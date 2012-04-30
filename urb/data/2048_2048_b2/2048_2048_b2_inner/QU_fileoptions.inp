@@ -1,0 +1,5 @@
+!QUIC 5.5
+2   !output data file format flag (1=ascii, 2=binary, 3=both)
+0   !flag to write out non-mass conserved initial field (uofield.dat) (1=write,0=no write)
+0   !flag to write out the file uosensorfield.dat, the initial sensor velocity field (1=write,0=no write)
+0   !flag to write out the file QU_staggered_velocity.bin used by QUIC-Pressure(1=write,0=no write)

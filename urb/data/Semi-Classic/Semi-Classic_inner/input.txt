@@ -1,0 +1,54 @@
+filler
+filler
+filler
+filler
+filler
+nx 64
+ny 64
+nz 21
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+output_file data.txt
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+filler
+numBuild 1
+build 27 32 0 10 10 10 

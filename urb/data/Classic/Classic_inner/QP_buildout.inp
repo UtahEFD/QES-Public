@@ -1,0 +1,10 @@
+   1 ! total number of buildings
+   0 ! total number of vegitative canopies
+   0 ! number of new buildings - parking garage
+Building Number =    1
+ Type =    1 gamma =    0.0000
+ Ht =   10.0000 W =   10.0000 L =   10.0000
+ xfo =   10.0000 yfo =   15.0000 zfo =    0.0000
+ Weff =   10.0000 Leff =   10.0000
+  Lf =    8.3333  Lr =   14.5161 Att =    0.0000
+ Sx = 9999.0000 Sy = 9999.0000

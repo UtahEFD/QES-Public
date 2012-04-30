@@ -1,0 +1,25 @@
+Creator:
+     unnamed
+Date:
+     01-Jul-2009
+Notes:
+     None
+Inner Grid Inlet Profile:
+     Logarithmic
+Roof Top (Inner Grid):
+     Vortex
+Wind Angle(Inner Grid):
+     0
+Velocity Ref(Inner Grid):
+     0.5
+# of Buildings(Inner Grid):
+     4
+Inner Grid Scale:
+     dx = 1 dy = 1 dz = 1
+Nested Grid Flag:
+     0
+Inner Grid Location,X:
+     0
+Inner Grid Location,Y:
+     0
+~

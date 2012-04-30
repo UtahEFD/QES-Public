@@ -1,0 +1,11 @@
+x_start 64
+y_start 64
+z_start 3
+
+x_end 512
+y_end 512
+z_end 21
+
+x_step 64
+y_step 64
+z_step 1
