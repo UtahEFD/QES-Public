@@ -9,7 +9,7 @@
 #define SETUP_BNDRY_MATS_H
 
 #include "cuda/showerror.cu"
-#include "quic/boundaryMatrices.h"
+#include "../cpp/boundaryMatrices.h"
 
 namespace QUIC
 {

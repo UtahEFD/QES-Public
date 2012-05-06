@@ -7,29 +7,12 @@
 #ifndef URBVIEWER_H
 #define URBVIEWER_H
 
-#include <GL/glew.h>
-#ifdef __APPLE__
-#include <GLUT/glut.h>
-#else
-#include <GL/glut.h>
-#endif
-
-#include <cuda_runtime.h>
-#include <cuda_gl_interop.h>
-
 #include "urbCUDA.h"
 #include "urbSetup.h"
 #include "urbParser.h"
 
-// Relative to where the source file is.
-#include "util/OpenGLExtensions.h"
-#include "util/viewer.h"
+#include "../util/viewer.h"
 #include "util/GLSL.h"
-#include "util/axis.h"
-
-#include <cmath>
-#include <iostream>
-#include <string>
 
 extern "C" 
 {
@@ -72,7 +55,6 @@ namespace QUIC
 			
 			void nextIteration();
 			void glDrawData();
-			void glDrawAxises() const;
 
 			void setSeperation(float const&);
 			float getSeperation() const;
@@ -129,10 +111,6 @@ namespace QUIC
 			float* t_v;
 			float* t_w;
 			
-			axis* x_axis;
-			axis* y_axis;
-			axis* z_axis;
-
 			GLSLObject lagrange_shader;
 			GLint uniform_lagrange_tex;
 			GLfloat uniform_lagrange_alpha;

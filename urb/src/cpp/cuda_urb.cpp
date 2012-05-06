@@ -10,6 +10,8 @@
 #include "urbParser.h"
 #include "urbSetup.h"
 
+#include "../util/directory.h"
+
 int main(int argc, char* argv[]) 
 {
 	std::cout << std::endl << "###--- sor3d on device ---###" << std::endl;
@@ -20,12 +22,12 @@ int main(int argc, char* argv[])
 	getDirectories(argc, argv, inp_dir, out_dir);
 
 	QUIC::urbModule* um = new QUIC::urbModule();
-
+  um->beQuiet(false);
+  
 	QUIC::urbParser::parse(um, inp_dir);
-	// Check? --> Manual
+	//um->use_fortran = true;
 	QUIC::urbSetup::setup(um);
 
-	// Check some stuff.
 	um->sanityCheck();
 
 	for(int i = 0; i < 1; i++)
@@ -47,7 +49,7 @@ int main(int argc, char* argv[])
   um->output_divergence = true;
   um->output_denominators = true;
 //  um->output_lagrangians = true;
-//  um->output_velocities = true;
+  um->output_velocities = true;
 
 	QUIC::urbParser::dump(um, out_dir);
 //	QUIC::urbParser::generatePlumeInput(um, out_dir);

@@ -30,7 +30,7 @@ namespace QUIC
 			QUIC::urbCUDA::checkForConvergence(um);
 		}
 
-		while(!um->converged && um->iteration < um->max_iterations)
+		while(!um->converged && um->iteration < um->simParams.max_iterations)
 		{
 			QUIC::urbCUDA::iterate(um, um->iter_step);
 			QUIC::urbCUDA::checkForConvergence(um);
@@ -50,7 +50,11 @@ namespace QUIC
 			QUIC::urbCUDA::solveUsingSOR_RB(um);
 
 				um->stpwtchs->diffus->start();
-			cudaDiffusion(um->d_vels, um->d_typs, um->d_visc, um->dx, um->dy, um->dz);
+			cudaDiffusion
+			(
+			  um->d_vels, um->d_typs, um->d_visc, 
+			  um->simParams.dx, um->simParams.dy, um->simParams.dz
+			);
 			cudaThreadSynchronize();
 				um->stpwtchs->diffus->stop();
 		}
@@ -71,7 +75,11 @@ namespace QUIC
 	// Divergence
 			um->stpwtchs->diverg->start();
 		//Setup d_r
-		cudaDivergence(um->d_r, um->d_vels,	um->alpha1, um->dx, um->dy, um->dz);
+		cudaDivergence
+		(
+		  um->d_r, um->d_vels,	um->alpha1, 
+		  um->simParams.dx, um->simParams.dy, um->simParams.dz
+		);
 		cudaThreadSynchronize();
 			um->stpwtchs->diverg->stop();
 
@@ -87,7 +95,7 @@ namespace QUIC
 		QUIC::urbCUDA::iterate(um, 1);
 		QUIC::urbCUDA::checkForConvergence(um);
 		
-		um->eps       = um->abse*pow(10., -um->residual_reduction);
+		um->eps       = um->abse*pow(10., -um->simParams.residual_reduction);
 		um->converged = false; // checkForConvergence gives true for first iteration.
 		
 		return false;
@@ -96,7 +104,7 @@ namespace QUIC
 	void urbCUDA::iterate(QUIC::urbModule* um, int const& times = 1) 
 	{
 		//iterate times times.
-		unsigned goto_iter = um->iteration + times;
+		int goto_iter = um->iteration + times;
 		
 		for(; um->iteration < goto_iter; um->iteration++) 
 		{			      
@@ -104,7 +112,7 @@ namespace QUIC
 			(
 			  um->d_p1, um->d_p2_err, um->d_bndrs, um->d_r, 
 			  um->omegarelax, um->one_less_omegarelax, 
-				um->dx, um->A, um->B
+				um->simParams.dx, um->A, um->B
 			);
 		}
 		
@@ -113,8 +121,8 @@ namespace QUIC
 		cudaMemcpy
 		(
 			&um->d_p1[0], 
-			&um->d_p1[um->nx*um->ny], 
-			um->nx*um->ny*sizeof(float), 
+			&um->d_p1[um->slice_size], 
+			um->slice_size*sizeof(float), 
 			cudaMemcpyDeviceToDevice
 		);
 		//*/
@@ -159,7 +167,7 @@ namespace QUIC
 		(
 			um->d_vels, um->d_typs, 
 			um->d_p1, um->alpha1, um->alpha2, 
-			um->dx, um->dy, um->dz
+			um->simParams.dx, um->simParams.dy, um->simParams.dz
 		);
 		cudaThreadSynchronize();
 

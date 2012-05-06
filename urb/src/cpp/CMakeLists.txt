@@ -8,11 +8,11 @@ foreach(program ${PROGRAMS})
   CUDA_ADD_EXECUTABLE(${program} ${program}.cpp)
   
   target_link_libraries (${program} UrbCUDA)
-  target_link_libraries (${program} UrbKernels) 
-  target_link_libraries (${program} CommonKernels)
-  target_link_libraries (${program} CommonUtil)
-  target_link_libraries (${program} CommonQUIC)
-  target_link_libraries (${program} sive-quicutil) 
+  target_link_libraries (${program} UrbKernels)
+  target_link_libraries (${program} UrbUtil)
+  target_link_libraries (${program} sive-cudautil)
+  target_link_libraries (${program} sive-quicutil)
+  target_link_libraries (${program} sive-util)
   target_link_libraries (${program} m)
   target_link_libraries (${program} gfortran)
   target_link_libraries (${program} Urbfortran)
@@ -22,23 +22,34 @@ endforeach(program)
 # These really need CUDA_ADD_LIB?
 if(QUIC_BUILD_DEV)
   CUDA_ADD_LIBRARY(UrbCUDA
-    urbModule.cpp 
-    urbTimer.cpp
-    urbSetup.cpp 
+    building.cpp
+    buildingList.cpp
+    intersect.cpp
+    pentagon.cpp
+    #
     urbCUDA.cpp 
-    urbParser.cpp
-    urbViewer.cpp
     urbHost.cpp
+    urbModule.cpp 
+    urbParser.cpp
+    urbSetup.cpp 
     urbStopWatchList.cpp
+    urbTimer.cpp
+    urbViewer.cpp
   )
 else()
   CUDA_ADD_LIBRARY(UrbCUDA
-    urbModule.cpp 
-    urbSetup.cpp 
+    building.cpp
+    buildingList.cpp
+    intersect.cpp
+    pentagon.cpp
+    #
     urbCUDA.cpp 
+    urbModule.cpp 
     urbParser.cpp
+    urbSetup.cpp 
     urbStopWatchList.cpp
   )
 endif()
+
 
 

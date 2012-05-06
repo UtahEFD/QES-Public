@@ -7,8 +7,8 @@
 #ifndef TURBULENCE_H
 #define TURBULENCE_H
 
-#include "quic/celltypes.h"
-#include "quic/velocities.h"
+#include "../cpp/celltypes.h"
+#include "quicutil/velocities.h"
 
 extern "C" void showError(char const* loc);
 

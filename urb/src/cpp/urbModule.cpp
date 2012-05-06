@@ -18,7 +18,6 @@ namespace QUIC
 		// Domain Parameters and Pointers
 		// Device and Host Pointers
 		this->setDimensions(0, 0, 0);
-		dx = dy = dz = 0.;
 		
 		h_bndrs.cmprssd = d_bndrs.cmprssd = NULL;
 		h_bndrs.denoms  = d_bndrs.denoms  = NULL;
@@ -55,10 +54,10 @@ namespace QUIC
 					
 		iteration = 0;
 		iter_step = 1;
-		max_iterations = DFLT_MAX_ITERATIONS;
+		simParams.max_iterations = DFLT_MAX_ITERATIONS;
 		
 		eps = 1.;
-		runto_eps = abse = residual_reduction = 0.;
+		runto_eps = abse = simParams.residual_reduction = 0.;
 		// Iteration Parameters
 
 
@@ -71,8 +70,8 @@ namespace QUIC
 		
 
 		// Diffusion Parameters
-		diffusion_flag = false;
-		diffusion_step = 0;
+		simParams.diffusion_flag = false;
+		simParams.diffusion_step = 0;
 		diffusion_iter = 1;
 		// Diffusion Parameters
 		
@@ -89,7 +88,7 @@ namespace QUIC
 
 	urbModule::~urbModule() 
 	{
-		for(unsigned int i = 0; i < sensors.size(); i++)
+		for(unsigned i = 0; i < sensors.size(); i++)
 		{
 			delete sensors[i];
 		}
@@ -114,28 +113,28 @@ namespace QUIC
 		// Simparams // SOR
 		if(simParams.quic_cfd_type > 0) 
 		{
-			max_iterations = 1; 
-			diffusion_flag = false;
+			simParams.max_iterations = 1; 
+			simParams.diffusion_flag = false;
 		}
 		
-		this->setDimensions(nx, ny, nz);
+		this->setDimensions(simParams.nx, simParams.ny, simParams.nz);
 		
-		A = (dx * dx) / (dy * dy);
-		B = eta * (dx * dx) / (dz * dz);
+		A = (simParams.dx * simParams.dx) / (simParams.dy * simParams.dy);
+		B = eta * (simParams.dx * simParams.dx) / (simParams.dz * simParams.dz);
 
 		
 		// Unclassified
-		Lx = nx * dx;
-		Ly = ny * dy;
-		Lz = nz * dz;		
+		Lx = simParams.nx * simParams.dx;
+		Ly = simParams.ny * simParams.dy;
+		Lz = simParams.nz * simParams.dz;		
 
 						
 		// Buildings
 		// todo resolve float to int warning.
-		buildings.x_subdomain_sw *= dx;
-		buildings.y_subdomain_sw *= dy;
-		buildings.x_subdomain_ne   *= dx;
-		buildings.y_subdomain_ne   *= dy;
+		fileBuildings.x_subdomain_sw *= simParams.dx;
+		fileBuildings.y_subdomain_sw *= simParams.dy;
+		fileBuildings.x_subdomain_ne *= simParams.dx;
+		fileBuildings.y_subdomain_ne *= simParams.dy;
 		
 		  stpwtchs->init->stop();
 			
@@ -156,7 +155,7 @@ namespace QUIC
 		eps 	  = 1.;
 		abse 	  = 0.;
 
-		diffusion_step = 0;
+		simParams.diffusion_step = 0;
 
     // Check method...
     stpwtchs->resetIterationTimers();
@@ -166,7 +165,7 @@ namespace QUIC
 		
 		if(host_runnable)
 		{
-		  for(unsigned i = 0; i < domain_size; i++)
+		  for(int i = 0; i < domain_size; i++)
 		  {
 		    h_p1[i] = h_p2_err[i] = 0.;
 		  }
@@ -194,16 +193,20 @@ namespace QUIC
 		else {return NULL;}
 	}
 
-	unsigned int urbModule::getDomainSize() const {return domain_size;}
-	unsigned int urbModule::getGridSize() const 	{return grid_size;}
+	int urbModule::getDomainSize() const {return domain_size;}
+	int urbModule::getGridSize() const 	{return grid_size;}
 	
-	unsigned int urbModule::getNX() const {return nx;}
-	unsigned int urbModule::getNY() const {return ny;}
-	unsigned int urbModule::getNZ() const {return nz;}
+	int urbModule::getNX() const {return simParams.nx;}
+	int urbModule::getNY() const {return simParams.ny;}
+	int urbModule::getNZ() const {return simParams.nz;}
 	
-	unsigned int urbModule::getDX() const {return dx;}
-	unsigned int urbModule::getDY() const {return dy;}
-	unsigned int urbModule::getDZ() const {return dz;}
+	int urbModule::getGX() const {return gx;}
+	int urbModule::getGY() const {return gy;}
+	int urbModule::getGZ() const {return gz;}
+	
+	float urbModule::getDX() const {return simParams.dx;}
+	float urbModule::getDY() const {return simParams.dy;}
+	float urbModule::getDZ() const {return simParams.dz;}
 
 	std::string urbModule::getName() const {return name;}
 	void urbModule::setName(std::string const& newName) {name = newName;}
@@ -236,13 +239,13 @@ namespace QUIC
 		one_less_omegarelax = 1. - omegarelax;
 	}
 
-	void urbModule::setWindAngle(angle const& theAngle)
+	void urbModule::setWindAngle(sivelab::angle const& theAngle)
 	{
 		if(module_initialized)
 		{
-			for(unsigned int i = 0; i < sensors.size(); i++)
+			for(unsigned i = 0; i < sensors.size(); i++)
 			{
-				sensors[i]->direction = theAngle.radians(QUIC::ENG);
+				sensors[i]->direction = theAngle.radians(sivelab::ENG);
 			}
 		}
 		else
@@ -252,28 +255,28 @@ namespace QUIC
 		}
 	}
 
-	unsigned int urbModule::getMaxIterations() const {return max_iterations;}
-	void urbModule::setMaxIterations(unsigned int const& new_max)
+	int urbModule::getMaxIterations() const {return simParams.max_iterations;}
+	void urbModule::setMaxIterations(int const& new_max)
 	{
-		max_iterations = (new_max > 1) ? new_max : DFLT_MAX_ITERATIONS ;
+		simParams.max_iterations = (new_max > 1) ? new_max : DFLT_MAX_ITERATIONS ;
 	}
 
-	unsigned int urbModule::getIteration() const 
+	int urbModule::getIteration() const 
 	{
 		return iteration;
 	}
 
-	unsigned int urbModule::getIterationStep() const {return iter_step;}
-	void urbModule::setIterationStep(unsigned int const& new_step)
+	int urbModule::getIterationStep() const {return iter_step;}
+	void urbModule::setIterationStep(int const& new_step)
 	{
 		iter_step = (new_step > 1) ? new_step : 1 ;
 	}
 
-	unsigned int urbModule::getDiffusionStep() const {return diffusion_step;}
+	int urbModule::getDiffusionStep() const {return simParams.diffusion_step;}
 	
-	bool urbModule::isDiffusionOnQ() const {return diffusion_flag;}
-	void urbModule::turnDiffusionOn()  {diffusion_flag = true;}
-	void urbModule::turnDiffusionOff() {diffusion_flag = false;}
+	bool urbModule::isDiffusionOnQ() const {return simParams.diffusion_flag;}
+	void urbModule::turnDiffusionOn()  {simParams.diffusion_flag = true;}
+	void urbModule::turnDiffusionOff() {simParams.diffusion_flag = false;}
 
   bool urbModule::isHostRunnableQ() const {return host_runnable;}
 
@@ -296,6 +299,7 @@ namespace QUIC
   bool urbModule::sanityCheck() const
   {
     bool passed = true;
+    passed &= validBuildingsQ();
 		passed &= validDimensionsQ(__FILE__);
 		passed &= validParametersQ();
 		passed &= validBoundaryMaskQ();
@@ -305,24 +309,18 @@ namespace QUIC
 		
 		std::cerr << "UrbModule " << ((passed) ? "passed" : "failed") << " sanity check." << std::endl;
 		
-		if (!passed)
-		{
-		  //std::cout << "Exiting now..." << std::endl; exit(EXIT_FAILURE);
-    }
+		if (!passed) {exit(EXIT_FAILURE);}
     
     return passed;
   }
 
-	void urbModule::setDimensions(unsigned int _nx, unsigned int _ny, unsigned int _nz)
+	void urbModule::setDimensions(int nx, int ny, int nz)
 	{
-		nx = _nx;
-		ny = _ny;
-		nz = _nz;
-	
 		gx = nx + 1;
 		gy = ny + 1;
 		gz = nz + 1;
 		
+		slice_size  = nx*ny;
 		domain_size = nx*ny*nz;
 		grid_size 	= gx*gy*gz;
 	
@@ -339,18 +337,61 @@ namespace QUIC
 		h_ntls.dim.z = d_vels.dim.z = gz;
 	}
 
+  bool urbModule::validBuildingsQ() const
+  {
+    bool enoughBuildings = buildings.size() > 0;
+    
+    if (!enoughBuildings)
+    {
+      std::cerr << "Buildings are required for the simulation." << std::endl;
+    }
+    
+    return enoughBuildings;
+  }
+
 	bool urbModule::validDimensionsQ(std::string checking_loc) const
 	{
+		if(simParams.nx < 1 || simParams.ny < 1 || simParams.nz < 1)
+		{
+			std::cerr << "Error in " << checking_loc << std::endl;
+			std::cerr << "Dimensions are Bad." << std::endl;
+			std::cerr << "urbModule cell Dim : " << simParams.nx << "x" << simParams.ny << "x" << simParams.nz << std::endl;
+
+			return false;
+		}
+
+	  if(simParams.nx + 1 != gx || simParams.ny + 1 != gy || simParams.nz + 1 != gz)
+		{
+			std::cerr << "Error in " << checking_loc << std::endl;
+			std::cerr << "Dimensions for cell domain and grid domain do not correspond correctly." << std::endl;
+			std::cerr << "urbModule cell Dim : " << simParams.nx << "x" << simParams.ny << "x" << simParams.nz << std::endl;
+			std::cerr << "urbModule grid Dim : " << gx << "x" << gy << "x" << gz << std::endl;		
+			
+			return false;
+		}
+	
 		if
 		(
-			nx != h_typs.dim.x ||
-			ny != h_typs.dim.y ||
-			nz != h_typs.dim.z ||
+			simParams.nx != (int) h_typs.dim.x ||
+			simParams.ny != (int) h_typs.dim.y ||
+			simParams.nz != (int) h_typs.dim.z ||
 			
-			nx != d_typs.dim.x ||
-			ny != d_typs.dim.y ||
-			nz != d_typs.dim.z ||
+			simParams.nx != (int) d_typs.dim.x ||
+			simParams.ny != (int) d_typs.dim.y ||
+			simParams.nz != (int) d_typs.dim.z
+		)
+		{
+		  std::cerr << "Error in " << checking_loc << std::endl;
+			std::cerr << "Dimensions of celltypes don't match urbModule." << std::endl;
+			std::cerr << "H-Celltypes Dim : " << h_typs.dim.x << "x" << h_typs.dim.y << "x" << h_typs.dim.z	<< std::endl;
+			std::cerr << "D-Celltypes Dim : " << d_typs.dim.x << "x" << d_typs.dim.y << "x" << d_typs.dim.z	<< std::endl;
+			std::cerr << "urbModule   Dim : " << simParams.nx << "x" << simParams.ny << "x" << simParams.nz << std::endl;
 			
+			return false;
+		}
+		
+		if 
+		(	
 			gx != h_ntls.dim.x ||
 			gy != h_ntls.dim.y ||
 			gz != h_ntls.dim.z ||
@@ -361,32 +402,11 @@ namespace QUIC
 		)
 		{
 			std::cerr << "Error in " << checking_loc << std::endl;
-			std::cerr << "Dimensions of celltypes and velocities don't match urbModule." << std::endl;
-			std::cerr << "H-Boundary  Dim : " << h_ntls.dim.x << "x" << h_ntls.dim.y << "x" << h_ntls.dim.z << std::endl;
-			std::cerr << "D-Boundary  Dim : " << d_vels.dim.x << "x" << d_vels.dim.y << "x" << d_vels.dim.z << std::endl;
-			std::cerr << "H-Celltypes Dim : " << h_typs.dim.x << "x" << h_typs.dim.y << "x" << h_typs.dim.z	<< std::endl;
-			std::cerr << "D-Celltypes Dim : " << d_typs.dim.x << "x" << d_typs.dim.y << "x" << d_typs.dim.z	<< std::endl;
-			std::cerr << "urbModule   Dim : " << nx           << "x" << ny           << "x" << nz           << std::endl;
+			std::cerr << "Dimensions of velocities don't match urbModule." << std::endl;
+			std::cerr << "H-InitVels  Dim : " << h_ntls.dim.x << "x" << h_ntls.dim.y << "x" << h_ntls.dim.z << std::endl;
+			std::cerr << "D-Velocity  Dim : " << d_vels.dim.x << "x" << d_vels.dim.y << "x" << d_vels.dim.z << std::endl;
+			std::cerr << "urbModule   Dim : " << gx           << "x" << gy           << "x" << gz           << std::endl;
 			
-			return false;
-		}
-
-		if(nx + 1 != gx || ny + 1 != gy || nz + 1 != gz)
-		{
-			std::cerr << "Error in " << checking_loc << std::endl;
-			std::cerr << "Dimensions for cell domain and grid domain do not correspond correctly." << std::endl;
-			std::cerr << "urbModule cell Dim : " << nx << "x" << ny << "x" << nz << std::endl;
-			std::cerr << "urbModule grid Dim : " << gx << "x" << gy << "x" << gz << std::endl;		
-			
-			return false;
-		}
-	
-		if(nx < 1 || ny < 1 || nz < 1)
-		{
-			std::cerr << "Error in " << checking_loc << std::endl;
-			std::cerr << "Dimensions are Bad." << std::endl;
-			std::cerr << "urbModule cell Dim : " << nx << "x" << ny << "x" << nz << std::endl;
-
 			return false;
 		}
 
@@ -415,11 +435,11 @@ namespace QUIC
 	celltypes urbModule::getCellTypes() const
 	{
 	  celltypes clltyps;
-	  clltyps.c = QUIC::urbModule::getCUDAdata<CellType>(d_typs.c, nx, ny, nz);
+	  clltyps.c = QUIC::urbModule::getCUDAdata<CellType>(d_typs.c, simParams.nx, simParams.ny, simParams.nz);
 	  
-	  clltyps.dim.x = nx;
-	  clltyps.dim.y = ny;
-	  clltyps.dim.z = nz;
+	  clltyps.dim.x = simParams.nx;
+	  clltyps.dim.y = simParams.ny;
+	  clltyps.dim.z = simParams.nz;
 	  
 	  return clltyps;
 	}
@@ -429,36 +449,36 @@ namespace QUIC
 	{
 		bool parameters_good = true;
 
-		if(A < 0.) {std::cerr << "A < 0.0." << std::endl; parameters_good = false;}
-		if(B < 0.) {std::cerr << "A < 0.0." << std::endl; parameters_good = false;}
+		if(A < 0.f) {std::cerr << "A < 0.0." << std::endl; parameters_good = false;}
+		if(B < 0.f) {std::cerr << "A < 0.0." << std::endl; parameters_good = false;}
 
 		//alpha1
 		//alpha2		
 
-		if(omegarelax < 0. || 2. < omegarelax) 
+		if(omegarelax < 0.f || 2.f < omegarelax) 
 		{
 			if(!quiet) {std::cerr << "omegarelax in [0., 2.]." << std::endl;} 
 			parameters_good = false;
 		}
 
-		if(dx <= 0.) {std::cerr << "dx <= 0." << std::endl; return false;}
-		if(dy <= 0.) {std::cerr << "dy <= 0." << std::endl; return false;}
-		if(dz <= 0.) {std::cerr << "dz <= 0." << std::endl; return false;}
+		if(simParams.dx <= 0.f) {std::cerr << "dx <= 0." << std::endl; return false;}
+		if(simParams.dy <= 0.f) {std::cerr << "dy <= 0." << std::endl; return false;}
+		if(simParams.dz <= 0.f) {std::cerr << "dz <= 0." << std::endl; return false;}
 		
 
-		if(!residual_reduction) {}
+		if(!simParams.residual_reduction) {}
 
-		if(nx < 1) 
+		if(simParams.nx < 1) 
 		{
 			std::cerr << "nx < 1. There should be at least one row."    << std::endl; 
 			parameters_good = false;
 		}
-		if(ny < 1) 
+		if(simParams.ny < 1) 
 		{
 			std::cerr << "ny < 1. There should be at least one column." << std::endl; 
 			parameters_good = false;
 		}
-		if(nz < 3) 
+		if(simParams.nz < 3) 
 		{
 			std::cerr << "nz < 3. There should be at least two slices." << std::endl; 
 			parameters_good = false;
@@ -467,11 +487,11 @@ namespace QUIC
 		//Limit the domain size
 		struct cudaDeviceProp d_info;
 		cudaGetDeviceProperties(&d_info, 0); //Current Device should be 0.
-		unsigned mx_grid_x = d_info.maxGridSize[0];
+		int mx_grid_x = d_info.maxGridSize[0];
 		
 		// Limited by which kernel? abs_diff.
-		unsigned min_thrd_cnt = 128;
-		unsigned max_elements = mx_grid_x*min_thrd_cnt;
+		int min_thrd_cnt = 128;
+		int max_elements = mx_grid_x*min_thrd_cnt;
 
 		// Make sure the size is doable...
 		if(domain_size >= max_elements) 
@@ -507,7 +527,7 @@ namespace QUIC
     // Basic values.
     
     // Check the boundary mask entries for valid values.
-    for (unsigned i = 0; i < domain_size; i++)
+    for (int i = 0; i < domain_size; i++)
     {
       if (h_bndrs.cmprssd[i] < 0 || 8192 < h_bndrs.cmprssd[i])
       {
@@ -546,7 +566,7 @@ namespace QUIC
     okDenoms[6] = omegarelax / (2.f*(.5f + A*1.f + B*1.f));
     okDenoms[7] = omegarelax / (2.f*(1.f + A*1.f + B*1.f));
 		
-    for (unsigned i = 0; i < domain_size; i++)
+    for (int i = 0; i < domain_size; i++)
     {
 		  // Only 8 possible values. 2 options for o, 2 options for p, 2 options for q.
 		  // o, p and q must each be .5f or 1.f
@@ -626,10 +646,10 @@ namespace QUIC
 		int domains	=	                 6;			int grids =  4;
 		
 		// 128 for padding for iter kernel to free x-dim.
-		unsigned int needed_cell_bytes = (domain_size + 127)*domains*sizeof(float);
-		unsigned int needed_grid_bytes = grid_size*grids*sizeof(float);
+		int needed_cell_bytes = (domain_size + 127)*domains*sizeof(float);
+		int needed_grid_bytes = grid_size*grids*sizeof(float);
 								
-		unsigned int needed_bytes = needed_cell_bytes + needed_grid_bytes;
+		int needed_bytes = needed_cell_bytes + needed_grid_bytes;
 		float        needed_MB    = needed_bytes / 1024. / 1024.;
 		
 		// Originally e, f, g, h, m, n, o, p, q and denoms on device.
@@ -640,7 +660,7 @@ namespace QUIC
 		struct cudaDeviceProp d_info;
 		cudaGetDeviceProperties(&d_info, 0); //Current Device should be 0.
 		
-		unsigned int avail_bytes = d_info.totalGlobalMem;
+		int avail_bytes = d_info.totalGlobalMem;
 		float        avail_MB    = avail_bytes / 1024. / 1024.;
 
 		float lefto_MB = avail_MB - needed_MB;
@@ -653,30 +673,27 @@ namespace QUIC
 		// Prevent leaks.
 		if(this->validDevicePointersQ(false)) {this->deallocateDeviceMemory();}
 	
-		qwrite("Allocating device memory...");
+		float enough_device_mem = this->enoughDeviceMemoryQ();
+		std::ostringstream oss;
+		std::fixed(oss);
+		oss.precision(2);
+		oss << "Allocating device memory of " << enough_device_mem << " Mb...";
+		qwrite(oss.str());
 
 			stpwtchs->malloc->start();
 	
-		float enough_device_mem = this->enoughDeviceMemoryQ();
 		if(enough_device_mem <= 0) 
 		{
-			std::cerr 
-			<< 
-				"not enough memory on device. Device memory left: " << 
-				enough_device_mem << "." 
-			<< 
-			std::endl;
+		  qwrite("done\n");
+			std::cerr << "Not enough memory on device." << std::endl;
+			std::cerr << "Device memory left: " << enough_device_mem << "." << std::endl;
 			
+			exit(EXIT_FAILURE);
 			// Set don't do anything flag...
 			
 			return;
 		} 
 
-		std::ostringstream oss;
-		std::fixed(oss);
-		oss.precision(2);
-		oss << "needed device memory: " << enough_device_mem << "Mb...";
-		qwrite(oss.str());
 
 		// Padding added to free x-dim in the iteration kernel.
 		int padded_size = (domain_size + 127);
@@ -771,10 +788,10 @@ namespace QUIC
 		// 3 matrices of floats at grid_size   : uo, vo, wo
 		// 2 matrix of integers at domain_size : celltypes, cmprssd
 		
-		unsigned int domain_size_bytes = domain_size*(0*sizeof(float) + 2*sizeof(int));
-		unsigned int grid_size_bytes   = grid_size*3*sizeof(float);
+		int domain_size_bytes = domain_size*(0*sizeof(float) + 2*sizeof(int));
+		int grid_size_bytes   = grid_size*3*sizeof(float);
 		
-		unsigned int needed_bytes = domain_size_bytes + grid_size_bytes;
+		int needed_bytes = domain_size_bytes + grid_size_bytes;
 		float        needed_MB    = needed_bytes / 1024. / 1024.;
 			
 		// Report the needed memory
@@ -843,10 +860,10 @@ namespace QUIC
 		// Calculate needed memory
 		// 3 matrices of floats at domain_size : e, f, g, h, m, n, o, p, q
 		// 3 matrices of floats at grid_size : u, v, w
-		unsigned int domain_size_bytes = domain_size*3*sizeof(float);
-		unsigned int grid_size_bytes   = grid_size*3*sizeof(float);
+		int domain_size_bytes = domain_size*3*sizeof(float);
+		int grid_size_bytes   = grid_size*3*sizeof(float);
 		
-		unsigned int needed_bytes = domain_size_bytes + grid_size_bytes;
+		int needed_bytes = domain_size_bytes + grid_size_bytes;
 		float        needed_MB    = needed_bytes / 1024. / 1024.;
 
 		// Report the needed memory

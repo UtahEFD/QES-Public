@@ -8,7 +8,7 @@
 #define ITERATION_RED_BLACK_COMP_H
 
 #include <stdio.h>
-#include "quic/boundaryMatrices.h"
+#include "../cpp/boundaryMatrices.h"
 
 extern "C" void showError(char const* loc);
 

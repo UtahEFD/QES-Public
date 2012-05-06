@@ -10,6 +10,8 @@
 #include "urbParser.h"
 #include "urbSetup.h"
 
+#include "../util/directory.h" 
+
 int main(int argc, char* argv[]) 
 {
 	std::cout << std::endl << "###--- sor3d on host (C++) ---###" << std::endl;

@@ -8,7 +8,7 @@
 #ifndef COMP_DENOMS_H
 #define COMP_DENOMS_H
 
-#include "quic/boundaryMatrices.h"
+#include "../cpp/boundaryMatrices.h"
 
 extern "C" void showError(char const* loc);
 

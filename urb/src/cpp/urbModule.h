@@ -9,26 +9,24 @@
 
 #include <vector>
 #include <iostream>
-#include <iomanip>
-#include <sstream>
 #include <string>
 
 #include <cuda_runtime.h>
 
 #include "util/angle.h"
 #include "util/Timer.h"
-#include "util/matrixIO.h"
-
-#include "quic/boundaryMatrices.h"
-#include "quic/celltypes.h"
-#include "quic/velocities.h"
-#include "quic/building.h"
 #include "quicutil/QUSensor.h"
 #include "quicutil/QUMetParams.h"
 #include "quicutil/QUSimparams.h"
 #include "quicutil/QUFileOptions.h"
 #include "quicutil/QUBuildings.h"
+#include "quicutil/velocities.h"
 
+#include "../util/matrixIO.h"
+
+#include "boundaryMatrices.h"
+#include "buildingList.h"
+#include "celltypes.h"
 #include "urbStopWatchList.h"
 
 extern "C" void cudaZero(float* d_abse, size_t size, float value);
@@ -44,7 +42,7 @@ namespace QUIC
 	*/
 	
 	static const float        DFLT_OMEGARELAX     =  1.78;
-	static const unsigned int DFLT_MAX_ITERATIONS = 10000;
+	static const int DFLT_MAX_ITERATIONS = 10000;
 	
 	class urbModule 
 	{		
@@ -73,16 +71,20 @@ namespace QUIC
 			*/
 			float* getSolution() const;
 
-			unsigned int getDomainSize() const;
-			unsigned int getGridSize() const;
+			int getDomainSize() const;
+			int getGridSize() const;
 			
-			unsigned int getNX() const;
-			unsigned int getNY() const;
-			unsigned int getNZ() const;
+			int getNX() const;
+			int getNY() const;
+			int getNZ() const;
 			
-			unsigned int getDX() const;
-			unsigned int getDY() const;
-			unsigned int getDZ() const;
+			int getGX() const;
+			int getGY() const;
+			int getGZ() const;
+			
+			float getDX() const;
+			float getDY() const;
+			float getDZ() const;
 
 			std::string getName() const;
 			void setName(std::string const& newName);
@@ -107,16 +109,16 @@ namespace QUIC
 			void setOmegaRelax(float const& _omegarelax = 1.78f);
 			float getOmegaRelax() const;
 			
-			void setWindAngle(angle const& a);
+			void setWindAngle(sivelab::angle const& a);
 
-			unsigned int getMaxIterations() const;
-			void setMaxIterations(unsigned int const&);
-			unsigned int getIteration() const;
-			unsigned int getIterationStep() const;
-			void setIterationStep(unsigned int const&);
+			int getMaxIterations() const;
+			void setMaxIterations(int const&);
+			int getIteration() const;
+			int getIterationStep() const;
+			void setIterationStep(int const&);
 
 
-			unsigned int getDiffusionStep() const;
+			int getDiffusionStep() const;
 			bool isDiffusionOnQ() const;
 			void turnDiffusionOn();
 			void turnDiffusionOff();
@@ -163,35 +165,26 @@ namespace QUIC
 			float alpha1; 
 			float alpha2; 
 			float eta;
-
-			float dx; 
-			float dy; 
-			float dz;
 			
-			unsigned int nx; 
-			unsigned int ny; 
-			unsigned int nz;
-			
-			unsigned int gx; 
-			unsigned int gy; 
-			unsigned int gz;
+			int gx; 
+			int gy; 
+			int gz;
 
-			unsigned int domain_size;
-			unsigned int grid_size;
+      int slice_size;
+			int domain_size;
+			int grid_size;
 			// Domain Information
 
 			// Sim Parameters
       bool sim_params_parsed;
 
 		  quSimParams simParams;
-		  
 			quMetParams metParams;
-			
 			
 			std::vector<quSensorParams*> sensors;
 
-		  quBuildings buildings;
-		  std::vector<building*> urbBuildings;
+		  quBuildings fileBuildings;
+		  urbBuildingList buildings;
 
       quFileOptions fileOptions;
       
@@ -201,20 +194,15 @@ namespace QUIC
 			float omegarelax; 
 			float one_less_omegarelax;
 						
-			unsigned int iteration;
-			unsigned int iter_step;
-			unsigned int max_iterations;			
+			int iteration;
+			int iter_step;
 			
 			float eps;
 			float runto_eps;
 			float abse;
-			float residual_reduction;
 			// Iteration Parameters
 
-
 			// Diffusion Parameters
-			bool diffusion_flag;
-			int diffusion_step;
 			int diffusion_iter;
 			// Diffusion Parameters
 
@@ -255,7 +243,9 @@ namespace QUIC
 	    urbStopWatchList* stpwtchs;
 
     protected:			
-			void setDimensions(unsigned int nx, unsigned int ny, unsigned int nz);
+			void setDimensions(int nx, int ny, int nz);
+			
+			bool validBuildingsQ() const;
 			bool validDimensionsQ(std::string checking_loc) const;
 
       // Quiet write. Only writes if module->quiet = false;
@@ -273,7 +263,7 @@ namespace QUIC
         if(d_ptr == NULL) {return NULL;}
 	      else 
 	      {
-		      unsigned int size = x*y*z;
+		      int size = x*y*z;
 		      T* temp = new T[size];
 		      cudaMemcpy(temp, d_ptr, size * sizeof(T), cudaMemcpyDeviceToHost);
 		      return temp;

@@ -7,7 +7,7 @@
 #ifndef DIVERGENCE_H
 #define DIVERGENCE_H 1
 
-#include "quic/velocities.h"
+#include "quicutil/velocities.h"
 
 extern "C" void showError(char const* loc);
 

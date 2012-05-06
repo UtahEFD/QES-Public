@@ -1,5 +1,10 @@
 #include "urbSetup.h"
 
+#include "../util/directory.h"
+
+#include "fortranDatamodule.h"
+#include "intersect.h"
+
 namespace QUIC
 {
 	void urbSetup::setup(QUIC::urbModule* um)
@@ -18,11 +23,6 @@ namespace QUIC
 	{
 		std::string directory = um->input_directory;
 	
-		if(directory.at(directory.length() - 1) != '/') 
-		{
-			directory = directory.append("/");
-		}
-	
 		um->qwrite("###--- Fortran setup ---###\n");
 	
 		char* orig_dir = getcwd(NULL, 0);
@@ -36,24 +36,35 @@ namespace QUIC
 
 		// Now we can to push the info to the urbModule.
 		
-		// First go the basic parameters
-		um->nx = (unsigned) F90DATAMODULE_(nx) - 1; um->gx = um->nx + 1;
-		um->ny = (unsigned) F90DATAMODULE_(ny) - 1; um->gy = um->ny + 1;
-		um->nz = (unsigned) F90DATAMODULE_(nz) - 1; um->gz = um->nz + 1;
+		// First get the basic parameters
+		um->simParams.nx = (unsigned) F90DATAMODULE_(nx) - 1;
+		um->simParams.ny = (unsigned) F90DATAMODULE_(ny) - 1;
+		um->simParams.nz = (unsigned) F90DATAMODULE_(nz) - 1;
 
-		um->dx = F90DATAMODULE_(dx);
-		um->dy = F90DATAMODULE_(dy);
-		um->dz = F90DATAMODULE_(dz);
+    std::cout << um->simParams.nx << "." << um->simParams.ny << "." << um->simParams.nz <<std::endl;
+
+    um->setDimensions(um->simParams.nx, um->simParams.ny, um->simParams.nz);
+    //um->gx = um->simParams.nx + 1;
+    //um->gy = um->simParams.ny + 1;
+    //um->gz = um->simParams.nz + 1;
+
+		um->simParams.dx = F90DATAMODULE_(dx);
+		um->simParams.dy = F90DATAMODULE_(dy);
+		
+		// TODO Fix this. Fortran makes dz 0.f;
+		//std::cout << um->dz << std::endl;
+		//um->dz = F90DATAMODULE_(dz);
+		std::cout << um->simParams.dz << std::endl;
 		
 		um->A      = F90DATAMODULE_(a);
 		um->B      = F90DATAMODULE_(b);
 		um->alpha1 = F90DATAMODULE_(alpha1);
 		um->alpha2 = F90DATAMODULE_(alpha2);
 
-		um->residual_reduction = F90DATAMODULE_(residual_reduction);
+		um->simParams.residual_reduction = F90DATAMODULE_(residual_reduction);
 
 		// Now the datamodule must be initialized.
-		//um->initialize(); Now called from urbParser
+		//um->initialize(); //Now called from urbParser
 		
 		um->stpwtchs->sort->start();
 		sort_(); 
@@ -90,7 +101,7 @@ namespace QUIC
 			F90DATAMODULE_(o), F90DATAMODULE_(p), F90DATAMODULE_(q)
 		);
 		
-		for(unsigned int i = 0; i < um->nx*um->ny*um->nz; i++)
+		for(int i = 0; i < um->domain_size; i++)
 		{
 			um->h_typs.c[i] = (CellType) F90DATAMODULE_(icellflag)[i];
 		}
@@ -116,7 +127,7 @@ namespace QUIC
 		QUIC::urbSetup::initializeBuildings(um);
 
 		um->stpwtchs->sort->start();
-		//sortBuildings(um->buildings);
+		um->buildings.sort();
 		um->stpwtchs->sort->stop();
 		
 		QUIC::urbSetup::buildingParameterizations(um);
@@ -125,6 +136,8 @@ namespace QUIC
 		um->transferDataToDevice();
 		
 		QUIC::urbSetup::setupBoundaryMatrices(um); // CUDA-nized.
+
+    std::cout << um->simParams.nx << "." << um->simParams.ny << "." << um->simParams.nz <<std::endl;
 		
 		um->qwrite("###--- done ---###\n\n");
 		um->reset();
@@ -141,7 +154,7 @@ namespace QUIC
 		
 		for(unsigned int i = 0; i < um->sensors.size(); i++)
 		{
-			um->sensors[i]->determineVerticalProfiles(um->buildings.zo, um->dz, 0);
+			um->sensors[i]->determineVerticalProfiles(um->buildings[0].zo, um->simParams.dz, 0);
 		}
 		
 		um->qwrite("done.\n");
@@ -168,8 +181,8 @@ namespace QUIC
 			//std::cout << " h_ntls.dim.x = " << um->h_ntls.dim.x << std::endl;
 			
 			for(int k = 1; k < um->sensors[0]->prfl_lgth; k++)
-			for(unsigned j = 0; j < um->h_ntls.dim.y; j++)
-			for(unsigned i = 0; i < um->h_ntls.dim.x; i++)
+			for(int j = 0; j < um->h_ntls.dim.y; j++)
+			for(int i = 0; i < um->h_ntls.dim.x; i++)
 			{
 				int ndx = k*um->h_ntls.dim.y*um->h_ntls.dim.x + j*um->h_ntls.dim.x + i;
 				um->h_ntls.u[ndx] = um->sensors[0]->u_prof[k];
@@ -193,14 +206,15 @@ namespace QUIC
 		um->qwrite("Initializing buildings...");
 		um->stpwtchs->init->start();
 		
-		for(unsigned int i = 0; i < um->urbBuildings.size(); i++)
+		for(unsigned int i = 0; i < um->buildings.size(); i++)
 		{
-			um->urbBuildings[i]->initialize(um->h_ntls, um->dx, um->dy, um->dz);
+			um->buildings[i].initialize(um->h_ntls, um->simParams.dx, um->simParams.dy, um->simParams.dz);
 		}
 		
 		QUIC::urbSetup::checkForVegetation(um);
 		
 		um->stpwtchs->init->stop();
+		
 		um->qwrite("done.\n");
 	}
 	
@@ -220,41 +234,44 @@ namespace QUIC
 		
 		if(!um->validDimensionsQ("urbSetup::buildingParam()")) {return;}
 		
-		float dx = um->dx;
-		float dy = um->dy;
-		float dz = um->dz;
+		float dx = um->simParams.dx;
+		float dy = um->simParams.dy;
+		float dz = um->simParams.dz;
 		
 		// Fill the celltypes matrix with "fluid" cells.
-		for(unsigned int m = 0; m < um->domain_size; m++) {um->h_typs.c[m] = FLUID;}
-	
-		for(unsigned int i = 0; i < um->urbBuildings.size(); i++)
+		for(int m = 0; m < um->domain_size; m++) 
 		{
-			um->urbBuildings[i]->interior(um->h_typs, um->h_ntls, dx, dy, dz);
+		  um->h_typs.c[m] = FLUID;
+		}
+	
+		for(unsigned int i = 0; i < um->buildings.size(); i++)
+		{
+			um->buildings[i].interior(um->h_typs, um->h_ntls, dx, dy, dz);
 		}
 //	std::cout << "interior done..." << std::flush;
-		for(unsigned int i = 0; i < um->urbBuildings.size(); i++)
+		for(unsigned int i = 0; i < um->buildings.size(); i++)
 		{
-			um->urbBuildings[i]->upwind(um->h_typs, um->h_ntls, dx, dy, dz);
+			um->buildings[i].upwind(um->h_typs, um->h_ntls, dx, dy, dz);
 		}
 //	std::cout << "upwind done..." << std::flush;		
-		for(unsigned int i = 0; i < um->urbBuildings.size(); i++)
+		for(unsigned int i = 0; i < um->buildings.size(); i++)
 		{
-			um->urbBuildings[i]->wake(um->h_typs, um->h_ntls, dx, dy, dz);
+			um->buildings[i].wake(um->h_typs, um->h_ntls, dx, dy, dz);
 		}
 //	std::cout << "wake done..." << std::flush;
-		for(unsigned int i = 0; i < um->urbBuildings.size(); i++)
+		for(unsigned int i = 0; i < um->buildings.size(); i++)
 		{
-			um->urbBuildings[i]->canyon(um->h_typs, um->h_ntls, um->urbBuildings, dx, dy, dz);
+			um->buildings[i].canyon(um->h_typs, um->h_ntls, um->buildings, dx, dy, dz);
 		}
 //	std::cout << "canyon done..." << std::flush;		
-		for(unsigned int i = 0; i < um->urbBuildings.size(); i++)
+		for(unsigned int i = 0; i < um->buildings.size(); i++)
 		{
-			um->urbBuildings[i]->rooftop(um->h_typs, um->h_ntls, dx, dy, dz);
+			um->buildings[i].rooftop(um->h_typs, um->h_ntls, dx, dy, dz);
 		}
 //	std::cout << "rooftop done..." << std::flush;		
-		for(unsigned int i = 0; i < um->urbBuildings.size(); i++)
+		for(unsigned int i = 0; i < um->buildings.size(); i++)
 		{
-			um->urbBuildings[i]->interior(um->h_typs, um->h_ntls, dx, dy, dz);
+			um->buildings[i].interior(um->h_typs, um->h_ntls, dx, dy, dz);
 		}
 //	std::cout << "interior done..." << std::flush;		
 		// Zero the bottom slice. Necessary? Yes!! Do the velocities too!!
@@ -293,7 +310,7 @@ namespace QUIC
 			
 			// Do the street intersections.
 			QUIC::intersect::street (um->h_typs);
-			QUIC::intersect::poisson(um->h_ntls, um->h_bndrs, um->h_typs, um->dx, um->dy, um->dz);
+			QUIC::intersect::poisson(um->h_ntls, um->h_bndrs, um->h_typs, um->simParams.dx, um->simParams.dy, um->simParams.dz);
 
 			um->stpwtchs->intersect->stop();
 			um->qwrite("done.\n");
@@ -314,7 +331,7 @@ namespace QUIC
 	  {
 	    // Setup the compressed boundary mats in host memory...
 	    // This addition is getting messy. Need to find a better way...
-	    for(unsigned cI = 0; cI < um->domain_size; cI++)
+	    for(int cI = 0; cI < um->domain_size; cI++)
 	    {
 	      QUIC::determineBoundaryCell(um->h_bndrs.cmprssd[cI], um->h_typs, cI);
 	    }
@@ -338,20 +355,17 @@ namespace QUIC
 		um->qwrite("Compressing boundaries (fortran only)...");
 		um->stpwtchs->bndrymat->start();
 
-		int nx = um->nx;
-		int ny = um->ny;
-		int nz = um->nz;
-		
-		int row = nx;
-		int slc = nx*ny;
-
 		//for(unsigned int i = 0; i < um->domain_size; i++) 		
-		for(int k = 0; k < nz; k++)
-		for(int j = 0; j < ny; j++)
-		for(int i = 0; i < nx; i++)
+
+		int row = um->simParams.nx;
+		int slc = um->simParams.nx*um->simParams.ny;
+		for(int k = 0; k < um->simParams.nz; k++)
+		for(int j = 0; j < um->simParams.ny; j++)
+		for(int i = 0; i < um->simParams.nx; i++)
 		{
 			int cI = k*slc + j*row + i;
-		
+
+      um->h_bndrs.cmprssd[cI] = 0;		
 			QUIC::encodeBoundary
 			(
 				um->h_bndrs.cmprssd[cI],
@@ -363,9 +377,9 @@ namespace QUIC
 			
 			QUIC::encodePassMask(um->h_bndrs.cmprssd[cI], (i + j + k) & 1);
 			
-			bool slcBndry = (k == 0 || k == nz - 1);
-			bool rowBndry = (j == 0 || j == ny - 1);
-			bool colBndry = (i == 0 || i == nx - 1);
+			bool slcBndry = (k == 0 || k == um->simParams.nz - 1);
+			bool rowBndry = (j == 0 || j == um->simParams.ny - 1);
+			bool colBndry = (i == 0 || i == um->simParams.nx - 1);
 			
 			QUIC::encodeDomainBoundaryMask(um->h_bndrs.cmprssd[cI], slcBndry, rowBndry, colBndry);
 		}

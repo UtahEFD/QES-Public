@@ -8,13 +8,7 @@
 #ifndef URBPARSER_H
 #define URBPARSER_H
 
-#include <iostream>
-#include <iomanip>
-
 #include "urbModule.h"
-
-#include "quicutil/legacyFileParser.h"
-#include "quicutil/standardFileParser.h"
 
 namespace QUIC
 {
@@ -29,8 +23,6 @@ namespace QUIC
 	{
 		public:
 			static void parse(urbModule* um, std::string directory);
-			
-			static void populate(urbModule* um, std::string const& quicProjectPath);
 			
 			static void dump
 			(
@@ -104,8 +96,9 @@ namespace QUIC
 			
 		private:
 
-//			static bool parse_input(urbModule* um, std::string const& directory);
+			static bool parse_input(urbModule* um, std::string const& directory);
 			
+			// TODO Push / Move these out to QUIC Data Files in libsivelab.
 			static void output_QU_screenout(urbModule* um, std::string const& directory);
 			static void output_QP_buildout (urbModule* um, std::string const& directory);
 			

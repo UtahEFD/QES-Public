@@ -1,12 +1,20 @@
 #include "urbParser.h"
-#include "quicutil/QUSimparams.cpp"
-#include "quicutil/QUMetParams.cpp"
-#include "quicutil/QUSensor.cpp"
+
+#include <iostream>
+#include <iomanip>
+
+#include "quicutil/legacyFileParser.h"
 #include "quicutil/QUBuildings.cpp"
 #include "quicutil/QUFileOptions.cpp"
-#include "quicutil/QUVelocities.cpp"
 #include "quicutil/QUICProject.cpp"
-#include "quic/building.h"
+#include "quicutil/QUMetParams.cpp"
+#include "quicutil/QUSimparams.cpp"
+#include "quicutil/QUSensor.cpp"
+#include "quicutil/QUVelocities.cpp"
+#include "quicutil/standardFileParser.h"
+
+#include "building.h"
+#include "../util/matrixIO.h"
 
 namespace QUIC
 {
@@ -14,73 +22,24 @@ namespace QUIC
  	{
 		um->stpwtchs->parse->start();
 
-
-    QUICProject quicProject = QUICProject(filepath, true);
+    QUICProject quicProject = QUICProject(filepath, !um->isQuietQ(), true);
+		um->input_directory = quicProject.m_quicProjectPath;
     
+    // Get the basic simulation information.
     um->simParams = quicProject.quSimParamData;
-		um->metParams = quicProject.quMetParamData;
-	  um->buildings = quicProject.quBuildingData;
-    
-    urbParser::populate(um, quicProject.m_quicProjectPath);
-		
-		um->stpwtchs->parse->stop();
-	}
-
-  void urbParser::populate(urbModule* um, std::string const& quicProjectPath)
-  {
-    std::cout << "Populate some stuff..." << std::flush;
-  // Take the building file information and create QUIC Urb usable building objects.
-		for (unsigned i = 0; i < um->buildings.buildings.size(); i++)
-		{
-		  building* bldng = new building();
-
-      /* START of input file. */
-			bldng->num = um->buildings.buildings[i].bldNum;
-			bldng->group = um->buildings.buildings[i].group;
-
-			bldng->type = (building::Type) um->buildings.buildings[i].type; 
-	  
-			bldng->lgth = um->buildings.buildings[i].length; // x
-			bldng->wdth = um->buildings.buildings[i].width; // y
-			bldng->hght = um->buildings.buildings[i].height; // z
-
-			bldng->xfo = um->buildings.buildings[i].xfo;
-			bldng->yfo = um->buildings.buildings[i].yfo;
-			bldng->zfo = um->buildings.buildings[i].zfo;
-	
-			bldng->zo = um->buildings.zo;
-	
-			bldng->gamma = um->buildings.buildings[i].gamma; // ENG
-	//TODO Check whether attenuation should be supplementalData
-			bldng->attenuation = um->buildings.buildings[i].supplementalData; 
-			/* END from input file. */
-			
-		  um->urbBuildings.push_back(bldng);
-		}
-		//simParams
-		um->nx = um->simParams.nx;
-    um->ny = um->simParams.ny;
-    um->nz = um->simParams.nz;
-			
-    um->dx = um->simParams.dx;
-    um->dy = um->simParams.dy;
-    um->dz = um->simParams.dz;
-    
+		um->setDimensions(um->simParams.nx, um->simParams.ny, um->simParams.nz);
 		um->sim_params_parsed = true;
-		
-		//metParams
+
+    // Get the sensor information.
+		um->metParams = quicProject.quMetParamData;
 		quSensorParams* tmp = new quSensorParams();
-		
-		tmp->siteName = um->metParams.siteName;
-		tmp->fileName = um->metParams.sensorFileName;
-		
+		tmp->siteName  = um->metParams.siteName;
+		tmp->fileName  = um->metParams.sensorFileName;
 		um->sensors.push_back(tmp);
-
-		um->initialize(); // Needed for parse sensors, which requires gz.
-
   	for(unsigned int i = 0; i < um->sensors.size(); i++)
 		{
-      um->sensors[i]->readQUICFile(quicProjectPath + um->sensors[i]->fileName); 
+		  um->sensors[i]->beVerbose = !(um->isQuietQ());
+      um->sensors[i]->readQUICFile(um->input_directory + um->sensors[i]->fileName); 
       //um->sensors[i]->print();    
 
       // Some sensor setup. Probably shouldn't stay here...
@@ -88,8 +47,19 @@ namespace QUIC
 			um->sensors[i]->u_prof = new float[um->gz];
 			um->sensors[i]->v_prof = new float[um->gz];
 		}
-	}
+
+    // Getting the buildings information
+	  um->fileBuildings = quicProject.quBuildingData;
+    // Take the building file information and create QUIC Urb usable building objects.
+		for (unsigned i = 0; i < um->fileBuildings.buildings.size(); i++)
+		{
+		  um->buildings.push_back(urbBuilding(um->fileBuildings.buildings[i]));
+		}
 		
+		um->initialize(); // Needed for parse sensors, which requires gz.
+
+		um->stpwtchs->parse->stop();
+	}
 
 	void urbParser::dump
 	(
@@ -233,15 +203,15 @@ namespace QUIC
 		out << endl << endl;
 			
 		out << " --- Buildings --- " << endl;
-		out << "\tx_subdomain_start = " << um->buildings.x_subdomain_sw << endl;
-		out << "\ty_subdomain_start = " << um->buildings.y_subdomain_sw << endl;
-		out << "\tx_subdomain_end = " << um->buildings.x_subdomain_ne << endl;
-		out << "\ty_subdomain_end = " << um->buildings.y_subdomain_ne << endl;
-		out << "\tzo = " << um->buildings.zo << endl;
-		out << "\tnumbuilds = " << um->buildings.buildings.size() << endl;
-		for(unsigned int i = 0; i < um->buildings.buildings.size(); i++)
+		out << "\tx_subdomain_start = " << um->fileBuildings.x_subdomain_sw << endl;
+		out << "\ty_subdomain_start = " << um->fileBuildings.y_subdomain_sw << endl;
+		out << "\tx_subdomain_end = " << um->fileBuildings.x_subdomain_ne << endl;
+		out << "\ty_subdomain_end = " << um->fileBuildings.y_subdomain_ne << endl;
+		out << "\tzo = " << um->buildings[0].zo << endl;
+		out << "\tnumbuilds = " << um->buildings.size() << endl;
+		for(unsigned int i = 0; i < um->buildings.size(); i++)
 		{
-			out << "\t\t" << flush; um->urbBuildings[i]->print();
+			out << "\t\t" << flush; um->buildings[i].print();
 		}
 		out << endl << endl;
 			
@@ -253,19 +223,19 @@ namespace QUIC
 		out << endl << endl;
 		
 		out << " --- urbModule variables --- " << endl;
-		out << "\tnx = " << um->nx << endl;
-		out << "\tny = " << um->ny << endl;
-		out << "\tnz = " << um->nz << endl;
+		out << "\tnx = " << um->simParams.nx << endl;
+		out << "\tny = " << um->simParams.ny << endl;
+		out << "\tnz = " << um->simParams.nz << endl;
 
-		out << "\tdx = " << um->dx << endl;
-		out << "\tdy = " << um->dy << endl;
-		out << "\tdz = " << um->dz << endl;
+		out << "\tdx = " << um->simParams.dx << endl;
+		out << "\tdy = " << um->simParams.dy << endl;
+		out << "\tdz = " << um->simParams.dz << endl;
 
-		out << "\tmax_iterations     = " << um->max_iterations     << endl;
-		out << "\tresidual_reduction = " << um->residual_reduction << endl;
+		out << "\tmax_iterations     = " << um->simParams.max_iterations     << endl;
+		out << "\tresidual_reduction = " << um->simParams.residual_reduction << endl;
 
-		out << "\tdiffusion_flag = " << um->diffusion_flag << endl;
-		out << "\tdiffusion_step = " << um->diffusion_step << endl;
+		out << "\tdiffusion_flag = " << um->simParams.diffusion_flag << endl;
+		out << "\tdiffusion_step = " << um->simParams.diffusion_step << endl;
 		out << endl << endl;
 	}
 
@@ -293,8 +263,8 @@ namespace QUIC
 		using namespace std;
 	
 		out << endl;
-		out << "Dimensions: " << um->nx << "x" << um->ny << "x" << um->nz << endl;
-		out << "Iterations: " << um->iteration << " (" << um->max_iterations << ")" << endl;
+		out << "Dimensions: " << um->simParams.nx << "x" << um->simParams.ny << "x" << um->simParams.nz << endl;
+		out << "Iterations: " << um->iteration << " (" << um->simParams.max_iterations << ")" << endl;
 		out << "Omegarelax: " << um->omegarelax << endl;
 		
 		out << fixed;
@@ -353,7 +323,7 @@ namespace QUIC
 	
 	  CellType* types = QUIC::urbModule::getCUDAdata<CellType>(um->d_typs.c, nx, ny, nz);
 	  int* data = new int[um->domain_size];
-	  for(unsigned i = 0; i < um->domain_size; i++) data[i] = (int) types[i];
+	  for(int i = 0; i < um->domain_size; i++) data[i] = (int) types[i];
 	  
 	  if(data)
 		{
@@ -434,12 +404,12 @@ namespace QUIC
   {
 		um->qwrite("  Outputting divergence data...");
 
-		float* data = QUIC::urbModule::getCUDAdata(um->d_r, um->nx, um->ny, um->nz);
+		float* data = QUIC::urbModule::getCUDAdata(um->d_r, um->simParams.nx, um->simParams.ny, um->simParams.nz);
 		
 		if(data)
 		{
 		  std::string file = drctry + prefix + "r.dat";
-		  outputMatrix(file.c_str(), data, um->nx, um->ny, um->nz);
+		  outputMatrix(file.c_str(), data, um->simParams.nx, um->simParams.ny, um->simParams.nz);
 		  delete [] data;
 		}
 		else
@@ -459,12 +429,12 @@ namespace QUIC
   { 
 		um->qwrite("  Outputting denominators data...");
 		
-		float* data = QUIC::urbModule::getCUDAdata<float>(um->d_bndrs.denoms, um->nx, um->ny, um->nz);
+		float* data = QUIC::urbModule::getCUDAdata<float>(um->d_bndrs.denoms, um->simParams.nx, um->simParams.ny, um->simParams.nz);
 		
 		if(data)
 		{
 		  std::string file = drctry + prefix + "denoms.dat";
-		  outputMatrix(file.c_str(), data, um->nx, um->ny, um->nz);
+		  outputMatrix(file.c_str(), data, um->simParams.nx, um->simParams.ny, um->simParams.nz);
 		  delete [] data;
 		}
 		else
@@ -484,12 +454,12 @@ namespace QUIC
 	{
 		um->qwrite("  Outputting lagrangian data...");
 		
-		float* data = QUIC::urbModule::getCUDAdata<float>(um->d_p1, um->nx, um->ny, um->nz);
+		float* data = QUIC::urbModule::getCUDAdata<float>(um->d_p1, um->simParams.nx, um->simParams.ny, um->simParams.nz);
 		
 		if(data)
 		{
 		  std::string file = drctry + prefix + "p1.dat";
-		  outputMatrix(file.c_str(), data, um->nx, um->ny, um->nz);
+		  outputMatrix(file.c_str(), data, um->simParams.nx, um->simParams.ny, um->simParams.nz);
 		  delete [] data;
 		}
 		else
@@ -508,12 +478,12 @@ namespace QUIC
 	{
 	  um->qwrite("  Outputting error data...");
 		
-		float* data = QUIC::urbModule::getCUDAdata<float>(um->d_p2_err, um->nx, um->ny, um->nz);
+		float* data = QUIC::urbModule::getCUDAdata<float>(um->d_p2_err, um->simParams.nx, um->simParams.ny, um->simParams.nz);
 		
 		if(data)
 		{
 		  std::string file = drctry + prefix + "p2_err.dat";
-		  outputMatrix(file.c_str(), data, um->nx, um->ny, um->nz);
+		  outputMatrix(file.c_str(), data, um->simParams.nx, um->simParams.ny, um->simParams.nz);
 		  delete [] data;
 		}
 		else
@@ -565,12 +535,12 @@ namespace QUIC
 	{
 		um->qwrite("  Outputting viscocity data...");
 		
-		float* data = QUIC::urbModule::getCUDAdata<float>(um->d_visc, um->nx, um->ny, um->nz);
+		float* data = QUIC::urbModule::getCUDAdata<float>(um->d_visc, um->simParams.nx, um->simParams.ny, um->simParams.nz);
 		
 		if(data)
 		{
 		  std::string file = drctry + prefix + "visc.dat";
-		  outputMatrix(file.c_str(), data, um->nx, um->ny, um->nz);
+		  outputMatrix(file.c_str(), data, um->simParams.nx, um->simParams.ny, um->simParams.nz);
 		  delete [] data;
 		}
 		else
@@ -581,27 +551,6 @@ namespace QUIC
 		um->qwrite("done.\n");
 	}
 
-/*	
-	bool urbParser::parse_sensors(urbModule* um, std::string const& drctry)
-	{		
-		for(unsigned int i = 0; i < um->sensors.size(); i++)
-		{
-      um->sensors[i]->readQUICFile(drctry + um->sensors[i]->fileName); 
-      um->sensors[i]->print();    
-
-      // Some sensor setup. Probably shouldn't stay here...
-			um->sensors[i]->prfl_lgth = um->gz;
-			um->sensors[i]->u_prof = new float[um->gz];
-			um->sensors[i]->v_prof = new float[um->gz];
-
-			um->qwrite("done.\n");
-		}
-		
-		// \\todo More checking for correct parsing.
-		return true;
-	}
-*/	
-	/*
 	bool urbParser::parse_input(QUIC::urbModule* um, std::string const& drctry)
 	{
 		um->qwrite("Parsing input.txt...");
@@ -623,7 +572,6 @@ namespace QUIC
 		// Describe the elements you're looking for.
 		boolElement  be_quiet      = boolElement ("quiet");
 		boolElement  be_use_fort   = boolElement ("use_fortran");
-		
 
 		boolElement  be_out_typs   = boolElement ("output_celltypes");
 		boolElement  be_out_bndr   = boolElement ("output_boundaries");
@@ -634,7 +582,6 @@ namespace QUIC
 		boolElement  be_out_visc   = boolElement ("output_viscocity");
 		
 		boolElement  be_diff_flag	 = boolElement ("diffusion_flag");
-		//intElement   ie_max_iters	 = intElement  ("max_iterations");
 		intElement   ie_iter_step  = intElement  ("iteration_step");
 		floatElement fe_runto_eps  = floatElement("runto_epsilon");
 		floatElement fe_omegarelax = floatElement("omegarelax");
@@ -652,7 +599,6 @@ namespace QUIC
 		sfp->commit(be_out_visc);
 		
 		sfp->commit(be_diff_flag);
-		//sfp->commit(ie_max_iters);
 		sfp->commit(ie_iter_step);
 		sfp->commit(fe_runto_eps);
 		sfp->commit(fe_omegarelax);
@@ -672,9 +618,8 @@ namespace QUIC
 		if(sfp->recall(be_out_vels))  {um->output_velocities   = be_out_vels.value;}
 		if(sfp->recall(be_out_visc))  {um->output_viscocity    = be_out_visc.value;}
 
-		if(sfp->recall(be_diff_flag)) {um->diffusion_flag  = be_diff_flag.value;}
+		if(sfp->recall(be_diff_flag)) {um->simParams.diffusion_flag  = be_diff_flag.value;}
 		// Call these to ensure proper parameter values.
-		//if(sfp->recall(ie_max_iters))  {um->setMaxIterations(ie_max_iters.value);}
 		if(sfp->recall(ie_iter_step))  {um->setIterationStep(ie_iter_step.value);}
 		if(sfp->recall(fe_runto_eps))  {um->setEpsilon      (fe_runto_eps.value);}
 		if(sfp->recall(fe_omegarelax)) {um->setOmegaRelax   (fe_omegarelax.value);}
@@ -686,7 +631,6 @@ namespace QUIC
 		// \\todo more checking for correct parsing.
 		return true;
 	}
-	*/
 	
 	// \\todo get a common parser working on this stuff --> change the formatting
 	void urbParser::output_QP_buildout(urbModule* um, std::string const& drctry)
@@ -730,11 +674,11 @@ namespace QUIC
     int row = clltyps.dim.x;
     int slc = clltyps.dim.x*clltyps.dim.y;
 
-    for(unsigned k = 0; k < clltyps.dim.z; k++)
-    for(unsigned j = 0; j < clltyps.dim.y; j++)
-    for(unsigned i = 0; i < clltyps.dim.x; i++)
+    for(int k = 0; k < clltyps.dim.z; k++)
+    for(int j = 0; j < clltyps.dim.y; j++)
+    for(int i = 0; i < clltyps.dim.x; i++)
     {
-      int ndx    = k*slc + j*row + i;
+      int ndx = k*slc + j*row + i;
       
       // Write out indices.
       writeCell << setw(12) << (i + .5);
@@ -769,9 +713,9 @@ namespace QUIC
 
 	  for(int i = 0; i < 5; i++) writeInput << "filler" << endl;
 	  
-	  writeInput << "nx " << um->nx << endl;
-	  writeInput << "ny " << um->ny << endl;
-	  writeInput << "nz " << um->nz << endl;
+	  writeInput << "nx " << um->simParams.nx << endl;
+	  writeInput << "ny " << um->simParams.ny << endl;
+	  writeInput << "nz " << um->simParams.nz << endl;
 
 	  for(int i = 0; i < 10; i++) writeInput << "filler" << endl;
 
@@ -779,17 +723,17 @@ namespace QUIC
 
 	  for(int i = 0; i < 33; i++) writeInput << "filler" << endl;
 
-	  writeInput << "numBuild " << um->buildings.buildings.size() << endl;
-	  for(unsigned i = 0; i < um->buildings.buildings.size(); i++)
+	  writeInput << "numBuild " << um->buildings.size() << endl;
+	  for(unsigned i = 0; i < um->buildings.size(); i++)
 	  {
 	    writeInput << "build " << flush;
-	    writeInput << um->urbBuildings[i]->xfo << " " << flush;
-	    writeInput << um->urbBuildings[i]->yfo << " " << flush;
-	    writeInput << um->urbBuildings[i]->zfo << " " << flush;
+	    writeInput << um->buildings[i].xfo << " " << flush;
+	    writeInput << um->buildings[i].yfo << " " << flush;
+	    writeInput << um->buildings[i].zfo << " " << flush;
 	    
-	    writeInput << um->urbBuildings[i]->hght << " " << flush;
-	    writeInput << um->urbBuildings[i]->wdth << " " << flush;
-	    writeInput << um->urbBuildings[i]->lgth << " " << flush;
+	    writeInput << um->buildings[i].height << " " << flush;
+	    writeInput << um->buildings[i].width << " " << flush;
+	    writeInput << um->buildings[i].length << " " << flush;
 	  }
 	  
 	  writeInput.close();

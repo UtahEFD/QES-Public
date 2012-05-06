@@ -14,10 +14,7 @@
 #include "urbModule.h"
 #include "urbViewer.h"
 
-//#include "fortranDatamodule.h"
-//#include "fortranSetup.h"
-
-#include "util/directory.h"
+#include "../util/directory.h"
 
 
 void initGL(void);

@@ -20,14 +20,9 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../CMake/Modules
 OPTION(QUIC_BUILD_DEV "On - buildings everything; Off - builds console only" On)
 
 SET(LIBSIVELAB_PATH "${CMAKE_SOURCE_DIR}/../../libsivelab" CACHE STRING "Path to the directory where the libsivelab repository is located.")
-SET(OPTIX_PATH /Developer/OptiX CACHE STRING "Path the to directory where OptiX is installed (defaults to Apple install location).")
-
-# TODO Some of this stuff should get moved out to libsivelab or such.
-SET(COMMON_PATH "${CMAKE_SOURCE_DIR}/../common" CACHE STRING "Path to the directory where common QUIC stuff is.")
-
 #MESSAGE(${LIBSIVELAB_PATH})
-#MESSAGE(${COMMON_PATH})
 
+SET(OPTIX_PATH /Developer/OptiX CACHE STRING "Path the to directory where OptiX is installed (defaults to Apple install location).")
 
 FIND_PACKAGE(CUDA REQUIRED)
 
@@ -122,11 +117,10 @@ ENDIF(CMAKE_CPACK_COMMAND)
 INCLUDE_DIRECTORIES (${LIBSIVELAB_PATH}) 
 LINK_DIRECTORIES (${LIBSIVELAB_PATH}/lib/) 
 
-INCLUDE_DIRECTORIES (${COMMON_PATH}) 
-LINK_DIRECTORIES (${COMMON_PATH}/lib/) 
 LINK_DIRECTORIES (${CMAKE_SOURCE_DIR}/../lib)
 
 add_subdirectory (cpp)
 add_subdirectory (cuda)
-#add_subdirectory (tests)
-#add_subdirectory (util)
+add_subdirectory (tests)
+add_subdirectory (util)
+add_subdirectory (tools)

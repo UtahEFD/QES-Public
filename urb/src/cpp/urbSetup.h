@@ -12,10 +12,6 @@
 #include <iostream>
 
 #include "urbModule.h"
-#include "fortranDatamodule.h"
-
-#include "util/directory.h"
-#include "quic/intersect.h"
 
 extern "C" void cudaSetupBndryMats(QUIC::boundaryMatrices d_bndrs, QUIC::celltypes d_typs);
 

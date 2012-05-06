@@ -1,5 +1,23 @@
 #include "urbViewer.h"
 
+#include <GL/glew.h>
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
+#include <GL/glut.h>
+#endif
+
+#include <cmath>
+#include <iostream>
+#include <string>
+#include <cuda_runtime.h>
+#include <cuda_gl_interop.h>
+
+// Relative to where the source file is.
+#include "../util/OpenGLExtensions.h"
+
+
+
 // const GLenum textureTarget = GL_TEXTURE_2D;
 const GLenum textureTarget = GL_TEXTURE_RECTANGLE_ARB;
 
@@ -30,8 +48,6 @@ namespace QUIC
 		t_vels = NULL;
 		t_u = t_v = t_w = NULL;
 			
-		x_axis = y_axis = z_axis = NULL;
-
 		uniform_lagrange_tex = 0;
 		uniform_lagrange_alpha = 0.;
 			
@@ -48,26 +64,23 @@ namespace QUIC
 		delete l_texs; l_texs = 0;	
 		delete e_pbos; e_pbos = 0;
 		delete e_texs; e_texs = 0;
-		delete x_axis; x_axis = 0;
-		delete y_axis; y_axis = 0;
-		delete z_axis; z_axis = 0;
 	}
 
 	void urbViewer::initialize()
 	{
-		if(urbModule::nx == 0)
+		if(simParams.nx == 0)
 		{
-			std::cerr << "Unable to initialize urbViewer. urbModule::nx = 0." << std::endl;
+			std::cerr << "Unable to initialize urbViewer. simParams.nx = 0." << std::endl;
 			std::cerr << "urbModule was probably not setup correctly." << std::endl;
 		}
 	
-		nnx = 1.*urbModule::nx / urbModule::nx;
-		nny = 1.*urbModule::ny / urbModule::nx;
+		nnx = 1.*simParams.nx / simParams.nx;
+		nny = 1.*simParams.ny / simParams.nx;
 		ngx = 1.*urbModule::gx / urbModule::gx;
 		ngy = 1.*urbModule::gy / urbModule::gx;
 
 		l_pbos = new GLuint[1];
-		l_texs = new GLuint[urbModule::nz];
+		l_texs = new GLuint[simParams.nz];
 		e_pbos = new GLuint[1];
 		e_texs = new GLuint[urbModule::gz];
 
@@ -78,10 +91,6 @@ namespace QUIC
 		normal left    = normal(-1., 0., 0.);
 		normal forward = normal( 0., 1., 0.);
 		normal up      = normal( 0., 0., 1.);
-
-		x_axis = new axis(0., 10.*nnx,             nx - 1., axises_loc, left);
-		y_axis = new axis(0., seperation*(nz - 1), nz - 1., axises_loc,	forward);
-		z_axis = new axis(0., 10.*nny,             ny - 1., axises_loc, up);
 
 		cudaMalloc((void**) &t_p1, urbModule::domain_size*sizeof(float));
 		cudaZero(t_p1, urbModule::domain_size, 0.);
@@ -148,15 +157,7 @@ namespace QUIC
 		glPushMatrix();
 		if(view_euler)	{this->glDrawEuler();}
 		else			{this->glDrawLagragian();}
-		if(!flat) {this->glDrawAxises();}
 		glPopMatrix();
-	}
-
-	void urbViewer::glDrawAxises() const
-	{
-		x_axis->glDraw();
-		y_axis->setLength(seperation * (nz - 1.)); y_axis->glDraw();
-		z_axis->glDraw();
 	}
 
 	void urbViewer::setSeperation(float const& new_s)
@@ -182,14 +183,14 @@ namespace QUIC
 	void urbViewer::showPrevSlice() 
 	{
 		show_slice--;
-		if(!view_euler && show_slice < -1) {show_slice = urbModule::nz - 1;}
+		if(!view_euler && show_slice < -1) {show_slice = simParams.nz - 1;}
 		if( view_euler && show_slice < -1) {show_slice = urbModule::gz - 1;}
 	}
 
 	void urbViewer::showNextSlice() 
 	{
 		show_slice++;
-		if(!view_euler && show_slice >= (int) urbModule::nz) {show_slice = -1;}
+		if(!view_euler && show_slice >= (int) simParams.nz) {show_slice = -1;}
 		if( view_euler && show_slice >= (int) urbModule::gz) {show_slice = -1;}
 	}
 	int urbViewer::getSliceToShow() const {return show_slice;}
@@ -281,8 +282,7 @@ namespace QUIC
 		cudaFree(d_min);
 		cudaFree(d_max);
 
-		int slice_size = urbModule::nx * urbModule::ny;
-		for(unsigned i = 0; i < urbModule::nz; i++) 
+		for(int i = 0; i < simParams.nz; i++) 
 		{
 			// map PBO to get CUDA device pointer
 			cudaGLMapBufferObject((void**)&cuda_bff_ptr, l_pbos[0]);
@@ -290,11 +290,11 @@ namespace QUIC
 			cudaPack
 			(
 				cuda_bff_ptr,
- 				&t_p1[slice_size * i], 
-				&t_p1[slice_size * i],
-				&t_p1[slice_size * i],
-				&t_p1[slice_size * i],
-				slice_size
+ 				&t_p1[urbModule::slice_size * i], 
+				&t_p1[urbModule::slice_size * i],
+				&t_p1[urbModule::slice_size * i],
+				&t_p1[urbModule::slice_size * i],
+				urbModule::slice_size
 			);
 
 			cudaGLUnmapBufferObject(l_pbos[0]);
@@ -306,7 +306,7 @@ namespace QUIC
 			(
 				textureTarget, 
 				0, 0, 0, 
-				urbModule::nx, urbModule::ny, 
+				simParams.nx, simParams.ny, 
 				textureFormat, GL_FLOAT, 
 				NULL
 			);
@@ -355,7 +355,7 @@ namespace QUIC
 		float* cuda_bff_ptr = 0;
 		int slice_size = urbModule::gx * urbModule::gy;
 
-		for(unsigned i = 0; i < urbModule::gz; i++) 
+		for(int i = 0; i < urbModule::gz; i++) 
 		{			
 			// map PBO to get CUDA device pointer
 			cudaGLMapBufferObject((void**)&cuda_bff_ptr, e_pbos[0]);
@@ -393,7 +393,7 @@ namespace QUIC
 		float& right, float& top
 	) const
 	{
-		int cols = (int) sqrt(urbModule::nz * nny) + 1;
+		int cols = (int) sqrt(simParams.nz * nny) + 1;
 		int rows = (int) cols / nny + 1;
 
 		//What am I doing here? Mapping multiple slices to a flat place.
@@ -408,7 +408,7 @@ namespace QUIC
 		
 		float left, bottom, right, top;
 
-		for(int i = 0; i < (int) urbModule::nz; i++) 
+		for(int i = 0; i < simParams.nz; i++) 
 		{    			
 			glBindTexture(textureTarget, l_texs[i]);
 			
@@ -436,9 +436,9 @@ namespace QUIC
 				else
 				{
 				    // Have to use texture width and height for texcoord
-				    glTexCoord2f(            0,	urbModule::ny); glVertex2f( left, top); 
-				    glTexCoord2f(urbModule::nx, urbModule::ny); glVertex2f(right, top); 
-				    glTexCoord2f(urbModule::nx,             0); glVertex2f(right, bottom); 
+				    glTexCoord2f(            0,	simParams.ny); glVertex2f( left, top); 
+				    glTexCoord2f(simParams.nx, simParams.ny); glVertex2f(right, top); 
+				    glTexCoord2f(simParams.nx,             0); glVertex2f(right, bottom); 
 				    glTexCoord2f(            0,	            0); glVertex2f( left, bottom); 
 				}
 				glEnd();		
@@ -465,13 +465,13 @@ namespace QUIC
 					}
 					else
 					{
-					    glTexCoord2f(            0, urbModule::ny); 
+					    glTexCoord2f(            0, simParams.ny); 
 					    glVertex3f( 5.*nnx, seperation*i, 10.*nny + shift*i);
 					    
-					    glTexCoord2f(urbModule::nx, urbModule::ny); 
+					    glTexCoord2f(simParams.nx, simParams.ny); 
 					    glVertex3f(-5.*nnx, seperation*i, 10.*nny + shift*i);
 					    
-					    glTexCoord2f(urbModule::nx,	            0); 
+					    glTexCoord2f(simParams.nx,	            0); 
 					    glVertex3f(-5.*nnx, seperation*i,  0.*nny + shift*i);
 					    
 					    glTexCoord2f(            0,	            0); 
@@ -491,7 +491,7 @@ namespace QUIC
 	{		
 		float left, bottom, right, top;
 
-		for(int i = 0; i < (int) urbModule::gz; i++) 
+		for(int i = 0; i < urbModule::gz; i++) 
 		{		
 			glBindTexture(textureTarget, e_texs[i]);
 			
@@ -577,7 +577,7 @@ namespace QUIC
 
 		// Lagrangians //
 		glGenBuffers (1, l_pbos);
-		glGenTextures(urbModule::nz, l_texs);
+		glGenTextures(simParams.nz, l_texs);
 
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -586,7 +586,7 @@ namespace QUIC
 		glBufferData
 		(
 			GL_PIXEL_UNPACK_BUFFER,  
-			urbModule::nx * urbModule::ny * 4 * sizeof(GLfloat), 
+			simParams.nx * simParams.ny * 4 * sizeof(GLfloat), 
 			0, 
 			GL_DYNAMIC_COPY
 		);
@@ -594,7 +594,7 @@ namespace QUIC
 
 		cudaGLRegisterBufferObject(l_pbos[0]);
 
-		for(int i = 0; i < (int) urbModule::nz; i++) 
+		for(int i = 0; i < simParams.nz; i++) 
 		{
 			// Set texture parameters for display.
 			glBindTexture(textureTarget, l_texs[i]);
@@ -603,7 +603,7 @@ namespace QUIC
 			glTexImage2D
 			(
 				textureTarget, 0, GL_RGBA32F_ARB, 
-				urbModule::nx, urbModule::ny, 
+				simParams.nx, simParams.ny, 
 				0, textureFormat, GL_FLOAT, NULL
 			);
 			glBindTexture(textureTarget, 0);
@@ -626,7 +626,7 @@ namespace QUIC
 
 		cudaGLRegisterBufferObject(e_pbos[0]);
 
-		for(unsigned i = 0; i < urbModule::gz; i++) 
+		for(int i = 0; i < urbModule::gz; i++) 
 		{
 			// Set texture parameters for display.
 			glBindTexture(textureTarget, e_texs[i]);
@@ -647,7 +647,7 @@ namespace QUIC
 		cudaGLUnmapBufferObject(l_pbos[0]);
     	cudaGLUnregisterBufferObject(l_pbos[0]);
 		
-		glDeleteTextures(urbModule::nz, l_texs);
+		glDeleteTextures(simParams.nz, l_texs);
 		glDeleteBuffers (1, l_pbos);
 
 		cudaGLUnmapBufferObject(e_pbos[0]);

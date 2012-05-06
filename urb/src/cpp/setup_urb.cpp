@@ -5,11 +5,12 @@
 
 #include <iostream>
 
-#include "util/directory.h" 
-#include "util/matrixIO.h"
 #include "urbCUDA.h"
 #include "urbSetup.h"
 #include "urbParser.h"
+
+#include "../util/matrixIO.h"
+#include "../util/directory.h" 
 
 int main(int argc, char* argv[]) 
 {

@@ -21,29 +21,27 @@ class urbStopWatchList
     void resetIterationTimers();
     
     // Setup timers
-    StopWatch* parse;
-		StopWatch* init;
-		StopWatch* sort;
-		StopWatch* sensor;
-		StopWatch* bldngprm;
-		StopWatch* intersect;
-		StopWatch* bndrymat;
-		  static const int stp_sz = 7;
+    sivelab::StopWatch* parse;
+		sivelab::StopWatch* init;
+		sivelab::StopWatch* sort;
+		sivelab::StopWatch* sensor;
+		sivelab::StopWatch* bldngprm;
+		sivelab::StopWatch* intersect;
+		sivelab::StopWatch* bndrymat;
 		
 		// Iteration timers
-		StopWatch* malloc;
-		StopWatch* trnsfr;
-		StopWatch* diverg;
-		StopWatch* denoms;
-		StopWatch* comput;
-		StopWatch* euler;
-		StopWatch* diffus;
-		  static const int ntl_sz = 7;
+		sivelab::StopWatch* malloc;
+		sivelab::StopWatch* trnsfr;
+		sivelab::StopWatch* diverg;
+		sivelab::StopWatch* denoms;
+		sivelab::StopWatch* comput;
+		sivelab::StopWatch* euler;
+		sivelab::StopWatch* diffus;
 
   private:
   
-    std::vector<StopWatch*> stpList;
-    std::vector<StopWatch*> ntlList;
+    std::vector<sivelab::StopWatch*> stpList;
+    std::vector<sivelab::StopWatch*> ntlList;
 
 };
 

@@ -29,7 +29,7 @@ namespace QUIC
 			QUIC::urbHost::checkForConvergence(um);
 		}
 
-		while(!um->converged && um->iteration < um->max_iterations)
+		while(!um->converged && um->iteration < um->simParams.max_iterations)
 		{
 			QUIC::urbHost::iterate(um, um->iter_step);
 			QUIC::urbHost::checkForConvergence(um);
@@ -72,16 +72,16 @@ namespace QUIC
 			
 	//Setup d_r
 		//Do divergence on host.
-		float dx_inv = 1 / um->dx;
-		float dy_inv = 1 / um->dy;
-		float dz_inv = 1 / um->dz;
+		float dx_inv = 1 / um->simParams.dx;
+		float dy_inv = 1 / um->simParams.dy;
+		float dz_inv = 1 / um->simParams.dz;
 				
 		int grid_row = um->gx;
 		int grid_slc = um->gx*um->gy;
 				
 		for(int cI = 0; cI < (int) um->domain_size; cI++)
 		{
-		  int gI = cI + int(cI / um->nx) + grid_row * int(cI / (um->nx*um->ny));
+		  int gI = cI + int(cI / um->simParams.nx) + grid_row * int(cI / (um->slice_size));
 		  
 		  um->h_r[cI] = (-2.f*um->alpha1*um->alpha1) 
 					          * 
@@ -125,7 +125,7 @@ namespace QUIC
 		QUIC::urbHost::iterate(um, 1);
 		QUIC::urbHost::checkForConvergence(um);
 		
-		um->eps       = um->abse*pow(10.f, -um->residual_reduction);
+		um->eps       = um->abse*pow(10.f, -um->simParams.residual_reduction);
 		um->converged = false; // checkForConvergence gives true for first iteration.
 		
 		um->stpwtchs->comput->stop();
@@ -137,10 +137,10 @@ namespace QUIC
 	void urbHost::iterate(QUIC::urbModule* um, int const& times = 1) 
 	{
 		//iterate times times.
-		unsigned goto_iter = um->iteration + times;
+		int goto_iter = um->iteration + times;
 		
-		int row_sz = um->nx;
-		int slc_sz = um->nx*um->ny;
+		int row_sz = um->simParams.nx;
+		int slc_sz = row_sz*um->simParams.ny;
 		
 		float* cStick = &um->h_p1[0];
 		float* fStick = &um->h_p1[ row_sz];
@@ -175,7 +175,7 @@ namespace QUIC
 							    					        (e*cStick[cI + 1] + f*cStick[cI - 1])
 							    			    + um->A*(g*fStick[cI]     + h*bStick[cI])
 							    			    + um->B*(m*uStick[cI]     + n*dStick[cI]) 
-							    			    - um->dx*um->dx*um->h_r[cI] 
+							    			    - um->simParams.dx*um->simParams.dx*um->h_r[cI] 
 							    		    )
 							    		    +
 							    		    um->one_less_omegarelax * um->h_p1[cI];

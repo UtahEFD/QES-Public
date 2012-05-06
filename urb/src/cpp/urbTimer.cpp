@@ -17,25 +17,25 @@ namespace QUIC
 		if(s.x >= 64 && s.x % 64 == 0 && s.y >= 1 && s.z >= 3) {start = s;}
 		else 
 		{
-			start.x = urbModule::nx;
-			start.y = urbModule::ny;
-			start.z = urbModule::nz;
+			start.x = simParams.nx;
+			start.y = simParams.ny;
+			start.z = simParams.nz;
 		}
 		if
 		(
 			(e.x >= start.x && e.x % 64 == 0 && e.y >= start.y && e.z >= start.z) &&
 			(
-			     e.x <= (int) urbModule::nx 
-			  && e.y <= (int) urbModule::ny 
-			  && e.z <= (int) urbModule::nz
+			     e.x <= simParams.nx 
+			  && e.y <= simParams.ny 
+			  && e.z <= simParams.nz
 			)
 		) 
 		{end = e;} 
 		else
 		{
-			end.x = urbModule::nx;
-			end.y = urbModule::ny;
-			end.z = urbModule::nz;
+			end.x = simParams.nx;
+			end.y = simParams.ny;
+			end.z = simParams.nz;
 		}
 		this->resizeTimings();
 	}
@@ -86,7 +86,7 @@ namespace QUIC
 	void urbTimer::runIterationTimings()
 	{
 		urbModule::quiet = true;
-		urbModule::diffusion_flag = false;
+		simParams.diffusion_flag = false;
 		urbModule::setMaxIterations(100);
 		
 		std::cout << "Running 100 iterations for each size." << std::endl;
@@ -131,7 +131,7 @@ namespace QUIC
 		output << "end   = {" << end.x   << ", " << end.y   << ", " << end.z   << "}" << std::endl;
 		output << "step  = {" << step.x  << ", " << step.y  << ", " << step.z  << "}" << std::endl;		
 
-		output << "max_iterations = " << urbModule::max_iterations << std::endl;
+		output << "max_iterations = " << simParams.max_iterations << std::endl;
 
 		output << std::fixed;
 		output.precision(6);
@@ -208,9 +208,9 @@ namespace QUIC
 			!sfp->recall(ie_z_start)
 		) 
 		{
-			start.x = urbModule::nx;
-			start.y = urbModule::ny;
-			start.z = urbModule::nz;
+			start.x = simParams.nx;
+			start.y = simParams.ny;
+			start.z = simParams.nz;
 		}
 		else
 		{
@@ -218,9 +218,9 @@ namespace QUIC
 			int y = ie_y_start.value;
 			int z = ie_z_start.value;
 	
-			start.x = (0 < x && x < (int) nx) ? x : nx ;
-			start.y = (0 < y && y < (int) ny) ? y : ny ;
-			start.z = (0 < z && z < (int) nz) ? z : nz ;
+			start.x = (0 < x && x < simParams.nx) ? x : simParams.nx ;
+			start.y = (0 < y && y < simParams.ny) ? y : simParams.ny ;
+			start.z = (0 < z && z < simParams.nz) ? z : simParams.nz ;
 		}
 		
 		if
@@ -230,9 +230,9 @@ namespace QUIC
 			!sfp->recall(ie_z_end)
 		)
 		{
-			end.x = urbModule::nx;
-			end.y = urbModule::ny;
-			end.z = urbModule::nz;
+			end.x = simParams.nx;
+			end.y = simParams.ny;
+			end.z = simParams.nz;
 		}
 		else
 		{
@@ -240,9 +240,9 @@ namespace QUIC
 			int y = ie_y_end.value;
 			int z = ie_z_end.value;
 		
-			end.x = (0 < x && x < (int) nx) ? x : nx ;
-			end.y = (0 < y && y < (int) ny) ? y : ny ;
-			end.z = (0 < z && z < (int) nz) ? z : nz ;
+			end.x = (0 < x && x < simParams.nx) ? x : simParams.nx ;
+			end.y = (0 < y && y < simParams.ny) ? y : simParams.ny ;
+			end.z = (0 < z && z < simParams.nz) ? z : simParams.nz ;
 		}
 		
 		if

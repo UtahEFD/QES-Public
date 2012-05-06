@@ -3,50 +3,43 @@
 urbStopWatchList::urbStopWatchList()
 {
   // Setup Timers
-  stpList.resize(stp_sz);
-  stpList[0] = parse     = new StopWatch("File Parsing              ");			
-	stpList[1] = init      = new StopWatch("Initialization            ");
-	stpList[2] = sort      = new StopWatch("Building Sorting          ");
-	stpList[3] = sensor    = new StopWatch("Sensors Initialization    ");
-	stpList[4] = bldngprm  = new StopWatch("Building Parameterizations");
-	stpList[5] = intersect = new StopWatch("Street Intersections      ");
-	stpList[6] = bndrymat  = new StopWatch("Boundary Matrices         ");
+  parse     = new sivelab::StopWatch("File Parsing              "); stpList.push_back(parse);
+	init      = new sivelab::StopWatch("Initialization            "); stpList.push_back(init);
+	sort      = new sivelab::StopWatch("Building Sorting          "); stpList.push_back(sort);
+	sensor    = new sivelab::StopWatch("Sensors Initialization    "); stpList.push_back(sensor);
+	bldngprm  = new sivelab::StopWatch("Building Parameterizations"); stpList.push_back(bldngprm);
+	intersect = new sivelab::StopWatch("Street Intersections      "); stpList.push_back(intersect);
+	bndrymat  = new sivelab::StopWatch("Boundary Matrices         "); stpList.push_back(bndrymat);
 	
 	// Iteration timers
-	ntlList.resize(ntl_sz);
-	ntlList[0] = malloc = new StopWatch("Memory Allocation         ");
-	ntlList[1] = trnsfr = new StopWatch("Memory Transfers          ");
-	ntlList[2] = diverg = new StopWatch("Divergence Matrix Setup   ");
-	ntlList[3] = denoms = new StopWatch("Denominators Setup        ");
-	ntlList[4] = comput = new StopWatch("Iteration Time            ");
-	ntlList[5] = euler  = new StopWatch("Euler Compute Time        ");
-	ntlList[6] = diffus = new StopWatch("Diffusion Calculation Time");
+	malloc = new sivelab::StopWatch("Memory Allocation         "); ntlList.push_back(malloc);
+	trnsfr = new sivelab::StopWatch("Memory Transfers          "); ntlList.push_back(trnsfr);
+	diverg = new sivelab::StopWatch("Divergence Matrix Setup   "); ntlList.push_back(diverg);
+	denoms = new sivelab::StopWatch("Denominators Setup        "); ntlList.push_back(denoms);
+	comput = new sivelab::StopWatch("Iteration Time            "); ntlList.push_back(comput);
+	euler  = new sivelab::StopWatch("Euler Compute Time        "); ntlList.push_back(euler);
+	diffus = new sivelab::StopWatch("Diffusion Calculation Time"); ntlList.push_back(diffus);
 }
 
 urbStopWatchList::~urbStopWatchList()
 {
-  stpList.clear();
-  ntlList.clear();
-
+  // TODO Fix this.
   // NOTE: FIX: Some problem here with corrupted memory.
-  delete parse;
-  delete init; 
-  delete sort;
-  delete sensor;
-  delete bldngprm;
-  delete intersect;
-  delete bndrymat;
-	delete malloc;
-	delete trnsfr;
-	delete diverg;
-	delete denoms;
-	delete comput;
-	delete euler;
-	delete diffus;
-	
-	// Kill danglers.
-  parse = init = sort = sensor = bldngprm = intersect = bndrymat = 0;
-	malloc = trnsfr = diverg = denoms = comput = euler = diffus = 0;
+  /*
+  for (unsigned i = 0; i < stpList.size(); i++)
+  {
+    delete stpList[i];
+    stpList[i] = 0;
+  }
+  stpList.clear();
+  
+  for (unsigned i = 0; i < ntlList.size(); i++)
+  {
+    delete ntlList[i];
+    ntlList[i] = 0;
+  }
+  ntlList.clear();
+  */
 }
     
 double urbStopWatchList::getTotalElapsedTime() const
@@ -58,7 +51,7 @@ double urbStopWatchList::getSetupTime() const
 {
   double ttl_tm = 0.0;
   
-  for(int i = 0; i < stp_sz; i++)
+  for(unsigned i = 0; i < stpList.size(); i++)
   {
     ttl_tm += stpList[i]->getElapsedTime();
   }
@@ -70,7 +63,7 @@ double urbStopWatchList::getIterationTime() const
 {
   double ttl_tm = 0.0;
 
-  for(int i = 0; i < ntl_sz; i++)
+  for(unsigned i = 0; i < ntlList.size(); i++)
   {
     ttl_tm += ntlList[i]->getElapsedTime();
   }
@@ -86,10 +79,10 @@ void urbStopWatchList::reset()
 
 void urbStopWatchList::resetSetupTimers()
 {
-  for(int i = 0; i < stp_sz; i++) {stpList[i]->reset();}
+  for(unsigned i = 0; i < stpList.size(); i++) {stpList[i]->reset();}
 }
 
 void urbStopWatchList::resetIterationTimers()
 {
-  for(int i = 0; i < ntl_sz; i++) {ntlList[i]->reset();}
+  for(unsigned i = 0; i < ntlList.size(); i++) {ntlList[i]->reset();}
 }

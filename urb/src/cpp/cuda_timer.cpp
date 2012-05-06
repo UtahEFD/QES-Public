@@ -8,7 +8,8 @@
 #include "urbParser.h"
 #include "urbSetup.h"
 #include "urbTimer.h"
-#include "util/directory.h"
+
+#include "../util/directory.h"
 
 int main(int argc, char* argv[]) 
 {
