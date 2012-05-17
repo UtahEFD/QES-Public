@@ -14,8 +14,9 @@ foreach(program ${PROGRAMS})
   target_link_libraries (${program} sive-quicutil)
   target_link_libraries (${program} sive-util)
   target_link_libraries (${program} m)
-  target_link_libraries (${program} gfortran)
+  # Order is IMPORTANT... gfortran is needed after Urbfortran
   target_link_libraries (${program} Urbfortran)
+  target_link_libraries (${program} gfortran)
 
 endforeach(program)
 
