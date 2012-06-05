@@ -85,6 +85,11 @@ void loadQUICWindField(int nx, int ny, int nz, const std::string &quicFilesPath,
 
   double quicIndex;
 
+  std::cout << "Domain Size: " 
+	    << nx << " X "  
+	    << ny << " X "  
+	    << nz << std::endl;
+
   for(int k = 0; k < nz; k++){   
     for(int i = 0; i < ny; i++){
       for(int j = 0; j < nx; j++){
@@ -103,7 +108,7 @@ void loadQUICWindField(int nx, int ny, int nz, const std::string &quicFilesPath,
 		  << windFieldData[p2idx].z << ' '
 		  << windFieldData[p2idx].u << ' '
 		  << windFieldData[p2idx].v << ' '
-		  << windFieldData[p2idx].z << ")" << std::endl;
+		  << windFieldData[p2idx].w << ")" << std::endl;
       }
     }
   }
