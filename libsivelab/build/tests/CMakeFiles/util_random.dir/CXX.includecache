@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../util/Random.h
+limits
+-
+windows.h
+-
+boost/random/mersenne_twister.hpp
+-
+boost/random/uniform_01.hpp
+-
+
+/home/alex/Desktop/project/libsivelab/tests/util_random.cpp
+iostream
+-
+cassert
+-
+cmath
+-
+algorithm
+-
+vector
+-
+util/Random.h
+/home/alex/Desktop/project/libsivelab/tests/util/Random.h
+

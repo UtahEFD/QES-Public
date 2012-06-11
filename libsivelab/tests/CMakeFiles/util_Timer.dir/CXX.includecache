@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/alex/Desktop/repos/libsivelab/tests/util_Timer.cpp
+iostream
+-
+cmath
+-
+vector
+-
+util/Timer.h
+/home/alex/Desktop/repos/libsivelab/tests/util/Timer.h
+
+util/Timer.h
+cstdio
+-
+cstdlib
+-
+

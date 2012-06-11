@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../util/logstream.h
+cstdio
+-
+iostream
+-
+string
+-
+tr1/memory
+-
+
+/home/alex/Desktop/project/libsivelab/tests/util_logstream.cpp
+iostream
+-
+memory
+-
+util/logstream.h
+/home/alex/Desktop/project/libsivelab/tests/util/logstream.h
+

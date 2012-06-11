@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/sum.dir/./sum_generated_sum.cu.o  -o sum -rdynamic /usr/local/cuda/lib/libcudart.so -lcuda -Wl,-rpath,/usr/local/cuda/lib 

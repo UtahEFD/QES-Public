@@ -1,0 +1,308 @@
+/*
+* main.cpp
+* This file is part of CUDAPLUME
+*
+* Copyright (C) 2012 - Alex, Pete
+*
+*
+* CUDAPLUME is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with CUDAPLUME. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+#include <GL/glew.h>
+#if defined (_WIN32)
+#include <GL/wglew.h>
+#endif
+#if defined(__APPLE__) || defined(__MACOSX)
+#include <GLUT/glut.h>
+#else
+#include <GL/freeglut.h>
+#endif
+
+// CUDA utilities and system includes
+#include <cutil_inline.h>    // includes cuda.h and cuda_runtime_api.h
+#include <cutil_gl_inline.h> // includes cuda_gl_interop.h// includes cuda_gl_interop.h
+#include <rendercheck_gl.h>
+#include <cutil_math.h>
+
+// Includes
+#include <stdlib.h>
+#include <cstdlib>
+#include <cstdio>
+#include <algorithm>
+
+#include "plumeSystem.h"
+#include "Shader/Particle/render_particles.h"
+#include "paramgl.h"
+#include "util/handleQUICArgs.h"
+#include "quicutil/QUICProject.h"
+ 
+ 
+#define NUM_PARTICLES   pow(2,10)  
+#define MAX(a,b) ((a > b) ? a : b)
+/* 
+
+const uint width = 800, height = 600;
+
+// view params
+int ox, oy;
+bool keyDown[256];
+int buttonState = 0;
+float3 campos = make_float3(3.810398f, -9.522257f, -11.32808f); 
+float camera_trans[] = {0, 0, 3};
+float3 camera_rot   = make_float3(0.f, 0.f, 0.f);//{0, 0, 0};
+float camera_trans_lag[] = {0, 0, 3};
+float3 camera_rot_lag = make_float3(0.f, 0.f, 0.f);//{0, 0, 0};
+const float inertia = .3f;
+const float walkSpeed = 0.1f;
+ParticleRenderer::DisplayMode displayMode = ParticleRenderer::PARTICLE_SPHERES;
+
+//hard coding default values
+Building building1;
+float3 lowCorner = make_float3(3.f, -2.f, 3.f);
+float3 highCorner = make_float3(8.f,  1.f, 8.f); 
+GLuint buldingTex = 0;
+GLuint roofTex = 0;
+
+float3 domain = make_float3(40.f, 25.f, 26.f); 
+float3 origin = make_float3(0.f, 0.f, 0.f); 
+// float3 sourceOrigin = make_float3(10.0f, 12.5f, .5f);
+Source source;
+GLuint floorTex = 0; 
+
+
+
+int mode = 0;
+bool displayEnabled = true;
+bool bPause = false;
+bool displaySliders = false;  
+int idleCounter = 0;
+int demoCounter = 0;
+float modelView[16];//for camera moving 
+
+
+enum { M_VIEW = 0, M_MOVE };
+
+uint numParticles = 0;
+uint3 gridSize;
+int numIterations = 0; // run until exit
+
+// simulation parameters
+float timestep = 0.5f;
+float damping = 1.0f;
+float gravity = 0.0003f;
+int iterations = 1;
+int ballr = 10;
+
+
+// fps
+static int fpsCount = 0;
+static int fpsLimit = 1;
+unsigned int timer;
+unsigned int frameCount = 0;   
+
+// CheckFBO/BackBuffer class objects
+CheckRender       *g_CheckRender = NULL;
+PlumeSystem *psystem = 0;
+ParticleRenderer *renderer = 0;  
+bool bUseOpenGL = true;  
+
+sivelab::QUICProject *data = 0;
+  
+extern "C" void cudaInit(int argc, char **argv);
+extern "C" void cudaGLInit(int argc, char **argv);
+extern "C" void copyArrayFromDevice(void* host, const void* device, unsigned int vbo, int size);*/
+extern  sivelab::QUICProject *data = 0;
+extern "C" void cleanup() ;
+extern "C" void cudaInit(int argc, char **argv);
+extern "C" void cudaGLInit(int argc, char **argv);
+extern "C" void initGL(int *argc, char **argv);
+extern "C" void  display() ;
+extern "C" void cleanup() ;
+extern "C" void reshape(int w, int h);
+extern "C" void mouse(int button, int state, int x, int y);
+extern "C" void motion(int x, int y);
+extern "C" void key(unsigned char key, int /*x*/, int /*y*/);
+extern "C" void special(int k, int x, int y);
+extern "C" void idle(void);
+extern "C" void initPlumeSystem(uint numParticles, uint3 gridSize, float4* &cellData);
+
+
+
+void loadQUICWindField(int nx, int ny, int nz, const std::string &quicFilesPath, 
+		       //std::vector<WindFieldDomainData>& windFieldData)
+		       float4* &windData, float3* &sig, float3* &U)
+{  
+  // 
+  // for now, this only loads the ascii files... binary will be
+  // incorporated into quicutil
+  //
+  
+  assert( quicFilesPath.c_str() != NULL );
+  std::string path = quicFilesPath + "QU_velocity.dat";
+
+  std::ifstream QUICWindField;
+  QUICWindField.open(path.c_str()); //opening the wind file  to read
+
+  if(!QUICWindField){
+    std::cerr<<"Unable to open QUIC Windfield file : QU_velocity.dat ";
+    exit(1);
+  }
+
+  std::string header;  // I am just using a very crude method to read the header of the wind file
+  QUICWindField>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header;
+  QUICWindField>>header>>header>>header>>header>>header;  
+
+  std::cout << "Domain Size: "  << nx << " X "   << ny << " X "    << nz << std::endl;
+  uint kk = 0; 
+  
+  for(int k = 0; k < nz; k++){   
+    for(int i = 0; i < ny; i++){
+      for(int j = 0; j < nx; j++){
+	int p2idx = k*nx*ny + i*nx + j; 
+	QUICWindField >> header;//windFieldData[p2idx].x;
+	QUICWindField >> header;//windFieldData[p2idx].y;
+	QUICWindField >> header;//windFieldData[p2idx].z;  	
+	QUICWindField >> windData[kk].x;//windFieldData[p2idx].u;//((Cell)(d_ptr[kk])).wind.x;//cell.wind.x;////h_ptr[p2idx].wind.x; 
+	QUICWindField >> windData[kk].y;//windFieldData[p2idx].v;//d_ptr[kk].wind.x;//cell.wind.y;//h_ptr[p2idx].wind.y; 
+	QUICWindField >> windData[kk].z;//windFieldData[p2idx].w;//d_ptr[kk].wind.x;//c/ell.wind.z;//h_ptr[p2idx].wind.z; 
+	
+	kk++;  
+      }
+    }
+  } 
+  QUICWindField.close();
+  return;
+  path = quicFilesPath + "QP_turbfield.dat"; 
+  std::ifstream QUICturbfield;
+  QUICturbfield.open(path.c_str()); //opening the wind file  to read
+  if(!QUICturbfield){
+    std::cerr<<"Unable to open QUIC Windfield file : QU_velocity.dat ";
+    exit(1);
+  }
+  kk = 0;
+  while(kk<43) 
+  {
+    QUICturbfield>>header;  
+    kk++;
+  }
+  kk=0;
+  float a; 
+  while(kk < 40*25*25) 
+  {
+    QUICturbfield>>header>>header>>header; 
+//     std::cout<<header<<" ";
+    QUICturbfield>>sig[kk].x>>sig[kk].y>>sig[kk].z;
+    QUICturbfield>>header>>header>>header
+		 >>header>>header>>header ; 
+//       std::cout<<sig[kk].x<< " "<<sig[kk].y<< " "<<sig[kk].z<<"\n";
+    kk++;
+  }
+  kk=0;
+  while(kk < 40*25*25) 
+  {
+     std::cout<<sig[kk].y/sig[kk].x<< " "<<sig[kk].z/sig[kk].x<< "\n";
+     kk++;
+    
+  }
+    std::cout<<"\n";
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Program main
+////////////////////////////////////////////////////////////////////////////////
+int main(int argc, char** argv) 
+{   
+  
+///////////////////building ??????????/////////////////  
+  printf("sizeof constant memory: %d \n", sizeof(ConstParams));
+  float3 localOrigin = make_float3(15.f, 12.5f, 0.f);
+  float3 buildingwhl = make_float3(5.f, 5.f, 5.f);
+  lowCorner = make_float3(localOrigin.x, localOrigin.y - (buildingwhl.x/2.f), localOrigin.z);
+  highCorner = make_float3(localOrigin.x +buildingwhl.y, localOrigin.y + (buildingwhl.x/2.f), localOrigin.z+buildingwhl.z);
+////\\\\\\\\\\\\\\\\\\\\building ??????????/////////////////  
+  
+  
+  numParticles = NUM_PARTICLES; 
+  numIterations = 0;  
+
+  
+/////////////////read files by args/////////////////////
+  sivelab::QUICArgs quicArgs;
+  quicArgs.process( argc, argv );
+  // ./plume -q ../../../quicdata/SBUE_small_bldg/SBUE_small_bldg.proj 
+
+  data = new sivelab::QUICProject( quicArgs.quicproj );
+  gridSize = make_uint3(data->nx, data->ny, data->nz);//.x = gridSize.y = gridSize.z = gridDim; 
+  std::cout << "Done loading QUIC data.\n" << std::endl;
+//   std::vector<WindFieldDomainData> windFieldData( data->nx * data->ny * data->nz );
+  float4 *windData = (float4 *)malloc(gridSize.x*gridSize.y*gridSize.z*sizeof(float4));
+  float3 *sigData = (float3 *)malloc(gridSize.x*gridSize.y*gridSize.z*sizeof(float3));
+  float3 *UData = (float3 *)malloc(gridSize.x*gridSize.y*gridSize.z*sizeof(float3));
+  loadQUICWindField(data->nx, data->ny, data->nz, data->m_quicProjectPath, windData, sigData, UData); 
+
+  source.type = SPHERESOURCE;
+  if(source.type == SPHERESOURCE)
+  {
+    assert(source.type == SPHERESOURCE);
+    float3 sourceOrigin = make_float3(10.0f, 12.5f, .5f);
+    source.info.sph.ori = sourceOrigin;
+    source.info.sph.rad = .5f;
+  }else if( source.type == LINESOURCE)
+  {
+    assert(source.type == LINESOURCE);
+  } else if( source.type == POINTSOURCE)
+  {
+    assert(source.type == POINTSOURCE);
+  } 
+  source.speed = 0.5f;
+//   return 1;
+//   loadQUICWindField(data->nx, data->ny, data->nz, data->m_quicProjectPath, windFieldData);
+
+  //
+  // 3.  Build kernel to simply advect the particles...
+  //
+  // 4. Use time step in QPParams.h to determine the
+  // loop... while (simulation duration is not yet complete) run
+  // advection kernel again...
+ 
+///////////////////////////////Opengl Main section////
+  if (!bUseOpenGL) {
+      cudaInit(argc, argv);
+  } 
+  else
+  { 
+    initGL(&argc, argv);
+    cudaGLInit(argc, argv);
+
+    initPlumeSystem(numParticles, gridSize, windData);
+    initParams();
+  
+    initMenus(); 
+    glutDisplayFunc(display);
+    glutReshapeFunc(reshape);
+    glutMouseFunc(mouse);
+    glutMotionFunc(motion);
+    glutKeyboardFunc(key);
+    glutKeyboardUpFunc(keyUp);
+    glutSpecialFunc(special);
+    glutIdleFunc(idle);
+
+    atexit(cleanup);
+
+    glutMainLoop(); 
+  }
+  if (psystem)
+    delete psystem;
+  if (data)
+    delete data;  
+
+  cutilDeviceReset(); 
+}

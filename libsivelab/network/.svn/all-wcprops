@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 42
+/svn/libsivelab/!svn/ver/124/trunk/network
+END
+IPAddress.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/libsivelab/!svn/ver/93/trunk/network/IPAddress.cpp
+END
+ServerSocket.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/libsivelab/!svn/ver/70/trunk/network/ServerSocket.cpp
+END
+UDPSocket.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/libsivelab/!svn/ver/93/trunk/network/UDPSocket.cpp
+END
+IPAddress.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/libsivelab/!svn/ver/96/trunk/network/IPAddress.h
+END
+SocketIncl.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/libsivelab/!svn/ver/94/trunk/network/SocketIncl.h
+END
+ServerSocket.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/libsivelab/!svn/ver/73/trunk/network/ServerSocket.h
+END
+UDPSocket.h
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/libsivelab/!svn/ver/93/trunk/network/UDPSocket.h
+END
+ClientSocket.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/libsivelab/!svn/ver/93/trunk/network/ClientSocket.cpp
+END
+Socket.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/libsivelab/!svn/ver/74/trunk/network/Socket.cpp
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/libsivelab/!svn/ver/124/trunk/network/CMakeLists.txt
+END
+ClientSocket.h
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/libsivelab/!svn/ver/74/trunk/network/ClientSocket.h
+END
+SocketException.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/libsivelab/!svn/ver/68/trunk/network/SocketException.h
+END
+Socket.h
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/libsivelab/!svn/ver/93/trunk/network/Socket.h
+END

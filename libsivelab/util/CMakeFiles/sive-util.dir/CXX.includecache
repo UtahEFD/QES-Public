@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/alex/Desktop/repos/libsivelab/util/ArgumentParsing.h
+iostream
+-
+sstream
+-
+cstdlib
+-
+cstring
+-
+vector
+-
+boost/program_options.hpp
+-
+
+/home/alex/Desktop/repos/libsivelab/util/handleQUICArgs.cpp
+handleQUICArgs.h
+/home/alex/Desktop/repos/libsivelab/util/handleQUICArgs.h
+
+/home/alex/Desktop/repos/libsivelab/util/handleQUICArgs.h
+iostream
+-
+string
+-
+ArgumentParsing.h
+/home/alex/Desktop/repos/libsivelab/util/ArgumentParsing.h
+

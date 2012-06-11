@@ -1,0 +1,2 @@
+/usr/bin/ar cr ../lib/libsive-network.a  CMakeFiles/sive-network.dir/IPAddress.cpp.o CMakeFiles/sive-network.dir/Socket.cpp.o CMakeFiles/sive-network.dir/UDPSocket.cpp.o CMakeFiles/sive-network.dir/ServerSocket.cpp.o CMakeFiles/sive-network.dir/ClientSocket.cpp.o
+/usr/bin/ranlib ../lib/libsive-network.a

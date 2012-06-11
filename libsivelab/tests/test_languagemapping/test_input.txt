@@ -1,0 +1,10 @@
+second.buildings[0].bldNum 10
+second.buildings[1].bldNum 200
+second.buildings[0].xfo  99.3
+second.x_subdomain_sw 200
+second.zo 1.23
+second.buildings[0].type_enum 10
+first.x_subdomain_sw 999
+first.myname nickelback
+first.buildings[0].gamma 10
+first.buildings[1].gamma 11

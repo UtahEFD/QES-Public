@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/quicLoaderTest.dir/quicLoaderTest.cpp.o  -o quicLoaderTest -rdynamic -L/network ../../lib/libsive-quicutil.a ../../lib/libsive-util.a -Wl,-Bstatic -lboost_program_options-mt -Wl,-Bdynamic -Wl,-rpath,/network: 

@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/network_UDPDataSender.dir/network_UDPDataSender.cpp.o  -o network_UDPDataSender -rdynamic -L/network ../lib/libsive-network.a ../lib/libsive-util.a -Wl,-Bstatic -lboost_program_options-mt -Wl,-Bdynamic -Wl,-rpath,/network: 

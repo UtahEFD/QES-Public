@@ -1,0 +1,1 @@
+/usr/bin/c++       CMakeFiles/util_logstream.dir/util_logstream.cpp.o  -o util_logstream -rdynamic -L/network ../../lib/libsive-util.a -Wl,-rpath,/network: 
