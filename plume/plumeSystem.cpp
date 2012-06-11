@@ -126,9 +126,9 @@ PlumeSystem::_initialize(int numParticles, float4* &cellData)
 
   // allocate host storage
   m_hPos = new float[m_numParticles*4];
-  m_hVel = new float[m_numParticles*4];
+//   m_hVel = new float[m_numParticles*4];
   memset(m_hPos, 0, m_numParticles*4*sizeof(float));//16384
-  memset(m_hVel, 0, m_numParticles*4*sizeof(float));//16384 
+//   memset(m_hVel, 0, m_numParticles*4*sizeof(float));//16384 
 
   // allocate GPU data
   unsigned int memSize = sizeof(float) * 4 * m_numParticles;
@@ -140,7 +140,7 @@ PlumeSystem::_initialize(int numParticles, float4* &cellData)
       cutilSafeCall( cudaMalloc( (void **)&m_cudaPosVBO, memSize )) ;// vertex buffer object for particle positions
   }
 
-  allocateArray((void**)&m_dVel, memSize); 
+//   allocateArray((void**)&m_dVel, memSize); 
 
 
   if (m_bUseOpenGL) {
@@ -181,10 +181,10 @@ PlumeSystem::_finalize()
   assert(m_bInitialized);
 
   delete [] m_hPos;
-  delete [] m_hVel;
+//   delete [] m_hVel;
 //     delete [] m_hCells; 
   
-  freeArray(m_dVel); 
+//   freeArray(m_dVel); 
   
   if (m_bUseOpenGL) {
     unregisterGLBufferObject(m_cuda_posvbo_resource);
@@ -245,11 +245,11 @@ PlumeSystem::dumpParticles(uint start, uint count)
 {
     // debug
   copyArrayFromDevice(m_hPos, 0, &m_cuda_posvbo_resource, sizeof(float)*4*count);
-  copyArrayFromDevice(m_hVel, m_dVel, 0, sizeof(float)*4*count);
+//   copyArrayFromDevice(m_hVel, m_dVel, 0, sizeof(float)*4*count);
 
   for(uint i=start; i<start+count; i++) {
 //        printf("%d: ", i);
-    if(m_hVel[i*4+0]==0.f)
+    if(m_hPos[i*4+0]==0.f)
       printf("pos: (%.4f, %.4f, %.4f, %.4f)\n", m_hPos[i*4+0], m_hPos[i*4+1], m_hPos[i*4+2], m_hPos[i*4+3]);
       // printf("vel: (%.4f, %.4f, %.4f, %.4f)\n", m_hVel[i*4+0], m_hVel[i*4+1], m_hVel[i*4+2], m_hVel[i*4+3]);
   }
@@ -273,8 +273,8 @@ PlumeSystem::getArray(DeviceArray array)
       cuda_vbo_resource = m_cuda_posvbo_resource;
       break;
   case VELOCITY:
-      hdata = m_hVel;
-      ddata = m_dVel;
+//       hdata = m_hVel;
+//       ddata = m_dVel;
       break;
   }
 
@@ -302,7 +302,7 @@ PlumeSystem::setArray(DeviceArray array, const float* data, int start, int count
     }
     break;
   case VELOCITY:
-    copyArrayToDevice(m_dVel, data, start*4*sizeof(float), count*4*sizeof(float));
+//     copyArrayToDevice(m_dVel, data, start*4*sizeof(float), count*4*sizeof(float));
     break; 
   }       
 }  
@@ -320,7 +320,7 @@ PlumeSystem::reset()//ParticleSystem::(ParticleConfig config)
   } 	
       
   setArray(POSITION, m_hPos, 0, m_numParticles);
-  setArray(VELOCITY, m_hVel, 0, m_numParticles);
+//   setArray(VELOCITY, m_hVel, 0, m_numParticles);
 //   setDeviceCells(m_hCells, m_numGridCells);
 //   copyArrayToDevice(m_hCell, g_dCells, 0, m_numGridCells*4*sizeof(Cell)); 
 }

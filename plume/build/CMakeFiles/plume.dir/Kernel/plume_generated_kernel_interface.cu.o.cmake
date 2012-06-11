@@ -76,7 +76,7 @@ set(CUDA_NVCC_FLAGS_MINSIZEREL  ;; )
 set(CUDA_NVCC_FLAGS_RELEASE  ;; )
 set(CUDA_NVCC_FLAGS_RELWITHDEBINFO  ;; )
 set(nvcc_flags -m32) # list
-set(CUDA_NVCC_INCLUDE_ARGS "-I/usr/local/cuda/include;-I/home/alex/Desktop/repos/gpuquic/plume/../libsivelab;-I/usr/local/cuda/include;-I/home/alex/NVIDIA_GPU_Computing_SDK/common/inc;-I/home/alex/NVIDIA_GPU_Computing_SDK/CUDALibraries/common/inc;-I/usr/include") # list (needs to be in quotes to handle spaces properly).
+set(CUDA_NVCC_INCLUDE_ARGS "-I/usr/local/cuda/include;-I/home/alex/Desktop/repos/gpuquic/plume/../../libsivelab;-I/usr/local/cuda/include;-I/home/alex/NVIDIA_GPU_Computing_SDK/common/inc;-I/home/alex/NVIDIA_GPU_Computing_SDK/CUDALibraries/common/inc;-I/usr/include") # list (needs to be in quotes to handle spaces properly).
 set(format_flag "-c") # string
 
 if(build_cubin AND NOT generated_cubin_file)

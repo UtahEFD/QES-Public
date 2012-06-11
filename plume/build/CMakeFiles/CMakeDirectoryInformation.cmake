@@ -10,7 +10,7 @@ SET(CMAKE_FORCE_UNIX_PATHS 1)
 
 # The C and CXX include file search paths:
 SET(CMAKE_C_INCLUDE_PATH
-  "../../libsivelab"
+  "../../../libsivelab"
   "/usr/local/cuda/include"
   "/home/alex/NVIDIA_GPU_Computing_SDK/common/inc"
   "/home/alex/NVIDIA_GPU_Computing_SDK/CUDALibraries/common/inc"

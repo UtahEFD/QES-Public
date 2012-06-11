@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-../../libsivelab/quicutil/../util/Vector3D.h
+../../../libsivelab/quicutil/../util/Vector3D.h
 cassert
 -
 iostream
@@ -14,27 +14,27 @@ iostream
 cmath
 -
 
-../../libsivelab/quicutil/../util/angle.h
+../../../libsivelab/quicutil/../util/angle.h
 cmath
 -
 iostream
 -
 normal.h
-../../libsivelab/quicutil/../util/normal.h
+../../../libsivelab/quicutil/../util/normal.h
 
-../../libsivelab/quicutil/../util/normal.h
+../../../libsivelab/quicutil/../util/normal.h
 math.h
 -
 point.h
-../../libsivelab/quicutil/../util/point.h
+../../../libsivelab/quicutil/../util/point.h
 
-../../libsivelab/quicutil/../util/point.h
+../../../libsivelab/quicutil/../util/point.h
 cmath
 -
 Vector3D.h
-../../libsivelab/quicutil/../util/Vector3D.h
+../../../libsivelab/quicutil/../util/Vector3D.h
 
-../../libsivelab/quicutil/QPBuildout.h
+../../../libsivelab/quicutil/QPBuildout.h
 iostream
 -
 fstream
@@ -46,17 +46,17 @@ cstdlib
 vector
 -
 QUICDataFile.h
-../../libsivelab/quicutil/QUICDataFile.h
+../../../libsivelab/quicutil/QUICDataFile.h
 
-../../libsivelab/quicutil/QPParams.h
+../../../libsivelab/quicutil/QPParams.h
 fstream
 -
 QUICDataFile.h
-../../libsivelab/quicutil/QUICDataFile.h
+../../../libsivelab/quicutil/QUICDataFile.h
 legacyFileParser.h
-../../libsivelab/quicutil/legacyFileParser.h
+../../../libsivelab/quicutil/legacyFileParser.h
 
-../../libsivelab/quicutil/QPSource.h
+../../../libsivelab/quicutil/QPSource.h
 iostream
 -
 cstdlib
@@ -68,9 +68,9 @@ fstream
 sstream
 -
 QUICDataFile.h
-../../libsivelab/quicutil/QUICDataFile.h
+../../../libsivelab/quicutil/QUICDataFile.h
 
-../../libsivelab/quicutil/QUBuildings.h
+../../../libsivelab/quicutil/QUBuildings.h
 iostream
 -
 fstream
@@ -82,13 +82,13 @@ cstdlib
 vector
 -
 QUICDataFile.h
-../../libsivelab/quicutil/QUICDataFile.h
+../../../libsivelab/quicutil/QUICDataFile.h
 
-../../libsivelab/quicutil/QUICDataFile.h
+../../../libsivelab/quicutil/QUICDataFile.h
 string
 -
 
-../../libsivelab/quicutil/QUICProject.h
+../../../libsivelab/quicutil/QUICProject.h
 iostream
 -
 fstream
@@ -96,89 +96,89 @@ fstream
 limits
 -
 util/fileHandling.h
-../../libsivelab/quicutil/util/fileHandling.h
+../../../libsivelab/quicutil/util/fileHandling.h
 quicutil/QUBuildings.h
-../../libsivelab/quicutil/quicutil/QUBuildings.h
+../../../libsivelab/quicutil/quicutil/QUBuildings.h
 quicutil/QUMetParams.h
-../../libsivelab/quicutil/quicutil/QUMetParams.h
+../../../libsivelab/quicutil/quicutil/QUMetParams.h
 quicutil/QUSimparams.h
-../../libsivelab/quicutil/quicutil/QUSimparams.h
+../../../libsivelab/quicutil/quicutil/QUSimparams.h
 quicutil/QPBuildout.h
-../../libsivelab/quicutil/quicutil/QPBuildout.h
+../../../libsivelab/quicutil/quicutil/QPBuildout.h
 quicutil/QPParams.h
-../../libsivelab/quicutil/quicutil/QPParams.h
+../../../libsivelab/quicutil/quicutil/QPParams.h
 quicutil/QPSource.h
-../../libsivelab/quicutil/quicutil/QPSource.h
+../../../libsivelab/quicutil/quicutil/QPSource.h
 
-../../libsivelab/quicutil/QUMetParams.h
+../../../libsivelab/quicutil/QUMetParams.h
 cstdlib
 -
 fstream
 -
 QUICDataFile.h
-../../libsivelab/quicutil/QUICDataFile.h
+../../../libsivelab/quicutil/QUICDataFile.h
 legacyFileParser.h
-../../libsivelab/quicutil/legacyFileParser.h
+../../../libsivelab/quicutil/legacyFileParser.h
 QUSensor.h
-../../libsivelab/quicutil/QUSensor.h
+../../../libsivelab/quicutil/QUSensor.h
 
-../../libsivelab/quicutil/QUSensor.h
+../../../libsivelab/quicutil/QUSensor.h
 QUICDataFile.h
-../../libsivelab/quicutil/QUICDataFile.h
+../../../libsivelab/quicutil/QUICDataFile.h
 ../util/angle.h
-../../libsivelab/quicutil/../util/angle.h
+../../../libsivelab/quicutil/../util/angle.h
 
-../../libsivelab/quicutil/QUSimparams.h
+../../../libsivelab/quicutil/QUSimparams.h
 cstdlib
 -
 fstream
 -
 QUICDataFile.h
-../../libsivelab/quicutil/QUICDataFile.h
+../../../libsivelab/quicutil/QUICDataFile.h
 legacyFileParser.h
-../../libsivelab/quicutil/legacyFileParser.h
+../../../libsivelab/quicutil/legacyFileParser.h
 
-../../libsivelab/quicutil/attribute.h
+../../../libsivelab/quicutil/attribute.h
 datam.h
-../../libsivelab/quicutil/datam.h
+../../../libsivelab/quicutil/datam.h
 
-../../libsivelab/quicutil/attributeList.h
+../../../libsivelab/quicutil/attributeList.h
 attribute.h
-../../libsivelab/quicutil/attribute.h
+../../../libsivelab/quicutil/attribute.h
 datamList.h
-../../libsivelab/quicutil/datamList.h
+../../../libsivelab/quicutil/datamList.h
 
-../../libsivelab/quicutil/basicElements.h
+../../../libsivelab/quicutil/basicElements.h
 string
 -
 standardElements.h
-../../libsivelab/quicutil/standardElements.h
+../../../libsivelab/quicutil/standardElements.h
 
-../../libsivelab/quicutil/datam.h
+../../../libsivelab/quicutil/datam.h
 string
 -
 iostream
 -
 
-../../libsivelab/quicutil/datamList.h
+../../../libsivelab/quicutil/datamList.h
 iostream
 -
 sstream
 -
 datam.h
-../../libsivelab/quicutil/datam.h
+../../../libsivelab/quicutil/datam.h
 
-../../libsivelab/quicutil/element.h
+../../../libsivelab/quicutil/element.h
 string
 -
 iostream
 -
 attributeList.h
-../../libsivelab/quicutil/attributeList.h
+../../../libsivelab/quicutil/attributeList.h
 datam.h
-../../libsivelab/quicutil/datam.h
+../../../libsivelab/quicutil/datam.h
 
-../../libsivelab/quicutil/fileParser.h
+../../../libsivelab/quicutil/fileParser.h
 iostream
 -
 fstream
@@ -186,33 +186,33 @@ fstream
 sstream
 -
 datamList.h
-../../libsivelab/quicutil/datamList.h
+../../../libsivelab/quicutil/datamList.h
 element.h
-../../libsivelab/quicutil/element.h
+../../../libsivelab/quicutil/element.h
 peekline.h
-../../libsivelab/quicutil/peekline.h
+../../../libsivelab/quicutil/peekline.h
 
-../../libsivelab/quicutil/legacyFileParser.h
+../../../libsivelab/quicutil/legacyFileParser.h
 basicElements.h
-../../libsivelab/quicutil/basicElements.h
+../../../libsivelab/quicutil/basicElements.h
 fileParser.h
-../../libsivelab/quicutil/fileParser.h
+../../../libsivelab/quicutil/fileParser.h
 
-../../libsivelab/quicutil/peekline.h
+../../../libsivelab/quicutil/peekline.h
 iostream
 -
 string
 -
 
-../../libsivelab/quicutil/standardElements.h
+../../../libsivelab/quicutil/standardElements.h
 element.h
-../../libsivelab/quicutil/element.h
+../../../libsivelab/quicutil/element.h
 attribute.h
-../../libsivelab/quicutil/attribute.h
+../../../libsivelab/quicutil/attribute.h
 peekline.h
-../../libsivelab/quicutil/peekline.h
+../../../libsivelab/quicutil/peekline.h
 
-../../libsivelab/util/ArgumentParsing.h
+../../../libsivelab/util/ArgumentParsing.h
 iostream
 -
 sstream
@@ -226,15 +226,15 @@ vector
 boost/program_options.hpp
 -
 
-../../libsivelab/util/fileHandling.h
+../../../libsivelab/util/fileHandling.h
 
-../../libsivelab/util/handleQUICArgs.h
+../../../libsivelab/util/handleQUICArgs.h
 iostream
 -
 string
 -
 ArgumentParsing.h
-../../libsivelab/util/ArgumentParsing.h
+../../../libsivelab/util/ArgumentParsing.h
 
 /home/alex/Desktop/repos/gpuquic/plume/Domain/ConstParams.cuh
 vector_types.h
@@ -254,6 +254,8 @@ GL/wglew.h
 GLUT/glut.h
 -
 GL/freeglut.h
+-
+iostream
 -
 cutil_inline.h
 -

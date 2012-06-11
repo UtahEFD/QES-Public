@@ -47,24 +47,12 @@
 #define NUM_PARTICLES   1000000  //pow(2,20)    
 const uint width = 800, height = 600;
  
-//hard coding default values 
-extern float3 lowCorner;// = make_float3(3.f, -2.f, 3.f);
-extern float3 highCorner;// = make_float3(8.f,  1.f, 8.f); 
-extern GLuint buldingTex;
-extern GLuint roofTex;
-extern GLuint floorTex; 
 
-extern float3 domain;//; = make_float3(40.f, 25.f, 26.f); 
-extern float3 origin;// = make_float3(0.f, 0.f, 0.f);  
-Source source;  
-
-extern uint numParticles;  
-// extern unsigned int timer; 
 
 // CheckFBO/BackBuffer class objects
-extern CheckRender *g_CheckRender;
-extern PlumeSystem *psystem;// = 0;
-extern ParticleRenderer *renderer;  
+// extern CheckRender *g_CheckRender;
+// extern PlumeSystem *psystem;// = 0;
+// extern ParticleRenderer *renderer;  
 bool bUseOpenGL = true;  
 
 //////////////in gl_funs.h////////////////////////////////////////////////////////////////
@@ -89,6 +77,7 @@ extern "C" void copyArrayFromDevice(void* host, const void* device, unsigned int
 ////////////////////////in kernel_interface.cu///////////////////////////////////////////
 
 sivelab::QUICProject *data = 0; 
+Source source;   
 
 // initialize particle system
 void initPlumeSystem(uint numParticles, uint3 gridSize, float4* &cellData)
@@ -123,22 +112,17 @@ void initGL(int *argc, char **argv)
     exit(-1);
   }
    
-// load  textures 
-//hard coding part for img location
-  std::string path = "../Img/building.ppm";
-  char* imagePath =  (char*)path.c_str();//"../Img/building.ppm";// cutFindFilePath("building.ppm", "../");
-  path = "../Img/buildingRoof.ppm";
-  char* imagePath1 =  (char*)path.c_str();//"../Img/buildingRoof.ppm";//cutFindFilePath("buildingRoof.ppm", "../");
-  path = "../Img/concrete.ppm";
-  char* imagePath2 =  (char*)path.c_str();//"../Img/concrete.ppm";//cutFindFilePath("concrete.ppm", "../");
-  if (imagePath == NULL) {
-    fprintf(stderr, "Error finding floor image file\n"); 
-  }
-  buldingTex = loadTexture(imagePath);
-  roofTex = loadTexture(imagePath1);
-  floorTex = loadTexture(imagePath2);
+/////////////load  textures done start
+////path should include 
+////////////////skyBoxTex for skyBox Texture(need four ppm pics named by east,west,south, and north )
+////////////////buildingTex  for building Texture(only need two ppm pics named by buliding and roof )
+////////////////floorTex  for floor Texture(one ppm pic named by concrect.ppm here)
+  std::string path = "../Img/";    
+  readTex(path);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, GL_REPEAT);
+/////////////load  textures done! 
+  
 
 #if defined (_WIN32)
   if (wglewIsSupported("WGL_EXT_swap_control")) {
@@ -246,11 +230,12 @@ int main(int argc, char** argv)
 {   
   
 ///////////////////building ??????????/////////////////  
-  printf("sizeof constant memory: %d \n", sizeof(ConstParams));
+//   printf("sizeof constant memory: %d \n", sizeof(ConstParams));
   float3 localOrigin = make_float3(15.f, 12.5f, 0.f);
   float3 buildingwhl = make_float3(5.f, 5.f, 5.f); 
   lowCorner = make_float3(localOrigin.x, localOrigin.y - (buildingwhl.x/2.f), localOrigin.z);
   highCorner = make_float3(localOrigin.x +buildingwhl.y, localOrigin.y + (buildingwhl.x/2.f), localOrigin.z+buildingwhl.z);
+//   std::cout<<"highCorner.z           "<<highCorner.z<<"\n\n\n\n\n";
 ////\\\\\\\\\\\\\\\\\\\\building ??????????/////////////////   
   
   numParticles = NUM_PARTICLES;   
@@ -280,8 +265,8 @@ int main(int argc, char** argv)
   else if( source.type == LINESOURCE)
   {
     assert(source.type == LINESOURCE); 
-    source.info.ln.start = make_float3(6, 0.5, 0.5f);//10.0f, 12.5f, .5f);
-    source.info.ln.end = make_float3(6, 24.5, 0.5f);//(6.0f, 13.5f, 5.5f);
+    source.info.ln.start = make_float3(6, 5.5, 0.5f);//10.0f, 12.5f, .5f);
+    source.info.ln.end = make_float3(6, 20.5, 0.5f);//(6.0f, 13.5f, 5.5f);
   } 
   else if( source.type == POINTSOURCE)
   {

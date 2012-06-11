@@ -32,6 +32,7 @@
 #include <GL/freeglut.h>
 #endif
 // CUDA utilities and system includes
+#include <iostream>  
 #include <cutil_inline.h>    // includes cuda.h and cuda_runtime_api.h
 #include <cutil_gl_inline.h> // includes cuda_gl_interop.h// includes cuda_gl_interop.h
 #include <rendercheck_gl.h>
@@ -40,9 +41,9 @@
 #include "plumeSystem.h"
 
 extern "C"
-{
-  GLuint buldingTex = 0;
-  GLuint roofTex = 0;
+{ 
+//////////////////////////////////////////scene texture part start////////////////////////  
+
   GLuint floorTex = 0; 
   enum BoxType{SKYBOX, BUILDING};
   struct BoxTex
@@ -50,7 +51,7 @@ extern "C"
     GLuint e; GLuint w; GLuint n; GLuint s;
     GLuint u; GLuint d; 
     BoxType type;
-  }skyBox, building;
+  }skyBoxTex, buildingTex;
    
   GLuint createTexture(GLenum target, GLint internalformat, GLenum format, int w, int h, void *data)
   {
@@ -72,7 +73,7 @@ extern "C"
     unsigned char *data = 0;
     unsigned int width, height;
     cutilCheckError( cutLoadPPM4ub(filename, &data, &width, &height));
-    if (!data) {
+    if(!data) {
       printf("Error opening file '%s'\n", filename);
       return 0;
     } 
@@ -80,90 +81,106 @@ extern "C"
     return createTexture(GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, width, height, data);
   }
 
-  void readBoxTex(std::string path, BoxTex boxTex)
+  void readTex(std::string path)
   {  
-    path = "../Img/";  
-      
-    
     std::string imgPath = path;
-    boxTex.type == BUILDING ? imgPath.append("building.ppm"):imgPath.append("east.ppm"); 
-    boxTex.e = loadTexture((char*)imgPath.c_str());
+    ///////////////reading floorTex
+    floorTex = loadTexture((char*)imgPath.append("concrete.ppm").c_str());
     
-    imgPath = path;
-    imgPath = path.append("west.ppm"); 
-    boxTex.type == BUILDING ? 1:boxTex.w = loadTexture((char*)imgPath.c_str());
+    bool twice = false;
+    BoxTex boxTex = skyBoxTex;
+    boxTex.type = SKYBOX;
+    while(!twice)
+    {//reading building texture and skyBox texture
+//       std::cout<<(boxTex.type == BUILDING) <<"\n";
+      imgPath = path;
+      boxTex.type == BUILDING ? imgPath.append("building.ppm") : imgPath.append("Skybox/east.ppm"); 
+      boxTex.e = loadTexture((char*)imgPath.c_str());
+      
+      imgPath = path;
+      imgPath = imgPath.append("Skybox/west.ppm"); 
+      boxTex.type == BUILDING ? 1 : boxTex.w = loadTexture((char*)imgPath.c_str());
+      
+      imgPath = path;
+      imgPath = imgPath.append("Skybox/north.ppm"); 
+      boxTex.type == BUILDING ? 1 : boxTex.n = loadTexture((char*)imgPath.c_str());
+      
+      imgPath = path;
+      imgPath = imgPath.append("Skybox/south.ppm"); 
+      boxTex.type == BUILDING ? 1 : boxTex.s = loadTexture((char*)imgPath.c_str());
+      
+      imgPath = path;
+      boxTex.type == BUILDING ? imgPath.append("roof.ppm"):imgPath.append("Skybox/up.ppm"); 
+      boxTex.u = loadTexture((char*)imgPath.c_str());
+      
+      imgPath = path;
+      imgPath = imgPath.append("Skybox/down.ppm"); 
+      boxTex.type == BUILDING ? 1 : boxTex.d = loadTexture((char*)imgPath.c_str()); 
+      
+      twice = (boxTex.type == BUILDING);
+      boxTex.type != BUILDING ? skyBoxTex = boxTex : buildingTex = boxTex;
+      boxTex = buildingTex;
+      boxTex.type = BUILDING;
+    }
+  } 
     
-    imgPath = path;
-    imgPath = path.append("north.ppm"); 
-    boxTex.type == BUILDING ? 1:boxTex.n = loadTexture((char*)imgPath.c_str());
-    
-    imgPath = path;
-    imgPath = path.append("south.ppm"); 
-    boxTex.type == BUILDING ? 1:boxTex.s = loadTexture((char*)imgPath.c_str());
-    
-    imgPath = path;
-    boxTex.type == BUILDING ? imgPath.append("roof.ppm"):imgPath.append("up.ppm"); 
-    boxTex.type == BUILDING ? 1:boxTex.u = loadTexture((char*)imgPath.c_str());
-    
-    imgPath = path;
-    imgPath = path.append("down.ppm"); 
-    boxTex.type == BUILDING ? 1:boxTex.d = loadTexture((char*)imgPath.c_str()); 
-  }
-  
-  void drawScene()
-  {
-    
-    
-  }
-    
-  void drawBuildings(float3 lowCorner, float3 highCorner, bool bottom) 
+  void drawBox(float3 lowCorner, float3 highCorner, bool isBox) 
   { 
     glPushMatrix(); 
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D,buldingTex);
+    glBindTexture(GL_TEXTURE_2D, isBox?skyBoxTex.s:buildingTex.e);
     glBegin(GL_QUADS);
-      glTexCoord2f(0.0f,0.0f);glVertex3f(lowCorner.x,lowCorner.y,lowCorner.z);
-      glTexCoord2f(0.0f,1.0f);glVertex3f(lowCorner.x,lowCorner.y,highCorner.z);
-      glTexCoord2f(1.0f,1.0f);glVertex3f(highCorner.x,lowCorner.y,highCorner.z);
-      glTexCoord2f(1.0f,0.0f);glVertex3f(highCorner.x,lowCorner.y,lowCorner.z);
-      
-      glTexCoord2f(0.0f,0.0f);glVertex3f(highCorner.x,lowCorner.y,lowCorner.z);
-      glTexCoord2f(0.0f,1.0f);glVertex3f(highCorner.x,lowCorner.y,highCorner.z);
-      glTexCoord2f(1.0f,1.0f);glVertex3f(highCorner.x,highCorner.y,highCorner.z);
-      glTexCoord2f(1.0f,0.0f);glVertex3f(highCorner.x,highCorner.y,lowCorner.z);
-	
-      glTexCoord2f(0.0f,0.0f);glVertex3f(highCorner.x,highCorner.y,lowCorner.z);
-      glTexCoord2f(0.0f,1.0f);glVertex3f(highCorner.x,highCorner.y,highCorner.z);
-      glTexCoord2f(1.0f,1.0f);glVertex3f(lowCorner.x,highCorner.y,highCorner.z);
-      glTexCoord2f(1.0f,0.0f);glVertex3f(lowCorner.x,highCorner.y,lowCorner.z);
-      
-      glTexCoord2f(0.0f,0.0f);glVertex3f(lowCorner.x,highCorner.y,lowCorner.z);
-      glTexCoord2f(0.0f,1.0f);glVertex3f(lowCorner.x,highCorner.y,highCorner.z);
-      glTexCoord2f(1.0f,1.0f);glVertex3f(lowCorner.x,lowCorner.y,highCorner.z);
-      glTexCoord2f(1.0f,0.0f);glVertex3f(lowCorner.x,lowCorner.y,lowCorner.z);
+      glTexCoord2f(1.0f,1.0f);glVertex3f(lowCorner.x,lowCorner.y,lowCorner.z);
+      glTexCoord2f(1.0f,0.0f);glVertex3f(lowCorner.x,lowCorner.y,highCorner.z);
+      glTexCoord2f(0.0f,0.0f);glVertex3f(highCorner.x,lowCorner.y,highCorner.z);
+      glTexCoord2f(0.0f,1.0f);glVertex3f(highCorner.x,lowCorner.y,lowCorner.z);
     glEnd();   
+     
+    glBindTexture(GL_TEXTURE_2D, isBox?skyBoxTex.e:buildingTex.e);
+    glBegin(GL_QUADS); 
+      glTexCoord2f(1.0f,1.0f);glVertex3f(highCorner.x,lowCorner.y,lowCorner.z);
+      glTexCoord2f(1.0f,0.0f);glVertex3f(highCorner.x,lowCorner.y,highCorner.z);
+      glTexCoord2f(0.0f,0.0f);glVertex3f(highCorner.x,highCorner.y,highCorner.z);
+      glTexCoord2f(0.0f,1.0f);glVertex3f(highCorner.x,highCorner.y,lowCorner.z);
+    glEnd();   
+     
+    glBindTexture(GL_TEXTURE_2D, isBox?skyBoxTex.n:buildingTex.e);
+    glBegin(GL_QUADS); 
+      glTexCoord2f(1.0f,1.0f);glVertex3f(highCorner.x,highCorner.y,lowCorner.z);
+      glTexCoord2f(1.0f,0.0f);glVertex3f(highCorner.x,highCorner.y,highCorner.z);
+      glTexCoord2f(0.0f,0.0f);glVertex3f(lowCorner.x,highCorner.y,highCorner.z);
+      glTexCoord2f(0.0f,1.0f);glVertex3f(lowCorner.x,highCorner.y,lowCorner.z);
+    glEnd();   
+     
+    glBindTexture(GL_TEXTURE_2D, isBox?skyBoxTex.w:buildingTex.e);
+    glBegin(GL_QUADS); 
+      glTexCoord2f(1.0f,1.0f);glVertex3f(lowCorner.x,highCorner.y,lowCorner.z);
+      glTexCoord2f(1.0f,0.0f);glVertex3f(lowCorner.x,highCorner.y,highCorner.z);
+      glTexCoord2f(0.0f,0.0f);glVertex3f(lowCorner.x,lowCorner.y,highCorner.z);
+      glTexCoord2f(0.0f,1.0f);glVertex3f(lowCorner.x,lowCorner.y,lowCorner.z);
+    glEnd();    
     
-    if(bottom)
+    if(isBox)
     {
       glEnable(GL_TEXTURE_2D);
-      glBindTexture(GL_TEXTURE_2D,roofTex);
+      glBindTexture(GL_TEXTURE_2D, skyBoxTex.d);
       glBegin(GL_QUADS); 
-	glTexCoord2f(0.0f,0.0f);glVertex3f(lowCorner.x,lowCorner.y,lowCorner.z);
-	glTexCoord2f(0.0f,1.0f);glVertex3f(lowCorner.x,highCorner.y,lowCorner.z);
-	glTexCoord2f(1.0f,1.0f);glVertex3f(highCorner.x,highCorner.y,lowCorner.z);
-	glTexCoord2f(1.0f,0.0f);glVertex3f(highCorner.x,lowCorner.y,lowCorner.z);
-      glEnd();
+	glTexCoord2f(1.0f,0.0f);glVertex3f(lowCorner.x,lowCorner.y,lowCorner.z);
+	glTexCoord2f(1.0f,1.0f);glVertex3f(lowCorner.x,highCorner.y,lowCorner.z);
+	glTexCoord2f(0.0f,1.0f);glVertex3f(highCorner.x,highCorner.y,lowCorner.z);
+	glTexCoord2f(0.0f,0.0f);glVertex3f(highCorner.x,lowCorner.y,lowCorner.z);
+      glEnd(); 
     }
     
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D,roofTex);
+    glBindTexture(GL_TEXTURE_2D, isBox?skyBoxTex.u:buildingTex.u);
     glBegin(GL_QUADS); 
-      glTexCoord2f(0.0f,0.0f);glVertex3f(lowCorner.x,lowCorner.y,highCorner.z);
-      glTexCoord2f(0.0f,1.0f);glVertex3f(lowCorner.x,highCorner.y,highCorner.z);
-      glTexCoord2f(1.0f,1.0f);glVertex3f(highCorner.x,highCorner.y,highCorner.z);
-      glTexCoord2f(1.0f,0.0f);glVertex3f(highCorner.x,lowCorner.y,highCorner.z);
+      glTexCoord2f(1.0f,1.0f);glVertex3f(lowCorner.x,lowCorner.y,highCorner.z);
+      glTexCoord2f(1.0f,0.0f);glVertex3f(lowCorner.x,highCorner.y,highCorner.z);
+      glTexCoord2f(0.0f,0.0f);glVertex3f(highCorner.x,highCorner.y,highCorner.z);
+      glTexCoord2f(0.0f,1.0f);glVertex3f(highCorner.x,lowCorner.y,highCorner.z);
     glEnd();
-    glPopMatrix(); 
+    glPopMatrix();  
   }
 
   void drawSphere()
@@ -184,89 +201,36 @@ extern "C"
       glTexCoord2f(0.0f,0.0f);glVertex3f(originP.x, originP.y, originP.z);
       glTexCoord2f(0.0f,1.0f);glVertex3f(originP.x, domainP.y, originP.z);
       glTexCoord2f(1.0f,1.0f);glVertex3f(domainP.x, domainP.y, originP.z);
-      glTexCoord2f(1.0f,0.0f);glVertex3f(domainP.x, originP.y, originP.z);
-      
-  //     glTexCoord2f(0.0f,0.0f);glVertex3f(originP.x, originP.y, domainP.z);
-  //     glTexCoord2f(0.0f,1.0f);glVertex3f(originP.x, domainP.y, domainP.z);
-  //     glTexCoord2f(1.0f,1.0f);glVertex3f(domainP.x, domainP.y, domainP.z);
-  //     glTexCoord2f(1.0f,0.0f);glVertex3f(domainP.x, originP.y, domainP.z);
+      glTexCoord2f(1.0f,0.0f);glVertex3f(domainP.x, originP.y, originP.z); 
     glEnd();
     glPopMatrix(); 
-  }
-
-
-// fps
-//   static int fpsCount = 0;
-//   static int /*fpsLimit*/ = 1;
-//   unsigned int timer;
-//   unsigned int frameCount = 0;   
-  uint numParticles = 0;
-  
-  CheckRender *g_CheckRender = NULL;	
-  ParticleRenderer *renderer = 0;  
-      
-  void computeFPS()
-  {
-//     frameCount++;
-//     fpsCount++; 
-//     if (fpsCount == fpsLimit) {
-//       char fps[256];
-//       float ifps = 1.f / (cutGetAverageTimerValue(timer) / 1000.f);
-//       sprintf(fps, "%s CUDA Plume (%d particles): %3.1f fps", 
-// 	      ((g_CheckRender && g_CheckRender->IsQAReadback()) ? "AutoTest: " : ""), numParticles, ifps);  
-// 
-//       glutSetWindowTitle(fps);
-//       fpsCount = 0; 
-//       if (g_CheckRender && !g_CheckRender->IsQAReadback()) 
-// 	fpsLimit = (int)MAX(ifps, 1.f);
-// 
-//       cutilCheckError(cutResetTimer(timer));   
-//     }
-
-	//update the delta time for animation
-    static int lastFrameTime = 0; 
-    if (lastFrameTime == 0) 
-      lastFrameTime = glutGet(GLUT_ELAPSED_TIME); 
-
-    int now = glutGet(GLUT_ELAPSED_TIME);
-    int elapsedMilliseconds = now - lastFrameTime;
-    float delta_t = elapsedMilliseconds / 1000.0f;
-    lastFrameTime = now;
-    char fps[256];
-    sprintf(fps, "CUDA Plume (%d particles) %4.1f fps", numParticles, 1/delta_t);   
-    glutSetWindowTitle(fps);
-  }
-  
-  void reshape(int w, int h)
-  {
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(60.0, (float) w / (float) h, 0.1, 10000.0);
-
-    glMatrixMode(GL_MODELVIEW);
-    glViewport(0, 0, w, h);
-
-    if (renderer) {
-      renderer->setWindowSize(w, h);
-      renderer->setFOV(60.0);
-    }
-  }
-
-  void cleanup() 
-  {
-//     cutilCheckError( cutDeleteTimer( timer));
-    
-    if (buldingTex)  glDeleteTextures(1, &buldingTex);
-    if (roofTex)  glDeleteTextures(1, &roofTex);
-    if (floorTex)  glDeleteTextures(1, &floorTex);
-
-    if (g_CheckRender) {
-      delete g_CheckRender; g_CheckRender = NULL;
-    }
   } 
+  
+  void cleanupTex() 
+  {  
+    if(buildingTex.e)  
+    {
+      glDeleteTextures(1, &buildingTex.e);
+      glDeleteTextures(1, &buildingTex.u);
+    }
+    if(skyBoxTex.e)
+    {
+      glDeleteTextures(1, &skyBoxTex.e);
+      glDeleteTextures(1, &skyBoxTex.w);
+      glDeleteTextures(1, &skyBoxTex.n);
+      glDeleteTextures(1, &skyBoxTex.s);
+      glDeleteTextures(1, &skyBoxTex.u);
+      glDeleteTextures(1, &skyBoxTex.d);
+    }
+    if(floorTex)  glDeleteTextures(1, &floorTex);
+  } 
+//////////////////////////////////////////scene texture part end//////////////////////// 
+
+ 
   
   int mode = 0;
   int ox, oy;
+  const float walkSpeed = 0.1f;
   bool keyDown[256];
   int buttonState = 0;
   float camera_trans[] = {0, 0, 3};
@@ -281,40 +245,57 @@ extern "C"
   bool displayEnabled = true;
   bool displaySliders = false; 
   bool bPause = false;
-  const float walkSpeed = 0.1f;
   ParticleRenderer::DisplayMode displayMode = ParticleRenderer::PARTICLE_SPHERES; 
+  CheckRender *g_CheckRender = NULL;	
+  ParticleRenderer *renderer = 0;  
   
+  /////////hard coding part, needs read from files
   float3 lowCorner = make_float3(3.f, -2.f, 3.f);
   float3 highCorner = make_float3(8.f,  1.f, 8.f); 
   float3 domain = make_float3(40.f, 25.f, 26.f); 
   float3 origin = make_float3(0.f, 0.f, 0.f); 
+  uint numParticles = 0;
     
   // simulation parameters
-  float timestep = 0.5f;
-  float damping = 1.0f;
-  float gravity = 0.0003f;
-  int iterations = 1;
-  int ballr = 10;
+  float timestep = 0.5f; 
+  int iterations = 1; 
+  
+  
+// fps  
+  void computeFPS()
+  { 
+  //update the delta time for animation
+    static int lastFrameTime = 0; 
+    if(lastFrameTime == 0) 
+      lastFrameTime = glutGet(GLUT_ELAPSED_TIME); 
+
+    int now = glutGet(GLUT_ELAPSED_TIME);
+    int elapsedMilliseconds = now - lastFrameTime;
+    float delta_t = elapsedMilliseconds / 1000.0f;
+    lastFrameTime = now;
+    char fps[256];
+    sprintf(fps, "CUDA Plume (%d particles) %4.1f fps", numParticles, 1/delta_t);   
+    glutSetWindowTitle(fps);
+  }
+  
 
   void mouse(int button, int state, int x, int y)
   {
     int mods;
 
-    if (state == GLUT_DOWN)
+    if(state == GLUT_DOWN)
       buttonState |= 1<<button;
-    else if (state == GLUT_UP)
+    else if(state == GLUT_UP)
       buttonState = 0;
 
     mods = glutGetModifiers();
-    if (mods & GLUT_ACTIVE_SHIFT) {
+    if(mods & GLUT_ACTIVE_SHIFT) {
       buttonState = 2;
-    } else if (mods & GLUT_ACTIVE_CTRL) {
+    } else if(mods & GLUT_ACTIVE_CTRL) {
       buttonState = 3;
     }
 
-    ox = x; oy = y;
-  
-//     idleCounter = 0;
+    ox = x; oy = y; 
 
     glutPostRedisplay();
   }
@@ -329,16 +310,16 @@ extern "C"
     switch(mode) 
     {
     case M_VIEW:
-      if (buttonState == 3) {
+      if(buttonState == 3) {
 	  // left+middle = zoom
 	camera_trans[2] += (dy / 100.0f) * 0.5f * fabs(camera_trans[2]);
       } 
-      else if (buttonState & 2) {
+      else if(buttonState & 2) {
 	  // middle = translate
 	camera_trans[0] += dx / 100.0f;
 	camera_trans[1] -= dy / 100.0f;
       } 
-      else if (buttonState & 1) {
+      else if(buttonState & 1) {
 	  // left = rotate
 	camera_rot.z -= dx / 5.0f;
 	camera_rot.x -= dy / 5.0f;
@@ -364,7 +345,7 @@ extern "C"
     { 
   //   case 13:
   //     psystem->update(timestep); 
-  //     if (renderer)
+  //     if(renderer)
   // 	renderer->setVertexBuffer(psystem->getCurrentReadBuffer(), psystem->getNumParticles());
   //     break;
     case '\033': 
@@ -382,10 +363,10 @@ extern "C"
 		    ((displayMode + 1) % ParticleRenderer::PARTICLE_NUM_MODES);
       break;
     case 'z':
-      psystem->dumpGrid();
+      psystem->dumpGrid();//debugging for winddata and turbutlence data
       break;
     case 'u':
-      psystem->dumpParticles(0, numParticles-1);//debugging
+      psystem->dumpParticles(0, numParticles-1);//debugging particles positions
       break;
 
     case 'r':
@@ -409,50 +390,65 @@ extern "C"
 
   void idle(void)
   {
-    if (keyDown['w']) {
+/////////////for camera moving
+    if(keyDown['w']) {
       // printf("adsfasdfasdf");
       campos.x += modelView[2] * walkSpeed;
       campos.y += modelView[6] * walkSpeed;
       campos.z += modelView[10] * walkSpeed;
     } else
-    if (keyDown['s']) {
+    if(keyDown['s']) {
       campos.x -= modelView[2] * walkSpeed;
       campos.y -= modelView[6] * walkSpeed;
       campos.z -= modelView[10] * walkSpeed;
     } else
-    if (keyDown['a']) {
+    if(keyDown['a']) {
       campos.x += modelView[0] * walkSpeed;
       campos.y += modelView[4] * walkSpeed;
       campos.z += modelView[8] * walkSpeed;
     } else
-    if (keyDown['d']) {
+    if(keyDown['d']) {
       campos.x -= modelView[0] * walkSpeed;
       campos.y -= modelView[4] * walkSpeed;
       campos.z -= modelView[8] * walkSpeed;
     } else
-    if (keyDown['e']) {
+    if(keyDown['e']) {
       campos.x += modelView[1] * walkSpeed;
       campos.y += modelView[5] * walkSpeed;
       campos.z += modelView[9] * walkSpeed;
     } else
-    if (keyDown[' ']) {
+    if(keyDown[' ']) {
       campos.x -= modelView[1] * walkSpeed;
       campos.y -= modelView[5] * walkSpeed;
       campos.z -= modelView[9] * walkSpeed;
     } 
     glutPostRedisplay();
   }
+  
+  
+  void reshape(int w, int h)
+  {
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(60.0, (float) w / (float) h, 0.1, 10000.0);
+
+    glMatrixMode(GL_MODELVIEW);
+    glViewport(0, 0, w, h);
+
+    if(renderer) {
+      renderer->setWindowSize(w, h);
+      renderer->setFOV(60.0);
+    }
+  }
     
   void display()
-  {
-//     cutilCheckError(cutStartTimer(timer));   
+  { 
     // update the simulation
-    if (!bPause)
+    if(!bPause)
     {
-      psystem->setIterations(iterations);
-  //     psystem->setDamping(damping);  
+      psystem->setIterations(iterations); 
       psystem->update(timestep); 
-      if (renderer) 
+      if(renderer) 
 	renderer->setVertexBuffer(psystem->getCurrentReadBuffer(), psystem->getNumParticles());
     }
 
@@ -471,51 +467,51 @@ extern "C"
     glTranslatef(campos.x, campos.y, campos.z); 
     glGetFloatv(GL_MODELVIEW_MATRIX, modelView);
     
-    lowCorner = make_float3(-1130, -1130, -1130);
-    highCorner = make_float3(1180,  1165, 1165);
-    drawBuildings(lowCorner, highCorner, true);
+////////////////draw scene (floor, skyBox and buildings) here
+    drawBox(make_float3(-1130, -1130, -1130), make_float3(1180,  1165, 1165), true);//skyBox
+    drawBox(lowCorner, highCorner, false);//building
     drawFloor(domain, origin);
   //   drawSphere();
+////////////////draw scene (floor, skyBox and buildings) here done!
     
-    if (renderer && displayEnabled)
+    if(renderer && displayEnabled)
     {
       renderer->display(displayMode);
     }
 
-    if (displaySliders) {
+    if(displaySliders) {
       glDisable(GL_DEPTH_TEST);
       glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ZERO); // invert color
       glEnable(GL_BLEND); 
       glDisable(GL_BLEND);
       glEnable(GL_DEPTH_TEST);
-    }
-
-//     cutilCheckError(cutStopTimer(timer));   
+    } 
 
     glutSwapBuffers();
     glutReportErrors();
 
-    computeFPS();
-  //     glutPostRedisplay();
+    computeFPS(); 
   }
    
-  void special(int k, int x, int y)
-  {
-    
-  } 
+  void special(int k, int x, int y){} 
   
-  void initParams()
-  {
-  }
+  void initParams(){}
 
   void mainMenu(int i)
   {
     key((unsigned char) i, 0, 0);
   }
 
-  void initMenus()
-  { 
+  void initMenus(){}
+  
+  void cleanup() 
+  {
+    cleanupTex();
+
+    if(g_CheckRender) {
+      delete g_CheckRender; g_CheckRender = NULL;
+    }
   }
 }
-#endif /* __GL_FUNS_H__ */
+#endif/* __GL_FUNS_H__ */
 

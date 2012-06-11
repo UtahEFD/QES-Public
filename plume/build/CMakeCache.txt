@@ -242,7 +242,7 @@ CUDA_cufft_LIBRARY:FILEPATH=/usr/local/cuda/lib/libcufft.so
 
 //Path to the directory where the libsivelab repository is located
 // (assumes code is built into a directory named 'build').
-LIBSIVELAB_PATH:STRING=/home/alex/Desktop/repos/gpuquic/plume/../libsivelab
+LIBSIVELAB_PATH:STRING=/home/alex/Desktop/repos/gpuquic/plume/../../libsivelab
 
 //Value Computed by CMake
 plume_BINARY_DIR:STATIC=/home/alex/Desktop/repos/gpuquic/plume/build
