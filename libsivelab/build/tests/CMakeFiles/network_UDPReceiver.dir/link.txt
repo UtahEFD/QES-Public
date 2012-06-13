@@ -1,1 +1,0 @@
-/usr/bin/c++       CMakeFiles/network_UDPReceiver.dir/network_UDPReceiver.cpp.o  -o network_UDPReceiver -rdynamic -L/network ../../lib/libsive-network.a ../../lib/libsive-util.a -Wl,-Bstatic -lboost_program_options-mt -Wl,-Bdynamic -Wl,-rpath,/network: 

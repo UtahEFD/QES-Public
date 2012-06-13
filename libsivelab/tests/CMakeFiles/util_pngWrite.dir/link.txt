@@ -1,1 +1,0 @@
-/usr/bin/c++       CMakeFiles/util_pngWrite.dir/util_pngWrite.cpp.o  -o util_pngWrite -rdynamic -L/network ../lib/libsive-util.a -Wl,-Bstatic -lboost_program_options-mt -Wl,-Bdynamic -lpng -lz -Wl,-rpath,/network: 

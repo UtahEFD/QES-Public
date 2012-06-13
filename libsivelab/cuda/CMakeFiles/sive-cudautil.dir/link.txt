@@ -1,2 +1,0 @@
-/usr/bin/ar cr ../lib/libsive-cudautil.a  CMakeFiles/sive-cudautil.dir/./sive-cudautil_generated_pack.cu.o CMakeFiles/sive-cudautil.dir/./sive-cudautil_generated_showerror.cu.o
-/usr/bin/ranlib ../lib/libsive-cudautil.a
