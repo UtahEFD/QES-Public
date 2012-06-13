@@ -18,8 +18,9 @@
  * along with CUDAPLUME. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "plumeSystem.h"
-#include "Kernel/kernel_interface.cuh" 
+#include "plumeSystem.h" 
+#include "Kernel/kernel_interface.cuh"  
+// #include "Kernel/Particle/particles_kernel.cuh"  
 
 #include <cutil_inline.h>    // includes cuda.h and cuda_runtime_api.h
 
@@ -71,6 +72,39 @@ PlumeSystem::setSource()
   }
   
 }*/
+
+
+  // create 3D texture for cells
+ 
+template<class T>
+void createCellTexture(int w, int h, int d, T* &cellData)
+{
+  cudaArray *cellArray;
+  
+  cudaExtent size = make_cudaExtent(w, h, d); 
+  cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<T>();
+  cutilSafeCall( cudaMalloc3DArray(&cellArray, &channelDesc, size) );
+
+  cudaMemcpy3DParms copyParams = { 0 };
+  copyParams.srcPtr   = make_cudaPitchedPtr((void*)cellData, size.width*sizeof(T), size.width, size.height);
+  copyParams.dstArray = cellArray;
+  copyParams.extent   = size;
+  copyParams.kind     = cudaMemcpyHostToDevice;
+  cutilSafeCall( cudaMemcpy3D(&copyParams) );
+
+  free(cellData);
+  
+//   // set texture parameters
+//   cellTex.normalized = false;                      // access with nonnormalized texture coordinates 
+//   cellTex.filterMode = cudaFilterModePoint;      // 
+//   cellTex.addressMode[0] = cudaAddressModeClamp;   // Clamp texture coordinates
+//   cellTex.addressMode[1] = cudaAddressModeClamp;
+//   cellTex.addressMode[2] = cudaAddressModeClamp;
+// 
+//   // bind array to 3D texture
+  bindTexture(cellArray, channelDesc);
+//   cutilSafeCall(cudaBindTextureToArray(cellTex, cellArray, channelDesc)); 
+ } //*/
 
 PlumeSystem::~PlumeSystem()
 {

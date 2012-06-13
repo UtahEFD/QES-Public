@@ -44,15 +44,10 @@
 #include "quicutil/QUICProject.h"
  
  
-#define NUM_PARTICLES   1000000  //pow(2,20)    
+#define NUM_PARTICLES   1000000 //00  //pow(2,20)    
 const uint width = 800, height = 600;
  
-
-
-// CheckFBO/BackBuffer class objects
-// extern CheckRender *g_CheckRender;
-// extern PlumeSystem *psystem;// = 0;
-// extern ParticleRenderer *renderer;  
+  
 bool bUseOpenGL = true;  
 
 //////////////in gl_funs.h////////////////////////////////////////////////////////////////
@@ -175,12 +170,23 @@ void loadQUICWindField(int nx, int ny, int nz, const std::string &quicFilesPath,
 	QUICWindField >> windData[kk].x;//windFieldData[p2idx].u;//((Cell)(d_ptr[kk])).wind.x;//cell.wind.x;////h_ptr[p2idx].wind.x; 
 	QUICWindField >> windData[kk].y;//windFieldData[p2idx].v;//d_ptr[kk].wind.x;//cell.wind.y;//h_ptr[p2idx].wind.y; 
 	QUICWindField >> windData[kk].z;//windFieldData[p2idx].w;//d_ptr[kk].wind.x;//c/ell.wind.z;//h_ptr[p2idx].wind.z; 
+	windData[kk].w = drand48();
 	
 	kk++;  
       }
     }
   } 
   QUICWindField.close();
+  
+  int row;
+  uint arrSize = nx*ny*nz; 
+  uint width = sqrt(arrSize); 
+  int numInRow = width/nx;//(width - (width % nx))/nx; 
+  std::cout<<"\n\n\n\n\n\n\n\n\n\nwidth :"<< width<<"\n"<< numInRow<<"\n" ;
+  while(kk < 40*25*25) 
+  {
+    
+  }
   return;
   
   
@@ -235,8 +241,10 @@ int main(int argc, char** argv)
   float3 buildingwhl = make_float3(5.f, 5.f, 5.f); 
   lowCorner = make_float3(localOrigin.x, localOrigin.y - (buildingwhl.x/2.f), localOrigin.z);
   highCorner = make_float3(localOrigin.x +buildingwhl.y, localOrigin.y + (buildingwhl.x/2.f), localOrigin.z+buildingwhl.z);
-//   std::cout<<"highCorner.z           "<<highCorner.z<<"\n\n\n\n\n";
 ////\\\\\\\\\\\\\\\\\\\\building ??????????/////////////////   
+  
+  std::cout<<"\n"<<"Initializing......          "<<"\n";
+
   
   numParticles = NUM_PARTICLES;   
   
