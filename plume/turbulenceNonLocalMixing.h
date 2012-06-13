@@ -3,9 +3,8 @@
 
 #include <cmath>
 #include <vector>
+#include <cutil_inline.h>    // includes cuda.h and cuda_runtime_api.h
 #include <cutil_math.h>
-
-// #include "../../Common/Structures/StopWatch.h"
 
 namespace QUIC
 {
