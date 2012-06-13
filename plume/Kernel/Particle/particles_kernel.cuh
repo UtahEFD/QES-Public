@@ -23,10 +23,8 @@
 
 #ifndef _PARTICLES_KERNEL_CUH_
 #define _PARTICLES_KERNEL_CUH_
-#include "cutil_math.h"
+#include <cutil_math.h> 
 
-
-texture<float4, 3, cudaReadModeElementType> cellTex;   
-int aaaaaaaaaa =1;
+texture<float4, 3, cudaReadModeElementType> windTex;    
 
 #endif

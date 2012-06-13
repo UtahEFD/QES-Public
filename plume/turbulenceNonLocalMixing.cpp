@@ -87,7 +87,7 @@ namespace QUIC
                           (dnmntr > 0.f) ? dutot.x / dnmntr : 
                                            1.f ;
                                      
-    float sinpsi = (lMgZero) ? wind_vel[id].y / ltrl_mgntd ;
+    float sinpsi = (lMgZero) ? wind_vel[id].y / ltrl_mgntd :
                           (dnmntr > 0.f) ? dutot.y / dnmntr : 
                                            0.f ; 
 
@@ -109,7 +109,7 @@ namespace QUIC
                       iomega, sinpsi, cospsi, 
                       sinphiw, cosphiw, dutot
                     );
-    if(!calcOkay) {return};
+    if(!calcOkay) {return;}
     
     bool wIsPstv = (wind_vel[id].z > 0.f);
     bool wIsZero = (fabs(wind_vel[id].z) < 1.e-05); 
@@ -258,7 +258,7 @@ namespace QUIC
   (
     int const& id, float& u3psq, float& upwp, float& v3psq, float& w3psq, 
     float const& ufsq, float const& ufvf, float const& ufwf, 
-    float const& vfsq, float const& vfwf, float const& wfsq,
+    float const& vfsq, float const& vfwf, float const& wfsq
   )
   {
     
@@ -371,9 +371,9 @@ namespace QUIC
 
     float nxnynz=nxdx*nydy*nzdz;
 
-    float dx = m_util_ptr->dx;
-    float dy = m_util_ptr->dy;
-    float dz = m_util_ptr->dz;
+    float dx = m_quicproj_ptr->dx;
+    float dy = m_quicproj_ptr->dy;
+    float dz = m_quicproj_ptr->dz;
 
     std::vector<float> dz_array,z,zm;
     dz_array.resize(nzdz,dz);
@@ -391,10 +391,10 @@ namespace QUIC
 	zm.at(k) = z.at(k)-0.5*dz_array.at(k);
       }
 
-    int roofflag = m_util_ptr->quSimParamData.roof_type;
-    float rcl = m_util_ptr->qpParamData.rcl;
-    float z0 = m_util_ptr->qpParamData.z0;
-    float h = m_util_ptr->qpParamData.boundaryLayerHeight; //Boundary Layer Height
+    int roofflag = m_quicproj_ptr->quSimParamData.roof_type;
+    float rcl = m_quicproj_ptr->qpParamData.rcl;
+    float z0 = m_quicproj_ptr->qpParamData.z0;
+    float h = m_quicproj_ptr->qpParamData.boundaryLayerHeight; //Boundary Layer Height
   
     //Balli: declaring few constants
     //NLM: non-local mixing
@@ -445,8 +445,8 @@ namespace QUIC
     //from QUICURB
 
     // grab the number of buildings read from QP_buildout.inp
-    unsigned int numBuild = m_util_ptr->qpBuildoutData.buildings.size();
-    unsigned int inumveg = m_util_ptr->qpBuildoutData.numVegetativeCanopies;
+    unsigned int numBuild = m_quicproj_ptr->qpBuildoutData.buildings.size();
+    unsigned int inumveg = m_quicproj_ptr->qpBuildoutData.numVegetativeCanopies;
 
     // completed
     // bldtype.resize(numBuild);
@@ -492,7 +492,7 @@ namespace QUIC
     int k=0;
     if(numBuild > 0 && numBuild != inumveg){
       for(int  i_b=0;i_b<numBuild;i_b++){
-	if(m_util_ptr->qpBuildoutData.buildings[i_b].type == 9){
+	if(m_quicproj_ptr->qpBuildoutData.buildings[i_b].type == 9){
 	  continue;
 	}
 	ht_avg=ht[i_b]+zfo[i_b]+ht_avg;
@@ -842,8 +842,8 @@ namespace QUIC
 	//Therefore following few lines do not effect the final solution at all
 	// phi will be calculated again by taking into account the actual wind angle at each building.
 
-	// float phi = m_util_ptr->quMetParamData.quSensorData.direction.degrees() - theta;
-	float phi = m_util_ptr->quMetParamData.quSensorData.direction - theta;
+	// float phi = m_quicproj_ptr->quMetParamData.quSensorData.direction.degrees() - theta;
+	float phi = m_quicproj_ptr->quMetParamData.quSensorData.direction - theta;
 	// Was -->> float phi = 270.-theta;
 	// phi = 270.0;  ???
 
@@ -900,7 +900,7 @@ namespace QUIC
 	utotmax.resize(nxnynz);
 
 	for(int i=0;i<numBuild;i++){
-	  if(m_util_ptr->qpBuildoutData.buildings[i].type == 9)continue;
+	  if(m_quicproj_ptr->qpBuildoutData.buildings[i].type == 9)continue;
 	  //! mdw 4-16-2004 added proper treatment of zfo
 	  float temp=0.f;
 	  int ktop=0;
@@ -913,7 +913,7 @@ namespace QUIC
             kmid=k;
             if(0.5*ht[i]+zfo[i]<z.at(k))break;
 	  }
-	  if(m_util_ptr->qpBuildoutData.buildings[i].type == 3){
+	  if(m_quicproj_ptr->qpBuildoutData.buildings[i].type == 3){
             xcb.at(i)=xfo[i];
 	  }
 	  else{
@@ -998,10 +998,10 @@ namespace QUIC
 
 	  if(fabs(sinphit)>=fabs(cosphit))
 	    {
-	      ycbp3=ycb.at(i)+(.5* m_util_ptr->qpBuildoutData.buildings[i].weff +.33* m_util_ptr->qpBuildoutData.buildings[i].weff )*sinphit;// ! Get reference values for x,y for non-local mixing
-	      xcbp3=xcb.at(i)+(.5* m_util_ptr->qpBuildoutData.buildings[i].weff +.33* m_util_ptr->qpBuildoutData.buildings[i].weff )*cosphit;// ! 1/3 bldg width outside of building is the boundary for the non-local mixing
-	      ycbm3=ycb.at(i)-(.5* m_util_ptr->qpBuildoutData.buildings[i].weff +.33* m_util_ptr->qpBuildoutData.buildings[i].weff )*sinphit;
-	      xcbm3=xcb.at(i)-(.5* m_util_ptr->qpBuildoutData.buildings[i].weff +.33* m_util_ptr->qpBuildoutData.buildings[i].weff )*cosphit;
+	      ycbp3=ycb.at(i)+(.5* m_quicproj_ptr->qpBuildoutData.buildings[i].weff +.33* m_quicproj_ptr->qpBuildoutData.buildings[i].weff )*sinphit;// ! Get reference values for x,y for non-local mixing
+	      xcbp3=xcb.at(i)+(.5* m_quicproj_ptr->qpBuildoutData.buildings[i].weff +.33* m_quicproj_ptr->qpBuildoutData.buildings[i].weff )*cosphit;// ! 1/3 bldg width outside of building is the boundary for the non-local mixing
+	      ycbm3=ycb.at(i)-(.5* m_quicproj_ptr->qpBuildoutData.buildings[i].weff +.33* m_quicproj_ptr->qpBuildoutData.buildings[i].weff )*sinphit;
+	      xcbm3=xcb.at(i)-(.5* m_quicproj_ptr->qpBuildoutData.buildings[i].weff +.33* m_quicproj_ptr->qpBuildoutData.buildings[i].weff )*cosphit;
 	      temp=(xcbp3-dx)/dx;
 	      icbp3=nint(temp);//substracted dx to comply gpu
 	      temp=(xcbm3-dx)/dx;
@@ -1085,27 +1085,27 @@ namespace QUIC
 		  if(retrieveCellTypeFromArray(idMid2) != 0) break;
                 }
 	      }
-	      ycbp=ycb.at(i)+(.5*m_util_ptr->qpBuildoutData.buildings[i].leff)*sinphi;
-	      xcbp=xcb.at(i)+(.5*m_util_ptr->qpBuildoutData.buildings[i].leff)*cosphi;
-	      ycbm=ycb.at(i)-(.5*m_util_ptr->qpBuildoutData.buildings[i].leff)*sinphi;
-	      xcbm=xcb.at(i)-(.5*m_util_ptr->qpBuildoutData.buildings[i].leff)*cosphi;
+	      ycbp=ycb.at(i)+(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff)*sinphi;
+	      xcbp=xcb.at(i)+(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff)*cosphi;
+	      ycbm=ycb.at(i)-(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff)*sinphi;
+	      xcbm=xcb.at(i)-(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff)*cosphi;
 
             
 	      if(cosphi>=0.f){
                 //! Note the current upstream and downstream limits for the wake non-local mixing
                 //! are 3*lr in the downstream direction and lfx upstream in the x direction
                 //! and lfy upstream in the y direction
-                xcd=xcb.at(i)+(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+.1*dx)*cosphi; // ! get the first point on the center line outside of the building (downstream)
-                ycd=ycb.at(i)+(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+.1*dx)*sinphi;// !
+                xcd=xcb.at(i)+(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+.1*dx)*cosphi; // ! get the first point on the center line outside of the building (downstream)
+                ycd=ycb.at(i)+(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+.1*dx)*sinphi;// !
                 
                 //!mdw 7-10-2006 made changes to xcd, ycd,xcu, & ycu - formerly used .5 dx
-                if(m_util_ptr->qpBuildoutData.buildings[i].type == 3){
-		  xcu=xcb.at(i)-(.4*m_util_ptr->qpBuildoutData.buildings[i].leff+dx)*cosphi;// ! (upstream)
-		  ycu=ycb.at(i)-(.4*m_util_ptr->qpBuildoutData.buildings[i].leff+dx)*sinphi; //!
+                if(m_quicproj_ptr->qpBuildoutData.buildings[i].type == 3){
+		  xcu=xcb.at(i)-(.4*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+dx)*cosphi;// ! (upstream)
+		  ycu=ycb.at(i)-(.4*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+dx)*sinphi; //!
                 }
                 else{
-		  xcu=xcb.at(i)-(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+0.1*dx)*cosphi;// ! (upstream)
-		  ycu=ycb.at(i)-(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+0.1*dx)*sinphi;// !
+		  xcu=xcb.at(i)-(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+0.1*dx)*cosphi;// ! (upstream)
+		  ycu=ycb.at(i)-(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+0.1*dx)*sinphi;// !
                 }
                  
 		// Changes made to match the Windows 5.51 version of
@@ -1118,11 +1118,11 @@ namespace QUIC
                 //!mdw 7-05-2006 made changes to xcul & ycul - formerly used .5 dx
 
 		// Was the following in Linux:
-                // xcul=xcu-(m_util_ptr->qpBuildoutData.buildings[i].lr+dx)*cosphi;// ! get upper limit of the eddie
-                // ycul=ycu-(m_util_ptr->qpBuildoutData.buildings[i].lr+dy)*sinphi;
+                // xcul=xcu-(m_quicproj_ptr->qpBuildoutData.buildings[i].lr+dx)*cosphi;// ! get upper limit of the eddie
+                // ycul=ycu-(m_quicproj_ptr->qpBuildoutData.buildings[i].lr+dy)*sinphi;
 		// Modified to match windows implementation below:
-                xcul=xcu-(m_util_ptr->qpBuildoutData.buildings[i].lfr+dx)*cosphi;// ! get upper limit of the eddie
-                ycul=ycu-(m_util_ptr->qpBuildoutData.buildings[i].lfr+dy)*sinphi;
+                xcul=xcu-(m_quicproj_ptr->qpBuildoutData.buildings[i].lfr+dx)*cosphi;// ! get upper limit of the eddie
+                ycul=ycu-(m_quicproj_ptr->qpBuildoutData.buildings[i].lfr+dy)*sinphi;
 
                 xcul=std::max(xcul,0.f);
                 xcul=std::min(xcul,dx*(nxdx-1));
@@ -1132,15 +1132,15 @@ namespace QUIC
 	      }
 	      else{
                 //!mdw 7-10-2006 made changes to xcd, ycd,xcu, & ycu - formerly used .5 dx
-                xcd=xcb.at(i)+(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+.1*dx)*cosphi;
-                ycd=ycb.at(i)+(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+.1*dx)*sinphi;
-                if(m_util_ptr->qpBuildoutData.buildings[i].type == 3){
-		  xcu=xcb.at(i)-(.4*m_util_ptr->qpBuildoutData.buildings[i].leff+dx)*cosphi;// ! (upstream)
-		  ycu=ycb.at(i)-(.4*m_util_ptr->qpBuildoutData.buildings[i].leff+dx)*sinphi;// !
+                xcd=xcb.at(i)+(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+.1*dx)*cosphi;
+                ycd=ycb.at(i)+(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+.1*dx)*sinphi;
+                if(m_quicproj_ptr->qpBuildoutData.buildings[i].type == 3){
+		  xcu=xcb.at(i)-(.4*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+dx)*cosphi;// ! (upstream)
+		  ycu=ycb.at(i)-(.4*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+dx)*sinphi;// !
                 }
                 else{  
-		  xcu=xcb.at(i)-(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+0.1*dx)*cosphi;// ! (upstream)
-		  ycu=ycb.at(i)-(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+0.1*dx)*sinphi;// !
+		  xcu=xcb.at(i)-(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+0.1*dx)*cosphi;// ! (upstream)
+		  ycu=ycb.at(i)-(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+0.1*dx)*sinphi;// !
                 }
 
 		// Changes made to match the Windows 5.51 version of
@@ -1152,11 +1152,11 @@ namespace QUIC
                 //!mdw 7-05-2006 made changes to xcul & ycul - formerly used .5 dx
 
 		// Was the following in Linux
-                // xcul=xcu-(m_util_ptr->qpBuildoutData.buildings[i].lr+dx)*cosphi;// ! get upstream limit on the front cavity
-                // ycul=ycu-(m_util_ptr->qpBuildoutData.buildings[i].lr+dy)*sinphi;// !
+                // xcul=xcu-(m_quicproj_ptr->qpBuildoutData.buildings[i].lr+dx)*cosphi;// ! get upstream limit on the front cavity
+                // ycul=ycu-(m_quicproj_ptr->qpBuildoutData.buildings[i].lr+dy)*sinphi;// !
 		// Modified to match windows implementation
-		xcul=xcu-(m_util_ptr->qpBuildoutData.buildings[i].lfr+dx)*cosphi;// ! get upstream limit on the front cavity
-                ycul=ycu-(m_util_ptr->qpBuildoutData.buildings[i].lfr+dy)*sinphi;// !		
+		xcul=xcu-(m_quicproj_ptr->qpBuildoutData.buildings[i].lfr+dx)*cosphi;// ! get upstream limit on the front cavity
+                ycul=ycu-(m_quicproj_ptr->qpBuildoutData.buildings[i].lfr+dy)*sinphi;// !		
 
                 xcul=std::max(xcul,0.f);
                 xcul=std::min(xcul,dx*(nxdx-1));
@@ -1167,10 +1167,10 @@ namespace QUIC
 	    }
 	  else{// ! if you are more aligned with y than x
             //! MAN 9/15/2005 use weff and leff appropriately
-            ycbp3=ycb.at(i)+(.5* m_util_ptr->qpBuildoutData.buildings[i].weff +.33* m_util_ptr->qpBuildoutData.buildings[i].weff )*sinphit;// ! get the effective length of the building
-            xcbp3=xcb.at(i)+(.5* m_util_ptr->qpBuildoutData.buildings[i].weff +.33* m_util_ptr->qpBuildoutData.buildings[i].weff )*cosphit;
-            ycbm3=ycb.at(i)-(.5* m_util_ptr->qpBuildoutData.buildings[i].weff +.33* m_util_ptr->qpBuildoutData.buildings[i].weff )*sinphit;
-            xcbm3=xcb.at(i)-(.5* m_util_ptr->qpBuildoutData.buildings[i].weff +.33* m_util_ptr->qpBuildoutData.buildings[i].weff )*cosphit;
+            ycbp3=ycb.at(i)+(.5* m_quicproj_ptr->qpBuildoutData.buildings[i].weff +.33* m_quicproj_ptr->qpBuildoutData.buildings[i].weff )*sinphit;// ! get the effective length of the building
+            xcbp3=xcb.at(i)+(.5* m_quicproj_ptr->qpBuildoutData.buildings[i].weff +.33* m_quicproj_ptr->qpBuildoutData.buildings[i].weff )*cosphit;
+            ycbm3=ycb.at(i)-(.5* m_quicproj_ptr->qpBuildoutData.buildings[i].weff +.33* m_quicproj_ptr->qpBuildoutData.buildings[i].weff )*sinphit;
+            xcbm3=xcb.at(i)-(.5* m_quicproj_ptr->qpBuildoutData.buildings[i].weff +.33* m_quicproj_ptr->qpBuildoutData.buildings[i].weff )*cosphit;
             //! end MAN 9/15/2005
             temp=(xcbp3-dx)/dx;
             icbp3=nint(temp);
@@ -1259,25 +1259,25 @@ namespace QUIC
 		if(retrieveCellTypeFromArray(idMid2) != 0) break;
 	      }
             }
-            ycbp=ycb.at(i)+(.5*m_util_ptr->qpBuildoutData.buildings[i].leff)*sinphit;// !  get back of the building
-            xcbp=xcb.at(i)+(.5*m_util_ptr->qpBuildoutData.buildings[i].leff)*cosphit;// !
-            ycbm=ycb.at(i)-(.5*m_util_ptr->qpBuildoutData.buildings[i].leff)*sinphit;// !  get front of the building
-            xcbm=xcb.at(i)-(.5*m_util_ptr->qpBuildoutData.buildings[i].leff)*cosphit;// !
+            ycbp=ycb.at(i)+(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff)*sinphit;// !  get back of the building
+            xcbp=xcb.at(i)+(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff)*cosphit;// !
+            ycbm=ycb.at(i)-(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff)*sinphit;// !  get front of the building
+            xcbm=xcb.at(i)-(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff)*cosphit;// !
             if(sinphi>=0.f){
 	      //! Note the current upstream and downstream limits for the wake non-local mixing
 	      //    ! are 3*lr in the downstream direction and lfx upstream in the x direction
 	      //  ! and lfy upstream in the y direction
 	      //! MAN 9/15/2005 use weff and leff appropriately
 	      //!mdw 7-05-2006 made changes to xcu,ycu, xcd & ycd - formerly used .5 dy or .5 dx
-	      xcd=xcb.at(i)+(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+dy)*cosphi;// ! get the first point on the center line outside of the building (downstream)
-	      ycd=ycb.at(i)+(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+dy)*sinphi;// !
-	      if(m_util_ptr->qpBuildoutData.buildings[i].type == 3){
-		xcu=xcb.at(i)-(.4*m_util_ptr->qpBuildoutData.buildings[i].leff+dx)*cosphi;// ! (upstream)
-		ycu=ycb.at(i)-(.4*m_util_ptr->qpBuildoutData.buildings[i].leff+dx)*sinphi; //!
+	      xcd=xcb.at(i)+(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+dy)*cosphi;// ! get the first point on the center line outside of the building (downstream)
+	      ycd=ycb.at(i)+(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+dy)*sinphi;// !
+	      if(m_quicproj_ptr->qpBuildoutData.buildings[i].type == 3){
+		xcu=xcb.at(i)-(.4*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+dx)*cosphi;// ! (upstream)
+		ycu=ycb.at(i)-(.4*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+dx)*sinphi; //!
 	      }
 	      else{
-		xcu=xcb.at(i)-(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+0.1*dx)*cosphi;// ! (upstream) 
-		ycu=ycb.at(i)-(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+0.1*dx)*sinphi;// !
+		xcu=xcb.at(i)-(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+0.1*dx)*cosphi;// ! (upstream) 
+		ycu=ycb.at(i)-(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+0.1*dx)*sinphi;// !
 	      }
 	      //! end MAN 9/15/2005
 
@@ -1290,11 +1290,11 @@ namespace QUIC
 
 	      //! mdw 7-05-2006 eliminated .5 dx  or .5 dy in favor of dx & dy
 	      // Was the following in Linux:
-	      // xcul=xcu-(m_util_ptr->qpBuildoutData.buildings[i].lr+dx)*cosphi;// ! get upper limit of the eddie
-	      // ycul=ycu-(m_util_ptr->qpBuildoutData.buildings[i].lr+dy)*sinphi;
+	      // xcul=xcu-(m_quicproj_ptr->qpBuildoutData.buildings[i].lr+dx)*cosphi;// ! get upper limit of the eddie
+	      // ycul=ycu-(m_quicproj_ptr->qpBuildoutData.buildings[i].lr+dy)*sinphi;
 	      // Modified to match windows implementation
-	      xcul=xcu-(m_util_ptr->qpBuildoutData.buildings[i].lfr+dx)*cosphi;// ! get upper limit of the eddie
-	      ycul=ycu-(m_util_ptr->qpBuildoutData.buildings[i].lfr+dy)*sinphi;	      
+	      xcul=xcu-(m_quicproj_ptr->qpBuildoutData.buildings[i].lfr+dx)*cosphi;// ! get upper limit of the eddie
+	      ycul=ycu-(m_quicproj_ptr->qpBuildoutData.buildings[i].lfr+dy)*sinphi;	      
 
 	      xcul=std::max(xcul,0.f);
 	      xcul=std::min(xcul,dx*(nxdx-1));
@@ -1304,15 +1304,15 @@ namespace QUIC
             }
             else{
 	      //! MAN 9/15/2005 use weff and leff appropriately
-	      xcd=xcb.at(i)+(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+dy)*cosphi;
-	      ycd=ycb.at(i)+(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+dy)*sinphi;
-	      if(m_util_ptr->qpBuildoutData.buildings[i].type == 3){
-		xcu=xcb.at(i)-(.4*m_util_ptr->qpBuildoutData.buildings[i].leff+dx)*cosphi;// ! (upstream)
-		ycu=ycb.at(i)-(.4*m_util_ptr->qpBuildoutData.buildings[i].leff+dx)*sinphi;// !
+	      xcd=xcb.at(i)+(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+dy)*cosphi;
+	      ycd=ycb.at(i)+(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+dy)*sinphi;
+	      if(m_quicproj_ptr->qpBuildoutData.buildings[i].type == 3){
+		xcu=xcb.at(i)-(.4*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+dx)*cosphi;// ! (upstream)
+		ycu=ycb.at(i)-(.4*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+dx)*sinphi;// !
 	      }
 	      else{
-		xcu=xcb.at(i)-(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+dx)*cosphi;// ! (upstream) 
-		ycu=ycb.at(i)-(.5*m_util_ptr->qpBuildoutData.buildings[i].leff+dx)*sinphi;// !
+		xcu=xcb.at(i)-(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+dx)*cosphi;// ! (upstream) 
+		ycu=ycb.at(i)-(.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff+dx)*sinphi;// !
 	      }
 	      //! end MAN 9/15/2005
                 
@@ -1324,11 +1324,11 @@ namespace QUIC
 	      // -Pete
 
 	      // Was the following in linux:
-	      // xcul=xcu+(m_util_ptr->qpBuildoutData.buildings[i].lr+dx)*cosphi;// ! get upstream limit on the front cavity
-	      // ycul=ycu+(m_util_ptr->qpBuildoutData.buildings[i].lr+dy)*sinphi;// !
+	      // xcul=xcu+(m_quicproj_ptr->qpBuildoutData.buildings[i].lr+dx)*cosphi;// ! get upstream limit on the front cavity
+	      // ycul=ycu+(m_quicproj_ptr->qpBuildoutData.buildings[i].lr+dy)*sinphi;// !
 	      // Modified to match the windows implementation:
-	      xcul=xcu+(m_util_ptr->qpBuildoutData.buildings[i].lfr+dx)*cosphi;// ! get upstream limit on the front cavity
-	      ycul=ycu+(m_util_ptr->qpBuildoutData.buildings[i].lfr+dy)*sinphi;// !
+	      xcul=xcu+(m_quicproj_ptr->qpBuildoutData.buildings[i].lfr+dx)*cosphi;// ! get upstream limit on the front cavity
+	      ycul=ycu+(m_quicproj_ptr->qpBuildoutData.buildings[i].lfr+dy)*sinphi;// !
 
 
 	      xcul=std::max(xcul,0.f);
@@ -1423,8 +1423,8 @@ namespace QUIC
             }
             //! mdw 7-05-2006 changed from .5 dx or .5 dy to dx & dy to be consistent with nint
 	    // Apparently, this is supposed to be lr as it matches the windows implementation... ??? -Pete
-            xcdl=xcd+(3.*m_util_ptr->qpBuildoutData.buildings[i].lr+dx)*zkfac*cosphi;// ! calculate the x,y limit of the wake as a function of height
-            ycdl=ycd+(3.*m_util_ptr->qpBuildoutData.buildings[i].lr+dy)*zkfac*sinphi;// !
+            xcdl=xcd+(3.*m_quicproj_ptr->qpBuildoutData.buildings[i].lr+dx)*zkfac*cosphi;// ! calculate the x,y limit of the wake as a function of height
+            ycdl=ycd+(3.*m_quicproj_ptr->qpBuildoutData.buildings[i].lr+dy)*zkfac*sinphi;// !
             xcdl=std::min(xcdl,dx*(nxdx));
             ycdl=std::min(ycdl,dy*(nydy));
             xcdl=std::max(xcdl,0.f);
@@ -1454,13 +1454,13 @@ namespace QUIC
             ds=0.7*std::min(dx,dy);// ! pick a step that is small enough to not skip grid cells
             sdown=sqrt((xcdl-xcd)*(xcdl-xcd)+(ycdl-ycd)*(ycdl-ycd))+2.*ds;// ! calculate the limits for the distance measured along the centerline (rear)
             sup=sqrt((xcul-xcu)*(xcul-xcu)+(ycul-ycu)*(ycul-ycu))+2.*ds;//   ! same for the front eddy
-            stin=.5*m_util_ptr->qpBuildoutData.buildings[i].leff;//
+            stin=.5*m_quicproj_ptr->qpBuildoutData.buildings[i].leff;//
             temp=stin/ds;
             istinf=nint(temp)+1.f;
             //!mdw 7-11-2006 changed istinf to allow replacement to center of bldg
             //!mdw 5-14-2004 corrected expression for st; older versions gave errors for wide blds
             st=sqrt((xcbp3-xcb.at(i))*(xcbp3-xcb.at(i))+(ycbp3-ycb.at(i))*(ycbp3-ycb.at(i)))+1.*ds;// ! total distance to point
-	    temp=(st+.333*m_util_ptr->qpBuildoutData.buildings[i].leff)/ds;
+	    temp=(st+.333*m_quicproj_ptr->qpBuildoutData.buildings[i].leff)/ds;
             istf=nint(temp)+1.f;//   ! (transverse direction) 
             //!mdw 6-9-2004 extended the transverse integration to st+.333*leff
             temp=sdown/ds;
@@ -1477,9 +1477,9 @@ namespace QUIC
 	    // versions.  So, we're modifying to match the windows version.
 	    // -Pete
 	    // Was the following under Linux:
-            // if(m_util_ptr->qpBuildoutData.buildings[i].lr < 0.f)isfu=0;
+            // if(m_quicproj_ptr->qpBuildoutData.buildings[i].lr < 0.f)isfu=0;
 	    // Modified to match windows implementation:
-            if(m_util_ptr->qpBuildoutData.buildings[i].lfr < 0.f)isfu=0;
+            if(m_quicproj_ptr->qpBuildoutData.buildings[i].lfr < 0.f)isfu=0;
             
             //!mdw 4-16-2004 added correction for ktop+3 > nz-1
             
@@ -1566,7 +1566,7 @@ namespace QUIC
 		  //! Selects the largest gradient (vert or horiz transfer)
 		  //! mdw 4-16-2004 added proper treatment of zfo
                         
-		  if((2.*deluc.at(ik)/ m_util_ptr->qpBuildoutData.buildings[i].weff )<(utotktp.at(iceljcel)/(ht[i]+zfo[i])) &&
+		  if((2.*deluc.at(ik)/ m_quicproj_ptr->qpBuildoutData.buildings[i].weff )<(utotktp.at(iceljcel)/(ht[i]+zfo[i])) &&
 		     delutz>.2*zcorf.at(k)*utotktp.at(iceljcel)){// ! vertical dominates
 		    ustargz.at(idcelk)=std::max(knlc*utotktp.at(iceljcel),ustargz.at(idcelk)); 
 		    if(fabs(ustargz.at(idcelk)-knlc*utotktp.at(iceljcel))<1.e-05*ustargz.at(idcelk)){//!This value dominates over prev. buildings.
@@ -1596,7 +1596,7 @@ namespace QUIC
 			upsqg=cusq*zbrac*ustarg.at(idcelk)*ustarg.at(idcelk);
 			wpsqg=cvsq*zbrac*ustarg.at(idcelk)*ustarg.at(idcelk);
 			vpwpg=0.f;
-			elzg.at(idcelk)=0.5* m_util_ptr->qpBuildoutData.buildings[i].weff ;
+			elzg.at(idcelk)=0.5* m_quicproj_ptr->qpBuildoutData.buildings[i].weff ;
 			vpsqg=cwsq*zbrac*ustarg.at(idcelk)*ustarg.at(idcelk);
 			rotate2d(idcelk,cosphi,sinphi,upsqg,upvpg,vpsqg,wpsqg,upwpg,vpwpg);
 		      }
@@ -1659,7 +1659,7 @@ namespace QUIC
 		    //! mdw 4-16-2004 added proper treatment of zfo
 		    //! mdw 6-10-2004 changed to make check on centerline rather than local value
 		    int ik=k*nxdx*nydy +i;
-		    if((2.*deluc.at(ik)/ m_util_ptr->qpBuildoutData.buildings[i].weff )<(utotktp.at(iceltjcelt)/(ht[i]+zfo[i])) 
+		    if((2.*deluc.at(ik)/ m_quicproj_ptr->qpBuildoutData.buildings[i].weff )<(utotktp.at(iceltjcelt)/(ht[i]+zfo[i])) 
 		       && delutz>.2*zcorf.at(k)*utotktp.at(iceltjcelt)){
 		      if(ustargz.at(idceltk)<knlc*utotktp.at(iceltjcelt)){
 			ustargz.at(idceltk)=knlc*utotktp.at(iceltjcelt);
@@ -1690,7 +1690,7 @@ namespace QUIC
 			  wpsqg=cvsq*zbrac*ustarg.at(idceltk)*ustarg.at(idceltk);
 			  vpwpg=0.;
 			  vpsqg=cwsq*zbrac*ustarg.at(idceltk)*ustarg.at(idceltk);
-			  elzg.at(idceltk)=.5* m_util_ptr->qpBuildoutData.buildings[i].weff ;
+			  elzg.at(idceltk)=.5* m_quicproj_ptr->qpBuildoutData.buildings[i].weff ;
 			  rotate2d(idceltk,cosphi,sinphi,upsqg,upvpg,vpsqg,wpsqg,upwpg,vpwpg);
 			}
 		      }
@@ -1773,7 +1773,7 @@ namespace QUIC
 				+pow( (wind_vel[idceltk].w-zcorf.at(k)*wktop.at(iceltjcelt)),2));
 		    // mdw 4-16-2004 added proper treatment of zfo
 		    // mdw 6-10-2004 made check on centerline rather than local value
-		    if((2.*deluc.at(ik)/ m_util_ptr->qpBuildoutData.buildings[i].weff )<(utotktp.at(iceltjcelt)/(ht[i]+zfo[i])) 
+		    if((2.*deluc.at(ik)/ m_quicproj_ptr->qpBuildoutData.buildings[i].weff )<(utotktp.at(iceltjcelt)/(ht[i]+zfo[i])) 
 		       && delutz>.2*zcorf.at(k)*utotktp.at(iceltjcelt)){
 		      if(ustargz.at(idceltk)<knlc*utotktp.at(iceltjcelt)){
 			ustargz.at(idceltk)=knlc*utotktp.at(iceltjcelt);
@@ -1806,7 +1806,7 @@ namespace QUIC
 			  // for eddy transport in uv we dont consider uw
 			  upsqg=cusq*zbrac*ustarg.at(idceltk)*ustarg.at(idceltk);
 			  wpsqg=cvsq*zbrac*ustarg.at(idceltk)*ustarg.at(idceltk);
-			  elzg.at(idceltk)=0.5f* m_util_ptr->qpBuildoutData.buildings[i].weff ;
+			  elzg.at(idceltk)=0.5f* m_quicproj_ptr->qpBuildoutData.buildings[i].weff ;
 			  vpwpg=0.f;
 			  vpsqg=cwsq*zbrac*ustarg.at(idceltk)*ustarg.at(idceltk);
 			  rotate2d(idceltk,cosphi,sinphi,upsqg,upvpg,vpsqg,wpsqg,upwpg,vpwpg);
@@ -1900,7 +1900,7 @@ namespace QUIC
 				  pow( (urefw.at(ik)-wind_vel[idcelk].w),2));
 		// Selects the largest gradient (vert or horiz transfer)
 		// mdw 4-16-2004 added proper treatment of zfo
-		if((2.*deluc.at(ik)/ m_util_ptr->qpBuildoutData.buildings[i].weff )<(utotktp.at(iceljcel)/(ht[i]+zfo[i])) 
+		if((2.*deluc.at(ik)/ m_quicproj_ptr->qpBuildoutData.buildings[i].weff )<(utotktp.at(iceljcel)/(ht[i]+zfo[i])) 
 		   && delutz>.2*zcorf.at(k)*utotktp.at(iceljcel)){ // vertical dominates
 		  if(ustargz.at(idcelk)<knlc*utotktp.at(iceljcel)){ // This value dominates over prev. buildings.
 		    ustargz.at(idcelk)=knlc*utotktp.at(iceljcel);
@@ -1931,7 +1931,7 @@ namespace QUIC
 		      upsqg=cusq*zbrac*ustarg.at(idcelk)*ustarg.at(idcelk);
 		      wpsqg=cvsq*zbrac*ustarg.at(idcelk)*ustarg.at(idcelk);
 		      vpwpg=0.;
-		      elzg.at(idcelk)=0.5* m_util_ptr->qpBuildoutData.buildings[i].weff ;
+		      elzg.at(idcelk)=0.5* m_quicproj_ptr->qpBuildoutData.buildings[i].weff ;
 		      vpsqg=cwsq*zbrac*ustarg.at(idcelk)*ustarg.at(idcelk);
 		      rotate2d(idcelk,cosphi,sinphi,upsqg,upvpg,vpsqg,wpsqg,upwpg,vpwpg);
 		    }
@@ -1985,7 +1985,7 @@ namespace QUIC
 			      pow( (wind_vel[idceltk].w-zcorf.at(k)*wktop.at(iceltjcelt)),2));
 		  // mdw 4-16-2004 added proper treatment of zfo
 		  // mdw 6-10-2004 made check on centerline deluc rather than local delut
-		  if((2.*deluc.at(ik)/ m_util_ptr->qpBuildoutData.buildings[i].weff )<(utotktp.at(iceltjcelt)/(ht[i]+zfo[i])) 
+		  if((2.*deluc.at(ik)/ m_quicproj_ptr->qpBuildoutData.buildings[i].weff )<(utotktp.at(iceltjcelt)/(ht[i]+zfo[i])) 
 		     && delutz>.2*zcorf.at(k)*utotktp.at(iceltjcelt)){
 		    if(ustargz.at(idceltk)<knlc*utotktp.at(iceltjcelt)){
 		      ustargz.at(idceltk)=knlc*utotktp.at(iceltjcelt);
@@ -2017,7 +2017,7 @@ namespace QUIC
 			wpsqg=cvsq*zbrac*ustarg.at(idceltk)*ustarg.at(idceltk);
 			vpwpg=0.;
 			vpsqg=cwsq*zbrac*ustarg.at(idceltk)*ustarg.at(idceltk);
-			elzg.at(idceltk)=0.5* m_util_ptr->qpBuildoutData.buildings[i].weff ;
+			elzg.at(idceltk)=0.5* m_quicproj_ptr->qpBuildoutData.buildings[i].weff ;
 			rotate2d(idceltk,cosphi,sinphi,upsqg,upvpg,vpsqg,wpsqg,upwpg,vpwpg);
 		      }
 		    }
@@ -2102,7 +2102,7 @@ namespace QUIC
 			      pow( (wind_vel[idceltk].w-zcorf.at(k)*wktop.at(iceltjcelt)),2));
 		  // mdw 4-16-2004 added proper treatment of zfo
 		  // mdw 6-10-2004 made check on centerline rather than local value
-		  if((2.*deluc.at(ik)/ m_util_ptr->qpBuildoutData.buildings[i].weff )<(utotktp.at(iceltjcelt)/(ht[i]+zfo[i])) 
+		  if((2.*deluc.at(ik)/ m_quicproj_ptr->qpBuildoutData.buildings[i].weff )<(utotktp.at(iceltjcelt)/(ht[i]+zfo[i])) 
 		     &&delutz>.2*zcorf.at(k)*utotktp.at(iceltjcelt)){
                             
 		    if(ustargz.at(idceltk)<knlc*utotktp.at(iceltjcelt)){
@@ -2136,7 +2136,7 @@ namespace QUIC
 			upsqg=cusq*zbrac*ustarg.at(idceltk)*ustarg.at(idceltk);
 			wpsqg=cvsq*zbrac*ustarg.at(idceltk)*ustarg.at(idceltk);
 			vpwpg=0.;
-			elzg.at(idceltk)=0.5* m_util_ptr->qpBuildoutData.buildings[i].weff ;
+			elzg.at(idceltk)=0.5* m_quicproj_ptr->qpBuildoutData.buildings[i].weff ;
 			vpsqg=cwsq*zbrac*ustarg.at(idceltk)*ustarg.at(idceltk);
 			rotate2d(idceltk,cosphi,sinphi,upsqg,upvpg,vpsqg,wpsqg,upwpg,vpwpg);
 		      }
@@ -2184,7 +2184,7 @@ namespace QUIC
 	  std::cout << "pre building switch =====================================>" << std::endl;
 
 	  ibuild=1;
-	  switch(m_util_ptr->qpBuildoutData.buildings[i].type) {
+	  switch(m_quicproj_ptr->qpBuildoutData.buildings[i].type) {
 	    case(3):
 
 	      std::cout << "case 3 =====================================>" << std::endl;
@@ -2266,8 +2266,8 @@ namespace QUIC
             
 	      std::cout << "case 5 =====================================>" << std::endl;
 
-	    float cgamma = cos( m_util_ptr->qpBuildoutData.buildings[i].gamma * pi/180.0 );
-	    float sgamma = sin( m_util_ptr->qpBuildoutData.buildings[i].gamma * pi/180.0 );
+	    float cgamma = cos( m_quicproj_ptr->qpBuildoutData.buildings[i].gamma * pi/180.0 );
+	    float sgamma = sin( m_quicproj_ptr->qpBuildoutData.buildings[i].gamma * pi/180.0 );
 
 	    float x0=xfo[i]+0.5*lti[i]*cgamma;
 	    float y0=yfo[i]+0.5*lti[i]*sgamma;
@@ -2327,7 +2327,7 @@ namespace QUIC
 		  int iceljcel=jcel*nxdx +icel;
 		  if(retrieveCellTypeFromArray(idcelk) != 0){
 		    utot=sqrt(wind_vel[idcelk].u*wind_vel[idcelk].u+wind_vel[idcelk].v*wind_vel[idcelk].v+wind_vel[idcelk].w*wind_vel[idcelk].w)+.000001f;
-		    if(m_util_ptr->qpBuildoutData.buildings[i].type == 4){
+		    if(m_quicproj_ptr->qpBuildoutData.buildings[i].type == 4){
 		      if(xc > -0.5*lti[i] && xc < 0.5*lti[i] && 
 			 yc > -0.5*wti[i] && yc < 0.5*wti[i]){
 			incourt=1;
@@ -3404,9 +3404,9 @@ namespace QUIC
     float nxnynz=nxdx*nydy*nzdz;
     std::string s;
 
-    float dx = m_util_ptr->dx;
-    float dy = m_util_ptr->dy;
-    float dz = m_util_ptr->dz;
+    float dx = m_quicproj_ptr->dx;
+    float dy = m_quicproj_ptr->dy;
+    float dz = m_quicproj_ptr->dz;
     std::vector<float> dz_array,z,zm;
     dz_array.resize(nzdz,dz);
     z.resize(nzdz,0.0f);

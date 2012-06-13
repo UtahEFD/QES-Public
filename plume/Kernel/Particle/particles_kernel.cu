@@ -30,9 +30,10 @@
 #include "math_constants.h"
 #include "../../Domain/ConstParams.cuh" 
 #include "../random.h"	
+#include "particles_kernel.cuh"
  
 
-texture<float4, 3, cudaReadModeElementType> windTex;   
+// texture<float4, 3, cudaReadModeElementType> windTex;   
 __constant__ ConstParams g_params;  
  
 
