@@ -72,6 +72,240 @@ namespace QUIC
     return true;
   }
 
+
+
+  void nonLocalMixing::detang(const int iomega,const int &id, float &dutotds,float &dutotdn,int &i,int &j,int &k)
+  {
+    float  e11,e12,e13,e21,e22,e23,e31,e32,e33;
+    float cospsi,sinpsi,sinphiw,cosphiw,omenum,omeden,cosomeg,sinomeg,tanomeg,omeg1,cosomeg1,sinomeg1;
+    float omeg2,cosomeg2,sinomeg2,dutotdn2,dutotdn1,pi,omeg;
+
+	pi=4.*atan(1.0);
+    
+    if(sqrt(wind_vel[id].u*wind_vel[id].u+wind_vel[id].v*wind_vel[id].v)>1.e-05){
+        cospsi=wind_vel[id].u/(sqrt(wind_vel[id].u*wind_vel[id].u+wind_vel[id].v*wind_vel[id].v));
+        sinpsi=wind_vel[id].v/(sqrt(wind_vel[id].u*wind_vel[id].u+wind_vel[id].v*wind_vel[id].v));
+        sinphiw=wind_vel[id].w/(sqrt(wind_vel[id].u*wind_vel[id].u+wind_vel[id].v*wind_vel[id].v+wind_vel[id].w*wind_vel[id].w)+1.e-10);
+        cosphiw=sqrt(wind_vel[id].u*wind_vel[id].u+wind_vel[id].v*wind_vel[id].v)/(sqrt(wind_vel[id].u*wind_vel[id].u+wind_vel[id].v*wind_vel[id].v+wind_vel[id].w*wind_vel[id].w)+1.e-10);
+        omenum=-dutotdxi.at(id)*sinpsi+dutotdyi.at(id)*cospsi;
+        omeden=dutotdxi.at(id)*cospsi*sinphiw+dutotdyi.at(id)*sinpsi*sinphiw-dutotdzi.at(id)*cosphiw;
+        if(iomega==0){
+            if(fabs(omeden)<1.e-10){
+                cosomeg=0.;
+                sinomeg=1.;
+                  dutotdn=dutotdxi.at(id)*(sinpsi*sinomeg-cospsi*sinphiw*cosomeg) 
+                       -dutotdyi.at(id)*(cospsi*sinomeg+sinpsi*sinphiw*cosomeg) 
+                      +dutotdzi.at(id)*cosomeg*cosphiw;
+                  if(dutotdn<0.)sinomeg=-1.;
+            }
+            else{
+                tanomeg=omenum/omeden;
+				omeg1=atan(tanomeg);
+                cosomeg1=cos(omeg1);
+                sinomeg1=sin(omeg1);
+                dutotdn1=dutotdxi.at(id)*(sinpsi*sinomeg1-cospsi*sinphiw*cosomeg1) 
+                    -dutotdyi.at(id)*(cospsi*sinomeg1+sinpsi*sinphiw*cosomeg1) 
+                    +dutotdzi.at(id)*cosomeg1*cosphiw;
+                omeg2=omeg1+pi;
+                cosomeg2=cos(omeg2);
+                sinomeg2=sin(omeg2);
+                dutotdn2=dutotdxi.at(id)*(sinpsi*sinomeg2-cospsi*sinphiw*cosomeg2) 
+                    -dutotdyi.at(id)*(cospsi*sinomeg2+sinpsi*sinphiw*cosomeg2) 
+                    +dutotdzi.at(id)*cosomeg2*cosphiw;
+                if(dutotdn2>dutotdn1){
+                    dutotdn=dutotdn2;
+                    omeg=omeg2;
+                    cosomeg=cosomeg2;
+                    sinomeg=sinomeg2;
+                }
+                else{
+                    dutotdn=dutotdn1;
+                    omeg=omeg1;
+                    cosomeg=cosomeg1;
+                    sinomeg=sinomeg1;
+                }
+                
+
+            }
+        }
+        else{
+            if(iomega==1){
+                omeg=0.;
+                cosomeg=1.;
+                sinomeg=0.;
+            }
+            else{
+                if(fabs(cospsi)>0.5){
+                    omeg=pi/2.;
+                    cosomeg=0.;
+					sinomeg=-sign(cospsi,1.0);
+                    if(iomega==3){
+                        sinomeg=sign(cospsi,1.0);
+                        omeg=-omeg;
+                    }
+                }
+                else{
+                    return;
+                }
+            }
+        }
+        alph1ij.at(id)=cospsi*cosphiw;
+        alph2ij.at(id)=-sinpsi*cosomeg-cospsi*sinphiw*sinomeg;
+        alph3ij.at(id)=sinpsi*sinomeg-cospsi*sinphiw*cosomeg;
+        bet1ij.at(id)=sinpsi*cosphiw;
+        bet2ij.at(id)=cospsi*cosomeg-sinpsi*sinphiw*sinomeg;
+        bet3ij.at(id)=-cospsi*sinomeg-sinpsi*sinphiw*cosomeg;
+        gam1ij.at(id)=sinphiw;
+        gam2ij.at(id)=cosphiw*sinomeg;
+        gam3ij.at(id)=cosphiw*cosomeg;
+        alphn1ij.at(id)=cospsi*cosphiw;
+        alphn2ij.at(id)=sinpsi*cosphiw;
+        alphn3ij.at(id)=sinphiw;
+        betn1ij.at(id)=-sinpsi*cosomeg-cospsi*sinphiw*sinomeg;
+        betn2ij.at(id)=cospsi*cosomeg-sinpsi*sinphiw*sinomeg;
+        betn3ij.at(id)=cosphiw*sinomeg;
+        gamn1ij.at(id)=sinpsi*sinomeg-cospsi*sinphiw*cosomeg;
+        gamn2ij.at(id)=-cospsi*sinomeg-sinpsi*sinphiw*cosomeg;
+        gamn3ij.at(id)=cosphiw*cosomeg;
+        dutotdn=dutotdxi.at(id)*(sinpsi*sinomeg-cospsi*sinphiw*cosomeg) 
+            -dutotdyi.at(id)*(cospsi*sinomeg+sinpsi*sinphiw*cosomeg) 
+            +dutotdzi.at(id)*cosomeg*cosphiw;
+        
+        dutotds=dutotdxi.at(id)*cospsi*cosphiw+dutotdyi.at(id)*
+            sinpsi*cosphiw+dutotdzi.at(id)*sinphiw;
+        dutotdni.at(id)=dutotdn;
+        dutotdsi.at(id)=dutotds;
+        ani.at(id)=(sinpsi*sinomeg-cospsi*sinphiw*cosomeg);
+        bni.at(id)=-(cospsi*sinomeg+sinpsi*sinphiw*cosomeg);
+        cni.at(id)=cosomeg*cosphiw;
+    }
+    else{
+        if(fabs(wind_vel[id].w)<1.e-05){
+            if(sqrt(dutotdxi.at(id)*dutotdxi.at(id)+dutotdyi.at(id)*dutotdyi.at(id))>0.){
+                cospsi=dutotdxi.at(id)/(sqrt(dutotdxi.at(id)*dutotdxi.at(id)+dutotdyi.at(id)*dutotdyi.at(id)));
+                sinpsi=dutotdyi.at(id)/(sqrt(dutotdxi.at(id)*dutotdxi.at(id)+dutotdyi.at(id)*dutotdyi.at(id)));
+            }
+            else{
+                cospsi=1.;
+                sinpsi=0.;
+            }
+            if(sqrt(dutotdxi.at(id)*dutotdxi.at(id)+dutotdyi.at(id)*dutotdyi.at(id)+dutotdzi.at(id)*dutotdzi.at(id))>0){
+                cosphiw=dutotdzi.at(id)/(sqrt(dutotdxi.at(id)*dutotdxi.at(id)
+                                              +dutotdyi.at(id)*dutotdyi.at(id)+dutotdzi.at(id)*dutotdzi.at(id)));
+                  sinphiw=sqrt(dutotdxi.at(id)*dutotdxi.at(id)+dutotdyi.at(id)*dutotdyi.at(id))
+                      /(sqrt(dutotdxi.at(id)*dutotdxi.at(id)+dutotdyi.at(id)*dutotdyi.at(id)+dutotdzi.at(id)*dutotdzi.at(id)));
+            }
+            else{
+                cosphiw=1.;
+                sinphiw=0.;
+            }
+            alphn1ij.at(id)=cospsi*cosphiw;
+            alphn2ij.at(id)=sinpsi*cosphiw;
+            alphn3ij.at(id)=-sinphiw;
+            betn1ij.at(id)=-sinpsi;
+            betn2ij.at(id)=cospsi;
+            betn3ij.at(id)=0.;
+            gamn1ij.at(id)=sinphiw*cospsi;
+            gamn2ij.at(id)=sinphiw*sinpsi;
+            gamn3ij.at(id)=cosphiw;
+            alph1ij.at(id)=cospsi*cosphiw;
+            alph2ij.at(id)=-sinpsi;
+            alph3ij.at(id)=sinphiw*cospsi;
+            bet1ij.at(id)=sinpsi*cosphiw;
+            bet2ij.at(id)=cospsi;
+            bet3ij.at(id)=sinphiw*sinpsi;
+            gam1ij.at(id)=-sinphiw;
+            gam2ij.at(id)=0.;
+            gam3ij.at(id)=cosphiw;
+            dutotdni.at(id)=sqrt(dutotdxi.at(id)*dutotdxi.at(id)+dutotdyi.at(id)*dutotdyi.at(id)+dutotdzi.at(id)*dutotdzi.at(id));
+            dutotdsi.at(id)=0.;
+            ani.at(id)=sinphiw*cospsi;
+            bni.at(id)=sinphiw*sinpsi;
+            cni.at(id)=cosphiw;
+        }
+        else{
+            if(wind_vel[id].w>0.){
+                if(sqrt(dutotdxi.at(id)*dutotdxi.at(id)+dutotdyi.at(id)*dutotdyi.at(id))>0.){
+                    cospsi=dutotdxi.at(id)/sqrt(dutotdxi.at(id)*dutotdxi.at(id)+dutotdyi.at(id)*dutotdyi.at(id));
+                    sinpsi=dutotdyi.at(id)/sqrt(dutotdxi.at(id)*dutotdxi.at(id)+dutotdyi.at(id)*dutotdyi.at(id));
+                }
+                else{
+                    cospsi=1.;
+                    sinpsi=0.;
+                }
+                alph1ij.at(id)=0.;
+                alph2ij.at(id)=sinpsi;
+                alph3ij.at(id)=cospsi;
+                bet1ij.at(id)=0.;
+                bet2ij.at(id)=-cospsi;
+                bet3ij.at(id)=sinpsi;
+                gam1ij.at(id)=1.;
+                gam2ij.at(id)=0.;
+                gam3ij.at(id)=0.;
+                alphn1ij.at(id)=0.;
+                alphn2ij.at(id)=0.;
+                alphn3ij.at(id)=1.;
+                betn1ij.at(id)=sinpsi;
+                betn2ij.at(id)=-cospsi;
+                betn3ij.at(id)=0.;
+                gamn1ij.at(id)=cospsi;
+                gamn2ij.at(id)=sinpsi;
+                gamn3ij.at(id)=0.;
+                dutotdni.at(id)=sqrt(dutotdxi.at(id)*dutotdxi.at(id)+dutotdyi.at(id)*dutotdyi.at(id));
+                dutotdni.at(id)=std::max(1.e-12f,dutotdni.at(id));
+                
+                dutotdsi.at(id)=dutotdzi.at(id);
+                ani.at(id)=cospsi;
+                bni.at(id)=sinpsi;
+                cni.at(id)=0.;
+            }
+            else{
+                if(sqrt(dutotdxi.at(id)*dutotdxi.at(id)+dutotdyi.at(id)*dutotdyi.at(id))>0.){
+                    cospsi=dutotdxi.at(id)/sqrt(dutotdxi.at(id)*dutotdxi.at(id)+dutotdyi.at(id)*dutotdyi.at(id));
+                    sinpsi=dutotdyi.at(id)/sqrt(dutotdxi.at(id)*dutotdxi.at(id)+dutotdyi.at(id)*dutotdyi.at(id));
+                }
+                else{
+                    cospsi=1.;
+                    sinpsi=0.;
+                  }
+                alphn1ij.at(id)=0.;
+                alphn2ij.at(id)=0.;
+                alphn3ij.at(id)=-1.;
+                betn1ij.at(id)=-sinpsi;
+                betn2ij.at(id)=cospsi;
+                betn3ij.at(id)=0.;
+                gamn1ij.at(id)=cospsi;
+                gamn2ij.at(id)=sinpsi;
+                gamn3ij.at(id)=0.;
+                alph1ij.at(id)=0.;
+                alph2ij.at(id)=-sinpsi;
+                alph3ij.at(id)=cospsi;
+                bet1ij.at(id)=0.;
+                bet2ij.at(id)=cospsi;
+                bet3ij.at(id)=sinpsi;
+                gam1ij.at(id)=-1.;
+                gam2ij.at(id)=0.;
+                gam3ij.at(id)=0.;
+                dutotdni.at(id)=sqrt(dutotdxi.at(id)*dutotdxi.at(id)+dutotdyi.at(id)*dutotdyi.at(id));
+                
+                dutotdsi.at(id)=-dutotdzi.at(id);
+            }
+        }
+    }
+    e11=alph1ij.at(id)*alphn1ij.at(id)+alph2ij.at(id)*betn1ij.at(id)+alph3ij.at(id)*gamn1ij.at(id);
+    e12=alph1ij.at(id)*alphn2ij.at(id)+alph2ij.at(id)*betn2ij.at(id)+alph3ij.at(id)*gamn2ij.at(id);
+    e13=alph1ij.at(id)*alphn3ij.at(id)+alph2ij.at(id)*betn3ij.at(id)+alph3ij.at(id)*gamn3ij.at(id);
+    e21=bet1ij.at(id)*alphn1ij.at(id)+bet2ij.at(id)*betn1ij.at(id)+bet3ij.at(id)*gamn1ij.at(id);
+    e22=bet1ij.at(id)*alphn2ij.at(id)+bet2ij.at(id)*betn2ij.at(id)+bet3ij.at(id)*gamn2ij.at(id);
+    e23=bet1ij.at(id)*alphn3ij.at(id)+bet2ij.at(id)*betn3ij.at(id)+bet3ij.at(id)*gamn3ij.at(id);
+    e31=gam1ij.at(id)*alphn1ij.at(id)+gam2ij.at(id)*betn1ij.at(id)+gam3ij.at(id)*gamn1ij.at(id);
+    e32=gam1ij.at(id)*alphn2ij.at(id)+gam2ij.at(id)*betn2ij.at(id)+gam3ij.at(id)*gamn2ij.at(id);
+    e33=gam1ij.at(id)*alphn3ij.at(id)+gam2ij.at(id)*betn3ij.at(id)+gam3ij.at(id)*gamn3ij.at(id);
+    
+}
+
+
+#if 0 // Andrew's version
   // Orignally 253 - 16 = 237 lines
   void nonLocalMixing::detang(const int iomega, const int id, 
 			      float& dutotds, float& dutotdn, int& i, int& j, int& k)
@@ -185,6 +419,45 @@ namespace QUIC
     dutotdni.at(id) = dutotdn;
     dutotdsi.at(id) = dutotds;
   }
+#endif
+
+  void nonLocalMixing::rotu3psq(const int &id,const float &u3psq,const float &utot,const float &upvp,const float &upwp,
+				const float &vpwp,const float &v3psq,const float &w3psq,float &ufsqb,float &wfsqb,float &vfsqb,
+				float &ufvf,float &ufwf,float &vfwf)
+  {
+    // this subroutine rotates the fluctuating quanitities back into the normal
+    // coordinate sytem
+								   
+    ufsqb=u3psq*alph1ij.at(id)*alph1ij.at(id)+utot*utot*alph1ij.at(id)*alph1ij.at(id)+2.*upvp*alph1ij.at(id)*alph2ij.at(id) 
+        +2.*upwp*alph1ij.at(id)*alph3ij.at(id)+v3psq*alph2ij.at(id)*alph2ij.at(id) 
+        +2.*vpwp*alph2ij.at(id)*alph3ij.at(id)+w3psq*alph3ij.at(id)*alph3ij.at(id)-wind_vel[id].u*wind_vel[id].u;
+    wfsqb=u3psq*gam1ij.at(id)*gam1ij.at(id)+utot*utot*gam1ij.at(id)*gam1ij.at(id)+2.*upvp*gam1ij.at(id)*gam2ij.at(id) 
+        +2.*upwp*gam1ij.at(id)*gam3ij.at(id)+v3psq*gam2ij.at(id)*gam2ij.at(id)+ 
+        2.*vpwp*gam2ij.at(id)*gam3ij.at(id)+w3psq*gam3ij.at(id)*gam3ij.at(id)-wind_vel[id].w*wind_vel[id].w;
+    vfsqb=u3psq*bet1ij.at(id)*bet1ij.at(id)+utot*utot*bet1ij.at(id)*bet1ij.at(id)+2.*upvp*bet1ij.at(id)*bet2ij.at(id) 
+        +2.*upwp*bet1ij.at(id)*bet3ij.at(id)+v3psq*bet2ij.at(id)*bet2ij.at(id) 
+        +2.*vpwp*bet2ij.at(id)*bet3ij.at(id)+w3psq*bet3ij.at(id)*bet3ij.at(id)-wind_vel[id].v*wind_vel[id].v;
+    ufvf=u3psq*alph1ij.at(id)*bet1ij.at(id)+utot*utot*alph1ij.at(id)*bet1ij.at(id) 
+        +upvp*(alph1ij.at(id)*bet2ij.at(id)+alph2ij.at(id)*bet1ij.at(id)) 
+        +upwp*(alph1ij.at(id)*bet3ij.at(id)+alph3ij.at(id)*bet1ij.at(id)) 
+        +v3psq*alph2ij.at(id)*bet2ij.at(id)+vpwp*(alph2ij.at(id)*bet3ij.at(id) 
+        +alph3ij.at(id)*bet2ij.at(id))+w3psq*alph3ij.at(id)*bet3ij.at(id) 
+        -wind_vel[id].u*wind_vel[id].v;
+    ufwf=u3psq*alph1ij.at(id)*gam1ij.at(id)+utot*utot*alph1ij.at(id)*gam1ij.at(id) 
+        +upvp*(alph1ij.at(id)*gam2ij.at(id)+alph2ij.at(id)*gam1ij.at(id)) 
+        +upwp*(alph1ij.at(id)*gam3ij.at(id)+alph3ij.at(id)*gam1ij.at(id)) 
+        +v3psq*alph2ij.at(id)*gam2ij.at(id)+vpwp*(alph2ij.at(id)*gam3ij.at(id) 
+        +alph3ij.at(id)*gam2ij.at(id))+w3psq*alph3ij.at(id)*gam3ij.at(id) 
+        -wind_vel[id].u*wind_vel[id].w;
+    vfwf=u3psq*bet1ij.at(id)*gam1ij.at(id)+utot*utot*bet1ij.at(id)*gam1ij.at(id)+upvp* 
+        (bet1ij.at(id)*gam2ij.at(id)+bet2ij.at(id)*gam1ij.at(id))+upwp*(bet1ij.at(id)*gam3ij.at(id) 
+        +bet3ij.at(id)*gam1ij.at(id))+v3psq*bet2ij.at(id)*gam2ij.at(id) 
+        +vpwp*(bet2ij.at(id)*gam3ij.at(id)+bet3ij.at(id)*gam2ij.at(id)) 
+        +w3psq*bet3ij.at(id)*gam3ij.at(id)-wind_vel[id].v*wind_vel[id].w;
+}
+
+
+#if 0 // Andrew's version
 
   void nonLocalMixing::rotu3psq
   (
@@ -253,7 +526,61 @@ namespace QUIC
            + 
            upvp*(b1*g2 + b2*g1) + upwp*(b1*g3 + b3*g1) + vpwp*(b2*g3 + b3*g2);
   }
+#endif
 
+
+  void nonLocalMixing::rotufsq(const int &id,float &u3psq,float &upwp,
+			       float &v3psq,float &w3psq,const float &ufsq,const float &ufvf,
+			       const float &ufwf,const float &vfsq,const float &vfwf,const float &wfsq)
+  {
+    float  e11,e12,e13,e21,e22,e23,e31,e32,e33;    
+    
+    u3psq=ufsq*alphn1ij.at(id)*alphn1ij.at(id)+wind_vel[id].u*wind_vel[id].u*alphn1ij.at(id)*alphn1ij.at(id) 
+        +2.*ufvf*alphn1ij.at(id)*alphn2ij.at(id)+2.*wind_vel[id].u*wind_vel[id].v*alphn1ij.at(id) 
+        *alphn2ij.at(id)+2.*ufwf*alphn1ij.at(id)*alphn3ij.at(id)+2.*wind_vel[id].u*wind_vel[id].w 
+        *alphn1ij.at(id)*alphn3ij.at(id)+vfsq*alphn2ij.at(id)*alphn2ij.at(id)+wind_vel[id].v*wind_vel[id].v 
+        *alphn2ij.at(id)*alphn2ij.at(id)+2.*vfwf*alphn2ij.at(id)*alphn3ij.at(id)+ 
+        2.*wind_vel[id].v*wind_vel[id].w*alphn2ij.at(id)*alphn3ij.at(id)+wfsq 
+        *alphn3ij.at(id)*alphn3ij.at(id)+wind_vel[id].w*wind_vel[id].w*alphn3ij.at(id)*alphn3ij.at(id)
+        -(wind_vel[id].u*wind_vel[id].u+wind_vel[id].v*wind_vel[id].v +wind_vel[id].w*wind_vel[id].w);
+    
+    v3psq=ufsq*betn1ij.at(id)*betn1ij.at(id)+wind_vel[id].u*wind_vel[id].u*betn1ij.at(id)*betn1ij.at(id)+2.*ufvf 
+        *betn1ij.at(id)*betn2ij.at(id)+2.*wind_vel[id].u*wind_vel[id].v*betn1ij.at(id) 
+        *betn2ij.at(id)+2.*ufwf*betn1ij.at(id)*betn3ij.at(id)+2.*wind_vel[id].u 
+        *wind_vel[id].w*betn1ij.at(id)*betn3ij.at(id)+vfsq*betn2ij.at(id)*betn2ij.at(id) 
+        +wind_vel[id].v*wind_vel[id].v*betn2ij.at(id)*betn2ij.at(id)+2.*vfwf*betn2ij.at(id)*betn3ij.at(id) 
+        +2.*wind_vel[id].v*wind_vel[id].w*betn2ij.at(id)*betn3ij.at(id)+wfsq*betn3ij.at(id)*betn3ij.at(id) 
+        +wind_vel[id].w*wind_vel[id].w*betn3ij.at(id)*betn3ij.at(id);
+    w3psq=ufsq*gamn1ij.at(id)*gamn1ij.at(id)+wind_vel[id].u*wind_vel[id].u*gamn1ij.at(id)*gamn1ij.at(id)+2.*ufvf 
+        *gamn1ij.at(id)*gamn2ij.at(id)+2.*wind_vel[id].u*wind_vel[id].v*gamn1ij.at(id) 
+        *gamn2ij.at(id)+2.*ufwf*gamn1ij.at(id)*gamn3ij.at(id)+2.*wind_vel[id].u 
+        *wind_vel[id].w*gamn1ij.at(id)*gamn3ij.at(id)+vfsq*gamn2ij.at(id)*gamn2ij.at(id) 
+        +wind_vel[id].v*wind_vel[id].v*gamn2ij.at(id)*gamn2ij.at(id)+2.*vfwf*gamn2ij.at(id)*gamn3ij.at(id) 
+        +2.*wind_vel[id].v*wind_vel[id].w*gamn2ij.at(id)*gamn3ij.at(id)+wfsq*gamn3ij.at(id)*gamn3ij.at(id) 
+        +wind_vel[id].w*wind_vel[id].w*gamn3ij.at(id)*gamn3ij.at(id);
+    upwp=ufsq*alphn1ij.at(id)*gamn1ij.at(id)+wind_vel[id].u*wind_vel[id].u*alphn1ij.at(id)* 
+        gamn1ij.at(id)+ufvf*(alphn1ij.at(id)*gamn2ij.at(id)+alphn2ij.at(id)*gamn1ij.at(id))
+        +wind_vel[id].u*wind_vel[id].v*(alphn1ij.at(id)*gamn2ij.at(id)+ alphn2ij.at(id)*gamn1ij.at(id))
+        +ufwf*(alphn1ij.at(id)*gamn3ij.at(id)+alphn3ij.at(id)*gamn1ij.at(id))
+        +wind_vel[id].u*wind_vel[id].w*(alphn1ij.at(id)*gamn3ij.at(id)+alphn3ij.at(id)*gamn1ij.at(id))+vfsq*alphn2ij.at(id) 
+        *gamn2ij.at(id)+wind_vel[id].v*wind_vel[id].v*alphn2ij.at(id)*gamn2ij.at(id) 
+        +vfwf*(alphn2ij.at(id)*gamn3ij.at(id)+alphn3ij.at(id)*gamn2ij.at(id)) 
+        +wind_vel[id].v*wind_vel[id].w*(alphn2ij.at(id)*gamn3ij.at(id)+alphn3ij.at(id)*gamn2ij.at(id))+wfsq*alphn3ij.at(id)
+        *gamn3ij.at(id)+wind_vel[id].w*wind_vel[id].w *alphn3ij.at(id)*gamn3ij.at(id);
+
+    e11=alph1ij.at(id)*alphn1ij.at(id)+alph2ij.at(id)*betn1ij.at(id)+alph3ij.at(id)*gamn1ij.at(id);
+    e12=alph1ij.at(id)*alphn2ij.at(id)+alph2ij.at(id)*betn2ij.at(id)+alph3ij.at(id)*gamn2ij.at(id);
+    e13=alph1ij.at(id)*alphn3ij.at(id)+alph2ij.at(id)*betn3ij.at(id)+alph3ij.at(id)*gamn3ij.at(id);
+    e21=bet1ij.at(id)*alphn1ij.at(id)+bet2ij.at(id)*betn1ij.at(id)+bet3ij.at(id)*gamn1ij.at(id);
+    e22=bet1ij.at(id)*alphn2ij.at(id)+bet2ij.at(id)*betn2ij.at(id)+bet3ij.at(id)*gamn2ij.at(id);
+    e23=bet1ij.at(id)*alphn3ij.at(id)+bet2ij.at(id)*betn3ij.at(id)+bet3ij.at(id)*gamn3ij.at(id);
+    e31=gam1ij.at(id)*alphn1ij.at(id)+gam2ij.at(id)*betn1ij.at(id)+gam3ij.at(id)*gamn1ij.at(id);
+    e32=gam1ij.at(id)*alphn2ij.at(id)+gam2ij.at(id)*betn2ij.at(id)+gam3ij.at(id)*gamn2ij.at(id);
+    e33=gam1ij.at(id)*alphn3ij.at(id)+gam2ij.at(id)*betn3ij.at(id)+gam3ij.at(id)*gamn3ij.at(id);
+    
+}
+
+#if 0 // Andrew's version
   void nonLocalMixing::rotufsq
   (
     int const& id, float& u3psq, float& upwp, float& v3psq, float& w3psq, 
@@ -307,43 +634,33 @@ namespace QUIC
            ufwf*(an1*gn3 + an3*gn1) + u*w*(an1*gn3 + an3*gn1) + 
            vfwf*(an2*gn3 + an3*gn2) + v*w*(an2*gn3 + an3*gn2) + 
   }
+#endif
 
-  void nonLocalMixing::rotate2d(int const& id, float const& cosphi, float const& sinphi, 
-				float const& upsqg,  float const& upvpg, float const& vpsqg, 
-				float const& wpsqg,  float const& upwpg, float const& vpwpg )
+
+  void nonLocalMixing::rotate2d(const int &id,const float &cosphi,const float &sinphi,const float &upsqg,
+				const float &upvpg,const float &vpsqg,const float &wpsqg,const float &upwpg,const float &vpwpg )
   {
     // this subroutine rotates variables from primed system aligned with the overall wind
     // into the regular grid system
-    float ub  = wind_vel[id].x;
-    float vb  = wind_vel[id].y;
-    float wb  = wind_vel[id].z;
-    float upb = ub*cosphi+vb*sinphi;
-    float vpb = -ub*sinphi+vb*cosphi;
-    
-    csp_csp = cosphi*cosphi;
-    csp_snp = cosphi*sinphi;
-    snp_snp = sinphi*sinphi;
-    
-    ufsqgi.at(id) =       cp_cp*(upsqg + upb*upb)
-                    - 2.f*cp_sp*(upvpg + upb*vpb)
-                    +     sp_sp*(vpsqg + vpb*vpb)
-                    - ub*ub;
+    float ub,vb,wb,upb,vpb;
+    ub=wind_vel[id].u;
+    vb=wind_vel[id].v;
+    wb=wind_vel[id].w;
+    upb=ub*cosphi+vb*sinphi;
+    vpb=-ub*sinphi+vb*cosphi;
+    ufsqgi.at(id)=upsqg*cosphi*cosphi+upb*upb*cosphi*cosphi-2.f*cosphi*sinphi*upvpg 
+        -2.f*cosphi*sinphi*upb*vpb+vpsqg*sinphi*sinphi+sinphi*sinphi*vpb*vpb-ub*ub;
 
-    vfsqgi.at(id) =       sp_sp*(upsqg + upb*upb) 
-                    + 2.f*cp_sp*(upvpg + upb*vpb)
-                    +     cp_cp*(vpsqg + vpb*vpb)
-                    - vb*vb;
-    
-    wfsqgi.at(id) = wpsqg;
-    
-    ////////////////////////////////////////////////////////////////////////////
-    ufvfgi.at(id) =    cp_sp*         (upsqg + upb*upb - vpsqg - vpb*vpb)
-                    + (cp_cp - sp_sp)*(upvpg + upb*vpb) 
-                    - ub*vb;
-    
-    ufwfgi.at(id) = cosphi*(upwpg + upb*wb) - sinphi*(vpwpg - vpb*wb) - ub*wb;
-    vfwfgi.at(id) = sinphi*(upwpg + upb*wb) + cosphi*(vpwpg + vpb*wb) - vb*wb;
-  }
+    vfsqgi.at(id)=upsqg*sinphi*sinphi+upb*upb*sinphi*sinphi+2.f*upvpg*sinphi*cosphi 
+        +2.f*upb*vpb*sinphi*cosphi+vpsqg*cosphi*cosphi+vpb*vpb*cosphi*cosphi-vb*vb;
+    wfsqgi.at(id)=wpsqg;
+    ufvfgi.at(id)=upsqg*cosphi*sinphi+upb*upb*cosphi*sinphi+upvpg
+        *(cosphi*cosphi-sinphi*sinphi)+upb*vpb*(cosphi*cosphi-sinphi*sinphi)-vpsqg*sinphi*cosphi
+        -vpb*vpb*sinphi*cosphi-ub*vb;
+    ufwfgi.at(id)=upwpg*cosphi+upb*wb*cosphi-vpwpg*sinphi-vpb*wb*sinphi-ub*wb;
+    vfwfgi.at(id)=upwpg*sinphi+upb*wb*sinphi+vpwpg*cosphi+vpb*wb*cosphi-vb*wb;
+}
+
 
   //void nonLocalMixing::nonLocalMixing
   //(
