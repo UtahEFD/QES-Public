@@ -54,14 +54,16 @@ ENDIF()
 
 cuda_add_executable (plume 
   Shader/Particle/shaders.cpp Kernel/kernel_interface.cu Shader/Particle/render_particles.cpp 
-  plumeSystem.cpp main.cpp  
+  turbulenceNonLocalMixing.cpp turbulenceNonLocalMixing.h
+  plumeSystem.cpp plumeSystem.h
+  main.cpp  
 )
 
 target_link_libraries (plume sive-quicutil) 
 target_link_libraries (plume sive-util)
 target_link_libraries (plume ${Boost_PROGRAM_OPTIONS_LIBRARIES} ) 
-target_link_libraries (plume cuda) 
-target_link_libraries (plume cutil_i386)
+# target_link_libraries (plume cuda) 
+target_link_libraries (plume cutil_x86_64)
 target_link_libraries (plume GL) 
 target_link_libraries (plume GLEW) 
 target_link_libraries (plume glut) 
