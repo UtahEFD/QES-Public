@@ -21,8 +21,8 @@
  * CUDA particle kernel code.
  */
 
-#ifndef _PARTICLES_KERNEL_H_
-#define _PARTICLES_KERNEL_H_
+#ifndef _PARTICLES_KERNEL_CU_
+#define _PARTICLES_KERNEL_CU_
 
 #include <stdio.h>
 #include <math.h>
@@ -32,7 +32,7 @@
 #include "../random.h"	
  
 
-texture<float4, 3, cudaReadModeElementType> cellTex;   
+texture<float4, 3, cudaReadModeElementType> windTex;   
 __constant__ ConstParams g_params;  
  
 
@@ -53,23 +53,23 @@ __device__ void resetParticles(float3 &pos)//resetParticles(float3 &pos, float3 
   {
     //pos = linestart + drand48() * (lineend - linestart)
     pos = (1.f - jitter.x) * g_params.source.info.ln.start + jitter.x * g_params.source.info.ln.end;
-    pos.z += thnum%10;
-    
+    pos.z += thnum%25;
+//     
   }else if(g_params.source.type == POINTSOURCE)
   {
     //pos = linestart + drand48() * (lineend - linestart)
 //     pos = (1.f - jitter.x) * g_params.source.info.ln.start + jitter.x * g_params.source.info.ln.end;
     
   }
-//   float4 n =  tex3D(cellTex, jitter.x, jitter.y, jitter.z);//tex3D(cellTex, jitter.x*40, jitter.y*25, jitter.z*25);
+//   float4 n =  tex3D(windTex, jitter.x, jitter.y, jitter.z);//tex3D(windTex, jitter.x*40, jitter.y*25, jitter.z*25);
 //   pos = make_float3(n.x, n.y, n.z);
 //   pos.x =  jitter.x/4.f-6.f;//- 3.f;//.1 *(u01(rng));
 //   pos.y =  jitter.y/2.f;// + 2.f ;//- 0.f;//*u01(rng);
 //   pos.z = jitter.z/4.f + 5.f;// 5.f;//jitter.z/2.f + 8.f; ;//- 3.f;//*u01(rng); */ 
 //   vel = make_float3(0.f, 0.f, 0.f);
-//   volatile float4 wind = tex3D(cellTex, pos.x, pos.y, pos.z);
-//   vel = make_float3(wind.x, wind.y, wind.z);//tex3D(cellTex, pos.x, pos.y, pos.z);
-//   pos = make_float3(cell4.x*8, cell4.y*50, cell4.z*50);//tex3D(cellTex, pos.x, pos.y, pos.z);
+//   volatile float4 wind = tex3D(windTex, pos.x, pos.y, pos.z);
+//   vel = make_float3(wind.x, wind.y, wind.z);//tex3D(windTex, pos.x, pos.y, pos.z);
+//   pos = make_float3(cell4.x*8, cell4.y*50, cell4.z*50);//tex3D(windTex, pos.x, pos.y, pos.z);
 //   unsigned int seed1 = tea<16>((pos.z*1000),thnum); 
 //   float3 jitter1 = make_float3(rnd(seed),  rnd(seed),  rnd(seed));
 //   vel.x = (jitter.z * 2.f)/100.f;//.01f *(u01(rng));
@@ -168,8 +168,8 @@ reset the particles that are out of boundary
 //////////////////////////////////////////////////////
 
 ////read winddata from texture memory
-	volatile float4 wind = tex3D(cellTex, pos.x, pos.y, pos.z);
-	float3 vel = make_float3(wind.x, wind.y, wind.z);// = tex3D(cellTex, pos.x, pos.y, pos.z);
+	volatile float4 wind = tex3D(windTex, pos.x, pos.y, pos.z);
+	float3 vel = make_float3(wind.x, wind.y, wind.z);// = tex3D(windTex, pos.x, pos.y, pos.z);
 
 ////generate random value based on threadID and drand48()
 	int thnum = __umul24(blockIdx.x,blockDim.x) + threadIdx.x; 
@@ -199,7 +199,7 @@ void getCell(float4* output)
     if (index >= 40*25*26) return;
     
 //     volatile Cell cell = pos[index]; 
-    output[index] = tex3D(cellTex, threadIdx.x%40, threadIdx.x%25, threadIdx.x%25);
+    output[index] = tex3D(windTex, threadIdx.x%40, threadIdx.x%25, threadIdx.x%25);
 }
 //   
   

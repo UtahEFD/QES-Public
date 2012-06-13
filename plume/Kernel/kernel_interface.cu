@@ -39,39 +39,39 @@
 #include "thrust/iterator/zip_iterator.h"
 #include "thrust/sort.h"
 
-#include "Particle/particles_kernel.cu"
-
+#include "Particle/particles_kernel.cu"  
+ 
 extern "C"
+{  
+
+// cudaArray *cellArray;
+  // create 3D texture for cells   
+// void createCellTexture(int w, int h, int d, float4* &cellData)
+void bindTexture(cudaArray *cellArray, cudaChannelFormatDesc channelDesc)
 {
-
-cudaArray *cellArray;
-  // create 3D texture for cells
-void createCellTexture(int w, int h, int d, float4* &cellData)
-{
-    cudaExtent size = make_cudaExtent(w, h, d); 
-    cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float4>();
-    cutilSafeCall( cudaMalloc3DArray(&cellArray, &channelDesc, size) );
-
-    cudaMemcpy3DParms copyParams = { 0 };
-    copyParams.srcPtr   = make_cudaPitchedPtr((void*)cellData, size.width*sizeof(float4), size.width, size.height);
-    copyParams.dstArray = cellArray;
-    copyParams.extent   = size;
-    copyParams.kind     = cudaMemcpyHostToDevice;
-    cutilSafeCall( cudaMemcpy3D(&copyParams) );
-
-    free(cellData);
-
+//     cudaExtent size = make_cudaExtent(w, h, d); 
+//     cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float4>();
+//     cutilSafeCall( cudaMalloc3DArray(&cellArray, &channelDesc, size) );
+// 
+//     cudaMemcpy3DParms copyParams = { 0 };
+//     copyParams.srcPtr   = make_cudaPitchedPtr((void*)cellData, size.width*sizeof(float4), size.width, size.height);
+//     copyParams.dstArray = cellArray;
+//     copyParams.extent   = size;
+//     copyParams.kind     = cudaMemcpyHostToDevice;
+//     cutilSafeCall( cudaMemcpy3D(&copyParams) );
+// 
+//     free(cellData);
+//  
     // set texture parameters
-    cellTex.normalized = false;                      // access with nonnormalized texture coordinates 
-    cellTex.filterMode = cudaFilterModePoint;      // 
-    cellTex.addressMode[0] = cudaAddressModeClamp;   // Clamp texture coordinates
-    cellTex.addressMode[1] = cudaAddressModeClamp;
-    cellTex.addressMode[2] = cudaAddressModeClamp;
+    windTex.normalized = false;                      // access with nonnormalized texture coordinates 
+    windTex.filterMode = cudaFilterModePoint;      // 
+    windTex.addressMode[0] = cudaAddressModeClamp;   // Clamp texture coordinates
+    windTex.addressMode[1] = cudaAddressModeClamp;
+    windTex.addressMode[2] = cudaAddressModeClamp;
 
     // bind array to 3D texture
-    cutilSafeCall(cudaBindTextureToArray(cellTex, cellArray, channelDesc)); 
-}
-
+    cutilSafeCall(cudaBindTextureToArray(windTex, cellArray, channelDesc)); 
+} 
   
 void cudaInit(int argc, char **argv)
 {   
@@ -204,7 +204,7 @@ void dumpCells( int count)
   cutilSafeCall(cudaMemcpy(hCell, dCell, total * sizeof(float4), cudaMemcpyDeviceToHost));  
   for(uint i=0; i<total; i++) 
   {
-    printf("this is:%d x=%f, y=%f, z=%f\n", i, hCell[i].x, hCell[i].y, hCell[i].z);      
+    printf("this is:%d x=%f, y=%f, z=%f, w=%f\n", i, hCell[i].x, hCell[i].y, hCell[i].z, hCell[i].w);      
   }
 }
 
@@ -223,10 +223,6 @@ void integrateSystem(float *pos,
       advect_functor(deltaTime));
 }
  
-
-
-
-
-
-
-}   // extern "C"
+ 
+  
+}   // extern "C" 
