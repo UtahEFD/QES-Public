@@ -40,7 +40,8 @@
 #include "GL_funs.h"
 #include "plumeSystem.h"
 #include "paramgl.h"
-#include "util/handleQUICArgs.h"
+
+#include "util/handlePlumeArgs.h"
 #include "quicutil/QUICProject.h"
  
  
@@ -234,6 +235,24 @@ void loadQUICWindField(int nx, int ny, int nz, const std::string &quicFilesPath,
 ////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char** argv) 
 {   
+  /////////////////read files by args/////////////////////
+  sivelab::PlumeArgs quicArgs;
+  quicArgs.process( argc, argv );
+  // ./plume -q ../../../quicdata/SBUE_small_bldg/SBUE_small_bldg.proj 
+
+  // Must supply an argument containing the .prof file to be read.
+  std::string quicInputFile;
+  if (quicArgs.isSet("quicproj", quicInputFile))
+    {
+      std::cout << "Will read input from files in: \"" << quicInputFile << "\"" << std::endl;
+    }
+  else 
+    {
+      std::cerr << "Must provide QUIC .proj file for opening. Exiting." << std::endl;
+      quicArgs.printUsage();
+      exit(EXIT_FAILURE);
+    }
+
   
 ///////////////////building ??????????/////////////////  
 //   printf("sizeof constant memory: %d \n", sizeof(ConstParams));
@@ -246,14 +265,16 @@ int main(int argc, char** argv)
   std::cout<<"\n"<<"Initializing......          "<<"\n";
 
   
-  numParticles = NUM_PARTICLES;   
-  
-/////////////////read files by args/////////////////////
-  sivelab::QUICArgs quicArgs;
-  quicArgs.process( argc, argv );
-  // ./plume -q ../../../quicdata/SBUE_small_bldg/SBUE_small_bldg.proj 
 
-  data = new sivelab::QUICProject( quicArgs.quicproj );
+  data = new sivelab::QUICProject( quicInputFile );
+
+
+  // At this point, we will have read in the particle number into
+  // QP_params.inp, so get from the QUICProject:
+  numParticles = data->qpParamData.numParticles;
+  std::cout << "Number of particles: " << numParticles << std::endl;
+
+
   uint3 gridSize = make_uint3(data->nx, data->ny, data->nz);//.x = gridSize.y = gridSize.z = gridDim; 
   std::cout << "Done loading QUIC data.\n" << std::endl;
 //   std::vector<WindFieldDomainData> windFieldData( data->nx * data->ny * data->nz );
