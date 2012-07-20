@@ -9,7 +9,7 @@
 #include <cutil_math.h>
 class dispersion{
  public:
-  eulerian eul;
+  eulerian eul; 
   void createDisp(const eulerian&);
   struct matrix{
     double x;
