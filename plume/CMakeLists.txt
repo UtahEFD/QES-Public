@@ -13,7 +13,11 @@ LINK_DIRECTORIES (${LIBSIVELAB_PATH}/lib)
 
 FIND_PACKAGE(CUDA REQUIRED)
 
-IF(CUDA_FOUND)
+IF(CUDA_FOUND) 
+#  set(CUDA_VERBOSE_BUILD ON)
+#      list(APPEND CUDA_NVCC_FLAGS "-g -G")
+  SET(CUDA_NVCC_FLAGS "-arch;sm_11")
+
   INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
 #ignore this################################## 
 #SET(SDK_LIB "/home/alex/NVIDIA_GPU_Computing_SDK") 
@@ -23,7 +27,8 @@ IF(CUDA_FOUND)
   LINK_DIRECTORIES (${CUDA_SDK_ROOT_DIR}/C/lib/)
 
   # Add the need flags for atomic operations in CUDA.
-  # SET(CUDA_NVCC_FLAGS -arch=compute_13)
+   #SET(CUDA_NVCC_FLAGS -arch=compute_13)
+   #SET(CUDA_NVCC_FLAGS "-g -G")
 
 #  ADD_SUBDIRECTORY(utils/computeVersion)
 
@@ -53,17 +58,32 @@ IF(${Boost_PROGRAM_OPTIONS_FOUND})
 ENDIF()
 
 cuda_add_executable (plume 
-  Shader/Particle/shaders.cpp Kernel/kernel_interface.cu Shader/Particle/render_particles.cpp 
-  turbulenceNonLocalMixing.cpp turbulenceNonLocalMixing.h
-  plumeSystem.cpp plumeSystem.h
-  main.cpp  
+   shader/particle/shaders.cpp kernel/kernel_interface.cu 
+   shader/particle/render_particles.cpp  
+   plumeSystem.cpp  
+  
+  bw/Eulerian.cpp
+  bw/Util.cpp
+  bw/advectPar.cpp
+  bw/Random.cpp
+  bw/Dispersion.cpp
+  bw/Turbulence.cpp
+  bw/LocalMixing.cpp
+  bw/NonLocalMixing.cpp
+  bw/NonLocalMixing2.cpp
+  main.cpp
 )
 
 target_link_libraries (plume sive-quicutil) 
 target_link_libraries (plume sive-util)
-target_link_libraries (plume ${Boost_PROGRAM_OPTIONS_LIBRARIES} ) 
-# target_link_libraries (plume cuda) 
-target_link_libraries (plume cutil_x86_64)
+target_link_libraries (plume ${Boost_PROGRAM_OPTIONS_LIBRARIES} )  
+
+IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  target_link_libraries (plume cutil_x86_64)
+ELSE(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  target_link_libraries (plume cutil_i386)
+ENDIF(CMAKE_SIZEOF_VOID_P EQUAL 8)
+
 target_link_libraries (plume GL) 
 target_link_libraries (plume GLEW) 
 target_link_libraries (plume glut) 

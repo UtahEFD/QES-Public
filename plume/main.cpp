@@ -31,25 +31,27 @@
 #include <rendercheck_gl.h>
 #include <cutil_math.h>
 
-// Includes
+#include <iostream> 
 #include <stdlib.h>
 #include <cstdlib>
 #include <cstdio>
 #include <algorithm>
 
-#include "GL_funs.h"
+#include "GL_funs.hpp" 
 #include "plumeSystem.h"
 #include "paramgl.h"
-
+#include "bw/Eulerian.h"
+#include "bw/Dispersion.h"
+#include "Turb_cp.cu" 
+ 
 #include "util/handlePlumeArgs.h"
 #include "quicutil/QUICProject.h"
- 
- 
-#define NUM_PARTICLES   1000000 //00  //pow(2,20)    
+#include <thrust/host_vector.h>  
 const uint width = 800, height = 600;
  
   
 bool bUseOpenGL = true;  
+bool bUseGlobal = false;
 
 //////////////in gl_funs.h////////////////////////////////////////////////////////////////
 // extern "C" void key(unsigned char, int, int);
@@ -69,34 +71,28 @@ bool bUseOpenGL = true;
 ////////////////////////in kernel_interface.cu///////////////////////////////////////////
 extern "C" void cudaInit(int argc, char **argv);
 extern "C" void cudaGLInit(int argc, char **argv);
-extern "C" void copyArrayFromDevice(void* host, const void* device, unsigned int vbo, int size);
+// extern "C" void copyArrayFromDevice(void* host, const void* device, unsigned int vbo, int size);
 ////////////////////////in kernel_interface.cu///////////////////////////////////////////
+
+void advectPar(const util&,dispersion&,eulerian&, const char*, const int);
 
 sivelab::QUICProject *data = 0; 
 Source source;   
-
 // initialize particle system
-void initPlumeSystem(uint numParticles, uint3 gridSize, float4* &cellData)
+// void initPlumeSystem(uint numParticles, uint3 gridSize, float4* &cellData)
+void initPlumeSystem(uint numParticles, uint3 gridSize)
 { 
   Building building;
   building.lowCorner = lowCorner; 
   building.highCorner = highCorner;  
-  psystem = new PlumeSystem(numParticles, gridSize, bUseOpenGL, building, domain, origin,
-			       source, cellData);  
-  psystem->reset(); 
-
-  if (bUseOpenGL) {
-    renderer = new ParticleRenderer;
-    renderer->setParticleRadius(psystem->getParticleRadius());
-    renderer->setColorBuffer(psystem->getColorBuffer());
-  }
-
+  psystem = new PlumeSystem(numParticles, bUseOpenGL, bUseGlobal, building, domain, origin,
+			       source);   
 //   cutilCheckError(cutCreateTimer(&timer));
 } 
 
 // initialize OpenGL
 void initGL(int *argc, char **argv)
-{  
+{   
   glutInit(argc, argv);
   glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
   glutInitWindowSize(width, height);
@@ -113,7 +109,7 @@ void initGL(int *argc, char **argv)
 ////////////////skyBoxTex for skyBox Texture(need four ppm pics named by east,west,south, and north )
 ////////////////buildingTex  for building Texture(only need two ppm pics named by buliding and roof )
 ////////////////floorTex  for floor Texture(one ppm pic named by concrect.ppm here)
-  std::string path = "../Img/";    
+  std::string path = "../img/";    
   readTex(path);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, GL_REPEAT);
@@ -132,8 +128,7 @@ void initGL(int *argc, char **argv)
 
   glutReportErrors();
 }
-  
-  
+   
 void loadQUICWindField(int nx, int ny, int nz, const std::string &quicFilesPath, 
 		       //std::vector<WindFieldDomainData>& windFieldData)
 		       float4* &windData, float3* &sig, float3* &U)
@@ -164,7 +159,7 @@ void loadQUICWindField(int nx, int ny, int nz, const std::string &quicFilesPath,
   for(int k = 0; k < nz; k++){   
     for(int i = 0; i < ny; i++){
       for(int j = 0; j < nx; j++){
-	int p2idx = k*nx*ny + i*nx + j; 
+// 	int p2idx = k*nx*ny + i*nx + j; taudz1
 	QUICWindField >> header;//windFieldData[p2idx].x;
 	QUICWindField >> header;//windFieldData[p2idx].y;
 	QUICWindField >> header;//windFieldData[p2idx].z;  	
@@ -179,7 +174,7 @@ void loadQUICWindField(int nx, int ny, int nz, const std::string &quicFilesPath,
   } 
   QUICWindField.close();
   
-  int row;
+//   int row;
   uint arrSize = nx*ny*nz; 
   uint width = sqrt(arrSize); 
   int numInRow = width/nx;//(width - (width % nx))/nx; 
@@ -189,7 +184,7 @@ void loadQUICWindField(int nx, int ny, int nz, const std::string &quicFilesPath,
     
   }
   return;
-  
+  /*
   
 ///////////////////////////////
 ////read turbulence data <not sure about if data correct yet> 
@@ -226,15 +221,96 @@ void loadQUICWindField(int nx, int ny, int nz, const std::string &quicFilesPath,
      kk++;
     
   }
-    std::cout<<"\n";
+    std::cout<<"\n";*/
 
-}
-
+} 
+ 
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char** argv) 
-{   
+{ 
+  std::cout<<std::endl;
+  std::cout<<"Going to UTL"<<std::endl;  
+  
+  util utl;
+  utl.readInputFile();
+  std::cout<<"Going to EUL"<<std::endl;  
+  
+  eulerian eul;
+  eul.createEul(utl); 
+  std::cout<<"Going to Disp"<<std::endl;
+ 
+  dispersion disp;
+  disp.createDisp(eul);    
+  
+/*
+ * only for device global memory  
+ * bUseGlobal must set true, false is default
+ */  
+  thrust::host_vector<turbulence> turbs;
+/*
+ * only for texture memory, default memory
+ */
+    thrust::host_vector<float4> windData;
+    thrust::host_vector<float3> prime(disp.prime.begin(), disp.prime.end()); 
+    
+    thrust::host_vector<int> cellType;
+    thrust::host_vector<float> CoEps;
+    thrust::host_vector<float4> eigVal; 
+    thrust::host_vector<float4> ka0; 
+    thrust::host_vector<float4> g2nd; 
+  ////////////////  matrix 9////////////////
+    thrust::host_vector<float4> eigVec1;
+    thrust::host_vector<float4> eigVec2;
+    thrust::host_vector<float4> eigVec3;
+    thrust::host_vector<float4> eigVecInv1;
+    thrust::host_vector<float4> eigVecInv2;
+    thrust::host_vector<float4> eigVecInv3;
+    thrust::host_vector<float4> lam1;
+    thrust::host_vector<float4> lam2;
+    thrust::host_vector<float4> lam3;
+  //////////////// matrix6 ////////////////
+    thrust::host_vector<float4> sig1;
+    thrust::host_vector<float4> sig2;
+    thrust::host_vector<float4> taudx1;
+    thrust::host_vector<float4> taudx2; 
+    thrust::host_vector<float4> taudy1;
+    thrust::host_vector<float4> taudy2; 
+    thrust::host_vector<float4> taudz1;
+    thrust::host_vector<float4> taudz2;
+  if(bUseGlobal)
+  {
+      turbs = thrust::host_vector<turbulence> (eul.CoEps.size()); 
+      turb_cp_2ndEdition(utl, eul, disp, turbs); 
+  } else
+  {    
+  //copy CoEps start//////////////////////////////////////////////////////////////
+    CoEps = thrust::host_vector<float> (eul.CoEps.begin(), eul.CoEps.end());  
+    eul.CoEps.clear();
+    
+    cellType = thrust::host_vector<int> (eul.CellType.size()); 
+    for(int i=0; i<eul.CellType.size(); i++)
+    {
+      cellType[i] =  eul.CellType[i].c;
+    } 
+    eul.CellType.clear(); 
+  //copy CoEps end//////////////////////////////////////////////////////////////
+    
+    
+    turb_cp(utl, eul, disp, windData, eigVal, ka0, g2nd,
+  ////////////////  matrix 9////////////////
+	    eigVec1, eigVec2, eigVec3,
+	    eigVecInv1, eigVecInv2, eigVecInv3,
+	    lam1, lam2, lam3,
+  //////////////// matrix6 ////////////////
+	    sig1, sig2, taudx1, taudx2, taudy1, taudy2, taudz1, taudz2);  
+  }
+  
+  
+//   advectParOLD(utl,disp,eul,argv[1]);
+ /* 
+  
   /////////////////read files by args/////////////////////
   sivelab::PlumeArgs quicArgs;
   quicArgs.process( argc, argv );
@@ -280,28 +356,33 @@ int main(int argc, char** argv)
 //   std::vector<WindFieldDomainData> windFieldData( data->nx * data->ny * data->nz );
   float4 *windData = (float4 *)malloc(gridSize.x*gridSize.y*gridSize.z*sizeof(float4));
   float3 *sigData  = (float3 *)malloc(gridSize.x*gridSize.y*gridSize.z*sizeof(float3));
-  float3 *UData    = (float3 *)malloc(gridSize.x*gridSize.y*gridSize.z*sizeof(float3));
+  float3 *UData    = (float3 *)malloc(gridSizpose.x*gridSize.y*gridSize.z*sizeof(float3)); 
   loadQUICWindField(data->nx, data->ny, data->nz, data->m_quicProjectPath, windData, sigData, UData); 
-
-  source.type = LINESOURCE;
+*/
+  numParticles = 100000;
+ 
+ source.type = POINTSOURCE;
   if(source.type == SPHERESOURCE)
   {
     assert(source.type == SPHERESOURCE);
-    float3 sourceOrigin = make_float3(10.0f, 12.5f, .5f);
+    float3 sourceOrigin = make_float3(utl.xSrc, utl.ySrc, utl.zSrc);
     source.info.sph.ori = sourceOrigin;
     source.info.sph.rad = .5f;
   }
   else if( source.type == LINESOURCE)
   {
     assert(source.type == LINESOURCE); 
-    source.info.ln.start = make_float3(6, 5.5, 0.5f);//10.0f, 12.5f, .5f);
-    source.info.ln.end = make_float3(6, 20.5, 0.5f);//(6.0f, 13.5f, 5.5f);
+    source.info.ln.start = make_float3(43.66666667, 75.0, 0.666666667);//6, 8.5, 0.5f); 
+    source.info.ln.end = make_float3(43.66666667, 25.0, 0.666666667);//(6, 17.5, 0.5f); 
   } 
   else if( source.type == POINTSOURCE)
   {
     assert(source.type == POINTSOURCE);
+    source.info.pt.ori = make_float3(utl.xSrc, utl.ySrc, utl.zSrc);
   } 
   source.speed = 0.5f;
+  
+  domain = make_uint3(utl.nx, utl.ny, utl.nz); 
 //   return 1;
 //   loadQUICWindField(data->nx, data->ny, data->nz, data->m_quicProjectPath, windFieldData);
 
@@ -310,18 +391,51 @@ int main(int argc, char** argv)
   //
   // 4. Use time step in QPParams.h to determine the
   // loop... while (simulation duration is not yet complete) run
-  // advection kernel again...
+  // advection kernel again... 
  
 ///////////////////////////////Opengl Main section////
-  if (!bUseOpenGL) {
+  if (!bUseOpenGL) 
+  {
+     cudaInit(argc, argv);
+    initGL(&argc, argv);
       cudaInit(argc, argv);
+      initPlumeSystem(numParticles, gridSize);
+      
+      psystem->reset(source.info.pt.ori, prime); 
+      if(bUseGlobal)
+	psystem->copy_turbs_2_deviceGlobal(turbs); 
+//       psystem->update(timestep); 
+    psystem->dev_par_concentration();
+    return 1; 
   } 
   else
   { 
     initGL(&argc, argv);
     cudaGLInit(argc, argv);
 
-    initPlumeSystem(numParticles, gridSize, windData);
+    initPlumeSystem(numParticles, gridSize);
+    if(!bUseGlobal)
+    {
+      psystem->_initDeviceTexture(CoEps, cellType, windData, eigVal, ka0, g2nd,
+  ////////////////  matrix 9////////////////
+	    eigVec1, eigVec2, eigVec3,
+	    eigVecInv1, eigVecInv2, eigVecInv3,
+	    lam1, lam2, lam3,
+  //////////////// matrix6 ////////////////
+	    sig1, sig2, taudx1, taudx2, taudy1, taudy2, taudz1, taudz2); 
+//       psystem->_initialize();
+    }
+    else
+    { 
+      psystem->copy_turbs_2_deviceGlobal(turbs);  
+    }
+     
+    psystem->reset(source.info.pt.ori, prime);
+    
+    renderer = new ParticleRenderer;
+    renderer->setParticleRadius(psystem->getParticleRadius());
+    renderer->setColorBuffer(psystem->getColorBuffer()); 
+
     initParams();
   
     initMenus(); 
