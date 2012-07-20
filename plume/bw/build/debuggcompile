@@ -1,0 +1,1 @@
+g++ -o debugg -g   main.cpp   Eulerian.cpp  Util.cpp  advectPar.cpp  Random.cpp  Dispersion.cpp  Turbulence.cpp LocalMixing.cpp  NonLocalMixing.cpp  NonLocalMixing2.cpp
