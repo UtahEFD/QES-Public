@@ -22,18 +22,45 @@
  #define __CONCENTRATION_CU_H__
  
 __global__ void concentration_kernel
-                (float4* posPtr, uint* device_cons) 
+                (float4* posPtr, uint* device_cons, const uint numParticles
+// 		 , float4* debug
+		) 
 { 
   int x = threadIdx.x + blockIdx.x * blockDim.x;
   int y = threadIdx.y + blockIdx.y * blockDim.y;
   uint offset = x + y * blockDim.x * gridDim.x; 
   
-  float3 posf3 = make_float3(posPtr[offset]);//make_float3(43.5,55,0.66);//
-  uint cellIndex = (int)(posf3.z+1)*g_params.domain.x*g_params.domain.y + 
-		   (int)(posf3.y)*g_params.domain.x + (int)posf3.x;
-  if(cellIndex > g_params.domain.x*g_params.domain.y*g_params.domain.z)
+  if(offset > numParticles-1) 
     return;
-  atomicAdd(&device_cons[cellIndex], 1);		  
+  
+  
+  float3 posf3 = make_float3(posPtr[offset]);//make_float3(43.5,55,0.66);// 
+  
+  int idx=(int)((posf3.x-33)/2);
+  int idy=(int)((posf3.y-0)/2);
+  int idz=(int)((posf3.z-0)/1.2f);
+    if(posf3.x<33)
+      idx=-1;
+    if(posf3.y<0)
+      idy=-1;
+    if(posf3.y<0)
+      idz=-1;
+  
+  if(idx>=0 && idx<60 && idy>=0 && idy<55 && idz>=0 && idz<25 )
+  {
+    int id=idz*55*60+idy*60+idx;
+    atomicAdd(&device_cons[id], 1);
+  }
+  
+  
+//   float3 posf3 = make_float3(posPtr[offset]);//make_float3(43.5,55,0.66);// 
+//   int cellIndex = (int)(posf3.z)*g_params.domain.x*g_params.domain.y + 
+// 		   (int)(posf3.y)*g_params.domain.x + (int)posf3.x - 1;
+// //   
+//   if(cellIndex > 0 && cellIndex < g_params.domain.x*g_params.domain.y*g_params.domain.z)
+//     atomicAdd(&device_cons[cellIndex], 1);
+// //   else
+// //     debug[offset] = make_float4(posf3, cellIndex);
 }
 
  #endif /* __CONCENTRATION_CU_H__ */

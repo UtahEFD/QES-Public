@@ -42,14 +42,14 @@ PlumeSystem::PlumeSystem(uint numParticles, bool bUseOpenGL, bool bUseGlobal, Bu
 			 uint3 domain, float3 origin, Source source) :
     m_bInitialized(false), m_bUseOpenGL(bUseOpenGL),m_bUseGlobal(bUseGlobal),
     m_bGlobal_set(false), m_bTexture_set(false),
-    m_numParticles(numParticles),
+    m_numParticles(numParticles), 
     m_hPos(0),m_hWinP(0), m_hSeeds(0), m_dPos(0), m_dWinP(0), m_dSeeds(0),//m_hCells(0),
 //     m_gridSize(gridSize),
     m_timer(0) 
 {
   m_numGridCells = domain.x * domain.y * domain.z;//m_gridSize.x*m_gridSize.y*m_gridSize.z; 
 //     m_params.isFirsttime = true;
-
+m_numCons = 60*55*25;
   m_params.building = building;//.lowCorner = make_float3(1.f, -1.f, 1.f); 
   m_params.particleRadius = 4.0f / 64.0f ;//particleRadius 
   m_params.domain = domain;//make_float3(40.f, 25.f, 25.f); 
@@ -144,7 +144,7 @@ void PlumeSystem::_initialize()
   m_hPos = new float[m_numParticles*4];
   m_hWinP = new float[m_numParticles*4];
   m_hSeeds = new bool[m_numParticles];
-  m_hConcetration = new uint[m_numGridCells];
+  m_hConcetration = new uint[m_numCons];
   memset(m_hPos, 0, m_numParticles*4*sizeof(float));//16384
   memset(m_hWinP, 0, m_numParticles*4*sizeof(float));//16384  
 
@@ -168,7 +168,7 @@ void PlumeSystem::_initialize()
 //   memSize = sizeof(float) * 4 * m_numParticles;
   allocateArray((void**)&m_dWinP, memSize); 
   
-  memSize = sizeof(uint) * m_numGridCells;
+  memSize = sizeof(uint) * m_numCons;
   allocateArray((void**)&m_dConcetration, memSize); 
   
   memSize = sizeof(bool) * m_numParticles;
@@ -307,7 +307,7 @@ void PlumeSystem::update(const float &deltaTime, bool &b_print_concentration)
   if(m_bUseGlobal)
     assert(m_bGlobal_set);
   
-  static uint numeject=1000;
+  static uint numeject=0;
   float *dPos;
 
   if(m_bUseOpenGL)
@@ -325,33 +325,50 @@ void PlumeSystem::update(const float &deltaTime, bool &b_print_concentration)
     setParameters(&m_params); 
   }  
   
-  // integrate
+//   // integrate
   if(m_bUseOpenGL && !m_bUseGlobal)  
-    advectPar_with_textureMemory(dPos, m_dWinP, m_dSeeds, m_dConcetration, 
-				 deltaTime, numeject);
-  else if(m_bUseOpenGL && m_bUseGlobal) 
+    advectPar_with_textureMemory(dPos, m_dWinP, m_dConcetration, deltaTime, numeject);  
+//   else if(m_bUseOpenGL && m_bUseGlobal) 
+//   { 
+//     global_kernel(dPos, m_dWinP, numeject, m_dGlobal_turbData); 
+//   }
+//   else if(!m_bUseOpenGL && m_bUseGlobal) 
+//   { 
+//     global_kernel(m_dPos, m_dWinP, numeject, m_dGlobal_turbData); 
+//   } 
+//   
+//   if(b_print_concentration)
+//   {
+// //     std::cout<<"numeject"<<numeject<<"\n";
+// //     /*cal_concentration*/(dPos, m_dConcetration, numeject);    
+// //     b_print_concentration = false;
+//   }
+//   
+//   if(m_bUseOpenGL)
+//   {
+//     dPos = (float *) mapGLBufferObject(&m_cuda_posvbo_resource);
+//   } 
+    
+/*
+ *concentration
+ */    
+  if(numeject >= 500)
   { 
-    global_kernel(dPos, m_dWinP, m_dSeeds, numeject, m_dGlobal_turbData); 
+//     std::cout<<"numeject"<<numeject<<"\n";
+    if(b_print_concentration)
+      cal_concentration(dPos, m_dConcetration, numeject, m_numParticles);    
+//     b_print_concentration = false;
   }
-  else if(!m_bUseOpenGL && m_bUseGlobal) 
-  { 
-    global_kernel(m_dPos, m_dWinP, m_dSeeds, numeject, m_dGlobal_turbData); 
-  } 
-  
-  if(b_print_concentration)
-  {
-    cal_concentration(dPos, m_dConcetration, numeject);   
-    b_print_concentration = false;
+ 
+  // note: do unmap at end here to avoid unnecessary graphics/CUDA context switch
+  if (m_bUseOpenGL) {
+    unmapGLBufferObject(m_cuda_posvbo_resource);
   }
+     
     
   if(numeject < m_numParticles)
   {
     numeject += 100;//speed of emitting particles  
-  }
-
-  // note: do unmap at end here to avoid unnecessary graphics/CUDA context switch
-  if (m_bUseOpenGL) {
-    unmapGLBufferObject(m_cuda_posvbo_resource);
   }
 }
 
@@ -443,7 +460,7 @@ void PlumeSystem::reset(const float3 &pos, thrust::host_vector<float3> &prime)//
     m_hSeeds[i] = false;
   } 	
   
-  for(uint i=0; i < m_numGridCells; i++) 
+  for(uint i=0; i < m_numCons; i++) 
   {  
     m_hConcetration[i] = 0;
 //     m_hConcetration[i] = i;
@@ -461,7 +478,8 @@ void PlumeSystem::reset(const float3 &pos, thrust::host_vector<float3> &prime)//
   setArray(WINDPRIME, m_hWinP, 0, m_numParticles);
   
   copyArrayToDevice(m_dSeeds, m_hSeeds, 0, m_numParticles*sizeof(bool));
-  copyArrayToDevice(m_dConcetration, m_hConcetration, 0, m_numGridCells*sizeof(uint));  
+  copyArrayToDevice(m_dConcetration, m_hConcetration, 0, m_numCons*sizeof(uint));  
+//     std::cout<<"  m_numGridCells   "<<m_numGridCells<<"  "<<m_numGridCells*sizeof(uint)<<"\n";
 }
 
 void PlumeSystem::copy_turbs_2_deviceGlobal(const thrust::host_vector<turbulence> &turbData)//ParticleSystem::(ParticleConfig config)
@@ -476,6 +494,6 @@ void PlumeSystem::copy_turbs_2_deviceGlobal(const thrust::host_vector<turbulence
 
 void PlumeSystem::dev_par_concentration()
 { 
-  cal_concentration(m_dPos, m_dConcetration, 2000);
+  cal_concentration(m_dPos, m_dConcetration, 2000, m_numParticles);
 }
  

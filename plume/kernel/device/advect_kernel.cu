@@ -40,14 +40,28 @@ __constant__ float terFacV = 2.;
 __constant__ float terFacW = 2.;
 std::ofstream random_file;
 
-
+__device__ 
+inline bool b_outofboundary(const float3 &pos)
+{ 
+//   return (pos.x > g_params.domain.x-1 - g_params.particleRadius) 
+//       || (pos.x < g_params.origin.x + g_params.particleRadius)
+//       || (pos.y > g_params.domain.y-1 - g_params.particleRadius) 
+//       || (pos.y < g_params.origin.y + g_params.particleRadius)  
+//       || (pos.z+1 > g_params.domain.z - g_params.particleRadius) 
+//       || (pos.z < g_params.origin.z-1 + g_params.particleRadius);
+//       
+  return (pos.x > g_params.domain.x-1) 
+      || (pos.x < g_params.origin.x  )
+      || (pos.y > g_params.domain.y-1) 
+      || (pos.y < g_params.origin.y  )  
+      || (pos.z > g_params.domain.z-1) 
+      || (pos.z < g_params.origin.z );
+  
+}
 
 // __device__ void resetParticles(float3 &pos, float &seed_para, uint &seed)//resetParticles(float3 &pos, float3 &vel)
-__device__ void resetParticles(float3 &pos, uint &seed)//resetParticles(float3 &pos, float3 &vel)
-{  
-//   int thnum = __umul24(blockIdx.x,blockDim.x) + threadIdx.x; 
-// //--------------generate random value based on threadID and drand48()
-//   unsigned int seed = tea<16>((pos.x *1000 /pos.z), thnum);  
+__device__ void resetParticles(float3 &pos, const uint &seed)//resetParticles(float3 &pos, float3 &vel)
+{   
   float3 jitter = make_float3(0,0,0);//rnd(seed) ,  rnd(seed) ,  rnd(seed));
   
   if(g_params.source.type == SPHERESOURCE)
@@ -57,16 +71,14 @@ __device__ void resetParticles(float3 &pos, uint &seed)//resetParticles(float3 &
     jitter = jitter / sqrtf(jitter.x*jitter.x + jitter.y*jitter.y + jitter.z*jitter.z) * g_params.source.info.sph.rad;   
     pos = jitter + g_params.source.info.sph.ori;
   }else if(g_params.source.type == LINESOURCE)
-  {
-    //pos = linestart + drand48() * (lineend - linestart)
+  { 
     pos = (1.f - jitter.x) * g_params.source.info.ln.start + jitter.x * g_params.source.info.ln.end;
 //     pos.z += thnum%11;
     pos.z += seed%11;
 //     
   }else if(g_params.source.type == POINTSOURCE)
   {
-    pos = g_params.source.info.sph.ori; 
-//     seed_para = pos.x + pos.y + pos.z;
+    pos = g_params.source.info.sph.ori;  
   }
 }
 
@@ -83,19 +95,17 @@ struct advect_functor
   void operator()(Tuple t)
   {    
     float3 pos = make_float3(thrust::get<0>(t)); 
-    int seed_first_para = thrust::get<0>(t).w;
+//     int seed_first_para = thrust::get<0>(t).w;
     float3 windPrime = make_float3(thrust::get<1>(t));  
 //     bool is_seed_flag = thrust::get<2>(t); 
     
     int x = threadIdx.x + blockIdx.x * blockDim.x;
     int y = threadIdx.y + blockIdx.y * blockDim.y;
     uint offset = x + y * blockDim.x * gridDim.x; 
-    unsigned int seed = offset + deltaTime;//tea<16>(pos.x*100, offset);   
-//     unsigned int seed = tea<16>(pos.x*100, seed_first_para);  
-    float3 seed_record = make_float3(seed, pos.x*100, offset);
-//     unsigned int seed = offset;
     
-    float4 debugf4 = thrust::get<3>(t); 
+    unsigned int seed = offset + deltaTime;//tea<16>(pos.x*100, offset);    
+    
+//     float4 debugf4;// = thrust::get<3>(t); 
     int countPrmMax=10;//1000;
 //--------------reset the particles that are out of boundary        
 //     debugf4 = make_float4(pos, thrust::get<2>(t));;
@@ -103,16 +113,11 @@ struct advect_functor
 //     {
 //       resetParticles(pos);
 //     }else 
-    if(  (pos.x > g_params.domain.x-1 - g_params.particleRadius) 
-      || (pos.x < g_params.origin.x + g_params.particleRadius)
-      || (pos.y > g_params.domain.y-1 - g_params.particleRadius) 
-      || (pos.y < g_params.origin.y + g_params.particleRadius)  
-      || (pos.z+1 > g_params.domain.z - g_params.particleRadius) 
-      || (pos.z < g_params.origin.z-1 + g_params.particleRadius)) 
+    if( b_outofboundary(pos) ) 
     {    
 // 	debugf4 = make_float4(pos, seed);
       resetParticles(pos, seed); //resetParticles(pos, vel);   
-      debugf4 = make_float4(0, 0, 0, seed);
+//       debugf4 = make_float4(0, 0, 0, seed);
 //       resetParticles(pos,seed_first_para, seed);        
     } 
     else 
@@ -121,11 +126,11 @@ struct advect_functor
       {
       int countPrm=0;
       volatile int cellType = tex3D(cellTypeTex, pos.x, pos.y, pos.z+1);
-      debugf4 = make_float4(cellType,tex3D(CoEpsTex, pos.x, pos.y, pos.z+1), tex3D(sig2Tex, pos.x, pos.y, pos.z+1).x,tex3D(sig2Tex, pos.x, pos.y, pos.z+1).z);
+//       debugf4 = make_float4(cellType,tex3D(CoEpsTex, pos.x, pos.y, pos.z+1), tex3D(sig2Tex, pos.x, pos.y, pos.z+1).x,tex3D(sig2Tex, pos.x, pos.y, pos.z+1).z);
       if(cellType == 0)
       { 
 	resetParticles(pos, seed); //resetParticles(pos, vel);   
-        debugf4 = make_float4(0, 0, 0, seed);
+//         debugf4 = make_float4(0, 0, 0, seed);
 // 	debugf4 = make_float4(pos, 1.01f);
 // 	thrust::get<3>(t) = debugf4; 
 	return ;
@@ -194,16 +199,19 @@ struct advect_functor
 	  curandState s;
 	  curand_init(seed, 0, 0, &s) ; 
 	  float randx = curand_normal(&s);// curand_log_normal(&s, 0, 1.f);
+// 	  curand_init(seed % threadIdx.y , 0, 0, &s) ; 
 // 	  curand(&s);
 	  float randy = curand_normal(&s);// curand_log_normal(&s, 0, 1.f);
+// 	  curand_init(seed % threadIdx.x , 0, 0, &s) ; 
 // 	  curand(&s);
 	  float randz = curand_normal(&s);// curand_log_normal(&s, 0, 1.f); 
 	  float3 randxyz_rand3 = make_float3(randx, randy, randz);
 // 	  float3 randxyz_rand3 = make_float3(curand_uniform(&s), curand_uniform(&s), curand_uniform(&s));
 	  float3 randxyz = sqrtf( (CoEps/(2.f*eigVal)) * ( exp(2.f*eigVal*dt)- make_float3(1.f, 1.f, 1.f)) ) 
+// 			   * make_float3(curand_normal(&s), curand_normal(&s), curand_normal(&s));
 			  * randxyz_rand3;//box_muller(seed, is_seed_flag);//box_muller random number
 // 	  randxyz_rand3.z = thrust::get<2>(t);
-	  debugf4 = make_float4(randxyz_rand3, offset);
+// 	  debugf4 = make_float4(randxyz_rand3, offset);
 	  
 	  float3 UVWRot_1st = UVWRot*exp_eigVal - ka0/eigVal*(make_float3(1.f, 1.f, 1.f) - exp_eigVal) + randxyz; 
 // 	  s	  
@@ -246,41 +254,34 @@ struct advect_functor
 	 
         int flagPrime=0;
 	if(fabs(windPrime.x)>terFacU*fabs(sig.x) && countPrm<countPrmMax){ 
-	      debugf4.w = curand_normal(&s);//box_muller_1(seed, is_seed_flag);
-	      windPrime.x=sig.x * debugf4.w;  
-// 	      windPrime.x=sig.x * box_muller_1(seed);  
-	      countPrm++; 
-	      flagPrime=1;
-// 	      filestream<< " uPrime "; 
-	    }
-	    if(fabs(windPrime.y)>terFacV*fabs(sig.y) && countPrm<countPrmMax){
-	      debugf4.w = curand_normal(&s);//box_muller_1(seed, is_seed_flag);
-	      windPrime.y=sig.y * debugf4.w;  
-// 	      windPrime.y=sig.y * box_muller_1(seed);   
-	      countPrm++; 
-	      flagPrime=1;
-// 	      filestream<< " vPrime "; 
-	    }
-	    if(fabs(windPrime.z)>terFacW*fabs(sig.z) && countPrm<countPrmMax){
-	      debugf4.w = curand_normal(&s);//box_muller_1(seed, is_seed_flag);
-	      windPrime.z=sig.z * debugf4.w;  
-// 	      windPrime.z=sig.z * box_muller_1(seed); 
-	      countPrm++; 
-	      flagPrime=1;
-// 	      filestream<< " wPrime "; 
-	    }
-	    
-	    if(flagPrime==1){
-	      flagPrime=0;  
-// 	      filestream<< countPrm<<"   contiune\n"; 
-	      continue;
-	    }
+// 	  debugf4.w = curand_normal(&s);//box_muller_1(seed, is_seed_flag);
+	  windPrime.x=sig.x * curand_normal(&s);//debugf4.w;   
+	  countPrm++; 
+	  flagPrime=1; 
+	}
+	if(fabs(windPrime.y)>terFacV*fabs(sig.y) && countPrm<countPrmMax){
+// 	  debugf4.w = curand_normal(&s);//box_muller_1(seed, is_seed_flag);
+	  windPrime.y=sig.y * curand_normal(&s);//debugf4.w;   
+	  countPrm++; 
+	  flagPrime=1; 
+	}
+	if(fabs(windPrime.z)>terFacW*fabs(sig.z) && countPrm<countPrmMax){
+// 	  debugf4.w = curand_normal(&s);//box_muller_1(seed, is_seed_flag);
+	  windPrime.z=sig.z * curand_normal(&s);//debugf4.w;   
+	  countPrm++; 
+	  flagPrime=1; 
+	}
 	
-	isDone = true;
-//     pos += randxyz_rand3*dt;
+	if(flagPrime==1){
+	  flagPrime=0;   
+	  continue;
+	}
+	
+	isDone = true; 
 	}
 	float3 newPos = pos + (wind + windPrime) * dt;
-	if(tex3D(cellTypeTex, newPos.x, newPos.y, newPos.z+1) == 0/* ||
+	int loop = 0;
+	while(tex3D(cellTypeTex, newPos.x, newPos.y, newPos.z+1) == 0 /*||
 	   tex3D(cellTypeTex, newPos.x-g_params.particleRadius, newPos.y-g_params.particleRadius, newPos.z+1-g_params.particleRadius) == 0 ||
 	   tex3D(cellTypeTex, newPos.x-g_params.particleRadius, newPos.y-g_params.particleRadius, newPos.z+1+g_params.particleRadius) == 0 ||
 	   tex3D(cellTypeTex, newPos.x-g_params.particleRadius, newPos.y+g_params.particleRadius, newPos.z+1+g_params.particleRadius) == 0 ||
@@ -288,22 +289,30 @@ struct advect_functor
 	   tex3D(cellTypeTex, newPos.x+g_params.particleRadius, newPos.y-g_params.particleRadius, newPos.z+1+g_params.particleRadius) == 0 ||
 	   tex3D(cellTypeTex, newPos.x+g_params.particleRadius, newPos.y+g_params.particleRadius, newPos.z+1+g_params.particleRadius) == 0 ||
 	   tex3D(cellTypeTex, newPos.x+g_params.particleRadius, newPos.y+g_params.particleRadius, newPos.z+1-g_params.particleRadius) == 0 
-	*/)
+	 */)
 	{
-// 	  pos = newPos;
-	  newPos = getReflectPos(pos, newPos, g_params.particleRadius);
+	  if(loop == 4)
+	  {
+	    resetParticles(newPos, 0); 
+	  } else
+	  { 
+	    newPos = getReflectPos(pos, newPos, g_params.particleRadius);
+	    loop++;
+	  }
 	}
 // 	else
 	  pos = newPos;
 	
       }
     }
-    debugf4 = make_float4(0, seed_record);
-    // store new position and windPrime
+    if( b_outofboundary(pos) ) 
+    {     
+      resetParticles(pos, seed);      
+    } 
+    
     thrust::get<0>(t) = make_float4(pos, thrust::get<0>(t).w); 
-    thrust::get<1>(t) = make_float4(windPrime, 0.f);//1*110*153 + floor(pos.y)*153 + floor(pos.x) ); 
-//     thrust::get<2>(t) = is_seed_flag;
-    thrust::get<3>(t) = debugf4; //make_float4(2.22044604925031e-45/2.f,2.22044604925031e-46,2.22044604925031e-45/8.f, 2.22044604925031e-45/4.f); // debugf4; 
+    thrust::get<1>(t) = make_float4(windPrime, 0.f); 
+//     thrust::get<3>(t) = debugf4; //make_float4(2.22044604925031e-45/2.f,2.22044604925031e-46,2.22044604925031e-45/8.f, 2.22044604925031e-45/4.f); // debugf4; 
   }
 };
 
@@ -365,13 +374,16 @@ struct rand_box_muller_f4
   } 
 };
  
-__global__ void test_kernel(float4* posPtr, float4* primePtr, bool* is_seed_flagPtr,
-			    float4* debugPtr, turbulence* device_turbs_test)//turbulence* device_turbs_test)
+__global__ void test_kernel(float4* posPtr, float4* primePtr, const uint numParticles,//bool* is_seed_flagPtr,
+// 			    float4* debugPtr,
+			    turbulence* device_turbs_test)//turbulence* device_turbs_test)
 {
   int x = threadIdx.x + blockIdx.x * blockDim.x;
   int y = threadIdx.y + blockIdx.y * blockDim.y;
-  uint offset = x + y * blockDim.x * gridDim.x; 
-  
+  uint offset = x + y * blockDim.x * gridDim.x;  
+    
+  if(offset > numParticles-1) 
+    return;
   
   float3 pos = make_float3(posPtr[offset]);
   unsigned int seed = offset;// = tea<16>(pos.x*100, offset); 
@@ -393,7 +405,7 @@ __global__ void test_kernel(float4* posPtr, float4* primePtr, bool* is_seed_flag
   { //734910
     posPtr[offset]   = make_float4(pos, cellType); 
     debugf4 = make_float4(pos.x, pos.y, offset, cellType);
-    debugPtr[offset] = debugf4;
+//     debugPtr[offset] = debugf4;
     return ;
   }
 	  ///////////////calculate dt

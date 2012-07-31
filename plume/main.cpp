@@ -36,6 +36,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <algorithm>
+#include <ctime>
 
 #include "GL_funs.hpp" 
 #include "plumeSystem.h"
@@ -111,8 +112,12 @@ void initGL(int *argc, char **argv)
 ////////////////floorTex  for floor Texture(one ppm pic named by concrect.ppm here)
   std::string path = "../img/";    
   readTex(path);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, GL_REPEAT);
+//  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, GL_REPEAT);
+ // glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FITER,GL_LINEAR_MIPMAP_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
 /////////////load  textures done! 
   
 
@@ -229,21 +234,23 @@ void loadQUICWindField(int nx, int ny, int nz, const std::string &quicFilesPath,
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char** argv) 
-{ 
-  std::cout<<std::endl;
-  std::cout<<"Going to UTL"<<std::endl;  
+{   
+//   std::cout<<"Going to UTL read end: "<<f_clock<<"\n"; 
   
   util utl;
-  utl.readInputFile();
-  std::cout<<"Going to EUL"<<std::endl;  
+  utl.readInputFile(); 
+  float f_clock = ((float)std::clock())/CLOCKS_PER_SEC;
+  std::cout<<"                    Going to UTL read end: "<<f_clock<<"\n"; 
   
   eulerian eul;
   eul.createEul(utl); 
-  std::cout<<"Going to Disp"<<std::endl;
+  std::cout<<"                     Going to EUL read end: "<<((float)std::clock())/CLOCKS_PER_SEC -f_clock<<"\n"; 
+  
+//   std::cout<<"Going to Disp"<<std::endl;
  
   dispersion disp;
   disp.createDisp(eul);    
-  
+//   return 0;
 /*
  * only for device global memory  
  * bUseGlobal must set true, false is default
@@ -396,14 +403,14 @@ int main(int argc, char** argv)
 ///////////////////////////////Opengl Main section////
   if (!bUseOpenGL) 
   {
-     cudaInit(argc, argv);
+    cudaInit(argc, argv);
     initGL(&argc, argv);
-      cudaInit(argc, argv);
-      initPlumeSystem(numParticles, gridSize);
-      
-      psystem->reset(source.info.pt.ori, prime); 
-      if(bUseGlobal)
-	psystem->copy_turbs_2_deviceGlobal(turbs); 
+    cudaInit(argc, argv);
+    initPlumeSystem(numParticles, gridSize);
+    
+    psystem->reset(source.info.pt.ori, prime); 
+    if(bUseGlobal)
+      psystem->copy_turbs_2_deviceGlobal(turbs); 
 //       psystem->update(timestep); 
     psystem->dev_par_concentration();
     return 1; 
@@ -459,3 +466,26 @@ int main(int argc, char** argv)
 
   cutilDeviceReset(); 
 }
+
+int test_gl(int argc, char** argv) 
+{
+  
+    initGL(&argc, argv);
+    cudaGLInit(argc, argv);
+  domain = make_uint3(153, 110, 30); 
+   initParams();
+  
+    initMenus(); 
+    glutDisplayFunc(display);
+    glutReshapeFunc(reshape);
+    glutMouseFunc(mouse);
+    glutMotionFunc(motion);
+    glutKeyboardFunc(key);
+    glutKeyboardUpFunc(keyUp);
+    glutSpecialFunc(special);
+    glutIdleFunc(idle);
+
+    atexit(cleanup);
+
+    glutMainLoop(); 
+    }

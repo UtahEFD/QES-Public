@@ -231,12 +231,12 @@ extern "C"
   
   int mode = 0;
   int ox, oy;
-  const float walkSpeed = 0.5f;
+  const float walkSpeed = 0.3f;
   bool keyDown[256];
   int buttonState = 0;
   float camera_trans[] = {0, 0, 3};
-  float3 campos = make_float3(3.810398f, -9.522257f, -11.32808f); 
-  float3 camera_rot_lag = make_float3(0.f, 0.f, 0.f);//{0, 0, 0};
+  float3 campos = make_float3(67.036858, 0.18543, -26.969292); 
+  float3 camera_rot_lag = make_float3(0.f, 50.f, 0.f);//{0, 0, 0};
   const float inertia = .3f;
   float3 camera_rot   = make_float3(0.f, 0.f, 0.f);
   float modelView[16];//for camera moving 
@@ -267,7 +267,7 @@ extern "C"
 // fps  
   void computeFPS()
   { 
-  //update the delta time for animation
+//   //update the delta time for animation
     static int lastFrameTime = 0; 
     if(lastFrameTime == 0) 
       lastFrameTime = glutGet(GLUT_ELAPSED_TIME); 
@@ -277,8 +277,26 @@ extern "C"
     float delta_t = elapsedMilliseconds / 1000.0f;
     lastFrameTime = now;
     char fps[256];
-    sprintf(fps, "CUDA Plume (%d particles) %4.1f fps", numParticles, 1/delta_t);   
+    sprintf(fps, "CUDA Plume (%d particles) %4.0f fps", numParticles, 1.f/delta_t);   
     glutSetWindowTitle(fps);
+//     static uint frameCount = 0; 
+//     static uint fpsCount = 0; 
+//     static unsigned int timer=0;
+//     static unsigned int fpsLimit = 4;
+//     cutStartTimer(timer);
+//     frameCount++;
+//     fpsCount++; 
+//     if (fpsCount == fpsLimit) {
+//       char fps[256];
+//       float ifps = 1.f / (cutGetAverageTimerValue(timer) / 1000.f);
+//       sprintf(fps, "%s CUDA Particles (%d particles): %3.1f fps", 
+// 	      ((g_CheckRender && g_CheckRender->IsQAReadback()) ? "AutoTest: " : ""), numParticles, ifps);  
+// 
+//       glutSetWindowTitle(fps);
+//       fpsCount = 0;   
+//       fpsLimit =  ifps > 1.f ? ifps : 1;
+//       cutilCheckError(cutResetTimer(timer));  
+//     }
   }
   
 
@@ -299,6 +317,15 @@ extern "C"
     }
 
     ox = x; oy = y; 
+    
+//     if ((button == 3) || (button == 4)) // It's a wheel event
+//    {
+//        // Each wheel event reports like a button click, GLUT_DOWN then GLUT_UP
+//        if (state == GLUT_UP) return; // Disregard redundant GLUT_UP events
+// //        printf("Scroll %s At %d %d\n", (button == 3) ? "Up" : "Down", x, y);
+//    }else{  // normal button event
+// //        printf("Button %s At %d %d\n", (state == GLUT_DOWN) ? "Down" : "Up", x, y);
+//    }
 
     glutPostRedisplay();
   }
@@ -315,17 +342,18 @@ extern "C"
     case M_VIEW:
       if(buttonState == 3) {
 	  // left+middle = zoom
-	camera_trans[2] += (dy / 100.0f) * 0.5f * fabs(camera_trans[2]);
+// 	camera_trans[2] += (dy / 100.0f) * 0.5f * fabs(camera_trans[2]);
       } 
       else if(buttonState & 2) {
 	  // middle = translate
-	camera_trans[0] += dx / 100.0f;
-	camera_trans[1] -= dy / 100.0f;
+// 	camera_trans[0] += dx / 100.0f;
+// 	camera_trans[1] -= dy / 100.0f;
       } 
       else if(buttonState & 1) {
 	  // left = rotate
-	camera_rot.z -= dx / 5.0f;
-	camera_rot.x -= dy / 5.0f;
+// 	  std::cout<<"camera_rot.z"<<camera_rot.z;
+	camera_rot.y -= dy / 10.0f;
+	camera_rot.z -= dx / 10.0f; 
       }
       break;
 
@@ -478,12 +506,14 @@ extern "C"
     // view transform 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity(); 
-    gluLookAt(0, -10, -7,
-	      0,  0,  0,
-	      0,  0,  1);
+    gluLookAt(0, 55, 30,
+	      153, 55, 0,
+	      0,  0, 1);
     camera_rot_lag += (camera_rot - camera_rot_lag) * inertia;  
     glRotatef(camera_rot_lag.x, 1.0, 0.0, 0.0);
-    glRotatef(camera_rot_lag.z, 0.0, 0.0, 1.0); 
+    glRotatef(camera_rot_lag.y,  .0, 1.0, 0.0);
+    glRotatef(camera_rot_lag.z, .0, .0, 1.0); 
+//     gluOrtho2D(-1.8/ 2, 1.8/ 2, 1./ 2, -1./ 2);
     glTranslatef(campos.x, campos.y, campos.z); 
     glGetFloatv(GL_MODELVIEW_MATRIX, modelView);
     

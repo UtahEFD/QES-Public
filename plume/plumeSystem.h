@@ -156,6 +156,7 @@ protected: // data
     ConstParams m_params;
 //     uint3 m_gridSize;
     uint m_numGridCells;
+    uint m_numCons;
 
     uint m_timer;
 
