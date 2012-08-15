@@ -38,18 +38,19 @@
 #define CUDART_PI_F         3.141592654f
 #endif
 
-PlumeSystem::PlumeSystem(uint numParticles, bool bUseOpenGL, bool bUseGlobal, Building building, 
-			 uint3 domain, float3 origin, Source source) :
+PlumeSystem::PlumeSystem(const uint &numParticles, const bool &bUseOpenGL, const bool &bUseGlobal,
+		const Building &building, const uint3 &domain,  const float3 &origin,  
+		const Source source, const util &utl, const char* output_file) :
     m_bInitialized(false), m_bUseOpenGL(bUseOpenGL),m_bUseGlobal(bUseGlobal),
     m_bGlobal_set(false), m_bTexture_set(false),
-    m_numParticles(numParticles), 
-    m_hPos(0),m_hWinP(0), m_hSeeds(0), m_dPos(0), m_dWinP(0), m_dSeeds(0),//m_hCells(0),
+    m_numParticles(numParticles), m_utl(utl), m_output_file(output_file),
+    m_hPos(0),m_hWinP(0), m_hIndex(0), m_dPos(0), m_dWinP(0), m_dIndex(0),//m_hCells(0),
 //     m_gridSize(gridSize),
     m_timer(0) 
 {
   m_numGridCells = domain.x * domain.y * domain.z;//m_gridSize.x*m_gridSize.y*m_gridSize.z; 
 //     m_params.isFirsttime = true;
-m_numCons = 60*55*25;
+  m_numCons = 60*55*25;
   m_params.building = building;//.lowCorner = make_float3(1.f, -1.f, 1.f); 
   m_params.particleRadius = 4.0f / 64.0f ;//particleRadius 
   m_params.domain = domain;//make_float3(40.f, 25.f, 25.f); 
@@ -143,7 +144,7 @@ void PlumeSystem::_initialize()
   // allocate host storage
   m_hPos = new float[m_numParticles*4];
   m_hWinP = new float[m_numParticles*4];
-  m_hSeeds = new bool[m_numParticles];
+  m_hIndex = new uint[m_numParticles];
   m_hConcetration = new uint[m_numCons];
   memset(m_hPos, 0, m_numParticles*4*sizeof(float));//16384
   memset(m_hWinP, 0, m_numParticles*4*sizeof(float));//16384  
@@ -171,8 +172,11 @@ void PlumeSystem::_initialize()
   memSize = sizeof(uint) * m_numCons;
   allocateArray((void**)&m_dConcetration, memSize); 
   
-  memSize = sizeof(bool) * m_numParticles;
-  allocateArray((void**)&m_dSeeds, memSize); 
+//   memSize = sizeof(bool) * m_numParticles;
+//   allocateArray((void**)&m_dSeeds, memSize); 
+  
+  memSize = sizeof(uint) * m_numParticles;
+  allocateArray((void**)&m_dIndex, memSize); 
 //   allocateArray((void**)&m_dWinP, memSize); 
 
   if(m_bUseGlobal) 
@@ -207,7 +211,7 @@ void PlumeSystem::_initialize()
     glUnmapBufferARB(GL_ARRAY_BUFFER);
   } else 
   {
-//     cutilSafeCall( cudaMalloc( (void **)&m_cudaColorVBO, sizeof(float)*numParticles*4) );
+    cutilSafeCall( cudaMalloc( (void **)&m_cudaColorVBO, sizeof(float)*m_numParticles*4) );
   }
 
   cutilCheckError(cutCreateTimer(&m_timer));
@@ -247,7 +251,7 @@ PlumeSystem::_initDeviceTexture(
 {
   assert(!m_bTexture_set);  
 //   bool isUseTexture = false;
-  if (m_bUseOpenGL && !m_bUseGlobal) 
+  if (!m_bUseGlobal) 
   {
     createCellTexture(CoEps, "CoEpsTex");
     createCellTexture(cellType, "cellTypeTex");
@@ -314,6 +318,7 @@ void PlumeSystem::update(const float &deltaTime, bool &b_print_concentration)
   {
     dPos = (float *) mapGLBufferObject(&m_cuda_posvbo_resource);
   } else {
+    dPos = m_dPos;  
 //     dPos = (float *) m_cudaPosVBO;
   }
 
@@ -326,8 +331,8 @@ void PlumeSystem::update(const float &deltaTime, bool &b_print_concentration)
   }  
   
 //   // integrate
-  if(m_bUseOpenGL && !m_bUseGlobal)  
-    advectPar_with_textureMemory(dPos, m_dWinP, m_dConcetration, deltaTime, numeject);  
+  if(!m_bUseGlobal)  
+    advectPar_with_textureMemory(dPos, m_dWinP, m_dIndex, m_dConcetration, deltaTime, numeject);  
 //   else if(m_bUseOpenGL && m_bUseGlobal) 
 //   { 
 //     global_kernel(dPos, m_dWinP, numeject, m_dGlobal_turbData); 
@@ -352,12 +357,14 @@ void PlumeSystem::update(const float &deltaTime, bool &b_print_concentration)
 /*
  *concentration
  */    
+  assert(numeject <= m_numParticles);
   if(numeject >= 500)
   { 
 //     std::cout<<"numeject"<<numeject<<"\n";
     if(b_print_concentration)
       cal_concentration(dPos, m_dConcetration, numeject, m_numParticles);    
-//     b_print_concentration = false;
+    if(numeject >= m_numParticles)
+      output_concentration(m_dConcetration, m_utl, m_output_file, m_numParticles);
   }
  
   // note: do unmap at end here to avoid unnecessary graphics/CUDA context switch
@@ -457,7 +464,7 @@ void PlumeSystem::reset(const float3 &pos, thrust::host_vector<float3> &prime)//
   
   for(uint i=0; i < m_numParticles; i++) 
   {  
-    m_hSeeds[i] = false;
+    m_hIndex[i] = i;
   } 	
   
   for(uint i=0; i < m_numCons; i++) 
@@ -477,7 +484,7 @@ void PlumeSystem::reset(const float3 &pos, thrust::host_vector<float3> &prime)//
   setArray(POSITION, m_hPos, 0, m_numParticles);
   setArray(WINDPRIME, m_hWinP, 0, m_numParticles);
   
-  copyArrayToDevice(m_dSeeds, m_hSeeds, 0, m_numParticles*sizeof(bool));
+  copyArrayToDevice(m_dIndex, m_hIndex, 0, m_numParticles*sizeof(uint));
   copyArrayToDevice(m_dConcetration, m_hConcetration, 0, m_numCons*sizeof(uint));  
 //     std::cout<<"  m_numGridCells   "<<m_numGridCells<<"  "<<m_numGridCells*sizeof(uint)<<"\n";
 }

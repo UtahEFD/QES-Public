@@ -26,20 +26,19 @@
 #include <thrust/host_vector.h>
 #include "kernel/kernel_global/CellTextureType.cuh" 
 #include "kernel/kernel_global/turbulence.cuh" 
-#include "kernel/kernel_global/ConstParams.cuh" 
-#include "kernel/kernel_interface.cuh"   
+#include "kernel/kernel_global/ConstParams.cuh"  
 
+#include "bw/Util.h"   
+#include "kernel/kernel_interface.cuh"   
 //set global memory of cells 
 // extern Cell* g_dCells; 
 // Plume system class
 class PlumeSystem
 {
 public:
-    PlumeSystem(uint numParticles, bool bUseOpenGL, bool bUseGlobal, Building building,
-		uint3 domain, float3 origin, Source source
-// 		float4* &cellData);
-// 		thrust::host_vector<float4> cellData);
-		);
+    PlumeSystem(const uint &numParticles, const bool &bUseOpenGL, const bool &bUseGlobal,
+		const Building &building, const uint3 &domain,  const float3 &origin,  
+		const Source source, const util &utl, const char* output_file);
     ~PlumeSystem();
     
     enum DeviceArray
@@ -124,21 +123,25 @@ protected: // methods
 protected: // data
     bool m_bInitialized, m_bUseOpenGL, m_bUseGlobal, m_bGlobal_set, m_bTexture_set;
     uint m_numParticles;
+    util m_utl;
+    const char* m_output_file;
 
     // CPU data
     float* m_hPos;              // particle positions
     float* m_hWinP;              // particle velocities
     uint * m_hConcetration;
-    bool* m_hSeeds;              // particle velocities
+    uint*  m_hIndex;
+//     bool* m_hSeeds;              // particle velocities
 //     Cell*  m_hCells;
  
 
     // GPU data
     float* m_dPos;
+    uint*  m_dIndex;
     float* m_dWinP;
     uint * m_dConcetration;
     turbulence* m_dGlobal_turbData;
-    bool*  m_dSeeds;              // particle velocities
+//     bool*  m_dSeeds;              // particle velocities
     uint   m_posVbo;            // vertex buffer object for particle positions
     uint   m_colorVBO;          // vertex buffer object for colors
 //     Cell*  m_dCell; //we use g_dCell instead

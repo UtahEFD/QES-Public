@@ -51,8 +51,10 @@
 const uint width = 800, height = 600;
  
   
-bool bUseOpenGL = true;  
+bool bUseOpenGL = false;  
 bool bUseGlobal = false;
+
+const char* output_file;
 
 //////////////in gl_funs.h////////////////////////////////////////////////////////////////
 // extern "C" void key(unsigned char, int, int);
@@ -81,14 +83,13 @@ sivelab::QUICProject *data = 0;
 Source source;   
 // initialize particle system
 // void initPlumeSystem(uint numParticles, uint3 gridSize, float4* &cellData)
-void initPlumeSystem(uint numParticles, uint3 gridSize)
+void initPlumeSystem(const uint &numParticles, const uint3 &gridSize, const util &utl, const char* output_file)
 { 
   Building building;
   building.lowCorner = lowCorner; 
   building.highCorner = highCorner;  
   psystem = new PlumeSystem(numParticles, bUseOpenGL, bUseGlobal, building, domain, origin,
-			       source);   
-//   cutilCheckError(cutCreateTimer(&timer));
+			    source, utl, output_file);   
 } 
 
 // initialize OpenGL
@@ -234,8 +235,7 @@ void loadQUICWindField(int nx, int ny, int nz, const std::string &quicFilesPath,
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char** argv) 
-{   
-//   std::cout<<"Going to UTL read end: "<<f_clock<<"\n"; 
+{    
   
   util utl;
   utl.readInputFile(); 
@@ -250,7 +250,15 @@ int main(int argc, char** argv)
  
   dispersion disp;
   disp.createDisp(eul);    
-//   return 0;
+  
+//   advectPar(utl,disp,eul,argv[1],argc);
+//   return 1;
+  
+  
+/*here you give the name of output_file of concentration 
+ */
+  output_file = "test.m";
+  
 /*
  * only for device global memory  
  * bUseGlobal must set true, false is default
@@ -314,8 +322,7 @@ int main(int argc, char** argv)
 	    sig1, sig2, taudx1, taudx2, taudy1, taudy2, taudz1, taudz2);  
   }
   
-  
-//   advectParOLD(utl,disp,eul,argv[1]);
+   
  /* 
   
   /////////////////read files by args/////////////////////
@@ -368,7 +375,7 @@ int main(int argc, char** argv)
 */
   numParticles = 100000;
  
- source.type = POINTSOURCE;
+  source.type = POINTSOURCE;
   if(source.type == SPHERESOURCE)
   {
     assert(source.type == SPHERESOURCE);
@@ -390,6 +397,7 @@ int main(int argc, char** argv)
   source.speed = 0.5f;
   
   domain = make_uint3(utl.nx, utl.ny, utl.nz); 
+   
 //   return 1;
 //   loadQUICWindField(data->nx, data->ny, data->nz, data->m_quicProjectPath, windFieldData);
 
@@ -402,17 +410,28 @@ int main(int argc, char** argv)
  
 ///////////////////////////////Opengl Main section////
   if (!bUseOpenGL) 
-  {
+  { 
     cudaInit(argc, argv);
     initGL(&argc, argv);
     cudaInit(argc, argv);
-    initPlumeSystem(numParticles, gridSize);
+    initPlumeSystem(numParticles, gridSize, utl, output_file);
     
-    psystem->reset(source.info.pt.ori, prime); 
     if(bUseGlobal)
       psystem->copy_turbs_2_deviceGlobal(turbs); 
+    else
+       psystem->_initDeviceTexture(CoEps, cellType, windData, eigVal, ka0, g2nd,
+  ////////////////  matrix 9////////////////
+	    eigVec1, eigVec2, eigVec3,
+	    eigVecInv1, eigVecInv2, eigVecInv3,
+	    lam1, lam2, lam3,
+  //////////////// matrix6 ////////////////
+	    sig1, sig2, taudx1, taudx2, taudy1, taudy2, taudz1, taudz2); 
 //       psystem->update(timestep); 
-    psystem->dev_par_concentration();
+    psystem->reset(source.info.pt.ori, prime); 
+    bool b_print_concentration = true;
+    while(true)   
+      psystem->update(timestep, b_print_concentration); 
+//     psystem->dev_par_concentration();
     return 1; 
   } 
   else
@@ -420,7 +439,7 @@ int main(int argc, char** argv)
     initGL(&argc, argv);
     cudaGLInit(argc, argv);
 
-    initPlumeSystem(numParticles, gridSize);
+    initPlumeSystem(numParticles, gridSize, utl, output_file);
     if(!bUseGlobal)
     {
       psystem->_initDeviceTexture(CoEps, cellType, windData, eigVal, ka0, g2nd,
@@ -437,27 +456,27 @@ int main(int argc, char** argv)
       psystem->copy_turbs_2_deviceGlobal(turbs);  
     }
      
-    psystem->reset(source.info.pt.ori, prime);
+      psystem->reset(source.info.pt.ori, prime);
+      
+      renderer = new ParticleRenderer;
+      renderer->setParticleRadius(psystem->getParticleRadius());
+      renderer->setColorBuffer(psystem->getColorBuffer()); 
+
+      initParams();
     
-    renderer = new ParticleRenderer;
-    renderer->setParticleRadius(psystem->getParticleRadius());
-    renderer->setColorBuffer(psystem->getColorBuffer()); 
+      initMenus(); 
+      glutDisplayFunc(display);
+      glutReshapeFunc(reshape);
+      glutMouseFunc(mouse);
+      glutMotionFunc(motion);
+      glutKeyboardFunc(key);
+      glutKeyboardUpFunc(keyUp);
+      glutSpecialFunc(special);
+      glutIdleFunc(idle);
 
-    initParams();
-  
-    initMenus(); 
-    glutDisplayFunc(display);
-    glutReshapeFunc(reshape);
-    glutMouseFunc(mouse);
-    glutMotionFunc(motion);
-    glutKeyboardFunc(key);
-    glutKeyboardUpFunc(keyUp);
-    glutSpecialFunc(special);
-    glutIdleFunc(idle);
+      atexit(cleanup);
 
-    atexit(cleanup);
-
-    glutMainLoop(); 
+      glutMainLoop();  
   }
   if (psystem)
     delete psystem;
@@ -466,26 +485,4 @@ int main(int argc, char** argv)
 
   cutilDeviceReset(); 
 }
-
-int test_gl(int argc, char** argv) 
-{
-  
-    initGL(&argc, argv);
-    cudaGLInit(argc, argv);
-  domain = make_uint3(153, 110, 30); 
-   initParams();
-  
-    initMenus(); 
-    glutDisplayFunc(display);
-    glutReshapeFunc(reshape);
-    glutMouseFunc(mouse);
-    glutMotionFunc(motion);
-    glutKeyboardFunc(key);
-    glutKeyboardUpFunc(keyUp);
-    glutSpecialFunc(special);
-    glutIdleFunc(idle);
-
-    atexit(cleanup);
-
-    glutMainLoop(); 
-    }
+ 

@@ -86,9 +86,11 @@ __device__ void resetParticles(float3 &pos, const uint &seed)//resetParticles(fl
 // template <typename InputIterator>
 struct advect_functor
 {
-  unsigned long deltaTime; 
+  unsigned long seed_offset; 
+  float tStepInp;
   __host__ __device__
-  advect_functor(unsigned long delta_time) : deltaTime(delta_time){}//,domain(make_float3(29,1,29)) {}
+  advect_functor(unsigned long delta_time, float tstepInput) : 
+    seed_offset(delta_time), tStepInp(tstepInput){}//,domain(make_float3(29,1,29)) {}
 
   template <typename Tuple>
   __device__
@@ -99,11 +101,13 @@ struct advect_functor
     float3 windPrime = make_float3(thrust::get<1>(t));  
 //     bool is_seed_flag = thrust::get<2>(t); 
     
-    int x = threadIdx.x + blockIdx.x * blockDim.x;
-    int y = threadIdx.y + blockIdx.y * blockDim.y;
-    uint offset = x + y * blockDim.x * gridDim.x; 
+//     int x = threadIdx.x + blockIdx.x * blockDim.x;
+//     int y = threadIdx.y + blockIdx.y * blockDim.y;
+//     uint offset = x + y * blockDim.x * gridDim.x; 
     
-    unsigned int seed = offset + deltaTime;//tea<16>(pos.x*100, offset);    
+    uint offset = thrust::get<2>(t); 
+    
+    unsigned int seed = offset + seed_offset;//tea<16>(pos.x*100, offset);    
     
 //     float4 debugf4;// = thrust::get<3>(t); 
     int countPrmMax=10;//1000;
@@ -136,9 +140,9 @@ struct advect_functor
 	return ;
       }
 	  /////////////////calculate dt
-	float tStepInp = 1.f;//read from input file
+// 	float tStepInp = 1.f;//read from input file
 	float tStepRem = tStepInp;
-	float dt = .03f;//tStepRem;
+	float dt = .1f;//tStepRem;
     //       float tStepMin = 1.0f; 
     //       int count = 0;
     //       int countprimeloop = 0;

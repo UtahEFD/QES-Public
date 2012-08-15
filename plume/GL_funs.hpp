@@ -247,7 +247,7 @@ extern "C"
   bool displaySliders = false; 
   bool bPause = false;
   bool bDrawBuilding = false;
-  bool b_print_concentration = false;
+  bool b_print_concentration = true;
   ParticleRenderer::DisplayMode displayMode = ParticleRenderer::PARTICLE_SPHERES; 
   CheckRender *g_CheckRender = NULL;	
   ParticleRenderer *renderer = 0;  

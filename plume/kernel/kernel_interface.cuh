@@ -66,10 +66,10 @@ void global_kernel_debug(float *pos, float *winP, bool* seeds_flag, const uint &
 		   const thrust::host_vector<turbulence> &hData);
 // void advectPar_with_textureMemory(float *pos, float *winP, bool* seed_flag,
 // 		     uint* concens, float deltaTime,  uint numParticles); 
-void advectPar_with_textureMemory(float *pos, float *winP, uint* concens, 
+void advectPar_with_textureMemory(float *pos, float *winP, uint* indexs, uint* concens, 
 				  float deltaTime,  uint numParticles);
 void cal_concentration(float *pos, uint* concens, const uint &numParticles, const uint &total_particles);
-// 		     float deltaTime,  uint numParticles); 
+void output_concentration(uint* concens, const util &utl, const char* filename, const uint &numParticles);
 
 void calcHash(int    numParticles);
   
