@@ -54,6 +54,7 @@ PlumeSystem::PlumeSystem(const uint &numParticles, const bool &bUseOpenGL, const
   m_params.building = building;//.lowCorner = make_float3(1.f, -1.f, 1.f); 
   m_params.particleRadius = 4.0f / 64.0f ;//particleRadius 
   m_params.domain = domain;//make_float3(40.f, 25.f, 25.f); 
+  m_params.origin = origin;
   m_params.source = source;
   _initialize(); 
 } 

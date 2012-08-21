@@ -51,7 +51,7 @@
 const uint width = 800, height = 600;
  
   
-bool bUseOpenGL = false;  
+bool bUseOpenGL = true;  
 bool bUseGlobal = false;
 
 const char* output_file;

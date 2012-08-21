@@ -41,7 +41,7 @@ __constant__ float terFacW = 2.;
 std::ofstream random_file;
 
 __device__ 
-inline bool b_outofboundary(const float3 &pos)
+inline bool b_inside_domain(const float3 &pos)
 { 
 //   return (pos.x > g_params.domain.x-1 - g_params.particleRadius) 
 //       || (pos.x < g_params.origin.x + g_params.particleRadius)
@@ -50,12 +50,12 @@ inline bool b_outofboundary(const float3 &pos)
 //       || (pos.z+1 > g_params.domain.z - g_params.particleRadius) 
 //       || (pos.z < g_params.origin.z-1 + g_params.particleRadius);
 //       
-  return (pos.x > g_params.domain.x-1) 
-      || (pos.x < g_params.origin.x  )
-      || (pos.y > g_params.domain.y-1) 
-      || (pos.y < g_params.origin.y  )  
-      || (pos.z > g_params.domain.z-1) 
-      || (pos.z < g_params.origin.z );
+  return (pos.x <= g_params.domain.x-1) 
+      && (pos.x >= g_params.origin.x  )
+      && (pos.y <= g_params.domain.y-1) 
+      && (pos.y >= g_params.origin.y  )  
+      && (pos.z <= g_params.domain.z-1) 
+      && (pos.z >= g_params.origin.z );
   
 }
 
@@ -117,17 +117,9 @@ struct advect_functor
 //     {
 //       resetParticles(pos);
 //     }else 
-    if( b_outofboundary(pos) ) 
-    {    
-// 	debugf4 = make_float4(pos, seed);
-      resetParticles(pos, seed); //resetParticles(pos, vel);   
-//       debugf4 = make_float4(0, 0, 0, seed);
-//       resetParticles(pos,seed_first_para, seed);        
-    } 
-    else 
+    if( b_inside_domain(pos) )  
 //------ if particle hits buildings then it bounces     
-    {  
-      {
+    {   
       int countPrm=0;
       volatile int cellType = tex3D(cellTypeTex, pos.x, pos.y, pos.z+1);
 //       debugf4 = make_float4(cellType,tex3D(CoEpsTex, pos.x, pos.y, pos.z+1), tex3D(sig2Tex, pos.x, pos.y, pos.z+1).x,tex3D(sig2Tex, pos.x, pos.y, pos.z+1).z);
@@ -306,10 +298,10 @@ struct advect_functor
 	}
 // 	else
 	  pos = newPos;
-	
-      }
+	 
     }
-    if( b_outofboundary(pos) ) 
+//     if( b_inside_domain(pos) ) 
+    else
     {     
       resetParticles(pos, seed);      
     } 
