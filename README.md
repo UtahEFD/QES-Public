@@ -67,3 +67,8 @@ type
 Buildings are not drawn in this test, but they do exist. Once the
 window pops up, just press 'b' to show the buildings.
 
+Currently, the code outputs a concentration data file called test.m. This can be run directly in matlab. One of the main results of the test matlab script is to produce concentration plots. For instance, the following image was generated with that script on Dec 9, 2014:
+
+![Concentration](media/cudaplume_concentrationExample.png)
+
+I believe the concentrations and dispersion code is working properly, but we have not yet validated the code.
