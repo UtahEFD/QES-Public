@@ -33,10 +33,13 @@
 #endif
 // CUDA utilities and system includes
 #include <iostream>  
-#include <cutil_inline.h>    // includes cuda.h and cuda_runtime_api.h
-#include <cutil_gl_inline.h> // includes cuda_gl_interop.h// includes cuda_gl_interop.h
+
+#include <helper_cuda.h>  
+#include <helper_cuda_gl.h> 
+#include <helper_math.h>
+
 #include <rendercheck_gl.h>
-#include <cutil_math.h>
+
 #include "shader/particle/render_particles.h"
 #include "plumeSystem.h"
 #include <thrust/host_vector.h>
@@ -73,7 +76,7 @@ extern "C"
   {
     unsigned char *data = 0;
     unsigned int width, height;
-    cutilCheckError( cutLoadPPM4ub(filename, &data, &width, &height));
+    // cutilCheckError( cutLoadPPM4ub(filename, &data, &width, &height));
     if(!data) {
       printf("Error opening file '%s'\n", filename);
       return 0;

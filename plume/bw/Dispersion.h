@@ -6,7 +6,9 @@
 #include <iostream>
 #include "Eulerian.h"
 #include "Random.h"
-#include <cutil_math.h>
+
+#include <helper_math.h>
+
 class dispersion{
  public:
   eulerian eul; 

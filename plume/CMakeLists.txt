@@ -16,14 +16,14 @@ FIND_PACKAGE(CUDA REQUIRED)
 IF(CUDA_FOUND) 
 #  set(CUDA_VERBOSE_BUILD ON)
 #      list(APPEND CUDA_NVCC_FLAGS "-g -G")
-  SET(CUDA_NVCC_FLAGS "-arch;sm_11")
+#  SET(CUDA_NVCC_FLAGS "-arch;sm_11")
 
   INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
 #ignore this################################## 
 #SET(SDK_LIB "/home/alex/NVIDIA_GPU_Computing_SDK") 
 #INCLUDE_DIRECTORIES (${SDK_PATH})
   INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/common/inc)  
-  INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/CUDALibraries/common/inc/)
+  INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
   LINK_DIRECTORIES (${CUDA_SDK_ROOT_DIR}/C/lib/)
 
   # Add the need flags for atomic operations in CUDA.
@@ -78,11 +78,11 @@ target_link_libraries (plume sive-quicutil)
 target_link_libraries (plume sive-util)
 target_link_libraries (plume ${Boost_PROGRAM_OPTIONS_LIBRARIES} )  
 
-IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
-  target_link_libraries (plume cutil_x86_64)
-ELSE(CMAKE_SIZEOF_VOID_P EQUAL 8)
-  target_link_libraries (plume cutil_i386)
-ENDIF(CMAKE_SIZEOF_VOID_P EQUAL 8)
+# IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
+#  target_link_libraries (plume cutil_x86_64)
+#ELSE(CMAKE_SIZEOF_VOID_P EQUAL 8)
+#  target_link_libraries (plume cutil_i386)
+#ENDIF(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
 target_link_libraries (plume GL) 
 target_link_libraries (plume GLEW) 

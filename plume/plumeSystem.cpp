@@ -21,9 +21,6 @@
 #include "plumeSystem.h" 
 // #include "Kernel/Texture_knl.cu"  
 
-#include <cutil_inline.h>    // includes cuda.h and cuda_runtime_api.h
-#include <cutil_math.h>  
-
 #include <assert.h>
 #include <math.h>
 #include <memory.h>
@@ -46,7 +43,7 @@ PlumeSystem::PlumeSystem(const uint &numParticles, const bool &bUseOpenGL, const
     m_numParticles(numParticles), m_utl(utl), m_output_file(output_file),
     m_hPos(0),m_hWinP(0), m_hIndex(0), m_dPos(0), m_dWinP(0), m_dIndex(0),//m_hCells(0),
 //     m_gridSize(gridSize),
-    m_timer(0) 
+    m_timer(0)
 {
   m_numGridCells = domain.x * domain.y * domain.z;//m_gridSize.x*m_gridSize.y*m_gridSize.z; 
 //     m_params.isFirsttime = true;
@@ -70,7 +67,8 @@ void PlumeSystem::createCellTexture(thrust::host_vector<T> &cellData, const char
   int w = m_params.domain.x, h = m_params.domain.y, d = m_params.domain.z;
   cudaExtent size = make_cudaExtent(w, h, d);  
   cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<T>();
-  cutilSafeCall( cudaMalloc3DArray(&cellArray, &channelDesc, size) );
+  // checkCudaErrors( cudaMalloc3DArray(&cellArray, &channelDesc, size) );
+  cudaMalloc3DArray(&cellArray, &channelDesc, size);
 
   cudaMemcpy3DParms copyParams = { 0 };
   T *cellDatapt =  thrust::raw_pointer_cast(&cellData[0]);
@@ -79,7 +77,8 @@ void PlumeSystem::createCellTexture(thrust::host_vector<T> &cellData, const char
   copyParams.dstArray = cellArray;
   copyParams.extent   = size;
   copyParams.kind     = cudaMemcpyHostToDevice;
-  cutilSafeCall( cudaMemcpy3D(&copyParams) );
+  // checkCudaErrors( cudaMemcpy3D(&copyParams) );
+  cudaMemcpy3D(&copyParams);
 
   cellData.clear();
   
@@ -90,7 +89,8 @@ void PlumeSystem::createCellTexture(thrust::host_vector<T> &cellData, const char
   ((textureReference *)texPt)->addressMode[0] = cudaAddressModeClamp;   // Clamp texture coordinates
   ((textureReference *)texPt)->addressMode[1] = cudaAddressModeClamp;
   ((textureReference *)texPt)->addressMode[2] = cudaAddressModeClamp;
-  cutilSafeCall(cudaBindTextureToArray(texPt, cellArray, &channelDesc)); 
+  // checkCudaErrors( cudaBindTextureToArray(texPt, cellArray, &channelDesc) ); 
+  cudaBindTextureToArray(texPt, cellArray, &channelDesc); 
    
  } //*/
 
@@ -212,10 +212,11 @@ void PlumeSystem::_initialize()
     glUnmapBufferARB(GL_ARRAY_BUFFER);
   } else 
   {
-    cutilSafeCall( cudaMalloc( (void **)&m_cudaColorVBO, sizeof(float)*m_numParticles*4) );
+      // checkCudaErrors( cudaMalloc( (void **)&m_cudaColorVBO, sizeof(float)*m_numParticles*4) );
+      cudaMalloc( (void **)&m_cudaColorVBO, sizeof(float)*m_numParticles*4);
   }
 
-  cutilCheckError(cutCreateTimer(&m_timer));
+  sdkCreateTimer(&m_timer);
 
   setParameters(&m_params);
 
@@ -300,8 +301,8 @@ void PlumeSystem::_finalize()
     glDeleteBuffers(1, (const GLuint*)&m_posVbo);
     glDeleteBuffers(1, (const GLuint*)&m_colorVBO);
   } else {
-//     cutilSafeCall( cudaFree(m_cudaPosVBO) );
-//     cutilSafeCall( cudaFree(m_cudaColorVBO) );
+//     checkCudaErrors( cudaFree(m_cudaPosVBO) );
+//     checkCudaErrors( cudaFree(m_cudaColorVBO) );
   }
 }
 

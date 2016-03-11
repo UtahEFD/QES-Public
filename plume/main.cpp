@@ -26,10 +26,11 @@
 #endif
 
 // CUDA utilities and system includes
-#include <cutil_inline.h>    // includes cuda.h and cuda_runtime_api.h
-#include <cutil_gl_inline.h> // includes cuda_gl_interop.h// includes cuda_gl_interop.h
+#include <helper_cuda.h>  
+#include <helper_cuda_gl.h> 
+#include <helper_math.h>
+
 #include <rendercheck_gl.h>
-#include <cutil_math.h>
 
 #include <iostream> 
 #include <stdlib.h>
@@ -51,7 +52,8 @@
 const uint width = 800, height = 600;
  
   
-bool bUseOpenGL = true;  
+bool bUseOpenGL = true;
+
 bool bUseGlobal = false;
 
 const char* output_file;
@@ -483,6 +485,6 @@ int main(int argc, char** argv)
   if (data)
     delete data;  
 
-  cutilDeviceReset(); 
+  // cutilDeviceReset(); 
 }
  

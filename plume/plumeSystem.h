@@ -20,7 +20,10 @@
 
 #ifndef __PLUMESYSTEM_H__
 #define __PLUMESYSTEM_H__
- 
+
+#include <helper_cuda.h>
+#include <helper_math.h>  
+#include <helper_timer.h>
 
 // #include "vector_functions.h"
 #include <thrust/host_vector.h>
@@ -161,7 +164,7 @@ protected: // data
     uint m_numGridCells;
     uint m_numCons;
 
-    uint m_timer;
+    StopWatchInterface *m_timer;
 
 //     uint m_solverIterations;
  
