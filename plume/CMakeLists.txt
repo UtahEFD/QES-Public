@@ -7,7 +7,7 @@ SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
 
  
 
-SET(LIBSIVELAB_PATH "${CMAKE_SOURCE_DIR}/../../libsivelab" CACHE STRING "Path to the directory where the libsivelab repository is located (assumes code is built into a directory named 'build').")
+SET(LIBSIVELAB_PATH "${CMAKE_SOURCE_DIR}/../libsivelab" CACHE STRING "Path to the directory where the libsivelab repository is located (assumes code is built into a directory named 'build').")
 INCLUDE_DIRECTORIES (${LIBSIVELAB_PATH}) 
 LINK_DIRECTORIES (${LIBSIVELAB_PATH}/lib) 
 
@@ -22,7 +22,6 @@ IF(CUDA_FOUND)
 #ignore this################################## 
 #SET(SDK_LIB "/home/alex/NVIDIA_GPU_Computing_SDK") 
 #INCLUDE_DIRECTORIES (${SDK_PATH})
-  INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/common/inc)  
   INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
   LINK_DIRECTORIES (${CUDA_SDK_ROOT_DIR}/C/lib/)
 
