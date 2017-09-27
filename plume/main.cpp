@@ -48,6 +48,7 @@
  
 #include "util/handlePlumeArgs.h"
 #include "quicutil/QUICProject.h"
+
 #include <thrust/host_vector.h>  
 const uint width = 800, height = 600;
  
@@ -238,10 +239,19 @@ void loadQUICWindField(int nx, int ny, int nz, const std::string &quicFilesPath,
 ////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char** argv) 
 {    
-    std::string quicFile = "";
+    sivelab::PlumeArgs quicArgs;
+    quicArgs.process(argc, argv);
+
+    std::string quicInputFile;
+    if (quicArgs.isSet("quicproj", quicInputFile)) {
+        std::cout << "Will read input from files in: \"" << quicInputFile << "\"" << std::endl;
+    }
+    else {
+        std::cout << "Using hard-coded test case and NOT reading a QUIC Project." << std::endl;
+    }
 
   util utl;
-  utl.readInputFile(quicFile); 
+  utl.readInputFile(quicInputFile); 
   float f_clock = ((float)std::clock())/CLOCKS_PER_SEC;
   std::cout<<"                    Going to UTL read end: "<<f_clock<<"\n"; 
   
