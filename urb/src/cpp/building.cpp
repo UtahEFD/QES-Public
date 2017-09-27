@@ -1759,7 +1759,10 @@ namespace QUIC
 		{
 			for(unsigned int i = 0; i < bldngs.size() - j; i++)
 			{
-				if(bldngs[i]->type == quBuildings::VEGETATION)
+                            // No good enums in the header so will use
+                            // the hard-coded values for now
+                            // if(bldngs[i]->type == quBuildings::VEGETATION)
+                            if(bldngs[i]->type == 9)
 				{
 					swapBuildings(bldngs[i], bldngs[j]);
 					veggies++;				

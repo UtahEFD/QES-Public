@@ -14,9 +14,15 @@ namespace QUIC
 {
 	typedef struct pentagon : public urbBuilding
 	{	
-		pentagon() : type(quBuildings::PENTAGON) {}
-	
-		const quBuildings::TYPE type;
+            // No good enums in the header so will use the hard-coded
+            // values for now
+            // 
+            // pentagon() : type(quBuildings::PENTAGON) {}
+            pentagon() 
+            {
+                type = 3;
+            }
+            // const quBuildings::TYPE type;
 	
 		void initialize(float dx, float dy, float dz);
 	

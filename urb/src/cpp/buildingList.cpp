@@ -8,7 +8,11 @@ namespace QUIC
 		for(unsigned int j = 0; j < vector<urbBuilding>::size(); j++)
 		for(unsigned int i = 0; i < vector<urbBuilding>::size() - j; i++)
 		{
-			if(vector<urbBuilding>::operator[](i).type == quBuildings::VEGETATION)
+                    // No good enums in the header so will use the
+                    // hard-coded values for now
+                    // 
+                    // if(vector<urbBuilding>::operator[](i).type == quBuildings::VEGETATION)
+                    if(vector<urbBuilding>::operator[](i).type == 9)
 			{
 				swapBuildings
 				(
