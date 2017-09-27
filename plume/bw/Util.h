@@ -4,10 +4,13 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+
+#include "quicutil/QUICProject.h"
+
 class util{
  public:
   util();
-  void readInputFile();
+    void readInputFile(const std::string &quicFileToLoad);
   int twidth,numPar, nx,ny,nz, theight, windFieldData,numBoxX,numBoxY,numBoxZ,numBuild,ibuild;
   double timeStep,ustar,dur,sCBoxTime,eCBoxTime, avgTime;
   double xSrc,ySrc,zSrc,rSrc,xBoxSize,yBoxSize,zBoxSize,zo,dx,dy,dz,vonKar;
