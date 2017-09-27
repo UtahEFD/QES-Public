@@ -100,27 +100,21 @@ void util::readInputFile( const std::string &quicFileToLoad ){
           rSrc = qproj.qpSourceData.sources[0].radius;
       }
 
-#if 0
-      if(inputStr=="numBuild"){
-          str >> numBuild;
-          xfo.resize(numBuild);
-          yfo.resize(numBuild);
-          zfo.resize(numBuild);
-          hgt.resize(numBuild);
-          wth.resize(numBuild);
-          len.resize(numBuild);
-      }
-      if(inputStr=="build"){      
-	
-          str >> xfo.at(ibuild);
-          str >> yfo.at(ibuild);
-          str >> zfo.at(ibuild);
-          str >> hgt.at(ibuild);
-          str >> wth.at(ibuild);
-          str >> len.at(ibuild);
-          ibuild++;
-      }
-#endif
+      numBuild = qproj.qpBuildoutData.buildings.size();
+      xfo.resize(numBuild);
+      yfo.resize(numBuild);
+      zfo.resize(numBuild);
+      hgt.resize(numBuild);
+      wth.resize(numBuild);
+      len.resize(numBuild);
+
+      for (int i=0; i<numBuild; i++) {
+          xfo.at(ibuild) = qproj.qpBuildoutData.buildings[i].xfo;
+          yfo.at(ibuild) = qproj.qpBuildoutData.buildings[i].yfo;
+          zfo.at(ibuild) = qproj.qpBuildoutData.buildings[i].zfo;
+          hgt.at(ibuild) = qproj.qpBuildoutData.buildings[i].height;
+          wth.at(ibuild) = qproj.qpBuildoutData.buildings[i].width;
+          len.at(ibuild) = qproj.qpBuildoutData.buildings[i].length;       }
   }
   else {
 
