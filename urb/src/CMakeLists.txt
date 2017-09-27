@@ -36,7 +36,7 @@ IF(CUDA_FOUND)
   INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/common/inc)
 
   # Add the need flags for atomic operations in CUDA.
-  SET(CUDA_NVCC_FLAGS -arch sm_11)
+  # SET(CUDA_NVCC_FLAGS -arch sm_11)
 
 ELSE (CUDA_FOUND)
   MESSAGE(FATAL_ERROR "CUDA is required for compiling this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories.")
