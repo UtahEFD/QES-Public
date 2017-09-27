@@ -71,34 +71,36 @@ void util::readInputFile( const std::string &quicFileToLoad ){
   
       avgTime = qproj.qpParamData.concAvgTime;
   
+      // array of the bounding box of the collection space;
+      bnds[0] = qproj.qpParamData.xbl;
+      bnds[1] = qproj.qpParamData.xbu;
+      bnds[2] = qproj.qpParamData.ybl;
+      bnds[3] = qproj.qpParamData.ybu;
+      bnds[4] = qproj.qpParamData.zbl;
+      bnds[5] = qproj.qpParamData.zbu;
+
+      numBoxX = qproj.qpParamData.nbx;
+      numBoxY = qproj.qpParamData.nby;
+      numBoxZ = qproj.qpParamData.nbz;
+      
+      xBoxSize=(bnds[1]-bnds[0])/numBoxX;
+      yBoxSize=(bnds[3]-bnds[2])/numBoxY;
+      zBoxSize=(bnds[5]-bnds[4])/numBoxZ;
+
+      src = qproj.qpSourceData.sources[0].name;
+
+      // assuming that this IS a "point" source.. until other 
+      // types can be integrated.
+      if (qproj.qpSourceData.sources[0].geometry == qpSource::SPHERICAL_SHELL) {
+          xSrc = qproj.qpSourceData.sources[0].points[0].x;
+          ySrc = qproj.qpSourceData.sources[0].points[0].y;
+          zSrc = qproj.qpSourceData.sources[0].points[0].z;
+          
+          // radius
+          rSrc = qproj.qpSourceData.sources[0].radius;
+      }
+
 #if 0
-      // where are these???
-      if(inputStr=="bounds"){
-          for(int i=0;i<6;i++)
-              str>>bnds[i];
-      }
-      if(inputStr=="numBox_x"){
-          str >> numBoxX;
-          xBoxSize=(bnds[1]-bnds[0])/numBoxX;
-      }
-      if(inputStr=="numBox_y"){
-          str >> numBoxY;
-          yBoxSize=(bnds[3]-bnds[2])/numBoxY;
-      }
-      if(inputStr=="numBox_z"){
-          str >> numBoxZ;
-          zBoxSize=(bnds[5]-bnds[4])/numBoxZ;
-      }
-      if(inputStr=="source_info"){
-          str >> src;
-          if(strcmp(src.c_str(),"point")==0){
-	  
-              str >> xSrc;
-              str >> ySrc;
-              str >> zSrc;
-              str >> rSrc;
-          }
-      }
       if(inputStr=="numBuild"){
           str >> numBuild;
           xfo.resize(numBuild);
