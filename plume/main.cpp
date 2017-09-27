@@ -242,6 +242,12 @@ int main(int argc, char** argv)
     sivelab::PlumeArgs quicArgs;
     quicArgs.process(argc, argv);
 
+    if (quicArgs.isSet("help")) {    
+      std::cerr << "Arguments that can be specified follow:" << std::endl;
+      quicArgs.printUsage();
+      exit(EXIT_FAILURE);
+    }
+
     std::string quicInputFile;
     if (quicArgs.isSet("quicproj", quicInputFile)) {
         std::cout << "Will read input from files in: \"" << quicInputFile << "\"" << std::endl;
