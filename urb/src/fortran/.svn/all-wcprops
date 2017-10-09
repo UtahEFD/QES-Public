@@ -1,0 +1,239 @@
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/quicurbCUDA/!svn/ver/400/trunk/QUIC_CUDA/Urb/Fortran
+END
+main.f90
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/quicurbCUDA/!svn/ver/341/trunk/QUIC_CUDA/Urb/Fortran/main.f90
+END
+diffusion.f90
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/diffusion.f90
+END
+sort.f90
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/sort.f90
+END
+wake.f90
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/wake.f90
+END
+turbulence_model.f90
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/turbulence_model.f90
+END
+sor3d.f90
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/quicurbCUDA/!svn/ver/341/trunk/QUIC_CUDA/Urb/Fortran/sor3d.f90
+END
+poisson.f90
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/quicurbCUDA/!svn/ver/332/trunk/QUIC_CUDA/Urb/Fortran/poisson.f90
+END
+datamodule.mod
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/quicurbCUDA/!svn/ver/368/trunk/QUIC_CUDA/Urb/Fortran/datamodule.mod
+END
+read_quic_met.f90
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/read_quic_met.f90
+END
+parking_garage.f90
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/parking_garage.f90
+END
+denominators.f90
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/quicurbCUDA/!svn/ver/338/trunk/QUIC_CUDA/Urb/Fortran/denominators.f90
+END
+init.f90
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/quicurbCUDA/!svn/ver/337/trunk/QUIC_CUDA/Urb/Fortran/init.f90
+END
+build_garage.f90
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/build_garage.f90
+END
+zd_bisect.f90
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/zd_bisect.f90
+END
+unbuild_garage.f90
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/unbuild_garage.f90
+END
+bisect.f90
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/bisect.f90
+END
+regress.f90
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/regress.f90
+END
+rectanglewake.f90
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/quicurbCUDA/!svn/ver/336/trunk/QUIC_CUDA/Urb/Fortran/rectanglewake.f90
+END
+building_parameterizations.f90
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/quicurbCUDA/!svn/ver/332/trunk/QUIC_CUDA/Urb/Fortran/building_parameterizations.f90
+END
+datamodule.f90
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/quicurbCUDA/!svn/ver/337/trunk/QUIC_CUDA/Urb/Fortran/datamodule.f90
+END
+CMakeLists.txt
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/quicurbCUDA/!svn/ver/372/trunk/QUIC_CUDA/Urb/Fortran/CMakeLists.txt
+END
+cylinderwake.f90
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/cylinderwake.f90
+END
+street_intersect.f90
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/quicurbCUDA/!svn/ver/332/trunk/QUIC_CUDA/Urb/Fortran/street_intersect.f90
+END
+rooftop.f90
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/quicurbCUDA/!svn/ver/336/trunk/QUIC_CUDA/Urb/Fortran/rooftop.f90
+END
+sensorinit.f90
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/quicurbCUDA/!svn/ver/323/trunk/QUIC_CUDA/Urb/Fortran/sensorinit.f90
+END
+plantinit.f90
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/plantinit.f90
+END
+bridgewake.f90
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/bridgewake.f90
+END
+wallbc.f90
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/wallbc.f90
+END
+building_connect.f90
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/building_connect.f90
+END
+upwind.f90
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/upwind.f90
+END
+outfile.f90
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/outfile.f90
+END
+read_hotmac_met.f90
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/read_hotmac_met.f90
+END
+pentagon.f90
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/pentagon.f90
+END
+divergence.f90
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/divergence.f90
+END
+courtyard.f90
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/courtyard.f90
+END
+euler.f90
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/euler.f90
+END
+defbuild.f90
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/defbuild.f90
+END
+streetcanyon.f90
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/streetcanyon.f90
+END
+read_ittmm5_met.f90
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/quicurbCUDA/!svn/ver/321/trunk/QUIC_CUDA/Urb/Fortran/read_ittmm5_met.f90
+END

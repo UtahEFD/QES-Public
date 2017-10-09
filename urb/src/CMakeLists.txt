@@ -33,7 +33,7 @@ SET(CMAKE_C_FLAGS "-Wall")
 
 IF(CUDA_FOUND)
   INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
-  INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/common/inc)
+  INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
 
   # Add the need flags for atomic operations in CUDA.
   # SET(CUDA_NVCC_FLAGS -arch sm_11)
@@ -119,6 +119,7 @@ LINK_DIRECTORIES (${LIBSIVELAB_PATH}/lib/)
 
 LINK_DIRECTORIES (${CMAKE_SOURCE_DIR}/../lib)
 
+add_subdirectory (fortran)
 add_subdirectory (cpp)
 add_subdirectory (cuda)
 add_subdirectory (tests)
