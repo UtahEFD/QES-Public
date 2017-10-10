@@ -493,6 +493,8 @@ namespace QUIC
 		int min_thrd_cnt = 128;
 		int max_elements = mx_grid_x*min_thrd_cnt;
 
+                std::cout << "mx_grid_x = " << mx_grid_x << ", min_thrd_cnt = " << min_thrd_cnt << std::endl;
+
 		// Make sure the size is doable...
 		if(domain_size >= max_elements) 
 		{
@@ -650,22 +652,47 @@ namespace QUIC
 		int needed_grid_bytes = grid_size*grids*sizeof(float);
 								
 		int needed_bytes = needed_cell_bytes + needed_grid_bytes;
-		float        needed_MB    = needed_bytes / 1024. / 1024.;
+		float needed_MiB = needed_bytes / 1024. / 1024.;
 		
 		// Originally e, f, g, h, m, n, o, p, q and denoms on device.
 		// Now denoms and cmprssd.
 		//unsigned int saved_bytes = domain_size*(10*sizeof(float) - 1*sizeof(int) - 1*sizeof(float));
 		//float        saved_Mb    = saved_bytes / 1024. / 1024.;
 
-		struct cudaDeviceProp d_info;
-		cudaGetDeviceProperties(&d_info, 0); //Current Device should be 0.
-		
-		int avail_bytes = d_info.totalGlobalMem;
-		float        avail_MB    = avail_bytes / 1024. / 1024.;
+                int numCUDADevices = 0;
+                cudaGetDeviceCount( &numCUDADevices );
+                std::cout << "Number of CUDA Devices: " << numCUDADevices << std::endl;
 
-		float lefto_MB = avail_MB - needed_MB;
+                if (numCUDADevices == 0) {
+                    std::cerr << "NO CUDA Device!  Exiting!!!" << std::endl;
+                }
+                    
+                // Some of this output is based on info from
+                //   https://devblogs.nvidia.com/parallelforall/how-query-device-properties-and-handle-errors-cuda-cc/
+                cudaDeviceProp d_info;
+                for (int i = 0; i < numCUDADevices; i++) {
+                    cudaGetDeviceProperties(&d_info, i);
+                    std::cout << "CUDA Device Number: " << i << std::endl;
+                    std::cout << "\tDevice name: " << d_info.name << std::endl;
+                    std::cout << "\tMemory Clock Rate (KHz): " << d_info.memoryClockRate << std::endl;
+                    std::cout << "\tMemory Bus Width (bits): " << d_info.memoryBusWidth << std::endl;
+                    std::cout << "\tPeak Memory Bandwidth (GB/s): "
+                              << 2.0*d_info.memoryClockRate*(d_info.memoryBusWidth/8)/1.0e6 << std::endl;
+                }
 
-		return (lefto_MB < 0) ? lefto_MB : needed_MB ;
+		cudaError_t cErr = cudaGetDeviceProperties(&d_info, 0);
+                if (cErr != cudaSuccess) 
+                    std::cerr << "CUDA error: " << cudaGetErrorString(cErr) << std::endl;
+
+		size_t avail_bytes = d_info.totalGlobalMem;
+		float  avail_MB    = avail_bytes / 1024.0f / 1024.0f;
+
+                std::cout << "Using Device 0, " << d_info.name << ", CUDA Device Mem: " << avail_MB << " MiB" << std::endl;
+                std::cout << "\testimated memory needed: " << needed_MiB << " MiB" << std::endl;
+
+		float lefto_MB = avail_MB - needed_MiB;
+
+		return (lefto_MB < 0) ? lefto_MB : needed_MiB;
 	}
 
 	void urbModule::allocateDeviceMemory() 
