@@ -150,6 +150,9 @@ void loadQUICWindField(int nx, int ny, int nz, const std::string &quicFilesPath,
   assert( quicFilesPath.c_str() != NULL );
   std::string path = quicFilesPath + "QU_velocity.dat";
 
+  std::cout << "Loading QUIC Windfield from " << path << std::endl;
+  
+
   std::ifstream QUICWindField;
   QUICWindField.open(path.c_str()); //opening the wind file  to read
 
@@ -239,6 +242,7 @@ void loadQUICWindField(int nx, int ny, int nz, const std::string &quicFilesPath,
 ////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char** argv) 
 {    
+    // Using the general argument parser to handle command line input
     sivelab::PlumeArgs quicArgs;
     quicArgs.process(argc, argv);
 
@@ -248,6 +252,7 @@ int main(int argc, char** argv)
       exit(EXIT_FAILURE);
     }
 
+    // extract the quic proj file if it was provided on the command line
     std::string quicInputFile;
     if (quicArgs.isSet("quicproj", quicInputFile)) {
         std::cout << "Will read input from files in: \"" << quicInputFile << "\"" << std::endl;
@@ -256,14 +261,15 @@ int main(int argc, char** argv)
         std::cout << "Using hard-coded test case and NOT reading a QUIC Project." << std::endl;
     }
 
-  util utl;
-  utl.readInputFile(quicInputFile); 
-  float f_clock = ((float)std::clock())/CLOCKS_PER_SEC;
-  std::cout<<"                    Going to UTL read end: "<<f_clock<<"\n"; 
+    util utl;
+    utl.readInputFile(quicInputFile);
   
-  eulerian eul;
-  eul.createEul(utl); 
-  std::cout<<"                     Going to EUL read end: "<<((float)std::clock())/CLOCKS_PER_SEC -f_clock<<"\n"; 
+    float f_clock = ((float)std::clock())/CLOCKS_PER_SEC;
+    std::cout<<"                    Going to UTL read end: "<<f_clock<<"\n"; 
+  
+    eulerian eul;
+    eul.createEul(utl); 
+    std::cout<<"                     Going to EUL read end: "<<((float)std::clock())/CLOCKS_PER_SEC -f_clock<<"\n"; 
   
 //   std::cout<<"Going to Disp"<<std::endl;
  
@@ -392,6 +398,9 @@ int main(int argc, char** argv)
   float3 *UData    = (float3 *)malloc(gridSizpose.x*gridSize.y*gridSize.z*sizeof(float3)); 
   loadQUICWindField(data->nx, data->ny, data->nz, data->m_quicProjectPath, windData, sigData, UData); 
 */
+
+  // this all needs to be pulled from the appropriate QUIC files!
+
   numParticles = 100000;
  
   source.type = POINTSOURCE;

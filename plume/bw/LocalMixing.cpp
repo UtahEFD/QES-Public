@@ -41,9 +41,9 @@ void localMixing::createSigTau(eulerian* eul,util& utl){
     len.at(i)=utl.len.at(i);
   }
 
-  int ii=34;
-  int jj=7;
-  int kk=2;
+//  int ii=34;
+//  int jj=7;
+//  int kk=2;
 
  ///////////////////doing nothing here//////////////
 //   std::ofstream minDist;

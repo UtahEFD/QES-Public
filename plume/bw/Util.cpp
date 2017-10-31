@@ -34,7 +34,7 @@ void util::readInputFile( const std::string &quicFileToLoad ){
       //
       // ./runMyExec --quicproj /res/quic/qedata/SLC/SLC.proj
       // 
-      sivelab::QUICProject qproj( quicFileToLoad );
+      m_QUICProjData.initialize_quicProjecPath( quicFileToLoad );
   
       // we should now have access to some QP parameters...
       // through qproj.qpParamData and qproj.qpSourceData..
@@ -48,59 +48,62 @@ void util::readInputFile( const std::string &quicFileToLoad ){
   
       numPar = twidth*theight;
 
-      nx = qproj.nx;
-      ny = qproj.ny;
-      nz = qproj.nz;
+      nx = m_QUICProjData.nx;
+      ny = m_QUICProjData.ny;
+      nz = m_QUICProjData.nz;
   
       // Deal with QU_velocity.dat
       // if(inputStr=="windFieldData"){
       // str >> windFieldData;
       // }
-      windFieldData = 6;   // should be tied better to other things???
+      // Since this is a QUIC Project, we need to read the Wind Field
+      // from the QUIC QU_velocity file, so set the windFieldData to 5
+      // to do this.
+      windFieldData = 5;
 
-      timeStep = qproj.qpParamData.timeStep;
+      timeStep = m_QUICProjData.qpParamData.timeStep;
   
       // Set the output file, whatever that is storing...
       file = "/tmp/cudaPlumeOutput.txt";
   
-      dur = qproj.qpParamData.duration;
+      dur = m_QUICProjData.qpParamData.duration;
       ustar = 0.18;
   
-      sCBoxTime = qproj.qpParamData.concStartTime;
+      sCBoxTime = m_QUICProjData.qpParamData.concStartTime;
       eCBoxTime = 100000.0;  // where is this set in QUIC?
   
-      avgTime = qproj.qpParamData.concAvgTime;
+      avgTime = m_QUICProjData.qpParamData.concAvgTime;
   
       // array of the bounding box of the collection space;
-      bnds[0] = qproj.qpParamData.xbl;
-      bnds[1] = qproj.qpParamData.xbu;
-      bnds[2] = qproj.qpParamData.ybl;
-      bnds[3] = qproj.qpParamData.ybu;
-      bnds[4] = qproj.qpParamData.zbl;
-      bnds[5] = qproj.qpParamData.zbu;
+      bnds[0] = m_QUICProjData.qpParamData.xbl;
+      bnds[1] = m_QUICProjData.qpParamData.xbu;
+      bnds[2] = m_QUICProjData.qpParamData.ybl;
+      bnds[3] = m_QUICProjData.qpParamData.ybu;
+      bnds[4] = m_QUICProjData.qpParamData.zbl;
+      bnds[5] = m_QUICProjData.qpParamData.zbu;
 
-      numBoxX = qproj.qpParamData.nbx;
-      numBoxY = qproj.qpParamData.nby;
-      numBoxZ = qproj.qpParamData.nbz;
+      numBoxX = m_QUICProjData.qpParamData.nbx;
+      numBoxY = m_QUICProjData.qpParamData.nby;
+      numBoxZ = m_QUICProjData.qpParamData.nbz;
       
       xBoxSize=(bnds[1]-bnds[0])/numBoxX;
       yBoxSize=(bnds[3]-bnds[2])/numBoxY;
       zBoxSize=(bnds[5]-bnds[4])/numBoxZ;
 
-      src = qproj.qpSourceData.sources[0].name;
+      src = m_QUICProjData.qpSourceData.sources[0].name;
 
       // assuming that this IS a "point" source.. until other 
       // types can be integrated.
-      if (qproj.qpSourceData.sources[0].geometry == qpSource::SPHERICAL_SHELL) {
-          xSrc = qproj.qpSourceData.sources[0].points[0].x;
-          ySrc = qproj.qpSourceData.sources[0].points[0].y;
-          zSrc = qproj.qpSourceData.sources[0].points[0].z;
+      if (m_QUICProjData.qpSourceData.sources[0].geometry == qpSource::SPHERICAL_SHELL) {
+          xSrc = m_QUICProjData.qpSourceData.sources[0].points[0].x;
+          ySrc = m_QUICProjData.qpSourceData.sources[0].points[0].y;
+          zSrc = m_QUICProjData.qpSourceData.sources[0].points[0].z;
           
           // radius
-          rSrc = qproj.qpSourceData.sources[0].radius;
+          rSrc = m_QUICProjData.qpSourceData.sources[0].radius;
       }
 
-      numBuild = qproj.qpBuildoutData.buildings.size();
+      numBuild = m_QUICProjData.qpBuildoutData.buildings.size();
       xfo.resize(numBuild);
       yfo.resize(numBuild);
       zfo.resize(numBuild);
@@ -109,12 +112,12 @@ void util::readInputFile( const std::string &quicFileToLoad ){
       len.resize(numBuild);
 
       for (int i=0; i<numBuild; i++) {
-          xfo.at(ibuild) = qproj.qpBuildoutData.buildings[i].xfo;
-          yfo.at(ibuild) = qproj.qpBuildoutData.buildings[i].yfo;
-          zfo.at(ibuild) = qproj.qpBuildoutData.buildings[i].zfo;
-          hgt.at(ibuild) = qproj.qpBuildoutData.buildings[i].height;
-          wth.at(ibuild) = qproj.qpBuildoutData.buildings[i].width;
-          len.at(ibuild) = qproj.qpBuildoutData.buildings[i].length;       }
+          xfo.at(ibuild) = m_QUICProjData.qpBuildoutData.buildings[i].xfo;
+          yfo.at(ibuild) = m_QUICProjData.qpBuildoutData.buildings[i].yfo;
+          zfo.at(ibuild) = m_QUICProjData.qpBuildoutData.buildings[i].zfo;
+          hgt.at(ibuild) = m_QUICProjData.qpBuildoutData.buildings[i].height;
+          wth.at(ibuild) = m_QUICProjData.qpBuildoutData.buildings[i].width;
+          len.at(ibuild) = m_QUICProjData.qpBuildoutData.buildings[i].length;       }
   }
   else {
 
@@ -220,31 +223,4 @@ void util::readInputFile( const std::string &quicFileToLoad ){
           }
       }
   }
-
-  /*  twidth=1000;
-      theight=10;
-      numPar=twidth*theight;
-      nx=100;
-      ny=50;
-      nz=20;
-      windFieldData=4;
-      timeStep=0.01;
-      file="data.txt";
-      dur=100;
-      ustar=0.084;
-      sCBoxTime=10;
-      eCBoxTime=10000;
-      avgTime=90;
-      
-      bnds[0]=0;
-      bnds[1]=100.0;
-      bnds[2]=0;
-      bnds[3]=50.0;
-      bnds[4]=0;
-      bnds[5]=20.0;
-      
-      numBox=20;
-      zBoxSize=(bnds[1]-bnds[0])/numBox;
-      zSrc=0;
-      rSrc=0;*/
 }

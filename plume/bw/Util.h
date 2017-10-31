@@ -17,6 +17,9 @@ class util{
   double bnds[6];
   std::string file,src;
   std::vector<double> xfo,yfo,zfo,hgt,wth,len;
+
+    sivelab::QUICProject m_QUICProjData;
+    
  private:
   int profile;
   std::string outFile;
