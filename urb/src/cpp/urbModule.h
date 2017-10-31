@@ -178,10 +178,10 @@ namespace QUIC
 			// Sim Parameters
       bool sim_params_parsed;
 
-		  quSimParams simParams;
-			quMetParams metParams;
-			
-			std::vector<quSensorParams*> sensors;
+            quSimParams simParams;
+            quMetParams metParams;
+            
+            std::vector<quSensorParams> sensors;
 
 		  quBuildings fileBuildings;
 		  urbBuildingList buildings;

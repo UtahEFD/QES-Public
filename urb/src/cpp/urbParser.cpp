@@ -20,45 +20,50 @@ namespace QUIC
 {
 	void urbParser::parse(urbModule* um, std::string filepath)
  	{
-		um->stpwtchs->parse->start();
+            um->stpwtchs->parse->start();
 
-    QUICProject quicProject = QUICProject(filepath, !um->isQuietQ(), true);
-		um->input_directory = quicProject.m_quicProjectPath;
+            // This loads in the entire QUIC project (or should)
+            QUICProject quicProject = QUICProject(filepath, !um->isQuietQ(), true);
+            um->input_directory = quicProject.m_quicProjectPath;
     
-    // Get the basic simulation information.
-    um->simParams = quicProject.quSimParamData;
-		um->setDimensions(um->simParams.nx, um->simParams.ny, um->simParams.nz);
-		um->sim_params_parsed = true;
+            // Get the basic simulation information.
+            um->simParams = quicProject.quSimParamData;
+            um->setDimensions(um->simParams.nx, um->simParams.ny, um->simParams.nz);
+            um->sim_params_parsed = true;
 
-    // Get the sensor information.
-		um->metParams = quicProject.quMetParamData;
-		quSensorParams* tmp = new quSensorParams();
-		tmp->siteName  = um->metParams.siteName;
-		tmp->fileName  = um->metParams.sensorFileName;
-		um->sensors.push_back(tmp);
-  	for(unsigned int i = 0; i < um->sensors.size(); i++)
-		{
-		  um->sensors[i]->beVerbose = !(um->isQuietQ());
-      um->sensors[i]->readQUICFile(um->input_directory + um->sensors[i]->fileName); 
-      //um->sensors[i]->print();    
+            // Get the sensor information.
+            um->metParams = quicProject.quMetParamData;
 
-      // Some sensor setup. Probably shouldn't stay here...
-			um->sensors[i]->prfl_lgth = um->gz;
-			um->sensors[i]->u_prof = new float[um->gz];
-			um->sensors[i]->v_prof = new float[um->gz];
-		}
+            // Metparams contains the sensors...
+            // currently, QUIC loader only handles a single sensor for
+            // the MetParams....
+            // quSensorParams* tmp = new quSensorParams();
+            // tmp->siteName  = um->metParams.siteName;
+            // tmp->fileName  = um->metParams.sensorFileName;
+            um->sensors.push_back( um->metParams.quSensorData );
+            // for(unsigned int i = 0; i < um->sensors.size(); i++)
+            // {
+            // um->sensors[0]->beVerbose = !(um->isQuietQ());
+                // um->sensors[0]->readQUICFile(um->input_directory + um->sensors[i]->fileName); 
+                //um->sensors[i]->print();    
 
-    // Getting the buildings information
-	  um->fileBuildings = quicProject.quBuildingData;
-    // Take the building file information and create QUIC Urb usable building objects.
-		for (unsigned i = 0; i < um->fileBuildings.buildings.size(); i++)
-		{
-		  um->buildings.push_back(urbBuilding(um->fileBuildings.buildings[i]));
-		}
+                // Some sensor setup. Probably shouldn't stay here...
+            // um->sensors[i]->prfl_lgth = um->gz;
+            //                um->sensors[i]->u_prof = new float[um->gz];
+            //              um->sensors[i]->v_prof = new float[um->gz];
+            // }
+
+            // Getting the buildings information
+            um->fileBuildings = quicProject.quBuildingData;
+            // Take the building file information and create QUIC Urb usable building objects.
+            for (unsigned i = 0; i < um->fileBuildings.buildings.size(); i++)
+            {
+                um->buildings.push_back(urbBuilding(um->fileBuildings.buildings[i]));
+            }
 		
-		um->initialize(); // Needed for parse sensors, which requires gz.
+            um->initialize(); // Needed for parse sensors, which requires gz.
 
-		um->stpwtchs->parse->stop();
+            um->stpwtchs->parse->stop();
 	}
 
 	void urbParser::dump
@@ -198,7 +203,7 @@ namespace QUIC
 		out << "\tnum_vert_points = " << um->metParams.maxSizeProfiles << endl;
 		for(unsigned int i = 0; i < um->sensors.size(); i++)
 		{
-			out << "\t\t" << flush; um->sensors[i]->print();
+			out << "\t\t" << flush; um->sensors[i].print();
 		}
 		out << endl << endl;
 			
