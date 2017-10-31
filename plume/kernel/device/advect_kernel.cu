@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <curand_kernel.h> 
-#include "cutil_math.h"
+#include "helper_math.h"
 #include "math_constants.h"
 #include "../kernel_global/ConstParams.cuh" 
 #include "../kernel_global/texture_mem.cuh" 
@@ -38,7 +38,7 @@ __constant__ int MAXCOUNT = 10;//which could be moved to g_params(const value)
 __constant__ float terFacU = 2.5;
 __constant__ float terFacV = 2.;
 __constant__ float terFacW = 2.;
-std::ofstream random_file;
+// std::ofstream random_file;
 
 __device__ 
 inline bool b_inside_domain(const float3 &pos)
@@ -67,7 +67,7 @@ __device__ void resetParticles(float3 &pos, const uint &seed)//resetParticles(fl
   if(g_params.source.type == SPHERESOURCE)
   {
 //----------sphere emitter// sphere sampling
-    jitter = jitter*2.0f - 1.f;  //(-1.f, 1.f)
+    jitter = jitter * 2.0f - 1.f;  //(-1.f, 1.f)
     jitter = jitter / sqrtf(jitter.x*jitter.x + jitter.y*jitter.y + jitter.z*jitter.z) * g_params.source.info.sph.rad;   
     pos = jitter + g_params.source.info.sph.ori;
   }else if(g_params.source.type == LINESOURCE)

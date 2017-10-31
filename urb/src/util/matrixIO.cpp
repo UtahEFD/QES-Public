@@ -109,22 +109,23 @@ void outputMatrix(const char* fileName, const double* M, const int& wM, const in
 		}
 	}
 
-void outputMatrix(const char* fileName, const float* M, const int& wM, const int& lM, const int& hM) {
-	std::fstream output(fileName, std::fstream::out);
-	output << wM << " " << lM << " " << hM << std::endl;
+void outputMatrix(const char* fileName, const float* M, const int& wM, const int& lM, const int& hM) 
+{
+    std::fstream output(fileName, std::fstream::out);
+    output << wM << " " << lM << " " << hM << std::endl;
 
-	fixed(output);
+    fixed(output);
 
-	for(int k = 0; k < hM; k++) {
-		for(int j = 0; j < lM; j++) {
-			for(int i = 0; i < wM; i++) {
-				output << M[k * lM * wM + j * wM + i] << "  ";
-				}
-			output << "\n";
-			}
-		output << "\n\n";
-		}
-	}
+    for(int k = 0; k < hM; k++) {
+        for(int j = 0; j < lM; j++) {
+            for(int i = 0; i < wM; i++) {
+                output << M[k * lM * wM + j * wM + i] << "  ";
+            }
+            output << "\n";
+        }
+        output << "\n\n";
+    }
+}
 
 void outputMatrix(const char* fileName, const int* M, const int& wM, const int& lM, const int& hM) {
 	std::fstream output(fileName, std::fstream::out);

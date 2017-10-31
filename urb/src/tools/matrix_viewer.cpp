@@ -7,6 +7,7 @@
 #include "../util/matrixIO.h"
 
 #include <cstring>
+#include <cstdlib>
 #include <iostream>
 #include <cstdio>
 

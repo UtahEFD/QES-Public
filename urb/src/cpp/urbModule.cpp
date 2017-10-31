@@ -88,11 +88,6 @@ namespace QUIC
 
 	urbModule::~urbModule() 
 	{
-		for(unsigned i = 0; i < sensors.size(); i++)
-		{
-			delete sensors[i];
-		}
-		
 		this->deallocateHostMemory();
 		this->deallocateDeviceMemory();
 		
@@ -245,7 +240,7 @@ namespace QUIC
 		{
 			for(unsigned i = 0; i < sensors.size(); i++)
 			{
-				sensors[i]->direction = theAngle.radians(sivelab::ENG);
+				sensors[i].direction = theAngle.radians(sivelab::ENG);
 			}
 		}
 		else
@@ -299,7 +294,7 @@ namespace QUIC
   bool urbModule::sanityCheck() const
   {
     bool passed = true;
-    passed &= validBuildingsQ();
+    // passed &= validBuildingsQ();
 		passed &= validDimensionsQ(__FILE__);
 		passed &= validParametersQ();
 		passed &= validBoundaryMaskQ();
@@ -337,6 +332,8 @@ namespace QUIC
 		h_ntls.dim.z = d_vels.dim.z = gz;
 	}
 
+    // Why do we require at least 1 building?  Seems like we should
+    // check if negative and not worry about 0.
   bool urbModule::validBuildingsQ() const
   {
     bool enoughBuildings = buildings.size() > 0;
@@ -487,11 +484,13 @@ namespace QUIC
 		//Limit the domain size
 		struct cudaDeviceProp d_info;
 		cudaGetDeviceProperties(&d_info, 0); //Current Device should be 0.
-		int mx_grid_x = d_info.maxGridSize[0];
+		long mx_grid_x = d_info.maxGridSize[0]; // needs to be long!
 		
 		// Limited by which kernel? abs_diff.
 		int min_thrd_cnt = 128;
-		int max_elements = mx_grid_x*min_thrd_cnt;
+		long max_elements = mx_grid_x*min_thrd_cnt;
+
+                std::cout << "mx_grid_x = " << mx_grid_x << ", min_thrd_cnt = " << min_thrd_cnt << std::endl;
 
 		// Make sure the size is doable...
 		if(domain_size >= max_elements) 
@@ -650,22 +649,49 @@ namespace QUIC
 		int needed_grid_bytes = grid_size*grids*sizeof(float);
 								
 		int needed_bytes = needed_cell_bytes + needed_grid_bytes;
-		float        needed_MB    = needed_bytes / 1024. / 1024.;
+		float needed_MiB = needed_bytes / 1024. / 1024.;
 		
 		// Originally e, f, g, h, m, n, o, p, q and denoms on device.
 		// Now denoms and cmprssd.
 		//unsigned int saved_bytes = domain_size*(10*sizeof(float) - 1*sizeof(int) - 1*sizeof(float));
 		//float        saved_Mb    = saved_bytes / 1024. / 1024.;
 
-		struct cudaDeviceProp d_info;
-		cudaGetDeviceProperties(&d_info, 0); //Current Device should be 0.
-		
-		int avail_bytes = d_info.totalGlobalMem;
-		float        avail_MB    = avail_bytes / 1024. / 1024.;
+                int numCUDADevices = 0;
+                cudaGetDeviceCount( &numCUDADevices );
+                std::cout << "Number of CUDA Devices: " << numCUDADevices << std::endl;
 
-		float lefto_MB = avail_MB - needed_MB;
+                if (numCUDADevices == 0) {
+                    std::cerr << "NO CUDA Device!  Exiting!!!" << std::endl;
+                }
+                    
+                // Some of this output is based on info from
+                //   https://devblogs.nvidia.com/parallelforall/how-query-device-properties-and-handle-errors-cuda-cc/
+                cudaDeviceProp d_info;
+                for (int i = 0; i < numCUDADevices; i++) {
+                    cudaGetDeviceProperties(&d_info, i);
+                    std::cout << "CUDA Device Number: " << i << std::endl;
+                    std::cout << "\tDevice name: " << d_info.name << std::endl;
+                    std::cout << "\tMemory Clock Rate (KHz): " << d_info.memoryClockRate << std::endl;
+                    std::cout << "\tMemory Bus Width (bits): " << d_info.memoryBusWidth << std::endl;
+                    std::cout << "\tPeak Memory Bandwidth (GB/s): "
+                              << 2.0*d_info.memoryClockRate*(d_info.memoryBusWidth/8)/1.0e6 << std::endl;
+                    std::cout << "\tMax Grid Size: " << d_info.maxGridSize[0] << std::endl;
+                }
 
-		return (lefto_MB < 0) ? lefto_MB : needed_MB ;
+		cudaError_t cErr = cudaGetDeviceProperties(&d_info, 0);
+                if (cErr != cudaSuccess) 
+                    std::cerr << "CUDA error: " << cudaGetErrorString(cErr) << std::endl;
+
+		size_t avail_bytes = d_info.totalGlobalMem;
+		float  avail_MB    = avail_bytes / 1024.0f / 1024.0f;
+
+                std::cout << "Using Device 0, " << d_info.name << ", CUDA Device Mem: "
+                          << avail_MB << " MiB" << std::endl;
+                std::cout << "\testimated memory needed: " << needed_MiB << " MiB" << std::endl;
+
+		float lefto_MB = avail_MB - needed_MiB;
+
+		return (lefto_MB < 0) ? lefto_MB : needed_MiB;
 	}
 
 	void urbModule::allocateDeviceMemory() 
@@ -677,23 +703,21 @@ namespace QUIC
 		std::ostringstream oss;
 		std::fixed(oss);
 		oss.precision(2);
-		oss << "Allocating device memory of " << enough_device_mem << " Mb...";
+		oss << "Allocating device memory of " << enough_device_mem << " MiB...";
 		qwrite(oss.str());
 
-			stpwtchs->malloc->start();
+                stpwtchs->malloc->start();
 	
-		if(enough_device_mem <= 0) 
-		{
-		  qwrite("done\n");
-			std::cerr << "Not enough memory on device." << std::endl;
-			std::cerr << "Device memory left: " << enough_device_mem << "." << std::endl;
+		if(enough_device_mem <= 0) {
+                    qwrite("done\n");
+                    std::cerr << "Not enough memory on device." << std::endl;
+                    std::cerr << "Device memory left: " << enough_device_mem << "." << std::endl;
 			
-			exit(EXIT_FAILURE);
-			// Set don't do anything flag...
-			
-			return;
+                    exit(EXIT_FAILURE);
+                    // Set don't do anything flag...
+                    
+                    return;
 		} 
-
 
 		// Padding added to free x-dim in the iteration kernel.
 		int padded_size = (domain_size + 127);
@@ -703,45 +727,49 @@ namespace QUIC
 
 		// Matrices with cell centered values
 		cudaMalloc((void**) &d_bndrs.cmprssd, cll_data_size);	
-			showError("urbModule::allocateDeviceMemory() - cmprssd");
-    cudaMalloc((void**) &d_bndrs.denoms, dmn_data_size); 
-      showError("urbModule::allocateDeviceMemory() - denoms");
+                showError("urbModule::allocateDeviceMemory() - cmprssd");
+                
+                cudaMalloc((void**) &d_bndrs.denoms, dmn_data_size); 
+                showError("urbModule::allocateDeviceMemory() - denoms");
 
 		cudaMalloc((void**) &d_typs.c, typ_data_size); 	
-			showError("urbModule::allocateDeviceMemory() - d_typs");
+                showError("urbModule::allocateDeviceMemory() - d_typs");
 
 		cudaMalloc((void**) &d_r, dmn_data_size);		
-			showError("urbModule::allocateDeviceMemory() - d_r");
+                showError("urbModule::allocateDeviceMemory() - d_r");
 
 		cudaMalloc((void**) &d_p1, dmn_data_size);		
-			showError("urbModule::allocateDeviceMemory() - d_p1");//new iter
+                showError("urbModule::allocateDeviceMemory() - d_p1");//new iter
+                
 		cudaMalloc((void**) &d_p2_err, dmn_data_size); 	
-			showError("urbModule::allocateDeviceMemory() - d_p2_err");//old iter
+                showError("urbModule::allocateDeviceMemory() - d_p2_err");//old iter
 
 		cudaMalloc((void**) &d_abse, sizeof(float));	
-			showError("urbModule::allocateDeviceMemory() - d_abse");
+                showError("urbModule::allocateDeviceMemory() - d_abse");
 		
 		// Matrices with grid point values 
 		// u,v,w and uo,vo,wo are one larger than domain. 
 		// Values at edges rather than centers.
-		    padded_size   = (grid_size + 127);
+                padded_size   = (grid_size + 127);
 		int grd_data_size = padded_size * sizeof(float);
 
 		cudaMalloc((void**) &d_vels.u, grd_data_size); 		
-			showError("urbModule::allocateDeviceMemory() - d_u");
+                showError("urbModule::allocateDeviceMemory() - d_u");
+                        
 		cudaMalloc((void**) &d_vels.v, grd_data_size); 		
-			showError("urbModule::allocateDeviceMemory() - d_v");
+                showError("urbModule::allocateDeviceMemory() - d_v");
+                
 		cudaMalloc((void**) &d_vels.w, grd_data_size); 		
-			showError("urbModule::allocateDeviceMemory() - d_w");
+                showError("urbModule::allocateDeviceMemory() - d_w");
 
 		cudaMalloc((void**) &d_visc, grd_data_size); 	
-			showError("urbModule::allocateDeviceMemory() - d_visc");
+                showError("urbModule::allocateDeviceMemory() - d_visc");
 
 		cudaThreadSynchronize();
 		
 		this->validDevicePointersQ();
-		
-			stpwtchs->malloc->stop();
+                
+                stpwtchs->malloc->stop();
 			
 		qwrite("done.\n");
 	}

@@ -21,10 +21,13 @@
 // This file contains C wrappers around the some of the CUDA API and the
 // kernel functions so that they can be called from "particleSystem.cpp"
  // includes cuda.h and cuda_runtime_api.h 
-#include <cutil_inline.h>   
+
+#include <helper_cuda.h>
 #include <cstdlib>
 #include <cstdio>
-#include <string.h>
+#include <cstring>
+#include <unistd.h>
+#include <fstream>
 
 #if defined(__APPLE__) || defined(MACOSX)
 #include <GLUT/glut.h>
@@ -63,7 +66,8 @@ void bindTexture(const cudaArray *&cellArray, const cudaChannelFormatDesc &chann
   ((textureReference *)texPt)->addressMode[0] = cudaAddressModeClamp;   // Clamp texture coordinates
   ((textureReference *)texPt)->addressMode[1] = cudaAddressModeClamp;
   ((textureReference *)texPt)->addressMode[2] = cudaAddressModeClamp;
-  cutilSafeCall(cudaBindTextureToArray(texPt, cellArray, &channelDesc));  
+
+  checkCudaErrors( cudaBindTextureToArray(texPt, cellArray, &channelDesc) );
 }  
 
 void cudaInit(int argc, char **argv)
@@ -76,7 +80,7 @@ void cudaInit(int argc, char **argv)
 // 	  printf("No CUDA Capable devices found, exiting...\n"); 
 //       }
 //   } else {
-      devID = cutGetMaxGflopsDeviceId();
+      devID = gpuGetMaxGflopsDeviceId();
       cudaSetDevice( devID );
 //   }
 }
@@ -91,53 +95,53 @@ void cudaGLInit(int argc, char **argv)
 //       cutilDeviceInit(argc, argv);
 //       printf("123123\n");
 //   } else {
-      cudaGLSetGLDevice( cutGetMaxGflopsDeviceId() );
+      cudaGLSetGLDevice( gpuGetMaxGflopsDeviceId() );
 //   }
 }
 
 void allocateArray(void **devPtr, size_t size)
 {
-  cutilSafeCall(cudaMalloc(devPtr, size));
+  checkCudaErrors( cudaMalloc(devPtr, size) );
 }
 
 void freeArray(void *devPtr)
 {
-  cutilSafeCall(cudaFree(devPtr));
+  checkCudaErrors( cudaFree(devPtr) );
 }
 
 void threadSync()
 {
-  cutilSafeCall(cutilDeviceSynchronize());
+  checkCudaErrors( cudaDeviceSynchronize() );
 }
 
 void copyArrayToDevice(void* device, const void* host, int offset, int size)
 {
-  cutilSafeCall(cudaMemcpy((char *) device + offset, host, size, cudaMemcpyHostToDevice));
+  checkCudaErrors( cudaMemcpy((char *) device + offset, host, size, cudaMemcpyHostToDevice) );
 }
 
 void registerGLBufferObject(uint vbo, struct cudaGraphicsResource **cuda_vbo_resource)
 {
-  cutilSafeCall(cudaGraphicsGLRegisterBuffer(cuda_vbo_resource, vbo, 
-					      cudaGraphicsMapFlagsNone));
+  checkCudaErrors( cudaGraphicsGLRegisterBuffer(cuda_vbo_resource, vbo, 
+						cudaGraphicsMapFlagsNone) );
 }
 
 void unregisterGLBufferObject(struct cudaGraphicsResource *cuda_vbo_resource)
 {
-  cutilSafeCall(cudaGraphicsUnregisterResource(cuda_vbo_resource));	
+  checkCudaErrors( cudaGraphicsUnregisterResource(cuda_vbo_resource) );	
 }
 
 void *mapGLBufferObject(struct cudaGraphicsResource **cuda_vbo_resource)
 {
   void *ptr;
-  cutilSafeCall(cudaGraphicsMapResources(1, cuda_vbo_resource, 0));
+  checkCudaErrors( cudaGraphicsMapResources(1, cuda_vbo_resource, 0) );
   size_t num_bytes; 
-  cutilSafeCall(cudaGraphicsResourceGetMappedPointer((void **)&ptr, &num_bytes, *cuda_vbo_resource));
+  checkCudaErrors( cudaGraphicsResourceGetMappedPointer((void **)&ptr, &num_bytes, *cuda_vbo_resource) );
   return ptr;
 }
 
 void unmapGLBufferObject(struct cudaGraphicsResource *cuda_vbo_resource)
 {
-  cutilSafeCall(cudaGraphicsUnmapResources(1, &cuda_vbo_resource, 0));
+  checkCudaErrors( cudaGraphicsUnmapResources(1, &cuda_vbo_resource, 0) );
 }
 
 void copyArrayFromDevice(void* host, const void* device, 
@@ -146,7 +150,7 @@ void copyArrayFromDevice(void* host, const void* device,
   if (cuda_vbo_resource)
       device = mapGLBufferObject(cuda_vbo_resource);
 
-  cutilSafeCall(cudaMemcpy(host, device, size, cudaMemcpyDeviceToHost));
+  checkCudaErrors( cudaMemcpy(host, device, size, cudaMemcpyDeviceToHost) );
   
   if (cuda_vbo_resource)
       unmapGLBufferObject(*cuda_vbo_resource);
@@ -155,7 +159,7 @@ void copyArrayFromDevice(void* host, const void* device,
 void setParameters(ConstParams *hostParams)
 {
   // copy parameters to constant memory
-  cutilSafeCall( cudaMemcpyToSymbol(g_params, hostParams, sizeof(ConstParams)) );
+  checkCudaErrors( cudaMemcpyToSymbol(g_params, hostParams, sizeof(ConstParams)) );
 }
  
 // compute grid and thread block size for a given number of elements
@@ -365,7 +369,7 @@ void global_kernel(float *pos, float *winP, const uint &numParticles,
 void global_kernel_debug(float *pos, float *winP, bool* seeds_flag, const uint &numParticles,
 		   const thrust::host_vector<turbulence> &hData)
 {   
-  
+  std::ofstream random_file;
   random_file.open ("random_gen_by_global.txt", std::ios::out);
   thrust::device_vector<turbulence> dev_turbs_vector = hData; 
  

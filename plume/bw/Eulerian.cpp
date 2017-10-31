@@ -113,11 +113,13 @@ void eulerian::shear(){
 }
 
 void eulerian::windFromQUIC(){//read wind field data from file
-    std::cout<<"in windfromquic "<<std::clock()<<std::endl;
+
   windVec.resize(nx*ny*nz);
   
   std::ifstream QUICWindField;
-  QUICWindField.open("../bw/QU_velocity.dat");
+  std::string velocityField_filename = utl.m_QUICProjData.m_quicProjectPath + "QU_velocity.dat";
+  std::cout << "Attempting to open velocity field: " << velocityField_filename << std::endl;
+  QUICWindField.open(velocityField_filename.c_str());
 
   if(!QUICWindField.is_open()){
     std::cerr<<"Wind input File open error"<<std::endl;
@@ -634,8 +636,9 @@ void eulerian::createUstar(){
 }
 
 void eulerian::createTauGrads(){
-        std::cout<<"in taugrads"<<std::endl;
-  std::cout<<"INside Tau Grads creat"<<std::endl;
+
+  std::cout<<"eulerian::createTauGrads..."<<std::endl;
+
   taudx.resize(nx*ny*nz);
   taudy.resize(nx*ny*nz);
   taudz.resize(nx*ny*nz);

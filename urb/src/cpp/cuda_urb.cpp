@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 	getDirectories(argc, argv, inp_dir, out_dir);
 
 	QUIC::urbModule* um = new QUIC::urbModule();
-  um->beQuiet(false);
+        um->beQuiet(false);
   
 	QUIC::urbParser::parse(um, inp_dir);
 	//um->use_fortran = true;

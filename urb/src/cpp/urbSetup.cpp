@@ -154,7 +154,7 @@ namespace QUIC
 		
 		for(unsigned int i = 0; i < um->sensors.size(); i++)
 		{
-			um->sensors[i]->determineVerticalProfiles(um->buildings[0].zo, um->simParams.dz, 0);
+			um->sensors[i].determineVerticalProfiles(um->buildings[0].zo, um->simParams.dz, 0);
 		}
 		
 		um->qwrite("done.\n");
@@ -164,11 +164,11 @@ namespace QUIC
 	{	
 		if(um->sensors.size() == 1)
 		{
-			if(um->sensors[0]->prfl_lgth != (int) um->h_ntls.dim.z)
+			if(um->sensors[0].prfl_lgth != (int) um->h_ntls.dim.z)
 			{
 				std::cerr << "Error in " << __FILE__ << " : " << __func__ << std::endl;
 				std::cerr << "Sensor profile length and velocities z dimension are wrong." << std::endl;
-				std::cerr << "  profile length = " << um->sensors[0]->prfl_lgth << std::endl;
+				std::cerr << "  profile length = " << um->sensors[0].prfl_lgth << std::endl;
 				std::cerr << "  h_ntls.dim.z   = " << um->h_ntls.dim.z << std::endl;
 				return; 
 			}
@@ -176,17 +176,17 @@ namespace QUIC
 			um->qwrite("Determining velocities...");
 			
 			//std::cout << "sensors.size() = " << um->sensors.size() << std::endl;
-			//std::cout << "sensors[0]->prfl_lgth = " << um->sensors[0]->prfl_lgth << std::endl;
+			//std::cout << "sensors[0].prfl_lgth = " << um->sensors[0].prfl_lgth << std::endl;
 			//std::cout << "h_ntls.dim.y = " << um->h_ntls.dim.y << std::flush;
 			//std::cout << " h_ntls.dim.x = " << um->h_ntls.dim.x << std::endl;
 			
-			for(int k = 1; k < um->sensors[0]->prfl_lgth; k++)
+			for(int k = 1; k < um->sensors[0].prfl_lgth; k++)
 			for(int j = 0; j < um->h_ntls.dim.y; j++)
 			for(int i = 0; i < um->h_ntls.dim.x; i++)
 			{
 				int ndx = k*um->h_ntls.dim.y*um->h_ntls.dim.x + j*um->h_ntls.dim.x + i;
-				um->h_ntls.u[ndx] = um->sensors[0]->u_prof[k];
-				um->h_ntls.v[ndx] = um->sensors[0]->v_prof[k];
+				um->h_ntls.u[ndx] = um->sensors[0].u_prof[k];
+				um->h_ntls.v[ndx] = um->sensors[0].v_prof[k];
 			}
 			
 			um->qwrite("done.\n");
@@ -248,32 +248,32 @@ namespace QUIC
 		{
 			um->buildings[i].interior(um->h_typs, um->h_ntls, dx, dy, dz);
 		}
-//	std::cout << "interior done..." << std::flush;
+	std::cout << "interior done..." << std::flush;
 		for(unsigned int i = 0; i < um->buildings.size(); i++)
 		{
 			um->buildings[i].upwind(um->h_typs, um->h_ntls, dx, dy, dz);
 		}
-//	std::cout << "upwind done..." << std::flush;		
+	std::cout << "upwind done..." << std::flush;		
 		for(unsigned int i = 0; i < um->buildings.size(); i++)
 		{
 			um->buildings[i].wake(um->h_typs, um->h_ntls, dx, dy, dz);
 		}
-//	std::cout << "wake done..." << std::flush;
+	std::cout << "wake done..." << std::flush;
 		for(unsigned int i = 0; i < um->buildings.size(); i++)
 		{
 			um->buildings[i].canyon(um->h_typs, um->h_ntls, um->buildings, dx, dy, dz);
 		}
-//	std::cout << "canyon done..." << std::flush;		
+	std::cout << "canyon done..." << std::flush;		
 		for(unsigned int i = 0; i < um->buildings.size(); i++)
 		{
 			um->buildings[i].rooftop(um->h_typs, um->h_ntls, dx, dy, dz);
 		}
-//	std::cout << "rooftop done..." << std::flush;		
+	std::cout << "rooftop done..." << std::flush;		
 		for(unsigned int i = 0; i < um->buildings.size(); i++)
 		{
 			um->buildings[i].interior(um->h_typs, um->h_ntls, dx, dy, dz);
 		}
-//	std::cout << "interior done..." << std::flush;		
+	std::cout << "interior done..." << std::flush;		
 		// Zero the bottom slice. Necessary? Yes!! Do the velocities too!!
 		int nx = um->h_typs.dim.x;
 		int ny = um->h_typs.dim.y;

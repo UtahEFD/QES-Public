@@ -31,12 +31,16 @@
 #else
 #include <GL/freeglut.h>
 #endif
+
 // CUDA utilities and system includes
 #include <iostream>  
-#include <cutil_inline.h>    // includes cuda.h and cuda_runtime_api.h
-#include <cutil_gl_inline.h> // includes cuda_gl_interop.h// includes cuda_gl_interop.h
+
+#include <helper_cuda.h>
+#include <helper_cuda_gl.h>
+#include <helper_math.h>
+
 #include <rendercheck_gl.h>
-#include <cutil_math.h>
+
 #include "Shader/Particle/render_particles.h"
 #include "plumeSystem.h"
 
@@ -72,11 +76,19 @@ extern "C"
   {
     unsigned char *data = 0;
     unsigned int width, height;
-    cutilCheckError( cutLoadPPM4ub(filename, &data, &width, &height));
-    if(!data) {
-      printf("Error opening file '%s'\n", filename);
-      return 0;
-    } 
+
+// Don't use for now since it's just for the vis  and there are better
+// ways to do this... -Pete
+   // cutilCheckError( cutLoadPPM4ub(filename, &data, &width, &height));
+//    if(!data) {
+//      printf("Error opening file '%s'\n", filename);
+//      return 0;
+//    } 
+
+    width = 1024;
+    height = 1024;
+    
+    data = new unsigned char[ width * height ];
 
     return createTexture(GL_TEXTURE_2D, GL_RGBA8, GL_RGBA, width, height, data);
   }

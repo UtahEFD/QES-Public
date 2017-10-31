@@ -22,21 +22,18 @@ OPTION(QUIC_BUILD_DEV "On - buildings everything; Off - builds console only" On)
 SET(LIBSIVELAB_PATH "${CMAKE_SOURCE_DIR}/../../libsivelab" CACHE STRING "Path to the directory where the libsivelab repository is located.")
 #MESSAGE(${LIBSIVELAB_PATH})
 
-SET(OPTIX_PATH /Developer/OptiX CACHE STRING "Path the to directory where OptiX is installed (defaults to Apple install location).")
+SET(OPTIX_PATH CACHE STRING "Path the to directory where OptiX is installed (defaults to Apple install location).")
 
 FIND_PACKAGE(CUDA REQUIRED)
 
-# Force 32-bit.
+# Force 32-bit.  ??? not needed anymore, is it?
 SET(CMAKE_CXX_FLAGS "-Wall")
 SET(CMAKE_C_FLAGS "-Wall")
 
 
 IF(CUDA_FOUND)
   INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
-  INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/common/inc)
-
-  # Add the need flags for atomic operations in CUDA.
-  SET(CUDA_NVCC_FLAGS -arch sm_11)
+  INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
 
 ELSE (CUDA_FOUND)
   MESSAGE(FATAL_ERROR "CUDA is required for compiling this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories.")
@@ -68,7 +65,7 @@ if(QUIC_BUILD_DEV)
   include_directories(${OPENGL_INCLUDE_DIR})
   include_directories(${GLUT_INCLUDE_DIRS})
   include_directories(${GLEW_INCLUDE_PATH})
-  INCLUDE_DIRECTORIES(${OPTIX_PATH}/include)
+  # INCLUDE_DIRECTORIES(${OPTIX_PATH}/include)
 
   set(LIBS ${LIBS} ${OPENGL_LIBRARIES})
   set(LIBS ${LIBS} ${GLUT_LIBRARIES})
@@ -119,6 +116,7 @@ LINK_DIRECTORIES (${LIBSIVELAB_PATH}/lib/)
 
 LINK_DIRECTORIES (${CMAKE_SOURCE_DIR}/../lib)
 
+add_subdirectory (fortran)
 add_subdirectory (cpp)
 add_subdirectory (cuda)
 add_subdirectory (tests)

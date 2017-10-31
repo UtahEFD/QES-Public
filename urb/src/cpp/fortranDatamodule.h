@@ -7,11 +7,11 @@
 #ifndef __INC_FORTRAN_DATAMODULE_H__
 #define __INC_FORTRAN_DATAMODULE_H__ 1
 
-#if defined(__APPLE__) || (__GNUC__ == 4 && __GNUC_MINOR__ > 2)
+//#if defined(__APPLE__) || (__GNUC__ == 4 && __GNUC_MINOR__ > 2)
 #define F90DATAMODULE_(v) __datamodule_MOD_##v
-#else
-#define F90DATAMODULE_(v) __datamodule__##v
-#endif
+//#else
+//#define F90DATAMODULE_(v) __datamodule__##v
+//#endif
 
 extern "C" int F90DATAMODULE_(roofflag);
 
