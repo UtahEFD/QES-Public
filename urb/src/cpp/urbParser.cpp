@@ -47,10 +47,11 @@ namespace QUIC
                 // um->sensors[0]->readQUICFile(um->input_directory + um->sensors[i]->fileName); 
                 //um->sensors[i]->print();    
 
-                // Some sensor setup. Probably shouldn't stay here...
-            // um->sensors[i]->prfl_lgth = um->gz;
-            //                um->sensors[i]->u_prof = new float[um->gz];
-            //              um->sensors[i]->v_prof = new float[um->gz];
+            // Only handle 1 sensor now...
+            // Some sensor setup. Probably shouldn't stay here...
+            um->sensors[0].prfl_lgth = um->gz;
+            um->sensors[0].u_prof = new float[um->gz];
+            um->sensors[0].v_prof = new float[um->gz];
             // }
 
             // Getting the buildings information
