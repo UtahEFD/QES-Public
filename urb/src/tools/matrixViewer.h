@@ -2,7 +2,11 @@
 #define MATRIXVIEWER_H
 
 #include <GL/glew.h>
-#include <GL/glut.h>
+#ifdef __APPLE__
+  #include <GLUT/glut.h>
+#else
+  #include <GL/glut.h>
+#endif
 
 #include "util/GLSL.h"
 #include "../util/viewer.h"
