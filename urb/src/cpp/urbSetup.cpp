@@ -2,122 +2,15 @@
 
 #include "../util/directory.h"
 
-// #include "fortranDatamodule.h"
 #include "intersect.h"
 
 namespace QUIC
 {
 	void urbSetup::setup(QUIC::urbModule* um)
 	{
-#if 0
-		if(um->use_fortran)
-		{
-			QUIC::urbSetup::usingFortran(um);
-		}
-		else
-		{
-#endif
-			QUIC::urbSetup::usingCPP(um);
-//		}
+            QUIC::urbSetup::usingCPP(um);
 	}
 
-#if 0
-	void urbSetup::usingFortran(QUIC::urbModule* um)
-	{
-		std::string directory = um->input_directory;
-	
-		um->qwrite("###--- Fortran setup ---###\n");
-	
-		char* orig_dir = getcwd(NULL, 0);
-		chdir_or_die(directory);
-	
-		um->stpwtchs->parse->start();
-		init_();
-		um->sim_params_parsed = true;
-		um->stpwtchs->parse->stop();
-		um->qwrite("  ...init_() done.\n");
-
-		// Now we can to push the info to the urbModule.
-		
-		// First get the basic parameters
-		um->simParams.nx = (unsigned) F90DATAMODULE_(nx) - 1;
-		um->simParams.ny = (unsigned) F90DATAMODULE_(ny) - 1;
-		um->simParams.nz = (unsigned) F90DATAMODULE_(nz) - 1;
-
-    std::cout << um->simParams.nx << "." << um->simParams.ny << "." << um->simParams.nz <<std::endl;
-
-    um->setDimensions(um->simParams.nx, um->simParams.ny, um->simParams.nz);
-    //um->gx = um->simParams.nx + 1;
-    //um->gy = um->simParams.ny + 1;
-    //um->gz = um->simParams.nz + 1;
-
-		um->simParams.dx = F90DATAMODULE_(dx);
-		um->simParams.dy = F90DATAMODULE_(dy);
-		
-		// TODO Fix this. Fortran makes dz 0.f;
-		//std::cout << um->dz << std::endl;
-		//um->dz = F90DATAMODULE_(dz);
-		std::cout << um->simParams.dz << std::endl;
-		
-		um->A      = F90DATAMODULE_(a);
-		um->B      = F90DATAMODULE_(b);
-		um->alpha1 = F90DATAMODULE_(alpha1);
-		um->alpha2 = F90DATAMODULE_(alpha2);
-
-		um->simParams.residual_reduction = F90DATAMODULE_(residual_reduction);
-
-		// Now the datamodule must be initialized.
-		//um->initialize(); //Now called from urbParser
-		
-		um->stpwtchs->sort->start();
-		sort_(); 
-		um->stpwtchs->sort->stop();
-		um->qwrite("  ...sort_() done.\n");
-
-		F90DATAMODULE_(i_time) = 1; 
-		um->qwrite("  ...doing just one time step.\n");
-
-		um->stpwtchs->sensor->start();
-		sensorinit_();	
-		um->stpwtchs->sensor->stop();
-		um->qwrite("  ...sensorinit_() done.\n");
-			
-		um->stpwtchs->bldngprm->start();
-		building_parameterizations_();
-		um->stpwtchs->bldngprm->stop();
-		um->qwrite("  ...building_params_() done.\n");
-	
-		um->stpwtchs->denoms->start();
-		denominators_();
-		um->stpwtchs->denoms->stop();
-	
-		chdir_or_die(orig_dir);
-		free(orig_dir);
-		
-		// Finally the information Fortran produced can be transferred to the module.				
-		QUIC::urbSetup::compressBoundaries
-		(
-			um, 
-			F90DATAMODULE_(e), F90DATAMODULE_(f), 
-			F90DATAMODULE_(g), F90DATAMODULE_(h), 
-			F90DATAMODULE_(m), F90DATAMODULE_(n), 
-			F90DATAMODULE_(o), F90DATAMODULE_(p), F90DATAMODULE_(q)
-		);
-		
-		for(int i = 0; i < um->domain_size; i++)
-		{
-			um->h_typs.c[i] = (CellType) F90DATAMODULE_(icellflag)[i];
-		}
-		
-		copyDoubleToFloat(um->h_ntls.u, F90DATAMODULE_(uo), um->gx, um->gy, um->gz);
-		copyDoubleToFloat(um->h_ntls.v, F90DATAMODULE_(vo), um->gx, um->gy, um->gz);
-		copyDoubleToFloat(um->h_ntls.w, F90DATAMODULE_(wo), um->gx, um->gy, um->gz);
-		
-		um->transferDataToDevice();
-		um->reset();
-	}
-#endif 
-		
 	void urbSetup::usingCPP(QUIC::urbModule* um)
 	{
 		um->qwrite("###--- CPP setup ---###\n");
@@ -356,7 +249,7 @@ namespace QUIC
 		double* o, double* p, double* q
 	)
 	{
-		um->qwrite("Compressing boundaries (fortran only)...");
+		um->qwrite("Compressing boundaries...");
 		um->stpwtchs->bndrymat->start();
 
 		//for(unsigned int i = 0; i < um->domain_size; i++) 		

@@ -1,7 +1,7 @@
 /**
 *	Author: Andrew Larson <lars2865@d.umn.edu>
 * Reason: CUDA-nizing QUICurb
-* Source: Adapted from datamodule.f90 and other QUICurbv5.? Fortran files.
+* Source: Adapted from datamodule.f90 and other fortran files.
 */
 
 #ifndef URBMODULE_H
@@ -151,7 +151,6 @@ namespace QUIC
 
 			// Default: false. True => many things output to the console.
 			bool quiet;
-			bool use_fortran; // Whether to use fortran or not for setup.
 			bool host_runnable;
 			
 		protected:

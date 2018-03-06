@@ -25,7 +25,6 @@ int main(int argc, char* argv[])
         um->beQuiet(false);
   
 	QUIC::urbParser::parse(um, inp_dir);
-	//um->use_fortran = true;
 	QUIC::urbSetup::setup(um);
 
 	um->sanityCheck();

@@ -577,7 +577,6 @@ namespace QUIC
 		
 		// Describe the elements you're looking for.
 		boolElement  be_quiet      = boolElement ("quiet");
-		boolElement  be_use_fort   = boolElement ("use_fortran");
 
 		boolElement  be_out_typs   = boolElement ("output_celltypes");
 		boolElement  be_out_bndr   = boolElement ("output_boundaries");
@@ -594,7 +593,6 @@ namespace QUIC
 		
 		// Commit them to the parser.
 		sfp->commit(be_quiet);
-		sfp->commit(be_use_fort);
 		
 		sfp->commit(be_out_typs);		
 		sfp->commit(be_out_bndr);
@@ -614,7 +612,6 @@ namespace QUIC
 
 		// See if they were found.
 		if(sfp->recall(be_quiet))     {um->quiet           = be_quiet.value;}
-		if(sfp->recall(be_use_fort))  {um->use_fortran     = be_use_fort.value;}
 		
 		if(sfp->recall(be_out_typs))  {um->output_celltypes    = be_out_typs.value;}
 		if(sfp->recall(be_out_bndr))  {um->output_boundaries   = be_out_bndr.value;}
