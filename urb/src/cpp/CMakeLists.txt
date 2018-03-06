@@ -1,3 +1,5 @@
+INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/quicutil)  
+
 if(QUIC_BUILD_DEV)
   SET(PROGRAMS cuda_timer cuda_urb setup_urb viewer_urb)
 else()

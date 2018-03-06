@@ -1,5 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
+INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/quicutil)  
 CUDA_ADD_LIBRARY(UrbKernels
   abs_diff.cu
 	comp_denoms.cu 

@@ -3,6 +3,8 @@ include_directories(/usr/local/cuda/include)
 
 include_directories(${CUDA_CUT_INCLUDE_DIR})
 
+INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/quicutil)  
+
 add_library(UrbTools matrixViewer.cpp)
 
 if(QUIC_BUILD_DEV)
