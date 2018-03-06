@@ -47,7 +47,7 @@
 #include "Turb_cp.cu" 
  
 #include "util/handlePlumeArgs.h"
-#include "quicutil/QUICProject.h"
+#include "quicloader/QUICProject.h"
 
 #include <thrust/host_vector.h>  
 const uint width = 800, height = 600;
