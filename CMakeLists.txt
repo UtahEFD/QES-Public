@@ -9,21 +9,7 @@ SET(gpuurbplume_VERSION ${gpuurbplume_MAJOR_VERSION}.${gpuurbplume_MINOR_VERSION
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../CMake/Modules/")
 
-#Determine if we're building for visuals or not (GLUT, GLEW, OpenGL...)
-# How to set the option from the terminal:
-# cmake -D QUIC_BUILD_DEV=[On \ Off] .. 
-#
-# You can set the option manually here:
-# SET(QUIC_BUILD_DEV On)
-# 
-# If not set or passed through -D then it's default value is 'Off'.
-
 OPTION(QUIC_BUILD_DEV "On - buildings everything; Off - builds console only" On)
-
-# SET(LIBSIVELAB_PATH "${CMAKE_SOURCE_DIR}/../../libsivelab" CACHE STRING "Path to the directory where the libsivelab repository is located.")
-#MESSAGE(${LIBSIVELAB_PATH})
-
-# SET(OPTIX_PATH CACHE STRING "Path the to directory where OptiX is installed (defaults to Apple install location).")
 
 FIND_PACKAGE(CUDA REQUIRED)
 
@@ -34,19 +20,17 @@ SET(CMAKE_C_FLAGS "-Wall")
 IF(CUDA_FOUND)
   INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
   INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
-
 ELSE (CUDA_FOUND)
   MESSAGE(FATAL_ERROR "CUDA is required for compiling this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories.")
 ENDIF(CUDA_FOUND)
-
 
 IF(APPLE)
    # Currently, SNOW LEOPARD/10.6 has problems with CUDA and
    # 64-bit..., so shut off 64 bit compiling and make sure we're in
    # 32-bit ode across the board.
    # SET(CUDA_64_BIT_DEVICE_CODE ON)
-   SET(CMAKE_CXX_FLAGS "-m64")
-   SET(CMAKE_C_FLAGS "-m64")
+#   SET(CMAKE_CXX_FLAGS "-m64")
+#   SET(CMAKE_C_FLAGS "-m64")
 
    FIND_LIBRARY(CARBON_LIBRARY Carbon)
    FIND_LIBRARY(COCOA_LIBRARY Cocoa)
@@ -64,7 +48,6 @@ if(QUIC_BUILD_DEV)
   include_directories(${OPENGL_INCLUDE_DIR})
   include_directories(${GLUT_INCLUDE_DIRS})
   include_directories(${GLEW_INCLUDE_PATH})
-  # INCLUDE_DIRECTORIES(${OPTIX_PATH}/include)
 
   set(LIBS ${LIBS} ${OPENGL_LIBRARIES})
   set(LIBS ${LIBS} ${GLUT_LIBRARIES})
@@ -73,11 +56,7 @@ if(QUIC_BUILD_DEV)
   link_libraries (${OPENGL_LIBRARY})
   link_libraries (${GLUT_LIBRARY})
   link_libraries (${GLEW_LIBRARY})
-  if (APPLE)
-    LINK_DIRECTORIES(${OPTIX_PATH}/lib)
-  else (APPLE)
-    LINK_DIRECTORIES(${OPTIX_PATH}/lib64)
-  endif (APPLE)
+
 endif()
 
 # present the packaging option only if we have the cpack command defined (effectively >= 2.6.0)
@@ -110,8 +89,8 @@ IF(CMAKE_CPACK_COMMAND)
 ENDIF(CMAKE_CPACK_COMMAND)
 
 
-INCLUDE_DIRECTORIES (${LIBSIVELAB_PATH}) 
-LINK_DIRECTORIES (${LIBSIVELAB_PATH}/lib/) 
+# INCLUDE_DIRECTORIES (${LIBSIVELAB_PATH}) 
+# LINK_DIRECTORIES (${LIBSIVELAB_PATH}/lib/) 
 
 add_subdirectory (quicutil)
 add_subdirectory (urb/src)
