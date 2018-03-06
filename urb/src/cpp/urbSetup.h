@@ -30,7 +30,7 @@ namespace QUIC
 		
 			static void setup(QUIC::urbModule* um);
 		
-			static void usingFortran(QUIC::urbModule* um);
+//			static void usingFortran(QUIC::urbModule* um);
 			static void usingCPP    (QUIC::urbModule* um);
 			static void usingCUDA   (QUIC::urbModule* um);
 		

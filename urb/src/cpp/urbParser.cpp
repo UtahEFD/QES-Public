@@ -3,15 +3,15 @@
 #include <iostream>
 #include <iomanip>
 
-#include "quicutil/legacyFileParser.h"
-#include "quicutil/QUBuildings.cpp"
-#include "quicutil/QUFileOptions.cpp"
-#include "quicutil/QUICProject.cpp"
-#include "quicutil/QUMetParams.cpp"
-#include "quicutil/QUSimparams.cpp"
-#include "quicutil/QUSensor.cpp"
-#include "quicutil/QUVelocities.cpp"
-#include "quicutil/standardFileParser.h"
+#include "quicloader/legacyFileParser.h"
+#include "quicloader/QUBuildings.cpp"
+#include "quicloader/QUFileOptions.cpp"
+#include "quicloader/QUICProject.cpp"
+#include "quicloader/QUMetParams.cpp"
+#include "quicloader/QUSimparams.cpp"
+#include "quicloader/QUSensor.cpp"
+#include "quicloader/QUVelocities.cpp"
+#include "quicloader/standardFileParser.h"
 
 #include "building.h"
 #include "../util/matrixIO.h"

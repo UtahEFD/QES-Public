@@ -17,5 +17,5 @@ foreach(program ${PROGRAMS})
   CUDA_ADD_EXECUTABLE(${program} ${program}.cu)
   
   target_link_libraries (${program} UrbKernels)
-  target_link_libraries (${program} sive-cudautil)
+#  target_link_libraries (${program} sive-cudautil)
 endforeach(program)

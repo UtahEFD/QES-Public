@@ -12,6 +12,7 @@ CUDA_ADD_LIBRARY(UrbKernels
   map_matrix_to_interval.cu
   max.cu
   min.cu
+  pack.cu
   rel_diff.cu
 	setup_bndry_mats.cu 
   sum.cu

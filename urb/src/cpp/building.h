@@ -10,8 +10,8 @@
 
 #include <vector>
 
-#include "quicutil/QUBuildings.h"
-#include "quicutil/velocities.h"
+#include "quicloader/QUBuildings.h"
+#include "quicloader/velocities.h"
 #include "util/angle.h"
 
 #include "../util/index3D.h"

@@ -11,7 +11,7 @@
 
 #include "urbCUDA.h"
 
-#include "quicutil/standardFileParser.h"
+#include "quicloader/standardFileParser.h"
 
 namespace QUIC 
 {

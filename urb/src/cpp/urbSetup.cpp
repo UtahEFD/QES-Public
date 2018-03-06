@@ -2,23 +2,26 @@
 
 #include "../util/directory.h"
 
-#include "fortranDatamodule.h"
+// #include "fortranDatamodule.h"
 #include "intersect.h"
 
 namespace QUIC
 {
 	void urbSetup::setup(QUIC::urbModule* um)
 	{
+#if 0
 		if(um->use_fortran)
 		{
 			QUIC::urbSetup::usingFortran(um);
 		}
 		else
 		{
+#endif
 			QUIC::urbSetup::usingCPP(um);
-		}
+//		}
 	}
 
+#if 0
 	void urbSetup::usingFortran(QUIC::urbModule* um)
 	{
 		std::string directory = um->input_directory;
@@ -113,6 +116,7 @@ namespace QUIC
 		um->transferDataToDevice();
 		um->reset();
 	}
+#endif 
 		
 	void urbSetup::usingCPP(QUIC::urbModule* um)
 	{

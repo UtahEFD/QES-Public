@@ -10,7 +10,7 @@
 #include <stdio.h>
 
 #include "../cpp/celltypes.h"
-#include "quicutil/velocities.h"
+#include "quicloader/velocities.h"
 
 extern "C" void showError(char const* loc);
 

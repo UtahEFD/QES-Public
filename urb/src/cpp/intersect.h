@@ -10,7 +10,7 @@
 
 #include "boundaryMatrices.h"
 #include "celltypes.h"
-#include "quicutil/velocities.h"
+#include "quicloader/velocities.h"
 
 namespace QUIC
 {

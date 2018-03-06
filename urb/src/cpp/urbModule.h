@@ -15,12 +15,12 @@
 
 #include "util/angle.h"
 #include "util/Timer.h"
-#include "quicutil/QUSensor.h"
-#include "quicutil/QUMetParams.h"
-#include "quicutil/QUSimparams.h"
-#include "quicutil/QUFileOptions.h"
-#include "quicutil/QUBuildings.h"
-#include "quicutil/velocities.h"
+#include "quicloader/QUSensor.h"
+#include "quicloader/QUMetParams.h"
+#include "quicloader/QUSimparams.h"
+#include "quicloader/QUFileOptions.h"
+#include "quicloader/QUBuildings.h"
+#include "quicloader/velocities.h"
 
 #include "../util/matrixIO.h"
 

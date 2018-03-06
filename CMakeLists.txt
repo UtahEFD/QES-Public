@@ -1,11 +1,11 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8) 
-PROJECT (EnvSim) 
+PROJECT (gpuurbplume) 
 
-SET(EnvSim_MAJOR_VERSION 0)
-SET(EnvSim_MINOR_VERSION 5)
-SET(EnvSim_PATCH_VERSION 0)
-SET(EnvSim_SOVERSION 0)
-SET(EnvSim_VERSION ${EnvSim_MAJOR_VERSION}.${EnvSim_MINOR_VERSION}.${EnvSim_PATCH_VERSION})
+SET(gpuurbplume_MAJOR_VERSION 0)
+SET(gpuurbplume_MINOR_VERSION 2)
+SET(gpuurbplume_PATCH_VERSION 0)
+SET(gpuurbplume_SOVERSION 0)
+SET(gpuurbplume_VERSION ${gpuurbplume_MAJOR_VERSION}.${gpuurbplume_MINOR_VERSION}.${gpuurbplume_PATCH_VERSION})
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../CMake/Modules/")
 
@@ -17,19 +17,19 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../CMake/Modules
 # SET(QUIC_BUILD_DEV On)
 # 
 # If not set or passed through -D then it's default value is 'Off'.
+
 OPTION(QUIC_BUILD_DEV "On - buildings everything; Off - builds console only" On)
 
-SET(LIBSIVELAB_PATH "${CMAKE_SOURCE_DIR}/../../libsivelab" CACHE STRING "Path to the directory where the libsivelab repository is located.")
+# SET(LIBSIVELAB_PATH "${CMAKE_SOURCE_DIR}/../../libsivelab" CACHE STRING "Path to the directory where the libsivelab repository is located.")
 #MESSAGE(${LIBSIVELAB_PATH})
 
-SET(OPTIX_PATH CACHE STRING "Path the to directory where OptiX is installed (defaults to Apple install location).")
+# SET(OPTIX_PATH CACHE STRING "Path the to directory where OptiX is installed (defaults to Apple install location).")
 
 FIND_PACKAGE(CUDA REQUIRED)
 
 # Force 32-bit.  ??? not needed anymore, is it?
-SET(CMAKE_CXX_FLAGS "-Wall")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -Wall")
 SET(CMAKE_C_FLAGS "-Wall")
-
 
 IF(CUDA_FOUND)
   INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
@@ -38,7 +38,6 @@ IF(CUDA_FOUND)
 ELSE (CUDA_FOUND)
   MESSAGE(FATAL_ERROR "CUDA is required for compiling this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories.")
 ENDIF(CUDA_FOUND)
-
 
 
 IF(APPLE)
@@ -110,8 +109,10 @@ IF(CMAKE_CPACK_COMMAND)
     ENDIF(BUILD_QUIC_PACKAGES)
 ENDIF(CMAKE_CPACK_COMMAND)
 
-add_subdirectory (cpp)
-add_subdirectory (cuda)
-add_subdirectory (tests)
-add_subdirectory (util)
-add_subdirectory (tools)
+
+INCLUDE_DIRECTORIES (${LIBSIVELAB_PATH}) 
+LINK_DIRECTORIES (${LIBSIVELAB_PATH}/lib/) 
+
+add_subdirectory (quicutil)
+add_subdirectory (urb/src)
+add_subdirectory (plume)
