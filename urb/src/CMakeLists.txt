@@ -7,6 +7,13 @@ SET(cudaUrb_PATCH_VERSION 0)
 SET(cudaUrb_SOVERSION 0)
 SET(cudaUrb_VERSION ${cudaUrb_MAJOR_VERSION}.${cudaUrb_MINOR_VERSION}.${cudaUrb_PATCH_VERSION})
 
+# configure a header file to pass some of the CMake settings
+# to the source code
+configure_file (
+  "${CMAKE_CURRENT_SOURCE_DIR}/cpp/urbConfig.h.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cpp/urbConfig.h"
+  )
+
 # SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../CMake/Modules/")
 
 #Determine if we're building for visuals or not (GLUT, GLEW, OpenGL...)
