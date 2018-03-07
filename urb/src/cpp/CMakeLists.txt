@@ -24,7 +24,7 @@ if(QUIC_BUILD_DEV)
     building.cpp
     buildingList.cpp
     intersect.cpp
-    pentagon.cpp
+#    pentagon.cpp
     #
     urbCUDA.cpp 
     urbHost.cpp
@@ -40,7 +40,7 @@ else()
     building.cpp
     buildingList.cpp
     intersect.cpp
-    pentagon.cpp
+#    pentagon.cpp
     #
     urbCUDA.cpp 
     urbModule.cpp 
