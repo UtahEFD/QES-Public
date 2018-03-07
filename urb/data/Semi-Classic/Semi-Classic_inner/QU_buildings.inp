@@ -1,9 +1,0 @@
-!QUIC 5.5
-0			!x subdomain coordinate (southwest corner) (Cells)
-0			!y subdomain coordinate (southwest corner) (Cells)
-64			!x subdomain coordinate (northeast corner) (Cells)
-64			!y subdomain coordinate (northeast corner) (Cells)
-0.1			!Wall roughness length (m)
-1			!Number of Structures
-!Bld #	Group	Type	Height(m)	Width(m)	Length(m)	Xfo(m)	Yfo(m)	Zfo(m)	Gamma	Suplemental Data
-1	1	1	10	10	10	27	32	0	0	0
