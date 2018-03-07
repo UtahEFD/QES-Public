@@ -64,11 +64,6 @@ namespace QUIC
 		float const& dx, float const& dy, float const& dz
 	)
 	{
-		// todo resolve float to int warnings.
-		length *= dx;
-		width *= dy;
-		height *= dz;
-
 		xfo *= dx;
 		yfo *= dy;
 		zfo *= dz;
@@ -1231,14 +1226,14 @@ namespace QUIC
 		
 		// Domain reference indices of start and end
 		// of building in each dimension.
-		istart = rnd(xfo / dx);
-		iend   = istart + int(length / dx);
+                istart = rnd(xfo / dx);
+		iend   = istart + int((xfo + length) / dx);
 				
 		jstart = rnd((yfo - half_width) / dy);
-		jend   = jstart + int(width / dy);
+		jend   = jstart + int((yfo + half_width) / dy);
 				
 		kstart = rnd(zfo / dz) + 1;
-		kend   = kstart + int(height / dz) - 1; // Actually one less than terminating index.
+		kend   = kstart + int((zfo + height) / dz) - 1; // Actually one less than terminating index.
 		
 		// \\todo check for buildings outside of domain to properly set indices.
 		
