@@ -145,8 +145,6 @@ bool quBuildings::readQUICFile(const std::string &filename)
       ss >> numPolygonBuildingNodes;
       ss.clear();
 
-      // std::cout << "num polys: " << numPolygonBuildingNodes << std::endl;
-
       // resize the building vector
       buildings.resize(numBuildings);
 
@@ -276,9 +274,11 @@ bool quBuildings::readQUICFile(const std::string &filename)
 	    ss >> buildings[i].numPolys;
 	    ss.clear();	    
 
+            buildings[i].polygons.resize( buildings[i].numPolys );
+
 	    for (unsigned int pCount=0; pCount<buildings[i].numPolys; pCount++) 
 	      {
-
+                  
 		// Read over the "!Start Polygon" line
 		getline(bldFile, line);
 
@@ -292,6 +292,9 @@ bool quBuildings::readQUICFile(const std::string &filename)
 		// Read over the "!X [m]   Y [m]" line
 		getline(bldFile, line);
 
+                buildings[i].polygons[pCount].nNodes = nNodes;
+                buildings[i].polygons[pCount].polygonNodes.resize(nNodes);
+
 		for (unsigned int nCount=0; nCount<nNodes; nCount++) 
 		  {
 		    getline(bldFile, line);
@@ -299,8 +302,10 @@ bool quBuildings::readQUICFile(const std::string &filename)
 		
 		    float xC, yC;
 		    ss >> xC >> yC;
-
 		    ss.clear();	    		
+
+                    buildings[i].polygons[pCount].polygonNodes[nCount].xC = xC;
+                    buildings[i].polygons[pCount].polygonNodes[nCount].yC = yC;
 		  }
 
 		// Read over the "!End Polygon" line

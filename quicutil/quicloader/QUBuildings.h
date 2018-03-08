@@ -44,6 +44,17 @@ class quBuildings : public quicDataFile
 
   float zo;
 
+    struct polyPt 
+    {
+        float xC, yC;
+    };
+    
+    struct poly  
+    {
+        int nNodes;
+        std::vector<polyPt> polygonNodes;
+    };
+
   struct buildingData
   {
     int bldNum;
@@ -63,7 +74,9 @@ class quBuildings : public quicDataFile
     float centroidY;  // 5.92
     float rotation; // 5.92
     float attenuationCoef; // 5.92
+
       unsigned int numPolys;
+      std::vector<poly> polygons;
   };
 
   float wallRoughnessLength;   // 5.92 information
