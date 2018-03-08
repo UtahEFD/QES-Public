@@ -4,17 +4,22 @@
 #include <iomanip>
 
 #include "quicloader/legacyFileParser.h"
-#include "quicloader/QUBuildings.cpp"
-#include "quicloader/QUFileOptions.cpp"
-#include "quicloader/QUICProject.cpp"
-#include "quicloader/QUMetParams.cpp"
-#include "quicloader/QUSimparams.cpp"
-#include "quicloader/QUSensor.cpp"
-#include "quicloader/QUVelocities.cpp"
+#include "quicloader/QUBuildings.h"
+#include "quicloader/QUFileOptions.h"
+#include "quicloader/QUICProject.h"
+#include "quicloader/QUMetParams.h"
+#include "quicloader/QUSimparams.h"
+#include "quicloader/QUSensor.h"
+#include "quicloader/QUVelocities.h"
+
+#include "quicloader/QPBuildout.h"
+
 #include "quicloader/standardFileParser.h"
 
 #include "building.h"
 #include "../util/matrixIO.h"
+
+using namespace sivelab;
 
 namespace QUIC
 {
@@ -702,11 +707,56 @@ namespace QUIC
 	
 	bool urbParser::output_PlumeInputFile(urbModule* um, std::string const& drctry)
 	{
+            um->qwrite("Writing QP_Buildout.inp");
+            qpBuildout qpBuildout;
+            
+            std::cout << "numpolys: " << um->fileBuildings.numPolygonBuildingNodes << std::endl;
+            
+            qpBuildout.numPolygonNodes = um->fileBuildings.numPolygonBuildingNodes;
+
+            qpBuildout.buildings.resize( um->buildings.size() );
+            
+            for(unsigned int i = 0; i < um->buildings.size(); i++)
+            {
+                qpBuildout.buildings[i].type = um->buildings[i].type;
+                qpBuildout.buildings[i].geometry = um->buildings[i].geometry;
+                qpBuildout.buildings[i].gamma = um->buildings[i].gamma;
+                
+                qpBuildout.buildings[i].height = um->buildings[i].height;
+                qpBuildout.buildings[i].width = um->buildings[i].width;
+                qpBuildout.buildings[i].length = um->buildings[i].length;
+
+                qpBuildout.buildings[i].xfo = um->buildings[i].xfo;
+                qpBuildout.buildings[i].yfo = um->buildings[i].yfo;
+                qpBuildout.buildings[i].zfo = um->buildings[i].zfo;
+                
+                qpBuildout.buildings[i].weff = um->buildings[i].getWeff();
+                qpBuildout.buildings[i].leff = um->buildings[i].getLeff();
+
+                qpBuildout.buildings[i].lfr = um->buildings[i].getLf();
+                qpBuildout.buildings[i].lr = um->buildings[i].getLr();
+            }
+            
+            std::cerr << "urbParser: WARNING setting numVegetativeCanopies to 0 -- not fully support yet." << std::endl;
+            qpBuildout.numVegetativeCanopies = 0;
+
+            // qpBuildout.numPolygonNodes = um->buildings[i].numPolygonBuildingNodes;
+
+            string filepath = drctry + "QP_buildout.inp";
+            qpBuildout.writeQUICFile(filepath);
+            
+            // 
+            // Really don't think the stuff below here is needed any
+            // longer!!!!
+            // Pete
+            // 
+
     um->qwrite("Writing Plume:: input.txt...");
 
     using namespace std;
 
-	  string filepath = drctry + "input.txt";
+    // string filepath = drctry + "input.txt";
+    filepath = drctry + "input.txt";
 	  ofstream writeInput(filepath.c_str());
 	  if(!writeInput.is_open()) 
 	  {

@@ -115,6 +115,7 @@ bool qpBuildout::readQUICFile(const std::string &filename)
 
     int bldId;
 
+    // And 6.1 needs to be added here!!!!
     if (quicVersionString == "5.92") 
       {
 	// For version 5.92, the format is
@@ -388,29 +389,32 @@ bool qpBuildout::readQUICFile(const std::string &filename)
 bool qpBuildout::writeQUICFile(const std::string &filename)
 {	
  
-  std::cerr<<"i am here is it breaking here"<<std::endl;
   std::ofstream qufile;
   qufile.open(filename.c_str());
   if (qufile.is_open())
     {
-
-	qufile<<buildings.size()<<" ! total number of buildings"<<std::endl;
-        qufile<<numVegetativeCanopies<<" ! total number of vegitative canopies"<<std::endl;
+	qufile << '\t' << buildings.size() << "\t! total number of buildings" << std::endl;
+        qufile << '\t' << numVegetativeCanopies << "\t! total number of vegitative canopies" << std::endl;
+        qufile << '\t' << numPolygonNodes << "\t! total number of polygon nodes" << std::endl;
       
-      for (int i=buildings.size()-1; i>=0; i--)
+        for (int i = buildings.size()-1; i>=0; i--)
 	{
-	std::cerr<<"NUBER"<<i<<":"<<std::endl;
-	   qufile<<"Building Number =\t"<<i+1<<std::endl;
-           qufile<<"Type =\t"<<buildings[i].type<<" gamma =\t"<<buildings[i].gamma<<std::endl;
-	   qufile<<"Ht =\t"<< buildings[i].height<<" W =\t"<<buildings[i].width<<" L =\t"<<buildings[i].length<<std::endl;
-	   qufile<<"xfo =\t"<< buildings[i].xfo<<" yfo =\t"<<buildings[i].yfo<<" zfo =\t"<<buildings[i].zfo<<std::endl;
-	   qufile<<"Weff =\t"<< buildings[i].weff<<" Leff =\t"<<buildings[i].leff<<std::endl;
-	   qufile<<"Lf =\t"<< buildings[i].lfr<<" Lr =\t"<<buildings[i].lr<<" Att =\t"<<buildings[i].att<<std::endl;
-	   qufile<<"Sx =\t"<< buildings[i].sx<<" Sy =\t"<<buildings[i].sy<<std::endl;
-	   qufile<<"Building Damage =\t"<< buildings[i].damage<<std::endl;
-	  std::cout<<"the value of lf "<<buildings[i].lfr<<std::endl;
+            qufile << '\t' << i+1 << "\t!number" << std::endl;
+            qufile << '\t' << buildings[i].geometry << "\t!geometry" << std::endl;
+            qufile << '\t' << buildings[i].type << "\t!type" << std::endl;
+            qufile << '\t' << buildings[i].height << "\t!height" << std::endl;
+            qufile << '\t' << buildings[i].zfo << "\t!zfo" << std::endl;
+            qufile << '\t' << buildings[i].damage << "\t!damage" << std::endl;
+            qufile << '\t' << buildings[i].weff << "\t!Weff" << std::endl;
+            qufile << '\t' << buildings[i].leff << "\t!Leff" << std::endl;
+            qufile << '\t' << buildings[i].lfr << "\t!Lf" << std::endl;
+            qufile << '\t' << buildings[i].lr << "\t!Lr" << std::endl;
+            qufile << '\t' << buildings[i].xc << "\t!xc" << std::endl;
+            qufile << '\t' << buildings[i].yc << "\t!yc" << std::endl;
+            qufile << '\t' << buildings[i].start << "\t!start" << std::endl;
+            qufile << '\t' << buildings[i].stop << "\t!stop" << std::endl;
+            qufile << '\t' << buildings[i].numPolys << "\t!num polygons" << std::endl;
 	}
-  
         
  
       return true;
