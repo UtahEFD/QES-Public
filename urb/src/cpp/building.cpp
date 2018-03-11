@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cmath>
 
-#include "quicutil/constants.h"
+#include "quicloader/constants.h"
 #include "../util/index3D.h"
 #include "../util/minmax.h"
 
@@ -64,15 +64,8 @@ namespace QUIC
 		float const& dx, float const& dy, float const& dz
 	)
 	{
-		// todo resolve float to int warnings.
-		length *= dx;
-		width *= dy;
-		height *= dz;
+            std::cout << "Initializing Building" << std::endl;
 
-		xfo *= dx;
-		yfo *= dy;
-		zfo *= dz;
-		
 		//height += zfo;
 		//zfo  += 2;
 		
@@ -85,6 +78,8 @@ namespace QUIC
 		xco = xfo + half_length*cos_gamma; // CENTER of building in QUIC domain coordinates
 		yco = yfo + half_length*sin_gamma;
 
+                std::cout << "Calculating Dimensional Indices" << std::endl;
+                
 		this->calculateDimensionalIndices(dx, dy, dz);
 		this->calculateFootprintCorners();
 
@@ -1231,7 +1226,7 @@ namespace QUIC
 		
 		// Domain reference indices of start and end
 		// of building in each dimension.
-		istart = rnd(xfo / dx);
+                istart = rnd(xfo / dx);
 		iend   = istart + int(length / dx);
 				
 		jstart = rnd((yfo - half_width) / dy);
@@ -1242,10 +1237,10 @@ namespace QUIC
 		
 		// \\todo check for buildings outside of domain to properly set indices.
 		
-		// debugging ingo
-		//std::cout << "istart = " << istart << " iend = " << iend << std::endl;
-		//std::cout << "jstart = " << jstart << " jend = " << jend << std::endl;
-		//std::cout << "kstart = " << kstart << " kend = " << kend << std::endl;
+		 // debugging ingo
+		// std::cout << "istart = " << istart << " iend = " << iend << std::endl;
+		// std::cout << "jstart = " << jstart << " jend = " << jend << std::endl;
+		// std::cout << "kstart = " << kstart << " kend = " << kend << std::endl;
 	}
 
 	void urbBuilding::calculateFootprintCorners()

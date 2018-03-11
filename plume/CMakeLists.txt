@@ -1,15 +1,11 @@
-cmake_minimum_required (VERSION 2.8) 
-PROJECT (plume) 
+#cmake_minimum_required (VERSION 2.8) 
+# PROJECT (cudaplume) 
 
 SET(BUNDLEOPTS MACOSX_BUNDLE)
 
 SET(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
 
- 
-
-SET(LIBSIVELAB_PATH "${CMAKE_SOURCE_DIR}/../libsivelab" CACHE STRING "Path to the directory where the libsivelab repository is located (assumes code is built into a directory named 'build').")
-INCLUDE_DIRECTORIES (${LIBSIVELAB_PATH}) 
-LINK_DIRECTORIES (${LIBSIVELAB_PATH}/lib) 
+SET(CMAKE_CXX_FLAGS "-Wall")
 
 FIND_PACKAGE(CUDA REQUIRED)
 
@@ -56,6 +52,9 @@ FIND_PACKAGE(Boost COMPONENTS program_options REQUIRED)
 IF(${Boost_PROGRAM_OPTIONS_FOUND})
 ENDIF()
 
+INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/quicutil)  
+LINK_DIRECTORIES (${CMAKE_BINARY_DIR}/quicutil/)
+
 cuda_add_executable (plume 
    shader/particle/shaders.cpp kernel/kernel_interface.cu 
    shader/particle/render_particles.cpp  
@@ -73,8 +72,8 @@ cuda_add_executable (plume
   main.cpp
 )
 
-target_link_libraries (plume sive-quicutil) 
-target_link_libraries (plume sive-util)
+target_link_libraries (plume quicloader) 
+target_link_libraries (plume util)
 target_link_libraries (plume ${Boost_PROGRAM_OPTIONS_LIBRARIES} )  
 
 # IF(CMAKE_SIZEOF_VOID_P EQUAL 8)

@@ -3,6 +3,8 @@ include_directories(/usr/local/cuda/include)
 
 include_directories(${CUDA_CUT_INCLUDE_DIR})
 
+INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/quicutil)  
+
 add_library(UrbTools matrixViewer.cpp)
 
 if(QUIC_BUILD_DEV)
@@ -23,9 +25,8 @@ if(QUIC_BUILD_DEV)
     target_link_libraries (${program} UrbTools)
     target_link_libraries (${program} UrbKernels)
     target_link_libraries (${program} UrbUtil)
-    target_link_libraries (${program} sive-cudautil)
-    target_link_libraries (${program} sive-quicutil)
-    target_link_libraries (${program} sive-util)
+    target_link_libraries (${program} quicloader)
+    target_link_libraries (${program} util)
   endforeach(program)
 
 endif()

@@ -8,7 +8,7 @@ namespace QUIC
 		name            = "";
 		input_directory = ".";
 				
-		quiet = use_fortran = false;
+		quiet = false;
 		
 		output_celltypes   = output_boundaries   = false; 
 		output_divergence  = output_denominators = false;

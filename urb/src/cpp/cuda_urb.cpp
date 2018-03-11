@@ -5,6 +5,8 @@
 
 #include <iostream>
  
+#include "urbConfig.h"
+
 #include "urbCUDA.h"
 #include "urbModule.h"
 #include "urbParser.h"
@@ -14,6 +16,10 @@
 
 int main(int argc, char* argv[]) 
 {
+    std::cout << "Running CUDA Urb, version " << cudaUrb_VERSION_MAJOR << "." 
+              << cudaUrb_VERSION_MINOR << "." 
+              << cudaUrb_VERSION_PATCH << std::endl;
+    
 	std::cout << std::endl << "###--- sor3d on device ---###" << std::endl;
 	
 	std::string inp_dir;
@@ -25,7 +31,6 @@ int main(int argc, char* argv[])
         um->beQuiet(false);
   
 	QUIC::urbParser::parse(um, inp_dir);
-	//um->use_fortran = true;
 	QUIC::urbSetup::setup(um);
 
 	um->sanityCheck();

@@ -1,42 +1,22 @@
 GPU QUIC
 --------
 
-This code contains the GPU versions of Urb and Plume that were started by Andrew Larson (urb) and Alex (Gai) Geng and Pete Willemsen (plume). These versions of the code are done in CUDA.
+This code contains the GPU versions of Urb and Plume that were started
+by Andrew Larson (urb), Alex (Gai) Geng (plume), Balwinder Singh
+(plume), Pete Willemsen (urb, plume) and Eric Pardyjak (urb,
+plume). These versions of the code are done in CUDA.
 
 ## GPU-Plume (3D GLE Model)
 
 This plume model uses Balwinder Singh's 3D GLE model from his
-dissertation. This code currently relies on CUDA 4.2. Instructions to
-compile and run it are designed for a Ubuntu 12.04 system with an
+dissertation. This code currently relies on CUDA 8.0. The code
+requires a recent Linux distribution (Ubuntu 16.04) and a recent
 NVIDIA graphics card and somewhat recent NVIDIA Linux drivers.
 
-To compile the 3D GLE model of gpuPlume, you will need cmake version
-2.8 or greater, Boost, and the NVIDIA CUDA Libraries installed. As of
-this writing the code has been tested with CUDA 4.2 only.
-
-You will also need the libsivelab library. It can be checked out with
-the following command:
-
-git clone https://envsim.d.umn.edu/genusis/libsivelab.git
-
-This will create a directory called libsivelab. You will need to go
-into that directory and build the libsivelab source. To do this,
-follow these steps:
-
-cd libsivelab
-mkdir build
-cd build
-cmake ..
-make
-cd ..
-
-At this point, the libsivelab source should have compiled.
-
-### Building the Plume Source
+### Building the Source
 
 To compile plume, first
 
-  cd plume
   mkdir build
   cd build
 
@@ -51,24 +31,9 @@ Alternatively, if you know where you installed CUDA and libsivelab,
 you can run cmake with command line options that will set up the
 project correctly. For instance:
 
-  cmake .. -DLIBSIVELAB_PATH=/home/cs/willemsn/Coding/libsivelab/trunk -DCUDA_TOOLKIT_ROOT_DIR=/home/cs/software/sivelab/cuda_4.2/cuda -DCUDA_SDK_ROOT_DIR=/home/cs/software/sivelab/cuda_4.2/sdk
+  cmake .. -DCUDA_TOOLKIT_ROOT_DIR=/home/cuda_8.0 -DCUDA_SDK_ROOT_DIR=/home/cuda_8.0
 
 Once cmake has been configured, the GPU plume code can be compiled.
 
   make
 
-### Running the Plume test case
-
-To run the hard-coded test (I think its Balwinder's test case), just
-type
-
-./plume
-
-Buildings are not drawn in this test, but they do exist. Once the
-window pops up, just press 'b' to show the buildings.
-
-Currently, the code outputs a concentration data file called test.m. This can be run directly in matlab. One of the main results of the test matlab script is to produce concentration plots. For instance, the following image was generated with that script on Dec 9, 2014:
-
-![Concentration](media/cudaplume_concentrationExample.png)
-
-I believe the concentrations and dispersion code is working properly, but we have not yet validated the code.

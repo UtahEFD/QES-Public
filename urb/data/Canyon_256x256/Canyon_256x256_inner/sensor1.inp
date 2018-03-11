@@ -1,9 +1,0 @@
-sensor1 !Site Name 
-1 !X coordinate (meters)
-1 !Y coordinate (meters)
-0.000000 !Decimal time (military time i.e. 0130 = 1.5)
-1 !site boundary layer flag (1 = log, 2 = exp, 3 = urban canopy, 4 = discrete data points)
-0.1 !site zo
-0 !reciprocal Monin-Obukhov Length (1/m)
-!Height (m),Speed	(m/s), Direction (deg relative to true N)
-10 3 0

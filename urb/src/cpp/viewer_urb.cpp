@@ -47,7 +47,7 @@ int main( int argc, char *argv[] )
 	getDirectories(argc, argv, inp_dir, out_dir);
 
 	// fourth arg should be shader directory
-	shdr_dir = "../src/shaders/";
+	shdr_dir = "./";
 	if(argc == 4)
 	{
 		shdr_dir.assign(argv[3]);

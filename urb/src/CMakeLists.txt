@@ -1,13 +1,20 @@
-CMAKE_MINIMUM_REQUIRED (VERSION 2.8) 
-PROJECT (EnvSim) 
+# CMAKE_MINIMUM_REQUIRED (VERSION 2.8) 
+# PROJECT (cudaUrb) 
 
-SET(EnvSim_MAJOR_VERSION 0)
-SET(EnvSim_MINOR_VERSION 5)
-SET(EnvSim_PATCH_VERSION 0)
-SET(EnvSim_SOVERSION 0)
-SET(EnvSim_VERSION ${EnvSim_MAJOR_VERSION}.${EnvSim_MINOR_VERSION}.${EnvSim_PATCH_VERSION})
+SET(cudaUrb_MAJOR_VERSION 0)
+SET(cudaUrb_MINOR_VERSION 5)
+SET(cudaUrb_PATCH_VERSION 0)
+SET(cudaUrb_SOVERSION 0)
+SET(cudaUrb_VERSION ${cudaUrb_MAJOR_VERSION}.${cudaUrb_MINOR_VERSION}.${cudaUrb_PATCH_VERSION})
 
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../CMake/Modules/")
+# configure a header file to pass some of the CMake settings
+# to the source code
+configure_file (
+  "${CMAKE_CURRENT_SOURCE_DIR}/cpp/urbConfig.h.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cpp/urbConfig.h"
+  )
+
+# SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../CMake/Modules/")
 
 #Determine if we're building for visuals or not (GLUT, GLEW, OpenGL...)
 # How to set the option from the terminal:
@@ -17,14 +24,14 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../CMake/Modules
 # SET(QUIC_BUILD_DEV On)
 # 
 # If not set or passed through -D then it's default value is 'Off'.
-OPTION(QUIC_BUILD_DEV "On - buildings everything; Off - builds console only" On)
+# OPTION(QUIC_BUILD_DEV "On - buildings everything; Off - builds console only" On)
 
-SET(LIBSIVELAB_PATH "${CMAKE_SOURCE_DIR}/../../libsivelab" CACHE STRING "Path to the directory where the libsivelab repository is located.")
+# SET(LIBSIVELAB_PATH "${CMAKE_SOURCE_DIR}/../../libsivelab" CACHE STRING "Path to the directory where the libsivelab repository is located.")
 #MESSAGE(${LIBSIVELAB_PATH})
 
-SET(OPTIX_PATH CACHE STRING "Path the to directory where OptiX is installed (defaults to Apple install location).")
+# SET(OPTIX_PATH CACHE STRING "Path the to directory where OptiX is installed (defaults to Apple install location).")
 
-FIND_PACKAGE(CUDA REQUIRED)
+# FIND_PACKAGE(CUDA REQUIRED)
 
 # Force 32-bit.  ??? not needed anymore, is it?
 SET(CMAKE_CXX_FLAGS "-Wall")
@@ -110,13 +117,6 @@ IF(CMAKE_CPACK_COMMAND)
     ENDIF(BUILD_QUIC_PACKAGES)
 ENDIF(CMAKE_CPACK_COMMAND)
 
-
-INCLUDE_DIRECTORIES (${LIBSIVELAB_PATH}) 
-LINK_DIRECTORIES (${LIBSIVELAB_PATH}/lib/) 
-
-#LINK_DIRECTORIES (${CMAKE_SOURCE_DIR}/../lib)
-
-add_subdirectory (fortran)
 add_subdirectory (cpp)
 add_subdirectory (cuda)
 add_subdirectory (tests)

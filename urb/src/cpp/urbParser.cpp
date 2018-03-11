@@ -3,18 +3,23 @@
 #include <iostream>
 #include <iomanip>
 
-#include "quicutil/legacyFileParser.h"
-#include "quicutil/QUBuildings.cpp"
-#include "quicutil/QUFileOptions.cpp"
-#include "quicutil/QUICProject.cpp"
-#include "quicutil/QUMetParams.cpp"
-#include "quicutil/QUSimparams.cpp"
-#include "quicutil/QUSensor.cpp"
-#include "quicutil/QUVelocities.cpp"
-#include "quicutil/standardFileParser.h"
+#include "quicloader/legacyFileParser.h"
+#include "quicloader/QUBuildings.h"
+#include "quicloader/QUFileOptions.h"
+#include "quicloader/QUICProject.h"
+#include "quicloader/QUMetParams.h"
+#include "quicloader/QUSimparams.h"
+#include "quicloader/QUSensor.h"
+#include "quicloader/QUVelocities.h"
+
+#include "quicloader/QPBuildout.h"
+
+#include "quicloader/standardFileParser.h"
 
 #include "building.h"
 #include "../util/matrixIO.h"
+
+using namespace sivelab;
 
 namespace QUIC
 {
@@ -577,7 +582,6 @@ namespace QUIC
 		
 		// Describe the elements you're looking for.
 		boolElement  be_quiet      = boolElement ("quiet");
-		boolElement  be_use_fort   = boolElement ("use_fortran");
 
 		boolElement  be_out_typs   = boolElement ("output_celltypes");
 		boolElement  be_out_bndr   = boolElement ("output_boundaries");
@@ -594,7 +598,6 @@ namespace QUIC
 		
 		// Commit them to the parser.
 		sfp->commit(be_quiet);
-		sfp->commit(be_use_fort);
 		
 		sfp->commit(be_out_typs);		
 		sfp->commit(be_out_bndr);
@@ -614,7 +617,6 @@ namespace QUIC
 
 		// See if they were found.
 		if(sfp->recall(be_quiet))     {um->quiet           = be_quiet.value;}
-		if(sfp->recall(be_use_fort))  {um->use_fortran     = be_use_fort.value;}
 		
 		if(sfp->recall(be_out_typs))  {um->output_celltypes    = be_out_typs.value;}
 		if(sfp->recall(be_out_bndr))  {um->output_boundaries   = be_out_bndr.value;}
@@ -705,11 +707,56 @@ namespace QUIC
 	
 	bool urbParser::output_PlumeInputFile(urbModule* um, std::string const& drctry)
 	{
+            um->qwrite("Writing QP_Buildout.inp");
+            qpBuildout qpBuildout;
+            
+            std::cout << "numpolys: " << um->fileBuildings.numPolygonBuildingNodes << std::endl;
+            
+            qpBuildout.numPolygonNodes = um->fileBuildings.numPolygonBuildingNodes;
+
+            qpBuildout.buildings.resize( um->buildings.size() );
+            
+            for(unsigned int i = 0; i < um->buildings.size(); i++)
+            {
+                qpBuildout.buildings[i].type = um->buildings[i].type;
+                qpBuildout.buildings[i].geometry = um->buildings[i].geometry;
+                qpBuildout.buildings[i].gamma = um->buildings[i].gamma;
+                
+                qpBuildout.buildings[i].height = um->buildings[i].height;
+                qpBuildout.buildings[i].width = um->buildings[i].width;
+                qpBuildout.buildings[i].length = um->buildings[i].length;
+
+                qpBuildout.buildings[i].xfo = um->buildings[i].xfo;
+                qpBuildout.buildings[i].yfo = um->buildings[i].yfo;
+                qpBuildout.buildings[i].zfo = um->buildings[i].zfo;
+                
+                qpBuildout.buildings[i].weff = um->buildings[i].getWeff();
+                qpBuildout.buildings[i].leff = um->buildings[i].getLeff();
+
+                qpBuildout.buildings[i].lfr = um->buildings[i].getLf();
+                qpBuildout.buildings[i].lr = um->buildings[i].getLr();
+            }
+            
+            std::cerr << "urbParser: WARNING setting numVegetativeCanopies to 0 -- not fully support yet." << std::endl;
+            qpBuildout.numVegetativeCanopies = 0;
+
+            // qpBuildout.numPolygonNodes = um->buildings[i].numPolygonBuildingNodes;
+
+            string filepath = drctry + "QP_buildout.inp";
+            qpBuildout.writeQUICFile(filepath);
+            
+            // 
+            // Really don't think the stuff below here is needed any
+            // longer!!!!
+            // Pete
+            // 
+
     um->qwrite("Writing Plume:: input.txt...");
 
     using namespace std;
 
-	  string filepath = drctry + "input.txt";
+    // string filepath = drctry + "input.txt";
+    filepath = drctry + "input.txt";
 	  ofstream writeInput(filepath.c_str());
 	  if(!writeInput.is_open()) 
 	  {
