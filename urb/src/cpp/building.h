@@ -98,6 +98,9 @@ namespace QUIC
 			
 			inline virtual float getWeff(){return Weff;};
 			inline virtual float getLeff(){return Leff;};
+
+			inline virtual float getLf(){return Lf;}
+                        inline virtual float getLr(){return Lr;};
 		protected:
 		
 		  // Careful there's a gamma in BuildingData.
@@ -108,7 +111,7 @@ namespace QUIC
 			sivelab::angle phiprime; // ENG
 			float Weff;
 			float Leff;
-			float Lr;
+                        float Lr, Lf;
 		
 			sivelab::angle upwind_dir; // ENG
 			float uo_h;
