@@ -1,5 +1,8 @@
 language: cpp
 
+# Building on trusty for now for C++-11 support
+dist: trusty
+
 addons:
   apt:
     packages:
