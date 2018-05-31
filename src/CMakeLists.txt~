@@ -1,0 +1,2 @@
+
+add_executable( coupledLSMTTM coupledLSMTTM.cpp TempCollector.h TempCollector.cpp )
