@@ -1,0 +1,28 @@
+<X>
+	<intVal> 5 </intVal>
+	<A>
+		<AVal> 1 </AVal>
+		<AVal> 2 </AVal>
+		<AVal> 3 </AVal>
+		<AVal> 4 </AVal>
+	</A>
+	<B>
+		<numAs> 3 </numAs>
+		<A>
+			<AVal> 1 </AVal>
+			<AVal> 2 </AVal>
+		</A>
+		<A>
+			<AVal> 3 </AVal>
+			<AVal> 4 </AVal>
+		</A>
+		<A>
+			<AVal> 5 </AVal>
+			<AVal> 6 </AVal>
+		</A>
+	</B>
+	<C>
+		<intValx> 12 </intValx>
+		<floatValy> 13.9 </floatValy>
+	</C>
+</X>

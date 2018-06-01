@@ -7,64 +7,33 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/optional.hpp>
 
+#include <vector>
+
+class X;
 
 namespace pt = boost::property_tree;
 
 class ParseInterface
 {
+public:
+	X* xVar;
 
-	private:
+	ParseInterface();
 
-		//dummy method for compiling should be pure virtual
-		virtual void parseValues(const pt::ptree tree) { int x = 5;}
+	template <typename T>
+	void parsePrimative(T& val,const std::string tag, const pt::ptree tree);
 
-	public:
+	template <typename T>
+	void parseMultiPrimatives(std::vector<T>& vals, const std::string tag, const pt::ptree tree);
 
-		template <typename T>
-		void parsePrimative(T& val, std::string tag, const pt::ptree tree)
-		{
-			boost::optional<T> newVal = tree.get_optional<T>(tag);
-			if (newVal)
-				val = *newVal;
-		}
+	template <typename T>
+	void parseElement(T*& ele, const std::string tag, const pt::ptree tree);
 
-		template <typename T>
-		void parseMultiPrimatives(std::vector<T>& vals, std::string tag, const pt::ptree tree)
-		{
-			pt::ptree::const_iterator end = tree.end();
-			/*for (tree::const_iterator it = tree.begin(); it != end; ++it)
-			{
-				if (it.first == tag)
-				{
-					T newEle;
-					newEle = it.second.get<T>;
-					eles.push_back(newEle);
-				}
-			}*/
-		}
+	template <typename T>
+	void parseMultiElements(std::vector<T*>& eles, const std::string tag, const pt::ptree tree);
 
-		void parseElement(ParseInterface* ele, std::string tag, const pt::ptree tree)
-		{
-			auto child = tree.get_child_optional(tag);
-			
-			if (child)
-			{
-				ele->parseValues(*child);
-			}
-		}
 
-		template <typename T>
-		void parseMultiElements(std::vector<T*>& eles, std::string tag, const pt::ptree tree)
-		{
-			pt::ptree::const_iterator end = tree.end();
-			for (pt::ptree::const_iterator it = tree.begin(); it != end; ++it)
-			{
-				if (it->first == tag)
-				{
-					T* newEle = new T();
-					newEle->parseValues(it->second);
-					eles.push_back(newEle);
-				}
-			}
-		}
+	virtual void parseValues(const pt::ptree tree);
+
+
 };
