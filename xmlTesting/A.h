@@ -2,8 +2,6 @@
 
 #include "ParseInterface.h"
 
-namespace pt = boost::property_tree;
-
 class A : public ParseInterface
 {
 public:
@@ -15,8 +13,8 @@ public:
 		vals.clear();
 	}
 
-	void parseValues(pt::ptree tree)
+	void parseValues()
 	{
-		parseMultiPrimatives<int>(vals, "AVal", tree);
+		parseMultiPrimatives<int>(vals, "AVal");
 	}
 };

@@ -3,8 +3,6 @@
 #include "ParseInterface.h"
 #include "A.h"
 
-namespace pt = boost::property_tree;
-
 class B : public ParseInterface
 {
 public:
@@ -17,9 +15,9 @@ public:
 		aVals.clear();
 	}
 
-	void parseValues(pt::ptree tree)
+	void parseValues()
 	{
-		parsePrimative<int>(numAs, "numAs", tree);
-		parseMultiElements<A>(aVals, "A", tree);
+		parsePrimative<int>(numAs, "numAs");
+		parseMultiElements<A>(aVals, "A");
 	}
 };

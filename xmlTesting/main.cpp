@@ -1,4 +1,5 @@
 #include "ParseInterface.h"
+#include "Root.h"
 #include "X.h"
 #include "A.h"
 #include "B.h"
@@ -18,8 +19,7 @@ namespace pt = boost::property_tree;
 
 int main()
 {
-	std::string fileName, logFileName;
-	int logLevel;
+	std::string fileName;
 	std::cout << "Input the file name: ";
 	std::cin >> fileName;
 
@@ -27,24 +27,24 @@ int main()
 
 	pt::read_xml(fileName, tree);
 
-	ParseInterface structureParsed;
+	ParseInterface structureParsed(tree);
 
-	structureParsed.parseValues(tree);
-
-	std::cout << "X" << std::endl << structureParsed.xVar->x << std::endl;
+	structureParsed.parseValues();
+			std::cout << "hereEND\n";
+	std::cout << "X" << std::endl << structureParsed.root->xVar->x << std::endl;
 	std::cout << "A" << std::endl;
-	for (int i = 0; i < structureParsed.xVar->aVar->vals.size(); i++)
-		std::cout << structureParsed.xVar->aVar->vals[i] << std::endl;
+	for (unsigned int i = 0; i < structureParsed.root->xVar->aVar->vals.size(); i++)
+		std::cout << structureParsed.root->xVar->aVar->vals[i] << std::endl;
 	std::cout << "B" << std::endl;
-	std::cout << structureParsed.xVar->bVar->numAs << std::endl;
-	for (int i = 0; i < structureParsed.xVar->bVar->aVals.size(); i++)
+	std::cout << structureParsed.root->xVar->bVar->numAs << std::endl;
+	for (unsigned int i = 0; i < structureParsed.root->xVar->bVar->aVals.size(); i++)
 	{
 		std::cout << "A" << std::endl;
-		for (int j = 0; j < (structureParsed.xVar->bVar->aVals[i])->vals.size(); j++)
-			std::cout << (structureParsed.xVar->bVar->aVals[i])->vals[j] << std::endl;
+		for (unsigned int j = 0; j < (structureParsed.root->xVar->bVar->aVals[i])->vals.size(); j++)
+			std::cout << (structureParsed.root->xVar->bVar->aVals[i])->vals[j] << std::endl;
 	}
 	std::cout << "C" << std::endl;
-	std::cout << structureParsed.xVar->cVar->x << std::endl << structureParsed.xVar->cVar->y << std::endl;
+	std::cout << structureParsed.root->xVar->cVar->x << std::endl << structureParsed.root->xVar->cVar->y << std::endl;
 
 
 }

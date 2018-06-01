@@ -5,8 +5,6 @@
 #include "B.h"
 #include "C.h"
 
-namespace pt = boost::property_tree;
-
 class X : public ParseInterface
 {
 public:
@@ -15,11 +13,12 @@ public:
 	C* cVar;
 	int x;
 
-	void parseValues(pt::ptree tree)
+	void parseValues()
 	{
-		parsePrimative<int>(x, "intVal", tree);
-		parseElement<A>(aVar, "A", tree);
-		parseElement<B>(bVar, "B", tree);
-		parseElement<C>(cVar, "C", tree);
+					std::cout << "here\n";
+		parsePrimative<int>(x, "intVal");
+		parseElement<A>(aVar, "A");
+		parseElement<B>(bVar, "B");
+		parseElement<C>(cVar, "C");
 	}
 };

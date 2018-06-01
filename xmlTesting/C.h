@@ -2,8 +2,6 @@
 
 #include "ParseInterface.h"
 
-namespace pt = boost::property_tree;
-
 class C : public ParseInterface
 {
 public:
@@ -16,9 +14,9 @@ public:
 		x = 0;
 	}
 
-	void parseValues(pt::ptree tree)
+	void parseValues()
 	{
-		parsePrimative<int>(x, "intValx", tree);
-		parsePrimative<float>(y, "floatValy", tree);
+		parsePrimative<int>(x, "intValx");
+		parsePrimative<float>(y, "floatValy");
 	}
 };
