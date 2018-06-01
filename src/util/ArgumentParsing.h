@@ -20,8 +20,7 @@
  * along with libSIVELab.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SIVELAB_ARGUMENT_PARSING_H__
-#define __SIVELAB_ARGUMENT_PARSING_H__ 1
+#pragma once
 
 #include <iostream>
 #include <sstream>
@@ -32,8 +31,6 @@
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
-namespace sivelab
-{
   class ArgumentParsing
   {
   public:
@@ -69,6 +66,4 @@ namespace sivelab
     po::options_description m_optDesc; 
     po::variables_map m_varMap;        
   };
-}
 
-#endif // __SIVELAB_ARGUMENT_PARSING_H__ 1
