@@ -63,6 +63,70 @@
 		}
 	}
 
+	template <typename T, typename X, typename... ARGS>
+	void ParseInterface::parsePolymorph(T*& ele, X poly, ARGS... args)
+	{
+		auto child = tree.get_child_optional(poly.tag);
+		if (child)
+		{
+			poly.setNewType(ele);
+			ele->setTree(*child);
+			ele->parseValues();
+		}
+		else
+			parsePolymorph(ele, args...);
+	}
+
+
+	template <typename T, typename X>
+	void ParseInterface::parsePolymorph(T*& ele, X poly)
+	{
+		auto child = tree.get_child_optional(poly.tag);
+		if (child)
+		{
+			poly.setNewType(ele);
+			ele->setTree(*child);
+			ele->parseValues();
+		}
+	}
+
+
+	template <typename T, typename X, typename... ARGS>
+	void ParseInterface::parseMultiPolymorphs(std::vector<T*>& eles, X poly, ARGS... args)
+	{
+		pt::ptree::const_iterator end = tree.end();
+		for (pt::ptree::const_iterator it = tree.begin(); it != end; ++it)
+		{
+			if (it->first == poly.tag)
+			{
+				T* newEle;
+				poly.setNewType(newEle);
+				newEle->setTree(it->second);
+				newEle->parseValues();
+				eles.push_back(newEle);
+			}
+		}
+		parseMultiPolymorphs(eles, args...);
+	}
+
+
+	template <typename T, typename X>
+	void ParseInterface::parseMultiPolymorphs(std::vector<T*>& eles, X poly)
+	{
+		pt::ptree::const_iterator end = tree.end();
+		for (pt::ptree::const_iterator it = tree.begin(); it != end; ++it)
+		{
+			if (it->first == poly.tag)
+			{
+				T* newEle;
+				poly.setNewType(newEle);
+				newEle->setTree(it->second);
+				newEle->parseValues();
+				eles.push_back(newEle);
+			}
+		}
+	}
+
 
 	void ParseInterface::parseValues() 
 	{

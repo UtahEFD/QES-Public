@@ -4,6 +4,8 @@
 #include "A.h"
 #include "B.h"
 #include "C.h"
+#include "D.h"
+#include "P.h"
 
 #include <string>
 #include <iostream>
@@ -17,12 +19,10 @@
 
 namespace pt = boost::property_tree;
 
-int main()
+int main(int argc, char *argv[])
 {
-	std::string fileName;
-	std::cout << "Input the file name: ";
-	std::cin >> fileName;
 
+	std::string fileName = argv[1];
 	pt::ptree tree;
 
 	pt::read_xml(fileName, tree);
@@ -30,7 +30,7 @@ int main()
 	ParseInterface structureParsed(tree);
 
 	structureParsed.parseValues();
-			std::cout << "hereEND\n";
+
 	std::cout << "X" << std::endl << structureParsed.root->xVar->x << std::endl;
 	std::cout << "A" << std::endl;
 	for (unsigned int i = 0; i < structureParsed.root->xVar->aVar->vals.size(); i++)
@@ -45,6 +45,11 @@ int main()
 	}
 	std::cout << "C" << std::endl;
 	std::cout << structureParsed.root->xVar->cVar->x << std::endl << structureParsed.root->xVar->cVar->y << std::endl;
+	structureParsed.root->xVar->pVar->output();
+
+	std::cout << "D" << std::endl;
+	for (unsigned int i = 0; i < structureParsed.root->xVar->dVar->pVars.size(); i++)
+		structureParsed.root->xVar->dVar->pVars[i]->output();
 
 
 }

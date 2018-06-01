@@ -15,6 +15,33 @@ class Root;
 namespace pt = boost::property_tree;
 
 /**
+ * This structure is for grouping information necessary
+ * for parsing out polymorphic objects from an XML. This takes
+ * two template types, one for the base class, and one for the
+ * inheriting class. The constructor takes in a string which
+ * is used as a tag for finding values in the XML
+ */
+
+template<typename generic, typename thisType>
+struct Polymorph
+{
+	typedef thisType T;
+	typedef generic G;
+	std::string tag;
+
+	Polymorph(std::string t)
+	{
+		tag = t;
+	}
+
+	void setNewType(G*& element)
+	{
+		element = new T();
+	}
+};
+
+
+/**
  * This class is a generic object from which all classes that can be parsed from an XML 
  * file will inherit from. This class contains methods to simplify the parsing process
  * and obscure the complecations of the boost library.
@@ -96,6 +123,52 @@ public:
 	template <typename T>
 	void parseMultiElements(std::vector<T*>& eles, const std::string tag);
 
+
+	/**
+	 * Recursive
+	 * This function takes in an element and a list of polymorphs. This function
+	 * will check the current ptree for all of the provided polymorphs. Once one
+	 * of the polymorphs is found, an element of that type is created over ele and
+	 * it's information is parsed out of the tree.
+	 * This function is a variadic template, which means it can take in any number
+	 * of objects each with their own type. However, this code is expecting each 
+	 * type to be a variation of a polymorph and as so, this calls functions and
+	 * uses variables specific to the polymorph structure.
+	 * @param ele the element that will be updated
+	 * @param poly the current polymorph we are looking for in the xml
+	 * @param ARGS subsequent polymorphs to check in case the current is not found
+	 */
+	template <typename T, typename X, typename... ARGS>
+	void parsePolymorph(T*& ele, X poly, ARGS... args);
+
+	/**
+	 * A base case for the recursive version of this function
+	 */
+	template <typename T, typename X>
+	void parsePolymorph(T*& ele, X poly);
+
+	/**
+	 * Recursive
+	 * This function takes in a vector of elements and a list of polymorphs. This function
+	 * will check the current ptree for all of the provided polymorphs. All instances
+	 * of the polymorphs in the current tree are created through parsing and then added
+	 * to the vector.
+	 * This function is a variadic template, which means it can take in any number
+	 * of objects each with their own type. However, this code is expecting each 
+	 * type to be a variation of a polymorph and as so, this calls functions and
+	 * uses variables specific to the polymorph structure.
+	 * @param eles a list of elements that will be updated
+	 * @param poly the current polymorph we are looking for in the xml
+	 * @param ARGS subsequent polymorphs to check in case the current is not found
+	 */
+	template <typename T, typename X, typename... ARGS>
+	void parseMultiPolymorphs(std::vector<T*>& eles, X poly, ARGS... args);
+
+	/**
+	 * A base case for the recursive version of this function
+	 */
+	template <typename T, typename X>
+	void parseMultiPolymorphs(std::vector<T*>& eles, X poly);
 
 	/**
 	 * Virtual function
