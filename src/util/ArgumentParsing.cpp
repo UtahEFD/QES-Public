@@ -23,8 +23,6 @@
 #include <cassert>
 #include "ArgumentParsing.h"
 
-using namespace sivelab;
-
 ArgumentParsing::ArgumentParsing()
   : m_optDesc("Allowed options")
 {
