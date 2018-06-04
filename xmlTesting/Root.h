@@ -10,6 +10,6 @@ public:
 
 	void parseValues()
 	{
-		parseElement<X>(xVar, "X");
+		parseElement<X>(true, xVar, "X");
 	}
 };

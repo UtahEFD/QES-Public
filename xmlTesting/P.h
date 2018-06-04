@@ -25,8 +25,8 @@ public:
 
 	void parseValues()
 	{
-		parsePrimative<std::string>(str, "name");
-		parsePrimative<int>(x, "xVal");
+		parsePrimative<std::string>(true, str, "name");
+		parsePrimative<int>(true, x, "xVal");
 	}
 
 	virtual void output()
@@ -41,19 +41,22 @@ public:
 	std::string str;
 	char c;
 	float f;
+	float q;
 
 	P2()
 	{
 		str = "";
 		c = 0;
 		f = 0.0f;
+		q = 0.0f;
 	}
 
 	void parseValues()
 	{
-		parsePrimative<std::string>(str, "name");
-		parsePrimative<char>(c, "cVal");
-		parsePrimative<float>(f, "fVal");
+		parsePrimative<std::string>(true, str, "name");
+		parsePrimative<char>(true, c, "cVal");
+		parsePrimative<float>(true, f, "fVal");
+		parsePrimative<float>(true, q, "qVal");
 	}
 
 	virtual void output()

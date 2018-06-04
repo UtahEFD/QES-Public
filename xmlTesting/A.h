@@ -15,6 +15,6 @@ public:
 
 	void parseValues()
 	{
-		parseMultiPrimatives<int>(vals, "AVal");
+		parseMultiPrimatives<int>(true, vals, "AVal");
 	}
 };

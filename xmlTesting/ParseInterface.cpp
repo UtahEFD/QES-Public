@@ -4,24 +4,29 @@
 	ParseInterface::ParseInterface()
 	{
 		root = 0;
+		treeParents = "";
 	}
 
 	ParseInterface::ParseInterface(pt::ptree t)
 	{
 		root = new Root();
 		tree = t;
+		treeParents = "";
 	}
 
 	template <typename T>
-	void ParseInterface::parsePrimative(T& val, const std::string tag)
+	void ParseInterface::parsePrimative(bool isReq, T& val, const std::string tag)
 	{
 		boost::optional<T> newVal = tree.get_optional<T>(tag);
 		if (newVal)
 			val = *newVal;
+		else
+			if (isReq)
+				throw(ParseException("Could not find " + treeParents + "::" + tag));
 	}
 
 	template <typename T>
-	void ParseInterface::parseMultiPrimatives(std::vector<T>& vals, const std::string tag)
+	void ParseInterface::parseMultiPrimatives(bool isReq, std::vector<T>& vals, const std::string tag)
 	{
 		pt::ptree::const_iterator end = tree.end();
 		for (pt::ptree::const_iterator it = tree.begin(); it != end; ++it)
@@ -33,22 +38,28 @@
 				vals.push_back(newVal);
 			}
 		}
+		if (isReq && vals.size() == 0)
+			throw(ParseException("Could not find " + treeParents + "::" + tag));
 	}
 
 	template <typename T>
-	void ParseInterface::parseElement(T*& ele, const std::string tag)
+	void ParseInterface::parseElement(bool isReq, T*& ele, const std::string tag)
 	{
 		auto child = tree.get_child_optional(tag);
 		if (child)
 		{
 			ele = new T();
 			ele->setTree(*child);
+			ele->setParents(treeParents + "::" + tag);
 			ele->parseValues();
 		}
+		else
+			if (isReq)
+				throw(ParseException("Could not find " + treeParents + "::" + tag));
 	}
 
 	template <typename T>
-	void ParseInterface::parseMultiElements(std::vector<T*>& eles, const std::string tag)
+	void ParseInterface::parseMultiElements(bool isReq, std::vector<T*>& eles, const std::string tag)
 	{
 		pt::ptree::const_iterator end = tree.end();
 		for (pt::ptree::const_iterator it = tree.begin(); it != end; ++it)
@@ -57,42 +68,50 @@
 			{
 				T* newEle = new T();
 				newEle->setTree(it->second);
+				newEle->setParents(treeParents + "::" + tag);
 				newEle->parseValues();
 				eles.push_back(newEle);
 			}
 		}
+		if (isReq && eles.size() == 0)
+			throw(ParseException("Could not find " + treeParents + "::" + tag));
 	}
 
 	template <typename T, typename X, typename... ARGS>
-	void ParseInterface::parsePolymorph(T*& ele, X poly, ARGS... args)
+	void ParseInterface::parsePolymorph(bool isReq, T*& ele, X poly, ARGS... args)
 	{
 		auto child = tree.get_child_optional(poly.tag);
 		if (child)
 		{
 			poly.setNewType(ele);
 			ele->setTree(*child);
+			ele->setParents(treeParents + "::" + poly.tag);
 			ele->parseValues();
 		}
 		else
-			parsePolymorph(ele, args...);
+			parsePolymorph(isReq, ele, args...);
 	}
 
 
 	template <typename T, typename X>
-	void ParseInterface::parsePolymorph(T*& ele, X poly)
+	void ParseInterface::parsePolymorph(bool isReq, T*& ele, X poly)
 	{
 		auto child = tree.get_child_optional(poly.tag);
 		if (child)
 		{
 			poly.setNewType(ele);
 			ele->setTree(*child);
+			ele->setParents(treeParents + "::" + poly.tag);
 			ele->parseValues();
 		}
+		else
+			if (isReq)
+				throw(ParseException("Could not find " + treeParents + "::" + poly.tag));
 	}
 
 
 	template <typename T, typename X, typename... ARGS>
-	void ParseInterface::parseMultiPolymorphs(std::vector<T*>& eles, X poly, ARGS... args)
+	void ParseInterface::parseMultiPolymorphs(bool isReq, std::vector<T*>& eles, X poly, ARGS... args)
 	{
 		pt::ptree::const_iterator end = tree.end();
 		for (pt::ptree::const_iterator it = tree.begin(); it != end; ++it)
@@ -102,16 +121,17 @@
 				T* newEle;
 				poly.setNewType(newEle);
 				newEle->setTree(it->second);
+				newEle->setParents(treeParents + "::" + poly.tag);
 				newEle->parseValues();
 				eles.push_back(newEle);
 			}
 		}
-		parseMultiPolymorphs(eles, args...);
+		parseMultiPolymorphs(isReq, eles, args...);
 	}
 
 
 	template <typename T, typename X>
-	void ParseInterface::parseMultiPolymorphs(std::vector<T*>& eles, X poly)
+	void ParseInterface::parseMultiPolymorphs(bool isReq, std::vector<T*>& eles, X poly)
 	{
 		pt::ptree::const_iterator end = tree.end();
 		for (pt::ptree::const_iterator it = tree.begin(); it != end; ++it)
@@ -121,15 +141,20 @@
 				T* newEle;
 				poly.setNewType(newEle);
 				newEle->setTree(it->second);
+				newEle->setParents(treeParents + "::" + poly.tag);
 				newEle->parseValues();
 				eles.push_back(newEle);
 			}
 		}
+		if (isReq && eles.size() == 0)
+			throw(ParseException("Could not find " + treeParents + "::" + poly.tag));
+
 	}
 
 
 	void ParseInterface::parseValues() 
 	{
 		root->setTree(tree);
+		root->setParents("root");
 		root->parseValues();
 	}

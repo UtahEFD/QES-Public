@@ -19,11 +19,11 @@ public:
 
 	void parseValues()
 	{
-		parsePrimative<int>(x, "intVal");
-		parseElement<A>(aVar, "A");
-		parseElement<B>(bVar, "B");
-		parseElement<C>(cVar, "C");
-		parsePolymorph(pVar, Polymorph<P,P1>("P1"), Polymorph<P,P2>("P2"));
-		parseElement<D>(dVar, "D");
+		parsePrimative<int>(true, x, "intVal");
+		parseElement<A>(true, aVar, "A");
+		parseElement<B>(true, bVar, "B");
+		parseElement<C>(true, cVar, "C");
+		parsePolymorph(true, pVar, Polymorph<P,P1>("P1"), Polymorph<P,P2>("P2"));
+		parseElement<D>(true, dVar, "D");
 	}
 };

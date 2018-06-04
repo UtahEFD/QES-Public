@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include <vector>
+#include "ParseException.h"
 
 class Root;
 
@@ -52,12 +53,20 @@ class ParseInterface
 private:
 
 protected:
-	pt::ptree tree;
+	pt::ptree tree; //XML tree at this point in parsing
+	std::string treeParents; //a string listing the parents' tags in order
 
 	 /**
 	 * This sets the tree of this object
+	 * @param t tree to be set
 	 */
 	void setTree(pt::ptree t) { tree = t;}
+
+	/**
+	 * sets the string of parent tags
+	 * @param s string of parent tags
+	 */
+	void setParents(std::string s) {treeParents = s;}
 
 public:
 	Root* root;
@@ -77,11 +86,13 @@ public:
 	 * this is a template function, so the type of the value that is taken in and
 	 * found are flexible. If the value is unable to be found, "val" will not be
 	 * updated.
+	 * If this variable is required and not found, an exception will be thrown.
+	 * @param isReq if this variable is required or not
 	 * @param val the value that is being updated
 	 * @param tag the tagline in the xml of the value we are searching for
 	 */
 	template <typename T>
-	void parsePrimative(T& val, const std::string tag);
+	void parsePrimative(bool isReq, T& val, const std::string tag);
 
 	/**
 	 * This function parses the current node of the tree and searches for all elements
@@ -89,11 +100,13 @@ public:
 	 * this is a template function, so the type of the value that is taken in and
 	 * found are flexible. This will return all instances of a certain tag, this means it
 	 * can have 0..* values.
+	 * If this variable is required and not found, an exception will be thrown.
+	 * @param isReq if this variable is required or not
 	 * @param vals the vector to be filled with found values
 	 * @param tag the tagline in the xml of the values we are searching for
 	 */
 	template <typename T>
-	void parseMultiPrimatives(std::vector<T>& vals, const std::string tag);
+	void parseMultiPrimatives(bool isReq, std::vector<T>& vals, const std::string tag);
 
 
 	/**
@@ -103,11 +116,13 @@ public:
 	 * this is a template function, so the type of the value that is taken in and
 	 * found are flexible. If the value is unable to be found, "val" will not be
 	 * updated.
+	 * If this variable is required and not found, an exception will be thrown.
+	 * @param isReq if this variable is required or not
 	 * @param ele the element that is being parsed and updated
 	 * @param tag the tagline in the xml of the element we are searching for
 	 */
 	template <typename T>
-	void parseElement(T*& ele, const std::string tag);
+	void parseElement(bool isReq, T*& ele, const std::string tag);
 
 
 	/**
@@ -117,11 +132,13 @@ public:
 	 * this is a template function, so the type of the value that is taken in and
 	 * found are flexible. This will return all instances of a certain tag, this means it
 	 * can have 0..* elements.
+	 * If this variable is required and not found, an exception will be thrown.
+	 * @param isReq if this variable is required or not
 	 * @param eles the vector to be filled with found elements
 	 * @param tag the tagline in the xml of the elements we are searching for
 	 */
 	template <typename T>
-	void parseMultiElements(std::vector<T*>& eles, const std::string tag);
+	void parseMultiElements(bool isReq, std::vector<T*>& eles, const std::string tag);
 
 
 	/**
@@ -134,18 +151,20 @@ public:
 	 * of objects each with their own type. However, this code is expecting each 
 	 * type to be a variation of a polymorph and as so, this calls functions and
 	 * uses variables specific to the polymorph structure.
+	 * If this variable is required and not found, an exception will be thrown.
+	 * @param isReq if this variable is required or not
 	 * @param ele the element that will be updated
 	 * @param poly the current polymorph we are looking for in the xml
 	 * @param ARGS subsequent polymorphs to check in case the current is not found
 	 */
 	template <typename T, typename X, typename... ARGS>
-	void parsePolymorph(T*& ele, X poly, ARGS... args);
+	void parsePolymorph(bool isReq, T*& ele, X poly, ARGS... args);
 
 	/**
 	 * A base case for the recursive version of this function
 	 */
 	template <typename T, typename X>
-	void parsePolymorph(T*& ele, X poly);
+	void parsePolymorph(bool isReq, T*& ele, X poly);
 
 	/**
 	 * Recursive
@@ -157,18 +176,20 @@ public:
 	 * of objects each with their own type. However, this code is expecting each 
 	 * type to be a variation of a polymorph and as so, this calls functions and
 	 * uses variables specific to the polymorph structure.
+	 * If this variable is required and not found, an exception will be thrown.
+	 * @param isReq if this variable is required or not
 	 * @param eles a list of elements that will be updated
 	 * @param poly the current polymorph we are looking for in the xml
 	 * @param ARGS subsequent polymorphs to check in case the current is not found
 	 */
 	template <typename T, typename X, typename... ARGS>
-	void parseMultiPolymorphs(std::vector<T*>& eles, X poly, ARGS... args);
+	void parseMultiPolymorphs(bool isReq, std::vector<T*>& eles, X poly, ARGS... args);
 
 	/**
 	 * A base case for the recursive version of this function
 	 */
 	template <typename T, typename X>
-	void parseMultiPolymorphs(std::vector<T*>& eles, X poly);
+	void parseMultiPolymorphs(bool isReq, std::vector<T*>& eles, X poly);
 
 	/**
 	 * Virtual function
@@ -176,6 +197,7 @@ public:
 	 * the xml file by calling the parseX functions above.
 	 */
 	virtual void parseValues();
+
 
 	/**
 	 * This function returns the root value

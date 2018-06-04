@@ -16,7 +16,7 @@ public:
 
 	void parseValues()
 	{
-		parsePrimative<int>(x, "intValx");
-		parsePrimative<float>(y, "floatValy");
+		parsePrimative<int>(true, x, "intValx");
+		parsePrimative<float>(true, y, "floatValy");
 	}
 };

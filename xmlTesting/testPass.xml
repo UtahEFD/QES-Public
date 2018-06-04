@@ -1,0 +1,60 @@
+<X>
+	<intVal> 5 </intVal>
+	<A>
+		<AVal> 1 </AVal>
+		<AVal> 2 </AVal>
+		<AVal> 3 </AVal>
+		<AVal> 4 </AVal>
+	</A>
+	<B>
+		<numAs> 3 </numAs>
+		<A>
+			<AVal> 1 </AVal>
+			<AVal> 2 </AVal>
+		</A>
+		<A>
+			<AVal> 3 </AVal>
+			<AVal> 4 </AVal>
+		</A>
+		<A>
+			<AVal> 5 </AVal>
+			<AVal> 6 </AVal>
+		</A>
+	</B>
+	<C>
+		<intValx> 12 </intValx>
+		<floatValy> 13.9 </floatValy>
+	</C>
+	<!--P1>
+		<name> thisIsP1 </name>
+		<xVal> 72 </xVal>
+	</P1-->
+	<P2>
+		<name>thisIsP2</name>
+		<cVal>Q</cVal>
+		<fVal>62.43</fVal>
+		<qVal>5.5</qVal>
+	</P2>
+	<D>
+		<P1>
+			<name>thisIsP1A</name>
+			<xVal>1</xVal>
+		</P1>
+		<P2>
+			<name>thisIsP2A</name>
+			<cVal>Y</cVal>
+			<fVal>7.12</fVal>
+			<qVal>5.5</qVal>
+		</P2>
+		<P1>
+			<name>thisIsP1B</name>
+			<xVal>2</xVal>
+		</P1>
+		<P2>
+			<name>thisIsP2B</name>
+			<cVal>Z</cVal>
+			<fVal>8.13</fVal>
+			<qVal>5.5</qVal>
+		</P2>
+	</D>
+</X>

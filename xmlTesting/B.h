@@ -17,7 +17,7 @@ public:
 
 	void parseValues()
 	{
-		parsePrimative<int>(numAs, "numAs");
-		parseMultiElements<A>(aVals, "A");
+		parsePrimative<int>(true, numAs, "numAs");
+		parseMultiElements<A>(true, aVals, "A");
 	}
 };
