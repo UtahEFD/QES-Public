@@ -1,3 +1,5 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+
 project(xmlTesting)
 
 SET(Boost_USE_STATIC_LIBS TRUE)
@@ -13,5 +15,3 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
 add_executable(xmlParser
   main.cpp
   ParseInterface.cpp)
-
-

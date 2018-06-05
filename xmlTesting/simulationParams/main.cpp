@@ -53,13 +53,10 @@ Root* parseXMLTree(const std::string fileName)
 		return (Root*)0;
 	}
 
-	ParseInterface structureParsed(tree);
-
 	Root* xmlRoot;
 	try 
 	{
-		structureParsed.parseValues();
-		xmlRoot = structureParsed.getRoot();
+		ParseInterface::parseTree(tree, xmlRoot);
 	}
 	catch (ParseException& p )
 	{

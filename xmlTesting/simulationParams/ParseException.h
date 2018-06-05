@@ -2,6 +2,12 @@
 #include <exception>
 #include <string>
 
+/**
+ * This class is an extension of the standard exception class. The specifics of this
+ * exception arre to identify when a parameter is required to exist but is not present
+ * in the XML.
+ */
+
 class ParseException: public std::exception
 {
 protected:

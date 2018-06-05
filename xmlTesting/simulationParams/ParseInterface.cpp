@@ -1,19 +1,6 @@
 #include "ParseInterface.h"
 #include "Root.h"
 
-	ParseInterface::ParseInterface()
-	{
-		root = 0;
-		treeParents = "";
-	}
-
-	ParseInterface::ParseInterface(pt::ptree t)
-	{
-		root = new Root();
-		tree = t;
-		treeParents = "";
-	}
-
 	template <typename T>
 	void ParseInterface::parsePrimative(bool isReq, T& val, const std::string tag)
 	{
@@ -163,9 +150,10 @@
 	}
 
 
-	void ParseInterface::parseValues() 
+	void ParseInterface::parseTree(pt::ptree t, Root*& root) 
 	{
-		root->setTree(tree);
+		root = new Root();
+		root->setTree(t);
 		root->setParents("root");
 		root->parseValues();
 	}

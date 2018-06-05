@@ -69,16 +69,7 @@ protected:
 	void setParents(std::string s) {treeParents = s;}
 
 public:
-	Root* root;
-	/**
-	 * default constructor
-	 */
-	ParseInterface();
 
-	/**
-	 * sets root to null, takes in a default tree
-	 */
-	ParseInterface(pt::ptree t);
 
 	/**
 	 * This function parses the current node of the tree and searches for an element
@@ -206,13 +197,15 @@ public:
 	 * This is where we select what values we want to parse out of
 	 * the xml file by calling the parseX functions above.
 	 */
-	virtual void parseValues();
+	virtual void parseValues() = 0;
 
 
 	/**
-	 * This function returns the root value
+	 * This function takes in a root variable and uses it
+	 * as the base to parse the ptree
+	 * @param root the object that will serve as the base level of the xml parser
 	 */
-	Root* getRoot() { return root; }
+	static void parseTree(pt::ptree t, Root*& root);
 
 
 };
