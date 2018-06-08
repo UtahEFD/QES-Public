@@ -1,5 +1,5 @@
 #include "ParseInterface.h"
-#include "Root.h"
+#include "URBInputData.h"
 
 	template <typename T>
 	void ParseInterface::parsePrimative(bool isReq, T& val, const std::string tag)
@@ -150,9 +150,9 @@
 	}
 
 
-	void ParseInterface::parseTree(pt::ptree t, Root*& root) 
+	void ParseInterface::parseTree(pt::ptree t, URBInputData*& root) 
 	{
-		root = new Root();
+		root = new URBInputData();
 		root->setTree(t);
 		root->setParents("root");
 		root->parseValues();

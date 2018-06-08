@@ -20,7 +20,7 @@ public:
 		parsePrimative<float>(true, wallRoughness, "wallRoughness");
 		parsePrimative<int>(true, numBuildings, "numBuildings");
 		parsePrimative<int>(true, numPolygonNodes, "numPolygonNodes");
-		parseMultiPolymorphs(true, buildings, Polymorph<Building, RectangularBuilding>("RectangularBuilding"));
+		parseMultiPolymorphs(true, buildings, Polymorph<Building, RectangularBuilding>("rectangularBuilding"));
 
 	}
 };

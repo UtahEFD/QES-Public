@@ -6,7 +6,7 @@
 #include "MetParams.h"
 #include "Buildings.h"
 
-class Root : public ParseInterface
+class URBInputData : public ParseInterface
 {
 public:
 	SimulationParameters* simParams;
@@ -17,8 +17,8 @@ public:
 	void parseValues()
 	{
 		parseElement<SimulationParameters>(false, simParams, "simulationParameters");
-		parseElement<SimulationParameters>(false, fileOptions, "fileOptions");
-		parseElement<SimulationParameters>(false, metParams, "metParams");
-		parseElement<SimulationParameters>(false, buildings, "buildings");
+		parseElement<FileOptions>(false, fileOptions, "fileOptions");
+		parseElement<MetParams>(false, metParams, "metParams");
+		parseElement<Buildings>(false, buildings, "buildings");
 	}
 };
