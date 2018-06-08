@@ -1,3 +1,0 @@
-/home/behnam/Desktop/SOR/Global memory/CMakeFiles/rebuild_cache.dir
-/home/behnam/Desktop/SOR/Global memory/CMakeFiles/SOR.dir
-/home/behnam/Desktop/SOR/Global memory/CMakeFiles/edit_cache.dir
