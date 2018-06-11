@@ -7,13 +7,15 @@
 class Buildings : public ParseInterface
 {
 private:
+
+
+
+public:
+
 	float wallRoughness;
 	int numBuildings;
 	int numPolygonNodes;
 	std::vector<Building*> buildings;
-
-
-public:
 
 	virtual void parseValues()
 	{

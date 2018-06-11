@@ -16,7 +16,7 @@ public:
 
 	void parseValues()
 	{
-		parseElement<SimulationParameters>(false, simParams, "simulationParameters");
+		parseElement<SimulationParameters>(true, simParams, "simulationParameters");
 		parseElement<FileOptions>(false, fileOptions, "fileOptions");
 		parseElement<MetParams>(false, metParams, "metParams");
 		parseElement<Buildings>(false, buildings, "buildings");

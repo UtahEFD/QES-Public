@@ -6,6 +6,11 @@
 class SimulationParameters : public ParseInterface
 {
 private:
+
+
+
+public:
+
 	Vector3<int>* domain;
 	Vector3<float>* grid;
 	int verticalStretching;
@@ -29,10 +34,7 @@ private:
 	int quicCDFFlag;
 	int explosiveDamageFlag;
 	int buildingArrayFlag;
-
-
-public:
-
+	
 	SimulationParameters()
 	{
 		UTMX = 0;

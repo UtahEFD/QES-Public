@@ -14,7 +14,7 @@ public:
 		parseTaglessValues<T>(values);
 	}
 
-	int& operator[](const int i)
+	T& operator[](const int i)
 	{
 		return values[i%3];
 	}

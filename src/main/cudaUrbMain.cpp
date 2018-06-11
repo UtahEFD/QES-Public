@@ -3,6 +3,9 @@
 #include "ParseException.h"
 #include "ParseInterface.h"
 #include "URBInputData.h"
+#include "handleURBArgs.h"
+#include "Solver.h"
+#include "CPUSolver.h"
 
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -25,24 +28,32 @@ URBInputData* parseXMLTree(const std::string fileName);
 int main(int argc, char *argv[])
 {
     // Use Pete's arg parser for command line stuff...
+    URBArgs arguments;
+    arguments.processArguments(argc, argv);
 
     std::cout << "cudaUrb " << "0.8.0" << std::endl;
 
     // read input files  -- some test XML, netcdf.... for now...
     URBInputData* UID;
 
-	UID = parseXMLTree("QU_Files/QU_inner.xml");
+	UID = parseXMLTree(arguments.quicFile);
 	if ( UID )
 	{
 		std::cout << "FileWasRead\n";
 		//File was successfully read
-		int x = 5; //Dummy lines
-		x++;       //for compile
-	
+		
+		Solver* solver;
+
+		if (arguments.solveType == CPU_Type)
+			solver = new CPUSolver(UID);
+		else
+		{
+			std::cerr << "Error: invalid solve type\n";
+			return -1;
+		}
     
-
     	// Run Simulation code
-
+		solver->solve();
 
 
    		// output netcdf test file

@@ -17,6 +17,9 @@ include_directories(${CMAKE_SOURCE_DIR})
 add_subdirectory( util )
 
 add_executable( cudaUrb
-  main/cudaUrbMain.cpp )
+  main/cudaUrbMain.cpp
+  handleURBArgs.cpp
+  CPUSolver.cpp)
 
 target_link_libraries(cudaUrb qesutil)
+target_link_libraries(cudaUrb ${Boost_PROGRAM_OPTIONS_LIBRARIES})

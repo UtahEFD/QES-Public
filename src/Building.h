@@ -5,8 +5,9 @@
 class Building : public ParseInterface
 {
 protected:
+
+public:
 	int groupID;
 	int buildingType;
-public:
 	virtual void parseValues() = 0;
 };
