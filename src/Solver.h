@@ -5,6 +5,8 @@
 #include "Buildings.h"
 #include "RectangularBuilding.h"
 #include "Vector3.h"
+#include "NetCDFData.h"
+#include <math.h>
 
 class Solver
 {
@@ -61,5 +63,5 @@ public:
 
 	}
 
-	virtual void solve() = 0;
+	virtual void solve(NetCDFData* netcdfDat) = 0;
 };

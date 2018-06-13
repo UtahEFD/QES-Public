@@ -8,6 +8,7 @@ URBArgs::URBArgs()
     reg("cellface", "select cellface, if not then cell center", ArgumentParsing::NONE, 'c');
     reg("solvetype", "selects the method for solving the windfield", ArgumentParsing::INT, 's');
     reg("quicproj", "Specifies the QUIC Proj file", ArgumentParsing::STRING, 'q');
+    reg("netcdfout", "Specifies the netcdf file to write results to", ArgumentParsing::STRING, 'o');
 }
 
 void URBArgs::processArguments(int argc, char *argv[])
@@ -25,7 +26,10 @@ void URBArgs::processArguments(int argc, char *argv[])
     if (verbose) std::cout << "Verbose Output: ON" << std::endl;
     
     isSet( "quicproj", quicFile );
-    if (verbose) std::cout << "quicproj set to " << quicFile << std::endl;
+    if (quicFile != "") std::cout << "quicproj set to " << quicFile << std::endl;
+
+    isSet( "netcdfout", netCDFFile );
+    if (netCDFFile != "") std::cout << "netCDF output file set to " << netCDFFile << std::endl;
 
     cellFace = isSet("cellface");
     if (cellFace) std::cout << "Cell face computations: ON" << std::endl;

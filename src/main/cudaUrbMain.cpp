@@ -6,6 +6,7 @@
 #include "handleURBArgs.h"
 #include "Solver.h"
 #include "CPUSolver.h"
+#include "NetCDFData.h"
 
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -31,6 +32,9 @@ int main(int argc, char *argv[])
     URBArgs arguments;
     arguments.processArguments(argc, argv);
 
+    NetCDFData* netcdfDat;
+    netcdfDat = new NetCDFData();
+
     std::cout << "cudaUrb " << "0.8.0" << std::endl;
 
     // read input files  -- some test XML, netcdf.... for now...
@@ -53,10 +57,15 @@ int main(int argc, char *argv[])
 		}
     
     	// Run Simulation code
-		solver->solve();
+		solver->solve(netcdfDat);
 
 
    		// output netcdf test file
+   		if (!netcdfDat->outputCellFaceResults(arguments.netCDFFile))
+   		{
+    		cerr << "ERROR: output is broken\n";
+    		return -1;
+   		}
 	}
 
 }

@@ -1,6 +1,6 @@
 #include "CPUSolver.h"
 
-void CPUSolver::solve()
+void CPUSolver::solve(NetCDFData* netcdfDat)
 {
     auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time    
 
@@ -362,7 +362,7 @@ void CPUSolver::solve()
 			}
 		}	
 	}
-/*
+
     // Write data to file
     ofstream outdata1;
     outdata1.open("Final velocity.dat");
@@ -380,6 +380,10 @@ void CPUSolver::solve()
 }
         }
     }
+
+    netcdfDat->getData(x,y,z,u,v,w,nx,ny,nz);
+
+
     outdata1.close();
 
     // Write data to file
@@ -397,5 +401,5 @@ void CPUSolver::solve()
 			}
 		}
 	}
-    outdata.close();*/
+    outdata.close();
 }
