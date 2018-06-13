@@ -1,4 +1,4 @@
-
+ 
 #include <netcdfcpp.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -8,10 +8,11 @@
  #define FILE_NAME "simple_xy.nc"
  
  /* We are writing 2D data, a 6 x 12 grid. */
- #define NDIMS 2
+ #define NDIMS 3
  #define NX 6
  #define NY 12
- 
+ #define NZ 4
+  
  /* Handle errors by printing an error message and exiting with a
   * non-zero status. */
  #define ERRCODE 2
@@ -22,22 +23,23 @@
  {
     /* When we create netCDF variables and dimensions, we get back an
      * ID for each one. */
-    int ncid, x_dimid, y_dimid, varid;
+    int ncid, x_dimid, y_dimid, z_dimid, varid;
     int dimids[NDIMS];
  
     /* This is the data array we will write. It will be filled with a
      * progression of numbers for this example. */
-    int data_out[NX][NY];
+    int data_out[NX][NY][NZ];
  
     /* Loop indexes, and error handling. */
-    int x, y, retval;
+    int x, y, z, retval;
  
     /* Create some pretend data. If this wasn't an example program, we
      * would have some real data to write, for example, model
      * output. */
     for (x = 0; x < NX; x++)
        for (y = 0; y < NY; y++)
-      data_out[x][y] = x * NY + y;
+	 for(z = 0; z < NZ; z++)
+	   data_out[x][y][z] = x * NY * NZ + y * NZ + z;
  
     /* Always check the return code of every netCDF function call. In
      * this example program, any retval which is not equal to NC_NOERR
@@ -54,11 +56,14 @@
        ERR(retval);
     if ((retval = nc_def_dim(ncid, "y", NY, &y_dimid)))
        ERR(retval);
+    if ((retval = nc_def_dim(ncid, "z", NZ, &z_dimid)))
+      ERR(retval);
  
     /* The dimids array is used to pass the IDs of the dimensions of
      * the variable. */
     dimids[0] = x_dimid;
     dimids[1] = y_dimid;
+    dimids[2] = z_dimid;
  
     /* Define the variable. The type of the variable in this case is
      * NC_INT (4-byte integer). */
@@ -74,7 +79,7 @@
     /* Write the pretend data to the file. Although netCDF supports
      * reading and writing subsets of data, in this case we write all
      * the data in one operation. */
-    if ((retval = nc_put_var_int(ncid, varid, &data_out[0][0])))
+    if ((retval = nc_put_var_int(ncid, varid, &data_out[0][0][0])))
        ERR(retval);
  
     /* Close the file. This frees up any internal netCDF resources
