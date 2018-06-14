@@ -11,7 +11,7 @@
 #include <vector>
 #include "ParseException.h"
 
-class Root;
+class URBInputData;
 
 namespace pt = boost::property_tree;
 
@@ -201,11 +201,11 @@ public:
 
 
 	/**
-	 * This function takes in a root variable and uses it
+	 * This function takes in an URBInputData variable and uses it
 	 * as the base to parse the ptree
-	 * @param root the object that will serve as the base level of the xml parser
+	 * @param UID the object that will serve as the base level of the xml parser
 	 */
-	static void parseTree(pt::ptree t, Root*& root);
+	static void parseTree(pt::ptree t, URBInputData*& UID);
 
 
 };
