@@ -1,9 +1,12 @@
 #pragma once
 
-#include <netcdfcpp.h>
+#include <vector>
+#include <netcdf>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
+using namespace netCDF;
+using namespace netCDF::exceptions;
 
 class NetCDFData
 {

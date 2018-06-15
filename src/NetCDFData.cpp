@@ -9,7 +9,7 @@ void NetCDFData::getData(float* newX, float* newY, float* newZ, double* newU, do
 
     x = new float [dimX-1];
     y = new float [dimY-1];
-    z = new float [dimZ-1];
+    z = new float [dimZ-2];
 
     for (int i = 0; i < dimX - 1; i++)
     	x[i] = newX[i];
@@ -21,11 +21,11 @@ void NetCDFData::getData(float* newX, float* newY, float* newZ, double* newU, do
     	z[i] = newZ[i];
 
 
-    u = new double [dimX * dimY * dimZ];
-    v = new double [dimX * dimY * dimZ];
-    w = new double [dimX * dimY * dimZ];
+    u = new double [(dimX - 1) * (dimY - 1) * (dimZ- 2)];
+    v = new double [(dimX - 1) * (dimY - 1) * (dimZ- 2)];
+    w = new double [(dimX - 1) * (dimY - 1) * (dimZ- 2)];
 	
-	for (int i = 0; i < dimX * dimY * dimZ; i++){
+	for (int i = 0; i < (dimX - 1) * (dimY - 1) * (dimZ- 2); i++){
 		u[i] = newU[i];
 		v[i] = newV[i];
 		w[i] = newW[i];
@@ -33,102 +33,99 @@ void NetCDFData::getData(float* newX, float* newY, float* newZ, double* newU, do
 }
 
 bool NetCDFData::outputCellFaceResults(std::string fileName)
-{
+{    
+
+    int lenZ = 10, lenY = 10, lenX = 10;
 
 
-    NcError err(NcError::silent_nonfatal);
-    NcFile dataFile(fileName.c_str(), NcFile::Replace);
-    if (!dataFile.is_valid())
-    	return false;
+    try 
+    {
+        NcFile dataFile(fileName.c_str(), NcFile::replace);
 
-    std::cout << "here1\n";
+        std::cout << "here1\n";
 
-    NcDim *Nx, *Ny, *Nz;
-    //if (!(latDim = dataFile.add_dim("latitude", NLAT)))
-    if (!(Nx = dataFile.add_dim("x", dimX - 1 )))
-    	return false;
-    if (!(Ny = dataFile.add_dim("y", dimY - 1 )))
-    	return false;
-	if (!(Nz = dataFile.add_dim("z", dimZ - 1 )))
-    	return false;
+        NcDim Nx, Ny, Nz;
+        Nx = dataFile.addDim("x", lenX);
+        Ny = dataFile.addDim("y", lenY);
+    	Nz = dataFile.addDim("z", lenZ);
 
-std::cout << "here2\n";
+    std::cout << "here2\n";
 
-    NcVar *xVar, *yVar, *zVar;
-    if (!(xVar = dataFile.add_var("x", ncFloat, Nx )))
-    	return false;
-    if (!(yVar = dataFile.add_var("y", ncFloat, Ny )))
-    	return false;
-	if (!(zVar = dataFile.add_var("z", ncFloat, Nz )))
-    	return false;
+        NcVar xVar, yVar, zVar;
+        xVar = dataFile.addVar("x", ncFloat, Nx );
+        yVar = dataFile.addVar("y", ncFloat, Ny );
+    	zVar = dataFile.addVar("z", ncFloat, Nz );
 
-std::cout << "here3\n";
+    std::cout << "here3\n";
 
-    if (!(xVar->add_att("units", "meters")))
-    	return false;
-    if (!(yVar->add_att("units", "meters")))
-    	return false;
-    if (!(zVar->add_att("units", "meters")))
-    	return false;
+        float temp[] = {1,2,3,4,5,6,7,8,9,10};
+        xVar.putVar(temp);
+        yVar.putVar(temp);
+        zVar.putVar(temp);
 
-std::cout << "here4\n";
 
-    NcVar *velX, *velY, *velZ;
-    if (!(velX = dataFile.add_var("velocityX", ncFloat, Nx, Ny, Nz)))
-    	return false;
-    if (!(velY = dataFile.add_var("velocityY", ncFloat, Nx, Ny, Nz)))
-    	return false;
-    if (!(velZ = dataFile.add_var("velocityZ", ncFloat, Nx, Ny, Nz)))
-    	return false;
+        xVar.putAtt("units", "meters");
+        yVar.putAtt("units", "meters");
+        zVar.putAtt("units", "meters");
 
-std::cout << "here5\n";
+        std::vector<NcDim> dimVector;
+        dimVector.push_back(Nx);
+        dimVector.push_back(Ny);
+        dimVector.push_back(Nz);
 
-    if (!(velX->add_att("units", "xVel")))
-    	return false;
-    if (!(velY->add_att("units", "yVel")))
-    	return false;
-    if (!(velZ->add_att("units", "zVel")))
-    	return false;
+    std::cout << "here4\n";
 
-std::cout << "here6\n";
+        NcVar velX, velY, velZ;
+        velX = dataFile.addVar("velocityX", ncDouble, dimVector);
+        velY = dataFile.addVar("velocityY", ncDouble, dimVector);
+        velZ = dataFile.addVar("velocityZ", ncDouble, dimVector);
 
-    if (!xVar->put(x, dimX - 1))
-    	return false;
-    if (!yVar->put(y, dimY - 1))
-    	return false;
-    if (!zVar->put(z, dimZ - 1))
-    	return false;
+    std::cout << "here5\n";
 
-    float ***u_out, ***v_out, ***w_out;
-    u_out = new float** [dimX-1];
-    v_out = new float** [dimX-1];
-    w_out = new float** [dimX-1];
-	
-	for (int i = 0; i < dimX - 1; i++){
-		u_out[i] = new float* [dimY-1];
-		v_out[i] = new float* [dimY-1];
-		w_out[i] = new float* [dimY-1];
-		for (int j = 0; j < dimY - 1; j++){
-			u_out[i][j] = new float [dimZ-1];
-			v_out[i][j] = new float [dimZ-1];
-			w_out[i][j] = new float [dimZ-1];
-			for (int k = 0; k < dimZ - 1; k++)
-			{
-				int icell_face = i + j*dimX + k*dimY*dimZ;
-				u_out[i][j][k] = (float)u[icell_face];
-				v_out[i][j][k] = (float)v[icell_face];
-				w_out[i][j][k] = (float)w[icell_face];
-			}
-		}
-	}
-std::cout << "here7\n";
+        velX.putAtt("units", "xVel");
+        velY.putAtt("units", "yVel");
+        velZ.putAtt("units", "zVel");
 
-    if (!velX->put(&u_out[0][0][0], dimX - 1, dimY - 1, dimZ - 1))
-    	return false;
-    if (!velY->put(&v_out[0][0][0], dimX - 1, dimY - 1, dimZ - 1))
-    	return false;
-    if (!velZ->put(&w_out[0][0][0], dimX - 1, dimY - 1, dimZ - 1))
-    	return false;
+    std::cout << "here6\n";
 
+    double *u_out, *v_out, *w_out;
+    u_out = new double[lenX * lenY * lenZ];
+    v_out = new double[lenX * lenY * lenZ];
+    w_out = new double[lenX * lenY * lenZ];
+    for (int i = 0; i < lenX; i++)
+        for (int j = 0; j < lenY; j++)
+            for (int k = 0; k < lenZ; k++)
+            {
+                int idx = (lenY * lenX) * k +    lenX * j  +   i;
+                u_out[idx] = k;
+                v_out[idx] = 1.0;
+                w_out[idx] = 1.0;
+            }
+
+
+       std::vector<size_t> start, count;
+       start.push_back(0);
+       start.push_back(0);
+       start.push_back(0);
+       count.push_back(lenX);
+       count.push_back(lenY);
+       count.push_back(lenZ);
+
+    std::cout << "here7\n";
+
+       velX.putVar(start,count, u_out);
+       velY.putVar(start,count, v_out);
+       velZ.putVar(start,count, w_out);
+
+
+    std::cout << "here8\n";
+
+        dataFile.close();
+    }
+    catch(NcException& e)
+    {
+      e.what(); 
+      return false;
+    }
     return true;
 }

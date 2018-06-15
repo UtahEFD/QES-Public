@@ -23,14 +23,21 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
 include_directories(${CMAKE_SOURCE_DIR}/util)
 include_directories(${CMAKE_SOURCE_DIR})
 
+include_directories("/home/csgrads/patte720/Research/netcdf-cxx4-4.3.0.dist/include")
+
 add_subdirectory( util )
 
+link_directories("/home/csgrads/patte720/Research/netcdf-cxx4-4.3.0.dist/lib")
+
 add_executable( cudaUrb
-  main/cudaUrbMain.cpp
   handleURBArgs.cpp
+  Solver.cpp
   CPUSolver.cpp
-  NetCDFData.cpp)
+  NetCDFData.cpp
+  main/cudaUrbMain.cpp
+  )
 
 target_link_libraries(cudaUrb qesutil)
 target_link_libraries(cudaUrb ${Boost_PROGRAM_OPTIONS_LIBRARIES})
-target_link_libraries(cudaUrb ${NetCDF_LIBRARIES})
+target_link_libraries(cudaUrb netcdf)
+target_link_libraries(cudaUrb netcdf_c++4)
