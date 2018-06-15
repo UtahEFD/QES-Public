@@ -370,7 +370,7 @@ int main(int argc, const char * argv[]) {
     float *x_out, *y_out, *z_out;
     x_out = new float [nx-1];
     y_out = new float [ny-1];
-    z_out = new float [nz-2];
+    z_out = new float [nz-1];
 
 
 	for ( int i = 0; i < nx-1; i++) {
