@@ -35,7 +35,7 @@ void NetCDFData::getData(float* newX, float* newY, float* newZ, double* newU, do
 bool NetCDFData::outputCellFaceResults(std::string fileName)
 {    
 
-    int lenZ = 10, lenY = 10, lenX = 10;
+    int lenX = dimX - 1, lenY = dimY - 1, lenZ = dimZ - 2;
 
 
     try 
@@ -58,10 +58,9 @@ bool NetCDFData::outputCellFaceResults(std::string fileName)
 
     std::cout << "here3\n";
 
-        float temp[] = {1,2,3,4,5,6,7,8,9,10};
-        xVar.putVar(temp);
-        yVar.putVar(temp);
-        zVar.putVar(temp);
+        xVar.putVar(x);
+        yVar.putVar(y);
+        zVar.putVar(z);
 
 
         xVar.putAtt("units", "meters");
@@ -113,9 +112,9 @@ bool NetCDFData::outputCellFaceResults(std::string fileName)
 
     std::cout << "here7\n";
 
-       velX.putVar(start,count, u_out);
-       velY.putVar(start,count, v_out);
-       velZ.putVar(start,count, w_out);
+       velX.putVar(start,count, u);
+       velY.putVar(start,count, v);
+       velZ.putVar(start,count, w);
 
 
     std::cout << "here8\n";
