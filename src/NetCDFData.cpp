@@ -25,11 +25,16 @@ void NetCDFData::getData(float* newX, float* newY, float* newZ, double* newU, do
     v = new double [(dimX - 1) * (dimY - 1) * (dimZ- 2)];
     w = new double [(dimX - 1) * (dimY - 1) * (dimZ- 2)];
 	
-	for (int i = 0; i < (dimX - 1) * (dimY - 1) * (dimZ- 2); i++){
-		u[i] = newU[i];
-		v[i] = newV[i];
-		w[i] = newW[i];
-	}
+    for (int k = 0; k < dimX - 2; k++) 
+        for (int j = 0; j < dimY - 1; j++)
+            for (int i = 0; i < dimX - 1; i++)
+            {
+                int iAll = i + j*(dimX) + k*(dimX)*(dimY);
+                int iReduced = i + j*(dimX - 1) + k*(dimX - 1)*(dimY - 1);
+                u[iReduced] = newU[iAll];
+                v[iReduced] = newV[iAll];
+                w[iReduced] = newW[iAll];    
+            }
 }
 
 bool NetCDFData::outputCellFaceResults(std::string fileName)
