@@ -29,6 +29,7 @@ ENDIF(CUDA_FOUND)
 
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=compute_53 -code=sm_53 -rdc=true -O3" )
 
 
 include_directories(${CMAKE_SOURCE_DIR}/util)
@@ -44,7 +45,6 @@ cuda_add_executable( cudaUrb
   handleURBArgs.cpp
   Solver.cpp
   CPUSolver.cpp
-  DynamicParallelism.cpp
   NetCDFData.cpp
   main/cudaUrbMain.cpp
   DynamicParallelism.cu
