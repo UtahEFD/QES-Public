@@ -17,7 +17,18 @@ ENDIF(NetCDF_FOUND)
 
 
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
+FIND_PACKAGE(CUDA REQUIRED)
+
+IF(CUDA_FOUND)
+  INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
+  INCLUDE_DIRECTORIES(${CUDA_SDK_ROOT_DIR}/samples/common/inc)
+
+ELSE (CUDA_FOUND)
+  MESSAGE(FATAL_ERROR "CUDA is required for compiling this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories.")
+ENDIF(CUDA_FOUND)
+
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
 
 
 include_directories(${CMAKE_SOURCE_DIR}/util)
@@ -29,12 +40,14 @@ add_subdirectory( util )
 
 link_directories("/home/csgrads/patte720/Research/netcdf-cxx4-4.3.0.dist/lib")
 
-add_executable( cudaUrb
+cuda_add_executable( cudaUrb
   handleURBArgs.cpp
   Solver.cpp
   CPUSolver.cpp
+  DynamicParallelism.cpp
   NetCDFData.cpp
   main/cudaUrbMain.cpp
+  DynamicParallelism.cu
   )
 
 target_link_libraries(cudaUrb qesutil)

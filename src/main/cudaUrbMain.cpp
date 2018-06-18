@@ -6,6 +6,7 @@
 #include "handleURBArgs.h"
 #include "Solver.h"
 #include "CPUSolver.h"
+#include "DynamicParallelism.h"
 #include "NetCDFData.h"
 
 #include <boost/foreach.hpp>
@@ -50,6 +51,9 @@ int main(int argc, char *argv[])
 
 		if (arguments.solveType == CPU_Type)
 			solver = new CPUSolver(UID);
+		else if (arguments.solveType == DYNAMIC_P)
+			solver = new DynamicParallelism(UID);
+
 		else
 		{
 			std::cerr << "Error: invalid solve type\n";

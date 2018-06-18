@@ -4,7 +4,7 @@
 #include "ArgumentParsing.h"
 
 enum solverTypes : int
-{CPU_Type = 1};
+{CPU_Type = 1, DYNAMIC_P = 2};
 
 class URBArgs : public ArgumentParsing 
 {
