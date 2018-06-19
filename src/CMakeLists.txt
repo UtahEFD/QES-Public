@@ -16,7 +16,6 @@ IF(NetCDF_FOUND)
 ENDIF(NetCDF_FOUND)
 
 
-
 FIND_PACKAGE(CUDA REQUIRED)
 
 IF(CUDA_FOUND)
@@ -28,8 +27,12 @@ ELSE (CUDA_FOUND)
 ENDIF(CUDA_FOUND)
 
 
+
+SET(CUDA_SEPARABLE_COMPILATION ON)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=compute_53 -code=sm_53 -rdc=true -O3" )
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;" )
+
 
 
 include_directories(${CMAKE_SOURCE_DIR}/util)
@@ -50,6 +53,7 @@ cuda_add_executable( cudaUrb
   DynamicParallelism.cu
   )
 
+target_link_libraries(cudaUrb /home/csgrads/software/sivelab/cuda_9.1/lib64/libcudadevrt.a)
 target_link_libraries(cudaUrb qesutil)
 target_link_libraries(cudaUrb ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(cudaUrb netcdf)

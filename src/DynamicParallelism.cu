@@ -161,24 +161,7 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat)
     
 
     auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time
-    int nx = 200;     // Number of cells in x-dir
-    int ny = 200;     // Number of cells in y-dir
-    int nz = 50;      // Number of cells in z-dir
     long d_size = nx*ny*nz;       // Total number of nodes in domain
-    
-    // Grid resolution
-    float dx = 5.0;
-    float dy = 5.0;
-    float dz = 5.0;
-    
-    int alpha1 = 1;        // Gaussian precision moduli
-    int alpha2 = 1;        // Gaussian precision moduli
-    float eta = pow(alpha1/alpha2, 2.0);
-    float A = pow(dx/dy, 2.0);
-    float B = eta*pow(dx/dz, 2.0);
-    double tol = 1e-9;     // Error tolerance
-    float omega = 1.78;   // Over-relaxation factor
-    int itermax = 500;    // Maximum number of iterations
   
     float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n, *d_o, *d_p, *d_q;
     double *d_R, *d_lambda, *d_lambda_old;
@@ -244,9 +227,7 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat)
     }
     
     
-    float z0[] = {0.01,0.05,0.1,1.0};       // Surface roughness (m)
-    float z_ref = 10.0;                  // Height of the measuring sensor (m)
-    float U_ref = 5.0;                   // Measured velocity at the sensor height (m/s)
+    //float z0[] = {0.01,0.05,0.1,1.0};       // Surface roughness (m)
     
     int numblocks = (d_size/BLOCKSIZE)+1;
     double *value, *bvalue;
@@ -265,16 +246,16 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat)
                 // Define logarithmic wind profile for four subdomains
                 if (i < (nx-1)/2 && j < (ny-1)/2) {
                     int kk = 0;
-                    u0[ii] = U_ref*(log((z[k]+z0[kk])/z0[kk])/log((z_ref+z0[kk])/z0[kk]));
+                    u0[ii] = U_ref*(log((z[k]+z0)/z0)/log((z_ref+z0)/z0));
                 } else if (i < (nx-1)/2 && j >= (ny-1)/2) {
                     int kk = 1;
-                    u0[ii] = U_ref*(log((z[k]+z0[kk])/z0[kk])/log((z_ref+z0[kk])/z0[kk]));
+                    u0[ii] = U_ref*(log((z[k]+z0)/z0)/log((z_ref+z0)/z0));
                 } else if (i >= (nx-1)/2 && j < (ny-1)/2) {
                     int kk = 2;
-                    u0[ii] = U_ref*(log((z[k]+z0[kk])/z0[kk])/log((z_ref+z0[kk])/z0[kk]));
+                    u0[ii] = U_ref*(log((z[k]+z0)/z0)/log((z_ref+z0)/z0));
                 } else {
                     int kk = 3;
-                    u0[ii] = U_ref*(log((z[k]+z0[kk])/z0[kk])/log((z_ref+z0[kk])/z0[kk]));
+                    u0[ii] = U_ref*(log((z[k]+z0)/z0)/log((z_ref+z0)/z0));
                 }
                 
                 //lambda[ii] = lambda_old[ii] = 0.0;
@@ -383,7 +364,7 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat)
     }
     
 
-    
+    netcdfDat->getData(x,y,z,u,v,w,nx,ny,nz);
     // Write data to file
     for (int k = 0; k < nz; k++){
         for (int i = 0; i < nx; i++){
