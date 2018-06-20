@@ -12,17 +12,17 @@ private:
 
 public:
 
-	float wallRoughness;
 	int numBuildings;
 	int numPolygonNodes;
 	std::vector<Building*> buildings;
+	float wallRoughness;
 
 	virtual void parseValues()
 	{
-		parsePrimative<float>(true, wallRoughness, "wallRoughness");
 		parsePrimative<int>(true, numBuildings, "numBuildings");
 		parsePrimative<int>(true, numPolygonNodes, "numPolygonNodes");
 		parseMultiPolymorphs(true, buildings, Polymorph<Building, RectangularBuilding>("rectangularBuilding"));
+		parsePrimative<float>(true, wallRoughness, "wallRoughness");
 
 	}
 };

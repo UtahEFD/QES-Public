@@ -14,18 +14,14 @@ Solver::Solver(URBInputData* UID)
 	dz = w[2];
 	itermax = UID->simParams->maxIterations;
 
-	z0 = UID->buildings->wallRoughness;
 	z_ref = UID->metParams->sensor->height;
 	U_ref = UID->metParams->sensor->speed;
+	z0 = UID->buildings->wallRoughness;
 
-	if (UID->buildings->buildings[0]->buildingType == 1)
+	for (int i = 0; i < UID->buildings->buildings.size(); i++)
+	if (UID->buildings->buildings[i]->buildingType == 1)
 	{
-		RectangularBuilding* rB = (RectangularBuilding*)UID->buildings->buildings[0];
-		H = rB->height;
-		W = rB->width;
-		L = rB->length;
-		x_start = rB->xFo;
-		y_start = rB->yFo;
+		buildings.push_back(UID->buildings->buildings[i]);
 	}
 
 }

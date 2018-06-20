@@ -38,7 +38,7 @@
 		<siteZ0> 0.1 </siteZ0>
 		<reciprocal> 0 </reciprocal>
 		<height> 10 </height>
-		<speed> 3 </speed>
+		<speed> 5 </speed>
 		<direction> 0 </direction> 
 	</sensor>
 </metParams>

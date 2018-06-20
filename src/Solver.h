@@ -7,6 +7,8 @@
 #include "Vector3.h"
 #include "NetCDFData.h"
 #include <math.h>
+#include <vector>
+
 
 class Solver
 {
@@ -15,14 +17,10 @@ protected:
 	float dx, dy, dz;
 	int itermax;
 
-	float z0;                /// Surface roughness
     float z_ref;             /// Height of the measuring sensor (m)
     float U_ref;             /// Measured velocity at the sensor height (m/s)
-    float H;                 /// Building height
-    float W;                 /// Building width
-    float L;                 /// Building length
-    float x_start;           /// Building start location in x-direction
-    float y_start;           /// Building start location in y-direction
+    float z0;
+    std::vector<Building*> buildings;
 
     const int alpha1 = 1;        /// Gaussian precision moduli
     const int alpha2 = 1;        /// Gaussian precision moduli

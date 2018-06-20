@@ -19,6 +19,7 @@ public:
 	float width;
 	float rotation;
 
+
 	virtual void parseValues()
 	{
 		parsePrimative<int>(true, groupID, "groupID");

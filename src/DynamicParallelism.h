@@ -18,9 +18,6 @@
 
 
 #define BLOCKSIZE 1024
-#define Blocksize_x 16
-#define Blocksize_y 16
-#define Blocksize_z 4
 #define cudaCheck(x) _cudaCheck(x, #x ,__FILE__, __LINE__)
 
 

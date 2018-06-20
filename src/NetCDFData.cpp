@@ -3,34 +3,34 @@
 
 void NetCDFData::getData(float* newX, float* newY, float* newZ, double* newU, double* newV, double* newW, int newDX, int newDY, int newDZ)
 {
-	dimX = newDX;
-	dimY = newDY;
-	dimZ = newDZ;
+	dimX = newDX-1;
+	dimY = newDY-1;
+	dimZ = newDZ-2;
 
-    x = new float [dimX-1];
-    y = new float [dimY-1];
-    z = new float [dimZ-2];
+    x = new float [dimX];
+    y = new float [dimY];
+    z = new float [dimZ];
 
-    for (int i = 0; i < dimX - 1; i++)
+    for (int i = 0; i < dimX; i++)
     	x[i] = newX[i];
 
-    for (int i = 0; i < dimY - 1; i++)
+    for (int i = 0; i < dimY; i++)
     	y[i] = newY[i];
 
-    for (int i = 0; i < dimZ - 1; i++)
+    for (int i = 0; i < dimZ; i++)
     	z[i] = newZ[i];
 
 
-    u = new double [(dimX - 1) * (dimY - 1) * (dimZ- 2)];
-    v = new double [(dimX - 1) * (dimY - 1) * (dimZ- 2)];
-    w = new double [(dimX - 1) * (dimY - 1) * (dimZ- 2)];
+    u = new double [(dimX) * (dimY) * (dimZ)];
+    v = new double [(dimX) * (dimY) * (dimZ)];
+    w = new double [(dimX) * (dimY) * (dimZ)];
 	
-    for (int k = 0; k < dimX - 2; k++) 
-        for (int j = 0; j < dimY - 1; j++)
-            for (int i = 0; i < dimX - 1; i++)
+    for (int k = 0; k < dimZ; k++) 
+        for (int j = 0; j < dimY; j++)
+            for (int i = 0; i < dimX; i++)
             {
-                int iAll = i + j*(dimX) + k*(dimX)*(dimY);
-                int iReduced = i + j*(dimX - 1) + k*(dimX - 1)*(dimY - 1);
+                int iAll = i + j*(newDX) + k*(newDX)*(newDY);
+                int iReduced = i + j*(dimX) + k*(dimX)*(dimY);
                 u[iReduced] = newU[iAll];
                 v[iReduced] = newV[iAll];
                 w[iReduced] = newW[iAll];    
@@ -40,7 +40,7 @@ void NetCDFData::getData(float* newX, float* newY, float* newZ, double* newU, do
 bool NetCDFData::outputCellFaceResults(std::string fileName)
 {    
 
-    int lenX = dimX - 1, lenY = dimY - 1, lenZ = dimZ - 2;
+    int lenX = dimX, lenY = dimY, lenZ = dimZ;
 
 
     try 
@@ -62,6 +62,7 @@ bool NetCDFData::outputCellFaceResults(std::string fileName)
     	zVar = dataFile.addVar("z", ncFloat, Nz );
 
     std::cout << "here3\n";
+
 
         xVar.putVar(x);
         yVar.putVar(y);
@@ -92,7 +93,7 @@ bool NetCDFData::outputCellFaceResults(std::string fileName)
 
     std::cout << "here6\n";
 
-    double *u_out, *v_out, *w_out;
+  /*  double *u_out, *v_out, *w_out;
     u_out = new double[lenX * lenY * lenZ];
     v_out = new double[lenX * lenY * lenZ];
     w_out = new double[lenX * lenY * lenZ];
@@ -104,9 +105,7 @@ bool NetCDFData::outputCellFaceResults(std::string fileName)
                 u_out[idx] = k;
                 v_out[idx] = 1.0;
                 w_out[idx] = 1.0;
-            }
-
-
+            }*/
        std::vector<size_t> start, count;
        start.push_back(0);
        start.push_back(0);

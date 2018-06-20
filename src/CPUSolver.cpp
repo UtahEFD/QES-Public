@@ -10,7 +10,6 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
 	long numcell_cent = (nx-1)*(ny-1)*(nz-1);         /// Total number of cell-centered values in domain
     long numface_cent = nx*ny*nz;                     /// Total number of face-centered values in domain
     
-    int itermax = 500;    /// Maximum number of iterations
     
     /// Declare face-centered positions
     float *x, *y, *z;
@@ -59,6 +58,11 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
     }
     
     
+    float H = 20.0;                 /// Building height
+    float W = 20.0;                 /// Building width
+    float L = 20.0;                 /// Building length
+    float x_start = 90.0;           /// Building start location in x-direction
+    float y_start = 90.0;           /// Building start location in y-direction
     float i_start = round(x_start/dx);     /// Index of building start location in x-direction
     float i_end = round((x_start+L)/dx);   /// Index of building end location in x-direction
     float j_start = round(y_start/dy);     /// Index of building start location in y-direction
