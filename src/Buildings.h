@@ -19,10 +19,10 @@ public:
 
 	virtual void parseValues()
 	{
-		parsePrimative<int>(true, numBuildings, "numBuildings");
-		parsePrimative<int>(true, numPolygonNodes, "numPolygonNodes");
+		parsePrimitive<int>(true, numBuildings, "numBuildings");
+		parsePrimitive<int>(true, numPolygonNodes, "numPolygonNodes");
 		parseMultiPolymorphs(true, buildings, Polymorph<Building, RectangularBuilding>("rectangularBuilding"));
-		parsePrimative<float>(true, wallRoughness, "wallRoughness");
+		parsePrimitive<float>(true, wallRoughness, "wallRoughness");
 
 	}
 };

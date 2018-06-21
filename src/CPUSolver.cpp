@@ -4,18 +4,10 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
 {
     auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time    
 
-    nx += 1;        /// +1 for Staggered grid
-    ny += 1;        /// +1 for Staggered grid
-    nz += 2;        /// +2 for staggered grid and ghost cell
 	long numcell_cent = (nx-1)*(ny-1)*(nz-1);         /// Total number of cell-centered values in domain
     long numface_cent = nx*ny*nz;                     /// Total number of face-centered values in domain
     
     
-    /// Declare face-centered positions
-    float *x, *y, *z;
-    x = new float [nx];
-    y = new float [ny];
-    z = new float [nz];  
 
     /// Declare coefficients for SOR solver
     float *e, *f, *g, *h, *m, *n;
@@ -47,18 +39,15 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
     lambda = new double [numcell_cent];
     lambda_old = new double [numcell_cent];
     
-    for ( int i = 0; i < nx-1; i++){
-        x[i] = (i+0.5)*dx;         /// Location of face centers in x-dir
-    }
+    for ( int i = 0; i < nx-1; i++)
+        x.push_back((i+0.5)*dx);         /// Location of face centers in x-dir
+
     for ( int j = 0; j < ny-1; j++){
-        y[j] = (j+0.5)*dy;         /// Location of face centers in y-dir
+        y.push_back((j+0.5)*dy);         /// Location of face centers in y-dir
     }
-    for ( int k = 0; k < nz-1; k++){
-        z[k] = (k-0.5)*dz;         /// Location of face centers in z-dir
-    }
+
     
-    
-    float H = 20.0;                 /// Building height
+ /*   float H = 20.0;                 /// Building height
     float W = 20.0;                 /// Building width
     float L = 20.0;                 /// Building length
     float x_start = 90.0;           /// Building start location in x-direction
@@ -67,15 +56,9 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
     float i_end = round((x_start+L)/dx);   /// Index of building end location in x-direction
     float j_start = round(y_start/dy);     /// Index of building start location in y-direction
     float j_end = round((y_start+W)/dy);   /// Index of building end location in y-direction 
-    float k_end = round(H/dz);             /// Index of building end location in z-direction
+    float k_end = round(H/dz);             /// Index of building end location in z-direction*/
     int *icellflag;
     icellflag = new int [numcell_cent];       /// Cell index flag (0 = building, 1 = fluid)
-
-    std::cout << "i_start:" << i_start << "\n";   // Print the number of iterations
-    std::cout << "i_end:" << i_end << "\n";       // Print the number of iterations
-    std::cout << "j_start:" << j_start << "\n";   // Print the number of iterations
-    std::cout << "j_end:" << j_end << "\n";       // Print the number of iterations    
-    std::cout << "k_end:" << k_end << "\n";       // Print the number of iterations 
 
     for ( int k = 0; k < nz-1; k++){
         for (int j = 0; j < ny-1; j++){
@@ -102,7 +85,7 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
         }
     }
 
-    for (int k = 0; k < k_end+1; k++){
+/*    for (int k = 0; k < k_end+1; k++){
         for (int j = j_start; j < j_end; j++){
             for (int i = i_start; i < i_end; i++){
 
@@ -111,6 +94,16 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
 
 			}
 		}
+    }*/
+
+    float* zm;
+    zm = new float[nz];
+    int* iBuildFlag;
+    iBuildFlag = new int[nx*ny*nz];
+    for (int i = 0; i < buildings.size(); i++)
+    {
+        ((RectangularBuilding*)buildings[i])->setBoundaries(dx, dy, nz, zm);
+        ((RectangularBuilding*)buildings[i])->setCells(nx, ny, nz, icellflag, iBuildFlag, i);
     }
 
     for (int j = 0; j < ny-1; j++){
@@ -150,8 +143,6 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
             }
         }
     }
-    
-	std::cout << "i_start:" << i_start << "\n";   // Print the number of iterations
 
     /// Boundary condition for building edges
     for (int k = 1; k < nz-2; k++){
@@ -385,7 +376,7 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
         }
     }
 
-    netcdfDat->getData(x,y,z,u,v,w,nx,ny,nz);
+    netcdfDat->getData(x.data(),y.data(),z.data(),u,v,w,nx,ny,nz);
 
 
     outdata1.close();

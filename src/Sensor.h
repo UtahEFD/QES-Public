@@ -20,16 +20,16 @@ public:
 
 	virtual void parseValues()
 	{
-		parsePrimative<int>(true, siteCoords, "siteCoords");
-		parsePrimative<int>(true, x, "x");
-		parsePrimative<int>(true, y, "y");
-		parsePrimative<float>(true, epoch, "epoch");
-		parsePrimative<bool>(true, boundaryLayerFlag, "boundaryLayerFlag");
-		parsePrimative<float>(true, siteZ0, "siteZ0");
-		parsePrimative<int>(true, reciprocal, "reciprocal");
-		parsePrimative<int>(true, height, "height");
-		parsePrimative<int>(true, speed, "speed");
-		parsePrimative<int>(true, direction, "direction");
+		parsePrimitive<int>(true, siteCoords, "siteCoords");
+		parsePrimitive<int>(true, x, "x");
+		parsePrimitive<int>(true, y, "y");
+		parsePrimitive<float>(true, epoch, "epoch");
+		parsePrimitive<bool>(true, boundaryLayerFlag, "boundaryLayerFlag");
+		parsePrimitive<float>(true, siteZ0, "siteZ0");
+		parsePrimitive<int>(true, reciprocal, "reciprocal");
+		parsePrimitive<int>(true, height, "height");
+		parsePrimitive<int>(true, speed, "speed");
+		parsePrimitive<int>(true, direction, "direction");
 
 	}
 };

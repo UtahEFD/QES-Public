@@ -15,6 +15,8 @@ class Solver
 protected:
 	int nx, ny, nz;
 	float dx, dy, dz;
+    std::vector<float> dzArray, zm;
+    std::vector<float> x,y,z;
 	int itermax;
 
     float z_ref;             /// Height of the measuring sensor (m)
