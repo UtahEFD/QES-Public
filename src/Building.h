@@ -15,6 +15,9 @@ public:
 	float centroidY;
 	int buildingDamage = 0;
 	float atten = 0;
+	float rotation = 0;
+	float Lf, Lr, Weff, Leff, Wt, Lt;
+	int iStart, iEnd, jStart, jEnd, kStart, kEnd;
 
 	virtual void parseValues() = 0;
 };

@@ -85,16 +85,12 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
         }
     }
 
-/*    for (int k = 0; k < k_end+1; k++){
-        for (int j = j_start; j < j_end; j++){
-            for (int i = i_start; i < i_end; i++){
+    max_velmag = 0.0f;
+    for (int i = 0; i < nx; i++)
+       for ( int j = 1; j < ny; j++)
+          max_velmag = MAX(max_velmag , sqrt( pow(u0[CELL(i,j,nz,0)], 2) + pow(v0[CELL(i,j,nz,0)],2) ));
+    max_velmag = 1.2 * max_velmag;
 
-                int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-				icellflag[icell_cent] = 0;                         /// Set cell index flag to building
-
-			}
-		}
-    }*/
 
     float* zm;
     zm = new float[nz];
@@ -145,56 +141,23 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
     }
 
     /// Boundary condition for building edges
-    for (int k = 1; k < nz-2; k++){
-        for (int j = 1; j < ny-2; j++){
-            for (int i = 1; i < nx-2; i++){
-                int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-				if (icellflag[icell_cent] != 0) {
-					
-					/// Wall bellow
-					if (icellflag[icell_cent-(nx-1)*(ny-1)]==0) {
-		    			n[icell_cent] = 0.0; 
+    defineWalls(icellflag, n, m, f, e, h, g);
 
-					}
-					/// Wall above
-					if (icellflag[icell_cent+(nx-1)*(ny-1)]==0) {
-		    			m[icell_cent] = 0.0;
-					}
-					/// Wall in back
-					if (icellflag[icell_cent-1]==0){
-						f[icell_cent] = 0.0; 
-					}
-					/// Wall in front
-					if (icellflag[icell_cent+1]==0){
-						e[icell_cent] = 0.0; 
-					}
-					/// Wall on right
-					if (icellflag[icell_cent-(nx-1)]==0){
-						h[icell_cent] = 0.0;
-					}
-					/// Wall on left
-					if (icellflag[icell_cent+(nx-1)]==0){
-						g[icell_cent] = 0.0; 
-					}
-				}
-			}
-		}
-	}
+    //INSERT CANOPY CODE
 
-    /// New boundary condition implementation
-    for (int k = 1; k < nz-1; k++){
-        for (int j = 0; j < ny-1; j++){
-            for (int i = 0; i < nx-1; i++){
-				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-				e[icell_cent] = e[icell_cent]/(dx*dx);
-				f[icell_cent] = f[icell_cent]/(dx*dx);
-				g[icell_cent] = g[icell_cent]/(dy*dy);
-				h[icell_cent] = h[icell_cent]/(dy*dy);
-				m[icell_cent] = m[icell_cent]/(dz*dz);
-				n[icell_cent] = n[icell_cent]/(dz*dz);
-			}
-		}
-	}
+    //Upwind
+    if (upwindCavityFlag > 0)
+    {
+        printf("Applying Upwind Parameterizations...\n");
+        for (int i = 0; i < buildings.size(); i++)
+            if ( buildings[i]->buildingDamage != 2 && //if damage isn't 2
+                (buildings[i]->buildingGeometry == 1 ||  //and it is of type 1,4, or 6.
+                buildings[i]->buildingGeometry == 4 ||
+                buildings[i]->buildingGeometry == 6) &&
+                buildings[i]->baseHeight == 0.0f)     //and if base height is 0
+                upWind(buildings[i], icellflag, u0, v0, w0, z.data(), zm);
+                    
+    }
    
     
     /////////////////////////////////////////////////

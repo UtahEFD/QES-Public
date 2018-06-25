@@ -1,26 +1,23 @@
 #pragma once
 
 #include "ParseInterface.h"
-#include "Building.h"
+#include "NonPolyBuilding.h"
 
-#define CELL(i,j,k,sub) (i + j * (nx - sub) + k * (nx - sub) * (ny - sub))
+#define CELL(i,j,k,sub) ((i) + (j) * ((nx) - (sub)) + (k) * ((nx) - (sub)) * ((ny) - (sub)))
 
-class RectangularBuilding : public Building
+class RectangularBuilding : public NonPolyBuilding
 {
 private:
 
 
 public:
-	float xFo;
-	float yFo;
-	float length;
-	float width;
-	float rotation;
-	int iStart, iEnd, jStart, jEnd, kStart, kEnd;
 
 	RectangularBuilding()
 	{
 		buildingGeometry = 1;
+		Lf = -999;
+		Leff = 0;
+		Weff = 0;
 	}
 
 	virtual void parseValues()
@@ -38,6 +35,8 @@ public:
 		parsePrimitive<float>(true, rotation, "rotation");
 		parsePrimitive<int>(false, buildingDamage, "buildingDamage");
 		parsePrimitive<float>(false, atten, "atten");
+		Wt = 0.5 * width;
+		Lt = 0.5 * length;
 	}
 
 	void setBoundaries(int dx, int dy, int nz, float *zm)
@@ -88,7 +87,7 @@ instead of 0. Also same as
 		          case 0:
 		         	for ( int k = kStart; k <= kEnd; k++)
 		         	{
-		             icellflag[CELL(i,j,k,1)] = 0;
+		             icellflag[CELL(i,j,k,1)] = 1;
 		             ibldflag[CELL(i,j,k,1)] = ibuild; //take in as parameter maybe?
 		         	}
 		         	break;
