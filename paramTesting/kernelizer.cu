@@ -9,8 +9,12 @@ void _cudaCheck(T e, const char* func, const char* call, const int line){
 }
 
 __global__ void init(int*flagsGPU, int x, int y);
-__global__ void setDataAs(int* flagsGPU, float* datAsFGPU, int* datAsIGPU, int building, int x, int y, float dx, float dy);
+__global__ void setDataAs(int* flagsGPU, float* datAsFGPU, int* datAsIGPU, int x, int y, float dx, float dy);
 __global__ void assignDataAs(int* flagsGPU, float* datAsFGPU, int* datAsIGPU, int idx, int x, int y, float dx, float dy);
+
+//__global__ void setDataAsR(int* flagsGPU, float* datAsFGPU, int* datAsIGPU, dim3 dimGridCells, dim3 dimBlockCells, int x, int y, float dx, float dy);
+//__global__ void assignDataAsR(int* flagsGPU, float* datAsFGPU, int* datAsIGPU, int idx, int x, int y, float dx, float dy);
+//__global__ void setDataAsT(int* flagsGPU, float* datAsFGPU, int* datAsIGPU, int x, int y, float dx, float dy);
 
 void doTheGPU(vector<DataA> datAs)
 {
@@ -62,12 +66,17 @@ void doTheGPU(vector<DataA> datAs)
 	else
 		bX = bY = bZ = 1;
 
-	dim3 dimGrid(bX, bY, bZ);
-	dim3 dimBlock(tX, tY, 1);
+	dim3 dimGridCells(bX, bY, bZ);
+	dim3 dimBlockCells(tX, tY, 1);
 
-	init<<<dimGrid, dimBlock>>>(flagsGPU, X, Y);
+
+
+
+	init<<<dimGridCells, dimBlockCells>>>(flagsGPU, X, Y);
 
 //DATA A
+	
+
 
 	vector<float> datAsF;
 	vector<int> datAsI;
@@ -89,10 +98,9 @@ void doTheGPU(vector<DataA> datAs)
 	cudaMemcpy(datAsFGPU, datAsF.data(), (4 * datAs.size()) * sizeof(float), cudaMemcpyHostToDevice);
 	cudaMemcpy(datAsIGPU, datAsI.data(), ( 1 + 3 * datAs.size()) * sizeof(int), cudaMemcpyHostToDevice);
 
-	for (int i = 0; i < datAs.size(); i++)
-	{
-		setDataAs<<<dimGrid, dimBlock>>>(flagsGPU, datAsFGPU, datAsIGPU, i, X, Y, DIMX, DIMY);
-	}
+	setDataAs<<<dimGridCells, dimBlockCells>>>(flagsGPU, datAsFGPU, datAsIGPU, X, Y, DIMX, DIMY);
+
+
 	cudaCheck(cudaGetLastError()); 
 
 	cudaMemcpy(flags, flagsGPU, X * Y * sizeof(int), cudaMemcpyDeviceToHost);
@@ -104,13 +112,13 @@ void doTheGPU(vector<DataA> datAs)
 	auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
     std::chrono::duration<double> elapsed = finish - start;
     printf("Elapsed time:%lf\n", elapsed.count());   // Print out elapsed execution time    
-
-	/*for (int i = 0; i < X; i++)
+/*
+	for (int i = 0; i < X; i++)
 	{
 		for (int j = 0; j < Y; j++)
 			printf("%d ", flags[i * Y + j]);
 		printf("\n");
-	}*/
+	}//*/
 	return;
 }
 
@@ -135,7 +143,7 @@ __global__ void init(int*flagsGPU, int x, int y)
 }
 
 //set up dynamic parallelism to diversify more. Could be a fast solution
-__global__ void setDataAs(int* flagsGPU, float* datAsFGPU, int* datAsIGPU, int building, int x, int y, float dx, float dy)
+__global__ void setDataAs(int* flagsGPU, float* datAsFGPU, int* datAsIGPU, int x, int y, float dx, float dy)
 {
 	int blockSize = blockDim.x * blockDim.y * blockDim.z;
 
@@ -150,21 +158,26 @@ __global__ void setDataAs(int* flagsGPU, float* datAsFGPU, int* datAsIGPU, int b
 	if (idx >= x * y)
 		return;
 
-	int bF = building * 4, bI = building * 3;
-	int tX = idx / x;
-	int tY = idx % x;
+	for (int building = 0; building < datAsIGPU[0]; building++)
+	{
+		int bF = building * 4, bI = building * 3;
+		int tX = idx / x;
+		int tY = idx % x;
 
-	int inner, outter;
+		int inner, outter;
 
-	inner = ((tX >= (int)(datAsFGPU[bF] / dx)) && (tX <= (int)(datAsFGPU[bF] / dx + datAsFGPU[bF + 2] / dx)) &&
-						(tY >= (int)(datAsFGPU[bF + 1] / dy)) && (tY <= (int)(datAsFGPU[bF + 1] / dy + datAsFGPU[bF + 3] / dy)));
+		inner = ((tX >= (int)(datAsFGPU[bF] / dx)) && (tX <= (int)(datAsFGPU[bF] / dx + datAsFGPU[bF + 2] / dx)) &&
+							(tY >= (int)(datAsFGPU[bF + 1] / dy)) && (tY <= (int)(datAsFGPU[bF + 1] / dy + datAsFGPU[bF + 3] / dy)));
 
-	outter = (( ((tX == (int)(datAsFGPU[bF] / dx - 1)) || (tX == (int)(datAsFGPU[bF] / dx + datAsFGPU[bF + 2] / dx + 1)))
-					&&  ((tY >= (int)(datAsFGPU[bF + 1] / dy - 1)) && (tY <= (int)(datAsFGPU[bF + 1] / dy + datAsFGPU[bF + 3] / dy + 1))) ) || 
-					( ((tX >= (int)(datAsFGPU[bF] / dx - 1)) && (tX <= (int)(datAsFGPU[bF] / dx + datAsFGPU[bF + 2] / dx + 1)))
-					&&  ((tY == (int)(datAsFGPU[bF + 1] / dy - 1)) || (tY == (int)(datAsFGPU[bF + 1] / dy + datAsFGPU[bF + 3] / dy + 1))) ) );
+		outter = (( ((tX == (int)(datAsFGPU[bF] / dx - 1)) || (tX == (int)(datAsFGPU[bF] / dx + datAsFGPU[bF + 2] / dx + 1)))
+						&&  ((tY >= (int)(datAsFGPU[bF + 1] / dy - 1)) && (tY <= (int)(datAsFGPU[bF + 1] / dy + datAsFGPU[bF + 3] / dy + 1))) ) || 
+						( ((tX >= (int)(datAsFGPU[bF] / dx - 1)) && (tX <= (int)(datAsFGPU[bF] / dx + datAsFGPU[bF + 2] / dx + 1)))
+						&&  ((tY == (int)(datAsFGPU[bF + 1] / dy - 1)) || (tY == (int)(datAsFGPU[bF + 1] / dy + datAsFGPU[bF + 3] / dy + 1))) ) );
 
-	flagsGPU[idx] =  outter * datAsIGPU[1 + bI + 2] + inner * datAsIGPU[1 + bI + 1] + (outter + inner == 0) * flagsGPU[idx];	
+		flagsGPU[idx] =  outter * datAsIGPU[1 + bI + 2] + inner * datAsIGPU[1 + bI + 1] + (outter + inner == 0) * flagsGPU[idx];	
+	}//*/
+
+//	assignDataAs<<<1,flagsGPU[0]>>>(flagsGPU, datAsFGPU, datAsIGPU, idx, x, y, dx, dy);
 }
 
 
@@ -187,6 +200,76 @@ __global__ void assignDataAs(int* flagsGPU, float* datAsFGPU, int* datAsIGPU, in
 
 	flagsGPU[idx] =  outter * datAsIGPU[1 + bI + 2] + inner * datAsIGPU[1 + bI + 1] + (outter + inner == 0) * flagsGPU[idx];
 
-	if (outter != 0 || inner != 0)
-		printf("%d %d \n", tX, tY);
 }
+/*
+
+__global__ void setDataAsR(int* flagsGPU, float* datAsFGPU, int* datAsIGPU, dim3 dimGridCells, dim3 dimBlockCells, int x, int y, float dx, float dy)
+{
+	int idx = threadIdx.x + threadIdx.y * blockDim.x;
+	if (idx >= datAsIGPU[0])
+		return;
+
+	printf("%d\n", idx);
+	assignDataAsR<<<dimGridCells, dimBlockCells>>>(flagsGPU, datAsFGPU, datAsIGPU, idx, x, y, dx, dy);
+}
+
+
+__global__ void assignDataAsR(int* flagsGPU, float* datAsFGPU, int* datAsIGPU, int idx, int x, int y, float dx, float dy)
+{
+	int blockSize = blockDim.x * blockDim.y * blockDim.z;
+
+	int idxT = threadIdx.x + 
+				threadIdx.y * blockDim.x +
+				threadIdx.z * blockDim.x * blockDim.y +
+				blockIdx.x * blockSize +
+				blockIdx.y * blockSize * gridDim.x +
+				blockIdx.z * blockSize * gridDim.x * gridDim.y;
+
+	int bF = idx * 4, bI = idx * 3;
+	int tX = idxT / x;
+	int tY = idxT % x;
+
+	int inner, outter;
+
+	inner = ((tX >= (int)(datAsFGPU[bF] / dx)) && (tX <= (int)(datAsFGPU[bF] / dx + datAsFGPU[bF + 2] / dx)) &&
+						(tY >= (int)(datAsFGPU[bF + 1] / dy)) && (tY <= (int)(datAsFGPU[bF + 1] / dy + datAsFGPU[bF + 3] / dy)));
+
+	outter = (( ((tX == (int)(datAsFGPU[bF] / dx - 1)) || (tX == (int)(datAsFGPU[bF] / dx + datAsFGPU[bF + 2] / dx + 1)))
+					&&  ((tY >= (int)(datAsFGPU[bF + 1] / dy - 1)) && (tY <= (int)(datAsFGPU[bF + 1] / dy + datAsFGPU[bF + 3] / dy + 1))) ) || 
+					( ((tX >= (int)(datAsFGPU[bF] / dx - 1)) && (tX <= (int)(datAsFGPU[bF] / dx + datAsFGPU[bF + 2] / dx + 1)))
+					&&  ((tY == (int)(datAsFGPU[bF + 1] / dy - 1)) || (tY == (int)(datAsFGPU[bF + 1] / dy + datAsFGPU[bF + 3] / dy + 1))) ) );
+
+	flagsGPU[idxT] =  outter * datAsIGPU[1 + bI + 2] + inner * datAsIGPU[1 + bI + 1] + (outter + inner == 0) * flagsGPU[idx];
+}
+
+__global__ void setDataAsT(int* flagsGPU, float* datAsFGPU, int* datAsIGPU, int x, int y, float dx, float dy)
+{
+	int blockSize = blockDim.x * blockDim.y * blockDim.z;
+
+	//this is not efficient, but it is clear. Speed isn't the goal here
+	int idx = threadIdx.x + 
+				threadIdx.y * blockDim.x +
+				threadIdx.z * blockDim.x * blockDim.y +
+				blockIdx.x * blockSize +
+				blockIdx.y * blockSize * gridDim.x;
+	int building = blockIdx.z;
+
+	if (idx >= x * y)
+		return;
+
+	int bF = building * 4, bI = building * 3;
+	int tX = idx / x;
+	int tY = idx % x;
+
+	int inner, outter;
+
+	inner = ((tX >= (int)(datAsFGPU[bF] / dx)) && (tX <= (int)(datAsFGPU[bF] / dx + datAsFGPU[bF + 2] / dx)) &&
+						(tY >= (int)(datAsFGPU[bF + 1] / dy)) && (tY <= (int)(datAsFGPU[bF + 1] / dy + datAsFGPU[bF + 3] / dy)));
+
+	outter = (( ((tX == (int)(datAsFGPU[bF] / dx - 1)) || (tX == (int)(datAsFGPU[bF] / dx + datAsFGPU[bF + 2] / dx + 1)))
+					&&  ((tY >= (int)(datAsFGPU[bF + 1] / dy - 1)) && (tY <= (int)(datAsFGPU[bF + 1] / dy + datAsFGPU[bF + 3] / dy + 1))) ) || 
+					( ((tX >= (int)(datAsFGPU[bF] / dx - 1)) && (tX <= (int)(datAsFGPU[bF] / dx + datAsFGPU[bF + 2] / dx + 1)))
+					&&  ((tY == (int)(datAsFGPU[bF + 1] / dy - 1)) || (tY == (int)(datAsFGPU[bF + 1] / dy + datAsFGPU[bF + 3] / dy + 1))) ) );
+
+	flagsGPU[idx] =  outter * datAsIGPU[1 + bI + 2] + inner * datAsIGPU[1 + bI + 1] + (outter + inner == 0) * flagsGPU[idx];	
+}*/
