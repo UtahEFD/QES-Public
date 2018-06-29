@@ -484,7 +484,7 @@ iCellFlag
 			   ns_flag=0;
 			   ((NonPolyBuilding*)build)->length = abs(lfcoeff * ((NonPolyBuilding*)build)->width * cos(upwind_rel) / ( 1 + 0.8 * ((NonPolyBuilding*)build)->width / eff_height));
 			   build_width=((NonPolyBuilding*)build)->width;
-		    }
+			}
 
 			if (num > -1)
 			{
@@ -692,7 +692,7 @@ iCellFlag
 								 if(i < nx - 1 && j < ny - 1 && k < nz - 1)
 								 {
 									iCellFlag[CELL(i,j,k,1)] = 2;
-							  	 }
+								 }
 							  }
 						   }
 						}
@@ -703,4 +703,149 @@ iCellFlag
 			else
 			   build->Lf = -999.0f;
 
+}
+
+
+
+void Solver::reliefWake(NonPolyBuilding* build, float* u0, float* v0)
+{
+	 int perpendicular_flag, uwakeflag, vwakeflag, wwakeflag;
+	 float uo_h, vo_h, upwind_dir, upwind_rel, xco, yco;
+	 float x1, y1, x2, y2, x3, y3, x4, y4;
+	 float xw1, yw1, xw2, yw2, xw3, yw3, xf2, yf2, tol, zb, ynorm;
+	 float farwake_exponent, farwake_factor, farwake_velocity;
+	 float cav_fac, wake_fac, beta, LoverH, WoverH, upwind_rel_norm, eff_height;
+	 float canyon_factor, xc, yc, dNu, dNv, xwall, xu, yu, xv, yv, xp, yp, xwallu, xwallv, xwallw;
+	 int x_idx, y_idx, x_idx_min, iu, ju, iv, jv, kk, iw, jw;
+	 float vd, hd, Bs, BL, shell_height, xw, yw, dNw;
+	 int roof_perpendicular_flag, ns_flag;
+	 int ktop, kbottom, nupwind;
+	 float LrRect[3], LrLocal, LrLocalu, LrLocalv, LrLocalw;
+	 float epsilon;
+	 
+	 epsilon = 10e-10;
+	 
+	 if(build->buildingGeometry == 4 && build->buildingRoof > 0)  //no current data param for buildingRoof
+		eff_height = 0.8 * (build->height - build->baseHeightActual) + build->baseHeightActual;
+	 else
+		eff_height = build->height;
+
+	 xco = build->xFo + build->Lt * cos(build->rotation); //!CENTER of building in QUIC domain coordinates
+	 yco = build->yFo + build->Lt * sin(build->rotation);
+
+	 //! find upwind direction and determine the type of flow regime
+	 uo_h = u0[CELL( (int)(xco/dx), (int)(yco/dy), build->kEnd + 1, 0)];
+	 vo_h = v0[CELL( (int)(xco/dx), (int)(yco/dy), build->kEnd + 1, 0)];
+	 upwind_dir = atan2(vo_h,uo_h);
+	 upwind_rel = upwind_dir - build->rotation;
+
+	 if(upwind_rel > pi) upwind_rel = upwind_rel - 2 * pi;
+
+	 if(upwind_rel <= -pi) upwind_rel = upwind_rel + 2 * pi;
+
+	 upwind_rel_norm = upwind_rel + 0.5 * pi;
+
+	 if(upwind_rel_norm > pi) upwind_rel_norm = upwind_rel_norm - 2 * pi;
+	 tol = 0.01f * pi / 180.0f;
+
+	 //!Location of corners relative to the center of the building
+
+	 x1 = build->xFo + build->Wt * sin(build->rotation) - xco;
+	 y1 = build->yFo - build->Wt * cos(build->rotation) - yco;
+	 x2 = x1 + build->length * cos(build->rotation);
+	 y2 = y1 + build->length * sin(build->rotation);
+	 x4 = build->xFo - build->Wt * sin(build->rotation) - xco;
+	 y4 = build->yFo + build->Wt * cos(build->rotation) - yco;
+	 x3 = x4 + build->length * cos(build->rotation);
+	 y3 = y4 + build->length * sin(build->rotation);
+	 if(upwind_rel > 0.5f * pi + tol && upwind_rel < pi - tol)
+	 {
+		xw1=x1*cos(upwind_dir)+y1*sin(upwind_dir);
+		yw1=-x1*sin(upwind_dir)+y1*cos(upwind_dir);
+		xw2=x4*cos(upwind_dir)+y4*sin(upwind_dir);
+		yw2=-x4*sin(upwind_dir)+y4*cos(upwind_dir);
+		xf2=x2*cos(upwind_dir)+y2*sin(upwind_dir);
+		yf2=-x2*sin(upwind_dir)+y2*cos(upwind_dir);
+		xw3=x3*cos(upwind_dir)+y3*sin(upwind_dir);
+		yw3=-x3*sin(upwind_dir)+y3*cos(upwind_dir);
+		perpendicular_flag=0;
+	}
+	 else if (upwind_rel >= 0.5f * pi - tol && upwind_rel <= 0.5f * pi + tol)
+	 {
+		xw1=x4*cos(upwind_dir)+y4*sin(upwind_dir);
+		yw1=-x4*sin(upwind_dir)+y4*cos(upwind_dir);
+		xw3=x3*cos(upwind_dir)+y3*sin(upwind_dir);
+		yw3=-x3*sin(upwind_dir)+y3*cos(upwind_dir);
+		xf2=x2*cos(upwind_dir)+y2*sin(upwind_dir);
+		perpendicular_flag=1;
+	}
+	 else if(upwind_rel > tol && upwind_rel < 0.5f * pi - tol)
+	 {
+		xw1=x4*cos(upwind_dir)+y4*sin(upwind_dir);
+		yw1=-x4*sin(upwind_dir)+y4*cos(upwind_dir);
+		xw2=x3*cos(upwind_dir)+y3*sin(upwind_dir);
+		yw2=-x3*sin(upwind_dir)+y3*cos(upwind_dir);
+		xf2=x1*cos(upwind_dir)+y1*sin(upwind_dir);
+		yf2=-x1*sin(upwind_dir)+y1*cos(upwind_dir);
+		xw3=x2*cos(upwind_dir)+y2*sin(upwind_dir);
+		yw3=-x2*sin(upwind_dir)+y2*cos(upwind_dir);
+		perpendicular_flag=0;
+	}
+	 else if( abs(upwind_rel) <= tol)
+	 {
+		xw1=x3*cos(upwind_dir)+y3*sin(upwind_dir);
+		yw1=-x3*sin(upwind_dir)+y3*cos(upwind_dir);
+		xw3=x2*cos(upwind_dir)+y2*sin(upwind_dir);
+		yw3=-x2*sin(upwind_dir)+y2*cos(upwind_dir);
+		xf2=x1*cos(upwind_dir)+y1*sin(upwind_dir);
+		perpendicular_flag=1;
+	}
+	 else if(upwind_rel < -tol && upwind_rel > -0.5f * pi + tol)
+	 {
+		xw1=x3*cos(upwind_dir)+y3*sin(upwind_dir);
+		yw1=-x3*sin(upwind_dir)+y3*cos(upwind_dir);
+		xw2=x2*cos(upwind_dir)+y2*sin(upwind_dir);
+		yw2=-x2*sin(upwind_dir)+y2*cos(upwind_dir);
+		xf2=x4*cos(upwind_dir)+y4*sin(upwind_dir);
+		yf2=-x4*sin(upwind_dir)+y4*cos(upwind_dir);
+		xw3=x1*cos(upwind_dir)+y1*sin(upwind_dir);
+		yw3=-x1*sin(upwind_dir)+y1*cos(upwind_dir);
+		perpendicular_flag=0;
+	}
+	 else if(upwind_rel < -0.5f * pi + tol && upwind_rel > -0.5f * pi - tol)
+	 {
+		xw1=x2*cos(upwind_dir)+y2*sin(upwind_dir);
+		yw1=-x2*sin(upwind_dir)+y2*cos(upwind_dir);
+		xw3=x1*cos(upwind_dir)+y1*sin(upwind_dir);
+		yw3=-x1*sin(upwind_dir)+y1*cos(upwind_dir);
+		xf2=x3*cos(upwind_dir)+y3*sin(upwind_dir);
+		perpendicular_flag=1;
+	}
+	 else if(upwind_rel < -0.5f * pi - tol && upwind_rel > -pi + tol)
+	 {
+		xw1=x2*cos(upwind_dir)+y2*sin(upwind_dir);
+		yw1=-x2*sin(upwind_dir)+y2*cos(upwind_dir);
+		xw2=x1*cos(upwind_dir)+y1*sin(upwind_dir);
+		yw2=-x1*sin(upwind_dir)+y1*cos(upwind_dir);
+		xf2=x3*cos(upwind_dir)+y3*sin(upwind_dir);
+		yf2=-x3*sin(upwind_dir)+y3*cos(upwind_dir);
+		xw3=x4*cos(upwind_dir)+y4*sin(upwind_dir);
+		yw3=-x4*sin(upwind_dir)+y4*cos(upwind_dir);
+		perpendicular_flag=0;
+	}
+	 else
+	 {
+		xw1=x1*cos(upwind_dir)+y1*sin(upwind_dir);
+		yw1=-x1*sin(upwind_dir)+y1*cos(upwind_dir);
+		xw3=x4*cos(upwind_dir)+y4*sin(upwind_dir);
+		yw3=-x4*sin(upwind_dir)+y4*cos(upwind_dir);
+		xf2=x2*cos(upwind_dir)+y2*sin(upwind_dir);
+		perpendicular_flag=1;
+	 }
+	 build->Leff = build->width * build->length / abs(yw3-yw1);
+	 if(perpendicular_flag == 1)
+		build->Weff = build->width * build->length / abs(xf2-xw1);
+	 else
+		build->Weff = build->width * build->length / abs(xf2-xw2);
+	 return;
 }

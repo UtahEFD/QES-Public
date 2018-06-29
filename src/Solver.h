@@ -52,4 +52,5 @@ public:
 
     void defineWalls(int* iCellFlag, float* n, float* m, float* f, float* e, float* h, float* g);
     void upWind(Building* build, int* iCellFlag, double* u0, double* v0, double* w0, float* z, float* zm);
+    void reliefWake(NonPolyBuilding* build, float* u0, float* v0);
 };
