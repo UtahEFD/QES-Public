@@ -51,6 +51,9 @@ cuda_add_executable( cudaUrb
   NetCDFData.cpp
   main/cudaUrbMain.cpp
   DynamicParallelism.cu
+  Mesh.cpp
+  Triangle.cpp
+  BVH.cpp
   )
 
 target_link_libraries(cudaUrb /home/csgrads/software/sivelab/cuda_9.1/lib64/libcudadevrt.a)
