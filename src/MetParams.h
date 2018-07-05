@@ -21,11 +21,11 @@ public:
 
 	virtual void parseValues()
 	{
-		parsePrimative<bool>(true, metInputFlag, "metInputFlag");
-		parsePrimative<int>(true, numMeasuringSites, "numMeasuringSites");
-		parsePrimative<int>(true, maxSizeDataPoints, "maxSizeDataPoints");
-		parsePrimative<std::string>(true, siteName, "siteName");
-		parsePrimative<std::string>(true, fileName, "fileName");
+		parsePrimitive<bool>(true, metInputFlag, "metInputFlag");
+		parsePrimitive<int>(true, numMeasuringSites, "numMeasuringSites");
+		parsePrimitive<int>(true, maxSizeDataPoints, "maxSizeDataPoints");
+		parsePrimitive<std::string>(true, siteName, "siteName");
+		parsePrimitive<std::string>(true, fileName, "fileName");
 		parseElement<Sensor>(true, sensor, "sensor");
 
 	}
