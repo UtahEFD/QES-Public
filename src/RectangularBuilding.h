@@ -20,6 +20,29 @@ public:
 		Weff = 0;
 	}
 
+	RectangularBuilding(float xfo, float yfo, float bh, float dx, float dy, float dz)
+	{
+		buildingGeometry = 1;
+		Lf = -999;
+		Leff = 0;
+		Weff = 0;
+
+		groupID = 999;
+		buildingType = 5;
+		height = dz;
+		baseHeight = bh;
+		centroidX = xfo + 0.5f * dx;
+		centroidX = yfo + 0.5f * dy;
+		xFo = xfo;
+		yFo = yfo;
+		length = dx;
+		width = dy;
+		rotation = 0.0f;
+		
+		Wt = 0.5 * width;
+		Lt = 0.5 * length;
+	}
+
 	virtual void parseValues()
 	{
 		parsePrimitive<int>(true, groupID, "groupID");

@@ -62,6 +62,10 @@ Solver::Solver(URBInputData* UID)
 		zm.push_back(z[i] - 0.5f * dzArray[i]);
 	} 
 
+	mesh = 0;
+	if (UID->terrain)
+		mesh = new Mesh(UID->terrain->tris);
+
 }
 
 void Solver::defineWalls(int* iCellFlag, float* n, float* m, float* f, float* e, float* h, float* g)

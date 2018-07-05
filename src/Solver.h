@@ -3,10 +3,12 @@
 #include "URBInputData.h"
 #include "SimulationParameters.h"
 #include "Buildings.h"
+#include "Terrain.h"
 #include "NonPolyBuilding.h"
 #include "RectangularBuilding.h"
 #include "Vector3.h"
 #include "NetCDFData.h"
+#include "Mesh.h"
 #include <math.h>
 #include <vector>
 
@@ -29,12 +31,15 @@ protected:
     float max_velmag;
     std::vector<Building*> buildings;
 
+    Mesh* mesh;
+
     int rooftopFlag;
     int upwindCavityFlag;
     int streetCanyonFlag;
     int streetIntersectionFlag;
     int wakeFlag;
     int sidewallFlag;
+
 
     const int alpha1 = 1;        /// Gaussian precision moduli
     const int alpha2 = 1;        /// Gaussian precision moduli

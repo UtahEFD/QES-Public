@@ -2,6 +2,12 @@
 
 void CPUSolver::solve(NetCDFData* netcdfDat)
 {
+
+
+
+    printf("eyy\n");
+
+    
     auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time    
 
 	long numcell_cent = (nx-1)*(ny-1)*(nz-1);         /// Total number of cell-centered values in domain
@@ -46,6 +52,17 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
         y.push_back((j+0.5)*dy);         /// Location of face centers in y-dir
     }
 
+    /*
+    Set Terrain buildings
+    */
+    if (mesh)
+        for (int i = 0; i < nx; i++)
+            for (int j = 0; j < ny; j++)
+            {
+                float heightToMesh = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
+                for (int k = 0; k < (int)(heightToMesh / dz); k++)
+                    buildings.push_back(new RectangularBuilding(i * dx, j * dy, k * dz, dx, dy, dz));
+            }
     
  /*   float H = 20.0;                 /// Building height
     float W = 20.0;                 /// Building width

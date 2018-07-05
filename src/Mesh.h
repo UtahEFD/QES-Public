@@ -8,13 +8,13 @@ using std::vector;
 class Mesh
 {
 public:
-	BVH*s tris;
+	BVH* tris;
 
-	Mesh(vector<Triangle> tris)
+	Mesh(vector<Triangle*> tris)
 	{
 		this->tris = BVH::createBVH(tris);
 	}
 
-
+	float getHeight(float x, float y);
 
 };

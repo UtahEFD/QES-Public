@@ -41,7 +41,13 @@ int main(int argc, char *argv[])
     // read input files  -- some test XML, netcdf.... for now...
     URBInputData* UID;
 
+
+
+    printf("eyy\n");
 	UID = parseXMLTree(arguments.quicFile);
+
+
+    printf("eyy\n");
 	if ( UID )
 	{
 		std::cout << "FileWasRead\n";

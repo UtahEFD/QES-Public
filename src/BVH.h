@@ -15,14 +15,14 @@ private:
 	BVH* rightBox;
 
 	bool isLeaf;
-	Triangle tri;
+	Triangle* tri;
 	static void mergeSort(std::vector<BVH *>& list, const int type);
 
 public:
 	float xmin, xmax, ymin, ymax, zmin, zmax;
 
-	BVA(BVA* l, BVA* r);
-	BVA(Triangle t);
+	BVH(BVH* l, BVH* r);
+	BVH(Triangle* t);
 	BVH(std::vector<BVH *> m, int height);
 
 	float heightToTri(float x, float y);
@@ -30,5 +30,5 @@ public:
 	/*
 	method that creates a BVA structure from a vector of models
 	*/
-	static BVH* createBVH(const std::vector<Triangle> tris);
+	static BVH* createBVH(const std::vector<Triangle*> tris);
 };

@@ -66,15 +66,15 @@ BVH::BVH(BVH* l, BVH* r)
 	}
 
 	isLeaf = false;
-	model = 0;
+	tri = 0;
 }
 
-BVH::BVH(Triangle t)
+BVH::BVH(Triangle* t)
 {
 	tri = t;
 	isLeaf = true;
 
-	t.getBoundaries(xmin, xmax, ymin, ymax, zmin, zmax);
+	t->getBoundaries(xmin, xmax, ymin, ymax, zmin, zmax);
 
 	leftBox = rightBox = 0;
 }
@@ -94,7 +94,7 @@ BVH::BVH(std::vector<BVH *> m, int height)
 		zmin = leftBox->zmin;
 		zmax = leftBox->zmax;
 
-		model = 0;
+		tri = 0;
 		return;
 	}
 	else if (m.size() == 2)
@@ -109,22 +109,22 @@ BVH::BVH(std::vector<BVH *> m, int height)
 		zmin = GETMIN(leftBox->zmin, rightBox->zmin);
 		zmax = GETMAX(leftBox->zmax, rightBox->zmax);
 
-		model = 0;
+		tri = 0;
 		return;
 	}
 
 	mergeSort(m, height % 2);
 
 
-	std::vector<BVA *> l, r;
+	std::vector<BVH *> l, r;
 	int midPoint = m.size() / 2;
 	for (int i = 0; i < midPoint; i++)
 		l.push_back(m[i]);
 	for (int i = midPoint; i < m.size(); i++)
 		r.push_back(m[i]);
 
-	leftBox = new BVA(l, height + 1);
-	rightBox = new BVA(r, height + 1);
+	leftBox = new BVH(l, height + 1);
+	rightBox = new BVH(r, height + 1);
 
 	xmin = GETMIN(leftBox->xmin, rightBox->xmin);
 	xmax = GETMAX(leftBox->xmax, rightBox->xmax);
@@ -133,11 +133,11 @@ BVH::BVH(std::vector<BVH *> m, int height)
 	zmin = GETMIN(leftBox->zmin, rightBox->zmin);
 	zmax = GETMAX(leftBox->zmax, rightBox->zmax);
 
-	model = 0;
+	tri = 0;
 }
 
 
-BVH* BVH::createBVH(const std::vector<Triangle> tris)
+BVH* BVH::createBVH(const std::vector<Triangle*> tris)
 {
 	std::vector<BVH *> boxes;
 
@@ -155,7 +155,7 @@ float BVH::heightToTri(float x, float y)
 {
   if (isLeaf)
     {
-      return tri.getHeightTo(x, y);
+      return tri->getHeightTo(x, y);
     }
   else
     {
