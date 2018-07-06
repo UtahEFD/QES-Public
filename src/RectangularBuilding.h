@@ -62,13 +62,13 @@ public:
 		Lt = 0.5 * length;
 	}
 
-	void setBoundaries(int dx, int dy, int nz, float *zm)
+	void setBoundaries(int dx, int dy, int dz, int nz, float *zm)
 	{
 		iStart = xFo / dx + 1;  
 		iEnd = (xFo + length) / dx;  
 		jEnd = (yFo + width) / dy;  
 		jStart = (yFo - width) / dy + 1;
-		if (buildingDamage != 2)
+/*		if (buildingDamage != 2)
 		{
 			for (int i = 1; i < nz - 1; i++)
 			{
@@ -82,8 +82,9 @@ public:
 				if (height < zm[i + 1])
 					break;
 			}
-		}
-		printf("s:%d e:%d\n", kStart, kEnd);
+		}*/
+		kStart = baseHeight / dz;
+		kEnd = kStart + (height / dz);
 	}
 
 

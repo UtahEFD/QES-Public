@@ -5,7 +5,6 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
 
 
 
-    printf("eyy\n");
 
     
     auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time    
@@ -51,7 +50,6 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
     for ( int j = 0; j < ny-1; j++){
         y.push_back((j+0.5)*dy);         /// Location of face centers in y-dir
     }
-
     /*
     Set Terrain buildings
     */
@@ -63,7 +61,6 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
                 for (int k = 0; k < (int)(heightToMesh / dz); k++)
                     buildings.push_back(new RectangularBuilding(i * dx, j * dy, k * dz, dx, dy, dz));
             }
-    
  /*   float H = 20.0;                 /// Building height
     float W = 20.0;                 /// Building width
     float L = 20.0;                 /// Building length
@@ -115,7 +112,7 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
     iBuildFlag = new int[nx*ny*nz];
     for (int i = 0; i < buildings.size(); i++)
     {
-        ((RectangularBuilding*)buildings[i])->setBoundaries(dx, dy, nz, zm);
+        ((RectangularBuilding*)buildings[i])->setBoundaries(dx, dy, dz, nz, zm);
         ((RectangularBuilding*)buildings[i])->setCells(nx, ny, nz, icellflag, iBuildFlag, i);
     }
 

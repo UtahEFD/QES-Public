@@ -43,15 +43,14 @@ int main(int argc, char *argv[])
 
 
 
-    printf("eyy\n");
 	UID = parseXMLTree(arguments.quicFile);
 
 
-    printf("eyy\n");
 	if ( UID )
 	{
 		std::cout << "FileWasRead\n";
 		//File was successfully read
+
 		
 		Solver* solver;
 

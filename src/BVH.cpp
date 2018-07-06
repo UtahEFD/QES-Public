@@ -161,12 +161,14 @@ float BVH::heightToTri(float x, float y)
     {
       float toL = -1.0f, toR = -1.0f;
 
-      if (leftBox->xmin <= x && leftBox->xmax >= x &&
+      if (leftBox && leftBox->xmin <= x && leftBox->xmax >= x &&
 	  leftBox->ymin <= y && leftBox->ymax >= y)
 	  toL = leftBox->heightToTri(x, y);
-      if (rightBox->xmin <= x && rightBox->xmax >= x &&
+
+      if (rightBox && rightBox->xmin <= x && rightBox->xmax >= x &&
 	  rightBox->ymin <= y && rightBox->ymax >= y)
 	  toR = rightBox->heightToTri(x, y);
+
       return toL > toR ? toL : toR; 
     }
 }
