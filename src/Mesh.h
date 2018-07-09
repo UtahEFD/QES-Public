@@ -12,6 +12,7 @@ public:
 
 	Mesh(vector<Triangle*> tris)
 	{
+		printf("tris:%d\n", tris.size());
 		this->tris = BVH::createBVH(tris);
 	}
 

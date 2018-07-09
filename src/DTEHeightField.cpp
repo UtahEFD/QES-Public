@@ -148,44 +148,56 @@ void DTEHeightField::load()
   Triangle *tPtr=0;
   m_triList.clear();
 
-  double xGeo, yGeo;
+  //double xGeo, yGeo;
   Vector3<float> tc0, tc1, tc2;
 
-  int step = 1;
+  int step = 80;
   for (int Yline = 0; Yline < m_nYSize-1; Yline+=step) {
     for (int Xpixel = 0; Xpixel < m_nXSize-1; Xpixel+=step) {
+
+      int iXStep = step;
+      int iYStep = step;
+      if ( (step + Yline) > m_nYSize)
+        iYStep = m_nYSize - 1 - Yline;
+      if ( (step + Xpixel) > m_nXSize)
+        iXStep = m_nXSize - 1 - Xpixel;
 
       // For these purposes, pixel refers to the "X" coordinate, while
       // line refers to the "Z" coordinate
 
       // turn localized coordinates (Yline and Xpixel) into geo-referenced values.
       // then use the geo referenced coordinate to lookup the height.
-      xGeo = m_geoTransform[0] + Xpixel * m_geoTransform[1];
-      yGeo = m_geoTransform[3] + Yline * m_geoTransform[5];
-      Vector3<float> tv0((float)Yline, queryHeight( pafScanline, Yline, Xpixel), (float)Xpixel );
 
-      Vector3<float> tv1((float)Yline, queryHeight( pafScanline, Yline, Xpixel+step), (float)Xpixel+step );
 
-      xGeo = m_geoTransform[0] + Xpixel * m_geoTransform[1];
-      yGeo = m_geoTransform[3] + Yline * m_geoTransform[5];
-      Vector3<float> tv2((float)Yline+step, queryHeight( pafScanline, Yline+step, Xpixel), (float)Xpixel);
+//      xGeo = m_geoTransform[0] + Xpixel * m_geoTransform[1];
+//      yGeo = m_geoTransform[3] + Yline * m_geoTransform[5];
+
+//height set to y coord, change to z
+
+      Vector3<float> tv0((float)Yline, (float)Xpixel, queryHeight( pafScanline, Yline, Xpixel) );
+
+      Vector3<float> tv1((float)Yline, (float)(Xpixel + iXStep), queryHeight( pafScanline, Yline, Xpixel + iXStep) );
+
+//      xGeo = m_geoTransform[0] + Xpixel * m_geoTransform[1];
+//      yGeo = m_geoTransform[3] + Yline * m_geoTransform[5];
+      Vector3<float> tv2((float)Yline + iYStep, (float)Xpixel, queryHeight( pafScanline, Yline + iYStep, Xpixel));
 
       tPtr = new Triangle( tv0, tv1, tv2 );
       m_triList.push_back(tPtr);
 
-      Vector3<float> tv3( (float)Yline+step, queryHeight( pafScanline, Yline+step, Xpixel ), (float)Xpixel );
+      Vector3<float> tv3( (float)(Yline + iYStep), (float)Xpixel, queryHeight( pafScanline, Yline + iYStep, Xpixel ) );
      // convertToTexCoord(Yline+step, Xpixel, tc0);
 
-      Vector3<float> tv4( (float)Yline,   queryHeight( pafScanline, Yline, Xpixel+step ), (float)Xpixel+step );
+      Vector3<float> tv4( (float)Yline, (float)(Xpixel + iXStep),   queryHeight( pafScanline, Yline, Xpixel + iXStep ) );
       // convertToTexCoord(Yline, Xpixel+step, tc1);
 
-      Vector3<float> tv5( (float)Yline+step, queryHeight( pafScanline, Yline+step, Xpixel+step ), (float)Xpixel+step );
+      Vector3<float> tv5( (float)(Yline + iYStep), (float)(Xpixel + iXStep), queryHeight( pafScanline, Yline+ iYStep, Xpixel + iXStep ) );
       // convertToTexCoord(Yline+step, Xpixel+step, tc2);
 
       tPtr = new Triangle( tv3, tv4, tv5 );
       m_triList.push_back(tPtr);
     }
-    std::cout << "DEM Loading - percentage complete: " << Yline / (float)m_nYSize << "\r";
+    std::cout << "DEM Loading - percentage complete: " << Yline << ", " << (Yline / (float)m_nYSize) * 100.0f << std::endl;
   }
   std::cout << std::endl;
 

@@ -50,17 +50,23 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
     for ( int j = 0; j < ny-1; j++){
         y.push_back((j+0.5)*dy);         /// Location of face centers in y-dir
     }
+
     /*
     Set Terrain buildings
     */
+    std::cout << "mesh:" << mesh << " nx ny nz: " << nx << " " <<ny << " " <<nz << std::endl;
+
     if (mesh)
         for (int i = 0; i < nx; i++)
             for (int j = 0; j < ny; j++)
-            {
+            {           //get height, then add half a cell, if the height exceeds half of a cell partially, it will round up.
                 float heightToMesh = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f) + 0.5f * dz;
+                if (j == 30)
+                    printf("%lf\n", heightToMesh);
                 for (int k = 0; k < (int)(heightToMesh / dz); k++)
                     buildings.push_back(new RectangularBuilding(i * dx, j * dy, k * dz, dx, dy, dz));
             }
+
  /*   float H = 20.0;                 /// Building height
     float W = 20.0;                 /// Building width
     float L = 20.0;                 /// Building length
