@@ -3,17 +3,17 @@
 #include "URBInputData.h"
 #include "SimulationParameters.h"
 #include "Buildings.h"
-#include "Terrain.h"
 #include "NonPolyBuilding.h"
 #include "RectangularBuilding.h"
 #include "Vector3.h"
 #include "NetCDFData.h"
 #include "Mesh.h"
+#include "DTEHeightField.h"
 #include <math.h>
 #include <vector>
 
-#define MIN(x,y) ((x) < (y) ? (x) : (y))
-#define MAX(x,y) ((x) > (y) ? (x) : (y))
+#define MIN_S(x,y) ((x) < (y) ? (x) : (y))
+#define MAX_S(x,y) ((x) > (y) ? (x) : (y))
 
 class Solver
 {
@@ -51,7 +51,7 @@ protected:
     const float pi = 4.0f * atan(1.0);
 
 public:
-	Solver(URBInputData* UID);
+	Solver(URBInputData* UID, DTEHeightField* DTEHF);
 
 	virtual void solve(NetCDFData* netcdfDat) = 0;
 

@@ -48,7 +48,7 @@
 	<sensorVelocityFlag> 0 </sensorVelocityFlag>
 	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
-<buildings>
+<!--buildings>
 	<wallRoughness> 0.1 </wallRoughness>
 	<numBuildings> 1 </numBuildings>
 	<numPolygonNodes> 0 </numPolygonNodes>
@@ -78,36 +78,4 @@
 		<width> 20.0 </width>
 		<rotation> 0 </rotation>
 	</rectangularBuilding>
-</buildings>
-<terrain>
-	<tri> 
-		<a> 0 0 5 </a>
-		<b> 50 0 12</b>
-		<c> 0 50 7 </c>
-	</tri>
-	<tri> 
-		<a> 0 100 5 </a>
-		<b> 50 100 12</b>
-		<c> 0 50 7 </c>
-	</tri>
-	<tri> 
-		<a> 100 100 5 </a>
-		<b> 100 50 7</b>
-		<c> 50 100 12 </c>
-	</tri>
-	<tri> 
-		<a> 100 0 5 </a>
-		<b> 50 0 12</b>
-		<c> 100 50 7 </c>
-	</tri>
-	<tri> 
-		<a> 50 100 12 </a>
-		<b> 50 0 12</b>
-		<c> 0 50 7 </c>
-	</tri>
-	<tri> 
-		<a> 100 50 7 </a>
-		<b> 50 0 12</b>
-		<c> 50 100 12 </c>
-	</tri>
-</terrain>
+</buildings-->

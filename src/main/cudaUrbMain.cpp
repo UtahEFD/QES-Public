@@ -8,6 +8,7 @@
 #include "CPUSolver.h"
 #include "DynamicParallelism.h"
 #include "NetCDFData.h"
+#include "DTEHeightField.h"
 
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -41,6 +42,7 @@ int main(int argc, char *argv[])
     // read input files  -- some test XML, netcdf.... for now...
     URBInputData* UID;
 
+    DTEHeightField* DTEHF = new DTEHeightField("/scratch/dem_1m_m.bil");
 
 
 	UID = parseXMLTree(arguments.quicFile);
@@ -55,9 +57,9 @@ int main(int argc, char *argv[])
 		Solver* solver;
 
 		if (arguments.solveType == CPU_Type)
-			solver = new CPUSolver(UID);
+			solver = new CPUSolver(UID, DTEHF);
 		else if (arguments.solveType == DYNAMIC_P)
-			solver = new DynamicParallelism(UID);
+			solver = new DynamicParallelism(UID, DTEHF);
 
 		else
 		{

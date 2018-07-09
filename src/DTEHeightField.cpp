@@ -5,22 +5,24 @@ DTEHeightField::DTEHeightField()
 {
 }
 
-DTEHeightField::DTEHeightField(const std::string &filename, Shader *s)
-  : m_filename(filename), m_baseShader(s), m_rbMin(0.0)
+DTEHeightField::DTEHeightField(const std::string &filename)
+  : m_filename(filename), m_rbMin(0.0)
 {
   GDALAllRegister();
 
-  loadImage();
+  // only for texture???
+ // loadImage();
 
   load();
 }
 
+#if 0
 void DTEHeightField::loadImage()
 {
   // High res giant image
   // std::string filename = "/scratch/PSP_003910_1685_RED_A_01_ORTHO.JP2";
 
-  std::string filename = "/tmp/PSP_003910_1685_RED_C_01_ORTHO.JP2";
+  std::string filename = "/scratch/dem.png";
 
   std::cout << "loadImage: opening " << filename << std::endl;
 
@@ -52,12 +54,12 @@ void DTEHeightField::loadImage()
 	      m_imageGeoTransform[1], m_imageGeoTransform[5] );
     }
 
-  
   m_imageXSize = m_imageDataset->GetRasterXSize();
   m_imageYSize = m_imageDataset->GetRasterYSize();
 
   std::cout << "loadImage: image loaded." << std::endl;
 }
+#endif
 
 void DTEHeightField::load()
 {
@@ -147,7 +149,7 @@ void DTEHeightField::load()
   m_triList.clear();
 
   double xGeo, yGeo;
-  sivelab::Vector3D tc0, tc1, tc2;
+  Vector3<float> tc0, tc1, tc2;
 
   int step = 1;
   for (int Yline = 0; Yline < m_nYSize-1; Yline+=step) {
@@ -156,72 +158,41 @@ void DTEHeightField::load()
       // For these purposes, pixel refers to the "X" coordinate, while
       // line refers to the "Z" coordinate
 
+      // turn localized coordinates (Yline and Xpixel) into geo-referenced values.
+      // then use the geo referenced coordinate to lookup the height.
       xGeo = m_geoTransform[0] + Xpixel * m_geoTransform[1];
       yGeo = m_geoTransform[3] + Yline * m_geoTransform[5];
-      sivelab::Vector3D tv0(Yline, queryHeight(pafScanline, Yline, Xpixel), Xpixel );
-      convertToTexCoord(Yline, Xpixel, tc0);
+      Vector3<float> tv0((float)Yline, queryHeight( pafScanline, Yline, Xpixel), (float)Xpixel );
 
-      sivelab::Vector3D tv1(Yline, queryHeight(pafScanline, Yline, Xpixel+step), Xpixel+step );
-      convertToTexCoord(Yline, Xpixel+step, tc1);
+      Vector3<float> tv1((float)Yline, queryHeight( pafScanline, Yline, Xpixel+step), (float)Xpixel+step );
 
       xGeo = m_geoTransform[0] + Xpixel * m_geoTransform[1];
       yGeo = m_geoTransform[3] + Yline * m_geoTransform[5];
-      sivelab::Vector3D tv2(Yline+step, queryHeight(pafScanline, Yline+step, Xpixel), Xpixel);
-      convertToTexCoord(Yline+step, Xpixel, tc2);
-
-      // Pull texture coordinates and store here...  
-      // 
-      // - find the the georeferenced coordinate for these particle
-      //   vertices, and look up the equivalent index in the image data
+      Vector3<float> tv2((float)Yline+step, queryHeight( pafScanline, Yline+step, Xpixel), (float)Xpixel);
 
       tPtr = new Triangle( tv0, tv1, tv2 );
-      tPtr->setTextureCoordinates( tc0, tc1, tc2 );
-      tPtr->provideShader( m_baseShader );
-      
       m_triList.push_back(tPtr);
-      
-      m_bbox.update(tv0);
-      m_bbox.update(tv1);
-      m_bbox.update(tv2);
 
-      sivelab::Vector3D tv3( Yline+step, queryHeight( pafScanline, Yline+step, Xpixel ), Xpixel );
-      convertToTexCoord(Yline+step, Xpixel, tc0);
+      Vector3<float> tv3( (float)Yline+step, queryHeight( pafScanline, Yline+step, Xpixel ), (float)Xpixel );
+     // convertToTexCoord(Yline+step, Xpixel, tc0);
 
-      sivelab::Vector3D tv4( Yline,   queryHeight( pafScanline, Yline, Xpixel+step ), Xpixel+step );
-      convertToTexCoord(Yline, Xpixel+step, tc1);
+      Vector3<float> tv4( (float)Yline,   queryHeight( pafScanline, Yline, Xpixel+step ), (float)Xpixel+step );
+      // convertToTexCoord(Yline, Xpixel+step, tc1);
 
-      sivelab::Vector3D tv5( Yline+step, queryHeight( pafScanline, Yline+step, Xpixel+step ), Xpixel+step );
-      convertToTexCoord(Yline+step, Xpixel+step, tc2);
+      Vector3<float> tv5( (float)Yline+step, queryHeight( pafScanline, Yline+step, Xpixel+step ), (float)Xpixel+step );
+      // convertToTexCoord(Yline+step, Xpixel+step, tc2);
 
       tPtr = new Triangle( tv3, tv4, tv5 );
-      tPtr->setTextureCoordinates( tc0, tc1, tc2 );
-      tPtr->provideShader( m_baseShader );
-      
       m_triList.push_back(tPtr);
-      
-      m_bbox.update(tv3);
-      m_bbox.update(tv4);
-      m_bbox.update(tv5);
     }
+    std::cout << "DEM Loading - percentage complete: " << Yline / (float)m_nYSize << "\r";
   }
+  std::cout << std::endl;
+
+  // At end of loop above, all height field data will have been converted to a triangle mesh, stored in m_triList.
 
   CPLFree(pafScanline);
-
-  std::cout << "Generating BVH with " << m_triList.size() << " triangles." << std::endl;
-
-  m_modelRoot = new BoundingVolumeNode( m_triList, 0 );
-
-  std::cout << "m_bbox = " << m_bbox << std::endl;
 }
-
-bool DTEHeightField::closestHit(const Ray &r, const double t0, double &t1, HitStruct &hit, bool primRay)
-{
-  if (m_modelRoot->closestHit(r, t0, t1, hit, primRay))
-    return true;
-  else 
-    return false;
-}
-
 
 DTEHeightField::~DTEHeightField()
 {

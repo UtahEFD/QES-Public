@@ -1,7 +1,7 @@
 #include "Solver.h"
 
 
-Solver::Solver(URBInputData* UID)
+Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
 {
 
 	rooftopFlag = UID->simParams->rooftopFlag;
@@ -28,18 +28,28 @@ Solver::Solver(URBInputData* UID)
 	dy = w[1];
 	dz = w[2];
 	itermax = UID->simParams->maxIterations;
-	dxy = MIN(dx, dy);
+	dxy = MIN_S(dx, dy);
 
 	z_ref = UID->metParams->sensor->height;
 	U_ref = UID->metParams->sensor->speed;
-	z0 = UID->buildings->wallRoughness;
 
-	for (int i = 0; i < UID->buildings->buildings.size(); i++)
+	if (UID->buildings)
 	{
-		if (UID->buildings->buildings[i]->buildingGeometry == 1)
+
+		z0 = UID->buildings->wallRoughness;
+
+		for (int i = 0; i < UID->buildings->buildings.size(); i++)
 		{
-			buildings.push_back(UID->buildings->buildings[i]);
+			if (UID->buildings->buildings[i]->buildingGeometry == 1)
+			{
+				buildings.push_back(UID->buildings->buildings[i]);
+			}
 		}
+	}
+	else
+	{
+		buildings.clear();
+		z0 = 0.0f;
 	}
 
 	int j = 0;
@@ -63,8 +73,7 @@ Solver::Solver(URBInputData* UID)
 	} 
 
 	mesh = 0;
-	if (UID->terrain)
-		mesh = new Mesh(UID->terrain->tris);
+	mesh = new Mesh(DTEHF->getTris());
 
 }
 
@@ -160,7 +169,7 @@ void Solver::upWind(Building* build, int* iCellFlag, double* u0, double* v0, dou
 			 yco = ((RectangularBuilding*)(build))->yFo + ((RectangularBuilding*)(build))->length*sin(((RectangularBuilding*)(build))->rotation);
 		 }
 		 
-		 // find upwind direction and deterMINe the type of flow regime
+		 // find upwind direction and deterMIN_Se the type of flow regime
 		 uo_h = u0[ CELL((int)(xco/dx), (int)(yco/dy), build->kEnd+1, 0)];
 		 vo_h = v0[ CELL((int)(xco/dx), (int)(yco/dy), build->kEnd+1, 0)];
 		 upwind_dir = atan2(vo_h,uo_h);
@@ -245,7 +254,7 @@ iCellFlag
 iCellFlag
 iCellFlag
 iCellFlag
-					 vortex_height=MIN(LengthFace(iface),eff_height)
+					 vortex_height=MIN_S(LengthFace(iface),eff_height)
 					 retarding_height=eff_height
 				  else
 					 vortex_height=eff_height
@@ -260,10 +269,10 @@ iCellFlag
 					 ktop=k
 					 if(height_factor*retarding_height+zfo_actual(ibuild) .le. z(k))exit
 				  enddo
-				  upIstart=MAX(nint(MIN(bldx(ivert),bldx(ivert+1))/dx)-nint(1.5*LfFace(iface)/dx),2)
-				  upIstop=MIN(nint(MAX(bldx(ivert),bldx(ivert+1))/dx)+nint(1.5*LfFace(iface)/dx),nx-1)
-				  upJstart=MAX(nint(MIN(bldy(ivert),bldy(ivert+1))/dy)-nint(1.5*LfFace(iface)/dy),2)
-				  upJstop=MIN(nint(MAX(bldy(ivert),bldy(ivert+1))/dy)+nint(1.5*LfFace(iface)/dy),ny-1)
+				  upIstart=MAX_S(nint(MIN_S(bldx(ivert),bldx(ivert+1))/dx)-nint(1.5*LfFace(iface)/dx),2)
+				  upIstop=MIN_S(nint(MAX_S(bldx(ivert),bldx(ivert+1))/dx)+nint(1.5*LfFace(iface)/dx),nx-1)
+				  upJstart=MAX_S(nint(MIN_S(bldy(ivert),bldy(ivert+1))/dy)-nint(1.5*LfFace(iface)/dy),2)
+				  upJstop=MIN_S(nint(MAX_S(bldy(ivert),bldy(ivert+1))/dy)+nint(1.5*LfFace(iface)/dy),ny-1)
 				  ynorm=abs(yf2)
 				  do k=kbottom,ktop
 					 zf=zm(k)-zfo(ibuild)
@@ -304,7 +313,7 @@ iCellFlag
 									   uo(i,j,k)=retarding_factor*uo(i,j,k)
 									endif
 									if(abs(uo(i,j,k)) .gt. max_velmag)then
-									   print*,'Parameterized U exceeds MAX in upwind',&
+									   print*,'Parameterized U exceeds MAX_S in upwind',&
 										  uo(i,j,k),max_velmag,i,j,k
 									endif
 								 endif
@@ -321,7 +330,7 @@ iCellFlag
 									endif
 									uo(i,j,k)=urot*cos(-gamma_eff)+vrot*sin(-gamma_eff)
 									if(abs(uo(i,j,k)) .gt. max_velmag)then
-									   print*,'Parameterized U exceeds MAX in upwind',&
+									   print*,'Parameterized U exceeds MAX_S in upwind',&
 										  uo(i,j,k),max_velmag,i,j,k
 									endif
 								 endif
@@ -350,7 +359,7 @@ iCellFlag
 									   vo(i,j,k)=retarding_factor*vo(i,j,k)
 									endif
 									if(abs(vo(i,j,k)) .gt. max_velmag)then
-									   print*,'Parameterized V exceeds MAX in upwind',&
+									   print*,'Parameterized V exceeds MAX_S in upwind',&
 										  vo(i,j,k),max_velmag,i,j,k
 									endif
 								 endif
@@ -367,7 +376,7 @@ iCellFlag
 									endif
 									vo(i,j,k)=-urot*sin(-gamma_eff)+vrot*cos(-gamma_eff)
 									if(abs(vo(i,j,k)) .gt. max_velmag)then
-									   print*,'Parameterized V exceeds MAX in upwind',&
+									   print*,'Parameterized V exceeds MAX_S in upwind',&
 										  vo(i,j,k),max_velmag,i,j,k
 									endif
 								 endif
@@ -389,7 +398,7 @@ iCellFlag
 									   .and. iCellFlag(i,j,k) .ne. 0)then
 									wo(i,j,k)=retarding_factor*wo(i,j,k)
 									if(abs(wo(i,j,k)) .gt. max_velmag)then
-									   print*,'Parameterized W exceeds MAX in upwind',&
+									   print*,'Parameterized W exceeds MAX_S in upwind',&
 										  wo(i,j,k),max_velmag,i,j,k
 									endif
 									if(i .lt. nx .and. j .lt. ny .and. k .lt. nz)then
@@ -400,7 +409,7 @@ iCellFlag
 									   .and. iCellFlag(i,j,k) .ne. 0)then
 									wo(i,j,k)=-vel_mag*(0.1*cos(((pi*abs(x_w-xs_w))/(length_factor*LfFace(iface))))-0.05)
 									if(abs(wo(i,j,k)) .gt. max_velmag)then
-									   print*,'Parameterized W exceeds MAX in upwind',&
+									   print*,'Parameterized W exceeds MAX_S in upwind',&
 										  wo(i,j,k),max_velmag,i,j,k
 									endif
 									if(i .lt. nx .and. j .lt. ny .and. k .lt. nz)then
@@ -503,7 +512,7 @@ iCellFlag
 			{
 			   if(upwindCavityFlag == 3)
 			   {
-				  vortex_height = MIN(build_width , eff_height);
+				  vortex_height = MIN_S(build_width , eff_height);
 				  retarding_height = eff_height;
 			  }
 			   else
@@ -522,10 +531,10 @@ iCellFlag
 				  ktop = k;
 				  if(height_factor * retarding_height + build->baseHeightActual <= z[k] ) break;
 			   }
-			   upIstart = MAX(build->iStart - (int)(1.5 * build->Lf / dx), 2);
-			   upIstop = MIN(build->iEnd + (int)(1.5 * build->Lf / dx), nx - 1);
-			   upJstart = MAX(build->jStart - (int)(1.5 * build->Lf / dy), 2);
-			   upJstop = MIN(build->jEnd + (int)(1.5 * build->Lf / dy), ny-1);
+			   upIstart = MAX_S(build->iStart - (int)(1.5 * build->Lf / dx), 2);
+			   upIstop = MIN_S(build->iEnd + (int)(1.5 * build->Lf / dx), nx - 1);
+			   upJstart = MAX_S(build->jStart - (int)(1.5 * build->Lf / dy), 2);
+			   upJstop = MIN_S(build->jEnd + (int)(1.5 * build->Lf / dy), ny-1);
 				for ( int k = kbottom; k <= ktop; k++)
 				{
 				  zf = zm[k]- build->baseHeight;
@@ -577,7 +586,7 @@ iCellFlag
 								 else
 									u0[CELL(i,j,k,0)] *= retarding_factor;
 								 if( abs(u0[CELL(i,j,k,0)]) > max_velmag)
-									printf("Parameterized U exceeds MAX in upwind: %lf : %lf i:%d j:%d k:%d\n",u0[CELL(i,j,k,0)],max_velmag,i,j,k);
+									printf("Parameterized U exceeds MAX_S in upwind: %lf : %lf i:%d j:%d k:%d\n",u0[CELL(i,j,k,0)],max_velmag,i,j,k);
 							  }
 							  if(x_u - xs_u >= length_factor * xv_u && x_u - xs_u <= 0.1f * dxy &&
 									iCellFlag[CELL(i,j,k,1)] != 0)
@@ -594,7 +603,7 @@ iCellFlag
 								 }
 								 u0[CELL(i,j,k,0)]=urot*cos(-build->rotation)+vrot*sin(-build->rotation);
 								 if(abs(u0[CELL(i,j,k,0)]) > max_velmag)
-									printf("Parameterized U exceeds MAX in upwind: %lf : %lf i:%d j:%d k:%d\n",u0[CELL(i,j,k,0)],max_velmag,i,j,k);
+									printf("Parameterized U exceeds MAX_S in upwind: %lf : %lf i:%d j:%d k:%d\n",u0[CELL(i,j,k,0)],max_velmag,i,j,k);
 							  }
 						   }
 						}
@@ -630,7 +639,7 @@ iCellFlag
 								 else
 									v0[CELL(i,j,k,0)] *= retarding_factor;
 								 if( abs(v0[CELL(i,j,k,0)]) > max_velmag)
-									printf("Parameterized V exceeds MAX in upwind: %lf : %lf i:%d j:%d k:%d\n",v0[CELL(i,j,k,0)],max_velmag,i,j,k);
+									printf("Parameterized V exceeds MAX_S in upwind: %lf : %lf i:%d j:%d k:%d\n",v0[CELL(i,j,k,0)],max_velmag,i,j,k);
 							  }
 							  if(x_v - xs_v >= length_factor * xv_v && x_v - xs_v <= 0.1f * dxy &&
 									iCellFlag[CELL(i,j,k,1)] != 0)
@@ -647,7 +656,7 @@ iCellFlag
 								 }
 								 v0[CELL(i,j,k,0)]=-urot*sin(-build->rotation)+vrot*cos(-build->rotation);
 								 if(abs(v0[CELL(i,j,k,0)]) > max_velmag)
-									printf("Parameterized V exceeds MAX in upwind: %lf : %lf i:%d j:%d k:%d\n",v0[CELL(i,j,k,0)],max_velmag,i,j,k);
+									printf("Parameterized V exceeds MAX_S in upwind: %lf : %lf i:%d j:%d k:%d\n",v0[CELL(i,j,k,0)],max_velmag,i,j,k);
 							  }
 						   }
 						}
@@ -682,7 +691,7 @@ iCellFlag
 							  {
 								 w0[CELL(i,j,k,0)] *= retarding_factor;
 								 if(abs(w0[CELL(i,j,k,0)]) > max_velmag)
-									printf("Parameterized W exceeds MAX in upwind: %lf : %lf i:%d j:%d k:%d\n",w0[CELL(i,j,k,0)],max_velmag,i,j,k);
+									printf("Parameterized W exceeds MAX_S in upwind: %lf : %lf i:%d j:%d k:%d\n",w0[CELL(i,j,k,0)],max_velmag,i,j,k);
 								 if(i < nx - 1 && j < ny - 1 && k < nz - 1)
 									iCellFlag[CELL(i,j,k,1)] = 2;
 							  }
@@ -691,7 +700,7 @@ iCellFlag
 								 //w0[CELL(i,j,k,0)] = -vel_mag*(0.1*cos(((pi*abs(x_w-xs_w))/(length_factor*build->Lf)))-0.05);
 								 if(abs(w0[CELL(i,j,k,0)]) > max_velmag)
 								 {
-									printf("Parameterized W exceeds MAX in upwind: %lf : %lf i:%d j:%d k:%d\n",w0[CELL(i,j,k,0)],max_velmag,i,j,k);
+									printf("Parameterized W exceeds MAX_S in upwind: %lf : %lf i:%d j:%d k:%d\n",w0[CELL(i,j,k,0)],max_velmag,i,j,k);
 								 }
 								 if(i < nx - 1 && j < ny - 1 && k < nz - 1)
 								 {

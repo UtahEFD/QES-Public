@@ -57,7 +57,7 @@ void CPUSolver::solve(NetCDFData* netcdfDat)
         for (int i = 0; i < nx; i++)
             for (int j = 0; j < ny; j++)
             {
-                float heightToMesh = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
+                float heightToMesh = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f) + 0.5f * dz;
                 for (int k = 0; k < (int)(heightToMesh / dz); k++)
                     buildings.push_back(new RectangularBuilding(i * dx, j * dy, k * dz, dx, dy, dz));
             }

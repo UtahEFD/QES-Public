@@ -15,6 +15,11 @@ IF(NetCDF_FOUND)
   MESSAGE(STATUS "Found NetCDF: ${NetCDF_INCLUDE_DIRECTORIES}, ${NetCDF_LIBRARIES}")
 ENDIF(NetCDF_FOUND)
 
+FIND_PACKAGE(GDAL)
+IF (${GDAL_FOUND})
+  INCLUDE_DIRECTORIES(${GDAL_INCLUDE_DIR})
+ENDIF(${GDAL_FOUND})
+
 
 FIND_PACKAGE(CUDA REQUIRED)
 
@@ -54,6 +59,7 @@ cuda_add_executable( cudaUrb
   Mesh.cpp
   Triangle.cpp
   BVH.cpp
+  DTEHeightField.cpp
   )
 
 target_link_libraries(cudaUrb /home/csgrads/software/sivelab/cuda_9.1/lib64/libcudadevrt.a)
@@ -61,3 +67,4 @@ target_link_libraries(cudaUrb qesutil)
 target_link_libraries(cudaUrb ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(cudaUrb netcdf)
 target_link_libraries(cudaUrb netcdf_c++4)
+target_link_libraries(cudaUrb ${GDAL_LIBRARY})

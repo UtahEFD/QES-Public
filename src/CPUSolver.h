@@ -3,6 +3,7 @@
 #include "URBInputData.h"
 #include "Solver.h"
 #include "NetCDFData.h"
+#include "DTEHeightField.h"
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -20,8 +21,8 @@ using std::cout;
 class CPUSolver : public Solver
 {
 public:
-	CPUSolver(URBInputData* UID)
-		: Solver(UID)
+	CPUSolver(URBInputData* UID, DTEHeightField* DTEHF)
+		: Solver(UID, DTEHF)
 		{
 
 		}
