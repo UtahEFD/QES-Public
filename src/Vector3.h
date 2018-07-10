@@ -32,6 +32,7 @@ public:
 
 	virtual void parseValues()
 	{
+		values.clear();
 		parseTaglessValues<T>(values);
 	}
 
