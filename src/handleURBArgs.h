@@ -18,7 +18,7 @@ public:
     
 
     bool verbose;
-    std::string quicFile = "", netCDFFile = "";
+    std::string quicFile = "", netCDFFile = "", demFile = "";
     bool cellFace;
     int solveType;
 private:

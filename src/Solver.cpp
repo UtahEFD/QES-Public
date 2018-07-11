@@ -73,7 +73,8 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
 	} 
 
 	mesh = 0;
-	mesh = new Mesh(DTEHF->getTris());
+	if (DTEHF != 0)
+		mesh = new Mesh(DTEHF->getTris());
 
 }
 

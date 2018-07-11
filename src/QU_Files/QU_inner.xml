@@ -1,6 +1,6 @@
 <simulationParameters>
 	<domain> 100 100 100 </domain>
-	<cellSize> 80.0 80.0 2.0 </cellSize> <!-- Meters-->
+	<cellSize> 2.0 2.0 2.0 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
 	<UTCConversion> 0 </UTCConversion>

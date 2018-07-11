@@ -9,6 +9,7 @@ URBArgs::URBArgs()
     reg("solvetype", "selects the method for solving the windfield", ArgumentParsing::INT, 's');
     reg("quicproj", "Specifies the QUIC Proj file", ArgumentParsing::STRING, 'q');
     reg("netcdfout", "Specifies the netcdf file to write results to", ArgumentParsing::STRING, 'o');
+    reg("demfile", "Specifies the DEM file that should be used for terrain", ArgumentParsing::STRING, 'd');
 }
 
 void URBArgs::processArguments(int argc, char *argv[])
@@ -37,5 +38,6 @@ void URBArgs::processArguments(int argc, char *argv[])
     isSet("solvetype", solveType);
     if (solveType == CPU_Type) std::cout << "Solving with: CPU" << std::endl;
 
-
+    isSet( "demfile", demFile );
+    if (demFile != "") std::cout << "DEM input file set to " << demFile << std::endl;
 }

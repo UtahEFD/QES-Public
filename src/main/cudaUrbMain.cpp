@@ -42,7 +42,11 @@ int main(int argc, char *argv[])
     // read input files  -- some test XML, netcdf.... for now...
     URBInputData* UID;
 
-    DTEHeightField* DTEHF = new DTEHeightField("/scratch/dem_1m_m.bil");
+    DTEHeightField* DTEHF = 0;
+    if (arguments.demFile != "")
+    {
+    	DTEHF = new DTEHeightField(arguments.demFile);
+    }
 
 	UID = parseXMLTree(arguments.quicFile);
 
