@@ -211,3 +211,52 @@ DTEHeightField::~DTEHeightField()
   GDALClose(m_poDataset);
 }
 
+void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
+{
+    float min[3] = {999999999.0f, 999999999.0f, 999999999.0f};
+    float max[3] = {0.0f, 0.0f, 0.0f};
+    for (int q = 0; q < 3; q++)
+    {
+      for (int i = 0; i < m_triList.size(); i++)
+      {
+        if ( (*(m_triList[i]->a))[q] > 0 && (*(m_triList[i]->a))[q] < min[q] )
+          min[q] = (*(m_triList[i]->a))[q];
+        if ( (*(m_triList[i]->b))[q] > 0 && (*(m_triList[i]->b))[q] < min[q] )
+          min[q] = (*(m_triList[i]->b))[q];
+        if ( (*(m_triList[i]->c))[q] > 0 && (*(m_triList[i]->c))[q] < min[q] )
+          min[q] = (*(m_triList[i]->c))[q];
+
+        if ( (*(m_triList[i]->a))[q] > max[q] )
+          max[q] = (*(m_triList[i]->a))[q];
+        if ( (*(m_triList[i]->b))[q] > max[q] )
+          max[q] = (*(m_triList[i]->b))[q];
+        if ( (*(m_triList[i]->c))[q] > max[q] )
+          max[q] = (*(m_triList[i]->c))[q];
+      }
+
+      for (int i = 0; i < m_triList.size(); i++)
+      {
+        (*(m_triList[i]->a))[q] -= min[q];
+        (*(m_triList[i]->b))[q] -= min[q];
+        (*(m_triList[i]->c))[q] -= min[q];
+      }
+
+      max[q] -= min[q];
+      (*domain)[q] = (int)(max[q] / (*grid)[q]) + 1;
+
+      //current implementation adds buffer in z dim for buffer space
+      //get more specific values, currently adding 50 meters
+      //Also, domains are currently only working with cubic dimensions... fix this
+      
+      if (q == 2)
+        (*domain)[q] += (int)(50.0f / (*grid)[q]);      
+
+    }
+    if ((*domain)[0] >= (*domain)[1] && (*domain)[0] >= (*domain)[2])
+      (*domain)[1] = (*domain) [2] = (*domain)[0];
+    else if ((*domain)[1] >= (*domain)[0] && (*domain)[1] >= (*domain)[2])
+      (*domain)[0] = (*domain) [2] = (*domain)[1];
+    else
+        (*domain)[0] = (*domain) [1] = (*domain)[2];
+    printf("domain: %d %d %d\n", (*domain)[0], (*domain)[1], (*domain)[2]);
+}

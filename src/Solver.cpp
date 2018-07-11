@@ -49,7 +49,7 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
 	else
 	{
 		buildings.clear();
-		z0 = 0.0f;
+		z0 = 0.1f;
 	}
 
 	int j = 0;
@@ -145,8 +145,8 @@ void Solver::upWind(Building* build, int* iCellFlag, double* u0, double* v0, dou
 		 float urot,vrot,uhrot,vhrot,vel_mag;
 		 float vortex_height,build_width,retarding_factor;
 		 float length_factor,height_factor,rz_end,retarding_height,eff_height;
-		 float totalLength,perpendicularDir,gamma_eff;
-		 int ktop,kbottom,iface,ivert,x_idx,y_idx;
+		 //float totalLength,perpendicularDir,gamma_eff;
+		 int ktop,kbottom,iface,ivert/*,x_idx,y_idx*/;
 
 		 if(build->buildingGeometry == 4)
 		 {
@@ -722,18 +722,19 @@ iCellFlag
 
 void Solver::reliefWake(NonPolyBuilding* build, float* u0, float* v0)
 {
-	 int perpendicular_flag, uwakeflag, vwakeflag, wwakeflag;
+	 int perpendicular_flag/*, uwakeflag, vwakeflag, wwakeflag*/;
 	 float uo_h, vo_h, upwind_dir, upwind_rel, xco, yco;
 	 float x1, y1, x2, y2, x3, y3, x4, y4;
 	 float xw1, yw1, xw2, yw2, xw3, yw3, xf2, yf2, tol, zb, ynorm;
 	 float farwake_exponent, farwake_factor, farwake_velocity;
-	 float cav_fac, wake_fac, beta, LoverH, WoverH, upwind_rel_norm, eff_height;
-	 float canyon_factor, xc, yc, dNu, dNv, xwall, xu, yu, xv, yv, xp, yp, xwallu, xwallv, xwallw;
-	 int x_idx, y_idx, x_idx_min, iu, ju, iv, jv, kk, iw, jw;
-	 float vd, hd, Bs, BL, shell_height, xw, yw, dNw;
-	 int roof_perpendicular_flag, ns_flag;
-	 int ktop, kbottom, nupwind;
-	 float LrRect[3], LrLocal, LrLocalu, LrLocalv, LrLocalw;
+	 float upwind_rel_norm, eff_height;
+	 //float cav_fac, wake_fac, beta, LoverH, WoverH, eff_height;
+	 //float canyon_factor, xc, yc, dNu, dNv, xwall, xu, yu, xv, yv, xp, yp, xwallu, xwallv, xwallw;
+	 //int x_idx, y_idx, x_idx_min, iu, ju, iv, jv, kk, iw, jw;
+	 //float vd, hd, Bs, BL, shell_height, xw, yw, dNw;
+	 //int roof_perpendicular_flag, ns_flag;
+	 //int ktop, kbottom, nupwind;
+	 //float LrRect[3], LrLocal, LrLocalu, LrLocalv, LrLocalw;
 	 float epsilon;
 	 
 	 epsilon = 10e-10;

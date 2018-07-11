@@ -50,7 +50,7 @@
 </fileOptions>
 <!--buildings>
 	<wallRoughness> 0.1 </wallRoughness>
-	<numBuildings> 1 </numBuildings>
+	<numBuildings> 2 </numBuildings>
 	<numPolygonNodes> 0 </numPolygonNodes>
 	<rectangularBuilding>
 		<groupID> 1 </groupID>

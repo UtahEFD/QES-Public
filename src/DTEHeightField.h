@@ -19,6 +19,18 @@ public:
 
   std::vector<Triangle*> getTris() {return m_triList;}
 
+  /*
+   * This function takes in a domain to change and a grid size for
+   * the size of sells in the domain. This iterates over all triangles
+   * and shifts all points so that the minimum value on each axis
+   * is 0. This will then use the greatest point divided by the size
+   * of one sell in the grid to set the value of the given domain.
+   *
+   * @param domain -The domain that will be changed to match the dem file
+   * @param grid -The size of each cell in the domain space.
+   */
+  void setDomain(Vector3<int>* domain, Vector3<float>* grid);
+
 
 private:
   void load();

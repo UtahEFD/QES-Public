@@ -44,12 +44,15 @@ int main(int argc, char *argv[])
 
     DTEHeightField* DTEHF = new DTEHeightField("/scratch/dem_1m_m.bil");
 
-
 	UID = parseXMLTree(arguments.quicFile);
 
 
 	if ( UID )
 	{
+
+		if (DTEHF)
+			DTEHF->setDomain(UID->simParams->domain, UID->simParams->grid);
+
 		std::cout << "FileWasRead\n";
 		//File was successfully read
 
