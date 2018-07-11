@@ -84,6 +84,12 @@ int main(int argc, char *argv[])
     		cerr << "ERROR: output is broken\n";
     		return -1;
    		}
+
+   		if (!netcdfDat->outputICellFlags("iCellValues.nc"))
+   		{
+    		cerr << "ERROR: iCell is broken\n";
+    		return -2;
+   		}
 	}
 
 }

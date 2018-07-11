@@ -37,6 +37,30 @@ void NetCDFData::getData(float* newX, float* newY, float* newZ, double* newU, do
             }
 }
 
+void NetCDFData::getDataICell(int* newICellFlags, float* newX, float* newY, float* newZ, int nDX, int nDY, int nDZ, long newSize)
+{
+    size = newSize;
+    dimXF = nDX;
+    dimYF = nDY;
+    dimZF = nDZ - 1;
+
+    xF = new float[dimXF];
+    for (int i = 0; i < dimXF; i++)
+        xF[i] = newX[i];
+
+    yF = new float[dimYF];
+    for (int i = 0; i < dimYF; i++)
+        yF[i] = newY[i];
+
+    zF = new float[dimZF];
+    for (int i = 0; i < dimZF; i++)
+        zF[i] = newZ[i];
+
+    iCellFlags = new int[size];
+    for (int i = 0; i < size; i++)
+        iCellFlags[i] = newICellFlags[i];
+}
+
 bool NetCDFData::outputCellFaceResults(std::string fileName)
 {    
 
@@ -106,6 +130,83 @@ bool NetCDFData::outputCellFaceResults(std::string fileName)
        velY.putVar(start,count, v);
        velZ.putVar(start,count, w);
 
+
+        dataFile.close();
+    }
+    catch(NcException& e)
+    {
+      e.what(); 
+      return false;
+    }
+    return true;
+}
+
+bool NetCDFData::outputICellFlags(std::string fileName)
+{    
+
+    int lenX = dimXF, lenY = dimYF, lenZ = dimZF, lenS = size;
+
+
+    try 
+    {
+        NcFile dataFile(fileName.c_str(), NcFile::replace);
+
+        std::cout << "here1\n";
+
+        NcDim Nx, Ny, Nz;
+        Nx = dataFile.addDim("x", lenX);
+        Ny = dataFile.addDim("y", lenY);
+        Nz = dataFile.addDim("z", lenZ);
+
+    std::cout << "here2\n";
+
+        NcVar xVar, yVar, zVar;
+        xVar = dataFile.addVar("x", ncFloat, Nx );
+        yVar = dataFile.addVar("y", ncFloat, Ny );
+        zVar = dataFile.addVar("z", ncFloat, Nz );
+
+    std::cout << "here3\n";
+
+
+        xVar.putVar(xF);
+        yVar.putVar(yF);
+        zVar.putVar(zF);
+
+
+        xVar.putAtt("units", "meters");
+        yVar.putAtt("units", "meters");
+        zVar.putAtt("units", "meters");
+
+        std::vector<NcDim> dimVector;
+        dimVector.push_back(Nx);
+        dimVector.push_back(Ny);
+        dimVector.push_back(Nz);
+
+    std::cout << "here4\n";
+
+        NcVar cellVals;
+        cellVals = dataFile.addVar("iCellFlag Values", ncInt, dimVector);
+
+    std::cout << "here5\n";
+
+        cellVals.putAtt("value", "flags");
+
+    std::cout << "here6\n";
+
+       std::vector<size_t> start, count;
+       start.push_back(0);
+       start.push_back(0);
+       start.push_back(0);
+       count.push_back(lenX);
+       count.push_back(lenY);
+       count.push_back(lenZ);
+
+    std::cout << "here7\n";
+
+       cellVals.putVar(start,count, iCellFlags);
+
+
+    std::cout << "here8\n";
 
         dataFile.close();
     }
