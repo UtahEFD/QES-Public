@@ -10,6 +10,7 @@ URBArgs::URBArgs()
     reg("quicproj", "Specifies the QUIC Proj file", ArgumentParsing::STRING, 'q');
     reg("netcdfout", "Specifies the netcdf file to write results to", ArgumentParsing::STRING, 'o');
     reg("demfile", "Specifies the DEM file that should be used for terrain", ArgumentParsing::STRING, 'd');
+    reg("icellout", "Specifies that the iCellFlag values should be output", ArgumentParsing::NONE, 'i');
 }
 
 void URBArgs::processArguments(int argc, char *argv[])
@@ -34,6 +35,9 @@ void URBArgs::processArguments(int argc, char *argv[])
 
     cellFace = isSet("cellface");
     if (cellFace) std::cout << "Cell face computations: ON" << std::endl;
+
+    iCellOut = isSet("icellout");
+    if (iCellOut) std::cout << "iCellFlag values WILL be output to iCellValues.nc" << std::endl;
 
     isSet("solvetype", solveType);
     if (solveType == CPU_Type) std::cout << "Solving with: CPU" << std::endl;

@@ -30,6 +30,7 @@ URBInputData* parseXMLTree(const std::string fileName);
 
 int main(int argc, char *argv[])
 {
+
     // Use Pete's arg parser for command line stuff...
     URBArgs arguments;
     arguments.processArguments(argc, argv);
@@ -85,11 +86,12 @@ int main(int argc, char *argv[])
     		return -1;
    		}
 
-   		if (!netcdfDat->outputICellFlags("iCellValues.nc"))
-   		{
-    		cerr << "ERROR: iCell is broken\n";
-    		return -2;
-   		}
+   		if (arguments.iCellOut)
+	   		if (!netcdfDat->outputICellFlags("iCellValues.nc"))
+	   		{
+	    		cerr << "ERROR: iCell is broken\n";
+	    		return -2;
+	   		}
 	}
 
 }

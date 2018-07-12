@@ -62,7 +62,7 @@ public:
 		Lt = 0.5 * length;
 	}
 
-	void setBoundaries(int dx, int dy, int dz, int nz, float *zm)
+	void setBoundaries(float dx, float dy, float dz, int nz, float *zm)
 	{
 		iStart = xFo / dx + 1;  
 		iEnd = (xFo + length) / dx;  

@@ -242,17 +242,17 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
       }
 
       max[q] -= min[q];
-      (*domain)[q] = (int)(max[q] / (*grid)[q]) + 1;
+      (*domain)[q] = (int)(max[q] / (float)(*grid)[q]) + 1;
 
       //current implementation adds buffer in z dim for buffer space
       //get more specific values, currently adding 50 meters
       //Also, domains are currently only working with cubic dimensions... fix this
       
       if (q == 2)
-        (*domain)[q] += (int)(50.0f / (*grid)[q]);      
+        (*domain)[q] += (int)(50.0f / (float)(*grid)[q]);      
 
     }
-    if ((*domain)[0] >= (*domain)[1] && (*domain)[0] >= (*domain)[2])
+    /*if ((*domain)[0] >= (*domain)[1] && (*domain)[0] >= (*domain)[2])
       (*domain)[1] = (*domain) [2] = (*domain)[0];
     else if ((*domain)[1] >= (*domain)[0] && (*domain)[1] >= (*domain)[2])
       (*domain)[0] = (*domain) [2] = (*domain)[1];
