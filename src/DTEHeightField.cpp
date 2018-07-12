@@ -260,3 +260,62 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
         (*domain)[0] = (*domain) [1] = (*domain)[2];//*/
     printf("domain: %d %d %d\n", (*domain)[0], (*domain)[1], (*domain)[2]);
 }
+
+void DTEHeightField::outputOBJ(std::string s)
+{
+  std::ofstream file;
+  file.open(s.c_str());
+
+  std::vector< Vector3<float>* > verts;
+  std::vector< Vector3<int>* > tris;
+
+  for (int i = 0; i < m_triList.size(); i++)
+  {
+    
+    Triangle* t = m_triList[i];
+
+    Vector3<int> *tVs = new Vector3<int>(-1, -1 , -1);
+
+    for (int j = 0; j < verts.size(); j++)
+    {
+      if ( (*(t->a)) == (*verts[j]) )
+        (*tVs)[0] = j + 1;
+      if ( (*(t->b)) == (*verts[j]) )
+        (*tVs)[1] = j + 1;
+      if ( (*(t->c)) == (*verts[j]) )
+        (*tVs)[2] = j + 1;
+    }
+
+    if ((*tVs)[0] == -1)
+    {        
+      verts.push_back( t->a );
+      (*tVs)[0] = verts.size();
+    }
+
+    if ((*tVs)[1] == -1)
+    {        
+      verts.push_back( t->b );
+      (*tVs)[1] = verts.size();
+    }
+
+    if ((*tVs)[2] == -1)
+    {        
+      verts.push_back( t->c );
+      (*tVs)[2] = verts.size();
+    }
+
+    tris.push_back(tVs);
+  }
+
+  for(int i = 0; i < verts.size(); i++)
+  {
+    file << "v " << (*(verts[i]))[0] << " " << (*(verts[i]))[1] << " " << (*(verts[i]))[2] << "\n";
+  }
+
+  for(int i = 0; i < tris.size(); i++)
+  {
+    file << "f " << (*(tris[i]))[0] << " " << (*(tris[i]))[1] << " " << (*(tris[i]))[2] << "\n";
+  }
+
+  file.close();
+}

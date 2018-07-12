@@ -58,6 +58,19 @@ int main(int argc, char *argv[])
 		if (DTEHF)
 			DTEHF->setDomain(UID->simParams->domain, UID->simParams->grid);
 
+		if (arguments.terrainOut)
+		{
+			if (DTEHF)
+			{
+				DTEHF->outputOBJ("terrain.obj");
+			}
+			else
+			{
+				std::cerr << "Error: No dem file specified as input\n";
+				return -1;				
+			}
+		}
+
 		std::cout << "FileWasRead\n";
 		//File was successfully read
 

@@ -40,4 +40,9 @@ public:
 	{
 		return values[i%3];
 	}
+
+	bool operator==(Vector3<T>& v)
+	{
+		return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];
+	}
 };

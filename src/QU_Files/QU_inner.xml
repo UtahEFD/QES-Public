@@ -1,6 +1,6 @@
 <simulationParameters>
-	<domain> 40 40 50 </domain>
-	<cellSize> 5.0 5.0 5.0 </cellSize> <!-- Meters-->
+	<domain> 40 40 40 </domain>
+	<cellSize> 10.0 10.0 5.0 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
 	<UTCConversion> 0 </UTCConversion>
@@ -48,7 +48,7 @@
 	<sensorVelocityFlag> 0 </sensorVelocityFlag>
 	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
-<buildings>
+<!--buildings>
 	<wallRoughness> 0.1 </wallRoughness>
 	<numBuildings> 2 </numBuildings>
 	<numPolygonNodes> 0 </numPolygonNodes>
@@ -65,7 +65,7 @@
 		<width> 20.0 </width>
 		<rotation> 0 </rotation>
 	</rectangularBuilding>
-	<!--rectangularBuilding>
+	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
 		<height> 20.0 </height>
@@ -77,5 +77,5 @@
 		<length> 20.0 </length>
 		<width> 20.0 </width>
 		<rotation> 0 </rotation>
-	</rectangularBuilding-->
-</buildings>
+	</rectangularBuilding>
+</buildings-->

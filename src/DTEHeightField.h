@@ -9,6 +9,9 @@
 #include "Vector3.h"
 #include "gdal_priv.h"
 #include "cpl_conv.h" // for CPLMalloc()
+#include <iostream>
+#include <iomanip>
+#include <fstream>
 
 class DTEHeightField
 {
@@ -31,6 +34,14 @@ public:
    */
   void setDomain(Vector3<int>* domain, Vector3<float>* grid);
 
+
+  /*
+   * This function takes the triangle list that represents the dem file and
+   * outputs the mesh in an obj file format to the file "s"
+   *
+   * @param s -The file that the obj data will be written to.
+   */
+  void outputOBJ(std::string s);
 
 private:
   void load();
