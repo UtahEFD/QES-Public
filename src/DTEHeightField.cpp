@@ -258,7 +258,7 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
       (*domain)[0] = (*domain) [2] = (*domain)[1];
     else
         (*domain)[0] = (*domain) [1] = (*domain)[2];//*/
-    printf("domain: %d %d %d\n", (*domain)[0], (*domain)[1], (*domain)[2]);
+    printf("domain: %d %d %d\n", (*domain)[0], (*domain)[1], (*domain)[2]);su
 }
 
 void DTEHeightField::outputOBJ(std::string s)
