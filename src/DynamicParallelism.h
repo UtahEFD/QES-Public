@@ -3,6 +3,7 @@
 #include "URBInputData.h"
 #include "Solver.h"
 #include "NetCDFData.h"
+#include "DTEHeightField.h"
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -15,7 +16,6 @@
 #include <stdio.h>
 #include "cuda.h"
 #include <string.h>
-
 
 #define BLOCKSIZE 1024
 #define cudaCheck(x) _cudaCheck(x, #x ,__FILE__, __LINE__)
@@ -44,8 +44,8 @@ private:
 	void _cudaCheck(T e, const char* func, const char* call, const int line);
 
 public:
-	DynamicParallelism(URBInputData* UID)
-		: Solver(UID)
+	DynamicParallelism(URBInputData* UID, DTEHeightField* DTEHF)
+		: Solver(UID, DTEHF)
 		{
 
 		}

@@ -258,16 +258,16 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat)
     float z0 = 0.1;                 /// Surface roughness
     float z_ref = 10.0;             /// Height of the measuring sensor (m)
     float U_ref = 5.0;              /// Measured velocity at the sensor height (m/s)
-    float H = 20.0;                 /// Building height
-    float W = 20.0;                 /// Building width
-    float L = 20.0;                 /// Building length
+    //float H = 20.0;                 /// Building height
+    //float W = 20.0;                 /// Building width
+    //float L = 20.0;                 /// Building length
     float x_start = 90.0;           /// Building start location in x-direction
     float y_start = 90.0;           /// Building start location in y-direction
     float i_start = std::round(x_start/dx);     /// Index of building start location in x-direction
-    float i_end = std::round((x_start+L)/dx);   /// Index of building end location in x-direction
+    float i_end = std::round((x_start+20.0)/dx);   /// Index of building end location in x-direction
     float j_start = std::round(y_start/dy);     /// Index of building start location in y-direction
-    float j_end = std::round((y_start+W)/dy);   /// Index of building end location in y-direction 
-    float k_end = std::round(H/dz);             /// Index of building end location in z-direction
+    float j_end = std::round((y_start+20.0)/dy);   /// Index of building end location in y-direction 
+    float k_end = std::round(20.0/dz);             /// Index of building end location in z-direction
     int *icellflag, *d_icellflag;
     icellflag = new int [numcell_cent];       /// Cell index flag (0 = building, 1 = fluid)
 

@@ -83,7 +83,7 @@ public:
 	 * @param tag the tagline in the xml of the value we are searching for
 	 */
 	template <typename T>
-	void parsePrimative(bool isReq, T& val, const std::string tag);
+	void parsePrimitive(bool isReq, T& val, const std::string tag);
 
 	/**
 	 * This function parses the current node of the tree and searches for all elements
@@ -97,7 +97,7 @@ public:
 	 * @param tag the tagline in the xml of the values we are searching for
 	 */
 	template <typename T>
-	void parseMultiPrimatives(bool isReq, std::vector<T>& vals, const std::string tag);
+	void parseMultiPrimitives(bool isReq, std::vector<T>& vals, const std::string tag);
 
 
 	/**

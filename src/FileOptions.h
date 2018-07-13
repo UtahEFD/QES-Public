@@ -17,10 +17,10 @@ public:
 
 	virtual void parseValues()
 	{
-		parsePrimative<int>(true, outputFormat, "outputFormat");
-		parsePrimative<bool>(true, massConservedFlag, "massConservedFlag");
-		parsePrimative<bool>(true, sensorVelocityFlag, "sensorVelocityFlag");
-		parsePrimative<bool>(true, staggerdVelocityFlag, "staggerdVelocityFlag");
+		parsePrimitive<int>(true, outputFormat, "outputFormat");
+		parsePrimitive<bool>(true, massConservedFlag, "massConservedFlag");
+		parsePrimitive<bool>(true, sensorVelocityFlag, "sensorVelocityFlag");
+		parsePrimitive<bool>(true, staggerdVelocityFlag, "staggerdVelocityFlag");
 
 	}
 };

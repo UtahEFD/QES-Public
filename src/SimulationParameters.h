@@ -34,6 +34,7 @@ public:
 	int quicCDFFlag;
 	int explosiveDamageFlag;
 	int buildingArrayFlag;
+	std::vector<float> dzArray;
 	
 	SimulationParameters()
 	{
@@ -50,26 +51,28 @@ public:
 	{
 		parseElement< Vector3<int> >(true, domain, "domain");
 		parseElement< Vector3<float> >(true, grid, "cellSize");
-		parsePrimative<int>(true, verticalStretching, "verticalStretching");
-		parsePrimative<int>(true, totalTimeIncrements, "totalTimeIncrements");
-		parsePrimative<int>(true, UTCConversion, "UTCConversion");
-		parsePrimative<float>(true, Epoch, "Epoch");
-		parsePrimative<int>(true, rooftopFlag, "rooftopFlag");
-		parsePrimative<int>(true, upwindCavityFlag, "upwindCavityFlag");
-		parsePrimative<int>(true, streetCanyonFlag, "streetCanyonFlag");
-		parsePrimative<int>(true, streetIntersectionFlag, "streetIntersectionFlag");
-		parsePrimative<int>(true, wakeFlag, "wakeFlag");
-		parsePrimative<int>(true, sidewallFlag, "sidewallFlag");
-		parsePrimative<int>(true, maxIterations, "maxIterations");
-		parsePrimative<int>(true, residualReduction, "residualReduction");
-		parsePrimative<int>(true, useDiffusion, "useDiffusion");
-		parsePrimative<float>(true, domainRotation, "domainRotation");
-		parsePrimative<int>(false, UTMX, "UTMX");
-		parsePrimative<int>(false, UTMY, "UTMY");
-		parsePrimative<int>(false, UTMZone, "UTMZone");
-		parsePrimative<int>(false, UTMZoneLetter, "UTMZoneLetter");
-		parsePrimative<int>(false, quicCDFFlag, "quicCDFFlag");
-		parsePrimative<int>(false, explosiveDamageFlag, "explosiveDamageFlag");
-		parsePrimative<int>(false, buildingArrayFlag, "buildingArrayFlag");
+		parsePrimitive<int>(true, verticalStretching, "verticalStretching");
+		parsePrimitive<int>(true, totalTimeIncrements, "totalTimeIncrements");
+		parsePrimitive<int>(true, UTCConversion, "UTCConversion");
+		parsePrimitive<float>(true, Epoch, "Epoch");
+		parsePrimitive<int>(true, rooftopFlag, "rooftopFlag");
+		parsePrimitive<int>(true, upwindCavityFlag, "upwindCavityFlag");
+		parsePrimitive<int>(true, streetCanyonFlag, "streetCanyonFlag");
+		parsePrimitive<int>(true, streetIntersectionFlag, "streetIntersectionFlag");
+		parsePrimitive<int>(true, wakeFlag, "wakeFlag");
+		parsePrimitive<int>(true, sidewallFlag, "sidewallFlag");
+		parsePrimitive<int>(true, maxIterations, "maxIterations");
+		parsePrimitive<int>(true, residualReduction, "residualReduction");
+		parsePrimitive<int>(true, useDiffusion, "useDiffusion");
+		parsePrimitive<float>(true, domainRotation, "domainRotation");
+		parsePrimitive<int>(false, UTMX, "UTMX");
+		parsePrimitive<int>(false, UTMY, "UTMY");
+		parsePrimitive<int>(false, UTMZone, "UTMZone");
+		parsePrimitive<int>(false, UTMZoneLetter, "UTMZoneLetter");
+		parsePrimitive<int>(false, quicCDFFlag, "quicCDFFlag");
+		parsePrimitive<int>(false, explosiveDamageFlag, "explosiveDamageFlag");
+		parsePrimitive<int>(false, buildingArrayFlag, "buildingArrayFlag");
+		parseMultiPrimitives<float>(false, dzArray, "dz_array");
 	}
+
 };

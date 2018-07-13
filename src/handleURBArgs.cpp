@@ -9,6 +9,9 @@ URBArgs::URBArgs()
     reg("solvetype", "selects the method for solving the windfield", ArgumentParsing::INT, 's');
     reg("quicproj", "Specifies the QUIC Proj file", ArgumentParsing::STRING, 'q');
     reg("netcdfout", "Specifies the netcdf file to write results to", ArgumentParsing::STRING, 'o');
+    reg("demfile", "Specifies the DEM file that should be used for terrain", ArgumentParsing::STRING, 'd');
+    reg("icellout", "Specifies that the iCellFlag values should be output", ArgumentParsing::NONE, 'i');
+    reg("terrainout", "Specifies that the triangle mesh for the terrain should be output", ArgumentParsing::NONE, 't');
 }
 
 void URBArgs::processArguments(int argc, char *argv[])
@@ -34,8 +37,15 @@ void URBArgs::processArguments(int argc, char *argv[])
     cellFace = isSet("cellface");
     if (cellFace) std::cout << "Cell face computations: ON" << std::endl;
 
+    iCellOut = isSet("icellout");
+    if (iCellOut) std::cout << "iCellFlag values WILL be output to iCellValues.nc" << std::endl;
+
+    terrainOut = isSet("terrainout");
+    if (terrainOut) std::cout << "the terrain triangle mesh WILL be output to terrain.obj" << std::endl;
+
     isSet("solvetype", solveType);
     if (solveType == CPU_Type) std::cout << "Solving with: CPU" << std::endl;
 
-
+    isSet( "demfile", demFile );
+    if (demFile != "") std::cout << "DEM input file set to " << demFile << std::endl;
 }

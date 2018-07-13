@@ -8,6 +8,7 @@
 #include "CPUSolver.h"
 #include "DynamicParallelism.h"
 #include "NetCDFData.h"
+#include "DTEHeightField.h"
 
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -29,6 +30,7 @@ URBInputData* parseXMLTree(const std::string fileName);
 
 int main(int argc, char *argv[])
 {
+
     // Use Pete's arg parser for command line stuff...
     URBArgs arguments;
     arguments.processArguments(argc, argv);
@@ -41,18 +43,44 @@ int main(int argc, char *argv[])
     // read input files  -- some test XML, netcdf.... for now...
     URBInputData* UID;
 
+    DTEHeightField* DTEHF = 0;
+    if (arguments.demFile != "")
+    {
+    	DTEHF = new DTEHeightField(arguments.demFile);
+    }
+
 	UID = parseXMLTree(arguments.quicFile);
+
+
 	if ( UID )
 	{
+
+		if (DTEHF)
+			DTEHF->setDomain(UID->simParams->domain, UID->simParams->grid);
+
+		if (arguments.terrainOut)
+		{
+			if (DTEHF)
+			{
+				DTEHF->outputOBJ("terrain.obj");
+			}
+			else
+			{
+				std::cerr << "Error: No dem file specified as input\n";
+				return -1;				
+			}
+		}
+
 		std::cout << "FileWasRead\n";
 		//File was successfully read
+
 		
 		Solver* solver;
 
 		if (arguments.solveType == CPU_Type)
-			solver = new CPUSolver(UID);
+			solver = new CPUSolver(UID, DTEHF);
 		else if (arguments.solveType == DYNAMIC_P)
-			solver = new DynamicParallelism(UID);
+			solver = new DynamicParallelism(UID, DTEHF);
 
 		else
 		{
@@ -70,6 +98,13 @@ int main(int argc, char *argv[])
     		cerr << "ERROR: output is broken\n";
     		return -1;
    		}
+
+   		if (arguments.iCellOut)
+	   		if (!netcdfDat->outputICellFlags("iCellValues.nc"))
+	   		{
+	    		cerr << "ERROR: iCell is broken\n";
+	    		return -2;
+	   		}
 	}
 
 }

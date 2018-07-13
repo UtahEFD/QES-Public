@@ -2,7 +2,7 @@
 #include "URBInputData.h"
 
 	template <typename T>
-	void ParseInterface::parsePrimative(bool isReq, T& val, const std::string tag)
+	void ParseInterface::parsePrimitive(bool isReq, T& val, const std::string tag)
 	{
 		boost::optional<T> newVal = tree.get_optional<T>(tag);
 		if (newVal)
@@ -13,7 +13,7 @@
 	}
 
 	template <typename T>
-	void ParseInterface::parseMultiPrimatives(bool isReq, std::vector<T>& vals, const std::string tag)
+	void ParseInterface::parseMultiPrimitives(bool isReq, std::vector<T>& vals, const std::string tag)
 	{
 		pt::ptree::const_iterator end = tree.end();
 		for (pt::ptree::const_iterator it = tree.begin(); it != end; ++it)

@@ -37,6 +37,30 @@ void NetCDFData::getData(float* newX, float* newY, float* newZ, double* newU, do
             }
 }
 
+void NetCDFData::getDataICell(int* newICellFlags, float* newX, float* newY, float* newZ, int nDX, int nDY, int nDZ, long newSize)
+{
+    size = newSize;
+    dimXF = nDX;
+    dimYF = nDY;
+    dimZF = nDZ - 1;
+
+    xF = new float[dimXF];
+    for (int i = 0; i < dimXF; i++)
+        xF[i] = newX[i];
+
+    yF = new float[dimYF];
+    for (int i = 0; i < dimYF; i++)
+        yF[i] = newY[i];
+
+    zF = new float[dimZF];
+    for (int i = 0; i < dimZF; i++)
+        zF[i] = newZ[i];
+
+    iCellFlags = new int[size];
+    for (int i = 0; i < size; i++)
+        iCellFlags[i] = newICellFlags[i];
+}
+
 bool NetCDFData::outputCellFaceResults(std::string fileName)
 {    
 
@@ -47,21 +71,15 @@ bool NetCDFData::outputCellFaceResults(std::string fileName)
     {
         NcFile dataFile(fileName.c_str(), NcFile::replace);
 
-        std::cout << "here1\n";
-
         NcDim Nx, Ny, Nz;
         Nx = dataFile.addDim("x", lenX);
         Ny = dataFile.addDim("y", lenY);
     	Nz = dataFile.addDim("z", lenZ);
 
-    std::cout << "here2\n";
-
         NcVar xVar, yVar, zVar;
         xVar = dataFile.addVar("x", ncFloat, Nx );
         yVar = dataFile.addVar("y", ncFloat, Ny );
     	zVar = dataFile.addVar("z", ncFloat, Nz );
-
-    std::cout << "here3\n";
 
 
         xVar.putVar(x);
@@ -74,24 +92,18 @@ bool NetCDFData::outputCellFaceResults(std::string fileName)
         zVar.putAtt("units", "meters");
 
         std::vector<NcDim> dimVector;
-        dimVector.push_back(Nx);
-        dimVector.push_back(Ny);
         dimVector.push_back(Nz);
-
-    std::cout << "here4\n";
+        dimVector.push_back(Ny);
+        dimVector.push_back(Nx);
 
         NcVar velX, velY, velZ;
         velX = dataFile.addVar("velocityX", ncDouble, dimVector);
         velY = dataFile.addVar("velocityY", ncDouble, dimVector);
         velZ = dataFile.addVar("velocityZ", ncDouble, dimVector);
 
-    std::cout << "here5\n";
-
         velX.putAtt("units", "xVel");
         velY.putAtt("units", "yVel");
         velZ.putAtt("units", "zVel");
-
-    std::cout << "here6\n";
 
   /*  double *u_out, *v_out, *w_out;
     u_out = new double[lenX * lenY * lenZ];
@@ -110,18 +122,78 @@ bool NetCDFData::outputCellFaceResults(std::string fileName)
        start.push_back(0);
        start.push_back(0);
        start.push_back(0);
-       count.push_back(lenX);
-       count.push_back(lenY);
        count.push_back(lenZ);
-
-    std::cout << "here7\n";
+       count.push_back(lenY);
+       count.push_back(lenX);
 
        velX.putVar(start,count, u);
        velY.putVar(start,count, v);
        velZ.putVar(start,count, w);
 
 
-    std::cout << "here8\n";
+        dataFile.close();
+    }
+    catch(NcException& e)
+    {
+      e.what(); 
+      return false;
+    }
+    return true;
+}
+
+bool NetCDFData::outputICellFlags(std::string fileName)
+{    
+
+    int lenX = dimXF, lenY = dimYF, lenZ = dimZF, lenS = size;
+
+
+    try 
+    {
+        NcFile dataFile(fileName.c_str(), NcFile::replace);
+
+
+        NcDim Nx, Ny, Nz;
+        Nx = dataFile.addDim("x", lenX);
+        Ny = dataFile.addDim("y", lenY);
+        Nz = dataFile.addDim("z", lenZ);
+
+
+        NcVar xVar, yVar, zVar;
+        xVar = dataFile.addVar("x", ncFloat, Nx );
+        yVar = dataFile.addVar("y", ncFloat, Ny );
+        zVar = dataFile.addVar("z", ncFloat, Nz );
+
+
+        xVar.putVar(xF);
+        yVar.putVar(yF);
+        zVar.putVar(zF);
+
+
+        xVar.putAtt("units", "meters");
+        yVar.putAtt("units", "meters");
+        zVar.putAtt("units", "meters");
+
+        std::vector<NcDim> dimVector;
+        dimVector.push_back(Nz);
+        dimVector.push_back(Ny);
+        dimVector.push_back(Nx);
+
+        NcVar cellVals;
+        cellVals = dataFile.addVar("iCellFlag Values", ncInt, dimVector);
+
+
+        cellVals.putAtt("value", "flags");
+
+
+       std::vector<size_t> start, count;
+       start.push_back(0);
+       start.push_back(0);
+       start.push_back(0);
+       count.push_back(lenZ);
+       count.push_back(lenY);
+       count.push_back(lenX);
+
+       cellVals.putVar(start,count, iCellFlags);
 
         dataFile.close();
     }
