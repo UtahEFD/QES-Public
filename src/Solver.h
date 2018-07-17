@@ -50,10 +50,12 @@ protected:
     const float omega = 1.78;   /// Over-relaxation factor
     const float pi = 4.0f * atan(1.0);
 
+    void printProgress (float percentage);
+
 public:
 	Solver(URBInputData* UID, DTEHeightField* DTEHF);
 
-	virtual void solve(NetCDFData* netcdfDat) = 0;
+	virtual void solve(NetCDFData* netcdfDat, bool solveWind) = 0;
 
     void defineWalls(int* iCellFlag, float* n, float* m, float* f, float* e, float* h, float* g);
     void upWind(Building* build, int* iCellFlag, double* u0, double* v0, double* w0, float* z, float* zm);

@@ -180,7 +180,7 @@ __global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, i
 
 
 
-void DynamicParallelism::solve(NetCDFData* netcdfDat) 
+void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind) 
 {
     
   

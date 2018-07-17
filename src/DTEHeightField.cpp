@@ -1,12 +1,16 @@
 #include "DTEHeightField.h"
 
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
+#define LIMIT 99999999.0f
+
 DTEHeightField::DTEHeightField()
   : m_filename(""), m_rbMin(0.0)
 {
 }
 
-DTEHeightField::DTEHeightField(const std::string &filename)
-  : m_filename(filename), m_rbMin(0.0)
+DTEHeightField::DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN)
+  : m_filename(filename), m_rbMin(0.0), cellSizeX(cellSizeXN), cellSizeY(cellSizeYN)
 {
   GDALAllRegister();
 
@@ -91,6 +95,8 @@ void DTEHeightField::load()
       
       printf( "Pixel Size = (%.6f,%.6f)\n",
 	      m_geoTransform[1], m_geoTransform[5] );
+      pixelSizeX = abs(m_geoTransform[1]);
+      pixelSizeY = abs(m_geoTransform[5]);
 
       printf( "These should be zero for north up: (%.6f, %.6f)\n",
 	      m_geoTransform[2], m_geoTransform[4] );
@@ -151,15 +157,23 @@ void DTEHeightField::load()
   //double xGeo, yGeo;
   Vector3<float> tc0, tc1, tc2;
 
-  int step = 80;
-  for (int Yline = 0; Yline < m_nYSize-1; Yline+=step) {
-    for (int Xpixel = 0; Xpixel < m_nXSize-1; Xpixel+=step) {
 
-      int iXStep = step;
-      int iYStep = step;
-      if ( (step + Yline) > m_nYSize)
+  std::cout << "DEM Loading\n";
+
+  float stepX = cellSizeX / pixelSizeX; // tie back to dx, dy here.... with scaling of pixelsize
+  float stepY = cellSizeY / pixelSizeY;
+  if (stepX < 1) stepX = 1.0f;
+  if (stepY < 1) stepY = 1.0f;
+  for (float iYline = 0; iYline < m_nYSize-1; iYline+=stepY) {
+    for (float iXpixel = 0; iXpixel < m_nXSize-1; iXpixel+=stepX) {
+
+      int Yline = iYline;
+      int Xpixel = iXpixel;
+      int iXStep = stepX;
+      int iYStep = stepY;
+      if ( (stepY + Yline) > m_nYSize)
         iYStep = m_nYSize - 1 - Yline;
-      if ( (step + Xpixel) > m_nXSize)
+      if ( (stepX + Xpixel) > m_nXSize)
         iXStep = m_nXSize - 1 - Xpixel;
 
       // For these purposes, pixel refers to the "X" coordinate, while
@@ -174,30 +188,30 @@ void DTEHeightField::load()
 
 //height set to y coord, change to z
 
-      Vector3<float> tv0((float)Yline, (float)Xpixel, queryHeight( pafScanline, Yline, Xpixel) );
+      Vector3<float> tv0((float)Yline * pixelSizeY, (float)Xpixel * pixelSizeX, queryHeight( pafScanline, Yline * pixelSizeY, Xpixel * pixelSizeX) );
 
-      Vector3<float> tv1((float)Yline, (float)(Xpixel + iXStep), queryHeight( pafScanline, Yline, Xpixel + iXStep) );
+      Vector3<float> tv1((float)Yline * pixelSizeY, (float)(Xpixel + iXStep) * pixelSizeX, queryHeight( pafScanline, Yline * pixelSizeY, (Xpixel + iXStep) * pixelSizeX ) );
 
 //      xGeo = m_geoTransform[0] + Xpixel * m_geoTransform[1];
 //      yGeo = m_geoTransform[3] + Yline * m_geoTransform[5];
-      Vector3<float> tv2((float)Yline + iYStep, (float)Xpixel, queryHeight( pafScanline, Yline + iYStep, Xpixel));
+      Vector3<float> tv2((float)(Yline + iYStep) * pixelSizeY, (float)Xpixel * pixelSizeX, queryHeight( pafScanline, (Yline + iYStep) * pixelSizeY, Xpixel * pixelSizeX));
 
       tPtr = new Triangle( tv0, tv1, tv2 );
       m_triList.push_back(tPtr);
 
-      Vector3<float> tv3( (float)(Yline + iYStep), (float)Xpixel, queryHeight( pafScanline, Yline + iYStep, Xpixel ) );
+      Vector3<float> tv3( (float)(Yline + iYStep) * pixelSizeY, (float)Xpixel * pixelSizeX, queryHeight( pafScanline, (Yline + iYStep) * pixelSizeY, Xpixel * pixelSizeX ) );
      // convertToTexCoord(Yline+step, Xpixel, tc0);
 
-      Vector3<float> tv4( (float)Yline, (float)(Xpixel + iXStep),   queryHeight( pafScanline, Yline, Xpixel + iXStep ) );
+      Vector3<float> tv4( (float)Yline * pixelSizeY, (float)(Xpixel + iXStep) * pixelSizeX,   queryHeight( pafScanline, Yline * pixelSizeY, (Xpixel + iXStep) * pixelSizeX ) );
       // convertToTexCoord(Yline, Xpixel+step, tc1);
 
-      Vector3<float> tv5( (float)(Yline + iYStep), (float)(Xpixel + iXStep), queryHeight( pafScanline, Yline+ iYStep, Xpixel + iXStep ) );
+      Vector3<float> tv5( (float)(Yline + iYStep) * pixelSizeY, (float)(Xpixel + iXStep) * pixelSizeX, queryHeight( pafScanline, (Yline+ iYStep) * pixelSizeY, (Xpixel + iXStep) * pixelSizeX ) );
       // convertToTexCoord(Yline+step, Xpixel+step, tc2);
 
       tPtr = new Triangle( tv3, tv4, tv5 );
       m_triList.push_back(tPtr);
     }
-    std::cout << "DEM Loading - percentage complete: " << Yline << ", " << (Yline / (float)m_nYSize) * 100.0f << std::endl;
+    printProgress((iYline / (float)m_nYSize));
   }
   std::cout << std::endl;
 
@@ -213,10 +227,18 @@ DTEHeightField::~DTEHeightField()
 
 void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
 {
-    float min[3] = {999999999.0f, 999999999.0f, 999999999.0f};
+    float min[3] = {LIMIT, LIMIT, LIMIT};
     float max[3] = {0.0f, 0.0f, 0.0f};
+    std::cout << "Seting Terrain Boundaries\n";
     for (int q = 0; q < 3; q++)
     {
+      if (q == 0)
+        std::cout << "X\n";
+      else if (q == 1)
+        std::cout << "Y\n";
+      else
+        std::cout << "Z\n";
+
       for (int i = 0; i < m_triList.size(); i++)
       {
         if ( (*(m_triList[i]->a))[q] > 0 && (*(m_triList[i]->a))[q] < min[q] )
@@ -226,12 +248,13 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
         if ( (*(m_triList[i]->c))[q] > 0 && (*(m_triList[i]->c))[q] < min[q] )
           min[q] = (*(m_triList[i]->c))[q];
 
-        if ( (*(m_triList[i]->a))[q] > max[q] )
+        if ( (*(m_triList[i]->a))[q] > max[q] && (*(m_triList[i]->a))[q] < LIMIT)
           max[q] = (*(m_triList[i]->a))[q];
-        if ( (*(m_triList[i]->b))[q] > max[q] )
+        if ( (*(m_triList[i]->b))[q] > max[q] && (*(m_triList[i]->b))[q] < LIMIT)
           max[q] = (*(m_triList[i]->b))[q];
-        if ( (*(m_triList[i]->c))[q] > max[q] )
+        if ( (*(m_triList[i]->c))[q] > max[q] && (*(m_triList[i]->c))[q] < LIMIT)
           max[q] = (*(m_triList[i]->c))[q];
+         printProgress( ( (float)i / (float)m_triList.size()) / 2.0f );
       }
 
       for (int i = 0; i < m_triList.size(); i++)
@@ -239,10 +262,12 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
         (*(m_triList[i]->a))[q] -= min[q];
         (*(m_triList[i]->b))[q] -= min[q];
         (*(m_triList[i]->c))[q] -= min[q];
+        printProgress( ( (float)i / (float)m_triList.size()) / 2.0f + 0.5f); 
       }
 
       max[q] -= min[q];
       (*domain)[q] = (int)(max[q] / (float)(*grid)[q]) + 1;
+      printf ("max %lf grid %lf\n" , max[q], (float)(*grid)[q]);
 
       //current implementation adds buffer in z dim for buffer space
       //get more specific values, currently adding 50 meters
@@ -251,6 +276,7 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
       if (q == 2)
         (*domain)[q] += (int)(50.0f / (float)(*grid)[q]);      
 
+      std::cout << std::endl;
     }
     /*if ((*domain)[0] >= (*domain)[1] && (*domain)[0] >= (*domain)[2])
       (*domain)[1] = (*domain) [2] = (*domain)[0];
@@ -258,7 +284,7 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
       (*domain)[0] = (*domain) [2] = (*domain)[1];
     else
         (*domain)[0] = (*domain) [1] = (*domain)[2];//*/
-    printf("domain: %d %d %d\n", (*domain)[0], (*domain)[1], (*domain)[2]);su
+    printf("domain: %d %d %d\n", (*domain)[0], (*domain)[1], (*domain)[2]);
 }
 
 void DTEHeightField::outputOBJ(std::string s)
@@ -305,17 +331,29 @@ void DTEHeightField::outputOBJ(std::string s)
     }
 
     tris.push_back(tVs);
+    printProgress( ( (float)i / (float)m_triList.size()) / 2.0f );
   }
 
   for(int i = 0; i < verts.size(); i++)
   {
     file << "v " << (*(verts[i]))[0] << " " << (*(verts[i]))[1] << " " << (*(verts[i]))[2] << "\n";
+    printProgress( ( (float)i / (float)m_triList.size()) / 4.0f + 0.5f );
   }
 
   for(int i = 0; i < tris.size(); i++)
   {
     file << "f " << (*(tris[i]))[0] << " " << (*(tris[i]))[1] << " " << (*(tris[i]))[2] << "\n";
+    printProgress( ( (float)i / (float)m_triList.size()) / 4.0f + 0.75f);
   }
 
   file.close();
+}
+
+void DTEHeightField::printProgress (float percentage)
+{
+    int val = (int) (percentage * 100);
+    int lpad = (int) (percentage * PBWIDTH);
+    int rpad = PBWIDTH - lpad;
+    printf ("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+    fflush (stdout);
 }

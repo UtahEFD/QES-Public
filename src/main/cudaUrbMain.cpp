@@ -43,26 +43,34 @@ int main(int argc, char *argv[])
     // read input files  -- some test XML, netcdf.... for now...
     URBInputData* UID;
 
-    DTEHeightField* DTEHF = 0;
-    if (arguments.demFile != "")
-    {
-    	DTEHF = new DTEHeightField(arguments.demFile);
-    }
+    std::cout << "parsing xml...\n";
 
 	UID = parseXMLTree(arguments.quicFile);
 
+	std::cout << "parsing complete!\n";
 
 	if ( UID )
 	{
+	    DTEHeightField* DTEHF = 0;
+	    if (arguments.demFile != "")
+	    {
+	    	DTEHF = new DTEHeightField(arguments.demFile, (*(UID->simParams->grid))[0], (*(UID->simParams->grid))[1] );
+	    }
 
 		if (DTEHF)
+		{
+			std::cout << "Forming triangle mesh...\n";
 			DTEHF->setDomain(UID->simParams->domain, UID->simParams->grid);
+			std::cout << "Mesh complete\n";
+		}
 
 		if (arguments.terrainOut)
 		{
 			if (DTEHF)
 			{
+				std::cout << "Creating terrain OBJ....\n";
 				DTEHF->outputOBJ("terrain.obj");
+				std::cout << "OBJ created....\n";
 			}
 			else
 			{
@@ -71,7 +79,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		std::cout << "FileWasRead\n";
+		std::cout << "Data Was Read\n";
 		//File was successfully read
 
 		
@@ -89,15 +97,16 @@ int main(int argc, char *argv[])
 		}
     
     	// Run Simulation code
-		solver->solve(netcdfDat);
+		solver->solve(netcdfDat, !arguments.solveWind);
 
 
    		// output netcdf test file
-   		if (!netcdfDat->outputCellFaceResults(arguments.netCDFFile))
-   		{
-    		cerr << "ERROR: output is broken\n";
-    		return -1;
-   		}
+   		if (!arguments.solveWind)
+	   		if (!netcdfDat->outputCellFaceResults(arguments.netCDFFile))
+	   		{
+	    		cerr << "ERROR: output is broken\n";
+	    		return -1;
+	   		}
 
    		if (arguments.iCellOut)
 	   		if (!netcdfDat->outputICellFlags("iCellValues.nc"))

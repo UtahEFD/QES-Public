@@ -17,7 +17,7 @@ class DTEHeightField
 {
 public:
   DTEHeightField();
-  DTEHeightField(const std::string &filename);
+  DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN);
   ~DTEHeightField();
 
   std::vector<Triangle*> getTris() {return m_triList;}
@@ -45,6 +45,8 @@ public:
 
 private:
   void load();
+
+  void printProgress (float percentage);
 
   // void loadImage();
 
@@ -76,6 +78,9 @@ private:
   GDALDataset  *m_imageDataset;
   int m_imageXSize, m_imageYSize;
   double m_imageGeoTransform[6];  
+
+  float pixelSizeX, pixelSizeY;
+  float cellSizeX, cellSizeY;
   
   std::vector<Triangle*> m_triList;
 };

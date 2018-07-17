@@ -19,7 +19,7 @@ public:
 
     bool verbose;
     std::string quicFile = "", netCDFFile = "", demFile = "";
-    bool cellFace, iCellOut, terrainOut;
+    bool cellFace, iCellOut, terrainOut, solveWind;
     int solveType;
 private:
 };

@@ -12,6 +12,7 @@ URBArgs::URBArgs()
     reg("demfile", "Specifies the DEM file that should be used for terrain", ArgumentParsing::STRING, 'd');
     reg("icellout", "Specifies that the iCellFlag values should be output", ArgumentParsing::NONE, 'i');
     reg("terrainout", "Specifies that the triangle mesh for the terrain should be output", ArgumentParsing::NONE, 't');
+    reg("windsolveroff", "Turns off the wind solver and wind output", ArgumentParsing::NONE, 'x');
 }
 
 void URBArgs::processArguments(int argc, char *argv[])
@@ -42,6 +43,9 @@ void URBArgs::processArguments(int argc, char *argv[])
 
     terrainOut = isSet("terrainout");
     if (terrainOut) std::cout << "the terrain triangle mesh WILL be output to terrain.obj" << std::endl;
+
+    solveWind = isSet("windsolveroff");
+    if (solveWind) std::cout << "the wind fields are not being calculated" << std::endl;
 
     isSet("solvetype", solveType);
     if (solveType == CPU_Type) std::cout << "Solving with: CPU" << std::endl;

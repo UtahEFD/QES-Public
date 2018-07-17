@@ -27,6 +27,6 @@ public:
 
 		}
 
-	virtual void solve(NetCDFData* netcdfDat);
+	virtual void solve(NetCDFData* netcdfDat, bool solveWind);
 
 };
