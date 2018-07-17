@@ -182,19 +182,10 @@ __global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, i
 
 void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind) 
 {
-    
-  
-    nx += 1;        /// +1 for Staggered grid
-    ny += 1;        /// +1 for Staggered grid
-    nz += 2;        /// +2 for staggered grid and ghost cell
 
     long numcell_cent = (nx-1)*(ny-1)*(nz-1);         /// Total number of cell-centered values in domain
     long numface_cent = nx*ny*nz;                     /// Total number of face-centered values in domain
     
-    float *x, *y, *z;
-    x = new float [nx];
-    y = new float [ny];
-    z = new float [nz];  
 
     // Declare coefficients for SOR solver
  float *e, *f, *g, *h, *m, *n;
@@ -245,17 +236,36 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     
     
     for ( int i = 0; i < nx-1; i++){
-        x[i] = (i+0.5)*dx;         /// Location of face centers in x-dir
+        x.push_back((i+0.5)*dx);         /// Location of face centers in x-dir
     }
     for ( int j = 0; j < ny-1; j++){
-        y[j] = (j+0.5)*dy;         /// Location of face centers in y-dir
+        y.push_back((j+0.5)*dy);         /// Location of face centers in y-dir
     }
     for ( int k = 0; k < nz-1; k++){
-        z[k] = (k-0.5)*dz;         /// Location of face centers in z-dir
+        z.push_back((k-0.5)*dz);         /// Location of face centers in z-dir
     }
 
 
-    float z0 = 0.1;                 /// Surface roughness
+    /*
+    Set Terrain buildings
+    */
+    if (mesh)
+    {
+        std::cout << "Creating terrain blocks...\n";
+        for (int i = 0; i < nx; i++)
+        {
+            for (int j = 0; j < ny; j++)
+            {           //get height, then add half a cell, if the height exceeds half of a cell partially, it will round up.
+                float heightToMesh = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f) + 0.5f * dz;
+                for (int k = 0; k < (int)(heightToMesh / dz); k++)
+                    buildings.push_back(new RectangularBuilding(i * dx, j * dy, k * dz, dx, dy, dz));
+            }
+             printProgress( (float)i / (float)nx);
+        }
+        std::cout << "blocks created\n";
+    }
+
+    /*float z0 = 0.1;                 /// Surface roughness
     float z_ref = 10.0;             /// Height of the measuring sensor (m)
     float U_ref = 5.0;              /// Measured velocity at the sensor height (m/s)
     //float H = 20.0;                 /// Building height
@@ -267,15 +277,10 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     float i_end = std::round((x_start+20.0)/dx);   /// Index of building end location in x-direction
     float j_start = std::round(y_start/dy);     /// Index of building start location in y-direction
     float j_end = std::round((y_start+20.0)/dy);   /// Index of building end location in y-direction 
-    float k_end = std::round(20.0/dz);             /// Index of building end location in z-direction
+    float k_end = std::round(20.0/dz);             /// Index of building end location in z-direction*/
     int *icellflag, *d_icellflag;
     icellflag = new int [numcell_cent];       /// Cell index flag (0 = building, 1 = fluid)
 
-    std::cout << "i_start:" << i_start << "\n";   // Print the number of iterations
-    std::cout << "i_end:" << i_end << "\n";       // Print the number of iterations
-    std::cout << "j_start:" << j_start << "\n";   // Print the number of iterations
-    std::cout << "j_end:" << j_end << "\n";       // Print the number of iterations    
-    std::cout << "k_end:" << k_end << "\n";       // Print the number of iterations 
 
     for ( int k = 0; k < nz-1; k++){
         for (int j = 0; j < ny-1; j++){
@@ -302,15 +307,16 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
         }
     }
 
-    for (int k = 0; k < k_end+1; k++){
-        for (int j = j_start; j < j_end; j++){
-            for (int i = i_start; i < i_end; i++){
 
-                int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-                icellflag[icell_cent] = 0;                         /// Set cell index flag to building
 
-            }
-        }
+    float* zm;
+    zm = new float[nz];
+    int* iBuildFlag;
+    iBuildFlag = new int[nx*ny*nz];
+    for (unsigned int i = 0; i < buildings.size(); i++)
+    {
+        ((RectangularBuilding*)buildings[i])->setBoundaries(dx, dy, dz, nz, zm);
+        ((RectangularBuilding*)buildings[i])->setCells(nx, ny, nz, icellflag, iBuildFlag, i);
     }
 
     for (int j = 0; j < ny-1; j++){
@@ -339,6 +345,8 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     }
 
 
+
+
     auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time
 
     cudaMalloc((void **) &d_icellflag, numcell_cent * sizeof(int));
@@ -354,42 +362,29 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     cudaMemcpy(d_w0,w0,numface_cent*sizeof(double),cudaMemcpyHostToDevice);
     cudaMemcpy(d_R,R,numcell_cent*sizeof(double),cudaMemcpyHostToDevice);
 
+    std::cout << "Defining Solid Walls...\n";
     /// Boundary condition for building edges
-    for (int k = 1; k < nz-2; k++){
-        for (int j = 1; j < ny-2; j++){
-            for (int i = 1; i < nx-2; i++){
-                int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-                if (icellflag[icell_cent] != 0) {
-                    
-                    /// Wall bellow
-                    if (icellflag[icell_cent-(nx-1)*(ny-1)]==0) {
-                        n[icell_cent] = 0.0; 
+    defineWalls(icellflag, n, m, f, e, h, g);
+    std::cout << "Walls Defined...\n";
 
-                    }
-                    /// Wall above
-                    if (icellflag[icell_cent+(nx-1)*(ny-1)]==0) {
-                        m[icell_cent] = 0.0;
-                    }
-                    /// Wall in back
-                    if (icellflag[icell_cent-1]==0){
-                        f[icell_cent] = 0.0; 
-                    }
-                    /// Wall in front
-                    if (icellflag[icell_cent+1]==0){
-                        e[icell_cent] = 0.0; 
-                    }
-                    /// Wall on right
-                    if (icellflag[icell_cent-(nx-1)]==0){
-                        h[icell_cent] = 0.0;
-                    }
-                    /// Wall on left
-                    if (icellflag[icell_cent+(nx-1)]==0){
-                        g[icell_cent] = 0.0; 
-                    }
-                }
-            }
+    //Upwind
+    if (upwindCavityFlag > 0)
+    {
+        printf("Applying Upwind Parameterizations...\n");
+        for (unsigned int i = 0; i < buildings.size(); i++)
+        {
+            if ( buildings[i]->buildingDamage != 2 && //if damage isn't 2
+                (buildings[i]->buildingGeometry == 1 ||  //and it is of type 1,4, or 6.
+                buildings[i]->buildingGeometry == 4 ||
+                buildings[i]->buildingGeometry == 6) &&
+                buildings[i]->baseHeight == 0.0f)     //and if base height is 0
+                upWind(buildings[i], icellflag, u0, v0, w0, z.data(), zm);
+             printProgress( (float) i / (float) buildings.size());
         }
+        std::cout << "Upwind applied\n";
+                    
     }
+
 
     /// New boundary condition implementation
     for (int k = 1; k < nz-1; k++){
@@ -421,9 +416,9 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     cudaMemcpy(d_h , h , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
     cudaMemcpy(d_m , m , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
     cudaMemcpy(d_n , n , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_x , x , nx * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_y , y , ny * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_z , z , nz * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_x , x.data() , nx * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_y , y.data() , ny * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_z , z.data() , nz * sizeof(float) , cudaMemcpyHostToDevice);
     
     double *d_u, *d_v, *d_w;
     cudaMalloc((void **) &d_u,numface_cent*sizeof(double));
@@ -535,7 +530,7 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     }
     outdata1.close();
 
-    netcdfDat->getData(x,y,z,u,v,w,nx,ny,nz);
+    netcdfDat->getData(x.data(),y.data(),z.data(),u,v,w,nx,ny,nz);
 
     // Write data to file
     ofstream outdata;
