@@ -531,6 +531,7 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     outdata1.close();
 
     netcdfDat->getData(x.data(),y.data(),z.data(),u,v,w,nx,ny,nz);
+    netcdfDat->getDataICell(icellflag, x_out, y_out, z_out, nx-1, ny - 1, nz - 1, numcell_cent);
 
     // Write data to file
     ofstream outdata;

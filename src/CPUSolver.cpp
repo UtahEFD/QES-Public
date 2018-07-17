@@ -355,7 +355,7 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
     		}	
     	}
 
-        // Write data to file
+       /* // Write data to file
         ofstream outdata1;
         outdata1.open("Final velocity.dat");
         if( !outdata1 ) {                 // File couldn't be opened
@@ -373,12 +373,13 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
             }
         }
 
+        outdata1.close(); //*/
+
         netcdfDat->getData(x.data(),y.data(),z.data(),u,v,w,nx,ny,nz);
         netcdfDat->getDataICell(icellflag, x_out, y_out, z_out, nx-1, ny - 1, nz - 1, numcell_cent);
 
 
-        outdata1.close();
-
+        /*
         // Write data to file
         ofstream outdata;
         outdata.open("Final velocity, cell-centered.dat");
@@ -394,25 +395,6 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
     			}
     		}
     	}
-        outdata.close();
-    }
-    {
-        float *x_out, *y_out, *z_out;
-        x_out = new float [nx-1];
-        y_out = new float [ny-1];
-        z_out = new float [nz-1];
-
-
-        for ( int i = 0; i < nx-1; i++) {
-            x_out[i] = (i+0.5)*dx;         /// Location of cell centers in x-dir
-        }
-        for ( int j = 0; j < ny-1; j++){
-            y_out[j] = (j+0.5)*dy;         /// Location of cell centers in y-dir
-        }
-        for ( int k = 0; k < nz-1; k++){
-            z_out[k] = (k-0.5)*dz;         /// Location of cell centers in z-dir
-        }
-
-        netcdfDat->getDataICell(icellflag, x_out, y_out, z_out, nx-1, ny - 1, nz - 1, numcell_cent);
+        outdata.close();//*/
     }
 }

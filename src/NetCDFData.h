@@ -31,4 +31,8 @@ public:
 	bool outputICellFlags(std::string fileName);
 
 	bool outputCellFaceResults(std::string fileName);
+
+	bool outputICellFlagsDifference(NetCDFData* compare, std::string fileName);
+
+	bool outputCellFaceResultsDifference(NetCDFData* compare, std::string fileName);
 };

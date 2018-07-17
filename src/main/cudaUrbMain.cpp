@@ -108,12 +108,62 @@ int main(int argc, char *argv[])
 	    		return -1;
 	   		}
 
-   		if (arguments.iCellOut)
-	   		if (!netcdfDat->outputICellFlags("iCellValues.nc"))
+   		if (arguments.iCellOut != "")
+	   		if (!netcdfDat->outputICellFlags(arguments.iCellOut))
 	   		{
 	    		cerr << "ERROR: iCell is broken\n";
 	    		return -2;
 	   		}
+
+	   	if (arguments.compareType)
+	   	{
+	   		Solver* solverCompare;
+	   		NetCDFData* netcdfDatCompare;
+    		netcdfDatCompare = new NetCDFData();
+
+			if (arguments.compareType == CPU_Type)
+				solverCompare = new CPUSolver(UID, DTEHF);
+			else if (arguments.compareType == DYNAMIC_P)
+				solverCompare = new DynamicParallelism(UID, DTEHF);
+
+			else
+			{
+				std::cerr << "Error: invalid compare type\n";
+				return -1;
+			}
+	    
+	    	// Run Simulation code
+			solverCompare->solve(netcdfDatCompare, !arguments.solveWind);
+
+
+	   		// output netcdf test file
+	   		if (!arguments.solveWind)
+	   		{
+		   		if (!netcdfDatCompare->outputCellFaceResults("Compare" + arguments.netCDFFile))
+		   		{
+		    		cerr << "ERROR: output is broken\n";
+		    		return -1;
+		   		}
+		   		if (!netcdfDat->outputCellFaceResultsDifference(netcdfDatCompare, "Difference" + arguments.netCDFFile))
+		   		{
+		    		cerr << "ERROR: difference is broken\n";
+		    		return -1;
+		   		}
+		   	}
+	   		if (arguments.iCellOut != "")
+	   		{
+		   		if (!netcdfDatCompare->outputICellFlags("Compare" + arguments.iCellOut))
+		   		{
+		    		cerr << "ERROR: iCell is broken\n";
+		    		return -2;
+		   		}
+		   		if (!netcdfDat->outputICellFlagsDifference(netcdfDatCompare, "Difference" + arguments.iCellOut))
+		   		{
+		    		cerr << "ERROR: difference is broken\n";
+		    		return -1;
+		   		}
+		   	}
+	   	}
 	}
 
 }

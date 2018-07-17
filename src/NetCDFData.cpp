@@ -204,3 +204,23 @@ bool NetCDFData::outputICellFlags(std::string fileName)
     }
     return true;
 }
+
+
+bool NetCDFData::outputICellFlagsDifference(NetCDFData* compare, std::string fileName)
+{
+    for (int i = 0; i < size; i++)
+        iCellFlags[i] -= compare->iCellFlags[i];
+
+    return outputICellFlags(fileName);
+}
+
+bool NetCDFData::outputCellFaceResultsDifference(NetCDFData* compare, std::string fileName)
+{
+    for (int i = 0; i < dimX * dimY * dimZ; i++)
+    {
+        u[i] -= compare->u[i];
+        v[i] -= compare->v[i];
+        w[i] -= compare->w[i];
+    }
+    return outputCellFaceResults(fileName);
+}
