@@ -1,7 +1,7 @@
 #include "NetCDFData.h"
 
 
-void NetCDFData::getData(float* newX, float* newY, float* newZ, double* newU, double* newV, double* newW, int newDX, int newDY, int newDZ)
+void NetCDFData::getDataFace(float* newX, float* newY, float* newZ, double* newU, double* newV, double* newW, int newDX, int newDY, int newDZ)
 {
 	dimX = newDX-1;
 	dimY = newDY-1;
@@ -33,7 +33,42 @@ void NetCDFData::getData(float* newX, float* newY, float* newZ, double* newU, do
                 int iReduced = i + j*(dimX) + k*(dimX)*(dimY);
                 u[iReduced] = newU[iAll];
                 v[iReduced] = newV[iAll];
-                w[iReduced] = newW[iAll];    
+                w[iReduced] = newW[iAll];     
+            }
+}
+
+void NetCDFData::getDataCenter(float* newX, float* newY, float* newZ, double* newU, double* newV, double* newW, int newDX, int newDY, int newDZ)
+{
+    dimX = newDX;
+    dimY = newDY;
+    dimZ = newDZ;
+
+    x = new float [dimX];
+    y = new float [dimY];
+    z = new float [dimZ];
+
+    for (int i = 0; i < dimX; i++)
+        x[i] = newX[i];
+
+    for (int i = 0; i < dimY; i++)
+        y[i] = newY[i];
+
+    for (int i = 0; i < dimZ; i++)
+        z[i] = newZ[i];
+
+
+    u = new double [(dimX) * (dimY) * (dimZ)];
+    v = new double [(dimX) * (dimY) * (dimZ)];
+    w = new double [(dimX) * (dimY) * (dimZ)];
+    
+    for (int k = 0; k < dimZ; k++) 
+        for (int j = 0; j < dimY; j++)
+            for (int i = 0; i < dimX; i++)
+            {
+                int iAll = i + j*(dimX) + k*(dimX)*(dimY);
+                u[iAll] = newU[iAll];
+                v[iAll] = newV[iAll];
+                w[iAll] = newW[iAll];    
             }
 }
 
@@ -61,7 +96,7 @@ void NetCDFData::getDataICell(int* newICellFlags, float* newX, float* newY, floa
         iCellFlags[i] = newICellFlags[i];
 }
 
-bool NetCDFData::outputCellFaceResults(std::string fileName)
+bool NetCDFData::outputCellResults(std::string fileName)
 {    
 
     int lenX = dimX, lenY = dimY, lenZ = dimZ;
@@ -214,7 +249,7 @@ bool NetCDFData::outputICellFlagsDifference(NetCDFData* compare, std::string fil
     return outputICellFlags(fileName);
 }
 
-bool NetCDFData::outputCellFaceResultsDifference(NetCDFData* compare, std::string fileName)
+bool NetCDFData::outputCellResultsDifference(NetCDFData* compare, std::string fileName)
 {
     for (int i = 0; i < dimX * dimY * dimZ; i++)
     {
@@ -222,5 +257,5 @@ bool NetCDFData::outputCellFaceResultsDifference(NetCDFData* compare, std::strin
         v[i] -= compare->v[i];
         w[i] -= compare->w[i];
     }
-    return outputCellFaceResults(fileName);
+    return outputCellResults(fileName);
 }

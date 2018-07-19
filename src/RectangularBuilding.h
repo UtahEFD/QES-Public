@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+ * This class represents a building that is a block with a length width height 
+ * and origin position. Rectangular buildigns may also have a rotation.
+ */
+
 #include "ParseInterface.h"
 #include "NonPolyBuilding.h"
 
@@ -62,6 +67,17 @@ public:
 		Lt = 0.5 * length;
 	}
 
+
+	/*
+	 * This function sets the range of cells that this building might
+	 * affect.
+	 *
+	 * @param dx -cell size in the x direction
+	 * @param dy -cell size in the y direction
+	 * @param dz -cell size in the z direction
+	 * @param nz -the number of cells in the z dimension
+	 * @param zm -holds information about current heights of solid objects in the domain
+	 */
 	void setBoundaries(float dx, float dy, float dz, int nz, float *zm)
 	{
 		iStart = xFo / dx + 1;  
@@ -97,6 +113,16 @@ Difference is that 6 has one more case, type 5. similar to default except sets t
 instead of 0. Also same as 
 */
 
+	/*
+	 * Sets icellflag and ibldflag values to indicate that they are a building
+	 *
+	 * @param nx -domain size in the x dimension
+	 * @param ny -domain size in the y dimension
+	 * @param nz -domain size in the z dimension
+	 * @param icellflag -array containg the cell information for each cell in the domain
+	 * @param ibldflag -array referencing what building is affecting that cell
+	 * @param ibuild -the number of the building currently being referenced
+	 */
 	void setCells(int nx, int ny, int nz, int *icellflag, int *ibldflag, int ibuild) 
 	{
 		if(!rotation)

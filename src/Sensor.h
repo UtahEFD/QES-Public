@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+ * This is a collection of variables containing information relevant to
+ * sensors read from an xml.
+ */
+
 #include "ParseInterface.h"
 
 class Sensor : public ParseInterface

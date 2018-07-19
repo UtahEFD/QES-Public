@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+ * This is child class of the solver that runs the convergence
+ * algorithm in serial order on a CPU.
+ */
+
 #include "URBInputData.h"
 #include "Solver.h"
 #include "NetCDFData.h"
@@ -27,6 +32,6 @@ public:
 
 		}
 
-	virtual void solve(NetCDFData* netcdfDat, bool solveWind);
+	virtual void solve(NetCDFData* netcdfDat, bool solveWind, bool cellFace);
 
 };

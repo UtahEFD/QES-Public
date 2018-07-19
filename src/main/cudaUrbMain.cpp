@@ -97,12 +97,12 @@ int main(int argc, char *argv[])
 		}
     
     	// Run Simulation code
-		solver->solve(netcdfDat, !arguments.solveWind);
+		solver->solve(netcdfDat, !arguments.solveWind, arguments.cellFace);
 
 
    		// output netcdf test file
    		if (!arguments.solveWind)
-	   		if (!netcdfDat->outputCellFaceResults(arguments.netCDFFile))
+	   		if (!netcdfDat->outputCellResults(arguments.netCDFFile))
 	   		{
 	    		cerr << "ERROR: output is broken\n";
 	    		return -1;
@@ -133,18 +133,18 @@ int main(int argc, char *argv[])
 			}
 	    
 	    	// Run Simulation code
-			solverCompare->solve(netcdfDatCompare, !arguments.solveWind);
+			solverCompare->solve(netcdfDatCompare, !arguments.solveWind, arguments.cellFace);
 
 
 	   		// output netcdf test file
 	   		if (!arguments.solveWind)
 	   		{
-		   		if (!netcdfDatCompare->outputCellFaceResults("Compare" + arguments.netCDFFile))
+		   		if (!netcdfDatCompare->outputCellResults("Compare" + arguments.netCDFFile))
 		   		{
 		    		cerr << "ERROR: output is broken\n";
 		    		return -1;
 		   		}
-		   		if (!netcdfDat->outputCellFaceResultsDifference(netcdfDatCompare, "Difference" + arguments.netCDFFile))
+		   		if (!netcdfDat->outputCellResultsDifference(netcdfDatCompare, "Difference" + arguments.netCDFFile))
 		   		{
 		    		cerr << "ERROR: difference is broken\n";
 		    		return -1;

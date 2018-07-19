@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+ * This function contains variables that define information
+ * necessary for running the simulation.
+ */
+
 #include "ParseInterface.h"
 #include "Vector3.h"
 

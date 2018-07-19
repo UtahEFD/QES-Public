@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+ * This class is an abstract representation of a building. It holds
+ * the basic information and functions that every building should have.
+*/
+
 #include "ParseInterface.h"
 
 class Building : public ParseInterface

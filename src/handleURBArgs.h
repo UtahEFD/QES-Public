@@ -1,5 +1,10 @@
 #pragma once
 
+/* 
+ * This class handles different commandline options and arguments
+ * and places the values into variables. This inherits from Argument Parsing
+ */
+
 #include <iostream>
 #include "ArgumentParsing.h"
 
@@ -14,6 +19,13 @@ public:
 
     ~URBArgs() {}
 
+    /*
+     * Takes in the commandline arguments and places
+     * them into variables.
+     *
+     * @param argc -number of commandline options/arguments
+     * @param argv -array of strings for arguments
+     */
     void processArguments(int argc, char *argv[]);
     
 

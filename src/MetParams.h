@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+ * This class is a container relating to sensors and metric
+ * information read from the xml.
+ */
+
 #include "ParseInterface.h"
 #include "Sensor.h"
 

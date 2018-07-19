@@ -1,6 +1,6 @@
 #include "CPUSolver.h"
 
-void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
+void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind, bool cellFace)
 {
 
 
@@ -327,30 +327,20 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
         }
 
     	/// Declare output velocity field arrays
-        double ***u_out, ***v_out, ***w_out;
-        u_out = new double** [nx-1];
-        v_out = new double** [nx-1];
-        w_out = new double** [nx-1];
+        double *u_out, *v_out, *w_out;
+        u_out = new double [(nx-1) * (ny-1) * (nz-1)];
+        v_out = new double [(nx-1) * (ny-1) * (nz-1)];
+        w_out = new double [(nx-1) * (ny-1) * (nz-1)];
     	
-    	for (int i = 0; i < nx-1; i++){
-    		u_out[i] = new double* [ny-1];
-    		v_out[i] = new double* [ny-1];
-    		w_out[i] = new double* [ny-1];
-    		for (int j = 0; j < ny-1; j++){
-    			u_out[i][j] = new double [nz-1];
-    			v_out[i][j] = new double [nz-1];
-    			w_out[i][j] = new double [nz-1];
-    		}
-    	}
 
 
     	for (int k = 0; k < nz-1; k++){
             for (int j = 0; j < ny-1; j++){
                 for (int i = 0; i < nx-1; i++){
                     int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values 
-    				u_out[i][j][k] = 0.5*(u[icell_face+1]+u[icell_face]);
-    				v_out[i][j][k] = 0.5*(v[icell_face+nx]+v[icell_face]);
-    				w_out[i][j][k] = 0.5*(w[icell_face+nx*ny]+w[icell_face]);
+    				u_out[i + j * (nx - 1) + k * (nx - 1) * (ny - 1)] = 0.5*(u[icell_face+1]+u[icell_face]);
+    				v_out[i + j * (nx - 1) + k * (nx - 1) * (ny - 1)] = 0.5*(v[icell_face+nx]+v[icell_face]);
+    				w_out[i + j * (nx - 1) + k * (nx - 1) * (ny - 1)] = 0.5*(w[icell_face+nx*ny]+w[icell_face]);
     			}
     		}	
     	}
@@ -375,7 +365,10 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
 
         outdata1.close(); //*/
 
-        netcdfDat->getData(x.data(),y.data(),z.data(),u,v,w,nx,ny,nz);
+        if (cellFace)
+            netcdfDat->getDataFace(x.data(),y.data(),z.data(),u,v,w,nx,ny,nz);
+        else
+            netcdfDat->getDataCenter(x_out,y_out,z_out,u_out,v_out,w_out,nx - 1,ny - 1,nz - 1);
         netcdfDat->getDataICell(icellflag, x_out, y_out, z_out, nx-1, ny - 1, nz - 1, numcell_cent);
 
 
