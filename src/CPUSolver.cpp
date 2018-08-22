@@ -53,6 +53,7 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
 
     /*
     Set Terrain buildings
+    Deprecate
     */
     if (mesh)
     {

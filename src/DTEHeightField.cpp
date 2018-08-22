@@ -137,7 +137,6 @@ void DTEHeightField::load()
   m_rbNoData = poBand->GetNoDataValue();
   printf( "Band has NoData value: %.4f\n", m_rbNoData );
 
-  float *pafScanline;
   
   m_nXSize = poBand->GetXSize();
   m_nYSize = poBand->GetYSize();
@@ -227,8 +226,12 @@ DTEHeightField::~DTEHeightField()
 
 void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
 {
-    float min[3] = {LIMIT, LIMIT, LIMIT};
-    float max[3] = {0.0f, 0.0f, 0.0f};
+    for (int i = 0; i < 3; i++)
+    {
+      min[i] = LIMIT;
+      max[i] = 0.0f;
+    }
+
     std::cout << "Seting Terrain Boundaries\n";
     for (int q = 0; q < 3; q++)
     {
@@ -356,4 +359,128 @@ void DTEHeightField::printProgress (float percentage)
     int rpad = PBWIDTH - lpad;
     printf ("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
     fflush (stdout);
+}
+
+
+// Note:
+// This method should probably be done recursively to some degree
+// in order to reduce querying for known values. The query transaction
+// is fairly quick, but this should be looked at in the future.
+// Memoization may also work, but that might be a bit excessive.
+#define CELL(i,j,k) ((i) + (j) * (nx) + (k) * (nx) * (ny))
+
+std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy, float dz)
+{
+
+  std::vector<int> cutCells;
+
+  for (int i = 0; i < nx; i++)
+    for (int j = 0; j < ny; j++)
+    {
+
+      //all work here is done for each column of cells in the z direction from the xy plane.
+
+       Vector3<float> corners[4]; //stored from top Left in clockwise order
+
+       corners[0] = Vector3<float>(i * dx, j * dy, queryHeight( pafScanline, j * dy + min[1], i * dx + min[0]) - min[2] );
+       corners[1] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline, j * dy + min[1], (i + 1) * dx + min[0]) - min[2] );
+       corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline, (j + 1) * dy + min[1], (i + 1) * dx + min[0]) - min[2] );
+       corners[3] = Vector3<float>(i * dx, (j + 1) * dy, queryHeight( pafScanline, (j + 1) * dy + min[1], i * dx + min[0]) - min[2] );
+
+       float cellMin, cellMax;
+       cellMin = cellMax = corners[0][2];
+       for (int l = 1; l <= 3; l++)
+         if (cellMin > corners[l][2])
+            cellMin = corners[l][2];
+         else if (cellMax < corners[l][2])
+          cellMax = corners[l][2];
+
+      for (int k = 0; k < nz; k++)
+      {
+        float cellBot = k * dz;
+        float cellTop = cellBot + dz;
+
+        if ( cellTop < cellMin)
+          cells[CELL(i,j,k)] = Cell(air_CT);
+        else if ( cellBot > cellMax)
+          cells[CELL(i,j,k)] = Cell(terrain_CT);
+        else
+        {
+          cutCells.push_back(CELL(i,j,k));
+          std::vector< Vector3<float> > pointsInCell;
+          int cornerPos[4] = {0, 0, 0, 0}; // 0 is in, 1 is above, -1 is below
+          //check if corners are in
+          for (int l = 0; l < 4; l++)
+            if (corners[l][2] > cellMin && corners[l][2] < cellMax)
+            {
+              pointsInCell.push_back(corners[l]);
+              cornerPos[l] = 0;
+            }
+            else if (corners[l][2] < cellMin)
+              cornerPos[l] = -1;
+            else
+              cornerPos[l] = 1;
+
+          //check intermediates 0-1 0-2 0-3 1-2 2-3
+            for (int first = 0; first < 3; first++)
+              for (int second = first + 1; second < 4; second++)
+                if (first != 1 || second != 3)
+                {
+                  if (cornerPos[first] == 0)
+                  {
+                    if (cornerPos[second] < 0)
+                      pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
+                    else if (cornerPos[second] > 0)
+                      pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
+                  }
+                  else if (cornerPos[first] > 0) 
+                  {
+                    if (cornerPos[second] == 0)
+                      pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
+                    else if (cornerPos[second] < 0)
+                    {
+                      pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
+                      pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
+                    }
+                  }
+                  else 
+                  {
+                    if (cornerPos[second] == 0)
+                      pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
+                    else if (cornerPos[second] > 0)
+                    {
+                      pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
+                      pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
+                    }
+                  }
+                }
+            cells[CELL(i,j,k)] = Cell(pointsInCell);
+          }
+
+      }
+    }
+
+return cutCells;
+
+
+}
+
+
+Vector3<float> DTEHeightField::getIntermediate(Vector3<float> a, Vector3<float> b, float height)
+{
+  float lowX, lowY, lowZ, difX, difY, difZ;
+
+  if (a[2] == b[2])
+    return Vector3<float> ( (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, a[2]);
+
+  lowX = a[0] < b[0] ? a[0] : b[0];
+  lowY = a[1] < b[1] ? a[1] : b[1];
+  lowZ = a[2] < b[2] ? a[2] : b[2];
+  difX = fabs(a[0] - b[0]);
+  difY = fabs(a[1] - b[1]);
+  difZ = fabs(a[2] - b[2]);
+
+  float change = (height - lowZ) / difZ;
+
+  return Vector3<float>(lowX + change * difX, lowY + change * difY, height);
 }

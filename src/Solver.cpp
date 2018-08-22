@@ -85,8 +85,19 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
 	} 
 
 	mesh = 0;
-	if (DTEHF != 0)
+	if (DTEHF)
 		mesh = new Mesh(DTEHF->getTris());
+
+	
+	cells = 0;
+	if (DTEHF)
+		{
+			cells = new Cell[(nx-1)*(ny-1)*(nz-1)];
+			DTEHF->setCells(cells, nx - 1, ny - 1, nz - 1, dx, dy, dz);
+
+		}
+
+
 
 }
 

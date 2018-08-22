@@ -9,9 +9,11 @@
 #include "Vector3.h"
 #include "gdal_priv.h"
 #include "cpl_conv.h" // for CPLMalloc()
+#include "Cell.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <cmath>
 
 class DTEHeightField
 {
@@ -43,6 +45,23 @@ public:
    */
   void outputOBJ(std::string s);
 
+  /*
+   * This function takes in a list of cells, and the domain space and queries
+   * the height field at corners of the each cell setting coordinates and the
+   * substances present in each cell. This then returns a list of ints that are
+   * the id's of all cut-cells(cells that are both terrain and air).
+   *
+   * @param cells -The list of cells to be initialized
+   * @param nx -X dimension in the domain
+   * @param ny -Y dimension in the domain
+   * @param nz -Z dimension in the domain
+   * @param dx -size of a cell in the X axis
+   * @param dy -size of a cell in the Y axis
+   * @param dz -size of a cell in the Z axis
+   * @return -A list of ID values for all cut cells.
+   */
+  std::vector<int> setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy, float dz);
+
 private:
   void load();
 
@@ -66,6 +85,18 @@ private:
     return height;
   }
 
+  /*
+   * Given a height between the two points (z value) this function will create
+   * a third point which exists on the line from a to b existing at height h.
+   * in the result that a and b exist on the same height, the mid point between
+   * the two will be returned instead.
+   *
+   * @param a -first point designating the line
+   * @param b -second point designating the line
+   * @param height -the height at which the third point will be created
+   * @return -an intermediate point existing on the line from a to b at z value height
+   */
+  Vector3<float> getIntermediate(Vector3<float> a, Vector3<float> b, float height);
 
   std::string m_filename;
   GDALDataset  *m_poDataset;
@@ -83,6 +114,10 @@ private:
   float cellSizeX, cellSizeY;
   
   std::vector<Triangle*> m_triList;
+  float min[3], max[3];
+
+  float *pafScanline;
+
 };
 
 

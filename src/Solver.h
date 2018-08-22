@@ -9,6 +9,7 @@
 #include "NetCDFData.h"
 #include "Mesh.h"
 #include "DTEHeightField.h"
+#include "Cell.h"
 #include <math.h>
 #include <vector>
 
@@ -39,6 +40,8 @@ protected:
     int streetIntersectionFlag;
     int wakeFlag;
     int sidewallFlag;
+
+    Cell* cells;
 
 
     const int alpha1 = 1;        /// Gaussian precision moduli
