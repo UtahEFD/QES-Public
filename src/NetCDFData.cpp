@@ -61,6 +61,21 @@ void NetCDFData::getDataICell(int* newICellFlags, float* newX, float* newY, floa
         iCellFlags[i] = newICellFlags[i];
 }
 
+void NetCDFData::getCutCellFlags(Cell* cells)
+{
+    cutCellFlags = new int[size];
+    for (int i = 0; i < size; i++)
+        if (cells[i].getIsCutCell())
+            cutCellFlags[i] = 2;
+        else if (cells[i].getIsAir())
+            cutCellFlags[i] = 3;
+        else if (cells[i].getIsTerrain())
+            cutCellFlags[i] = 1;
+        else
+            cutCellFlags[i] = 0;
+
+}
+
 bool NetCDFData::outputCellFaceResults(std::string fileName)
 {    
 
@@ -194,6 +209,70 @@ bool NetCDFData::outputICellFlags(std::string fileName)
        count.push_back(lenX);
 
        cellVals.putVar(start,count, iCellFlags);
+
+        dataFile.close();
+    }
+    catch(NcException& e)
+    {
+      e.what(); 
+      return false;
+    }
+    return true;
+}
+
+bool NetCDFData::outputCutCellFlags(std::string fileName)
+{    
+
+    int lenX = dimXF, lenY = dimYF, lenZ = dimZF, lenS = size;
+
+
+    try 
+    {
+        NcFile dataFile(fileName.c_str(), NcFile::replace);
+
+
+        NcDim Nx, Ny, Nz;
+        Nx = dataFile.addDim("x", lenX);
+        Ny = dataFile.addDim("y", lenY);
+        Nz = dataFile.addDim("z", lenZ);
+
+
+        NcVar xVar, yVar, zVar;
+        xVar = dataFile.addVar("x", ncFloat, Nx );
+        yVar = dataFile.addVar("y", ncFloat, Ny );
+        zVar = dataFile.addVar("z", ncFloat, Nz );
+
+
+        xVar.putVar(xF);
+        yVar.putVar(yF);
+        zVar.putVar(zF);
+
+
+        xVar.putAtt("units", "meters");
+        yVar.putAtt("units", "meters");
+        zVar.putAtt("units", "meters");
+
+        std::vector<NcDim> dimVector;
+        dimVector.push_back(Nz);
+        dimVector.push_back(Ny);
+        dimVector.push_back(Nx);
+
+        NcVar cellVals;
+        cellVals = dataFile.addVar("cutCellFlag Values", ncInt, dimVector);
+
+
+        cellVals.putAtt("value", "flags");
+
+
+       std::vector<size_t> start, count;
+       start.push_back(0);
+       start.push_back(0);
+       start.push_back(0);
+       count.push_back(lenZ);
+       count.push_back(lenY);
+       count.push_back(lenX);
+
+       cellVals.putVar(start,count, cutCellFlags);
 
         dataFile.close();
     }

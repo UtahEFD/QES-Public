@@ -77,7 +77,11 @@ private:
 
   float queryHeight( float *scanline, int j, int k )
   {
-    double height = scanline[ j * m_nXSize + k ];
+    double height;
+    if (j * m_nXSize + k >= m_nXSize * m_nYSize)
+      height = 0;
+    else
+      height = scanline[ j * m_nXSize + k ];
     if (!compareEquality( height, m_rbNoData ))
       height = height * m_rbScale + m_rbOffset;
     else 

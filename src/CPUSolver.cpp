@@ -376,6 +376,8 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
 
         netcdfDat->getData(x.data(),y.data(),z.data(),u,v,w,nx,ny,nz);
         netcdfDat->getDataICell(icellflag, x_out, y_out, z_out, nx-1, ny - 1, nz - 1, numcell_cent);
+        netcdfDat->getCutCellFlags(cells);
+        netcdfDat->outputCutCellFlags("cutCellFlags.nc");
 
 
         outdata1.close();
