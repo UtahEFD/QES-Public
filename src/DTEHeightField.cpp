@@ -215,8 +215,6 @@ void DTEHeightField::load()
   std::cout << std::endl;
 
   // At end of loop above, all height field data will have been converted to a triangle mesh, stored in m_triList.
-
-  CPLFree(pafScanline);
 }
 
 DTEHeightField::~DTEHeightField()
@@ -368,9 +366,12 @@ void DTEHeightField::printProgress (float percentage)
 // is fairly quick, but this should be looked at in the future.
 // Memoization may also work, but that might be a bit excessive.
 #define CELL(i,j,k) ((i) + (j) * (nx) + (k) * (nx) * (ny))
+#define CLAMP(low, high, x) ( (x) < (low) ? (low) : ( (x) > (high) ? (high) : (x) ))
 
 std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy, float dz)
 {
+
+  printf("Setting Cell Data...\n");
 
   std::vector<int> cutCells;
 
@@ -382,10 +383,10 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
 
        Vector3<float> corners[4]; //stored from top Left in clockwise order
 
-       corners[0] = Vector3<float>(i * dx, j * dy, queryHeight( pafScanline, j * dy + min[1], i * dx + min[0]) - min[2] );
-       corners[1] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline, j * dy + min[1], (i + 1) * dx + min[0]) - min[2] );
-       corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline, (j + 1) * dy + min[1], (i + 1) * dx + min[0]) - min[2] );
-       corners[3] = Vector3<float>(i * dx, (j + 1) * dy, queryHeight( pafScanline, (j + 1) * dy + min[1], i * dx + min[0]) - min[2] );
+       corners[0] = Vector3<float>(i * dx, j * dy, CLAMP(0, max[2], queryHeight( pafScanline, 0, 0)) );
+       corners[1] = Vector3<float>( (i + 1) * dx, j * dy, CLAMP(0, max[2], queryHeight( pafScanline, 0, 0)) );
+       corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, CLAMP(0, max[2], queryHeight( pafScanline,  0, 0)) );
+       corners[3] = Vector3<float>(i * dx, (j + 1) * dy, CLAMP(0, max[2], queryHeight( pafScanline,  0, 0)) );
 
        float cellMin, cellMax;
        cellMin = cellMax = corners[0][2];
@@ -460,6 +461,8 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
       }
     }
 
+
+  CPLFree(pafScanline);
 return cutCells;
 
 
