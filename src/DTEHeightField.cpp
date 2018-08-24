@@ -383,10 +383,10 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
 
        Vector3<float> corners[4]; //stored from top Left in clockwise order
 
-       corners[0] = Vector3<float>(i * dx, j * dy, CLAMP(0, max[2], queryHeight( pafScanline, (min[1] + j * dy) / pixelSizeY , (min[0] + i * dx) / pixelSizeX) - min[2]) );
-       corners[1] = Vector3<float>( (i + 1) * dx, j * dy, CLAMP(0, max[2], queryHeight( pafScanline, (min[1] + j * dy) / pixelSizeY , (min[0] +  (i + 1) * dx) / pixelSizeX) - min[2]) );
-       corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, CLAMP(0, max[2], queryHeight( pafScanline,  (min[1] + (j + 1) * dy) / pixelSizeY , (min[0] + (i + 1) * dx) / pixelSizeX) - min[2]) );
-       corners[3] = Vector3<float>(i * dx, (j + 1) * dy, CLAMP(0, max[2], queryHeight( pafScanline,  (min[1] + (j + 1) * dy) / pixelSizeY , (min[0] + i * dx) / pixelSizeX) - min[2]) );
+       corners[0] = Vector3<float>(i * dx, j * dy, CLAMP(0, max[2], queryHeight( pafScanline, (min[0] + i * dx) / pixelSizeX, (min[1] + j * dy) / pixelSizeY) - min[2]) );
+       corners[1] = Vector3<float>( (i + 1) * dx, j * dy, CLAMP(0, max[2], queryHeight( pafScanline, (min[0] +  (i + 1) * dx) / pixelSizeX, (min[1] + j * dy) / pixelSizeY ) - min[2]) );
+       corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, CLAMP(0, max[2], queryHeight( pafScanline , (min[0] + (i + 1) * dx) / pixelSizeX,  (min[1] + (j + 1) * dy) / pixelSizeY) - min[2]) );
+       corners[3] = Vector3<float>(i * dx, (j + 1) * dy, CLAMP(0, max[2], queryHeight( pafScanline , (min[0] + i * dx) / pixelSizeX,  (min[1] + (j + 1) * dy) / pixelSizeY) - min[2]) );
 
        float cellMin, cellMax;
        cellMin = cellMax = corners[0][2];
