@@ -68,9 +68,9 @@ void NetCDFData::getCutCellFlags(Cell* cells)
         if (cells[i].getIsCutCell())
             cutCellFlags[i] = 2;
         else if (cells[i].getIsAir())
-            cutCellFlags[i] = 3;
-        else if (cells[i].getIsTerrain())
             cutCellFlags[i] = 1;
+        else if (cells[i].getIsTerrain())
+            cutCellFlags[i] = 3;
         else
             cutCellFlags[i] = 0;
 
