@@ -1,6 +1,9 @@
 #pragma once
 
 #include "ParseInterface.h"
+#include <type_traits>
+
+#define FLOATS_ARE_EQUAL(x,y) ( (x) - (y) > -0.0000001 && (x) - (y) < 0.0000001 )
 
 template <class T>
 class Vector3 : public ParseInterface
@@ -41,8 +44,11 @@ public:
 		return values[i%3];
 	}
 
-	bool operator==(Vector3<T>& v)
+	bool operator==(const Vector3<T>& v)
 	{
-		return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];
+		if (std::is_same<T,float>::value || std::is_same<T,double>::value)
+			return FLOATS_ARE_EQUAL(values[0], v.values[0]) && FLOATS_ARE_EQUAL(values[1], v.values[1]) && FLOATS_ARE_EQUAL(values[2], v.values[2]);
+		else
+			return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];
 	}
 };

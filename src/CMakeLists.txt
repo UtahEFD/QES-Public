@@ -42,10 +42,12 @@ set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;" )
 
 include_directories(${CMAKE_SOURCE_DIR}/util)
 include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/unitTests)
 
 include_directories("/home/csgrads/patte720/Research/netcdf-cxx4-4.3.0.dist/include")
 
 add_subdirectory( util )
+add_subdirectory( unitTests )
 
 link_directories("/home/csgrads/patte720/Research/netcdf-cxx4-4.3.0.dist/lib")
 
@@ -63,9 +65,32 @@ cuda_add_executable( cudaUrb
   Cell.cpp
   )
 
+  cuda_add_executable( unitTest
+    handleURBArgs.cpp
+    Solver.cpp
+    CPUSolver.cpp
+    NetCDFData.cpp
+    unitTests/testsMain.cpp
+    DynamicParallelism.cu
+    Mesh.cpp
+    Triangle.cpp
+    BVH.cpp
+    DTEHeightField.cpp
+    Cell.cpp
+  )
+
 target_link_libraries(cudaUrb /home/csgrads/software/sivelab/cuda_9.1/lib64/libcudadevrt.a)
 target_link_libraries(cudaUrb qesutil)
 target_link_libraries(cudaUrb ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(cudaUrb netcdf)
 target_link_libraries(cudaUrb netcdf_c++4)
 target_link_libraries(cudaUrb ${GDAL_LIBRARY})
+
+target_link_libraries(unitTest /home/csgrads/software/sivelab/cuda_9.1/lib64/libcudadevrt.a)
+target_link_libraries(unitTest unitTestLib)
+target_link_libraries(unitTest qesutil)
+target_link_libraries(unitTest ${Boost_PROGRAM_OPTIONS_LIBRARIES})
+target_link_libraries(unitTest netcdf)
+target_link_libraries(unitTest netcdf_c++4)
+target_link_libraries(unitTest ${GDAL_LIBRARY})
+
