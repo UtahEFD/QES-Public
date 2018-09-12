@@ -1,5 +1,5 @@
 CMAKE_MINIMUM_REQUIRED (VERSION 2.8) 
-PROJECT (gpuurbplume) 
+PROJECT (CUDAPlume) 
 
 SET(gpuurbplume_MAJOR_VERSION 0)
 SET(gpuurbplume_MINOR_VERSION 2)
@@ -8,8 +8,6 @@ SET(gpuurbplume_SOVERSION 0)
 SET(gpuurbplume_VERSION ${gpuurbplume_MAJOR_VERSION}.${gpuurbplume_MINOR_VERSION}.${gpuurbplume_PATCH_VERSION})
 
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/../CMake/Modules/")
-
-OPTION(QUIC_BUILD_DEV "On - buildings everything; Off - builds console only" On)
 
 FIND_PACKAGE(CUDA REQUIRED)
 
@@ -93,5 +91,4 @@ ENDIF(CMAKE_CPACK_COMMAND)
 # LINK_DIRECTORIES (${LIBSIVELAB_PATH}/lib/) 
 
 add_subdirectory (quicutil)
-add_subdirectory (urb/src)
 add_subdirectory (plume)
