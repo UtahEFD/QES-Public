@@ -1,5 +1,0 @@
-
-// the configured options and settings for Urb
-#define cudaUrb_VERSION_MAJOR @cudaUrb_MAJOR_VERSION@
-#define cudaUrb_VERSION_MINOR @cudaUrb_MINOR_VERSION@
-#define cudaUrb_VERSION_PATCH @cudaUrb_PATCH_VERSION@
