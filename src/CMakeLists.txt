@@ -38,11 +38,14 @@ ENDIF(CUDA_FOUND)
 include_directories(${CMAKE_SOURCE_DIR}/util)
 include_directories(${CMAKE_SOURCE_DIR})
 
-include_directories("/home/cs/willemsn/Research/envsim_research/netcdf-cxx4-4.3.0.dist/include")
+#### NOTE -- Please change your NetCDF directories here for NOW.  Pete's examples are included for reference:
+#  include_directories("/opt/external/netcdf-cxx4-4.3.0.dist/include")
+#  link_directories("/opt/external/netcdf-cxx4-4.3.0.dist/lib")
+
+include_directories("/usr/local/include")
+link_directories("/usr/local/lib/lib")
 
 add_subdirectory( util )
-
-link_directories("/home/cs/willemsn/Research/envsim_research/netcdf-cxx4-4.3.0.dist/lib")
 
 # CUDA_ADD_LIBRARY( urbgpucore SHARED 
 #   DynamicParallelism.cu
