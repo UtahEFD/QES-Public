@@ -42,6 +42,7 @@ protected:
     int sidewallFlag;
 
     Cell* cells;
+    DTEHeightField* DTEHF;
 
 
     const int alpha1 = 1;        /// Gaussian precision moduli
