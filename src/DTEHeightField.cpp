@@ -374,6 +374,7 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
 {
 
   printf("Setting Cell Data...\n");
+  auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time    
 
   std::vector<int> cutCells;
 
@@ -396,6 +397,10 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
 
 
   CPLFree(pafScanline);
+  auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+  std::chrono::duration<float> elapsed = finish - start;
+  std::cout << "Elapsed time For CellSet: " << elapsed.count() << " s\n";   // Print out elapsed execution time
+
 return cutCells;
 
 

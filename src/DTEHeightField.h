@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <fstream>
 #include <cmath>
+#include <chrono>
 
 class DTEHeightField
 {
