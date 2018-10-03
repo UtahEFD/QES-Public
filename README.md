@@ -37,3 +37,22 @@ Once cmake has been configured, the GPU plume code can be compiled.
 
   make
 
+
+
+The process is a bit tricker for compiling the code on chpc. On kingspeak where
+boost can be loaded in separate from the boost libraries, and where the default gcc
+is 4.8.5 (you probably need gcc 5.4.0 or higher), do the following before running
+cmake from the clean build directory:
+
+	module load cuda/8.0
+	module load boost
+	module load gcc/5.4.0
+
+now the cmake command needs to be something like the following:
+
+	cmake ../CUDA-Plume -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_ROOTDIR -DCUDA_SDK_ROOT_DIR=$CUDA_ROOTDIR -DCUDA_SDK_ROOT_DIR=$CUDA_ROOTDIR -DBOOST_ROOT=$BOOST_DIR
+
+Then can run make the same as normal and it should work. Note that notchpeak
+may not have boost libraries that can be loaded in with module load.
+
+
