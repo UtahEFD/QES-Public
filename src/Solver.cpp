@@ -90,6 +90,7 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
 
 	
 	cells = 0;
+	this->DTEHF = DTEHF;
 	if (DTEHF)
 		{
 			cells = new Cell[(nx-1)*(ny-1)*(nz-1)];

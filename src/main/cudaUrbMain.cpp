@@ -109,11 +109,19 @@ int main(int argc, char *argv[])
 	   		}
 
    		if (arguments.iCellOut)
+   		{
 	   		if (!netcdfDat->outputICellFlags("iCellValues.nc"))
 	   		{
 	    		cerr << "ERROR: iCell is broken\n";
 	    		return -2;
 	   		}
+	   		if (DTEHF)
+	   			if (!netcdfDat->outputCutCellFlags("cutCellFlags.nc"))
+		   		{
+		    		cerr << "ERROR: cutCell is broken\n";
+		    		return -3;
+		   		}
+	   	}
 	}
 
 }

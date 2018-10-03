@@ -10,7 +10,7 @@ URBArgs::URBArgs()
     reg("quicproj", "Specifies the QUIC Proj file", ArgumentParsing::STRING, 'q');
     reg("netcdfout", "Specifies the netcdf file to write results to", ArgumentParsing::STRING, 'o');
     reg("demfile", "Specifies the DEM file that should be used for terrain", ArgumentParsing::STRING, 'd');
-    reg("icellout", "Specifies that the iCellFlag values should be output", ArgumentParsing::NONE, 'i');
+    reg("icellout", "Specifies that the iCellFlag values should be output, this also will output cutCellFlags if they exist", ArgumentParsing::NONE, 'i');
     reg("terrainout", "Specifies that the triangle mesh for the terrain should be output", ArgumentParsing::NONE, 't');
     reg("windsolveroff", "Turns off the wind solver and wind output", ArgumentParsing::NONE, 'x');
 }
