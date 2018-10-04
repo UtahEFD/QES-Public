@@ -1,1 +1,0 @@
-/usr/bin/c++     CMakeFiles/SOR.dir/SOR_generated_SOR_Global.cu.o  -o SOR /usr/local/cuda-9.1/lib64/libcudart_static.a -lpthread -ldl /usr/lib/x86_64-linux-gnu/librt.so 

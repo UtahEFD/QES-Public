@@ -1,0 +1,74 @@
+<simulationParameters>
+	<domain> 7 6 5 </domain>
+	<cellSize> 5.0 5.0 5.0 </cellSize> <!-- Meters-->
+	<verticalStretching> 0 </verticalStretching>
+	<totalTimeIncrements> 1 </totalTimeIncrements>
+	<UTCConversion> 0 </UTCConversion>
+	<Epoch> 1510930800 </Epoch>
+	<rooftopFlag> 2 </rooftopFlag>
+	<upwindCavityFlag> 3 </upwindCavityFlag>
+	<streetCanyonFlag> 4 </streetCanyonFlag>
+	<streetIntersectionFlag> 1 </streetIntersectionFlag>
+	<wakeFlag> 3 </wakeFlag>
+	<sidewallFlag> 0 </sidewallFlag>
+	<maxIterations> 500 </maxIterations>
+	<residualReduction> 3 </residualReduction>
+	<useDiffusion> 0 </useDiffusion>
+	<domainRotation> 0 </domainRotation>
+	<UTMX> 0 </UTMX>
+	<UTMY> 0 </UTMY>
+	<UTMZone> 1 </UTMZone>
+	<UTMZoneLetter> 17 </UTMZoneLetter>
+	<quicCDFFlag> 1 </QuicCDFFlag>
+	<explosiveDamageFlag> 0 </ExplosiveDamageFlag>
+	<buildingArrayFlag> 0 </buildingArrayFlag>
+</simulationParameters>
+<metParams>
+	<metInputFlag> 0 </metInputFlag>
+	<maxSizeDataPoints> 1 </maxSizeDataPoints>
+	<siteName> sensor1 </siteName>
+	<fileName> sensor1.inp </fileName>
+	<sensor>
+		<numberofSites> 1 </numberofSites>
+		<!--siteCoords> 1 </siteCoords-->
+		<site_xcoord> 1.0</site_xcoord>
+		<site_ycoord> 1.0</site_ycoord>
+		<boundaryLayerFlag> 1</boundaryLayerFlag>
+		<siteZ0> 0.1</siteZ0>
+		<reciprocal> 0.0</reciprocal>
+		<height> 10.0</height>
+		<speed> 5.0</speed>
+		<direction> 270.0</direction> 
+	</sensor>
+</metParams>
+<fileOptions>
+	<outputFormat> 3 </outputFormat>  
+	<massConservedFlag> 0 </massConservedFlag>
+	<sensorVelocityFlag> 0 </sensorVelocityFlag>
+	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+</fileOptions>
+<buildings>
+	<wallRoughness> 0.1 </wallRoughness>
+	<numBuildings> 1 </numBuildings>
+	<numPolygonNodes> 0 </numPolygonNodes>
+	<rectangularBuilding>
+		<groupID> 1 </groupID>
+		<buildingType> 1 </buildingType>
+		<height> 10.0 </height>
+		<baseHeight> 0 </baseHeight>
+		<xFo> 12.0 </xFo>
+		<yFo> 12.0 </yFo>
+		<length> 12.0 </length>
+		<width> 12.0 </width>
+	</rectangularBuilding>
+	<!--rectangularBuilding>
+		<groupID> 1 </groupID>
+		<buildingType> 1 </buildingType>
+		<height> 20.0 </height>
+		<baseHeight> 0 </baseHeight>
+		<xFo> 50.0 </xFo>
+		<yFo> 50.0 </yFo>
+		<length> 20.0 </length>
+		<width> 20.0 </width>
+	</rectangularBuilding-->
+</buildings>
