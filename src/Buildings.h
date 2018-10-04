@@ -3,7 +3,9 @@
 #include "ParseInterface.h"
 #include "Building.h"
 #include "RectangularBuilding.h"
-
+/*
+ *Placeholder class for parsed buildings info in the xml
+ */
 class Buildings : public ParseInterface
 {
 private:

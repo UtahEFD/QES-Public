@@ -2,6 +2,9 @@
 
 #include "ParseInterface.h"
 
+/*
+ *Placeholder class for parsed building info in the xml
+ */
 class Building : public ParseInterface
 {
 protected:

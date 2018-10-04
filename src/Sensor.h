@@ -2,6 +2,9 @@
 
 #include "ParseInterface.h"
 
+/*
+ *Placeholder class for parsed sensor info in the xml
+ */
 class Sensor : public ParseInterface
 {
 private:

@@ -2,6 +2,9 @@
 
 #include "ParseInterface.h"
 
+/*
+ *Placeholder class for parsed file options in the xml
+ */
 class FileOptions : public ParseInterface
 {
 private:

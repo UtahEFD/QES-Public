@@ -3,6 +3,9 @@
 #include "ParseInterface.h"
 #include "Vector3.h"
 
+/*
+ *Placeholder class for parsed simulation parameters info in the xml
+ */
 class SimulationParameters : public ParseInterface
 {
 private:

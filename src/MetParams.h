@@ -2,7 +2,9 @@
 
 #include "ParseInterface.h"
 #include "Sensor.h"
-
+/*
+ *Placeholder class for parsed met parameters info in the xml
+ */
 class MetParams : public ParseInterface
 {
 private:
