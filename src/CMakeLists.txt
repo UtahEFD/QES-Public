@@ -36,6 +36,29 @@ ELSE (CUDA_FOUND)
   MESSAGE(FATAL_ERROR "CUDA is required for compiling this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories.")
 ENDIF(CUDA_FOUND)
 
+#
+# Find doxygen so we can add a target for building
+#
+FIND_PACKAGE(Doxygen)
+if (DOXYGEN_FOUND)
+
+    # set input and output files
+    SET(DOXYGEN_CONFIG_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/DoxygenConfig.in)
+    SET(DOXYGEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/doc)
+
+    # request to configure the file
+    configure_file(${DOXYGEN_CONFIG_IN} ${DOXYGEN_OUTPUT_DIR} @ONLY)
+
+    # note the option ALL which allows to build the docs together with the application
+    add_custom_target( doc
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUTPUT_DIR}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM )
+else (DOXYGEN_FOUND)
+  message("Doxygen need to be installed to generate the doxygen documentation")
+endif (DOXYGEN_FOUND)
+
 include_directories(${CMAKE_SOURCE_DIR}/util)
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/unitTests)
