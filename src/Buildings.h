@@ -3,13 +3,7 @@
 #include "ParseInterface.h"
 #include "Building.h"
 #include "RectangularBuilding.h"
-<<<<<<< HEAD
 
-=======
-/*
- *Placeholder class for parsed buildings info in the xml
- */
->>>>>>> origin/doxygenAdd
 class Buildings : public ParseInterface
 {
 private:

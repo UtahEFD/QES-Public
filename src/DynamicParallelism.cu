@@ -12,11 +12,7 @@ void DynamicParallelism::_cudaCheck(T e, const char* func, const char* call, con
 }
 
 // Divergence kernel
-<<<<<<< HEAD
 __global__ void divergence(double *d_u0, double *d_v0, double *d_w0, double *d_R, float *d_e, float *d_f, float *d_g, float *d_h, float *d_m, float *d_n, int alpha1, int  nx, int  ny, int nz, float dx,float dy, float dz){
-=======
-__global__ void divergence(double *d_u0, double *d_v0, double *d_w0, double *d_R, int alpha1, int  nx, int  ny, int nz, float dx,float dy, float dz){
->>>>>>> origin/doxygenAdd
 
     int icell_cent = blockDim.x*blockIdx.x+threadIdx.x;
     int k = icell_cent/((nx-1)*(ny-1));
@@ -25,11 +21,7 @@ __global__ void divergence(double *d_u0, double *d_v0, double *d_w0, double *d_R
     int icell_face = i + j*nx + k*nx*ny;
 
     if((i<nx-1)&&(j<ny-1)&&(k<nz-1)){
-<<<<<<< HEAD
         d_R[icell_cent] = (-2*pow(alpha1, 2.0))*(((d_e[icell_cent]*d_u0[icell_face+1]-d_f[icell_cent]*d_u0[icell_face])/dx)+((d_g[icell_cent]*d_v0[icell_face + nx]-d_h[icell_cent]*d_v0[icell_face])/dy)+((d_m[icell_cent]*d_w0[icell_face + nx*ny]-d_n[icell_cent]*d_w0[icell_face])/dy));   // Divergence equation
-=======
-        d_R[icell_cent] = (-2*pow(alpha1, 2.0))*(((d_u0[icell_face+1]-d_u0[icell_face])/dx)+((d_v0[icell_face + nx]-d_v0[icell_face])/dy)+((d_w0[icell_face + nx*ny]-d_w0[icell_face])/dy));   // Divergence equation
->>>>>>> origin/doxygenAdd
     }
 }
 
@@ -107,11 +99,7 @@ __global__ void calculateError(double *d_lambda, double *d_lambda_old, int nx, i
  }
 
 // Euler Final Velocity kernel
-<<<<<<< HEAD
 __global__ void finalVelocity(double *d_u0, double *d_v0, double *d_w0, double *d_lambda, double *d_u, double *d_v,double *d_w, int *d_icellflag, float *d_f, float *d_h, float *d_n, int alpha1, int alpha2, float dx, float dy, float dz, int  nx, int  ny, int nz){
-=======
-__global__ void finalVelocity(double *d_u0, double *d_v0, double *d_w0, double *d_lambda, double *d_u, double *d_v,double *d_w, int *d_icellflag, int alpha1, int alpha2, float dx, float dy, float dz, int  nx, int  ny, int nz){
->>>>>>> origin/doxygenAdd
 
     int icell_face = blockDim.x*blockIdx.x+threadIdx.x;
     int k = icell_face/(nx*ny);
@@ -130,15 +118,9 @@ __global__ void finalVelocity(double *d_u0, double *d_v0, double *d_w0, double *
     
     if ((i > 0) && (i < nx-1) && (j > 0) && (j < ny-1) && (k < nz-1) && (k > 0)) {
 
-<<<<<<< HEAD
         d_u[icell_face] = d_u0[icell_face]+(1/(2*pow(alpha1, 2.0)*dx))*d_f[icell_cent]*(d_lambda[icell_cent]-d_lambda[icell_cent-1]);
         d_v[icell_face] = d_v0[icell_face]+(1/(2*pow(alpha1, 2.0)*dy))*d_h[icell_cent]*(d_lambda[icell_cent]-d_lambda[icell_cent - (nx-1)]);
         d_w[icell_face] = d_w0[icell_face]+(1/(2*pow(alpha2, 2.0)*dz))*d_n[icell_cent]*(d_lambda[icell_cent]-d_lambda[icell_cent - (nx-1)*(ny-1)]);
-=======
-        d_u[icell_face] = d_u0[icell_face]+(1/(2*pow(alpha1, 2.0)*dx))*(d_lambda[icell_cent]-d_lambda[icell_cent-1]);
-        d_v[icell_face] = d_v0[icell_face]+(1/(2*pow(alpha1, 2.0)*dy))*(d_lambda[icell_cent]-d_lambda[icell_cent - (nx-1)]);
-        d_w[icell_face] = d_w0[icell_face]+(1/(2*pow(alpha2, 2.0)*dz))*(d_lambda[icell_cent]-d_lambda[icell_cent - (nx-1)*(ny-1)]);
->>>>>>> origin/doxygenAdd
 
     }
 
@@ -161,11 +143,7 @@ __global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, i
     dim3 numberOfThreadsPerBlock(BLOCKSIZE,1,1);
     dim3 numberOfBlocks(ceil(((nx-1)*(ny-1)*(nz-1))/(double) (BLOCKSIZE)),1,1);
     // Invoke divergence kernel
-<<<<<<< HEAD
     divergence<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_u0,d_v0,d_w0,d_R,d_e,d_f,d_g,d_h,d_m,d_n,alpha1,nx,ny,nz,dx,dy,dz);
-=======
-    divergence<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_u0,d_v0,d_w0,d_R,alpha1,nx,ny,nz,dx,dy,dz);
->>>>>>> origin/doxygenAdd
 
     // Iterate untill convergence is reached
     while ( (iter < itermax) && (error > tol)) {
@@ -197,11 +175,7 @@ __global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, i
     printf("error = %2.9f\n", error);
     dim3 numberOfBlocks3(ceil((nx*ny*nz)/(double) (BLOCKSIZE)),1,1);
     // Invoke final velocity (Euler) kernel
-<<<<<<< HEAD
     finalVelocity<<<numberOfBlocks3,numberOfThreadsPerBlock>>>(d_u0,d_v0,d_w0,d_lambda,d_u,d_v,d_w,d_icellflag,d_f,d_h,d_n,alpha1,alpha2,dx,dy,dz,nx,ny,nz);
-=======
-    finalVelocity<<<numberOfBlocks3,numberOfThreadsPerBlock>>>(d_u0,d_v0,d_w0,d_lambda,d_u,d_v,d_w,d_icellflag,alpha1,alpha2,dx,dy,dz,nx,ny,nz);
->>>>>>> origin/doxygenAdd
 }
 
 
@@ -209,7 +183,6 @@ __global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, i
 void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind) 
 {
     
-<<<<<<< HEAD
 	int numblocks = (numcell_cent/BLOCKSIZE)+1;
     double *value, *bvalue;
     value = new double [numcell_cent];
@@ -220,10 +193,6 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     double *d_u, *d_v, *d_w;  
 	int *d_icellflag;
 /*    nx += 1;        /// +1 for Staggered grid
-=======
-  
-    nx += 1;        /// +1 for Staggered grid
->>>>>>> origin/doxygenAdd
     ny += 1;        /// +1 for Staggered grid
     nz += 2;        /// +2 for staggered grid and ghost cell
 
@@ -236,7 +205,6 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     z = new float [nz];  
 
     // Declare coefficients for SOR solver
-<<<<<<< HEAD
 	std::vector<float> e;
 	std::vector<float> f;
 	std::vector<float> g;
@@ -259,64 +227,6 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     /// Declaration of Lagrange multipliers
     std::vector<double> lambda;
 	std::vector<double> lambda_old;
-=======
- float *e, *f, *g, *h, *m, *n;
-    e = new float [numcell_cent];
-    f = new float [numcell_cent];
-    g = new float [numcell_cent];
-    h = new float [numcell_cent];
-    m = new float [numcell_cent];
-    n = new float [numcell_cent];
-
-    float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;
-    cudaMalloc((void **) &d_e, numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_f, numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_g, numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_h, numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_m, numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_n, numcell_cent * sizeof(float));
-
-    /// Declaration of initial wind components (u0,v0,w0)
-    double *u0, *v0, *w0;
-    u0 = new double [numface_cent];
-    v0 = new double [numface_cent];
-    w0 = new double [numface_cent];
-    
-    
-    double *R, *d_R;              //!> Divergence of initial velocity field
-    R = new double [numcell_cent];
-    cudaMalloc((void **) &d_R, numcell_cent * sizeof(double));    
-
-    /// Declaration of final velocity field components (u,v,w)
-    double *u, *v, *w;
-    u = new double [numface_cent];
-    v = new double [numface_cent];
-    w = new double [numface_cent];
-
-    // Declare Lagrange multipliers
-    /// Declaration of Lagrange multipliers
-    double *lambda, *lambda_old, *d_lambda, *d_lambda_old;
-    lambda = new double [numcell_cent];
-    lambda_old = new double [numcell_cent];
-    cudaMalloc((void **) &d_lambda, numcell_cent * sizeof(double));
-    cudaMalloc((void **) &d_lambda_old, numcell_cent * sizeof(double));
-
-    int numblocks = (numcell_cent/BLOCKSIZE)+1;
-    double *value, *bvalue;
-    value = new double [numcell_cent];
-    bvalue = new double [numblocks];    
-    
-    
-    for ( int i = 0; i < nx-1; i++){
-        x[i] = (i+0.5)*dx;         /// Location of face centers in x-dir
-    }
-    for ( int j = 0; j < ny-1; j++){
-        y[j] = (j+0.5)*dy;         /// Location of face centers in y-dir
-    }
-    for ( int k = 0; k < nz-1; k++){
-        z[k] = (k-0.5)*dz;         /// Location of face centers in z-dir
-    }
->>>>>>> origin/doxygenAdd
 
 
     float z0 = 0.1;                 /// Surface roughness
@@ -332,13 +242,8 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     float j_start = std::round(y_start/dy);     /// Index of building start location in y-direction
     float j_end = std::round((y_start+20.0)/dy);   /// Index of building end location in y-direction 
     float k_end = std::round(20.0/dz);             /// Index of building end location in z-direction
-<<<<<<< HEAD
     int *d_icellflag;
     std::vector<double> icellflag;       /// Cell index flag (0 = building, 1 = fluid)
-=======
-    int *icellflag, *d_icellflag;
-    icellflag = new int [numcell_cent];       /// Cell index flag (0 = building, 1 = fluid)
->>>>>>> origin/doxygenAdd
 
     std::cout << "i_start:" << i_start << "\n";   // Print the number of iterations
     std::cout << "i_end:" << i_end << "\n";       // Print the number of iterations
@@ -351,7 +256,6 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
             for (int i = 0; i < nx-1; i++){
 
                 int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);            /// Lineralized index for cell centered values
-<<<<<<< HEAD
 				e.push_back(1.0);
 				f.push_back(1.0);	
 				g.push_back(1.0);
@@ -365,11 +269,6 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
                // e[icell_cent] = f[icell_cent] = g[icell_cent] = h[icell_cent] = m[icell_cent] = n[icell_cent] = 1.0;  /// Assign initial values to the coefficients for SOR solver
                 //icellflag[icell_cent] = 1;                                  /// Initialize all cells to fluid   
                 //lambda[icell_cent] = lambda_old[icell_cent] = 0.0;
-=======
-                e[icell_cent] = f[icell_cent] = g[icell_cent] = h[icell_cent] = m[icell_cent] = n[icell_cent] = 1.0;  /// Assign initial values to the coefficients for SOR solver
-                icellflag[icell_cent] = 1;                                  /// Initialize all cells to fluid   
-                lambda[icell_cent] = lambda_old[icell_cent] = 0.0;
->>>>>>> origin/doxygenAdd
             }
         }    
     }   
@@ -380,7 +279,6 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
                 
                 int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values                                
                 /// Define logarithmic wind profile
-<<<<<<< HEAD
 				u0.push_back( U_ref*(log((z[k]+z0)/z0)/log((z_ref+z0)/z0)));
                 //u0[icell_face] = U_ref*(log((z[k]+z0)/z0)/log((z_ref+z0)/z0));
 				v0.push_back(0.0);
@@ -420,31 +318,6 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     {
         ((RectangularBuilding*)buildings[i])->setBoundaries(dx, dy, dz, nx, ny, nz, zm, e.data(), f.data(), g.data(), h.data(), m.data(), n.data(), icellflag.data());    /// located in RectangularBuilding.h
         //((RectangularBuilding*)buildings[i])->setCells(nx, ny, nz, icellflag, iBuildFlag, i);
-=======
-                u0[icell_face] = U_ref*(log((z[k]+z0)/z0)/log((z_ref+z0)/z0));
-                v0[icell_face] = w0 [icell_face] = 0.0;         /// Perpendicular wind direction
-
-            }
-        }
-    }
-
-    for (int k = 0; k < k_end+1; k++){
-        for (int j = j_start; j < j_end; j++){
-            for (int i = i_start; i < i_end; i++){
-
-                int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-                icellflag[icell_cent] = 0;                         /// Set cell index flag to building
-
-            }
-        }
-    }
-
-    for (int j = 0; j < ny-1; j++){
-        for (int i = 0; i < nx-1; i++){
-            int icell_cent = i + j*(nx-1);   /// Lineralized index for cell centered values
-            icellflag[icell_cent] = 0.0;
-        }
->>>>>>> origin/doxygenAdd
     }
 
    
@@ -468,7 +341,6 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
 
     auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time
 
-<<<<<<< HEAD
     cudaMalloc((void **) &d_e, numcell_cent * sizeof(float));
     cudaMalloc((void **) &d_f, numcell_cent * sizeof(float));
     cudaMalloc((void **) &d_g, numcell_cent * sizeof(float));
@@ -491,57 +363,6 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     cudaMalloc((void **) &d_v,numface_cent*sizeof(double));
     cudaMalloc((void **) &d_w,numface_cent*sizeof(double));
 
-=======
-    cudaMalloc((void **) &d_icellflag, numcell_cent * sizeof(int));
-    cudaMemcpy(d_icellflag,icellflag,numcell_cent*sizeof(int),cudaMemcpyHostToDevice);
-    // Allocate GPU memory
-    double *d_u0, *d_v0, *d_w0;
-    cudaMalloc((void **) &d_u0,numface_cent*sizeof(double));
-    cudaMalloc((void **) &d_v0,numface_cent*sizeof(double));
-    cudaMalloc((void **) &d_w0,numface_cent*sizeof(double));
-    // Initialize GPU input/output
-    cudaMemcpy(d_u0,u0,numface_cent*sizeof(double),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_v0,v0,numface_cent*sizeof(double),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_w0,w0,numface_cent*sizeof(double),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_R,R,numcell_cent*sizeof(double),cudaMemcpyHostToDevice);
-
-    /// Boundary condition for building edges
-    for (int k = 1; k < nz-2; k++){
-        for (int j = 1; j < ny-2; j++){
-            for (int i = 1; i < nx-2; i++){
-                int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-                if (icellflag[icell_cent] != 0) {
-                    
-                    /// Wall bellow
-                    if (icellflag[icell_cent-(nx-1)*(ny-1)]==0) {
-                        n[icell_cent] = 0.0; 
-
-                    }
-                    /// Wall above
-                    if (icellflag[icell_cent+(nx-1)*(ny-1)]==0) {
-                        m[icell_cent] = 0.0;
-                    }
-                    /// Wall in back
-                    if (icellflag[icell_cent-1]==0){
-                        f[icell_cent] = 0.0; 
-                    }
-                    /// Wall in front
-                    if (icellflag[icell_cent+1]==0){
-                        e[icell_cent] = 0.0; 
-                    }
-                    /// Wall on right
-                    if (icellflag[icell_cent-(nx-1)]==0){
-                        h[icell_cent] = 0.0;
-                    }
-                    /// Wall on left
-                    if (icellflag[icell_cent+(nx-1)]==0){
-                        g[icell_cent] = 0.0; 
-                    }
-                }
-            }
-        }
-    }
->>>>>>> origin/doxygenAdd
 
     /// New boundary condition implementation
     for (int k = 1; k < nz-1; k++){
@@ -558,7 +379,6 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
         }
     }
     
-<<<<<<< HEAD
 
     cudaMemcpy(d_icellflag,icellflag.data(),numcell_cent*sizeof(int),cudaMemcpyHostToDevice);
     cudaMemcpy(d_u0,u0.data(),numface_cent*sizeof(double),cudaMemcpyHostToDevice);
@@ -580,57 +400,20 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     cudaMemcpy(d_lambda_old , lambda_old.data() , numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);    
 
 
-=======
-    double *d_value,*d_bvalue;
-    float *d_x,*d_y,*d_z;
-    cudaMalloc((void **) &d_value,numcell_cent*sizeof(double));
-    cudaMalloc((void **) &d_bvalue,numblocks*sizeof(double));
-    cudaMalloc((void **) &d_x,nx*sizeof(float));
-    cudaMalloc((void **) &d_y,ny*sizeof(float));
-    cudaMalloc((void **) &d_z,nz*sizeof(float));
-    cudaMemcpy(d_value , value , numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_bvalue , bvalue , numblocks * sizeof(double) , cudaMemcpyHostToDevice);      
-    cudaMemcpy(d_e , e , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_f , f , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_g , g , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_h , h , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_m , m , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_n , n , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_x , x , nx * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_y , y , ny * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_z , z , nz * sizeof(float) , cudaMemcpyHostToDevice);
-    
-    double *d_u, *d_v, *d_w;
-    cudaMalloc((void **) &d_u,numface_cent*sizeof(double));
-    cudaMalloc((void **) &d_v,numface_cent*sizeof(double));
-    cudaMalloc((void **) &d_w,numface_cent*sizeof(double));
->>>>>>> origin/doxygenAdd
 
     /////////////////////////////////////////////////
     //                 SOR solver              //////
     /////////////////////////////////////////////////
     
-<<<<<<< HEAD
 
-=======
-    cudaMemcpy(d_lambda , lambda , numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_lambda_old , lambda_old , numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
->>>>>>> origin/doxygenAdd
     // Invoke the main (mother) kernel
     SOR_iteration<<<1,1>>>(d_lambda,d_lambda_old, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m, d_n, d_R,itermax,tol,d_value,d_bvalue,d_u0,d_v0,d_w0,alpha1,alpha2,dy,dz,d_u,d_v,d_w,d_icellflag);
     cudaCheck(cudaGetLastError()); 
     
-<<<<<<< HEAD
     cudaMemcpy (lambda.data() , d_lambda , numcell_cent * sizeof(double) , cudaMemcpyDeviceToHost);
     cudaMemcpy(u.data(),d_u,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
     cudaMemcpy(v.data(),d_v,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
     cudaMemcpy(w.data(),d_w,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
-=======
-    cudaMemcpy (lambda , d_lambda , numcell_cent * sizeof(double) , cudaMemcpyDeviceToHost);
-    cudaMemcpy(u,d_u,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
-    cudaMemcpy(v,d_v,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
-    cudaMemcpy(w,d_w,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
->>>>>>> origin/doxygenAdd
 
     cudaFree (d_lambda);
     cudaFree (d_e);
@@ -722,11 +505,7 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     }
     outdata1.close();
 
-<<<<<<< HEAD
     netcdfDat->getData(x.data(),y.data(),z.data(),u,v,w,nx,ny,nz);
-=======
-    netcdfDat->getData(x,y,z,u,v,w,nx,ny,nz);
->>>>>>> origin/doxygenAdd
 
     // Write data to file
     ofstream outdata;

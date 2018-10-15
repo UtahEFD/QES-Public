@@ -2,12 +2,6 @@
 
 #include "ParseInterface.h"
 
-<<<<<<< HEAD
-=======
-/*
- *Placeholder class for parsed file options in the xml
- */
->>>>>>> origin/doxygenAdd
 class FileOptions : public ParseInterface
 {
 private:

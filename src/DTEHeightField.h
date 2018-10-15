@@ -14,20 +14,10 @@
 #include <iomanip>
 #include <fstream>
 #include <cmath>
-<<<<<<< HEAD
-=======
-#include <chrono>
->>>>>>> origin/doxygenAdd
 
 class DTEHeightField
 {
 public:
-<<<<<<< HEAD
-=======
-
-  friend class test_DTEHeightField;
-
->>>>>>> origin/doxygenAdd
   DTEHeightField();
   DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN);
   ~DTEHeightField();
@@ -73,26 +63,6 @@ public:
   std::vector<int> setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy, float dz);
 
 private:
-<<<<<<< HEAD
-=======
-
-  /*
-   * This function is given the height of the DEM file at each of it's corners and uses
-   * them to calculate at what points cells are intersected by the quad the corners form.
-   * the cells are then updated to reflect the cut.
-   * @param cells -The list of cells to be initialized
-   * @param i -The current x dimension index of the cell
-   * @param i -The current y dimension index of the cell
-   * @param nx -X dimension in the domain
-   * @param ny -Y dimension in the domain
-   * @param nz -Z dimension in the domain
-   * @param dz -size of a cell in the Z axis
-   * @param corners -an array containing the points that representing the DEM elevation at each of the cells corners
-   * @param cutCells -a list of all cells which the terrain goes through
-   */
-  void setCellPoints(Cell* cells, int i, int j, int nx, int ny, int nz, float dz, Vector3<float> corners[], std::vector<int>& cutCells);
-
->>>>>>> origin/doxygenAdd
   void load();
 
   void printProgress (float percentage);
