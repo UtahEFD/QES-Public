@@ -4,9 +4,12 @@
 #include "Solver.h"
 #include "NetCDFData.h"
 #include "DTEHeightField.h"
+<<<<<<< HEAD
 #include "RectangularBuilding.h"
 #include "Sensor.h"
 #include "inputWindProfile.h"
+=======
+>>>>>>> origin/doxygenAdd
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -29,8 +32,15 @@ public:
 		{
 
 		}
+<<<<<<< HEAD
     
 
 	virtual void solve(NetCDFData* netcdfDat, bool solveWind);
 
 };
+=======
+
+	virtual void solve(NetCDFData* netcdfDat, bool solveWind);
+
+};
+>>>>>>> origin/doxygenAdd

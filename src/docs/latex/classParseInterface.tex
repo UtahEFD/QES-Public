@@ -1,0 +1,626 @@
+\hypertarget{classParseInterface}{}\section{Parse\+Interface Class Reference}
+\label{classParseInterface}\index{Parse\+Interface@{Parse\+Interface}}
+
+
+{\ttfamily \#include $<$Parse\+Interface.\+h$>$}
+
+
+
+Inheritance diagram for Parse\+Interface\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classParseInterface__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Parse\+Interface\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=174pt]{classParseInterface__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classParseInterface_a86b7469a47ed83434a55ca1974a7287e}{parse\+Primitive} (bool is\+Req, T \&val, const std\+::string tag)
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classParseInterface_a0d16b9baf79eb34c63914159798dc1eb}{parse\+Multi\+Primitives} (bool is\+Req, std\+::vector$<$ T $>$ \&vals, const std\+::string tag)
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classParseInterface_a289c74beb3acea103f9864f2225bce00}{parse\+Element} (bool is\+Req, T $\ast$\&ele, const std\+::string tag)
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classParseInterface_aca9ff3a3139e6939cb7b0c8612d4a609}{parse\+Multi\+Elements} (bool is\+Req, std\+::vector$<$ T $\ast$$>$ \&eles, const std\+::string tag)
+\item 
+{\footnotesize template$<$typename T , typename X , typename... A\+R\+GS$>$ }\\void \hyperlink{classParseInterface_af24b31d7ffc3029b8a7a67f986ab414f}{parse\+Polymorph} (bool is\+Req, T $\ast$\&ele, \hyperlink{classX}{X} poly, A\+R\+G\+S... args)
+\item 
+{\footnotesize template$<$typename T , typename X $>$ }\\void \hyperlink{classParseInterface_a3eddda17bca991a068b171fb6949bce8}{parse\+Polymorph} (bool is\+Req, T $\ast$\&ele, \hyperlink{classX}{X} poly)
+\item 
+{\footnotesize template$<$typename T , typename X , typename... A\+R\+GS$>$ }\\void \hyperlink{classParseInterface_ab742098ba7badf016388bd10b32fb1ee}{parse\+Multi\+Polymorphs} (bool is\+Req, std\+::vector$<$ T $\ast$$>$ \&eles, \hyperlink{classX}{X} poly, A\+R\+G\+S... args)
+\item 
+{\footnotesize template$<$typename T , typename X $>$ }\\void \hyperlink{classParseInterface_a3d1afd8bdd00110808e3c42320556544}{parse\+Multi\+Polymorphs} (bool is\+Req, std\+::vector$<$ T $\ast$$>$ \&eles, \hyperlink{classX}{X} poly)
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classParseInterface_a60c8afbe5369965c8855491bb3f75668}{parse\+Tagless\+Values} (std\+::vector$<$ T $>$ \&eles)
+\item 
+virtual void \hyperlink{classParseInterface_afca32108192ba0997c9e5a78189b0cbc}{parse\+Values} ()=0
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classParseInterface_a2ba3a44090e2bebeb485457ea4c743a8}{parse\+Primative} (bool is\+Req, T \&val, const std\+::string tag)
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classParseInterface_ab6ffc29634def5ea16a7a30998cc15f8}{parse\+Multi\+Primatives} (bool is\+Req, std\+::vector$<$ T $>$ \&vals, const std\+::string tag)
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classParseInterface_a289c74beb3acea103f9864f2225bce00}{parse\+Element} (bool is\+Req, T $\ast$\&ele, const std\+::string tag)
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classParseInterface_aca9ff3a3139e6939cb7b0c8612d4a609}{parse\+Multi\+Elements} (bool is\+Req, std\+::vector$<$ T $\ast$$>$ \&eles, const std\+::string tag)
+\item 
+{\footnotesize template$<$typename T , typename X , typename... A\+R\+GS$>$ }\\void \hyperlink{classParseInterface_af24b31d7ffc3029b8a7a67f986ab414f}{parse\+Polymorph} (bool is\+Req, T $\ast$\&ele, \hyperlink{classX}{X} poly, A\+R\+G\+S... args)
+\item 
+{\footnotesize template$<$typename T , typename X $>$ }\\void \hyperlink{classParseInterface_a3eddda17bca991a068b171fb6949bce8}{parse\+Polymorph} (bool is\+Req, T $\ast$\&ele, \hyperlink{classX}{X} poly)
+\item 
+{\footnotesize template$<$typename T , typename X , typename... A\+R\+GS$>$ }\\void \hyperlink{classParseInterface_ab742098ba7badf016388bd10b32fb1ee}{parse\+Multi\+Polymorphs} (bool is\+Req, std\+::vector$<$ T $\ast$$>$ \&eles, \hyperlink{classX}{X} poly, A\+R\+G\+S... args)
+\item 
+{\footnotesize template$<$typename T , typename X $>$ }\\void \hyperlink{classParseInterface_a3d1afd8bdd00110808e3c42320556544}{parse\+Multi\+Polymorphs} (bool is\+Req, std\+::vector$<$ T $\ast$$>$ \&eles, \hyperlink{classX}{X} poly)
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classParseInterface_a60c8afbe5369965c8855491bb3f75668}{parse\+Tagless\+Values} (std\+::vector$<$ T $>$ \&eles)
+\item 
+virtual void \hyperlink{classParseInterface_afca32108192ba0997c9e5a78189b0cbc}{parse\+Values} ()=0
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classParseInterface_a2ba3a44090e2bebeb485457ea4c743a8}{parse\+Primative} (bool is\+Req, T \&val, const std\+::string tag)
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classParseInterface_ab6ffc29634def5ea16a7a30998cc15f8}{parse\+Multi\+Primatives} (bool is\+Req, std\+::vector$<$ T $>$ \&vals, const std\+::string tag)
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classParseInterface_a289c74beb3acea103f9864f2225bce00}{parse\+Element} (bool is\+Req, T $\ast$\&ele, const std\+::string tag)
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classParseInterface_aca9ff3a3139e6939cb7b0c8612d4a609}{parse\+Multi\+Elements} (bool is\+Req, std\+::vector$<$ T $\ast$$>$ \&eles, const std\+::string tag)
+\item 
+{\footnotesize template$<$typename T , typename X , typename... A\+R\+GS$>$ }\\void \hyperlink{classParseInterface_af24b31d7ffc3029b8a7a67f986ab414f}{parse\+Polymorph} (bool is\+Req, T $\ast$\&ele, \hyperlink{classX}{X} poly, A\+R\+G\+S... args)
+\item 
+{\footnotesize template$<$typename T , typename X $>$ }\\void \hyperlink{classParseInterface_a3eddda17bca991a068b171fb6949bce8}{parse\+Polymorph} (bool is\+Req, T $\ast$\&ele, \hyperlink{classX}{X} poly)
+\item 
+{\footnotesize template$<$typename T , typename X , typename... A\+R\+GS$>$ }\\void \hyperlink{classParseInterface_ab742098ba7badf016388bd10b32fb1ee}{parse\+Multi\+Polymorphs} (bool is\+Req, std\+::vector$<$ T $\ast$$>$ \&eles, \hyperlink{classX}{X} poly, A\+R\+G\+S... args)
+\item 
+{\footnotesize template$<$typename T , typename X $>$ }\\void \hyperlink{classParseInterface_a3d1afd8bdd00110808e3c42320556544}{parse\+Multi\+Polymorphs} (bool is\+Req, std\+::vector$<$ T $\ast$$>$ \&eles, \hyperlink{classX}{X} poly)
+\item 
+{\footnotesize template$<$typename T $>$ }\\void \hyperlink{classParseInterface_a60c8afbe5369965c8855491bb3f75668}{parse\+Tagless\+Values} (std\+::vector$<$ T $>$ \&eles)
+\item 
+virtual void \hyperlink{classParseInterface_afca32108192ba0997c9e5a78189b0cbc}{parse\+Values} ()=0
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static void \hyperlink{classParseInterface_a47a3d184a3746c20169383e867e85d3a}{parse\+Tree} (pt\+::ptree t, \hyperlink{classURBInputData}{U\+R\+B\+Input\+Data} $\ast$\&U\+ID)
+\item 
+static void \hyperlink{classParseInterface_a40785f4b5636c69df24784ba151716ac}{parse\+Tree} (pt\+::ptree t, \hyperlink{classRoot}{Root} $\ast$\&root)
+\item 
+static void \hyperlink{classParseInterface_a90a82d1495a227ed4fa757935c2843a8}{parse\+Tree} (pt\+::ptree t, \hyperlink{classRoot}{Root} $\ast$\&root)
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{classParseInterface_af983d932c4a708ffeba59fe71b46c2dc}{set\+Tree} (pt\+::ptree t)
+\item 
+void \hyperlink{classParseInterface_a000ce4b52a192d2a7d0bfeaeb38fc358}{set\+Parents} (std\+::string s)
+\item 
+void \hyperlink{classParseInterface_af983d932c4a708ffeba59fe71b46c2dc}{set\+Tree} (pt\+::ptree t)
+\item 
+void \hyperlink{classParseInterface_a000ce4b52a192d2a7d0bfeaeb38fc358}{set\+Parents} (std\+::string s)
+\item 
+void \hyperlink{classParseInterface_af983d932c4a708ffeba59fe71b46c2dc}{set\+Tree} (pt\+::ptree t)
+\item 
+void \hyperlink{classParseInterface_a000ce4b52a192d2a7d0bfeaeb38fc358}{set\+Parents} (std\+::string s)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classParseInterface_a0da456d91cbfd2fdc59c67b525b1b578}\label{classParseInterface_a0da456d91cbfd2fdc59c67b525b1b578}} 
+pt\+::ptree {\bfseries tree}
+\item 
+\mbox{\Hypertarget{classParseInterface_a67d43a4cf288733ceec9478ab7c55193}\label{classParseInterface_a67d43a4cf288733ceec9478ab7c55193}} 
+std\+::string {\bfseries tree\+Parents}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This class is a generic object from which all classes that can be parsed from an X\+ML file will inherit from. This class contains methods to simplify the parsing process and obscure the complecations of the boost library. 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classParseInterface_a289c74beb3acea103f9864f2225bce00}\label{classParseInterface_a289c74beb3acea103f9864f2225bce00}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Element@{parse\+Element}}
+\index{parse\+Element@{parse\+Element}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Element()}{parseElement()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void Parse\+Interface\+::parse\+Element (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{T $\ast$\&}]{ele,  }\item[{const std\+::string}]{tag }\end{DoxyParamCaption})}
+
+This function parses the current node of the tree and searches for an element with the tag of \char`\"{}tag\char`\"{}. Once it is found, that element will be parsed and the completed element will be returned. this is a template function, so the type of the value that is taken in and found are flexible. If the value is unable to be found, \char`\"{}val\char`\"{} will not be updated. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em ele} & the element that is being parsed and updated \\
+\hline
+{\em tag} & the tagline in the xml of the element we are searching for \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_a289c74beb3acea103f9864f2225bce00}\label{classParseInterface_a289c74beb3acea103f9864f2225bce00}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Element@{parse\+Element}}
+\index{parse\+Element@{parse\+Element}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Element()}{parseElement()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void Parse\+Interface\+::parse\+Element (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{T $\ast$\&}]{ele,  }\item[{const std\+::string}]{tag }\end{DoxyParamCaption})}
+
+This function parses the current node of the tree and searches for an element with the tag of \char`\"{}tag\char`\"{}. Once it is found, that element will be parsed and the completed element will be returned. this is a template function, so the type of the value that is taken in and found are flexible. If the value is unable to be found, \char`\"{}val\char`\"{} will not be updated. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em ele} & the element that is being parsed and updated \\
+\hline
+{\em tag} & the tagline in the xml of the element we are searching for \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_a289c74beb3acea103f9864f2225bce00}\label{classParseInterface_a289c74beb3acea103f9864f2225bce00}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Element@{parse\+Element}}
+\index{parse\+Element@{parse\+Element}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Element()}{parseElement()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void Parse\+Interface\+::parse\+Element (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{T $\ast$\&}]{ele,  }\item[{const std\+::string}]{tag }\end{DoxyParamCaption})}
+
+This function parses the current node of the tree and searches for an element with the tag of \char`\"{}tag\char`\"{}. Once it is found, that element will be parsed and the completed element will be returned. this is a template function, so the type of the value that is taken in and found are flexible. If the value is unable to be found, \char`\"{}val\char`\"{} will not be updated. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em ele} & the element that is being parsed and updated \\
+\hline
+{\em tag} & the tagline in the xml of the element we are searching for \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_aca9ff3a3139e6939cb7b0c8612d4a609}\label{classParseInterface_aca9ff3a3139e6939cb7b0c8612d4a609}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Multi\+Elements@{parse\+Multi\+Elements}}
+\index{parse\+Multi\+Elements@{parse\+Multi\+Elements}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Multi\+Elements()}{parseMultiElements()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void Parse\+Interface\+::parse\+Multi\+Elements (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{std\+::vector$<$ T $\ast$$>$ \&}]{eles,  }\item[{const std\+::string}]{tag }\end{DoxyParamCaption})}
+
+This function parses the current node of the tree and searches for all elements with the tag of \char`\"{}tag\char`\"{}. Once it is found, that element will be parsed and the completed element will be returned. this is a template function, so the type of the value that is taken in and found are flexible. This will return all instances of a certain tag, this means it can have 0..$\ast$ elements. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em eles} & the vector to be filled with found elements \\
+\hline
+{\em tag} & the tagline in the xml of the elements we are searching for \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_aca9ff3a3139e6939cb7b0c8612d4a609}\label{classParseInterface_aca9ff3a3139e6939cb7b0c8612d4a609}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Multi\+Elements@{parse\+Multi\+Elements}}
+\index{parse\+Multi\+Elements@{parse\+Multi\+Elements}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Multi\+Elements()}{parseMultiElements()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void Parse\+Interface\+::parse\+Multi\+Elements (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{std\+::vector$<$ T $\ast$$>$ \&}]{eles,  }\item[{const std\+::string}]{tag }\end{DoxyParamCaption})}
+
+This function parses the current node of the tree and searches for all elements with the tag of \char`\"{}tag\char`\"{}. Once it is found, that element will be parsed and the completed element will be returned. this is a template function, so the type of the value that is taken in and found are flexible. This will return all instances of a certain tag, this means it can have 0..$\ast$ elements. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em eles} & the vector to be filled with found elements \\
+\hline
+{\em tag} & the tagline in the xml of the elements we are searching for \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_aca9ff3a3139e6939cb7b0c8612d4a609}\label{classParseInterface_aca9ff3a3139e6939cb7b0c8612d4a609}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Multi\+Elements@{parse\+Multi\+Elements}}
+\index{parse\+Multi\+Elements@{parse\+Multi\+Elements}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Multi\+Elements()}{parseMultiElements()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void Parse\+Interface\+::parse\+Multi\+Elements (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{std\+::vector$<$ T $\ast$$>$ \&}]{eles,  }\item[{const std\+::string}]{tag }\end{DoxyParamCaption})}
+
+This function parses the current node of the tree and searches for all elements with the tag of \char`\"{}tag\char`\"{}. Once it is found, that element will be parsed and the completed element will be returned. this is a template function, so the type of the value that is taken in and found are flexible. This will return all instances of a certain tag, this means it can have 0..$\ast$ elements. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em eles} & the vector to be filled with found elements \\
+\hline
+{\em tag} & the tagline in the xml of the elements we are searching for \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_ab742098ba7badf016388bd10b32fb1ee}\label{classParseInterface_ab742098ba7badf016388bd10b32fb1ee}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Multi\+Polymorphs@{parse\+Multi\+Polymorphs}}
+\index{parse\+Multi\+Polymorphs@{parse\+Multi\+Polymorphs}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Multi\+Polymorphs()}{parseMultiPolymorphs()}\hspace{0.1cm}{\footnotesize\ttfamily [1/6]}}
+{\footnotesize\ttfamily template$<$typename T , typename X , typename... A\+R\+GS$>$ \\
+void Parse\+Interface\+::parse\+Multi\+Polymorphs (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{std\+::vector$<$ T $\ast$$>$ \&}]{eles,  }\item[{\hyperlink{classX}{X}}]{poly,  }\item[{A\+R\+G\+S...}]{args }\end{DoxyParamCaption})}
+
+Recursive This function takes in a vector of elements and a list of polymorphs. This function will check the current ptree for all of the provided polymorphs. All instances of the polymorphs in the current tree are created through parsing and then added to the vector. This function is a variadic template, which means it can take in any number of objects each with their own type. However, this code is expecting each type to be a variation of a polymorph and as so, this calls functions and uses variables specific to the polymorph structure. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em eles} & a list of elements that will be updated \\
+\hline
+{\em poly} & the current polymorph we are looking for in the xml \\
+\hline
+{\em A\+R\+GS} & subsequent polymorphs to check in case the current is not found \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_ab742098ba7badf016388bd10b32fb1ee}\label{classParseInterface_ab742098ba7badf016388bd10b32fb1ee}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Multi\+Polymorphs@{parse\+Multi\+Polymorphs}}
+\index{parse\+Multi\+Polymorphs@{parse\+Multi\+Polymorphs}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Multi\+Polymorphs()}{parseMultiPolymorphs()}\hspace{0.1cm}{\footnotesize\ttfamily [2/6]}}
+{\footnotesize\ttfamily template$<$typename T , typename X , typename... A\+R\+GS$>$ \\
+void Parse\+Interface\+::parse\+Multi\+Polymorphs (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{std\+::vector$<$ T $\ast$$>$ \&}]{eles,  }\item[{\hyperlink{classX}{X}}]{poly,  }\item[{A\+R\+G\+S...}]{args }\end{DoxyParamCaption})}
+
+Recursive This function takes in a vector of elements and a list of polymorphs. This function will check the current ptree for all of the provided polymorphs. All instances of the polymorphs in the current tree are created through parsing and then added to the vector. This function is a variadic template, which means it can take in any number of objects each with their own type. However, this code is expecting each type to be a variation of a polymorph and as so, this calls functions and uses variables specific to the polymorph structure. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em eles} & a list of elements that will be updated \\
+\hline
+{\em poly} & the current polymorph we are looking for in the xml \\
+\hline
+{\em A\+R\+GS} & subsequent polymorphs to check in case the current is not found \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_ab742098ba7badf016388bd10b32fb1ee}\label{classParseInterface_ab742098ba7badf016388bd10b32fb1ee}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Multi\+Polymorphs@{parse\+Multi\+Polymorphs}}
+\index{parse\+Multi\+Polymorphs@{parse\+Multi\+Polymorphs}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Multi\+Polymorphs()}{parseMultiPolymorphs()}\hspace{0.1cm}{\footnotesize\ttfamily [3/6]}}
+{\footnotesize\ttfamily template$<$typename T , typename X , typename... A\+R\+GS$>$ \\
+void Parse\+Interface\+::parse\+Multi\+Polymorphs (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{std\+::vector$<$ T $\ast$$>$ \&}]{eles,  }\item[{\hyperlink{classX}{X}}]{poly,  }\item[{A\+R\+G\+S...}]{args }\end{DoxyParamCaption})}
+
+Recursive This function takes in a vector of elements and a list of polymorphs. This function will check the current ptree for all of the provided polymorphs. All instances of the polymorphs in the current tree are created through parsing and then added to the vector. This function is a variadic template, which means it can take in any number of objects each with their own type. However, this code is expecting each type to be a variation of a polymorph and as so, this calls functions and uses variables specific to the polymorph structure. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em eles} & a list of elements that will be updated \\
+\hline
+{\em poly} & the current polymorph we are looking for in the xml \\
+\hline
+{\em A\+R\+GS} & subsequent polymorphs to check in case the current is not found \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_a3d1afd8bdd00110808e3c42320556544}\label{classParseInterface_a3d1afd8bdd00110808e3c42320556544}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Multi\+Polymorphs@{parse\+Multi\+Polymorphs}}
+\index{parse\+Multi\+Polymorphs@{parse\+Multi\+Polymorphs}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Multi\+Polymorphs()}{parseMultiPolymorphs()}\hspace{0.1cm}{\footnotesize\ttfamily [4/6]}}
+{\footnotesize\ttfamily template$<$typename T , typename X $>$ \\
+void Parse\+Interface\+::parse\+Multi\+Polymorphs (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{std\+::vector$<$ T $\ast$$>$ \&}]{eles,  }\item[{\hyperlink{classX}{X}}]{poly }\end{DoxyParamCaption})}
+
+\hyperlink{classA}{A} base case for the recursive version of this function \mbox{\Hypertarget{classParseInterface_a3d1afd8bdd00110808e3c42320556544}\label{classParseInterface_a3d1afd8bdd00110808e3c42320556544}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Multi\+Polymorphs@{parse\+Multi\+Polymorphs}}
+\index{parse\+Multi\+Polymorphs@{parse\+Multi\+Polymorphs}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Multi\+Polymorphs()}{parseMultiPolymorphs()}\hspace{0.1cm}{\footnotesize\ttfamily [5/6]}}
+{\footnotesize\ttfamily template$<$typename T , typename X $>$ \\
+void Parse\+Interface\+::parse\+Multi\+Polymorphs (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{std\+::vector$<$ T $\ast$$>$ \&}]{eles,  }\item[{\hyperlink{classX}{X}}]{poly }\end{DoxyParamCaption})}
+
+\hyperlink{classA}{A} base case for the recursive version of this function \mbox{\Hypertarget{classParseInterface_a3d1afd8bdd00110808e3c42320556544}\label{classParseInterface_a3d1afd8bdd00110808e3c42320556544}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Multi\+Polymorphs@{parse\+Multi\+Polymorphs}}
+\index{parse\+Multi\+Polymorphs@{parse\+Multi\+Polymorphs}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Multi\+Polymorphs()}{parseMultiPolymorphs()}\hspace{0.1cm}{\footnotesize\ttfamily [6/6]}}
+{\footnotesize\ttfamily template$<$typename T , typename X $>$ \\
+void Parse\+Interface\+::parse\+Multi\+Polymorphs (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{std\+::vector$<$ T $\ast$$>$ \&}]{eles,  }\item[{\hyperlink{classX}{X}}]{poly }\end{DoxyParamCaption})}
+
+\hyperlink{classA}{A} base case for the recursive version of this function \mbox{\Hypertarget{classParseInterface_ab6ffc29634def5ea16a7a30998cc15f8}\label{classParseInterface_ab6ffc29634def5ea16a7a30998cc15f8}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Multi\+Primatives@{parse\+Multi\+Primatives}}
+\index{parse\+Multi\+Primatives@{parse\+Multi\+Primatives}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Multi\+Primatives()}{parseMultiPrimatives()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void Parse\+Interface\+::parse\+Multi\+Primatives (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{std\+::vector$<$ T $>$ \&}]{vals,  }\item[{const std\+::string}]{tag }\end{DoxyParamCaption})}
+
+This function parses the current node of the tree and searches for all elements with the tag of \char`\"{}tag\char`\"{}. When one is found, it adds the value to a vector. this is a template function, so the type of the value that is taken in and found are flexible. This will return all instances of a certain tag, this means it can have 0..$\ast$ values. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em vals} & the vector to be filled with found values \\
+\hline
+{\em tag} & the tagline in the xml of the values we are searching for \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_ab6ffc29634def5ea16a7a30998cc15f8}\label{classParseInterface_ab6ffc29634def5ea16a7a30998cc15f8}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Multi\+Primatives@{parse\+Multi\+Primatives}}
+\index{parse\+Multi\+Primatives@{parse\+Multi\+Primatives}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Multi\+Primatives()}{parseMultiPrimatives()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void Parse\+Interface\+::parse\+Multi\+Primatives (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{std\+::vector$<$ T $>$ \&}]{vals,  }\item[{const std\+::string}]{tag }\end{DoxyParamCaption})}
+
+This function parses the current node of the tree and searches for all elements with the tag of \char`\"{}tag\char`\"{}. When one is found, it adds the value to a vector. this is a template function, so the type of the value that is taken in and found are flexible. This will return all instances of a certain tag, this means it can have 0..$\ast$ values. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em vals} & the vector to be filled with found values \\
+\hline
+{\em tag} & the tagline in the xml of the values we are searching for \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_a0d16b9baf79eb34c63914159798dc1eb}\label{classParseInterface_a0d16b9baf79eb34c63914159798dc1eb}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Multi\+Primitives@{parse\+Multi\+Primitives}}
+\index{parse\+Multi\+Primitives@{parse\+Multi\+Primitives}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Multi\+Primitives()}{parseMultiPrimitives()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void Parse\+Interface\+::parse\+Multi\+Primitives (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{std\+::vector$<$ T $>$ \&}]{vals,  }\item[{const std\+::string}]{tag }\end{DoxyParamCaption})}
+
+This function parses the current node of the tree and searches for all elements with the tag of \char`\"{}tag\char`\"{}. When one is found, it adds the value to a vector. this is a template function, so the type of the value that is taken in and found are flexible. This will return all instances of a certain tag, this means it can have 0..$\ast$ values. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em vals} & the vector to be filled with found values \\
+\hline
+{\em tag} & the tagline in the xml of the values we are searching for \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_af24b31d7ffc3029b8a7a67f986ab414f}\label{classParseInterface_af24b31d7ffc3029b8a7a67f986ab414f}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Polymorph@{parse\+Polymorph}}
+\index{parse\+Polymorph@{parse\+Polymorph}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Polymorph()}{parsePolymorph()}\hspace{0.1cm}{\footnotesize\ttfamily [1/6]}}
+{\footnotesize\ttfamily template$<$typename T , typename X , typename... A\+R\+GS$>$ \\
+void Parse\+Interface\+::parse\+Polymorph (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{T $\ast$\&}]{ele,  }\item[{\hyperlink{classX}{X}}]{poly,  }\item[{A\+R\+G\+S...}]{args }\end{DoxyParamCaption})}
+
+Recursive This function takes in an element and a list of polymorphs. This function will check the current ptree for all of the provided polymorphs. Once one of the polymorphs is found, an element of that type is created over ele and it\textquotesingle{}s information is parsed out of the tree. This function is a variadic template, which means it can take in any number of objects each with their own type. However, this code is expecting each type to be a variation of a polymorph and as so, this calls functions and uses variables specific to the polymorph structure. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em ele} & the element that will be updated \\
+\hline
+{\em poly} & the current polymorph we are looking for in the xml \\
+\hline
+{\em A\+R\+GS} & subsequent polymorphs to check in case the current is not found \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_af24b31d7ffc3029b8a7a67f986ab414f}\label{classParseInterface_af24b31d7ffc3029b8a7a67f986ab414f}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Polymorph@{parse\+Polymorph}}
+\index{parse\+Polymorph@{parse\+Polymorph}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Polymorph()}{parsePolymorph()}\hspace{0.1cm}{\footnotesize\ttfamily [2/6]}}
+{\footnotesize\ttfamily template$<$typename T , typename X , typename... A\+R\+GS$>$ \\
+void Parse\+Interface\+::parse\+Polymorph (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{T $\ast$\&}]{ele,  }\item[{\hyperlink{classX}{X}}]{poly,  }\item[{A\+R\+G\+S...}]{args }\end{DoxyParamCaption})}
+
+Recursive This function takes in an element and a list of polymorphs. This function will check the current ptree for all of the provided polymorphs. Once one of the polymorphs is found, an element of that type is created over ele and it\textquotesingle{}s information is parsed out of the tree. This function is a variadic template, which means it can take in any number of objects each with their own type. However, this code is expecting each type to be a variation of a polymorph and as so, this calls functions and uses variables specific to the polymorph structure. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em ele} & the element that will be updated \\
+\hline
+{\em poly} & the current polymorph we are looking for in the xml \\
+\hline
+{\em A\+R\+GS} & subsequent polymorphs to check in case the current is not found \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_af24b31d7ffc3029b8a7a67f986ab414f}\label{classParseInterface_af24b31d7ffc3029b8a7a67f986ab414f}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Polymorph@{parse\+Polymorph}}
+\index{parse\+Polymorph@{parse\+Polymorph}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Polymorph()}{parsePolymorph()}\hspace{0.1cm}{\footnotesize\ttfamily [3/6]}}
+{\footnotesize\ttfamily template$<$typename T , typename X , typename... A\+R\+GS$>$ \\
+void Parse\+Interface\+::parse\+Polymorph (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{T $\ast$\&}]{ele,  }\item[{\hyperlink{classX}{X}}]{poly,  }\item[{A\+R\+G\+S...}]{args }\end{DoxyParamCaption})}
+
+Recursive This function takes in an element and a list of polymorphs. This function will check the current ptree for all of the provided polymorphs. Once one of the polymorphs is found, an element of that type is created over ele and it\textquotesingle{}s information is parsed out of the tree. This function is a variadic template, which means it can take in any number of objects each with their own type. However, this code is expecting each type to be a variation of a polymorph and as so, this calls functions and uses variables specific to the polymorph structure. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em ele} & the element that will be updated \\
+\hline
+{\em poly} & the current polymorph we are looking for in the xml \\
+\hline
+{\em A\+R\+GS} & subsequent polymorphs to check in case the current is not found \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_a3eddda17bca991a068b171fb6949bce8}\label{classParseInterface_a3eddda17bca991a068b171fb6949bce8}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Polymorph@{parse\+Polymorph}}
+\index{parse\+Polymorph@{parse\+Polymorph}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Polymorph()}{parsePolymorph()}\hspace{0.1cm}{\footnotesize\ttfamily [4/6]}}
+{\footnotesize\ttfamily template$<$typename T , typename X $>$ \\
+void Parse\+Interface\+::parse\+Polymorph (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{T $\ast$\&}]{ele,  }\item[{\hyperlink{classX}{X}}]{poly }\end{DoxyParamCaption})}
+
+\hyperlink{classA}{A} base case for the recursive version of this function \mbox{\Hypertarget{classParseInterface_a3eddda17bca991a068b171fb6949bce8}\label{classParseInterface_a3eddda17bca991a068b171fb6949bce8}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Polymorph@{parse\+Polymorph}}
+\index{parse\+Polymorph@{parse\+Polymorph}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Polymorph()}{parsePolymorph()}\hspace{0.1cm}{\footnotesize\ttfamily [5/6]}}
+{\footnotesize\ttfamily template$<$typename T , typename X $>$ \\
+void Parse\+Interface\+::parse\+Polymorph (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{T $\ast$\&}]{ele,  }\item[{\hyperlink{classX}{X}}]{poly }\end{DoxyParamCaption})}
+
+\hyperlink{classA}{A} base case for the recursive version of this function \mbox{\Hypertarget{classParseInterface_a3eddda17bca991a068b171fb6949bce8}\label{classParseInterface_a3eddda17bca991a068b171fb6949bce8}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Polymorph@{parse\+Polymorph}}
+\index{parse\+Polymorph@{parse\+Polymorph}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Polymorph()}{parsePolymorph()}\hspace{0.1cm}{\footnotesize\ttfamily [6/6]}}
+{\footnotesize\ttfamily template$<$typename T , typename X $>$ \\
+void Parse\+Interface\+::parse\+Polymorph (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{T $\ast$\&}]{ele,  }\item[{\hyperlink{classX}{X}}]{poly }\end{DoxyParamCaption})}
+
+\hyperlink{classA}{A} base case for the recursive version of this function \mbox{\Hypertarget{classParseInterface_a2ba3a44090e2bebeb485457ea4c743a8}\label{classParseInterface_a2ba3a44090e2bebeb485457ea4c743a8}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Primative@{parse\+Primative}}
+\index{parse\+Primative@{parse\+Primative}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Primative()}{parsePrimative()}\hspace{0.1cm}{\footnotesize\ttfamily [1/2]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void Parse\+Interface\+::parse\+Primative (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{T \&}]{val,  }\item[{const std\+::string}]{tag }\end{DoxyParamCaption})}
+
+This function parses the current node of the tree and searches for an element with the tag of \char`\"{}tag\char`\"{}. Once it is found, it returns the value. this is a template function, so the type of the value that is taken in and found are flexible. If the value is unable to be found, \char`\"{}val\char`\"{} will not be updated. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em val} & the value that is being updated \\
+\hline
+{\em tag} & the tagline in the xml of the value we are searching for \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_a2ba3a44090e2bebeb485457ea4c743a8}\label{classParseInterface_a2ba3a44090e2bebeb485457ea4c743a8}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Primative@{parse\+Primative}}
+\index{parse\+Primative@{parse\+Primative}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Primative()}{parsePrimative()}\hspace{0.1cm}{\footnotesize\ttfamily [2/2]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void Parse\+Interface\+::parse\+Primative (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{T \&}]{val,  }\item[{const std\+::string}]{tag }\end{DoxyParamCaption})}
+
+This function parses the current node of the tree and searches for an element with the tag of \char`\"{}tag\char`\"{}. Once it is found, it returns the value. this is a template function, so the type of the value that is taken in and found are flexible. If the value is unable to be found, \char`\"{}val\char`\"{} will not be updated. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em val} & the value that is being updated \\
+\hline
+{\em tag} & the tagline in the xml of the value we are searching for \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_a86b7469a47ed83434a55ca1974a7287e}\label{classParseInterface_a86b7469a47ed83434a55ca1974a7287e}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Primitive@{parse\+Primitive}}
+\index{parse\+Primitive@{parse\+Primitive}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Primitive()}{parsePrimitive()}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void Parse\+Interface\+::parse\+Primitive (\begin{DoxyParamCaption}\item[{bool}]{is\+Req,  }\item[{T \&}]{val,  }\item[{const std\+::string}]{tag }\end{DoxyParamCaption})}
+
+This function parses the current node of the tree and searches for an element with the tag of \char`\"{}tag\char`\"{}. Once it is found, it returns the value. this is a template function, so the type of the value that is taken in and found are flexible. If the value is unable to be found, \char`\"{}val\char`\"{} will not be updated. If this variable is required and not found, an exception will be thrown. 
+\begin{DoxyParams}{Parameters}
+{\em is\+Req} & if this variable is required or not \\
+\hline
+{\em val} & the value that is being updated \\
+\hline
+{\em tag} & the tagline in the xml of the value we are searching for \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_a60c8afbe5369965c8855491bb3f75668}\label{classParseInterface_a60c8afbe5369965c8855491bb3f75668}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Tagless\+Values@{parse\+Tagless\+Values}}
+\index{parse\+Tagless\+Values@{parse\+Tagless\+Values}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Tagless\+Values()}{parseTaglessValues()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void Parse\+Interface\+::parse\+Tagless\+Values (\begin{DoxyParamCaption}\item[{std\+::vector$<$ T $>$ \&}]{eles }\end{DoxyParamCaption})}
+
+This function will parse out a list of values that do not have tags associated with the values. Keep in mind, if this function is being called, the values can not be optional, this should only be used to parse a specific data structure. This is a template function, whatever type is put in will be parsed out. note\+: the type must have an overload for $>$$>$ with input streams. \mbox{\Hypertarget{classParseInterface_a60c8afbe5369965c8855491bb3f75668}\label{classParseInterface_a60c8afbe5369965c8855491bb3f75668}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Tagless\+Values@{parse\+Tagless\+Values}}
+\index{parse\+Tagless\+Values@{parse\+Tagless\+Values}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Tagless\+Values()}{parseTaglessValues()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void Parse\+Interface\+::parse\+Tagless\+Values (\begin{DoxyParamCaption}\item[{std\+::vector$<$ T $>$ \&}]{eles }\end{DoxyParamCaption})}
+
+This function will parse out a list of values that do not have tags associated with the values. Keep in mind, if this function is being called, the values can not be optional, this should only be used to parse a specific data structure. This is a template function, whatever type is put in will be parsed out. note\+: the type must have an overload for $>$$>$ with input streams. \mbox{\Hypertarget{classParseInterface_a60c8afbe5369965c8855491bb3f75668}\label{classParseInterface_a60c8afbe5369965c8855491bb3f75668}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Tagless\+Values@{parse\+Tagless\+Values}}
+\index{parse\+Tagless\+Values@{parse\+Tagless\+Values}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Tagless\+Values()}{parseTaglessValues()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily template$<$typename T $>$ \\
+void Parse\+Interface\+::parse\+Tagless\+Values (\begin{DoxyParamCaption}\item[{std\+::vector$<$ T $>$ \&}]{eles }\end{DoxyParamCaption})}
+
+This function will parse out a list of values that do not have tags associated with the values. Keep in mind, if this function is being called, the values can not be optional, this should only be used to parse a specific data structure. This is a template function, whatever type is put in will be parsed out. note\+: the type must have an overload for $>$$>$ with input streams. \mbox{\Hypertarget{classParseInterface_a47a3d184a3746c20169383e867e85d3a}\label{classParseInterface_a47a3d184a3746c20169383e867e85d3a}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Tree@{parse\+Tree}}
+\index{parse\+Tree@{parse\+Tree}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Tree()}{parseTree()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily void Parse\+Interface\+::parse\+Tree (\begin{DoxyParamCaption}\item[{pt\+::ptree}]{t,  }\item[{\hyperlink{classURBInputData}{U\+R\+B\+Input\+Data} $\ast$\&}]{U\+ID }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+This function takes in an \hyperlink{classURBInputData}{U\+R\+B\+Input\+Data} variable and uses it as the base to parse the ptree 
+\begin{DoxyParams}{Parameters}
+{\em U\+ID} & the object that will serve as the base level of the xml parser \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_a40785f4b5636c69df24784ba151716ac}\label{classParseInterface_a40785f4b5636c69df24784ba151716ac}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Tree@{parse\+Tree}}
+\index{parse\+Tree@{parse\+Tree}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Tree()}{parseTree()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily void Parse\+Interface\+::parse\+Tree (\begin{DoxyParamCaption}\item[{pt\+::ptree}]{t,  }\item[{\hyperlink{classRoot}{Root} $\ast$\&}]{root }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+This function takes in a root variable and uses it as the base to parse the ptree 
+\begin{DoxyParams}{Parameters}
+{\em root} & the object that will serve as the base level of the xml parser \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_a90a82d1495a227ed4fa757935c2843a8}\label{classParseInterface_a90a82d1495a227ed4fa757935c2843a8}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Tree@{parse\+Tree}}
+\index{parse\+Tree@{parse\+Tree}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Tree()}{parseTree()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily static void Parse\+Interface\+::parse\+Tree (\begin{DoxyParamCaption}\item[{pt\+::ptree}]{t,  }\item[{\hyperlink{classRoot}{Root} $\ast$\&}]{root }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [static]}}
+
+This function takes in a root variable and uses it as the base to parse the ptree 
+\begin{DoxyParams}{Parameters}
+{\em root} & the object that will serve as the base level of the xml parser \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_afca32108192ba0997c9e5a78189b0cbc}\label{classParseInterface_afca32108192ba0997c9e5a78189b0cbc}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Values@{parse\+Values}}
+\index{parse\+Values@{parse\+Values}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Values()}{parseValues()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily virtual void Parse\+Interface\+::parse\+Values (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+Virtual function This is where we select what values we want to parse out of the xml file by calling the parseX functions above. 
+
+Implemented in \hyperlink{classP2_a3b8928a6e7dda94f06dab603420cd8c7}{P2}, \hyperlink{classSimulationParameters_a306c6d373794f5186beec9026f56845c}{Simulation\+Parameters}, \hyperlink{classRectangularBuilding_adbc6b832c817fc06f9bc2e51561a7e81}{Rectangular\+Building}, \hyperlink{classSimulationParameters_a306c6d373794f5186beec9026f56845c}{Simulation\+Parameters}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ T $>$}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ float $>$}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ int $>$}, \hyperlink{classTriangle_a3b08ac99b202202bf7dbf2504da91ba1}{Triangle}, \hyperlink{classP1_aea4d99ff4e45862292d2dbb83ec32363}{P1}, \hyperlink{classURBInputData_a3fea38ec8d574eb8e5c9ee5f1ad53636}{U\+R\+B\+Input\+Data}, \hyperlink{classSensor_a570a911466a9fd98894f7c2f2abaf103}{Sensor}, \hyperlink{classMetParams_ad40706e0668d5e0248f39cc3a480b0af}{Met\+Params}, \hyperlink{classNonPolyBuilding_ace133756e0233d75b434fec5273b4414}{Non\+Poly\+Building}, \hyperlink{classBuildings_a97851dd190977ba999ecb1f50481c400}{Buildings}, \hyperlink{classX_a0d0aabf7efbe8356894613e58b736216}{X}, \hyperlink{classFileOptions_aca2f6304ed7d1fdde5c6c392d7fd11b9}{File\+Options}, \hyperlink{classGeneralInputData_a674714bd018eea1a601ae9c4b8212c4a}{General\+Input\+Data}, \hyperlink{classTerrain_a4258f6f5195a3be6c7afa3e4f03bd227}{Terrain}, \hyperlink{classB_abf3989a414e46fb5dd4bd15a279008ab}{B}, \hyperlink{classBuilding_a7782e7933a009fcfee4d186e62d34b43}{Building}, \hyperlink{classC_a7f8b8fa8187ab2f50ca999ae9a1687d7}{C}, \hyperlink{classA_a71896ec8a87fd03a725668c503ec64e7}{A}, \hyperlink{classD_afd52a3aa7a7e9047386deb6aeb796b2a}{D}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ T $>$}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ float $>$}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ int $>$}, \hyperlink{classRoot_ade0eb65da55fa8c045a76bcf1fb16009}{Root}, and \hyperlink{classRoot_ade0eb65da55fa8c045a76bcf1fb16009}{Root}.
+
+\mbox{\Hypertarget{classParseInterface_afca32108192ba0997c9e5a78189b0cbc}\label{classParseInterface_afca32108192ba0997c9e5a78189b0cbc}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Values@{parse\+Values}}
+\index{parse\+Values@{parse\+Values}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Values()}{parseValues()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily virtual void Parse\+Interface\+::parse\+Values (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+Virtual function This is where we select what values we want to parse out of the xml file by calling the parseX functions above. 
+
+Implemented in \hyperlink{classP2_a3b8928a6e7dda94f06dab603420cd8c7}{P2}, \hyperlink{classSimulationParameters_a306c6d373794f5186beec9026f56845c}{Simulation\+Parameters}, \hyperlink{classRectangularBuilding_adbc6b832c817fc06f9bc2e51561a7e81}{Rectangular\+Building}, \hyperlink{classSimulationParameters_a306c6d373794f5186beec9026f56845c}{Simulation\+Parameters}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ T $>$}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ float $>$}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ int $>$}, \hyperlink{classTriangle_a3b08ac99b202202bf7dbf2504da91ba1}{Triangle}, \hyperlink{classP1_aea4d99ff4e45862292d2dbb83ec32363}{P1}, \hyperlink{classURBInputData_a3fea38ec8d574eb8e5c9ee5f1ad53636}{U\+R\+B\+Input\+Data}, \hyperlink{classSensor_a570a911466a9fd98894f7c2f2abaf103}{Sensor}, \hyperlink{classMetParams_ad40706e0668d5e0248f39cc3a480b0af}{Met\+Params}, \hyperlink{classNonPolyBuilding_ace133756e0233d75b434fec5273b4414}{Non\+Poly\+Building}, \hyperlink{classBuildings_a97851dd190977ba999ecb1f50481c400}{Buildings}, \hyperlink{classX_a0d0aabf7efbe8356894613e58b736216}{X}, \hyperlink{classFileOptions_aca2f6304ed7d1fdde5c6c392d7fd11b9}{File\+Options}, \hyperlink{classGeneralInputData_a674714bd018eea1a601ae9c4b8212c4a}{General\+Input\+Data}, \hyperlink{classTerrain_a4258f6f5195a3be6c7afa3e4f03bd227}{Terrain}, \hyperlink{classB_abf3989a414e46fb5dd4bd15a279008ab}{B}, \hyperlink{classBuilding_a7782e7933a009fcfee4d186e62d34b43}{Building}, \hyperlink{classC_a7f8b8fa8187ab2f50ca999ae9a1687d7}{C}, \hyperlink{classA_a71896ec8a87fd03a725668c503ec64e7}{A}, \hyperlink{classD_afd52a3aa7a7e9047386deb6aeb796b2a}{D}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ T $>$}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ float $>$}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ int $>$}, \hyperlink{classRoot_ade0eb65da55fa8c045a76bcf1fb16009}{Root}, and \hyperlink{classRoot_ade0eb65da55fa8c045a76bcf1fb16009}{Root}.
+
+\mbox{\Hypertarget{classParseInterface_afca32108192ba0997c9e5a78189b0cbc}\label{classParseInterface_afca32108192ba0997c9e5a78189b0cbc}} 
+\index{Parse\+Interface@{Parse\+Interface}!parse\+Values@{parse\+Values}}
+\index{parse\+Values@{parse\+Values}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{parse\+Values()}{parseValues()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily virtual void Parse\+Interface\+::parse\+Values (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [pure virtual]}}
+
+Virtual function This is where we select what values we want to parse out of the xml file by calling the parseX functions above. 
+
+Implemented in \hyperlink{classP2_a3b8928a6e7dda94f06dab603420cd8c7}{P2}, \hyperlink{classSimulationParameters_a306c6d373794f5186beec9026f56845c}{Simulation\+Parameters}, \hyperlink{classRectangularBuilding_adbc6b832c817fc06f9bc2e51561a7e81}{Rectangular\+Building}, \hyperlink{classSimulationParameters_a306c6d373794f5186beec9026f56845c}{Simulation\+Parameters}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ T $>$}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ float $>$}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ int $>$}, \hyperlink{classTriangle_a3b08ac99b202202bf7dbf2504da91ba1}{Triangle}, \hyperlink{classP1_aea4d99ff4e45862292d2dbb83ec32363}{P1}, \hyperlink{classURBInputData_a3fea38ec8d574eb8e5c9ee5f1ad53636}{U\+R\+B\+Input\+Data}, \hyperlink{classSensor_a570a911466a9fd98894f7c2f2abaf103}{Sensor}, \hyperlink{classMetParams_ad40706e0668d5e0248f39cc3a480b0af}{Met\+Params}, \hyperlink{classNonPolyBuilding_ace133756e0233d75b434fec5273b4414}{Non\+Poly\+Building}, \hyperlink{classBuildings_a97851dd190977ba999ecb1f50481c400}{Buildings}, \hyperlink{classX_a0d0aabf7efbe8356894613e58b736216}{X}, \hyperlink{classFileOptions_aca2f6304ed7d1fdde5c6c392d7fd11b9}{File\+Options}, \hyperlink{classGeneralInputData_a674714bd018eea1a601ae9c4b8212c4a}{General\+Input\+Data}, \hyperlink{classTerrain_a4258f6f5195a3be6c7afa3e4f03bd227}{Terrain}, \hyperlink{classB_abf3989a414e46fb5dd4bd15a279008ab}{B}, \hyperlink{classBuilding_a7782e7933a009fcfee4d186e62d34b43}{Building}, \hyperlink{classC_a7f8b8fa8187ab2f50ca999ae9a1687d7}{C}, \hyperlink{classA_a71896ec8a87fd03a725668c503ec64e7}{A}, \hyperlink{classD_afd52a3aa7a7e9047386deb6aeb796b2a}{D}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ T $>$}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ float $>$}, \hyperlink{classVector3_a15a1271a3ba4497ca95cc4dd66481f9e}{Vector3$<$ int $>$}, \hyperlink{classRoot_ade0eb65da55fa8c045a76bcf1fb16009}{Root}, and \hyperlink{classRoot_ade0eb65da55fa8c045a76bcf1fb16009}{Root}.
+
+\mbox{\Hypertarget{classParseInterface_a000ce4b52a192d2a7d0bfeaeb38fc358}\label{classParseInterface_a000ce4b52a192d2a7d0bfeaeb38fc358}} 
+\index{Parse\+Interface@{Parse\+Interface}!set\+Parents@{set\+Parents}}
+\index{set\+Parents@{set\+Parents}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{set\+Parents()}{setParents()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily void Parse\+Interface\+::set\+Parents (\begin{DoxyParamCaption}\item[{std\+::string}]{s }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+sets the string of parent tags 
+\begin{DoxyParams}{Parameters}
+{\em s} & string of parent tags \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_a000ce4b52a192d2a7d0bfeaeb38fc358}\label{classParseInterface_a000ce4b52a192d2a7d0bfeaeb38fc358}} 
+\index{Parse\+Interface@{Parse\+Interface}!set\+Parents@{set\+Parents}}
+\index{set\+Parents@{set\+Parents}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{set\+Parents()}{setParents()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily void Parse\+Interface\+::set\+Parents (\begin{DoxyParamCaption}\item[{std\+::string}]{s }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+sets the string of parent tags 
+\begin{DoxyParams}{Parameters}
+{\em s} & string of parent tags \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_a000ce4b52a192d2a7d0bfeaeb38fc358}\label{classParseInterface_a000ce4b52a192d2a7d0bfeaeb38fc358}} 
+\index{Parse\+Interface@{Parse\+Interface}!set\+Parents@{set\+Parents}}
+\index{set\+Parents@{set\+Parents}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{set\+Parents()}{setParents()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily void Parse\+Interface\+::set\+Parents (\begin{DoxyParamCaption}\item[{std\+::string}]{s }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+sets the string of parent tags 
+\begin{DoxyParams}{Parameters}
+{\em s} & string of parent tags \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_af983d932c4a708ffeba59fe71b46c2dc}\label{classParseInterface_af983d932c4a708ffeba59fe71b46c2dc}} 
+\index{Parse\+Interface@{Parse\+Interface}!set\+Tree@{set\+Tree}}
+\index{set\+Tree@{set\+Tree}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{set\+Tree()}{setTree()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily void Parse\+Interface\+::set\+Tree (\begin{DoxyParamCaption}\item[{pt\+::ptree}]{t }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+This sets the tree of this object 
+\begin{DoxyParams}{Parameters}
+{\em t} & tree to be set \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_af983d932c4a708ffeba59fe71b46c2dc}\label{classParseInterface_af983d932c4a708ffeba59fe71b46c2dc}} 
+\index{Parse\+Interface@{Parse\+Interface}!set\+Tree@{set\+Tree}}
+\index{set\+Tree@{set\+Tree}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{set\+Tree()}{setTree()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily void Parse\+Interface\+::set\+Tree (\begin{DoxyParamCaption}\item[{pt\+::ptree}]{t }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+This sets the tree of this object 
+\begin{DoxyParams}{Parameters}
+{\em t} & tree to be set \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseInterface_af983d932c4a708ffeba59fe71b46c2dc}\label{classParseInterface_af983d932c4a708ffeba59fe71b46c2dc}} 
+\index{Parse\+Interface@{Parse\+Interface}!set\+Tree@{set\+Tree}}
+\index{set\+Tree@{set\+Tree}!Parse\+Interface@{Parse\+Interface}}
+\subsubsection{\texorpdfstring{set\+Tree()}{setTree()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily void Parse\+Interface\+::set\+Tree (\begin{DoxyParamCaption}\item[{pt\+::ptree}]{t }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [protected]}}
+
+This sets the tree of this object 
+\begin{DoxyParams}{Parameters}
+{\em t} & tree to be set \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+/home/behnam/\+C\+U\+D\+A-\/\+U\+R\+B/src/util/Parse\+Interface.\+h\item 
+/home/behnam/\+C\+U\+D\+A-\/\+U\+R\+B/src/util/Parse\+Interface.\+cpp\end{DoxyCompactItemize}

@@ -1,0 +1,192 @@
+\hypertarget{classParseException}{}\section{Parse\+Exception Class Reference}
+\label{classParseException}\index{Parse\+Exception@{Parse\+Exception}}
+
+
+{\ttfamily \#include $<$Parse\+Exception.\+h$>$}
+
+
+
+Inheritance diagram for Parse\+Exception\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=249pt]{classParseException__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Parse\+Exception\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=295pt]{classParseException__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classParseException_a0e2db737183a1801d528102617ddc3c4}{Parse\+Exception} (const char $\ast$message)
+\item 
+\hyperlink{classParseException_a162b338172e869ef6e308b4489abf95b}{Parse\+Exception} (const std\+::string \&message)
+\item 
+virtual \hyperlink{classParseException_a59f11745728ad1ede341f2dda48e79b6}{$\sim$\+Parse\+Exception} ()  throw ()
+\item 
+virtual const char $\ast$ \hyperlink{classParseException_a7c96d5c467fe71354528570caf9209cd}{what} () const  throw ()
+\item 
+\hyperlink{classParseException_a0e2db737183a1801d528102617ddc3c4}{Parse\+Exception} (const char $\ast$message)
+\item 
+\hyperlink{classParseException_a162b338172e869ef6e308b4489abf95b}{Parse\+Exception} (const std\+::string \&message)
+\item 
+virtual \hyperlink{classParseException_a59f11745728ad1ede341f2dda48e79b6}{$\sim$\+Parse\+Exception} ()  throw ()
+\item 
+virtual const char $\ast$ \hyperlink{classParseException_a7c96d5c467fe71354528570caf9209cd}{what} () const  throw ()
+\item 
+\hyperlink{classParseException_a0e2db737183a1801d528102617ddc3c4}{Parse\+Exception} (const char $\ast$message)
+\item 
+\hyperlink{classParseException_a162b338172e869ef6e308b4489abf95b}{Parse\+Exception} (const std\+::string \&message)
+\item 
+virtual \hyperlink{classParseException_a59f11745728ad1ede341f2dda48e79b6}{$\sim$\+Parse\+Exception} ()  throw ()
+\item 
+virtual const char $\ast$ \hyperlink{classParseException_a7c96d5c467fe71354528570caf9209cd}{what} () const  throw ()
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+std\+::string \hyperlink{classParseException_a1e21a45e6538896bb5c71cc7390d986b}{msg\+\_\+}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This class is an extension of the standard exception class. The specifics of this exception arre to identify when a parameter is required to exist but is not present in the X\+ML. 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classParseException_a0e2db737183a1801d528102617ddc3c4}\label{classParseException_a0e2db737183a1801d528102617ddc3c4}} 
+\index{Parse\+Exception@{Parse\+Exception}!Parse\+Exception@{Parse\+Exception}}
+\index{Parse\+Exception@{Parse\+Exception}!Parse\+Exception@{Parse\+Exception}}
+\subsubsection{\texorpdfstring{Parse\+Exception()}{ParseException()}\hspace{0.1cm}{\footnotesize\ttfamily [1/6]}}
+{\footnotesize\ttfamily Parse\+Exception\+::\+Parse\+Exception (\begin{DoxyParamCaption}\item[{const char $\ast$}]{message }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [explicit]}}
+
+Constructor (\hyperlink{classC}{C} strings). 
+\begin{DoxyParams}{Parameters}
+{\em message} & C-\/style string error message. The string contents are copied upon construction. Hence, responsibility for deleting the char$\ast$ lies with the caller. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseException_a162b338172e869ef6e308b4489abf95b}\label{classParseException_a162b338172e869ef6e308b4489abf95b}} 
+\index{Parse\+Exception@{Parse\+Exception}!Parse\+Exception@{Parse\+Exception}}
+\index{Parse\+Exception@{Parse\+Exception}!Parse\+Exception@{Parse\+Exception}}
+\subsubsection{\texorpdfstring{Parse\+Exception()}{ParseException()}\hspace{0.1cm}{\footnotesize\ttfamily [2/6]}}
+{\footnotesize\ttfamily Parse\+Exception\+::\+Parse\+Exception (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{message }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [explicit]}}
+
+Constructor (C++ S\+TL strings). 
+\begin{DoxyParams}{Parameters}
+{\em message} & The error message. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseException_a59f11745728ad1ede341f2dda48e79b6}\label{classParseException_a59f11745728ad1ede341f2dda48e79b6}} 
+\index{Parse\+Exception@{Parse\+Exception}!````~Parse\+Exception@{$\sim$\+Parse\+Exception}}
+\index{````~Parse\+Exception@{$\sim$\+Parse\+Exception}!Parse\+Exception@{Parse\+Exception}}
+\subsubsection{\texorpdfstring{$\sim$\+Parse\+Exception()}{~ParseException()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily virtual Parse\+Exception\+::$\sim$\+Parse\+Exception (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) throw  ) \hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+Destructor. Virtual to allow for subclassing. \mbox{\Hypertarget{classParseException_a0e2db737183a1801d528102617ddc3c4}\label{classParseException_a0e2db737183a1801d528102617ddc3c4}} 
+\index{Parse\+Exception@{Parse\+Exception}!Parse\+Exception@{Parse\+Exception}}
+\index{Parse\+Exception@{Parse\+Exception}!Parse\+Exception@{Parse\+Exception}}
+\subsubsection{\texorpdfstring{Parse\+Exception()}{ParseException()}\hspace{0.1cm}{\footnotesize\ttfamily [3/6]}}
+{\footnotesize\ttfamily Parse\+Exception\+::\+Parse\+Exception (\begin{DoxyParamCaption}\item[{const char $\ast$}]{message }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [explicit]}}
+
+Constructor (\hyperlink{classC}{C} strings). 
+\begin{DoxyParams}{Parameters}
+{\em message} & C-\/style string error message. The string contents are copied upon construction. Hence, responsibility for deleting the char$\ast$ lies with the caller. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseException_a162b338172e869ef6e308b4489abf95b}\label{classParseException_a162b338172e869ef6e308b4489abf95b}} 
+\index{Parse\+Exception@{Parse\+Exception}!Parse\+Exception@{Parse\+Exception}}
+\index{Parse\+Exception@{Parse\+Exception}!Parse\+Exception@{Parse\+Exception}}
+\subsubsection{\texorpdfstring{Parse\+Exception()}{ParseException()}\hspace{0.1cm}{\footnotesize\ttfamily [4/6]}}
+{\footnotesize\ttfamily Parse\+Exception\+::\+Parse\+Exception (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{message }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [explicit]}}
+
+Constructor (C++ S\+TL strings). 
+\begin{DoxyParams}{Parameters}
+{\em message} & The error message. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseException_a59f11745728ad1ede341f2dda48e79b6}\label{classParseException_a59f11745728ad1ede341f2dda48e79b6}} 
+\index{Parse\+Exception@{Parse\+Exception}!````~Parse\+Exception@{$\sim$\+Parse\+Exception}}
+\index{````~Parse\+Exception@{$\sim$\+Parse\+Exception}!Parse\+Exception@{Parse\+Exception}}
+\subsubsection{\texorpdfstring{$\sim$\+Parse\+Exception()}{~ParseException()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily virtual Parse\+Exception\+::$\sim$\+Parse\+Exception (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) throw  ) \hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+Destructor. Virtual to allow for subclassing. \mbox{\Hypertarget{classParseException_a0e2db737183a1801d528102617ddc3c4}\label{classParseException_a0e2db737183a1801d528102617ddc3c4}} 
+\index{Parse\+Exception@{Parse\+Exception}!Parse\+Exception@{Parse\+Exception}}
+\index{Parse\+Exception@{Parse\+Exception}!Parse\+Exception@{Parse\+Exception}}
+\subsubsection{\texorpdfstring{Parse\+Exception()}{ParseException()}\hspace{0.1cm}{\footnotesize\ttfamily [5/6]}}
+{\footnotesize\ttfamily Parse\+Exception\+::\+Parse\+Exception (\begin{DoxyParamCaption}\item[{const char $\ast$}]{message }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [explicit]}}
+
+Constructor (\hyperlink{classC}{C} strings). 
+\begin{DoxyParams}{Parameters}
+{\em message} & C-\/style string error message. The string contents are copied upon construction. Hence, responsibility for deleting the char$\ast$ lies with the caller. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseException_a162b338172e869ef6e308b4489abf95b}\label{classParseException_a162b338172e869ef6e308b4489abf95b}} 
+\index{Parse\+Exception@{Parse\+Exception}!Parse\+Exception@{Parse\+Exception}}
+\index{Parse\+Exception@{Parse\+Exception}!Parse\+Exception@{Parse\+Exception}}
+\subsubsection{\texorpdfstring{Parse\+Exception()}{ParseException()}\hspace{0.1cm}{\footnotesize\ttfamily [6/6]}}
+{\footnotesize\ttfamily Parse\+Exception\+::\+Parse\+Exception (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{message }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [explicit]}}
+
+Constructor (C++ S\+TL strings). 
+\begin{DoxyParams}{Parameters}
+{\em message} & The error message. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classParseException_a59f11745728ad1ede341f2dda48e79b6}\label{classParseException_a59f11745728ad1ede341f2dda48e79b6}} 
+\index{Parse\+Exception@{Parse\+Exception}!````~Parse\+Exception@{$\sim$\+Parse\+Exception}}
+\index{````~Parse\+Exception@{$\sim$\+Parse\+Exception}!Parse\+Exception@{Parse\+Exception}}
+\subsubsection{\texorpdfstring{$\sim$\+Parse\+Exception()}{~ParseException()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily virtual Parse\+Exception\+::$\sim$\+Parse\+Exception (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) throw  ) \hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+Destructor. Virtual to allow for subclassing. 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classParseException_a7c96d5c467fe71354528570caf9209cd}\label{classParseException_a7c96d5c467fe71354528570caf9209cd}} 
+\index{Parse\+Exception@{Parse\+Exception}!what@{what}}
+\index{what@{what}!Parse\+Exception@{Parse\+Exception}}
+\subsubsection{\texorpdfstring{what()}{what()}\hspace{0.1cm}{\footnotesize\ttfamily [1/3]}}
+{\footnotesize\ttfamily virtual const char$\ast$ Parse\+Exception\+::what (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const throw  ) \hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+Returns a pointer to the (constant) error description. \begin{DoxyReturn}{Returns}
+\hyperlink{classA}{A} pointer to a const char$\ast$. The underlying memory is in posession of the Exception object. Callers must not attempt to free the memory. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classParseException_a7c96d5c467fe71354528570caf9209cd}\label{classParseException_a7c96d5c467fe71354528570caf9209cd}} 
+\index{Parse\+Exception@{Parse\+Exception}!what@{what}}
+\index{what@{what}!Parse\+Exception@{Parse\+Exception}}
+\subsubsection{\texorpdfstring{what()}{what()}\hspace{0.1cm}{\footnotesize\ttfamily [2/3]}}
+{\footnotesize\ttfamily virtual const char$\ast$ Parse\+Exception\+::what (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const throw  ) \hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+Returns a pointer to the (constant) error description. \begin{DoxyReturn}{Returns}
+\hyperlink{classA}{A} pointer to a const char$\ast$. The underlying memory is in posession of the Exception object. Callers must not attempt to free the memory. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classParseException_a7c96d5c467fe71354528570caf9209cd}\label{classParseException_a7c96d5c467fe71354528570caf9209cd}} 
+\index{Parse\+Exception@{Parse\+Exception}!what@{what}}
+\index{what@{what}!Parse\+Exception@{Parse\+Exception}}
+\subsubsection{\texorpdfstring{what()}{what()}\hspace{0.1cm}{\footnotesize\ttfamily [3/3]}}
+{\footnotesize\ttfamily virtual const char$\ast$ Parse\+Exception\+::what (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const throw  ) \hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+Returns a pointer to the (constant) error description. \begin{DoxyReturn}{Returns}
+\hyperlink{classA}{A} pointer to a const char$\ast$. The underlying memory is in posession of the Exception object. Callers must not attempt to free the memory. 
+\end{DoxyReturn}
+
+
+\subsection{Member Data Documentation}
+\mbox{\Hypertarget{classParseException_a1e21a45e6538896bb5c71cc7390d986b}\label{classParseException_a1e21a45e6538896bb5c71cc7390d986b}} 
+\index{Parse\+Exception@{Parse\+Exception}!msg\+\_\+@{msg\+\_\+}}
+\index{msg\+\_\+@{msg\+\_\+}!Parse\+Exception@{Parse\+Exception}}
+\subsubsection{\texorpdfstring{msg\+\_\+}{msg\_}}
+{\footnotesize\ttfamily std\+::string Parse\+Exception\+::msg\+\_\+\hspace{0.3cm}{\ttfamily [protected]}}
+
+Error message. 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/home/behnam/\+C\+U\+D\+A-\/\+U\+R\+B/src/util/Parse\+Exception.\+h\end{DoxyCompactItemize}

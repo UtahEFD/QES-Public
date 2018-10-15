@@ -1,0 +1,64 @@
+\hypertarget{classArgumentParsing}{}\section{Argument\+Parsing Class Reference}
+\label{classArgumentParsing}\index{Argument\+Parsing@{Argument\+Parsing}}
+
+
+Inheritance diagram for Argument\+Parsing\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=270pt]{classArgumentParsing__inherit__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classArgumentParsing_afc7b06f169fe65ee044117603822d751}\label{classArgumentParsing_afc7b06f169fe65ee044117603822d751}} 
+enum {\bfseries Arg\+Types} \{ \newline
+{\bfseries N\+O\+NE}, 
+{\bfseries I\+NT}, 
+{\bfseries F\+L\+O\+AT}, 
+{\bfseries C\+H\+AR}, 
+\newline
+{\bfseries S\+T\+R\+I\+NG}
+ \}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classArgumentParsing_a510548c4ed100184f99970ab68980424}\label{classArgumentParsing_a510548c4ed100184f99970ab68980424}} 
+void {\bfseries reg} (const std\+::string \&arg\+Name, const std\+::string \&description, Arg\+Types t, char short\+Arg\+Name=0)
+\item 
+\mbox{\Hypertarget{classArgumentParsing_af761b06eb7c86d92ffdf590db6ed0b46}\label{classArgumentParsing_af761b06eb7c86d92ffdf590db6ed0b46}} 
+int {\bfseries process\+Command\+Line\+Args} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\item 
+\mbox{\Hypertarget{classArgumentParsing_a696c167419b300f3b8161d36234131c7}\label{classArgumentParsing_a696c167419b300f3b8161d36234131c7}} 
+bool {\bfseries is\+Set} (const std\+::string \&arg\+Name)
+\item 
+\mbox{\Hypertarget{classArgumentParsing_a2e9140007f6824a49b0e3fbe658cc3a0}\label{classArgumentParsing_a2e9140007f6824a49b0e3fbe658cc3a0}} 
+bool {\bfseries is\+Set} (const std\+::string \&arg\+Name, int \&arg\+Value)
+\item 
+\mbox{\Hypertarget{classArgumentParsing_ac3572d336f0a9151dd5dc53bd208edb1}\label{classArgumentParsing_ac3572d336f0a9151dd5dc53bd208edb1}} 
+bool {\bfseries is\+Set} (const std\+::string \&arg\+Name, float \&arg\+Value)
+\item 
+\mbox{\Hypertarget{classArgumentParsing_a308f10dbeead11c73b7a1ffbf1c5274a}\label{classArgumentParsing_a308f10dbeead11c73b7a1ffbf1c5274a}} 
+bool {\bfseries is\+Set} (const std\+::string \&arg\+Name, char \&arg\+Value)
+\item 
+\mbox{\Hypertarget{classArgumentParsing_a4e19fd0b5a9a26f106b64decd66610b8}\label{classArgumentParsing_a4e19fd0b5a9a26f106b64decd66610b8}} 
+bool {\bfseries is\+Set} (const std\+::string \&arg\+Name, std\+::string \&arg\+Value)
+\item 
+\mbox{\Hypertarget{classArgumentParsing_a9386d5a547050a15f344b049b167a628}\label{classArgumentParsing_a9386d5a547050a15f344b049b167a628}} 
+void {\bfseries print\+Usage} () const
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classArgumentParsing_ab8eaad07d0c28d6e6c9f6a68b7751714}\label{classArgumentParsing_ab8eaad07d0c28d6e6c9f6a68b7751714}} 
+int {\bfseries process} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+/home/behnam/\+C\+U\+D\+A-\/\+U\+R\+B/src/util/Argument\+Parsing.\+h\item 
+/home/behnam/\+C\+U\+D\+A-\/\+U\+R\+B/src/util/Argument\+Parsing.\+cpp\end{DoxyCompactItemize}

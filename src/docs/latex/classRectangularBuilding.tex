@@ -1,0 +1,109 @@
+\hypertarget{classRectangularBuilding}{}\section{Rectangular\+Building Class Reference}
+\label{classRectangularBuilding}\index{Rectangular\+Building@{Rectangular\+Building}}
+
+
+Inheritance diagram for Rectangular\+Building\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=184pt]{classRectangularBuilding__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Rectangular\+Building\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=186pt]{classRectangularBuilding__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classRectangularBuilding_a5106fdd27a6eb098386f608e6eaf3135}\label{classRectangularBuilding_a5106fdd27a6eb098386f608e6eaf3135}} 
+{\bfseries Rectangular\+Building} (float xfo, float yfo, float bh, float dx, float dy, float dz)
+\item 
+virtual void \hyperlink{classRectangularBuilding_adbc6b832c817fc06f9bc2e51561a7e81}{parse\+Values} ()
+\item 
+void \hyperlink{classRectangularBuilding_af690323c42b943b9a72ce6857b5e9ca0}{set\+Boundaries} (float dx, float dy, float dz, int nx, int ny, int nz, float $\ast$zm, float $\ast$e, float $\ast$f, float $\ast$g, float $\ast$h, float $\ast$m, float $\ast$n, int $\ast$icellflag)
+\item 
+void \hyperlink{classRectangularBuilding_ae2e0b496b0adf1b3e6961a42043f22c8}{set\+Cells} (int nx, int ny, int nz, int $\ast$icellflag, int $\ast$ibldflag, int ibuild)
+\end{DoxyCompactItemize}
+\subsection*{Additional Inherited Members}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classRectangularBuilding_adbc6b832c817fc06f9bc2e51561a7e81}\label{classRectangularBuilding_adbc6b832c817fc06f9bc2e51561a7e81}} 
+\index{Rectangular\+Building@{Rectangular\+Building}!parse\+Values@{parse\+Values}}
+\index{parse\+Values@{parse\+Values}!Rectangular\+Building@{Rectangular\+Building}}
+\subsubsection{\texorpdfstring{parse\+Values()}{parseValues()}}
+{\footnotesize\ttfamily virtual void Rectangular\+Building\+::parse\+Values (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [virtual]}}
+
+Virtual function This is where we select what values we want to parse out of the xml file by calling the parseX functions above. 
+
+Implements \hyperlink{classNonPolyBuilding_ace133756e0233d75b434fec5273b4414}{Non\+Poly\+Building}.
+
+\mbox{\Hypertarget{classRectangularBuilding_af690323c42b943b9a72ce6857b5e9ca0}\label{classRectangularBuilding_af690323c42b943b9a72ce6857b5e9ca0}} 
+\index{Rectangular\+Building@{Rectangular\+Building}!set\+Boundaries@{set\+Boundaries}}
+\index{set\+Boundaries@{set\+Boundaries}!Rectangular\+Building@{Rectangular\+Building}}
+\subsubsection{\texorpdfstring{set\+Boundaries()}{setBoundaries()}}
+{\footnotesize\ttfamily void Rectangular\+Building\+::set\+Boundaries (\begin{DoxyParamCaption}\item[{float}]{dx,  }\item[{float}]{dy,  }\item[{float}]{dz,  }\item[{int}]{nx,  }\item[{int}]{ny,  }\item[{int}]{nz,  }\item[{float $\ast$}]{zm,  }\item[{float $\ast$}]{e,  }\item[{float $\ast$}]{f,  }\item[{float $\ast$}]{g,  }\item[{float $\ast$}]{h,  }\item[{float $\ast$}]{m,  }\item[{float $\ast$}]{n,  }\item[{int $\ast$}]{icellflag }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Total number of cell-\/centered values in domain
+
+Total number of face-\/centered values in domain
+
+defining building and cut-\/cell indices
+
+defining cells cut by building
+
+Set cell index flag to cut-\/cell
+
+defining building solid cells
+
+Set cell index flag to building
+
+defining ground solid cells
+
+number of intersection points in each face of the cell
+
+cut-\/cell index
+
+intersection points hard-\/coded
+
+area fraction coeeficient
+
+calculate area fraction coeeficient for each face of the cut-\/cell
+
+Assign solver coefficients
+
+Wall bellow
+
+Wall above
+
+Wall in back
+
+Wall in front
+
+Wall on right
+
+Wall on left \mbox{\Hypertarget{classRectangularBuilding_ae2e0b496b0adf1b3e6961a42043f22c8}\label{classRectangularBuilding_ae2e0b496b0adf1b3e6961a42043f22c8}} 
+\index{Rectangular\+Building@{Rectangular\+Building}!set\+Cells@{set\+Cells}}
+\index{set\+Cells@{set\+Cells}!Rectangular\+Building@{Rectangular\+Building}}
+\subsubsection{\texorpdfstring{set\+Cells()}{setCells()}}
+{\footnotesize\ttfamily void Rectangular\+Building\+::set\+Cells (\begin{DoxyParamCaption}\item[{int}]{nx,  }\item[{int}]{ny,  }\item[{int}]{nz,  }\item[{int $\ast$}]{icellflag,  }\item[{int $\ast$}]{ibldflag,  }\item[{int}]{ibuild }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+Lineralized index for cell centered values
+
+Set cell index flag to cut-\/cell
+
+Lineralized index for cell centered values
+
+Set cell index flag to building 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/home/behnam/\+C\+U\+D\+A-\/\+U\+R\+B/src/Rectangular\+Building.\+h\end{DoxyCompactItemize}

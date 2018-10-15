@@ -1,0 +1,5 @@
+<map id="RectangularBuilding" name="RectangularBuilding">
+<area shape="rect" id="node2" href="$classNonPolyBuilding.html" title="NonPolyBuilding" alt="" coords="15,247,134,273"/>
+<area shape="rect" id="node3" href="$classBuilding.html" title="Building" alt="" coords="41,171,109,197"/>
+<area shape="rect" id="node4" href="$classParseInterface.html" title="ParseInterface" alt="" coords="21,95,128,121"/>
+</map>

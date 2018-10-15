@@ -7,6 +7,11 @@
 DTEHeightField::DTEHeightField()
   : m_filename(""), m_rbMin(0.0)
 {
+<<<<<<< HEAD
+=======
+  m_poDataset = 0;
+  
+>>>>>>> origin/doxygenAdd
 }
 
 DTEHeightField::DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN)
@@ -372,6 +377,10 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
 {
 
   printf("Setting Cell Data...\n");
+<<<<<<< HEAD
+=======
+  auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time    
+>>>>>>> origin/doxygenAdd
 
   std::vector<int> cutCells;
 
@@ -388,6 +397,7 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
        corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, CLAMP(0, max[2], queryHeight( pafScanline , (min[0] + (i + 1) * dx) / pixelSizeX,  (min[1] + (j + 1) * dy) / pixelSizeY) - min[2]) );
        corners[3] = Vector3<float>(i * dx, (j + 1) * dy, CLAMP(0, max[2], queryHeight( pafScanline , (min[0] + i * dx) / pixelSizeX,  (min[1] + (j + 1) * dy) / pixelSizeY) - min[2]) );
 
+<<<<<<< HEAD
        float cellMin, cellMax;
        cellMin = cellMax = corners[0][2];
        for (int l = 1; l <= 3; l++)
@@ -459,15 +469,103 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
           }
 
       }
+=======
+       setCellPoints(cells, i, j, nx, ny, nz, dz, corners, cutCells);
+
+>>>>>>> origin/doxygenAdd
     }
 
 
   CPLFree(pafScanline);
+<<<<<<< HEAD
+=======
+  auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+  std::chrono::duration<float> elapsed = finish - start;
+  std::cout << "Elapsed time For CellSet: " << elapsed.count() << " s\n";   // Print out elapsed execution time
+
+>>>>>>> origin/doxygenAdd
 return cutCells;
 
 
 }
 
+<<<<<<< HEAD
+=======
+void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, int nz, float dz, Vector3<float> corners[], std::vector<int>& cutCells)
+{
+   float coordsMin, coordsMax;
+   coordsMin = coordsMax = corners[0][2];
+   for (int l = 1; l <= 3; l++)
+     if (coordsMin > corners[l][2])
+        coordsMin = corners[l][2];
+     else if (coordsMax < corners[l][2])
+      coordsMax = corners[l][2];
+
+  for (int k = 0; k < nz; k++)
+  {
+    float cellBot = k * dz;
+    float cellTop = cellBot + dz;
+
+    if ( cellTop < coordsMin)
+      cells[CELL(i,j,k)] = Cell(terrain_CT);
+    else if ( cellBot > coordsMax)
+      cells[CELL(i,j,k)] = Cell(air_CT);
+    else
+    {
+      cutCells.push_back(CELL(i,j,k));
+      std::vector< Vector3<float> > pointsInCell;
+      int cornerPos[4] = {0, 0, 0, 0}; // 0 is in, 1 is above, -1 is below
+      //check if corners are in
+      for (int l = 0; l < 4; l++)
+        if (corners[l][2] > cellBot && corners[l][2] < cellTop)
+        {
+          pointsInCell.push_back(corners[l]);
+          cornerPos[l] = 0;
+        }
+        else if (corners[l][2] < cellBot)
+          cornerPos[l] = -1;
+        else
+          cornerPos[l] = 1;
+
+      //check intermediates 0-1 0-2 0-3 1-2 2-3
+        for (int first = 0; first < 3; first++)
+          for (int second = first + 1; second < 4; second++)
+            if (first != 1 || second != 3)
+            {
+              if (cornerPos[first] == 0)
+              {
+                if (cornerPos[second] < 0)
+                  pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
+                else if (cornerPos[second] > 0)
+                  pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
+              }
+              else if (cornerPos[first] > 0) 
+              {
+                if (cornerPos[second] == 0)
+                  pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
+                else if (cornerPos[second] < 0)
+                {
+                  pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
+                  pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
+                }
+              }
+              else 
+              {
+                if (cornerPos[second] == 0)
+                  pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
+                else if (cornerPos[second] > 0)
+                {
+                  pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
+                  pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
+                }
+              }
+            }
+        cells[CELL(i,j,k)] = Cell(pointsInCell);
+      }
+    }
+}
+
+>>>>>>> origin/doxygenAdd
 
 Vector3<float> DTEHeightField::getIntermediate(Vector3<float> a, Vector3<float> b, float height)
 {

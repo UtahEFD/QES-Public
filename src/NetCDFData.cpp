@@ -1,7 +1,11 @@
 #include "NetCDFData.h"
 
 
+<<<<<<< HEAD
 void NetCDFData::getData(float* newX, float* newY, float* newZ, std::vector<double> newU, std::vector<double> newV, std::vector<double> newW, int newDX, int newDY, int newDZ)
+=======
+void NetCDFData::getData(float* newX, float* newY, float* newZ, double* newU, double* newV, double* newW, int newDX, int newDY, int newDZ)
+>>>>>>> origin/doxygenAdd
 {
 	dimX = newDX-1;
 	dimY = newDY-1;
@@ -282,4 +286,8 @@ bool NetCDFData::outputCutCellFlags(std::string fileName)
       return false;
     }
     return true;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/doxygenAdd

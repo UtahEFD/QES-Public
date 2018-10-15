@@ -1,6 +1,10 @@
 <simulationParameters>
 	<domain> 40 40 40 </domain>
+<<<<<<< HEAD
 	<cellSize> 5.0 5.0 5.0 </cellSize> <!-- Meters-->
+=======
+	<cellSize> 40.0 40.0 1.0 </cellSize> <!-- Meters-->
+>>>>>>> origin/doxygenAdd
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
 	<UTCConversion> 0 </UTCConversion>
@@ -25,6 +29,7 @@
 </simulationParameters>
 <metParams>
 	<metInputFlag> 0 </metInputFlag>
+<<<<<<< HEAD
 	<num_sites> 1 </num_sites>
 	<maxSizeDataPoints> 2 </maxSizeDataPoints>
 	<siteName> sensor1 </siteName>
@@ -40,6 +45,23 @@
 		<height> 10.0</height>
 		<speed> 5.0</speed>
 		<direction> 270.0</direction> 
+=======
+	<numMeasuringSites> 1 </numMeasuringSites>
+	<maxSizeDataPoints> 1 </maxSizeDataPoints>
+	<siteName> sensor1 </siteName>
+	<fileName> sensor1.inp </fileName>
+	<sensor>
+		<siteCoords> 1 </siteCoords>
+		<x> 1 </x>
+		<y> 1 </y>
+		<epoch> 1510930800 </epoch>
+		<boundaryLayerFlag> 1 </boundaryLayerFlag>
+		<siteZ0> 0.1 </siteZ0>
+		<reciprocal> 0 </reciprocal>
+		<height> 10 </height>
+		<speed> 5 </speed>
+		<direction> 0 </direction> 
+>>>>>>> origin/doxygenAdd
 	</sensor>
 </metParams>
 <fileOptions>
@@ -48,28 +70,58 @@
 	<sensorVelocityFlag> 0 </sensorVelocityFlag>
 	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
+<<<<<<< HEAD
 <buildings>
 	<wallRoughness> 0.1 </wallRoughness>
 	<numBuildings> 1 </numBuildings>
+=======
+<!--buildings>
+	<wallRoughness> 0.1 </wallRoughness>
+	<numBuildings> 2 </numBuildings>
+>>>>>>> origin/doxygenAdd
 	<numPolygonNodes> 0 </numPolygonNodes>
 	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
 		<height> 20.0 </height>
 		<baseHeight> 0 </baseHeight>
+<<<<<<< HEAD
 		<xFo> 90.0 </xFo>
 		<yFo> 90.0 </yFo>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
 	</rectangularBuilding>
 	<!--rectangularBuilding>
+=======
+		<centroidX> 24 </centroidX>
+		<centroidY> 26	</centroidY>
+		<xFo> 20.0 </xFo>
+		<yFo> 20.0 </yFo>
+		<length> 20.0 </length>
+		<width> 20.0 </width>
+		<rotation> 0 </rotation>
+	</rectangularBuilding>
+	<rectangularBuilding>
+>>>>>>> origin/doxygenAdd
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
 		<height> 20.0 </height>
 		<baseHeight> 0 </baseHeight>
+<<<<<<< HEAD
 		<xFo> 50.0 </xFo>
 		<yFo> 50.0 </yFo>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
 	</rectangularBuilding-->
 </buildings>
+=======
+		<centroidX> 24 </centroidX>
+		<centroidY> 26	</centroidY>
+		<xFo> 70.0 </xFo>
+		<yFo> 70.0 </yFo>
+		<length> 20.0 </length>
+		<width> 20.0 </width>
+		<rotation> 0 </rotation>
+	</rectangularBuilding>
+</buildings-->
+>>>>>>> origin/doxygenAdd

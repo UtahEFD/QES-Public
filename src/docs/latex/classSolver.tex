@@ -1,0 +1,476 @@
+\hypertarget{classSolver}{}\section{Solver Class Reference}
+\label{classSolver}\index{Solver@{Solver}}
+
+
+{\ttfamily \#include $<$Solver.\+h$>$}
+
+
+
+Inheritance diagram for Solver\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=268pt]{classSolver__inherit__graph}
+\end{center}
+\end{figure}
+
+
+Collaboration diagram for Solver\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=278pt]{classSolver__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classSolver_a0df0752d39f016c7dc636d8c46274218}{Solver} (\hyperlink{classURBInputData}{U\+R\+B\+Input\+Data} $\ast$U\+ID, \hyperlink{classDTEHeightField}{D\+T\+E\+Height\+Field} $\ast$D\+T\+E\+HF)
+\item 
+\mbox{\Hypertarget{classSolver_ad004f38b8aff33fa13a8971f87f7816e}\label{classSolver_ad004f38b8aff33fa13a8971f87f7816e}} 
+virtual void {\bfseries solve} (\hyperlink{classNetCDFData}{Net\+C\+D\+F\+Data} $\ast$netcdf\+Dat, bool solve\+Wind)=0
+\item 
+void \hyperlink{classSolver_a66fa054cbf52fd6c184386fe11f9cadf}{define\+Walls} (int $\ast$i\+Cell\+Flag, float $\ast$n, float $\ast$m, float $\ast$f, float $\ast$\hyperlink{classSolver_ab65a76ec3befd44f11e817fdef8f47a6}{e}, float $\ast$h, float $\ast$g)
+\item 
+\mbox{\Hypertarget{classSolver_af815849a5dda94feb2a5a0e5afa3e5a2}\label{classSolver_af815849a5dda94feb2a5a0e5afa3e5a2}} 
+void {\bfseries up\+Wind} (\hyperlink{classBuilding}{Building} $\ast$build, int $\ast$i\+Cell\+Flag, double $\ast$\hyperlink{classSolver_aaf60f18219d1d08959b9a6fa209d5e17}{u0}, double $\ast$v0, double $\ast$w0, float $\ast$z, float $\ast$zm)
+\item 
+\mbox{\Hypertarget{classSolver_aa74c027e6f75376d459cecbfd71dbc2f}\label{classSolver_aa74c027e6f75376d459cecbfd71dbc2f}} 
+void {\bfseries relief\+Wake} (\hyperlink{classNonPolyBuilding}{Non\+Poly\+Building} $\ast$build, float $\ast$\hyperlink{classSolver_aaf60f18219d1d08959b9a6fa209d5e17}{u0}, float $\ast$v0)
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classSolver_a4380db2e63e45a27b1cae8d9558f004d}\label{classSolver_a4380db2e63e45a27b1cae8d9558f004d}} 
+void {\bfseries print\+Progress} (float percentage)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classSolver_aae65c28682a9953c5164cd8c6da3d69c}\label{classSolver_aae65c28682a9953c5164cd8c6da3d69c}} 
+int {\bfseries nx}
+\item 
+\mbox{\Hypertarget{classSolver_a1f154e748c539e4cfcee150c7e155daf}\label{classSolver_a1f154e748c539e4cfcee150c7e155daf}} 
+int {\bfseries ny}
+\item 
+int \hyperlink{classSolver_a4312c5a1ff7a5eba3eb8d7ef3fed0190}{nz}
+\item 
+\mbox{\Hypertarget{classSolver_a4a3e239b59c3822b17edae555b7683d7}\label{classSolver_a4a3e239b59c3822b17edae555b7683d7}} 
+float {\bfseries dx}
+\item 
+\mbox{\Hypertarget{classSolver_a137aa51312a07b0ce69959dccc4ab7b6}\label{classSolver_a137aa51312a07b0ce69959dccc4ab7b6}} 
+float {\bfseries dy}
+\item 
+float \hyperlink{classSolver_aed4366cb221b3429a878cb39a06b0ef4}{dz}
+\item 
+float \hyperlink{classSolver_acca22a72409a3ccff8662d0000358512}{dxy}
+\item 
+\mbox{\Hypertarget{classSolver_a83c7c4b749580980db91770e88b2fcf5}\label{classSolver_a83c7c4b749580980db91770e88b2fcf5}} 
+std\+::vector$<$ float $>$ {\bfseries dz\+Array}
+\item 
+\mbox{\Hypertarget{classSolver_a4cc407bf68dc76310521a7b347e39dc0}\label{classSolver_a4cc407bf68dc76310521a7b347e39dc0}} 
+std\+::vector$<$ float $>$ {\bfseries zm}
+\item 
+\mbox{\Hypertarget{classSolver_ad06fb03e479e8c41b1960f21e510c0d0}\label{classSolver_ad06fb03e479e8c41b1960f21e510c0d0}} 
+std\+::vector$<$ float $>$ {\bfseries x}
+\item 
+\mbox{\Hypertarget{classSolver_aa70241bd5d16502b7becb591dc141ec3}\label{classSolver_aa70241bd5d16502b7becb591dc141ec3}} 
+std\+::vector$<$ float $>$ {\bfseries y}
+\item 
+\mbox{\Hypertarget{classSolver_a179243358326a5c867706192597b30f3}\label{classSolver_a179243358326a5c867706192597b30f3}} 
+std\+::vector$<$ float $>$ {\bfseries z}
+\item 
+int \hyperlink{classSolver_aa42a6832b9dd82be64b07071135b69e8}{itermax}
+\item 
+int \hyperlink{classSolver_a0edd9bd90200b40133cc007c9f9600bb}{num\+\_\+sites}
+\item 
+std\+::vector$<$ int $>$ \hyperlink{classSolver_ad28319be4f9915bec3840aadd083c2ae}{site\+\_\+blayer\+\_\+flag}
+\item 
+std\+::vector$<$ float $>$ \hyperlink{classSolver_ad5f6e755ca6e125ae1499afe1930dfcf}{site\+\_\+one\+\_\+overL}
+\item 
+std\+::vector$<$ float $>$ \hyperlink{classSolver_a431d4f3051f3c29aabccb5e539e91f4d}{site\+\_\+xcoord}
+\item 
+std\+::vector$<$ float $>$ \hyperlink{classSolver_a00a819ad1ff7e520b23488a25f43d729}{site\+\_\+ycoord}
+\item 
+std\+::vector$<$ float $>$ \hyperlink{classSolver_a8c9d9b52656069625d10ba854680f118}{site\+\_\+wind\+\_\+dir}
+\item 
+std\+::vector$<$ float $>$ \hyperlink{classSolver_a7ca18ea25f9117d2c43f7ea7cf1569e6}{site\+\_\+z0}
+\item 
+std\+::vector$<$ float $>$ \hyperlink{classSolver_a838b82880aa58582918678eb7b969938}{site\+\_\+z\+\_\+ref}
+\item 
+std\+::vector$<$ float $>$ \hyperlink{classSolver_adae403dd4db1cf42265cfd74f3ff9452}{site\+\_\+\+U\+\_\+ref}
+\item 
+\mbox{\Hypertarget{classSolver_ab65a76ec3befd44f11e817fdef8f47a6}\label{classSolver_ab65a76ec3befd44f11e817fdef8f47a6}} 
+std\+::vector$<$ float $>$ \hyperlink{classSolver_ab65a76ec3befd44f11e817fdef8f47a6}{e}
+\begin{DoxyCompactList}\small\item\em Declare coefficients for S\+OR solver. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classSolver_ab54b33f50a45b825f4539384f35f61d9}\label{classSolver_ab54b33f50a45b825f4539384f35f61d9}} 
+std\+::vector$<$ float $>$ {\bfseries f}
+\item 
+\mbox{\Hypertarget{classSolver_a26c3952745b8244e167a6b92e7a4a3c3}\label{classSolver_a26c3952745b8244e167a6b92e7a4a3c3}} 
+std\+::vector$<$ float $>$ {\bfseries g}
+\item 
+\mbox{\Hypertarget{classSolver_a17a3e816297c81a3d4a7af3820884774}\label{classSolver_a17a3e816297c81a3d4a7af3820884774}} 
+std\+::vector$<$ float $>$ {\bfseries h}
+\item 
+\mbox{\Hypertarget{classSolver_ae5e24f7a9bdda4c664244cb11316feef}\label{classSolver_ae5e24f7a9bdda4c664244cb11316feef}} 
+std\+::vector$<$ float $>$ {\bfseries m}
+\item 
+\mbox{\Hypertarget{classSolver_a53c23907e08c2ccdffbd9001b16a72e2}\label{classSolver_a53c23907e08c2ccdffbd9001b16a72e2}} 
+std\+::vector$<$ float $>$ {\bfseries n}
+\item 
+\mbox{\Hypertarget{classSolver_aaf60f18219d1d08959b9a6fa209d5e17}\label{classSolver_aaf60f18219d1d08959b9a6fa209d5e17}} 
+std\+::vector$<$ double $>$ \hyperlink{classSolver_aaf60f18219d1d08959b9a6fa209d5e17}{u0}
+\begin{DoxyCompactList}\small\item\em Declaration of initial wind components (u0,v0,w0) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classSolver_ac5900dc7c2afdaaea09fbadb1e415276}\label{classSolver_ac5900dc7c2afdaaea09fbadb1e415276}} 
+std\+::vector$<$ double $>$ {\bfseries v0}
+\item 
+\mbox{\Hypertarget{classSolver_afcf2572409568d3056b396a4b3ceae54}\label{classSolver_afcf2572409568d3056b396a4b3ceae54}} 
+std\+::vector$<$ double $>$ {\bfseries w0}
+\item 
+std\+::vector$<$ double $>$ \hyperlink{classSolver_aaca74be9e1a11be0c7a480c4202670e7}{R}
+\item 
+\mbox{\Hypertarget{classSolver_a4ef34a205c0f10ac6aebe746865c5560}\label{classSolver_a4ef34a205c0f10ac6aebe746865c5560}} 
+std\+::vector$<$ double $>$ \hyperlink{classSolver_a4ef34a205c0f10ac6aebe746865c5560}{u}
+\begin{DoxyCompactList}\small\item\em Declaration of final velocity field components (u,v,w) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classSolver_ae0521e44d6759661ee87b8cad4d8880c}\label{classSolver_ae0521e44d6759661ee87b8cad4d8880c}} 
+std\+::vector$<$ double $>$ {\bfseries v}
+\item 
+\mbox{\Hypertarget{classSolver_afab3c620a5ee2755f725347a834d8689}\label{classSolver_afab3c620a5ee2755f725347a834d8689}} 
+std\+::vector$<$ double $>$ {\bfseries w}
+\item 
+\mbox{\Hypertarget{classSolver_a7cbf1a351c061c4d33e977ae95e246ef}\label{classSolver_a7cbf1a351c061c4d33e977ae95e246ef}} 
+std\+::vector$<$ double $>$ \hyperlink{classSolver_a7cbf1a351c061c4d33e977ae95e246ef}{lambda}
+\begin{DoxyCompactList}\small\item\em Declaration of Lagrange multipliers. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classSolver_a479deb1cb4d561d0389fc9d14aa0fc0d}\label{classSolver_a479deb1cb4d561d0389fc9d14aa0fc0d}} 
+std\+::vector$<$ double $>$ {\bfseries lambda\+\_\+old}
+\item 
+\mbox{\Hypertarget{classSolver_af7773bf4c9fce880f071bd47ba2bcf28}\label{classSolver_af7773bf4c9fce880f071bd47ba2bcf28}} 
+std\+::vector$<$ int $>$ {\bfseries icellflag}
+\item 
+\mbox{\Hypertarget{classSolver_a3c7a2b93b76bc0c219740988e8f0bbe3}\label{classSolver_a3c7a2b93b76bc0c219740988e8f0bbe3}} 
+float \hyperlink{classSolver_a3c7a2b93b76bc0c219740988e8f0bbe3}{max\+\_\+velmag}
+\begin{DoxyCompactList}\small\item\em \hyperlink{classCell}{Cell} index flag (0 = building, 1 = fluid) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classSolver_a560d2a46322206e831c0395f3933f1b0}\label{classSolver_a560d2a46322206e831c0395f3933f1b0}} 
+std\+::vector$<$ \hyperlink{classBuilding}{Building} $\ast$ $>$ {\bfseries buildings}
+\item 
+\mbox{\Hypertarget{classSolver_a9b516765134fb4193329639761924cf7}\label{classSolver_a9b516765134fb4193329639761924cf7}} 
+\hyperlink{classMesh}{Mesh} $\ast$ {\bfseries mesh}
+\item 
+int \hyperlink{classSolver_ada5e48b402bea1092dc90d2fa7d374e9}{rooftop\+Flag}
+\item 
+int \hyperlink{classSolver_a597d486a292558f5f55db306eeec42d1}{upwind\+Cavity\+Flag}
+\item 
+int \hyperlink{classSolver_af05b7600810c10dbf97b926bd67b71da}{street\+Canyon\+Flag}
+\item 
+int \hyperlink{classSolver_ad30bcedb245dc79e937cbf7776fc27d7}{street\+Intersection\+Flag}
+\item 
+int \hyperlink{classSolver_a5de7954b3723e984ef9c4963dfedcb04}{wake\+Flag}
+\item 
+int \hyperlink{classSolver_a243552b62125c493cd0f08f3bbfe3723}{sidewall\+Flag}
+\item 
+\mbox{\Hypertarget{classSolver_a21a65352d2b9fe246309a54a1fb916c0}\label{classSolver_a21a65352d2b9fe246309a54a1fb916c0}} 
+\hyperlink{classCell}{Cell} $\ast$ {\bfseries cells}
+\item 
+\mbox{\Hypertarget{classSolver_a0a19a30f249bc14ce15915c2cb533f7f}\label{classSolver_a0a19a30f249bc14ce15915c2cb533f7f}} 
+\hyperlink{classDTEHeightField}{D\+T\+E\+Height\+Field} $\ast$ {\bfseries D\+T\+E\+HF}
+\item 
+\mbox{\Hypertarget{classSolver_a65a58db8e3b6ff0938f297d959298441}\label{classSolver_a65a58db8e3b6ff0938f297d959298441}} 
+float {\bfseries z0}
+\item 
+const int \hyperlink{classSolver_a1dba41a0d2c04b18cf121e2730a5d2f0}{alpha1} = 1
+\item 
+const int \hyperlink{classSolver_ac6cd00ae8ed99b0375a15fd0973d674b}{alpha2} = 1
+\item 
+\mbox{\Hypertarget{classSolver_af870716dd37bbf5710fde9c9da2c450a}\label{classSolver_af870716dd37bbf5710fde9c9da2c450a}} 
+const float {\bfseries eta} = pow(\hyperlink{classSolver_a1dba41a0d2c04b18cf121e2730a5d2f0}{alpha1}/\hyperlink{classSolver_ac6cd00ae8ed99b0375a15fd0973d674b}{alpha2}, 2.\+0)
+\item 
+\mbox{\Hypertarget{classSolver_a5744d5828cc41b1981141d780c30b1c4}\label{classSolver_a5744d5828cc41b1981141d780c30b1c4}} 
+const float {\bfseries A} = pow(dx/dy, 2.\+0)
+\item 
+\mbox{\Hypertarget{classSolver_a0f0aa4fa9d7a1a92453db21b17ad73db}\label{classSolver_a0f0aa4fa9d7a1a92453db21b17ad73db}} 
+const float {\bfseries B} = eta$\ast$pow(dx/\hyperlink{classSolver_aed4366cb221b3429a878cb39a06b0ef4}{dz}, 2.\+0)
+\item 
+const float \hyperlink{classSolver_aa97117b666a33e9a70963f0da7fbbcd5}{tol} = 1e-\/9
+\item 
+const float \hyperlink{classSolver_a5b7c9bb1344ba12a12fbf1820d2b1711}{omega} = 1.\+78
+\item 
+\mbox{\Hypertarget{classSolver_ac27a8d6209b24e812b6b17e7f51676eb}\label{classSolver_ac27a8d6209b24e812b6b17e7f51676eb}} 
+const float {\bfseries pi} = 4.\+0f $\ast$ atan(1.\+0)
+\item 
+long \hyperlink{classSolver_a6d8fd890a91082577b9aab319ffe705b}{numcell\+\_\+cent}
+\item 
+long \hyperlink{classSolver_a2da3e1b65b167e21ba94610c3c2a8b9e}{numface\+\_\+cent}
+\item 
+int \hyperlink{classSolver_a6600e00574807ef15d5089110a9d05d0}{icell\+\_\+face}
+\item 
+int \hyperlink{classSolver_a87eb89d205a491f3c6536163eeac9e3a}{icell\+\_\+cent}
+\item 
+\mbox{\Hypertarget{classSolver_ac6207cbb3da30048b6b7da0467371141}\label{classSolver_ac6207cbb3da30048b6b7da0467371141}} 
+float $\ast$ {\bfseries d\+\_\+e}
+\item 
+\mbox{\Hypertarget{classSolver_a5591981427d26e6d923b0ac12d333d64}\label{classSolver_a5591981427d26e6d923b0ac12d333d64}} 
+float $\ast$ {\bfseries d\+\_\+f}
+\item 
+\mbox{\Hypertarget{classSolver_a270fdfdaa3e0c252d4c1e84c6f2bef50}\label{classSolver_a270fdfdaa3e0c252d4c1e84c6f2bef50}} 
+float $\ast$ {\bfseries d\+\_\+g}
+\item 
+\mbox{\Hypertarget{classSolver_ae708f693b743b5939f88a9624063d39b}\label{classSolver_ae708f693b743b5939f88a9624063d39b}} 
+float $\ast$ {\bfseries d\+\_\+h}
+\item 
+\mbox{\Hypertarget{classSolver_ab3729adae1ab25ee5fe1265100ea7225}\label{classSolver_ab3729adae1ab25ee5fe1265100ea7225}} 
+float $\ast$ {\bfseries d\+\_\+m}
+\item 
+\mbox{\Hypertarget{classSolver_add6e093a1b6b6b8c00b934415dc7074b}\label{classSolver_add6e093a1b6b6b8c00b934415dc7074b}} 
+float $\ast$ {\bfseries d\+\_\+n}
+\item 
+\mbox{\Hypertarget{classSolver_ac9743d00efa4366b6a1c6a5b2f0538bf}\label{classSolver_ac9743d00efa4366b6a1c6a5b2f0538bf}} 
+double $\ast$ {\bfseries d\+\_\+R}
+\item 
+\mbox{\Hypertarget{classSolver_a30c2fca173a23bd9808246601720d01e}\label{classSolver_a30c2fca173a23bd9808246601720d01e}} 
+double $\ast$ \hyperlink{classSolver_a30c2fca173a23bd9808246601720d01e}{d\+\_\+lambda}
+\begin{DoxyCompactList}\small\item\em \begin{quote}
+Divergence of initial velocity field \end{quote}
+\end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classSolver_a91977bd785a8bf99c5cf19f108c6b146}\label{classSolver_a91977bd785a8bf99c5cf19f108c6b146}} 
+double $\ast$ {\bfseries d\+\_\+lambda\+\_\+old}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This class declares and defines variables required for both solvers 
+
+\subsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classSolver_a0df0752d39f016c7dc636d8c46274218}\label{classSolver_a0df0752d39f016c7dc636d8c46274218}} 
+\index{Solver@{Solver}!Solver@{Solver}}
+\index{Solver@{Solver}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{Solver()}{Solver()}}
+{\footnotesize\ttfamily Solver\+::\+Solver (\begin{DoxyParamCaption}\item[{\hyperlink{classURBInputData}{U\+R\+B\+Input\+Data} $\ast$}]{U\+ID,  }\item[{\hyperlink{classDTEHeightField}{D\+T\+E\+Height\+Field} $\ast$}]{D\+T\+E\+HF }\end{DoxyParamCaption})}
+
+$<$ number of cells in x-\/direction
+
+$<$ number of cells in y-\/direction
+
+$<$ number of cells in z-\/direction
+
++1 for Staggered grid
+
++1 for Staggered grid
+
++2 for staggered grid and ghost cell
+
+$<$ Grid resolution in x-\/direction
+
+$<$ Grid resolution in y-\/direction
+
+$<$ Grid resolution in z-\/direction
+
+$<$ Total number of cell-\/centered values in domain
+
+$<$ Total number of face-\/centered values in domain
+
+$<$ Location of face centers in x-\/dir
+
+$<$ Location of face centers in y-\/dir 
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{classSolver_a66fa054cbf52fd6c184386fe11f9cadf}\label{classSolver_a66fa054cbf52fd6c184386fe11f9cadf}} 
+\index{Solver@{Solver}!define\+Walls@{define\+Walls}}
+\index{define\+Walls@{define\+Walls}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{define\+Walls()}{defineWalls()}}
+{\footnotesize\ttfamily void Solver\+::define\+Walls (\begin{DoxyParamCaption}\item[{int $\ast$}]{i\+Cell\+Flag,  }\item[{float $\ast$}]{n,  }\item[{float $\ast$}]{m,  }\item[{float $\ast$}]{f,  }\item[{float $\ast$}]{e,  }\item[{float $\ast$}]{h,  }\item[{float $\ast$}]{g }\end{DoxyParamCaption})}
+
+Lineralized index for cell centered values
+
+Wall bellow
+
+Wall above
+
+Wall in back
+
+Wall in front
+
+Wall on right
+
+Wall on left
+
+New boundary condition implementation
+
+Lineralized index for cell centered values 
+
+\subsection{Member Data Documentation}
+\mbox{\Hypertarget{classSolver_a1dba41a0d2c04b18cf121e2730a5d2f0}\label{classSolver_a1dba41a0d2c04b18cf121e2730a5d2f0}} 
+\index{Solver@{Solver}!alpha1@{alpha1}}
+\index{alpha1@{alpha1}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{alpha1}{alpha1}}
+{\footnotesize\ttfamily const int Solver\+::alpha1 = 1\hspace{0.3cm}{\ttfamily [protected]}}
+
+Gaussian precision moduli \mbox{\Hypertarget{classSolver_ac6cd00ae8ed99b0375a15fd0973d674b}\label{classSolver_ac6cd00ae8ed99b0375a15fd0973d674b}} 
+\index{Solver@{Solver}!alpha2@{alpha2}}
+\index{alpha2@{alpha2}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{alpha2}{alpha2}}
+{\footnotesize\ttfamily const int Solver\+::alpha2 = 1\hspace{0.3cm}{\ttfamily [protected]}}
+
+Gaussian precision moduli \mbox{\Hypertarget{classSolver_acca22a72409a3ccff8662d0000358512}\label{classSolver_acca22a72409a3ccff8662d0000358512}} 
+\index{Solver@{Solver}!dxy@{dxy}}
+\index{dxy@{dxy}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{dxy}{dxy}}
+{\footnotesize\ttfamily float Solver\+::dxy\hspace{0.3cm}{\ttfamily [protected]}}
+
+Minimum value between dx and dy \mbox{\Hypertarget{classSolver_aed4366cb221b3429a878cb39a06b0ef4}\label{classSolver_aed4366cb221b3429a878cb39a06b0ef4}} 
+\index{Solver@{Solver}!dz@{dz}}
+\index{dz@{dz}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{dz}{dz}}
+{\footnotesize\ttfamily float Solver\+::dz\hspace{0.3cm}{\ttfamily [protected]}}
+
+Grid resolution \mbox{\Hypertarget{classSolver_a87eb89d205a491f3c6536163eeac9e3a}\label{classSolver_a87eb89d205a491f3c6536163eeac9e3a}} 
+\index{Solver@{Solver}!icell\+\_\+cent@{icell\+\_\+cent}}
+\index{icell\+\_\+cent@{icell\+\_\+cent}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{icell\+\_\+cent}{icell\_cent}}
+{\footnotesize\ttfamily int Solver\+::icell\+\_\+cent\hspace{0.3cm}{\ttfamily [protected]}}
+
+cell-\/center index \mbox{\Hypertarget{classSolver_a6600e00574807ef15d5089110a9d05d0}\label{classSolver_a6600e00574807ef15d5089110a9d05d0}} 
+\index{Solver@{Solver}!icell\+\_\+face@{icell\+\_\+face}}
+\index{icell\+\_\+face@{icell\+\_\+face}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{icell\+\_\+face}{icell\_face}}
+{\footnotesize\ttfamily int Solver\+::icell\+\_\+face\hspace{0.3cm}{\ttfamily [protected]}}
+
+cell-\/face index \mbox{\Hypertarget{classSolver_aa42a6832b9dd82be64b07071135b69e8}\label{classSolver_aa42a6832b9dd82be64b07071135b69e8}} 
+\index{Solver@{Solver}!itermax@{itermax}}
+\index{itermax@{itermax}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{itermax}{itermax}}
+{\footnotesize\ttfamily int Solver\+::itermax\hspace{0.3cm}{\ttfamily [protected]}}
+
+Maximum number of iterations \mbox{\Hypertarget{classSolver_a0edd9bd90200b40133cc007c9f9600bb}\label{classSolver_a0edd9bd90200b40133cc007c9f9600bb}} 
+\index{Solver@{Solver}!num\+\_\+sites@{num\+\_\+sites}}
+\index{num\+\_\+sites@{num\+\_\+sites}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{num\+\_\+sites}{num\_sites}}
+{\footnotesize\ttfamily int Solver\+::num\+\_\+sites\hspace{0.3cm}{\ttfamily [protected]}}
+
+number of data entry sites \mbox{\Hypertarget{classSolver_a6d8fd890a91082577b9aab319ffe705b}\label{classSolver_a6d8fd890a91082577b9aab319ffe705b}} 
+\index{Solver@{Solver}!numcell\+\_\+cent@{numcell\+\_\+cent}}
+\index{numcell\+\_\+cent@{numcell\+\_\+cent}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{numcell\+\_\+cent}{numcell\_cent}}
+{\footnotesize\ttfamily long Solver\+::numcell\+\_\+cent\hspace{0.3cm}{\ttfamily [protected]}}
+
+Total number of cell-\/centered values in domain \mbox{\Hypertarget{classSolver_a2da3e1b65b167e21ba94610c3c2a8b9e}\label{classSolver_a2da3e1b65b167e21ba94610c3c2a8b9e}} 
+\index{Solver@{Solver}!numface\+\_\+cent@{numface\+\_\+cent}}
+\index{numface\+\_\+cent@{numface\+\_\+cent}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{numface\+\_\+cent}{numface\_cent}}
+{\footnotesize\ttfamily long Solver\+::numface\+\_\+cent\hspace{0.3cm}{\ttfamily [protected]}}
+
+Total number of face-\/centered values in domain \mbox{\Hypertarget{classSolver_a4312c5a1ff7a5eba3eb8d7ef3fed0190}\label{classSolver_a4312c5a1ff7a5eba3eb8d7ef3fed0190}} 
+\index{Solver@{Solver}!nz@{nz}}
+\index{nz@{nz}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{nz}{nz}}
+{\footnotesize\ttfamily int Solver\+::nz\hspace{0.3cm}{\ttfamily [protected]}}
+
+number of cells \mbox{\Hypertarget{classSolver_a5b7c9bb1344ba12a12fbf1820d2b1711}\label{classSolver_a5b7c9bb1344ba12a12fbf1820d2b1711}} 
+\index{Solver@{Solver}!omega@{omega}}
+\index{omega@{omega}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{omega}{omega}}
+{\footnotesize\ttfamily const float Solver\+::omega = 1.\+78\hspace{0.3cm}{\ttfamily [protected]}}
+
+Over-\/relaxation factor \mbox{\Hypertarget{classSolver_aaca74be9e1a11be0c7a480c4202670e7}\label{classSolver_aaca74be9e1a11be0c7a480c4202670e7}} 
+\index{Solver@{Solver}!R@{R}}
+\index{R@{R}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{R}{R}}
+{\footnotesize\ttfamily std\+::vector$<$double$>$ Solver\+::R\hspace{0.3cm}{\ttfamily [protected]}}
+
+Divergence of initial velocity field \mbox{\Hypertarget{classSolver_ada5e48b402bea1092dc90d2fa7d374e9}\label{classSolver_ada5e48b402bea1092dc90d2fa7d374e9}} 
+\index{Solver@{Solver}!rooftop\+Flag@{rooftop\+Flag}}
+\index{rooftop\+Flag@{rooftop\+Flag}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{rooftop\+Flag}{rooftopFlag}}
+{\footnotesize\ttfamily int Solver\+::rooftop\+Flag\hspace{0.3cm}{\ttfamily [protected]}}
+
+Rooftop flag \mbox{\Hypertarget{classSolver_a243552b62125c493cd0f08f3bbfe3723}\label{classSolver_a243552b62125c493cd0f08f3bbfe3723}} 
+\index{Solver@{Solver}!sidewall\+Flag@{sidewall\+Flag}}
+\index{sidewall\+Flag@{sidewall\+Flag}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{sidewall\+Flag}{sidewallFlag}}
+{\footnotesize\ttfamily int Solver\+::sidewall\+Flag\hspace{0.3cm}{\ttfamily [protected]}}
+
+Sidewall flag \mbox{\Hypertarget{classSolver_ad28319be4f9915bec3840aadd083c2ae}\label{classSolver_ad28319be4f9915bec3840aadd083c2ae}} 
+\index{Solver@{Solver}!site\+\_\+blayer\+\_\+flag@{site\+\_\+blayer\+\_\+flag}}
+\index{site\+\_\+blayer\+\_\+flag@{site\+\_\+blayer\+\_\+flag}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{site\+\_\+blayer\+\_\+flag}{site\_blayer\_flag}}
+{\footnotesize\ttfamily std\+::vector$<$int$>$ Solver\+::site\+\_\+blayer\+\_\+flag\hspace{0.3cm}{\ttfamily [protected]}}
+
+site boundary layer flag \mbox{\Hypertarget{classSolver_ad5f6e755ca6e125ae1499afe1930dfcf}\label{classSolver_ad5f6e755ca6e125ae1499afe1930dfcf}} 
+\index{Solver@{Solver}!site\+\_\+one\+\_\+overL@{site\+\_\+one\+\_\+overL}}
+\index{site\+\_\+one\+\_\+overL@{site\+\_\+one\+\_\+overL}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{site\+\_\+one\+\_\+overL}{site\_one\_overL}}
+{\footnotesize\ttfamily std\+::vector$<$float$>$ Solver\+::site\+\_\+one\+\_\+overL\hspace{0.3cm}{\ttfamily [protected]}}
+
+Reciprocal Monin-\/\+Obukhov length (1/m) \mbox{\Hypertarget{classSolver_adae403dd4db1cf42265cfd74f3ff9452}\label{classSolver_adae403dd4db1cf42265cfd74f3ff9452}} 
+\index{Solver@{Solver}!site\+\_\+\+U\+\_\+ref@{site\+\_\+\+U\+\_\+ref}}
+\index{site\+\_\+\+U\+\_\+ref@{site\+\_\+\+U\+\_\+ref}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{site\+\_\+\+U\+\_\+ref}{site\_U\_ref}}
+{\footnotesize\ttfamily std\+::vector$<$float$>$ Solver\+::site\+\_\+\+U\+\_\+ref\hspace{0.3cm}{\ttfamily [protected]}}
+
+site measured velocity \mbox{\Hypertarget{classSolver_a8c9d9b52656069625d10ba854680f118}\label{classSolver_a8c9d9b52656069625d10ba854680f118}} 
+\index{Solver@{Solver}!site\+\_\+wind\+\_\+dir@{site\+\_\+wind\+\_\+dir}}
+\index{site\+\_\+wind\+\_\+dir@{site\+\_\+wind\+\_\+dir}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{site\+\_\+wind\+\_\+dir}{site\_wind\_dir}}
+{\footnotesize\ttfamily std\+::vector$<$float$>$ Solver\+::site\+\_\+wind\+\_\+dir\hspace{0.3cm}{\ttfamily [protected]}}
+
+site wind wind direction \mbox{\Hypertarget{classSolver_a431d4f3051f3c29aabccb5e539e91f4d}\label{classSolver_a431d4f3051f3c29aabccb5e539e91f4d}} 
+\index{Solver@{Solver}!site\+\_\+xcoord@{site\+\_\+xcoord}}
+\index{site\+\_\+xcoord@{site\+\_\+xcoord}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{site\+\_\+xcoord}{site\_xcoord}}
+{\footnotesize\ttfamily std\+::vector$<$float$>$ Solver\+::site\+\_\+xcoord\hspace{0.3cm}{\ttfamily [protected]}}
+
+location of the measuring site in x-\/direction \mbox{\Hypertarget{classSolver_a00a819ad1ff7e520b23488a25f43d729}\label{classSolver_a00a819ad1ff7e520b23488a25f43d729}} 
+\index{Solver@{Solver}!site\+\_\+ycoord@{site\+\_\+ycoord}}
+\index{site\+\_\+ycoord@{site\+\_\+ycoord}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{site\+\_\+ycoord}{site\_ycoord}}
+{\footnotesize\ttfamily std\+::vector$<$float$>$ Solver\+::site\+\_\+ycoord\hspace{0.3cm}{\ttfamily [protected]}}
+
+location of the measuring site in y-\/direction \mbox{\Hypertarget{classSolver_a7ca18ea25f9117d2c43f7ea7cf1569e6}\label{classSolver_a7ca18ea25f9117d2c43f7ea7cf1569e6}} 
+\index{Solver@{Solver}!site\+\_\+z0@{site\+\_\+z0}}
+\index{site\+\_\+z0@{site\+\_\+z0}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{site\+\_\+z0}{site\_z0}}
+{\footnotesize\ttfamily std\+::vector$<$float$>$ Solver\+::site\+\_\+z0\hspace{0.3cm}{\ttfamily [protected]}}
+
+site surface roughness \mbox{\Hypertarget{classSolver_a838b82880aa58582918678eb7b969938}\label{classSolver_a838b82880aa58582918678eb7b969938}} 
+\index{Solver@{Solver}!site\+\_\+z\+\_\+ref@{site\+\_\+z\+\_\+ref}}
+\index{site\+\_\+z\+\_\+ref@{site\+\_\+z\+\_\+ref}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{site\+\_\+z\+\_\+ref}{site\_z\_ref}}
+{\footnotesize\ttfamily std\+::vector$<$float$>$ Solver\+::site\+\_\+z\+\_\+ref\hspace{0.3cm}{\ttfamily [protected]}}
+
+measuring sensor height \mbox{\Hypertarget{classSolver_af05b7600810c10dbf97b926bd67b71da}\label{classSolver_af05b7600810c10dbf97b926bd67b71da}} 
+\index{Solver@{Solver}!street\+Canyon\+Flag@{street\+Canyon\+Flag}}
+\index{street\+Canyon\+Flag@{street\+Canyon\+Flag}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{street\+Canyon\+Flag}{streetCanyonFlag}}
+{\footnotesize\ttfamily int Solver\+::street\+Canyon\+Flag\hspace{0.3cm}{\ttfamily [protected]}}
+
+Street canyon flag \mbox{\Hypertarget{classSolver_ad30bcedb245dc79e937cbf7776fc27d7}\label{classSolver_ad30bcedb245dc79e937cbf7776fc27d7}} 
+\index{Solver@{Solver}!street\+Intersection\+Flag@{street\+Intersection\+Flag}}
+\index{street\+Intersection\+Flag@{street\+Intersection\+Flag}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{street\+Intersection\+Flag}{streetIntersectionFlag}}
+{\footnotesize\ttfamily int Solver\+::street\+Intersection\+Flag\hspace{0.3cm}{\ttfamily [protected]}}
+
+Street intersection flag \mbox{\Hypertarget{classSolver_aa97117b666a33e9a70963f0da7fbbcd5}\label{classSolver_aa97117b666a33e9a70963f0da7fbbcd5}} 
+\index{Solver@{Solver}!tol@{tol}}
+\index{tol@{tol}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{tol}{tol}}
+{\footnotesize\ttfamily const float Solver\+::tol = 1e-\/9\hspace{0.3cm}{\ttfamily [protected]}}
+
+Error tolerance \mbox{\Hypertarget{classSolver_a597d486a292558f5f55db306eeec42d1}\label{classSolver_a597d486a292558f5f55db306eeec42d1}} 
+\index{Solver@{Solver}!upwind\+Cavity\+Flag@{upwind\+Cavity\+Flag}}
+\index{upwind\+Cavity\+Flag@{upwind\+Cavity\+Flag}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{upwind\+Cavity\+Flag}{upwindCavityFlag}}
+{\footnotesize\ttfamily int Solver\+::upwind\+Cavity\+Flag\hspace{0.3cm}{\ttfamily [protected]}}
+
+Upwind cavity flag \mbox{\Hypertarget{classSolver_a5de7954b3723e984ef9c4963dfedcb04}\label{classSolver_a5de7954b3723e984ef9c4963dfedcb04}} 
+\index{Solver@{Solver}!wake\+Flag@{wake\+Flag}}
+\index{wake\+Flag@{wake\+Flag}!Solver@{Solver}}
+\subsubsection{\texorpdfstring{wake\+Flag}{wakeFlag}}
+{\footnotesize\ttfamily int Solver\+::wake\+Flag\hspace{0.3cm}{\ttfamily [protected]}}
+
+Wake flag 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+/home/behnam/\+C\+U\+D\+A-\/\+U\+R\+B/src/Solver.\+h\item 
+/home/behnam/\+C\+U\+D\+A-\/\+U\+R\+B/src/Solver.\+cpp\end{DoxyCompactItemize}

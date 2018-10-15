@@ -9,6 +9,7 @@ private:
 
 
 public:
+<<<<<<< HEAD
 	float x_start;
 	float y_start;
 	float L;
@@ -20,3 +21,12 @@ public:
 
 	virtual void parseValues() = 0;
 };
+=======
+	float xFo;
+	float yFo;
+	float length;
+	float width;
+
+	virtual void parseValues() = 0;
+};
+>>>>>>> origin/doxygenAdd

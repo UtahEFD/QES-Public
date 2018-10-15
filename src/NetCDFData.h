@@ -27,7 +27,11 @@ private:
 
 public:
 
+<<<<<<< HEAD
 	void getData(float* newX, float* newY, float* newZ, std::vector<double> newU, std::vector<double> newV, std::vector<double> newW, int newDX, int newDY, int newDZ);
+=======
+	void getData(float* newX, float* newY, float* newZ, double* newU, double* newV, double* newW, int newDX, int newDY, int newDZ);
+>>>>>>> origin/doxygenAdd
 
 	void getDataICell(int* newICellFlags, float* newX, float* newY, float* newZ, int nDX, int nDY, int nDZ, long newSize);
 
@@ -38,4 +42,8 @@ public:
 	bool outputCutCellFlags(std::string fileName);
 
 	bool outputCellFaceResults(std::string fileName);
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> origin/doxygenAdd
