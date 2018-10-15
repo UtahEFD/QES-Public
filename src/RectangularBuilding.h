@@ -115,7 +115,7 @@ public:
 				}
 			}
     	}
-		
+
 		/// defining building solid cells
 		for (int k = 0; k < k_end; k++){
 			for (int j = j_start; j < j_end; j++){
@@ -133,7 +133,7 @@ public:
 				icellflag[icell_cent] = 0.0;
 			}
 		}
-   
+ 
 		float ***x_cut, ***y_cut, ***z_cut;
 		x_cut = new float** [numcell_cent]();
 		y_cut = new float** [numcell_cent]();
@@ -277,6 +277,184 @@ public:
 		for (int k=1; k<k_end; k++){		
 			icell_cut = i_cut_start + j_cut_start*(nx-1) + k*(nx-1)*(ny-1);
 			if (icellflag[icell_cut]==7){
+				num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][3] = 4;
+				num_points[icell_cut][5] = num_points[icell_cut][4] = 6;
+
+				y_cut[icell_cut][0][2] = y_cut[icell_cut][0][3] = dy;
+				y_cut[icell_cut][0][1] = y_cut[icell_cut][0][0] = 0.0;
+				z_cut[icell_cut][0][2] = z_cut[icell_cut][0][1] = 0.0;
+				z_cut[icell_cut][0][0] = z_cut[icell_cut][0][3] = dz;
+
+				y_cut[icell_cut][1][2] = y_cut[icell_cut][1][3] = y_start-j_cut_start*dy;
+				y_cut[icell_cut][1][1] = y_cut[icell_cut][1][0] = 0.0;
+				z_cut[icell_cut][1][2] = z_cut[icell_cut][1][1] = 0.0;
+				z_cut[icell_cut][1][0] = z_cut[icell_cut][1][3] = dz;
+
+				x_cut[icell_cut][2][0] = x_cut[icell_cut][2][3] = 0.0;
+				x_cut[icell_cut][2][1] = x_cut[icell_cut][2][2] = dx;
+				z_cut[icell_cut][2][0] = z_cut[icell_cut][2][1] = 0.0;
+				z_cut[icell_cut][2][2] = z_cut[icell_cut][2][3] = dz;
+			
+				x_cut[icell_cut][3][2] = x_cut[icell_cut][3][3] = x_start-i_cut_start*dx;
+				x_cut[icell_cut][3][0] = x_cut[icell_cut][3][1] = 0.0;
+				z_cut[icell_cut][3][0] = z_cut[icell_cut][3][3] = dz;
+				z_cut[icell_cut][3][2] = z_cut[icell_cut][3][1] = 0.0;
+
+				x_cut[icell_cut][4][0] = x_cut[icell_cut][4][1] = 0.0;
+				x_cut[icell_cut][4][2] = x_cut[icell_cut][4][3] = dx;
+				x_cut[icell_cut][4][4] = x_cut[icell_cut][4][5] = x_start-i_cut_start*dx;
+				y_cut[icell_cut][4][1] = y_cut[icell_cut][4][2] = 0.0;
+				y_cut[icell_cut][4][0] = y_cut[icell_cut][4][5] = dy;
+				y_cut[icell_cut][4][4] = y_cut[icell_cut][4][3] = y_start-j_cut_start*dy;
+	
+				x_cut[icell_cut][5][0] = x_cut[icell_cut][5][1] = 0.0;
+				x_cut[icell_cut][5][2] = x_cut[icell_cut][5][3] = dx;
+				x_cut[icell_cut][5][4] = x_cut[icell_cut][5][5] = x_start-i_cut_start*dx;
+				y_cut[icell_cut][5][1] = y_cut[icell_cut][5][2] = 0.0;
+				y_cut[icell_cut][5][3] = y_cut[icell_cut][5][4] = y_start-j_cut_start*dy;
+				y_cut[icell_cut][5][0] = y_cut[icell_cut][5][5] = dy;
+		
+			}
+		}
+
+		for (int k=1; k<k_end; k++){		
+			icell_cut = (i_cut_end-1) + j_cut_start*(nx-1) + k*(nx-1)*(ny-1);
+			if (icellflag[icell_cut]==7){
+
+				num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][3] = 4;
+				num_points[icell_cut][5] = num_points[icell_cut][4] = 6;
+	
+				y_cut[icell_cut][0][0] = y_cut[icell_cut][0][1] = 0.0;
+				y_cut[icell_cut][0][2] = y_cut[icell_cut][0][3] = y_start-j_cut_start*dy;
+				z_cut[icell_cut][0][0] = z_cut[icell_cut][0][3] = dz;
+				z_cut[icell_cut][0][1] = z_cut[icell_cut][0][2] = 0.0;
+
+				y_cut[icell_cut][1][2] = y_cut[icell_cut][1][3] = dy;
+				y_cut[icell_cut][1][1] = y_cut[icell_cut][1][0] = 0.0;
+				z_cut[icell_cut][1][2] = z_cut[icell_cut][1][1] = 0.0;
+				z_cut[icell_cut][1][0] = z_cut[icell_cut][1][3] = dz;
+				
+				x_cut[icell_cut][2][0] = x_cut[icell_cut][2][1] = 0.0;
+				x_cut[icell_cut][2][2] = x_cut[icell_cut][2][3] = dx;
+				z_cut[icell_cut][2][1] = z_cut[icell_cut][2][2] = 0.0;
+				z_cut[icell_cut][2][0] = z_cut[icell_cut][2][3] = dz;
+
+				x_cut[icell_cut][3][0] = x_cut[icell_cut][3][1] = x_start+L-i_end*dx;
+				x_cut[icell_cut][3][2] = x_cut[icell_cut][3][3] = dx;
+				z_cut[icell_cut][3][1] = z_cut[icell_cut][3][2] = 0.0;
+				z_cut[icell_cut][3][0] = z_cut[icell_cut][3][3] = dz;
+
+				y_cut[icell_cut][4][4] = y_cut[icell_cut][4][3] = dy;
+				y_cut[icell_cut][4][1] = y_cut[icell_cut][4][2] = 0.0;
+				y_cut[icell_cut][4][0] = y_cut[icell_cut][4][5] = y_start-j_cut_start*dy;
+				x_cut[icell_cut][4][0] = x_cut[icell_cut][4][1] = 0.0;
+				x_cut[icell_cut][4][2] = x_cut[icell_cut][4][3] = dx;
+				x_cut[icell_cut][4][4] = x_cut[icell_cut][4][5] = x_start+L-i_end*dx;
+	
+				y_cut[icell_cut][5][4] = y_cut[icell_cut][5][3] = dy;
+				y_cut[icell_cut][5][1] = y_cut[icell_cut][5][2] = 0.0;
+				y_cut[icell_cut][5][0] = y_cut[icell_cut][5][5] = y_start-j_cut_start*dy;
+				x_cut[icell_cut][5][0] = x_cut[icell_cut][5][1] = 0.0;
+				x_cut[icell_cut][5][2] = x_cut[icell_cut][5][3] = dx;
+				x_cut[icell_cut][5][4] = x_cut[icell_cut][5][5] = x_start+L-i_end*dx;
+
+			}
+		}
+
+		for (int k=1; k<k_end; k++){		
+			icell_cut = i_cut_start + (j_cut_end-1)*(nx-1) + k*(nx-1)*(ny-1);
+			if (icellflag[icell_cut]==7){
+
+
+				num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][3] = 4;
+				num_points[icell_cut][5] = num_points[icell_cut][4] = 6;
+
+				y_cut[icell_cut][0][2] = y_cut[icell_cut][0][3] = dy;
+				y_cut[icell_cut][0][1] = y_cut[icell_cut][0][0] = 0.0;
+				z_cut[icell_cut][0][2] = z_cut[icell_cut][0][1] = 0.0;
+				z_cut[icell_cut][0][0] = z_cut[icell_cut][0][3] = dz;
+
+				y_cut[icell_cut][1][2] = y_cut[icell_cut][1][3] = dy;
+				y_cut[icell_cut][1][1] = y_cut[icell_cut][1][0] = y_start+W-j_end*dy;
+				z_cut[icell_cut][1][2] = z_cut[icell_cut][1][1] = 0.0;
+				z_cut[icell_cut][1][0] = z_cut[icell_cut][1][3] = dz;
+
+				x_cut[icell_cut][2][2] = x_cut[icell_cut][2][3] = x_start-i_cut_start*dx;
+				x_cut[icell_cut][2][0] = x_cut[icell_cut][2][1] = 0.0;
+				z_cut[icell_cut][2][0] = z_cut[icell_cut][2][3] = dz;
+				z_cut[icell_cut][2][2] = z_cut[icell_cut][2][1] = 0.0;
+
+				x_cut[icell_cut][3][0] = x_cut[icell_cut][3][3] = 0.0;
+				x_cut[icell_cut][3][1] = x_cut[icell_cut][3][2] = dx;
+				z_cut[icell_cut][3][0] = z_cut[icell_cut][3][1] = 0.0;
+				z_cut[icell_cut][3][2] = z_cut[icell_cut][3][3] = dz;
+
+				x_cut[icell_cut][4][0] = x_cut[icell_cut][4][1] = 0.0;
+				x_cut[icell_cut][4][2] = x_cut[icell_cut][4][3] = x_start-i_cut_start*dx;
+				x_cut[icell_cut][4][4] = x_cut[icell_cut][4][5] = dx;
+				y_cut[icell_cut][4][1] = y_cut[icell_cut][4][2] = 0.0;
+				y_cut[icell_cut][4][0] = y_cut[icell_cut][4][5] = dy;
+				y_cut[icell_cut][4][4] = y_cut[icell_cut][4][3] = y_start+W-j_end*dy;
+	
+				x_cut[icell_cut][5][0] = x_cut[icell_cut][5][1] = 0.0;
+				x_cut[icell_cut][5][2] = x_cut[icell_cut][5][3] = x_start-i_cut_start*dx;
+				x_cut[icell_cut][5][4] = x_cut[icell_cut][5][5] = dx;
+				y_cut[icell_cut][5][1] = y_cut[icell_cut][5][2] = 0.0;
+				y_cut[icell_cut][5][0] = y_cut[icell_cut][5][5] = dy;
+				y_cut[icell_cut][5][4] = y_cut[icell_cut][5][3] = y_start+W-j_end*dy;
+
+			}
+		}
+
+		for (int k=1; k<k_end; k++){		
+			icell_cut = (i_cut_end-1) + (j_cut_end-1)*(nx-1) + k*(nx-1)*(ny-1);
+			if (icellflag[icell_cut]==7){
+
+
+				num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][3] = 4;
+				num_points[icell_cut][5] = num_points[icell_cut][4] = 6;
+	
+				y_cut[icell_cut][0][0] = y_cut[icell_cut][0][1] = y_start+W-j_end*dy;
+				y_cut[icell_cut][0][2] = y_cut[icell_cut][0][3] = dy;
+				z_cut[icell_cut][0][0] = z_cut[icell_cut][0][3] = dz;
+				z_cut[icell_cut][0][1] = z_cut[icell_cut][0][2] = 0.0;
+
+				y_cut[icell_cut][1][2] = y_cut[icell_cut][1][3] = dy;
+				y_cut[icell_cut][1][1] = y_cut[icell_cut][1][0] = 0.0;
+				z_cut[icell_cut][1][2] = z_cut[icell_cut][1][1] = 0.0;
+				z_cut[icell_cut][1][0] = z_cut[icell_cut][1][3] = dz;
+				
+				x_cut[icell_cut][2][0] = x_cut[icell_cut][2][1] = x_start+L-i_end*dx;
+				x_cut[icell_cut][2][2] = x_cut[icell_cut][2][3] = dx;
+				z_cut[icell_cut][2][1] = z_cut[icell_cut][2][2] = 0.0;
+				z_cut[icell_cut][2][0] = z_cut[icell_cut][2][3] = dz;
+
+				x_cut[icell_cut][3][0] = x_cut[icell_cut][3][1] = 0.0;
+				x_cut[icell_cut][3][2] = x_cut[icell_cut][3][3] = dx;
+				z_cut[icell_cut][3][1] = z_cut[icell_cut][3][2] = 0.0;
+				z_cut[icell_cut][3][0] = z_cut[icell_cut][3][3] = dz;
+
+				y_cut[icell_cut][4][3] = y_cut[icell_cut][4][4] = 0.0;
+				y_cut[icell_cut][4][0] = y_cut[icell_cut][4][5] = dy;
+				y_cut[icell_cut][4][1] = y_cut[icell_cut][4][2] = y_start+W-j_end*dy;
+				x_cut[icell_cut][4][0] = x_cut[icell_cut][4][1] = 0.0;
+				x_cut[icell_cut][4][2] = x_cut[icell_cut][4][3] = x_start+L-i_end*dx;
+				x_cut[icell_cut][4][4] = x_cut[icell_cut][4][5] = dx;
+	
+				y_cut[icell_cut][5][3] = y_cut[icell_cut][5][4] = 0.0;
+				y_cut[icell_cut][5][0] = y_cut[icell_cut][5][5] = dy;
+				y_cut[icell_cut][5][1] = y_cut[icell_cut][5][2] = y_start+W-j_end*dy;
+				x_cut[icell_cut][5][0] = x_cut[icell_cut][5][1] = 0.0;
+				x_cut[icell_cut][5][2] = x_cut[icell_cut][5][3] = x_start+L-i_end*dx;
+				x_cut[icell_cut][5][4] = x_cut[icell_cut][5][5] = dx;
+			}
+		}
+
+
+
+
+			icell_cut = i_cut_start + j_cut_start*(nx-1) + k_end*(nx-1)*(ny-1);
+			if (icellflag[icell_cut]==7){
 				num_points[icell_cut][0] = num_points[icell_cut][2] = num_points[icell_cut][5] = 4;
 				num_points[icell_cut][1] = num_points[icell_cut][3] = num_points[icell_cut][4] = 6;
 
@@ -316,10 +494,10 @@ public:
 				y_cut[icell_cut][4][2] = y_cut[icell_cut][4][3] = y_start-j_cut_start*dy;
 				y_cut[icell_cut][4][4] = y_cut[icell_cut][4][5] = dy;
 			}
-		}
 
-		for (int k=1; k<k_end; k++){		
-			icell_cut = (i_cut_end-1) + j_cut_start*(nx-1) + k*(nx-1)*(ny-1);
+
+
+			icell_cut = (i_cut_end-1) + j_cut_start*(nx-1) + k_end*(nx-1)*(ny-1);
 			if (icellflag[icell_cut]==7){
 				num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][5] = 4;
 				num_points[icell_cut][0] = num_points[icell_cut][3] = num_points[icell_cut][4] = 6;
@@ -360,187 +538,9 @@ public:
 				y_cut[icell_cut][4][2] = y_cut[icell_cut][4][3] = dy;
 				y_cut[icell_cut][4][4] = y_cut[icell_cut][4][5] = y_start-j_cut_start*dy;
 			}
-		}
-
-		for (int k=1; k<k_end; k++){		
-			icell_cut = i_cut_start + (j_cut_end-1)*(nx-1) + k*(nx-1)*(ny-1);
-			if (icellflag[icell_cut]==7){
-				num_points[icell_cut][0] = num_points[icell_cut][3] = num_points[icell_cut][5] = 4;
-				num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][4] = 6;
-	
-				y_cut[icell_cut][0][2] = y_cut[icell_cut][0][3] = dy;
-				y_cut[icell_cut][0][1] = y_cut[icell_cut][0][0] = 0.0;
-				z_cut[icell_cut][0][2] = z_cut[icell_cut][0][1] = 0.0;
-				z_cut[icell_cut][0][0] = z_cut[icell_cut][0][3] = dz;
-	
-				x_cut[icell_cut][3][0] = x_cut[icell_cut][3][3] = 0.0;
-				x_cut[icell_cut][3][1] = x_cut[icell_cut][3][2] = dx;
-				z_cut[icell_cut][3][0] = z_cut[icell_cut][3][1] = 0.0;
-				z_cut[icell_cut][3][2] = z_cut[icell_cut][3][3] = dz;
-			
-				x_cut[icell_cut][5][0] = x_cut[icell_cut][5][3] = 0.0;
-				x_cut[icell_cut][5][1] = x_cut[icell_cut][5][2] = dx;
-				y_cut[icell_cut][5][0] = y_cut[icell_cut][5][1] = 0.0;
-				y_cut[icell_cut][5][2] = y_cut[icell_cut][5][3] = dy;
-		
-				y_cut[icell_cut][1][4] = y_cut[icell_cut][1][5] = dy;
-				y_cut[icell_cut][1][1] = y_cut[icell_cut][1][0] = 0.0;
-				y_cut[icell_cut][1][3] = y_cut[icell_cut][1][2] = y_start+W-j_end*dy;
-				z_cut[icell_cut][1][4] = z_cut[icell_cut][1][3] = 0.0;
-				z_cut[icell_cut][1][2] = z_cut[icell_cut][1][1] = H-(k_end-1)*dz;
-				z_cut[icell_cut][1][0] = z_cut[icell_cut][1][5] = dz;
-	
-				x_cut[icell_cut][2][0] = x_cut[icell_cut][2][5] = 0.0;
-				x_cut[icell_cut][2][3] = x_cut[icell_cut][2][4] = dx;
-				x_cut[icell_cut][2][1] = x_cut[icell_cut][2][2] = x_start-i_cut_start*dx;
-				z_cut[icell_cut][2][0] = z_cut[icell_cut][2][1] = 0.0;
-				z_cut[icell_cut][2][2] = z_cut[icell_cut][2][3] = H-(k_end-1)*dz;
-				z_cut[icell_cut][2][4] = z_cut[icell_cut][2][5] = dz;
-
-				x_cut[icell_cut][4][0] = x_cut[icell_cut][4][5] = 0.0;
-				x_cut[icell_cut][4][1] = x_cut[icell_cut][4][2] = x_start-i_cut_start*dx;
-				x_cut[icell_cut][4][3] = x_cut[icell_cut][4][4] = dx;
-				y_cut[icell_cut][4][0] = y_cut[icell_cut][4][1] = 0.0;
-				y_cut[icell_cut][4][2] = y_cut[icell_cut][4][3] = y_start+W-j_end*dy;
-				y_cut[icell_cut][4][4] = y_cut[icell_cut][4][5] = dy;
-			}
-		}
-
-		for (int k=1; k<k_end; k++){		
-			icell_cut = (i_cut_end-1) + (j_cut_end-1)*(nx-1) + k*(nx-1)*(ny-1);
-			if (icellflag[icell_cut]==7){
-				num_points[icell_cut][1] = num_points[icell_cut][3] = num_points[icell_cut][5] = 4;
-				num_points[icell_cut][0] = num_points[icell_cut][2] = num_points[icell_cut][4] = 6;
-
-				y_cut[icell_cut][1][2] = y_cut[icell_cut][1][3] = dy;
-				y_cut[icell_cut][1][1] = y_cut[icell_cut][1][0] = 0.0;
-				z_cut[icell_cut][1][2] = z_cut[icell_cut][1][1] = 0.0;
-				z_cut[icell_cut][1][0] = z_cut[icell_cut][1][3] = dz;
-
-				x_cut[icell_cut][3][0] = x_cut[icell_cut][3][3] = 0.0;
-				x_cut[icell_cut][3][1] = x_cut[icell_cut][3][2] = dx;
-				z_cut[icell_cut][3][0] = z_cut[icell_cut][3][1] = 0.0;
-				z_cut[icell_cut][3][2] = z_cut[icell_cut][3][3] = dz;
-			
-				x_cut[icell_cut][5][0] = x_cut[icell_cut][5][3] = 0.0;
-				x_cut[icell_cut][5][1] = x_cut[icell_cut][5][2] = dx;
-				y_cut[icell_cut][5][0] = y_cut[icell_cut][5][1] = 0.0;
-				y_cut[icell_cut][5][2] = y_cut[icell_cut][5][3] = dy;
-		
-				y_cut[icell_cut][0][4] = y_cut[icell_cut][0][5] = dy;
-				y_cut[icell_cut][0][1] = y_cut[icell_cut][0][0] = 0.0;
-				y_cut[icell_cut][0][3] = y_cut[icell_cut][0][2] = y_start+W-j_end*dy;
-				z_cut[icell_cut][0][4] = z_cut[icell_cut][0][3] = 0.0;
-				z_cut[icell_cut][0][2] = z_cut[icell_cut][0][1] = H-(k_end-1)*dz;
-				z_cut[icell_cut][0][0] = z_cut[icell_cut][0][5] = dz;
-	
-				x_cut[icell_cut][2][0] = x_cut[icell_cut][2][5] = 0.0;
-				x_cut[icell_cut][2][3] = x_cut[icell_cut][2][4] = dx;
-				x_cut[icell_cut][2][1] = x_cut[icell_cut][2][2] = x_start+L-i_end*dx;
-				z_cut[icell_cut][2][0] = z_cut[icell_cut][2][1] = H-(k_end-1)*dz;
-				z_cut[icell_cut][2][2] = z_cut[icell_cut][2][3] = 0.0;
-				z_cut[icell_cut][2][4] = z_cut[icell_cut][2][5] = dz;
-
-				x_cut[icell_cut][4][0] = x_cut[icell_cut][4][5] = 0.0;
-				x_cut[icell_cut][4][1] = x_cut[icell_cut][4][2] = x_start+L-i_end*dx;
-				x_cut[icell_cut][4][3] = x_cut[icell_cut][4][4] = dx;
-				y_cut[icell_cut][4][0] = y_cut[icell_cut][4][1] = y_start+W-j_end*dy;
-				y_cut[icell_cut][4][2] = y_cut[icell_cut][4][3] = 0.0;
-				y_cut[icell_cut][4][4] = y_cut[icell_cut][4][5] = dy;
-			}
-		}
 
 
-
-
-			icell_cut = i_cut_start + j_cut_start*(nx-1) + k*(nx-1)*(ny-1);
-			if (icellflag[icell_cut]==7){
-				num_points[icell_cut][0] = num_points[icell_cut][2] = num_points[icell_cut][5] = 4;
-				num_points[icell_cut][1] = num_points[icell_cut][3] = num_points[icell_cut][4] = 6;
-
-				y_cut[icell_cut][0][2] = y_cut[icell_cut][0][3] = dy;
-				y_cut[icell_cut][0][1] = y_cut[icell_cut][0][0] = 0.0;
-				z_cut[icell_cut][0][2] = z_cut[icell_cut][0][1] = 0.0;
-				z_cut[icell_cut][0][0] = z_cut[icell_cut][0][3] = dz;
-
-				x_cut[icell_cut][2][0] = x_cut[icell_cut][2][3] = 0.0;
-				x_cut[icell_cut][2][1] = x_cut[icell_cut][2][2] = dx;
-				z_cut[icell_cut][2][0] = z_cut[icell_cut][2][1] = 0.0;
-				z_cut[icell_cut][2][2] = z_cut[icell_cut][2][3] = dz;
-			
-				x_cut[icell_cut][5][0] = x_cut[icell_cut][5][3] = 0.0;
-				x_cut[icell_cut][5][1] = x_cut[icell_cut][5][2] = dx;
-				y_cut[icell_cut][5][0] = y_cut[icell_cut][5][1] = 0.0;
-				y_cut[icell_cut][5][2] = y_cut[icell_cut][5][3] = dy;
-	
-				y_cut[icell_cut][1][4] = y_cut[icell_cut][1][5] = dy;
-				y_cut[icell_cut][1][1] = y_cut[icell_cut][1][0] = 0.0;
-				y_cut[icell_cut][1][3] = y_cut[icell_cut][1][2] = y_start-j_cut_start*dy;
-				z_cut[icell_cut][1][4] = z_cut[icell_cut][1][3] = H-(k_end-1)*dz;
-				z_cut[icell_cut][1][2] = z_cut[icell_cut][1][1] = 0.0;
-				z_cut[icell_cut][1][0] = z_cut[icell_cut][1][5] = dz;
-		
-				x_cut[icell_cut][3][0] = x_cut[icell_cut][3][5] = 0.0;
-				x_cut[icell_cut][3][3] = x_cut[icell_cut][3][4] = dx;
-				x_cut[icell_cut][3][1] = x_cut[icell_cut][3][2] = x_start-i_cut_start*dx;
-				z_cut[icell_cut][3][0] = z_cut[icell_cut][3][1] = 0.0;
-				z_cut[icell_cut][3][2] = z_cut[icell_cut][3][3] = H-(k_end-1)*dz;
-				z_cut[icell_cut][3][4] = z_cut[icell_cut][3][5] = dz;
-
-				x_cut[icell_cut][4][0] = x_cut[icell_cut][4][5] = 0.0;
-				x_cut[icell_cut][4][1] = x_cut[icell_cut][4][2] = dx;
-				x_cut[icell_cut][4][3] = x_cut[icell_cut][4][4] = x_start-i_cut_start*dx;
-				y_cut[icell_cut][4][0] = y_cut[icell_cut][4][1] = 0.0;
-				y_cut[icell_cut][4][2] = y_cut[icell_cut][4][3] = y_start-j_cut_start*dy;
-				y_cut[icell_cut][4][4] = y_cut[icell_cut][4][5] = dy;
-			}
-
-
-
-			icell_cut = (i_cut_end-1) + j_cut_start*(nx-1) + k*(nx-1)*(ny-1);
-			if (icellflag[icell_cut]==7){
-				num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][5] = 4;
-				num_points[icell_cut][0] = num_points[icell_cut][3] = num_points[icell_cut][4] = 6;
-	
-				y_cut[icell_cut][1][2] = y_cut[icell_cut][1][3] = dy;
-				y_cut[icell_cut][1][1] = y_cut[icell_cut][1][0] = 0.0;
-				z_cut[icell_cut][1][2] = z_cut[icell_cut][1][1] = 0.0;
-				z_cut[icell_cut][1][0] = z_cut[icell_cut][1][3] = dz;
-
-				x_cut[icell_cut][2][0] = x_cut[icell_cut][2][3] = 0.0;
-				x_cut[icell_cut][2][1] = x_cut[icell_cut][2][2] = dx;
-				z_cut[icell_cut][2][0] = z_cut[icell_cut][2][1] = 0.0;
-				z_cut[icell_cut][2][2] = z_cut[icell_cut][2][3] = dz;
-				
-				x_cut[icell_cut][5][0] = x_cut[icell_cut][5][3] = 0.0;
-				x_cut[icell_cut][5][1] = x_cut[icell_cut][5][2] = dx;
-				y_cut[icell_cut][5][0] = y_cut[icell_cut][5][1] = 0.0;
-				y_cut[icell_cut][5][2] = y_cut[icell_cut][5][3] = dy;
-	
-				y_cut[icell_cut][0][4] = y_cut[icell_cut][0][5] = dy;
-				y_cut[icell_cut][0][1] = y_cut[icell_cut][0][0] = 0.0;
-				y_cut[icell_cut][0][3] = y_cut[icell_cut][0][2] = y_start-j_cut_start*dy;
-				z_cut[icell_cut][0][4] = z_cut[icell_cut][0][3] = H-(k_end-1)*dz;
-				z_cut[icell_cut][0][2] = z_cut[icell_cut][0][1] = 0.0;
-				z_cut[icell_cut][0][0] = z_cut[icell_cut][0][5] = dz;
-	
-				x_cut[icell_cut][3][0] = x_cut[icell_cut][3][5] = 0.0;
-				x_cut[icell_cut][3][3] = x_cut[icell_cut][3][4] = dx;
-				x_cut[icell_cut][3][1] = x_cut[icell_cut][3][2] = x_start+L-i_end*dx;
-				z_cut[icell_cut][3][0] = z_cut[icell_cut][3][1] = H-(k_end-1)*dz;
-				z_cut[icell_cut][3][2] = z_cut[icell_cut][3][3] = 0.0;
-				z_cut[icell_cut][3][4] = z_cut[icell_cut][3][5] = dz;
-
-				x_cut[icell_cut][4][0] = x_cut[icell_cut][4][5] = 0.0;
-				x_cut[icell_cut][4][1] = x_cut[icell_cut][4][2] = dx;
-				x_cut[icell_cut][4][3] = x_cut[icell_cut][4][4] = x_start+L-i_end*dx;
-				y_cut[icell_cut][4][0] = y_cut[icell_cut][4][1] = 0.0;
-				y_cut[icell_cut][4][2] = y_cut[icell_cut][4][3] = dy;
-				y_cut[icell_cut][4][4] = y_cut[icell_cut][4][5] = y_start-j_cut_start*dy;
-			}
-
-
-			icell_cut = i_cut_start + (j_cut_end-1)*(nx-1) + k*(nx-1)*(ny-1);
+			icell_cut = i_cut_start + (j_cut_end-1)*(nx-1) + k_end*(nx-1)*(ny-1);
 			if (icellflag[icell_cut]==7){
 				num_points[icell_cut][0] = num_points[icell_cut][3] = num_points[icell_cut][5] = 4;
 				num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][4] = 6;
@@ -583,7 +583,7 @@ public:
 			}
 
 
-			icell_cut = (i_cut_end-1) + (j_cut_end-1)*(nx-1) + k*(nx-1)*(ny-1);
+			icell_cut = (i_cut_end-1) + (j_cut_end-1)*(nx-1) + k_end*(nx-1)*(ny-1);
 			if (icellflag[icell_cut]==7){
 				num_points[icell_cut][1] = num_points[icell_cut][3] = num_points[icell_cut][5] = 4;
 				num_points[icell_cut][0] = num_points[icell_cut][2] = num_points[icell_cut][4] = 6;
@@ -624,7 +624,6 @@ public:
 				y_cut[icell_cut][4][2] = y_cut[icell_cut][4][3] = 0.0;
 				y_cut[icell_cut][4][4] = y_cut[icell_cut][4][5] = dy;
 			}
-
 
 
 		float **coeff;				/// area fraction coeeficient

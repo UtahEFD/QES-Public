@@ -6,6 +6,7 @@
 #include "DTEHeightField.h"
 #include "RectangularBuilding.h"
 #include "Sensor.h"
+#include "inputWindProfile.h"
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -28,6 +29,7 @@ public:
 		{
 
 		}
+    
 
 	virtual void solve(NetCDFData* netcdfDat, bool solveWind);
 

@@ -1,5 +1,5 @@
 <simulationParameters>
-	<domain> 7 6 5 </domain>
+	<domain> 40 40 40 </domain>
 	<cellSize> 5.0 5.0 5.0 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
@@ -25,11 +25,12 @@
 </simulationParameters>
 <metParams>
 	<metInputFlag> 0 </metInputFlag>
-	<maxSizeDataPoints> 1 </maxSizeDataPoints>
+	<num_sites> 1 </num_sites>
+	<maxSizeDataPoints> 2 </maxSizeDataPoints>
 	<siteName> sensor1 </siteName>
 	<fileName> sensor1.inp </fileName>
 	<sensor>
-		<numberofSites> 1 </numberofSites>
+		<!--numberofSites> 1 </numberofSites-->
 		<!--siteCoords> 1 </siteCoords-->
 		<site_xcoord> 1.0</site_xcoord>
 		<site_ycoord> 1.0</site_ycoord>
@@ -54,12 +55,12 @@
 	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
-		<height> 10.0 </height>
+		<height> 20.0 </height>
 		<baseHeight> 0 </baseHeight>
-		<xFo> 12.0 </xFo>
-		<yFo> 12.0 </yFo>
-		<length> 12.0 </length>
-		<width> 12.0 </width>
+		<xFo> 90.0 </xFo>
+		<yFo> 90.0 </yFo>
+		<length> 20.0 </length>
+		<width> 20.0 </width>
 	</rectangularBuilding>
 	<!--rectangularBuilding>
 		<groupID> 1 </groupID>

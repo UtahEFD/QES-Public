@@ -1,70 +1,12 @@
 #include "CPUSolver.h"
 
+
+
 void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
 {
 
-
-
-
+    auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time             
     
-    auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time    
-
-	long numcell_cent = (nx-1)*(ny-1)*(nz-1);         /// Total number of cell-centered values in domain
-    long numface_cent = nx*ny*nz;                     /// Total number of face-centered values in domain
-    
-    
-
-    /// Declare coefficients for SOR solver
-    float *e, *f, *g, *h, *m, *n;
-    e = new float [numcell_cent];
-    f = new float [numcell_cent];
-    g = new float [numcell_cent];
-    h = new float [numcell_cent];
-    m = new float [numcell_cent];
-    n = new float [numcell_cent];
-
-    /// Declaration of initial wind components (u0,v0,w0)
-    double *u0, *v0, *w0;
-    u0 = new double [numface_cent];
-    v0 = new double [numface_cent];
-    w0 = new double [numface_cent];
-    
-    
-    double * R;              //!> Divergence of initial velocity field
-    R = new double [numcell_cent];
-  
-    /// Declaration of final velocity field components (u,v,w)
-    double *u, *v, *w;
-    u = new double [numface_cent];
-    v = new double [numface_cent];
-    w = new double [numface_cent];
-
-    /// Declaration of Lagrange multipliers
-    double *lambda, *lambda_old;
-    lambda = new double [numcell_cent];
-    lambda_old = new double [numcell_cent];
-	int icell_face, icell_cent;
-    
-    for ( int i = 0; i < nx; i++){
-        x.push_back(i*dx);         /// Location of face centers in x-dir
-	}
-    for ( int j = 0; j < ny; j++){
-        y.push_back(j*dy);         /// Location of face centers in y-dir
-    }
-
-    for ( int k = 0; k < nz; k++){
-        for (int j = 0; j < ny; j++){
-            for (int i = 0; i < nx; i++){
-
-				icell_face = i + j*nx + k*nx*ny;
-				u0[icell_face] = v0[icell_face] = w0[icell_face] = 0.0;
-			}
-		}    
-	}	
-	
-	std::cout << "num_sites:" << Sensor1->num_sites << "\n";
-	std::cout << "site_blayer_flag:" << Sensor1->site_blayer_flag[num_sites-1] << "\n";
-	Sensor1->inputWindProfile(dx, dy, dz, nx, ny, nz, u0, v0, w0);
     /*
     Set Terrain buildings
     Deprecate
@@ -85,21 +27,8 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
         std::cout << "blocks created\n";
     }
 
-    int *icellflag;
-    icellflag = new int [numcell_cent];       /// Cell index flag (0 = building, 1 = fluid)
 
-    for ( int k = 0; k < nz-1; k++){
-        for (int j = 0; j < ny-1; j++){
-            for (int i = 0; i < nx-1; i++){
-
-				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);            /// Lineralized index for cell centered values
-                e[icell_cent] = f[icell_cent] = g[icell_cent] = h[icell_cent] = m[icell_cent] = n[icell_cent] = 1.0;  /// Assign initial values to the coefficients for SOR solver
-				icellflag[icell_cent] = 1;                                  /// Initialize all cells to fluid	
-				lambda[icell_cent] = lambda_old[icell_cent] = 0.0;
-			}
-		}    
-	}	
-
+	inputWindProfile(dx, dy, dz, nx, ny, nz, u0.data(), v0.data(), w0.data(), num_sites, site_blayer_flag.data(), site_one_overL.data(), site_xcoord.data(), site_ycoord.data(), site_wind_dir.data(), site_z0.data(), site_z_ref.data(), site_U_ref.data(), x.data(), y.data(), z.data());
 
     float* zm;
     zm = new float[nz];
@@ -107,10 +36,9 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
     iBuildFlag = new int[nx*ny*nz];
     for (int i = 0; i < buildings.size(); i++)
     {
-        ((RectangularBuilding*)buildings[i])->setBoundaries(dx, dy, dz, nx, ny, nz, zm, e, f, g, h, m, n, icellflag);    /// located in RectangularBuilding.h
+        ((RectangularBuilding*)buildings[i])->setBoundaries(dx, dy, dz, nx, ny, nz, zm, e.data(), f.data(), g.data(), h.data(), m.data(), n.data(), icellflag.data());    /// located in RectangularBuilding.h
         //((RectangularBuilding*)buildings[i])->setCells(nx, ny, nz, icellflag, iBuildFlag, i);
     }
-
 
 
     for (int k = 0; k < nz; k++){
@@ -156,7 +84,7 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
 			}
 		}
 	}
-   
+
 
     if (solveWind)
     {
@@ -258,7 +186,6 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
                     int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
     				int icell_face = i + j*nx + k*nx*ny;               /// Lineralized index for cell faced values 
     				if (icellflag[icell_cent]==0) {
-						std::cout << "i:" << i << "\n"<< "j:" << j << "\n"<< "k:" << k << "\n";
     					u[icell_face] = 0;
     					u[icell_face+1] = 0;
     					v[icell_face] = 0;
@@ -343,13 +270,31 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
                 }
             }
         }
-
-
         outdata1.close();
 
 
+        // Write data to file
+        ofstream outdata2;
+        outdata2.open("Final velocity1.dat");
+        if( !outdata2 ) {                 // File couldn't be opened
+            cerr << "Error: file could not be opened" << endl;
+            exit(1);
+        }
+        // Write data to file
+        for (int k = 0; k < nz-1; k++){
+            for (int j = 0; j < ny-1; j++){
+                for (int i = 0; i < nx-1; i++){
+    				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+    				int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
+                    outdata2 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] << "\t \t"<< "\t \t" << f[icell_cent] <<"\t \t"<< "\t \t"<<e[icell_cent]<<"\t \t"<< "\t \t"<<h[icell_cent]<< "\t \t"<< "\t \t" << g[icell_cent] <<"\t \t"<< "\t \t"<<n[icell_cent]<<"\t \t"<< "\t \t"<<m[icell_cent]<<"\t \t"<<icellflag[icell_cent]<< endl;   
+                }
+            }
+        }
+        outdata2.close();
+
+
         netcdfDat->getData(x.data(),y.data(),z.data(),u,v,w,nx,ny,nz);
-        netcdfDat->getDataICell(icellflag, x_out, y_out, z_out, nx-1, ny - 1, nz - 1, numcell_cent);
+        netcdfDat->getDataICell(icellflag.data(), x_out, y_out, z_out, nx-1, ny - 1, nz - 1, numcell_cent);
         if (DTEHF)
             netcdfDat->getCutCellFlags(cells);
 
@@ -389,6 +334,6 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
             z_out[k] = (k-0.5)*dz;         /// Location of cell centers in z-dir
         }
 
-        netcdfDat->getDataICell(icellflag, x_out, y_out, z_out, nx-1, ny - 1, nz - 1, numcell_cent);
+        netcdfDat->getDataICell(icellflag.data(), x_out, y_out, z_out, nx-1, ny - 1, nz - 1, numcell_cent);
     }
 }

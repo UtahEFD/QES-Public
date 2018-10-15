@@ -4,6 +4,8 @@
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
 
+/**< This function is showing progress of the solving process by printing the percentage */
+
 void Solver::printProgress (float percentage)
 {
     int val = (int) (percentage * 100);
@@ -13,48 +15,55 @@ void Solver::printProgress (float percentage)
     fflush (stdout);
 }
 
+
+/**< \fn Solver
+* This function is assigning values read by URBImputData to variables used in the solvers
+ */
+
 Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
 {
 
-	rooftopFlag = UID->simParams->rooftopFlag;
-	upwindCavityFlag = UID->simParams->upwindCavityFlag;
-	streetCanyonFlag = UID->simParams->streetCanyonFlag;
-	streetIntersectionFlag = UID->simParams->streetIntersectionFlag;
-	wakeFlag = UID->simParams->wakeFlag;
-	sidewallFlag = UID->simParams->sidewallFlag;
+	rooftopFlag = UID->simParams->rooftopFlag;		
+	upwindCavityFlag = UID->simParams->upwindCavityFlag;		
+	streetCanyonFlag = UID->simParams->streetCanyonFlag;		
+	streetIntersectionFlag = UID->simParams->streetIntersectionFlag;		
+	wakeFlag = UID->simParams->wakeFlag;		
+	sidewallFlag = UID->simParams->sidewallFlag;		
 
-	Vector3<int> v;
-	v = *(UID->simParams->domain);
-	nx = v[0];
-	ny = v[1];
-	nz = v[2];
+	Vector3<int> D;
+	D = *(UID->simParams->domain);
+	nx = D[0];      /**< number of cells in x-direction */
+	ny = D[1];		/**< number of cells in y-direction */
+	nz = D[2];		/**< number of cells in z-direction */
 
 	nx += 1;        /// +1 for Staggered grid
 	ny += 1;        /// +1 for Staggered grid
 	nz += 2;        /// +2 for staggered grid and ghost cell
 
 
-	Vector3<float> w;
-	w = *(UID->simParams->grid);
-	dx = w[0];
-	dy = w[1];
-	dz = w[2];
-	itermax = UID->simParams->maxIterations;
-	dxy = MIN_S(dx, dy);
+	Vector3<float> G;
+	G = *(UID->simParams->grid);
+	dx = G[0];		/**< Grid resolution in x-direction */
+	dy = G[1];		/**< Grid resolution in y-direction */
+	dz = G[2];		/**< Grid resolution in z-direction */
+	itermax = UID->simParams->maxIterations;		
+	dxy = MIN_S(dx, dy);		
+		
+	numcell_cent = (nx-1)*(ny-1)*(nz-1);         /**< Total number of cell-centered values in domain */
+    numface_cent = nx*ny*nz;                     /**< Total number of face-centered values in domain */
 
-	num_sites = UID->metParams->sensor->num_sites;
-	site_blayer_flag = UID->metParams->sensor->site_blayer_flag;
-	site_one_overL = UID->metParams->sensor->site_one_overL;
-	site_xcoord = UID->metParams->sensor->site_xcoord;
-	site_ycoord = UID->metParams->sensor->site_ycoord;
-	site_wind_dir = UID->metParams->sensor->site_wind_dir;
+	num_sites = UID->metParams->num_sites;
+	for (int i=0; i<num_sites; i++){
+		site_blayer_flag.push_back (UID->metParams->sensors[i]->site_blayer_flag);
+		site_one_overL.push_back (UID->metParams->sensors[i]->site_one_overL);
+		site_xcoord.push_back (UID->metParams->sensors[i]->site_xcoord);
+		site_ycoord.push_back (UID->metParams->sensors[i]->site_ycoord);
+		site_wind_dir.push_back (UID->metParams->sensors[i]->site_wind_dir);
+		site_z0.push_back (UID->metParams->sensors[i]->site_z0);
+		site_z_ref.push_back (UID->metParams->sensors[i]->site_z_ref);
+		site_U_ref.push_back (UID->metParams->sensors[i]->site_U_ref);
+	}
 
-	site_z0 = UID->metParams->sensor->site_z0;
-	site_z_ref = UID->metParams->sensor->site_z_ref;
-	site_U_ref = UID->metParams->sensor->site_U_ref;
-	Sensor1 = UID->metParams->sensor;
-
-	//U_ref = UID->metParams->sensor->site_U_ref;
 
 	if (UID->buildings)
 	{
@@ -91,8 +100,47 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
 	//z.push_back(0.0f);
 	for (int k = 0; k < nz; k++)
 	{
-		z.push_back((k-1)*dz);
+		z.push_back((k-0.5)*dz);
 	} 
+
+    for ( int i = 0; i < nx-1; i++)
+        x.push_back((i+0.5)*dx);         /**< Location of face centers in x-dir */
+
+    for ( int j = 0; j < ny-1; j++){
+        y.push_back((j+0.5)*dy);         /**< Location of face centers in y-dir */
+    }
+
+    for ( int k = 0; k < nz-1; k++){
+        for (int j = 0; j < ny-1; j++){
+            for (int i = 0; i < nx-1; i++){
+				e.push_back(1.0);
+				f.push_back(1.0);	
+				g.push_back(1.0);
+				h.push_back(1.0);
+				m.push_back(1.0);
+				n.push_back(1.0);
+				R.push_back(0.0);
+				icellflag.push_back(1);
+				lambda.push_back(0.0);
+				lambda_old.push_back(0.0);
+			}
+		}    
+	}	
+
+
+    for ( int k = 0; k < nz; k++){
+        for (int j = 0; j < ny; j++){
+            for (int i = 0; i < nx; i++){
+
+				u0.push_back(0.0);
+				v0.push_back(0.0);
+				w0.push_back(0.0);
+				u.push_back(0.0);
+				v.push_back(0.0);
+				w.push_back(0.0);
+			}
+		}    
+	}	
 
 	mesh = 0;
 	if (DTEHF)
