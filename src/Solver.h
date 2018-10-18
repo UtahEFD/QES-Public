@@ -14,6 +14,7 @@
 #include <math.h>
 #include <vector>
 
+#define _USE_MATH_DEFINES
 #define MIN_S(x,y) ((x) < (y) ? (x) : (y))
 #define MAX_S(x,y) ((x) > (y) ? (x) : (y))
 
@@ -67,6 +68,7 @@ protected:
 	std::vector<double> lambda_old;
     std::vector<int> icellflag;        /// Cell index flag (0 = building, 1 = fluid)
 
+
     float max_velmag;
     std::vector<Building*> buildings;
 
@@ -96,6 +98,14 @@ protected:
 	int icell_face;		/**< cell-face index */
 	int icell_cent;		/**< cell-center index */  
 
+	std::vector<std::vector<std::vector<float>>> x_cut;
+	std::vector<std::vector<std::vector<float>>> y_cut;
+	std::vector<std::vector<std::vector<float>>> z_cut;
+
+	std::vector<std::vector<int>> num_points;
+	std::vector<std::vector<float>> coeff;
+
+
 	float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;
 	double *d_R;              //!> Divergence of initial velocity field
     double *d_lambda, *d_lambda_old;
@@ -107,7 +117,9 @@ public:
 
 	virtual void solve(NetCDFData* netcdfDat, bool solveWind) = 0;
 
-    void defineWalls(int* iCellFlag, float* n, float* m, float* f, float* e, float* h, float* g);
+	void inputWindProfile(float dx, float dy, float dz, int nx, int ny, int nz, double *u0, double *v0, double *w0, int num_sites, int *site_blayer_flag, float *site_one_overL, float *site_xcoord, 								float *site_ycoord, float *site_wind_dir, float *site_z0, float *site_z_ref, float *site_U_ref, float *x, float *y, float *z);
+
+    void defineWalls(int* iCellFlag, float* n, float* m, float* f, float* e, float* h, float* g, std::vector<std::vector<std::vector<float>>> x_cut, std::vector<std::vector<std::vector<float>>> y_cut, 							std::vector<std::vector<std::vector<float>>> z_cut, std::vector<std::vector<int>> num_points, std::vector<std::vector<float>> coeff);
     void upWind(Building* build, int* iCellFlag, double* u0, double* v0, double* w0, float* z, float* zm);
     void reliefWake(NonPolyBuilding* build, float* u0, float* v0);
 };

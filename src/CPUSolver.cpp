@@ -27,8 +27,16 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
         std::cout << "blocks created\n";
     }
 
+	inputWindProfile(dx, dy, dz, nx, ny, nz, u0.data(), v0.data(), w0.data(), num_sites, site_blayer_flag.data(), site_one_overL.data(), site_xcoord.data(), site_ycoord.data(), site_wind_dir.data(), 						site_z0.data(), site_z_ref.data(), site_U_ref.data(), x.data(), y.data(), z.data());
 
-	inputWindProfile(dx, dy, dz, nx, ny, nz, u0.data(), v0.data(), w0.data(), num_sites, site_blayer_flag.data(), site_one_overL.data(), site_xcoord.data(), site_ycoord.data(), site_wind_dir.data(), site_z0.data(), site_z_ref.data(), site_U_ref.data(), x.data(), y.data(), z.data());
+
+	std::vector<std::vector<std::vector<float>>> x_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
+	std::vector<std::vector<std::vector<float>>> y_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
+	std::vector<std::vector<std::vector<float>>> z_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
+
+	std::vector<std::vector<int>> num_points(numcell_cent, std::vector<int>(6,0));
+	std::vector<std::vector<float>> coeff(numcell_cent, std::vector<float>(6,0.0));
+
 
     float* zm;
     zm = new float[nz];
@@ -36,8 +44,9 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
     iBuildFlag = new int[nx*ny*nz];
     for (int i = 0; i < buildings.size(); i++)
     {
-        ((RectangularBuilding*)buildings[i])->setBoundaries(dx, dy, dz, nx, ny, nz, zm, e.data(), f.data(), g.data(), h.data(), m.data(), n.data(), icellflag.data());    /// located in RectangularBuilding.h
-        //((RectangularBuilding*)buildings[i])->setCells(nx, ny, nz, icellflag, iBuildFlag, i);
+		((RectangularBuilding*)buildings[i])->setCells(dx, dy, dz, nx, ny, nz, icellflag.data());
+        ((RectangularBuilding*)buildings[i])->setBoundaries(dx, dy, dz, nx, ny, nz, zm, e.data(), f.data(), g.data(), h.data(), m.data(), n.data(), icellflag.data(), x_cut, y_cut, z_cut, num_points, coeff);    /// located in RectangularBuilding.h
+        
     }
 
 
@@ -58,6 +67,11 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
 		}
 	}
 
+    std::cout << "Defining Solid Walls...\n";
+    /// Boundary condition for building edges
+    defineWalls(icellflag.data(), n.data(), m.data(), f.data(), e.data(), h.data(), g.data(), x_cut, y_cut, z_cut, num_points, coeff);
+	std::cout << "Walls Defined...\n";
+
     for (int k = 1; k < nz-1; k++){
         for (int j = 0; j < ny-1; j++){
             for (int i = 0; i < nx-1; i++){
@@ -69,21 +83,6 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
             }
         }
     }
-
-    /// New boundary condition implementation
-    for (int k = 0; k < nz-1; k++){
-        for (int j = 0; j < ny-1; j++){
-            for (int i = 0; i < nx-1; i++){
-				icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-				e[icell_cent] = e[icell_cent]/(dx*dx);
-				f[icell_cent] = f[icell_cent]/(dx*dx);
-				g[icell_cent] = g[icell_cent]/(dy*dy);
-				h[icell_cent] = h[icell_cent]/(dy*dy);
-				m[icell_cent] = m[icell_cent]/(dz*dz);
-				n[icell_cent] = n[icell_cent]/(dz*dz);
-			}
-		}
-	}
 
 
     if (solveWind)

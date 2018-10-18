@@ -25,7 +25,7 @@
 </simulationParameters>
 <metParams>
 	<metInputFlag> 0 </metInputFlag>
-	<num_sites> 1 </num_sites>
+	<num_sites> 2 </num_sites>
 	<maxSizeDataPoints> 2 </maxSizeDataPoints>
 	<siteName> sensor1 </siteName>
 	<fileName> sensor1.inp </fileName>
@@ -41,6 +41,18 @@
 		<speed> 5.0</speed>
 		<direction> 270.0</direction> 
 	</sensor>
+	<sensor>
+		<!--numberofSites> 1 </numberofSites-->
+		<!--siteCoords> 1 </siteCoords-->
+		<site_xcoord> 150.0</site_xcoord>
+		<site_ycoord> 150.0</site_ycoord>
+		<boundaryLayerFlag> 2</boundaryLayerFlag>
+		<siteZ0> 0.1</siteZ0>
+		<reciprocal> 0.0</reciprocal>
+		<height> 10.0</height>
+		<speed> 5.0</speed>
+		<direction> 270.0</direction> 
+	</sensor>
 </metParams>
 <fileOptions>
 	<outputFormat> 3 </outputFormat>  
@@ -50,26 +62,26 @@
 </fileOptions>
 <buildings>
 	<wallRoughness> 0.1 </wallRoughness>
-	<numBuildings> 1 </numBuildings>
+	<numBuildings> 2 </numBuildings>
 	<numPolygonNodes> 0 </numPolygonNodes>
 	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
 		<height> 20.0 </height>
 		<baseHeight> 0 </baseHeight>
-		<xFo> 90.0 </xFo>
-		<yFo> 90.0 </yFo>
+		<xFo> 89.0 </xFo>
+		<yFo> 89.0 </yFo>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
 	</rectangularBuilding>
-	<!--rectangularBuilding>
+	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
 		<height> 20.0 </height>
 		<baseHeight> 0 </baseHeight>
-		<xFo> 50.0 </xFo>
-		<yFo> 50.0 </yFo>
+		<xFo> 149.0 </xFo>
+		<yFo> 149.0 </yFo>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
-	</rectangularBuilding-->
+	</rectangularBuilding>
 </buildings>

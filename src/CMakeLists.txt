@@ -81,7 +81,6 @@ CUDA_ADD_EXECUTABLE( cudaUrb
   BVH.cpp
   DTEHeightField.cpp
   Cell.cpp
-  inputWindProfile.cpp
   )
 
 target_link_libraries(cudaUrb qesutil)
