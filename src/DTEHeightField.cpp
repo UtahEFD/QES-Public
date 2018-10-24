@@ -362,11 +362,7 @@ void DTEHeightField::printProgress (float percentage)
 }
 
 
-// Note:
-// This method should probably be done recursively to some degree
-// in order to reduce querying for known values. The query transaction
-// is fairly quick, but this should be looked at in the future.
-// Memoization may also work, but that might be a bit excessive.
+
 #define CELL(i,j,k) ((i) + (j) * (nx) + (k) * (nx) * (ny))
 #define CLAMP(low, high, x) ( (x) < (low) ? (low) : ( (x) > (high) ? (high) : (x) ))
 
@@ -429,6 +425,14 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
     {
       cutCells.push_back(CELL(i,j,k));
       std::vector< Vector3<float> > pointsInCell;
+      std::vector< Edge< int > > edgesInCell;
+
+      //Check to see the positions of the corners, the corners are always in
+      //the cell, no matter what. If they exist out of bounds of the cell in the
+      //Z dimension, we add them at the floor or ceiling of the cell. We can use
+      //this to identify where the actual geometry of the terrain crosses the cell,
+      //as anything below the mesh of points and edges is terrain, and above is air.
+
       int cornerPos[4] = {0, 0, 0, 0}; // 0 is in, 1 is above, -1 is below
       //check if corners are in
       for (int l = 0; l < 4; l++)
@@ -436,13 +440,39 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
         {
           pointsInCell.push_back(corners[l]);
           cornerPos[l] = 0;
+          for (int p = l - 1; p >= 0; p--)
+            if (cornerPos[p] == 1 && (p != 0 || l != 2) )
+              edgesInCell.push_back( Edge< int >(p, l) );
         }
         else if (corners[l][2] < cellBot)
+        {
           cornerPos[l] = -1;
+          pointsInCell.push_back( Vector3<float>(corners[l][0], corners[l][1], cellBot) );
+          for (int p = l - 1; p >= 0; p--)
+            if (cornerPos[p] == -1)
+              edgesInCell.push_back( Edge< int >(p, l) );
+        }
         else
+        {
           cornerPos[l] = 1;
+          pointsInCell.push_back( Vector3<float>(corners[l][0], corners[l][1], cellBot) );
+          for (int p = l - 1; p >= 0; p--)
+            if (cornerPos[p] == 1)
+              edgesInCell.push_back( Edge< int >(p, l) );
+        }
 
       //check intermediates 0-1 0-2 0-3 1-2 2-3
+        int intermed[4][4][2]; //first two array cells are for identifying the corners, last one is top and bottom of cell
+        //note, only care about about the above pairs, in 3rd index 0 is bot 1 is top
+
+        //initialize all identifiers to -1, this is a position in the list of points that doesn't exist
+        for (int di = 0; d < 4; d++)
+          for (int dj = 0; dj < 4; dj++)
+            intermed[di][dj][0] = intermed[di][dj][1] = -1;
+
+        //for all considered pairs 0-1 0-2 0-3 1-2 2-3, we check to see if they span a Z-dimension boundary
+        //of the cell. If they do, we add an intermediate point that stops at the cell boundaries. And we 
+        //update the intermediate matrix so that we know what is the index of the intermediate point.
         for (int first = 0; first < 3; first++)
           for (int second = first + 1; second < 4; second++)
             if (first != 1 || second != 3)
@@ -450,32 +480,136 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
               if (cornerPos[first] == 0)
               {
                 if (cornerPos[second] < 0)
+                {
+                  intermed[first][second][0] = pointsInCell.size();
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
+                  edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
+                }
                 else if (cornerPos[second] > 0)
+                {
+                  intermed[first][second][1] = pointsInCell.size();
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
+                  edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
+                }
               }
               else if (cornerPos[first] > 0) 
               {
+
                 if (cornerPos[second] == 0)
+                {
+                  intermed[first][second][1] = pointsInCell.size();
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
+                  edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
+                }
                 else if (cornerPos[second] < 0)
                 {
+                  intermed[first][second][1] = pointsInCell.size();
+                  intermed[first][second][0] = pointsInCell.size() + 1;
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
+                  edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 2));
+                  edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
                 }
               }
               else 
               {
                 if (cornerPos[second] == 0)
+                {
+                  intermed[first][second][0] = pointsInCell.size();
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
+                  edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
+                }
                 else if (cornerPos[second] > 0)
                 {
+                  intermed[first][second][1] = pointsInCell.size();
+                  intermed[first][second][0] = pointsInCell.size() + 1;
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
+                  edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 2));
+                  edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
                 }
               }
             }
-        cells[CELL(i,j,k)] = Cell(pointsInCell);
+
+            //if there is a top and bottom on any intermediate set, create an edge
+            for (int first = 0; first < 3; first++)
+              for (int second = first + 1; second < 4; second++)
+                if (first != 1 || second != 3)
+                  if (intermed[first][second][0] != -1 && intermed[first][second][1] != -1)
+                    edgesInCell.push_back(intermed[first][second][0], intermed[first][second][1]);
+
+            //intermediates who share a corner on the same plane as them form an edge
+            for (int tier = 0; tier < 2; tier ++)
+              for (int sCorner = 0; sCorner < 4; sCorner++)
+                if (sCorner != 3)
+                {
+                  if (intermed[sCorner][(sCorner + 1) % 4][tier] != -1 && intermed[(sCorner + 1) % 4][(sCorner + 2) % 4][tier] != -1)
+                    edgesInCell.push_back(intermed[sCorner][(sCorner + 1) % 4][tier], intermed[(sCorner + 1) % 4][(sCorner + 2) % 4][tier]);
+                }
+                else
+                  if (intermed[0][3][tier] != -1 && intermed[0][1][tier] != -1)
+                    edgesInCell.push_back(intermed[0][3][tier], intermed[0][1][tier]);
+
+
+            //if the diagonal is completely in the cell create a mid a
+            //and attatch to all intermediates or corners if the intermeds doesn't exist
+            if (cornerPos[0] == 0 && cornerPos[2] == 0)
+            {
+              pointsInCell.push_back(Vector3<float>( (corners[0][0] + corners[2][0]) / 2.0f, (corners[0][1] + corners[2][1]) / 2.0f,
+                                                     (corners[0][2] + corners[2][2]) / 2.0f));
+              int newP = pointsInCell.size() - 1;
+              edgesInCell.push_back(0, newP);
+              edgesInCell.push_back(2, newP);
+              if ( cornerPos[1] == 0)
+                edgesInCell.push_back(1,newP);
+              else
+                for (int tier = 0; tier < 2; tier++)
+                {
+                  if (intermed[0][1][tier] != -1)
+                    edgesInCell.push_back(intermed[0][1][tier], newP);
+                  if (intermed[1][2][tier] != -1)
+                    edgesInCell.push_back(intermed[1][2][tier], newP);
+                }
+              if ( cornerPos[3] == 0)
+                edgesInCell.push_back(3,newP);
+              else
+                for (int tier = 0; tier < 2; tier++)
+                {
+                  if (intermed[0][3][tier] != -1)
+                    edgesInCell.push_back(intermed[0][3][tier], newP);
+                  if (intermed[2][3][tier] != -1)
+                    edgesInCell.push_back(intermed[2][3][tier], newP);
+                }
+
+            }
+            //if there is one diagonal intermed, run the same idea as above
+            //note: code will be quite different. But this should connect
+            //to all intermediates, and all corners if they are missing an
+            //intermediate pair.
+
+            //if there is both diagonal intermeds, connect top with all tops, 
+            //bot with all bots, then top to all bot intermediates
+
+            //note: we also need to consider how to make complete mesh where the diagonal
+            //rests across the bottom or top of a cell. This has been a challenging process.
+
+
+            /* point index structure notes: 0 is always top left, 1 is always top right,
+             * 2 is bottom right, 3 is bottom left. When intermediates exist, they are created
+             * top intermediate first, bottom intermediate second, and are considered in the order
+             * 0-1 0-2 0-3 1-2 2-3, So for example. If 0 is below the cell, 1 is above the cell, 2 is
+             * in the cell, and 3 is below the cell. Point 4 is a 0-1 intermediate resting on the ceiling
+             * of the cell. Point 5 is a 0-1 intermediate resting on the bottom of the cell. Point 6 is a
+             * 0-2 intermediate resting on the bottom. Point 7 is a 1-2 intermediate resting on the top, and
+             * Point 8 is a 2-3 intermediate resting on the bottom. I'll send you a picture depicting the look
+             * of this, along with the edges. Note, the point order matters for indexing, but the order the edges
+             * are written in should not matter, edge(0-3) is the same as edge(3-0) and the index of each edge
+             * also should not matter.
+             */
+
+       
+
+        cells[CELL(i,j,k)] = Cell(pointsInCell, edgesInCell);
       }
     }
 }

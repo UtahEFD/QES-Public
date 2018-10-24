@@ -83,6 +83,7 @@ std::string test_DTEHeightField::testCutCells()
 	//Check Results
 	///////////////////////////////////
 	std::vector< Vector3<float> > cellPoints;
+	std::vector< Edge<int> >cellEdges;
 
 	//Base Cell (1st)
 	cellPoints = cells[ CELL(0,0,0) ].getTerrainPoints();
@@ -96,10 +97,13 @@ std::string test_DTEHeightField::testCutCells()
 
 	//2nd Cell
 	cellPoints = cells[CELL(0,0,1)].getTerrainPoints();
-	std::vector< Vector3<float> >::iterator it;
+	cellEdges = cells[CELL(0,0,1)].getTerrainEdges();
+	std::vector< Vector3<float> >::iterator it; std::vector< Edge< int > >::iterator itE;
 
-	if (cellPoints.size() != 5)
-		return util_errorReport("cutCells", 101, 5, cellPoints.size());	
+	if (cellPoints.size() != 7)
+		return util_errorReport("cutCells", 103, 7, cellPoints.size());	
+	if (cellEdges.size() != 12)
+		return util_errorReport("cutCells", 105, 12, cellEdges.size());
 
 	std::vector< Vector3<float> > pointsToCheck;
 	std::vector< std::string > messages;
@@ -108,40 +112,99 @@ std::string test_DTEHeightField::testCutCells()
 	pointsToCheck.push_back(Vector3< float >(0.375f, 1.0f, 2.0f)); messages.push_back( "Vector3< float >(0.375f, 1.0f, 2.0f) was not found" );
 	pointsToCheck.push_back(Vector3< float >(0.375f, 0.0f, 2.0f)); messages.push_back( "Vector3< float >(0.375f, 0.0f, 2.0f) was not found" );
 	pointsToCheck.push_back(Vector3< float >(0.375f, 0.375f, 2.0f)); messages.push_back( "Vector3< float >(0.375f, 0.375f, 2.0f) was not found" );
+	pointsToCheck.push_back(Vector3< float >(1.0f, 1.0f, 2.0f)); messages.push_back( "Vector3< float >(1.0f, 1.0f, 2.0f) was not found" );
+	pointsToCheck.push_back(Vector3< float >(1.0f, 0.0f, 2.0f)); messages.push_back( "Vector3< float >(1.0f, 0.0f, 2.0f) was not found" );
+
+	std::vector< Edge< int > > edgesToCheck;
+	std::vector< std::string > messages_E;
+
+	edgesToCheck.push_back(Edge<int>(0,3)); messages_E.push_back("missing Edge 0,3");
+	edgesToCheck.push_back(Edge<int>(0,4)); messages_E.push_back("missing Edge 0,4");
+	edgesToCheck.push_back(Edge<int>(0,5)); messages_E.push_back("missing Edge 0,5");
+	edgesToCheck.push_back(Edge<int>(1,2)); messages_E.push_back("missing Edge 1,2");
+	edgesToCheck.push_back(Edge<int>(1,4)); messages_E.push_back("missing Edge 1,4");
+	edgesToCheck.push_back(Edge<int>(1,5)); messages_E.push_back("missing Edge 1,5");
+	edgesToCheck.push_back(Edge<int>(2,5)); messages_E.push_back("missing Edge 2,5");
+	edgesToCheck.push_back(Edge<int>(2,6)); messages_E.push_back("missing Edge 2,6");
+	edgesToCheck.push_back(Edge<int>(3,5)); messages_E.push_back("missing Edge 3,5");
+	edgesToCheck.push_back(Edge<int>(3,6)); messages_E.push_back("missing Edge 3,6");
+	edgesToCheck.push_back(Edge<int>(4,5)); messages_E.push_back("missing Edge 4,5");
+	edgesToCheck.push_back(Edge<int>(5,6)); messages_E.push_back("missing Edge 5,6");
 
 	for (int i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())
-			return util_errorReport("cutCells", 115, messages[i]);
+			return util_errorReport("cutCells", 137, messages[i]);
+	}
+
+	for (int i = 0; i < edgesToCheck.size(); i++)
+	{
+		itE = find(cellEdges.begin(), cellEdges.end(), edgesToCheck[i]);
+		if (itE == cellEdges.end())
+			return util_errorReport("cutCells", 144, messages[i]);
 	}
 
 	//4th Cell
 	cellPoints = cells[CELL(0,0,3)].getTerrainPoints();
-	if (cellPoints.size() != 5)
-		return util_errorReport("cutCells", 121, 5, cellPoints.size());	
+	cellEdges = cells[CELL(0,0,3)].getTerrainEdges();
+
+	if (cellPoints.size() != 7)
+		return util_errorReport("cutCells", 152, 7, cellPoints.size());	
+	if (cellEdges.size() != 12)
+		return util_errorReport("cutCells", 154, 12, cellEdges.size());
 
 	pointsToCheck.clear();
+	edgesToCheck.clear();
+	messages_E.clear();
 	messages.clear();
 	pointsToCheck.push_back(Vector3< float >(1.0f, 1.0f, 3.5f)); messages.push_back( "Vector3< float >(1.0f, 1.0f, 3.5f) was not found" );
 	pointsToCheck.push_back(Vector3< float >(1.0f, 0.0f, 3.5f)); messages.push_back( "Vector3< float >(1.0f, 0.0f, 3.5f) was not found" );
 	pointsToCheck.push_back(Vector3< float >(0.79166667f, 1.0f, 3.0f)); messages.push_back( "Vector3< float >(0.79166666666f, 1.0f, 3.0f) was not found" );
 	pointsToCheck.push_back(Vector3< float >(0.79166667f, 0.0f, 3.0f)); messages.push_back( "Vector3< float >(0.79166666666ff, 0.0f, 3.0f) was not found" );
 	pointsToCheck.push_back(Vector3< float >(0.79166667f, 0.79166667f, 3.0f)); messages.push_back( "Vector3< float >(0.79166666666ff, 0.79166666666ff, 3.0f) was not found" );
+	pointsToCheck.push_back(Vector3< float >(0.0f, 1.0f, 3.0f)); messages.push_back( "Vector3< float >(0.0f, 1.0f, 3.0f) was not found" );
+	pointsToCheck.push_back(Vector3< float >(0.0f, 0.0f, 3.0f)); messages.push_back( "Vector3< float >(0.0f, 0.0f, 3.0f) was not found" );
+
+	edgesToCheck.push_back(Edge<int>(0,3)); messages_E.push_back("missing Edge 0,3");
+	edgesToCheck.push_back(Edge<int>(0,4)); messages_E.push_back("missing Edge 0,4");
+	edgesToCheck.push_back(Edge<int>(0,5)); messages_E.push_back("missing Edge 0,5");
+	edgesToCheck.push_back(Edge<int>(1,2)); messages_E.push_back("missing Edge 1,2");
+	edgesToCheck.push_back(Edge<int>(1,4)); messages_E.push_back("missing Edge 1,4");
+	edgesToCheck.push_back(Edge<int>(1,5)); messages_E.push_back("missing Edge 1,5");
+	edgesToCheck.push_back(Edge<int>(2,5)); messages_E.push_back("missing Edge 2,5");
+	edgesToCheck.push_back(Edge<int>(2,6)); messages_E.push_back("missing Edge 2,6");
+	edgesToCheck.push_back(Edge<int>(3,5)); messages_E.push_back("missing Edge 3,5");
+	edgesToCheck.push_back(Edge<int>(3,6)); messages_E.push_back("missing Edge 3,6");
+	edgesToCheck.push_back(Edge<int>(4,5)); messages_E.push_back("missing Edge 4,5");
+	edgesToCheck.push_back(Edge<int>(5,6)); messages_E.push_back("missing Edge 5,6");
 
 	for (int i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())
-			return util_errorReport("cutCells", 135, messages[i]);
+			return util_errorReport("cutCells", 185, messages[i]);
+	}
+
+	for (int i = 0; i < edgesToCheck.size(); i++)
+	{
+		itE = find(cellEdges.begin(), cellEdges.end(), edgesToCheck[i]);
+		if (itE == cellEdges.end())
+			return util_errorReport("cutCells", 192, messages[i]);
 	}
 
 	//3rd Cell
 	cellPoints = cells[CELL(0,0,2)].getTerrainPoints();
-	if (cellPoints.size() != 6)
-		return util_errorReport("cutCells", 141, 6, cellPoints.size());	
+	cellEdges = cells[CELL(0,0,3)].getTerrainEdges();
+
+	if (cellPoints.size() != 10)
+		return util_errorReport("cutCells", 200, 10, cellPoints.size());	
+	if (cellEdges.size() != 19)
+		return util_errorReport("cutCells", 202, 19, cellEdges.size());
 
 	pointsToCheck.clear();
+	edgesToCheck.clear();
+	messages_E.clear();
 	messages.clear();
 	pointsToCheck.push_back(Vector3< float >(0.375f, 1.0f, 2.0f)); messages.push_back( "Vector3< float >(0.375f, 1.0f, 2.0f) was not found" );
 	pointsToCheck.push_back(Vector3< float >(0.375f, 0.0f, 2.0f)); messages.push_back( "Vector3< float >(0.375f, 0.0f, 2.0f) was not found" );
@@ -149,12 +212,44 @@ std::string test_DTEHeightField::testCutCells()
 	pointsToCheck.push_back(Vector3< float >(0.79166667f, 1.0f, 3.0f)); messages.push_back( "Vector3< float >(0.79166666666f, 1.0f, 3.0f) was not found" );
 	pointsToCheck.push_back(Vector3< float >(0.79166667f, 0.0f, 3.0f)); messages.push_back( "Vector3< float >(0.79166666666ff, 0.0f, 3.0f) was not found" );
 	pointsToCheck.push_back(Vector3< float >(0.79166667f, 0.79166667f, 3.0f)); messages.push_back( "Vector3< float >(0.79166666666ff, 0.79166666666ff, 3.0f) was not found" );
+	pointsToCheck.push_back(Vector3< float >(0.0f, 0.0f, 2.0f)); messages.push_back( "Vector3< float >(0.0f, 0.0f, 2.0f) was not found" );
+	pointsToCheck.push_back(Vector3< float >(0.0f, 1.0f, 2.0f)); messages.push_back( "Vector3< float >(0.0f, 1.0f, 2.0f) was not found" );
+	pointsToCheck.push_back(Vector3< float >(1.0f, 0.0f, 3.0f)); messages.push_back( "Vector3< float >(1.0f, 0.0f, 3.0f) was not found" );
+	pointsToCheck.push_back(Vector3< float >(1.0f, 1.0f, 3.0f)); messages.push_back( "Vector3< float >(1.0f, 1.0f, 3.0f) was not found" );
+
+
+	edgesToCheck.push_back(Edge<int>(0,3)); messages_E.push_back("missing Edge 0,3");
+	edgesToCheck.push_back(Edge<int>(0,5)); messages_E.push_back("missing Edge 0,5");
+	edgesToCheck.push_back(Edge<int>(0,7)); messages_E.push_back("missing Edge 0,7");
+	edgesToCheck.push_back(Edge<int>(1,2)); messages_E.push_back("missing Edge 1,2");
+	edgesToCheck.push_back(Edge<int>(1,4)); messages_E.push_back("missing Edge 1,4");
+	edgesToCheck.push_back(Edge<int>(1,6)); messages_E.push_back("missing Edge 1,6");
+	edgesToCheck.push_back(Edge<int>(2,6)); messages_E.push_back("missing Edge 2,6");
+	edgesToCheck.push_back(Edge<int>(2,8)); messages_E.push_back("missing Edge 2,8");
+	edgesToCheck.push_back(Edge<int>(3,7)); messages_E.push_back("missing Edge 3,7");
+	edgesToCheck.push_back(Edge<int>(3,9)); messages_E.push_back("missing Edge 3,9");
+	edgesToCheck.push_back(Edge<int>(4,5)); messages_E.push_back("missing Edge 4,5");
+	edgesToCheck.push_back(Edge<int>(4,6)); messages_E.push_back("missing Edge 4,6");
+	edgesToCheck.push_back(Edge<int>(5,6)); messages_E.push_back("missing Edge 5,6");
+	edgesToCheck.push_back(Edge<int>(5,7)); messages_E.push_back("missing Edge 5,7");
+	edgesToCheck.push_back(Edge<int>(6,7)); messages_E.push_back("missing Edge 6,7");
+	edgesToCheck.push_back(Edge<int>(6,8)); messages_E.push_back("missing Edge 6,8");
+	edgesToCheck.push_back(Edge<int>(6,9)); messages_E.push_back("missing Edge 6,9");
+	edgesToCheck.push_back(Edge<int>(7,9)); messages_E.push_back("missing Edge 7,9");
+	edgesToCheck.push_back(Edge<int>(8,9)); messages_E.push_back("missing Edge 8,9");
 
 	for (int i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())
-			return util_errorReport("cutCells", 156, messages[i]);
+			return util_errorReport("cutCells", 244, messages[i]);
+	}
+
+	for (int i = 0; i < edgesToCheck.size(); i++)
+	{
+		itE = find(cellEdges.begin(), cellEdges.end(), edgesToCheck[i]);
+		if (itE == cellEdges.end())
+			return util_errorReport("cutCells", 251, messages[i]);
 	}
 
 	return TEST_PASS;

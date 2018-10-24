@@ -59,6 +59,7 @@ CUDA_ADD_EXECUTABLE( cudaUrb
   BVH.cpp
   DTEHeightField.cpp
   Cell.cpp
+  Edge.cpp
   )
 
   cuda_add_executable( unitTest
@@ -73,6 +74,7 @@ CUDA_ADD_EXECUTABLE( cudaUrb
     BVH.cpp
     DTEHeightField.cpp
     Cell.cpp
+    Edge.cpp
   )
 
 
