@@ -17,12 +17,7 @@ public:
 	/*
 	 *Default constructor, both items initialized as 0. 
 	 */
-	Edge()
-	{
-		values.push_back( 0 );
-		values.push_back( 0 );
-	}
-
+	Edge();
 
 	/*
 	 *This constructor takes in two values and sets them
@@ -30,11 +25,7 @@ public:
 	 *@param a -value to be assigned to point 0
 	 *@param b -value to be assigned to point 1
 	 */
-	Edge(const T a, const T b)
-	{
-		values.push_back(a);
-		values.push_back(b);
-	}
+	Edge(const T a, const T b);
 
 	/*
 	 *Operator overload of the [] operator. This
@@ -43,10 +34,7 @@ public:
 	 *@param i -index indicating which point should be returned
 	 *@return -a reference to the value denoted by i.
 	 */
-	T& operator[](const int i)
-	{
-		return values[i%2];
-	}
+	T& operator[](const int i);
 
 	/*
 	 *== comparative operator overload.
@@ -55,16 +43,7 @@ public:
 	 *@param e -edge to be compared to this edge.
 	 *@return -true if edges are equal, false otherwise. 
 	 */
-	bool operator==(Edge< T > e)
-	{
-		if (values[0] == e.values[0])
-			return values[1] == e.values[1];
-		else if (values[0] == e.values[1])
-			return values[1] == e.values[0]; 
-		else
-			return false;
-
-	}
+	bool operator==(Edge< T > e);
 
 	/*
 	 *Checks to see if value v exists in this edge. If it does,
@@ -73,13 +52,9 @@ public:
 	 *@param v -value to query for index.
 	 *@return -the index of the given value, -1 if not found.
 	 */
-	int getIndex(T v)
-	{
-		if (values[0] == v)
-			return 0;
-		else if (values[1] == v)
-			return 1;
-		else
-			return -1;
-	}
+	int getIndex(T v);
+
 };
+
+//this is because this is a template class
+#include "Edge.cpp"

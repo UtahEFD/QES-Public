@@ -195,7 +195,7 @@ std::string test_DTEHeightField::testCutCells()
 
 	//3rd Cell
 	cellPoints = cells[CELL(0,0,2)].getTerrainPoints();
-	cellEdges = cells[CELL(0,0,3)].getTerrainEdges();
+	cellEdges = cells[CELL(0,0,2)].getTerrainEdges();
 
 	if (cellPoints.size() != 10)
 		return util_errorReport("cutCells", 200, 10, cellPoints.size());	
