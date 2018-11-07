@@ -436,7 +436,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
       int cornerPos[4] = {0, 0, 0, 0}; // 0 is in, 1 is above, -1 is below
       //check if corners are in
       for (int l = 0; l < 4; l++)
-        if (corners[l][2] > cellBot && corners[l][2] < cellTop)
+        if (corners[l][2] >= cellBot && corners[l][2] <= cellTop)
         {
           pointsInCell.push_back(corners[l]);
           cornerPos[l] = 0;
@@ -705,19 +705,33 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
 
 Vector3<float> DTEHeightField::getIntermediate(Vector3<float> a, Vector3<float> b, float height)
 {
-  float lowX, lowY, lowZ, difX, difY, difZ;
 
   if (a[2] == b[2])
     return Vector3<float> ( (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, a[2]);
 
-  lowX = a[0] < b[0] ? a[0] : b[0];
-  lowY = a[1] < b[1] ? a[1] : b[1];
-  lowZ = a[2] < b[2] ? a[2] : b[2];
-  difX = fabs(a[0] - b[0]);
-  difY = fabs(a[1] - b[1]);
-  difZ = fabs(a[2] - b[2]);
+  float offset = a[2] - height;
+  float xCoord, yCoord;
+  if (a[0] != b[0])
+  {
+    float slopeX;
+    slopeX = (b[2] - a[2]) / (b[0] - a[0]);
+    float xOff = fabs((offset)/slopeX);
+    xCoord = a[0] < b[0] ? a[0] + xOff : a[0] - xOff;
 
-  float change = (height - lowZ) / difZ;
+  }
+  else
+    xCoord = a[0];
 
-  return Vector3<float>(lowX + change * difX, lowY + change * difY, height);
+  if (a[1] != b[1])
+  {
+    float slopeY;
+    slopeY = (b[2] - a[2]) / (b[1] - a[1]);
+    float yOff = fabs((offset)/slopeY);
+    yCoord = a[1] < b[1] ? a[1] + yOff : a[1] - yOff;
+  }
+  else
+    yCoord = a[1];
+
+  return Vector3<float>(xCoord, yCoord, height);
+
 }
