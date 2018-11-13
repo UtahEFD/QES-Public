@@ -2,19 +2,25 @@
 
 ## Configuring the Build
 
-`mkdir build
+```
+mkdir build
 cd build
-cmake ..'
+cmake ..
+'''
 
 You can then build the source:
 
-`make'
+```
+make
+'''
 
 ## Building the Documentation via Doxygen
 
 After the build is configured the Doxygen documentation can be built. The output from this process is the updating of the _html_ and _latex_ folders in the top-level _docs_ folders.
 
-`make doc'
+```
+make doc
+'''
 
 ## Instructions for CHPC Cluster
 
