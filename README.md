@@ -6,13 +6,13 @@
 mkdir build
 cd build
 cmake ..
-'''
+```
 
 You can then build the source:
 
 ```
 make
-'''
+```
 
 ## Building the Documentation via Doxygen
 
@@ -20,7 +20,7 @@ After the build is configured the Doxygen documentation can be built. The output
 
 ```
 make doc
-'''
+```
 
 ## Instructions for CHPC Cluster
 
