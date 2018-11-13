@@ -541,20 +541,16 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
             //intermediates who share a corner on the same plane as them form an edge
             //unless the diagonal is also there
             for (int tier = 0; tier < 2; tier ++)
-              for (int sCorner = 0; sCorner < 4; sCorner++)
-                {
-                  int firstC = sCorner < 3 ? intermed[sCorner][sCorner + 1][tier] : intermed[0][3][tier];
-                  //sCorner % 2 is called when sCorner is 2 or 3, returning 0 and 1 respectively. this checks 0,3 and 1,2
-                  int secondC = sCorner < 2 ? intermed[sCorner + 1][sCorner + 2][tier] : intermed[(sCorner % 2)][3 - (sCorner % 2)][tier];
-                  if (firstC != -1 && secondC != -1)
-                  {
-                    //if an intermediate doesn't exist that would bisect the connection
-                    //then... form a conneciton
-                    if ( !(sCorner == 1 && intermed[0][2][tier] != -1)  &&
-                         !(sCorner == 3) && intermed[0][2][tier] != -1) 
-                      edgesInCell.push_back(Edge<int>(firstC, secondC));
-                  }
-                }
+            {
+              if (cornerPos[1] == -1 + (2 * tier) && intermed[0][1][tier] != -1 && intermed[1][2][tier] != -1) //-1 for bottom, 1 for top
+              {
+                edgesInCell.push_back(Edge<int>(intermed[0][1][tier], intermed[1][2][tier]));
+              }
+              if (cornerPos[3] == -1 + (2 * tier) && intermed[0][3][tier] != -1 && intermed[2][3][tier] != -1) //-1 for bottom, 1 for top
+              {
+                edgesInCell.push_back(Edge<int>(intermed[0][3][tier], intermed[2][3][tier]));
+              }
+            }
 
 
             //if the diagonal is completely in the cell create a mid a
@@ -624,11 +620,11 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
               //corners
               if (cornerPos[1] >= 0)
                 edgesInCell.push_back(Edge<int>(1, midT));
-              if (cornerPos[1] <= 0)
+              if (cornerPos[1] < 0)
                 edgesInCell.push_back(Edge<int>(1, midB));
               if (cornerPos[3] >= 0)
                 edgesInCell.push_back(Edge<int>(3, midT));
-              if (cornerPos[3] <= 0)
+              if (cornerPos[3] < 0)
                 edgesInCell.push_back(Edge<int>(3, midB));
               //intermeds
              for (int first = 0; first < 3; first++)
@@ -656,8 +652,10 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
 
               if (cornerPos[1] != cornerPos[0] && cornerPos[3] != cornerPos[0]) //if both corners are away from the diagonal
               { //create a mesh on the top of the cell
-                edgesInCell.push_back( Edge<int>(intermed[0][3][topBot], intermed[0][1][topBot]));
+                edgesInCell.push_back(Edge<int>(intermed[0][3][topBot], intermed[0][1][topBot]));
                 edgesInCell.push_back(Edge<int>(intermed[0][3][topBot], intermed[1][2][topBot]));
+                edgesInCell.push_back(Edge<int>(intermed[0][3][topBot], intermed[2][3][topBot]));
+                edgesInCell.push_back(Edge<int>(intermed[0][1][topBot], intermed[1][2][topBot]));
                 edgesInCell.push_back(Edge<int>(intermed[2][3][topBot], intermed[1][2][topBot]));
                 if (cornerPos[1] == (topBot == 1 ? -1 : 1)) //if the diag is on the cell top, we check if the corner is out of the bottom vice versa.
                   edgesInCell.push_back(Edge<int>(intermed[0][1][1], intermed[1][2][0])); //make the intermediate face into triangles
