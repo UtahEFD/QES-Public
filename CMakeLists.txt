@@ -26,27 +26,34 @@ MESSAGE(STATUS "If you want something different, use -DCMAKE_BUILD_TYPE=Debug, R
 # ----------------------------------------------------------
 # SET (Boost_MULTITHREADED TRUE)
 
+SET(BOOST_LIBRARYDIR /usr/lib64)
+
 # If you want to get more info on what the Find Boost macro is
 # doing...  
 # SET(Boost_DEBUG 1)
 
-# Necessary to get Win32 version to work, plus, not a bad idea to link
-# statically for our purposes.
-SET(Boost_USE_STATIC_LIBS TRUE)
+# May be necessary to get Win32 version to work
+# SET(Boost_USE_STATIC_LIBS TRUE)
 
 FIND_PACKAGE(Boost REQUIRED date_time program_options system thread unit_test_framework chrono timer)
 IF(${Boost_FOUND})
   INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+  MESSAGE(STATUS "Found Boost Libraries in ${Boost_LIBRARY_DIR}, Version ${Boost_VERSION}")
 ENDIF()
 
-FIND_PACKAGE(NetCDF)
-IF(NetCDF_FOUND)
-  MESSAGE(STATUS "Found NetCDF: ${NetCDF_INCLUDE_DIRECTORIES}, ${NetCDF_LIBRARIES}")
+# SET(NetCDF_PREFIX /uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0i18-c7)
+# include(FindNetCDF)
+FIND_PACKAGE(NetCDF REQUIRED)
+IF(NETCDF_FOUND)
+  INCLUDE_DIRECTORIES(${NetCDF_INCLUDE_DIRECTORIES})
+  MESSAGE(STATUS "Found NetCDF: ${NETCDF_INCLUDES}, ${NETCDF_LIBRARIES}")
 ENDIF(NetCDF_FOUND)
 
-FIND_PACKAGE(GDAL)
+# SET(CMAKE_PREFIX_PATH /uufs/chpc.utah.edu/sys/installdir/gdal/2.1.3-c7)
+FIND_PACKAGE(GDAL REQUIRED)
 IF (${GDAL_FOUND})
   INCLUDE_DIRECTORIES(${GDAL_INCLUDE_DIR})
+  MESSAGE(STATUS "Found GDAL: ${GDAL_INCLUDE_DIR}")
 ENDIF(${GDAL_FOUND})
 
 SET(CUDA_SEPARABLE_COMPILATION ON)
