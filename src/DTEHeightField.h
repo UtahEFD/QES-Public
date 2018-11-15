@@ -10,6 +10,7 @@
 #include "gdal_priv.h"
 #include "cpl_conv.h" // for CPLMalloc()
 #include "Cell.h"
+#include "Edge.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -122,6 +123,8 @@ private:
    * @return -an intermediate point existing on the line from a to b at z value height
    */
   Vector3<float> getIntermediate(Vector3<float> a, Vector3<float> b, float height);
+
+
 
   std::string m_filename;
   GDALDataset  *m_poDataset;

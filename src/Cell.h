@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vector3.h"
+#include "Edge.h"
 #include <vector>
 
 enum cellType : int {air_CT, terrain_CT};
@@ -8,13 +9,15 @@ enum cellType : int {air_CT, terrain_CT};
 /*
  *This class holds information about cell data. This mostly
  *pertains to what entities exit in the cell, and what coordinate
- *points form the terrain in the cell. (if it exists) 
+ *points form the terrain in the cell and what edges connect
+ *the points. (if it exists) 
  */
 class Cell
 {
 private:
 	bool isAir, isTerrain, isCutCell;
 	std::vector< Vector3<float> > terrainPoints;
+	std::vector< Edge< int > > terrainEdges;
 public:
 
 	/*
@@ -42,6 +45,12 @@ public:
 	std::vector< Vector3<float> > getTerrainPoints() {return terrainPoints;}
 
 	/*
+	 *returns a list of edges that connect the terrain points in the cell
+	 *@return -the list of edges
+	 */
+	std::vector< Edge< int > > getTerrainEdges() {return terrainEdges;}
+
+	/*
 	 *Defaults all entity existances values to false, and has no terrain points
 	 */
 	Cell();
@@ -57,6 +66,7 @@ public:
 	 *Takes in a list of terrain points that exist in the cell separating where
 	 *the terrain and air exist in the cell, sets isCutCell to true.
 	 *@param points -a list of points that form the cut.
+	 *@param edges -a list of edges that form the terrain
 	 */
-	Cell( std::vector< Vector3<float> > points);
+	Cell( const std::vector< Vector3<float> >& points, const std::vector< Edge< int > >& edges);
 };

@@ -3,7 +3,8 @@
 #include "ParseInterface.h"
 #include <type_traits>
 
-#define FLOATS_ARE_EQUAL(x,y) ( (x) - (y) > -0.0000001 && (x) - (y) < 0.0000001 )
+
+#define FLOATS_ARE_EQUAL(x,y) ( ( (x) - (y)) < 0.000001 && ( (x) - (y)) >   -0.000001 )
 
 template <class T>
 class Vector3 : public ParseInterface
