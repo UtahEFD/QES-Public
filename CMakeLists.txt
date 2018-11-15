@@ -96,6 +96,17 @@ else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
+#
+#	Unit Testing:
+#
+# This "unit test" is only a simple test to show the system
+# working. It simply returns a true value to indicate that a null
+# program has ended OK. I pass on this test really just means the
+# cmake system constructed the build environment OK.
+enable_testing() # once
+include(CTest)
+
+
 add_subdirectory(util)
 add_subdirectory(src)
 add_subdirectory(cudaUrb)
