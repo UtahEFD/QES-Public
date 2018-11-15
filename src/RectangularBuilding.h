@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ParseInterface.h"
+#include "util/ParseInterface.h"
 #include "NonPolyBuilding.h"
 
 #define CELL(i,j,k,sub) ((i) + (j) * ((nx) - (sub)) + (k) * ((nx) - (sub)) * ((ny) - (sub)))

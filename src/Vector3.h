@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ParseInterface.h"
+#include "util/ParseInterface.h"
 #include <type_traits>
 
 #define FLOATS_ARE_EQUAL(x,y) ( (x) - (y) > -0.0000001 && (x) - (y) < 0.0000001 )
@@ -52,3 +52,4 @@ public:
 			return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];
 	}
 };
+
