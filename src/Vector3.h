@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ParseInterface.h"
+#include "util/ParseInterface.h"
 #include <type_traits>
 
 
@@ -53,3 +53,4 @@ public:
 			return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];
 	}
 };
+

@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "ParseException.h"
-#include "ParseInterface.h"
+#include "util/ParseException.h"
+#include "util/ParseInterface.h"
 #include "URBInputData.h"
 #include "handleURBArgs.h"
 #include "Solver.h"
@@ -30,6 +30,9 @@ URBInputData* parseXMLTree(const std::string fileName);
 
 int main(int argc, char *argv[])
 {
+    // BEGIN - ARG
+    // This is all argument parsing, and accumulating the data we need
+    // for running.
 
     // Use Pete's arg parser for command line stuff...
     URBArgs arguments;
@@ -39,6 +42,10 @@ int main(int argc, char *argv[])
     netcdfDat = new NetCDFData();
 
     std::cout << "cudaUrb " << "0.8.0" << std::endl;
+
+    // END - ARG
+
+    // BEGIN - Input Data Elements
 
     // read input files  -- some test XML, netcdf.... for now...
     URBInputData* UID;
@@ -140,15 +147,18 @@ URBInputData* parseXMLTree(const std::string fileName)
 		return (URBInputData*)0;
 	}
 
-	URBInputData* xmlRoot;
-	try 
-	{
-		ParseInterface::parseTree(tree, xmlRoot);
-	}
-	catch (ParseException& p )
-	{
-		std::cerr  << "ERROR: " << p.what() << std::endl;
-		xmlRoot = 0;
-	}
+	URBInputData* xmlRoot = new URBInputData();
+        xmlRoot->parseTree( tree );
+        
+//	try 
+//	{
+//		ParseInterface::parseTree(tree, xmlRoot);
+//	}
+//	catch (ParseException& p )
+//	{
+//		std::cerr  << "ERROR: " << p.what() << std::endl;
+//		xmlRoot = 0;
+//	}
+        
 	return xmlRoot;
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include "ArgumentParsing.h"
+#include "util/ArgumentParsing.h"
 
 enum solverTypes : int
 {CPU_Type = 1, DYNAMIC_P = 2};
