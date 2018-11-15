@@ -96,9 +96,7 @@ else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
+add_subdirectory(util)
 add_subdirectory(src)
-
-# add_subdirectory(solverTestCases)
-# add_subdirectory(test)
-
+add_subdirectory(cudaUrb)
 
