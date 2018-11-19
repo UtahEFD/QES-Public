@@ -163,19 +163,15 @@ void DTEHeightField::load()
 
   float stepX = cellSizeX / pixelSizeX; // tie back to dx, dy here.... with scaling of pixelsize
   float stepY = cellSizeY / pixelSizeY;
-  if (stepX < 1) stepX = 1.0f;
-  if (stepY < 1) stepY = 1.0f;
+
+  assert(stepX > 0 && stepY > 0);
+
   for (float iYline = 0; iYline < m_nYSize-1; iYline+=stepY) {
     for (float iXpixel = 0; iXpixel < m_nXSize-1; iXpixel+=stepX) {
 
-      int Yline = iYline;
-      int Xpixel = iXpixel;
-      int iXStep = stepX;
-      int iYStep = stepY;
-      if ( (stepY + Yline) > m_nYSize)
-        iYStep = m_nYSize - 1 - Yline;
-      if ( (stepX + Xpixel) > m_nXSize)
-        iXStep = m_nXSize - 1 - Xpixel;
+      int Yline = (int)iYline;
+      int Xpixel = (int)iXpixel;
+
 
       // For these purposes, pixel refers to the "X" coordinate, while
       // line refers to the "Z" coordinate
@@ -189,24 +185,22 @@ void DTEHeightField::load()
 
 //height set to y coord, change to z
 
-      Vector3<float> tv0((float)Yline * pixelSizeY, (float)Xpixel * pixelSizeX, queryHeight( pafScanline, Yline * pixelSizeY, Xpixel * pixelSizeX) );
-
-      Vector3<float> tv1((float)Yline * pixelSizeY, (float)(Xpixel + iXStep) * pixelSizeX, queryHeight( pafScanline, Yline * pixelSizeY, (Xpixel + iXStep) * pixelSizeX ) );
-
-//      xGeo = m_geoTransform[0] + Xpixel * m_geoTransform[1];
-//      yGeo = m_geoTransform[3] + Yline * m_geoTransform[5];
-      Vector3<float> tv2((float)(Yline + iYStep) * pixelSizeY, (float)Xpixel * pixelSizeX, queryHeight( pafScanline, (Yline + iYStep) * pixelSizeY, Xpixel * pixelSizeX));
+    //These "should" be real unit-based triangles.. hopefully meters..
+      Vector3<float> tv0(iYline * pixelSizeY, iXpixel * pixelSizeX,         queryHeight( pafScanline, Yline, Xpixel));
+      Vector3<float> tv1(iYline * pixelSizeY, (iXpixel + stepX) * pixelSizeX, queryHeight( pafScanline, Yline, (int)(iXpixel + stepX ) ) );
+      Vector3<float> tv2((iYline + stepY) * pixelSizeY, iXpixel * pixelSizeX, queryHeight( pafScanline, (int)(iYline + stepY), Xpixel));
 
       tPtr = new Triangle( tv0, tv1, tv2 );
       m_triList.push_back(tPtr);
+      
 
-      Vector3<float> tv3( (float)(Yline + iYStep) * pixelSizeY, (float)Xpixel * pixelSizeX, queryHeight( pafScanline, (Yline + iYStep) * pixelSizeY, Xpixel * pixelSizeX ) );
+      Vector3<float> tv3( (iYline + stepY) * pixelSizeY, iXpixel * pixelSizeX, queryHeight( pafScanline, (int)(iYline + stepY), Xpixel ) );
      // convertToTexCoord(Yline+step, Xpixel, tc0);
 
-      Vector3<float> tv4( (float)Yline * pixelSizeY, (float)(Xpixel + iXStep) * pixelSizeX,   queryHeight( pafScanline, Yline * pixelSizeY, (Xpixel + iXStep) * pixelSizeX ) );
+      Vector3<float> tv4( iYline * pixelSizeY, (iXpixel + stepX) * pixelSizeX,   queryHeight( pafScanline, Yline, (int)(iXpixel + stepX) ) );
       // convertToTexCoord(Yline, Xpixel+step, tc1);
 
-      Vector3<float> tv5( (float)(Yline + iYStep) * pixelSizeY, (float)(Xpixel + iXStep) * pixelSizeX, queryHeight( pafScanline, (Yline+ iYStep) * pixelSizeY, (Xpixel + iXStep) * pixelSizeX ) );
+      Vector3<float> tv5( (iYline + stepY) * pixelSizeY, (iXpixel + stepX) * pixelSizeX, queryHeight( pafScanline, (int)(iYline + stepY), (int)(iXpixel + stepX)) );
       // convertToTexCoord(Yline+step, Xpixel+step, tc2);
 
       tPtr = new Triangle( tv3, tv4, tv5 );

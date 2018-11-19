@@ -143,7 +143,7 @@ URBInputData* parseXMLTree(const std::string fileName)
 	}
 	catch (boost::property_tree::xml_parser::xml_parser_error& e)
 	{
-		std::cerr << "Error reading tree\n";
+		std::cerr << "Error reading tree in" << fileName << "\n";
 		return (URBInputData*)0;
 	}
 
