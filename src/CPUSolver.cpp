@@ -7,7 +7,7 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
 
 
     
-    auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time    
+    auto startTotal = std::chrono::high_resolution_clock::now(); // Start recording execution time    
 
 	long numcell_cent = (nx-1)*(ny-1)*(nz-1);         /// Total number of cell-centered values in domain
     long numface_cent = nx*ny*nz;                     /// Total number of face-centered values in domain
@@ -192,7 +192,7 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
                         
         }
        
-        
+        auto startSolve = std::chrono::high_resolution_clock::now();
         /////////////////////////////////////////////////
         //                 SOR solver              //////
         /////////////////////////////////////////////////
@@ -303,8 +303,10 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
 
 
         auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
-        std::chrono::duration<float> elapsed = finish - start;
-        std::cout << "Elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
+        std::chrono::duration<float> elapsedTotal = finish - startTotal;
+        std::chrono::duration<float> elapsedSolve = finish - startSolve;
+        std::cout << "Elapsed total time: " << elapsedTotal.count() << " s\n";   // Print out elapsed execution time
+        std::cout << "Elapsed solve time: " << elapsedSolve.count() << " s\n";   // Print out elapsed execution time
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //////    Writing output data                            //////////////////////////////////////

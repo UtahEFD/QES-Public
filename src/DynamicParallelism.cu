@@ -182,7 +182,8 @@ __global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, i
 
 void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind) 
 {
-    
+    auto startTotal = std::chrono::high_resolution_clock::now(); // Start recording execution time    
+
 
     long numcell_cent = (nx-1)*(ny-1)*(nz-1);         /// Total number of cell-centered values in domain
     long numface_cent = nx*ny*nz;                     /// Total number of face-centered values in domain
@@ -362,7 +363,6 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     }
 
 
-    auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time
 
     cudaMalloc((void **) &d_icellflag, numcell_cent * sizeof(int));
     cudaMemcpy(d_icellflag,icellflag,numcell_cent*sizeof(int),cudaMemcpyHostToDevice);
@@ -428,6 +428,8 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
             }
         }
     }
+
+    auto startSolve = std::chrono::high_resolution_clock::now();    
     
     double *d_value,*d_bvalue;
     float *d_x,*d_y,*d_z;
@@ -452,6 +454,8 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     cudaMalloc((void **) &d_u,numface_cent*sizeof(double));
     cudaMalloc((void **) &d_v,numface_cent*sizeof(double));
     cudaMalloc((void **) &d_w,numface_cent*sizeof(double));
+
+
 
     /////////////////////////////////////////////////
     //                 SOR solver              //////
@@ -490,9 +494,11 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     cudaFree (d_icellflag);
 
     auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
-    std::chrono::duration<double> elapsed = finish - start;
-    std::cout << "Elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time    
-    
+    std::chrono::duration<float> elapsedTotal = finish - startTotal;
+    std::chrono::duration<float> elapsedSolve = finish - startSolve;
+    std::cout << "Elapsed total time: " << elapsedTotal.count() << " s\n";   // Print out elapsed execution time
+    std::cout << "Elapsed solve time: " << elapsedSolve.count() << " s\n";   // Print out elapsed execution time   
+
     /// Declare cell center positions
     float *x_out, *y_out, *z_out;
     x_out = new float [nx-1];
