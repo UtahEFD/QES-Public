@@ -1,0 +1,7 @@
+<metParams>
+	<metInputFlag> 0 </metInputFlag>
+	<numMeasuringSites> 1 </numMeasuringSites>
+	<maxSizeDataPoints> 1 </maxSizeDataPoints>
+	<siteName> sensor1 </siteName>
+	<fileName> sensor1.inp </fileName>
+</metParams>
