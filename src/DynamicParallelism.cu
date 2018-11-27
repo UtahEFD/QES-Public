@@ -180,7 +180,7 @@ __global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, i
 
 
 
-void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind) 
+void DynamicParallelism::solve(bool solveWind) 
 {
     
 
@@ -215,12 +215,6 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     double *R, *d_R;              //!> Divergence of initial velocity field
     R = new double [numcell_cent];
     cudaMalloc((void **) &d_R, numcell_cent * sizeof(double));    
-
-    /// Declaration of final velocity field components (u,v,w)
-    double *u, *v, *w;
-    u = new double [numface_cent];
-    v = new double [numface_cent];
-    w = new double [numface_cent];
 
     // Declare Lagrange multipliers
     /// Declaration of Lagrange multipliers
@@ -464,9 +458,9 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     cudaCheck(cudaGetLastError()); 
     
     cudaMemcpy (lambda , d_lambda , numcell_cent * sizeof(double) , cudaMemcpyDeviceToHost);
-    cudaMemcpy(u,d_u,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
-    cudaMemcpy(v,d_v,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
-    cudaMemcpy(w,d_w,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(u.data(), d_u,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(v.data(), d_v,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(w.data(), d_w,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
 
     cudaFree (d_lambda);
     cudaFree (d_e);
@@ -493,6 +487,11 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     std::chrono::duration<double> elapsed = finish - start;
     std::cout << "Elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time    
     
+
+}
+
+void DynamicParallelism::outputDataFile()
+{
     /// Declare cell center positions
     float *x_out, *y_out, *z_out;
     x_out = new float [nx-1];
@@ -527,7 +526,6 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
         }
     }
 
-
     for (int k = 0; k < nz-1; k++){
         for (int j = 0; j < ny-1; j++){
             for (int i = 0; i < nx-1; i++){
@@ -558,8 +556,6 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
     }
     outdata1.close();
 
-    netcdfDat->getData(x.data(),y.data(),z.data(),u,v,w,nx,ny,nz);
-
     // Write data to file
     ofstream outdata;
     outdata.open("Final velocity, cell-centered.dat");
@@ -576,4 +572,10 @@ void DynamicParallelism::solve(NetCDFData* netcdfDat, bool solveWind)
         }
     }
     outdata.close();
+}
+    
+
+void DynamicParallelism::outputNetCDF(  NetCDFData* netcdfDat )
+{
+    netcdfDat->getData(x.data(),y.data(),z.data(), u.data(), v.data(), w.data(), nx,ny,nz);
 }
