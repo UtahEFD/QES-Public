@@ -26,6 +26,9 @@ protected:
     std::vector<float> x,y,z;
 	int itermax;
 
+    /// Final velocity field components (u, v, w)
+    std::vector<double> u, v, w;
+
     float z_ref;             /// Height of the measuring sensor (m)
     float U_ref;             /// Measured velocity at the sensor height (m/s)
     float z0;
@@ -57,9 +60,12 @@ protected:
     void printProgress (float percentage);
 
 public:
-	Solver(URBInputData* UID, DTEHeightField* DTEHF);
+    Solver(URBInputData* UID, DTEHeightField* DTEHF);
 
-	virtual void solve(NetCDFData* netcdfDat, bool solveWind) = 0;
+    virtual void solve(bool solveWind) = 0;
+
+    virtual void outputDatFile() {}
+    virtual void outputNetCDF( NetCDFData* netcdfDat ) {}
 
     void defineWalls(int* iCellFlag, float* n, float* m, float* f, float* e, float* h, float* g);
     void upWind(Building* build, int* iCellFlag, double* u0, double* v0, double* w0, float* z, float* zm);

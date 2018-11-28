@@ -47,9 +47,10 @@ public:
 	DynamicParallelism(URBInputData* UID, DTEHeightField* DTEHF)
 		: Solver(UID, DTEHF)
 		{
-
 		}
 
-	virtual void solve(NetCDFData* netcdfDat, bool solveWind);
+	virtual void solve(bool solveWind);
 
+    void outputDataFile();
+    void outputNetCDF( NetCDFData* netcdfDat );
 };

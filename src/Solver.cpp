@@ -23,27 +23,33 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
 	wakeFlag = UID->simParams->wakeFlag;
 	sidewallFlag = UID->simParams->sidewallFlag;
 
-	Vector3<int> v;
-	v = *(UID->simParams->domain);
-	nx = v[0];
-	ny = v[1];
-	nz = v[2];
+	Vector3<int> domainInfo;
+	domainInfo = *(UID->simParams->domain);
+	nx = domainInfo[0];
+	ny = domainInfo[1];
+	nz = domainInfo[2];
 
 	nx += 1;        /// +1 for Staggered grid
 	ny += 1;        /// +1 for Staggered grid
 	nz += 2;        /// +2 for staggered grid and ghost cell
 
 
-	Vector3<float> w;
-	w = *(UID->simParams->grid);
-	dx = w[0];
-	dy = w[1];
-	dz = w[2];
+	Vector3<float> gridInfo;
+	gridInfo = *(UID->simParams->grid);
+	dx = gridInfo[0];
+	dy = gridInfo[1];
+	dz = gridInfo[2];
 	itermax = UID->simParams->maxIterations;
 	dxy = MIN_S(dx, dy);
 
 	z_ref = UID->metParams->sensor->height;
 	U_ref = UID->metParams->sensor->speed;
+
+        /// Total number of face-centered values in domain
+        long numface_cent = nx*ny*nz;
+        u.resize(numface_cent);
+        v.resize(numface_cent);
+        w.resize(numface_cent);
 
 	if (UID->buildings)
 	{
