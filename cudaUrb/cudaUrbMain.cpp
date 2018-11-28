@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 {
     std::string Revision = "0"; 
     // CUDA-Urb - Version output information
-    std::cout << "cudaUrb " << "0.8.0" << " Rev " << Revision << std::endl;
+    std::cout << "cudaUrb " << "0.8.0" << std::endl;
     
     // ///////////////////////////////////
     // Parse Command Line arguments
@@ -44,9 +44,9 @@ int main(int argc, char *argv[])
     URBArgs arguments;
     arguments.processArguments(argc, argv);
 
-    //
+    // ///////////////////////////////////
     // Read and Process any Input for the system
-    // 
+    // ///////////////////////////////////
 
     // Parse the base XML QUIC file -- contains simulation parameters 
     URBInputData* UID = parseXMLTree(arguments.quicFile);
@@ -78,15 +78,14 @@ int main(int argc, char *argv[])
         }
     }
 
+    // Files was successfully read
     std::cout << "Data Was Read\n";
-    //File was successfully read
 
-    NetCDFData* netcdfDat;
-    netcdfDat = new NetCDFData();
-
+    // //////////////////////////////////////////
     //
     // Run the CUDA-URB Solver 
     //
+    // //////////////////////////////////////////
     Solver* solver;
     if (arguments.solveType == CPU_Type)
         solver = new CPUSolver(UID, DTEHF);
@@ -98,13 +97,20 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     
-    // Run Simulation code
+    // Run urb simulation code
     solver->solve( !arguments.solveWind);
     
-    //
+
+    // /////////////////////////////
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
-    // 
+    // /////////////////////////////
+
+    // Prepare the NetCDF Data Structure for outputting simulation results.
+    NetCDFData* netcdfDat = 0;
+    netcdfDat = new NetCDFData();
+
+
     if (!arguments.solveWind) {
         
         solver->outputNetCDF( netcdfDat );
