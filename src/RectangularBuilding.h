@@ -17,7 +17,6 @@ class RectangularBuilding : public NonPolyBuilding
 private:
 
 	int icell_cent, icell_cut;
-	float H;
 
 
 public:
@@ -28,7 +27,7 @@ public:
 
 	}
 
-	RectangularBuilding(float xfo, float yfo, float bh, float dx, float dy, float dz)
+	RectangularBuilding(float xStart, float yStart, float bh, float dx, float dy, float dz)
 	{
 		buildingGeometry = 1;
 
@@ -36,8 +35,8 @@ public:
 		buildingType = 5;
 		H = dz;
 		baseHeight = bh;
-		x_start = xfo;
-		y_start = yfo;
+		x_start = xStart;
+		y_start = yStart;
 		L = dx;
 		W = dy;
 
@@ -49,14 +48,17 @@ public:
 		parsePrimitive<int>(true, buildingType, "buildingType");
 		parsePrimitive<float>(true, H, "height");
 		parsePrimitive<float>(true, baseHeight, "baseHeight");
-		parsePrimitive<float>(true, x_start, "xFo");
-		parsePrimitive<float>(true, y_start, "yFo");
+		parsePrimitive<float>(true, x_start, "xStart");
+		parsePrimitive<float>(true, y_start, "yStart");
 		parsePrimitive<float>(true, L, "length");
 		parsePrimitive<float>(true, W, "width");
 
 	}
 
-	void setBoundaries(float dx, float dy, float dz, int nx, int ny, int nz, float *zm, float *e, float *f, float *g, float *h, float *m, float *n, int *icellflag, std::vector<std::vector<std::vector<float>>> &x_cut, std::vector<std::vector<std::vector<float>>> &y_cut, std::vector<std::vector<std::vector<float>>> &z_cut, std::vector<std::vector<int>> &num_points, std::vector<std::vector<float>> &coeff)
+	void setCutCells(float dx, float dy, float dz, int nx, int ny, int nz, int *icellflag, 
+					 std::vector<std::vector<std::vector<float>>> &x_cut,std::vector<std::vector<std::vector<float>>> &y_cut, 
+					 std::vector<std::vector<std::vector<float>>> &z_cut, std::vector<std::vector<int>> &num_points, 
+					 std::vector<std::vector<float>> &coeff)
 	{
 
 
@@ -65,7 +67,8 @@ public:
 			for (int k=1; k<k_cut_end; k++){
 				icell_cut = i_cut_start + j*(nx-1) + k*(nx-1)*(ny-1);
 				if (icellflag[icell_cut]==7){
-					num_points[icell_cut][0] = num_points[icell_cut][2] = num_points[icell_cut][3] = num_points[icell_cut][4] = num_points[icell_cut][5] = 4;
+					num_points[icell_cut][0] = num_points[icell_cut][2] = num_points[icell_cut][3] = 
+					num_points[icell_cut][4] = num_points[icell_cut][5] = 4;
 					num_points[icell_cut][1] = 0;
 
 					y_cut[icell_cut][0][2] = y_cut[icell_cut][0][3] = dy;
@@ -74,19 +77,22 @@ public:
 					z_cut[icell_cut][0][0] = z_cut[icell_cut][0][3] = dz;
 
 					x_cut[icell_cut][2][0] = x_cut[icell_cut][2][3] = x_cut[icell_cut][3][0] = x_cut[icell_cut][3][3] = 0.0;
-					x_cut[icell_cut][2][1] = x_cut[icell_cut][2][2] = x_cut[icell_cut][3][1] = x_cut[icell_cut][3][2] = x_start-i_cut_start*dx;
+					x_cut[icell_cut][2][1] = x_cut[icell_cut][2][2] = x_cut[icell_cut][3][1] = x_cut[icell_cut][3][2] = 
+																									x_start-i_cut_start*dx;
 					z_cut[icell_cut][2][0] = z_cut[icell_cut][2][1] = z_cut[icell_cut][3][0] = z_cut[icell_cut][3][1] = 0.0;
 					z_cut[icell_cut][2][2] = z_cut[icell_cut][2][3] = z_cut[icell_cut][3][2] = z_cut[icell_cut][3][3] = dz;
 
 					x_cut[icell_cut][4][0] = x_cut[icell_cut][4][3] = x_cut[icell_cut][5][0] = x_cut[icell_cut][5][3] = 0.0;
-					x_cut[icell_cut][4][1] = x_cut[icell_cut][4][2] = x_cut[icell_cut][5][1] = x_cut[icell_cut][5][2] = x_start-i_cut_start*dx;
+					x_cut[icell_cut][4][1] = x_cut[icell_cut][4][2] = x_cut[icell_cut][5][1] = x_cut[icell_cut][5][2] = 
+																									x_start-i_cut_start*dx;
 					y_cut[icell_cut][4][0] = y_cut[icell_cut][4][1] = y_cut[icell_cut][5][0] = y_cut[icell_cut][5][1] = 0.0;
 					y_cut[icell_cut][4][2] = y_cut[icell_cut][4][3] = y_cut[icell_cut][5][2] = y_cut[icell_cut][5][3] = dy;
 				
 				}
 				icell_cut = (i_cut_end-1) + j*(nx-1) + k*(nx-1)*(ny-1);
 				if (icellflag[icell_cut]==7){
-					num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][3] = num_points[icell_cut][4] = num_points[icell_cut][5] = 4;
+					num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][3] = 
+					num_points[icell_cut][4] = num_points[icell_cut][5] = 4;
 					num_points[icell_cut][0] = 0;
 
 					y_cut[icell_cut][1][2] = y_cut[icell_cut][1][3] = dy;
@@ -95,12 +101,14 @@ public:
 					z_cut[icell_cut][1][0] = z_cut[icell_cut][1][3] = dz;
 	
 					x_cut[icell_cut][2][2] = x_cut[icell_cut][2][3] = x_cut[icell_cut][3][2] = x_cut[icell_cut][3][3] = dx;
-					x_cut[icell_cut][2][1] = x_cut[icell_cut][2][0] = x_cut[icell_cut][3][1] = x_cut[icell_cut][3][0] = x_start+L-i_end*dx;
+					x_cut[icell_cut][2][1] = x_cut[icell_cut][2][0] = x_cut[icell_cut][3][1] = x_cut[icell_cut][3][0] = 
+																										x_start+L-i_end*dx;
 					z_cut[icell_cut][2][2] = z_cut[icell_cut][2][1] = z_cut[icell_cut][3][2] = z_cut[icell_cut][3][1] = 0.0;
 					z_cut[icell_cut][2][0] = z_cut[icell_cut][2][3] = z_cut[icell_cut][3][0] = z_cut[icell_cut][3][3] = dz;
 	
 					x_cut[icell_cut][4][2] = x_cut[icell_cut][4][3] = x_cut[icell_cut][5][2] = x_cut[icell_cut][5][3] = dx;
-					x_cut[icell_cut][4][1] = x_cut[icell_cut][4][0] = x_cut[icell_cut][5][1] = x_cut[icell_cut][5][0] = x_start+L-i_end*dx;
+					x_cut[icell_cut][4][1] = x_cut[icell_cut][4][0] = x_cut[icell_cut][5][1] = x_cut[icell_cut][5][0] = 
+																										x_start+L-i_end*dx;
 					y_cut[icell_cut][4][2] = y_cut[icell_cut][4][1] = y_cut[icell_cut][5][2] = y_cut[icell_cut][5][1] = 0.0;
 					y_cut[icell_cut][4][0] = y_cut[icell_cut][4][3] = y_cut[icell_cut][5][0] = y_cut[icell_cut][5][3] = dy;
 				}
@@ -111,7 +119,8 @@ public:
 			for (int k=1; k<k_cut_end; k++){
 				icell_cut = i + j_cut_start*(nx-1) + k*(nx-1)*(ny-1);
 				if (icellflag[icell_cut]==7){
-					num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][4] = num_points[icell_cut][5] = 4;
+					num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][2] = 
+					num_points[icell_cut][4] = num_points[icell_cut][5] = 4;
 					num_points[icell_cut][3] = 0;
 	
 					x_cut[icell_cut][2][0] = x_cut[icell_cut][2][3] = 0.0;
@@ -119,7 +128,8 @@ public:
 					z_cut[icell_cut][2][0] = z_cut[icell_cut][2][1] = 0.0;
 					z_cut[icell_cut][2][2] = z_cut[icell_cut][2][3] = dz;
 	
-					y_cut[icell_cut][0][2] = y_cut[icell_cut][0][3] = y_cut[icell_cut][1][2] = y_cut[icell_cut][1][3] = y_start-j_cut_start*dy;
+					y_cut[icell_cut][0][2] = y_cut[icell_cut][0][3] = y_cut[icell_cut][1][2] = y_cut[icell_cut][1][3] = 
+																									y_start-j_cut_start*dy;
 					y_cut[icell_cut][0][1] = y_cut[icell_cut][0][0] = y_cut[icell_cut][1][1] = y_cut[icell_cut][1][0] = 0.0;
 					z_cut[icell_cut][0][2] = z_cut[icell_cut][0][1] = z_cut[icell_cut][1][2] = z_cut[icell_cut][1][1] = 0.0;
 					z_cut[icell_cut][0][0] = z_cut[icell_cut][0][3] = z_cut[icell_cut][1][0] = z_cut[icell_cut][1][3] = dz;
@@ -127,11 +137,13 @@ public:
 					x_cut[icell_cut][4][0] = x_cut[icell_cut][4][3] = x_cut[icell_cut][5][0] = x_cut[icell_cut][5][3] = 0.0;
 					x_cut[icell_cut][4][1] = x_cut[icell_cut][4][2] = x_cut[icell_cut][5][1] = x_cut[icell_cut][5][2] = dx;
 					y_cut[icell_cut][4][0] = y_cut[icell_cut][4][1] = y_cut[icell_cut][5][0] = y_cut[icell_cut][5][1] = 0.0;
-					y_cut[icell_cut][4][2] = y_cut[icell_cut][4][3] = y_cut[icell_cut][5][2] = y_cut[icell_cut][5][3] = y_start-j_cut_start*dy;
+					y_cut[icell_cut][4][2] = y_cut[icell_cut][4][3] = y_cut[icell_cut][5][2] = y_cut[icell_cut][5][3] = 
+																									y_start-j_cut_start*dy;
 				}
 				icell_cut = i + (j_cut_end-1)*(nx-1) + k*(nx-1)*(ny-1);
 				if (icellflag[icell_cut]==7){
-					num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][3] = num_points[icell_cut][4] = num_points[icell_cut][5] = 4;
+					num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][3] = 
+					num_points[icell_cut][4] = num_points[icell_cut][5] = 4;
 					num_points[icell_cut][2] = 0;
 	
 					x_cut[icell_cut][3][0] = x_cut[icell_cut][3][3] = 0.0;
@@ -140,13 +152,15 @@ public:
 					z_cut[icell_cut][3][2] = z_cut[icell_cut][3][3] = dz;
 	
 					y_cut[icell_cut][0][2] = y_cut[icell_cut][0][3] = y_cut[icell_cut][1][2] = y_cut[icell_cut][1][3] = dy;
-					y_cut[icell_cut][0][1] = y_cut[icell_cut][0][0] = y_cut[icell_cut][1][1] = y_cut[icell_cut][1][0] = y_start+W-j_end*dy;
+					y_cut[icell_cut][0][1] = y_cut[icell_cut][0][0] = y_cut[icell_cut][1][1] = y_cut[icell_cut][1][0] = 
+																										y_start+W-j_end*dy;
 					z_cut[icell_cut][0][2] = z_cut[icell_cut][0][1] = z_cut[icell_cut][1][2] = z_cut[icell_cut][1][1] = 0.0;
 					z_cut[icell_cut][0][0] = z_cut[icell_cut][0][3] = z_cut[icell_cut][1][0] = z_cut[icell_cut][1][3] = dz;
 	
 					x_cut[icell_cut][4][0] = x_cut[icell_cut][4][3] = x_cut[icell_cut][5][1] = x_cut[icell_cut][5][0] = 0.0;
 					x_cut[icell_cut][4][1] = x_cut[icell_cut][4][2] = x_cut[icell_cut][5][2] = x_cut[icell_cut][5][3] = dx;
-					y_cut[icell_cut][4][0] = y_cut[icell_cut][4][1] = y_cut[icell_cut][5][1] = y_cut[icell_cut][5][2] = y_start+W-j_end*dy;
+					y_cut[icell_cut][4][0] = y_cut[icell_cut][4][1] = y_cut[icell_cut][5][1] = y_cut[icell_cut][5][2] = 
+																										y_start+W-j_end*dy;
 					y_cut[icell_cut][4][2] = y_cut[icell_cut][4][3] = y_cut[icell_cut][5][3] = y_cut[icell_cut][5][0] = dy;
 				}
 			}
@@ -156,7 +170,8 @@ public:
 			for (int j=j_cut_start+1; j<j_cut_end; j++){
 				icell_cut = i + j*(nx-1) + k_end*(nx-1)*(ny-1);
 				if (icellflag[icell_cut]==7){
-					num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][3] = num_points[icell_cut][5] = 4;
+					num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][2] = 
+					num_points[icell_cut][3] = num_points[icell_cut][5] = 4;
 					num_points[icell_cut][4] = 0;
 
 					x_cut[icell_cut][5][0] = x_cut[icell_cut][5][3] = 0.0;
@@ -166,12 +181,14 @@ public:
 	
 					y_cut[icell_cut][0][2] = y_cut[icell_cut][0][3] = y_cut[icell_cut][1][2] = y_cut[icell_cut][1][3] = dy;
 					y_cut[icell_cut][0][1] = y_cut[icell_cut][0][0] = y_cut[icell_cut][1][1] = y_cut[icell_cut][1][0] = 0.0;
-					z_cut[icell_cut][0][2] = z_cut[icell_cut][0][1] = z_cut[icell_cut][1][2] = z_cut[icell_cut][1][1] = H-(k_end-1)*dz;
+					z_cut[icell_cut][0][2] = z_cut[icell_cut][0][1] = z_cut[icell_cut][1][2] = z_cut[icell_cut][1][1] = 
+																											H-(k_end-1)*dz;
 					z_cut[icell_cut][0][0] = z_cut[icell_cut][0][3] = z_cut[icell_cut][1][0] = z_cut[icell_cut][1][3] = dz;
 	
 					x_cut[icell_cut][2][0] = x_cut[icell_cut][2][3] = x_cut[icell_cut][3][0] = x_cut[icell_cut][3][3] = 0.0;
 					x_cut[icell_cut][2][1] = x_cut[icell_cut][2][2] = x_cut[icell_cut][3][1] = x_cut[icell_cut][3][2] = dx;
-					z_cut[icell_cut][2][0] = z_cut[icell_cut][2][1] = z_cut[icell_cut][3][0] = z_cut[icell_cut][3][1] = H-(k_end-1)*dz;
+					z_cut[icell_cut][2][0] = z_cut[icell_cut][2][1] = z_cut[icell_cut][3][0] = z_cut[icell_cut][3][1] = 
+																											H-(k_end-1)*dz;
 					z_cut[icell_cut][2][2] = z_cut[icell_cut][2][3] = z_cut[icell_cut][3][2] = z_cut[icell_cut][3][3] = dz;
 				}
 			}
@@ -180,7 +197,7 @@ public:
 		for (int k=1; k<k_end; k++){		
 			icell_cut = i_cut_start + j_cut_start*(nx-1) + k*(nx-1)*(ny-1);
 			if (icellflag[icell_cut]==7){
-				num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][3] = 4;
+				num_points[icell_cut][0] = num_points[icell_cut][1] =num_points[icell_cut][2] =num_points[icell_cut][3] = 4;
 				num_points[icell_cut][5] = num_points[icell_cut][4] = 6;
 
 				y_cut[icell_cut][0][2] = y_cut[icell_cut][0][3] = dy;
@@ -224,7 +241,7 @@ public:
 			icell_cut = (i_cut_end-1) + j_cut_start*(nx-1) + k*(nx-1)*(ny-1);
 			if (icellflag[icell_cut]==7){
 
-				num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][3] = 4;
+				num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][3]=4;
 				num_points[icell_cut][5] = num_points[icell_cut][4] = 6;
 	
 				y_cut[icell_cut][0][0] = y_cut[icell_cut][0][1] = 0.0;
@@ -269,7 +286,7 @@ public:
 			if (icellflag[icell_cut]==7){
 
 
-				num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][3] = 4;
+				num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][3]=4;
 				num_points[icell_cut][5] = num_points[icell_cut][4] = 6;
 
 				y_cut[icell_cut][0][2] = y_cut[icell_cut][0][3] = dy;
@@ -314,7 +331,7 @@ public:
 			if (icellflag[icell_cut]==7){
 
 
-				num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][3] = 4;
+				num_points[icell_cut][0] = num_points[icell_cut][1] = num_points[icell_cut][2] = num_points[icell_cut][3]=4;
 				num_points[icell_cut][5] = num_points[icell_cut][4] = 6;
 	
 				y_cut[icell_cut][0][0] = y_cut[icell_cut][0][1] = y_start+W-j_end*dy;
@@ -521,90 +538,111 @@ public:
 				y_cut[icell_cut][4][4] = y_cut[icell_cut][4][5] = dy;
 			}
 
+
+
 	}
 
-/*
-Note: The select case portion is almost identical across geometry types 1, 2, and 6.
-Difference is that 6 has one more case, type 5. similar to default except sets to 1
-instead of 0. Also same as 
-*/
 
-	void setCells(float dx, float dy, float dz, int nx, int ny, int nz, int *icellflag) 
+	void setCellsFlag(float dx, float dy, float dz, int nx, int ny, int nz, int *icellflag, int mesh_type_flag) 
 	{
 
-
-		/// defining building and cut-cell indices
-		if (fmod(x_start,dx)==0){
-			i_start = x_start/dx;
-			i_cut_start = i_start;
-		} else{
-			i_start = 1+x_start/dx;
-			i_cut_start = x_start/dx;
-		}
-		i_end = (x_start+L)/dx;
-		i_cut_end = i_end;
-		if (fmod((x_start+L),dx)!=0){
-			i_cut_end = 1+(x_start+L)/dx;
-		}
-		if (fmod(y_start,dy)==0){	
-			j_start = y_start/dy;
-			j_cut_start = j_start;
-		} else{
-			j_start = 1+y_start/dy;
-			j_cut_start = y_start/dy;
-		}		
-		j_end = (y_start+W)/dy;
-		j_cut_end = j_end;
-		if (fmod((y_start+W),dy)!=0){
-			j_cut_end = 1+(y_start+W)/dy;
-		}
-		k_end = (H/dz)+1;
-		k_cut_end = k_end;
-		if (fmod(H,dz)!=0){
-			k_cut_end = 2+(H/dz);
-		}
-
-		k_start = baseHeight / dz;
-
-    	std::cout << "i_start:" << i_start << "\n";   
-   	 	std::cout << "i_end:" << i_end << "\n";       
-    	std::cout << "j_start:" << j_start << "\n";  
-   	 	std::cout << "j_end:" << j_end << "\n";         
-   	 	std::cout << "k_end:" << k_end << "\n";       
-
-   	 	std::cout << "i_cut_start:" << i_cut_start << "\n";  
-    	std::cout << "i_cut_end:" << i_cut_end << "\n";      
-    	std::cout << "j_cut_start:" << j_cut_start << "\n"; 
-    	std::cout << "j_cut_end:" << j_cut_end << "\n";        
-    	std::cout << "k_cut_end:" << k_cut_end << "\n"; 
-
-		for (int k = 1; k < k_cut_end; k++){
-			for (int j = j_cut_start; j < j_cut_end; j++){
-				for (int i = i_cut_start; i < i_cut_end; i++){
-	               	icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-					icellflag[icell_cent] = 7;                         /// Set cell index flag to cut-cell
+		if (mesh_type_flag == 1)
+		{
+			/// defining building and cut-cell indices
+			if (fmod(x_start,dx)==0){
+				i_start = x_start/dx;
+				i_cut_start = i_start;
+			} else{
+				i_start = 1+x_start/dx;
+				i_cut_start = x_start/dx;
+			}
+			i_end = (x_start+L)/dx;
+			i_cut_end = i_end;
+			if (fmod((x_start+L),dx)!=0){
+				i_cut_end = 1+(x_start+L)/dx;
+			}
+			if (fmod(y_start,dy)==0){	
+				j_start = y_start/dy;
+				j_cut_start = j_start;
+			} else{
+				j_start = 1+y_start/dy;
+				j_cut_start = y_start/dy;
+			}		
+			j_end = (y_start+W)/dy;
+			j_cut_end = j_end;
+			if (fmod((y_start+W),dy)!=0){
+				j_cut_end = 1+(y_start+W)/dy;
+			}
+			k_end = (baseHeight+H)/dz+1;
+			k_cut_end = k_end;
+			if (fmod(H,dz)!=0){
+				k_cut_end = 2+(H/dz);
+			}
+	
+			k_start = baseHeight/dz;
+	
+    		std::cout << "i_start:" << i_start << "\n";   
+   		 	std::cout << "i_end:" << i_end << "\n";       
+    		std::cout << "j_start:" << j_start << "\n";  
+   		 	std::cout << "j_end:" << j_end << "\n";         
+   		 	std::cout << "k_end:" << k_end << "\n";       
+	
+   		 	std::cout << "i_cut_start:" << i_cut_start << "\n";  
+    		std::cout << "i_cut_end:" << i_cut_end << "\n";      
+    		std::cout << "j_cut_start:" << j_cut_start << "\n"; 
+    		std::cout << "j_cut_end:" << j_cut_end << "\n";        
+    		std::cout << "k_cut_end:" << k_cut_end << "\n"; 
+	
+			for (int k = 1; k < k_cut_end; k++){
+				for (int j = j_cut_start; j < j_cut_end; j++){
+					for (int i = i_cut_start; i < i_cut_end; i++){
+		               	icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+						icellflag[icell_cent] = 7;                         /// Set cell index flag to cut-cell
+					}
 				}
-			}
-   		}
-			
-
-   		for (int k = k_start; k < k_end; k++){
-       		for (int j = j_start; j < j_end; j++){
-           		for (int i = i_start; i < i_end; i++){
-                	icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-					icellflag[icell_cent] = 0;                         /// Set cell index flag to building
+   			}
+				
+	
+   			for (int k = k_start; k < k_end; k++){
+    	   		for (int j = j_start; j < j_end; j++){
+    	       		for (int i = i_start; i < i_end; i++){
+    	            	icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+						icellflag[icell_cent] = 0;                         /// Set cell index flag to building
+					}
 				}
-			}
-    	}
-
-		/// defining ground solid cells
-		for (int j = 0; j < ny-1; j++){
-			for (int i = 0; i < nx-1; i++){
-				int icell_cent = i + j*(nx-1);
-				icellflag[icell_cent] = 0.0;
-			}
+    		}
+	
+		}
+		else
+		{
+			i_start = round(x_start/dx);     /// Index of building start location in x-direction
+			i_end = round((x_start+L)/dx);   /// Index of building end location in x-direction
+			j_start = round(y_start/dy);     /// Index of building start location in y-direction
+			j_end = round((y_start+W)/dy);   /// Index of building end location in y-direction 
+			k_start = baseHeight/dz;		/// Index of building start location in z-direction
+			k_end = round((H+baseHeight)/dz)+1;             /// Index of building end location in z-direction
+	
+    		std::cout << "i_start:" << i_start << "\n";   // Print the number of iterations
+    		std::cout << "i_end:" << i_end << "\n";       // Print the number of iterations
+    		std::cout << "j_start:" << j_start << "\n";   // Print the number of iterations
+    		std::cout << "j_end:" << j_end << "\n";       // Print the number of iterations    
+    		std::cout << "k_end:" << k_end << "\n";       // Print the number of iterations 
+	
+				
+	
+   			for (int k = k_start; k < k_end; k++){
+    	   		for (int j = j_start; j < j_end; j++){
+    	       		for (int i = i_start; i < i_end; i++){
+    	            	icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+						icellflag[icell_cent] = 0;                         /// Set cell index flag to building
+					}
+				}
+    		}
+	
 		}
 	}
+	
+	
 
 };
 

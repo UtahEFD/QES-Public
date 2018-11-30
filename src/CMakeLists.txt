@@ -81,6 +81,9 @@ CUDA_ADD_EXECUTABLE( cudaUrb
   BVH.cpp
   DTEHeightField.cpp
   Cell.cpp
+  Canopy.cpp
+  Cut_cell.cpp
+  Sensor.cpp
   )
 
 target_link_libraries(cudaUrb qesutil)

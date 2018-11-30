@@ -1,11 +1,11 @@
 #include "NetCDFData.h"
 
 
-void NetCDFData::getData(float* newX, float* newY, float* newZ, std::vector<double> newU, std::vector<double> newV, std::vector<double> newW, int newDX, int newDY, int newDZ)
+void NetCDFData::getData(float* newX, float* newY, float* newZ, double* newU, double* newV, double* newW, int newDX, int newDY, int newDZ)
 {
 	dimX = newDX-1;
 	dimY = newDY-1;
-	dimZ = newDZ-2;
+	dimZ = newDZ-1;
 
     x = new float [dimX];
     y = new float [dimY];
@@ -25,15 +25,15 @@ void NetCDFData::getData(float* newX, float* newY, float* newZ, std::vector<doub
     v = new double [(dimX) * (dimY) * (dimZ)];
     w = new double [(dimX) * (dimY) * (dimZ)];
 	
-    for (int k = 0; k < dimZ; k++) 
+    for (int k = 1; k < dimZ; k++) 
         for (int j = 0; j < dimY; j++)
             for (int i = 0; i < dimX; i++)
             {
-                int iAll = i + j*(newDX) + k*(newDX)*(newDY);
+                //int iAll = i + j*(newDX) + k*(newDX)*(newDY);
                 int iReduced = i + j*(dimX) + k*(dimX)*(dimY);
-                u[iReduced] = newU[iAll];
-                v[iReduced] = newV[iAll];
-                w[iReduced] = newW[iAll];    
+                u[iReduced] = newU[iReduced];
+                v[iReduced] = newV[iReduced];
+                w[iReduced] = newW[iReduced];    
             }
 }
 

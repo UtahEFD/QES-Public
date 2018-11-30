@@ -11,8 +11,23 @@
 #include "DTEHeightField.h"
 #include "Cell.h"
 #include "Sensor.h"
+#include "Canopies.h"
+#include "Canopy.h"
+#include "Cut_cell.h"
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
 #include <math.h>
 #include <vector>
+#include <chrono>
+#include <limits>
+
+
+using namespace std;
+using std::cerr;
+using std::endl;
+using std::vector;
+using std::cout;
 
 #define _USE_MATH_DEFINES
 #define MIN_S(x,y) ((x) < (y) ? (x) : (y))
@@ -32,41 +47,43 @@ protected:
     std::vector<float> x,y,z;
 	int itermax;		/**< Maximum number of iterations */
 
-	int num_sites;		/**< number of data entry sites */
+	Sensor* sensor;
+	int num_sites;			/**< number of data entry sites */
 	std::vector<int> site_blayer_flag;		/**< site boundary layer flag */
 	std::vector<float> site_one_overL;		/**< Reciprocal Monin-Obukhov length (1/m) */
-	std::vector<float> site_xcoord;		/**< location of the measuring site in x-direction */
-	std::vector<float> site_ycoord;		/**< location of the measuring site in y-direction */
+	std::vector<float> site_xcoord;			/**< location of the measuring site in x-direction */
+	std::vector<float> site_ycoord;			/**< location of the measuring site in y-direction */
 	std::vector<float> site_wind_dir;		/**< site wind wind direction */
 
-	std::vector<float> site_z0;		/**< site surface roughness */
+	std::vector<float> site_z0;			/**< site surface roughness */
 	std::vector<float> site_z_ref;		/**< measuring sensor height */
 	std::vector<float> site_U_ref;		/**< site measured velocity */
 
-    /// Declare coefficients for SOR solver
-	std::vector<float> e;
-	std::vector<float> f;
-	std::vector<float> g;
-	std::vector<float> h;
-	std::vector<float> m;
-	std::vector<float> n;
+	int num_canopies;				/**< number of canopies */
+	std::vector<float> atten;		/**< Attenuation coefficient */	
+	int landuse_flag;
+	int landuse_veg_flag;
+	int landuse_urb_flag;		
+	int lu_canopy_flag;
+    std::vector<Building*> canopies;
+	Canopy* canopy;
+
+
+    /// Declaration of coefficients for SOR solver
+	std::vector<float> e,f,g,h,m,n;
 
     /// Declaration of initial wind components (u0,v0,w0)
-    std::vector<double> u0;
-    std::vector<double> v0;
-    std::vector<double> w0;
-    
+    std::vector<double> u0,v0,w0;
+
     std::vector<double> R;           /**< Divergence of initial velocity field */
   
     /// Declaration of final velocity field components (u,v,w)
-    std::vector<double> u;
-    std::vector<double> v;
-    std::vector<double> w;
+    std::vector<double> u,v,w;
+    std::vector<double> u_out,v_out,w_out;
 
     /// Declaration of Lagrange multipliers
-    std::vector<double> lambda;
-	std::vector<double> lambda_old;
-    std::vector<int> icellflag;        /// Cell index flag (0 = building, 1 = fluid)
+    std::vector<double> lambda, lambda_old;
+    std::vector<int> icellflag;        /// Cell index flag (0 = building/terrain, 1 = fluid)
 
 
     float max_velmag;
@@ -79,9 +96,12 @@ protected:
     int streetIntersectionFlag;		/**< Street intersection flag */
     int wakeFlag;		/**< Wake flag */
     int sidewallFlag;		/**< Sidewall flag */
+	int mesh_type_flag;		/**< mesh type (0 = Original QUIC/Stair-step, 1 = Cut-cell method) */
 
     Cell* cells;
     DTEHeightField* DTEHF;
+	Cut_cell* cut_cell;
+
 	float z0;
 
     const int alpha1 = 1;        /**< Gaussian precision moduli */
@@ -105,21 +125,36 @@ protected:
 	std::vector<std::vector<int>> num_points;
 	std::vector<std::vector<float>> coeff;
 
+	float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;		/**< Solver coefficients on device (GPU) */
+	double *d_R;              /**< Divergence of initial velocity field on device (GPU) */
+    double *d_lambda, *d_lambda_old;		/**< Lagrange multipliers on device (GPU) */
 
-	float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;
-	double *d_R;              //!> Divergence of initial velocity field
-    double *d_lambda, *d_lambda_old;
+	const float vk = 0.4;			/// Von Karman's constant
+
+
 
     void printProgress (float percentage);
 
 public:
+	
 	Solver(URBInputData* UID, DTEHeightField* DTEHF);
 
 	virtual void solve(NetCDFData* netcdfDat, bool solveWind) = 0;
+		
 
-	void inputWindProfile(float dx, float dy, float dz, int nx, int ny, int nz, double *u0, double *v0, double *w0, int num_sites, int *site_blayer_flag, float *site_one_overL, float *site_xcoord, 								float *site_ycoord, float *site_wind_dir, float *site_z0, float *site_z_ref, float *site_U_ref, float *x, float *y, float *z);
-
-    void defineWalls(int* iCellFlag, float* n, float* m, float* f, float* e, float* h, float* g, std::vector<std::vector<std::vector<float>>> x_cut, std::vector<std::vector<std::vector<float>>> y_cut, 							std::vector<std::vector<std::vector<float>>> z_cut, std::vector<std::vector<int>> num_points, std::vector<std::vector<float>> coeff);
-    void upWind(Building* build, int* iCellFlag, double* u0, double* v0, double* w0, float* z, float* zm);
-    void reliefWake(NonPolyBuilding* build, float* u0, float* v0);
+	/*
+	 *This function takes in values necessary for cut-cell method for buildings and then calculates the area fraction 
+	 *coefficients, sets them to approperiate solver coefficients and finally sets related coefficients to zero to define
+	 *solid walls for non cut-cells.
+	 */
+	void defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, int* icellflag, float* n, float* m, 
+						float* f, float* e, float* h, float* g, std::vector<std::vector<std::vector<float>>> x_cut,
+						std::vector<std::vector<std::vector<float>>>y_cut,std::vector<std::vector<std::vector<float>>> z_cut, 
+						std::vector<std::vector<int>> num_points, std::vector<std::vector<float>> coeff);
+	/*
+	 *This function takes in the icellflags set by setCellsFlag function for stair-step method and sets related coefficients
+	 *to zero to define solid walls.
+	 */
+	void defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, int* icellflag, float* n, float* m, 
+							 float* f, float* e, float* h, float* g);
 };

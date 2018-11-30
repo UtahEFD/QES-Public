@@ -30,7 +30,7 @@ public:
 	int UTMY;
 	int UTMZone;
 	int UTMZoneLetter;
-	std::vector<float> dzArray;
+	int meshTypeFlag;
 	
 	SimulationParameters()
 	{
@@ -56,12 +56,12 @@ public:
 		parsePrimitive<int>(true, sidewallFlag, "sidewallFlag");
 		parsePrimitive<int>(true, maxIterations, "maxIterations");
 		parsePrimitive<int>(true, residualReduction, "residualReduction");
+		parsePrimitive<int>(true, meshTypeFlag, "meshTypeFlag");
 		parsePrimitive<float>(true, domainRotation, "domainRotation");
 		parsePrimitive<int>(false, UTMX, "UTMX");
 		parsePrimitive<int>(false, UTMY, "UTMY");
 		parsePrimitive<int>(false, UTMZone, "UTMZone");
 		parsePrimitive<int>(false, UTMZoneLetter, "UTMZoneLetter");
-		parseMultiPrimitives<float>(false, dzArray, "dz_array");
 	}
 
 };
