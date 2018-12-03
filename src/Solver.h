@@ -45,7 +45,7 @@ protected:
     int sidewallFlag;
 
     Cell* cells;
-    DTEHeightField* DTEHF;
+    bool DTEHFExists = false;
 
 
     const int alpha1 = 1;        /// Gaussian precision moduli
@@ -60,7 +60,7 @@ protected:
     void printProgress (float percentage);
 
 public:
-    Solver(URBInputData* UID, DTEHeightField* DTEHF);
+    Solver(const URBInputData* UID, const DTEHeightField* DTEHF);
 
     virtual void solve(bool solveWind) = 0;
 

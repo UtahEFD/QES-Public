@@ -360,7 +360,7 @@ void DTEHeightField::printProgress (float percentage)
 #define CELL(i,j,k) ((i) + (j) * (nx) + (k) * (nx) * (ny))
 #define CLAMP(low, high, x) ( (x) < (low) ? (low) : ( (x) > (high) ? (high) : (x) ))
 
-std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy, float dz)
+std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy, float dz) const
 {
 
   printf("Setting Cell Data...\n");
@@ -396,7 +396,7 @@ return cutCells;
 
 }
 
-void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, int nz, float dz, Vector3<float> corners[], std::vector<int>& cutCells)
+void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, int nz, float dz, Vector3<float> corners[], std::vector<int>& cutCells) const 
 {
    float coordsMin, coordsMax;
    coordsMin = coordsMax = corners[0][2];
@@ -695,7 +695,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
 }
 
 
-Vector3<float> DTEHeightField::getIntermediate(Vector3<float> a, Vector3<float> b, float height)
+Vector3<float> DTEHeightField::getIntermediate(Vector3<float> a, Vector3<float> b, float height) const
 {
 
   if (a[2] == b[2])

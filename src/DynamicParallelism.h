@@ -44,7 +44,7 @@ private:
 	void _cudaCheck(T e, const char* func, const char* call, const int line);
 
 public:
-	DynamicParallelism(URBInputData* UID, DTEHeightField* DTEHF)
+	DynamicParallelism(const URBInputData* UID, const DTEHeightField* DTEHF)
 		: Solver(UID, DTEHF)
 		{
 		}

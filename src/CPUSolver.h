@@ -21,7 +21,7 @@ using std::cout;
 class CPUSolver : public Solver
 {
 public:
-	CPUSolver(URBInputData* UID, DTEHeightField* DTEHF)
+	CPUSolver(const URBInputData* UID, const DTEHeightField* DTEHF)
 		: Solver(UID, DTEHF)
 		{
                     /// Total number of cell-centered values in domain

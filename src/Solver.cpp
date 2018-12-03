@@ -13,7 +13,7 @@ void Solver::printProgress (float percentage)
     fflush (stdout);
 }
 
-Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
+Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
 {
 
 	rooftopFlag = UID->simParams->rooftopFlag;
@@ -96,11 +96,11 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
 
 	
 	cells = 0;
-	this->DTEHF = DTEHF;
 	if (DTEHF)
 		{
 			cells = new Cell[(nx-1)*(ny-1)*(nz-1)];
 			DTEHF->setCells(cells, nx - 1, ny - 1, nz - 1, dx, dy, dz);
+			DTEHFExists = true;
 
 		}
 
