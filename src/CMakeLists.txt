@@ -16,6 +16,9 @@ CUDA_ADD_LIBRARY( cudaurbcore
   BVH.cpp
   DTEHeightField.cpp
   Cell.cpp
+  Canopy.cpp
+  Cut_cell.cpp
+  Sensor.cpp
   )
 
 cuda_add_executable( unitTest

@@ -6,6 +6,7 @@
 #include "FileOptions.h"
 #include "MetParams.h"
 #include "Buildings.h"
+#include "Canopies.h"
 
 class URBInputData : public ParseInterface
 {
@@ -14,6 +15,7 @@ public:
 	FileOptions* fileOptions;
 	MetParams* metParams;
 	Buildings* buildings;
+	Canopies* canopies;
 
 
 	URBInputData()
@@ -21,6 +23,7 @@ public:
 	fileOptions = 0;
 	metParams = 0;
 	buildings = 0;
+	canopies = 0;
 	}
 
 	virtual void parseValues()
@@ -29,13 +32,14 @@ public:
 	parseElement<FileOptions>(false, fileOptions, "fileOptions");
 	parseElement<MetParams>(false, metParams, "metParams");
 	parseElement<Buildings>(false, buildings, "buildings");
+	parseElement<Canopies>(false, canopies, "canopies");
 	}
 
-    	/**
-	 * This function takes in an URBInputData variable and uses it
-	 * as the base to parse the ptree
-	 * @param UID the object that will serve as the base level of the xml parser
-	 */
+   /**
+	* This function takes in an URBInputData variable and uses it
+	* as the base to parse the ptree
+	* @param UID the object that will serve as the base level of the xml parser
+	*/
     void parseTree(pt::ptree t) { //  URBInputData*& UID) {
         // root = new URBInputData();
         setTree(t);

@@ -4,6 +4,8 @@
 #include "Solver.h"
 #include "NetCDFData.h"
 #include "DTEHeightField.h"
+#include "RectangularBuilding.h"
+#include "Sensor.h"
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -28,12 +30,10 @@ public:
                     long numcell_cent = (nx-1)*(ny-1)*(nz-1); 
                     icellflag = new int [ numcell_cent ];
 		}
+    
 
 	virtual void solve(bool solveWind);
 
     void outputDataFile();
     void outputNetCDF( NetCDFData* netcdfDat );
-
-private:
-    int *icellflag;
 };

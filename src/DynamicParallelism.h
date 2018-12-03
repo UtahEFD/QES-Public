@@ -4,6 +4,8 @@
 #include "Solver.h"
 #include "NetCDFData.h"
 #include "DTEHeightField.h"
+#include "RectangularBuilding.h"
+#include "Sensor.h"
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -51,6 +53,9 @@ public:
 
 	virtual void solve(bool solveWind);
 
+<<<<<<< HEAD
     void outputDataFile();
     void outputNetCDF( NetCDFData* netcdfDat );
+=======
+>>>>>>> 1d5d8aa6c846d4cc653130b2767ebd5338e81607
 };

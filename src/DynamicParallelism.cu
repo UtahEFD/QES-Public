@@ -12,7 +12,9 @@ void DynamicParallelism::_cudaCheck(T e, const char* func, const char* call, con
 }
 
 // Divergence kernel
-__global__ void divergence(double *d_u0, double *d_v0, double *d_w0, double *d_R, int alpha1, int  nx, int  ny, int nz, float dx,float dy, float dz){
+__global__ void divergence(double *d_u0, double *d_v0, double *d_w0, double *d_R, float *d_e, float *d_f, float *d_g, 
+						float *d_h, float *d_m, float *d_n, int alpha1, int  nx, int  ny, int nz,float dx,float dy,float dz)
+{
 
     int icell_cent = blockDim.x*blockIdx.x+threadIdx.x;
     int k = icell_cent/((nx-1)*(ny-1));
@@ -21,12 +23,16 @@ __global__ void divergence(double *d_u0, double *d_v0, double *d_w0, double *d_R
     int icell_face = i + j*nx + k*nx*ny;
 
     if((i<nx-1)&&(j<ny-1)&&(k<nz-1)){
-        d_R[icell_cent] = (-2*pow(alpha1, 2.0))*(((d_u0[icell_face+1]-d_u0[icell_face])/dx)+((d_v0[icell_face + nx]-d_v0[icell_face])/dy)+((d_w0[icell_face + nx*ny]-d_w0[icell_face])/dy));   // Divergence equation
+        d_R[icell_cent] = (-2*pow(alpha1, 2.0))*(((d_e[icell_cent]*d_u0[icell_face+1]-d_f[icell_cent]*d_u0[icell_face])*dx)+
+						((d_g[icell_cent]*d_v0[icell_face + nx]-d_h[icell_cent]*d_v0[icell_face])*dy)+((d_m[icell_cent]*
+						d_w0[icell_face + nx*ny]-d_n[icell_cent]*d_w0[icell_face])*dz));         // Divergence equation
     }
 }
 
 
-__global__ void SOR_RB(double *d_lambda, int nx, int ny, int nz, float omega, float  A, float  B, float  dx, float *d_e, float *d_f, float *d_g, float *d_h, float *d_m, float *d_n, double *d_R, int offset){
+__global__ void SOR_RB(double *d_lambda, int nx, int ny, int nz, float omega, float  A, float  B, float  dx, float *d_e, 
+						float *d_f, float *d_g, float *d_h, float *d_m, float *d_n, double *d_R, int offset)
+{
     
     int icell_cent = blockDim.x*blockIdx.x+threadIdx.x;
     int k = icell_cent/((nx-1)*(ny-1));
@@ -35,7 +41,12 @@ __global__ void SOR_RB(double *d_lambda, int nx, int ny, int nz, float omega, fl
     
     if ( (i > 0) && (i < nx-2) && (j > 0) && (j < ny-2) && (k < nz-2) && (k > 0) && ((i+j+k)%2) == offset ){
         
-        d_lambda[icell_cent] = (omega/(d_e[icell_cent]+d_f[icell_cent]+d_g[icell_cent]+d_h[icell_cent]+d_m[icell_cent]+d_n[icell_cent]))*(d_e[icell_cent]*d_lambda[icell_cent+1]+d_f[icell_cent]*d_lambda[icell_cent-1]+d_g[icell_cent]*d_lambda[icell_cent + (nx-1)]+d_h[icell_cent]*d_lambda[icell_cent - (nx-1)]+d_m[icell_cent]*d_lambda[icell_cent + (nx-1)*(ny-1)]+d_n[icell_cent]*d_lambda[icell_cent - (nx-1)*(ny-1)]-d_R[icell_cent])+(1-omega)*d_lambda[icell_cent];    /// SOR formulation
+        d_lambda[icell_cent] = (omega/(d_e[icell_cent]+d_f[icell_cent]+d_g[icell_cent]+d_h[icell_cent]+d_m[icell_cent]+
+								d_n[icell_cent]))*(d_e[icell_cent]*d_lambda[icell_cent+1]+d_f[icell_cent]*
+								d_lambda[icell_cent-1]+d_g[icell_cent]*d_lambda[icell_cent + (nx-1)]+d_h[icell_cent]*
+								d_lambda[icell_cent - (nx-1)]+d_m[icell_cent]*d_lambda[icell_cent + (nx-1)*(ny-1)]+
+								d_n[icell_cent]*d_lambda[icell_cent - (nx-1)*(ny-1)]-d_R[icell_cent])+
+								(1-omega)*d_lambda[icell_cent];    /// SOR formulation
     }
 }
 
@@ -58,7 +69,9 @@ __global__ void applyNeumannBC(double *d_lambda, int nx, int ny) {
     }
 }
 
-__global__ void calculateError(double *d_lambda, double *d_lambda_old, int nx, int ny, int nz, double *d_value, double *d_bvalue){
+__global__ void calculateError(double *d_lambda, double *d_lambda_old, int nx, int ny, int nz, double *d_value, 
+								double *d_bvalue)
+{
 
 
     int d_size = (nx-1)*(ny-1)*(nz-1);
@@ -99,7 +112,10 @@ __global__ void calculateError(double *d_lambda, double *d_lambda_old, int nx, i
  }
 
 // Euler Final Velocity kernel
-__global__ void finalVelocity(double *d_u0, double *d_v0, double *d_w0, double *d_lambda, double *d_u, double *d_v,double *d_w, int *d_icellflag, int alpha1, int alpha2, float dx, float dy, float dz, int  nx, int  ny, int nz){
+__global__ void finalVelocity(double *d_u0, double *d_v0, double *d_w0, double *d_lambda, double *d_u, double *d_v,
+							 double *d_w, int *d_icellflag, float *d_f, float *d_h, float *d_n, int alpha1, int alpha2, 
+							 float dx, float dy, float dz, int  nx, int  ny, int nz)
+{
 
     int icell_face = blockDim.x*blockIdx.x+threadIdx.x;
     int k = icell_face/(nx*ny);
@@ -118,9 +134,12 @@ __global__ void finalVelocity(double *d_u0, double *d_v0, double *d_w0, double *
     
     if ((i > 0) && (i < nx-1) && (j > 0) && (j < ny-1) && (k < nz-1) && (k > 0)) {
 
-        d_u[icell_face] = d_u0[icell_face]+(1/(2*pow(alpha1, 2.0)*dx))*(d_lambda[icell_cent]-d_lambda[icell_cent-1]);
-        d_v[icell_face] = d_v0[icell_face]+(1/(2*pow(alpha1, 2.0)*dy))*(d_lambda[icell_cent]-d_lambda[icell_cent - (nx-1)]);
-        d_w[icell_face] = d_w0[icell_face]+(1/(2*pow(alpha2, 2.0)*dz))*(d_lambda[icell_cent]-d_lambda[icell_cent - (nx-1)*(ny-1)]);
+        d_u[icell_face] = d_u0[icell_face]+(1/(2*pow(alpha1, 2.0)*dx))*d_f[icell_cent]*dx*dx*
+						 (d_lambda[icell_cent]-d_lambda[icell_cent-1]);
+        d_v[icell_face] = d_v0[icell_face]+(1/(2*pow(alpha1, 2.0)*dy))*d_h[icell_cent]*dy*dy*
+						 (d_lambda[icell_cent]-d_lambda[icell_cent - (nx-1)]);
+        d_w[icell_face] = d_w0[icell_face]+(1/(2*pow(alpha2, 2.0)*dz))*d_n[icell_cent]*dz*dz*
+						 (d_lambda[icell_cent]-d_lambda[icell_cent - (nx-1)*(ny-1)]);
 
     }
 
@@ -135,7 +154,12 @@ __global__ void finalVelocity(double *d_u0, double *d_v0, double *d_w0, double *
         
     }
 }
-__global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, int ny, int nz, float omega, float  A, float  B, float  dx, float *d_e, float *d_f, float *d_g, float *d_h, float *d_m, float *d_n, double *d_R, int itermax, double tol, double *d_value, double *d_bvalue, double *d_u0, double *d_v0, double *d_w0,int alpha1, int alpha2, float dy, float dz, double *d_u, double *d_v, double *d_w, int *d_icellflag) {
+__global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, int ny, int nz, float omega, float  A, 
+								float  B, float  dx, float *d_e, float *d_f, float *d_g, float *d_h, float *d_m, float *d_n, 
+								double *d_R, int itermax, double tol, double *d_value, double *d_bvalue, double *d_u0, 
+								double *d_v0, double *d_w0,int alpha1, int alpha2, float dy, float dz, double *d_u, 
+								double *d_v, double *d_w, int *d_icellflag) 
+{
     int iter = 0;
     error = 1.0;
 
@@ -143,7 +167,8 @@ __global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, i
     dim3 numberOfThreadsPerBlock(BLOCKSIZE,1,1);
     dim3 numberOfBlocks(ceil(((nx-1)*(ny-1)*(nz-1))/(double) (BLOCKSIZE)),1,1);
     // Invoke divergence kernel
-    divergence<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_u0,d_v0,d_w0,d_R,alpha1,nx,ny,nz,dx,dy,dz);
+    divergence<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_u0,d_v0,d_w0,d_R,d_e,d_f,d_g,d_h,d_m,d_n,alpha1,nx,ny,nz,dx,dy,
+															dz);
 
     // Iterate untill convergence is reached
     while ( (iter < itermax) && (error > tol)) {
@@ -154,11 +179,13 @@ __global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, i
         // SOR part
         int offset = 0;   // red nodes
         // Invoke red-black SOR kernel for red nodes
-        SOR_RB<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m, d_n, d_R, offset);
+        SOR_RB<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m, 
+															d_n, d_R, offset);
         cudaDeviceSynchronize();
         offset = 1;    // black nodes
         // Invoke red-black SOR kernel for black nodes
-        SOR_RB<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m, d_n, d_R,offset);
+        SOR_RB<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m, 
+															d_n, d_R,offset);
         cudaDeviceSynchronize();
         dim3 numberOfBlocks2(ceil(((nx-1)*(ny-1))/(double) (BLOCKSIZE)),1,1);
         // Invoke kernel to apply Neumann boundary condition (lambda (@k=0) = lambda (@k=1))
@@ -175,13 +202,15 @@ __global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, i
     printf("error = %2.9f\n", error);
     dim3 numberOfBlocks3(ceil((nx*ny*nz)/(double) (BLOCKSIZE)),1,1);
     // Invoke final velocity (Euler) kernel
-    finalVelocity<<<numberOfBlocks3,numberOfThreadsPerBlock>>>(d_u0,d_v0,d_w0,d_lambda,d_u,d_v,d_w,d_icellflag,alpha1,alpha2,dx,dy,dz,nx,ny,nz);
+    finalVelocity<<<numberOfBlocks3,numberOfThreadsPerBlock>>>(d_u0,d_v0,d_w0,d_lambda,d_u,d_v,d_w,d_icellflag,d_f,d_h,d_n,
+																alpha1,alpha2,dx,dy,dz,nx,ny,nz);
 }
 
 
 
 void DynamicParallelism::solve(bool solveWind) 
 {
+<<<<<<< HEAD
     auto startTotal = std::chrono::high_resolution_clock::now(); // Start recording execution time    
 
 
@@ -199,12 +228,29 @@ void DynamicParallelism::solve(bool solveWind)
     n = new float [numcell_cent];
 
     float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;
+=======
+    
+	int numblocks = (numcell_cent/BLOCKSIZE)+1;
+
+    std::vector<double> value(numcell_cent,0.0);
+    std::vector<double> bvalue(numblocks,0.0);   
+	double *d_u0, *d_v0, *d_w0; 
+	double *d_value,*d_bvalue;
+    float *d_x,*d_y,*d_z;
+    double *d_u, *d_v, *d_w;  
+	int *d_icellflag;
+
+
+    auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time
+
+>>>>>>> 1d5d8aa6c846d4cc653130b2767ebd5338e81607
     cudaMalloc((void **) &d_e, numcell_cent * sizeof(float));
     cudaMalloc((void **) &d_f, numcell_cent * sizeof(float));
     cudaMalloc((void **) &d_g, numcell_cent * sizeof(float));
     cudaMalloc((void **) &d_h, numcell_cent * sizeof(float));
     cudaMalloc((void **) &d_m, numcell_cent * sizeof(float));
     cudaMalloc((void **) &d_n, numcell_cent * sizeof(float));
+<<<<<<< HEAD
 
     /// Declaration of initial wind components (u0,v0,w0)
     double *u0, *v0, *w0;
@@ -427,11 +473,21 @@ void DynamicParallelism::solve(bool solveWind)
     
     double *d_value,*d_bvalue;
     float *d_x,*d_y,*d_z;
+=======
+	cudaMalloc((void **) &d_R, numcell_cent * sizeof(double)); 
+    cudaMalloc((void **) &d_lambda, numcell_cent * sizeof(double));
+    cudaMalloc((void **) &d_lambda_old, numcell_cent * sizeof(double));
+	cudaMalloc((void **) &d_icellflag, numcell_cent * sizeof(int));
+    cudaMalloc((void **) &d_u0,numface_cent*sizeof(double));
+    cudaMalloc((void **) &d_v0,numface_cent*sizeof(double));
+    cudaMalloc((void **) &d_w0,numface_cent*sizeof(double));
+>>>>>>> 1d5d8aa6c846d4cc653130b2767ebd5338e81607
     cudaMalloc((void **) &d_value,numcell_cent*sizeof(double));
     cudaMalloc((void **) &d_bvalue,numblocks*sizeof(double));
     cudaMalloc((void **) &d_x,nx*sizeof(float));
     cudaMalloc((void **) &d_y,ny*sizeof(float));
     cudaMalloc((void **) &d_z,nz*sizeof(float));
+<<<<<<< HEAD
     cudaMemcpy(d_value , value , numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
     cudaMemcpy(d_bvalue , bvalue , numblocks * sizeof(double) , cudaMemcpyHostToDevice);      
     cudaMemcpy(d_e , e , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
@@ -445,9 +501,33 @@ void DynamicParallelism::solve(bool solveWind)
     cudaMemcpy(d_z , z.data() , nz * sizeof(float) , cudaMemcpyHostToDevice);
     
     double *d_u, *d_v, *d_w;
+=======
+>>>>>>> 1d5d8aa6c846d4cc653130b2767ebd5338e81607
     cudaMalloc((void **) &d_u,numface_cent*sizeof(double));
     cudaMalloc((void **) &d_v,numface_cent*sizeof(double));
     cudaMalloc((void **) &d_w,numface_cent*sizeof(double));
+	 
+
+    cudaMemcpy(d_icellflag,icellflag.data(),numcell_cent*sizeof(int),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_u0,u0.data(),numface_cent*sizeof(double),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_v0,v0.data(),numface_cent*sizeof(double),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_w0,w0.data(),numface_cent*sizeof(double),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_R,R.data(),numcell_cent*sizeof(double),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_value , value.data() , numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_bvalue , bvalue.data() , numblocks * sizeof(double) , cudaMemcpyHostToDevice);      
+    cudaMemcpy(d_e , e.data() , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_f , f.data() , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_g , g.data() , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_h , h.data() , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_m , m.data() , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_n , n.data() , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_x , x.data() , nx * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_y , y.data() , ny * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_z , z.data() , nz * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_lambda , lambda.data() , numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_lambda_old , lambda_old.data() , numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);    
+
+
 
 
 
@@ -455,16 +535,22 @@ void DynamicParallelism::solve(bool solveWind)
     //                 SOR solver              //////
     /////////////////////////////////////////////////
     
-    cudaMemcpy(d_lambda , lambda , numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_lambda_old , lambda_old , numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
+
     // Invoke the main (mother) kernel
     SOR_iteration<<<1,1>>>(d_lambda,d_lambda_old, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m, d_n, d_R,itermax,tol,d_value,d_bvalue,d_u0,d_v0,d_w0,alpha1,alpha2,dy,dz,d_u,d_v,d_w,d_icellflag);
     cudaCheck(cudaGetLastError()); 
     
+<<<<<<< HEAD
     cudaMemcpy (lambda , d_lambda , numcell_cent * sizeof(double) , cudaMemcpyDeviceToHost);
     cudaMemcpy(u.data(), d_u,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
     cudaMemcpy(v.data(), d_v,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
     cudaMemcpy(w.data(), d_w,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
+=======
+    cudaMemcpy (lambda.data() , d_lambda , numcell_cent * sizeof(double) , cudaMemcpyDeviceToHost);
+    cudaMemcpy(u.data(),d_u,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(v.data(),d_v,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(w.data(),d_w,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
+>>>>>>> 1d5d8aa6c846d4cc653130b2767ebd5338e81607
 
     cudaFree (d_lambda);
     cudaFree (d_e);
@@ -488,6 +574,7 @@ void DynamicParallelism::solve(bool solveWind)
     cudaFree (d_icellflag);
 
     auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+<<<<<<< HEAD
     std::chrono::duration<float> elapsedTotal = finish - startTotal;
     std::chrono::duration<float> elapsedSolve = finish - startSolve;
     std::cout << "Elapsed total time: " << elapsedTotal.count() << " s\n";   // Print out elapsed execution time
@@ -498,6 +585,12 @@ void DynamicParallelism::solve(bool solveWind)
 
 void DynamicParallelism::outputDataFile()
 {
+=======
+    std::chrono::duration<double> elapsed = finish - start;
+    std::cout << "Elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time    
+    
+
+>>>>>>> 1d5d8aa6c846d4cc653130b2767ebd5338e81607
     /// Declare cell center positions
     float *x_out, *y_out, *z_out;
     x_out = new float [nx-1];
@@ -515,23 +608,40 @@ void DynamicParallelism::outputDataFile()
         z_out[k] = (k-0.5)*dz;         /// Location of cell centers in z-dir
     }
 
-    /// Declare output velocity field arrays
-    double ***u_out, ***v_out, ***w_out;
-    u_out = new double** [nx-1];
-    v_out = new double** [nx-1];
-    w_out = new double** [nx-1];
-    
-    for (int i = 0; i < nx-1; i++){
-        u_out[i] = new double* [ny-1];
-        v_out[i] = new double* [ny-1];
-        w_out[i] = new double* [ny-1];
-        for (int j = 0; j < ny-1; j++){
-            u_out[i][j] = new double [nz-1];
-            v_out[i][j] = new double [nz-1];
-            w_out[i][j] = new double [nz-1];
+    	for (int k = 0; k < nz-1; k++){
+            for (int j = 0; j < ny-1; j++){
+                for (int i = 0; i < nx-1; i++){
+                    int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values 
+					int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1); 
+    				u_out[icell_cent] = 0.5*(u[icell_face+1]+u[icell_face]);
+    				v_out[icell_cent] = 0.5*(v[icell_face+nx]+v[icell_face]);
+    				w_out[icell_cent] = 0.5*(w[icell_face+nx*ny]+w[icell_face]);
+    			}
+    		}	
+    	}
+        // Write data to file
+        ofstream outdata1;
+        outdata1.open("Final velocity.dat");
+        if( !outdata1 ) {                 // File couldn't be opened
+            cerr << "Error: file could not be opened" << endl;
+            exit(1);
         }
-    }
+        // Write data to file
+        for (int k = 0; k < nz-1; k++){
+            for (int j = 0; j < ny-1; j++){
+                for (int i = 0; i < nx-1; i++){
+    				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+    				int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
+                    outdata1 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] 
+							 << "\t \t"<< "\t \t" << u[icell_face] <<"\t \t"<< "\t \t"<<v[icell_face]<<"\t \t"<< "\t \t"
+							 << w[icell_face]<< "\t \t"<< "\t \t" << u0[icell_face] <<"\t \t"<< "\t \t"<<v0[icell_face]
+							 <<"\t \t"<< "\t \t"<<w0[icell_face]<<"\t \t"<<R[icell_cent]<< endl;   
+                }
+            }
+        }
+        outdata1.close();
 
+<<<<<<< HEAD
     for (int k = 0; k < nz-1; k++){
         for (int j = 0; j < ny-1; j++){
             for (int i = 0; i < nx-1; i++){
@@ -539,29 +649,32 @@ void DynamicParallelism::outputDataFile()
                 u_out[i][j][k] = 0.5*(u[icell_face+1]+u[icell_face]);
                 v_out[i][j][k] = 0.5*(v[icell_face+nx]+v[icell_face]);
                 w_out[i][j][k] = 0.5*(w[icell_face+nx*ny]+w[icell_face]);
-            }
-        }   
-    }
+=======
 
-    // Write data to file
-    ofstream outdata1;
-    outdata1.open("Final velocity.dat");
-    if( !outdata1 ) {                 // File couldn't be opened
-        cerr << "Error: file could not be opened" << endl;
-        exit(1);
-    }
-    // Write data to file
-    for (int k = 0; k < nz; k++){
-        for (int j = 0; j < ny; j++){
-            for (int i = 0; i < nx; i++){
-                //int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-                int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
-                outdata1 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] << "\t \t"<< "\t \t" << u[icell_face] <<"\t \t"<< "\t \t"<<v[icell_face]<<"\t \t"<< "\t \t"<<w[icell_face]<< endl;   
-}
+        // Write data to file
+        ofstream outdata2;
+        outdata2.open("Final velocity1.dat");
+        if( !outdata2 ) {                 // File couldn't be opened
+            cerr << "Error: file could not be opened" << endl;
+            exit(1);
         }
-    }
-    outdata1.close();
+        // Write data to file
+        for (int k = 0; k < nz-1; k++){
+            for (int j = 0; j < ny-1; j++){
+                for (int i = 0; i < nx-1; i++){
+    				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+    				int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
+                    outdata2 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] 
+							 << "\t \t"<< "\t \t" << f[icell_cent] <<"\t \t"<< "\t \t"<<e[icell_cent]<<"\t \t"<< "\t \t"
+							 <<h[icell_cent]<< "\t \t"<< "\t \t" << g[icell_cent] <<"\t \t"<< "\t \t"<<n[icell_cent]<<"\t \t"
+							 << "\t \t"<<m[icell_cent]<<"\t \t"<<icellflag[icell_cent]<< endl;   
+                }
+>>>>>>> 1d5d8aa6c846d4cc653130b2767ebd5338e81607
+            }
+        }
+        outdata2.close(); 
 
+<<<<<<< HEAD
     // Write data to file
     ofstream outdata;
     outdata.open("Final velocity, cell-centered.dat");
@@ -575,9 +688,34 @@ void DynamicParallelism::outputDataFile()
             for (int i = 0; i < nx-1; i++){
                 outdata << "\t" << i << "\t" << j << "\t" << k << "\t"<< x_out[i] << "\t" << y_out[j] << "\t" << z_out[k] << "\t" << u_out[i][j][k] << "\t" << v_out[i][j][k] << "\t" << w_out[i][j][k]                     << endl;   
             }
+=======
+        netcdfDat->getData(x.data(),y.data(),z.data(),u_out.data(),v_out.data(),w_out.data(),nx,ny,nz);
+        //netcdfDat->getDataICell(icellflag.data(), x_out, y_out, z_out, nx-1, ny - 1, nz - 1, numcell_cent);
+        //if (DTEHF)
+            //netcdfDat->getCutCellFlags(cells);
+
+
+       // Write data to file
+/*       ofstream outdata;
+        outdata.open("Final velocity, cell-centered.dat");
+        if( !outdata ) {                 // File couldn't be opened
+            cerr << "Error: file could not be opened" << endl;
+            exit(1);
+>>>>>>> 1d5d8aa6c846d4cc653130b2767ebd5338e81607
         }
-    }
-    outdata.close();
+        // Write data to file
+        for (int k = 0; k < nz-1; k++){
+            for (int j = 0; j < ny-1; j++){
+                for (int i = 0; i < nx-1; i++){
+					int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+                    outdata << "\t" << i << "\t" << j << "\t" << k << "\t"<< x_out[i] << "\t" << y_out[j] << "\t" <<z_out[k] 
+							<< "\t" << u_out[icell_cent] << "\t" << v_out[icell_cent] << "\t" << w_out[icell_cent]<< endl;   
+    			}
+    		}
+    	}
+        outdata.close();*/
+
+        //netcdfDat->getDataICell(icellflag.data(), x_out, y_out, z_out, nx-1, ny - 1, nz - 1, numcell_cent);
 }
     
 
