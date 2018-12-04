@@ -13,26 +13,24 @@
 	<sidewallFlag> 0 </sidewallFlag>
 	<maxIterations> 500 </maxIterations>
 	<residualReduction> 3 </residualReduction>
+	<meshTypeFlag> 1 </meshTypeFlag>
 	<useDiffusion> 0 </useDiffusion>
 	<domainRotation> 0 </domainRotation>
 	<UTMX> 0 </UTMX>
 	<UTMY> 0 </UTMY>
 	<UTMZone> 1 </UTMZone>
 	<UTMZoneLetter> 17 </UTMZoneLetter>
-	<quicCDFFlag> 1 </QuicCDFFlag>
-	<explosiveDamageFlag> 0 </ExplosiveDamageFlag>
-	<buildingArrayFlag> 0 </buildingArrayFlag>
 </simulationParameters>
 <metParams>
 	<metInputFlag> 0 </metInputFlag>
-	<numMeasuringSites> 1 </numMeasuringSites>
+	<num_sites> 1 </num_sites>
 	<maxSizeDataPoints> 1 </maxSizeDataPoints>
 	<siteName> sensor1 </siteName>
 	<fileName> sensor1.inp </fileName>
 	<sensor>
 		<siteCoords> 1 </siteCoords>
-		<x> 1 </x>
-		<y> 1 </y>
+		<site_xcoord> 1.0</site_xcoord>
+		<site_ycoord> 1.0</site_ycoord>
 		<epoch> 1510930800 </epoch>
 		<boundaryLayerFlag> 1 </boundaryLayerFlag>
 		<siteZ0> 0.1 </siteZ0>
