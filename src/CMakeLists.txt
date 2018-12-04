@@ -1,5 +1,8 @@
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/unitTests)
+
+add_subdirectory( unitTests )
 
 CUDA_ADD_LIBRARY( cudaurbcore
   BVH.cpp

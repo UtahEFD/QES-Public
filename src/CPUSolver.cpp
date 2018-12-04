@@ -35,29 +35,6 @@ void CPUSolver::solve(bool solveWind)
     {
         //INSERT CANOPY CODE
 
-        //Upwind
-        if (upwindCavityFlag > 0)
-        {
-            printf("Applying Upwind Parameterizations...\n");
-            for (auto i = 0; i < buildings.size(); i++)
-            {
-                if ( (buildings[i]->buildingGeometry == 1 ||  //and it is of type 1,4, or 6.
-                      buildings[i]->buildingGeometry == 4 ||
-                      buildings[i]->buildingGeometry == 6) &&
-                     buildings[i]->baseHeight == 0.0f )    //and if
-                                                           //base
-                                                           //height is
-                                                           //0
-                {
-                    upWind(buildings[i], icellflag.data(), u0.data(), v0.data(), w0.data(), z.data(), zm.data());
-                }
-                
-                printProgress( (float) i / (float) buildings.size());
-            }
-            std::cout << "Upwind applied\n";
-                        
-        }
-       
         auto startSolve = std::chrono::high_resolution_clock::now();
         /////////////////////////////////////////////////
         //                 SOR solver              //////

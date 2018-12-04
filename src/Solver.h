@@ -151,9 +151,6 @@ public:
     virtual void outputDatFile() {}
     virtual void outputNetCDF( NetCDFData* netcdfDat ) {}
 
-    void upWind(Building* build, int* iCellFlag, double* u0, double* v0, double* w0, float* z, float* zm);
-    void reliefWake(NonPolyBuilding* build, float* u0, float* v0);
-
     /**
      * @brief
      * 
