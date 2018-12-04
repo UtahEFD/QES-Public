@@ -90,3 +90,5 @@ public:
 
 	Vector3<float> getLocationPoints() {return location;}
 
+};
+

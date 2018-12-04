@@ -1,8 +1,13 @@
 #include "CPUSolver.h"
 
-void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
+void CPUSolver::solve(bool solveWind)
 {
 
+    auto startTotal = std::chrono::high_resolution_clock::now(); // Start
+                                                                 // recording
+                                                                 // execution
+                                                                 // time
+    
     auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time             
     
 	/////////////////////////////////////////////////////////////////
@@ -36,13 +41,18 @@ void CPUSolver::solve(NetCDFData* netcdfDat, bool solveWind)
             printf("Applying Upwind Parameterizations...\n");
             for (auto i = 0; i < buildings.size(); i++)
             {
-                if ( buildings[i]->buildingDamage != 2 && //if damage isn't 2
-                    (buildings[i]->buildingGeometry == 1 ||  //and it is of type 1,4, or 6.
-                    buildings[i]->buildingGeometry == 4 ||
-                    buildings[i]->buildingGeometry == 6) &&
-                    buildings[i]->baseHeight == 0.0f)     //and if base height is 0
-                    upWind(buildings[i], icellflag, u0, v0, w0, z.data(), zm);
-                 printProgress( (float) i / (float) buildings.size());
+                if ( (buildings[i]->buildingGeometry == 1 ||  //and it is of type 1,4, or 6.
+                      buildings[i]->buildingGeometry == 4 ||
+                      buildings[i]->buildingGeometry == 6) &&
+                     buildings[i]->baseHeight == 0.0f )    //and if
+                                                           //base
+                                                           //height is
+                                                           //0
+                {
+                    upWind(buildings[i], icellflag.data(), u0.data(), v0.data(), w0.data(), z.data(), zm.data());
+                }
+                
+                printProgress( (float) i / (float) buildings.size());
             }
             std::cout << "Upwind applied\n";
                         
@@ -290,7 +300,7 @@ void CPUSolver::outputNetCDF( NetCDFData* netcdfDat )
     long numcell_cent = (nx-1)*(ny-1)*(nz-1);         /// Total number of cell-centered values in domain
 
     netcdfDat->getData(x.data(),y.data(),z.data(),u.data(),v.data(),w.data(),nx,ny,nz);
-    netcdfDat->getDataICell(icellflag, x_out.data(), y_out.data(), z_out.data(), nx-1, ny - 1, nz - 1, numcell_cent);
+    netcdfDat->getDataICell(icellflag.data(), x_out.data(), y_out.data(), z_out.data(), nx-1, ny - 1, nz - 1, numcell_cent);
     
         if (DTEHF)
             netcdfDat->getCutCellFlags(cells);

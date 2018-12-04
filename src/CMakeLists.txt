@@ -1,23 +1,19 @@
-
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/unitTests)
-
-add_subdirectory( unitTests )
 
 CUDA_ADD_LIBRARY( cudaurbcore
+  BVH.cpp
+  Canopy.cpp
+  Cell.cpp
+  CPUSolver.cpp
+  Cut_cell.cpp
+  DTEHeightField.cpp
   DynamicParallelism.cu
   handleURBArgs.cpp
   Solver.cpp
-  CPUSolver.cpp
-  NetCDFData.cpp
   Mesh.cpp
+  NetCDFData.cpp
   Triangle.cpp
-  BVH.cpp
-  DTEHeightField.cpp
-  Cell.cpp
-  Canopy.cpp
-  Cut_cell.cpp
   Sensor.cpp
   )
 

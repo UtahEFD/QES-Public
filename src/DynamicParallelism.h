@@ -22,7 +22,6 @@
 #define BLOCKSIZE 1024
 #define cudaCheck(x) _cudaCheck(x, #x ,__FILE__, __LINE__)
 
-
 using namespace std::chrono;
 using namespace std;
 using std::ofstream;
@@ -35,27 +34,30 @@ using std::vector;
 using std::cout;
 using std::to_string;
 
-
-
-
+/**
+ *
+ */
 class DynamicParallelism : public Solver
 {
 private:
 
-	template<typename T>
-	void _cudaCheck(T e, const char* func, const char* call, const int line);
+    template<typename T>
+    void _cudaCheck(T e, const char* func, const char* call, const int line);
+
+protected:
+    float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;		/**< Solver coefficients on device (GPU) */
+    double *d_R;              /**< Divergence of initial velocity field on device (GPU) */
+    double *d_lambda, *d_lambda_old;		/**< Lagrange multipliers on device (GPU) */
 
 public:
-	DynamicParallelism(URBInputData* UID, DTEHeightField* DTEHF)
-		: Solver(UID, DTEHF)
-		{
-		}
+    DynamicParallelism(URBInputData* UID, DTEHeightField* DTEHF)
+        : Solver(UID, DTEHF)
+    {
+    }
 
-	virtual void solve(bool solveWind);
+    virtual void solve(bool solveWind);
 
-<<<<<<< HEAD
     void outputDataFile();
     void outputNetCDF( NetCDFData* netcdfDat );
-=======
->>>>>>> 1d5d8aa6c846d4cc653130b2767ebd5338e81607
+
 };

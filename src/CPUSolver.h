@@ -23,16 +23,13 @@ using std::cout;
 class CPUSolver : public Solver
 {
 public:
-	CPUSolver(URBInputData* UID, DTEHeightField* DTEHF)
-		: Solver(UID, DTEHF)
-		{
-                    /// Total number of cell-centered values in domain
-                    long numcell_cent = (nx-1)*(ny-1)*(nz-1); 
-                    icellflag = new int [ numcell_cent ];
-		}
+    CPUSolver(URBInputData* UID, DTEHeightField* DTEHF)
+        : Solver(UID, DTEHF)
+    {
+    }
     
 
-	virtual void solve(bool solveWind);
+    virtual void solve(bool solveWind);
 
     void outputDataFile();
     void outputNetCDF( NetCDFData* netcdfDat );
