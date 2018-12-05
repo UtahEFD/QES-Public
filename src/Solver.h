@@ -148,7 +148,7 @@ public:
 
     virtual void solve(bool solveWind) = 0;
 
-    virtual void outputDatFile() {}
+    virtual void outputDataFile() {}
     virtual void outputNetCDF( NetCDFData* netcdfDat ) {}
 
     /**
