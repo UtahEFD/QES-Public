@@ -22,12 +22,7 @@
 #include <chrono>
 #include <limits>
 
-
 using namespace std;
-using std::cerr;
-using std::endl;
-using std::vector;
-using std::cout;
 
 #define _USE_MATH_DEFINES
 #define MIN_S(x,y) ((x) < (y) ? (x) : (y))

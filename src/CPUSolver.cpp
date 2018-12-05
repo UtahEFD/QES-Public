@@ -1,41 +1,43 @@
 #include "CPUSolver.h"
 
+// If you want to use these types of statements, they should go in the
+// CPP file.
+using std::cerr;
+using std::endl;
+using std::vector;
+using std::cout;
+
 void CPUSolver::solve(bool solveWind)
 {
-
-    auto startTotal = std::chrono::high_resolution_clock::now(); // Start
-                                                                 // recording
-                                                                 // execution
-                                                                 // time
+    auto startOfSolveMethod = std::chrono::high_resolution_clock::now(); // Start recording execution time             
     
-    auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time             
-    
-	/////////////////////////////////////////////////////////////////
-	////////      Divergence of the initial velocity field   ////////
-	/////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////
+    ////////      Divergence of the initial velocity field   ////////
+    /////////////////////////////////////////////////////////////////
 
     for (int k = 1; k < nz-1; k++)
-	{
+    {
         for (int j = 0; j < ny-1; j++)
-		{
+        {
             for (int i = 0; i < nx-1; i++)
-			{
-                
+            {
                 icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-				icell_face = i + j*nx + k*nx*ny;
+                icell_face = i + j*nx + k*nx*ny;
+
                 /// Calculate divergence of initial velocity field
-                R[icell_cent] = (-2*pow(alpha1, 2.0))*(((e[icell_cent]*u0[icell_face+1]-f[icell_cent]*u0[icell_face])*dx)+
-								((g[icell_cent]*v0[icell_face + nx]-h[icell_cent]*v0[icell_face])*dy)+
-								((m[icell_cent]*w0[icell_face + nx*ny]-n[icell_cent]*w0[icell_face])*dz));
+                R[icell_cent] = (-2*pow(alpha1, 2.0))*((( e[icell_cent] * u0[icell_face+1]       - f[icell_cent] * u0[icell_face]) * dx ) +
+                                                       (( g[icell_cent] * v0[icell_face + nx]    - h[icell_cent] * v0[icell_face]) * dy ) +
+                                                       (( m[icell_cent] * w0[icell_face + nx*ny] - n[icell_cent] * w0[icell_face]) * dz ));
             }
         }
     }
 
     if (solveWind)
     {
+        auto startSolveSection = std::chrono::high_resolution_clock::now();
+        
         //INSERT CANOPY CODE
 
-        auto startSolve = std::chrono::high_resolution_clock::now();
         /////////////////////////////////////////////////
         //                 SOR solver              //////
         /////////////////////////////////////////////////
@@ -46,30 +48,29 @@ void CPUSolver::solve(bool solveWind)
         std::cout << "Solving...\n";
         while (iter < itermax && error > tol && error > reduced_error) {
             
-    		/// Save previous iteration values for error calculation  
-            for (int k = 0; k < nz-1; k++){
-                for (int j = 0; j < ny-1; j++){
-                    for (int i = 0; i < nx-1; i++){
-                        int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-                        lambda_old[icell_cent] = lambda[icell_cent];
-                    }
-                }
-            }
+            // Save previous iteration values for error calculation
+            //    uses stl vector's assignment copy function, assign
+            lambda_old.assign( lambda.begin(), lambda.end() );   
             
-        	for (int k = 1; k < nz-2; k++){
+            //
+            // main SOR formulation loop
+            // 
+            for (int k = 1; k < nz-2; k++){
             	for (int j = 1; j < ny-2; j++){
             	    for (int i = 1; i < nx-2; i++){
                     
             	        icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-						lambda[icell_cent] = (omega/(e[icell_cent]+f[icell_cent]+g[icell_cent]+h[icell_cent]+
-										m[icell_cent]+n[icell_cent]))*(e[icell_cent]*lambda[icell_cent+1]+
-										f[icell_cent]*lambda[icell_cent-1]+g[icell_cent]*lambda[icell_cent + (nx-1)]+
-										h[icell_cent]*lambda[icell_cent-(nx-1)]+m[icell_cent]*lambda[icell_cent+(nx-1)*(ny-1)]+
-										n[icell_cent]*lambda[icell_cent-(nx-1)*(ny-1)]-R[icell_cent])+
-										(1-omega)*lambda[icell_cent];    /// SOR formulation
-					}
-				}
-			}
+
+                        lambda[icell_cent] = (omega / ( e[icell_cent] + f[icell_cent] + g[icell_cent] +
+                                                        h[icell_cent] + m[icell_cent] + n[icell_cent])) *
+                            ( e[icell_cent] * lambda[icell_cent+1]        + f[icell_cent] * lambda[icell_cent-1] +
+                              g[icell_cent] * lambda[icell_cent + (nx-1)] + h[icell_cent] * lambda[icell_cent-(nx-1)] +
+                              m[icell_cent] * lambda[icell_cent+(nx-1)*(ny-1)] +
+                              n[icell_cent] * lambda[icell_cent-(nx-1)*(ny-1)] - R[icell_cent] ) +
+                            (1.0 - omega) * lambda[icell_cent];    /// SOR formulation
+                    }
+                }
+            }
             
             /// Mirror boundary condition (lambda (@k=0) = lambda (@k=1))
             for (int j = 0; j < ny-1; j++){
@@ -79,9 +80,8 @@ void CPUSolver::solve(bool solveWind)
                 }
             }
             
+            /// Error calculation
             error = 0.0;                   /// Reset error value before error calculation 
-
-    		/// Error calculation
             for (int k = 0; k < nz-1; k++){
                 for (int j = 0; j < ny-1; j++){
                     for (int i = 0; i < nx-1; i++){
@@ -91,11 +91,9 @@ void CPUSolver::solve(bool solveWind)
                 }
             }
 
-
-    		if (iter == 0){
-    			reduced_error = error*1e-3;
-    		}
-
+            if (iter == 0) {
+                reduced_error = error * 1.0e-3;
+            }
             
             iter += 1;
         }
@@ -105,13 +103,15 @@ void CPUSolver::solve(bool solveWind)
         std::cout << "Error:" << error << "\n";
         std::cout << "Reduced Error:" << reduced_error << "\n";   
 
-		////////////////////////////////////////////////////////////////////////
-		/////   Update the velocity field using Euler-Lagrange equations   /////
-		////////////////////////////////////////////////////////////////////////  
+        ////////////////////////////////////////////////////////////////////////
+        /////   Update the velocity field using Euler-Lagrange equations   /////
+        ////////////////////////////////////////////////////////////////////////  
         
+        // Ideally only do for boundary planes.... on external faces
+        // of domain - Pete
         for (int k = 0; k < nz; k++){
             for (int j = 0; j < ny; j++){
-                for (int i = 0; i < nx; i++){
+                for (int i = 0; i < nx; i++) {
                     int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values 
                     u[icell_face] = u0[icell_face];
                     v[icell_face] = v0[icell_face];
@@ -119,46 +119,49 @@ void CPUSolver::solve(bool solveWind)
                 }
             }
         }
-        
+//  For only the boundary space....
+        // Ideally, for k={0,nz-1}
+//        u[ ? ] = u0[ ? ]
+//            v[ ? ] = v0[ ? ]
+//            w[ ? ] = w0[ ? ]
+            
+        // /////////////////////////////////////////////
     	/// Update velocity field using Euler equations
-		for (int k = 1; k < nz-1; k++){
-	        for (int j = 1; j < ny-1; j++){
-	            for (int i = 1; i < nx-1; i++){
-	                icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-					icell_face = i + j*nx + k*nx*ny;               /// Lineralized index for cell faced values 
-	                u[icell_face] = u0[icell_face]+(1/(2*pow(alpha1, 2.0)*dx))*f[icell_cent]*dx*dx*
-									(lambda[icell_cent]-lambda[icell_cent-1]);
-	                v[icell_face] = v0[icell_face]+(1/(2*pow(alpha1, 2.0)*dy))*h[icell_cent]*dy*dy*
-									(lambda[icell_cent]-lambda[icell_cent - (nx-1)]);
-	                w[icell_face] = w0[icell_face]+(1/(2*pow(alpha2, 2.0)*dz))*n[icell_cent]*dz*dz*
-									(lambda[icell_cent]-lambda[icell_cent - (nx-1)*(ny-1)]);
-	                
-	            }
-	        }
-	    }
-
-    	/// Setting velocity field inside the building to zero
+        // /////////////////////////////////////////////
         for (int k = 1; k < nz-1; k++){
             for (int j = 1; j < ny-1; j++){
                 for (int i = 1; i < nx-1; i++){
-                    int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-    				int icell_face = i + j*nx + k*nx*ny;               /// Lineralized index for cell faced values 
-    				if (icellflag[icell_cent]==0) {
-    					u[icell_face] = 0;
-    					u[icell_face+1] = 0;
-    					v[icell_face] = 0;
-    					v[icell_face+nx] = 0;
-    					w[icell_face] = 0;
-    					w[icell_face+nx*ny] = 0;
-    				}
+                    icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+                    icell_face = i + j*nx + k*nx*ny;               /// Lineralized index for cell faced values 
+
+                    // Calculate correct wind velocity
+                    u[icell_face] = u0[icell_face] + (1/(2*pow(alpha1, 2.0)*dx)) *
+                        f[icell_cent]*dx*dx*(lambda[icell_cent]-lambda[icell_cent-1]);
                     
+                    v[icell_face] = v0[icell_face] + (1/(2*pow(alpha1, 2.0)*dy)) *
+                        h[icell_cent]*dy*dy*(lambda[icell_cent]-lambda[icell_cent - (nx-1)]);
+                    
+                    w[icell_face] = w0[icell_face]+(1/(2*pow(alpha2, 2.0)*dz)) *
+                        n[icell_cent]*dz*dz*(lambda[icell_cent]-lambda[icell_cent - (nx-1)*(ny-1)]);
+
+                    // If we are inside a building, set velocities to 0.0
+                    if (icellflag[icell_cent] == 0) {
+                        /// Setting velocity field inside the building to zero
+                        u[icell_face] = 0;
+                        u[icell_face+1] = 0;
+                        v[icell_face] = 0;
+                        v[icell_face+nx] = 0;
+                        w[icell_face] = 0;
+                        w[icell_face+nx*ny] = 0;
+                    }
+
                 }
             }
         }
 
         auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
-        std::chrono::duration<float> elapsedTotal = finish - startTotal;
-        std::chrono::duration<float> elapsedSolve = finish - startSolve;
+        std::chrono::duration<float> elapsedTotal = finish - startOfSolveMethod;
+        std::chrono::duration<float> elapsedSolve = finish - startSolveSection;
         std::cout << "Elapsed total time: " << elapsedTotal.count() << " s\n";   // Print out elapsed execution time
         std::cout << "Elapsed solve time: " << elapsedSolve.count() << " s\n";   // Print out elapsed execution time
     }

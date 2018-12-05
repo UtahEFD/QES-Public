@@ -13,12 +13,7 @@
 #include <vector>
 #include <chrono>
 
-
 using namespace std;
-using std::cerr;
-using std::endl;
-using std::vector;
-using std::cout;
 
 class CPUSolver : public Solver
 {
@@ -27,7 +22,6 @@ public:
         : Solver(UID, DTEHF)
     {
     }
-    
 
     virtual void solve(bool solveWind);
 
