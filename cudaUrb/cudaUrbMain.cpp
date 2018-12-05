@@ -114,6 +114,7 @@ int main(int argc, char *argv[])
     if (!arguments.solveWind) {
         
         solver->outputNetCDF( netcdfDat );
+	solver->outputDataFile ();
         
         if (!netcdfDat->outputCellFaceResults(arguments.netCDFFile))
         {
