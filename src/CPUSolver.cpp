@@ -177,7 +177,6 @@ void CPUSolver::outputDataFile()
     y_out = new float [ny-1];
     z_out = new float [nz-1];
 
-	std::cout<<"start writing data";
     for ( int i = 0; i < nx-1; i++) {
     	x_out[i] = (i+0.5)*dx;         /// Location of cell centers in x-dir
    	}
