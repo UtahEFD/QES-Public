@@ -169,7 +169,6 @@ void CPUSolver::solve(bool solveWind)
 ///////////////////////////////////////////////////////////////////////////////////////////////
 void CPUSolver::outputDataFile()
 {
-    // NO MEMORY CLEANUP IN THIS FUNCTION!!!! -Pete
 
     /// Declare cell center positions
     float *x_out, *y_out, *z_out;
