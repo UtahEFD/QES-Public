@@ -144,7 +144,24 @@ void CPUSolver::solve(bool solveWind)
                     w[icell_face] = w0[icell_face]+(1/(2*pow(alpha2, 2.0)*dz)) *
                         n[icell_cent]*dz*dz*(lambda[icell_cent]-lambda[icell_cent - (nx-1)*(ny-1)]);
 
-                    // If we are inside a building, set velocities to 0.0
+
+
+                }
+            }
+        }
+
+                for (int k = 1; k < nz-1; k++){
+            for (int j = 1; j < ny-1; j++){
+                for (int i = 1; i < nx-1; i++){
+                    icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+                    icell_face = i + j*nx + k*nx*ny;               /// Lineralized
+                                                                   /// index
+                                                                   /// for
+                                                                   /// cell
+                                                                   /// faced
+                                                                   /// values
+
+                                        // If we are inside a building, set velocities to 0.0
                     if (icellflag[icell_cent] == 0) {
                         /// Setting velocity field inside the building to zero
                         u[icell_face] = 0;
@@ -154,10 +171,13 @@ void CPUSolver::solve(bool solveWind)
                         w[icell_face] = 0;
                         w[icell_face+nx*ny] = 0;
                     }
-
                 }
+
             }
-        }
+                }
+                
+
+                
 
         auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
         std::chrono::duration<float> elapsedTotal = finish - startOfSolveMethod;
