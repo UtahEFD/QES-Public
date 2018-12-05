@@ -172,91 +172,76 @@ void CPUSolver::outputDataFile()
     // NO MEMORY CLEANUP IN THIS FUNCTION!!!! -Pete
 
     /// Declare cell center positions
-    std::vector<float> x_out(nx-1) , y_out(ny-1), z_out(nz-1);
+    float *x_out, *y_out, *z_out;
+    x_out = new float [nx-1];
+    y_out = new float [ny-1];
+    z_out = new float [nz-1];
 
-    for ( auto i : x_out ) {
-        x_out[i] = (i+0.5)*dx;         /// Location of cell centers in x-dir
-    }
-    for ( auto j : y_out ) {
-        y_out[j] = (j+0.5)*dy;         /// Location of cell centers in y-dir
-    }
-    for ( auto k : z_out ) {
-        z_out[k] = (k-0.5)*dz;         /// Location of cell centers in z-dir
-    }
+	std::cout<<"start writing data";
+    for ( int i = 0; i < nx-1; i++) {
+    	x_out[i] = (i+0.5)*dx;         /// Location of cell centers in x-dir
+   	}
+    for ( int j = 0; j < ny-1; j++){
+		y_out[j] = (j+0.5)*dy;         /// Location of cell centers in y-dir
+	}
+	for ( int k = 0; k < nz-1; k++){
+		z_out[k] = (k-0.5)*dz;         /// Location of cell centers in z-dir
+	}
 
-    /// Declare output velocity field arrays
-    double ***u_out, ***v_out, ***w_out;
-    u_out = new double** [nx-1];
-    v_out = new double** [nx-1];
-    w_out = new double** [nx-1];
-    	
-    for (int i = 0; i < nx-1; i++){
-        u_out[i] = new double* [ny-1];
-        v_out[i] = new double* [ny-1];
-        w_out[i] = new double* [ny-1];
-        for (int j = 0; j < ny-1; j++){
-            u_out[i][j] = new double [nz-1];
-            v_out[i][j] = new double [nz-1];
-            w_out[i][j] = new double [nz-1];
-        }
-    }
+	for (int k = 0; k < nz-1; k++){
+		for (int j = 0; j < ny-1; j++){
+			for (int i = 0; i < nx-1; i++){
+				int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values 
+				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1); 
+				u_out[icell_cent] = 0.5*(u[icell_face+1]+u[icell_face]);
+				v_out[icell_cent] = 0.5*(v[icell_face+nx]+v[icell_face]);
+				w_out[icell_cent] = 0.5*(w[icell_face+nx*ny]+w[icell_face]);
+			}
+		}	
+	}
+        // Write data to file
+	ofstream outdata1;
+	outdata1.open("Final velocity.dat");
+	if( !outdata1 ) {                 // File couldn't be opened
+		cerr << "Error: file could not be opened" << endl;
+		exit(1);
+	}
+        // Write data to file
+	for (int k = 0; k < nz-1; k++){
+		for (int j = 0; j < ny-1; j++){
+			for (int i = 0; i < nx-1; i++){
+  				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+				int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
+				outdata1 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] 
+								<< "\t \t"<< "\t \t" << u[icell_face] <<"\t \t"<< "\t \t"<<v[icell_face]<<"\t \t"<< "\t \t"
+								<<w[icell_face]<< "\t \t"<< "\t \t" << u0[icell_face] <<"\t \t"<< "\t \t"<<v0[icell_face]
+								<<"\t \t"<< "\t \t"<<w0[icell_face]<<"\t \t"<<R[icell_cent]<< endl;   
+			}
+		}
+	}
+	outdata1.close();
 
-
-    for (int k = 0; k < nz-1; k++){
-        for (int j = 0; j < ny-1; j++){
-            for (int i = 0; i < nx-1; i++){
-                int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values 
-                u_out[i][j][k] = 0.5*(u[icell_face+1]+u[icell_face]);
-                v_out[i][j][k] = 0.5*(v[icell_face+nx]+v[icell_face]);
-                w_out[i][j][k] = 0.5*(w[icell_face+nx*ny]+w[icell_face]);
-            }
-        }	
-    }
-
-    // Write data to file
-    ofstream outdata1;
-    outdata1.open("Final velocity.dat");
-    if( !outdata1 ) {                 // File couldn't be opened
-        cerr << "Error: file could not be opened" << endl;
-        exit(1);
-    }
-    // Write data to file
-    for (int k = 0; k < nz-1; k++){
-        for (int j = 0; j < ny-1; j++){
-            for (int i = 0; i < nx-1; i++){
-                int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-                int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
-                outdata1 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] 
-                            << "\t \t"<< "\t \t" << u[icell_face] <<"\t \t"<< "\t \t"<<v[icell_face]<<"\t \t"<< "\t \t"
-                            <<w[icell_face]<< "\t \t"<< "\t \t" << u0[icell_face] <<"\t \t"<< "\t \t"<<v0[icell_face]
-                            <<"\t \t"<< "\t \t"<<w0[icell_face]<<"\t \t"<<R[icell_cent]<< endl;   
-            }
-        }
-    }
-    outdata1.close();
-
-
-    // Write data to file
-    ofstream outdata2;
-    outdata2.open("Final velocity1.dat");
-    if( !outdata2 ) {                 // File couldn't be opened
-        cerr << "Error: file could not be opened" << endl;
-        exit(1);
-    }
-    // Write data to file
-    for (int k = 0; k < nz-1; k++){
-        for (int j = 0; j < ny-1; j++){
-            for (int i = 0; i < nx-1; i++){
-                int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-                int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
-                outdata2 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] 
-                            << "\t \t"<< "\t \t" << f[icell_cent] <<"\t \t"<< "\t \t"<<e[icell_cent]<<"\t \t"<< "\t \t"
-                            <<h[icell_cent]<< "\t \t"<< "\t \t" << g[icell_cent] <<"\t \t"<< "\t \t"<<n[icell_cent]
-                            <<"\t \t"<< "\t \t"<<m[icell_cent]<<"\t \t"<<icellflag[icell_cent]<< endl;   
-            }
-        }
-    }
-    outdata2.close();     
+	// Write data to file
+	ofstream outdata2;
+	outdata2.open("Final velocity1.dat");
+	if( !outdata2 ) {                 // File couldn't be opened
+		cerr << "Error: file could not be opened" << endl;
+		exit(1);
+	}
+	// Write data to file
+	for (int k = 0; k < nz-1; k++){
+		for (int j = 0; j < ny-1; j++){
+			for (int i = 0; i < nx-1; i++){
+				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+				int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
+				outdata2 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] 
+								<< "\t \t"<< "\t \t" << f[icell_cent] <<"\t \t"<< "\t \t"<<e[icell_cent]<<"\t \t"<< "\t \t"
+								<<h[icell_cent]<< "\t \t"<< "\t \t" << g[icell_cent] <<"\t \t"<< "\t \t"<<n[icell_cent]
+								<<"\t \t"<< "\t \t"<<m[icell_cent]<<"\t \t"<<icellflag[icell_cent]<< endl;   
+			}
+		}
+	}
+	outdata2.close();      
 }
 
 void CPUSolver::outputNetCDF( NetCDFData* netcdfDat )
@@ -279,7 +264,7 @@ void CPUSolver::outputNetCDF( NetCDFData* netcdfDat )
     netcdfDat->getData(x.data(),y.data(),z.data(),u.data(),v.data(),w.data(),nx,ny,nz);
     netcdfDat->getDataICell(icellflag.data(), x_out.data(), y_out.data(), z_out.data(), nx-1, ny - 1, nz - 1, numcell_cent);
     
-        if (DTEHF)
+    /*    if (DTEHF)
             netcdfDat->getCutCellFlags(cells);
 
             {
@@ -300,7 +285,7 @@ void CPUSolver::outputNetCDF( NetCDFData* netcdfDat )
         }
 
         //netcdfDat->getDataICell(icellflag.data(), x_out, y_out, z_out, nx-1, ny - 1, nz - 1, numcell_cent);
-    }
+    }*/
 }
 
 
