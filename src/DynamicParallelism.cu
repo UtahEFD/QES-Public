@@ -1,5 +1,20 @@
 #include "DynamicParallelism.h"
 
+using namespace std::chrono;
+using namespace std;
+using std::ofstream;
+using std::ifstream;
+using std::istringstream;
+using std::string;
+using std::cerr;
+using std::endl;
+using std::vector;
+using std::cout;
+using std::to_string;
+
+#define BLOCKSIZE 1024
+#define cudaCheck(x) _cudaCheck(x, #x ,__FILE__, __LINE__)
+
 __device__ double error;
 
 
@@ -11,7 +26,9 @@ void DynamicParallelism::_cudaCheck(T e, const char* func, const char* call, con
     }
 }
 
-// Divergence kernel
+/// Divergence CUDA Kernel. 
+/// The divergence kernel ...
+/// 
 __global__ void divergence(double *d_u0, double *d_v0, double *d_w0, double *d_R, float *d_e, float *d_f, float *d_g, 
 						float *d_h, float *d_m, float *d_n, int alpha1, int  nx, int  ny, int nz,float dx,float dy,float dz)
 {
@@ -22,18 +39,23 @@ __global__ void divergence(double *d_u0, double *d_v0, double *d_w0, double *d_R
     int i = icell_cent - k*(nx-1)*(ny-1) - j*(nx-1);
     int icell_face = i + j*nx + k*nx*ny;
 
-    if((i<nx-1)&&(j<ny-1)&&(k<nz-1)){
-        d_R[icell_cent] = (-2*pow(alpha1, 2.0))*(((d_e[icell_cent]*d_u0[icell_face+1]-d_f[icell_cent]*d_u0[icell_face])*dx)+
-						((d_g[icell_cent]*d_v0[icell_face + nx]-d_h[icell_cent]*d_v0[icell_face])*dy)+((d_m[icell_cent]*
-						d_w0[icell_face + nx*ny]-d_n[icell_cent]*d_w0[icell_face])*dz));         // Divergence equation
+    // Would be nice to figure out how to not have this branch check...
+    if((i<nx-1)&&(j<ny-1)&&(k<nz-1)) {
+
+        // Divergence equation
+        d_R[icell_cent] = (-2*pow(alpha1, 2.0))*((( d_e[icell_cent] * d_u0[icell_face+1]      - d_f[icell_cent] * d_u0[icell_face]) * dx ) +
+                                                 (( d_g[icell_cent] * d_v0[icell_face + nx]   - d_h[icell_cent] * d_v0[icell_face]) * dy ) +
+                                                 ((d_m[icell_cent] * d_w0[icell_face + nx*ny] - d_n[icell_cent] * d_w0[icell_face]) * dz)); 
     }
 }
 
 
+/// SOR RedBlack Kernel.
+///
+///
 __global__ void SOR_RB(double *d_lambda, int nx, int ny, int nz, float omega, float  A, float  B, float  dx, float *d_e, 
 						float *d_f, float *d_g, float *d_h, float *d_m, float *d_n, double *d_R, int offset)
 {
-    
     int icell_cent = blockDim.x*blockIdx.x+threadIdx.x;
     int k = icell_cent/((nx-1)*(ny-1));
     int j = (icell_cent - k*(nx-1)*(ny-1))/(nx-1);
@@ -41,26 +63,27 @@ __global__ void SOR_RB(double *d_lambda, int nx, int ny, int nz, float omega, fl
     
     if ( (i > 0) && (i < nx-2) && (j > 0) && (j < ny-2) && (k < nz-2) && (k > 0) && ((i+j+k)%2) == offset ){
         
-        d_lambda[icell_cent] = (omega/(d_e[icell_cent]+d_f[icell_cent]+d_g[icell_cent]+d_h[icell_cent]+d_m[icell_cent]+
-								d_n[icell_cent]))*(d_e[icell_cent]*d_lambda[icell_cent+1]+d_f[icell_cent]*
-								d_lambda[icell_cent-1]+d_g[icell_cent]*d_lambda[icell_cent + (nx-1)]+d_h[icell_cent]*
-								d_lambda[icell_cent - (nx-1)]+d_m[icell_cent]*d_lambda[icell_cent + (nx-1)*(ny-1)]+
-								d_n[icell_cent]*d_lambda[icell_cent - (nx-1)*(ny-1)]-d_R[icell_cent])+
-								(1-omega)*d_lambda[icell_cent];    /// SOR formulation
+        d_lambda[icell_cent] = (omega / ( d_e[icell_cent] + d_f[icell_cent] + d_g[icell_cent] +
+                                          d_h[icell_cent] + d_m[icell_cent] + d_n[icell_cent])) *
+            ( d_e[icell_cent] * d_lambda[icell_cent+1]               + d_f[icell_cent] * d_lambda[icell_cent-1] +
+              d_g[icell_cent] * d_lambda[icell_cent + (nx-1)]        + d_h[icell_cent] * d_lambda[icell_cent - (nx-1)] +
+              d_m[icell_cent] * d_lambda[icell_cent + (nx-1)*(ny-1)] +
+              d_n[icell_cent] * d_lambda[icell_cent - (nx-1)*(ny-1)] - d_R[icell_cent] ) +
+            (1.0 - omega) * d_lambda[icell_cent];    /// SOR formulation
     }
 }
 
-__global__ void assign_lambda_to_lambda_old(double *d_lambda, double *d_lambda_old, int nx, int ny, int nz) {
-    
+__global__ void assign_lambda_to_lambda_old(double *d_lambda, double *d_lambda_old, int nx, int ny, int nz)
+{
     int ii = blockDim.x*blockIdx.x+threadIdx.x;
     
     if(ii < (nz-1)*(ny-1)*(nx-1)) {
         d_lambda_old[ii] = d_lambda[ii];
     }
-    
 }
 
-__global__ void applyNeumannBC(double *d_lambda, int nx, int ny) {
+__global__ void applyNeumannBC(double *d_lambda, int nx, int ny)
+{
     // Neumann boundary condition (lambda (@k=0) = lambda (@k=1))
     int ii = blockDim.x*blockIdx.x+threadIdx.x;
     
@@ -69,11 +92,10 @@ __global__ void applyNeumannBC(double *d_lambda, int nx, int ny) {
     }
 }
 
-__global__ void calculateError(double *d_lambda, double *d_lambda_old, int nx, int ny, int nz, double *d_value, 
-								double *d_bvalue)
+__global__ void calculateError(double *d_lambda, double *d_lambda_old, int nx, int ny, int nz,
+                               double *d_value, 
+                               double *d_bvalue)
 {
-
-
     int d_size = (nx-1)*(ny-1)*(nz-1);
     int ii = blockDim.x*blockIdx.x+threadIdx.x;
     int numblocks = (d_size/BLOCKSIZE) +1;
@@ -154,6 +176,10 @@ __global__ void finalVelocity(double *d_u0, double *d_v0, double *d_w0, double *
         
     }
 }
+
+
+/// SOR iteration kernel
+/// 
 __global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, int ny, int nz, float omega, float  A, 
 								float  B, float  dx, float *d_e, float *d_f, float *d_g, float *d_h, float *d_m, float *d_n, 
 								double *d_R, int itermax, double tol, double *d_value, double *d_bvalue, double *d_u0, 
@@ -166,10 +192,10 @@ __global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, i
     // Calculate divergence of initial velocity field
     dim3 numberOfThreadsPerBlock(BLOCKSIZE,1,1);
     dim3 numberOfBlocks(ceil(((nx-1)*(ny-1)*(nz-1))/(double) (BLOCKSIZE)),1,1);
+
     // Invoke divergence kernel
     divergence<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_u0,d_v0,d_w0,d_R,d_e,d_f,d_g,d_h,d_m,d_n,alpha1,nx,ny,nz,dx,dy,
 															dz);
-
     // Iterate untill convergence is reached
     while ( (iter < itermax) && (error > tol)) {
         

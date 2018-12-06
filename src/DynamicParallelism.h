@@ -17,22 +17,6 @@
 #include <cuda_gl_interop.h>
 #include <stdio.h>
 #include "cuda.h"
-#include <string.h>
-
-#define BLOCKSIZE 1024
-#define cudaCheck(x) _cudaCheck(x, #x ,__FILE__, __LINE__)
-
-using namespace std::chrono;
-using namespace std;
-using std::ofstream;
-using std::ifstream;
-using std::istringstream;
-using std::string;
-using std::cerr;
-using std::endl;
-using std::vector;
-using std::cout;
-using std::to_string;
 
 /**
  *
