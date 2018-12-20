@@ -9,10 +9,8 @@ private:
 
 
 public:
-	float xFo;
-	float yFo;
-	float length;
-	float width;
+
+
 
 	virtual void parseValues() = 0;
 };

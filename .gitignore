@@ -1,5 +1,7 @@
 build/
 Build/
+src/docs/*
+docs/*
 
 # Prerequisites
 *.d
