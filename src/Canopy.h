@@ -2,7 +2,7 @@
 
 #include "util/ParseInterface.h"
 #include "Building.h"
-#include <math.h>
+#include <cmath>
 
 
 class Canopy : public Building
@@ -84,12 +84,12 @@ public:
 						std::vector<std::vector<float>> &canopy_top) 
 	{
 
-		i_start = round(x_start/dx);  
-		i_end = round((x_start+L)/dx);  
-		j_end = round((y_start+W)/dy);  
-		j_start = round(y_start/dy);
-		k_start = round(baseHeight/dz);
-		k_end = round((baseHeight+H)/dz)+1;
+            i_start = std::round(x_start/dx);  
+            i_end = std::round((x_start+L)/dx);  
+            j_end = std::round((y_start+W)/dy);  
+            j_start = std::round(y_start/dy);
+            k_start = std::round(baseHeight/dz);
+            k_end = std::round((baseHeight+H)/dz)+1;
 
     	std::cout << "i_start:" << i_start << "\n";   
    	 	std::cout << "i_end:" << i_end << "\n";       

@@ -2,8 +2,9 @@
 
 #include "util/ParseInterface.h"
 #include "NonPolyBuilding.h"
+
 #define _USE_MATH_DEFINES
-#include <math.h>
+#include <cmath>
 
 using namespace std;
 using std::cerr;
@@ -615,12 +616,12 @@ public:
 		}
 		else
 		{
-			i_start = round(x_start/dx);     /// Index of building start location in x-direction
-			i_end = round((x_start+L)/dx);   /// Index of building end location in x-direction
-			j_start = round(y_start/dy);     /// Index of building start location in y-direction
-			j_end = round((y_start+W)/dy);   /// Index of building end location in y-direction 
-			k_start = baseHeight/dz;		/// Index of building start location in z-direction
-			k_end = round((H+baseHeight)/dz)+1;             /// Index of building end location in z-direction
+                    i_start = std::round(x_start/dx);     /// Index of building start location in x-direction
+                    i_end = std::round((x_start+L)/dx);   /// Index of building end location in x-direction
+                    j_start = std::round(y_start/dy);     /// Index of building start location in y-direction
+                    j_end = std::round((y_start+W)/dy);   /// Index of building end location in y-direction 
+                    k_start = baseHeight/dz;		/// Index of building start location in z-direction
+                    k_end = std::round((H+baseHeight)/dz)+1;             /// Index of building end location in z-direction
 	
     		std::cout << "i_start:" << i_start << "\n";   // Print the number of iterations
     		std::cout << "i_end:" << i_end << "\n";       // Print the number of iterations
