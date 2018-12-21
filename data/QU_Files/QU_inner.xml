@@ -28,14 +28,16 @@
 	<siteName> sensor1 </siteName>
 	<fileName> sensor1.inp </fileName>
 	<sensor>
-		<site_xcoord> 1.0</site_xcoord>
-		<site_ycoord> 1.0</site_ycoord>
-		<boundaryLayerFlag> 1</boundaryLayerFlag>
-		<siteZ0> 0.1</siteZ0>
-		<reciprocal> 0.0</reciprocal>
-		<height> 10.0</height>
-		<speed> 5.0</speed>
-		<direction> 270.0</direction> 
+		<site_xcoord> 1.0 </site_xcoord>
+		<site_ycoord> 1.0 </site_ycoord>
+		<boundaryLayerFlag> 3 </boundaryLayerFlag>
+		<siteZ0> 0.1 </siteZ0>
+		<reciprocal> 0.0 </reciprocal>
+		<height> 10.0 </height>
+		<speed> 5.0 </speed>
+		<direction> 270.0 </direction> 
+		<canopyHeight> 10.0 </canopyHeight>
+		<attenuationCoefficient> 1.97 </attenuationCoefficient> 
 	</sensor>
 	<!--sensor>
 		<site_xcoord> 190.0</site_xcoord>
@@ -69,7 +71,7 @@
 	<sensorVelocityFlag> 0 </sensorVelocityFlag>
 	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
-<buildings>
+<!--buildings>
 	<wallRoughness> 0.1 </wallRoughness>
 	<numBuildings> 1 </numBuildings>
 	<numPolygonNodes> 0 </numPolygonNodes>
@@ -83,7 +85,7 @@
 		<length> 25.0 </length>
 		<width> 45.0 </width>
 	</rectangularBuilding>
-	<!--rectangularBuilding>
+	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
 		<height> 33.0 </height>
@@ -92,5 +94,5 @@
 		<yStart> 112.0 </yStart>
 		<length> 28.0 </length>
 		<width> 20.0 </width>
-	</rectangularBuilding-->
-</buildings>
+	</rectangularBuilding>
+</buildings-->

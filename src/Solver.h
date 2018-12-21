@@ -77,6 +77,9 @@ protected:
     std::vector<float> site_z_ref;		/**< measuring sensor height */
     std::vector<float> site_U_ref;		/**< site measured velocity */
 
+    std::vector<float> site_canopy_H;
+    std::vector<float> site_atten_coeff;
+
     int num_canopies;				/**< number of canopies */
     std::vector<float> atten;		/**< Attenuation coefficient */	
     int landuse_flag;

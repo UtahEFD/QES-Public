@@ -81,6 +81,10 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
             site_z0.push_back (UID->metParams->sensors[i]->site_z0);
             site_z_ref.push_back (UID->metParams->sensors[i]->site_z_ref);
             site_U_ref.push_back (UID->metParams->sensors[i]->site_U_ref);
+			if (site_blayer_flag[i] == 3){
+				site_canopy_H.push_back (UID->metParams->sensors[i]->site_canopy_H);
+				site_atten_coeff.push_back (UID->metParams->sensors[i]->site_atten_coeff);
+			}
         }
     }
 
@@ -161,7 +165,8 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
     // Calling inputWindProfile function to generate initial velocity field from sensors information (located in Sensor.cpp)
     sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0.data(), v0.data(), w0.data(), num_sites, site_blayer_flag.data(), 
                              site_one_overL.data(), site_xcoord.data(), site_ycoord.data(), site_wind_dir.data(),
-                             site_z0.data(), site_z_ref.data(), site_U_ref.data(), x.data(), y.data(), z.data());
+                             site_z0.data(), site_z_ref.data(), site_U_ref.data(), x.data(), y.data(), z.data(), canopy,
+							 site_canopy_H.data(), site_atten_coeff.data());
 
     mesh = 0;
     if (DTEHF)
