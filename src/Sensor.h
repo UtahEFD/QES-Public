@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/ParseInterface.h"
+#include "Canopy.h"
 
 class Sensor : public ParseInterface
 {
@@ -18,6 +19,9 @@ public:
     float site_z_ref;
     float site_U_ref;
 
+	float site_canopy_H;
+	float site_atten_coeff;
+
     virtual void parseValues()
     {
         parsePrimitive<float>(true, site_xcoord, "site_xcoord");
@@ -28,6 +32,9 @@ public:
         parsePrimitive<float>(true, site_z_ref, "height");
         parsePrimitive<float>(true, site_U_ref, "speed");
         parsePrimitive<float>(true, site_wind_dir, "direction");
+
+        parsePrimitive<float>(false, site_canopy_H, "canopyHeight");
+        parsePrimitive<float>(false, site_atten_coeff, "attenuationCoefficient");
 
     }
 
@@ -42,7 +49,7 @@ public:
     void inputWindProfile(float dx, float dy, float dz, int nx, int ny, int nz, double *u0, double *v0, double *w0, 
                           int num_sites, int *site_blayer_flag, float *site_one_overL, float *site_xcoord,
                           float *site_ycoord, float *site_wind_dir, float *site_z0, float *site_z_ref, float *site_U_ref, 
-                          float *x, float *y, float *z);
+                          float *x, float *y, float *z, Canopy* canopy, float *site_canopy_H, float *site_atten_coeff);
 
 };
 
