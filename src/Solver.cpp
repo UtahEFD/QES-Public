@@ -214,6 +214,7 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
     //      Apply canopy vegetation parameterization           //   
     /////////////////////////////////////////////////////////////
     
+
     if (num_canopies>0)
     {
         std::vector<std::vector<std::vector<float>>> canopy_atten(nx-1, std::vector<std::vector<float>>(ny-1, std::vector<float>(nz-1,0.0)));
@@ -223,16 +224,23 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
         std::vector<std::vector<float>> canopy_ustar(nx-1, std::vector<float>(ny-1,0.0));
         std::vector<std::vector<float>> canopy_d(nx-1, std::vector<float>(ny-1,0.0));
 
-        // Read in canopy information
-        canopy->readCanopy(nx, ny, nz, landuse_flag, num_canopies, lu_canopy_flag, canopy_atten, canopy_top);
-
         for (int i=0; i<canopies.size();i++)
         {
+            // Hack to work around until we re-org this -- Pete
+            canopy = (Canopy*)canopies[i];
+
+            // Read in canopy information
+            canopy->readCanopy(nx, ny, nz, landuse_flag, num_canopies, lu_canopy_flag, canopy_atten, canopy_top);
+
+            // here because the array that holds this all Building*
             ((Canopy*)canopies[i])->defineCanopy(dx, dy, dz, nx, ny, nz, icellflag.data(), num_canopies, lu_canopy_flag, 
-                                                 canopy_atten, canopy_top);			// Defininf canopy bounderies
+                                                 canopy_atten, canopy_top);			// Defininf
+                                                                                                // canopy
+                                                                                                // bounderies
+
+            canopy->plantInitial(nx, ny, nz, vk, icellflag.data(), z, u0, v0, canopy_atten, canopy_top, canopy_top_index, 
+                                 canopy_ustar, canopy_z0, canopy_d);		// Apply canopy parameterization
         }
-        canopy->plantInitial(nx, ny, nz, vk, icellflag.data(), z, u0, v0, canopy_atten, canopy_top, canopy_top_index, 
-                             canopy_ustar, canopy_z0, canopy_d);		// Apply canopy parameterization
     }
    
     /////////////////////////////////////////////////////////////
