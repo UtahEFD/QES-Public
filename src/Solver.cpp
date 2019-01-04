@@ -68,6 +68,10 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
     // initialize those elements
     if (UID->metParams)
     {
+        // Set the sensor to the one loaded in from the files:
+        std::cout << "\nWARNING: only managing 1 sensor!!!! Need to fix for multiple sensors!\n" << std::endl;
+        sensor = UID->metParams->sensors[0];
+
         // This has already been done... the UID->metParams
         // contains a vector of "sensors" (or sites).  We should
         // use this directly rather than re-doing it...
@@ -163,6 +167,7 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
     w.resize(numface_cent, 0.0);
     
     // Calling inputWindProfile function to generate initial velocity field from sensors information (located in Sensor.cpp)
+    // Needs to be foreach sensor! --Pete
     sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0.data(), v0.data(), w0.data(), num_sites, site_blayer_flag.data(), 
                              site_one_overL.data(), site_xcoord.data(), site_ycoord.data(), site_wind_dir.data(),
                              site_z0.data(), site_z_ref.data(), site_U_ref.data(), x.data(), y.data(), z.data(), canopy,
