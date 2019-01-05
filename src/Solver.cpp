@@ -295,11 +295,11 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
         }
     }
 
-    for (int k = 0; k < nz; k++)
+    for (int k = 1; k < nz-1; k++)
     {
-        for (int j = 0; j < ny; j++)
+        for (int j = 1; j < ny-1; j++)
         {
-            for (int i = 0; i < nx; i++)
+            for (int i = 1; i < nx-1; i++)
             {
                 icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);		/// Lineralized index for cell centered values
                 icell_face = i + j*nx + k*nx*ny;			/// Lineralized index for cell faced values 
@@ -585,11 +585,11 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
 
 {
 
-	for (int i=0; i<nx-1; i++)
+	for (int i=1; i<nx-2; i++)
 	{
-		for (int j=0; j<ny-1; j++)
+		for (int j=1; j<ny-2; j++)
 		{
-			for (int k=0; k<nz-1; k++)
+			for (int k=1; k<nz-2; k++)
 			{
 				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
 				if (icellflag[icell_cent] !=0) {
