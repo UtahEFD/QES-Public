@@ -91,11 +91,13 @@ public:
             k_start = std::round(baseHeight/dz);
             k_end = std::round((baseHeight+H)/dz)+1;
 
+#if 0
     	std::cout << "i_start:" << i_start << "\n";   
    	 	std::cout << "i_end:" << i_end << "\n";       
     	std::cout << "j_start:" << j_start << "\n";  
    	 	std::cout << "j_end:" << j_end << "\n";         
-   	 	std::cout << "k_end:" << k_end << "\n"; 
+   	 	std::cout << "k_end:" << k_end << "\n";
+#endif
 
 		if(lu_canopy_flag > 0 && k_end < 2)
 		{

@@ -582,6 +582,7 @@ public:
 	
 			k_start = baseHeight/dz;
 	
+#if 0
     		std::cout << "i_start:" << i_start << "\n";   
    		 	std::cout << "i_end:" << i_end << "\n";       
     		std::cout << "j_start:" << j_start << "\n";  
@@ -592,7 +593,8 @@ public:
     		std::cout << "i_cut_end:" << i_cut_end << "\n";      
     		std::cout << "j_cut_start:" << j_cut_start << "\n"; 
     		std::cout << "j_cut_end:" << j_cut_end << "\n";        
-    		std::cout << "k_cut_end:" << k_cut_end << "\n"; 
+    		std::cout << "k_cut_end:" << k_cut_end << "\n";
+#endif
 	
 			for (int k = 1; k < k_cut_end; k++){
 				for (int j = j_cut_start; j < j_cut_end; j++){
@@ -623,12 +625,13 @@ public:
                     k_start = baseHeight/dz;		/// Index of building start location in z-direction
                     k_end = std::round((H+baseHeight)/dz)+1;             /// Index of building end location in z-direction
 	
+#if 0
     		std::cout << "i_start:" << i_start << "\n";   // Print the number of iterations
     		std::cout << "i_end:" << i_end << "\n";       // Print the number of iterations
     		std::cout << "j_start:" << j_start << "\n";   // Print the number of iterations
     		std::cout << "j_end:" << j_end << "\n";       // Print the number of iterations    
     		std::cout << "k_end:" << k_end << "\n";       // Print the number of iterations 
-	
+#endif	
 				
 	
    			for (int k = k_start; k < k_end; k++){
