@@ -1,0 +1,98 @@
+<simulationParameters>
+	<domain> 40 40 100 </domain>
+	<cellSize> 5.0 5.0 2.0 </cellSize> <!-- Meters-->
+	<verticalStretching> 0 </verticalStretching>
+	<totalTimeIncrements> 1 </totalTimeIncrements>
+	<UTCConversion> 0 </UTCConversion>
+	<Epoch> 1510930800 </Epoch>
+	<rooftopFlag> 2 </rooftopFlag>
+	<upwindCavityFlag> 3 </upwindCavityFlag>
+	<streetCanyonFlag> 4 </streetCanyonFlag>
+	<streetIntersectionFlag> 1 </streetIntersectionFlag>
+	<wakeFlag> 3 </wakeFlag>
+	<sidewallFlag> 0 </sidewallFlag>
+	<maxIterations> 500 </maxIterations>
+	<residualReduction> 3 </residualReduction>
+	<meshTypeFlag> 1 </meshTypeFlag>
+	<useDiffusion> 0 </useDiffusion>
+	<domainRotation> 0 </domainRotation>
+	<UTMX> 0 </UTMX>
+	<UTMY> 0 </UTMY>
+	<UTMZone> 1 </UTMZone>
+	<UTMZoneLetter> 17 </UTMZoneLetter>
+</simulationParameters>
+<metParams>
+	<metInputFlag> 0 </metInputFlag>
+	<num_sites> 1 </num_sites>
+	<maxSizeDataPoints> 2 </maxSizeDataPoints>
+	<siteName> sensor1 </siteName>
+	<fileName> sensor1.inp </fileName>
+	<sensor>
+		<site_xcoord> 1.0 </site_xcoord>
+		<site_ycoord> 1.0 </site_ycoord>
+		<boundaryLayerFlag> 3 </boundaryLayerFlag>
+		<siteZ0> 0.1 </siteZ0>
+		<reciprocal> 0.0 </reciprocal>
+		<height> 10.0 </height>
+		<speed> 5.0 </speed>
+		<direction> 270.0 </direction> 
+		<canopyHeight> 10.0 </canopyHeight>
+		<attenuationCoefficient> 1.97 </attenuationCoefficient> 
+	</sensor>
+	<!--sensor>
+		<site_xcoord> 190.0</site_xcoord>
+		<site_ycoord> 190.0</site_ycoord>
+		<boundaryLayerFlag> 1</boundaryLayerFlag>
+		<siteZ0> 0.1</siteZ0>
+		<reciprocal> 0.0</reciprocal>
+		<height> 10.0</height>
+		<speed> 5.0</speed>
+		<direction> 270.0</direction> 
+	</sensor-->
+</metParams>
+<!--canopies>
+	<num_canopies> 1 </num_canopies>
+	<landuseFlag> 0 </landuseFlag>
+	<landuseVegetationFlag> 0 </landuseVegetationFlag>
+	<landuseUrbanFlag> 0 </landuseUrbanFlag>
+	<canopy>
+		<attenuationCoefficient> 1.97 </attenuationCoefficient>
+		<height> 10.0 </height>
+		<baseHeight> 0 </baseHeight>
+		<xStart> 90.0 </xStart>
+		<yStart> 90.0 </yStart>
+		<length> 20.0 </length>
+		<width> 20.0 </width>
+	</canopy>
+</canopies-->
+<fileOptions>
+	<outputFormat> 3 </outputFormat>  
+	<massConservedFlag> 0 </massConservedFlag>
+	<sensorVelocityFlag> 0 </sensorVelocityFlag>
+	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+</fileOptions>
+<!--buildings>
+	<wallRoughness> 0.1 </wallRoughness>
+	<numBuildings> 1 </numBuildings>
+	<numPolygonNodes> 0 </numPolygonNodes>
+	<rectangularBuilding>
+		<groupID> 1 </groupID>
+		<buildingType> 1 </buildingType>
+		<height> 33.0 </height>
+		<baseHeight> 0 </baseHeight>
+		<xStart> 90.0 </xStart>
+		<yStart> 85.0 </yStart>
+		<length> 25.0 </length>
+		<width> 45.0 </width>
+	</rectangularBuilding>
+	<rectangularBuilding>
+		<groupID> 1 </groupID>
+		<buildingType> 1 </buildingType>
+		<height> 33.0 </height>
+		<baseHeight> 0 </baseHeight>
+		<xStart> 88.0 </xStart>
+		<yStart> 112.0 </yStart>
+		<length> 28.0 </length>
+		<width> 20.0 </width>
+	</rectangularBuilding>
+</buildings-->

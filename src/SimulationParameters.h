@@ -5,7 +5,7 @@
  * necessary for running the simulation.
  */
 
-#include "ParseInterface.h"
+#include "util/ParseInterface.h"
 #include "Vector3.h"
 
 class SimulationParameters : public ParseInterface
@@ -30,16 +30,12 @@ public:
 	int sidewallFlag;
 	int maxIterations;
 	int residualReduction;
-	int useDiffusion;
 	float domainRotation;
 	int UTMX;
 	int UTMY;
 	int UTMZone;
 	int UTMZoneLetter;
-	int quicCDFFlag;
-	int explosiveDamageFlag;
-	int buildingArrayFlag;
-	std::vector<float> dzArray;
+	int meshTypeFlag;
 	
 	SimulationParameters()
 	{
@@ -47,9 +43,6 @@ public:
 		UTMY = 0;
 		UTMZone = 0;
 		UTMZoneLetter = 0;
-		quicCDFFlag = 0;
-		explosiveDamageFlag = 0;
-		buildingArrayFlag = 0;
 	}
 
 	virtual void parseValues()
@@ -68,16 +61,12 @@ public:
 		parsePrimitive<int>(true, sidewallFlag, "sidewallFlag");
 		parsePrimitive<int>(true, maxIterations, "maxIterations");
 		parsePrimitive<int>(true, residualReduction, "residualReduction");
-		parsePrimitive<int>(true, useDiffusion, "useDiffusion");
+		parsePrimitive<int>(true, meshTypeFlag, "meshTypeFlag");
 		parsePrimitive<float>(true, domainRotation, "domainRotation");
 		parsePrimitive<int>(false, UTMX, "UTMX");
 		parsePrimitive<int>(false, UTMY, "UTMY");
 		parsePrimitive<int>(false, UTMZone, "UTMZone");
 		parsePrimitive<int>(false, UTMZoneLetter, "UTMZoneLetter");
-		parsePrimitive<int>(false, quicCDFFlag, "quicCDFFlag");
-		parsePrimitive<int>(false, explosiveDamageFlag, "explosiveDamageFlag");
-		parsePrimitive<int>(false, buildingArrayFlag, "buildingArrayFlag");
-		parseMultiPrimitives<float>(false, dzArray, "dz_array");
 	}
 
 };

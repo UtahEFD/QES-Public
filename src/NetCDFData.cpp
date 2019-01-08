@@ -96,7 +96,22 @@ void NetCDFData::getDataICell(int* newICellFlags, float* newX, float* newY, floa
         iCellFlags[i] = newICellFlags[i];
 }
 
-bool NetCDFData::outputCellResults(std::string fileName)
+void NetCDFData::getCutCellFlags(Cell* cells)
+{
+    cutCellFlags = new int[size];
+    for (int i = 0; i < size; i++)
+        if (cells[i].getIsCutCell())
+            cutCellFlags[i] = 2;
+        else if (cells[i].getIsAir())
+            cutCellFlags[i] = 1;
+        else if (cells[i].getIsTerrain())
+            cutCellFlags[i] = 3;
+        else
+            cutCellFlags[i] = 0;
+
+}
+
+bool NetCDFData::outputCellFaceResults(std::string fileName)
 {    
 
     int lenX = dimX, lenY = dimY, lenZ = dimZ;
@@ -240,7 +255,6 @@ bool NetCDFData::outputICellFlags(std::string fileName)
     return true;
 }
 
-
 bool NetCDFData::outputICellFlagsDifference(NetCDFData* compare, std::string fileName)
 {
     for (int i = 0; i < size; i++)
@@ -258,4 +272,68 @@ bool NetCDFData::outputCellResultsDifference(NetCDFData* compare, std::string fi
         w[i] -= compare->w[i];
     }
     return outputCellResults(fileName);
+}
+
+bool NetCDFData::outputCutCellFlags(std::string fileName)
+{    
+
+    int lenX = dimXF, lenY = dimYF, lenZ = dimZF, lenS = size;
+
+
+    try 
+    {
+        NcFile dataFile(fileName.c_str(), NcFile::replace);
+
+
+        NcDim Nx, Ny, Nz;
+        Nx = dataFile.addDim("x", lenX);
+        Ny = dataFile.addDim("y", lenY);
+        Nz = dataFile.addDim("z", lenZ);
+
+
+        NcVar xVar, yVar, zVar;
+        xVar = dataFile.addVar("x", ncFloat, Nx );
+        yVar = dataFile.addVar("y", ncFloat, Ny );
+        zVar = dataFile.addVar("z", ncFloat, Nz );
+
+
+        xVar.putVar(xF);
+        yVar.putVar(yF);
+        zVar.putVar(zF);
+
+
+        xVar.putAtt("units", "meters");
+        yVar.putAtt("units", "meters");
+        zVar.putAtt("units", "meters");
+
+        std::vector<NcDim> dimVector;
+        dimVector.push_back(Nz);
+        dimVector.push_back(Ny);
+        dimVector.push_back(Nx);
+
+        NcVar cellVals;
+        cellVals = dataFile.addVar("cutCellFlag Values", ncInt, dimVector);
+
+
+        cellVals.putAtt("value", "flags");
+
+
+       std::vector<size_t> start, count;
+       start.push_back(0);
+       start.push_back(0);
+       start.push_back(0);
+       count.push_back(lenZ);
+       count.push_back(lenY);
+       count.push_back(lenX);
+
+       cellVals.putVar(start,count, cutCellFlags);
+
+        dataFile.close();
+    }
+    catch(NcException& e)
+    {
+      e.what(); 
+      return false;
+    }
+    return true;
 }

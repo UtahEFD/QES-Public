@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
+#include "Cell.h"
+
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
@@ -26,6 +28,8 @@ private:
 	int dimXF, dimYF, dimZF;
 	float *xF, *yF, *zF;
 	long size;
+
+	int *cutCellFlags;
 
 public:
 
@@ -88,7 +92,7 @@ public:
 	 * @param fileName -the file to output the data to
 	 * @return returns false if creation fails
 	 */
-	bool outputCellResults(std::string fileName);
+	bool outputCellFaceResults(std::string fileName);
 
 	/*
 	 * Subtracts all iCellFlags from compare and then Outputs ICellFlag 
@@ -109,4 +113,9 @@ public:
 	 * @return returns false if creation fails
 	 */
 	bool outputCellResultsDifference(NetCDFData* compare, std::string fileName);
+
+	void getCutCellFlags(Cell* cells);
+
+	bool outputCutCellFlags(std::string fileName);
 };
+	

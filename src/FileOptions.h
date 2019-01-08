@@ -5,7 +5,7 @@
  * settngs read from the xml.
  */
 
-#include "ParseInterface.h"
+#include "util/ParseInterface.h"
 
 class FileOptions : public ParseInterface
 {
