@@ -348,7 +348,6 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
         }
     }
 
-    for (int k = 0; k < nz; k++)
     for (int k = 1; k < nz-1; k++)
     {
         for (int j = 1; j < ny-1; j++)
