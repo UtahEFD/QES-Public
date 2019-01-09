@@ -16,8 +16,6 @@ public:
 	Vector3<float>* grid;
 	int verticalStretching;
 	int totalTimeIncrements;
-	int UTCConversion;
-	float Epoch;
 	int rooftopFlag;
 	int upwindCavityFlag;
 	int streetCanyonFlag;
@@ -27,16 +25,16 @@ public:
 	int maxIterations;
 	int residualReduction;
 	float domainRotation;
-	int UTMX;
-	int UTMY;
+	float UTMx;
+	float UTMy;
 	int UTMZone;
 	int UTMZoneLetter;
 	int meshTypeFlag;
-	
+
 	SimulationParameters()
 	{
-		UTMX = 0;
-		UTMY = 0;
+		UTMx = 0.0;
+		UTMy = 0.0;
 		UTMZone = 0;
 		UTMZoneLetter = 0;
 	}
@@ -47,8 +45,6 @@ public:
 		parseElement< Vector3<float> >(true, grid, "cellSize");
 		parsePrimitive<int>(true, verticalStretching, "verticalStretching");
 		parsePrimitive<int>(true, totalTimeIncrements, "totalTimeIncrements");
-		parsePrimitive<int>(true, UTCConversion, "UTCConversion");
-		parsePrimitive<float>(true, Epoch, "Epoch");
 		parsePrimitive<int>(true, rooftopFlag, "rooftopFlag");
 		parsePrimitive<int>(true, upwindCavityFlag, "upwindCavityFlag");
 		parsePrimitive<int>(true, streetCanyonFlag, "streetCanyonFlag");
@@ -59,8 +55,8 @@ public:
 		parsePrimitive<int>(true, residualReduction, "residualReduction");
 		parsePrimitive<int>(true, meshTypeFlag, "meshTypeFlag");
 		parsePrimitive<float>(true, domainRotation, "domainRotation");
-		parsePrimitive<int>(false, UTMX, "UTMX");
-		parsePrimitive<int>(false, UTMY, "UTMY");
+		parsePrimitive<float>(false, UTMx, "UTMx");
+		parsePrimitive<float>(false, UTMy, "UTMy");
 		parsePrimitive<int>(false, UTMZone, "UTMZone");
 		parsePrimitive<int>(false, UTMZoneLetter, "UTMZoneLetter");
 	}
