@@ -205,12 +205,7 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
     sensor->getConvergence(site_lon, site_lat, site_UTM_zone, convergence, pi);
 
     // Calling inputWindProfile function to generate initial velocity field from sensors information (located in Sensor.cpp)
-<<<<<<< HEAD
     sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0.data(), v0.data(), w0.data(), num_sites, site_blayer_flag.data(),
-=======
-    // Needs to be foreach sensor! --Pete
-    sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0.data(), v0.data(), w0.data(), num_sites, site_blayer_flag.data(), 
->>>>>>> bbf6d0fb46a99d02e39526b7b2a7e8f7a339956e
                              site_one_overL.data(), site_xcoord.data(), site_ycoord.data(), site_wind_dir.data(),
                              site_z0.data(), site_z_ref.data(), site_U_ref.data(), x.data(), y.data(), z.data(), canopy,
                              site_canopy_H.data(), site_atten_coeff.data());
@@ -255,10 +250,6 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
     /////////////////////////////////////////////////////////////
     //      Apply canopy vegetation parameterization           //
     /////////////////////////////////////////////////////////////
-<<<<<<< HEAD
-=======
-    
->>>>>>> bbf6d0fb46a99d02e39526b7b2a7e8f7a339956e
 
     if (num_canopies>0)
     {
@@ -271,13 +262,6 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
 
         for (int i=0; i<canopies.size();i++)
         {
-<<<<<<< HEAD
-            ((Canopy*)canopies[i])->defineCanopy(dx, dy, dz, nx, ny, nz, icellflag.data(), num_canopies, lu_canopy_flag,
-                                                 canopy_atten, canopy_top);			// Defininf canopy bounderies
-        }
-        canopy->plantInitial(nx, ny, nz, vk, icellflag.data(), z, u0, v0, canopy_atten, canopy_top, canopy_top_index,
-                             canopy_ustar, canopy_z0, canopy_d);		// Apply canopy parameterization
-=======
             // Hack to work around until we re-org this -- Pete
             canopy = (Canopy*)canopies[i];
 
@@ -285,15 +269,14 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
             canopy->readCanopy(nx, ny, nz, landuse_flag, num_canopies, lu_canopy_flag, canopy_atten, canopy_top);
 
             // here because the array that holds this all Building*
-            ((Canopy*)canopies[i])->defineCanopy(dx, dy, dz, nx, ny, nz, icellflag.data(), num_canopies, lu_canopy_flag, 
+            ((Canopy*)canopies[i])->defineCanopy(dx, dy, dz, nx, ny, nz, icellflag.data(), num_canopies, lu_canopy_flag,
                                                  canopy_atten, canopy_top);			// Defininf
                                                                                                 // canopy
                                                                                                 // bounderies
 
-            canopy->plantInitial(nx, ny, nz, vk, icellflag.data(), z, u0, v0, canopy_atten, canopy_top, canopy_top_index, 
+            canopy->plantInitial(nx, ny, nz, vk, icellflag.data(), z, u0, v0, canopy_atten, canopy_top, canopy_top_index,
                                  canopy_ustar, canopy_z0, canopy_d);		// Apply canopy parameterization
         }
->>>>>>> bbf6d0fb46a99d02e39526b7b2a7e8f7a339956e
     }
 
     /////////////////////////////////////////////////////////////

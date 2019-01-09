@@ -44,9 +44,9 @@
 
 		<!--canopyHeight> 10.0 </canopyHeight-->     <!-- Canopy height -->
 		<!--attenuationCoefficient> 1.97 </attenuationCoefficient--> 				<!-- Canopy attenuation coefficient -->
-	<!--/sensor-->                       	<!-- Wnd of sensor section -->
-	<!--sensor>
-	<site_xcoord> 0.0 </site_xcoord> 						<!-- x component of site location in QUIC domain (m) -->
+	</sensor>                       	<!-- Wnd of sensor section -->
+	<!--sensor-->
+	<!--site_xcoord> 0.0 </site_xcoord--> 						<!-- x component of site location in QUIC domain (m) -->
 	<!--site_ycoord> 12.5 </site_ycoord--> 					<!-- y component of site location in QUIC domain (m) -->
 	<!--boundaryLayerFlag> 1 </boundaryLayerFlag--> 				<!-- Site boundary layer flag (1-log, 2-exp, 3-urban canopy) -->
 	<!--siteZ0> 0.01 </siteZ0--> 										<!-- Site z0 -->
