@@ -1,10 +1,18 @@
+include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/src)
-link_directories(${CMAKE_BINARY_DIR}/src/util)
 
 set(BASETESTS argparser wrfInputTest)
 foreach(basetest ${BASETESTS})
     add_executable(${basetest} ${basetest}.cpp)
+
+    target_link_libraries(${basetest} cudaurbcore)
     target_link_libraries(${basetest} qesutil)
     target_link_libraries(${basetest} ${Boost_PROGRAM_OPTIONS_LIBRARIES})
+    target_link_libraries(${basetest} netcdf)
+    target_link_libraries(${basetest} netcdf_c++4)
+    target_link_libraries(${basetest} ${GDAL_LIBRARY})
+    target_link_libraries(${basetest} cudadevrt)
+    target_link_libraries(${basetest} ${CUDA_LIBRARIES})
+
 endforeach(basetest)
 

@@ -3,4 +3,5 @@
 int main(int argc, char *argv[])
 {
     WRFInput wrfFile;
+    wrfFile.readDomainInfo();
 }

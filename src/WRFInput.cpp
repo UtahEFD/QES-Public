@@ -44,7 +44,7 @@ WRFInput::~WRFInput()
 }
 
 
-WRFInput::readDomainInfo()
+void WRFInput::readDomainInfo()
 {
     
 // Read domain dimensions, terrain elevation, wind data, land-use and Z0 from WRF output. 
@@ -55,14 +55,14 @@ WRFInput::readDomainInfo()
                                                 
     // Read the WRF NetCDF file as read-only (default option in the
     // following call).
-    try
-    {
+//    try
+//    {
         // Open the file for read access
-        NcFile wrfInputFile( filename.c_str() );
+        NcFile wrfInputFile( "/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21", NcFile::read );
 
         // Retrieve the variable named "Times"
         NcVar simDataClock = wrfInputFile.getVar("Times");
-        if (simDataClock.isNull()) return NC_ERR;
+        if (simDataClock.isNull()) return;
 
         // data.getVar(dataIn);
         // Check the values...
@@ -78,7 +78,14 @@ WRFInput::readDomainInfo()
 
         NcVarAtt att;
         wrfInputFile.getAtt( "DX" );
-        if(att.isNull()) return NC_ERR;
+        if(att.isNull()) { std::cout << "no DX" << std::endl; return; 
+        }
+        
+
+        double dx[1];
+
+        att.getValues( dx );
+        std::cout << "dx = " << dx[0] << std::endl;
            
         // double dx, dy;
         //dx = wrfInputFile.double(ncreadatt(WRFFile,'/','DX'));
@@ -87,13 +94,13 @@ WRFInput::readDomainInfo()
         // Relief = ncread(WRFFile,'HGT');
         // LU = ncread(WRFFile,'LU_INDEX');
 
-                return 0;
-    }catch(NcException& e)
-     {
-       e.what();
-       cout<<"FAILURE*************************************"<<endl;
-       return NC_ERR;
-     }
+                return;
+//    }catch(NcException& e)
+//     {
+//       e.what();
+//       cout<<"FAILURE*************************************"<<endl;
+//       return;
+//     }
 
 }
 

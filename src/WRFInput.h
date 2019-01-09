@@ -27,6 +27,9 @@ class WRFInput
 {
 public:
 
+    WRFInput();
+    ~WRFInput();
+
     /**
      * Reading WRF data - ReadDomainInfo.m
      *
