@@ -24,25 +24,11 @@ using namespace netCDF::exceptions;
 
 WRFInput::WRFInput()
 {
-    // SimData.WRFFile = 'RXCwrfout_d07_2012-11-11_15-21'; 
-    // % Min WRF site altitude in meters AGL --- ! CHOOSE A MINIMUM ALTITUDE ABOVE CANOPY LAYER HEIGHT !
-    // SimData.MinWRFAlt = 22;
-
-    // % Max WRF site altitude in meters AGL 
-    // SimData.MaxWRFAlt = 330;
-
-    // % Number max of topography blocks
-    // SimData.MaxTerrainSize = 10001;
-
-    // % Number of WRF sites
-    // SimData.MaxNbStat = 156; 
-
 }
 
 WRFInput::~WRFInput()
 {
 }
-
 
 void WRFInput::readDomainInfo()
 {
@@ -58,11 +44,13 @@ void WRFInput::readDomainInfo()
 //    try
 //    {
         // Open the file for read access
-        NcFile wrfInputFile( "/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21", NcFile::read );
+    NcFile wrfInputFile( "/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21", NcFile::read );
 
         // Retrieve the variable named "Times"
         NcVar simDataClock = wrfInputFile.getVar("Times");
         if (simDataClock.isNull()) return;
+
+        std::cout << "Number of attributes: " << wrfInputFile.getAttCount() << std::endl;
 
         // data.getVar(dataIn);
         // Check the values...
@@ -76,16 +64,19 @@ void WRFInput::readDomainInfo()
         // YEND = double(ncreadatt(WRFFile,'/','SOUTH-NORTH_GRID_DIMENSION'))-1;
         // nx, ny,
 
-        NcVarAtt att;
-        wrfInputFile.getAtt( "DX" );
-        if(att.isNull()) { std::cout << "no DX" << std::endl; return; 
+        std::multimap<std::string,NcGroupAtt> globalAttributes = wrfInputFile.getAtts();
+        for (auto i=globalAttributes.cbegin(); i!=globalAttributes.cend(); i++) {
+            std::cout << "Attribute Name: " << i->first << std::endl;
         }
         
+        // Pull out DX and DY
+        double cellSize[2];
+        auto gblAttIter = globalAttributes.find("DX");
+        gblAttIter->second.getValues( cellSize );
 
-        double dx[1];
-
-        att.getValues( dx );
-        std::cout << "dx = " << dx[0] << std::endl;
+        gblAttIter = globalAttributes.find("DY");
+        gblAttIter->second.getValues( cellSize+1 );
+        std::cout << "DX = " << cellSize[0] << ", DY = " << cellSize[1] << std::endl;
            
         // double dx, dy;
         //dx = wrfInputFile.double(ncreadatt(WRFFile,'/','DX'));
