@@ -1,7 +1,7 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 link_directories(${CMAKE_BINARY_DIR}/src/util)
 
-set(BASETESTS argparser)
+set(BASETESTS argparser wrfInputTest)
 foreach(basetest ${BASETESTS})
     add_executable(${basetest} ${basetest}.cpp)
     target_link_libraries(${basetest} qesutil)

@@ -1,7 +1,7 @@
 /** \file "WRFInput.h" Context header file. 
     \author Pete Willemsen, Matthieu 
 
-    Copyright (C) 2018  Brian Bailey
+    Copyright (C) 2019 Pete Willemsen
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ public:
 	\param[in] "data" Primitive data value (scalar)
 	\param[out] "data" Primitive data structure
      */
-    readDomainInfo();
+    void readDomainInfo();
 
     /**
      * Reading wind data - WindFunc.m
@@ -72,7 +72,8 @@ public:
      *     [ny,nx]. So are every other layers in this script (they are stored as
      *     [nx,ny] in WRF).
      */
-    readWindData();
+    void readWindData() {}
+            
 
     /**
      * Smoothing domain - Smooth.m
@@ -89,7 +90,10 @@ public:
      *     • Land-use categories are interpolated to the "nearest point" as we must not change their values
      *       while averaging them.
      */
-    smoothDomain();
+    void smoothDomain() 
+    {
+    }
+    
 
     /** 
      * Minimizing cell number - MinDomainHeight.m
@@ -99,8 +103,11 @@ public:
      * of blocks in NbTerrain. Wind vertical coordinate is modified
      * accordingly.
      */
-    minimizeDomainHeight();
+    void minimizeDomainHeight() 
+    {
+    }
     
+        
 
     /** 
      * Selecting WRF data stations - SetWRFdataPt.m
@@ -117,7 +124,10 @@ public:
      *     • Finally, maximal vertical coordinate is stored, it will be used to define the domain height (this
      * value multiplied by 1.2).
      */
-    setWRFDataPoint();
+    void setWRFDataPoint() 
+    {
+    }
+    
 
 private:
 };

@@ -16,6 +16,7 @@ CUDA_ADD_LIBRARY( cudaurbcore
   BVH.cpp
   DTEHeightField.cpp
   Cell.cpp
+  WRFInput.cpp WRFInput.h
   )
 
 cuda_add_executable( unitTest
