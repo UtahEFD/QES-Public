@@ -270,15 +270,15 @@ void CPUSolver::outputNetCDF( NetCDFData* netcdfDat )
     /// Declare cell center positions
     std::vector<float> x_out(nx-1) , y_out(ny-1), z_out(nz-1);
 
-    for ( auto i : x_out ) {
-        x_out[i] = (i+0.5)*dx;         /// Location of cell centers in x-dir
-    }
-    for ( auto j : y_out ) {
-        y_out[j] = (j+0.5)*dy;         /// Location of cell centers in y-dir
-    }
-    for ( auto k : z_out ) {
-        z_out[k] = (k-0.5)*dz;         /// Location of cell centers in z-dir
-    }
+    for ( int i = 0; i < nx-1; i++) {
+    	x_out[i] = (i+0.5)*dx;         /// Location of cell centers in x-dir
+   	}
+    for ( int j = 0; j < ny-1; j++){
+		y_out[j] = (j+0.5)*dy;         /// Location of cell centers in y-dir
+	}
+	for ( int k = 0; k < nz-1; k++){
+		z_out[k] = (k-0.5)*dz;         /// Location of cell centers in z-dir
+	}
 
     long numcell_cent = (nx-1)*(ny-1)*(nz-1);         /// Total number of cell-centered values in domain
 
