@@ -30,13 +30,20 @@ void Solver::printProgress (float percentage)
 Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
     : itermax( UID->simParams->maxIterations )
 {
+
     rooftopFlag = UID->simParams->rooftopFlag;
-    upwindCavityFlag = UID->simParams->upwindCavityFlag;		
-    streetCanyonFlag = UID->simParams->streetCanyonFlag;		
-    streetIntersectionFlag = UID->simParams->streetIntersectionFlag;		
-    wakeFlag = UID->simParams->wakeFlag;		
-    sidewallFlag = UID->simParams->sidewallFlag;	
+    upwindCavityFlag = UID->simParams->upwindCavityFlag;
+    streetCanyonFlag = UID->simParams->streetCanyonFlag;
+    streetIntersectionFlag = UID->simParams->streetIntersectionFlag;
+    wakeFlag = UID->simParams->wakeFlag;
+    sidewallFlag = UID->simParams->sidewallFlag;
     mesh_type_flag = UID->simParams->meshTypeFlag;
+    UTMx = UID->simParams->UTMx;
+    UTMy = UID->simParams->UTMy;
+    UTMZone = UID->simParams->UTMZone;
+    domain_rotation = UID->simParams->domainRotation;
+
+    theta = (domain_rotation*pi/180.0);
 
     // Pull Domain Size information from the UrbInputData structure --
     // this is either read in from the XML files and/or potentially
@@ -72,21 +79,46 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
         // contains a vector of "sensors" (or sites).  We should
         // use this directly rather than re-doing it...
         num_sites = UID->metParams->num_sites;
-        for (int i=0; i<num_sites; i++){
-            site_blayer_flag.push_back (UID->metParams->sensors[i]->site_blayer_flag);
-            site_one_overL.push_back (UID->metParams->sensors[i]->site_one_overL);
-            site_xcoord.push_back (UID->metParams->sensors[i]->site_xcoord);
-            site_ycoord.push_back (UID->metParams->sensors[i]->site_ycoord);
-            site_wind_dir.push_back (UID->metParams->sensors[i]->site_wind_dir);
-            site_z0.push_back (UID->metParams->sensors[i]->site_z0);
-            site_z_ref.push_back (UID->metParams->sensors[i]->site_z_ref);
-            site_U_ref.push_back (UID->metParams->sensors[i]->site_U_ref);
-			if (site_blayer_flag[i] == 3){
-				site_canopy_H.push_back (UID->metParams->sensors[i]->site_canopy_H);
-				site_atten_coeff.push_back (UID->metParams->sensors[i]->site_atten_coeff);
-			}
+        site_coord_flag = (UID->metParams->site_coord_flag);
+
+        for (int i=0; i<num_sites; i++)
+        {
+
+          site_blayer_flag.push_back (UID->metParams->sensors[i]->site_blayer_flag);
+          site_one_overL.push_back (UID->metParams->sensors[i]->site_one_overL);
+          site_xcoord.push_back (UID->metParams->sensors[i]->site_xcoord);
+          site_ycoord.push_back (UID->metParams->sensors[i]->site_ycoord);
+          site_wind_dir.push_back (UID->metParams->sensors[i]->site_wind_dir);
+          site_z0.push_back (UID->metParams->sensors[i]->site_z0);
+          site_z_ref.push_back (UID->metParams->sensors[i]->site_z_ref);
+          site_U_ref.push_back (UID->metParams->sensors[i]->site_U_ref);
+
+          if (site_blayer_flag[i] == 3)
+          {
+            site_canopy_H.push_back (UID->metParams->sensors[i]->site_canopy_H);
+            site_atten_coeff.push_back (UID->metParams->sensors[i]->site_atten_coeff);
+          }
         }
-    }
+
+        if (site_coord_flag == 1 && UTMx != 0 && UTMy != 0)
+        {
+          site_UTM_x = site_xcoord[0] * acos(theta) + site_ycoord[0] * asin(theta) + UTMx;
+          site_UTM_y = site_xcoord[0] * asin(theta) + site_ycoord[0] * acos(theta) + UTMy;
+        }
+
+        if (site_coord_flag == 2 && UTMx != 0 && UTMy != 0)
+        {
+          site_UTM_x = (UID->metParams->site_UTM_x);
+          site_UTM_y = (UID->metParams->site_UTM_y);
+          site_UTM_zone = (UID->metParams->site_UTM_zone);
+        }
+        if (site_coord_flag == 3)
+        {
+          site_lat = (UID->metParams->site_lat);
+          site_lon = (UID->metParams->site_lon);
+        }
+
+      }
 
     if (UID->canopies)			// If there are canopies specified in input files
     {
@@ -103,7 +135,7 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
     if (UID->buildings)
     {
         z0 = UID->buildings->wallRoughness;
-        
+
         for (int i = 0; i < UID->buildings->buildings.size(); i++)
         {
             if (UID->buildings->buildings[i]->buildingGeometry == 1)
@@ -161,18 +193,24 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
     u.resize(numface_cent, 0.0);
     v.resize(numface_cent, 0.0);
     w.resize(numface_cent, 0.0);
-    
+
+    // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa (located in Sensor.cpp)
+    sensor->UTMConverter (site_lon, site_lat, site_UTM_x, site_UTM_y, site_UTM_zone, 1);
+
+    // Caling getConvergence function to calculate the convergence value (located in Sensor.cpp)
+    sensor->getConvergence(site_lon, site_lat, site_UTM_zone, convergence, pi);
+
     // Calling inputWindProfile function to generate initial velocity field from sensors information (located in Sensor.cpp)
-    sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0.data(), v0.data(), w0.data(), num_sites, site_blayer_flag.data(), 
+    sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0.data(), v0.data(), w0.data(), num_sites, site_blayer_flag.data(),
                              site_one_overL.data(), site_xcoord.data(), site_ycoord.data(), site_wind_dir.data(),
                              site_z0.data(), site_z_ref.data(), site_U_ref.data(), x.data(), y.data(), z.data(), canopy,
-							 site_canopy_H.data(), site_atten_coeff.data());
+                             site_canopy_H.data(), site_atten_coeff.data());
 
     mesh = 0;
     if (DTEHF)
     {
         mesh = new Mesh(DTEHF->getTris());
-        if (mesh_type_flag == 0)		
+        if (mesh_type_flag == 0)
         {
             // ////////////////////////////////
             // Stair-step (original QUIC)
@@ -193,7 +231,7 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
                 std::cout << "blocks created\n";
             }
         }
-        else						
+        else
         {
             // ////////////////////////////////
             // Cut-cell method
@@ -206,9 +244,9 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
 
 
     /////////////////////////////////////////////////////////////
-    //      Apply canopy vegetation parameterization           //   
+    //      Apply canopy vegetation parameterization           //
     /////////////////////////////////////////////////////////////
-    
+
     if (num_canopies>0)
     {
         std::vector<std::vector<std::vector<float>>> canopy_atten(nx-1, std::vector<std::vector<float>>(ny-1, std::vector<float>(nz-1,0.0)));
@@ -223,15 +261,15 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
 
         for (int i=0; i<canopies.size();i++)
         {
-            ((Canopy*)canopies[i])->defineCanopy(dx, dy, dz, nx, ny, nz, icellflag.data(), num_canopies, lu_canopy_flag, 
+            ((Canopy*)canopies[i])->defineCanopy(dx, dy, dz, nx, ny, nz, icellflag.data(), num_canopies, lu_canopy_flag,
                                                  canopy_atten, canopy_top);			// Defininf canopy bounderies
         }
-        canopy->plantInitial(nx, ny, nz, vk, icellflag.data(), z, u0, v0, canopy_atten, canopy_top, canopy_top_index, 
+        canopy->plantInitial(nx, ny, nz, vk, icellflag.data(), z, u0, v0, canopy_atten, canopy_top, canopy_top_index,
                              canopy_ustar, canopy_z0, canopy_d);		// Apply canopy parameterization
     }
-   
+
     /////////////////////////////////////////////////////////////
-    //                Apply building effect                    //   
+    //                Apply building effect                    //
     /////////////////////////////////////////////////////////////
 
     if (mesh_type_flag == 0)
@@ -239,35 +277,35 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
         for (int i = 0; i < buildings.size(); i++)
         {
             ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz, nx, ny, nz, icellflag.data(), mesh_type_flag);
-        
+
         }
-		
+
         std::cout << "Defining Solid Walls...\n";
         /// Boundary condition for building edges
         defineWalls(dx,dy,dz,nx,ny,nz, icellflag.data(), n.data(), m.data(), f.data(), e.data(), h.data(), g.data());
         std::cout << "Walls Defined...\n";
     }
     else
-    {	
+    {
         std::vector<std::vector<std::vector<float>>> x_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
         std::vector<std::vector<std::vector<float>>> y_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
         std::vector<std::vector<std::vector<float>>> z_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
-	
+
         std::vector<std::vector<int>> num_points(numcell_cent, std::vector<int>(6,0));
         std::vector<std::vector<float>> coeff(numcell_cent, std::vector<float>(6,0.0));
-	
-	
+
+
     	for (int i = 0; i < buildings.size(); i++)
     	{
             ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz, nx, ny, nz, icellflag.data(), mesh_type_flag);
-    	    ((RectangularBuilding*)buildings[i])->setCutCells(dx, dy, dz, nx, ny, nz, icellflag.data(), x_cut, y_cut, z_cut, 
+    	    ((RectangularBuilding*)buildings[i])->setCutCells(dx, dy, dz, nx, ny, nz, icellflag.data(), x_cut, y_cut, z_cut,
                                                               num_points, coeff);    /// located in RectangularBuilding.h
-    	    
+
         }
-		
+
         std::cout << "Defining Solid Walls...\n";
         /// Boundary condition for building edges
-        defineWalls(dx, dy, dz, nx, ny, nz, icellflag.data(), n.data(), m.data(), f.data(), e.data(), h.data(), g.data(), 
+        defineWalls(dx, dy, dz, nx, ny, nz, icellflag.data(), n.data(), m.data(), f.data(), e.data(), h.data(), g.data(),
                     x_cut, y_cut, z_cut, num_points, coeff);
         std::cout << "Walls Defined...\n";
     }
@@ -289,7 +327,7 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
             for (int i = 0; i < nx; i++)
             {
                 icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);		/// Lineralized index for cell centered values
-                icell_face = i + j*nx + k*nx*ny;			/// Lineralized index for cell faced values 
+                icell_face = i + j*nx + k*nx*ny;			/// Lineralized index for cell faced values
                 if (icellflag[icell_cent] == 0) {
                     u0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
                     u0[icell_face+1] = 0.0;
@@ -324,9 +362,9 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
 
 
 
-void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, int* icellflag, float* n, float* m, float* f, 
+void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, int* icellflag, float* n, float* m, float* f,
 						float* e, float* h, float* g, std::vector<std::vector<std::vector<float>>> x_cut,
-						std::vector<std::vector<std::vector<float>>>y_cut,std::vector<std::vector<std::vector<float>>> z_cut, 
+						std::vector<std::vector<std::vector<float>>>y_cut,std::vector<std::vector<std::vector<float>>> z_cut,
 						std::vector<std::vector<int>> num_points, std::vector<std::vector<float>> coeff)
 
 {
@@ -347,7 +385,7 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
     	for (int j = 1; j < ny-2; j++){
 	    	for (int i = 1; i < nx-2; i++){
 				icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-	
+
 				if (icellflag[icell_cent]==7){
 					for (int ii=0; ii<6; ii++){
 						if (num_points[icell_cent][ii] !=0){
@@ -373,7 +411,7 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
 	    for (int j = 1; j < ny-2; j++){
 	   		for (int i = 1; i < nx-2; i++){
 				icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-	
+
 				if (icellflag[icell_cent]==7){
 					for (int ii=0; ii<6; ii++){
 						if (num_points[icell_cent][ii] !=0){
@@ -411,7 +449,7 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
     				int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
 					for (int ii=0; ii<6; ii++){
                     	outdata3 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] << "\t \t"<< "\t \t" << angle[icell_cent][ii][0] <<"\t \t"<< "\t \t"<<angle[icell_cent][ii][1]<<"\t \t"<< "\t \t"<<angle[icell_cent][ii][2]<< "\t \t"<< "\t \t" << angle[icell_cent][ii][3] <<"\t \t"<< "\t \t"<<angle[icell_cent][ii][4]<<"\t \t"<< "\t \t"<<angle[icell_cent][ii][5]<<"\t \t"<<icellflag[icell_cent]<< endl;
-					}   
+					}
                 }
             }
         }
@@ -423,7 +461,7 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
     	for (int j = 1; j < ny-2; j++){
 	    	for (int i = 1; i < nx-2; i++){
 				icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-	
+
 				if (icellflag[icell_cent]==7){
 					for (int ii=0; ii<6; ii++){
 						if (num_points[icell_cent][ii] !=0){
@@ -451,9 +489,9 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
 								y_cut[icell_cent][ii][jj] = ycut_temp[imax[num_points[icell_cent][ii]-1-jj]];
 								z_cut[icell_cent][ii][jj] = zcut_temp[imax[num_points[icell_cent][ii]-1-jj]];
 								angle[icell_cent][ii][jj] = angle_temp[imax[num_points[icell_cent][ii]-1-jj]];
-								
+
 							}
-							
+
 						}
 					}
 				}
@@ -476,7 +514,7 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
     				int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
 					for (int ii=0; ii<6; ii++){
                     	outdata4 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] << "\t \t"<< "\t \t" << angle[icell_cent][ii][0] <<"\t \t"<< "\t \t"<<angle[icell_cent][ii][1]<<"\t \t"<< "\t \t"<<angle[icell_cent][ii][2]<< "\t \t"<< "\t \t" << angle[icell_cent][ii][3] <<"\t \t"<< "\t \t"<<angle[icell_cent][ii][4]<<"\t \t"<< "\t \t"<<angle[icell_cent][ii][5]<<"\t \t"<<icellflag[icell_cent]<< endl;
-					}   
+					}
                 }
             }
         }
@@ -489,7 +527,7 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
 			for (int i = 1; i < nx-2; i++)
 			{
 				icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-	
+
 				if (icellflag[icell_cent]==7)
 				{
 					for (int ii=0; ii<6; ii++)
@@ -501,17 +539,17 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
 							for (int jj=0; jj<num_points[icell_cent][ii]-1; jj++)
 							{
 								coeff[icell_cent][ii] += (0.5*(y_cut[icell_cent][ii][jj+1]+y_cut[icell_cent][ii][jj])*
-														(z_cut[icell_cent][ii][jj+1]-z_cut[icell_cent][ii][jj]))/(dy*dz) + 
+														(z_cut[icell_cent][ii][jj+1]-z_cut[icell_cent][ii][jj]))/(dy*dz) +
 														(0.5*(x_cut[icell_cent][ii][jj+1]+x_cut[icell_cent][ii][jj])*
-														(z_cut[icell_cent][ii][jj+1]-z_cut[icell_cent][ii][jj]))/(dx*dz) + 
+														(z_cut[icell_cent][ii][jj+1]-z_cut[icell_cent][ii][jj]))/(dx*dz) +
 														(0.5*(x_cut[icell_cent][ii][jj+1]+x_cut[icell_cent][ii][jj])*
 														(y_cut[icell_cent][ii][jj+1]-y_cut[icell_cent][ii][jj]))/(dx*dy);
 							}
 
 				coeff[icell_cent][ii] +=(0.5*(y_cut[icell_cent][ii][0]+y_cut[icell_cent][ii][num_points[icell_cent][ii]-1])*
-									(z_cut[icell_cent][ii][0]-z_cut[icell_cent][ii][num_points[icell_cent][ii]-1]))/(dy*dz)+ 
+									(z_cut[icell_cent][ii][0]-z_cut[icell_cent][ii][num_points[icell_cent][ii]-1]))/(dy*dz)+
 									(0.5*(x_cut[icell_cent][ii][0]+x_cut[icell_cent][ii][num_points[icell_cent][ii]-1])*
-									(z_cut[icell_cent][ii][0]-z_cut[icell_cent][ii][num_points[icell_cent][ii]-1]))/(dx*dz)+ 
+									(z_cut[icell_cent][ii][0]-z_cut[icell_cent][ii][num_points[icell_cent][ii]-1]))/(dx*dz)+
 									(0.5*(x_cut[icell_cent][ii][0]+x_cut[icell_cent][ii][num_points[icell_cent][ii]-1])*
 									(y_cut[icell_cent][ii][0]-y_cut[icell_cent][ii][num_points[icell_cent][ii]-1]))/(dx*dy);
 
@@ -525,30 +563,30 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
 					g[icell_cent] = coeff[icell_cent][3];
 					n[icell_cent] = coeff[icell_cent][4];
 					m[icell_cent] = coeff[icell_cent][5];
-				}	
+				}
 
-				if (icellflag[icell_cent] !=0) 
+				if (icellflag[icell_cent] !=0)
 				{
-					
+
 					/// Wall bellow
-					if (icellflag[icell_cent-(nx-1)*(ny-1)]==0) 
+					if (icellflag[icell_cent-(nx-1)*(ny-1)]==0)
 					{
-			    		n[icell_cent] = 0.0; 
+			    		n[icell_cent] = 0.0;
 					}
 					/// Wall above
-					if (icellflag[icell_cent+(nx-1)*(ny-1)]==0) 
+					if (icellflag[icell_cent+(nx-1)*(ny-1)]==0)
 					{
 		    			m[icell_cent] = 0.0;
 					}
 					/// Wall in back
 					if (icellflag[icell_cent-1]==0)
 					{
-						f[icell_cent] = 0.0; 
+						f[icell_cent] = 0.0;
 					}
 					/// Wall in front
 					if (icellflag[icell_cent+1]==0)
 					{
-						e[icell_cent] = 0.0; 
+						e[icell_cent] = 0.0;
 					}
 					/// Wall on right
 					if (icellflag[icell_cent-(nx-1)]==0)
@@ -558,16 +596,16 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
 					/// Wall on left
 					if (icellflag[icell_cent+(nx-1)]==0)
 					{
-						g[icell_cent] = 0.0; 
+						g[icell_cent] = 0.0;
 					}
 				}
-			}    
+			}
 		}
 	}
 }
 
 
-void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, int* icellflag, float* n, float* m, float* f, 
+void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, int* icellflag, float* n, float* m, float* f,
 						float* e, float* h, float* g)
 
 {
@@ -580,10 +618,10 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
 			{
 				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
 				if (icellflag[icell_cent] !=0) {
-					
+
 					/// Wall bellow
 					if (icellflag[icell_cent-(nx-1)*(ny-1)]==0) {
-			    		n[icell_cent] = 0.0; 
+			    		n[icell_cent] = 0.0;
 					}
 					/// Wall above
 					if (icellflag[icell_cent+(nx-1)*(ny-1)]==0) {
@@ -591,11 +629,11 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
 					}
 					/// Wall in back
 					if (icellflag[icell_cent-1]==0){
-						f[icell_cent] = 0.0; 
+						f[icell_cent] = 0.0;
 					}
 					/// Wall in front
 					if (icellflag[icell_cent+1]==0){
-						e[icell_cent] = 0.0; 
+						e[icell_cent] = 0.0;
 					}
 					/// Wall on right
 					if (icellflag[icell_cent-(nx-1)]==0){
@@ -603,11 +641,10 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
 					}
 					/// Wall on left
 					if (icellflag[icell_cent+(nx-1)]==0){
-						g[icell_cent] = 0.0; 
+						g[icell_cent] = 0.0;
 					}
 				}
 			}
 		}
-	}	
-}		
-
+	}
+}

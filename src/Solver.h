@@ -29,8 +29,8 @@ using namespace std;
 #define MAX_S(x,y) ((x) > (y) ? (x) : (y))
 
 /**< \class Solver
-* This class declares and defines variables required for both solvers 
-* 
+* This class declares and defines variables required for both solvers
+*
 * There are several special member variables that should be accessible
 * to all solvers.  They are declared in this class.
 */
@@ -53,11 +53,11 @@ protected:
 
     const float vk = 0.4;			/// Von Karman's
                                                 /// constant
-    
+
 
     // SOLVER-based parameters
     int itermax;		/**< Maximum number of iterations */
-    
+
     // General QUIC Domain Data needed in solvers
     int nx, ny, nz;		/**< number of cells */
     float dx, dy, dz;		/**< Grid resolution*/
@@ -80,11 +80,19 @@ protected:
     std::vector<float> site_canopy_H;
     std::vector<float> site_atten_coeff;
 
+    float site_UTM_x, site_UTM_y, site_lat, site_lon;
+    int site_coord_flag, site_UTM_zone;
+
+    float UTMx, UTMy;       /**< Origin of QUIC domain UTM coordinates */
+    int UTMZone;            /**< Domain UTM zone */
+    float domain_rotation, theta;
+    float convergence;
+
     int num_canopies;				/**< number of canopies */
-    std::vector<float> atten;		/**< Attenuation coefficient */	
+    std::vector<float> atten;		/**< Attenuation coefficient */
     int landuse_flag;
     int landuse_veg_flag;
-    int landuse_urb_flag;		
+    int landuse_urb_flag;
     int lu_canopy_flag;
     std::vector<Building*> canopies;
     Canopy* canopy;
@@ -97,7 +105,7 @@ protected:
     std::vector<double> u0,v0,w0;
 
     std::vector<double> R;           /**< Divergence of initial velocity field */
-  
+
     /// Declaration of final velocity field components (u,v,w)
     std::vector<double> u,v,w;
     std::vector<double> u_out,v_out,w_out;
@@ -129,7 +137,7 @@ protected:
     long numcell_cent;		/**< Total number of cell-centered values in domain */
     long numface_cent;		/**< Total number of face-centered values in domain */
     int icell_face;		/**< cell-face index */
-    int icell_cent;		/**< cell-center index */  
+    int icell_cent;		/**< cell-center index */
 
     std::vector<std::vector<std::vector<float>>> x_cut;
     std::vector<std::vector<std::vector<float>>> y_cut;
@@ -151,24 +159,24 @@ public:
 
     /**
      * @brief
-     * 
+     *
      * This function takes in values necessary for cut-cell method for
      * buildings and then calculates the area fraction coefficients,
      * sets them to approperiate solver coefficients and finally sets
      * related coefficients to zero to define solid walls for non
      * cut-cells.
      */
-    void defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, int* icellflag, float* n, float* m, 
+    void defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, int* icellflag, float* n, float* m,
                      float* f, float* e, float* h, float* g, std::vector<std::vector<std::vector<float>>> x_cut,
-                     std::vector<std::vector<std::vector<float>>>y_cut,std::vector<std::vector<std::vector<float>>> z_cut, 
+                     std::vector<std::vector<std::vector<float>>>y_cut,std::vector<std::vector<std::vector<float>>> z_cut,
                      std::vector<std::vector<int>> num_points, std::vector<std::vector<float>> coeff);
     /**
-     * @brief 
-     * 
+     * @brief
+     *
      * This function takes in the icellflags set by setCellsFlag
      * function for stair-step method and sets related coefficients to
      * zero to define solid walls.
      */
-    void defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, int* icellflag, float* n, float* m, 
+    void defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, int* icellflag, float* n, float* m,
                      float* f, float* e, float* h, float* g);
 };
