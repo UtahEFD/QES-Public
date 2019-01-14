@@ -282,7 +282,7 @@ void CPUSolver::outputNetCDF( NetCDFData* netcdfDat )
 
     long numcell_cent = (nx-1)*(ny-1)*(nz-1);         /// Total number of cell-centered values in domain
 
-    netcdfDat->getData(x.data(),y.data(),z.data(),u.data(),v.data(),w.data(),nx,ny,nz);
+    netcdfDat->getDataFace(x.data(),y.data(),z.data(),u.data(),v.data(),w.data(),nx,ny,nz);
     netcdfDat->getDataICell(icellflag.data(), x_out.data(), y_out.data(), z_out.data(), nx-1, ny - 1, nz - 1, numcell_cent);
     
     /*    if (DTEHF)

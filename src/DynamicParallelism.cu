@@ -414,5 +414,5 @@ void DynamicParallelism::outputDataFile()
 
 void DynamicParallelism::outputNetCDF(  NetCDFData* netcdfDat )
 {
-    netcdfDat->getData(x.data(),y.data(),z.data(), u.data(), v.data(), w.data(), nx,ny,nz);
+    netcdfDat->getDataFace(x.data(),y.data(),z.data(), u.data(), v.data(), w.data(), nx,ny,nz);
 }

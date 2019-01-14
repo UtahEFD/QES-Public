@@ -271,7 +271,7 @@ bool NetCDFData::outputCellResultsDifference(NetCDFData* compare, std::string fi
         v[i] -= compare->v[i];
         w[i] -= compare->w[i];
     }
-    return outputCellResults(fileName);
+    return outputCellFaceResults(fileName);
 }
 
 bool NetCDFData::outputCutCellFlags(std::string fileName)
