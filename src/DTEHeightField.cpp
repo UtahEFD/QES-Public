@@ -328,19 +328,19 @@ void DTEHeightField::outputOBJ(std::string s)
     }
 
     tris.push_back(tVs);
-    printProgress( ( (float)i / (float)m_triList.size()) / 2.0f );
+    printProgress( ( (float)i / (float)m_triList.size()) * (9.0f / 10.0f) );
   }
 
   for(int i = 0; i < verts.size(); i++)
   {
     file << "v " << (*(verts[i]))[0] << " " << (*(verts[i]))[1] << " " << (*(verts[i]))[2] << "\n";
-    printProgress( ( (float)i / (float)m_triList.size()) / 4.0f + 0.5f );
+    printProgress( ( (float)i / (float)m_triList.size()) / 20.0f + 0.9f );
   }
 
   for(int i = 0; i < tris.size(); i++)
   {
     file << "f " << (*(tris[i]))[0] << " " << (*(tris[i]))[1] << " " << (*(tris[i]))[2] << "\n";
-    printProgress( ( (float)i / (float)m_triList.size()) / 4.0f + 0.75f);
+    printProgress( ( (float)i / (float)m_triList.size()) / 20.0f + 0.95f);
   }
 
   file.close();

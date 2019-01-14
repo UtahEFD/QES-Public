@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+ * This is child class of the solver that runs the convergence
+ * algorithm using Dynamic Parallelism on a single GPU.
+ */
+
 #include "URBInputData.h"
 #include "Solver.h"
 #include "NetCDFData.h"
@@ -40,7 +45,6 @@ public:
     }
 
     virtual void solve(bool solveWind);
-
     void outputDataFile();
     void outputNetCDF( NetCDFData* netcdfDat );
 

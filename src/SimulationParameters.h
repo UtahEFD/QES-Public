@@ -1,7 +1,11 @@
 #pragma once
 
-#include "util/ParseInterface.h"
+/*
+ * This function contains variables that define information
+ * necessary for running the simulation.
+ */
 
+#include "util/ParseInterface.h"
 #include "Vector3.h"
 
 class SimulationParameters : public ParseInterface

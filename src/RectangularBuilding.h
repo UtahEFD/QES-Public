@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+ * This class represents a building that is a block with a length width height 
+ * and origin position. Rectangular buildigns may also have a rotation.
+ */
+
 #include "util/ParseInterface.h"
 #include "NonPolyBuilding.h"
 
@@ -55,6 +60,7 @@ public:
 		parsePrimitive<float>(true, W, "width");
 
 	}
+
 
 	void setCutCells(float dx, float dy, float dz, int nx, int ny, int nz, int *icellflag, 
 					 std::vector<std::vector<std::vector<float>>> &x_cut,std::vector<std::vector<std::vector<float>>> &y_cut, 

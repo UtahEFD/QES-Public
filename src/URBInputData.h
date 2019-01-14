@@ -1,7 +1,11 @@
 #pragma once
 
-#include "util/ParseInterface.h"
+/*
+ * A collection of data read from an XML. This contains
+ * all root level information extracted from the xml.
+ */
 
+#include "util/ParseInterface.h"
 #include "SimulationParameters.h"
 #include "FileOptions.h"
 #include "MetParams.h"

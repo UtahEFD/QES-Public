@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+ * This class contains data and variables that set flags and
+ * settngs read from the xml.
+ */
+
 #include "util/ParseInterface.h"
 
 class FileOptions : public ParseInterface

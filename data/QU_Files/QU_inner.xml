@@ -1,6 +1,6 @@
-<simulationParameters> 													<!-- Parameters needed for simulation -->
-	<domain> 50 25 40 </domain> 									<!-- Domain cell numbers in each direction, x, y and z-->
-	<cellSize> 1.0 1.0 0.25 </cellSize> 									<!-- Cell size (grid size) in Meters-->
+<simulationParameters>
+	<domain> 40 40 100 </domain>
+	<cellSize> 40.0 40.0 5.0 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements> 				<!-- Number of time steps-->
 	<rooftopFlag> 2 </rooftopFlag> 											<!-- Rooftop flag (0-none, 1-log profile, 2-vortex) -->

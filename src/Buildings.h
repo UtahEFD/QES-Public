@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+ * This class contains data and variables that pretain to all buildings
+ * along with a list of all buildings pulled from an input xml file
+ */
+
 #include "util/ParseInterface.h"
 #include "Building.h"
 #include "RectangularBuilding.h"

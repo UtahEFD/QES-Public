@@ -1,5 +1,12 @@
 #pragma once
 
+/* 
+ * This is an abstract class that is the basis for the windfield
+ * convergence algorithm. This class has information needed to run
+ * the simulation as well as functions widely used by different solver
+ * methods
+ */
+
 #include "URBInputData.h"
 #include "SimulationParameters.h"
 #include "Buildings.h"
@@ -147,6 +154,12 @@ protected:
     std::vector<std::vector<float>> coeff;
 
 
+    /*
+     * This prints out the current amount that a process
+     * has finished with a progress bar
+     *
+     * @param percentage -the amount the task has finished
+     */
     void printProgress (float percentage);
 
 public:
