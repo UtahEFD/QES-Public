@@ -357,7 +357,7 @@ void DTEHeightField::printProgress (float percentage)
 
 
 
-#define CELL(i,j,k) ((i) + (j) * (nx) + (k) * (nx) * (ny))
+#define CELL(i,j,k) ((i) + (j) * (nx - 1) + (k) * (nx - 1) * (ny - 1))
 #define CLAMP(low, high, x) ( (x) < (low) ? (low) : ( (x) > (high) ? (high) : (x) ))
 
 std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy, float dz)
@@ -368,8 +368,8 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
 
   std::vector<int> cutCells;
 
-  for (int i = 0; i < nx; i++)
-    for (int j = 0; j < ny; j++)
+  for (int i = 0; i < nx - 1; i++)
+    for (int j = 0; j < ny - 1; j++)
     {
 
       //all work here is done for each column of cells in the z direction from the xy plane.
@@ -412,7 +412,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
 		}
 	}
 
-  for (int k = 0; k < nz; k++)
+  for (int k = 1; k < nz - 1; k++)
   {
     float cellBot = k * dz;
     float cellTop = cellBot + dz;

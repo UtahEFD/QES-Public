@@ -242,7 +242,7 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
             // ////////////////////////////////
 
             // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
-            cut_cell->calculateCoefficient(cells, DTEHF, nx, ny, nz, dx, dy, dz, n, m, f, e, h, g, pi, icellflag);
+            cut_cell.calculateCoefficient(cells, DTEHF, nx, ny, nz, dx, dy, dz, n, m, f, e, h, g, pi, icellflag);
         }
     }
 

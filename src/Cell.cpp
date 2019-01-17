@@ -87,6 +87,7 @@ Cell::Cell(  std::vector< Vector3<float> >& points,  std::vector< Edge< int > >&
 			for (int j = 0; j < 2; j++)
 				if (intermed[firstC][secondC][j] != -1)
 					fluidFacePoints[i].push_back(points[intermed[firstC][secondC][j]]);
+
 			if (fluidFacePoints[i].size() <= 2)
 				fluidFacePoints[i].clear();
 		}
@@ -104,5 +105,7 @@ Cell::Cell(  std::vector< Vector3<float> >& points,  std::vector< Edge< int > >&
             	if (first != 1 || second != 3)
             		if (intermed[first][second][i - 4] != -1)
             			fluidFacePoints[i].push_back(points[intermed[first][second][i - 4]]);
+        if (fluidFacePoints[i].size() <= 2)
+			fluidFacePoints[i].clear();
 	}
 }

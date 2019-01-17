@@ -139,7 +139,7 @@ protected:
 
     Cell* cells;
     DTEHeightField* DTEHF;
-    Cut_cell* cut_cell;
+    Cut_cell cut_cell;
 
     long numcell_cent;		/**< Total number of cell-centered values in domain */
     long numface_cent;		/**< Total number of face-centered values in domain */

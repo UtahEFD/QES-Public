@@ -15,13 +15,10 @@ void Cut_cell::calculateCoefficient(Cell* cells, DTEHeightField* DTEHF, int nx, 
 	std::vector< Vector3<float>> cut_points;
 	Vector3 <float> location;
 
-	cells = 0;
-	if (DTEHF)
-		{
-			cells = new Cell[(nx-1)*(ny-1)*(nz-1)];
-			cutcell_index = DTEHF->setCells(cells, nx - 1, ny - 1, nz - 1, dx, dy, dz);
 
-		}
+	cells = new Cell[(nx-1)*(ny-1)*(nz-1)];
+	cutcell_index = DTEHF->setCells(cells, nx, ny, nz, dx, dy, dz);
+
 	std::cout<<"number of cut cells:" << cutcell_index.size() << "\n";
 
 	for (int i=0; i<nx-1; i++)
@@ -40,8 +37,10 @@ void Cut_cell::calculateCoefficient(Cell* cells, DTEHeightField* DTEHF, int nx, 
 		}
 	} 
 
+	//for all cut cells
 	for (int j=0; j<cutcell_index.size(); j++)
 	{
+		//for every face
 		for (int i=0; i<6; i++)
 		{
 			cut_points.clear();
@@ -52,12 +51,15 @@ void Cut_cell::calculateCoefficient(Cell* cells, DTEHeightField* DTEHF, int nx, 
 				count += 1;
 			}
 
-			if (cut_points.size()>2){
+			//if valid
+			if (cut_points.size()>2)
+			{
+				//place points in local cell space
 				for (int jj =0; jj<cut_points.size(); jj++)
 				{
 					for (int l=0; l<3; l++)
 					{
-						cut_points[jj][l] = cut_points[jj][l]-location[l];
+						cut_points[jj][l] = cut_points[jj][l] - location[l];
 					}
 
 				}	
