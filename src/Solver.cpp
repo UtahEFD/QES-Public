@@ -227,7 +227,7 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
                     for (int j = 0; j < ny; j++)
                     {      //get height, then add half a cell, if the height exceeds half of a cell partially, it will round up.
                         float heightToMesh = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f) + 0.5f * dz;
-                        for (int k = 0; k < (int)(heightToMesh / dz); k++)
+                        for (int k = 1; k < (int)(heightToMesh / dz)+1; k++)
                             buildings.push_back(new RectangularBuilding(i * dx, j * dy, k * dz, dx, dy, dz));
                     }
                     printProgress( (float)i / (float)nx);
