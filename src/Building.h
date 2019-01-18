@@ -1,10 +1,12 @@
 #pragma once
 
+/*
+ * This class is an abstract representation of a building. It holds
+ * the basic information and functions that every building should have.
+*/
+
 #include "util/ParseInterface.h"
 
-/*
- *Placeholder class for parsed building info in the xml
- */
 class Building : public ParseInterface
 {
 protected:
@@ -12,16 +14,15 @@ protected:
 public:
 	int groupID;
 	int buildingType, buildingGeometry;
-	float height;
-	float baseHeight, baseHeightActual; //zfo
-	float centroidX;
-	float centroidY;
-	int buildingDamage = 0;
-	float atten = 0;
-	float rotation = 0;
-	float Lf, Lr, Weff, Leff, Wt, Lt;
-	int iStart, iEnd, jStart, jEnd, kStart, kEnd;
-	int buildingRoof = 0;
+	float x_start;
+	float y_start;
+	float L;
+	float W;
+	int i_start, i_end, j_start, j_end, k_end,k_start;
+	int i_cut_start, i_cut_end, j_cut_start, j_cut_end, k_cut_end;
+	float H; 
+	float baseHeight, baseHeightActual; 
+
 
 	virtual void parseValues() = 0;
 };

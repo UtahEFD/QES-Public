@@ -30,14 +30,14 @@ URBInputData* parseXMLTree(const std::string fileName);
 
 int main(int argc, char *argv[])
 {
-    std::string Revision = "0"; 
+    std::string Revision = "0";
     // CUDA-Urb - Version output information
     std::cout << "cudaUrb " << "0.8.0" << std::endl;
-    
+
     // ///////////////////////////////////
     // Parse Command Line arguments
     // ///////////////////////////////////
-    
+
     // Command line arguments are processed in a uniform manner using
     // cross-platform code.  Check the URBArgs class for details on
     // how to extend the arguments.
@@ -48,13 +48,13 @@ int main(int argc, char *argv[])
     // Read and Process any Input for the system
     // ///////////////////////////////////
 
-    // Parse the base XML QUIC file -- contains simulation parameters 
+    // Parse the base XML QUIC file -- contains simulation parameters
     URBInputData* UID = parseXMLTree(arguments.quicFile);
     if ( !UID ) {
         std::cerr << "QUIC Input file: " << arguments.quicFile << " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
-    
+
     DTEHeightField* DTEHF = 0;
     if (arguments.demFile != "") {
         DTEHF = new DTEHeightField(arguments.demFile, (*(UID->simParams->grid))[0], (*(UID->simParams->grid))[1] );
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
         }
         else {
             std::cerr << "Error: No dem file specified as input\n";
-            return -1;				
+            return -1;
         }
     }
 
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 
     // //////////////////////////////////////////
     //
-    // Run the CUDA-URB Solver 
+    // Run the CUDA-URB Solver
     //
     // //////////////////////////////////////////
     Solver* solver;
@@ -96,10 +96,11 @@ int main(int argc, char *argv[])
         std::cerr << "Error: invalid solve type\n";
         exit(EXIT_FAILURE);
     }
-    
+
+
     // Run urb simulation code
     solver->solve( !arguments.solveWind);
-    
+
 
     // /////////////////////////////
     // Output the various files requested from the simulation run
@@ -112,26 +113,27 @@ int main(int argc, char *argv[])
 
 
     if (!arguments.solveWind) {
-        
+
         solver->outputNetCDF( netcdfDat );
-        
+	solver->outputDataFile ();
+
         if (!netcdfDat->outputCellFaceResults(arguments.netCDFFile))
         {
             cerr << "ERROR: output is broken\n";
             return -1;
         }
     }
-    
 
-    if (arguments.iCellOut)
+
+    if (arguments.iCellOut != "")
     {
-        if (!netcdfDat->outputICellFlags("iCellValues.nc"))
+        if (!netcdfDat->outputICellFlags(arguments.iCellOut))
         {
             cerr << "ERROR: iCell is broken\n";
             return -2;
         }
         if (DTEHF)
-            if (!netcdfDat->outputCutCellFlags("cutCellFlags.nc"))
+            if (!netcdfDat->outputCutCellFlags(arguments.iCellOut))
             {
                 cerr << "ERROR: cutCell is broken\n";
                 return -3;
@@ -145,7 +147,7 @@ URBInputData* parseXMLTree(const std::string fileName)
 {
 	pt::ptree tree;
 
-	try 
+	try
 	{
 		pt::read_xml(fileName, tree);
 	}
@@ -157,8 +159,8 @@ URBInputData* parseXMLTree(const std::string fileName)
 
 	URBInputData* xmlRoot = new URBInputData();
         xmlRoot->parseTree( tree );
-        
-//	try 
+
+//	try
 //	{
 //		ParseInterface::parseTree(tree, xmlRoot);
 //	}
@@ -167,6 +169,6 @@ URBInputData* parseXMLTree(const std::string fileName)
 //		std::cerr  << "ERROR: " << p.what() << std::endl;
 //		xmlRoot = 0;
 //	}
-        
+
 	return xmlRoot;
 }

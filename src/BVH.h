@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+ * This class is a Bounding Volume Hierarchy data structure. This
+ * organizes Triangles spacially allowing for fast access based on location.
+ */
+
 #include "Triangle.h"
 #include <vector>
 
@@ -7,13 +12,7 @@
 #define GETMAX(x,y) ( (x) > (y) ? (x) : (y))
 
 using std::vector;
-/*
- *This class is a bounding volume hierarchy for triangles. BVHs are
- *data structures where objects are stored spacially, this allows for 
- *fast access (log2(n)) time to any individual triangle. Objects are stored
- *in a tree structure where intermediate nodes bound the area covered by the
- *leaves.
- */
+
 class BVH
 {
 private:
@@ -23,12 +22,13 @@ private:
 	bool isLeaf;
 	Triangle* tri;
 
+
 	/*
-	 *Sorts a BVH based on the criteria given in type. This lets us
-	 *sort by x dimension on one tier, and y on the next which leads to
-	 *better seperation and less search time.
-	 *@param list -a list of all BVH that are being sorted
-	 *@param type -identifier for what dimension the list is being sorted
+	 * This function sorts Bounding Boxes by recursively dividing them 
+	 * apart, and then putting them in order and then merging the lists.
+	 *
+	 * @param list -the list of bounding boxes that should be sorted
+	 * @param type -identifier for what dimension the boxes are being sorted by
 	 */
 	static void mergeSort(std::vector<BVH *>& list, const int type);
 
@@ -36,45 +36,44 @@ public:
 	float xmin, xmax, ymin, ymax, zmin, zmax;
 
 	/*
-	 *creates a bounding volume hierarchy by taking in two
-	 *bounding volumes and assigning them to the left and right
-	 *child of this box. The region this contains is the union
-	 *of the child boxes.
-	 *@param l -BVH to be assigned to the left child
-	 *@param r -BVH to be assigned to the right child
+	 * Creates a bounding box encasing two child bounding boxes
+	 *
+	 * @param l -left child box
+	 * @param r -right child box
 	 */
 	BVH(BVH* l, BVH* r);
 
 	/*
-	 *Creates a BVH leaf node.
-	 *@param t -triangle to be encased by the bounding box
+	 * Creates a bounding box encasing a triangle, this marks the box
+	 * as a leaf meaning it is at the bottom of the tree.
+	 *
+	 * @param t -The triangle to be put in the heirarchy
 	 */
 	BVH(Triangle* t);
-
+	
 	/*
-	 *Creates a BVH by sorting the a list of BVH leaves, assigning them
-	 *to the left and right children. This runs recursively until the leaves
-	 *have been hit. Height indicates what level of the tree is being created
-	 *which is used for sorting dimensionally.
-	 *@param m -list of BVH leaves
-	 *@param height -level of the BVH currently being created (root is 0)
+	 * Creates a bounding volume heirarchy from a list of bounding boxes.
+	 * height is used to determine the spacial ordering.
+	 *
+	 * @param m -list of bounding boxes
+	 * @param height -current depth in the tree
 	 */
 	BVH(std::vector<BVH *> m, int height);
 
 	/*
-	 *Queries the BVH with a point in the x y plane and returns the distance
-	 *to the farthest triangle that exists in the positive z direction. If the
-	 *current BVH is a leaf, it returns the height, if it bounds sub-boxes it
-	 *recursively calls this operation on it's children and compares the return values.
-	 *@param x -query location in the x direction
-	 *@param y -query location in the y direction
+	 * Takes a point in the x y plane and finds what triangle is directly above
+	 * it. It returns how many meters exist between the point and the ground
+	 *
+	 * @param x -x position
+	 * @param y -y position
+	 * @return distance from the point to the triangle directly above it
 	 */
 	float heightToTri(float x, float y);
 
 	/*
-	 *method that creates a BVH structure from a list of triangles.
-	 *@param tris -list of triangles to be enclosed by the BVH
-	 *@return -the root of the BVH
+	 *method that creates a BVA structure from a vector of models
+	 *
+	 * @param tris -list of triangles that will be placed in the structure
 	 */
 	static BVH* createBVH(const std::vector<Triangle*> tris);
 };

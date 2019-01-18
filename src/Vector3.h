@@ -1,5 +1,10 @@
 #pragma once
 
+/*
+ * This is a template class that holds 3 values. These values
+ * can be accessed as if this was an array.
+ */
+
 #include "util/ParseInterface.h"
 #include <type_traits>
 
@@ -40,11 +45,23 @@ public:
 		parseTaglessValues<T>(values);
 	}
 
+	/*
+	 * accesses the value at position i
+	 *
+	 * @param i -the index of the value to return
+	 * @return a reference to the value stored at i
+	 */
 	T& operator[](const int i)
 	{
 		return values[i%3];
 	}
 
+	/*
+	 * returns if two Vector3 values of the same type are equal
+	 *
+	 * @param v -the vector3 to compare with this
+	 * @return if values at index 0,1,2 are all equal with their counterparts
+	 */
 	bool operator==(const Vector3<T>& v)
 	{
 		if (std::is_same<T,float>::value || std::is_same<T,double>::value)

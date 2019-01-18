@@ -328,19 +328,19 @@ void DTEHeightField::outputOBJ(std::string s)
     }
 
     tris.push_back(tVs);
-    printProgress( ( (float)i / (float)m_triList.size()) / 2.0f );
+    printProgress( ( (float)i / (float)m_triList.size()) * (9.0f / 10.0f) );
   }
 
   for(int i = 0; i < verts.size(); i++)
   {
     file << "v " << (*(verts[i]))[0] << " " << (*(verts[i]))[1] << " " << (*(verts[i]))[2] << "\n";
-    printProgress( ( (float)i / (float)m_triList.size()) / 4.0f + 0.5f );
+    printProgress( ( (float)i / (float)m_triList.size()) / 20.0f + 0.9f );
   }
 
   for(int i = 0; i < tris.size(); i++)
   {
     file << "f " << (*(tris[i]))[0] << " " << (*(tris[i]))[1] << " " << (*(tris[i]))[2] << "\n";
-    printProgress( ( (float)i / (float)m_triList.size()) / 4.0f + 0.75f);
+    printProgress( ( (float)i / (float)m_triList.size()) / 20.0f + 0.95f);
   }
 
   file.close();
@@ -357,7 +357,7 @@ void DTEHeightField::printProgress (float percentage)
 
 
 
-#define CELL(i,j,k) ((i) + (j) * (nx) + (k) * (nx) * (ny))
+#define CELL(i,j,k) ((i) + (j) * (nx - 1) + (k) * (nx - 1) * (ny - 1))
 #define CLAMP(low, high, x) ( (x) < (low) ? (low) : ( (x) > (high) ? (high) : (x) ))
 
 std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy, float dz) const
@@ -368,8 +368,8 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
 
   std::vector<int> cutCells;
 
-  for (int i = 0; i < nx; i++)
-    for (int j = 0; j < ny; j++)
+  for (int i = 0; i < nx - 1; i++)
+    for (int j = 0; j < ny - 1; j++)
     {
 
       //all work here is done for each column of cells in the z direction from the xy plane.
@@ -400,24 +400,36 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
 {
    float coordsMin, coordsMax;
    coordsMin = coordsMax = corners[0][2];
-   for (int l = 1; l <= 3; l++)
-     if (coordsMin > corners[l][2])
-        coordsMin = corners[l][2];
-     else if (coordsMax < corners[l][2])
-      coordsMax = corners[l][2];
+	for (int l = 1; l <= 3; l++)
+	{
+		if (coordsMin > corners[l][2])
+		{
+			coordsMin = corners[l][2];
+		}
+		else if (coordsMax < corners[l][2])
+		{
+			coordsMax = corners[l][2];
+		}
+	}
 
-  for (int k = 0; k < nz; k++)
+  for (int k = 1; k < nz - 1; k++)
   {
     float cellBot = k * dz;
     float cellTop = cellBot + dz;
 
     if ( cellTop < coordsMin)
-      cells[CELL(i,j,k)] = Cell(terrain_CT);
+      cells[CELL(i,j,k)] = Cell(terrain_CT, Vector3<float>(corners[0][0], corners[0][1], cellBot), 
+                                            Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz));
     else if ( cellBot > coordsMax)
-      cells[CELL(i,j,k)] = Cell(air_CT);
+      cells[CELL(i,j,k)] = Cell(air_CT, Vector3<float>(corners[0][0], corners[0][1], cellBot), 
+                                            Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz));
     else
     {
       cutCells.push_back(CELL(i,j,k));
+	 /* std::cout << "i:" << i <<"\n";
+	  std::cout << "j:" << j <<"\n";
+	  std::cout << "k:" << k <<"\n";
+	  std::cout << "Number of cutcells:" << cutCells.size()<<"\n";*/
       std::vector< Vector3<float> > pointsInCell;
       std::vector< Edge< int > > edgesInCell;
 
@@ -673,7 +685,6 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
             }
 
 
-
             /* point index structure notes: 0 is always top left, 1 is always top right,
              * 2 is bottom right, 3 is bottom left. When intermediates exist, they are created
              * top intermediate first, bottom intermediate second, and are considered in the order
@@ -687,15 +698,15 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
              * also should not matter.
              */
 
-       
-
-        cells[CELL(i,j,k)] = Cell(pointsInCell, edgesInCell);
+        cells[CELL(i,j,k)] = Cell(pointsInCell, edgesInCell, intermed,
+                                            Vector3<float>(corners[0][0], corners[0][1], cellBot), 
+                                            Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz));
       }
     }
 }
 
-
 Vector3<float> DTEHeightField::getIntermediate(Vector3<float> a, Vector3<float> b, float height) const
+
 {
 
   if (a[2] == b[2])
