@@ -8,7 +8,7 @@ DTEHeightField::DTEHeightField()
   : m_filename(""), m_rbMin(0.0)
 {
   m_poDataset = 0;
-  
+
 }
 
 DTEHeightField::DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN)
@@ -41,10 +41,10 @@ void DTEHeightField::loadImage()
     }
 
   printf( "Driver: %s/%s\n",
-	  m_imageDataset->GetDriver()->GetDescription(), 
+	  m_imageDataset->GetDriver()->GetDescription(),
 	  m_imageDataset->GetDriver()->GetMetadataItem( GDAL_DMD_LONGNAME ) );
 
-  printf( "Size is %dx%dx%d\n", 
+  printf( "Size is %dx%dx%d\n",
 	  m_imageDataset->GetRasterXSize(), m_imageDataset->GetRasterYSize(),
 	  m_imageDataset->GetRasterCount() );
 
@@ -55,7 +55,7 @@ void DTEHeightField::loadImage()
     {
       printf( "Origin = (%.6f,%.6f)\n",
 	      m_imageGeoTransform[0], m_imageGeoTransform[3] );
-      
+
       printf( "Pixel Size = (%.6f,%.6f)\n",
 	      m_imageGeoTransform[1], m_imageGeoTransform[5] );
     }
@@ -80,10 +80,10 @@ void DTEHeightField::load()
     }
 
   printf( "Driver: %s/%s\n",
-	  m_poDataset->GetDriver()->GetDescription(), 
+	  m_poDataset->GetDriver()->GetDescription(),
 	  m_poDataset->GetDriver()->GetMetadataItem( GDAL_DMD_LONGNAME ) );
 
-  printf( "Size is %dx%dx%d\n", 
+  printf( "Size is %dx%dx%d\n",
 	  m_poDataset->GetRasterXSize(), m_poDataset->GetRasterYSize(),
 	  m_poDataset->GetRasterCount() );
 
@@ -94,7 +94,7 @@ void DTEHeightField::load()
     {
       printf( "Origin = (%.6f,%.6f)\n",
 	      m_geoTransform[0], m_geoTransform[3] );
-      
+
       printf( "Pixel Size = (%.6f,%.6f)\n",
 	      m_geoTransform[1], m_geoTransform[5] );
       pixelSizeX = abs(m_geoTransform[1]);
@@ -108,26 +108,26 @@ void DTEHeightField::load()
   int             nBlockXSize, nBlockYSize;
   int             bGotMin, bGotMax;
   double          adfMinMax[2];
-        
+
   poBand = m_poDataset->GetRasterBand( 1 );
   poBand->GetBlockSize( &nBlockXSize, &nBlockYSize );
   printf( "Block=%dx%d Type=%s, ColorInterp=%s\n",
 	  nBlockXSize, nBlockYSize,
 	  GDALGetDataTypeName(poBand->GetRasterDataType()),
 	  GDALGetColorInterpretationName(poBand->GetColorInterpretation()) );
-  
+
   adfMinMax[0] = poBand->GetMinimum( &bGotMin );
   adfMinMax[1] = poBand->GetMaximum( &bGotMax );
   if( ! (bGotMin && bGotMax) )
     GDALComputeRasterMinMax((GDALRasterBandH)poBand, TRUE, adfMinMax);
 
   printf( "Min=%.3fd, Max=%.3f\n", adfMinMax[0], adfMinMax[1] );
-        
+
   if( poBand->GetOverviewCount() > 0 )
     printf( "Band has %d overviews.\n", poBand->GetOverviewCount() );
 
   if( poBand->GetColorTable() != NULL )
-    printf( "Band has a color table with %d entries.\n", 
+    printf( "Band has a color table with %d entries.\n",
 	    poBand->GetColorTable()->GetColorEntryCount() );
 
   m_rbScale = poBand->GetScale();
@@ -139,17 +139,17 @@ void DTEHeightField::load()
   m_rbNoData = poBand->GetNoDataValue();
   printf( "Band has NoData value: %.4f\n", m_rbNoData );
 
-  
+
   m_nXSize = poBand->GetXSize();
   m_nYSize = poBand->GetYSize();
-  
+
   pafScanline = (float *) CPLMalloc(sizeof(float)*m_nXSize*m_nYSize);
 
   // rb->RasterIO(GF_Read, 0, 0, xsize, ysize, buffer, xsize, ysize, GDT_Float32, 0, 0);
-  poBand->RasterIO( GF_Read, 0, 0, 
-		    m_nXSize, m_nYSize, 
-		    pafScanline, 
-		    m_nXSize, m_nYSize, GDT_Float32, 
+  poBand->RasterIO( GF_Read, 0, 0,
+		    m_nXSize, m_nYSize,
+		    pafScanline,
+		    m_nXSize, m_nYSize, GDT_Float32,
 		    0, 0 );
 
   Triangle *tPtr=0;
@@ -192,7 +192,7 @@ void DTEHeightField::load()
 
       tPtr = new Triangle( tv0, tv1, tv2 );
       m_triList.push_back(tPtr);
-      
+
 
       Vector3<float> tv3( (iYline + stepY) * pixelSizeY, iXpixel * pixelSizeX, queryHeight( pafScanline, (int)(iYline + stepY), Xpixel ) );
      // convertToTexCoord(Yline+step, Xpixel, tc0);
@@ -259,7 +259,7 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
         (*(m_triList[i]->a))[q] -= min[q];
         (*(m_triList[i]->b))[q] -= min[q];
         (*(m_triList[i]->c))[q] -= min[q];
-        printProgress( ( (float)i / (float)m_triList.size()) / 2.0f + 0.5f); 
+        printProgress( ( (float)i / (float)m_triList.size()) / 2.0f + 0.5f);
       }
 
       if (q != 2)
@@ -272,9 +272,9 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
       //current implementation adds buffer in z dim for buffer space
       //get more specific values, currently adding 50 meters
       //Also, domains are currently only working with cubic dimensions... fix this
-      
+
       if (q == 2)
-        (*domain)[q] += (int)(50.0f / (float)(*grid)[q]);      
+        (*domain)[q] += (int)(50.0f / (float)(*grid)[q]);
 
       std::cout << std::endl;
     }
@@ -297,7 +297,7 @@ void DTEHeightField::outputOBJ(std::string s)
 
   for (int i = 0; i < m_triList.size(); i++)
   {
-    
+
     Triangle* t = m_triList[i];
 
     Vector3<int> *tVs = new Vector3<int>(-1, -1 , -1);
@@ -313,19 +313,19 @@ void DTEHeightField::outputOBJ(std::string s)
     }
 
     if ((*tVs)[0] == -1)
-    {        
+    {
       verts.push_back( t->a );
       (*tVs)[0] = verts.size();
     }
 
     if ((*tVs)[1] == -1)
-    {        
+    {
       verts.push_back( t->b );
       (*tVs)[1] = verts.size();
     }
 
     if ((*tVs)[2] == -1)
-    {        
+    {
       verts.push_back( t->c );
       (*tVs)[2] = verts.size();
     }
@@ -367,7 +367,7 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
 {
 
   printf("Setting Cell Data...\n");
-  auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time    
+  auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time
 
   std::vector<int> cutCells;
 
@@ -421,10 +421,10 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
     float cellTop = cellBot + dz;
 
     if ( cellTop < coordsMin)
-      cells[CELL(i,j,k)] = Cell(terrain_CT, Vector3<float>(corners[0][0], corners[0][1], cellBot), 
+      cells[CELL(i,j,k)] = Cell(terrain_CT, Vector3<float>(corners[0][0], corners[0][1], cellBot),
                                             Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz));
     else if ( cellBot > coordsMax)
-      cells[CELL(i,j,k)] = Cell(air_CT, Vector3<float>(corners[0][0], corners[0][1], cellBot), 
+      cells[CELL(i,j,k)] = Cell(air_CT, Vector3<float>(corners[0][0], corners[0][1], cellBot),
                                             Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz));
     else
     {
@@ -476,7 +476,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
             intermed[di][dj][0] = intermed[di][dj][1] = -1;
 
         //for all considered pairs 0-1 0-2 0-3 1-2 2-3, we check to see if they span a Z-dimension boundary
-        //of the cell. If they do, we add an intermediate point that stops at the cell boundaries. And we 
+        //of the cell. If they do, we add an intermediate point that stops at the cell boundaries. And we
         //update the intermediate matrix so that we know what is the index of the intermediate point.
         for (int first = 0; first < 3; first++)
           for (int second = first + 1; second < 4; second++)
@@ -499,7 +499,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
                   edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
                 }
               }
-              else if (cornerPos[first] > 0) 
+              else if (cornerPos[first] > 0)
               {
 
                 if (cornerPos[second] == 0)
@@ -519,7 +519,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
                   edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
                 }
               }
-              else 
+              else
               {
                 if (cornerPos[second] == 0)
                 {
@@ -602,11 +602,11 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
               //only need to check 1 and 3 corners
               //since there is only one intermediate on the diagonal, either 0 or 2 exists in the cell
               //because of this, if 1 or 3 exists in the cell the intermediate always connects to it
-              if ( (cornerPos[1] == -1 && (intermed[0][1][0] == -1 || intermed[1][2][0] == -1) ) || 
+              if ( (cornerPos[1] == -1 && (intermed[0][1][0] == -1 || intermed[1][2][0] == -1) ) ||
                    (cornerPos[1] == 1 && (intermed[0][1][1] == -1 || intermed[1][2][1] == -1) ) ||
                    cornerPos[1] == 0)
                 edgesInCell.push_back(Edge<int>(1, midP));
-              if ( (cornerPos[3] == -1 && (intermed[0][3][0] == -1 || intermed[2][3][0] == -1) ) || 
+              if ( (cornerPos[3] == -1 && (intermed[0][3][0] == -1 || intermed[2][3][0] == -1) ) ||
                    (cornerPos[3] == 1 && (intermed[0][3][1] == -1 || intermed[2][3][1] == -1) ) ||
                    cornerPos[3] == 0)
                 edgesInCell.push_back(Edge<int>(3, midP));
@@ -620,7 +620,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
                       edgesInCell.push_back(Edge<int>(intermed[first][second][1], midP));
                   }
             }
-            //if there is both diagonal intermeds, connect top with all tops, 
+            //if there is both diagonal intermeds, connect top with all tops,
             //bot with all bots, then top to all bot intermediates
             else if (intermed[0][2][0] != -1  && intermed[0][2][1] != -1)
             {
@@ -678,7 +678,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
                 {
                   edgesInCell.push_back(Edge<int>(1, intermed[0][3][topBot]));
                   edgesInCell.push_back(Edge<int>(1, intermed[2][3][topBot]));
-                } 
+                }
                 else //or c3 to c1 intermeds
                 {
                   edgesInCell.push_back(Edge<int>(3, intermed[0][1][topBot]));
@@ -702,7 +702,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
              */
 
         cells[CELL(i,j,k)] = Cell(pointsInCell, edgesInCell, intermed,
-                                            Vector3<float>(corners[0][0], corners[0][1], cellBot), 
+                                            Vector3<float>(corners[0][0], corners[0][1], cellBot),
                                             Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz));
       }
     }
