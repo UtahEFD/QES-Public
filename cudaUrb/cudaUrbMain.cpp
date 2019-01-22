@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     // Run the CUDA-URB Solver
     //
     // //////////////////////////////////////////
-    Solver* solver;
+    Solver *solver, *solverC = nullptr;
     if (arguments.solveType == CPU_Type)
         solver = new CPUSolver(UID, DTEHF);
     else if (arguments.solveType == DYNAMIC_P)
@@ -97,9 +97,31 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    //check for comparison
+    if (arguments.compareType)
+    {
+        if (arguments.compareType == CPU_Type)
+            solverC = new CPUSolver(UID, DTEHF);
+        else if (arguments.compareType == DYNAMIC_P)
+            solverC = new DynamicParallelism(UID, DTEHF);
+        else
+        {
+            std::cerr << "Error: invalid comparison type\n";
+            exit(EXIT_FAILURE);
+        }
+    }
+
 
     // Run urb simulation code
     solver->solve( !arguments.solveWind);
+
+    std::cout << "Solver done!\n";
+
+    if (solverC != nullptr)
+    {
+        std::cout << "Running comparson type...\n";
+        solverC->solve(!arguments.solveWind);
+    }
 
 
     // /////////////////////////////
@@ -108,15 +130,25 @@ int main(int argc, char *argv[])
     // /////////////////////////////
 
     // Prepare the NetCDF Data Structure for outputting simulation results.
-    NetCDFData* netcdfDat = 0;
+    NetCDFData* netcdfDat = nullptr, *netcdfCompare = nullptr;
     netcdfDat = new NetCDFData();
 
 
     if (!arguments.solveWind) {
 
         solver->outputNetCDF( netcdfDat );
-	solver->outputDataFile ();
+	    solver->outputDataFile ();
 
+        if (solverC != nullptr)
+        {
+            netcdfCompare = new NetCDFData();
+            solverC->outputNetCDF( netcdfCompare);
+            if (!netcdfDat->outputCellResultsDifference(netcdfCompare, arguments.netCDFFile))
+            {   
+                cerr << "ERROR: output is broken\n";
+                return -1;
+            }
+        }
         if (!netcdfDat->outputCellFaceResults(arguments.netCDFFile))
         {
             cerr << "ERROR: output is broken\n";

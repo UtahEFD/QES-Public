@@ -168,6 +168,11 @@ public:
     virtual void solve(bool solveWind) = 0;
 
     virtual void outputDataFile() {}
+
+    /*
+     * note: this doesn't actually output the netcdf data, not sure why it's
+     * named this way
+     */
     virtual void outputNetCDF( NetCDFData* netcdfDat ) {}
 
     /**

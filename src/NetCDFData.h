@@ -102,7 +102,7 @@ public:
 	 * @param fileName -the file to output the data to
 	 * @return returns false if creation fails
 	 */
-	bool outputICellFlagsDifference(NetCDFData* compare, std::string fileName);
+	bool outputICellFlagsDifference(const NetCDFData* compare, std::string fileName);
 
 	/*
 	 * Subtracts all velocities from compare and then Outputs ICellFlag 
@@ -112,7 +112,7 @@ public:
 	 * @param fileName -the file to output the data to
 	 * @return returns false if creation fails
 	 */
-	bool outputCellResultsDifference(NetCDFData* compare, std::string fileName);
+	bool outputCellResultsDifference( const NetCDFData* compare, std::string fileName);
 
 	void getCutCellFlags(Cell* cells);
 

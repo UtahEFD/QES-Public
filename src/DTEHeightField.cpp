@@ -417,7 +417,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
 
   for (int k = 1; k < nz - 1; k++)
   {
-    float cellBot = k * dz;
+    float cellBot = (k - 1) * dz;
     float cellTop = cellBot + dz;
 
     if ( cellTop < coordsMin)
