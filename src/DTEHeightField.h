@@ -67,6 +67,11 @@ public:
    */
   std::vector<int> setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy, float dz) const;
 
+  /*
+   * This function frees the pafScanline. It should be called after all DEM querying has taken place.
+   */
+  void closeScanner();
+
 private:
 
   /*

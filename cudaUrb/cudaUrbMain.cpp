@@ -111,6 +111,9 @@ int main(int argc, char *argv[])
         }
     }
 
+    //close the scanner
+    if (DTEHF)
+        DTEHF->closeScanner();
 
     // Run urb simulation code
     solver->solve( !arguments.solveWind);

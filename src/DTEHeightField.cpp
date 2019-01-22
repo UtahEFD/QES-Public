@@ -389,7 +389,6 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
     }
 
 
-  CPLFree(pafScanline);
   auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
   std::chrono::duration<float> elapsed = finish - start;
   std::cout << "Elapsed time For CellSet: " << elapsed.count() << " s\n";   // Print out elapsed execution time
@@ -740,4 +739,9 @@ Vector3<float> DTEHeightField::getIntermediate(Vector3<float> a, Vector3<float> 
 
   return Vector3<float>(xCoord, yCoord, height);
 
+}
+
+void DTEHeightField::closeScanner()
+{ 
+  CPLFree(pafScanline);
 }
