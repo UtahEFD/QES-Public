@@ -33,16 +33,16 @@ private:
     template<typename T>
     void _cudaCheck(T e, const char* func, const char* call, const int line);
 
+public:
+	DynamicParallelism(const URBInputData* UID, const DTEHeightField* DTEHF)
+		: Solver(UID, DTEHF)
+		{
+		}
+
 protected:
     float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;		/**< Solver coefficients on device (GPU) */
     double *d_R;              /**< Divergence of initial velocity field on device (GPU) */
     double *d_lambda, *d_lambda_old;		/**< Lagrange multipliers on device (GPU) */
-
-public:
-    DynamicParallelism(URBInputData* UID, DTEHeightField* DTEHF)
-        : Solver(UID, DTEHF)
-    {
-    }
 
     virtual void solve(bool solveWind);
     void outputDataFile();

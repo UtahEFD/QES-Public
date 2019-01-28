@@ -23,12 +23,12 @@ using namespace std;
 class CPUSolver : public Solver
 {
 public:
-    CPUSolver(URBInputData* UID, DTEHeightField* DTEHF)
-        : Solver(UID, DTEHF)
-    {
-    }
-  
-    virtual void solve(bool solveWind);
+	CPUSolver(const URBInputData* UID, const DTEHeightField* DTEHF)
+		: Solver(UID, DTEHF)
+		{
+		}
+
+	virtual void solve(bool solveWind);
 
     void outputDataFile();
     void outputNetCDF( NetCDFData* netcdfDat );

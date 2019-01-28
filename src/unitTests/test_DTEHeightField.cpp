@@ -16,14 +16,14 @@ std::string test_DTEHeightField::mainTest()
 	return TEST_PASS;
 }
 
-#define CELL(i,j,k) ((i) + (j) * (nx) + (k) * (nx) * (ny))
+#define CELL(i,j,k) ((i) + (j) * (nx - 1) + (k) * (nx - 1) * (ny - 1))
 std::string test_DTEHeightField::testCutCells()
 {
 	//cutCells(Cell* cells, int i, int j, int nx, int ny, int nz, float dz, Vector3<float> corners[])
 
 	Cell* cells;
-	cells = new Cell[20]; //4 stacks of 5 cells. 
-	int nx = 4, ny = 1, nz = 5;
+	cells = new Cell[24]; //4 stacks of 5 cells. (+ ghost cell) 
+	int nx = 4 + 1, ny = 1 + 1, nz = 5 + 2;
 	float dz = 1.0f; //dx and dy are also 1.0 but that doesn't entirely matter
 	Vector3<float> corners[4];
 	std::vector<int> cutCells;
@@ -86,18 +86,18 @@ std::string test_DTEHeightField::testCutCells()
 	std::vector< Edge<int> >cellEdges;
 
 	//Base Cell (1st)
-	cellPoints = cells[ CELL(0,0,0) ].getTerrainPoints();
+	cellPoints = cells[ CELL(0,0,1) ].getTerrainPoints();
 	if (cellPoints.size() != 0)
 		return util_errorReport("cutCells", 89, 0, cellPoints.size());
 
 	//Top Cell (5th)
-	cellPoints = cells[CELL(0,0,4)].getTerrainPoints();
+	cellPoints = cells[CELL(0,0,5)].getTerrainPoints();
 	if (cellPoints.size() != 0)
 		return util_errorReport("cutCells", 94, 0, cellPoints.size());
 
 	//2nd Cell
-	cellPoints = cells[CELL(0,0,1)].getTerrainPoints();
-	cellEdges = cells[CELL(0,0,1)].getTerrainEdges();
+	cellPoints = cells[CELL(0,0,2)].getTerrainPoints();
+	cellEdges = cells[CELL(0,0,2)].getTerrainEdges();
 	std::vector< Vector3<float> >::iterator it; std::vector< Edge< int > >::iterator itE;
 
 	if (cellPoints.size() != 7)
@@ -146,8 +146,8 @@ std::string test_DTEHeightField::testCutCells()
 	}
 
 	//4th Cell
-	cellPoints = cells[CELL(0,0,3)].getTerrainPoints();
-	cellEdges = cells[CELL(0,0,3)].getTerrainEdges();
+	cellPoints = cells[CELL(0,0,4)].getTerrainPoints();
+	cellEdges = cells[CELL(0,0,4)].getTerrainEdges();
 
 	if (cellPoints.size() != 7)
 		return util_errorReport("cutCells", 152, 7, cellPoints.size());	
@@ -194,8 +194,8 @@ std::string test_DTEHeightField::testCutCells()
 	}
 
 	//3rd Cell
-	cellPoints = cells[CELL(0,0,2)].getTerrainPoints();
-	cellEdges = cells[CELL(0,0,2)].getTerrainEdges();
+	cellPoints = cells[CELL(0,0,3)].getTerrainPoints();
+	cellEdges = cells[CELL(0,0,3)].getTerrainEdges();
 
 	if (cellPoints.size() != 10)
 		return util_errorReport("cutCells", 200, 10, cellPoints.size());	
@@ -259,8 +259,8 @@ std::string test_DTEHeightField::testCutCells()
 	//note, cells 1 and 3 should have the same edges as 2 so they aren't necessary to check
 
 	//Bottom Cell [0]
-	cellPoints = cells[CELL(1,0,0)].getTerrainPoints();
-	cellEdges = cells[CELL(1,0,0)].getTerrainEdges();
+	cellPoints = cells[CELL(1,0,1)].getTerrainPoints();
+	cellEdges = cells[CELL(1,0,1)].getTerrainEdges();
 
 	if (cellPoints.size() != 7)
 		return util_errorReport("cutCells", 266, 7, cellPoints.size());	
@@ -309,8 +309,8 @@ std::string test_DTEHeightField::testCutCells()
 	}
 
 	//Mid Cell [2]
-	cellPoints = cells[CELL(1,0,2)].getTerrainPoints();
-	cellEdges = cells[CELL(1,0,2)].getTerrainEdges();
+	cellPoints = cells[CELL(1,0,3)].getTerrainPoints();
+	cellEdges = cells[CELL(1,0,3)].getTerrainEdges();
 
 	if (cellPoints.size() != 10)
 		return util_errorReport("cutCells", 316, 10, cellPoints.size());	
@@ -368,8 +368,8 @@ std::string test_DTEHeightField::testCutCells()
 	}
 
 	//Top Cell [4]
-	cellPoints = cells[CELL(1,0,4)].getTerrainPoints();
-	cellEdges = cells[CELL(1,0,4)].getTerrainEdges();
+	cellPoints = cells[CELL(1,0,5)].getTerrainPoints();
+	cellEdges = cells[CELL(1,0,5)].getTerrainEdges();
 
 	if (cellPoints.size() != 7)
 		return util_errorReport("cutCells", 376, 7, cellPoints.size());	
@@ -424,8 +424,8 @@ std::string test_DTEHeightField::testCutCells()
 	//note, cell 1 isn't necessary to check
 
 	//Bottom Cell [0]
-	cellPoints = cells[CELL(2,0,0)].getTerrainPoints();
-	cellEdges = cells[CELL(2,0,0)].getTerrainEdges();
+	cellPoints = cells[CELL(2,0,1)].getTerrainPoints();
+	cellEdges = cells[CELL(2,0,1)].getTerrainEdges();
 
 	if (cellPoints.size() != 7)
 		return util_errorReport("cutCells", 430, 7, cellPoints.size());	
@@ -475,8 +475,8 @@ std::string test_DTEHeightField::testCutCells()
 
 
 	//Mid Cell [2]
-	cellPoints = cells[CELL(2,0,2)].getTerrainPoints();
-	cellEdges = cells[CELL(2,0,2)].getTerrainEdges();
+	cellPoints = cells[CELL(2,0,3)].getTerrainPoints();
+	cellEdges = cells[CELL(2,0,3)].getTerrainEdges();
 
 	if (cellPoints.size() != 10)
 		return util_errorReport("cutCells", 481, 10, cellPoints.size());	
@@ -534,8 +534,8 @@ std::string test_DTEHeightField::testCutCells()
 	}
 
 	//Mid-Upper Cell [3]
-	cellPoints = cells[CELL(2,0,3)].getTerrainPoints();
-	cellEdges = cells[CELL(2,0,3)].getTerrainEdges();
+	cellPoints = cells[CELL(2,0,4)].getTerrainPoints();
+	cellEdges = cells[CELL(2,0,4)].getTerrainEdges();
 
 	if (cellPoints.size() != 10)
 		return util_errorReport("cutCells", 540, 10, cellPoints.size());	
@@ -593,8 +593,8 @@ std::string test_DTEHeightField::testCutCells()
 	}
 
 	//Top Cell [4]
-	cellPoints = cells[CELL(2,0,4)].getTerrainPoints();
-	cellEdges = cells[CELL(2,0,4)].getTerrainEdges();
+	cellPoints = cells[CELL(2,0,5)].getTerrainPoints();
+	cellEdges = cells[CELL(2,0,5)].getTerrainEdges();
 
 	if (cellPoints.size() != 7)
 		return util_errorReport("cutCells", 599, 7, cellPoints.size());	
@@ -648,8 +648,8 @@ std::string test_DTEHeightField::testCutCells()
 	//note, cell 1 and 3 aren't necessary as they are the same as 2
 
 	//Bottom Cell [0]
-	cellPoints = cells[CELL(3,0,0)].getTerrainPoints();
-	cellEdges = cells[CELL(3,0,0)].getTerrainEdges();
+	cellPoints = cells[CELL(3,0,1)].getTerrainPoints();
+	cellEdges = cells[CELL(3,0,1)].getTerrainEdges();
 
 	if (cellPoints.size() != 8)
 		return util_errorReport("cutCells", 654, 8, cellPoints.size());	
@@ -701,8 +701,8 @@ std::string test_DTEHeightField::testCutCells()
 
 
 	//Mid Cell [2]
-	cellPoints = cells[CELL(3,0,2)].getTerrainPoints();
-	cellEdges = cells[CELL(3,0,2)].getTerrainEdges();
+	cellPoints = cells[CELL(3,0,3)].getTerrainPoints();
+	cellEdges = cells[CELL(3,0,3)].getTerrainEdges();
 
 	if (cellPoints.size() != 12)
 		return util_errorReport("cutCells", 707, 12, cellPoints.size());	
@@ -764,8 +764,8 @@ std::string test_DTEHeightField::testCutCells()
 	}
 
 	//Top Cell [4]
-	cellPoints = cells[CELL(3,0,4)].getTerrainPoints();
-	cellEdges = cells[CELL(3,0,4)].getTerrainEdges();
+	cellPoints = cells[CELL(3,0,5)].getTerrainPoints();
+	cellEdges = cells[CELL(3,0,5)].getTerrainEdges();
 
 	if (cellPoints.size() != 9)
 		return util_errorReport("cutCells", 770, 9, cellPoints.size());	

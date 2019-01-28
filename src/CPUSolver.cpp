@@ -285,7 +285,7 @@ void CPUSolver::outputNetCDF( NetCDFData* netcdfDat )
     netcdfDat->getDataFace(x.data(),y.data(),z.data(),u.data(),v.data(),w.data(),nx,ny,nz);
     netcdfDat->getDataICell(icellflag.data(), x_out.data(), y_out.data(), z_out.data(), nx-1, ny - 1, nz - 1, numcell_cent);
     
-    /*    if (DTEHF)
+      /* if (DTEHFExists)
             netcdfDat->getCutCellFlags(cells);
 
             {

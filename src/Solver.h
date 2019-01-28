@@ -138,7 +138,7 @@ protected:
     int mesh_type_flag;		/**< mesh type (0 = Original QUIC/Stair-step, 1 = Cut-cell method) */
 
     Cell* cells;
-    DTEHeightField* DTEHF;
+    bool DTEHFExists = false;
     Cut_cell cut_cell;
 
     long numcell_cent;		/**< Total number of cell-centered values in domain */
@@ -163,11 +163,16 @@ protected:
     void printProgress (float percentage);
 
 public:
-    Solver(URBInputData* UID, DTEHeightField* DTEHF);
+    Solver(const URBInputData* UID, const DTEHeightField* DTEHF);
 
     virtual void solve(bool solveWind) = 0;
 
     virtual void outputDataFile() {}
+
+    /*
+     * note: this doesn't actually output the netcdf data, not sure why it's
+     * named this way
+     */
     virtual void outputNetCDF( NetCDFData* netcdfDat ) {}
 
     /**

@@ -4,7 +4,7 @@
 
 
 
-void Cut_cell::calculateCoefficient(Cell* cells, DTEHeightField* DTEHF, int nx, int ny, int nz, float dx, float dy,float dz,
+void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, int nx, int ny, int nz, float dx, float dy,float dz,
 								std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, 
 								std::vector<float> &h, std::vector<float> &g, float pi, std::vector<int> &icellflag)
 {

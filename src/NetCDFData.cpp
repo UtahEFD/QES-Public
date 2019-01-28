@@ -255,7 +255,7 @@ bool NetCDFData::outputICellFlags(std::string fileName)
     return true;
 }
 
-bool NetCDFData::outputICellFlagsDifference(NetCDFData* compare, std::string fileName)
+bool NetCDFData::outputICellFlagsDifference(const NetCDFData* compare, std::string fileName)
 {
     for (int i = 0; i < size; i++)
         iCellFlags[i] -= compare->iCellFlags[i];
@@ -263,7 +263,7 @@ bool NetCDFData::outputICellFlagsDifference(NetCDFData* compare, std::string fil
     return outputICellFlags(fileName);
 }
 
-bool NetCDFData::outputCellResultsDifference(NetCDFData* compare, std::string fileName)
+bool NetCDFData::outputCellResultsDifference(const NetCDFData* compare, std::string fileName)
 {
     for (int i = 0; i < dimX * dimY * dimZ; i++)
     {

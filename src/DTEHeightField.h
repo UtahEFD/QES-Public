@@ -27,7 +27,7 @@ public:
   DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN);
   ~DTEHeightField();
 
-  std::vector<Triangle*> getTris() {return m_triList;}
+  std::vector<Triangle*> getTris() const {return m_triList;}
 
   /*
    * This function takes in a domain to change and a grid size for
@@ -65,7 +65,12 @@ public:
    * @param dz -size of a cell in the Z axis
    * @return -A list of ID values for all cut cells.
    */
-  std::vector<int> setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy, float dz);
+  std::vector<int> setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy, float dz) const;
+
+  /*
+   * This function frees the pafScanline. It should be called after all DEM querying has taken place.
+   */
+  void closeScanner();
 
 private:
 
@@ -83,7 +88,7 @@ private:
    * @param corners -an array containing the points that representing the DEM elevation at each of the cells corners
    * @param cutCells -a list of all cells which the terrain goes through
    */
-  void setCellPoints(Cell* cells, int i, int j, int nx, int ny, int nz, float dz, Vector3<float> corners[], std::vector<int>& cutCells);
+  void setCellPoints(Cell* cells, int i, int j, int nx, int ny, int nz, float dz, Vector3<float> corners[], std::vector<int>& cutCells) const;
 
   void load();
 
@@ -91,13 +96,13 @@ private:
 
   // void loadImage();
 
-  bool compareEquality( double f1, double f2 )
+  bool compareEquality( double f1, double f2 ) const
   {
     const double eps = 1.0e-6;
     return fabs( f1 - f2 ) < eps;
   }
 
-  float queryHeight( float *scanline, int j, int k )
+  float queryHeight( float *scanline, int j, int k )  const
   {
     float height;
     if (j * m_nXSize + k >= m_nXSize * m_nYSize)
@@ -124,7 +129,7 @@ private:
    * @param height -the height at which the third point will be created
    * @return -an intermediate point existing on the line from a to b at z value height
    */
-  Vector3<float> getIntermediate(Vector3<float> a, Vector3<float> b, float height);
+  Vector3<float> getIntermediate(Vector3<float> a, Vector3<float> b, float height) const;
 
 
 

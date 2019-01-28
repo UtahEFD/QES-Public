@@ -27,7 +27,7 @@ void Solver::printProgress (float percentage)
 * This function is assigning values read by URBImputData to variables used in the solvers
  */
 
-Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
+Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
     : itermax( UID->simParams->maxIterations )
 {
 
@@ -210,9 +210,11 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
                              site_z0.data(), site_z_ref.data(), site_U_ref.data(), x.data(), y.data(), z.data(), canopy,
                              site_canopy_H.data(), site_atten_coeff.data());
 
+
     mesh = 0;
     if (DTEHF)
     {
+        DTEHFExists = true;
         mesh = new Mesh(DTEHF->getTris());
         if (mesh_type_flag == 0)
         {
@@ -227,7 +229,7 @@ Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
                     for (int j = 0; j < ny; j++)
                     {      //get height, then add half a cell, if the height exceeds half of a cell partially, it will round up.
                         float heightToMesh = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f) + 0.5f * dz;
-                        for (int k = 0; k < (int)(heightToMesh / dz); k++)
+                        for (int k = 1; k < (int)(heightToMesh / dz)+1; k++)
                             buildings.push_back(new RectangularBuilding(i * dx, j * dy, k * dz, dx, dy, dz));
                     }
                     printProgress( (float)i / (float)nx);
