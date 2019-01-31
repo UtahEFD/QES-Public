@@ -88,6 +88,11 @@ public:
 	 */
 	std::vector< Vector3<float> > getFaceFluidPoints(const int index) {return fluidFacePoints[index % 6];}
 
+
+	/*
+	 *Returns the xyz location of the cell from the corner closest to the origin
+	 *@return -The location of the cell
+	 */
 	Vector3<float> getLocationPoints() {return location;}
 
 };
