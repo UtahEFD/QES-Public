@@ -279,5 +279,5 @@ void Cut_cell::calculateAreaTopBot(std::vector< Vector3<float> > &terrainPoints,
 	if (isBot)
 		area = dx * dy - area;
 
-	coef[cellIndex] = area; 
+	coef[cellIndex] = area / (dx * dy); 
 }
