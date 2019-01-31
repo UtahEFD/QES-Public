@@ -43,7 +43,7 @@ public:
 	 *@param e -edge to be compared to this edge.
 	 *@return -true if edges are equal, false otherwise. 
 	 */
-	bool operator==(Edge< T > e);
+	bool operator==(const Edge< T > e) const;
 
 	/*
 	 *Checks to see if value v exists in this edge. If it does,

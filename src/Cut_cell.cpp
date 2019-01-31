@@ -76,7 +76,7 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 				//for the top and bottom faces of the cell (XY planes)
 				else
 				{
-					if (i == cellFace.faceXYNeg_CF)
+					if (i == faceXYNeg_CF)
 						calculateAreaTopBot(cut_points, terrainEdges,cutcell_index[j], 
 											dx, dy, dz, location, n, true);
 					else
@@ -230,13 +230,13 @@ void Cut_cell::calculateArea(std::vector< Vector3<float>> &cut_points, int cutce
 	}
 }
 
-void calculateAreaTopBot(const std::vector< Vector3<float> > &terrainPoints, 
+void Cut_cell::calculateAreaTopBot(std::vector< Vector3<float> > &terrainPoints, 
 						 const std::vector< Edge<int> > &terrainEdges, 
 						 const int cellIndex, const float dx, const float dy, const float dz, 
-						 const Vector3 <float> location, std::vector<float> &coef,
+						 Vector3 <float> location, std::vector<float> &coef,
 						 const bool isBot)
 {
-	float = area;
+	float area;
 	std::vector< int > pointsOnFace;
 	std::vector< Vector3< Vector3<float> > > listOfTriangles; //each point is a vector3, the triangle is 3 points
 	float faceHeight = location[2] + (isBot ? 0.0f : dz); //face height is 0 if we are on the bottom, otherwise add dz
@@ -252,15 +252,18 @@ void calculateAreaTopBot(const std::vector< Vector3<float> > &terrainPoints,
 		for (int a = 0; a < pointsOnFace.size() - 2; a++)
 			for (int b = a + 1; b < pointsOnFace.size() - 1; b++)
 				for (int c = b + 1; c < pointsOnFace.size(); c++)
+				{
 					//triangle is on face if a,b a,c b,c edges all exist (note edges are reversable)
-					// a|b|c is the index in pointsOnFace, which is the index in terrainPoint that we are representing. 
-					//this looks messy but it's more efficient than considering all points. It could probably be cleaned for readability though
-					if ( (std::find(terrainEdges.begin(), terrainEdges.end(), Edge<int>( terrainPoints[pointsOnFace[a]],terrainPoints[pointsOnFace[b]]) ) != terrainEdges.end())  &&
-						 (std::find(terrainEdges.begin(), terrainEdges.end(), Edge<int>( terrainPoints[pointsOnFace[a]],terrainPoints[pointsOnFace[c]]) ) != terrainEdges.end())  &&
-						 (std::find(terrainEdges.begin(), terrainEdges.end(), Edge<int>( terrainPoints[pointsOnFace[b]],terrainPoints[pointsOnFace[c]]) ) != terrainEdges.end())  )	
-						listOfTriangles.push_back( Vector3<int>( terrainPoints[pointsOnFace[a]],
+					// a|b|c is the index in pointsOnFace, which is the index in terrainPoint that we are representing.
+					Edge<int> abEdge( pointsOnFace[a],pointsOnFace[b]), acEdge(pointsOnFace[a],pointsOnFace[c]), 
+							 bcEdge( pointsOnFace[b],pointsOnFace[c]);
+					if ( (std::find(terrainEdges.begin(), terrainEdges.end(), abEdge ) != terrainEdges.end())  &&
+						 (std::find(terrainEdges.begin(), terrainEdges.end(), acEdge) != terrainEdges.end())  &&
+						 (std::find(terrainEdges.begin(), terrainEdges.end(), bcEdge ) != terrainEdges.end())  )	
+						 listOfTriangles.push_back( Vector3< Vector3<float> >( terrainPoints[pointsOnFace[a]],
 																 terrainPoints[pointsOnFace[b]],
 																 terrainPoints[pointsOnFace[c]]));
+				}
 	}
 
 	//for all triangles, add the area to the total

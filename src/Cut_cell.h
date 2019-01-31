@@ -42,10 +42,10 @@ public:
 	 * @param coef - the coefficient that should be updated
 	 * @param isBot - states if the area for the bottom or top of the cell should be calculated
 	 */
-	void calculateAreaTopBot(const std::vector< Vector3<float> > &terrainPoints, 
+	void calculateAreaTopBot(std::vector< Vector3<float> > &terrainPoints, 
 							 const std::vector< Edge<int> > &terrainEdges, 
 							 const int cellIndex, const float dx, const float dy, const float dz, 
-							 const Vector3 <float> location, std::vector<float> &coef,
+							 Vector3 <float> location, std::vector<float> &coef,
 							 const bool isBot);
 
 

@@ -5,8 +5,9 @@
  * can be accessed as if this was an array.
  */
 
-#include "util/ParseInterface.h"
 #include <type_traits>
+#include <iostream>
+#include "util/ParseInterface.h"
 
 
 #define FLOATS_ARE_EQUAL(x,y) ( ( (x) - (y)) < 0.000001 && ( (x) - (y)) >   -0.000001 )
@@ -68,6 +69,13 @@ public:
 			return FLOATS_ARE_EQUAL(values[0], v.values[0]) && FLOATS_ARE_EQUAL(values[1], v.values[1]) && FLOATS_ARE_EQUAL(values[2], v.values[2]);
 		else
 			return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];
+	}
+
+
+	friend std::istream& operator>> (std::istream& is, Vector3<T>& v)
+	{
+	    is >> v.values[0] >> v.values[1] >> v.values[2];
+	    return is;
 	}
 };
 
