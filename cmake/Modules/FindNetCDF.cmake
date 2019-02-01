@@ -11,11 +11,18 @@
 #  NETCDF_F77         - require the F77 interface and link the fortran library
 #  NETCDF_F90         - require the F90 interface and link the fortran library
 #
-# The following are not for general use and are included in
-# NETCDF_LIBRARIES if the corresponding option above is set.
+# In some installations of NETCDF, the different interfaces may be installed in separate 
+# directories.  When this is the case, the other interfaces may not be located. For each interface,
+# you can set CMake variables to provide the include path of that interface:
+# 
+#     NETCDF_CXX_DIR
 #
-#  NETCDF_LIBRARIES_C    - Just the C interface
-#  NETCDF_LIBRARIES_CXX  - C++ interface, if available
+# The following are not for general use and are included in
+# NETCDF_LIBRARIES if the corresponding options above are set.
+#
+#  NETCDF_INCLUDES_CXX   - C++ interface (include dir), if available
+#  NETCDF_LIBRARIES_CXX  - C++ interface (library), if available
+#
 #  NETCDF_LIBRARIES_F77  - Fortran 77 interface, if available
 #  NETCDF_LIBRARIES_F90  - Fortran 90 interface, if available
 #
@@ -25,6 +32,16 @@
 #  target_link_libraries (uses_f90_interface ${NETCDF_LIBRARIES})
 #  target_link_libraries (only_uses_c_interface ${NETCDF_LIBRARIES_C})
 #
+# Or, 
+#  set (NETCDF_CXX "YES")
+#  find_package (NetCDF REQUIRED)
+#  target_link_libraries (uses_f90_interface ${NETCDF_LIBRARIES})
+#  target_link_libraries (only_uses_c_interface ${NETCDF_LIBRARIES_C})
+#
+# Updated by Pete Willemsen, January 2019
+#   - look for C++4 (netcdf_c++4) bindings rather than older C++ bindings (netcdf_c++)
+#   - allows the C library and C++ libraries to be installed in different locations
+# 
 # Taken from: https://github.com/jedbrown/cmake-modules/blob/master/FindNetCDF.cmake
 #
 # Copyright Constantine Khroulev
@@ -58,24 +75,56 @@ if (NETCDF_INCLUDES AND NETCDF_LIBRARIES)
   set (NETCDF_FIND_QUIETLY TRUE)
 endif (NETCDF_INCLUDES AND NETCDF_LIBRARIES)
 
-find_path (NETCDF_INCLUDES netcdf.h
-  HINTS NETCDF_DIR ENV NETCDF_DIR)
+# On some systems, netcdf and netcdf_cxx are installed in different
+# directories.  When this is the case, a single NETCDF_DIR location
+# will not be able to locate both interfaces, say C and CXX. 
+#
+# Use NETCDF_DIR to help locate the base C interface. If
+# NETCDF_CXX_DIR is set, we can add it to the search HINTS for finding
+# any CXX-related files.
 
-find_library (NETCDF_LIBRARIES_C       NAMES netcdf)
-mark_as_advanced(NETCDF_LIBRARIES_C)
+# Search for NetCDF C interfaces using well-known locations as well as the
+# NETCDF_DIR hint and/or environment variable
+find_path (NETCDF_INCLUDES netcdf.h
+	   HINTS ${NETCDF_DIR} ENV NETCDF_DIR)
+# message(STATUS "FindNetCDF.cmake: NETCDF_INCLUDES=${NETCDF_INCLUDES}")
+
+# Extract the Parent directory path for NETCDF_C
+get_filename_component(NETCDF_C_DIR ${NETCDF_INCLUDES} DIRECTORY)
+# message(STATUS "Parent dir = ${NETCDF_C_DIR}")
+
+# Locate the NETCDF Libraries for the C interface
+find_library (NETCDF_LIBRARIES       NAMES netcdf   PATHS ${NETCDF_C_DIR}/lib)
+mark_as_advanced(NETCDF_LIBRARIES)
+# message(STATUS "FindNetCDF.cmake: NETCDF_LIBRARIES_C=${NETCDF_LIBRARIES_C}")
 
 set (NetCDF_has_interfaces "YES") # will be set to NO if we're missing any interfaces
-set (NetCDF_libs "${NETCDF_LIBRARIES_C}")
+set (NetCDF_libs "${NETCDF_LIBRARIES}")
 
-get_filename_component (NetCDF_lib_dirs "${NETCDF_LIBRARIES_C}" PATH)
+get_filename_component (NetCDF_lib_dirs "${NETCDF_LIBRARIES}" PATH)
 
 macro (NetCDF_check_interface lang header libs)
   if (NETCDF_${lang})
+
+    message(STATUS "Searching for NETCDF_${lang} interfaces (via header file ${header} and library ${libs})...")
+    set (NETCDF_${lang}_SEARCHPATH ${NETCDF_DIR})
+    if (NETCDF_${lang}_DIR)
+      set (NETCDF_${lang}_SEARCHPATH ${NETCDF_${lang}_DIR})
+      message(STATUS "     looking in ${NETCDF_${lang}_SEARCHPATH}")
+    endif (NETCDF_${lang}_DIR)
+
     find_path (NETCDF_INCLUDES_${lang} NAMES ${header}
-      HINTS "${NETCDF_INCLUDES}" NO_DEFAULT_PATH)
-    find_library (NETCDF_LIBRARIES_${lang} NAMES ${libs}
-      HINTS "${NetCDF_lib_dirs}" NO_DEFAULT_PATH)
+      HINTS ${NETCDF_${lang}_SEARCHPATH})
+    # message(STATUS "   result NETCDF_INCLUDES_${lang} = ${NETCDF_INCLUDES_${lang}}")
+
+    # Extract the Parent directory path for NETCDF_${lang}
+    get_filename_component(NETCDF_${lang}_PDIR ${NETCDF_INCLUDES_${lang}} DIRECTORY)
+    # message(STATUS "   Parent ${lang} dir = ${NETCDF_${lang}_PDIR}")
+
+    find_library (NETCDF_LIBRARIES_${lang}    NAMES ${libs}      PATHS ${NETCDF_${lang}_PDIR}/lib)
+    # message(STATUS "   result NETCDF_LIBRARIES_${lang} = ${NETCDF_LIBRARIES_${lang}}")
     mark_as_advanced (NETCDF_INCLUDES_${lang} NETCDF_LIBRARIES_${lang})
+    
     if (NETCDF_INCLUDES_${lang} AND NETCDF_LIBRARIES_${lang})
       list (INSERT NetCDF_libs 0 ${NETCDF_LIBRARIES_${lang}}) # prepend so that -lnetcdf is last
     else (NETCDF_INCLUDES_${lang} AND NETCDF_LIBRARIES_${lang})
@@ -85,11 +134,12 @@ macro (NetCDF_check_interface lang header libs)
   endif (NETCDF_${lang})
 endmacro (NetCDF_check_interface)
 
-NetCDF_check_interface (CXX netcdfcpp.h netcdf_c++)
+NetCDF_check_interface (CXX netcdf netcdf_c++4)  # header for CXX does not have .h
 NetCDF_check_interface (F77 netcdf.inc  netcdff)
 NetCDF_check_interface (F90 netcdf.mod  netcdff)
 
-set (NETCDF_LIBRARIES "${NetCDF_libs}" CACHE STRING "All NetCDF libraries required for interface level")
+message(STATUS "All NetCDF Libraries: ${NetCDF_libs}")
+set (NETCDF_LIBRARIES "${NetCDF_libs}" CACHE STRING "All NetCDF libraries required for requested interfaces")
 
 # handle the QUIETLY and REQUIRED arguments and set NETCDF_FOUND to TRUE if
 # all listed variables are TRUE
