@@ -34,7 +34,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # ----------------------------------------------------------
 # SET (Boost_MULTITHREADED TRUE)
 
-SET(BOOST_LIBRARYDIR /usr/lib64)
+if(DEFINED ENV{BOOST_DIR})
+    message(STATUS "Setting BOOST_DIR to $ENV{BOOST_DIR}")
+    SET(BOOST_ROOT $ENV{BOOST_DIR})
+endif()
 
 # If you want to get more info on what the Find Boost macro is
 # doing...  
