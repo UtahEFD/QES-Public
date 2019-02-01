@@ -75,7 +75,7 @@ public:
      *     [ny,nx]. So are every other layers in this script (they are stored as
      *     [nx,ny] in WRF).
      */
-    void readWindData() {}
+    void readWindData();
             
 
     /**
@@ -133,6 +133,26 @@ public:
     
 
 private:
+
+    int nx, ny;
+
+    // PHB Struct from WRF
+    // float PHB(Time, bottom_top_stag, south_north, west_east) ;
+    //		PHB:FieldType = 104 ;
+    //		PHB:MemoryOrder = "XYZ" ;
+    //		PHB:description = "base-state geopotential" ;
+    //		PHB:units = "m2 s-2" ;
+    //		PHB:stagger = "Z" ;
+    //		PHB:coordinates = "XLONG XLAT" ;
+
+    // PH Struct
+    // float PH(Time, bottom_top_stag, south_north, west_east) ;
+    // 		PH:FieldType = 104 ;
+    //		PH:MemoryOrder = "XYZ" ;
+    //		PH:description = "perturbation geopotential" ;
+    //		PH:units = "m2 s-2" ;
+    //		PH:stagger = "Z" ;
+    //		PH:coordinates = "XLONG XLAT" ;
 };
 
     
