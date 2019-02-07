@@ -11,7 +11,10 @@ class Cut_cell
 {
 private:
 
+
 public:
+
+	friend class test_CutCell;
 
 	/*
 	 * Assumes DTEHF exists
@@ -24,11 +27,13 @@ public:
 
 	void sort(std::vector<float> &angle, std::vector< Vector3<float>> &cut_points, float pi);
 
+private:
+
 	void calculateArea(std::vector< Vector3<float>> &cut_points, int cutcell_index, float dx, float dy, float dz, 
 					  std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, 
 					  std::vector<float> &h, std::vector<float> &g, int index);
 
-	/*
+	/*1
 	 * This function uses the edges that form triangles that lie on either the top or bottom of the cell to 
 	 * calculate the terrain area that covers each face.
 	 *

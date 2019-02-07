@@ -230,6 +230,7 @@ void Cut_cell::calculateArea(std::vector< Vector3<float>> &cut_points, int cutce
 	}
 }
 
+
 void Cut_cell::calculateAreaTopBot(std::vector< Vector3<float> > &terrainPoints, 
 						 const std::vector< Edge<int> > &terrainEdges, 
 						 const int cellIndex, const float dx, const float dy, const float dz, 
@@ -272,11 +273,18 @@ void Cut_cell::calculateAreaTopBot(std::vector< Vector3<float> > &terrainPoints,
 		Vector3<float> a = listOfTriangles[t][0];
 		Vector3<float> b = listOfTriangles[t][1];
 		Vector3<float> c = listOfTriangles[t][2];
+		//move to local space
+		for (int d = 0; d < 3; d++)
+		{
+			a[d] -= location[d];
+			b[d] -= location[d];
+			c[d] -= location[d];
+		}
 		area += ( a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1]) ) / 2.0f;
 	}
 
 	//when on the bottom, the area of triangles is the area of the air, so subtract it from the face size
-	if (isBot)
+	if (!isBot)
 		area = dx * dy - area;
 
 	coef[cellIndex] = area / (dx * dy); 
