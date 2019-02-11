@@ -23,11 +23,34 @@
 // A. GOWARDHAN, M. J. BROWN, and W. J. STEENBURGH
 //
 
+#include <string>
+#include <netcdf>
+using namespace std;
+using namespace netCDF;
+using namespace netCDF::exceptions;
+
+class NCInputFile {
+public:
+    NCInputFile() {}
+    ~NCInputFile() {}
+    
+    /** Mimic matlab functionality for ncread */
+    void readVectorData(const std::string d)
+    {
+        
+    }
+
+    
+private:
+};
+
+    
+
 class WRFInput
 {
 public:
 
-    WRFInput();
+    WRFInput(const std::string& filename);
     ~WRFInput();
 
     /**
@@ -79,6 +102,13 @@ public:
             
 
     /**
+     * Roughness Length
+     *
+     *
+     */
+    void roughnessLength();
+
+    /**
      * Smoothing domain - Smooth.m
      * 
      * If the total number of horizontal cells exceeds the limit defined in the first part with MaxTerrainSize,
@@ -127,14 +157,15 @@ public:
      *     • Finally, maximal vertical coordinate is stored, it will be used to define the domain height (this
      * value multiplied by 1.2).
      */
-    void setWRFDataPoint() 
-    {
-    }
+    void setWRFDataPoint();
     
 
 private:
 
+    NcFile wrfInputFile;
+
     int nx, ny;
+    int xDim[2], yDim[2];
 
     // PHB Struct from WRF
     // float PHB(Time, bottom_top_stag, south_north, west_east) ;
