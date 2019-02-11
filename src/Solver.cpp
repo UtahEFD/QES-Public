@@ -271,12 +271,12 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
             canopy->readCanopy(nx, ny, nz, landuse_flag, num_canopies, lu_canopy_flag, canopy_atten, canopy_top);
 
             // here because the array that holds this all Building*
-            ((Canopy*)canopies[i])->defineCanopy(dx, dy, dz, nx, ny, nz, icellflag.data(), num_canopies, lu_canopy_flag,
+            ((Canopy*)canopies[i])->defineCanopy(dx, dy, dz, nx, ny, nz, icellflag, num_canopies, lu_canopy_flag,
                                                  canopy_atten, canopy_top);			// Defininf
                                                                                                 // canopy
                                                                                                 // bounderies
 
-            canopy->plantInitial(nx, ny, nz, vk, icellflag.data(), z, u0, v0, canopy_atten, canopy_top, canopy_top_index,
+            canopy->plantInitial(nx, ny, nz, vk, icellflag, z, u0, v0, canopy_atten, canopy_top, canopy_top_index,
                                  canopy_ustar, canopy_z0, canopy_d);		// Apply canopy parameterization
         }
     }
@@ -289,13 +289,13 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
     {
         for (int i = 0; i < buildings.size(); i++)
         {
-            ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz, nx, ny, nz, icellflag.data(), mesh_type_flag);
+            ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz, nx, ny, nz, icellflag, mesh_type_flag);
 
         }
 
         std::cout << "Defining Solid Walls...\n";
         /// Boundary condition for building edges
-        defineWalls(dx,dy,dz,nx,ny,nz, icellflag.data(), n.data(), m.data(), f.data(), e.data(), h.data(), g.data());
+        defineWalls(dx,dy,dz,nx,ny,nz, icellflag, n.data(), m.data(), f.data(), e.data(), h.data(), g.data());
         std::cout << "Walls Defined...\n";
     }
     else
@@ -310,15 +310,15 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
 
     	for (int i = 0; i < buildings.size(); i++)
     	{
-            ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz, nx, ny, nz, icellflag.data(), mesh_type_flag);
-    	    ((RectangularBuilding*)buildings[i])->setCutCells(dx, dy, dz, nx, ny, nz, icellflag.data(), x_cut, y_cut, z_cut,
+            ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz, nx, ny, nz, icellflag, mesh_type_flag);
+    	    ((RectangularBuilding*)buildings[i])->setCutCells(dx, dy, dz, nx, ny, nz, icellflag, x_cut, y_cut, z_cut,
                                                               num_points, coeff);    /// located in RectangularBuilding.h
 
         }
 
         std::cout << "Defining Solid Walls...\n";
         /// Boundary condition for building edges
-        defineWalls(dx, dy, dz, nx, ny, nz, icellflag.data(), n.data(), m.data(), f.data(), e.data(), h.data(), g.data(),
+        defineWalls(dx, dy, dz, nx, ny, nz, icellflag, n.data(), m.data(), f.data(), e.data(), h.data(), g.data(),
                     x_cut, y_cut, z_cut, num_points, coeff);
         std::cout << "Walls Defined...\n";
     }
@@ -353,6 +353,23 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
         }
     }
 
+    /*
+     * Calling getWallIndices to return 6 vectores of indices of the cells that have wall to right/left,
+     * wall above/below and wall in front/back
+     */
+    getWallIndices (icellflag, wall_right_indices, wall_left_indices, wall_above_indices,
+                   wall_below_indices, wall_front_indices, wall_back_indices);
+
+    /*
+     * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
+     * wall above/below and wall in front/back and applies the log law boundary condition fix
+     * to the cells near Walls
+     *
+     */
+    wallLogBC (wall_right_indices, wall_left_indices, wall_above_indices, wall_below_indices,
+                wall_front_indices, wall_back_indices, u0.data(), v0.data(), w0.data(), z0);
+
+
 
     /// New boundary condition implementation
     for (int k = 0; k < nz-1; k++)
@@ -375,10 +392,11 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
 
 
 
-void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, int* icellflag, float* n, float* m, float* f,
-						float* e, float* h, float* g, std::vector<std::vector<std::vector<float>>> x_cut,
-						std::vector<std::vector<std::vector<float>>>y_cut,std::vector<std::vector<std::vector<float>>> z_cut,
-						std::vector<std::vector<int>> num_points, std::vector<std::vector<float>> coeff)
+void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag,
+                        float* n, float* m, float* f, float* e, float* h, float* g,
+                        std::vector<std::vector<std::vector<float>>> x_cut, std::vector<std::vector<std::vector<float>>>y_cut,
+                        std::vector<std::vector<std::vector<float>>> z_cut, std::vector<std::vector<int>> num_points,
+                        std::vector<std::vector<float>> coeff)
 
 {
 
@@ -581,7 +599,7 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
 				if (icellflag[icell_cent] !=0)
 				{
 
-					/// Wall bellow
+					/// Wall below
 					if (icellflag[icell_cent-(nx-1)*(ny-1)]==0)
 					{
 			    		n[icell_cent] = 0.0;
@@ -618,8 +636,8 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
 }
 
 
-void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, int* icellflag, float* n, float* m, float* f,
-						float* e, float* h, float* g)
+void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag,
+                         float* n, float* m, float* f, float* e, float* h, float* g)
 
 {
 
@@ -632,7 +650,7 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
 				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
 				if (icellflag[icell_cent] !=0) {
 
-					/// Wall bellow
+					/// Wall below
 					if (icellflag[icell_cent-(nx-1)*(ny-1)]==0) {
 			    		n[icell_cent] = 0.0;
 					}
@@ -660,4 +678,197 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, i
 			}
 		}
 	}
+}
+
+
+void Solver::getWallIndices(std::vector<int> &icellflag, std::vector<int>& wall_right_indices,
+                            std::vector<int>& wall_left_indices,std::vector<int>& wall_above_indices,
+                            std::vector<int>& wall_below_indices, std::vector<int>& wall_front_indices,
+                            std::vector<int>& wall_back_indices)
+{
+  for (int i=1; i<nx-2; i++)
+  {
+    for (int j=1; j<ny-2; j++)
+    {
+      for (int k=1; k<nz-2; k++)
+      {
+        int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        if (icellflag[icell_cent] !=0)
+        {
+
+          /// Wall below
+          if (icellflag[icell_cent-(nx-1)*(ny-1)]==0)
+          {
+            wall_below_indices.push_back(icell_cent);
+            n[icell_cent] = 0.0;
+          }
+          /// Wall above
+          if (icellflag[icell_cent+(nx-1)*(ny-1)]==0)
+          {
+            wall_above_indices.push_back(icell_cent);
+            m[icell_cent] = 0.0;
+          }
+          /// Wall in back
+          if (icellflag[icell_cent-1]==0)
+          {
+            wall_back_indices.push_back(icell_cent);
+            f[icell_cent] = 0.0;
+          }
+          /// Wall in front
+          if (icellflag[icell_cent+1]==0)
+          {
+            wall_front_indices.push_back(icell_cent);
+            e[icell_cent] = 0.0;
+          }
+          /// Wall on right
+          if (icellflag[icell_cent-(nx-1)]==0)
+          {
+            wall_right_indices.push_back(icell_cent);
+            h[icell_cent] = 0.0;
+          }
+          /// Wall on left
+          if (icellflag[icell_cent+(nx-1)]==0)
+          {
+            wall_left_indices.push_back(icell_cent);
+            g[icell_cent] = 0.0;
+          }
+        }
+      }
+    }
+  }
+
+}
+
+
+void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& wall_left_indices,
+                        std::vector<int>& wall_above_indices,std::vector<int>& wall_below_indices,
+                        std::vector<int>& wall_front_indices, std::vector<int>& wall_back_indices,
+                        double *u0, double *v0, double *w0, float z0)
+{
+  float ustar_wall;              /**< velocity gradient at the wall */
+  float new_ustar;              /**< new ustar value calculated */
+  float vel_mag1;               /**< velocity magnitude at the nearest cell to wall in perpendicular direction */
+  float vel_mag2;                /**< velocity magnitude at the second cell near wall in perpendicular direction */
+  float dist1;                  /**< distance of the center of the nearest cell in perpendicular direction from wall */
+  float dist2;                  /**< distance of the center of second near cell in perpendicular direction from wall */
+  float wind_dir;               /**< wind direction in parallel planes to wall */
+
+
+  dist1 = 0.5*dy;
+  dist2 = 1.5*dy;
+
+  /// apply log law fix to the cells with wall to right
+  for (int i=0; i < wall_right_indices.size(); i++)
+  {
+    ustar_wall = 0.1;          /// reset default value for velocity gradient
+    for (int iter=0; iter<20; iter++)
+    {
+      wind_dir = atan2(w0[wall_right_indices[i]+(nx-1)],u0[wall_right_indices[i]+(nx-1)]);
+      vel_mag2 = sqrt(pow(u0[wall_right_indices[i]+(nx-1)],2.0)+pow(w0[wall_right_indices[i]+(nx-1)],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
+      v0[wall_right_indices[i]] = 0;        /// normal component of velocity set to zero
+      /// parallel components of velocity to wall
+      u0[wall_right_indices[i]] = vel_mag1*cos(wind_dir);
+      w0[wall_right_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = vk*vel_mag1/log(dist1/z0);
+      ustar_wall = new_ustar;
+    }
+  }
+
+  /// apply log law fix to the cells with wall to left
+  for (int i=0; i < wall_left_indices.size(); i++)
+  {
+    ustar_wall = 0.1;       /// reset default value for velocity gradient
+    for (int iter=0; iter<20; iter++)
+    {
+      wind_dir = atan2(w0[wall_left_indices[i]-(nx-1)],u0[wall_left_indices[i]-(nx-1)]);
+      vel_mag2 = sqrt(pow(u0[wall_left_indices[i]-(nx-1)],2.0)+pow(w0[wall_left_indices[i]-(nx-1)],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
+      v0[wall_left_indices[i]] = 0;          /// normal component of velocity set to zero
+      /// parallel components of velocity to wall
+      u0[wall_left_indices[i]] = vel_mag1*cos(wind_dir);
+      w0[wall_left_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = vk*vel_mag1/log(dist1/z0);
+      ustar_wall = new_ustar;
+    }
+  }
+
+  dist1 = 0.5*dz;
+  dist2 = 1.5*dz;
+
+  /// apply log law fix to the cells with wall above
+  for (int i=0; i < wall_above_indices.size(); i++)
+  {
+    ustar_wall = 0.1;       /// reset default value for velocity gradient
+    for (int iter=0; iter<20; iter++)
+    {
+      wind_dir = atan2(v0[wall_above_indices[i]-(nx-1)*(ny-1)],u0[wall_above_indices[i]-(nx-1)*(ny-1)]);
+      vel_mag2 = sqrt(pow(u0[wall_above_indices[i]-(nx-1)*(ny-1)],2.0)+pow(v0[wall_above_indices[i]-(nx-1)*(ny-1)],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
+      w0[wall_above_indices[i]] = 0;          /// normal component of velocity set to zero
+      /// parallel components of velocity to wall
+      u0[wall_above_indices[i]] = vel_mag1*cos(wind_dir);
+      v0[wall_above_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = vk*vel_mag1/log(dist1/z0);
+      ustar_wall = new_ustar;
+    }
+  }
+
+  /// apply log law fix to the cells with wall below
+  for (int i=0; i < wall_below_indices.size(); i++)
+  {
+    ustar_wall = 0.1;       /// reset default value for velocity gradient
+    for (int iter=0; iter<20; iter++)
+    {
+      wind_dir = atan2(v0[wall_below_indices[i]+(nx-1)*(ny-1)],u0[wall_below_indices[i]+(nx-1)*(ny-1)]);
+      vel_mag2 = sqrt(pow(u0[wall_below_indices[i]+(nx-1)*(ny-1)],2.0)+pow(v0[wall_below_indices[i]+(nx-1)*(ny-1)],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
+      w0[wall_below_indices[i]] = 0;        /// normal component of velocity set to zero
+      /// parallel components of velocity to wall
+      u0[wall_below_indices[i]] = vel_mag1*cos(wind_dir);
+      v0[wall_below_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = vk*vel_mag1/log(dist1/z0);
+      ustar_wall = new_ustar;
+    }
+  }
+
+  dist1 = 0.5*dx;
+  dist2 = 1.5*dx;
+
+  /// apply log law fix to the cells with wall in front
+  for (int i=0; i < wall_front_indices.size(); i++)
+  {
+    ustar_wall = 0.1;       /// reset default value for velocity gradient
+    for (int iter=0; iter<20; iter++)
+    {
+      wind_dir = atan2(w0[wall_front_indices[i]-1],v0[wall_front_indices[i]-1]);
+      vel_mag2 = sqrt(pow(v0[wall_front_indices[i]-1],2.0)+pow(w0[wall_front_indices[i]-1],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
+      u0[wall_front_indices[i]] = 0;        /// normal component of velocity set to zero
+      /// parallel components of velocity to wall
+      v0[wall_front_indices[i]] = vel_mag1*cos(wind_dir);
+      w0[wall_front_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = vk*vel_mag1/log(dist1/z0);
+      ustar_wall = new_ustar;
+    }
+  }
+
+  /// apply log law fix to the cells with wall in back
+  for (int i=0; i < wall_back_indices.size(); i++)
+  {
+    ustar_wall = 0.1;
+    for (int iter=0; iter<20; iter++)
+    {
+      wind_dir = atan2(w0[wall_back_indices[i]+1],v0[wall_back_indices[i]+1]);
+      vel_mag2 = sqrt(pow(v0[wall_back_indices[i]+1],2.0)+pow(w0[wall_back_indices[i]+1],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
+      u0[wall_back_indices[i]] = 0;        /// normal component of velocity set to zero
+      /// parallel components of velocity to wall
+      v0[wall_back_indices[i]] = vel_mag1*cos(wind_dir);
+      w0[wall_back_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = vk*vel_mag1/log(dist1/z0);
+      ustar_wall = new_ustar;
+    }
+  }
+
 }

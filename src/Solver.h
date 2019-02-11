@@ -1,6 +1,6 @@
 #pragma once
 
-/* 
+/*
  * This is an abstract class that is the basis for the windfield
  * convergence algorithm. This class has information needed to run
  * the simulation as well as functions widely used by different solver
@@ -162,6 +162,13 @@ protected:
      */
     void printProgress (float percentage);
 
+    std::vector<int> wall_right_indices;     /**< Indices of the cells with wall to right boundary condition */
+    std::vector<int> wall_left_indices;      /**< Indices of the cells with wall to left boundary condition */
+    std::vector<int> wall_above_indices;     /**< Indices of the cells with wall above boundary condition */
+    std::vector<int> wall_below_indices;     /**< Indices of the cells with wall bellow boundary condition */
+    std::vector<int> wall_back_indices;      /**< Indices of the cells with wall in back boundary condition */
+    std::vector<int> wall_front_indices;     /**< Indices of the cells with wall in front boundary condition */
+
 public:
     Solver(const URBInputData* UID, const DTEHeightField* DTEHF);
 
@@ -184,7 +191,7 @@ public:
      * related coefficients to zero to define solid walls for non
      * cut-cells.
      */
-    void defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, int* icellflag, float* n, float* m,
+    void defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag, float* n, float* m,
                      float* f, float* e, float* h, float* g, std::vector<std::vector<std::vector<float>>> x_cut,
                      std::vector<std::vector<std::vector<float>>>y_cut,std::vector<std::vector<std::vector<float>>> z_cut,
                      std::vector<std::vector<int>> num_points, std::vector<std::vector<float>> coeff);
@@ -195,6 +202,32 @@ public:
      * function for stair-step method and sets related coefficients to
      * zero to define solid walls.
      */
-    void defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, int* icellflag, float* n, float* m,
+    void defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag, float* n, float* m,
                      float* f, float* e, float* h, float* g);
+
+
+    /**
+    * @brief
+    *
+    * This function takes in the icellflag valus set by setCellsFlag
+    * function for both stair-step and cut-cell methods and creates vectors of indices
+    * of the cells that have wall to right/left, wall above/bellow and wall in front/back
+    *
+    */
+    void getWallIndices (std::vector<int>& icellflag, std::vector<int>& wall_right_indices, std::vector<int>& wall_left_indices,
+                        std::vector<int>& wall_above_indices, std::vector<int>& wall_below_indices,
+                        std::vector<int>& wall_front_indices, std::vector<int>& wall_back_indices);
+
+    /**
+    * @brief
+    *
+    * This function takes in vectores of indices of the cells that have wall to right/left,
+    * wall above/bellow and wall in front/back and applies the log law boundary condition fix
+    * to the cells near Walls (based on Kevin Briggs master's thesis (2015))
+    *
+    */
+    void wallLogBC (std::vector<int>& wall_right_indices, std::vector<int>& wall_left_indices,
+                    std::vector<int>& wall_above_indices, std::vector<int>& wall_below_indices,
+                    std::vector<int>& wall_front_indices, std::vector<int>& wall_back_indices,
+                    double *u0, double *v0, double *w0, float z0);
 };

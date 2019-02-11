@@ -2,7 +2,7 @@
 
 
 
-void Canopy::readCanopy(int nx, int ny, int nz, int landuse_flag, int num_canopies,int &lu_canopy_flag, 
+void Canopy::readCanopy(int nx, int ny, int nz, int landuse_flag, int num_canopies,int &lu_canopy_flag,
 					std::vector<std::vector<std::vector<float>>> &canopy_atten,std::vector<std::vector<float>> &canopy_top)
 {
 
@@ -24,10 +24,10 @@ void Canopy::readCanopy(int nx, int ny, int nz, int landuse_flag, int num_canopi
 }
 
 
-void Canopy::plantInitial(int nx, int ny, int nz, float vk, int *icellflag, std::vector<float> z, std::vector<double> &u0, 
-					std::vector<double> &v0, std::vector<std::vector<std::vector<float>>> &canopy_atten, 
-					std::vector<std::vector<float>> &canopy_top, std::vector<std::vector<float>> &canopy_top_index, 
-					std::vector<std::vector<float>> &canopy_ustar, std::vector<std::vector<float>> &canopy_z0, 
+void Canopy::plantInitial(int nx, int ny, int nz, float vk, std::vector<int> &icellflag, std::vector<float> z, std::vector<double> &u0, 
+					std::vector<double> &v0, std::vector<std::vector<std::vector<float>>> &canopy_atten,
+					std::vector<std::vector<float>> &canopy_top, std::vector<std::vector<float>> &canopy_top_index,
+					std::vector<std::vector<float>> &canopy_ustar, std::vector<std::vector<float>> &canopy_z0,
 					std::vector<std::vector<float>> &canopy_d)
 {
 
@@ -35,20 +35,20 @@ void Canopy::plantInitial(int nx, int ny, int nz, float vk, int *icellflag, std:
 	int num_atten;
 
 	regression(nx,ny,nz,vk,z.data(),u0.data(),v0.data(),canopy_atten,canopy_top,canopy_top_index,canopy_ustar,canopy_z0);
-	
+
 	for (int j=0; j<ny-1; j++)
 	{
 		for (int i=0; i<nx-1; i++)
 		{
 			if (canopy_top[i][j] > 0)
 			{
-				canopy_d[i][j] = bisection(canopy_ustar[i][j],canopy_z0[i][j], canopy_top[i][j], 
+				canopy_d[i][j] = bisection(canopy_ustar[i][j],canopy_z0[i][j], canopy_top[i][j],
 								canopy_atten[i][j][canopy_top_index[i][j]],vk,0.0);
-				std::cout << "d passed from bisection is:" << canopy_d[i][j] << "\n";  
+				std::cout << "d passed from bisection is:" << canopy_d[i][j] << "\n";
 				if (canopy_d[i][j] == 10000)
 				{
-					std::cout << "bisection failed to converge" << "\n"; 
-					canopy_d[i][j] = canopy_slope_match(canopy_z0[i][j], canopy_top[i][j], 
+					std::cout << "bisection failed to converge" << "\n";
+					canopy_d[i][j] = canopy_slope_match(canopy_z0[i][j], canopy_top[i][j],
 									canopy_atten[i][j][canopy_top_index[i][j]]);
 				}
 				u_H = (canopy_ustar[i][j]/vk)*log((canopy_top[i][j]-canopy_d[i][j])/canopy_z0[i][j]);
@@ -59,8 +59,8 @@ void Canopy::plantInitial(int nx, int ny, int nz, float vk, int *icellflag, std:
 						if (canopy_atten[i][j][k] > 0)
 						{
 							avg_atten = canopy_atten[i][j][k];
-				
-							if (canopy_atten[i][j][k+1]!=canopy_atten[i][j][k] || 
+
+							if (canopy_atten[i][j][k+1]!=canopy_atten[i][j][k] ||
 											canopy_atten[i][j][k-1]!=canopy_atten[i][j][k])
 							{
 								num_atten = 1;
@@ -112,7 +112,7 @@ void Canopy::plantInitial(int nx, int ny, int nz, float vk, int *icellflag, std:
 						if (veg_vel_frac > 1 || veg_vel_frac < 0)
 						{
 							veg_vel_frac = 1;
-						} 
+						}
 						int icell_face = i + j*nx + k*nx*ny;
 						u0[icell_face] *= veg_vel_frac;
 						v0[icell_face] *= veg_vel_frac;
@@ -131,7 +131,7 @@ void Canopy::plantInitial(int nx, int ny, int nz, float vk, int *icellflag, std:
 							}
 						}
 					}
-				}							
+				}
 			}
 		}
 	}
@@ -139,14 +139,14 @@ void Canopy::plantInitial(int nx, int ny, int nz, float vk, int *icellflag, std:
 }
 
 
-void Canopy::regression(int nx, int ny, int nz, float vk, float* z, double *u0, double *v0, 
+void Canopy::regression(int nx, int ny, int nz, float vk, float* z, double *u0, double *v0,
 					std::vector<std::vector<std::vector<float>>> &canopy_atten, std::vector<std::vector<float>> &canopy_top,
-					std::vector<std::vector<float>> &canopy_top_index, std::vector<std::vector<float>> &canopy_ustar, 
+					std::vector<std::vector<float>> &canopy_top_index, std::vector<std::vector<float>> &canopy_ustar,
 					std::vector<std::vector<float>> &canopy_z0)
 {
 
 	int k_top, counter;
-	float sum_x, sum_y, sum_xy, sum_x_sq, local_mag; 
+	float sum_x, sum_y, sum_xy, sum_x_sq, local_mag;
 	float y, xm, ym;
 
 	for (int i=0; i<nx-1; i++)
@@ -213,9 +213,9 @@ float Canopy::bisection(float ustar, float z0, float canopy_top, float canopy_at
 	d2 = canopy_top;
 	d = (d1+d2)/2;
 
-	uhc = (ustar/vk)*(log((canopy_top-d1)/z0)+psi_m);	
+	uhc = (ustar/vk)*(log((canopy_top-d1)/z0)+psi_m);
 	fi = ((canopy_atten*uhc*vk)/ustar)-canopy_top/(canopy_top-d1);
-	
+
 	if (canopy_atten > 0)
 	{
 		iter = 0;
@@ -239,11 +239,11 @@ float Canopy::bisection(float ustar, float z0, float canopy_top, float canopy_at
 			d = 10000;
 		}
 	}
-	else 
+	else
 	{
 		d = 0.99*canopy_top;
 	}
-	
+
 	return d;
 
 }
@@ -268,7 +268,7 @@ float Canopy::canopy_slope_match(float z0, float canopy_top, float canopy_atten)
 	}
 	d2 = canopy_top;
 	d = (d1+d2)/2;
-	
+
 	if (canopy_atten > 0)
 	{
 		iter = 0;
@@ -291,15 +291,11 @@ float Canopy::canopy_slope_match(float z0, float canopy_top, float canopy_atten)
 			d = 0.7*canopy_top;
 		}
 	}
-	else 
+	else
 	{
 		d = 10000;
-	}	
+	}
 
 	return d;
 
 }
-
-
-
-				
