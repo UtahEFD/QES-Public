@@ -12,6 +12,7 @@ CUDA_ADD_LIBRARY( cudaurbcore
   Cut_cell.cpp
   DTEHeightField.cpp
   DynamicParallelism.cu
+  ESRIShapefile.cpp ESRIShapefile.h
   handleURBArgs.cpp
   Solver.cpp
   Mesh.cpp
