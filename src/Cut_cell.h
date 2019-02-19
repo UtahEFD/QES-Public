@@ -37,7 +37,7 @@ private:
 	 * This function uses the edges that form triangles that lie on either the top or bottom of the cell to 
 	 * calculate the terrain area that covers each face.
 	 *
-	 * @param terrainPoints - the points on the face that mark a separation of terrain and air
+	 * @param terrainPoints - the points in the cell that mark a separation of terrain and air
 	 * @param terrainEdges - a list of edges that exist between terrainPoints
 	 * @param cellIndex - the index of the cell (this is needed for the coef)
 	 * @param dx - dimension of the cell in the x direction
