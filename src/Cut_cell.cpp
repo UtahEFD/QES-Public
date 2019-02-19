@@ -43,6 +43,7 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 	{
 		location = cells[cutcell_index[j]].getLocationPoints();
 		terrainEdges = cells[cutcell_index[j]].getTerrainEdges();
+		std::vector< Vector3<float> > terrainPoints = cells[cutcell_index[j]].getTerrainPoints();
 		//for every face
 		for (int i=0; i<6; i++)
 		{
@@ -77,10 +78,10 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 				else
 				{
 					if (i == faceXYNeg_CF)
-						calculateAreaTopBot(cut_points, terrainEdges,cutcell_index[j], 
+						calculateAreaTopBot(terrainPoints, terrainEdges,cutcell_index[j], 
 											dx, dy, dz, location, n, true);
 					else
-						calculateAreaTopBot(cut_points, terrainEdges,cutcell_index[j], 
+						calculateAreaTopBot(terrainPoints, terrainEdges,cutcell_index[j], 
 											dx, dy, dz, location, m, false);
 				}
 			}
@@ -237,14 +238,14 @@ void Cut_cell::calculateAreaTopBot(std::vector< Vector3<float> > &terrainPoints,
 						 Vector3 <float> location, std::vector<float> &coef,
 						 const bool isBot)
 {
-	float area;
+	float area = 0.0f;
 	std::vector< int > pointsOnFace;
 	std::vector< Vector3< Vector3<float> > > listOfTriangles; //each point is a vector3, the triangle is 3 points
 	float faceHeight = location[2] + (isBot ? 0.0f : dz); //face height is 0 if we are on the bottom, otherwise add dz
 	
 	//find all points in the terrain on this face
 	for (int i = 0; i < terrainPoints.size(); i++)
-		if (terrainPoints[i][2] == faceHeight)
+		if (terrainPoints[i][2] > faceHeight - 0.00001f && terrainPoints[i][2] < faceHeight + 0.00001f)
 			pointsOnFace.push_back(i);
 
 	//find list of triangles
@@ -280,7 +281,9 @@ void Cut_cell::calculateAreaTopBot(std::vector< Vector3<float> > &terrainPoints,
 			b[d] -= location[d];
 			c[d] -= location[d];
 		}
-		area += ( a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1]) ) / 2.0f;
+
+		float tempArea = ( a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1]) ) / 2.0f;
+		area += (tempArea < 0.0f ? tempArea * -1.0f : tempArea);
 	}
 
 	//when on the bottom, the area of triangles is the area of the air, so subtract it from the face size
