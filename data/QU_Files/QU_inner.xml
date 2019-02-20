@@ -1,6 +1,6 @@
 <simulationParameters>
 	<domain> 40 40 100 </domain>
-	<cellSize> 5.0 5.0 1.0 </cellSize> <!-- Meters-->
+	<cellSize> 5.0 5.0 2.0 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements> 				<!-- Number of time steps-->
 	<rooftopFlag> 2 </rooftopFlag> 											<!-- Rooftop flag (0-none, 1-log profile, 2-vortex) -->
@@ -80,18 +80,18 @@
 	<sensorVelocityFlag> 0 </sensorVelocityFlag>
 	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
-<!--buildings>
-	<wallRoughness> 0.01 </wallRoughness>
+<buildings>
+	<wallRoughness> 0.05 </wallRoughness>
 	<numBuildings> 1 </numBuildings>
 	<numPolygonNodes> 0 </numPolygonNodes>
 	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
-		<height> 1.0 </height>
+		<height> 20.0 </height>
 		<baseHeight> 0 </baseHeight>
-		<xStart> 2.0 </xStart>
-		<yStart> 2.0 </yStart>
-		<length> 4.0 </length>
-		<width> 21.0 </width>
+		<xStart> 80.0 </xStart>
+		<yStart> 80.0 </yStart>
+		<length> 20.0 </length>
+		<width> 20.0 </width>
 	</rectangularBuilding>
-</buildings-->
+</buildings>
