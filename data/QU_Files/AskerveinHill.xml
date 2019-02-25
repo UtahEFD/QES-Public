@@ -20,6 +20,7 @@
 	<UTMY> 0 </UTMY>
 	<UTMZone> 1 </UTMZone>
 	<UTMZoneLetter> 17 </UTMZoneLetter>
+	<DEM>/scratch/AskerveinHill/askervein.tif</DEM>
 </simulationParameters>
 <metParams>
 	<metInputFlag> 0 </metInputFlag>
@@ -27,6 +28,7 @@
 	<maxSizeDataPoints> 1 </maxSizeDataPoints>
 	<siteName> sensor1 </siteName>
 	<fileName> sensor1.inp </fileName>
+	<site_coord_flag> 2 </site_coord_flag> 
 	<sensor>
 		<siteCoords> 1 </siteCoords>
 		<site_xcoord> 1.0</site_xcoord>

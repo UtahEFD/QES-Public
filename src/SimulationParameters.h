@@ -7,6 +7,7 @@
 
 #include "util/ParseInterface.h"
 #include "Vector3.h"
+#include <string>
 
 class SimulationParameters : public ParseInterface
 {
@@ -34,6 +35,7 @@ public:
 	int UTMZone;
 	int UTMZoneLetter;
 	int meshTypeFlag;
+	std::string demFile;
 
 	SimulationParameters()
 	{
@@ -63,6 +65,8 @@ public:
 		parsePrimitive<float>(false, UTMy, "UTMy");
 		parsePrimitive<int>(false, UTMZone, "UTMZone");
 		parsePrimitive<int>(false, UTMZoneLetter, "UTMZoneLetter");
+		demFile = "";
+		parsePrimitive<std::string>(false, demFile, "DEM");
 	}
 
 };

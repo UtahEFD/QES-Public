@@ -265,7 +265,7 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
       if (q != 2)
         max[q] -= min[q];
       else
-        max[q] -= (min[q] + (float)((*grid)[2]) );
+        max[q] = max[q] - min[q] + (float)((*grid)[2]);
       (*domain)[q] = (int)(max[q] / (float)(*grid)[q]) + 1;
       printf ("max %lf grid %lf\n" , max[q], (float)(*grid)[q]);
 

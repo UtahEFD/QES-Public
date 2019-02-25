@@ -55,9 +55,18 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
+    //if the commandline dem file is blank, and a file was specified in the xml,
+    //use the dem file from the xml
+    std::string demFile = "";
+    if (arguments.demFile != "")
+        demFile = arguments.demFile;
+    else if (UID->simParams && UID->simParams->demFile != "")
+        demFile = UID->simParams->demFile;
+
+
     DTEHeightField* DTEHF = 0;
-    if (arguments.demFile != "") {
-        DTEHF = new DTEHeightField(arguments.demFile, (*(UID->simParams->grid))[0], (*(UID->simParams->grid))[1] );
+    if (demFile != "") {
+        DTEHF = new DTEHeightField(demFile, (*(UID->simParams->grid))[0], (*(UID->simParams->grid))[1] );
     }
 
     if (DTEHF) {
