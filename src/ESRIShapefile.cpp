@@ -93,12 +93,7 @@ void ESRIShapefile::loadVectorData()
             else if( poGeometry != NULL
                      && wkbFlatten(poGeometry->getGeometryType()) == wkbPolygon )
             {
-#if GDAL_VERSION_NUM >= GDAL_COMPUTE_VERSION(2,3,0)
-                OGRPolygon *poPolygon = poGeometry->toPoint();
-#else
                 OGRPolygon *poPolygon = (OGRPolygon *) poGeometry;
-#endif
-
             
                 OGRLinearRing* pLinearRing = nullptr;;
                 pLinearRing = ((OGRPolygon*)poGeometry)->getExteriorRing();
