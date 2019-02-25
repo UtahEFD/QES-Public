@@ -22,13 +22,12 @@ WRFInput::WRFInput(const std::string& filename)
 {
     std::cout <<"there are "<<wrfInputFile.getVarCount()<<" variables"<<std::endl;;
     std::cout <<"there are "<<wrfInputFile.getAttCount()<<" attributes"<<std::endl;;
-
-   std::cout <<"there are "<<wrfInputFile.getGroupCount()<<" groups"<<std::endl;;
-   std::cout <<"there are "<<wrfInputFile.getTypeCount()<<" types"<<std::endl;;
-
-   // Read in all the dm
-   std::cout <<"there are "<< wrfInputFile.getDimCount()<<" dimensions"<<std::endl;;
-   
+    
+    std::cout <<"there are "<<wrfInputFile.getGroupCount()<<" groups"<<std::endl;;
+    std::cout <<"there are "<<wrfInputFile.getTypeCount()<<" types"<<std::endl;;
+    
+    // Read in all the dm
+    std::cout <<"there are "<< wrfInputFile.getDimCount()<<" dimensions"<<std::endl;;
 }
 
 WRFInput::~WRFInput()
@@ -382,7 +381,7 @@ void WRFInput::readWindData()
     std::cout << "PHB dim count: " << phbVar.getDimCount() << std::endl;
     std::vector<NcDim> dims = phbVar.getDims();
     long totalDim = 1;
-    for (int i=0; i<dims.size(); i++) {
+    for (auto i=0; i<dims.size(); i++) {
         std::cout << "Dim: " << dims[i].getName() << ", ";
         if (dims[i].isUnlimited())
             std::cout << "Unlimited (" << dims[i].getSize() << ")" << std::endl;
@@ -400,65 +399,36 @@ void WRFInput::readWindData()
     // this is a 114 x 114 x 41 x 360 dim array...
     // slice by slice 114 x 114 per slice; 41 slices; 360 times
 
-            // How do I extract out the start to end in and and y?
-            // PHB = double(PHB(SimData.XSTART:SimData.XEND,
-            // SimData.YSTART:SimData.YEND, :, SimData.TIMEVECT));
+    // Need to extract out the start to end in and and y?
+    // PHB = double(PHB(SimData.XSTART:SimData.XEND,
+    // SimData.YSTART:SimData.YEND, :, SimData.TIMEVECT));
+    // can use getVar to do this.
 
-    // we want all slice data (xstart:xend X ystart:yend) at all
-    // slices but only for the first 2 time series (TIMEVECT)
-    double* phbData = new double[ totalDim ];
-    phbVar.getVar( phbData );
-    
-    // whole thing is in... now
     int nz = 41;
-    long subsetDim = nx * ny * nz * 2;
-    double* phbSave = new double[ subsetDim ];
-    for (auto l=0; l<subsetDim; l++)
-        phbSave[l] = phbData[l];
-        
-//    for (long l=0; l<subsetDim; l++) {
-//        std::cout << "d[" << l << "] = " << dSave[l] << std::endl;
-//    }
+    long subsetDim = 2 * nz * ny * nx;
+
+    // PHB(Time, bottom_top_stag, south_north, west_east) ;
+    double* phbData = new double[ subsetDim ];
+    std::vector< size_t > starts = { 0, 0, 0, 0 };
+    std::vector< size_t > counts = { 2, 41, 114, 114 };   // depends on order of dims
+    phbVar.getVar( starts, counts, phbData );
 
     std::cout << "first 10 for phb" << std::endl;
     for (auto l=0; l<10; l++)
         std::cout << phbData[l] << std::endl;
-
+    
     std::cout << "last 10 for phb" << std::endl;
     for (auto l=subsetDim-10-1; l<subsetDim; l++)
         std::cout << phbData[l] << std::endl;
 
-    delete [] phbData;
-    
-
+    // 
     // Extraction of the Wind data vertical position
+    // 
     NcVar phVar = wrfInputFile.getVar("PH");
-    std::cout << "PH dim count: " << phVar.getDimCount() << std::endl;
+
+    double* phData = new double[ subsetDim ];
+    phVar.getVar( starts, counts, phData );
     
-    std::cout << "PH att count: " << phVar.getAttCount() << std::endl;
-    std::map<std::string, NcVarAtt> phVar_attrMap = phVar.getAtts();
-    for (std::map<std::string, NcVarAtt>::const_iterator ci=phVar_attrMap.begin();
-         ci!=phVar_attrMap.end(); ++ci) {
-        std::cout << "PH Attr: " << ci->first << std::endl;
-    }
-
-    // this is a 114 x 114 x 41 x 360 dim array...
-    // slice by slice 114 x 114 per slice; 41 slices; 360 times
-
-            // How do I extract out the start to end in and and y?
-            // PHB = double(PHB(SimData.XSTART:SimData.XEND,
-            // SimData.YSTART:SimData.YEND, :, SimData.TIMEVECT));
-
-    // we want all slice data (xstart:xend X ystart:yend) at all
-    // slices but only for the first 2 time series (TIMEVECT)
-    double* phData = new double[ totalDim ];
-    phVar.getVar( phData );
-    
-    // whole thing is in... now
-    double* phSave = new double[ subsetDim ];
-    for (auto l=0; l<subsetDim; l++)
-        phSave[l] = phData[l];
-
     std::cout << "first 10 for ph" << std::endl;
     for (auto l=0; l<10; l++)
         std::cout << phData[l] << std::endl;
@@ -467,77 +437,109 @@ void WRFInput::readWindData()
     for (auto l=subsetDim-10-1; l<subsetDim; l++)
         std::cout << phData[l] << std::endl;
 
-    delete [] phData;
-
 
     // 
     /// Height
     // 
-
     double* heightData = new double[ subsetDim ];
     for (auto l=0; l<subsetDim; l++) {
-        heightData[l] = (phbSave[l] + phSave[l]) / 9.81;
-        // std::cout << "H[" << l << "] = " << heightData[l] << std::endl;
+        heightData[l] = (phbData[l] + phData[l]) / 9.81;
     }
-
 
     std::cout << "first 10 for height" << std::endl;
     for (auto l=0; l<10; l++) {
         std::cout << "H[" << l << "] = " << heightData[l] << std::endl;
     }
 
-
     std::cout << "last 10 for height" << std::endl;
     for (auto l=subsetDim-10-1; l<subsetDim; l++) {
         std::cout << "H[" << l << "] = " << heightData[l] << std::endl;
     }
 
+    // 
+    // Data seems good above here
+    // 
+
+    
+    // Extraction of the Ustagg
+    // Ustagg = ncread(SimData.WRFFile,'U');
+    // Ustagg = Ustagg(SimData.XSTART:SimData.XEND +1, SimData.YSTART:SimData.YEND, :, SimData.TIMEVECT);
+    NcVar uStaggered = wrfInputFile.getVar("U");
+
+    // time, Z, Y, X is order
+    starts.clear(); counts.clear();
+    starts = { 0, 0, 0, 0 };
+    counts = { 2, 40, 114, 115 };
+    subsetDim = 1;
+    for (auto i=0; i<counts.size(); i++)  {
+        subsetDim *= (counts[i] - starts[i]);
+    }
+    
+    double* uStaggeredData = new double[ subsetDim ];
+    uStaggered.getVar( starts, counts, uStaggeredData );
+    
+    std::cout << "first 10 for uStaggered" << std::endl;
+    for (auto l=0; l<10; l++)
+        std::cout << uStaggeredData[l] << std::endl;
+    
+    std::cout << "last 10 for uStaggered" << std::endl;
+    for (auto l=subsetDim-10-1; l<subsetDim; l++)
+        std::cout << uStaggeredData[l] << std::endl;
+
+
+    // 
+    // Vstagg = ncread(SimData.WRFFile,'V');
+    // Vstagg = Vstagg(SimData.XSTART:SimData.XEND, SimData.YSTART:SimData.YEND +1, :, SimData.TIMEVECT);
+    //
+    NcVar vStaggered = wrfInputFile.getVar("V");
+    
+    starts.clear();  counts.clear();
+    starts = { 0, 0, 0, 0 };
+    counts = { 2, 40, 115, 114 };
+    subsetDim = 1;
+    for (auto i=0; i<counts.size(); i++) 
+        subsetDim *= (counts[i] - starts[i]);
+    
+    double* vStaggeredData = new double[ subsetDim ];
+    vStaggered.getVar( starts, counts, vStaggeredData );
+    
+    std::cout << "first 10 for vStaggered" << std::endl;
+    for (auto l=0; l<10; l++)
+        std::cout << vStaggeredData[l] << std::endl;
+    
+    std::cout << "last 10 for vStaggered" << std::endl;
+    for (auto l=subsetDim-10-1; l<subsetDim; l++)
+        std::cout << vStaggeredData[l] << std::endl;
+
+
+
+    // 
+    // %% Centering values %%
+    // SimData.NbAlt = size(Height,3) - 1;
+    //
+    int nbAlt = 40;  //hack for now
+    
+    // U = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
+    // for x = 1:SimData.nx
+    //   U(x,:,:,:) = .5*(Ustagg(x,:,:,:) + Ustagg(x+1,:,:,:));
+    // end
+    
+    std::vector<double> U( nx * ny * nbAlt * 2, 0.0 );
+    
+    // V = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
+    // for y = 1:SimData.ny
+    //    V(:,y,:,:) = .5*(Vstagg(:,y,:,:) + Vstagg(:,y+1,:,:));
+    // end
+    std::vector<double> V( nx * ny * nbAlt * 2, 0.0 );
+
+    // SimData.CoordZ = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
+    // for k = 1:SimData.NbAlt
+    //    SimData.CoordZ(:,:,k,:) = .5*(Height(:,:,k,:) + Height(:,:,k+1,:));
+    // end
+
 
 #if 0
 
-PHB = ncread(SimData.WRFFile,'PHB');
-PHB = double(PHB(SimData.XSTART:SimData.XEND, SimData.YSTART:SimData.YEND, :, SimData.TIMEVECT));
-
-PH = ncread(SimData.WRFFile,'PH');
-PH = double(PH(SimData.XSTART:SimData.XEND, SimData.YSTART:SimData.YEND, :, SimData.TIMEVECT));
-
-Height = (PHB + PH)./9.81; % Converting to meters
-SimData.NbAlt = size(Height,3) - 1;
-#endif
-
-
-// Data seems good above here
-
-
-
-#if 0
-
-% Wind components
-Ustagg = ncread(SimData.WRFFile,'U');
-Ustagg = Ustagg(SimData.XSTART:SimData.XEND +1, SimData.YSTART:SimData.YEND, :, SimData.TIMEVECT);
-
-Vstagg = ncread(SimData.WRFFile,'V');
-Vstagg = Vstagg(SimData.XSTART:SimData.XEND, SimData.YSTART:SimData.YEND +1, :, SimData.TIMEVECT);
-
-
-%% Centering values %%
-
-SimData.NbAlt = size(Height,3) - 1;
-
-U = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
-for x = 1:SimData.nx
-    U(x,:,:,:) = .5*(Ustagg(x,:,:,:) + Ustagg(x+1,:,:,:));
-end
-
-V = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
-for y = 1:SimData.ny   
-    V(:,y,:,:) = .5*(Vstagg(:,y,:,:) + Vstagg(:,y+1,:,:));
-end
-
-SimData.CoordZ = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
-for k = 1:SimData.NbAlt
-    SimData.CoordZ(:,:,k,:) = .5*(Height(:,:,k,:) + Height(:,:,k+1,:));
-end
 
 %% Velocity and direction %%
 
