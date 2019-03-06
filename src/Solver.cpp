@@ -332,7 +332,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
                     x_cut, y_cut, z_cut, num_points, coeff);
         std::cout << "Walls Defined...\n";
     }
-    
+
     /*
      * Calling getWallIndices to return 6 vectores of indices of the cells that have wall to right/left,
      * wall above/below and wall in front/back
@@ -767,6 +767,8 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
   std::vector<float> ustar;
   ustar.resize(wall_size, 0.0);
   std::vector<int> index;
+  index.resize(wall_size, 0.0);
+  int j;
 
   ustar_wall = 0.1;
   wind_dir = 0.0;
@@ -792,8 +794,8 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
       new_ustar = vk*vel_mag1/log(dist1/z0);
       ustar_wall = new_ustar;
     }
-    index.push_back(wall_below_indices[i]);
-    ustar[index.size()] = ustar_wall;
+    index[i] = wall_below_indices[i];
+    ustar[i] = ustar_wall;
   }
 
   /// apply log law fix to the cells with wall above
@@ -812,8 +814,9 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
       new_ustar = vk*vel_mag1/log(dist1/z0);
       ustar_wall = new_ustar;
     }
-    index.push_back(wall_above_indices[i]);
-    ustar[index.size()] = ustar_wall;
+    j = i+wall_below_indices.size();
+    index[j] = wall_above_indices[i];
+    ustar[j] = ustar_wall;
   }
 
   dist1 = 0.5*dx;
@@ -835,8 +838,9 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
       new_ustar = vk*vel_mag1/log(dist1/z0);
       ustar_wall = new_ustar;
     }
-    index.push_back(wall_back_indices[i]);
-    ustar[index.size()] = ustar_wall;
+    j = i+wall_below_indices.size()+wall_above_indices.size();
+    index[j] = wall_back_indices[i];
+    ustar[j] = ustar_wall;
   }
 
 
@@ -856,8 +860,9 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
       new_ustar = vk*vel_mag1/log(dist1/z0);
       ustar_wall = new_ustar;
     }
-    index.push_back(wall_front_indices[i]);
-    ustar[index.size()] = ustar_wall;
+    j = i+wall_below_indices.size()+wall_above_indices.size()+wall_back_indices.size();
+    index[j] = wall_front_indices[i];
+    ustar[j] = ustar_wall;
   }
 
 
@@ -880,8 +885,9 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
       new_ustar = vk*vel_mag1/log(dist1/z0);
       ustar_wall = new_ustar;
     }
-    index.push_back(wall_right_indices[i]);
-    ustar[index.size()] = ustar_wall;
+    j = i+wall_below_indices.size()+wall_above_indices.size()+wall_back_indices.size()+wall_front_indices.size();
+    index[j] = wall_right_indices[i];
+    ustar[j] = ustar_wall;
   }
 
   /// apply log law fix to the cells with wall to left
@@ -900,8 +906,9 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
       new_ustar = vk*vel_mag1/log(dist1/z0);
       ustar_wall = new_ustar;
     }
-    index.push_back(wall_left_indices[i]);
-    ustar[index.size()] = ustar_wall;
+    j = i+wall_below_indices.size()+wall_above_indices.size()+wall_back_indices.size()+wall_front_indices.size()+wall_right_indices.size();
+    index[j] = wall_left_indices[i];
+    ustar[j] = ustar_wall;
   }
 
 
@@ -924,6 +931,7 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
   }
 
   outdata3.close();*/
+
 
 
 
