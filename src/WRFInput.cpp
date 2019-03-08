@@ -13,7 +13,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 */
-
+#include <fstream>
 
 #include "WRFInput.h"
 
@@ -466,6 +466,16 @@ void WRFInput::readWindData()
     // Ustagg = Ustagg(SimData.XSTART:SimData.XEND +1, SimData.YSTART:SimData.YEND, :, SimData.TIMEVECT);
     NcVar uStaggered = wrfInputFile.getVar("U");
 
+    std::vector<NcDim> ustagg_dims = uStaggered.getDims();
+    for (int i=0; i<ustagg_dims.size(); i++) {
+        std::cout << "Dim: " << ustagg_dims[i].getName() << ", ";
+        if (ustagg_dims[i].isUnlimited())
+            std::cout << "Unlimited (" << ustagg_dims[i].getSize() << ")" << std::endl;
+        else
+            std::cout << ustagg_dims[i].getSize() << std::endl;
+    }
+    
+
     // time, Z, Y, X is order
     starts.clear(); counts.clear();
     starts = { 0, 0, 0, 0 };
@@ -475,9 +485,18 @@ void WRFInput::readWindData()
         subsetDim *= (counts[i] - starts[i]);
     }
     
+    // I have assumed a row-major ordering here... perhaps it's column major?
+
     double* uStaggeredData = new double[ subsetDim ];
     uStaggered.getVar( starts, counts, uStaggeredData );
     
+    std::ofstream uOut;
+    uOut.open("uStagg.dat");
+    for (auto l=0; l<subsetDim; l++)
+        uOut << uStaggeredData[l] << std::endl;
+    uOut.close();
+
+
     std::cout << "first 10 for uStaggered" << std::endl;
     for (auto l=0; l<10; l++)
         std::cout << uStaggeredData[l] << std::endl;
@@ -517,26 +536,115 @@ void WRFInput::readWindData()
     // %% Centering values %%
     // SimData.NbAlt = size(Height,3) - 1;
     //
-    int nbAlt = 40;  //hack for now
+    int nbAlt = 40;  //hack for now -- need to be computed
     
+    // ///////////////////////////////////
     // U = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
     // for x = 1:SimData.nx
     //   U(x,:,:,:) = .5*(Ustagg(x,:,:,:) + Ustagg(x+1,:,:,:));
     // end
+    // ///////////////////////////////////    
+    uOut.open("u.dat");
+
+    nx = 114;
+    ny = 114;
+    nbAlt = 40;
     
     std::vector<double> U( nx * ny * nbAlt * 2, 0.0 );
+    for (auto t=0; t<2; t++) {
+        for (auto z=0; z<nbAlt; z++) {
+            for (auto y=0; y<ny; y++) {
+                for (auto x=0; x<nx; x++) {
+
+                    // row major?
+                    auto idx = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + x;
+                    auto idxP1 = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + (x+1);
+
+                    U[idx] = 0.5 * uStaggeredData[idx] + uStaggeredData[idxP1];
+
+                    uOut << uStaggeredData[idx] << ", " << uStaggeredData[idxP1] << std::endl;
+                }
+                uOut << "y" << std::endl;
+            }
+            uOut << "z" << std::endl;
+        }
+        uOut << "t" << std::endl;
+    }
+
+    uOut.close();
+
+    std::cout << "first 10 for U" << std::endl;
+    for (auto l=0; l<10; l++)
+        std::cout << U[l] << std::endl;
+
+    subsetDim = nx * ny * nbAlt * 2;
+    std::cout << "last 10 for U" << std::endl;
+    for (auto l=(subsetDim-10-1); l<subsetDim; l++)
+        std::cout << U[l] << std::endl;
+
+
     
     // V = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
     // for y = 1:SimData.ny
     //    V(:,y,:,:) = .5*(Vstagg(:,y,:,:) + Vstagg(:,y+1,:,:));
     // end
     std::vector<double> V( nx * ny * nbAlt * 2, 0.0 );
+    for (auto t=0; t<2; t++) {
+        for (auto z=0; z<nbAlt; z++) {
+            for (auto y=0; y<ny; y++) {
+                for (auto x=0; x<nx; x++) {
+
+                    auto idx = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + x;
+                    auto idxP1 = t * (nbAlt * ny * nx) + z * (ny * nx) + (y+1) * (nx) + x;
+                    
+                    V[idx] = 0.5 * vStaggeredData[idx] + vStaggeredData[idxP1];
+                    
+                }
+            }
+        }
+    }
+
+
+    std::cout << "first 10 for V" << std::endl;
+    for (auto l=0; l<10; l++)
+        std::cout << V[l] << std::endl;
+
+    std::cout << "last 10 for V" << std::endl;
+    for (auto l=subsetDim-10-1; l<subsetDim; l++)
+        std::cout << V[l] << std::endl;
+
+
+
 
     // SimData.CoordZ = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
     // for k = 1:SimData.NbAlt
     //    SimData.CoordZ(:,:,k,:) = .5*(Height(:,:,k,:) + Height(:,:,k+1,:));
     // end
 
+    std::vector<double> coordZ( nx * ny * nbAlt * 2, 0.0 );
+    for (auto t=0; t<2; t++) {
+        for (auto z=0; z<nbAlt; z++) {
+            for (auto y=0; y<ny; y++) {
+                for (auto x=0; x<nx; x++) {
+                    
+                    auto idx = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + x;
+                    auto idxP1 = t * (nbAlt * ny * nx) + (z+1) * (ny * nx) + y * (nx) + x;
+                    
+                    coordZ[idx] = 0.5 * heightData[idx] + heightData[idxP1];
+                    
+                }
+            }
+        }
+    }
+
+
+    std::cout << "first 10 for coordZ" << std::endl;
+    for (auto l=0; l<10; l++)
+        std::cout << coordZ[l] << std::endl;
+
+    std::cout << "last 10 for coordZ" << std::endl;
+    for (auto l=subsetDim-10-1; l<subsetDim; l++)
+        std::cout << coordZ[l] << std::endl;
 
 #if 0
 
