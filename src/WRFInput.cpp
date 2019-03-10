@@ -396,6 +396,25 @@ void WRFInput::readWindData()
         std::cout << "PHB Attr: " << ci->first << std::endl;
     }
 
+
+    // ////////////////////
+    // Test reading in of this data into an array we can easily deal
+    // with
+#if 0 
+    // WRF multi-dim format
+    int timeDim = dims[0].getSize();
+    int zDim = dims[1].getSize();
+    int yDim = dims[2].getSize();
+    int xDim = dims[3].getSize();
+    
+    std::cout << "PHB Dims: t=" << timeDim << "< z=" << zDim << ", y=" << yDim << ", x=" << xDim << std::endl;
+    double* allPHBData = new double[ timeDim * zDim * yDim * xDim ];
+    phbVar.getVar( allPHBData );
+
+    dumpWRFDataArray("PHB", allPHBData, timeDim, zDim, yDim, xDim);
+#endif
+    // ////////////////////
+
     // this is a 114 x 114 x 41 x 360 dim array...
     // slice by slice 114 x 114 per slice; 41 slices; 360 times
 
@@ -412,14 +431,8 @@ void WRFInput::readWindData()
     std::vector< size_t > starts = { 0, 0, 0, 0 };
     std::vector< size_t > counts = { 2, 41, 114, 114 };   // depends on order of dims
     phbVar.getVar( starts, counts, phbData );
-
-    std::cout << "first 10 for phb" << std::endl;
-    for (auto l=0; l<10; l++)
-        std::cout << phbData[l] << std::endl;
-    
-    std::cout << "last 10 for phb" << std::endl;
-    for (auto l=subsetDim-10-1; l<subsetDim; l++)
-        std::cout << phbData[l] << std::endl;
+                     
+    dumpWRFDataArray("PHB Subset", phbData, 2, 41, 114, 114);
 
     // 
     // Extraction of the Wind data vertical position
@@ -429,14 +442,6 @@ void WRFInput::readWindData()
     double* phData = new double[ subsetDim ];
     phVar.getVar( starts, counts, phData );
     
-    std::cout << "first 10 for ph" << std::endl;
-    for (auto l=0; l<10; l++)
-        std::cout << phData[l] << std::endl;
-    
-    std::cout << "last 10 for ph" << std::endl;
-    for (auto l=subsetDim-10-1; l<subsetDim; l++)
-        std::cout << phData[l] << std::endl;
-
 
     // 
     /// Height
@@ -446,19 +451,7 @@ void WRFInput::readWindData()
         heightData[l] = (phbData[l] + phData[l]) / 9.81;
     }
 
-    std::cout << "first 10 for height" << std::endl;
-    for (auto l=0; l<10; l++) {
-        std::cout << "H[" << l << "] = " << heightData[l] << std::endl;
-    }
-
-    std::cout << "last 10 for height" << std::endl;
-    for (auto l=subsetDim-10-1; l<subsetDim; l++) {
-        std::cout << "H[" << l << "] = " << heightData[l] << std::endl;
-    }
-
-    // 
-    // Data seems good above here
-    // 
+    dumpWRFDataArray("Height", heightData, 2, 41, 114, 114);
 
     
     // Extraction of the Ustagg
@@ -485,26 +478,9 @@ void WRFInput::readWindData()
         subsetDim *= (counts[i] - starts[i]);
     }
     
-    // I have assumed a row-major ordering here... perhaps it's column major?
-
     double* uStaggeredData = new double[ subsetDim ];
     uStaggered.getVar( starts, counts, uStaggeredData );
-    
-    std::ofstream uOut;
-    uOut.open("uStagg.dat");
-    for (auto l=0; l<subsetDim; l++)
-        uOut << uStaggeredData[l] << std::endl;
-    uOut.close();
-
-
-    std::cout << "first 10 for uStaggered" << std::endl;
-    for (auto l=0; l<10; l++)
-        std::cout << uStaggeredData[l] << std::endl;
-    
-    std::cout << "last 10 for uStaggered" << std::endl;
-    for (auto l=subsetDim-10-1; l<subsetDim; l++)
-        std::cout << uStaggeredData[l] << std::endl;
-
+    dumpWRFDataArray("Ustaggered", uStaggeredData, 2, 40, 114, 115);
 
     // 
     // Vstagg = ncread(SimData.WRFFile,'V');
@@ -521,22 +497,13 @@ void WRFInput::readWindData()
     
     double* vStaggeredData = new double[ subsetDim ];
     vStaggered.getVar( starts, counts, vStaggeredData );
-    
-    std::cout << "first 10 for vStaggered" << std::endl;
-    for (auto l=0; l<10; l++)
-        std::cout << vStaggeredData[l] << std::endl;
-    
-    std::cout << "last 10 for vStaggered" << std::endl;
-    for (auto l=subsetDim-10-1; l<subsetDim; l++)
-        std::cout << vStaggeredData[l] << std::endl;
-
-
+    dumpWRFDataArray("Vstaggered", vStaggeredData, 2, 40, 115, 114);
 
     // 
     // %% Centering values %%
     // SimData.NbAlt = size(Height,3) - 1;
     //
-    int nbAlt = 40;  //hack for now -- need to be computed
+    int nbAlt = 40;  // zDim - 1 but hack for now -- need to be computed
     
     // ///////////////////////////////////
     // U = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
@@ -544,44 +511,29 @@ void WRFInput::readWindData()
     //   U(x,:,:,:) = .5*(Ustagg(x,:,:,:) + Ustagg(x+1,:,:,:));
     // end
     // ///////////////////////////////////    
-    uOut.open("u.dat");
 
+    // Just make sure we've got the write dims here
     nx = 114;
     ny = 114;
     nbAlt = 40;
     
     std::vector<double> U( nx * ny * nbAlt * 2, 0.0 );
+
     for (auto t=0; t<2; t++) {
         for (auto z=0; z<nbAlt; z++) {
-            for (auto y=0; y<ny; y++) {
-                for (auto x=0; x<nx; x++) {
+            for (auto x=0; x<nx; x++) {
+                for (auto y=0; y<ny; y++) {   // WRF uses column major
 
-                    // row major?
                     auto idx = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + x;
-                    auto idxP1 = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + (x+1);
+                    auto idxP1x = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + (x+1);
 
-                    U[idx] = 0.5 * uStaggeredData[idx] + uStaggeredData[idxP1];
-
-                    uOut << uStaggeredData[idx] << ", " << uStaggeredData[idxP1] << std::endl;
+                    U[idx] = 0.5 * (uStaggeredData[idx] + uStaggeredData[idxP1x]);
                 }
-                uOut << "y" << std::endl;
             }
-            uOut << "z" << std::endl;
         }
-        uOut << "t" << std::endl;
     }
 
-    uOut.close();
-
-    std::cout << "first 10 for U" << std::endl;
-    for (auto l=0; l<10; l++)
-        std::cout << U[l] << std::endl;
-
-    subsetDim = nx * ny * nbAlt * 2;
-    std::cout << "last 10 for U" << std::endl;
-    for (auto l=(subsetDim-10-1); l<subsetDim; l++)
-        std::cout << U[l] << std::endl;
-
+    dumpWRFDataArray("U", U.data(), 2, nbAlt, ny, nx);
 
     
     // V = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
@@ -589,32 +541,22 @@ void WRFInput::readWindData()
     //    V(:,y,:,:) = .5*(Vstagg(:,y,:,:) + Vstagg(:,y+1,:,:));
     // end
     std::vector<double> V( nx * ny * nbAlt * 2, 0.0 );
+
     for (auto t=0; t<2; t++) {
         for (auto z=0; z<nbAlt; z++) {
-            for (auto y=0; y<ny; y++) {
-                for (auto x=0; x<nx; x++) {
+            for (auto x=0; x<nx; x++) {
+                for (auto y=0; y<ny; y++) {   // WRF uses column major
 
                     auto idx = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + x;
-                    auto idxP1 = t * (nbAlt * ny * nx) + z * (ny * nx) + (y+1) * (nx) + x;
-                    
-                    V[idx] = 0.5 * vStaggeredData[idx] + vStaggeredData[idxP1];
-                    
+                    auto idxP1y = t * (nbAlt * ny * nx) + z * (ny * nx) + (y+1) * (nx) + x;
+
+                    V[idx] = 0.5 * (vStaggeredData[idx] + vStaggeredData[idxP1y]);
                 }
             }
         }
     }
 
-
-    std::cout << "first 10 for V" << std::endl;
-    for (auto l=0; l<10; l++)
-        std::cout << V[l] << std::endl;
-
-    std::cout << "last 10 for V" << std::endl;
-    for (auto l=subsetDim-10-1; l<subsetDim; l++)
-        std::cout << V[l] << std::endl;
-
-
-
+    dumpWRFDataArray("V", V.data(), 2, nbAlt, ny, nx);
 
     // SimData.CoordZ = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
     // for k = 1:SimData.NbAlt
@@ -624,27 +566,20 @@ void WRFInput::readWindData()
     std::vector<double> coordZ( nx * ny * nbAlt * 2, 0.0 );
     for (auto t=0; t<2; t++) {
         for (auto z=0; z<nbAlt; z++) {
-            for (auto y=0; y<ny; y++) {
-                for (auto x=0; x<nx; x++) {
-                    
+            for (auto x=0; x<nx; x++) {
+                for (auto y=0; y<ny; y++) {   // WRF uses column major
+
                     auto idx = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + x;
-                    auto idxP1 = t * (nbAlt * ny * nx) + (z+1) * (ny * nx) + y * (nx) + x;
-                    
-                    coordZ[idx] = 0.5 * heightData[idx] + heightData[idxP1];
-                    
+                    auto idxP1z = t * (nbAlt * ny * nx) + (z+1) * (ny * nx) + y * (nx) + x;
+
+                    coordZ[idx] = 0.5 * (heightData[idx] + heightData[idxP1z]);
                 }
             }
         }
     }
 
-
-    std::cout << "first 10 for coordZ" << std::endl;
-    for (auto l=0; l<10; l++)
-        std::cout << coordZ[l] << std::endl;
-
-    std::cout << "last 10 for coordZ" << std::endl;
-    for (auto l=subsetDim-10-1; l<subsetDim; l++)
-        std::cout << coordZ[l] << std::endl;
+    dumpWRFDataArray("coordZ", coordZ.data(), 2, nbAlt, ny, nx);
+    
 
 #if 0
 
@@ -753,3 +688,25 @@ fprintf('%i %s %g %s %g %s\n',SimData.NbStat,' WRF data points have been generat
 
 }
 
+
+void WRFInput::dumpWRFDataArray(const std::string &name, double *data, int dimT, int dimZ, int dimY, int dimX)
+{
+    std::cout << "[" << name << "] WRF Data Dump" << std::endl << "==========================" << std::endl;
+
+    // This output is analagous to Matlab's Columns 1 through dimY style of output
+    for (auto t=0; t<dimT; t++) {
+        for (auto z=0; z<dimZ; z++) {
+            std::cout << "Slice: (t=" << t << ", z=" << z << ")" << std::endl;
+            for (auto x=0; x<dimX; x++) {
+                for (auto y=0; y<dimY; y++) {
+
+                    // WRF uses column major
+                    auto idx = t * (dimZ * dimY * dimX) + z * (dimY * dimX) + y * (dimX) + x;
+                    std::cout << data[idx] << ' ';
+                    
+                }
+                std::cout << std::endl;
+            }
+        }
+    }
+}

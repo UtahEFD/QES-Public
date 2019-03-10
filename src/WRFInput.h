@@ -197,6 +197,8 @@ private:
     int nx, ny;
     int xDim[2], yDim[2];
 
+    void dumpWRFDataArray(const std::string &name, double *allData, int dimT, int dimZ, int dimY, int dimX);
+
     // PHB Struct from WRF
     // float PHB(Time, bottom_top_stag, south_north, west_east) ;
     //		PHB:FieldType = 104 ;
