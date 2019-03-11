@@ -13,12 +13,16 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
 */
+
 #include <fstream>
+#include <cmath>
 
 #include "WRFInput.h"
 
 WRFInput::WRFInput(const std::string& filename)
-    : wrfInputFile( filename, NcFile::read )
+    : wrfInputFile( filename, NcFile::read ),
+      m_minWRFAlt( 22 ), m_maxWRFAlt( 330 ), m_maxTerrainSize( 10001 ), m_maxNbStat( 156 ),
+      m_TerrainFlag(1), m_BdFlag(0), m_VegFlag(0), m_Z0Flag(2)
 {
     std::cout <<"there are "<<wrfInputFile.getVarCount()<<" variables"<<std::endl;;
     std::cout <<"there are "<<wrfInputFile.getAttCount()<<" attributes"<<std::endl;;
@@ -96,7 +100,10 @@ void WRFInput::readDomainInfo()
 
         gblAttIter = globalAttributes.find("DY");
         gblAttIter->second.getValues( cellSize+1 );
-        std::cout << "DX = " << cellSize[0] << ", DY = " << cellSize[1] << std::endl;
+
+        m_dx = cellSize[0];
+        m_dy = cellSize[1];
+        std::cout << "DX = " << m_dx << ", DY = " << m_dy << std::endl;
 
            
 // % If new domain borders are defined
@@ -158,17 +165,17 @@ void WRFInput::readDomainInfo()
     
     // whole thing is in... now
     long subsetDim = nx * ny;
-    double* reliefSave = new double[ subsetDim ];
+    relief = new double[ subsetDim ];
     for (auto l=0; l<subsetDim; l++)
-        reliefSave[l] = reliefData[l];
+        relief[l] = reliefData[l];
         
     std::cout << "first 10 for relief" << std::endl;
     for (auto l=0; l<10; l++)
-        std::cout << reliefSave[l] << std::endl;
+        std::cout << relief[l] << std::endl;
 
     std::cout << "last 10 for relief" << std::endl;
     for (auto l=subsetDim-10-1; l<subsetDim; l++)
-        std::cout << reliefSave[l] << std::endl;
+        std::cout << relief[l] << std::endl;
 
     delete [] reliefData;
 
@@ -180,32 +187,28 @@ void WRFInput::readDomainInfo()
     //
     // LU = ncread(WRFFile,'LU_INDEX');
     //
-        NcVar LUIndexVar = wrfInputFile.getVar("LU_INDEX");
-        std::cout << "LUIndex dim count: " << LUIndexVar.getDimCount() << std::endl;
-        dims.clear();
-        dims = LUIndexVar.getDims();
-        totalDim = 1;
-        for (int i=0; i<dims.size(); i++) {
-            std::cout << "Dim: " << dims[i].getName() << ", ";
-            if (dims[i].isUnlimited())
-                std::cout << "Unlimited (" << dims[i].getSize() << ")" << std::endl;
-            else
-                std::cout << dims[i].getSize() << std::endl;
-            totalDim *= dims[i].getSize();
-        }
-        std::cout << "LUIndex att count: " << LUIndexVar.getAttCount() << std::endl;
-        std::map<std::string, NcVarAtt> LUIndexVar_attrMap = LUIndexVar.getAtts();
-        for (std::map<std::string, NcVarAtt>::const_iterator ci=LUIndexVar_attrMap.begin();
-             ci!=LUIndexVar_attrMap.end(); ++ci) {
-            std::cout << "LUIndex Attr: " << ci->first << std::endl;
+    NcVar LUIndexVar = wrfInputFile.getVar("LU_INDEX");
+    std::cout << "LUIndex dim count: " << LUIndexVar.getDimCount() << std::endl;
+    dims.clear();
+    dims = LUIndexVar.getDims();
+    totalDim = 1;
+    for (int i=0; i<dims.size(); i++) {
+        std::cout << "Dim: " << dims[i].getName() << ", ";
+        if (dims[i].isUnlimited())
+            std::cout << "Unlimited (" << dims[i].getSize() << ")" << std::endl;
+        else
+            std::cout << dims[i].getSize() << std::endl;
+        totalDim *= dims[i].getSize();
+    }
+    std::cout << "LUIndex att count: " << LUIndexVar.getAttCount() << std::endl;
+    std::map<std::string, NcVarAtt> LUIndexVar_attrMap = LUIndexVar.getAtts();
+    for (std::map<std::string, NcVarAtt>::const_iterator ci=LUIndexVar_attrMap.begin();
+         ci!=LUIndexVar_attrMap.end(); ++ci) {
+        std::cout << "LUIndex Attr: " << ci->first << std::endl;
     }
 
     // this is a 114 x 114 x 41 x 360 dim array...
     // slice by slice 114 x 114 per slice; 41 slices; 360 times
-
-            // How do I extract out the start to end in and and y?
-            // PHB = double(PHB(SimData.XSTART:SimData.XEND,
-            // SimData.YSTART:SimData.YEND, :, SimData.TIMEVECT));
 
     // we want all slice data (xstart:xend X ystart:yend) at all
     // slices but only for the first 2 time series (TIMEVECT)
@@ -235,6 +238,10 @@ void WRFInput::readDomainInfo()
 //       return;
 //     }
 
+    if (nx * ny > m_maxTerrainSize) {
+        smoothDomain();
+    }
+    
 }
 
 
@@ -450,9 +457,6 @@ void WRFInput::readWindData()
     for (auto l=0; l<subsetDim; l++) {
         heightData[l] = (phbData[l] + phData[l]) / 9.81;
     }
-
-    dumpWRFDataArray("Height", heightData, 2, 41, 114, 114);
-
     
     // Extraction of the Ustagg
     // Ustagg = ncread(SimData.WRFFile,'U');
@@ -468,7 +472,6 @@ void WRFInput::readWindData()
             std::cout << ustagg_dims[i].getSize() << std::endl;
     }
     
-
     // time, Z, Y, X is order
     starts.clear(); counts.clear();
     starts = { 0, 0, 0, 0 };
@@ -480,7 +483,7 @@ void WRFInput::readWindData()
     
     double* uStaggeredData = new double[ subsetDim ];
     uStaggered.getVar( starts, counts, uStaggeredData );
-    dumpWRFDataArray("Ustaggered", uStaggeredData, 2, 40, 114, 115);
+    dumpWRFDataArray("Ustagg", uStaggeredData, 2, 40, 114, 115);
 
     // 
     // Vstagg = ncread(SimData.WRFFile,'V');
@@ -497,8 +500,8 @@ void WRFInput::readWindData()
     
     double* vStaggeredData = new double[ subsetDim ];
     vStaggered.getVar( starts, counts, vStaggeredData );
-    dumpWRFDataArray("Vstaggered", vStaggeredData, 2, 40, 115, 114);
 
+    
     // 
     // %% Centering values %%
     // SimData.NbAlt = size(Height,3) - 1;
@@ -515,101 +518,147 @@ void WRFInput::readWindData()
     // Just make sure we've got the write dims here
     nx = 114;
     ny = 114;
-    nbAlt = 40;
     
     std::vector<double> U( nx * ny * nbAlt * 2, 0.0 );
-
     for (auto t=0; t<2; t++) {
         for (auto z=0; z<nbAlt; z++) {
-            for (auto x=0; x<nx; x++) {
-                for (auto y=0; y<ny; y++) {   // WRF uses column major
+            for (auto y=0; y<ny; y++) {
+                for (auto x=0; x<nx; x++) {
 
                     auto idx = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + x;
                     auto idxP1x = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + (x+1);
 
-                    U[idx] = 0.5 * (uStaggeredData[idx] + uStaggeredData[idxP1x]);
+                    U[idx] = 0.5 * ( uStaggeredData[idx] + uStaggeredData[idxP1x] );
                 }
             }
         }
     }
-
-    dumpWRFDataArray("U", U.data(), 2, nbAlt, ny, nx);
-
+    dumpWRFDataArray("U", U.data(), 2, 40, 114, 114);
     
     // V = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
     // for y = 1:SimData.ny
     //    V(:,y,:,:) = .5*(Vstagg(:,y,:,:) + Vstagg(:,y+1,:,:));
     // end
     std::vector<double> V( nx * ny * nbAlt * 2, 0.0 );
-
     for (auto t=0; t<2; t++) {
         for (auto z=0; z<nbAlt; z++) {
-            for (auto x=0; x<nx; x++) {
-                for (auto y=0; y<ny; y++) {   // WRF uses column major
-
+            for (auto y=0; y<ny; y++) {
+                for (auto x=0; x<nx; x++) {
+                    
                     auto idx = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + x;
                     auto idxP1y = t * (nbAlt * ny * nx) + z * (ny * nx) + (y+1) * (nx) + x;
 
-                    V[idx] = 0.5 * (vStaggeredData[idx] + vStaggeredData[idxP1y]);
+                    V[idx] = 0.5 * ( vStaggeredData[idx] + vStaggeredData[idxP1y] );
                 }
             }
         }
     }
-
-    dumpWRFDataArray("V", V.data(), 2, nbAlt, ny, nx);
-
+    dumpWRFDataArray("V", V.data(), 2, 40, 114, 114);
+    
     // SimData.CoordZ = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
     // for k = 1:SimData.NbAlt
     //    SimData.CoordZ(:,:,k,:) = .5*(Height(:,:,k,:) + Height(:,:,k+1,:));
     // end
-
     std::vector<double> coordZ( nx * ny * nbAlt * 2, 0.0 );
     for (auto t=0; t<2; t++) {
         for (auto z=0; z<nbAlt; z++) {
-            for (auto x=0; x<nx; x++) {
-                for (auto y=0; y<ny; y++) {   // WRF uses column major
+            for (auto y=0; y<ny; y++) {
+                for (auto x=0; x<nx; x++) {
 
                     auto idx = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + x;
                     auto idxP1z = t * (nbAlt * ny * nx) + (z+1) * (ny * nx) + y * (nx) + x;
 
-                    coordZ[idx] = 0.5 * (heightData[idx] + heightData[idxP1z]);
+                    coordZ[idx] = 0.5 * ( heightData[idx] + heightData[idxP1z] );
                 }
             }
         }
     }
 
-    dumpWRFDataArray("coordZ", coordZ.data(), 2, nbAlt, ny, nx);
+    // %% Velocity and direction %%
+    // SimData.WS = sqrt(U.^2 + V.^2);
+    std::vector<double> WS( nx * ny * nbAlt * 2, 0.0 );
+    for (auto t=0; t<2; t++) {
+        for (auto z=0; z<nbAlt; z++) {
+            for (auto y=0; y<ny; y++) {
+                for (auto x=0; x<nx; x++) {
+                    auto idx = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + x;
+                    WS[idx] = sqrt( U[idx]*U[idx] + V[idx]*V[idx] );
+                }
+            }
+        }
+
+        
+    }
+    dumpWRFDataArray("WS", WS.data(), 2, nbAlt, ny, nx);
     
 
+    // SimData.WD = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
+    std::vector<double> WD( nx * ny * nbAlt * 2, 0.0 );
+    for (auto t=0; t<2; t++) {
+        for (auto z=0; z<nbAlt; z++) {
+            for (auto y=0; y<ny; y++) {
+                for (auto x=0; x<nx; x++) {
+                    auto idx = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + x;
+                    if (U[idx]> 0) {
+                        WD[idx] = 270.0 - (180.0/c_PI) * atan( V[idx]/U[idx] );
+                    }
+                    else {
+                        WD[idx] = 90.0 - (180.0/c_PI) * atan( V[idx]/U[idx] );
+                    }
+                }
+            }
+        }
+    }
+    dumpWRFDataArray("WD", WD.data(), 2, nbAlt, ny, nx);
+
 #if 0
-
-
-%% Velocity and direction %%
-
-SimData.WS = sqrt(U.^2 + V.^2);
-
-SimData.WD = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
-
-for x = 1:SimData.nx
-    for y = 1:SimData.ny
-        for Alt = 1:SimData.NbAlt
-            for Time = 1:numel(SimData.TIMEVECT)
-                if U(x,y,Alt,Time) > 0
-                    SimData.WD(x,y,Alt,Time) = 270-(180/pi)*atan(V(x,y,Alt,Time)/U(x,y,Alt,Time));
-                else
-                    SimData.WD(x,y,Alt,Time) = 90-(180/pi)*atan(V(x,y,Alt,Time)/U(x,y,Alt,Time));
-                end
-            end
-        end
-    end
-end
-
+I shoould need this... hopefully
 %% Permutation to set dimensions as (row,col,etc) = (ny,nx,nz,nt) %%
 
 SimData.WD = permute(SimData.WD,[2 1 3 4]);
 SimData.WS = permute(SimData.WS,[2 1 3 4]);
 SimData.CoordZ = permute(SimData.CoordZ,[2 1 3 4]);
 #endif
+
+    std::cout << "Smoothing domain" << std::endl;
+
+    // Updating dimensions
+    int nx2 = floor(sqrt(m_maxTerrainSize * nx/(float)ny));
+    int ny2 = floor(sqrt(m_maxTerrainSize * ny/(float)nx));
+    
+    // SimData.nx = nx2;
+    // SimData.ny = ny2;
+    m_dx = m_dx * nx/(float)nx2;
+    m_dy = m_dy * ny/(float)ny2;
+
+    std::cout << "Resizing from " << nx << " by " << ny << " to " << nx2 << " by " << ny2 << std::endl;
+
+    // Terrain
+    // SimData.Relief = imresize(SimData.Relief,[ny2,nx2]);
+    std::vector<double> reliefResize( nx2 * ny2 * nbAlt * 2, 0.0 );
+
+    //
+    // Fake this for now with nearest neighbor... implement bicubic
+    // later
+    //
+
+    float scaleX = nx / (float)nx2;
+    float scaleY = ny / (float)ny2;
+    
+    for (auto y=0; y<ny2; y++) {
+        for (auto x=0; x<nx2; x++) {
+                    
+            // Map this into the larger vector
+            int largerX = (int)floor( x * scaleX );
+            int largerY = (int)floor( y * scaleY );
+            
+            auto idxLarger = largerY * (nx) + largerX;
+            auto idx = y * (nx2) + x;
+
+            reliefResize[idx] = relief[idxLarger];
+        }
+    }
+
 
 }
 
@@ -700,7 +749,6 @@ void WRFInput::dumpWRFDataArray(const std::string &name, double *data, int dimT,
             for (auto x=0; x<dimX; x++) {
                 for (auto y=0; y<dimY; y++) {
 
-                    // WRF uses column major
                     auto idx = t * (dimZ * dimY * dimX) + z * (dimY * dimX) + y * (dimX) + x;
                     std::cout << data[idx] << ' ';
                     
@@ -709,4 +757,81 @@ void WRFInput::dumpWRFDataArray(const std::string &name, double *data, int dimT,
             }
         }
     }
+}
+
+
+void WRFInput::smoothDomain()
+{
+    // Smooth the following layers: topography, wind data, Z0 and
+    // land-use using imresize (bicubic interpolation by default).
+    // Land-use is interpolated with the "nearest point" method as we
+    // must not change the categories values.
+    
+#if 0
+    std::cout << "Smoothing domain" << std::endl;
+
+    // Updating dimensions
+    int nx2 = floor(sqrt(m_maxTerrainSize * nx/(float)ny));
+    int ny2 = floor(sqrt(m_maxTerrainSize * ny/(float)nx));
+    
+    // SimData.nx = nx2;
+    // SimData.ny = ny2;
+    m_dx = m_dx * nx/(float)nx2;
+    m_dy = m_dy * ny/(float)ny2;
+
+    // Terrain
+    // SimData.Relief = imresize(SimData.Relief,[ny2,nx2]);
+    int nbAlt = 40;
+    std::vector<double> reliefResize( nx_2 * ny_2 * nbAlt * 2, 0.0 );
+
+    // fake this for now with nearest neighbor...
+    for (auto t=0; t<2; t++) {
+        for (auto z=0; z<nbAlt; z++) {
+
+            for (auto y=0; y<ny2; y++) {
+                for (auto x=0; x<nx2; x++) {
+                    
+                    // Map this into the larger vector
+
+                }
+            }
+
+        }
+    }
+    
+            
+#endif
+
+
+
+    // Wind velocity, direction and vertical position
+    // SimData.WS = imresize(SimData.WS,[ny2,nx2]);
+    // SimData.WD = imresize(SimData.WD,[ny2,nx2]);
+    // SimData.CoordZ = imresize(SimData.CoordZ,[ny2,nx2]);
+
+    // Roughness length
+    // SimData.Z0 = imresize(SimData.Z0,[ny2,nx2]);
+
+    // Land-use
+    // SimData.LU = imresize(SimData.LU,[ny2,nx2],'nearest');
+
+}
+
+
+void WRFInput::minimizeDomainHeight()
+{
+    // Here we lower minimum altitude to 0 in order to save
+    // computational space.  For the same reason, topography below 50
+    // cm will not be considered.
+
+    // SimData.OldTopoMin = min(min(SimData.Relief));
+    // SimData.Relief = SimData.Relief - SimData.OldTopoMin;  % Lowering minimum altitude to 0 
+
+    // IndLowRelief = find(SimData.Relief <= 15); % Relief below 0.5m is not considered
+    // SimData.Relief(IndLowRelief) = 0;
+
+    // SimData.NbTerrain = numel(SimData.Relief) - size(IndLowRelief,1);
+    // SimData.NewTopoMax = max(max(SimData.Relief));
+    // SimData.CoordZ = SimData.CoordZ - SimData.OldTopoMin;
+
 }

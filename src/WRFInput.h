@@ -80,6 +80,8 @@ class WRFInput
 {
 public:
 
+    const double c_PI = 3.14159265358979323846;
+
     WRFInput(const std::string& filename);
     ~WRFInput();
 
@@ -153,9 +155,7 @@ public:
      *     • Land-use categories are interpolated to the "nearest point" as we must not change their values
      *       while averaging them.
      */
-    void smoothDomain() 
-    {
-    }
+    void smoothDomain();
     
 
     /** 
@@ -166,9 +166,7 @@ public:
      * of blocks in NbTerrain. Wind vertical coordinate is modified
      * accordingly.
      */
-    void minimizeDomainHeight() 
-    {
-    }
+    void minimizeDomainHeight();
     
         
 
@@ -195,7 +193,26 @@ private:
     NcFile wrfInputFile;
 
     int nx, ny;
+    float m_dx, m_dy;
+    
     int xDim[2], yDim[2];
+
+    int m_minWRFAlt;
+    int m_maxWRFAlt;
+    int m_maxTerrainSize;
+    int m_maxNbStat;
+
+    int m_TerrainFlag; // 0 = No relief; 1 = W/ relief.
+    int m_BdFlag;      // 0 = No buildings; 1 = Defined by the user.
+    int m_VegFlag;     // 0 = No vegetation; 1 = Extracted from WRF.
+    int m_Z0Flag;      // 1 = Extracted from WRF Restart File; 2 = Defined by WRF land use; 3 = Constant value.
+  
+    // For later efforts
+    // SimData.Z0DataSource = SimData.WRFFile;            %%% If
+    // Z0Flag = 1, put WRF Restart File name; if Z0Flag = 2, put
+    // WRFOUTPUT FILE name; if Z0Flag = 3, put a CONSTANT VALUE.
+
+    double* relief;
 
     void dumpWRFDataArray(const std::string &name, double *allData, int dimT, int dimZ, int dimY, int dimX);
 
