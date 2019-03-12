@@ -295,6 +295,31 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
     //                Apply building effect                    //
     /////////////////////////////////////////////////////////////
 
+    /*std::vector <polyVert> polygonVertices(7);
+
+    polygonVertices[0].x_poly = 50;
+    polygonVertices[1].x_poly = 70;
+    polygonVertices[2].x_poly = 75;
+    polygonVertices[3].x_poly = 105;
+    polygonVertices[4].x_poly = 72;
+    polygonVertices[5].x_poly = 79;
+    polygonVertices[6].x_poly = 50;
+    //std::cout << "x_poly:" << polygonVertices[5].x_poly << "\n";
+    polygonVertices[0].y_poly = 91;
+    polygonVertices[1].y_poly = 110;
+    polygonVertices[2].y_poly = 98;
+    polygonVertices[3].y_poly = 91;
+    polygonVertices[4].y_poly = 60;
+    polygonVertices[5].y_poly = 85;
+    polygonVertices[6].y_poly = 91;
+    //std::cout << "y_poly:" << polygonVertices[2].y_poly << "\n";*/
+
+    float bldElevation = 20.0;
+    float base_height = 0.0;
+
+    PolyBuilding* poly_building;
+    poly_building->setCellsFlag ( dx, dy, dz, nx, ny, nz,icellflag, mesh_type_flag, polygonVertices, base_height, bldElevation);
+
     if (mesh_type_flag == 0)
     {
         for (int i = 0; i < buildings.size(); i++)
@@ -302,11 +327,6 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
             ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz, nx, ny, nz, icellflag, mesh_type_flag);
 
         }
-
-        std::cout << "Defining Solid Walls...\n";
-        /// Boundary condition for building edges
-        defineWalls(dx,dy,dz,nx,ny,nz, icellflag, n.data(), m.data(), f.data(), e.data(), h.data(), g.data());
-        std::cout << "Walls Defined...\n";
     }
     else
     {
@@ -324,14 +344,21 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
     	    ((RectangularBuilding*)buildings[i])->setCutCells(dx, dy, dz, nx, ny, nz, icellflag, x_cut, y_cut, z_cut,
                                                               num_points, coeff);    /// located in RectangularBuilding.h
 
-        }
+      }
 
-        std::cout << "Defining Solid Walls...\n";
+      if (buildings.size()>0)
+      {
         /// Boundary condition for building edges
-        defineWalls(dx, dy, dz, nx, ny, nz, icellflag, n.data(), m.data(), f.data(), e.data(), h.data(), g.data(),
+        calculateCoefficients(dx, dy, dz, nx, ny, nz, icellflag, n.data(), m.data(), f.data(), e.data(), h.data(), g.data(),
                     x_cut, y_cut, z_cut, num_points, coeff);
-        std::cout << "Walls Defined...\n";
+      }
     }
+
+    std::cout << "Defining Solid Walls...\n";
+    /// Boundary condition for building edges
+    defineWalls(dx,dy,dz,nx,ny,nz, icellflag, n.data(), m.data(), f.data(), e.data(), h.data(), g.data());
+    std::cout << "Walls Defined...\n";
+
 
     /*
      * Calling getWallIndices to return 6 vectores of indices of the cells that have wall to right/left,
@@ -390,7 +417,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
 
 
 
-void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag,
+void Solver::calculateCoefficients(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag,
                         float* n, float* m, float* f, float* e, float* h, float* g,
                         std::vector<std::vector<std::vector<float>>> x_cut, std::vector<std::vector<std::vector<float>>>y_cut,
                         std::vector<std::vector<std::vector<float>>> z_cut, std::vector<std::vector<int>> num_points,
@@ -594,40 +621,6 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, s
 					m[icell_cent] = coeff[icell_cent][5];
 				}
 
-				if (icellflag[icell_cent] !=0)
-				{
-
-					/// Wall below
-					if (icellflag[icell_cent-(nx-1)*(ny-1)]==0)
-					{
-			    		n[icell_cent] = 0.0;
-					}
-					/// Wall above
-					if (icellflag[icell_cent+(nx-1)*(ny-1)]==0)
-					{
-		    			m[icell_cent] = 0.0;
-					}
-					/// Wall in back
-					if (icellflag[icell_cent-1]==0)
-					{
-						f[icell_cent] = 0.0;
-					}
-					/// Wall in front
-					if (icellflag[icell_cent+1]==0)
-					{
-						e[icell_cent] = 0.0;
-					}
-					/// Wall on right
-					if (icellflag[icell_cent-(nx-1)]==0)
-					{
-						h[icell_cent] = 0.0;
-					}
-					/// Wall on left
-					if (icellflag[icell_cent+(nx-1)]==0)
-					{
-						g[icell_cent] = 0.0;
-					}
-				}
 			}
 		}
 	}

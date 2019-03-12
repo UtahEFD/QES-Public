@@ -21,6 +21,7 @@
 #include "Canopies.h"
 #include "Canopy.h"
 #include "Cut_cell.h"
+#include "PolyBuilding.h"
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -191,7 +192,7 @@ public:
      * related coefficients to zero to define solid walls for non
      * cut-cells.
      */
-    void defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag, float* n, float* m,
+    void calculateCoefficients(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag, float* n, float* m,
                      float* f, float* e, float* h, float* g, std::vector<std::vector<std::vector<float>>> x_cut,
                      std::vector<std::vector<std::vector<float>>>y_cut,std::vector<std::vector<std::vector<float>>> z_cut,
                      std::vector<std::vector<int>> num_points, std::vector<std::vector<float>> coeff);

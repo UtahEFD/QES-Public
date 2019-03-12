@@ -240,10 +240,10 @@ void CPUSolver::outputDataFile()
 			}
 		}
 	}
-	outdata1.close();
+	outdata1.close();*/
 
 	// Write data to file
-	ofstream outdata2;
+	/*ofstream outdata2;
 	outdata2.open("Final velocity1.dat");
 	if( !outdata2 ) {                 // File couldn't be opened
 		cerr << "Error: file could not be opened" << endl;
@@ -262,28 +262,39 @@ void CPUSolver::outputDataFile()
 			}
 		}
 	}
-	outdata2.close(); */     
+	outdata2.close();*/
 }
 
 void CPUSolver::outputNetCDF( NetCDFData* netcdfDat )
 {
-    /// Declare cell center positions
-    std::vector<float> x_out(nx-1) , y_out(ny-1), z_out(nz-1);
+  std::vector<float> x_out(nx-1) , y_out(ny-1), z_out(nz-1);
 
-    for ( int i = 0; i < nx-1; i++) {
-    	x_out[i] = (i+0.5)*dx;         /// Location of cell centers in x-dir
-   	}
-    for ( int j = 0; j < ny-1; j++){
-		y_out[j] = (j+0.5)*dy;         /// Location of cell centers in y-dir
-	}
-	for ( int k = 0; k < nz-1; k++){
-		z_out[k] = (k-0.5)*dz;         /// Location of cell centers in z-dir
-	}
+  for ( int i = 0; i < nx-1; i++) {
+    x_out[i] = (i+0.5)*dx;         /// Location of cell centers in x-dir
+  }
+  for ( int j = 0; j < ny-1; j++){
+    y_out[j] = (j+0.5)*dy;         /// Location of cell centers in y-dir
+  }
+  for ( int k = 0; k < nz-1; k++){
+    z_out[k] = (k-0.5)*dz;         /// Location of cell centers in z-dir
+  }
 
-    long numcell_cent = (nx-1)*(ny-1)*(nz-1);         /// Total number of cell-centered values in domain
+  for (int k = 0; k < nz-1; k++){
+    for (int j = 0; j < ny-1; j++){
+      for (int i = 0; i < nx-1; i++){
+        int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
+        int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        u_out[icell_cent] = 0.5*(u[icell_face+1]+u[icell_face]);
+        v_out[icell_cent] = 0.5*(v[icell_face+nx]+v[icell_face]);
+        w_out[icell_cent] = 0.5*(w[icell_face+nx*ny]+w[icell_face]);
+      }
+    }
+  }
 
-    netcdfDat->getDataFace(x.data(),y.data(),z.data(),u.data(),v.data(),w.data(),nx,ny,nz);
-    netcdfDat->getDataICell(icellflag.data(), x_out.data(), y_out.data(), z_out.data(), nx-1, ny - 1, nz - 1, numcell_cent);
+  long numcell_cent = (nx-1)*(ny-1)*(nz-1);         /// Total number of cell-centered values in domain
+
+  netcdfDat->getDataCenter(x_out.data(),y_out.data(),z_out.data(),u_out.data(),v_out.data(),w_out.data(),nx-1,ny-1,nz-1);
+  netcdfDat->getDataICell(icellflag.data(), x_out.data(), y_out.data(), z_out.data(), nx-1, ny - 1, nz - 1, numcell_cent);
 
       /* if (DTEHFExists)
             netcdfDat->getCutCellFlags(cells);
