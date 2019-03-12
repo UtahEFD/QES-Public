@@ -14,6 +14,7 @@
 #include "DynamicParallelism.h"
 #include "NetCDFData.h"
 #include "DTEHeightField.h"
+#include "ESRIShapefile.h"
 
 namespace pt = boost::property_tree;
 
@@ -87,8 +88,17 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Files was successfully read
-    std::cout << "Data Was Read\n";
+    
+    // For now, process ESRIShapeFile here:
+    ESRIShapefile *shpFile = nullptr;
+    if (UID->simParams->shpFile != "") {
+        shpFile = new ESRIShapefile( UID->simParams->shpFile,
+                                     UID->simParams->shpBuildingLayerName );
+        std::vector<float> shpDomainSize(2);
+        shpFile->getLocalDomain( shpDomainSize );
+        std::cout << "SHP Domain Size: " << shpDomainSize[0] << " X " << shpDomainSize[1] << std::endl;
+    }
+    
 
     // //////////////////////////////////////////
     //
