@@ -8,8 +8,8 @@ ESRIShapefile::ESRIShapefile()
     maxBound = { -1.0*std::numeric_limits<float>::max(), -1.0*std::numeric_limits<float>::max() };    
 }
 
-ESRIShapefile::ESRIShapefile(const std::string &filename)
-    : m_filename(filename), minBound(2), maxBound(2)
+ESRIShapefile::ESRIShapefile(const std::string &filename, const std::string &bldLayerName)
+    : m_filename(filename), m_layerName(bldLayerName), minBound(2), maxBound(2)
 {
     minBound = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
     maxBound = { -1.0*std::numeric_limits<float>::max(), -1.0*std::numeric_limits<float>::max() };
@@ -50,7 +50,7 @@ void ESRIShapefile::loadVectorData()
     // just what I set my layer name too -- may need to specify this
     //
     // Need to extract the layer from the QU XML files....
-    OGRLayer  *buildingLayer = m_poDS->GetLayerByName( "seoul_small" );  
+    OGRLayer  *buildingLayer = m_poDS->GetLayerByName( m_layerName.c_str() );
     if (buildingLayer == nullptr) {
         std::cerr << "ESRIShapefile -- no layer" << std::endl;
         exit( 1 );
@@ -112,7 +112,14 @@ void ESRIShapefile::loadVectorData()
                 for (int vidx=0; vidx< vertexCount; vidx++) {
                     double x = pLinearRing->getX( vidx );
                     double y = pLinearRing->getY( vidx );
-                    std::cout << "\t(" << x << ", " << y << ")" << std::endl;
+
+                    if (x < minBound[0]) minBound[0] = x;
+                    if (y < minBound[1]) minBound[1] = y;
+
+                    if (x > maxBound[0]) maxBound[0] = x;
+                    if (y > maxBound[1]) maxBound[1] = y;
+
+                    // std::cout << "\t(" << x << ", " << y << ")" << std::endl;
                 }
                 polyCount++;
             }
@@ -123,6 +130,9 @@ void ESRIShapefile::loadVectorData()
         }
         
     }
+
+    std::cout << "Bounds of SHP: Min=(" << minBound[0] << ", " << minBound[1] << "), Max=(" << maxBound[0] << ", " << maxBound[1] << ")" << std::endl;
+    std::cout << "Domain Size: " << (int)ceil(maxBound[0] - minBound[0]) << " X " << (int)ceil(maxBound[1] - minBound[1]) << std::endl;
 }
 
 
