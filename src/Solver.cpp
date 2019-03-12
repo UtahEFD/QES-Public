@@ -27,7 +27,7 @@ void Solver::printProgress (float percentage)
 * This function is assigning values read by URBImputData to variables used in the solvers
  */
 
-Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
+Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* output)
     : itermax( UID->simParams->maxIterations )
 {
 
@@ -61,8 +61,9 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
     ny += 1;        /// +1 for Staggered grid
     nz += 2;        /// +2 for staggered grid and ghost cell
 
-    numcell_cent = (nx-1)*(ny-1)*(nz-1);         /**< Total number of cell-centered values in domain */
-    numface_cent = nx*ny*nz;                     /**< Total number of face-centered values in domain */
+    numcell_cout = (nx-1)*(ny-1)*(nz-2);        /**< Total number of cell-centered values in domain */
+    numcell_cent = (nx-1)*(ny-1)*(nz-1);        /**< Total number of cell-centered values in domain */
+    numcell_face = nx*ny*nz;                    /**< Total number of face-centered values in domain */
 
     Vector3<float> gridInfo;
     gridInfo = *(UID->simParams->grid);
@@ -158,18 +159,28 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
     z.resize( nz-1 );
     zm.resize( nz-1 );
     for (auto k=0; k<z.size(); k++) {
-        z[k] = (k - 0.5) * dz;     /**< Location of face centers in x-dir */
+        z[k] = (k - 0.5) * dz;          /**< Location of face centers in z-dir */
         zm[k] = k*dz;
     }
-
+    
+    z_out.resize( nz-2 );
+    for (auto k=1; k<z.size(); k++) {
+        z_out[k-1] = (k - 0.5) * dz;    /**< Location of face centers in z-dir */
+    }
+    
     x.resize( nx-1 );
+    x_out.resize( nx-1 );
     for (auto i=0; i<x.size(); i++) {
-        x[i] = (i+0.5)*dx;         /**< Location of face centers in x-dir */
+        x_out[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
+        x[i] = (float)x[i]; 
     }
 
     y.resize( ny-1 );
+    y_out.resize( ny-1 );
     for (auto j=0; j<ny-1; j++) {
-        y[j] = (j+0.5)*dy;         /**< Location of face centers in y-dir */
+        y_out[j] = (j+0.5)*dy;          /**< Location of face centers in y-dir */
+        y[j] = (float)y_out[j];
+	
     }
 
 
@@ -184,19 +195,20 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
     icellflag.resize( numcell_cent, 1 );
     lambda.resize( numcell_cent, 0.0 );
     lambda_old.resize( numcell_cent, 0.0 );
-    u_out.resize( numcell_cent, 0.0 );
-    v_out.resize( numcell_cent, 0.0 );
-    w_out.resize( numcell_cent, 0.0 );
+    u_out.resize( numcell_cout, 0.0 );
+    v_out.resize( numcell_cout, 0.0 );
+    w_out.resize( numcell_cout, 0.0 );
+    icellflag_out.resize( numcell_cout, 0.0 );
 
     // Set the Wind Velocity data elements to be of the correct size
     // Initialize u0,v0,w0,u,v and w to 0.0
-    u0.resize( numface_cent, 0.0 );
-    v0.resize( numface_cent, 0.0 );
-    w0.resize( numface_cent, 0.0 );
+    u0.resize( numcell_face, 0.0 );
+    v0.resize( numcell_face, 0.0 );
+    w0.resize( numcell_face, 0.0 );
 
-    u.resize(numface_cent, 0.0);
-    v.resize(numface_cent, 0.0);
-    w.resize(numface_cent, 0.0);
+    u.resize(numcell_face, 0.0);
+    v.resize(numcell_face, 0.0);
+    w.resize(numcell_face, 0.0);
 
     // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa (located in Sensor.cpp)
     sensor->UTMConverter (site_lon, site_lat, site_UTM_x, site_UTM_y, site_UTM_zone, 1);
@@ -386,9 +398,89 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
             }
         }
     }
+    
+    //////////////////////////////////////////////////
+    //      Initialize output information           //   
+    //////////////////////////////////////////////////
+    
+    // set output fields
+    std::cout<<"Getting output fields"<<std::endl;
+    output_fields = UID->fileOptions->outputFields;
+    if (output_fields[0]=="all") {
+        output_fields.erase(output_fields.begin());
+        output_fields = {"u","v","w"};
+    }
+    
+    // set cell-centered dimensions
+    NcDim t_dim = output->addDimension("t");
+    NcDim z_dim = output->addDimension("z",nz-2);
+    NcDim y_dim = output->addDimension("y",ny-1);
+    NcDim x_dim = output->addDimension("x",nx-1);
+    
+    dim_scalar_t.push_back(t_dim);
+    dim_scalar_z.push_back(z_dim);
+    dim_scalar_y.push_back(y_dim);
+    dim_scalar_x.push_back(x_dim);
+    dim_vector.push_back(t_dim);
+    dim_vector.push_back(z_dim);
+    dim_vector.push_back(y_dim);
+    dim_vector.push_back(x_dim);
+    
+    // create attributes
+    AttScalarDbl att_t = {&time,  "t", "time",      "s", dim_scalar_t};
+    AttVectorDbl att_x = {&x_out, "x", "x-distance", "m", dim_scalar_x};
+    AttVectorDbl att_y = {&y_out, "y", "y-distance", "m", dim_scalar_y};
+    AttVectorDbl att_z = {&z_out, "z", "z-distance", "m", dim_scalar_z};
+    AttVectorDbl att_u = {&u_out, "u", "x-component velocity", "m s-1", dim_vector};
+    AttVectorDbl att_v = {&v_out, "v", "y-component velocity", "m s-1", dim_vector};
+    AttVectorDbl att_w = {&w_out, "w", "z-component velocity", "m s-1", dim_vector};
+    AttVectorInt att_i = {&icellflag_out,  "icell", "icell flag value", "--", dim_vector};
+    
+    // map the name to attributes
+    map_att_scalar_dbl.emplace("t", att_t);
+    map_att_vector_dbl.emplace("x", att_x);
+    map_att_vector_dbl.emplace("y", att_y);
+    map_att_vector_dbl.emplace("z", att_z);
+    map_att_vector_dbl.emplace("u", att_u);
+    map_att_vector_dbl.emplace("v", att_v);
+    map_att_vector_dbl.emplace("w", att_w);
+    map_att_vector_int.emplace("icell", att_i);
+    
+    // we will always save time and grid lengths
+    output_scalar_dbl.push_back(map_att_scalar_dbl["t"]);
+    output_vector_dbl.push_back(map_att_vector_dbl["x"]);
+    output_vector_dbl.push_back(map_att_vector_dbl["y"]);
+    output_vector_dbl.push_back(map_att_vector_dbl["z"]);
+    
+    // create list of fields to save
+    for (int i=0; i<output_fields.size(); i++) {
+        std::string key = output_fields[i];
+        if (map_att_scalar_dbl.count(key)) {
+            output_scalar_dbl.push_back(map_att_scalar_dbl[key]);
+        } else if (map_att_vector_dbl.count(key)) {
+            output_vector_dbl.push_back(map_att_vector_dbl[key]);
+        } else if(map_att_vector_int.count(key)) {
+            output_vector_int.push_back(map_att_vector_int[key]);
+        }
+    }
+    
+    // add scalar double fields
+    for (int i=0; i<output_scalar_dbl.size(); i++) {
+        AttScalarDbl att = output_scalar_dbl[i];
+        output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
+    }
+    // add vector double fields
+    for (int i=0; i<output_vector_dbl.size(); i++) {
+        AttVectorDbl att = output_vector_dbl[i];
+        output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
+    }
+    
+    // add vector int fields
+    for (int i=0; i<output_vector_int.size(); i++) {
+        AttVectorInt att = output_vector_int[i];
+        output->addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
+    }
 }
-
-
 
 void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag,
                         float* n, float* m, float* f, float* e, float* h, float* g,
@@ -935,4 +1027,64 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
 
 
 
+}
+
+// Save output at cell-centered values
+void Solver :: save(Output* output) {
+
+    // output size and location
+    std::vector<size_t> scalar_index;
+    std::vector<size_t> scalar_size;
+    std::vector<size_t> vector_index;
+    std::vector<size_t> vector_size;
+
+    scalar_index = {static_cast<unsigned long>(output_counter)};
+    scalar_size  = {1};
+    vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
+    vector_size  = {1, static_cast<unsigned long>(nz-2),static_cast<unsigned long>(ny-1), static_cast<unsigned long>(nx-1)};
+
+    // set time 
+    time = (double)output_counter;
+
+    // get cell-centered values
+    for (int k = 1; k < nz-2; k++){
+    	for (int j = 0; j < ny-1; j++){
+    		for (int i = 0; i < nx-1; i++){
+    			int icell_face = i + j*nx + k*nx*ny;
+    			int icell_cent = i + j*(nx-1) + (k-1)*(nx-1)*(ny-1); 
+    			u_out[icell_cent] = 0.5*(u[icell_face+1]+u[icell_face]);
+    			v_out[icell_cent] = 0.5*(v[icell_face+nx]+v[icell_face]);
+    			w_out[icell_cent] = 0.5*(w[icell_face+nx*ny]+w[icell_face]);
+    			icellflag_out[icell_cent] = icellflag[icell_cent+((nx-1)*(ny-1))];
+    		}
+    	}	
+    }
+
+    // loop through 1D fields to save
+    for (int i=0; i<output_scalar_dbl.size(); i++) {
+        output->saveField1D(output_scalar_dbl[i].name, scalar_index, output_scalar_dbl[i].data);
+    }
+    // loop through 2D double fields to save
+    for (int i=0; i<output_vector_dbl.size(); i++) {
+
+        // x,y,z saved once with no time component
+        if (i<3 && output_counter==0) {
+            output->saveField2D(output_vector_dbl[i].name, *output_vector_dbl[i].data);
+        } else {
+            output->saveField2D(output_vector_dbl[i].name, vector_index,
+                                vector_size, *output_vector_dbl[i].data);
+        }
+    }
+    // loop through 2D int fields to save
+    for (int i=0; i<output_vector_int.size(); i++) { 
+        output->saveField2D(output_vector_int[i].name, vector_index,
+                            vector_size, *output_vector_int[i].data);
+    }
+    // remove x, y, z from output array after first save
+    if (output_counter==0) {
+        output_vector_dbl.erase(output_vector_dbl.begin(),output_vector_dbl.begin()+3);
+    }
+
+    // increment for next time insertion
+    output_counter +=1;
 }

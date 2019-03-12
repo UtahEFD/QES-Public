@@ -7,7 +7,7 @@
 
 #include "URBInputData.h"
 #include "Solver.h"
-#include "NetCDFData.h"
+#include "Output.hpp"
 #include "DTEHeightField.h"
 #include "RectangularBuilding.h"
 #include "Sensor.h"
@@ -34,8 +34,8 @@ private:
     void _cudaCheck(T e, const char* func, const char* call, const int line);
 
 public:
-	DynamicParallelism(const URBInputData* UID, const DTEHeightField* DTEHF)
-		: Solver(UID, DTEHF)
+	DynamicParallelism(const URBInputData* UID, const DTEHeightField* DTEHF, Output* output)
+		: Solver(UID, DTEHF, output)
 		{
 		}
 
@@ -45,7 +45,4 @@ protected:
     double *d_lambda, *d_lambda_old;		/**< Lagrange multipliers on device (GPU) */
 
     virtual void solve(bool solveWind);
-    void outputDataFile();
-    void outputNetCDF( NetCDFData* netcdfDat );
-
 };

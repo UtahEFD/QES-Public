@@ -1,7 +1,7 @@
 #include "handleURBArgs.h"
 
 URBArgs::URBArgs()
-	: verbose(false), quicFile(""), cellFace(false), solveType(1), compareType(0)
+	: verbose(false), quicFile(""), netCDFFile("cudaurb.nc"), cellFace(false), solveType(1), compareType(0)
 {
     reg("help", "help/usage information", ArgumentParsing::NONE, '?');
     reg("verbose", "turn on verbose output", ArgumentParsing::NONE, 'v');

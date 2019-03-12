@@ -13,7 +13,7 @@
 #include "NonPolyBuilding.h"
 #include "RectangularBuilding.h"
 #include "Vector3.h"
-#include "NetCDFData.h"
+#include "Output.hpp"
 #include "Mesh.h"
 #include "DTEHeightField.h"
 #include "Cell.h"
@@ -71,6 +71,7 @@ protected:
     float dxy;		/**< Minimum value between dx and dy */
     std::vector<float> dzArray, zm;
     std::vector<float> x,y,z;
+    std::vector<double> x_out,y_out,z_out;
 
     Sensor* sensor;
     int num_sites;			/**< number of data entry sites */
@@ -119,7 +120,7 @@ protected:
 
     /// Declaration of Lagrange multipliers
     std::vector<double> lambda, lambda_old;
-    std::vector<int> icellflag;        /// Cell index flag (0 = building/terrain, 1 = fluid)
+    std::vector<int> icellflag, icellflag_out;        /// Cell index flag (0 = building/terrain, 1 = fluid)
 
     float z_ref;             /// Height of the measuring sensor (m)
     float U_ref;             /// Measured velocity at the sensor height (m/s)
@@ -141,10 +142,11 @@ protected:
     bool DTEHFExists = false;
     Cut_cell cut_cell;
 
-    long numcell_cent;		/**< Total number of cell-centered values in domain */
-    long numface_cent;		/**< Total number of face-centered values in domain */
-    int icell_face;		/**< cell-face index */
-    int icell_cent;		/**< cell-center index */
+    long numcell_cout;
+    long numcell_cent;                          /**< Total number of cell-centered values in domain */
+    long numcell_face;                          /**< Total number of face-centered values in domain */
+    int icell_face;                             /**< cell-face index */
+    int icell_cent; 
 
     std::vector<std::vector<std::vector<float>>> x_cut;
     std::vector<std::vector<std::vector<float>>> y_cut;
@@ -152,7 +154,48 @@ protected:
 
     std::vector<std::vector<int>> num_points;
     std::vector<std::vector<float>> coeff;
-
+    
+    /// Declaration of output manager
+    int output_counter=0;
+    double time=0;
+    std::vector<NcDim> dim_scalar_t;
+    std::vector<NcDim> dim_scalar_z;
+    std::vector<NcDim> dim_scalar_y;
+    std::vector<NcDim> dim_scalar_x;
+    std::vector<NcDim> dim_vector;
+    std::vector<std::string> output_fields;
+    
+    struct AttScalarDbl {
+        double* data;
+        std::string name;
+        std::string long_name;
+        std::string units;
+        std::vector<NcDim> dimensions;
+    };
+    
+    struct AttVectorDbl {
+        std::vector<double>* data;
+        std::string name;
+        std::string long_name;
+        std::string units;
+        std::vector<NcDim> dimensions;
+    };
+    
+    struct AttVectorInt {
+        std::vector<int>* data;
+        std::string name;
+        std::string long_name;
+        std::string units;
+        std::vector<NcDim> dimensions;
+    };
+    
+    std::map<std::string,AttScalarDbl> map_att_scalar_dbl;
+    std::map<std::string,AttVectorDbl> map_att_vector_dbl;
+    std::map<std::string,AttVectorInt> map_att_vector_int;
+    
+    std::vector<AttScalarDbl> output_scalar_dbl;
+    std::vector<AttVectorDbl> output_vector_dbl;
+    std::vector<AttVectorInt> output_vector_int;
 
     /*
      * This prints out the current amount that a process
@@ -170,17 +213,9 @@ protected:
     std::vector<int> wall_front_indices;     /**< Indices of the cells with wall in front boundary condition */
 
 public:
-    Solver(const URBInputData* UID, const DTEHeightField* DTEHF);
+    Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* output);
 
     virtual void solve(bool solveWind) = 0;
-
-    virtual void outputDataFile() {}
-
-    /*
-     * note: this doesn't actually output the netcdf data, not sure why it's
-     * named this way
-     */
-    virtual void outputNetCDF( NetCDFData* netcdfDat ) {}
 
     /**
      * @brief
@@ -230,4 +265,11 @@ public:
                     std::vector<int>& wall_above_indices, std::vector<int>& wall_below_indices,
                     std::vector<int>& wall_front_indices, std::vector<int>& wall_back_indices,
                     double *u0, double *v0, double *w0, float z0);
+                    
+    /**
+    * @brief 
+    * 
+    * This function saves user-defined data to file
+    */
+    void save(Output*);
 };

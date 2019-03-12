@@ -262,23 +262,23 @@ void DynamicParallelism::solve(bool solveWind)
     cudaMalloc((void **) &d_lambda, numcell_cent * sizeof(double));
     cudaMalloc((void **) &d_lambda_old, numcell_cent * sizeof(double));
     cudaMalloc((void **) &d_icellflag, numcell_cent * sizeof(int));
-    cudaMalloc((void **) &d_u0,numface_cent*sizeof(double));
-    cudaMalloc((void **) &d_v0,numface_cent*sizeof(double));
-    cudaMalloc((void **) &d_w0,numface_cent*sizeof(double));
+    cudaMalloc((void **) &d_u0,numcell_face*sizeof(double));
+    cudaMalloc((void **) &d_v0,numcell_face*sizeof(double));
+    cudaMalloc((void **) &d_w0,numcell_face*sizeof(double));
     cudaMalloc((void **) &d_value,numcell_cent*sizeof(double));
     cudaMalloc((void **) &d_bvalue,numblocks*sizeof(double));
     cudaMalloc((void **) &d_x,nx*sizeof(float));
     cudaMalloc((void **) &d_y,ny*sizeof(float));
     cudaMalloc((void **) &d_z,nz*sizeof(float));
-    cudaMalloc((void **) &d_u,numface_cent*sizeof(double));
-    cudaMalloc((void **) &d_v,numface_cent*sizeof(double));
-    cudaMalloc((void **) &d_w,numface_cent*sizeof(double));
+    cudaMalloc((void **) &d_u,numcell_face*sizeof(double));
+    cudaMalloc((void **) &d_v,numcell_face*sizeof(double));
+    cudaMalloc((void **) &d_w,numcell_face*sizeof(double));
 	 
 
     cudaMemcpy(d_icellflag,icellflag.data(),numcell_cent*sizeof(int),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_u0,u0.data(),numface_cent*sizeof(double),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_v0,v0.data(),numface_cent*sizeof(double),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_w0,w0.data(),numface_cent*sizeof(double),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_u0,u0.data(),numcell_face*sizeof(double),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_v0,v0.data(),numcell_face*sizeof(double),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_w0,w0.data(),numcell_face*sizeof(double),cudaMemcpyHostToDevice);
     cudaMemcpy(d_R,R.data(),numcell_cent*sizeof(double),cudaMemcpyHostToDevice);
     cudaMemcpy(d_value , value.data() , numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
     cudaMemcpy(d_bvalue , bvalue.data() , numblocks * sizeof(double) , cudaMemcpyHostToDevice);      
@@ -305,9 +305,9 @@ void DynamicParallelism::solve(bool solveWind)
     cudaCheck(cudaGetLastError()); 
     
     cudaMemcpy (lambda.data() , d_lambda , numcell_cent * sizeof(double) , cudaMemcpyDeviceToHost);
-    cudaMemcpy(u.data(),d_u,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
-    cudaMemcpy(v.data(),d_v,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
-    cudaMemcpy(w.data(),d_w,numface_cent*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(u.data(),d_u,numcell_face*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(v.data(),d_v,numcell_face*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(w.data(),d_w,numcell_face*sizeof(double),cudaMemcpyDeviceToHost);
 
     cudaFree (d_lambda);
     cudaFree (d_e);
@@ -334,85 +334,4 @@ void DynamicParallelism::solve(bool solveWind)
 
     std::chrono::duration<double> elapsed = finish - start;
     std::cout << "Elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time    
-}
-
-void DynamicParallelism::outputDataFile()
-{
-    /// Declare cell center positions
-    float *x_out, *y_out, *z_out;
-    x_out = new float [nx-1];
-    y_out = new float [ny-1];
-    z_out = new float [nz-1];
-
-
-    for ( int i = 0; i < nx-1; i++) {
-        x_out[i] = (i+0.5)*dx;         /// Location of cell centers in x-dir
-    }
-    for ( int j = 0; j < ny-1; j++){
-        y_out[j] = (j+0.5)*dy;         /// Location of cell centers in y-dir
-    }
-    for ( int k = 0; k < nz-1; k++){
-        z_out[k] = (k-0.5)*dz;         /// Location of cell centers in z-dir
-    }
-
-    	for (int k = 0; k < nz-1; k++){
-            for (int j = 0; j < ny-1; j++){
-                for (int i = 0; i < nx-1; i++){
-                    int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values 
-					int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1); 
-    				u_out[icell_cent] = 0.5*(u[icell_face+1]+u[icell_face]);
-    				v_out[icell_cent] = 0.5*(v[icell_face+nx]+v[icell_face]);
-    				w_out[icell_cent] = 0.5*(w[icell_face+nx*ny]+w[icell_face]);
-    			}
-    		}	
-    	}
-        // Write data to file
-        ofstream outdata1;
-        outdata1.open("Final velocity.dat");
-        if( !outdata1 ) {                 // File couldn't be opened
-            cerr << "Error: file could not be opened" << endl;
-            exit(1);
-        }
-        // Write data to file
-        for (int k = 0; k < nz-1; k++){
-            for (int j = 0; j < ny-1; j++){
-                for (int i = 0; i < nx-1; i++){
-    				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-    				int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
-                    outdata1 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] 
-							 << "\t \t"<< "\t \t" << u[icell_face] <<"\t \t"<< "\t \t"<<v[icell_face]<<"\t \t"<< "\t \t"
-							 << w[icell_face]<< "\t \t"<< "\t \t" << u0[icell_face] <<"\t \t"<< "\t \t"<<v0[icell_face]
-							 <<"\t \t"<< "\t \t"<<w0[icell_face]<<"\t \t"<<R[icell_cent]<< endl;   
-                }
-            }
-        }
-        outdata1.close();
-
-        // Write data to file
-        ofstream outdata2;
-        outdata2.open("Final velocity1.dat");
-        if( !outdata2 ) {                 // File couldn't be opened
-            cerr << "Error: file could not be opened" << endl;
-            exit(1);
-        }
-        // Write data to file
-        for (int k = 0; k < nz-1; k++){
-            for (int j = 0; j < ny-1; j++){
-                for (int i = 0; i < nx-1; i++){
-                    int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-                    int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
-                    outdata2 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] 
-                             << "\t \t"<< "\t \t" << f[icell_cent] <<"\t \t"<< "\t \t"<<e[icell_cent]<<"\t \t"<< "\t \t"
-                             <<h[icell_cent]<< "\t \t"<< "\t \t" << g[icell_cent] <<"\t \t"<< "\t \t"<<n[icell_cent]<<"\t \t"
-                             << "\t \t"<<m[icell_cent]<<"\t \t"<<icellflag[icell_cent]<< endl;   
-                }
-            }
-        }
-        outdata2.close(); 
-}
-    
-
-void DynamicParallelism::outputNetCDF(  NetCDFData* netcdfDat )
-{
-    netcdfDat->getDataFace(x.data(),y.data(),z.data(), u.data(), v.data(), w.data(), nx,ny,nz);
 }

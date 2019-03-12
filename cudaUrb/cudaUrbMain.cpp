@@ -12,7 +12,7 @@
 #include "Solver.h"
 #include "CPUSolver.h"
 #include "DynamicParallelism.h"
-#include "NetCDFData.h"
+#include "Output.hpp"
 #include "DTEHeightField.h"
 
 namespace pt = boost::property_tree;
@@ -89,6 +89,9 @@ int main(int argc, char *argv[])
 
     // Files was successfully read
     std::cout << "Data Was Read\n";
+    
+    // Create instance of output class
+    Output* output = new Output(arguments.netCDFFile);
 
     // //////////////////////////////////////////
     //
@@ -97,9 +100,9 @@ int main(int argc, char *argv[])
     // //////////////////////////////////////////
     Solver *solver, *solverC = nullptr;
     if (arguments.solveType == CPU_Type)
-        solver = new CPUSolver(UID, DTEHF);
+        solver = new CPUSolver(UID, DTEHF, output);
     else if (arguments.solveType == DYNAMIC_P)
-        solver = new DynamicParallelism(UID, DTEHF);
+        solver = new DynamicParallelism(UID, DTEHF, output);
     else
     {
         std::cerr << "Error: invalid solve type\n";
@@ -110,20 +113,20 @@ int main(int argc, char *argv[])
     if (arguments.compareType)
     {
         if (arguments.compareType == CPU_Type)
-            solverC = new CPUSolver(UID, DTEHF);
+            solverC = new CPUSolver(UID, DTEHF, output);
         else if (arguments.compareType == DYNAMIC_P)
-            solverC = new DynamicParallelism(UID, DTEHF);
+            solverC = new DynamicParallelism(UID, DTEHF, output);
         else
         {
             std::cerr << "Error: invalid comparison type\n";
             exit(EXIT_FAILURE);
         }
     }
-
+    
     //close the scanner
     if (DTEHF)
         DTEHF->closeScanner();
-
+    
     // Run urb simulation code
     solver->solve( !arguments.solveWind);
 
@@ -135,54 +138,7 @@ int main(int argc, char *argv[])
         solverC->solve(!arguments.solveWind);
     }
 
-
-    // /////////////////////////////
-    // Output the various files requested from the simulation run
-    // (netcdf wind velocity, icell values, etc...
-    // /////////////////////////////
-
-    // Prepare the NetCDF Data Structure for outputting simulation results.
-    NetCDFData* netcdfDat = nullptr, *netcdfCompare = nullptr;
-    netcdfDat = new NetCDFData();
-
-
-    if (!arguments.solveWind) {
-
-        solver->outputNetCDF( netcdfDat );
-	    solver->outputDataFile ();
-
-        if (solverC != nullptr)
-        {
-            netcdfCompare = new NetCDFData();
-            solverC->outputNetCDF( netcdfCompare);
-            if (!netcdfDat->outputCellResultsDifference(netcdfCompare, arguments.netCDFFile))
-            {   
-                cerr << "ERROR: output is broken\n";
-                return -1;
-            }
-        }
-        if (!netcdfDat->outputCellFaceResults(arguments.netCDFFile))
-        {
-            cerr << "ERROR: output is broken\n";
-            return -1;
-        }
-    }
-
-
-    if (arguments.iCellOut != "")
-    {
-        if (!netcdfDat->outputICellFlags(arguments.iCellOut))
-        {
-            cerr << "ERROR: iCell is broken\n";
-            return -2;
-        }
-        if (DTEHF)
-            if (!netcdfDat->outputCutCellFlags(arguments.iCellOut))
-            {
-                cerr << "ERROR: cutCell is broken\n";
-                return -3;
-            }
-    }
+    solver->save(output);
 
     exit(EXIT_SUCCESS);
 }
