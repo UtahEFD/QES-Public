@@ -2,8 +2,10 @@
   <SHP>/scratch/seoul_small.shp</SHP>
   <SHPBuildingLayer>seoul_small</SHPBuildingLayer>
 
-	<domain> 40 40 100 </domain>
-	<cellSize> 15.0 15.0 5.0 </cellSize> <!-- Meters-->
+<!-- 3005 X 3024 -->
+	<domain> 3005 3024 40 </domain>
+
+	<cellSize> 30.0 30.0 5.0 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements> 				<!-- Number of time steps-->
 	<rooftopFlag> 2 </rooftopFlag> 											<!-- Rooftop flag (0-none, 1-log profile, 2-vortex) -->

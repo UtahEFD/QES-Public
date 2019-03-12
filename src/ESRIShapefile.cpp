@@ -8,17 +8,18 @@ ESRIShapefile::ESRIShapefile()
     maxBound = { -1.0*std::numeric_limits<float>::max(), -1.0*std::numeric_limits<float>::max() };    
 }
 
-ESRIShapefile::ESRIShapefile(const std::string &filename, const std::string &bldLayerName)
+ESRIShapefile::ESRIShapefile(const std::string &filename, const std::string &bldLayerName,
+                             std::vector< std::vector< polyVert > > &polygons)
     : m_filename(filename), m_layerName(bldLayerName), minBound(2), maxBound(2)
 {
     minBound = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
     maxBound = { -1.0*std::numeric_limits<float>::max(), -1.0*std::numeric_limits<float>::max() };
     
     GDALAllRegister();
-    loadVectorData();
+    loadVectorData( polygons );
 }
 
-void ESRIShapefile::loadVectorData()
+void ESRIShapefile::loadVectorData( std::vector< std::vector< polyVert > > &polygons )
 {
     int polyCount = 0;
     
@@ -109,6 +110,9 @@ void ESRIShapefile::loadVectorData()
                 pLinearRing = ((OGRPolygon*)poGeometry)->getExteriorRing();
                 int vertexCount = pLinearRing->getNumPoints();
                 std::cout << "Building Poly #" << polyCount << " (" << vertexCount << " vertices):" << std::endl;
+
+                std::vector< polyVert > polyList( vertexCount );
+                
                 for (int vidx=0; vidx< vertexCount; vidx++) {
                     double x = pLinearRing->getX( vidx );
                     double y = pLinearRing->getY( vidx );
@@ -119,9 +123,13 @@ void ESRIShapefile::loadVectorData()
                     if (x > maxBound[0]) maxBound[0] = x;
                     if (y > maxBound[1]) maxBound[1] = y;
 
-                    // std::cout << "\t(" << x << ", " << y << ")" << std::endl;
+                    // std::cout << "\t(" << x << ", " << y << ")" <<
+                    // std::endl;
+                    polyList[vidx] = polyVert(x, y);
                 }
                 polyCount++;
+
+                polygons.push_back( polyList );                
             }
             else
             {

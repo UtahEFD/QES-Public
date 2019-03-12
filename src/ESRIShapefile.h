@@ -5,11 +5,14 @@
 #include "gdal.h"
 #include "ogrsf_frmts.h"
 
+#include "PolygonVertex.h"
+
 class ESRIShapefile
 {
 public:
     ESRIShapefile();
-    ESRIShapefile(const std::string &filename, const std::string &layerName);
+    ESRIShapefile(const std::string &filename, const std::string &layerName,
+                  std::vector< std::vector< polyVert > >& polygons );
     ~ESRIShapefile();
 
     void getLocalDomain( std::vector<float> &dim ) 
@@ -21,7 +24,7 @@ public:
     
 private:
 
-    void loadVectorData();
+    void loadVectorData( std::vector< std::vector< polyVert > > &polygons );
 
     std::string m_filename;
     std::string m_layerName;

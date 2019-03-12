@@ -1,5 +1,7 @@
 #include "Solver.h"
 
+#include "ESRIShapefile.h"
+
 using std::cerr;
 using std::endl;
 using std::vector;
@@ -295,30 +297,61 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
     //                Apply building effect                    //
     /////////////////////////////////////////////////////////////
 
-    /*std::vector <polyVert> polygonVertices(7);
+    // For now, process ESRIShapeFile here:
+    ESRIShapefile *shpFile = nullptr;
+    
+    if (UID->simParams->shpFile != "") {
 
-    polygonVertices[0].x_poly = 50;
-    polygonVertices[1].x_poly = 70;
-    polygonVertices[2].x_poly = 75;
-    polygonVertices[3].x_poly = 105;
-    polygonVertices[4].x_poly = 72;
-    polygonVertices[5].x_poly = 79;
-    polygonVertices[6].x_poly = 50;
-    //std::cout << "x_poly:" << polygonVertices[5].x_poly << "\n";
-    polygonVertices[0].y_poly = 91;
-    polygonVertices[1].y_poly = 110;
-    polygonVertices[2].y_poly = 98;
-    polygonVertices[3].y_poly = 91;
-    polygonVertices[4].y_poly = 60;
-    polygonVertices[5].y_poly = 85;
-    polygonVertices[6].y_poly = 91;
-    //std::cout << "y_poly:" << polygonVertices[2].y_poly << "\n";*/
+        std::vector< std::vector <polyVert> > shpPolygons;
 
-    float bldElevation = 20.0;
-    float base_height = 0.0;
+        shpFile = new ESRIShapefile( UID->simParams->shpFile,
+                                     UID->simParams->shpBuildingLayerName,
+                                     shpPolygons );
 
-    PolyBuilding* poly_building;
-    poly_building->setCellsFlag ( dx, dy, dz, nx, ny, nz,icellflag, mesh_type_flag, polygonVertices, base_height, bldElevation);
+        std::vector<float> shpDomainSize(2);
+        shpFile->getLocalDomain( shpDomainSize );
+        std::cout << "SHP Domain Size: " << shpDomainSize[0] << " X " << shpDomainSize[1] << std::endl;
+
+        /*std::vector <polyVert> polygonVertices(7);
+
+          polygonVertices[0].x_poly = 50;
+          polygonVertices[1].x_poly = 70;
+          polygonVertices[2].x_poly = 75;
+          polygonVertices[3].x_poly = 105;
+          polygonVertices[4].x_poly = 72;
+          polygonVertices[5].x_poly = 79;
+          polygonVertices[6].x_poly = 50;
+          //std::cout << "x_poly:" << polygonVertices[5].x_poly << "\n";
+          polygonVertices[0].y_poly = 91;
+          polygonVertices[1].y_poly = 110;
+          polygonVertices[2].y_poly = 98;
+          polygonVertices[3].y_poly = 91;
+          polygonVertices[4].y_poly = 60;
+          polygonVertices[5].y_poly = 85;
+          polygonVertices[6].y_poly = 91;
+          //std::cout << "y_poly:" << polygonVertices[2].y_poly << "\n";*/
+
+        float bldElevation = 20.0;
+        float base_height = 0.0;
+
+        for (int pIdx = 0; pIdx<shpPolygons.size(); pIdx++) {
+
+            // convert the global polys to local domain coordinates
+            std::vector< polyVert > localPoly = shpPolygons[pIdx];
+            for (int lIdx=0; lIdx<localPoly.size(); lIdx++) {
+                localPoly[lIdx].x_poly = localPoly[lIdx].x_poly - shpDomainSize[0];
+                localPoly[lIdx].y_poly = localPoly[lIdx].y_poly - shpDomainSize[1];
+            }
+            
+            std::cout << "Adding PolyBuilding " << pIdx << std::endl;
+
+            PolyBuilding* poly_building = new PolyBuilding();
+            poly_building->setCellsFlag ( dx, dy, dz, nx, ny, nz,icellflag, mesh_type_flag, localPoly, base_height, bldElevation);
+        }
+        
+    }
+
+
 
     if (mesh_type_flag == 0)
     {
