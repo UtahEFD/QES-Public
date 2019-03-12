@@ -17,4 +17,6 @@ private:
 
     std::string m_filename;
     GDALDataset *m_poDS;
+
+    std::vector<float> minBound, maxBound;
 };

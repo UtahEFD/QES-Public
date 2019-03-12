@@ -2,18 +2,26 @@
 #include "ESRIShapefile.h"
 
 ESRIShapefile::ESRIShapefile()
+    : minBound(2), maxBound(2)
 {
+    minBound = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
+    maxBound = { -1.0*std::numeric_limits<float>::max(), -1.0*std::numeric_limits<float>::max() };    
 }
 
 ESRIShapefile::ESRIShapefile(const std::string &filename)
-    : m_filename(filename)
+    : m_filename(filename), minBound(2), maxBound(2)
 {
+    minBound = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
+    maxBound = { -1.0*std::numeric_limits<float>::max(), -1.0*std::numeric_limits<float>::max() };
+    
     GDALAllRegister();
     loadVectorData();
 }
 
 void ESRIShapefile::loadVectorData()
 {
+    int polyCount = 0;
+    
     // From -- http://www.gdal.org/gdal_tutorial.html
     m_poDS = (GDALDataset*) GDALOpenEx( m_filename.c_str(),
                                         GDAL_OF_VECTOR,
@@ -40,7 +48,9 @@ void ESRIShapefile::loadVectorData()
     }
     
     // just what I set my layer name too -- may need to specify this
-    OGRLayer  *buildingLayer = m_poDS->GetLayerByName( "DLH_buildings" );  
+    //
+    // Need to extract the layer from the QU XML files....
+    OGRLayer  *buildingLayer = m_poDS->GetLayerByName( "seoul_small" );  
     if (buildingLayer == nullptr) {
         std::cerr << "ESRIShapefile -- no layer" << std::endl;
         exit( 1 );
@@ -98,12 +108,13 @@ void ESRIShapefile::loadVectorData()
                 OGRLinearRing* pLinearRing = nullptr;;
                 pLinearRing = ((OGRPolygon*)poGeometry)->getExteriorRing();
                 int vertexCount = pLinearRing->getNumPoints();
-                std::cout << "Building Poly (" << vertexCount << " vertices):" << std::endl;
+                std::cout << "Building Poly #" << polyCount << " (" << vertexCount << " vertices):" << std::endl;
                 for (int vidx=0; vidx< vertexCount; vidx++) {
                     double x = pLinearRing->getX( vidx );
                     double y = pLinearRing->getY( vidx );
                     std::cout << "\t(" << x << ", " << y << ")" << std::endl;
                 }
+                polyCount++;
             }
             else
             {
