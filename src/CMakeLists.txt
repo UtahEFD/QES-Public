@@ -16,7 +16,7 @@ CUDA_ADD_LIBRARY( cudaurbcore
   handleURBArgs.cpp
   Solver.cpp
   Mesh.cpp
-  NetCDFData.cpp
+  Output.cpp
   Triangle.cpp
   Sensor.cpp
   )
