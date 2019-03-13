@@ -75,10 +75,14 @@
 	</canopy>
 </canopies-->
 <fileOptions>
-	<outputFormat> 3 </outputFormat>
-	<massConservedFlag> 0 </massConservedFlag>
-	<sensorVelocityFlag> 0 </sensorVelocityFlag>
-	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+  <outputFormat> 3 </outputFormat>
+  <outputFields>u</outputFields> 
+  <outputFields>v</outputFields> 
+  <outputFields>w</outputFields>
+  <outputFields>icell</outputFields> 
+  <massConservedFlag> 0 </massConservedFlag>
+  <sensorVelocityFlag> 0 </sensorVelocityFlag>
+  <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
 <!--buildings>
 	<wallRoughness> 0.05 </wallRoughness>
