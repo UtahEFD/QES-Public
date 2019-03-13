@@ -86,9 +86,12 @@ int main(int argc, char *argv[])
             return -1;
         }
     }
-
+    
     // Files was successfully read, so create instance of output class
-    Output* output = new Output(arguments.netCDFFile);
+    Output* output = nullptr;
+    if (UID->fileOptions->outputFlag==1) {
+        output = new Output(arguments.netCDFFile);
+    }
 
     // //////////////////////////////////////////
     //
@@ -139,8 +142,11 @@ int main(int argc, char *argv[])
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    solver->save(output);
-
+    if (output != nullptr) {
+        std::cout << "Saving data!"<<std::endl;
+        solver->save(output);
+    }
+    
     exit(EXIT_SUCCESS);
 }
 

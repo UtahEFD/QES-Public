@@ -45,7 +45,7 @@
 	</sensor>
 </metParams>
 <fileOptions>
-	<outputFormat> 3 </outputFormat>
+	<outputFlag>1</outputFlag>
     <outputFields>u</outputFields> 
     <outputFields>v</outputFields> 
     <outputFields>w</outputFields>

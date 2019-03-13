@@ -79,11 +79,11 @@
 	</canopy>
 </canopies-->
 <fileOptions>
-  <outputFormat> 3 </outputFormat>
-  	<outputFields>u</outputFields> 
-    	<outputFields>v</outputFields> 
-    	<outputFields>w</outputFields>
-    	<outputFields>icell</outputFields> 
+    <outputFlag>1</outputFlag>
+    <outputFields>u</outputFields> 
+    <outputFields>v</outputFields> 
+    <outputFields>w</outputFields>
+    <outputFields>icell</outputFields>  
 	<massConservedFlag> 0 </massConservedFlag>
 	<sensorVelocityFlag> 0 </sensorVelocityFlag>
 	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
