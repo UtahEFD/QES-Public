@@ -186,3 +186,4 @@ void CPUSolver::solve(bool solveWind)
         std::cout << "Elapsed solve time: " << elapsedSolve.count() << " s\n";   // Print out elapsed execution time
     }
 }
+

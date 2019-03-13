@@ -550,7 +550,7 @@ public:
 	}
 
 
-	void setCellsFlag(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag, int mesh_type_flag) 
+	void setCellsFlag(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag, int mesh_type_flag)
 	{
 
 		if (mesh_type_flag == 1)
@@ -628,7 +628,7 @@ public:
                     i_end = std::round((x_start+L)/dx);   /// Index of building end location in x-direction
                     j_start = std::round(y_start/dy);     /// Index of building start location in y-direction
                     j_end = std::round((y_start+W)/dy);   /// Index of building end location in y-direction
-                    k_start = baseHeight/dz;		/// Index of building start location in z-direction
+                    k_start = std::round(baseHeight/dz)+1;		/// Index of building start location in z-direction
                     k_end = std::round((H+baseHeight)/dz)+1;             /// Index of building end location in z-direction
 
 #if 0

@@ -87,10 +87,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Files was successfully read
-    std::cout << "Data Was Read\n";
-    
-    // Create instance of output class
+    // Files was successfully read, so create instance of output class
     Output* output = new Output(arguments.netCDFFile);
 
     // //////////////////////////////////////////
@@ -138,6 +135,10 @@ int main(int argc, char *argv[])
         solverC->solve(!arguments.solveWind);
     }
 
+    // /////////////////////////////
+    // Output the various files requested from the simulation run
+    // (netcdf wind velocity, icell values, etc...
+    // /////////////////////////////
     solver->save(output);
 
     exit(EXIT_SUCCESS);
@@ -159,16 +160,5 @@ URBInputData* parseXMLTree(const std::string fileName)
 
 	URBInputData* xmlRoot = new URBInputData();
         xmlRoot->parseTree( tree );
-
-//	try
-//	{
-//		ParseInterface::parseTree(tree, xmlRoot);
-//	}
-//	catch (ParseException& p )
-//	{
-//		std::cerr  << "ERROR: " << p.what() << std::endl;
-//		xmlRoot = 0;
-//	}
-
 	return xmlRoot;
 }

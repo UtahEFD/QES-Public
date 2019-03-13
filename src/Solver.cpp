@@ -1,5 +1,7 @@
 #include "Solver.h"
 
+#include "ESRIShapefile.h"
+
 using std::cerr;
 using std::endl;
 using std::vector;
@@ -158,19 +160,19 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
 
     z.resize( nz-1 );
     zm.resize( nz-1 );
-    for (auto k=0; k<z.size(); k++) {
+    for (size_t k=0; k<z.size(); k++) {
         z[k] = (k - 0.5) * dz;          /**< Location of face centers in z-dir */
         zm[k] = k*dz;
     }
     
     z_out.resize( nz-2 );
-    for (auto k=1; k<z.size(); k++) {
+    for (size_t k=1; k<z.size(); k++) {
         z_out[k-1] = (k - 0.5) * dz;    /**< Location of face centers in z-dir */
     }
     
     x.resize( nx-1 );
     x_out.resize( nx-1 );
-    for (auto i=0; i<x.size(); i++) {
+    for (size_t i=0; i<x.size(); i++) {
         x_out[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
         x[i] = (float)x[i]; 
     }
@@ -307,18 +309,73 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     //                Apply building effect                    //
     /////////////////////////////////////////////////////////////
 
+    // For now, process ESRIShapeFile here:
+    ESRIShapefile *shpFile = nullptr;
+    
+    if (UID->simParams->shpFile != "") {
+
+        std::vector< std::vector <polyVert> > shpPolygons;
+
+        shpFile = new ESRIShapefile( UID->simParams->shpFile,
+                                     UID->simParams->shpBuildingLayerName,
+                                     shpPolygons );
+
+        std::vector<float> shpDomainSize(2), minExtent(2);
+        shpFile->getLocalDomain( shpDomainSize );
+        shpFile->getMinExtent( minExtent );
+        std::cout << "SHP Domain Size: " << shpDomainSize[0] << " X " << shpDomainSize[1] << std::endl;
+        std::cout << "Min Extent: (" << minExtent[0] << ", " << minExtent[1] << ")" << std::endl;
+
+        /*std::vector <polyVert> polygonVertices(7);
+
+          polygonVertices[0].x_poly = 50;
+          polygonVertices[1].x_poly = 70;
+          polygonVertices[2].x_poly = 75;
+          polygonVertices[3].x_poly = 105;
+          polygonVertices[4].x_poly = 72;
+          polygonVertices[5].x_poly = 79;
+          polygonVertices[6].x_poly = 50;
+          //std::cout << "x_poly:" << polygonVertices[5].x_poly << "\n";
+          polygonVertices[0].y_poly = 91;
+          polygonVertices[1].y_poly = 110;
+          polygonVertices[2].y_poly = 98;
+          polygonVertices[3].y_poly = 91;
+          polygonVertices[4].y_poly = 60;
+          polygonVertices[5].y_poly = 85;
+          polygonVertices[6].y_poly = 91;
+          //std::cout << "y_poly:" << polygonVertices[2].y_poly << "\n";*/
+
+        float bldElevation = 20.0;
+        float base_height = 0.0;
+
+        float domainOffset[2] = { 50, 50 };
+
+        for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++) {
+
+            // convert the global polys to local domain coordinates
+            std::vector< polyVert > localPoly = shpPolygons[pIdx];
+            for (size_t lIdx=0; lIdx<localPoly.size(); lIdx++) {
+                localPoly[lIdx].x_poly = localPoly[lIdx].x_poly - minExtent[0] + domainOffset[0];
+                localPoly[lIdx].y_poly = localPoly[lIdx].y_poly - minExtent[1] + domainOffset[1];
+
+                std::cout << "[" << lIdx << "] " << localPoly[lIdx].x_poly << ", " << localPoly[lIdx].y_poly << std::endl;
+            }
+            
+            std::cout << "Adding PolyBuilding " << pIdx << std::endl;
+
+            PolyBuilding poly_building;
+            poly_building.setCellsFlag ( dx, dy, dz, nx, ny, nz,icellflag, mesh_type_flag, localPoly, base_height, bldElevation);
+        }
+    }
+
+
+
     if (mesh_type_flag == 0)
     {
         for (int i = 0; i < buildings.size(); i++)
         {
             ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz, nx, ny, nz, icellflag, mesh_type_flag);
-
         }
-
-        std::cout << "Defining Solid Walls...\n";
-        /// Boundary condition for building edges
-        defineWalls(dx,dy,dz,nx,ny,nz, icellflag, n.data(), m.data(), f.data(), e.data(), h.data(), g.data());
-        std::cout << "Walls Defined...\n";
     }
     else
     {
@@ -330,20 +387,27 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         std::vector<std::vector<float>> coeff(numcell_cent, std::vector<float>(6,0.0));
 
 
-    	for (int i = 0; i < buildings.size(); i++)
+    	for (size_t i = 0; i < buildings.size(); i++)
     	{
             ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz, nx, ny, nz, icellflag, mesh_type_flag);
     	    ((RectangularBuilding*)buildings[i])->setCutCells(dx, dy, dz, nx, ny, nz, icellflag, x_cut, y_cut, z_cut,
                                                               num_points, coeff);    /// located in RectangularBuilding.h
 
-        }
+      }
 
-        std::cout << "Defining Solid Walls...\n";
+      if (buildings.size()>0)
+      {
         /// Boundary condition for building edges
-        defineWalls(dx, dy, dz, nx, ny, nz, icellflag, n.data(), m.data(), f.data(), e.data(), h.data(), g.data(),
+        calculateCoefficients(dx, dy, dz, nx, ny, nz, icellflag, n.data(), m.data(), f.data(), e.data(), h.data(), g.data(),
                     x_cut, y_cut, z_cut, num_points, coeff);
-        std::cout << "Walls Defined...\n";
+      }
     }
+
+    std::cout << "Defining Solid Walls...\n";
+    /// Boundary condition for building edges
+    defineWalls(dx,dy,dz,nx,ny,nz, icellflag, n.data(), m.data(), f.data(), e.data(), h.data(), g.data());
+    std::cout << "Walls Defined...\n";
+
 
     /*
      * Calling getWallIndices to return 6 vectores of indices of the cells that have wall to right/left,
@@ -453,7 +517,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     output_vector_dbl.push_back(map_att_vector_dbl["z"]);
     
     // create list of fields to save
-    for (int i=0; i<output_fields.size(); i++) {
+    for (size_t i=0; i<output_fields.size(); i++) {
         std::string key = output_fields[i];
         if (map_att_scalar_dbl.count(key)) {
             output_scalar_dbl.push_back(map_att_scalar_dbl[key]);
@@ -464,25 +528,23 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         }
     }
     
-    // add scalar double fields
-    for (int i=0; i<output_scalar_dbl.size(); i++) {
-        AttScalarDbl att = output_scalar_dbl[i];
+    // for all AttScalarDbl (att) in the output_scalar_dbl vector, add scalar double fields
+    for ( AttScalarDbl att : output_scalar_dbl ) {
         output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
     }
+
     // add vector double fields
-    for (int i=0; i<output_vector_dbl.size(); i++) {
-        AttVectorDbl att = output_vector_dbl[i];
+    for ( AttVectorDbl att : output_vector_dbl ) {
         output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
     }
     
     // add vector int fields
-    for (int i=0; i<output_vector_int.size(); i++) {
-        AttVectorInt att = output_vector_int[i];
+    for ( AttVectorInt att : output_vector_int ) {
         output->addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
     }
 }
 
-void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag,
+void Solver::calculateCoefficients(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag,
                         float* n, float* m, float* f, float* e, float* h, float* g,
                         std::vector<std::vector<std::vector<float>>> x_cut, std::vector<std::vector<std::vector<float>>>y_cut,
                         std::vector<std::vector<std::vector<float>>> z_cut, std::vector<std::vector<int>> num_points,
@@ -686,40 +748,6 @@ void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, s
 					m[icell_cent] = coeff[icell_cent][5];
 				}
 
-				if (icellflag[icell_cent] !=0)
-				{
-
-					/// Wall below
-					if (icellflag[icell_cent-(nx-1)*(ny-1)]==0)
-					{
-			    		n[icell_cent] = 0.0;
-					}
-					/// Wall above
-					if (icellflag[icell_cent+(nx-1)*(ny-1)]==0)
-					{
-		    			m[icell_cent] = 0.0;
-					}
-					/// Wall in back
-					if (icellflag[icell_cent-1]==0)
-					{
-						f[icell_cent] = 0.0;
-					}
-					/// Wall in front
-					if (icellflag[icell_cent+1]==0)
-					{
-						e[icell_cent] = 0.0;
-					}
-					/// Wall on right
-					if (icellflag[icell_cent-(nx-1)]==0)
-					{
-						h[icell_cent] = 0.0;
-					}
-					/// Wall on left
-					if (icellflag[icell_cent+(nx-1)]==0)
-					{
-						g[icell_cent] = 0.0;
-					}
-				}
 			}
 		}
 	}
@@ -871,7 +899,7 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
   dist2 = 1.5*dz;
 
   /// apply log law fix to the cells with wall below
-  for (int i=0; i < wall_below_indices.size(); i++)
+  for (size_t i=0; i < wall_below_indices.size(); i++)
   {
     ustar_wall = 0.1;       /// reset default value for velocity gradient
     for (int iter=0; iter<20; iter++)
@@ -891,7 +919,7 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
   }
 
   /// apply log law fix to the cells with wall above
-  for (int i=0; i < wall_above_indices.size(); i++)
+  for (size_t i=0; i < wall_above_indices.size(); i++)
   {
     ustar_wall = 0.1;       /// reset default value for velocity gradient
     for (int iter=0; iter<20; iter++)
@@ -915,7 +943,7 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
   dist2 = 1.5*dx;
 
   /// apply log law fix to the cells with wall in back
-  for (int i=0; i < wall_back_indices.size(); i++)
+  for (size_t i=0; i < wall_back_indices.size(); i++)
   {
     ustar_wall = 0.1;
     for (int iter=0; iter<20; iter++)
@@ -937,7 +965,7 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
 
 
   /// apply log law fix to the cells with wall in front
-  for (int i=0; i < wall_front_indices.size(); i++)
+  for (size_t i=0; i < wall_front_indices.size(); i++)
   {
     ustar_wall = 0.1;       /// reset default value for velocity gradient
     for (int iter=0; iter<20; iter++)
@@ -962,7 +990,7 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
   dist2 = 1.5*dy;
 
   /// apply log law fix to the cells with wall to right
-  for (int i=0; i < wall_right_indices.size(); i++)
+  for (size_t i=0; i < wall_right_indices.size(); i++)
   {
     ustar_wall = 0.1;          /// reset default value for velocity gradient
     for (int iter=0; iter<20; iter++)
@@ -983,7 +1011,7 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
   }
 
   /// apply log law fix to the cells with wall to left
-  for (int i=0; i < wall_left_indices.size(); i++)
+  for (size_t i=0; i < wall_left_indices.size(); i++)
   {
     ustar_wall = 0.1;       /// reset default value for velocity gradient
     for (int iter=0; iter<20; iter++)
@@ -1061,11 +1089,11 @@ void Solver :: save(Output* output) {
     }
 
     // loop through 1D fields to save
-    for (int i=0; i<output_scalar_dbl.size(); i++) {
+    for (size_t i=0; i<output_scalar_dbl.size(); i++) {
         output->saveField1D(output_scalar_dbl[i].name, scalar_index, output_scalar_dbl[i].data);
     }
     // loop through 2D double fields to save
-    for (int i=0; i<output_vector_dbl.size(); i++) {
+    for (size_t i=0; i<output_vector_dbl.size(); i++) {
 
         // x,y,z saved once with no time component
         if (i<3 && output_counter==0) {
@@ -1076,7 +1104,7 @@ void Solver :: save(Output* output) {
         }
     }
     // loop through 2D int fields to save
-    for (int i=0; i<output_vector_int.size(); i++) { 
+    for (size_t i=0; i<output_vector_int.size(); i++) { 
         output->saveField2D(output_vector_int[i].name, vector_index,
                             vector_size, *output_vector_int[i].data);
     }
