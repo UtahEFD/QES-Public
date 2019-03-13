@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
     if (!arguments.solveWind) {
 
         solver->outputNetCDF( netcdfDat );
-	    solver->outputDataFile ();
+        // solver->outputDataFile ();
 
         if (solverC != nullptr)
         {
