@@ -101,19 +101,21 @@ void ESRIShapefile::loadVectorData( std::vector< std::vector< polyVert > > &poly
 #endif
                 printf( "%.3f,%3.f\n", poPoint->getX(), poPoint->getY() );
             }
+
+            // POLYGON
             else if( poGeometry != NULL
                      && wkbFlatten(poGeometry->getGeometryType()) == wkbPolygon )
             {
                 OGRPolygon *poPolygon = (OGRPolygon *) poGeometry;
-            
+                
                 OGRLinearRing* pLinearRing = nullptr;;
                 pLinearRing = ((OGRPolygon*)poGeometry)->getExteriorRing();
                 int vertexCount = pLinearRing->getNumPoints();
                 std::cout << "Building Poly #" << polyCount << " (" << vertexCount << " vertices):" << std::endl;
 
-                std::vector< polyVert > polyList( vertexCount );
+                std::vector< polyVert > vertexList( vertexCount );
                 
-                for (int vidx=0; vidx< vertexCount; vidx++) {
+                for (int vidx=0; vidx<vertexCount; vidx++) {
                     double x = pLinearRing->getX( vidx );
                     double y = pLinearRing->getY( vidx );
 
@@ -122,14 +124,18 @@ void ESRIShapefile::loadVectorData( std::vector< std::vector< polyVert > > &poly
 
                     if (x > maxBound[0]) maxBound[0] = x;
                     if (y > maxBound[1]) maxBound[1] = y;
+                
 
                     // std::cout << "\t(" << x << ", " << y << ")" <<
                     // std::endl;
-                    polyList[vidx] = polyVert(x, y);
+                    vertexList[vidx] = polyVert(x, y);
                 }
-                polyCount++;
 
-                polygons.push_back( polyList );                
+
+                    polyCount++;
+                    polygons.push_back( vertexList );
+
+                
             }
             else
             {

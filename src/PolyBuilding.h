@@ -20,10 +20,10 @@ public:
     {
     }
     
-    PolyBuilding( const std::vector< polyVert > &polygonVertices, float bldElevation ) 
+    PolyBuilding( const std::vector< polyVert > &polygonVertices, float bldElevation )
     {
+        // ????
     }
-    
 
     void setCellsFlag (float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag, int mesh_type_flag,
                         std::vector< polyVert > &polygonVertices, float baseHeight, float bldElevation)

@@ -308,9 +308,11 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
                                      UID->simParams->shpBuildingLayerName,
                                      shpPolygons );
 
-        std::vector<float> shpDomainSize(2);
+        std::vector<float> shpDomainSize(2), minExtent(2);
         shpFile->getLocalDomain( shpDomainSize );
+        shpFile->getMinExtent( minExtent );
         std::cout << "SHP Domain Size: " << shpDomainSize[0] << " X " << shpDomainSize[1] << std::endl;
+        std::cout << "Min Extent: (" << minExtent[0] << ", " << minExtent[1] << ")" << std::endl;
 
         /*std::vector <polyVert> polygonVertices(7);
 
@@ -334,21 +336,24 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
         float bldElevation = 20.0;
         float base_height = 0.0;
 
+        float domainOffset[2] = { 50, 50 };
+
         for (int pIdx = 0; pIdx<shpPolygons.size(); pIdx++) {
 
             // convert the global polys to local domain coordinates
             std::vector< polyVert > localPoly = shpPolygons[pIdx];
             for (int lIdx=0; lIdx<localPoly.size(); lIdx++) {
-                localPoly[lIdx].x_poly = localPoly[lIdx].x_poly - shpDomainSize[0];
-                localPoly[lIdx].y_poly = localPoly[lIdx].y_poly - shpDomainSize[1];
+                localPoly[lIdx].x_poly = localPoly[lIdx].x_poly - minExtent[0] + domainOffset[0];
+                localPoly[lIdx].y_poly = localPoly[lIdx].y_poly - minExtent[1] + domainOffset[1];
+
+                std::cout << "[" << lIdx << "] " << localPoly[lIdx].x_poly << ", " << localPoly[lIdx].y_poly << std::endl;
             }
             
             std::cout << "Adding PolyBuilding " << pIdx << std::endl;
 
-            PolyBuilding* poly_building = new PolyBuilding();
-            poly_building->setCellsFlag ( dx, dy, dz, nx, ny, nz,icellflag, mesh_type_flag, localPoly, base_height, bldElevation);
+            PolyBuilding poly_building;
+            poly_building.setCellsFlag ( dx, dy, dz, nx, ny, nz,icellflag, mesh_type_flag, localPoly, base_height, bldElevation);
         }
-        
     }
 
 
@@ -358,7 +363,6 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF)
         for (int i = 0; i < buildings.size(); i++)
         {
             ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz, nx, ny, nz, icellflag, mesh_type_flag);
-
         }
     }
     else

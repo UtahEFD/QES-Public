@@ -21,6 +21,13 @@ public:
         dim[0] = (int)ceil(maxBound[0] - minBound[0]);
         dim[1] = (int)ceil(maxBound[1] - minBound[1]);
     }
+
+    void getMinExtent( std::vector<float> &ext ) 
+    {
+        assert(ext.size() == 2);
+        ext[0] = minBound[0];
+        ext[1] = minBound[1];
+    }
     
 private:
 
