@@ -48,6 +48,7 @@ void Output :: saveField1D(std::string name, const std::vector<size_t> index,
     // write output data
     NcVar var = fields[name];
     var.putVar(index, data);
+    outfile->sync();
 }
 
 void Output :: saveField2D(std::string name, const std::vector<size_t> index,
@@ -56,6 +57,7 @@ void Output :: saveField2D(std::string name, const std::vector<size_t> index,
     // write output data
     NcVar var = fields[name];
     var.putVar(index, size, &data[0]);
+    outfile->sync();
 }
 
 void Output :: saveField2D(std::string name, const std::vector<size_t> index,
@@ -64,6 +66,7 @@ void Output :: saveField2D(std::string name, const std::vector<size_t> index,
     // write output data
     NcVar var = fields[name];
     var.putVar(index, size, &data[0]);
+    outfile->sync();
 }
 
 void Output :: saveField2D(std::string name, std::vector<double>& data) {
@@ -71,4 +74,5 @@ void Output :: saveField2D(std::string name, std::vector<double>& data) {
     // write output data
     NcVar var = fields[name];
     var.putVar(&data[0]);
+    outfile->sync();
 }

@@ -17,7 +17,7 @@ private:
 
 public:
 
-	int outputFormat;
+	int outputFlag;
 	std::vector<std::string> outputFields;
 	bool massConservedFlag;
 	bool sensorVelocityFlag;
@@ -25,8 +25,8 @@ public:
 
 	virtual void parseValues()
 	{
-		parsePrimitive<int>(true, outputFormat, "outputFormat");
-		parseMultiPrimitives<std::string>(true, outputFields, "outputFields");
+		parsePrimitive<int>(true, outputFlag, "outputFlag");
+		parseMultiPrimitives<std::string>(false, outputFields, "outputFields");
 		parsePrimitive<bool>(true, massConservedFlag, "massConservedFlag");
 		parsePrimitive<bool>(true, sensorVelocityFlag, "sensorVelocityFlag");
 		parsePrimitive<bool>(true, staggerdVelocityFlag, "staggerdVelocityFlag");
