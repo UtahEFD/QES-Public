@@ -158,7 +158,7 @@ void eulerian::readCellType(){
   CellType.resize(nx*ny*nz);
   
   std::ifstream QUICCellType;
-  QUICCellType.open("../bw/QU_celltype.dat");
+  QUICCellType.open("../plume/bw/QU_celltype.dat");
 
   if(!QUICCellType.is_open()){
     std::cerr<<"CellType input File open error"<<std::endl;

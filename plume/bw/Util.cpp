@@ -121,8 +121,14 @@ void util::readInputFile( const std::string &quicFileToLoad ){
   }
   else {
 
+      // set the default path to be relative
+      m_QUICProjData.m_quicProjectPath = "../plume/bw/";
+
+      std::string defaultFile = "../plume/bw/input.txt";
+      std::cout << "Reading from default file... " << defaultFile << std::endl;
+
       std::ifstream in;
-      in.open("../bw/input.txt");
+      in.open(defaultFile.c_str());
   
       char line[1024];
       std::string inputStr;

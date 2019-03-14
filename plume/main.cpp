@@ -26,9 +26,9 @@
 #endif
 
 // CUDA utilities and system includes
-#include <helper_cuda.h>  
-#include <helper_cuda_gl.h> 
-#include <helper_math.h>
+// #include <helper_cuda.h>  
+// #include <helper_cuda_gl.h> 
+// #include <helper_math.h>
 
 #include <rendercheck_gl.h>
 
@@ -53,7 +53,7 @@
 const uint width = 800, height = 600;
  
   
-bool bUseOpenGL = true;
+bool bUseOpenGL = false;
 
 bool bUseGlobal = false;
 
@@ -98,6 +98,8 @@ void initPlumeSystem(const uint &numParticles, const uint3 &gridSize, const util
 // initialize OpenGL
 void initGL(int *argc, char **argv)
 {   
+    std::cout << "Calling initGL!" << std::endl;
+    
   glutInit(argc, argv);
   glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
   glutInitWindowSize(width, height);
@@ -439,6 +441,7 @@ int main(int argc, char** argv)
 ///////////////////////////////Opengl Main section////
   if (!bUseOpenGL) 
   { 
+      
     cudaInit(argc, argv);
     initGL(&argc, argv);
     cudaInit(argc, argv);
@@ -464,8 +467,19 @@ int main(int argc, char** argv)
   } 
   else
   { 
-    initGL(&argc, argv);
-    cudaGLInit(argc, argv);
+      std::cout << "Not using OpenGL for rendering the visuals." << std::endl;
+      
+      glutInit(&argc, argv);
+      glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
+  
+      GLenum glewErr = glewInit();
+      if (GLEW_OK != glewErr) {
+          /* Problem: glewInit failed, something is seriously wrong. */
+          std::cerr << "Error: " << glewGetErrorString(glewErr) << std::endl;
+          exit(EXIT_FAILURE);
+      }
+      // initGL(&argc, argv);
+      cudaGLInit(argc, argv);
 
     initPlumeSystem(numParticles, gridSize, utl, output_file);
     if(!bUseGlobal)

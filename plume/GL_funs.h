@@ -35,9 +35,9 @@
 // CUDA utilities and system includes
 #include <iostream>  
 
-#include <helper_cuda.h>
-#include <helper_cuda_gl.h>
-#include <helper_math.h>
+// #include <helper_cuda.h>
+// #include <helper_cuda_gl.h>
+// #include <helper_math.h>
 
 #include <rendercheck_gl.h>
 

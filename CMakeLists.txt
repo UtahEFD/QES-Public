@@ -90,5 +90,23 @@ ENDIF(CMAKE_CPACK_COMMAND)
 # INCLUDE_DIRECTORIES (${LIBSIVELAB_PATH}) 
 # LINK_DIRECTORIES (${LIBSIVELAB_PATH}/lib/) 
 
+include_directories( ${CMAKE_SOURCE_DIR}/quicutil )
+
 add_subdirectory (quicutil)
 add_subdirectory (plume)
+
+# from bw's directory
+ADD_EXECUTABLE(glecode
+  plume/bw/main.cpp 
+  plume/bw/Eulerian.cpp
+  plume/bw/Util.cpp
+  plume/bw/advectPar.cpp
+  plume/bw/Random.cpp
+  plume/bw/Dispersion.cpp
+  plume/bw/Turbulence.cpp
+  plume/bw/LocalMixing.cpp
+  plume/bw/NonLocalMixing.cpp
+  plume/bw/NonLocalMixing2.cpp
+  )
+target_link_libraries (glecode quicloader)
+target_link_libraries (glecode util)

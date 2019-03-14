@@ -30,7 +30,7 @@ int main(int argc, char *argv[]){
   std::cout<<"Going to UTL"<<std::endl;
   
   util utl;
-  utl.readInputFile();
+  utl.readInputFile("");
   std::cout<<"Going to EUL"<<std::endl;
   
   
