@@ -1,4 +1,4 @@
-FILE(REMOVE_RECURSE
+file(REMOVE_RECURSE
   "CMakeFiles/glecode.dir/main.cpp.o"
   "CMakeFiles/glecode.dir/Eulerian.cpp.o"
   "CMakeFiles/glecode.dir/Util.cpp.o"
@@ -14,6 +14,6 @@ FILE(REMOVE_RECURSE
 )
 
 # Per-language clean rules from dependency scanning.
-FOREACH(lang CXX)
-  INCLUDE(CMakeFiles/glecode.dir/cmake_clean_${lang}.cmake OPTIONAL)
-ENDFOREACH(lang)
+foreach(lang CXX)
+  include(CMakeFiles/glecode.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()
