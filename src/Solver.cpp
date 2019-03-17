@@ -31,7 +31,7 @@ void Solver::printProgress (float percentage)
 
 Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* output)
     : itermax( UID->simParams->maxIterations )
-{   
+{
     rooftopFlag = UID->simParams->rooftopFlag;
     upwindCavityFlag = UID->simParams->upwindCavityFlag;
     streetCanyonFlag = UID->simParams->streetCanyonFlag;
@@ -156,32 +156,55 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         z0 = 0.1f;
     }
 
-
+    dz_array.resize( nz-1, 0.0 );
     z.resize( nz-1 );
     zm.resize( nz-1 );
-    for (size_t k=0; k<z.size(); k++) {
-        z[k] = (k - 0.5) * dz;          /**< Location of face centers in z-dir */
-        zm[k] = k*dz;
+
+    if (UID->simParams->verticalStretching == 0)    // Uniform vertical grid
+    {
+      for (auto k=1; k<z.size(); k++)
+      {
+        dz_array[k] = dz;
+      }
     }
-    
+    if (UID->simParams->verticalStretching == 1)     // Stretched vertical grid
+    {
+      for (auto k=1; k<z.size(); k++)
+      {
+        dz_array[k] = UID->simParams->dz_value[k-1];      // Read in custom dz values and set them to dz_array
+      }
+    }
+
+    dz_array[0] = dz_array[1];                  // Value for ghost cell below the surface
+    dz = *std::min_element(dz_array.begin() , dz_array.end());     // Set dz to minimum value of
+
+    z[0] = -0.5*dz_array[0];
+    for (auto k=1; k<z.size(); k++)
+    {
+      z[k] = z[k-1] + dz_array[k];     /**< Location of face centers in z-dir */
+    }
+
     z_out.resize( nz-2 );
-    for (size_t k=1; k<z.size(); k++) {
-        z_out[k-1] = (k - 0.5) * dz;    /**< Location of face centers in z-dir */
+    for (size_t k=1; k<z.size(); k++)
+    {
+        z_out[k-1] = (float)z[k];    /**< Location of face centers in z-dir */
     }
-    
+
     x.resize( nx-1 );
     x_out.resize( nx-1 );
-    for (size_t i=0; i<x.size(); i++) {
+    for (size_t i=0; i<x.size(); i++)
+    {
         x_out[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
-        x[i] = (float)x[i]; 
+        x[i] = (float)x_out[i];
     }
 
     y.resize( ny-1 );
     y_out.resize( ny-1 );
-    for (auto j=0; j<ny-1; j++) {
+    for (auto j=0; j<ny-1; j++)
+    {
         y_out[j] = (j+0.5)*dy;          /**< Location of face centers in y-dir */
         y[j] = (float)y_out[j];
-	
+
     }
 
 
@@ -224,6 +247,9 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
                              site_canopy_H.data(), site_atten_coeff.data());
 
 
+    ////////////////////////////////////////////////////////
+    //////              Apply Terrain code             /////
+    ///////////////////////////////////////////////////////
     mesh = 0;
     if (DTEHF)
     {
@@ -232,7 +258,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         if (mesh_type_flag == 0)
         {
             // ////////////////////////////////
-            // Stair-step (original QUIC)
+            // Stair-step (original QUIC)    //
             // ////////////////////////////////
             if (mesh)
             {
@@ -240,10 +266,11 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
                 for (int i = 0; i < nx; i++)
                 {
                     for (int j = 0; j < ny; j++)
-                    {      //get height, then add half a cell, if the height exceeds half of a cell partially, it will round up.
-                        float heightToMesh = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f) + 0.5f * dz;
-                        for (int k = 1; k < (int)(heightToMesh / dz)+1; k++)
-                            buildings.push_back(new RectangularBuilding(i * dx, j * dy, k * dz, dx, dy, dz));
+                    {
+                      // Gets height of the terrain for each cell
+                      float heightToMesh = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
+                      // Calls rectangular building to create a each cell to the height of terrain in that cell
+                      buildings.push_back(new RectangularBuilding(i * dx, j * dy, 0.0, dx, dy, heightToMesh,z));
                     }
                     printProgress( (float)i / (float)nx);
                 }
@@ -253,7 +280,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         else
         {
             // ////////////////////////////////
-            // Cut-cell method
+            //        Cut-cell method        //
             // ////////////////////////////////
 
             // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
@@ -294,7 +321,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         }
     }
 
-    /// defining ground solid cells
+    /// defining ground solid cells (ghost cells below the surface)
     for (int j = 0; j < ny-1; j++)
     {
         for (int i = 0; i < nx-1; i++)
@@ -310,7 +337,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
 
     // For now, process ESRIShapeFile here:
     ESRIShapefile *shpFile = nullptr;
-    
+
     if (UID->simParams->shpFile != "") {
 
         std::vector< std::vector <polyVert> > shpPolygons;
@@ -348,7 +375,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         float base_height = 0.0;
 
         float domainOffset[2] = { 50, 50 };
-
+        // Loop to create each of the polygon buildings read in from the shapefile
         for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++) {
 
             // convert the global polys to local domain coordinates
@@ -359,38 +386,45 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
 
                 std::cout << "[" << lIdx << "] " << localPoly[lIdx].x_poly << ", " << localPoly[lIdx].y_poly << std::endl;
             }
-            
-            std::cout << "Adding PolyBuilding " << pIdx << std::endl;
 
+            std::cout << "Adding PolyBuilding " << pIdx << std::endl;
+            // Create polygon buildings
             PolyBuilding poly_building;
-            poly_building.setCellsFlag ( dx, dy, dz, nx, ny, nz,icellflag, mesh_type_flag, localPoly, base_height, bldElevation);
+            // Call setCellsFlag in the PolyBuilding class to identify building cells
+            poly_building.setCellsFlag ( dx, dy, dz, z, nx, ny, nz,icellflag, mesh_type_flag, localPoly, base_height, bldElevation);
         }
     }
 
 
-
+    ///////////////////////////////////////////////////////////////
+    //    Stair-step (original QUIC) for rectangular buildings   //
+    ///////////////////////////////////////////////////////////////
     if (mesh_type_flag == 0)
     {
         for (int i = 0; i < buildings.size(); i++)
         {
-            ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz, nx, ny, nz, icellflag, mesh_type_flag);
+            ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz_array, nx, ny, nz, z, icellflag, mesh_type_flag);
         }
     }
+    /////////////////////////////////////////////////////////////
+    //        Cut-cell method for rectangular buildings        //
+    /////////////////////////////////////////////////////////////
     else
     {
-        std::vector<std::vector<std::vector<float>>> x_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
-        std::vector<std::vector<std::vector<float>>> y_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
-        std::vector<std::vector<std::vector<float>>> z_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
+      std::vector<std::vector<std::vector<float>>> x_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
+      std::vector<std::vector<std::vector<float>>> y_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
+      std::vector<std::vector<std::vector<float>>> z_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
 
-        std::vector<std::vector<int>> num_points(numcell_cent, std::vector<int>(6,0));
-        std::vector<std::vector<float>> coeff(numcell_cent, std::vector<float>(6,0.0));
-
+      std::vector<std::vector<int>> num_points(numcell_cent, std::vector<int>(6,0));
+      std::vector<std::vector<float>> coeff(numcell_cent, std::vector<float>(6,0.0));
 
     	for (size_t i = 0; i < buildings.size(); i++)
     	{
-            ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz, nx, ny, nz, icellflag, mesh_type_flag);
-    	    ((RectangularBuilding*)buildings[i])->setCutCells(dx, dy, dz, nx, ny, nz, icellflag, x_cut, y_cut, z_cut,
-                                                              num_points, coeff);    /// located in RectangularBuilding.h
+        // Sets cells flag for each building
+        ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz_array, nx, ny, nz, z, icellflag, mesh_type_flag);
+        ((RectangularBuilding*)buildings[i])->setCutCells(dx, dy, dz_array,z, nx, ny, nz, icellflag, x_cut, y_cut, z_cut,
+                                                              num_points, coeff);    // Sets cut-cells for specified building,
+                                                                                     // located in RectangularBuilding.h
 
       }
 
@@ -430,8 +464,8 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
           {
               for (int i = 1; i < nx-1; i++)
               {
-                  icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);		/// Lineralized index for cell centered values
-                  icell_face = i + j*nx + k*nx*ny;			/// Lineralized index for cell faced values
+                  icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+                  icell_face = i + j*nx + k*nx*ny;
                   if (icellflag[icell_cent] == 0) {
                       u0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
                       u0[icell_face+1] = 0.0;
@@ -451,38 +485,38 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         {
             for (int i = 0; i < nx-1; i++)
             {
-                icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+                icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
                 e[icell_cent] = e[icell_cent]/(dx*dx);
                 f[icell_cent] = f[icell_cent]/(dx*dx);
                 g[icell_cent] = g[icell_cent]/(dy*dy);
                 h[icell_cent] = h[icell_cent]/(dy*dy);
-                m[icell_cent] = m[icell_cent]/(dz*dz);
-                n[icell_cent] = n[icell_cent]/(dz*dz);
+                m[icell_cent] = m[icell_cent]/(dz_array[k]*0.5*(dz_array[k]+dz_array[k+1]));
+                n[icell_cent] = n[icell_cent]/(dz_array[k]*0.5*(dz_array[k]+dz_array[k-1]));
             }
         }
     }
-    
+
     //////////////////////////////////////////////////
-    //      Initialize output information           //   
+    //      Initialize output information           //
     //////////////////////////////////////////////////
-    
+
     if (output != nullptr) {
-        
+
         // set output fields
         std::cout<<"Getting output fields"<<std::endl;
         output_fields = UID->fileOptions->outputFields;
-                
+
         if (output_fields.empty() || output_fields[0]=="all") {
             output_fields.clear();
             output_fields = {"u","v","w","icell"};
         }
-        
+
         // set cell-centered dimensions
         NcDim t_dim = output->addDimension("t");
         NcDim z_dim = output->addDimension("z",nz-2);
         NcDim y_dim = output->addDimension("y",ny-1);
         NcDim x_dim = output->addDimension("x",nx-1);
-        
+
         dim_scalar_t.push_back(t_dim);
         dim_scalar_z.push_back(z_dim);
         dim_scalar_y.push_back(y_dim);
@@ -491,7 +525,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         dim_vector.push_back(z_dim);
         dim_vector.push_back(y_dim);
         dim_vector.push_back(x_dim);
-        
+
         // create attributes
         AttScalarDbl att_t = {&time,  "t", "time",      "s", dim_scalar_t};
         AttVectorDbl att_x = {&x_out, "x", "x-distance", "m", dim_scalar_x};
@@ -501,7 +535,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         AttVectorDbl att_v = {&v_out, "v", "y-component velocity", "m s-1", dim_vector};
         AttVectorDbl att_w = {&w_out, "w", "z-component velocity", "m s-1", dim_vector};
         AttVectorInt att_i = {&icellflag_out,  "icell", "icell flag value", "--", dim_vector};
-        
+
         // map the name to attributes
         map_att_scalar_dbl.emplace("t", att_t);
         map_att_vector_dbl.emplace("x", att_x);
@@ -511,13 +545,13 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         map_att_vector_dbl.emplace("v", att_v);
         map_att_vector_dbl.emplace("w", att_w);
         map_att_vector_int.emplace("icell", att_i);
-        
+
         // we will always save time and grid lengths
         output_scalar_dbl.push_back(map_att_scalar_dbl["t"]);
         output_vector_dbl.push_back(map_att_vector_dbl["x"]);
         output_vector_dbl.push_back(map_att_vector_dbl["y"]);
         output_vector_dbl.push_back(map_att_vector_dbl["z"]);
-        
+
         // create list of fields to save
         for (size_t i=0; i<output_fields.size(); i++) {
             std::string key = output_fields[i];
@@ -529,17 +563,17 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
                 output_vector_int.push_back(map_att_vector_int[key]);
             }
         }
-        
+
         // add vector double fields
         for ( AttScalarDbl att : output_scalar_dbl ) {
             output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
         }
-        
+
         // add vector double fields
         for ( AttVectorDbl att : output_vector_dbl ) {
             output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
         }
-        
+
         // add vector int fields
         for ( AttVectorInt att : output_vector_int ) {
             output->addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
@@ -740,9 +774,11 @@ void Solver::calculateCoefficients(float dx, float dy, float dz, int nx, int ny,
 									(y_cut[icell_cent][ii][0]-y_cut[icell_cent][ii][num_points[icell_cent][ii]-1]))/(dx*dy);
 
 						}
+            coeff[icell_cent][ii] = 1;
+
 					}
 
-					/// Assign solver coefficients
+          /// Assign solver coefficients
 					f[icell_cent] = coeff[icell_cent][0];
 					e[icell_cent] = coeff[icell_cent][1];
 					h[icell_cent] = coeff[icell_cent][2];
@@ -1074,31 +1110,31 @@ void Solver :: save(Output* output) {
     vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
     vector_size  = {1, static_cast<unsigned long>(nz-2),static_cast<unsigned long>(ny-1), static_cast<unsigned long>(nx-1)};
 
-    // set time 
+    // set time
     time = (double)output_counter;
 
     // get cell-centered values
-    for (int k = 1; k < nz-2; k++){
+    for (int k = 1; k < nz-1; k++){
     	for (int j = 0; j < ny-1; j++){
     		for (int i = 0; i < nx-1; i++){
     			int icell_face = i + j*nx + k*nx*ny;
-    			int icell_cent = i + j*(nx-1) + (k-1)*(nx-1)*(ny-1); 
+    			int icell_cent = i + j*(nx-1) + (k-1)*(nx-1)*(ny-1);
     			u_out[icell_cent] = 0.5*(u[icell_face+1]+u[icell_face]);
     			v_out[icell_cent] = 0.5*(v[icell_face+nx]+v[icell_face]);
     			w_out[icell_cent] = 0.5*(w[icell_face+nx*ny]+w[icell_face]);
     			icellflag_out[icell_cent] = icellflag[icell_cent+((nx-1)*(ny-1))];
     		}
-    	}	
+    	}
     }
 
     // loop through 1D fields to save
     for (int i=0; i<output_scalar_dbl.size(); i++) {
         output->saveField1D(output_scalar_dbl[i].name, scalar_index, output_scalar_dbl[i].data);
     }
-        
+
     // loop through 2D double fields to save
     for (int i=0; i<output_vector_dbl.size(); i++) {
-        
+
         // x,y,z saved once with no time component
         if (i<3 && output_counter==0) {
             output->saveField2D(output_vector_dbl[i].name, *output_vector_dbl[i].data);
@@ -1107,13 +1143,13 @@ void Solver :: save(Output* output) {
                                 vector_size, *output_vector_dbl[i].data);
         }
     }
-    
+
     // loop through 2D int fields to save
-    for (int i=0; i<output_vector_int.size(); i++) { 
+    for (int i=0; i<output_vector_int.size(); i++) {
         output->saveField2D(output_vector_int[i].name, vector_index,
                             vector_size, *output_vector_int[i].data);
     }
-    
+
     // remove x, y, z from output array after first save
     if (output_counter==0) {
         output_vector_dbl.erase(output_vector_dbl.begin(),output_vector_dbl.begin()+3);

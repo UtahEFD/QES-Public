@@ -1,7 +1,44 @@
 <simulationParameters>
 	<domain> 100 100 40 </domain>
-	<cellSize> 2.0 2.0 5.0 </cellSize> <!-- Meters-->
-	<verticalStretching> 0 </verticalStretching>
+	<cellSize> 40.0 40.0 5.0 </cellSize> <!-- Meters-->
+	<verticalStretching> 1 </verticalStretching>              <!-- vertical stretching (0-uniform grid, 1-costum grid)-->
+		<dz_value> 1.0 </dz_value>
+		<dz_value> 1.0 </dz_value>
+		<dz_value> 1.0 </dz_value>
+		<dz_value> 1.1 </dz_value>
+		<dz_value> 1.2 </dz_value>
+		<dz_value> 1.3 </dz_value>
+		<dz_value> 1.5 </dz_value>
+		<dz_value> 1.7 </dz_value>
+		<dz_value> 1.9 </dz_value>
+		<dz_value> 2.1 </dz_value>
+		<dz_value> 2.4 </dz_value>
+		<dz_value> 2.7 </dz_value>
+		<dz_value> 3.0 </dz_value>
+		<dz_value> 3.3 </dz_value>
+		<dz_value> 3.7 </dz_value>
+		<dz_value> 4.1 </dz_value>
+		<dz_value> 4.5 </dz_value>
+		<dz_value> 4.9 </dz_value>
+		<dz_value> 5.3 </dz_value>
+		<dz_value> 5.8 </dz_value>
+		<dz_value> 6.2 </dz_value>
+		<dz_value> 6.6 </dz_value>
+		<dz_value> 7.0 </dz_value>
+		<dz_value> 7.4 </dz_value>
+		<dz_value> 7.8 </dz_value>
+		<dz_value> 8.2 </dz_value>
+		<dz_value> 8.6 </dz_value>
+		<dz_value> 9.0 </dz_value>
+		<dz_value> 9.4 </dz_value>
+		<dz_value> 9.8 </dz_value>
+		<dz_value> 10.2 </dz_value>
+		<dz_value> 10.6 </dz_value>
+		<dz_value> 11.0 </dz_value>
+		<dz_value> 11.4 </dz_value>
+		<dz_value> 11.8 </dz_value>
+		<dz_value> 12.2 </dz_value>
+
 	<totalTimeIncrements> 1 </totalTimeIncrements> 				<!-- Number of time steps-->
 	<rooftopFlag> 2 </rooftopFlag> 											<!-- Rooftop flag (0-none, 1-log profile, 2-vortex) -->
 	<upwindCavityFlag> 3 </upwindCavityFlag> 						<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP, 3-HMVP) -->
@@ -91,10 +128,10 @@
 	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
-		<height> 20.0 </height>
+		<height> 19.9 </height>
 		<baseHeight> 0 </baseHeight>
-		<xStart> 80.0 </xStart>
-		<yStart> 80.0 </yStart>
+		<xStart> 82.0 </xStart>
+		<yStart> 82.0 </yStart>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
 	</rectangularBuilding>
