@@ -70,7 +70,7 @@ protected:
     int nx, ny, nz;		/**< number of cells */
     float dx, dy, dz;		/**< Grid resolution*/
     float dxy;		/**< Minimum value between dx and dy */
-    std::vector<float> dzArray, zm;
+    std::vector<float> dz_array, zm;
     std::vector<float> x,y,z;
     std::vector<double> x_out,y_out,z_out;
 
@@ -147,7 +147,7 @@ protected:
     long numcell_cent;                          /**< Total number of cell-centered values in domain */
     long numcell_face;                          /**< Total number of face-centered values in domain */
     int icell_face;                             /**< cell-face index */
-    int icell_cent; 
+    int icell_cent;
 
     std::vector<std::vector<std::vector<float>>> x_cut;
     std::vector<std::vector<std::vector<float>>> y_cut;
@@ -155,7 +155,7 @@ protected:
 
     std::vector<std::vector<int>> num_points;
     std::vector<std::vector<float>> coeff;
-    
+
     /// Declaration of output manager
     int output_counter=0;
     double time=0;
@@ -165,7 +165,7 @@ protected:
     std::vector<NcDim> dim_scalar_x;
     std::vector<NcDim> dim_vector;
     std::vector<std::string> output_fields;
-    
+
     struct AttScalarDbl {
         double* data;
         std::string name;
@@ -173,7 +173,7 @@ protected:
         std::string units;
         std::vector<NcDim> dimensions;
     };
-    
+
     struct AttVectorDbl {
         std::vector<double>* data;
         std::string name;
@@ -181,7 +181,7 @@ protected:
         std::string units;
         std::vector<NcDim> dimensions;
     };
-    
+
     struct AttVectorInt {
         std::vector<int>* data;
         std::string name;
@@ -189,11 +189,11 @@ protected:
         std::string units;
         std::vector<NcDim> dimensions;
     };
-    
+
     std::map<std::string,AttScalarDbl> map_att_scalar_dbl;
     std::map<std::string,AttVectorDbl> map_att_vector_dbl;
     std::map<std::string,AttVectorInt> map_att_vector_int;
-    
+
     std::vector<AttScalarDbl> output_scalar_dbl;
     std::vector<AttVectorDbl> output_vector_dbl;
     std::vector<AttVectorInt> output_vector_int;
@@ -266,10 +266,10 @@ public:
                     std::vector<int>& wall_above_indices, std::vector<int>& wall_below_indices,
                     std::vector<int>& wall_front_indices, std::vector<int>& wall_back_indices,
                     double *u0, double *v0, double *w0, float z0);
-                    
+
     /**
-    * @brief 
-    * 
+    * @brief
+    *
     * This function saves user-defined data to file
     */
     void save(Output*);

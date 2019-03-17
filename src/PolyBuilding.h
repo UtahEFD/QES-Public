@@ -16,16 +16,16 @@ class PolyBuilding
 {
 public:
 
-    PolyBuilding() 
+    PolyBuilding()
     {
     }
-    
+
     PolyBuilding( const std::vector< polyVert > &polygonVertices, float bldElevation )
     {
         // ????
     }
 
-    void setCellsFlag (float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag, int mesh_type_flag,
+    void setCellsFlag (float dx, float dy, float dz, std::vector<float> z, int nx, int ny, int nz, std::vector<int> &icellflag, int mesh_type_flag,
                         std::vector< polyVert > &polygonVertices, float baseHeight, float bldElevation)
     {
 
@@ -63,8 +63,25 @@ public:
         i_end = (x_max/dx)+1;       /// Index of building end location in x-direction
         j_start = (y_min/dy);       /// Index of building start location in y-direction
         j_end = (y_max/dy)+1;       /// Index of building end location in y-direction
-        k_start = (baseHeight/dz)+1;		  /// Index of building start location in z-direction
-        k_end = (bldElevation+baseHeight)/dz+1;             /// Index of building end location in z-direction
+
+
+        for (auto k=1; k<z.size(); k++)
+  			{
+  				k_start = k;
+  				if (baseHeight <= z[k])
+  				{
+  					break;
+  				}
+  			}
+
+  			for (auto k=k_start; k<z.size(); k++)
+  			{
+  				k_end = k+1;
+  				if (baseHeight+bldElevation < z[k+1])
+  				{
+  					break;
+  				}
+  			}
 
         for (int j=j_start; j<j_end; j++)
         {

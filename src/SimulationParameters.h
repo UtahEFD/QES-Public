@@ -20,6 +20,7 @@ public:
 	Vector3<int>* domain;
 	Vector3<float>* grid;
 	int verticalStretching;
+	std::vector<float> dz_value;
 	int totalTimeIncrements;
 	int rooftopFlag;
 	int upwindCavityFlag;
@@ -40,7 +41,7 @@ public:
     // SHP File parameters
     std::string shpFile;   // SHP file name
     std::string shpBuildingLayerName;
-    
+
 
 	SimulationParameters()
 	{
@@ -55,6 +56,7 @@ public:
 		parseElement< Vector3<int> >(true, domain, "domain");
 		parseElement< Vector3<float> >(true, grid, "cellSize");
 		parsePrimitive<int>(true, verticalStretching, "verticalStretching");
+		parseMultiPrimitives<float>(false, dz_value, "dz_value");
 		parsePrimitive<int>(true, totalTimeIncrements, "totalTimeIncrements");
 		parsePrimitive<int>(true, rooftopFlag, "rooftopFlag");
 		parsePrimitive<int>(true, upwindCavityFlag, "upwindCavityFlag");

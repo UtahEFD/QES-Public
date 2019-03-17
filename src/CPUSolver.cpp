@@ -27,7 +27,8 @@ void CPUSolver::solve(bool solveWind)
                 /// Calculate divergence of initial velocity field
                 R[icell_cent] = (-2*pow(alpha1, 2.0))*((( e[icell_cent] * u0[icell_face+1]       - f[icell_cent] * u0[icell_face]) * dx ) +
                                                        (( g[icell_cent] * v0[icell_face + nx]    - h[icell_cent] * v0[icell_face]) * dy ) +
-                                                       (( m[icell_cent] * w0[icell_face + nx*ny] - n[icell_cent] * w0[icell_face]) * dz ));
+                                                       ( m[icell_cent]  * w0[icell_face + nx*ny] * dz_array[k]*0.5*(dz_array[k]+dz_array[k+1])
+                                                        - n[icell_cent] * w0[icell_face] * dz_array[k]*0.5*(dz_array[k]+dz_array[k-1]) ));
             }
         }
     }
@@ -135,14 +136,14 @@ void CPUSolver::solve(bool solveWind)
                     icell_face = i + j*nx + k*nx*ny;               /// Lineralized index for cell faced values
 
                     // Calculate correct wind velocity
-                    u[icell_face] = u0[icell_face] + (1/(2*pow(alpha1, 2.0)*dx)) *
-                        f[icell_cent]*dx*dx*(lambda[icell_cent]-lambda[icell_cent-1]);
+                    u[icell_face] = u0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
+                        f[icell_cent]*dx*(lambda[icell_cent]-lambda[icell_cent-1]);
 
-                    v[icell_face] = v0[icell_face] + (1/(2*pow(alpha1, 2.0)*dy)) *
-                        h[icell_cent]*dy*dy*(lambda[icell_cent]-lambda[icell_cent - (nx-1)]);
+                    v[icell_face] = v0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
+                        h[icell_cent]*dy*(lambda[icell_cent]-lambda[icell_cent - (nx-1)]);
 
-                    w[icell_face] = w0[icell_face]+(1/(2*pow(alpha2, 2.0)*dz)) *
-                        n[icell_cent]*dz*dz*(lambda[icell_cent]-lambda[icell_cent - (nx-1)*(ny-1)]);
+                    w[icell_face] = w0[icell_face]+(1/(2*pow(alpha2, 2.0))) *
+                        n[icell_cent]*dz_array[k]*(lambda[icell_cent]-lambda[icell_cent - (nx-1)*(ny-1)]);
 
 
 
@@ -184,6 +185,27 @@ void CPUSolver::solve(bool solveWind)
         std::chrono::duration<float> elapsedSolve = finish - startSolveSection;
         std::cout << "Elapsed total time: " << elapsedTotal.count() << " s\n";   // Print out elapsed execution time
         std::cout << "Elapsed solve time: " << elapsedSolve.count() << " s\n";   // Print out elapsed execution time
+
+
+
+
+        // Write data to file
+        ofstream outdata2;
+        outdata2.open("Final velocity1.dat");
+        if( !outdata2 ) {                 // File couldn't be opened
+            cerr << "Error: file could not be opened" << endl;
+            exit(1);
+        }
+        // Write data to file
+        for (int k = 0; k < nz-1; k++){
+            for (int j = 0; j < ny-1; j++){
+                for (int i = 0; i < nx-1; i++){
+            int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+            int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
+                    outdata2 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] << "\t \t"<< "\t \t" << f[icell_cent] <<"\t \t"<< "\t \t"<<e[icell_cent]<<"\t \t"<< "\t \t"<<h[icell_cent]<< "\t \t"<< "\t \t" << g[icell_cent] <<"\t \t"<< "\t \t"<<n[icell_cent]<<"\t \t"<< "\t \t"<<m[icell_cent]<<"\t \t"<<icellflag[icell_cent]<< endl;
+                }
+            }
+        }
+        outdata2.close();
     }
 }
-
