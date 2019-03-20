@@ -21,6 +21,10 @@ CUDA_ADD_LIBRARY( cudaurbcore
   Sensor.cpp
   )
 
+CUDA_ADD_LIBRARY( cudafirecore
+  Fire.cpp
+  )
+
 cuda_add_executable( unitTest
   unitTests/testsMain.cpp
   )

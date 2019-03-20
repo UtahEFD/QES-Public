@@ -1,0 +1,61 @@
+<simulationParameters>
+	<domain> 75 25 40 </domain>
+	<cellSize> 1.0 1.0 0.25 </cellSize> <!-- Meters-->
+	<verticalStretching> 0 </verticalStretching>
+	<totalTimeIncrements> 60 </totalTimeIncrements>
+	<UTCConversion> 0 </UTCConversion>
+	<Epoch> 1510930800 </Epoch>
+	<rooftopFlag> 2 </rooftopFlag>
+	<upwindCavityFlag> 3 </upwindCavityFlag>
+	<streetCanyonFlag> 4 </streetCanyonFlag>
+	<streetIntersectionFlag> 1 </streetIntersectionFlag>
+	<wakeFlag> 3 </wakeFlag>
+	<sidewallFlag> 0 </sidewallFlag>
+	<maxIterations> 500 </maxIterations>
+	<residualReduction> 3 </residualReduction>
+	<meshTypeFlag> 1 </meshTypeFlag>
+	<useDiffusion> 0 </useDiffusion>
+	<domainRotation> 0 </domainRotation>
+	<UTMX> 0 </UTMX>
+	<UTMY> 0 </UTMY>
+	<UTMZone> 1 </UTMZone>
+	<UTMZoneLetter> 17 </UTMZoneLetter>
+</simulationParameters>
+<metParams>
+	<metInputFlag> 0 </metInputFlag>
+	<num_sites> 1 </num_sites>
+	<maxSizeDataPoints> 2 </maxSizeDataPoints>
+	<siteName> sensor1 </siteName>
+	<fileName> sensor1.inp </fileName>
+	<site_coord_flag> 1</site_coord_flag>
+	<sensor>
+		<site_xcoord> 0.0 </site_xcoord>
+		<site_ycoord> 12.5 </site_ycoord>
+		<boundaryLayerFlag> 1 </boundaryLayerFlag>
+		<siteZ0> 0.01 </siteZ0>
+		<reciprocal> 0.0 </reciprocal>
+		<height> 1.0 </height>
+		<speed> 4.0 </speed>
+		<direction> 270.0 </direction>
+	</sensor>
+</metParams>
+<fires>
+	<numFires> 1 </numFires>
+	<fuelType>2</fuelType>
+    <height> 0.25 </height>
+    <baseHeight> 0 </baseHeight>
+    <xStart> 10.0 </xStart>
+    <yStart> 5.0 </yStart>
+    <length> 1.0 </length>
+    <width>  15.0 </width>
+</fires>
+<fileOptions>
+	<outputFlag> 1 </outputFlag>
+	<outputFields>u</outputFields> 
+	<outputFields>v</outputFields> 
+	<outputFields>w</outputFields>
+	<outputFields>icell</outputFields> 
+	<massConservedFlag> 0 </massConservedFlag>
+	<sensorVelocityFlag> 0 </sensorVelocityFlag>
+	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+</fileOptions>

@@ -11,6 +11,7 @@
 #include "MetParams.h"
 #include "Buildings.h"
 #include "Canopies.h"
+#include "Fires.hpp"
 
 class URBInputData : public ParseInterface
 {
@@ -20,6 +21,7 @@ public:
     MetParams* metParams;
     Buildings* buildings;
     Canopies* canopies;
+    Fires* fires;
 
     URBInputData()
     {
@@ -27,6 +29,7 @@ public:
 	metParams = 0;
 	buildings = 0;
 	canopies = 0;
+	fires = 0;
     }
 
     virtual void parseValues()
@@ -36,6 +39,7 @@ public:
 	parseElement<MetParams>(false, metParams, "metParams");
 	parseElement<Buildings>(false, buildings, "buildings");
 	parseElement<Canopies>(false, canopies, "canopies");
+	parseElement<Fires>(false, fires, "fires");
     }
 
     /**

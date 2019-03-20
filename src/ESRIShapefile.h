@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <vector>
+#include <limits>
 #include "gdal.h"
 #include "ogrsf_frmts.h"
 

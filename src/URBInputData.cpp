@@ -8,6 +8,7 @@ URBInputData::URBInputData()
 	buildings = 0;
 	canopies = 0;
 	terrain = 0;
+	fires = 0;
 }
 
 void URBInputData::parseValues()
@@ -18,4 +19,5 @@ void URBInputData::parseValues()
 	parseElement<Buildings>(false, buildings, "buildings");
 	parseElement<Canopies>(false, canopies, "canopies");
 	parseElement<Terrain>(false, terrain, "terrain");
+	parseElement<Terrain>(false, terrain, "fires");
 }
