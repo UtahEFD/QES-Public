@@ -1,0 +1,37 @@
+** Controls **
+
+
+1 - Control Defaults:
+
+By default, siveLAB GUI will default to a standard WASD-control scheme.  If you make any changes to the key bindings, they will be stored and reloaded the next time you run the program.  To return to default settings, delete the config file located in your program's base directory.  The default controls are:
+
+Forward:		w or mouse-wheel-up
+Backward:		s or mouse-wheel-down
+Strafe Left:		a or (right-click) mouse-left
+Strafe Right:		d or (right-click) mouse-right
+Move Up/Down:			(right-click) mouse-up/down
+Move View:			(left-click) mouse-up/down/left/right
+
+Open/Close Console:		tab
+Click Cell:		shift-left-click
+Close Program:		ctrl-c
+Close Window:		escape
+
+
+2 - MATLAB Style Controls:
+
+If you wish to change the control setup to be similar to MATLAB, go to "Camera View->Model View".  The camera movement controls will now be:
+
+Zoom In:		mouse-wheel-up
+Zoom Out:		mouse-wheel-down
+Strafe Left:		(right-click) mouse-left
+Strafe Right:		(right-click) mouse-right
+Move Up/Down:		(right-click) mouse-up/down
+Move View:		(left-click) mouse-up/down/left/right
+
+
+3 - Changing Control Settings
+
+In the controls menu (Settings->Controls) you'll notice there is a button for each key and its current binding.  Click the button of the action you wish to change then press a new key.  If the key you pressed doesn't show up and it reverts to the previous binding, that key is not available for use.
+
+
