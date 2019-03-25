@@ -7,6 +7,10 @@
 #include "Cell.h"
 #include "DTEHeightField.h"
 
+/**
+* This class basically designed to store and handle information related to the
+* cut-cells.
+*/
 class Cut_cell
 {
 private:
@@ -16,25 +20,41 @@ public:
 
 	friend class test_CutCell;
 
-	/*
-	 * Assumes DTEHF exists
+	/**
+	 * This function calculates area fraction coefficients used in the cut-cell method.
+	 * It takes in a pointer to cell and terrain information (intersection points) and after sorting them for each
+	 * face of the cell and calculating coefficients, it sets them to the related solver coefficient (e,f,g,h,m,n)
 	 */
-	void calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, int nx, int ny, int nz, float dx, float dy, float dz, 
-							 std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, 
+	void calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, int nx, int ny, int nz, float dx, float dy, float dz,
+							 std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e,
 							 std::vector<float> &h, std::vector<float> &g, float pi, std::vector<int> &icellflag);
-	
+
+  /**
+	* This function takes in intersection points for each face and reorder them based on angle. It
+	* fisrt calculates the centroid of points (simple average). Then it reorders points based on their angle
+	* start from -180 to 180 degree.
+	*/
 	void reorderPoints(std::vector< Vector3<float>> &cut_points, int index, float pi);
+
+	/**
+	* This function takes in points and their calculated angles and sort them from lowest to
+	* largest.
+	*/
 
 	void sort(std::vector<float> &angle, std::vector< Vector3<float>> &cut_points, float pi);
 
 private:
 
-	void calculateArea(std::vector< Vector3<float>> &cut_points, int cutcell_index, float dx, float dy, float dz, 
-					  std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, 
+	/**
+	* This function takes in sorted intersection points and calculates area fraction coefficients
+	* based on polygon area formulation. Then it sets them to related solver coefficients.
+	*/
+	void calculateArea(std::vector< Vector3<float>> &cut_points, int cutcell_index, float dx, float dy, float dz,
+					  std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e,
 					  std::vector<float> &h, std::vector<float> &g, int index);
 
 	/*1
-	 * This function uses the edges that form triangles that lie on either the top or bottom of the cell to 
+	 * This function uses the edges that form triangles that lie on either the top or bottom of the cell to
 	 * calculate the terrain area that covers each face.
 	 *
 	 * @param terrainPoints - the points in the cell that mark a separation of terrain and air
@@ -47,9 +67,9 @@ private:
 	 * @param coef - the coefficient that should be updated
 	 * @param isBot - states if the area for the bottom or top of the cell should be calculated
 	 */
-	void calculateAreaTopBot(std::vector< Vector3<float> > &terrainPoints, 
-							 const std::vector< Edge<int> > &terrainEdges, 
-							 const int cellIndex, const float dx, const float dy, const float dz, 
+	void calculateAreaTopBot(std::vector< Vector3<float> > &terrainPoints,
+							 const std::vector< Edge<int> > &terrainEdges,
+							 const int cellIndex, const float dx, const float dy, const float dz,
 							 Vector3 <float> location, std::vector<float> &coef,
 							 const bool isBot);
 

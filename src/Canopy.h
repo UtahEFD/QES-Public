@@ -38,12 +38,12 @@ public:
 					std::vector<std::vector<std::vector<float>>> &canopy_atten,std::vector<std::vector<float>> &canopy_top);
 
 	/*
-	 *This function takes in icellflaf defined in the defineCanopy function along with variables initialized in
+	 *This function takes in icellflag defined in the defineCanopy function along with variables initialized in
 	 *the readCanopy function and initial velocity field components (u0 and v0). This function applies the urban canopy
 	 *parameterization and returns modified initial velocity field components.
 	 */
 
-	void plantInitial(int nx, int ny, int nz, float vk, std::vector<int> &icellflag, std::vector<float> z, std::vector<double> &u0, 
+	void plantInitial(int nx, int ny, int nz, float vk, std::vector<int> &icellflag, std::vector<float> z, std::vector<double> &u0,
 						std::vector<double> &v0, std::vector<std::vector<std::vector<float>>> &canopy_atten,
 						std::vector<std::vector<float>> &canopy_top, std::vector<std::vector<float>> &canopy_top_index,
 						std::vector<std::vector<float>> &canopy_ustar, std::vector<std::vector<float>> &canopy_z0,
@@ -84,12 +84,12 @@ public:
 						std::vector<std::vector<float>> &canopy_top)
 	{
 
-            i_start = std::round(x_start/dx);
-            i_end = std::round((x_start+L)/dx);
-            j_end = std::round((y_start+W)/dy);
-            j_start = std::round(y_start/dy);
-            k_start = std::round(baseHeight/dz);
-            k_end = std::round((baseHeight+H)/dz)+1;
+		i_start = std::round(x_start/dx);       // Index of canopy start location in x-direction
+		i_end = std::round((x_start+L)/dx);			// Index of canopy end location in x-direction
+		j_end = std::round((y_start+W)/dy);			// Index of canopy end location in y-direction
+		j_start = std::round(y_start/dy);				// Index of canopy start location in y-direction
+		k_start = std::round(baseHeight/dz);			// Index of canopy start location in z-direction
+		k_end = std::round((baseHeight+H)/dz)+1;				// Index of canopy end location in y-direction
 
 #if 0
     	std::cout << "i_start:" << i_start << "\n";
@@ -99,11 +99,6 @@ public:
    	 	std::cout << "k_end:" << k_end << "\n";
 #endif
 
-		if(lu_canopy_flag > 0 && k_end < 2)
-		{
-			k_end=2;
-		}
-
 		for (int j=j_start; j<j_end; j++)
 		{
 			for (int i=i_start; i<i_end; i++)
@@ -111,7 +106,7 @@ public:
 				for (int k=k_start; k<k_end; k++)
 				{
 					int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-					if (icellflag[icell_cent] != 0)
+					if (icellflag[icell_cent] != 0)       // if the cell is not solid
 					{
 						if (lu_canopy_flag > 0)
 						{
@@ -122,7 +117,7 @@ public:
 							{
 								canopy_top[i][j] = H;
 							}
-							canopy_atten[i][j][k] = atten;
+							canopy_atten[i][j][k] = atten;     // initiate all attenuation coefficients to the canopy coefficient
 						}
 					}
 				}

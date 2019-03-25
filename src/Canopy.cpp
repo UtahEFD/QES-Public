@@ -6,6 +6,8 @@ void Canopy::readCanopy(int nx, int ny, int nz, int landuse_flag, int num_canopi
 					std::vector<std::vector<std::vector<float>>> &canopy_atten,std::vector<std::vector<float>> &canopy_top)
 {
 
+	// This function needs to be updated when we can read land use data fom WRF or
+	// other sources
 	if (landuse_flag == 1)
 	{
 	}
@@ -23,17 +25,21 @@ void Canopy::readCanopy(int nx, int ny, int nz, int landuse_flag, int num_canopi
 
 }
 
-
-void Canopy::plantInitial(int nx, int ny, int nz, float vk, std::vector<int> &icellflag, std::vector<float> z, std::vector<double> &u0, 
+// Function to apply the urban canopy parameterization
+// Based on the version contain Lucas Ulmer's modifications
+void Canopy::plantInitial(int nx, int ny, int nz, float vk, std::vector<int> &icellflag, std::vector<float> z, std::vector<double> &u0,
 					std::vector<double> &v0, std::vector<std::vector<std::vector<float>>> &canopy_atten,
 					std::vector<std::vector<float>> &canopy_top, std::vector<std::vector<float>> &canopy_top_index,
 					std::vector<std::vector<float>> &canopy_ustar, std::vector<std::vector<float>> &canopy_z0,
 					std::vector<std::vector<float>> &canopy_d)
 {
 
-	float u_H, avg_atten, veg_vel_frac;
+	float u_H;                  /**< velocity at the height of the canopy */
+	float avg_atten;						/**< average attenuation of the canopy */
+	float veg_vel_frac;					/**< vegetation velocity fraction */
 	int num_atten;
 
+	// Call regression to define ustar and and surface roughness of the canopy
 	regression(nx,ny,nz,vk,z.data(),u0.data(),v0.data(),canopy_atten,canopy_top,canopy_top_index,canopy_ustar,canopy_z0);
 
 	for (int j=0; j<ny-1; j++)
@@ -42,6 +48,7 @@ void Canopy::plantInitial(int nx, int ny, int nz, float vk, std::vector<int> &ic
 		{
 			if (canopy_top[i][j] > 0)
 			{
+				// Call the bisection method to find the root
 				canopy_d[i][j] = bisection(canopy_ustar[i][j],canopy_z0[i][j], canopy_top[i][j],
 								canopy_atten[i][j][canopy_top_index[i][j]],vk,0.0);
 				std::cout << "d passed from bisection is:" << canopy_d[i][j] << "\n";
