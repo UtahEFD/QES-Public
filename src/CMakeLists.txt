@@ -16,6 +16,11 @@ CUDA_ADD_LIBRARY( cudaplumecore
     bw/LocalMixing.cpp
     bw/NonLocalMixing.cpp
     bw/NonLocalMixing2.cpp
+    Args.cpp
+    Input.cpp
+    Output.cpp
+    Urb.cpp
+    Turb.cpp
 )
 
 target_link_libraries (cudaplumecore quicloader) 

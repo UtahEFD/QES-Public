@@ -7,6 +7,7 @@
 
 #include "Args.hpp"
 #include "Urb.hpp"
+#include "Turb.hpp"
 #include "Input.hpp"
 #include "Output.hpp"
 
@@ -19,11 +20,6 @@
 #else
 #include <GL/freeglut.h>
 #endif
-
-// CUDA utilities and system includes
-// #include <helper_cuda.h>  
-// #include <helper_cuda_gl.h> 
-// #include <helper_math.h>
 
 #include <rendercheck_gl.h>
 
@@ -142,7 +138,38 @@ void initGL(int *argc, char **argv)
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char** argv) 
-{    
+{
+    // set up time information
+    double elapsed;
+    struct timespec start, finish;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    
+    // print a nice little welcome message
+    std::cout << std::endl;
+    std::cout<<"##############################################################"<<std::endl;
+    std::cout<<"#                                                            #"<<std::endl;
+    std::cout<<"#                   Welcome to CUDA-PLUME                    #"<<std::endl;
+    std::cout<<"#                                                            #"<<std::endl;
+    std::cout<<"##############################################################"<<std::endl;
+    
+    // parse command line arguments
+    Args arguments;
+    arguments.processArguments(argc, argv);
+    
+    // Create instance of cudaUrb input class
+    Input* inputUrb = new Input(arguments.inputFileUrb);
+    
+    // Create instance of cudaTurb input class
+    Input* inputTurb = new Input(arguments.inputFileTurb);
+
+    // Create instance of output class
+    Output* output = new Output(arguments.outputFile);
+    
+    // Create instance of cudaUrb class
+    Urb* urb = new Urb(inputUrb);
+    
+    // Create instance of cudaTurb class
+    Turb* turb = new Turb(inputTurb);
     
 //    // Using the general argument parser to handle command line input
 //    sivelab::PlumeArgs quicArgs;
