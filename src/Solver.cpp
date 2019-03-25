@@ -46,6 +46,17 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
 
     theta = (domain_rotation*pi/180.0);
 
+    if ( UID->simParams->wakeFlag > 1)
+    {
+      cavity_factor = 1.1;
+      wake_factor = 0.1;
+    }
+    else
+    {
+      cavity_factor = 1.0;
+      wake_factor = 0.0;
+    }
+
     // Pull Domain Size information from the UrbInputData structure --
     // this is either read in from the XML files and/or potentially
     // calculated based on the geographic data that was loaded
@@ -78,12 +89,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     if (UID->metParams)
     {
         // Set the sensor to the one loaded in from the files:
-        std::cout << "\nWARNING: only managing 1 sensor!!!! Need to fix for multiple sensors!\n" << std::endl;
         sensor = UID->metParams->sensors[0];
-
-        // This has already been done... the UID->metParams
-        // contains a vector of "sensors" (or sites).  We should
-        // use this directly rather than re-doing it...
         num_sites = UID->metParams->num_sites;
         site_coord_flag = (UID->metParams->site_coord_flag);
 
@@ -234,6 +240,10 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     v.resize(numcell_face, 0.0);
     w.resize(numcell_face, 0.0);
 
+    //////////////////////////////////////////////////////////////////////////////////
+    /////    Create sensor velocity profiles and generate initial velocity field /////
+    //////////////////////////////////////////////////////////////////////////////////
+
     // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa (located in Sensor.cpp)
     sensor->UTMConverter (site_lon, site_lat, site_UTM_x, site_UTM_y, site_UTM_zone, 1);
 
@@ -245,6 +255,17 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
                              site_one_overL.data(), site_xcoord.data(), site_ycoord.data(), site_wind_dir.data(),
                              site_z0.data(), site_z_ref.data(), site_U_ref.data(), x.data(), y.data(), z.data(), canopy,
                              site_canopy_H.data(), site_atten_coeff.data());
+
+    max_velmag = 0.0;
+    for (auto i=0; i<nx; i++)
+    {
+      for (auto j=0; j<ny; j++)
+      {
+        icell_face = i+j*nx+nz*nx*ny;
+        max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face],2.0)+pow(v0[icell_face],2.0)));
+      }
+    }
+    max_velmag *= 1.2;
 
 
     ////////////////////////////////////////////////////////
@@ -335,65 +356,100 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     //                Apply building effect                    //
     /////////////////////////////////////////////////////////////
 
+    auto buildingsetup = std::chrono::high_resolution_clock::now(); // Start recording execution time
     // For now, process ESRIShapeFile here:
     ESRIShapefile *shpFile = nullptr;
 
-    if (UID->simParams->shpFile != "") {
+    if (UID->simParams->shpFile != "")
+    {
 
+        std::vector <PolyBuilding> poly_buildings;
         std::vector< std::vector <polyVert> > shpPolygons;
+        std::vector <float> base_height;            // Base height of buildings
+        float corner_height, min_height;
+        std::vector <float> building_height;        // Height of buildings
 
+        // Read polygon node coordinates and building height from shapefile
         shpFile = new ESRIShapefile( UID->simParams->shpFile,
                                      UID->simParams->shpBuildingLayerName,
-                                     shpPolygons );
+                                     shpPolygons, building_height );
+
+
 
         std::vector<float> shpDomainSize(2), minExtent(2);
         shpFile->getLocalDomain( shpDomainSize );
         shpFile->getMinExtent( minExtent );
-        std::cout << "SHP Domain Size: " << shpDomainSize[0] << " X " << shpDomainSize[1] << std::endl;
-        std::cout << "Min Extent: (" << minExtent[0] << ", " << minExtent[1] << ")" << std::endl;
-
-        /*std::vector <polyVert> polygonVertices(7);
-
-          polygonVertices[0].x_poly = 50;
-          polygonVertices[1].x_poly = 70;
-          polygonVertices[2].x_poly = 75;
-          polygonVertices[3].x_poly = 105;
-          polygonVertices[4].x_poly = 72;
-          polygonVertices[5].x_poly = 79;
-          polygonVertices[6].x_poly = 50;
-          //std::cout << "x_poly:" << polygonVertices[5].x_poly << "\n";
-          polygonVertices[0].y_poly = 91;
-          polygonVertices[1].y_poly = 110;
-          polygonVertices[2].y_poly = 98;
-          polygonVertices[3].y_poly = 91;
-          polygonVertices[4].y_poly = 60;
-          polygonVertices[5].y_poly = 85;
-          polygonVertices[6].y_poly = 91;
-          //std::cout << "y_poly:" << polygonVertices[2].y_poly << "\n";*/
-
-        float bldElevation = 20.0;
-        float base_height = 0.0;
 
         float domainOffset[2] = { 50, 50 };
-        // Loop to create each of the polygon buildings read in from the shapefile
-        for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++) {
-
+        for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+        {
             // convert the global polys to local domain coordinates
-            std::vector< polyVert > localPoly = shpPolygons[pIdx];
-            for (size_t lIdx=0; lIdx<localPoly.size(); lIdx++) {
-                localPoly[lIdx].x_poly = localPoly[lIdx].x_poly - minExtent[0] + domainOffset[0];
-                localPoly[lIdx].y_poly = localPoly[lIdx].y_poly - minExtent[1] + domainOffset[1];
+          for (size_t lIdx=0; lIdx<shpPolygons[pIdx].size(); lIdx++)
+          {
+            shpPolygons[pIdx][lIdx].x_poly = shpPolygons[pIdx][lIdx].x_poly - minExtent[0] + domainOffset[0];
+            shpPolygons[pIdx][lIdx].y_poly = shpPolygons[pIdx][lIdx].y_poly - minExtent[1] + domainOffset[1];
+          }
+        }
 
-                std::cout << "[" << lIdx << "] " << localPoly[lIdx].x_poly << ", " << localPoly[lIdx].y_poly << std::endl;
+        // Setting base height for buildings if there is a DEM file
+        if (UID->simParams->demFile != "")
+        {
+          for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+          {
+            // Get base height of every corner of building from terrain height
+            min_height = mesh->getHeight(shpPolygons[pIdx][0].x_poly, shpPolygons[pIdx][0].y_poly);
+            if (min_height<0)
+            {
+              min_height = 0.0;
             }
+            for (auto lIdx=1; lIdx<shpPolygons[pIdx].size(); lIdx++)
+            {
+              corner_height = mesh->getHeight(shpPolygons[pIdx][lIdx].x_poly, shpPolygons[pIdx][lIdx].y_poly);
+              if (corner_height<min_height && corner_height>0.0)
+              {
+                min_height = corner_height;
+              }
+            }
+            base_height.push_back(min_height);
+          }
+        }
+        else
+        {
+          for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+          {
+            base_height.push_back(0.0);
+          }
+        }
 
-            std::cout << "Adding PolyBuilding " << pIdx << std::endl;
-            // Create polygon buildings
-            PolyBuilding poly_building;
-            // Call setCellsFlag in the PolyBuilding class to identify building cells
-            poly_building.setCellsFlag ( dx, dy, dz, z, nx, ny, nz,icellflag, mesh_type_flag, localPoly, base_height, bldElevation);
+        // Loop to create each of the polygon buildings read in from the shapefile
+        std::cout << "num_poly buildings" << shpPolygons.size() << std::endl;
+
+        for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+        {
+          // Create polygon buildings
+          poly_buildings.push_back (PolyBuilding (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], nx, ny,
+                                      nz, dx, dy, dz, u0, v0, z));
+          // Call setCellsFlag in the PolyBuilding class to identify building cells
+          poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz,icellflag, mesh_type_flag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
+        }
+
+        // @Zach: we need to sort buildings based on their effective height (building_height+base_height)
+        // Note that after sort, building_height and base_height, poly_buildings and shpPolygons need to be sorted
+        // It might be easier to do it before the loop that creates poly_buildings
+
+        // If there is wake behind the building to apply
+        if (UID->simParams->wakeFlag > 0)
+        {
+          for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+          {
+              poly_buildings[pIdx].polygonWake (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], dx, dy, dz, z, nx, ny, nz,
+                                          cavity_factor, wake_factor, dxy, icellflag, u0, v0, w0, max_velmag);
+          }
         }
     }
+    auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+    std::chrono::duration<float> elapsedBuilding = finish - buildingsetup;
+    std::cout << "Elapsed building time: " << elapsedBuilding.count() << " s\n";   // Print out elapsed execution time
 
 
     ///////////////////////////////////////////////////////////////
@@ -432,7 +488,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
       {
         /// Boundary condition for building edges
         calculateCoefficients(dx, dy, dz, nx, ny, nz, icellflag, n.data(), m.data(), f.data(), e.data(), h.data(), g.data(),
-                    x_cut, y_cut, z_cut, num_points, coeff);
+                                x_cut, y_cut, z_cut, num_points, coeff);
       }
     }
 
@@ -455,8 +511,8 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
      * to the cells near Walls
      *
      */
-    wallLogBC (wall_right_indices, wall_left_indices, wall_above_indices, wall_below_indices,
-      wall_front_indices, wall_back_indices, u0.data(), v0.data(), w0.data(), z0);
+    /*wallLogBC (wall_right_indices, wall_left_indices, wall_above_indices, wall_below_indices,
+      wall_front_indices, wall_back_indices, u0.data(), v0.data(), w0.data(), z0);*/
 
       for (int k = 1; k < nz-1; k++)
       {
@@ -588,157 +644,6 @@ void Solver::calculateCoefficients(float dx, float dy, float dz, int nx, int ny,
                         std::vector<std::vector<float>> coeff)
 
 {
-
-	/*std::vector<std::vector<float>> x_centroid((nx-1)*(ny-1)*(nz-1), std::vector<float>(6,0.0));
-	std::vector<std::vector<float>> y_centroid((nx-1)*(ny-1)*(nz-1), std::vector<float>(6,0.0));
-	std::vector<std::vector<float>> z_centroid((nx-1)*(ny-1)*(nz-1), std::vector<float>(6,0.0));
-	std::vector<std::vector<std::vector<float>>> angle((nx-1)*(ny-1)*(nz-1), std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
-	float sum_x, sum_y, sum_z;
-	std::vector<float> angle_temp (6, 0.0);
-	std::vector<float> angle_max (6, 0.0);
-	std::vector<float> xcut_temp (6, 0.0);
-	std::vector<float> ycut_temp (6, 0.0);
-	std::vector<float> zcut_temp (6, 0.0);
-	std::vector<int> imax (6,0);
-
-	for ( int k = 1; k < nz-2; k++){
-    	for (int j = 1; j < ny-2; j++){
-	    	for (int i = 1; i < nx-2; i++){
-				icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-
-				if (icellflag[icell_cent]==7){
-					for (int ii=0; ii<6; ii++){
-						if (num_points[icell_cent][ii] !=0){
-							sum_x = 0;
-							sum_y = 0;
-							sum_z = 0;
-							for (int jj=0; jj<num_points[icell_cent][ii]; jj++){
-								sum_x += x_cut[icell_cent][ii][jj];
-								sum_y += y_cut[icell_cent][ii][jj];
-								sum_z += z_cut[icell_cent][ii][jj];
-							}
-							x_centroid[icell_cent][ii] = sum_x/num_points[icell_cent][ii];
-							y_centroid[icell_cent][ii] = sum_y/num_points[icell_cent][ii];
-							z_centroid[icell_cent][ii] = sum_z/num_points[icell_cent][ii];
-						}
-					}
-				}
-			}
-		}
-	}
-
-	for ( int k = 1; k < nz-2; k++){
-	    for (int j = 1; j < ny-2; j++){
-	   		for (int i = 1; i < nx-2; i++){
-				icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-
-				if (icellflag[icell_cent]==7){
-					for (int ii=0; ii<6; ii++){
-						if (num_points[icell_cent][ii] !=0){
-							for (int jj=0; jj<num_points[icell_cent][ii]; jj++){
-								if (ii==0 || ii==1){
-									angle[icell_cent][ii][jj] = (180/pi)*atan2((z_cut[icell_cent][ii][jj]-z_centroid[icell_cent][ii]),(y_cut[icell_cent][ii][jj]-y_centroid[icell_cent][ii]));
-								}
-								if (ii==2 || ii==3){
-									angle[icell_cent][ii][jj] = (180/pi)*atan2((z_cut[icell_cent][ii][jj]-z_centroid[icell_cent][ii]),(x_cut[icell_cent][ii][jj]-x_centroid[icell_cent][ii]));
-								}
-								if (ii==4 || ii==5){
-									angle[icell_cent][ii][jj] = (180/pi)*atan2((y_cut[icell_cent][ii][jj]-y_centroid[icell_cent][ii]),(x_cut[icell_cent][ii][jj]-x_centroid[icell_cent][ii]));
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-
-        // Write data to file
-        ofstream outdata3;
-        outdata3.open("test.dat");
-        if( !outdata3 ) {                 // File couldn't be opened
-            cerr << "Error: file could not be opened" << endl;
-            exit(1);
-        }
-        // Write data to file
-        for (int k = 0; k < nz-1; k++){
-            for (int j = 0; j < ny-1; j++){
-                for (int i = 0; i < nx-1; i++){
-    				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-    				int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
-					for (int ii=0; ii<6; ii++){
-                    	outdata3 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] << "\t \t"<< "\t \t" << angle[icell_cent][ii][0] <<"\t \t"<< "\t \t"<<angle[icell_cent][ii][1]<<"\t \t"<< "\t \t"<<angle[icell_cent][ii][2]<< "\t \t"<< "\t \t" << angle[icell_cent][ii][3] <<"\t \t"<< "\t \t"<<angle[icell_cent][ii][4]<<"\t \t"<< "\t \t"<<angle[icell_cent][ii][5]<<"\t \t"<<icellflag[icell_cent]<< endl;
-					}
-                }
-            }
-        }
-        outdata3.close();
-
-
-
-	for ( int k = 1; k < nz-2; k++){
-    	for (int j = 1; j < ny-2; j++){
-	    	for (int i = 1; i < nx-2; i++){
-				icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-
-				if (icellflag[icell_cent]==7){
-					for (int ii=0; ii<6; ii++){
-						if (num_points[icell_cent][ii] !=0){
-							for (int jj=0; jj<num_points[icell_cent][ii]; jj++){
-								imax[jj] = jj;
-								angle_max[jj] = -180;
-								xcut_temp [jj] = x_cut[icell_cent][ii][jj];
-								ycut_temp [jj] = y_cut[icell_cent][ii][jj];
-								zcut_temp [jj] = z_cut[icell_cent][ii][jj];
-								angle_temp [jj] = angle[icell_cent][ii][jj];
-							}
-
-							for (int iii=0; iii<num_points[icell_cent][ii]; iii++){
-								for (int jjj=0; jjj<num_points[icell_cent][ii]; jjj++){
-									if (angle[icell_cent][ii][jjj] > angle_max[iii]){
-										angle_max[iii] = angle[icell_cent][ii][jjj];
-										imax[iii] = jjj;
-									}
-								}
-								angle[icell_cent][ii][imax[iii]] = -999;
-							}
-
-							for (int jj=0; jj<num_points[icell_cent][ii]; jj++){
-								x_cut[icell_cent][ii][jj] = xcut_temp[imax[num_points[icell_cent][ii]-1-jj]];
-								y_cut[icell_cent][ii][jj] = ycut_temp[imax[num_points[icell_cent][ii]-1-jj]];
-								z_cut[icell_cent][ii][jj] = zcut_temp[imax[num_points[icell_cent][ii]-1-jj]];
-								angle[icell_cent][ii][jj] = angle_temp[imax[num_points[icell_cent][ii]-1-jj]];
-
-							}
-
-						}
-					}
-				}
-			}
-		}
-	}
-
-       // Write data to file
-        ofstream outdata4;
-        outdata4.open("test1.dat");
-        if( !outdata4 ) {                 // File couldn't be opened
-            cerr << "Error: file could not be opened" << endl;
-            exit(1);
-        }
-        // Write data to file
-        for (int k = 0; k < nz-1; k++){
-            for (int j = 0; j < ny-1; j++){
-                for (int i = 0; i < nx-1; i++){
-    				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-    				int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
-					for (int ii=0; ii<6; ii++){
-                    	outdata4 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] << "\t \t"<< "\t \t" << angle[icell_cent][ii][0] <<"\t \t"<< "\t \t"<<angle[icell_cent][ii][1]<<"\t \t"<< "\t \t"<<angle[icell_cent][ii][2]<< "\t \t"<< "\t \t" << angle[icell_cent][ii][3] <<"\t \t"<< "\t \t"<<angle[icell_cent][ii][4]<<"\t \t"<< "\t \t"<<angle[icell_cent][ii][5]<<"\t \t"<<icellflag[icell_cent]<< endl;
-					}
-                }
-            }
-        }
-        outdata4.close();*/
 
 	for ( int k = 1; k < nz-2; k++)
 	{

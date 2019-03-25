@@ -135,9 +135,11 @@ protected:
     int upwindCavityFlag;		/**< Upwind cavity flag */
     int streetCanyonFlag;		/**< Street canyon flag */
     int streetIntersectionFlag;		/**< Street intersection flag */
-    int wakeFlag;		/**< Wake flag */
+    int wakeFlag;	        	/**< Wake flag */
     int sidewallFlag;		/**< Sidewall flag */
     int mesh_type_flag;		/**< mesh type (0 = Original QUIC/Stair-step, 1 = Cut-cell method) */
+
+    float cavity_factor, wake_factor;
 
     Cell* cells;
     bool DTEHFExists = false;
