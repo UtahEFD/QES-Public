@@ -1,7 +1,7 @@
 <simulationParameters>
-	<domain> 100 100 40 </domain>
-	<cellSize> 40.0 40.0 5.0 </cellSize> <!-- Meters-->
-	<verticalStretching> 1 </verticalStretching>              <!-- vertical stretching (0-uniform grid, 1-costum grid)-->
+	<domain> 150 150 100 </domain>
+	<cellSize> 2.0 2.0 2.0 </cellSize> <!-- Meters-->
+	<verticalStretching> 0 </verticalStretching>              <!-- vertical stretching (0-uniform grid, 1-costum grid)-->
 		<dz_value> 1.0 </dz_value>
 		<dz_value> 1.0 </dz_value>
 		<dz_value> 1.0 </dz_value>
@@ -39,12 +39,12 @@
 		<dz_value> 11.8 </dz_value>
 		<dz_value> 12.2 </dz_value>
 
-	<totalTimeIncrements> 1 </totalTimeIncrements> 				<!-- Number of time steps-->
-	<rooftopFlag> 2 </rooftopFlag> 											<!-- Rooftop flag (0-none, 1-log profile, 2-vortex) -->
-	<upwindCavityFlag> 3 </upwindCavityFlag> 						<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP, 3-HMVP) -->
-	<streetCanyonFlag> 4 </streetCanyonFlag> 						<!-- Street canyon flag (0-none, 1-Roeckle, 2-CPB, 3-exp. param. PKK, 4-Roeckle w/ Fackrel) -->
-	<streetIntersectionFlag> 1 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
-	<wakeFlag> 3 </wakeFlag> 												<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle, 3-Area Scaled) -->
+	<totalTimeIncrements> 0 </totalTimeIncrements> 				<!-- Number of time steps-->
+	<rooftopFlag> 0 </rooftopFlag> 											<!-- Rooftop flag (0-none, 1-log profile, 2-vortex) -->
+	<upwindCavityFlag> 0 </upwindCavityFlag> 						<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP, 3-HMVP) -->
+	<streetCanyonFlag> 0 </streetCanyonFlag> 						<!-- Street canyon flag (0-none, 1-Roeckle, 2-CPB, 3-exp. param. PKK, 4-Roeckle w/ Fackrel) -->
+	<streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
+	<wakeFlag> 1 </wakeFlag> 												<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle, 3-Area Scaled) -->
 	<sidewallFlag> 0 </sidewallFlag> 								<!-- Sidewall flag (0-off, 1-on) -->
 	<maxIterations> 500 </maxIterations> 						<!-- Maximum number of iterations -->
 	<residualReduction> 3 </residualReduction> 			<!-- Residual Reduction (Orders of Magnitude) -->
@@ -77,7 +77,7 @@
 		<reciprocal> 0.0 </reciprocal> 						<!-- Reciprocal Monin-Obukhov Length (1/m) -->
 		<height> 10.0 </height> 										<!-- Height of the sensor -->
 		<speed> 5.0 </speed> 											<!-- Measured speed at the sensor height -->
-		<direction> 270.0 </direction> 						<!-- Wind direction of sensor -->
+		<direction> 225.0 </direction> 						<!-- Wind direction of sensor -->
 
 		<!--canopyHeight> 10.0 </canopyHeight-->     <!-- Canopy height -->
 		<!--attenuationCoefficient> 1.97 </attenuationCoefficient--> 				<!-- Canopy attenuation coefficient -->
@@ -113,7 +113,7 @@
 </canopies-->
 <fileOptions>
   <outputFlag>1</outputFlag>
-  <outputFields>u</outputFields> 
+  <outputFields>all</outputFields> 
   <outputFields>v</outputFields> 
   <outputFields>w</outputFields>
   <outputFields>icell</outputFields> 

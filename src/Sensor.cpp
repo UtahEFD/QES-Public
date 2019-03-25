@@ -37,9 +37,12 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 	std::vector<std::vector<std::vector<double>>> wm(num_sites, std::vector<std::vector<double>>(nx, std::vector<double>(ny,0.0)));
 	std::vector<std::vector<std::vector<double>>> wms(num_sites, std::vector<std::vector<double>>(nx, std::vector<double>(ny,0.0)));
 
+	// Loop through all sites and create velocity profiles (u0,v0)
 	for (int i = 0 ; i < num_sites; i++)
 	{
 		site_theta[i] = (270.0-site_wind_dir[i])*M_PI/180.0;
+
+		// If site has a uniform velocity profile
 		if (site_blayer_flag[i] == 0)
 		{
 			for (int k = 1; k < nz; k++)
@@ -48,7 +51,7 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 				v_prof[i][k] = 0.0;
 			}
 		}
-
+		// Logarithmic velocity profile
 		if (site_blayer_flag[i] == 1)
 		{
 			for (int k = 1; k < nz-1; k++)
@@ -82,6 +85,7 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 			}
 		}
 
+		// Exponential velocity profile
 		if (site_blayer_flag[i] == 2)
 		{
 			for (int k = 1; k < nz; k++)
@@ -91,6 +95,7 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 			}
 		}
 
+		// Canopy velocity profile
 		if (site_blayer_flag[i] == 3)
 		{
 			for (int k = 1; k< nz; k++)
@@ -178,9 +183,12 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 					v0[icell_face] = v_prof[0][k];
 					w0[icell_face] = 0.0;         /// Perpendicular wind direction
 				}
-    	    }
-   	    }
+			}
    	}
+  }
+
+	// If number of sites are more than one
+	// Apply 2D Barnes scheme to interpolate site velocity profiles to the whole domain
 	else
 	{
 		rc_sum = 0.0;

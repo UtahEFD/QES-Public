@@ -556,7 +556,7 @@ public:
 
 		if (mesh_type_flag == 1)
 		{
-			/// defining building and cut-cell indices
+			// defining building and cut-cell indices
 			if (fmod(x_start,dx)==0)
 			{
 				i_start = x_start/dx;
@@ -661,10 +661,10 @@ public:
 		}
 		else
 		{
-			i_start = std::round(x_start/dx);     /// Index of building start location in x-direction
-      i_end = std::round((x_start+L)/dx);   /// Index of building end location in x-direction
-      j_start = std::round(y_start/dy);     /// Index of building start location in y-direction
-      j_end = std::round((y_start+W)/dy);   /// Index of building end location in y-direction
+			i_start = std::round(x_start/dx);     // Index of building start location in x-direction
+      i_end = std::round((x_start+L)/dx);   // Index of building end location in x-direction
+      j_start = std::round(y_start/dy);     // Index of building start location in y-direction
+      j_end = std::round((y_start+W)/dy);   // Index of building end location in y-direction
 
 			for (auto k=1; k<z.size(); k++)
 			{
@@ -685,22 +685,29 @@ public:
 			}
 
 #if 0
-    		std::cout << "i_start:" << i_start << "\n";   // Print the number of iterations
-    		std::cout << "i_end:" << i_end << "\n";       // Print the number of iterations
-    		std::cout << "j_start:" << j_start << "\n";   // Print the number of iterations
-    		std::cout << "j_end:" << j_end << "\n";       // Print the number of iterations
-    		std::cout << "k_end:" << k_end << "\n";       // Print the number of iterations
+    		std::cout << "i_start:" << i_start << "\n";
+    		std::cout << "i_end:" << i_end << "\n";
+    		std::cout << "j_start:" << j_start << "\n";
+    		std::cout << "j_end:" << j_end << "\n";
+    		std::cout << "k_end:" << k_end << "\n";
 #endif
 
 
-   			for (int k = k_start; k < k_end; k++){
-    	   		for (int j = j_start; j < j_end; j++){
-    	       		for (int i = i_start; i < i_end; i++){
-    	            	icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-						icellflag[icell_cent] = 0;                         /// Set cell index flag to building
+   			for (int k = k_start; k < k_end; k++)
+				{
+					for (int j = j_start; j < j_end; j++)
+					{
+						for (int i = i_start; i < i_end; i++)
+						{
+							icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+							icellflag[icell_cent] = 0;                         /// Set cell index flag to building
+						}
 					}
 				}
-    		}
+
+
+
+
 
 		}
 	}

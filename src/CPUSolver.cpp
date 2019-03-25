@@ -1,7 +1,5 @@
 #include "CPUSolver.h"
 
-// If you want to use these types of statements, they should go in the
-// CPP file.
 using std::cerr;
 using std::endl;
 using std::vector;
@@ -108,8 +106,6 @@ void CPUSolver::solve(bool solveWind)
         /////   Update the velocity field using Euler-Lagrange equations   /////
         ////////////////////////////////////////////////////////////////////////
 
-        // Ideally only do for boundary planes.... on external faces
-        // of domain - Pete
         for (int k = 0; k < nz; k++){
             for (int j = 0; j < ny; j++){
                 for (int i = 0; i < nx; i++) {
@@ -120,11 +116,7 @@ void CPUSolver::solve(bool solveWind)
                 }
             }
         }
-//  For only the boundary space....
-        // Ideally, for k={0,nz-1}
-//        u[ ? ] = u0[ ? ]
-//            v[ ? ] = v0[ ? ]
-//            w[ ? ] = w0[ ? ]
+
 
         // /////////////////////////////////////////////
     	/// Update velocity field using Euler equations
@@ -186,26 +178,5 @@ void CPUSolver::solve(bool solveWind)
         std::cout << "Elapsed total time: " << elapsedTotal.count() << " s\n";   // Print out elapsed execution time
         std::cout << "Elapsed solve time: " << elapsedSolve.count() << " s\n";   // Print out elapsed execution time
 
-
-
-
-        // Write data to file
-        ofstream outdata2;
-        outdata2.open("Final velocity1.dat");
-        if( !outdata2 ) {                 // File couldn't be opened
-            cerr << "Error: file could not be opened" << endl;
-            exit(1);
-        }
-        // Write data to file
-        for (int k = 0; k < nz-1; k++){
-            for (int j = 0; j < ny-1; j++){
-                for (int i = 0; i < nx-1; i++){
-            int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-            int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
-                    outdata2 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k] << "\t \t"<< "\t \t" << f[icell_cent] <<"\t \t"<< "\t \t"<<e[icell_cent]<<"\t \t"<< "\t \t"<<h[icell_cent]<< "\t \t"<< "\t \t" << g[icell_cent] <<"\t \t"<< "\t \t"<<n[icell_cent]<<"\t \t"<< "\t \t"<<m[icell_cent]<<"\t \t"<<icellflag[icell_cent]<< endl;
-                }
-            }
-        }
-        outdata2.close();
     }
 }
