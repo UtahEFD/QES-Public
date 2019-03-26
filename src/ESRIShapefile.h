@@ -5,6 +5,7 @@
 #include <limits>
 #include "gdal.h"
 #include "ogrsf_frmts.h"
+#include <limits>
 
 #include "PolygonVertex.h"
 

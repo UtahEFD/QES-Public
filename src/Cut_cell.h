@@ -41,7 +41,7 @@ public:
 	* largest.
 	*/
 
-	void sort(std::vector<float> &angle, std::vector< Vector3<float>> &cut_points, float pi);
+	void mergeSort(std::vector<float> &angle, std::vector< Vector3<float>> &cutPoints);
 
 private:
 
