@@ -4,7 +4,7 @@
 #include <vector>
 #include "gdal.h"
 #include "ogrsf_frmts.h"
-#include <limits>
+//#include <limits>
 
 #include "PolygonVertex.h"
 
