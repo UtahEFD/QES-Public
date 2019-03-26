@@ -71,6 +71,13 @@ public:
 			return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];
 	}
 
+	Vector3<T>& operator=(const Vector3<T>& v)
+	{
+		for (int i = 0; i < 3; i++)
+			values[0] = v.values[i];
+		return *this;
+	}
+
 
 	friend std::istream& operator>> (std::istream& is, Vector3<T>& v)
 	{

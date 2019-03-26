@@ -127,12 +127,68 @@ void Cut_cell::reorderPoints(std::vector< Vector3<float>> &cut_points, int index
 		}
 	}
 	// Call sort to sort points based on the angles (from -180 to 180)
-	sort(angle, cut_points, pi);
+	mergeSort(angle, cut_points);
 
 }
 
 
-void Cut_cell::sort(std::vector<float> &angle, std::vector< Vector3<float>> &cut_points, float pi)
+
+void Cut_cell::mergeSort(std::vector<float> &angle, std::vector< Vector3<float>> &cutPoints)
+{
+	//if the size of the array is 1, it is already sorted
+	if (angle.size() == 1)
+		return;
+
+	//make left and right sides of the data
+	std::vector<float> angleL, angleR;
+	std::vector< Vector3<float>> cutPointsL, cutPointsR;
+	
+	angleL.resize(angle.size() / 2);
+	angleR.resize(angle.size() - angle.size() / 2);
+	cutPointsL.resize(cutPoints.size() / 2);
+	cutPointsR.resize(cutPoints.size() - cutPoints.size() / 2);
+
+	//copy data from the main data set to the left and right children
+	int lC = 0, rC = 0;
+	for (unsigned int i = 0; i < angle.size(); i++)
+	{		
+		if (i < angle.size() / 2)
+		{
+			angleL[lC] = angle[i];
+			cutPointsL[lC++] = cutPoints[i];
+		}
+		else
+		{
+			angleR[rC] = angle[i];	
+			cutPointsR[rC++] = cutPoints[i];
+		}
+	}
+
+	//recursively sort the children
+	mergeSort(angleL, cutPointsL);
+	mergeSort(angleR, cutPointsR);
+
+	//compare the sorted children to place the data into the main array
+	lC = rC = 0;
+	for (unsigned int i = 0; i < cutPoints.size(); i++)
+	{
+		if (rC == angleR.size() || ( lC != angleL.size() &&
+			angleL[lC] < angleR[rC]))
+		{
+			angle[i] = angleL[lC];
+			cutPoints[i] = cutPointsL[lC++]; 
+		}
+		else 
+		{
+			angle[i] = angleR[rC];
+			cutPoints[i] = cutPointsR[rC++]; 
+		}
+	}
+
+	return;
+}
+
+/*
 {
 
 	std::vector<float> angle_temp (cut_points.size(), 0.0);
@@ -169,7 +225,7 @@ void Cut_cell::sort(std::vector<float> &angle, std::vector< Vector3<float>> &cut
 		angle[i] = angle_temp[imax[cut_points.size()-1-i]];
 	}
 
-}
+}*/
 
 void Cut_cell::calculateArea(std::vector< Vector3<float>> &cut_points, int cutcell_index, float dx, float dy, float dz,
 							std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e,
