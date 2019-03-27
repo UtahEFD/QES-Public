@@ -142,7 +142,7 @@ void Cut_cell::mergeSort(std::vector<float> &angle, std::vector< Vector3<float>>
 	//make left and right sides of the data
 	std::vector<float> angleL, angleR;
 	std::vector< Vector3<float>> cutPointsL, cutPointsR;
-	
+
 	angleL.resize(angle.size() / 2);
 	angleR.resize(angle.size() - angle.size() / 2);
 	cutPointsL.resize(cutPoints.size() / 2);
@@ -151,7 +151,7 @@ void Cut_cell::mergeSort(std::vector<float> &angle, std::vector< Vector3<float>>
 	//copy data from the main data set to the left and right children
 	int lC = 0, rC = 0;
 	for (unsigned int i = 0; i < angle.size(); i++)
-	{		
+	{
 		if (i < angle.size() / 2)
 		{
 			angleL[lC] = angle[i];
@@ -159,7 +159,7 @@ void Cut_cell::mergeSort(std::vector<float> &angle, std::vector< Vector3<float>>
 		}
 		else
 		{
-			angleR[rC] = angle[i];	
+			angleR[rC] = angle[i];
 			cutPointsR[rC++] = cutPoints[i];
 		}
 	}
@@ -176,12 +176,12 @@ void Cut_cell::mergeSort(std::vector<float> &angle, std::vector< Vector3<float>>
 			angleL[lC] < angleR[rC]))
 		{
 			angle[i] = angleL[lC];
-			cutPoints[i] = cutPointsL[lC++]; 
+			cutPoints[i] = cutPointsL[lC++];
 		}
-		else 
+		else
 		{
 			angle[i] = angleR[rC];
-			cutPoints[i] = cutPointsR[rC++]; 
+			cutPoints[i] = cutPointsR[rC++];
 		}
 	}
 
