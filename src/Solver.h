@@ -62,7 +62,6 @@ protected:
     const float vk = 0.4;			/// Von Karman's
                                                 /// constant
 
-
     // SOLVER-based parameters
     int itermax;		/**< Maximum number of iterations */
 
@@ -72,7 +71,7 @@ protected:
     float dxy;		/**< Minimum value between dx and dy */
     std::vector<float> dz_array, zm;
     std::vector<float> x,y,z;
-    std::vector<double> x_out,y_out,z_out;
+    std::vector<double> x_out,y_out,z_out, terrain;
 
     Sensor* sensor;
     int num_sites;			/**< number of data entry sites */
@@ -105,7 +104,6 @@ protected:
     int lu_canopy_flag;
     std::vector<Building*> canopies;
     Canopy* canopy;
-
 
     /// Declaration of coefficients for SOR solver
     std::vector<float> e,f,g,h,m,n;
@@ -146,6 +144,7 @@ protected:
     Cut_cell cut_cell;
 
     long numcell_cout;
+    long numcell_cout_2d;
     long numcell_cent;                          /**< Total number of cell-centered values in domain */
     long numcell_face;                          /**< Total number of face-centered values in domain */
     int icell_face;                             /**< cell-face index */
@@ -166,6 +165,7 @@ protected:
     std::vector<NcDim> dim_scalar_y;
     std::vector<NcDim> dim_scalar_x;
     std::vector<NcDim> dim_vector;
+    std::vector<NcDim> dim_vector_2d;
     std::vector<std::string> output_fields;
 
     struct AttScalarDbl {

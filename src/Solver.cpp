@@ -73,9 +73,10 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     ny += 1;        /// +1 for Staggered grid
     nz += 2;        /// +2 for staggered grid and ghost cell
 
-    numcell_cout = (nx-1)*(ny-1)*(nz-2);        /**< Total number of cell-centered values in domain */
-    numcell_cent = (nx-1)*(ny-1)*(nz-1);        /**< Total number of cell-centered values in domain */
-    numcell_face = nx*ny*nz;                    /**< Total number of face-centered values in domain */
+    numcell_cout    = (nx-1)*(ny-1)*(nz-2);        /**< Total number of cell-centered values in domain */
+    numcell_cout_2d = (nx-1)*(ny-1);               /**< Total number of horizontal cell-centered values in domain */
+    numcell_cent    = (nx-1)*(ny-1)*(nz-1);        /**< Total number of cell-centered values in domain */
+    numcell_face    = nx*ny*nz;                    /**< Total number of face-centered values in domain */
 
     Vector3<float> gridInfo;
     gridInfo = *(UID->simParams->grid);
@@ -228,6 +229,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     u_out.resize( numcell_cout, 0.0 );
     v_out.resize( numcell_cout, 0.0 );
     w_out.resize( numcell_cout, 0.0 );
+    terrain.resize( numcell_cout_2d, 0.0 );
     icellflag_out.resize( numcell_cout, 0.0 );
 
     // Set the Wind Velocity data elements to be of the correct size
@@ -274,8 +276,23 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     mesh = 0;
     if (DTEHF)
     {
+        
         DTEHFExists = true;
         mesh = new Mesh(DTEHF->getTris());
+        
+        // ////////////////////////////////
+        // Retrieve terrain height field //
+        // ////////////////////////////////
+        for (int i = 0; i < nx-1; i++)
+        {
+            for (int j = 0; j < ny-1; j++)
+            {
+              // Gets height of the terrain for each cell
+              int idx = i + j*(nx-1);
+              terrain[idx] = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
+            }
+        }
+        
         if (mesh_type_flag == 0)
         {
             // ////////////////////////////////
@@ -581,6 +598,8 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         dim_vector.push_back(z_dim);
         dim_vector.push_back(y_dim);
         dim_vector.push_back(x_dim);
+        dim_vector_2d.push_back(y_dim);
+        dim_vector_2d.push_back(x_dim);
 
         // create attributes
         AttScalarDbl att_t = {&time,  "t", "time",      "s", dim_scalar_t};
@@ -590,6 +609,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         AttVectorDbl att_u = {&u_out, "u", "x-component velocity", "m s-1", dim_vector};
         AttVectorDbl att_v = {&v_out, "v", "y-component velocity", "m s-1", dim_vector};
         AttVectorDbl att_w = {&w_out, "w", "z-component velocity", "m s-1", dim_vector};
+        AttVectorDbl att_h = {&terrain,  "terrain", "terrain height", "m", dim_vector_2d};
         AttVectorInt att_i = {&icellflag_out,  "icell", "icell flag value", "--", dim_vector};
 
         // map the name to attributes
@@ -600,6 +620,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         map_att_vector_dbl.emplace("u", att_u);
         map_att_vector_dbl.emplace("v", att_v);
         map_att_vector_dbl.emplace("w", att_w);
+        map_att_vector_dbl.emplace("terrain", att_h);
         map_att_vector_int.emplace("icell", att_i);
 
         // we will always save time and grid lengths
@@ -607,6 +628,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         output_vector_dbl.push_back(map_att_vector_dbl["x"]);
         output_vector_dbl.push_back(map_att_vector_dbl["y"]);
         output_vector_dbl.push_back(map_att_vector_dbl["z"]);
+        output_vector_dbl.push_back(map_att_vector_dbl["terrain"]);
 
         // create list of fields to save
         for (size_t i=0; i<output_fields.size(); i++) {
@@ -1009,11 +1031,15 @@ void Solver :: save(Output* output) {
     std::vector<size_t> scalar_size;
     std::vector<size_t> vector_index;
     std::vector<size_t> vector_size;
+    std::vector<size_t> vector_index_2d;
+    std::vector<size_t> vector_size_2d;
 
     scalar_index = {static_cast<unsigned long>(output_counter)};
     scalar_size  = {1};
     vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
     vector_size  = {1, static_cast<unsigned long>(nz-2),static_cast<unsigned long>(ny-1), static_cast<unsigned long>(nx-1)};
+    vector_index_2d = {0, 0};
+    vector_size_2d  = {static_cast<unsigned long>(ny-1), static_cast<unsigned long>(nx-1)};
 
     // set time
     time = (double)output_counter;
@@ -1040,9 +1066,12 @@ void Solver :: save(Output* output) {
     // loop through 2D double fields to save
     for (int i=0; i<output_vector_dbl.size(); i++) {
 
-        // x,y,z saved once with no time component
+        // x,y,z, terrain saved once with no time component
         if (i<3 && output_counter==0) {
             output->saveField2D(output_vector_dbl[i].name, *output_vector_dbl[i].data);
+        } else if (i==3 && output_counter==0) {
+            output->saveField2D(output_vector_dbl[i].name, vector_index_2d,
+                                vector_size_2d, *output_vector_dbl[i].data);
         } else {
             output->saveField2D(output_vector_dbl[i].name, vector_index,
                                 vector_size, *output_vector_dbl[i].data);
@@ -1055,9 +1084,9 @@ void Solver :: save(Output* output) {
                             vector_size, *output_vector_int[i].data);
     }
 
-    // remove x, y, z from output array after first save
+    // remove x, y, z, terrain from output array after first save
     if (output_counter==0) {
-        output_vector_dbl.erase(output_vector_dbl.begin(),output_vector_dbl.begin()+3);
+        output_vector_dbl.erase(output_vector_dbl.begin(),output_vector_dbl.begin()+4);
     }
     std::cout<<output_vector_dbl.size()<<std::endl;
     // increment for next time insertion
