@@ -475,25 +475,25 @@ void advectPar(const util &utl, dispersion &disp,eulerian &eul, const char* mode
 		std::cout<<"Last increment :  "<<du_3rd<<"  "<< dv_3rd<<"   "<< dw_3rd<<std::endl;
 		std::cout<<"Final:  "<<uPrime<<"   "<<vPrime<<"   "<<wPrime<<std::endl;
 		
-				std::cout<<"Taudx :"<<std::endl;
-		eul.display(eul.taudx.at(id));
-		std::cout<<std::endl;
-		
-		std::cout<<"Taudy :"<<std::endl;
-		eul.display(eul.taudy.at(id));
-		std::cout<<std::endl;
-		
-		std::cout<<"Taudz :"<<std::endl;
-		eul.display(eul.taudz.at(id));
-		std::cout<<std::endl;
-		
-		std::cout<<"Tau :"<<std::endl;
-		eul.display(eul.tau.at(id));
-		std::cout<<std::endl;
-		
-		std::cout<<"lam :"<<std::endl;
-		eul.display(eul.lam.at(id));
-		std::cout<<std::endl;
+		//		std::cout<<"Taudx :"<<std::endl;
+		//eul.display(eul.taudx.at(id));
+		//std::cout<<std::endl;
+		//
+		//std::cout<<"Taudy :"<<std::endl;
+		//eul.display(eul.taudy.at(id));
+		//std::cout<<std::endl;
+		//
+		//std::cout<<"Taudz :"<<std::endl;
+		//eul.display(eul.taudz.at(id));
+		//std::cout<<std::endl;
+		//
+		//std::cout<<"Tau :"<<std::endl;
+		//eul.display(eul.tau.at(id));
+		//std::cout<<std::endl;
+		//
+		//std::cout<<"lam :"<<std::endl;
+		//eul.display(eul.lam.at(id));
+		//std::cout<<std::endl;
 		//getchar();
 	      }
 	      
@@ -506,9 +506,9 @@ void advectPar(const util &utl, dispersion &disp,eulerian &eul, const char* mode
 		std::cerr<<"tStep      : "<<tStep<<std::endl;
 		std::cerr<<"par        : "<<par<<std::endl;
 		std::cout<<"eigen Vector "<<std::endl;
-		eul.display(eul.eigVecInv.at(id));
+		//eul.display(eul.eigVecInv.at(id));
 		std::cout<<"eigen Value  "<<std::endl;
-		eul.display(eul.eigVal.at(id));
+		//eul.display(eul.eigVal.at(id));
 		exit(1);
 	      }
 	      

@@ -171,53 +171,32 @@ int main(int argc, char** argv)
     // Create instance of cudaTurb class
     Turb* turb = new Turb(inputTurb);
     
-//    // Using the general argument parser to handle command line input
-//    sivelab::PlumeArgs quicArgs;
-//    quicArgs.process(argc, argv);
-//
-//    if (quicArgs.isSet("help")) {    
-//      std::cerr << "Arguments that can be specified follow:" << std::endl;
-//      quicArgs.printUsage();
-//      exit(EXIT_FAILURE);
-//    }
-//
-//    // extract the quic proj file if it was provided on the command line
-//    std::string quicInputFile;
-//    if (quicArgs.isSet("quicproj", quicInputFile)) {
-//        std::cout << "Will read input from files in: \"" << quicInputFile << "\"" << std::endl;
-//    }
-//    else {
-//        std::cout << "Using hard-coded test case and NOT reading a QUIC Project." << std::endl;
-//    }
-//
-//    util utl;
-//    utl.readInputFile(quicInputFile);
-//  
-//    float f_clock = ((float)std::clock())/CLOCKS_PER_SEC;
-//    std::cout<<"                    Going to UTL read end: "<<f_clock<<"\n"; 
-//  
-//    eulerian eul;
-//    eul.createEul(utl); 
-//    std::cout<<"                     Going to EUL read end: "<<((float)std::clock())/CLOCKS_PER_SEC -f_clock<<"\n"; 
-//  
-////   std::cout<<"Going to Disp"<<std::endl;
-// 
-//  dispersion disp;
-//  disp.createDisp(eul);    
-//  
-////   advectPar(utl,disp,eul,argv[1],argc);
-////   return 1;
-//  
-//  
-///*here you give the name of output_file of concentration 
-// */
-//  output_file = "test.m";
-//  
-///*
-// * only for device global memory  
-// * bUseGlobal must set true, false is default
-// */  
-//  thrust::host_vector<turbulence> turbs;
+    
+    
+    
+  
+    //eulerian eul;
+    //eul.createEul(utl); 
+    //std::cout<<"                     Going to EUL read end: "<<((float)std::clock())/CLOCKS_PER_SEC -f_clock<<"\n"; 
+  
+//   std::cout<<"Going to Disp"<<std::endl;
+ 
+  //dispersion disp;
+  //disp.createDisp(eul);    
+  
+//   advectPar(utl,disp,eul,argv[1],argc);
+//   return 1;
+  
+  
+/*here you give the name of output_file of concentration 
+ */
+  output_file = "test.m";
+  
+/*
+ * only for device global memory  
+ * bUseGlobal must set true, false is default
+ */  
+  thrust::host_vector<turbulence> turbs;
 ///*
 // * only for texture memory, default memory
 // */

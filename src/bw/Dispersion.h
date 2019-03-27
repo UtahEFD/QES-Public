@@ -1,3 +1,9 @@
+//
+//  Dispersion.h
+//  
+//  This class handles dispersion information
+//
+
 #ifndef DISPERSION_H
 #define DISPERSION_H
 
@@ -9,29 +15,26 @@
 
 #include <helper_math.h>
 
-class dispersion{
- public:
-  eulerian eul; 
-  void createDisp(const eulerian&);
-  struct matrix{
-    double x;
-    double y;
-    double z;
-  };
+class dispersion {
+    public:
+        
+        eulerian eul; 
+        void createDisp(const eulerian&);
+        
+        struct matrix {
+            double x;
+            double y;
+            double z;
+        };
   
- // std::vector<matrix> pos,prime;
-  std::vector<float3> pos,prime;
-  std::list<double> zIniPos;
-  std::list<double> wPrime;
-  double eps;
-  int numTimeStep;
-  std::vector<double> timeStepStamp,tStrt;
-  int parPerTimestep;
-  
- private:
-  
-  double xSrc,ySrc,zSrc;
-  int numPar;
-	
+        std::vector<float3> pos,prime;
+        std::vector<double> zIniPos,wPrime,timeStepStamp,tStrt;
+        double eps;
+        int numTimeStep, parPerTimestep;
+        
+    private:
+        
+        double xSrc,ySrc,zSrc;
+        int numPar;
 };
 #endif

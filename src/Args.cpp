@@ -14,8 +14,8 @@
 Args::Args(): inputFileUrb("cudaurb.nc"), inputFileTurb("cudaturb.nc"), outputFile("cudaplume.nc")
 {
     reg("help",          "help/usage information",                   ArgumentParsing::NONE,   '?');
-    reg("inputFileUrb",  "specifies input file from cuda-urb",       ArgumentParsing::STRING, 'i');
-    reg("inputFileTurb", "specifies input file from cuda-turb",      ArgumentParsing::STRING, 'i');
+    reg("inputFileUrb",  "specifies input file from cuda-urb",       ArgumentParsing::STRING, 'u');
+    reg("inputFileTurb", "specifies input file from cuda-turb",      ArgumentParsing::STRING, 't');
     reg("outputFile",    "select cellface, if not then cell center", ArgumentParsing::STRING, 'o');
 }
 

@@ -31,569 +31,10 @@ void eulerian::createEul(const util& u){
     //-0.5 0.5 1.5 2.5 3.5 4.5 5.5 6.5 7.5 ... 25.5 26.5 27.5 28.5
     std::cout<<zInMeters.at(k)<<" ";
   }
-
-  createWindField();
   
 }
 
-void eulerian::createWindField(){//currently just call windFromQUIC;
-    std::cout<<"in createwindfield "<<std::clock()<<std::endl;
-  switch(windField){
-  case 3:
-    uniform();
-    break;
-  case 4:
-    shear();
-    break;
-  case 5:
-    windFromQUIC();
-    break;
-  case 6:
-    readCellType();
-    windFromQUIC();
-    break;
-  case 10:
-    uniform();
-    break;
-  default:
-    std::cerr<<"NO WIND Field Specified"<<std::endl;
-    exit(1);
-  }
 
-}
-
-void eulerian::uniform(){
-        std::cout<<"in uniform"<<std::endl;
-  
-  windVec.resize(nx*ny*nz);
-  CellType.resize(nx*ny*nz);
-  
-  for(int k=0;k<nz; k++)
-    for(int j=0;j<ny;j++)
-      for(int i=0;i<nx;i++){
-	int id=k*ny*nx + j*nx + i;
-	if(k==0){//ground
-	  windVec.at(id).u=0.0;
-	  windVec.at(id).v=0.0;
-	  windVec.at(id).w=0.0;
-	  
-	  CellType.at(id).c = 0;
-	}
-	else{
-	  windVec.at(id).u=2.0;
-	  windVec.at(id).v=0.0;
-	  windVec.at(id).w=0.0;
-	  
-	  CellType.at(id).c = 1;
-	}
-      }
-  createSigmaAndEps();
-}
-void eulerian::shear(){
-        std::cout<<"in shear"<<std::endl;
-  windVec.resize(nx*ny*nz);
-  double Wh= 3.0;//Change in sigma function too if you change values here
-  double Zh=10.0;
-  for(int k=0;k<nz; k++)
-    for(int j=0;j<ny;j++)
-      for(int i=0;i<nx;i++){
-	int id=k*ny*nx + j*nx + i;
-	if(k==0){//ground
-	  windVec.at(id).u=0.0;
-	  windVec.at(id).v=0.0;
-	  windVec.at(id).w=0.0;
-	}
-	else{
-	  windVec.at(id).u=Wh*( log((zInMeters.at(k))/zo) / log(Zh/zo) );
-	  windVec.at(id).v=0.0;
-	  windVec.at(id).w=0.0;
-	}
-      }
-  createSigmaAndEps();
-}
-
-void eulerian::windFromQUIC(){//read wind field data from file
-
-  windVec.resize(nx*ny*nz);
-  
-  std::ifstream QUICWindField;
-  std::string velocityField_filename = utl.m_QUICProjData.m_quicProjectPath + "QU_velocity.dat";
-  std::cout << "Attempting to open velocity field: " << velocityField_filename << std::endl;
-  QUICWindField.open(velocityField_filename.c_str());
-
-  if(!QUICWindField.is_open()){
-    std::cerr<<"Wind input File open error"<<std::endl;
-    exit(1);
-  }
-  std::string header;
-  
-  QUICWindField>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header
-  	       >>header>>header>>header>>header>>header>>header>>header>>header>>header>>header;
-
-
-  double quicIndex;
-  int id;
-  for(int k = 0; k < nz; k++)
-    for(int j = 0; j < ny; j++)
-      for(int i = 0; i < nx; i++){
-	 id= k*nx*ny + j*nx + i;
-
-	QUICWindField>>quicIndex; // ignoring the X,Y and Z values
-	QUICWindField>>quicIndex;
-	QUICWindField>>quicIndex;
-	
-	QUICWindField>>windVec.at(id).u ;//storing the velocity values in the wind structure
-	QUICWindField>>windVec.at(id).v ;
-	QUICWindField>>windVec.at(id).w ;
-      }
-  
-  std::cout<<windVec.at(id).u<<" "<<windVec.at(id).v<<" "<<windVec.at(id).w<<" "<<"\n";
-  std::cout<<"num of windfielddata is:"<<id<<"\n";
-  QUICWindField.close();
-  createSigmaAndEps();
-}
-
-void eulerian::readCellType(){
-    std::cout<<"read cell type "<<std::clock()<<std::endl;
-  CellType.resize(nx*ny*nz);
-  
-  std::ifstream QUICCellType;
-  QUICCellType.open("../plume/bw/QU_celltype.dat");
-
-  if(!QUICCellType.is_open()){
-    std::cerr<<"CellType input File open error"<<std::endl;
-    exit(1);
-  }
-  std::string header;
-  
-  double quicIndex;
-  int id;
-  for(int k = 0; k < nz; k++) //k==0 is ground
-    for(int j = 0; j < ny; j++)
-      for(int i = 0; i < nx; i++){
-	id = k*nx*ny + j*nx + i;
-
-	QUICCellType>>quicIndex; // ignoring the X,Y and Z values
-	QUICCellType>>quicIndex;
-	QUICCellType>>quicIndex;
-	QUICCellType>>CellType.at(id).c ;//storing the velocity values in the wind structure
-// 	std::cout<<CellType.at(id).c <<"  "<<id<<"\n";
-      } 
-  std::cout<<"num of QUICCellType is:"<<id<<"\n";
-  QUICCellType.close();
-  addBuildingsInWindField();
-}
-
-
-void eulerian::addBuildingsInWindField(){
-    std::cout<<"create cellBuild satrts "<<std::endl;
-    
-    CellBuild.resize(nx*ny*nz);
-    
-    for(int k = 0; k < nz; k++){   //k==0 is ground
-        for(int j = 0; j < ny; j++){
-            for(int i = 0; i < nx; i++){
-                int id = k*nx*ny + j*nx + i;
-                CellBuild.at(id).c =- 1;
-            }
-        }
-    }
-    std::cout<<"create cellBuild :1 "<<std::endl;
-    
-    int numBuild=utl.numBuild;
-    
-    std::cout<<"create cellBuild, building: "<<std::endl;
-    for(int n=0; n < numBuild; n++){
-      //        std::cout<<"create cellBuild, building: "<<n<<std::endl;
-      int lk = int(utl.zfo.at(n));
-      int uk = int(utl.zfo.at(n)+utl.hgt.at(n))+1;//added 1 as the loop below has < sign and building go to 10
-      int lj = int(utl.yfo.at(n)-(utl.wth.at(n)/2.0));
-      int uj = int(utl.yfo.at(n)+(utl.wth.at(n)/2.0));
-      int li = int(utl.xfo.at(n));
-      int ui = int(utl.xfo.at(n)+utl.len.at(n));
-      //        std::cout<<"create cellBuild,after build data "<<std::endl;
-      for(int k= lk; k < uk; k++){
-	for(int j= lj; j < uj; j++){
-	  for(int i= li; i < ui; i++){
-	    //std::cout<<"create cellBuild:i,j,k "<<i<<","<<j<<","<<k<<std::endl;
-	    int id = k*nx*ny + j*nx + i;
-	    if(CellType.at(id).c==0)
-	    {
-	      CellBuild.at(id).c = n;
-// 	      std::cout<<"create cellBuild:i,j,k "<<i<<","<<j<<","<<k<<std::endl;
-	    }
-	  }
-	}
-      }
-    }
-    /*    std::ofstream cellBld;
-	  cellBld.open("cellBuild.dat");
-	  for(int k = 0; k < nz; k++){   
-	  for(int j = 0; j < ny; j++){
-	  for(int i = 0; i < nx; i++){
-	  int id = k*nx*ny + j*nx + i;
-	  cellBld<<i<<"   "<<j<<"   "<<k<<"   "<<CellBuild.at(id).c<<std::endl;
-	  }
-	  }
-	  }
-	  cellBld.close();*/
-    std::cout<<"create cellBuild end "<<std::clock()<<std::endl;
-    return;
-}
-
- 
-void eulerian::createSigmaAndEps(){
-        std::cout<<"in createsigmaand eps"<<std::endl;
-  
-  CoEps.resize(nx*ny*nz);
-  sig.resize(nx*ny*nz);
-  tau.resize(nx*ny*nz);
-  lam.resize(nx*ny*nz);
-  std::cout<<"INside sig and eps"<<std::endl;
-  
-   turbulence* turb;
-
-  
-  
-  switch(windField){
-  case 6:
-      //      createSigmaAndEpsQUICFull();
-      turb = new localMixing;//non localMixing turbulence
-      turb->createSigTau(this,utl);
-      delete turb;
-      
-      //      turb = new nonLocalMixing;
-      //turb->createSigTau(this,utl);
-      //delete turb;
-
-      turb = new nonLocalMixing2;
-      turb->createSigTau(this,utl);
-      delete turb;
-
-      
-    
-    break;
-
-  case 3: //uniform
-    for(int k=0;k<nz;++k)
-      for(int j=0;j<ny;++j)
-	for(int i=0; i<nx;i++){
-	  int id=k*ny*nx + j*nx + i;
-	  
-	  
-	  sig.at(id).e11 = 2.0 * utl.ustar;
-	  sig.at(id).e12 = 0.0;
-	  sig.at(id).e13 = 0.0;//utl.ustar*utl.ustar;
-	  sig.at(id).e22 = 1.6 * utl.ustar;
-	  sig.at(id).e23 = 0.0;
-	  sig.at(id).e33 = 1.2 * utl.ustar;
-	  
-	  CoEps.at(id)=5.7*pow(utl.ustar,3.0) / (vonKar*nz/2.0);
-	  
-	  tau.at(id).e11=sig.at(id).e11*sig.at(id).e11;
-	  tau.at(id).e12=sig.at(id).e12*sig.at(id).e12;
-	  tau.at(id).e13=sig.at(id).e13*sig.at(id).e13;
-
-	  tau.at(id).e22=sig.at(id).e22*sig.at(id).e22;
-	  tau.at(id).e23=sig.at(id).e23*sig.at(id).e23;
-	  tau.at(id).e33=sig.at(id).e33*sig.at(id).e33;
-	 	  
-	  double detTau=(tau.at(id).e11*tau.at(id).e22*tau.at(id).e33)-
-	    (tau.at(id).e11*tau.at(id).e23*tau.at(id).e23)-
-	    (tau.at(id).e12*tau.at(id).e12*tau.at(id).e33)+
-	    (tau.at(id).e12*tau.at(id).e23*tau.at(id).e13)+
-	    (tau.at(id).e13*tau.at(id).e12*tau.at(id).e23)-
-	    (tau.at(id).e13*tau.at(id).e22*tau.at(id).e13);
-	 	  
-	  lam.at(id).e11=( (tau.at(id).e22*tau.at(id).e33)-(tau.at(id).e23*tau.at(id).e23) )/detTau;
-	  lam.at(id).e12=( (tau.at(id).e13*tau.at(id).e23)-(tau.at(id).e12*tau.at(id).e33) )/detTau;
-	  lam.at(id).e13=( (tau.at(id).e12*tau.at(id).e23)-(tau.at(id).e13*tau.at(id).e22) )/detTau;
-	  lam.at(id).e21=( (tau.at(id).e23*tau.at(id).e13)-(tau.at(id).e12*tau.at(id).e33) )/detTau;
-	  lam.at(id).e22=( (tau.at(id).e11*tau.at(id).e33)-(tau.at(id).e13*tau.at(id).e13) )/detTau;
-	  lam.at(id).e23=( (tau.at(id).e13*tau.at(id).e12)-(tau.at(id).e11*tau.at(id).e23) )/detTau;
-	  lam.at(id).e31=( (tau.at(id).e12*tau.at(id).e23)-(tau.at(id).e22*tau.at(id).e13) )/detTau;
-	  lam.at(id).e32=( (tau.at(id).e12*tau.at(id).e13)-(tau.at(id).e11*tau.at(id).e23) )/detTau;
-	  lam.at(id).e33=( (tau.at(id).e11*tau.at(id).e22)-(tau.at(id).e12*tau.at(id).e12) )/detTau;	  
-	}
-    break;
-  case 5:
-  case 4://shear
-    createUstar();
-    for(int k=0;k<nz;++k)
-      for(int j=0;j<ny;++j)
-	for(int i=0; i<nx;++i){
-
-	  int id=k*ny*nx + j*nx + i;
-
-	  //double ustarEul=vonKar*windVec.at(id).w/ (log(zInMeters.at(k)/zo));
-	  double ustarEul=ustar.at(id);
-	  double vertShear=pow( ( 1.0-( zInMeters.at(k)/(nz) ) ), 3.0/4.0);
-	  
-	  sig.at(id).e11 = 2.5 * ustarEul;// * vertShear;
-	  sig.at(id).e12 = 0.0;
-	  sig.at(id).e13 = ustarEul;//*vertShear;
-	  sig.at(id).e22 = 2.3 * ustarEul;// * vertShear;
-	  sig.at(id).e23 = 0.0;
-	  sig.at(id).e33 = 1.3 * ustarEul;// * vertShear;
-
-
-	  
-	  CoEps.at(id)=5.7*pow(ustarEul,3.0) / (vonKar*(zInMeters.at(k)+zo));
-
-	  tau.at(id).e11=sig.at(id).e11*sig.at(id).e11;
-	  tau.at(id).e12=sig.at(id).e12*sig.at(id).e12;
-	  tau.at(id).e13=sig.at(id).e13*sig.at(id).e13;
-
-	  tau.at(id).e22=sig.at(id).e22*sig.at(id).e22;
-	  tau.at(id).e23=sig.at(id).e23*sig.at(id).e23;
-	  tau.at(id).e33=sig.at(id).e33*sig.at(id).e33;
-	 	  
-	  double detTau=(tau.at(id).e11*tau.at(id).e22*tau.at(id).e33)-
-	    (tau.at(id).e11*tau.at(id).e23*tau.at(id).e23)-
-	    (tau.at(id).e12*tau.at(id).e12*tau.at(id).e33)+
-	    (tau.at(id).e12*tau.at(id).e23*tau.at(id).e13)+
-	    (tau.at(id).e13*tau.at(id).e12*tau.at(id).e23)-
-	    (tau.at(id).e13*tau.at(id).e22*tau.at(id).e13);
-	 	  
-	  lam.at(id).e11=( (tau.at(id).e22*tau.at(id).e33)-(tau.at(id).e23*tau.at(id).e23) )/detTau;
-	  lam.at(id).e12=( (tau.at(id).e13*tau.at(id).e23)-(tau.at(id).e12*tau.at(id).e33) )/detTau;
-	  lam.at(id).e13=( (tau.at(id).e12*tau.at(id).e23)-(tau.at(id).e13*tau.at(id).e22) )/detTau;
-	  lam.at(id).e21=( (tau.at(id).e23*tau.at(id).e13)-(tau.at(id).e12*tau.at(id).e33) )/detTau;
-	  lam.at(id).e22=( (tau.at(id).e11*tau.at(id).e33)-(tau.at(id).e13*tau.at(id).e13) )/detTau;
-	  lam.at(id).e23=( (tau.at(id).e13*tau.at(id).e12)-(tau.at(id).e11*tau.at(id).e23) )/detTau;
-	  lam.at(id).e31=( (tau.at(id).e12*tau.at(id).e23)-(tau.at(id).e22*tau.at(id).e13) )/detTau;
-	  lam.at(id).e32=( (tau.at(id).e12*tau.at(id).e13)-(tau.at(id).e11*tau.at(id).e23) )/detTau;
-	  lam.at(id).e33=( (tau.at(id).e11*tau.at(id).e22)-(tau.at(id).e12*tau.at(id).e12) )/detTau;
-
-
-	}
-    //    writeFile(sig,"sigma.dat");
-    break;
-  default:
-    std::cerr<<"Cannot Create Sigmas"<<std::endl;
-  }
-  std::ofstream taus;
-  taus.open("../bw/taus.dat");
-  for(int k=0;k<nz;k++){
-      for(int j=0;j<ny;j++){
-          for(int i=0;i<nx;i++){
-              int id=k*ny*nx + j*nx + i;            
-              double tau11=tau.at(id).e11;
-              double tau12=tau.at(id).e12;
-              double tau13=tau.at(id).e13;
-              double tau22=tau.at(id).e22;
-              double tau23=tau.at(id).e23;
-              double tau33=tau.at(id).e33;
-              taus<<i<<"   "<<j<<"   "<<k<<"   "<<tau11<<"  "<<tau12<<"  "<<tau13<<"  "<<tau22<<"  "<<tau23<<"  "<<tau33<<std::endl;
-          }
-      }
-  }
-  taus.close();
-  // writeFile(sig,"sigma.dat");
-  for(int i=0; i<nz*ny*nx; i++)
-  {
-//     std::cout<<tau.at(i).e11<<"  "<<tau.at(i).e11<<std::endl;
-  }
-  createTauGrads();
-  //delete turb;
-}
-  
-  
-void eulerian::createSigmaAndEpsQUIC(){
-        std::cout<<"in create sigma eps QUIC"<<std::endl;
-
-  CoEps.resize(nx*ny*nz);
-  sig.resize(nx*ny*nz);
-  tau.resize(nx*ny*nz);
-  lam.resize(nx*ny*nz);
-
-  std::ifstream QUICTurbField;
-  QUICTurbField.open("../bw/QP_turbfield.dat");
-  
-  if(!QUICTurbField.is_open()){
-    std::cerr<<"Turbulence input File open error"<<std::endl;
-    exit(1);
-  }
-  std::string header;
-  
-   QUICTurbField>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header
-		>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header
-		>>header>>header>>header>>header>>header>>header>>header>>header>>header
-		>>header>>header>>header>>header>>header>>header>>header>>header>>header
-		>>header>>header>>header;
-
-
-  double quicIndex;
-  
-
-  
-  for(int k=0;k<nz;++k)
-    for(int j=0;j<ny;++j)
-      for(int i=0; i<nx;++i){
-	
-	int id=k*ny*nx + j*nx + i;
-	double ustarQUIC=0.0;
-	
-	if(k==0){
-	  sig.at(id).e11 = 0.0;
-	  sig.at(id).e12 = 0.0;
-	  sig.at(id).e13 = 0.0;
-	  sig.at(id).e22 = 0.0;// * vertShear;
-	  sig.at(id).e23 = 0.0;
-	  sig.at(id).e33 = 0.0;// * vertShear;
-	}
-	else{
-	  QUICTurbField>>quicIndex>>quicIndex>>quicIndex;
-
-	  QUICTurbField>>ustarQUIC;
-	  ustarQUIC=ustarQUIC/2.5;
-	  double extra;
-	  QUICTurbField>>extra>>extra>>extra>>extra>>extra>>extra>>extra>>extra;
-	}
-	  
-	sig.at(id).e11 = 2.5 * ustarQUIC;
-	sig.at(id).e12 = 0.0;
-	sig.at(id).e13 = ustarQUIC;
-	sig.at(id).e22 = 2.0 * ustarQUIC;
-	sig.at(id).e23 = 0.0;
-	sig.at(id).e33 = 1.3 * ustarQUIC;
-	
-	
-	
-	CoEps.at(id)=5.7*pow(ustarQUIC,3.0) / (vonKar*(zInMeters.at(k)+zo));
-	
-	tau.at(id).e11=sig.at(id).e11*sig.at(id).e11;
-	tau.at(id).e12=sig.at(id).e12*sig.at(id).e12;
-	tau.at(id).e13=sig.at(id).e13*sig.at(id).e13;
-	
-	tau.at(id).e22=sig.at(id).e22*sig.at(id).e22;
-	tau.at(id).e23=sig.at(id).e23*sig.at(id).e23;
-	tau.at(id).e33=sig.at(id).e33*sig.at(id).e33;
-	
-	double detTau=(tau.at(id).e11*tau.at(id).e22*tau.at(id).e33)-
-	  (tau.at(id).e11*tau.at(id).e23*tau.at(id).e23)-
-	  (tau.at(id).e12*tau.at(id).e12*tau.at(id).e33)+
-	  (tau.at(id).e12*tau.at(id).e23*tau.at(id).e13)+
-	  (tau.at(id).e13*tau.at(id).e12*tau.at(id).e23)-
-	  (tau.at(id).e13*tau.at(id).e22*tau.at(id).e13);
-	
-	lam.at(id).e11=( (tau.at(id).e22*tau.at(id).e33)-(tau.at(id).e23*tau.at(id).e23) )/detTau;
-	lam.at(id).e12=( (tau.at(id).e13*tau.at(id).e23)-(tau.at(id).e12*tau.at(id).e33) )/detTau;
-	lam.at(id).e13=( (tau.at(id).e12*tau.at(id).e23)-(tau.at(id).e13*tau.at(id).e22) )/detTau;
-	lam.at(id).e21=( (tau.at(id).e23*tau.at(id).e13)-(tau.at(id).e12*tau.at(id).e33) )/detTau;
-	lam.at(id).e22=( (tau.at(id).e11*tau.at(id).e33)-(tau.at(id).e13*tau.at(id).e13) )/detTau;
-	lam.at(id).e23=( (tau.at(id).e13*tau.at(id).e12)-(tau.at(id).e11*tau.at(id).e23) )/detTau;
-	lam.at(id).e31=( (tau.at(id).e12*tau.at(id).e23)-(tau.at(id).e22*tau.at(id).e13) )/detTau;
-	lam.at(id).e32=( (tau.at(id).e12*tau.at(id).e13)-(tau.at(id).e11*tau.at(id).e23) )/detTau;
-	lam.at(id).e33=( (tau.at(id).e11*tau.at(id).e22)-(tau.at(id).e12*tau.at(id).e12) )/detTau;
-      }
-  // writeFile(sig,"sigma.dat");
-  createTauGrads();
-}
-
- 
-void eulerian::createSigmaAndEpsQUICFull(){
-        std::cout<<"in create sigma eps QUIC"<<std::endl;
-
-  CoEps.resize(nx*ny*nz);
-  sig.resize(nx*ny*nz);
-  tau.resize(nx*ny*nz);
-  lam.resize(nx*ny*nz);
-
-  std::ifstream QUICTurbField;
-  QUICTurbField.open("../bw/QP_turbfield.dat");
-  
-  if(!QUICTurbField.is_open()){
-    std::cerr<<"Turbulence input File open error"<<std::endl;
-    exit(1);
-  }
-  std::string header;
-  
-   QUICTurbField>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header
-		>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header>>header
-		>>header>>header>>header>>header>>header>>header>>header>>header>>header
-		>>header>>header>>header>>header>>header>>header>>header>>header>>header
-		>>header>>header>>header;
-
-
-  double quicIndex;
-  
-
-  
-  for(int k=0;k<nz;++k)
-    for(int j=0;j<ny;++j)
-      for(int i=0; i<nx;++i){
-	
-	int id=k*ny*nx + j*nx + i;
-	double ustarQUIC=0.0;
-	
-	if(k==0){
-	  sig.at(id).e11 = 0.0;
-	  sig.at(id).e12 = 0.0;
-	  sig.at(id).e13 = 0.0;
-	  sig.at(id).e22 = 0.0;// * vertShear;
-	  sig.at(id).e23 = 0.0;
-	  sig.at(id).e33 = 0.0;// * vertShear;
-	}
-	else{
-	  QUICTurbField>>quicIndex>>quicIndex>>quicIndex;
-
-	  QUICTurbField>>sig.at(id).e11>>sig.at(id).e22>>sig.at(id).e33;
-          double Lz,extra;
-          QUICTurbField>>Lz;
-          
-          QUICTurbField>>extra>>extra;
-          QUICTurbField>>sig.at(id).e12>>sig.at(id).e13>>sig.at(id).e23;
-
-          ustarQUIC=sig.at(id).e11/2.5;
-
-          //          CoEps.at(id)=5.7*pow(ustarQUIC,3.0) / (vonKar*(zInMeters.at(k)+zo));
-          CoEps.at(id)=5.7*pow(ustarQUIC,3.0) / (Lz);
-          
-          tau.at(id).e11=sig.at(id).e11*sig.at(id).e11;
-          tau.at(id).e12=sig.at(id).e12*sig.at(id).e12;
-          tau.at(id).e13=sig.at(id).e13*sig.at(id).e13;
-          
-          tau.at(id).e22=sig.at(id).e22*sig.at(id).e22;
-          tau.at(id).e23=sig.at(id).e23*sig.at(id).e23;
-          tau.at(id).e33=sig.at(id).e33*sig.at(id).e33;
-
-          if(tau.at(id).e11>1.)tau.at(id).e11=1.0;
-          if(tau.at(id).e22>1.)tau.at(id).e11=1.0;
-          if(tau.at(id).e33>1.)tau.at(id).e11=1.0;
-          if(tau.at(id).e12>1.)tau.at(id).e11=1.0;
-          if(tau.at(id).e13>1.)tau.at(id).e11=1.0;
-          if(tau.at(id).e23>1.)tau.at(id).e11=1.0;
-                                            
-          //std::cout<<sig.at(id).e11<<"  "<<sig.at(id).e22<<"   "<<sig.at(id).e33<<"  "<<Lz<<std::endl;
-          //std::cout<<sig.at(id).e12<<"  "<<sig.at(id).e13<<"   "<<sig.at(id).e23<<std::endl;
-          //getchar();
-	}
-
-	  
-	
-	double detTau=(tau.at(id).e11*tau.at(id).e22*tau.at(id).e33)-
-	  (tau.at(id).e11*tau.at(id).e23*tau.at(id).e23)-
-	  (tau.at(id).e12*tau.at(id).e12*tau.at(id).e33)+
-	  (tau.at(id).e12*tau.at(id).e23*tau.at(id).e13)+
-	  (tau.at(id).e13*tau.at(id).e12*tau.at(id).e23)-
-	  (tau.at(id).e13*tau.at(id).e22*tau.at(id).e13);
-	
-	lam.at(id).e11=( (tau.at(id).e22*tau.at(id).e33)-(tau.at(id).e23*tau.at(id).e23) )/detTau;
-	lam.at(id).e12=( (tau.at(id).e13*tau.at(id).e23)-(tau.at(id).e12*tau.at(id).e33) )/detTau;
-	lam.at(id).e13=( (tau.at(id).e12*tau.at(id).e23)-(tau.at(id).e13*tau.at(id).e22) )/detTau;
-	lam.at(id).e21=( (tau.at(id).e23*tau.at(id).e13)-(tau.at(id).e12*tau.at(id).e33) )/detTau;
-	lam.at(id).e22=( (tau.at(id).e11*tau.at(id).e33)-(tau.at(id).e13*tau.at(id).e13) )/detTau;
-	lam.at(id).e23=( (tau.at(id).e13*tau.at(id).e12)-(tau.at(id).e11*tau.at(id).e23) )/detTau;
-	lam.at(id).e31=( (tau.at(id).e12*tau.at(id).e23)-(tau.at(id).e22*tau.at(id).e13) )/detTau;
-	lam.at(id).e32=( (tau.at(id).e12*tau.at(id).e13)-(tau.at(id).e11*tau.at(id).e23) )/detTau;
-	lam.at(id).e33=( (tau.at(id).e11*tau.at(id).e22)-(tau.at(id).e12*tau.at(id).e12) )/detTau;
-      }
-  // writeFile(sig,"sigma.dat");
-  createTauGrads();
-}
-
-  
 void eulerian::createUstar(){
         std::cout<<"in crete ustar"<<std::endl;
   ustar.resize(nx*ny*nz);
@@ -747,116 +188,7 @@ void eulerian::createTauGrads(){
               taudz.at(id).e23= ( tau.at(idZp1).e23-tau.at(idZm1).e23 ) / 2.0;
               taudz.at(id).e33= ( tau.at(idZp1).e33-tau.at(idZm1).e33 ) / 2.0;
 	  }
-	}//if loop for domain
-        
-        /*	taugradsdx<<i<<"  "<<j<<"  "<<k<<"  "<<taudx.at(id).e11<<"  "<<taudx.at(id).e22<<"  "<<taudx.at(id).e33<<"  "<<taudx.at(id).e12<<"  "<<taudx.at(id).e13<<"  "<<taudx.at(id).e23<<std::endl;
-
-	taugradsdy<<i<<"  "<<j<<"  "<<k<<"  "<<taudy.at(id).e11<<"  "<<taudy.at(id).e22<<"  "<<taudy.at(id).e33<<"  "<<taudy.at(id).e12<<"  "<<taudy.at(id).e13<<"  "<<taudy.at(id).e23<<std::endl;
-
-	taugradsdz<<i<<"  "<<j<<"  "<<k<<"  "<<taudz.at(id).e11<<"  "<<taudz.at(id).e22<<"  "<<taudz.at(id).e33<<"  "<<taudz.at(id).e12<<"  "<<taudz.at(id).e13<<"  "<<taudz.at(id).e23<<std::endl;
-	*/
-
-
-	
-	
-	/*	if(i>1 && j>1 && i<nx-2 && j<ny-2 && k>0 && CellType.at(id).c!=0){ //all cells except boundary cells
-	  if(k==1){//just above ground
-
-	    taudz.at(id).e11=0.0;//0.5*(tau.at(idZp2).e11-tau.at(id).e11)/dz;
-	    taudz.at(id).e12=0.0;//0.5*(tau.at(idZp2).e12-tau.at(id).e12)/dz;
-	    taudz.at(id).e13=0.0;//0.5*(tau.at(idZp2).e13-tau.at(id).e13)/dz;
-	    taudz.at(id).e22=0.0;//0.5*(tau.at(idZp2).e22-tau.at(id).e22)/dz;
-	    taudz.at(id).e23=0.0;//0.5*(tau.at(idZp2).e23-tau.at(id).e23)/dz;
-	    taudz.at(id).e33=0.0;//0.5*(tau.at(idZp2).e33-tau.at(id).e33)/dz;
-	    
-	    
-	    taudx.at(id).e11= 0.0;//( tau.at(idXp1).e11-tau.at(idXm1).e11 ) / 2.0;
-	    taudx.at(id).e12= 0.0;//( tau.at(idXp1).e12-tau.at(idXm1).e12 ) / 2.0;
-	    taudx.at(id).e13= 0.0;//( tau.at(idXp1).e13-tau.at(idXm1).e13 ) / 2.0;
-	    taudx.at(id).e22= 0.0;//( tau.at(idXp1).e22-tau.at(idXm1).e22 ) / 2.0;
-	    taudx.at(id).e23= 0.0;//( tau.at(idXp1).e23-tau.at(idXm1).e23 ) / 2.0;
-	    taudx.at(id).e33= 0.0;//( tau.at(idXp1).e33-tau.at(idXm1).e33 ) / 2.0;
-	    
-	    taudy.at(id).e11= 0.0;// ( tau.at(idYp1).e11-tau.at(idYm1).e11 ) / 2.0;
-	    taudy.at(id).e12= 0.0;//( tau.at(idYp1).e12-tau.at(idYm1).e12 ) / 2.0;
-	    taudy.at(id).e13= 0.0;// ( tau.at(idYp1).e13-tau.at(idYm1).e13 ) / 2.0;
-	    taudy.at(id).e22= 0.0;// ( tau.at(idYp1).e22-tau.at(idYm1).e22 ) / 2.0;
-	    taudy.at(id).e23= 0.0;// ( tau.at(idYp1).e23-tau.at(idYm1).e23 ) / 2.0;
-	    taudy.at(id).e33= 0.0;// ( tau.at(idYp1).e33-tau.at(idYm1).e33 ) / 2.0;
-	    
-	  }
-	  else if(k==nz-1){
-
-	    taudz.at(id).e11= taudz.at(idZm1).e11;
-	    taudz.at(id).e12= taudz.at(idZm1).e12;
-	    taudz.at(id).e13= taudz.at(idZm1).e13;
-	    taudz.at(id).e22= taudz.at(idZm1).e22;
-	    taudz.at(id).e23= taudz.at(idZm1).e23;
-	    taudz.at(id).e33= taudz.at(idZm1).e33;
-	    
-	    taudx.at(id).e11= ( tau.at(idXp1).e11-tau.at(idXm1).e11 ) / 2.0;
-	    taudx.at(id).e12= ( tau.at(idXp1).e12-tau.at(idXm1).e12 ) / 2.0;
-	    taudx.at(id).e13= ( tau.at(idXp1).e13-tau.at(idXm1).e13 ) / 2.0;
-	    taudx.at(id).e22= ( tau.at(idXp1).e22-tau.at(idXm1).e22 ) / 2.0;
-	    taudx.at(id).e23= ( tau.at(idXp1).e23-tau.at(idXm1).e23 ) / 2.0;
-	    taudx.at(id).e33= ( tau.at(idXp1).e33-tau.at(idXm1).e33 ) / 2.0;
-	    
-	    taudy.at(id).e11= ( tau.at(idYp1).e11-tau.at(idYm1).e11 ) / 2.0;
-	    taudy.at(id).e12= ( tau.at(idYp1).e12-tau.at(idYm1).e12 ) / 2.0;
-	    taudy.at(id).e13= ( tau.at(idYp1).e13-tau.at(idYm1).e13 ) / 2.0;
-	    taudy.at(id).e22= ( tau.at(idYp1).e22-tau.at(idYm1).e22 ) / 2.0;
-	    taudy.at(id).e23= ( tau.at(idYp1).e23-tau.at(idYm1).e23 ) / 2.0;
-	    taudy.at(id).e33= ( tau.at(idYp1).e33-tau.at(idYm1).e33 ) / 2.0;
-	    
-	  }
-	  else{
-
-	    	    taudx.at(id).e11= ( tau.at(idXp1).e11-tau.at(idXm1).e11 ) / 2.0;
-	    taudx.at(id).e12= ( tau.at(idXp1).e12-tau.at(idXm1).e12 ) / 2.0;
-	    taudx.at(id).e13= ( tau.at(idXp1).e13-tau.at(idXm1).e13 ) / 2.0;
-	    taudx.at(id).e22= ( tau.at(idXp1).e22-tau.at(idXm1).e22 ) / 2.0;
-	    taudx.at(id).e23= ( tau.at(idXp1).e23-tau.at(idXm1).e23 ) / 2.0;
-	    taudx.at(id).e33= ( tau.at(idXp1).e33-tau.at(idXm1).e33 ) / 2.0;
-	    
-	    taudy.at(id).e11= ( tau.at(idYp1).e11-tau.at(idYm1).e11 ) / 2.0;
-	    taudy.at(id).e12= ( tau.at(idYp1).e12-tau.at(idYm1).e12 ) / 2.0;
-	    taudy.at(id).e13= ( tau.at(idYp1).e13-tau.at(idYm1).e13 ) / 2.0;
-	    taudy.at(id).e22= ( tau.at(idYp1).e22-tau.at(idYm1).e22 ) / 2.0;
-	    taudy.at(id).e23= ( tau.at(idYp1).e23-tau.at(idYm1).e23 ) / 2.0;
-	    taudy.at(id).e33= ( tau.at(idYp1).e33-tau.at(idYm1).e33 ) / 2.0;
-	    
-	    taudz.at(id).e11= ( tau.at(idZp1).e11-tau.at(idZm1).e11 ) / 2.0;
-	    taudz.at(id).e12= ( tau.at(idZp1).e12-tau.at(idZm1).e12 ) / 2.0;
-	    taudz.at(id).e13= ( tau.at(idZp1).e13-tau.at(idZm1).e13 ) / 2.0;
-	    taudz.at(id).e22= ( tau.at(idZp1).e22-tau.at(idZm1).e22 ) / 2.0;
-	    taudz.at(id).e23= ( tau.at(idZp1).e23-tau.at(idZm1).e23 ) / 2.0;
-	    taudz.at(id).e33= ( tau.at(idZp1).e33-tau.at(idZm1).e33 ) / 2.0;
-	  }
 	}
-	else{//boundary cells
-
-	  taudz.at(id).e11=0.0;
-	  taudz.at(id).e12=0.0;
-	  taudz.at(id).e13=0.0;
-	  taudz.at(id).e22=0.0;
-	  taudz.at(id).e23=0.0;
-	  taudz.at(id).e33=0.0;
-	  
-	  
-	  taudx.at(id).e11=0.0;
-	  taudx.at(id).e12=0.0;
-	  taudx.at(id).e13=0.0;
-	  taudx.at(id).e22=0.0;
-	  taudx.at(id).e23=0.0;
-	  taudx.at(id).e33=0.0;
-	  
-	  taudy.at(id).e11=0.0;
-	  taudy.at(id).e12=0.0;
-	  taudy.at(id).e13=0.0;
-	  taudy.at(id).e22=0.0;
-	  taudy.at(id).e23=0.0;
-	  taudy.at(id).e33=0.0;
-	  }*/
       }
     }
   }
@@ -1050,8 +382,8 @@ void eulerian::createA1Matrix(){
               mat9.e31=A1e31;
               mat9.e32=A1e32;
               mat9.e33=A1e33;
-              cond_A1=matCondFro(mat9);
-              det_A1=matrixDet(mat9);
+              //cond_A1=matCondFro(mat9);
+              //det_A1=matrixDet(mat9);
               
               //For solving cubic equation (source http://en.wikipedia.org/wiki/Eigenvalue_algorithm
               //and http://www.1728.com/cubic2.htm)
@@ -1091,30 +423,30 @@ void eulerian::createA1Matrix(){
                   int iV=id%nx;
                   int jV=(id/nx)%ny;
                   int kV=(id/(nx*ny))%nz;
-                  std::cerr<<"Imaginary roots ....exiting as h ="<<h<<std::endl;
-                  std::cout<< "For equatio ax^3 + bx^2 + cx + d=0"<<std::endl;
-                  std::cout<<"a :"<<a<<std::endl;
-                  std::cout<<"b :"<<b<<std::endl;
-                  std::cout<<"c :"<<c<<std::endl;
-                  std::cout<<"d :"<<d<<std::endl;
-                  std::cout<<"The original matrix is..."<<std::endl;
-                  display(mat9);
-                  std::cout<<"The d(tau)/dx  matrix is..."<<std::endl;
-                  display(taudx.at(id));
-                  std::cout<<"The d(tau)/dy  matrix is..."<<std::endl;
-                  display(taudy.at(id));
-                  std::cout<<"The d(tau)/dz  matrix is..."<<std::endl;
-                  display(taudz.at(id));
+                  //std::cerr<<"Imaginary roots ....exiting as h ="<<h<<std::endl;
+                  //std::cout<< "For equatio ax^3 + bx^2 + cx + d=0"<<std::endl;
+                  //std::cout<<"a :"<<a<<std::endl;
+                  //std::cout<<"b :"<<b<<std::endl;
+                  //std::cout<<"c :"<<c<<std::endl;
+                  //std::cout<<"d :"<<d<<std::endl;
+                  //std::cout<<"The original matrix is..."<<std::endl;
+                  //display(mat9);
+                  //std::cout<<"The d(tau)/dx  matrix is..."<<std::endl;
+                  //display(taudx.at(id));
+                  //std::cout<<"The d(tau)/dy  matrix is..."<<std::endl;
+                  //display(taudy.at(id));
+                  //std::cout<<"The d(tau)/dz  matrix is..."<<std::endl;
+                  //display(taudz.at(id));
                   
-                  std::cout<<"The tau  matrix is..."<<std::endl;
-                  display(tau.at(id));
+                  //std::cout<<"The tau  matrix is..."<<std::endl;
+                  //display(tau.at(id));
+                  //
+                  //std::cout<<"The lamda  matrix is..."<<std::endl;
+                  //display(lam.at(id));
+                  //std::cout<<"The CoEps is..."<<std::endl;
+                  //std::cout<<CoEps.at(id)<<std::endl;
                   
-                  std::cout<<"The lamda  matrix is..."<<std::endl;
-                  display(lam.at(id));
-                  std::cout<<"The CoEps is..."<<std::endl;
-                  std::cout<<CoEps.at(id)<<std::endl;
-                  
-                  std::cout<<"indicies at which this happend are (i,j,k) :"<<iV<<"   "<<jV<<"   "<<kV<<std::endl;
+                  //std::cout<<"indicies at which this happend are (i,j,k) :"<<iV<<"   "<<jV<<"   "<<kV<<std::endl;
                   //	    exit(1);
               }
               else if(h<=tolP && h>=tolN && g<=tolP && g>=tolN && f<=tolP && f>=tolN){// All roots are real and equal
@@ -1148,13 +480,13 @@ void eulerian::createA1Matrix(){
                   eigVal.at(id).e33=smallest;//eigen values
                   //checking if eigenvalues are nan or not                  
                   if(isnan(largest) || isnan(middle) || isnan(smallest)){
-                      std::cout<<"Nan:"<<largest<<"  "<<middle<<"  "<<smallest<<std::endl;
-                      std::cout<<M<<"  "<<N<<"  "<<kk<<"  "<<g<<"  "<<ii<<std::endl;
-                      std::cout<<i<<"  "<<j<<"  "<<k<<std::endl;
-                      std::cout<<"The tau  matrix is..."<<std::endl;
-                      display(tau.at(id));
-                      std::cout<<"The original matrix is..."<<std::endl;
-                      display(mat9);
+                      //std::cout<<"Nan:"<<largest<<"  "<<middle<<"  "<<smallest<<std::endl;
+                      //std::cout<<M<<"  "<<N<<"  "<<kk<<"  "<<g<<"  "<<ii<<std::endl;
+                      //std::cout<<i<<"  "<<j<<"  "<<k<<std::endl;
+                      //std::cout<<"The tau  matrix is..."<<std::endl;
+                      //display(tau.at(id));
+                      //std::cout<<"The original matrix is..."<<std::endl;
+                      //display(mat9);
 
                   }
               }
@@ -1176,89 +508,6 @@ void eulerian::createA1Matrix(){
 	    // getchar();
 	    number++;
 	    flagnum=1;
-	    
-	    
-	    /*std::cout<<"Eigen Values are positive"<<std::endl;
-	    std::cout<<"The original matrix is..."<<std::endl;
-	    display(mat9);
-	    
-	    std::cout<<"Eigen Values are :"<<std::endl;
-	    display(eigVal.at(id));
-	    std::cout<<"The d(tau)/dx  matrix is..."<<std::endl;
-	    display(taudx.at(id));
-	    std::cout<<"Tau matrices FOR cal  d(tau)/dx  matrix are (p and m)..."<<std::endl;
-	    display(tau.at(idXp1));
-	    display(tau.at(idXm1));
-	    std::cout<<"The d(tau)/dy  matrix is..."<<std::endl;
-	    display(taudy.at(id));
-	    std::cout<<"Tau matrices FOR cal  d(tau)/dy  matrix are (p and m)..."<<std::endl;
-	    display(tau.at(idYp1));
-	    display(tau.at(idYm1));
-	    std::cout<<"The d(tau)/dz  matrix is..."<<std::endl;
-	    display(taudz.at(id));
-	    std::cout<<"Tau matrices FOR  cal d(tau)/dz  matrix are (p and m)..."<<std::endl;
-	    display(tau.at(idZp1));
-	    display(tau.at(idZm1));
-	    
-	    std::cout<<"The tau  matrix is..."<<std::endl;
-	    display(tau.at(id));
-
-	    std::cout<<"Realizibility Condition:"<<std::endl;
-	    if(tau.at(id).e11<0.0 || tau.at(id).e22<0.0 || tau.at(id).e33<0.0){
-	      std::cout<<"One of the following is Negative:"<<std::endl;
-	      std::cout<<"tau11="<<tau.at(id).e11<<"/n"
-		       <<"tau22="<<tau.at(id).e22<<"/n"
-		"tau33="<<tau.at(id).e33<<std::endl;
-
-	    }
-	    else{
-	      std::cout<<"Diagonal elements are Positive! GOOD!"<<std::endl;
-	    }
-	    std::cout<<"Checking Diagonal stresses:"<<std::endl;
-	    if(fabs(tau.at(id).e12)>sqrt(tau.at(id).e11*tau.at(id).e22)){
-	      std::cout<<"fabs(tau12)>sqrt(tau11*tau22)"<<std::endl;
-	      std::cout<<"fabs(tau12):"<<fabs(tau.at(id).e12)<<std::endl;
-	      std::cout<<"sqrt(tau11*tau22)"<<sqrt(tau.at(id).e11*tau.at(id).e22)<<std::endl;
-	    }
-	    else{
-	      std::cout<<"OffDiagonal Stresses are Okay! (tau12) GOOD!"<<std::endl;
-	    }
-
-	    if(fabs(tau.at(id).e13)>sqrt(tau.at(id).e11*tau.at(id).e33)){
-	      std::cout<<"fabs(tau13)>sqrt(tau11*tau33)"<<std::endl;
-	      std::cout<<"fabs(tau13):"<<fabs(tau.at(id).e13)<<std::endl;
-	      std::cout<<"sqrt(tau11*tau33)"<<sqrt(tau.at(id).e11*tau.at(id).e33)<<std::endl;
-	    }
-	    else{
-	      std::cout<<"OffDiagonal Stresses are Okay! (tau13) GOOD!"<<std::endl;
-	    }
-
-	    if(fabs(tau.at(id).e23)>sqrt(tau.at(id).e22*tau.at(id).e33)){
-	      std::cout<<"fabs(tau23)>sqrt(tau22*tau33)"<<std::endl;
-	      std::cout<<"fabs(tau23):"<<fabs(tau.at(id).e23)<<std::endl;
-	      std::cout<<"sqrt(tau22*tau33)"<<sqrt(tau.at(id).e22*tau.at(id).e33)<<std::endl;
-	    }
-	    else{
-	      std::cout<<"OffDiagonal Stresses are Okay! (tau23) GOOD!"<<std::endl;
-	    }
-	    if(matrixDet(tau.at(id))<0.0){
-	      std::cout<<"Determinant is Negative! BAD!!"<<std::endl;
-	      std::cout<<"Determinant:"<<matrixDet(tau.at(id))<<std::endl;
-	    }
-	    else{
-	      std::cout<<"Determinant is positive! GOOD!"<<std::endl;
-	    }
-	    
-	    
-	    
-	    std::cout<<"The lamda  matrix is..."<<std::endl;
-	    display(lam.at(id));
-	    std::cout<<"The CoEps is..."<<std::endl;
-	    std::cout<<CoEps.at(id)<<std::endl;
-	    
-	    std::cout<<"indicies at which this happend are (i,j,k) :"<<i<<"   "<<j<<"   "<<k<<std::endl;
-	    getchar();*/
-	    // exit(1);
 	  }
 	  
 
@@ -1276,8 +525,6 @@ void eulerian::createA1Matrix(){
 	  
 	  
 	  double eigValData[]={firstVal, secondVal, thirdVal};
-	  
-	  
 	  
 	  matrix9 eye;//identity matrix
 	  
@@ -1384,8 +631,6 @@ void eulerian::createA1Matrix(){
 	  g2nd.at(id).e31=0.5*(lam.at(id).e13*taudz.at(id).e13+lam.at(id).e23*taudz.at(id).e23
 			       +lam.at(id).e33*taudz.at(id).e33);
 	}
-	//	CondNum_A1<<i<<"   "<<j<<"   "<<k<<"  "<<cond_A1<<std::endl;
-	//Det_A1<<i<<"   "<<j<<"   "<<k<<"  "<<det_A1<<std::endl;
 		
       }
 	  if(flagnum==1)std::cout<<"Total:  "<<number<<std::endl;
@@ -1399,42 +644,42 @@ void eulerian::swap(double &a,double &b){
   b=temp;
 }
 
-double  eulerian::matrixDet(const matrix9& mat){
-  
-  double detMat=(mat.e11*mat.e22*mat.e33)-
-    (mat.e11*mat.e23*mat.e32)-
-    (mat.e12*mat.e21*mat.e33)+
-    (mat.e12*mat.e23*mat.e31)+
-    (mat.e13*mat.e21*mat.e32)-
-    (mat.e13*mat.e22*mat.e31);
-  
-  
-  return detMat;
-}
-double eulerian::matrixDet(const matrix6& matIni){
-  
-  matrix9 mat;
-  mat.e11=matIni.e11;
-  mat.e12=matIni.e12;
-  mat.e13=matIni.e13;
-  mat.e21=matIni.e12;
-  mat.e22=matIni.e22;
-  mat.e23=matIni.e23;
-  mat.e31=matIni.e13;
-  mat.e32=matIni.e23;
-  mat.e33=matIni.e33;
-
-
-  double detMat=(mat.e11*mat.e22*mat.e33)-
-    (mat.e11*mat.e23*mat.e32)-
-    (mat.e12*mat.e21*mat.e33)+
-    (mat.e12*mat.e23*mat.e31)+
-    (mat.e13*mat.e21*mat.e32)-
-    (mat.e13*mat.e22*mat.e31);
-  
-  return detMat;
-}
-
+//double  eulerian::matrixDet(const matrix9& mat){
+//  
+//  double detMat=(mat.e11*mat.e22*mat.e33)-
+//    (mat.e11*mat.e23*mat.e32)-
+//    (mat.e12*mat.e21*mat.e33)+
+//    (mat.e12*mat.e23*mat.e31)+
+//    (mat.e13*mat.e21*mat.e32)-
+//    (mat.e13*mat.e22*mat.e31);
+//  
+//  
+//  return detMat;
+//}
+//double eulerian::matrixDet(const matrix6& matIni){
+//  
+//  matrix9 mat;
+//  mat.e11=matIni.e11;
+//  mat.e12=matIni.e12;
+//  mat.e13=matIni.e13;
+//  mat.e21=matIni.e12;
+//  mat.e22=matIni.e22;
+//  mat.e23=matIni.e23;
+//  mat.e31=matIni.e13;
+//  mat.e32=matIni.e23;
+//  mat.e33=matIni.e33;
+//
+//
+//  double detMat=(mat.e11*mat.e22*mat.e33)-
+//    (mat.e11*mat.e23*mat.e32)-
+//    (mat.e12*mat.e21*mat.e33)+
+//    (mat.e12*mat.e23*mat.e31)+
+//    (mat.e13*mat.e21*mat.e32)-
+//    (mat.e13*mat.e22*mat.e31);
+//  
+//  return detMat;
+//}
+//
 
 
 
@@ -1461,7 +706,7 @@ eulerian::matrix9 eulerian::matrixInv(const matrix9& mat){
     matInv.e33=( (mat.e11*mat.e22)-(mat.e12*mat.e21) )/detMat;
   }
   else{
-    display(mat);
+    //display(mat);
     std::cerr<<"Divide by Zero!!! (Eulerian.cpp - 1,mat9)"<<std::endl;
     exit(1);
     
@@ -1506,7 +751,7 @@ eulerian::matrix9 eulerian::matrixInv(const matrix6& matIni){
   }
   else{
       std::cout<<matIni.e23<<"  "<<mat.e23<<std::endl;
-    display(mat);
+    ///display(mat);
     std::cerr<<"Divide by Zero!!! (Eulerian.cpp - 1,mat6)"<<std::endl;
     exit(1);
     
@@ -1575,40 +820,40 @@ eulerian::vec3 eulerian::matrixVecMult(const matrix9& mat,const vec3& vec){
 }
 
 
-void eulerian::display(const matrix9& mat){
-  std::cout<<std::endl;
-  std::cout<<mat.e11<<"  "<<mat.e12<<"  "<<mat.e13<<"  "<<std::endl;
-  std::cout<<mat.e21<<"  "<<mat.e22<<"  "<<mat.e23<<"  "<<std::endl;
-  std::cout<<mat.e31<<"  "<<mat.e32<<"  "<<mat.e33<<"  "<<std::endl;
-  //  getchar();
-}
-
-void eulerian::display(const matrix6& mat){
-  std::cout<<std::endl;
-  std::cout<<mat.e11<<"  "<<mat.e12<<"  "<<mat.e13<<"  "<<std::endl;
-  std::cout<<mat.e12<<"  "<<mat.e22<<"  "<<mat.e23<<"  "<<std::endl;
-  std::cout<<mat.e13<<"  "<<mat.e23<<"  "<<mat.e33<<"  "<<std::endl;
-  //  getchar();
-}
-
-void eulerian::display(const vec3& vec){
-  std::cout<<std::endl;
-  std::cout<<vec.e11<<std::endl;
-  std::cout<<vec.e21<<std::endl;
-  std::cout<<vec.e31<<std::endl;
-  //getchar();
-
-}
-
-void eulerian::display(const diagonal& mat){
-
-  std::cout<<std::endl;
-  std::cout<<mat.e11<<"  "<<"0"<<"  "<<"0"<<"  "<<std::endl;
-  std::cout<<"0"<<"  "<<mat.e22<<"  "<<"0"<<"  "<<std::endl;
-  std::cout<<"0"<<"  "<<"0"<<"  "<<mat.e33<<"  "<<std::endl;
-  //getchar();
-
-}
+////void eulerian::display(const matrix9& mat){
+////  std::cout<<std::endl;
+////  std::cout<<mat.e11<<"  "<<mat.e12<<"  "<<mat.e13<<"  "<<std::endl;
+////  std::cout<<mat.e21<<"  "<<mat.e22<<"  "<<mat.e23<<"  "<<std::endl;
+////  std::cout<<mat.e31<<"  "<<mat.e32<<"  "<<mat.e33<<"  "<<std::endl;
+////  //  getchar();
+////}
+////
+////void eulerian::display(const matrix6& mat){
+////  std::cout<<std::endl;
+////  std::cout<<mat.e11<<"  "<<mat.e12<<"  "<<mat.e13<<"  "<<std::endl;
+////  std::cout<<mat.e12<<"  "<<mat.e22<<"  "<<mat.e23<<"  "<<std::endl;
+////  std::cout<<mat.e13<<"  "<<mat.e23<<"  "<<mat.e33<<"  "<<std::endl;
+////  //  getchar();
+////}
+////
+////void eulerian::display(const vec3& vec){
+////  std::cout<<std::endl;
+////  std::cout<<vec.e11<<std::endl;
+////  std::cout<<vec.e21<<std::endl;
+////  std::cout<<vec.e31<<std::endl;
+////  //getchar();
+////
+////}
+////
+////void eulerian::display(const diagonal& mat){
+////
+////  std::cout<<std::endl;
+////  std::cout<<mat.e11<<"  "<<"0"<<"  "<<"0"<<"  "<<std::endl;
+////  std::cout<<"0"<<"  "<<mat.e22<<"  "<<"0"<<"  "<<std::endl;
+////  std::cout<<"0"<<"  "<<"0"<<"  "<<mat.e33<<"  "<<std::endl;
+////  //getchar();
+////
+////}
 
 double eulerian::maxValAbs(const vec3& vec){
   double maxAbs;
@@ -1659,123 +904,65 @@ double eulerian::vecNorm(const vec3& vec){
   return (sqrt(vec.e11*vec.e11 + vec.e21*vec.e21 + vec.e31*vec.e31));
 }
 
-double eulerian::matNormFro(const matrix9& mat){
-
-  matrix9 matTrans,matMult;
-  matTrans.e11=mat.e11;
-  matTrans.e12=mat.e21;
-  matTrans.e13=mat.e31;
-  matTrans.e21=mat.e12;
-  matTrans.e22=mat.e22;
-  matTrans.e23=mat.e32;
-  matTrans.e31=mat.e13;
-  matTrans.e32=mat.e23;
-  matTrans.e33=mat.e33;
-
-  matMult=matrixMult(mat,matTrans);
-  double sumDiag=matMult.e11+matMult.e22+matMult.e33;
-  return sqrt(sumDiag);
-}
-double eulerian::matNormFro(const matrix6& mat6){
-  
-
-  matrix9 mat,matTrans,matMult;
-
-  mat.e11=mat6.e11;
-  mat.e12=mat6.e12;
-  mat.e13=mat6.e13;
-  mat.e21=mat6.e12;
-  mat.e22=mat6.e22;
-  mat.e23=mat6.e23;
-  mat.e31=mat6.e13;
-  mat.e32=mat6.e23;
-  mat.e33=mat6.e33;
-
-
-
-  matTrans.e11=mat.e11;
-  matTrans.e12=mat.e21;
-  matTrans.e13=mat.e31;
-  matTrans.e21=mat.e12;
-  matTrans.e22=mat.e22;
-  matTrans.e23=mat.e32;
-  matTrans.e31=mat.e13;
-  matTrans.e32=mat.e23;
-  matTrans.e33=mat.e33;
-
-  matMult=matrixMult(mat,matTrans);
-  double sumDiag=matMult.e11+matMult.e22+matMult.e33;
-  return sqrt(sumDiag);
-}
-double eulerian::matCondFro(const matrix9& mat){
-
-  matrix9 matInv=matrixInv(mat);
-  double normMat=matNormFro(mat);
-  double normMatInv=matNormFro(matInv);
-  return  normMat*normMatInv ;
- 
-}
-double eulerian::matCondFro(const matrix6& mat6){
-
-  matrix9 matInv=matrixInv(mat6);
-  double normMat=matNormFro(mat6);
-  double normMatInv=matNormFro(matInv);
-  return  normMat*normMatInv ;
- 
-}
-
-
-void eulerian::writeFile(const std::vector<matrix6>& mat,const char* str){
-  std::ofstream out;
-  out.open(str);
-  std::cout<<"Writing file : "<<str<< "  ......"<<std::endl;  
-  for(int k=0;k<nz;k++)
-    for(int j=0;j<ny;j++)
-      for(int i=0;i<nx;i++){
-	int id=k*ny*nx + j*nx + i;
-	out<<i<<"  "<<j<<"  "<<k<<"  "<<mat.at(id).e11<<"  "<<mat.at(id).e22<<"  "<<mat.at(id).e33<<std::endl;
-      }
-  std::cout<<"Wrote File : "<<str<<std::endl;
-}
-
-
-void eulerian::writeFile(const std::vector<matrix9>& mat,const char* str ){
-  std::ofstream out;
-  out.open(str);
-  std::cout<<"Writing file : "<<str<< "  ......"<<std::endl;  
-  for(int k=0;k<nz;k++)
-    for(int j=0;j<ny;j++)
-      for(int i=0;i<nx;i++){
-	int id=k*ny*nx + j*nx + i;
-	out<<i<<"  "<<j<<"  "<<k<<"  "<<mat.at(id).e11<<"  "<<mat.at(id).e22<<"  "<<mat.at(id).e33<<std::endl;
-      }
-  std::cout<<"Wrote File : "<<str<<std::endl;
-}
-
-void eulerian::writeFile(const std::vector<diagonal>& mat,const char* str){
-  std::ofstream out;
-  out.open(str);
-  std::cout<<"Writing file : "<<str<< "  ......"<<std::endl;  
-  for(int k=0;k<nz;k++)
-    for(int j=0;j<ny;j++)
-      for(int i=0;i<nx;i++){
-	int id=k*ny*nx + j*nx + i;
-	out<<i<<"  "<<j<<"  "<<k<<"  "<<mat.at(id).e11<<"  "<<mat.at(id).e22<<"  "<<mat.at(id).e33<<std::endl;
-      }
-  std::cout<<"Wrote File : "<<str<<std::endl;
-}
-
-void eulerian::writeFile(const std::vector<wind>& wind,const char* str ){
-  std::ofstream out;
-  out.open(str);
-  std::cout<<"Writing file : "<<str<< "  ......"<<std::endl;
-  for(int k=0;k<nz;k++)
-    for(int j=0;j<ny;j++)
-      for(int i=0;i<nx;i++){
-	int id=k*ny*nx + j*nx + i;
-	out<<i<<"  "<<j<<"  "<<k<<"  "<<wind.at(id).u<<"  "<<wind.at(id).v<<"  "<<wind.at(id).w<<std::endl;
-      }
-  std::cout<<"Wrote File : "<<str<<std::endl;
-  out.close();
-}
-
+//double eulerian::matNormFro(const matrix9& mat){
+//
+//  matrix9 matTrans,matMult;
+//  matTrans.e11=mat.e11;
+//  matTrans.e12=mat.e21;
+//  matTrans.e13=mat.e31;
+//  matTrans.e21=mat.e12;
+//  matTrans.e22=mat.e22;
+//  matTrans.e23=mat.e32;
+//  matTrans.e31=mat.e13;
+//  matTrans.e32=mat.e23;
+//  matTrans.e33=mat.e33;
+//
+//  matMult=matrixMult(mat,matTrans);
+//  double sumDiag=matMult.e11+matMult.e22+matMult.e33;
+//  return sqrt(sumDiag);
+//}
+//double eulerian::matNormFro(const matrix6& mat6){
+//  
+//
+//  matrix9 mat,matTrans,matMult;
+//
+//  mat.e11=mat6.e11;
+//  mat.e12=mat6.e12;
+//  mat.e13=mat6.e13;
+//  mat.e21=mat6.e12;
+//  mat.e22=mat6.e22;
+//  mat.e23=mat6.e23;
+//  mat.e31=mat6.e13;
+//  mat.e32=mat6.e23;
+//  mat.e33=mat6.e33;
+//
+//  matTrans.e11=mat.e11;
+//  matTrans.e12=mat.e21;
+//  matTrans.e13=mat.e31;
+//  matTrans.e21=mat.e12;
+//  matTrans.e22=mat.e22;
+//  matTrans.e23=mat.e32;
+//  matTrans.e31=mat.e13;
+//  matTrans.e32=mat.e23;
+//  matTrans.e33=mat.e33;
+//
+//  matMult=matrixMult(mat,matTrans);
+//  double sumDiag=matMult.e11+matMult.e22+matMult.e33;
+//  return sqrt(sumDiag);
+//}
+//double eulerian::matCondFro(const matrix9& mat){
+//
+//  matrix9 matInv=matrixInv(mat);
+//  double normMat=matNormFro(mat);
+//  double normMatInv=matNormFro(matInv);
+//  return  normMat*normMatInv ;
+// 
+//}
+//double eulerian::matCondFro(const matrix6& mat6){
+//
+//  matrix9 matInv=matrixInv(mat6);
+//  double normMat=matNormFro(mat6);
+//  double normMatInv=matNormFro(matInv);
+//  return  normMat*normMatInv ;
+// 
+//}

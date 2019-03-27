@@ -65,29 +65,8 @@ public:
     util utl;  
     void createEul(const util&);
     vec3 matrixVecMult(const matrix9&, const vec3&);
-    void display(const matrix9&);
-    void display(const matrix6&);
-    void display(const vec3&);
-    void display(const diagonal&);
     std::vector<double> zInMeters; 
     matrix9 matrixInv(const matrix6&);
-    double matrixDet(const matrix6&);
-    double matrixDet(const matrix9&);
-    double matNormFro(const matrix9&);
-    double matNormFro(const matrix6&);
-    double matCondFro(const matrix6& mat);
-    double matCondFro(const matrix9& mat);
-    
-    friend std::ostream &operator<<(std::ostream& os,eulerian &eul)
-    {
-      os <<std::endl << '[' << eul.tau[10].e11 << ' ' << eul.tau[10].e12 << ' ' << eul.tau[10].e13 << ']'<<std::endl
-       << '[' <<0 << ' ' << eul.tau[10].e22<< ' ' << eul.tau[10].e23 << ']'<<std::endl 
-       << '[' << 0  << ' ' <<0 << ' ' << eul.tau[10].e33<<  ']'<<std::endl ;
-      return os;
-      
-    }
-    
-    
     
     
     int windField,nx,ny,nz;
@@ -95,12 +74,6 @@ public:
 private:   
     double zo,dx,dy,dz;
     
-    void createWindField();
-    void readCellType();
-    void addBuildingsInWindField();
-    void createSigmaAndEps();
-    void createSigmaAndEpsQUIC();
-    void createSigmaAndEpsQUICFull();
     void createUstar();
     void createTausAndLamdas();
     void createTauGrads();
@@ -120,11 +93,5 @@ private:
     vec3 vecScalarDiv(const vec3&, const double&);
     vec3 vecScalarMult(const vec3&, const double&);
     double maxValAbs(const vec3&);
-    void writeFile(const std::vector<matrix9>&,const char*);
-    void writeFile(const std::vector<matrix6>&,const char*);
-    void writeFile(const std::vector<diagonal>&,const char*);
-    void writeFile(const std::vector<wind>&,const char*);
-    
-    
 };
 #endif
