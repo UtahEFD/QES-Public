@@ -2,13 +2,19 @@
 #define EULERIAN_H
 
 #include "Util.h"
+#include "Urb.hpp"
+#include "Turb.hpp"
+
 #include <fstream>
 #include <string>
 #include <vector>
-class eulerian{
+
+class Eulerian{
     
 public:
-    eulerian();
+    
+    Eulerian(Urb*,Turb*);
+    
     double vonKar;
     typedef struct{
         int c;

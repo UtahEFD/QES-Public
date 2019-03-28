@@ -1,5 +1,5 @@
 #include "Turbulence.h"
 
-void turbulence::createSigTau(eulerian* eul,util& utl){
+void turbulence::createSigTau(Eulerian* eul,util& utl){
   int i=1;
 }

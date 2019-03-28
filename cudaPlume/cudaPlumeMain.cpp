@@ -74,7 +74,7 @@ extern "C" void cudaGLInit(int argc, char **argv);
 // extern "C" void copyArrayFromDevice(void* host, const void* device, unsigned int vbo, int size);
 ////////////////////////in kernel_interface.cu///////////////////////////////////////////
 
-void advectPar(const util&,dispersion&,eulerian&, const char*, const int);
+void advectPar(const util&,dispersion&,Eulerian&, const char*, const int);
 
 sivelab::QUICProject *data = 0; 
 Source source;   
@@ -171,11 +171,10 @@ int main(int argc, char** argv)
     // Create instance of cudaTurb class
     Turb* turb = new Turb(inputTurb);
     
-    
-    
-    
+    // Create instance of Eulerian class
+    Eulerian* eul = new Eulerian(urb,turb);
   
-    //eulerian eul;
+    //Eulerian eul;
     //eul.createEul(utl); 
     //std::cout<<"                     Going to EUL read end: "<<((float)std::clock())/CLOCKS_PER_SEC -f_clock<<"\n"; 
   

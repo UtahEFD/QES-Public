@@ -18,8 +18,8 @@
 class dispersion {
     public:
         
-        eulerian eul; 
-        void createDisp(const eulerian&);
+        Eulerian eul; 
+        void createDisp(const Eulerian&);
         
         struct matrix {
             double x;

@@ -8,7 +8,7 @@
 
 class turbulence{
  public:
-  virtual void createSigTau(eulerian*, util&); 
+  virtual void createSigTau(Eulerian*, util&); 
   std::vector<double> xfo,yfo,zfo,hgt,wth,len;
   int numBuild,nx,ny,nz;
   double dx,dy,dz;

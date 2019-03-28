@@ -8,7 +8,7 @@
 #include <fstream>
 #define EPSILON 0.00001   
 
-void dispersion::createDisp(const eulerian& e) {
+void dispersion::createDisp(const Eulerian& e) {
     eul=e;
     xSrc=eul.utl.xSrc;
     ySrc=eul.utl.ySrc;

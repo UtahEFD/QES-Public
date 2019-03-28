@@ -2,7 +2,7 @@
 #include "LocalMixing.h"
 
 
-void localMixing::createSigTau(eulerian* eul,util& utl){
+void localMixing::createSigTau(Eulerian* eul,util& utl){
 
   double vonKar=utl.vonKar;
   double cPope=0.55;

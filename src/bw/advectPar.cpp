@@ -17,7 +17,7 @@ typedef struct{
 void average(const int, const dispersion&);
 void outputConc();
 void reflection(double&, double&, const double&, const  double&,  const double&, const double&
-		,double&,double&,const eulerian&,const int&,const int&,const int&,double&,double&,const util&);
+		,double&,double&,const Eulerian&,const int&,const int&,const int&,double&,double&,const util&);
 double dot(const vec3&, const vec3&);
 vec3 normalize(const vec3&);
 vec3 VecScalarMult(const vec3&,const double&);
@@ -39,7 +39,7 @@ std::ofstream output;
 std::ofstream rand_output;
 int loopExt=0;
 
-void advectPar(const util &utl, dispersion &disp,eulerian &eul, const char* model, const int argc){
+void advectPar(const util &utl, dispersion &disp,Eulerian &eul, const char* model, const int argc){
   int parNo=-53;
 
   // Pete: Really need a singleton class to do this right... not like the commented out code below:
@@ -653,7 +653,7 @@ void advectPar(const util &utl, dispersion &disp,eulerian &eul, const char* mode
 
 void reflection(double &zPos, double &wPrime, const double &z0,const double &disX
 		,const double &disY,const double &disZ ,double &xPos
-		,double &yPos,const eulerian &eul, const int &imc, const int &jmc
+		,double &yPos,const Eulerian &eul, const int &imc, const int &jmc
 		, const int &kmc,double &uPrime,double &vPrime,const util &utl ){
     
     //shader reflection   

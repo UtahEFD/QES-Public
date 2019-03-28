@@ -5,7 +5,7 @@
 
 class nonLocalMixing2 : public turbulence{
  public:
-  void createSigTau(eulerian*, util&);
+  void createSigTau(Eulerian*, util&);
  protected:
 
  private:

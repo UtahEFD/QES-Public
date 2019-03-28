@@ -2,7 +2,7 @@
 #include "NonLocalMixing2.h"
 
 
-void nonLocalMixing2::createSigTau(eulerian* eul,util& utl){
+void nonLocalMixing2::createSigTau(Eulerian* eul,util& utl){
     double vonKar=utl.vonKar;
     double cPope=.55;
     double sigUOrg=1.8;

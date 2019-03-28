@@ -44,18 +44,18 @@ struct copyTurbData1
   __host__ 
   void operator()(Tuple t)
   {
-   //  eulerian::wind wd = thrust::get<1>(t); 
+   //  Eulerian::wind wd = thrust::get<1>(t); 
     // double f1 = thrust::get<1>(t);
     thrust::get<0>(t).CoEps = thrust::get<1>(t); // make_float4(wd.u, wd.v, wd.w, 0.f); 
     thrust::get<0>(t).cellType = thrust::get<2>(t).c; // make_float4(wd.u, wd.v, wd.w, 0.f); 
-     eulerian::wind wd = thrust::get<3>(t);  
+     Eulerian::wind wd = thrust::get<3>(t);  
     thrust::get<0>(t).windData = make_float3(wd.u, wd.v, wd.w); // make_float4(wd.u, wd.v, wd.w, 0.f); 
-    eulerian::vec3 vec = thrust::get<4>(t); 
+    Eulerian::vec3 vec = thrust::get<4>(t); 
     thrust::get<0>(t).ka0 = make_float3(vec.e11, vec.e21, vec.e31); 
     vec = thrust::get<5>(t); 
     thrust::get<0>(t).g2nd = make_float3(vec.e11, vec.e21, vec.e31); 
     
-    eulerian::matrix9 matr = thrust::get<6>(t); 
+    Eulerian::matrix9 matr = thrust::get<6>(t); 
     thrust::get<0>(t).eigVec1 = make_float3(matr.e11, matr.e12, matr.e13 ); //make_float3(matr.e11, matr.e12, matr.e13); 
     thrust::get<0>(t).eigVec2 = make_float3(matr.e21, matr.e22, matr.e23 ); //make_float3(matr.e21, matr.e22, matr.e23); 
     thrust::get<0>(t).eigVec3 = make_float3(matr.e31, matr.e32, matr.e33 ); 
@@ -74,7 +74,7 @@ struct copyTurbData2
   __host__ 
   void operator()(Tuple t)
   {  
-    eulerian::matrix6 
+    Eulerian::matrix6 
     matr = thrust::get<1>(t); 
     thrust::get<0>(t).taudx1 = make_float3(matr.e11, matr.e12, matr.e13);//  make_float3(matr.e11, matr.e12, matr.e13); 
     thrust::get<0>(t).taudx2 = make_float3(matr.e22, matr.e23, matr.e33); 
@@ -91,12 +91,12 @@ struct copyTurbData2
     thrust::get<0>(t).sig1 = make_float3(matr.e11, matr.e12, matr.e13);//  make_float3(matr.e11, matr.e12, matr.e13); 
     thrust::get<0>(t).sig2 = make_float3(matr.e22, matr.e23, matr.e33); 
     
-    eulerian::diagonal dia = thrust::get<5>(t); 
+    Eulerian::diagonal dia = thrust::get<5>(t); 
     thrust::get<0>(t).eigVal = make_float3(dia.e11, dia.e22, dia.e33); 
   }
 };
 
-void turb_cp_2ndEdition(util &utl, eulerian &eul, dispersion &disp, 
+void turb_cp_2ndEdition(util &utl, Eulerian &eul, dispersion &disp, 
 	     thrust::host_vector<turbulence> &turb)
 {
   thrust::for_each(
@@ -146,7 +146,7 @@ struct copyWinddata
   __host__ 
   void operator()(Tuple t)
   {
-     eulerian::wind wd = thrust::get<0>(t); 
+     Eulerian::wind wd = thrust::get<0>(t); 
     thrust::get<1>(t) = make_float4(wd.u, wd.v, wd.w, 0.f); 
 //     thrust::get<1>(t) = make_float4(2.f, 0.f, 0.f, 0.f); 
   }
@@ -157,7 +157,7 @@ struct copyEigVal
   __host__ 
   void operator()(Tuple t)
   {
-     eulerian::diagonal diag = thrust::get<0>(t); 
+     Eulerian::diagonal diag = thrust::get<0>(t); 
     thrust::get<1>(t) = make_float4(diag.e11, diag.e22, diag.e33,0.f);//  make_float3(diag.e11, diag.e22, diag.e33); 
   } 
 };
@@ -167,7 +167,7 @@ struct copyka0
   __host__ 
   void operator()(Tuple t)
   {
-     eulerian::vec3 vec = thrust::get<0>(t); 
+     Eulerian::vec3 vec = thrust::get<0>(t); 
     thrust::get<1>(t) = make_float4(vec.e11, vec.e21, vec.e31, 0.f); //make_float3(vec.e11, vec.e21, vec.e31); 
   }
 };
@@ -177,7 +177,7 @@ struct copyMatrix9
   __host__ 
   void operator()(Tuple t)
   {
-     eulerian::matrix9 matr = thrust::get<0>(t); 
+     Eulerian::matrix9 matr = thrust::get<0>(t); 
     thrust::get<1>(t) = make_float4(matr.e11, matr.e12, matr.e13, 0.f); //make_float3(matr.e11, matr.e12, matr.e13); 
     thrust::get<2>(t) = make_float4(matr.e21, matr.e22, matr.e23, 0.f); //make_float3(matr.e21, matr.e22, matr.e23); 
     thrust::get<3>(t) = make_float4(matr.e31, matr.e32, matr.e33, 0.f); //make_float3(matr.e31, matr.e32, matr.e33); 
@@ -189,7 +189,7 @@ struct copyMatrix6
   __host__ 
   void operator()(Tuple t)
   {
-     eulerian::matrix6 matr = thrust::get<0>(t); 
+     Eulerian::matrix6 matr = thrust::get<0>(t); 
     thrust::get<1>(t) = make_float4(matr.e11, matr.e12, matr.e13, 0.f);//  make_float3(matr.e11, matr.e12, matr.e13); 
     thrust::get<2>(t) = make_float4(matr.e22, matr.e23, matr.e33, 0.f);//// make_float3(matr.e22, matr.e23, matr.e33);  
   }
@@ -223,7 +223,7 @@ struct makeBuildings
 };
 
  
-void turb_cp(util &utl, eulerian &eul, dispersion &disp, 
+void turb_cp(util &utl, Eulerian &eul, dispersion &disp, 
 	     thrust::host_vector<float4> &windData, 
 	     thrust::host_vector<float4> &eigVal, 
 	     thrust::host_vector<float4> &ka0, 
