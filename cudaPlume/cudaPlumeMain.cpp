@@ -10,6 +10,7 @@
 #include "Turb.hpp"
 #include "Input.hpp"
 #include "Output.hpp"
+#include "PlumeInputData.hpp"
 
 #include <GL/glew.h>
 #if defined (_WIN32)
@@ -32,8 +33,8 @@
 #include "GL_funs.hpp" 
 #include "plumeSystem.h"
 #include "paramgl.h"
-#include "bw/Eulerian.h"
-#include "bw/Dispersion.h"
+#include "Eulerian.h"
+#include "Dispersion.h"
 //#include "Turb_cp.cu" 
  
 #include "util/handlePlumeArgs.h"
@@ -155,6 +156,9 @@ int main(int argc, char** argv)
     // parse command line arguments
     Args arguments;
     arguments.processArguments(argc, argv);
+    
+    // parse xml settings
+    PlumeInputData* PID;
     
     // Create instance of cudaUrb input class
     Input* inputUrb = new Input(arguments.inputFileUrb);

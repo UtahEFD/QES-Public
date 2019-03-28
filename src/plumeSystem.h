@@ -31,7 +31,7 @@
 #include "kernel/kernel_global/turbulence.cuh" 
 #include "kernel/kernel_global/ConstParams.cuh"  
 
-#include "bw/Util.h"   
+#include "Util.h"   
 #include "kernel/kernel_interface.cuh"   
 //set global memory of cells 
 // extern Cell* g_dCells; 

@@ -7,15 +7,11 @@ CUDA_ADD_LIBRARY( cudaplumecore
     shader/particle/shaders.cpp kernel/kernel_interface.cu 
     shader/particle/render_particles.cpp  
     plumeSystem.cpp  
-    bw/Eulerian.cpp
-    bw/Util.cpp
-    #bw/advectPar.cpp
-    bw/Random.cpp
-    #bw/Dispersion.cpp
-    #bw/Turbulence.cpp
-    #bw/LocalMixing.cpp
-    #bw/NonLocalMixing.cpp
-    #bw/NonLocalMixing2.cpp
+    Eulerian.cpp
+    Util.cpp
+    #advectPar.cpp
+    Random.cpp
+    #Dispersion.cpp
     Args.cpp
     Input.cpp
     Output.cpp

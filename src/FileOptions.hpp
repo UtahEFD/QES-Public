@@ -1,35 +1,29 @@
-#pragma once
+//
+//  FileOptions.hpp
+//  
+//  This class handles xml output options
+//
+//  Created by Jeremy Gibbs on 03/25/19.
+//
 
-/*
- * This class contains data and variables that set flags and
- * settngs read from the xml.
- */
+#ifndef FILEOPTIONS_HPP
+#define FILEOPTIONS_HPP
 
 #include "util/ParseInterface.h"
 #include <string>
 #include <vector>
 
-class FileOptions : public ParseInterface
-{
-private:
-
-
-
-public:
-
-	int outputFlag;
-	std::vector<std::string> outputFields;
-	bool massConservedFlag;
-	bool sensorVelocityFlag;
-	bool staggerdVelocityFlag;
-
-	virtual void parseValues()
-	{
-		parsePrimitive<int>(true, outputFlag, "outputFlag");
-		parseMultiPrimitives<std::string>(false, outputFields, "outputFields");
-		parsePrimitive<bool>(true, massConservedFlag, "massConservedFlag");
-		parsePrimitive<bool>(true, sensorVelocityFlag, "sensorVelocityFlag");
-		parsePrimitive<bool>(true, staggerdVelocityFlag, "staggerdVelocityFlag");
-
-	}
+class FileOptions : public ParseInterface {
+    private:
+    
+    public:
+    
+    	int outputFlag;
+    	std::vector<std::string> outputFields;
+    
+    	virtual void parseValues() {
+    		parsePrimitive<int>(true, outputFlag, "outputFlag");
+    		parseMultiPrimitives<std::string>(false, outputFields, "outputFields");    
+    	}
 };
+#endif

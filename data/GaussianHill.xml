@@ -1,8 +1,5 @@
 <simulationParameters>
-	<domain>40 40 40 </domain>
-	<cellSize> 1.0 1.0 1.0 </cellSize>
-	<verticalStretching> 0 </verticalStretching>
-	<runTime> 1000 </runTime>
+	<runTime> 1000.0 </runTime>
 	<timeStep> 1.0 </timeStep>
 </simulationParameters>
 <collectionParams>

@@ -49,7 +49,7 @@
 
 #include "device/advect_kernel.cu" 
 #include "device/cell_concentration.cu"   
-#include "../bw/Util.h"   
+#include "../Util.h"   
 
 extern "C"
 {  
