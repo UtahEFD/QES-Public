@@ -34,7 +34,7 @@
 #include "paramgl.h"
 #include "bw/Eulerian.h"
 #include "bw/Dispersion.h"
-#include "Turb_cp.cu" 
+//#include "Turb_cp.cu" 
  
 #include "util/handlePlumeArgs.h"
 #include "quicloader/QUICProject.h"

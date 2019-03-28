@@ -9,13 +9,13 @@ CUDA_ADD_LIBRARY( cudaplumecore
     plumeSystem.cpp  
     bw/Eulerian.cpp
     bw/Util.cpp
-    bw/advectPar.cpp
+    #bw/advectPar.cpp
     bw/Random.cpp
-    bw/Dispersion.cpp
-    bw/Turbulence.cpp
-    bw/LocalMixing.cpp
-    bw/NonLocalMixing.cpp
-    bw/NonLocalMixing2.cpp
+    #bw/Dispersion.cpp
+    #bw/Turbulence.cpp
+    #bw/LocalMixing.cpp
+    #bw/NonLocalMixing.cpp
+    #bw/NonLocalMixing2.cpp
     Args.cpp
     Input.cpp
     Output.cpp

@@ -13,6 +13,7 @@
 #include <vector>
 #include <netcdf>
 #include "Input.hpp"
+#include "TypeDefs.hpp"
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
@@ -47,13 +48,7 @@ class Urb {
         Grid grid;
         
         // wind information
-        struct Wind {
-            std::vector<double>u;
-            std::vector<double>v;
-            std::vector<double>w;   
-        };
-        
-        Wind wind;
+        std::vector<Wind> wind;
 };
 
 #endif

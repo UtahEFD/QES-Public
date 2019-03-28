@@ -1,9 +1,10 @@
 #ifndef EULERIAN_H
 #define EULERIAN_H
 
-#include "Util.h"
+//#include "Util.h"
 #include "Urb.hpp"
 #include "Turb.hpp"
+#include "TypeDefs.hpp"
 
 #include <fstream>
 #include <string>
@@ -20,75 +21,45 @@ public:
         int c;
     }cell;	
     std::vector<cell> CellType,CellBuild;
-    
 
-    typedef struct{
-        double u;
-        double v;
-        double w;
-    }wind;	
+    std::vector<matrix9> eigVec,eigVecInv;
     
-    typedef struct{
-        double e11;
-        double e22;
-        double e33;
-    }diagonal;
-    std::vector<wind> windVec;
-    typedef struct{
-        double e11;
-        double e12;
-        double e13;
-        double e21;
-        double e22;
-        double e23;
-        double e31;
-        double e32;
-        double e33;
-    }matrix9;	
-    std::vector<matrix9> eigVec,eigVecInv,lam;
-    typedef struct{
-        double e11;
-        double e12;
-        double e13;
-        double e22;
-        double e23;
-        double e33;
-    }matrix6;
-    std::vector<matrix6> sig,tau,taudx,taudy,taudz;
-    std::vector<double> CoEps,ustar,dudz;
+    std::vector<matrix6> taudx,taudy,taudz;
     
+    std::vector<double> ustar,dudz;
     
     std::vector<diagonal> eigVal;
     
-    typedef struct{
-        double e11;
-        double e21;
-        double e31;
-    }vec3;
     std::vector<vec3> ka0,g2nd;
     vec3 windP,windPRot;
     
-    util utl;  
-    void createEul(const util&);
+    void display(const matrix9&);
+    void display(const matrix6&);
+    void display(const vec3&);
+    void display(const diagonal&);
+    
     vec3 matrixVecMult(const matrix9&, const vec3&);
     std::vector<double> zInMeters; 
     matrix9 matrixInv(const matrix6&);
+    double matrixDet(const matrix6&);
+    double matrixDet(const matrix9&);
+    double matNormFro(const matrix9&);
+    double matNormFro(const matrix6&);
+    double matCondFro(const matrix6& mat);
+    double matCondFro(const matrix9& mat);
     
-    
-    int windField,nx,ny,nz;
+    int nx,ny,nz,nt;
  
 private:   
+    
     double zo,dx,dy,dz;
     
     void createUstar();
     void createTausAndLamdas();
-    void createTauGrads();
+    void createTauGrads(Urb*,Turb*);
     void writeSigmas();
-    void createA1Matrix();
+    void createA1Matrix(Urb*,Turb*);
     void swap(double&,double&);
-    void uniform();
-    void shear();
-    void windFromQUIC();
     
     matrix9 matrixInv(const matrix9&);
     matrix9 matrixMult(const matrix9&,const matrix9&);

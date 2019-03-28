@@ -13,6 +13,7 @@
 #include <vector>
 #include <netcdf>
 #include "Input.hpp"
+#include "TypeDefs.hpp"
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
@@ -45,17 +46,12 @@ class Turb {
         
         Grid grid;
         
-        // wind information
-        struct Tau {
-            std::vector<double>tau_11;
-            std::vector<double>tau_22;
-            std::vector<double>tau_33;
-            std::vector<double>tau_12;
-            std::vector<double>tau_13;
-            std::vector<double>tau_23;   
-        };
+        // wind stress and variance information
+        std::vector<matrix6> tau, sig;
+        std::vector<matrix9> lam;
         
-        Tau tau;
+        // CoEps
+        std::vector<double>CoEps;
 };
 
 #endif
