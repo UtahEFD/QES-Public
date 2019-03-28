@@ -1,0 +1,395 @@
+/*
+* kernel_interface.cu
+* This file is part of CUDAPLUME
+*
+* Copyright (C) 2012 - Alex Geng
+*
+* CUDAPLUME is free software; you can redistribute it and/or
+* modify it under the terms of the GNU Lesser General Public
+* License as published by the Free Software Foundation; either
+* version 2.1 of the License, or (at your option) any later version.
+*
+* CUDAPLUME is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* Lesser General Public License for more details.
+*
+* You should have received a copy of the GNU Lesser General Public License
+* along with CUDAPLUME. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+// This file contains C wrappers around the some of the CUDA API and the
+// kernel functions so that they can be called from "particleSystem.cpp"
+ // includes cuda.h and cuda_runtime_api.h 
+
+#include <helper_cuda.h>
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
+#include <unistd.h>
+#include <fstream>
+
+#if defined(__APPLE__) || defined(MACOSX)
+#include <GLUT/glut.h>
+#else
+#include <GL/freeglut.h>
+#endif
+
+#include <cuda_gl_interop.h>
+#include <iomanip> 
+#include <cstdlib>
+#include <sys/time.h>
+
+#include <thrust/device_ptr.h>
+#include <thrust/device_vector.h>
+#include <thrust/for_each.h>
+#include <thrust/fill.h>
+#include <thrust/iterator/zip_iterator.h>
+#include <thrust/sort.h>
+
+#include "device/advect_kernel.cu" 
+#include "device/cell_concentration.cu"   
+#include "../Util.h"   
+
+extern "C"
+{  
+uint numThreads, numBlocks; 
+  
+ extern
+// void bindTexture(cudaArray *cellArray, cudaChannelFormatDesc channelDesc, CellTextureType textureType)
+void bindTexture(const cudaArray *&cellArray, const cudaChannelFormatDesc &channelDesc, const char* texname)
+{   
+  const textureReference* texPt=NULL; 
+  cudaGetTextureReference(&texPt, texname);  
+  ((textureReference *)texPt)->normalized = false;                      // access with nonnormalized texture coordinates 
+  ((textureReference *)texPt)->filterMode = cudaFilterModePoint;      // 
+  ((textureReference *)texPt)->addressMode[0] = cudaAddressModeClamp;   // Clamp texture coordinates
+  ((textureReference *)texPt)->addressMode[1] = cudaAddressModeClamp;
+  ((textureReference *)texPt)->addressMode[2] = cudaAddressModeClamp;
+
+  checkCudaErrors( cudaBindTextureToArray(texPt, cellArray, &channelDesc) );
+}  
+
+void cudaInit(int argc, char **argv)
+{   
+  int devID;
+  // use command-line specified CUDA device, otherwise use device with highest Gflops/s
+//   if( cutCheckCmdLineFlag(argc, (const char**)argv, "device") ) {
+//       devID = cutilDeviceInit(argc, argv);
+//       if (devID < 0) {
+// 	  printf("No CUDA Capable devices found, exiting...\n"); 
+//       }
+//   } else {
+      devID = gpuGetMaxGflopsDeviceId();
+      cudaSetDevice( devID );
+//   }
+}
+
+void cudaGLInit(int argc, char **argv)
+{   
+  
+//   computeGridSize(numParticles, 256, numBlocks, numThreads);
+//   random_file.open ("random_gen_by_global.txt", std::ios::out);
+  // use command-line specified CUDA device, otherwise use device with highest Gflops/s
+//   if( cutCheckCmdLineFlag(argc, (const char**)argv, "device") ) {
+//       cutilDeviceInit(argc, argv);
+//       printf("123123\n");
+//   } else {
+      cudaGLSetGLDevice( gpuGetMaxGflopsDeviceId() );
+//   }
+}
+
+void allocateArray(void **devPtr, size_t size)
+{
+  checkCudaErrors( cudaMalloc(devPtr, size) );
+}
+
+void freeArray(void *devPtr)
+{
+  checkCudaErrors( cudaFree(devPtr) );
+}
+
+void threadSync()
+{
+  checkCudaErrors( cudaDeviceSynchronize() );
+}
+
+void copyArrayToDevice(void* device, const void* host, int offset, int size)
+{
+  checkCudaErrors( cudaMemcpy((char *) device + offset, host, size, cudaMemcpyHostToDevice) );
+}
+
+void registerGLBufferObject(uint vbo, struct cudaGraphicsResource **cuda_vbo_resource)
+{
+  checkCudaErrors( cudaGraphicsGLRegisterBuffer(cuda_vbo_resource, vbo, 
+						cudaGraphicsMapFlagsNone) );
+}
+
+void unregisterGLBufferObject(struct cudaGraphicsResource *cuda_vbo_resource)
+{
+  checkCudaErrors( cudaGraphicsUnregisterResource(cuda_vbo_resource) );	
+}
+
+void *mapGLBufferObject(struct cudaGraphicsResource **cuda_vbo_resource)
+{
+  void *ptr;
+  checkCudaErrors( cudaGraphicsMapResources(1, cuda_vbo_resource, 0) );
+  size_t num_bytes; 
+  checkCudaErrors( cudaGraphicsResourceGetMappedPointer((void **)&ptr, &num_bytes, *cuda_vbo_resource) );
+  return ptr;
+}
+
+void unmapGLBufferObject(struct cudaGraphicsResource *cuda_vbo_resource)
+{
+  checkCudaErrors( cudaGraphicsUnmapResources(1, &cuda_vbo_resource, 0) );
+}
+
+void copyArrayFromDevice(void* host, const void* device, 
+			struct cudaGraphicsResource **cuda_vbo_resource, int size)
+{   
+  if (cuda_vbo_resource)
+      device = mapGLBufferObject(cuda_vbo_resource);
+
+  checkCudaErrors( cudaMemcpy(host, device, size, cudaMemcpyDeviceToHost) );
+  
+  if (cuda_vbo_resource)
+      unmapGLBufferObject(*cuda_vbo_resource);
+}
+
+void setParameters(ConstParams *hostParams)
+{
+  // copy parameters to constant memory
+  checkCudaErrors( cudaMemcpyToSymbol(g_params, hostParams, sizeof(ConstParams)) );
+}
+ 
+// compute grid and thread block size for a given number of elements
+//Round a / b to nearest higher integer value
+uint iDivUp(uint a, uint b){
+  return (a % b != 0) ? (a / b + 1) : (a / b);
+}
+void computeGridSize(uint n, uint blockSize, uint &numBlocks, uint &numThreads)
+{
+  numThreads = min(blockSize, n);
+  numBlocks = iDivUp(n, numThreads);
+}
+  
+ 
+void advectPar_with_textureMemory(float *pos, float *winP, uint* indexs, uint* concens, 
+				  float tstepInput,  uint numParticles) 
+{    
+  thrust::device_ptr<float4> dev_pos4((float4 *)pos);
+  thrust::device_ptr<float4> dev_winP4((float4 *)winP); 
+  thrust::device_ptr<uint> dev_Index((uint *)indexs);  
+
+  timeval t;
+  gettimeofday(&t,0);
+  thrust::for_each(
+      thrust::make_zip_iterator( 
+	thrust::make_tuple(dev_pos4, dev_winP4, dev_Index) 
+      ), 
+      thrust::make_zip_iterator( 
+	thrust::make_tuple(dev_pos4+numParticles, dev_winP4+numParticles, dev_Index+numParticles)
+     ), 
+      advect_functor(t.tv_sec * 1000LL + t.tv_usec / 1000 + getpid(), tstepInput)
+  ); 
+   
+}     
+
+void output_concentration(uint* concens, const util &utl, const char* filename, const uint &numParticles)
+{
+  printf("\nOutput concentration\n");
+  std::ofstream random_file;
+  random_file.open (filename, std::ios::out); 
+//      
+  thrust::host_vector<double>xBoxCen(utl.numBoxX*utl.numBoxY*utl.numBoxZ),
+			    yBoxCen(utl.numBoxX*utl.numBoxY*utl.numBoxZ), 
+			    zBoxCen(utl.numBoxX*utl.numBoxY*utl.numBoxZ);  
+  int lBndx, lBndy, lBndz;
+  int id=0, zR=0;
+  
+  lBndx=utl.bnds[0]; 
+  lBndy=utl.bnds[2]; 
+  lBndz=utl.bnds[4]; 
+  
+  double quanX=(utl.bnds[1]-utl.bnds[0])/(utl.numBoxX);
+  double quanY=(utl.bnds[3]-utl.bnds[2])/(utl.numBoxY);
+  double quanZ=(utl.bnds[5]-utl.bnds[4])/(utl.numBoxZ);
+//   std::cout<<" quanX"<<quanX<<" quanY"<<quanY<<" quanZ"<<quanZ<<"\n";
+  
+  for(int k=0;k<utl.numBoxZ;++k){
+    int yR=0;
+    for(int j=0;j<utl.numBoxY;++j){
+      int xR=0;
+      for(int i=0;i<utl.numBoxX;++i){
+	id=k*utl.numBoxY*utl.numBoxX+j*utl.numBoxX+i;
+	
+	xBoxCen[id]=lBndx + xR*(quanX) + utl.xBoxSize/2.0;
+	yBoxCen[id]=lBndy + yR*(quanY) + utl.yBoxSize/2.0; 
+	zBoxCen[id]=lBndz + zR*(quanZ) + utl.zBoxSize/2.0;	
+        printf(id%2 ? "\r..":"\r....");
+	xR++;
+      }
+      yR++;
+    }
+    zR++;
+  } 
+  
+  uint volume = utl.xBoxSize*utl.yBoxSize*utl.zBoxSize;
+  
+  double conc = (utl.timeStep)/(utl.avgTime*volume*numParticles);//0.1/(899*4.8*100000);
+  thrust::device_ptr<uint> d_concensPtr(concens);  
+  random_file<<"data = [\n";
+  for(int index=0; index<utl.numBoxZ*utl.numBoxY*utl.numBoxX; index++)
+  {  
+    random_file<<xBoxCen[index]<<"  "<<yBoxCen[index]<<"  "<<zBoxCen[index]<<"  "<<(double)(d_concensPtr[index]) * conc<<"\n";  
+  } 
+  random_file<<"];\n";
+  random_file << "[aa bb] = size(data); " << std::endl;
+  random_file << "x = unique(data(:,1)); " << std::endl;
+  random_file << "y = unique(data(:,2)); " << std::endl;
+  random_file << "z = unique(data(:,3));" << std::endl;
+  random_file << "nx = length(x);" << std::endl;
+  random_file << "ny = length(y);" << std::endl;
+  random_file << "for zht = 1:length(z)    %% or, you can select the z-height at which you want concentration contours " << std::endl;
+  random_file << "   cc=1;" << std::endl;
+  random_file << "   conc_vector_zht=0;" << std::endl;
+  random_file << "   for ii = 1:aa " << std::endl;
+  random_file << "      if data(ii,3) == z(zht,:)" << std::endl;
+  random_file << "         conc_vector_zht(cc,1) = data(ii,4);" << std::endl;
+  random_file << "         cc=cc+1;" << std::endl;
+  random_file << "      end" << std::endl;
+  random_file << "   end" << std::endl;
+  random_file << "   conc_matrix_zht=0; " << std::endl;
+  random_file << "   conc_matrix_zht = reshape(conc_vector_zht,nx,ny)';" << std::endl;
+  random_file << "   figure(zht)" << std::endl;
+  random_file << "   h = pcolor(x,y,log10(conc_matrix_zht));" << std::endl;
+  random_file << "   set(h,'edgecolor','none');" << std::endl;
+  random_file << "   shading interp;" << std::endl;
+  random_file << "   hh=colorbar;" << std::endl;
+  random_file << "   set(get(hh,'ylabel'),'string','log10(Concentration)','fontsize',20);" << std::endl;
+  random_file << "   set(gcf,'color','w');" << std::endl;
+  random_file << "   set(gcf,'visible','off'); %%this is to make sure the image is not displayed" << std::endl;
+  random_file << "   xlabel('$x$','interpreter','latex','fontsize',20,'color','k'); " << std::endl;
+  random_file << "   ylabel('$y$','interpreter','latex','fontsize',20,'color','k');" << std::endl;
+  random_file << "   caxis([-8 3.5]);" << std::endl;
+  random_file << "   string = strcat('log10(Concentration) Contours; Horizontal x-y plane; Elevation z = ',num2str(z(zht,:)));" << std::endl;
+  random_file << "   h=title(string,'fontsize',12);" << std::endl;
+  random_file << "   axis equal;" << std::endl;
+  random_file << " filename = sprintf('concentrationData_zht=%05.1f.png', z(zht,:)); "<< std::endl;
+  random_file << " print('-dpng', filename);"<< std::endl;
+  random_file << " end"<< std::endl;
+  random_file.close();
+  printf("\nAll done!\n");
+  exit(0);  
+  
+}
+
+
+void cal_concentration(float *pos, uint* concens, const uint &numParticles, const uint &total_particles)
+{    
+  
+  computeGridSize(numParticles, 64, numBlocks, numThreads); 
+  concentration_kernel<<< numBlocks, numThreads >>>((float4*)(pos),
+						    concens,
+						    numParticles  
+						   );  
+  printf("\r\rAdvect particles:  %5.2f%%",numParticles*100.f/total_particles);
+}
+
+void compareHstDev(const thrust::host_vector<float4> &hData, const uint &size, const int &texname)
+{ 
+    thrust::device_vector<float4> devVec;
+    thrust::device_vector<int> devIndex;
+    devVec.resize(size); 
+    devIndex.resize(size); 
+    thrust::sequence(devIndex.begin(), devIndex.end());  
+    
+    thrust::for_each(  
+      thrust::make_zip_iterator( thrust::make_tuple(devVec.begin(), devIndex.begin())),
+      thrust::make_zip_iterator( thrust::make_tuple(devVec.end(), devIndex.end())),
+      copyDeviceData_functor(texname)
+    ); 
+    
+    for(int i=0; i<devIndex.size(); i++)
+    { 
+      if(hData[i]!=(float4)devVec[i])
+      {
+	std::cout<<"error data found!!"<<i<<" x "<< hData[i].x<< " y "<<hData[i].y<< " z "<< hData[i].z<<"\n";
+	std::cout<<"                  "<<i<<" x "<< ((float4)devVec[i]).x<< " y "<<((float4)devVec[i]).y<< " z "<< ((float4)devVec[i]).z<<"\n";
+      } 
+    }
+//   }
+ }
+  
+ 
+void randDevTest(thrust::host_vector<float4> &hData, const uint &size)
+{
+   thrust::device_vector<float4> devVec;
+   thrust::device_vector<int> devIndex;
+   devVec.resize(size); 
+   devIndex.resize(size); 
+   thrust::sequence(devIndex.begin(), devIndex.end()); 
+   
+   thrust::for_each(  
+     thrust::make_zip_iterator( thrust::make_tuple(devVec.begin(), devIndex.begin())),
+     thrust::make_zip_iterator( thrust::make_tuple(devVec.end(), devIndex.end())),
+     rand_box_muller_f4()
+   ); 
+   std::ofstream file;
+   file.open ("testboxmullerf4.csv", std::ios::out);
+   for(int i=0; i<devIndex.size(); i++) 
+     file<<" "<<((float4)devVec[i]).x<<", "<<((float4)devVec[i]).y<<", "<<((float4)devVec[i]).z<<", "<<((float4)devVec[i]).w<<"\n"; 
+}
+
+void copyTurbsToDevice(const thrust::host_vector<turbulence> &hData)
+{ 
+}
+
+void global_kernel(float *pos, float *winP, const uint &numParticles,
+		   turbulence* d_turbs_ptr)
+{    
+//   thrust::device_vector<float4> devDebug_vector(numParticles);  
+  thrust::device_ptr<float4> dev_pos4((float4 *)pos); 
+  thrust::device_ptr<float4> dev_winP4((float4 *)winP);  
+//   thrust::device_ptr<bool> dev_seed_flag_ptr((bool *)seeds_flag);   
+  
+//   uint numThreads, numBlocks;
+  computeGridSize(numParticles, 64, numBlocks, numThreads);
+  
+//   turbulence* d_turbs_ptr =  thrust::raw_pointer_cast(dev_turbs_vector); 
+//   test_kernel<<< numBlocks, numThreads >>>(thrust::raw_pointer_cast(dev_pos4),
+// 					   thrust::raw_pointer_cast(dev_winP4),
+// 					   numParticles,
+// // 					  thrust::raw_pointer_cast(dev_seed_flag_ptr),
+// // 					   thrust::raw_pointer_cast(&devDebug_vector[0]),
+// 					   d_turbs_ptr); 
+  
+}
+
+void global_kernel_debug(float *pos, float *winP, bool* seeds_flag, const uint &numParticles,
+		   const thrust::host_vector<turbulence> &hData)
+{   
+  std::ofstream random_file;
+  random_file.open ("random_gen_by_global.txt", std::ios::out);
+  thrust::device_vector<turbulence> dev_turbs_vector = hData; 
+ 
+  thrust::device_vector<float4> devDebug_vector(numParticles);  
+  thrust::device_ptr<float4> d_pos4((float4 *)pos);
+  thrust::device_ptr<float4> d_winP4((float4 *)winP); 
+  thrust::device_ptr<bool> dev_seed_flag_ptr((bool *)seeds_flag);   
+  
+//   uint numThreads, numBlocks;
+  computeGridSize(numParticles, 64, numBlocks, numThreads);
+  
+  turbulence* d_turbs_ptr =  thrust::raw_pointer_cast(&dev_turbs_vector[0]); 
+//   test_kernel<<< numBlocks, numThreads >>>(thrust::raw_pointer_cast(d_pos4),
+// 					  thrust::raw_pointer_cast(d_winP4),
+// 					  thrust::raw_pointer_cast(dev_seed_flag_ptr),
+// 					  thrust::raw_pointer_cast(&devDebug_vector[0]),
+// 					  d_turbs_ptr);    
+
+   
+}
+
+
+}   // extern "C" 

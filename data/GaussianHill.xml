@@ -1,0 +1,38 @@
+<simulationParameters>
+	<runTime> 1000.0 </runTime>
+	<timeStep> 1.0 </timeStep>
+</simulationParameters>
+<collectionParams>
+	<timeStart> 0 </timeStart>
+	<timeEnd> 1 </timeEnd>
+	<timeAvg> 1 </timeAvg>
+	<bounds> 2 </bounds> 				
+	<nBoxesX> 60 </nBoxesX> 								
+	<nBoxesY> 55 </nBoxesY> 							
+	<nBoxesZ> 25 </nBoxesZ> 
+</collectionParams>
+<sources>
+	<numSources> 2 </numSources>
+	<pointSource>
+		<posX> 1 </posX>
+		<posY> 20.0 </posY>
+		<posZ> 0 </posZ>
+		<radius> 24 </radius>
+	</pointSource>
+	<pointSource>
+		<posX> 1 </posX>
+		<posY> 20.0 </posY>
+		<posZ> 0 </posZ>
+		<radius> 24 </radius>
+	</pointSource>
+</sources>
+<fileOptions>
+	<outputFlag>1</outputFlag>
+    <outputFields>u</outputFields> 
+    <outputFields>v</outputFields> 
+    <outputFields>w</outputFields>
+    <outputFields>icell</outputFields>  
+	<massConservedFlag> 0 </massConservedFlag>
+	<sensorVelocityFlag> 0 </sensorVelocityFlag>
+	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+</fileOptions>
