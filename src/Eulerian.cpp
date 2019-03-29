@@ -259,10 +259,9 @@ void Eulerian::createA1Matrix(Urb* urb, Turb* turb) {
                         mat9.e32=A1e32;
                         mat9.e33=A1e33;
                         
-                        std::string msg1 = "Imaginary";
-                        cond_A1=matCondFro(mat9,msg1);
+                        cond_A1=matCondFro(mat9,turb->tke[id]);
                         det_A1=matrixDet(mat9);
-              
+                                                
                         double a=-1; //ax^3+bx^2+cx+d=0
                         double b=A1e11+A1e22+A1e33;
                         double c=A1e12*A1e21 + A1e13*A1e31 + A1e23*A1e32
@@ -275,7 +274,7 @@ void Eulerian::createA1Matrix(Urb* urb, Turb* turb) {
                         double f=( (3.0*c/a)-((b*b)/(a*a)) ) / 3.0;
                         double g=( ((2.0*b*b*b)/(a*a*a)) - ((9.0*b*c)/(a*a)) + (27.0*d/a) ) / 27.0;
                         double h= (g*g/4.0) + (f*f*f/27.0);
-                         
+                        
                         double tolP=1e-100;//tolerance on positive side (as h is double not an int, we cannot use equality logical operator)
                         double tolN=-1e-100;//tolerance on negative side
               
@@ -291,27 +290,27 @@ void Eulerian::createA1Matrix(Urb* urb, Turb* turb) {
                             int iV=id%nx;
                             int jV=(id/nx)%ny;
                             int kV=(id/(nx*ny))%nz;
-                            std::cerr<<"Imaginary roots ....exiting as h ="<<h<<std::endl;
-                            std::cout<< "For equatio ax^3 + bx^2 + cx + d=0"<<std::endl;
-                            std::cout<<"a :"<<a<<std::endl;
-                            std::cout<<"b :"<<b<<std::endl;
-                            std::cout<<"c :"<<c<<std::endl;
-                            std::cout<<"d :"<<d<<std::endl;
-                            std::cout<<"The original matrix is..."<<std::endl;
-                            display(mat9);
-                            std::cout<<"The d(tau)/dx  matrix is..."<<std::endl;
-                            display(taudx.at(id));
-                            std::cout<<"The d(tau)/dy  matrix is..."<<std::endl;
-                            display(taudy.at(id));
-                            std::cout<<"The d(tau)/dz  matrix is..."<<std::endl;
-                            display(taudz.at(id));
-                            std::cout<<"The tau  matrix is..."<<std::endl;
-                            display(turb->tau.at(id));
-                            std::cout<<"The lamda  matrix is..."<<std::endl;
-                            display(turb->lam.at(id));
-                            std::cout<<"The CoEps is..."<<std::endl;
-                            std::cout<<turb->CoEps.at(id)<<std::endl;
-                            std::cout<<"indicies at which this happend are (i,j,k) :"<<iV<<"   "<<jV<<"   "<<kV<<std::endl;
+                            //std::cerr<<"Imaginary roots ....exiting as h ="<<h<<std::endl;
+                            //std::cout<< "For equatio ax^3 + bx^2 + cx + d=0"<<std::endl;
+                            //std::cout<<"a :"<<a<<std::endl;
+                            //std::cout<<"b :"<<b<<std::endl;
+                            //std::cout<<"c :"<<c<<std::endl;
+                            //std::cout<<"d :"<<d<<std::endl;
+                            //std::cout<<"The original matrix is..."<<std::endl;
+                            //display(mat9);
+                            //std::cout<<"The d(tau)/dx  matrix is..."<<std::endl;
+                            //display(taudx.at(id));
+                            //std::cout<<"The d(tau)/dy  matrix is..."<<std::endl;
+                            //display(taudy.at(id));
+                            //std::cout<<"The d(tau)/dz  matrix is..."<<std::endl;
+                            //display(taudz.at(id));
+                            //std::cout<<"The tau  matrix is..."<<std::endl;
+                            //display(turb->tau.at(id));
+                            //std::cout<<"The lamda  matrix is..."<<std::endl;
+                            //display(turb->lam.at(id));
+                            //std::cout<<"The CoEps is..."<<std::endl;
+                            //std::cout<<turb->CoEps.at(id)<<std::endl;
+                            //std::cout<<"indicies at which this happend are (i,j,k) :"<<iV<<"   "<<jV<<"   "<<kV<<std::endl;
                         }
                         else if(h<=tolP && h>=tolN && g<=tolP && g>=tolN && f<=tolP && f>=tolN) {// All roots are real and equal
                             eigVal.at(id).e11=pow(d/a,1.0/3.0);
@@ -341,16 +340,17 @@ void Eulerian::createA1Matrix(Urb* urb, Turb* turb) {
                             eigVal.at(id).e11=largest;
                             eigVal.at(id).e22=middle;
                             eigVal.at(id).e33=smallest;//eigen values
+                            
                             //checking if eigenvalues are nan or not                  
-                            if(isnan(largest) || isnan(middle) || isnan(smallest)) {
-                                //std::cout<<"Nan:"<<largest<<"  "<<middle<<"  "<<smallest<<std::endl;
-                                //std::cout<<M<<"  "<<N<<"  "<<kk<<"  "<<g<<"  "<<ii<<std::endl;
-                                //std::cout<<i<<"  "<<j<<"  "<<k<<std::endl;
-                                //std::cout<<"The tau  matrix is..."<<std::endl;
-                                //display(tau.at(id));
-                                //std::cout<<"The original matrix is..."<<std::endl;
-                                //display(mat9);
-                            }
+                            //if(isnan(largest) || isnan(middle) || isnan(smallest)) {
+                            //    std::cout<<"Nan: "<<largest<<"  "<<middle<<"  "<<smallest<<std::endl;
+                            //    std::cout<<M<<"  "<<N<<"  "<<kk<<"  "<<g<<"  "<<ii<<std::endl;
+                            //    std::cout<<i<<"  "<<j<<"  "<<k<<std::endl;
+                            //    std::cout<<"The tau  matrix is..."<<std::endl;
+                            //    display(turb->tau.at(id));
+                            //    std::cout<<"The original matrix is..."<<std::endl;
+                            //    display(mat9);
+                            //}
                         }
                     }// while imaginary
       
@@ -359,11 +359,11 @@ void Eulerian::createA1Matrix(Urb* urb, Turb* turb) {
                     double lnumm=100.;
                     
                     //      if(eigVal.at(id).e11>numm ||eigVal.at(id).e22>numm ||eigVal.at(id).e33>numm || (i==inn && j==jnn && k==knn)){
-                    if(eigVal.at(id).e11>=snumm &&eigVal.at(id).e11<lnumm) {
-                        if(eigVal.at(id).e11<-1.0)std::cout<<"Eigen: "<<eigVal.at(id).e11<<std::endl;
-                        number++;
-                        flagnum=1;
-                    }
+                    //if(eigVal.at(id).e11>=snumm &&eigVal.at(id).e11<lnumm) {
+                    //    if(eigVal.at(id).e11<-1.0)std::cout<<"Eigen: "<<eigVal.at(id).e11<<std::endl;
+                    //    number++;
+                    //    flagnum=1;
+                    //}
                     
                     double larMidFac=(eigVal.at(id).e11-eigVal.at(id).e22)/50.0;
                     double firstVal=eigVal.at(id).e11+larMidFac;
@@ -402,11 +402,10 @@ void Eulerian::createA1Matrix(Urb* urb, Turb* turb) {
                         double s=eigValData[ieigen];
                         
                         while(err>1.0e-5) {
-                            std::string msg = "matSubs";
                             double maxVec1=maxValAbs(vecX);
                             matrix9 idenEigVal=matrixScalarMult(eye,s);
                             matrix9 matSubs=matrixSubs(mat9,idenEigVal);
-                            matrix9 matSubsInv=matrixInv(matSubs,msg);
+                            matrix9 matSubsInv=matrixInv(matSubs,turb->tke[id]);
                             vec3 vecY=matrixVecMult(matSubsInv,vecX);
                             vecX=vecScalarDiv(vecY,vecNorm(vecY));
                             double maxVec2=maxValAbs(vecX);
@@ -462,8 +461,7 @@ void Eulerian::createA1Matrix(Urb* urb, Turb* turb) {
                             }
                         }
                     }
-                    std::string itme = "eigVecInv";
-                    eigVecInv.at(id)=matrixInv(eigVec.at(id),itme);
+                    eigVecInv.at(id)=matrixInv(eigVec.at(id),turb->tke[id]);
                     
                     vec3 a0;
                        
@@ -482,7 +480,7 @@ void Eulerian::createA1Matrix(Urb* urb, Turb* turb) {
                 }
             }
             
-            if(flagnum==1) std::cout<<"Total:  "<<number<<std::endl;
+            //if(flagnum==1) std::cout<<"Total:  "<<number<<std::endl;
         }
     }
 }
@@ -537,8 +535,8 @@ double Eulerian::vecNorm(const vec3& vec){
     return (sqrt(vec.e11*vec.e11 + vec.e21*vec.e21 + vec.e31*vec.e31));
 }
 
-double Eulerian::matCondFro(const matrix9& mat,std::string msg) {
-    matrix9 matInv=matrixInv(mat,msg);
+double Eulerian::matCondFro(matrix9& mat,double tke) {
+    matrix9 matInv=matrixInv(mat,tke);
     double normMat=matNormFro(mat);
     double normMatInv=matNormFro(matInv);
     return  normMat*normMatInv ;
@@ -637,17 +635,38 @@ double Eulerian::matrixDet(const matrix6& matIni) {
   return detMat;
 }
 
-matrix9 Eulerian::matrixInv(const matrix9& mat, std::string msg) {
+matrix9 Eulerian::matrixInv(matrix9& mat, double tke) {
     
     matrix9 matInv;
     
     double detMat=(mat.e11*mat.e22*mat.e33)-
-      (mat.e11*mat.e23*mat.e32)-
-      (mat.e12*mat.e21*mat.e33)+
-      (mat.e12*mat.e23*mat.e31)+
-      (mat.e13*mat.e21*mat.e32)-
-      (mat.e13*mat.e22*mat.e31);
-        
+                  (mat.e11*mat.e23*mat.e32)-
+                  (mat.e12*mat.e21*mat.e33)+
+                  (mat.e12*mat.e23*mat.e31)+
+                  (mat.e13*mat.e21*mat.e32)-
+                  (mat.e13*mat.e22*mat.e31);
+    
+    // Fix non-invertable matrix
+    if (detMat==0.0) {
+        mat.e12=0.0;
+        mat.e13=0.0;
+        mat.e21=0.0;
+        mat.e23=0.0;
+        mat.e31=0.0;
+        mat.e32=0.0;
+        mat.e11=0.67*tke;
+        mat.e22=0.67*tke;
+        mat.e33=0.67*tke;
+    }
+    
+    // confirm that determinant is non-zero
+    detMat=(mat.e11*mat.e22*mat.e33)-
+           (mat.e11*mat.e23*mat.e32)-
+           (mat.e12*mat.e21*mat.e33)+
+           (mat.e12*mat.e23*mat.e31)+
+           (mat.e13*mat.e21*mat.e32)-
+           (mat.e13*mat.e22*mat.e31);
+    
     if(detMat!=0.0) {
       matInv.e11=( (mat.e22*mat.e33)-(mat.e23*mat.e32) )/detMat;
       matInv.e12=( (mat.e13*mat.e32)-(mat.e12*mat.e33) )/detMat;
@@ -660,7 +679,6 @@ matrix9 Eulerian::matrixInv(const matrix9& mat, std::string msg) {
       matInv.e33=( (mat.e11*mat.e22)-(mat.e12*mat.e21) )/detMat;
     }
     else{
-        std::cout<<msg<<std::endl;
         display(mat);
         std::cerr<<"Divide by Zero!!! (Eulerian.cpp - 1,mat9)"<<std::endl;
         exit(1);

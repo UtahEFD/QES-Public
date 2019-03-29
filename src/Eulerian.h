@@ -46,7 +46,7 @@ public:
     double matNormFro(const matrix9&);
     double matNormFro(const matrix6&);
     double matCondFro(const matrix6& mat);
-    double matCondFro(const matrix9& mat,std::string);
+    double matCondFro(matrix9& mat,double);
     
     int nx,ny,nz,nt;
  
@@ -61,7 +61,7 @@ private:
     void createA1Matrix(Urb*,Turb*);
     void swap(double&,double&);
     
-    matrix9 matrixInv(const matrix9&,std::string);
+    matrix9 matrixInv(matrix9&,double);
     matrix9 matrixMult(const matrix9&,const matrix9&);
     matrix9 matrixScalarMult(const matrix9&,const double&);
     matrix9 matrixSubs(const matrix9&,const matrix9&);

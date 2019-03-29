@@ -37,12 +37,14 @@ Turb :: Turb(Input* input) {
     sig.resize(grid.nt*grid.nz*grid.ny*grid.nx);
     lam.resize(grid.nt*grid.nz*grid.ny*grid.nx);
     CoEps.resize(grid.nt*grid.nz*grid.ny*grid.nx);
+    tke.resize(grid.nt*grid.nz*grid.ny*grid.nx);
             
     input->getVariableData("x",grid.x);
     input->getVariableData("y",grid.y);
     input->getVariableData("z",grid.z);
     input->getVariableData("t",grid.t);
     input->getVariableData("CoEps",start,count,CoEps);
+    input->getVariableData("tke",start,count,tke);
     
     // read in data
     std::vector<double> tau1(c),tau2(c),tau3(c),tau4(c),tau5(c),tau6(c);

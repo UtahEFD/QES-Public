@@ -15,11 +15,14 @@
 
 #include <helper_math.h>
 
-class dispersion {
+class Dispersion {
+    
     public:
         
-        Eulerian eul; 
-        void createDisp(const Eulerian&);
+        Dispersion(Urb*,Turb*,Eulerian*);
+        
+        //Eulerian eul; 
+        //void createDisp(const Eulerian&);
         
         struct matrix {
             double x;
@@ -27,7 +30,7 @@ class dispersion {
             double z;
         };
   
-        std::vector<float3> pos,prime;
+        std::vector<float3> pos, prime;
         std::vector<double> zIniPos,wPrime,timeStepStamp,tStrt;
         double eps;
         int numTimeStep, parPerTimestep;

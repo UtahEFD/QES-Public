@@ -52,6 +52,7 @@ class Turb {
         
         // CoEps
         std::vector<double>CoEps;
+        std::vector<double>tke;
 };
 
 #endif

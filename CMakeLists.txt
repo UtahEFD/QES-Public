@@ -109,7 +109,7 @@ else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
-add_subdirectory(quicutil)
+#add_subdirectory(quicutil)
 add_subdirectory(util)
 add_subdirectory(src)
 add_subdirectory(cudaPlume)

@@ -3,27 +3,32 @@
 	<timeStep> 1.0 </timeStep>
 </simulationParameters>
 <collectionParameters>
-	<timeStart> 0 </timeStart>
-	<timeEnd> 1 </timeEnd>
-	<timeAvg> 1 </timeAvg>
-	<bounds> 2 </bounds> 				
-	<nBoxesX> 60 </nBoxesX> 								
-	<nBoxesY> 55 </nBoxesY> 							
-	<nBoxesZ> 25 </nBoxesZ> 
+	<timeStart> 100.0 </timeStart>
+	<timeEnd> 100000.0 </timeEnd>
+	<timeAvg> 899.0 </timeAvg>
+	<boxBoundsX1> 0.0 </boxBoundsX1>
+	<boxBoundsX2> 200.0 </boxBoundsX2>
+	<boxBoundsY1> 0.0 </boxBoundsY1>
+	<boxBoundsY2> 200.0 </boxBoundsY2>
+	<boxBoundsZ1> 0.0 </boxBoundsZ1>
+	<boxBoundsZ2> 115.0 </boxBoundsZ2> 				
+	<nBoxesX> 100 </nBoxesX> 								
+	<nBoxesY> 100 </nBoxesY> 							
+	<nBoxesZ> 110 </nBoxesZ> 
 </collectionParameters>
 <sources>
 	<numSources> 2 </numSources>
 	<pointSource>
-		<posX> 1 </posX>
-		<posY> 20.0 </posY>
-		<posZ> 0 </posZ>
-		<radius> 24 </radius>
+		<posX> 25.0 </posX>
+		<posY> 25.0 </posY>
+		<posZ> 1.0 </posZ>
+		<radius> 0.33 </radius>
 	</pointSource>
 	<pointSource>
-		<posX> 1 </posX>
-		<posY> 20.0 </posY>
-		<posZ> 0 </posZ>
-		<radius> 24 </radius>
+		<posX> 25.0 </posX>
+		<posY> 75.0 </posY>
+		<posZ> 1.0 </posZ>
+		<radius> 0.33 </radius>
 	</pointSource>
 </sources>
 <fileOptions>
@@ -32,7 +37,4 @@
     <outputFields>v</outputFields> 
     <outputFields>w</outputFields>
     <outputFields>icell</outputFields>  
-	<massConservedFlag> 0 </massConservedFlag>
-	<sensorVelocityFlag> 0 </sensorVelocityFlag>
-	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
