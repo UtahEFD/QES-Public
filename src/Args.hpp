@@ -32,6 +32,7 @@ class Args : public ArgumentParsing
          */
         void processArguments(int argc, char *argv[]);
         
+        std::string quicFile = "";
         std::string inputFileUrb = "";
         std::string inputFileTurb = "";
         std::string outputFile = "";

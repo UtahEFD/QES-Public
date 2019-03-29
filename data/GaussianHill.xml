@@ -2,7 +2,7 @@
 	<runTime> 1000.0 </runTime>
 	<timeStep> 1.0 </timeStep>
 </simulationParameters>
-<collectionParams>
+<collectionParameters>
 	<timeStart> 0 </timeStart>
 	<timeEnd> 1 </timeEnd>
 	<timeAvg> 1 </timeAvg>
@@ -10,7 +10,7 @@
 	<nBoxesX> 60 </nBoxesX> 								
 	<nBoxesY> 55 </nBoxesY> 							
 	<nBoxesZ> 25 </nBoxesZ> 
-</collectionParams>
+</collectionParameters>
 <sources>
 	<numSources> 2 </numSources>
 	<pointSource>

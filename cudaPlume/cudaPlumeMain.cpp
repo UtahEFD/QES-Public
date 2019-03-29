@@ -134,7 +134,9 @@ void initGL(int *argc, char **argv)
 
   glutReportErrors();
 }
- 
+
+PlumeInputData* parseXMLTree(const std::string fileName);
+
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
@@ -158,8 +160,12 @@ int main(int argc, char** argv)
     arguments.processArguments(argc, argv);
     
     // parse xml settings
-    PlumeInputData* PID;
-    
+    PlumeInputData* PID = parseXMLTree(arguments.quicFile);
+    if ( !PID ) {
+        std::cerr << "QUIC-Plume input file: " << arguments.quicFile << " not able to be read successfully." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+        
     // Create instance of cudaUrb input class
     Input* inputUrb = new Input(arguments.inputFileUrb);
     
@@ -383,5 +389,24 @@ int main(int argc, char** argv)
 //    delete data;  
 //
   // cutilDeviceReset(); 
+}
+
+PlumeInputData* parseXMLTree(const std::string fileName)
+{
+	pt::ptree tree;
+
+	try
+	{
+		pt::read_xml(fileName, tree);
+	}
+	catch (boost::property_tree::xml_parser::xml_parser_error& e)
+	{
+		std::cerr << "Error reading tree in" << fileName << "\n";
+		return (PlumeInputData*)0;
+	}
+
+	PlumeInputData* xmlRoot = new PlumeInputData();
+        xmlRoot->parseTree( tree );
+	return xmlRoot;
 }
  
