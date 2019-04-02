@@ -49,11 +49,10 @@ public:
     double matCondFro(matrix9& mat,double);
     
     int nx,ny,nz,nt;
+    double zo,dx,dy,dz;
  
 private:   
-    
-    double zo,dx,dy,dz;
-    
+        
     void createUstar();
     void createTausAndLamdas();
     void createTauGrads(Urb*,Turb*);

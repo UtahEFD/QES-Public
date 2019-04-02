@@ -35,7 +35,7 @@ class Advection {
         std::ofstream rand_output;
         int loopExt=0;
         
-        void average(const int, const Dispersion&);
+        void average(const int, const Dispersion*);
         void outputConc();
         void reflection(double&, double&, const double&, const  double&,  const double&, const double&
         		,double&,double&,const Eulerian&,const int&,const int&,const int&,double&,double&);
