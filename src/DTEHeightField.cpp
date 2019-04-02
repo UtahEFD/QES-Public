@@ -276,8 +276,8 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
       //get more specific values, currently adding 50 meters
       //Also, domains are currently only working with cubic dimensions... fix this
 
-      if (q == 2)
-        (*domain)[q] += (int)(50.0f / (float)(*grid)[q]);
+      /*if (q == 2)
+        (*domain)[q] += (int)(50.0f / (float)(*grid)[q]);*/
 
       std::cout << std::endl;
     }
