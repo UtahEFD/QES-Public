@@ -189,7 +189,7 @@ int main(int argc, char** argv)
     Dispersion* dis = new Dispersion(urb,turb,eul,PID);
     
     // Create instance of Advection class
-    Advection* adv = new Advection(urb,turb,eul,dis);
+    Advection* adv = new Advection(urb,turb,eul,dis,PID);
     
     // compuet run time information
     clock_gettime(CLOCK_MONOTONIC, &finish);

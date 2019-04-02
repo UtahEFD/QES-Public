@@ -23,12 +23,12 @@ class Advection {
     
     public:
         
-        Advection(Urb*,Turb*,Eulerian*,Dispersion*);
+        Advection(Urb*,Turb*,Eulerian*,Dispersion*,PlumeInputData*);
         
     private:
         
-        int numPar,nx,ny,nz,numBoxX,numBoxY,numBoxZ,tStep;
-        double xBoxSize,yBoxSize,zBoxSize,lBndx,lBndy,lBndz,uBndx,uBndy,uBndz,tStepInp,avgTime,volume;
+        int numPar,nx,ny,nz,nBoxesX,nBoxesY,nBoxesZ,tStep;
+        double boxSizeX,boxSizeY,boxSizeZ,lBndx,lBndy,lBndz,uBndx,uBndy,uBndz,tStepInp,avgTime,volume;
         std::vector<double> cBox,tStrt,timeStepStamp,xBoxCen,yBoxCen,zBoxCen;
         
         std::ofstream output;

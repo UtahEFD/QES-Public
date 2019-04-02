@@ -6,144 +6,103 @@
 
 #include "Advection.hpp"
 
-Advection::Advection(Urb*,Turb*,Eulerian*,Dispersion*) {
+Advection::Advection(Urb* urb, Turb* turb, Eulerian* eul, 
+                     Dispersion* dis, PlumeInputData* PID) {
     
     std::cout<<"[Advection] \t Setting up sources "<<std::endl;
-
+    
+    
+    Wind windRot;
+    
+    // make local copies
+    nx = urb->grid.nx;
+    ny = urb->grid.ny;
+    nz = urb->grid.nz;
+    
+    numPar = PID->sources->numParticles;
+    
+    nBoxesX = PID->colParams->nBoxesX;
+    nBoxesY = PID->colParams->nBoxesY;
+    nBoxesZ = PID->colParams->nBoxesZ;
+    
+    boxSizeX = (PID->colParams->boxBoundsX2-PID->colParams->boxBoundsX1)/nBoxesX;	  
+    boxSizeY = (PID->colParams->boxBoundsY2-PID->colParams->boxBoundsY1)/nBoxesY;	  
+    boxSizeZ = (PID->colParams->boxBoundsZ2-PID->colParams->boxBoundsZ1)/nBoxesZ;
+    
+    volume=boxSizeX*boxSizeY*boxSizeZ;
+    
+    lBndx = PID->colParams->boxBoundsX1;
+    uBndx = PID->colParams->boxBoundsX2;
+    lBndy = PID->colParams->boxBoundsY1;
+    uBndy = PID->colParams->boxBoundsY2;
+    lBndz = PID->colParams->boxBoundsZ1;
+    uBndz = PID->colParams->boxBoundsZ2;
+    
+    xBoxCen.resize(nBoxesX*nBoxesY*nBoxesZ);
+    yBoxCen.resize(nBoxesX*nBoxesY*nBoxesZ);
+    zBoxCen.resize(nBoxesX*nBoxesY*nBoxesZ);
+    
+    double quanX = (uBndx-lBndx)/(nBoxesX);
+    double quanY = (uBndy-lBndy)/(nBoxesY);
+    double quanZ = (uBndz-lBndz)/(nBoxesZ);
+    
+    int id=0;
+    int zR=0;
+    for(int k=0;k<nBoxesZ;++k) {
+        int yR=0;
+        for(int j=0;j<nBoxesY;++j) {
+            int xR=0;
+            for(int i=0;i<nBoxesX;++i) {
+                id=k*nBoxesY*nBoxesX+j*nBoxesX+i;
+                xBoxCen.at(id)=lBndx+xR*(quanX)+boxSizeX/2.0;
+                yBoxCen.at(id)=lBndy+yR*(quanY)+boxSizeY/2.0;
+                zBoxCen.at(id)=lBndz+zR*(quanZ)+boxSizeZ/2.0;	
+                xR++;
+            }
+            yR++;
+        }
+        zR++;
+    }
+    
+    tStepInp = PID->simParams->timeStep;
+    avgTime  = PID->colParams->timeAvg;
+    
+    double sCBoxTime = PID->colParams->timeStart;
+    int numTimeStep  = dis->numTimeStep;
+    
+    tStrt.resize(numPar);
+    tStrt = dis->tStrt;
+    
+    timeStepStamp.resize(numTimeStep);
+    timeStepStamp = dis->timeStepStamp;
+    
+    cBox.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
+    
+    int Flag=0;
+    int flag=0;
+    int flagPrime=0;
+    int loopPrm=0;
+    int loopLowestCell=0;
+    int flag_g2nd=0;
+    int countMax=10;//100;
+    int countPrmMax=10;//1000;
+    double ranU=0.0;
+    double ranV=0.0;
+    double ranW=0.0;
+    int parPerTimestep=dis->parPerTimestep;
+    int parToMove=0;
+    
+    // For every time step
+    for(tStep=0; tStep<numTimeStep; tStep++) {
+        
+        // Move each particle for every time step
+        parToMove = parToMove + parPerTimestep;
+                    
+    }
+    
 }
 
-//  wind windRot;
-//
-//  numPar=utl.numPar; 
-//  
-//  nx=utl.nx;
-//  ny=utl.ny;
-//  nz=utl.nz;
-//
-//  numBoxX=utl.numBoxX;
-//  numBoxY=utl.numBoxY;
-//  numBoxZ=utl.numBoxZ;
-//
-//  xBoxSize = utl.xBoxSize;	  
-//  yBoxSize = utl.yBoxSize;	  
-//  zBoxSize = utl.zBoxSize;	  
-//  
-//  volume=xBoxSize*yBoxSize*zBoxSize;
-//  
-//
-//  lBndx=utl.bnds[0];
-//  uBndx=utl.bnds[1];
-//  lBndy=utl.bnds[2];
-//  uBndy=utl.bnds[3];
-//  lBndz=utl.bnds[4];
-//  uBndz=utl.bnds[5];
-//
-//  xBoxCen.resize(numBoxX*numBoxY*numBoxZ);
-//  yBoxCen.resize(numBoxX*numBoxY*numBoxZ);
-//  zBoxCen.resize(numBoxX*numBoxY*numBoxZ);
-//
-//  
-//  double quanX=(uBndx-lBndx)/(numBoxX);
-//  double quanY=(uBndy-lBndy)/(numBoxY);
-//  double quanZ=(uBndz-lBndz)/(numBoxZ);
-//
-//  int id=0;
-//  int zR=0;
-//  for(int k=0;k<numBoxZ;++k){
-//    int yR=0;
-//    for(int j=0;j<numBoxY;++j){
-//      int xR=0;
-//      for(int i=0;i<numBoxX;++i){
-//	id=k*numBoxY*numBoxX+j*numBoxX+i;
-//	
-//	xBoxCen.at(id)=lBndx+xR*(quanX)+xBoxSize/2.0;
-//	yBoxCen.at(id)=lBndy+yR*(quanY)+yBoxSize/2.0;
-//
-//	zBoxCen.at(id)=lBndz+zR*(quanZ)+zBoxSize/2.0;	
-//
-//	xR++;
-//      }
-//      yR++;
-//    }
-//    zR++;
-//  }
-//  
-//  tStepInp=utl.timeStep;
-//  avgTime=utl.avgTime;
-//
-//
-//  std::cout<<"NEXT:::::::::::::::"<<std::endl;
-//  if(argc==2 && std::strcmp(method,"o")==0){
-//    if(remove("output_old.m")!=0)
-//      perror("Output File Delete error");
-//    else
-//      std::cout<<" OLD - Output File succesfully removed!!"<<std::endl;
-//    output.open("output_old.m");
-//  }
-//  else{
-//    if(remove("output_new.m")!=0)
-//      perror("Output File Delete error");
-//    else
-//      std::cout<<" NEW - Output File succesfully removed!!"<<std::endl;
-//    
-//    output.open("output_new.m");
-//    rand_output.open("random.txt");
-//  }
-//  
-//  if(!output.is_open()){
-//    std::cerr<<"Output.dat file open error"<<std::endl;
-//    exit(1);
-//  }
-//
-//
-//  double sCBoxTime=utl.sCBoxTime;
-//  int numTimeStep=disp.numTimeStep;
-//
-//  tStrt.resize(numPar);
-//  tStrt=disp.tStrt;
-//
-//  timeStepStamp.resize(numTimeStep);
-//  timeStepStamp=disp.timeStepStamp;
-//
-//  cBox.resize(numBoxX*numBoxY*numBoxZ,0.0);
-//  std::cout << "cBox.size = " << cBox.size() << "; " << numBoxX << " X " << numBoxY << " X " << numBoxZ << std::endl;
-//
-//  std::ofstream particles;
-//  particles.open("particle.dat");
-//  if(!particles.is_open()){
-//      std::cerr<<"particle output file not open"<<std::endl;
-//      exit(1);
-//  }  
-//  std::ofstream outPrimes;
-//  
-//  outPrimes.open("Primes_new.dat");
-//  
-//  if(!outPrimes.is_open()){
-//    std::cerr<<"Prime output file not open"<<std::endl;
-//    exit(1);
-//  }  
-//  int Flag=0;
-//  int flag=0;
-//  int flagPrime=0;
-//  int loopPrm=0;
-//  int loopLowestCell=0;
-//  int flag_g2nd=0;
-//  int countMax=10;//100;
-//  int countPrmMax=10;//1000;
-//  double ranU=0.0;
-//  double ranV=0.0;
-//  double ranW=0.0;
-//  int parPerTimestep=disp.parPerTimestep;
-//  int parToMove=0;
-//
-//  //For every time step
-//  for(tStep=0; tStep<numTimeStep; tStep++){
-//    std::cout<<"Time Step :                                 "<<tStep<<std::endl;
-//
-//    // getchar();
-//    //Move each particle for every time step
-//    parToMove=parToMove+parPerTimestep;
-//    // std::cout<<parToMove<<std::endl;
+
 //    
 //    for(int par=0; par<parToMove;par++){
 //      loopPrm=0;
@@ -151,9 +110,9 @@ Advection::Advection(Urb*,Turb*,Eulerian*,Dispersion*) {
 //      
 //      int count=0;
 //      int countPrm=0;
-//      double xPos=disp.pos.at(par).x;
-//      double yPos=disp.pos.at(par).y;
-//      double zPos=disp.pos.at(par).z;
+//      double xPos=dis->pos.at(par).x;
+//      double yPos=dis->pos.at(par).y;
+//      double zPos=dis->pos.at(par).z;
 //      if(par>9000)particles<<tStep<<"   "<<par<<"   "<<xPos<<"   "<<yPos<<"   "<<zPos<<std::endl;
 //
 //      double tStepRem=tStepInp;
@@ -198,9 +157,9 @@ Advection::Advection(Urb*,Turb*,Eulerian*,Dispersion*) {
 //	    tStepCal=tFac * min(tStepArr,4); 
 //	    double arrT[]={tStepMin,tStepCal,tStepRem,dt};
 //	    dt=min(arrT,4);
-//	    double uPrime=disp.prime.at(par).x;
-//	    double vPrime=disp.prime.at(par).y;
-//	    double wPrime=disp.prime.at(par).z;
+//	    double uPrime=dis->prime.at(par).x;
+//	    double vPrime=dis->prime.at(par).y;
+//	    double wPrime=dis->prime.at(par).z;
 //	    double uMean=eul.windVec.at(id).u;
 //	    double vMean=eul.windVec.at(id).v;
 //	    double wMean=eul.windVec.at(id).w;
@@ -485,9 +444,9 @@ Advection::Advection(Urb*,Turb*,Eulerian*,Dispersion*) {
 //            
 //	    if(fabs(uPrime)>terFacU*fabs(eul.sig.at(id).e11) && countPrm<countPrmMax){
 //	      
-//	      disp.prime.at(par).x=eul.sig.at(id).e11*random::norRan();
+//	      dis->prime.at(par).x=eul.sig.at(id).e11*random::norRan();
 //	      /*	      std::cout<<"Uprime OLD : "<<uPrime<<std::endl;
-//	      std::cout<<"Uprime New : "<<disp.prime.at(par).x<<std::endl;
+//	      std::cout<<"Uprime New : "<<dis->prime.at(par).x<<std::endl;
 //	      std::cout<<"SIGMA U    : "<<eul.sig.at(id).e11<<std::endl;
 //	      std::cout<<"xPos       : "<<xPos<< "    "<<iV<<std::endl;
 //	      std::cout<<"yPos       : "<<yPos<< "    "<<jV<<std::endl;
@@ -498,9 +457,9 @@ Advection::Advection(Urb*,Turb*,Eulerian*,Dispersion*) {
 //	      flagPrime=1;
 //	    }
 //	    if(fabs(vPrime)>terFacV*fabs(eul.sig.at(id).e22)&& countPrm<countPrmMax){
-//	      disp.prime.at(par).y=eul.sig.at(id).e22*random::norRan();
+//	      dis->prime.at(par).y=eul.sig.at(id).e22*random::norRan();
 //	      /*	      std::cout<<"Vprime OLD : "<<vPrime<<std::endl;
-//	      std::cout<<"Vprime New : "<<disp.prime.at(par).y<<std::endl;
+//	      std::cout<<"Vprime New : "<<dis->prime.at(par).y<<std::endl;
 //	      std::cout<<"SIGMA V    : "<<eul.sig.at(id).e22<<std::endl;
 //	      std::cout<<"xPos       : "<<xPos<< "    "<<iV<<std::endl;
 //	      std::cout<<"yPos       : "<<yPos<< "    "<<jV<<std::endl;
@@ -511,10 +470,10 @@ Advection::Advection(Urb*,Turb*,Eulerian*,Dispersion*) {
 //	      flagPrime=1;
 //	    }
 //	    if(fabs(wPrime)>terFacW*fabs(eul.sig.at(id).e33)&& countPrm<countPrmMax){
-//	      disp.prime.at(par).z=eul.sig.at(id).e33*random::norRan();
+//	      dis->prime.at(par).z=eul.sig.at(id).e33*random::norRan();
 //	      
 //	      /*	      std::cout<<"Wprime OLD : "<<wPrime<<std::endl;
-//	      std::cout<<"Wprime New : "<<disp.prime.at(par).z<<std::endl;
+//	      std::cout<<"Wprime New : "<<dis->prime.at(par).z<<std::endl;
 //	      std::cout<<"SIGMA W    : "<<eul.sig.at(id).e33<<std::endl;
 //	      std::cout<<"xPos       : "<<xPos<< "    "<<iV<<std::endl;
 //	      std::cout<<"yPos       : "<<yPos<< "    "<<jV<<std::endl;
@@ -569,13 +528,13 @@ Advection::Advection(Urb*,Turb*,Eulerian*,Dispersion*) {
 //	      }
 //	    }
 //	    
-//	    disp.prime.at(par).x=uPrime;
-//	    disp.prime.at(par).y=vPrime;
-//	    disp.prime.at(par).z=wPrime;
+//	    dis->prime.at(par).x=uPrime;
+//	    dis->prime.at(par).y=vPrime;
+//	    dis->prime.at(par).z=wPrime;
 //	    
-//	    disp.pos.at(par).x=xPos;
-//	    disp.pos.at(par).y=yPos;
-//	    disp.pos.at(par).z=zPos;
+//	    dis->pos.at(par).x=xPos;
+//	    dis->pos.at(par).y=yPos;
+//	    dis->pos.at(par).z=zPos;
 //	    
 //	    tStepUsed=tStepUsed+dt;
 //	    tStepRem=tStepRem-dt;
@@ -585,9 +544,9 @@ Advection::Advection(Urb*,Turb*,Eulerian*,Dispersion*) {
 //	}// if condition for domain---SEE ELSE ALSO 
 //	else{
 //	  tStepRem=0.0;
-//	  disp.pos.at(par).x=-999.0;
-//	  disp.pos.at(par).y=-999.0;
-//	  disp.pos.at(par).z=-999.0;;
+//	  dis->pos.at(par).x=-999.0;
+//	  dis->pos.at(par).y=-999.0;
+//	  dis->pos.at(par).z=-999.0;;
 //	  //	  std::cout<<xPos<<"   "<<yPos<<"   "<<zPos<<"   "<<par<<"   "<<tStep<<std::endl;
 //	  //getchar();
 //	}//if for domain ends
@@ -1002,9 +961,9 @@ Advection::Advection(Urb*,Turb*,Eulerian*,Dispersion*) {
 //  for(int i=0;i<numPar;i++){
 //    if(tStrt.at(i)>timeStepStamp.at(tStep))
 //	continue;
-//    double xPos=disp.pos.at(i).x;
-//    double yPos=disp.pos.at(i).y;
-//    double zPos=disp.pos.at(i).z;
+//    double xPos=dis->pos.at(i).x;
+//    double yPos=dis->pos.at(i).y;
+//    double zPos=dis->pos.at(i).z;
 //    if(zPos==-1)
 //      continue;
 //    
@@ -1014,9 +973,9 @@ Advection::Advection(Urb*,Turb*,Eulerian*,Dispersion*) {
 //
 //
 //    
-//    int idx=(int)((xPos-lBndx)/xBoxSize);
-//    int idy=(int)((yPos-lBndy)/yBoxSize);
-//    int idz=(int)((zPos-lBndz)/zBoxSize);
+//    int idx=(int)((xPos-lBndx)/boxSizeX);
+//    int idy=(int)((yPos-lBndy)/boxSizeY);
+//    int idz=(int)((zPos-lBndz)/boxSizeZ);
 //    
 //    if(xPos<lBndx)
 //      idx=-1;
@@ -1028,8 +987,8 @@ Advection::Advection(Urb*,Turb*,Eulerian*,Dispersion*) {
 //    
 //    
 //    int id=0;
-//    if(idx>=0 && idx<numBoxX && idy>=0 && idy<numBoxY && idz>=0 && idz<numBoxZ && tStrt.at(i)<=timeStepStamp.at(tStep)){
-//      id=idz*numBoxY*numBoxX+idy*numBoxX+idx;
+//    if(idx>=0 && idx<nBoxesX && idy>=0 && idy<nBoxesY && idz>=0 && idz<nBoxesZ && tStrt.at(i)<=timeStepStamp.at(tStep)){
+//      id=idz*nBoxesY*nBoxesX+idy*nBoxesX+idx;
 //      cBox.at(id)=cBox.at(id)+1.0;
 //    }
 //    
@@ -1040,17 +999,17 @@ Advection::Advection(Urb*,Turb*,Eulerian*,Dispersion*) {
 //  std::cout<<"Time:  "<<tStep<<std::endl;
 //  output << "data = [" << std::endl;
 //  double conc=(tStepInp)/(avgTime*volume*numPar);
-//  for(int k=0;k<numBoxZ;k++)
-//    for(int j=0;j<numBoxY;j++)
-//      for(int i=0;i<numBoxX;i++){
-//	int id=k*numBoxY*numBoxX+j*numBoxX+i;
+//  for(int k=0;k<nBoxesZ;k++)
+//    for(int j=0;j<nBoxesY;j++)
+//      for(int i=0;i<nBoxesX;i++){
+//	int id=k*nBoxesY*nBoxesX+j*nBoxesX+i;
 //      	output<<xBoxCen.at(id)<<" "<<yBoxCen.at(id)<<" "<<zBoxCen.at(id)<<" "<<cBox.at(id)*conc<< ';' << std::endl;
 //  }
 //  output << "];" << std::endl;
-//  for(int k=0;k<numBoxZ;k++)
-//    for(int j=0;j<numBoxY;j++)
-//      for(int i=0;i<numBoxX;i++){
-//	int id=k*numBoxY*numBoxX+j*numBoxX+i;
+//  for(int k=0;k<nBoxesZ;k++)
+//    for(int j=0;j<nBoxesY;j++)
+//      for(int i=0;i<nBoxesX;i++){
+//	int id=k*nBoxesY*nBoxesX+j*nBoxesX+i;
 //	
 //	cBox.at(id)=0.0;
 //      }
