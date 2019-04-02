@@ -5,6 +5,7 @@
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include "Advection.hpp"
 #include "Args.hpp"
 #include "Urb.hpp"
 #include "Turb.hpp"
@@ -185,7 +186,10 @@ int main(int argc, char** argv)
     Eulerian* eul = new Eulerian(urb,turb);
     
     // Create instance of Dispersion class
-    Dispersion* dis = new Dispersion(urb,turb, eul);
+    Dispersion* dis = new Dispersion(urb,turb,eul,PID);
+    
+    // Create instance of Advection class
+    Advection* adv = new Advection(urb,turb,eul,dis);
     
     // compuet run time information
     clock_gettime(CLOCK_MONOTONIC, &finish);
@@ -208,199 +212,6 @@ int main(int argc, char** argv)
 //   advectPar(utl,disp,eul,argv[1],argc);
 //   return 1;
   
-  
-/*here you give the name of output_file of concentration 
- */
-  //output_file = "test.m";
-  
-/*
- * only for device global memory  
- * bUseGlobal must set true, false is default
- */  
-  //thrust::host_vector<turbulence> turbs;
-///*
-// * only for texture memory, default memory
-// */
-//    thrust::host_vector<float4> windData;
-//    thrust::host_vector<float3> prime(disp.prime.begin(), disp.prime.end()); 
-//    
-//    thrust::host_vector<int> cellType;
-//    thrust::host_vector<float> CoEps;
-//    thrust::host_vector<float4> eigVal; 
-//    thrust::host_vector<float4> ka0; 
-//    thrust::host_vector<float4> g2nd; 
-//  ////////////////  matrix 9////////////////
-//    thrust::host_vector<float4> eigVec1;
-//    thrust::host_vector<float4> eigVec2;
-//    thrust::host_vector<float4> eigVec3;
-//    thrust::host_vector<float4> eigVecInv1;
-//    thrust::host_vector<float4> eigVecInv2;
-//    thrust::host_vector<float4> eigVecInv3;
-//    thrust::host_vector<float4> lam1;
-//    thrust::host_vector<float4> lam2;
-//    thrust::host_vector<float4> lam3;
-//  //////////////// matrix6 ////////////////
-//    thrust::host_vector<float4> sig1;
-//    thrust::host_vector<float4> sig2;
-//    thrust::host_vector<float4> taudx1;
-//    thrust::host_vector<float4> taudx2; 
-//    thrust::host_vector<float4> taudy1;
-//    thrust::host_vector<float4> taudy2; 
-//    thrust::host_vector<float4> taudz1;
-//    thrust::host_vector<float4> taudz2;
-//  if(bUseGlobal)
-//  {
-//      turbs = thrust::host_vector<turbulence> (eul.CoEps.size()); 
-//      turb_cp_2ndEdition(utl, eul, disp, turbs); 
-//  } else
-//  {    
-//  //copy CoEps start//////////////////////////////////////////////////////////////
-//    CoEps = thrust::host_vector<float> (eul.CoEps.begin(), eul.CoEps.end());  
-//    eul.CoEps.clear();
-//    
-//    cellType = thrust::host_vector<int> (eul.CellType.size()); 
-//    for(int i=0; i<eul.CellType.size(); i++)
-//    {
-//      cellType[i] =  eul.CellType[i].c;
-//    } 
-//    eul.CellType.clear(); 
-//  //copy CoEps end//////////////////////////////////////////////////////////////
-//    
-//    
-//    turb_cp(utl, eul, disp, windData, eigVal, ka0, g2nd,
-//  ////////////////  matrix 9////////////////
-//	    eigVec1, eigVec2, eigVec3,
-//	    eigVecInv1, eigVecInv2, eigVecInv3,
-//	    lam1, lam2, lam3,
-//  //////////////// matrix6 ////////////////
-//	    sig1, sig2, taudx1, taudx2, taudy1, taudy2, taudz1, taudz2);  
-//  }
-//
-//  // this all needs to be pulled from the appropriate QUIC files!
-//
-//  numParticles = 100000;
-// 
-//  source.type = POINTSOURCE;
-//  if(source.type == SPHERESOURCE)
-//  {
-//    assert(source.type == SPHERESOURCE);
-//    float3 sourceOrigin = make_float3(utl.xSrc, utl.ySrc, utl.zSrc);
-//    source.info.sph.ori = sourceOrigin;
-//    source.info.sph.rad = .5f;
-//  }
-//  else if( source.type == LINESOURCE)
-//  {
-//    assert(source.type == LINESOURCE); 
-//    source.info.ln.start = make_float3(43.66666667, 75.0, 0.666666667);//6, 8.5, 0.5f); 
-//    source.info.ln.end = make_float3(43.66666667, 25.0, 0.666666667);//(6, 17.5, 0.5f); 
-//  } 
-//  else if( source.type == POINTSOURCE)
-//  {
-//    assert(source.type == POINTSOURCE);
-//    source.info.pt.ori = make_float3(utl.xSrc, utl.ySrc, utl.zSrc);
-//  } 
-//  source.speed = 0.5f;
-//  
-//  domain = make_uint3(utl.nx, utl.ny, utl.nz); 
-//   
-////   return 1;
-////   loadQUICWindField(data->nx, data->ny, data->nz, data->m_quicProjectPath, windFieldData);
-//
-//  //
-//  // 3.  Build kernel to simply advect the particles...
-//  //
-//  // 4. Use time step in QPParams.h to determine the
-//  // loop... while (simulation duration is not yet complete) run
-//  // advection kernel again... 
-// 
-/////////////////////////////////Opengl Main section////
-//  if (!bUseOpenGL) 
-//  { 
-//      
-//    cudaInit(argc, argv);
-//    initGL(&argc, argv);
-//    cudaInit(argc, argv);
-//    initPlumeSystem(numParticles, gridSize, utl, output_file);
-//    
-//    if(bUseGlobal)
-//      psystem->copy_turbs_2_deviceGlobal(turbs); 
-//    else
-//       psystem->_initDeviceTexture(CoEps, cellType, windData, eigVal, ka0, g2nd,
-//  ////////////////  matrix 9////////////////
-//	    eigVec1, eigVec2, eigVec3,
-//	    eigVecInv1, eigVecInv2, eigVecInv3,
-//	    lam1, lam2, lam3,
-//  //////////////// matrix6 ////////////////
-//	    sig1, sig2, taudx1, taudx2, taudy1, taudy2, taudz1, taudz2); 
-////       psystem->update(timestep); 
-//    psystem->reset(source.info.pt.ori, prime); 
-//    bool b_print_concentration = true;
-//    while(true)   
-//      psystem->update(timestep, b_print_concentration); 
-////     psystem->dev_par_concentration();
-//    return 1; 
-//  } 
-//  else
-//  { 
-//      std::cout << "Not using OpenGL for rendering the visuals." << std::endl;
-//      
-//      glutInit(&argc, argv);
-//      glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
-//  
-//      GLenum glewErr = glewInit();
-//      if (GLEW_OK != glewErr) {
-//          /* Problem: glewInit failed, something is seriously wrong. */
-//          std::cerr << "Error: " << glewGetErrorString(glewErr) << std::endl;
-//          exit(EXIT_FAILURE);
-//      }
-//      // initGL(&argc, argv);
-//      cudaGLInit(argc, argv);
-//
-//    initPlumeSystem(numParticles, gridSize, utl, output_file);
-//    if(!bUseGlobal)
-//    {
-//      psystem->_initDeviceTexture(CoEps, cellType, windData, eigVal, ka0, g2nd,
-//  ////////////////  matrix 9////////////////
-//	    eigVec1, eigVec2, eigVec3,
-//	    eigVecInv1, eigVecInv2, eigVecInv3,
-//	    lam1, lam2, lam3,
-//  //////////////// matrix6 ////////////////
-//	    sig1, sig2, taudx1, taudx2, taudy1, taudy2, taudz1, taudz2); 
-////       psystem->_initialize();
-//    }
-//    else
-//    { 
-//      psystem->copy_turbs_2_deviceGlobal(turbs);  
-//    }
-//     
-//      psystem->reset(source.info.pt.ori, prime);
-//      
-//      renderer = new ParticleRenderer;
-//      renderer->setParticleRadius(psystem->getParticleRadius());
-//      renderer->setColorBuffer(psystem->getColorBuffer()); 
-//
-//      initParams();
-//    
-//      initMenus(); 
-//      glutDisplayFunc(display);
-//      glutReshapeFunc(reshape);
-//      glutMouseFunc(mouse);
-//      glutMotionFunc(motion);
-//      glutKeyboardFunc(key);
-//      glutKeyboardUpFunc(keyUp);
-//      glutSpecialFunc(special);
-//      glutIdleFunc(idle);
-//
-//      atexit(cleanup);
-//
-//      glutMainLoop();  
-//  }
-//  if (psystem)
-//    delete psystem;
-//  if (data)
-//    delete data;  
-//
-  // cutilDeviceReset(); 
 }
 
 PlumeInputData* parseXMLTree(const std::string fileName)

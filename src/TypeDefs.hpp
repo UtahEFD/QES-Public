@@ -38,3 +38,9 @@ typedef struct{
     double e22;
     double e33;
 } diagonal;
+
+typedef struct{
+    double x;
+    double y;
+    double z;
+} pos;

@@ -17,16 +17,11 @@
 	<nBoxesZ> 110 </nBoxesZ> 
 </collectionParameters>
 <sources>
+    <numParticles>100000</numParticles>
 	<numSources> 2 </numSources>
 	<pointSource>
 		<posX> 25.0 </posX>
 		<posY> 25.0 </posY>
-		<posZ> 1.0 </posZ>
-		<radius> 0.33 </radius>
-	</pointSource>
-	<pointSource>
-		<posX> 25.0 </posX>
-		<posY> 75.0 </posY>
 		<posZ> 1.0 </posZ>
 		<radius> 0.33 </radius>
 	</pointSource>

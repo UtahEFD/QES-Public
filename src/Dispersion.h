@@ -10,6 +10,8 @@
 #include <list>
 #include <vector>
 #include <iostream>
+#include <cmath>
+#include "PlumeInputData.hpp"
 #include "Eulerian.h"
 #include "Random.h"
 
@@ -19,7 +21,7 @@ class Dispersion {
     
     public:
         
-        Dispersion(Urb*,Turb*,Eulerian*);
+        Dispersion(Urb*,Turb*,Eulerian*,PlumeInputData*);
         
         //Eulerian eul; 
         //void createDisp(const Eulerian&);
@@ -37,7 +39,7 @@ class Dispersion {
         
     private:
         
-        double xSrc,ySrc,zSrc;
-        int numPar;
+        double dur,srcX,srcY,srcZ;
+        int dt,nx,ny,numPar;
 };
 #endif
