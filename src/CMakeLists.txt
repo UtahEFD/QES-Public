@@ -7,7 +7,7 @@ CUDA_ADD_LIBRARY( cudaplumecore
     #shader/particle/shaders.cpp kernel/kernel_interface.cu 
     #shader/particle/render_particles.cpp  
     #plumeSystem.cpp  
-    Advection.cpp
+    Plume.cpp
     Eulerian.cpp
     #Util.cpp
     #advectPar.cpp

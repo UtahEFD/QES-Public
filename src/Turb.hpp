@@ -38,6 +38,7 @@ class Turb {
         // grid information
         struct Grid {
             int nx, ny, nz, nt;
+            double dx, dy, dz;
             std::vector<double>x;
             std::vector<double>y;
             std::vector<double>z;

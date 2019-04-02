@@ -8,7 +8,7 @@
 #include <fstream>
 #define EPSILON 0.00001   
 
-Dispersion::Dispersion(Urb* urb, Turb* turb, Eulerian* eul, PlumeInputData* PID) {
+Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID) {
     std::cout<<"[Dispersion] \t Setting up sources "<<std::endl;
     
     // make local copies

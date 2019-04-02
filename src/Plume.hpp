@@ -1,17 +1,18 @@
 //
-//  Advection.hpp
+//  Plume.hpp
 //  
-//  This class handles advection of particles
+//  This class handles plume model
 //
 
-#ifndef ADVECTION_H
-#define ADVECTION_H
+#ifndef PLUME_H
+#define PLUME_H
 
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <cmath>
 #include <cstring>
+#include "Output.hpp"
 #include "Urb.hpp"
 #include "Turb.hpp"
 #include "Eulerian.h"
@@ -19,20 +20,20 @@
 #include "TypeDefs.hpp"
 #include "PlumeInputData.hpp"
 
-class Advection {
+class Plume {
     
     public:
         
-        Advection(Urb*,Turb*,Eulerian*,Dispersion*,PlumeInputData*);
+        Plume(Urb*,Dispersion*,PlumeInputData*);
+        void run(Urb*,Turb*,Eulerian*,Dispersion*,PlumeInputData*,Output*);
         
     private:
         
-        int numPar,nx,ny,nz,nBoxesX,nBoxesY,nBoxesZ,tStep;
+        int numPar,nx,ny,nz,nBoxesX,nBoxesY,nBoxesZ,tStep,numTimeStep,parPerTimestep;
         double boxSizeX,boxSizeY,boxSizeZ,lBndx,lBndy,lBndz,uBndx,uBndy,uBndz,tStepInp,avgTime,volume;
+        double quanX,quanY,quanZ,sCBoxTime;
         std::vector<double> cBox,tStrt,timeStepStamp,xBoxCen,yBoxCen,zBoxCen;
         
-        std::ofstream output;
-        std::ofstream rand_output;
         int loopExt=0;
         
         void average(const int, const Dispersion*);

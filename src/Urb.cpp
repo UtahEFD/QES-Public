@@ -41,6 +41,10 @@ Urb :: Urb(Input* input) {
     input->getVariableData("z",grid.z);
     input->getVariableData("t",grid.t);
     input->getVariableData("icell",start,count,grid.icell);
+
+    grid.dx = grid.x[1]-grid.x[0];
+    grid.dy = grid.y[1]-grid.y[0];
+    grid.dz = grid.z[1]-grid.z[0];
     
     std::vector<double> u1(c),u2(c),u3(c);
     

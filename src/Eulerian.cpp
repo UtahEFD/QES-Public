@@ -20,12 +20,14 @@ Eulerian::Eulerian(Urb* urb, Turb* turb) {
     nz = urb->grid.nz;
     ny = urb->grid.ny;
     nx = urb->grid.nx;
+    dz = urb->grid.dz;
+    dy = urb->grid.dy;
+    dx = urb->grid.dx;
     
-    dz = urb->grid.z[1] - urb->grid.z[0];
-    dy = urb->grid.y[1] - urb->grid.y[0];
-    dx = urb->grid.x[1] - urb->grid.x[0];
-    
+    // compute stress gradients
     createTauGrads(urb,turb);
+    
+    // construct matrices
     createA1Matrix(urb,turb);
 }
 
@@ -82,7 +84,7 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb){
 
 void Eulerian::createA1Matrix(Urb* urb, Turb* turb) {
     
-    std::cout<<"[Eulerian] \t Creating A1 matrix"<<std::endl;
+    std::cout<<"[Eulerian] \t Creating matrices"<<std::endl;
     
     eigVal.resize(nx*ny*nz);
     eigVec.resize(nx*ny*nz);

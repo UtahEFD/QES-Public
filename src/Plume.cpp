@@ -1,16 +1,14 @@
 //
-//  Advection.cpp
+//  Plume.cpp
 //  
-//  This class handles advection of particles
+//  This class handles plume model
 //
 
-#include "Advection.hpp"
+#include "Plume.hpp"
 
-Advection::Advection(Urb* urb, Turb* turb, Eulerian* eul, 
-                     Dispersion* dis, PlumeInputData* PID) {
+Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID) {
     
-    std::cout<<"[Advection] \t Setting up sources "<<std::endl;
-    
+    std::cout<<"[Plume] \t Setting up particles "<<std::endl;
     
     Wind windRot;
     
@@ -42,9 +40,9 @@ Advection::Advection(Urb* urb, Turb* turb, Eulerian* eul,
     yBoxCen.resize(nBoxesX*nBoxesY*nBoxesZ);
     zBoxCen.resize(nBoxesX*nBoxesY*nBoxesZ);
     
-    double quanX = (uBndx-lBndx)/(nBoxesX);
-    double quanY = (uBndy-lBndy)/(nBoxesY);
-    double quanZ = (uBndz-lBndz)/(nBoxesZ);
+    quanX = (uBndx-lBndx)/(nBoxesX);
+    quanY = (uBndy-lBndy)/(nBoxesY);
+    quanZ = (uBndz-lBndz)/(nBoxesZ);
     
     int id=0;
     int zR=0;
@@ -67,8 +65,8 @@ Advection::Advection(Urb* urb, Turb* turb, Eulerian* eul,
     tStepInp = PID->simParams->timeStep;
     avgTime  = PID->colParams->timeAvg;
     
-    double sCBoxTime = PID->colParams->timeStart;
-    int numTimeStep  = dis->numTimeStep;
+    sCBoxTime = PID->colParams->timeStart;
+    numTimeStep  = dis->numTimeStep;
     
     tStrt.resize(numPar);
     tStrt = dis->tStrt;
@@ -76,7 +74,14 @@ Advection::Advection(Urb* urb, Turb* turb, Eulerian* eul,
     timeStepStamp.resize(numTimeStep);
     timeStepStamp = dis->timeStepStamp;
     
+    parPerTimestep=dis->parPerTimestep;
+    
     cBox.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
+}
+
+void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID, Output* output) {
+    
+    std::cout<<"[Plume] \t Advecting particles "<<std::endl;
     
     int Flag=0;
     int flag=0;
@@ -89,7 +94,6 @@ Advection::Advection(Urb* urb, Turb* turb, Eulerian* eul,
     double ranU=0.0;
     double ranV=0.0;
     double ranW=0.0;
-    int parPerTimestep=dis->parPerTimestep;
     int parToMove=0;
     
     // For every time step
@@ -303,17 +307,17 @@ Advection::Advection(Urb* urb, Turb* turb, Eulerian* eul,
                     wPrime=W_2nd+dw_3rd;
                     
                     if(isnan(uPrime) || isnan(vPrime) || isnan(wPrime)) {
-                        std::cerr<<"NAN.....>!!!!!!!"<<std::endl;
-                        std::cout<<"xPos       : "<<xPos<< "    "<<iV<<std::endl;
-                        std::cout<<"yPos       : "<<yPos<< "    "<<jV<<std::endl;
-                        std::cout<<"zPos       : "<<zPos<< "    "<<kV<<std::endl;
-                        std::cerr<<"tStep      : "<<tStep<<std::endl;
-                        std::cerr<<"par        : "<<par<<std::endl;
-                        std::cout<<"eigen Vector "<<std::endl;
-                        eul->display(eul->eigVecInv.at(id));
-                        std::cout<<"eigen Value  "<<std::endl;
-                        eul->display(eul->eigVal.at(id));
-                        exit(1);
+                        //std::cerr<<"NAN.....>!!!!!!!"<<std::endl;
+                        //std::cout<<"xPos       : "<<xPos<< "    "<<iV<<std::endl;
+                        //std::cout<<"yPos       : "<<yPos<< "    "<<jV<<std::endl;
+                        //std::cout<<"zPos       : "<<zPos<< "    "<<kV<<std::endl;
+                        //std::cerr<<"tStep      : "<<tStep<<std::endl;
+                        //std::cerr<<"par        : "<<par<<std::endl;
+                        //std::cout<<"eigen Vector "<<std::endl;
+                        //eul->display(eul->eigVecInv.at(id));
+                        //std::cout<<"eigen Value  "<<std::endl;
+                        //eul->display(eul->eigVal.at(id));
+                        //exit(1);
                     }
                     
                     double terFacU = 2.5;
@@ -377,7 +381,7 @@ Advection::Advection(Urb* urb, Turb* turb, Eulerian* eul,
                     double disY=((vMean+vPrime)*dt);
                     double disZ=((wMean+wPrime)*dt);
                     
-                    if(fabs(disX)>eul->dx || fabs(disY)>eul->dy || fabs(disZ)>eul->dz){
+                    if(fabs(disX)>urb->grid.dx || fabs(disY)>urb->grid.dy || fabs(disZ)>urb->grid.dz){
                         tStepMin=dt/2.0;
                         loopTby2++;
                         continue;
@@ -418,19 +422,19 @@ Advection::Advection(Urb* urb, Turb* turb, Eulerian* eul,
             average(tStep,dis);
         }
         if(timeStepStamp.at(tStep)>= sCBoxTime+avgTime) {
-            std::cout<<"loopPrm   :"<<loopPrm<<std::endl;
-            std::cout<<"loopLowestCell :"<<loopLowestCell<<std::endl;
+            //std::cout<<"loopPrm   :"<<loopPrm<<std::endl;
+            //std::cout<<"loopLowestCell :"<<loopLowestCell<<std::endl;
             //outputConc();
             avgTime=avgTime+PID->colParams->timeAvg;
         }
     } // for(tStep=0; tStep<numTimeStep; tStep++)
-} // Advection()
+} // run()
 
-double Advection::dot(const pos &vecA, const pos &vecB){
+double Plume::dot(const pos &vecA, const pos &vecB){
     return(vecA.x*vecB.x + vecA.y*vecB.y + vecA.z*vecB.z);
 }
 
-pos Advection::normalize(const pos &vec){
+pos Plume::normalize(const pos &vec){
     double mag=sqrt(vec.x*vec.x+vec.y*vec.y+vec.z*vec.z);
     pos vecTmp;
     vecTmp.x=vec.x/mag;
@@ -439,7 +443,7 @@ pos Advection::normalize(const pos &vec){
     return(vecTmp);
 }
 
-pos Advection::VecScalarMult(const pos &vec,const double &a){
+pos Plume::VecScalarMult(const pos &vec,const double &a){
     pos vecTmp;
     vecTmp.x=a*vec.x;
     vecTmp.y=a*vec.y;
@@ -447,7 +451,7 @@ pos Advection::VecScalarMult(const pos &vec,const double &a){
     return(vecTmp);
 }
 
-pos Advection::posAdd(const pos &vecA,const pos &vecB){
+pos Plume::posAdd(const pos &vecA,const pos &vecB){
     pos vecTmp;
     vecTmp.x=vecA.x+vecB.x;
     vecTmp.y=vecA.y+vecB.y;
@@ -455,7 +459,7 @@ pos Advection::posAdd(const pos &vecA,const pos &vecB){
     return(vecTmp);
 }
 
-pos Advection::reflect(const pos &vec,const pos &normal) {
+pos Plume::reflect(const pos &vec,const pos &normal) {
     pos a=VecScalarMult(normal , 2.0*dot(vec, normal));
     a.x=-a.x;
     a.y=-a.y;
@@ -464,11 +468,11 @@ pos Advection::reflect(const pos &vec,const pos &normal) {
     return(vecTmp);
 }
 
-double Advection::distance(const pos &vecA,const pos &vecB) {
+double Plume::distance(const pos &vecA,const pos &vecB) {
     return(sqrt((vecA.x-vecB.x)*(vecA.x-vecB.x) + (vecA.y-vecB.y)*(vecA.y-vecB.y) + (vecA.z-vecB.z)*(vecA.z-vecB.z) ));
 }
 
-pos Advection::posSubs(const pos &vecA, const pos & vecB){
+pos Plume::posSubs(const pos &vecA, const pos & vecB){
     pos vecTmp;
     vecTmp.x=vecA.x-vecB.x;
     vecTmp.y=vecA.y-vecB.y;
@@ -476,7 +480,7 @@ pos Advection::posSubs(const pos &vecA, const pos & vecB){
     return(vecTmp);
 }
 
-void Advection::average(const int tStep,const Dispersion* dis) {
+void Plume::average(const int tStep,const Dispersion* dis) {
     for(int i=0;i<numPar;i++) {
         if(tStrt.at(i)>timeStepStamp.at(tStep)) continue;
         double xPos=dis->pos.at(i).x;
@@ -500,7 +504,7 @@ void Advection::average(const int tStep,const Dispersion* dis) {
     }
 }
 
-double Advection::min(double arr[],int len) {
+double Plume::min(double arr[],int len) {
     double min=arr[0];
     for(int i=1;i<len;i++) {
         if(arr[i]<min) {
@@ -510,7 +514,7 @@ double Advection::min(double arr[],int len) {
     return min;
 }
 
-double Advection::max(double arr[],int len) {
+double Plume::max(double arr[],int len) {
     double max=arr[0];
     for(int i=1;i<len;i++) {
         if(arr[i]>max) {

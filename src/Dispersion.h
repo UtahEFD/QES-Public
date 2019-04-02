@@ -21,11 +21,8 @@ class Dispersion {
     
     public:
         
-        Dispersion(Urb*,Turb*,Eulerian*,PlumeInputData*);
-        
-        //Eulerian eul; 
-        //void createDisp(const Eulerian&);
-        
+        Dispersion(Urb*,Turb*,PlumeInputData*);
+                
         struct matrix {
             double x;
             double y;

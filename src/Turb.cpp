@@ -46,6 +46,10 @@ Turb :: Turb(Input* input) {
     input->getVariableData("CoEps",start,count,CoEps);
     input->getVariableData("tke",start,count,tke);
     
+    grid.dx = grid.x[1]-grid.x[0];
+    grid.dy = grid.y[1]-grid.y[0];
+    grid.dz = grid.z[1]-grid.z[0];
+    
     // read in data
     std::vector<double> tau1(c),tau2(c),tau3(c),tau4(c),tau5(c),tau6(c);
     std::vector<double> sig1(c),sig2(c),sig3(c),sig4(c),sig5(c),sig6(c);
