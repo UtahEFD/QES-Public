@@ -269,6 +269,9 @@ public:
                     std::vector<int>& wall_front_indices, std::vector<int>& wall_back_indices,
                     double *u0, double *v0, double *w0, float z0);
 
+
+    void mergeSort( std::vector<float> &height, std::vector<std::vector<polyVert>> &poly_points, std::vector<float> &base_height, std::vector<float> &building_height);
+
     /**
     * @brief
     *

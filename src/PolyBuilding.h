@@ -101,7 +101,7 @@ public:
       polygon_area = 0.0;
 
       // Loop to calculate polygon area, differences in x and y values
-      for (auto id=0; id<polygonVertices.size(); id++)
+      for (auto id=0; id<polygonVertices.size()-1; id++)
       {
         polygon_area += 0.5*(polygonVertices[id].x_poly*polygonVertices[id+1].y_poly-polygonVertices[id].y_poly*polygonVertices[id+1].x_poly);
         xi[id] = (polygonVertices[id].x_poly-building_cent_x)*cos(upwind_dir)+(polygonVertices[id].y_poly-building_cent_y)*sin(upwind_dir);
@@ -126,11 +126,13 @@ public:
         }
       }
 
+
       polygon_area = abs(polygon_area);
       width_eff = polygon_area/(x2-x1);           // Effective width of the building
       length_eff = polygon_area/(y2-y1);          // Effective length of the building
       L_over_H = length_eff/height_eff;           // Length over height
       W_over_H = width_eff/height_eff;            // Width over height
+
 
       // Checking bounds of length over height and width over height
       if (L_over_H > 3.0)
@@ -317,6 +319,8 @@ public:
         }
       }
 
+
+
       Lr_ave = total_seg_length = 0.0;
       for (auto id=0; id<polygonVertices.size(); id++)
       {
@@ -357,6 +361,21 @@ public:
       }
 
       Lr = Lr_ave/total_seg_length;
+
+      for (auto id=0; id<polygonVertices.size()-1; id++)
+      {
+        if (Lr_node[id] > Lr)
+        {
+          if (Lr_node[id+1] < Lr)
+          {
+            Lr_node[id] = Lr_node[id+1];
+          }
+          else
+          {
+            Lr_node[id] = Lr;
+          }
+        }
+      }
 
       for (auto k=k_start; k<k_end; k++)
       {
@@ -459,6 +478,10 @@ public:
                     xu = xp*cos(upwind_dir)+yp*sin(upwind_dir);
                     yu = -xp*sin(upwind_dir)+yp*cos(upwind_dir);
                     Lr_local_u = Lr_node[id]+(yu-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
+                    if (Lr_local_u > Lr)
+                    {
+                      Lr_local_u = Lr;
+                    }
                     if (perpendicular_flag[id] > 0)
                     {
                       x_wall_u = xi[id];
@@ -513,6 +536,10 @@ public:
                     xv = xp*cos(upwind_dir)+yp*sin(upwind_dir);
                     yv = -xp*sin(upwind_dir)+yp*cos(upwind_dir);
                     Lr_local_v = Lr_node[id]+(yv-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
+                    if (Lr_local_v > Lr)
+                    {
+                      Lr_local_v = Lr;
+                    }
                     if (perpendicular_flag[id] > 0)
                     {
                       x_wall_v = xi[id];
