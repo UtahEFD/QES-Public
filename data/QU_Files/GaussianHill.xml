@@ -1,0 +1,87 @@
+<simulationParameters>
+	<domain>40 40 40 </domain>
+	<cellSize> 1.0 1.0 1.0 </cellSize> <!-- Meters-->
+	<verticalStretching> 0 </verticalStretching>
+	<totalTimeIncrements> 1 </totalTimeIncrements>
+	<UTCConversion> 0 </UTCConversion>
+	<Epoch> 1510930800 </Epoch>
+	<rooftopFlag> 2 </rooftopFlag>
+	<upwindCavityFlag> 3 </upwindCavityFlag>
+	<streetCanyonFlag> 4 </streetCanyonFlag>
+	<streetIntersectionFlag> 1 </streetIntersectionFlag>
+	<wakeFlag> 3 </wakeFlag>
+	<sidewallFlag> 0 </sidewallFlag>
+	<maxIterations> 500 </maxIterations>
+	<residualReduction> 3 </residualReduction>
+	<meshTypeFlag> 0 </meshTypeFlag> <!-- 0 is stair; 1 is cut-cell  -->
+	<useDiffusion> 0 </useDiffusion>
+	<domainRotation> 0 </domainRotation>
+	<UTMX> 0 </UTMX>
+	<UTMY> 0 </UTMY>
+	<UTMZone> 1 </UTMZone>
+	<UTMZoneLetter> 17 </UTMZoneLetter>
+</simulationParameters>
+<metParams>
+	<metInputFlag> 0 </metInputFlag>
+	<num_sites> 1 </num_sites>
+	<maxSizeDataPoints> 1 </maxSizeDataPoints>
+	<site_coord_flag> 2 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->
+	<site_UTM_x> 2.0 </site_UTM_x> 								<!-- x components of site coordinate in UTM -->
+	<site_UTM_y> 2.0 </site_UTM_y> 								<!-- y components of site coordinate in UTM -->
+	<site_UTM_zone> 0 </site_UTM_zone> 						<!-- UTM zone of the sensor site -->
+	<siteName> sensor1 </siteName>
+	<fileName> sensor1.inp </fileName>
+	<sensor>
+		<siteCoords> 1 </siteCoords>
+		<site_xcoord> 1.0</site_xcoord>
+		<site_ycoord> 1.0</site_ycoord>
+		<epoch> 1510930800 </epoch>
+		<boundaryLayerFlag> 1 </boundaryLayerFlag>
+		<siteZ0> 0.1 </siteZ0>
+		<reciprocal> 0 </reciprocal>
+		<height> 10 </height>
+		<speed> 5 </speed>
+		<direction> 270 </direction> 
+	</sensor>
+</metParams>
+<fileOptions>
+	<outputFlag>1</outputFlag>
+    <outputFields>u</outputFields> 
+    <outputFields>v</outputFields> 
+    <outputFields>w</outputFields>
+    <outputFields>icell</outputFields>  
+	<massConservedFlag> 0 </massConservedFlag>
+	<sensorVelocityFlag> 0 </sensorVelocityFlag>
+	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+</fileOptions>
+<!--buildings>
+	<wallRoughness> 0.1 </wallRoughness>
+	<numBuildings> 2 </numBuildings>
+	<numPolygonNodes> 0 </numPolygonNodes>
+	<rectangularBuilding>
+		<groupID> 1 </groupID>
+		<buildingType> 1 </buildingType>
+		<height> 20.0 </height>
+		<baseHeight> 0 </baseHeight>
+		<centroidX> 24 </centroidX>
+		<centroidY> 26	</centroidY>
+		<xFo> 20.0 </xFo>
+		<yFo> 20.0 </yFo>
+		<length> 20.0 </length>
+		<width> 20.0 </width>
+		<rotation> 0 </rotation>
+	</rectangularBuilding>
+	<rectangularBuilding>
+		<groupID> 1 </groupID>
+		<buildingType> 1 </buildingType>
+		<height> 20.0 </height>
+		<baseHeight> 0 </baseHeight>
+		<centroidX> 24 </centroidX>
+		<centroidY> 26	</centroidY>
+		<xFo> 70.0 </xFo>
+		<yFo> 70.0 </yFo>
+		<length> 20.0 </length>
+		<width> 20.0 </width>
+		<rotation> 0 </rotation>
+	</rectangularBuilding>
+</buildings-->

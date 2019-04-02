@@ -19,7 +19,7 @@ T& Edge<T>::operator[](const int i)
 }
 
 template <class T>
-bool Edge<T>::operator==(Edge< T > e)
+bool Edge<T>::operator==(const Edge< T > e) const
 {
 	if (values[0] == e.values[0])
 		return values[1] == e.values[1];

@@ -1,12 +1,14 @@
 #pragma once
 
-#include "util/ParseInterface.h"
-
-#include "Vector3.h"
-
 /*
- *Placeholder class for parsed simulation parameters info in the xml
+ * This function contains variables that define information
+ * necessary for running the simulation.
  */
+
+#include "util/ParseInterface.h"
+#include "Vector3.h"
+#include <string>
+
 class SimulationParameters : public ParseInterface
 {
 private:
@@ -18,9 +20,8 @@ public:
 	Vector3<int>* domain;
 	Vector3<float>* grid;
 	int verticalStretching;
+	std::vector<float> dz_value;
 	int totalTimeIncrements;
-	int UTCConversion;
-	float Epoch;
 	int rooftopFlag;
 	int upwindCavityFlag;
 	int streetCanyonFlag;
@@ -29,26 +30,25 @@ public:
 	int sidewallFlag;
 	int maxIterations;
 	int residualReduction;
-	int useDiffusion;
 	float domainRotation;
-	int UTMX;
-	int UTMY;
+	float UTMx;
+	float UTMy;
 	int UTMZone;
 	int UTMZoneLetter;
-	int quicCDFFlag;
-	int explosiveDamageFlag;
-	int buildingArrayFlag;
-	std::vector<float> dzArray;
-	
+	int meshTypeFlag;
+        std::string demFile;    // DEM file name
+
+    // SHP File parameters
+    std::string shpFile;   // SHP file name
+    std::string shpBuildingLayerName;
+
+
 	SimulationParameters()
 	{
-		UTMX = 0;
-		UTMY = 0;
+		UTMx = 0.0;
+		UTMy = 0.0;
 		UTMZone = 0;
 		UTMZoneLetter = 0;
-		quicCDFFlag = 0;
-		explosiveDamageFlag = 0;
-		buildingArrayFlag = 0;
 	}
 
 	virtual void parseValues()
@@ -56,9 +56,8 @@ public:
 		parseElement< Vector3<int> >(true, domain, "domain");
 		parseElement< Vector3<float> >(true, grid, "cellSize");
 		parsePrimitive<int>(true, verticalStretching, "verticalStretching");
+		parseMultiPrimitives<float>(false, dz_value, "dz_value");
 		parsePrimitive<int>(true, totalTimeIncrements, "totalTimeIncrements");
-		parsePrimitive<int>(true, UTCConversion, "UTCConversion");
-		parsePrimitive<float>(true, Epoch, "Epoch");
 		parsePrimitive<int>(true, rooftopFlag, "rooftopFlag");
 		parsePrimitive<int>(true, upwindCavityFlag, "upwindCavityFlag");
 		parsePrimitive<int>(true, streetCanyonFlag, "streetCanyonFlag");
@@ -67,16 +66,20 @@ public:
 		parsePrimitive<int>(true, sidewallFlag, "sidewallFlag");
 		parsePrimitive<int>(true, maxIterations, "maxIterations");
 		parsePrimitive<int>(true, residualReduction, "residualReduction");
-		parsePrimitive<int>(true, useDiffusion, "useDiffusion");
+		parsePrimitive<int>(true, meshTypeFlag, "meshTypeFlag");
 		parsePrimitive<float>(true, domainRotation, "domainRotation");
-		parsePrimitive<int>(false, UTMX, "UTMX");
-		parsePrimitive<int>(false, UTMY, "UTMY");
+		parsePrimitive<float>(false, UTMx, "UTMx");
+		parsePrimitive<float>(false, UTMy, "UTMy");
 		parsePrimitive<int>(false, UTMZone, "UTMZone");
 		parsePrimitive<int>(false, UTMZoneLetter, "UTMZoneLetter");
-		parsePrimitive<int>(false, quicCDFFlag, "quicCDFFlag");
-		parsePrimitive<int>(false, explosiveDamageFlag, "explosiveDamageFlag");
-		parsePrimitive<int>(false, buildingArrayFlag, "buildingArrayFlag");
-		parseMultiPrimitives<float>(false, dzArray, "dz_array");
+		demFile = "";
+		parsePrimitive<std::string>(false, demFile, "DEM");
+
+                shpFile = "";
+                parsePrimitive<std::string>(false, shpFile, "SHP");
+
+                shpBuildingLayerName = "buildings";  // defaults
+                parsePrimitive<std::string>(false, shpBuildingLayerName, "SHPBuildingLayer");
 	}
 
 };

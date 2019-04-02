@@ -17,6 +17,14 @@ SET(CUDAURB_VERSION_INFO -${cudaUrb_Toolkit_VERSION_MAJOR}.${MinVR_Toolkit_VERSI
 MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of cudaUrb.")
 MESSAGE(STATUS "If you want something different, use -DCMAKE_BUILD_TYPE=Debug, Release, RelWithDebInfo, MinSizeRel.")
 
+#
+# This code used C++ 11 and 14 features so enable these on CXX Flags
+#
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+
 # ----------------------------------------------------------
 # Boost
 #
@@ -26,7 +34,10 @@ MESSAGE(STATUS "If you want something different, use -DCMAKE_BUILD_TYPE=Debug, R
 # ----------------------------------------------------------
 # SET (Boost_MULTITHREADED TRUE)
 
-SET(BOOST_LIBRARYDIR /usr/lib64)
+if(DEFINED ENV{BOOST_DIR})
+    message(STATUS "Setting BOOST_DIR to $ENV{BOOST_DIR}")
+    SET(BOOST_ROOT $ENV{BOOST_DIR})
+endif()
 
 # If you want to get more info on what the Find Boost macro is
 # doing...  
@@ -41,12 +52,12 @@ IF(${Boost_FOUND})
   MESSAGE(STATUS "Found Boost Libraries in ${Boost_LIBRARY_DIR}, Version ${Boost_VERSION}")
 ENDIF()
 
-# SET(NetCDF_PREFIX /uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0i18-c7)
-# include(FindNetCDF)
+SET(NETCDF_CXX "YES")
 FIND_PACKAGE(NetCDF REQUIRED)
 IF(NetCDF_FOUND)
+  MESSAGE(STATUS "Found NetCDF: ${NETCDF_INCLUDES}: ${NETCDF_LIBRARIES}, ${NETCDF_INCLUDES_CXX}, ${NETCDF_LIBRARIES_CXX}")
   INCLUDE_DIRECTORIES(${NETCDF_INCLUDES})
-  MESSAGE(STATUS "Found NetCDF: ${NETCDF_INCLUDES}, ${NETCDF_LIBRARIES}")
+  INCLUDE_DIRECTORIES(${NETCDF_INCLUDES_CXX})
 ENDIF(NetCDF_FOUND)
 
 # SET(CMAKE_PREFIX_PATH /uufs/chpc.utah.edu/sys/installdir/gdal/2.1.3-c7)
@@ -58,7 +69,7 @@ ENDIF(${GDAL_FOUND})
 
 SET(CUDA_SEPARABLE_COMPILATION ON)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall --std=c++11")
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;" )
 
 FIND_PACKAGE(CUDA REQUIRED)
@@ -109,5 +120,8 @@ include(CTest)
 
 add_subdirectory(util)
 add_subdirectory(src)
+
+add_subdirectory(scratch)
+
 add_subdirectory(cudaUrb)
 

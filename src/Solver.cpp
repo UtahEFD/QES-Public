@@ -1,8 +1,19 @@
 #include "Solver.h"
 
+#include "ESRIShapefile.h"
+
+using std::cerr;
+using std::endl;
+using std::vector;
+using std::cout;
+
+// duplication of this macro
+#define CELL(i,j,k,w) ((i) + (j) * (nx+(w)) + (k) * (nx+(w)) * (ny+(w)))
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
+
+/**< This function is showing progress of the solving process by printing the percentage */
 
 void Solver::printProgress (float percentage)
 {
@@ -13,878 +24,1126 @@ void Solver::printProgress (float percentage)
     fflush (stdout);
 }
 
-Solver::Solver(URBInputData* UID, DTEHeightField* DTEHF)
+
+/**< \fn Solver
+* This function is assigning values read by URBImputData to variables used in the solvers
+ */
+
+Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* output)
+    : itermax( UID->simParams->maxIterations )
+{
+    rooftopFlag = UID->simParams->rooftopFlag;
+    upwindCavityFlag = UID->simParams->upwindCavityFlag;
+    streetCanyonFlag = UID->simParams->streetCanyonFlag;
+    streetIntersectionFlag = UID->simParams->streetIntersectionFlag;
+    wakeFlag = UID->simParams->wakeFlag;
+    sidewallFlag = UID->simParams->sidewallFlag;
+    mesh_type_flag = UID->simParams->meshTypeFlag;
+    UTMx = UID->simParams->UTMx;
+    UTMy = UID->simParams->UTMy;
+    UTMZone = UID->simParams->UTMZone;
+    domain_rotation = UID->simParams->domainRotation;
+
+    theta = (domain_rotation*pi/180.0);
+
+    if ( UID->simParams->wakeFlag > 1)
+    {
+      cavity_factor = 1.1;
+      wake_factor = 0.1;
+    }
+    else
+    {
+      cavity_factor = 1.0;
+      wake_factor = 0.0;
+    }
+
+    // Pull Domain Size information from the UrbInputData structure --
+    // this is either read in from the XML files and/or potentially
+    // calculated based on the geographic data that was loaded
+    // (i.e. DEM files). It is important to get this data from the
+    // main input structure.
+    Vector3<int> domainInfo;
+    domainInfo = *(UID->simParams->domain);
+    nx = domainInfo[0];
+    ny = domainInfo[1];
+    nz = domainInfo[2];
+
+    // Modify the domain size to fit the Staggered Grid used in the solver
+    nx += 1;        /// +1 for Staggered grid
+    ny += 1;        /// +1 for Staggered grid
+    nz += 2;        /// +2 for staggered grid and ghost cell
+
+    numcell_cout    = (nx-1)*(ny-1)*(nz-2);        /**< Total number of cell-centered values in domain */
+    numcell_cout_2d = (nx-1)*(ny-1);               /**< Total number of horizontal cell-centered values in domain */
+    numcell_cent    = (nx-1)*(ny-1)*(nz-1);        /**< Total number of cell-centered values in domain */
+    numcell_face    = nx*ny*nz;                    /**< Total number of face-centered values in domain */
+
+    Vector3<float> gridInfo;
+    gridInfo = *(UID->simParams->grid);
+    dx = gridInfo[0];		/**< Grid resolution in x-direction */
+    dy = gridInfo[1];		/**< Grid resolution in y-direction */
+    dz = gridInfo[2];		/**< Grid resolution in z-direction */
+    dxy = MIN_S(dx, dy);
+
+    // if the MetParams data has been provided in the XML,
+    // initialize those elements
+    if (UID->metParams)
+    {
+        // Set the sensor to the one loaded in from the files:
+        sensor = UID->metParams->sensors[0];
+        num_sites = UID->metParams->num_sites;
+        site_coord_flag = (UID->metParams->site_coord_flag);
+
+        for (int i=0; i<num_sites; i++)
+        {
+
+          site_blayer_flag.push_back (UID->metParams->sensors[i]->site_blayer_flag);
+          site_one_overL.push_back (UID->metParams->sensors[i]->site_one_overL);
+          site_xcoord.push_back (UID->metParams->sensors[i]->site_xcoord);
+          site_ycoord.push_back (UID->metParams->sensors[i]->site_ycoord);
+          site_wind_dir.push_back (UID->metParams->sensors[i]->site_wind_dir);
+          site_z0.push_back (UID->metParams->sensors[i]->site_z0);
+          site_z_ref.push_back (UID->metParams->sensors[i]->site_z_ref);
+          site_U_ref.push_back (UID->metParams->sensors[i]->site_U_ref);
+
+          if (site_blayer_flag[i] == 3)
+          {
+            site_canopy_H.push_back (UID->metParams->sensors[i]->site_canopy_H);
+            site_atten_coeff.push_back (UID->metParams->sensors[i]->site_atten_coeff);
+          }
+        }
+
+        if (site_coord_flag == 1 && UTMx != 0 && UTMy != 0)
+        {
+          site_UTM_x = site_xcoord[0] * acos(theta) + site_ycoord[0] * asin(theta) + UTMx;
+          site_UTM_y = site_xcoord[0] * asin(theta) + site_ycoord[0] * acos(theta) + UTMy;
+        }
+
+        if (site_coord_flag == 2 && UTMx != 0 && UTMy != 0)
+        {
+          site_UTM_x = (UID->metParams->site_UTM_x);
+          site_UTM_y = (UID->metParams->site_UTM_y);
+          site_UTM_zone = (UID->metParams->site_UTM_zone);
+        }
+        if (site_coord_flag == 3)
+        {
+          site_lat = (UID->metParams->site_lat);
+          site_lon = (UID->metParams->site_lon);
+        }
+
+      }
+
+    if (UID->canopies)			// If there are canopies specified in input files
+    {
+        num_canopies = UID->canopies->num_canopies;
+        landuse_flag = UID->canopies->landuse_flag;
+        landuse_veg_flag = UID->canopies->landuse_veg_flag;
+        landuse_urb_flag = UID->canopies->landuse_urb_flag;
+        for (int i = 0; i < UID->canopies->canopies.size(); i++)
+        {
+            canopies.push_back(UID->canopies->canopies[i]);		// Add a new canopy element
+        }
+    }
+
+    if (UID->buildings)
+    {
+        z0 = UID->buildings->wallRoughness;
+
+        for (int i = 0; i < UID->buildings->buildings.size(); i++)
+        {
+            if (UID->buildings->buildings[i]->buildingGeometry == 1)
+            {
+                buildings.push_back(UID->buildings->buildings[i]);
+            }
+        }
+    }
+    else
+    {
+        buildings.clear();
+        z0 = 0.1f;
+    }
+
+    dz_array.resize( nz-1, 0.0 );
+    z.resize( nz-1 );
+    zm.resize( nz-1 );
+
+    if (UID->simParams->verticalStretching == 0)    // Uniform vertical grid
+    {
+      for (auto k=1; k<z.size(); k++)
+      {
+        dz_array[k] = dz;
+      }
+    }
+    if (UID->simParams->verticalStretching == 1)     // Stretched vertical grid
+    {
+      for (auto k=1; k<z.size(); k++)
+      {
+        dz_array[k] = UID->simParams->dz_value[k-1];      // Read in custom dz values and set them to dz_array
+      }
+    }
+
+    dz_array[0] = dz_array[1];                  // Value for ghost cell below the surface
+    dz = *std::min_element(dz_array.begin() , dz_array.end());     // Set dz to minimum value of
+
+    z[0] = -0.5*dz_array[0];
+    for (auto k=1; k<z.size(); k++)
+    {
+      z[k] = z[k-1] + dz_array[k];     /**< Location of face centers in z-dir */
+    }
+
+    z_out.resize( nz-2 );
+    for (size_t k=1; k<z.size(); k++)
+    {
+        z_out[k-1] = (float)z[k];    /**< Location of face centers in z-dir */
+    }
+
+    x.resize( nx-1 );
+    x_out.resize( nx-1 );
+    for (size_t i=0; i<x.size(); i++)
+    {
+        x_out[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
+        x[i] = (float)x_out[i];
+    }
+
+    y.resize( ny-1 );
+    y_out.resize( ny-1 );
+    for (auto j=0; j<ny-1; j++)
+    {
+        y_out[j] = (j+0.5)*dy;          /**< Location of face centers in y-dir */
+        y[j] = (float)y_out[j];
+
+    }
+
+
+    /// Initializing variables
+    e.resize( numcell_cent, 1.0 );
+    f.resize( numcell_cent, 1.0 );
+    g.resize( numcell_cent, 1.0 );
+    h.resize( numcell_cent, 1.0 );
+    m.resize( numcell_cent, 1.0 );
+    n.resize( numcell_cent, 1.0 );
+    R.resize( numcell_cent, 0.0 );
+    icellflag.resize( numcell_cent, 1 );
+    lambda.resize( numcell_cent, 0.0 );
+    lambda_old.resize( numcell_cent, 0.0 );
+    u_out.resize( numcell_cout, 0.0 );
+    v_out.resize( numcell_cout, 0.0 );
+    w_out.resize( numcell_cout, 0.0 );
+    terrain.resize( numcell_cout_2d, 0.0 );
+    icellflag_out.resize( numcell_cout, 0.0 );
+
+    // Set the Wind Velocity data elements to be of the correct size
+    // Initialize u0,v0,w0,u,v and w to 0.0
+    u0.resize( numcell_face, 0.0 );
+    v0.resize( numcell_face, 0.0 );
+    w0.resize( numcell_face, 0.0 );
+
+    u.resize(numcell_face, 0.0);
+    v.resize(numcell_face, 0.0);
+    w.resize(numcell_face, 0.0);
+
+    //////////////////////////////////////////////////////////////////////////////////
+    /////    Create sensor velocity profiles and generate initial velocity field /////
+    //////////////////////////////////////////////////////////////////////////////////
+
+    // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa (located in Sensor.cpp)
+    sensor->UTMConverter (site_lon, site_lat, site_UTM_x, site_UTM_y, site_UTM_zone, 1);
+
+    // Caling getConvergence function to calculate the convergence value (located in Sensor.cpp)
+    sensor->getConvergence(site_lon, site_lat, site_UTM_zone, convergence, pi);
+
+    // Calling inputWindProfile function to generate initial velocity field from sensors information (located in Sensor.cpp)
+    sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0.data(), v0.data(), w0.data(), num_sites, site_blayer_flag.data(),
+                             site_one_overL.data(), site_xcoord.data(), site_ycoord.data(), site_wind_dir.data(),
+                             site_z0.data(), site_z_ref.data(), site_U_ref.data(), x.data(), y.data(), z.data(), canopy,
+                             site_canopy_H.data(), site_atten_coeff.data());
+
+    max_velmag = 0.0;
+    for (auto i=0; i<nx; i++)
+    {
+      for (auto j=0; j<ny; j++)
+      {
+        icell_face = i+j*nx+nz*nx*ny;
+        max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face],2.0)+pow(v0[icell_face],2.0)));
+      }
+    }
+    max_velmag *= 1.2;
+
+
+    ////////////////////////////////////////////////////////
+    //////              Apply Terrain code             /////
+    ///////////////////////////////////////////////////////
+    mesh = 0;
+    if (DTEHF)
+    {
+
+        DTEHFExists = true;
+        mesh = new Mesh(DTEHF->getTris());
+
+        // ////////////////////////////////
+        // Retrieve terrain height field //
+        // ////////////////////////////////
+        for (int i = 0; i < nx-1; i++)
+        {
+            for (int j = 0; j < ny-1; j++)
+            {
+              // Gets height of the terrain for each cell
+              int idx = i + j*(nx-1);
+              terrain[idx] = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
+            }
+        }
+
+        if (mesh_type_flag == 0)
+        {
+            // ////////////////////////////////
+            // Stair-step (original QUIC)    //
+            // ////////////////////////////////
+            if (mesh)
+            {
+                std::cout << "Creating terrain blocks...\n";
+                for (int i = 0; i < nx; i++)
+                {
+                    for (int j = 0; j < ny; j++)
+                    {
+                      // Gets height of the terrain for each cell
+                      float heightToMesh = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
+                      // Calls rectangular building to create a each cell to the height of terrain in that cell
+                      buildings.push_back(new RectangularBuilding(i * dx, j * dy, 0.0, dx, dy, heightToMesh,z));
+                    }
+                    printProgress( (float)i / (float)nx);
+                }
+                std::cout << "blocks created\n";
+            }
+        }
+        else
+        {
+            // ////////////////////////////////
+            //        Cut-cell method        //
+            // ////////////////////////////////
+
+            // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
+            cut_cell.calculateCoefficient(cells, DTEHF, nx, ny, nz, dx, dy, dz, n, m, f, e, h, g, pi, icellflag);
+        }
+    }
+
+
+    /////////////////////////////////////////////////////////////
+    //      Apply canopy vegetation parameterization           //
+    /////////////////////////////////////////////////////////////
+
+    if (num_canopies>0)
+    {
+        std::vector<std::vector<std::vector<float>>> canopy_atten(nx-1, std::vector<std::vector<float>>(ny-1, std::vector<float>(nz-1,0.0)));
+        std::vector<std::vector<float>> canopy_top(nx-1, std::vector<float>(ny-1,0.0));
+        std::vector<std::vector<float>> canopy_top_index(nx-1, std::vector<float>(ny-1,0.0));
+        std::vector<std::vector<float>> canopy_z0(nx-1, std::vector<float>(ny-1,0.0));
+        std::vector<std::vector<float>> canopy_ustar(nx-1, std::vector<float>(ny-1,0.0));
+        std::vector<std::vector<float>> canopy_d(nx-1, std::vector<float>(ny-1,0.0));
+
+        for (int i=0; i<canopies.size();i++)
+        {
+            // Hack to work around until we re-org this -- Pete
+            canopy = (Canopy*)canopies[i];
+
+            // Read in canopy information
+            canopy->readCanopy(nx, ny, nz, landuse_flag, num_canopies, lu_canopy_flag, canopy_atten, canopy_top);
+
+            // here because the array that holds this all Building*
+            ((Canopy*)canopies[i])->defineCanopy(dx, dy, dz, nx, ny, nz, icellflag, num_canopies, lu_canopy_flag,
+                                                 canopy_atten, canopy_top);			// Defininf
+                                                                                                // canopy
+                                                                                                // bounderies
+
+            canopy->plantInitial(nx, ny, nz, vk, icellflag, z, u0, v0, canopy_atten, canopy_top, canopy_top_index,
+                                 canopy_ustar, canopy_z0, canopy_d);		// Apply canopy parameterization
+        }
+    }
+
+    /// defining ground solid cells (ghost cells below the surface)
+    for (int j = 0; j < ny-1; j++)
+    {
+        for (int i = 0; i < nx-1; i++)
+        {
+            int icell_cent = i + j*(nx-1);
+            icellflag[icell_cent] = 0.0;
+        }
+    }
+
+    /////////////////////////////////////////////////////////////
+    //                Apply building effect                    //
+    /////////////////////////////////////////////////////////////
+
+
+    // For now, process ESRIShapeFile here:
+    ESRIShapefile *shpFile = nullptr;
+
+    if (UID->simParams->shpFile != "")
+    {
+      auto buildingsetup = std::chrono::high_resolution_clock::now(); // Start recording execution time
+
+        std::vector <PolyBuilding> poly_buildings;
+        std::vector< std::vector <polyVert> > shpPolygons;
+        std::vector< std::vector <polyVert> > poly;
+        std::vector <float> base_height;            // Base height of buildings
+        std::vector <float> effective_height;            // Effective height of buildings
+        float corner_height, min_height;
+        std::vector <float> building_height;        // Height of buildings
+
+        // Read polygon node coordinates and building height from shapefile
+        shpFile = new ESRIShapefile( UID->simParams->shpFile,
+                                     UID->simParams->shpBuildingLayerName,
+                                     shpPolygons, building_height );
+
+
+
+        std::vector<float> shpDomainSize(2), minExtent(2);
+        shpFile->getLocalDomain( shpDomainSize );
+        shpFile->getMinExtent( minExtent );
+
+        float domainOffset[2] = { 50, 50 };
+        for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+        {
+            // convert the global polys to local domain coordinates
+          for (size_t lIdx=0; lIdx<shpPolygons[pIdx].size(); lIdx++)
+          {
+            shpPolygons[pIdx][lIdx].x_poly = shpPolygons[pIdx][lIdx].x_poly - minExtent[0] + domainOffset[0];
+            shpPolygons[pIdx][lIdx].y_poly = shpPolygons[pIdx][lIdx].y_poly - minExtent[1] + domainOffset[1];
+          }
+        }
+        std::cout << "num_poly buildings" << shpPolygons.size() << std::endl;
+        // Setting base height for buildings if there is a DEM file
+        if (UID->simParams->demFile != "")
+        {
+          for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+          {
+            // Get base height of every corner of building from terrain height
+            min_height = mesh->getHeight(shpPolygons[pIdx][0].x_poly, shpPolygons[pIdx][0].y_poly);
+            if (min_height<0)
+            {
+              min_height = 0.0;
+            }
+            for (auto lIdx=1; lIdx<shpPolygons[pIdx].size(); lIdx++)
+            {
+              corner_height = mesh->getHeight(shpPolygons[pIdx][lIdx].x_poly, shpPolygons[pIdx][lIdx].y_poly);
+              if (corner_height<min_height && corner_height>0.0)
+              {
+                min_height = corner_height;
+              }
+            }
+            base_height.push_back(min_height);
+          }
+        }
+        else
+        {
+          for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+          {
+            base_height.push_back(0.0);
+          }
+        }
+
+        for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+        {
+          effective_height.push_back (base_height[pIdx]+building_height[pIdx]);
+
+        }
+
+        mergeSort( effective_height, shpPolygons, base_height, building_height);
+
+        // Loop to create each of the polygon buildings read in from the shapefile
+        for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+        {
+          // Create polygon buildings
+
+          poly_buildings.push_back (PolyBuilding (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], nx, ny,
+                                      nz, dx, dy, dz, u0, v0, z));
+          // Call setCellsFlag in the PolyBuilding class to identify building cells
+          poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz,icellflag, mesh_type_flag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
+        }
+
+        // If there is wake behind the building to apply
+        if (UID->simParams->wakeFlag > 0)
+        {
+          for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+          {
+            poly_buildings[pIdx].polygonWake (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], dx, dy, dz, z, nx, ny, nz,
+                                          cavity_factor, wake_factor, dxy, icellflag, u0, v0, w0, max_velmag);
+
+            std::cout << "building added" << pIdx << std::endl;
+          }
+        }
+        auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+        std::chrono::duration<float> elapsedBuilding = finish - buildingsetup;
+        std::cout << "Elapsed building time: " << elapsedBuilding.count() << " s\n";   // Print out elapsed execution time
+    }
+
+
+
+    ///////////////////////////////////////////////////////////////
+    //    Stair-step (original QUIC) for rectangular buildings   //
+    ///////////////////////////////////////////////////////////////
+    if (mesh_type_flag == 0)
+    {
+        for (int i = 0; i < buildings.size(); i++)
+        {
+            ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz_array, nx, ny, nz, z, icellflag, mesh_type_flag);
+        }
+    }
+    /////////////////////////////////////////////////////////////
+    //        Cut-cell method for rectangular buildings        //
+    /////////////////////////////////////////////////////////////
+    else
+    {
+      std::vector<std::vector<std::vector<float>>> x_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
+      std::vector<std::vector<std::vector<float>>> y_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
+      std::vector<std::vector<std::vector<float>>> z_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
+
+      std::vector<std::vector<int>> num_points(numcell_cent, std::vector<int>(6,0));
+      std::vector<std::vector<float>> coeff(numcell_cent, std::vector<float>(6,0.0));
+
+    	for (size_t i = 0; i < buildings.size(); i++)
+    	{
+        // Sets cells flag for each building
+        ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz_array, nx, ny, nz, z, icellflag, mesh_type_flag);
+        ((RectangularBuilding*)buildings[i])->setCutCells(dx, dy, dz_array,z, nx, ny, nz, icellflag, x_cut, y_cut, z_cut,
+                                                              num_points, coeff);    // Sets cut-cells for specified building,
+                                                                                     // located in RectangularBuilding.h
+
+      }
+
+      if (buildings.size()>0)
+      {
+        /// Boundary condition for building edges
+        calculateCoefficients(dx, dy, dz, nx, ny, nz, icellflag, n.data(), m.data(), f.data(), e.data(), h.data(), g.data(),
+                                x_cut, y_cut, z_cut, num_points, coeff);
+      }
+    }
+
+    std::cout << "Defining Solid Walls...\n";
+    /// Boundary condition for building edges
+    defineWalls(dx,dy,dz,nx,ny,nz, icellflag, n.data(), m.data(), f.data(), e.data(), h.data(), g.data());
+    std::cout << "Walls Defined...\n";
+
+
+    /*
+     * Calling getWallIndices to return 6 vectores of indices of the cells that have wall to right/left,
+     * wall above/below and wall in front/back
+     */
+    getWallIndices (icellflag, wall_right_indices, wall_left_indices, wall_above_indices,
+      wall_below_indices, wall_front_indices, wall_back_indices);
+
+    /*
+     * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
+     * wall above/below and wall in front/back and applies the log law boundary condition fix
+     * to the cells near Walls
+     *
+     */
+    /*wallLogBC (wall_right_indices, wall_left_indices, wall_above_indices, wall_below_indices,
+      wall_front_indices, wall_back_indices, u0.data(), v0.data(), w0.data(), z0);*/
+
+      for (int k = 1; k < nz-1; k++)
+      {
+          for (int j = 1; j < ny-1; j++)
+          {
+              for (int i = 1; i < nx-1; i++)
+              {
+                  icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+                  icell_face = i + j*nx + k*nx*ny;
+                  if (icellflag[icell_cent] == 0) {
+                      u0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
+                      u0[icell_face+1] = 0.0;
+                      v0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
+                      v0[icell_face+nx] = 0.0;
+                      w0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
+                      w0[icell_face+nx*ny] = 0.0;
+                  }
+              }
+          }
+      }
+
+    /// New boundary condition implementation
+    for (int k = 0; k < nz-1; k++)
+    {
+        for (int j = 0; j < ny-1; j++)
+        {
+            for (int i = 0; i < nx-1; i++)
+            {
+                icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+                e[icell_cent] = e[icell_cent]/(dx*dx);
+                f[icell_cent] = f[icell_cent]/(dx*dx);
+                g[icell_cent] = g[icell_cent]/(dy*dy);
+                h[icell_cent] = h[icell_cent]/(dy*dy);
+                m[icell_cent] = m[icell_cent]/(dz_array[k]*0.5*(dz_array[k]+dz_array[k+1]));
+                n[icell_cent] = n[icell_cent]/(dz_array[k]*0.5*(dz_array[k]+dz_array[k-1]));
+            }
+        }
+    }
+
+    //////////////////////////////////////////////////
+    //      Initialize output information           //
+    //////////////////////////////////////////////////
+
+    if (output != nullptr) {
+
+        // set output fields
+        std::cout<<"Getting output fields"<<std::endl;
+        output_fields = UID->fileOptions->outputFields;
+
+        if (output_fields.empty() || output_fields[0]=="all") {
+            output_fields.clear();
+            output_fields = {"u","v","w","icell"};
+        }
+
+        // set cell-centered dimensions
+        NcDim t_dim = output->addDimension("t");
+        NcDim z_dim = output->addDimension("z",nz-2);
+        NcDim y_dim = output->addDimension("y",ny-1);
+        NcDim x_dim = output->addDimension("x",nx-1);
+
+        dim_scalar_t.push_back(t_dim);
+        dim_scalar_z.push_back(z_dim);
+        dim_scalar_y.push_back(y_dim);
+        dim_scalar_x.push_back(x_dim);
+        dim_vector.push_back(t_dim);
+        dim_vector.push_back(z_dim);
+        dim_vector.push_back(y_dim);
+        dim_vector.push_back(x_dim);
+        dim_vector_2d.push_back(y_dim);
+        dim_vector_2d.push_back(x_dim);
+
+        // create attributes
+        AttScalarDbl att_t = {&time,  "t", "time",      "s", dim_scalar_t};
+        AttVectorDbl att_x = {&x_out, "x", "x-distance", "m", dim_scalar_x};
+        AttVectorDbl att_y = {&y_out, "y", "y-distance", "m", dim_scalar_y};
+        AttVectorDbl att_z = {&z_out, "z", "z-distance", "m", dim_scalar_z};
+        AttVectorDbl att_u = {&u_out, "u", "x-component velocity", "m s-1", dim_vector};
+        AttVectorDbl att_v = {&v_out, "v", "y-component velocity", "m s-1", dim_vector};
+        AttVectorDbl att_w = {&w_out, "w", "z-component velocity", "m s-1", dim_vector};
+        AttVectorDbl att_h = {&terrain,  "terrain", "terrain height", "m", dim_vector_2d};
+        AttVectorInt att_i = {&icellflag_out,  "icell", "icell flag value", "--", dim_vector};
+
+        // map the name to attributes
+        map_att_scalar_dbl.emplace("t", att_t);
+        map_att_vector_dbl.emplace("x", att_x);
+        map_att_vector_dbl.emplace("y", att_y);
+        map_att_vector_dbl.emplace("z", att_z);
+        map_att_vector_dbl.emplace("u", att_u);
+        map_att_vector_dbl.emplace("v", att_v);
+        map_att_vector_dbl.emplace("w", att_w);
+        map_att_vector_dbl.emplace("terrain", att_h);
+        map_att_vector_int.emplace("icell", att_i);
+
+        // we will always save time and grid lengths
+        output_scalar_dbl.push_back(map_att_scalar_dbl["t"]);
+        output_vector_dbl.push_back(map_att_vector_dbl["x"]);
+        output_vector_dbl.push_back(map_att_vector_dbl["y"]);
+        output_vector_dbl.push_back(map_att_vector_dbl["z"]);
+        output_vector_dbl.push_back(map_att_vector_dbl["terrain"]);
+
+        // create list of fields to save
+        for (size_t i=0; i<output_fields.size(); i++) {
+            std::string key = output_fields[i];
+            if (map_att_scalar_dbl.count(key)) {
+                output_scalar_dbl.push_back(map_att_scalar_dbl[key]);
+            } else if (map_att_vector_dbl.count(key)) {
+                output_vector_dbl.push_back(map_att_vector_dbl[key]);
+            } else if(map_att_vector_int.count(key)) {
+                output_vector_int.push_back(map_att_vector_int[key]);
+            }
+        }
+
+        // add vector double fields
+        for ( AttScalarDbl att : output_scalar_dbl ) {
+            output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
+        }
+
+        // add vector double fields
+        for ( AttVectorDbl att : output_vector_dbl ) {
+            output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
+        }
+
+        // add vector int fields
+        for ( AttVectorInt att : output_vector_int ) {
+            output->addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
+        }
+    }
+}
+
+void Solver::calculateCoefficients(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag,
+                        float* n, float* m, float* f, float* e, float* h, float* g,
+                        std::vector<std::vector<std::vector<float>>> x_cut, std::vector<std::vector<std::vector<float>>>y_cut,
+                        std::vector<std::vector<std::vector<float>>> z_cut, std::vector<std::vector<int>> num_points,
+                        std::vector<std::vector<float>> coeff)
+
 {
 
-	rooftopFlag = UID->simParams->rooftopFlag;
-	upwindCavityFlag = UID->simParams->upwindCavityFlag;
-	streetCanyonFlag = UID->simParams->streetCanyonFlag;
-	streetIntersectionFlag = UID->simParams->streetIntersectionFlag;
-	wakeFlag = UID->simParams->wakeFlag;
-	sidewallFlag = UID->simParams->sidewallFlag;
-
-	Vector3<int> v;
-	v = *(UID->simParams->domain);
-	nx = v[0];
-	ny = v[1];
-	nz = v[2];
-
-	nx += 1;        /// +1 for Staggered grid
-	ny += 1;        /// +1 for Staggered grid
-	nz += 2;        /// +2 for staggered grid and ghost cell
-
-
-	Vector3<float> w;
-	w = *(UID->simParams->grid);
-	dx = w[0];
-	dy = w[1];
-	dz = w[2];
-	itermax = UID->simParams->maxIterations;
-	dxy = MIN_S(dx, dy);
-
-	z_ref = UID->metParams->sensor->height;
-	U_ref = UID->metParams->sensor->speed;
-
-	if (UID->buildings)
+	for ( int k = 1; k < nz-2; k++)
 	{
-
-		z0 = UID->buildings->wallRoughness;
-
-		for (int i = 0; i < UID->buildings->buildings.size(); i++)
+		for (int j = 1; j < ny-2; j++)
 		{
-			if (UID->buildings->buildings[i]->buildingGeometry == 1)
+			for (int i = 1; i < nx-2; i++)
 			{
-				buildings.push_back(UID->buildings->buildings[i]);
+				icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+
+				if (icellflag[icell_cent]==7)
+				{
+					for (int ii=0; ii<6; ii++)
+					{
+						coeff[icell_cent][ii] = 0;
+						if (num_points[icell_cent][ii] !=0)
+						{
+							/// calculate area fraction coeeficient for each face of the cut-cell
+							for (int jj=0; jj<num_points[icell_cent][ii]-1; jj++)
+							{
+								coeff[icell_cent][ii] += (0.5*(y_cut[icell_cent][ii][jj+1]+y_cut[icell_cent][ii][jj])*
+														(z_cut[icell_cent][ii][jj+1]-z_cut[icell_cent][ii][jj]))/(dy*dz) +
+														(0.5*(x_cut[icell_cent][ii][jj+1]+x_cut[icell_cent][ii][jj])*
+														(z_cut[icell_cent][ii][jj+1]-z_cut[icell_cent][ii][jj]))/(dx*dz) +
+														(0.5*(x_cut[icell_cent][ii][jj+1]+x_cut[icell_cent][ii][jj])*
+														(y_cut[icell_cent][ii][jj+1]-y_cut[icell_cent][ii][jj]))/(dx*dy);
+							}
+
+				coeff[icell_cent][ii] +=(0.5*(y_cut[icell_cent][ii][0]+y_cut[icell_cent][ii][num_points[icell_cent][ii]-1])*
+									(z_cut[icell_cent][ii][0]-z_cut[icell_cent][ii][num_points[icell_cent][ii]-1]))/(dy*dz)+
+									(0.5*(x_cut[icell_cent][ii][0]+x_cut[icell_cent][ii][num_points[icell_cent][ii]-1])*
+									(z_cut[icell_cent][ii][0]-z_cut[icell_cent][ii][num_points[icell_cent][ii]-1]))/(dx*dz)+
+									(0.5*(x_cut[icell_cent][ii][0]+x_cut[icell_cent][ii][num_points[icell_cent][ii]-1])*
+									(y_cut[icell_cent][ii][0]-y_cut[icell_cent][ii][num_points[icell_cent][ii]-1]))/(dx*dy);
+
+						}
+            coeff[icell_cent][ii] = 1;
+
+					}
+
+          /// Assign solver coefficients
+					f[icell_cent] = coeff[icell_cent][0];
+					e[icell_cent] = coeff[icell_cent][1];
+					h[icell_cent] = coeff[icell_cent][2];
+					g[icell_cent] = coeff[icell_cent][3];
+					n[icell_cent] = coeff[icell_cent][4];
+					m[icell_cent] = coeff[icell_cent][5];
+				}
+
 			}
 		}
 	}
-	else
-	{
-		buildings.clear();
-		z0 = 0.1f;
-	}
-
-	int j = 0;
-	for (int i = 0; i < nz; i++)
-	{
-		if (UID->simParams->verticalStretching == 0)
-			dzArray.push_back(dz);
-		else
-			dzArray.push_back(UID->simParams->dzArray[j]);
-
-		if (i != 0 && i != nz - 2)
-			j++;
-	}
-
-	zm.push_back(-0.5*dzArray[0]);
-	z.push_back(0.0f);
-	for (int i = 1; i < nz; i++)
-	{
-		z.push_back(z[i - 1] + dzArray[i]);
-		zm.push_back(z[i] - 0.5f * dzArray[i]);
-	} 
-
-	mesh = 0;
-	if (DTEHF)
-		mesh = new Mesh(DTEHF->getTris());
-
-	
-	cells = 0;
-	this->DTEHF = DTEHF;
-	if (DTEHF)
-		{
-			cells = new Cell[(nx-1)*(ny-1)*(nz-1)];
-			DTEHF->setCells(cells, nx - 1, ny - 1, nz - 1, dx, dy, dz);
-
-		}
-
-
-
 }
 
-void Solver::defineWalls(int* iCellFlag, float* n, float* m, float* f, float* e, float* h, float* g)
-{
-	for (int k = 1; k < nz-2; k++){
-		for (int j = 1; j < ny-2; j++){
-			for (int i = 1; i < nx-2; i++){
-				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-				if (iCellFlag[icell_cent] != 0) {
-					
-					/// Wall bellow
-					if (iCellFlag[icell_cent-(nx-1)*(ny-1)]==0) {
-						n[icell_cent] = 0.0f; 
 
+void Solver::defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag,
+                         float* n, float* m, float* f, float* e, float* h, float* g)
+
+{
+
+	for (int i=1; i<nx-2; i++)
+	{
+		for (int j=1; j<ny-2; j++)
+		{
+			for (int k=1; k<nz-2; k++)
+			{
+				icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+				if (icellflag[icell_cent] !=0) {
+
+					/// Wall below
+					if (icellflag[icell_cent-(nx-1)*(ny-1)]==0) {
+			    		n[icell_cent] = 0.0;
 					}
 					/// Wall above
-					if (iCellFlag[icell_cent+(nx-1)*(ny-1)]==0) {
-						m[icell_cent] = 0.0f;
+					if (icellflag[icell_cent+(nx-1)*(ny-1)]==0) {
+		    			m[icell_cent] = 0.0;
 					}
 					/// Wall in back
-					if (iCellFlag[icell_cent-1]==0){
-						f[icell_cent] = 0.0f; 
+					if (icellflag[icell_cent-1]==0){
+						f[icell_cent] = 0.0;
 					}
 					/// Wall in front
-					if (iCellFlag[icell_cent+1]==0){
-						e[icell_cent] = 0.0f; 
+					if (icellflag[icell_cent+1]==0){
+						e[icell_cent] = 0.0;
 					}
 					/// Wall on right
-					if (iCellFlag[icell_cent-(nx-1)]==0){
-						h[icell_cent] = 0.0f;
+					if (icellflag[icell_cent-(nx-1)]==0){
+						h[icell_cent] = 0.0;
 					}
 					/// Wall on left
-					if (iCellFlag[icell_cent+(nx-1)]==0){
-						g[icell_cent] = 0.0f; 
+					if (icellflag[icell_cent+(nx-1)]==0){
+						g[icell_cent] = 0.0;
 					}
 				}
 			}
 		}
 	}
-
-		/// New boundary condition implementation
-	for (int k = 1; k < nz-1; k++){
-		for (int j = 0; j < ny-1; j++){
-			for (int i = 0; i < nx-1; i++){
-				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-				e[icell_cent] /= (dx*dx);
-				f[icell_cent] /= (dx*dx);
-				g[icell_cent] /= (dy*dy);
-				h[icell_cent] /= (dy*dy);
-				m[icell_cent] /= (dz*dz);
-				n[icell_cent] /= (dz*dz);
-				//denom(:,:,k)=omegarelax/(e(:,:,k)+f(:,:,k)+g(:,:,k)+h(:,:,k)+m(:,:,k)+n(:,:,k))
-			}
-		}
-	}
 }
 
-void Solver::upWind(Building* build, int* iCellFlag, double* u0, double* v0, double* w0, float* z, float* zm)
+
+void Solver::getWallIndices(std::vector<int> &icellflag, std::vector<int>& wall_right_indices,
+                            std::vector<int>& wall_left_indices,std::vector<int>& wall_above_indices,
+                            std::vector<int>& wall_below_indices, std::vector<int>& wall_front_indices,
+                            std::vector<int>& wall_back_indices)
 {
+  for (int i=0; i<nx-1; i++)
+  {
+    for (int j=0; j<ny-1; j++)
+    {
+      for (int k=1; k<nz-2; k++)
+      {
+        icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        icell_face = i + j*nx + k*nx*ny;
 
-		 int perpendicular_flag,ns_flag;
-		 int upIstart,upIstop,upJstart,upJstop;
-		 float uo_h,vo_h,upwind_dir,upwind_rel,xco,yco;
-		 std::vector<float> x,y;
-		 float xf1,yf1,xf2,yf2,tol,ynorm,lfcoeff;
-		 float zf,x_u,y_u,x_v,y_v,x_w,y_w;
-		 float xs_u,xs_v,xs_w,xv_u,xv_v,xv_w,xrz_u,xrz_v;
-		 float urot,vrot,uhrot,vhrot,vel_mag;
-		 float vortex_height,build_width,retarding_factor;
-		 float length_factor,height_factor,rz_end,retarding_height,eff_height;
-		 //float totalLength,perpendicularDir,gamma_eff;
-		 int ktop,kbottom,iface,ivert/*,x_idx,y_idx*/;
+        if (icellflag[icell_cent] !=0)
+        {
 
-		 if(build->buildingGeometry == 4)
-		 {
-			eff_height=0.8*(build->height - build->baseHeightActual ) + build->baseHeightActual;
-			/*  This building geometry doesn't exist yet. Update this when it does.
-			 xco = (RectangularBuilding*)(build)->xfo + (RectangularBuilding*)(build)->length*cos((RectangularBuilding*)(build)->rotation) //!CENTER of building in QUIC domain coordinates
-			 yco = (RectangularBuilding*)(build)->yfo + (RectangularBuilding*)(build)->length*sin((RectangularBuilding*)(build)->rotation)
-			*/
-		 }
-		 else if (build->buildingGeometry == 6)
-		 {
-			eff_height = build->height;
-			xco = build->centroidX;
-			yco = build->centroidY;
-		 }
-		 else //must be 1 which is rectangular building
-		 {
-			 eff_height = build->height;
-			 xco = ((RectangularBuilding*)(build))->xFo + ((RectangularBuilding*)(build))->length*cos(((RectangularBuilding*)(build))->rotation); //!CENTER of building in QUIC domain coordinates
-			 yco = ((RectangularBuilding*)(build))->yFo + ((RectangularBuilding*)(build))->length*sin(((RectangularBuilding*)(build))->rotation);
-		 }
-		 
-		 // find upwind direction and deterMIN_Se the type of flow regime
-		 uo_h = u0[ CELL((int)(xco/dx), (int)(yco/dy), build->kEnd+1, 0)];
-		 vo_h = v0[ CELL((int)(xco/dx), (int)(yco/dy), build->kEnd+1, 0)];
-		 upwind_dir = atan2(vo_h,uo_h);
-		 upwind_rel = upwind_dir - build->rotation;
-		 uhrot = uo_h * cos(build->rotation) + vo_h * sin(build->rotation);
-		 vhrot = -uo_h * sin(build->rotation) + vo_h * cos(build->rotation);
-		 vel_mag = sqrt( (uo_h * uo_h) + ( vo_h * vo_h) );
-		 tol = 10 * pi / 180.0f;
-		 retarding_factor = 0.4f;
-		 length_factor = 0.4f;
-		 height_factor = 0.6;
-
-		 if(upwindCavityFlag == 1)
-			lfcoeff=2;
-		 else
-			lfcoeff=1.5;
-
-		 if( upwind_rel > pi) upwind_rel = upwind_rel - 2 * pi;
-		 if(upwind_rel < -pi) upwind_rel = upwind_rel + 2 * pi;
-
-
-		 if(build->buildingGeometry == 6)
-		 {
-			/*
-				NOTE::buildingGeo 6 isn't being implemented right now, so just leave this blank.
-
-			allocate(LfFace(bldstopidx(ibuild)-bldstartidx(ibuild)),LengthFace(bldstopidx(ibuild)-bldstartidx(ibuild)))
-			iface=0
-			do ivert=bldstartidx(ibuild),bldstopidx(ibuild)
-			   x1=0.5*(bldx(ivert)+bldx(ivert+1))
-			   y1=0.5*(bldy(ivert)+bldy(ivert+1))
-			   xf1=(bldx(ivert)-x1)*cos(upwind_dir)+(bldy(ivert)-y1)*sin(upwind_dir)
-			   yf1=-(bldx(ivert)-x1)*sin(upwind_dir)+(bldy(ivert)-y1)*cos(upwind_dir)
-			   xf2=(bldx(ivert+1)-x1)*cos(upwind_dir)+(bldy(ivert+1)-y1)*sin(upwind_dir)
-			   yf2=-(bldx(ivert+1)-x1)*sin(upwind_dir)+(bldy(ivert+1)-y1)*cos(upwind_dir)
-			   upwind_rel=atan2(yf2-yf1,xf2-xf1)+0.5*pi
-			   if(upwind_rel .gt. pi)upwind_rel=upwind_rel-2*pi
-			   if(abs(upwind_rel) .gt. pi-tol)then
-				  perpendicularDir=atan2(bldy(ivert+1)-bldy(ivert),bldx(ivert+1)-bldx(ivert))+0.5*pi
-				  if(perpendicularDir.le.-pi)perpendicularDir=perpendicularDir+2*pi
-				  if(abs(perpendicularDir) .ge. 0.25*pi .and. abs(perpendicularDir) .le. 0.75*pi)then
-					 ns_flag=1
-				  else
-					 ns_flag=0
-				  endif
-				  gamma_eff=perpendicularDir
-				  if(gamma_eff .ge. 0.75*pi)then
-					 gamma_eff=gamma_eff-pi
-				  elseif(gamma_eff .ge. 0.25*pi)then
-					 gamma_eff=gamma_eff-0.5*pi
-				  elseif(gamma_eff .lt. -0.75*pi)then
-					 gamma_eff=gamma_eff+pi
-				  elseif(gamma_eff .lt. -0.25*pi)then
-					 gamma_eff=gamma_eff+0.5*pi
-				  endif
-				  uhrot=uo_h*cos(gamma_eff)+vo_h*sin(gamma_eff)
-				  vhrot=-uo_h*sin(gamma_eff)+vo_h*cos(gamma_eff)
-				  iface=iface+1
-				  LengthFace(iface)=sqrt(((xf2-xf1)**2.)+((yf2-yf1)**2.))
-				  LfFace(iface)=abs(lfcoeff*LengthFace(iface)*cos(upwind_rel)/(1+0.8*LengthFace(iface)/eff_height))
-				  if(upwindflag .eq. 3)theniCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-iCellFlag
-					 vortex_height=MIN_S(LengthFace(iface),eff_height)
-					 retarding_height=eff_height
-				  else
-					 vortex_height=eff_height
-					 retarding_height=eff_height
-				  endif
-				  ! MAN 07/25/2008 stretched vertical grid
-				  do k=2,kstart(ibuild)
-					 kbottom=k
-					 if(zfo(ibuild) .le. zm(k))exit
-				  enddo
-				  do k=kstart(ibuild),nz-1
-					 ktop=k
-					 if(height_factor*retarding_height+zfo_actual(ibuild) .le. z(k))exit
-				  enddo
-				  upIstart=MAX_S(nint(MIN_S(bldx(ivert),bldx(ivert+1))/dx)-nint(1.5*LfFace(iface)/dx),2)
-				  upIstop=MIN_S(nint(MAX_S(bldx(ivert),bldx(ivert+1))/dx)+nint(1.5*LfFace(iface)/dx),nx-1)
-				  upJstart=MAX_S(nint(MIN_S(bldy(ivert),bldy(ivert+1))/dy)-nint(1.5*LfFace(iface)/dy),2)
-				  upJstop=MIN_S(nint(MAX_S(bldy(ivert),bldy(ivert+1))/dy)+nint(1.5*LfFace(iface)/dy),ny-1)
-				  ynorm=abs(yf2)
-				  do k=kbottom,ktop
-					 zf=zm(k)-zfo(ibuild)
-					 do j=upJstart,upJstop
-						do i=upIstart,upIstop
-						   x_u=((real(i)-1)*dx-x1)*cos(upwind_dir)+ &
-										((real(j)-0.5)*dy-y1)*sin(upwind_dir)
-						   y_u=-((real(i)-1)*dx-x1)*sin(upwind_dir)+ &
-										((real(j)-0.5)*dy-y1)*cos(upwind_dir)
-						   x_v=((real(i)-0.5)*dx-x1)*cos(upwind_dir)+ &
-										((real(j)-1)*dy-y1)*sin(upwind_dir)
-						   y_v=-((real(i)-0.5)*dx-x1)*sin(upwind_dir)+	&
-										((real(j)-1)*dy-y1)*cos(upwind_dir)
-						   x_w=((real(i)-0.5)*dx-x1)*cos(upwind_dir)+ &
-										((real(j)-0.5)*dy-y1)*sin(upwind_dir)
-						   y_w=-((real(i)-0.5)*dx-x1)*sin(upwind_dir)+	&
-										((real(j)-0.5)*dy-y1)*cos(upwind_dir)
-!u values
-						   if(abs(y_u) .le. ynorm .and. height_factor*vortex_height .gt. zf)then
-							  xs_u=((xf2-xf1)/(yf2-yf1))*(y_u-yf1)+xf1
-							  xv_u=-LfFace(iface)*sqrt((1-((y_u/ynorm)**2.))*(1-((zf/(height_factor*vortex_height))**2.)))
-							  xrz_u=-LfFace(iface)*sqrt((1-((y_u/ynorm)**2.))*(1-((zf/(height_factor*retarding_height))**2.)))
-							  if(zf .gt. height_factor*vortex_height)then
-								 rz_end=0.
-							  else
-								 rz_end=length_factor*xv_u
-							  endif
-							  if(upwindflag .eq. 1)then
-								 if(x_u-xs_u .ge. xv_u .and. x_u-xs_u .le. 0.1*dxy .and. iCellFlag(i,j,k) .ne. 0)then
-									uo(i,j,k)=0.
-								 endif
-							  else
-								 if(x_u-xs_u .ge. xrz_u .and. x_u-xs_u .lt. rz_end &
-									   .and. iCellFlag(i,j,k) .ne. 0)then
-									if(upwindflag .eq. 3)then
-									   uo(i,j,k)=((x_u-xs_u-xrz_u)*(retarding_factor-1.)/(rz_end-xrz_u)+1.)*uo(i,j,k)
-									else
-									   uo(i,j,k)=retarding_factor*uo(i,j,k)
-									endif
-									if(abs(uo(i,j,k)) .gt. max_velmag)then
-									   print*,'Parameterized U exceeds MAX_S in upwind',&
-										  uo(i,j,k),max_velmag,i,j,k
-									endif
-								 endif
-								 if(x_u-xs_u .ge. length_factor*xv_u .and. x_u-xs_u .le. 0.1*dxy &
-									   .and. iCellFlag(i,j,k) .ne. 0)then
-									urot=uo(i,j,k)*cos(gamma_eff)
-									vrot=-uo(i,j,k)*sin(gamma_eff)
-									if(ns_flag .eq. 1)then
-									   vrot=-vhrot*(-height_factor*cos(((pi*zf)/(0.5*vortex_height)))+0.05)   &
-											*(-height_factor*sin(((pi*abs(x_u-xs_u))/(length_factor*LfFace(iface)))+0))
-									else
-									   urot=-uhrot*(-height_factor*cos(((pi*zf)/(0.5*vortex_height)))+0.05)   &
-											*(-height_factor*sin(((pi*abs(x_u-xs_u))/(length_factor*LfFace(iface)))+0))
-									endif
-									uo(i,j,k)=urot*cos(-gamma_eff)+vrot*sin(-gamma_eff)
-									if(abs(uo(i,j,k)) .gt. max_velmag)then
-									   print*,'Parameterized U exceeds MAX_S in upwind',&
-										  uo(i,j,k),max_velmag,i,j,k
-									endif
-								 endif
-							  endif
-						   endif
-!v values
-						   if(abs(y_v) .le. ynorm .and. height_factor*vortex_height .gt. zf)then
-							  xs_v=((xf2-xf1)/(yf2-yf1))*(y_v-yf1)+xf1
-							  xv_v=-LfFace(iface)*sqrt((1-((y_v/ynorm)**2.))*(1-((zf/(height_factor*vortex_height))**2.)))
-							  xrz_v=-LfFace(iface)*sqrt((1-((y_v/ynorm)**2.))*(1-((zf/(height_factor*retarding_height))**2.)))
-							  if(zf .ge. height_factor*vortex_height)then
-								 rz_end=0.
-							  else
-								 rz_end=length_factor*xv_v
-							  endif
-							  if(upwindflag .eq. 1)then
-								 if(x_v-xs_v .ge. xv_v .and. x_v-xs_v .le. 0.1*dxy .and. iCellFlag(i,j,k) .ne. 0)then
-									vo(i,j,k)=0.
-								 endif
-							  else
-								 if(x_v-xs_v .ge. xrz_v .and. x_v-xs_v .lt. rz_end &
-									   .and. iCellFlag(i,j,k) .ne. 0)then
-									if(upwindflag .eq. 3)then
-									   vo(i,j,k)=((x_v-xs_v-xrz_v)*(retarding_factor-1.)/(rz_end-xrz_v)+1.)*vo(i,j,k)
-									else
-									   vo(i,j,k)=retarding_factor*vo(i,j,k)
-									endif
-									if(abs(vo(i,j,k)) .gt. max_velmag)then
-									   print*,'Parameterized V exceeds MAX_S in upwind',&
-										  vo(i,j,k),max_velmag,i,j,k
-									endif
-								 endif
-								 if(x_v-xs_v .ge. length_factor*xv_v .and. x_v-xs_v .le. 0.1*dxy &
-									   .and. iCellFlag(i,j,k) .ne. 0)then
-									urot=vo(i,j,k)*sin(gamma_eff)
-									vrot=vo(i,j,k)*cos(gamma_eff)
-									if(ns_flag .eq. 1)then
-									   vrot=-vhrot*(-height_factor*cos(((pi*zf)/(0.5*vortex_height)))+0.05)   &
-											*(-height_factor*sin(((pi*abs(x_v-xs_v))/(length_factor*LfFace(iface)))+0))
-									else
-									   urot=-uhrot*(-height_factor*cos(((pi*zf)/(0.5*vortex_height)))+0.05)   &
-											*(-height_factor*sin(((pi*abs(x_v-xs_v))/(length_factor*LfFace(iface)))+0))
-									endif
-									vo(i,j,k)=-urot*sin(-gamma_eff)+vrot*cos(-gamma_eff)
-									if(abs(vo(i,j,k)) .gt. max_velmag)then
-									   print*,'Parameterized V exceeds MAX_S in upwind',&
-										  vo(i,j,k),max_velmag,i,j,k
-									endif
-								 endif
-							  endif
-						   endif
-!w values
-						   if(abs(y_w) .le. ynorm .and. height_factor*vortex_height .gt. zf)then
-							  xs_w=((xf2-xf1)/(yf2-yf1))*(y_w-yf1)+xf1
-							  xv_w=-LfFace(iface)*sqrt((1-((y_w/ynorm)**2.))*(1-((zf/(height_factor*vortex_height))**2.)))
-							  if(upwindflag .eq. 1)then
-								 if(x_w-xs_w .ge. xv_w .and. x_w-xs_w .le. 0.1*dxy .and. iCellFlag(i,j,k) .ne. 0)then
-									wo(i,j,k)=0.
-									if(i .lt. nx .and. j .lt. ny .and. k .lt. nz)then
-									   iCellFlag(i,j,k)=2
-									endif
-								 endif
-							  else
-								 if(x_w-xs_w .ge. xv_w .and. x_w-xs_w .lt. length_factor*xv_w &
-									   .and. iCellFlag(i,j,k) .ne. 0)then
-									wo(i,j,k)=retarding_factor*wo(i,j,k)
-									if(abs(wo(i,j,k)) .gt. max_velmag)then
-									   print*,'Parameterized W exceeds MAX_S in upwind',&
-										  wo(i,j,k),max_velmag,i,j,k
-									endif
-									if(i .lt. nx .and. j .lt. ny .and. k .lt. nz)then
-									   iCellFlag(i,j,k)=2
-									endif
-								 endif
-								 if(x_w-xs_w .ge. length_factor*xv_w .and. x_w-xs_w .le. 0.1*dxy &
-									   .and. iCellFlag(i,j,k) .ne. 0)then
-									wo(i,j,k)=-vel_mag*(0.1*cos(((pi*abs(x_w-xs_w))/(length_factor*LfFace(iface))))-0.05)
-									if(abs(wo(i,j,k)) .gt. max_velmag)then
-									   print*,'Parameterized W exceeds MAX_S in upwind',&
-										  wo(i,j,k),max_velmag,i,j,k
-									endif
-									if(i .lt. nx .and. j .lt. ny .and. k .lt. nz)then
-									   iCellFlag(i,j,k)=2
-									endif
-								 endif
-							  endif
-						   endif
-						enddo
-					 enddo
-				  enddo
-			   endif
-			   if(bldx(ivert+1) .eq. bldx(bldstartidx(ibuild)) &
-					 .and. bldy(ivert+1) .eq. bldy(bldstartidx(ibuild)))exit
-			enddo
-			if(iface .gt. 0)then
-			   totalLength=0.
-			   Lf(ibuild)=0.
-			   do ivert=1,iface
-				  Lf(ibuild)=Lf(ibuild)+LfFace(ivert)*LengthFace(ivert)
-				  totalLength=totalLength+LengthFace(ivert)
-			   enddo
-			   Lf(ibuild)=Lf(ibuild)/totalLength
-			else
-			   Lf(ibuild)=-999.0
-			endif
-			deallocate(LfFace,LengthFace)
-			*/
-			build->iStart += 1; //dummy code for build, throw out on implementation
-		 }
-		 else
-			//Location of corners relative to the center of the building
-			x.push_back(((NonPolyBuilding*)build)->xFo + ((NonPolyBuilding*)build)->width * sin((build)->rotation) - xco);
-			y.push_back(((NonPolyBuilding*)build)->yFo  - ((NonPolyBuilding*)build)->width * cos(build->rotation) - yco);
-			x.push_back(x[0] + ((NonPolyBuilding*)build)->length * cos(build->rotation));
-			y.push_back(y[0] + ((NonPolyBuilding*)build)->length * sin(build->rotation));
-			x.push_back(((NonPolyBuilding*)build)->xFo - ((NonPolyBuilding*)build)->width * sin(build->rotation) - xco);
-			y.push_back(((NonPolyBuilding*)build)->yFo + ((NonPolyBuilding*)build)->width * cos(build->rotation) - yco);
-			x.push_back(x[2] + ((NonPolyBuilding*)build)->length * cos(build->rotation));
-			y.push_back(y[2] + ((NonPolyBuilding*)build)->length * sin(build->rotation));
-
-
-			//flip the last two values to maintain order
-			float tempx, tempy;
-			tempx = x[3];
-			tempy = y[3];
-			x[3] = x[2];
-			y[3] = y[2];
-			x[2] = tempx;
-			y[2] = tempy;
-
-
-
-			perpendicular_flag = 0;
-
-			int num = -1;
-			if(upwind_rel > 0.5 * pi - tol && upwind_rel < 0.5 * pi + tol )
-			{ 
-			  num = 2;
-			   perpendicular_flag=1;
-			   ns_flag=1;
-			   ((NonPolyBuilding*)build)->length = abs(lfcoeff * ((NonPolyBuilding*)build)->length * sin(upwind_rel) / ( 1 + 0.8 * ((NonPolyBuilding*)build)->length / eff_height));
-			   build_width=((NonPolyBuilding*)build)->length;
-			}
-			else if(upwind_rel > -tol && upwind_rel > tol)
-			{
-			   num = 1;
-			   perpendicular_flag=1;
-			   ns_flag=0;
-			   ((NonPolyBuilding*)build)->length = abs(lfcoeff * ((NonPolyBuilding*)build)->width * cos(upwind_rel) / ( 1 + 0.8 * ((NonPolyBuilding*)build)->width / eff_height));
-			   build_width=((NonPolyBuilding*)build)->width;
-		   }
-			else if(upwind_rel > -0.5 * pi - tol && upwind_rel < -0.5 * pi + tol)
-			{
-			   num = 4;
-			   perpendicular_flag=1;
-			   ns_flag=1;
-			   ((NonPolyBuilding*)build)->length = abs(lfcoeff * ((NonPolyBuilding*)build)->length * sin(upwind_rel) / ( 1 + 0.8 * ((NonPolyBuilding*)build)->length / eff_height));
-			   build_width=((NonPolyBuilding*)build)->length;
-			}
-			else if(upwind_rel > pi - tol || upwind_rel < -pi + tol)
-			{
-			   num = 3;
-			   perpendicular_flag=1;
-			   ns_flag=0;
-			   ((NonPolyBuilding*)build)->length = abs(lfcoeff * ((NonPolyBuilding*)build)->width * cos(upwind_rel) / ( 1 + 0.8 * ((NonPolyBuilding*)build)->width / eff_height));
-			   build_width=((NonPolyBuilding*)build)->width;
-			}
-
-			if (num > -1)
-			{
-			   xf1=x[ (num % 4) + 1 ]*cos(upwind_dir)+y[ (num % 4) + 1 ]*sin(upwind_dir);
-			   yf1=-x[ (num % 4) + 1 ]*sin(upwind_dir)+y[ (num % 4) + 1 ]*cos(upwind_dir);
-			   xf2=x[ ( (num - 1) % 4) + 1]*cos(upwind_dir)+y[((num - 1) % 4) + 1]*sin(upwind_dir);
-			   yf2=-x[ ((num - 1) % 4) + 1 ]*sin(upwind_dir)+y[((num - 1) % 4) + 1]*cos(upwind_dir);
-			}
-
-			ynorm = abs(yf1);
-			if(perpendicular_flag == 1)
-			{
-			   if(upwindCavityFlag == 3)
-			   {
-				  vortex_height = MIN_S(build_width , eff_height);
-				  retarding_height = eff_height;
-			  }
-			   else
-			   {
-				  vortex_height = eff_height;
-				  retarding_height = eff_height;
-			   }
-			   // MAN 07/25/2008 stretched vertical grid
-			   for (int k = 1; k <= build->kStart; k++)
-			   {
-				  kbottom = k;
-				  if( build->baseHeight <= zm[k]) break;
-			   }
-			   for ( int k = build->kStart; k <= nz-1; k++)
-				{
-				  ktop = k;
-				  if(height_factor * retarding_height + build->baseHeightActual <= z[k] ) break;
-			   }
-			   upIstart = MAX_S(build->iStart - (int)(1.5 * build->Lf / dx), 2);
-			   upIstop = MIN_S(build->iEnd + (int)(1.5 * build->Lf / dx), nx - 1);
-			   upJstart = MAX_S(build->jStart - (int)(1.5 * build->Lf / dy), 2);
-			   upJstop = MIN_S(build->jEnd + (int)(1.5 * build->Lf / dy), ny-1);
-				for ( int k = kbottom; k <= ktop; k++)
-				{
-				  zf = zm[k]- build->baseHeight;
-					for (int j = upJstart; j <= upJstop; j++)
-					{
-					   for ( int i = upIstart; i <= upIstop; i++)
-					   {
-						x_u = (((float)(i) - 1) * dx - xco) * cos(upwind_dir) + 
-									 (((float)(j) - 0.5 ) * dy - yco) * sin(upwind_dir);
-						y_u = -(((float)(i)-1)*dx-xco)*sin(upwind_dir)+ 
-									 (((float)(j)-0.5)*dy-yco)*cos(upwind_dir);
-						x_v = (((float)(i)-0.5)*dx-xco)*cos(upwind_dir)+ 
-									 (((float)(j)-1)*dy-yco)*sin(upwind_dir);
-						y_v = -(((float)(i)-0.5)*dx-xco)*sin(upwind_dir)+	
-									 (((float)(j)-1)*dy-yco)*cos(upwind_dir);
-						x_w = (((float)(i)-0.5)*dx-xco)*cos(upwind_dir)+ 
-									 (((float)(j)-0.5)*dy-yco)*sin(upwind_dir);
-						y_w= -(((float)(i)-0.5)*dx-xco)*sin(upwind_dir)+	
-									 (((float)(j)-0.5)*dy-yco)*cos(upwind_dir);
-// u values
-						if(y_u >= -ynorm && y_u <= ynorm)
-						{
-						   xs_u =((xf2-xf1)/(yf2-yf1))*(y_u-yf1)+xf1;
-						   
-						   if(zf > height_factor * vortex_height )
-						   {
-							  rz_end = 0.0f;
-							  xv_u = 0.0f;
-							  xrz_u = 0.0f;
-						   }
-						   else
-						   {
-							  xv_u = -build->Lf * sqrt( (1 - (pow(y_u/ynorm,2))) * (1 - pow((zf/(height_factor*vortex_height)),2)));
-							  xrz_u = -build->Lf * sqrt( (1 - (pow(y_u/ynorm,2))) * (1 - pow((zf/(height_factor*retarding_height)),2)));
-							  rz_end = length_factor * xv_u;
-						   }
-						   if(upwindCavityFlag == 1)
-						   {
-							  if(x_u-xs_u >= xv_u && x_u - xs_u <= 0.1 * dxy && iCellFlag[CELL(i,j,k,1)] != 0)
-								 u0[CELL(i,j,k,0)] = 0.0f;
-						   }
-						   else
-						   {
-							  if(x_u - xs_u >= xrz_u && x_u - xs_u < rz_end &&
-									iCellFlag[CELL(i,j,k,1)] != 0)
-							  {
-								 if(upwindCavityFlag == 3)
-									u0[CELL(i,j,k,0)] *= ((x_u - xs_u - xrz_u) * (retarding_factor - 1.0f) / (rz_end - xrz_u) + 1.0f);
-								 else
-									u0[CELL(i,j,k,0)] *= retarding_factor;
-								 if( abs(u0[CELL(i,j,k,0)]) > max_velmag)
-									printf("Parameterized U exceeds MAX_S in upwind: %lf : %lf i:%d j:%d k:%d\n",u0[CELL(i,j,k,0)],max_velmag,i,j,k);
-							  }
-							  if(x_u - xs_u >= length_factor * xv_u && x_u - xs_u <= 0.1f * dxy &&
-									iCellFlag[CELL(i,j,k,1)] != 0)
-							  {
-								 urot = u0[CELL(i,j,k,0)]*cos(build->rotation);
-								 vrot = -u0[CELL(i,j,k,0)]*sin(build->rotation);
-								 if(ns_flag == 1)
-								 {
-									vrot=-vhrot*(-height_factor*cos(((pi*zf)/(0.5*vortex_height)))+0.05) * (-height_factor*sin(((pi*abs(x_u-xs_u))/(length_factor*build->Lf))+0));
-								 }
-								 else
-								 {
-									urot=-uhrot*(-height_factor*cos(((pi*zf)/(0.5*vortex_height)))+0.05) * (-height_factor*sin(((pi*abs(x_u-xs_u))/(length_factor*build->Lf))+0));
-								 }
-								 u0[CELL(i,j,k,0)]=urot*cos(-build->rotation)+vrot*sin(-build->rotation);
-								 if(abs(u0[CELL(i,j,k,0)]) > max_velmag)
-									printf("Parameterized U exceeds MAX_S in upwind: %lf : %lf i:%d j:%d k:%d\n",u0[CELL(i,j,k,0)],max_velmag,i,j,k);
-							  }
-						   }
-						}
-//v values
-						if(y_v >= -ynorm && y_v <= ynorm)
-						{
-						   xs_v =((xf2-xf1)/(yf2-yf1))*(y_v-yf1)+xf1;
-						   
-						   if(zf >= height_factor * vortex_height )
-						   {
-							  rz_end = 0.0f;
-							  xv_v = 0.0f;
-							  xrz_v = 0.0f;
-						   }
-						   else
-						   {
-							  xv_v = -build->Lf * sqrt( (1 - (pow(y_v/ynorm,2))) * (1 - pow((zf/(height_factor*vortex_height)),2)));
-							  xrz_v = -build->Lf * sqrt( (1 - (pow(y_v/ynorm,2))) * (1 - pow((zf/(height_factor*retarding_height)),2)));
-							  rz_end = length_factor * xv_v;
-						   }
-						   if(upwindCavityFlag == 1)
-						   {
-							  if(x_v-xs_v >= xv_v && x_v - xs_v <= 0.1 * dxy && iCellFlag[CELL(i,j,k,1)] != 0)
-								 v0[CELL(i,j,k,0)] = 0.0f;
-						   }
-						   else
-						   {
-							  if(x_v - xs_v >= xrz_v && x_v - xs_v < rz_end &&
-									iCellFlag[CELL(i,j,k,1)] != 0)
-							  {
-								 if(upwindCavityFlag == 3)
-									v0[CELL(i,j,k,0)] *= ((x_v - xs_v - xrz_v) * (retarding_factor - 1.0f) / (rz_end - xrz_v) + 1.0f);
-								 else
-									v0[CELL(i,j,k,0)] *= retarding_factor;
-								 if( abs(v0[CELL(i,j,k,0)]) > max_velmag)
-									printf("Parameterized V exceeds MAX_S in upwind: %lf : %lf i:%d j:%d k:%d\n",v0[CELL(i,j,k,0)],max_velmag,i,j,k);
-							  }
-							  if(x_v - xs_v >= length_factor * xv_v && x_v - xs_v <= 0.1f * dxy &&
-									iCellFlag[CELL(i,j,k,1)] != 0)
-							  {
-								 urot = v0[CELL(i,j,k,0)]*sin(build->rotation);
-								 vrot = -v0[CELL(i,j,k,0)]*cos(build->rotation);
-								 if(ns_flag == 1)
-								 {
-									vrot=-vhrot*(-height_factor*cos(((pi*zf)/(0.5*vortex_height)))+0.05) * (-height_factor*sin(((pi*abs(x_v-xs_v))/(length_factor*build->Lf))+0));
-								 }
-								 else
-								 {
-									vrot=-vhrot*(-height_factor*cos(((pi*zf)/(0.5*vortex_height)))+0.05) * (-height_factor*sin(((pi*abs(x_v-xs_v))/(length_factor*build->Lf))+0));
-								 }
-								 v0[CELL(i,j,k,0)]=-urot*sin(-build->rotation)+vrot*cos(-build->rotation);
-								 if(abs(v0[CELL(i,j,k,0)]) > max_velmag)
-									printf("Parameterized V exceeds MAX_S in upwind: %lf : %lf i:%d j:%d k:%d\n",v0[CELL(i,j,k,0)],max_velmag,i,j,k);
-							  }
-						   }
-						}
-//w values
-						if(y_w >= -ynorm && y_w <= ynorm)
-						{
-						   xs_w =((xf2-xf1)/(yf2-yf1))*(y_w-yf1)+xf1;
-						   
-						   if(zf >= height_factor * vortex_height )
-						   {
-							  xv_w = 0.0f;
-						   }
-						   else
-						   {
-							  xv_w = -build->Lf * sqrt( (1 - (pow(y_w/ynorm,2))) * (1 - pow((zf/(height_factor*vortex_height)),2)));
-						   }
-						   if(upwindCavityFlag == 1)
-						   {
-							  if(x_w-xs_w >= xv_w && x_w-xs_w <= 0.1*dxy && iCellFlag[CELL(i,j,k,1)] != 0)
-							  {
-								 w0[CELL(i,j,k,0)] = 0.0f;
-								 if(i < nx && j < ny && k < nz)
-								 {
-									iCellFlag[CELL(i,j,k,1)]=2;
-								 }
-							  }
-						   }
-						   else
-						   {
-							  if(x_w - xs_w >= xv_w && x_w - xs_w  < length_factor * xv_w &&
-									iCellFlag[CELL(i,j,k,1)] != 0)
-							  {
-								 w0[CELL(i,j,k,0)] *= retarding_factor;
-								 if(abs(w0[CELL(i,j,k,0)]) > max_velmag)
-									printf("Parameterized W exceeds MAX_S in upwind: %lf : %lf i:%d j:%d k:%d\n",w0[CELL(i,j,k,0)],max_velmag,i,j,k);
-								 if(i < nx - 1 && j < ny - 1 && k < nz - 1)
-									iCellFlag[CELL(i,j,k,1)] = 2;
-							  }
-							  if(x_w - xs_w >= length_factor * xv_w && x_w - xs_w <= 0.0f && iCellFlag[CELL(i,j,k,1)] != 0)
-							  {
-								 //w0[CELL(i,j,k,0)] = -vel_mag*(0.1*cos(((pi*abs(x_w-xs_w))/(length_factor*build->Lf)))-0.05);
-								 if(abs(w0[CELL(i,j,k,0)]) > max_velmag)
-								 {
-									printf("Parameterized W exceeds MAX_S in upwind: %lf : %lf i:%d j:%d k:%d\n",w0[CELL(i,j,k,0)],max_velmag,i,j,k);
-								 }
-								 if(i < nx - 1 && j < ny - 1 && k < nz - 1)
-								 {
-									iCellFlag[CELL(i,j,k,1)] = 2;
-								 }
-							  }
-						   }
-						}
-					 } 
-				  } 
-			   }
-		   }
-			else
-			   build->Lf = -999.0f;
+          /// Wall below
+          if (icellflag[icell_cent-(nx-1)*(ny-1)]==0)
+          {
+            wall_below_indices.push_back(icell_face);
+            n[icell_cent] = 0.0;
+          }
+          /// Wall above
+          if (icellflag[icell_cent+(nx-1)*(ny-1)]==0)
+          {
+            wall_above_indices.push_back(icell_face);
+            m[icell_cent] = 0.0;
+          }
+          /// Wall in back
+          if (icellflag[icell_cent-1]==0)
+          {
+            if (i>0)
+            {
+              wall_back_indices.push_back(icell_face);
+              f[icell_cent] = 0.0;
+            }
+          }
+          /// Wall in front
+          if (icellflag[icell_cent+1]==0)
+          {
+            wall_front_indices.push_back(icell_face);
+            e[icell_cent] = 0.0;
+          }
+          /// Wall on right
+          if (icellflag[icell_cent-(nx-1)]==0)
+          {
+            if (j>0)
+            {
+              wall_right_indices.push_back(icell_face);
+              h[icell_cent] = 0.0;
+            }
+          }
+          /// Wall on left
+          if (icellflag[icell_cent+(nx-1)]==0)
+          {
+            wall_left_indices.push_back(icell_face);
+            g[icell_cent] = 0.0;
+          }
+        }
+      }
+    }
+  }
 
 }
 
 
-
-void Solver::reliefWake(NonPolyBuilding* build, float* u0, float* v0)
+void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& wall_left_indices,
+                        std::vector<int>& wall_above_indices,std::vector<int>& wall_below_indices,
+                        std::vector<int>& wall_front_indices, std::vector<int>& wall_back_indices,
+                        double *u0, double *v0, double *w0, float z0)
 {
-	 int perpendicular_flag/*, uwakeflag, vwakeflag, wwakeflag*/;
-	 float uo_h, vo_h, upwind_dir, upwind_rel, xco, yco;
-	 float x1, y1, x2, y2, x3, y3, x4, y4;
-	 float xw1, yw1, xw2, yw2, xw3, yw3, xf2, yf2, tol, zb, ynorm;
-	 float farwake_exponent, farwake_factor, farwake_velocity;
-	 float upwind_rel_norm, eff_height;
-	 //float cav_fac, wake_fac, beta, LoverH, WoverH, eff_height;
-	 //float canyon_factor, xc, yc, dNu, dNv, xwall, xu, yu, xv, yv, xp, yp, xwallu, xwallv, xwallw;
-	 //int x_idx, y_idx, x_idx_min, iu, ju, iv, jv, kk, iw, jw;
-	 //float vd, hd, Bs, BL, shell_height, xw, yw, dNw;
-	 //int roof_perpendicular_flag, ns_flag;
-	 //int ktop, kbottom, nupwind;
-	 //float LrRect[3], LrLocal, LrLocalu, LrLocalv, LrLocalw;
-	 float epsilon;
-	 
-	 epsilon = 10e-10;
-	 
-	 if(build->buildingGeometry == 4 && build->buildingRoof > 0)  //no current data param for buildingRoof
-		eff_height = 0.8 * (build->height - build->baseHeightActual) + build->baseHeightActual;
-	 else
-		eff_height = build->height;
+  float ustar_wall;              /**< velocity gradient at the wall */
+  float new_ustar;              /**< new ustar value calculated */
+  float vel_mag1;               /**< velocity magnitude at the nearest cell to wall in perpendicular direction */
+  float vel_mag2;                /**< velocity magnitude at the second cell near wall in perpendicular direction */
+  float dist1;                  /**< distance of the center of the nearest cell in perpendicular direction from wall */
+  float dist2;                  /**< distance of the center of second near cell in perpendicular direction from wall */
+  float wind_dir;               /**< wind direction in parallel planes to wall */
 
-	 xco = build->xFo + build->Lt * cos(build->rotation); //!CENTER of building in QUIC domain coordinates
-	 yco = build->yFo + build->Lt * sin(build->rotation);
+  // Total size of wall indices
+  int wall_size = wall_right_indices.size()+wall_left_indices.size()+
+                  wall_above_indices.size()+wall_below_indices.size()+
+                  wall_front_indices.size()+wall_back_indices.size();
 
-	 //! find upwind direction and determine the type of flow regime
-	 uo_h = u0[CELL( (int)(xco/dx), (int)(yco/dy), build->kEnd + 1, 0)];
-	 vo_h = v0[CELL( (int)(xco/dx), (int)(yco/dy), build->kEnd + 1, 0)];
-	 upwind_dir = atan2(vo_h,uo_h);
-	 upwind_rel = upwind_dir - build->rotation;
+  std::vector<float> ustar;
+  ustar.resize(wall_size, 0.0);
+  std::vector<int> index;
+  index.resize(wall_size, 0.0);
+  int j;
 
-	 if(upwind_rel > pi) upwind_rel = upwind_rel - 2 * pi;
+  ustar_wall = 0.1;
+  wind_dir = 0.0;
+  vel_mag1 = 0.0;
+  vel_mag2 = 0.0;
 
-	 if(upwind_rel <= -pi) upwind_rel = upwind_rel + 2 * pi;
+  dist1 = 0.5*dz;
+  dist2 = 1.5*dz;
 
-	 upwind_rel_norm = upwind_rel + 0.5 * pi;
+  /// apply log law fix to the cells with wall below
+  for (size_t i=0; i < wall_below_indices.size(); i++)
+  {
+    ustar_wall = 0.1;       /// reset default value for velocity gradient
+    for (int iter=0; iter<20; iter++)
+    {
+      wind_dir = atan2(v0[wall_below_indices[i]+nx*ny],u0[wall_below_indices[i]+nx*ny]);
+      vel_mag2 = sqrt(pow(u0[wall_below_indices[i]+nx*ny],2.0)+pow(v0[wall_below_indices[i]+nx*ny],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
+      w0[wall_below_indices[i]] = 0;        /// normal component of velocity set to zero
+      /// parallel components of velocity to wall
+      u0[wall_below_indices[i]] = vel_mag1*cos(wind_dir);
+      v0[wall_below_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = vk*vel_mag1/log(dist1/z0);
+      ustar_wall = new_ustar;
+    }
+    index[i] = wall_below_indices[i];
+    ustar[i] = ustar_wall;
+  }
 
-	 if(upwind_rel_norm > pi) upwind_rel_norm = upwind_rel_norm - 2 * pi;
-	 tol = 0.01f * pi / 180.0f;
+  /// apply log law fix to the cells with wall above
+  for (size_t i=0; i < wall_above_indices.size(); i++)
+  {
+    ustar_wall = 0.1;       /// reset default value for velocity gradient
+    for (int iter=0; iter<20; iter++)
+    {
+      wind_dir = atan2(v0[wall_above_indices[i]-nx*ny],u0[wall_above_indices[i]-nx*ny]);
+      vel_mag2 = sqrt(pow(u0[wall_above_indices[i]-nx*ny],2.0)+pow(v0[wall_above_indices[i]-nx*ny],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
+      w0[wall_above_indices[i]] = 0;          /// normal component of velocity set to zero
+      /// parallel components of velocity to wall
+      u0[wall_above_indices[i]] = vel_mag1*cos(wind_dir);
+      v0[wall_above_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = vk*vel_mag1/log(dist1/z0);
+      ustar_wall = new_ustar;
+    }
+    j = i+wall_below_indices.size();
+    index[j] = wall_above_indices[i];
+    ustar[j] = ustar_wall;
+  }
 
-	 //!Location of corners relative to the center of the building
+  dist1 = 0.5*dx;
+  dist2 = 1.5*dx;
 
-	 x1 = build->xFo + build->Wt * sin(build->rotation) - xco;
-	 y1 = build->yFo - build->Wt * cos(build->rotation) - yco;
-	 x2 = x1 + build->length * cos(build->rotation);
-	 y2 = y1 + build->length * sin(build->rotation);
-	 x4 = build->xFo - build->Wt * sin(build->rotation) - xco;
-	 y4 = build->yFo + build->Wt * cos(build->rotation) - yco;
-	 x3 = x4 + build->length * cos(build->rotation);
-	 y3 = y4 + build->length * sin(build->rotation);
-	 if(upwind_rel > 0.5f * pi + tol && upwind_rel < pi - tol)
-	 {
-		xw1=x1*cos(upwind_dir)+y1*sin(upwind_dir);
-		yw1=-x1*sin(upwind_dir)+y1*cos(upwind_dir);
-		xw2=x4*cos(upwind_dir)+y4*sin(upwind_dir);
-		yw2=-x4*sin(upwind_dir)+y4*cos(upwind_dir);
-		xf2=x2*cos(upwind_dir)+y2*sin(upwind_dir);
-		yf2=-x2*sin(upwind_dir)+y2*cos(upwind_dir);
-		xw3=x3*cos(upwind_dir)+y3*sin(upwind_dir);
-		yw3=-x3*sin(upwind_dir)+y3*cos(upwind_dir);
-		perpendicular_flag=0;
-	}
-	 else if (upwind_rel >= 0.5f * pi - tol && upwind_rel <= 0.5f * pi + tol)
-	 {
-		xw1=x4*cos(upwind_dir)+y4*sin(upwind_dir);
-		yw1=-x4*sin(upwind_dir)+y4*cos(upwind_dir);
-		xw3=x3*cos(upwind_dir)+y3*sin(upwind_dir);
-		yw3=-x3*sin(upwind_dir)+y3*cos(upwind_dir);
-		xf2=x2*cos(upwind_dir)+y2*sin(upwind_dir);
-		perpendicular_flag=1;
-	}
-	 else if(upwind_rel > tol && upwind_rel < 0.5f * pi - tol)
-	 {
-		xw1=x4*cos(upwind_dir)+y4*sin(upwind_dir);
-		yw1=-x4*sin(upwind_dir)+y4*cos(upwind_dir);
-		xw2=x3*cos(upwind_dir)+y3*sin(upwind_dir);
-		yw2=-x3*sin(upwind_dir)+y3*cos(upwind_dir);
-		xf2=x1*cos(upwind_dir)+y1*sin(upwind_dir);
-		yf2=-x1*sin(upwind_dir)+y1*cos(upwind_dir);
-		xw3=x2*cos(upwind_dir)+y2*sin(upwind_dir);
-		yw3=-x2*sin(upwind_dir)+y2*cos(upwind_dir);
-		perpendicular_flag=0;
-	}
-	 else if( abs(upwind_rel) <= tol)
-	 {
-		xw1=x3*cos(upwind_dir)+y3*sin(upwind_dir);
-		yw1=-x3*sin(upwind_dir)+y3*cos(upwind_dir);
-		xw3=x2*cos(upwind_dir)+y2*sin(upwind_dir);
-		yw3=-x2*sin(upwind_dir)+y2*cos(upwind_dir);
-		xf2=x1*cos(upwind_dir)+y1*sin(upwind_dir);
-		perpendicular_flag=1;
-	}
-	 else if(upwind_rel < -tol && upwind_rel > -0.5f * pi + tol)
-	 {
-		xw1=x3*cos(upwind_dir)+y3*sin(upwind_dir);
-		yw1=-x3*sin(upwind_dir)+y3*cos(upwind_dir);
-		xw2=x2*cos(upwind_dir)+y2*sin(upwind_dir);
-		yw2=-x2*sin(upwind_dir)+y2*cos(upwind_dir);
-		xf2=x4*cos(upwind_dir)+y4*sin(upwind_dir);
-		yf2=-x4*sin(upwind_dir)+y4*cos(upwind_dir);
-		xw3=x1*cos(upwind_dir)+y1*sin(upwind_dir);
-		yw3=-x1*sin(upwind_dir)+y1*cos(upwind_dir);
-		perpendicular_flag=0;
-	}
-	 else if(upwind_rel < -0.5f * pi + tol && upwind_rel > -0.5f * pi - tol)
-	 {
-		xw1=x2*cos(upwind_dir)+y2*sin(upwind_dir);
-		yw1=-x2*sin(upwind_dir)+y2*cos(upwind_dir);
-		xw3=x1*cos(upwind_dir)+y1*sin(upwind_dir);
-		yw3=-x1*sin(upwind_dir)+y1*cos(upwind_dir);
-		xf2=x3*cos(upwind_dir)+y3*sin(upwind_dir);
-		perpendicular_flag=1;
-	}
-	 else if(upwind_rel < -0.5f * pi - tol && upwind_rel > -pi + tol)
-	 {
-		xw1=x2*cos(upwind_dir)+y2*sin(upwind_dir);
-		yw1=-x2*sin(upwind_dir)+y2*cos(upwind_dir);
-		xw2=x1*cos(upwind_dir)+y1*sin(upwind_dir);
-		yw2=-x1*sin(upwind_dir)+y1*cos(upwind_dir);
-		xf2=x3*cos(upwind_dir)+y3*sin(upwind_dir);
-		yf2=-x3*sin(upwind_dir)+y3*cos(upwind_dir);
-		xw3=x4*cos(upwind_dir)+y4*sin(upwind_dir);
-		yw3=-x4*sin(upwind_dir)+y4*cos(upwind_dir);
-		perpendicular_flag=0;
-	}
-	 else
-	 {
-		xw1=x1*cos(upwind_dir)+y1*sin(upwind_dir);
-		yw1=-x1*sin(upwind_dir)+y1*cos(upwind_dir);
-		xw3=x4*cos(upwind_dir)+y4*sin(upwind_dir);
-		yw3=-x4*sin(upwind_dir)+y4*cos(upwind_dir);
-		xf2=x2*cos(upwind_dir)+y2*sin(upwind_dir);
-		perpendicular_flag=1;
-	 }
-	 build->Leff = build->width * build->length / abs(yw3-yw1);
-	 if(perpendicular_flag == 1)
-		build->Weff = build->width * build->length / abs(xf2-xw1);
-	 else
-		build->Weff = build->width * build->length / abs(xf2-xw2);
-	 return;
+  /// apply log law fix to the cells with wall in back
+  for (size_t i=0; i < wall_back_indices.size(); i++)
+  {
+    ustar_wall = 0.1;
+    for (int iter=0; iter<20; iter++)
+    {
+      wind_dir = atan2(w0[wall_back_indices[i]+1],v0[wall_back_indices[i]+1]);
+      vel_mag2 = sqrt(pow(v0[wall_back_indices[i]+1],2.0)+pow(w0[wall_back_indices[i]+1],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
+      u0[wall_back_indices[i]] = 0;        /// normal component of velocity set to zero
+      /// parallel components of velocity to wall
+      v0[wall_back_indices[i]] = vel_mag1*cos(wind_dir);
+      w0[wall_back_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = vk*vel_mag1/log(dist1/z0);
+      ustar_wall = new_ustar;
+    }
+    j = i+wall_below_indices.size()+wall_above_indices.size();
+    index[j] = wall_back_indices[i];
+    ustar[j] = ustar_wall;
+  }
+
+
+  /// apply log law fix to the cells with wall in front
+  for (size_t i=0; i < wall_front_indices.size(); i++)
+  {
+    ustar_wall = 0.1;       /// reset default value for velocity gradient
+    for (int iter=0; iter<20; iter++)
+    {
+      wind_dir = atan2(w0[wall_front_indices[i]-1],v0[wall_front_indices[i]-1]);
+      vel_mag2 = sqrt(pow(v0[wall_front_indices[i]-1],2.0)+pow(w0[wall_front_indices[i]-1],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
+      u0[wall_front_indices[i]] = 0;        /// normal component of velocity set to zero
+      /// parallel components of velocity to wall
+      v0[wall_front_indices[i]] = vel_mag1*cos(wind_dir);
+      w0[wall_front_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = vk*vel_mag1/log(dist1/z0);
+      ustar_wall = new_ustar;
+    }
+    j = i+wall_below_indices.size()+wall_above_indices.size()+wall_back_indices.size();
+    index[j] = wall_front_indices[i];
+    ustar[j] = ustar_wall;
+  }
+
+
+  dist1 = 0.5*dy;
+  dist2 = 1.5*dy;
+
+  /// apply log law fix to the cells with wall to right
+  for (size_t i=0; i < wall_right_indices.size(); i++)
+  {
+    ustar_wall = 0.1;          /// reset default value for velocity gradient
+    for (int iter=0; iter<20; iter++)
+    {
+      wind_dir = atan2(w0[wall_right_indices[i]+nx],u0[wall_right_indices[i]+nx]);
+      vel_mag2 = sqrt(pow(u0[wall_right_indices[i]+nx],2.0)+pow(w0[wall_right_indices[i]+nx],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
+      v0[wall_right_indices[i]] = 0;        /// normal component of velocity set to zero
+      /// parallel components of velocity to wall
+      u0[wall_right_indices[i]] = vel_mag1*cos(wind_dir);
+      w0[wall_right_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = vk*vel_mag1/log(dist1/z0);
+      ustar_wall = new_ustar;
+    }
+    j = i+wall_below_indices.size()+wall_above_indices.size()+wall_back_indices.size()+wall_front_indices.size();
+    index[j] = wall_right_indices[i];
+    ustar[j] = ustar_wall;
+  }
+
+  /// apply log law fix to the cells with wall to left
+  for (size_t i=0; i < wall_left_indices.size(); i++)
+  {
+    ustar_wall = 0.1;       /// reset default value for velocity gradient
+    for (int iter=0; iter<20; iter++)
+    {
+      wind_dir = atan2(w0[wall_left_indices[i]-nx],u0[wall_left_indices[i]-nx]);
+      vel_mag2 = sqrt(pow(u0[wall_left_indices[i]-nx],2.0)+pow(w0[wall_left_indices[i]-nx],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
+      v0[wall_left_indices[i]] = 0;          /// normal component of velocity set to zero
+      /// parallel components of velocity to wall
+      u0[wall_left_indices[i]] = vel_mag1*cos(wind_dir);
+      w0[wall_left_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = vk*vel_mag1/log(dist1/z0);
+      ustar_wall = new_ustar;
+    }
+    j = i+wall_below_indices.size()+wall_above_indices.size()+wall_back_indices.size()+wall_front_indices.size()+wall_right_indices.size();
+    index[j] = wall_left_indices[i];
+    ustar[j] = ustar_wall;
+  }
+}
+
+  void Solver::mergeSort( std::vector<float> &height, std::vector<std::vector<polyVert>> &poly_points, std::vector<float> &base_height, std::vector<float> &building_height)
+  {
+  	//if the size of the array is 1, it is already sorted
+  	if (height.size() == 1)
+    {
+      return;
+    }
+  	//make left and right sides of the data
+  	std::vector<float> height_L, height_R;
+    std::vector<float> base_height_L, base_height_R;
+    std::vector<float> building_height_L, building_height_R;
+  	std::vector< std::vector <polyVert> > poly_points_L, poly_points_R;
+  	height_L.resize(height.size() / 2);
+  	height_R.resize(height.size() - height.size() / 2);
+    base_height_L.resize(base_height.size() / 2);
+  	base_height_R.resize(base_height.size() - base_height.size() / 2);
+    building_height_L.resize(building_height.size() / 2);
+  	building_height_R.resize(building_height.size() - building_height.size() / 2);
+  	poly_points_L.resize(poly_points.size() / 2);
+  	poly_points_R.resize(poly_points.size() - poly_points.size() / 2);
+
+  	//copy data from the main data set to the left and right children
+  	int lC = 0, rC = 0;
+  	for (unsigned int i = 0; i < height.size(); i++)
+  	{
+  		if (i < height.size() / 2)
+  		{
+  			height_L[lC] = height[i];
+        base_height_L[lC] = base_height[i];
+        building_height_L[lC] = building_height[i];
+  			poly_points_L[lC++] = poly_points[i];
+  		}
+  		else
+  		{
+  			height_R[rC] = height[i];
+        base_height_R[rC] = base_height[i];
+        building_height_R[rC] = building_height[i];
+  			poly_points_R[rC++] = poly_points[i];
+  		}
+  	}
+
+  	//recursively sort the children
+  	mergeSort(height_L, poly_points_L, base_height_L, building_height_L);
+  	mergeSort(height_R, poly_points_R, base_height_R, building_height_R);
+
+  	//compare the sorted children to place the data into the main array
+  	lC = rC = 0;
+  	for (unsigned int i = 0; i < poly_points.size(); i++)
+  	{
+  		if (rC == height_R.size() || ( lC != height_L.size() &&
+  			height_L[lC] > height_R[rC]))
+  		{
+  			height[i] = height_L[lC];
+        base_height[i] = base_height_L[lC];
+        building_height[i] = building_height_L[lC];
+  			poly_points[i] = poly_points_L[lC++];
+  		}
+  		else
+  		{
+  			height[i] = height_R[rC];
+        base_height[i] = base_height_R[rC];
+        building_height[i] = building_height_R[rC];
+  			poly_points[i] = poly_points_R[rC++];
+  		}
+  	}
+
+  	return;
+  }
+
+
+
+// Save output at cell-centered values
+void Solver :: save(Output* output) {
+
+    // output size and location
+    std::vector<size_t> scalar_index;
+    std::vector<size_t> scalar_size;
+    std::vector<size_t> vector_index;
+    std::vector<size_t> vector_size;
+    std::vector<size_t> vector_index_2d;
+    std::vector<size_t> vector_size_2d;
+
+    scalar_index = {static_cast<unsigned long>(output_counter)};
+    scalar_size  = {1};
+    vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
+    vector_size  = {1, static_cast<unsigned long>(nz-2),static_cast<unsigned long>(ny-1), static_cast<unsigned long>(nx-1)};
+    vector_index_2d = {0, 0};
+    vector_size_2d  = {static_cast<unsigned long>(ny-1), static_cast<unsigned long>(nx-1)};
+
+    // set time
+    time = (double)output_counter;
+
+    // get cell-centered values
+    for (int k = 1; k < nz-1; k++){
+    	for (int j = 0; j < ny-1; j++){
+    		for (int i = 0; i < nx-1; i++){
+    			int icell_face = i + j*nx + k*nx*ny;
+    			int icell_cent = i + j*(nx-1) + (k-1)*(nx-1)*(ny-1);
+    			u_out[icell_cent] = 0.5*(u[icell_face+1]+u[icell_face]);
+    			v_out[icell_cent] = 0.5*(v[icell_face+nx]+v[icell_face]);
+    			w_out[icell_cent] = 0.5*(w[icell_face+nx*ny]+w[icell_face]);
+    			icellflag_out[icell_cent] = icellflag[icell_cent+((nx-1)*(ny-1))];
+    		}
+    	}
+    }
+
+    // loop through 1D fields to save
+    for (int i=0; i<output_scalar_dbl.size(); i++) {
+        output->saveField1D(output_scalar_dbl[i].name, scalar_index, output_scalar_dbl[i].data);
+    }
+
+    // loop through 2D double fields to save
+    for (int i=0; i<output_vector_dbl.size(); i++) {
+
+        // x,y,z, terrain saved once with no time component
+        if (i<3 && output_counter==0) {
+            output->saveField2D(output_vector_dbl[i].name, *output_vector_dbl[i].data);
+        } else if (i==3 && output_counter==0) {
+            output->saveField2D(output_vector_dbl[i].name, vector_index_2d,
+                                vector_size_2d, *output_vector_dbl[i].data);
+        } else {
+            output->saveField2D(output_vector_dbl[i].name, vector_index,
+                                vector_size, *output_vector_dbl[i].data);
+        }
+    }
+
+    // loop through 2D int fields to save
+    for (int i=0; i<output_vector_int.size(); i++) {
+        output->saveField2D(output_vector_int[i].name, vector_index,
+                            vector_size, *output_vector_int[i].data);
+    }
+
+    // remove x, y, z, terrain from output array after first save
+    if (output_counter==0) {
+        output_vector_dbl.erase(output_vector_dbl.begin(),output_vector_dbl.begin()+4);
+    }
+    std::cout<<output_vector_dbl.size()<<std::endl;
+    // increment for next time insertion
+    output_counter +=1;
 }
