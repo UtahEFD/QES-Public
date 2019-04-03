@@ -301,14 +301,18 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
             if (mesh)
             {
                 std::cout << "Creating terrain blocks...\n";
-                for (int i = 0; i < nx; i++)
+                for (int i = 0; i < nx-1; i++)
                 {
-                    for (int j = 0; j < ny; j++)
+                    for (int j = 0; j < ny-1; j++)
                     {
                       // Gets height of the terrain for each cell
                       float heightToMesh = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
                       // Calls rectangular building to create a each cell to the height of terrain in that cell
-                      buildings.push_back(new RectangularBuilding(i * dx, j * dy, 0.0, dx, dy, heightToMesh,z));
+                      if (heightToMesh > z[1])
+                      {
+                        buildings.push_back(new RectangularBuilding(i * dx, j * dy, 0.0, dx, dy, heightToMesh,z));
+                      }
+
                     }
                     printProgress( (float)i / (float)nx);
                 }

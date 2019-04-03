@@ -109,7 +109,7 @@ private:
     //if (j * m_nXSize + k >= m_nXSize * m_nYSize)
       height = 0.0;
     else
-      height = scanline[ k * m_nXSize + j ];
+      height = scanline[ k * m_nXSize + j ]-min[2];
 
     if (!compareEquality( height, m_rbNoData ))
       height = height * m_rbScale + m_rbOffset;
