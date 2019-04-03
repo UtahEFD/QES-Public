@@ -6,7 +6,7 @@
 
 #include "Plume.hpp"
 
-Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID) {
+Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     
     std::cout<<"[Plume] \t Setting up particles "<<std::endl;
     
@@ -36,9 +36,9 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID) {
     lBndz = PID->colParams->boxBoundsZ1;
     uBndz = PID->colParams->boxBoundsZ2;
     
-    xBoxCen.resize(nBoxesX*nBoxesY*nBoxesZ);
-    yBoxCen.resize(nBoxesX*nBoxesY*nBoxesZ);
-    zBoxCen.resize(nBoxesX*nBoxesY*nBoxesZ);
+    xBoxCen.resize(nBoxesX);
+    yBoxCen.resize(nBoxesY);
+    zBoxCen.resize(nBoxesZ);
     
     quanX = (uBndx-lBndx)/(nBoxesX);
     quanY = (uBndy-lBndy)/(nBoxesY);
@@ -46,20 +46,19 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID) {
     
     int id=0;
     int zR=0;
+    int yR=0;
+    int xR=0;
     for(int k=0;k<nBoxesZ;++k) {
-        int yR=0;
-        for(int j=0;j<nBoxesY;++j) {
-            int xR=0;
-            for(int i=0;i<nBoxesX;++i) {
-                id=k*nBoxesY*nBoxesX+j*nBoxesX+i;
-                xBoxCen.at(id)=lBndx+xR*(quanX)+boxSizeX/2.0;
-                yBoxCen.at(id)=lBndy+yR*(quanY)+boxSizeY/2.0;
-                zBoxCen.at(id)=lBndz+zR*(quanZ)+boxSizeZ/2.0;	
-                xR++;
-            }
-            yR++;
-        }
+        zBoxCen.at(k) = lBndz + (zR*quanZ) + (boxSizeZ/2.0);
         zR++;
+    }
+    for(int j=0;j<nBoxesY;++j) {
+        yBoxCen.at(j) = lBndy + (yR*quanY) + (boxSizeY/2.0);
+        yR++;
+    }
+    for(int i=0;i<nBoxesX;++i) {
+        xBoxCen.at(i) = lBndx + (xR*quanX) + (boxSizeX/2.0);
+        xR++;
     }
     
     tStepInp = PID->simParams->timeStep;
@@ -77,6 +76,54 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID) {
     parPerTimestep=dis->parPerTimestep;
     
     cBox.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
+    conc.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
+    
+    // set cell-centered dimensions
+    NcDim t_dim = output->addDimension("t");
+    NcDim z_dim = output->addDimension("z",nBoxesZ);
+    NcDim y_dim = output->addDimension("y",nBoxesY);
+    NcDim x_dim = output->addDimension("x",nBoxesX);
+
+    dim_scalar_t.push_back(t_dim);
+    dim_scalar_z.push_back(z_dim);
+    dim_scalar_y.push_back(y_dim);
+    dim_scalar_x.push_back(x_dim);
+    
+    dim_vector.push_back(t_dim);
+    dim_vector.push_back(z_dim);
+    dim_vector.push_back(y_dim);
+    dim_vector.push_back(x_dim);
+
+    // create attributes
+    AttScalarDbl att_t     = {&timeOut, "t",    "time",        "s",  dim_scalar_t};
+    AttVectorDbl att_x     = {&xBoxCen, "x",    "x-distance",  "m",  dim_scalar_x};
+    AttVectorDbl att_y     = {&yBoxCen, "y",    "y-distance",  "m",  dim_scalar_y};
+    AttVectorDbl att_z     = {&zBoxCen, "z",    "z-distance",  "m",  dim_scalar_z};
+    AttVectorDbl att_conc  = {&conc,    "conc", "concentratio","--", dim_vector};
+
+    // map the name to attributes
+    map_att_scalar_dbl.emplace("t", att_t);
+    map_att_vector_dbl.emplace("x", att_x);
+    map_att_vector_dbl.emplace("y", att_y);
+    map_att_vector_dbl.emplace("z", att_z);
+    map_att_vector_dbl.emplace("conc", att_conc);
+    
+    // stage fields for output
+    output_scalar_dbl.push_back(map_att_scalar_dbl["t"]);
+    output_vector_dbl.push_back(map_att_vector_dbl["x"]);
+    output_vector_dbl.push_back(map_att_vector_dbl["y"]);
+    output_vector_dbl.push_back(map_att_vector_dbl["z"]);
+    output_vector_dbl.push_back(map_att_vector_dbl["conc"]);
+
+    // add scalar double fields
+    for ( AttScalarDbl att : output_scalar_dbl ) {
+        output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
+    }
+
+    // add vector double fields
+    for ( AttVectorDbl att : output_vector_dbl ) {
+        output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
+    }
 }
 
 void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID, Output* output) {
@@ -424,11 +471,64 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         if(timeStepStamp.at(tStep)>= sCBoxTime+avgTime) {
             //std::cout<<"loopPrm   :"<<loopPrm<<std::endl;
             //std::cout<<"loopLowestCell :"<<loopLowestCell<<std::endl;
-            //outputConc();
+            double cc=(tStepInp)/(avgTime*volume*numPar);
+            for(int k=0;k<nBoxesZ;k++) {
+                for(int j=0;j<nBoxesY;j++) {
+                    for(int i=0;i<nBoxesX;i++) {
+                        int id=k*nBoxesY*nBoxesX+j*nBoxesX+i;
+                        conc.at(id) = cBox.at(id)*cc;
+                        cBox.at(id) = 0.0;
+                    }
+                }
+            }
+            save(output);
             avgTime=avgTime+PID->colParams->timeAvg;
         }
     } // for(tStep=0; tStep<numTimeStep; tStep++)
 } // run()
+
+void Plume::save(Output* output) {
+    
+    std::cout<<"[Plume] \t Saving particle concentrations"<<std::endl;
+    
+    // output size and location
+    std::vector<size_t> scalar_index;
+    std::vector<size_t> scalar_size;
+    std::vector<size_t> vector_index;
+    std::vector<size_t> vector_size;
+    
+    scalar_index = {static_cast<unsigned long>(output_counter)};
+    scalar_size  = {1};
+    vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
+    vector_size  = {1, static_cast<unsigned long>(nBoxesZ),static_cast<unsigned long>(nBoxesY), static_cast<unsigned long>(nBoxesX)};
+    
+    timeOut = (double)output_counter;
+    
+    // loop through 1D fields to save
+    for (int i=0; i<output_scalar_dbl.size(); i++) {
+        output->saveField1D(output_scalar_dbl[i].name, scalar_index, output_scalar_dbl[i].data);
+    }
+    
+    // loop through 2D double fields to save
+    for (int i=0; i<output_vector_dbl.size(); i++) {
+
+        // x,y,z, terrain saved once with no time component
+        if (i<3 && output_counter==0) {
+            output->saveField2D(output_vector_dbl[i].name, *output_vector_dbl[i].data);
+        } else {
+            output->saveField2D(output_vector_dbl[i].name, vector_index,
+                                vector_size, *output_vector_dbl[i].data);
+        }
+    }
+
+    // remove x, y, z, terrain from output array after first save
+    if (output_counter==0) {
+        output_vector_dbl.erase(output_vector_dbl.begin(),output_vector_dbl.begin()+3);
+    }
+
+    // increment for next time insertion
+    output_counter +=1;
+}
 
 double Plume::dot(const pos &vecA, const pos &vecB){
     return(vecA.x*vecB.x + vecA.y*vecB.y + vecA.z*vecB.z);

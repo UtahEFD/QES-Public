@@ -77,7 +77,7 @@ int main(int argc, char** argv)
     Dispersion* dis = new Dispersion(urb,turb,PID);
     
     // Create instance of Plume model class
-    Plume* plume = new Plume(urb,dis,PID);
+    Plume* plume = new Plume(urb,dis,PID,output);
     
     // Run plume advection model
     plume->run(urb,turb,eul,dis,PID,output);

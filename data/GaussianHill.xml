@@ -14,15 +14,15 @@
 	<boxBoundsZ2> 115.0 </boxBoundsZ2> 				
 	<nBoxesX> 100 </nBoxesX> 								
 	<nBoxesY> 100 </nBoxesY> 							
-	<nBoxesZ> 110 </nBoxesZ> 
+	<nBoxesZ> 115 </nBoxesZ> 
 </collectionParameters>
 <sources>
     <numParticles>100000</numParticles>
 	<numSources> 2 </numSources>
 	<pointSource>
-		<posX> 25.0 </posX>
-		<posY> 25.0 </posY>
-		<posZ> 1.0 </posZ>
+		<posX> 100.0 </posX>
+		<posY> 100.0 </posY>
+		<posZ> 2.0 </posZ>
 		<radius> 0.33 </radius>
 	</pointSource>
 </sources>

@@ -1,7 +1,7 @@
 //
 //  FileOptions.hpp
 //  
-//  This class rhandles xml collection box options
+//  This class handles xml collection box options
 //
 //  Created by Jeremy Gibbs on 03/25/19.
 //
@@ -24,18 +24,18 @@ class CollectionParameters : public ParseInterface {
         float timeStart, timeEnd, timeAvg ;
     	        
     	virtual void parseValues() {
-        	parsePrimitive< float >(true, timeStart, "timeStart");
-    		parsePrimitive< float >(true, timeEnd,   "timeEnd");
-    		parsePrimitive< float >(true, timeAvg,   "timeAvg");
-        	parsePrimitive< float >(true, timeStart, "boxBoundsX1");
-    		parsePrimitive< float >(true, timeEnd,   "boxBoundsY1");
-    		parsePrimitive< float >(true, timeAvg,   "boxBoundsZ1");
-    		parsePrimitive< float >(true, timeStart, "boxBoundsX2");
-    		parsePrimitive< float >(true, timeEnd,   "boxBoundsY2");
-    		parsePrimitive< float >(true, timeAvg,   "boxBoundsZ2");
-    		parsePrimitive< int   >(true, nBoxesX,   "nBoxesX");
-    		parsePrimitive< int   >(true, nBoxesY,   "nBoxesY");
-    		parsePrimitive< int   >(true, nBoxesZ,   "nBoxesZ");
+        	parsePrimitive< float >(true, timeStart,   "timeStart");
+    		parsePrimitive< float >(true, timeEnd,     "timeEnd");
+    		parsePrimitive< float >(true, timeAvg,     "timeAvg");
+        	parsePrimitive< float >(true, boxBoundsX1, "boxBoundsX1");
+    		parsePrimitive< float >(true, boxBoundsY1, "boxBoundsY1");
+    		parsePrimitive< float >(true, boxBoundsZ1, "boxBoundsZ1");
+    		parsePrimitive< float >(true, boxBoundsX2, "boxBoundsX2");
+    		parsePrimitive< float >(true, boxBoundsY2, "boxBoundsY2");
+    		parsePrimitive< float >(true, boxBoundsZ2, "boxBoundsZ2");
+    		parsePrimitive< int   >(true, nBoxesX,     "nBoxesX");
+    		parsePrimitive< int   >(true, nBoxesY,     "nBoxesY");
+    		parsePrimitive< int   >(true, nBoxesZ,     "nBoxesZ");
     	}
 };
 #endif
