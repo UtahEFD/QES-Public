@@ -143,6 +143,9 @@ void DTEHeightField::load()
   m_nXSize = poBand->GetXSize();
   m_nYSize = poBand->GetYSize();
 
+  printf( "Size is %dx%dx%d\n",
+	  m_nXSize, m_nYSize );
+
   pafScanline = (float *) CPLMalloc(sizeof(float)*m_nXSize*m_nYSize);
 
   // rb->RasterIO(GF_Read, 0, 0, xsize, ysize, buffer, xsize, ysize, GDT_Float32, 0, 0);
@@ -186,21 +189,21 @@ void DTEHeightField::load()
 //height set to y coord, change to z
 
     //These "should" be real unit-based triangles.. hopefully meters..
-      Vector3<float> tv0(iYline * pixelSizeY, iXpixel * pixelSizeX,         queryHeight( pafScanline, Yline, Xpixel));
-      Vector3<float> tv1(iYline * pixelSizeY, (iXpixel + stepX) * pixelSizeX, queryHeight( pafScanline, Yline, (int)(iXpixel + stepX ) ) );
-      Vector3<float> tv2((iYline + stepY) * pixelSizeY, iXpixel * pixelSizeX, queryHeight( pafScanline, (int)(iYline + stepY), Xpixel));
+      Vector3<float> tv0( iXpixel * pixelSizeX,    iYline * pixelSizeY,     queryHeight( pafScanline, Xpixel,  Yline));
+      Vector3<float> tv1( (iXpixel + stepX) * pixelSizeX, iYline * pixelSizeY, queryHeight( pafScanline,  (int)(iXpixel + stepX ), Yline ) );
+      Vector3<float> tv2( iXpixel * pixelSizeX, (iYline + stepY) * pixelSizeY, queryHeight( pafScanline, Xpixel, (int)(iYline + stepY) ));
 
       tPtr = new Triangle( tv0, tv1, tv2 );
       m_triList.push_back(tPtr);
 
 
-      Vector3<float> tv3( (iYline + stepY) * pixelSizeY, iXpixel * pixelSizeX, queryHeight( pafScanline, (int)(iYline + stepY), Xpixel ) );
+      Vector3<float> tv3(  iXpixel * pixelSizeX, (iYline + stepY) * pixelSizeY, queryHeight( pafScanline,  Xpixel, (int)(iYline + stepY) ) );
      // convertToTexCoord(Yline+step, Xpixel, tc0);
 
-      Vector3<float> tv4( iYline * pixelSizeY, (iXpixel + stepX) * pixelSizeX,   queryHeight( pafScanline, Yline, (int)(iXpixel + stepX) ) );
+      Vector3<float> tv4(  (iXpixel + stepX) * pixelSizeX, iYline * pixelSizeY,  queryHeight( pafScanline,  (int)(iXpixel + stepX) , Yline ) );
       // convertToTexCoord(Yline, Xpixel+step, tc1);
 
-      Vector3<float> tv5( (iYline + stepY) * pixelSizeY, (iXpixel + stepX) * pixelSizeX, queryHeight( pafScanline, (int)(iYline + stepY), (int)(iXpixel + stepX)) );
+      Vector3<float> tv5(  (iXpixel + stepX) * pixelSizeX,(iYline + stepY) * pixelSizeY, queryHeight( pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY) ) );
       // convertToTexCoord(Yline+step, Xpixel+step, tc2);
 
       tPtr = new Triangle( tv3, tv4, tv5 );
@@ -273,8 +276,8 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
       //get more specific values, currently adding 50 meters
       //Also, domains are currently only working with cubic dimensions... fix this
 
-      if (q == 2)
-        (*domain)[q] += (int)(50.0f / (float)(*grid)[q]);
+      /*if (q == 2)
+        (*domain)[q] += (int)(50.0f / (float)(*grid)[q]);*/
 
       std::cout << std::endl;
     }
@@ -398,7 +401,7 @@ return cutCells;
 
 }
 
-void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, int nz, float dz, Vector3<float> corners[], std::vector<int>& cutCells) const 
+void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, int nz, float dz, Vector3<float> corners[], std::vector<int>& cutCells) const
 {
    float coordsMin, coordsMax;
    coordsMin = coordsMax = corners[0][2];
@@ -742,6 +745,6 @@ Vector3<float> DTEHeightField::getIntermediate(Vector3<float> a, Vector3<float> 
 }
 
 void DTEHeightField::closeScanner()
-{ 
+{
   CPLFree(pafScanline);
 }

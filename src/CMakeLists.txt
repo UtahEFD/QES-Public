@@ -19,6 +19,7 @@ CUDA_ADD_LIBRARY( cudaurbcore
   Output.cpp
   Triangle.cpp
   Sensor.cpp
+  WRFInput.cpp WRFInput.h
   )
 
 CUDA_ADD_LIBRARY( cudafirecore

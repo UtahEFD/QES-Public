@@ -105,14 +105,15 @@ private:
   float queryHeight( float *scanline, int j, int k )  const
   {
     float height;
-    if (j * m_nXSize + k >= m_nXSize * m_nYSize)
+    if ( j>m_nXSize || k>m_nYSize)
+    //if (j * m_nXSize + k >= m_nXSize * m_nYSize)
       height = 0.0;
     else
-      height = scanline[ j * m_nXSize + k ];
+      height = scanline[ k * m_nXSize + j ];
 
     if (!compareEquality( height, m_rbNoData ))
       height = height * m_rbScale + m_rbOffset;
-    else 
+    else
       height = m_rbMin;
 
     return height;
@@ -135,7 +136,7 @@ private:
 
   std::string m_filename;
   GDALDataset  *m_poDataset;
-  double m_geoTransform[6];  
+  double m_geoTransform[6];
 
   int m_nXSize, m_nYSize;
   double m_rbScale, m_rbOffset, m_rbNoData, m_rbMin;
@@ -143,11 +144,11 @@ private:
   // Texture relative information
   GDALDataset  *m_imageDataset;
   int m_imageXSize, m_imageYSize;
-  double m_imageGeoTransform[6];  
+  double m_imageGeoTransform[6];
 
   float pixelSizeX, pixelSizeY;
   float cellSizeX, cellSizeY;
-  
+
   std::vector<Triangle*> m_triList;
   float min[3], max[3];
 

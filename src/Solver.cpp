@@ -276,10 +276,10 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     mesh = 0;
     if (DTEHF)
     {
-        
+
         DTEHFExists = true;
         mesh = new Mesh(DTEHF->getTris());
-        
+
         // ////////////////////////////////
         // Retrieve terrain height field //
         // ////////////////////////////////
@@ -292,7 +292,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
               terrain[idx] = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
             }
         }
-        
+
         if (mesh_type_flag == 0)
         {
             // ////////////////////////////////
@@ -373,16 +373,19 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     //                Apply building effect                    //
     /////////////////////////////////////////////////////////////
 
-    auto buildingsetup = std::chrono::high_resolution_clock::now(); // Start recording execution time
+
     // For now, process ESRIShapeFile here:
     ESRIShapefile *shpFile = nullptr;
 
     if (UID->simParams->shpFile != "")
     {
+      auto buildingsetup = std::chrono::high_resolution_clock::now(); // Start recording execution time
 
         std::vector <PolyBuilding> poly_buildings;
         std::vector< std::vector <polyVert> > shpPolygons;
+        std::vector< std::vector <polyVert> > poly;
         std::vector <float> base_height;            // Base height of buildings
+        std::vector <float> effective_height;            // Effective height of buildings
         float corner_height, min_height;
         std::vector <float> building_height;        // Height of buildings
 
@@ -407,7 +410,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
             shpPolygons[pIdx][lIdx].y_poly = shpPolygons[pIdx][lIdx].y_poly - minExtent[1] + domainOffset[1];
           }
         }
-
+        std::cout << "num_poly buildings" << shpPolygons.size() << std::endl;
         // Setting base height for buildings if there is a DEM file
         if (UID->simParams->demFile != "")
         {
@@ -438,35 +441,41 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
           }
         }
 
-        // Loop to create each of the polygon buildings read in from the shapefile
-        std::cout << "num_poly buildings" << shpPolygons.size() << std::endl;
+        for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+        {
+          effective_height.push_back (base_height[pIdx]+building_height[pIdx]);
 
+        }
+
+        mergeSort( effective_height, shpPolygons, base_height, building_height);
+
+        // Loop to create each of the polygon buildings read in from the shapefile
         for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
         {
           // Create polygon buildings
+
           poly_buildings.push_back (PolyBuilding (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], nx, ny,
                                       nz, dx, dy, dz, u0, v0, z));
           // Call setCellsFlag in the PolyBuilding class to identify building cells
           poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz,icellflag, mesh_type_flag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
         }
 
-        // @Zach: we need to sort buildings based on their effective height (building_height+base_height)
-        // Note that after sort, building_height and base_height, poly_buildings and shpPolygons need to be sorted
-        // It might be easier to do it before the loop that creates poly_buildings
-
         // If there is wake behind the building to apply
         if (UID->simParams->wakeFlag > 0)
         {
           for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
           {
-              poly_buildings[pIdx].polygonWake (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], dx, dy, dz, z, nx, ny, nz,
+            poly_buildings[pIdx].polygonWake (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], dx, dy, dz, z, nx, ny, nz,
                                           cavity_factor, wake_factor, dxy, icellflag, u0, v0, w0, max_velmag);
+
+            std::cout << "building added" << pIdx << std::endl;
           }
         }
+        auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+        std::chrono::duration<float> elapsedBuilding = finish - buildingsetup;
+        std::cout << "Elapsed building time: " << elapsedBuilding.count() << " s\n";   // Print out elapsed execution time
     }
-    auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
-    std::chrono::duration<float> elapsedBuilding = finish - buildingsetup;
-    std::cout << "Elapsed building time: " << elapsedBuilding.count() << " s\n";   // Print out elapsed execution time
+
 
 
     ///////////////////////////////////////////////////////////////
@@ -996,32 +1005,78 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
     index[j] = wall_left_indices[i];
     ustar[j] = ustar_wall;
   }
-
-
-
-  /*// Write data to file
-  ofstream outdata3;
-  outdata3.open("ustar.dat");
-  if( !outdata3 )
-  {                 // File couldn't be opened
-    cerr << "Error: file could not be opened" << endl;
-    exit(1);
-  }
-  // Write data to file
-  for (int i = 0; i < wall_size; i++)
-  {
-    int k = index[i]/(nx*ny);
-    int j = (index[i]-k*nx*ny)/nx;
-    int ii = index[i]-j*nx-k*nx*ny;
-    outdata3 << ii<< "\t \t"<< j <<"\t \t"<< k <<"\t \t"<< "\t \t"<< index[i]<<"\t \t"<< "\t \t" <<"\t \t"<< "\t \t" << ustar[i] <<endl;
-  }
-
-  outdata3.close();*/
-
-
-
-
 }
+
+  void Solver::mergeSort( std::vector<float> &height, std::vector<std::vector<polyVert>> &poly_points, std::vector<float> &base_height, std::vector<float> &building_height)
+  {
+  	//if the size of the array is 1, it is already sorted
+  	if (height.size() == 1)
+    {
+      return;
+    }
+  	//make left and right sides of the data
+  	std::vector<float> height_L, height_R;
+    std::vector<float> base_height_L, base_height_R;
+    std::vector<float> building_height_L, building_height_R;
+  	std::vector< std::vector <polyVert> > poly_points_L, poly_points_R;
+  	height_L.resize(height.size() / 2);
+  	height_R.resize(height.size() - height.size() / 2);
+    base_height_L.resize(base_height.size() / 2);
+  	base_height_R.resize(base_height.size() - base_height.size() / 2);
+    building_height_L.resize(building_height.size() / 2);
+  	building_height_R.resize(building_height.size() - building_height.size() / 2);
+  	poly_points_L.resize(poly_points.size() / 2);
+  	poly_points_R.resize(poly_points.size() - poly_points.size() / 2);
+
+  	//copy data from the main data set to the left and right children
+  	int lC = 0, rC = 0;
+  	for (unsigned int i = 0; i < height.size(); i++)
+  	{
+  		if (i < height.size() / 2)
+  		{
+  			height_L[lC] = height[i];
+        base_height_L[lC] = base_height[i];
+        building_height_L[lC] = building_height[i];
+  			poly_points_L[lC++] = poly_points[i];
+  		}
+  		else
+  		{
+  			height_R[rC] = height[i];
+        base_height_R[rC] = base_height[i];
+        building_height_R[rC] = building_height[i];
+  			poly_points_R[rC++] = poly_points[i];
+  		}
+  	}
+
+  	//recursively sort the children
+  	mergeSort(height_L, poly_points_L, base_height_L, building_height_L);
+  	mergeSort(height_R, poly_points_R, base_height_R, building_height_R);
+
+  	//compare the sorted children to place the data into the main array
+  	lC = rC = 0;
+  	for (unsigned int i = 0; i < poly_points.size(); i++)
+  	{
+  		if (rC == height_R.size() || ( lC != height_L.size() &&
+  			height_L[lC] > height_R[rC]))
+  		{
+  			height[i] = height_L[lC];
+        base_height[i] = base_height_L[lC];
+        building_height[i] = building_height_L[lC];
+  			poly_points[i] = poly_points_L[lC++];
+  		}
+  		else
+  		{
+  			height[i] = height_R[rC];
+        base_height[i] = base_height_R[rC];
+        building_height[i] = building_height_R[rC];
+  			poly_points[i] = poly_points_R[rC++];
+  		}
+  	}
+
+  	return;
+  }
+
+
 
 // Save output at cell-centered values
 void Solver :: save(Output* output) {
