@@ -52,7 +52,7 @@ Turb :: Turb(Input* input) {
     
     // read in data
     std::vector<double> tau1(c),tau2(c),tau3(c),tau4(c),tau5(c),tau6(c);
-    std::vector<double> sig1(c),sig2(c),sig3(c),sig4(c),sig5(c),sig6(c);
+    std::vector<double> sig1(c),sig2(c),sig3(c);
     std::vector<double> lam1(c),lam2(c),lam3(c),lam4(c),lam5(c),lam6(c),
                         lam7(c),lam8(c),lam9(c);
     
@@ -63,11 +63,8 @@ Turb :: Turb(Input* input) {
     input->getVariableData("tau_23",start,count,tau5);
     input->getVariableData("tau_33",start,count,tau6);
     input->getVariableData("sig_11",start,count,sig1);
-    input->getVariableData("sig_12",start,count,sig2);
-    input->getVariableData("sig_13",start,count,sig3);
-    input->getVariableData("sig_22",start,count,sig4);
-    input->getVariableData("sig_23",start,count,sig5);
-    input->getVariableData("sig_33",start,count,sig6);
+    input->getVariableData("sig_22",start,count,sig2);
+    input->getVariableData("sig_33",start,count,sig3);
     input->getVariableData("lam_11",start,count,lam1);
     input->getVariableData("lam_12",start,count,lam2);
     input->getVariableData("lam_13",start,count,lam3);
@@ -92,12 +89,11 @@ Turb :: Turb(Input* input) {
                     tau.at(id).e22 = tau4.at(id);
                     tau.at(id).e23 = tau5.at(id);
                     tau.at(id).e33 = tau6.at(id);
+                    
                     sig.at(id).e11 = sig1.at(id);
-                    sig.at(id).e12 = sig2.at(id);
-                    sig.at(id).e13 = sig3.at(id);
-                    sig.at(id).e22 = sig4.at(id);
-                    sig.at(id).e23 = sig5.at(id);
-                    sig.at(id).e33 = sig6.at(id);
+                    sig.at(id).e22 = sig2.at(id);
+                    sig.at(id).e33 = sig3.at(id);
+                    
                     lam.at(id).e11 = lam1.at(id);
                     lam.at(id).e12 = lam2.at(id);
                     lam.at(id).e13 = lam3.at(id);
@@ -122,9 +118,6 @@ Turb :: Turb(Input* input) {
     sig1.clear();
     sig2.clear();
     sig3.clear();
-    sig4.clear();
-    sig5.clear();
-    sig6.clear();
     lam1.clear();
     lam2.clear();
     lam3.clear();

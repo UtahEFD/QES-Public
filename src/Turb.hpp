@@ -48,7 +48,8 @@ class Turb {
         Grid grid;
         
         // wind stress and variance information
-        std::vector<matrix6> tau, sig;
+        std::vector<diagonal> sig;
+        std::vector<matrix6> tau;
         std::vector<matrix9> lam;
         
         // CoEps
