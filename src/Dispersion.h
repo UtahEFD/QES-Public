@@ -30,13 +30,14 @@ class Dispersion {
         };
   
         std::vector<float3> pos, prime;
-        std::vector<double> zIniPos,wPrime,timeStepStamp,tStrt;
+        std::vector<double> timeStepStamp,tStrt;
         double eps;
         int numTimeStep, parPerTimestep;
         
     private:
         
         double dur,srcX,srcY,srcZ;
+        double dx,dy,dz;
         int dt,nx,ny,numPar;
 };
 #endif

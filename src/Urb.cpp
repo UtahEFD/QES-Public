@@ -27,12 +27,15 @@ Urb :: Urb(Input* input) {
              static_cast<unsigned long>(grid.nz),
              static_cast<unsigned long>(grid.ny),
              static_cast<unsigned long>(grid.nx)};
+    count2d = {static_cast<unsigned long>(grid.ny),
+               static_cast<unsigned long>(grid.nx)};
     
     // get input data and information
     grid.x.resize(grid.nx);
     grid.y.resize(grid.ny);
     grid.z.resize(grid.nz);
     grid.t.resize(grid.nt);
+    grid.terrain.resize(grid.ny*grid.nx);
     grid.icell.resize(grid.nt*grid.nz*grid.ny*grid.nx);
     wind.resize(grid.nt*grid.nz*grid.ny*grid.nx);
     
@@ -41,6 +44,7 @@ Urb :: Urb(Input* input) {
     input->getVariableData("z",grid.z);
     input->getVariableData("t",grid.t);
     input->getVariableData("icell",start,count,grid.icell);
+    input->getVariableData("terrain",start,count2d,grid.terrain);
 
     grid.dx = grid.x[1]-grid.x[0];
     grid.dy = grid.y[1]-grid.y[0];

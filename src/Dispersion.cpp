@@ -14,6 +14,9 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID) {
     // make local copies
     nx     = urb->grid.nx;
     ny     = urb->grid.ny;
+    dx     = urb->grid.dx;
+    dy     = urb->grid.dy;
+    dz     = urb->grid.dz;
     dt     = PID->simParams->timeStep;
     dur    = PID->simParams->runTime;
     numPar = PID->sources->numParticles;
@@ -31,7 +34,9 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID) {
     // set up source information
     pos.resize(numPar);
     prime.resize(numPar);
-    int id=int(srcZ)*ny*nx+int(srcY)*nx+int(srcX);
+    
+    int id=int(srcZ/dz)*ny*nx+int(srcY/dy)*nx+int(srcX/dx);
+    int idt=int(srcY/dy)*nx+int(srcX/dx);
     for(int i=0;i<numPar;i++){
         pos.at(i).x=srcX;
         pos.at(i).y=srcY;

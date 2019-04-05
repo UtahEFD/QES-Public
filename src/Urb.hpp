@@ -24,7 +24,7 @@ class Urb {
         
         // netCDF variables
         std::vector<size_t> start;
-        std::vector<size_t> count;
+        std::vector<size_t> count,count2d;
         
         NcDim dim_x, dim_y, dim_z, dim_t;
         NcVar var_x, var_y, var_z, var_t;
@@ -43,7 +43,8 @@ class Urb {
             std::vector<double>y;
             std::vector<double>z;
             std::vector<double>t;
-            std::vector<double>icell;   
+            std::vector<double>icell;
+            std::vector<double>terrain;   
         };
         
         Grid grid;

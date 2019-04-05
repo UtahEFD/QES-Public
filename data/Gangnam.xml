@@ -6,24 +6,24 @@
 	<timeStart> 100.0 </timeStart>
 	<timeEnd> 100000.0 </timeEnd>
 	<timeAvg> 899.0 </timeAvg>
-	<boxBoundsX1> 0.0 </boxBoundsX1>
+	<boxBoundsX1> 25.0 </boxBoundsX1>
 	<boxBoundsX2> 4525.0 </boxBoundsX2>
 	<boxBoundsY1> 0.0 </boxBoundsY1>
 	<boxBoundsY2> 2900.0 </boxBoundsY2>
 	<boxBoundsZ1> 0.0 </boxBoundsZ1>
 	<boxBoundsZ2> 240.0 </boxBoundsZ2> 				
-	<nBoxesX> 100 </nBoxesX> 								
-	<nBoxesY> 100 </nBoxesY> 							
-	<nBoxesZ> 240 </nBoxesZ> 
+	<nBoxesX> 2250 </nBoxesX> 								
+	<nBoxesY> 1450 </nBoxesY> 							
+	<nBoxesZ> 40 </nBoxesZ> 
 </collectionParameters>
 <sources>
     <numParticles>100000</numParticles>
 	<numSources> 1 </numSources>
 	<pointSource>
-		<posX> 10.0 </posX>
-		<posY> 1450.0 </posY>
-		<posZ> 10.0 </posZ>
-		<radius> 0.33 </radius>
+		<posX> 75.0 </posX>
+		<posY> 1800.0 </posY>
+		<posZ> 40.0 </posZ>
+		<radius> 1.0 </radius>
 	</pointSource>
 </sources>
 <fileOptions>

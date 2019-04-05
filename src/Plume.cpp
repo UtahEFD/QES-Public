@@ -167,9 +167,9 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             int loopTby2=0;
             
             while(tStepRem>1.0e-5) { 
-                int iV=int(xPos);
-                int jV=int(yPos);
-                int kV=int(zPos)+1;
+                int iV=int(xPos/urb->grid.dx);
+                int jV=int(yPos/urb->grid.dy);
+                int kV=int(zPos/urb->grid.dz)+1;
                 int id=kV*ny*nx+jV*nx+iV;
                 
                 // if the partice is in domain and ready to be released*/
@@ -442,7 +442,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                         Flag=1;
                     }
                     
-                    //reflection(zPos,wPrime,eul->zo,disX,disY,disZ,xPos,yPos,eul,iV,jV,kV,uPrime,vPrime);
+                    //reflection(zPos,wPrime,eul->zo,disX,disY,disZ,xPos,yPos,eul,urb,iV,jV,kV,uPrime,vPrime);
                     
                     dis->prime.at(par).x=uPrime;
                     dis->prime.at(par).y=vPrime;
@@ -466,7 +466,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             } // while (tStepRem>1.0e-5)
         } // for (int par=0; par<parToMove;par++)
         if(timeStepStamp.at(tStep) >= sCBoxTime){
-            average(tStep,dis);
+            average(tStep,dis,urb);
         }
         if(timeStepStamp.at(tStep)>= sCBoxTime+avgTime) {
             //std::cout<<"loopPrm   :"<<loopPrm<<std::endl;
@@ -580,16 +580,16 @@ pos Plume::posSubs(const pos &vecA, const pos & vecB){
     return(vecTmp);
 }
 
-void Plume::average(const int tStep,const Dispersion* dis) {
+void Plume::average(const int tStep,const Dispersion* dis, const Urb* urb) {
     for(int i=0;i<numPar;i++) {
         if(tStrt.at(i)>timeStepStamp.at(tStep)) continue;
         double xPos=dis->pos.at(i).x;
         double yPos=dis->pos.at(i).y;
         double zPos=dis->pos.at(i).z;
         if(zPos==-1) continue;
-        int iV=int(xPos);
-        int jV=int(yPos);
-        int kV=int(zPos)+1;
+        int iV=int(xPos/urb->grid.dx);
+        int jV=int(yPos/urb->grid.dy);
+        int kV=int(zPos/urb->grid.dz)+1;
         int idx=(int)((xPos-lBndx)/boxSizeX);
         int idy=(int)((yPos-lBndy)/boxSizeY);
         int idz=(int)((zPos-lBndz)/boxSizeZ);
@@ -622,4 +622,329 @@ double Plume::max(double arr[],int len) {
         }
     }
     return max;
+}
+
+void Plume::reflection(double &zPos, double &wPrime, const double &z0,const double &disX
+		,const double &disY,const double &disZ ,double &xPos
+		,double &yPos,const Eulerian* eul, const Urb* urb, const int &imc, const int &jmc
+		, const int &kmc,double &uPrime,double &vPrime){
+    
+    //shader reflection   
+    //Now do Reflection		
+    //	pos u;
+    //point of intersection
+    //	pos pI;	
+    //incident vector
+    //	pos l;
+    //reflection vector
+    //	pos r;
+    //normal vector
+    //	pos normal;
+    //distance from reflected surface
+    //	float dis;
+    
+    //	float denom;
+    //	float numer;
+    
+    //	vec2 cIndex;
+
+    
+    pos u,n,vecS,prevPos,normal,vecZ,vecTmp,vecTmp1,pI,r,l,pos,prmCurr;
+    double d,denom,numer,dis;
+    pos.x=xPos;
+    pos.y=yPos;
+    pos.z=zPos;
+            
+    prevPos.x=xPos-disX;
+    prevPos.y=yPos-disY;
+    prevPos.z=zPos-disZ;
+
+    prmCurr.x=uPrime;
+    prmCurr.y=vPrime;
+    prmCurr.z=wPrime;
+    
+    int i = int(xPos/urb->grid.dx);
+    int j = int(yPos/urb->grid.dy);
+    int k = int(zPos/urb->grid.dz)+1;
+    int id=0;
+    
+    double eps_S = 0.0001;
+    double eps_d = 0.01;
+    double smallestS = 100.0;
+    double cellBld = 1.0;
+    
+    //check if within domain
+    if((i < nx) && (j < ny) && (k < nz) && (i >= 0) && (j >= 0)) {
+        double cellBld = 1.0; //set it so that default is no reflection
+        
+        //ground is at 0 in this code, this also avoids out of bound in case of large negative k
+        if(k < 0) k = 0;
+        
+        id=k*nx*ny+j*nx+i;
+
+        if(k >= 0) {
+            //Perform lookup into wind texture to see if new position is inside a building
+            cellBld = urb->grid.icell.at(id);
+        }
+        int count=0;
+        
+        //pos.z<0.0 covers ground reflections
+        while((urb->grid.icell.at(id)==0 || (zPos < 0.0)) && count<25) {
+        
+            /*	  std::cout<<"Before Reflection-prev"<<xPos-disX<<"   "<<yPos-disY<<"   "<<zPos-disZ<<std::endl;
+            std::cout<<std::endl;
+            std::cout<<"Before Reflection"<<xPos<<"   "<<yPos<<"   "<<zPos<<std::endl;
+            std::cout<<"Before Reflection"<<uPrime<<"   "<<vPrime<<"   "<<wPrime<<std::endl;*/
+            
+            //	  std::cout<<"reflection while, count:"<<count<<std::endl;
+            count=count+1;
+            
+            // pos(pos) - prevPos;// u has disX,disY and disZ
+            u.x =disX;
+            u.y =disY;
+            u.z =disZ;
+                
+            double s1 = -1.0; //for -x
+            double s2 = -1.0; //for +x
+            double s3 = -1.0; //for -y
+            double s4 = -1.0; //for +y
+            double s5 = -1.0; //for +z (buildings)
+            double s6 = -1.0; //Not used
+            double s7 = -1.0; //for ground
+                 
+	        smallestS = 100.0;
+	        double xfo=-999.0;
+	        double yfo=-999.0;
+	        double zfo=-999.0;
+	        double ht =-999.0;
+	        double wti=-999.0;
+	        double lti=-999.0;
+            
+            //	  std::cout<<"reflection while, build params,cellBld:"<<cellBld<<"  "<<id<<"  "<<i<<"  "<<j<<"  "<<k<<std::endl;
+            //if(cellBld!=-1) {
+	        //    xfo = utl.xfo.at(int(cellBld));//bcoords.x;
+	        //    yfo = utl.yfo.at(int(cellBld));//bcoords.y;
+	        //    zfo = utl.zfo.at(int(cellBld));//bcoords.z;
+	        //    ht  = utl.hgt.at(int(cellBld));//bdim.x;
+	        //    wti = utl.wth.at(int(cellBld));//bdim.y;
+	        //    lti = utl.len.at(int(cellBld));//bdim.z;
+            //}
+            //	  std::cout<<"xfo:"<<"  "<<xfo<<" yfo:"<<"  "<<yfo<<" zfo:"<<"  "<<zfo<<std::endl;
+                
+            //-x normal  
+            n.x=-1.0;
+            n.y=0.0;
+            n.z=0.0;
+            vecS.x=xfo;
+            vecS.y=0.0;
+            vecS.z=0.0;
+            
+            d = -dot(n,vecS);
+            denom = dot(n,u);
+            numer = dot(n,prevPos) + d;
+            s1 = -numer/denom;
+            
+            /*	  std::cout<<"-x:n:"<<"  "<<n.x<<"   "<<n.y<<"  "<<n.z<<std::endl;
+            std::cout<<"vecS:"<<"  "<<vecS.x<<"   "<<vecS.y<<"  "<<vecS.z<<std::endl;
+            std::cout<<"-x:s1:"<<"  "<<s1<<std::endl;*/
+                  
+            //+x normal
+            n.x=1.0;
+            n.y=0.0;
+            n.z=0.0;
+            vecS.x=xfo+lti;
+            vecS.y=0.0;
+            vecS.z=0.0;
+            d = -dot(n,vecS);
+            denom = dot(n,u);
+            numer = dot(n,prevPos) + d;
+            s2 = -numer/denom;
+            
+            /*std::cout<<"+x:n:"<<"  "<<n.x<<"   "<<n.y<<"  "<<n.z<<std::endl;
+            std::cout<<"vecS:"<<"  "<<vecS.x<<"   "<<vecS.y<<"  "<<vecS.z<<std::endl;
+            std::cout<<"s2:"<<"  "<<s2<<std::endl;*/
+            
+            //+y normal
+            n.x=0.0;
+            n.y=1.0;
+            n.z=0.0;
+            
+            vecS.x=xfo;
+            vecS.y=yfo+(wti/2.0);
+            vecS.z=0.0;
+                
+            d = -dot(n,vecS);
+            denom = dot(n,u);
+            numer = dot(n,prevPos) + d;
+            s3 = -numer/denom;
+            
+            /*std::cout<<"+y:n:"<<"  "<<n.x<<"   "<<n.y<<"  "<<n.z<<std::endl;
+            std::cout<<"vecS:"<<"  "<<vecS.x<<"   "<<vecS.y<<"  "<<vecS.z<<std::endl;
+            std::cout<<"s3:"<<"  "<<s3<<std::endl;*/
+                
+            //-y normal
+            n.x=0.0;
+            n.y=-1.0;
+            n.z=0.0;
+            
+            vecS.x=xfo;
+            vecS.y=yfo-(wti/2.0);
+            vecS.z=0.0;
+            d = -dot(n,vecS);
+            denom = dot(n,u);
+            numer = dot(n,prevPos) + d;
+            s4 = -numer/denom;
+            
+            /*std::cout<<"-y:n:"<<"  "<<n.x<<"   "<<n.y<<"  "<<n.z<<std::endl;
+            std::cout<<"vecS:"<<"  "<<vecS.x<<"   "<<vecS.y<<"  "<<vecS.z<<std::endl;
+            std::cout<<"s4:"<<"  "<<s4<<std::endl;*/
+            
+            //+z normal
+            n.x=0.0;
+            n.y=0.0;
+            n.z=1.0;
+            
+            vecS.x=xfo;
+            vecS.y=0.0;
+            vecS.z=zfo+ht;
+                
+            d = -dot(n,vecS);
+            denom = dot(n,u);
+            numer = dot(n,prevPos) + d;
+            s5 = -numer/denom;
+            
+            //std::cout<<"+z:n:"<<"  "<<n.x<<"   "<<n.y<<"  "<<n.z<<std::endl;
+            //std::cout<<"vecS:"<<"  "<<vecS.x<<"   "<<vecS.y<<"  "<<vecS.z<<std::endl;
+            //std::cout<<"s5:"<<"  "<<s5<<std::endl;
+            
+            //Ground plane
+            n.x=0.0;
+            n.y=0.0;
+            n.z=1.0;
+            numer = dot(n,prevPos);
+            denom = dot(n,u);
+            s7 = -numer/denom;
+            
+            //std::cout<<"gr:n:"<<"  "<<n.x<<"   "<<n.y<<"  "<<n.z<<std::endl;
+            //std::cout<<"vecS:"<<"  "<<vecS.x<<"   "<<vecS.y<<"  "<<vecS.z<<std::endl;
+            //std::cout<<"s7:"<<"  "<<s7<<std::endl;   
+            
+            if((s1 < smallestS) && (s1 >= -eps_S)){
+              smallestS = s1;
+              normal.x=-1.0;
+              normal.y=0.0;
+              normal.z=0.0;
+              //std::cout<<"s1-smallestS:"<<"  "<<smallestS<<std::endl;
+            }
+            if((s2 < smallestS) && (s2 >= -eps_S)){
+              normal.x =1.0;
+              normal.y=0.0;
+              normal.z=0.0;
+              smallestS = s2;
+              //std::cout<<"s2-smallestS:"<<"  "<<smallestS<<std::endl;
+            }
+            if((s3 < smallestS) && (s3 >= -eps_S)){
+              normal.x=0.0;
+              normal.y=1.0;
+              normal.z=0.0;
+              smallestS = s3;
+              //std::cout<<"s3-smallestS:"<<"  "<<smallestS<<std::endl;
+            }	
+            if((s4 < smallestS) && (s4 >= -eps_S)){
+              normal.x=0.0;
+              normal.y=-1.0;
+              normal.z=0.0;
+              smallestS = s4;
+              //std::cout<<"s4-smallestS:"<<"  "<<smallestS<<std::endl;
+            }	   
+            if((s5 < smallestS) && (s5 >= -eps_S)){
+              normal.x =0.0;
+              normal.y=0.0;
+              normal.z=1.0;
+              smallestS = s5;
+              //std::cout<<"s5-smallestS:"<<"  "<<smallestS<<std::endl;
+            }	 
+            //std::cout<<"normal:"<<"  "<<normal.x<<"   "<<normal.y<<"  "<<normal.z<<std::endl;
+            //std::cout<<"smallestS:"<<"  "<<smallestS<<std::endl;
+            
+            //Detect Edge Collision
+            
+            double edgeS = fabs(smallestS-s7);
+            //std::cout<<"edgeS:"<<"  "<<edgeS<<", eps_d:"<<eps_d<<std::endl;
+            if((edgeS < eps_d)){
+              //smallestS = s6;
+              vecZ.x=0.0;
+              vecZ.y=0.0;
+              vecZ.z=1.0;
+              vecTmp.x=normal.x+vecZ.x;
+              vecTmp.y=normal.y+vecZ.y;
+              vecTmp.z=normal.z+vecZ.z;
+              //std::cout<<"first cond"<<std::endl;
+              
+              normal = normalize(vecTmp);
+            }
+            else if((s7 < smallestS) && (s7 >= -eps_S)){
+              //std::cout<<"else cond"<<std::endl;
+              normal.x=0.0;
+              normal.y=0.0;
+              normal.z=1.0;
+              smallestS = s7;
+            }
+            //std::cout<<"edge and else:normal:"<<"  "<<normal.x<<"   "<<normal.y<<"  "<<normal.z<<std::endl;
+            //std::cout<<"after edge: smallestS:"<<"  "<<smallestS<<std::endl;
+            vecTmp1 = VecScalarMult(u,smallestS);
+            pI=posAdd(vecTmp1,prevPos);
+            //std::cout<<"pI:"<<"  "<<pI.x<<"   "<<pI.y<<"  "<<pI.z<<std::endl;
+                
+            if((smallestS >= -eps_S) && (smallestS <= eps_S)){
+              pI = prevPos;
+              r = normal;
+            }	
+            else{
+              l = normalize(posSubs(pI,prevPos));
+              r = normalize(reflect(l,normal));
+            }
+            //std::cout<<"l:"<<"  "<<l.x<<"   "<<l.y<<"  "<<l.z<<std::endl;
+            //std::cout<<"r:"<<"  "<<r.x<<"   "<<r.y<<"  "<<r.z<<std::endl;
+            
+            dis = distance(pI,pos);		
+            //std::cout<<"dis:"<<"  "<<dis<<std::endl;
+            
+            prevPos = pI;
+            pos = posAdd(pI,VecScalarMult(r,dis));
+            //update xpos,ypos,zpos
+            xPos=pos.x;
+            yPos=pos.y;
+            zPos=pos.z;
+            prmCurr = reflect(prmCurr,normal);
+            uPrime=prmCurr.x;
+            vPrime=prmCurr.y;
+            wPrime=prmCurr.z;
+            //update primes
+            i = int(pos.x);
+            j = int(pos.y);
+            k = int(pos.z)+1;
+        
+            //NOTE: Consider what happens if building is too close to domain.
+            //Do check to make sure i,j,k's are valid;
+            cellBld = 1.0;
+            if(k < 0) k = 0;
+            
+            id=k*nx*ny+j*nx+i;
+            if(k >= 0) {
+              //std::cout<<"end of while cellbld check"<<i<<"  "<<j<<"   "<<k<<std::endl;
+              cellBld = urb->grid.icell.at(id);  //find cellType of (i,j,k) {cellType stores
+            }
+            //std::cout<<"after Reflection"<<xPos<<"   "<<yPos<<"   "<<zPos<<std::endl;
+            //std::cout<<"after Reflection"<<uPrime<<"   "<<vPrime<<"   "<<wPrime<<std::endl;
+                //          std::cout<<"count:"<<count<<std::endl;
+            if(smallestS>=99.999 || count>20) {
+                //std::cout<<"may be a reflection problem"<<std::endl;
+                //std::cout<<"count:"<<count<<std::endl;
+                //std::cout<<"smallestS:"<<smallestS<<std::endl;
+            }
+        } //while loop for reflection
+    } //domain check
+    
+    return;
 }

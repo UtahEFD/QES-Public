@@ -40,10 +40,10 @@ class Plume {
         
         int loopExt=0;
         
-        void average(const int, const Dispersion*);
+        void average(const int, const Dispersion*, const Urb*);
         void outputConc();
         void reflection(double&, double&, const double&, const  double&,  const double&, const double&
-        		,double&,double&,const Eulerian&,const int&,const int&,const int&,double&,double&);
+        		,double&,double&,const Eulerian*,const Urb*,const int&,const int&,const int&,double&,double&);
         double dot(const pos&, const pos&);
         pos normalize(const pos&);
         pos VecScalarMult(const pos&,const double&);
