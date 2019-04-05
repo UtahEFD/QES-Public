@@ -79,11 +79,11 @@ protected:
     std::vector<float> site_one_overL;		/**< Reciprocal Monin-Obukhov length (1/m) */
     std::vector<float> site_xcoord;			/**< location of the measuring site in x-direction */
     std::vector<float> site_ycoord;			/**< location of the measuring site in y-direction */
-    std::vector<float> site_wind_dir;		/**< site wind wind direction */
+    std::vector<std::vector<float>> site_wind_dir;		/**< site wind wind direction */
 
     std::vector<float> site_z0;			/**< site surface roughness */
-    std::vector<float> site_z_ref;		/**< measuring sensor height */
-    std::vector<float> site_U_ref;		/**< site measured velocity */
+    std::vector<std::vector<float>> site_z_ref;		/**< measuring sensor height */
+    std::vector<std::vector<float>> site_U_ref;		/**< site measured velocity */
 
     std::vector<float> site_canopy_H;
     std::vector<float> site_atten_coeff;

@@ -85,54 +85,6 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     dz = gridInfo[2];		/**< Grid resolution in z-direction */
     dxy = MIN_S(dx, dy);
 
-    // if the MetParams data has been provided in the XML,
-    // initialize those elements
-    if (UID->metParams)
-    {
-        // Set the sensor to the one loaded in from the files:
-        sensor = UID->metParams->sensors[0];
-        num_sites = UID->metParams->num_sites;
-        site_coord_flag = (UID->metParams->site_coord_flag);
-
-        for (int i=0; i<num_sites; i++)
-        {
-
-          site_blayer_flag.push_back (UID->metParams->sensors[i]->site_blayer_flag);
-          site_one_overL.push_back (UID->metParams->sensors[i]->site_one_overL);
-          site_xcoord.push_back (UID->metParams->sensors[i]->site_xcoord);
-          site_ycoord.push_back (UID->metParams->sensors[i]->site_ycoord);
-          site_wind_dir.push_back (UID->metParams->sensors[i]->site_wind_dir);
-          site_z0.push_back (UID->metParams->sensors[i]->site_z0);
-          site_z_ref.push_back (UID->metParams->sensors[i]->site_z_ref);
-          site_U_ref.push_back (UID->metParams->sensors[i]->site_U_ref);
-
-          if (site_blayer_flag[i] == 3)
-          {
-            site_canopy_H.push_back (UID->metParams->sensors[i]->site_canopy_H);
-            site_atten_coeff.push_back (UID->metParams->sensors[i]->site_atten_coeff);
-          }
-        }
-
-        if (site_coord_flag == 1 && UTMx != 0 && UTMy != 0)
-        {
-          site_UTM_x = site_xcoord[0] * acos(theta) + site_ycoord[0] * asin(theta) + UTMx;
-          site_UTM_y = site_xcoord[0] * asin(theta) + site_ycoord[0] * acos(theta) + UTMy;
-        }
-
-        if (site_coord_flag == 2 && UTMx != 0 && UTMy != 0)
-        {
-          site_UTM_x = (UID->metParams->site_UTM_x);
-          site_UTM_y = (UID->metParams->site_UTM_y);
-          site_UTM_zone = (UID->metParams->site_UTM_zone);
-        }
-        if (site_coord_flag == 3)
-        {
-          site_lat = (UID->metParams->site_lat);
-          site_lon = (UID->metParams->site_lon);
-        }
-
-      }
-
     if (UID->canopies)			// If there are canopies specified in input files
     {
         num_canopies = UID->canopies->num_canopies;
@@ -246,17 +198,9 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     /////    Create sensor velocity profiles and generate initial velocity field /////
     //////////////////////////////////////////////////////////////////////////////////
 
-    // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa (located in Sensor.cpp)
-    sensor->UTMConverter (site_lon, site_lat, site_UTM_x, site_UTM_y, site_UTM_zone, 1);
-
-    // Caling getConvergence function to calculate the convergence value (located in Sensor.cpp)
-    sensor->getConvergence(site_lon, site_lat, site_UTM_zone, convergence, pi);
-
     // Calling inputWindProfile function to generate initial velocity field from sensors information (located in Sensor.cpp)
-    sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0.data(), v0.data(), w0.data(), num_sites, site_blayer_flag.data(),
-                             site_one_overL.data(), site_xcoord.data(), site_ycoord.data(), site_wind_dir.data(),
-                             site_z0.data(), site_z_ref.data(), site_U_ref.data(), x.data(), y.data(), z.data(), canopy,
-                             site_canopy_H.data(), site_atten_coeff.data());
+    sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0, v0, w0, x, y, z, UID->metParams->sensors,
+                            canopy, UTMx, UTMy, theta, UTMZone);
 
     max_velmag = 0.0;
     for (auto i=0; i<nx; i++)

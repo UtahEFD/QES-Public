@@ -68,8 +68,8 @@ public:
 		parsePrimitive<int>(true, residualReduction, "residualReduction");
 		parsePrimitive<int>(true, meshTypeFlag, "meshTypeFlag");
 		parsePrimitive<float>(true, domainRotation, "domainRotation");
-		parsePrimitive<float>(false, UTMx, "UTMx");
-		parsePrimitive<float>(false, UTMy, "UTMy");
+		parsePrimitive<float>(false, UTMx, "UTMX");
+		parsePrimitive<float>(false, UTMy, "UTMY");
 		parsePrimitive<int>(false, UTMZone, "UTMZone");
 		parsePrimitive<int>(false, UTMZoneLetter, "UTMZoneLetter");
 		demFile = "";

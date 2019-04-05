@@ -56,46 +56,28 @@
 	<UTMZone> 1 </UTMZone> 												<!-- UTM zone that domain located -->
 	<UTMZoneLetter> 17 </UTMZoneLetter>
 </simulationParameters>                     <!-- End of simulation parameters -->
-<metParams> 																<!-- Meteorological parameters -->
+<metParams>
 	<metInputFlag> 0 </metInputFlag>
-	<num_sites> 1 </num_sites>                <!-- Number of sensor sites in the domain -->
-	<maxSizeDataPoints> 2 </maxSizeDataPoints>
+	<num_sites> 2 </num_sites>
+	<maxSizeDataPoints> 1 </maxSizeDataPoints>
 	<siteName> sensor1 </siteName>
 	<fileName> sensor1.inp </fileName>
-	<site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->
-	<site_UTM_x> 2.0 </site_UTM_x> 								<!-- x components of site coordinate in UTM -->
-	<site_UTM_y> 2.0 </site_UTM_y> 								<!-- y components of site coordinate in UTM -->
-	<site_UTM_zone> 0 </site_UTM_zone> 						<!-- UTM zone of the sensor site -->
-	<!--site_lat> 2.0 </site_lat--> 							<!-- Latitude of the sensor site -->
-	<!--site_lon> 2.0 </site_lon--> 							<!-- Longitude of the sensor site -->
-
-	<sensor>                                    <!-- Sensor information (if more than one sensor specified, more sensor sections needed) -->
-		<site_xcoord> 1.0 </site_xcoord> 					<!-- x component of site location in QUIC domain (m) -->
-		<site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) -->
-		<boundaryLayerFlag> 1 </boundaryLayerFlag> 			<!-- Site boundary layer flag (1-log, 2-exp, 3-urban canopy) -->
-		<siteZ0> 0.01 </siteZ0> 									<!-- Site z0 -->
-		<reciprocal> 0.0 </reciprocal> 						<!-- Reciprocal Monin-Obukhov Length (1/m) -->
-		<height> 10.0 </height> 										<!-- Height of the sensor -->
-		<speed> 5.0 </speed> 											<!-- Measured speed at the sensor height -->
-		<direction> 225.0 </direction> 						<!-- Wind direction of sensor -->
-
-		<!--canopyHeight> 10.0 </canopyHeight-->     <!-- Canopy height -->
-		<!--attenuationCoefficient> 1.97 </attenuationCoefficient--> 				<!-- Canopy attenuation coefficient -->
-	</sensor>                       	<!-- Wnd of sensor section -->
-	<!--sensor-->
-	<!--site_xcoord> 0.0 </site_xcoord--> 						<!-- x component of site location in QUIC domain (m) -->
-	<!--site_ycoord> 12.5 </site_ycoord--> 					<!-- y component of site location in QUIC domain (m) -->
-	<!--boundaryLayerFlag> 1 </boundaryLayerFlag--> 				<!-- Site boundary layer flag (1-log, 2-exp, 3-urban canopy) -->
-	<!--siteZ0> 0.01 </siteZ0--> 										<!-- Site z0 -->
-	<!--reciprocal> 0.0 </reciprocal--> 						<!-- Reciprocal Monin-Obukhov Length (1/m) -->
-	<!--height> 1.0 </height--> 										<!-- Height of the sensor -->
-	<!--speed> 3.0 </speed--> 											<!-- Measured speed at the sensor height -->
-	<!--direction> 270.0 </direction--> 						<!-- Wind direction of sensor -->
-
-	<!--canopyHeight> 10.0 </canopyHeight-->     <!-- Canopy height -->
-	<!--attenuationCoefficient> 1.97 </attenuationCoefficient--> 				<!-- Canopy attenuation coefficient -->
-	<!--/sensor-->
-</metParams>  															<!-- End of meteorological parameters -->
+	<sensor>
+		<site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->
+		<site_xcoord> 1.0</site_xcoord>
+		<site_ycoord> 1.0</site_ycoord>		
+		<site_UTM_x> 2.0 </site_UTM_x> 								<!-- x components of site coordinate in UTM -->
+		<site_UTM_y> 2.0 </site_UTM_y> 								<!-- y components of site coordinate in UTM -->
+		<site_UTM_zone> 0 </site_UTM_zone> 						<!-- UTM zone of the sensor site -->
+		<epoch> 1510930800 </epoch>
+		<boundaryLayerFlag> 1 </boundaryLayerFlag>
+		<siteZ0> 0.1 </siteZ0>
+		<reciprocal> 0 </reciprocal>
+		<height> 10 </height>
+		<speed> 5 </speed>
+		<direction> 270 </direction> 
+	</sensor>
+</metParams>								<!-- End of meteorological parameters -->
 <!--canopies>
 	<num_canopies> 1 </num_canopies>
 	<landuseFlag> 0 </landuseFlag>
