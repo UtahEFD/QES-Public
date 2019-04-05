@@ -1091,7 +1091,6 @@ void Solver :: save(Output* output) {
     if (output_counter==0) {
         output_vector_dbl.erase(output_vector_dbl.begin(),output_vector_dbl.begin()+4);
     }
-    std::cout<<output_vector_dbl.size()<<std::endl;
     // increment for next time insertion
     output_counter +=1;
 }
