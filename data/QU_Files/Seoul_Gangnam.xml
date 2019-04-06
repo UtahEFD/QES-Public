@@ -1,0 +1,91 @@
+<simulationParameters>
+  <DEM>scratch/SeoulDataset/contour/w001001.adf</DEM>
+  <SHP>scratch/SeoulDataset/building.shp</SHP>
+  <SHPBuildingLayer>building</SHPBuildingLayer>
+
+  <domain> 1125 1500 44</domain>
+  <cellSize> 4.0 2.0 2.0 </cellSize>
+
+	<verticalStretching> 0 </verticalStretching>
+	<totalTimeIncrements> 1 </totalTimeIncrements> 				<!-- Number of time steps-->
+	<rooftopFlag> 2 </rooftopFlag> 											<!-- Rooftop flag (0-none, 1-log profile, 2-vortex) -->
+	<upwindCavityFlag> 3 </upwindCavityFlag> 						<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP, 3-HMVP) -->
+	<streetCanyonFlag> 4 </streetCanyonFlag> 						<!-- Street canyon flag (0-none, 1-Roeckle, 2-CPB, 3-exp. param. PKK, 4-Roeckle w/ Fackrel) -->
+	<streetIntersectionFlag> 1 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
+	<wakeFlag> 3 </wakeFlag> 												<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle, 3-Area Scaled) -->
+	<sidewallFlag> 0 </sidewallFlag> 								<!-- Sidewall flag (0-off, 1-on) -->
+	<maxIterations> 500 </maxIterations> 						<!-- Maximum number of iterations -->
+	<residualReduction> 3 </residualReduction> 			<!-- Residual Reduction (Orders of Magnitude) -->
+	<meshTypeFlag> 0 </meshTypeFlag> 								<!-- Type of meshing scheme (0-Stair step (origional QUIC), 1-Cut-cell method -->
+	<useDiffusion> 0 </useDiffusion>
+	<domainRotation> 0 </domainRotation>  					<!-- Rotation angle of domain relative to true north -->
+	<UTMx> 1.0 </UTMx> 														<!-- x component (m) in UTM -->
+	<UTMy> 1.0 </UTMy> 														<!-- y component (m) in UTM -->
+	<UTMZone> 1 </UTMZone> 												<!-- UTM zone that domain located -->
+	<UTMZoneLetter> 17 </UTMZoneLetter>
+</simulationParameters>                     <!-- End of simulation parameters -->
+<metParams> 																<!-- Meteorological parameters -->
+	<metInputFlag> 0 </metInputFlag>
+	<num_sites> 1 </num_sites>                <!-- Number of sensor sites in the domain -->
+	<maxSizeDataPoints> 2 </maxSizeDataPoints>
+	<siteName> sensor1 </siteName>
+	<fileName> sensor1.inp </fileName>
+	<site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->
+	<site_UTM_x> 2.0 </site_UTM_x> 								<!-- x components of site coordinate in UTM -->
+	<site_UTM_y> 2.0 </site_UTM_y> 								<!-- y components of site coordinate in UTM -->
+	<site_UTM_zone> 0 </site_UTM_zone> 						<!-- UTM zone of the sensor site -->
+	<!--site_lat> 2.0 </site_lat--> 							<!-- Latitude of the sensor site -->
+	<!--site_lon> 2.0 </site_lon--> 							<!-- Longitude of the sensor site -->
+
+	<sensor>                                    <!-- Sensor information (if more than one sensor specified, more sensor sections needed) -->
+		<site_xcoord> 1.0 </site_xcoord> 					<!-- x component of site location in QUIC domain (m) -->
+		<site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) -->
+		<boundaryLayerFlag> 1 </boundaryLayerFlag> 			<!-- Site boundary layer flag (1-log, 2-exp, 3-urban canopy) -->
+		<siteZ0> 0.01 </siteZ0> 									<!-- Site z0 -->
+		<reciprocal> 0.0 </reciprocal> 						<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+		<height> 10.0 </height> 										<!-- Height of the sensor -->
+		<speed> 5.0 </speed> 											<!-- Measured speed at the sensor height -->
+		<direction> 270.0 </direction> 						<!-- Wind direction of sensor -->
+
+		<!--canopyHeight> 10.0 </canopyHeight-->     <!-- Canopy height -->
+		<!--attenuationCoefficient> 1.97 </attenuationCoefficient--> 				<!-- Canopy attenuation coefficient -->
+	</sensor>                       	<!-- Wnd of sensor section -->
+	<!--sensor-->
+	<!--site_xcoord> 0.0 </site_xcoord--> 						<!-- x component of site location in QUIC domain (m) -->
+	<!--site_ycoord> 12.5 </site_ycoord--> 					<!-- y component of site location in QUIC domain (m) -->
+	<!--boundaryLayerFlag> 1 </boundaryLayerFlag--> 				<!-- Site boundary layer flag (1-log, 2-exp, 3-urban canopy) -->
+	<!--siteZ0> 0.01 </siteZ0--> 										<!-- Site z0 -->
+	<!--reciprocal> 0.0 </reciprocal--> 						<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+	<!--height> 1.0 </height--> 										<!-- Height of the sensor -->
+	<!--speed> 3.0 </speed--> 											<!-- Measured speed at the sensor height -->
+	<!--direction> 270.0 </direction--> 						<!-- Wind direction of sensor -->
+
+	<!--canopyHeight> 10.0 </canopyHeight-->     <!-- Canopy height -->
+	<!--attenuationCoefficient> 1.97 </attenuationCoefficient--> 				<!-- Canopy attenuation coefficient -->
+	<!--/sensor-->
+</metParams>  															<!-- End of meteorological parameters -->
+<!--canopies>
+	<num_canopies> 1 </num_canopies>
+	<landuseFlag> 0 </landuseFlag>
+	<landuseVegetationFlag> 0 </landuseVegetationFlag>
+	<landuseUrbanFlag> 0 </landuseUrbanFlag>
+	<canopy>
+		<attenuationCoefficient> 1.97 </attenuationCoefficient>
+		<height> 10.0 </height>
+		<baseHeight> 0 </baseHeight>
+		<xStart> 90.0 </xStart>
+		<yStart> 90.0 </yStart>
+		<length> 20.0 </length>
+		<width> 20.0 </width>
+	</canopy>
+</canopies-->
+<fileOptions>
+  <outputFormat> 3 </outputFormat>
+  	<outputFields>u</outputFields> 
+    	<outputFields>v</outputFields> 
+    	<outputFields>w</outputFields>
+    	<outputFields>icell</outputFields> 
+	<massConservedFlag> 0 </massConservedFlag>
+	<sensorVelocityFlag> 0 </sensorVelocityFlag>
+	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+</fileOptions>
