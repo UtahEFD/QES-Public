@@ -348,7 +348,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         shpFile->getLocalDomain( shpDomainSize );
         shpFile->getMinExtent( minExtent );
 
-        float domainOffset[2] = { 50, 50 };
+        float domainOffset[2] = { 0, 0 };
         for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
         {
             // convert the global polys to local domain coordinates

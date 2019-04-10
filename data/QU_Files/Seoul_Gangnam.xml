@@ -1,10 +1,10 @@
 <simulationParameters>
-  <DEM>/scratch/SeoulDataset/contour/w001001.adf</DEM>
-  <SHP>/scratch/SeoulDataset/building.shp</SHP>
+  <DEM>../scratch/Gangnam/w001001.adf</DEM>
+  <SHP>../scratch/Gangnam/building.shp</SHP>
   <SHPBuildingLayer>building</SHPBuildingLayer>
 
-  <domain> 1810 1160 40</domain>
-  <cellSize> 2.5 2.5 6.0 </cellSize> <!-- Meters-->
+  <domain> 1200 700 70</domain>
+  <cellSize> 4.0 4.0 3.0 </cellSize> <!-- Meters-->
 
   <verticalStretching> 0 </verticalStretching>
   <totalTimeIncrements> 1 </totalTimeIncrements> 				<!-- Number of time steps-->
@@ -35,18 +35,31 @@
   <fileName> sensor1.inp </fileName>
   <sensor>
     <site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->
-    <site_UTM_x> 2.0 </site_UTM_x> 								<!-- x components of site coordinate in UTM -->
-    <site_UTM_y> 2.0 </site_UTM_y> 								<!-- y components of site coordinate in UTM -->
-    <site_UTM_zone> 0 </site_UTM_zone> 						<!-- UTM zone of the sensor site -->
+    <site_xcoord> 2248.0  </site_xcoord> 					<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+    <site_ycoord> 702.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
 
-    <site_xcoord> 1.0 </site_xcoord> 					<!-- x component of site location in QUIC domain (m) -->
-    <site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) -->
-    <boundaryLayerFlag> 1 </boundaryLayerFlag> 			<!-- Site boundary layer flag (1-log, 2-exp, 3-urban canopy) -->
-    <siteZ0> 0.01 </siteZ0> 									<!-- Site z0 -->
+    <site_UTM_x> 2.0 </site_UTM_x> 								<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
+    <site_UTM_y> 2.0 </site_UTM_y> 								<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
+    <site_UTM_zone> 0 </site_UTM_zone> 						<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->
+
+    <boundaryLayerFlag> 4 </boundaryLayerFlag> 			<!-- Site boundary layer flag (1-log, 2-exp, 3-urban canopy, 4-data entry) -->
+    <siteZ0> 0.1 </siteZ0> 									<!-- Site z0 -->
     <reciprocal> 0.0 </reciprocal> 						<!-- Reciprocal Monin-Obukhov Length (1/m) -->
-    <height> 10.0 </height> 										<!-- Height of the sensor -->
-    <speed> 5.0 </speed> 											<!-- Measured speed at the sensor height -->
-    <direction> 270.0 </direction> 						<!-- Wind direction of sensor -->
+    <height> 30.7015 </height> 										<!-- Height of the sensor -->
+    <height> 74.4169 </height> 
+    <height> 144.644 </height> 
+    <height> 197.455 </height> 
+    <height> 268.468 </height> 
+    <speed> 2.56922 </speed> 											<!-- Measured speed at the sensor height -->
+    <speed> 2.55532 </speed>
+    <speed> 2.33319 </speed>
+    <speed> 2.16058 </speed>
+    <speed> 1.98843 </speed>
+    <direction> 323.283 </direction> 						<!-- Wind direction of sensor -->
+    <direction> 327.377 </direction>
+    <direction> 332.676 </direction>
+    <direction> 337.649 </direction>
+    <direction> 344.273 </direction>
   </sensor>                       	<!-- Wnd of sensor section -->
 </metParams>  															<!-- End of meteorological parameters -->
 <fileOptions>
