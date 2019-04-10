@@ -254,7 +254,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
                       // Calls rectangular building to create a each cell to the height of terrain in that cell
                       if (heightToMesh > z[1])
                       {
-                        buildings.push_back(new RectangularBuilding(i * dx, j * dy, 0.0, dx, dy, heightToMesh,z));
+                        buildings.push_back(new RectangularBuilding(i * dx+UID->simParams->halo_x, j * dy+UID->simParams->halo_y, 0.0, dx, dy, heightToMesh,z));
                       }
 
                     }
@@ -354,8 +354,8 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
             // convert the global polys to local domain coordinates
           for (size_t lIdx=0; lIdx<shpPolygons[pIdx].size(); lIdx++)
           {
-            shpPolygons[pIdx][lIdx].x_poly = shpPolygons[pIdx][lIdx].x_poly - minExtent[0] + domainOffset[0];
-            shpPolygons[pIdx][lIdx].y_poly = shpPolygons[pIdx][lIdx].y_poly - minExtent[1] + domainOffset[1];
+            shpPolygons[pIdx][lIdx].x_poly = shpPolygons[pIdx][lIdx].x_poly - minExtent[0] ;
+            shpPolygons[pIdx][lIdx].y_poly = shpPolygons[pIdx][lIdx].y_poly - minExtent[1] ;
           }
         }
         std::cout << "num_poly buildings" << shpPolygons.size() << std::endl;
@@ -392,11 +392,15 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
         {
           effective_height.push_back (base_height[pIdx]+building_height[pIdx]);
-
+          for (auto lIdx=0; lIdx<shpPolygons[pIdx].size(); lIdx++)
+          {
+            shpPolygons[pIdx][lIdx].x_poly += UID->simParams->halo_x;
+            shpPolygons[pIdx][lIdx].y_poly += UID->simParams->halo_y;
+          }
         }
 
         mergeSort( effective_height, shpPolygons, base_height, building_height);
-
+        std::cout << "Creating buildings from shapefile...\n";
         // Loop to create each of the polygon buildings read in from the shapefile
         for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
         {
@@ -405,23 +409,27 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
           poly_buildings.push_back (PolyBuilding (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], nx, ny,
                                       nz, dx, dy, dz, u0, v0, z));
           // Call setCellsFlag in the PolyBuilding class to identify building cells
-          poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz,icellflag, mesh_type_flag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
+          poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz, icellflag.data(), mesh_type_flag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
         }
+        std::cout << "Buildings created...\n";
 
         // If there is wake behind the building to apply
         if (UID->simParams->wakeFlag > 0)
         {
+          std::cout << "Applying wake behind building parameterization...\n";
           for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
           {
             poly_buildings[pIdx].polygonWake (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], dx, dy, dz, z, nx, ny, nz,
                                           cavity_factor, wake_factor, dxy, icellflag, u0, v0, w0, max_velmag);
 
-            std::cout << "building added" << pIdx << std::endl;
+            //std::cout << "building added" << pIdx << std::endl;
           }
+          std::cout << "Wake behind building parameterization done...\n";
         }
+
         auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
         std::chrono::duration<float> elapsedBuilding = finish - buildingsetup;
-        std::cout << "Elapsed building time: " << elapsedBuilding.count() << " s\n";   // Print out elapsed execution time
+        std::cout << "Elapsed time to read in and create buildings and apply parameterization: " << elapsedBuilding.count() << " s\n";   // Print out elapsed execution time
     }
 
 
