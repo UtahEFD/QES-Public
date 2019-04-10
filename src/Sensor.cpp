@@ -198,11 +198,12 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 		// Data entry profile (WRF output)
 		if (sensors[i]->site_blayer_flag == 4)
 		{
-			int ii = 0;
+			int z_size = sensors[i]->site_z_ref.size();
+			int ii = -1;
 			site_theta[i] = (270.0-sensors[i]->site_wind_dir[0])*M_PI/180.0;
 			for (auto k=1; k<nz; k++)
 			{
-				if (z[k] < sensors[i]->site_z_ref[0] || sensors[i]->site_z_ref.size() == 1)
+				if (z[k] < sensors[i]->site_z_ref[0] || z_size == 1)
 				{
 					u_prof[i][k] = (sensors[i]->site_U_ref[0]*cos(site_theta[i])/log((sensors[i]->site_z_ref[0]+sensors[i]->site_z0)/sensors[i]->site_z0))
 													*log((z[k]+sensors[i]->site_z0)/sensors[i]->site_z0);
@@ -211,7 +212,8 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 				}
 				else
 				{
-					if (ii < sensors[i]->site_z_ref.size()-1 && z[k] >= sensors[i]->site_z_ref[ii+1])
+
+					if ( (ii < z_size-2) && (z[k] >= sensors[i]->site_z_ref[ii+1]))
 					{
 						ii += 1;
 						if (abs(sensors[i]->site_wind_dir[ii+1]-sensors[i]->site_wind_dir[ii]) > 180.0)
@@ -229,7 +231,7 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 						}
 						else
 						{
-							wind_dir = (sensors[i]->site_wind_dir[ii+1]-sensors[i]->site_wind_dir[ii+1])
+							wind_dir = (sensors[i]->site_wind_dir[ii+1]-sensors[i]->site_wind_dir[ii])
 													/(sensors[i]->site_z_ref[ii+1]-sensors[i]->site_z_ref[ii]);
 						}
 						z0_high = 20.0;
@@ -238,6 +240,7 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 						z0_low = 1e-9;
 						u_star = vk*sensors[i]->site_U_ref[ii]/log((sensors[i]->site_z_ref[ii]+z0_low)/z0_low);
 						u_new_low = (u_star/vk)*log((sensors[i]->site_z_ref[ii+1]+z0_low)/z0_low);
+
 						if (sensors[i]->site_U_ref[ii+1] > u_new_low && sensors[i]->site_U_ref[ii+1] < u_new_high)
 						{
 							log_flag = 1;
@@ -263,7 +266,7 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 						else
 						{
 							log_flag = 0;
-							if (ii < sensors[i]->site_z_ref.size()-1)
+							if (ii < z_size-2)
 							{
 								a1 = ((sensors[i]->site_z_ref[ii+1]-sensors[i]->site_z_ref[ii])
 									 	*(sensors[i]->site_U_ref[ii+2]-sensors[i]->site_U_ref[ii])
@@ -282,9 +285,7 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 								 	-a1*(pow(sensors[i]->site_z_ref[ii+1],2.0)-pow(sensors[i]->site_z_ref[ii],2.0)))
 								 	/(sensors[i]->site_z_ref[ii+1]-sensors[i]->site_z_ref[ii]);
 							a3 = sensors[i]->site_U_ref[ii]-a1*pow(sensors[i]->site_z_ref[ii],2.0)
-								 	-a2*pow(sensors[i]->site_z_ref[ii],2.0);
-
-
+								 	-a2*sensors[i]->site_z_ref[ii];
 						}
 					}
 					if (log_flag == 1)

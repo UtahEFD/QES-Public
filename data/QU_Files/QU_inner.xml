@@ -1,5 +1,5 @@
 <simulationParameters>
-	<domain> 150 150 100 </domain>
+	<domain> 150 150 150 </domain>
 	<cellSize> 2.0 2.0 2.0 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>              <!-- vertical stretching (0-uniform grid, 1-costum grid)-->
 		<dz_value> 1.0 </dz_value>
@@ -62,21 +62,34 @@
 	<maxSizeDataPoints> 1 </maxSizeDataPoints>
 	<siteName> sensor1 </siteName>
 	<fileName> sensor1.inp </fileName>
-	<sensor>
-		<site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->
-		<site_xcoord> 1.0</site_xcoord>
-		<site_ycoord> 1.0</site_ycoord>		
-		<site_UTM_x> 2.0 </site_UTM_x> 								<!-- x components of site coordinate in UTM -->
-		<site_UTM_y> 2.0 </site_UTM_y> 								<!-- y components of site coordinate in UTM -->
-		<site_UTM_zone> 0 </site_UTM_zone> 						<!-- UTM zone of the sensor site -->
-		<epoch> 1510930800 </epoch>
-		<boundaryLayerFlag> 1 </boundaryLayerFlag>
-		<siteZ0> 0.1 </siteZ0>
-		<reciprocal> 0 </reciprocal>
-		<height> 10 </height>
-		<speed> 5 </speed>
-		<direction> 270 </direction> 
-	</sensor>
+  <sensor>
+    <site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->
+    <site_xcoord> 200.0  </site_xcoord> 					<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+    <site_ycoord> 200.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
+
+    <site_UTM_x> 2.0 </site_UTM_x> 								<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
+    <site_UTM_y> 2.0 </site_UTM_y> 								<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
+    <site_UTM_zone> 0 </site_UTM_zone> 						<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->
+
+    <boundaryLayerFlag> 1 </boundaryLayerFlag> 			<!-- Site boundary layer flag (1-log, 2-exp, 3-urban canopy, 4-data entry) -->
+    <siteZ0> 0.1 </siteZ0> 									<!-- Site z0 -->
+    <reciprocal> 0.0 </reciprocal> 						<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+    <height> 10.7015 </height> 										<!-- Height of the sensor -->
+    <height> 24.4169 </height> 
+    <height> 144.644 </height> 
+    <height> 197.455 </height> 
+    <height> 268.468 </height> 
+    <speed> 2.56922 </speed> 											<!-- Measured speed at the sensor height -->
+    <speed> 4.55532 </speed>
+    <speed> 6.33319 </speed>
+    <speed> 8.16058 </speed>
+    <speed> 10.98843 </speed>
+    <direction> 278.283 </direction> 						<!-- Wind direction of sensor -->
+    <direction> 298.377 </direction>
+    <direction> 322.676 </direction>
+    <direction> 337.649 </direction>
+    <direction> 344.273 </direction>
+  </sensor>                       	<!-- Wnd of sensor section -->
 </metParams>								<!-- End of meteorological parameters -->
 <!--canopies>
 	<num_canopies> 1 </num_canopies>
@@ -103,7 +116,7 @@
   <sensorVelocityFlag> 0 </sensorVelocityFlag>
   <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
-<!--buildings>
+<buildings>
 	<wallRoughness> 0.05 </wallRoughness>
 	<numBuildings> 1 </numBuildings>
 	<numPolygonNodes> 0 </numPolygonNodes>
@@ -117,4 +130,4 @@
 		<length> 20.0 </length>
 		<width> 20.0 </width>
 	</rectangularBuilding>
-</buildings-->
+</buildings>
