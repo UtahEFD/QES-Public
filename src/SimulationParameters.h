@@ -36,6 +36,8 @@ public:
 	int UTMZone;
 	int UTMZoneLetter;
 	int meshTypeFlag;
+	float halo_x;
+	float halo_y;
         std::string demFile;    // DEM file name
 
     // SHP File parameters
@@ -68,10 +70,12 @@ public:
 		parsePrimitive<int>(true, residualReduction, "residualReduction");
 		parsePrimitive<int>(true, meshTypeFlag, "meshTypeFlag");
 		parsePrimitive<float>(true, domainRotation, "domainRotation");
-		parsePrimitive<float>(false, UTMx, "UTMX");
-		parsePrimitive<float>(false, UTMy, "UTMY");
+		parsePrimitive<float>(false, UTMx, "UTMx");
+		parsePrimitive<float>(false, UTMy, "UTMy");
 		parsePrimitive<int>(false, UTMZone, "UTMZone");
 		parsePrimitive<int>(false, UTMZoneLetter, "UTMZoneLetter");
+		parsePrimitive<float>(false, halo_x, "halo_x");
+		parsePrimitive<float>(false, halo_y, "halo_y");
 		demFile = "";
 		parsePrimitive<std::string>(false, demFile, "DEM");
 
