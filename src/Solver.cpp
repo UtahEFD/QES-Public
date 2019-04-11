@@ -85,54 +85,6 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     dz = gridInfo[2];		/**< Grid resolution in z-direction */
     dxy = MIN_S(dx, dy);
 
-    // if the MetParams data has been provided in the XML,
-    // initialize those elements
-    if (UID->metParams)
-    {
-        // Set the sensor to the one loaded in from the files:
-        sensor = UID->metParams->sensors[0];
-        num_sites = UID->metParams->num_sites;
-        site_coord_flag = (UID->metParams->site_coord_flag);
-
-        for (int i=0; i<num_sites; i++)
-        {
-
-          site_blayer_flag.push_back (UID->metParams->sensors[i]->site_blayer_flag);
-          site_one_overL.push_back (UID->metParams->sensors[i]->site_one_overL);
-          site_xcoord.push_back (UID->metParams->sensors[i]->site_xcoord);
-          site_ycoord.push_back (UID->metParams->sensors[i]->site_ycoord);
-          site_wind_dir.push_back (UID->metParams->sensors[i]->site_wind_dir);
-          site_z0.push_back (UID->metParams->sensors[i]->site_z0);
-          site_z_ref.push_back (UID->metParams->sensors[i]->site_z_ref);
-          site_U_ref.push_back (UID->metParams->sensors[i]->site_U_ref);
-
-          if (site_blayer_flag[i] == 3)
-          {
-            site_canopy_H.push_back (UID->metParams->sensors[i]->site_canopy_H);
-            site_atten_coeff.push_back (UID->metParams->sensors[i]->site_atten_coeff);
-          }
-        }
-
-        if (site_coord_flag == 1 && UTMx != 0 && UTMy != 0)
-        {
-          site_UTM_x = site_xcoord[0] * acos(theta) + site_ycoord[0] * asin(theta) + UTMx;
-          site_UTM_y = site_xcoord[0] * asin(theta) + site_ycoord[0] * acos(theta) + UTMy;
-        }
-
-        if (site_coord_flag == 2 && UTMx != 0 && UTMy != 0)
-        {
-          site_UTM_x = (UID->metParams->site_UTM_x);
-          site_UTM_y = (UID->metParams->site_UTM_y);
-          site_UTM_zone = (UID->metParams->site_UTM_zone);
-        }
-        if (site_coord_flag == 3)
-        {
-          site_lat = (UID->metParams->site_lat);
-          site_lon = (UID->metParams->site_lon);
-        }
-
-      }
-
     if (UID->canopies)			// If there are canopies specified in input files
     {
         num_canopies = UID->canopies->num_canopies;
@@ -246,17 +198,9 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     /////    Create sensor velocity profiles and generate initial velocity field /////
     //////////////////////////////////////////////////////////////////////////////////
 
-    // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa (located in Sensor.cpp)
-    sensor->UTMConverter (site_lon, site_lat, site_UTM_x, site_UTM_y, site_UTM_zone, 1);
-
-    // Caling getConvergence function to calculate the convergence value (located in Sensor.cpp)
-    sensor->getConvergence(site_lon, site_lat, site_UTM_zone, convergence, pi);
-
     // Calling inputWindProfile function to generate initial velocity field from sensors information (located in Sensor.cpp)
-    sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0.data(), v0.data(), w0.data(), num_sites, site_blayer_flag.data(),
-                             site_one_overL.data(), site_xcoord.data(), site_ycoord.data(), site_wind_dir.data(),
-                             site_z0.data(), site_z_ref.data(), site_U_ref.data(), x.data(), y.data(), z.data(), canopy,
-                             site_canopy_H.data(), site_atten_coeff.data());
+    sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0, v0, w0, x, y, z, UID->metParams->sensors,
+                            canopy, UTMx, UTMy, theta, UTMZone);
 
     max_velmag = 0.0;
     for (auto i=0; i<nx; i++)
@@ -301,14 +245,18 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
             if (mesh)
             {
                 std::cout << "Creating terrain blocks...\n";
-                for (int i = 0; i < nx; i++)
+                for (int i = 0; i < nx-1; i++)
                 {
-                    for (int j = 0; j < ny; j++)
+                    for (int j = 0; j < ny-1; j++)
                     {
                       // Gets height of the terrain for each cell
                       float heightToMesh = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
                       // Calls rectangular building to create a each cell to the height of terrain in that cell
-                      buildings.push_back(new RectangularBuilding(i * dx, j * dy, 0.0, dx, dy, heightToMesh,z));
+                      if (heightToMesh > z[1])
+                      {
+                        buildings.push_back(new RectangularBuilding(i * dx+UID->simParams->halo_x, j * dy+UID->simParams->halo_y, 0.0, dx, dy, heightToMesh,z));
+                      }
+
                     }
                     printProgress( (float)i / (float)nx);
                 }
@@ -400,14 +348,14 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         shpFile->getLocalDomain( shpDomainSize );
         shpFile->getMinExtent( minExtent );
 
-        float domainOffset[2] = { 50, 50 };
+        float domainOffset[2] = { 0, 0 };
         for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
         {
             // convert the global polys to local domain coordinates
           for (size_t lIdx=0; lIdx<shpPolygons[pIdx].size(); lIdx++)
           {
-            shpPolygons[pIdx][lIdx].x_poly = shpPolygons[pIdx][lIdx].x_poly - minExtent[0] + domainOffset[0];
-            shpPolygons[pIdx][lIdx].y_poly = shpPolygons[pIdx][lIdx].y_poly - minExtent[1] + domainOffset[1];
+            shpPolygons[pIdx][lIdx].x_poly = shpPolygons[pIdx][lIdx].x_poly - minExtent[0] ;
+            shpPolygons[pIdx][lIdx].y_poly = shpPolygons[pIdx][lIdx].y_poly - minExtent[1] ;
           }
         }
         std::cout << "num_poly buildings" << shpPolygons.size() << std::endl;
@@ -444,11 +392,15 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
         {
           effective_height.push_back (base_height[pIdx]+building_height[pIdx]);
-
+          for (auto lIdx=0; lIdx<shpPolygons[pIdx].size(); lIdx++)
+          {
+            shpPolygons[pIdx][lIdx].x_poly += UID->simParams->halo_x;
+            shpPolygons[pIdx][lIdx].y_poly += UID->simParams->halo_y;
+          }
         }
 
         mergeSort( effective_height, shpPolygons, base_height, building_height);
-
+        std::cout << "Creating buildings from shapefile...\n";
         // Loop to create each of the polygon buildings read in from the shapefile
         for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
         {
@@ -457,23 +409,27 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
           poly_buildings.push_back (PolyBuilding (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], nx, ny,
                                       nz, dx, dy, dz, u0, v0, z));
           // Call setCellsFlag in the PolyBuilding class to identify building cells
-          poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz,icellflag, mesh_type_flag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
+          poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz, icellflag.data(), mesh_type_flag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
         }
+        std::cout << "Buildings created...\n";
 
         // If there is wake behind the building to apply
         if (UID->simParams->wakeFlag > 0)
         {
+          std::cout << "Applying wake behind building parameterization...\n";
           for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
           {
             poly_buildings[pIdx].polygonWake (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], dx, dy, dz, z, nx, ny, nz,
                                           cavity_factor, wake_factor, dxy, icellflag, u0, v0, w0, max_velmag);
 
-            std::cout << "building added" << pIdx << std::endl;
+            //std::cout << "building added" << pIdx << std::endl;
           }
+          std::cout << "Wake behind building parameterization done...\n";
         }
+
         auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
         std::chrono::duration<float> elapsedBuilding = finish - buildingsetup;
-        std::cout << "Elapsed building time: " << elapsedBuilding.count() << " s\n";   // Print out elapsed execution time
+        std::cout << "Elapsed time to read in and create buildings and apply parameterization: " << elapsedBuilding.count() << " s\n";   // Print out elapsed execution time
     }
 
 
@@ -1143,7 +1099,6 @@ void Solver :: save(Output* output) {
     if (output_counter==0) {
         output_vector_dbl.erase(output_vector_dbl.begin(),output_vector_dbl.begin()+4);
     }
-    std::cout<<output_vector_dbl.size()<<std::endl;
     // increment for next time insertion
     output_counter +=1;
 }

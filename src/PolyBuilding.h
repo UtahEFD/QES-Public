@@ -78,7 +78,7 @@ public:
       }
 
       // Define end index of the building in z-direction
-      for (auto k=k_start; k<z.size(); k++)
+      for (auto k=0; k<z.size(); k++)
       {
         k_end = k+1;
         if (height_eff < z[k+1])
@@ -163,7 +163,7 @@ public:
     * for building cells. It applies the Stair-step method to define building bounds.
     *
     */
-    void setCellsFlag (float dx, float dy, float dz, std::vector<float> z, int nx, int ny, int nz, std::vector<int> &icellflag, int mesh_type_flag,
+    void setCellsFlag (float dx, float dy, float dz, std::vector<float> z, int nx, int ny, int nz, int* icellflag, int mesh_type_flag,
                         std::vector< polyVert > &polygonVertices, float baseHeight, float bldElevation)
     {
 

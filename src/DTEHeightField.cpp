@@ -265,12 +265,15 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
         printProgress( ( (float)i / (float)m_triList.size()) / 2.0f + 0.5f);
       }
 
-      if (q != 2)
+      /*if (q != 2)
+      {
         max[q] -= min[q];
+        (*domain)[q] = (int)(max[q] / (float)(*grid)[q]) + 1;
+      }
       else
         max[q] = max[q] - min[q] + (float)((*grid)[2]);
-      (*domain)[q] = (int)(max[q] / (float)(*grid)[q]) + 1;
-      printf ("max %lf grid %lf\n" , max[q], (float)(*grid)[q]);
+
+      printf ("max %lf grid %lf\n" , max[q], (float)(*grid)[q]);*/
 
       //current implementation adds buffer in z dim for buffer space
       //get more specific values, currently adding 50 meters

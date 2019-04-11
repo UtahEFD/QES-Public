@@ -598,7 +598,7 @@ public:
 				}
 			}
 
-			for (auto k=k_start; k<z.size(); k++)
+			for (auto k=0; k<z.size(); k++)
 			{
 				k_end = k+1;
 				k_cut_end = k_end+1;
@@ -675,7 +675,7 @@ public:
 				}
 			}
 
-			for (auto k=k_start; k<z.size(); k++)
+			for (auto k=0; k<z.size(); k++)
 			{
 				k_end = k+1;
 				if (baseHeight+H < z[k+1])
@@ -704,11 +704,6 @@ public:
 						}
 					}
 				}
-
-
-
-
-
 		}
 	}
 
