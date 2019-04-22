@@ -144,8 +144,8 @@ void CPUSolver::solve(bool solveWind)
         }
 
                 for (int k = 1; k < nz-1; k++){
-            for (int j = 1; j < ny-1; j++){
-                for (int i = 1; i < nx-1; i++){
+            for (int j = 0; j < ny-1; j++){
+                for (int i = 0; i < nx-1; i++){
                     icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
                     icell_face = i + j*nx + k*nx*ny;               /// Lineralized
                                                                    /// index
@@ -179,4 +179,6 @@ void CPUSolver::solve(bool solveWind)
         std::cout << "Elapsed solve time: " << elapsedSolve.count() << " s\n";   // Print out elapsed execution time
 
     }
+
+    
 }

@@ -68,29 +68,29 @@ void ESRIShapefile::loadVectorData( std::vector< std::vector< polyVert > > &poly
         for(int idxField = 0; idxField < poFDefn->GetFieldCount(); idxField++ ) {
 
             OGRFieldDefn *oField = poFDefn->GetFieldDefn( idxField );
-            std::cout << "Field Name: " << oField->GetNameRef() << ", Value: ";
+            //std::cout << "Field Name: " << oField->GetNameRef() << ", Value: ";
             switch( oField->GetType() )
             {
             case OFTInteger:
-                printf( "%d,", feature->GetFieldAsInteger( idxField ) );
+                //printf( "%d,", feature->GetFieldAsInteger( idxField ) );
                 building_height.push_back(feature->GetFieldAsInteger( idxField ));
 
                 break;
             case OFTInteger64:
-                printf( CPL_FRMT_GIB ",", feature->GetFieldAsInteger64( idxField ));
+                //printf( CPL_FRMT_GIB ",", feature->GetFieldAsInteger64( idxField ));
                 building_height.push_back(feature->GetFieldAsInteger( idxField )*3);
                 break;
             case OFTReal:
-                printf( "%.3f,", feature->GetFieldAsDouble( idxField ) );
+                //printf( "%.3f,", feature->GetFieldAsDouble( idxField ) );
                 break;
             case OFTString:
-                printf( "%s,", feature->GetFieldAsString( idxField ) );
+                //printf( "%s,", feature->GetFieldAsString( idxField ) );
                 break;
             default:
-                printf( "%s,", feature->GetFieldAsString( idxField ) );
+                //printf( "%s,", feature->GetFieldAsString( idxField ) );
                 break;
             }
-            std::cout << std::endl;
+            //std::cout << std::endl;
 
             OGRGeometry *poGeometry;
             poGeometry = feature->GetGeometryRef();
