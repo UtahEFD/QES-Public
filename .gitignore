@@ -2,6 +2,7 @@ build/
 Build/
 src/docs/*
 docs/*
+.vscode/
 
 # Prerequisites
 *.d
