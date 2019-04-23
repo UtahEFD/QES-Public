@@ -1,8 +1,12 @@
-// QUICFire spread rate using Balbi (2009) model
-// Matthew Moody
-// Dec 27, 2018
+//
+//  Fire.cpp
+//  
+//  This class models fire spread rate using Balbi (2019)
+//
+//  Created by Matthew Moody, Jeremy Gibbs on 12/27/18.
+//
 
-#include "Fire.h"
+#include "Fire.hpp"
 
 using namespace std;
 
@@ -23,7 +27,8 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     dz = gridInfo[2];
     
     // set-up the mapper array
-    allFireCells.resize(nx*ny);
+    fire_cells.resize(nx*ny);
+    burn_flag.resize(nx*ny);
     
     // get initial fire info
     x_start    = UID->fires->xStart;
@@ -37,21 +42,22 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     // set fuel properties
     for (int j = 0; j < ny; j++){
         for (int i = 0; i < nx; i++){
+            
             int idx = i + j*nx;
             
-            if (fuel_type==1)  allFireCells[idx].fuel = new ShortGrass();
-            if (fuel_type==2)  allFireCells[idx].fuel = new TimberGrass();
-            if (fuel_type==3)  allFireCells[idx].fuel = new TallGrass();
-            if (fuel_type==4)  allFireCells[idx].fuel = new Chaparral();
-            if (fuel_type==5)  allFireCells[idx].fuel = new Brush();
-            if (fuel_type==6)  allFireCells[idx].fuel = new DormantBrush();
-            if (fuel_type==7)  allFireCells[idx].fuel = new SouthernRough();
-            if (fuel_type==8)  allFireCells[idx].fuel = new TimberClosedLitter();
-            if (fuel_type==9)  allFireCells[idx].fuel = new HarwoodLitter();
-            if (fuel_type==10) allFireCells[idx].fuel = new TimberLitter();
-            if (fuel_type==11) allFireCells[idx].fuel = new LoggingSlashLight();
-            if (fuel_type==12) allFireCells[idx].fuel = new LoggingSlashMedium();
-            if (fuel_type==13) allFireCells[idx].fuel = new LoggingSlashHeavy();
+            if (fuel_type==1)  fire_cells[idx].fuel = new ShortGrass();
+            if (fuel_type==2)  fire_cells[idx].fuel = new TimberGrass();
+            if (fuel_type==3)  fire_cells[idx].fuel = new TallGrass();
+            if (fuel_type==4)  fire_cells[idx].fuel = new Chaparral();
+            if (fuel_type==5)  fire_cells[idx].fuel = new Brush();
+            if (fuel_type==6)  fire_cells[idx].fuel = new DormantBrush();
+            if (fuel_type==7)  fire_cells[idx].fuel = new SouthernRough();
+            if (fuel_type==8)  fire_cells[idx].fuel = new TimberClosedLitter();
+            if (fuel_type==9)  fire_cells[idx].fuel = new HarwoodLitter();
+            if (fuel_type==10) fire_cells[idx].fuel = new TimberLitter();
+            if (fuel_type==11) fire_cells[idx].fuel = new LoggingSlashLight();
+            if (fuel_type==12) fire_cells[idx].fuel = new LoggingSlashMedium();
+            if (fuel_type==13) fire_cells[idx].fuel = new LoggingSlashHeavy();
         }
     }
     
@@ -67,16 +73,26 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     for (int j = j_start; j < j_end; j++){
         for (int i = i_start; i < i_end; i++){
             int idx = i + j*nx;
-	    	allFireCells[idx].state.burn_flag = 1;
+	    	fire_cells[idx].state.burn_flag = 1;
+        }
+    }
+    
+    // set up burn flag field
+    for (int j = 0; j < ny; j++){
+        for (int i = 0; i < nx; i++){
+            
+            int idx = i + j*nx;       
+            burn_flag[idx] = fire_cells[idx].state.burn_flag;
         }
     }
     
     // set output fields
     output_fields = UID->fileOptions->outputFields;
-    if (output_fields[0]=="all") {
-        output_fields.erase(output_fields.begin());
-        output_fields = {"u","v","w"};
-    }
+    
+    //if (output_fields[0]=="all") {
+    //    output_fields.erase(output_fields.begin());
+    //    output_fields = {"u","v","w"};
+    //}
     
     // set cell-centered dimensions
     const std::string tname = "t";
@@ -90,42 +106,42 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     dim_scalar_t.push_back(x_dim);
 
     // create attributes
-    //AttVectorDbl att_b = {&allFireCells.state.burn_flag,  "burn", "burn flag value", "--", dim_scalar_t};
+    AttVectorInt att_b = {&burn_flag,  "burn", "burn flag value", "--", dim_scalar_t};
     
     // map the name to attributes
-    //map_att_vector_dbl.emplace("burn", att_b);
-        
+    map_att_vector_int.emplace("burn", att_b);
+      
     // we will always save time and grid lengths
-    //output_vector_dbl.push_back(map_att_vector_dbl["burn"]);
+    //output_vector_int.push_back(map_att_vector_int["burn"]);
     
     // create list of fields to save
-    //for (int i=0; i<output_fields.size(); i++) {
-    //    std::string key = output_fields[i];
-    //    if (map_att_scalar_dbl.count(key)) {
-    //        output_scalar_dbl.push_back(map_att_scalar_dbl[key]);
-    //    } else if (map_att_vector_dbl.count(key)) {
-    //        output_vector_dbl.push_back(map_att_vector_dbl[key]);
-    //    } else if(map_att_vector_int.count(key)) {
-    //        output_vector_int.push_back(map_att_vector_int[key]);
-    //    }
-    //}
+    for (int i=0; i<output_fields.size(); i++) {
+        std::string key = output_fields[i];
+        if (map_att_scalar_dbl.count(key)) {
+            output_scalar_dbl.push_back(map_att_scalar_dbl[key]);
+        } else if (map_att_vector_dbl.count(key)) {
+            output_vector_dbl.push_back(map_att_vector_dbl[key]);
+        } else if(map_att_vector_int.count(key)) {
+            output_vector_int.push_back(map_att_vector_int[key]);
+        }
+    }
     
     // add scalar double fields
-    //for (int i=0; i<output_scalar_dbl.size(); i++) {
-    //    AttScalarDbl att = output_scalar_dbl[i];
-    //    output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
-    //}
+    for (int i=0; i<output_scalar_dbl.size(); i++) {
+        AttScalarDbl att = output_scalar_dbl[i];
+        output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
+    }
     // add vector double fields
-    //for (int i=0; i<output_vector_dbl.size(); i++) {
-    //    AttVectorDbl att = output_vector_dbl[i];
-    //    output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
-    //}
+    for (int i=0; i<output_vector_dbl.size(); i++) {
+        AttVectorDbl att = output_vector_dbl[i];
+        output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
+    }
     
     // add vector int fields
-    //for (int i=0; i<output_vector_int.size(); i++) {
-    //    AttVectorInt att = output_vector_int[i];
-    //    output->addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
-    //}    
+    for (int i=0; i<output_vector_int.size(); i++) {
+        AttVectorInt att = output_vector_int[i];
+        output->addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
+    }    
 }
 
 //struct FireProperties Fire :: runFire(double u_mid, double v_mid, int type) {

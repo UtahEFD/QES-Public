@@ -9,7 +9,7 @@
 
 #include "URBInputData.h"
 #include "handleURBArgs.h"
-#include "Fire.h"
+#include "Fire.hpp"
 #include "Solver.h"
 #include "CPUSolver.h"
 #include "DynamicParallelism.h"
@@ -127,6 +127,9 @@ int main(int argc, char *argv[])
     //close the scanner
     if (DTEHF)
         DTEHF->closeScanner();
+    
+    // Create Fire Mapper
+    Fire* fire = new Fire(UID, output);
         
     // Run urb simulation code
     for (int t=0; t<UID->simParams->totalTimeIncrements; t++) {
@@ -161,7 +164,7 @@ int main(int argc, char *argv[])
         }
         
         // save any fire data
-        //fire->save(output);
+        fire->save(output);
         
         // move flame
         //solver->moveFire(fp.rx, fp.h, fp.tau, 1);

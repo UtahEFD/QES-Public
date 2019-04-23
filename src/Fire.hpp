@@ -1,6 +1,10 @@
-// QUICFire spread rate using Balbi (2009) model
-// Matthew Moody
-// Dec 27, 2018
+//
+//  Fire.hpp
+//  
+//  This class models fire spread rate using Balbi (2019)
+//
+//  Created by Matthew Moody, Jeremy Gibbs on 12/27/18.
+//
 
 #ifndef FIRE_H
 #define FIRE_H
@@ -40,14 +44,9 @@ class Fire {
             FireState state;
         };
         
-        std::vector< FireCell > allFireCells;
-        
-        /**
-         * @brief 
-         * 
-         * This function saves user-defined data to file
-         */
-         void save(Output*);
+        std::vector< FireCell > fire_cells;
+                
+        void save(Output*);
         
     private:
         
@@ -71,6 +70,8 @@ class Fire {
         
         FireProperties runFire(double, double, int);
         
+        // output fields
+        std::vector<int> burn_flag;
         
         /// Declaration of output manager
         int output_counter=0;

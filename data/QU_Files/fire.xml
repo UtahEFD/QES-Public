@@ -29,6 +29,7 @@
 	<fileName> sensor1.inp </fileName>
 	<site_coord_flag> 1</site_coord_flag>
 	<sensor>
+		<site_coord_flag>1</site_coord_flag>
 		<site_xcoord> 0.0 </site_xcoord>
 		<site_ycoord> 12.5 </site_ycoord>
 		<boundaryLayerFlag> 1 </boundaryLayerFlag>
@@ -54,7 +55,8 @@
 	<outputFields>u</outputFields> 
 	<outputFields>v</outputFields> 
 	<outputFields>w</outputFields>
-	<outputFields>icell</outputFields> 
+	<outputFields>icell</outputFields>
+	<outputFields>burn</outputFields> 
 	<massConservedFlag> 0 </massConservedFlag>
 	<sensorVelocityFlag> 0 </sensorVelocityFlag>
 	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
