@@ -108,14 +108,7 @@ protected:
     /// Declaration of coefficients for SOR solver
     std::vector<float> e,f,g,h,m,n;
 
-    /// Declaration of initial wind components (u0,v0,w0)
-    std::vector<double> u0,v0,w0;
-
     std::vector<double> R;           /**< Divergence of initial velocity field */
-
-    /// Declaration of final velocity field components (u,v,w)
-    std::vector<double> u,v,w;
-    std::vector<double> u_out,v_out,w_out;
 
     /// Declaration of Lagrange multipliers
     std::vector<double> lambda, lambda_old;
@@ -271,7 +264,14 @@ public:
 
 
     void mergeSort( std::vector<float> &height, std::vector<std::vector<polyVert>> &poly_points, std::vector<float> &base_height, std::vector<float> &building_height);
+    
+    /// Declaration of initial wind components (u0,v0,w0)
+    std::vector<double> u0,v0,w0;
 
+    /// Declaration of final velocity field components (u,v,w)
+    std::vector<double> u,v,w;
+    std::vector<double> u_out,v_out,w_out;
+    
     /**
     * @brief
     *

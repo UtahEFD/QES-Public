@@ -144,6 +144,44 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     }    
 }
 
+void Fire :: run(Solver* solver) {
+    
+    // search predicate for burn state
+    struct find_burn : std::unary_function<FireCell, bool> {
+        int burn;
+        find_burn(int burn):burn(burn) { }
+        bool operator()(FireCell const& f) const {
+            return f.state.burn_flag == burn;
+        }
+    };
+    
+    // get indices of burning cells
+    std::vector<FireCell>::iterator it = std::find_if(fire_cells.begin(),fire_cells.end(),find_burn(1));
+    
+    while ( it != fire_cells.end()) {
+        it = std::find_if (++it, fire_cells.end(),find_burn(1)); 
+        //std::cout<<std::distance(fire_cells.begin(), it)<<std::endl;
+    }
+    FuelProperties* test = fire_cells[0].fuel;
+    double R0 = rothermel(test, 0.0,0.0,0.0);
+    FireProperties tester = balbi(test,0.0,0.0,0.0,0.0);
+}
+
+double Fire :: rothermel(FuelProperties* fuel, double max_wind, double tanphi,double fmc_g) {
+    
+    std::cout<<"Running Rothermel"<<std::endl;
+    return 0.0;
+}
+
+struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, double v_mid, 
+                                    double tanphi,double fmc_g) {
+    
+    FireProperties test;
+    std::cout<<"Running Balbi"<<std::endl;
+    return test;
+    
+}
+
 //struct FireProperties Fire :: runFire(double u_mid, double v_mid, int type) {
 //    
 //    // get properties for fuel type

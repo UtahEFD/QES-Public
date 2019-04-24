@@ -13,6 +13,7 @@
 #include "FuelProperties.hpp"
 #include "Vector3.h"
 #include "Output.hpp"
+#include "Solver.h"
 
 #include <fstream>
 #include <iostream>
@@ -45,7 +46,8 @@ class Fire {
         };
         
         std::vector< FireCell > fire_cells;
-                
+        
+        void run(Solver*);        
         void save(Output*);
         
     private:
@@ -60,13 +62,9 @@ class Fire {
         float L, W, H, baseHeight;
         int i_start, i_end, j_start, j_end, k_end,k_start;
         
-        double Rothermel(double, double, double, double, double, 
-                         double, double, double, double, double, 
-                         double, double, double, double, double, 
-                         double, double, double, double);
+        double rothermel(FuelProperties*, double, double, double);
                      
-        FireProperties Balbi(double, double, double, double, double,
-                             double, double, double, double, double);
+        FireProperties balbi(FuelProperties*, double, double, double, double);
         
         FireProperties runFire(double, double, int);
         

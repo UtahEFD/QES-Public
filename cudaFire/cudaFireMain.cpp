@@ -149,6 +149,7 @@ int main(int argc, char *argv[])
             err = 0.001;
             // re-run Balbi model to get w
             //fp = solver->runBalbi();
+            fire->run(solver);
             
             // compute err
             //err = std::abs((r_old-fp.rx)/fp.rx);
