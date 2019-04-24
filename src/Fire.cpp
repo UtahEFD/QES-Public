@@ -141,7 +141,11 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     }    
 }
 
+// compute fire spread for burning cells
 void Fire :: run(Solver* solver) {
+    
+    // indices for burning cells
+    std::vector<int> cells_burning;
     
     // search predicate for burn state
     struct find_burn : std::unary_function<FireCell, bool> {
@@ -154,13 +158,67 @@ void Fire :: run(Solver* solver) {
     
     // get indices of burning cells
     std::vector<FireCell>::iterator it = std::find_if(fire_cells.begin(),fire_cells.end(),find_burn(1));
-    
     while ( it != fire_cells.end()) {
+        
+        if (it!=fire_cells.end()) {
+            cells_burning.push_back(std::distance(fire_cells.begin(), it));
+        }
+        
         it = std::find_if (++it, fire_cells.end(),find_burn(1)); 
-        //std::cout<<std::distance(fire_cells.begin(), it)<<std::endl;
     }
-    FuelProperties* test = fire_cells[0].fuel;
-    FireProperties tester = balbi(test,0.0,0.0,0.0,0.0);
+    
+    // loop through burning cells
+    for (int i=0; i<cells_burning.size();i++) {
+        
+        // get index burning cell
+        int id = cells_burning[i];
+
+        // get horizontal wind at near-surface (minus ghost layer)
+        // this needs to be using flame height in the future
+        double u = solver->u.at(id + nx*ny);
+        double v = solver->v.at(id + nx*ny);
+        
+        // get fuel properties at this location
+        struct FuelProperties* fuel = fire_cells.at(id).fuel;
+        
+        // run Balbi model
+        struct FireProperties fp = balbi(fuel,u,v,0.0,0.0650);
+        fire_cells.at(id).properties.w   = fp.w;
+        fire_cells.at(id).properties.h   = fp.h;
+        fire_cells.at(id).properties.d   = fp.d;
+        fire_cells.at(id).properties.rxb = fp.rxb;
+        fire_cells.at(id).properties.ryb = fp.ryb;
+        fire_cells.at(id).properties.rxf = fp.rxf;
+        fire_cells.at(id).properties.ryf = fp.ryf;
+        fire_cells.at(id).properties.T   = fp.T;
+        fire_cells.at(id).properties.tau = fp.tau;
+        
+        // check neighbors and compute spread
+        int idxF = id+1;
+        int idxB = id-1;
+        int idyF = id+nx;
+        int idyB = id-nx;
+        
+        double BxF = fire_cells.at(idxF).state.burn_flag;
+        double BxB = fire_cells.at(idxB).state.burn_flag;
+        double ByF = fire_cells.at(idyF).state.burn_flag;
+        double ByB = fire_cells.at(idyB).state.burn_flag;
+        
+        std::cout<<"===="<<std::endl;
+        if (BxF == 1 || BxF == 2) {
+            std::cout<<"Neighbor x+1 is on fire"<<std::endl;
+        }
+        if (BxB == 1 || BxB == 2) {
+            std::cout<<"Neighbor x-1 is on fire"<<std::endl;
+        }
+        if (ByF == 1 || ByF == 2) {
+            std::cout<<"Neighbor y+1 is on fire"<<std::endl;
+        }
+        if (ByB == 1 || ByB == 2) {
+            std::cout<<"Neighbor y-1 is on fire"<<std::endl;
+        }
+        std::cout<<"===="<<std::endl;
+    }
 }
 
 // Rothermel (1972) flame propgation model used for initial guess to Balbi
