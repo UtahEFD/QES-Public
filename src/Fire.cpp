@@ -192,7 +192,7 @@ void Fire :: run(Solver* solver) {
         fire_cells.at(id).properties.ryf = fp.ryf;
         fire_cells.at(id).properties.T   = fp.T;
         fire_cells.at(id).properties.tau = fp.tau;
-        
+    
         // check neighbors and compute spread
         int idxF = id+1;
         int idxB = id-1;
