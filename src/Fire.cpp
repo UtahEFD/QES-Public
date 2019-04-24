@@ -195,35 +195,54 @@ void Fire :: run(Solver* solver) {
         // run Balbi model
         struct FireProperties fp = balbi(fuel,u,v,0.0,0.0650);
         fire_cells.at(id).properties = fp;
-
-        // check neighbors and compute spread
+        // check neighbors
         int idxF = id+1;
         int idxB = id-1;
         int idyF = id+nx;
         int idyB = id-nx;
         
-        double BxF = fire_cells.at(idxF).state.burn_flag;
-        double BxB = fire_cells.at(idxB).state.burn_flag;
-        double ByF = fire_cells.at(idyF).state.burn_flag;
-        double ByB = fire_cells.at(idyB).state.burn_flag;
+        // convert flat index to i, j
+        //int i_idxF = idxF % nx;
+        //int i_idxB = idxB % nx;
+        //int j_idyF = (idyF / nx) % ny;
+        //int j_idyB = (idyB / nx) % ny;
         
-        if (BxF != 1 && BxF != 2) {
-            double frac = fmin(BxF+fp.rxf/dx,1.0);
-            fire_cells.at(idxF).state.burn_flag = frac;
+        // x+1
+        if (idxF<=fire_cells.size()) {
+            double BxF = fire_cells.at(idxF).state.burn_flag;
+            if (BxF != 1 && BxF != 2) {
+                double frac = fmin(BxF+fp.rxf/dx,1.0);
+                fire_cells.at(idxF).state.burn_flag = frac;
+            }
         }
-        if (BxB != 1 && BxB != 2) {
-            double frac = fmin(BxB+fp.rxb/dx,1.0);
-            fire_cells.at(idxB).state.burn_flag = frac;
+        
+        // x-1
+        if (idxB>=0) {
+            double BxB = fire_cells.at(idxB).state.burn_flag;
+            if (BxB != 1 && BxB != 2) {
+                double frac = fmin(BxB+fp.rxb/dx,1.0);
+                fire_cells.at(idxB).state.burn_flag = frac;
+            }
         }
-        if (ByF != 1 && ByF != 2) {
-            double frac = fmin(ByF+fp.ryf/dy,1.0);
-            fire_cells.at(idyF).state.burn_flag = frac;        
+        
+        // y+1
+        if (idyF<=fire_cells.size()) {
+            double ByF = fire_cells.at(idyF).state.burn_flag;
+            if (ByF != 1 && ByF != 2) {
+                double frac = fmin(ByF+fp.ryf/dy,1.0);
+                fire_cells.at(idyF).state.burn_flag = frac;        
+            }
         }
-        if (ByB != 1 && ByB != 2) {
-            double frac = fmin(ByB+fp.ryb/dy,1.0);
-            fire_cells.at(idyB).state.burn_flag = frac;
+        
+        // y-1
+        if (idyB>=0) {
+            double ByB = fire_cells.at(idyB).state.burn_flag;
+            if (ByB != 1 && ByB != 2) {
+                double frac = fmin(ByB+fp.ryb/dy,1.0);
+                fire_cells.at(idyB).state.burn_flag = frac;
+            }
         }
-                
+                        
         // update residence time
         fire_cells.at(id).state.burn_time += 1;
         

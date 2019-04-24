@@ -31,7 +31,7 @@
 	<sensor>
 		<site_coord_flag>1</site_coord_flag>
 		<site_xcoord> 0.0 </site_xcoord>
-		<site_ycoord> 12.5 </site_ycoord>
+		<site_ycoord> 0.0 </site_ycoord>
 		<boundaryLayerFlag> 1 </boundaryLayerFlag>
 		<siteZ0> 0.01 </siteZ0>
 		<reciprocal> 0.0 </reciprocal>
@@ -45,10 +45,10 @@
 	<fuelType>1</fuelType>
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight>
-    <xStart> 10.0 </xStart>
-    <yStart> 5.0 </yStart>
+    <xStart> 2.0 </xStart>
+    <yStart> 2.0 </yStart>
     <length> 1.0 </length>
-    <width>  15.0 </width>
+    <width>  1.0 </width>
 </fires>
 <fileOptions>
 	<outputFlag> 1 </outputFlag>
