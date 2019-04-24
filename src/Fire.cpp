@@ -163,217 +163,207 @@ void Fire :: run(Solver* solver) {
         //std::cout<<std::distance(fire_cells.begin(), it)<<std::endl;
     }
     FuelProperties* test = fire_cells[0].fuel;
-    double R0 = rothermel(test, 0.0,0.0,0.0);
     FireProperties tester = balbi(test,0.0,0.0,0.0,0.0);
 }
 
+// Rothermel (1972) flame propgation model used for initial guess to Balbi
 double Fire :: rothermel(FuelProperties* fuel, double max_wind, double tanphi,double fmc_g) {
     
+    // fuel properties
+    int savr          = fuel->savr;
+    int fueldens      = fuel->fueldens;
+    double st         = fuel->st;
+    double se         = fuel->se;
+    double fgi        = fuel->fgi;        
+    double fuelmce    = fuel->fuelmce;
+    double fuelheat   = fuel->fuelheat;
+    double fueldepthm = fuel->fueldepthm;
+    
+    // local fire variables
     double bmst      = fmc_g/(1+fmc_g);
-    double fuelloadm = (1.-bmst)*fuel->fgi;
-    double fuelload  = fuelloadm*(pow(.3048, 2.0))*2.205;             // convert fuel load to lb/ft^2
-    double fueldepth = fuel->fueldepthm/0.3048;                        // to ft
-    double betafl    = fuelload/(fueldepth * fuel->fueldens);          // packing ratio  jm: lb/ft^2/(ft * lb*ft^3) = 1
-    double betaop    = 3.348 * pow(fuel->savr, -0.8189);               // optimum packing ratio jm: units?? 
-    double qig       = 250. + 1116.*fmc_g;                            // heat of preignition, btu/lb
-    double epsilon   = exp(-138./fuel->savr );                         // effective heating number
-    double rhob      = fuelload/fueldepth;                            // ovendry bulk density, lb/ft^3
-    double rtemp2    = pow(fuel->savr, 1.5);
-    double gammax    = rtemp2/(495. + 0.0594*rtemp2);                 // maximum rxn vel, 1/min
-    double ar        = 1./(4.774 * (pow(fuel->savr, 0.1)) - 7.27);     // coef for optimum rxn vel
+    double fuelloadm = (1.-bmst)*fgi;
+    double fuelload  = fuelloadm*(pow(.3048, 2.0))*2.205;               // convert fuel load to lb/ft^2
+    double fueldepth = fueldepthm/0.3048;                               // to ft
+    double betafl    = fuelload/(fueldepth * fueldens);                 // packing ratio  jm: lb/ft^2/(ft * lb*ft^3) = 1
+    double betaop    = 3.348 * pow(savr, -0.8189);                      // optimum packing ratio jm: units?? 
+    double qig       = 250. + 1116.*fmc_g;                              // heat of preignition, btu/lb
+    double epsilon   = exp(-138./savr );                                // effective heating number
+    double rhob      = fuelload/fueldepth;                              // ovendry bulk density, lb/ft^3
+    double rtemp2    = pow(savr, 1.5);
+    double gammax    = rtemp2/(495. + 0.0594*rtemp2);                   // maximum rxn vel, 1/min
+    double ar        = 1./(4.774 * (pow(savr, 0.1)) - 7.27);            // coef for optimum rxn vel
     double ratio     = betafl/betaop;   
-    double gamma     = gammax*((pow(ratio, ar))*(exp(ar*(1.-ratio))));// optimum rxn vel, 1/min
-    double wn        = fuelload/(1 + fuel->st);                        // net fuel loading, lb/ft^2
-    double rtemp1    = fmc_g/fuel->fuelmce;
+    double gamma     = gammax*((pow(ratio, ar))*(exp(ar*(1.-ratio))));  // optimum rxn vel, 1/min
+    double wn        = fuelload/(1 + st);                               // net fuel loading, lb/ft^2
+    double rtemp1    = fmc_g/fuelmce;
     double etam      = 1.-2.59*rtemp1 +5.11*(pow(rtemp1, 2)) -3.52*(pow(rtemp1, 3));  // moist damp coef
-    double etas      = 0.174* pow(fuel->se, -0.19);                    // mineral damping coef
-    double ir        = gamma * wn * fuel->fuelheat * etam * etas;      // rxn intensity,btu/ft^2 min
-    double xifr      = exp((0.792 + 0.681*(pow(fuel->savr, 0.5)))*(betafl+0.1))/(192.+0.2595*fuel->savr);// propagating flux ratio   
-    double rothR0    = ir*xifr/(rhob*epsilon*qig);                    // SPREAD RATE [ft/s]
-    double R0        = rothR0 * .005080;                              // SPREAD RATE [m/s]
+    double etas      = 0.174* pow(se, -0.19);                           // mineral damping coef
+    double ir        = gamma * wn * fuelheat * etam * etas;             // rxn intensity,btu/ft^2 min
+    double xifr      = exp((0.792 + 0.681*(pow(savr, 0.5)))*(betafl+0.1))/(192.+0.2595*savr);// propagating flux ratio   
+    double rothR0    = ir*xifr/(rhob*epsilon*qig);                      // SPREAD RATE [ft/s]
+    double R0        = rothR0 * .005080;                                // SPREAD RATE [m/s]
     
     return R0;
 
 }
 
+// Balbi (2019) fire propagation model
 struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, double v_mid, 
-                                    double tanphi,double fmc_g) {
+                                          double tanphi,double fmc_g) {
+        
+    // fuel properties
+    double fgi        = fuel->fgi;              // initial total mass of surface fuel (kg/m**2)
+    double fueldepthm = fuel->fueldepthm;       // fuel depth (m)
+    int savr          = fuel->savr;             // fuel particle surface-area-to-volume ratio, 1/ft
+    int cmbcnst       = fuel->cmbcnst;          // joules per kg of dry fuel
     
-    FireProperties test;
-    std::cout<<"Running Balbi"<<std::endl;
-    return test;
-    
-}
+    // universal constants
+    double g        = 9.81;                     // gravity 
+    double pi       = 3.14159265358979323846;   // pi
+    double s        = 17;                       // stoichiometric constant - Balbi 2018
+    double Chi_0    = 0.3;                      // thin flame radiant fraction - ?Balbi 2009?
+    double B        = 5.67e-8;                  // Stefan-Boltzman 
+    double Deltah_v = 2.257e6;                  // water evap enthalpy [J/kg]
+    double C_p      = 2e3;                      // calorific capacity [J/kg] - Balbi 2009  
+    double C_pa     = 1150;                     // specific heat of air [J/Kg/K]
+    double tau_0    = 75591;                    // residence time coefficient - Anderson 196?
+    double tau      = 75591/(savr/0.3048);
 
-//struct FireProperties Fire :: runFire(double u_mid, double v_mid, int type) {
-//    
-//    // get properties for fuel type
-//    FuelProperties f = fuelProp(type);
-//    
-//    // Calculate ROS for 0 slope, 0 wind using Rothermel (1972)
-//    double R0 = Rothermel(f.windrf, f.fgi, f.fueldepthm, f.savr, f.fuelmce, 
-//                          f.fueldens, f.st, f.se, f.weight, f.fci_d, 
-//                          f.fct, f.ichap, f.fci, f.fcbr, f.hfgl, 
-//                          f.cmbcnst, f.fuelheat, f.fmc_g, f.fuelmc_c);
-//
-//    // Calculate ROS fusing Balbi (2009)
-//    struct FireProperties fp = Balbi(f.fueldens, f.fueldepthm, f.fgi, f.savr, 
-//                                     f.cmbcnst, u_mid, v_mid, f.slope, f.fmc_g, R0);
-//
-//    return fp; 
-//}
-//
-//
-//// Calculate ROS for zero slope, zero wind using Rothermel (1972) model
-//double Fire :: Rothermel(double windrf, double fgi, double fueldepthm, double savr, double fuelmce, 
-//                         double fueldens, double st, double se, double weight, double fci_d, 
-//                         double fct, double ichap, double fci, double fcbr, double hfgl, 
-//                         double cmbcnst, double fuelheat, double fmc_g, double fuelmc_c){
-//   
-//    double bmst        = fmc_g/(1+fmc_g);
-//    double fuelloadm   = (1.-bmst)*fgi;
-//    double fuelload    = fuelloadm*(pow(.3048, 2.0))*2.205;             // convert fuel load to lb/ft^2
-//    double fueldepth   = fueldepthm/0.3048;                             // to ft
-//    double betafl      = fuelload/(fueldepth * fueldens);               // packing ratio  jm: lb/ft^2/(ft * lb*ft^3) = 1
-//    double betaop      = 3.348 * pow(savr, -0.8189);                    // optimum packing ratio jm: units?? 
-//    double qig         = 250. + 1116.*fmc_g;                         // heat of preignition, btu/lb
-//    double epsilon     = exp(-138./savr );                              // effective heating number
-//    double rhob        = fuelload/fueldepth;                            // ovendry bulk density, lb/ft^3
-//    double rtemp2      = pow(savr, 1.5);
-//    double gammax      = rtemp2/(495. + 0.0594*rtemp2);                 // maximum rxn vel, 1/min
-//    double ar          = 1./(4.774 * (pow(savr, 0.1)) - 7.27);          // coef for optimum rxn vel
-//    double ratio       = betafl/betaop;   
-//    double gamma       = gammax*((pow(ratio, ar))*(exp(ar*(1.-ratio))));// optimum rxn vel, 1/min
-//    double wn          = fuelload/(1 + st);                             // net fuel loading, lb/ft^2
-//    double rtemp1      = fmc_g/fuelmce;
-//    double etam        = 1.-2.59*rtemp1 +5.11*(pow(rtemp1, 2)) -3.52*(pow(rtemp1, 3));  // moist damp coef
-//    double etas        = 0.174* pow(se, -0.19);                         // mineral damping coef
-//    double ir          = gamma * wn * fuelheat * etam * etas;           // rxn intensity,btu/ft^2 min
-//    double xifr        = exp((0.792 + 0.681*(pow(savr, 0.5))) * (betafl+0.1))/(192. + 0.2595*savr);   // propagating flux ratio   
-//    
-//    double rothR0 = ir*xifr/(rhob*epsilon*qig); // SPREAD RATE [ft/s]
-//    double R0 = rothR0 * .005080;               // SPREAD RATE [m/s]
-//
-//    return R0;
-//}
-//
-//struct FireProperties Fire :: Balbi(double fueldens, double fueldepthm, double fgi, double savr, 
-//                                    double cmbcnst, double u_mid, double v_mid, double slope, double fmc_g, double R0){
-//    
-//    struct FireProperties fp;
-//    
-//    // Universal constants
-//    double g = 9.81;                       // Gravity 
-//    double pi = 3.14159265358979323846;    // pi
-//    //double s = 9;                          // Stoichiometric constant - Balbi 2009
-//    double s = 17;                         // Stoichiometric constant - Balbi 2018
-//    double Chi_0 = 0.3;                    // Thin Flame Radiant Fraction - ?Balbi 2009?
-//    double a = 0.05;                       // Constant from Balbi 2008
-//    double A_0 = 2.25;                     // Constant from Balbi 2008
-//    double eps = 0.2;                      // Pastor 2002
-//    double B = 5.67e-8;                    // Stefan-Boltzman 
-//    double Deltah_v = 2.257e6;             // Water Evap Enthalpy [J/kg]
-//    double C_p = 2e3;                      // Calorific Capacity [J/kg] - Balbi 2009  
-//    double C_pa = 1150;                    // Specific heat of air [J/Kg/K]
-//    double tau_0 = 75591;                  // Residence time coefficient - Anderson 196?
-//    double tau = 75591/(savr/0.3048);
-//
-//    // Fuel Constants
-//    double m = fmc_g;                   // FUEL PARTICLE MOISTURE CONTENT [0-1]
-//    double rho_v = fueldens*16.0185;       // FUEL Particle Density [Kg/m^3]
-//    double sigma = fgi;                    // Dead fuel load [Kg/m^2]
-//    double sigmaT = sigma;                 // Total fuel load [Kg/m^2]
-//    double e_delta = (savr/0.3048)*sigma/(4*rho_v);
-//    double rhoFuel = 1500;                 // Fuel Density [Kg/m^3]
-//    double rhoFlame = 0.25;                // Gas Flame Density [kg/m^3]
-//    double T_i = 600;                      // Ignition temp [K]
-//    
-//    // Model Parameters
-//    double beta = sigma/(fueldepthm*rhoFuel);     // Packing ratio of dead fuel [eq.1]
-//    double betaT = sigmaT/(fueldepthm*rhoFuel);      // Total packing ratio [eq.2]
-//    double SAV = savr/0.3048;                       // Surface area to volume ratio [m^2/m^3]
-//    double lai = (SAV*fueldepthm*beta)/2;           // Leaf Area Index for dead fuel [eq.3]
-//    double laiT = (SAV*fueldepthm*betaT)/2;         // Total fuel LAI [eq.4]
-//    double nu = fmin(2*lai,2*pi*beta/betaT);        // Absorption coefficient [eq.5]
-//    double lv = fueldepthm;                         // fuel length [m] ?? need better parameterization here
-//    double K1 = 100;                                // drag force coefficient: 100 for field, 1400 for lab 
-//    double r_00 = 2.5e-5;                           // Model parameter ??
-//    
-//    // Environmental Constants
-//    double rhoAir = 1.125;                  // Air Density [Kg/m^3]
-//    double T_a = 293.15;                    // Air Temp [K]
-//    double alphax = atan(slope);             // Slope angle [rad]
-//    double alphay = atan(slope);
-//    double psi = 0;                         // Angle between wind and flame front, assume parallel
-//    double phi = 0;                         // Angle between flame front vector and slope vector
-//
-//    // Compute drag force coefficient [eq.7]
-//    double KDrag = K1*betaT*fmin(fueldepthm/lv,1);
-//
-//    // Compute activation energy [eq.14]
-//    double q = C_p*(T_i - T_a) + m*Deltah_v; 
-//
-//    // Compute radiant coefficient [eq.13]
-//    double A = fmin(SAV/(2*pi),beta/betaT)*Chi_0*cmbcnst/(4*q);
-//    
-//    // Initial quess = Rothermel ROS 
-//    double R = R0;
-//    double Rx, Ry;
-//    
-//    // Initial tilt angle guess = slope angle
-//    double gammax = alphax;
-//    double gammay = alphay;
-//    double maxIter = 100;
-//    double R_tol = 1e-5;
-//    double iter = 1;
-//    double error = 1;
-//    double R_old = R;
-//    double Chi,TFlame,u0,H,Hx,Hy;
-//    while (iter < maxIter && error > R_tol){
-//        // Calculate radiative fraction [eq.20]
-//        double Chi = Chi_0/(1 + R*cos(gammax)/(SAV*r_00));
-//        // Compute flame Temp [eq.16]
-//        double TFlame = T_a + cmbcnst*(1 - Chi)/((s+1)*C_pa);
-//        // Compute upward gas velocity [eq.19]
-//        double u0 = 2*nu*((s+1)/tau_0)*(rhoFuel/rhoAir)*(TFlame/T_a);       
-//        // Calculate flame tilt angle (gammax)
-//        double gammax = atan(tan(alphax)*cos(phi)+u_mid*cos(psi)/u0);
-//        double gammay = atan(tan(alphay)*cos(phi)+v_mid*cos(psi)/u0);
-//        // Compute flame height [eq.17]
-//        Hx = u0*u0/(g*(TFlame/T_a - 1)*cos(alphax)*cos(alphax));
-//        Hy = u0*u0/(g*(TFlame/T_a - 1)*cos(alphay)*cos(alphay));
-//        H = fmax(Hx,Hy);
-//        // Compute convective coefficient [eq.8]
-//        double b = 1/(q*tau_0*u0*betaT)*Deltah_v*nu*fmin(s/30,1);
-//        // Compute ROS
-//        // ROS from base radiation
-//        double ROSBase = fmin(SAV*fueldepthm*betaT/pi,1)*(beta/betaT)*(beta/betaT)*(B*TFlame*TFlame*TFlame*TFlame)/(beta*rhoFuel*q);
-//        // ROS from flame radiation [eq.11]
-//        double ROSFlamex = A*R*(1+sin(gammax) - cos (gammax))/(1 + R*cos(gammax)/(SAV*r_00));
-//        double ROSFlamey = A*R*(1+sin(gammay) - cos (gammay))/(1 + R*cos(gammay)/(SAV*r_00));
-//        // ROS from convection
-//        double ROSConvx = b*(tan(alphax) + 2*u_mid/u0*exp(-KDrag*R));
-//        double ROSConvy = b*(tan(alphay) + 2*v_mid/u0*exp(-KDrag*R));
-//        // Total ROS 
-//        Rx = ROSBase + ROSFlamex + ROSConvx;
-//        Ry = ROSBase + ROSFlamey + ROSConvy;
-//        R = sqrt(Rx*Rx+Ry*Ry);
-//        error = std::abs(R-R_old);
-//        R_old = R;
-//    }
-//    
-//    // Calculate Flame Depth
-//    double L = R*tau;
-//    
-//    fp.w   = u0;
-//    fp.h   = H;
-//    fp.rx  = Rx;
-//    fp.ry  = Ry;
-//    fp.T   = TFlame;
-//    fp.tau = tau;
-//    
-//    return fp;
-//}
+    // fuel constants
+    double m        = fmc_g;                    // fuel particle moisture content [0-1]
+    double sigma    = fgi;                      // dead fuel load [kg/m^2]
+    double sigmaT   = sigma;                    // total fuel load [kg/m^2]
+    double rhoFuel  = 1500;                     // fuel density [kg/m^3]
+    double T_i      = 600;                      // ignition temp [k]
+    
+    // model parameters
+    double beta  = sigma/(fueldepthm*rhoFuel);  // packing ratio of dead fuel [eq.1]
+    double betaT = sigmaT/(fueldepthm*rhoFuel); // total packing ratio [eq.2]
+    double SAV   = savr/0.3048;                 // surface area to volume ratio [m^2/m^3]
+    double lai   = (SAV*fueldepthm*beta)/2;     // leaf Area Index for dead fuel [eq.3]
+    double nu    = fmin(2*lai,2*pi*beta/betaT); // absorption coefficient [eq.5]
+    double lv    = fueldepthm;                  // fuel length [m] ?? need better parameterization here
+    double K1    = 100;                         // drag force coefficient: 100 for field, 1400 for lab 
+    double r_00  = 2.5e-5;                      // model parameter ??
+    
+    // Environmental Constants
+    double rhoAir = 1.125;                      // air Density [Kg/m^3]
+    double T_a    = 293.15;                     // air Temp [K]
+    double alphax = atan(tanphi);               // slope angle [rad]
+    double alphay = atan(tanphi);               // slope angle [rad]
+    double psi    = 0;                          // angle between wind and flame front, assume parallel
+    double phi    = 0;                          // angle between flame front vector and slope vector
+    
+    // Compute drag force coefficient [eq.7]
+    double KDrag = K1*betaT*fmin(fueldepthm/lv,1);
+
+    // Compute activation energy [eq.14]
+    double q = C_p*(T_i - T_a) + m*Deltah_v; 
+
+    // Compute radiant coefficient [eq.13]
+    double A = fmin(SAV/(2*pi),beta/betaT)*Chi_0*cmbcnst/(4*q);
+    
+    // Initial quess = Rothermel ROS 
+    double R = rothermel(fuel,max(u_mid,v_mid),tanphi,fmc_g);
+    
+    // Initial tilt angle guess = slope angle
+    double gammax  = alphax;
+    double gammay  = alphay;
+    double maxIter = 100;
+    double R_tol   = 1e-5;
+    double iter    = 1;
+    double error   = 1;
+    double R_old   = R;
+    
+    // find spread rates
+    double Chi,TFlame,u0,H,Hx,Hy,b;
+    double ROSBase,ROSFlamex,ROSFlamey;
+    double ROSConvx,ROSConvy,Rx,Ry;
+    while (iter < maxIter && error > R_tol){
+        
+        // Calculate radiative fraction [eq.20]
+        Chi = Chi_0/(1 + R*cos(gammax)/(SAV*r_00));
+        
+        // Compute flame Temp [eq.16]
+        TFlame = T_a + cmbcnst*(1 - Chi)/((s+1)*C_pa);
+        
+        // Compute upward gas velocity [eq.19]
+        u0 = 2*nu*((s+1)/tau_0)*(rhoFuel/rhoAir)*(TFlame/T_a);       
+        
+        // Calculate flame tilt angle (gammax)
+        gammax = atan(tan(alphax)*cos(phi)+u_mid*cos(psi)/u0);
+        gammay = atan(tan(alphay)*cos(phi)+v_mid*cos(psi)/u0);
+        
+        // Compute flame height [eq.17]
+        Hx = u0*u0/(g*(TFlame/T_a - 1)*cos(alphax)*cos(alphax));
+        Hy = u0*u0/(g*(TFlame/T_a - 1)*cos(alphay)*cos(alphay));
+        H = fmax(Hx,Hy);
+        
+        // Compute convective coefficient [eq.8]
+        b = 1/(q*tau_0*u0*betaT)*Deltah_v*nu*fmin(s/30,1);
+        
+        // Compute ROS
+        // ROS from base radiation
+        ROSBase = fmin(SAV*fueldepthm*betaT/pi,1)*(beta/betaT)*(beta/betaT)*(B*TFlame*TFlame*TFlame*TFlame)/(beta*rhoFuel*q);
+        
+        // ROS from flame radiation [eq.11]
+        ROSFlamex = A*R*(1+sin(gammax) - cos (gammax))/(1 + R*cos(gammax)/(SAV*r_00));
+        ROSFlamey = A*R*(1+sin(gammay) - cos (gammay))/(1 + R*cos(gammay)/(SAV*r_00));
+        
+        // ROS from convection
+        ROSConvx = b*(tan(alphax) + 2*u_mid/u0*exp(-KDrag*R));
+        ROSConvy = b*(tan(alphay) + 2*v_mid/u0*exp(-KDrag*R));
+        
+        // Total ROS 
+        Rx    = ROSBase + ROSFlamex + ROSConvx;
+        Ry    = ROSBase + ROSFlamey + ROSConvy;
+        R     = sqrt(Rx*Rx+Ry*Ry);
+        error = std::abs(R-R_old);
+        R_old = R;
+    }
+    
+    // define forward, backward spread in x, y diections
+    double RxF, RxB, RyF, RyB; 
+    if (u_mid>0) {
+        RxF = Rx;
+        RxB = ROSBase;
+    } else if (u_mid<0) {
+        RxF = ROSBase;
+        RxB = Rx;
+    } else {
+        RxF = Rx;
+        RxB = Rx;
+    }
+    if (v_mid>0) {
+        RyF = Ry;
+        RyB = ROSBase;
+    } else if (v_mid<0) {
+        RyF = ROSBase;
+        RyB = Ry;
+    } else {
+        RyF = Ry;
+        RyB = Ry;
+    }
+    
+    // calculate flame depth
+    double L = R*tau;
+    
+    // struct to hold computed fire properties
+    struct FireProperties fp;
+    
+    // set fire properties
+    fp.w   = u0;
+    fp.h   = H;
+    fp.d   = L;
+    fp.rxb = RxB;
+    fp.ryb = RyB;
+    fp.rxf = RxF;
+    fp.ryf = RyF;
+    fp.T   = TFlame;
+    fp.tau = tau;
+    
+    return fp;
+}
 
 // Save output at cell-centered values
 void Fire :: save(Output* output) {
