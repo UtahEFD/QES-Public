@@ -183,15 +183,7 @@ void Fire :: run(Solver* solver) {
         
         // run Balbi model
         struct FireProperties fp = balbi(fuel,u,v,0.0,0.0650);
-        fire_cells.at(id).properties.w   = fp.w;
-        fire_cells.at(id).properties.h   = fp.h;
-        fire_cells.at(id).properties.d   = fp.d;
-        fire_cells.at(id).properties.rxb = fp.rxb;
-        fire_cells.at(id).properties.ryb = fp.ryb;
-        fire_cells.at(id).properties.rxf = fp.rxf;
-        fire_cells.at(id).properties.ryf = fp.ryf;
-        fire_cells.at(id).properties.T   = fp.T;
-        fire_cells.at(id).properties.tau = fp.tau;
+        fire_cells.at(id).properties = fp;
     
         // check neighbors and compute spread
         int idxF = id+1;
@@ -204,20 +196,30 @@ void Fire :: run(Solver* solver) {
         double ByF = fire_cells.at(idyF).state.burn_flag;
         double ByB = fire_cells.at(idyB).state.burn_flag;
         
-        std::cout<<"===="<<std::endl;
-        if (BxF == 1 || BxF == 2) {
-            std::cout<<"Neighbor x+1 is on fire"<<std::endl;
+        if (BxF != 1 && BxF != 2) {
+            double frac = fmin(BxF+fp.rxf/dx,1.0);
+            fire_cells.at(idxF).state.burn_flag = frac;
         }
-        if (BxB == 1 || BxB == 2) {
-            std::cout<<"Neighbor x-1 is on fire"<<std::endl;
+        if (BxB != 1 && BxB != 2) {
+            double frac = fmin(BxB+fp.rxb/dx,1.0);
+            fire_cells.at(idxB).state.burn_flag = frac;
         }
-        if (ByF == 1 || ByF == 2) {
-            std::cout<<"Neighbor y+1 is on fire"<<std::endl;
+        if (ByF != 1 && ByF != 2) {
+            double frac = fmin(ByF+fp.ryf/dy,1.0);
+            fire_cells.at(idyF).state.burn_flag = frac;        
         }
-        if (ByB == 1 || ByB == 2) {
-            std::cout<<"Neighbor y-1 is on fire"<<std::endl;
+        if (ByB != 1 && ByB != 2) {
+            double frac = fmin(ByB+fp.ryb/dy,1.0);
+            fire_cells.at(idyB).state.burn_flag = frac;
         }
-        std::cout<<"===="<<std::endl;
+    }
+    
+    // update burn flag field
+    for (int j = 0; j < ny; j++){
+        for (int i = 0; i < nx; i++){
+            int idx = i + j*nx;       
+            burn_flag[idx] = fire_cells[idx].state.burn_flag;
+        }
     }
 }
 
