@@ -3,7 +3,7 @@
 
 class FuelProperties {
     
-    protected:
+    public:
         double windrf;
         double fgi;
         double fueldepthm;
@@ -33,7 +33,6 @@ class FuelProperties {
                        fueldens(fueldens), st(st), se(se), weight(weight), fci_d(fci_d), 
                        fct(fct), ichap(ichap), fci(fci), fcbr(fcbr), hfgl(hfgl), cmbcnst(cmbcnst), 
                        fuelheat(fuelheat), fuelmc_g(fuelmc_g), fuelmc_c(fuelmc_c), slope(slope) {}
-    public:
     private:
 };
 

@@ -169,8 +169,31 @@ void Fire :: run(Solver* solver) {
 
 double Fire :: rothermel(FuelProperties* fuel, double max_wind, double tanphi,double fmc_g) {
     
-    std::cout<<"Running Rothermel"<<std::endl;
-    return 0.0;
+    double bmst      = fmc_g/(1+fmc_g);
+    double fuelloadm = (1.-bmst)*fuel->fgi;
+    double fuelload  = fuelloadm*(pow(.3048, 2.0))*2.205;             // convert fuel load to lb/ft^2
+    double fueldepth = fuel->fueldepthm/0.3048;                        // to ft
+    double betafl    = fuelload/(fueldepth * fuel->fueldens);          // packing ratio  jm: lb/ft^2/(ft * lb*ft^3) = 1
+    double betaop    = 3.348 * pow(fuel->savr, -0.8189);               // optimum packing ratio jm: units?? 
+    double qig       = 250. + 1116.*fmc_g;                            // heat of preignition, btu/lb
+    double epsilon   = exp(-138./fuel->savr );                         // effective heating number
+    double rhob      = fuelload/fueldepth;                            // ovendry bulk density, lb/ft^3
+    double rtemp2    = pow(fuel->savr, 1.5);
+    double gammax    = rtemp2/(495. + 0.0594*rtemp2);                 // maximum rxn vel, 1/min
+    double ar        = 1./(4.774 * (pow(fuel->savr, 0.1)) - 7.27);     // coef for optimum rxn vel
+    double ratio     = betafl/betaop;   
+    double gamma     = gammax*((pow(ratio, ar))*(exp(ar*(1.-ratio))));// optimum rxn vel, 1/min
+    double wn        = fuelload/(1 + fuel->st);                        // net fuel loading, lb/ft^2
+    double rtemp1    = fmc_g/fuel->fuelmce;
+    double etam      = 1.-2.59*rtemp1 +5.11*(pow(rtemp1, 2)) -3.52*(pow(rtemp1, 3));  // moist damp coef
+    double etas      = 0.174* pow(fuel->se, -0.19);                    // mineral damping coef
+    double ir        = gamma * wn * fuel->fuelheat * etam * etas;      // rxn intensity,btu/ft^2 min
+    double xifr      = exp((0.792 + 0.681*(pow(fuel->savr, 0.5)))*(betafl+0.1))/(192.+0.2595*fuel->savr);// propagating flux ratio   
+    double rothR0    = ir*xifr/(rhob*epsilon*qig);                    // SPREAD RATE [ft/s]
+    double R0        = rothR0 * .005080;                              // SPREAD RATE [m/s]
+    
+    return R0;
+
 }
 
 struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, double v_mid, 
@@ -191,11 +214,11 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
 //    double R0 = Rothermel(f.windrf, f.fgi, f.fueldepthm, f.savr, f.fuelmce, 
 //                          f.fueldens, f.st, f.se, f.weight, f.fci_d, 
 //                          f.fct, f.ichap, f.fci, f.fcbr, f.hfgl, 
-//                          f.cmbcnst, f.fuelheat, f.fuelmc_g, f.fuelmc_c);
+//                          f.cmbcnst, f.fuelheat, f.fmc_g, f.fuelmc_c);
 //
 //    // Calculate ROS fusing Balbi (2009)
 //    struct FireProperties fp = Balbi(f.fueldens, f.fueldepthm, f.fgi, f.savr, 
-//                                     f.cmbcnst, u_mid, v_mid, f.slope, f.fuelmc_g, R0);
+//                                     f.cmbcnst, u_mid, v_mid, f.slope, f.fmc_g, R0);
 //
 //    return fp; 
 //}
@@ -205,15 +228,15 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
 //double Fire :: Rothermel(double windrf, double fgi, double fueldepthm, double savr, double fuelmce, 
 //                         double fueldens, double st, double se, double weight, double fci_d, 
 //                         double fct, double ichap, double fci, double fcbr, double hfgl, 
-//                         double cmbcnst, double fuelheat, double fuelmc_g, double fuelmc_c){
+//                         double cmbcnst, double fuelheat, double fmc_g, double fuelmc_c){
 //   
-//    double bmst        = fuelmc_g/(1+fuelmc_g);
+//    double bmst        = fmc_g/(1+fmc_g);
 //    double fuelloadm   = (1.-bmst)*fgi;
 //    double fuelload    = fuelloadm*(pow(.3048, 2.0))*2.205;             // convert fuel load to lb/ft^2
 //    double fueldepth   = fueldepthm/0.3048;                             // to ft
 //    double betafl      = fuelload/(fueldepth * fueldens);               // packing ratio  jm: lb/ft^2/(ft * lb*ft^3) = 1
 //    double betaop      = 3.348 * pow(savr, -0.8189);                    // optimum packing ratio jm: units?? 
-//    double qig         = 250. + 1116.*fuelmc_g;                         // heat of preignition, btu/lb
+//    double qig         = 250. + 1116.*fmc_g;                         // heat of preignition, btu/lb
 //    double epsilon     = exp(-138./savr );                              // effective heating number
 //    double rhob        = fuelload/fueldepth;                            // ovendry bulk density, lb/ft^3
 //    double rtemp2      = pow(savr, 1.5);
@@ -222,7 +245,7 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
 //    double ratio       = betafl/betaop;   
 //    double gamma       = gammax*((pow(ratio, ar))*(exp(ar*(1.-ratio))));// optimum rxn vel, 1/min
 //    double wn          = fuelload/(1 + st);                             // net fuel loading, lb/ft^2
-//    double rtemp1      = fuelmc_g/fuelmce;
+//    double rtemp1      = fmc_g/fuelmce;
 //    double etam        = 1.-2.59*rtemp1 +5.11*(pow(rtemp1, 2)) -3.52*(pow(rtemp1, 3));  // moist damp coef
 //    double etas        = 0.174* pow(se, -0.19);                         // mineral damping coef
 //    double ir          = gamma * wn * fuelheat * etam * etas;           // rxn intensity,btu/ft^2 min
@@ -235,7 +258,7 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
 //}
 //
 //struct FireProperties Fire :: Balbi(double fueldens, double fueldepthm, double fgi, double savr, 
-//                                    double cmbcnst, double u_mid, double v_mid, double slope, double fuelmc_g, double R0){
+//                                    double cmbcnst, double u_mid, double v_mid, double slope, double fmc_g, double R0){
 //    
 //    struct FireProperties fp;
 //    
@@ -256,7 +279,7 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
 //    double tau = 75591/(savr/0.3048);
 //
 //    // Fuel Constants
-//    double m = fuelmc_g;                   // FUEL PARTICLE MOISTURE CONTENT [0-1]
+//    double m = fmc_g;                   // FUEL PARTICLE MOISTURE CONTENT [0-1]
 //    double rho_v = fueldens*16.0185;       // FUEL Particle Density [Kg/m^3]
 //    double sigma = fgi;                    // Dead fuel load [Kg/m^2]
 //    double sigmaT = sigma;                 // Total fuel load [Kg/m^2]
