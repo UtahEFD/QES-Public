@@ -2,7 +2,7 @@
 	<domain> 75 25 40 </domain>
 	<cellSize> 1.0 1.0 0.25 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
-	<totalTimeIncrements> 60 </totalTimeIncrements>
+	<totalTimeIncrements> 120 </totalTimeIncrements>
 	<UTCConversion> 0 </UTCConversion>
 	<Epoch> 1510930800 </Epoch>
 	<rooftopFlag> 2 </rooftopFlag>
@@ -37,12 +37,12 @@
 		<reciprocal> 0.0 </reciprocal>
 		<height> 1.0 </height>
 		<speed> 4.0 </speed>
-		<direction> 270.0 </direction>
+		<direction> 225.0 </direction>
 	</sensor>
 </metParams>
 <fires>
 	<numFires> 1 </numFires>
-	<fuelType>2</fuelType>
+	<fuelType>1</fuelType>
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight>
     <xStart> 10.0 </xStart>

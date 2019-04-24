@@ -135,9 +135,6 @@ int main(int argc, char *argv[])
     for (int t=0; t<UID->simParams->totalTimeIncrements; t++) {
         
         std::cout<<"Processing time t = "<<t+1<<std::endl;
-            
-        // run Balbi model to get w
-        //fp = solver->runBalbi();
         
         // converge on rate of spread
         //double r_old = fp.rx;

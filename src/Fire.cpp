@@ -66,9 +66,9 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     i_end   = std::round((x_start+L)/dx);     
     j_start = std::round(y_start/dy);       
     j_end   = std::round((y_start+W)/dy);      
-    k_start = baseHeight/dz;                
+    k_start = std::round((H+baseHeight)/dz);                
     k_end   = std::round((H+baseHeight)/dz)+1;
-        
+    
     // set-up initial fire state
     for (int j = j_start; j < j_end; j++){
         for (int i = i_start; i < i_end; i++){
@@ -172,19 +172,30 @@ void Fire :: run(Solver* solver) {
         
         // get index burning cell
         int id = cells_burning[i];
-
+ 
+        // get vertical index of mid-flame height
+        int kh   = 0;
+        double H = fire_cells.at(id).properties.h;
+        
+        if (H==0) {
+            kh = 1;
+        } else {
+            kh = std::round(H/dz);
+        }
+                
         // get horizontal wind at near-surface (minus ghost layer)
         // this needs to be using flame height in the future
-        double u = solver->u.at(id + nx*ny);
-        double v = solver->v.at(id + nx*ny);
         
+        double u = solver->u.at(id + kh*nx*ny);
+        double v = solver->v.at(id + kh*nx*ny);
+                
         // get fuel properties at this location
         struct FuelProperties* fuel = fire_cells.at(id).fuel;
         
         // run Balbi model
         struct FireProperties fp = balbi(fuel,u,v,0.0,0.0650);
         fire_cells.at(id).properties = fp;
-    
+
         // check neighbors and compute spread
         int idxF = id+1;
         int idxB = id-1;
@@ -211,6 +222,14 @@ void Fire :: run(Solver* solver) {
         if (ByB != 1 && ByB != 2) {
             double frac = fmin(ByB+fp.ryb/dy,1.0);
             fire_cells.at(idyB).state.burn_flag = frac;
+        }
+                
+        // update residence time
+        fire_cells.at(id).state.burn_time += 1;
+        
+        // set burn flag to 2 (burned) if residence time exceeded
+        if (fire_cells.at(id).state.burn_time >= fp.tau) {
+            fire_cells.at(id).state.burn_flag = 2;
         }
     }
     
@@ -401,7 +420,7 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
         RyF = Ry;
         RyB = Ry;
     }
-    
+        
     // calculate flame depth
     double L = R*tau;
     
@@ -412,10 +431,10 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     fp.w   = u0;
     fp.h   = H;
     fp.d   = L;
-    fp.rxb = RxB;
-    fp.ryb = RyB;
     fp.rxf = RxF;
+    fp.rxb = RxB;
     fp.ryf = RyF;
+    fp.ryb = RyB;
     fp.T   = TFlame;
     fp.tau = tau;
     
