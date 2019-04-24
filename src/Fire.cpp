@@ -141,7 +141,11 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     }    
 }
 
+// compute fire spread for burning cells
 void Fire :: run(Solver* solver) {
+    
+    // indices for burning cells
+    std::vector<int> cells_burning;
     
     // search predicate for burn state
     struct find_burn : std::unary_function<FireCell, bool> {
@@ -154,13 +158,41 @@ void Fire :: run(Solver* solver) {
     
     // get indices of burning cells
     std::vector<FireCell>::iterator it = std::find_if(fire_cells.begin(),fire_cells.end(),find_burn(1));
-    
     while ( it != fire_cells.end()) {
         it = std::find_if (++it, fire_cells.end(),find_burn(1)); 
-        //std::cout<<std::distance(fire_cells.begin(), it)<<std::endl;
+        
+        if (it!=fire_cells.end()) {
+            cells_burning.push_back(std::distance(fire_cells.begin(), it));
+        }
     }
-    FuelProperties* test = fire_cells[0].fuel;
-    FireProperties tester = balbi(test,0.0,0.0,0.0,0.0);
+    
+    // loop through burning cells
+    for (int i=0; i<cells_burning.size();i++) {
+        
+        // get index burning cell
+        int idx  = cells_burning[i];
+
+        // get horizontal wind at near-surface (minus ghost layer)
+        // this needs to be using flame height in the future
+        double u = solver->u.at(idx + nx*ny);
+        double v = solver->v.at(idx + nx*ny);
+        
+        // get fuel properties at this location
+        struct FuelProperties* fuel = fire_cells.at(idx).fuel;
+        
+        // run Balbi model
+        struct FireProperties fp = balbi(fuel,u,v,0.0,0.0650);
+        fire_cells.at(idx).properties.w   = fp.w;
+        fire_cells.at(idx).properties.h   = fp.h;
+        fire_cells.at(idx).properties.d   = fp.d;
+        fire_cells.at(idx).properties.rxb = fp.rxb;
+        fire_cells.at(idx).properties.ryb = fp.ryb;
+        fire_cells.at(idx).properties.rxf = fp.rxf;
+        fire_cells.at(idx).properties.ryf = fp.ryf;
+        fire_cells.at(idx).properties.T   = fp.T;
+        fire_cells.at(idx).properties.tau = fp.tau;
+        
+    }
 }
 
 // Rothermel (1972) flame propgation model used for initial guess to Balbi
