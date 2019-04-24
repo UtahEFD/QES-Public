@@ -89,10 +89,10 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     // set output fields
     output_fields = UID->fileOptions->outputFields;
     
-    //if (output_fields[0]=="all") {
-    //    output_fields.erase(output_fields.begin());
-    //    output_fields = {"u","v","w"};
-    //}
+    if (output_fields[0]=="all") {
+        output_fields.erase(output_fields.begin());
+        output_fields = {"burn"};
+    }
     
     // set cell-centered dimensions
     const std::string tname = "t";
@@ -106,13 +106,10 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     dim_scalar_t.push_back(x_dim);
 
     // create attributes
-    AttVectorInt att_b = {&burn_flag,  "burn", "burn flag value", "--", dim_scalar_t};
+    AttVectorDbl att_b = {&burn_flag,  "burn", "burn flag value", "--", dim_scalar_t};
     
     // map the name to attributes
-    map_att_vector_int.emplace("burn", att_b);
-      
-    // we will always save time and grid lengths
-    //output_vector_int.push_back(map_att_vector_int["burn"]);
+    map_att_vector_dbl.emplace("burn", att_b);
     
     // create list of fields to save
     for (int i=0; i<output_fields.size(); i++) {
@@ -148,7 +145,7 @@ void Fire :: run(Solver* solver) {
     
     // search predicate for burn state
     struct find_burn : std::unary_function<FireCell, bool> {
-        int burn;
+        double burn;
         find_burn(int burn):burn(burn) { }
         bool operator()(FireCell const& f) const {
             return f.state.burn_flag == burn;

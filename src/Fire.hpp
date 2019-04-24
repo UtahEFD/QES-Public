@@ -69,7 +69,7 @@ class Fire {
         FireProperties runFire(double, double, int);
         
         // output fields
-        std::vector<int> burn_flag;
+        std::vector<double> burn_flag;
         
         /// Declaration of output manager
         int output_counter=0;
