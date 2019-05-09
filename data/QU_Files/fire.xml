@@ -1,8 +1,8 @@
 <simulationParameters>
-	<domain> 75 25 40 </domain>
+	<domain> 50 50 40 </domain>
 	<cellSize> 1.0 1.0 0.25 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
-	<totalTimeIncrements> 120 </totalTimeIncrements>
+	<totalTimeIncrements> 180 </totalTimeIncrements>
 	<UTCConversion> 0 </UTCConversion>
 	<Epoch> 1510930800 </Epoch>
 	<rooftopFlag> 2 </rooftopFlag>
@@ -37,21 +37,21 @@
 		<reciprocal> 0.0 </reciprocal>
 		<height> 1.0 </height>
 		<speed> 4.0 </speed>
-		<direction> 225.0 </direction>
+		<direction> 270.00 </direction>
 	</sensor>
 </metParams>
 <fires>
-	<numFires> 1 </numFires>
-	<fuelType>1</fuelType>
+	<numFires>1</numFires>
+	<fuelType>3</fuelType>
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight>
-    <xStart> 2.0 </xStart>
-    <yStart> 2.0 </yStart>
+    <xStart> 10.0 </xStart>
+    <yStart> 10.0 </yStart>
     <length> 1.0 </length>
-    <width>  1.0 </width>
+    <width>  30.0 </width>
 </fires>
 <fileOptions>
-	<outputFlag> 1 </outputFlag>
+	<outputFlag>1</outputFlag>
 	<outputFields>u</outputFields> 
 	<outputFields>v</outputFields> 
 	<outputFields>w</outputFields>

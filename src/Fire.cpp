@@ -172,7 +172,7 @@ void Fire :: run(Solver* solver) {
         
         // get index burning cell
         int id = cells_burning[i];
- 
+        
         // get vertical index of mid-flame height
         int kh   = 0;
         double H = fire_cells.at(id).properties.h;
@@ -183,11 +183,14 @@ void Fire :: run(Solver* solver) {
             kh = std::round(H/dz);
         }
                 
-        // get horizontal wind at near-surface (minus ghost layer)
-        // this needs to be using flame height in the future
+        // convert flat index to i, j at cell center
+        int ii = id % nx;
+        int jj = (id / nx) % ny;
+                        
+        // get horizontal wind at flame height
         
-        double u = solver->u.at(id + kh*nx*ny);
-        double v = solver->v.at(id + kh*nx*ny);
+        double u = solver->u.at(ii + jj*(nx+1) + kh*(ny+1)*(nx+1));
+        double v = solver->v.at(ii + jj*(nx+1) + kh*(ny+1)*(nx+1));
                 
         // get fuel properties at this location
         struct FuelProperties* fuel = fire_cells.at(id).fuel;
@@ -195,20 +198,66 @@ void Fire :: run(Solver* solver) {
         // run Balbi model
         struct FireProperties fp = balbi(fuel,u,v,0.0,0.0650);
         fire_cells.at(id).properties = fp;
+        
+        // modify w0 in solver
+        for (int k=0; k<=kh; k++) {
+            solver->w0[ii + jj*(nx+1) + (k+2)*(nx+1)*(ny+1)] = fp.w;
+        }
+    }
+}
+
+// compute fire spread for burning cells
+void Fire :: move(Solver* solver) {
+    
+    // indices for burning cells
+    std::vector<int> cells_burning;
+    
+    // search predicate for burn state
+    struct find_burn : std::unary_function<FireCell, bool> {
+        double burn;
+        find_burn(int burn):burn(burn) { }
+        bool operator()(FireCell const& f) const {
+            return f.state.burn_flag == burn;
+        }
+    };
+    
+    // get indices of burning cells
+    std::vector<FireCell>::iterator it = std::find_if(fire_cells.begin(),fire_cells.end(),find_burn(1));
+    while ( it != fire_cells.end()) {
+        
+        if (it!=fire_cells.end()) {
+            cells_burning.push_back(std::distance(fire_cells.begin(), it));
+        }
+        
+        it = std::find_if (++it, fire_cells.end(),find_burn(1)); 
+    }
+    
+    // loop through burning cells
+    for (int i=0; i<cells_burning.size();i++) {
+        
+        // get index burning cell
+        int id = cells_burning[i];
+        
+        // convert flat index to i, j at cell center
+        int ii = id % nx;
+        int jj = (id / nx) % ny;
+                
+        // get fire proiperties at this location
+        struct FireProperties fp = fire_cells.at(id).properties;
+        
         // check neighbors
         int idxF = id+1;
         int idxB = id-1;
         int idyF = id+nx;
         int idyB = id-nx;
         
-        // convert flat index to i, j
-        //int i_idxF = idxF % nx;
-        //int i_idxB = idxB % nx;
-        //int j_idyF = (idyF / nx) % ny;
-        //int j_idyB = (idyB / nx) % ny;
-        
-        // x+1
-        if (idxF<=fire_cells.size()) {
+        int iiF = ii+1;
+        int iiB = ii-1;
+        int jjF = jj+1;
+        int jjB = jj-1;
+                
+        // check that x+1 is in-bounds, then compute fraction
+        if (iiF <= (nx-1)) {
             double BxF = fire_cells.at(idxF).state.burn_flag;
             if (BxF != 1 && BxF != 2) {
                 double frac = fmin(BxF+fp.rxf/dx,1.0);
@@ -216,8 +265,8 @@ void Fire :: run(Solver* solver) {
             }
         }
         
-        // x-1
-        if (idxB>=0) {
+        // check that x-1 is in-bounds, then compute fraction
+        if (iiB>=0) {
             double BxB = fire_cells.at(idxB).state.burn_flag;
             if (BxB != 1 && BxB != 2) {
                 double frac = fmin(BxB+fp.rxb/dx,1.0);
@@ -225,8 +274,8 @@ void Fire :: run(Solver* solver) {
             }
         }
         
-        // y+1
-        if (idyF<=fire_cells.size()) {
+        // check that y+1 is in-bounds, then compute fraction
+        if (jjF<=(ny-1)) {
             double ByF = fire_cells.at(idyF).state.burn_flag;
             if (ByF != 1 && ByF != 2) {
                 double frac = fmin(ByF+fp.ryf/dy,1.0);
@@ -234,8 +283,8 @@ void Fire :: run(Solver* solver) {
             }
         }
         
-        // y-1
-        if (idyB>=0) {
+        // check that y-1 is in-bounds, then compute fraction
+        if (jjB>=0) {
             double ByB = fire_cells.at(idyB).state.burn_flag;
             if (ByB != 1 && ByB != 2) {
                 double frac = fmin(ByB+fp.ryb/dy,1.0);
@@ -260,6 +309,7 @@ void Fire :: run(Solver* solver) {
         }
     }
 }
+
 
 // Rothermel (1972) flame propgation model used for initial guess to Balbi
 double Fire :: rothermel(FuelProperties* fuel, double max_wind, double tanphi,double fmc_g) {

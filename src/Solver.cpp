@@ -200,7 +200,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
 
     // Calling inputWindProfile function to generate initial velocity field from sensors information (located in Sensor.cpp)
     sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0, v0, w0, x, y, z, UID->metParams->sensors,
-                            canopy, UTMx, UTMy, theta, UTMZone);
+                             canopy, UTMx, UTMy, theta, UTMZone);
 
     max_velmag = 0.0;
     for (auto i=0; i<nx; i++)

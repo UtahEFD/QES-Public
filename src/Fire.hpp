@@ -47,7 +47,10 @@ class Fire {
         
         std::vector< FireCell > fire_cells;
         
-        void run(Solver*);        
+        std::vector<double> w_base;
+        
+        void run(Solver*);
+        void move(Solver*);      
         void save(Output*);
         
     private:

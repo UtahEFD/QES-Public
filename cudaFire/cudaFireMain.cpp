@@ -128,35 +128,67 @@ int main(int argc, char *argv[])
     if (DTEHF)
         DTEHF->closeScanner();
     
+    // save initial fields to reset after each time+fire loop
+    std::vector<double> u0 = solver->u0;
+    std::vector<double> v0 = solver->v0;
+    std::vector<double> w0 = solver->w0;
+    
     // Create Fire Mapper
     Fire* fire = new Fire(UID, output);
-        
+    
+    // set base w in fire model to initial w0
+    fire->w_base = w0;
+    
+    // Run initial solver to generate full field
+    solver->solve(!arguments.solveWind);
+    
+    // save initial fields in solver and fire
+    if (output != nullptr) {
+        solver->save(output);
+    }
+    
+    // save any fire data
+    fire->save(output);
+    
     // Run urb simulation code
+    std::cout<<"===================="<<std::endl;
     for (int t=0; t<UID->simParams->totalTimeIncrements; t++) {
         
         std::cout<<"Processing time t = "<<t+1<<std::endl;
         
-        // converge on rate of spread
-        //double r_old = fp.rx;
-        double err = 1000;
-        while (err>0.1) {
+        // re-set initial fields after first time step
+        if (t>0) {
+            solver->u0 = u0;
+            solver->v0 = v0;
+            solver->w0 = w0;
+        }
+        solver->solve(solver);
+        
+        // loop 3 times for fire
+        int loop = 0;
+        
+        while (loop<2) {
+            
+            // run Balbi model to get new w0
+            fire->run(solver);
             
             // run wind solver
             solver->solve(!arguments.solveWind);
-            err = 0.001;
-            // re-run Balbi model to get w
-            //fp = solver->runBalbi();
-            fire->run(solver);
             
-            // compute err
-            //err = std::abs((r_old-fp.rx)/fp.rx);
-            //r_old = fp.rx;
+            // set u0,v0 to current solution
+            solver->u0 = solver->u;
+            solver->v0 = solver->v;
+            
+            //increment fire loop
+            loop += 1;
+            
+            std::cout<<"--------------------"<<std::endl;
         }
         
-        // /////////////////////////////
-        // Output the various files requested from the simulation run
-        // (netcdf wind velocity, icell values, etc...
-        // /////////////////////////////
+        // move the fire
+        fire->move(solver);
+        
+        // save solver data
         if (output != nullptr) {
             solver->save(output);
         }
@@ -164,8 +196,7 @@ int main(int argc, char *argv[])
         // save any fire data
         fire->save(output);
         
-        // move flame
-        //solver->moveFire(fp.rx, fp.h, fp.tau, 1);
+        std::cout<<"===================="<<std::endl;
     }
     
     exit(EXIT_SUCCESS);
