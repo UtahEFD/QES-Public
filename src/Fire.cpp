@@ -141,6 +141,17 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     }    
 }
 
+// compute adaptive time step
+double Fire :: dt(Solver* solver) {
+    
+    // get max wind speed (hardcoded temporarily)
+    double u = 5.6568542495;
+    double c = 1.0;
+    double dt = c * dx / u;
+    return dt;
+    
+}
+
 // compute fire spread for burning cells
 void Fire :: run(Solver* solver) {
     
@@ -173,14 +184,21 @@ void Fire :: run(Solver* solver) {
         // get index burning cell
         int id = cells_burning[i];
         
+        // get fuel properties at this location
+        struct FuelProperties* fuel = fire_cells[id].fuel;
+        
         // get vertical index of mid-flame height
         int kh   = 0;
-        double H = fire_cells.at(id).properties.h;
+        double H = fire_cells[id].properties.h;
+        double T = solver->terrain[id];
+        double D = fuel->fueldepthm;
+        
+        double FD = H + T + D;
         
         if (H==0) {
             kh = 1;
         } else {
-            kh = std::round(H/dz);
+            kh = std::round(FD/dz);
         }
                 
         // convert flat index to i, j at cell center
@@ -189,15 +207,12 @@ void Fire :: run(Solver* solver) {
                         
         // get horizontal wind at flame height
         
-        double u = solver->u.at(ii + jj*(nx+1) + kh*(ny+1)*(nx+1));
-        double v = solver->v.at(ii + jj*(nx+1) + kh*(ny+1)*(nx+1));
-                
-        // get fuel properties at this location
-        struct FuelProperties* fuel = fire_cells.at(id).fuel;
+        double u = solver->u[ii + jj*(nx+1) + kh*(ny+1)*(nx+1)];
+        double v = solver->v[ii + jj*(nx+1) + kh*(ny+1)*(nx+1)];
         
         // run Balbi model
         struct FireProperties fp = balbi(fuel,u,v,0.0,0.0650);
-        fire_cells.at(id).properties = fp;
+        fire_cells[id].properties = fp;
         
         // modify w0 in solver
         for (int k=0; k<=kh; k++) {
@@ -245,7 +260,7 @@ void Fire :: move(Solver* solver) {
         int jj = (id / nx) % ny;
                 
         // get fire proiperties at this location
-        struct FireProperties fp = fire_cells.at(id).properties;
+        struct FireProperties fp = fire_cells[id].properties;
         
         // check neighbors
         int idxF = id+1;
@@ -264,86 +279,86 @@ void Fire :: move(Solver* solver) {
                 
         // check that x+1 is in-bounds, then compute fraction
         if (iiF <= (nx-1)) {
-            double BxF = fire_cells.at(idxF).state.burn_flag;
+            double BxF = fire_cells[idxF].state.burn_flag;
             if (BxF != 1 && BxF != 2) {
                 double frac = fmin(BxF+fp.rxf/dx,1.0);
-                fire_cells.at(idxF).state.burn_flag = frac;
+                fire_cells[idxF].state.burn_flag = frac;
             }
         }
         
         // check that x-1 is in-bounds, then compute fraction
         if (iiB>=0) {
-            double BxB = fire_cells.at(idxB).state.burn_flag;
+            double BxB = fire_cells[idxB].state.burn_flag;
             if (BxB != 1 && BxB != 2) {
                 double frac = fmin(BxB+fp.rxb/dx,1.0);
-                fire_cells.at(idxB).state.burn_flag = frac;
+                fire_cells[idxB].state.burn_flag = frac;
             }
         }
         
         // check that y+1 is in-bounds, then compute fraction
         if (jjF<=(ny-1)) {
-            double ByF = fire_cells.at(idyF).state.burn_flag;
+            double ByF = fire_cells[idyF].state.burn_flag;
             if (ByF != 1 && ByF != 2) {
                 double frac = fmin(ByF+fp.ryf/dy,1.0);
-                fire_cells.at(idyF).state.burn_flag = frac;        
+                fire_cells[idyF].state.burn_flag = frac;        
             }
         }
         
         // check that y-1 is in-bounds, then compute fraction
         if (jjB>=0) {
-            double ByB = fire_cells.at(idyB).state.burn_flag;
+            double ByB = fire_cells[idyB].state.burn_flag;
             if (ByB != 1 && ByB != 2) {
                 double frac = fmin(ByB+fp.ryb/dy,1.0);
-                fire_cells.at(idyB).state.burn_flag = frac;
+                fire_cells[idyB].state.burn_flag = frac;
             }
         }
         
         // check that x+1, y+1 is in-bounds, then compute fraction
         if (iiF<=(nx-1) && jjF<=(ny-1)) {
-            double BdFF = fire_cells.at(idFF).state.burn_flag;
+            double BdFF = fire_cells[idFF].state.burn_flag;
             if (BdFF != 1 && BdFF != 2) {
                 double dxy = std::sqrt(std::pow(dx,2) + std::pow(dy,2));
                 double frac = fmin(BdFF+fp.rdff/dxy,1.0);
-                fire_cells.at(idFF).state.burn_flag = frac;
+                fire_cells[idFF].state.burn_flag = frac;
             }
         }
         
         // check that x+1, y-1 is in-bounds, then compute fraction
         if (iiF<=(nx-1) && jjB>=0) {
-            double BdFB = fire_cells.at(idFB).state.burn_flag;
+            double BdFB = fire_cells[idFB].state.burn_flag;
             if (BdFB != 1 && BdFB != 2) {
                 double dxy = std::sqrt(std::pow(dx,2) + std::pow(dy,2));
                 double frac = fmin(BdFB+fp.rdfb/dxy,1.0);
-                fire_cells.at(idFB).state.burn_flag = frac;
+                fire_cells[idFB].state.burn_flag = frac;
             }
         }
         
         // check that x-1, y+1 is in-bounds, then compute fraction
         if (iiB>=0 && jjF<=(ny-1)) {
-            double BdBF = fire_cells.at(idBF).state.burn_flag;
+            double BdBF = fire_cells[idBF].state.burn_flag;
             if (BdBF != 1 && BdBF != 2) {
                 double dxy = std::sqrt(std::pow(dx,2) + std::pow(dy,2));
                 double frac = fmin(BdBF+fp.rdbf/dxy,1.0);
-                fire_cells.at(idBF).state.burn_flag = frac;
+                fire_cells[idBF].state.burn_flag = frac;
             }
         }
         
         // check that x-1, y-1 is in-bounds, then compute fraction
         if (iiB>=0 && jjB>=0) {
-            double BdBB = fire_cells.at(idBB).state.burn_flag;
+            double BdBB = fire_cells[idBB].state.burn_flag;
             if (BdBB != 1 && BdBB != 2) {
                 double dxy = std::sqrt(std::pow(dx,2) + std::pow(dy,2));
                 double frac = fmin(BdBB+fp.rdbb/dxy,1.0);
-                fire_cells.at(idBB).state.burn_flag = frac;
+                fire_cells[idBB].state.burn_flag = frac;
             }
         }
                         
         // update residence time
-        fire_cells.at(id).state.burn_time += 1;
+        fire_cells[id].state.burn_time += 1;
         
         // set burn flag to 2 (burned) if residence time exceeded
-        if (fire_cells.at(id).state.burn_time >= fp.tau) {
-            fire_cells.at(id).state.burn_flag = 2;
+        if (fire_cells[id].state.burn_time >= fp.tau) {
+            fire_cells[id].state.burn_flag = 2;
         }
     }
     

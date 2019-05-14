@@ -11,7 +11,7 @@
 	<streetIntersectionFlag> 1 </streetIntersectionFlag>
 	<wakeFlag> 3 </wakeFlag>
 	<sidewallFlag> 0 </sidewallFlag>
-	<maxIterations> 500 </maxIterations>
+	<maxIterations> 100 </maxIterations>
 	<residualReduction> 3 </residualReduction>
 	<meshTypeFlag> 1 </meshTypeFlag>
 	<useDiffusion> 0 </useDiffusion>
@@ -36,7 +36,7 @@
 		<siteZ0> 0.01 </siteZ0>
 		<reciprocal> 0.0 </reciprocal>
 		<height> 1.0 </height>
-		<speed> 4.0 </speed>
+		<speed> 5.6568 </speed>
 		<direction> 225.00 </direction>
 	</sensor>
 </metParams>

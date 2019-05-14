@@ -152,9 +152,14 @@ int main(int argc, char *argv[])
     
     // Run urb simulation code
     std::cout<<"===================="<<std::endl;
-    for (int t=0; t<UID->simParams->totalTimeIncrements; t++) {
+    double t = 0;
+    
+    while (t<UID->simParams->totalTimeIncrements) {
         
-        std::cout<<"Processing time t = "<<t+1<<std::endl;
+        std::cout<<"Processing time t = "<<t<<std::endl;
+        
+        // compute dt
+        double dt = fire->dt(solver);
         
         // re-set initial fields after first time step
         if (t>0) {
@@ -195,6 +200,9 @@ int main(int argc, char *argv[])
         
         // save any fire data
         fire->save(output);
+        
+        // advance time 
+        t += dt;
         
         std::cout<<"===================="<<std::endl;
     }

@@ -49,6 +49,7 @@ class Fire {
         
         std::vector<double> w_base;
         
+        double dt(Solver*);
         void run(Solver*);
         void move(Solver*);      
         void save(Output*);
