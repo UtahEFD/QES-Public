@@ -201,6 +201,8 @@ void Fire :: run(Solver* solver) {
         
         // modify w0 in solver
         for (int k=0; k<=kh; k++) {
+            solver->u0[ii + jj*(nx+1) + (k+2)*(nx+1)*(ny+1)] = 0;
+            solver->v0[ii + jj*(nx+1) + (k+2)*(nx+1)*(ny+1)] = 0;
             solver->w0[ii + jj*(nx+1) + (k+2)*(nx+1)*(ny+1)] = fp.w;
         }
     }
@@ -250,6 +252,10 @@ void Fire :: move(Solver* solver) {
         int idxB = id-1;
         int idyF = id+nx;
         int idyB = id-nx;
+        int idFF = id+1+nx;
+        int idFB = id+1-nx;
+        int idBF = id-1+nx;
+        int idBB = id-1-nx;
         
         int iiF = ii+1;
         int iiB = ii-1;
@@ -289,6 +295,46 @@ void Fire :: move(Solver* solver) {
             if (ByB != 1 && ByB != 2) {
                 double frac = fmin(ByB+fp.ryb/dy,1.0);
                 fire_cells.at(idyB).state.burn_flag = frac;
+            }
+        }
+        
+        // check that x+1, y+1 is in-bounds, then compute fraction
+        if (iiF<=(nx-1) && jjF<=(ny-1)) {
+            double BdFF = fire_cells.at(idFF).state.burn_flag;
+            if (BdFF != 1 && BdFF != 2) {
+                double dxy = std::sqrt(std::pow(dx,2) + std::pow(dy,2));
+                double frac = fmin(BdFF+fp.rdff/dxy,1.0);
+                fire_cells.at(idFF).state.burn_flag = frac;
+            }
+        }
+        
+        // check that x+1, y-1 is in-bounds, then compute fraction
+        if (iiF<=(nx-1) && jjB>=0) {
+            double BdFB = fire_cells.at(idFB).state.burn_flag;
+            if (BdFB != 1 && BdFB != 2) {
+                double dxy = std::sqrt(std::pow(dx,2) + std::pow(dy,2));
+                double frac = fmin(BdFB+fp.rdfb/dxy,1.0);
+                fire_cells.at(idFB).state.burn_flag = frac;
+            }
+        }
+        
+        // check that x-1, y+1 is in-bounds, then compute fraction
+        if (iiB>=0 && jjF<=(ny-1)) {
+            double BdBF = fire_cells.at(idBF).state.burn_flag;
+            if (BdBF != 1 && BdBF != 2) {
+                double dxy = std::sqrt(std::pow(dx,2) + std::pow(dy,2));
+                double frac = fmin(BdBF+fp.rdbf/dxy,1.0);
+                fire_cells.at(idBF).state.burn_flag = frac;
+            }
+        }
+        
+        // check that x-1, y-1 is in-bounds, then compute fraction
+        if (iiB>=0 && jjB>=0) {
+            double BdBB = fire_cells.at(idBB).state.burn_flag;
+            if (BdBB != 1 && BdBB != 2) {
+                double dxy = std::sqrt(std::pow(dx,2) + std::pow(dy,2));
+                double frac = fmin(BdBB+fp.rdbb/dxy,1.0);
+                fire_cells.at(idBB).state.burn_flag = frac;
             }
         }
                         
@@ -468,7 +514,8 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     }
     
     // define forward, backward spread in x, y diections
-    double RxF, RxB, RyF, RyB; 
+    double RxF, RxB, RyF, RyB;
+    double RdFF, RdFB, RdBF, RdBB; 
     if (u_mid>0) {
         RxF = Rx;
         RxB = ROSBase;
@@ -489,6 +536,12 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
         RyF = Ry;
         RyB = Ry;
     }
+    
+    // calculate diagonal spread
+    RdFF = std::sqrt(std::pow(RxF,2) + std::pow(RyF,2));
+    RdFB = std::sqrt(std::pow(RxF,2) + std::pow(RyB,2));
+    RdBF = std::sqrt(std::pow(RxB,2) + std::pow(RyF,2));
+    RdBB = std::sqrt(std::pow(RxB,2) + std::pow(RyB,2));
         
     // calculate flame depth
     double L = R*tau;
@@ -497,15 +550,19 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     struct FireProperties fp;
     
     // set fire properties
-    fp.w   = u0;
-    fp.h   = H;
-    fp.d   = L;
-    fp.rxf = RxF;
-    fp.rxb = RxB;
-    fp.ryf = RyF;
-    fp.ryb = RyB;
-    fp.T   = TFlame;
-    fp.tau = tau;
+    fp.w    = u0;
+    fp.h    = H;
+    fp.d    = L;
+    fp.rxf  = RxF;
+    fp.rxb  = RxB;
+    fp.ryf  = RyF;
+    fp.ryb  = RyB;
+    fp.rdff = RdFF;
+    fp.rdfb = RdFB;
+    fp.rdbf = RdBF;
+    fp.rdbb = RdBB;
+    fp.T    = TFlame;
+    fp.tau  = tau;
     
     return fp;
 }

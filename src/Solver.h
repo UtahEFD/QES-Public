@@ -71,7 +71,7 @@ protected:
     float dxy;		/**< Minimum value between dx and dy */
     std::vector<float> dz_array, zm;
     std::vector<float> x,y,z;
-    std::vector<double> x_out,y_out,z_out, terrain;
+    std::vector<double> x_out,y_out,z_out;
 
     Sensor* sensor;
     int num_sites;			/**< number of data entry sites */
@@ -269,7 +269,7 @@ public:
     std::vector<double> u0,v0,w0;
 
     /// Declaration of final velocity field components (u,v,w)
-    std::vector<double> u,v,w;
+    std::vector<double> u,v,w,terrain;
     std::vector<double> u_out,v_out,w_out;
     
     /**
