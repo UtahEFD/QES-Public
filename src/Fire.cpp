@@ -317,8 +317,7 @@ void Fire :: move(Solver* solver) {
         if (iiF<=(nx-1) && jjF<=(ny-1)) {
             double BdFF = fire_cells[idFF].state.burn_flag;
             if (BdFF != 1 && BdFF != 2) {
-                double dxy = std::sqrt(std::pow(dx,2) + std::pow(dy,2));
-                double frac = fmin(BdFF+fp.rdff/dxy,1.0);
+                double frac = fmin(BdFF+fp.rxf/dx+fp.ryf/dy,1.0);
                 fire_cells[idFF].state.burn_flag = frac;
             }
         }
@@ -327,8 +326,7 @@ void Fire :: move(Solver* solver) {
         if (iiF<=(nx-1) && jjB>=0) {
             double BdFB = fire_cells[idFB].state.burn_flag;
             if (BdFB != 1 && BdFB != 2) {
-                double dxy = std::sqrt(std::pow(dx,2) + std::pow(dy,2));
-                double frac = fmin(BdFB+fp.rdfb/dxy,1.0);
+                double frac = fmin(BdFB+fp.rxf/dx+fp.ryb/dy,1.0);
                 fire_cells[idFB].state.burn_flag = frac;
             }
         }
@@ -337,8 +335,7 @@ void Fire :: move(Solver* solver) {
         if (iiB>=0 && jjF<=(ny-1)) {
             double BdBF = fire_cells[idBF].state.burn_flag;
             if (BdBF != 1 && BdBF != 2) {
-                double dxy = std::sqrt(std::pow(dx,2) + std::pow(dy,2));
-                double frac = fmin(BdBF+fp.rdbf/dxy,1.0);
+                double frac = fmin(BdBF+fp.rxb/dx+fp.ryf/dy,1.0);
                 fire_cells[idBF].state.burn_flag = frac;
             }
         }
@@ -348,7 +345,7 @@ void Fire :: move(Solver* solver) {
             double BdBB = fire_cells[idBB].state.burn_flag;
             if (BdBB != 1 && BdBB != 2) {
                 double dxy = std::sqrt(std::pow(dx,2) + std::pow(dy,2));
-                double frac = fmin(BdBB+fp.rdbb/dxy,1.0);
+                double frac = fmin(BdBB+fp.rxb/dx+fp.ryb/dy,1.0);
                 fire_cells[idBB].state.burn_flag = frac;
             }
         }
@@ -530,7 +527,6 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     
     // define forward, backward spread in x, y diections
     double RxF, RxB, RyF, RyB;
-    double RdFF, RdFB, RdBF, RdBB; 
     if (u_mid>0) {
         RxF = Rx;
         RxB = ROSBase;
@@ -551,12 +547,6 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
         RyF = Ry;
         RyB = Ry;
     }
-    
-    // calculate diagonal spread
-    RdFF = std::sqrt(std::pow(RxF,2) + std::pow(RyF,2));
-    RdFB = std::sqrt(std::pow(RxF,2) + std::pow(RyB,2));
-    RdBF = std::sqrt(std::pow(RxB,2) + std::pow(RyF,2));
-    RdBB = std::sqrt(std::pow(RxB,2) + std::pow(RyB,2));
         
     // calculate flame depth
     double L = R*tau;
@@ -572,10 +562,6 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     fp.rxb  = RxB;
     fp.ryf  = RyF;
     fp.ryb  = RyB;
-    fp.rdff = RdFF;
-    fp.rdfb = RdFB;
-    fp.rdbf = RdBF;
-    fp.rdbb = RdBB;
     fp.T    = TFlame;
     fp.tau  = tau;
     
