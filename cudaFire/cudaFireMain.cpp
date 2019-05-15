@@ -158,20 +158,16 @@ int main(int argc, char *argv[])
         
         std::cout<<"Processing time t = "<<t<<std::endl;
         
-        // compute dt
-        double dt = fire->dt(solver);
-        
         // re-set initial fields after first time step
         if (t>0) {
             solver->u0 = u0;
             solver->v0 = v0;
             solver->w0 = w0;
+            solver->solve(solver);
         }
-        solver->solve(solver);
         
-        // loop 3 times for fire
+        // loop 2 times for fire
         int loop = 0;
-        
         while (loop<2) {
             
             // run Balbi model to get new w0
@@ -189,7 +185,7 @@ int main(int argc, char *argv[])
             
             std::cout<<"--------------------"<<std::endl;
         }
-        
+                
         // move the fire
         fire->move(solver);
         
@@ -202,7 +198,7 @@ int main(int argc, char *argv[])
         fire->save(output);
         
         // advance time 
-        t += dt;
+        t = fire->time;
         
         std::cout<<"===================="<<std::endl;
     }

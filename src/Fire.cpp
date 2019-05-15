@@ -91,7 +91,7 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     
     if (output_fields[0]=="all") {
         output_fields.erase(output_fields.begin());
-        output_fields = {"burn"};
+        output_fields = {"time","burn"};
     }
     
     // set cell-centered dimensions
@@ -101,14 +101,17 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     NcDim y_dim = output->getDimension("y");
     NcDim x_dim = output->getDimension("x");
     
-    dim_scalar_t.push_back(t_dim);
-    dim_scalar_t.push_back(y_dim);
-    dim_scalar_t.push_back(x_dim);
+    dim_scalar_1.push_back(t_dim);
+    dim_scalar_3.push_back(t_dim);
+    dim_scalar_3.push_back(y_dim);
+    dim_scalar_3.push_back(x_dim);
 
     // create attributes
-    AttVectorDbl att_b = {&burn_flag,  "burn", "burn flag value", "--", dim_scalar_t};
+    AttScalarDbl att_t = {&time,      "time", "time[s]",         "--", dim_scalar_1};
+    AttVectorDbl att_b = {&burn_flag, "burn", "burn flag value", "--", dim_scalar_3};
     
     // map the name to attributes
+    map_att_scalar_dbl.emplace("time", att_t);
     map_att_vector_dbl.emplace("burn", att_b);
     
     // create list of fields to save
@@ -133,7 +136,6 @@ Fire :: Fire(URBInputData* UID, Output* output) {
         AttVectorDbl att = output_vector_dbl[i];
         output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
     }
-    
     // add vector int fields
     for (int i=0; i<output_vector_int.size(); i++) {
         AttVectorInt att = output_vector_int[i];
@@ -142,18 +144,36 @@ Fire :: Fire(URBInputData* UID, Output* output) {
 }
 
 // compute adaptive time step
-double Fire :: dt(Solver* solver) {
+double Fire :: computeTimeStep(Solver* solver) {
     
-    // get max wind speed (hardcoded temporarily)
-    double u = 5.6568542495;
+    // get max wind speed
+    double u,v,w,u_mag;
+    double u_max = 0;
     double c = 1.0;
-    double dt = c * dx / u;
-    return dt;
+    for (int k = 1; k < nz+1; k++){
+        for (int j = 0; j < ny+1; j++){
+            for (int i = 0; i < nx+1; i++){
+                
+                int idx = i + j*(nx+1) + k*(ny+1)*(nx+1);
+                
+                u = solver->u[idx];
+                v = solver->v[idx];
+                w = solver->w[idx];
+                
+                u_mag = std::sqrt(std::pow(u,2)+std::pow(v,2)+std::pow(w,2));
+                u_max = u_mag>u_max ? u_mag : u_max;    
+            }
+        }
+    }
     
+    return c * dx / u_max;
 }
 
 // compute fire spread for burning cells
 void Fire :: run(Solver* solver) {
+    
+    // compute time step
+    dt = computeTimeStep(solver);
     
     // indices for burning cells
     std::vector<int> cells_burning;
@@ -281,7 +301,7 @@ void Fire :: move(Solver* solver) {
         if (iiF <= (nx-1)) {
             double BxF = fire_cells[idxF].state.burn_flag;
             if (BxF != 1 && BxF != 2) {
-                double frac = fmin(BxF+fp.rxf/dx,1.0);
+                double frac = fmin(BxF+fp.rxf*dt/dx,1.0);
                 fire_cells[idxF].state.burn_flag = frac;
             }
         }
@@ -290,7 +310,7 @@ void Fire :: move(Solver* solver) {
         if (iiB>=0) {
             double BxB = fire_cells[idxB].state.burn_flag;
             if (BxB != 1 && BxB != 2) {
-                double frac = fmin(BxB+fp.rxb/dx,1.0);
+                double frac = fmin(BxB+fp.rxb*dt/dx,1.0);
                 fire_cells[idxB].state.burn_flag = frac;
             }
         }
@@ -299,7 +319,7 @@ void Fire :: move(Solver* solver) {
         if (jjF<=(ny-1)) {
             double ByF = fire_cells[idyF].state.burn_flag;
             if (ByF != 1 && ByF != 2) {
-                double frac = fmin(ByF+fp.ryf/dy,1.0);
+                double frac = fmin(ByF+fp.ryf*dt/dy,1.0);
                 fire_cells[idyF].state.burn_flag = frac;        
             }
         }
@@ -308,7 +328,7 @@ void Fire :: move(Solver* solver) {
         if (jjB>=0) {
             double ByB = fire_cells[idyB].state.burn_flag;
             if (ByB != 1 && ByB != 2) {
-                double frac = fmin(ByB+fp.ryb/dy,1.0);
+                double frac = fmin(ByB+fp.ryb*dt/dy,1.0);
                 fire_cells[idyB].state.burn_flag = frac;
             }
         }
@@ -317,7 +337,7 @@ void Fire :: move(Solver* solver) {
         if (iiF<=(nx-1) && jjF<=(ny-1)) {
             double BdFF = fire_cells[idFF].state.burn_flag;
             if (BdFF != 1 && BdFF != 2) {
-                double frac = fmin(BdFF+fp.rxf/dx+fp.ryf/dy,1.0);
+                double frac = fmin(BdFF+fp.rxf*dt/dx+fp.ryf*dt/dy,1.0);
                 fire_cells[idFF].state.burn_flag = frac;
             }
         }
@@ -326,7 +346,7 @@ void Fire :: move(Solver* solver) {
         if (iiF<=(nx-1) && jjB>=0) {
             double BdFB = fire_cells[idFB].state.burn_flag;
             if (BdFB != 1 && BdFB != 2) {
-                double frac = fmin(BdFB+fp.rxf/dx+fp.ryb/dy,1.0);
+                double frac = fmin(BdFB+fp.rxf*dt/dx+fp.ryb*dt/dy,1.0);
                 fire_cells[idFB].state.burn_flag = frac;
             }
         }
@@ -335,7 +355,7 @@ void Fire :: move(Solver* solver) {
         if (iiB>=0 && jjF<=(ny-1)) {
             double BdBF = fire_cells[idBF].state.burn_flag;
             if (BdBF != 1 && BdBF != 2) {
-                double frac = fmin(BdBF+fp.rxb/dx+fp.ryf/dy,1.0);
+                double frac = fmin(BdBF+fp.rxb*dt/dx+fp.ryf*dt/dy,1.0);
                 fire_cells[idBF].state.burn_flag = frac;
             }
         }
@@ -344,14 +364,13 @@ void Fire :: move(Solver* solver) {
         if (iiB>=0 && jjB>=0) {
             double BdBB = fire_cells[idBB].state.burn_flag;
             if (BdBB != 1 && BdBB != 2) {
-                double dxy = std::sqrt(std::pow(dx,2) + std::pow(dy,2));
-                double frac = fmin(BdBB+fp.rxb/dx+fp.ryb/dy,1.0);
+                double frac = fmin(BdBB+fp.rxb*dt/dx+fp.ryb*dt/dy,1.0);
                 fire_cells[idBB].state.burn_flag = frac;
             }
         }
                         
         // update residence time
-        fire_cells[id].state.burn_time += 1;
+        fire_cells[id].state.burn_time += dt;
         
         // set burn flag to 2 (burned) if residence time exceeded
         if (fire_cells[id].state.burn_time >= fp.tau) {
@@ -583,7 +602,7 @@ void Fire :: save(Output* output) {
     vector_size  = {1, static_cast<unsigned long>(ny), static_cast<unsigned long>(nx)};
     
     // set time 
-    time = (double)output_counter;
+    time += dt;
 	
     // loop through 1D fields to save
     for (int i=0; i<output_scalar_dbl.size(); i++) {

@@ -2,7 +2,7 @@
 	<domain> 50 50 40 </domain>
 	<cellSize> 1.0 1.0 0.25 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
-	<totalTimeIncrements> 180 </totalTimeIncrements>
+	<totalTimeIncrements> 125 </totalTimeIncrements>
 	<UTCConversion> 0 </UTCConversion>
 	<Epoch> 1510930800 </Epoch>
 	<rooftopFlag> 2 </rooftopFlag>
@@ -37,7 +37,7 @@
 		<reciprocal> 0.0 </reciprocal>
 		<height> 1.0 </height>
 		<speed> 5.6568 </speed>
-		<direction> 225.00 </direction>
+		<direction> 270.00 </direction>
 	</sensor>
 </metParams>
 <fires>
@@ -46,7 +46,7 @@
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight>
     <xStart> 5.0 </xStart>
-    <yStart> 5.0 </yStart>
+    <yStart> 25.0 </yStart>
     <length> 1.0 </length>
     <width>  1.0 </width>
 </fires>
@@ -57,6 +57,7 @@
 	<outputFields>w</outputFields>
 	<outputFields>icell</outputFields>
 	<outputFields>burn</outputFields> 
+	<outputFields>time</outputFields> 
 	<massConservedFlag> 0 </massConservedFlag>
 	<sensorVelocityFlag> 0 </sensorVelocityFlag>
 	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>

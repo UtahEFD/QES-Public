@@ -45,14 +45,17 @@ class Fire {
             FireState state;
         };
         
+        double time=0;
+        double dt=0;
+        
         std::vector< FireCell > fire_cells;
         
         std::vector<double> w_base;
         
-        double dt(Solver*);
         void run(Solver*);
         void move(Solver*);      
         void save(Output*);
+        double computeTimeStep(Solver*);
         
     private:
         
@@ -77,8 +80,7 @@ class Fire {
         
         /// Declaration of output manager
         int output_counter=0;
-        double time=0;
-        std::vector<NcDim> dim_scalar_t;
+        std::vector<NcDim> dim_scalar_1,dim_scalar_3;
         std::vector<std::string> output_fields;
         
         struct AttScalarDbl {
