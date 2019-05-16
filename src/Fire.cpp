@@ -222,11 +222,14 @@ void Fire :: run(Solver* solver) {
         }
                 
         // convert flat index to i, j at cell center
-        int ii = id % nx;
-        int jj = (id / nx) % ny;
+        int ii  = id % nx;
+        int jj  = (id / nx) % ny;
+        int iiF = ii+1;
+        int iiB = ii-1;
+        int jjF = jj+1;
+        int jjB = jj-1;
                         
         // get horizontal wind at flame height
-        
         double u = solver->u[ii + jj*(nx+1) + kh*(ny+1)*(nx+1)];
         double v = solver->v[ii + jj*(nx+1) + kh*(ny+1)*(nx+1)];
         
@@ -234,10 +237,37 @@ void Fire :: run(Solver* solver) {
         struct FireProperties fp = balbi(fuel,u,v,0.0,0.0650);
         fire_cells[id].properties = fp;
         
-        // modify w0 in solver
+        // modify w0 in solver (adjust to use faces)
         for (int k=0; k<=kh; k++) {
-            solver->u0[ii + jj*(nx+1) + (k+2)*(nx+1)*(ny+1)] = 0;
-            solver->v0[ii + jj*(nx+1) + (k+2)*(nx+1)*(ny+1)] = 0;
+            
+            int idf  = ii + jj*(nx+1) + (k+2)*(nx+1)*(ny+1);
+            int idxF = idf+1;
+            int idxB = idf-1;
+            int idyF = idf+(nx+1);
+            int idyB = idf-(nx+1);
+            
+            double K = fire_cells[id].properties.K;            
+            double u = solver->u0[idf];
+            double v = solver->v0[idf];
+            double u_uw, v_uw;
+            
+            if (u>0 && iiB>=0) {
+                u_uw = solver->u0[idxB];
+                solver->u0[idf] = u_uw * std::exp(-K*dx);
+            }
+            if (u<0 && iiF <= nx) {
+                u_uw = solver->u0[idxF];
+                solver->u0[idf] = u_uw * std::exp(-K*dx);
+            }
+            if (v>0 && jjB>=0) {
+                v_uw = solver->v0[idyB];
+                solver->v0[idf] = v_uw * std::exp(-K*dy);
+            }
+            if (v<0 && jjF <= ny) {
+                v_uw = solver->v0[idyF];
+                solver->v0[idf] = v_uw * std::exp(-K*dy);
+            }
+            
             solver->w0[ii + jj*(nx+1) + (k+2)*(nx+1)*(ny+1)] = fp.w;
         }
     }
@@ -583,6 +613,7 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     fp.ryb  = RyB;
     fp.T    = TFlame;
     fp.tau  = tau;
+    fp.K    = KDrag;
     
     return fp;
 }

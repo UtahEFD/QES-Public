@@ -31,7 +31,7 @@ class Fire {
         Fire(URBInputData*, Output*);
         
         struct FireProperties {
-            double  w, h, d, rxb, ryb, rxf, ryf, T, tau;
+            double  w, h, d, rxb, ryb, rxf, ryf, T, tau, K;
         };
         
         struct FireState {
