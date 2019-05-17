@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
                 
         // move the fire
         fire->move(solver);
-        
+                
         // save solver data
         if (output != nullptr) {
             solver->save(output);

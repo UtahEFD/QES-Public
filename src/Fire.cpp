@@ -331,6 +331,7 @@ void Fire :: move(Solver* solver) {
         if (iiF <= (nx-1)) {
             double BxF = fire_cells[idxF].state.burn_flag;
             if (BxF != 1 && BxF != 2) {
+                
                 double frac = fmin(BxF+fp.rxf*dt/dx,1.0);
                 fire_cells[idxF].state.burn_flag = frac;
             }
@@ -367,7 +368,9 @@ void Fire :: move(Solver* solver) {
         if (iiF<=(nx-1) && jjF<=(ny-1)) {
             double BdFF = fire_cells[idFF].state.burn_flag;
             if (BdFF != 1 && BdFF != 2) {
-                double frac = fmin(BdFF+fp.rxf*dt/dx+fp.ryf*dt/dy,1.0);
+                
+                double areafrac = fp.rxf*dt*fp.ryf*dt / (dx*dy);
+                double frac = fmin(BdFF+areafrac,1.0);
                 fire_cells[idFF].state.burn_flag = frac;
             }
         }
@@ -376,7 +379,8 @@ void Fire :: move(Solver* solver) {
         if (iiF<=(nx-1) && jjB>=0) {
             double BdFB = fire_cells[idFB].state.burn_flag;
             if (BdFB != 1 && BdFB != 2) {
-                double frac = fmin(BdFB+fp.rxf*dt/dx+fp.ryb*dt/dy,1.0);
+                double areafrac = fp.rxf*dt*fp.ryb*dt / (dx*dy);
+                double frac = fmin(BdFB+areafrac,1.0);
                 fire_cells[idFB].state.burn_flag = frac;
             }
         }
@@ -385,7 +389,8 @@ void Fire :: move(Solver* solver) {
         if (iiB>=0 && jjF<=(ny-1)) {
             double BdBF = fire_cells[idBF].state.burn_flag;
             if (BdBF != 1 && BdBF != 2) {
-                double frac = fmin(BdBF+fp.rxb*dt/dx+fp.ryf*dt/dy,1.0);
+                double areafrac = fp.rxb*dt*fp.ryf*dt / (dx*dy);
+                double frac = fmin(BdBF+areafrac,1.0);
                 fire_cells[idBF].state.burn_flag = frac;
             }
         }
@@ -394,7 +399,8 @@ void Fire :: move(Solver* solver) {
         if (iiB>=0 && jjB>=0) {
             double BdBB = fire_cells[idBB].state.burn_flag;
             if (BdBB != 1 && BdBB != 2) {
-                double frac = fmin(BdBB+fp.rxb*dt/dx+fp.ryb*dt/dy,1.0);
+                double areafrac = fp.rxb*dt*fp.ryb*dt / (dx*dy);
+                double frac = fmin(BdBB+areafrac,1.0);
                 fire_cells[idBB].state.burn_flag = frac;
             }
         }
