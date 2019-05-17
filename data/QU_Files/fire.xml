@@ -37,7 +37,7 @@
 		<reciprocal> 0.0 </reciprocal>
 		<height> 1.0 </height>
 		<speed> 5.6568 </speed>
-		<direction> 270.00 </direction>
+		<direction> 300.00 </direction>
 	</sensor>
 </metParams>
 <fires>
@@ -45,7 +45,7 @@
 	<fuelType>3</fuelType>
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight>
-    <xStart> 5.0 </xStart>
+    <xStart> 25.0 </xStart>
     <yStart> 25.0 </yStart>
     <length> 1.0 </length>
     <width>  1.0 </width>

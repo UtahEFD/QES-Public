@@ -165,7 +165,7 @@ double Fire :: computeTimeStep(Solver* solver) {
             }
         }
     }
-    
+    //return 1.0;
     return c * dx / u_max;
 }
 
