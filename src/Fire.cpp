@@ -569,8 +569,8 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
         ROSFlamey = A*R*(1+sin(gammay) - cos (gammay))/(1 + R*cos(gammay)/(SAV*r_00));
         
         // ROS from convection
-        ROSConvx = b*(tan(alphax) + 2*u_mid/u0*exp(-KDrag*R));
-        ROSConvy = b*(tan(alphay) + 2*v_mid/u0*exp(-KDrag*R));
+        ROSConvx = b*(tan(alphax) + 2*abs(u_mid)/u0*exp(-KDrag*R));
+        ROSConvy = b*(tan(alphay) + 2*abs(v_mid)/u0*exp(-KDrag*R));
         
         // Total ROS 
         Rx    = ROSBase + ROSFlamex + ROSConvx;
