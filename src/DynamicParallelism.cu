@@ -341,4 +341,6 @@ void DynamicParallelism::solve(bool solveWind)
     std::chrono::duration<double> elapsed = finish - start;
     std::cout << "Elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
 
+
+
 }

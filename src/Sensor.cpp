@@ -316,7 +316,7 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 				{
 
 					icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
-		            u0[icell_face] = u_prof[0][k];
+		      u0[icell_face] = u_prof[0][k];
 					v0[icell_face] = v_prof[0][k];
 					w0[icell_face] = 0.0;         /// Perpendicular wind direction
 				}
