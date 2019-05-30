@@ -55,7 +55,7 @@ class Fire {
         void run(Solver*);
         void move(Solver*);      
         void save(Output*);
-        double computeTimeStep(Solver*);
+        double computeTimeStep();
         
     private:
         

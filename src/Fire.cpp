@@ -144,36 +144,40 @@ Fire :: Fire(URBInputData* UID, Output* output) {
 }
 
 // compute adaptive time step
-double Fire :: computeTimeStep(Solver* solver) {
+double Fire :: computeTimeStep() {
     
-    // get max wind speed
-    double u,v,w,u_mag;
-    double u_max = 0;
+    // "courant" number
     double c = 1.0;
-    for (int k = 1; k < nz+1; k++){
-        for (int j = 0; j < ny+1; j++){
-            for (int i = 0; i < nx+1; i++){
-                
-                int idx = i + j*(nx+1) + k*(ny+1)*(nx+1);
-                
-                u = solver->u[idx];
-                v = solver->v[idx];
-                w = solver->w[idx];
-                
-                u_mag = std::sqrt(std::pow(u,2)+std::pow(v,2)+std::pow(w,2));
-                u_max = u_mag>u_max ? u_mag : u_max;    
-            }
+    
+    // spread rates
+    double rxf, rxb, ryf, ryb, r_max;
+    
+    // get max spread rate
+    for (int j = 0; j < ny; j++){
+        for (int i = 0; i < nx; i++){
+            
+            int idx = i + j*nx;
+            rxf = fire_cells[idx].properties.rxf;       
+            rxb = fire_cells[idx].properties.rxb;
+            ryf = fire_cells[idx].properties.ryf;       
+            ryb = fire_cells[idx].properties.ryb;
+            
+            double max_xfb, max_yfb, max;
+            max_xfb = rxf > rxb ? rxf : rxb;
+            max_yfb = ryf > ryb ? ryf : rxb;
+            max     = max_xfb > max_yfb ? max_xfb : max_yfb;
+            
+            r_max   = max > r_max ? max : r_max;
         }
     }
-    //return 1.0;
-    return c * dx / u_max;
+    return c * dx / r_max;
 }
 
 // compute fire spread for burning cells
 void Fire :: run(Solver* solver) {
     
     // compute time step
-    dt = computeTimeStep(solver);
+    dt = computeTimeStep();
     
     // indices for burning cells
     std::vector<int> cells_burning;
