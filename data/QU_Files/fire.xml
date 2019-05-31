@@ -49,6 +49,7 @@
     <yStart> 25.0 </yStart>
     <length> 1.0 </length>
     <width>  1.0 </width>
+    <courant> 0.25 </courant>
 </fires>
 <fileOptions>
 	<outputFlag>1</outputFlag>

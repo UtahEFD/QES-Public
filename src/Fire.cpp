@@ -38,6 +38,7 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     W          = UID->fires->width;
     baseHeight = UID->fires->baseHeight;
     fuel_type  = UID->fires->fuelType;
+    courant    = UID->fires->courant;
     
     // set fuel properties
     for (int j = 0; j < ny; j++){
@@ -146,9 +147,6 @@ Fire :: Fire(URBInputData* UID, Output* output) {
 // compute adaptive time step
 double Fire :: computeTimeStep() {
     
-    // "courant" number
-    double c = 1.0;
-    
     // spread rates
     double rxf, rxb, ryf, ryb, r_max;
     
@@ -170,7 +168,7 @@ double Fire :: computeTimeStep() {
             r_max   = max > r_max ? max : r_max;
         }
     }
-    return c * dx / r_max;
+    return courant * dx / r_max;
 }
 
 // compute fire spread for burning cells
@@ -317,95 +315,229 @@ void Fire :: move(Solver* solver) {
         struct FireProperties fp = fire_cells[id].properties;
         
         // check neighbors
-        int idxF = id+1;
-        int idxB = id-1;
-        int idyF = id+nx;
-        int idyB = id-nx;
-        int idFF = id+1+nx;
-        int idFB = id+1-nx;
-        int idBF = id-1+nx;
-        int idBB = id-1-nx;
+        int idxF = id+1;     // x+1
+        int idxB = id-1;     // x-1
+        int idyF = id+nx;    // y+1
+        int idyB = id-nx;    // y-1
+        int idFF = id+1+nx;  // x+1, y+1
+        int idFB = id+1-nx;  // x+1, y-1
+        int idBF = id-1+nx;  // x-1, y+1
+        int idBB = id-1-nx;  // x-1, y-1
         
-        int iiF = ii+1;
-        int iiB = ii-1;
-        int jjF = jj+1;
-        int jjB = jj-1;
+        int iiF = ii+1;      // x+1
+        int iiB = ii-1;      // x-1
+        int jjF = jj+1;      // y+1
+        int jjB = jj-1;      // y-1
                 
-        // check that x+1 is in-bounds, then compute fraction
+        // check that x+1 is in-bounds
         if (iiF <= (nx-1)) {
+  
             double BxF = fire_cells[idxF].state.burn_flag;
+            
+            // check that neighbor is not on fire or burned out
             if (BxF != 1 && BxF != 2) {
                 
-                double frac = fmin(BxF+fp.rxf*dt/dx,1.0);
+                //compute area fraction
+                double frac = BxF+fp.rxf*dt/dx;
+                double over = frac > 1.0 ? frac-1.0 : 0.0; 
+                frac        = frac > 1.0 ? 1.0 : frac;                
                 fire_cells[idxF].state.burn_flag = frac;
+                
+                // if excess area fraction, move to next cell
+                int iiFN    = iiF+1;  // x+2 (next neighbor)
+                int idxFN   = idxF+1; // x+2 (next neighbor)
+                if (iiFN <= (nx-1)) {
+                    double BxFN = fire_cells[idxFN].state.burn_flag;
+                    if (BxFN != 1 && BxFN != 2) {
+                        fire_cells[idxFN].state.burn_flag += over;
+                    }
+                }
             }
         }
         
-        // check that x-1 is in-bounds, then compute fraction
+        // check that x-1 is in-bounds
         if (iiB>=0) {
+            
             double BxB = fire_cells[idxB].state.burn_flag;
+            
+            // check that neighbor is not on fire or burned out
             if (BxB != 1 && BxB != 2) {
-                double frac = fmin(BxB+fp.rxb*dt/dx,1.0);
+                
+                //compute area fraction
+                double frac = BxB+fp.rxb*dt/dx;
+                double over = frac > 1.0 ? frac-1.0 : 0.0; 
+                frac = frac > 1.0 ? 1.0 : frac; 
                 fire_cells[idxB].state.burn_flag = frac;
+                
+                // if excess area fraction, move to next cell
+                int iiBN    = iiB-1;  // x-2 (next neighbor)
+                int idxBN   = idxB-1; // x-2 (next neighbor)
+                if (iiBN>=0) {
+                    double BxBN = fire_cells[idxBN].state.burn_flag;
+                    if (BxBN != 1 && BxBN != 2) {
+                        fire_cells[idxBN].state.burn_flag += over;
+                    }
+                }
             }
         }
         
-        // check that y+1 is in-bounds, then compute fraction
+        // check that y+1 is in-bounds
         if (jjF<=(ny-1)) {
+            
             double ByF = fire_cells[idyF].state.burn_flag;
+            
+            // check that neighbor is not on fire or burned out
             if (ByF != 1 && ByF != 2) {
-                double frac = fmin(ByF+fp.ryf*dt/dy,1.0);
-                fire_cells[idyF].state.burn_flag = frac;        
+                
+                //compute area fraction
+                double frac = ByF+fp.ryf*dt/dy;
+                double over = frac > 1.0 ? frac-1.0 : 0.0; 
+                frac = frac > 1.0 ? 1.0 : frac;  
+                fire_cells[idyF].state.burn_flag = frac;
+                
+                // if excess area fraction, move to next cell
+                int jjFN    = jjF+1;   // y+2 (next neighbor)
+                int idyFN   = idyF+nx; // y+2 (next neighbor)
+                if (jjFN<=(ny-1)) {
+                    double ByFN = fire_cells[idyFN].state.burn_flag;
+                    if (ByFN != 1 && ByFN != 2) {
+                        fire_cells[idyFN].state.burn_flag += over;
+                    }
+                }        
             }
         }
         
-        // check that y-1 is in-bounds, then compute fraction
+        // check that y-1 is in-bounds
         if (jjB>=0) {
+            
             double ByB = fire_cells[idyB].state.burn_flag;
+            
+            // check that neighbor is not on fire or burned out
             if (ByB != 1 && ByB != 2) {
-                double frac = fmin(ByB+fp.ryb*dt/dy,1.0);
+                
+                //compute area fraction
+                double frac = ByB+fp.ryb*dt/dy;
+                double over = frac > 1.0 ? frac-1.0 : 0.0; 
+                frac = frac > 1.0 ? 1.0 : frac; 
                 fire_cells[idyB].state.burn_flag = frac;
+                
+                // if excess area fraction, move to next cell
+                int jjBN  = jjB-1;   // y-2 (next neighbor)
+                int idyBN = idyB-nx; // y-2 (next neighbor)
+                if (jjBN>=0) {
+                    double ByBN = fire_cells[idyBN].state.burn_flag;
+                    if (ByBN != 1 && ByBN != 2) {
+                        fire_cells[idyBN].state.burn_flag += over;
+                    }
+                }
             }
         }
         
         // check that x+1, y+1 is in-bounds, then compute fraction
         if (iiF<=(nx-1) && jjF<=(ny-1)) {
+            
             double BdFF = fire_cells[idFF].state.burn_flag;
+            
+            // check that neighbor is not on fire or burned out
             if (BdFF != 1 && BdFF != 2) {
                 
-                double areafrac = fp.rxf*dt*fp.ryf*dt / (dx*dy);
-                double frac = fmin(BdFF+areafrac,1.0);
+                //compute area fraction
+                double frac = BdFF + (fp.rxf*dt*fp.ryf*dt / (dx*dy));
+                double over = frac > 1.0 ? frac-1.0 : 0.0;
+                frac = frac > 1.0 ? 1.0 : frac;
                 fire_cells[idFF].state.burn_flag = frac;
+                
+                // if excess area fraction, move to next cell
+                int iiFN  = iiF+1;     // x+2 (next neighbor)
+                int jjFN  = jjF+1;     // y+2 (next neighbor)
+                int idFFN = idFF+1+nx; // x+2, y+2 (next neighbor)
+                if (iiFN<=(nx-1) && jjFN<=(ny-1)) {
+                    double BdFFN = fire_cells[idFFN].state.burn_flag;
+                    if (BdFFN != 1 && BdFFN != 2) {
+                        fire_cells[idFFN].state.burn_flag += over;
+                    }
+                }
             }
         }
         
         // check that x+1, y-1 is in-bounds, then compute fraction
         if (iiF<=(nx-1) && jjB>=0) {
+            
             double BdFB = fire_cells[idFB].state.burn_flag;
+            
+            // check that neighbor is not on fire or burned out
             if (BdFB != 1 && BdFB != 2) {
-                double areafrac = fp.rxf*dt*fp.ryb*dt / (dx*dy);
-                double frac = fmin(BdFB+areafrac,1.0);
+                
+                //compute area fraction
+                double frac = BdFB + (fp.rxf*dt*fp.ryb*dt / (dx*dy));
+                double over = frac > 1.0 ? frac-1.0 : 0.0;
+                frac = frac > 1.0 ? 1.0 : frac;
                 fire_cells[idFB].state.burn_flag = frac;
+                
+                // if excess area fraction, move to next cell
+                int iiFN  = iiF+1;     // x+2 (next neighbor)
+                int jjBN  = jjB-1;     // y-2 (next neighbor)
+                int idFBN = idFB+1-nx; // x+2, y-2 (next neighbor)
+                if (iiFN<=(nx-1) && jjBN>=0) {
+                    double BdFBN = fire_cells[idFBN].state.burn_flag;
+                    if (BdFBN != 1 && BdFBN != 2) {
+                        fire_cells[idFBN].state.burn_flag += over;
+                    }
+                }
             }
         }
         
         // check that x-1, y+1 is in-bounds, then compute fraction
         if (iiB>=0 && jjF<=(ny-1)) {
+            
             double BdBF = fire_cells[idBF].state.burn_flag;
+            
+            // check that neighbor is not on fire or burned out
             if (BdBF != 1 && BdBF != 2) {
-                double areafrac = fp.rxb*dt*fp.ryf*dt / (dx*dy);
-                double frac = fmin(BdBF+areafrac,1.0);
+                
+                //compute area fraction
+                double frac = BdBF + (fp.rxb*dt*fp.ryf*dt / (dx*dy));
+                double over = frac > 1.0 ? frac-1.0 : 0.0;
+                frac = frac > 1.0 ? 1.0 : frac;
                 fire_cells[idBF].state.burn_flag = frac;
+                
+                // if excess area fraction, move to next cell
+                int iiBN  = iiB-1;     // x-2 (next neighbor)
+                int jjFN  = jjF+1;     // y+2 (next neighbor)
+                int idBFN = idBF-1+nx; // x-2, y+2 (next neighbor)
+                if (iiBN>=0 && jjFN<=(ny-1)) {
+                    double BdBFN = fire_cells[idBFN].state.burn_flag;
+                    if (BdBFN != 1 && BdBFN != 2) {
+                        fire_cells[idBFN].state.burn_flag += over;
+                    }
+                }
             }
         }
         
         // check that x-1, y-1 is in-bounds, then compute fraction
         if (iiB>=0 && jjB>=0) {
+            
             double BdBB = fire_cells[idBB].state.burn_flag;
+            
+            // check that neighbor is not on fire or burned out
             if (BdBB != 1 && BdBB != 2) {
-                double areafrac = fp.rxb*dt*fp.ryb*dt / (dx*dy);
-                double frac = fmin(BdBB+areafrac,1.0);
+                
+                //compute area fraction
+                double frac = BdBB + (fp.rxb*dt*fp.ryb*dt / (dx*dy));
+                double over = frac > 1.0 ? frac-1.0 : 0.0;
+                frac = frac > 1.0 ? 1.0 : frac;
                 fire_cells[idBB].state.burn_flag = frac;
+                
+                // if excess area fraction, move to next cell
+                int iiBN  = iiB-1;     // x-2 (next neighbor)
+                int jjBN  = jjB-1;     // y-2 (next neighbor)
+                int idBBN = idBB-1-nx; // x-2, y-2 (next neighbor)
+                if (iiBN>=0 && jjBN>=0) {
+                    double BdBBN = fire_cells[idBBN].state.burn_flag;
+                    if (BdBBN != 1 && BdBBN != 2) {
+                        fire_cells[idBBN].state.burn_flag += over;
+                    }
+                }
             }
         }
                         

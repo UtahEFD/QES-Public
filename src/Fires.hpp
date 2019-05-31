@@ -12,7 +12,7 @@ class Fires : public ParseInterface {
     public:
     
     	int numFires,fuelType;
-    	float height,baseHeight,xStart,yStart,length,width;
+    	float height,baseHeight,xStart,yStart,length,width,courant;
     
     	virtual void parseValues() {
     		parsePrimitive<int>(true,   numFires,   "numFires");
@@ -23,6 +23,7 @@ class Fires : public ParseInterface {
     		parsePrimitive<float>(true, yStart,     "yStart");
     		parsePrimitive<float>(true, length,     "length");
     		parsePrimitive<float>(true, width,      "width");
+    		parsePrimitive<float>(true, courant,    "courant");
     	}
 };
 #endif
