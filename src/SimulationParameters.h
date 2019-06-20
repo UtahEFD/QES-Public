@@ -38,11 +38,11 @@ public:
 	int meshTypeFlag;
 	float halo_x;
 	float halo_y;
-        std::string demFile;    // DEM file name
+  std::string demFile;    // DEM file name
 
-    // SHP File parameters
-    std::string shpFile;   // SHP file name
-    std::string shpBuildingLayerName;
+  // SHP File parameters
+  std::string shpFile;   // SHP file name
+  std::string shpBuildingLayerName;
 
 
 	SimulationParameters()
@@ -79,11 +79,11 @@ public:
 		demFile = "";
 		parsePrimitive<std::string>(false, demFile, "DEM");
 
-                shpFile = "";
-                parsePrimitive<std::string>(false, shpFile, "SHP");
+    shpFile = "";
+  	parsePrimitive<std::string>(false, shpFile, "SHP");
 
-                shpBuildingLayerName = "buildings";  // defaults
-                parsePrimitive<std::string>(false, shpBuildingLayerName, "SHPBuildingLayer");
+    shpBuildingLayerName = "buildings";  // defaults
+    parsePrimitive<std::string>(false, shpBuildingLayerName, "SHPBuildingLayer");
 	}
 
 };

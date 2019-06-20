@@ -13,12 +13,12 @@ using namespace std;
 
 
 void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<double> &u0,
-	 						std::vector<double> &v0, std::vector<double> &w0, std::vector<float> x, std::vector<float> y,
-							std::vector<float> z, std::vector<Sensor*> sensors, Canopy* canopy, float UTMx, float UTMy, float theta,
-							float UTMZone)
+	 						std::vector<double> &v0, std::vector<double> &w0, std::vector<float> z, std::vector<Sensor*> sensors,
+							Canopy* canopy, float UTMx, float UTMy, float theta, float UTMZone, std::vector<float> z0_domain,
+							std::vector<int> terrain_id)
 {
 
-	float psi, x_temp, u_star;
+	float psi, psi_first, x_temp, u_star;
 	float rc_sum, rc_val, xc, yc, rc, dn, lamda, s_gamma;
 	float sum_wm, sum_wu, sum_wv;
 	int iwork = 0, jwork = 0;
@@ -29,15 +29,21 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 	float site_lon, site_lat;
 	float wind_dir, z0_new, z0_high, z0_low;
 	float u_new, u_new_low, u_new_high;
-	int log_flag, iter;
+	int log_flag, iter, id;
 	float a1, a2, a3;
 	float site_mag;
+	float blending_height = 0.0, average__one_overL = 0.0;
+	int max_terrain_id = 1;
+	std::vector<float> x,y;
 
 	int num_sites = sensors.size();
 	std::vector<std::vector<double>> u_prof(num_sites, std::vector<double>(nz,0.0));
 	std::vector<std::vector<double>> v_prof(num_sites, std::vector<double>(nz,0.0));
 	int icell_face, icell_cent;
 
+	std::vector<int> site_i(num_sites,0);
+	std::vector<int> site_j(num_sites,0);
+	std::vector<int> site_id(num_sites,0);
 	std::vector<float> u0_int(num_sites,0.0);
 	std::vector<float> v0_int(num_sites,0.0);
 	std::vector<float> site_theta(num_sites,0.0);
@@ -46,9 +52,14 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 	std::vector<std::vector<std::vector<double>>> wms(num_sites, std::vector<std::vector<double>>(nx, std::vector<double>(ny,0.0)));
 
 	// Loop through all sites and create velocity profiles (u0,v0)
-	for (int i = 0 ; i < num_sites; i++)
+	for (auto i = 0 ; i < num_sites; i++)
 	{
 		float convergence = 0.0;
+	  site_i[i] = sensors[i]->site_xcoord/dx;
+		site_j[i] = sensors[i]->site_ycoord/dy;
+		site_id[i] = site_i[i] + site_j[i]*(nx-1);
+		blending_height += sensors[i]->site_z_ref[0]/num_sites;
+		average__one_overL += sensors[i]->site_one_overL/num_sites;
 		if (UTMx != 0 && UTMy != 0)
 		{
 			if (sensors[i]->site_coord_flag == 1)
@@ -74,18 +85,18 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 		// If site has a uniform velocity profile
 		if (sensors[i]->site_blayer_flag == 0)
 		{
-			for (int k = 1; k < nz; k++)
+			for (auto k = terrain_id[site_id[i]]; k < nz; k++)
 			{
-				u_prof[i][k] = 0.0;
-				v_prof[i][k] = 0.0;
+				u_prof[i][k] = cos(site_theta[i])*sensors[i]->site_U_ref[0];
+				v_prof[i][k] = sin(site_theta[i])*sensors[i]->site_U_ref[0];
 			}
 		}
 		// Logarithmic velocity profile
 		if (sensors[i]->site_blayer_flag == 1)
 		{
-			for (int k = 1; k < nz-1; k++)
+			for (auto k = terrain_id[site_id[i]]; k < nz; k++)
 			{
-				if (k == 1)
+				if (k == terrain_id[site_id[i]])
 				{
 					if (sensors[i]->site_z_ref[0]*sensors[i]->site_one_overL >= 0)
 					{
@@ -117,7 +128,7 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 		// Exponential velocity profile
 		if (sensors[i]->site_blayer_flag == 2)
 		{
-			for (int k = 1; k < nz; k++)
+			for (auto k = terrain_id[site_id[i]]; k < nz; k++)
 			{
 				u_prof[i][k] = cos(site_theta[i])*sensors[i]->site_U_ref[0]*pow((z[k]/sensors[i]->site_z_ref[0]),sensors[i]->site_z0);
 				v_prof[i][k] = sin(site_theta[i])*sensors[i]->site_U_ref[0]*pow((z[k]/sensors[i]->site_z_ref[0]),sensors[i]->site_z0);
@@ -127,9 +138,9 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 		// Canopy velocity profile
 		if (sensors[i]->site_blayer_flag == 3)
 		{
-			for (int k = 1; k< nz; k++)
+			for (auto k = terrain_id[site_id[i]]; k< nz; k++)
 			{
-				if (k == 1)
+				if (k == terrain_id[site_id[i]])
 				{
 					if (sensors[i]->site_z_ref[0]*sensors[i]->site_one_overL > 0)
 					{
@@ -201,7 +212,7 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 			int z_size = sensors[i]->site_z_ref.size();
 			int ii = -1;
 			site_theta[i] = (270.0-sensors[i]->site_wind_dir[0])*M_PI/180.0;
-			for (auto k=1; k<nz; k++)
+			for (auto k=terrain_id[site_id[i]]; k<nz; k++)
 			{
 				if (z[k] < sensors[i]->site_z_ref[0] || z_size == 1)
 				{
@@ -305,14 +316,26 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 		}
 	}
 
+	x.resize( nx );
+	for (size_t i=0; i<nx; i++)
+	{
+		x[i] = (i-0.5)*dx;          /**< Location of face centers in x-dir */
+	}
+
+	y.resize( ny );
+	for (auto j=0; j<ny; j++)
+	{
+		y[j] = (j-0.5)*dy;          /**< Location of face centers in y-dir */
+	}
+
 
 	if (num_sites == 1)
 	{
-		for ( int k = 0; k < nz; k++)
+		for ( auto k = 0; k < nz; k++)
 		{
-			for (int j = 0; j < ny; j++)
+			for (auto j = 0; j < ny; j++)
 			{
-				for (int i = 0; i < nx; i++)
+				for (auto i = 0; i < nx; i++)
 				{
 
 					icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
@@ -329,10 +352,10 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 	else
 	{
 		rc_sum = 0.0;
-		for (int i = 0; i < num_sites; i++)
+		for (auto i = 0; i < num_sites; i++)
 		{
 			rc_val = 1000000.0;
-			for (int ii = 0; ii < num_sites; ii++)
+			for (auto ii = 0; ii < num_sites; ii++)
 			{
 				xc = sensors[ii]->site_xcoord - sensors[i]->site_xcoord;
 				yc = sensors[ii]->site_ycoord - sensors[i]->site_ycoord;
@@ -346,12 +369,12 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 		dn = rc_sum/num_sites;
 		lamda = 5.052*pow((2*dn/M_PI),2.0);
 		s_gamma = 0.2;
-		for (int j=0; j<ny-1; j++)
+		for (auto j=0; j<ny; j++)
 		{
-			for (int i=0; i<nx-1; i++)
+			for (auto i=0; i<nx; i++)
 			{
 				sum_wm = 0.0;
-				for (int ii=0; ii<num_sites; ii++)
+				for (auto ii=0; ii<num_sites; ii++)
 				{
 					wm[ii][i][j] = exp((-1/lamda)*pow(sensors[ii]->site_xcoord-x[i],2.0)-(1/lamda)*pow(sensors[ii]->site_ycoord-y[j],2.0));
 					wms[ii][i][j] = exp((-1/(s_gamma*lamda))*pow(sensors[ii]->site_xcoord-x[i],2.0)-(1/(s_gamma*lamda))*
@@ -360,7 +383,7 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 				}
 				if (sum_wm == 0)
 				{
-					for (int ii = 0; ii<num_sites; ii++)
+					for (auto ii = 0; ii<num_sites; ii++)
 					{
 						wm[ii][i][j] = 1e-20;
 					}
@@ -368,16 +391,16 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 			}
 		}
 
-		for (int k=1; k<nz-1; k++)
+		for (auto k=1; k<nz; k++)
 		{
-			for (int j=0; j<ny-1; j++)
+			for (auto j=0; j<ny; j++)
 			{
-				for (int i=0; i<nx-1; i++)
+				for (auto i=0; i<nx; i++)
 				{
 					sum_wu = 0.0;
 					sum_wv = 0.0;
 					sum_wm = 0.0;
-					for (int ii=0; ii<num_sites; ii++)
+					for (auto ii=0; ii<num_sites; ii++)
 					{
 						sum_wu += wm[ii][i][j]*u_prof[ii][k];
 						sum_wv += wm[ii][i][j]*v_prof[ii][k];
@@ -390,18 +413,18 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 				}
 			}
 
-			for (int ii=0; ii<num_sites; ii++)
+			for (auto ii=0; ii<num_sites; ii++)
 			{
 				if(sensors[ii]->site_xcoord>0 && sensors[ii]->site_xcoord<(nx-1)*dx && sensors[ii]->site_ycoord>0 && sensors[ii]->site_ycoord<(ny-1)*dy)
 				{
-					for (int j=0; j<ny-1; j++)
+					for (auto j=0; j<ny; j++)
 					{
 						if (y[j]<sensors[ii]->site_ycoord)
 						{
 							jwork = j;
 						}
 					}
-					for (int i=0; i<nx-1; i++)
+					for (auto i=0; i<nx; i++)
 					{
 						if (x[i]<sensors[ii]->site_xcoord)
 						{
@@ -426,14 +449,14 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 				}
 			}
 
-			for (int j=0; j<ny-1; j++)
+			for (auto j=0; j<ny; j++)
 			{
-				for (int i=0; i<nx-1; i++)
+				for (auto i=0; i<nx; i++)
 				{
 					sum_wu = 0.0;
 					sum_wv = 0.0;
 					sum_wm = 0.0;
-					for (int ii=0; ii<num_sites; ii++)
+					for (auto ii=0; ii<num_sites; ii++)
 					{
 						sum_wu += wm[ii][i][j]*(u_prof[ii][k]-u0_int[ii]);
 						sum_wv += wm[ii][i][j]*(v_prof[ii][k]-v0_int[ii]);
@@ -446,9 +469,142 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 						v0[icell_face] = v0[icell_face]+sum_wv/sum_wm;
 					}
 				}
+				//std::cout << "u0:   "  << u0[nx-1+j*nx+k*nx*ny] << std::endl;
 			}
 		}
 	}
+
+	double sum_z0=0.0;
+	double z0_effective;
+	int height_id, blending_id;
+	std::vector<float> blending_velocity, blending_theta;
+	std::cout << "sum_z0:   " << sum_z0 << std::endl;
+	for (auto i=0; i<nx; i++)
+	{
+		for (auto j=0; j<ny; j++)
+		{
+			id = i+j*nx;
+			if (terrain_id[id] > max_terrain_id)
+			{
+				max_terrain_id = terrain_id[id];
+			}
+		}
+	}
+
+	for (auto i=0; i<nx; i++)
+	{
+		for (auto j=0; j<ny; j++)
+		{
+			id = i+j*nx;
+			sum_z0 += log(z0_domain[id]+(terrain_id[id]-1)*dz);
+		}
+	}
+	std::cout << "sum_z0:   " << sum_z0 << std::endl;
+	z0_effective = exp(sum_z0/(nx*ny));
+	std::cout << "z0_effective:   " << z0_effective << std::endl;
+	std::cout << "blending_height:   " << blending_height << std::endl;
+	std::cout << "average__one_overL:   " << average__one_overL << std::endl;
+	blending_height = blending_height+(max_terrain_id-1)*dz;
+	height_id = (blending_height/dz)+1;
+	std::cout << "height_id:   " << height_id << "\t \t"<< z[height_id]<< std::endl;
+
+	blending_velocity.resize( nx*ny, 0.0 );
+	blending_theta.resize( nx*ny, 0.0 );
+
+	for (auto i=0; i<nx; i++)
+	{
+		for (auto j=0; j<ny; j++)
+		{
+			blending_id = i+j*nx+height_id*nx*ny;
+			id = i+j*nx;
+			blending_velocity[id] = sqrt(pow(u0[blending_id],2.0)+pow(v0[blending_id],2.0));
+			blending_theta[id] = atan2(v0[blending_id],u0[blending_id]);
+			//std::cout << "id" << "\t \t"<< id  << "\t \t"<< "blending_velocity:   "  << "\t \t" <<blending_velocity[id] << std::endl;
+		}
+	}
+
+	for (auto i=0; i<nx; i++)
+	{
+		for (auto j=0; j<ny; j++)
+		{
+			id = i+j*nx;
+			if (blending_height*average__one_overL >= 0)
+			{
+				psi_first = 4.7*blending_height*average__one_overL;
+			}
+			else
+			{
+				x_temp = pow((1.0-15.0*blending_height*average__one_overL),0.25);
+				psi_first = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
+			}
+			//std::cout << "psi:   "  << psi_first << std::endl;
+			//std::cout << "terrain_id[id]:   " << terrain_id[id] << std::endl;
+			//std::cout << "terrain_id[id]+height_id:   " << terrain_id[id]+height_id << std::endl;
+
+			for (auto k = terrain_id[id]; k < height_id; k++)
+			{
+				if (z[k]*average__one_overL >= 0)
+				{
+					psi = 4.7*z[k]*average__one_overL;
+				}
+				else
+				{
+					x_temp = pow((1.0-15.0*z[k]*average__one_overL),0.25);
+					psi = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
+				}
+				icell_face = i+j*nx+k*nx*ny;
+				//std::cout << "psi:   "  << psi << std::endl;
+				u_star = blending_velocity[id]*vk/(log((blending_height+z0_domain[id])/z0_domain[id])+psi_first);
+				//std::cout << "ustar:   "  << u_star << std::endl;
+				u0[icell_face] = (cos(blending_theta[id])*u_star/vk)*(log((z[k]+z0_domain[id])/z0_domain[id])+psi);
+				v0[icell_face] = (sin(blending_theta[id])*u_star/vk)*(log((z[k]+z0_domain[id])/z0_domain[id])+psi);
+				//std::cout << "i" << "\t \t"<< i <<  "\t \t"<<"j" << "\t \t"<< j <<  "\t \t"<<"k" << "\t \t"<< k  << "\t \t" << "u0[icell_face]:   "  << u0[icell_face] << std::endl;
+			}
+
+			for (auto k = height_id+1; k < nz-1; k++)
+			{
+				if (z[k]*average__one_overL >= 0)
+				{
+					psi = 4.7*z[k]*average__one_overL;
+				}
+				else
+				{
+					x_temp = pow((1.0-15.0*z[k]*average__one_overL),0.25);
+					psi = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
+				}
+				//std::cout << "k" << "\t \t"<< k  << "\t \t" << "z:   "  << z[k] << std::endl;
+				icell_face = i+j*nx+k*nx*ny;
+				//std::cout << "blending_theta:   "  << blending_theta << std::endl;
+				u_star = blending_velocity[id]*vk/(log((blending_height+z0_effective)/z0_effective)+psi_first);
+				u0[icell_face] = (cos(blending_theta[id])*u_star/vk)*(log((z[k]+z0_effective)/z0_effective)+psi);
+				v0[icell_face] = (sin(blending_theta[id])*u_star/vk)*(log((z[k]+z0_effective)/z0_effective)+psi);
+				//std::cout << "k" << "\t \t"<< k  << "\t \t" << "u0[icell_face]:   "  << u0[icell_face] << std::endl;
+			}
+
+		}
+	}
+
+
+	/*ofstream outdata1;
+	outdata1.open("Initial velocity.dat");
+	if( !outdata1 ) {                 // File couldn't be opened
+			cerr << "Error: file could not be opened" << endl;
+			exit(1);
+	}
+	// Write data to file
+	for (int k = 0; k < nz-1; k++){
+			for (int j = 0; j < ny; j++){
+					for (int i = 0; i < nx; i++){
+						id = i+j*(nx-1);
+			int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+			int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
+							outdata1 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k]
+					<< "\t \t"<< "\t \t" <<  u0[icell_face] <<"\t \t"<< "\t \t"<<v0[icell_face]
+					<<"\t \t"<< "\t \t"<<w0[icell_face]<< "\t \t"<< "\t \t"<<terrain_id[id]<<endl;
+					}
+			}
+	}
+	outdata1.close();*/
 
 }
 
