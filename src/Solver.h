@@ -66,12 +66,14 @@ protected:
     int itermax;		/**< Maximum number of iterations */
 
     // General QUIC Domain Data needed in solvers
+    int id;
     int nx, ny, nz;		/**< number of cells */
     float dx, dy, dz;		/**< Grid resolution*/
     float dxy;		/**< Minimum value between dx and dy */
     std::vector<float> dz_array, zm;
     std::vector<float> x,y,z;
     std::vector<double> x_out,y_out,z_out, terrain;
+    std::vector<int> terrain_id;
 
     Sensor* sensor;
     int num_sites;			/**< number of data entry sites */
@@ -84,6 +86,7 @@ protected:
     std::vector<float> site_z0;			/**< site surface roughness */
     std::vector<std::vector<float>> site_z_ref;		/**< measuring sensor height */
     std::vector<std::vector<float>> site_U_ref;		/**< site measured velocity */
+    std::vector<float> z0_domain;
 
     std::vector<float> site_canopy_H;
     std::vector<float> site_atten_coeff;
