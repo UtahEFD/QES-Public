@@ -1,3 +1,36 @@
+/*
+ * CUDA-URB
+ * Copyright (c) 2019 Behnam Bozorgmehr
+ * Copyright (c) 2019 Eric Pardyjak
+ * Copyright (c) 2019 Rob Stoll
+ * Copyright (c) 2019 Pete Willemsen
+ *
+ * This file is part of CUDA-URB
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
+
+
+
 #include "Sensor.h"
 #include <math.h>
 #include <iostream>
@@ -15,7 +48,7 @@ using namespace std;
 void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<double> &u0,
 	 						std::vector<double> &v0, std::vector<double> &w0, std::vector<float> z, std::vector<Sensor*> sensors,
 							Canopy* canopy, float UTMx, float UTMy, float theta, float UTMZone, std::vector<float> z0_domain,
-							std::vector<int> terrain_id)
+							std::vector<int> terrain_id, std::vector<double> terrain, int z0_domain_flag)
 {
 
 	float psi, psi_first, x_temp, u_star;
@@ -33,7 +66,7 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 	float a1, a2, a3;
 	float site_mag;
 	float blending_height = 0.0, average__one_overL = 0.0;
-	int max_terrain_id = 1;
+	int max_terrain = 1;
 	std::vector<float> x,y;
 
 	int num_sites = sensors.size();
@@ -58,7 +91,30 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 	  site_i[i] = sensors[i]->site_xcoord/dx;
 		site_j[i] = sensors[i]->site_ycoord/dy;
 		site_id[i] = site_i[i] + site_j[i]*(nx-1);
-		blending_height += sensors[i]->site_z_ref[0]/num_sites;
+		for (auto j=0; j<sensors[i]->site_z_ref.size(); j++)
+		{
+			sensors[i]->site_z_ref[j] -= terrain[site_id[i]];
+		}
+		int id = 1;
+		int counter = 0;
+		if (sensors[i]->site_z_ref[0] > 0)
+		{
+			blending_height += sensors[i]->site_z_ref[0]/num_sites;
+		}
+		else
+		{
+			if (sensors[i]->site_blayer_flag == 4 )
+			{
+				while (id<sensors[i]->site_z_ref.size() && sensors[i]->site_z_ref[id]>0 && counter<1)
+				{
+					blending_height += sensors[i]->site_z_ref[id]/num_sites;
+					counter += 1;
+					id += 1;
+				}
+			}
+		}
+
+		std::cout << "blending_height:   " << blending_height << std::endl;
 		average__one_overL += sensors[i]->site_one_overL/num_sites;
 		if (UTMx != 0 && UTMy != 0)
 		{
@@ -474,137 +530,150 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 		}
 	}
 
-	double sum_z0=0.0;
-	double z0_effective;
-	int height_id, blending_id;
-	std::vector<float> blending_velocity, blending_theta;
-	std::cout << "sum_z0:   " << sum_z0 << std::endl;
-	for (auto i=0; i<nx; i++)
+	if (z0_domain_flag == 1)
 	{
-		for (auto j=0; j<ny; j++)
+		double sum_z0=0.0;
+		double z0_effective;
+		int height_id, blending_id, max_terrain_id;
+		std::vector<float> blending_velocity, blending_theta;
+		std::cout << "sum_z0:   " << sum_z0 << std::endl;
+		for (auto i=0; i<nx; i++)
 		{
-			id = i+j*nx;
-			if (terrain_id[id] > max_terrain_id)
+			for (auto j=0; j<ny; j++)
 			{
-				max_terrain_id = terrain_id[id];
-			}
-		}
-	}
-
-	for (auto i=0; i<nx; i++)
-	{
-		for (auto j=0; j<ny; j++)
-		{
-			id = i+j*nx;
-			sum_z0 += log(z0_domain[id]+(terrain_id[id]-1)*dz);
-		}
-	}
-	std::cout << "sum_z0:   " << sum_z0 << std::endl;
-	z0_effective = exp(sum_z0/(nx*ny));
-	std::cout << "z0_effective:   " << z0_effective << std::endl;
-	std::cout << "blending_height:   " << blending_height << std::endl;
-	std::cout << "average__one_overL:   " << average__one_overL << std::endl;
-	blending_height = blending_height+(max_terrain_id-1)*dz;
-	height_id = (blending_height/dz)+1;
-	std::cout << "height_id:   " << height_id << "\t \t"<< z[height_id]<< std::endl;
-
-	blending_velocity.resize( nx*ny, 0.0 );
-	blending_theta.resize( nx*ny, 0.0 );
-
-	for (auto i=0; i<nx; i++)
-	{
-		for (auto j=0; j<ny; j++)
-		{
-			blending_id = i+j*nx+height_id*nx*ny;
-			id = i+j*nx;
-			blending_velocity[id] = sqrt(pow(u0[blending_id],2.0)+pow(v0[blending_id],2.0));
-			blending_theta[id] = atan2(v0[blending_id],u0[blending_id]);
-			//std::cout << "id" << "\t \t"<< id  << "\t \t"<< "blending_velocity:   "  << "\t \t" <<blending_velocity[id] << std::endl;
-		}
-	}
-
-	for (auto i=0; i<nx; i++)
-	{
-		for (auto j=0; j<ny; j++)
-		{
-			id = i+j*nx;
-			if (blending_height*average__one_overL >= 0)
-			{
-				psi_first = 4.7*blending_height*average__one_overL;
-			}
-			else
-			{
-				x_temp = pow((1.0-15.0*blending_height*average__one_overL),0.25);
-				psi_first = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
-			}
-			//std::cout << "psi:   "  << psi_first << std::endl;
-			//std::cout << "terrain_id[id]:   " << terrain_id[id] << std::endl;
-			//std::cout << "terrain_id[id]+height_id:   " << terrain_id[id]+height_id << std::endl;
-
-			for (auto k = terrain_id[id]; k < height_id; k++)
-			{
-				if (z[k]*average__one_overL >= 0)
+				id = i+j*nx;
+				if (terrain_id[id] > max_terrain)
 				{
-					psi = 4.7*z[k]*average__one_overL;
+					max_terrain = terrain_id[id];
+					max_terrain_id = i+j*(nx-1);
+				}
+			}
+		}
+
+		for (auto i=0; i<nx; i++)
+		{
+			for (auto j=0; j<ny; j++)
+			{
+				id = i+j*nx;
+				sum_z0 += log(z0_domain[id]+z[terrain_id[id]]);
+			}
+		}
+		std::cout << "sum_z0:   " << sum_z0 << std::endl;
+		z0_effective = exp(sum_z0/(nx*ny));
+		std::cout << "z0_effective:   " << z0_effective << std::endl;
+		std::cout << "blending_height:   " << blending_height << std::endl;
+		std::cout << "average__one_overL:   " << average__one_overL << std::endl;
+		std::cout << "max_terrain_id:   " << max_terrain_id << std::endl;
+		std::cout << "terrain[max_terrain_id]:   " << terrain[max_terrain_id] << std::endl;
+		blending_height = blending_height+terrain[max_terrain_id];
+		for (auto k=0; k<z.size(); k++)
+		{
+			height_id = k+1;
+			if (blending_height < z[k+1])
+			{
+				break;
+			}
+		}
+		std::cout << "height_id:   " << height_id << "\t \t"<< z[height_id]<< std::endl;
+
+		blending_velocity.resize( nx*ny, 0.0 );
+		blending_theta.resize( nx*ny, 0.0 );
+
+		for (auto i=0; i<nx; i++)
+		{
+			for (auto j=0; j<ny; j++)
+			{
+				blending_id = i+j*nx+height_id*nx*ny;
+				id = i+j*nx;
+				blending_velocity[id] = sqrt(pow(u0[blending_id],2.0)+pow(v0[blending_id],2.0));
+				blending_theta[id] = atan2(v0[blending_id],u0[blending_id]);
+				//std::cout << "id" << "\t \t"<< id  << "\t \t"<< "blending_velocity:   "  << "\t \t" <<blending_velocity[id] << std::endl;
+			}
+		}
+
+		for (auto i=0; i<nx; i++)
+		{
+			for (auto j=0; j<ny; j++)
+			{
+				id = i+j*nx;
+				if (blending_height*average__one_overL >= 0)
+				{
+					psi_first = 4.7*blending_height*average__one_overL;
 				}
 				else
 				{
-					x_temp = pow((1.0-15.0*z[k]*average__one_overL),0.25);
-					psi = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
+					x_temp = pow((1.0-15.0*blending_height*average__one_overL),0.25);
+					psi_first = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
 				}
-				icell_face = i+j*nx+k*nx*ny;
-				//std::cout << "psi:   "  << psi << std::endl;
-				u_star = blending_velocity[id]*vk/(log((blending_height+z0_domain[id])/z0_domain[id])+psi_first);
-				//std::cout << "ustar:   "  << u_star << std::endl;
-				u0[icell_face] = (cos(blending_theta[id])*u_star/vk)*(log((z[k]+z0_domain[id])/z0_domain[id])+psi);
-				v0[icell_face] = (sin(blending_theta[id])*u_star/vk)*(log((z[k]+z0_domain[id])/z0_domain[id])+psi);
-				//std::cout << "i" << "\t \t"<< i <<  "\t \t"<<"j" << "\t \t"<< j <<  "\t \t"<<"k" << "\t \t"<< k  << "\t \t" << "u0[icell_face]:   "  << u0[icell_face] << std::endl;
-			}
+				//std::cout << "psi:   "  << psi_first << std::endl;
+				//std::cout << "terrain_id[id]:   " << terrain_id[id] << std::endl;
+				//std::cout << "terrain_id[id]+height_id:   " << terrain_id[id]+height_id << std::endl;
 
-			for (auto k = height_id+1; k < nz-1; k++)
-			{
-				if (z[k]*average__one_overL >= 0)
+				for (auto k = terrain_id[id]; k < height_id; k++)
 				{
-					psi = 4.7*z[k]*average__one_overL;
-				}
-				else
-				{
-					x_temp = pow((1.0-15.0*z[k]*average__one_overL),0.25);
-					psi = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
-				}
-				//std::cout << "k" << "\t \t"<< k  << "\t \t" << "z:   "  << z[k] << std::endl;
-				icell_face = i+j*nx+k*nx*ny;
-				//std::cout << "blending_theta:   "  << blending_theta << std::endl;
-				u_star = blending_velocity[id]*vk/(log((blending_height+z0_effective)/z0_effective)+psi_first);
-				u0[icell_face] = (cos(blending_theta[id])*u_star/vk)*(log((z[k]+z0_effective)/z0_effective)+psi);
-				v0[icell_face] = (sin(blending_theta[id])*u_star/vk)*(log((z[k]+z0_effective)/z0_effective)+psi);
-				//std::cout << "k" << "\t \t"<< k  << "\t \t" << "u0[icell_face]:   "  << u0[icell_face] << std::endl;
-			}
-
-		}
-	}
-
-
-	/*ofstream outdata1;
-	outdata1.open("Initial velocity.dat");
-	if( !outdata1 ) {                 // File couldn't be opened
-			cerr << "Error: file could not be opened" << endl;
-			exit(1);
-	}
-	// Write data to file
-	for (int k = 0; k < nz-1; k++){
-			for (int j = 0; j < ny; j++){
-					for (int i = 0; i < nx; i++){
-						id = i+j*(nx-1);
-			int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-			int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
-							outdata1 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k]
-					<< "\t \t"<< "\t \t" <<  u0[icell_face] <<"\t \t"<< "\t \t"<<v0[icell_face]
-					<<"\t \t"<< "\t \t"<<w0[icell_face]<< "\t \t"<< "\t \t"<<terrain_id[id]<<endl;
+					if (z[k]*average__one_overL >= 0)
+					{
+						psi = 4.7*z[k]*average__one_overL;
 					}
+					else
+					{
+						x_temp = pow((1.0-15.0*z[k]*average__one_overL),0.25);
+						psi = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
+					}
+					icell_face = i+j*nx+k*nx*ny;
+					//std::cout << "psi:   "  << psi << std::endl;
+					u_star = blending_velocity[id]*vk/(log((blending_height+z0_domain[id])/z0_domain[id])+psi_first);
+					//std::cout << "ustar:   "  << u_star << std::endl;
+					u0[icell_face] = (cos(blending_theta[id])*u_star/vk)*(log((z[k]+z0_domain[id])/z0_domain[id])+psi);
+					v0[icell_face] = (sin(blending_theta[id])*u_star/vk)*(log((z[k]+z0_domain[id])/z0_domain[id])+psi);
+					//std::cout << "i" << "\t \t"<< i <<  "\t \t"<<"j" << "\t \t"<< j <<  "\t \t"<<"k" << "\t \t"<< k  << "\t \t" << "u0[icell_face]:   "  << u0[icell_face] << std::endl;
+				}
+
+				for (auto k = height_id+1; k < nz-1; k++)
+				{
+					if (z[k]*average__one_overL >= 0)
+					{
+						psi = 4.7*z[k]*average__one_overL;
+					}
+					else
+					{
+						x_temp = pow((1.0-15.0*z[k]*average__one_overL),0.25);
+						psi = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
+					}
+					//std::cout << "k" << "\t \t"<< k  << "\t \t" << "z:   "  << z[k] << std::endl;
+					icell_face = i+j*nx+k*nx*ny;
+					//std::cout << "blending_theta:   "  << blending_theta << std::endl;
+					u_star = blending_velocity[id]*vk/(log((blending_height+z0_effective)/z0_effective)+psi_first);
+					u0[icell_face] = (cos(blending_theta[id])*u_star/vk)*(log((z[k]+z0_effective)/z0_effective)+psi);
+					v0[icell_face] = (sin(blending_theta[id])*u_star/vk)*(log((z[k]+z0_effective)/z0_effective)+psi);
+					//std::cout << "k" << "\t \t"<< k  << "\t \t" << "u0[icell_face]:   "  << u0[icell_face] << std::endl;
+				}
+
 			}
+		}
+
+
+		/*ofstream outdata1;
+		outdata1.open("Initial velocity.dat");
+		if( !outdata1 ) {                 // File couldn't be opened
+				cerr << "Error: file could not be opened" << endl;
+				exit(1);
+		}
+		// Write data to file
+		for (int k = 0; k < nz-1; k++){
+				for (int j = 0; j < ny; j++){
+						for (int i = 0; i < nx; i++){
+							id = i+j*(nx-1);
+				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+				int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
+								outdata1 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k]
+						<< "\t \t"<< "\t \t" <<  u0[icell_face] <<"\t \t"<< "\t \t"<<v0[icell_face]
+						<<"\t \t"<< "\t \t"<<w0[icell_face]<< "\t \t"<< "\t \t"<<terrain_id[id]<<endl;
+						}
+				}
+		}
+		outdata1.close();*/
 	}
-	outdata1.close();*/
 
 }
 

@@ -9,7 +9,79 @@
   <domain> 894 560 70</domain>				<!-- Number of cells in x,y and z directions-->
   <cellSize> 5.0 5.0 3.0 </cellSize> 		<!-- Mesh resolution (meters)-->
 
-  <verticalStretching> 0 </verticalStretching>		<!-- vertical stretching (0-uniform grid, 1-costum grid)-->
+  <verticalStretching> 1 </verticalStretching>              <!-- vertical stretching (0-uniform grid, 1-costum grid)-->
+		<dz_value> 2.0 </dz_value>
+		<dz_value> 2.0 </dz_value>
+		<dz_value> 2.0 </dz_value>
+		<dz_value> 2.1 </dz_value>
+		<dz_value> 2.2 </dz_value>
+		<dz_value> 2.3 </dz_value>
+		<dz_value> 2.4 </dz_value>
+		<dz_value> 2.5 </dz_value>
+		<dz_value> 2.6 </dz_value>
+		<dz_value> 2.7 </dz_value>
+		<dz_value> 2.8 </dz_value>
+		<dz_value> 2.9 </dz_value>
+		<dz_value> 3.0 </dz_value>
+		<dz_value> 3.1 </dz_value>
+		<dz_value> 3.2 </dz_value>
+		<dz_value> 3.3 </dz_value>
+		<dz_value> 3.4 </dz_value>
+		<dz_value> 3.5 </dz_value>
+		<dz_value> 3.6 </dz_value>
+		<dz_value> 3.7 </dz_value>
+		<dz_value> 3.8 </dz_value>
+		<dz_value> 3.9 </dz_value>
+		<dz_value> 4.0 </dz_value>
+		<dz_value> 4.1 </dz_value>
+		<dz_value> 4.2 </dz_value>
+		<dz_value> 4.3 </dz_value>
+		<dz_value> 4.4 </dz_value>
+		<dz_value> 4.5 </dz_value>
+		<dz_value> 4.6 </dz_value>
+		<dz_value> 4.7 </dz_value>
+		<dz_value> 4.8 </dz_value>
+		<dz_value> 4.9 </dz_value>
+		<dz_value> 5.0 </dz_value>
+		<dz_value> 5.1 </dz_value>
+		<dz_value> 5.2 </dz_value>
+		<dz_value> 5.3 </dz_value>
+		<dz_value> 5.4 </dz_value>
+		<dz_value> 5.5 </dz_value>
+		<dz_value> 5.6 </dz_value>
+		<dz_value> 5.7 </dz_value>
+		<dz_value> 5.8 </dz_value>
+		<dz_value> 5.9 </dz_value>
+		<dz_value> 6.0 </dz_value>
+		<dz_value> 6.1 </dz_value>
+		<dz_value> 6.2 </dz_value>
+		<dz_value> 6.3 </dz_value>
+		<dz_value> 6.4 </dz_value>
+		<dz_value> 6.5 </dz_value>
+		<dz_value> 6.6 </dz_value>
+		<dz_value> 6.7 </dz_value>
+		<dz_value> 6.8 </dz_value>
+		<dz_value> 6.9 </dz_value>
+		<dz_value> 7.0 </dz_value>
+		<dz_value> 7.2 </dz_value>
+		<dz_value> 7.7 </dz_value>
+		<dz_value> 8.2 </dz_value>
+		<dz_value> 8.8 </dz_value>
+		<dz_value> 9.4 </dz_value>
+		<dz_value> 10.0 </dz_value>
+		<dz_value> 10.6 </dz_value>
+		<dz_value> 11.2 </dz_value>
+		<dz_value> 12.0 </dz_value>
+		<dz_value> 12.0 </dz_value>
+		<dz_value> 12.0 </dz_value>
+		<dz_value> 12.0 </dz_value>
+		<dz_value> 12.0 </dz_value>
+		<dz_value> 12.0 </dz_value>
+		<dz_value> 12.0 </dz_value>
+		<dz_value> 12.0 </dz_value>
+		<dz_value> 12.0 </dz_value>
+		<dz_value> 12.0 </dz_value>
+
   <totalTimeIncrements> 1 </totalTimeIncrements> 				<!-- Number of time steps-->
   <rooftopFlag> 0 </rooftopFlag> 											<!-- Rooftop flag (0-none, 1-log profile, 2-vortex) -->
   <upwindCavityFlag> 0 </upwindCavityFlag> 						<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP, 3-HMVP) -->
@@ -36,6 +108,7 @@
   <maxSizeDataPoints> 2 </maxSizeDataPoints>
   <siteName> sensor1 </siteName>
   <fileName> sensor1.inp </fileName>
+  <z0_domain_flag> 1 </z0_domain_flag>            <!-- Distribution of sueface roughness for domain (0-uniform, 1-custom -->
   <sensor>
     <site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->
     <site_xcoord> 2768.0  </site_xcoord> 					<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
