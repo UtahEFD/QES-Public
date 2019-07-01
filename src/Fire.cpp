@@ -685,8 +685,8 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
         u0 = 2*nu*((s+1)/tau_0)*(rhoFuel/rhoAir)*(TFlame/T_a);       
         
         // Calculate flame tilt angle (gammax)
-        gammax = atan(tan(alphax)*cos(phi)+u_mid*cos(psi)/u0);
-        gammay = atan(tan(alphay)*cos(phi)+v_mid*cos(psi)/u0);
+        gammax = atan(tan(alphax)*cos(phi)+abs(u_mid)*cos(psi)/u0);
+        gammay = atan(tan(alphay)*cos(phi)+abs(v_mid)*cos(psi)/u0);
         
         // Compute flame height [eq.17]
         Hx = u0*u0/(g*(TFlame/T_a - 1)*cos(alphax)*cos(alphax));
