@@ -183,7 +183,6 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
 
     dz_array.resize( nz-1, 0.0 );
     z.resize( nz-1 );
-    zm.resize( nz-1 );
 
     if (UID->simParams->verticalStretching == 0)    // Uniform vertical grid
     {
