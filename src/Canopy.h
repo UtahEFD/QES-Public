@@ -30,6 +30,7 @@ public:
 
 	}
 
+
 	/*!
 	 *This function takes in variables read in from input files and initializes required variables for definig
 	 *canopy elementa.

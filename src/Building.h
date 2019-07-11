@@ -38,4 +38,18 @@ public:
 	float Lr;										/**< Length of far wake zone */
 
 	virtual void parseValues() = 0;
+
+    // virtual functions....
+    virtual void callParameterizationOne() 
+    {
+    }
+
+    virtual void callParameterizationTwo() 
+    {
+    }
+
+    virtual void callParameterizationSpecial() 
+    {
+    }
+    
 };

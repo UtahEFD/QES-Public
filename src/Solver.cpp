@@ -63,172 +63,10 @@ void Solver::printProgress (float percentage)
 * This function is assigning values read by URBImputData to variables used in the solvers
  */
 
-Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* output)
+Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, UrbGeneralData * ugb, Output* output)
     : itermax( UID->simParams->maxIterations )
 {
-    rooftopFlag = UID->simParams->rooftopFlag;
-    upwindCavityFlag = UID->simParams->upwindCavityFlag;
-    streetCanyonFlag = UID->simParams->streetCanyonFlag;
-    streetIntersectionFlag = UID->simParams->streetIntersectionFlag;
-    wakeFlag = UID->simParams->wakeFlag;
-    sidewallFlag = UID->simParams->sidewallFlag;
-    mesh_type_flag = UID->simParams->meshTypeFlag;
-    UTMx = UID->simParams->UTMx;
-    UTMy = UID->simParams->UTMy;
-    UTMZone = UID->simParams->UTMZone;
-    domain_rotation = UID->simParams->domainRotation;
 
-    theta = (domain_rotation*pi/180.0);
-
-    if ( UID->simParams->wakeFlag > 1)
-    {
-      cavity_factor = 1.1;
-      wake_factor = 0.1;
-    }
-    else
-    {
-      cavity_factor = 1.0;
-      wake_factor = 0.0;
-    }
-
-    // Pull Domain Size information from the UrbInputData structure --
-    // this is either read in from the XML files and/or potentially
-    // calculated based on the geographic data that was loaded
-    // (i.e. DEM files). It is important to get this data from the
-    // main input structure.
-    Vector3<int> domainInfo;
-    domainInfo = *(UID->simParams->domain);
-    nx = domainInfo[0];
-    ny = domainInfo[1];
-    nz = domainInfo[2];
-
-    // Modify the domain size to fit the Staggered Grid used in the solver
-    nx += 1;        /// +1 for Staggered grid
-    ny += 1;        /// +1 for Staggered grid
-    nz += 2;        /// +2 for staggered grid and ghost cell
-
-    numcell_cout    = (nx-1)*(ny-1)*(nz-2);        /**< Total number of cell-centered values in domain */
-    numcell_cout_2d = (nx-1)*(ny-1);               /**< Total number of horizontal cell-centered values in domain */
-    numcell_cent    = (nx-1)*(ny-1)*(nz-1);        /**< Total number of cell-centered values in domain */
-    numcell_face    = nx*ny*nz;                    /**< Total number of face-centered values in domain */
-
-    Vector3<float> gridInfo;
-    gridInfo = *(UID->simParams->grid);
-    dx = gridInfo[0];		/**< Grid resolution in x-direction */
-    dy = gridInfo[1];		/**< Grid resolution in y-direction */
-    dz = gridInfo[2];		/**< Grid resolution in z-direction */
-    dxy = MIN_S(dx, dy);
-
-    z0_domain.resize( nx*ny );
-    if (UID->metParams->z0_domain_flag == 0)      // Uniform z0 for the whole domain
-    {
-      for (auto i=0; i<nx; i++)
-      {
-        for (auto j=0; j<ny; j++)
-        {
-          id = i+j*nx;
-          z0_domain[id] = UID->metParams->sensors[0]->site_z0;
-        }
-      }
-    }
-    else
-    {
-      for (auto i=0; i<nx/2; i++)
-      {
-        for (auto j=0; j<ny; j++)
-        {
-          id = i+j*nx;
-          z0_domain[id] = 0.5;
-        }
-      }
-      for (auto i=nx/2; i<nx; i++)
-      {
-        for (auto j=0; j<ny; j++)
-        {
-          id = i+j*nx;
-          z0_domain[id] = 0.1;
-        }
-      }
-    }
-
-    if (UID->canopies)			// If there are canopies specified in input files
-    {
-        num_canopies = UID->canopies->num_canopies;
-        landuse_flag = UID->canopies->landuse_flag;
-        landuse_veg_flag = UID->canopies->landuse_veg_flag;
-        landuse_urb_flag = UID->canopies->landuse_urb_flag;
-        for (int i = 0; i < UID->canopies->canopies.size(); i++)
-        {
-            canopies.push_back(UID->canopies->canopies[i]);		// Add a new canopy element
-        }
-    }
-
-    if (UID->buildings)
-    {
-        z0 = UID->buildings->wallRoughness;
-
-        for (int i = 0; i < UID->buildings->buildings.size(); i++)
-        {
-            if (UID->buildings->buildings[i]->buildingGeometry == 1)
-            {
-                buildings.push_back(UID->buildings->buildings[i]);
-            }
-        }
-    }
-    else
-    {
-        buildings.clear();
-        z0 = 0.1f;
-    }
-
-    dz_array.resize( nz-1, 0.0 );
-    z.resize( nz-1 );
-
-    if (UID->simParams->verticalStretching == 0)    // Uniform vertical grid
-    {
-      for (auto k=1; k<z.size(); k++)
-      {
-        dz_array[k] = dz;
-      }
-    }
-    if (UID->simParams->verticalStretching == 1)     // Stretched vertical grid
-    {
-      for (auto k=1; k<z.size(); k++)
-      {
-        dz_array[k] = UID->simParams->dz_value[k-1];      // Read in custom dz values and set them to dz_array
-      }
-    }
-
-    dz_array[0] = dz_array[1];                  // Value for ghost cell below the surface
-    dz = *std::min_element(dz_array.begin() , dz_array.end());     // Set dz to minimum value of
-
-    z[0] = -0.5*dz_array[0];
-    for (auto k=1; k<z.size(); k++)
-    {
-      z[k] = z[k-1] + dz_array[k];     /**< Location of face centers in z-dir */
-    }
-
-    z_out.resize( nz-2 );
-    for (size_t k=1; k<z.size(); k++)
-    {
-      z_out[k-1] = (float)z[k];    /**< Location of face centers in z-dir */
-    }
-
-    x.resize( nx-1 );
-    x_out.resize( nx-1 );
-    for (size_t i=0; i<x.size(); i++)
-    {
-      x_out[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
-      x[i] = (float)x_out[i];
-    }
-
-    y.resize( ny-1 );
-    y_out.resize( ny-1 );
-    for (auto j=0; j<ny-1; j++)
-    {
-      y_out[j] = (j+0.5)*dy;          /**< Location of face centers in y-dir */
-      y[j] = (float)y_out[j];
-    }
 
     /// Initializing variables
     e.resize( numcell_cent, 1.0 );
@@ -294,7 +132,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
             }
         }
 
-        if (mesh_type_flag == 0)
+        if (UID->simParams->meshTypeFlag == 0)
         {
             // ////////////////////////////////
             // Stair-step (original QUIC)    //
@@ -337,7 +175,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
 
     // Calling inputWindProfile function to generate initial velocity field from sensors information (located in Sensor.cpp)
     sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0, v0, w0, z, UID->metParams->sensors,
-                            canopy, UTMx, UTMy, theta, UTMZone, z0_domain, terrain_id, terrain, UID->metParams->z0_domain_flag);
+                            canopy, UID->simParams->UTMx, UID->simParams->UTMy, theta, UID->simParams->UTMZone, z0_domain, terrain_id, terrain, UID->metParams->z0_domain_flag);
 
     max_velmag = 0.0;
     for (auto i=0; i<nx; i++)
@@ -488,7 +326,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
         {
           // Call setCellsFlag in the PolyBuilding class to identify building cells
-          poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz, icellflag, mesh_type_flag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
+          poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz, icellflag, UID->simParams->meshTypeFlag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
         }
         std::cout << "Buildings created...\n";
 
@@ -516,11 +354,11 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     ///////////////////////////////////////////////////////////////
     //    Stair-step (original QUIC) for rectangular buildings   //
     ///////////////////////////////////////////////////////////////
-    if (mesh_type_flag == 0)
+    if (UID->simParams->meshTypeFlag == 0)
     {
         for (int i = 0; i < buildings.size(); i++)
         {
-            ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz_array, nx, ny, nz, z, icellflag, mesh_type_flag);
+            ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz_array, nx, ny, nz, z, icellflag, UID->simParams->meshTypeFlag);
         }
     }
     /////////////////////////////////////////////////////////////
@@ -538,7 +376,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     	for (size_t i = 0; i < buildings.size(); i++)
     	{
         // Sets cells flag for each building
-        ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz_array, nx, ny, nz, z, icellflag, mesh_type_flag);
+        ((RectangularBuilding*)buildings[i])->setCellsFlag(dx, dy, dz_array, nx, ny, nz, z, icellflag, UID->simParams->meshTypeFlag);
         ((RectangularBuilding*)buildings[i])->setCutCells(dx, dy, dz_array,z, nx, ny, nz, icellflag, x_cut, y_cut, z_cut,
                                                               num_points, coeff);    // Sets cut-cells for specified building,
                                                                                      // located in RectangularBuilding.h
