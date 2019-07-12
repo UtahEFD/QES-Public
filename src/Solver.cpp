@@ -165,22 +165,8 @@ Solver::Solver(const URBInputData* UID,
     ///////////////////////////////////////////////////////
 
 
-    // now here...
-
-    /// defining ground solid cells (ghost cells below the surface)
-    for (int j = 0; j < ny-1; j++)
-    {
-        for (int i = 0; i < nx-1; i++)
-        {
-            int icell_cent = i + j*(nx-1);
-            icellflag[icell_cent] = 0.0;
-        }
-    }
-
-    /////////////////////////////////////////////////////////////
-    //                Apply building effect                    //
-    /////////////////////////////////////////////////////////////
-
+    // //////////////////////////////////////////
+    // Pete needs to get his out ASAP!
 
     // For now, process ESRIShapeFile here:
     ESRIShapefile *shpFile = nullptr;
@@ -259,22 +245,39 @@ Solver::Solver(const URBInputData* UID,
           }
         }
 
-        mergeSort( effective_height, shpPolygons, base_height, building_height);
+
         std::cout << "Creating buildings from shapefile...\n";
         // Loop to create each of the polygon buildings read in from the shapefile
         for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
         {
           // Create polygon buildings
+            // Pete needs to move this into URBInputData processing BUT
+          // instead of adding to the poly_buildings vector, it really
+          // needs to be pushed back onto buildings within the
+          // UID->buildings structures...
           poly_buildings.push_back (PolyBuilding (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], nx, ny,
                                       nz, dx, dy, dz, u0, v0, z));
         }
 
+        
+        
+        /// all cell flags should be specific to the TYPE ofbuilding
+        // class: canopy, rectbuilding, polybuilding, etc...
+        // should setcellflags be part of the .. should be part of URBGeneralD
         for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
         {
           // Call setCellsFlag in the PolyBuilding class to identify building cells
           poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz, icellflag, UID->simParams->meshTypeFlag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
+
+
         }
-        std::cout << "Buildings created...\n";
+        // Pete needs to get his out ASAP!
+        // //////////////////////////////////////////
+
+        
+        // !!!!!!!!!!!!!!!!!!!!! @*@*@*@*@*@
+        // We are here now...
+        // where does this go then????
 
         // If there is wake behind the building to apply
         if (UID->simParams->wakeFlag > 0)

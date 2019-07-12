@@ -40,6 +40,12 @@ public:
 	virtual void parseValues() = 0;
 
     // virtual functions....
+
+    // Need to finalize the parameters here...
+    virtual void setCellFlags(URBGeneraData *ugd)) 
+    {
+    }
+
     virtual void callParameterizationOne() 
     {
     }

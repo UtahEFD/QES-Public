@@ -162,7 +162,7 @@ public:
     * for building cells. It applies the Stair-step method to define building bounds.
     *
     */
-    void setCellsFlag (float dx, float dy, float dz, std::vector<float> z, int nx, int ny, int nz, std::vector<int> &icellflag, int mesh_type_flag,
+    void setCellFlags(URBGeneralData *ugd, float dx, float dy, float dz, std::vector<float> z, int nx, int ny, int nz, std::vector<int> &icellflag, int mesh_type_flag,
                         std::vector< polyVert > &polygonVertices, float baseHeight, float bldElevation)
     {
 

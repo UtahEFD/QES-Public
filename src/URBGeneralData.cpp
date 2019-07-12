@@ -224,6 +224,44 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     }
     max_velmag *= 1.2;
 
+
+
+
+    // ///////////////////////////////////////
+    // All iCellFlags should now be set!!!
+    // ///////////////////////////////////////
+
+    /// defining ground solid cells (ghost cells below the surface)
+    for (int j = 0; j < ny-1; j++)
+    {
+        for (int i = 0; i < nx-1; i++)
+        {
+            int icell_cent = i + j*(nx-1);
+            icellflag[icell_cent] = 0.0;
+        }
+    }
+
+    //
+    // Terrain stuff should go here too... somehow
+    //
+
+    // Now all buildings
+    for (int i = 0; i < allBuildingsV.size(); i++)
+    {
+        // for now this does the canopy stuff for us
+        allBuildingsV[i]->setCellFlags();
+    }
+
+    std::cout << "All building types (canopies, buildings, terrain) created and initialized...\n";
+
+
+    // We want to sort ALL buildings here...  use the allBuildingsV to
+    // do this... (remember some are canopies) so we may need a
+    // virtual function in the Building class to get the appropriate
+    // data for the sort.
+    mergeSort( effective_height, shpPolygons, base_height, building_height);
+
+
     // ///////////////////////////////////////
     // Generic Parameterization Related Stuff
     // ///////////////////////////////////////
@@ -233,7 +271,13 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
         allBuildingsV[i]->callParameterizationSpecial();  
     }
 
-
+    // Deal with the rest of the parameterization somehow all
+    // here... very generically.
+    for (int i = 0; i < allBuildingsV.size(); i++)
+    {
+        // for now this does the canopy stuff for us
+        allBuildingsV[i]->callParameterizationOne();
+    }
 
 }
 
