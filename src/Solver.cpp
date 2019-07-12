@@ -81,7 +81,7 @@ Solver::Solver(const URBInputData* UID,
 
     ////////////////////////////////////////////////////////
     //
-    // THIS NEEDS TO BE MOVE OUT OF HERE AND INTO THE INPUT PARSING!!!
+    // THIS NEEDS TO BE MOVED OUT OF HERE AND INTO THE INPUT PARSING!!!
     // -Pete
     // 
     // Behnam also notes that this section will be completely changed

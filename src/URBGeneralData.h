@@ -68,7 +68,7 @@ public:
     /// Declaration of initial wind components (u0,v0,w0)
     std::vector<double> u0,v0,w0;
 
-    Sensor* sensor;    
+    // Sensor* sensor;      may not need this now
 
     
     int id;
