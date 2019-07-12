@@ -12,6 +12,13 @@ public:
     URBGeneralData(const URBInputData *UID);
     ~URBGeneralData();
     
+    /*!
+     * This function is being called from the plantInitial function
+     * and uses the bisection method to find the displacement height
+     * of the canopy.
+     */
+    float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
+
     
 
     ////////////////////////////////////////////////////////////////////////////
@@ -46,19 +53,29 @@ public:
     std::vector<float> x,y,z;    
     std::vector<double> x_out,y_out,z_out;
 
+    /// Declaration of coefficients for SOR solver
+    std::vector<float> e,f,g,h,m,n;
+    
+    // The following are mostly used for output
+    std::vector<int> icellflag;  /**< Cell index flag (0 = building/terrain, 1 = fluid) */
+    std::vector<int> icellflag_out;    
+    std::vector<double> u_out,v_out,w_out;
+    std::vector<double> terrain; 
+    std::vector<int> terrain_id;      // Sensor function
+                                      // (inputWindProfile)
+    
+    // Initial wind conditions
+    /// Declaration of initial wind components (u0,v0,w0)
+    std::vector<double> u0,v0,w0;
+
+    Sensor* sensor;    
 
     
-
     int id;
 
-    // Just for output
 
-    std::vector<double> u_out,v_out,w_out;
-    std::vector<int> icellflag_out;
-    std::vector<double> terrain;
-    // Sensor function (inputWindProfile)
-    std::vector<int> terrain_id;
-    Sensor* sensor;
+
+
 
     std::vector<float> site_canopy_H;
     std::vector<float> site_atten_coeff;

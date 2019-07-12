@@ -207,53 +207,6 @@ void Canopy::regression(int nx, int ny, int nz, float vk, float* z, double *u0, 
 
 
 
-float Canopy::bisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m)
-{
-
-	int iter;
-	float tol, uhc, d, d1, d2, fi, fnew;
-
-	tol = z0/100;
-	fnew = tol*10;
-
-	d1 = z0;
-	d2 = canopy_top;
-	d = (d1+d2)/2;
-
-	uhc = (ustar/vk)*(log((canopy_top-d1)/z0)+psi_m);
-	fi = ((canopy_atten*uhc*vk)/ustar)-canopy_top/(canopy_top-d1);
-
-	if (canopy_atten > 0)
-	{
-		iter = 0;
-		while (iter < 200 && abs(fnew) > tol && d < canopy_top && d > z0)
-		{
-			iter += 1;
-			d = (d1+d2)/2;
-			uhc = (ustar/vk)*(log((canopy_top-d)/z0)+psi_m);
-			fnew = ((canopy_atten*uhc*vk)/ustar) - canopy_top/(canopy_top-d);
-			if(fnew*fi>0)
-			{
-				d1 = d;
-			}
-			else if(fnew*fi<0)
-			{
-				d2 = d;
-			}
-		}
-		if (d > canopy_top)
-		{
-			d = 10000;
-		}
-	}
-	else
-	{
-		d = 0.99*canopy_top;
-	}
-
-	return d;
-
-}
 
 
 float Canopy::canopy_slope_match(float z0, float canopy_top, float canopy_atten)
@@ -305,4 +258,32 @@ float Canopy::canopy_slope_match(float z0, float canopy_top, float canopy_atten)
 
 	return d;
 
+}
+
+
+void Canopy::callParameterizationSpecial()
+{
+    std::vector<std::vector<std::vector<float>>> canopy_atten(nx-1, std::vector<std::vector<float>>(ny-1, std::vector<float>(nz-1,0.0)));
+    std::vector<std::vector<float>> canopy_top(nx-1, std::vector<float>(ny-1,0.0));
+    std::vector<std::vector<float>> canopy_top_index(nx-1, std::vector<float>(ny-1,0.0));
+    std::vector<std::vector<float>> canopy_z0(nx-1, std::vector<float>(ny-1,0.0));
+    std::vector<std::vector<float>> canopy_ustar(nx-1, std::vector<float>(ny-1,0.0));
+    std::vector<std::vector<float>> canopy_d(nx-1, std::vector<float>(ny-1,0.0));
+
+    // When THIS canopy calls this function, we need to do the
+    // following:
+    readCanopy(nx, ny, nz,
+               landuse_flag, num_canopies, lu_canopy_flag,
+               canopy_atten, canopy_top);
+
+    // here because the array that holds this all Building*
+    defineCanopy(dx, dy, dz, nx, ny, nz, icellflag, num_canopies, lu_canopy_flag,
+                 canopy_atten, canopy_top);
+
+    // Defininf
+    // canopy
+    // bounderies
+    plantInitial(nx, ny, nz, vk, icellflag, z, u0, v0, canopy_atten, canopy_top, canopy_top_index,
+                                 canopy_ustar, canopy_z0, canopy_d);		// Apply canopy parameterization
+    
 }

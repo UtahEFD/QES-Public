@@ -107,7 +107,6 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
 
     // !!!!!! Pete ---- Make sure polybuildings from SHP file get on
     // !!!!!! this list too!!!!
-
     
     // At this point, the allBuildingsV will be complete and ready for
     // use below... parameterizations, etc...
@@ -166,20 +165,121 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     }
     
     
+    // Resize the coefficients for use with the solver e.resize( numcell_cent, 1.0 );
+    e.resize( numcell_cent, 1.0 );
+    f.resize( numcell_cent, 1.0 );
+    g.resize( numcell_cent, 1.0 );
 
-    // ///////////////////////////////////////
-    // Building Parameterization Related Stuff
-    // ///////////////////////////////////////
+    h.resize( numcell_cent, 1.0 );
+    m.resize( numcell_cent, 1.0 );
+    n.resize( numcell_cent, 1.0 );
+
+    icellflag.resize( numcell_cent, 1 );    
+
+    // /////////////////////////////////////////
+    // Output related data --- should be part of some URBOutputData
+    // class to separate from Input and GeneralData
+    u_out.resize( numcell_cout, 0.0 );
+    v_out.resize( numcell_cout, 0.0 );
+    w_out.resize( numcell_cout, 0.0 );
+
+    terrain.resize( numcell_cout_2d, 0.0 );
+    terrain_id.resize( nx*ny, 1 );
+    icellflag_out.resize( numcell_cout, 0.0 );
+    /////////////////////////////////////////
+
+    // Set the Wind Velocity data elements to be of the correct size
+    // Initialize u0,v0,w0,u,v and w to 0.0
+    u0.resize( numcell_face, 0.0 );
+    v0.resize( numcell_face, 0.0 );
+    w0.resize( numcell_face, 0.0 );
     
+    
+    //////////////////////////////////////////////////////////////////////////////////
+    /////    Create sensor velocity profiles and generate initial velocity field /////
+    //////////////////////////////////////////////////////////////////////////////////
+    // Calling inputWindProfile function to generate initial velocity
+    // field from sensors information (located in Sensor.cpp)
 
+    // Pete could move to input param processing...
+    assert( UID->metParams->sensors && (UID->metParams->sensors.size() > 0) );  // extra
+                                                                                // check
+                                                                                // to
+                                                                                // be safe
+    // Guaranteed to always have at least 1 sensor!
+    // Pete thinks inputWindProfile should be a function of MetParams
+    // so it would have access to all the sensors naturally.
+    // Make this change later.
+    //    UID->metParams->inputWindProfile(UID, this);
+    UID->metParams->sensors[0]->inputWindProfile(UID, this);
+
+    max_velmag = 0.0;
+    for (auto i=0; i<nx; i++)
+    {
+      for (auto j=0; j<ny; j++)
+      {
+        icell_face = i+j*nx+nz*nx*ny;
+        max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face],2.0)+pow(v0[icell_face],2.0)));
+      }
+    }
+    max_velmag *= 1.2;
+
+    // ///////////////////////////////////////
+    // Generic Parameterization Related Stuff
+    // ///////////////////////////////////////
     for (int i = 0; i < allBuildingsV.size(); i++)
     {
-        allBuildingsV[i]->callParameterizationOne();
-        allBuildingsV[i]->callParameterizationTwo();
-        allBuildingsV[i]->callParameterizationSpecial();
+        // for now this does the canopy stuff for us
+        allBuildingsV[i]->callParameterizationSpecial();  
     }
 
 
 
 }
 
+
+float URGBGeneralData::canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m)
+{
+    int iter;
+    float tol, uhc, d, d1, d2, fi, fnew;
+
+    tol = z0/100;
+    fnew = tol*10;
+
+    d1 = z0;
+    d2 = canopy_top;
+    d = (d1+d2)/2;
+
+    uhc = (ustar/vk)*(log((canopy_top-d1)/z0)+psi_m);
+    fi = ((canopy_atten*uhc*vk)/ustar)-canopy_top/(canopy_top-d1);
+
+    if (canopy_atten > 0)
+    {
+        iter = 0;
+        while (iter < 200 && abs(fnew) > tol && d < canopy_top && d > z0)
+        {
+            iter += 1;
+            d = (d1+d2)/2;
+            uhc = (ustar/vk)*(log((canopy_top-d)/z0)+psi_m);
+            fnew = ((canopy_atten*uhc*vk)/ustar) - canopy_top/(canopy_top-d);
+            if(fnew*fi>0)
+            {
+                d1 = d;
+            }
+            else if(fnew*fi<0)
+            {
+                d2 = d;
+            }
+        }
+        if (d > canopy_top)
+        {
+            d = 10000;
+        }
+    }
+    else
+    {
+        d = 0.99*canopy_top;
+    }
+
+    return d;
+}

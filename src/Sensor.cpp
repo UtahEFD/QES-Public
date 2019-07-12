@@ -45,11 +45,36 @@ using namespace std;
 
 
 
-void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<double> &u0,
-	 						std::vector<double> &v0, std::vector<double> &w0, std::vector<float> z, std::vector<Sensor*> sensors,
-							Canopy* canopy, float UTMx, float UTMy, float theta, float UTMZone, std::vector<float> z0_domain,
-							std::vector<int> terrain_id, std::vector<double> terrain, int z0_domain_flag)
+void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 {
+    // replicate some local variable to make reference to URBInputData
+    // and URBGeneralData elements to make reading code below more conciser
+    int dx = ugd->dx;
+    int dy = ugd->dy;
+    int dz = ugd->dz;
+    int nx = ugd->nx;
+    int ny = ugd->ny;
+    int nz = ugd->nz;
+    std::vector<double> &u0 = ugd->u0;
+    std::vector<double> &v0 = ugd->v0;
+    std::vector<double> &w0 = ugd->w0;
+
+    const std::vector<float> &z = ugd->z;
+    
+    std::vector<Sensor*> &sensors = UID->metParams->sensors;
+
+    const float UTMx = UID->simParams->UTMx;
+    const float UTMy = UID->simParams->UTMy;
+    const float UTMZone = UID->simParams->UTMZone;
+
+    const float theta = ugd->theta;
+
+    const std::vector<float> &z0_domain = ugd->z0_domain;
+    const std::vector<int> &terrain_id = ugd->terrain_id;
+    const std::vector<double> &terrain = ugd->terrain;
+    const int z0_domain_flag = UID->metParams->z0_domain_flag;
+    
+
 
 	float psi, psi_first, x_temp, u_star;
 	float rc_sum, rc_val, xc, yc, rc, dn, lamda, s_gamma;
@@ -208,7 +233,7 @@ void Sensor::inputWindProfile(float dx, float dy, float dz, int nx, int ny, int 
 						psi = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
 					}
 					u_star = sensors[i]->site_U_ref[0]*vk/(log(sensors[i]->site_z_ref[0]/sensors[i]->site_z0)+psi);
-					canopy_d = canopy->bisection(u_star, sensors[i]->site_z0, sensors[i]->site_canopy_H, sensors[i]->site_atten_coeff, vk, psi);
+					canopy_d = ugd->canopyBisection(u_star, sensors[i]->site_z0, sensors[i]->site_canopy_H, sensors[i]->site_atten_coeff, vk, psi);
 					if (sensors[i]->site_canopy_H*sensors[i]->site_one_overL > 0)
 					{
 						psi = 4.7*(sensors[i]->site_canopy_H-canopy_d)*sensors[i]->site_one_overL;

@@ -52,14 +52,20 @@ protected:
     const float tol = 1.0e-9;     /**< Error tolerance -->>> very
                                    * small tol for float! */
     const float omega = 1.78f;   /**< Over-relaxation factor */
+
     // SOLVER-based parameters
-    int itermax;		/**< Maximum number of iterations */
     std::vector<double> R;           /**< Divergence of initial velocity field */
+    std::vector<double> lambda, lambda_old;    
+
     /// Declaration of final velocity field components (u,v,w)
     std::vector<double> u,v,w;
+    
+    int itermax;		/**< Maximum number of iterations */
+
+
     /// Declaration of Lagrange multipliers
-    std::vector<double> lambda, lambda_old;
-    std::vector<int> icellflag;           /**< Cell index flag (0 = building/terrain, 1 = fluid) */
+
+
 
     ////////////////////////////////////////////////////////////////////////////
     //////// Variables and constants needed in solver and other functions-- Behnam
@@ -69,10 +75,7 @@ protected:
     const int alpha2 = 1;        /**< Gaussian precision moduli */
 
 
-    /// Declaration of coefficients for SOR solver
-    std::vector<float> e,f,g,h,m,n;
-    /// Declaration of initial wind components (u0,v0,w0)
-    std::vector<double> u0,v0,w0;
+    
 
 
 

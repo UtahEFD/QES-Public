@@ -60,42 +60,34 @@ void Solver::printProgress (float percentage)
 
 
 /**< \fn Solver
-* This function is assigning values read by URBImputData to variables used in the solvers
+* This function is assigning values read by URBImputData to variables
+* used in the solvers - this is only meant work with CUDA-URB!
  */
 
-Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, UrbGeneralData * ugb, Output* output)
+Solver::Solver(const URBInputData* UID,
+               const DTEHeightField* DTEHF,
+               UrbGeneralData * ugd,
+               Output* output)
     : itermax( UID->simParams->maxIterations )
 {
-
-
-    /// Initializing variables
-    e.resize( numcell_cent, 1.0 );
-    f.resize( numcell_cent, 1.0 );
-    g.resize( numcell_cent, 1.0 );
-
-    h.resize( numcell_cent, 1.0 );
-    m.resize( numcell_cent, 1.0 );
-    n.resize( numcell_cent, 1.0 );
-    R.resize( numcell_cent, 0.0 );
-    icellflag.resize( numcell_cent, 1 );
-    lambda.resize( numcell_cent, 0.0 );
+    R.resize( ugd->numcell_cent, 0.0 );
+    
+    lambda.resize( ugd->numcell_cent, 0.0 );
     lambda_old.resize( numcell_cent, 0.0 );
-    u_out.resize( numcell_cout, 0.0 );
-    v_out.resize( numcell_cout, 0.0 );
-    w_out.resize( numcell_cout, 0.0 );
-    terrain.resize( numcell_cout_2d, 0.0 );
-    terrain_id.resize( nx*ny, 1 );
-    icellflag_out.resize( numcell_cout, 0.0 );
-
-    // Set the Wind Velocity data elements to be of the correct size
-    // Initialize u0,v0,w0,u,v and w to 0.0
-    u0.resize( numcell_face, 0.0 );
-    v0.resize( numcell_face, 0.0 );
-    w0.resize( numcell_face, 0.0 );
+    
     u.resize(numcell_face, 0.0);
     v.resize(numcell_face, 0.0);
     w.resize(numcell_face, 0.0);
 
+    ////////////////////////////////////////////////////////
+    //
+    // THIS NEEDS TO BE MOVE OUT OF HERE AND INTO THE INPUT PARSING!!!
+    // -Pete
+    // 
+    // Behnam also notes that this section will be completely changed
+    // to NOT treat terrain cells as "buildings" -- Behnam will fix
+    // this
+    // 
     ////////////////////////////////////////////////////////
     //////              Apply Terrain code             /////
     ///////////////////////////////////////////////////////
@@ -168,58 +160,12 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, UrbGeneralD
             cut_cell.calculateCoefficient(cells, DTEHF, nx, ny, nz, dx, dy, dz, n, m, f, e, h, g, pi, icellflag);
         }
     }
-
-    //////////////////////////////////////////////////////////////////////////////////
-    /////    Create sensor velocity profiles and generate initial velocity field /////
-    //////////////////////////////////////////////////////////////////////////////////
-
-    // Calling inputWindProfile function to generate initial velocity field from sensors information (located in Sensor.cpp)
-    sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0, v0, w0, z, UID->metParams->sensors,
-                            canopy, UID->simParams->UTMx, UID->simParams->UTMy, theta, UID->simParams->UTMZone, z0_domain, terrain_id, terrain, UID->metParams->z0_domain_flag);
-
-    max_velmag = 0.0;
-    for (auto i=0; i<nx; i++)
-    {
-      for (auto j=0; j<ny; j++)
-      {
-        icell_face = i+j*nx+nz*nx*ny;
-        max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face],2.0)+pow(v0[icell_face],2.0)));
-      }
-    }
-    max_velmag *= 1.2;
+    ///////////////////////////////////////////////////////
+    //////   END END END of  Apply Terrain code       /////
+    ///////////////////////////////////////////////////////
 
 
-    /////////////////////////////////////////////////////////////
-    //      Apply canopy vegetation parameterization           //
-    /////////////////////////////////////////////////////////////
-
-    if (num_canopies>0)
-    {
-        std::vector<std::vector<std::vector<float>>> canopy_atten(nx-1, std::vector<std::vector<float>>(ny-1, std::vector<float>(nz-1,0.0)));
-        std::vector<std::vector<float>> canopy_top(nx-1, std::vector<float>(ny-1,0.0));
-        std::vector<std::vector<float>> canopy_top_index(nx-1, std::vector<float>(ny-1,0.0));
-        std::vector<std::vector<float>> canopy_z0(nx-1, std::vector<float>(ny-1,0.0));
-        std::vector<std::vector<float>> canopy_ustar(nx-1, std::vector<float>(ny-1,0.0));
-        std::vector<std::vector<float>> canopy_d(nx-1, std::vector<float>(ny-1,0.0));
-
-        for (int i=0; i<canopies.size();i++)
-        {
-            // Hack to work around until we re-org this -- Pete
-            canopy = (Canopy*)canopies[i];
-
-            // Read in canopy information
-            canopy->readCanopy(nx, ny, nz, landuse_flag, num_canopies, lu_canopy_flag, canopy_atten, canopy_top);
-
-            // here because the array that holds this all Building*
-            ((Canopy*)canopies[i])->defineCanopy(dx, dy, dz, nx, ny, nz, icellflag, num_canopies, lu_canopy_flag,
-                                                 canopy_atten, canopy_top);			// Defininf
-                                                                                                // canopy
-                                                                                                // bounderies
-
-            canopy->plantInitial(nx, ny, nz, vk, icellflag, z, u0, v0, canopy_atten, canopy_top, canopy_top_index,
-                                 canopy_ustar, canopy_z0, canopy_d);		// Apply canopy parameterization
-        }
-    }
+    // now here...
 
     /// defining ground solid cells (ghost cells below the surface)
     for (int j = 0; j < ny-1; j++)

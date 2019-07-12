@@ -59,10 +59,13 @@ public:
      * roughness and measured wind velocity and direction), generates wind velocity profile for each sensor and finally
      * utilizes Barns scheme to interplote velocity to generate the initial velocity field for the domain.
      */
-    void inputWindProfile(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<double> &u0,
-    	 						std::vector<double> &v0, std::vector<double> &w0, std::vector<float> z, std::vector<Sensor*> sensors,
-                  Canopy* canopy, float UTMx, float UTMy, float theta, float UTMZone, std::vector<float> z0_domain,
-                  std::vector<int> terrain_id, std::vector<double> terrain, int z0_domain_flag);
+    void inputWindProfile(const URBInputData *UID,
+                          URBGeneralData *ugd)
+        
+    // float dx, float dy, float dz, int nx, int ny, int nz, std::vector<double> &u0,
+    //    	 						std::vector<double> &v0, std::vector<double> &w0, std::vector<float> z, std::vector<Sensor*> sensors,
+    //                  Canopy* canopy, float UTMx, float UTMy, float theta, float UTMZone, std::vector<float> z0_domain,
+    //                   std::vector<int> terrain_id, std::vector<double> terrain, int z0_domain_flag);
 
     /**
     * @brief Converts UTM to lat/lon and vice versa of the sensor coordiantes

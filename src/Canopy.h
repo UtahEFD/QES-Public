@@ -30,6 +30,8 @@ public:
 
 	}
 
+    void callParameterizationSpecial();
+    
 
 	/*!
 	 *This function takes in variables read in from input files and initializes required variables for definig
@@ -60,12 +62,6 @@ public:
 					std::vector<std::vector<float>> &canopy_top_index, std::vector<std::vector<float>> &canopy_ustar,
 					std::vector<std::vector<float>> &canopy_z0);
 
-	/*!
-	 *This function is being called from the plantInitial function and uses the bisection method to find the displacement
-	 *height of the canopy.
-	 */
-
-	float bisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
 
 	/*!
 	 *This is a new function wrote by Lucas Ulmer and is being called from the plantInitial function. The purpose of this
@@ -129,3 +125,5 @@ public:
 
 
 };
+
+
