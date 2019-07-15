@@ -27,7 +27,7 @@ cuda_add_executable( unitTest
   )
 
 target_link_libraries(unitTest cudaurbcore )
-target_link_libraries(unitTest qesutil)
+target_link_libraries(unitTest cudaurbutil)
 target_link_libraries(unitTest unitTestLib)
 target_link_libraries(unitTest ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(unitTest ${GDAL_LIBRARY})
