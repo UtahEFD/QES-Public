@@ -98,7 +98,7 @@ if (DOXYGEN_FOUND)
       @ONLY)
 
     # note the option ALL which allows to build the docs together with the application
-    add_custom_target( doc
+    add_custom_target( urbdoc
         COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/docs
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating API documentation with Doxygen"

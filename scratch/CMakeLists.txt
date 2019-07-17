@@ -11,7 +11,7 @@ foreach(basetest ${BASETESTS})
     add_executable(${basetest} ${basetest}.cpp)
 
     target_link_libraries(${basetest} cudaurbcore)
-    target_link_libraries(${basetest} qesutil)
+    target_link_libraries(${basetest} cudaurbutil)
     target_link_libraries(${basetest} ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 
     target_link_libraries(${basetest} ${GDAL_LIBRARY})

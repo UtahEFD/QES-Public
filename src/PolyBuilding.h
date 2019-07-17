@@ -101,7 +101,7 @@ public:
       polygon_area = 0.0;
 
       // Loop to calculate polygon area, differences in x and y values
-      for (auto id=0; id<polygonVertices.size()-1; id++)
+      for (auto id=0; id<polygonVertices.size(); id++)
       {
         polygon_area += 0.5*(polygonVertices[id].x_poly*polygonVertices[id+1].y_poly-polygonVertices[id].y_poly*polygonVertices[id+1].x_poly);
         xi[id] = (polygonVertices[id].x_poly-building_cent_x)*cos(upwind_dir)+(polygonVertices[id].y_poly-building_cent_y)*sin(upwind_dir);
@@ -133,7 +133,6 @@ public:
       L_over_H = length_eff/height_eff;           // Length over height
       W_over_H = width_eff/height_eff;            // Width over height
 
-
       // Checking bounds of length over height and width over height
       if (L_over_H > 3.0)
       {
@@ -163,7 +162,7 @@ public:
     * for building cells. It applies the Stair-step method to define building bounds.
     *
     */
-    void setCellsFlag (float dx, float dy, float dz, std::vector<float> z, int nx, int ny, int nz, int* icellflag, int mesh_type_flag,
+    void setCellsFlag (float dx, float dy, float dz, std::vector<float> z, int nx, int ny, int nz, std::vector<int> &icellflag, int mesh_type_flag,
                         std::vector< polyVert > &polygonVertices, float baseHeight, float bldElevation)
     {
 
@@ -266,7 +265,7 @@ public:
       std::vector<float> Lr_face, Lr_node;
       std::vector<float> upwind_rel_dir;
       std::vector<int> perpendicular_flag;
-      Lr_face.resize (polygonVertices.size(), 0.0);       // Length of wake for each face
+      Lr_face.resize (polygonVertices.size(), -1.0);       // Length of wake for each face
       Lr_node.resize (polygonVertices.size(), 0.0);       // Length of wake for each node
       upwind_rel_dir.resize (polygonVertices.size(), 0.0);      // Upwind reletive direction for each face
       perpendicular_flag.resize (polygonVertices.size(), 0);
@@ -298,8 +297,6 @@ public:
       std::vector<double> u0_modified, v0_modified;
       std::vector<int> u0_mod_id, v0_mod_id;
 
-      Lr_face[0] = -1.0;
-      Lr_node[0] = 0.0;
       for (auto id=0; id<polygonVertices.size()-1; id++)
       {
         // Calculate upwind reletive direction for each face
@@ -308,10 +305,13 @@ public:
         {
           upwind_rel_dir[id] -= 2*M_PI;
         }
+        // Finding faces that are eligible for applying the far-wake parameterizations
+        // angle between two points should be in -180 to 0 degree
         if ( abs(upwind_rel_dir[id]) < 0.5*M_PI)
         {
           // Calculate length of the far wake zone for each face
           Lr_face[id] = Lr*cos(upwind_rel_dir[id]);
+          // Checking to see whether the face is perpendicular to the wind direction
           if (abs(upwind_rel_dir[id]) < tol)
           {
             perpendicular_flag[id]= 1;
@@ -319,15 +319,15 @@ public:
         }
       }
 
-
-
       Lr_ave = total_seg_length = 0.0;
-      for (auto id=0; id<polygonVertices.size(); id++)
+      // This loop interpolates the value of Lr for eligible faces to nodes of those faces
+      for (auto id=0; id<polygonVertices.size()-1; id++)
       {
+        // If the face is eligible for parameterization
         if (Lr_face[id] > 0.0)
         {
-          index_previous = (id+polygonVertices.size()-2)%(polygonVertices.size()-1);
-          index_next = (id+1)%(polygonVertices.size()-1);
+          index_previous = (id+polygonVertices.size()-2)%(polygonVertices.size()-1);     // Index of previous face
+          index_next = (id+1)%(polygonVertices.size()-1);           // Index of next face
           if (Lr_face[index_previous] < 0.0 && Lr_face[index_next] < 0.0)
           {
             Lr_node[id] = Lr_face[id];
@@ -361,21 +361,6 @@ public:
       }
 
       Lr = Lr_ave/total_seg_length;
-
-      for (auto id=0; id<polygonVertices.size()-1; id++)
-      {
-        if (Lr_node[id] > Lr)
-        {
-          if (Lr_node[id+1] < Lr)
-          {
-            Lr_node[id] = Lr_node[id+1];
-          }
-          else
-          {
-            Lr_node[id] = Lr;
-          }
-        }
-      }
 
       for (auto k=k_start; k<k_end; k++)
       {
@@ -478,10 +463,10 @@ public:
                     xu = xp*cos(upwind_dir)+yp*sin(upwind_dir);
                     yu = -xp*sin(upwind_dir)+yp*cos(upwind_dir);
                     Lr_local_u = Lr_node[id]+(yu-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
-                    if (Lr_local_u > Lr)
+                    /*if (Lr_local_u > Lr)
                     {
                       Lr_local_u = Lr;
-                    }
+                    }*/
                     if (perpendicular_flag[id] > 0)
                     {
                       x_wall_u = xi[id];
@@ -536,10 +521,10 @@ public:
                     xv = xp*cos(upwind_dir)+yp*sin(upwind_dir);
                     yv = -xp*sin(upwind_dir)+yp*cos(upwind_dir);
                     Lr_local_v = Lr_node[id]+(yv-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
-                    if (Lr_local_v > Lr)
+                    /*if (Lr_local_v > Lr)
                     {
                       Lr_local_v = Lr;
-                    }
+                    }*/
                     if (perpendicular_flag[id] > 0)
                     {
                       x_wall_v = xi[id];
@@ -618,6 +603,7 @@ public:
                     }
                     icell_cent = i_w + j_w*(nx-1)+k*(nx-1)*(ny-1);
                     icell_face = i_w + j_w*nx+k*nx*ny;
+                    //std::cout << "dn_w:    "  << dn_w << std::endl;
                     if (dn_w > 0.0 && w_wake_flag == 1 && yw <= yi[id] && yw >= yi[id+1] && icellflag[icell_cent] != 0)
                     {
                       if (xw > dn_w)
@@ -637,13 +623,14 @@ public:
                       else
                       {
                         icellflag[icell_cent] = 4;
+                        //std::cout << "icell:    " << icell_cent << std::endl;
                       }
                     }
+                    if (u_wake_flag == 0 && v_wake_flag == 0 && w_wake_flag == 0)
+                    {
+                      break;
+                    }
                   }
-                }
-                if (u_wake_flag == 0 && v_wake_flag == 0 && w_wake_flag == 0)
-                {
-                  break;
                 }
               }
             }

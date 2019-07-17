@@ -50,32 +50,34 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 			cut_points.clear();
 			cut_points = cells[cutcell_index[j]].getFaceFluidPoints(i);
 
-			//for faces that exist on the side of the cell (not XY planes)
-			if (j < 4)
+			if (cut_points.size()>2)
 			{
-				//place points in local cell space
-				for (int jj =0; jj<cut_points.size(); jj++)
+				//for faces that exist on the side of the cell (not XY planes)
+				if (j < 4)
 				{
-					for (int l=0; l<3; l++)
+					//place points in local cell space
+					for (int jj =0; jj<cut_points.size(); jj++)
 					{
-						cut_points[jj][l] = cut_points[jj][l] - location[l];
-					}
-				}
+						for (int l=0; l<3; l++)
+						{
+							cut_points[jj][l] = cut_points[jj][l] - location[l];
+						}
 
-				// Call reorder function to sort cut-points
-				reorderPoints(cut_points, i, pi);
-				// Call calculateArea function to calculate area fraction coefficients
-				calculateArea(cut_points, cutcell_index[j], dx, dy, dz, n, m, f, e, h, g, i);
-			}
-			//for the top and bottom faces of the cell (XY planes)
-			else
-			{
-				if (i == faceXYNeg_CF)
-					calculateAreaTopBot(terrainPoints, terrainEdges,cutcell_index[j],
-										dx, dy, dz, location, n, true);
+					}
+					reorderPoints(cut_points, i, pi);
+
+					calculateArea(cut_points, cutcell_index[j], dx, dy, dz, n, m, f, e, h, g, i);
+				}
+				//for the top and bottom faces of the cell (XY planes)
 				else
-					calculateAreaTopBot(terrainPoints, terrainEdges,cutcell_index[j],
-										dx, dy, dz, location, m, false);
+				{
+					if (i == faceXYNeg_CF)
+						calculateAreaTopBot(terrainPoints, terrainEdges,cutcell_index[j],
+											dx, dy, dz, location, n, true);
+					else
+						calculateAreaTopBot(terrainPoints, terrainEdges,cutcell_index[j],
+											dx, dy, dz, location, m, false);
+				}
 			}
 
 		}

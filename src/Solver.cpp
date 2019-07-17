@@ -1,3 +1,37 @@
+/*
+ *
+ * CUDA-URB
+ * Copyright (c) 2019 Behnam Bozorgmehr
+ * Copyright (c) 2019 Jeremy Gibbs
+ * Copyright (c) 2019 Eric Pardyjak
+ * Copyright (c) 2019 Zachary Patterson
+ * Copyright (c) 2019 Rob Stoll
+ * Copyright (c) 2019 Pete Willemsen
+ *
+ * This file is part of CUDA-URB package
+ *
+ * MIT License
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
+
 #include "Solver.h"
 
 #include "ESRIShapefile.h"
@@ -85,6 +119,38 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     dz = gridInfo[2];		/**< Grid resolution in z-direction */
     dxy = MIN_S(dx, dy);
 
+    z0_domain.resize( nx*ny );
+    if (UID->metParams->z0_domain_flag == 0)      // Uniform z0 for the whole domain
+    {
+      for (auto i=0; i<nx; i++)
+      {
+        for (auto j=0; j<ny; j++)
+        {
+          id = i+j*nx;
+          z0_domain[id] = UID->metParams->sensors[0]->site_z0;
+        }
+      }
+    }
+    else
+    {
+      for (auto i=0; i<nx/2; i++)
+      {
+        for (auto j=0; j<ny; j++)
+        {
+          id = i+j*nx;
+          z0_domain[id] = 0.5;
+        }
+      }
+      for (auto i=nx/2; i<nx; i++)
+      {
+        for (auto j=0; j<ny; j++)
+        {
+          id = i+j*nx;
+          z0_domain[id] = 0.1;
+        }
+      }
+    }
+
     if (UID->canopies)			// If there are canopies specified in input files
     {
         num_canopies = UID->canopies->num_canopies;
@@ -146,31 +212,30 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     z_out.resize( nz-2 );
     for (size_t k=1; k<z.size(); k++)
     {
-        z_out[k-1] = (float)z[k];    /**< Location of face centers in z-dir */
+      z_out[k-1] = (float)z[k];    /**< Location of face centers in z-dir */
     }
 
     x.resize( nx-1 );
     x_out.resize( nx-1 );
     for (size_t i=0; i<x.size(); i++)
     {
-        x_out[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
-        x[i] = (float)x_out[i];
+      x_out[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
+      x[i] = (float)x_out[i];
     }
 
     y.resize( ny-1 );
     y_out.resize( ny-1 );
     for (auto j=0; j<ny-1; j++)
     {
-        y_out[j] = (j+0.5)*dy;          /**< Location of face centers in y-dir */
-        y[j] = (float)y_out[j];
-
+      y_out[j] = (j+0.5)*dy;          /**< Location of face centers in y-dir */
+      y[j] = (float)y_out[j];
     }
-
 
     /// Initializing variables
     e.resize( numcell_cent, 1.0 );
     f.resize( numcell_cent, 1.0 );
     g.resize( numcell_cent, 1.0 );
+
     h.resize( numcell_cent, 1.0 );
     m.resize( numcell_cent, 1.0 );
     n.resize( numcell_cent, 1.0 );
@@ -182,6 +247,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     v_out.resize( numcell_cout, 0.0 );
     w_out.resize( numcell_cout, 0.0 );
     terrain.resize( numcell_cout_2d, 0.0 );
+    terrain_id.resize( nx*ny, 1 );
     icellflag_out.resize( numcell_cout, 0.0 );
 
     // Set the Wind Velocity data elements to be of the correct size
@@ -189,31 +255,10 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
     u0.resize( numcell_face, 0.0 );
     v0.resize( numcell_face, 0.0 );
     w0.resize( numcell_face, 0.0 );
-
     u.resize(numcell_face, 0.0);
     v.resize(numcell_face, 0.0);
     w.resize(numcell_face, 0.0);
-
-    //////////////////////////////////////////////////////////////////////////////////
-    /////    Create sensor velocity profiles and generate initial velocity field /////
-    //////////////////////////////////////////////////////////////////////////////////
-
-    // Calling inputWindProfile function to generate initial velocity field from sensors information (located in Sensor.cpp)
-    sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0, v0, w0, x, y, z, UID->metParams->sensors,
-                             canopy, UTMx, UTMy, theta, UTMZone);
-
-    max_velmag = 0.0;
-    for (auto i=0; i<nx; i++)
-    {
-      for (auto j=0; j<ny; j++)
-      {
-        icell_face = i+j*nx+nz*nx*ny;
-        max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face],2.0)+pow(v0[icell_face],2.0)));
-      }
-    }
-    max_velmag *= 1.2;
-
-
+    
     ////////////////////////////////////////////////////////
     //////              Apply Terrain code             /////
     ///////////////////////////////////////////////////////
@@ -234,6 +279,19 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
               // Gets height of the terrain for each cell
               int idx = i + j*(nx-1);
               terrain[idx] = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
+              if (terrain[idx] < 0.0)
+              {
+                terrain[idx] = 0.0;
+              }
+              id = i+j*nx;
+              for (auto k=0; k<z.size(); k++)
+        			{
+        				terrain_id[id] = k+1;
+        				if (terrain[idx] < z[k+1])
+        				{
+        					break;
+        				}
+        			}
             }
         }
 
@@ -273,6 +331,25 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
             cut_cell.calculateCoefficient(cells, DTEHF, nx, ny, nz, dx, dy, dz, n, m, f, e, h, g, pi, icellflag);
         }
     }
+
+    //////////////////////////////////////////////////////////////////////////////////
+    /////    Create sensor velocity profiles and generate initial velocity field /////
+    //////////////////////////////////////////////////////////////////////////////////
+
+    // Calling inputWindProfile function to generate initial velocity field from sensors information (located in Sensor.cpp)
+    sensor->inputWindProfile(dx, dy, dz, nx, ny, nz, u0, v0, w0, z, UID->metParams->sensors,
+                            canopy, UTMx, UTMy, theta, UTMZone, z0_domain, terrain_id, terrain, UID->metParams->z0_domain_flag);
+
+    max_velmag = 0.0;
+    for (auto i=0; i<nx; i++)
+    {
+      for (auto j=0; j<ny; j++)
+      {
+        icell_face = i+j*nx+nz*nx*ny;
+        max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face],2.0)+pow(v0[icell_face],2.0)));
+      }
+    }
+    max_velmag *= 1.2;
 
 
     /////////////////////////////////////////////////////////////
@@ -349,10 +426,10 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         shpFile->getMinExtent( minExtent );
 
         float domainOffset[2] = { 0, 0 };
-        for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+        for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
         {
             // convert the global polys to local domain coordinates
-          for (size_t lIdx=0; lIdx<shpPolygons[pIdx].size(); lIdx++)
+          for (auto lIdx=0; lIdx<shpPolygons[pIdx].size(); lIdx++)
           {
             shpPolygons[pIdx][lIdx].x_poly = shpPolygons[pIdx][lIdx].x_poly - minExtent[0] ;
             shpPolygons[pIdx][lIdx].y_poly = shpPolygons[pIdx][lIdx].y_poly - minExtent[1] ;
@@ -389,7 +466,7 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
           }
         }
 
-        for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+        for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
         {
           effective_height.push_back (base_height[pIdx]+building_height[pIdx]);
           for (auto lIdx=0; lIdx<shpPolygons[pIdx].size(); lIdx++)
@@ -402,14 +479,17 @@ Solver::Solver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* out
         mergeSort( effective_height, shpPolygons, base_height, building_height);
         std::cout << "Creating buildings from shapefile...\n";
         // Loop to create each of the polygon buildings read in from the shapefile
-        for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+        for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
         {
           // Create polygon buildings
-
           poly_buildings.push_back (PolyBuilding (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], nx, ny,
                                       nz, dx, dy, dz, u0, v0, z));
+        }
+
+        for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+        {
           // Call setCellsFlag in the PolyBuilding class to identify building cells
-          poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz, icellflag.data(), mesh_type_flag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
+          poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz, icellflag, mesh_type_flag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
         }
         std::cout << "Buildings created...\n";
 

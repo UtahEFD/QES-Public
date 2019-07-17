@@ -639,24 +639,29 @@ public:
 
 #endif
 
-			for (int k = 1; k < k_cut_end; k++){
-				for (int j = j_cut_start; j < j_cut_end; j++){
-					for (int i = i_cut_start; i < i_cut_end; i++){
-		               	icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+			for (int k = 1; k < k_cut_end; k++)
+			{
+				for (int j = j_cut_start; j < j_cut_end; j++)
+				{
+					for (int i = i_cut_start; i < i_cut_end; i++)
+					{
+						icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
 						icellflag[icell_cent] = 7;                         /// Set cell index flag to cut-cell
 					}
 				}
-   			}
+   		}
 
-
-   			for (int k = k_start; k < k_end; k++){
-    	   		for (int j = j_start; j < j_end; j++){
-    	       		for (int i = i_start; i < i_end; i++){
-    	            	icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+   		for (int k = k_start; k < k_end; k++)
+			{
+				for (int j = j_start; j < j_end; j++)
+				{
+					for (int i = i_start; i < i_end; i++)
+					{
+						icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
 						icellflag[icell_cent] = 0;                         /// Set cell index flag to building
 					}
 				}
-    		}
+    	}
 
 		}
 		else
