@@ -432,7 +432,7 @@ void Fire :: move(Solver* solver) {
                 }
             }
         }
-        
+        /*
         // check that x+1, y+1 is in-bounds, then compute fraction
         if (iiF<=(nx-1) && jjF<=(ny-1)) {
             
@@ -539,7 +539,7 @@ void Fire :: move(Solver* solver) {
                     }
                 }
             }
-        }
+        } */
                         
         // update residence time
         fire_cells[id].state.burn_time += dt;
