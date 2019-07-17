@@ -28,6 +28,7 @@
 	<siteName> sensor1 </siteName>
 	<fileName> sensor1.inp </fileName>
 	<site_coord_flag> 1</site_coord_flag>
+	<z0_domain_flag> 0 </z0_domain_flag>
 	<sensor>
 		<site_coord_flag>1</site_coord_flag>
 		<site_xcoord> 0.0 </site_xcoord>

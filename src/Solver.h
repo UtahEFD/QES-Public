@@ -72,7 +72,7 @@ protected:
     float dxy;		/**< Minimum value between dx and dy */
     std::vector<float> dz_array, zm;
     std::vector<float> x,y,z;
-    std::vector<double> x_out,y_out,z_out, terrain;
+    std::vector<double> x_out,y_out,z_out;
     std::vector<int> terrain_id;
 
     Sensor* sensor;
