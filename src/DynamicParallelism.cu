@@ -167,7 +167,8 @@ __global__ void finalVelocity(double *d_u0, double *d_v0, double *d_w0, double *
     }
 
 
-    if ((i >= 0) && (i < nx-1) && (j >= 0) && (j < ny-1) && (k < nz-1) && (k > 0) && (d_icellflag[icell_cent] == 0) ) {
+    if ((i >= 0) && (i < nx-1) && (j >= 0) && (j < ny-1) && (k < nz-1) && (k > 0) && ((d_icellflag[icell_cent] == 0) || (d_icellflag[icell_cent] == 2))
+    {
         d_u[icell_face] = 0;
         d_u[icell_face+1] = 0;
         d_v[icell_face] = 0;

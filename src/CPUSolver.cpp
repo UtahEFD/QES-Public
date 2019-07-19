@@ -42,7 +42,7 @@ void CPUSolver::solve(bool solveWind)
         /////////////////////////////////////////////////
         int iter = 0;
         double error = 1.0;
-    	double reduced_error = 0.0;
+    	  double reduced_error = 0.0;
 
         std::cout << "Solving...\n";
         while (iter < itermax && error > tol && error > reduced_error) {
@@ -106,9 +106,12 @@ void CPUSolver::solve(bool solveWind)
         /////   Update the velocity field using Euler-Lagrange equations   /////
         ////////////////////////////////////////////////////////////////////////
 
-        for (int k = 0; k < nz; k++){
-            for (int j = 0; j < ny; j++){
-                for (int i = 0; i < nx; i++) {
+        for (int k = 0; k < nz; k++)
+        {
+            for (int j = 0; j < ny; j++)
+            {
+                for (int i = 0; i < nx; i++)
+                {
                     int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
                     u[icell_face] = u0[icell_face];
                     v[icell_face] = v0[icell_face];
@@ -119,11 +122,14 @@ void CPUSolver::solve(bool solveWind)
 
 
         // /////////////////////////////////////////////
-    	/// Update velocity field using Euler equations
+    	  /// Update velocity field using Euler equations
         // /////////////////////////////////////////////
-        for (int k = 1; k < nz-1; k++){
-            for (int j = 1; j < ny-1; j++){
-                for (int i = 1; i < nx-1; i++){
+        for (int k = 1; k < nz-1; k++)
+        {
+            for (int j = 1; j < ny-1; j++)
+            {
+                for (int i = 1; i < nx-1; i++)
+                {
                     icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
                     icell_face = i + j*nx + k*nx*ny;               /// Lineralized index for cell faced values
 
@@ -136,26 +142,22 @@ void CPUSolver::solve(bool solveWind)
 
                     w[icell_face] = w0[icell_face]+(1/(2*pow(alpha2, 2.0))) *
                         n[icell_cent]*dz_array[k]*(lambda[icell_cent]-lambda[icell_cent - (nx-1)*(ny-1)]);
-
-
-
                 }
             }
         }
 
-                for (int k = 1; k < nz-1; k++){
-            for (int j = 0; j < ny-1; j++){
-                for (int i = 0; i < nx-1; i++){
+        for (int k = 1; k < nz-1; k++)
+        {
+            for (int j = 0; j < ny-1; j++)
+            {
+                for (int i = 0; i < nx-1; i++)
+                {
                     icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-                    icell_face = i + j*nx + k*nx*ny;               /// Lineralized
-                                                                   /// index
-                                                                   /// for
-                                                                   /// cell
-                                                                   /// faced
-                                                                   /// values
+                    icell_face = i + j*nx + k*nx*ny;               /// Lineralized index for cell faced values
 
-                                        // If we are inside a building, set velocities to 0.0
-                    if (icellflag[icell_cent] == 0) {
+                    // If we are inside a building, set velocities to 0.0
+                    if (icellflag[icell_cent] == 0 || icellflag[icell_cent] == 2)
+                    {
                         /// Setting velocity field inside the building to zero
                         u[icell_face] = 0;
                         u[icell_face+1] = 0;
@@ -165,12 +167,8 @@ void CPUSolver::solve(bool solveWind)
                         w[icell_face+nx*ny] = 0;
                     }
                 }
-
             }
-                }
-
-
-
+        }
 
         auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
         std::chrono::duration<float> elapsedTotal = finish - startOfSolveMethod;
@@ -180,5 +178,5 @@ void CPUSolver::solve(bool solveWind)
 
     }
 
-    
+
 }

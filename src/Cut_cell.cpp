@@ -31,7 +31,7 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
 				if (cells[icell_cent].getIsTerrain())
 				{
-					icellflag[icell_cent] = 0;
+					icellflag[icell_cent] = 2;
 					//std::cout<<"cell Id:" << icell_cent << "\n";
 				}
 			}

@@ -54,11 +54,11 @@ protected:
 
     // SOLVER-based parameters
     std::vector<double> R;           /**< Divergence of initial velocity field */
-    std::vector<double> lambda, lambda_old;    
+    std::vector<double> lambda, lambda_old;
 
     /// Declaration of final velocity field components (u,v,w)
     std::vector<double> u,v,w;
-    
+
     int itermax;		/**< Maximum number of iterations */
 
 
@@ -74,7 +74,7 @@ protected:
     const int alpha2 = 1;        /**< Gaussian precision moduli */
 
 
-    
+
 
 
 
@@ -105,44 +105,7 @@ public:
                      float* f, float* e, float* h, float* g, std::vector<std::vector<std::vector<float>>> x_cut,
                      std::vector<std::vector<std::vector<float>>>y_cut,std::vector<std::vector<std::vector<float>>> z_cut,
                      std::vector<std::vector<int>> num_points, std::vector<std::vector<float>> coeff);
-    /**
-     * @brief
-     *
-     * This function takes in the icellflags set by setCellsFlag
-     * function for stair-step method and sets related coefficients to
-     * zero to define solid walls.
-     */
-    void defineWalls(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag, float* n, float* m,
-                     float* f, float* e, float* h, float* g);
 
-
-    /**
-    * @brief
-    *
-    * This function takes in the icellflag valus set by setCellsFlag
-    * function for both stair-step and cut-cell methods and creates vectors of indices
-    * of the cells that have wall to right/left, wall above/bellow and wall in front/back
-    *
-    */
-    void getWallIndices (std::vector<int>& icellflag, std::vector<int>& wall_right_indices, std::vector<int>& wall_left_indices,
-                        std::vector<int>& wall_above_indices, std::vector<int>& wall_below_indices,
-                        std::vector<int>& wall_front_indices, std::vector<int>& wall_back_indices);
-
-    /**
-    * @brief
-    *
-    * This function takes in vectores of indices of the cells that have wall to right/left,
-    * wall above/bellow and wall in front/back and applies the log law boundary condition fix
-    * to the cells near Walls (based on Kevin Briggs master's thesis (2015))
-    *
-    */
-    void wallLogBC (std::vector<int>& wall_right_indices, std::vector<int>& wall_left_indices,
-                    std::vector<int>& wall_above_indices, std::vector<int>& wall_below_indices,
-                    std::vector<int>& wall_front_indices, std::vector<int>& wall_back_indices,
-                    double *u0, double *v0, double *w0, float z0);
-
-
-    void mergeSort( std::vector<float> &height, std::vector<std::vector<polyVert>> &poly_points, std::vector<float> &base_height, std::vector<float> &building_height);
 
     /**
     * @brief

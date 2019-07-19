@@ -410,7 +410,7 @@ public:
                   break;
                 }
                 icell_cent = i+j*(nx-1)+kk*(nx-1)*(ny-1);
-                if (icellflag[icell_cent] != 0 && x_id_min < 0)
+                if (icellflag[icell_cent] != 0 && icellflag[icell_cent] != 2 && x_id_min < 0)
                 {
                   x_id_min = x_id;
                 }
@@ -434,7 +434,7 @@ public:
                   break;
                 }
                 icell_cent = i+j*(nx-1)+k*(nx-1)*(ny-1);
-                if (icellflag[icell_cent] != 0 && x_id_min < 0)
+                if (icellflag[icell_cent] != 0 && icellflag[icell_cent] != 2 && x_id_min < 0)
                 {
                   x_id_min = x_id;
                 }
@@ -452,7 +452,7 @@ public:
                 }
                 icell_cent = i+j*(nx-1)+k*(nx-1)*(ny-1);
 
-                if (icellflag[icell_cent] != 0)
+                if (icellflag[icell_cent] != 0 && icellflag[icell_cent] != 2)
                 {
                   i_u = std::round(((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/dx);
                   j_u = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/dy;
@@ -490,7 +490,7 @@ public:
                     }
                     icell_cent = i_u + j_u*(nx-1)+k*(nx-1)*(ny-1);
                     icell_face = i_u + j_u*nx+k*nx*ny;
-                    if (dn_u > 0.0 && u_wake_flag == 1 && yu <= yi[id] && yu >= yi[id+1] && icellflag[icell_cent] != 0)
+                    if (dn_u > 0.0 && u_wake_flag == 1 && yu <= yi[id] && yu >= yi[id+1] && icellflag[icell_cent] != 0 && icellflag[icell_cent] != 2)
                     {
                       // Far wake zone
                       if (xu > dn_u)
@@ -549,7 +549,7 @@ public:
                     }
                     icell_cent = i_v + j_v*(nx-1)+k*(nx-1)*(ny-1);
                     icell_face = i_v + j_v*nx+k*nx*ny;
-                    if (dn_v > 0.0 && v_wake_flag == 1 && yv <= yi[id] && yv >= yi[id+1] && icellflag[icell_cent] != 0)
+                    if (dn_v > 0.0 && v_wake_flag == 1 && yv <= yi[id] && yv >= yi[id+1] && icellflag[icell_cent] != 0 && icellflag[icell_cent] != 2)
                     {
                       // Far wake zone
                       if (xv > dn_v)
@@ -604,7 +604,7 @@ public:
                     icell_cent = i_w + j_w*(nx-1)+k*(nx-1)*(ny-1);
                     icell_face = i_w + j_w*nx+k*nx*ny;
                     //std::cout << "dn_w:    "  << dn_w << std::endl;
-                    if (dn_w > 0.0 && w_wake_flag == 1 && yw <= yi[id] && yw >= yi[id+1] && icellflag[icell_cent] != 0)
+                    if (dn_w > 0.0 && w_wake_flag == 1 && yw <= yi[id] && yw >= yi[id+1] && icellflag[icell_cent] != 0 && icellflag[icell_cent] != 2)
                     {
                       if (xw > dn_w)
                       {

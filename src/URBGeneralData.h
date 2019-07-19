@@ -14,6 +14,7 @@
 #include <vector>
 
 #include <netcdf>
+#imclude "Wall.h"
 
 #include "Mesh.h"
 #include "DTEHeightField.h"
@@ -24,11 +25,11 @@ class URBInputData; // forward reference
 class URBGeneralData {
 protected:
     URBGeneralData();
-    
+
 public:
     URBGeneralData(const URBInputData *UID);
     ~URBGeneralData();
-    
+
     /*!
      * This function is being called from the plantInitial function
      * and uses the bisection method to find the displacement height
@@ -36,7 +37,7 @@ public:
      */
     float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
 
-    
+    void mergeSort( std::vector<float> &height, std::vector<std::vector<polyVert>> &poly_points, std::vector<float> &base_height, std::vector<float> &building_height);
 
     ////////////////////////////////////////////////////////////////////////////
     //////// Variables and constants needed only in other functions-- Behnam
@@ -47,7 +48,7 @@ public:
                                                 /// constant
     float cavity_factor, wake_factor;
     float theta;
-    
+
     // General QUIC Domain Data
     int nx, ny, nz;		/**< number of cells */
     float dx, dy, dz;		/**< Grid resolution*/
@@ -67,27 +68,27 @@ public:
     float z0;           // In wallLogBC
 
     std::vector<float> dz_array;
-    std::vector<float> x,y,z;    
+    std::vector<float> x,y,z;
     std::vector<double> x_out,y_out,z_out;
 
     /// Declaration of coefficients for SOR solver
     std::vector<float> e,f,g,h,m,n;
-    
+
     // The following are mostly used for output
     std::vector<int> icellflag;  /**< Cell index flag (0 = building/terrain, 1 = fluid) */
-    std::vector<int> icellflag_out;    
+    std::vector<int> icellflag_out;
     std::vector<double> u_out,v_out,w_out;
-    std::vector<double> terrain; 
+    std::vector<double> terrain;
     std::vector<int> terrain_id;      // Sensor function
                                       // (inputWindProfile)
-    
+
     // Initial wind conditions
     /// Declaration of initial wind components (u0,v0,w0)
     std::vector<double> u0,v0,w0;
 
     // Sensor* sensor;      may not need this now
 
-    
+
     int id;
 
 
@@ -118,10 +119,11 @@ public:
     std::vector<int> wall_front_indices;     /**< Indices of the cells with wall in front boundary condition */
 
     Mesh* mesh;           // In terrain functions
-    
+
     Cell* cells;
     // bool DTEHFExists = false;
     Cut_cell cut_cell;
+    Wall *wall;
 
 
     // Building cut-cell (rectangular building)
@@ -172,4 +174,3 @@ public:
 #endif
 
 };
-

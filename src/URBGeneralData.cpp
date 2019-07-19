@@ -42,7 +42,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     dx = gridInfo[0];		/**< Grid resolution in x-direction */
     dy = gridInfo[1];		/**< Grid resolution in y-direction */
     dz = gridInfo[2];		/**< Grid resolution in z-direction */
-    dxy = MIN_S(dx, dy);    
+    dxy = MIN_S(dx, dy);
 
     numcell_cout    = (nx-1)*(ny-1)*(nz-2);        /**< Total number of cell-centered values in domain */
     numcell_cout_2d = (nx-1)*(ny-1);               /**< Total number of horizontal cell-centered values in domain */
@@ -85,132 +85,6 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
         }
     }
 
-
-
-    ////////////////////////////////////////////////////////
-    //////              Apply Terrain code             /////
-    ///////////////////////////////////////////////////////
-    // Handle remaining Terrain processing components here
-    ////////////////////////////////////////////////////////
-    //
-    // Behnam also notes that this section will be completely changed
-    // to NOT treat terrain cells as "buildings" -- Behnam will fix
-    // this
-    // 
-    if (UID->simParameters->DTE_heightField)
-    {
-        // ////////////////////////////////
-        // Retrieve terrain height field //
-        // ////////////////////////////////
-        for (int i = 0; i < nx-1; i++)
-        {
-            for (int j = 0; j < ny-1; j++)
-            {
-                // Gets height of the terrain for each cell
-                int idx = i + j*(nx-1);
-                terrain[idx] = UID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
-                if (terrain[idx] < 0.0)
-                {
-                    terrain[idx] = 0.0;
-                }
-                id = i+j*nx;
-                for (auto k=0; k<z.size(); k++)
-                {
-                    terrain_id[id] = k+1;
-                    if (terrain[idx] < z[k+1])
-                    {
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (UID->simParams->meshTypeFlag == 0)
-        {
-            // ////////////////////////////////
-            // Stair-step (original QUIC)    //
-            // ////////////////////////////////
-            if (UID->simParams->DTE_mesh)
-            {
-                std::cout << "Creating terrain blocks...\n";
-                for (int i = 0; i < nx-1; i++)
-                {
-                    for (int j = 0; j < ny-1; j++)
-                    {
-                        // Gets height of the terrain for each cell
-                        float heightToMesh = UID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
-                        // Calls rectangular building to create a each cell to the height of terrain in that cell
-                        if (heightToMesh > z[1])
-                        {
-                            buildings.push_back(new RectangularBuilding(i * dx+UID->simParams->halo_x, j * dy+UID->simParams->halo_y, 0.0, dx, dy, heightToMesh,z));
-                        }
-
-                    }
-                    printProgress( (float)i / (float)nx);
-                }
-                std::cout << "blocks created\n";
-            }
-        }
-        else
-        {
-            // ////////////////////////////////
-            //        Cut-cell method        //
-            // ////////////////////////////////
-
-            // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
-            cut_cell.calculateCoefficient(cells, DTEHF, nx, ny, nz, dx, dy, dz, n, m, f, e, h, g, pi, icellflag);
-        }
-    }
-    ///////////////////////////////////////////////////////
-    //////   END END END of  Apply Terrain code       /////
-    ///////////////////////////////////////////////////////
-
-
-
-    // After Terrain is process, handle remaining processing of SHP
-    // file data
-
-    
-    /// all cell flags should be specific to the TYPE ofbuilding
-    // class: canopy, rectbuilding, polybuilding, etc...
-    // should setcellflags be part of the .. should be part of URBGeneralD
-    // 
-    // This needs to be changed!  PolyBuildings should have been
-    // created and added to buildings array if done correctly by now
-    for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
-    {
-        // Call setCellsFlag in the PolyBuilding class to identify building cells
-        poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz, icellflag, UID->simParams->meshTypeFlag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
-    }
-    
-
-    // Urb Input Data will have read in the specific types of
-    // buildings, canopies, etc... but we need to merge all of that
-    // onto a single vector of Building* -- this vector is called
-    //
-    // allBuildingsVector
-    allBuildingsV.clear();  // make sure there's nothing on it
-    
-    // Add all the Canopy* to it (they are derived from Building)
-    for (int i = 0; i < UID->canopies->canopies.size(); i++)
-    {
-        allBuildingsV.push_back( UID->canopies->canopies[i] ); 
-    }    
-
-    // Add all the Building* that were read in from XML to this list
-    // too -- could be RectBuilding, PolyBuilding, whatever is derived
-    // from Building in the end...
-    for (int i = 0; i < UID->buildings->buildings.size(); i++)
-    {
-        allBuildingsV.push_back( UID->buildings->buildings[i] );
-    }
-
-    // !!!!!! Pete ---- Make sure polybuildings from SHP file get on
-    // !!!!!! this list too!!!!
-    
-    // At this point, the allBuildingsV will be complete and ready for
-    // use below... parameterizations, etc...
-    
     z0 = 0.1f
     if (UID->buildings)
         z0 = UID->buildings->wallRoughness;
@@ -263,18 +137,17 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
       y_out[j] = (j+0.5)*dy;          /**< Location of face centers in y-dir */
       y[j] = (float)y_out[j];
     }
-    
-    
+
+
     // Resize the coefficients for use with the solver e.resize( numcell_cent, 1.0 );
     e.resize( numcell_cent, 1.0 );
     f.resize( numcell_cent, 1.0 );
     g.resize( numcell_cent, 1.0 );
-
     h.resize( numcell_cent, 1.0 );
     m.resize( numcell_cent, 1.0 );
     n.resize( numcell_cent, 1.0 );
 
-    icellflag.resize( numcell_cent, 1 );    
+    icellflag.resize( numcell_cent, 1 );
 
     // /////////////////////////////////////////
     // Output related data --- should be part of some URBOutputData
@@ -293,8 +166,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     u0.resize( numcell_face, 0.0 );
     v0.resize( numcell_face, 0.0 );
     w0.resize( numcell_face, 0.0 );
-    
-    
+
+
     //////////////////////////////////////////////////////////////////////////////////
     /////    Create sensor velocity profiles and generate initial velocity field /////
     //////////////////////////////////////////////////////////////////////////////////
@@ -325,10 +198,111 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     max_velmag *= 1.2;
 
 
+    ////////////////////////////////////////////////////////
+    //////              Apply Terrain code             /////
+    ///////////////////////////////////////////////////////
+    // Handle remaining Terrain processing components here
+    ////////////////////////////////////////////////////////
+    //
+    // Behnam also notes that this section will be completely changed
+    // to NOT treat terrain cells as "buildings" -- Behnam will fix
+    // this
+    //
+    if (UID->simParameters->DTE_heightField)
+    {
+        // ////////////////////////////////
+        // Retrieve terrain height field //
+        // ////////////////////////////////
+        for (int i = 0; i < nx-1; i++)
+        {
+            for (int j = 0; j < ny-1; j++)
+            {
+                // Gets height of the terrain for each cell
+                int idx = i + j*(nx-1);
+                terrain[idx] = UID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
+                if (terrain[idx] < 0.0)
+                {
+                    terrain[idx] = 0.0;
+                }
+                id = i+j*nx;
+                for (auto k=0; k<z.size(); k++)
+                {
+                    terrain_id[id] = k+1;
+                    if (terrain[idx] < z[k+1])
+                    {
+                        break;
+                    }
+                    if (UID->simParams->meshTypeFlag == 0)
+                    {
+                      // ////////////////////////////////
+                      // Stair-step (original QUIC)    //
+                      // ////////////////////////////////
+                      icell_cent = i+j*(nx-1)+(k+1)*(nx-1)*(ny-1);
+                      icellflag[icell_cent] = 2;
+                    }
+                }
+            }
+        }
+
+        if (UID->simParams->meshTypeFlag == 1)
+        {
+            // ////////////////////////////////
+            //        Cut-cell method        //
+            // ////////////////////////////////
+
+            // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
+            cut_cell.calculateCoefficient(cells, DTEHF, nx, ny, nz, dx, dy, dz, n, m, f, e, h, g, pi, icellflag);
+        }
+    }
+    ///////////////////////////////////////////////////////
+    //////   END END END of  Apply Terrain code       /////
+    ///////////////////////////////////////////////////////
 
 
 
+    // After Terrain is process, handle remaining processing of SHP
+    // file data
 
+
+    /// all cell flags should be specific to the TYPE ofbuilding
+    // class: canopy, rectbuilding, polybuilding, etc...
+    // should setcellflags be part of the .. should be part of URBGeneralD
+    //
+    // This needs to be changed!  PolyBuildings should have been
+    // created and added to buildings array if done correctly by now
+    for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+    {
+        // Call setCellsFlag in the PolyBuilding class to identify building cells
+        poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz, icellflag, UID->simParams->meshTypeFlag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
+    }
+
+
+    // Urb Input Data will have read in the specific types of
+    // buildings, canopies, etc... but we need to merge all of that
+    // onto a single vector of Building* -- this vector is called
+    //
+    // allBuildingsVector
+    allBuildingsV.clear();  // make sure there's nothing on it
+
+    // Add all the Canopy* to it (they are derived from Building)
+    for (int i = 0; i < UID->canopies->canopies.size(); i++)
+    {
+        allBuildingsV.push_back( UID->canopies->canopies[i] );
+    }
+
+    // Add all the Building* that were read in from XML to this list
+    // too -- could be RectBuilding, PolyBuilding, whatever is derived
+    // from Building in the end...
+    for (int i = 0; i < UID->buildings->buildings.size(); i++)
+    {
+        allBuildingsV.push_back( UID->buildings->buildings[i] );
+    }
+
+    // !!!!!! Pete ---- Make sure polybuildings from SHP file get on
+    // !!!!!! this list too!!!!
+
+    // At this point, the allBuildingsV will be complete and ready for
+    // use below... parameterizations, etc...
 
 
 
@@ -373,7 +347,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     for (int i = 0; i < allBuildingsV.size(); i++)
     {
         // for now this does the canopy stuff for us
-        allBuildingsV[i]->callParameterizationSpecial();  
+        allBuildingsV[i]->callParameterizationSpecial();
     }
 
     // Deal with the rest of the parameterization somehow all
@@ -384,6 +358,94 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
         allBuildingsV[i]->callParameterizationOne();
     }
 
+
+    std::cout << "Defining Solid Walls...\n";
+    /// Boundary condition for building edges
+    Wall->defineWall(this);
+    std::cout << "Walls Defined...\n";
+
+    /*
+     * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
+     * wall above/below and wall in front/back and applies the log law boundary condition fix
+     * to the cells near Walls
+     *
+     */
+     Wall->wallLogBC (this);
+
+     Wall->setVelocityZero (this);
+
+     Wall->solverCoefficients (this);
+
+}
+
+
+void UrbGeneralData::mergeSort( std::vector<float> &height, std::vector<std::vector<polyVert>> &poly_points, std::vector<float> &base_height, std::vector<float> &building_height)
+{
+  //if the size of the array is 1, it is already sorted
+  if (height.size() == 1)
+  {
+    return;
+  }
+  //make left and right sides of the data
+  std::vector<float> height_L, height_R;
+  std::vector<float> base_height_L, base_height_R;
+  std::vector<float> building_height_L, building_height_R;
+  std::vector< std::vector <polyVert> > poly_points_L, poly_points_R;
+  height_L.resize(height.size() / 2);
+  height_R.resize(height.size() - height.size() / 2);
+  base_height_L.resize(base_height.size() / 2);
+  base_height_R.resize(base_height.size() - base_height.size() / 2);
+  building_height_L.resize(building_height.size() / 2);
+  building_height_R.resize(building_height.size() - building_height.size() / 2);
+  poly_points_L.resize(poly_points.size() / 2);
+  poly_points_R.resize(poly_points.size() - poly_points.size() / 2);
+
+  //copy data from the main data set to the left and right children
+  int lC = 0, rC = 0;
+  for (unsigned int i = 0; i < height.size(); i++)
+  {
+    if (i < height.size() / 2)
+    {
+      height_L[lC] = height[i];
+      base_height_L[lC] = base_height[i];
+      building_height_L[lC] = building_height[i];
+      poly_points_L[lC++] = poly_points[i];
+    }
+    else
+    {
+      height_R[rC] = height[i];
+      base_height_R[rC] = base_height[i];
+      building_height_R[rC] = building_height[i];
+      poly_points_R[rC++] = poly_points[i];
+    }
+  }
+
+  //recursively sort the children
+  mergeSort(height_L, poly_points_L, base_height_L, building_height_L);
+  mergeSort(height_R, poly_points_R, base_height_R, building_height_R);
+
+  //compare the sorted children to place the data into the main array
+  lC = rC = 0;
+  for (unsigned int i = 0; i < poly_points.size(); i++)
+  {
+    if (rC == height_R.size() || ( lC != height_L.size() &&
+      height_L[lC] > height_R[rC]))
+    {
+      height[i] = height_L[lC];
+      base_height[i] = base_height_L[lC];
+      building_height[i] = building_height_L[lC];
+      poly_points[i] = poly_points_L[lC++];
+    }
+    else
+    {
+      height[i] = height_R[rC];
+      base_height[i] = base_height_R[rC];
+      building_height[i] = building_height_R[rC];
+      poly_points[i] = poly_points_R[rC++];
+    }
+  }
+
+  return;
 }
 
 

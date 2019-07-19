@@ -107,7 +107,7 @@ void Canopy::plantInitial(int nx, int ny, int nz, float vk, std::vector<int> &ic
 								}
 							}
 							int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-							if( icellflag[icell_cent] > 0)
+							if( icellflag[icell_cent] != 0 && icellflag[icell_cent] != 2)
 							{
 								icellflag[icell_cent] = 8;
 							}
@@ -285,5 +285,5 @@ void Canopy::callParameterizationSpecial()
     // bounderies
     plantInitial(nx, ny, nz, vk, icellflag, z, u0, v0, canopy_atten, canopy_top, canopy_top_index,
                                  canopy_ustar, canopy_z0, canopy_d);		// Apply canopy parameterization
-    
+
 }

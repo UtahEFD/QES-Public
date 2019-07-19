@@ -31,7 +31,7 @@ public:
 	}
 
     void callParameterizationSpecial();
-    
+
 
 	/*!
 	 *This function takes in variables read in from input files and initializes required variables for definig
@@ -103,7 +103,7 @@ public:
 				for (int k=k_start; k<k_end; k++)
 				{
 					int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-					if (icellflag[icell_cent] != 0)       // if the cell is not solid
+					if (icellflag[icell_cent] != 0 && icellflag[icell_cent] != 2)       // if the cell is not solid
 					{
 						if (lu_canopy_flag > 0)
 						{
@@ -125,5 +125,3 @@ public:
 
 
 };
-
-
