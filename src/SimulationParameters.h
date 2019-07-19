@@ -9,6 +9,7 @@
 #include "util/ParseInterface.h"
 #include "Vector3.h"
 #include "DTEHeightField.h"
+#include "ESRIShapefile.h"
 
 class SimulationParameters : public ParseInterface
 {
@@ -41,6 +42,7 @@ public:
     // DTE - digital elevation model details
     std::string demFile;    // DEM file name
     DTEHeightField* DTE_heightField = nullptr;
+    Mesh* DTE_mesh;
 
     // SHP File parameters
     std::string shpFile;   // SHP file name
@@ -96,6 +98,7 @@ public:
         shpBuildingLayerName = "buildings";  // defaults
         parsePrimitive<std::string>(false, shpBuildingLayerName, "SHPBuildingLayer");
 
+        // Read in height field
         if (demFile != "") {
             std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
             DTE_heightField = new DTEHeightField(demFile,
@@ -105,6 +108,7 @@ public:
             
             std::cout << "Forming triangle mesh...\n";
             DTE_heightField->setDomain(domain, grid);
+            DTE_mesh = new Mesh(DTE_heigthField->getTris());
             std::cout << "Mesh complete\n";
         }
         else {
@@ -146,7 +150,7 @@ public:
                                          UID->simParams->shpBuildingLayerName,
                                          shpPolygons, building_height );
 
-
+            
 
             std::vector<float> shpDomainSize(2), minExtent(2);
             shpFile->getLocalDomain( shpDomainSize );
@@ -163,21 +167,20 @@ public:
                 }
             }
 
-            std::cout << "num_poly buildings" << shpPolygons.size() << std::endl;
             // Setting base height for buildings if there is a DEM file
-            if (DTE_heightField)
+            if (DTE_heightField && DTE_mesh)
             {
                 for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
                 {
                     // Get base height of every corner of building from terrain height
-                    min_height = mesh->getHeight(shpPolygons[pIdx][0].x_poly, shpPolygons[pIdx][0].y_poly);
+                    min_height = DTE_mesh->getHeight(shpPolygons[pIdx][0].x_poly, shpPolygons[pIdx][0].y_poly);
                     if (min_height<0)
                     {
                         min_height = 0.0;
                     }
                     for (auto lIdx=1; lIdx<shpPolygons[pIdx].size(); lIdx++)
                     {
-                        corner_height = mesh->getHeight(shpPolygons[pIdx][lIdx].x_poly, shpPolygons[pIdx][lIdx].y_poly);
+                        corner_height = DTE_mesh->getHeight(shpPolygons[pIdx][lIdx].x_poly, shpPolygons[pIdx][lIdx].y_poly);
                         if (corner_height<min_height && corner_height>0.0)
                         {
                             min_height = corner_height;
@@ -215,16 +218,12 @@ public:
                 // UID->buildings structures...
                 poly_buildings.push_back (PolyBuilding (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], nx, ny,
                                                         nz, dx, dy, dz, u0, v0, z));
+
+                poly_buildings.push_back (new PolyBuilding (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], nx, ny,
+                                                            nz, dx, dy, dz, u0, v0, z));
             }
             
-            /// all cell flags should be specific to the TYPE ofbuilding
-            // class: canopy, rectbuilding, polybuilding, etc...
-            // should setcellflags be part of the .. should be part of URBGeneralD
-            for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
-            {
-                // Call setCellsFlag in the PolyBuilding class to identify building cells
-                poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz, icellflag, UID->simParams->meshTypeFlag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
-            }
+
         }
     }
     

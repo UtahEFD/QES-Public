@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
     // Generate the general URB data from all inputs
     URBGeneralData* UGD = new URBGeneralData(UID);
 
+
     // Files was successfully read, so create instance of output class
     Output* output = nullptr;
     if (UID->fileOptions->outputFlag==1) {
@@ -73,9 +74,9 @@ int main(int argc, char *argv[])
     // //////////////////////////////////////////
     Solver *solver, *solverC = nullptr;
     if (arguments.solveType == CPU_Type)
-        solver = new CPUSolver(UID, DTEHF, output);
+        solver = new CPUSolver(UID, UGD, output);
     else if (arguments.solveType == DYNAMIC_P)
-        solver = new DynamicParallelism(UID, DTEHF, output);
+        solver = new DynamicParallelism(UID, UGD, output);
     else
     {
         std::cerr << "Error: invalid solve type\n";
@@ -86,9 +87,9 @@ int main(int argc, char *argv[])
     if (arguments.compareType)
     {
         if (arguments.compareType == CPU_Type)
-            solverC = new CPUSolver(UID, DTEHF, output);
+            solverC = new CPUSolver(UID, UGD, output);
         else if (arguments.compareType == DYNAMIC_P)
-            solverC = new DynamicParallelism(UID, DTEHF, output);
+            solverC = new DynamicParallelism(UID, UGD, output);
         else
         {
             std::cerr << "Error: invalid comparison type\n";

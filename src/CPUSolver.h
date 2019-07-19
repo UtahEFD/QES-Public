@@ -23,8 +23,8 @@ using namespace std;
 class CPUSolver : public Solver
 {
 public:
-	CPUSolver(const URBInputData* UID, const DTEHeightField* DTEHF, Output* output)
-		: Solver(UID, DTEHF, output)
+	CPUSolver(const URBInputData* UID, URBGeneralData* UGD, Output* output)
+		: Solver(UID, UGD, output)
 		{
 		}
 

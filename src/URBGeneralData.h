@@ -116,9 +116,11 @@ public:
     std::vector<int> wall_below_indices;     /**< Indices of the cells with wall bellow boundary condition */
     std::vector<int> wall_back_indices;      /**< Indices of the cells with wall in back boundary condition */
     std::vector<int> wall_front_indices;     /**< Indices of the cells with wall in front boundary condition */
+
     Mesh* mesh;           // In terrain functions
+    
     Cell* cells;
-    bool DTEHFExists = false;
+    // bool DTEHFExists = false;
     Cut_cell cut_cell;
 
 

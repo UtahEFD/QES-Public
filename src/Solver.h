@@ -16,15 +16,11 @@
 #include <limits>
 
 #include "Cut_cell.h"
-#include "PolyBuilding.h"
 
 #include "URBInputData.h"
 #include "URBGeneralData.h"
 
 #include "SimulationParameters.h"
-#include "Buildings.h"
-#include "NonPolyBuilding.h"
-#include "RectangularBuilding.h"
 #include "Vector3.h"
 #include "Output.hpp"
 

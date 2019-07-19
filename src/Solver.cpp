@@ -31,10 +31,7 @@
  *
  */
 
-
 #include "Solver.h"
-
-#include "ESRIShapefile.h"
 
 using std::cerr;
 using std::endl;
@@ -78,91 +75,6 @@ Solver::Solver(const URBInputData* UID,
     u.resize(numcell_face, 0.0);
     v.resize(numcell_face, 0.0);
     w.resize(numcell_face, 0.0);
-
-    ////////////////////////////////////////////////////////
-    //
-    // THIS NEEDS TO BE MOVED OUT OF HERE AND INTO THE INPUT PARSING!!!
-    // -Pete
-    // 
-    // Behnam also notes that this section will be completely changed
-    // to NOT treat terrain cells as "buildings" -- Behnam will fix
-    // this
-    // 
-    ////////////////////////////////////////////////////////
-    //////              Apply Terrain code             /////
-    ///////////////////////////////////////////////////////
-    mesh = 0;
-    if (DTEHF)
-    {
-
-        DTEHFExists = true;
-        mesh = new Mesh(DTEHF->getTris());
-
-        // ////////////////////////////////
-        // Retrieve terrain height field //
-        // ////////////////////////////////
-        for (int i = 0; i < nx-1; i++)
-        {
-            for (int j = 0; j < ny-1; j++)
-            {
-              // Gets height of the terrain for each cell
-              int idx = i + j*(nx-1);
-              terrain[idx] = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
-              if (terrain[idx] < 0.0)
-              {
-                terrain[idx] = 0.0;
-              }
-              id = i+j*nx;
-              for (auto k=0; k<z.size(); k++)
-        			{
-        				terrain_id[id] = k+1;
-        				if (terrain[idx] < z[k+1])
-        				{
-        					break;
-        				}
-        			}
-            }
-        }
-
-        if (UID->simParams->meshTypeFlag == 0)
-        {
-            // ////////////////////////////////
-            // Stair-step (original QUIC)    //
-            // ////////////////////////////////
-            if (mesh)
-            {
-                std::cout << "Creating terrain blocks...\n";
-                for (int i = 0; i < nx-1; i++)
-                {
-                    for (int j = 0; j < ny-1; j++)
-                    {
-                      // Gets height of the terrain for each cell
-                      float heightToMesh = mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
-                      // Calls rectangular building to create a each cell to the height of terrain in that cell
-                      if (heightToMesh > z[1])
-                      {
-                        buildings.push_back(new RectangularBuilding(i * dx+UID->simParams->halo_x, j * dy+UID->simParams->halo_y, 0.0, dx, dy, heightToMesh,z));
-                      }
-
-                    }
-                    printProgress( (float)i / (float)nx);
-                }
-                std::cout << "blocks created\n";
-            }
-        }
-        else
-        {
-            // ////////////////////////////////
-            //        Cut-cell method        //
-            // ////////////////////////////////
-
-            // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
-            cut_cell.calculateCoefficient(cells, DTEHF, nx, ny, nz, dx, dy, dz, n, m, f, e, h, g, pi, icellflag);
-        }
-    }
-    ///////////////////////////////////////////////////////
-    //////   END END END of  Apply Terrain code       /////
-    ///////////////////////////////////////////////////////
 
 
 
@@ -766,7 +678,7 @@ void Solver::wallLogBC (std::vector<int>& wall_right_indices,std::vector<int>& w
   	mergeSort(height_L, poly_points_L, base_height_L, building_height_L);
   	mergeSort(height_R, poly_points_R, base_height_R, building_height_R);
 
-  	//compare the sorted children to place the data into the main array
+p  	//compare the sorted children to place the data into the main array
   	lC = rC = 0;
   	for (unsigned int i = 0; i < poly_points.size(); i++)
   	{

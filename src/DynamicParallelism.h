@@ -19,8 +19,6 @@
 #include "URBInputData.h"
 #include "Solver.h"
 #include "Output.hpp"
-#include "DTEHeightField.h"
-#include "RectangularBuilding.h"
 #include "Sensor.h"
 
 
@@ -35,8 +33,8 @@ private:
     void _cudaCheck(T e, const char* func, const char* call, const int line);
 
 public:
-	DynamicParallelism(const URBInputData* UID, const DTEHeightField* DTEHF, Output* output)
-		: Solver(UID, DTEHF, output)
+	DynamicParallelism(const URBInputData* UID, URBGeneralData* UGD, Output* output)
+		: Solver(UID, UGD, output)
 		{
 		}
 

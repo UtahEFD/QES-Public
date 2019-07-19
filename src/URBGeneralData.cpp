@@ -85,10 +85,107 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
         }
     }
 
+
+
+    ////////////////////////////////////////////////////////
+    //////              Apply Terrain code             /////
+    ///////////////////////////////////////////////////////
+    // Handle remaining Terrain processing components here
+    ////////////////////////////////////////////////////////
+    //
+    // Behnam also notes that this section will be completely changed
+    // to NOT treat terrain cells as "buildings" -- Behnam will fix
+    // this
+    // 
+    if (UID->simParameters->DTE_heightField)
+    {
+        // ////////////////////////////////
+        // Retrieve terrain height field //
+        // ////////////////////////////////
+        for (int i = 0; i < nx-1; i++)
+        {
+            for (int j = 0; j < ny-1; j++)
+            {
+                // Gets height of the terrain for each cell
+                int idx = i + j*(nx-1);
+                terrain[idx] = UID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
+                if (terrain[idx] < 0.0)
+                {
+                    terrain[idx] = 0.0;
+                }
+                id = i+j*nx;
+                for (auto k=0; k<z.size(); k++)
+                {
+                    terrain_id[id] = k+1;
+                    if (terrain[idx] < z[k+1])
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (UID->simParams->meshTypeFlag == 0)
+        {
+            // ////////////////////////////////
+            // Stair-step (original QUIC)    //
+            // ////////////////////////////////
+            if (UID->simParams->DTE_mesh)
+            {
+                std::cout << "Creating terrain blocks...\n";
+                for (int i = 0; i < nx-1; i++)
+                {
+                    for (int j = 0; j < ny-1; j++)
+                    {
+                        // Gets height of the terrain for each cell
+                        float heightToMesh = UID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
+                        // Calls rectangular building to create a each cell to the height of terrain in that cell
+                        if (heightToMesh > z[1])
+                        {
+                            buildings.push_back(new RectangularBuilding(i * dx+UID->simParams->halo_x, j * dy+UID->simParams->halo_y, 0.0, dx, dy, heightToMesh,z));
+                        }
+
+                    }
+                    printProgress( (float)i / (float)nx);
+                }
+                std::cout << "blocks created\n";
+            }
+        }
+        else
+        {
+            // ////////////////////////////////
+            //        Cut-cell method        //
+            // ////////////////////////////////
+
+            // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
+            cut_cell.calculateCoefficient(cells, DTEHF, nx, ny, nz, dx, dy, dz, n, m, f, e, h, g, pi, icellflag);
+        }
+    }
+    ///////////////////////////////////////////////////////
+    //////   END END END of  Apply Terrain code       /////
+    ///////////////////////////////////////////////////////
+
+
+
+    // After Terrain is process, handle remaining processing of SHP
+    // file data
+
+    
+    /// all cell flags should be specific to the TYPE ofbuilding
+    // class: canopy, rectbuilding, polybuilding, etc...
+    // should setcellflags be part of the .. should be part of URBGeneralD
+    // 
+    // This needs to be changed!  PolyBuildings should have been
+    // created and added to buildings array if done correctly by now
+    for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+    {
+        // Call setCellsFlag in the PolyBuilding class to identify building cells
+        poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz, icellflag, UID->simParams->meshTypeFlag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
+    }
     
 
     // Urb Input Data will have read in the specific types of
-    // buildings, canoopies, etc... but we need to merge all of that
+    // buildings, canopies, etc... but we need to merge all of that
     // onto a single vector of Building* -- this vector is called
     //
     // allBuildingsVector
@@ -226,6 +323,11 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
       }
     }
     max_velmag *= 1.2;
+
+
+
+
+
 
 
 

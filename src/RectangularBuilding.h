@@ -6,7 +6,7 @@
  */
 
 #include "util/ParseInterface.h"
-#include "NonPolyBuilding.h"
+#include "PolyBuilding.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -17,8 +17,7 @@ using std::endl;
 using std::vector;
 using std::cout;
 
-
-class RectangularBuilding : public NonPolyBuilding
+class RectangularBuilding : public PolyBuilding
 {
 private:
 
