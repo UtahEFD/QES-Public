@@ -17,8 +17,10 @@ CUDA_ADD_LIBRARY( cudaurbcore
   Solver.cpp
   Mesh.cpp
   Output.cpp
-  Triangle.cpp
   Sensor.cpp
+  Triangle.cpp
+  URBInputData.h
+  URBGeneralData.cpp URBGeneralData.h 
   WRFInput.cpp WRFInput.h
   )
 

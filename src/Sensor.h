@@ -5,9 +5,11 @@
  * sensors read from an xml.
  */
 
-#include "util/ParseInterface.h"
-#include "Canopy.h"
 #include <algorithm>
+#include "util/ParseInterface.h"
+
+#include "URBInputData.h"
+#include "URBGeneralData.h"
 
 class Sensor : public ParseInterface
 {
@@ -60,7 +62,8 @@ public:
      * utilizes Barns scheme to interplote velocity to generate the initial velocity field for the domain.
      */
     void inputWindProfile(const URBInputData *UID,
-                          URBGeneralData *ugd)
+                          URBGeneralData *ugd);
+    
         
     // float dx, float dy, float dz, int nx, int ny, int nz, std::vector<double> &u0,
     //    	 						std::vector<double> &v0, std::vector<double> &w0, std::vector<float> z, std::vector<Sensor*> sensors,

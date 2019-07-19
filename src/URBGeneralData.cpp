@@ -1,4 +1,5 @@
 #include "URBGeneralData.h"
+#include "URBInputData.h"
 
 URBGeneralData::URBGeneralData(const URBInputData* UID)
 {
@@ -83,6 +84,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
             }
         }
     }
+
+    
 
     // Urb Input Data will have read in the specific types of
     // buildings, canoopies, etc... but we need to merge all of that
@@ -326,4 +329,13 @@ float URGBGeneralData::canopyBisection(float ustar, float z0, float canopy_top, 
     }
 
     return d;
+}
+
+
+URBGeneralData::URBGeneralData()
+{
+}
+
+URBGeneralData::~URBGeneralData()
+{
 }

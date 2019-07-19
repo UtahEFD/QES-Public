@@ -7,13 +7,15 @@
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
-#include "URBInputData.h"
 #include "handleURBArgs.h"
+
+#include "URBInputData.h"
+#include "URBGeneralData.h"
+
 #include "Solver.h"
 #include "CPUSolver.h"
 #include "DynamicParallelism.h"
 #include "Output.hpp"
-#include "DTEHeightField.h"
 
 namespace pt = boost::property_tree;
 
@@ -30,8 +32,8 @@ URBInputData* parseXMLTree(const std::string fileName);
 
 int main(int argc, char *argv[])
 {
-    std::string Revision = "0";
     // CUDA-Urb - Version output information
+    std::string Revision = "0";
     std::cout << "cudaUrb " << "0.8.0" << std::endl;
 
     // ///////////////////////////////////
@@ -55,38 +57,9 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    //if the commandline dem file is blank, and a file was specified in the xml,
-    //use the dem file from the xml
-    std::string demFile = "";
-    if (arguments.demFile != "")
-        demFile = arguments.demFile;
-    else if (UID->simParams && UID->simParams->demFile != "")
-        demFile = UID->simParams->demFile;
+    // Generate the general URB data from all inputs
+    URBGeneralData* UGD = new URBGeneralData(UID);
 
-
-    DTEHeightField* DTEHF = 0;
-    if (demFile != "") {
-        DTEHF = new DTEHeightField(demFile, (*(UID->simParams->grid))[0], (*(UID->simParams->grid))[1] );
-    }
-
-    if (DTEHF) {
-        std::cout << "Forming triangle mesh...\n";
-        DTEHF->setDomain(UID->simParams->domain, UID->simParams->grid);
-        std::cout << "Mesh complete\n";
-    }
-
-    if (arguments.terrainOut) {
-        if (DTEHF) {
-            std::cout << "Creating terrain OBJ....\n";
-            DTEHF->outputOBJ("terrain.obj");
-            std::cout << "OBJ created....\n";
-        }
-        else {
-            std::cerr << "Error: No dem file specified as input\n";
-            return -1;
-        }
-    }
-    
     // Files was successfully read, so create instance of output class
     Output* output = nullptr;
     if (UID->fileOptions->outputFlag==1) {
@@ -123,9 +96,6 @@ int main(int argc, char *argv[])
         }
     }
     
-    //close the scanner
-    if (DTEHF)
-        DTEHF->closeScanner();
     
     // Run urb simulation code
     solver->solve( !arguments.solveWind);

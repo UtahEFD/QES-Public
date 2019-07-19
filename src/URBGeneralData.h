@@ -1,8 +1,25 @@
 #pragma once
 
+#include <vector>
+#include <netcdf>
+
+#include "Building.h"
+#include "Canopy.h"
+#include "URBInputData.h"
+
 #define _USE_MATH_DEFINES
 #define MIN_S(x,y) ((x) < (y) ? (x) : (y))
 #define MAX_S(x,y) ((x) > (y) ? (x) : (y))
+
+#include <vector>
+
+#include <netcdf>
+
+#include "Mesh.h"
+#include "DTEHeightField.h"
+#include "Cut_cell.h"
+
+class URBInputData; // forward reference
 
 class URBGeneralData {
 protected:
@@ -111,6 +128,8 @@ public:
     std::vector<std::vector<std::vector<float>>> z_cut;
     std::vector<std::vector<int>> num_points;
     std::vector<std::vector<float>> coeff;
+
+#if 0
     /// Declaration of output manager
     int output_counter=0;
     double time=0;
@@ -148,6 +167,7 @@ public:
     std::vector<AttScalarDbl> output_scalar_dbl;
     std::vector<AttVectorDbl> output_vector_dbl;
     std::vector<AttVectorInt> output_vector_int;
+#endif
 
 };
 

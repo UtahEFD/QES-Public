@@ -42,9 +42,13 @@ public:
     // virtual functions....
 
     // Need to finalize the parameters here...
-    virtual void setCellFlags(URBGeneraData *ugd)) 
+    virtual void setCellFlags() 
     {
     }
+    
+    //virtual void setCellFlags(URBGeneraData *ugd)) 
+    //{
+// }
 
     virtual void callParameterizationOne() 
     {

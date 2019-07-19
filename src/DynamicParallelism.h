@@ -5,12 +5,7 @@
  * algorithm using Dynamic Parallelism on a single GPU.
  */
 
-#include "URBInputData.h"
-#include "Solver.h"
-#include "Output.hpp"
-#include "DTEHeightField.h"
-#include "RectangularBuilding.h"
-#include "Sensor.h"
+#include <cstdio>
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -20,8 +15,14 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
-#include <stdio.h>
-#include "cuda.h"
+
+#include "URBInputData.h"
+#include "Solver.h"
+#include "Output.hpp"
+#include "DTEHeightField.h"
+#include "RectangularBuilding.h"
+#include "Sensor.h"
+
 
 /**
  *

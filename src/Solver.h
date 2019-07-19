@@ -7,21 +7,6 @@
  * methods
  */
 
-#include "URBInputData.h"
-#include "SimulationParameters.h"
-#include "Buildings.h"
-#include "NonPolyBuilding.h"
-#include "RectangularBuilding.h"
-#include "Vector3.h"
-#include "Output.hpp"
-#include "Mesh.h"
-#include "DTEHeightField.h"
-#include "Cell.h"
-#include "Sensor.h"
-#include "Canopies.h"
-#include "Canopy.h"
-#include "Cut_cell.h"
-#include "PolyBuilding.h"
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -29,6 +14,24 @@
 #include <vector>
 #include <chrono>
 #include <limits>
+
+#include "Cut_cell.h"
+#include "PolyBuilding.h"
+
+#include "URBInputData.h"
+#include "URBGeneralData.h"
+
+#include "SimulationParameters.h"
+#include "Buildings.h"
+#include "NonPolyBuilding.h"
+#include "RectangularBuilding.h"
+#include "Vector3.h"
+#include "Output.hpp"
+
+#include "Cell.h"
+#include "Sensor.h"
+#include "Canopies.h"
+#include "Canopy.h"
 
 using namespace std;
 
@@ -89,7 +92,7 @@ protected:
 
 
 public:
-    Solver(const URBInputData* UID, const DTEHeightField* DTEHF, UrbGeneralData* ugd, Output* output);
+    Solver(const URBInputData* UID, const DTEHeightField* DTEHF, URBGeneralData* ugd, Output* output);
 
     virtual void solve(bool solveWind) = 0;
 
