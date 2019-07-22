@@ -1,6 +1,8 @@
+#include "Wall.h"
+
 #include "URBGeneralData.h"
 #include "URBInputData.h"
-#include "Wall.h"
+
 
 void Wall::defineWalls(URBGeneralData *ugd)
 {

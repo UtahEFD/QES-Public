@@ -8,6 +8,7 @@
 #include "util/ParseInterface.h"
 #include "Building.h"
 #include "RectangularBuilding.h"
+#include "PolyBuilding.h"
 
 
 class Buildings : public ParseInterface

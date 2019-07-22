@@ -8,6 +8,9 @@
 #include <chrono>
 #include <limits>
 
+// may need to forward reference this???
+class URBGeneralData;
+
 using namespace std;
 
 class Wall

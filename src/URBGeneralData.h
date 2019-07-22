@@ -3,31 +3,25 @@
 #include <vector>
 #include <netcdf>
 
-#include "Building.h"
-#include "Canopy.h"
-#include "URBInputData.h"
+// #include "URBInputData.h"
 
 #define _USE_MATH_DEFINES
 #define MIN_S(x,y) ((x) < (y) ? (x) : (y))
 #define MAX_S(x,y) ((x) > (y) ? (x) : (y))
 
-#include <vector>
-
-#include <netcdf>
-#imclude "Wall.h"
-
+#include "Building.h"
+#include "Canopy.h"
 #include "Mesh.h"
 #include "DTEHeightField.h"
 #include "Cut_cell.h"
+#include "Wall.h"
 
-class URBInputData; // forward reference
+class URBInputData;
 
 class URBGeneralData {
-protected:
-    URBGeneralData();
-
 public:
-    URBGeneralData(const URBInputData *UID);
+    URBGeneralData();
+    URBGeneralData(const URBInputData* UID);
     ~URBGeneralData();
 
     /*!
