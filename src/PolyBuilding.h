@@ -38,10 +38,11 @@ private:
 
 public:
 
-    /*PolyBuilding()
-    : Building()
+    // Need to fix this constructor
+    PolyBuilding()
+        : Building()
     {
-    }*/
+    }
 
     /**
     *

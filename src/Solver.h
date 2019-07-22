@@ -90,7 +90,7 @@ protected:
 
 
 public:
-    Solver(const URBInputData* UID, const DTEHeightField* DTEHF, URBGeneralData* ugd, Output* output);
+    Solver(const URBInputData* UID, URBGeneralData* ugd, Output* output);
 
     virtual void solve(const URBInputData *UID, const URBGeneralData* ugd, bool solveWind) = 0;
 

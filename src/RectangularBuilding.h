@@ -19,20 +19,20 @@ using std::cout;
 
 class RectangularBuilding : public PolyBuilding
 {
-private:
-
+protected:
 	int icell_cent, icell_cut;
-
 
 public:
 
 	RectangularBuilding()
+            : PolyBuilding()
 	{
 		buildingGeometry = 1;
 
 	}
 
 	RectangularBuilding(float xStart, float yStart, float bh, float length, float width, float height, std::vector<float> z)
+            : PolyBuilding()
 	{
 		buildingGeometry = 1;
 
