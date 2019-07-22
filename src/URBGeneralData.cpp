@@ -190,8 +190,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     {
       for (auto j=0; j<ny; j++)
       {
-        icell_face = i+j*nx+nz*nx*ny;
-        max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face],2.0)+pow(v0[icell_face],2.0)));
+          int icell_face = i+j*nx+nz*nx*ny;
+          max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face],2.0)+pow(v0[icell_face],2.0)));
       }
     }
     max_velmag *= 1.2;
@@ -233,11 +233,11 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
                     }
                     if (UID->simParams->meshTypeFlag == 0)
                     {
-                      // ////////////////////////////////
-                      // Stair-step (original QUIC)    //
-                      // ////////////////////////////////
-                      icell_cent = i+j*(nx-1)+(k+1)*(nx-1)*(ny-1);
-                      icellflag[icell_cent] = 2;
+                        // ////////////////////////////////
+                        // Stair-step (original QUIC)    //
+                        // ////////////////////////////////
+                        int icell_cent = i+j*(nx-1)+(k+1)*(nx-1)*(ny-1);
+                        icellflag[icell_cent] = 2;
                     }
                 }
             }

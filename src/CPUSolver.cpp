@@ -13,6 +13,9 @@ void CPUSolver::solve(const URBInputData *UID, const URBGeneralData* ugd, bool s
     ////////      Divergence of the initial velocity field   ////////
     /////////////////////////////////////////////////////////////////
 
+    int icell_face;          /**< cell-face index */
+    int icell_cent;
+
     for (int k = 1; k < ugd->nz-1; k++)
     {
         for (int j = 0; j < ugd->ny-1; j++)

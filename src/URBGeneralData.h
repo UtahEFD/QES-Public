@@ -45,8 +45,6 @@ public:
     long numcell_cout_2d;
     long numcell_cent;       /**< Total number of cell-centered values in domain */
     long numcell_face;       /**< Total number of face-centered values in domain */
-    int icell_face;          /**< cell-face index */
-    int icell_cent;
 
     std::vector<float> z0_domain;
 
