@@ -24,13 +24,6 @@ public:
     URBGeneralData(const URBInputData* UID);
     ~URBGeneralData();
 
-    /*!
-     * This function is being called from the plantInitial function
-     * and uses the bisection method to find the displacement height
-     * of the canopy.
-     */
-    float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
-
     void mergeSort( std::vector<float> &height, std::vector<std::vector<polyVert>> &poly_points, std::vector<float> &base_height, std::vector<float> &building_height);
 
     ////////////////////////////////////////////////////////////////////////////

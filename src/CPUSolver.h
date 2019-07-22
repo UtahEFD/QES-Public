@@ -28,5 +28,5 @@ public:
 		{
 		}
 
-	virtual void solve(bool solveWind);
+	virtual void solve(const URBInputData* UID, const URBGeneralData* ugd, bool solveWind);
 };
