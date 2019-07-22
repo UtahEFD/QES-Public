@@ -28,12 +28,14 @@ public:
             : PolyBuilding()
 	{
 		buildingGeometry = 1;
-
 	}
 
 	RectangularBuilding(float xStart, float yStart, float bh, float length, float width, float height, std::vector<float> z)
-            : PolyBuilding()
+            : PolyBuilding(xStart, yStart)  // correct poly building
+                                            // constructor gets called...
 	{
+#if 0
+            // SHouldn't much here...
 		buildingGeometry = 1;
 
 		groupID = 999;
@@ -44,8 +46,7 @@ public:
 		y_start = yStart;
 		L = length;
 		W = width;
-
-
+#endif
 	}
 
 	virtual void parseValues()
@@ -61,6 +62,10 @@ public:
 
 	}
 
+
+    // /////////////////////////////////////////////////////////////////
+    // EVERYTHING FROM HERE DOWN SHOULD GO AWAY, thus relying on the
+    // PolyBuiding to provide the functionality...
 
 	void setCutCells(float dx, float dy, std::vector<float> dz_array, std::vector<float> z, int nx, int ny, int nz, std::vector<int> &icellflag,
 					 std::vector<std::vector<std::vector<float>>> &x_cut,std::vector<std::vector<std::vector<float>>> &y_cut,

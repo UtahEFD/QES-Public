@@ -36,30 +36,12 @@ private:
     int icell_cent, icell_face;
     float x1, x2, y1, y2;
 
-public:
-
-    // Need to fix this constructor
-    PolyBuilding()
-        : Building()
+    /** 
+     * 
+     */
+    void finishBuildingPolybuiding( args... ) 
     {
-    }
-
-    /**
-    *
-    * This constructor creates a polygon type building: calculates and initializes
-    * all the features specific to this type of the building. This function reads in
-    * nodes of the polygon along with height and base height of the building.
-    *
-    */
-    PolyBuilding( const std::vector< polyVert > &polygonVertices, float bldElevation, float baseHeight,
-                  int nx, int ny, int nz, float dx, float dy, float dz, std::vector<double> &u0, std::vector<double> &v0, std::vector<float> z)
-                  : Building()
-    {
-      building_cent_x = 0;               // x-coordinate of the centroid of the building
-      building_cent_y = 0;               // y-coordinate of the centroid of the building
-      height_eff = bldElevation+baseHeight;       // Effective height of the building
-
-      // Calculate the centroid coordinates of the building (average of all nodes coordinates)
+        // Calculate the centroid coordinates of the building (average of all nodes coordinates)
       for (auto i=0; i<polygonVertices.size()-1; i++)
       {
         building_cent_x += polygonVertices[i].x_poly;
@@ -151,11 +133,63 @@ public:
       // Calculating length of the downwind wake based on Fackrell (1984) formulation
       Lr = 1.8*height_eff*W_over_H/(pow(L_over_H,0.3)*(1+0.24*W_over_H));
     }
+    
+
+public:
+
+    // Need to fix this constructor
+    PolyBuilding()
+        : Building()
+    {
+    }
+
+    /**
+    *
+    * Converts data about rect building into something that poly can
+    * building can use
+    * 
+    * This constructor creates a polygon type building using
+    * rectangular building information...
+    *
+    */
+    PolyBuilding( float xStart, float yStart, float bldElevation, float baseHeight,
+                  int nx, int ny, int nz, float dx, float dy, float dz )
+        : Building()
+    {
+        // extract the vertices from this definition here and make the
+        // poly building...
+
+        finishBuildingPolybuiding();
+    }
+    
+
+    /**
+    *
+    * This constructor creates a polygon type building: calculates and initializes
+    * all the features specific to this type of the building. This function reads in
+    * nodes of the polygon along with height and base height of the building.
+    *
+    */
+    PolyBuilding( const std::vector< polyVert > &polygonVertices, float bldElevation, float baseHeight,
+                  int nx, int ny, int nz, float dx, float dy, float dz, std::vector<double> &u0, std::vector<double> &v0, std::vector<float> z)
+                  : Building()
+    {
+      building_cent_x = 0;               // x-coordinate of the centroid of the building
+      building_cent_y = 0;               // y-coordinate of the centroid of the building
+      height_eff = bldElevation+baseHeight;       // Effective height of the building
+
+      finishBuildingPolybuiding();
+    }
 
     virtual void parseValues()
     {
-
+        // let it parse XML here if we get there...
     }
+
+
+    // make sure virtual functions from "Building" get implemented
+    // here ...
+    
 
     /**
     *
