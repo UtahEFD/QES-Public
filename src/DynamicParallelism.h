@@ -43,5 +43,5 @@ protected:
     double *d_R;              /**< Divergence of initial velocity field on device (GPU) */
     double *d_lambda, *d_lambda_old;		/**< Lagrange multipliers on device (GPU) */
 
-    virtual void solve(bool solveWind);
+    virtual void solve(const URBInputData* UID, const URBGeneralData* ugd, bool solveWind);
 };

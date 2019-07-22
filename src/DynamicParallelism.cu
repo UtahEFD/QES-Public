@@ -237,15 +237,15 @@ __global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, i
 
 
 
-void DynamicParallelism::solve(bool solveWind)
+void DynamicParallelism::solve(const URBInputData* UID, const URBGeneralData* ugd, bool solveWind)
 {
     auto startTotal = std::chrono::high_resolution_clock::now(); // Start
                                                                  // recording
                                                                  // execution
                                                                  // time
-    int numblocks = (numcell_cent/BLOCKSIZE)+1;
+    int numblocks = (ugd->numcell_cent/BLOCKSIZE)+1;
 
-    std::vector<double> value(numcell_cent,0.0);
+    std::vector<double> value(ugd->numcell_cent,0.0);
     std::vector<double> bvalue(numblocks,0.0);
     double *d_u0, *d_v0, *d_w0;
     double *d_value,*d_bvalue;
@@ -256,49 +256,49 @@ void DynamicParallelism::solve(bool solveWind)
 
     auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time
 
-    cudaMalloc((void **) &d_e, numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_f, numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_g, numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_h, numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_m, numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_n, numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_R, numcell_cent * sizeof(double));
-    cudaMalloc((void **) &d_lambda, numcell_cent * sizeof(double));
-    cudaMalloc((void **) &d_lambda_old, numcell_cent * sizeof(double));
-    cudaMalloc((void **) &d_icellflag, numcell_cent * sizeof(int));
-    cudaMalloc((void **) &d_u0,numcell_face*sizeof(double));
-    cudaMalloc((void **) &d_v0,numcell_face*sizeof(double));
-    cudaMalloc((void **) &d_w0,numcell_face*sizeof(double));
-    cudaMalloc((void **) &d_value,numcell_cent*sizeof(double));
+    cudaMalloc((void **) &d_e, ugd->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_f, ugd->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_g, ugd->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_h, ugd->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_m, ugd->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_n, ugd->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_R, ugd->numcell_cent * sizeof(double));
+    cudaMalloc((void **) &d_lambda, ugd->numcell_cent * sizeof(double));
+    cudaMalloc((void **) &d_lambda_old, ugd->numcell_cent * sizeof(double));
+    cudaMalloc((void **) &d_icellflag, ugd->numcell_cent * sizeof(int));
+    cudaMalloc((void **) &d_u0,ugd->numcell_face*sizeof(double));
+    cudaMalloc((void **) &d_v0,ugd->numcell_face*sizeof(double));
+    cudaMalloc((void **) &d_w0,ugd->numcell_face*sizeof(double));
+    cudaMalloc((void **) &d_value,ugd->numcell_cent*sizeof(double));
     cudaMalloc((void **) &d_bvalue,numblocks*sizeof(double));
-    cudaMalloc((void **) &d_x,nx*sizeof(float));
-    cudaMalloc((void **) &d_y,ny*sizeof(float));
-    cudaMalloc((void **) &d_z,nz*sizeof(float));
-    cudaMalloc((void **) &d_dz_array,(nz-1)*sizeof(float));
-    cudaMalloc((void **) &d_u,numcell_face*sizeof(double));
-    cudaMalloc((void **) &d_v,numcell_face*sizeof(double));
-    cudaMalloc((void **) &d_w,numcell_face*sizeof(double));
+    cudaMalloc((void **) &d_x,ugd->nx*sizeof(float));
+    cudaMalloc((void **) &d_y,ugd->ny*sizeof(float));
+    cudaMalloc((void **) &d_z,ugd->nz*sizeof(float));
+    cudaMalloc((void **) &d_dz_array,(ugd->nz-1)*sizeof(float));
+    cudaMalloc((void **) &d_u,ugd->numcell_face*sizeof(double));
+    cudaMalloc((void **) &d_v,ugd->numcell_face*sizeof(double));
+    cudaMalloc((void **) &d_w,ugd->numcell_face*sizeof(double));
 
 
-    cudaMemcpy(d_icellflag,icellflag.data(),numcell_cent*sizeof(int),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_u0,u0.data(),numcell_face*sizeof(double),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_v0,v0.data(),numcell_face*sizeof(double),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_w0,w0.data(),numcell_face*sizeof(double),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_R,R.data(),numcell_cent*sizeof(double),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_value , value.data() , numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_icellflag, ugd->icellflag.data(), ugd->numcell_cent*sizeof(int),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_u0, ugd->u0.data(),ugd->numcell_face*sizeof(double),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_v0, ugd->v0.data(),ugd->numcell_face*sizeof(double),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_w0, ugd->w0.data(),ugd->numcell_face*sizeof(double),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_R,R.data(),ugd->numcell_cent*sizeof(double),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_value , value.data() , ugd->numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
     cudaMemcpy(d_bvalue , bvalue.data() , numblocks * sizeof(double) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_e , e.data() , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_f , f.data() , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_g , g.data() , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_h , h.data() , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_m , m.data() , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_n , n.data() , numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_x , x.data() , nx * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_y , y.data() , ny * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_z , z.data() , nz * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_dz_array , dz_array.data() , (nz-1) * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_lambda , lambda.data() , numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_lambda_old , lambda_old.data() , numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_e , ugd->e.data() , ugd->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_f , ugd->f.data() , ugd->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_g , ugd->g.data() , ugd->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_h , ugd->h.data() , ugd->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_m , ugd->m.data() , ugd->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_n , ugd->n.data() , ugd->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_x , ugd->x.data() , ugd->nx * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_y , ugd->y.data() , ugd->ny * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_z , ugd->z.data() , ugd->nz * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_dz_array , ugd->dz_array.data() , (ugd->nz-1) * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_lambda , lambda.data() , ugd->numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_lambda_old , lambda_old.data() , ugd->numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
 
 
     /////////////////////////////////////////////////
@@ -307,13 +307,13 @@ void DynamicParallelism::solve(bool solveWind)
 
 
     // Invoke the main (mother) kernel
-    SOR_iteration<<<1,1>>>(d_lambda,d_lambda_old, nx, ny, nz, omega, A, B, dx, dy,dz, d_dz_array, d_e, d_f, d_g, d_h, d_m, d_n, d_R,itermax,tol,d_value,d_bvalue,d_u0,d_v0,d_w0,alpha1,alpha2,d_u,d_v,d_w,d_icellflag);
+    SOR_iteration<<<1,1>>>(d_lambda,d_lambda_old, ugd->nx, ugd->ny, ugd->nz, omega, A, B, ugd->dx, ugd->dy, ugd->dz, d_dz_array, d_e, d_f, d_g, d_h, d_m, d_n, d_R,itermax,tol,d_value,d_bvalue,d_u0,d_v0,d_w0,alpha1,alpha2,d_u,d_v,d_w,d_icellflag);
     cudaCheck(cudaGetLastError());
 
-    cudaMemcpy (lambda.data() , d_lambda , numcell_cent * sizeof(double) , cudaMemcpyDeviceToHost);
-    cudaMemcpy(u.data(),d_u,numcell_face*sizeof(double),cudaMemcpyDeviceToHost);
-    cudaMemcpy(v.data(),d_v,numcell_face*sizeof(double),cudaMemcpyDeviceToHost);
-    cudaMemcpy(w.data(),d_w,numcell_face*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy (lambda.data() , d_lambda , ugd->numcell_cent * sizeof(double) , cudaMemcpyDeviceToHost);
+    cudaMemcpy(u.data(),d_u,ugd->numcell_face*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(v.data(),d_v,ugd->numcell_face*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(w.data(),d_w,ugd->numcell_face*sizeof(double),cudaMemcpyDeviceToHost);
 
     cudaFree (d_lambda);
     cudaFree (d_e);
