@@ -65,7 +65,10 @@ Solver::Solver(const URBInputData* UID,
                const DTEHeightField* DTEHF,
                UrbGeneralData * ugd,
                Output* output)
-    : itermax( UID->simParams->maxIterations )
+    : eta( pow(alpha1/alpha2, 2.0) ),
+      A( pow( UID->simParams->dx/UID->simParams->dy, 2.0 ) ),
+      B( eta*pow( UID->simParams->dx/UID->simParams->dz, 2.0) ),
+      itermax( UID->simParams->maxIterations )
 {
     R.resize( ugd->numcell_cent, 0.0 );
 

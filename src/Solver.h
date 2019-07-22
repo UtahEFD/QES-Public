@@ -15,14 +15,15 @@
 #include <chrono>
 #include <limits>
 
-#include "Cut_cell.h"
+
 
 #include "URBInputData.h"
 #include "URBGeneralData.h"
 
-#include "SimulationParameters.h"
 #include "Vector3.h"
 #include "Output.hpp"
+
+#include "Cut_cell.h"
 
 #include "Cell.h"
 #include "Sensor.h"
@@ -45,9 +46,10 @@ protected:
     //////// Variables and constants needed only in solver -- Behnam
     //////// These can be stayed in the solver class
     ////////////////////////////////////////////////////////////////////////////
-    const float eta = pow(alpha1/alpha2, 2.0);
-    const float A = pow(dx/dy, 2.0);
-    const float B = eta*pow(dx/dz, 2.0);
+    const float eta; // = pow(alpha1/alpha2, 2.0);
+    const float A; //  = pow(dx/dy, 2.0);
+    const float B; //  = eta*pow(dx/dz, 2.0);
+
     const float tol = 1.0e-9;     /**< Error tolerance -->>> very
                                    * small tol for float! */
     const float omega = 1.78f;   /**< Over-relaxation factor */
