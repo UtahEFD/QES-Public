@@ -11,7 +11,7 @@ using std::endl;
 using std::vector;
 using std::cout;
 
-#include "PolygonVortex.h"
+#include "PolygonVertex.h"
 #define MIN_S(x,y) ((x) < (y) ? (x) : (y))
 
 /**
@@ -35,7 +35,7 @@ private:
     std::vector<float> xi, yi;
     int icell_cent, icell_face;
     float x1, x2, y1, y2;
-    std::vector <polyVert> polygonVortices;
+    std::vector <polyVert> polygonVertices;
 
 
 
@@ -58,15 +58,15 @@ public:
     {
 
       building_rotation *= M_PI/180.0;
-      polygonVortices.resize (5);
-      polygonVortices[0].x_poly = polygonVortices[4].x_poly = x_start;
-      polygonVortices[0].y_poly = polygonVortices[4].y_poly = y_start;
-      polygonVortices[1].x_poly = x_start-W*sin(building_rotation);
-      polygonVortices[1].y_poly = y_start+W*cos(building_rotation);
-      polygonVortices[2].x_poly = polygonVortices[1].x_poly+L*cos(building_rotation);
-      polygonVortices[2].y_poly = polygonVortices[1].y_poly+L*sin(building_rotation);
-      polygonVortices[3].x_poly = x_start+L*cos(building_rotation);
-      polygonVortices[3].y_poly = y_start+L*sin(building_rotation);
+      polygonVertices.resize (5);
+      polygonVertices[0].x_poly = polygonVertices[4].x_poly = x_start;
+      polygonVertices[0].y_poly = polygonVertices[4].y_poly = y_start;
+      polygonVertices[1].x_poly = x_start-W*sin(building_rotation);
+      polygonVertices[1].y_poly = y_start+W*cos(building_rotation);
+      polygonVertices[2].x_poly = polygonVertices[1].x_poly+L*cos(building_rotation);
+      polygonVertices[2].y_poly = polygonVertices[1].y_poly+L*sin(building_rotation);
+      polygonVertices[3].x_poly = x_start+L*cos(building_rotation);
+      polygonVertices[3].y_poly = y_start+L*sin(building_rotation);
 
       // extract the vertices from this definition here and make the
       // poly building...
@@ -84,7 +84,7 @@ public:
     PolyBuilding(const URBInputData *UID, URBGeneralData *ugd, int id)
                   : Building()
     {
-      &polygonVortices = UID->simParams->SHPData->shpPolygons[id];
+      &polygonVertices = UID->simParams->SHPData->shpPolygons[id];
       H = UID->simParams->SHPData->building_height[id];
       base_height = ugd->base_height[id];
 
