@@ -20,45 +20,28 @@ using std::cout;
 class RectangularBuilding : public PolyBuilding
 {
 protected:
-	int icell_cent, icell_cut;
+	//int icell_cent, icell_cut;
 
 public:
 
-	RectangularBuilding()
-            : PolyBuilding()
-	{
-		buildingGeometry = 1;
-	}
 
-	RectangularBuilding(float xStart, float yStart, float bh, float length, float width, float height, std::vector<float> z)
-            : PolyBuilding(xStart, yStart)  // correct poly building
+	RectangularBuilding(float x_start, float y_start, float base_height, float L, float W,
+											float H, float building_rotation, const URBInputData *UID, URBGeneralData *ugd)
+            : PolyBuilding(UID, ugd, x_start, y_start, base_height, L, W, H, building_rotation)  // correct poly building
                                             // constructor gets called...
 	{
-#if 0
-            // SHouldn't much here...
-		buildingGeometry = 1;
 
-		groupID = 999;
-		buildingType = 5;
-		H = height;
-		baseHeight = bh;
-		x_start = xStart;
-		y_start = yStart;
-		L = length;
-		W = width;
-#endif
 	}
 
 	virtual void parseValues()
 	{
-		parsePrimitive<int>(true, groupID, "groupID");
-		parsePrimitive<int>(true, buildingType, "buildingType");
 		parsePrimitive<float>(true, H, "height");
-		parsePrimitive<float>(true, baseHeight, "baseHeight");
+		parsePrimitive<float>(true, base_height, "baseHeight");
 		parsePrimitive<float>(true, x_start, "xStart");
 		parsePrimitive<float>(true, y_start, "yStart");
 		parsePrimitive<float>(true, L, "length");
 		parsePrimitive<float>(true, W, "width");
+		parsePrimitive<float>(true, building_rotation, "buildingRotation");
 
 	}
 
@@ -67,7 +50,7 @@ public:
     // EVERYTHING FROM HERE DOWN SHOULD GO AWAY, thus relying on the
     // PolyBuiding to provide the functionality...
 
-	void setCutCells(float dx, float dy, std::vector<float> dz_array, std::vector<float> z, int nx, int ny, int nz, std::vector<int> &icellflag,
+	/*void setCutCells(float dx, float dy, std::vector<float> dz_array, std::vector<float> z, int nx, int ny, int nz, std::vector<int> &icellflag,
 					 std::vector<std::vector<std::vector<float>>> &x_cut,std::vector<std::vector<std::vector<float>>> &y_cut,
 					 std::vector<std::vector<std::vector<float>>> &z_cut, std::vector<std::vector<int>> &num_points,
 					 std::vector<std::vector<float>> &coeff)
@@ -552,10 +535,10 @@ public:
 
 
 
-	}
+	}*/
 
 
-	void setCellsFlag(float dx, float dy, std::vector<float> dz_array, int nx, int ny, int nz, std::vector<float> z, std::vector<int> &icellflag, int mesh_type_flag)
+	/*void setCellsFlag(float dx, float dy, std::vector<float> dz_array, int nx, int ny, int nz, std::vector<float> z, std::vector<int> &icellflag, int mesh_type_flag)
 	{
 
 		if (mesh_type_flag == 1)
@@ -714,7 +697,7 @@ public:
 					}
 				}
 		}
-	}
+	}*/
 
 
 

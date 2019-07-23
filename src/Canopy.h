@@ -20,7 +20,7 @@ public:
 
 		parsePrimitive<float>(true, atten, "attenuationCoefficient");
 		parsePrimitive<float>(true, H, "height");
-		parsePrimitive<float>(true, baseHeight, "baseHeight");
+		parsePrimitive<float>(true, base_height, "baseHeight");
 		parsePrimitive<float>(true, x_start, "xStart");
 		parsePrimitive<float>(true, y_start, "yStart");
 		parsePrimitive<float>(true, L, "length");
@@ -93,8 +93,8 @@ public:
 		i_end = std::round((x_start+L)/dx);			// Index of canopy end location in x-direction
 		j_end = std::round((y_start+W)/dy);			// Index of canopy end location in y-direction
 		j_start = std::round(y_start/dy);				// Index of canopy start location in y-direction
-		k_start = std::round(baseHeight/dz);			// Index of canopy start location in z-direction
-		k_end = std::round((baseHeight+H)/dz)+1;				// Index of canopy end location in y-direction
+		k_start = std::round(base_height/dz);			// Index of canopy start location in z-direction
+		k_end = std::round((base_height+H)/dz)+1;				// Index of canopy end location in y-direction
 
 #if 0
     	std::cout << "i_start:" << i_start << "\n";

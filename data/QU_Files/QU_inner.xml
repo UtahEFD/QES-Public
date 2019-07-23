@@ -94,15 +94,13 @@
 <!--buildings>
 	<wallRoughness> 0.1 </wallRoughness>
 	<numBuildings> 1 </numBuildings>
-	<numPolygonNodes> 0 </numPolygonNodes>
 	<rectangularBuilding>
-		<groupID> 1 </groupID>
-		<buildingType> 1 </buildingType>
 		<height> 20.0 </height>
 		<baseHeight> 0 </baseHeight>
 		<xStart> 90.0 </xStart>
 		<yStart> 90.0 </yStart>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
+		<buildingRotation> 20.0 </buildingRotation>
 	</rectangularBuilding>
 </buildings-->

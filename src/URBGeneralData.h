@@ -67,6 +67,8 @@ public:
     std::vector<int> terrain_id;      // Sensor function
                                       // (inputWindProfile)
 
+    std::vector <float> base_height;      // Base height of buildings
+
     // Initial wind conditions
     /// Declaration of initial wind components (u0,v0,w0)
     std::vector<double> u0,v0,w0;

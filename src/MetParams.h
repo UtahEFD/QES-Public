@@ -6,7 +6,6 @@
  */
 #include "util/ParseInterface.h"
 #include "Sensor.h"
-#include "PolygonVertex.h"
 
 class MetParams : public ParseInterface
 {

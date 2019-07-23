@@ -6,7 +6,7 @@
 #include "ogrsf_frmts.h"
 #include <limits>
 
-#include "PolygonVertex.h"
+#include "PolygonVortex.h"
 
 class ESRIShapefile
 {

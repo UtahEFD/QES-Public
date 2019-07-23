@@ -264,44 +264,40 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
 
     if (UID->simParams->SHPData) {
             auto buildingsetup = std::chrono::high_resolution_clock::now(); // Start recording execution time
-        
+
             std::vector <PolyBuilding> poly_buildings;
-            std::vector< std::vector <polyVert> > poly;
-            std::vector <float> base_height;            // Base height of buildings
             std::vector <float> effective_height;            // Effective height of buildings
             float corner_height, min_height;
 
-
-    
             std::vector<float> shpDomainSize(2), minExtent(2);
             shpFile->getLocalDomain( shpDomainSize );
             shpFile->getMinExtent( minExtent );
-            
+
             float domainOffset[2] = { 0, 0 };
-            for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+            for (auto pIdx = 0; pIdx<UID->simParams->SHPData->shpPolygons.size(); pIdx++)
             {
                 // convert the global polys to local domain coordinates
-                for (auto lIdx=0; lIdx<shpPolygons[pIdx].size(); lIdx++)
+                for (auto lIdx=0; lIdx<UID->simParams->SHPData->shpPolygons[pIdx].size(); lIdx++)
                 {
-                    shpPolygons[pIdx][lIdx].x_poly = shpPolygons[pIdx][lIdx].x_poly - minExtent[0] ;
-                    shpPolygons[pIdx][lIdx].y_poly = shpPolygons[pIdx][lIdx].y_poly - minExtent[1] ;
+                    UID->simParams->SHPData->shpPolygons[pIdx][lIdx].x_poly = UID->simParams->SHPData->shpPolygons[pIdx][lIdx].x_poly - minExtent[0] ;
+                    UID->simParams->SHPData->shpPolygons[pIdx][lIdx].y_poly = UID->simParams->SHPData->shpPolygons[pIdx][lIdx].y_poly - minExtent[1] ;
                 }
             }
 
             // Setting base height for buildings if there is a DEM file
             if (DTE_heightField && DTE_mesh)
             {
-                for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+                for (auto pIdx = 0; pIdx<UID->simParams->SHPData->shpPolygons.size(); pIdx++)
                 {
                     // Get base height of every corner of building from terrain height
-                    min_height = DTE_mesh->getHeight(shpPolygons[pIdx][0].x_poly, shpPolygons[pIdx][0].y_poly);
+                    min_height = DTE_mesh->getHeight(UID->simParams->SHPData->shpPolygons[pIdx][0].x_poly, UID->simParams->SHPData->shpPolygons[pIdx][0].y_poly);
                     if (min_height<0)
                     {
                         min_height = 0.0;
                     }
-                    for (auto lIdx=1; lIdx<shpPolygons[pIdx].size(); lIdx++)
+                    for (auto lIdx=1; lIdx<UID->simParams->SHPData->shpPolygons[pIdx].size(); lIdx++)
                     {
-                        corner_height = DTE_mesh->getHeight(shpPolygons[pIdx][lIdx].x_poly, shpPolygons[pIdx][lIdx].y_poly);
+                        corner_height = DTE_mesh->getHeight(UID->simParams->SHPData->shpPolygons[pIdx][lIdx].x_poly, UID->simParams->SHPData->shpPolygons[pIdx][lIdx].y_poly);
                         if (corner_height<min_height && corner_height>0.0)
                         {
                             min_height = corner_height;
@@ -312,43 +308,39 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
             }
             else
             {
-                for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+                for (auto pIdx = 0; pIdx<UID->simParams->SHPData->shpPolygons.size(); pIdx++)
                 {
                     base_height.push_back(0.0);
                 }
             }
-            
-            for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+
+            for (auto pIdx = 0; pIdx<UID->simParams->SHPData->shpPolygons.size(); pIdx++)
             {
                 effective_height.push_back (base_height[pIdx]+building_height[pIdx]);
-                for (auto lIdx=0; lIdx<shpPolygons[pIdx].size(); lIdx++)
+                for (auto lIdx=0; lIdx<UID->simParams->SHPData->shpPolygons[pIdx].size(); lIdx++)
                 {
-                    shpPolygons[pIdx][lIdx].x_poly += UID->simParams->halo_x;
-                    shpPolygons[pIdx][lIdx].y_poly += UID->simParams->halo_y;
+                    UID->simParams->SHPData->shpPolygons[pIdx][lIdx].x_poly += UID->simParams->halo_x;
+                    UID->simParams->SHPData->shpPolygons[pIdx][lIdx].y_poly += UID->simParams->halo_y;
                 }
             }
 
             std::cout << "Creating buildings from shapefile...\n";
             // Loop to create each of the polygon buildings read in from the shapefile
-            for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+            for (auto pIdx = 0; pIdx<UID->simParams->SHPData->shpPolygons.size(); pIdx++)
             {
                 // Create polygon buildings
                 // Pete needs to move this into URBInputData processing BUT
                 // instead of adding to the poly_buildings vector, it really
                 // needs to be pushed back onto buildings within the
                 // UID->buildings structures...
-                poly_buildings.push_back (PolyBuilding (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], nx, ny,
-                                                        nz, dx, dy, dz, u0, v0, z));
-
-                poly_buildings.push_back (new PolyBuilding (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], nx, ny,
-                                                            nz, dx, dy, dz, u0, v0, z));
+                poly_buildings.push_back (new PolyBuilding (UID, this, pIdx));
             }
-            
+
 
         }
     }
 
-    
+
 
 
     /// all cell flags should be specific to the TYPE ofbuilding

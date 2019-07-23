@@ -12,8 +12,8 @@ class Building : public ParseInterface
 protected:
 
 public:
-	int groupID;
-	int buildingType, buildingGeometry;
+
+	float building_rotation;
 	float x_start;
 	float y_start;
 	float L;									/**< Length of the building */
@@ -23,7 +23,7 @@ public:
 	int i_cut_start, i_cut_end, j_cut_start, j_cut_end, k_cut_end;  // Indices of start and end of building
 	 																																// in cut-cell method
 	float H;							/**< Height of the building */
-	float baseHeight, baseHeightActual; 			/**< Base height of the building */
+	float base_height; 			/**< Base height of the building */
 
 	float upwind_dir;						/**< Wind direction of initial velocity at the height of building at the centroid */
 	float height_eff;						/**< Effective height of the building */
@@ -42,24 +42,24 @@ public:
     // virtual functions....
 
     // Need to finalize the parameters here...
-    virtual void setCellFlags() 
-    {
-    }
-    
-    //virtual void setCellFlags(URBGeneraData *ugd)) 
-    //{
-// }
-
-    virtual void callParameterizationOne() 
+    virtual void setCellFlags()
     {
     }
 
-    virtual void callParameterizationTwo() 
+    virtual void setCellFlags(const URBInputData *UID, URBGeneralData *ugd)
+    {
+		}
+
+    virtual void polygonWake(const URBInputData *UID, URBGeneralData *ugd)
     {
     }
 
-    virtual void callParameterizationSpecial() 
+    virtual void callParameterizationTwo()
     {
     }
-    
+
+    virtual void callParameterizationSpecial()
+    {
+    }
+
 };
