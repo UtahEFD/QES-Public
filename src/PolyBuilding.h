@@ -6,6 +6,8 @@
 #include "Building.h"
 #include "SimulationParameters.h"
 #include "util/ParseInterface.h"
+#include "URBInputData.h"
+#include "URBGeneralData.h"
 
 using namespace std;
 using std::cerr;

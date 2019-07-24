@@ -15,8 +15,6 @@ private:
 public:
 
 	float atten;
-	int landuse_veg_flag, landuse_urb_flag, lu_canopy_flag;
-	int canopy_flag;
 
 	Canopy()
 	{

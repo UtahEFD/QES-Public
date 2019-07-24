@@ -68,9 +68,6 @@
 </metParams>								<!-- End of meteorological parameters -->
 <!--canopies>
 	<num_canopies> 1 </num_canopies>
-	<landuseFlag> 0 </landuseFlag>
-	<landuseVegetationFlag> 0 </landuseVegetationFlag>
-	<landuseUrbanFlag> 0 </landuseUrbanFlag>
 	<canopy>
 		<attenuationCoefficient> 1.97 </attenuationCoefficient>
 		<height> 10.0 </height>
@@ -79,6 +76,7 @@
 		<yStart> 90.0 </yStart>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
+		<canopyRotation> 20.0 </canopyRotation>
 	</canopy>
 </canopies-->
 <fileOptions>
