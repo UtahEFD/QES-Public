@@ -4,6 +4,8 @@
 #include <cmath>
 #include <math.h>
 #include "Building.h"
+#include "SimulationParameters.h"
+#include "util/ParseInterface.h"
 
 using namespace std;
 using std::cerr;
@@ -41,6 +43,12 @@ private:
 
 public:
 
+    PolyBuilding()
+    {
+
+    }
+
+    virtual void parseValues() = 0;
 
     /**
     *
@@ -51,27 +59,13 @@ public:
     * rectangular building information...
     *
     */
-    PolyBuilding( const URBInputData *UID, URBGeneralData *ugd,float x_start,
+    PolyBuilding( const URBInputData* UID, URBGeneralData* UGD, float x_start,
                   float y_start, float base_height, float L, float W, float H,
-                  float building_rotation)
-        : Building()
-    {
+                  float building_rotation);
 
-      building_rotation *= M_PI/180.0;
-      polygonVertices.resize (5);
-      polygonVertices[0].x_poly = polygonVertices[4].x_poly = x_start;
-      polygonVertices[0].y_poly = polygonVertices[4].y_poly = y_start;
-      polygonVertices[1].x_poly = x_start-W*sin(building_rotation);
-      polygonVertices[1].y_poly = y_start+W*cos(building_rotation);
-      polygonVertices[2].x_poly = polygonVertices[1].x_poly+L*cos(building_rotation);
-      polygonVertices[2].y_poly = polygonVertices[1].y_poly+L*sin(building_rotation);
-      polygonVertices[3].x_poly = x_start+L*cos(building_rotation);
-      polygonVertices[3].y_poly = y_start+L*sin(building_rotation);
 
-      // extract the vertices from this definition here and make the
-      // poly building...
-      setPolybuilding(ugd->nx, ugd->ny, ugd->dx, ugd->dy, ugd->u0, ugd->v0, ugd->z);
-    }
+    PolyBuilding( float x_start, float y_start, float base_height, float L, float W,
+                  float H, float canopy_rotation, const URBInputData* UID, URBGeneralData* UGD);
 
 
     /**
@@ -81,20 +75,7 @@ public:
     * nodes of the polygon along with height and base height of the building.
     *
     */
-    PolyBuilding(const URBInputData *UID, URBGeneralData *ugd, int id)
-                  : Building()
-    {
-      &polygonVertices = UID->simParams->SHPData->shpPolygons[id];
-      H = UID->simParams->SHPData->building_height[id];
-      base_height = ugd->base_height[id];
-
-      setPolybuilding(ugd->nx, ugd->ny, ugd->dx, ugd->dy, ugd->u0, ugd->v0, ugd->z);
-    }
-
-    virtual void parseValues()
-    {
-        // let it parse XML here if we get there...
-    }
+    PolyBuilding(const URBInputData* UID, URBGeneralData* UGD, int id);
 
 
     // make sure virtual functions from "Building" get implemented
@@ -104,7 +85,7 @@ public:
     /**
      *
      */
-    void setPolybuilding(int nx, int ny, int nz, float dx, float dy, std::vector<double> &u0, std::vector<double> &v0, std::vector<float> z);
+    void setPolybuilding(int nx, int ny, float dx, float dy, std::vector<double> &u0, std::vector<double> &v0, std::vector<float> z);
 
 
     /**
@@ -113,7 +94,7 @@ public:
     * for building cells. It applies the Stair-step method to define building bounds.
     *
     */
-    void setCellFlags(const URBInputData *UID, URBGeneralData *ugd);
+    void setCellFlags(const URBInputData* UID, URBGeneralData* UGD);
 
     /**
     *
@@ -124,6 +105,6 @@ public:
     * parameterization to them.
     *
     */
-    void polygonWake (const URBInputData *UID, URBGeneralData *ugd);
+    void polygonWake (const URBInputData* UID, URBGeneralData* UGD);
 
 };

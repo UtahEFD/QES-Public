@@ -6,6 +6,7 @@
  */
 #include "util/ParseInterface.h"
 #include "Sensor.h"
+#include <algorithm>
 
 class MetParams : public ParseInterface
 {

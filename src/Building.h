@@ -4,8 +4,10 @@
  * This class is an abstract representation of a building. It holds
  * the basic information and functions that every building should have.
 */
-
+#include "URBInputData.h"
+#include "URBGeneralData.h"
 #include "util/ParseInterface.h"
+using namespace std;
 
 class Building : public ParseInterface
 {
@@ -14,6 +16,7 @@ protected:
 public:
 
 	float building_rotation;
+	float canopy_rotation;
 	float x_start;
 	float y_start;
 	float L;									/**< Length of the building */
@@ -46,20 +49,13 @@ public:
     {
     }
 
-    virtual void setCellFlags(const URBInputData *UID, URBGeneralData *ugd)
-    {
-		}
-
-    virtual void polygonWake(const URBInputData *UID, URBGeneralData *ugd)
+    virtual void polygonWake()
     {
     }
 
-    virtual void callParameterizationTwo()
+    virtual void canopyVegetation()
     {
     }
 
-    virtual void callParameterizationSpecial()
-    {
-    }
 
 };

@@ -137,6 +137,14 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
       y[j] = (float)y_out[j];
     }
 
+    // Resize the canopy-related vectors
+    canopy_atten.resize( numcell_cent, 0.0 );
+    canopy_top.resize( (nx-1)*(ny-1), 0.0 );
+    canopy_top_index.resize( (nx-1)*(ny-1), 0 );
+    canopy_z0.resize( (nx-1)*(ny-1), 0.0 );
+    canopy_ustar.resize( (nx-1)*(ny-1), 0.0 );
+    canopy_d.resize( (nx-1)*(ny-1), 0.0 );
+
 
     // Resize the coefficients for use with the solver e.resize( numcell_cent, 1.0 );
     e.resize( numcell_cent, 1.0 );
@@ -262,7 +270,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     // After Terrain is process, handle remaining processing of SHP
     // file data
 
-    if (UID->simParams->SHPData) {
+    if (UID->simParams->SHPData)
+    {
             auto buildingsetup = std::chrono::high_resolution_clock::now(); // Start recording execution time
 
             std::vector <PolyBuilding> poly_buildings;
@@ -279,8 +288,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
                 // convert the global polys to local domain coordinates
                 for (auto lIdx=0; lIdx<UID->simParams->SHPData->shpPolygons[pIdx].size(); lIdx++)
                 {
-                    UID->simParams->SHPData->shpPolygons[pIdx][lIdx].x_poly = UID->simParams->SHPData->shpPolygons[pIdx][lIdx].x_poly - minExtent[0] ;
-                    UID->simParams->SHPData->shpPolygons[pIdx][lIdx].y_poly = UID->simParams->SHPData->shpPolygons[pIdx][lIdx].y_poly - minExtent[1] ;
+                    UID->simParams->SHPData->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
+                    UID->simParams->SHPData->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
                 }
             }
 
@@ -335,12 +344,17 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
                 // UID->buildings structures...
                 poly_buildings.push_back (new PolyBuilding (UID, this, pIdx));
             }
-
-
         }
-    }
 
+        for (int i = 0; i < UID->canopies->canopies.size(); i++)
+        {
+            poly_buildings.push_back( new Canopy (UID, this) );
+        }
 
+        for (int i = 0; i < UID->canopies->buildings.size(); i++)
+        {
+            poly_buildings.push_back( new RectangularBuilding (UID, this) );
+        }
 
 
     /// all cell flags should be specific to the TYPE ofbuilding
@@ -349,7 +363,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     //
     // This needs to be changed!  PolyBuildings should have been
     // created and added to buildings array if done correctly by now
-    for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+    /*for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
     {
         // Call setCellsFlag in the PolyBuilding class to identify building cells
         poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz, icellflag, UID->simParams->meshTypeFlag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
@@ -377,16 +391,16 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
         allBuildingsV.push_back( UID->buildings->buildings[i] );
     }
 
+    // All iCellFlags should now be set!!!
     // !!!!!! Pete ---- Make sure polybuildings from SHP file get on
     // !!!!!! this list too!!!!
 
     // At this point, the allBuildingsV will be complete and ready for
     // use below... parameterizations, etc...
 
-
+*/
 
     // ///////////////////////////////////////
-    // All iCellFlags should now be set!!!
     // ///////////////////////////////////////
 
     /// defining ground solid cells (ghost cells below the surface)
@@ -395,7 +409,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
         for (int i = 0; i < nx-1; i++)
         {
             int icell_cent = i + j*(nx-1);
-            icellflag[icell_cent] = 0.0;
+            icellflag[icell_cent] = 2;
         }
     }
 
@@ -404,7 +418,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     //
 
     // Now all buildings
-    for (int i = 0; i < allBuildingsV.size(); i++)
+    /*for (int i = 0; i < allBuildingsV.size(); i++)
     {
         // for now this does the canopy stuff for us
         allBuildingsV[i]->setCellFlags();
@@ -435,7 +449,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     {
         // for now this does the canopy stuff for us
         allBuildingsV[i]->callParameterizationOne();
-    }
+    }*/
 
 
     std::cout << "Defining Solid Walls...\n";
@@ -525,6 +539,55 @@ void UrbGeneralData::mergeSort( std::vector<float> &height, std::vector<std::vec
   }
 
   return;
+}
+
+
+
+
+float UrbGeneralData::canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m)
+{
+    int iter;
+    float tol, uhc, d, d1, d2, fi, fnew;
+
+    tol = z0/100;
+    fnew = tol*10;
+
+    d1 = z0;
+    d2 = canopy_top;
+    d = (d1+d2)/2;
+
+    uhc = (ustar/vk)*(log((canopy_top-d1)/z0)+psi_m);
+    fi = ((canopy_atten*uhc*vk)/ustar)-canopy_top/(canopy_top-d1);
+
+    if (canopy_atten > 0)
+    {
+        iter = 0;
+        while (iter < 200 && abs(fnew) > tol && d < canopy_top && d > z0)
+        {
+            iter += 1;
+            d = (d1+d2)/2;
+            uhc = (ustar/vk)*(log((canopy_top-d)/z0)+psi_m);
+            fnew = ((canopy_atten*uhc*vk)/ustar) - canopy_top/(canopy_top-d);
+            if(fnew*fi>0)
+            {
+                d1 = d;
+            }
+            else if(fnew*fi<0)
+            {
+                d2 = d;
+            }
+        }
+        if (d > canopy_top)
+        {
+            d = 10000;
+        }
+    }
+    else
+    {
+        d = 0.99*canopy_top;
+    }
+
+    return d;
 }
 
 

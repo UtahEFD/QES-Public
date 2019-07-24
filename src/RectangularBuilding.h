@@ -24,9 +24,12 @@ protected:
 
 public:
 
+	RectangularBuilding()
+	{
 
-	RectangularBuilding(float x_start, float y_start, float base_height, float L, float W,
-											float H, float building_rotation, const URBInputData *UID, URBGeneralData *ugd)
+	}
+
+	RectangularBuilding(const URBInputData *UID, URBGeneralData *ugd)
             : PolyBuilding(UID, ugd, x_start, y_start, base_height, L, W, H, building_rotation)  // correct poly building
                                             // constructor gets called...
 	{

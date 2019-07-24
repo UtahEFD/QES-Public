@@ -5,7 +5,7 @@ using std::endl;
 using std::vector;
 using std::cout;
 
-void CPUSolver::solve(const URBInputData *UID, const URBGeneralData* ugd, bool solveWind)
+void CPUSolver::solve(const URBInputData* UID, const URBGeneralData* UGD, bool solveWind)
 {
     auto startOfSolveMethod = std::chrono::high_resolution_clock::now(); // Start recording execution time
 
@@ -16,20 +16,20 @@ void CPUSolver::solve(const URBInputData *UID, const URBGeneralData* ugd, bool s
     int icell_face;          /**< cell-face index */
     int icell_cent;
 
-    for (int k = 1; k < ugd->nz-1; k++)
+    for (int k = 1; k < UGD->nz-1; k++)
     {
-        for (int j = 0; j < ugd->ny-1; j++)
+        for (int j = 0; j < UGD->ny-1; j++)
         {
-            for (int i = 0; i < ugd->nx-1; i++)
+            for (int i = 0; i < UGD->nx-1; i++)
             {
-                icell_cent = i + j*(ugd->nx-1) + k*(ugd->nx-1)*(ugd->ny-1);
-                icell_face = i + j*ugd->nx + k*ugd->nx*ugd->ny;
+                icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+                icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
 
                 /// Calculate divergence of initial velocity field
-                R[icell_cent] = (-2*pow(alpha1, 2.0))*((( e[icell_cent] * u0[icell_face+1]       - f[icell_cent] * u0[icell_face]) * dx ) +
-                                                       (( g[icell_cent] * v0[icell_face + ugd->nx]    - h[icell_cent] * v0[icell_face]) * dy ) +
-                                                       ( m[icell_cent]  * w0[icell_face + ugd->nx*ugd->ny] * dz_array[k]*0.5*(dz_array[k]+dz_array[k+1])
-                                                        - n[icell_cent] * w0[icell_face] * dz_array[k]*0.5*(dz_array[k]+dz_array[k-1]) ));
+                R[icell_cent] = (-2*pow(alpha1, 2.0))*((( UGD->e[icell_cent] * UGD->u0[icell_face+1]       - UGD->f[icell_cent] * UGD->u0[icell_face]) * UGD->dx ) +
+                                                       (( UGD->g[icell_cent] * UGD->v0[icell_face + UGD->nx]    - UGD->h[icell_cent] * UGD->v0[icell_face]) * UGD->dy ) +
+                                                       ( UGD->m[icell_cent]  * UGD->w0[icell_face + UGD->nx*UGD->ny] * UGD->dz_array[k]*0.5*(UGD->dz_array[k]+UGD->dz_array[k+1])
+                                                        - UGD->n[icell_cent] * UGD->w0[icell_face] * UGD->dz_array[k]*0.5*(UGD->dz_array[k]+UGD->dz_array[k-1]) ));
             }
         }
     }
@@ -57,38 +57,38 @@ void CPUSolver::solve(const URBInputData *UID, const URBGeneralData* ugd, bool s
             //
             // main SOR formulation loop
             //
-            for (int k = 1; k < ugd->nz-2; k++){
-            	for (int j = 1; j < ugd->ny-2; j++){
-            	    for (int i = 1; i < ugd->nx-2; i++){
+            for (int k = 1; k < UGD->nz-2; k++){
+            	for (int j = 1; j < UGD->ny-2; j++){
+            	    for (int i = 1; i < UGD->nx-2; i++){
 
-            	        icell_cent = i + j*(ugd->nx-1) + k*(ugd->nx-1)*(ugd->ny-1);   /// Lineralized index for cell centered values
+            	        icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   /// Lineralized index for cell centered values
 
-                        lambda[icell_cent] = (omega / ( e[icell_cent] + f[icell_cent] + g[icell_cent] +
-                                                        h[icell_cent] + m[icell_cent] + n[icell_cent])) *
-                            ( e[icell_cent] * lambda[icell_cent+1]        + f[icell_cent] * lambda[icell_cent-1] +
-                              g[icell_cent] * lambda[icell_cent + (ugd->nx-1)] + h[icell_cent] * lambda[icell_cent-(ugd->nx-1)] +
-                              m[icell_cent] * lambda[icell_cent+(ugd->nx-1)*(ugd->ny-1)] +
-                              n[icell_cent] * lambda[icell_cent-(ugd->nx-1)*(ugd->ny-1)] - R[icell_cent] ) +
+                        lambda[icell_cent] = (omega / ( UGD->e[icell_cent] + UGD->f[icell_cent] + UGD->g[icell_cent] +
+                                                        UGD->h[icell_cent] + UGD->m[icell_cent] + UGD->n[icell_cent])) *
+                            ( UGD->e[icell_cent] * lambda[icell_cent+1]        + UGD->f[icell_cent] * lambda[icell_cent-1] +
+                              UGD->g[icell_cent] * lambda[icell_cent + (UGD->nx-1)] + UGD->h[icell_cent] * lambda[icell_cent-(UGD->nx-1)] +
+                              UGD->m[icell_cent] * lambda[icell_cent+(UGD->nx-1)*(UGD->ny-1)] +
+                              UGD->n[icell_cent] * lambda[icell_cent-(UGD->nx-1)*(UGD->ny-1)] - R[icell_cent] ) +
                             (1.0 - omega) * lambda[icell_cent];    /// SOR formulation
                     }
                 }
             }
 
             /// Mirror boundary condition (lambda (@k=0) = lambda (@k=1))
-            for (int j = 0; j < ugd->ny-1; j++){
-                for (int i = 0; i < ugd->nx-1; i++){
-                    int icell_cent = i + j*(ugd->nx-1);         /// Lineralized index for cell centered values
-                    lambda[icell_cent] = lambda[icell_cent + (ugd->nx-1)*(ugd->ny-1)];
+            for (int j = 0; j < UGD->ny-1; j++){
+                for (int i = 0; i < UGD->nx-1; i++){
+                    int icell_cent = i + j*(UGD->nx-1);         /// Lineralized index for cell centered values
+                    lambda[icell_cent] = lambda[icell_cent + (UGD->nx-1)*(UGD->ny-1)];
                 }
             }
 
             /// Error calculation
             error = 0.0;                   /// Reset error value before error calculation
-            for (int k = 0; k < ugd->nz-1; k++){
-                for (int j = 0; j < ugd->ny-1; j++){
-                    for (int i = 0; i < ugd->nx-1; i++){
-                        int icell_cent = i + j*(ugd->nx-1) + k*(ugd->nx-1)*(ugd->ny-1);   /// Lineralized index for cell centered values
-                        error += fabs(lambda[icell_cent] - lambda_old[icell_cent])/((ugd->nx-1)*(ugd->ny-1)*(ugd->nz-1));
+            for (int k = 0; k < UGD->nz-1; k++){
+                for (int j = 0; j < UGD->ny-1; j++){
+                    for (int i = 0; i < UGD->nx-1; i++){
+                        int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   /// Lineralized index for cell centered values
+                        error += fabs(lambda[icell_cent] - lambda_old[icell_cent])/((UGD->nx-1)*(UGD->ny-1)*(UGD->nz-1));
                     }
                 }
             }
@@ -109,16 +109,16 @@ void CPUSolver::solve(const URBInputData *UID, const URBGeneralData* ugd, bool s
         /////   Update the velocity field using Euler-Lagrange equations   /////
         ////////////////////////////////////////////////////////////////////////
 
-        for (int k = 0; k < ugd->nz; k++)
+        for (int k = 0; k < UGD->nz; k++)
         {
-            for (int j = 0; j < ugd->ny; j++)
+            for (int j = 0; j < UGD->ny; j++)
             {
-                for (int i = 0; i < ugd->nx; i++)
+                for (int i = 0; i < UGD->nx; i++)
                 {
-                    int icell_face = i + j*ugd->nx + k*ugd->nx*ugd->ny;   /// Lineralized index for cell faced values
-                    u[icell_face] = u0[icell_face];
-                    v[icell_face] = v0[icell_face];
-                    w[icell_face] = w0[icell_face];
+                    int icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;   /// Lineralized index for cell faced values
+                    u[icell_face] = UGD->u0[icell_face];
+                    v[icell_face] = UGD->v0[icell_face];
+                    w[icell_face] = UGD->w0[icell_face];
                 }
             }
         }
@@ -127,47 +127,47 @@ void CPUSolver::solve(const URBInputData *UID, const URBGeneralData* ugd, bool s
         // /////////////////////////////////////////////
     	  /// Update velocity field using Euler equations
         // /////////////////////////////////////////////
-        for (int k = 1; k < ugd->nz-1; k++)
+        for (int k = 1; k < UGD->nz-1; k++)
         {
-            for (int j = 1; j < ugd->ny-1; j++)
+            for (int j = 1; j < UGD->ny-1; j++)
             {
-                for (int i = 1; i < ugd->nx-1; i++)
+                for (int i = 1; i < UGD->nx-1; i++)
                 {
-                    icell_cent = i + j*(ugd->nx-1) + k*(ugd->nx-1)*(ugd->ny-1);   /// Lineralized index for cell centered values
-                    icell_face = i + j*ugd->nx + k*ugd->nx*ugd->ny;               /// Lineralized index for cell faced values
+                    icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   /// Lineralized index for cell centered values
+                    icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;               /// Lineralized index for cell faced values
 
-                    // Calculate correct wind velocity
-                    u[icell_face] = u0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
-                        f[icell_cent]*dx*(lambda[icell_cent]-lambda[icell_cent-1]);
+                    u[icell_face] = UGD->u0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
+                        UGD->f[icell_cent]*UGD->dx*(lambda[icell_cent]-lambda[icell_cent-1]);
 
-                    v[icell_face] = v0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
-                        h[icell_cent]*dy*(lambda[icell_cent]-lambda[icell_cent - (ugd->nx-1)]);
+                        // Calculate correct wind velocity
+                    v[icell_face] = UGD->v0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
+                        UGD->h[icell_cent]*UGD->dy*(lambda[icell_cent]-lambda[icell_cent - (UGD->nx-1)]);
 
-                    w[icell_face] = w0[icell_face]+(1/(2*pow(alpha2, 2.0))) *
-                        n[icell_cent]*dz_array[k]*(lambda[icell_cent]-lambda[icell_cent - (ugd->nx-1)*(ugd->ny-1)]);
+                    w[icell_face] = UGD->w0[icell_face]+(1/(2*pow(alpha2, 2.0))) *
+                        UGD->n[icell_cent]*UGD->dz_array[k]*(lambda[icell_cent]-lambda[icell_cent - (UGD->nx-1)*(UGD->ny-1)]);
                 }
             }
         }
 
-        for (int k = 1; k < ugd->nz-1; k++)
+        for (int k = 1; k < UGD->nz-1; k++)
         {
-            for (int j = 0; j < ugd->ny-1; j++)
+            for (int j = 0; j < UGD->ny-1; j++)
             {
-                for (int i = 0; i < ugd->nx-1; i++)
+                for (int i = 0; i < UGD->nx-1; i++)
                 {
-                    icell_cent = i + j*(ugd->nx-1) + k*(ugd->nx-1)*(ugd->ny-1);   /// Lineralized index for cell centered values
-                    icell_face = i + j*ugd->nx + k*ugd->nx*ugd->ny;               /// Lineralized index for cell faced values
+                    icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   /// Lineralized index for cell centered values
+                    icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;               /// Lineralized index for cell faced values
 
                     // If we are inside a building, set velocities to 0.0
-                    if (icellflag[icell_cent] == 0 || icellflag[icell_cent] == 2)
+                    if (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 2)
                     {
                         /// Setting velocity field inside the building to zero
                         u[icell_face] = 0;
                         u[icell_face+1] = 0;
                         v[icell_face] = 0;
-                        v[icell_face+ugd->nx] = 0;
+                        v[icell_face+UGD->nx] = 0;
                         w[icell_face] = 0;
-                        w[icell_face+ugd->nx*ugd->ny] = 0;
+                        w[icell_face+UGD->nx*UGD->ny] = 0;
                     }
                 }
             }

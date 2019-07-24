@@ -9,6 +9,7 @@
 #define MIN_S(x,y) ((x) < (y) ? (x) : (y))
 #define MAX_S(x,y) ((x) > (y) ? (x) : (y))
 
+#include "URBInputData.h"
 #include "Building.h"
 #include "Canopy.h"
 #include "Mesh.h"
@@ -25,6 +26,14 @@ public:
     ~URBGeneralData();
 
     void mergeSort( std::vector<float> &height, std::vector<std::vector<polyVert>> &poly_points, std::vector<float> &base_height, std::vector<float> &building_height);
+
+
+    /*!
+    * This function is being called from the plantInitial function
+    * and uses the bisection method to find the displacement height
+    * of the canopy.
+    */
+    float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
 
     ////////////////////////////////////////////////////////////////////////////
     //////// Variables and constants needed only in other functions-- Behnam
@@ -78,20 +87,18 @@ public:
 
     int id;
 
-
-
-
-
     std::vector<float> site_canopy_H;
     std::vector<float> site_atten_coeff;
-
 
     float convergence;
     // Canopy functions
 
-    std::vector<float> atten;		/**< Attenuation coefficient */
-
-    int lu_canopy_flag;
+    std::vector<float> canopy_atten;		/**< Canopy attenuation coefficient */
+    std::vector<float> canopy_top;		  /**< Canopy height */
+    std::vector<int> canopy_top_index;		  /**< Canopy top index */
+    std::vector<float> canopy_z0;		  /**< Canopy surface roughness */
+    std::vector<float> canopy_ustar;		  /**< Velocity gradient at the top of canopy */
+    std::vector<float> canopy_d;		  /**< Canopy displacement length */
 
     Canopy* canopy;
 

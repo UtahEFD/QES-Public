@@ -62,26 +62,25 @@ void Solver::printProgress (float percentage)
  */
 
 Solver::Solver(const URBInputData* UID,
-               const DTEHeightField* DTEHF,
-               UrbGeneralData * ugd,
+               URBGeneralData * ugd,
                Output* output)
     : eta( pow(alpha1/alpha2, 2.0) ),
-      A( pow( UID->simParams->dx/UID->simParams->dy, 2.0 ) ),
-      B( eta*pow( UID->simParams->dx/UID->simParams->dz, 2.0) ),
+      A( pow( ugd->dx/ugd->dy, 2.0 ) ),
+      B( eta*pow( ugd->dx/ugd->dz, 2.0) ),
       itermax( UID->simParams->maxIterations )
 {
     R.resize( ugd->numcell_cent, 0.0 );
 
     lambda.resize( ugd->numcell_cent, 0.0 );
-    lambda_old.resize( numcell_cent, 0.0 );
+    lambda_old.resize( ugd->numcell_cent, 0.0 );
 
-    u.resize(numcell_face, 0.0);
-    v.resize(numcell_face, 0.0);
-    w.resize(numcell_face, 0.0);
-
-
+    u.resize(ugd->numcell_face, 0.0);
+    v.resize(ugd->numcell_face, 0.0);
+    w.resize(ugd->numcell_face, 0.0);
 
 
+
+/*
         // !!!!!!!!!!!!!!!!!!!!! @*@*@*@*@*@
         // We are here now...
         // where does this go then????
@@ -103,7 +102,6 @@ Solver::Solver(const URBInputData* UID,
         auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
         std::chrono::duration<float> elapsedBuilding = finish - buildingsetup;
         std::cout << "Elapsed time to read in and create buildings and apply parameterization: " << elapsedBuilding.count() << " s\n";   // Print out elapsed execution time
-    }
 
 
 
@@ -122,12 +120,12 @@ Solver::Solver(const URBInputData* UID,
     /////////////////////////////////////////////////////////////
     else
     {
-      std::vector<std::vector<std::vector<float>>> x_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
-      std::vector<std::vector<std::vector<float>>> y_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
-      std::vector<std::vector<std::vector<float>>> z_cut(numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
+      std::vector<std::vector<std::vector<float>>> x_cut(ugd->numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
+      std::vector<std::vector<std::vector<float>>> y_cut(ugd->numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
+      std::vector<std::vector<std::vector<float>>> z_cut(ugd->numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
 
-      std::vector<std::vector<int>> num_points(numcell_cent, std::vector<int>(6,0));
-      std::vector<std::vector<float>> coeff(numcell_cent, std::vector<float>(6,0.0));
+      std::vector<std::vector<int>> num_points(ugd->numcell_cent, std::vector<int>(6,0));
+      std::vector<std::vector<float>> coeff(ugd->numcell_cent, std::vector<float>(6,0.0));
 
     	for (size_t i = 0; i < buildings.size(); i++)
     	{
@@ -145,14 +143,14 @@ Solver::Solver(const URBInputData* UID,
         calculateCoefficients(dx, dy, dz, nx, ny, nz, icellflag, n.data(), m.data(), f.data(), e.data(), h.data(), g.data(),
                                 x_cut, y_cut, z_cut, num_points, coeff);
       }
-    }
+    }*/
 
 
 
     //////////////////////////////////////////////////
     //      Initialize output information           //
     //////////////////////////////////////////////////
-
+/*
     if (output != nullptr) {
 
         // set output fields
@@ -236,10 +234,10 @@ Solver::Solver(const URBInputData* UID,
         for ( AttVectorInt att : output_vector_int ) {
             output->addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
         }
-    }
+    }*/
 }
 
-void Solver::calculateCoefficients(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag,
+/*void Solver::calculateCoefficients(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag,
                         float* n, float* m, float* f, float* e, float* h, float* g,
                         std::vector<std::vector<std::vector<float>>> x_cut, std::vector<std::vector<std::vector<float>>>y_cut,
                         std::vector<std::vector<std::vector<float>>> z_cut, std::vector<std::vector<int>> num_points,
@@ -367,4 +365,4 @@ void Solver :: save(Output* output) {
     }
     // increment for next time insertion
     output_counter +=1;
-}
+}*/

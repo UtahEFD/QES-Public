@@ -37,8 +37,8 @@ public:
     int UTMZone;
     int UTMZoneLetter;
     int meshTypeFlag;
-    float halo_x;
-    float halo_y;
+    float halo_x = 0.0;
+    float halo_y = 0.0;
 
     // DTE - digital elevation model details
     std::string demFile;    // DEM file name
@@ -65,7 +65,7 @@ public:
         if (DTE_heightField)
             DTE_heightField->closeScanner();
     }
-    
+
 
     virtual void parseValues()
     {
@@ -106,7 +106,7 @@ public:
                                                  (*(grid))[0],
                                                  (*(grid))[1] );
             assert(DTE_heightField);
-            
+
             std::cout << "Forming triangle mesh...\n";
             DTE_heightField->setDomain(domain, grid);
             DTE_mesh = new Mesh(DTE_heightField->getTris());
@@ -115,7 +115,7 @@ public:
         else {
             std::cerr << "Error: No dem file specified in input\n";
         }
-        
+
 #if 0
         if (arguments.terrainOut) {
             if (DTEHF) {
@@ -130,8 +130,8 @@ public:
         }
 #endif
 
-        
-        // 
+
+        //
         // Process ESRIShapeFile here, but leave extraction of poly
         // building for later in URBGeneralData
         //
@@ -147,4 +147,3 @@ public:
         }
     }
 };
-

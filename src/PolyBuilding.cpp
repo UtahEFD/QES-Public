@@ -1,5 +1,59 @@
 #include "PolyBuilding.h"
 
+
+PolyBuilding::PolyBuilding( const URBInputData* UID, URBGeneralData* UGD, float x_start,
+              float y_start, float base_height, float L, float W, float H,
+              float building_rotation)
+    : Building()
+{
+  x_start += UID->simParams->halo_x;
+  y_start += UID->simParams->halo_y;
+  building_rotation *= M_PI/180.0;
+  polygonVertices.resize (5);
+  polygonVertices[0].x_poly = polygonVertices[4].x_poly = x_start;
+  polygonVertices[0].y_poly = polygonVertices[4].y_poly = y_start;
+  polygonVertices[1].x_poly = x_start-W*sin(building_rotation);
+  polygonVertices[1].y_poly = y_start+W*cos(building_rotation);
+  polygonVertices[2].x_poly = polygonVertices[1].x_poly+L*cos(building_rotation);
+  polygonVertices[2].y_poly = polygonVertices[1].y_poly+L*sin(building_rotation);
+  polygonVertices[3].x_poly = x_start+L*cos(building_rotation);
+  polygonVertices[3].y_poly = y_start+L*sin(building_rotation);
+
+  // extract the vertices from this definition here and make the
+  // poly building...
+  setPolybuilding(UGD->nx, UGD->ny, UGD->dx, UGD->dy, UGD->u0, UGD->v0, UGD->z);
+}
+
+
+PolyBuilding( float x_start, float y_start, float base_height, float L, float W,
+              float H, float canopy_rotation, const URBInputData *UID, URBGeneralData *UGD)
+              : Building()
+{
+  x_start += UID->simParams->halo_x;
+  y_start += UID->simParams->halo_y;
+  canopy_rotation *= M_PI/180.0;
+  polygonVertices.resize (5);
+  polygonVertices[0].x_poly = polygonVertices[4].x_poly = x_start;
+  polygonVertices[0].y_poly = polygonVertices[4].y_poly = y_start;
+  polygonVertices[1].x_poly = x_start-W*sin(canopy_rotation);
+  polygonVertices[1].y_poly = y_start+W*cos(canopy_rotation);
+  polygonVertices[2].x_poly = polygonVertices[1].x_poly+L*cos(canopy_rotation);
+  polygonVertices[2].y_poly = polygonVertices[1].y_poly+L*sin(canopy_rotation);
+  polygonVertices[3].x_poly = x_start+L*cos(canopy_rotation);
+  polygonVertices[3].y_poly = y_start+L*sin(canopy_rotation);
+}
+
+
+PolyBuilding::PolyBuilding(const URBInputData* UID, URBGeneralData* UGD, int id)
+              : Building()
+{
+  polygonVertices = UID->simParams->SHPData->shpPolygons[id];
+  H = UID->simParams->SHPData->building_height[id];
+  base_height = UGD->base_height[id];
+
+  setPolybuilding(UGD->nx, UGD->ny, UGD->dx, UGD->dy, UGD->u0, UGD->v0, UGD->z);
+}
+
 /**
  *
  */
@@ -109,7 +163,7 @@ void PolyBuilding::setPolybuilding(int nx, int ny, float dx, float dy, std::vect
 * for building cells. It applies the Stair-step method to define building bounds.
 *
 */
-void PolyBuilding::setCellFlags(const URBInputData *UID, URBGeneralData *ugd)
+void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD)
 {
 
   int mesh_type_flag = UID->simParams->meshTypeFlag;
@@ -141,20 +195,20 @@ void PolyBuilding::setCellFlags(const URBInputData *UID, URBGeneralData *ugd)
       }
     }
 
-    i_start = (x_min/ugd->dx);       // Index of building start location in x-direction
-    i_end = (x_max/ugd->dx)+1;       // Index of building end location in x-direction
-    j_start = (y_min/ugd->dy);       // Index of building start location in y-direction
-    j_end = (y_max/ugd->dy)+1;       // Index of building end location in y-direction
+    i_start = (x_min/UGD->dx);       // Index of building start location in x-direction
+    i_end = (x_max/UGD->dx)+1;       // Index of building end location in x-direction
+    j_start = (y_min/UGD->dy);       // Index of building start location in y-direction
+    j_end = (y_max/UGD->dy)+1;       // Index of building end location in y-direction
 
     // Find out which cells are going to be inside the polygone
     // Based on Wm. Randolph Franklin, "PNPOLY - Point Inclusion in Polygon Test"
     // Check the center of each cell, if it's inside, set that cell to building
-    for (int j=j_start; j<j_end; j++)
+    for (auto j=j_start; j<j_end; j++)
     {
-      y_cent = (j+0.5)*ugd->dy;         // Center of cell y coordinate
-      for (int i=i_start; i<i_end; i++)
+      y_cent = (j+0.5)*UGD->dy;         // Center of cell y coordinate
+      for (auto i=i_start; i<i_end; i++)
       {
-        x_cent = (i+0.5)*ugd->dx;
+        x_cent = (i+0.5)*UGD->dx;
         vert_id = 0;               // Node index
         start_poly = vert_id;
         num_crossing = 0;
@@ -181,10 +235,10 @@ void PolyBuilding::setCellFlags(const URBInputData *UID, URBGeneralData *ugd)
         // if num_crossing is even = cell is inside of the polygon
         if ( (num_crossing%2) != 0 )
         {
-          for (int k=k_start; k<k_end; k++)
+          for (auto k=k_start; k<k_end; k++)
           {
-            int icell_cent = i + j*(ugd->nx-1) + k*(ugd->nx-1)*(ugd->ny-1);
-            ugd->icellflag[icell_cent] = 0;
+            int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+            UGD->icellflag[icell_cent] = 0;
           }
         }
 
@@ -204,7 +258,7 @@ void PolyBuilding::setCellFlags(const URBInputData *UID, URBGeneralData *ugd)
 * parameterization to them.
 *
 */
-void PolyBuilding::polygonWake (const URBInputData *UID, URBGeneralData *ugd)
+void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
 {
 
   std::vector<float> Lr_face, Lr_node;
@@ -237,8 +291,8 @@ void PolyBuilding::polygonWake (const URBInputData *UID, URBGeneralData *ugd)
   float dn_u, dn_v, dn_w;             // Length of cavity zone
   float farwake_vel;
   std::vector<double> u_temp, v_temp;
-  u_temp.resize (ugd->nx*ugd->ny, 0.0);
-  v_temp.resize (ugd->nx*ugd->ny, 0.0);
+  u_temp.resize (UGD->nx*UGD->ny, 0.0);
+  v_temp.resize (UGD->nx*UGD->ny, 0.0);
   std::vector<double> u0_modified, v0_modified;
   std::vector<int> u0_mod_id, v0_mod_id;
 
@@ -310,7 +364,7 @@ void PolyBuilding::polygonWake (const URBInputData *UID, URBGeneralData *ugd)
   for (auto k=k_start; k<k_end; k++)
   {
     kk = k;
-    if (0.75*H+base_height <= ugd->z[k])
+    if (0.75*H+base_height <= UGD->z[k])
     {
       break;
     }
@@ -318,14 +372,14 @@ void PolyBuilding::polygonWake (const URBInputData *UID, URBGeneralData *ugd)
 
   for (auto k=k_end-1; k>=k_start; k--)
   {
-    z_build = ugd->z[k] - base_height;
+    z_build = UGD->z[k] - base_height;
     for (auto id=0; id<=stop_id; id++)
     {
       if (abs(upwind_rel_dir[id]) < 0.5*M_PI)
       {
-        for (auto y_id=0; y_id <= 2*ceil(abs(yi[id]-yi[id+1])/ugd->dxy); y_id++)
+        for (auto y_id=0; y_id <= 2*ceil(abs(yi[id]-yi[id+1])/UGD->dxy); y_id++)
         {
-          yc = yi[id]-0.5*y_id*ugd->dxy;
+          yc = yi[id]-0.5*y_id*UGD->dxy;
           Lr_local = Lr_node[id]+(yc-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
           if(perpendicular_flag[id] > 0)
           {
@@ -345,66 +399,66 @@ void PolyBuilding::polygonWake (const URBInputData *UID, URBGeneralData *ugd)
           }
           canyon_factor = 1.0;
           x_id_min = -1;
-          for (auto x_id=1; x_id <= ceil(Lr_local/ugd->dxy); x_id++)
+          for (auto x_id=1; x_id <= ceil(Lr_local/UGD->dxy); x_id++)
           {
-            xc = x_id*ugd->dxy;
-            int i = ((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/ugd->dx;
-            int j = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/ugd->dy;
-            if ( i>=ugd->nx-2 && i<=0 && j>=ugd->ny-2 && j<=0)
+            xc = x_id*UGD->dxy;
+            int i = ((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx;
+            int j = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy;
+            if ( i>=UGD->nx-2 && i<=0 && j>=UGD->ny-2 && j<=0)
             {
               break;
             }
-            icell_cent = i+j*(ugd->nx-1)+kk*(ugd->nx-1)*(ugd->ny-1);
-            if (ugd->icellflag[icell_cent] != 0 && ugd->icellflag[icell_cent] != 2 && x_id_min < 0)
+            icell_cent = i+j*(UGD->nx-1)+kk*(UGD->nx-1)*(UGD->ny-1);
+            if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2 && x_id_min < 0)
             {
               x_id_min = x_id;
             }
-            if (ugd->icellflag[icell_cent] == 0 && x_id_min > 0)
+            if (UGD->icellflag[icell_cent] == 0 && x_id_min > 0)
             {
               canyon_factor = xc/Lr;
               break;
             }
           }
           x_id_min = -1;
-          for (auto x_id=1; x_id <= 2*ceil(farwake_factor*Lr_local/ugd->dxy); x_id++)
+          for (auto x_id=1; x_id <= 2*ceil(farwake_factor*Lr_local/UGD->dxy); x_id++)
           {
             u_wake_flag = 1;
             v_wake_flag = 1;
             w_wake_flag = 1;
-            xc = 0.5*x_id*ugd->dxy;
-            int i = ((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/ugd->dx;
-            int j = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/ugd->dy;
-            if (i>=ugd->nx-2 && i<=0 && j>=ugd->ny-2 && j<=0)
+            xc = 0.5*x_id*UGD->dxy;
+            int i = ((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx;
+            int j = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy;
+            if (i>=UGD->nx-2 && i<=0 && j>=UGD->ny-2 && j<=0)
             {
               break;
             }
-            icell_cent = i+j*(ugd->nx-1)+k*(ugd->nx-1)*(ugd->ny-1);
-            if (ugd->icellflag[icell_cent] != 0 && ugd->icellflag[icell_cent] != 2 && x_id_min < 0)
+            icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
+            if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2 && x_id_min < 0)
             {
               x_id_min = x_id;
             }
-            if (ugd->icellflag[icell_cent] == 0)
+            if (UGD->icellflag[icell_cent] == 0)
             {
               if (x_id_min >= 0)
               {
                 x_id_min = -1;
-                icell_cent = i+j*(ugd->nx-1)+kk*(ugd->nx-1)*(ugd->ny-1);
-                if (canyon_factor < 1.0 || ugd->icellflag[icell_cent] == 0)
+                icell_cent = i+j*(UGD->nx-1)+kk*(UGD->nx-1)*(UGD->ny-1);
+                if (canyon_factor < 1.0 || UGD->icellflag[icell_cent] == 0)
                 {
                   break;
                 }
               }
             }
-            icell_cent = i+j*(ugd->nx-1)+k*(ugd->nx-1)*(ugd->ny-1);
+            icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
 
-            if (ugd->icellflag[icell_cent] != 0 && ugd->icellflag[icell_cent] != 2)
+            if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
             {
-              i_u = std::round(((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/ugd->dx);
-              j_u = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/ugd->dy;
-              if (i_u<ugd->nx-2 && i_u>0 && j_u<ugd->ny-2 && j_u>0)
+              i_u = std::round(((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx);
+              j_u = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy;
+              if (i_u<UGD->nx-2 && i_u>0 && j_u<UGD->ny-2 && j_u>0)
               {
-                xp = i_u*ugd->dx-building_cent_x;
-                yp = (j_u+0.5)*ugd->dy-building_cent_y;
+                xp = i_u*UGD->dx-building_cent_x;
+                yp = (j_u+0.5)*UGD->dy-building_cent_y;
                 xu = xp*cos(upwind_dir)+yp*sin(upwind_dir);
                 yu = -xp*sin(upwind_dir)+yp*cos(upwind_dir);
                 Lr_local_u = Lr_node[id]+(yu-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
@@ -433,36 +487,36 @@ void PolyBuilding::polygonWake (const URBInputData *UID, URBGeneralData *ugd)
                 {
                   u_wake_flag = 0;
                 }
-                icell_cent = i_u + j_u*(ugd->nx-1)+k*(ugd->nx-1)*(ugd->ny-1);
-                icell_face = i_u + j_u*ugd->nx+k*ugd->nx*ugd->ny;
-                if (dn_u > 0.0 && u_wake_flag == 1 && yu <= yi[id] && yu >= yi[id+1] && ugd->icellflag[icell_cent] != 0 && ugd->icellflag[icell_cent] != 2)
+                icell_cent = i_u + j_u*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
+                icell_face = i_u + j_u*UGD->nx+k*UGD->nx*UGD->ny;
+                if (dn_u > 0.0 && u_wake_flag == 1 && yu <= yi[id] && yu >= yi[id+1] && UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
                 {
                   // Far wake zone
                   if (xu > dn_u)
                   {
-                    farwake_vel = ugd->u0[icell_face]*(1.0-pow((dn_u/(xu+ugd->wake_factor*dn_u)),farwake_exp));
+                    farwake_vel = UGD->u0[icell_face]*(1.0-pow((dn_u/(xu+UGD->wake_factor*dn_u)),farwake_exp));
                     if (canyon_factor == 1.0)
                     {
                       u0_modified.push_back(farwake_vel);
                       u0_mod_id.push_back(icell_face);
-                      ugd->w0[i+j*ugd->nx+k*ugd->nx*ugd->ny] = 0.0;
+                      UGD->w0[i+j*UGD->nx+k*UGD->nx*UGD->ny] = 0.0;
                     }
                   }
                   // Cavity zone
                   else
                   {
-                    ugd->u0[icell_face] = -u0_h*MIN_S(pow((1.0-xu/(ugd->cavity_factor*dn_u)),2.0),1.0)*MIN_S(sqrt(1.0-abs(yu/y_norm)),1.0);
-                    ugd->w0[i+j*ugd->nx+k*ugd->nx*ugd->ny] = 0.0;
+                    UGD->u0[icell_face] = -u0_h*MIN_S(pow((1.0-xu/(UGD->cavity_factor*dn_u)),2.0),1.0)*MIN_S(sqrt(1.0-abs(yu/y_norm)),1.0);
+                    UGD->w0[i+j*UGD->nx+k*UGD->nx*UGD->ny] = 0.0;
                   }
                 }
               }
 
-              i_v = ((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/ugd->dx;
-              j_v = std::round(((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/ugd->dy);
-              if (i_v<ugd->nx-2 && i_v>0 && j_v<ugd->ny-2 && j_v>0)
+              i_v = ((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx;
+              j_v = std::round(((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy);
+              if (i_v<UGD->nx-2 && i_v>0 && j_v<UGD->ny-2 && j_v>0)
               {
-                xp = (i_v+0.5)*ugd->dx-building_cent_x;
-                yp = j_v*ugd->dy-building_cent_y;
+                xp = (i_v+0.5)*UGD->dx-building_cent_x;
+                yp = j_v*UGD->dy-building_cent_y;
                 xv = xp*cos(upwind_dir)+yp*sin(upwind_dir);
                 yv = -xp*sin(upwind_dir)+yp*cos(upwind_dir);
                 Lr_local_v = Lr_node[id]+(yv-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
@@ -492,36 +546,36 @@ void PolyBuilding::polygonWake (const URBInputData *UID, URBGeneralData *ugd)
                 {
                   v_wake_flag = 0;
                 }
-                icell_cent = i_v + j_v*(ugd->nx-1)+k*(ugd->nx-1)*(ugd->ny-1);
-                icell_face = i_v + j_v*ugd->nx+k*ugd->nx*ugd->ny;
-                if (dn_v > 0.0 && v_wake_flag == 1 && yv <= yi[id] && yv >= yi[id+1] && ugd->icellflag[icell_cent] != 0 && ugd->icellflag[icell_cent] != 2)
+                icell_cent = i_v + j_v*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
+                icell_face = i_v + j_v*UGD->nx+k*UGD->nx*UGD->ny;
+                if (dn_v > 0.0 && v_wake_flag == 1 && yv <= yi[id] && yv >= yi[id+1] && UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
                 {
                   // Far wake zone
                   if (xv > dn_v)
                   {
-                    farwake_vel = ugd->v0[icell_face]*(1.0-pow((dn_v/(xv+ugd->wake_factor*dn_v)),farwake_exp));
+                    farwake_vel = UGD->v0[icell_face]*(1.0-pow((dn_v/(xv+UGD->wake_factor*dn_v)),farwake_exp));
                     if (canyon_factor == 1)
                     {
                       v0_modified.push_back(farwake_vel);
                       v0_mod_id.push_back(icell_face);
-                      ugd->w0[i+j*ugd->nx+k*ugd->nx*ugd->ny] = 0.0;
+                      UGD->w0[i+j*UGD->nx+k*UGD->nx*UGD->ny] = 0.0;
                     }
                   }
                   // Cavity zone
                   else
                   {
-                    ugd->v0[icell_face] = -v0_h*MIN_S(pow((1.0-xv/(ugd->cavity_factor*dn_v)),2.0),1.0)*MIN_S(sqrt(1.0-abs(yv/y_norm)),1.0);
-                    ugd->w0[i+j*ugd->nx+k*ugd->nx*ugd->ny] = 0.0;
+                    UGD->v0[icell_face] = -v0_h*MIN_S(pow((1.0-xv/(UGD->cavity_factor*dn_v)),2.0),1.0)*MIN_S(sqrt(1.0-abs(yv/y_norm)),1.0);
+                    UGD->w0[i+j*UGD->nx+k*UGD->nx*UGD->ny] = 0.0;
                   }
                 }
               }
 
-              i_w = ceil(((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/ugd->dx)-1;
-              j_w = ceil(((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/ugd->dy)-1;
-              if (i_w<ugd->nx-2 && i_w>0 && j_w<ugd->ny-2 && j_w>0)
+              i_w = ceil(((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx)-1;
+              j_w = ceil(((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy)-1;
+              if (i_w<UGD->nx-2 && i_w>0 && j_w<UGD->ny-2 && j_w>0)
               {
-                xp = (i_w+0.5)*ugd->dx-building_cent_x;
-                yp = (j_w+0.5)*ugd->dy-building_cent_y;
+                xp = (i_w+0.5)*UGD->dx-building_cent_x;
+                yp = (j_w+0.5)*UGD->dy-building_cent_y;
                 xw = xp*cos(upwind_dir)+yp*sin(upwind_dir);
                 yw = -xp*sin(upwind_dir)+yp*cos(upwind_dir);
                 Lr_local_w = Lr_node[id]+(yw-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
@@ -546,28 +600,28 @@ void PolyBuilding::polygonWake (const URBInputData *UID, URBGeneralData *ugd)
                 {
                   w_wake_flag = 0;
                 }
-                icell_cent = i_w + j_w*(ugd->nx-1)+k*(ugd->nx-1)*(ugd->ny-1);
-                icell_face = i_w + j_w*ugd->nx+k*ugd->nx*ugd->ny;
+                icell_cent = i_w + j_w*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
+                icell_face = i_w + j_w*UGD->nx+k*UGD->nx*UGD->ny;
                 //std::cout << "dn_w:    "  << dn_w << std::endl;
-                if (dn_w > 0.0 && w_wake_flag == 1 && yw <= yi[id] && yw >= yi[id+1] && ugd->icellflag[icell_cent] != 0 && ugd->icellflag[icell_cent] != 2)
+                if (dn_w > 0.0 && w_wake_flag == 1 && yw <= yi[id] && yw >= yi[id+1] && UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
                 {
                   if (xw > dn_w)
                   {
                     if (canyon_factor == 1)
                     {
-                      if (ugd->icellflag[icell_cent] == 4)
+                      if (UGD->icellflag[icell_cent] == 4)
                       {
-                        ugd->icellflag[icell_cent] = 12;
+                        UGD->icellflag[icell_cent] = 12;
                       }
                       else
                       {
-                        ugd->icellflag[icell_cent] = 5;
+                        UGD->icellflag[icell_cent] = 5;
                       }
                     }
                   }
                   else
                   {
-                    ugd->icellflag[icell_cent] = 4;
+                    UGD->icellflag[icell_cent] = 4;
                     //std::cout << "icell:    " << icell_cent << std::endl;
                   }
                 }
@@ -585,12 +639,12 @@ void PolyBuilding::polygonWake (const URBInputData *UID, URBGeneralData *ugd)
 
   for (auto x_id=0; x_id < u0_mod_id.size(); x_id++)
   {
-    ugd->u0[u0_mod_id[x_id]] = u0_modified[x_id];
+    UGD->u0[u0_mod_id[x_id]] = u0_modified[x_id];
   }
 
   for (auto y_id=0; y_id < v0_mod_id.size(); y_id++)
   {
-    ugd->v0[v0_mod_id[y_id]] = v0_modified[y_id];
+    UGD->v0[v0_mod_id[y_id]] = v0_modified[y_id];
   }
 
   u0_mod_id.clear();
