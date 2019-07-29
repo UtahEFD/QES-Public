@@ -60,3 +60,23 @@ int main(int argc, char *argv[])
     // Generate the general URB data from all inputs
     URBGeneralData* UGD = new URBGeneralData(UID);
 }
+
+
+URBInputData* parseXMLTree(const std::string fileName)
+{
+	pt::ptree tree;
+
+	try
+	{
+		pt::read_xml(fileName, tree);
+	}
+	catch (boost::property_tree::xml_parser::xml_parser_error& e)
+	{
+		std::cerr << "Error reading tree in" << fileName << "\n";
+		return (URBInputData*)0;
+	}
+
+	URBInputData* xmlRoot = new URBInputData();
+        xmlRoot->parseTree( tree );
+	return xmlRoot;
+}

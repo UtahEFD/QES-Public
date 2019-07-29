@@ -14,10 +14,11 @@ CUDA_ADD_LIBRARY( cudaurbcore
   DynamicParallelism.cu
   ESRIShapefile.cpp ESRIShapefile.h
   handleURBArgs.cpp
-  Solver.cpp
   Mesh.cpp
   Output.cpp
+  PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
+  Solver.cpp
   Triangle.cpp
   URBInputData.h
   URBGeneralData.cpp URBGeneralData.h 

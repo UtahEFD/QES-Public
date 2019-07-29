@@ -115,7 +115,13 @@ int main(int argc, char *argv[])
     // /////////////////////////////
     if (output != nullptr) {
         std::cout << "Saving data!"<<std::endl;
-        solver->save(output);
+        std::cout << "(@(@(@(@(@(@(@(@@(@(@(@(@(@(@(@(@(@(@(@" << std::endl;
+        std::cout << "(@(@(@(@(@(@(@(@@(@(@(@(@(@(@(@(@(@(@(@" << std::endl;        
+        std::cout << "NO SAVE FUNCTION!!!!!! PLEASE FIX!!!!!" << std::endl;
+        std::cout << "(@(@(@(@(@(@(@(@@(@(@(@(@(@(@(@(@(@(@(@" << std::endl;
+        std::cout << "(@(@(@(@(@(@(@(@@(@(@(@(@(@(@(@(@(@(@(@" << std::endl;
+        
+        // solver->save(output);
     }
     
     exit(EXIT_SUCCESS);
