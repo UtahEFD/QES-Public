@@ -17,7 +17,7 @@ void BVH::mergeSort(std::vector<BVH*>& list, const int type)
 
 	int lSize = l.size(), rSize = r.size();
 	int j = 0, k = 0;
-	for (int i = 0; i < list.size(); i++)
+	for (auto i = 0u; i < list.size(); i++)
 	{
 		if ( j == lSize)
 			list[i] = r[k++];

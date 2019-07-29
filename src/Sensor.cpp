@@ -29,9 +29,6 @@
  */
 
 
-
-
-#include "Sensor.h"
 #include <math.h>
 #include <iostream>
 #include <fstream>
@@ -39,6 +36,12 @@
 #include <vector>
 #include <chrono>
 #include <limits>
+
+#include "Sensor.h"
+
+#include "URBInputData.h"
+#include "URBGeneralData.h"
+
 
 using namespace std;
 

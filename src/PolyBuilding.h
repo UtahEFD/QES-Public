@@ -3,11 +3,11 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <math.h>
-#include "Building.h"
-#include "SimulationParameters.h"
+
 #include "util/ParseInterface.h"
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+
+#include "Building.h"
+#include "PolygonVertex.h"
 
 using namespace std;
 using std::cerr;
@@ -15,7 +15,6 @@ using std::endl;
 using std::vector;
 using std::cout;
 
-#include "PolygonVertex.h"
 #define MIN_S(x,y) ((x) < (y) ? (x) : (y))
 
 /**
@@ -31,6 +30,8 @@ using std::cout;
 class PolyBuilding : public Building
 {
 private:
+
+protected:
 
     float x_min, x_max, y_min, y_max;      // Minimum and maximum values of x
                                            // and y for a building
@@ -50,7 +51,8 @@ public:
 
     }
 
-    virtual void parseValues() = 0;
+    // Need to complete!!!
+    virtual void parseValues() {}
 
     /**
     *

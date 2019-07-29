@@ -1,12 +1,10 @@
 #pragma once
 
-#include "util/ParseInterface.h"
-#include "Building.h"
-#include "URBInputData.h"
-#include "URBGeneralData.h"
-#include "PolyBuilding.h"
 #include <cmath>
 
+#include "util/ParseInterface.h"
+
+#include "PolyBuilding.h"
 
 class Canopy : public PolyBuilding
 {

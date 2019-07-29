@@ -1,5 +1,8 @@
 #include "PolyBuilding.h"
 
+// These take care of the circular reference
+#include "URBInputData.h"
+#include "URBGeneralData.h"
 
 PolyBuilding::PolyBuilding( const URBInputData* UID, URBGeneralData* UGD, float x_start,
               float y_start, float base_height, float L, float W, float H,

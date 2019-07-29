@@ -8,8 +8,8 @@
 #include <algorithm>
 #include "util/ParseInterface.h"
 
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+class URBInputData;
+class URBGeneralData;
 
 class Sensor : public ParseInterface
 {

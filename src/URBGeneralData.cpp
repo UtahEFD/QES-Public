@@ -84,7 +84,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
         }
     }
 
-    z0 = 0.1f
+    z0 = 0.1f;
     if (UID->buildings)
         z0 = UID->buildings->wallRoughness;
 
@@ -182,7 +182,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     // field from sensors information (located in Sensor.cpp)
 
     // Pete could move to input param processing...
-    assert( UID->metParams->sensors && (UID->metParams->sensors.size() > 0) );  // extra
+    assert( UID->metParams->sensors.size() > 0 );  // extra
                                                                                 // check
                                                                                 // to
                                                                                 // be safe
@@ -215,7 +215,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     // to NOT treat terrain cells as "buildings" -- Behnam will fix
     // this
     //
-    if (UID->simParameters->DTE_heightField)
+    if (UID->simParams->DTE_heightField)
     {
         // ////////////////////////////////
         // Retrieve terrain height field //
@@ -258,7 +258,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
             // ////////////////////////////////
 
             // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
-            cut_cell.calculateCoefficient(cells, DTEHF, nx, ny, nz, dx, dy, dz, n, m, f, e, h, g, pi, icellflag);
+            cut_cell.calculateCoefficient(cells, UID->simParams->DTE_heightField, nx, ny, nz, dx, dy, dz, n, m, f, e, h, g, pi, icellflag);
         }
     }
     ///////////////////////////////////////////////////////
@@ -279,34 +279,36 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
             float corner_height, min_height;
 
             std::vector<float> shpDomainSize(2), minExtent(2);
-            shpFile->getLocalDomain( shpDomainSize );
-            shpFile->getMinExtent( minExtent );
+            UID->simParams->SHPData->getLocalDomain( shpDomainSize );
+            UID->simParams->SHPData->getMinExtent( minExtent );
 
             float domainOffset[2] = { 0, 0 };
-            for (auto pIdx = 0; pIdx<UID->simParams->SHPData->shpPolygons.size(); pIdx++)
+            for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
             {
                 // convert the global polys to local domain coordinates
-                for (auto lIdx=0; lIdx<UID->simParams->SHPData->shpPolygons[pIdx].size(); lIdx++)
+                for (auto lIdx=0; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
                 {
-                    UID->simParams->SHPData->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
-                    UID->simParams->SHPData->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
+                    UID->simParams->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
+                    UID->simParams->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
                 }
             }
 
             // Setting base height for buildings if there is a DEM file
-            if (DTE_heightField && DTE_mesh)
+            if (UID->simParams->DTE_heightField && UID->simParams->DTE_mesh)
             {
-                for (auto pIdx = 0; pIdx<UID->simParams->SHPData->shpPolygons.size(); pIdx++)
+                for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
                 {
                     // Get base height of every corner of building from terrain height
-                    min_height = DTE_mesh->getHeight(UID->simParams->SHPData->shpPolygons[pIdx][0].x_poly, UID->simParams->SHPData->shpPolygons[pIdx][0].y_poly);
+                    min_height = UID->simParams->DTE_mesh->getHeight(UID->simParams->shpPolygons[pIdx][0].x_poly,
+                                                                     UID->simParams->shpPolygons[pIdx][0].y_poly);
                     if (min_height<0)
                     {
                         min_height = 0.0;
                     }
-                    for (auto lIdx=1; lIdx<UID->simParams->SHPData->shpPolygons[pIdx].size(); lIdx++)
+                    for (auto lIdx=1; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
                     {
-                        corner_height = DTE_mesh->getHeight(UID->simParams->SHPData->shpPolygons[pIdx][lIdx].x_poly, UID->simParams->SHPData->shpPolygons[pIdx][lIdx].y_poly);
+                        corner_height = UID->simParams->DTE_mesh->getHeight(UID->simParams->shpPolygons[pIdx][lIdx].x_poly,
+                                                                            UID->simParams->shpPolygons[pIdx][lIdx].y_poly);
                         if (corner_height<min_height && corner_height>0.0)
                         {
                             min_height = corner_height;
@@ -317,25 +319,25 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
             }
             else
             {
-                for (auto pIdx = 0; pIdx<UID->simParams->SHPData->shpPolygons.size(); pIdx++)
+                for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
                 {
                     base_height.push_back(0.0);
                 }
             }
 
-            for (auto pIdx = 0; pIdx<UID->simParams->SHPData->shpPolygons.size(); pIdx++)
+            for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
             {
-                effective_height.push_back (base_height[pIdx]+building_height[pIdx]);
-                for (auto lIdx=0; lIdx<UID->simParams->SHPData->shpPolygons[pIdx].size(); lIdx++)
+                effective_height.push_back (base_height[pIdx]+ UID->simParams->shpBuildingHeight[pIdx]);
+                for (auto lIdx=0; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
                 {
-                    UID->simParams->SHPData->shpPolygons[pIdx][lIdx].x_poly += UID->simParams->halo_x;
-                    UID->simParams->SHPData->shpPolygons[pIdx][lIdx].y_poly += UID->simParams->halo_y;
+                    UID->simParams->shpPolygons[pIdx][lIdx].x_poly += UID->simParams->halo_x;
+                    UID->simParams->shpPolygons[pIdx][lIdx].y_poly += UID->simParams->halo_y;
                 }
             }
 
             std::cout << "Creating buildings from shapefile...\n";
             // Loop to create each of the polygon buildings read in from the shapefile
-            for (auto pIdx = 0; pIdx<UID->simParams->SHPData->shpPolygons.size(); pIdx++)
+            for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
             {
                 // Create polygon buildings
                 // Pete needs to move this into URBInputData processing BUT
@@ -544,7 +546,7 @@ void UrbGeneralData::mergeSort( std::vector<float> &height, std::vector<std::vec
 
 
 
-float UrbGeneralData::canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m)
+float URBGeneralData::canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m)
 {
     int iter;
     float tol, uhc, d, d1, d2, fi, fnew;

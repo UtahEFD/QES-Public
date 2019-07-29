@@ -4,9 +4,10 @@
  * This class is a container relating to sensors and metric
  * information read from the xml.
  */
+#include <algorithm>
+
 #include "util/ParseInterface.h"
 #include "Sensor.h"
-#include <algorithm>
 
 class MetParams : public ParseInterface
 {

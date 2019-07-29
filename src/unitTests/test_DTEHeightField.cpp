@@ -131,7 +131,7 @@ std::string test_DTEHeightField::testCutCells()
 	edgesToCheck.push_back(Edge<int>(4,5)); messages_E.push_back("missing Edge 4,5");
 	edgesToCheck.push_back(Edge<int>(5,6)); messages_E.push_back("missing Edge 5,6");
 
-	for (int i = 0; i < pointsToCheck.size(); i++)
+	for (auto i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())
@@ -179,7 +179,7 @@ std::string test_DTEHeightField::testCutCells()
 	edgesToCheck.push_back(Edge<int>(4,5)); messages_E.push_back("missing Edge 4,5");
 	edgesToCheck.push_back(Edge<int>(5,6)); messages_E.push_back("missing Edge 5,6");
 
-	for (int i = 0; i < pointsToCheck.size(); i++)
+	for (auto i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())
@@ -238,7 +238,7 @@ std::string test_DTEHeightField::testCutCells()
 	edgesToCheck.push_back(Edge<int>(7,9)); messages_E.push_back("missing Edge 7,9");
 	edgesToCheck.push_back(Edge<int>(8,9)); messages_E.push_back("missing Edge 8,9");
 
-	for (int i = 0; i < pointsToCheck.size(); i++)
+	for (auto i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())
@@ -294,7 +294,7 @@ std::string test_DTEHeightField::testCutCells()
 	edgesToCheck.push_back(Edge<int>(4,5)); messages_E.push_back("missing Edge 4,5");
 	edgesToCheck.push_back(Edge<int>(5,6)); messages_E.push_back("missing Edge 5,6");
 
-	for (int i = 0; i < pointsToCheck.size(); i++)
+	for (auto i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())
@@ -353,7 +353,7 @@ std::string test_DTEHeightField::testCutCells()
 	edgesToCheck.push_back(Edge<int>(7,9)); messages_E.push_back("missing Edge 7,9");
 	edgesToCheck.push_back(Edge<int>(8,9)); messages_E.push_back("missing Edge 8,9");
 
-	for (int i = 0; i < pointsToCheck.size(); i++)
+	for (auto i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())
@@ -403,7 +403,7 @@ std::string test_DTEHeightField::testCutCells()
 	edgesToCheck.push_back(Edge<int>(4,5)); messages_E.push_back("missing Edge 4,5");
 	edgesToCheck.push_back(Edge<int>(5,6)); messages_E.push_back("missing Edge 5,6");
 
-	for (int i = 0; i < pointsToCheck.size(); i++)
+	for (auto i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())
@@ -459,7 +459,7 @@ std::string test_DTEHeightField::testCutCells()
 	edgesToCheck.push_back(Edge<int>(4,5)); messages_E.push_back("missing Edge 4,5");
 	edgesToCheck.push_back(Edge<int>(5,6)); messages_E.push_back("missing Edge 5,6");
 
-	for (int i = 0; i < pointsToCheck.size(); i++)
+	for (auto i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())
@@ -519,7 +519,7 @@ std::string test_DTEHeightField::testCutCells()
 	edgesToCheck.push_back(Edge<int>(6,9)); messages_E.push_back("missing Edge 6,9");
 	edgesToCheck.push_back(Edge<int>(8,9)); messages_E.push_back("missing Edge 8,9");
 
-	for (int i = 0; i < pointsToCheck.size(); i++)
+	for (auto i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())
@@ -578,7 +578,7 @@ std::string test_DTEHeightField::testCutCells()
 	edgesToCheck.push_back(Edge<int>(6,7)); messages_E.push_back("missing Edge 6,7");
 	edgesToCheck.push_back(Edge<int>(8,9)); messages_E.push_back("missing Edge 8,9");
 
-	for (int i = 0; i < pointsToCheck.size(); i++)
+	for (auto i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())
@@ -627,7 +627,7 @@ std::string test_DTEHeightField::testCutCells()
 	edgesToCheck.push_back(Edge<int>(4,5)); messages_E.push_back("missing Edge 4,5");
 	edgesToCheck.push_back(Edge<int>(4,6)); messages_E.push_back("missing Edge 4,6");
 
-	for (int i = 0; i < pointsToCheck.size(); i++)
+	for (auto i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())
@@ -685,7 +685,7 @@ std::string test_DTEHeightField::testCutCells()
 	edgesToCheck.push_back(Edge<int>(5,7)); messages_E.push_back("missing Edge 5,7");
 	edgesToCheck.push_back(Edge<int>(6,7)); messages_E.push_back("missing Edge 6,7");
 
-	for (int i = 0; i < pointsToCheck.size(); i++)
+	for (auto i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())
@@ -749,7 +749,7 @@ std::string test_DTEHeightField::testCutCells()
 	edgesToCheck.push_back(Edge<int>(8,9));  messages_E.push_back("missing Edge 8,9");
 	edgesToCheck.push_back(Edge<int>(10,11));messages_E.push_back("missing Edge 10,11");
 
-	for (int i = 0; i < pointsToCheck.size(); i++)
+	for (auto i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())
@@ -805,7 +805,7 @@ std::string test_DTEHeightField::testCutCells()
 	edgesToCheck.push_back(Edge<int>(6,8)); messages_E.push_back("missing Edge 6,8");
 	edgesToCheck.push_back(Edge<int>(7,8)); messages_E.push_back("missing Edge 7,8");
 
-	for (int i = 0; i < pointsToCheck.size(); i++)
+	for (auto i = 0; i < pointsToCheck.size(); i++)
 	{
 		it = find(cellPoints.begin(), cellPoints.end(), pointsToCheck[i]);
 		if (it == cellPoints.end())

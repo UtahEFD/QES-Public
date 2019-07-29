@@ -4,10 +4,15 @@
  * This class is an abstract representation of a building. It holds
  * the basic information and functions that every building should have.
 */
-#include "URBInputData.h"
-#include "URBGeneralData.h"
 #include "util/ParseInterface.h"
+
 using namespace std;
+
+// forward declaration of URBInputData and URBGeneralData, which
+// will be used by the derived classes and thus included there in the
+// C++ files
+class URBInputData;
+class URBGeneralData;
 
 class Building : public ParseInterface
 {
@@ -42,20 +47,17 @@ public:
 
 	virtual void parseValues() = 0;
 
-    // virtual functions....
-
     // Need to finalize the parameters here...
-    virtual void setCellFlags()
+    virtual void setCellFlags(const URBInputData* UID, URBGeneralData* UGD)
     {
     }
 
-    virtual void polygonWake()
+    virtual void polygonWake(const URBInputData* UID, URBGeneralData* UGD)
     {
     }
 
-    virtual void canopyVegetation()
+    virtual void canopyVegetation(URBGeneralData *ugd)
     {
     }
-
 
 };
