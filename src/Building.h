@@ -45,7 +45,16 @@ public:
 	float L_over_H, W_over_H;			/**< Length/width over height of the building */
 	float Lr;										/**< Length of far wake zone */
 
-	virtual void parseValues() = 0;
+    Building()
+    {
+    }
+
+    virtual ~Building() 
+    {
+    }
+    
+
+    virtual void parseValues() = 0;
 
     // Need to finalize the parameters here...
     virtual void setCellFlags(const URBInputData* UID, URBGeneralData* UGD)

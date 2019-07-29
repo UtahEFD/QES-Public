@@ -114,5 +114,5 @@ public:
     *
     * This function saves user-defined data to file
     */
-    void save(Output*);
+    // void save(Output*);
 };

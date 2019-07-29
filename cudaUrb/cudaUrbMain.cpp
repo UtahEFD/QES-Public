@@ -99,14 +99,14 @@ int main(int argc, char *argv[])
     
     
     // Run urb simulation code
-    solver->solve( !arguments.solveWind);
+    solver->solve(UID, UGD, !arguments.solveWind );
 
     std::cout << "Solver done!\n";
 
     if (solverC != nullptr)
     {
         std::cout << "Running comparson type...\n";
-        solverC->solve(!arguments.solveWind);
+        solverC->solve(UID, UGD, !arguments.solveWind);
     }
 
     // /////////////////////////////

@@ -42,18 +42,19 @@ protected:
     float x1, x2, y1, y2;
     std::vector <polyVert> polygonVertices;
 
-
-
 public:
 
     PolyBuilding()
+        : Building()
     {
-
+        // What should go here ???  Good to consider this case so we
+        // don't have problems down the line.
     }
 
-    // Need to complete!!!
-    virtual void parseValues() {}
-
+    virtual ~PolyBuilding() 
+    {
+    }
+    
     /**
     *
     * Converts data about rect building into something that poly can
@@ -80,6 +81,10 @@ public:
     *
     */
     PolyBuilding(const URBInputData* UID, URBGeneralData* UGD, int id);
+
+
+    // Need to complete!!!
+    virtual void parseValues() {}
 
 
     // make sure virtual functions from "Building" get implemented

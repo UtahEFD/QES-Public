@@ -28,7 +28,7 @@ PolyBuilding::PolyBuilding( const URBInputData* UID, URBGeneralData* UGD, float 
 }
 
 
-PolyBuilding( float x_start, float y_start, float base_height, float L, float W,
+PolyBuilding::PolyBuilding( float x_start, float y_start, float base_height, float L, float W,
               float H, float canopy_rotation, const URBInputData *UID, URBGeneralData *UGD)
               : Building()
 {

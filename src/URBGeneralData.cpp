@@ -112,29 +112,29 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     z[0] = -0.5*dz_array[0];
     for (auto k=1; k<z.size(); k++)
     {
-      z[k] = z[k-1] + dz_array[k];     /**< Location of face centers in z-dir */
+        z[k] = z[k-1] + dz_array[k];     /**< Location of face centers in z-dir */
     }
 
     z_out.resize( nz-2 );
     for (size_t k=1; k<z.size(); k++)
     {
-      z_out[k-1] = (float)z[k];    /**< Location of face centers in z-dir */
+        z_out[k-1] = (float)z[k];    /**< Location of face centers in z-dir */
     }
 
     x.resize( nx-1 );
     x_out.resize( nx-1 );
     for (size_t i=0; i<x.size(); i++)
     {
-      x_out[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
-      x[i] = (float)x_out[i];
+        x_out[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
+        x[i] = (float)x_out[i];
     }
 
     y.resize( ny-1 );
     y_out.resize( ny-1 );
     for (auto j=0; j<ny-1; j++)
     {
-      y_out[j] = (j+0.5)*dy;          /**< Location of face centers in y-dir */
-      y[j] = (float)y_out[j];
+        y_out[j] = (j+0.5)*dy;          /**< Location of face centers in y-dir */
+        y[j] = (float)y_out[j];
     }
 
     // Resize the canopy-related vectors
@@ -183,9 +183,9 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
 
     // Pete could move to input param processing...
     assert( UID->metParams->sensors.size() > 0 );  // extra
-                                                                                // check
-                                                                                // to
-                                                                                // be safe
+    // check
+    // to
+    // be safe
     // Guaranteed to always have at least 1 sensor!
     // Pete thinks inputWindProfile should be a function of MetParams
     // so it would have access to all the sensors naturally.
@@ -196,11 +196,11 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     max_velmag = 0.0;
     for (auto i=0; i<nx; i++)
     {
-      for (auto j=0; j<ny; j++)
-      {
-          int icell_face = i+j*nx+nz*nx*ny;
-          max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face],2.0)+pow(v0[icell_face],2.0)));
-      }
+        for (auto j=0; j<ny; j++)
+        {
+            int icell_face = i+j*nx+nz*nx*ny;
+            max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face],2.0)+pow(v0[icell_face],2.0)));
+        }
     }
     max_velmag *= 1.2;
 
@@ -266,118 +266,100 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     ///////////////////////////////////////////////////////
 
 
-
-    // After Terrain is process, handle remaining processing of SHP
-    // file data
-
-    if (UID->simParams->SHPData)
-    {
-            auto buildingsetup = std::chrono::high_resolution_clock::now(); // Start recording execution time
-
-            std::vector <PolyBuilding> poly_buildings;
-            std::vector <float> effective_height;            // Effective height of buildings
-            float corner_height, min_height;
-
-            std::vector<float> shpDomainSize(2), minExtent(2);
-            UID->simParams->SHPData->getLocalDomain( shpDomainSize );
-            UID->simParams->SHPData->getMinExtent( minExtent );
-
-            float domainOffset[2] = { 0, 0 };
-            for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
-            {
-                // convert the global polys to local domain coordinates
-                for (auto lIdx=0; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
-                {
-                    UID->simParams->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
-                    UID->simParams->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
-                }
-            }
-
-            // Setting base height for buildings if there is a DEM file
-            if (UID->simParams->DTE_heightField && UID->simParams->DTE_mesh)
-            {
-                for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
-                {
-                    // Get base height of every corner of building from terrain height
-                    min_height = UID->simParams->DTE_mesh->getHeight(UID->simParams->shpPolygons[pIdx][0].x_poly,
-                                                                     UID->simParams->shpPolygons[pIdx][0].y_poly);
-                    if (min_height<0)
-                    {
-                        min_height = 0.0;
-                    }
-                    for (auto lIdx=1; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
-                    {
-                        corner_height = UID->simParams->DTE_mesh->getHeight(UID->simParams->shpPolygons[pIdx][lIdx].x_poly,
-                                                                            UID->simParams->shpPolygons[pIdx][lIdx].y_poly);
-                        if (corner_height<min_height && corner_height>0.0)
-                        {
-                            min_height = corner_height;
-                        }
-                    }
-                    base_height.push_back(min_height);
-                }
-            }
-            else
-            {
-                for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
-                {
-                    base_height.push_back(0.0);
-                }
-            }
-
-            for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
-            {
-                effective_height.push_back (base_height[pIdx]+ UID->simParams->shpBuildingHeight[pIdx]);
-                for (auto lIdx=0; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
-                {
-                    UID->simParams->shpPolygons[pIdx][lIdx].x_poly += UID->simParams->halo_x;
-                    UID->simParams->shpPolygons[pIdx][lIdx].y_poly += UID->simParams->halo_y;
-                }
-            }
-
-            std::cout << "Creating buildings from shapefile...\n";
-            // Loop to create each of the polygon buildings read in from the shapefile
-            for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
-            {
-                // Create polygon buildings
-                // Pete needs to move this into URBInputData processing BUT
-                // instead of adding to the poly_buildings vector, it really
-                // needs to be pushed back onto buildings within the
-                // UID->buildings structures...
-                poly_buildings.push_back (new PolyBuilding (UID, this, pIdx));
-            }
-        }
-
-        for (int i = 0; i < UID->canopies->canopies.size(); i++)
-        {
-            poly_buildings.push_back( new Canopy (UID, this) );
-        }
-
-        for (int i = 0; i < UID->canopies->buildings.size(); i++)
-        {
-            poly_buildings.push_back( new RectangularBuilding (UID, this) );
-        }
-
-
-    /// all cell flags should be specific to the TYPE ofbuilding
-    // class: canopy, rectbuilding, polybuilding, etc...
-    // should setcellflags be part of the .. should be part of URBGeneralD
-    //
-    // This needs to be changed!  PolyBuildings should have been
-    // created and added to buildings array if done correctly by now
-    /*for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
-    {
-        // Call setCellsFlag in the PolyBuilding class to identify building cells
-        poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz, icellflag, UID->simParams->meshTypeFlag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
-    }
-
-
     // Urb Input Data will have read in the specific types of
     // buildings, canopies, etc... but we need to merge all of that
     // onto a single vector of Building* -- this vector is called
     //
     // allBuildingsVector
     allBuildingsV.clear();  // make sure there's nothing on it
+
+
+    // After Terrain is process, handle remaining processing of SHP
+    // file data
+
+    if (UID->simParams->SHPData)
+    {
+        auto buildingsetup = std::chrono::high_resolution_clock::now(); // Start recording execution time
+
+        std::vector<Building*> poly_buildings;
+        
+        std::vector <float> effective_height;            // Effective height of buildings
+        float corner_height, min_height;
+
+        std::vector<float> shpDomainSize(2), minExtent(2);
+        UID->simParams->SHPData->getLocalDomain( shpDomainSize );
+        UID->simParams->SHPData->getMinExtent( minExtent );
+
+        float domainOffset[2] = { 0, 0 };
+        for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
+        {
+            // convert the global polys to local domain coordinates
+            for (auto lIdx=0; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
+            {
+                UID->simParams->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
+                UID->simParams->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
+            }
+        }
+
+        // Setting base height for buildings if there is a DEM file
+        if (UID->simParams->DTE_heightField && UID->simParams->DTE_mesh)
+        {
+            for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
+            {
+                // Get base height of every corner of building from terrain height
+                min_height = UID->simParams->DTE_mesh->getHeight(UID->simParams->shpPolygons[pIdx][0].x_poly,
+                                                                 UID->simParams->shpPolygons[pIdx][0].y_poly);
+                if (min_height<0)
+                {
+                    min_height = 0.0;
+                }
+                for (auto lIdx=1; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
+                {
+                    corner_height = UID->simParams->DTE_mesh->getHeight(UID->simParams->shpPolygons[pIdx][lIdx].x_poly,
+                                                                        UID->simParams->shpPolygons[pIdx][lIdx].y_poly);
+                    if (corner_height<min_height && corner_height>0.0)
+                    {
+                        min_height = corner_height;
+                    }
+                }
+                base_height.push_back(min_height);
+            }
+        }
+        else
+        {
+            for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
+            {
+                base_height.push_back(0.0);
+            }
+        }
+
+        for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
+        {
+            effective_height.push_back (base_height[pIdx]+ UID->simParams->shpBuildingHeight[pIdx]);
+            for (auto lIdx=0; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
+            {
+                UID->simParams->shpPolygons[pIdx][lIdx].x_poly += UID->simParams->halo_x;
+                UID->simParams->shpPolygons[pIdx][lIdx].y_poly += UID->simParams->halo_y;
+            }
+        }
+
+        std::cout << "Creating buildings from shapefile...\n";
+        // Loop to create each of the polygon buildings read in from the shapefile
+        for (auto pIdx = 0u; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
+        {
+            // Create polygon buildings
+            // Pete needs to move this into URBInputData processing BUT
+            // instead of adding to the poly_buildings vector, it really
+            // needs to be pushed back onto buildings within the
+            // UID->buildings structures...
+            allBuildingsV.push_back (new PolyBuilding (UID, this, pIdx));
+        }
+    }
+
+
+    // SHP processing is done.  Now, consolidate all "buildings" onto
+    // the same list...  this includes any canopies and building types
+    // that were read in via the XML file...
 
     // Add all the Canopy* to it (they are derived from Building)
     for (int i = 0; i < UID->canopies->canopies.size(); i++)
@@ -392,15 +374,50 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     {
         allBuildingsV.push_back( UID->buildings->buildings[i] );
     }
+    
 
-    // All iCellFlags should now be set!!!
-    // !!!!!! Pete ---- Make sure polybuildings from SHP file get on
-    // !!!!!! this list too!!!!
+    /// all cell flags should be specific to the TYPE ofbuilding
+    // class: canopy, rectbuilding, polybuilding, etc...
+    // should setcellflags be part of the .. should be part of URBGeneralD
+    //
+    // This needs to be changed!  PolyBuildings should have been
+    // created and added to buildings array if done correctly by now
+    /*for (auto pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
+      {
+      // Call setCellsFlag in the PolyBuilding class to identify building cells
+      poly_buildings[pIdx].setCellsFlag ( dx, dy, dz, z, nx, ny, nz, icellflag, UID->simParams->meshTypeFlag, shpPolygons[pIdx], base_height[pIdx], building_height[pIdx]);
+      }
 
-    // At this point, the allBuildingsV will be complete and ready for
-    // use below... parameterizations, etc...
 
-*/
+      // Urb Input Data will have read in the specific types of
+      // buildings, canopies, etc... but we need to merge all of that
+      // onto a single vector of Building* -- this vector is called
+      //
+      // allBuildingsVector
+      allBuildingsV.clear();  // make sure there's nothing on it
+
+      // Add all the Canopy* to it (they are derived from Building)
+      for (int i = 0; i < UID->canopies->canopies.size(); i++)
+      {
+      allBuildingsV.push_back( UID->canopies->canopies[i] );
+      }
+
+      // Add all the Building* that were read in from XML to this list
+      // too -- could be RectBuilding, PolyBuilding, whatever is derived
+      // from Building in the end...
+      for (int i = 0; i < UID->buildings->buildings.size(); i++)
+      {
+      allBuildingsV.push_back( UID->buildings->buildings[i] );
+      }
+
+      // All iCellFlags should now be set!!!
+      // !!!!!! Pete ---- Make sure polybuildings from SHP file get on
+      // !!!!!! this list too!!!!
+
+      // At this point, the allBuildingsV will be complete and ready for
+      // use below... parameterizations, etc...
+
+      */
 
     // ///////////////////////////////////////
     // ///////////////////////////////////////
@@ -421,38 +438,39 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
 
     // Now all buildings
     /*for (int i = 0; i < allBuildingsV.size(); i++)
-    {
-        // for now this does the canopy stuff for us
-        allBuildingsV[i]->setCellFlags();
-    }
+      {
+      // for now this does the canopy stuff for us
+      allBuildingsV[i]->setCellFlags();
+      }
 
-    std::cout << "All building types (canopies, buildings, terrain) created and initialized...\n";
-
-
-    // We want to sort ALL buildings here...  use the allBuildingsV to
-    // do this... (remember some are canopies) so we may need a
-    // virtual function in the Building class to get the appropriate
-    // data for the sort.
-    mergeSort( effective_height, shpPolygons, base_height, building_height);
+      std::cout << "All building types (canopies, buildings, terrain) created and initialized...\n";
 
 
-    // ///////////////////////////////////////
-    // Generic Parameterization Related Stuff
-    // ///////////////////////////////////////
-    for (int i = 0; i < allBuildingsV.size(); i++)
-    {
-        // for now this does the canopy stuff for us
-        allBuildingsV[i]->callParameterizationSpecial();
-    }
+      // We want to sort ALL buildings here...  use the allBuildingsV to
+      // do this... (remember some are canopies) so we may need a
+      // virtual function in the Building class to get the appropriate
+      // data for the sort.
+      mergeSort( effective_height, shpPolygons, base_height, building_height);
 
-    // Deal with the rest of the parameterization somehow all
-    // here... very generically.
-    for (int i = 0; i < allBuildingsV.size(); i++)
-    {
-        // for now this does the canopy stuff for us
-        allBuildingsV[i]->callParameterizationOne();
-    }*/
 
+      // ///////////////////////////////////////
+      // Generic Parameterization Related Stuff
+      // ///////////////////////////////////////
+      for (int i = 0; i < allBuildingsV.size(); i++)
+      {
+      // for now this does the canopy stuff for us
+      allBuildingsV[i]->callParameterizationSpecial();
+      }
+
+      // Deal with the rest of the parameterization somehow all
+      // here... very generically.
+      for (int i = 0; i < allBuildingsV.size(); i++)
+      {
+      // for now this does the canopy stuff for us
+      allBuildingsV[i]->callParameterizationOne();
+      }*/
+
+#if 0
 
     std::cout << "Defining Solid Walls...\n";
     /// Boundary condition for building edges
@@ -465,82 +483,82 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
      * to the cells near Walls
      *
      */
-     Wall->wallLogBC (this);
+    Wall->wallLogBC (this);
 
-     Wall->setVelocityZero (this);
+    Wall->setVelocityZero (this);
 
-     Wall->solverCoefficients (this);
-
+    Wall->solverCoefficients (this);
+#endif
 }
 
 
-void UrbGeneralData::mergeSort( std::vector<float> &height, std::vector<std::vector<polyVert>> &poly_points, std::vector<float> &base_height, std::vector<float> &building_height)
+void URBGeneralData::mergeSort( std::vector<float> &height, std::vector<std::vector<polyVert>> &poly_points, std::vector<float> &base_height, std::vector<float> &building_height)
 {
-  //if the size of the array is 1, it is already sorted
-  if (height.size() == 1)
-  {
+    //if the size of the array is 1, it is already sorted
+    if (height.size() == 1)
+    {
+        return;
+    }
+    //make left and right sides of the data
+    std::vector<float> height_L, height_R;
+    std::vector<float> base_height_L, base_height_R;
+    std::vector<float> building_height_L, building_height_R;
+    std::vector< std::vector <polyVert> > poly_points_L, poly_points_R;
+    height_L.resize(height.size() / 2);
+    height_R.resize(height.size() - height.size() / 2);
+    base_height_L.resize(base_height.size() / 2);
+    base_height_R.resize(base_height.size() - base_height.size() / 2);
+    building_height_L.resize(building_height.size() / 2);
+    building_height_R.resize(building_height.size() - building_height.size() / 2);
+    poly_points_L.resize(poly_points.size() / 2);
+    poly_points_R.resize(poly_points.size() - poly_points.size() / 2);
+
+    //copy data from the main data set to the left and right children
+    int lC = 0, rC = 0;
+    for (unsigned int i = 0; i < height.size(); i++)
+    {
+        if (i < height.size() / 2)
+        {
+            height_L[lC] = height[i];
+            base_height_L[lC] = base_height[i];
+            building_height_L[lC] = building_height[i];
+            poly_points_L[lC++] = poly_points[i];
+        }
+        else
+        {
+            height_R[rC] = height[i];
+            base_height_R[rC] = base_height[i];
+            building_height_R[rC] = building_height[i];
+            poly_points_R[rC++] = poly_points[i];
+        }
+    }
+
+    //recursively sort the children
+    mergeSort(height_L, poly_points_L, base_height_L, building_height_L);
+    mergeSort(height_R, poly_points_R, base_height_R, building_height_R);
+
+    //compare the sorted children to place the data into the main array
+    lC = rC = 0;
+    for (unsigned int i = 0; i < poly_points.size(); i++)
+    {
+        if (rC == height_R.size() || ( lC != height_L.size() &&
+                                       height_L[lC] > height_R[rC]))
+        {
+            height[i] = height_L[lC];
+            base_height[i] = base_height_L[lC];
+            building_height[i] = building_height_L[lC];
+            poly_points[i] = poly_points_L[lC++];
+        }
+        else
+        {
+            height[i] = height_R[rC];
+            base_height[i] = base_height_R[rC];
+            building_height[i] = building_height_R[rC];
+            poly_points[i] = poly_points_R[rC++];
+        }
+    }
+
     return;
-  }
-  //make left and right sides of the data
-  std::vector<float> height_L, height_R;
-  std::vector<float> base_height_L, base_height_R;
-  std::vector<float> building_height_L, building_height_R;
-  std::vector< std::vector <polyVert> > poly_points_L, poly_points_R;
-  height_L.resize(height.size() / 2);
-  height_R.resize(height.size() - height.size() / 2);
-  base_height_L.resize(base_height.size() / 2);
-  base_height_R.resize(base_height.size() - base_height.size() / 2);
-  building_height_L.resize(building_height.size() / 2);
-  building_height_R.resize(building_height.size() - building_height.size() / 2);
-  poly_points_L.resize(poly_points.size() / 2);
-  poly_points_R.resize(poly_points.size() - poly_points.size() / 2);
-
-  //copy data from the main data set to the left and right children
-  int lC = 0, rC = 0;
-  for (unsigned int i = 0; i < height.size(); i++)
-  {
-    if (i < height.size() / 2)
-    {
-      height_L[lC] = height[i];
-      base_height_L[lC] = base_height[i];
-      building_height_L[lC] = building_height[i];
-      poly_points_L[lC++] = poly_points[i];
-    }
-    else
-    {
-      height_R[rC] = height[i];
-      base_height_R[rC] = base_height[i];
-      building_height_R[rC] = building_height[i];
-      poly_points_R[rC++] = poly_points[i];
-    }
-  }
-
-  //recursively sort the children
-  mergeSort(height_L, poly_points_L, base_height_L, building_height_L);
-  mergeSort(height_R, poly_points_R, base_height_R, building_height_R);
-
-  //compare the sorted children to place the data into the main array
-  lC = rC = 0;
-  for (unsigned int i = 0; i < poly_points.size(); i++)
-  {
-    if (rC == height_R.size() || ( lC != height_L.size() &&
-      height_L[lC] > height_R[rC]))
-    {
-      height[i] = height_L[lC];
-      base_height[i] = base_height_L[lC];
-      building_height[i] = building_height_L[lC];
-      poly_points[i] = poly_points_L[lC++];
-    }
-    else
-    {
-      height[i] = height_R[rC];
-      base_height[i] = base_height_R[rC];
-      building_height[i] = building_height_R[rC];
-      poly_points[i] = poly_points_R[rC++];
-    }
-  }
-
-  return;
 }
 
 
