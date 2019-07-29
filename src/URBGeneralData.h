@@ -17,12 +17,14 @@
 #include "Cut_cell.h"
 #include "Wall.h"
 
+#include "Output.hpp"
+
 class URBInputData;
 
 class URBGeneralData {
 public:
     URBGeneralData();
-    URBGeneralData(const URBInputData* UID);
+    URBGeneralData(const URBInputData* UID, Output *cudaOutput);
     ~URBGeneralData();
 
     void mergeSort( std::vector<float> &height, std::vector<std::vector<polyVert>> &poly_points, std::vector<float> &base_height, std::vector<float> &building_height);
@@ -34,6 +36,13 @@ public:
     * of the canopy.
     */
     float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
+
+    /**
+    * @brief
+    *
+    * This function saves user-defined data to file
+    */
+    void save();
 
     ////////////////////////////////////////////////////////////////////////////
     //////// Variables and constants needed only in other functions-- Behnam
@@ -82,6 +91,10 @@ public:
     /// Declaration of initial wind components (u0,v0,w0)
     std::vector<double> u0,v0,w0;
 
+    /// Declaration of final velocity field components (u,v,w)
+    std::vector<double> u,v,w;
+
+
     // Sensor* sensor;      may not need this now
 
 
@@ -127,8 +140,10 @@ public:
     std::vector<std::vector<int>> num_points;
     std::vector<std::vector<float>> coeff;
 
-#if 0
+
     /// Declaration of output manager
+    Output *output;
+
     int output_counter=0;
     double time=0;
     std::vector<NcDim> dim_scalar_t;
@@ -165,6 +180,5 @@ public:
     std::vector<AttScalarDbl> output_scalar_dbl;
     std::vector<AttVectorDbl> output_vector_dbl;
     std::vector<AttVectorInt> output_vector_int;
-#endif
 
 };

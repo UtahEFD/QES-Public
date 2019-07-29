@@ -57,15 +57,14 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    // Generate the general URB data from all inputs
-    URBGeneralData* UGD = new URBGeneralData(UID);
-
-
     // Files was successfully read, so create instance of output class
     Output* output = nullptr;
     if (UID->fileOptions->outputFlag==1) {
         output = new Output(arguments.netCDFFile);
     }
+
+    // Generate the general URB data from all inputs
+    URBGeneralData* UGD = new URBGeneralData(UID, output);
 
     // //////////////////////////////////////////
     //
@@ -74,9 +73,9 @@ int main(int argc, char *argv[])
     // //////////////////////////////////////////
     Solver *solver, *solverC = nullptr;
     if (arguments.solveType == CPU_Type)
-        solver = new CPUSolver(UID, UGD, output);
+        solver = new CPUSolver(UID, UGD);
     else if (arguments.solveType == DYNAMIC_P)
-        solver = new DynamicParallelism(UID, UGD, output);
+        solver = new DynamicParallelism(UID, UGD);
     else
     {
         std::cerr << "Error: invalid solve type\n";
@@ -87,9 +86,9 @@ int main(int argc, char *argv[])
     if (arguments.compareType)
     {
         if (arguments.compareType == CPU_Type)
-            solverC = new CPUSolver(UID, UGD, output);
+            solverC = new CPUSolver(UID, UGD);
         else if (arguments.compareType == DYNAMIC_P)
-            solverC = new DynamicParallelism(UID, UGD, output);
+            solverC = new DynamicParallelism(UID, UGD);
         else
         {
             std::cerr << "Error: invalid comparison type\n";
@@ -113,15 +112,8 @@ int main(int argc, char *argv[])
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    if (output != nullptr) {
-        std::cout << "Saving data!"<<std::endl;
-        std::cout << "(@(@(@(@(@(@(@(@@(@(@(@(@(@(@(@(@(@(@(@" << std::endl;
-        std::cout << "(@(@(@(@(@(@(@(@@(@(@(@(@(@(@(@(@(@(@(@" << std::endl;        
-        std::cout << "NO SAVE FUNCTION!!!!!! PLEASE FIX!!!!!" << std::endl;
-        std::cout << "(@(@(@(@(@(@(@(@@(@(@(@(@(@(@(@(@(@(@(@" << std::endl;
-        std::cout << "(@(@(@(@(@(@(@(@@(@(@(@(@(@(@(@(@(@(@(@" << std::endl;
-        
-        // solver->save(output);
+    if (output) {
+        UGD->save();
     }
     
     exit(EXIT_SUCCESS);

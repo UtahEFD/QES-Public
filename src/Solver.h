@@ -21,7 +21,6 @@
 #include "URBGeneralData.h"
 
 #include "Vector3.h"
-#include "Output.hpp"
 
 #include "Cut_cell.h"
 
@@ -58,8 +57,7 @@ protected:
     std::vector<double> R;           /**< Divergence of initial velocity field */
     std::vector<double> lambda, lambda_old;
 
-    /// Declaration of final velocity field components (u,v,w)
-    std::vector<double> u,v,w;
+
 
     int itermax;		/**< Maximum number of iterations */
 
@@ -75,11 +73,6 @@ protected:
     const int alpha1 = 1;        /**< Gaussian precision moduli */
     const int alpha2 = 1;        /**< Gaussian precision moduli */
 
-
-
-
-
-
     /*
      * This prints out the current amount that a process
      * has finished with a progress bar
@@ -90,9 +83,9 @@ protected:
 
 
 public:
-    Solver(const URBInputData* UID, URBGeneralData* ugd, Output* output);
+    Solver(const URBInputData* UID, URBGeneralData* ugd);
 
-    virtual void solve(const URBInputData *UID, const URBGeneralData* ugd, bool solveWind) = 0;
+    virtual void solve(const URBInputData *UID, URBGeneralData* ugd, bool solveWind) = 0;
 
     /**
      * @brief
@@ -108,11 +101,4 @@ public:
                      std::vector<std::vector<std::vector<float>>>y_cut,std::vector<std::vector<std::vector<float>>> z_cut,
                      std::vector<std::vector<int>> num_points, std::vector<std::vector<float>> coeff);
 
-
-    /**
-    * @brief
-    *
-    * This function saves user-defined data to file
-    */
-    // void save(Output*);
 };

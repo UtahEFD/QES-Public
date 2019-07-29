@@ -18,7 +18,6 @@
 
 #include "URBInputData.h"
 #include "Solver.h"
-#include "Output.hpp"
 #include "Sensor.h"
 
 
@@ -33,15 +32,15 @@ private:
     void _cudaCheck(T e, const char* func, const char* call, const int line);
 
 public:
-	DynamicParallelism(const URBInputData* UID, URBGeneralData* UGD, Output* output)
-		: Solver(UID, UGD, output)
-		{
-		}
+    DynamicParallelism(const URBInputData* UID, URBGeneralData* UGD)
+		: Solver(UID, UGD)
+    {
+    }
 
 protected:
     float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;		/**< Solver coefficients on device (GPU) */
     double *d_R;              /**< Divergence of initial velocity field on device (GPU) */
     double *d_lambda, *d_lambda_old;		/**< Lagrange multipliers on device (GPU) */
 
-    virtual void solve(const URBInputData* UID, const URBGeneralData* ugd, bool solveWind);
+    virtual void solve(const URBInputData* UID, URBGeneralData* ugd, bool solveWind);
 };

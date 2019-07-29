@@ -7,7 +7,6 @@
 
 #include "URBInputData.h"
 #include "Solver.h"
-#include "Output.hpp"
 #include "DTEHeightField.h"
 #include "RectangularBuilding.h"
 #include "Sensor.h"
@@ -23,10 +22,10 @@ using namespace std;
 class CPUSolver : public Solver
 {
 public:
-	CPUSolver(const URBInputData* UID, URBGeneralData* UGD, Output* output)
-		: Solver(UID, UGD, output)
-		{
-		}
-
-	virtual void solve(const URBInputData* UID, const URBGeneralData* ugd, bool solveWind);
+    CPUSolver(const URBInputData* UID, URBGeneralData* UGD)
+        : Solver(UID, UGD)
+    {
+    }
+    
+    virtual void solve(const URBInputData* UID, URBGeneralData* ugd, bool solveWind);
 };

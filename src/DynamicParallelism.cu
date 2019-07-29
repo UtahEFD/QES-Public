@@ -237,7 +237,7 @@ __global__ void SOR_iteration (double *d_lambda, double *d_lambda_old, int nx, i
 
 
 
-void DynamicParallelism::solve(const URBInputData* UID, const URBGeneralData* ugd, bool solveWind)
+void DynamicParallelism::solve(const URBInputData* UID, URBGeneralData* ugd, bool solveWind)
 {
     auto startTotal = std::chrono::high_resolution_clock::now(); // Start
                                                                  // recording
@@ -311,9 +311,9 @@ void DynamicParallelism::solve(const URBInputData* UID, const URBGeneralData* ug
     cudaCheck(cudaGetLastError());
 
     cudaMemcpy (lambda.data() , d_lambda , ugd->numcell_cent * sizeof(double) , cudaMemcpyDeviceToHost);
-    cudaMemcpy(u.data(),d_u,ugd->numcell_face*sizeof(double),cudaMemcpyDeviceToHost);
-    cudaMemcpy(v.data(),d_v,ugd->numcell_face*sizeof(double),cudaMemcpyDeviceToHost);
-    cudaMemcpy(w.data(),d_w,ugd->numcell_face*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(ugd->u.data(),d_u,ugd->numcell_face*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(ugd->v.data(),d_v,ugd->numcell_face*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(ugd->w.data(),d_w,ugd->numcell_face*sizeof(double),cudaMemcpyDeviceToHost);
 
     cudaFree (d_lambda);
     cudaFree (d_e);

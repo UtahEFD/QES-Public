@@ -61,9 +61,7 @@ void Solver::printProgress (float percentage)
 * used in the solvers - this is only meant work with CUDA-URB!
  */
 
-Solver::Solver(const URBInputData* UID,
-               URBGeneralData * ugd,
-               Output* output)
+Solver::Solver(const URBInputData* UID, URBGeneralData * ugd)
     : eta( pow(alpha1/alpha2, 2.0) ),
       A( pow( ugd->dx/ugd->dy, 2.0 ) ),
       B( eta*pow( ugd->dx/ugd->dz, 2.0) ),
@@ -73,11 +71,6 @@ Solver::Solver(const URBInputData* UID,
 
     lambda.resize( ugd->numcell_cent, 0.0 );
     lambda_old.resize( ugd->numcell_cent, 0.0 );
-
-    u.resize(ugd->numcell_face, 0.0);
-    v.resize(ugd->numcell_face, 0.0);
-    w.resize(ugd->numcell_face, 0.0);
-
 
 
 /*
@@ -147,94 +140,6 @@ Solver::Solver(const URBInputData* UID,
 
 
 
-    //////////////////////////////////////////////////
-    //      Initialize output information           //
-    //////////////////////////////////////////////////
-/*
-    if (output != nullptr) {
-
-        // set output fields
-        std::cout<<"Getting output fields"<<std::endl;
-        output_fields = UID->fileOptions->outputFields;
-
-        if (output_fields.empty() || output_fields[0]=="all") {
-            output_fields.clear();
-            output_fields = {"u","v","w","icell"};
-        }
-
-        // set cell-centered dimensions
-        NcDim t_dim = output->addDimension("t");
-        NcDim z_dim = output->addDimension("z",nz-2);
-        NcDim y_dim = output->addDimension("y",ny-1);
-        NcDim x_dim = output->addDimension("x",nx-1);
-
-        dim_scalar_t.push_back(t_dim);
-        dim_scalar_z.push_back(z_dim);
-        dim_scalar_y.push_back(y_dim);
-        dim_scalar_x.push_back(x_dim);
-        dim_vector.push_back(t_dim);
-        dim_vector.push_back(z_dim);
-        dim_vector.push_back(y_dim);
-        dim_vector.push_back(x_dim);
-        dim_vector_2d.push_back(y_dim);
-        dim_vector_2d.push_back(x_dim);
-
-        // create attributes
-        AttScalarDbl att_t = {&time,  "t", "time",      "s", dim_scalar_t};
-        AttVectorDbl att_x = {&x_out, "x", "x-distance", "m", dim_scalar_x};
-        AttVectorDbl att_y = {&y_out, "y", "y-distance", "m", dim_scalar_y};
-        AttVectorDbl att_z = {&z_out, "z", "z-distance", "m", dim_scalar_z};
-        AttVectorDbl att_u = {&u_out, "u", "x-component velocity", "m s-1", dim_vector};
-        AttVectorDbl att_v = {&v_out, "v", "y-component velocity", "m s-1", dim_vector};
-        AttVectorDbl att_w = {&w_out, "w", "z-component velocity", "m s-1", dim_vector};
-        AttVectorDbl att_h = {&terrain,  "terrain", "terrain height", "m", dim_vector_2d};
-        AttVectorInt att_i = {&icellflag_out,  "icell", "icell flag value", "--", dim_vector};
-
-        // map the name to attributes
-        map_att_scalar_dbl.emplace("t", att_t);
-        map_att_vector_dbl.emplace("x", att_x);
-        map_att_vector_dbl.emplace("y", att_y);
-        map_att_vector_dbl.emplace("z", att_z);
-        map_att_vector_dbl.emplace("u", att_u);
-        map_att_vector_dbl.emplace("v", att_v);
-        map_att_vector_dbl.emplace("w", att_w);
-        map_att_vector_dbl.emplace("terrain", att_h);
-        map_att_vector_int.emplace("icell", att_i);
-
-        // we will always save time and grid lengths
-        output_scalar_dbl.push_back(map_att_scalar_dbl["t"]);
-        output_vector_dbl.push_back(map_att_vector_dbl["x"]);
-        output_vector_dbl.push_back(map_att_vector_dbl["y"]);
-        output_vector_dbl.push_back(map_att_vector_dbl["z"]);
-        output_vector_dbl.push_back(map_att_vector_dbl["terrain"]);
-
-        // create list of fields to save
-        for (size_t i=0; i<output_fields.size(); i++) {
-            std::string key = output_fields[i];
-            if (map_att_scalar_dbl.count(key)) {
-                output_scalar_dbl.push_back(map_att_scalar_dbl[key]);
-            } else if (map_att_vector_dbl.count(key)) {
-                output_vector_dbl.push_back(map_att_vector_dbl[key]);
-            } else if(map_att_vector_int.count(key)) {
-                output_vector_int.push_back(map_att_vector_int[key]);
-            }
-        }
-
-        // add vector double fields
-        for ( AttScalarDbl att : output_scalar_dbl ) {
-            output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
-        }
-
-        // add vector double fields
-        for ( AttVectorDbl att : output_vector_dbl ) {
-            output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
-        }
-
-        // add vector int fields
-        for ( AttVectorInt att : output_vector_int ) {
-            output->addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
-        }
-    }*/
 }
 
 /*void Solver::calculateCoefficients(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag,
@@ -297,72 +202,4 @@ Solver::Solver(const URBInputData* UID,
 	}
 }
 
-
-// Save output at cell-centered values
-void Solver :: save(Output* output) {
-
-    // output size and location
-    std::vector<size_t> scalar_index;
-    std::vector<size_t> scalar_size;
-    std::vector<size_t> vector_index;
-    std::vector<size_t> vector_size;
-    std::vector<size_t> vector_index_2d;
-    std::vector<size_t> vector_size_2d;
-
-    scalar_index = {static_cast<unsigned long>(output_counter)};
-    scalar_size  = {1};
-    vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
-    vector_size  = {1, static_cast<unsigned long>(nz-2),static_cast<unsigned long>(ny-1), static_cast<unsigned long>(nx-1)};
-    vector_index_2d = {0, 0};
-    vector_size_2d  = {static_cast<unsigned long>(ny-1), static_cast<unsigned long>(nx-1)};
-
-    // set time
-    time = (double)output_counter;
-
-    // get cell-centered values
-    for (int k = 1; k < nz-1; k++){
-    	for (int j = 0; j < ny-1; j++){
-    		for (int i = 0; i < nx-1; i++){
-    			int icell_face = i + j*nx + k*nx*ny;
-    			int icell_cent = i + j*(nx-1) + (k-1)*(nx-1)*(ny-1);
-    			u_out[icell_cent] = 0.5*(u[icell_face+1]+u[icell_face]);
-    			v_out[icell_cent] = 0.5*(v[icell_face+nx]+v[icell_face]);
-    			w_out[icell_cent] = 0.5*(w[icell_face+nx*ny]+w[icell_face]);
-    			icellflag_out[icell_cent] = icellflag[icell_cent+((nx-1)*(ny-1))];
-    		}
-    	}
-    }
-
-    // loop through 1D fields to save
-    for (int i=0; i<output_scalar_dbl.size(); i++) {
-        output->saveField1D(output_scalar_dbl[i].name, scalar_index, output_scalar_dbl[i].data);
-    }
-
-    // loop through 2D double fields to save
-    for (int i=0; i<output_vector_dbl.size(); i++) {
-
-        // x,y,z, terrain saved once with no time component
-        if (i<3 && output_counter==0) {
-            output->saveField2D(output_vector_dbl[i].name, *output_vector_dbl[i].data);
-        } else if (i==3 && output_counter==0) {
-            output->saveField2D(output_vector_dbl[i].name, vector_index_2d,
-                                vector_size_2d, *output_vector_dbl[i].data);
-        } else {
-            output->saveField2D(output_vector_dbl[i].name, vector_index,
-                                vector_size, *output_vector_dbl[i].data);
-        }
-    }
-
-    // loop through 2D int fields to save
-    for (int i=0; i<output_vector_int.size(); i++) {
-        output->saveField2D(output_vector_int[i].name, vector_index,
-                            vector_size, *output_vector_int[i].data);
-    }
-
-    // remove x, y, z, terrain from output array after first save
-    if (output_counter==0) {
-        output_vector_dbl.erase(output_vector_dbl.begin(),output_vector_dbl.begin()+4);
-    }
-    // increment for next time insertion
-    output_counter +=1;
-}*/
+*/

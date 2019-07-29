@@ -5,7 +5,7 @@ using std::endl;
 using std::vector;
 using std::cout;
 
-void CPUSolver::solve(const URBInputData* UID, const URBGeneralData* UGD, bool solveWind)
+void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWind)
 {
     auto startOfSolveMethod = std::chrono::high_resolution_clock::now(); // Start recording execution time
 
@@ -116,9 +116,9 @@ void CPUSolver::solve(const URBInputData* UID, const URBGeneralData* UGD, bool s
                 for (int i = 0; i < UGD->nx; i++)
                 {
                     int icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;   /// Lineralized index for cell faced values
-                    u[icell_face] = UGD->u0[icell_face];
-                    v[icell_face] = UGD->v0[icell_face];
-                    w[icell_face] = UGD->w0[icell_face];
+                    UGD->u[icell_face] = UGD->u0[icell_face];
+                    UGD->v[icell_face] = UGD->v0[icell_face];
+                    UGD->w[icell_face] = UGD->w0[icell_face];
                 }
             }
         }
@@ -136,14 +136,14 @@ void CPUSolver::solve(const URBInputData* UID, const URBGeneralData* UGD, bool s
                     icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   /// Lineralized index for cell centered values
                     icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;               /// Lineralized index for cell faced values
 
-                    u[icell_face] = UGD->u0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
+                    UGD->u[icell_face] = UGD->u0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
                         UGD->f[icell_cent]*UGD->dx*(lambda[icell_cent]-lambda[icell_cent-1]);
 
                         // Calculate correct wind velocity
-                    v[icell_face] = UGD->v0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
+                    UGD->v[icell_face] = UGD->v0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
                         UGD->h[icell_cent]*UGD->dy*(lambda[icell_cent]-lambda[icell_cent - (UGD->nx-1)]);
 
-                    w[icell_face] = UGD->w0[icell_face]+(1/(2*pow(alpha2, 2.0))) *
+                    UGD->w[icell_face] = UGD->w0[icell_face]+(1/(2*pow(alpha2, 2.0))) *
                         UGD->n[icell_cent]*UGD->dz_array[k]*(lambda[icell_cent]-lambda[icell_cent - (UGD->nx-1)*(UGD->ny-1)]);
                 }
             }
@@ -162,12 +162,12 @@ void CPUSolver::solve(const URBInputData* UID, const URBGeneralData* UGD, bool s
                     if (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 2)
                     {
                         /// Setting velocity field inside the building to zero
-                        u[icell_face] = 0;
-                        u[icell_face+1] = 0;
-                        v[icell_face] = 0;
-                        v[icell_face+UGD->nx] = 0;
-                        w[icell_face] = 0;
-                        w[icell_face+UGD->nx*UGD->ny] = 0;
+                        UGD->u[icell_face] = 0;
+                        UGD->u[icell_face+1] = 0;
+                        UGD->v[icell_face] = 0;
+                        UGD->v[icell_face+UGD->nx] = 0;
+                        UGD->w[icell_face] = 0;
+                        UGD->w[icell_face+UGD->nx*UGD->ny] = 0;
                     }
                 }
             }
