@@ -367,6 +367,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     // that were read in via the XML file...
 
     // Add all the Canopy* to it (they are derived from Building)
+<<<<<<< HEAD
     if ( UID->canopies )
     {
       for (int i = 0; i < UID->canopies->canopies.size(); i++)
@@ -375,11 +376,20 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
           allBuildingsV.push_back( UID->canopies->canopies[i]  );
           //(Canopy*)
       }
+=======
+    if (UID->canopies) {
+        for (int i = 0; i < UID->canopies->canopies.size(); i++)
+        {
+            allBuildingsV.push_back( UID->canopies->canopies[i] );
+        }
+>>>>>>> 353ab3b482748adccd6e75fef5cdced0533356dc
     }
+    
 
     // Add all the Building* that were read in from XML to this list
     // too -- could be RectBuilding, PolyBuilding, whatever is derived
     // from Building in the end...
+<<<<<<< HEAD
     if ( UID->buildings )
     {
       for (int i = 0; i < UID->buildings->buildings.size(); i++)
@@ -399,6 +409,16 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
 
 
 
+=======
+    if (UID->buildings) {
+        for (int i = 0; i < UID->buildings->buildings.size(); i++)
+        {
+            allBuildingsV.push_back( UID->buildings->buildings[i] );
+        }
+    }
+    
+    
+>>>>>>> 353ab3b482748adccd6e75fef5cdced0533356dc
     /// all cell flags should be specific to the TYPE ofbuilding
     // class: canopy, rectbuilding, polybuilding, etc...
     // should setcellflags be part of the .. should be part of URBGeneralD
