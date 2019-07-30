@@ -371,15 +371,12 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     {
       for (int i = 0; i < UID->canopies->canopies.size(); i++)
       {
-
           allBuildingsV.push_back( UID->canopies->canopies[i]  );
-          //(Canopy*)
       }
 
     // Add all the Building* that were read in from XML to this list
     // too -- could be RectBuilding, PolyBuilding, whatever is derived
     // from Building in the end...
-<<<<<<< HEAD
     if ( UID->buildings )
     {
       for (int i = 0; i < UID->buildings->buildings.size(); i++)
@@ -390,6 +387,10 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
       }
     }
 
+    
+    // for all buildings, calculate polygon area scales
+    // Benham will fill this in...
+      
 
     // We want to sort ALL buildings here...  use the allBuildingsV to
     // do this... (remember some are canopies) so we may need a

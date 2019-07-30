@@ -33,19 +33,50 @@ public:
             : PolyBuilding(UID, UGD, x_start, y_start, base_height, L, W, H, building_rotation)  // correct poly building
                                             // constructor gets called...
 	{
-
+            // This doesn't work yet!
 	}
 
 	virtual void parseValues()
 	{
-		parsePrimitive<float>(true, H, "height");
-		parsePrimitive<float>(true, base_height, "baseHeight");
-		parsePrimitive<float>(true, x_start, "xStart");
-		parsePrimitive<float>(true, y_start, "yStart");
-		parsePrimitive<float>(true, L, "length");
-		parsePrimitive<float>(true, W, "width");
-		parsePrimitive<float>(true, building_rotation, "buildingRotation");
+            // Extract important XML stuff
+            parsePrimitive<float>(true, H, "height");
+            parsePrimitive<float>(true, base_height, "baseHeight");
+            parsePrimitive<float>(true, x_start, "xStart");
+            parsePrimitive<float>(true, y_start, "yStart");
+            parsePrimitive<float>(true, L, "length");
+            parsePrimitive<float>(true, W, "width");
+            parsePrimitive<float>(true, building_rotation, "buildingRotation");
 
+            // We cannot call the constructor since the default had
+            // already been called.  So, use other functions in
+            // PolyBuilding to create the correct PolyBuilding from
+            // height, x_start, y_start, etc...
+
+            // We will now initialize the polybuilding using the
+            // protected variables accessible to RectangularBuilding
+            // from the PolyBuilding class:
+            height_eff = H+base_height;
+
+            // ?????  maybe ignore or hard code here??? until we get a
+            // reference back to the Root XML
+            x_start += UID->simParams->halo_x;
+            y_start += UID->simParams->halo_y;
+            
+            building_rotation *= M_PI/180.0;
+            this->polygonVertices.resize (5);
+            this->polygonVertices[0].x_poly = this->polygonVertices[4].x_poly = x_start;
+            this->polygonVertices[0].y_poly = this->polygonVertices[4].y_poly = y_start;
+            this->polygonVertices[1].x_poly = x_start-W*sin(building_rotation);
+            this->polygonVertices[1].y_poly = y_start+W*cos(building_rotation);
+            this->polygonVertices[2].x_poly = this->polygonVertices[1].x_poly+L*cos(building_rotation);
+            this->polygonVertices[2].y_poly = this->polygonVertices[1].y_poly+L*sin(building_rotation);
+            this->polygonVertices[3].x_poly = x_start+L*cos(building_rotation);
+            this->polygonVertices[3].y_poly = y_start+L*sin(building_rotation);
+
+            // This will now be process for ALL buildings...
+            // extract the vertices from this definition here and make the
+            // poly building...
+            // setPolybuilding(UGD->nx, UGD->ny, UGD->dx, UGD->dy, UGD->u0, UGD->v0, UGD->z);
 	}
 
 
