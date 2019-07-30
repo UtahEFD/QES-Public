@@ -29,8 +29,8 @@ public:
 
 	}
 
-	RectangularBuilding(const URBInputData *UID, URBGeneralData *ugd)
-            : PolyBuilding(UID, ugd, x_start, y_start, base_height, L, W, H, building_rotation)  // correct poly building
+	RectangularBuilding(const URBInputData *UID, URBGeneralData *UGD)
+            : PolyBuilding(UID, UGD, x_start, y_start, base_height, L, W, H, building_rotation)  // correct poly building
                                             // constructor gets called...
 	{
 

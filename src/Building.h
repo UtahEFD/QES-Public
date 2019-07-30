@@ -49,10 +49,10 @@ public:
     {
     }
 
-    virtual ~Building() 
+    virtual ~Building()
     {
     }
-    
+
 
     virtual void parseValues() = 0;
 

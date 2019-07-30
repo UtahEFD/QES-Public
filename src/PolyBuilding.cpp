@@ -9,18 +9,20 @@ PolyBuilding::PolyBuilding( const URBInputData* UID, URBGeneralData* UGD, float 
               float building_rotation)
     : Building()
 {
+
+  height_eff = H+base_height;
   x_start += UID->simParams->halo_x;
   y_start += UID->simParams->halo_y;
   building_rotation *= M_PI/180.0;
-  polygonVertices.resize (5);
-  polygonVertices[0].x_poly = polygonVertices[4].x_poly = x_start;
-  polygonVertices[0].y_poly = polygonVertices[4].y_poly = y_start;
-  polygonVertices[1].x_poly = x_start-W*sin(building_rotation);
-  polygonVertices[1].y_poly = y_start+W*cos(building_rotation);
-  polygonVertices[2].x_poly = polygonVertices[1].x_poly+L*cos(building_rotation);
-  polygonVertices[2].y_poly = polygonVertices[1].y_poly+L*sin(building_rotation);
-  polygonVertices[3].x_poly = x_start+L*cos(building_rotation);
-  polygonVertices[3].y_poly = y_start+L*sin(building_rotation);
+  this->polygonVertices.resize (5);
+  this->polygonVertices[0].x_poly = this->polygonVertices[4].x_poly = x_start;
+  this->polygonVertices[0].y_poly = this->polygonVertices[4].y_poly = y_start;
+  this->polygonVertices[1].x_poly = x_start-W*sin(building_rotation);
+  this->polygonVertices[1].y_poly = y_start+W*cos(building_rotation);
+  this->polygonVertices[2].x_poly = this->polygonVertices[1].x_poly+L*cos(building_rotation);
+  this->polygonVertices[2].y_poly = this->polygonVertices[1].y_poly+L*sin(building_rotation);
+  this->polygonVertices[3].x_poly = x_start+L*cos(building_rotation);
+  this->polygonVertices[3].y_poly = y_start+L*sin(building_rotation);
 
   // extract the vertices from this definition here and make the
   // poly building...
@@ -35,22 +37,22 @@ PolyBuilding::PolyBuilding( float x_start, float y_start, float base_height, flo
   x_start += UID->simParams->halo_x;
   y_start += UID->simParams->halo_y;
   canopy_rotation *= M_PI/180.0;
-  polygonVertices.resize (5);
-  polygonVertices[0].x_poly = polygonVertices[4].x_poly = x_start;
-  polygonVertices[0].y_poly = polygonVertices[4].y_poly = y_start;
-  polygonVertices[1].x_poly = x_start-W*sin(canopy_rotation);
-  polygonVertices[1].y_poly = y_start+W*cos(canopy_rotation);
-  polygonVertices[2].x_poly = polygonVertices[1].x_poly+L*cos(canopy_rotation);
-  polygonVertices[2].y_poly = polygonVertices[1].y_poly+L*sin(canopy_rotation);
-  polygonVertices[3].x_poly = x_start+L*cos(canopy_rotation);
-  polygonVertices[3].y_poly = y_start+L*sin(canopy_rotation);
+  this->polygonVertices.resize (5);
+  this->polygonVertices[0].x_poly = this->polygonVertices[4].x_poly = x_start;
+  this->polygonVertices[0].y_poly = this->polygonVertices[4].y_poly = y_start;
+  this->polygonVertices[1].x_poly = x_start-W*sin(canopy_rotation);
+  this->polygonVertices[1].y_poly = y_start+W*cos(canopy_rotation);
+  this->polygonVertices[2].x_poly = this->polygonVertices[1].x_poly+L*cos(canopy_rotation);
+  this->polygonVertices[2].y_poly = this->polygonVertices[1].y_poly+L*sin(canopy_rotation);
+  this->polygonVertices[3].x_poly = x_start+L*cos(canopy_rotation);
+  this->polygonVertices[3].y_poly = y_start+L*sin(canopy_rotation);
 }
 
 
 PolyBuilding::PolyBuilding(const URBInputData* UID, URBGeneralData* UGD, int id)
               : Building()
 {
-  polygonVertices = UID->simParams->shpPolygons[id];
+  this->polygonVertices = UID->simParams->shpPolygons[id];
   H = UID->simParams->shpBuildingHeight[id];
   base_height = UGD->base_height[id];
 
@@ -67,13 +69,13 @@ void PolyBuilding::setPolybuilding(int nx, int ny, float dx, float dy, std::vect
   building_cent_y = 0;               // y-coordinate of the centroid of the building
   height_eff = H+base_height;       // Effective height of the building
   // Calculate the centroid coordinates of the building (average of all nodes coordinates)
-  for (auto i=0; i<polygonVertices.size()-1; i++)
+  for (auto i=0; i<this->polygonVertices.size()-1; i++)
   {
-    building_cent_x += polygonVertices[i].x_poly;
-    building_cent_y += polygonVertices[i].y_poly;
+    building_cent_x += this->polygonVertices[i].x_poly;
+    building_cent_y += this->polygonVertices[i].y_poly;
   }
-  building_cent_x /= polygonVertices.size()-1;
-  building_cent_y /= polygonVertices.size()-1;
+  building_cent_x /= this->polygonVertices.size()-1;
+  building_cent_y /= this->polygonVertices.size()-1;
 
   // Define start index of the building in z-direction
   for (auto k=1; k<z.size(); k++)
@@ -104,16 +106,16 @@ void PolyBuilding::setPolybuilding(int nx, int ny, float dx, float dy, std::vect
   upwind_dir = atan2(v0_h,u0_h);
 
   x1 = x2 = y1 = y2 = 0.0;
-  xi.resize (polygonVertices.size(),0.0);      // Difference of x values of the centroid and each node
-  yi.resize (polygonVertices.size(),0.0);     // Difference of y values of the centroid and each node
+  xi.resize (this->polygonVertices.size(),0.0);      // Difference of x values of the centroid and each node
+  yi.resize (this->polygonVertices.size(),0.0);     // Difference of y values of the centroid and each node
   polygon_area = 0.0;
 
   // Loop to calculate polygon area, differences in x and y values
-  for (auto id=0; id<polygonVertices.size(); id++)
+  for (auto id=0; id<this->polygonVertices.size(); id++)
   {
-    polygon_area += 0.5*(polygonVertices[id].x_poly*polygonVertices[id+1].y_poly-polygonVertices[id].y_poly*polygonVertices[id+1].x_poly);
-    xi[id] = (polygonVertices[id].x_poly-building_cent_x)*cos(upwind_dir)+(polygonVertices[id].y_poly-building_cent_y)*sin(upwind_dir);
-    yi[id] = -(polygonVertices[id].x_poly-building_cent_x)*sin(upwind_dir)+(polygonVertices[id].y_poly-building_cent_y)*cos(upwind_dir);
+    polygon_area += 0.5*(this->polygonVertices[id].x_poly*this->polygonVertices[id+1].y_poly-this->polygonVertices[id].y_poly*this->polygonVertices[id+1].x_poly);
+    xi[id] = (this->polygonVertices[id].x_poly-building_cent_x)*cos(upwind_dir)+(this->polygonVertices[id].y_poly-building_cent_y)*sin(upwind_dir);
+    yi[id] = -(this->polygonVertices[id].x_poly-building_cent_x)*sin(upwind_dir)+(this->polygonVertices[id].y_poly-building_cent_y)*cos(upwind_dir);
 
     // Find maximum and minimum differences in x and y values
     if (xi[id] < x1)
@@ -173,28 +175,29 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD)
   float ray_intersect;
   int num_crossing, vert_id, start_poly;
 
+
   if (mesh_type_flag == 0)
   {
     // Loop to calculate maximum and minimum of x and y values of the building
-    x_min = x_max = polygonVertices[0].x_poly;
-    y_min = x_max = polygonVertices[0].y_poly;
-    for (auto id=1; id<polygonVertices.size(); id++)
+    x_min = x_max = this->polygonVertices[0].x_poly;
+    y_min = x_max = this->polygonVertices[0].y_poly;
+    for (auto id=1; id<this->polygonVertices.size(); id++)
     {
-      if (polygonVertices[id].x_poly > x_max)
+      if (this->polygonVertices[id].x_poly > x_max)
       {
-        x_max = polygonVertices[id].x_poly;
+        x_max = this->polygonVertices[id].x_poly;
       }
-      if (polygonVertices[id].x_poly < x_min)
+      if (this->polygonVertices[id].x_poly < x_min)
       {
-        x_min = polygonVertices[id].x_poly;
+        x_min = this->polygonVertices[id].x_poly;
       }
-      if (polygonVertices[id].y_poly > y_max)
+      if (this->polygonVertices[id].y_poly > y_max)
       {
-        y_max = polygonVertices[id].y_poly;
+        y_max = this->polygonVertices[id].y_poly;
       }
-      if (polygonVertices[id].y_poly < y_min)
+      if (this->polygonVertices[id].y_poly < y_min)
       {
-        y_min = polygonVertices[id].y_poly;
+        y_min = this->polygonVertices[id].y_poly;
       }
     }
 
@@ -215,20 +218,20 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD)
         vert_id = 0;               // Node index
         start_poly = vert_id;
         num_crossing = 0;
-        while (vert_id < polygonVertices.size()-1)
+        while (vert_id < this->polygonVertices.size()-1)
         {
-          if ( (polygonVertices[vert_id].y_poly<=y_cent && polygonVertices[vert_id+1].y_poly>y_cent) ||
-               (polygonVertices[vert_id].y_poly>y_cent && polygonVertices[vert_id+1].y_poly<=y_cent) )
+          if ( (this->polygonVertices[vert_id].y_poly<=y_cent && this->polygonVertices[vert_id+1].y_poly>y_cent) ||
+               (this->polygonVertices[vert_id].y_poly>y_cent && this->polygonVertices[vert_id+1].y_poly<=y_cent) )
           {
-            ray_intersect = (y_cent-polygonVertices[vert_id].y_poly)/(polygonVertices[vert_id+1].y_poly-polygonVertices[vert_id].y_poly);
-            if (x_cent < (polygonVertices[vert_id].x_poly+ray_intersect*(polygonVertices[vert_id+1].x_poly-polygonVertices[vert_id].x_poly)))
+            ray_intersect = (y_cent-this->polygonVertices[vert_id].y_poly)/(this->polygonVertices[vert_id+1].y_poly-this->polygonVertices[vert_id].y_poly);
+            if (x_cent < (this->polygonVertices[vert_id].x_poly+ray_intersect*(this->polygonVertices[vert_id+1].x_poly-this->polygonVertices[vert_id].x_poly)))
             {
               num_crossing += 1;
             }
           }
           vert_id += 1;
-          if (polygonVertices[vert_id].x_poly == polygonVertices[start_poly].x_poly &&
-              polygonVertices[vert_id].y_poly == polygonVertices[start_poly].y_poly)
+          if (this->polygonVertices[vert_id].x_poly == this->polygonVertices[start_poly].x_poly &&
+              this->polygonVertices[vert_id].y_poly == this->polygonVertices[start_poly].y_poly)
           {
             vert_id += 1;
             start_poly = vert_id;
@@ -267,10 +270,10 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
   std::vector<float> Lr_face, Lr_node;
   std::vector<float> upwind_rel_dir;
   std::vector<int> perpendicular_flag;
-  Lr_face.resize (polygonVertices.size(), -1.0);       // Length of wake for each face
-  Lr_node.resize (polygonVertices.size(), 0.0);       // Length of wake for each node
-  upwind_rel_dir.resize (polygonVertices.size(), 0.0);      // Upwind reletive direction for each face
-  perpendicular_flag.resize (polygonVertices.size(), 0);
+  Lr_face.resize (this->polygonVertices.size(), -1.0);       // Length of wake for each face
+  Lr_node.resize (this->polygonVertices.size(), 0.0);       // Length of wake for each node
+  upwind_rel_dir.resize (this->polygonVertices.size(), 0.0);      // Upwind reletive direction for each face
+  perpendicular_flag.resize (this->polygonVertices.size(), 0);
   float z_build;            // z value of each building point from its base height
   float yc, xc;
   float Lr_local, Lr_local_u, Lr_local_v, Lr_local_w;   // Local length of the wake for each velocity component
@@ -299,7 +302,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
   std::vector<double> u0_modified, v0_modified;
   std::vector<int> u0_mod_id, v0_mod_id;
 
-  for (auto id=0; id<polygonVertices.size()-1; id++)
+  for (auto id=0; id<this->polygonVertices.size()-1; id++)
   {
     // Calculate upwind reletive direction for each face
     upwind_rel_dir[id] = atan2(yi[id+1]-yi[id],xi[id+1]-xi[id])+0.5*M_PI;
@@ -323,13 +326,13 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
 
   Lr_ave = total_seg_length = 0.0;
   // This loop interpolates the value of Lr for eligible faces to nodes of those faces
-  for (auto id=0; id<polygonVertices.size()-1; id++)
+  for (auto id=0; id<this->polygonVertices.size()-1; id++)
   {
     // If the face is eligible for parameterization
     if (Lr_face[id] > 0.0)
     {
-      index_previous = (id+polygonVertices.size()-2)%(polygonVertices.size()-1);     // Index of previous face
-      index_next = (id+1)%(polygonVertices.size()-1);           // Index of next face
+      index_previous = (id+this->polygonVertices.size()-2)%(this->polygonVertices.size()-1);     // Index of previous face
+      index_next = (id+1)%(this->polygonVertices.size()-1);           // Index of next face
       if (Lr_face[index_previous] < 0.0 && Lr_face[index_next] < 0.0)
       {
         Lr_node[id] = Lr_face[id];
@@ -354,8 +357,8 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
       total_seg_length += (yi[id]-yi[index_next]);
     }
 
-    if ((polygonVertices[id+1].x_poly > polygonVertices[0].x_poly-0.1) && (polygonVertices[id+1].x_poly < polygonVertices[0].x_poly+0.1)
-         && (polygonVertices[id+1].y_poly > polygonVertices[0].y_poly-0.1) && (polygonVertices[id+1].y_poly < polygonVertices[0].y_poly+0.1))
+    if ((this->polygonVertices[id+1].x_poly > this->polygonVertices[0].x_poly-0.1) && (this->polygonVertices[id+1].x_poly < this->polygonVertices[0].x_poly+0.1)
+         && (this->polygonVertices[id+1].y_poly > this->polygonVertices[0].y_poly-0.1) && (this->polygonVertices[id+1].y_poly < this->polygonVertices[0].y_poly+0.1))
     {
       stop_id = id;
       break;

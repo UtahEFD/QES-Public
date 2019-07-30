@@ -4,29 +4,15 @@
 #include "URBInputData.h"
 
 
-void Wall::defineWalls(URBGeneralData *ugd)
+void Wall::defineWalls(URBGeneralData *UGD)
 {
 
-  int dx = ugd->dx;
-  int dy = ugd->dy;
-  int dz = ugd->dz;
-  int nx = ugd->nx;
-  int ny = ugd->ny;
-  int nz = ugd->nz;
-  std::vector<int> &wall_right_indices = ugd->wall_right_indices;
-  std::vector<int> &wall_left_indices = ugd->wall_left_indices;
-  std::vector<int> &wall_above_indices = ugd->wall_above_indices;
-  std::vector<int> &wall_below_indices = ugd->wall_below_indices;
-  std::vector<int> &wall_front_indices = ugd->wall_front_indices;
-  std::vector<int> &wall_back_indices = ugd->wall_back_indices;
-
-  std::vector<int> &icellflag = ugd->icellflag;
-  std::vector<float> &n = ugd->n;
-  std::vector<float> &m = ugd->m;
-  std::vector<float> &e = ugd->e;
-  std::vector<float> &f = ugd->f;
-  std::vector<float> &g = ugd->g;
-  std::vector<float> &h = ugd->h;
+  int dx = UGD->dx;
+  int dy = UGD->dy;
+  int dz = UGD->dz;
+  int nx = UGD->nx;
+  int ny = UGD->ny;
+  int nz = UGD->nz;
 
 
   for (int i=0; i<nx-1; i++)
@@ -35,53 +21,53 @@ void Wall::defineWalls(URBGeneralData *ugd)
     {
       for (int k=1; k<nz-2; k++)
       {
-        icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-        icell_face = i + j*nx + k*nx*ny;
+        int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        int icell_face = i + j*nx + k*nx*ny;
 
-        if (icellflag[icell_cent] !=0 && icellflag[icell_cent] !=2)
+        if (UGD->icellflag[icell_cent] !=0 && UGD->icellflag[icell_cent] !=2)
         {
 
           /// Wall below
-          if (icellflag[icell_cent-(nx-1)*(ny-1)]==0 || icellflag[icell_cent-(nx-1)*(ny-1)]==2)
+          if (UGD->icellflag[icell_cent-(nx-1)*(ny-1)]==0 || UGD->icellflag[icell_cent-(nx-1)*(ny-1)]==2)
           {
-            wall_below_indices.push_back(icell_face);
-            n[icell_cent] = 0.0;
+            UGD->wall_below_indices.push_back(icell_face);
+            UGD->n[icell_cent] = 0.0;
           }
           /// Wall above
-          if (icellflag[icell_cent+(nx-1)*(ny-1)]==0 || icellflag[icell_cent+(nx-1)*(ny-1)]==2)
+          if (UGD->icellflag[icell_cent+(nx-1)*(ny-1)]==0 || UGD->icellflag[icell_cent+(nx-1)*(ny-1)]==2)
           {
-            wall_above_indices.push_back(icell_face);
-            m[icell_cent] = 0.0;
+            UGD->wall_above_indices.push_back(icell_face);
+            UGD->m[icell_cent] = 0.0;
           }
           /// Wall in back
-          if (icellflag[icell_cent-1]==0 || icellflag[icell_cent-1]==2)
+          if (UGD->icellflag[icell_cent-1]==0 || UGD->icellflag[icell_cent-1]==2)
           {
             if (i>0)
             {
-              wall_back_indices.push_back(icell_face);
-              f[icell_cent] = 0.0;
+              UGD->wall_back_indices.push_back(icell_face);
+              UGD->f[icell_cent] = 0.0;
             }
           }
           /// Wall in front
-          if (icellflag[icell_cent+1]==0 || icellflag[icell_cent+1]==2)
+          if (UGD->icellflag[icell_cent+1]==0 || UGD->icellflag[icell_cent+1]==2)
           {
-            wall_front_indices.push_back(icell_face);
-            e[icell_cent] = 0.0;
+            UGD->wall_front_indices.push_back(icell_face);
+            UGD->e[icell_cent] = 0.0;
           }
           /// Wall on right
-          if (icellflag[icell_cent-(nx-1)]==0 || icellflag[icell_cent-(nx-1)]==2)
+          if (UGD->icellflag[icell_cent-(nx-1)]==0 || UGD->icellflag[icell_cent-(nx-1)]==2)
           {
             if (j>0)
             {
-              wall_right_indices.push_back(icell_face);
-              h[icell_cent] = 0.0;
+              UGD->wall_right_indices.push_back(icell_face);
+              UGD->h[icell_cent] = 0.0;
             }
           }
           /// Wall on left
-          if (icellflag[icell_cent+(nx-1)]==0 || icellflag[icell_cent+(nx-1)]==2)
+          if (UGD->icellflag[icell_cent+(nx-1)]==0 || UGD->icellflag[icell_cent+(nx-1)]==2)
           {
-            wall_left_indices.push_back(icell_face);
-            g[icell_cent] = 0.0;
+            UGD->wall_left_indices.push_back(icell_face);
+            UGD->g[icell_cent] = 0.0;
           }
         }
       }
@@ -91,26 +77,20 @@ void Wall::defineWalls(URBGeneralData *ugd)
 }
 
 
-void Wall::wallLogBC (URBGeneralData *ugd)
+void Wall::wallLogBC (URBGeneralData *UGD)
 {
 
-  int dx = ugd->dx;
-  int dy = ugd->dy;
-  int dz = ugd->dz;
-  int nx = ugd->nx;
-  int ny = ugd->ny;
-  int nz = ugd->nz;
-  const float z0 = ugd->z0;
-  std::vector<double> &u0 = ugd->u0;
-  std::vector<double> &v0 = ugd->v0;
-  std::vector<double> &w0 = ugd->w0;
+  int dx = UGD->dx;
+  int dy = UGD->dy;
+  int dz = UGD->dz;
+  int nx = UGD->nx;
+  int ny = UGD->ny;
+  int nz = UGD->nz;
+  const float z0 = UGD->z0;
+  std::vector<double> &u0 = UGD->u0;
+  std::vector<double> &v0 = UGD->v0;
+  std::vector<double> &w0 = UGD->w0;
 
-  std::vector<int> &wall_right_indices = ugd->wall_right_indices;
-  std::vector<int> &wall_left_indices = ugd->wall_left_indices;
-  std::vector<int> &wall_above_indices = ugd->wall_above_indices;
-  std::vector<int> &wall_below_indices = ugd->wall_below_indices;
-  std::vector<int> &wall_front_indices = ugd->wall_front_indices;
-  std::vector<int> &wall_back_indices = ugd->wall_back_indices;
 
 
 
@@ -123,9 +103,9 @@ void Wall::wallLogBC (URBGeneralData *ugd)
   float wind_dir;               /**< wind direction in parallel planes to wall */
 
   // Total size of wall indices
-  int wall_size = wall_right_indices.size()+wall_left_indices.size()+
-                  wall_above_indices.size()+wall_below_indices.size()+
-                  wall_front_indices.size()+wall_back_indices.size();
+  int wall_size = UGD->wall_right_indices.size()+UGD->wall_left_indices.size()+
+                  UGD->wall_above_indices.size()+UGD->wall_below_indices.size()+
+                  UGD->wall_front_indices.size()+UGD->wall_back_indices.size();
 
   std::vector<float> ustar;
   ustar.resize(wall_size, 0.0);
@@ -142,43 +122,43 @@ void Wall::wallLogBC (URBGeneralData *ugd)
   dist2 = 1.5*dz;
 
   /// apply log law fix to the cells with wall below
-  for (size_t i=0; i < wall_below_indices.size(); i++)
+  for (size_t i=0; i < UGD->wall_below_indices.size(); i++)
   {
     ustar_wall = 0.1;       /// reset default value for velocity gradient
     for (int iter=0; iter<20; iter++)
     {
-      wind_dir = atan2(v0[wall_below_indices[i]+nx*ny],u0[wall_below_indices[i]+nx*ny]);
-      vel_mag2 = sqrt(pow(u0[wall_below_indices[i]+nx*ny],2.0)+pow(v0[wall_below_indices[i]+nx*ny],2.0));
-      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
-      w0[wall_below_indices[i]] = 0;        /// normal component of velocity set to zero
+      wind_dir = atan2(v0[UGD->wall_below_indices[i]+nx*ny],u0[UGD->wall_below_indices[i]+nx*ny]);
+      vel_mag2 = sqrt(pow(u0[UGD->wall_below_indices[i]+nx*ny],2.0)+pow(v0[UGD->wall_below_indices[i]+nx*ny],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/UGD->vk)*log(dist2/dist1);
+      w0[UGD->wall_below_indices[i]] = 0;        /// normal component of velocity set to zero
       /// parallel components of velocity to wall
-      u0[wall_below_indices[i]] = vel_mag1*cos(wind_dir);
-      v0[wall_below_indices[i]] = vel_mag1*sin(wind_dir);
-      new_ustar = vk*vel_mag1/log(dist1/z0);
+      u0[UGD->wall_below_indices[i]] = vel_mag1*cos(wind_dir);
+      v0[UGD->wall_below_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = UGD->vk*vel_mag1/log(dist1/z0);
       ustar_wall = new_ustar;
     }
-    index[i] = wall_below_indices[i];
+    index[i] = UGD->wall_below_indices[i];
     ustar[i] = ustar_wall;
   }
 
   /// apply log law fix to the cells with wall above
-  for (size_t i=0; i < wall_above_indices.size(); i++)
+  for (size_t i=0; i < UGD->wall_above_indices.size(); i++)
   {
     ustar_wall = 0.1;       /// reset default value for velocity gradient
     for (int iter=0; iter<20; iter++)
     {
-      wind_dir = atan2(v0[wall_above_indices[i]-nx*ny],u0[wall_above_indices[i]-nx*ny]);
-      vel_mag2 = sqrt(pow(u0[wall_above_indices[i]-nx*ny],2.0)+pow(v0[wall_above_indices[i]-nx*ny],2.0));
-      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
-      w0[wall_above_indices[i]] = 0;          /// normal component of velocity set to zero
+      wind_dir = atan2(v0[UGD->wall_above_indices[i]-nx*ny],u0[UGD->wall_above_indices[i]-nx*ny]);
+      vel_mag2 = sqrt(pow(u0[UGD->wall_above_indices[i]-nx*ny],2.0)+pow(v0[UGD->wall_above_indices[i]-nx*ny],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/UGD->vk)*log(dist2/dist1);
+      w0[UGD->wall_above_indices[i]] = 0;          /// normal component of velocity set to zero
       /// parallel components of velocity to wall
-      u0[wall_above_indices[i]] = vel_mag1*cos(wind_dir);
-      v0[wall_above_indices[i]] = vel_mag1*sin(wind_dir);
-      new_ustar = vk*vel_mag1/log(dist1/z0);
+      u0[UGD->wall_above_indices[i]] = vel_mag1*cos(wind_dir);
+      v0[UGD->wall_above_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = UGD->vk*vel_mag1/log(dist1/z0);
       ustar_wall = new_ustar;
     }
-    j = i+wall_below_indices.size();
-    index[j] = wall_above_indices[i];
+    j = i+UGD->wall_below_indices.size();
+    index[j] = UGD->wall_above_indices[i];
     ustar[j] = ustar_wall;
   }
 
@@ -186,45 +166,45 @@ void Wall::wallLogBC (URBGeneralData *ugd)
   dist2 = 1.5*dx;
 
   /// apply log law fix to the cells with wall in back
-  for (size_t i=0; i < wall_back_indices.size(); i++)
+  for (size_t i=0; i < UGD->wall_back_indices.size(); i++)
   {
     ustar_wall = 0.1;
     for (int iter=0; iter<20; iter++)
     {
-      wind_dir = atan2(w0[wall_back_indices[i]+1],v0[wall_back_indices[i]+1]);
-      vel_mag2 = sqrt(pow(v0[wall_back_indices[i]+1],2.0)+pow(w0[wall_back_indices[i]+1],2.0));
-      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
-      u0[wall_back_indices[i]] = 0;        /// normal component of velocity set to zero
+      wind_dir = atan2(w0[UGD->wall_back_indices[i]+1],v0[UGD->wall_back_indices[i]+1]);
+      vel_mag2 = sqrt(pow(v0[UGD->wall_back_indices[i]+1],2.0)+pow(w0[UGD->wall_back_indices[i]+1],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/UGD->vk)*log(dist2/dist1);
+      u0[UGD->wall_back_indices[i]] = 0;        /// normal component of velocity set to zero
       /// parallel components of velocity to wall
-      v0[wall_back_indices[i]] = vel_mag1*cos(wind_dir);
-      w0[wall_back_indices[i]] = vel_mag1*sin(wind_dir);
-      new_ustar = vk*vel_mag1/log(dist1/z0);
+      v0[UGD->wall_back_indices[i]] = vel_mag1*cos(wind_dir);
+      w0[UGD->wall_back_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = UGD->vk*vel_mag1/log(dist1/z0);
       ustar_wall = new_ustar;
     }
-    j = i+wall_below_indices.size()+wall_above_indices.size();
-    index[j] = wall_back_indices[i];
+    j = i+UGD->wall_below_indices.size()+UGD->wall_above_indices.size();
+    index[j] = UGD->wall_back_indices[i];
     ustar[j] = ustar_wall;
   }
 
 
   /// apply log law fix to the cells with wall in front
-  for (size_t i=0; i < wall_front_indices.size(); i++)
+  for (size_t i=0; i < UGD->wall_front_indices.size(); i++)
   {
     ustar_wall = 0.1;       /// reset default value for velocity gradient
     for (int iter=0; iter<20; iter++)
     {
-      wind_dir = atan2(w0[wall_front_indices[i]-1],v0[wall_front_indices[i]-1]);
-      vel_mag2 = sqrt(pow(v0[wall_front_indices[i]-1],2.0)+pow(w0[wall_front_indices[i]-1],2.0));
-      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
-      u0[wall_front_indices[i]] = 0;        /// normal component of velocity set to zero
+      wind_dir = atan2(w0[UGD->wall_front_indices[i]-1],v0[UGD->wall_front_indices[i]-1]);
+      vel_mag2 = sqrt(pow(v0[UGD->wall_front_indices[i]-1],2.0)+pow(w0[UGD->wall_front_indices[i]-1],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/UGD->vk)*log(dist2/dist1);
+      u0[UGD->wall_front_indices[i]] = 0;        /// normal component of velocity set to zero
       /// parallel components of velocity to wall
-      v0[wall_front_indices[i]] = vel_mag1*cos(wind_dir);
-      w0[wall_front_indices[i]] = vel_mag1*sin(wind_dir);
-      new_ustar = vk*vel_mag1/log(dist1/z0);
+      v0[UGD->wall_front_indices[i]] = vel_mag1*cos(wind_dir);
+      w0[UGD->wall_front_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = UGD->vk*vel_mag1/log(dist1/z0);
       ustar_wall = new_ustar;
     }
-    j = i+wall_below_indices.size()+wall_above_indices.size()+wall_back_indices.size();
-    index[j] = wall_front_indices[i];
+    j = i+UGD->wall_below_indices.size()+UGD->wall_above_indices.size()+UGD->wall_back_indices.size();
+    index[j] = UGD->wall_front_indices[i];
     ustar[j] = ustar_wall;
   }
 
@@ -233,89 +213,90 @@ void Wall::wallLogBC (URBGeneralData *ugd)
   dist2 = 1.5*dy;
 
   /// apply log law fix to the cells with wall to right
-  for (size_t i=0; i < wall_right_indices.size(); i++)
+  for (size_t i=0; i < UGD->wall_right_indices.size(); i++)
   {
     ustar_wall = 0.1;          /// reset default value for velocity gradient
     for (int iter=0; iter<20; iter++)
     {
-      wind_dir = atan2(w0[wall_right_indices[i]+nx],u0[wall_right_indices[i]+nx]);
-      vel_mag2 = sqrt(pow(u0[wall_right_indices[i]+nx],2.0)+pow(w0[wall_right_indices[i]+nx],2.0));
-      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
-      v0[wall_right_indices[i]] = 0;        /// normal component of velocity set to zero
+      wind_dir = atan2(w0[UGD->wall_right_indices[i]+nx],u0[UGD->wall_right_indices[i]+nx]);
+      vel_mag2 = sqrt(pow(u0[UGD->wall_right_indices[i]+nx],2.0)+pow(w0[UGD->wall_right_indices[i]+nx],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/UGD->vk)*log(dist2/dist1);
+      v0[UGD->wall_right_indices[i]] = 0;        /// normal component of velocity set to zero
       /// parallel components of velocity to wall
-      u0[wall_right_indices[i]] = vel_mag1*cos(wind_dir);
-      w0[wall_right_indices[i]] = vel_mag1*sin(wind_dir);
-      new_ustar = vk*vel_mag1/log(dist1/z0);
+      u0[UGD->wall_right_indices[i]] = vel_mag1*cos(wind_dir);
+      w0[UGD->wall_right_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = UGD->vk*vel_mag1/log(dist1/z0);
       ustar_wall = new_ustar;
     }
-    j = i+wall_below_indices.size()+wall_above_indices.size()+wall_back_indices.size()+wall_front_indices.size();
-    index[j] = wall_right_indices[i];
+    j = i+UGD->wall_below_indices.size()+UGD->wall_above_indices.size()+UGD->wall_back_indices.size()+UGD->wall_front_indices.size();
+    index[j] = UGD->wall_right_indices[i];
     ustar[j] = ustar_wall;
   }
 
   /// apply log law fix to the cells with wall to left
-  for (size_t i=0; i < wall_left_indices.size(); i++)
+  for (size_t i=0; i < UGD->wall_left_indices.size(); i++)
   {
     ustar_wall = 0.1;       /// reset default value for velocity gradient
     for (int iter=0; iter<20; iter++)
     {
-      wind_dir = atan2(w0[wall_left_indices[i]-nx],u0[wall_left_indices[i]-nx]);
-      vel_mag2 = sqrt(pow(u0[wall_left_indices[i]-nx],2.0)+pow(w0[wall_left_indices[i]-nx],2.0));
-      vel_mag1 = vel_mag2 - (ustar_wall/vk)*log(dist2/dist1);
-      v0[wall_left_indices[i]] = 0;          /// normal component of velocity set to zero
+      wind_dir = atan2(w0[UGD->wall_left_indices[i]-nx],u0[UGD->wall_left_indices[i]-nx]);
+      vel_mag2 = sqrt(pow(u0[UGD->wall_left_indices[i]-nx],2.0)+pow(w0[UGD->wall_left_indices[i]-nx],2.0));
+      vel_mag1 = vel_mag2 - (ustar_wall/UGD->vk)*log(dist2/dist1);
+      v0[UGD->wall_left_indices[i]] = 0;          /// normal component of velocity set to zero
       /// parallel components of velocity to wall
-      u0[wall_left_indices[i]] = vel_mag1*cos(wind_dir);
-      w0[wall_left_indices[i]] = vel_mag1*sin(wind_dir);
-      new_ustar = vk*vel_mag1/log(dist1/z0);
+      u0[UGD->wall_left_indices[i]] = vel_mag1*cos(wind_dir);
+      w0[UGD->wall_left_indices[i]] = vel_mag1*sin(wind_dir);
+      new_ustar = UGD->vk*vel_mag1/log(dist1/z0);
       ustar_wall = new_ustar;
     }
-    j = i+wall_below_indices.size()+wall_above_indices.size()+wall_back_indices.size()+wall_front_indices.size()+wall_right_indices.size();
-    index[j] = wall_left_indices[i];
+    j = i+UGD->wall_below_indices.size()+UGD->wall_above_indices.size()+UGD->wall_back_indices.size()+UGD->wall_front_indices.size()+UGD->wall_right_indices.size();
+    index[j] = UGD->wall_left_indices[i];
     ustar[j] = ustar_wall;
   }
 }
 
-void Wall::setVelocityZero (URBGeneralData *ugd)
+void Wall::setVelocityZero (URBGeneralData *UGD)
 {
-  for (auto k = 1; k < ugd->nz-1; k++)
+  for (auto k = 0; k < UGD->nz-1; k++)
   {
-    for (auto j = 1; j < ugd->ny-1; j++)
+    for (auto j = 1; j < UGD->ny-1; j++)
     {
-      for (auto i = 1; i < ugd->nx-1; i++)
+      for (auto i = 1; i < UGD->nx-1; i++)
       {
-        int icell_cent = i + j*(ugd->nx-1) + k*(ugd->nx-1)*(ugd->ny-1);
-        int icell_face = i + j*ugd->nx + k*ugd->nx*ugd->ny;
-        if (ugd->icellflag[icell_cent] == 0 || ugd->icellflag[icell_cent] == 2)
+        int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+        int icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
+        if (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 2)
         {
-          ugd->u0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
-          ugd->u0[icell_face+1] = 0.0;
-          ugd->v0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
-          ugd->v0[icell_face+ugd->nx] = 0.0;
-          ugd->w0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
-          ugd->w0[icell_face+ugd->nx*ugd->ny] = 0.0;
+          UGD->u0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
+          UGD->u0[icell_face+1] = 0.0;
+          UGD->v0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
+          UGD->v0[icell_face+UGD->nx] = 0.0;
+          UGD->w0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
+          UGD->w0[icell_face+UGD->nx*UGD->ny] = 0.0;
         }
       }
     }
   }
+}
 
 
-void Wall::solverCoefficients (URBGeneralData *ugd)
+void Wall::solverCoefficients (URBGeneralData *UGD)
 {
   // New boundary condition implementation
   // This needs to be done only once
-  for (auto k = 0; k < ugd->nz-1; k++)
+  for (auto k = 0; k < UGD->nz-1; k++)
   {
-    for (auto j = 0; j < ugd->ny-1; j++)
+    for (auto j = 0; j < UGD->ny-1; j++)
     {
-      for (auto i = 0; i < ugd->nx-1; i++)
+      for (auto i = 0; i < UGD->nx-1; i++)
       {
-        int icell_cent = i + j*(ugd->nx-1) + k*(ugd->nx-1)*(ugd->ny-1);
-        ugd->e[icell_cent] = ugd->e[icell_cent]/(ugd->dx*ugd->dx);
-        ugd->f[icell_cent] = ugd->f[icell_cent]/(ugd->dx*ugd->dx);
-        ugd->g[icell_cent] = ugd->g[icell_cent]/(ugd->dy*ugd->dy);
-        ugd->h[icell_cent] = ugd->h[icell_cent]/(ugd->dy*ugd->dy);
-        ugd->m[icell_cent] = ugd->m[icell_cent]/(ugd->dz_array[k]*0.5*(ugd->dz_array[k]+ugd->dz_array[k+1]));
-        ugd->n[icell_cent] = ugd->n[icell_cent]/(ugd->dz_array[k]*0.5*(ugd->dz_array[k]+ugd->dz_array[k-1]));
+        int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+        UGD->e[icell_cent] = UGD->e[icell_cent]/(UGD->dx*UGD->dx);
+        UGD->f[icell_cent] = UGD->f[icell_cent]/(UGD->dx*UGD->dx);
+        UGD->g[icell_cent] = UGD->g[icell_cent]/(UGD->dy*UGD->dy);
+        UGD->h[icell_cent] = UGD->h[icell_cent]/(UGD->dy*UGD->dy);
+        UGD->m[icell_cent] = UGD->m[icell_cent]/(UGD->dz_array[k]*0.5*(UGD->dz_array[k]+UGD->dz_array[k+1]));
+        UGD->n[icell_cent] = UGD->n[icell_cent]/(UGD->dz_array[k]*0.5*(UGD->dz_array[k]+UGD->dz_array[k-1]));
       }
     }
   }

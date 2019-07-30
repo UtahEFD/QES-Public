@@ -21,8 +21,9 @@ CUDA_ADD_LIBRARY( cudaurbcore
   Solver.cpp
   Triangle.cpp
   URBInputData.h
-  URBGeneralData.cpp URBGeneralData.h 
+  URBGeneralData.cpp URBGeneralData.h
   WRFInput.cpp WRFInput.h
+  Wall.cpp Wall.h
   )
 
 cuda_add_executable( unitTest

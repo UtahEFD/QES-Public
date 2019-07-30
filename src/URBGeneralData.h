@@ -27,7 +27,7 @@ public:
     URBGeneralData(const URBInputData* UID, Output *cudaOutput);
     ~URBGeneralData();
 
-    void mergeSort( std::vector<float> &height, std::vector<std::vector<polyVert>> &poly_points, std::vector<float> &base_height, std::vector<float> &building_height);
+    void mergeSort( std::vector<Building*> allBuildingsV );
 
 
     /*!
@@ -86,6 +86,7 @@ public:
                                       // (inputWindProfile)
 
     std::vector <float> base_height;      // Base height of buildings
+    std::vector <float> effective_height;            // Effective height of buildings
 
     // Initial wind conditions
     /// Declaration of initial wind components (u0,v0,w0)

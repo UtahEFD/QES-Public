@@ -17,10 +17,18 @@ class Wall
 {
 
 protected:
-    Wall();
+
 
 public:
-    ~Wall();
+
+    Wall()
+    {
+
+    }
+    ~Wall()
+    {
+
+    }
 
     /**
      * @brief
@@ -32,7 +40,7 @@ public:
      * and wall in front/back
      *
      */
-    void defineWalls(URBGeneralData *ugd);
+    void defineWalls(URBGeneralData *UGD);
 
 
     /**
@@ -43,7 +51,7 @@ public:
     * to the cells near Walls (based on Kevin Briggs master's thesis (2015))
     *
     */
-    void wallLogBC (URBGeneralData *ugd);
+    void wallLogBC (URBGeneralData *UGD);
 
 
     /**
@@ -53,7 +61,7 @@ public:
     * and terrain to zero.
     *
     */
-    void setVelocityZero (URBGeneralData *ugd);
+    void setVelocityZero (URBGeneralData *UGD);
 
 
     /**
@@ -63,6 +71,6 @@ public:
     * and modify them for solver
     *
     */
-    void solverCoefficients (URBGeneralData *ugd);
+    void solverCoefficients (URBGeneralData *UGD);
 
 };

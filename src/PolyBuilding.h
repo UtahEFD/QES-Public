@@ -51,10 +51,10 @@ public:
         // don't have problems down the line.
     }
 
-    virtual ~PolyBuilding() 
+    virtual ~PolyBuilding()
     {
     }
-    
+
     /**
     *
     * Converts data about rect building into something that poly can
