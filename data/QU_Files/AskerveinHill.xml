@@ -1,8 +1,8 @@
 <simulationParameters>
 
-	<DEM>../scratch/AskerveinHill/askervein.tif</DEM>					<!-- Address to DEM location-->	
-	<domain> 600 600 50 </domain>
-	<cellSize> 10.0 10.0 4.0 </cellSize> <!-- Meters-->
+	<DEM>../scratch/DEM/askervein.tif</DEM>					<!-- Address to DEM location-->	
+	<domain> 300 300 50 </domain>
+	<cellSize> 20.0 20.0 4.0 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
 	<UTCConversion> 0 </UTCConversion>
@@ -22,7 +22,7 @@
 	<UTMY> 0 </UTMY>
 	<UTMZone> 1 </UTMZone>
 	<UTMZoneLetter> 17 </UTMZoneLetter>
-	<DEM>/scratch/AskerveinHill/askervein.tif</DEM>
+
 </simulationParameters>
 <metParams>
 	<metInputFlag> 0 </metInputFlag>
@@ -30,7 +30,7 @@
 	<maxSizeDataPoints> 1 </maxSizeDataPoints>
 	<siteName> sensor1 </siteName>
 	<fileName> sensor1.inp </fileName>
-	<z0_domain_flag> 1 </z0_domain_flag>            <!-- Distribution of sueface roughness for domain (0-uniform, 1-custom -->
+	<z0_domain_flag> 0 </z0_domain_flag>            <!-- Distribution of sueface roughness for domain (0-uniform, 1-custom -->
 	<sensor>
 		<site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->
 		<site_xcoord> 1.0</site_xcoord>
@@ -38,7 +38,6 @@
 		<site_UTM_x> 2.0 </site_UTM_x> 								<!-- x components of site coordinate in UTM -->
 		<site_UTM_y> 2.0 </site_UTM_y> 								<!-- y components of site coordinate in UTM -->
 		<site_UTM_zone> 0 </site_UTM_zone> 						<!-- UTM zone of the sensor site -->
-		<epoch> 1510930800 </epoch>
 		<boundaryLayerFlag> 1 </boundaryLayerFlag>
 		<siteZ0> 0.1 </siteZ0>
 		<reciprocal> 0 </reciprocal>
@@ -59,32 +58,14 @@
 </fileOptions>
 <!--buildings>
 	<wallRoughness> 0.1 </wallRoughness>
-	<numBuildings> 2 </numBuildings>
-	<numPolygonNodes> 0 </numPolygonNodes>
+	<numBuildings> 1 </numBuildings>
 	<rectangularBuilding>
-		<groupID> 1 </groupID>
-		<buildingType> 1 </buildingType>
 		<height> 20.0 </height>
 		<baseHeight> 0 </baseHeight>
-		<centroidX> 24 </centroidX>
-		<centroidY> 26	</centroidY>
-		<xFo> 20.0 </xFo>
-		<yFo> 20.0 </yFo>
+		<xStart> 90.0 </xStart>
+		<yStart> 90.0 </yStart>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
-		<rotation> 0 </rotation>
-	</rectangularBuilding>
-	<rectangularBuilding>
-		<groupID> 1 </groupID>
-		<buildingType> 1 </buildingType>
-		<height> 20.0 </height>
-		<baseHeight> 0 </baseHeight>
-		<centroidX> 24 </centroidX>
-		<centroidY> 26	</centroidY>
-		<xFo> 70.0 </xFo>
-		<yFo> 70.0 </yFo>
-		<length> 20.0 </length>
-		<width> 20.0 </width>
-		<rotation> 0 </rotation>
+		<buildingRotation> 20.0 </buildingRotation>
 	</rectangularBuilding>
 </buildings-->

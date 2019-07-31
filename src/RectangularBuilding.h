@@ -6,7 +6,7 @@
  */
 
 #include "util/ParseInterface.h"
-#include "NonPolyBuilding.h"
+#include "PolyBuilding.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -17,53 +17,67 @@ using std::endl;
 using std::vector;
 using std::cout;
 
-
-class RectangularBuilding : public NonPolyBuilding
+class RectangularBuilding : public PolyBuilding
 {
-private:
-
-	int icell_cent, icell_cut;
-
+protected:
+	//int icell_cent, icell_cut;
 
 public:
 
 	RectangularBuilding()
 	{
-		buildingGeometry = 1;
-
-	}
-
-	RectangularBuilding(float xStart, float yStart, float bh, float length, float width, float height, std::vector<float> z)
-	{
-		buildingGeometry = 1;
-
-		groupID = 999;
-		buildingType = 5;
-		H = height;
-		baseHeight = bh;
-		x_start = xStart;
-		y_start = yStart;
-		L = length;
-		W = width;
-
 
 	}
 
 	virtual void parseValues()
 	{
-		parsePrimitive<int>(true, groupID, "groupID");
-		parsePrimitive<int>(true, buildingType, "buildingType");
-		parsePrimitive<float>(true, H, "height");
-		parsePrimitive<float>(true, baseHeight, "baseHeight");
-		parsePrimitive<float>(true, x_start, "xStart");
-		parsePrimitive<float>(true, y_start, "yStart");
-		parsePrimitive<float>(true, L, "length");
-		parsePrimitive<float>(true, W, "width");
+            // Extract important XML stuff
+            parsePrimitive<float>(true, H, "height");
+            parsePrimitive<float>(true, base_height, "baseHeight");
+            parsePrimitive<float>(true, x_start, "xStart");
+            parsePrimitive<float>(true, y_start, "yStart");
+            parsePrimitive<float>(true, L, "length");
+            parsePrimitive<float>(true, W, "width");
+            parsePrimitive<float>(true, building_rotation, "buildingRotation");
 
+            // We cannot call the constructor since the default had
+            // already been called.  So, use other functions in
+            // PolyBuilding to create the correct PolyBuilding from
+            // height, x_start, y_start, etc...
+
+            // We will now initialize the polybuilding using the
+            // protected variables accessible to RectangularBuilding
+            // from the PolyBuilding class:
+            height_eff = H+base_height;
+
+            // ?????  maybe ignore or hard code here??? until we get a
+            // reference back to the Root XML
+            //x_start += UID->simParams->halo_x;
+            //y_start += UID->simParams->halo_y;
+
+            building_rotation *= M_PI/180.0;
+            polygonVertices.resize (5);
+            polygonVertices[0].x_poly = polygonVertices[4].x_poly = x_start;
+            polygonVertices[0].y_poly = polygonVertices[4].y_poly = y_start;
+            polygonVertices[1].x_poly = x_start-W*sin(building_rotation);
+            polygonVertices[1].y_poly = y_start+W*cos(building_rotation);
+            polygonVertices[2].x_poly = polygonVertices[1].x_poly+L*cos(building_rotation);
+            polygonVertices[2].y_poly = polygonVertices[1].y_poly+L*sin(building_rotation);
+            polygonVertices[3].x_poly = x_start+L*cos(building_rotation);
+            polygonVertices[3].y_poly = y_start+L*sin(building_rotation);
+
+            // This will now be process for ALL buildings...
+            // extract the vertices from this definition here and make the
+            // poly building...
+            // setPolybuilding(UGD->nx, UGD->ny, UGD->dx, UGD->dy, UGD->u0, UGD->v0, UGD->z);
 	}
 
 
-	void setCutCells(float dx, float dy, std::vector<float> dz_array, std::vector<float> z, int nx, int ny, int nz, std::vector<int> &icellflag,
+    // /////////////////////////////////////////////////////////////////
+    // EVERYTHING FROM HERE DOWN SHOULD GO AWAY, thus relying on the
+    // PolyBuiding to provide the functionality...
+
+	/*void setCutCells(float dx, float dy, std::vector<float> dz_array, std::vector<float> z, int nx, int ny, int nz, std::vector<int> &icellflag,
 					 std::vector<std::vector<std::vector<float>>> &x_cut,std::vector<std::vector<std::vector<float>>> &y_cut,
 					 std::vector<std::vector<std::vector<float>>> &z_cut, std::vector<std::vector<int>> &num_points,
 					 std::vector<std::vector<float>> &coeff)
@@ -548,10 +562,10 @@ public:
 
 
 
-	}
+	}*/
 
 
-	void setCellsFlag(float dx, float dy, std::vector<float> dz_array, int nx, int ny, int nz, std::vector<float> z, std::vector<int> &icellflag, int mesh_type_flag)
+	/*void setCellsFlag(float dx, float dy, std::vector<float> dz_array, int nx, int ny, int nz, std::vector<float> z, std::vector<int> &icellflag, int mesh_type_flag)
 	{
 
 		if (mesh_type_flag == 1)
@@ -710,7 +724,7 @@ public:
 					}
 				}
 		}
-	}
+	}*/
 
 
 
