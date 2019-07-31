@@ -5,6 +5,7 @@
  * the basic information and functions that every building should have.
 */
 #include "util/ParseInterface.h"
+#include "PolygonVertex.h"
 
 using namespace std;
 
@@ -45,6 +46,8 @@ public:
 	float L_over_H, W_over_H;			/**< Length/width over height of the building */
 	float Lr;										/**< Length of far wake zone */
 
+	std::vector <polyVert> polygonVertices;
+
     Building()
     {
     }
@@ -56,10 +59,19 @@ public:
 
     virtual void parseValues() = 0;
 
+		virtual void setPolyBuilding(URBGeneralData* UGD)
+		{
+		}
+
     // Need to finalize the parameters here...
     virtual void setCellFlags(const URBInputData* UID, URBGeneralData* UGD)
     {
     }
+
+		virtual void upwindCavity (const URBInputData* UID, URBGeneralData* UGD)
+    {
+    }
+
 
     virtual void polygonWake(const URBInputData* UID, URBGeneralData* UGD)
     {

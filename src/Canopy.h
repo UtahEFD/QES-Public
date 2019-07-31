@@ -19,12 +19,6 @@ public:
 
 	}
 
-	Canopy(const URBInputData *UID, URBGeneralData *ugd)
-        : PolyBuilding(x_start, y_start, base_height, L, W, H, canopy_rotation, UID, ugd)  // correct poly building
-                                            // constructor gets called...
-	{
-
-	}
 
 	virtual void parseValues()
 	{
@@ -36,6 +30,22 @@ public:
 		parsePrimitive<float>(true, L, "length");
 		parsePrimitive<float>(true, W, "width");
 		parsePrimitive<float>(true, canopy_rotation, "canopyRotation");
+
+
+		//x_start += UID->simParams->halo_x;
+	  //y_start += UID->simParams->halo_y;
+	  canopy_rotation *= M_PI/180.0;
+	  polygonVertices.resize (5);
+	  polygonVertices[0].x_poly = polygonVertices[4].x_poly = x_start;
+	  polygonVertices[0].y_poly = polygonVertices[4].y_poly = y_start;
+	  polygonVertices[1].x_poly = x_start-W*sin(canopy_rotation);
+	  polygonVertices[1].y_poly = y_start+W*cos(canopy_rotation);
+	  polygonVertices[2].x_poly = polygonVertices[1].x_poly+L*cos(canopy_rotation);
+	  polygonVertices[2].y_poly = polygonVertices[1].y_poly+L*sin(canopy_rotation);
+	  polygonVertices[3].x_poly = x_start+L*cos(canopy_rotation);
+	  polygonVertices[3].y_poly = y_start+L*sin(canopy_rotation);
+
+
 	}
 
   void canopyVegetation(URBGeneralData *ugd);

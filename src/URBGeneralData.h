@@ -16,6 +16,7 @@
 #include "DTEHeightField.h"
 #include "Cut_cell.h"
 #include "Wall.h"
+#include <cmath>
 
 #include "Output.hpp"
 
@@ -52,6 +53,7 @@ public:
     const float vk = 0.4;			/// Von Karman's
                                                 /// constant
     float cavity_factor, wake_factor;
+    float lengthf_coeff;
     float theta;
 
     // General QUIC Domain Data

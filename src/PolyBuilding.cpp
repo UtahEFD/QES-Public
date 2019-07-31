@@ -4,118 +4,75 @@
 #include "URBInputData.h"
 #include "URBGeneralData.h"
 
-PolyBuilding::PolyBuilding( const URBInputData* UID, URBGeneralData* UGD, float x_start,
-              float y_start, float base_height, float L, float W, float H,
-              float building_rotation)
-    : Building()
-{
-
-  height_eff = H+base_height;
-  x_start += UID->simParams->halo_x;
-  y_start += UID->simParams->halo_y;
-  building_rotation *= M_PI/180.0;
-  this->polygonVertices.resize (5);
-  this->polygonVertices[0].x_poly = this->polygonVertices[4].x_poly = x_start;
-  this->polygonVertices[0].y_poly = this->polygonVertices[4].y_poly = y_start;
-  this->polygonVertices[1].x_poly = x_start-W*sin(building_rotation);
-  this->polygonVertices[1].y_poly = y_start+W*cos(building_rotation);
-  this->polygonVertices[2].x_poly = this->polygonVertices[1].x_poly+L*cos(building_rotation);
-  this->polygonVertices[2].y_poly = this->polygonVertices[1].y_poly+L*sin(building_rotation);
-  this->polygonVertices[3].x_poly = x_start+L*cos(building_rotation);
-  this->polygonVertices[3].y_poly = y_start+L*sin(building_rotation);
-
-  // extract the vertices from this definition here and make the
-  // poly building...
-  setPolybuilding(UGD->nx, UGD->ny, UGD->dx, UGD->dy, UGD->u0, UGD->v0, UGD->z);
-}
-
-
-PolyBuilding::PolyBuilding( float x_start, float y_start, float base_height, float L, float W,
-              float H, float canopy_rotation, const URBInputData *UID, URBGeneralData *UGD)
-              : Building()
-{
-  x_start += UID->simParams->halo_x;
-  y_start += UID->simParams->halo_y;
-  canopy_rotation *= M_PI/180.0;
-  this->polygonVertices.resize (5);
-  this->polygonVertices[0].x_poly = this->polygonVertices[4].x_poly = x_start;
-  this->polygonVertices[0].y_poly = this->polygonVertices[4].y_poly = y_start;
-  this->polygonVertices[1].x_poly = x_start-W*sin(canopy_rotation);
-  this->polygonVertices[1].y_poly = y_start+W*cos(canopy_rotation);
-  this->polygonVertices[2].x_poly = this->polygonVertices[1].x_poly+L*cos(canopy_rotation);
-  this->polygonVertices[2].y_poly = this->polygonVertices[1].y_poly+L*sin(canopy_rotation);
-  this->polygonVertices[3].x_poly = x_start+L*cos(canopy_rotation);
-  this->polygonVertices[3].y_poly = y_start+L*sin(canopy_rotation);
-}
-
 
 PolyBuilding::PolyBuilding(const URBInputData* UID, URBGeneralData* UGD, int id)
               : Building()
 {
-  this->polygonVertices = UID->simParams->shpPolygons[id];
+  polygonVertices = UID->simParams->shpPolygons[id];
   H = UID->simParams->shpBuildingHeight[id];
   base_height = UGD->base_height[id];
 
-  setPolybuilding(UGD->nx, UGD->ny, UGD->dx, UGD->dy, UGD->u0, UGD->v0, UGD->z);
 }
 
 /**
  *
  */
-void PolyBuilding::setPolybuilding(int nx, int ny, float dx, float dy, std::vector<double> &u0, std::vector<double> &v0, std::vector<float> z)
+void PolyBuilding::setPolyBuilding(URBGeneralData* UGD)
 {
 
   building_cent_x = 0;               // x-coordinate of the centroid of the building
   building_cent_y = 0;               // y-coordinate of the centroid of the building
   height_eff = H+base_height;       // Effective height of the building
+  upwind_rel_dir.resize (polygonVertices.size(), 0.0);      // Upwind reletive direction for each face
+
   // Calculate the centroid coordinates of the building (average of all nodes coordinates)
-  for (auto i=0; i<this->polygonVertices.size()-1; i++)
+  for (auto i=0; i<polygonVertices.size()-1; i++)
   {
-    building_cent_x += this->polygonVertices[i].x_poly;
-    building_cent_y += this->polygonVertices[i].y_poly;
+    building_cent_x += polygonVertices[i].x_poly;
+    building_cent_y += polygonVertices[i].y_poly;
   }
-  building_cent_x /= this->polygonVertices.size()-1;
-  building_cent_y /= this->polygonVertices.size()-1;
+  building_cent_x /= polygonVertices.size()-1;
+  building_cent_y /= polygonVertices.size()-1;
 
   // Define start index of the building in z-direction
-  for (auto k=1; k<z.size(); k++)
+  for (auto k=1; k<UGD->z.size(); k++)
   {
     k_start = k;
-    if (base_height <= z[k])
+    if (base_height <= UGD->z[k])
     {
       break;
     }
   }
 
   // Define end index of the building in z-direction
-  for (auto k=0; k<z.size(); k++)
+  for (auto k=0; k<UGD->z.size(); k++)
   {
     k_end = k+1;
-    if (height_eff < z[k+1])
+    if (height_eff < UGD->z[k+1])
     {
       break;
     }
   }
 
-  int i_building_cent = std::round(building_cent_x/dx);   // Index of building centroid in x-direction
-  int j_building_cent = std::round(building_cent_y/dy);   // Index of building centroid in y-direction
-  int index_building_face = i_building_cent + j_building_cent*nx + (k_end)*nx*ny;
-  u0_h = u0[index_building_face];         // u velocity at the height of building at the centroid
-  v0_h = v0[index_building_face];         // v velocity at the height of building at the centroid
+  int i_building_cent = std::round(building_cent_x/UGD->dx);   // Index of building centroid in x-direction
+  int j_building_cent = std::round(building_cent_y/UGD->dy);   // Index of building centroid in y-direction
+  int index_building_face = i_building_cent + j_building_cent*UGD->nx + (k_end)*UGD->nx*UGD->ny;
+  u0_h = UGD->u0[index_building_face];         // u velocity at the height of building at the centroid
+  v0_h = UGD->v0[index_building_face];         // v velocity at the height of building at the centroid
   // Wind direction of initial velocity at the height of building at the centroid
   upwind_dir = atan2(v0_h,u0_h);
 
   x1 = x2 = y1 = y2 = 0.0;
-  xi.resize (this->polygonVertices.size(),0.0);      // Difference of x values of the centroid and each node
-  yi.resize (this->polygonVertices.size(),0.0);     // Difference of y values of the centroid and each node
+  xi.resize (polygonVertices.size(),0.0);      // Difference of x values of the centroid and each node
+  yi.resize (polygonVertices.size(),0.0);     // Difference of y values of the centroid and each node
   polygon_area = 0.0;
 
   // Loop to calculate polygon area, differences in x and y values
-  for (auto id=0; id<this->polygonVertices.size(); id++)
+  for (auto id=0; id<polygonVertices.size(); id++)
   {
-    polygon_area += 0.5*(this->polygonVertices[id].x_poly*this->polygonVertices[id+1].y_poly-this->polygonVertices[id].y_poly*this->polygonVertices[id+1].x_poly);
-    xi[id] = (this->polygonVertices[id].x_poly-building_cent_x)*cos(upwind_dir)+(this->polygonVertices[id].y_poly-building_cent_y)*sin(upwind_dir);
-    yi[id] = -(this->polygonVertices[id].x_poly-building_cent_x)*sin(upwind_dir)+(this->polygonVertices[id].y_poly-building_cent_y)*cos(upwind_dir);
+    polygon_area += 0.5*(polygonVertices[id].x_poly*polygonVertices[id+1].y_poly-polygonVertices[id].y_poly*polygonVertices[id+1].x_poly);
+    xi[id] = (polygonVertices[id].x_poly-building_cent_x)*cos(upwind_dir)+(polygonVertices[id].y_poly-building_cent_y)*sin(upwind_dir);
+    yi[id] = -(polygonVertices[id].x_poly-building_cent_x)*sin(upwind_dir)+(polygonVertices[id].y_poly-building_cent_y)*cos(upwind_dir);
 
     // Find maximum and minimum differences in x and y values
     if (xi[id] < x1)
@@ -136,6 +93,15 @@ void PolyBuilding::setPolybuilding(int nx, int ny, float dx, float dy, std::vect
     }
   }
 
+  for (auto id=0; id<polygonVertices.size()-1; id++)
+  {
+    // Calculate upwind reletive direction for each face
+    upwind_rel_dir[id] = atan2(yi[id+1]-yi[id],xi[id+1]-xi[id])+0.5*M_PI;
+    if (upwind_rel_dir[id] > M_PI+0.0001)
+    {
+      upwind_rel_dir[id] -= 2*M_PI;
+    }
+  }
 
   polygon_area = abs(polygon_area);
   width_eff = polygon_area/(x2-x1);           // Effective width of the building
@@ -179,25 +145,25 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD)
   if (mesh_type_flag == 0)
   {
     // Loop to calculate maximum and minimum of x and y values of the building
-    x_min = x_max = this->polygonVertices[0].x_poly;
-    y_min = x_max = this->polygonVertices[0].y_poly;
-    for (auto id=1; id<this->polygonVertices.size(); id++)
+    x_min = x_max = polygonVertices[0].x_poly;
+    y_min = x_max = polygonVertices[0].y_poly;
+    for (auto id=1; id<polygonVertices.size(); id++)
     {
-      if (this->polygonVertices[id].x_poly > x_max)
+      if (polygonVertices[id].x_poly > x_max)
       {
-        x_max = this->polygonVertices[id].x_poly;
+        x_max = polygonVertices[id].x_poly;
       }
-      if (this->polygonVertices[id].x_poly < x_min)
+      if (polygonVertices[id].x_poly < x_min)
       {
-        x_min = this->polygonVertices[id].x_poly;
+        x_min = polygonVertices[id].x_poly;
       }
-      if (this->polygonVertices[id].y_poly > y_max)
+      if (polygonVertices[id].y_poly > y_max)
       {
-        y_max = this->polygonVertices[id].y_poly;
+        y_max = polygonVertices[id].y_poly;
       }
-      if (this->polygonVertices[id].y_poly < y_min)
+      if (polygonVertices[id].y_poly < y_min)
       {
-        y_min = this->polygonVertices[id].y_poly;
+        y_min = polygonVertices[id].y_poly;
       }
     }
 
@@ -218,20 +184,20 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD)
         vert_id = 0;               // Node index
         start_poly = vert_id;
         num_crossing = 0;
-        while (vert_id < this->polygonVertices.size()-1)
+        while (vert_id < polygonVertices.size()-1)
         {
-          if ( (this->polygonVertices[vert_id].y_poly<=y_cent && this->polygonVertices[vert_id+1].y_poly>y_cent) ||
-               (this->polygonVertices[vert_id].y_poly>y_cent && this->polygonVertices[vert_id+1].y_poly<=y_cent) )
+          if ( (polygonVertices[vert_id].y_poly<=y_cent && polygonVertices[vert_id+1].y_poly>y_cent) ||
+               (polygonVertices[vert_id].y_poly>y_cent && polygonVertices[vert_id+1].y_poly<=y_cent) )
           {
-            ray_intersect = (y_cent-this->polygonVertices[vert_id].y_poly)/(this->polygonVertices[vert_id+1].y_poly-this->polygonVertices[vert_id].y_poly);
-            if (x_cent < (this->polygonVertices[vert_id].x_poly+ray_intersect*(this->polygonVertices[vert_id+1].x_poly-this->polygonVertices[vert_id].x_poly)))
+            ray_intersect = (y_cent-polygonVertices[vert_id].y_poly)/(polygonVertices[vert_id+1].y_poly-polygonVertices[vert_id].y_poly);
+            if (x_cent < (polygonVertices[vert_id].x_poly+ray_intersect*(polygonVertices[vert_id+1].x_poly-polygonVertices[vert_id].x_poly)))
             {
               num_crossing += 1;
             }
           }
           vert_id += 1;
-          if (this->polygonVertices[vert_id].x_poly == this->polygonVertices[start_poly].x_poly &&
-              this->polygonVertices[vert_id].y_poly == this->polygonVertices[start_poly].y_poly)
+          if (polygonVertices[vert_id].x_poly == polygonVertices[start_poly].x_poly &&
+              polygonVertices[vert_id].y_poly == polygonVertices[start_poly].y_poly)
           {
             vert_id += 1;
             start_poly = vert_id;
@@ -268,12 +234,10 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
 {
 
   std::vector<float> Lr_face, Lr_node;
-  std::vector<float> upwind_rel_dir;
   std::vector<int> perpendicular_flag;
-  Lr_face.resize (this->polygonVertices.size(), -1.0);       // Length of wake for each face
-  Lr_node.resize (this->polygonVertices.size(), 0.0);       // Length of wake for each node
-  upwind_rel_dir.resize (this->polygonVertices.size(), 0.0);      // Upwind reletive direction for each face
-  perpendicular_flag.resize (this->polygonVertices.size(), 0);
+  Lr_face.resize (polygonVertices.size(), -1.0);       // Length of wake for each face
+  Lr_node.resize (polygonVertices.size(), 0.0);       // Length of wake for each node
+  perpendicular_flag.resize (polygonVertices.size(), 0);
   float z_build;            // z value of each building point from its base height
   float yc, xc;
   float Lr_local, Lr_local_u, Lr_local_v, Lr_local_w;   // Local length of the wake for each velocity component
@@ -302,14 +266,8 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
   std::vector<double> u0_modified, v0_modified;
   std::vector<int> u0_mod_id, v0_mod_id;
 
-  for (auto id=0; id<this->polygonVertices.size()-1; id++)
+  for (auto id=0; id<polygonVertices.size()-1; id++)
   {
-    // Calculate upwind reletive direction for each face
-    upwind_rel_dir[id] = atan2(yi[id+1]-yi[id],xi[id+1]-xi[id])+0.5*M_PI;
-    if (upwind_rel_dir[id] > M_PI+0.0001)
-    {
-      upwind_rel_dir[id] -= 2*M_PI;
-    }
     // Finding faces that are eligible for applying the far-wake parameterizations
     // angle between two points should be in -180 to 0 degree
     if ( abs(upwind_rel_dir[id]) < 0.5*M_PI)
@@ -320,19 +278,20 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
       if (abs(upwind_rel_dir[id]) < tol)
       {
         perpendicular_flag[id]= 1;
+        x_wall = xi[id];
       }
     }
   }
 
   Lr_ave = total_seg_length = 0.0;
   // This loop interpolates the value of Lr for eligible faces to nodes of those faces
-  for (auto id=0; id<this->polygonVertices.size()-1; id++)
+  for (auto id=0; id<polygonVertices.size()-1; id++)
   {
     // If the face is eligible for parameterization
     if (Lr_face[id] > 0.0)
     {
-      index_previous = (id+this->polygonVertices.size()-2)%(this->polygonVertices.size()-1);     // Index of previous face
-      index_next = (id+1)%(this->polygonVertices.size()-1);           // Index of next face
+      index_previous = (id+polygonVertices.size()-2)%(polygonVertices.size()-1);     // Index of previous face
+      index_next = (id+1)%(polygonVertices.size()-1);           // Index of next face
       if (Lr_face[index_previous] < 0.0 && Lr_face[index_next] < 0.0)
       {
         Lr_node[id] = Lr_face[id];
@@ -357,8 +316,8 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
       total_seg_length += (yi[id]-yi[index_next]);
     }
 
-    if ((this->polygonVertices[id+1].x_poly > this->polygonVertices[0].x_poly-0.1) && (this->polygonVertices[id+1].x_poly < this->polygonVertices[0].x_poly+0.1)
-         && (this->polygonVertices[id+1].y_poly > this->polygonVertices[0].y_poly-0.1) && (this->polygonVertices[id+1].y_poly < this->polygonVertices[0].y_poly+0.1))
+    if ((polygonVertices[id+1].x_poly > polygonVertices[0].x_poly-0.1) && (polygonVertices[id+1].x_poly < polygonVertices[0].x_poly+0.1)
+         && (polygonVertices[id+1].y_poly > polygonVertices[0].y_poly-0.1) && (polygonVertices[id+1].y_poly < polygonVertices[0].y_poly+0.1))
     {
       stop_id = id;
       break;
@@ -387,11 +346,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
         {
           yc = yi[id]-0.5*y_id*UGD->dxy;
           Lr_local = Lr_node[id]+(yc-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
-          if(perpendicular_flag[id] > 0)
-          {
-            x_wall = xi[id];
-          }
-          else
+          if(perpendicular_flag[id] == 0)
           {
             x_wall = ((xi[id+1]-xi[id])/(yi[id+1]-yi[id]))*(yc-yi[id])+xi[id];
           }
@@ -414,8 +369,8 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
             {
               break;
             }
-            icell_cent = i+j*(UGD->nx-1)+kk*(UGD->nx-1)*(UGD->ny-1);
-            if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2 && x_id_min < 0)
+            int icell_cent = i+j*(UGD->nx-1)+kk*(UGD->nx-1)*(UGD->ny-1);
+            if (UGD->icellflag[icell_cent] != 0 && x_id_min < 0)
             {
               x_id_min = x_id;
             }
@@ -439,7 +394,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
               break;
             }
             icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
-            if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2 && x_id_min < 0)
+            if (UGD->icellflag[icell_cent] != 0 && x_id_min < 0)
             {
               x_id_min = x_id;
             }
@@ -455,9 +410,9 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
                 }
               }
             }
-            icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
+            int icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
 
-            if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
+            if (UGD->icellflag[icell_cent] != 0)
             {
               i_u = std::round(((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx);
               j_u = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy;
@@ -495,7 +450,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
                 }
                 icell_cent = i_u + j_u*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
                 icell_face = i_u + j_u*UGD->nx+k*UGD->nx*UGD->ny;
-                if (dn_u > 0.0 && u_wake_flag == 1 && yu <= yi[id] && yu >= yi[id+1] && UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
+                if (dn_u > 0.0 && u_wake_flag == 1 && yu <= yi[id] && yu >= yi[id+1] && UGD->icellflag[icell_cent] != 0)
                 {
                   // Far wake zone
                   if (xu > dn_u)
@@ -554,7 +509,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
                 }
                 icell_cent = i_v + j_v*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
                 icell_face = i_v + j_v*UGD->nx+k*UGD->nx*UGD->ny;
-                if (dn_v > 0.0 && v_wake_flag == 1 && yv <= yi[id] && yv >= yi[id+1] && UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
+                if (dn_v > 0.0 && v_wake_flag == 1 && yv <= yi[id] && yv >= yi[id+1] && UGD->icellflag[icell_cent] != 0)
                 {
                   // Far wake zone
                   if (xv > dn_v)
@@ -609,7 +564,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
                 icell_cent = i_w + j_w*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
                 icell_face = i_w + j_w*UGD->nx+k*UGD->nx*UGD->ny;
                 //std::cout << "dn_w:    "  << dn_w << std::endl;
-                if (dn_w > 0.0 && w_wake_flag == 1 && yw <= yi[id] && yw >= yi[id+1] && UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
+                if (dn_w > 0.0 && w_wake_flag == 1 && yw <= yi[id] && yw >= yi[id+1] && UGD->icellflag[icell_cent] != 0)
                 {
                   if (xw > dn_w)
                   {
@@ -617,7 +572,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
                     {
                       if (UGD->icellflag[icell_cent] == 4)
                       {
-                        UGD->icellflag[icell_cent] = 12;
+                        UGD->icellflag[icell_cent] = 8;
                       }
                       else
                       {
@@ -657,4 +612,275 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
   v0_mod_id.clear();
   u0_modified.clear();
   v0_modified.clear();
+}
+
+
+
+
+
+
+/**
+*
+* This function applies the upwind cavity in front of the building to buildings defined as polygons.
+* This function reads in building features like nodes, building height and base height and uses
+* features of the building defined in the class constructor and setCellsFlag function. It defines
+* cells in the upwind area and applies the approperiate parameterization to them.
+* More information: "Improvements to a fast-response urban wind model, M. Nelson et al. (2008)"
+*
+*/
+void PolyBuilding::upwindCavity (const URBInputData* UID, URBGeneralData* UGD)
+{
+  float tol = 10.0*M_PI/180.0;         // Upwind cavity is applied if the angle
+                                       // is in 10 degree of the perpendicular direction
+  float retarding_factor = 0.4;        // In the outer region, velocities are reduced by 40% (Bagal et al. (2004))
+  float height_factor = 0.6;           // Height of both elipsoids (inner and outer) extends to 0.6H
+  float length_factor = 0.4;
+  int k_top;
+  float uh_rotation, vh_rotation;     // Velocity components at the height of the building after rotation
+  float vortex_height;
+  float retarding_height;
+  float x_average, y_average;
+  int upwind_i_start, upwind_i_end, upwind_j_start, upwind_j_end;
+  float z_front;
+  float x_u, y_u, x_v, y_v, x_w, y_w;
+  float x_intersect_u, x_ellipse_u, xrz_u;
+  float x_intersect_v, x_ellipse_v, xrz_v;
+  float x_intersect_w, x_ellipse_w;
+  float rz_end;
+  float u_rotation, v_rotation;
+  std::vector<float> perpendicular_dir;
+  std::vector<float> effective_gamma;
+  std::vector<float> face_length;
+  std::vector<float> Lf_face;
+
+  xf1.resize (polygonVertices.size(),0.0);
+  xf2.resize (polygonVertices.size(),0.0);
+  yf1.resize (polygonVertices.size(),0.0);
+  yf2.resize (polygonVertices.size(),0.0);
+  perpendicular_dir.resize (polygonVertices.size(), 0.0);
+  effective_gamma.resize (polygonVertices.size(), 0.0);
+  int counter = 0;
+
+  for (auto id=0; id<polygonVertices.size()-1; id++)
+  {
+    xf1[id] = 0.5*(polygonVertices[id].x_poly-polygonVertices[id+1].x_poly)*cos(upwind_dir)+
+              0.5*(polygonVertices[id].y_poly-polygonVertices[id+1].y_poly)*sin(upwind_dir);
+    yf1[id] = -0.5*(polygonVertices[id].x_poly-polygonVertices[id+1].x_poly)*sin(upwind_dir)+
+              0.5*(polygonVertices[id].y_poly-polygonVertices[id+1].y_poly)*cos(upwind_dir);
+    xf2[id] = 0.5*(polygonVertices[id+1].x_poly-polygonVertices[id].x_poly)*cos(upwind_dir)+
+              0.5*(polygonVertices[id+1].y_poly-polygonVertices[id].y_poly)*sin(upwind_dir);
+    yf2[id] = -0.5*(polygonVertices[id+1].x_poly-polygonVertices[id].x_poly)*sin(upwind_dir)+
+              0.5*(polygonVertices[id+1].y_poly-polygonVertices[id].y_poly)*cos(upwind_dir);
+
+    if (abs(upwind_rel_dir[id]) > M_PI-tol)
+    {
+      perpendicular_dir[id] = atan2(polygonVertices[id+1].y_poly-polygonVertices[id].y_poly,polygonVertices[id+1].x_poly-polygonVertices[id].x_poly)+0.5*M_PI;
+      if (perpendicular_dir[id] <= -M_PI)
+      {
+        perpendicular_dir[id] += 2*M_PI;
+      }
+
+      if (perpendicular_dir[id] >= 0.75*M_PI)
+      {
+        effective_gamma[id] = perpendicular_dir[id]-M_PI;
+      }
+      else if (perpendicular_dir[id] >= 0.25*M_PI)
+      {
+        effective_gamma[id] = perpendicular_dir[id]-0.5*M_PI;
+      }
+      else if (perpendicular_dir[id] < -0.75*M_PI)
+      {
+        effective_gamma[id] = perpendicular_dir[id]+M_PI;
+      }
+      else if (perpendicular_dir[id] < -0.25*M_PI)
+      {
+        effective_gamma[id] = perpendicular_dir[id]+0.5*M_PI;
+      }
+      uh_rotation = u0_h*cos(effective_gamma[id])+v0_h*sin(effective_gamma[id]);
+      vh_rotation = -u0_h*sin(effective_gamma[id])+v0_h*cos(effective_gamma[id]);
+      face_length.push_back(sqrt(pow(xi[id+1]-xi[id],2.0)+pow(yi[id+1]-yi[id],2.0)));
+      Lf_face.push_back(abs(UGD->lengthf_coeff*face_length[counter]*cos(upwind_rel_dir[id])/(1+0.8*face_length[counter]/height_eff)));
+      // High-rise Modified Vortex Parameterization (HMVP) (Bagal et al. (2004))
+      if (UID->simParams->upwindCavityFlag == 3)
+      {
+        vortex_height = MIN_S(face_length[counter],height_eff);
+        retarding_height = height_eff;
+      }
+      else
+      {
+        vortex_height = height_eff;
+        retarding_height = height_eff;
+      }
+      // Defining index related to the height that upwind cavity is being applied
+      for (auto k=k_start; k<UGD->z.size(); k++)
+      {
+        k_top = k+1;
+        if (height_factor*retarding_height + base_height <= UGD->z[k])
+        {
+          break;
+        }
+      }
+      // Defining limits of the upwind cavity in x and y directions
+      upwind_i_start = MAX_S(std::round(MIN_S(polygonVertices[id].x_poly, polygonVertices[id+1].x_poly)/UGD->dx)-std::round(Lf_face[counter]/UGD->dx)-1, 1);
+      upwind_i_end = MIN_S(std::round(MAX_S(polygonVertices[id].x_poly, polygonVertices[id+1].x_poly)/UGD->dx)+std::round(Lf_face[counter]/UGD->dx), UGD->nx-2);
+      upwind_j_start = MAX_S(std::round(MIN_S(polygonVertices[id].y_poly, polygonVertices[id+1].y_poly)/UGD->dy)-std::round(Lf_face[counter]/UGD->dy)-1, 1);
+      upwind_j_end = MIN_S(std::round(MAX_S(polygonVertices[id].y_poly, polygonVertices[id+1].y_poly)/UGD->dy)+std::round(Lf_face[counter]/UGD->dy), UGD->ny-2);
+      x_average = 0.5*(polygonVertices[id].x_poly+polygonVertices[id+1].x_poly);        // x-location of middle of the face
+      y_average = 0.5*(polygonVertices[id].y_poly+polygonVertices[id+1].y_poly);        // y-location of middle of the face
+
+      // Apply the upwind parameterization
+      for (auto k=k_start; k<k_top; k++)
+      {
+        z_front = UGD->z[k]-base_height;            // Height from the base of the building
+        for (auto i=upwind_i_start; i<upwind_i_end; i++)
+        {
+          for (auto j=upwind_j_start; j<upwind_j_end; j++)
+          {
+            x_u = (i*UGD->dx-x_average)*cos(upwind_dir)+((j+0.5)*UGD->dy-y_average)*sin(upwind_dir);      // x-location of u velocity
+            y_u = -(i*UGD->dx-x_average)*sin(upwind_dir)+((j+0.5)*UGD->dy-y_average)*cos(upwind_dir);     // y-location of u velocity
+            x_v = ((i+0.5)*UGD->dx-x_average)*cos(upwind_dir)+(j*UGD->dy-y_average)*sin(upwind_dir);      // x-location of v velocity
+            y_v = -((i+0.5)*UGD->dx-x_average)*sin(upwind_dir)+(j*UGD->dy-y_average)*cos(upwind_dir);      // y-location of v velocity
+            x_w = ((i+0.5)*UGD->dx-x_average)*cos(upwind_dir)+((j+0.5)*UGD->dy-y_average)*sin(upwind_dir);      // x-location of w velocity
+            y_w = -((i+0.5)*UGD->dx-x_average)*sin(upwind_dir)+((j+0.5)*UGD->dy-y_average)*cos(upwind_dir);     // y-location of w velocity
+
+            if ( (abs(y_u)<=abs(yf2[id])) && (height_factor*vortex_height>z_front))
+            {
+              // Intersection of a parallel line to the line goes through (xf1,yf1) and (xf2,yf2) and the y=y_u
+              x_intersect_u = ((xf2[id]-xf1[id])/(yf2[id]-yf1[id]))*(y_u-yf1[id])+xf1[id];
+              //
+              x_ellipse_u = -Lf_face[counter]*sqrt((1-pow(y_u/abs(yf2[id]), 2.0))*(1-pow(z_front/(height_factor*vortex_height), 2.0)));
+              xrz_u = -Lf_face[counter]*sqrt((1-pow(y_u/abs(yf2[id]), 2.0))*(1-pow(z_front/(height_factor*retarding_height), 2.0)));
+              rz_end = length_factor*x_ellipse_u;
+              icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
+              icell_face = i+j*UGD->nx+k*UGD->nx*UGD->ny;
+              if (UID->simParams->upwindCavityFlag == 1)            // Rockle parameterization
+              {
+                if ( (x_u-x_intersect_u>=x_ellipse_u) && (x_u-x_intersect_u<=0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0))
+                {
+                  UGD->u0[icell_face] = 0.0;
+                }
+              }
+              else
+              {
+                if ( (x_u-x_intersect_u>=xrz_u) && (x_u-x_intersect_u<=rz_end) && (UGD->icellflag[icell_cent] != 0))
+                {
+                  if (UID->simParams->upwindCavityFlag == 3)        // High-rise Modified Vortex Parameterization (HMVP) (Bagal et al. (2004))
+                  {
+                    UGD->u0[icell_face] *= ((x_u-x_intersect_u-xrz_u)*(retarding_factor-1.0)/(rz_end-xrz_u)+1.0);
+                  }
+                  else          // Modified Vortex Parameterization (MVP)
+                  {
+                    UGD->u0[icell_face] *= retarding_factor;
+                  }
+                }
+                if ( (x_u-x_intersect_u >= length_factor*x_ellipse_u) && (x_u-x_intersect_u <= 0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0))
+                {
+                  u_rotation = UGD->u0[icell_face]*cos(effective_gamma[id]);
+                  v_rotation = UGD->u0[icell_face]*sin(effective_gamma[id]);
+                  if (abs(upwind_rel_dir[id]) >= 0.25*M_PI && abs(upwind_rel_dir[id]) <= 0.75*M_PI)
+                  {
+                    v_rotation = -vh_rotation*(-height_factor*cos(M_PI*z_front/(0.5*vortex_height))+0.05)
+                                  *(-height_factor*sin(M_PI*abs(x_u-x_intersect_u)/(length_factor*Lf_face[counter])));
+                  }
+                  else
+                  {
+                    u_rotation = -uh_rotation*(-height_factor*cos(M_PI*z_front/(0.5*vortex_height))+0.05)
+                                  *(-height_factor*sin(M_PI*abs(x_u-x_intersect_u)/(length_factor*Lf_face[counter])));
+                  }
+                  UGD->u0[icell_face] = u_rotation*cos(-effective_gamma[id])+v_rotation*sin(-effective_gamma[id]);
+                }
+              }
+            }
+            // v velocity
+            if ( (abs(y_v)<=abs(yf2[id])) && (height_factor*vortex_height>z_front))
+            {
+              x_intersect_v = ((xf2[id]-xf1[id])/(yf2[id]-yf1[id]))*(y_v-yf1[id])+xf1[id];
+              x_ellipse_v = -Lf_face[counter]*sqrt((1-pow(y_v/abs(yf2[id]), 2.0))*(1-pow(z_front/(height_factor*vortex_height), 2.0)));
+              xrz_v = -Lf_face[counter]*sqrt((1-pow(y_v/abs(yf2[id]), 2.0))*(1-pow(z_front/(height_factor*retarding_height), 2.0)));
+              rz_end = length_factor*x_ellipse_v;
+              icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
+              icell_face = i+j*UGD->nx+k*UGD->nx*UGD->ny;
+              if (UID->simParams->upwindCavityFlag == 1)        // Rockle parameterization
+              {
+                if ( (x_v-x_intersect_v>=x_ellipse_v) && (x_v-x_intersect_v<=0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0))
+                {
+                  UGD->v0[icell_face] = 0.0;
+                }
+              }
+              else
+              {
+                if ( (x_v-x_intersect_v>=xrz_v) && (x_v-x_intersect_v<=rz_end) && (UGD->icellflag[icell_cent] != 0))
+                {
+                  if (UID->simParams->upwindCavityFlag == 3)      // High-rise Modified Vortex Parameterization (HMVP) (Bagal et al. (2004))
+                  {
+                    UGD->v0[icell_face] *= ((x_v-x_intersect_v-xrz_v)*(retarding_factor-1.0)/(rz_end-xrz_v)+1.0);
+                  }
+                  else            // Modified Vortex Parameterization (MVP)
+                  {
+                    UGD->v0[icell_face] *= retarding_factor;
+                  }
+                }
+                if ( (x_v-x_intersect_v >= length_factor*x_ellipse_v) && (x_v-x_intersect_v <= 0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0))
+                {
+                  u_rotation = UGD->v0[icell_face]*cos(effective_gamma[id]);
+                  v_rotation = UGD->v0[icell_face]*sin(effective_gamma[id]);
+                  if (abs(upwind_rel_dir[id]) >= 0.25*M_PI && abs(upwind_rel_dir[id]) <= 0.75*M_PI)
+                  {
+                    v_rotation = -vh_rotation*(-height_factor*cos(M_PI*z_front/(0.5*vortex_height))+0.05)
+                                  *(-height_factor*sin(M_PI*abs(x_v-x_intersect_v)/(length_factor*Lf_face[counter])));
+                  }
+                  else
+                  {
+                    u_rotation = -uh_rotation*(-height_factor*cos(M_PI*z_front/(0.5*vortex_height))+0.05)
+                                  *(-height_factor*sin(M_PI*abs(x_v-x_intersect_v)/(length_factor*Lf_face[counter])));
+                  }
+                  UGD->v0[icell_face] = -u_rotation*sin(-effective_gamma[id])+v_rotation*cos(-effective_gamma[id]);
+                }
+              }
+            }
+
+            // w velocity
+            if ( (abs(y_w)<=abs(yf2[id])) && (height_factor*vortex_height>z_front))
+            {
+              x_intersect_w = ((xf2[id]-xf1[id])/(yf2[id]-yf1[id]))*(y_w-yf1[id])+xf1[id];
+              x_ellipse_w = -Lf_face[counter]*sqrt((1-pow(y_w/abs(yf2[id]), 2.0))*(1-pow(z_front/(height_factor*vortex_height), 2.0)));
+              icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
+              icell_face = i+j*UGD->nx+k*UGD->nx*UGD->ny;
+              if (UID->simParams->upwindCavityFlag == 1)        // Rockle parameterization
+              {
+                if ( (x_w-x_intersect_w>=x_ellipse_w) && (x_w-x_intersect_w<=0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0))
+                {
+                  UGD->w0[icell_face] = 0.0;
+                  if (i < UGD->nx-1 && j < UGD->ny-1 && k < UGD->nz-2)
+                  {
+                    UGD->icellflag[icell_cent] = 3;
+                  }
+                }
+              }
+              else
+              {
+                if ( (x_w-x_intersect_w>=x_ellipse_w) && (x_w-x_intersect_w < length_factor*x_ellipse_w) && (UGD->icellflag[icell_cent] != 0))
+                {
+                  UGD->v0[icell_face] *= retarding_factor;
+                  if (i < UGD->nx-1 && j < UGD->ny-1 && k < UGD->nz-2)
+                  {
+                    UGD->icellflag[icell_cent] = 3;
+                  }
+                }
+                if ( (x_w-x_intersect_w >= length_factor*x_ellipse_w) && (x_w-x_intersect_w <= 0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0))
+                {
+                  UGD->w0[icell_face] = -sqrt(pow(u0_h,2.0)+pow(v0_h,2.0))*(0.1*cos(M_PI*abs(x_w-x_intersect_w)/(length_factor*Lf_face[counter]))-0.05);
+                  if (i < UGD->nx-1 && j < UGD->ny-1 && k < UGD->nz-2)
+                  {
+                    UGD->icellflag[icell_cent] = 3;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      counter += 1;
+    }
+  }
 }

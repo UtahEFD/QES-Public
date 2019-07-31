@@ -33,7 +33,7 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
     unsigned int num_crossing, vert_id, start_poly;
 
     // Define start index of the canopy in z-direction
-    for (auto k=1u; k<UGD->z.size(); k++)
+    for (auto k=1; k<UGD->z.size(); k++)
     {
         k_start = k;
         if (base_height <= UGD->z[k])
@@ -44,7 +44,7 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
 
     // Define end index of the canopy in z-direction   Note that 0u
     // means 0 unsigned
-    for (auto k=0u; k<UGD->z.size(); k++)
+    for (auto k=0; k<UGD->z.size(); k++)
     {
         k_end = k+1;
         if (base_height+H < UGD->z[k+1])
@@ -56,7 +56,7 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
     // Loop to calculate maximum and minimum of x and y values of the building
     x_min = x_max = polygonVertices[0].x_poly;
     y_min = x_max = polygonVertices[0].y_poly;
-    for (auto id=1u; id<polygonVertices.size(); id++)
+    for (auto id=1; id<polygonVertices.size(); id++)
     {
         if (polygonVertices[id].x_poly > x_max)
         {
@@ -129,9 +129,9 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
         }
     }
 
-    for (auto j=j_start; j<j_end; j++)
+    for (auto j=j_start; j<j_end-1; j++)
     {
-        for (auto i=i_start; i<i_end; i++)
+        for (auto i=i_start; i<i_end-1; i++)
         {
             for (auto k=k_start; k<k_end; k++)
             {
@@ -161,9 +161,9 @@ void Canopy::plantInitial(URBGeneralData* UGD)
     // Call regression to define ustar and surface roughness of the canopy
     regression(UGD);
 
-    for (auto j=j_start; j<j_end; j++)
+    for (auto j=j_start; j<j_end-1; j++)
     {
-        for (auto i=i_start; i<i_end; i++)
+        for (auto i=i_start; i<i_end-1; i++)
         {
             int id = i+j*(UGD->nx-1);
             if (UGD->canopy_top[id] > 0)
@@ -172,6 +172,8 @@ void Canopy::plantInitial(URBGeneralData* UGD)
                 int icell_cent = i+j*(UGD->nx-1)+UGD->canopy_top_index[id]*(UGD->nx-1)*(UGD->ny-1);
                 UGD->canopy_d[id] = UGD->canopyBisection(UGD->canopy_ustar[id],UGD->canopy_z0[id], UGD->canopy_top[id],
                                                          UGD->canopy_atten[icell_cent],UGD->vk,0.0);
+                //std::cout << "UGD->vk:" << UGD->vk << "\n";
+                //std::cout << "UGD->canopy_atten[icell_cent]:" << UGD->canopy_atten[icell_cent] << "\n";
                 if (UGD->canopy_d[id] == 10000)
                 {
                     std::cout << "bisection failed to converge" << "\n";
@@ -269,9 +271,9 @@ void Canopy::regression(URBGeneralData* UGD)
     float sum_x, sum_y, sum_xy, sum_x_sq, local_mag;
     float y, xm, ym;
 
-    for (auto j=j_start; j<j_end; j++)
+    for (auto j=j_start; j<j_end-1; j++)
     {
-        for (auto i=i_start; i<i_end; i++)
+        for (auto i=i_start; i<i_end-1; i++)
         {
             int id = i+j*(UGD->nx-1);
             if (UGD->canopy_top[id] > 0)

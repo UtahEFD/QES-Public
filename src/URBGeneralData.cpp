@@ -3,6 +3,16 @@
 URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     : output( cudaOutput )
 {
+
+    if ( UID->simParams->upwindCavityFlag == 1)
+    {
+      lengthf_coeff = 2.0;
+    }
+    else
+    {
+      lengthf_coeff = 1.5;
+    }
+
     // Determines how wakes behind buildings are calculated
     if ( UID->simParams->wakeFlag > 1)
     {
@@ -250,7 +260,9 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
                         // ////////////////////////////////
                         // Stair-step (original QUIC)    //
                         // ////////////////////////////////
-                        int icell_cent = i+j*(nx-1)+(k+1)*(nx-1)*(ny-1);
+                        int ii = i+UID->simParams->halo_x/dx;
+                        int jj = j+UID->simParams->halo_y/dy;
+                        int icell_cent = ii+jj*(nx-1)+(k+1)*(nx-1)*(ny-1);
                         icellflag[icell_cent] = 2;
                     }
                 }
@@ -350,7 +362,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
 
         std::cout << "Creating buildings from shapefile...\n";
         // Loop to create each of the polygon buildings read in from the shapefile
-        for (auto pIdx = 0u; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
+        for (auto pIdx = 0; pIdx< UID->simParams->shpPolygons.size(); pIdx++)
         {
             // Create polygon buildings
             // Pete needs to move this into URBInputData processing BUT
@@ -358,6 +370,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
             // needs to be pushed back onto buildings within the
             // UID->buildings structures...
             allBuildingsV.push_back (new PolyBuilding (UID, this, pIdx));
+            allBuildingsV[pIdx]->setPolyBuilding(this);
+            allBuildingsV[pIdx]->setCellFlags(UID, this);
         }
     }
 
@@ -371,8 +385,10 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     {
       for (int i = 0; i < UID->canopies->canopies.size(); i++)
       {
-          allBuildingsV.push_back( UID->canopies->canopies[i]  );
+          allBuildingsV.push_back( UID->canopies->canopies[i] );
       }
+    }
+
 
     // Add all the Building* that were read in from XML to this list
     // too -- could be RectBuilding, PolyBuilding, whatever is derived
@@ -382,30 +398,17 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
       for (int i = 0; i < UID->buildings->buildings.size(); i++)
       {
           allBuildingsV.push_back( UID->buildings->buildings[i] );
-          //effective_height.push_back( allBuildingsV[allBuildingsV.size()]->height_eff );
-          //base_height.push_back( allBuildingsV[allBuildingsV.size()]->base_height );
+          int j = allBuildingsV.size()-1;
+          allBuildingsV[j]->setPolyBuilding(this);
+          allBuildingsV[j]->setCellFlags(UID, this);
       }
     }
-
-    
-    // for all buildings, calculate polygon area scales
-    // Benham will fill this in...
-      
 
     // We want to sort ALL buildings here...  use the allBuildingsV to
     // do this... (remember some are canopies) so we may need a
     // virtual function in the Building class to get the appropriate
     // data for the sort.
     mergeSort( allBuildingsV );
-
-    /// all cell flags should be specific to the TYPE ofbuilding
-    // class: canopy, rectbuilding, polybuilding, etc...
-    // should setcellflags be part of the .. should be part of URBGeneralD
-    for (int i = 0; i < allBuildingsV.size(); i++)
-    {
-      // for now this does the canopy stuff for us
-      allBuildingsV[i]->setCellFlags(UID, this);
-    }
 
     // ///////////////////////////////////////
     // Generic Parameterization Related Stuff
@@ -416,16 +419,26 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
       allBuildingsV[i]->canopyVegetation(this);
     }
 
+    std::cout << "Applying upwind cavity parameterization...\n";
+    for (int i = 0; i < allBuildingsV.size(); i++)
+    {
+      if (UID->simParams->upwindCavityFlag > 0)
+      {
+        allBuildingsV[i]->upwindCavity(UID, this);
+      }
+    }
+    std::cout << "Upwind cavity parameterization done...\n";
+
+    std::cout << "Applying wake behind building parameterization...\n";
     for (int i = 0; i < allBuildingsV.size(); i++)
     {
       if (UID->simParams->wakeFlag > 0)
       {
-        std::cout << "Applying wake behind building parameterization...\n";
         // for now this does the canopy stuff for us
         allBuildingsV[i]->polygonWake(UID, this);
-        std::cout << "Wake behind building parameterization done...\n";
       }
     }
+    std::cout << "Wake behind building parameterization done...\n";
 
 
 
@@ -570,23 +583,22 @@ void URBGeneralData::mergeSort( std::vector<Building*> allBuildingsV )
     {
       //make left and right sides of the data
       std::vector<Building*> allBuildingsV_L, allBuildingsV_R;
-      allBuildingsV.resize(allBuildingsV.size() / 2);
-      allBuildingsV.resize(allBuildingsV.size() - allBuildingsV.size()/2);
+      allBuildingsV_L.resize(allBuildingsV.size() / 2);
+      allBuildingsV_R.resize(allBuildingsV.size() - allBuildingsV.size()/2);
 
       //copy data from the main data set to the left and right children
       int lC = 0, rC = 0;
-      for (unsigned int i = 0; i < allBuildingsV.size(); i++)
+      for (auto i = 0; i < allBuildingsV.size(); i++)
       {
           if (i < allBuildingsV.size() / 2)
           {
-              allBuildingsV_L[lC] = allBuildingsV[i];
+              allBuildingsV_L[lC++] = allBuildingsV[i];
           }
           else
           {
-              allBuildingsV_R[rC] = allBuildingsV[i];
+              allBuildingsV_R[rC++] = allBuildingsV[i];
           }
       }
-
       //recursively sort the children
       mergeSort( allBuildingsV_L );
       mergeSort( allBuildingsV_R );
@@ -598,11 +610,11 @@ void URBGeneralData::mergeSort( std::vector<Building*> allBuildingsV )
           if (rC == allBuildingsV_R.size() || ( lC != allBuildingsV_L.size() &&
                                          allBuildingsV_L[lC]->height_eff > allBuildingsV_R[rC]->height_eff))
           {
-              allBuildingsV[i] = allBuildingsV_L[lC];
+              allBuildingsV[i] = allBuildingsV_L[lC++];
           }
           else
           {
-              allBuildingsV[i] = allBuildingsV_R[rC];
+              allBuildingsV[i] = allBuildingsV_R[rC++];
           }
       }
     }
@@ -615,8 +627,10 @@ void URBGeneralData::mergeSort( std::vector<Building*> allBuildingsV )
 
 float URBGeneralData::canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m)
 {
+
     int iter;
-    float tol, uhc, d, d1, d2, fi, fnew;
+    float  uhc, d, d1, d2;
+    double tol, fnew, fi;
 
     tol = z0/100;
     fnew = tol*10;
@@ -650,6 +664,7 @@ float URBGeneralData::canopyBisection(float ustar, float z0, float canopy_top, f
         {
             d = 10000;
         }
+
     }
     else
     {

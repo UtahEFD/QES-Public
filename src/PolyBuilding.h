@@ -7,7 +7,7 @@
 #include "util/ParseInterface.h"
 
 #include "Building.h"
-#include "PolygonVertex.h"
+
 
 using namespace std;
 using std::cerr;
@@ -38,9 +38,11 @@ protected:
     float x_cent, y_cent;                  /**< Coordinates of center of a cell */
     float polygon_area;                    /**< Polygon area */
     std::vector<float> xi, yi;
+    std::vector<float> xf1, yf1, xf2, yf2;
     int icell_cent, icell_face;
     float x1, x2, y1, y2;
-    std::vector <polyVert> polygonVertices;
+    std::vector<float> upwind_rel_dir;
+
 
 public:
 
@@ -54,23 +56,6 @@ public:
     virtual ~PolyBuilding()
     {
     }
-
-    /**
-    *
-    * Converts data about rect building into something that poly can
-    * building can use
-    *
-    * This constructor creates a polygon type building using
-    * rectangular building information...
-    *
-    */
-    PolyBuilding( const URBInputData* UID, URBGeneralData* UGD, float x_start,
-                  float y_start, float base_height, float L, float W, float H,
-                  float building_rotation);
-
-
-    PolyBuilding( float x_start, float y_start, float base_height, float L, float W,
-                  float H, float canopy_rotation, const URBInputData* UID, URBGeneralData* UGD);
 
 
     /**
@@ -94,7 +79,7 @@ public:
     /**
      *
      */
-    void setPolybuilding(int nx, int ny, float dx, float dy, std::vector<double> &u0, std::vector<double> &v0, std::vector<float> z);
+    void setPolyBuilding(URBGeneralData* UGD);
 
 
     /**
@@ -107,6 +92,17 @@ public:
 
     /**
     *
+    * This function applies the upwind cavity in front of the building to buildings defined as polygons.
+    * This function reads in building features like nodes, building height and base height and uses
+    * features of the building defined in the class constructor and setCellsFlag function. It defines
+    * cells in the upwind area and applies the approperiate parameterization to them.
+    * More information: "Improvements to a fast-response urban wind model, M. Nelson et al. (2008)"
+    *
+    */
+    void upwindCavity (const URBInputData* UID, URBGeneralData* UGD);
+
+    /**
+    *
     * This function applies wake behind the building parameterization to buildings defined as polygons.
     * The parameterization has two parts: near wake and far wake. This function reads in building features
     * like nodes, building height and base height and uses features of the building defined in the class
@@ -115,5 +111,8 @@ public:
     *
     */
     void polygonWake (const URBInputData* UID, URBGeneralData* UGD);
+
+
+
 
 };

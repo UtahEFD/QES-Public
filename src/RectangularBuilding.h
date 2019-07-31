@@ -29,13 +29,6 @@ public:
 
 	}
 
-	RectangularBuilding(const URBInputData *UID, URBGeneralData *UGD)
-            : PolyBuilding(UID, UGD, x_start, y_start, base_height, L, W, H, building_rotation)  // correct poly building
-                                            // constructor gets called...
-	{
-            // This doesn't work yet!
-	}
-
 	virtual void parseValues()
 	{
             // Extract important XML stuff
@@ -59,19 +52,19 @@ public:
 
             // ?????  maybe ignore or hard code here??? until we get a
             // reference back to the Root XML
-            x_start += UID->simParams->halo_x;
-            y_start += UID->simParams->halo_y;
-            
+            //x_start += UID->simParams->halo_x;
+            //y_start += UID->simParams->halo_y;
+
             building_rotation *= M_PI/180.0;
-            this->polygonVertices.resize (5);
-            this->polygonVertices[0].x_poly = this->polygonVertices[4].x_poly = x_start;
-            this->polygonVertices[0].y_poly = this->polygonVertices[4].y_poly = y_start;
-            this->polygonVertices[1].x_poly = x_start-W*sin(building_rotation);
-            this->polygonVertices[1].y_poly = y_start+W*cos(building_rotation);
-            this->polygonVertices[2].x_poly = this->polygonVertices[1].x_poly+L*cos(building_rotation);
-            this->polygonVertices[2].y_poly = this->polygonVertices[1].y_poly+L*sin(building_rotation);
-            this->polygonVertices[3].x_poly = x_start+L*cos(building_rotation);
-            this->polygonVertices[3].y_poly = y_start+L*sin(building_rotation);
+            polygonVertices.resize (5);
+            polygonVertices[0].x_poly = polygonVertices[4].x_poly = x_start;
+            polygonVertices[0].y_poly = polygonVertices[4].y_poly = y_start;
+            polygonVertices[1].x_poly = x_start-W*sin(building_rotation);
+            polygonVertices[1].y_poly = y_start+W*cos(building_rotation);
+            polygonVertices[2].x_poly = polygonVertices[1].x_poly+L*cos(building_rotation);
+            polygonVertices[2].y_poly = polygonVertices[1].y_poly+L*sin(building_rotation);
+            polygonVertices[3].x_poly = x_start+L*cos(building_rotation);
+            polygonVertices[3].y_poly = y_start+L*sin(building_rotation);
 
             // This will now be process for ALL buildings...
             // extract the vertices from this definition here and make the

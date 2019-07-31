@@ -52,7 +52,7 @@
 
 
 </metParams>								<!-- End of meteorological parameters -->
-<!--canopies>
+<canopies>
 	<num_canopies> 1 </num_canopies>
 	<canopy>
 		<attenuationCoefficient> 1.97 </attenuationCoefficient>
@@ -62,9 +62,9 @@
 		<yStart> 90.0 </yStart>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
-		<canopyRotation> 20.0 </canopyRotation>
+		<canopyRotation> 0.0 </canopyRotation>
 	</canopy>
-</canopies-->
+</canopies>
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 
@@ -75,7 +75,7 @@
   <sensorVelocityFlag> 0 </sensorVelocityFlag>
   <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
-<buildings>
+<!--buildings>
 	<wallRoughness> 0.1 </wallRoughness>
 	<numBuildings> 1 </numBuildings>
 	<numPolygonNodes> 0 </numPolygonNodes>
@@ -88,4 +88,4 @@
 		<width> 20.0 </width>
 		<buildingRotation> 0.0 </buildingRotation>
 	</rectangularBuilding>
-</buildings>
+</buildings-->
