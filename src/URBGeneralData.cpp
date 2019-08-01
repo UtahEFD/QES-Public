@@ -352,7 +352,6 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
 
         for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
         {
-            effective_height.push_back (base_height[pIdx]+ UID->simParams->shpBuildingHeight[pIdx]);
             for (auto lIdx=0; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
             {
                 UID->simParams->shpPolygons[pIdx][lIdx].x_poly += UID->simParams->halo_x;
@@ -370,8 +369,10 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
             // needs to be pushed back onto buildings within the
             // UID->buildings structures...
             allBuildingsV.push_back (new PolyBuilding (UID, this, pIdx));
+            building_id.push_back(allBuildingsV.size()-1);
             allBuildingsV[pIdx]->setPolyBuilding(this);
             allBuildingsV[pIdx]->setCellFlags(UID, this);
+            effective_height.push_back (allBuildingsV[pIdx]->height_eff);
         }
     }
 
@@ -386,6 +387,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
       for (int i = 0; i < UID->canopies->canopies.size(); i++)
       {
           allBuildingsV.push_back( UID->canopies->canopies[i] );
+          effective_height.push_back(allBuildingsV[i]->height_eff);
+          building_id.push_back(allBuildingsV.size()-1);
       }
     }
 
@@ -399,8 +402,10 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
       {
           allBuildingsV.push_back( UID->buildings->buildings[i] );
           int j = allBuildingsV.size()-1;
+          building_id.push_back( j );
           allBuildingsV[j]->setPolyBuilding(this);
           allBuildingsV[j]->setCellFlags(UID, this);
+          effective_height.push_back(allBuildingsV[i]->height_eff);
       }
     }
 
@@ -408,15 +413,15 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     // do this... (remember some are canopies) so we may need a
     // virtual function in the Building class to get the appropriate
     // data for the sort.
-    mergeSort( allBuildingsV );
-
+    mergeSort( effective_height, allBuildingsV, building_id );
+    
     // ///////////////////////////////////////
     // Generic Parameterization Related Stuff
     // ///////////////////////////////////////
     for (int i = 0; i < allBuildingsV.size(); i++)
     {
       // for now this does the canopy stuff for us
-      allBuildingsV[i]->canopyVegetation(this);
+      allBuildingsV[building_id[i]]->canopyVegetation(this);
     }
 
     std::cout << "Applying upwind cavity parameterization...\n";
@@ -424,7 +429,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     {
       if (UID->simParams->upwindCavityFlag > 0)
       {
-        allBuildingsV[i]->upwindCavity(UID, this);
+        allBuildingsV[building_id[i]]->upwindCavity(UID, this);
       }
     }
     std::cout << "Upwind cavity parameterization done...\n";
@@ -435,7 +440,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
       if (UID->simParams->wakeFlag > 0)
       {
         // for now this does the canopy stuff for us
-        allBuildingsV[i]->polygonWake(UID, this);
+        allBuildingsV[building_id[i]]->polygonWake(UID, this);
       }
     }
     std::cout << "Wake behind building parameterization done...\n";
@@ -571,7 +576,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
 }
 
 
-void URBGeneralData::mergeSort( std::vector<Building*> allBuildingsV )
+void URBGeneralData::mergeSort( std::vector<float> &effective_height, std::vector<Building*> allBuildingsV, std::vector<int> &building_id)
 {
     //if the size of the array is 1, it is already sorted
     if ( allBuildingsV.size() == 1)
@@ -582,9 +587,15 @@ void URBGeneralData::mergeSort( std::vector<Building*> allBuildingsV )
     if ( allBuildingsV.size() > 1)
     {
       //make left and right sides of the data
+      std::vector<float> effective_height_L, effective_height_R;
+      std::vector<int> building_id_L, building_id_R;
       std::vector<Building*> allBuildingsV_L, allBuildingsV_R;
+      effective_height_L.resize(allBuildingsV.size() / 2);
+    	effective_height_R.resize(allBuildingsV.size() - allBuildingsV.size() / 2);
+      building_id_L.resize(allBuildingsV.size() / 2);
+      building_id_R.resize(allBuildingsV.size() - allBuildingsV.size()/2);
       allBuildingsV_L.resize(allBuildingsV.size() / 2);
-      allBuildingsV_R.resize(allBuildingsV.size() - allBuildingsV.size()/2);
+    	allBuildingsV_R.resize(allBuildingsV.size() - allBuildingsV.size() / 2);
 
       //copy data from the main data set to the left and right children
       int lC = 0, rC = 0;
@@ -592,29 +603,37 @@ void URBGeneralData::mergeSort( std::vector<Building*> allBuildingsV )
       {
           if (i < allBuildingsV.size() / 2)
           {
-              allBuildingsV_L[lC++] = allBuildingsV[i];
+              effective_height_L[lC] = effective_height[i];
+              allBuildingsV_L[lC] = allBuildingsV[i];
+              building_id_L[lC++] = building_id[i];
+
           }
           else
           {
-              allBuildingsV_R[rC++] = allBuildingsV[i];
+              effective_height_R[rC] = effective_height[i];
+              allBuildingsV_R[rC] = allBuildingsV[i];
+              building_id_R[rC++] = building_id[i];
+
           }
       }
       //recursively sort the children
-      mergeSort( allBuildingsV_L );
-      mergeSort( allBuildingsV_R );
+      mergeSort( effective_height_L, allBuildingsV_L, building_id_L );
+      mergeSort( effective_height_R, allBuildingsV_R, building_id_R );
 
       //compare the sorted children to place the data into the main array
       lC = rC = 0;
       for (unsigned int i = 0; i < allBuildingsV.size(); i++)
       {
-          if (rC == allBuildingsV_R.size() || ( lC != allBuildingsV_L.size() &&
-                                         allBuildingsV_L[lC]->height_eff > allBuildingsV_R[rC]->height_eff))
+          if (rC == effective_height_R.size() || ( lC != effective_height_L.size() &&
+              effective_height_L[lC] > effective_height_R[rC]))
           {
-              allBuildingsV[i] = allBuildingsV_L[lC++];
+              effective_height[i] = effective_height_L[lC];
+              building_id[i] = building_id_L[lC++];
           }
           else
           {
-              allBuildingsV[i] = allBuildingsV_R[rC++];
+              effective_height[i] = effective_height_R[rC];
+              building_id[i] = building_id_R[rC++];
           }
       }
     }

@@ -370,11 +370,11 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
               break;
             }
             int icell_cent = i+j*(UGD->nx-1)+kk*(UGD->nx-1)*(UGD->ny-1);
-            if (UGD->icellflag[icell_cent] != 0 && x_id_min < 0)
+            if ( UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2 && x_id_min < 0)
             {
               x_id_min = x_id;
             }
-            if (UGD->icellflag[icell_cent] == 0 && x_id_min > 0)
+            if ( (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 2) && x_id_min > 0)
             {
               canyon_factor = xc/Lr;
               break;
@@ -394,17 +394,17 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
               break;
             }
             icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
-            if (UGD->icellflag[icell_cent] != 0 && x_id_min < 0)
+            if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2 && x_id_min < 0)
             {
               x_id_min = x_id;
             }
-            if (UGD->icellflag[icell_cent] == 0)
+            if (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 2)
             {
               if (x_id_min >= 0)
               {
                 x_id_min = -1;
                 icell_cent = i+j*(UGD->nx-1)+kk*(UGD->nx-1)*(UGD->ny-1);
-                if (canyon_factor < 1.0 || UGD->icellflag[icell_cent] == 0)
+                if (canyon_factor < 1.0 || UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 2)
                 {
                   break;
                 }
@@ -412,7 +412,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
             }
             int icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
 
-            if (UGD->icellflag[icell_cent] != 0)
+            if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
             {
               i_u = std::round(((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx);
               j_u = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy;
@@ -450,7 +450,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
                 }
                 icell_cent = i_u + j_u*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
                 icell_face = i_u + j_u*UGD->nx+k*UGD->nx*UGD->ny;
-                if (dn_u > 0.0 && u_wake_flag == 1 && yu <= yi[id] && yu >= yi[id+1] && UGD->icellflag[icell_cent] != 0)
+                if (dn_u > 0.0 && u_wake_flag == 1 && yu <= yi[id] && yu >= yi[id+1] && UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
                 {
                   // Far wake zone
                   if (xu > dn_u)
@@ -509,7 +509,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
                 }
                 icell_cent = i_v + j_v*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
                 icell_face = i_v + j_v*UGD->nx+k*UGD->nx*UGD->ny;
-                if (dn_v > 0.0 && v_wake_flag == 1 && yv <= yi[id] && yv >= yi[id+1] && UGD->icellflag[icell_cent] != 0)
+                if (dn_v > 0.0 && v_wake_flag == 1 && yv <= yi[id] && yv >= yi[id+1] && UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
                 {
                   // Far wake zone
                   if (xv > dn_v)
@@ -564,7 +564,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
                 icell_cent = i_w + j_w*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
                 icell_face = i_w + j_w*UGD->nx+k*UGD->nx*UGD->ny;
                 //std::cout << "dn_w:    "  << dn_w << std::endl;
-                if (dn_w > 0.0 && w_wake_flag == 1 && yw <= yi[id] && yw >= yi[id+1] && UGD->icellflag[icell_cent] != 0)
+                if (dn_w > 0.0 && w_wake_flag == 1 && yw <= yi[id] && yw >= yi[id+1] && UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
                 {
                   if (xw > dn_w)
                   {
@@ -755,14 +755,14 @@ void PolyBuilding::upwindCavity (const URBInputData* UID, URBGeneralData* UGD)
               icell_face = i+j*UGD->nx+k*UGD->nx*UGD->ny;
               if (UID->simParams->upwindCavityFlag == 1)            // Rockle parameterization
               {
-                if ( (x_u-x_intersect_u>=x_ellipse_u) && (x_u-x_intersect_u<=0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0))
+                if ( (x_u-x_intersect_u>=x_ellipse_u) && (x_u-x_intersect_u<=0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0) && (UGD->icellflag[icell_cent] != 2))
                 {
                   UGD->u0[icell_face] = 0.0;
                 }
               }
               else
               {
-                if ( (x_u-x_intersect_u>=xrz_u) && (x_u-x_intersect_u<=rz_end) && (UGD->icellflag[icell_cent] != 0))
+                if ( (x_u-x_intersect_u>=xrz_u) && (x_u-x_intersect_u<=rz_end) && (UGD->icellflag[icell_cent] != 0) && (UGD->icellflag[icell_cent] != 2))
                 {
                   if (UID->simParams->upwindCavityFlag == 3)        // High-rise Modified Vortex Parameterization (HMVP) (Bagal et al. (2004))
                   {
@@ -773,7 +773,7 @@ void PolyBuilding::upwindCavity (const URBInputData* UID, URBGeneralData* UGD)
                     UGD->u0[icell_face] *= retarding_factor;
                   }
                 }
-                if ( (x_u-x_intersect_u >= length_factor*x_ellipse_u) && (x_u-x_intersect_u <= 0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0))
+                if ( (x_u-x_intersect_u >= length_factor*x_ellipse_u) && (x_u-x_intersect_u <= 0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0) && (UGD->icellflag[icell_cent] != 2))
                 {
                   u_rotation = UGD->u0[icell_face]*cos(effective_gamma[id]);
                   v_rotation = UGD->u0[icell_face]*sin(effective_gamma[id]);
@@ -802,14 +802,14 @@ void PolyBuilding::upwindCavity (const URBInputData* UID, URBGeneralData* UGD)
               icell_face = i+j*UGD->nx+k*UGD->nx*UGD->ny;
               if (UID->simParams->upwindCavityFlag == 1)        // Rockle parameterization
               {
-                if ( (x_v-x_intersect_v>=x_ellipse_v) && (x_v-x_intersect_v<=0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0))
+                if ( (x_v-x_intersect_v>=x_ellipse_v) && (x_v-x_intersect_v<=0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0) && (UGD->icellflag[icell_cent] != 2))
                 {
                   UGD->v0[icell_face] = 0.0;
                 }
               }
               else
               {
-                if ( (x_v-x_intersect_v>=xrz_v) && (x_v-x_intersect_v<=rz_end) && (UGD->icellflag[icell_cent] != 0))
+                if ( (x_v-x_intersect_v>=xrz_v) && (x_v-x_intersect_v<=rz_end) && (UGD->icellflag[icell_cent] != 0) && (UGD->icellflag[icell_cent] != 2))
                 {
                   if (UID->simParams->upwindCavityFlag == 3)      // High-rise Modified Vortex Parameterization (HMVP) (Bagal et al. (2004))
                   {
@@ -820,7 +820,7 @@ void PolyBuilding::upwindCavity (const URBInputData* UID, URBGeneralData* UGD)
                     UGD->v0[icell_face] *= retarding_factor;
                   }
                 }
-                if ( (x_v-x_intersect_v >= length_factor*x_ellipse_v) && (x_v-x_intersect_v <= 0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0))
+                if ( (x_v-x_intersect_v >= length_factor*x_ellipse_v) && (x_v-x_intersect_v <= 0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0) && (UGD->icellflag[icell_cent] != 2))
                 {
                   u_rotation = UGD->v0[icell_face]*cos(effective_gamma[id]);
                   v_rotation = UGD->v0[icell_face]*sin(effective_gamma[id]);
@@ -848,7 +848,7 @@ void PolyBuilding::upwindCavity (const URBInputData* UID, URBGeneralData* UGD)
               icell_face = i+j*UGD->nx+k*UGD->nx*UGD->ny;
               if (UID->simParams->upwindCavityFlag == 1)        // Rockle parameterization
               {
-                if ( (x_w-x_intersect_w>=x_ellipse_w) && (x_w-x_intersect_w<=0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0))
+                if ( (x_w-x_intersect_w>=x_ellipse_w) && (x_w-x_intersect_w<=0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0) && (UGD->icellflag[icell_cent] != 2))
                 {
                   UGD->w0[icell_face] = 0.0;
                   if (i < UGD->nx-1 && j < UGD->ny-1 && k < UGD->nz-2)
@@ -859,7 +859,7 @@ void PolyBuilding::upwindCavity (const URBInputData* UID, URBGeneralData* UGD)
               }
               else
               {
-                if ( (x_w-x_intersect_w>=x_ellipse_w) && (x_w-x_intersect_w < length_factor*x_ellipse_w) && (UGD->icellflag[icell_cent] != 0))
+                if ( (x_w-x_intersect_w>=x_ellipse_w) && (x_w-x_intersect_w < length_factor*x_ellipse_w) && (UGD->icellflag[icell_cent] != 0) && (UGD->icellflag[icell_cent] != 2))
                 {
                   UGD->v0[icell_face] *= retarding_factor;
                   if (i < UGD->nx-1 && j < UGD->ny-1 && k < UGD->nz-2)
@@ -867,7 +867,7 @@ void PolyBuilding::upwindCavity (const URBInputData* UID, URBGeneralData* UGD)
                     UGD->icellflag[icell_cent] = 3;
                   }
                 }
-                if ( (x_w-x_intersect_w >= length_factor*x_ellipse_w) && (x_w-x_intersect_w <= 0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0))
+                if ( (x_w-x_intersect_w >= length_factor*x_ellipse_w) && (x_w-x_intersect_w <= 0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0) && (UGD->icellflag[icell_cent] != 2))
                 {
                   UGD->w0[icell_face] = -sqrt(pow(u0_h,2.0)+pow(v0_h,2.0))*(0.1*cos(M_PI*abs(x_w-x_intersect_w)/(length_factor*Lf_face[counter]))-0.05);
                   if (i < UGD->nx-1 && j < UGD->ny-1 && k < UGD->nz-2)

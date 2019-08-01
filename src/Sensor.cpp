@@ -63,7 +63,7 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
     std::vector<double> &w0 = ugd->w0;
 
     const std::vector<float> &z = ugd->z;
-    
+
     std::vector<Sensor*> &sensors = UID->metParams->sensors;
 
     const float UTMx = UID->simParams->UTMx;
@@ -76,7 +76,7 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
     const std::vector<int> &terrain_id = ugd->terrain_id;
     const std::vector<double> &terrain = ugd->terrain;
     const int z0_domain_flag = UID->metParams->z0_domain_flag;
-    
+
 
 
 	float psi, psi_first, x_temp, u_star;
@@ -142,7 +142,6 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 			}
 		}
 
-		std::cout << "blending_height:   " << blending_height << std::endl;
 		average__one_overL += sensors[i]->site_one_overL/num_sites;
 		if (UTMx != 0 && UTMy != 0)
 		{
@@ -564,7 +563,6 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 		double z0_effective;
 		int height_id, blending_id, max_terrain_id;
 		std::vector<float> blending_velocity, blending_theta;
-		std::cout << "sum_z0:   " << sum_z0 << std::endl;
 		for (auto i=0; i<nx; i++)
 		{
 			for (auto j=0; j<ny; j++)
@@ -586,13 +584,7 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 				sum_z0 += log(z0_domain[id]+z[terrain_id[id]]);
 			}
 		}
-		std::cout << "sum_z0:   " << sum_z0 << std::endl;
 		z0_effective = exp(sum_z0/(nx*ny));
-		std::cout << "z0_effective:   " << z0_effective << std::endl;
-		std::cout << "blending_height:   " << blending_height << std::endl;
-		std::cout << "average__one_overL:   " << average__one_overL << std::endl;
-		std::cout << "max_terrain_id:   " << max_terrain_id << std::endl;
-		std::cout << "terrain[max_terrain_id]:   " << terrain[max_terrain_id] << std::endl;
 		blending_height = blending_height+terrain[max_terrain_id];
 		for (auto k=0; k<z.size(); k++)
 		{
@@ -602,7 +594,6 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 				break;
 			}
 		}
-		std::cout << "height_id:   " << height_id << "\t \t"<< z[height_id]<< std::endl;
 
 		blending_velocity.resize( nx*ny, 0.0 );
 		blending_theta.resize( nx*ny, 0.0 );
@@ -615,7 +606,6 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 				id = i+j*nx;
 				blending_velocity[id] = sqrt(pow(u0[blending_id],2.0)+pow(v0[blending_id],2.0));
 				blending_theta[id] = atan2(v0[blending_id],u0[blending_id]);
-				//std::cout << "id" << "\t \t"<< id  << "\t \t"<< "blending_velocity:   "  << "\t \t" <<blending_velocity[id] << std::endl;
 			}
 		}
 
@@ -633,9 +623,6 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 					x_temp = pow((1.0-15.0*blending_height*average__one_overL),0.25);
 					psi_first = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
 				}
-				//std::cout << "psi:   "  << psi_first << std::endl;
-				//std::cout << "terrain_id[id]:   " << terrain_id[id] << std::endl;
-				//std::cout << "terrain_id[id]+height_id:   " << terrain_id[id]+height_id << std::endl;
 
 				for (auto k = terrain_id[id]; k < height_id; k++)
 				{
@@ -649,12 +636,9 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 						psi = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
 					}
 					icell_face = i+j*nx+k*nx*ny;
-					//std::cout << "psi:   "  << psi << std::endl;
 					u_star = blending_velocity[id]*vk/(log((blending_height+z0_domain[id])/z0_domain[id])+psi_first);
-					//std::cout << "ustar:   "  << u_star << std::endl;
 					u0[icell_face] = (cos(blending_theta[id])*u_star/vk)*(log((z[k]+z0_domain[id])/z0_domain[id])+psi);
 					v0[icell_face] = (sin(blending_theta[id])*u_star/vk)*(log((z[k]+z0_domain[id])/z0_domain[id])+psi);
-					//std::cout << "i" << "\t \t"<< i <<  "\t \t"<<"j" << "\t \t"<< j <<  "\t \t"<<"k" << "\t \t"<< k  << "\t \t" << "u0[icell_face]:   "  << u0[icell_face] << std::endl;
 				}
 
 				for (auto k = height_id+1; k < nz-1; k++)
@@ -668,39 +652,15 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 						x_temp = pow((1.0-15.0*z[k]*average__one_overL),0.25);
 						psi = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
 					}
-					//std::cout << "k" << "\t \t"<< k  << "\t \t" << "z:   "  << z[k] << std::endl;
 					icell_face = i+j*nx+k*nx*ny;
-					//std::cout << "blending_theta:   "  << blending_theta << std::endl;
 					u_star = blending_velocity[id]*vk/(log((blending_height+z0_effective)/z0_effective)+psi_first);
 					u0[icell_face] = (cos(blending_theta[id])*u_star/vk)*(log((z[k]+z0_effective)/z0_effective)+psi);
 					v0[icell_face] = (sin(blending_theta[id])*u_star/vk)*(log((z[k]+z0_effective)/z0_effective)+psi);
-					//std::cout << "k" << "\t \t"<< k  << "\t \t" << "u0[icell_face]:   "  << u0[icell_face] << std::endl;
 				}
 
 			}
 		}
 
-
-		/*ofstream outdata1;
-		outdata1.open("Initial velocity.dat");
-		if( !outdata1 ) {                 // File couldn't be opened
-				cerr << "Error: file could not be opened" << endl;
-				exit(1);
-		}
-		// Write data to file
-		for (int k = 0; k < nz-1; k++){
-				for (int j = 0; j < ny; j++){
-						for (int i = 0; i < nx; i++){
-							id = i+j*(nx-1);
-				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-				int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
-								outdata1 << "\t" << i << "\t" << j << "\t" << k << "\t \t"<< x[i] << "\t \t" << y[j] << "\t \t" << z[k]
-						<< "\t \t"<< "\t \t" <<  u0[icell_face] <<"\t \t"<< "\t \t"<<v0[icell_face]
-						<<"\t \t"<< "\t \t"<<w0[icell_face]<< "\t \t"<< "\t \t"<<terrain_id[id]<<endl;
-						}
-				}
-		}
-		outdata1.close();*/
 	}
 
 }

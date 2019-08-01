@@ -28,7 +28,7 @@ public:
     URBGeneralData(const URBInputData* UID, Output *cudaOutput);
     ~URBGeneralData();
 
-    void mergeSort( std::vector<Building*> allBuildingsV );
+    void mergeSort( std::vector<float> &effective_height, std::vector<Building*> allBuildingsV, std::vector<int> &building_id );
 
 
     /*!
@@ -68,6 +68,7 @@ public:
 
     std::vector<float> z0_domain;
 
+    std::vector<int> building_id;
     std::vector<Building*> allBuildingsV;
 
     float z0;           // In wallLogBC

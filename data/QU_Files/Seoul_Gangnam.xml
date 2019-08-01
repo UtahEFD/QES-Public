@@ -3,10 +3,10 @@
   <SHP>../scratch/Gangnam/building.shp</SHP>				<!-- Address to shapefile location-->
   <SHPBuildingLayer>building</SHPBuildingLayer>
 
-  <halo_x> 20.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
-  <halo_y> 20.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain)-->
+  <halo_x> 40.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
+  <halo_y> 40.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain)-->
 
-  <domain> 894 560 70</domain>				<!-- Number of cells in x,y and z directions-->
+  <domain> 898 574 70</domain>				<!-- Number of cells in x,y and z directions-->
   <cellSize> 5.0 5.0 3.0 </cellSize> 		<!-- Mesh resolution (meters)-->
 
   <verticalStretching> 0 </verticalStretching>		<!-- vertical stretching (0-uniform grid, 1-costum grid)-->
@@ -51,7 +51,7 @@
     <reciprocal> 0.0 </reciprocal> 						<!-- Reciprocal Monin-Obukhov Length (1/m) -->
     <height> 10 </height> 							<!-- Height of the sensor -->
     <speed> 5.0 </speed> 							<!-- Measured speed at the sensor height -->
-    <direction> 270.0 </direction> 					<!-- Wind direction of sensor -->
+    <direction> 240.0 </direction> 					<!-- Wind direction of sensor -->
   </sensor>  				                     	<!-- End of sensor section -->
 </metParams>  								<!-- End of meteorological parameters -->
 <fileOptions>
