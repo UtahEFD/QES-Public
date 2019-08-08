@@ -570,14 +570,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD)
                   {
                     if (canyon_factor == 1)
                     {
-                      if (UGD->icellflag[icell_cent] == 4)
-                      {
-                        UGD->icellflag[icell_cent] = 8;
-                      }
-                      else
-                      {
-                        UGD->icellflag[icell_cent] = 5;
-                      }
+                      UGD->icellflag[icell_cent] = 5;
                     }
                   }
                   else

@@ -74,27 +74,7 @@ Solver::Solver(const URBInputData* UID, URBGeneralData * ugd)
 
 
 /*
-        // !!!!!!!!!!!!!!!!!!!!! @*@*@*@*@*@
-        // We are here now...
-        // where does this go then????
 
-        // If there is wake behind the building to apply
-        if (UID->simParams->wakeFlag > 0)
-        {
-          std::cout << "Applying wake behind building parameterization...\n";
-          for (size_t pIdx = 0; pIdx<shpPolygons.size(); pIdx++)
-          {
-            poly_buildings[pIdx].polygonWake (shpPolygons[pIdx], building_height[pIdx], base_height[pIdx], dx, dy, dz, z, nx, ny, nz,
-                                          cavity_factor, wake_factor, dxy, icellflag, u0, v0, w0, max_velmag);
-
-            //std::cout << "building added" << pIdx << std::endl;
-          }
-          std::cout << "Wake behind building parameterization done...\n";
-        }
-
-        auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
-        std::chrono::duration<float> elapsedBuilding = finish - buildingsetup;
-        std::cout << "Elapsed time to read in and create buildings and apply parameterization: " << elapsedBuilding.count() << " s\n";   // Print out elapsed execution time
 
 
 
