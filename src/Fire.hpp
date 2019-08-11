@@ -37,6 +37,7 @@ class Fire {
         struct FireState {
             double burn_time;
             double burn_flag;
+            double front_flag;
         };
         
         struct FireCell {
@@ -51,6 +52,8 @@ class Fire {
         std::vector< FireCell > fire_cells;
         
         std::vector<double> w_base;
+
+        std::vector<double> front_map;
         
         void run(Solver*);
         void move(Solver*);      

@@ -29,6 +29,7 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     // set-up the mapper array
     fire_cells.resize(nx*ny);
     burn_flag.resize(nx*ny);
+    front_map.resize(nx*ny);
     
     // get initial fire info
     x_start    = UID->fires->xStart;
@@ -70,23 +71,57 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     k_start = std::round((H+baseHeight)/dz);                
     k_end   = std::round((H+baseHeight)/dz)+1;
     
-    // set-up initial fire state
+    /**
+     * Set-up initial fire state
+     */
     for (int j = j_start; j < j_end; j++){
         for (int i = i_start; i < i_end; i++){
             int idx = i + j*nx;
 	    	fire_cells[idx].state.burn_flag = 1;
+            fire_cells[idx].state.front_flag = 1;
         }
     }
     
-    // set up burn flag field
+    /** 
+     *  Set up burn flag field
+     */
     for (int j = 0; j < ny; j++){
         for (int i = 0; i < nx; i++){
-            
             int idx = i + j*nx;       
             burn_flag[idx] = fire_cells[idx].state.burn_flag;
         }
     }
     
+    /**
+     * Set up initial level set. Use signed distance function: swap to fast marching method in future.
+     */
+    double sdf, sdf_min;
+    for (int j = 0; j < ny; j++){
+        for (int i = 0; i < nx; i++){
+            int idx = i + j*nx;
+            if (fire_cells[idx].state.front_flag == 1){
+                front_map[idx] = 0;                
+            }
+            else {
+                sdf = 1000;
+                for (int jj = 0; jj < ny; jj++){
+                    for (int ii = 0; ii < nx; ii++){
+                        int idx2 = ii + jj*nx;
+                        if (fire_cells[idx2].state.front_flag == 1){
+                            sdf_min = sqrt ((ii-i)*(ii-i) + (jj-j)*(jj-j));
+                        }
+                        else{
+                            sdf_min = 1000;
+                        }
+                        
+                        sdf = sdf_min < sdf ? sdf_min : sdf;
+                    }
+                }
+                front_map[idx] = sdf;                
+            }
+        }
+    }
+
     // set output fields
     output_fields = UID->fileOptions->outputFields;
     
@@ -432,7 +467,7 @@ void Fire :: move(Solver* solver) {
                 }
             }
         }
-        /*
+        
         // check that x+1, y+1 is in-bounds, then compute fraction
         if (iiF<=(nx-1) && jjF<=(ny-1)) {
             
@@ -539,7 +574,7 @@ void Fire :: move(Solver* solver) {
                     }
                 }
             }
-        } */
+        }
                         
         // update residence time
         fire_cells[id].state.burn_time += dt;
@@ -606,63 +641,60 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
                                           double tanphi,double fmc_g) {
         
     // fuel properties
-    double fgi        = fuel->fgi;              // initial total mass of surface fuel (kg/m**2)
-    double fueldepthm = fuel->fueldepthm;       // fuel depth (m)
-    int savr          = fuel->savr;             // fuel particle surface-area-to-volume ratio, 1/ft
-    int cmbcnst       = fuel->cmbcnst;          // joules per kg of dry fuel
+    double fgi        = fuel->fgi;              ///< initial total mass of surface fuel [kg/m**2]
+    double fueldepthm = fuel->fueldepthm;       ///< fuel depth [m]
+    int savr          = fuel->savr;             ///< fuel particle surface-area-to-volume ratio, [1/ft]
+    int cmbcnst       = fuel->cmbcnst;          ///< joules per kg of dry fuel [J/kg]
     
     // universal constants
-    double g        = 9.81;                     // gravity 
-    double pi       = 3.14159265358979323846;   // pi
-    double s        = 17;                       // stoichiometric constant - Balbi 2018
-    double Chi_0    = 0.3;                      // thin flame radiant fraction - ?Balbi 2009?
-    double B        = 5.67e-8;                  // Stefan-Boltzman 
-    double Deltah_v = 2.257e6;                  // water evap enthalpy [J/kg]
-    double C_p      = 2e3;                      // calorific capacity [J/kg] - Balbi 2009  
-    double C_pa     = 1150;                     // specific heat of air [J/Kg/K]
-    double tau_0    = 75591;                    // residence time coefficient - Anderson 196?
+    double g        = 9.81;                     ///< gravity 
+    double pi       = 3.14159265358979323846;   ///< pi
+    double s        = 17;                       ///< stoichiometric constant - Balbi 2018
+    double Chi_0    = 0.3;                      ///< thin flame radiant fraction - Balbi 2009
+    double B        = 5.67e-8;                  ///< Stefan-Boltzman 
+    double Deltah_v = 2.257e6;                  ///< water evap enthalpy [J/kg]
+    double C_p      = 2e3;                      ///< calorific capacity [J/kg] - Balbi 2009  
+    double C_pa     = 1150;                     ///< specific heat of air [J/Kg/K]
+    double tau_0    = 75591;                    ///< residence time coefficient - Anderson 196?
     double tau      = 75591/(savr/0.3048);
 
     // fuel constants
-    double m        = fmc_g;                    // fuel particle moisture content [0-1]
-    double sigma    = fgi;                      // dead fuel load [kg/m^2]
-    double sigmaT   = sigma;                    // total fuel load [kg/m^2]
-    double rhoFuel  = 1500;                     // fuel density [kg/m^3]
-    double T_i      = 600;                      // ignition temp [k]
+    double m        = fmc_g;                    ///< fuel particle moisture content [0-1]
+    double sigma    = fgi;                      ///< dead fuel load [kg/m^2]
+    double sigmaT   = sigma;                    ///< total fuel load [kg/m^2]
+    double rhoFuel  = 1500;                     ///< fuel density [kg/m^3]
+    double T_i      = 600;                      ///< ignition temp [k]
     
     // model parameters
-    double beta  = sigma/(fueldepthm*rhoFuel);  // packing ratio of dead fuel [eq.1]
-    double betaT = sigmaT/(fueldepthm*rhoFuel); // total packing ratio [eq.2]
-    double SAV   = savr/0.3048;                 // surface area to volume ratio [m^2/m^3]
-    double lai   = (SAV*fueldepthm*beta)/2;     // leaf Area Index for dead fuel [eq.3]
-    double nu    = fmin(2*lai,2*pi*beta/betaT); // absorption coefficient [eq.5]
-    double lv    = fueldepthm;                  // fuel length [m] ?? need better parameterization here
-    double K1    = 100;                         // drag force coefficient: 100 for field, 1400 for lab 
-    double r_00  = 2.5e-5;                      // model parameter ??
+    double beta  = sigma/(fueldepthm*rhoFuel);  ///< packing ratio of dead fuel [eq.1]
+    double betaT = sigmaT/(fueldepthm*rhoFuel); ///< total packing ratio [eq.2]
+    double SAV   = savr/0.3048;                 ///< surface area to volume ratio [m^2/m^3]
+    double lai   = (SAV*fueldepthm*beta)/2;     ///< leaf Area Index for dead fuel [eq.3]
+    double nu    = fmin(2*lai,2*pi*beta/betaT); ///< absorption coefficient [eq.5]
+    double lv    = fueldepthm;                  ///< fuel length [m] ?? need better parameterization here
+    double K1    = 100;                         ///< drag force coefficient: 100 for field, 1400 for lab 
+    double r_00  = 2.5e-5;                      ///< model parameter ??
     
     // Environmental Constants
-    double rhoAir = 1.125;                      // air Density [Kg/m^3]
-    double T_a    = 293.15;                     // air Temp [K]
-    double alphax = atan(tanphi);               // slope angle [rad]
-    double alphay = atan(tanphi);               // slope angle [rad]
-    double psi    = 0;                          // angle between wind and flame front, assume parallel
-    double phi    = 0;                          // angle between flame front vector and slope vector
+    double rhoAir = 1.125;                      ///< air Density [Kg/m^3]
+    double T_a    = 293.15;                     ///< air Temp [K]
+    double alphax = atan(tanphi);               ///< slope angle (x) [rad]
+    double alphay = atan(tanphi);               ///< slope angle (y) [rad]
+    double psi    = 0;                          ///< angle between wind and flame front, assume parallel [rad]
+    double phi    = 0;                          ///< angle between flame front vector and slope vector [rad]
     
-    // Compute drag force coefficient [eq.7]
-    double KDrag = K1*betaT*fmin(fueldepthm/lv,1);
+    double KDrag = K1*betaT*fmin(fueldepthm/lv,1);  ///< Drag force coefficient [eq.7]
 
-    // Compute activation energy [eq.14]
-    double q = C_p*(T_i - T_a) + m*Deltah_v; 
+    double q = C_p*(T_i - T_a) + m*Deltah_v;        ///< Activation energy [eq.14]
 
-    // Compute radiant coefficient [eq.13]
-    double A = fmin(SAV/(2*pi),beta/betaT)*Chi_0*cmbcnst/(4*q);
+    double A = fmin(SAV/(2*pi),beta/betaT)*Chi_0*cmbcnst/(4*q);     ///< Radiant coefficient [eq.13]
     
-    // Initial quess = Rothermel ROS 
-    double R = rothermel(fuel,max(u_mid,v_mid),tanphi,fmc_g);
+    // Initial guess = Rothermel ROS 
+    double R = rothermel(fuel,max(u_mid,v_mid),tanphi,fmc_g);       ///< Total Rate of Spread (ROS) [m/s]
     
     // Initial tilt angle guess = slope angle
-    double gammax  = alphax;
-    double gammay  = alphay;
+    double gammax  = alphax;    ///< Flame tilt angle (x)
+    double gammay  = alphay;    ///< Flame tilt angle (y)
     double maxIter = 100;
     double R_tol   = 1e-5;
     double iter    = 1;
@@ -670,31 +702,32 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     double R_old   = R;
     
     // find spread rates
-    double Chi,TFlame,u0,H,Hx,Hy,b;
-    double ROSBase,ROSFlamex,ROSFlamey;
-    double ROSConvx,ROSConvy,Rx,Ry;
+    double Chi;                     ///< Radiative fraction [-]
+    double TFlame;                  ///< Flame Temp [K]
+    double u0;                      ///< Upward gas velocity [m/s] 
+    double H, Hx, Hy;               ///< Flame height [m]
+    double b;                       ///< Convective coefficient [-]
+    double ROSBase;                 ///< ROS from base radiation [m/s]
+    double ROSFlamex,ROSFlamey;     ///< ROS from flame radiation [m/s]
+    double ROSConvx,ROSConvy;       ///< ROS from convection [m/s] 
+    double Rx;                      ///< ROS in x [m/s]
+    double Ry;                      ///< ROS in y [m/s]
     while (iter < maxIter && error > R_tol){
+        Chi = Chi_0/(1 + R*cos(gammax)/(SAV*r_00));         //[eq.20]
         
-        // Calculate radiative fraction [eq.20]
-        Chi = Chi_0/(1 + R*cos(gammax)/(SAV*r_00));
+        TFlame = T_a + cmbcnst*(1 - Chi)/((s+1)*C_pa);      //[eq.16]
         
-        // Compute flame Temp [eq.16]
-        TFlame = T_a + cmbcnst*(1 - Chi)/((s+1)*C_pa);
+        u0 = 2*nu*((s+1)/tau_0)*(rhoFuel/rhoAir)*(TFlame/T_a);   //[eq.19]
         
-        // Compute upward gas velocity [eq.19]
-        u0 = 2*nu*((s+1)/tau_0)*(rhoFuel/rhoAir)*(TFlame/T_a);       
         
-        // Calculate flame tilt angle (gammax)
-        gammax = atan(tan(alphax)*cos(phi)+abs(u_mid)*cos(psi)/u0);
-        gammay = atan(tan(alphay)*cos(phi)+abs(v_mid)*cos(psi)/u0);
+        gammax = atan(tan(alphax)*cos(phi)+abs(u_mid)*cos(psi)/u0);  
+        gammay = atan(tan(alphay)*cos(phi)+abs(v_mid)*cos(psi)/u0);  
         
-        // Compute flame height [eq.17]
         Hx = u0*u0/(g*(TFlame/T_a - 1)*cos(alphax)*cos(alphax));
         Hy = u0*u0/(g*(TFlame/T_a - 1)*cos(alphay)*cos(alphay));
-        H = fmax(Hx,Hy);
+        H = fmax(Hx,Hy);                                        //[eq.17]
         
-        // Compute convective coefficient [eq.8]
-        b = 1/(q*tau_0*u0*betaT)*Deltah_v*nu*fmin(s/30,1);
+        b = 1/(q*tau_0*u0*betaT)*Deltah_v*nu*fmin(s/30,1);      //[eq.8]
         
         // Compute ROS
         // ROS from base radiation
@@ -717,7 +750,10 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     }
     
     // define forward, backward spread in x, y diections
-    double RxF, RxB, RyF, RyB;
+    double RxF;     ///< Spread rate i+1
+    double RxB;     ///< Spread rate i-1 
+    double RyF;     ///< Spread rate j+1
+    double RyB;     ///< Spread rate j-1
     if (u_mid>0) {
         RxF = Rx;
         RxB = ROSBase;
@@ -738,6 +774,9 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
         RyF = Ry;
         RyB = Ry;
     }
+
+    // Calculate spread in 8 directions
+    struct SpreadRates sr = eggSpread(RxF,RxB,RyF,RyB);
         
     // calculate flame depth
     double L = R*tau;
@@ -749,16 +788,74 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     fp.w    = u0;
     fp.h    = H;
     fp.d    = L;
-    fp.rxf  = RxF;
-    fp.rxb  = RxB;
-    fp.ryf  = RyF;
-    fp.ryb  = RyB;
+    fp.r11  = sr.r11
+    fp.r12  = sr.r12;
+    fp.r13  = sr.r13;
+    fp.r21  = sr.r21;
+    fp.r23  = sr.r23;
+    fp.r31  = sr.r31;
+    fp.r32  = sr.r32;
+    fp.r33  = sr.r33;
     fp.T    = TFlame;
     fp.tau  = tau;
     fp.K    = KDrag;
     
     return fp;
 }
+
+struct Fire::SpreadRates Fire :: eggSpread(double rxf, double rxb, double ryf, double ryb){
+    double PI = 3.14159265;
+    // Define flame spread in 8 directions
+    double R11;     ///< Spread in i-1, j-1
+    double R12;     ///< Spread in i-1, j
+    double R13;     ///< Spread in i-1, j+1
+    double R21;     ///< Spread in i, j-1
+    double R23;     ///< Spread in i, j+1
+    double R31;     ///< Spread in i+1, j-1
+    double R32;     ///< Spread in i+1, j
+    double R33;     ///< Spread in i+1, j+1
+    
+    // Find max spread rate
+    double max_xfb, max_yfb, r_max, min_xfb, minyfb, r_min;
+    max_xfb = rxf > rxb ? rxf : rxb;
+    max_yfb = ryf > ryb ? ryf : rxb;
+    r_max   = max_xfb > max_yfb ? max_xfb : max_yfb;
+    // Find min spread rate
+    min_xfb = rxf < rxb ? rxf : rxb;
+    min_yfb = ryf < ryb ? ryf : ryb;
+    r_min   = min_xfb < min_yfb ? min_xfb : min_yfb;
+
+    // Define axis for ellipse forward spread rate
+    double xax_ell = r_min + dx;        ///< Minor ellipse axis
+    double yax_ell = r_max + dy;        ///< Major ellipse axis
+
+    // Rotation angle
+    double psi;     ///< Rotation angle of ellipse
+    double tanpsi = abs(ryf-ryb)/abs(rxf-rxb);
+    double psi_int = atan(tanpsi);
+    if (rxf >= rxb) {
+        psi = ryf >= ryb ? psi_int - PI/2 : 3*PI/2 - psi_int;
+    }
+    if (rxf<rxb) {
+        psi = ryf >= ryb ? PI/2 - psi_int : psi_int + PI/2;
+    }
+    
+
+    // Structure to hold spread rates
+    struct SpreadRates sr;
+
+    sr.r11  = R11;
+    sr.r12  = R12;
+    sr.r13  = R13;
+    sr.r21  = R21;
+    sr.r23  = R23;
+    sr.r31  = R31;
+    sr.r32  = R32;
+    sr.r33  = R33;
+
+    return sr;
+}
+
 
 // Save output at cell-centered values
 void Fire :: save(Output* output) {
