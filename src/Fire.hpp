@@ -31,7 +31,7 @@ class Fire {
         Fire(URBInputData*, Output*);
         
         struct FireProperties {
-            double  w, h, d, rxb, ryb, rxf, ryf, T, tau, K;
+            double  w, h, d, r, T, tau, K;
         };
         
         struct FireState {
@@ -74,7 +74,7 @@ class Fire {
         
         double rothermel(FuelProperties*, double, double, double);
                      
-        FireProperties balbi(FuelProperties*, double, double, double, double);
+        FireProperties balbi(FuelProperties*, double, double, double, double, double, double);
         
         FireProperties runFire(double, double, int);
         

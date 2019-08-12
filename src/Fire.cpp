@@ -1,10 +1,10 @@
-//
-//  Fire.cpp
-//  
-//  This class models fire spread rate using Balbi (2019)
-//
-//  Created by Matthew Moody, Jeremy Gibbs on 12/27/18.
-//
+/**
+*  Fire.cpp
+*  
+*  This class models fire spread rate using Balbi (2019)
+*
+*  Created by Matthew Moody, Jeremy Gibbs on 12/27/18.
+*/
 
 #include "Fire.hpp"
 
@@ -179,28 +179,20 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     }    
 }
 
-// compute adaptive time step
+/**
+* Compute adaptive time step. Based on Courant criteria.
+*/
 double Fire :: computeTimeStep() {
     
     // spread rates
-    double rxf, rxb, ryf, ryb, r_max;
+    double r, r_max;
     
     // get max spread rate
     for (int j = 0; j < ny; j++){
         for (int i = 0; i < nx; i++){
-            
             int idx = i + j*nx;
-            rxf = fire_cells[idx].properties.rxf;       
-            rxb = fire_cells[idx].properties.rxb;
-            ryf = fire_cells[idx].properties.ryf;       
-            ryb = fire_cells[idx].properties.ryb;
-            
-            double max_xfb, max_yfb, max;
-            max_xfb = rxf > rxb ? rxf : rxb;
-            max_yfb = ryf > ryb ? ryf : rxb;
-            max     = max_xfb > max_yfb ? max_xfb : max_yfb;
-            
-            r_max   = max > r_max ? max : r_max;
+            r = fire_cells[idx].properties.r;       
+            r_max   = r > r_max ? r : r_max;
         }
     }
     return courant * dx / r_max;
@@ -271,7 +263,9 @@ void Fire :: run(Solver* solver) {
         double v = solver->v[ii + jj*(nx+1) + kh*(ny+1)*(nx+1)];
         
         // run Balbi model
-        struct FireProperties fp = balbi(fuel,u,v,0.0,0.0650);
+        double x_norm = 0.0;
+        double y_norm = 0.0;
+        struct FireProperties fp = balbi(fuel,u,v,x_norm,y_norm,0.0,0.0650);
         fire_cells[id].properties = fp;
         
         // modify w0 in solver (adjust to use faces)
@@ -638,7 +632,7 @@ double Fire :: rothermel(FuelProperties* fuel, double max_wind, double tanphi,do
 
 // Balbi (2019) fire propagation model
 struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, double v_mid, 
-                                          double tanphi,double fmc_g) {
+                                          double x_norm, double y_norm, double tanphi,double fmc_g) {
         
     // fuel properties
     double fgi        = fuel->fgi;              ///< initial total mass of surface fuel [kg/m**2]
@@ -678,10 +672,36 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     // Environmental Constants
     double rhoAir = 1.125;                      ///< air Density [Kg/m^3]
     double T_a    = 293.15;                     ///< air Temp [K]
-    double alphax = atan(tanphi);               ///< slope angle (x) [rad]
-    double alphay = atan(tanphi);               ///< slope angle (y) [rad]
-    double psi    = 0;                          ///< angle between wind and flame front, assume parallel [rad]
+    double alpha = atan(tanphi);               ///< slope angle [rad]
+    double psi    = 0;                          ///< angle between wind and flame front [rad]
     double phi    = 0;                          ///< angle between flame front vector and slope vector [rad]
+
+    /**
+     * Calculate wind velocity angle.
+     */
+    double psi_wind, psi_norm;
+    if (u_mid>=0 && v_mid>=0) {
+        psi_wind = atan(v_mid/u_mid);
+    } else if (u_mid<0 && v_mid>0) {
+        psi_wind = pi + atan(v_mid/u_mid);
+    } else if (u_mid<0 && v_mid<0) {
+        psi_wind = pi + atan(v_mid/u_mid);
+    } else {
+        psi_wind = 2*pi + atan(v_mid/u_mid);
+    }
+    /**
+     * Calculate level set norm angle.
+     */
+    if (x_norm>=0 && y_norm>=0) {
+        psi_norm = atan(y_norm/x_norm);
+    } else if (x_norm<0 && y_norm>0) {
+        psi_norm = pi + atan(y_norm/x_norm);
+    } else if (x_norm<0 && y_norm<0) {
+        psi_norm = pi + atan(y_norm/x_norm);
+    } else {
+        psi_norm = 2*pi + atan(y_norm/x_norm);
+    }
+    psi = psi_wind-psi_norm;
     
     double KDrag = K1*betaT*fmin(fueldepthm/lv,1);  ///< Drag force coefficient [eq.7]
 
@@ -693,8 +713,7 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     double R = rothermel(fuel,max(u_mid,v_mid),tanphi,fmc_g);       ///< Total Rate of Spread (ROS) [m/s]
     
     // Initial tilt angle guess = slope angle
-    double gammax  = alphax;    ///< Flame tilt angle (x)
-    double gammay  = alphay;    ///< Flame tilt angle (y)
+    double gamma  = alpha;    ///< Flame tilt angle
     double maxIter = 100;
     double R_tol   = 1e-5;
     double iter    = 1;
@@ -705,78 +724,45 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     double Chi;                     ///< Radiative fraction [-]
     double TFlame;                  ///< Flame Temp [K]
     double u0;                      ///< Upward gas velocity [m/s] 
-    double H, Hx, Hy;               ///< Flame height [m]
+    double H;                       ///< Flame height [m]
     double b;                       ///< Convective coefficient [-]
     double ROSBase;                 ///< ROS from base radiation [m/s]
-    double ROSFlamex,ROSFlamey;     ///< ROS from flame radiation [m/s]
-    double ROSConvx,ROSConvy;       ///< ROS from convection [m/s] 
-    double Rx;                      ///< ROS in x [m/s]
-    double Ry;                      ///< ROS in y [m/s]
+    double ROSFlame;                ///< ROS from flame radiation [m/s]
+    double ROSConv;                 ///< ROS from convection [m/s] 
+    
+    double V_mid = sqrt(u_mid*u_mid + v_mid*v_mid);         ///< Midflame Wind Velocity [m/s]
     while (iter < maxIter && error > R_tol){
-        Chi = Chi_0/(1 + R*cos(gammax)/(SAV*r_00));         //[eq.20]
+        Chi = Chi_0/(1 + R*cos(gamma)/(SAV*r_00));          //[eq.20]
         
         TFlame = T_a + cmbcnst*(1 - Chi)/((s+1)*C_pa);      //[eq.16]
         
         u0 = 2*nu*((s+1)/tau_0)*(rhoFuel/rhoAir)*(TFlame/T_a);   //[eq.19]
         
         
-        gammax = atan(tan(alphax)*cos(phi)+abs(u_mid)*cos(psi)/u0);  
-        gammay = atan(tan(alphay)*cos(phi)+abs(v_mid)*cos(psi)/u0);  
+        gamma = atan(tan(alpha)*cos(phi)+V_mid*cos(psi)/u0);    
         
-        Hx = u0*u0/(g*(TFlame/T_a - 1)*cos(alphax)*cos(alphax));
-        Hy = u0*u0/(g*(TFlame/T_a - 1)*cos(alphay)*cos(alphay));
-        H = fmax(Hx,Hy);                                        //[eq.17]
+        H = u0*u0/(g*(TFlame/T_a - 1)*cos(alpha)*cos(alpha));   //[eq.17]
         
         b = 1/(q*tau_0*u0*betaT)*Deltah_v*nu*fmin(s/30,1);      //[eq.8]
         
-        // Compute ROS
+        /** 
+         * Compute ROS
+        */
+         
         // ROS from base radiation
         ROSBase = fmin(SAV*fueldepthm*betaT/pi,1)*(beta/betaT)*(beta/betaT)*(B*TFlame*TFlame*TFlame*TFlame)/(beta*rhoFuel*q);
         
         // ROS from flame radiation [eq.11]
-        ROSFlamex = A*R*(1+sin(gammax) - cos (gammax))/(1 + R*cos(gammax)/(SAV*r_00));
-        ROSFlamey = A*R*(1+sin(gammay) - cos (gammay))/(1 + R*cos(gammay)/(SAV*r_00));
+        ROSFlame = A*R*(1+sin(gamma) - cos (gamma))/(1 + R*cos(gamma)/(SAV*r_00));
         
         // ROS from convection
-        ROSConvx = b*(tan(alphax) + 2*abs(u_mid)/u0*exp(-KDrag*R));
-        ROSConvy = b*(tan(alphay) + 2*abs(v_mid)/u0*exp(-KDrag*R));
+        ROSConv = b*(tan(alpha) + 2*V_mid/u0*exp(-KDrag*R));
         
         // Total ROS 
-        Rx    = ROSBase + ROSFlamex + ROSConvx;
-        Ry    = ROSBase + ROSFlamey + ROSConvy;
-        R     = sqrt(Rx*Rx+Ry*Ry);
+        R    = ROSBase + ROSFlame + ROSConv;
         error = std::abs(R-R_old);
         R_old = R;
     }
-    
-    // define forward, backward spread in x, y diections
-    double RxF;     ///< Spread rate i+1
-    double RxB;     ///< Spread rate i-1 
-    double RyF;     ///< Spread rate j+1
-    double RyB;     ///< Spread rate j-1
-    if (u_mid>0) {
-        RxF = Rx;
-        RxB = ROSBase;
-    } else if (u_mid<0) {
-        RxF = ROSBase;
-        RxB = Rx;
-    } else {
-        RxF = Rx;
-        RxB = Rx;
-    }
-    if (v_mid>0) {
-        RyF = Ry;
-        RyB = ROSBase;
-    } else if (v_mid<0) {
-        RyF = ROSBase;
-        RyB = Ry;
-    } else {
-        RyF = Ry;
-        RyB = Ry;
-    }
-
-    // Calculate spread in 8 directions
-    struct SpreadRates sr = eggSpread(RxF,RxB,RyF,RyB);
         
     // calculate flame depth
     double L = R*tau;
@@ -788,72 +774,12 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     fp.w    = u0;
     fp.h    = H;
     fp.d    = L;
-    fp.r11  = sr.r11
-    fp.r12  = sr.r12;
-    fp.r13  = sr.r13;
-    fp.r21  = sr.r21;
-    fp.r23  = sr.r23;
-    fp.r31  = sr.r31;
-    fp.r32  = sr.r32;
-    fp.r33  = sr.r33;
+    fp.r    = R;
     fp.T    = TFlame;
     fp.tau  = tau;
     fp.K    = KDrag;
     
     return fp;
-}
-
-struct Fire::SpreadRates Fire :: eggSpread(double rxf, double rxb, double ryf, double ryb){
-    double PI = 3.14159265;
-    // Define flame spread in 8 directions
-    double R11;     ///< Spread in i-1, j-1
-    double R12;     ///< Spread in i-1, j
-    double R13;     ///< Spread in i-1, j+1
-    double R21;     ///< Spread in i, j-1
-    double R23;     ///< Spread in i, j+1
-    double R31;     ///< Spread in i+1, j-1
-    double R32;     ///< Spread in i+1, j
-    double R33;     ///< Spread in i+1, j+1
-    
-    // Find max spread rate
-    double max_xfb, max_yfb, r_max, min_xfb, minyfb, r_min;
-    max_xfb = rxf > rxb ? rxf : rxb;
-    max_yfb = ryf > ryb ? ryf : rxb;
-    r_max   = max_xfb > max_yfb ? max_xfb : max_yfb;
-    // Find min spread rate
-    min_xfb = rxf < rxb ? rxf : rxb;
-    min_yfb = ryf < ryb ? ryf : ryb;
-    r_min   = min_xfb < min_yfb ? min_xfb : min_yfb;
-
-    // Define axis for ellipse forward spread rate
-    double xax_ell = r_min + dx;        ///< Minor ellipse axis
-    double yax_ell = r_max + dy;        ///< Major ellipse axis
-
-    // Rotation angle
-    double psi;     ///< Rotation angle of ellipse
-    double tanpsi = abs(ryf-ryb)/abs(rxf-rxb);
-    double psi_int = atan(tanpsi);
-    if (rxf >= rxb) {
-        psi = ryf >= ryb ? psi_int - PI/2 : 3*PI/2 - psi_int;
-    }
-    if (rxf<rxb) {
-        psi = ryf >= ryb ? PI/2 - psi_int : psi_int + PI/2;
-    }
-    
-
-    // Structure to hold spread rates
-    struct SpreadRates sr;
-
-    sr.r11  = R11;
-    sr.r12  = R12;
-    sr.r13  = R13;
-    sr.r21  = R21;
-    sr.r23  = R23;
-    sr.r31  = R31;
-    sr.r32  = R32;
-    sr.r33  = R33;
-
-    return sr;
 }
 
 
