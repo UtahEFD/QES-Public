@@ -30,7 +30,12 @@ Fire :: Fire(URBInputData* UID, Output* output) {
     fire_cells.resize(nx*ny);
     burn_flag.resize(nx*ny);
     front_map.resize(nx*ny);
-    
+    del_plus.resize(nx*ny);
+    del_min.resize(nx*ny);
+    xNorm.resize(nx*ny);
+    yNorm.resize(nx*ny);
+    Force.resize(nx*ny);
+
     // get initial fire info
     x_start    = UID->fires->xStart;
     y_start    = UID->fires->yStart;
@@ -180,8 +185,8 @@ Fire :: Fire(URBInputData* UID, Output* output) {
 }
 
 /**
-* Compute adaptive time step. Based on Courant criteria.
-*/
+ * Compute adaptive time step. Based on Courant criteria.
+ */
 double Fire :: computeTimeStep() {
     
     // spread rates
@@ -198,9 +203,63 @@ double Fire :: computeTimeStep() {
     return courant * dx / r_max;
 }
 
-// compute fire spread for burning cells
+/**
+ * Compute fire spread for burning cells
+ */
 void Fire :: run(Solver* solver) {
-    
+    /**
+     * Calculate level set gradient and norm (Chapter 6, Sethian 2008)
+     */
+    double dmx, dpx, dmy, dpy, n_star_x, n_star_y;
+    for (int j = 1; j < ny-1; j++){
+        for (int i = 1; i < nx-1; i++){
+            int idx = i + j*nx;       
+            int idxjp = i + (j+1)*nx;
+            int idxjm = i + (j-1)*nx;
+            dmx = (front_map[idx] - front_map[idxjm])/dx;
+            dpx = (front_map[idxjp] - front_map[idx])/dx;
+            dmy = (front_map[idx] - front_map[idx-1])/dy;
+            dpy = (front_map[idx+1] - front_map[idx])/dy;
+            del_plus[idx] = sqrt(fmax(dmx,0)*fmax(dmx,0) + fmin(dpx,0)*fmin(dpx,0) + fmax(dmy,0)*fmax(dmy,0) + fmin(dpy,0)*fmin(dpy,0));
+            del_min[idx] = sqrt(fmax(dpx,0)*fmax(dpx,0) + fmin(dmx,0)*fmin(dmx,0) + fmax(dpy,0)*fmax(dpy,0) + fmin(dmy,0)*fmin(dmy,0));
+            n_star_x = dpx/sqrt(dpx*dpx + dpy*dpy) + dmx/sqrt(dmx*dmx + dpy*dpy) + dpx/sqrt(dpx*dpx + dmy*dmy) + dmx/sqrt(dmx*dmx + dmy*dmy);
+            n_star_y = dpy/sqrt(dpx*dpx + dpy*dpy) + dpy/sqrt(dmx*dmx + dpy*dpy) + dmy/sqrt(dpx*dpx + dmy*dmy) + dmy/sqrt(dmx*dmx + dmy*dmy);
+            xNorm[idx] = n_star_x/sqrt(n_star_x*n_star_x + n_star_y*n_star_y);
+            yNorm[idx] = n_star_y/sqrt(n_star_x*n_star_x + n_star_y*n_star_y);
+        }
+    }
+
+    /**
+     * Calculate Forcing Function (Balbi model at mid-flame height or first grid cell if no fire)
+     */
+    for (int j=0; j < ny; j++){
+        for (int i=0; i < nx; i++){
+            int idx = i + j*nx;
+            // calculate mid-flame height
+            int kh   = 0;
+            double H = fire_cells[idx].properties.h;
+            double T = solver->terrain[idx];
+            double D = fuel->fueldepthm;
+            double FD = H + T + D;
+        
+            if (H==0) {
+                kh = 1;
+            } else {
+                kh = std::round(FD/dz);
+            }
+
+            // call u and v from CUDA-Urb solver
+            double u = solver->u[i + j*(nx) + kh*(ny)*(nx)];
+            double v = solver->v[i + j*(nx) + kh*(ny)*(nx)];
+            // call norm for cells
+            double x_norm = xNorm[idx];
+            double y_norm = yNorm[idx];
+            // run Balbi model
+            struct FireProperties fp = balbi(fuel,u,v,x_norm,y_norm,0.0,0.0650);
+            fire_cells[idx].properties = fp;
+            Force[idx] = fp.r
+        }
+    }
     // compute time step
     dt = computeTimeStep();
     
@@ -263,8 +322,8 @@ void Fire :: run(Solver* solver) {
         double v = solver->v[ii + jj*(nx+1) + kh*(ny+1)*(nx+1)];
         
         // run Balbi model
-        double x_norm = 0.0;
-        double y_norm = 0.0;
+        double x_norm = xNorm[id];
+        double y_norm = yNorm[id];
         struct FireProperties fp = balbi(fuel,u,v,x_norm,y_norm,0.0,0.0650);
         fire_cells[id].properties = fp;
         
@@ -304,6 +363,7 @@ void Fire :: run(Solver* solver) {
     }
 }
 
+/*
 // compute fire spread for burning cells
 void Fire :: move(Solver* solver) {
     
@@ -584,6 +644,33 @@ void Fire :: move(Solver* solver) {
         for (int i = 0; i < nx; i++){
             int idx = i + j*nx;       
             burn_flag[idx] = fire_cells[idx].state.burn_flag;
+        }
+    }
+}
+*/
+/** 
+ * Advance level set
+ */
+void Fire :: move(Solver* solver){
+    for (int j=1; j < ny-1; j++){
+        for (int i=1; i < nx-1; i++){
+            int idx = i + j*nx;
+            // get fire proiperties at this location
+            struct FireProperties fp = fire_cells[idx].properties;
+            // advance level set
+            front_map[idx] = front_map[idx] - dt*(fmax(Force[idx],0)*del_plus[idx] + fmin(Force[idx],0)*del_min[idx]);
+            // if level set < threshold, set burn flag to 1
+            if (front_map[idx] <= 0.01 && burn_flag[idx] < 1){
+                burn_flag[idx] = 1;
+            }
+            // if burn flag = 1, update burn time
+            if (burn_flag[idx] == 1){
+                fire_cells[idx].state.burn_time += dt;
+            }
+            // set burn flag to 2 (burned) if residence time exceeded
+            if (fire_cells[idx].state.burn_time >= fp.tau) {
+                fire_cells[idx].state.burn_flag = 2;
+            }
         }
     }
 }

@@ -54,6 +54,16 @@ class Fire {
         std::vector<double> w_base;
 
         std::vector<double> front_map;
+
+        std::vector<double> del_plus;
+
+        std::vector<double> del_min;
+
+        std::vector<double> xNorm;
+
+        std::vector<double> yNorm;
+
+        std::vector<double> Force;
         
         void run(Solver*);
         void move(Solver*);      
