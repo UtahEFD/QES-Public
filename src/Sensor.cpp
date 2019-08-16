@@ -561,7 +561,7 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 	{
 		double sum_z0=0.0;
 		double z0_effective;
-		int height_id, blending_id, max_terrain_id;
+		int height_id, blending_id, max_terrain_id=0;
 		std::vector<float> blending_velocity, blending_theta;
 		for (auto i=0; i<nx; i++)
 		{
