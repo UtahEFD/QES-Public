@@ -649,7 +649,7 @@ void Fire :: move(Solver* solver) {
 }
 */
 /** 
- * Advance level set
+ * Compute fire spread. Advance level set.
  */
 void Fire :: move(Solver* solver){
     for (int j=1; j < ny-1; j++){
@@ -659,9 +659,13 @@ void Fire :: move(Solver* solver){
             struct FireProperties fp = fire_cells[idx].properties;
             // advance level set
             front_map[idx] = front_map[idx] - dt*(fmax(Force[idx],0)*del_plus[idx] + fmin(Force[idx],0)*del_min[idx]);
+            // if level set <= 1, set burn_flag to 1 - L.S. for preheating
+            if (front_map[idx] <= 1 && burn_flag[idx] < 1){
+                fire_cells[idx].state.burn_flag = 1 - front_map[idx];
+            }
             // if level set < threshold, set burn flag to 1
             if (front_map[idx] <= 0.01 && burn_flag[idx] < 1){
-                burn_flag[idx] = 1;
+                fire_cells[idx].state.burn_flag = 1;
             }
             // if burn flag = 1, update burn time
             if (burn_flag[idx] == 1){
@@ -671,6 +675,8 @@ void Fire :: move(Solver* solver){
             if (fire_cells[idx].state.burn_time >= fp.tau) {
                 fire_cells[idx].state.burn_flag = 2;
             }
+            // update burn flag field
+            burn_flag[idx] = fire_cells[idx].state.burn_flag;
         }
     }
 }
