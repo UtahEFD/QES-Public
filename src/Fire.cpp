@@ -257,7 +257,7 @@ void Fire :: run(Solver* solver) {
             // run Balbi model
             struct FireProperties fp = balbi(fuel,u,v,x_norm,y_norm,0.0,0.0650);
             fire_cells[idx].properties = fp;
-            Force[idx] = fp.r
+            Force[idx] = fp.r;
         }
     }
     // compute time step
