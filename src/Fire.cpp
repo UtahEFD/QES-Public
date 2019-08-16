@@ -235,6 +235,8 @@ void Fire :: run(Solver* solver) {
     for (int j=0; j < ny; j++){
         for (int i=0; i < nx; i++){
             int idx = i + j*nx;
+            // get fuel properties at this location
+            struct FuelProperties* fuel = fire_cells[idx].fuel;
             // calculate mid-flame height
             int kh   = 0;
             double H = fire_cells[idx].properties.h;
