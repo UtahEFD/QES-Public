@@ -663,7 +663,7 @@ void Fire :: move(Solver* solver){
             front_map[idx] = front_map[idx] - dt*(fmax(Force[idx],0)*del_plus[idx] + fmin(Force[idx],0)*del_min[idx]);
             // if level set <= 1, set burn_flag to 1 - L.S. for preheating
             if (front_map[idx] <= 1 && burn_flag[idx] < 1){
-                fire_cells[idx].state.burn_flag = 1 - front_map[idx];
+                fire_cells[idx].state.burn_flag = 0.5;
             }
             // if level set < threshold, set burn flag to 1
             if (front_map[idx] <= 0.01 && burn_flag[idx] < 1){
