@@ -18,7 +18,6 @@
 
 #include "URBInputData.h"
 #include "Solver.h"
-#include "Sensor.h"
 
 
 /**
@@ -42,5 +41,5 @@ protected:
     double *d_R;              /**< Divergence of initial velocity field on device (GPU) */
     double *d_lambda, *d_lambda_old;		/**< Lagrange multipliers on device (GPU) */
 
-    virtual void solve(const URBInputData* UID, URBGeneralData* ugd, bool solveWind);
+    virtual void solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWind);
 };

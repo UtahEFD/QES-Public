@@ -78,9 +78,10 @@ void ESRIShapefile::loadVectorData( std::vector< std::vector< polyVert > > &poly
                 break;
             case OFTInteger64:
                 //printf( CPL_FRMT_GIB ",", feature->GetFieldAsInteger64( idxField ));
-                building_height.push_back(feature->GetFieldAsInteger( idxField )*3);
+                building_height.push_back(feature->GetFieldAsInteger( idxField ));
                 break;
             case OFTReal:
+                building_height.push_back(feature->GetFieldAsDouble( idxField ));
                 //printf( "%.3f,", feature->GetFieldAsDouble( idxField ) );
                 break;
             case OFTString:

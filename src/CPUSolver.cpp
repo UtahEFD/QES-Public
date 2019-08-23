@@ -34,6 +34,7 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
         }
     }
 
+
     if (solveWind)
     {
         auto startSolveSection = std::chrono::high_resolution_clock::now();

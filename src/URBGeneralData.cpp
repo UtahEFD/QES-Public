@@ -101,6 +101,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
 
     dz_array.resize( nz-1, 0.0 );
     z.resize( nz-1 );
+    z_face.resize( nz-1);
 
     if (UID->simParams->verticalStretching == 0)    // Uniform vertical grid
     {
@@ -121,9 +122,11 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     dz = *std::min_element(dz_array.begin() , dz_array.end());     // Set dz to minimum value of
 
     z[0] = -0.5*dz_array[0];
+    z_face[0] = 0.0;
     for (auto k=1; k<z.size(); k++)
     {
         z[k] = z[k-1] + dz_array[k];     /**< Location of face centers in z-dir */
+        z_face[k] = z_face[k-1] + dz_array[k];
     }
 
     z_out.resize( nz-2 );
@@ -166,6 +169,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     n.resize( numcell_cent, 1.0 );
 
     icellflag.resize( numcell_cent, 1 );
+    ibuilding_flag.resize ( numcell_cent, -1 );
 
     // /////////////////////////////////////////
     // Output related data --- should be part of some URBOutputData
@@ -188,6 +192,16 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     u.resize( numcell_face, 0.0 );
     v.resize( numcell_face, 0.0 );
     w.resize( numcell_face, 0.0 );
+
+    /// defining ground solid cells (ghost cells below the surface)
+    for (int j = 0; j < ny-1; j++)
+    {
+        for (int i = 0; i < nx-1; i++)
+        {
+            int icell_cent = i + j*(nx-1);
+            icellflag[icell_cent] = 2;
+        }
+    }
 
     //////////////////////////////////////////////////////////////////////////////////
     /////    Create sensor velocity profiles and generate initial velocity field /////
@@ -214,7 +228,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     {
         for (auto j=0; j<ny; j++)
         {
-            int icell_face = i+j*nx+nz*nx*ny;
+            int icell_face = i+j*nx+(nz-2)*nx*ny;
             max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face],2.0)+pow(v0[icell_face],2.0)));
         }
     }
@@ -226,11 +240,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     ///////////////////////////////////////////////////////
     // Handle remaining Terrain processing components here
     ////////////////////////////////////////////////////////
-    //
-    // Behnam also notes that this section will be completely changed
-    // to NOT treat terrain cells as "buildings" -- Behnam will fix
-    // this
-    //
+
     if (UID->simParams->DTE_heightField)
     {
         // ////////////////////////////////
@@ -291,7 +301,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     // allBuildingsVector
     allBuildingsV.clear();  // make sure there's nothing on it
 
-    // After Terrain is process, handle remaining processing of SHP
+    // After Terrain is processed, handle remaining processing of SHP
     // file data
 
     if (UID->simParams->SHPData)
@@ -363,17 +373,13 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
         // Loop to create each of the polygon buildings read in from the shapefile
         for (auto pIdx = 0; pIdx< UID->simParams->shpPolygons.size(); pIdx++)
         {
-            // Create polygon buildings
-            // Pete needs to move this into URBInputData processing BUT
-            // instead of adding to the poly_buildings vector, it really
-            // needs to be pushed back onto buildings within the
-            // UID->buildings structures...
             allBuildingsV.push_back (new PolyBuilding (UID, this, pIdx));
             building_id.push_back(allBuildingsV.size()-1);
             allBuildingsV[pIdx]->setPolyBuilding(this);
             allBuildingsV[pIdx]->setCellFlags(UID, this);
             effective_height.push_back (allBuildingsV[pIdx]->height_eff);
         }
+        std::cout << "Buildings created from shapefile...\n";
     }
 
 
@@ -414,7 +420,17 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     // virtual function in the Building class to get the appropriate
     // data for the sort.
     mergeSort( effective_height, allBuildingsV, building_id );
-    
+
+    /*for (int i = 0; i < allBuildingsV.size(); i++)
+    {
+      std::cout << "height: " << allBuildingsV[building_id[i]]->H << std::endl;
+      std::cout << "k_end: " << allBuildingsV[building_id[i]]->k_end << std::endl;
+      int index_building_face = allBuildingsV[building_id[i]]->i_building_cent + allBuildingsV[building_id[i]]->j_building_cent*nx + (allBuildingsV[building_id[i]]->k_end)*nx*ny;
+      std::cout << "u0_h:   " << u0[index_building_face] << "\t\t" << "v0_h:  " << v0[index_building_face] << std::endl;
+
+
+    }*/
+
     // ///////////////////////////////////////
     // Generic Parameterization Related Stuff
     // ///////////////////////////////////////
@@ -424,43 +440,47 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
       allBuildingsV[building_id[i]]->canopyVegetation(this);
     }
 
-    std::cout << "Applying upwind cavity parameterization...\n";
-    for (int i = 0; i < allBuildingsV.size(); i++)
+
+
+    ///////////////////////////////////////////
+    //   Upwind Cavity Parameterization     ///
+    ///////////////////////////////////////////
+    if (UID->simParams->upwindCavityFlag > 0)
     {
-      if (UID->simParams->upwindCavityFlag > 0)
+      std::cout << "Applying upwind cavity parameterization...\n";
+      for (int i = 0; i < allBuildingsV.size(); i++)
       {
         allBuildingsV[building_id[i]]->upwindCavity(UID, this);
       }
+      std::cout << "Upwind cavity parameterization done...\n";
     }
-    std::cout << "Upwind cavity parameterization done...\n";
 
-    std::cout << "Applying wake behind building parameterization...\n";
-    for (int i = 0; i < allBuildingsV.size(); i++)
+
+     //////////////////////////////////////////////////
+    //   Far-Wake and Cavity Parameterizations     ///
+    //////////////////////////////////////////////////
+    if (UID->simParams->wakeFlag > 0)
     {
-      if (UID->simParams->wakeFlag > 0)
+      std::cout << "Applying wake behind building parameterization...\n";
+      for (int i = 0; i < allBuildingsV.size(); i++)
       {
-        // for now this does the canopy stuff for us
-        allBuildingsV[building_id[i]]->polygonWake(UID, this);
+        allBuildingsV[building_id[i]]->polygonWake(UID, this, building_id[i]);
       }
+      std::cout << "Wake behind building parameterization done...\n";
     }
-    std::cout << "Wake behind building parameterization done...\n";
 
-
-
-
-    // ///////////////////////////////////////
-    // ///////////////////////////////////////
-
-    /// defining ground solid cells (ghost cells below the surface)
-    for (int j = 0; j < ny-1; j++)
+    ///////////////////////////////////////////
+    //   Street Canyon Parameterization     ///
+    ///////////////////////////////////////////
+    if (UID->simParams->streetCanyonFlag > 0)
     {
-        for (int i = 0; i < nx-1; i++)
-        {
-            int icell_cent = i + j*(nx-1);
-            icellflag[icell_cent] = 2;
-        }
+      std::cout << "Applying street canyon parameterization...\n";
+      allBuildingsV[0]->streetCanyon(this);
+      std::cout << "Street canyon parameterization done...\n";
     }
 
+    // ///////////////////////////////////////
+    // ///////////////////////////////////////
 
       wall = new Wall();
 
@@ -475,14 +495,11 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
      * to the cells near Walls
      *
      */
-     wall->wallLogBC (this);
+     //wall->wallLogBC (this);
 
      wall->setVelocityZero (this);
 
      wall->solverCoefficients (this);
-
-
-
 
 
     //////////////////////////////////////////////////
@@ -625,7 +642,7 @@ void URBGeneralData::mergeSort( std::vector<float> &effective_height, std::vecto
       for (unsigned int i = 0; i < allBuildingsV.size(); i++)
       {
           if (rC == effective_height_R.size() || ( lC != effective_height_L.size() &&
-              effective_height_L[lC] > effective_height_R[rC]))
+              effective_height_L[lC] < effective_height_R[rC]))
           {
               effective_height[i] = effective_height_L[lC];
               building_id[i] = building_id_L[lC++];

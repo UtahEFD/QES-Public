@@ -37,6 +37,8 @@ public:
 	float upwind_dir;						/**< Wind direction of initial velocity at the height of building at the centroid */
 	float height_eff;						/**< Effective height of the building */
 	float building_cent_x, building_cent_y;				/**< Coordinates of centroid of the building */
+	int i_building_cent, j_building_cent;
+
 
 	double u0_h, v0_h; 				/**< u/v velocity at the height of building at the centroid */
 
@@ -73,12 +75,16 @@ public:
     }
 
 
-    virtual void polygonWake(const URBInputData* UID, URBGeneralData* UGD)
+    virtual void polygonWake(const URBInputData* UID, URBGeneralData* UGD, int building_id)
     {
     }
 
-    virtual void canopyVegetation(URBGeneralData *ugd)
+    virtual void canopyVegetation(URBGeneralData *UGD)
     {
     }
+
+		virtual void streetCanyon(URBGeneralData *UGD)
+		{
+		}
 
 };

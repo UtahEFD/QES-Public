@@ -26,10 +26,10 @@ void URBArgs::processArguments(int argc, char *argv[])
         printUsage();
         exit(EXIT_SUCCESS);
     }
-    
+
     verbose = isSet("verbose");
     if (verbose) std::cout << "Verbose Output: ON" << std::endl;
-    
+
     isSet( "quicproj", quicFile );
     if (quicFile != "") std::cout << "quicproj set to " << quicFile << std::endl;
 

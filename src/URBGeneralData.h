@@ -68,6 +68,7 @@ public:
 
     std::vector<float> z0_domain;
 
+    std::vector<int> ibuilding_flag;
     std::vector<int> building_id;
     std::vector<Building*> allBuildingsV;
 
@@ -75,6 +76,7 @@ public:
 
     std::vector<float> dz_array;
     std::vector<float> x,y,z;
+    std::vector<float> z_face;
     std::vector<double> x_out,y_out,z_out;
 
     /// Declaration of coefficients for SOR solver

@@ -22,13 +22,6 @@
 
 #include "Vector3.h"
 
-#include "Cut_cell.h"
-
-#include "Cell.h"
-#include "Sensor.h"
-#include "Canopies.h"
-#include "Canopy.h"
-
 using namespace std;
 
 /**< \class Solver
@@ -83,9 +76,9 @@ protected:
 
 
 public:
-    Solver(const URBInputData* UID, URBGeneralData* ugd);
+    Solver(const URBInputData* UID, URBGeneralData* UGD);
 
-    virtual void solve(const URBInputData *UID, URBGeneralData* ugd, bool solveWind) = 0;
+    virtual void solve(const URBInputData *UID, URBGeneralData* UGD, bool solveWind) = 0;
 
     /**
      * @brief
