@@ -1,35 +1,35 @@
 <simulationParameters>
 
-	<!--SHP>../scratch/Single_building.shp</SHP-->				<!-- Address to shapefile location-->
-	<!--SHPBuildingLayer>Single_building</SHPBuildingLayer-->
+	<!--SHP>../scratch/building.shp</SHP-->				<!-- Address to shapefile location-->
+	<!--SHPBuildingLayer>building</SHPBuildingLayer-->
 
-  	<halo_x> 0.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
+	<halo_x> 0.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
   	<halo_y> 0.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain)-->
 
-	<domain> 40 40 100 </domain>
-	<cellSize> 5.0 5.0 2.0 </cellSize> <!-- Meters-->
+	<domain> 200 200 200 </domain>
+	<cellSize> 1.0 1.0 1.0 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>              <!-- vertical stretching (0-uniform grid, 1-costum grid)-->
 
 	<totalTimeIncrements> 0 </totalTimeIncrements> 				<!-- Number of time steps-->
 	<rooftopFlag> 0 </rooftopFlag> 											<!-- Rooftop flag (0-none, 1-log profile, 2-vortex) -->
-	<upwindCavityFlag> 0 </upwindCavityFlag> 						<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP, 3-HMVP) -->
-	<streetCanyonFlag> 0 </streetCanyonFlag> 						<!-- Street canyon flag (0-none, 1-Roeckle, 2-CPB, 3-exp. param. PKK, 4-Roeckle w/ Fackrel) -->
+	<upwindCavityFlag> 2 </upwindCavityFlag> 						<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP, 3-HMVP) -->
+	<streetCanyonFlag> 4 </streetCanyonFlag> 						<!-- Street canyon flag (0-none, 1-Roeckle, 2-CPB, 3-exp. param. PKK, 4-Roeckle w/ Fackrel) -->
 	<streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
-	<wakeFlag> 0 </wakeFlag> 												<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle, 3-Area Scaled) -->
+	<wakeFlag> 2 </wakeFlag> 												<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle, 3-Area Scaled) -->
 	<sidewallFlag> 0 </sidewallFlag> 								<!-- Sidewall flag (0-off, 1-on) -->
 	<maxIterations> 500 </maxIterations> 						<!-- Maximum number of iterations -->
 	<residualReduction> 3 </residualReduction> 			<!-- Residual Reduction (Orders of Magnitude) -->
 	<meshTypeFlag> 0 </meshTypeFlag> 								<!-- Type of meshing scheme (0-Stair step (origional QUIC), 1-Cut-cell method -->
 	<useDiffusion> 0 </useDiffusion>
 	<domainRotation> 0 </domainRotation>  					<!-- Rotation angle of domain relative to true north -->
-	<UTMx> 0.0 </UTMx> 														<!-- x component (m) in UTM -->
-	<UTMy> 0.0 </UTMy> 														<!-- y component (m) in UTM -->
+	<UTMx> 0 </UTMx> 														<!-- x component (m) in UTM -->
+	<UTMy> 0 </UTMy> 														<!-- y component (m) in UTM -->
 	<UTMZone> 1 </UTMZone> 												<!-- UTM zone that domain located -->
 	<UTMZoneLetter> 17 </UTMZoneLetter>
 </simulationParameters>                     <!-- End of simulation parameters -->
 <metParams>
 	<metInputFlag> 0 </metInputFlag>
-	<num_sites> 2 </num_sites>
+	<num_sites> 1 </num_sites>
 	<maxSizeDataPoints> 1 </maxSizeDataPoints>
 	<siteName> sensor1 </siteName>
 	<fileName> sensor1.inp </fileName>
@@ -47,13 +47,15 @@
     <reciprocal> 0.0 </reciprocal> 						<!-- Reciprocal Monin-Obukhov Length (1/m) -->
     <height> 10.0 </height> 										<!-- Height of the sensor -->
     <speed> 5.0 </speed> 											<!-- Measured speed at the sensor height -->
-    <direction> 270.0 </direction> 						<!-- Wind direction of sensor -->
+    <direction> 360.0 </direction> 						<!-- Wind direction of sensor -->
   </sensor>                       	<!-- Wnd of sensor section -->
 
-
 </metParams>								<!-- End of meteorological parameters -->
-<canopies>
+<!--canopies>
 	<num_canopies> 1 </num_canopies>
+	<landuseFlag> 0 </landuseFlag>
+	<landuseVegetationFlag> 0 </landuseVegetationFlag>
+	<landuseUrbanFlag> 0 </landuseUrbanFlag>
 	<canopy>
 		<attenuationCoefficient> 1.97 </attenuationCoefficient>
 		<height> 10.0 </height>
@@ -62,9 +64,8 @@
 		<yStart> 90.0 </yStart>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
-		<canopyRotation> 0.0 </canopyRotation>
 	</canopy>
-</canopies>
+</canopies-->
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 
@@ -75,17 +76,30 @@
   <sensorVelocityFlag> 0 </sensorVelocityFlag>
   <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
-<!--buildings>
+<buildings>
 	<wallRoughness> 0.1 </wallRoughness>
-	<numBuildings> 1 </numBuildings>
+	<numBuildings> 2 </numBuildings>
 	<numPolygonNodes> 0 </numPolygonNodes>
 	<rectangularBuilding>
-		<height> 20.0 </height>
+		<groupID> 1 </groupID>
+		<buildingType> 1 </buildingType>
+		<height> 70.0 </height>
 		<baseHeight> 0 </baseHeight>
-		<xStart> 90.0 </xStart>
-		<yStart> 90.0 </yStart>
+		<xStart> 70.0 </xStart>
+		<yStart> 70.0 </yStart>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
 		<buildingRotation> 0.0 </buildingRotation>
 	</rectangularBuilding>
-</buildings-->
+	<rectangularBuilding>
+		<groupID> 1 </groupID>
+		<buildingType> 1 </buildingType>
+		<height> 20.0 </height>
+		<baseHeight> 0 </baseHeight>
+		<xStart> 95.0 </xStart>
+		<yStart> 70.0 </yStart>
+		<length> 20.0 </length>
+		<width> 20.0 </width>
+		<buildingRotation> 0.0 </buildingRotation>
+	</rectangularBuilding>
+</buildings>

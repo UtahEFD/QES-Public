@@ -110,7 +110,19 @@ public:
     * parameterization to them.
     *
     */
-    void polygonWake (const URBInputData* UID, URBGeneralData* UGD);
+    void polygonWake (const URBInputData* UID, URBGeneralData* UGD, int building_id);
+
+
+    /**
+    *
+    * This function applies the street canyon parameterization to the qualified space between buildings defined as polygons.
+    * This function reads in building features like nodes, building height and base height and uses
+    * features of the building defined in the class constructor and setCellsFlag function. It defines
+    * cells qualified in the space between buildings and applies the approperiate parameterization to them.
+    * More information: "Improvements to a fast-response urban wind model, M. Nelson et al. (2008)"
+    *
+    */
+    void streetCanyon (URBGeneralData *UGD);
 
 
 

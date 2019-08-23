@@ -121,7 +121,7 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
                     int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
                     if( UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
                     {
-                        UGD->icellflag[icell_cent] = 6;           // Canopy cell
+                        UGD->icellflag[icell_cent] = 9;           // Canopy cell
                     }
                 }
             }
@@ -136,7 +136,7 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
             for (auto k=k_start; k<k_end; k++)
             {
                 int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] == 6)       // if the cell is defined as canopy
+                if (UGD->icellflag[icell_cent] == 9)       // if the cell is defined as canopy
                 {
                     int id = i+j*(UGD->nx-1);
                     UGD->canopy_top[id] = base_height+H;

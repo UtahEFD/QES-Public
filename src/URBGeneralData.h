@@ -68,6 +68,7 @@ public:
 
     std::vector<float> z0_domain;
 
+    std::vector<int> ibuilding_flag;
     std::vector<int> building_id;
     std::vector<Building*> allBuildingsV;
 
@@ -75,13 +76,15 @@ public:
 
     std::vector<float> dz_array;
     std::vector<float> x,y,z;
+    std::vector<float> z_face;
     std::vector<double> x_out,y_out,z_out;
 
     /// Declaration of coefficients for SOR solver
     std::vector<float> e,f,g,h,m,n;
 
     // The following are mostly used for output
-    std::vector<int> icellflag;  /**< Cell index flag (0 = building/terrain, 1 = fluid) */
+    std::vector<int> icellflag;  /**< Cell index flag (0 = building, 1 = fluid, 2 = terrain, 3 = upwind_cavity
+                                                       4 = cavity, 5 = farwake, 6 = canopy vegetation, 7 = cut-cells) */
     std::vector<int> icellflag_out;
     std::vector<double> u_out,v_out,w_out;
     std::vector<double> terrain;

@@ -5,11 +5,7 @@
  * algorithm in serial order on a CPU.
  */
 
-#include "URBInputData.h"
-#include "Solver.h"
-#include "DTEHeightField.h"
-#include "RectangularBuilding.h"
-#include "Sensor.h"
+#include <cstdio>
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -17,7 +13,9 @@
 #include <vector>
 #include <chrono>
 
-using namespace std;
+#include "URBInputData.h"
+#include "Solver.h"
+
 
 class CPUSolver : public Solver
 {
@@ -26,6 +24,7 @@ public:
         : Solver(UID, UGD)
     {
     }
-    
-    virtual void solve(const URBInputData* UID, URBGeneralData* ugd, bool solveWind);
+protected:
+
+    virtual void solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWind);
 };

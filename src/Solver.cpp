@@ -61,18 +61,18 @@ void Solver::printProgress (float percentage)
 * used in the solvers - this is only meant work with CUDA-URB!
  */
 
-Solver::Solver(const URBInputData* UID, URBGeneralData * ugd)
+Solver::Solver(const URBInputData* UID, URBGeneralData * UGD)
     : eta( pow(alpha1/alpha2, 2.0) ),
-      A( pow( ugd->dx/ugd->dy, 2.0 ) ),
-      B( eta*pow( ugd->dx/ugd->dz, 2.0) ),
+      A( pow( UGD->dx/UGD->dy, 2.0 ) ),
+      B( eta*pow( UGD->dx/UGD->dz, 2.0) ),
       itermax( UID->simParams->maxIterations )
 {
-    R.resize( ugd->numcell_cent, 0.0 );
+    R.resize( UGD->numcell_cent, 0.0 );
 
-    lambda.resize( ugd->numcell_cent, 0.0 );
-    lambda_old.resize( ugd->numcell_cent, 0.0 );
+    lambda.resize( UGD->numcell_cent, 0.0 );
+    lambda_old.resize( UGD->numcell_cent, 0.0 );
 
-
+}
 /*
         // !!!!!!!!!!!!!!!!!!!!! @*@*@*@*@*@
         // We are here now...
@@ -113,12 +113,12 @@ Solver::Solver(const URBInputData* UID, URBGeneralData * ugd)
     /////////////////////////////////////////////////////////////
     else
     {
-      std::vector<std::vector<std::vector<float>>> x_cut(ugd->numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
-      std::vector<std::vector<std::vector<float>>> y_cut(ugd->numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
-      std::vector<std::vector<std::vector<float>>> z_cut(ugd->numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
+      std::vector<std::vector<std::vector<float>>> x_cut(UGD->numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
+      std::vector<std::vector<std::vector<float>>> y_cut(UGD->numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
+      std::vector<std::vector<std::vector<float>>> z_cut(UGD->numcell_cent, std::vector<std::vector<float>>(6, std::vector<float>(6,0.0)));
 
-      std::vector<std::vector<int>> num_points(ugd->numcell_cent, std::vector<int>(6,0));
-      std::vector<std::vector<float>> coeff(ugd->numcell_cent, std::vector<float>(6,0.0));
+      std::vector<std::vector<int>> num_points(UGD->numcell_cent, std::vector<int>(6,0));
+      std::vector<std::vector<float>> coeff(UGD->numcell_cent, std::vector<float>(6,0.0));
 
     	for (size_t i = 0; i < buildings.size(); i++)
     	{
@@ -138,9 +138,6 @@ Solver::Solver(const URBInputData* UID, URBGeneralData * ugd)
       }
     }*/
 
-
-
-}
 
 /*void Solver::calculateCoefficients(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag,
                         float* n, float* m, float* f, float* e, float* h, float* g,

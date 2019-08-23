@@ -95,8 +95,6 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
     }
-    
-    
     // Run urb simulation code
     solver->solve(UID, UGD, !arguments.solveWind );
 
@@ -115,7 +113,6 @@ int main(int argc, char *argv[])
     if (output) {
         UGD->save();
     }
-    
     exit(EXIT_SUCCESS);
 }
 

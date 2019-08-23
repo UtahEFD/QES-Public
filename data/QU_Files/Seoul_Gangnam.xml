@@ -13,7 +13,7 @@
   <totalTimeIncrements> 1 </totalTimeIncrements> 				<!-- Number of time steps-->
   <rooftopFlag> 0 </rooftopFlag> 											<!-- Rooftop flag (0-none, 1-log profile, 2-vortex) -->
   <upwindCavityFlag> 2 </upwindCavityFlag> 						<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP, 3-HMVP) -->
-  <streetCanyonFlag> 0 </streetCanyonFlag> 						<!-- Street canyon flag (0-none, 1-Roeckle, 2-CPB, 3-exp. param. PKK, 4-Roeckle w/ Fackrel) -->
+  <streetCanyonFlag> 1 </streetCanyonFlag> 						<!-- Street canyon flag (0-none, 1-Roeckle, 2-CPB, 3-exp. param. PKK, 4-Roeckle w/ Fackrel) -->
   <streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
   <wakeFlag> 2 </wakeFlag> 												<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle, 3-Area Scaled) -->
   <sidewallFlag> 0 </sidewallFlag> 								<!-- Sidewall flag (0-off, 1-on) -->
@@ -51,7 +51,7 @@
     <reciprocal> 0.0 </reciprocal> 						<!-- Reciprocal Monin-Obukhov Length (1/m) -->
     <height> 10 </height> 							<!-- Height of the sensor -->
     <speed> 5.0 </speed> 							<!-- Measured speed at the sensor height -->
-    <direction> 240.0 </direction> 					<!-- Wind direction of sensor -->
+    <direction> 270.0 </direction> 					<!-- Wind direction of sensor -->
   </sensor>  				                     	<!-- End of sensor section -->
 </metParams>  								<!-- End of meteorological parameters -->
 <fileOptions>
