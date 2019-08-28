@@ -60,9 +60,6 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-        // Generate the general URB data from all inputs
-        URBGeneralData* UGD = new URBGeneralData(UID, output);
-
     //if the commandline dem file is blank, and a file was specified in the xml,
     //use the dem file from the xml
     std::string demFile = "";
@@ -100,6 +97,9 @@ int main(int argc, char *argv[])
     if (UID->fileOptions->outputFlag==1) {
         output = new Output(arguments.netCDFFile);
     }
+
+    // Generate the general URB data from all inputs
+    URBGeneralData* UGD = new URBGeneralData(UID, output);
 
     // //////////////////////////////////////////
     //
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
     
     // save initial fields in solver and fire
     if (output != nullptr) {
-        solver->save(output);
+        UGD->save(output);
     }
     
     // save any fire data
@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
             UGD->u0 = u0;
             UGD->v0 = v0;
             UGD->w0 = w0;
-            UGD->solve(solver);
+            solver->solve(solver);
         }
         
         // loop 2 times for fire
@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
                 
         // save solver data
         if (output != nullptr) {
-            solver->save(output);
+            UGD->save(output);
         }
         
         // save any fire data
