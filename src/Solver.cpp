@@ -62,7 +62,8 @@ void Solver::printProgress (float percentage)
  */
 
 Solver::Solver(const URBInputData* UID, URBGeneralData * UGD)
-    : eta( pow(alpha1/alpha2, 2.0) ),
+    : alpha1(1), alpha2(1),
+      eta( pow(alpha1/alpha2, 2.0) ),
       A( pow( UGD->dx/UGD->dy, 2.0 ) ),
       B( eta*pow( UGD->dx/UGD->dz, 2.0) ),
       itermax( UID->simParams->maxIterations )

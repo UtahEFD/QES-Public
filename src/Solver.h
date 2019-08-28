@@ -35,6 +35,13 @@ class Solver
 protected:
 
     ////////////////////////////////////////////////////////////////////////////
+    //////// Variables and constants needed in solver and other functions-- Behnam
+    ////////////////////////////////////////////////////////////////////////////
+    // Matthieu will use change them in future
+    const int alpha1 = 1;        /**< Gaussian precision moduli */
+    const int alpha2 = 1;        /**< Gaussian precision moduli */
+
+    ////////////////////////////////////////////////////////////////////////////
     //////// Variables and constants needed only in solver -- Behnam
     //////// These can be stayed in the solver class
     ////////////////////////////////////////////////////////////////////////////
@@ -59,12 +66,6 @@ protected:
 
 
 
-    ////////////////////////////////////////////////////////////////////////////
-    //////// Variables and constants needed in solver and other functions-- Behnam
-    ////////////////////////////////////////////////////////////////////////////
-    // Matthieu will use change them in future
-    const int alpha1 = 1;        /**< Gaussian precision moduli */
-    const int alpha2 = 1;        /**< Gaussian precision moduli */
 
     /*
      * This prints out the current amount that a process
