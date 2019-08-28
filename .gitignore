@@ -1,3 +1,6 @@
+# emacs backup/tilde files
+*~
+
 build/
 Build/
 src/docs/*
