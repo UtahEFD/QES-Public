@@ -421,16 +421,6 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     // data for the sort.
     mergeSort( effective_height, allBuildingsV, building_id );
 
-    /*for (int i = 0; i < allBuildingsV.size(); i++)
-    {
-      std::cout << "height: " << allBuildingsV[building_id[i]]->H << std::endl;
-      std::cout << "k_end: " << allBuildingsV[building_id[i]]->k_end << std::endl;
-      int index_building_face = allBuildingsV[building_id[i]]->i_building_cent + allBuildingsV[building_id[i]]->j_building_cent*nx + (allBuildingsV[building_id[i]]->k_end)*nx*ny;
-      std::cout << "u0_h:   " << u0[index_building_face] << "\t\t" << "v0_h:  " << v0[index_building_face] << std::endl;
-
-
-    }*/
-
     // ///////////////////////////////////////
     // Generic Parameterization Related Stuff
     // ///////////////////////////////////////
@@ -439,8 +429,6 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
       // for now this does the canopy stuff for us
       allBuildingsV[building_id[i]]->canopyVegetation(this);
     }
-
-
 
     ///////////////////////////////////////////
     //   Upwind Cavity Parameterization     ///
@@ -477,6 +465,19 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
       std::cout << "Applying street canyon parameterization...\n";
       allBuildingsV[0]->streetCanyon(this);
       std::cout << "Street canyon parameterization done...\n";
+    }
+
+    ///////////////////////////////////////////
+    //      Sidewall Parameterization       ///
+    ///////////////////////////////////////////
+    if (UID->simParams->sidewallFlag > 0)
+    {
+      std::cout << "Applying sidewall parameterization...\n";
+      for (int i = 0; i < allBuildingsV.size(); i++)
+      {
+        allBuildingsV[building_id[i]]->sideWall(UID, this);
+      }
+      std::cout << "Sidewall parameterization done...\n";
     }
 
     // ///////////////////////////////////////

@@ -125,6 +125,19 @@ public:
     void streetCanyon (URBGeneralData *UGD);
 
 
+    /**
+    *
+    * This function applies the sidewall parameterization to the qualified space on the side of buildings defined as polygons.
+    * This function reads in building features like nodes, building height and base height and uses
+    * features of the building defined in the class constructor and setPolyBuilding and setCellsFlag functions. It defines
+    * cells qualified on the side of buildings and applies the approperiate parameterization to them.
+    * More information: "Comprehensive Evaluation of Fast-Response, Reynolds-Averaged Navier–Stokes, and Large-Eddy Simulation
+    * Methods Against High-Spatial-Resolution Wind-Tunnel Data in Step-Down Street Canyons, A. N. Hayati et al. (2017)"
+    *
+    */
+    void sideWall (const URBInputData* UID, URBGeneralData* UGD);
+
+
 
 
 };
