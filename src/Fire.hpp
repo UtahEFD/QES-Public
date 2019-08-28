@@ -66,7 +66,7 @@ class Fire {
 
         std::vector<double> Force;
         
-        void run(Solver*);
+        void run(Solver*, URBGeneralData*);
         void move(Solver*);      
         void save(Output*);
         double computeTimeStep();

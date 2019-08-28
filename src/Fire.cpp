@@ -214,7 +214,7 @@ double Fire :: computeTimeStep() {
 /**
  * Compute fire spread for burning cells
  */
-void Fire :: run(Solver* solver) {
+void Fire :: run(Solver* solver, URBGeneralData* UGD) {
     /**
      * Calculate level set gradient and norm (Chapter 6, Sethian 2008)
      */
