@@ -114,7 +114,9 @@ public:
             std::cout << "Mesh complete\n";
         }
         else {
-            std::cerr << "Error: No dem file specified in input\n";
+            // No DEM, so make sure these are null
+            DTE_heightField = nullptr;
+            DTE_mesh = nullptr;
         }
 
 #if 0
