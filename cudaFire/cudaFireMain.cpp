@@ -18,7 +18,7 @@
 #include "Output.hpp"
 
 #include "Fire.hpp"
-#include "DTEHeightField.h"
+//#include "DTEHeightField.h"
 
 namespace pt = boost::property_tree;
 
@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
 
     //if the commandline dem file is blank, and a file was specified in the xml,
     //use the dem file from the xml
+    /*
     std::string demFile = "";
     if (arguments.demFile != "")
         demFile = arguments.demFile;
@@ -91,7 +92,8 @@ int main(int argc, char *argv[])
             return -1;
         }
     }
-    
+    */
+
     // Files was successfully read, so create instance of output class
     Output* output = nullptr;
     if (UID->fileOptions->outputFlag==1) {
@@ -108,9 +110,9 @@ int main(int argc, char *argv[])
     // //////////////////////////////////////////
     Solver *solver, *solverC = nullptr;
     if (arguments.solveType == CPU_Type)
-        solver = new CPUSolver(UID, DTEHF, output);
+        solver = new CPUSolver(UID, UGD);
     else if (arguments.solveType == DYNAMIC_P)
-        solver = new DynamicParallelism(UID, DTEHF, output);
+        solver = new DynamicParallelism(UID, UGD);
     else
     {
         std::cerr << "Error: invalid solve type\n";
@@ -121,20 +123,20 @@ int main(int argc, char *argv[])
     if (arguments.compareType)
     {
         if (arguments.compareType == CPU_Type)
-            solverC = new CPUSolver(UID, DTEHF, output);
+            solverC = new CPUSolver(UID, UGD);
         else if (arguments.compareType == DYNAMIC_P)
-            solverC = new DynamicParallelism(UID, DTEHF, output);
+            solverC = new DynamicParallelism(UID, UGD);
         else
         {
             std::cerr << "Error: invalid comparison type\n";
             exit(EXIT_FAILURE);
         }
     }
-    
+    /*
     //close the scanner
     if (DTEHF)
         DTEHF->closeScanner();
-    
+    */
     // save initial fields to reset after each time+fire loop
     std::vector<double> u0 = UGD->u0;
     std::vector<double> v0 = UGD->v0;
@@ -151,7 +153,7 @@ int main(int argc, char *argv[])
     
     // save initial fields in solver and fire
     if (output != nullptr) {
-        UGD->save(output);
+        UGD->save();
     }
     
     // save any fire data
@@ -198,7 +200,7 @@ int main(int argc, char *argv[])
                 
         // save solver data
         if (output != nullptr) {
-            UGD->save(output);
+            UGD->save();
         }
         
         // save any fire data
