@@ -7,13 +7,17 @@
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
-#include "URBInputData.h"
 #include "handleURBArgs.h"
-#include "Fire.hpp"
+
+#include "URBInputData.h"
+#include "URBGeneralData.h"
+
 #include "Solver.h"
 #include "CPUSolver.h"
 #include "DynamicParallelism.h"
 #include "Output.hpp"
+
+#include "Fire.hpp"
 #include "DTEHeightField.h"
 
 namespace pt = boost::property_tree;
@@ -55,6 +59,9 @@ int main(int argc, char *argv[])
         std::cerr << "QUIC Input file: " << arguments.quicFile << " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
+
+        // Generate the general URB data from all inputs
+        URBGeneralData* UGD = new URBGeneralData(UID, output);
 
     //if the commandline dem file is blank, and a file was specified in the xml,
     //use the dem file from the xml
@@ -129,18 +136,18 @@ int main(int argc, char *argv[])
         DTEHF->closeScanner();
     
     // save initial fields to reset after each time+fire loop
-    std::vector<double> u0 = solver->u0;
-    std::vector<double> v0 = solver->v0;
-    std::vector<double> w0 = solver->w0;
+    std::vector<double> u0 = UGD->u0;
+    std::vector<double> v0 = UGD->v0;
+    std::vector<double> w0 = UGD->w0;
     
     // Create Fire Mapper
-    Fire* fire = new Fire(UID, output);
+    Fire* fire = new Fire(UID, UGD, output);
     
     // set base w in fire model to initial w0
     fire->w_base = w0;
     
     // Run initial solver to generate full field
-    solver->solve(!arguments.solveWind);
+    solver->solve(UID, UGD, !arguments.solveWind);
     
     // save initial fields in solver and fire
     if (output != nullptr) {
@@ -160,10 +167,10 @@ int main(int argc, char *argv[])
         
         // re-set initial fields after first time step
         if (t>0) {
-            solver->u0 = u0;
-            solver->v0 = v0;
-            solver->w0 = w0;
-            solver->solve(solver);
+            UGD->u0 = u0;
+            UGD->v0 = v0;
+            UGD->w0 = w0;
+            UGD->solve(solver);
         }
         
         // loop 2 times for fire
@@ -171,14 +178,14 @@ int main(int argc, char *argv[])
         while (loop<2) {
             
             // run Balbi model to get new w0
-            fire->run(solver);
+            fire->run(solver, UGD);
             
             // run wind solver
-            solver->solve(!arguments.solveWind);
+            solver->solve(UID, UGD, !arguments.solveWind);
             
             // set u0,v0 to current solution
-            solver->u0 = solver->u;
-            solver->v0 = solver->v;
+            UGD->u0 = UGD->u;
+            UGD->v0 = UGD->v;
             
             //increment fire loop
             loop += 1;
