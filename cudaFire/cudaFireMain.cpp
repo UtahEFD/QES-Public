@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
             UGD->u0 = u0;
             UGD->v0 = v0;
             UGD->w0 = w0;
-            solver->solve(solver);
+            solver->solve(UID, UGD, !arguments.solveWind);
         }
         
         // loop 2 times for fire
