@@ -83,8 +83,9 @@ public:
     std::vector<float> e,f,g,h,m,n;
 
     // The following are mostly used for output
-    std::vector<int> icellflag;  /**< Cell index flag (0 = building, 1 = fluid, 2 = terrain, 3 = upwind_cavity
-                                                       4 = cavity, 5 = farwake, 6 = canopy vegetation, 7 = cut-cells) */
+    std::vector<int> icellflag;  /**< Cell index flag (0 = Building, 1 = Fluid, 2 = Terrain, 3 = Upwind_cavity
+                                                       4 = Cavity, 5 = Farwake, 6 = Street canyon, 7 = Cut-cells, 9 = Canopy vegetation
+                                                       10 = Sidewall) */
     std::vector<int> icellflag_out;
     std::vector<double> u_out,v_out,w_out;
     std::vector<double> terrain;

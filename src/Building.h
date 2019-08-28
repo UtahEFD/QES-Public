@@ -44,6 +44,8 @@ public:
 
 	float width_eff;					/**< Effective width of the building */
 	float length_eff;					/**< Effective length of the building */
+	float small_dimension;		/**< Smaller of the height (H) and the effective cross-wind width (Weff) */
+	float long_dimension;			/**< Larger of the height (H) and the effective cross-wind width (Weff) */
 
 	float L_over_H, W_over_H;			/**< Length/width over height of the building */
 	float Lr;										/**< Length of far wake zone */
@@ -84,6 +86,10 @@ public:
     }
 
 		virtual void streetCanyon(URBGeneralData *UGD)
+		{
+		}
+
+		virtual void sideWall(const URBInputData* UID, URBGeneralData* UGD)
 		{
 		}
 
