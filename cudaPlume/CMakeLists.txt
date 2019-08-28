@@ -9,7 +9,7 @@ CUDA_ADD_EXECUTABLE( cudaPlume
   )
 
 target_link_libraries(cudaPlume cudaplumecore)
-target_link_libraries(cudaPlume qesutil)
+target_link_libraries(cudaPlume cudaplumeutil)
 target_link_libraries(cudaPlume ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 #target_link_libraries(cudaPlume ${GDAL_LIBRARY})
 target_link_libraries(cudaPlume ${NETCDF_LIBRARIES_CXX})
