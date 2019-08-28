@@ -10,6 +10,7 @@
 #define FIRE_H
 
 #include "URBInputData.h"
+#include "URBGeneralData.h"
 #include "FuelProperties.hpp"
 #include "Vector3.h"
 #include "Output.hpp"
@@ -28,7 +29,7 @@ class Fire {
     
     public:
         
-        Fire(URBInputData*, Output*);
+        Fire(URBInputData*, URBGeneralData*, Output*);
         
         struct FireProperties {
             double  w, h, d, r, T, tau, K;

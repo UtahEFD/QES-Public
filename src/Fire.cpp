@@ -10,22 +10,30 @@
 
 using namespace std;
 
-Fire :: Fire(URBInputData* UID, Output* output) {
+Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     
     // get domain information
-    Vector3<int> domainInfo;
+    /*Vector3<int> domainInfo;
     domainInfo = *(UID->simParams->domain);
     nx = domainInfo[0];
     ny = domainInfo[1];
     nz = domainInfo[2];
-    
+    */
+    nx = UGD->nx;
+    ny = UGD->ny;
+    nz = UGD->nz;
     // get grid information
+    /*
     Vector3<float> gridInfo;
     gridInfo = *(UID->simParams->grid);
     dx = gridInfo[0];
     dy = gridInfo[1];
     dz = gridInfo[2];
-    
+    */
+    dx = UGD->dx;
+    dy = UGD->dy;
+    dz = UGD->dz;
+
     // set-up the mapper array
     fire_cells.resize(nx*ny);
     burn_flag.resize(nx*ny);
@@ -240,7 +248,7 @@ void Fire :: run(Solver* solver) {
             // calculate mid-flame height
             int kh   = 0;
             double H = fire_cells[idx].properties.h;
-            double T = solver->terrain[idx];
+            double T = UGD->terrain[idx];
             double D = fuel->fueldepthm;
             double FD = H + T + D;
         
@@ -251,8 +259,8 @@ void Fire :: run(Solver* solver) {
             }
 
             // call u and v from CUDA-Urb solver
-            double u = solver->u[i + j*(nx) + kh*(ny)*(nx)];
-            double v = solver->v[i + j*(nx) + kh*(ny)*(nx)];
+            double u = UGD->u[i + j*(nx) + kh*(ny)*(nx)];
+            double v = UGD->v[i + j*(nx) + kh*(ny)*(nx)];
             // call norm for cells
             double x_norm = xNorm[idx];
             double y_norm = yNorm[idx];
@@ -301,7 +309,7 @@ void Fire :: run(Solver* solver) {
         int kh   = 0;
         //modify flame height by time on fire (assume linear functionality)
         double H = fire_cells[id].properties.h*(1-(fire_cells[id].state.burn_time/fire_cells[id].properties.tau));
-        double T = solver->terrain[id];
+        double T = UGD->terrain[id];
         double D = fuel->fueldepthm;
         
         double FD = H + T + D;
@@ -321,8 +329,8 @@ void Fire :: run(Solver* solver) {
         int jjB = jj-1;
                         
         // get horizontal wind at flame height
-        double u = solver->u[ii + jj*(nx+1) + kh*(ny+1)*(nx+1)];
-        double v = solver->v[ii + jj*(nx+1) + kh*(ny+1)*(nx+1)];
+        double u = UGD->u[ii + jj*(nx+1) + kh*(ny+1)*(nx+1)];
+        double v = UGD->v[ii + jj*(nx+1) + kh*(ny+1)*(nx+1)];
         
         // run Balbi model
         double x_norm = xNorm[id];
@@ -341,28 +349,28 @@ void Fire :: run(Solver* solver) {
             int idyB = idf-(nx+1);
             
             double K = fire_cells[id].properties.K;            
-            double u = solver->u0[idf];
-            double v = solver->v0[idf];
+            double u = UGD->u0[idf];
+            double v = UGD->v0[idf];
             double u_uw, v_uw;
             
             if (u>0 && iiB>=0) {
-                u_uw = solver->u0[idxB];
-                solver->u0[idf] = u_uw * std::exp(-K*dx);
+                u_uw = UGD->u0[idxB];
+                UGD->u0[idf] = u_uw * std::exp(-K*dx);
             }
             if (u<0 && iiF <= nx) {
-                u_uw = solver->u0[idxF];
-                solver->u0[idf] = u_uw * std::exp(-K*dx);
+                u_uw = UGD->u0[idxF];
+                UGD->u0[idf] = u_uw * std::exp(-K*dx);
             }
             if (v>0 && jjB>=0) {
-                v_uw = solver->v0[idyB];
-                solver->v0[idf] = v_uw * std::exp(-K*dy);
+                v_uw = UGD->v0[idyB];
+                UGD->v0[idf] = v_uw * std::exp(-K*dy);
             }
             if (v<0 && jjF <= ny) {
-                v_uw = solver->v0[idyF];
-                solver->v0[idf] = v_uw * std::exp(-K*dy);
+                v_uw = UGD->v0[idyF];
+                UGD->v0[idf] = v_uw * std::exp(-K*dy);
             }
             
-            solver->w0[ii + jj*(nx+1) + (k+2)*(nx+1)*(ny+1)] = fp.w;
+            UGD->w0[ii + jj*(nx+1) + (k+2)*(nx+1)*(ny+1)] = fp.w;
         }
     }
 }
