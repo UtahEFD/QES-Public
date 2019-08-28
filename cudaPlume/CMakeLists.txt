@@ -1,7 +1,8 @@
 include_directories(${CMAKE_SOURCE_DIR})
-include_directories(${CMAKE_SOURCE_DIR}/src)
-#INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/quicutil)  
-#LINK_DIRECTORIES (${CMAKE_BINARY_DIR}/quicutil/)
+
+# needs to be relative to the current project when we
+# hierarchically integrate projects together.
+include_directories(${PROJECT_SOURCE_DIR}/src)
 
 CUDA_ADD_EXECUTABLE( cudaPlume
   cudaPlumeMain.cpp
