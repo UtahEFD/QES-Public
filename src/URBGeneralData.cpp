@@ -463,7 +463,10 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     if (UID->simParams->streetCanyonFlag > 0)
     {
       std::cout << "Applying street canyon parameterization...\n";
-      allBuildingsV[0]->streetCanyon(this);
+      for (int i = 0; i < allBuildingsV.size(); i++)
+      {
+          allBuildingsV[i]->streetCanyon(this);
+      }
       std::cout << "Street canyon parameterization done...\n";
     }
 
