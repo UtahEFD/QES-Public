@@ -30,6 +30,7 @@ public:
 	      metParams = 0;
 	      buildings = 0;
 	      canopies = 0;
+              fires = 0;
     }
 
     virtual void parseValues()
@@ -39,6 +40,7 @@ public:
 	     parseElement<MetParams>(false, metParams, "metParams");
 	     parseElement<Buildings>(false, buildings, "buildings");
 	     parseElement<Canopies>(false, canopies, "canopies");
+             parseElement<Fires>(false, fires, "fires");
     }
 
     /**
