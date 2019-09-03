@@ -615,7 +615,7 @@ void Fire :: save(Output* output) {
     scalar_index = {static_cast<unsigned long>(output_counter)};
     scalar_size  = {1};
     vector_index = {static_cast<size_t>(output_counter), 0, 0};
-    vector_size  = {1, static_cast<unsigned long>(ny), static_cast<unsigned long>(nx)};
+    vector_size  = {1, static_cast<unsigned long>(ny-1), static_cast<unsigned long>(nx-1)};
     
     // set time 
     time += dt;
