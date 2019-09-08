@@ -37,6 +37,7 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     // set-up the mapper array
     fire_cells.resize(nx*ny);
     burn_flag.resize(nx*ny);
+    burn_out.resize((nx-1)*(ny-1));
     front_map.resize(nx*ny);
     del_plus.resize(nx*ny);
     del_min.resize(nx*ny);
@@ -157,7 +158,7 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
 
     // create attributes
     AttScalarDbl att_t = {&time,      "time", "time[s]",         "--", dim_scalar_1};
-    AttVectorDbl att_b = {&burn_flag, "burn", "burn flag value", "--", dim_scalar_3};
+    AttVectorDbl att_b = {&burn_out, "burn", "burn flag value", "--", dim_scalar_3};
     
     // map the name to attributes
     map_att_scalar_dbl.emplace("time", att_t);
@@ -258,7 +259,7 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
                 kh = std::round(FD/dz);
             }
 
-            // call u and v from CUDA-Urb solver
+            // call u and v from URB General Data
             double u = UGD->u[i + j*(nx) + kh*(ny)*(nx)];
             double v = UGD->v[i + j*(nx) + kh*(ny)*(nx)];
             // call norm for cells
@@ -342,11 +343,11 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
         // modify w0 in solver (adjust to use faces)
         for (int k=0; k<=kh; k++) {
             
-            int idf  = ii + jj*(nx+1) + (k+2)*(nx+1)*(ny+1);
+            int idf  = ii + jj*(nx) + (k+1)*(nx)*(ny);
             int idxF = idf+1;
             int idxB = idf-1;
-            int idyF = idf+(nx+1);
-            int idyB = idf-(nx+1);
+            int idyF = idf+(nx);
+            int idyB = idf-(nx);
             
             double K = fire_cells[id].properties.K;            
             double u = UGD->u0[idf];
@@ -370,7 +371,7 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
                 UGD->v0[idf] = v_uw * std::exp(-K*dy);
             }
             
-            UGD->w0[ii + jj*(nx+1) + (k+2)*(nx+1)*(ny+1)] = fp.w;
+            UGD->w0[ii + jj*(nx) + (k+1)*(nx)*(ny)] = fp.w;
         }
     }
 }
@@ -619,6 +620,20 @@ void Fire :: save(Output* output) {
     
     // set time 
     time += dt;
+
+    // get cell-centered values
+    // for (int k = 1; k < nz-1; k++){
+      for (int j = 0; j < ny-1; j++){
+	for (int i = 0; i < nx-1; i++){
+	  int icell_face = i + j*nx;
+	  int icell_cent = i + j*(nx-1);
+	  burn_out[icell_cent] = 0.5*(burn_flag[icell_face+1]+burn_flag[icell_face]);
+	  //v_out[icell_cent] = 0.5*(v[icell_face+nx]+v[icell_face]);
+	  //w_out[icell_cent] = 0.5*(w[icell_face+nx*ny]+w[icell_face]);
+	  //icellflag_out[icell_cent] = icellflag[icell_cent+((nx-1)*(ny-1))];
+	}
+      }
+      //}
 	
     // loop through 1D fields to save
     for (int i=0; i<output_scalar_dbl.size(); i++) {
