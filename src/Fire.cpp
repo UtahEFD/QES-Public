@@ -330,8 +330,8 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
         int jjB = jj-1;
                         
         // get horizontal wind at flame height
-        double u = UGD->u[ii + jj*(nx+1) + kh*(ny+1)*(nx+1)];
-        double v = UGD->v[ii + jj*(nx+1) + kh*(ny+1)*(nx+1)];
+        double u = UGD->u[ii + jj*(nx) + kh*(ny)*(nx)];
+        double v = UGD->v[ii + jj*(nx) + kh*(ny)*(nx)];
         
         // run Balbi model
         double x_norm = xNorm[id];
