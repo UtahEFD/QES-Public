@@ -11,6 +11,7 @@
 
 #include "URBInputData.h"
 #include "URBGeneralData.h"
+//#include "URBOutput.h"
 
 #include "Solver.h"
 #include "CPUSolver.h"
@@ -63,8 +64,13 @@ int main(int argc, char *argv[])
         output = new Output(arguments.netCDFFile);
     }
 
+    
+
     // Generate the general URB data from all inputs
     URBGeneralData* UGD = new URBGeneralData(UID, output);
+
+    // create URB output  
+    // UU
 
     // //////////////////////////////////////////
     //
