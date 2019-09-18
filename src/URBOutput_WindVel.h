@@ -4,7 +4,8 @@
 
 
 // specialize the windvel
-class URBOutput_WindVel : public NetCDFOutput
+class URBOutput_WindVel : public URBOutput_Generic
 {
+  
 };
 

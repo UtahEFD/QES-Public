@@ -1,10 +1,10 @@
 #pragma once
 
-#include "UrbOutput_WindVel.h"
+#include "UrbOutput_Generic.h"
 
 // Specialized output classes that can take URBGeneratlData or
 // URBInputData, etc... and dump out reasonably..
-class URBOutput_WindVelFaceCentered : public URBOutput_WindVel
+class URBOutput_WindVelFaceCentered : public URBOutput_Generic
 {
   
   virtual bool validateFileOtions()

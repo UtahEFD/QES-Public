@@ -63,9 +63,7 @@ int main(int argc, char *argv[])
     if (UID->fileOptions->outputFlag==1) {
         output = new Output(arguments.netCDFFile);
     }
-
     
-
     // Generate the general URB data from all inputs
     URBGeneralData* UGD = new URBGeneralData(UID, output);
 
