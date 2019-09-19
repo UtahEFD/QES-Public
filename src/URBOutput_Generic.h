@@ -5,6 +5,8 @@
 #include <map>
 #include <netcdf>
 
+#include "NetCDFOutput.h"
+
 /**
  * This class handles saving output files.
  */
@@ -35,7 +37,8 @@ struct AttVectorInt {
 };
 
 
-class URBOutput_Generic : public NetCDFOutput {
+class URBOutput_Generic : public NetCDFOutput 
+{
     
 protected:
   
@@ -45,29 +48,37 @@ protected:
   };
   
   virtual void save();
-
-  // own copy of the pointer to URBGeneralData
-  URBGeneralData *ugd
   
   int output_counter=0;
   double time=0;
+
+  //int nx_out,ny_out,nz_out;
+
   std::vector<NcDim> dim_scalar_t;
   std::vector<NcDim> dim_scalar_z;
   std::vector<NcDim> dim_scalar_y;
   std::vector<NcDim> dim_scalar_x;
   std::vector<NcDim> dim_vector;
   std::vector<NcDim> dim_vector_2d;
+
   std::vector<std::string> output_fields;
+
   std::map<std::string,AttScalarDbl> map_att_scalar_dbl;
   std::map<std::string,AttVectorDbl> map_att_vector_dbl;
   std::map<std::string,AttVectorInt> map_att_vector_int;
+
   std::vector<AttScalarDbl> output_scalar_dbl;
   std::vector<AttVectorDbl> output_vector_dbl;
   std::vector<AttVectorInt> output_vector_int;
-  
+
 public:
+  URBOutput_Generic();
+  URBOutput_Generic(std::string);
+  ~URBOutput_Generic();
   
-  URBOutput_Generic(URBGeneralData*);
+  void addOutputFields();
+  void saveOutputFields();
   
+
 };
 

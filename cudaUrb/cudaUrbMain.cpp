@@ -11,7 +11,7 @@
 
 #include "URBInputData.h"
 #include "URBGeneralData.h"
-//#include "URBOutput.h"
+#include "URBOutput_WindVelCellCentered.h"
 
 #include "Solver.h"
 #include "CPUSolver.h"
@@ -68,7 +68,10 @@ int main(int argc, char *argv[])
     URBGeneralData* UGD = new URBGeneralData(UID, output);
 
     // create URB output  
-    // UU
+    URBOutput_WindVelCellCentered* output2 = nullptr;
+    if (UID->fileOptions->outputFlag==1) {
+      output2 = new URBOutput_WindVelCellCentered(UGD,arguments.netCDFFile);
+    }
 
     // //////////////////////////////////////////
     //
@@ -115,7 +118,8 @@ int main(int argc, char *argv[])
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
     if (output) {
-        UGD->save();
+      //UGD->save();
+      output2->save(UGD);
     }
     exit(EXIT_SUCCESS);
 }

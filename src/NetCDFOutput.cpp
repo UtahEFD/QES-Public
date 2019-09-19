@@ -1,6 +1,4 @@
-#pragma once
-
-#include 'NetCDFOutput.h'
+#include "NetCDFOutput.h"
 
 #include <iostream>
 

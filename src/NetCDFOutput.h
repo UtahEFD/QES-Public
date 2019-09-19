@@ -22,7 +22,7 @@ protected:
 public:
   
   // initializer
-  NetCDFOutput(FileOptions &fopts, std::string);
+  NetCDFOutput(std::string);
   
   // setter
   NcDim addDimension(std::string, int size=0);

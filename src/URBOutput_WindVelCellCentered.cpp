@@ -1,9 +1,7 @@
-#pragma once
+#include "URBOutput_WindVelCellCentered.h"
 
-#include "UrbOutput_WindVelCellCentered.h"
-
-URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd)
-  : URBOutput_Generic(ugb),NetCDFOutput(...)
+URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd,std::string output_file)
+  : URBOutput_Generic(output_file)
 {
   /* FM -> need to implement the outputFields options here...
      std::cout<<"Getting output fields"<<std::endl;
@@ -71,6 +69,8 @@ URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd
   //output_vector_dbl.push_back(map_att_vector_dbl["z"]);
   //output_vector_dbl.push_back(map_att_vector_dbl["terrain"]);
 
+  saveOutputFields();
+  /*
   // create list of fields to save
   for (size_t i=0; i<output_fields.size(); i++) {
     std::string key = output_fields[i];
@@ -97,12 +97,15 @@ URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd
   for ( AttVectorInt att : output_vector_int ) {
     addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
   }
+  */
+
    
 }
 
 bool URBOutput_WindVelCellCentered::validateFileOtions()
 {
   //check all fileoption specificed to make sure it's possible...
+  return true;
 }
 
   
@@ -127,7 +130,8 @@ void URBOutput_WindVelCellCentered::save(URBGeneralData *ugd)
   vector_size  = {1, static_cast<unsigned long>(nz-2),static_cast<unsigned long>(ny-1), static_cast<unsigned long>(nx-1)};
   vector_index_2d = {0, 0};
   vector_size_2d  = {static_cast<unsigned long>(ny-1), static_cast<unsigned long>(nx-1)};
-    
+  
+
   // set time
   time = (double)output_counter;
     
@@ -144,7 +148,10 @@ void URBOutput_WindVelCellCentered::save(URBGeneralData *ugd)
       }
     }
   }
-    
+   
+  //saveOutputFields();
+ 
+  
   // loop through 1D fields to save
   for (int i=0; i<output_scalar_dbl.size(); i++) {
     saveField1D(output_scalar_dbl[i].name, scalar_index, output_scalar_dbl[i].data);
@@ -180,6 +187,4 @@ void URBOutput_WindVelCellCentered::save(URBGeneralData *ugd)
     
   // increment for next time insertion
   output_counter +=1;
-}
-    
 };
