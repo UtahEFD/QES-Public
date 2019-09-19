@@ -422,6 +422,18 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     mergeSort( effective_height, allBuildingsV, building_id );
 
     // ///////////////////////////////////////
+    // ///////////////////////////////////////
+
+    wall = new Wall();
+
+    std::cout << "Defining Solid Walls...\n";
+    /// Boundary condition for building edges
+    wall->defineWalls(this);
+    std::cout << "Walls Defined...\n";
+
+    wall->solverCoefficients (this);
+
+    // ///////////////////////////////////////
     // Generic Parameterization Related Stuff
     // ///////////////////////////////////////
     for (int i = 0; i < allBuildingsV.size(); i++)
@@ -463,7 +475,10 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     if (UID->simParams->streetCanyonFlag > 0)
     {
       std::cout << "Applying street canyon parameterization...\n";
-      allBuildingsV[0]->streetCanyon(this);
+      for (int i = 0; i < allBuildingsV.size(); i++)
+      {
+        allBuildingsV[building_id[i]]->streetCanyon(this);
+      }
       std::cout << "Street canyon parameterization done...\n";
     }
 
@@ -480,15 +495,31 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
       std::cout << "Sidewall parameterization done...\n";
     }
 
-    // ///////////////////////////////////////
-    // ///////////////////////////////////////
 
-      wall = new Wall();
+    ///////////////////////////////////////////
+    //      Rooftop Parameterization        ///
+    ///////////////////////////////////////////
+    if (UID->simParams->rooftopFlag > 0)
+    {
+      std::cout << "Applying rooftop parameterization...\n";
+      for (int i = 0; i < allBuildingsV.size(); i++)
+      {
+        allBuildingsV[building_id[i]]->rooftop (UID, this);
+      }
+      std::cout << "Rooftop parameterization done...\n";
+    }
 
-      std::cout << "Defining Solid Walls...\n";
-      /// Boundary condition for building edges
-      wall->defineWalls(this);
-      std::cout << "Walls Defined...\n";
+    ///////////////////////////////////////////
+    //         Street Intersection          ///
+    ///////////////////////////////////////////
+    /*if (UID->simParams->streetCanyonFlag > 0 && UID->simParams->streetIntersectionFlag > 0 && allBuildingsV.size() > 0)
+    {
+      std::cout << "Applying Blended Region Parameterization...\n";
+      allBuildingsV[0]->streetIntersection (UID, this);
+      allBuildingsV[0]->poisson (UID, this);
+      std::cout << "Blended Region Parameterization done...\n";
+    }*/
+
 
     /*
      * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
@@ -500,7 +531,6 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
 
      wall->setVelocityZero (this);
 
-     wall->solverCoefficients (this);
 
 
     //////////////////////////////////////////////////
