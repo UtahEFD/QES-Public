@@ -5,6 +5,7 @@
 #include <map>
 #include <netcdf>
 
+#include "URBGeneralData.h"
 #include "NetCDFOutput.h"
 
 /**
@@ -39,21 +40,28 @@ struct AttVectorInt {
 
 class URBOutput_Generic : public NetCDFOutput 
 {
-    
-protected:
+ public:
+  URBOutput_Generic();
+  URBOutput_Generic(std::string);
+  ~URBOutput_Generic();
+  
+  void addOutputFields();
+  void saveOutputFields();
+  
+ protected:
   
   virtual bool validateFileOtions() 
   {
     return true;
   };
   
-  virtual void save();
+  virtual void save(URBGeneralData*);
   
   int output_counter=0;
   double time=0;
-
+  
   //int nx_out,ny_out,nz_out;
-
+  
   std::vector<NcDim> dim_scalar_t;
   std::vector<NcDim> dim_scalar_z;
   std::vector<NcDim> dim_scalar_y;
@@ -70,15 +78,6 @@ protected:
   std::vector<AttScalarDbl> output_scalar_dbl;
   std::vector<AttVectorDbl> output_vector_dbl;
   std::vector<AttVectorInt> output_vector_int;
-
-public:
-  URBOutput_Generic();
-  URBOutput_Generic(std::string);
-  ~URBOutput_Generic();
-  
-  void addOutputFields();
-  void saveOutputFields();
-  
 
 };
 
