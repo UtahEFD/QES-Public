@@ -34,11 +34,6 @@ class Solver
 {
 protected:
 
-    ////////////////////////////////////////////////////////////////////////////
-    //////// Variables and constants needed only in solver -- Behnam
-    //////// These can be stayed in the solver class
-    ////////////////////////////////////////////////////////////////////////////
-    // Matthieu will use change them in future
     const int alpha1;        /**< Gaussian precision moduli */
     const int alpha2;        /**< Gaussian precision moduli */
     const float eta; //= pow((alpha1/alpha2), 2.0);
@@ -53,19 +48,7 @@ protected:
     std::vector<double> R;           /**< Divergence of initial velocity field */
     std::vector<double> lambda, lambda_old;
 
-
-
     int itermax;		/**< Maximum number of iterations */
-
-
-    /// Declaration of Lagrange multipliers
-
-
-
-    ////////////////////////////////////////////////////////////////////////////
-    //////// Variables and constants needed in solver and other functions-- Behnam
-    ////////////////////////////////////////////////////////////////////////////
-
 
     /*
      * This prints out the current amount that a process
