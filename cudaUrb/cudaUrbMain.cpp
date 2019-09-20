@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
     // Files was successfully read, so create instance of output class
     Output* output = nullptr;
     if (UID->fileOptions->outputFlag==1) {
-        output = new Output(arguments.netCDFFile);
+      output = new Output(arguments.netCDFFile);
     }
     
     // Generate the general URB data from all inputs
@@ -72,7 +72,9 @@ int main(int argc, char *argv[])
     // create URB output  
     URBOutput_WindVelCellCentered* output2 = nullptr;
     if (UID->fileOptions->outputFlag==1) {
-      output2 = new URBOutput_WindVelCellCentered(UGD,arguments.netCDFFile);
+      std::string fname=arguments.netCDFFile;
+      fname.replace(fname.end()-3,fname.end(),"_cc.nc");
+      output2 = new URBOutput_WindVelCellCentered(UGD,fname);
     }
 
     // //////////////////////////////////////////
@@ -120,7 +122,10 @@ int main(int argc, char *argv[])
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
     if (output) {
-      //UGD->save();
+      UGD->save();
+      //output2->save(UGD);
+    }
+    if (output2) {
       output2->save(UGD);
     }
     exit(EXIT_SUCCESS);

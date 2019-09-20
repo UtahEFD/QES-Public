@@ -22,11 +22,10 @@ class URBOutput_WindVelCellCentered : public URBOutput_Generic
   bool validateFileOtions();
   void save(URBGeneralData*);
   
-  /*
-    FM -> maybe u_out, v_out, w_out should be here
-    private:
-    std::vector<int> icellflag_out;
-    std::vector<double> u_out,v_out,w_out;
-  */
+  
+ private:
+  std::vector<double> x_out,y_out,z_out;
+  std::vector<int> icellflag_out;
+  std::vector<double> u_out,v_out,w_out;
   
 };

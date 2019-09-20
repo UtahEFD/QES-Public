@@ -49,7 +49,7 @@ class URBOutput_Generic : public NetCDFOutput
   
   void addOutputFields();
   void saveOutputFields();
-  
+
  protected:
   
   virtual bool validateFileOtions() 
@@ -62,9 +62,7 @@ class URBOutput_Generic : public NetCDFOutput
   
   int output_counter=0;
   double time=0;
-  
-  //int nx_out,ny_out,nz_out;
-  
+    
   std::vector<NcDim> dim_scalar_t;
   std::vector<NcDim> dim_scalar_z;
   std::vector<NcDim> dim_scalar_y;
