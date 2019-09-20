@@ -20,10 +20,13 @@ protected:
   std::map<std::string,NcVar> fields;
   
 public:
-  
+  NetCDFOutput()
+    {}
   // initializer
   NetCDFOutput(std::string);
-  
+  virtual ~NetCDFOutput()
+    {}
+
   // setter
   NcDim addDimension(std::string, int size=0);
   NcDim getDimension(std::string);
@@ -36,4 +39,3 @@ public:
 		   std::vector<size_t>, std::vector<int>&);
   
 };
-

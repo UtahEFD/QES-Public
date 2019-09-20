@@ -11,6 +11,8 @@
 
 #include "URBInputData.h"
 #include "URBGeneralData.h"
+#include "NetCDFOutput.h"
+#include "URBOutput_Generic.h"
 #include "URBOutput_WindVelCellCentered.h"
 
 #include "Solver.h"

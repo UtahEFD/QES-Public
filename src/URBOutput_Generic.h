@@ -41,9 +41,11 @@ struct AttVectorInt {
 class URBOutput_Generic : public NetCDFOutput 
 {
  public:
-  URBOutput_Generic();
+  URBOutput_Generic()
+    {}
   URBOutput_Generic(std::string);
-  ~URBOutput_Generic();
+  virtual ~URBOutput_Generic()
+    {}
   
   void addOutputFields();
   void saveOutputFields();
@@ -55,7 +57,8 @@ class URBOutput_Generic : public NetCDFOutput
     return true;
   };
   
-  virtual void save(URBGeneralData*);
+  virtual void save(URBGeneralData*)
+  {}
   
   int output_counter=0;
   double time=0;
