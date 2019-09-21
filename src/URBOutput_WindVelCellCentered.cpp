@@ -177,19 +177,18 @@ void URBOutput_WindVelCellCentered::save(URBGeneralData *ugd)
       }
     }
   }
-   
-  //saveOutputFields();
- 
-  
-  // loop through 1D fields to save
-  for (auto i=0u; i<output_scalar_dbl.size(); i++) {
-    saveField1D(output_scalar_dbl[i].name, scalar_index, output_scalar_dbl[i].data);    
-  }
 
   /* better way (more robust) using:
      - output_vector_dbl[i].dimensions.size()
      - output_vector_dbl[i].dimensions[0].getSize()
   */
+  saveOutputFields();
+  
+  /*
+  // loop through 1D fields to save
+  for (auto i=0u; i<output_scalar_dbl.size(); i++) {
+    saveField1D(output_scalar_dbl[i].name, scalar_index, output_scalar_dbl[i].data);    
+  }
 
   // loop through 2D double fields to save
   for (auto i=0u; i<output_vector_dbl.size(); i++) {
@@ -208,10 +207,12 @@ void URBOutput_WindVelCellCentered::save(URBGeneralData *ugd)
     saveField2D(output_vector_int[i].name, vector_index,
 		vector_size, *output_vector_int[i].data);
   }
-  
-  // remove x, y, z, terrain from output array after first save
+  */
+
+  // FM -> need to change this!!
+  // remove x, y, z from output array after first save
   if (output_counter==0) {
-    output_vector_dbl.erase(output_vector_dbl.begin(),output_vector_dbl.begin()+3);
+    output_vector_dbl.erase(output_vector_dbl.begin(),output_vector_dbl.begin()+2);
   }
   
   // increment for next time insertion
