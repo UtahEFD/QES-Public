@@ -7,15 +7,15 @@
 
 // Specialized output classes that can take URBGeneratlData or
 // URBInputData, etc... and dump out reasonably..
-class URBOutput_WindVelCellCentered : public URBOutput_Generic
+class URBOutput_WindVelFaceCentered : public URBOutput_Generic
 {
  public:
- URBOutput_WindVelCellCentered()
+ URBOutput_WindVelFaceCentered()
    : URBOutput_Generic()
     {}
   
-  URBOutput_WindVelCellCentered(URBGeneralData*,std::string);
-  ~URBOutput_WindVelCellCentered()	       
+  URBOutput_WindVelFaceCentered(URBGeneralData*,std::string);
+  ~URBOutput_WindVelFaceCentered()	       
     {}
 
   
@@ -24,8 +24,8 @@ class URBOutput_WindVelCellCentered : public URBOutput_Generic
   
   
  private:
-  std::vector<double> x_out,y_out,z_out;
-  std::vector<int> icellflag_out;
-  std::vector<double> u_out,v_out,w_out;
+  // - no copy are needed here
+  // std::vector<double> x_out,y_out,z_out;
+  // std::vector<double> u_out,v_out,w_out;
   
 };
