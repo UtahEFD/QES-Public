@@ -97,6 +97,7 @@ URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd
   //output_vector_dbl.push_back(map_att_vector_dbl["terrain"]);  
   
   addOutputFields();
+
   /*  
   // create list of fields to save
   for (size_t i=0; i<output_fields.size(); i++) {
@@ -138,50 +139,53 @@ bool URBOutput_WindVelCellCentered::validateFileOtions()
 // Save output at cell-centered values
 void URBOutput_WindVelCellCentered::save(URBGeneralData *ugd)
 {
-  int nx = ugd->nx;
-  int ny = ugd->ny;
-  int nz = ugd->nz;
+  /* FM -> need to clean this .....
+    int nx = ugd->nx;
+    int ny = ugd->ny;
+    int nz = ugd->nz;
     
-  // output size and location
-  std::vector<size_t> scalar_index;
-  std::vector<size_t> scalar_size;
-  std::vector<size_t> vector_index;
-  std::vector<size_t> vector_size;
-  std::vector<size_t> vector_index_2d;
-  std::vector<size_t> vector_size_2d;
     
-  scalar_index = {static_cast<unsigned long>(output_counter)};
-  scalar_size  = {1};
-  vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
-  vector_size  = {1, static_cast<unsigned long>(nz-2),
-		  static_cast<unsigned long>(ny-1), 
-		  static_cast<unsigned long>(nx-1)};
-  vector_index_2d = {0, 0};
-  vector_size_2d  = {static_cast<unsigned long>(ny-1), 
-		     static_cast<unsigned long>(nx-1)};
-  
-
-  // set time
-  time = (double)output_counter;
+    // output size and location
+    std::vector<size_t> scalar_index;
+    std::vector<size_t> scalar_size;
+    std::vector<size_t> vector_index;
+    std::vector<size_t> vector_size;
+    std::vector<size_t> vector_index_2d;
+    std::vector<size_t> vector_size_2d;
     
-  // get cell-centered values
-  for (auto k = 1; k < nz-1; k++){
+    scalar_index = {static_cast<unsigned long>(output_counter)};
+    scalar_size  = {1};
+    vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
+    vector_size  = {1, static_cast<unsigned long>(nz-2),
+    static_cast<unsigned long>(ny-1), 
+    static_cast<unsigned long>(nx-1)};
+    vector_index_2d = {0, 0};
+    vector_size_2d  = {static_cast<unsigned long>(ny-1), 
+    static_cast<unsigned long>(nx-1)};
+    
+    
+    // set time
+    time = (double)output_counter;
+    
+    // get cell-centered values
+    for (auto k = 1; k < nz-1; k++){
     for (auto j = 0; j < ny-1; j++){
-      for (auto i = 0; i < nx-1; i++){
-	int icell_face = i + j*nx + k*nx*ny;
-	int icell_cent = i + j*(nx-1) + (k-1)*(nx-1)*(ny-1);
-        u_out[icell_cent] = 0.5*(ugd->u[icell_face+1]+ugd->u[icell_face]);
-        v_out[icell_cent] = 0.5*(ugd->v[icell_face+nx]+ugd->v[icell_face]);
-        w_out[icell_cent] = 0.5*(ugd->w[icell_face+nx*ny]+ugd->w[icell_face]);
-        icellflag_out[icell_cent] = ugd->icellflag[icell_cent+((nx-1)*(ny-1))];
-      }
+    for (auto i = 0; i < nx-1; i++){
+    int icell_face = i + j*nx + k*nx*ny;
+    int icell_cent = i + j*(nx-1) + (k-1)*(nx-1)*(ny-1);
+    u_out[icell_cent] = 0.5*(ugd->u[icell_face+1]+ugd->u[icell_face]);
+    v_out[icell_cent] = 0.5*(ugd->v[icell_face+nx]+ugd->v[icell_face]);
+    w_out[icell_cent] = 0.5*(ugd->w[icell_face+nx*ny]+ugd->w[icell_face]);
+    icellflag_out[icell_cent] = ugd->icellflag[icell_cent+((nx-1)*(ny-1))];
     }
-  }
-
-  /* better way (more robust) using:
-     - output_vector_dbl[i].dimensions.size()
-     - output_vector_dbl[i].dimensions[0].getSize()
+    }
+    }
+    
+    /* better way (more robust) using:
+    - output_vector_dbl[i].dimensions.size()
+    - output_vector_dbl[i].dimensions[0].getSize()
   */
+  
   saveOutputFields();
   
   /*
