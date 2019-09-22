@@ -11,8 +11,7 @@
 
 #include "URBInputData.h"
 #include "URBGeneralData.h"
-//#include "NetCDFOutput.h"
-//#include "URBOutput_Generic.h"
+#include "URBOutput_Static.h"
 #include "URBOutput_WindVelCellCentered.h"
 #include "URBOutput_WindVelFaceCentered.h"
 
@@ -71,6 +70,13 @@ int main(int argc, char *argv[])
     URBGeneralData* UGD = new URBGeneralData(UID, output);
 
     // create URB output  
+    URBOutput_Static* output_st = nullptr;
+    if (UID->fileOptions->outputFlag==1) {
+      std::string fname=arguments.netCDFFile;
+      fname.replace(fname.end()-3,fname.end(),"_st.nc");
+      output_st = new URBOutput_Static(UGD,fname);
+      output_st->save(UGD);
+    }
     URBOutput_WindVelCellCentered* output_cc = nullptr;
     if (UID->fileOptions->outputFlag==1) {
       std::string fname=arguments.netCDFFile;
@@ -83,7 +89,7 @@ int main(int argc, char *argv[])
       fname.replace(fname.end()-3,fname.end(),"_fc.nc");
       output_fc = new URBOutput_WindVelFaceCentered(UGD,fname);
     }
-
+    
     // //////////////////////////////////////////
     //
     // Run the CUDA-URB Solver
