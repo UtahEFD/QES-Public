@@ -48,6 +48,7 @@ class Fire {
         };
         
         double time=0;
+        double r_max = 0;
         double dt=0;
         
         std::vector< FireCell > fire_cells;
@@ -67,7 +68,7 @@ class Fire {
         std::vector<double> Force;
         
         void run(Solver*, URBGeneralData*);
-        void move(Solver*);      
+  void move(Solver*, URBGeneralData*);      
         void save(Output*);
         double computeTimeStep();
         

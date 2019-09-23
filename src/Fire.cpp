@@ -141,7 +141,7 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     
     if (output_fields[0]=="all") {
         output_fields.erase(output_fields.begin());
-        output_fields = {"time","burn"};
+        output_fields = {"time","burn"/*,"ros"*/};
     }
     
     // set cell-centered dimensions
@@ -150,19 +150,23 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     NcDim z_dim = output->getDimension("z");
     NcDim y_dim = output->getDimension("y");
     NcDim x_dim = output->getDimension("x");
+    //NcDim r_dim = output->getDimension("ros");
     
     dim_scalar_1.push_back(t_dim);
     dim_scalar_3.push_back(t_dim);
     dim_scalar_3.push_back(y_dim);
     dim_scalar_3.push_back(x_dim);
+    //dim_scalar_1.push_back(r_dim);
 
     // create attributes
     AttScalarDbl att_t = {&time,      "time", "time[s]",         "--", dim_scalar_1};
     AttVectorDbl att_b = {&burn_out, "burn", "burn flag value", "--", dim_scalar_3};
-    
+    //AttScalarDbl att_r = {&r_max, "ros", "Max ROS [m/s]", "--", dim_scalar_1};
+
     // map the name to attributes
     map_att_scalar_dbl.emplace("time", att_t);
     map_att_vector_dbl.emplace("burn", att_b);
+    //map_att_scalar_dbl.emplace("ros", att_r);
     
     // create list of fields to save
     for (int i=0; i<output_fields.size(); i++) {
@@ -354,7 +358,7 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
             double v = UGD->v0[idf];
             double u_uw, v_uw;
             
-            if (u>0 && iiB>=0) {
+            /*if (u>0 && iiB>=0) {
                 u_uw = UGD->u0[idxB];
                 UGD->u0[idf] = u_uw * std::exp(-K*dx);
             }
@@ -370,7 +374,7 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
                 v_uw = UGD->v0[idyF];
                 UGD->v0[idf] = v_uw * std::exp(-K*dy);
             }
-            
+            */
             UGD->w0[ii + jj*(nx) + (k+1)*(nx)*(ny)] = fp.w;
         }
     }
@@ -379,7 +383,7 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
 /** 
  * Compute fire spread. Advance level set.
  */
-void Fire :: move(Solver* solver){
+void Fire :: move(Solver* solver, URBGeneralData* UGD){
     for (int j=1; j < ny-1; j++){
         for (int i=1; i < nx-1; i++){
             int idx = i + j*nx;
@@ -399,9 +403,10 @@ void Fire :: move(Solver* solver){
             if (burn_flag[idx] == 1){
                 fire_cells[idx].state.burn_time += dt;
             }
-            // set burn flag to 2 (burned) if residence time exceeded
+            // set burn flag to 2 (burned) if residence time exceeded and update z0 to bare soil
             if (fire_cells[idx].state.burn_time >= fp.tau) {
                 fire_cells[idx].state.burn_flag = 2;
+		UGD->z0_domain[idx] = 0.01;
             }
             // update burn flag field
             burn_flag[idx] = fire_cells[idx].state.burn_flag;
@@ -620,6 +625,20 @@ void Fire :: save(Output* output) {
     
     // set time 
     time += dt;
+
+    // set max_ros
+    // spread rates
+    /*double r, r_max;
+    
+    // get max spread rate
+    for (int j = 0; j < ny; j++){
+        for (int i = 0; i < nx; i++){
+            int idx = i + j*nx;
+            r = fire_cells[idx].properties.r;       
+            r_max   = r > r_max ? r : r_max;
+        }
+    }
+    */
 
     // get cell-centered values
     // for (int k = 1; k < nz-1; k++){

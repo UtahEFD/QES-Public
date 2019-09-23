@@ -142,7 +142,9 @@ int main(int argc, char *argv[])
     std::vector<double> v0 = UGD->v0;
     std::vector<double> w0 = UGD->w0;
     
-    // Create Fire Mapper
+    /** 
+     * Create Fire Mapper
+     **/
     Fire* fire = new Fire(UID, UGD, output);
     
     // set base w in fire model to initial w0
@@ -169,10 +171,14 @@ int main(int argc, char *argv[])
         
         // re-set initial fields after first time step
         if (t>0) {
-            UGD->u0 = u0;
-            UGD->v0 = v0;
+	  //UGD->u0 = u0;
+	  //UGD->v0 = v0;
+	    UID->metParams->z0_domain_flag=1;
+	    UID->metParams->sensors[0]->inputWindProfile(UID, UGD);
             UGD->w0 = w0;
+	    
             solver->solve(UID, UGD, !arguments.solveWind);
+	    
         }
         
         // loop 2 times for fire
@@ -196,7 +202,7 @@ int main(int argc, char *argv[])
         }
                 
         // move the fire
-        fire->move(solver);
+        fire->move(solver, UGD);
                 
         // save solver data
         if (output != nullptr) {
