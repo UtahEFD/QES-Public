@@ -30,6 +30,22 @@ struct AttVectorDbl {
   std::string units;
   std::vector<NcDim> dimensions;
 };
+
+struct AttScalarFlt {
+  double* data;
+  std::string name;
+  std::string long_name;
+  std::string units;
+  std::vector<NcDim> dimensions;
+};
+struct AttVectorFlt {
+  std::vector<double>* data;
+  std::string name;
+  std::string long_name;
+  std::string units;
+  std::vector<NcDim> dimensions;
+};
+
 struct AttVectorInt {
   std::vector<int>* data;
   std::string name;
@@ -37,7 +53,6 @@ struct AttVectorInt {
   std::string units;
   std::vector<NcDim> dimensions;
 };
-
 
 class URBOutput_Generic : public NetCDFOutput 
 {
@@ -75,10 +90,12 @@ class URBOutput_Generic : public NetCDFOutput
 
   std::map<std::string,AttScalarDbl> map_att_scalar_dbl;
   std::map<std::string,AttVectorDbl> map_att_vector_dbl;
+
   std::map<std::string,AttVectorInt> map_att_vector_int;
 
   std::vector<AttScalarDbl> output_scalar_dbl;
   std::vector<AttVectorDbl> output_vector_dbl;
+
   std::vector<AttVectorInt> output_vector_int;
 
 };

@@ -24,7 +24,7 @@ void URBOutput_Generic::addOutputFields()
     addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
   }
 
-  // add vector double fields
+   // add vector double fields
   for ( AttVectorDbl att : output_vector_dbl ) {
     addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
   }
@@ -49,7 +49,7 @@ void URBOutput_Generic::saveOutputFields()
      if 2D array -> can get nx,ny
      if only 1D -> ambuguous desciption, cannot get dimensions
   */
-
+  
   std::vector<int> dims_vec_dbl;
   for (auto i=0u; i<output_vector_dbl.size(); i++) {
     dims_vec_dbl.push_back(output_vector_dbl[i].dimensions.size());
@@ -69,7 +69,7 @@ void URBOutput_Generic::saveOutputFields()
     ny_out = output_vector_dbl[id].dimensions[2].getSize();
     nz_out = output_vector_dbl[id].dimensions[1].getSize();
   } else if (it2 != dims_vec_dbl.end()) {
-    // Get index of element from iterator                                                                                                                                                                         
+    // Get index of element from iterator
     int id = std::distance(dims_vec_dbl.begin(), it2);
     nx_out = output_vector_dbl[id].dimensions[1].getSize();
     ny_out = output_vector_dbl[id].dimensions[0].getSize();
@@ -84,13 +84,16 @@ void URBOutput_Generic::saveOutputFields()
   std::vector<size_t> vector_size;
   std::vector<size_t> vector_index_2d;
   std::vector<size_t> vector_size_2d;
-    
+  
   scalar_index = {static_cast<unsigned long>(output_counter)};
   scalar_size  = {1};
   vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
-  vector_size  = {1, static_cast<unsigned long>(nz_out),static_cast<unsigned long>(ny_out), static_cast<unsigned long>(nx_out)};
+  vector_size  = {1, static_cast<unsigned long>(nz_out),
+		  static_cast<unsigned long>(ny_out),
+		  static_cast<unsigned long>(nx_out)};
   vector_index_2d = {0, 0};
-  vector_size_2d  = {static_cast<unsigned long>(ny_out), static_cast<unsigned long>(nx_out)};
+  vector_size_2d  = {static_cast<unsigned long>(ny_out),
+		     static_cast<unsigned long>(nx_out)};
   
   // loop through 1D fields to save
   for (unsigned int i=0; i<output_scalar_dbl.size(); i++) {
