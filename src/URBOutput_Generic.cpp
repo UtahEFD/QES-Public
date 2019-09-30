@@ -14,16 +14,37 @@ URBOutput_Generic::URBOutput_Generic(std::string output_file)
   by output_fields 
   -> the methods allows to by type generic (as long as the data is 
   either int,float or double
- */
+*/
+
+
+void URBOutput_Generic::createDimensions(std::vector<NcDim> dim_vect)
+{
+  // scalar dimension 
+  dim_scalar_t.push_back(dim_vect[0]);
+  dim_scalar_z.push_back(dim_vect[1]);
+  dim_scalar_y.push_back(dim_vect[2]);
+  dim_scalar_x.push_back(dim_vect[3]);
+  
+  // 3D vector dimension (time dep)
+  dim_vector.push_back(dim_vect[0]);
+  dim_vector.push_back(dim_vect[1]);
+  dim_vector.push_back(dim_vect[2]);
+  dim_vector.push_back(dim_vect[3]);
+  
+  // 2D vector (surface, indep of time)
+  dim_vector_2d.push_back(dim_vect[2]);
+  dim_vector_2d.push_back(dim_vect[3]);
+  
+}
 
 //----------------------------------------
 // create attribute scalar
 // -> float
-void URBOutput_Generic::createAttSacalar(std::string name,
-					 std::string long_name,
-					 std::string units,
-					 std::vector<NcDim> dims,
-					 int* data)
+void URBOutput_Generic::createAttSaclar(std::string name,
+					std::string long_name,
+					std::string units,
+					std::vector<NcDim> dims,
+					int* data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   AttScalarInt att = {&data,name,long_name,units,dims};
@@ -31,11 +52,11 @@ void URBOutput_Generic::createAttSacalar(std::string name,
   
 }
 // -> float
-void URBOutput_Generic::createAttSacalar(std::string name,
-					 std::string long_name,
-					 std::string units,
-					 std::vector<NcDim> dims,
-					 float* data)
+void URBOutput_Generic::createAttSaclar(std::string name,
+					std::string long_name,
+					std::string units,
+					std::vector<NcDim> dims,
+					float* data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   AttScalarFlt att = {&data,name,long_name,units,dims};
@@ -43,11 +64,11 @@ void URBOutput_Generic::createAttSacalar(std::string name,
   
 }
 // -> double
-void URBOutput_Generic::createAttSacalar(std::string name,
-					 std::string long_name,
-					 std::string units,
-					 std::vector<NcDim> dims,
-					 double* data)
+void URBOutput_Generic::createAttSaclar(std::string name,
+					std::string long_name,
+					std::string units,
+					std::vector<NcDim> dims,
+					double* data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   AttScalarDbl att = {&data,name,long_name,units,dims};
@@ -58,10 +79,10 @@ void URBOutput_Generic::createAttSacalar(std::string name,
 // create attribute Vector
 // -> int
 void URBOutput_Generic::createAttVector(std::string name,
-					 std::string long_name,
-					 std::string units,
-					 std::vector<NcDim> dims,
-					 int* data)
+					std::string long_name,
+					std::string units,
+					std::vector<NcDim> dims,
+					int* data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   AttVectorInt att = {&data,name,long_name,units,dims};
@@ -70,10 +91,10 @@ void URBOutput_Generic::createAttVector(std::string name,
 }
 // -> float
 void URBOutput_Generic::createAttVector(std::string name,
-					 std::string long_name,
-					 std::string units,
-					 std::vector<NcDim> dims,
-					 float* data)
+					std::string long_name,
+					std::string units,
+					std::vector<NcDim> dims,
+					float* data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   AttVectorFlt att = {&data,name,long_name,units,dims};
@@ -82,10 +103,10 @@ void URBOutput_Generic::createAttVector(std::string name,
 }
 // -> double
 void URBOutput_Generic::createAttVector(std::string name,
-					 std::string long_name,
-					 std::string units,
-					 std::vector<NcDim> dims,
-					 double* data)
+					std::string long_name,
+					std::string units,
+					std::vector<NcDim> dims,
+					double* data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
   AttVectorDbl att = {&data,name,long_name,units,dims};
@@ -156,15 +177,23 @@ void URBOutput_Generic::saveOutputFields()
   int nx_out=0;
   int ny_out=0;
   int nz_out=0;
- 
-  /* 
+
+  /*
+    can get the dimensions form 
+    dim_scalar_t;
+    dim_scalar_z;
+    dim_scalar_y;
+    - need to convert NcDim -> int
+   */
+  
+  // ???? OBSOLETE
+  /*
      query fot the dimenson of the output. 
      if 4D array -> can get nx,ny,nz
      if 2D array -> can get nx,ny
      if only 1D -> ambuguous desciption, cannot get dimensions
   */
 
-  // FM need to change this as it is not generic for int/float/double
   std::vector<int> dims_vec_dbl;
   for (auto i=0u; i<output_vector_dbl.size(); i++) {
     dims_vec_dbl.push_back(output_vector_dbl[i].dimensions.size());
@@ -190,8 +219,9 @@ void URBOutput_Generic::saveOutputFields()
     ny_out = output_vector_dbl[id].dimensions[0].getSize();
   } else {
     // abort ??
-  }  
-
+  }
+  // ???? OBSOLETE
+  
   // output size and location
   std::vector<size_t> scalar_index;
   std::vector<size_t> scalar_size;
