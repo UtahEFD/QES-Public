@@ -5,10 +5,12 @@
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
+// constructor, linked to NetCDF file, replace mode only
 NetCDFOutput :: NetCDFOutput(std::string output_file) {
     
     outfile = new NcFile(output_file, NcFile::replace);
 }
+
 
 NcDim NetCDFOutput :: addDimension(std::string name, int size) {
     
@@ -35,6 +37,27 @@ void NetCDFOutput :: addField(std::string name, std::string units, std::string l
     fields[name] = var;
 }
 
+// 1D -> int
+void NetCDFOutput :: saveField1D(std::string name, const std::vector<size_t> index,
+                           int* data) {
+    
+    // write output data
+    NcVar var = fields[name];
+    var.putVar(index, data);
+    outfile->sync();
+}
+
+// 1D -> float
+void NetCDFOutput :: saveField1D(std::string name, const std::vector<size_t> index,
+                           float* data) {
+    
+    // write output data
+    NcVar var = fields[name];
+    var.putVar(index, data);
+    outfile->sync();
+}
+
+// 1D -> double
 void NetCDFOutput :: saveField1D(std::string name, const std::vector<size_t> index,
                            double* data) {
     
@@ -44,25 +67,34 @@ void NetCDFOutput :: saveField1D(std::string name, const std::vector<size_t> ind
     outfile->sync();
 }
 
-void NetCDFOutput :: saveField2D(std::string name, const std::vector<size_t> index,
-                           std::vector<size_t> size, std::vector<double>& data) {
+// 2D -> int
+void NetCDFOutput :: saveField2D(std::string name, std::vector<int>& data) {
     
     // write output data
     NcVar var = fields[name];
-    var.putVar(index, size, &data[0]);
+    var.putVar(&data[0]);
     outfile->sync();
 }
 
-void NetCDFOutput :: saveField2D(std::string name, const std::vector<size_t> index,
-				 std::vector<size_t> size, std::vector<float>& data) {
-  
-  // write output data
-  NcVar var = fields[name];
-  var.putVar(index, size, &data[0]);
-  outfile->sync();
+// 2D -> float
+void NetCDFOutput :: saveField2D(std::string name, std::vector<float>& data) {
+    
+    // write output data
+    NcVar var = fields[name];
+    var.putVar(&data[0]);
+    outfile->sync();
 }
 
+// 2D -> double
+void NetCDFOutput :: saveField2D(std::string name, std::vector<double>& data) {
+    
+    // write output data
+    NcVar var = fields[name];
+    var.putVar(&data[0]);
+    outfile->sync();
+ }
 
+// *D -> int
 void NetCDFOutput :: saveField2D(std::string name, const std::vector<size_t> index,
                            std::vector<size_t> size, std::vector<int>& data) {
     
@@ -72,10 +104,23 @@ void NetCDFOutput :: saveField2D(std::string name, const std::vector<size_t> ind
     outfile->sync();
 }
 
-void NetCDFOutput :: saveField2D(std::string name, std::vector<double>& data) {
+// *D -> float
+void NetCDFOutput :: saveField2D(std::string name, const std::vector<size_t> index,
+				 std::vector<size_t> size, std::vector<float>& data) {
+  
+  // write output data
+  NcVar var = fields[name];
+  var.putVar(index, size, &data[0]);
+  outfile->sync();
+}
+
+// *D -> double
+void NetCDFOutput :: saveField2D(std::string name, const std::vector<size_t> index,
+                           std::vector<size_t> size, std::vector<int>& data) {
     
     // write output data
     NcVar var = fields[name];
-    var.putVar(&data[0]);
+    var.putVar(index, size, &data[0]);
     outfile->sync();
 }
+
