@@ -54,6 +54,16 @@ void NetCDFOutput :: saveField2D(std::string name, const std::vector<size_t> ind
 }
 
 void NetCDFOutput :: saveField2D(std::string name, const std::vector<size_t> index,
+				 std::vector<size_t> size, std::vector<float>& data) {
+  
+  // write output data
+  NcVar var = fields[name];
+  var.putVar(index, size, &data[0]);
+  outfile->sync();
+}
+
+
+void NetCDFOutput :: saveField2D(std::string name, const std::vector<size_t> index,
                            std::vector<size_t> size, std::vector<int>& data) {
     
     // write output data
