@@ -48,7 +48,19 @@ URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd
   icellflag_out.resize( numcell_cout, 0.0 );
 
   output_fields = {"x","y","z","u","v","w","icell"};
+
+  std::vector<NcDim> dim_vect;
   
+  // set cell-centered dimensions
+  dim_vect.push_back(addDimension("t"));
+  dim_vect.push_back(addDimension("z",ugd->nz-2));
+  dim_vect.push_back(addDimension("y",ugd->ny-1));
+  dim_vect.push_back(addDimension("x",ugd->nx-1));
+  void createDimensions(dim_vect);
+
+  
+  // ??? OBSOLETE
+  /*
   // set cell-centered dimensions
   NcDim t_dim = addDimension("t");
   NcDim z_dim = addDimension("z",ugd->nz-2);
@@ -63,9 +75,10 @@ URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd
   dim_vector.push_back(z_dim);
   dim_vector.push_back(y_dim);
   dim_vector.push_back(x_dim);
-  // dim_vector_2d.push_back(y_dim);
-  // dim_vector_2d.push_back(x_dim);
-    
+  dim_vector_2d.push_back(y_dim);
+  dim_vector_2d.push_back(x_dim);
+  */
+  
   // create attributes
   AttScalarDbl att_t = {&time,"t", "time","s", dim_scalar_t};
   AttVectorDbl att_x = {&x_out,"x", "x-distance", "m", dim_scalar_x};
