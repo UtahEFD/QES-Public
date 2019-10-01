@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
       output_cc->save(UGD);
     }
     if (output_fc) {
-      output_fc->save(UGD);
+      //output_fc->save(UGD);
     }
 
     exit(EXIT_SUCCESS);

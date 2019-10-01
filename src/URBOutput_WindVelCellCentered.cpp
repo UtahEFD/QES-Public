@@ -15,6 +15,8 @@ URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd
      validateFileOptions();     
   */
   
+  std::cout<<"Getting output fields for CC var"<<std::endl;
+
   int nx = ugd->nx;
   int ny = ugd->ny;
   int nz = ugd->nz;
@@ -47,7 +49,7 @@ URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd
   
   icellflag_out.resize( numcell_cout, 0.0 );
 
-  output_fields = {"x","y","z","u","v","w","icell"};
+  output_fields = {"t","x","y","z","u","v","w","icell"};
 
   std::vector<NcDim> dim_vect;
   
@@ -56,7 +58,9 @@ URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd
   dim_vect.push_back(addDimension("z",ugd->nz-2));
   dim_vect.push_back(addDimension("y",ugd->ny-1));
   dim_vect.push_back(addDimension("x",ugd->nx-1));
-  void createDimensions(dim_vect);
+  createDimensions(dim_vect);
+
+  std::cout<<"dim created"<<std::endl;
 
   
   // ??? OBSOLETE
@@ -77,7 +81,6 @@ URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd
   dim_vector.push_back(x_dim);
   dim_vector_2d.push_back(y_dim);
   dim_vector_2d.push_back(x_dim);
-  */
   
   // create attributes
   AttScalarDbl att_t = {&time,"t", "time","s", dim_scalar_t};
@@ -108,8 +111,25 @@ URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd
   //output_vector_dbl.push_back(map_att_vector_dbl["y"]);
   //output_vector_dbl.push_back(map_att_vector_dbl["z"]);
   //output_vector_dbl.push_back(map_att_vector_dbl["terrain"]);  
+
+  */
+
+ // create attributes
+  createAttScalar("t","time","s",dim_scalar_t,&time);
+  createAttVector("x","x-distance","m",dim_scalar_x,&x_out);
+  createAttVector("y","y-distance","m",dim_scalar_y,&y_out);
+  createAttVector("z","z-distance","m",dim_scalar_z,&z_out);
+  createAttVector("u","x-component velocity","m s-1",dim_vector,&u_out);
+  createAttVector("v","y-component velocity","m s-1",dim_vector,&v_out);
+  createAttVector("w","z-component velocity","m s-1",dim_vector,&w_out);
+  createAttVector("icell","icell flag value","--",dim_vector,&icellflag_out);
+
+  std::cout<<"att created"<<std::endl;
   
   addOutputFields();
+
+  std::cout<<"fields created"<<std::endl;
+    
 
   /*  
   // create list of fields to save
@@ -152,12 +172,11 @@ bool URBOutput_WindVelCellCentered::validateFileOtions()
 // Save output at cell-centered values
 void URBOutput_WindVelCellCentered::save(URBGeneralData *ugd)
 {
-  /* FM -> need to clean this .....
     int nx = ugd->nx;
     int ny = ugd->ny;
     int nz = ugd->nz;
     
-    
+    /* FM -> need to clean this .....
     // output size and location
     std::vector<size_t> scalar_index;
     std::vector<size_t> scalar_size;
@@ -175,23 +194,23 @@ void URBOutput_WindVelCellCentered::save(URBGeneralData *ugd)
     vector_index_2d = {0, 0};
     vector_size_2d  = {static_cast<unsigned long>(ny-1), 
     static_cast<unsigned long>(nx-1)};
-    
-    
-    // set time
+  */
+  
+  // set time
     time = (double)output_counter;
     
     // get cell-centered values
     for (auto k = 1; k < nz-1; k++){
-    for (auto j = 0; j < ny-1; j++){
-    for (auto i = 0; i < nx-1; i++){
-    int icell_face = i + j*nx + k*nx*ny;
-    int icell_cent = i + j*(nx-1) + (k-1)*(nx-1)*(ny-1);
-    u_out[icell_cent] = 0.5*(ugd->u[icell_face+1]+ugd->u[icell_face]);
-    v_out[icell_cent] = 0.5*(ugd->v[icell_face+nx]+ugd->v[icell_face]);
-    w_out[icell_cent] = 0.5*(ugd->w[icell_face+nx*ny]+ugd->w[icell_face]);
-    icellflag_out[icell_cent] = ugd->icellflag[icell_cent+((nx-1)*(ny-1))];
-    }
-    }
+      for (auto j = 0; j < ny-1; j++){
+	for (auto i = 0; i < nx-1; i++){
+	  int icell_face = i + j*nx + k*nx*ny;
+	  int icell_cent = i + j*(nx-1) + (k-1)*(nx-1)*(ny-1);
+	  u_out[icell_cent] = 0.5*(ugd->u[icell_face+1]+ugd->u[icell_face]);
+	  v_out[icell_cent] = 0.5*(ugd->v[icell_face+nx]+ugd->v[icell_face]);
+	  w_out[icell_cent] = 0.5*(ugd->w[icell_face+nx*ny]+ugd->w[icell_face]);
+	  icellflag_out[icell_cent] = ugd->icellflag[icell_cent+((nx-1)*(ny-1))];
+	}
+      }
     }
     
     /* better way (more robust) using:
@@ -199,7 +218,7 @@ void URBOutput_WindVelCellCentered::save(URBGeneralData *ugd)
     - output_vector_dbl[i].dimensions[0].getSize()
   */
   
-  saveOutputFields();
+    saveOutputFields();
   
   /*
   // loop through 1D fields to save
@@ -226,10 +245,11 @@ void URBOutput_WindVelCellCentered::save(URBGeneralData *ugd)
   }
   */
 
-  // FM -> need to change this!!
   // remove x, y, z from output array after first save
   if (output_counter==0) {
-    output_vector_dbl.erase(output_vector_dbl.begin(),output_vector_dbl.begin()+2);
+    rmOutputField("x");
+    rmOutputField("y");
+    rmOutputField("z");
   }
   
   // increment for next time insertion

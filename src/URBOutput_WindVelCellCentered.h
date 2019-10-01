@@ -24,7 +24,7 @@ class URBOutput_WindVelCellCentered : public URBOutput_Generic
   
   
  private:
-  std::vector<double> x_out,y_out,z_out;
+  std::vector<float> x_out,y_out,z_out;
   std::vector<int> icellflag_out;
   std::vector<double> u_out,v_out,w_out;
   
