@@ -3,7 +3,7 @@
 URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd,std::string output_file)
   : URBOutput_Generic(output_file)
 {
-  std::cout<<"Getting output fields for Cell Centered data"<<std::endl;
+  std::cout<<"Getting output fields for Cell-Centered data"<<std::endl;
   //FM -> need to implement the outputFields options here...
   output_fields = {"t","x","y","z","u","v","w","icell"};
   /* output_fields = UID->fileOptions->outputFields;

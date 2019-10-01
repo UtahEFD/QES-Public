@@ -3,7 +3,7 @@
 URBOutput_WindVelFaceCentered::URBOutput_WindVelFaceCentered(URBGeneralData *ugd,std::string output_file)
   : URBOutput_Generic(output_file)
 {
-  std::cout<<"Getting output fields for Cell Centered data"<<std::endl;
+  std::cout<<"Getting output fields for Face-Centered data"<<std::endl;
   
   //FM -> need to implement the outputFields options here...
   output_fields = {"u","v","w"};
@@ -28,9 +28,9 @@ URBOutput_WindVelFaceCentered::URBOutput_WindVelFaceCentered(URBGeneralData *ugd
       
   // create attributes
   createAttScalar("t","time","s",dim_scalar_t,&time);
-  createAttVector("u","x-component velocity","m s-1",dim_vector,&(&ugd->u));
-  createAttVector("v","y-component velocity","m s-1",dim_vector,&(&ugd->v));
-  createAttVector("w","z-component velocity","m s-1",dim_vector,&(&ugd->w));
+  createAttVector("u","x-component velocity","m s-1",dim_vector,&(ugd->u));
+  createAttVector("v","y-component velocity","m s-1",dim_vector,&(ugd->v));
+  createAttVector("w","z-component velocity","m s-1",dim_vector,&(ugd->w));
 
   // create output fields
   addOutputFields();
