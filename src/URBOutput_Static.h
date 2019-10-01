@@ -25,6 +25,6 @@ class URBOutput_Static : public URBOutput_Generic
   void save(URBGeneralData*);
 
  private:
-  std::vector<double> x_out,y_out,z_out;
+  std::vector<float> x_out,y_out,z_out;
   
 };
