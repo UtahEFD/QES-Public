@@ -172,14 +172,66 @@ void URBOutput_Generic::addOutputFields()
   
 };
 
+
+void URBOutput_Generic::rmOutputField(std::string name)
+{
+ // loop through scalar fields to remove
+  // -> int
+  for (unsigned int i=0; i<output_scalar_int.size(); i++) {
+    if(output_scalar_int[i].name==name) {
+      output_scalar_int.erase(output_scalar_int.begin()+i);
+      return;
+    }
+  }
+  // -> float
+  for (unsigned int i=0; i<output_scalar_flt.size(); i++) {
+    if(output_scalar_flt[i].name==name) {
+      output_scalar_flt.erase(output_scalar_flt.begin()+i);
+      return;
+    } 
+  }
+  
+  // -> double
+  for (unsigned int i=0; i<output_scalar_dbl.size(); i++) {
+    if(output_scalar_dbl[i].name==name) {
+      output_scalar_dbl.erase(output_scalar_dbl.begin()+i);
+      return;
+    } 
+  }
+  
+  // loop through vectore fields to remove
+  // -> int
+  for (unsigned int i=0; i<output_vector_int.size(); i++) {
+    if(output_vector_int[i].name==name) {
+      output_vector_int.erase(output_vector_int.begin()+i);
+      return;
+    } 
+  }
+  // -> float
+  for (unsigned int i=0; i<output_vector_flt.size(); i++) { 
+    if(output_vector_flt[i].name==name) {
+      output_vector_flt.erase(output_vector_flt.begin()+i);
+      return;
+    } 
+  }
+  // -> double
+  for (unsigned int i=0; i<output_vector_dbl.size(); i++) {
+    if(output_vector_dbl[i].name==name) {
+      output_vector_dbl.erase(output_vector_dbl.begin()+i);
+      return;
+    } 
+  } 
+};
+
 void URBOutput_Generic::saveOutputFields()
 {
 
+  // dimensons of output. 
   int nx_out=0;
   int ny_out=0;
   int nz_out=0;
   
-  // query the dimenson of the output. 
+  // query the dimensons of output. 
   nx_out=dim_scalar_x[0].getSize();
   ny_out=dim_scalar_y[0].getSize();
   nz_out=dim_scalar_z[0].getSize();
@@ -218,7 +270,6 @@ void URBOutput_Generic::saveOutputFields()
     saveField1D(output_scalar_dbl[i].name, scalar_index,
 		output_scalar_dbl[i].data);
   }
-
   
   // loop through vectore fields to save
   // -> int

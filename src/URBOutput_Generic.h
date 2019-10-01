@@ -91,6 +91,8 @@ class URBOutput_Generic : public NetCDFOutput
 
   // add fields based on output_fields
   void addOutputFields();
+  // removed field
+  void rmOutputField(std::string);
   // save fields 
   void saveOutputFields();
 
