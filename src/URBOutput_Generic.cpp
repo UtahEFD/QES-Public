@@ -178,50 +178,11 @@ void URBOutput_Generic::saveOutputFields()
   int nx_out=0;
   int ny_out=0;
   int nz_out=0;
-
-  /*
-    can get the dimensions form 
-    dim_scalar_t;
-    dim_scalar_z;
-    dim_scalar_y;
-    - need to convert NcDim -> int
-   */
   
-  // ???? OBSOLETE
-  /*
-     query fot the dimenson of the output. 
-     if 4D array -> can get nx,ny,nz
-     if 2D array -> can get nx,ny
-     if only 1D -> ambuguous desciption, cannot get dimensions
-  */
-
-  std::vector<int> dims_vec_dbl;
-  for (auto i=0u; i<output_vector_dbl.size(); i++) {
-    dims_vec_dbl.push_back(output_vector_dbl[i].dimensions.size());
-  }
-  
-  // find the 4D array
-  std::vector<int>::iterator it4;
-  it4 = find (dims_vec_dbl.begin(), dims_vec_dbl.end(), 4);
-  // find the 2D array
-  std::vector<int>::iterator it2;
-  it2 = find (dims_vec_dbl.begin(), dims_vec_dbl.end(), 2);
-  
-  if (it4 != dims_vec_dbl.end()) {
-    // Get index of element from iterator
-    int id = std::distance(dims_vec_dbl.begin(), it4);
-    nx_out = output_vector_dbl[id].dimensions[3].getSize();
-    ny_out = output_vector_dbl[id].dimensions[2].getSize();
-    nz_out = output_vector_dbl[id].dimensions[1].getSize();
-  } else if (it2 != dims_vec_dbl.end()) {
-    // Get index of element from iterator
-    int id = std::distance(dims_vec_dbl.begin(), it2);
-    nx_out = output_vector_dbl[id].dimensions[1].getSize();
-    ny_out = output_vector_dbl[id].dimensions[0].getSize();
-  } else {
-    // abort ??
-  }
-  // ???? OBSOLETE
+  // query the dimenson of the output. 
+  nx_out=dim_scalar_x[0].getSize();
+  ny_out=dim_scalar_y[0].getSize();
+  nz_out=dim_scalar_z[0].getSize();
   
   // output size and location
   std::vector<size_t> scalar_index;
