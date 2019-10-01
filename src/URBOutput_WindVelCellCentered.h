@@ -5,8 +5,9 @@
 #include "URBGeneralData.h"
 #include "URBOutput_Generic.h"
 
-// Specialized output classes that can take URBGeneratlData or
-// URBInputData, etc... and dump out reasonably..
+/* Specialized output classes derived from URBOutput_Generic for 
+   cell center data (used primarly for vizualization)
+*/
 class URBOutput_WindVelCellCentered : public URBOutput_Generic
 {
  public:
@@ -18,10 +19,8 @@ class URBOutput_WindVelCellCentered : public URBOutput_Generic
   ~URBOutput_WindVelCellCentered()	       
     {}
 
-  
   bool validateFileOtions();
   void save(URBGeneralData*);
-  
   
  private:
   std::vector<float> x_out,y_out,z_out;
