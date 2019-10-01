@@ -39,39 +39,40 @@ void URBOutput_Generic::createDimensions(std::vector<NcDim> dim_vect)
 
 //----------------------------------------
 // create attribute scalar
-// -> float
-void URBOutput_Generic::createAttSaclar(std::string name,
+// -> int
+void URBOutput_Generic::createAttScalar(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
 					int* data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
-  AttScalarInt att = {&data,name,long_name,units,dims};
-  map_att_scalar_flt.emplace(name,att);
+  AttScalarInt att = {data,name,long_name,units,dims};
+  map_att_scalar_int.emplace(name,att);
   
+
 }
 // -> float
-void URBOutput_Generic::createAttSaclar(std::string name,
+void URBOutput_Generic::createAttScalar(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
 					float* data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
-  AttScalarFlt att = {&data,name,long_name,units,dims};
+  AttScalarFlt att = {data,name,long_name,units,dims};
   map_att_scalar_flt.emplace(name,att);
   
 }
 // -> double
-void URBOutput_Generic::createAttSaclar(std::string name,
+void URBOutput_Generic::createAttScalar(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
 					double* data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
-  AttScalarDbl att = {&data,name,long_name,units,dims};
+  AttScalarDbl att = {data,name,long_name,units,dims};
   map_att_scalar_dbl.emplace(name,att);
 }
 
@@ -82,10 +83,10 @@ void URBOutput_Generic::createAttVector(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
-					int* data)
+					std::vector<int>* data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
-  AttVectorInt att = {&data,name,long_name,units,dims};
+  AttVectorInt att = {data,name,long_name,units,dims};
   map_att_vector_int.emplace(name,att);
   
 }
@@ -94,10 +95,10 @@ void URBOutput_Generic::createAttVector(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
-					float* data)
+					std::vector<float>* data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
-  AttVectorFlt att = {&data,name,long_name,units,dims};
+  AttVectorFlt att = {data,name,long_name,units,dims};
   map_att_vector_flt.emplace(name,att);
   
 }
@@ -106,10 +107,10 @@ void URBOutput_Generic::createAttVector(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
-					double* data)
+					std::vector<double>* data)
 {
   // FM -> here I do not know what is the best way to add the ref to data.
-  AttVectorDbl att = {&data,name,long_name,units,dims};
+  AttVectorDbl att = {data,name,long_name,units,dims};
   map_att_vector_dbl.emplace(name,att);
 }
 
@@ -120,16 +121,16 @@ void URBOutput_Generic::addOutputFields()
   // create list of fields to save base on output_fields
   for (size_t i=0; i<output_fields.size(); i++) {
     std::string key = output_fields[i];
-    
+        
     if (map_att_scalar_int.count(key)) {
       // scalar int
       output_scalar_int.push_back(map_att_scalar_int[key]);
-    } else if (map_att_vector_dbl.count(key)) {
+    } else if (map_att_scalar_flt.count(key)) {
       // scalar flt
-      output_vector_flt.push_back(map_att_vector_dbl[key]);
-    } else if (map_att_vector_dbl.count(key)) {
+      output_scalar_flt.push_back(map_att_scalar_flt[key]);
+    } else if (map_att_scalar_dbl.count(key)) {
       // scalar dbl
-      output_vector_dbl.push_back(map_att_vector_dbl[key]);  
+      output_scalar_dbl.push_back(map_att_scalar_dbl[key]);  
     } else if(map_att_vector_int.count(key)) {
       // vector int
       output_vector_int.push_back(map_att_vector_int[key]);
@@ -145,17 +146,16 @@ void URBOutput_Generic::addOutputFields()
   // add scalar fields
   // -> int
   for ( AttScalarInt att : output_scalar_int ) {
-    addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
-  }
+    addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
+  }  
   // -> float
-  for ( AttScalarFlt att : output_scalar_flt ) {
-    addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
+  for ( AttScalarFlt att : output_scalar_flt ) {    
+    addField(att.name, att.units, att.long_name, att.dimensions, ncFloat);
   }
   // -> double
   for ( AttScalarDbl att : output_scalar_dbl ) {
     addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
   }
-
   // add vector fields
   // -> int
   for ( AttVectorInt att : output_vector_int ) {
@@ -163,12 +163,13 @@ void URBOutput_Generic::addOutputFields()
   }
   // -> int
   for ( AttVectorFlt att : output_vector_flt ) {
-    addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
-  }x
+    addField(att.name, att.units, att.long_name, att.dimensions, ncFloat);
+  }
   // -> double
   for ( AttVectorDbl att : output_vector_dbl ) {
     addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
   }
+  
 };
 
 void URBOutput_Generic::saveOutputFields()
@@ -305,7 +306,7 @@ void URBOutput_Generic::saveOutputFields()
 		  vector_size_2d, *output_vector_dbl[i].data);
     }
     // 4D (u,v,w)
-    else if (output_vector_dbl[i].dimensions.sizexs()==4) {
+    else if (output_vector_dbl[i].dimensions.size()==4) {
       saveField2D(output_vector_dbl[i].name, vector_index,
 		  vector_size, *output_vector_dbl[i].data);
     }

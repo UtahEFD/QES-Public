@@ -16,6 +16,13 @@
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
+struct AttScalarInt {
+  int* data;
+  std::string name;
+  std::string long_name;
+  std::string units;
+  std::vector<NcDim> dimensions;
+};
 struct AttVectorInt {
   std::vector<int>* data;
   std::string name;
@@ -54,7 +61,7 @@ struct AttVectorDbl {
   std::vector<NcDim> dimensions;
 };
 
-class URBOutput_Generic : public NetCDFOutput 
+class URBOutput_Generic : public NetCDFOutput
 {
  public:
   URBOutput_Generic()
@@ -62,7 +69,7 @@ class URBOutput_Generic : public NetCDFOutput
   URBOutput_Generic(std::string);
   virtual ~URBOutput_Generic()
     {}
-
+  
   // create dimenson of output fields
   void createDimensions(std::vector<NcDim>);
   
@@ -76,11 +83,11 @@ class URBOutput_Generic : public NetCDFOutput
   
   // create attribute vector based on type of data
   void createAttVector(std::string,std::string,std::string,
-		       std::vector<NcDim>,int*);
+		       std::vector<NcDim>,std::vector<int>*);
   void createAttVector(std::string,std::string,std::string,
-		       std::vector<NcDim>,float*);
+		       std::vector<NcDim>,std::vector<float>*);
   void createAttVector(std::string,std::string,std::string,
-		       std::vector<NcDim>,double*);
+		       std::vector<NcDim>,std::vector<double>*);
 
   // add fields based on output_fields
   void addOutputFields();

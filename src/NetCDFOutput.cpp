@@ -116,7 +116,7 @@ void NetCDFOutput :: saveField2D(std::string name, const std::vector<size_t> ind
 
 // *D -> double
 void NetCDFOutput :: saveField2D(std::string name, const std::vector<size_t> index,
-                           std::vector<size_t> size, std::vector<int>& data) {
+                           std::vector<size_t> size, std::vector<double>& data) {
     
     // write output data
     NcVar var = fields[name];
