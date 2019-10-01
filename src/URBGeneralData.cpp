@@ -531,6 +531,25 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
 
      wall->setVelocityZero (this);
 
+     // Write data to file
+     ofstream outdata2;
+     outdata2.open("Initial velocity.dat");
+     if( !outdata2 ) {                 // File couldn't be opened
+         cerr << "Error: file could not be opened" << endl;
+         exit(1);
+     }
+     // Write data to file
+     for (int k = 0; k < nz; k++){
+         for (int j = 0; j < ny; j++){
+             for (int i = 0; i < nx; i++){
+               int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+               int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
+               outdata2 << "\t" << i << "\t" << j << "\t" << k <<  "\t \t"<< "\t \t" << u0[icell_face] <<"\t \t"<< "\t \t"<<v0[icell_face]<<"\t \t"<< "\t \t"<<w0[icell_face]<< endl;
+             }
+         }
+     }
+     outdata2.close();
+
 
 
     //////////////////////////////////////////////////

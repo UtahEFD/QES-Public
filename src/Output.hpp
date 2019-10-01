@@ -1,6 +1,6 @@
 //
 //  output.hpp
-//  
+//
 //  This class handles netcdf output
 //
 //  Created by Jeremy Gibbs on 12/19/18.
@@ -22,17 +22,17 @@ using namespace netCDF;
 using namespace netCDF::exceptions;
 
 class Output {
-    
+
     private:
         // netCDF variables
         NcFile* outfile;
         std::map<std::string,NcVar> fields;
-    
+
     public:
-    
+
         // initializer
         Output(std::string);
-        
+
         // setter
         NcDim addDimension(std::string, int size=0);
         NcDim getDimension(std::string);

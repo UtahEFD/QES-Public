@@ -7,19 +7,19 @@
 void Wall::defineWalls(URBGeneralData *UGD)
 {
 
-  int dx = UGD->dx;
-  int dy = UGD->dy;
-  int dz = UGD->dz;
+  float dx = UGD->dx;
+  float dy = UGD->dy;
+  float dz = UGD->dz;
   int nx = UGD->nx;
   int ny = UGD->ny;
   int nz = UGD->nz;
 
 
-  for (int i=0; i<nx-1; i++)
+  for (auto i=0; i<nx-1; i++)
   {
-    for (int j=0; j<ny-1; j++)
+    for (auto j=0; j<ny-1; j++)
     {
-      for (int k=1; k<nz-2; k++)
+      for (auto k=1; k<nz-2; k++)
       {
         int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
         int icell_face = i + j*nx + k*nx*ny;
@@ -80,9 +80,9 @@ void Wall::defineWalls(URBGeneralData *UGD)
 void Wall::wallLogBC (URBGeneralData *UGD)
 {
 
-  int dx = UGD->dx;
-  int dy = UGD->dy;
-  int dz = UGD->dz;
+  float dx = UGD->dx;
+  float dy = UGD->dy;
+  float dz = UGD->dz;
   int nx = UGD->nx;
   int ny = UGD->ny;
   int nz = UGD->nz;
@@ -125,7 +125,7 @@ void Wall::wallLogBC (URBGeneralData *UGD)
   for (size_t i=0; i < UGD->wall_below_indices.size(); i++)
   {
     ustar_wall = 0.1;       /// reset default value for velocity gradient
-    for (int iter=0; iter<20; iter++)
+    for (auto iter=0; iter<20; iter++)
     {
       wind_dir = atan2(v0[UGD->wall_below_indices[i]+nx*ny],u0[UGD->wall_below_indices[i]+nx*ny]);
       vel_mag2 = sqrt(pow(u0[UGD->wall_below_indices[i]+nx*ny],2.0)+pow(v0[UGD->wall_below_indices[i]+nx*ny],2.0));
@@ -145,7 +145,7 @@ void Wall::wallLogBC (URBGeneralData *UGD)
   for (size_t i=0; i < UGD->wall_above_indices.size(); i++)
   {
     ustar_wall = 0.1;       /// reset default value for velocity gradient
-    for (int iter=0; iter<20; iter++)
+    for (auto iter=0; iter<20; iter++)
     {
       wind_dir = atan2(v0[UGD->wall_above_indices[i]-nx*ny],u0[UGD->wall_above_indices[i]-nx*ny]);
       vel_mag2 = sqrt(pow(u0[UGD->wall_above_indices[i]-nx*ny],2.0)+pow(v0[UGD->wall_above_indices[i]-nx*ny],2.0));
@@ -169,7 +169,7 @@ void Wall::wallLogBC (URBGeneralData *UGD)
   for (size_t i=0; i < UGD->wall_back_indices.size(); i++)
   {
     ustar_wall = 0.1;
-    for (int iter=0; iter<20; iter++)
+    for (auto iter=0; iter<20; iter++)
     {
       wind_dir = atan2(w0[UGD->wall_back_indices[i]+1],v0[UGD->wall_back_indices[i]+1]);
       vel_mag2 = sqrt(pow(v0[UGD->wall_back_indices[i]+1],2.0)+pow(w0[UGD->wall_back_indices[i]+1],2.0));
@@ -191,7 +191,7 @@ void Wall::wallLogBC (URBGeneralData *UGD)
   for (size_t i=0; i < UGD->wall_front_indices.size(); i++)
   {
     ustar_wall = 0.1;       /// reset default value for velocity gradient
-    for (int iter=0; iter<20; iter++)
+    for (auto iter=0; iter<20; iter++)
     {
       wind_dir = atan2(w0[UGD->wall_front_indices[i]-1],v0[UGD->wall_front_indices[i]-1]);
       vel_mag2 = sqrt(pow(v0[UGD->wall_front_indices[i]-1],2.0)+pow(w0[UGD->wall_front_indices[i]-1],2.0));
@@ -216,7 +216,7 @@ void Wall::wallLogBC (URBGeneralData *UGD)
   for (size_t i=0; i < UGD->wall_right_indices.size(); i++)
   {
     ustar_wall = 0.1;          /// reset default value for velocity gradient
-    for (int iter=0; iter<20; iter++)
+    for (auto iter=0; iter<20; iter++)
     {
       wind_dir = atan2(w0[UGD->wall_right_indices[i]+nx],u0[UGD->wall_right_indices[i]+nx]);
       vel_mag2 = sqrt(pow(u0[UGD->wall_right_indices[i]+nx],2.0)+pow(w0[UGD->wall_right_indices[i]+nx],2.0));
@@ -237,7 +237,7 @@ void Wall::wallLogBC (URBGeneralData *UGD)
   for (size_t i=0; i < UGD->wall_left_indices.size(); i++)
   {
     ustar_wall = 0.1;       /// reset default value for velocity gradient
-    for (int iter=0; iter<20; iter++)
+    for (auto iter=0; iter<20; iter++)
     {
       wind_dir = atan2(w0[UGD->wall_left_indices[i]-nx],u0[UGD->wall_left_indices[i]-nx]);
       vel_mag2 = sqrt(pow(u0[UGD->wall_left_indices[i]-nx],2.0)+pow(w0[UGD->wall_left_indices[i]-nx],2.0));

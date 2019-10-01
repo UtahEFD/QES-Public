@@ -122,10 +122,10 @@ void PolyBuilding::upwindCavity (const URBInputData* UID, URBGeneralData* UGD)
         }
       }
       // Defining limits of the upwind cavity in x and y directions
-      upwind_i_start = MAX_S(std::round(MIN_S(polygonVertices[id].x_poly, polygonVertices[id+1].x_poly)/UGD->dx)-std::round(1*Lf_face[counter]/UGD->dx)-1, 1);
-      upwind_i_end = MIN_S(std::round(MAX_S(polygonVertices[id].x_poly, polygonVertices[id+1].x_poly)/UGD->dx)+std::round(1*Lf_face[counter]/UGD->dx), UGD->nx-2);
-      upwind_j_start = MAX_S(std::round(MIN_S(polygonVertices[id].y_poly, polygonVertices[id+1].y_poly)/UGD->dy)-std::round(1*Lf_face[counter]/UGD->dy)-1, 1);
-      upwind_j_end = MIN_S(std::round(MAX_S(polygonVertices[id].y_poly, polygonVertices[id+1].y_poly)/UGD->dy)+std::round(1*Lf_face[counter]/UGD->dy), UGD->ny-2);
+      upwind_i_start = MAX_S(std::round(MIN_S(polygonVertices[id].x_poly, polygonVertices[id+1].x_poly)/UGD->dx)-std::round(1.5*Lf_face[counter]/UGD->dx)-1, 1);
+      upwind_i_end = MIN_S(std::round(MAX_S(polygonVertices[id].x_poly, polygonVertices[id+1].x_poly)/UGD->dx)+std::round(1.5*Lf_face[counter]/UGD->dx), UGD->nx-2);
+      upwind_j_start = MAX_S(std::round(MIN_S(polygonVertices[id].y_poly, polygonVertices[id+1].y_poly)/UGD->dy)-std::round(1.5*Lf_face[counter]/UGD->dy)-1, 1);
+      upwind_j_end = MIN_S(std::round(MAX_S(polygonVertices[id].y_poly, polygonVertices[id+1].y_poly)/UGD->dy)+std::round(1.5*Lf_face[counter]/UGD->dy), UGD->ny-2);
       x_average = 0.5*(polygonVertices[id].x_poly+polygonVertices[id+1].x_poly);        // x-location of middle of the face
       y_average = 0.5*(polygonVertices[id].y_poly+polygonVertices[id+1].y_poly);        // y-location of middle of the face
 
