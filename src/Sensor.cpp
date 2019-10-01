@@ -52,9 +52,9 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 {
     // replicate some local variable to make reference to URBInputData
     // and URBGeneralData elements to make reading code below more conciser
-    int dx = ugd->dx;
-    int dy = ugd->dy;
-    int dz = ugd->dz;
+    float dx = ugd->dx;
+    float dy = ugd->dy;
+    float dz = ugd->dz;
     int nx = ugd->nx;
     int ny = ugd->ny;
     int nz = ugd->nz;
@@ -98,8 +98,8 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 	std::vector<float> x,y;
 
 	int num_sites = sensors.size();
-	std::vector<std::vector<double>> u_prof(num_sites, std::vector<double>(nz,0.0));
-	std::vector<std::vector<double>> v_prof(num_sites, std::vector<double>(nz,0.0));
+	std::vector<std::vector<float>> u_prof(num_sites, std::vector<float>(nz,0.0));
+	std::vector<std::vector<float>> v_prof(num_sites, std::vector<float>(nz,0.0));
 	int icell_face, icell_cent;
 
 	std::vector<int> site_i(num_sites,0);
@@ -109,8 +109,8 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 	std::vector<float> v0_int(num_sites,0.0);
 	std::vector<float> site_theta(num_sites,0.0);
 
-	std::vector<std::vector<std::vector<double>>> wm(num_sites, std::vector<std::vector<double>>(nx, std::vector<double>(ny,0.0)));
-	std::vector<std::vector<std::vector<double>>> wms(num_sites, std::vector<std::vector<double>>(nx, std::vector<double>(ny,0.0)));
+	std::vector<std::vector<std::vector<float>>> wm(num_sites, std::vector<std::vector<float>>(nx, std::vector<float>(ny,0.0)));
+	std::vector<std::vector<std::vector<float>>> wms(num_sites, std::vector<std::vector<float>>(nx, std::vector<float>(ny,0.0)));
 
 	// Loop through all sites and create velocity profiles (u0,v0)
 	for (auto i = 0 ; i < num_sites; i++)
@@ -424,7 +424,7 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 					icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
 		      u0[icell_face] = u_prof[0][k];
 					v0[icell_face] = v_prof[0][k];
-					w0[icell_face] = 0.0;         /// Perpendicular wind direction
+					//w0[icell_face] = 0.0;         /// Perpendicular wind direction
 				}
 			}
    	}
@@ -559,8 +559,8 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 
 	if (z0_domain_flag == 1)
 	{
-		double sum_z0=0.0;
-		double z0_effective;
+		float sum_z0=0.0;
+		float z0_effective;
 		int height_id, blending_id, max_terrain_id=0;
 		std::vector<float> blending_velocity, blending_theta;
 		for (auto i=0; i<nx; i++)
