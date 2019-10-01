@@ -5,8 +5,11 @@
 #include "URBGeneralData.h"
 #include "URBOutput_Generic.h"
 
-// Specialized output classes that can take URBGeneratlData or
-// URBInputData, etc... and dump out reasonably..
+/* Specialized output classes derived from URBOutput_Generic for 
+   static data (terrain,...)
+   Note: Need to implement building here!!
+*/
+
 class URBOutput_Static : public URBOutput_Generic
 {
  public:
@@ -17,13 +20,11 @@ class URBOutput_Static : public URBOutput_Generic
   URBOutput_Static(URBGeneralData*,std::string);
   ~URBOutput_Static()	       
     {}
-
   
   bool validateFileOtions();
   void save(URBGeneralData*);
-  
-  
+
  private:
   std::vector<double> x_out,y_out,z_out;
-    
+  
 };
