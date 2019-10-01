@@ -5,17 +5,6 @@ URBOutput_Generic::URBOutput_Generic(std::string output_file)
 {
 };
 
-/*
-  Attribute are create based and the type of the data
-  -> attribute are store in map_att_*
-  -> all possible attribute available for the derived class should be 
-  created by its constructor. 
-  -> attribute are pushed back to output_* based on what is selected 
-  by output_fields 
-  -> the methods allows to by type generic (as long as the data is 
-  either int,float or double
-*/
-
 
 void URBOutput_Generic::createDimensions(std::vector<NcDim> dim_vect)
 {
@@ -117,6 +106,15 @@ void URBOutput_Generic::createAttVector(std::string name,
 //----------------------------------------
 void URBOutput_Generic::addOutputFields()
 {
+   /*
+    This function add the  fields to the output vectors
+    and link them to the NetCDF.
+
+    Since the type is not know, one needs to loop through 
+    the 6 output vector to find it.
+        
+    FMargairaz
+  */
   
   // create list of fields to save base on output_fields
   for (size_t i=0; i<output_fields.size(); i++) {
@@ -175,7 +173,17 @@ void URBOutput_Generic::addOutputFields()
 
 void URBOutput_Generic::rmOutputField(std::string name)
 {
- // loop through scalar fields to remove
+  /*
+    This function remove a field from the output vectors
+    Since the type is not know, one needs to loop through 
+    the 6 output vector to find it.
+    
+    Note: the field CANNOT be added again.
+    
+    FMargairaz
+  */
+
+  // loop through scalar fields to remove
   // -> int
   for (unsigned int i=0; i<output_scalar_int.size(); i++) {
     if(output_scalar_int[i].name==name) {
@@ -199,7 +207,7 @@ void URBOutput_Generic::rmOutputField(std::string name)
     } 
   }
   
-  // loop through vectore fields to remove
+  // loop through vector fields to remove
   // -> int
   for (unsigned int i=0; i<output_vector_int.size(); i++) {
     if(output_vector_int[i].name==name) {
@@ -225,7 +233,14 @@ void URBOutput_Generic::rmOutputField(std::string name)
 
 void URBOutput_Generic::saveOutputFields()
 {
-
+   /*
+    This function save the fields from the output vectors
+    Since the type is not know, one needs to loop through 
+    the 6 output vector to find it.
+    
+    FMargairaz
+   */
+  
   // dimensons of output. 
   int nx_out=0;
   int ny_out=0;
@@ -271,7 +286,7 @@ void URBOutput_Generic::saveOutputFields()
 		output_scalar_dbl[i].data);
   }
   
-  // loop through vectore fields to save
+  // loop through vector fields to save
   // -> int
   for (unsigned int i=0; i<output_vector_int.size(); i++) {
     // 1D (x or z or y)

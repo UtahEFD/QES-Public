@@ -9,13 +9,23 @@
 #include "URBGeneralData.h"
 #include "NetCDFOutput.h"
 
-/**
- * This class handles saving output files.
- */
+/*
+  This class handles saving output files.
+  
+  Attribute are create based and the type of the data
+  -> attribute are store in map_att_*
+  -> all possible attribute available for the derived class should be 
+  created by its constructor. 
+  -> attribute are pushed back to output_* based on what is selected 
+  by output_fields 
+  -> the methods allows to by type generic (as long as the data is 
+  either int,float or double
+*/
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
+//Attribute for scalar/vector for each type
 struct AttScalarInt {
   int* data;
   std::string name;
@@ -108,7 +118,15 @@ class URBOutput_Generic : public NetCDFOutput
   
   int output_counter=0;
   double time=0;
-    
+
+  /* vector containing fields to add to the NetCDF file
+     Note: this vector is used ONLY for creating fields
+     (i.e. by the constuctor &add function) NOT to save 
+     them (i.e. by the function save)
+  */
+  std::vector<std::string> output_fields;
+
+  // dimensions of output fields in the NetCDF file
   std::vector<NcDim> dim_scalar_t;
   std::vector<NcDim> dim_scalar_z;
   std::vector<NcDim> dim_scalar_y;
@@ -116,8 +134,10 @@ class URBOutput_Generic : public NetCDFOutput
   std::vector<NcDim> dim_vector;
   std::vector<NcDim> dim_vector_2d;
 
-  std::vector<std::string> output_fields;
-
+  /* output fields in the NetCDF file for scalar/vector 
+     for each type.
+     Note: this is used ONLY to create and link fields.
+  */
   std::map<std::string,AttScalarInt> map_att_scalar_int;
   std::map<std::string,AttScalarFlt> map_att_scalar_flt;
   std::map<std::string,AttScalarDbl> map_att_scalar_dbl;
@@ -125,6 +145,11 @@ class URBOutput_Generic : public NetCDFOutput
   std::map<std::string,AttVectorFlt> map_att_vector_flt;
   std::map<std::string,AttVectorDbl> map_att_vector_dbl;
 
+  /* vectors of output fields in the NetCDF file for
+     scalar/vector for each type. 
+     Note: this is used to save the fields, ONLY the
+     fields in these 6 vectors will be saved
+  */
   std::vector<AttScalarInt> output_scalar_int;
   std::vector<AttScalarFlt> output_scalar_flt;
   std::vector<AttScalarDbl> output_scalar_dbl;
