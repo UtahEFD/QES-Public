@@ -61,7 +61,7 @@ URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd
   createAttVector("w","z-component velocity","m s-1",dim_vector,&w_out);
   createAttVector("icell","icell flag value","--",dim_vector,&icellflag_out);
 
-  // create attributes
+  // create output fields
   addOutputFields();
 
 }
