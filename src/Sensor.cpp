@@ -177,7 +177,11 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 		// Logarithmic velocity profile
 		if (sensors[i]->site_blayer_flag == 1)
 		{
-			for (auto k = terrain_id[site_id[i]]; k < nz; k++)
+                    // This loop should be bounded by size of the z
+                    // vector, and not nz since z.size can be equal to
+                    // nz+1 from what I can tell.  We access z[k]
+                    // below...
+                    for (auto k = terrain_id[site_id[i]]; k < z.size(); k++)
 			{
 				if (k == terrain_id[site_id[i]])
 				{

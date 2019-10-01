@@ -284,7 +284,7 @@ void Wall::solverCoefficients (URBGeneralData *UGD)
 {
   // New boundary condition implementation
   // This needs to be done only once
-  for (auto k = 0; k < UGD->nz-1; k++)
+  for (auto k = 1; k < UGD->nz-2; k++)
   {
     for (auto j = 0; j < UGD->ny-1; j++)
     {
