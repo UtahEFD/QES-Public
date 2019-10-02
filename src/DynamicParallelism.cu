@@ -293,9 +293,12 @@ void DynamicParallelism::solve(const URBInputData* UID, URBGeneralData* UGD, boo
     cudaMemcpy(d_h , UGD->h.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
     cudaMemcpy(d_m , UGD->m.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
     cudaMemcpy(d_n , UGD->n.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_x , UGD->x.data() , UGD->nx * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_y , UGD->y.data() , UGD->ny * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_z , UGD->z.data() , UGD->nz * sizeof(float) , cudaMemcpyHostToDevice);
+
+    // should be 
+    cudaMemcpy(d_x , UGD->x.data() , (UGD->nx - 1)* sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_y , UGD->y.data() , (UGD->ny - 1) * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_z , UGD->z.data() , (UGD->nz - 1) * sizeof(float) , cudaMemcpyHostToDevice);
+    
     cudaMemcpy(d_dz_array , UGD->dz_array.data() , (UGD->nz-1) * sizeof(float) , cudaMemcpyHostToDevice);
     cudaMemcpy(d_lambda , lambda.data() , UGD->numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
     cudaMemcpy(d_lambda_old , lambda_old.data() , UGD->numcell_cent * sizeof(double) , cudaMemcpyHostToDevice);
