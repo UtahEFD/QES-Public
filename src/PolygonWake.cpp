@@ -60,7 +60,6 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD, in
 
   // Wind direction of initial velocity at the height of building at the centroid
   upwind_dir = atan2(v0_h,u0_h);
-  std::cout << "upwind_dir:  " << upwind_dir << std::endl;
 
   x1 = x2 = y1 = y2 = 0.0;
   xi.resize (polygonVertices.size(),0.0);      // Difference of x values of the centroid and each node
@@ -106,7 +105,6 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD, in
   {
     // Calculate upwind reletive direction for each face
     upwind_rel_dir[id] = atan2(yi[id+1]-yi[id],xi[id+1]-xi[id])+0.5*M_PI;
-    std::cout << "upwind_rel_dir[id]:  " << upwind_rel_dir[id] << std::endl;
     if (upwind_rel_dir[id] > M_PI+0.0001)
     {
       upwind_rel_dir[id] -= 2*M_PI;
@@ -161,7 +159,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD, in
   tol = 0.01*M_PI/180.0;
   // Calculating length of the downwind wake based on Fackrell (1984) formulation
   Lr = 1.8*height_eff*W_over_H/(pow(L_over_H,0.3)*(1+0.24*W_over_H));
-  std::cout << "Lr:  " << Lr << std::endl;
+
   for (auto id=0; id<polygonVertices.size()-1; id++)
   {
     // Finding faces that are eligible for applying the far-wake parameterizations
@@ -241,7 +239,6 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD, in
       break;
     }
   }
-  std::cout << "H:  " << H << std::endl;
 
   for (auto k=k_top; k>=k_bottom; k--)
   {
