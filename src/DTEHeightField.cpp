@@ -143,7 +143,7 @@ void DTEHeightField::load()
   m_nXSize = poBand->GetXSize();
   m_nYSize = poBand->GetYSize();
 
-  printf( "Size is %dx%dx%d\n",
+  printf( "DEM size is %dx%dx%d\n",
 	  m_nXSize, m_nYSize );
 
   pafScanline = (float *) CPLMalloc(sizeof(float)*m_nXSize*m_nYSize);
@@ -392,8 +392,8 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
 
   std::vector<int> cutCells;
 
-  for (int i = 0; i < nx - 1; i++)
-    for (int j = 0; j < ny - 1; j++)
+  for (int i = 0; i < nx - 2; i++)
+    for (int j = 0; j < ny - 2; j++)
     {
 
       //all work here is done for each column of cells in the z direction from the xy plane.
@@ -435,7 +435,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
 		}
 	}
 
-//#pragma acc parallel loop
+// #pragma acc parallel loop
   for (int k = 1; k < nz - 1; k++)
   {
     float cellBot = (k - 1) * dz;
