@@ -317,7 +317,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
         UID->simParams->SHPData->getLocalDomain( shpDomainSize );
         UID->simParams->SHPData->getMinExtent( minExtent );
 
-        float domainOffset[2] = { 0, 0 };
+        // float domainOffset[2] = { 0, 0 };
         for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
         {
             // convert the global polys to local domain coordinates
@@ -542,9 +542,9 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
      for (int k = 0; k < nz; k++){
          for (int j = 0; j < ny; j++){
              for (int i = 0; i < nx; i++){
-               int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-               int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
-               outdata2 << "\t" << i << "\t" << j << "\t" << k <<  "\t \t"<< "\t \t" << u0[icell_face] <<"\t \t"<< "\t \t"<<v0[icell_face]<<"\t \t"<< "\t \t"<<w0[icell_face]<< endl;
+                 // int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+                 int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
+                 outdata2 << "\t" << i << "\t" << j << "\t" << k <<  "\t \t"<< "\t \t" << u0[icell_face] <<"\t \t"<< "\t \t"<<v0[icell_face]<<"\t \t"<< "\t \t"<<w0[icell_face]<< endl;
              }
          }
      }

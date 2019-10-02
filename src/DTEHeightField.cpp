@@ -149,11 +149,18 @@ void DTEHeightField::load()
   pafScanline = (float *) CPLMalloc(sizeof(float)*m_nXSize*m_nYSize);
 
   // rb->RasterIO(GF_Read, 0, 0, xsize, ysize, buffer, xsize, ysize, GDT_Float32, 0, 0);
-  poBand->RasterIO( GF_Read, 0, 0,
-		    m_nXSize, m_nYSize,
-		    pafScanline,
-		    m_nXSize, m_nYSize, GDT_Float32,
-		    0, 0 );
+  // 
+  // CPLErr - CE_Failure if the access fails, otherwise CE_None.
+  CPLErr rasterErr = poBand->RasterIO( GF_Read, 0, 0,
+                                       m_nXSize, m_nYSize,
+                                       pafScanline,
+                                       m_nXSize, m_nYSize, GDT_Float32,
+                                       0, 0 );
+  if (rasterErr == CE_Failure) {
+      std::cerr << "CPL RasterIO failure during DEM loading. Exiting." << std::endl;
+      exit(EXIT_FAILURE);
+  }
+  
 
   Triangle *tPtr=0;
   m_triList.clear();
@@ -299,12 +306,12 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
     std::chrono::duration<double> elapsed = finish - start;
     std::cout << "\telapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
 
-    /*if ((*domain)[0] >= (*domain)[1] && (*domain)[0] >= (*domain)[2])
+    /* if ((*domain)[0] >= (*domain)[1] && (*domain)[0] >= (*domain)[2])
       (*domain)[1] = (*domain) [2] = (*domain)[0];
     else if ((*domain)[1] >= (*domain)[0] && (*domain)[1] >= (*domain)[2])
       (*domain)[0] = (*domain) [2] = (*domain)[1];
     else
-        (*domain)[0] = (*domain) [1] = (*domain)[2];//*/
+        (*domain)[0] = (*domain) [1] = (*domain)[2]; */
     printf("domain: %d %d %d\n", (*domain)[0], (*domain)[1], (*domain)[2]);
 }
 

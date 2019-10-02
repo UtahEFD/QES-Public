@@ -40,3 +40,4 @@ int Edge<T>::getIndex(T v)
 	else
 		return -1;
 }
+
