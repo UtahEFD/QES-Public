@@ -1,4 +1,5 @@
 <simulationParameters>
+  	<DEM>../data/GISFiles/GaussianHill_200x200.tiff</DEM>
 	<domain>200 200 200 </domain>
 	<cellSize> 1.0 1.0 1.0 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>

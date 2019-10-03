@@ -95,7 +95,7 @@ public:
         parsePrimitive<std::string>(false, demFile, "DEM");
 
         shpFile = "";
-  	parsePrimitive<std::string>(false, shpFile, "SHP");
+  	    parsePrimitive<std::string>(false, shpFile, "SHP");
 
         shpBuildingLayerName = "buildings";  // defaults
         parsePrimitive<std::string>(false, shpBuildingLayerName, "SHPBuildingLayer");
