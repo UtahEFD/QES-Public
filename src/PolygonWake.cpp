@@ -66,13 +66,16 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD, in
   yi.resize (polygonVertices.size(),0.0);     // Difference of y values of the centroid and each node
   polygon_area = 0.0;
 
+  for (auto id=0; id<polygonVertices.size(); id++)
+  {
+    xi[id] = (polygonVertices[id].x_poly-building_cent_x)*cos(upwind_dir)+(polygonVertices[id].y_poly-building_cent_y)*sin(upwind_dir);
+    yi[id] = -(polygonVertices[id].x_poly-building_cent_x)*sin(upwind_dir)+(polygonVertices[id].y_poly-building_cent_y)*cos(upwind_dir);
+  }
+
   // Loop to calculate polygon area, projections of x and y values of each point wrt upwind wind
   for (auto id=0; id<polygonVertices.size()-1; id++)
   {
     polygon_area += 0.5*(polygonVertices[id].x_poly*polygonVertices[id+1].y_poly-polygonVertices[id].y_poly*polygonVertices[id+1].x_poly);
-    xi[id] = (polygonVertices[id].x_poly-building_cent_x)*cos(upwind_dir)+(polygonVertices[id].y_poly-building_cent_y)*sin(upwind_dir);
-    yi[id] = -(polygonVertices[id].x_poly-building_cent_x)*sin(upwind_dir)+(polygonVertices[id].y_poly-building_cent_y)*cos(upwind_dir);
-
     // Find maximum and minimum x and y values in rotated coordinates
     if (xi[id] < x1)
     {
@@ -371,8 +374,11 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD, in
                     farwake_vel = UGD->u0[icell_face]*(1.0-pow((dn_u/(xu+UGD->wake_factor*dn_u)),farwake_exp));
                     if (canyon_factor == 1.0)
                     {
+                      //std::cout << "farwake_vel:   " << farwake_vel << std::endl;
+                      //std::cout << "i_u:   " << i_u << "\t\t"<< "j_u:   " << j_u << "\t\t"<< "k:   " << k << std::endl;
                       u0_modified.push_back(farwake_vel);
                       u0_mod_id.push_back(icell_face);
+
                       UGD->w0[i+j*UGD->nx+k*UGD->nx*UGD->ny] = 0.0;
                     }
                   }
@@ -380,6 +386,12 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD, in
                   else
                   {
                     UGD->u0[icell_face] = -u0_h*MIN_S(pow((1.0-xu/(UGD->cavity_factor*dn_u)),2.0),1.0)*MIN_S(sqrt(1.0-abs(yu/y_norm)),1.0);
+                    /*if (i_u == 115 && j_u == 96 && k == 1)
+                    {
+                      std::cout << "UGD->u0[icell_face]:   " << UGD->u0[icell_face] << std::endl;
+                    }*/
+                    //std::cout << "UGD->u0[icell_face]:   " << UGD->u0[icell_face] << std::endl;
+                    //std::cout << "i:   " << i << "\t\t"<< "j:   " << j << "\t\t"<< "k:   " << k << std::endl;
                     UGD->w0[i+j*UGD->nx+k*UGD->nx*UGD->ny] = 0.0;
                   }
                 }
@@ -387,7 +399,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD, in
 
               i_v = ((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx;
               j_v = std::round(((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy);
-              if (i_v<UGD->nx-2 && i_v>0 && j_v<UGD->ny-2 && j_v>0)
+              if (i_v<UGD->nx-1 && i_v>0 && j_v<UGD->ny-1 && j_v>0)
               {
                 xp = (i_v+0.5)*UGD->dx-building_cent_x;
                 yp = j_v*UGD->dy-building_cent_y;
@@ -435,7 +447,16 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD, in
                   else
                   {
                     UGD->v0[icell_face] = -v0_h*MIN_S(pow((1.0-xv/(UGD->cavity_factor*dn_v)),2.0),1.0)*MIN_S(sqrt(1.0-abs(yv/y_norm)),1.0);
-                    UGD->w0[i+j*UGD->nx+k*UGD->nx*UGD->ny] = 0.0;
+                    /*if (i_v == 115 && j_v == 96 && k == 1)
+                    {
+                      std::cout << "v0_h:   " << v0_h << std::endl;
+                      std::cout << "MIN_S(pow((1.0-xv/(UGD->cavity_factor*dn_v)),2.0),1.0):   " << MIN_S(pow((1.0-xv/(UGD->cavity_factor*dn_v)),2.0),1.0) << std::endl;
+                      std::cout << "MIN_S(sqrt(1.0-abs(yv/y_norm)),1.0):   " << MIN_S(sqrt(1.0-abs(yv/y_norm)),1.0) << std::endl;
+                      std::cout << "UGD->v0[icell_face]:   " << UGD->v0[icell_face] << std::endl;
+                    }*/
+                    //std::cout << "UGD->v0[icell_face]:   " << UGD->v0[icell_face] << std::endl;
+                    //std::cout << "i:   " << i << "\t\t"<< "j:   " << j << "\t\t"<< "k:   " << k << std::endl;
+                    UGD->w0[icell_face] = 0.0;
                   }
                 }
               }

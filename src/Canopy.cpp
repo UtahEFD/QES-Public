@@ -153,7 +153,6 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
 void Canopy::plantInitial(URBGeneralData* UGD)
 {
 
-    float u_H;                  /**< velocity at the height of the canopy */
     float avg_atten;						/**< average attenuation of the canopy */
     float veg_vel_frac;					/**< vegetation velocity fraction */
     int num_atten;
@@ -179,7 +178,13 @@ void Canopy::plantInitial(URBGeneralData* UGD)
                     std::cout << "bisection failed to converge" << "\n";
                     UGD->canopy_d[id] = canopy_slope_match(UGD->canopy_z0[id], UGD->canopy_top[id], UGD->canopy_atten[icell_cent]);
                 }
-                u_H = (UGD->canopy_ustar[id]/UGD->vk)*log((UGD->canopy_top[id]-UGD->canopy_d[id])/UGD->canopy_z0[id]);
+
+                /**< velocity at the height of the canopy */
+                // Local variable - not being used by anything... so
+                // commented out for now.
+                // 
+                // float u_H = (UGD->canopy_ustar[id]/UGD->vk)*log((UGD->canopy_top[id]-UGD->canopy_d[id])/UGD->canopy_z0[id]);
+                
                 for (auto k=1; k < UGD->nz; k++)
                 {
                     if (UGD->z[k] < UGD->canopy_top[id])

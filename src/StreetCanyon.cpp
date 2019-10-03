@@ -56,7 +56,7 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
   // Wind direction of initial velocity at the height of building at the centroid
   upwind_dir = atan2(v0_h,u0_h);
   // Loop through to calculate projected location for each polygon node in rotated coordinates
-  for (auto id=0; id<polygonVertices.size()-1; id++)
+  for (auto id=0; id<polygonVertices.size(); id++)
   {
     xi[id] = (polygonVertices[id].x_poly-building_cent_x)*cos(upwind_dir)
             +(polygonVertices[id].y_poly-building_cent_y)*sin(upwind_dir);
@@ -363,6 +363,8 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
             }
           }
 
+
+          //std::cout << "along_dir:   " << along_dir << std::endl;
           if (canyon_flag == 1 && s > 0.9*UGD->dxy)
           {
             along_vel_mag = abs(velocity_mag*cos(canyon_dir-along_dir))*log(UGD->z[k]/UGD->z0)/log(UGD->z[k_ref]/UGD->z0);
@@ -398,6 +400,14 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
                 {
                   icell_face = i_u+j*UGD->nx+k*UGD->nx*UGD->ny;
                   UGD->u0[icell_face] = along_vel_mag*cos(along_dir)+cross_vel_mag*(2*x_pos/s)*2*(1-x_pos/s)*cos(cross_dir);
+                  if (i_u == 94 && j == 94 && k == 20)
+                  {
+                    std::cout << "polygonVertices[id].x_poly:   " << polygonVertices[id].x_poly << std::endl;
+                    std::cout << "polygonVertices[id+1].x_poly:   " << polygonVertices[id+1].x_poly << std::endl;
+                    std::cout << "y_u:   " << y_u << std::endl;
+                    std::cout << "id:   " << id << std::endl;
+                    std::cout << "UGD->u0[icell_face]:   " << UGD->u0[icell_face] << std::endl;
+                  }
                 }
 
                 j_v = std::round(((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)
@@ -451,6 +461,13 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
                     }
                   }
                   UGD->icellflag[icell_cent] = 6;
+                  if (i == 94 && j == 94 && k == 20)
+                  {
+                    /*std::cout << "v0_h:   " << v0_h << std::endl;
+                    std::cout << "MIN_S(pow((1.0-xv/(UGD->cavity_factor*dn_v)),2.0),1.0):   " << MIN_S(pow((1.0-xv/(UGD->cavity_factor*dn_v)),2.0),1.0) << std::endl;
+                    std::cout << "MIN_S(sqrt(1.0-abs(yv/y_norm)),1.0):   " << MIN_S(sqrt(1.0-abs(yv/y_norm)),1.0) << std::endl;*/
+                    std::cout << "UGD->icellflag[icell_cent]:   " << UGD->icellflag[icell_cent] << std::endl;
+                  }
                 }
               }
             }

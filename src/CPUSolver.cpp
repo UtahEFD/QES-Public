@@ -16,7 +16,7 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
     int icell_face;          /**< cell-face index */
     int icell_cent;
 
-    for (int k = 1; k < UGD->nz-1; k++)
+    for (int k = 1; k < UGD->nz-2; k++)
     {
         for (int j = 0; j < UGD->ny-1; j++)
         {
