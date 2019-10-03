@@ -74,8 +74,15 @@ Currently Loaded Modules:
 cmake -DCUDA_TOOLKIT_DIR=/usr/local/cuda-8.0 -DCUDA_SDK_ROOT_DIR=/usr/local/cuda-8.0 -DCMAKE_PREFIX_PATH=/uufs/chpc.utah.edu/sys/installdir/gdal/2.1.3-c7 -DNETCDF_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-c/4.4.1-c7/include -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include ..
 ```
 
-To run the cudaUrb executable on notchpeak
+Then, compile the code
 
+```
+make
+```
+
+Note you *may* need to type make a second time due to a build bug.
+
+Then, to run the cudaUrb executable on notchpeak, create the following script 
 
 ```
 #!/bin/bash
@@ -93,7 +100,7 @@ ulimit -c unlimited -s
 ./cudaUrb/cudaUrb -q ../data/QU_Files/GaussianHill.xml -s 2 -o gaussianHill.nc
 ```
 
-
+You can then run the script on the nodes:
 ```
 sbatch runurb_GPU.sh
 ```
