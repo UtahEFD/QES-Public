@@ -76,6 +76,7 @@ cmake -DCUDA_TOOLKIT_DIR=/usr/local/cuda-8.0 -DCUDA_SDK_ROOT_DIR=/usr/local/cuda
 
 To run the cudaUrb executable on notchpeak
 
+```
 #!/bin/bash
 #SBATCH --account=efd-np
 #SBATCH --partition=efd-shared-np
@@ -89,8 +90,11 @@ To run the cudaUrb executable on notchpeak
 module load gcc/5.4.0
 ulimit -c unlimited -s
 ./cudaUrb/cudaUrb -q ../CUDA-URB/data/QU_Files/GaussianHill.xml -s 2 -o gaussianHill.nc
+```
 
+```
 sbatch runurb_GPU.sh
+```
 
 ## Tips and Tricks
 
