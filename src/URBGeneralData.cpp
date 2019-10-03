@@ -221,7 +221,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     //    UID->metParams->inputWindProfile(UID, this);
     UID->metParams->sensors[0]->inputWindProfile(UID, this);
 
-    std::cout << "Sensor is done ..." << std::endl;
+    std::cout << "Sensors have been loaded (total sensors = " << UID->metParams->sensors.size() << ")." << std::endl;
 
     max_velmag = 0.0;
     for (auto i=0; i<nx; i++)
