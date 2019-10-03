@@ -90,7 +90,7 @@ To run the cudaUrb executable on notchpeak
 #SBATCH -o init_out.log
 module load gcc/5.4.0
 ulimit -c unlimited -s
-./cudaUrb/cudaUrb -q ../CUDA-URB/data/QU_Files/GaussianHill.xml -s 2 -o gaussianHill.nc
+./cudaUrb/cudaUrb -q ../data/QU_Files/GaussianHill.xml -s 2 -o gaussianHill.nc
 ```
 
 
