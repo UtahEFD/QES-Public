@@ -82,7 +82,7 @@ make
 
 Note you *may* need to type make a second time due to a build bug.
 
-Then, to run the cudaUrb executable on notchpeak, create the following script 
+Then, to run the cudaUrb executable on notchpeak, create the following script as file GaussianHill_gpu.slurm
 
 ```
 #!/bin/bash
@@ -102,7 +102,7 @@ ulimit -c unlimited -s
 
 You can then run the script on the nodes:
 ```
-sbatch runurb_GPU.sh
+sbatch rGaussianHill_gpu.slurm
 ```
 
 ## Tips and Tricks
