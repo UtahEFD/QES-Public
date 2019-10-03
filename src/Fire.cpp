@@ -13,39 +13,28 @@ using namespace std;
 Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     
     // get domain information
-    /*Vector3<int> domainInfo;
-    domainInfo = *(UID->simParams->domain);
-    nx = domainInfo[0];
-    ny = domainInfo[1];
-    nz = domainInfo[2];
-    */
     nx = UGD->nx;
     ny = UGD->ny;
     nz = UGD->nz;
-    // get grid information
-    /*
-    Vector3<float> gridInfo;
-    gridInfo = *(UID->simParams->grid);
-    dx = gridInfo[0];
-    dy = gridInfo[1];
-    dz = gridInfo[2];
-    */
+    
     dx = UGD->dx;
     dy = UGD->dy;
     dz = UGD->dz;
 
     // set-up the mapper array
-    fire_cells.resize(nx*ny);
-    burn_flag.resize(nx*ny);
+    fire_cells.resize((nx-1)*(ny-1));
+    burn_flag.resize((nx-1)*(ny-1));
     burn_out.resize((nx-1)*(ny-1));
-    front_map.resize(nx*ny);
-    del_plus.resize(nx*ny);
-    del_min.resize(nx*ny);
-    xNorm.resize(nx*ny);
-    yNorm.resize(nx*ny);
-    Force.resize(nx*ny);
+    front_map.resize((nx-1)*(ny-1));
+    del_plus.resize((nx-1)*(ny-1));
+    del_min.resize((nx-1)*(ny-1));
+    xNorm.resize((nx-1)*(ny-1));
+    yNorm.resize((nx-1)*(ny-1));
+    Force.resize((nx-1)*(ny-1));
 
-    // get initial fire info
+    /**
+     * Set initial fire info
+     */
     x_start    = UID->fires->xStart;
     y_start    = UID->fires->yStart;
     H          = UID->fires->height;
@@ -55,11 +44,11 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     fuel_type  = UID->fires->fuelType;
     courant    = UID->fires->courant;
     
-    // set fuel properties
-    for (int j = 0; j < ny; j++){
-        for (int i = 0; i < nx; i++){
+    // Set fuel properties for domain
+    for (int j = 0; j < ny-1; j++){
+        for (int i = 0; i < nx-1; i++){
             
-            int idx = i + j*nx;
+	  int idx = i + j*(nx-1);
             
             if (fuel_type==1)  fire_cells[idx].fuel = new ShortGrass();
             if (fuel_type==2)  fire_cells[idx].fuel = new TimberGrass();
@@ -90,7 +79,7 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
      */
     for (int j = j_start; j < j_end; j++){
         for (int i = i_start; i < i_end; i++){
-            int idx = i + j*nx;
+	  int idx = i + j*(nx-1);
 	    	fire_cells[idx].state.burn_flag = 1;
             fire_cells[idx].state.front_flag = 1;
         }
@@ -99,9 +88,9 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     /** 
      *  Set up burn flag field
      */
-    for (int j = 0; j < ny; j++){
-        for (int i = 0; i < nx; i++){
-            int idx = i + j*nx;       
+    for (int j = 0; j < ny-1; j++){
+        for (int i = 0; i < nx-1; i++){
+	  int idx = i + j*(nx-1);       
             burn_flag[idx] = fire_cells[idx].state.burn_flag;
         }
     }
@@ -110,17 +99,17 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
      * Set up initial level set. Use signed distance function: swap to fast marching method in future.
      */
     double sdf, sdf_min;
-    for (int j = 0; j < ny; j++){
-        for (int i = 0; i < nx; i++){
-            int idx = i + j*nx;
+    for (int j = 0; j < ny-1; j++){
+        for (int i = 0; i < nx-1; i++){
+	  int idx = i + j*(nx-1);
             if (fire_cells[idx].state.front_flag == 1){
                 front_map[idx] = 0;                
             }
             else {
                 sdf = 1000;
-                for (int jj = 0; jj < ny; jj++){
-                    for (int ii = 0; ii < nx; ii++){
-                        int idx2 = ii + jj*nx;
+                for (int jj = 0; jj < ny-1; jj++){
+                    for (int ii = 0; ii < nx-1; ii++){
+		      int idx2 = ii + jj*(nx-1);
                         if (fire_cells[idx2].state.front_flag == 1){
                             sdf_min = sqrt ((ii-i)*(ii-i) + (jj-j)*(jj-j));
                         }
@@ -206,9 +195,9 @@ double Fire :: computeTimeStep() {
     double r, r_max;
     
     // get max spread rate
-    for (int j = 0; j < ny; j++){
-        for (int i = 0; i < nx; i++){
-            int idx = i + j*nx;
+    for (int j = 0; j < ny-1; j++){
+        for (int i = 0; i < nx-1; i++){
+	  int idx = i + j*(nx-1);
             r = fire_cells[idx].properties.r;       
             r_max   = r > r_max ? r : r_max;
         }
@@ -224,11 +213,11 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
      * Calculate level set gradient and norm (Chapter 6, Sethian 2008)
      */
     double dmx, dpx, dmy, dpy, n_star_x, n_star_y;
-    for (int j = 1; j < ny-1; j++){
-        for (int i = 1; i < nx-1; i++){
-            int idx = i + j*nx;       
-            int idxjp = i + (j+1)*nx;
-            int idxjm = i + (j-1)*nx;
+    for (int j = 1; j < ny-2; j++){
+        for (int i = 1; i < nx-2; i++){
+	  int idx = i + j*(nx-1);       
+	  int idxjp = i + (j+1)*(nx-1);
+	  int idxjm = i + (j-1)*(nx-1);
             dmx = (front_map[idx] - front_map[idxjm])/dx;
             dpx = (front_map[idxjp] - front_map[idx])/dx;
             dmy = (front_map[idx] - front_map[idx-1])/dy;
@@ -245,9 +234,9 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
     /**
      * Calculate Forcing Function (Balbi model at mid-flame height or first grid cell if no fire)
      */
-    for (int j=0; j < ny; j++){
-        for (int i=0; i < nx; i++){
-            int idx = i + j*nx;
+    for (int j=0; j < ny-1; j++){
+        for (int i=0; i < nx-1; i++){
+	    int idx = i + j*(nx-1);
             // get fuel properties at this location
             struct FuelProperties* fuel = fire_cells[idx].fuel;
             // calculate mid-flame height
@@ -264,8 +253,9 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
             }
 
             // call u and v from URB General Data
-            double u = UGD->u[i + j*(nx) + kh*(ny)*(nx)];
-            double v = UGD->v[i + j*(nx) + kh*(ny)*(nx)];
+	    double cell_face = i + j*nx + kh*nx*ny;
+            double u = 0.5*(UGD->u[cell_face] + UGD->u[cell_face+1]);
+            double v = 0.5*(UGD->v[cell_face] + UGD->v[cell_face+nx]);
             // call norm for cells
             double x_norm = xNorm[idx];
             double y_norm = yNorm[idx];
@@ -326,16 +316,13 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
         }
                 
         // convert flat index to i, j at cell center
-        int ii  = id % nx;
-        int jj  = (id / nx) % ny;
-        int iiF = ii+1;
-        int iiB = ii-1;
-        int jjF = jj+1;
-        int jjB = jj-1;
+        int ii  = id % (nx-1);
+        int jj  = (id / (nx-1)) % (ny-1);
                         
         // get horizontal wind at flame height
-        double u = UGD->u[ii + jj*(nx) + kh*(ny)*(nx)];
-        double v = UGD->v[ii + jj*(nx) + kh*(ny)*(nx)];
+	double cell_face = ii + jj*nx + kh*ny*nx;
+        double u = 0.5*(UGD->u[cell_face] + UGD->u[cell_face+1]);
+        double v = 0.5*(UGD->v[cell_face] + UGD->v[cell_face+nx]);
         
         // run Balbi model
         double x_norm = xNorm[id];
@@ -347,7 +334,7 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
         // modify w0 in solver (adjust to use faces)
         for (int k=0; k<=kh; k++) {
             
-            int idf  = ii + jj*(nx) + (k+1)*(nx)*(ny);
+	  int idf  = ii + (jj)*(nx) + (k+2)*(nx)*(ny);
             int idxF = idf+1;
             int idxB = idf-1;
             int idyF = idf+(nx);
@@ -375,7 +362,8 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
                 UGD->v0[idf] = v_uw * std::exp(-K*dy);
             }
             */
-            UGD->w0[ii + jj*(nx) + (k+1)*(nx)*(ny)] = fp.w;
+            UGD->w0[idf] = fp.w;
+	    //UGD->w0[cell_face + (k+1)*nx*ny] = fp.w;
         }
     }
 }
@@ -384,9 +372,9 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
  * Compute fire spread. Advance level set.
  */
 void Fire :: move(Solver* solver, URBGeneralData* UGD){
-    for (int j=1; j < ny-1; j++){
-        for (int i=1; i < nx-1; i++){
-            int idx = i + j*nx;
+    for (int j=1; j < ny-2; j++){
+        for (int i=1; i < nx-2; i++){
+	  int idx = i + j*(nx-1);
             // get fire proiperties at this location
             struct FireProperties fp = fire_cells[idx].properties;
             // advance level set
@@ -410,6 +398,7 @@ void Fire :: move(Solver* solver, URBGeneralData* UGD){
             }
             // update burn flag field
             burn_flag[idx] = fire_cells[idx].state.burn_flag;
+	    burn_out[idx] = burn_flag[idx];
         }
     }
 }
@@ -502,10 +491,10 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     double psi    = 0;                          ///< angle between wind and flame front [rad]
     double phi    = 0;                          ///< angle between flame front vector and slope vector [rad]
 
-    /**
+
+    /*
      * Calculate wind velocity angle.
-     */
-    double psi_wind, psi_norm;
+     double psi_wind, psi_norm;
     if (u_mid>=0 && v_mid>=0) {
         psi_wind = atan(v_mid/u_mid);
     } else if (u_mid<0 && v_mid>0) {
@@ -515,9 +504,9 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     } else {
         psi_wind = 2*pi + atan(v_mid/u_mid);
     }
-    /**
+   
      * Calculate level set norm angle.
-     */
+     
     if (x_norm>=0 && y_norm>=0) {
         psi_norm = atan(y_norm/x_norm);
     } else if (x_norm<0 && y_norm>0) {
@@ -528,7 +517,9 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
         psi_norm = 2*pi + atan(y_norm/x_norm);
     }
     psi = psi_wind-psi_norm;
-    
+    */
+    double cos_psi = (u_mid*x_norm + v_mid*y_norm)/(sqrt(u_mid*u_mid + v_mid*v_mid)*sqrt(x_norm*x_norm + y_norm*y_norm));
+   
     double KDrag = K1*betaT*fmin(fueldepthm/lv,1);  ///< Drag force coefficient [eq.7]
 
     double q = C_p*(T_i - T_a) + m*Deltah_v;        ///< Activation energy [eq.14]
@@ -565,7 +556,7 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
         u0 = 2*nu*((s+1)/tau_0)*(rhoFuel/rhoAir)*(TFlame/T_a);   //[eq.19]
         
         
-        gamma = atan(tan(alpha)*cos(phi)+V_mid*cos(psi)/u0);    
+        gamma = atan(tan(alpha)*cos(phi)+V_mid*cos_psi/u0);    
         
         H = u0*u0/(g*(TFlame/T_a - 1)*cos(alpha)*cos(alpha));   //[eq.17]
         
@@ -639,20 +630,21 @@ void Fire :: save(Output* output) {
         }
     }
     */
-
+    /*
     // get cell-centered values
     // for (int k = 1; k < nz-1; k++){
       for (int j = 0; j < ny-1; j++){
 	for (int i = 0; i < nx-1; i++){
-	  int icell_face = i + j*nx;
+	  //int icell_face = i + j*nx;
 	  int icell_cent = i + j*(nx-1);
-	  burn_out[icell_cent] = 0.5*(burn_flag[icell_face+1]+burn_flag[icell_face]);
+	  burn_out[icell_cent] = burn_flag[icell_cent];
 	  //v_out[icell_cent] = 0.5*(v[icell_face+nx]+v[icell_face]);
 	  //w_out[icell_cent] = 0.5*(w[icell_face+nx*ny]+w[icell_face]);
 	  //icellflag_out[icell_cent] = icellflag[icell_cent+((nx-1)*(ny-1))];
 	}
       }
       //}
+      */
 	
     // loop through 1D fields to save
     for (int i=0; i<output_scalar_dbl.size(); i++) {

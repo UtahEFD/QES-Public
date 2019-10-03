@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
         
         // loop 2 times for fire
         int loop = 0;
-        while (loop<2) {
+        while (loop<1) {
             
             // run Balbi model to get new w0
             fire->run(solver, UGD);
