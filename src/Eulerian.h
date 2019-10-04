@@ -22,9 +22,22 @@ public:
     }cell;	
     std::vector<cell> CellType,CellBuild;
 
+
+    // 
+    // New code variables here
+    //
+    
+
+
+
+    // Still need Tau variables.  They are defined here:
+    std::vector<matrix6> taudx,taudy,taudz;
+
+
+
     std::vector<matrix9> eigVec,eigVecInv;
     
-    std::vector<matrix6> taudx,taudy,taudz;
+
     
     std::vector<double> ustar,dudz;
     

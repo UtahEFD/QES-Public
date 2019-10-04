@@ -39,46 +39,103 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb){
     taudy.resize(nx*ny*nz);
     taudz.resize(nx*ny*nz);
     
+    // Loop over all cells in the domain
     for(int k=0; k<nz; ++k) {
         for(int j=0; j<ny; ++j) {
             for(int i=0; i<nx; ++i) {
                 
-                int id=k*ny*nx+j*nx+i;
-                
-                if(i>0 && i<nx-1 && j>1 && j<ny-1 && k>1 && k<nz-1 && urb->grid.icell[id]!=0) {
+                // Provides a linear index based on the 3D (i, j, k)
+                // indices so we can access 
+                int idx = k*ny*nx + j*nx + i;
+
+                //
+                // DX components
+                // 
+                if (i < (nx-2)) {
+                    // Forward differencing
+                    int idx_xp1 = idx+1;
+                    int idx_xp2 = idx+2;
                     
-                    int idxp1=id+1;
-                    int idxm1=id-1;
-                    int idxp2=id+2;
-                    int idxm2=id-2;
-                    int idyp1=id+nx;
-                    int idym1=id-nx;
-                    int idzp1=id+(ny*nx);
-                    int idzm1=id-(ny*nx);
+                    taudx.at(idx).e11 = ( -3.0*turb->tau.at(idx).e11 + 4.0*turb->tau.at(idx_xp1).e11 - turb->tau.at(idx_xp2).e11 ) * 0.5 / dx;
+                    taudx.at(idx).e12 = ( -3.0*turb->tau.at(idx).e12 + 4.0*turb->tau.at(idx_xp1).e12 - turb->tau.at(idx_xp2).e12 ) * 0.5 / dx;
+                    taudx.at(idx).e13 = ( -3.0*turb->tau.at(idx).e13 + 4.0*turb->tau.at(idx_xp1).e13 - turb->tau.at(idx_xp2).e13 ) * 0.5 / dx;
+                    taudx.at(idx).e22 = ( -3.0*turb->tau.at(idx).e22 + 4.0*turb->tau.at(idx_xp1).e22 - turb->tau.at(idx_xp2).e22 ) * 0.5 / dx;
+                    taudx.at(idx).e23 = ( -3.0*turb->tau.at(idx).e23 + 4.0*turb->tau.at(idx_xp1).e23 - turb->tau.at(idx_xp2).e23 ) * 0.5 / dx;
+                    taudx.at(idx).e33 = ( -3.0*turb->tau.at(idx).e33 + 4.0*turb->tau.at(idx_xp1).e33 - turb->tau.at(idx_xp2).e33 ) * 0.5 / dx;
+                }
+                else { 
+                    // Backward differencing
+                    int idx_xm1 = idx-1;
+                    int idx_xm2 = idx-2;
                     
-                    //central frist order difference 
-                    taudx.at(id).e11 = ( turb->tau.at(idxp1).e11-turb->tau.at(idxm1).e11 ) / 2.0;
-                    taudx.at(id).e12 = ( turb->tau.at(idxp1).e12-turb->tau.at(idxm1).e12 ) / 2.0;
-                    taudx.at(id).e13 = ( turb->tau.at(idxp1).e13-turb->tau.at(idxm1).e13 ) / 2.0;
-                    taudx.at(id).e22 = ( turb->tau.at(idxp1).e22-turb->tau.at(idxm1).e22 ) / 2.0;
-                    taudx.at(id).e23 = ( turb->tau.at(idxp1).e23-turb->tau.at(idxm1).e23 ) / 2.0;
-                    taudx.at(id).e33 = ( turb->tau.at(idxp1).e33-turb->tau.at(idxm1).e33 ) / 2.0;
-                    taudy.at(id).e11 = ( turb->tau.at(idyp1).e11-turb->tau.at(idym1).e11 ) / 2.0;
-                    taudy.at(id).e12 = ( turb->tau.at(idyp1).e12-turb->tau.at(idym1).e12 ) / 2.0;
-                    taudy.at(id).e13 = ( turb->tau.at(idyp1).e13-turb->tau.at(idym1).e13 ) / 2.0;
-                    taudy.at(id).e22 = ( turb->tau.at(idyp1).e22-turb->tau.at(idym1).e22 ) / 2.0;
-                    taudy.at(id).e23 = ( turb->tau.at(idyp1).e23-turb->tau.at(idym1).e23 ) / 2.0;
-                    taudy.at(id).e33 = ( turb->tau.at(idyp1).e33-turb->tau.at(idym1).e33 ) / 2.0;
-                    taudz.at(id).e11 = ( turb->tau.at(idzp1).e11-turb->tau.at(idzm1).e11 ) / 2.0;
-                    taudz.at(id).e12 = ( turb->tau.at(idzp1).e12-turb->tau.at(idzm1).e12 ) / 2.0;
-                    taudz.at(id).e13 = ( turb->tau.at(idzp1).e13-turb->tau.at(idzm1).e13 ) / 2.0;
-                    taudz.at(id).e22 = ( turb->tau.at(idzp1).e22-turb->tau.at(idzm1).e22 ) / 2.0;
-                    taudz.at(id).e23 = ( turb->tau.at(idzp1).e23-turb->tau.at(idzm1).e23 ) / 2.0;
-                    taudz.at(id).e33 = ( turb->tau.at(idzp1).e33-turb->tau.at(idzm1).e33 ) / 2.0;
+                    taudx.at(idx).e11 = ( 3.0*turb->tau.at(idx).e11 - 4.0*turb->tau.at(idx_xm1).e11 + turb->tau.at(idx_xm2).e11 ) * 0.5 / dx;
+                    taudx.at(idx).e12 = ( 3.0*turb->tau.at(idx).e12 - 4.0*turb->tau.at(idx_xm1).e12 + turb->tau.at(idx_xm2).e12 ) * 0.5 / dx;
+                    taudx.at(idx).e13 = ( 3.0*turb->tau.at(idx).e13 - 4.0*turb->tau.at(idx_xm1).e13 + turb->tau.at(idx_xm2).e13 ) * 0.5 / dx;
+                    taudx.at(idx).e22 = ( 3.0*turb->tau.at(idx).e22 - 4.0*turb->tau.at(idx_xm1).e22 + turb->tau.at(idx_xm2).e22 ) * 0.5 / dx;
+                    taudx.at(idx).e23 = ( 3.0*turb->tau.at(idx).e23 - 4.0*turb->tau.at(idx_xm1).e23 + turb->tau.at(idx_xm2).e23 ) * 0.5 / dx;
+                    taudx.at(idx).e33 = ( 3.0*turb->tau.at(idx).e33 - 4.0*turb->tau.at(idx_xm1).e33 + turb->tau.at(idx_xm2).e33 ) * 0.5 / dx;
+                }
+                    
+                    
+                //
+                // DY components
+                // 
+                if (j < (ny-2)) {
+                    // Forward differencing
+                    int idx_yp1 = idx+nx;
+                    int idx_yp2 = idx+(2.0*nx);
+                    
+                    taudy.at(idx).e11 = ( -3.0*turb->tau.at(idx).e11 + 4.0*turb->tau.at(idx_yp1).e11 - turb->tau.at(idx_yp2).e11 ) * 0.5 / dy;
+                    taudy.at(idx).e12 = ( -3.0*turb->tau.at(idx).e12 + 4.0*turb->tau.at(idx_yp1).e12 - turb->tau.at(idx_yp2).e12 ) * 0.5 / dy;
+                    taudy.at(idx).e13 = ( -3.0*turb->tau.at(idx).e13 + 4.0*turb->tau.at(idx_yp1).e13 - turb->tau.at(idx_yp2).e13 ) * 0.5 / dy;
+                    taudy.at(idx).e22 = ( -3.0*turb->tau.at(idx).e22 + 4.0*turb->tau.at(idx_yp1).e22 - turb->tau.at(idx_yp2).e22 ) * 0.5 / dy;
+                    taudy.at(idx).e23 = ( -3.0*turb->tau.at(idx).e23 + 4.0*turb->tau.at(idx_yp1).e23 - turb->tau.at(idx_yp2).e23 ) * 0.5 / dy;
+                    taudy.at(idx).e33 = ( -3.0*turb->tau.at(idx).e33 + 4.0*turb->tau.at(idx_yp1).e33 - turb->tau.at(idx_yp2).e33 ) * 0.5 / dy;
+                }
+                else { 
+                    // Backward differencing
+                    int idx_ym1 = idx - nx;
+                    int idx_ym2 = idx - (2.0*nx);
+                    
+                    taudy.at(idx).e11 = ( 3.0*turb->tau.at(idx).e11 - 4.0*turb->tau.at(idx_ym1).e11 + turb->tau.at(idx_ym2).e11 ) * 0.5 / dy;
+                    taudy.at(idx).e12 = ( 3.0*turb->tau.at(idx).e12 - 4.0*turb->tau.at(idx_ym1).e12 + turb->tau.at(idx_ym2).e12 ) * 0.5 / dy;
+                    taudy.at(idx).e13 = ( 3.0*turb->tau.at(idx).e13 - 4.0*turb->tau.at(idx_ym1).e13 + turb->tau.at(idx_ym2).e13 ) * 0.5 / dy;
+                    taudy.at(idx).e22 = ( 3.0*turb->tau.at(idx).e22 - 4.0*turb->tau.at(idx_ym1).e22 + turb->tau.at(idx_ym2).e22 ) * 0.5 / dy;
+                    taudy.at(idx).e23 = ( 3.0*turb->tau.at(idx).e23 - 4.0*turb->tau.at(idx_ym1).e23 + turb->tau.at(idx_ym2).e23 ) * 0.5 / dy;
+                    taudy.at(idx).e33 = ( 3.0*turb->tau.at(idx).e33 - 4.0*turb->tau.at(idx_ym1).e33 + turb->tau.at(idx_ym2).e33 ) * 0.5 / dy;
+                }
+
+                //
+                // DZ components
+                // 
+                if (k < (nz-2)) {
+                    // Forward differencing
+                    int idx_zp1 = idx + (ny*nx);
+                    int idx_zp2 = idx + 2.0*(ny*nx);
+
+                    taudz.at(idx).e11 = ( -3.0*turb->tau.at(idx).e11 + 4.0*turb->tau.at(idx_zp1).e11 - turb->tau.at(idx_zp2).e11 ) * 0.5 / dz;
+                    taudz.at(idx).e12 = ( -3.0*turb->tau.at(idx).e12 + 4.0*turb->tau.at(idx_zp1).e12 - turb->tau.at(idx_zp2).e12 ) * 0.5 / dz;
+                    taudz.at(idx).e13 = ( -3.0*turb->tau.at(idx).e13 + 4.0*turb->tau.at(idx_zp1).e13 - turb->tau.at(idx_zp2).e13 ) * 0.5 / dz;
+                    taudz.at(idx).e22 = ( -3.0*turb->tau.at(idx).e22 + 4.0*turb->tau.at(idx_zp1).e22 - turb->tau.at(idx_zp2).e22 ) * 0.5 / dz;
+                    taudz.at(idx).e23 = ( -3.0*turb->tau.at(idx).e23 + 4.0*turb->tau.at(idx_zp1).e23 - turb->tau.at(idx_zp2).e23 ) * 0.5 / dz;
+                    taudz.at(idx).e33 = ( -3.0*turb->tau.at(idx).e33 + 4.0*turb->tau.at(idx_zp1).e33 - turb->tau.at(idx_zp2).e33 ) * 0.5 / dz;
+                }
+                else {
+                    // Backward differencing
+                    int idx_zm1 = idx - (ny*nx);
+                    int idx_zm2 = idx - 2.0*(ny*nx);
+                    
+                    taudz.at(idx).e11 = ( 3.0*turb->tau.at(idx).e11 - 4.0*turb->tau.at(idx_zm1).e11 + turb->tau.at(idx_zm2).e11 ) * 0.5 / dz;
+                    taudz.at(idx).e12 = ( 3.0*turb->tau.at(idx).e12 - 4.0*turb->tau.at(idx_zm1).e12 + turb->tau.at(idx_zm2).e12 ) * 0.5 / dz;
+                    taudz.at(idx).e13 = ( 3.0*turb->tau.at(idx).e13 - 4.0*turb->tau.at(idx_zm1).e13 + turb->tau.at(idx_zm2).e13 ) * 0.5 / dz;
+                    taudz.at(idx).e22 = ( 3.0*turb->tau.at(idx).e22 - 4.0*turb->tau.at(idx_zm1).e22 + turb->tau.at(idx_zm2).e22 ) * 0.5 / dz;
+                    taudz.at(idx).e23 = ( 3.0*turb->tau.at(idx).e23 - 4.0*turb->tau.at(idx_zm1).e23 + turb->tau.at(idx_zm2).e23 ) * 0.5 / dz;
+                    taudz.at(idx).e33 = ( 3.0*turb->tau.at(idx).e33 - 4.0*turb->tau.at(idx_zm1).e33 + turb->tau.at(idx_zm2).e33 ) * 0.5 / dz;
                 }
             }
         }
     }
+
   //createA1Matrix();
 }
 
