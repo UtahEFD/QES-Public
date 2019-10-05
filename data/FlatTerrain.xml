@@ -12,8 +12,8 @@
 	<boxBoundsY2> 200.0 </boxBoundsY2>
 	<boxBoundsZ1> 0.0 </boxBoundsZ1>
 	<boxBoundsZ2> 200.0 </boxBoundsZ2> 				
-	<nBoxesX> 100 </nBoxesX> 								
-	<nBoxesY> 100 </nBoxesY> 							
+	<nBoxesX> 200 </nBoxesX> 								
+	<nBoxesY> 200 </nBoxesY> 							
 	<nBoxesZ> 200 </nBoxesZ> 
 </collectionParameters>
 <sources>
@@ -21,7 +21,7 @@
   <numSources> 1 </numSources>
   <pointSource>
     <posX> 10.0 </posX>
-    <posY> 50.0 </posY>
+    <posY> 100.0 </posY>
     <posZ> 50.0 </posZ>
     <radius>1.0 </radius>
   </pointSource>
