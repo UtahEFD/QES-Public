@@ -33,9 +33,11 @@ Eulerian::Eulerian(Urb* urb, Turb* turb) {
     createA1Matrix(urb,turb);
 }
 
-#define USEFIRST 0
+// This is here only so we can test the two versions a bit for
+// timing... and then I will remove the older version.
+#define USE_PREVIOUSCODE 0
 
-#if USEFIRST
+#if USE_PREVIOUSCODE
 void Eulerian::createTauGrads(Urb* urb, Turb* turb)
 {
     std::cout<<"[Eulerian] \t Computing stress gradients "<<std::endl;
@@ -102,7 +104,6 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
     // Loop over all cells in the domain up to 2 in from the edge
 
     // Forward differencing
-#pragma acc parallel loop
     for(int k=0; k<nz-2; ++k) {
         for(int j=0; j<ny-2; ++j) {
             for(int i=0; i<nx-2; ++i) {
@@ -121,7 +122,6 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
     // Section to complete backward differences at boundary
     //
     // DX
-#pragma acc parallel loop
     for(int k=0; k<nz-2; ++k) {
         for(int j=0; j<ny-2; ++j) {
             for(int i=nx-2; i<nx; ++i) {
@@ -136,7 +136,6 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
     }
 
     // DY
-#pragma acc parallel loop
     for(int k=0; k<nz-2; ++k) {
         for(int j=ny-2; j<ny; ++j) {
             for(int i=0; i<nx-2; ++i) {
@@ -151,7 +150,6 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
     }
 
     // DZ
-#pragma acc parallel loop
     for(int k=nz-2; k<nz; ++k) {
         for(int j=0; j<ny-2; ++j) {
             for(int i=0; i<nx-2; ++i) {
