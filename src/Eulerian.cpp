@@ -2,6 +2,8 @@
 #include <ctime>
 #include <cmath>
 
+#include <chrono>
+
 #include "Eulerian.h"
 #include "Random.h"
 #include "Urb.hpp"
@@ -31,15 +33,20 @@ Eulerian::Eulerian(Urb* urb, Turb* turb) {
     createA1Matrix(urb,turb);
 }
 
-void Eulerian::createTauGrads(Urb* urb, Turb* turb){
-    
+#define USEFIRST 0
+
+#if USEFIRST
+void Eulerian::createTauGrads(Urb* urb, Turb* turb)
+{
     std::cout<<"[Eulerian] \t Computing stress gradients "<<std::endl;
     
-    taudx.resize(nx*ny*nz);
-    taudy.resize(nx*ny*nz);
-    taudz.resize(nx*ny*nz);
+    auto timerStart = std::chrono::high_resolution_clock::now();
+
+    taudx.resize(nx*ny*nz, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+    taudy.resize(nx*ny*nz, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+    taudz.resize(nx*ny*nz, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
     
-    // Loop over all cells in the domain
+    // Loop over all cells in the domain up to 2 in from the edge
     for(int k=0; k<nz; ++k) {
         for(int j=0; j<ny; ++j) {
             for(int i=0; i<nx; ++i) {
@@ -48,96 +55,122 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb){
                 // indices so we can access 
                 int idx = k*ny*nx + j*nx + i;
 
-                //
                 // DX components
-                // 
                 if (i < (nx-2)) {
-                    // Forward differencing
-                    int idx_xp1 = idx+1;
-                    int idx_xp2 = idx+2;
-                    
-                    taudx.at(idx).e11 = ( -3.0*turb->tau.at(idx).e11 + 4.0*turb->tau.at(idx_xp1).e11 - turb->tau.at(idx_xp2).e11 ) * 0.5 / dx;
-                    taudx.at(idx).e12 = ( -3.0*turb->tau.at(idx).e12 + 4.0*turb->tau.at(idx_xp1).e12 - turb->tau.at(idx_xp2).e12 ) * 0.5 / dx;
-                    taudx.at(idx).e13 = ( -3.0*turb->tau.at(idx).e13 + 4.0*turb->tau.at(idx_xp1).e13 - turb->tau.at(idx_xp2).e13 ) * 0.5 / dx;
-                    taudx.at(idx).e22 = ( -3.0*turb->tau.at(idx).e22 + 4.0*turb->tau.at(idx_xp1).e22 - turb->tau.at(idx_xp2).e22 ) * 0.5 / dx;
-                    taudx.at(idx).e23 = ( -3.0*turb->tau.at(idx).e23 + 4.0*turb->tau.at(idx_xp1).e23 - turb->tau.at(idx_xp2).e23 ) * 0.5 / dx;
-                    taudx.at(idx).e33 = ( -3.0*turb->tau.at(idx).e33 + 4.0*turb->tau.at(idx_xp1).e33 - turb->tau.at(idx_xp2).e33 ) * 0.5 / dx;
+                    setDX_Forward(turb, idx);
                 }
                 else { 
-                    // Backward differencing
-                    int idx_xm1 = idx-1;
-                    int idx_xm2 = idx-2;
-                    
-                    taudx.at(idx).e11 = ( 3.0*turb->tau.at(idx).e11 - 4.0*turb->tau.at(idx_xm1).e11 + turb->tau.at(idx_xm2).e11 ) * 0.5 / dx;
-                    taudx.at(idx).e12 = ( 3.0*turb->tau.at(idx).e12 - 4.0*turb->tau.at(idx_xm1).e12 + turb->tau.at(idx_xm2).e12 ) * 0.5 / dx;
-                    taudx.at(idx).e13 = ( 3.0*turb->tau.at(idx).e13 - 4.0*turb->tau.at(idx_xm1).e13 + turb->tau.at(idx_xm2).e13 ) * 0.5 / dx;
-                    taudx.at(idx).e22 = ( 3.0*turb->tau.at(idx).e22 - 4.0*turb->tau.at(idx_xm1).e22 + turb->tau.at(idx_xm2).e22 ) * 0.5 / dx;
-                    taudx.at(idx).e23 = ( 3.0*turb->tau.at(idx).e23 - 4.0*turb->tau.at(idx_xm1).e23 + turb->tau.at(idx_xm2).e23 ) * 0.5 / dx;
-                    taudx.at(idx).e33 = ( 3.0*turb->tau.at(idx).e33 - 4.0*turb->tau.at(idx_xm1).e33 + turb->tau.at(idx_xm2).e33 ) * 0.5 / dx;
+                    setDX_Backward(turb, idx);
                 }
                     
-                    
-                //
                 // DY components
-                // 
                 if (j < (ny-2)) {
-                    // Forward differencing
-                    int idx_yp1 = idx+nx;
-                    int idx_yp2 = idx+(2.0*nx);
-                    
-                    taudy.at(idx).e11 = ( -3.0*turb->tau.at(idx).e11 + 4.0*turb->tau.at(idx_yp1).e11 - turb->tau.at(idx_yp2).e11 ) * 0.5 / dy;
-                    taudy.at(idx).e12 = ( -3.0*turb->tau.at(idx).e12 + 4.0*turb->tau.at(idx_yp1).e12 - turb->tau.at(idx_yp2).e12 ) * 0.5 / dy;
-                    taudy.at(idx).e13 = ( -3.0*turb->tau.at(idx).e13 + 4.0*turb->tau.at(idx_yp1).e13 - turb->tau.at(idx_yp2).e13 ) * 0.5 / dy;
-                    taudy.at(idx).e22 = ( -3.0*turb->tau.at(idx).e22 + 4.0*turb->tau.at(idx_yp1).e22 - turb->tau.at(idx_yp2).e22 ) * 0.5 / dy;
-                    taudy.at(idx).e23 = ( -3.0*turb->tau.at(idx).e23 + 4.0*turb->tau.at(idx_yp1).e23 - turb->tau.at(idx_yp2).e23 ) * 0.5 / dy;
-                    taudy.at(idx).e33 = ( -3.0*turb->tau.at(idx).e33 + 4.0*turb->tau.at(idx_yp1).e33 - turb->tau.at(idx_yp2).e33 ) * 0.5 / dy;
+                    setDY_Forward(turb, idx);
                 }
                 else { 
-                    // Backward differencing
-                    int idx_ym1 = idx - nx;
-                    int idx_ym2 = idx - (2.0*nx);
-                    
-                    taudy.at(idx).e11 = ( 3.0*turb->tau.at(idx).e11 - 4.0*turb->tau.at(idx_ym1).e11 + turb->tau.at(idx_ym2).e11 ) * 0.5 / dy;
-                    taudy.at(idx).e12 = ( 3.0*turb->tau.at(idx).e12 - 4.0*turb->tau.at(idx_ym1).e12 + turb->tau.at(idx_ym2).e12 ) * 0.5 / dy;
-                    taudy.at(idx).e13 = ( 3.0*turb->tau.at(idx).e13 - 4.0*turb->tau.at(idx_ym1).e13 + turb->tau.at(idx_ym2).e13 ) * 0.5 / dy;
-                    taudy.at(idx).e22 = ( 3.0*turb->tau.at(idx).e22 - 4.0*turb->tau.at(idx_ym1).e22 + turb->tau.at(idx_ym2).e22 ) * 0.5 / dy;
-                    taudy.at(idx).e23 = ( 3.0*turb->tau.at(idx).e23 - 4.0*turb->tau.at(idx_ym1).e23 + turb->tau.at(idx_ym2).e23 ) * 0.5 / dy;
-                    taudy.at(idx).e33 = ( 3.0*turb->tau.at(idx).e33 - 4.0*turb->tau.at(idx_ym1).e33 + turb->tau.at(idx_ym2).e33 ) * 0.5 / dy;
+                    setDY_Backward(turb, idx);
                 }
 
-                //
                 // DZ components
-                // 
                 if (k < (nz-2)) {
-                    // Forward differencing
-                    int idx_zp1 = idx + (ny*nx);
-                    int idx_zp2 = idx + 2.0*(ny*nx);
-
-                    taudz.at(idx).e11 = ( -3.0*turb->tau.at(idx).e11 + 4.0*turb->tau.at(idx_zp1).e11 - turb->tau.at(idx_zp2).e11 ) * 0.5 / dz;
-                    taudz.at(idx).e12 = ( -3.0*turb->tau.at(idx).e12 + 4.0*turb->tau.at(idx_zp1).e12 - turb->tau.at(idx_zp2).e12 ) * 0.5 / dz;
-                    taudz.at(idx).e13 = ( -3.0*turb->tau.at(idx).e13 + 4.0*turb->tau.at(idx_zp1).e13 - turb->tau.at(idx_zp2).e13 ) * 0.5 / dz;
-                    taudz.at(idx).e22 = ( -3.0*turb->tau.at(idx).e22 + 4.0*turb->tau.at(idx_zp1).e22 - turb->tau.at(idx_zp2).e22 ) * 0.5 / dz;
-                    taudz.at(idx).e23 = ( -3.0*turb->tau.at(idx).e23 + 4.0*turb->tau.at(idx_zp1).e23 - turb->tau.at(idx_zp2).e23 ) * 0.5 / dz;
-                    taudz.at(idx).e33 = ( -3.0*turb->tau.at(idx).e33 + 4.0*turb->tau.at(idx_zp1).e33 - turb->tau.at(idx_zp2).e33 ) * 0.5 / dz;
+                    setDZ_Forward(turb, idx);
                 }
                 else {
-                    // Backward differencing
-                    int idx_zm1 = idx - (ny*nx);
-                    int idx_zm2 = idx - 2.0*(ny*nx);
-                    
-                    taudz.at(idx).e11 = ( 3.0*turb->tau.at(idx).e11 - 4.0*turb->tau.at(idx_zm1).e11 + turb->tau.at(idx_zm2).e11 ) * 0.5 / dz;
-                    taudz.at(idx).e12 = ( 3.0*turb->tau.at(idx).e12 - 4.0*turb->tau.at(idx_zm1).e12 + turb->tau.at(idx_zm2).e12 ) * 0.5 / dz;
-                    taudz.at(idx).e13 = ( 3.0*turb->tau.at(idx).e13 - 4.0*turb->tau.at(idx_zm1).e13 + turb->tau.at(idx_zm2).e13 ) * 0.5 / dz;
-                    taudz.at(idx).e22 = ( 3.0*turb->tau.at(idx).e22 - 4.0*turb->tau.at(idx_zm1).e22 + turb->tau.at(idx_zm2).e22 ) * 0.5 / dz;
-                    taudz.at(idx).e23 = ( 3.0*turb->tau.at(idx).e23 - 4.0*turb->tau.at(idx_zm1).e23 + turb->tau.at(idx_zm2).e23 ) * 0.5 / dz;
-                    taudz.at(idx).e33 = ( 3.0*turb->tau.at(idx).e33 - 4.0*turb->tau.at(idx_zm1).e33 + turb->tau.at(idx_zm2).e33 ) * 0.5 / dz;
+                    setDZ_Backward(turb, idx);
                 }
             }
         }
     }
 
-  //createA1Matrix();
+    auto timerEnd = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = timerEnd - timerStart;
+    std::cout << "\telapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
 }
+
+#else
+
+void Eulerian::createTauGrads(Urb* urb, Turb* turb)
+{
+    std::cout<<"[Eulerian] \t Computing stress gradients "<<std::endl;
+    
+    auto timerStart = std::chrono::high_resolution_clock::now();
+
+    taudx.resize(nx*ny*nz, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+    taudy.resize(nx*ny*nz, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+    taudz.resize(nx*ny*nz, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+    
+    // Loop over all cells in the domain up to 2 in from the edge
+
+    // Forward differencing
+#pragma acc parallel loop
+    for(int k=0; k<nz-2; ++k) {
+        for(int j=0; j<ny-2; ++j) {
+            for(int i=0; i<nx-2; ++i) {
+                
+                // Provides a linear index based on the 3D (i, j, k)
+                // indices so we can access 
+                int idx = k*ny*nx + j*nx + i;
+
+                setDX_Forward( turb, idx );
+                setDY_Forward( turb, idx );
+                setDZ_Forward( turb, idx );
+            }
+        }
+    }
+    
+    // Section to complete backward differences at boundary
+    //
+    // DX
+#pragma acc parallel loop
+    for(int k=0; k<nz-2; ++k) {
+        for(int j=0; j<ny-2; ++j) {
+            for(int i=nx-2; i<nx; ++i) {
+                
+                // Provides a linear index based on the 3D (i, j, k)
+                // indices so we can access 
+                int idx = k*ny*nx + j*nx + i;
+
+                setDX_Backward( turb, idx );
+            }
+        }
+    }
+
+    // DY
+#pragma acc parallel loop
+    for(int k=0; k<nz-2; ++k) {
+        for(int j=ny-2; j<ny; ++j) {
+            for(int i=0; i<nx-2; ++i) {
+                
+                // Provides a linear index based on the 3D (i, j, k)
+                // indices so we can access 
+                int idx = k*ny*nx + j*nx + i;
+
+                setDY_Backward( turb, idx );
+            }
+        }
+    }
+
+    // DZ
+#pragma acc parallel loop
+    for(int k=nz-2; k<nz; ++k) {
+        for(int j=0; j<ny-2; ++j) {
+            for(int i=0; i<nx-2; ++i) {
+                
+                // Provides a linear index based on the 3D (i, j, k)
+                // indices so we can access 
+                int idx = k*ny*nx + j*nx + i;
+
+                setDZ_Backward( turb, idx );
+            }
+        }
+    }
+
+    auto timerEnd = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = timerEnd - timerStart;
+    std::cout << "\telapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
+}
+
+#endif
 
 void Eulerian::createA1Matrix(Urb* urb, Turb* turb) {
     
