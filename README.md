@@ -1,5 +1,10 @@
 # CUDA-URB
 
+CUDA-URB is a fast response 3D diagnostic urban wind  model  written  in  C++ and uses NVIDIA's CUDA framework to accelerate
+
+URB,is  a  rapid  mass  conserving  wind-field  solver. dispersion modeling system that provides high-resolution wind and concentration fields in cities.
+
+CUDA-URB  uses  a  variational  analysistechnique to ensure the conservation of mass rather than slower yet more physics-basedsolvers that include conservation of momentum.  CUDA-URB minimizes the differencebetween an initial wind field that is specified using empirical parameterizations and thefinal wind field.  This method requires the solution of a Poisson equation for Lagrangemultipliers.  The Poisson equation is solved using the Successive Over-Relaxation (SOR)method (an iterative solver), which is a variant of the Gauss-Seidel method with morerapid convergence.  CUDA-URB utilizes the concept of dynamic parallelism in NVIDIAsparallel computing-based Graphics Processing Unit (or GPU) API, CUDA, to substan-tially accelerate wind simulations.
 
 ## Package Requirements
 
@@ -22,11 +27,11 @@ will need to remember the path to the cuda install directory.
 
 The most active development occurs in the *workingBranch*. We suggest you use that branch at this time.  You can checkout this branch with the following git command:
 
-``` git checkout workingBranch ```
+```
+git checkout workingBranch
+```
 
 If you are unsure about which branch you are on, the ``` git status ``` command can provide you with this information.
-
-
 
 
 ### Building on general Linux system
