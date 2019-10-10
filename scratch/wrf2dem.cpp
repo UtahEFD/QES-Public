@@ -1,7 +1,9 @@
+#include <iostream>
 #include <fstream>
 #include <cmath>
 
-#include <iostream>
+#include <boost/filesystem.hpp>
+namespace filesys = boost::filesystem;
 
 #include <netcdf>
 using namespace std;
@@ -21,7 +23,8 @@ int main(int argc, char *argv[])
     
     std::string filename = argv[1];
     std::string outFilename = argv[2];
-    
+    filesys::path outFilenamePath(outFilename);
+
     NcFile wrfInputFile( filename, NcFile::read );
         
     std::multimap<std::string,NcGroupAtt> globalAttributes = wrfInputFile.getAtts();
@@ -202,5 +205,22 @@ int main(int argc, char *argv[])
     
     /* Once we're done, close properly the dataset */
     GDALClose( (GDALDatasetH) poDstDS );
+
+    std::string xmlOutput = outFilenamePath.filename().string() + ".xml";
+    std::cout << "\twriting XML data to " << xmlOutput << std::endl;
+
+    std::string stage1XML = "<simulationParameters>\n\t<DEM>";
+    std::string stage2XML = "</DEM>\n\t<halo_x> 40.0 </halo_x>\n\t<halo_y> 40.0 </halo_y>\n";
+    std::string stage3XML = "\t<verticalStretching> 0 </verticalStretching>\n\t<totalTimeIncrements> 1 </totalTimeIncrements>\n\t<UTCConversion> 0 </UTCConversion>\n\t<Epoch> 1510930800 </Epoch>\n\t<rooftopFlag> 0 </rooftopFlag>\n\t<upwindCavityFlag> 0 </upwindCavityFlag>\n\t<streetCanyonFlag> 0 </streetCanyonFlag>\n\t<streetIntersectionFlag> 0 </streetIntersectionFlag>\n\t<wakeFlag> 0 </wakeFlag>\n\t<sidewallFlag> 0 </sidewallFlag>\n\t<maxIterations> 500 </maxIterations>\n\t<residualReduction> 3 </residualReduction>\n\t<meshTypeFlag> 0 </meshTypeFlag> <!-- cut cell -->\n\t<useDiffusion> 0 </useDiffusion>\n\t<domainRotation> 0 </domainRotation>\n\t<UTMX> 0 </UTMX>\n\t<UTMY> 0 </UTMY>\n\t<UTMZone> 1 </UTMZone>\n\t<UTMZoneLetter> 17 </UTMZoneLetter>\n\t</simulationParameters>\n<metParams>\n\t<metInputFlag> 0 </metInputFlag>\n\t<num_sites> 1 </num_sites>\n\t<maxSizeDataPoints> 1 </maxSizeDataPoints>\n\t<siteName> sensor1 </siteName>\n\t<fileName> sensor1.inp </fileName>\n\t<z0_domain_flag> 0 </z0_domain_flag>            <!-- Distribution of surface roughness for domain (0-uniform, 1-custom -->\n\t<sensor>\n\t<site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->\n\t<site_xcoord> 1.0  </site_xcoord> 					<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->\n\t<site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->\n\t<site_UTM_x> 2.0 </site_UTM_x> 								<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->\n\t<site_UTM_y> 2.0 </site_UTM_y> 								<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->\n\t<site_UTM_zone> 0 </site_UTM_zone> 						<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->\n\t <boundaryLayerFlag> 1 </boundaryLayerFlag> 			<!-- Site boundary layer flag (1-log, 2-exp, 3-urban canopy, 4-data entry) -->\n\t<siteZ0> 0.1 </siteZ0> 									<!-- Site z0 -->\n\t<reciprocal> 0.0 </reciprocal> 						<!-- Reciprocal Monin-Obukhov Length (1/m) -->\n\t<height> 10.0 </height> 										<!-- Height of the sensor -->\n\t<speed> 5.0 </speed> 											<!-- Measured speed at the sensor height -->\n\t<direction> 360.0 </direction> 						<!-- Wind direction of sensor -->\n\t</sensor>                       	<!-- Wnd of sensor section -->\n</metParams>\n<fileOptions>\n\t<outputFlag>1</outputFlag>\n\t<outputFields>u</outputFields> \n\t<outputFields>v</outputFields> \n\t<outputFields>w</outputFields>\n\t<outputFields>icell</outputFields>   \n\t<massConservedFlag> 0 </massConservedFlag>\n\t<sensorVelocityFlag> 0 </sensorVelocityFlag>\n\t<staggerdVelocityFlag> 0 </staggerdVelocityFlag>\n</fileOptions>\n";
+    
+    ofstream xmlout;
+    xmlout.open( xmlOutput, std::ofstream::out );
+
+    xmlout << stage1XML;
+    xmlout << outFilenamePath.filename();
+    xmlout << stage2XML;
+    xmlout << "\t<domain> " << fm_nx << " " << fm_ny << " " << 300 << "</domain>\n\t<cellSize> " << dxf << " " << dyf << " 1.0 </cellSize>\n";
+    xmlout << stage3XML;
+    xmlout.close();
 }
 
