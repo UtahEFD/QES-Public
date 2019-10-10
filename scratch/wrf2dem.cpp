@@ -14,7 +14,13 @@ using namespace netCDF::exceptions;
 
 int main(int argc, char *argv[])
 {
+    if (argc != 3) {
+        std::cerr << "Missing required arguments:\n\twrf2dem WRF_inputfilename DEM_outputfilename" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    
     std::string filename = argv[1];
+    std::string outFilename = argv[2];
     
     NcFile wrfInputFile( filename, NcFile::read );
         
@@ -37,7 +43,7 @@ int main(int argc, char *argv[])
     int nx = xDim[1] - xDim[0] + 1;
     int ny = yDim[1] - yDim[0] + 1;
 
-    std::cout << "Domain is " << nx << " X " << ny << " cells." << std::endl;
+    std::cout << "WRF Atmos Domain is " << nx << " X " << ny << " cells." << std::endl;
     
     // Pull DX and DY
     double cellSize[2] = {1, 1};
@@ -47,7 +53,7 @@ int main(int argc, char *argv[])
     gblAttIter = globalAttributes.find("DY");
     gblAttIter->second.getValues( cellSize+1 );
     
-    std::cout << "Atmos Resolution (dx,dy) is ("<< cellSize[0] << ", " << cellSize[1] << ")" << std::endl;
+    std::cout << "WRF Atmos Resolution (dx,dy) is ("<< cellSize[0] << ", " << cellSize[1] << ")" << std::endl;
 
     // 
     // Fire Mesh Terrain Nodes
@@ -85,7 +91,8 @@ int main(int argc, char *argv[])
     float dyf = cellSize[1] / sr_y;    
     // Then dxf=DX/sr_x, dyf=DY/sr_y
 
-    std::cout << "Fire Mesh (dxf, dyf) = (" << dxf << ", " << dyf << ")" << std::endl;
+    std::cout << "WRF Fire Mesh Domain is " << fm_nx << " X " << fm_ny << std::endl;
+    std::cout << "WRF Fire Mesh Resolution (dx, dy) is (" << dxf << ", " << dyf << ")" << std::endl;
     
     double minHt = std::numeric_limits<double>::max(),
         maxHt = std::numeric_limits<double>::min();
@@ -101,7 +108,7 @@ int main(int argc, char *argv[])
     }
 
     double rangeHt = maxHt - minHt;
-    std::cout << "Min Ht: " << minHt << ", Max Ht: " << maxHt << std::endl;
+    std::cout << "Terrain Min Ht: " << minHt << ", Max Ht: " << maxHt << std::endl;
 
     int UTMZone = (int)floor((fxlong[0] + 180) / 6) + 1;
     
@@ -110,10 +117,6 @@ int main(int argc, char *argv[])
     std::cout << "(Lat,Long) at [nx-1][0] = " << fxlat[fm_nx-1] << ", " << fxlong[nx-1] << std::endl;
     std::cout << "(Lat,Long) at [0][ny-1] = " << fxlat[(fm_ny-1)*fm_nx] << ", " << fxlong[(fm_ny-1)*fm_nx] << std::endl;
     std::cout << "(Lat,Long) at [nx-1][ny-1] = " << fxlat[fm_nx-1 + (fm_ny-1)*fm_nx] << ", " << fxlong[fm_nx-1 + (fm_ny-1)*fm_nx] << std::endl;
-
-    // [0] is lower left, [1] is pixel width, [2] is , [3] is 
-    // Need to automate this conversion
-    double adfGeoTransform[6] = {  524972.33, dxf, 0, 3376924.26, 0, -dyf };
 
     // is it possible to create a GDAL DS from this info?
     // write out GDAL file of fire mesh here as first pass.
@@ -134,10 +137,9 @@ int main(int argc, char *argv[])
     GDALDataset *poDstDS;
     char **papszOptions = NULL;
 
-    poDstDS = poDriver->Create( "WRFOut.tiff", fm_nx, fm_ny, 1, GDT_Byte, papszOptions );
+    poDstDS = poDriver->Create( outFilename.c_str(), fm_nx, fm_ny, 1, GDT_Byte, papszOptions );
 
     OGRSpatialReference oSRS;
-    char *pszSRS_WKT = NULL;
     GDALRasterBand *poBand;
 
     std::vector<GByte> abyRaster( fm_nx * fm_ny );
@@ -151,22 +153,47 @@ int main(int argc, char *argv[])
     }
     std::cout << "Done." << std::endl;
     
+    //  NC_GLOBAL#TRUELAT1=30
+    //  NC_GLOBAL#TRUELAT2=34
+    //  NC_GLOBAL#CEN_LAT=30.533249
+    //  NC_GLOBAL#MOAD_CEN_LAT=30.53326
+    //  NC_GLOBAL#CEN_LON=-86.730408
+    // oSRS.SetLCC(double dfStdP1, double dfStdP2, double dfCenterLat, double dfCenterLong, double dfFalseEasting, double dfFalseNorthing)
+    oSRS.SetLCC(30.0, 34.0, 30.533249, -86.730408, 0.0, 0.0);
+    oSRS.SetWellKnownGeogCS( "WGS84" );
+
+    char *exportResult;
+    oSRS.exportToPrettyWkt(&exportResult);
+    // std::cout << "oSRS: " << exportResult << std::endl;
+    CPLFree(exportResult);
+    
+    // wgs84 coordinate system
+    OGRSpatialReference wgs84sr;
+    wgs84sr.SetWellKnownGeogCS( "WGS84" );
+    wgs84sr.SetUTM( UTMZone, TRUE );
+    
+    wgs84sr.exportToPrettyWkt(&exportResult);
+    // std::cout << "wgs84sr: " << exportResult << std::endl;
+    CPLFree(exportResult);
+
+    // set the transform wgs84_to_utm and do the transform
+    //transform_WGS84_To_UTM = osr.CoordinateTransformation(wgs84_cs,utm_cs)
+    OGRCoordinateTransformation *ogrCoordXform = OGRCreateCoordinateTransformation(&oSRS, &wgs84sr);
+        
+    double lats2eastings[1] = { 30.5244 };
+    double longs2northings[1] = { -86.7397 };
+    ogrCoordXform->Transform(1, lats2eastings, longs2northings);
+    
+    // std::cout << "UTM: " << lats2eastings[0] << ", " << longs2northings[0] << std::endl;
+
+    // [0] is lower left, [1] is pixel width, [2] is , [3] is 
+    // Need to automate this conversion
+    double adfGeoTransform[6] = { lats2eastings[0], dxf, 0, longs2northings[0], 0, -dyf };
     poDstDS->SetGeoTransform( adfGeoTransform );
 
-//  NC_GLOBAL#TRUELAT1=30
-//  NC_GLOBAL#TRUELAT2=34
-//  NC_GLOBAL#CEN_LAT=30.533249
-//  NC_GLOBAL#MOAD_CEN_LAT=30.53326
-//  NC_GLOBAL#CEN_LON=-86.730408
-      // oSRS.SetLCC(double dfStdP1, double dfStdP2, double dfCenterLat, double dfCenterLong, double dfFalseEasting, double dfFalseNorthing)
-
-    oSRS.SetLCC(30.0, 34.0, 30.533249, -86.730408, 0.0, 0.0);
-    
-    oSRS.SetUTM( UTMZone, TRUE );
-    oSRS.SetWellKnownGeogCS( "WGS84" );
-    oSRS.exportToWkt( &pszSRS_WKT );
+    char *pszSRS_WKT = NULL;
+    wgs84sr.exportToWkt( &pszSRS_WKT );
     poDstDS->SetProjection( pszSRS_WKT );
-    
     CPLFree( pszSRS_WKT );
 
     poBand = poDstDS->GetRasterBand(1);
