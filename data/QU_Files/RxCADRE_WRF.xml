@@ -1,10 +1,11 @@
 <simulationParameters>
   <DEM>../data/GISFiles/RxCADRE_fromWRF.tif</DEM>
+
   <halo_x> 40.0 </halo_x>	
   <halo_y> 40.0 </halo_y>	
     
-     <domain> 100 100 300 </domain>
-  <cellSize> 16.4609 16.4609 1.0 </cellSize> -->
+     <domain> 1150 1150 300 </domain>
+     <cellSize> 1.64609 1.64609 1.0 </cellSize> -->
        
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
