@@ -6,6 +6,7 @@ set(BASETESTS
   shpTest
   UIDugdTest
   wrfInputTest
+  wrf2dem
   )
 
 foreach(basetest ${BASETESTS})
