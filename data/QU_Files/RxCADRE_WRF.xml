@@ -4,8 +4,13 @@
   <halo_x> 40.0 </halo_x>	
   <halo_y> 40.0 </halo_y>	
     
-     <domain> 1150 1150 300 </domain>
-     <cellSize> 1.64609 1.64609 1.0 </cellSize> -->
+  <!-- This is the domain sampled in large cells -->
+     <domain> 575 575 150 </domain>
+     <cellSize> 3.29218 3.29218 2.0 </cellSize> 
+
+  <!-- the original fire mesh size; runs slower 
+       <domain> 1150 1150 300 </domain>
+       <cellSize> 1.64609 1.64609 1.0 </cellSize> -->
        
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
