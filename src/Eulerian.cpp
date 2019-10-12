@@ -35,7 +35,7 @@ Eulerian::Eulerian(Urb* urb, Turb* turb) {
 
 // This is here only so we can test the two versions a bit for
 // timing... and then I will remove the older version.
-#define USE_PREVIOUSCODE 0
+#define USE_PREVIOUSCODE 1
 
 #if USE_PREVIOUSCODE
 void Eulerian::createTauGrads(Urb* urb, Turb* turb)
@@ -101,11 +101,14 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
     taudy.resize(nx*ny*nz, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
     taudz.resize(nx*ny*nz, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
     
-    // Loop over all cells in the domain up to 2 in from the edge
+    // 2nd order Forward differencing up to 2 in from the edge in the direction of the gradient,
+    // 2nd order Backward differencing for the last two in the direction of the gradient,
+    // all this over all cells in the other two directions
 
-    // Forward differencing
-    for(int k=0; k<nz-2; ++k) {
-        for(int j=0; j<ny-2; ++j) {
+
+    // DX forward differencing
+    for(int k=0; k<nz; ++k) {
+        for(int j=0; j<ny; ++j) {
             for(int i=0; i<nx-2; ++i) {
                 
                 // Provides a linear index based on the 3D (i, j, k)
@@ -113,17 +116,14 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
                 int idx = k*ny*nx + j*nx + i;
 
                 setDX_Forward( turb, idx );
-                setDY_Forward( turb, idx );
-                setDZ_Forward( turb, idx );
+
             }
         }
     }
-    
-    // Section to complete backward differences at boundary
-    //
-    // DX
-    for(int k=0; k<nz-2; ++k) {
-        for(int j=0; j<ny-2; ++j) {
+
+    // DX backward differencing
+    for(int k=0; k<nz; ++k) {
+        for(int j=0; j<ny; ++j) {
             for(int i=nx-2; i<nx; ++i) {
                 
                 // Provides a linear index based on the 3D (i, j, k)
@@ -131,37 +131,73 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
                 int idx = k*ny*nx + j*nx + i;
 
                 setDX_Backward( turb, idx );
+
             }
         }
     }
 
-    // DY
-    for(int k=0; k<nz-2; ++k) {
+
+    // DY forward differencing
+    for(int k=0; k<nz; ++k) {
+        for(int j=0; j<ny-2; ++j) {
+            for(int i=0; i<nx; ++i) {
+                
+                // Provides a linear index based on the 3D (i, j, k)
+                // indices so we can access 
+                int idx = k*ny*nx + j*nx + i;
+
+                setDY_Forward( turb, idx );
+
+            }
+        }
+    }
+
+    // DY backward differencing
+    for(int k=0; k<nz; ++k) {
         for(int j=ny-2; j<ny; ++j) {
-            for(int i=0; i<nx-2; ++i) {
+            for(int i=0; i<nx; ++i) {
                 
                 // Provides a linear index based on the 3D (i, j, k)
                 // indices so we can access 
                 int idx = k*ny*nx + j*nx + i;
 
                 setDY_Backward( turb, idx );
+
             }
         }
     }
 
-    // DZ
+
+    // DZ forward differencing
+    for(int k=0; k<nz-2; ++k) {
+        for(int j=0; j<ny; ++j) {
+            for(int i=0; i<nx; ++i) {
+                
+                // Provides a linear index based on the 3D (i, j, k)
+                // indices so we can access 
+                int idx = k*ny*nx + j*nx + i;
+
+                setDZ_Forward( turb, idx );
+
+            }
+        }
+    }
+
+    // DZ backward differencing
     for(int k=nz-2; k<nz; ++k) {
-        for(int j=0; j<ny-2; ++j) {
-            for(int i=0; i<nx-2; ++i) {
+        for(int j=0; j<ny; ++j) {
+            for(int i=0; i<nx; ++i) {
                 
                 // Provides a linear index based on the 3D (i, j, k)
                 // indices so we can access 
                 int idx = k*ny*nx + j*nx + i;
 
                 setDZ_Backward( turb, idx );
+
             }
         }
     }
+
 
     auto timerEnd = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = timerEnd - timerStart;
