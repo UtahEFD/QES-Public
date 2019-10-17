@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
+
 #include <cmath>
 
 #include <boost/filesystem.hpp>
@@ -34,6 +36,7 @@ int main(int argc, char *argv[])
     // Same happens for yDim below.
     int xDim[2] = {1, 0}, yDim[2] = {1, 0};
 
+    // Atmospheric mesh size is stored in GRID_DIMENSIONs
     auto gblAttIter = globalAttributes.find("WEST-EAST_GRID_DIMENSION");
     gblAttIter->second.getValues( xDim+1 );
     xDim[1] -= 1;
@@ -121,87 +124,220 @@ int main(int argc, char *argv[])
     std::cout << "(Lat,Long) at [0][ny-1] = " << fxlat[(fm_ny-1)*fm_nx] << ", " << fxlong[(fm_ny-1)*fm_nx] << std::endl;
     std::cout << "(Lat,Long) at [nx-1][ny-1] = " << fxlat[fm_nx-1 + (fm_ny-1)*fm_nx] << ", " << fxlong[fm_nx-1 + (fm_ny-1)*fm_nx] << std::endl;
 
-    // is it possible to create a GDAL DS from this info?
-    // write out GDAL file of fire mesh here as first pass.
+
 
    GDALAllRegister(); 
 
-    const char *pszFormat = "GTiff";
-    GDALDriver *poDriver;
-    char **papszMetadata;
-    poDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
-    if( poDriver == NULL ) {
-        std::cerr << "No GTiff driver." << std::endl;
-        exit( 1 );
-    }
+   const char *pszFormat = "GTiff";
+   GDALDriver *poDriver;
+   char **papszMetadata;
+   poDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
+   if( poDriver == NULL ) {
+       std::cerr << "No GTiff driver." << std::endl;
+       exit( 1 );
+   }
     
     papszMetadata = poDriver->GetMetadata();
 
     GDALDataset *poDstDS;
-    char **papszOptions = NULL;
-
-    poDstDS = poDriver->Create( outFilename.c_str(), fm_nx, fm_ny, 1, GDT_Byte, papszOptions );
-
-    OGRSpatialReference oSRS;
     GDALRasterBand *poBand;
+    char **papszOptions = NULL;
+    poDstDS = poDriver->Create( outFilename.c_str(), fm_nx, fm_ny, 1, GDT_UInt16, papszOptions );
 
-    std::vector<GByte> abyRaster( fm_nx * fm_ny );
+    std::vector<float> abyRaster( fm_nx * fm_ny );
 
     for (int i=0; i<fm_nx; i++) {
         for (int j=0; j<fm_ny; j++) {
             
             int l_idx = i + j*fm_nx;
-            abyRaster[ l_idx ] = (GByte)( (int)floor( ((fmHeight[l_idx]-minHt)/rangeHt) * 255 ) );
+            abyRaster[ l_idx ] = fmHeight[l_idx];
         }
     }
     std::cout << "Done." << std::endl;
     
+    // 
+    // Setting up WRF-based SpatialReference
+    //
+    //    lat1 = d.TRUELAT1
+    //    lat2 = d.TRUELAT2
+    //    lat0 = d.MOAD_CEN_LAT
+    //    lon0 = d.STAND_LON
+    //    clat = d.CEN_LAT
+    //    clon = d.CEN_LON
+    //    csr = osr.SpatialReference()
+    //    proj4 = '+proj=lcc +lat_1=%.10f +lat_2=%.10f +lat_0=%.10f +lon_0=%.10f +a=6370000.0 +b=6370000.0' % (lat1,lat2,lat0 \
+,lon0)
+    //    logging.info('proj4: %s' % proj4)
+    //    csr.ImportFromProj4(proj4)
+    //    ll_proj = pyproj.Proj('+proj=latlong +datum=WGS84')
+//     wrf_proj = pyproj.Proj(proj4)
+
+    double lat1, lat2, lat0, lon0, clat, clon;
+    gblAttIter = globalAttributes.find("TRUELAT1");
+    gblAttIter->second.getValues( &lat1 );
+    
+    gblAttIter = globalAttributes.find("TRUELAT2");
+    gblAttIter->second.getValues( &lat2 );
+
+    gblAttIter = globalAttributes.find("MOAD_CEN_LAT");
+    gblAttIter->second.getValues( &lat0 );
+    
+    gblAttIter = globalAttributes.find("STAND_LON");
+    gblAttIter->second.getValues( &lon0 );
+    
+    gblAttIter = globalAttributes.find("CEN_LAT");
+    gblAttIter->second.getValues( &clat );
+    
+    gblAttIter = globalAttributes.find("CEN_LON");
+    gblAttIter->second.getValues( &clon );
+
+    // WRF coordinates are unique projections.  Use Lambert Conformal
+    // Conic projections.
+    std::ostringstream proj4ss;
+    proj4ss << "+proj=lcc +lat_1=" << lat1 << " +lat_2=" << lat2 << " +lat_0=" << lat0 << " +lon_0=" << lon0 << " +a=6370000.0 +b=6370000.0";
+
+    std::cout << "Initializing WRF Spatial Reference from PROJ4 string: " << proj4ss.str() << std::endl;
+    OGRSpatialReference wrfSpatialRef;
+    wrfSpatialRef.importFromProj4( proj4ss.str().c_str() );
+
+    char *exportResult;
+    wrfSpatialRef.exportToPrettyWkt(&exportResult);
+    std::cout << "WRF Spatial Reference: " << exportResult << std::endl;
+    CPLFree(exportResult);
+
+    std::string proj4_spherLatLon = "+proj=latlong +a=6370000 +b=6370000";
+    OGRSpatialReference sr_SpherLatLon;
+    sr_SpherLatLon.importFromProj4( proj4_spherLatLon.c_str() );
+
+ //    csr.ImportFromProj4(proj4)
+ //    ll_proj = pyproj.Proj('+proj=latlong +datum=WGS84')
+ //    wrf_proj = pyproj.Proj(proj4)
+
+    OGRSpatialReference wgs84;
+    std::ostringstream outString;
+    outString << "UTM " << UTMZone << " (WGS84) in northern hemisphere.";
+    wgs84.SetProjCS( outString.str().c_str() );
+    wgs84.SetWellKnownGeogCS( "WGS84" );
+    wgs84.SetUTM( UTMZone, TRUE );
+    // wgs84.importFromProj4( "+proj=latlong +datum=WGS84" );
+     
+    OGRSpatialReference latLongProj;
+    std::string projString = "+proj=latlong +datum=WGS84";
+    latLongProj.importFromProj4( projString.c_str() );
+    
+
+    // # geotransform
+    // e,n = pyproj.transform(ll_proj,wrf_proj,clon,clat)
+    // dx_atm = d.DX
+    // dy_atm = d.DY
+    // nx_atm = d.dimensions['west_east'].size
+    // ny_atm = d.dimensions['south_north'].size
+    // x0_atm = -nx_atm / 2. * dx_atm + e
+    // y1_atm = ny_atm / 2. * dy_atm + n
+    // geotransform_atm = (x0_atm,dx_atm,0,y1_atm,0,-dy_atm)
+
+//    OGRCoordinateTransformation *wrfCoordXform = OGRCreateCoordinateTransformation(&ll_proj, &wrfSpatialRef);    
+//    std::cout << "clon, clat = " << clon << ", " << clat << std::endl;
+//    wrfCoordXform->Transform(1, &clon, &clat);
+//    std::cout << "Transformed: clon, clat = " << clon << ", " << clat << std::endl;
+
     //  NC_GLOBAL#TRUELAT1=30
     //  NC_GLOBAL#TRUELAT2=34
     //  NC_GLOBAL#CEN_LAT=30.533249
     //  NC_GLOBAL#MOAD_CEN_LAT=30.53326
     //  NC_GLOBAL#CEN_LON=-86.730408
     // oSRS.SetLCC(double dfStdP1, double dfStdP2, double dfCenterLat, double dfCenterLong, double dfFalseEasting, double dfFalseNorthing)
-    oSRS.SetLCC(30.0, 34.0, 30.533249, -86.730408, 0.0, 0.0);
-    oSRS.SetWellKnownGeogCS( "WGS84" );
 
-    char *exportResult;
-    oSRS.exportToPrettyWkt(&exportResult);
-    // std::cout << "oSRS: " << exportResult << std::endl;
-    CPLFree(exportResult);
+    // oSRS.SetLCC(30.0, 34.0, 30.533249, -86.730408, 0.0, 0.0);
+    // oSRS.SetWellKnownGeogCS( "WGS84" );
+    
     
     // wgs84 coordinate system
-    OGRSpatialReference wgs84sr;
-    wgs84sr.SetWellKnownGeogCS( "WGS84" );
-    wgs84sr.SetUTM( UTMZone, TRUE );
+//    OGRSpatialReference wgs84sr;
+//    wgs84sr.SetWellKnownGeogCS( "WGS84" );
+//    wgs84sr.SetUTM( UTMZone, TRUE );
     
-    wgs84sr.exportToPrettyWkt(&exportResult);
-    // std::cout << "wgs84sr: " << exportResult << std::endl;
-    CPLFree(exportResult);
-
     // set the transform wgs84_to_utm and do the transform
-    //transform_WGS84_To_UTM = osr.CoordinateTransformation(wgs84_cs,utm_cs)
-    OGRCoordinateTransformation *ogrCoordXform = OGRCreateCoordinateTransformation(&oSRS, &wgs84sr);
+    //transform_WGS84_To_UTM =
+    //osr.CoordinateTransformation(wgs84_cs,utm_cs)
+    // src to dst
+    OGRCoordinateTransformation *ogrCoordXform1of2 = OGRCreateCoordinateTransformation(&wrfSpatialRef, &sr_SpherLatLon);
+    OGRCoordinateTransformation *ogrCoordXform2of2 = OGRCreateCoordinateTransformation(&sr_SpherLatLon, &wgs84);
+
+    OGRCoordinateTransformation *ogrCoordXform3 = OGRCreateCoordinateTransformation(&wgs84, &wrfSpatialRef);
+    // OGRCoordinateTransformation *ogrCoordXform3 = OGRCreateCoordinateTransformation(&wrfSpatialRef, &wgs84);
+
+    // OGRCoordinateTransformation *ogrCoordXform4 = OGRCreateCoordinateTransformation(&latLongProj, &wrfSpatialRef);
+    OGRCoordinateTransformation *ogrCoordXform4 = OGRCreateCoordinateTransformation(&wrfSpatialRef, &latLongProj);
         
-    double lats2eastings[1] = { 30.5244 };
-    double longs2northings[1] = { -86.7397 };
-    ogrCoordXform->Transform(1, lats2eastings, longs2northings);
+    // From: https://gdal.org/tutorials/osr_api_tut.html
+    // Starting with GDAL 3.0, the axis order mandated by the
+    // authority defining a CRS is by default honoured by the
+    // OGRCoordinateTransformation class, and always exported in
+    // WKT1. Consequently CRS created with the “EPSG:4326” or “WGS84”
+    // strings use the latitude first, longitude second axis order.
+
+    double lon2eastings[1] = { clon };
+    double lat2northings[1] = { clat };
+
+//    ogrCoordXform1of2->Transform(1, lon2eastings, lat2northings);
+//    ogrCoordXform2of2->Transform(1, lon2eastings, lat2northings);
+
+//    ogrCoordXform3->Transform(1, lon2eastings, lat2northings);
+    ogrCoordXform4->Transform(1, lon2eastings, lat2northings);
+
+    std::cout << "UTM: " << lon2eastings[0] << ", " << lat2northings[0] << std::endl;    
+
+    nx = fm_nx;
+    ny = fm_ny;
     
-    // std::cout << "UTM: " << lats2eastings[0] << ", " << longs2northings[0] << std::endl;
+    int nx_atm = xDim[1];
+    int ny_atm = yDim[1];    
+
+    int srx = int(nx/(nx_atm+1));
+    int sry = int(ny/(ny_atm+1));
+    
+    int nx_fire = nx - srx;
+    int ny_fire = ny - sry;
+    
+    float dx_atm = cellSize[0];
+    float dy_atm = cellSize[1];
+
+    float dx_fire = dx_atm/(float)srx;
+    float dy_fire = dy_atm/(float)sry;
+    
+    double t_x0_fire = -nx_fire / 2. * dx_fire + lon2eastings[0];
+    double t_y1_fire = (ny_fire / 2. + sry) * dy_fire + lat2northings[0];
+
+    std::cout << "Xform: " << srx << ", " << sry
+              << "; " << nx_fire << ", " << ny_fire
+              << "; " << dx_fire << ", " << dy_fire
+              << "; " << t_x0_fire << ", " << t_y1_fire << std::endl;
+    
+    
+
+    // nx_atm / 2. * dx_atm + e
+    double x0_fire = t_x0_fire; // -fm_nx / 2.0 * dxf + lon2eastings[0]; 
+    // ny_atm / 2. * dy_atm + n 
+    double y1_fire = t_y1_fire; // -fm_ny / 2.0 * dyf + lat2northings[0];
+
+    double geoTransform_fireMesh[6] = { x0_fire, dxf, 0, y1_fire, 0, -dyf };    
+    poDstDS->SetGeoTransform( geoTransform_fireMesh );
 
     // [0] is lower left, [1] is pixel width, [2] is , [3] is 
     // Need to automate this conversion
-    double adfGeoTransform[6] = { lats2eastings[0], dxf, 0, longs2northings[0], 0, -dyf };
-    poDstDS->SetGeoTransform( adfGeoTransform );
+//    double adfGeoTransform[6] = { lon2eastings[0], dxf, 0, lat2northings[0], 0, -dyf };
+//    poDstDS->SetGeoTransform( adfGeoTransform );
+
 
     char *pszSRS_WKT = NULL;
-    wgs84sr.exportToWkt( &pszSRS_WKT );
+    wgs84.exportToWkt( &pszSRS_WKT );
     poDstDS->SetProjection( pszSRS_WKT );
     CPLFree( pszSRS_WKT );
 
     poBand = poDstDS->GetRasterBand(1);
     poBand->RasterIO( GF_Write, 0, 0, fm_nx, fm_ny,
-                      abyRaster.data(), fm_nx, fm_ny, GDT_Byte, 0, 0 );
+                      abyRaster.data(), fm_nx, fm_ny, GDT_UInt16, 0, 0 );
     
     /* Once we're done, close properly the dataset */
     GDALClose( (GDALDatasetH) poDstDS );
