@@ -21,23 +21,44 @@ class Dispersion {
     
     public:
         
-        Dispersion(Urb*,Turb*,PlumeInputData*);
-                
+        Dispersion(Urb*,Turb*,PlumeInputData*); // starts by making copies of nx,ny, dx,dy,dz, numParticles, timestep,runTime, and source->posX,posY,posZ
+                                                // then calculates the number of timesteps numTimeStep from runTime and timestep.
+                                                // then calculates the list of times timeStepStamp
+                                                // then sets the pos and prime values for each particle, which are the starting positions and the starting values for each particle
+                                                // then calculate the number of particles to release at each time, so the total number to release is split up for each time
+                                                // yeah we need to change how this is done cause I want to release once at the start. Need to set time start for release, and time end for release
+                                                // then finally set the release times for each and every particle, since they are released constantly over time
+
+        // looks like this is just defining a list of information for Plume to use to know where and when to release different particles.
+        // so defining where and when every single particle is released over the entire simulation.
+        // looks like there needs to be a lot of work here. I thought the source had a radius as well as a point input, but here we only use a single point location
+        // a lot of work needs done to get the source stuff up to par. Right now can only release at a point, and it is ugly to figure out how to use this
+        // current method will NOT work for Brian's test cases, as they release all over the entire domain, only at the very start of the simulation
+        
+        // the way this information is used in Plume right now is as follows:
+        // 
+
         struct matrix {
             double x;
             double y;
             double z;
-        };
+        };      // why this and not a pos matrix? wait, when do you define it? Is it just sitting here? ah, type is matrix.
   
-        std::vector<float3> pos, prime;
-        std::vector<double> timeStepStamp,tStrt;
-        double eps;
-        int numTimeStep, parPerTimestep;
+        double eps;                     // is this machine tolerance, or tke/epps stuff? Doesn't appear to be used. Instead, a compile time variable EPSILON seems to be used
+        int numTimeStep;            // this is the number of timesteps of the simulation
+        std::vector<double> timeStepStamp;  // this is the list of times for the simulation
+        std::vector<float3> pos, prime;     // pos is the list of particle source positions, prime is the particle source values. Actually, the prime is the velFluct value for a given iteration!
+        int parPerTimestep;             // this is the number of particles to release at each timestep, used to calculate the release time for each particle
+        std::vector<double> tStrt;        // this is the time of release for each set of particles
         
     private:
         
-        double dur,srcX,srcY,srcZ;
-        double dx,dy,dz;
-        int dt,nx,ny,numPar;
+        double dur;         // this is a copy of the input runTime, or the total amount of time to run the simulation for
+        int dt;             // this is a copy of the input timestep
+        double srcX,srcY,srcZ;  // these are the source point x, y, and z values as copied from the input source information
+        int nx,ny;              // these are copies of the Urb grid nx and ny values. Not sure why nz isn't included
+        double dx,dy,dz;        // these are copies of the Urb grid dx,dy,dz values.
+        int numPar;        // this is a copy of the input numParticles to be released over the whole simulation
+
 };
 #endif

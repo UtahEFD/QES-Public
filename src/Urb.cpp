@@ -21,14 +21,14 @@ Urb :: Urb(Input* input) {
     input->getDimensionSize("z",grid.nz);
     input->getDimensionSize("t",grid.nt);
     
-    int c = grid.nt*grid.nz*grid.ny*grid.nx;
-    start = {0,0,0,0};
+    int c = grid.nt*grid.nz*grid.ny*grid.nx;    // numValues
+    start = {0,0,0,0};      // used for getVariableData() when it is a grid of values
     count = {static_cast<unsigned long>(grid.nt),
              static_cast<unsigned long>(grid.nz),
              static_cast<unsigned long>(grid.ny),
-             static_cast<unsigned long>(grid.nx)};
+             static_cast<unsigned long>(grid.nx)};  // the number of values in each grid dimension of the input data, I guess the default is a 4D structure
     count2d = {static_cast<unsigned long>(grid.ny),
-               static_cast<unsigned long>(grid.nx)};
+               static_cast<unsigned long>(grid.nx)};  // the number of values in each grid dimension of the input data, for a 2D structure
     
     // get input data and information
     grid.x.resize(grid.nx);
@@ -50,12 +50,13 @@ Urb :: Urb(Input* input) {
     grid.dy = grid.y[1]-grid.y[0];
     grid.dz = grid.z[1]-grid.z[0];
     
-    std::vector<double> u1(c),u2(c),u3(c);
+    std::vector<double> u1(c),u2(c),u3(c);  // temporary vector to hold the velocities before putting them into the grid
     
     input->getVariableData("u",start,count,u1);
     input->getVariableData("v",start,count,u2);
     input->getVariableData("w",start,count,u3);
     
+    // now take the input wind values stored in the vector, and put them into the Wind grid data structure
     int id;
     for (int n=0;n<grid.nt;n++) {
         for(int k=0;k<grid.nz;k++) {

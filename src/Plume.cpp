@@ -10,13 +10,15 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     
     std::cout<<"[Plume] \t Setting up particles "<<std::endl;
     
-    Wind windRot;
+    Wind windRot;   // strange, this doesn't appear to be used in this function, so it is an unnecessary declaration
     
     // make local copies
     nx = urb->grid.nx;
     ny = urb->grid.ny;
     nz = urb->grid.nz;
     
+    /* setup the sampling box concentration information */
+
     numPar = PID->sources->numParticles;
     
     nBoxesX = PID->colParams->nBoxesX;
@@ -44,12 +46,12 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     quanY = (uBndy-lBndy)/(nBoxesY);
     quanZ = (uBndz-lBndz)/(nBoxesZ);
     
-    int id=0;
+    int id=0;   // this isn't used apparently
     int zR=0;
     int yR=0;
     int xR=0;
     for(int k=0;k<nBoxesZ;++k) {
-        zBoxCen.at(k) = lBndz + (zR*quanZ) + (boxSizeZ/2.0);
+        zBoxCen.at(k) = lBndz + (zR*quanZ) + (boxSizeZ/2.0);        // the .at(k) is different from [k] in that it checks the bounds, throwing an out of range error if outside the bounds of the vector
         zR++;
     }
     for(int j=0;j<nBoxesY;++j) {
@@ -61,6 +63,8 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
         xR++;
     }
     
+    /* make copies of important dispersion information for particle release */
+
     tStepInp = PID->simParams->timeStep;
     avgTime  = PID->colParams->timeAvg;
     
@@ -78,6 +82,8 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     cBox.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
     conc.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
     
+    /* setup output information */
+
     // set cell-centered dimensions
     NcDim t_dim = output->addDimension("t");
     NcDim z_dim = output->addDimension("z",nBoxesZ);
@@ -130,53 +136,61 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
     
     std::cout<<"[Plume] \t Advecting particles "<<std::endl;
     
-    int Flag=0;
-    int flag=0;
-    int flagPrime=0;
-    int loopPrm=0;
-    int loopLowestCell=0;
-    int flag_g2nd=0;
+    // these flags are either to warn of a problem, or to control how the iteration goes and what methods to use for the iteration during each iteration
+    // the counts appear to be related to the flags, some kind of way to also control the number of iterations
+    int Flag=0;     // this is just to warn/flag if the zPos becomes less than the zo roughness length found in the euler stuff. Yet it is unused other than being set to 1
+    int flag=0;     // this is not used. Took me a bit to track it down
+    int flagPrime=0;    // some kind of check on some value stuff in the calculation
+    int loopPrm=0;      // this is just a count for the number of particles per timestep that flagPrime gets set to 1
+    int loopLowestCell=0;   // not used
+    int flag_g2nd=0;        // some kind of check on some value stuff in the calculation
     int countMax=10;//100;
     int countPrmMax=10;//1000;
-    double ranU=0.0;
+    double ranU=0.0;    // storage container for a random number in the U direction for each iteration. Looks like it is a normalized random number
     double ranV=0.0;
     double ranW=0.0;
-    int parToMove=0;
+    int parToMove=0;    // this is the loop counter ending point for the particle loop. Looks like it gets adjusted each time to add in the extra particles
     
     // For every time step
     for(tStep=0; tStep<numTimeStep; tStep++) {
         
         // Move each particle for every time step
-        parToMove = parToMove + parPerTimestep;
+        parToMove = parToMove + parPerTimestep;     // add the new particles to the total number to be moved each timestep
         
         for(int par=0; par<parToMove;par++) {
-            loopPrm=0;
+            loopPrm=0;      // this is just a count for the number of particles per timestep that flagPrime gets set to 1
             
             int count=0;
             int countPrm=0;
-            double xPos = dis->pos.at(par).x;
+            double xPos = dis->pos.at(par).x;   // this is getting the position for where to release the new particles for this time
             double yPos = dis->pos.at(par).y;
             double zPos = dis->pos.at(par).z;
                         
-            double tStepRem=tStepInp;
+            double tStepRem=tStepInp;   // I guess the dt isn't a good variable name or can't be used again?
             double tStepUsed=0.0;
             double tStepCal=0.0;
-            double dt=tStepRem;
+            double dt=tStepRem;     // isn't this just the dt again? why not use the variable you've set in the class? I guess it is an adaptive timestepping thing
             int loops=0;
             double tStepMin=tStepInp;
             int loopTby2=0;
             
-            while(tStepRem>1.0e-5) { 
+            while(tStepRem>1.0e-5) {        // looks like an iterative process till something converges
+                // a set of grid indexing variables
                 int iV=int(xPos/urb->grid.dx);
                 int jV=int(yPos/urb->grid.dy);
                 int kV=int(zPos/urb->grid.dz)+1;
                 int id=kV*ny*nx+jV*nx+iV;
                 
                 // if the partice is in domain and ready to be released*/
+                // so this is a way to ignore particles that go bad without restarting them
+                // is it in the domain? and is the wind velocity not zero for the closest cell?
+                // hm, so this is eulerian cell grid ID stuff
                 if(iV>0 && iV<nx-1 && jV>0 && jV<ny-1 && kV>0 && kV<nz-1 && urb->grid.icell.at(id)!=0) {
                         
 	                loops++;                
                     
+                    /* looks like the first thing is to get a bunch of values for the current particle */
+
                     double eigVal_11=eul->eigVal.at(id).e11;
                     double eigVal_22=eul->eigVal.at(id).e22;
                     double eigVal_33=eul->eigVal.at(id).e33;
@@ -192,7 +206,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                     tStepCal=tFac * min(tStepArr,4); 
                     double arrT[]={tStepMin,tStepCal,tStepRem,dt};
                     dt=min(arrT,4);
-                    double uPrime=dis->prime.at(par).x;
+                    double uPrime=dis->prime.at(par).x;     // this is the current velFluct value not the position!
                     double vPrime=dis->prime.at(par).y;
                     double wPrime=dis->prime.at(par).z;
                     double uMean=urb->wind.at(id).u;
@@ -236,6 +250,8 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                     double taudz23=eul->taudz.at(id).e23;
                     double taudz33=eul->taudz.at(id).e33;
                     
+                    /* now looks like calculating a bunch of values for the current particle */
+
                     ranU=random::norRan();
                     double randXO=pow((CoEps*dt),0.5)*ranU;
                     double randXN=sqrt( (CoEps/(2.0*eigVal_11)) * ( exp(2.0*eigVal_11*dt)- 1.0 ) ) * ranU;
@@ -248,7 +264,9 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                     double randZO=pow((CoEps*dt),0.5)*ranW;
                     double randZN=sqrt( (CoEps/(2.0*eigVal_33)) * ( exp(2.0*eigVal_33*dt)- 1.0 ) ) * ranW;                    
                     
-                    eul->windP.e11=uPrime;
+                    /* now it calculates the Ax=b stuff, in stages starting at this point! */
+
+                    eul->windP.e11=uPrime;  // I think this is some kind of current velFluct for a current particle?
                     eul->windP.e21=vPrime;
                     eul->windP.e31=wPrime;
                     eul->windPRot=eul->matrixVecMult(eul->eigVecInv.at(id),eul->windP);
@@ -349,10 +367,14 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                       	                + lam32*(taudx33*V_2nd*U_2nd + taudy33*V_2nd*V_2nd + taudz33*V_2nd*W_2nd) 
                       	                + lam33*(taudx33*W_2nd*U_2nd + taudy33*W_2nd*V_2nd                      ) 
                                       )*dt;
+
+                    /* I think at this point, it finally does the final calculation on the current velFluct values */
+
                     uPrime=U_2nd+du_3rd;
                     vPrime=V_2nd+dv_3rd;
                     wPrime=W_2nd+dw_3rd;
                     
+                    // now check to see if the value is nan or not. Guess this is the rogue check stuff
                     if(isnan(uPrime) || isnan(vPrime) || isnan(wPrime)) {
                         //std::cerr<<"NAN.....>!!!!!!!"<<std::endl;
                         //std::cout<<"xPos       : "<<xPos<< "    "<<iV<<std::endl;
@@ -367,6 +389,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                         //exit(1);
                     }
                     
+                    // whatever the heck this is, it is hard coded
                     double terFacU = 2.5;
                     double terFacV = 2.;
                     double terFacW = 2.;
@@ -376,6 +399,8 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                         terFacW = 10.5;
                     }
                     
+                    /* now checking to see if the particle has gone rogue or not */
+
                     if(fabs(uPrime)>terFacU*fabs(turb->sig.at(id).e11) && countPrm<countPrmMax) {
                         dis->prime.at(par).x = turb->sig.at(id).e11*random::norRan();
                         /*	      std::cout<<"Uprime OLD : "<<uPrime<<std::endl;
@@ -418,22 +443,30 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                         flagPrime=1;
                     }
                     
+                    /* 
+                        increment the number of rogue particles for this iteration 
+                        guess they weren't keeping track of old information since loopPrm = 0 at each time?
+                    */
+
                     if(flagPrime==1) {
                         flagPrime=0;
                         loopPrm++;
                         continue;
                     }
                     
+                    // I think this is finally calculating the new particle positions :) finally something that makes sense again !!!
                     double disX=((uMean+uPrime)*dt);
                     double disY=((vMean+vPrime)*dt);
                     double disZ=((wMean+wPrime)*dt);
                     
+                    // now making sure the displacement of the particle isn't bigger than the velocity grid, if so, redo the particle stuff at a halved timestep
                     if(fabs(disX)>urb->grid.dx || fabs(disY)>urb->grid.dy || fabs(disZ)>urb->grid.dz){
                         tStepMin=dt/2.0;
                         loopTby2++;
                         continue;
                     }
                     
+                    // if the particle got to this point, it only moved by one wind cell, so now update the particle position information!!!
                     xPos=xPos+disX;
                     yPos=yPos+disY;
                     zPos=zPos+disZ;
@@ -442,8 +475,14 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                         Flag=1;
                     }
                     
+                    /* this was commented out, but it appears to be the how boundary conditions used to be handled, via straight up reflection
+                        importantly, there appears to be a simpler version of reflection, like what I'm used to, and this humongous ugly one that is the 
+                        true wall boundary condition! Yet this big and ugly guy is not used apparently, but is sitting there, big and nasty!
+                    */
                     //reflection(zPos,wPrime,eul->zo,disX,disY,disZ,xPos,yPos,eul,urb,iV,jV,kV,uPrime,vPrime);
                     
+                    // now set variables for the next loop, man this timestep stuff is difficult and confusing to me, 
+                    // but this part of setting the old velFluct terms to be the current values from this iteration makes sense
                     dis->prime.at(par).x=uPrime;
                     dis->prime.at(par).y=vPrime;
                     dis->prime.at(par).z=wPrime;
@@ -458,6 +497,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                     loopTby2=0;
                 } // if in domain
                 else {
+                    // if not in the domain, basically the particle is bad/ignored and this is how it is handled
                     tStepRem=0.0;
                     dis->pos.at(par).x=-999.0;
                     dis->pos.at(par).y=-999.0;
@@ -465,9 +505,18 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 }//if for domain ends   
             } // while (tStepRem>1.0e-5)
         } // for (int par=0; par<parToMove;par++)
+
+        // all particles have been integrated in time by this point
+
+        // this is basically saying, if we are past the time to start averaging values to calculate the concentration,
+        // then calculate the average, where average does . . .
         if(timeStepStamp.at(tStep) >= sCBoxTime){
             average(tStep,dis,urb);
         }
+        // this is basically saying, if the current time has passed a time that we should be outputting values at,
+        // then calculate the concentrations for the sampling boxes, save the output for this timestep, and update time counter for when to do it again.
+        // I'm honestly confused why cBox gets set to zero, unless this is meant to cleanup for the next iteration. If this is so, then why do it in a way
+        // that you can't output the information if you ever need to debug it? Seems like it should be a temporary variable then.
         if(timeStepStamp.at(tStep)>= sCBoxTime+avgTime) {
             //std::cout<<"loopPrm   :"<<loopPrm<<std::endl;
             //std::cout<<"loopLowestCell :"<<loopLowestCell<<std::endl;
@@ -482,7 +531,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 }
             }
             save(output);
-            avgTime=avgTime+PID->colParams->timeAvg;
+            avgTime=avgTime+PID->colParams->timeAvg;    // I think this is updating the averaging time for the next loop
         }
     } // for(tStep=0; tStep<numTimeStep; tStep++)
 } // run()
@@ -647,6 +696,9 @@ void Plume::reflection(double &zPos, double &wPrime, const double &z0,const doub
     //	float numer;
     
     //	vec2 cIndex;
+
+
+    // have to reflect all these values, not just the positions and the velocities. That is why this function looks so dang complicated!
 
     
     pos u,n,vecS,prevPos,normal,vecZ,vecTmp,vecTmp1,pI,r,l,pos,prmCurr;

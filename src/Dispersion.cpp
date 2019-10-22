@@ -35,15 +35,15 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID) {
     pos.resize(numPar);
     prime.resize(numPar);
     
-    int id=int(srcZ/dz)*ny*nx+int(srcY/dy)*nx+int(srcX/dx);
-    int idt=int(srcY/dy)*nx+int(srcX/dx);
+    int id=int(srcZ/dz)*ny*nx+int(srcY/dy)*nx+int(srcX/dx);     // appears to be the cell ID of the source point location, used to get the right variance values for the source values
+    int idt=int(srcY/dy)*nx+int(srcX/dx);       // doesn't appear to be used
     for(int i=0;i<numPar;i++){
-        pos.at(i).x=srcX;
+        pos.at(i).x=srcX;   // set the source positions for each particle
         pos.at(i).y=srcY;
         pos.at(i).z=srcZ;
     
-        double rann=random::norRan();
-        prime.at(i).x=turb->sig.at(id).e11 * rann;
+        double rann=random::norRan();   // almost didn't see it, but it does use different random numbers for each direction
+        prime.at(i).x=turb->sig.at(id).e11 * rann;  // set the values for the source positions for each particle. Might need to add sqrt of the variance to match Brian's code
         rann=random::norRan();
         prime.at(i).y=turb->sig.at(id).e22 * rann;
         rann=random::norRan();

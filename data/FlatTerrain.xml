@@ -1,11 +1,11 @@
 <simulationParameters>
-	<runTime> 1000.0 </runTime>
-	<timeStep> 1.0 </timeStep>
+	<runTime> 1000.0 </runTime>		<!-- this is the amount of time to run the simulation, lets you have an arbitrary start time to an arbitrary end time -->
+	<timeStep> 1.0 </timeStep>		<!-- this is the integration timestep. Do we want to do adaptive timestepping in the future? for now, we assume they choose a smart timestep -->
 </simulationParameters>
-<collectionParameters>
+<collectionParameters>			<!-- this is for collecting output, calculation does it for everywhere, this grabs what is needed for an area? -->
 	<timeStart> 100.0 </timeStart>
 	<timeEnd> 1000.0 </timeEnd>
-	<timeAvg> 899.0 </timeAvg>
+	<timeAvg> 899.0 </timeAvg>		<!-- this is for collecting output, calculation does it for everywhere, this grabs what is needed for an area? -->
 	<boxBoundsX1> 0.0 </boxBoundsX1>
 	<boxBoundsX2> 200.0 </boxBoundsX2>
 	<boxBoundsY1> 0.0 </boxBoundsY1>
@@ -16,17 +16,27 @@
 	<nBoxesY> 200 </nBoxesY> 							
 	<nBoxesZ> 200 </nBoxesZ> 
 </collectionParameters>
-<sources>
-  <numParticles>100000</numParticles>
-  <numSources> 1 </numSources>
-  <pointSource>
+<sources>						<!-- this is the source input. Eventually the GUI can help to set up everything, always converting it into a point source using built in tools this is the source input. Eventually the GUI can help to set up everything, always converting it into a point source using built in tools-->
+  <numParticles>100000</numParticles>	<!-- total number of particles to release over some duration (where is duration defined?) -->
+  <numSources> 1 </numSources>			<!-- number of sources, you fill in source information for each source next -->
+  <pointSource>					<!-- source type, probs will always be a point source, converter tools should be able to turn everything into a point source -->
     <posX> 10.0 </posX>
     <posY> 100.0 </posY>
     <posZ> 50.0 </posZ>
     <radius>1.0 </radius>
   </pointSource>
+  <!-- 
+	  nevermind, this is choosing a point, and a radius, and releasing equally in a circle. So we WILL need to derive a few more source methods
+	  in fact, probably should make it a class that can be grabbed and used by the GUI, or some of it in the GUI. I think we will need to play
+	  more with this to get it right, even for our test cases.
+  -->
 </sources>
 <fileOptions>
+  <!-- 
+	I can't figure out how this works. I think somehow you are choosing u,v,w as outputs, as icell, but I can't tell why or how
+	it honestly almost looks like there is nothing in here that is used. I guess I'll ask Pete more when I get there.
+	I did find something that looks like this, in Urb.hpp
+  -->
 	<outputFlag>1</outputFlag>
     <outputFields>u</outputFields> 
     <outputFields>v</outputFields> 

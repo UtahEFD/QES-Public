@@ -21,12 +21,12 @@ Turb :: Turb(Input* input) {
     input->getDimensionSize("z",grid.nz);
     input->getDimensionSize("t",grid.nt);
     
-    int c = grid.nt*grid.nz*grid.ny*grid.nx;
-    start = {0,0,0,0};
+    int c = grid.nt*grid.nz*grid.ny*grid.nx;    // numValues
+    start = {0,0,0,0};      // used for getVariableData() when it is a grid of values
     count = {static_cast<unsigned long>(grid.nt),
              static_cast<unsigned long>(grid.nz),
              static_cast<unsigned long>(grid.ny),
-             static_cast<unsigned long>(grid.nx)};
+             static_cast<unsigned long>(grid.nx)};  // the number of values in each grid dimension of the input data, I guess the default is a 4D structure
     
     // get input data and information
     grid.x.resize(grid.nx);
@@ -51,6 +51,7 @@ Turb :: Turb(Input* input) {
     grid.dz = grid.z[1]-grid.z[0];
     
     // read in data
+    // set of temporary vectors to hold the stress tensors and inverted stress tensors and variances before putting them into the grid
     std::vector<double> tau1(c),tau2(c),tau3(c),tau4(c),tau5(c),tau6(c);
     std::vector<double> sig1(c),sig2(c),sig3(c);
     std::vector<double> lam1(c),lam2(c),lam3(c),lam4(c),lam5(c),lam6(c),
@@ -75,6 +76,7 @@ Turb :: Turb(Input* input) {
     input->getVariableData("lam_32",start,count,lam8);
     input->getVariableData("lam_33",start,count,lam9);
     
+    // now take the input tensor, inverted tensor, and variance values stored in the vectors, and put them into the data structures found inside Turb
     int id;
     for (int n=0;n<grid.nt;n++) {
         for(int k=0;k<grid.nz;k++) {
