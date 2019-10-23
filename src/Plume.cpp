@@ -133,7 +133,7 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
 }
 
 // This is here only so we still have the old and ugly method to look at. As soon as I have the better stuff done, I'm throwing this out!
-#define USE_NEWCODE 0
+#define USE_NEWCODE 1
 
 #if USE_NEWCODE
 void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID, Output* output)
@@ -170,6 +170,12 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             double uFluct_old = dis->prime_old.at(par).x;
             double vFluct_old = dis->prime_old.at(par).v;
             double wFluct_old = dis->prime_old.at(par).w;
+            double txx_old = dis->tau_old.at(par).e11;
+            double txy_old = dis->tau_old.at(par).e12;
+            double txz_old = dis->tau_old.at(par).e13;
+            double tyy_old = dis->tau_old.at(par).e22;
+            double tyz_old = dis->tau_old.at(par).e23;
+            double tzz_old = dis->tau_old.at(par).e33;
             bool isRogue = dis->isRogue.at(par);
             bool isActive = dis->isActive.at(par);
 
@@ -195,29 +201,29 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
 
             // this is the Co times Eps for the particle
-            double CoEps=turb->CoEps.at(id);
+            double CoEps = turb->CoEps.at(id);
             
             // this is the old velFluct value
-            double uPrime=dis->prime.at(par).x;
-            double vPrime=dis->prime.at(par).y;
-            double wPrime=dis->prime.at(par).z;
+            double uPrime = dis->prime.at(par).x;
+            double vPrime = dis->prime.at(par).y;
+            double wPrime = dis->prime.at(par).z;
 
             // this is the current velMean value
-            double uMean=urb->wind.at(id).u;
-            double vMean=urb->wind.at(id).v;
-            double wMean=urb->wind.at(id).w;
+            double uMean = urb->wind.at(id).u;
+            double vMean = urb->wind.at(id).v;
+            double wMean = urb->wind.at(id).w;
             
-            double txx=turb->tau.at(id).e11;
-            double txy=turb->tau.at(id).e12;
-            double txz=turb->tau.at(id).e13;
-            double tyy=turb->tau.at(id).e21;
-            double tyz=turb->tau.at(id).e22;
-            double tzz=turb->tau.at(id).e23;
+            double txx = turb->tau.at(id).e11;
+            double txy = turb->tau.at(id).e12;
+            double txz = turb->tau.at(id).e13;
+            double tyy = turb->tau.at(id).e21;
+            double tyz = turb->tau.at(id).e22;
+            double tzz = turb->tau.at(id).e23;
             
             // now need flux_div_vel not the different dtxxdx type components
-            flux_div_u = eul->flux_div.at(id).e11;
-            flux_div_v = eul->flux_div.at(id).e12;
-            flux_div_w = eul->flux_div.at(id).e13;
+            double flux_div_u = eul->flux_div.at(id).e11;
+            double flux_div_v = eul->flux_div.at(id).e12;
+            double flux_div_w = eul->flux_div.at(id).e13;
 
 
             // now need to call makeRealizable on tao
@@ -228,25 +234,55 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
 
             // these are the random numbers for each direction
-            double xRandn=random::norRan();
-            double yRandn=random::norRan();
-            double zRandn=random::norRan();
+            double xRandn = random::norRan();
+            double yRandn = random::norRan();
+            double zRandn = random::norRan();
 
 
             
             /* now calculate a bunch of values for the current particle */
             // calculate the d_tao_dt values, which are the (tao_current - tao_old)/dt
+            double dtxxdt = (txx - txx_old)/dt;
+            double dtxydt = (txy - txy_old)/dt;
+            double dtxzdt = (txz - txz_old)/dt;
+            double dtyydt = (tyy - tyy_old)/dt;
+            double dtyzdt = (tyz - tyz_old)/dt;
+            double dtzzdt = (tzz - tzz_old)/dt;
 
 
             /* now calculate and set the A and b matrices for an Ax = b */
+            double A[3][3] = {0};
+            double b[3] = {0};
+
+            A[1][1] = -1.0 + 0.50*(-CoEps*lxx + lxx*dtxxdt + lxy*dtxydt + lxz*dtxzdt)*dt;
+            A[1][2] =        0.50*(-CoEps*lxy + lxy*dtxxdt + lyy*dtxydt + lyz*dtxzdt)*dt;
+            A[1][3] =        0.50*(-CoEps*lxz + lxz*dtxxdt + lyz*dtxydt + lzz*dtxzdt)*dt;
+
+            A[2][1] =        0.50*(-CoEps*lxy + lxx*dtxydt + lxy*dtyydt + lxz*dtyzdt)*dt;
+            A[2][2] = -1.0 + 0.50*(-CoEps*lyy + lxy*dtxydt + lyy*dtyydt + lyz*dtyzdt)*dt;
+            A[2][3] =        0.50*(-CoEps*lyz + lxz*dtxydt + lyz*dtyydt + lzz*dtyzdt)*dt;
+            
+            A[3][1] =        0.50*(-CoEps*lxz + lxx*dtxzdt + lxy*dtyzdt + lxz*dtzzdt)*dt;
+            A[3][2] =        0.50*(-CoEps*lyz + lxy*dtxzdt + lyy*dtyzdt + lyz*dtzzdt)*dt;
+            A[3][3] = -1.0 + 0.50*(-CoEps*lzz + lxz*dtxzdt + lyz*dtyzdt + lzz*dtzzdt)*dt;
 
 
-            // will need to replace the right hand side with an Ax=b function result
-            // velFluct = matmult(Ainv,b)
-            uPrime=U_2nd+du_3rd;
-            vPrime=V_2nd+dv_3rd;
-            wPrime=W_2nd+dw_3rd;
+            b[1] = -uFluct_old - 0.50*flux_div_x*dt - sqrt(CoEps*dt)*xRandn;
+            b[2] = -vFluct_old - 0.50*flux_div_y*dt - sqrt(CoEps*dt)*yRandn;
+            b[3] = -wFluct_old - 0.50*flux_div_z*dt - sqrt(CoEps*dt)*zRandn;
 
+
+            // now prepare for the Ax=b calculation by calculating the inverted A matrix
+            // need to prepare the invert function, mayone one already exists in Eulerian since they do an Ax=b calculation
+            // not sure if these inputs and outputs are allowable or make sense either. Seems off somehow to me.
+            double Ainv[3][3] = invert3(A);
+
+
+            // now do the Ax=b calculation using the inverted matrix
+            // need to either write this function, or find it in the Eulerian Ax=b stuff
+            // hm, since getting out three values, might be easier to do a pass in by reference thing for the velPrime values
+            matmult(Ainv,b,  uPrime,vPrime,wPrime);
+            
 
             // now check to see if the value is rogue or not
             
@@ -262,7 +298,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
 
             // now apply boundary conditions
-            // enforceWallBCs
+            //enforceWallBCs();
 
 
             // now update the old values and current values in the dispersion storage to be ready for the next iteration
