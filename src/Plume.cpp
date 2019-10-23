@@ -204,16 +204,16 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
 
             // this is the Co times Eps for the particle
-            double CoEps = eul->interp3D(turb->CoEps.at(id));
+            double CoEps = eul->interp3D(turb->CoEps);
             
             
             // this is the current velMean value
-            Wind velMean = eul->interp3D(urb->wind.at(id));
+            Wind velMean = eul->interp3D(urb->wind);
             double uMean = velMean.u;
             double vMean = velMean.v;
             double wMean = velMean.w;
             
-            matrix6 tao = eul->interp3D(turb->tau.at(id));
+            matrix6 tao = eul->interp3D(turb->tau);
             double txx = tao.e11;
             double txy = tao.e12;
             double txz = tao.e13;
@@ -222,7 +222,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             double tzz = tao.e23;
             
             // now need flux_div_vel not the different dtxxdx type components
-            vec3 flux_div_vel = eul->interp3D(eul->flux_div.at(id));
+            vec3 flux_div_vel = eul->interp3D(eul->flux_div);
             double flux_div_u = flux_div_vel.e11;
             double flux_div_v = flux_div_vel.e12;
             double flux_div_w = flux_div_vel.e13;

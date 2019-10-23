@@ -21,7 +21,7 @@ class Dispersion {
     
     public:
         
-        Dispersion(Urb*,Turb*,PlumeInputData*); // starts by making copies of nx,ny, dx,dy,dz, numParticles, timestep,runTime, and source->posX,posY,posZ
+        Dispersion(Urb*,Turb*,PlumeInputData*,Eulerian*); // starts by making copies of nx,ny, dx,dy,dz, numParticles, timestep,runTime, and source->posX,posY,posZ
                                                 // then calculates the number of timesteps numTimeStep from runTime and timestep.
                                                 // then calculates the list of times timeStepStamp
                                                 // then sets the pos and prime values for each particle, which are the starting positions and the starting values for each particle

@@ -270,11 +270,7 @@ void Eulerian::setInterp3Dindexing(const float3& xyz_particle)
 
 }
 
-// two problems so far. I need to either completely change the input data structures so that I have all vectors of doubles (which would be easier)
-// or I need to make multiple overloaded versions of this for different input EulerData types. The method will be similar, it will just be a loop over values
-// which makes me think that it could become some kind of function of a function, where the bulk of this function is the same data for each interpolated variable
-// the second problem is more basic. This is how it would work with a nonlinearized 3D vector of data, but this is NOT that, but linearized 3D vectors of data
-// so I have to get the indexing fixed to be more correct for this to even work!
+// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
 double Eulerian::interp3D(const std::vector<double>& EulerData)
 {
 
@@ -312,7 +308,317 @@ double Eulerian::interp3D(const std::vector<double>& EulerData)
     double u_high = (1-iw)*(1-jw)*cube(1,1,2) + iw*(1-jw)*cube(2,1,2) + iw*jw*cube(2,2,2) + (1-iw)*jw*cube(1,2,2);
     outputVal = (u_high-u_low)*kw + u_low;
 
+    return outputVal;
+
 }
+
+// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
+vec3 Eulerian::interp3D(const std::vector<vec3>& EulerData)
+{
+
+    // initialize the output value
+    vec3 outputVal;
+    outputVal.e11 = 0.0;
+    outputVal.e21 = 0.0;
+    outputVal.e31 = 0.0;
+    
+
+    // first set a cube of size two to zero.
+    // This is important because if nx, ny, or nz are only size 1, referencing two spots in cube won't reference outside the array.
+    // the next steps are to figure out the right indices to grab the values for cube from the data, 
+    // where indices are forced to be special if nx, ny, or nz are zero.
+    // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
+
+    
+    // now set the cube to zero, then fill it using the indices and the counters from the indices
+    double cube_e11[2][2][2] = {0.0};
+    double cube_e21[2][2][2] = {0.0};
+    double cube_e31[2][2][2] = {0.0};
+
+    // now set the cube values
+    for(int kkk = 0; kk <= kk+kp; kkk++)
+    {
+        for(int jjj = 0; jj <= jj+jp; jjj++)
+        {
+            for(int iii = 0; ii <= ii+ip; iii++)
+            {
+                // set the actual indices to use for the linearized Euler data
+                int idx = kkk*ny*nx + jjj*nx + iii;
+                cube_e11(iii,jjj,kkk) = EulerData.at(idx).e11;
+                cube_e21(iii,jjj,kkk) = EulerData.at(idx).e21;
+                cube_e31(iii,jjj,kkk) = EulerData.at(idx).e31;
+            }
+        }
+    }
+
+    // now do the interpolation, with the cube, the counters from the indices,
+    // and the normalized width between the point locations and the closest cell left walls
+    double u_low  = (1-iw)*(1-jw)*cube_e11(1,1,1) + iw*(1-jw)*cube_e11(2,1,1) + iw*jw*cube_e11(2,2,1) + (1-iw)*jw*cube_e11(1,2,1);
+    double u_high = (1-iw)*(1-jw)*cube_e11(1,1,2) + iw*(1-jw)*cube_e11(2,1,2) + iw*jw*cube_e11(2,2,2) + (1-iw)*jw*cube_e11(1,2,2);
+    outputVal.e11 = (u_high-u_low)*kw + u_low;
+
+    u_low         = (1-iw)*(1-jw)*cube_e21(1,1,1) + iw*(1-jw)*cube_e21(2,1,1) + iw*jw*cube_e21(2,2,1) + (1-iw)*jw*cube_e21(1,2,1);
+    u_high        = (1-iw)*(1-jw)*cube_e21(1,1,2) + iw*(1-jw)*cube_e21(2,1,2) + iw*jw*cube_e21(2,2,2) + (1-iw)*jw*cube_e21(1,2,2);
+    outputVal.e21 = (u_high-u_low)*kw + u_low;
+    
+    u_low         = (1-iw)*(1-jw)*cube_e31(1,1,1) + iw*(1-jw)*cube_e31(2,1,1) + iw*jw*cube_e31(2,2,1) + (1-iw)*jw*cube_e31(1,2,1);
+    u_high        = (1-iw)*(1-jw)*cube_e31(1,1,2) + iw*(1-jw)*cube_e31(2,1,2) + iw*jw*cube_e31(2,2,2) + (1-iw)*jw*cube_e31(1,2,2);
+    outputVal.e31 = (u_high-u_low)*kw + u_low;
+
+    return outputVal;
+
+}
+
+// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
+diagonal Eulerian::interp3D(const std::vector<diagonal>& EulerData)
+{
+    
+    // initialize the output value
+    diagonal outputVal;
+    outputVal.e11 = 0.0;
+    outputVal.e22 = 0.0;
+    outputVal.e33 = 0.0;
+    
+
+    // first set a cube of size two to zero.
+    // This is important because if nx, ny, or nz are only size 1, referencing two spots in cube won't reference outside the array.
+    // the next steps are to figure out the right indices to grab the values for cube from the data, 
+    // where indices are forced to be special if nx, ny, or nz are zero.
+    // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
+
+    
+    // now set the cube to zero, then fill it using the indices and the counters from the indices
+    double cube_e11[2][2][2] = {0.0};
+    double cube_e22[2][2][2] = {0.0};
+    double cube_e33[2][2][2] = {0.0};
+
+    // now set the cube values
+    for(int kkk = 0; kk <= kk+kp; kkk++)
+    {
+        for(int jjj = 0; jj <= jj+jp; jjj++)
+        {
+            for(int iii = 0; ii <= ii+ip; iii++)
+            {
+                // set the actual indices to use for the linearized Euler data
+                int idx = kkk*ny*nx + jjj*nx + iii;
+                cube_e11(iii,jjj,kkk) = EulerData.at(idx).e11;
+                cube_e22(iii,jjj,kkk) = EulerData.at(idx).e22;
+                cube_e33(iii,jjj,kkk) = EulerData.at(idx).e33;
+            }
+        }
+    }
+
+    // now do the interpolation, with the cube, the counters from the indices,
+    // and the normalized width between the point locations and the closest cell left walls
+    double u_low  = (1-iw)*(1-jw)*cube_e11(1,1,1) + iw*(1-jw)*cube_e11(2,1,1) + iw*jw*cube_e11(2,2,1) + (1-iw)*jw*cube_e11(1,2,1);
+    double u_high = (1-iw)*(1-jw)*cube_e11(1,1,2) + iw*(1-jw)*cube_e11(2,1,2) + iw*jw*cube_e11(2,2,2) + (1-iw)*jw*cube_e11(1,2,2);
+    outputVal.e11 = (u_high-u_low)*kw + u_low;
+
+    u_low         = (1-iw)*(1-jw)*cube_e22(1,1,1) + iw*(1-jw)*cube_e22(2,1,1) + iw*jw*cube_e22(2,2,1) + (1-iw)*jw*cube_e22(1,2,1);
+    u_high        = (1-iw)*(1-jw)*cube_e22(1,1,2) + iw*(1-jw)*cube_e22(2,1,2) + iw*jw*cube_e22(2,2,2) + (1-iw)*jw*cube_e22(1,2,2);
+    outputVal.e22 = (u_high-u_low)*kw + u_low;
+    
+    u_low         = (1-iw)*(1-jw)*cube_e33(1,1,1) + iw*(1-jw)*cube_e33(2,1,1) + iw*jw*cube_e33(2,2,1) + (1-iw)*jw*cube_e33(1,2,1);
+    u_high        = (1-iw)*(1-jw)*cube_e33(1,1,2) + iw*(1-jw)*cube_e33(2,1,2) + iw*jw*cube_e33(2,2,2) + (1-iw)*jw*cube_e33(1,2,2);
+    outputVal.e33 = (u_high-u_low)*kw + u_low;
+
+    return outputVal;
+    
+}
+
+// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
+matrix6 Eulerian::interp3D(const std::vector<matrix6>& EulerData)
+{
+
+    // initialize the output value
+    matrix6 outputVal;
+    outputVal.e11 = 0.0;
+    outputVal.e12 = 0.0;
+    outputVal.e13 = 0.0;
+    outputVal.e22 = 0.0;
+    outputVal.e23 = 0.0;
+    outputVal.e33 = 0.0;
+    
+
+    // first set a cube of size two to zero.
+    // This is important because if nx, ny, or nz are only size 1, referencing two spots in cube won't reference outside the array.
+    // the next steps are to figure out the right indices to grab the values for cube from the data, 
+    // where indices are forced to be special if nx, ny, or nz are zero.
+    // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
+
+    
+    // now set the cube to zero, then fill it using the indices and the counters from the indices
+    double cube_e11[2][2][2] = {0.0};
+    double cube_e12[2][2][2] = {0.0};
+    double cube_e13[2][2][2] = {0.0};
+    double cube_e22[2][2][2] = {0.0};
+    double cube_e23[2][2][2] = {0.0};
+    double cube_e33[2][2][2] = {0.0};
+
+    // now set the cube values
+    for(int kkk = 0; kk <= kk+kp; kkk++)
+    {
+        for(int jjj = 0; jj <= jj+jp; jjj++)
+        {
+            for(int iii = 0; ii <= ii+ip; iii++)
+            {
+                // set the actual indices to use for the linearized Euler data
+                int idx = kkk*ny*nx + jjj*nx + iii;
+                cube_e11(iii,jjj,kkk) = EulerData.at(idx).e11;
+                cube_e12(iii,jjj,kkk) = EulerData.at(idx).e12;
+                cube_e13(iii,jjj,kkk) = EulerData.at(idx).e13;
+                cube_e22(iii,jjj,kkk) = EulerData.at(idx).e22;
+                cube_e23(iii,jjj,kkk) = EulerData.at(idx).e23;
+                cube_e33(iii,jjj,kkk) = EulerData.at(idx).e33;
+            }
+        }
+    }
+
+    // now do the interpolation, with the cube, the counters from the indices,
+    // and the normalized width between the point locations and the closest cell left walls
+    double u_low  = (1-iw)*(1-jw)*cube_e11(1,1,1) + iw*(1-jw)*cube_e11(2,1,1) + iw*jw*cube_e11(2,2,1) + (1-iw)*jw*cube_e11(1,2,1);
+    double u_high = (1-iw)*(1-jw)*cube_e11(1,1,2) + iw*(1-jw)*cube_e11(2,1,2) + iw*jw*cube_e11(2,2,2) + (1-iw)*jw*cube_e11(1,2,2);
+    outputVal.e11 = (u_high-u_low)*kw + u_low;
+
+    u_low         = (1-iw)*(1-jw)*cube_e12(1,1,1) + iw*(1-jw)*cube_e12(2,1,1) + iw*jw*cube_e12(2,2,1) + (1-iw)*jw*cube_e12(1,2,1);
+    u_high        = (1-iw)*(1-jw)*cube_e12(1,1,2) + iw*(1-jw)*cube_e12(2,1,2) + iw*jw*cube_e12(2,2,2) + (1-iw)*jw*cube_e12(1,2,2);
+    outputVal.e12 = (u_high-u_low)*kw + u_low;
+
+    u_low         = (1-iw)*(1-jw)*cube_e13(1,1,1) + iw*(1-jw)*cube_e13(2,1,1) + iw*jw*cube_e13(2,2,1) + (1-iw)*jw*cube_e13(1,2,1);
+    u_high        = (1-iw)*(1-jw)*cube_e13(1,1,2) + iw*(1-jw)*cube_e13(2,1,2) + iw*jw*cube_e13(2,2,2) + (1-iw)*jw*cube_e13(1,2,2);
+    outputVal.e13 = (u_high-u_low)*kw + u_low;
+
+    u_low         = (1-iw)*(1-jw)*cube_e22(1,1,1) + iw*(1-jw)*cube_e22(2,1,1) + iw*jw*cube_e22(2,2,1) + (1-iw)*jw*cube_e22(1,2,1);
+    u_high        = (1-iw)*(1-jw)*cube_e22(1,1,2) + iw*(1-jw)*cube_e22(2,1,2) + iw*jw*cube_e22(2,2,2) + (1-iw)*jw*cube_e22(1,2,2);
+    outputVal.e22 = (u_high-u_low)*kw + u_low;
+
+    u_low         = (1-iw)*(1-jw)*cube_e23(1,1,1) + iw*(1-jw)*cube_e23(2,1,1) + iw*jw*cube_e23(2,2,1) + (1-iw)*jw*cube_e23(1,2,1);
+    u_high        = (1-iw)*(1-jw)*cube_e23(1,1,2) + iw*(1-jw)*cube_e23(2,1,2) + iw*jw*cube_e23(2,2,2) + (1-iw)*jw*cube_e23(1,2,2);
+    outputVal.e23 = (u_high-u_low)*kw + u_low;
+    
+    u_low         = (1-iw)*(1-jw)*cube_e33(1,1,1) + iw*(1-jw)*cube_e33(2,1,1) + iw*jw*cube_e33(2,2,1) + (1-iw)*jw*cube_e33(1,2,1);
+    u_high        = (1-iw)*(1-jw)*cube_e33(1,1,2) + iw*(1-jw)*cube_e33(2,1,2) + iw*jw*cube_e33(2,2,2) + (1-iw)*jw*cube_e33(1,2,2);
+    outputVal.e33 = (u_high-u_low)*kw + u_low;
+
+    return outputVal;
+
+}
+
+// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
+Wind Eulerian::interp3D(const std::vector<Wind>& EulerData)
+{
+
+    // initialize the output value
+    Wind outputVal;
+    outputVal.u = 0.0;
+    outputVal.v = 0.0;
+    outputVal.w = 0.0;
+    
+
+    // first set a cube of size two to zero.
+    // This is important because if nx, ny, or nz are only size 1, referencing two spots in cube won't reference outside the array.
+    // the next steps are to figure out the right indices to grab the values for cube from the data, 
+    // where indices are forced to be special if nx, ny, or nz are zero.
+    // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
+
+    
+    // now set the cube to zero, then fill it using the indices and the counters from the indices
+    double cube_u[2][2][2] = {0.0};
+    double cube_v[2][2][2] = {0.0};
+    double cube_w[2][2][2] = {0.0};
+
+    // now set the cube values
+    for(int kkk = 0; kk <= kk+kp; kkk++)
+    {
+        for(int jjj = 0; jj <= jj+jp; jjj++)
+        {
+            for(int iii = 0; ii <= ii+ip; iii++)
+            {
+                // set the actual indices to use for the linearized Euler data
+                int idx = kkk*ny*nx + jjj*nx + iii;
+                cube_u(iii,jjj,kkk) = EulerData.at(idx).u;
+                cube_v(iii,jjj,kkk) = EulerData.at(idx).v;
+                cube_w(iii,jjj,kkk) = EulerData.at(idx).w;
+            }
+        }
+    }
+
+    // now do the interpolation, with the cube, the counters from the indices,
+    // and the normalized width between the point locations and the closest cell left walls
+    double u_low  = (1-iw)*(1-jw)*cube_u(1,1,1) + iw*(1-jw)*cube_u(2,1,1) + iw*jw*cube_u(2,2,1) + (1-iw)*jw*cube_u(1,2,1);
+    double u_high = (1-iw)*(1-jw)*cube_u(1,1,2) + iw*(1-jw)*cube_u(2,1,2) + iw*jw*cube_u(2,2,2) + (1-iw)*jw*cube_u(1,2,2);
+    outputVal.u = (u_high-u_low)*kw + u_low;
+
+    u_low         = (1-iw)*(1-jw)*cube_v(1,1,1) + iw*(1-jw)*cube_v(2,1,1) + iw*jw*cube_v(2,2,1) + (1-iw)*jw*cube_v(1,2,1);
+    u_high        = (1-iw)*(1-jw)*cube_v(1,1,2) + iw*(1-jw)*cube_v(2,1,2) + iw*jw*cube_v(2,2,2) + (1-iw)*jw*cube_v(1,2,2);
+    outputVal.v = (u_high-u_low)*kw + u_low;
+    
+    u_low         = (1-iw)*(1-jw)*cube_w(1,1,1) + iw*(1-jw)*cube_w(2,1,1) + iw*jw*cube_w(2,2,1) + (1-iw)*jw*cube_w(1,2,1);
+    u_high        = (1-iw)*(1-jw)*cube_w(1,1,2) + iw*(1-jw)*cube_w(2,1,2) + iw*jw*cube_w(2,2,2) + (1-iw)*jw*cube_w(1,2,2);
+    outputVal.w = (u_high-u_low)*kw + u_low;
+
+    return outputVal;
+
+}
+
+// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
+float3 Eulerian::interp3D(const std::vector<float3>& EulerData)
+{
+
+    // initialize the output value
+    float3 outputVal;
+    outputVal.x = 0.0;
+    outputVal.y = 0.0;
+    outputVal.z = 0.0;
+    
+
+    // first set a cube of size two to zero.
+    // This is important because if nx, ny, or nz are only size 1, referencing two spots in cube won't reference outside the array.
+    // the next steps are to figure out the right indices to grab the values for cube from the data, 
+    // where indices are forced to be special if nx, ny, or nz are zero.
+    // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
+
+    
+    // now set the cube to zero, then fill it using the indices and the counters from the indices
+    double cube_x[2][2][2] = {0.0};
+    double cube_y[2][2][2] = {0.0};
+    double cube_z[2][2][2] = {0.0};
+
+    // now set the cube values
+    for(int kkk = 0; kk <= kk+kp; kkk++)
+    {
+        for(int jjj = 0; jj <= jj+jp; jjj++)
+        {
+            for(int iii = 0; ii <= ii+ip; iii++)
+            {
+                // set the actual indices to use for the linearized Euler data
+                int idx = kkk*ny*nx + jjj*nx + iii;
+                cube_x(iii,jjj,kkk) = EulerData.at(idx).x;
+                cube_y(iii,jjj,kkk) = EulerData.at(idx).y;
+                cube_z(iii,jjj,kkk) = EulerData.at(idx).z;
+            }
+        }
+    }
+
+    // now do the interpolation, with the cube, the counters from the indices,
+    // and the normalized width between the point locations and the closest cell left walls
+    double u_low  = (1-iw)*(1-jw)*cube_x(1,1,1) + iw*(1-jw)*cube_x(2,1,1) + iw*jw*cube_x(2,2,1) + (1-iw)*jw*cube_x(1,2,1);
+    double u_high = (1-iw)*(1-jw)*cube_x(1,1,2) + iw*(1-jw)*cube_x(2,1,2) + iw*jw*cube_x(2,2,2) + (1-iw)*jw*cube_x(1,2,2);
+    outputVal.x = (u_high-u_low)*kw + u_low;
+
+    u_low         = (1-iw)*(1-jw)*cube_y(1,1,1) + iw*(1-jw)*cube_y(2,1,1) + iw*jw*cube_y(2,2,1) + (1-iw)*jw*cube_y(1,2,1);
+    u_high        = (1-iw)*(1-jw)*cube_y(1,1,2) + iw*(1-jw)*cube_y(2,1,2) + iw*jw*cube_y(2,2,2) + (1-iw)*jw*cube_y(1,2,2);
+    outputVal.y = (u_high-u_low)*kw + u_low;
+    
+    u_low         = (1-iw)*(1-jw)*cube_z(1,1,1) + iw*(1-jw)*cube_z(2,1,1) + iw*jw*cube_z(2,2,1) + (1-iw)*jw*cube_z(1,2,1);
+    u_high        = (1-iw)*(1-jw)*cube_z(1,1,2) + iw*(1-jw)*cube_z(2,1,2) + iw*jw*cube_z(2,2,2) + (1-iw)*jw*cube_z(1,2,2);
+    outputVal.z = (u_high-u_low)*kw + u_low;
+
+    return outputVal;
+
+}
+
+
 
 void Eulerian::createA1Matrix(Urb* urb, Turb* turb) {
     

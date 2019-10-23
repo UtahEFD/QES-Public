@@ -56,7 +56,7 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
         double rann=random::norRan();   // almost didn't see it, but it does use different random numbers for each direction
 
         // get the sigma values from the Eulerian grid for the particle value
-        diagonal current_sig = eul->interp3D(sig.at(id));
+        diagonal current_sig = eul->interp3D(turb->sig);
 
         // now set the initial velocity fluctuations for the particle
         prime.at(i).x = current_sig.e11 * rann;  // set the values for the source positions for each particle. Might need to add sqrt of the variance to match Brian's code
@@ -71,7 +71,7 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
         prime_old.at(i).z = prime.at(i).z;
 
         // get the tau values from the Eulerian grid for the particle value
-        matrix6 current_tau = eul->interp3D(tau.at(id));
+        matrix6 current_tau = eul->interp3D(turb->tau);
 
         // set tau_old to the interpolated values for each position
         tau_old.at(i).e11 = current_tau.e11;

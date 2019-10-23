@@ -90,8 +90,13 @@ public:
 
 
     void setInterp3Dindexing(const float3& xyz_particle);
-    double interp3D(const std::vector<double>& EulerData);  // not sure what all to have as inputs, but this needs to be able to interp turb stuff as well since not all values to interp are found in Eulerian
-
+    double interp3D(const std::vector<double>& EulerData);
+    vec3 interp3D(const std::vector<vec3>& EulerData);
+    diagonal interp3D(const std::vector<diagonal>& EulerData);
+    matrix6 interp3D(const std::vector<matrix6>& EulerData);
+    Wind interp3D(const std::vector<Wind>& EulerData);
+    float3 interp3D(const std::vector<float3>& EulerData);  // this one is causing me troubles, this datatype doesn't appear to be defined and I'm having trouble with it
+    
  
 private:
 
