@@ -89,7 +89,7 @@ public:
     double dx,dy,dz;    // a copy of the urb grid information, the difference between points in the grid
 
 
-double interp3D();  // not sure what all to have as inputs, but this needs to be able to interp turb stuff as well since not all values to interp are found in Eulerian
+    double interp3D(const float3& xyz_particle, const std::vector<double>& EulerData);  // not sure what all to have as inputs, but this needs to be able to interp turb stuff as well since not all values to interp are found in Eulerian
 
  
 private:   

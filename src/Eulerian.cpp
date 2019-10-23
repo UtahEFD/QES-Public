@@ -219,9 +219,72 @@ void Eulerian::createFluxDiv()
     }
 }
 
-double Eulerian::interp3D()
+// two problems so far. I need to either completely change the input data structures so that I have all vectors of doubles (which would be easier)
+// or I need to make multiple overloaded versions of this for different input EulerData types. The method will be similar, it will just be a loop over values
+// which makes me think that it could become some kind of function of a function, where the bulk of this function is the same data for each interpolated variable
+// the second problem is more basic. This is how it would work with a nonlinearized 3D vector of data, but this is NOT that, but linearized 3D vectors of data
+// so I have to get the indexing fixed to be more correct for this to even work!
+double Eulerian::interp3D(const float3& xyz_particle, const std::vector<double>& EulerData)
 {
-    // need to fill out this function. Is going to be some work cause now the vectors are linearized. Might need some operator overloading versions of this
+
+    // initialize the output value
+    double outputVal = 0.0;
+    
+
+    // first set a cube of size two to zero.
+    // This is important because if nx, ny, or nz are only size 1, referencing two spots in cube won't reference outside the array.
+    // the next steps are to figure out the right indices to grab the values for cube from the data, 
+    // where indices are forced to be special if nx, ny, or nz are zero.
+    // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
+
+    // index of nearest node in negative direction
+    int ii = floor(xyz_particle(1)/dx)+1;
+    int jj = floor(xyz_particle(2)/dy)+1;
+    int kk = floor(xyz_particle(3)/dz)+1;
+
+    // fractional distance between nearest nodes
+    double iw = (xyz_particle(1)/dx-floor(xyz_particle(1)/dx));
+    double jw = (xyz_particle(2)/dy-floor(xyz_particle(2)/dy));
+    double kw = (xyz_particle(3)/dz-floor(xyz_particle(3)/dz));
+
+    // initialize the counters from the indices
+    int ip = 1;
+    int jp = 1;
+    int kp = 1;
+
+    // now set the indices and the counters from the indices
+    if( Nx == 1 )
+    {
+        ii = 1;
+        iw = 0.0;
+        ip = 0;
+    }
+    if( Ny == 1 )
+    {
+        jj = 1;
+        jw = 0.0;
+        jp = 0;
+    }
+    if( Nz == 1 )
+    {
+        kk = 1;
+        kw = 0.0;
+        kp = 0;
+    }
+
+    // now set the cube to zero, then fill it using the indices and the counters from the indices
+    double cube[2][2][2] = {0.0};
+
+    /***** this line here will break hard core, cause it isn't proper syntax. Need to get the indexing correct to get this to work correctly */
+    cube(1:1+ip,1:1+jp,1:1+kp) = EulerData(ii:ii+ip,jj:jj+jp,kk:kk+kp);
+    /******/
+
+    // now do the interpolation, with the cube, the counters from the indices,
+    // and the normalized width between the point locations and the closest cell left walls
+    double u_low  = (1-iw)*(1-jw)*cube(1,1,1) + iw*(1-jw)*cube(2,1,1) + iw*jw*cube(2,2,1) + (1-iw)*jw*cube(1,2,1);
+    double u_high = (1-iw)*(1-jw)*cube(1,1,2) + iw*(1-jw)*cube(2,1,2) + iw*jw*cube(2,2,2) + (1-iw)*jw*cube(1,2,2);
+    outputVal = (u_high-u_low)*kw + u_low;
+
 }
 
 void Eulerian::createA1Matrix(Urb* urb, Turb* turb) {
