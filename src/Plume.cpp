@@ -132,6 +132,160 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     }
 }
 
+// This is here only so we still have the old and ugly method to look at. As soon as I have the better stuff done, I'm throwing this out!
+#define USE_NEWCODE 0
+
+#if USE_NEWCODE
+void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID, Output* output)
+{
+    
+    std::cout<<"[Plume] \t Advecting particles "<<std::endl;
+
+    // set some variables before the time integration
+    int parToMove=0;    // this is the loop counter ending point for the particle loop. Looks like it gets adjusted each time to add in the extra particles
+
+    double dt=tStepInp;     // this is a cleaner name for the timestep
+
+    // need to calculate the velFluct threshold value for rogue particles
+
+    
+    // For every time step
+    for(tStep=0; tStep<numTimeStep; tStep++) {
+        
+        // Move each particle for every time step
+        parToMove = parToMove + parPerTimestep;     // add the new particles to the total number to be moved each timestep
+        
+        for(int par=0; par<parToMove;par++) {
+
+            // this is getting the current position for where the particle is at for a given time
+            // if it is the first time a particle is ever released, then the value is already set at the initial value
+            double xPos = dis->pos.at(par).x;
+            double yPos = dis->pos.at(par).y;
+            double zPos = dis->pos.at(par).z;
+
+            // should also probably grab and store the old values in this same way
+            // these consist of velFluct_old and tao_old
+            // also need to keep track of a delta_velFluct and an isActive flag for each particle
+            
+            /*
+                now get the values for the current iteration
+                will need to use the interp3D function
+                Need to get velMean, CoEps, tao, flux_div_vel
+                Then need to call makeRealizable on tao then calculate inverse tao
+                
+                Okay should I use the given inverse tao from Turb or no? I'm going to go with no for now
+            */
+
+            // this is the Co times Eps for the particle
+            double CoEps=turb->CoEps.at(id);
+            
+            // this is the old velFluct value
+            double uPrime=dis->prime.at(par).x;
+            double vPrime=dis->prime.at(par).y;
+            double wPrime=dis->prime.at(par).z;
+
+            // this is the current velMean value
+            double uMean=urb->wind.at(id).u;
+            double vMean=urb->wind.at(id).v;
+            double wMean=urb->wind.at(id).w;
+            
+            double txx=turb->tau.at(id).e11;
+            double txy=turb->tau.at(id).e12;
+            double txz=turb->tau.at(id).e13;
+            double tyy=turb->tau.at(id).e21;
+            double tyz=turb->tau.at(id).e22;
+            double tzz=turb->tau.at(id).e23;
+            
+            // now need flux_div_vel not the different dtxxdx type components
+
+
+            // now need to call makeRealizable on tao
+
+
+            // now need to calculate the inverse values for tao
+
+
+            // these are the random numbers for each direction
+            double xRandn=random::norRan();
+            double yRandn=random::norRan();
+            double zRandn=random::norRan();
+
+
+            
+            /* now calculate a bunch of values for the current particle */
+            // calculate the d_tao_dt values, which are the (tao_current - tao_old)/dt
+
+
+            /* now calculate and set the A and b matrices for an Ax = b */
+
+
+            // will need to replace the right hand side with an Ax=b function result
+            // velFluct = matmult(Ainv,b)
+            uPrime=U_2nd+du_3rd;
+            vPrime=V_2nd+dv_3rd;
+            wPrime=W_2nd+dw_3rd;
+
+
+            // now check to see if the value is rogue or not
+            
+            
+            // now update the particle position for this iteration
+            double disX=((uMean+uPrime)*dt);
+            double disY=((vMean+vPrime)*dt);
+            double disZ=((wMean+wPrime)*dt);
+            
+            xPos=xPos+disX;
+            yPos=yPos+disY;
+            zPos=zPos+disZ;
+
+
+            // now apply boundary conditions
+            // enforceWallBCs
+
+
+            // now update the old values and current values in the dispersion storage to be ready for the next iteration
+            dis->prime.at(par).x=uPrime;
+            dis->prime.at(par).y=vPrime;
+            dis->prime.at(par).z=wPrime;
+            dis->pos.at(par).x=xPos;
+            dis->pos.at(par).y=yPos;
+            dis->pos.at(par).z=zPos;
+            
+
+        } // for (int par=0; par<parToMove;par++)
+
+        
+        // this is basically saying, if we are past the time to start averaging values to calculate the concentration,
+        // then calculate the average, where average does . . .
+        if(timeStepStamp.at(tStep) >= sCBoxTime){
+            average(tStep,dis,urb);
+        }
+        // this is basically saying, if the current time has passed a time that we should be outputting values at,
+        // then calculate the concentrations for the sampling boxes, save the output for this timestep, and update time counter for when to do it again.
+        // I'm honestly confused why cBox gets set to zero, unless this is meant to cleanup for the next iteration. If this is so, then why do it in a way
+        // that you can't output the information if you ever need to debug it? Seems like it should be a temporary variable then.
+        if(timeStepStamp.at(tStep)>= sCBoxTime+avgTime) {
+            //std::cout<<"loopPrm   :"<<loopPrm<<std::endl;
+            //std::cout<<"loopLowestCell :"<<loopLowestCell<<std::endl;
+            double cc=(tStepInp)/(avgTime*volume*numPar);
+            for(int k=0;k<nBoxesZ;k++) {
+                for(int j=0;j<nBoxesY;j++) {
+                    for(int i=0;i<nBoxesX;i++) {
+                        int id=k*nBoxesY*nBoxesX+j*nBoxesX+i;
+                        conc.at(id) = cBox.at(id)*cc;
+                        cBox.at(id) = 0.0;
+                    }
+                }
+            }
+            save(output);
+            avgTime=avgTime+PID->colParams->timeAvg;    // I think this is updating the averaging time for the next loop
+        }
+
+    } // for(tStep=0; tStep<numTimeStep; tStep++)
+
+}
+
+#else   // USE_NEWCODE == 0
 void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID, Output* output) {
     
     std::cout<<"[Plume] \t Advecting particles "<<std::endl;
@@ -162,17 +316,17 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             
             int count=0;
             int countPrm=0;
-            double xPos = dis->pos.at(par).x;   // this is getting the position for where to release the new particles for this time
+            double xPos = dis->pos.at(par).x;   // this is getting the current position for where the particle is at for a given time
             double yPos = dis->pos.at(par).y;
             double zPos = dis->pos.at(par).z;
                         
-            double tStepRem=tStepInp;   // I guess the dt isn't a good variable name or can't be used again?
-            double tStepUsed=0.0;
-            double tStepCal=0.0;
-            double dt=tStepRem;     // isn't this just the dt again? why not use the variable you've set in the class? I guess it is an adaptive timestepping thing
-            int loops=0;
-            double tStepMin=tStepInp;
-            int loopTby2=0;
+            double tStepRem=tStepInp;   // I guess the dt isn't a good variable name or can't be used again?. This is the remaining part of the timestep still to be stepped through.
+            double tStepUsed=0.0;       // this is the actual timestep that was used for a given timestep iteration
+            double tStepCal=0.0;        // still confused by this, but it appears to be some method for adapting the timestep, taking a minimum of the different times that can vary, and dividing again
+            double dt=tStepRem;     // isn't this just the dt again? why not use the variable you've set in the class? I guess it is an adaptive timestepping thing. Okay now I see, it is the actual dt that is varying as the timestep is adapted a lot. So this is the adapting timestep, not necessarily the final used timestep till the end
+            int loops=0;        // appears to be a counter variable for how many loops happen, but isn't really used
+            double tStepMin=tStepInp;   // another form of the adaptive timestepping stuff again! Looks like the minimum it can be and is used to force the time to shrink for the next iteration
+            int loopTby2=0;     // another counter variable, how many times does it loop over the timestep in it's adaptive method. But isn't used anywhere
             
             while(tStepRem>1.0e-5) {        // looks like an iterative process till something converges
                 // a set of grid indexing variables
@@ -483,6 +637,8 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                     
                     // now set variables for the next loop, man this timestep stuff is difficult and confusing to me, 
                     // but this part of setting the old velFluct terms to be the current values from this iteration makes sense
+                    // is also setting the current positions there too. Looks like the positions and velFluct change only when ready to be advected
+                    // so for the first iteration they haven't been moved yet, they used to be the initial values :)
                     dis->prime.at(par).x=uPrime;
                     dis->prime.at(par).y=vPrime;
                     dis->prime.at(par).z=wPrime;
@@ -535,6 +691,9 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         }
     } // for(tStep=0; tStep<numTimeStep; tStep++)
 } // run()
+
+#endif  // USE_NEWCODE or no
+
 
 void Plume::save(Output* output) {
     
