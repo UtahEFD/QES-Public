@@ -34,6 +34,14 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID) {
     // set up source information
     pos.resize(numPar);
     prime.resize(numPar);
+
+    // set up the initial conditions for the old values too
+    prime_old.resize(numPar);
+    tau_old.resize(numPar);
+    delta_prime.resize(numPar);
+    isRogue.resize(numPar);
+    isActive.resize(numPar);
+
     
     int id=int(srcZ/dz)*ny*nx+int(srcY/dy)*nx+int(srcX/dx);     // appears to be the cell ID of the source point location, used to get the right variance values for the source values
     int idt=int(srcY/dy)*nx+int(srcX/dx);       // doesn't appear to be used
@@ -48,6 +56,29 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID) {
         prime.at(i).y=turb->sig.at(id).e22 * rann;
         rann=random::norRan();
         prime.at(i).z=turb->sig.at(id).e33 * rann;
+
+        // set the initial values for the old stuff
+        prime_old.at(i).x = prime.at(i).x;
+        prime_old.at(i).y = prime.at(i).y;
+        prime_old.at(i).z = prime.at(i).z;
+
+        // set tau_old to the interpolated values for each position
+        tau_old.at(i).e11 = turb->tau.at(id).e11;
+        tau_old.at(i).e12 = turb->tau.at(id).e12;
+        tau_old.at(i).e13 = turb->tau.at(id).e13;
+        tau_old.at(i).e22 = turb->tau.at(id).e22;
+        tau_old.at(i).e23 = turb->tau.at(id).e23;
+        tau_old.at(i).e33 = turb->tau.at(id).e33;
+
+        // set delta_prime to zero for now
+        delta_prime.at(i).x = 0.0;
+        delta_prime.at(i).y = 0.0;
+        delta_prime.at(i).z = 0.0;
+
+        // set isRogue and isActive to true for each particle
+        isRogue.at(id) = true;
+        isActive.at(id) = true;
+        
     }
     tStrt.resize(numPar);
     

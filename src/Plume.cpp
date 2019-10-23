@@ -166,6 +166,13 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             // should also probably grab and store the old values in this same way
             // these consist of velFluct_old and tao_old
             // also need to keep track of a delta_velFluct and an isActive flag for each particle
+            // though delta_velFluct doesn't need grabbed as a value till later now that I think on it
+            double uFluct_old = dis->prime_old.at(par).x;
+            double vFluct_old = dis->prime_old.at(par).v;
+            double wFluct_old = dis->prime_old.at(par).w;
+            bool isRogue = dis->isRogue.at(par);
+            bool isActive = dis->isActive.at(par);
+
             
             /*
                 now get the values for the current iteration
@@ -174,7 +181,18 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 Then need to call makeRealizable on tao then calculate inverse tao
                 
                 Okay should I use the given inverse tao from Turb or no? I'm going to go with no for now
+
+                I guess for now, I can just use the old interpolation method
             */
+
+           // a set of grid indexing variables
+            int iV=int(xPos/urb->grid.dx);
+            int jV=int(yPos/urb->grid.dy);
+            int kV=int(zPos/urb->grid.dz)+1;
+            int id=kV*ny*nx+jV*nx+iV;
+
+
+
 
             // this is the Co times Eps for the particle
             double CoEps=turb->CoEps.at(id);
@@ -197,12 +215,16 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             double tzz=turb->tau.at(id).e23;
             
             // now need flux_div_vel not the different dtxxdx type components
+            flux_div_u = eul->flux_div.at(id).e11;
+            flux_div_v = eul->flux_div.at(id).e12;
+            flux_div_w = eul->flux_div.at(id).e13;
 
 
             // now need to call makeRealizable on tao
-
+            //makeRealizable();
 
             // now need to calculate the inverse values for tao
+            // might be able to get away with currently existing functions for this. May still be good to write my own
 
 
             // these are the random numbers for each direction
@@ -284,6 +306,19 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
     } // for(tStep=0; tStep<numTimeStep; tStep++)
 
 }
+
+matrix6 Plume::makeRealizable(const matrix6& tau)
+{
+    // need to fill out this function. Is going to be some work cause now the data structures are wierd
+}
+
+void enforceBCs(double&)
+{
+    // need to fill out this function. Is going to be some work cause now the data structures are wierd, and I can't output multiple values at once
+    // this one may also change as we figure out the reflections vs depositions on buildings and terrain as well as the outer domain
+    // probably will become some kind of inherited function or a pointer function that can be chosen at initialization time
+}
+
 
 #else   // USE_NEWCODE == 0
 void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID, Output* output) {

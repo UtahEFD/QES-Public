@@ -28,6 +28,9 @@ Eulerian::Eulerian(Urb* urb, Turb* turb) {
     
     // compute stress gradients
     createTauGrads(urb,turb);
+
+    // use the stress gradients to calculate the flux div
+    createFluxDiv();
     
     // construct matrices
     createA1Matrix(urb,turb);
@@ -205,6 +208,21 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
 }
 
 #endif
+
+void Eulerian::createFluxDiv()
+{
+    // loop through each cell and calculate the flux_div_vel from the gradients of tao
+    for(int idx = 1; idx < nx*ny*nz; idx++) {
+        flux_div.at(idx).e11 = taudx.at(idx).e11 + taudy.at(idx).e12 + taudz.at(idx).e13;
+        flux_div.at(idx).e12 = taudx.at(idx).e12 + taudy.at(idx).e22 + taudz.at(idx).e23;
+        flux_div.at(idx).e13 = taudx.at(idx).e13 + taudy.at(idx).e23 + taudz.at(idx).e33;
+    }
+}
+
+double Eulerian::interp3D()
+{
+    // need to fill out this function. Is going to be some work cause now the vectors are linearized. Might need some operator overloading versions of this
+}
 
 void Eulerian::createA1Matrix(Urb* urb, Turb* turb) {
     

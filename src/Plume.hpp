@@ -69,6 +69,14 @@ class Plume {
         int tStep;  // this is the integration timestep loop counter. Why the heck it is out here instead of in the loop is beyond me
         
         int loopExt=0;
+
+
+        // still need to figure out how this is going to work, especially with the data structures
+        matrix6 makeRealizable(const matrix6& tau);
+
+        // this one might be fun to figure out. I'm used to having multiple outputs and that is not so in C++
+        void enforceBCs(double&);
+
         
         // ironically, almost all of these functions are used only by "reflection", which isn't even called now
         // reflection is normally called right after the particles have been advected and checked, as a way to

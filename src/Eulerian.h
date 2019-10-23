@@ -45,6 +45,10 @@ public:
                                                 // but linearized since it is at a 3D grid of points x,y,z that has been linearized
                                                 // units are probably m/s^2
 
+    std::vector<vec3> flux_div;     // taudx, taudy, and taudz are actually not used, except to calculate this value
+                                    // this is just a value for each direction: flux_div_x, flux_div_y, flux_div_z
+                                    // but now it is flux_div.e11, flux_div.e21, flux_div.e31
+
 
 
     std::vector<matrix9> eigVec,eigVecInv;      // I believe these are the eigenvector and inverse eigenvector of the A1 matrix, so probably won't be used
@@ -83,6 +87,10 @@ public:
     int nx,ny,nz,nt;    // a copy of the urb grid information, the number of values in each dimension, including time
     double zo;      // a constant representing the roughness length
     double dx,dy,dz;    // a copy of the urb grid information, the difference between points in the grid
+
+
+double interp3D();  // not sure what all to have as inputs, but this needs to be able to interp turb stuff as well since not all values to interp are found in Eulerian
+
  
 private:   
         
@@ -97,6 +105,7 @@ private:
     void createUstar();         // this function doesn't exist
     void createTausAndLamdas(); // this function doesn't exist
     void createTauGrads(Urb*,Turb*);
+    void createFluxDiv();       // this function takes the TauGrads and turns them into a bunch simpler values to use
     void writeSigmas();         // this function doesn't exist
     void createA1Matrix(Urb*,Turb*);        // this is ugly as heck. Looks like it starts out by setting a bunch of the A values. But it is confusing cause it seems to break it down into parts, then add stuff back together at the end.
                                             // takes 100 lines of code or so just to set the initial values of this A matrix. But these are all temporary values. It then stuffs the values into the real A matrix, and does some kind of imaginary value check
