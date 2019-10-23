@@ -8,7 +8,7 @@
 #include <fstream>
 #define EPSILON 0.00001   
 
-Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID) {
+Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul) {
     std::cout<<"[Dispersion] \t Setting up sources "<<std::endl;
     
     // make local copies
@@ -43,32 +43,43 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID) {
     isActive.resize(numPar);
 
     
-    int id=int(srcZ/dz)*ny*nx+int(srcY/dy)*nx+int(srcX/dx);     // appears to be the cell ID of the source point location, used to get the right variance values for the source values
-    int idt=int(srcY/dy)*nx+int(srcX/dx);       // doesn't appear to be used
+    
     for(int i=0;i<numPar;i++){
         pos.at(i).x=srcX;   // set the source positions for each particle
         pos.at(i).y=srcY;
         pos.at(i).z=srcZ;
+
+        // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
+        // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
+        eul->setInterp3Dindexing(pos.at(i));
     
         double rann=random::norRan();   // almost didn't see it, but it does use different random numbers for each direction
-        prime.at(i).x=turb->sig.at(id).e11 * rann;  // set the values for the source positions for each particle. Might need to add sqrt of the variance to match Brian's code
+
+        // get the sigma values from the Eulerian grid for the particle value
+        diagonal current_sig = eul->interp3D(sig.at(id));
+
+        // now set the initial velocity fluctuations for the particle
+        prime.at(i).x = current_sig.e11 * rann;  // set the values for the source positions for each particle. Might need to add sqrt of the variance to match Brian's code
         rann=random::norRan();
-        prime.at(i).y=turb->sig.at(id).e22 * rann;
+        prime.at(i).y = current_sig.e22 * rann;
         rann=random::norRan();
-        prime.at(i).z=turb->sig.at(id).e33 * rann;
+        prime.at(i).z = current_sig.e33 * rann;
 
         // set the initial values for the old stuff
         prime_old.at(i).x = prime.at(i).x;
         prime_old.at(i).y = prime.at(i).y;
         prime_old.at(i).z = prime.at(i).z;
 
+        // get the tau values from the Eulerian grid for the particle value
+        matrix6 current_tau = eul->interp3D(tau.at(id));
+
         // set tau_old to the interpolated values for each position
-        tau_old.at(i).e11 = turb->tau.at(id).e11;
-        tau_old.at(i).e12 = turb->tau.at(id).e12;
-        tau_old.at(i).e13 = turb->tau.at(id).e13;
-        tau_old.at(i).e22 = turb->tau.at(id).e22;
-        tau_old.at(i).e23 = turb->tau.at(id).e23;
-        tau_old.at(i).e33 = turb->tau.at(id).e33;
+        tau_old.at(i).e11 = current_tau.e11;
+        tau_old.at(i).e12 = current_tau.e12;
+        tau_old.at(i).e13 = current_tau.e13;
+        tau_old.at(i).e22 = current_tau.e22;
+        tau_old.at(i).e23 = current_tau.e23;
+        tau_old.at(i).e33 = current_tau.e33;
 
         // set delta_prime to zero for now
         delta_prime.at(i).x = 0.0;
@@ -76,8 +87,8 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID) {
         delta_prime.at(i).z = 0.0;
 
         // set isRogue and isActive to true for each particle
-        isRogue.at(id) = true;
-        isActive.at(id) = true;
+        isRogue.at(i) = true;
+        isActive.at(i) = true;
         
     }
     tStrt.resize(numPar);

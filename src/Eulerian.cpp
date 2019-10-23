@@ -219,12 +219,63 @@ void Eulerian::createFluxDiv()
     }
 }
 
+// this gets around the problem of repeated or not repeated information, just needs called once before each interpolation,
+// then intepolation on all kinds of datatypes can be done
+void Eulerian::setInterp3Dindexing(const float3& xyz_particle)
+{
+    // the next steps are to figure out the right indices to grab the values for cube from the data, 
+    // where indices are forced to be special if nx, ny, or nz are zero.
+    // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
+
+    // so this is called once before calling the interp3D function on many different datatypes
+    // sets the current indices for grabbing the cube values and for interpolating with the cube,
+    // but importantly sets ip,jp, and kp to zero if the number of cells in a dimension is 1
+    // as this avoids referencing outside of array problems in an efficient manner
+    // it also causes some stuff to be multiplied by zero so that interpolation works on any size of data without lots of if statements
+
+    // index of nearest node in negative direction
+    ii = floor(xyz_particle(1)/dx)+1;
+    jj = floor(xyz_particle(2)/dy)+1;
+    kk = floor(xyz_particle(3)/dz)+1;
+
+    // fractional distance between nearest nodes
+    iw = (xyz_particle(1)/dx-floor(xyz_particle(1)/dx));
+    jw = (xyz_particle(2)/dy-floor(xyz_particle(2)/dy));
+    kw = (xyz_particle(3)/dz-floor(xyz_particle(3)/dz));
+
+    // initialize the counters from the indices
+    ip = 1;
+    jp = 1;
+    kp = 1;
+
+    // now set the indices and the counters from the indices
+    if( nx == 1 )
+    {
+        ii = 1;
+        iw = 0.0;
+        ip = 0;
+    }
+    if( ny == 1 )
+    {
+        jj = 1;
+        jw = 0.0;
+        jp = 0;
+    }
+    if( nz == 1 )
+    {
+        kk = 1;
+        kw = 0.0;
+        kp = 0;
+    }
+
+}
+
 // two problems so far. I need to either completely change the input data structures so that I have all vectors of doubles (which would be easier)
 // or I need to make multiple overloaded versions of this for different input EulerData types. The method will be similar, it will just be a loop over values
 // which makes me think that it could become some kind of function of a function, where the bulk of this function is the same data for each interpolated variable
 // the second problem is more basic. This is how it would work with a nonlinearized 3D vector of data, but this is NOT that, but linearized 3D vectors of data
 // so I have to get the indexing fixed to be more correct for this to even work!
-double Eulerian::interp3D(const float3& xyz_particle, const std::vector<double>& EulerData)
+double Eulerian::interp3D(const std::vector<double>& EulerData)
 {
 
     // initialize the output value
@@ -237,41 +288,7 @@ double Eulerian::interp3D(const float3& xyz_particle, const std::vector<double>&
     // where indices are forced to be special if nx, ny, or nz are zero.
     // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
 
-    // index of nearest node in negative direction
-    int ii = floor(xyz_particle(1)/dx)+1;
-    int jj = floor(xyz_particle(2)/dy)+1;
-    int kk = floor(xyz_particle(3)/dz)+1;
-
-    // fractional distance between nearest nodes
-    double iw = (xyz_particle(1)/dx-floor(xyz_particle(1)/dx));
-    double jw = (xyz_particle(2)/dy-floor(xyz_particle(2)/dy));
-    double kw = (xyz_particle(3)/dz-floor(xyz_particle(3)/dz));
-
-    // initialize the counters from the indices
-    int ip = 1;
-    int jp = 1;
-    int kp = 1;
-
-    // now set the indices and the counters from the indices
-    if( Nx == 1 )
-    {
-        ii = 1;
-        iw = 0.0;
-        ip = 0;
-    }
-    if( Ny == 1 )
-    {
-        jj = 1;
-        jw = 0.0;
-        jp = 0;
-    }
-    if( Nz == 1 )
-    {
-        kk = 1;
-        kw = 0.0;
-        kp = 0;
-    }
-
+    
     // now set the cube to zero, then fill it using the indices and the counters from the indices
     double cube[2][2][2] = {0.0};
 

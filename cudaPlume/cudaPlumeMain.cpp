@@ -74,7 +74,7 @@ int main(int argc, char** argv)
     Eulerian* eul = new Eulerian(urb,turb);
     
     // Create instance of Dispersion class
-    Dispersion* dis = new Dispersion(urb,turb,PID);
+    Dispersion* dis = new Dispersion(urb,turb,PID,eul);
     
     // Create instance of Plume model class
     Plume* plume = new Plume(urb,dis,PID,output);

@@ -163,6 +163,11 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             double yPos = dis->pos.at(par).y;
             double zPos = dis->pos.at(par).z;
 
+            // this is the old velFluct value
+            double uPrime = dis->prime.at(par).x;
+            double vPrime = dis->prime.at(par).y;
+            double wPrime = dis->prime.at(par).z;
+
             // should also probably grab and store the old values in this same way
             // these consist of velFluct_old and tao_old
             // also need to keep track of a delta_velFluct and an isActive flag for each particle
@@ -191,39 +196,36 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 I guess for now, I can just use the old interpolation method
             */
 
-           // a set of grid indexing variables
-            int iV=int(xPos/urb->grid.dx);
-            int jV=int(yPos/urb->grid.dy);
-            int kV=int(zPos/urb->grid.dz)+1;
-            int id=kV*ny*nx+jV*nx+iV;
 
+            // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
+            // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
+            eul->setInterp3Dindexing(pos.at(par));
 
 
 
             // this is the Co times Eps for the particle
-            double CoEps = turb->CoEps.at(id);
+            double CoEps = eul->interp3D(turb->CoEps.at(id));
             
-            // this is the old velFluct value
-            double uPrime = dis->prime.at(par).x;
-            double vPrime = dis->prime.at(par).y;
-            double wPrime = dis->prime.at(par).z;
-
+            
             // this is the current velMean value
-            double uMean = urb->wind.at(id).u;
-            double vMean = urb->wind.at(id).v;
-            double wMean = urb->wind.at(id).w;
+            Wind velMean = eul->interp3D(urb->wind.at(id));
+            double uMean = velMean.u;
+            double vMean = velMean.v;
+            double wMean = velMean.w;
             
-            double txx = turb->tau.at(id).e11;
-            double txy = turb->tau.at(id).e12;
-            double txz = turb->tau.at(id).e13;
-            double tyy = turb->tau.at(id).e21;
-            double tyz = turb->tau.at(id).e22;
-            double tzz = turb->tau.at(id).e23;
+            matrix6 tao = eul->interp3D(turb->tau.at(id));
+            double txx = tao.e11;
+            double txy = tao.e12;
+            double txz = tao.e13;
+            double tyy = tao.e21;
+            double tyz = tao.e22;
+            double tzz = tao.e23;
             
             // now need flux_div_vel not the different dtxxdx type components
-            double flux_div_u = eul->flux_div.at(id).e11;
-            double flux_div_v = eul->flux_div.at(id).e12;
-            double flux_div_w = eul->flux_div.at(id).e13;
+            vec3 flux_div_vel = eul->interp3D(eul->flux_div.at(id));
+            double flux_div_u = flux_div_vel.e11;
+            double flux_div_v = flux_div_vel.e12;
+            double flux_div_w = flux_div_vel.e13;
 
 
             // now need to call makeRealizable on tao
