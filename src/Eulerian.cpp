@@ -275,9 +275,19 @@ double Eulerian::interp3D(const float3& xyz_particle, const std::vector<double>&
     // now set the cube to zero, then fill it using the indices and the counters from the indices
     double cube[2][2][2] = {0.0};
 
-    /***** this line here will break hard core, cause it isn't proper syntax. Need to get the indexing correct to get this to work correctly */
-    cube(1:1+ip,1:1+jp,1:1+kp) = EulerData(ii:ii+ip,jj:jj+jp,kk:kk+kp);
-    /******/
+    // now set the cube values
+    for(int kkk = 0; kk <= kk+kp; kkk++)
+    {
+        for(int jjj = 0; jj <= jj+jp; jjj++)
+        {
+            for(int iii = 0; ii <= ii+ip; iii++)
+            {
+                // set the actual indices to use for the linearized Euler data
+                int idx = kkk*ny*nx + jjj*nx + iii;
+                cube(iii,jjj,kkk) = EulerData(idx);
+            }
+        }
+    }
 
     // now do the interpolation, with the cube, the counters from the indices,
     // and the normalized width between the point locations and the closest cell left walls
