@@ -45,9 +45,9 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     
     
     for(int i=0;i<numPar;i++){
-        pos.at(i).x=srcX;   // set the source positions for each particle
-        pos.at(i).y=srcY;
-        pos.at(i).z=srcZ;
+        pos.at(i).e11=srcX;   // set the source positions for each particle
+        pos.at(i).e21=srcY;
+        pos.at(i).e31=srcZ;
 
         // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
         // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
@@ -56,19 +56,19 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
         double rann=random::norRan();   // almost didn't see it, but it does use different random numbers for each direction
 
         // get the sigma values from the Eulerian grid for the particle value
-        diagonal current_sig = eul->interp3D(turb->sig);
+        diagonal current_sig = eul->interp3D(turb->sig,"sigma2");
 
         // now set the initial velocity fluctuations for the particle
-        prime.at(i).x = current_sig.e11 * rann;  // set the values for the source positions for each particle. Might need to add sqrt of the variance to match Brian's code
+        prime.at(i).e11 = sqrt(current_sig.e11) * rann;  // set the values for the source positions for each particle. Might need to add sqrt of the variance to match Brian's code
         rann=random::norRan();
-        prime.at(i).y = current_sig.e22 * rann;
+        prime.at(i).e21 = sqrt(current_sig.e22) * rann;
         rann=random::norRan();
-        prime.at(i).z = current_sig.e33 * rann;
+        prime.at(i).e31 = sqrt(current_sig.e33) * rann;
 
         // set the initial values for the old stuff
-        prime_old.at(i).x = prime.at(i).x;
-        prime_old.at(i).y = prime.at(i).y;
-        prime_old.at(i).z = prime.at(i).z;
+        prime_old.at(i).e11 = prime.at(i).e11;
+        prime_old.at(i).e21 = prime.at(i).e21;
+        prime_old.at(i).e31 = prime.at(i).e31;
 
         // get the tau values from the Eulerian grid for the particle value
         matrix6 current_tau = eul->interp3D(turb->tau);

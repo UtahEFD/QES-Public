@@ -271,7 +271,9 @@ void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
 }
 
 // always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-double Eulerian::interp3D(const std::vector<double>& EulerData)
+// the extra dataName is so that if the input is eps, the value is not allowed to be zero, but is set to two orders of magnitude bigger than sigma2
+// since this would actually be CoEps, the value actually needs to be one order of magnitude bigger than sigma2?
+double Eulerian::interp3D(const std::vector<double>& EulerData,const std::string& dataName)
 {
 
     // initialize the output value
@@ -307,6 +309,23 @@ double Eulerian::interp3D(const std::vector<double>& EulerData)
     double u_low  = (1-iw)*(1-jw)*cube(1,1,1) + iw*(1-jw)*cube(2,1,1) + iw*jw*cube(2,2,1) + (1-iw)*jw*cube(1,2,1);
     double u_high = (1-iw)*(1-jw)*cube(1,1,2) + iw*(1-jw)*cube(2,1,2) + iw*jw*cube(2,2,2) + (1-iw)*jw*cube(1,2,2);
     outputVal = (u_high-u_low)*kw + u_low;
+
+    // make sure CoEps is always bigger than zero, and eps is two orders of magnitude bigger than sigma2
+    // I guess since this is actually CoEps, the value needs to be one order of magnitutde bigger than sigma2
+    if( dataName == "Eps" )
+    {
+        if( outputVal <= 1e-6 )
+        {
+            outputVal = 1e-6;
+        }
+    }
+    if( dataName == "CoEps" )
+    {
+        if( outputVal <= 1e-7 )
+        {
+            outputVal = 1e-7;
+        }
+    }
 
     return outputVal;
 
@@ -370,7 +389,8 @@ vec3 Eulerian::interp3D(const std::vector<vec3>& EulerData)
 }
 
 // always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-diagonal Eulerian::interp3D(const std::vector<diagonal>& EulerData)
+// the extra dataName is so that if the input is sigma2, the value is not allowed to be zero, but is set to two orders of magnitude smaller than eps
+diagonal Eulerian::interp3D(const std::vector<diagonal>& EulerData,const std::string& dataName)
 {
     
     // initialize the output value
@@ -421,6 +441,23 @@ diagonal Eulerian::interp3D(const std::vector<diagonal>& EulerData)
     u_low         = (1-iw)*(1-jw)*cube_e33(1,1,1) + iw*(1-jw)*cube_e33(2,1,1) + iw*jw*cube_e33(2,2,1) + (1-iw)*jw*cube_e33(1,2,1);
     u_high        = (1-iw)*(1-jw)*cube_e33(1,1,2) + iw*(1-jw)*cube_e33(2,1,2) + iw*jw*cube_e33(2,2,2) + (1-iw)*jw*cube_e33(1,2,2);
     outputVal.e33 = (u_high-u_low)*kw + u_low;
+
+    // make sure sigma is always bigger than zero, and two orders of magnitude smaller than Eps
+    if( dataName == "sigma2" )
+    {
+        if( outputVal.e11 == 0.0 )
+        {
+            outputVal.e11 = 1e-8;
+        }
+        if( outputVal.e22 == 0.0 )
+        {
+            outputVal.e22 = 1e-8;
+        }
+        if( outputVal.e33 == 0.0 )
+        {
+            outputVal.e33 = 1e-8;
+        }
+    }
 
     return outputVal;
     

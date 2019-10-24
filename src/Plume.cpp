@@ -173,6 +173,9 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 double zPos = dis->pos.at(par).e31;
 
                 // this is the old velFluct value
+                // hmm, Brian's code just starts out setting these values to zero,
+                // so the prime values are actually the old velFluct. velFluct_old and prime are probably identical and kind of redundant in this implementation
+                // but it shouldn't hurt anything for now, even if it is redundant
                 double uPrime = dis->prime.at(par).e11;
                 double vPrime = dis->prime.at(par).e21;
                 double wPrime = dis->prime.at(par).e31;
@@ -211,7 +214,8 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
 
                 // this is the Co times Eps for the particle
-                double CoEps = eul->interp3D(turb->CoEps);
+                double CoEps = eul->interp3D(turb->CoEps,"CoEps");
+                //double CoEps = eul->interp3D(turb->CoEps,"Eps");
                 
                 
                 // this is the current velMean value

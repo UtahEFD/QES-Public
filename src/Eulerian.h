@@ -91,9 +91,9 @@ public:
 
 
     void setInterp3Dindexing(const vec3& xyz_particle);
-    double interp3D(const std::vector<double>& EulerData);
+    double interp3D(const std::vector<double>& EulerData,const std::string& dataName);
     vec3 interp3D(const std::vector<vec3>& EulerData);
-    diagonal interp3D(const std::vector<diagonal>& EulerData);
+    diagonal interp3D(const std::vector<diagonal>& EulerData,const std::string& dataName);
     matrix6 interp3D(const std::vector<matrix6>& EulerData);
     Wind interp3D(const std::vector<Wind>& EulerData);
     
