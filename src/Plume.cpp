@@ -168,22 +168,22 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 // this is getting the current position for where the particle is at for a given time
                 // if it is the first time a particle is ever released, then the value is already set at the initial value
-                double xPos = dis->pos.at(par).x;
-                double yPos = dis->pos.at(par).y;
-                double zPos = dis->pos.at(par).z;
+                double xPos = dis->pos.at(par).e11;
+                double yPos = dis->pos.at(par).e21;
+                double zPos = dis->pos.at(par).e31;
 
                 // this is the old velFluct value
-                double uPrime = dis->prime.at(par).x;
-                double vPrime = dis->prime.at(par).y;
-                double wPrime = dis->prime.at(par).z;
+                double uPrime = dis->prime.at(par).e11;
+                double vPrime = dis->prime.at(par).e21;
+                double wPrime = dis->prime.at(par).e31;
 
                 // should also probably grab and store the old values in this same way
                 // these consist of velFluct_old and tao_old
                 // also need to keep track of a delta_velFluct and an isActive flag for each particle
                 // though delta_velFluct doesn't need grabbed as a value till later now that I think on it
-                double uFluct_old = dis->prime_old.at(par).x;
-                double vFluct_old = dis->prime_old.at(par).y;
-                double wFluct_old = dis->prime_old.at(par).z;
+                double uFluct_old = dis->prime_old.at(par).e11;
+                double vFluct_old = dis->prime_old.at(par).e21;
+                double wFluct_old = dis->prime_old.at(par).e31;
                 double txx_old = dis->tau_old.at(par).e11;
                 double txy_old = dis->tau_old.at(par).e12;
                 double txz_old = dis->tau_old.at(par).e13;
@@ -346,19 +346,19 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 // now update the old values and current values in the dispersion storage to be ready for the next iteration
                 // also calculate the velFluct increment
-                dis->prime.at(par).x = uPrime;
-                dis->prime.at(par).y = vPrime;
-                dis->prime.at(par).z = wPrime;
-                dis->pos.at(par).x = xPos;
-                dis->pos.at(par).y = yPos;
-                dis->pos.at(par).z = zPos;
+                dis->prime.at(par).e11 = uPrime;
+                dis->prime.at(par).e21 = vPrime;
+                dis->prime.at(par).e31 = wPrime;
+                dis->pos.at(par).e11 = xPos;
+                dis->pos.at(par).e21 = yPos;
+                dis->pos.at(par).e31 = zPos;
 
                 dis->delta_prime.at(par).e11 = uPrime - uFluct_old;
                 dis->delta_prime.at(par).e21 = vPrime - vFluct_old;
                 dis->delta_prime.at(par).e31 = wPrime - wFluct_old;
-                dis->prime_old.at(par).x = uPrime;
-                dis->prime_old.at(par).y = vPrime;
-                dis->prime_old.at(par).z = wPrime;
+                dis->prime_old.at(par).e11 = uPrime;
+                dis->prime_old.at(par).e21 = vPrime;
+                dis->prime_old.at(par).e31 = wPrime;
 
                 dis->tau_old.at(par).e11 = txx;
                 dis->tau_old.at(par).e12 = txy;

@@ -47,8 +47,8 @@ class Dispersion {
         double eps;                     // is this machine tolerance, or tke/epps stuff? Doesn't appear to be used. Instead, a compile time variable EPSILON seems to be used
         int numTimeStep;            // this is the number of timesteps of the simulation
         std::vector<double> timeStepStamp;  // this is the list of times for the simulation
-        std::vector<float3> pos, prime;     // pos is the list of particle source positions, prime is the particle source values. Actually, the prime is the velFluct value for a given iteration!
-        std::vector<float3> prime_old;     // this is the velocity fluctuations from the last iteration. They start out the same as the current values initially
+        std::vector<vec3> pos, prime;     // pos is the list of particle source positions, prime is the particle source values. Actually, the prime is the velFluct value for a given iteration!
+        std::vector<vec3> prime_old;     // this is the velocity fluctuations from the last iteration. They start out the same as the current values initially
         std::vector<matrix6> tau_old;       // this is the stress tensor from the last iteration. Starts out as the values at the initial position, the values for the initial iteration
         std::vector<vec3> delta_prime;    // this is the difference between the current and last iteration of the velocity fluctuations
         std::vector<bool> isRogue;         // this is false until it becomes true. Should not go true. It is whether a particle has gone rogue or not

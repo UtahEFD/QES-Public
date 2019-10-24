@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include <helper_math.h> 
 
 class Eulerian{
     
@@ -91,13 +90,12 @@ public:
     double dx,dy,dz;    // a copy of the urb grid information, the difference between points in the grid
 
 
-    void setInterp3Dindexing(const float3& xyz_particle);
+    void setInterp3Dindexing(const vec3& xyz_particle);
     double interp3D(const std::vector<double>& EulerData);
     vec3 interp3D(const std::vector<vec3>& EulerData);
     diagonal interp3D(const std::vector<diagonal>& EulerData);
     matrix6 interp3D(const std::vector<matrix6>& EulerData);
     Wind interp3D(const std::vector<Wind>& EulerData);
-    float3 interp3D(const std::vector<float3>& EulerData);  // this one is causing me troubles, this datatype doesn't appear to be defined and I'm having trouble with it
     
  
 private:

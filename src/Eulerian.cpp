@@ -221,7 +221,7 @@ void Eulerian::createFluxDiv()
 
 // this gets around the problem of repeated or not repeated information, just needs called once before each interpolation,
 // then intepolation on all kinds of datatypes can be done
-void Eulerian::setInterp3Dindexing(const float3& xyz_particle)
+void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
 {
     // the next steps are to figure out the right indices to grab the values for cube from the data, 
     // where indices are forced to be special if nx, ny, or nz are zero.
@@ -234,14 +234,14 @@ void Eulerian::setInterp3Dindexing(const float3& xyz_particle)
     // it also causes some stuff to be multiplied by zero so that interpolation works on any size of data without lots of if statements
 
     // index of nearest node in negative direction
-    ii = floor(xyz_particle(1)/dx)+1;
-    jj = floor(xyz_particle(2)/dy)+1;
-    kk = floor(xyz_particle(3)/dz)+1;
+    ii = floor(xyz_particle.e11/dx)+1;
+    jj = floor(xyz_particle.e21/dy)+1;
+    kk = floor(xyz_particle.e31/dz)+1;
 
     // fractional distance between nearest nodes
-    iw = (xyz_particle(1)/dx-floor(xyz_particle(1)/dx));
-    jw = (xyz_particle(2)/dy-floor(xyz_particle(2)/dy));
-    kw = (xyz_particle(3)/dz-floor(xyz_particle(3)/dz));
+    iw = (xyz_particle.e11/dx-floor(xyz_particle.e11/dx));
+    jw = (xyz_particle.e21/dy-floor(xyz_particle.e21/dy));
+    kw = (xyz_particle.e31/dz-floor(xyz_particle.e31/dz));
 
     // initialize the counters from the indices
     ip = 1;
@@ -556,63 +556,6 @@ Wind Eulerian::interp3D(const std::vector<Wind>& EulerData)
     u_low         = (1-iw)*(1-jw)*cube_w(1,1,1) + iw*(1-jw)*cube_w(2,1,1) + iw*jw*cube_w(2,2,1) + (1-iw)*jw*cube_w(1,2,1);
     u_high        = (1-iw)*(1-jw)*cube_w(1,1,2) + iw*(1-jw)*cube_w(2,1,2) + iw*jw*cube_w(2,2,2) + (1-iw)*jw*cube_w(1,2,2);
     outputVal.w = (u_high-u_low)*kw + u_low;
-
-    return outputVal;
-
-}
-
-// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-float3 Eulerian::interp3D(const std::vector<float3>& EulerData)
-{
-
-    // initialize the output value
-    float3 outputVal;
-    outputVal.x = 0.0;
-    outputVal.y = 0.0;
-    outputVal.z = 0.0;
-    
-
-    // first set a cube of size two to zero.
-    // This is important because if nx, ny, or nz are only size 1, referencing two spots in cube won't reference outside the array.
-    // the next steps are to figure out the right indices to grab the values for cube from the data, 
-    // where indices are forced to be special if nx, ny, or nz are zero.
-    // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
-
-    
-    // now set the cube to zero, then fill it using the indices and the counters from the indices
-    double cube_x[2][2][2] = {0.0};
-    double cube_y[2][2][2] = {0.0};
-    double cube_z[2][2][2] = {0.0};
-
-    // now set the cube values
-    for(int kkk = 0; kk <= kk+kp; kkk++)
-    {
-        for(int jjj = 0; jj <= jj+jp; jjj++)
-        {
-            for(int iii = 0; ii <= ii+ip; iii++)
-            {
-                // set the actual indices to use for the linearized Euler data
-                int idx = kkk*ny*nx + jjj*nx + iii;
-                cube_x(iii,jjj,kkk) = EulerData.at(idx).x;
-                cube_y(iii,jjj,kkk) = EulerData.at(idx).y;
-                cube_z(iii,jjj,kkk) = EulerData.at(idx).z;
-            }
-        }
-    }
-
-    // now do the interpolation, with the cube, the counters from the indices,
-    // and the normalized width between the point locations and the closest cell left walls
-    double u_low  = (1-iw)*(1-jw)*cube_x(1,1,1) + iw*(1-jw)*cube_x(2,1,1) + iw*jw*cube_x(2,2,1) + (1-iw)*jw*cube_x(1,2,1);
-    double u_high = (1-iw)*(1-jw)*cube_x(1,1,2) + iw*(1-jw)*cube_x(2,1,2) + iw*jw*cube_x(2,2,2) + (1-iw)*jw*cube_x(1,2,2);
-    outputVal.x = (u_high-u_low)*kw + u_low;
-
-    u_low         = (1-iw)*(1-jw)*cube_y(1,1,1) + iw*(1-jw)*cube_y(2,1,1) + iw*jw*cube_y(2,2,1) + (1-iw)*jw*cube_y(1,2,1);
-    u_high        = (1-iw)*(1-jw)*cube_y(1,1,2) + iw*(1-jw)*cube_y(2,1,2) + iw*jw*cube_y(2,2,2) + (1-iw)*jw*cube_y(1,2,2);
-    outputVal.y = (u_high-u_low)*kw + u_low;
-    
-    u_low         = (1-iw)*(1-jw)*cube_z(1,1,1) + iw*(1-jw)*cube_z(2,1,1) + iw*jw*cube_z(2,2,1) + (1-iw)*jw*cube_z(1,2,1);
-    u_high        = (1-iw)*(1-jw)*cube_z(1,1,2) + iw*(1-jw)*cube_z(2,1,2) + iw*jw*cube_z(2,2,2) + (1-iw)*jw*cube_z(1,2,2);
-    outputVal.z = (u_high-u_low)*kw + u_low;
 
     return outputVal;
 
