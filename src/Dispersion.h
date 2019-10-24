@@ -50,9 +50,11 @@ class Dispersion {
         std::vector<float3> pos, prime;     // pos is the list of particle source positions, prime is the particle source values. Actually, the prime is the velFluct value for a given iteration!
         std::vector<float3> prime_old;     // this is the velocity fluctuations from the last iteration. They start out the same as the current values initially
         std::vector<matrix6> tau_old;       // this is the stress tensor from the last iteration. Starts out as the values at the initial position, the values for the initial iteration
-        std::vector<float3> delta_prime;    // this is the difference between the current and last iteration of the velocity fluctuations
-        std::vector<bool> isRogue;         // this is true until it becomes false. Should not go false. It is whether a particle has gone rogue or not
+        std::vector<vec3> delta_prime;    // this is the difference between the current and last iteration of the velocity fluctuations
+        std::vector<bool> isRogue;         // this is false until it becomes true. Should not go true. It is whether a particle has gone rogue or not
         std::vector<bool> isActive;         // this is true until it becomes false. If a particle leaves the domain or runs out of mass, this becomes false. Later we will add a method to start more particles when this has become false
+        double isRogueCount;        // just a total number of rogue particles per time iteration
+        double vel_threshold;       // the velocity fluctuation threshold velocity used to determine if particles are rogue or no
         int parPerTimestep;             // this is the number of particles to release at each timestep, used to calculate the release time for each particle
         std::vector<double> tStrt;        // this is the time of release for each set of particles
         

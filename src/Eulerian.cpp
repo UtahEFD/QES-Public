@@ -1240,6 +1240,7 @@ matrix9 Eulerian::matrixInv(const matrix6& matIni){
     mat.e32=matIni.e23;
     mat.e33=matIni.e33;
     
+    // looks the same as how Brian calculates the determinant for his matrix inversion
     double detMat=(mat.e11*mat.e22*mat.e33)-
       (mat.e11*mat.e23*mat.e32)-
       (mat.e12*mat.e21*mat.e33)+
@@ -1247,10 +1248,12 @@ matrix9 Eulerian::matrixInv(const matrix6& matIni){
       (mat.e13*mat.e21*mat.e32)-
       (mat.e13*mat.e22*mat.e31);
     
+    // Brian has a different handle for this, if abs(detMat) < 1e-10, then set it to 10^10, with a warning which I sometimes had to turn off
+    // then he just does the matrix inversion and it works out
     if(detMat!=0.0){
       
       matInv.e11=( (mat.e22*mat.e33)-(mat.e23*mat.e32) )/detMat;
-      matInv.e12=( (mat.e13*mat.e32)-(mat.e12*mat.e33) )/detMat;
+      matInv.e12=( (mat.e13*mat.e32)-(mat.e12*mat.e33) )/detMat;    // brian has an extra - on the front term
       matInv.e13=( (mat.e12*mat.e23)-(mat.e13*mat.e22) )/detMat;
       matInv.e21=( (mat.e23*mat.e31)-(mat.e21*mat.e33) )/detMat;
       matInv.e22=( (mat.e11*mat.e33)-(mat.e13*mat.e31) )/detMat;

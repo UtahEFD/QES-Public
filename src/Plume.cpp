@@ -147,172 +147,242 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
     double dt=tStepInp;     // this is a cleaner name for the timestep
 
     // need to calculate the velFluct threshold value for rogue particles
-
+    // the threshold velocity fluctuation to define rogue particles
+    double vel_threshold = dis->vel_threshold;
     
     // For every time step
     for(tStep=0; tStep<numTimeStep; tStep++) {
         
         // Move each particle for every time step
         parToMove = parToMove + parPerTimestep;     // add the new particles to the total number to be moved each timestep
-        
+        double isRogueCount = dis->isRogueCount;
+
         for(int par=0; par<parToMove;par++) {
 
-            // this is getting the current position for where the particle is at for a given time
-            // if it is the first time a particle is ever released, then the value is already set at the initial value
-            double xPos = dis->pos.at(par).x;
-            double yPos = dis->pos.at(par).y;
-            double zPos = dis->pos.at(par).z;
-
-            // this is the old velFluct value
-            double uPrime = dis->prime.at(par).x;
-            double vPrime = dis->prime.at(par).y;
-            double wPrime = dis->prime.at(par).z;
-
-            // should also probably grab and store the old values in this same way
-            // these consist of velFluct_old and tao_old
-            // also need to keep track of a delta_velFluct and an isActive flag for each particle
-            // though delta_velFluct doesn't need grabbed as a value till later now that I think on it
-            double uFluct_old = dis->prime_old.at(par).x;
-            double vFluct_old = dis->prime_old.at(par).y;
-            double wFluct_old = dis->prime_old.at(par).z;
-            double txx_old = dis->tau_old.at(par).e11;
-            double txy_old = dis->tau_old.at(par).e12;
-            double txz_old = dis->tau_old.at(par).e13;
-            double tyy_old = dis->tau_old.at(par).e22;
-            double tyz_old = dis->tau_old.at(par).e23;
-            double tzz_old = dis->tau_old.at(par).e33;
+            // first check to see if the particle should even be advected
             bool isRogue = dis->isRogue.at(par);
             bool isActive = dis->isActive.at(par);
 
-            
-            /*
-                now get the values for the current iteration
-                will need to use the interp3D function
-                Need to get velMean, CoEps, tao, flux_div_vel
-                Then need to call makeRealizable on tao then calculate inverse tao
+            if(isActive == true && isRogue == false)
+            {
+
+                // this is getting the current position for where the particle is at for a given time
+                // if it is the first time a particle is ever released, then the value is already set at the initial value
+                double xPos = dis->pos.at(par).x;
+                double yPos = dis->pos.at(par).y;
+                double zPos = dis->pos.at(par).z;
+
+                // this is the old velFluct value
+                double uPrime = dis->prime.at(par).x;
+                double vPrime = dis->prime.at(par).y;
+                double wPrime = dis->prime.at(par).z;
+
+                // should also probably grab and store the old values in this same way
+                // these consist of velFluct_old and tao_old
+                // also need to keep track of a delta_velFluct and an isActive flag for each particle
+                // though delta_velFluct doesn't need grabbed as a value till later now that I think on it
+                double uFluct_old = dis->prime_old.at(par).x;
+                double vFluct_old = dis->prime_old.at(par).y;
+                double wFluct_old = dis->prime_old.at(par).z;
+                double txx_old = dis->tau_old.at(par).e11;
+                double txy_old = dis->tau_old.at(par).e12;
+                double txz_old = dis->tau_old.at(par).e13;
+                double tyy_old = dis->tau_old.at(par).e22;
+                double tyz_old = dis->tau_old.at(par).e23;
+                double tzz_old = dis->tau_old.at(par).e33;
                 
-                Okay should I use the given inverse tao from Turb or no? I'm going to go with no for now
+                
+                /*
+                    now get the values for the current iteration
+                    will need to use the interp3D function
+                    Need to get velMean, CoEps, tao, flux_div_vel
+                    Then need to call makeRealizable on tao then calculate inverse tao
+                    
+                    Okay should I use the given inverse tao from Turb or no? I'm going to go with no for now
 
-                I guess for now, I can just use the old interpolation method
-            */
+                    I guess for now, I can just use the old interpolation method
+                */
 
 
-            // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
-            // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
-            eul->setInterp3Dindexing(pos.at(par));
+                // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
+                // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
+                eul->setInterp3Dindexing(pos.at(par));
 
 
 
-            // this is the Co times Eps for the particle
-            double CoEps = eul->interp3D(turb->CoEps);
+                // this is the Co times Eps for the particle
+                double CoEps = eul->interp3D(turb->CoEps);
+                
+                
+                // this is the current velMean value
+                Wind velMean = eul->interp3D(urb->wind);
+                double uMean = velMean.u;
+                double vMean = velMean.v;
+                double wMean = velMean.w;
+                
+                matrix6 tao = eul->interp3D(turb->tau);
+                double txx = tao.e11;
+                double txy = tao.e12;
+                double txz = tao.e13;
+                double tyy = tao.e21;
+                double tyz = tao.e22;
+                double tzz = tao.e23;
+                
+                // now need flux_div_vel not the different dtxxdx type components
+                vec3 flux_div_vel = eul->interp3D(eul->flux_div);
+                double flux_div_u = flux_div_vel.e11;
+                double flux_div_v = flux_div_vel.e12;
+                double flux_div_w = flux_div_vel.e13;
+
+
+                // now need to call makeRealizable on tao
+                //makeRealizable();
+
+                // now need to calculate the inverse values for tao
+                // might be able to get away with currently existing functions for this. May still be good to write my own
+                // again already existing function Eulerian->matrixInv() for matrix6 to matrix 9 seems close to what I want
+                // I'm probably going to write my own function, but it looks like using the structs might be the best way to control output
+                // either that or passing in the variables by reference that need changed
+
+
+
+                // these are the random numbers for each direction
+                double xRandn = random::norRan();
+                double yRandn = random::norRan();
+                double zRandn = random::norRan();
+
+
+                
+                /* now calculate a bunch of values for the current particle */
+                // calculate the d_tao_dt values, which are the (tao_current - tao_old)/dt
+                double dtxxdt = (txx - txx_old)/dt;
+                double dtxydt = (txy - txy_old)/dt;
+                double dtxzdt = (txz - txz_old)/dt;
+                double dtyydt = (tyy - tyy_old)/dt;
+                double dtyzdt = (tyz - tyz_old)/dt;
+                double dtzzdt = (tzz - tzz_old)/dt;
+
+
+                /* now calculate and set the A and b matrices for an Ax = b */
+                double A[3][3] = {0};
+                double b[3] = {0};
+
+                A[1][1] = -1.0 + 0.50*(-CoEps*lxx + lxx*dtxxdt + lxy*dtxydt + lxz*dtxzdt)*dt;
+                A[1][2] =        0.50*(-CoEps*lxy + lxy*dtxxdt + lyy*dtxydt + lyz*dtxzdt)*dt;
+                A[1][3] =        0.50*(-CoEps*lxz + lxz*dtxxdt + lyz*dtxydt + lzz*dtxzdt)*dt;
+
+                A[2][1] =        0.50*(-CoEps*lxy + lxx*dtxydt + lxy*dtyydt + lxz*dtyzdt)*dt;
+                A[2][2] = -1.0 + 0.50*(-CoEps*lyy + lxy*dtxydt + lyy*dtyydt + lyz*dtyzdt)*dt;
+                A[2][3] =        0.50*(-CoEps*lyz + lxz*dtxydt + lyz*dtyydt + lzz*dtyzdt)*dt;
+                
+                A[3][1] =        0.50*(-CoEps*lxz + lxx*dtxzdt + lxy*dtyzdt + lxz*dtzzdt)*dt;
+                A[3][2] =        0.50*(-CoEps*lyz + lxy*dtxzdt + lyy*dtyzdt + lyz*dtzzdt)*dt;
+                A[3][3] = -1.0 + 0.50*(-CoEps*lzz + lxz*dtxzdt + lyz*dtyzdt + lzz*dtzzdt)*dt;
+
+
+                b[1] = -uFluct_old - 0.50*flux_div_x*dt - sqrt(CoEps*dt)*xRandn;
+                b[2] = -vFluct_old - 0.50*flux_div_y*dt - sqrt(CoEps*dt)*yRandn;
+                b[3] = -wFluct_old - 0.50*flux_div_z*dt - sqrt(CoEps*dt)*zRandn;
+
+
+                // now prepare for the Ax=b calculation by calculating the inverted A matrix
+                // need to prepare the invert function, mayone one already exists in Eulerian since they do an Ax=b calculation
+                // not sure if these inputs and outputs are allowable or make sense either. Seems off somehow to me.
+                // the Eulerian->matrixInv() function for inverting a matrix6 to become a matrix9 looks closest to Brian's matrix inversion function
+                // but there appears to be some differences in the sign stuff, and how to handle if the determinant is too small
+                // the other Eulerian->matrixInv() is for matrix9 in to matrix9 out, but has a bunch of extra stuff that looks kind of like parts of makeRealizable
+
+                double Ainv[3][3] = invert3(A);
+
+
+                // now do the Ax=b calculation using the inverted matrix
+                // need to either write this function, or find it in the Eulerian Ax=b stuff
+                // hm, since getting out three values, might be easier to do a pass in by reference thing for the velPrime values
+                // Brian's matmult looks like Eulerian->matrixVecMult, so I guess if the datatypes are right, could use that function
+                matmult(Ainv,b,  uPrime,vPrime,wPrime);
+                
+
+                // now check to see if the value is rogue or not
+                if( abs(uPrime) >= vel_threshold || isnan(uPrime) && nx > 1 )
+                {
+                    std::cout << "Particle # " << par << " is rogue.\n";
+                    std::cout << "responsible uFluct was \"" << uPrime << "\"\n";
+                    uPrime = 0.0;
+                    isRogue = true;
+                }
+                if( abs(vPrime) >= vel_threshold || isnan(vPrime) && ny > 1 )
+                {
+                    std::cout << "Particle # " << par << " is rogue.\n";
+                    std::cout << "responsible vFluct was \"" << vPrime << "\"\n";
+                    vPrime = 0.0;
+                    isRogue = true;
+                }
+                if( abs(wPrime) >= vel_threshold || isnan(wPrime) && nz > 1 )
+                {
+                    std::cout << "Particle # " << par << " is rogue.\n";
+                    std::cout << "responsible wFluct was \"" << wPrime << "\"\n";
+                    wPrime = 0.0;
+                    isRogue = true;
+                }
+                
+                // now update the particle position for this iteration
+                double disX = ((uMean + uPrime)*dt);
+                double disY = ((vMean + vPrime)*dt);
+                double disZ = ((wMean + wPrime)*dt);
+                
+                xPos = xPos + disX;
+                yPos = yPos + disY;
+                zPos = zPos + disZ;
+
+
+                // now apply boundary conditions
+                // we may want to skip this one, or maybe just set the particle to being inactive if it reaches outside the domain
+                // the reason for this, is Brian's BCs don't match what is normally used for Plume, we don't want reflections or periodic BCs
+                // when we allow different test cases, we will want these options, and a way to choose the boundary condition type
+                // for different regions sometime during the constructor phases.
+                // I guess just implement one that makes isActive go false if it goes outside the domain
+                //enforceWallBCs();
+
+
+                // now update the old values and current values in the dispersion storage to be ready for the next iteration
+                // also calculate the velFluct increment
+                dis->prime.at(par).x = uPrime;
+                dis->prime.at(par).y = vPrime;
+                dis->prime.at(par).z = wPrime;
+                dis->pos.at(par).x = xPos;
+                dis->pos.at(par).y = yPos;
+                dis->pos.at(par).z = zPos;
+
+                dis->delta_prime.at(par).e11 = uPrime - uFluct_old;
+                dis->delta_prime.at(par).e21 = vPrime - vFluct_old;
+                dis->delta_prime.at(par).e31 = wPrime - wFluct_old;
+                dis->prime_old.at(par).x = uPrime;
+                dis->prime_old.at(par).y = vPrime;
+                dis->prime_old.at(par).z = wPrime;
+
+                dis->tau_old.at(par).e11 = txx;
+                dis->tau_old.at(par).e12 = txy;
+                dis->tau_old.at(par).e13 = txz;
+                dis->tau_old.at(par).e22 = tyy;
+                dis->tau_old.at(par).e23 = tyz;
+                dis->tau_old.at(par).e33 = tzz;
+
+                if(isRogue == true)
+                {
+                    isRogueCount = isRogueCount + 1;
+                }
+
+                dis->isRogue.at(par) = isRogue;
+                dis->isActive.at(par) = isActive;
             
-            
-            // this is the current velMean value
-            Wind velMean = eul->interp3D(urb->wind);
-            double uMean = velMean.u;
-            double vMean = velMean.v;
-            double wMean = velMean.w;
-            
-            matrix6 tao = eul->interp3D(turb->tau);
-            double txx = tao.e11;
-            double txy = tao.e12;
-            double txz = tao.e13;
-            double tyy = tao.e21;
-            double tyz = tao.e22;
-            double tzz = tao.e23;
-            
-            // now need flux_div_vel not the different dtxxdx type components
-            vec3 flux_div_vel = eul->interp3D(eul->flux_div);
-            double flux_div_u = flux_div_vel.e11;
-            double flux_div_v = flux_div_vel.e12;
-            double flux_div_w = flux_div_vel.e13;
-
-
-            // now need to call makeRealizable on tao
-            //makeRealizable();
-
-            // now need to calculate the inverse values for tao
-            // might be able to get away with currently existing functions for this. May still be good to write my own
-
-
-            // these are the random numbers for each direction
-            double xRandn = random::norRan();
-            double yRandn = random::norRan();
-            double zRandn = random::norRan();
-
-
-            
-            /* now calculate a bunch of values for the current particle */
-            // calculate the d_tao_dt values, which are the (tao_current - tao_old)/dt
-            double dtxxdt = (txx - txx_old)/dt;
-            double dtxydt = (txy - txy_old)/dt;
-            double dtxzdt = (txz - txz_old)/dt;
-            double dtyydt = (tyy - tyy_old)/dt;
-            double dtyzdt = (tyz - tyz_old)/dt;
-            double dtzzdt = (tzz - tzz_old)/dt;
-
-
-            /* now calculate and set the A and b matrices for an Ax = b */
-            double A[3][3] = {0};
-            double b[3] = {0};
-
-            A[1][1] = -1.0 + 0.50*(-CoEps*lxx + lxx*dtxxdt + lxy*dtxydt + lxz*dtxzdt)*dt;
-            A[1][2] =        0.50*(-CoEps*lxy + lxy*dtxxdt + lyy*dtxydt + lyz*dtxzdt)*dt;
-            A[1][3] =        0.50*(-CoEps*lxz + lxz*dtxxdt + lyz*dtxydt + lzz*dtxzdt)*dt;
-
-            A[2][1] =        0.50*(-CoEps*lxy + lxx*dtxydt + lxy*dtyydt + lxz*dtyzdt)*dt;
-            A[2][2] = -1.0 + 0.50*(-CoEps*lyy + lxy*dtxydt + lyy*dtyydt + lyz*dtyzdt)*dt;
-            A[2][3] =        0.50*(-CoEps*lyz + lxz*dtxydt + lyz*dtyydt + lzz*dtyzdt)*dt;
-            
-            A[3][1] =        0.50*(-CoEps*lxz + lxx*dtxzdt + lxy*dtyzdt + lxz*dtzzdt)*dt;
-            A[3][2] =        0.50*(-CoEps*lyz + lxy*dtxzdt + lyy*dtyzdt + lyz*dtzzdt)*dt;
-            A[3][3] = -1.0 + 0.50*(-CoEps*lzz + lxz*dtxzdt + lyz*dtyzdt + lzz*dtzzdt)*dt;
-
-
-            b[1] = -uFluct_old - 0.50*flux_div_x*dt - sqrt(CoEps*dt)*xRandn;
-            b[2] = -vFluct_old - 0.50*flux_div_y*dt - sqrt(CoEps*dt)*yRandn;
-            b[3] = -wFluct_old - 0.50*flux_div_z*dt - sqrt(CoEps*dt)*zRandn;
-
-
-            // now prepare for the Ax=b calculation by calculating the inverted A matrix
-            // need to prepare the invert function, mayone one already exists in Eulerian since they do an Ax=b calculation
-            // not sure if these inputs and outputs are allowable or make sense either. Seems off somehow to me.
-            double Ainv[3][3] = invert3(A);
-
-
-            // now do the Ax=b calculation using the inverted matrix
-            // need to either write this function, or find it in the Eulerian Ax=b stuff
-            // hm, since getting out three values, might be easier to do a pass in by reference thing for the velPrime values
-            matmult(Ainv,b,  uPrime,vPrime,wPrime);
-            
-
-            // now check to see if the value is rogue or not
-            
-            
-            // now update the particle position for this iteration
-            double disX=((uMean+uPrime)*dt);
-            double disY=((vMean+vPrime)*dt);
-            double disZ=((wMean+wPrime)*dt);
-            
-            xPos=xPos+disX;
-            yPos=yPos+disY;
-            zPos=zPos+disZ;
-
-
-            // now apply boundary conditions
-            //enforceWallBCs();
-
-
-            // now update the old values and current values in the dispersion storage to be ready for the next iteration
-            dis->prime.at(par).x=uPrime;
-            dis->prime.at(par).y=vPrime;
-            dis->prime.at(par).z=wPrime;
-            dis->pos.at(par).x=xPos;
-            dis->pos.at(par).y=yPos;
-            dis->pos.at(par).z=zPos;
-            
+            }   // if isActive == true and isRogue == false
 
         } // for (int par=0; par<parToMove;par++)
+
+        // set the isRogueCount for the time iteration in the disperion data
+        // hm, I'm almost wondering if this needs to go into dispersion, could just be kept locally,
+        // but declared outside the loop to preserve the value
+        dis->isRogueCount = isRogueCount;
 
         
         // this is basically saying, if we are past the time to start averaging values to calculate the concentration,

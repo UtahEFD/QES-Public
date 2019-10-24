@@ -82,15 +82,22 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
         tau_old.at(i).e33 = current_tau.e33;
 
         // set delta_prime to zero for now
-        delta_prime.at(i).x = 0.0;
-        delta_prime.at(i).y = 0.0;
-        delta_prime.at(i).z = 0.0;
+        delta_prime.at(i).e11 = 0.0;
+        delta_prime.at(i).e21 = 0.0;
+        delta_prime.at(i).e31 = 0.0;
 
-        // set isRogue and isActive to true for each particle
-        isRogue.at(i) = true;
+        // set isRogue to false and isActive to true for each particle
+        isRogue.at(i) = false;
         isActive.at(i) = true;
         
     }
+
+    // set the isRogueCount to zero
+    isRogueCount = 0.0;
+
+    // calculate the threshold velocity
+    vel_threshold = 10.d0*sqrt(maxval(turb->sig));  // might need to write a maxval function, since it has to get the largest value from the entire sig array
+
     tStrt.resize(numPar);
     
     parPerTimestep = numPar*dt/dur; 
