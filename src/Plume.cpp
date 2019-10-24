@@ -236,7 +236,15 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
 
                 // now need to call makeRealizable on tao
-                //makeRealizable();
+                // note that the invarianceTol is hard coded for now, but needs to be added as an overall input to CUDA-Plume
+                double invarianceTol = 1e-10;
+                matrix6 realizedTao = makeRealizable(tao,invarianceTol);
+                txx = realizedTao.e11;
+                txy = realizedTao.e12;
+                txz = realizedTao.e13;
+                tyy = realizedTao.e22;
+                tyz = realizedTao.e23;
+                tzz = realizedTao.e33;
 
                 // now need to calculate the inverse values for tao
                 // might be able to get away with currently existing functions for this. May still be good to write my own
@@ -415,9 +423,82 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
 }
 
-matrix6 Plume::makeRealizable(const matrix6& tau)
+vec3 Plume::calcInvariants(const matrix6& tau)
 {
-    // need to fill out this function. Is going to be some work cause now the data structures are wierd
+
+    vec3 invariants;
+
+    invariants.e11 = tau.e11 + tau.e22 + tau.e33;
+
+    invariants.e21 = tau.e11*tau.e22 + tau.e11*tau.e33 + tau.e22*tau.e33 - tau.e12*tau.e12 - tau.e13*tau.e13 - tau.e23*tau.e23;
+
+    invariants.e31 = tau.e11*(tau.e22*tau.e33 - tau.e23*tau.e23) - tau.e12*(tau.e12*tau.e33 - tau.e23*tau.e13) + tau.e13*(tau.e12*tau.e23 - tau.e22*tau.e13);
+
+    return invariants;
+}
+
+matrix6 Plume::makeRealizable(const matrix6& tau,const double& invarianceTol)
+{
+    // first calculate the invariants and see if they are already realizable
+
+    vec3 invariants = calcInvariants(tau);
+    if( invariants.e11 > invarianceTol && invariants.e21 > invarianceTol && invariants.e31 > invarianceTol )
+    {
+        return tau;     // tau is already realizable
+    }
+
+    // since tau is not already realizable, need to make it realizeable
+    // start by making a guess of ks, the subfilter scale tke
+    // I keep wondering if we can use the input Turb->tke for this or if we should leave it as is
+    double b = 4.0/3.0*(tau.e11 + tau.e22 + tau.e33);   // I think this is 4.0/3.0*invariants.e11 as well
+    double c = tau.e11*tau.e22 + tau.e11*tau.e33 + tau.e22*tau.e33 - tau.e12*tau.e12 - tau.e13*tau.e13 - tau.e23*tau.e23;   // this is probably invariants.e21
+    double ks = 1.01*(-b + sqrt(b*b - 16.0/3.0*c)) / (8.0/3.0);
+
+    // if the initial guess is bad, use the straight up invariance.e11 value
+    if( ks < invariancTol || isnan(ks) )
+    {
+        ks = 0.5*abs(tau.e11 + tau.e22 + tau.e33);  // looks like 0.5*abs(invariants.e11)
+    }
+
+    // now set the initial values of the new make realizable tau, 
+    // the first iteration of the following loop
+    // notice that through all this process, only the diagonals are really increased by a value of 0.05% of the subfilter tke ks
+    matrix6 tau_new;
+    tau_new.e11 = tau.e11 + 2.0/3.0*ks;
+    tau_new.e22 = tau.e22 + 2.0/3.0*ks;
+    tau_new.e33 = tau.e33 + 2.0/3.0*ks;
+    tau_new.e12 = tau.e12;
+    tau_new.e13 = tau.e13;
+    tau_new.e23 = tau.e23;
+
+    // adjust the invariants for the new tau
+    invariants = calcInvariants(tau_new);
+
+    // now adjust the diagonals by 0.05% of the subfilter tke, which is ks, till tau is realizable
+    // or if too many iterations go on, give a warning. I've had trouble with this taking too long
+    // if it isn't realizable, so maybe another approach for when the iterations are reached might be smart
+    int iter = 0;
+    while( (invariants.e11 < invarianceTol || invariants.e21 < invarianceTol || invariants.e31 < invarianceTol) && iter <= 1000 )
+    {
+        iter = iter + 1;
+
+        ks = ks*1.050;      // increase subfilter tke by 5%
+
+        tau_new.e11 = tau.e11 + 2.0/3.0*ks;
+        tau_new.e22 = tau.e22 + 2.0/3.0*ks;
+        tau_new.e33 = tau.e33 + 2.0/3.0*ks;
+
+        invariants = calcInvariants(tau_new);
+
+    }
+
+    if( iter == 1000 )
+    {
+        std::cout << "WARNING (Plume::makeRealizable): unable to make stress tensor realizble.";
+    }
+
+    return tau_new;
+
 }
 
 void enforceBCs(double&)
