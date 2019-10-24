@@ -173,8 +173,8 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             // also need to keep track of a delta_velFluct and an isActive flag for each particle
             // though delta_velFluct doesn't need grabbed as a value till later now that I think on it
             double uFluct_old = dis->prime_old.at(par).x;
-            double vFluct_old = dis->prime_old.at(par).v;
-            double wFluct_old = dis->prime_old.at(par).w;
+            double vFluct_old = dis->prime_old.at(par).y;
+            double wFluct_old = dis->prime_old.at(par).z;
             double txx_old = dis->tau_old.at(par).e11;
             double txy_old = dis->tau_old.at(par).e12;
             double txz_old = dis->tau_old.at(par).e13;
