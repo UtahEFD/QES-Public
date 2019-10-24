@@ -6,7 +6,6 @@
 #include <map>
 #include <netcdf>
 
-#include "URBGeneralData.h"
 #include "NetCDFOutput.h"
 
 /*
@@ -112,9 +111,6 @@ class URBOutput_Generic : public NetCDFOutput
   {
     return true;
   };
-  
-  virtual void save(URBGeneralData*)
-  {}
   
   int output_counter=0;
   double time=0;
