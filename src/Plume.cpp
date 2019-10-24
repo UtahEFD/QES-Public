@@ -255,6 +255,29 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 // again already existing function Eulerian->matrixInv() for matrix6 to matrix 9 seems close to what I want
                 // I'm probably going to write my own function, but it looks like using the structs might be the best way to control output
                 // either that or passing in the variables by reference that need changed
+                matrix9 fullTao;
+                fullTao.e11 = txx;
+                fullTao.e12 = txy;
+                fullTao.e13 = txz;
+                fullTao.e21 = txy;
+                fullTao.e22 = tyy;
+                fullTao.e23 = tyz;
+                fullTao.e31 = txz;
+                fullTao.e32 = tyz;
+                fullTao.e33 = tzz;
+                // I just noticed that Brian's code always leaves the last three components alone, never filled with new tensor info
+                // even though he keeps everything as a matrix9 datatype. This seems fine for makeRealizable, but I wonder if it
+                // messes with the invert3 stuff since those values are used even though they are empty
+                // going to send in the matrix with all 9 terms anyways, and use the method that assumes they are all filled,
+                // so like Brian's code in method, not the same with the inputs to the function.
+                matrix9 inverseTao = invert3(fullTao);
+                double lxx = inverseTao.e11;
+                double lxy = inverseTao.e12;
+                double lxz = inverseTao.e13;
+                double lyy = inverseTao.e22;
+                double lyz = inverseTao.e23;
+                double lzz = inverseTao.e33;
+
 
 
 
@@ -276,25 +299,25 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
 
                 /* now calculate and set the A and b matrices for an Ax = b */
-                double A[3][3] = {0};
-                double b[3] = {0};
+                matrix9 A;
+                vec3 b;
 
-                A[1][1] = -1.0 + 0.50*(-CoEps*lxx + lxx*dtxxdt + lxy*dtxydt + lxz*dtxzdt)*dt;
-                A[1][2] =        0.50*(-CoEps*lxy + lxy*dtxxdt + lyy*dtxydt + lyz*dtxzdt)*dt;
-                A[1][3] =        0.50*(-CoEps*lxz + lxz*dtxxdt + lyz*dtxydt + lzz*dtxzdt)*dt;
+                A.e11 = -1.0 + 0.50*(-CoEps*lxx + lxx*dtxxdt + lxy*dtxydt + lxz*dtxzdt)*dt;
+                A.e12 =        0.50*(-CoEps*lxy + lxy*dtxxdt + lyy*dtxydt + lyz*dtxzdt)*dt;
+                A.e13 =        0.50*(-CoEps*lxz + lxz*dtxxdt + lyz*dtxydt + lzz*dtxzdt)*dt;
 
-                A[2][1] =        0.50*(-CoEps*lxy + lxx*dtxydt + lxy*dtyydt + lxz*dtyzdt)*dt;
-                A[2][2] = -1.0 + 0.50*(-CoEps*lyy + lxy*dtxydt + lyy*dtyydt + lyz*dtyzdt)*dt;
-                A[2][3] =        0.50*(-CoEps*lyz + lxz*dtxydt + lyz*dtyydt + lzz*dtyzdt)*dt;
+                A.e21 =        0.50*(-CoEps*lxy + lxx*dtxydt + lxy*dtyydt + lxz*dtyzdt)*dt;
+                A.e22 = -1.0 + 0.50*(-CoEps*lyy + lxy*dtxydt + lyy*dtyydt + lyz*dtyzdt)*dt;
+                A.e23 =        0.50*(-CoEps*lyz + lxz*dtxydt + lyz*dtyydt + lzz*dtyzdt)*dt;
                 
-                A[3][1] =        0.50*(-CoEps*lxz + lxx*dtxzdt + lxy*dtyzdt + lxz*dtzzdt)*dt;
-                A[3][2] =        0.50*(-CoEps*lyz + lxy*dtxzdt + lyy*dtyzdt + lyz*dtzzdt)*dt;
-                A[3][3] = -1.0 + 0.50*(-CoEps*lzz + lxz*dtxzdt + lyz*dtyzdt + lzz*dtzzdt)*dt;
+                A.e31 =        0.50*(-CoEps*lxz + lxx*dtxzdt + lxy*dtyzdt + lxz*dtzzdt)*dt;
+                A.e32 =        0.50*(-CoEps*lyz + lxy*dtxzdt + lyy*dtyzdt + lyz*dtzzdt)*dt;
+                A.e33 = -1.0 + 0.50*(-CoEps*lzz + lxz*dtxzdt + lyz*dtyzdt + lzz*dtzzdt)*dt;
 
 
-                b[1] = -uFluct_old - 0.50*flux_div_x*dt - sqrt(CoEps*dt)*xRandn;
-                b[2] = -vFluct_old - 0.50*flux_div_y*dt - sqrt(CoEps*dt)*yRandn;
-                b[3] = -wFluct_old - 0.50*flux_div_z*dt - sqrt(CoEps*dt)*zRandn;
+                b.e11 = -uFluct_old - 0.50*flux_div_x*dt - sqrt(CoEps*dt)*xRandn;
+                b.e21 = -vFluct_old - 0.50*flux_div_y*dt - sqrt(CoEps*dt)*yRandn;
+                b.e31 = -wFluct_old - 0.50*flux_div_z*dt - sqrt(CoEps*dt)*zRandn;
 
 
                 // now prepare for the Ax=b calculation by calculating the inverted A matrix
@@ -304,14 +327,17 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 // but there appears to be some differences in the sign stuff, and how to handle if the determinant is too small
                 // the other Eulerian->matrixInv() is for matrix9 in to matrix9 out, but has a bunch of extra stuff that looks kind of like parts of makeRealizable
 
-                double Ainv[3][3] = invert3(A);
+                matrix9 Ainv = invert3(A);
 
 
                 // now do the Ax=b calculation using the inverted matrix
                 // need to either write this function, or find it in the Eulerian Ax=b stuff
                 // hm, since getting out three values, might be easier to do a pass in by reference thing for the velPrime values
                 // Brian's matmult looks like Eulerian->matrixVecMult, so I guess if the datatypes are right, could use that function
-                matmult(Ainv,b,  uPrime,vPrime,wPrime);
+                vec3 velPrime = matmult(Ainv,b);
+                uPrime = velPrime.e11;
+                vPrime = velPrime.e21;
+                wPrime = velPrime.e31;
                 
 
                 // now check to see if the value is rogue or not
@@ -503,6 +529,49 @@ matrix6 Plume::makeRealizable(const matrix6& tau,const double& invarianceTol)
 
     return tau_new;
 
+}
+
+matrix9 Plume::invert3(const matrix9& A)
+{
+    // set the output value storage
+    matrix9 Ainv;
+
+    // now calculate the determinant
+    double det = A.e11*(A.e22*A.e33 - A.e23*A.e32) - A.e12*(A.e21*A.e33 - A.e23*A.e31) + A.e13*(A.e21*A.e32 - A.e22*A.e31);
+
+    // check for near zero value determinants
+    if(abs(det) < 1e-10)
+    {
+        det = 10e10;
+        std::cout << "WARNING (Plume::invert3): matrix nearly singular\n";
+    }
+
+    // calculate the inverse
+    Ainv.e11 =  (A.e22*A.e33 - A.e23*A.e32)/det;
+    Ainv.e12 = -(A.e12*A.e33 - A.e13*A.e32)/det;
+    Ainv.e13 =  (A.e12*A.e23 - A.e22*A.e13)/det;
+    Ainv.e21 = -(A.e21*A.e33 - A.e23*A.e31)/det;
+    Ainv.e22 =  (A.e11*A.e33 - A.e13*A.e31)/det;
+    Ainv.e23 = -(A.e11*A.e23 - A.e13*A.e21)/det;
+    Ainv.e31 =  (A.e21*A.e32 - A.e31*A.e22)/det;
+    Ainv.e32 = -(A.e11*A.e32 - A.e12*A.e31)/det;
+    Ainv.e33 =  (A.e11*A.e22 - A.e12*A.e21)/det;
+
+
+    return Ainv;
+}
+
+vec3 Plume::matmult(const matrix9& Ainv,const vec3& b)
+{
+    // initialize output
+    vec3 x;
+
+    // now calculate the Ax=b x value from the input inverse A matrix and b matrix
+    x.e11 = b.e11*Ainv.e11 + b.e21*Ainv.e12 + b.e31*Ainv.e13;
+    x.e21 = b.e11*Ainv.e21 + b.e21*Ainv.e22 + b.e31*Ainv.e23;
+    x.e31 = b.e11*Ainv.e31 + b.e21*Ainv.e32 + b.e31*Ainv.e33;
+
+    return x;
 }
 
 void enforceBCs(double&)

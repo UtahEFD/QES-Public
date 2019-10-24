@@ -74,6 +74,8 @@ class Plume {
         // still need to figure out how this is going to work, especially with the data structures
         vec3 calcInvariants(const matrix6& tau);
         matrix6 makeRealizable(const matrix6& tau,const double& invarianceTol);
+        matrix9 invert3(const matrix9& A);
+        vec3 matmult(const matrix9& Ainv,const vec3& b);
 
         // this one might be fun to figure out. I'm used to having multiple outputs and that is not so in C++
         void enforceBCs(double&);
