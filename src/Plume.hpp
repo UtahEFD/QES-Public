@@ -77,8 +77,17 @@ class Plume {
         matrix9 invert3(const matrix9& A);
         vec3 matmult(const matrix9& Ainv,const vec3& b);
 
-        // this one might be fun to figure out. I'm used to having multiple outputs and that is not so in C++
-        void enforceBCs(double&);
+        // might need to create multiple versions depending on the selection of boundary condition types by the inputs
+        void enforceWallBCs(const double& xPos,const double& yPos,const double& zPos,bool &isActive);
+
+        // these values are calculated from the urb data during construction
+        // they are used for applying boundary conditions at the walls of the domain
+        double domainXstart;    // the urb domain starting x value
+        double domainXend;      // the urb domain ending x value
+        double domainYstart;    // the urb domain starting y value
+        double domainYend;      // the urb domain ending y value
+        double domainZstart;    // the urb domain starting z value
+        double domainZend;      // the urb domain ending z value
 
         
         // ironically, almost all of these functions are used only by "reflection", which isn't even called now

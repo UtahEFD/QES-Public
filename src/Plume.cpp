@@ -81,6 +81,18 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     
     cBox.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
     conc.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
+
+
+    // calculate the urb domain start and end values, needed for wall boundary condition application
+    // I would guess that it is the first x value in the list of x points, and the last x value from the list of x points
+    // same thing for each of the y and z values
+    domainXstart = urb->grid.x.at(1);
+    domainXend = urb->grid.x.at(nx);
+    domainYstart = urb->grid.y.at(1);
+    domainYend = urb->grid.y.at(ny);
+    domainZstart = urb->grid.z.at(1);
+    domainZend = urb->grid.z.at(nz);
+
     
     /* setup output information */
 
@@ -379,7 +391,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 // when we allow different test cases, we will want these options, and a way to choose the boundary condition type
                 // for different regions sometime during the constructor phases.
                 // I guess just implement one that makes isActive go false if it goes outside the domain
-                //enforceWallBCs();
+                enforceWallBCs(xPos,yPos,zPos,isActive);
 
 
                 // now update the old values and current values in the dispersion storage to be ready for the next iteration
@@ -574,11 +586,16 @@ vec3 Plume::matmult(const matrix9& Ainv,const vec3& b)
     return x;
 }
 
-void enforceBCs(double&)
+void Plume::enforceWallBCs(const double& xPos,const double& yPos,const double& zPos,bool &isActive)
 {
-    // need to fill out this function. Is going to be some work cause now the data structures are wierd, and I can't output multiple values at once
-    // this one may also change as we figure out the reflections vs depositions on buildings and terrain as well as the outer domain
+    // this may change as we figure out the reflections vs depositions on buildings and terrain as well as the outer domain
     // probably will become some kind of inherited function or a pointer function that can be chosen at initialization time
+    // for now, if it goes out of the domain, set isActive to false
+
+    if( xPos < domainXstart || xPos > domainXend || yPos < domainYstart || yPos > domainYend || zPos < domainZstart || zPos > domainZend )
+    {
+        isActive = false;
+    }
 }
 
 
