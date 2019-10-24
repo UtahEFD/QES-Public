@@ -10,6 +10,8 @@
 #include <string>
 #include <vector>
 
+#include <helper_math.h> 
+
 class Eulerian{
     
 public:
