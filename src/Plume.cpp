@@ -209,7 +209,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
                 // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
-                eul->setInterp3Dindexing(pos.at(par));
+                eul->setInterp3Dindexing(dis->pos.at(par));
 
 
 
@@ -228,15 +228,15 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 double txx = tao.e11;
                 double txy = tao.e12;
                 double txz = tao.e13;
-                double tyy = tao.e21;
-                double tyz = tao.e22;
-                double tzz = tao.e23;
+                double tyy = tao.e22;  // should this be e22?
+                double tyz = tao.e23;  // should this be e23?
+                double tzz = tao.e33;  // and this e33?
                 
                 // now need flux_div_vel not the different dtxxdx type components
                 vec3 flux_div_vel = eul->interp3D(eul->flux_div);
                 double flux_div_u = flux_div_vel.e11;
-                double flux_div_v = flux_div_vel.e12;
-                double flux_div_w = flux_div_vel.e13;
+                double flux_div_v = flux_div_vel.e21; 
+                double flux_div_w = flux_div_vel.e31;
 
 
                 // now need to call makeRealizable on tao
@@ -315,9 +315,9 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 A.e33 = -1.0 + 0.50*(-CoEps*lzz + lxz*dtxzdt + lyz*dtyzdt + lzz*dtzzdt)*dt;
 
 
-                b.e11 = -uFluct_old - 0.50*flux_div_x*dt - sqrt(CoEps*dt)*xRandn;
-                b.e21 = -vFluct_old - 0.50*flux_div_y*dt - sqrt(CoEps*dt)*yRandn;
-                b.e31 = -wFluct_old - 0.50*flux_div_z*dt - sqrt(CoEps*dt)*zRandn;
+                b.e11 = -uFluct_old - 0.50*flux_div_u*dt - sqrt(CoEps*dt)*xRandn;  
+                b.e21 = -vFluct_old - 0.50*flux_div_v*dt - sqrt(CoEps*dt)*yRandn;
+                b.e31 = -wFluct_old - 0.50*flux_div_w*dt - sqrt(CoEps*dt)*zRandn;
 
 
                 // now prepare for the Ax=b calculation by calculating the inverted A matrix
@@ -485,7 +485,7 @@ matrix6 Plume::makeRealizable(const matrix6& tau,const double& invarianceTol)
     double ks = 1.01*(-b + sqrt(b*b - 16.0/3.0*c)) / (8.0/3.0);
 
     // if the initial guess is bad, use the straight up invariance.e11 value
-    if( ks < invariancTol || isnan(ks) )
+    if( ks < invarianceTol || isnan(ks) )
     {
         ks = 0.5*abs(tau.e11 + tau.e22 + tau.e33);  // looks like 0.5*abs(invariants.e11)
     }
@@ -1088,9 +1088,9 @@ pos Plume::posSubs(const pos &vecA, const pos & vecB){
 void Plume::average(const int tStep,const Dispersion* dis, const Urb* urb) {
     for(int i=0;i<numPar;i++) {
         if(tStrt.at(i)>timeStepStamp.at(tStep)) continue;
-        double xPos=dis->pos.at(i).x;
-        double yPos=dis->pos.at(i).y;
-        double zPos=dis->pos.at(i).z;
+        double xPos=dis->pos.at(i).e11;
+        double yPos=dis->pos.at(i).e21;
+        double zPos=dis->pos.at(i).e31;
         if(zPos==-1) continue;
         int iV=int(xPos/urb->grid.dx);
         int jV=int(yPos/urb->grid.dy);
