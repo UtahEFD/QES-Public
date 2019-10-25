@@ -96,7 +96,7 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     isRogueCount = 0.0;
 
     // calculate the threshold velocity
-    vel_threshold = 10.d0*sqrt(maxval(turb->sig));  // might need to write a maxval function, since it has to get the largest value from the entire sig array
+    vel_threshold = 10.0*sqrt(maxval(turb->sig));  // might need to write a maxval function, since it has to get the largest value from the entire sig array
 
     tStrt.resize(numPar);
     
