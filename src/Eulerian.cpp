@@ -211,7 +211,7 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
 
 void Eulerian::createFluxDiv()
 {
-    // loop through each cell and calculate the flux_div_vel from the gradients of tao
+    // loop through each cell and calculate the flux_div from the gradients of tao
     for(int idx = 1; idx < nx*ny*nz; idx++) {
         flux_div.at(idx).e11 = taudx.at(idx).e11 + taudy.at(idx).e12 + taudz.at(idx).e13;
         flux_div.at(idx).e21 = taudx.at(idx).e12 + taudy.at(idx).e22 + taudz.at(idx).e23;
@@ -266,6 +266,25 @@ void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
         kk = 1;
         kw = 0.0;
         kp = 0;
+    }
+
+    // now check to make sure that the indices are within the Eulerian grid domain
+    // Notice that this includes that no particles touching the far walls which
+    // would cause this interpolation method trouble!
+    if( (ii < 1 || ii >= nx) && nx > 1 )
+    {
+        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle x position is out of range! x = \"" << xyz_particle.e11 << "\" ii = \"" << ii << "\" nx = \"" << nx << "\"\n";
+        exit(1);
+    }
+    if( (jj < 1 || jj >= ny) && ny > 1 )
+    {
+        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle y position is out of range! y = \"" << xyz_particle.e21 << "\" jj = \"" << jj << "\" ny = \"" << ny << "\"\n";
+        exit(1);
+    }
+    if( (kk < 1 || kk >= nz) && nz > 1 )
+    {
+        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle z position is out of range! z = \"" << xyz_particle.e31 << "\" kk = \"" << kk << "\" nz = \"" << nz << "\"\n";
+        exit(1);
     }
 
 }

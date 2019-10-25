@@ -210,7 +210,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 /*
                     now get the values for the current iteration
                     will need to use the interp3D function
-                    Need to get velMean, CoEps, tao, flux_div_vel
+                    Need to get velMean, CoEps, tao, flux_div
                     Then need to call makeRealizable on tao then calculate inverse tao
                     
                     Okay should I use the given inverse tao from Turb or no? I'm going to go with no for now
@@ -240,15 +240,15 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 double txx = tao.e11;
                 double txy = tao.e12;
                 double txz = tao.e13;
-                double tyy = tao.e22;  // should this be e22?
-                double tyz = tao.e23;  // should this be e23?
-                double tzz = tao.e33;  // and this e33?
+                double tyy = tao.e22;
+                double tyz = tao.e23;
+                double tzz = tao.e33;
                 
                 // now need flux_div_vel not the different dtxxdx type components
-                vec3 flux_div_vel = eul->interp3D(eul->flux_div);
-                double flux_div_u = flux_div_vel.e11;
-                double flux_div_v = flux_div_vel.e21; 
-                double flux_div_w = flux_div_vel.e31;
+                vec3 flux_div = eul->interp3D(eul->flux_div);
+                double flux_div_x = flux_div.e11;
+                double flux_div_y = flux_div.e21; 
+                double flux_div_z = flux_div.e31;
 
 
                 // now need to call makeRealizable on tao
@@ -327,9 +327,9 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 A.e33 = -1.0 + 0.50*(-CoEps*lzz + lxz*dtxzdt + lyz*dtyzdt + lzz*dtzzdt)*dt;
 
 
-                b.e11 = -uFluct_old - 0.50*flux_div_u*dt - sqrt(CoEps*dt)*xRandn;  
-                b.e21 = -vFluct_old - 0.50*flux_div_v*dt - sqrt(CoEps*dt)*yRandn;
-                b.e31 = -wFluct_old - 0.50*flux_div_w*dt - sqrt(CoEps*dt)*zRandn;
+                b.e11 = -uFluct_old - 0.50*flux_div_x*dt - sqrt(CoEps*dt)*xRandn;
+                b.e21 = -vFluct_old - 0.50*flux_div_y*dt - sqrt(CoEps*dt)*yRandn;
+                b.e31 = -wFluct_old - 0.50*flux_div_z*dt - sqrt(CoEps*dt)*zRandn;
 
 
                 // now prepare for the Ax=b calculation by calculating the inverted A matrix
