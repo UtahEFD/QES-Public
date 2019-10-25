@@ -5,7 +5,7 @@ URBOutput_Static::URBOutput_Static(URBGeneralData *ugd,std::string output_file)
 {
   std::cout<<"Getting output fields for Static data"<<std::endl;
   //FM -> need to implement the outputFields options here...
-  output_fields = {"t","x","y","z","terrain"};
+  output_fields = {"x","y","z","terrain"};
   /* output_fields = UID->fileOptions->outputFields;
      
      if (output_fields.empty() || output_fields[0]=="all") {
