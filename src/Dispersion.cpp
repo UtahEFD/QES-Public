@@ -128,3 +128,32 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     }
     
 }
+
+
+double Dispersion::maxval(const std::vector<diagonal>& vec)
+{
+    // set the initial maximum value to a very small number. The idea is to go through each value of the data,
+    // setting the current value to the max value each time the current value is bigger than the old maximum value
+    double maximumVal = -10e-10;
+
+    double nVals = vec.size();
+
+    for(int idx = 0; idx < nVals; idx++)
+    {
+        if(vec.at(idx).e11 > maximumVal)
+        {
+            maximumVal = vec.at(idx).e11;
+        }
+        if(vec.at(idx).e22 > maximumVal)
+        {
+            maximumVal = vec.at(idx).e22;
+        }
+        if(vec.at(idx).e33 > maximumVal)
+        {
+            maximumVal = vec.at(idx).e33;
+        }
+    }
+
+    return maximumVal;
+    
+}

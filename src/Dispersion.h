@@ -67,5 +67,8 @@ class Dispersion {
         double dx,dy,dz;        // these are copies of the Urb grid dx,dy,dz values.
         int numPar;        // this is a copy of the input numParticles to be released over the whole simulation
 
+        // function for finding the largest sig value, which could be used for other similar datatypes if needed
+        double maxval(const std::vector<diagonal>& vec);
+
 };
 #endif
