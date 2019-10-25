@@ -234,14 +234,20 @@ void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
     // it also causes some stuff to be multiplied by zero so that interpolation works on any size of data without lots of if statements
 
     // index of nearest node in negative direction
-    ii = floor(xyz_particle.e11/dx)+1;
-    jj = floor(xyz_particle.e21/dy)+1;
-    kk = floor(xyz_particle.e31/dz)+1;
+    // by adding a really small number to dx, it stops it from putting
+    // the stuff on the right wall of the cell into the next cell, and
+    // puts everything from the left wall to the right wall of a cell
+    // into the left cell. Makes it simpler for interpolation, as without this,
+    // the interpolation would reference outside the array if the input position was exactly on
+    // nx, ny, or nz.
+    ii = floor(xyz_particle.e11/(dx+1e-9)) + 1;
+    jj = floor(xyz_particle.e21/(dy+1e-9)) + 1;
+    kk = floor(xyz_particle.e31/(dz+1e-9)) + 1;
 
     // fractional distance between nearest nodes
-    iw = (xyz_particle.e11/dx-floor(xyz_particle.e11/dx));
-    jw = (xyz_particle.e21/dy-floor(xyz_particle.e21/dy));
-    kw = (xyz_particle.e31/dz-floor(xyz_particle.e31/dz));
+    iw = (xyz_particle.e11/(dx+1e-9) - floor(xyz_particle.e11/(dx+1e-9)));
+    jw = (xyz_particle.e21/(dy+1e-9) - floor(xyz_particle.e21/(dy+1e-9)));
+    kw = (xyz_particle.e31/(dz+1e-9) - floor(xyz_particle.e31/(dz+1e-9)));
 
     // initialize the counters from the indices
     ip = 1;
@@ -269,21 +275,24 @@ void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
     }
 
     // now check to make sure that the indices are within the Eulerian grid domain
-    // Notice that this includes that no particles touching the far walls which
-    // would cause this interpolation method trouble!
-    if( (ii < 1 || ii >= nx) && nx > 1 )
+    // Notice that this no longer includes throwing an error if particles touch the far walls
+    // because adding a small number to dx in the index calculation forces the index to be completely left side biased
+    if( ii < 1 || ii > nx )
     {
-        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle x position is out of range! x = \"" << xyz_particle.e11 << "\" ii = \"" << ii << "\" nx = \"" << nx << "\"\n";
+        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle x position is out of range! x = \"" << xyz_particle.e11 
+            << "\" ii = \"" << ii << "\" nx = \"" << nx << "\"\n";
         exit(1);
     }
-    if( (jj < 1 || jj >= ny) && ny > 1 )
+    if( jj < 1 || jj > ny )
     {
-        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle y position is out of range! y = \"" << xyz_particle.e21 << "\" jj = \"" << jj << "\" ny = \"" << ny << "\"\n";
+        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle y position is out of range! y = \"" << xyz_particle.e21 
+            << "\" jj = \"" << jj << "\" ny = \"" << ny << "\"\n";
         exit(1);
     }
-    if( (kk < 1 || kk >= nz) && nz > 1 )
+    if( kk < 1 || kk > nz )
     {
-        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle z position is out of range! z = \"" << xyz_particle.e31 << "\" kk = \"" << kk << "\" nz = \"" << nz << "\"\n";
+        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle z position is out of range! z = \"" << xyz_particle.e31 
+            << "\" kk = \"" << kk << "\" nz = \"" << nz << "\"\n";
         exit(1);
     }
 
