@@ -225,9 +225,6 @@ void Eulerian::createFluxDiv()
 void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
 {
 
-    std::cout << "[Eulerian] \t setting interp3D indexing for particle x = \"" 
-        << xyz_particle.e11 << "\" y = \"" << xyz_particle.e21 << "\" z = \"" << xyz_particle.e31 << "\"\n";
-        
     // the next steps are to figure out the right indices to grab the values for cube from the data, 
     // where indices are forced to be special if nx, ny, or nz are zero.
     // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
