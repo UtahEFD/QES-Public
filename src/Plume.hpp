@@ -57,7 +57,7 @@ class Plume {
         double lBndx,lBndy,lBndz,uBndx,uBndy,uBndz;     // these are copies of the input parameters boxBoundsX1, boxBoundsX2, boxBoundsY1, ... . These are the upper and lower bounds in each direction of the concentration sampling boxes for output
         double quanX,quanY,quanZ;           // funny, these appear to be the same thing as the boxSize variables
         std::vector<double> xBoxCen,yBoxCen,zBoxCen;    // I believe these are the list of x,y, and z points for the concentration sampling box information
-        double tStepInp,avgTime;            // these are copies of input parameters timeStep and timeAvg. Since timeStep is the integration timestep and timeAvg is the output concentration averaging time, it is strange to me to pull them out next to each other in this way. Also, the resulting names seem terrible.
+        double dt,avgTime;            // these are copies of input parameters timeStep and timeAvg. Since timeStep is the integration timestep and timeAvg is the output concentration averaging time, it is strange to me to pull them out next to each other in this way. Also, the resulting names seem terrible.
         double sCBoxTime;           // a copy of the input startTime, which is the starting time for averaging of the output concentration sampling
         int numTimeStep;        // a copy of the dispersion number of timesteps for the simulation
         std::vector<double> tStrt;  // a copy of the dispersion tStrt, which is the time of release for each set of particles to release in the simulation
@@ -66,9 +66,14 @@ class Plume {
         std::vector<double> cBox,conc;      // these are the concentration box and concentration values for the simulation
 
 
-        int tStep;  // this is the integration timestep loop counter. Why the heck it is out here instead of in the loop is beyond me
-        
-        int loopExt=0;
+        // these values are calculated from the urb data during construction
+        // they are used for applying boundary conditions at the walls of the domain
+        double domainXstart;    // the urb domain starting x value
+        double domainXend;      // the urb domain ending x value
+        double domainYstart;    // the urb domain starting y value
+        double domainYend;      // the urb domain ending y value
+        double domainZstart;    // the urb domain starting z value
+        double domainZend;      // the urb domain ending z value
 
 
         // still need to figure out how this is going to work, especially with the data structures
@@ -80,35 +85,12 @@ class Plume {
         // might need to create multiple versions depending on the selection of boundary condition types by the inputs
         void enforceWallBCs(const double& xPos,const double& yPos,const double& zPos,bool &isActive);
 
-        // these values are calculated from the urb data during construction
-        // they are used for applying boundary conditions at the walls of the domain
-        double domainXstart;    // the urb domain starting x value
-        double domainXend;      // the urb domain ending x value
-        double domainYstart;    // the urb domain starting y value
-        double domainYend;      // the urb domain ending y value
-        double domainZstart;    // the urb domain starting z value
-        double domainZend;      // the urb domain ending z value
-
         
-        // ironically, almost all of these functions are used only by "reflection", which isn't even called now
-        // reflection is normally called right after the particles have been advected and checked, as a way to
-        // handle wall boundary conditions
+        // functions used to average the output concentrations
         void average(const int, const Dispersion*, const Urb*);     // this one is called right at output. Going to keep. Calculates the concentration averages
-        void outputConc();      // doesn't appear to exist anymore
-        void reflection(double&, double&, const double&, const  double&,  const double&, const double&
-        		,double&,double&,const Eulerian*,const Urb*,const int&,const int&,const int&,double&,double&);      // this thing is almost bigger and longer than plume! There is a simplified version as if it is just Brian's code, but is not enough
-        double dot(const pos&, const pos&); // calculates the dot product of two pos datatypes. Shouldn't this be put in where the pos datatype is defined?
-        pos normalize(const pos&); // calculates the norm of a pos datatype. Shouldn't this be put in where the pos datatype is defined?
-        pos VecScalarMult(const pos&,const double&);    // calculates a pos datatype multipled by a scalar. Again, shoudn't this go where the pos datatype is defined?
-        pos reflect(const pos&,const pos&);     // ah, here is the smaller reflect function. Shouldn't this go where the pos datatype is defined?
-        pos posSubs(const pos&,const pos&);     // subtract two pos vector values. Shouldn't this go where the pos datatype is defined?
-        pos posAdd(const pos&,const pos&);      // add two pos vector values. Shouldn't this go where the pos datatype is defined?
-        double distance(const pos&,const pos&);     // calculate the distance between two pos vectors. Shouldn't this go where the pos datatype is defined?
         
-        // these are just some standard utility functions not specific to a datatype
-        double min(double[],int);
-        double max(double[],int);
         
+
         // output manager
         // looks like the main variables to output are concentration at each x,y, and z position for each time
         // where the values are only for the concentration sampling boxes and concentration sampling times as calculated during the constructor setup
@@ -139,5 +121,6 @@ class Plume {
         std::map<std::string,AttVectorDbl> map_att_vector_dbl; 
         std::vector<AttScalarDbl> output_scalar_dbl;       
         std::vector<AttVectorDbl> output_vector_dbl;
+
 };
 #endif

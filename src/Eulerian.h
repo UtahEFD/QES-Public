@@ -23,21 +23,6 @@ public:
                             // put into Urb and Turb, depending on what is needed. I bet some of these functions currently reside in Plume.
     
 
-    double vonKar;  // the von karman coefficient, used in Boundary Layer meterology theory for calculations of near ground wind fields, the friction velocity ustar, and other Surface Layer variables
-    
-    typedef struct{ // not sure what this is yet
-        int c;
-    }cell;	
-    std::vector<cell> CellType,CellBuild;   // this is not used in Eulerian.cpp, probably set/called from inside Plume or Dispersion?
-
-
-    // 
-    // New code variables here
-    //
-    
-
-
-
     // Still need Tau variables.  They are defined here:
     std::vector<matrix6> taudx,taudy,taudz;     // these are the gradients of tau in each direction. Tau is still kept inside Turb
                                                 // this is the only non symmetric parts of the gradient of the stress tensor 
@@ -51,42 +36,12 @@ public:
                                     // but now it is flux_div.e11, flux_div.e21, flux_div.e31
 
 
-
-    std::vector<matrix9> eigVec,eigVecInv;      // I believe these are the eigenvector and inverse eigenvector of the A1 matrix, so probably won't be used
-    
-
-    
-    std::vector<double> ustar,dudz;             // this is the friction velocity, and the gradient of the mean wind along the ground. Both are usually used in BL theory for value estimation along the ground
-                                                // so probably won't be used, but maybe when we add in deposition, it comes back
-                                                // actually, these are not used in Eulerian.cpp, dispersion, or plume!!! Must be leftovers from turb
-    
-    std::vector<diagonal> eigVal;               // I believe this is the eigenvalue of the A1 matrix, so probably won't be used
-    
-    std::vector<vec3> ka0,g2nd;                 // no clue what these are. ka0 comes from a vector multiply of the eigenvector inverse and some a0 variable, in the calc A1 matrix function
-                                                // g2nd seems to be adding a bunch of the stress tensor components together, also done in the calc A1 matrix function
-                                                // I suspect these are temporary variables for the calc A1 matrix function. That being said, they are both used in the old Plume.
-    vec3 windP,windPRot;                // not sure what these are, but they are not used in Eulerian.cpp, just in Plume.cpp. They are used with something called uPrime, vPrime, wPrime.
-                                        // these prime values are used in dispersion to set the initial values of new particles
-                                        // this is just an e11, e21, e31 struct of values. Seems to be used like a temporary variable somehow
-                                        // whatever the heck this is being used for makes no sense to me.
-    
     void display(const matrix9&);       // you would think this should be a function put with the datatype. Seems useful, especially in debug mode
     void display(const matrix6&);       // you would think this should be a function put with the datatype. Seems useful, especially in debug mode
     void display(const vec3&);       // you would think this should be a function put with the datatype. Seems useful, especially in debug mode
     void display(const diagonal&);       // you would think this should be a function put with the datatype. Seems useful, especially in debug mode
     
-    vec3 matrixVecMult(const matrix9&, const vec3&);    // since this involves two datatypes, not sure if you can put it into a single class. Is matrix multiplication of two datatypes
-    std::vector<double> zInMeters;          // this isn't used anywhere
-    matrix9 matrixInv(const matrix6&);      // since this involves two datatypes, not sure if you can put it into a single class. Is getting the inverse of the matrix6 datatype out as a matrix 9 value
-    double matrixDet(const matrix6&);       // seems like this should be a function put with the datatype. Is getting the determinant of a matrix 6 type
-    double matrixDet(const matrix9&);       // seems like this should be a function put with the datatype. Is getting the determinant of a matrix 9 type
-    double matNormFro(const matrix9&);      // seems like this should be a function put with the datatype. I'm a bit confused by it. Looks like getting a transform of the matrix, performing matrix multiplication, then the norm, but it isn't a transform of the matrix. It ends up being the same values of the matrix. So is it matrix^2 then norm?
-    double matNormFro(const matrix6&);      // seems like this should be a function put with the datatype. I'm a bit confused by it. Looks like getting a transform of the matrix, performing matrix multiplication, then the norm, but it isn't a transform of the matrix. It ends up being the same values of the matrix. So is it matrix^2 then norm?
-    double matCondFro(const matrix6& mat);       // seems like this should be a function put with the datatype. I think this is calculating the condition of the matrix? It uses the matNormFro stuff in the calulation.
-    double matCondFro(matrix9& mat,double);       // seems like this should be a function put with the datatype. I think this is calculating the condition of the matrix? It uses the matNormFro stuff in the calulation.
-    
     int nx,ny,nz,nt;    // a copy of the urb grid information, the number of values in each dimension, including time
-    double zo;      // a constant representing the roughness length
     double dx,dy,dz;    // a copy of the urb grid information, the difference between points in the grid
 
 
@@ -120,29 +75,9 @@ private:
     void setDY_Backward(const Turb* turb, const int idx);   // second order backward differencing for calc gradient in the y direction of tau
     void setDZ_Backward(const Turb* turb, const int idx);   // second order backward differencing for calc gradient in the z direction of tau
 
-    void createUstar();         // this function doesn't exist
-    void createTausAndLamdas(); // this function doesn't exist
     void createTauGrads(Urb*,Turb*);
     void createFluxDiv();       // this function takes the TauGrads and turns them into a bunch simpler values to use
-    void writeSigmas();         // this function doesn't exist
-    void createA1Matrix(Urb*,Turb*);        // this is ugly as heck. Looks like it starts out by setting a bunch of the A values. But it is confusing cause it seems to break it down into parts, then add stuff back together at the end.
-                                            // takes 100 lines of code or so just to set the initial values of this A matrix. But these are all temporary values. It then stuffs the values into the real A matrix, and does some kind of imaginary value check
-                                            // but at the same time, nothing is ever making it imaginary or no. instead it looks like a bunch of checks to make sure the matrix is realizable, and to swap values around with sort/swapping to make it realizable
-                                            // okay so it is setting the values, then doing a HUGE list of checks to make sure it is doable or warning if it is not. Then calculates a bunch
-                                            // of other values to be used later like the eigenvectors, eigenvalues, this strange ka0 and g2nd.
-    void swap(double&,double&);     // moves two values around. Looks like this was used for swapping whole rows of the A matrix to make matrix math more stable. Not sure if we need this or not once we have the makeRealizable stuff going. Or I guess it can be part of makeRealizeable?
     
-    // these look like useful functions for a matrix9 dataset, should probably put them in this matrix9 dataset. Probably going to use each of these functions in Brian's code implementation
-    matrix9 matrixInv(matrix9&,double);
-    matrix9 matrixMult(const matrix9&,const matrix9&);
-    matrix9 matrixScalarMult(const matrix9&,const double&);
-    matrix9 matrixSubs(const matrix9&,const matrix9&);  // only used in Eulerian.cpp. An interesting function, it is taking the difference between two matrix9 datasets. Shouldn't this be placed in the matrix9 function sets?
-    
-    // some vec3 functions that should probably be put with the datatype. I guess that depends on if we still need this stuff since we still compute an A1 matrix, but now in the moment instead of ahead of time.
-    double vecNorm(const vec3&);                    // only used in Eulerian.cpp. Looks like taking a vec3 and computing the norm. Shouldn't this be added to the vec3 dataype list of functions?
-    vec3 vecScalarDiv(const vec3&, const double&);      // only used in Eulerian.cpp. Looks like taking a vec3 and dividing each component by a scalar. Shouldn't this be added to the vec3 dataype list of functions?
-    vec3 vecScalarMult(const vec3&, const double&);     // only used in Eulerian.cpp. Plume.cpp defines it's own version. Looks like taking a vec3 and multiplying each value by a scalar. Shouldn't this be placed in the vec3 datatype?
-    double maxValAbs(const vec3&);          // only used in Eulerian.cpp when performing checks on the A1 matrix. Looks like a simple function just looking for which is the greatest absolute max of a three valued vector. Not sure if needs to be kept or no. Shouldn't this be placed in the vec3 datatype?
 };
 
 // second order forward differencing for calc gradient in the x direction of tau
