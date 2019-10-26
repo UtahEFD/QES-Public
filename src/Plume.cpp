@@ -85,12 +85,12 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     // calculate the urb domain start and end values, needed for wall boundary condition application
     // I would guess that it is the first x value in the list of x points, and the last x value from the list of x points
     // same thing for each of the y and z values
-    domainXstart = urb->grid.x.at(1);
-    domainXend = urb->grid.x.at(nx);
-    domainYstart = urb->grid.y.at(1);
-    domainYend = urb->grid.y.at(ny);
-    domainZstart = urb->grid.z.at(1);
-    domainZend = urb->grid.z.at(nz);
+    domainXstart = urb->grid.x.at(0);
+    domainXend = urb->grid.x.at(nx-1);
+    domainYstart = urb->grid.y.at(0);
+    domainYend = urb->grid.y.at(ny-1);
+    domainZstart = urb->grid.z.at(0);
+    domainZend = urb->grid.z.at(nz-1);
 
     
     /* setup output information */
@@ -515,7 +515,7 @@ matrix6 Plume::makeRealizable(const matrix6& tau,const double& invarianceTol)
     // or if too many iterations go on, give a warning. I've had trouble with this taking too long
     // if it isn't realizable, so maybe another approach for when the iterations are reached might be smart
     int iter = 0;
-    while( (invariants.e11 < invarianceTol || invariants.e21 < invarianceTol || invariants.e31 < invarianceTol) && iter <= 1000 )
+    while( (invariants.e11 < invarianceTol || invariants.e21 < invarianceTol || invariants.e31 < invarianceTol) && iter < 1000 )
     {
         iter = iter + 1;
 
@@ -529,7 +529,7 @@ matrix6 Plume::makeRealizable(const matrix6& tau,const double& invarianceTol)
 
     }
 
-    if( iter == 1000 )
+    if( iter == 999 )
     {
         std::cout << "WARNING (Plume::makeRealizable): unable to make stress tensor realizble.";
     }

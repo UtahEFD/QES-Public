@@ -48,12 +48,12 @@ boost can be loaded in separate from the boost libraries, and where the default 
 is 4.8.5 (you probably need gcc 5.4.0 or higher), do the following before running
 cmake from the clean build directory:
 ```
-	module load cuda/8.0
-	module load gcc/5.4.0
-	module load cmake/3.11.2 
-	module load gdal/2.3.1
-	module load boost/1.66.0
-	ml netcdf-cxx
+module load cuda/8.0
+module load gcc/5.4.0
+module load cmake/3.11.2 
+module load gdal/2.3.1
+module load boost/1.66.0
+ml netcdf-cxx
 ```
 Where just to keep things safe with overkill, all the expected libraries for when Plume, Urb, and Turb are finished are loaded as well as the current minimum requirements. Now the cmake command needs to be something like the following:
 ```    

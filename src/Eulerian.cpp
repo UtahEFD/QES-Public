@@ -207,7 +207,7 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
 void Eulerian::createFluxDiv()
 {
     // loop through each cell and calculate the flux_div from the gradients of tao
-    for(int idx = 1; idx < nx*ny*nz; idx++) {
+    for(int idx = 0; idx < nx*ny*nz; idx++) {
         flux_div.at(idx).e11 = taudx.at(idx).e11 + taudy.at(idx).e12 + taudz.at(idx).e13;
         flux_div.at(idx).e21 = taudx.at(idx).e12 + taudy.at(idx).e22 + taudz.at(idx).e23;
         flux_div.at(idx).e31 = taudx.at(idx).e13 + taudy.at(idx).e23 + taudz.at(idx).e33;
@@ -235,9 +235,9 @@ void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
     // into the left cell. Makes it simpler for interpolation, as without this,
     // the interpolation would reference outside the array if the input position was exactly on
     // nx, ny, or nz.
-    ii = floor(xyz_particle.e11/(dx+1e-9)) + 1;
-    jj = floor(xyz_particle.e21/(dy+1e-9)) + 1;
-    kk = floor(xyz_particle.e31/(dz+1e-9)) + 1;
+    ii = floor(xyz_particle.e11/(dx+1e-9));
+    jj = floor(xyz_particle.e21/(dy+1e-9));
+    kk = floor(xyz_particle.e31/(dz+1e-9));
 
     // fractional distance between nearest nodes
     iw = (xyz_particle.e11/(dx+1e-9) - floor(xyz_particle.e11/(dx+1e-9)));
@@ -252,19 +252,19 @@ void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
     // now set the indices and the counters from the indices
     if( nx == 1 )
     {
-        ii = 1;
+        ii = 0;
         iw = 0.0;
         ip = 0;
     }
     if( ny == 1 )
     {
-        jj = 1;
+        jj = 0;
         jw = 0.0;
         jp = 0;
     }
     if( nz == 1 )
     {
-        kk = 1;
+        kk = 0;
         kw = 0.0;
         kp = 0;
     }
@@ -272,22 +272,22 @@ void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
     // now check to make sure that the indices are within the Eulerian grid domain
     // Notice that this no longer includes throwing an error if particles touch the far walls
     // because adding a small number to dx in the index calculation forces the index to be completely left side biased
-    if( ii < 1 || ii > nx )
+    if( ii < 0 || ii > nx-1 )
     {
         std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle x position is out of range! x = \"" << xyz_particle.e11 
-            << "\" ii = \"" << ii << "\" nx = \"" << nx << "\"\n";
+            << "\" ii = \"" << ii << "\" nx-1 = \"" << nx-1 << "\"\n";
         exit(1);
     }
-    if( jj < 1 || jj > ny )
+    if( jj < 0 || jj > ny-1 )
     {
         std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle y position is out of range! y = \"" << xyz_particle.e21 
-            << "\" jj = \"" << jj << "\" ny = \"" << ny << "\"\n";
+            << "\" jj = \"" << jj << "\" ny-1 = \"" << ny-1 << "\"\n";
         exit(1);
     }
-    if( kk < 1 || kk > nz )
+    if( kk < 0 || kk > nz-1 )
     {
         std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle z position is out of range! z = \"" << xyz_particle.e31 
-            << "\" kk = \"" << kk << "\" nz = \"" << nz << "\"\n";
+            << "\" kk = \"" << kk << "\" nz-1 = \"" << nz-1 << "\"\n";
         exit(1);
     }
 
@@ -314,14 +314,14 @@ double Eulerian::interp3D(const std::vector<double>& EulerData,const std::string
     double cube[2][2][2] = {0.0};
 
     // now set the cube values
-    for(int kkk = 0; kk <= kk+kp; kkk++)
+    for(int kkk = 0; kkk <= kp; kkk++)
     {
-        for(int jjj = 0; jj <= jj+jp; jjj++)
+        for(int jjj = 0; jjj <= jp; jjj++)
         {
-            for(int iii = 0; ii <= ii+ip; iii++)
+            for(int iii = 0; iii <= ip; iii++)
             {
                 // set the actual indices to use for the linearized Euler data
-                int idx = kkk*ny*nx + jjj*nx + iii;
+                int idx = (kk+kkk)*ny*nx + (jj+jjj)*nx + (ii+iii);
                 cube[iii][jjj][kkk] = EulerData.at(idx);
             }
         }
@@ -329,8 +329,8 @@ double Eulerian::interp3D(const std::vector<double>& EulerData,const std::string
 
     // now do the interpolation, with the cube, the counters from the indices,
     // and the normalized width between the point locations and the closest cell left walls
-    double u_low  = (1-iw)*(1-jw)*cube[1][1][1] + iw*(1-jw)*cube[2][1][1] + iw*jw*cube[2][2][1] + (1-iw)*jw*cube[1][2][1];
-    double u_high = (1-iw)*(1-jw)*cube[1][1][2] + iw*(1-jw)*cube[2][1][2] + iw*jw*cube[2][2][2] + (1-iw)*jw*cube[1][2][2];
+    double u_low  = (1-iw)*(1-jw)*cube[0][0][0] + iw*(1-jw)*cube[1][0][0] + iw*jw*cube[1][1][0] + (1-iw)*jw*cube[0][1][0];
+    double u_high = (1-iw)*(1-jw)*cube[0][0][1] + iw*(1-jw)*cube[1][0][1] + iw*jw*cube[1][1][1] + (1-iw)*jw*cube[0][1][1];
     outputVal = (u_high-u_low)*kw + u_low;
 
     // make sure CoEps is always bigger than zero, and eps is two orders of magnitude bigger than sigma2
@@ -378,14 +378,14 @@ vec3 Eulerian::interp3D(const std::vector<vec3>& EulerData)
     double cube_e31[2][2][2] = {0.0};
 
     // now set the cube values
-    for(int kkk = 0; kk <= kk+kp; kkk++)
+    for(int kkk = 0; kkk <= kp; kkk++)
     {
-        for(int jjj = 0; jj <= jj+jp; jjj++)
+        for(int jjj = 0; jjj <= jp; jjj++)
         {
-            for(int iii = 0; ii <= ii+ip; iii++)
+            for(int iii = 0; iii <= ip; iii++)
             {
                 // set the actual indices to use for the linearized Euler data
-                int idx = kkk*ny*nx + jjj*nx + iii;
+                int idx = (kk+kkk)*ny*nx + (jj+jjj)*nx + (ii+iii);
                 cube_e11[iii][jjj][kkk] = EulerData.at(idx).e11;
                 cube_e21[iii][jjj][kkk] = EulerData.at(idx).e21;
                 cube_e31[iii][jjj][kkk] = EulerData.at(idx).e31;
@@ -395,16 +395,16 @@ vec3 Eulerian::interp3D(const std::vector<vec3>& EulerData)
 
     // now do the interpolation, with the cube, the counters from the indices,
     // and the normalized width between the point locations and the closest cell left walls
-    double u_low  = (1-iw)*(1-jw)*cube_e11[1][1][1] + iw*(1-jw)*cube_e11[2][1][1] + iw*jw*cube_e11[2][2][1] + (1-iw)*jw*cube_e11[1][2][1];
-    double u_high = (1-iw)*(1-jw)*cube_e11[1][1][2] + iw*(1-jw)*cube_e11[2][1][2] + iw*jw*cube_e11[2][2][2] + (1-iw)*jw*cube_e11[1][2][2];
+    double u_low  = (1-iw)*(1-jw)*cube_e11[0][0][0] + iw*(1-jw)*cube_e11[1][0][0] + iw*jw*cube_e11[1][1][0] + (1-iw)*jw*cube_e11[0][1][0];
+    double u_high = (1-iw)*(1-jw)*cube_e11[0][0][1] + iw*(1-jw)*cube_e11[1][0][1] + iw*jw*cube_e11[1][1][1] + (1-iw)*jw*cube_e11[0][1][1];
     outputVal.e11 = (u_high-u_low)*kw + u_low;
 
-    u_low         = (1-iw)*(1-jw)*cube_e21[1][1][1] + iw*(1-jw)*cube_e21[2][1][1] + iw*jw*cube_e21[2][2][1] + (1-iw)*jw*cube_e21[1][2][1];
-    u_high        = (1-iw)*(1-jw)*cube_e21[1][1][2] + iw*(1-jw)*cube_e21[2][1][2] + iw*jw*cube_e21[2][2][2] + (1-iw)*jw*cube_e21[1][2][2];
+    u_low         = (1-iw)*(1-jw)*cube_e21[0][0][0] + iw*(1-jw)*cube_e21[1][0][0] + iw*jw*cube_e21[1][1][0] + (1-iw)*jw*cube_e21[0][1][0];
+    u_high        = (1-iw)*(1-jw)*cube_e21[0][0][1] + iw*(1-jw)*cube_e21[1][0][1] + iw*jw*cube_e21[1][1][1] + (1-iw)*jw*cube_e21[0][1][1];
     outputVal.e21 = (u_high-u_low)*kw + u_low;
     
-    u_low         = (1-iw)*(1-jw)*cube_e31[1][1][1] + iw*(1-jw)*cube_e31[2][1][1] + iw*jw*cube_e31[2][2][1] + (1-iw)*jw*cube_e31[1][2][1];
-    u_high        = (1-iw)*(1-jw)*cube_e31[1][1][2] + iw*(1-jw)*cube_e31[2][1][2] + iw*jw*cube_e31[2][2][2] + (1-iw)*jw*cube_e31[1][2][2];
+    u_low         = (1-iw)*(1-jw)*cube_e31[0][0][0] + iw*(1-jw)*cube_e31[1][0][0] + iw*jw*cube_e31[1][1][0] + (1-iw)*jw*cube_e31[0][1][0];
+    u_high        = (1-iw)*(1-jw)*cube_e31[0][0][1] + iw*(1-jw)*cube_e31[1][0][1] + iw*jw*cube_e31[1][1][1] + (1-iw)*jw*cube_e31[0][1][1];
     outputVal.e31 = (u_high-u_low)*kw + u_low;
 
     return outputVal;
@@ -436,14 +436,14 @@ diagonal Eulerian::interp3D(const std::vector<diagonal>& EulerData,const std::st
     double cube_e33[2][2][2] = {0.0};
 
     // now set the cube values
-    for(int kkk = 0; kk <= kk+kp; kkk++)
+    for(int kkk = 0; kkk <= kp; kkk++)
     {
-        for(int jjj = 0; jj <= jj+jp; jjj++)
+        for(int jjj = 0; jjj <= jp; jjj++)
         {
-            for(int iii = 0; ii <= ii+ip; iii++)
+            for(int iii = 0; iii <= ip; iii++)
             {
                 // set the actual indices to use for the linearized Euler data
-                int idx = kkk*ny*nx + jjj*nx + iii;
+                int idx = (kk+kkk)*ny*nx + (jj+jjj)*nx + (ii+iii);
                 cube_e11[iii][jjj][kkk] = EulerData.at(idx).e11;
                 cube_e22[iii][jjj][kkk] = EulerData.at(idx).e22;
                 cube_e33[iii][jjj][kkk] = EulerData.at(idx).e33;
@@ -453,16 +453,16 @@ diagonal Eulerian::interp3D(const std::vector<diagonal>& EulerData,const std::st
 
     // now do the interpolation, with the cube, the counters from the indices,
     // and the normalized width between the point locations and the closest cell left walls
-    double u_low  = (1-iw)*(1-jw)*cube_e11[1][1][1] + iw*(1-jw)*cube_e11[2][1][1] + iw*jw*cube_e11[2][2][1] + (1-iw)*jw*cube_e11[1][2][1];
-    double u_high = (1-iw)*(1-jw)*cube_e11[1][1][2] + iw*(1-jw)*cube_e11[2][1][2] + iw*jw*cube_e11[2][2][2] + (1-iw)*jw*cube_e11[1][2][2];
+    double u_low  = (1-iw)*(1-jw)*cube_e11[0][0][0] + iw*(1-jw)*cube_e11[1][0][0] + iw*jw*cube_e11[1][1][0] + (1-iw)*jw*cube_e11[0][1][0];
+    double u_high = (1-iw)*(1-jw)*cube_e11[0][0][1] + iw*(1-jw)*cube_e11[1][0][1] + iw*jw*cube_e11[1][1][1] + (1-iw)*jw*cube_e11[0][1][1];
     outputVal.e11 = (u_high-u_low)*kw + u_low;
 
-    u_low         = (1-iw)*(1-jw)*cube_e22[1][1][1] + iw*(1-jw)*cube_e22[2][1][1] + iw*jw*cube_e22[2][2][1] + (1-iw)*jw*cube_e22[1][2][1];
-    u_high        = (1-iw)*(1-jw)*cube_e22[1][1][2] + iw*(1-jw)*cube_e22[2][1][2] + iw*jw*cube_e22[2][2][2] + (1-iw)*jw*cube_e22[1][2][2];
+    u_low         = (1-iw)*(1-jw)*cube_e22[0][0][0] + iw*(1-jw)*cube_e22[1][0][0] + iw*jw*cube_e22[1][1][0] + (1-iw)*jw*cube_e22[0][1][0];
+    u_high        = (1-iw)*(1-jw)*cube_e22[0][0][1] + iw*(1-jw)*cube_e22[1][0][1] + iw*jw*cube_e22[1][1][1] + (1-iw)*jw*cube_e22[0][1][1];
     outputVal.e22 = (u_high-u_low)*kw + u_low;
     
-    u_low         = (1-iw)*(1-jw)*cube_e33[1][1][1] + iw*(1-jw)*cube_e33[2][1][1] + iw*jw*cube_e33[2][2][1] + (1-iw)*jw*cube_e33[1][2][1];
-    u_high        = (1-iw)*(1-jw)*cube_e33[1][1][2] + iw*(1-jw)*cube_e33[2][1][2] + iw*jw*cube_e33[2][2][2] + (1-iw)*jw*cube_e33[1][2][2];
+    u_low         = (1-iw)*(1-jw)*cube_e33[0][0][0] + iw*(1-jw)*cube_e33[1][0][0] + iw*jw*cube_e33[1][1][0] + (1-iw)*jw*cube_e33[0][1][0];
+    u_high        = (1-iw)*(1-jw)*cube_e33[0][0][1] + iw*(1-jw)*cube_e33[1][0][1] + iw*jw*cube_e33[1][1][1] + (1-iw)*jw*cube_e33[0][1][1];
     outputVal.e33 = (u_high-u_low)*kw + u_low;
 
     // make sure sigma is always bigger than zero, and two orders of magnitude smaller than Eps
@@ -516,14 +516,14 @@ matrix6 Eulerian::interp3D(const std::vector<matrix6>& EulerData)
     double cube_e33[2][2][2] = {0.0};
 
     // now set the cube values
-    for(int kkk = 0; kk <= kk+kp; kkk++)
+    for(int kkk = 0; kkk <= kp; kkk++)
     {
-        for(int jjj = 0; jj <= jj+jp; jjj++)
+        for(int jjj = 0; jjj <= jp; jjj++)
         {
-            for(int iii = 0; ii <= ii+ip; iii++)
+            for(int iii = 0; iii <= ip; iii++)
             {
                 // set the actual indices to use for the linearized Euler data
-                int idx = kkk*ny*nx + jjj*nx + iii;
+                int idx = (kk+kkk)*ny*nx + (jj+jjj)*nx + (ii+iii);
                 cube_e11[iii][jjj][kkk] = EulerData.at(idx).e11;
                 cube_e12[iii][jjj][kkk] = EulerData.at(idx).e12;
                 cube_e13[iii][jjj][kkk] = EulerData.at(idx).e13;
@@ -536,28 +536,28 @@ matrix6 Eulerian::interp3D(const std::vector<matrix6>& EulerData)
 
     // now do the interpolation, with the cube, the counters from the indices,
     // and the normalized width between the point locations and the closest cell left walls
-    double u_low  = (1-iw)*(1-jw)*cube_e11[1][1][1] + iw*(1-jw)*cube_e11[2][1][1] + iw*jw*cube_e11[2][2][1] + (1-iw)*jw*cube_e11[1][2][1];
-    double u_high = (1-iw)*(1-jw)*cube_e11[1][1][2] + iw*(1-jw)*cube_e11[2][1][2] + iw*jw*cube_e11[2][2][2] + (1-iw)*jw*cube_e11[1][2][2];
+    double u_low  = (1-iw)*(1-jw)*cube_e11[0][0][0] + iw*(1-jw)*cube_e11[1][0][0] + iw*jw*cube_e11[1][1][0] + (1-iw)*jw*cube_e11[0][1][0];
+    double u_high = (1-iw)*(1-jw)*cube_e11[0][0][1] + iw*(1-jw)*cube_e11[1][0][1] + iw*jw*cube_e11[1][1][1] + (1-iw)*jw*cube_e11[0][1][1];
     outputVal.e11 = (u_high-u_low)*kw + u_low;
 
-    u_low         = (1-iw)*(1-jw)*cube_e12[1][1][1] + iw*(1-jw)*cube_e12[2][1][1] + iw*jw*cube_e12[2][2][1] + (1-iw)*jw*cube_e12[1][2][1];
-    u_high        = (1-iw)*(1-jw)*cube_e12[1][1][2] + iw*(1-jw)*cube_e12[2][1][2] + iw*jw*cube_e12[2][2][2] + (1-iw)*jw*cube_e12[1][2][2];
+    u_low         = (1-iw)*(1-jw)*cube_e12[0][0][0] + iw*(1-jw)*cube_e12[1][0][0] + iw*jw*cube_e12[1][1][0] + (1-iw)*jw*cube_e12[0][1][0];
+    u_high        = (1-iw)*(1-jw)*cube_e12[0][0][1] + iw*(1-jw)*cube_e12[1][0][1] + iw*jw*cube_e12[1][1][1] + (1-iw)*jw*cube_e12[0][1][1];
     outputVal.e12 = (u_high-u_low)*kw + u_low;
 
-    u_low         = (1-iw)*(1-jw)*cube_e13[1][1][1] + iw*(1-jw)*cube_e13[2][1][1] + iw*jw*cube_e13[2][2][1] + (1-iw)*jw*cube_e13[1][2][1];
-    u_high        = (1-iw)*(1-jw)*cube_e13[1][1][2] + iw*(1-jw)*cube_e13[2][1][2] + iw*jw*cube_e13[2][2][2] + (1-iw)*jw*cube_e13[1][2][2];
+    u_low         = (1-iw)*(1-jw)*cube_e13[0][0][0] + iw*(1-jw)*cube_e13[1][0][0] + iw*jw*cube_e13[1][1][0] + (1-iw)*jw*cube_e13[0][1][0];
+    u_high        = (1-iw)*(1-jw)*cube_e13[0][0][1] + iw*(1-jw)*cube_e13[1][0][1] + iw*jw*cube_e13[1][1][1] + (1-iw)*jw*cube_e13[0][1][1];
     outputVal.e13 = (u_high-u_low)*kw + u_low;
 
-    u_low         = (1-iw)*(1-jw)*cube_e22[1][1][1] + iw*(1-jw)*cube_e22[2][1][1] + iw*jw*cube_e22[2][2][1] + (1-iw)*jw*cube_e22[1][2][1];
-    u_high        = (1-iw)*(1-jw)*cube_e22[1][1][2] + iw*(1-jw)*cube_e22[2][1][2] + iw*jw*cube_e22[2][2][2] + (1-iw)*jw*cube_e22[1][2][2];
+    u_low         = (1-iw)*(1-jw)*cube_e22[0][0][0] + iw*(1-jw)*cube_e22[1][0][0] + iw*jw*cube_e22[1][1][0] + (1-iw)*jw*cube_e22[0][1][0];
+    u_high        = (1-iw)*(1-jw)*cube_e22[0][0][1] + iw*(1-jw)*cube_e22[1][0][1] + iw*jw*cube_e22[1][1][1] + (1-iw)*jw*cube_e22[0][1][1];
     outputVal.e22 = (u_high-u_low)*kw + u_low;
 
-    u_low         = (1-iw)*(1-jw)*cube_e23[1][1][1] + iw*(1-jw)*cube_e23[2][1][1] + iw*jw*cube_e23[2][2][1] + (1-iw)*jw*cube_e23[1][2][1];
-    u_high        = (1-iw)*(1-jw)*cube_e23[1][1][2] + iw*(1-jw)*cube_e23[2][1][2] + iw*jw*cube_e23[2][2][2] + (1-iw)*jw*cube_e23[1][2][2];
+    u_low         = (1-iw)*(1-jw)*cube_e23[0][0][0] + iw*(1-jw)*cube_e23[1][0][0] + iw*jw*cube_e23[1][1][0] + (1-iw)*jw*cube_e23[0][1][0];
+    u_high        = (1-iw)*(1-jw)*cube_e23[0][0][1] + iw*(1-jw)*cube_e23[1][0][1] + iw*jw*cube_e23[1][1][1] + (1-iw)*jw*cube_e23[0][1][1];
     outputVal.e23 = (u_high-u_low)*kw + u_low;
     
-    u_low         = (1-iw)*(1-jw)*cube_e33[1][1][1] + iw*(1-jw)*cube_e33[2][1][1] + iw*jw*cube_e33[2][2][1] + (1-iw)*jw*cube_e33[1][2][1];
-    u_high        = (1-iw)*(1-jw)*cube_e33[1][1][2] + iw*(1-jw)*cube_e33[2][1][2] + iw*jw*cube_e33[2][2][2] + (1-iw)*jw*cube_e33[1][2][2];
+    u_low         = (1-iw)*(1-jw)*cube_e33[0][0][0] + iw*(1-jw)*cube_e33[1][0][0] + iw*jw*cube_e33[1][1][0] + (1-iw)*jw*cube_e33[0][1][0];
+    u_high        = (1-iw)*(1-jw)*cube_e33[0][0][1] + iw*(1-jw)*cube_e33[1][0][1] + iw*jw*cube_e33[1][1][1] + (1-iw)*jw*cube_e33[0][1][1];
     outputVal.e33 = (u_high-u_low)*kw + u_low;
 
     return outputVal;
@@ -588,14 +588,14 @@ Wind Eulerian::interp3D(const std::vector<Wind>& EulerData)
     double cube_w[2][2][2] = {0.0};
 
     // now set the cube values
-    for(int kkk = 0; kk <= kk+kp; kkk++)
+    for(int kkk = 0; kkk <= kp; kkk++)
     {
-        for(int jjj = 0; jj <= jj+jp; jjj++)
+        for(int jjj = 0; jjj <= jp; jjj++)
         {
-            for(int iii = 0; ii <= ii+ip; iii++)
+            for(int iii = 0; iii <= ip; iii++)
             {
                 // set the actual indices to use for the linearized Euler data
-                int idx = kkk*ny*nx + jjj*nx + iii;
+                int idx = (kk+kkk)*ny*nx + (jj+jjj)*nx + (ii+iii);
                 cube_u[iii][jjj][kkk] = EulerData.at(idx).u;
                 cube_v[iii][jjj][kkk] = EulerData.at(idx).v;
                 cube_w[iii][jjj][kkk] = EulerData.at(idx).w;
@@ -605,16 +605,16 @@ Wind Eulerian::interp3D(const std::vector<Wind>& EulerData)
 
     // now do the interpolation, with the cube, the counters from the indices,
     // and the normalized width between the point locations and the closest cell left walls
-    double u_low  = (1-iw)*(1-jw)*cube_u[1][1][1] + iw*(1-jw)*cube_u[2][1][1] + iw*jw*cube_u[2][2][1] + (1-iw)*jw*cube_u[1][2][1];
-    double u_high = (1-iw)*(1-jw)*cube_u[1][1][2] + iw*(1-jw)*cube_u[2][1][2] + iw*jw*cube_u[2][2][2] + (1-iw)*jw*cube_u[1][2][2];
+    double u_low  = (1-iw)*(1-jw)*cube_u[0][0][0] + iw*(1-jw)*cube_u[1][0][0] + iw*jw*cube_u[1][1][0] + (1-iw)*jw*cube_u[0][1][0];
+    double u_high = (1-iw)*(1-jw)*cube_u[0][0][1] + iw*(1-jw)*cube_u[1][0][1] + iw*jw*cube_u[1][1][1] + (1-iw)*jw*cube_u[0][1][1];
     outputVal.u = (u_high-u_low)*kw + u_low;
 
-    u_low         = (1-iw)*(1-jw)*cube_v[1][1][1] + iw*(1-jw)*cube_v[2][1][1] + iw*jw*cube_v[2][2][1] + (1-iw)*jw*cube_v[1][2][1];
-    u_high        = (1-iw)*(1-jw)*cube_v[1][1][2] + iw*(1-jw)*cube_v[2][1][2] + iw*jw*cube_v[2][2][2] + (1-iw)*jw*cube_v[1][2][2];
+    u_low         = (1-iw)*(1-jw)*cube_v[0][0][0] + iw*(1-jw)*cube_v[1][0][0] + iw*jw*cube_v[1][1][0] + (1-iw)*jw*cube_v[0][1][0];
+    u_high        = (1-iw)*(1-jw)*cube_v[0][0][1] + iw*(1-jw)*cube_v[1][0][1] + iw*jw*cube_v[1][1][1] + (1-iw)*jw*cube_v[0][1][1];
     outputVal.v = (u_high-u_low)*kw + u_low;
     
-    u_low         = (1-iw)*(1-jw)*cube_w[1][1][1] + iw*(1-jw)*cube_w[2][1][1] + iw*jw*cube_w[2][2][1] + (1-iw)*jw*cube_w[1][2][1];
-    u_high        = (1-iw)*(1-jw)*cube_w[1][1][2] + iw*(1-jw)*cube_w[2][1][2] + iw*jw*cube_w[2][2][2] + (1-iw)*jw*cube_w[1][2][2];
+    u_low         = (1-iw)*(1-jw)*cube_w[0][0][0] + iw*(1-jw)*cube_w[1][0][0] + iw*jw*cube_w[1][1][0] + (1-iw)*jw*cube_w[0][1][0];
+    u_high        = (1-iw)*(1-jw)*cube_w[0][0][1] + iw*(1-jw)*cube_w[1][0][1] + iw*jw*cube_w[1][1][1] + (1-iw)*jw*cube_w[0][1][1];
     outputVal.w = (u_high-u_low)*kw + u_low;
 
     return outputVal;
