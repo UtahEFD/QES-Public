@@ -16,6 +16,27 @@ using namespace netCDF::exceptions;
 #include "gdal_priv.h"
 #include "cpl_conv.h" // for CPLMalloc()
 
+class profData 
+{
+public:
+    float zCoord;
+    float ws, wd;
+};
+
+class stationData 
+{
+public:
+    stationData() {}
+    ~stationData() {}
+
+    float xCoord, yCoord;
+    std::vector< std::vector< profData > > profiles;
+
+private:
+};
+
+const double mPI = 3.14159;
+
 int main(int argc, char *argv[])
 {
     if (argc != 3) {
@@ -358,5 +379,246 @@ int main(int argc, char *argv[])
     xmlout << "\t<domain> " << fm_nx << " " << fm_ny << " " << 300 << "</domain>\n\t<cellSize> " << dxf << " " << dyf << " 1.0 </cellSize>\n";
     xmlout << stage3XML;
     xmlout.close();
+
+
+    //
+    // remainder of code is for pulling out wind profiles
+    //
+
+    // Need atm mesh sizes, stored in nx_atm and ny_atm
+    // top grid dimension stored in BOTTOM-TOP_GRID_DIMENSION
+    int nz_atm = 1;
+    gblAttIter = globalAttributes.find("BOTTOM-TOP_GRID_DIMENSION");
+    gblAttIter->second.getValues( &nz_atm );
+    
+    std::cout << "Atmos NZ = " << nz_atm << std::endl;
+    std::cout << "Atmos NY = " << ny_atm << std::endl;
+    std::cout << "Atmos NX = " << nx_atm << std::endl;
+
+    // Wind data vertical positions, stored in PHB and PH
+    // 
+    // For example, 360 time series, 41 vertical, 114 x 114 
+    // SUBDATASET_12_DESC=[360x41x114x114] PH (32-bit floating-point)
+    // SUBDATASET_13_NAME=NETCDF:"/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21":PHB
+    // 
+    // SUBDATASET_13_DESC=[360x41x114x114] PHB (32-bit floating-point)
+    // SUBDATASET_14_NAME=NETCDF:"/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21":T
+    //
+    std::vector<size_t> atmStartIdx = {0,0,0,0};
+    std::vector<size_t> atmCounts = {2,
+                                     static_cast<unsigned long>(nz_atm),
+                                     static_cast<unsigned long>(ny_atm),
+                                     static_cast<unsigned long>(nx_atm)};
+
+    std::vector<double> phbData( 2 * nz_atm * ny_atm * nx_atm );
+    wrfInputFile.getVar("PHB").getVar(atmStartIdx, atmCounts, phbData.data());
+
+    std::vector<double> phData( 2 * nz_atm * ny_atm * nx_atm );
+    wrfInputFile.getVar("PH").getVar(atmStartIdx, atmCounts, phData.data());
+
+    std::cout << "PHB and PH read in..." << std::endl;
+
+    //
+    // Calculate the height  (PHB + PH) / 9.81
+    //
+    std::vector<double> heightData( 2 * nz_atm * ny_atm * nx_atm );
+    for (int t=0; t<2; t++) {
+        for (int k=0; k<nz_atm; k++) { 
+            for (int j=0; j<ny_atm; j++) {
+                for (int i=0; i<nx_atm; i++) {
+                    int l_idx = t*(nz_atm*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + j*nx_atm + i;
+                    heightData[ l_idx ] = (phbData[l_idx] + phData[l_idx]) / 9.81;
+                }
+            }
+        }
+    }
+    std::cout << "Height computed." << std::endl;
+
+    // use winds straight from atmospheric 
+
+    // calculate number of altitudes to store, while reset
+    atmCounts[1] = nz_atm - 1;
+
+    //
+    // Wind components are on staggered grid in U and V
+    //
+    // When these are read in, we will read one additional cell in X
+    // and Y, for U and V, respectively.
+    atmCounts[3] = nx_atm + 1;
+    std::vector<double> UStaggered( 2 * (nz_atm-1) * ny_atm * (nx_atm+1) );
+    wrfInputFile.getVar("U").getVar(atmStartIdx, atmCounts, UStaggered.data());
+    
+    atmCounts[2] = ny_atm + 1;
+    atmCounts[3] = nx_atm;
+    std::vector<double> VStaggered( 2 * (nz_atm-1) * (ny_atm+1) * nx_atm );
+    wrfInputFile.getVar("V").getVar(atmStartIdx, atmCounts, VStaggered.data());
+    atmCounts[2] = ny_atm;  // reset to ny_atm
+    
+    // But then, U and V are on standard nx and ny atmos mesh
+    std::vector<double> U( 2 * (nz_atm-1) * ny_atm * nx_atm );
+    std::vector<double> V( 2 * (nz_atm-1) * ny_atm * nx_atm );
+    for (int t=0; t<2; t++) {
+        for (int k=0; k<(nz_atm-1); k++) { 
+            for (int j=0; j<ny_atm; j++) {
+                for (int i=0; i<nx_atm; i++) {
+                    
+                    int l_idx = t*((nz_atm-1)*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + j*nx_atm + i;
+
+                    int l_xp1_idx = t*((nz_atm-1)*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + j*nx_atm + i+1;
+                    int l_yp1_idx = t*((nz_atm-1)*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + (j+1)*nx_atm + i;
+                    
+                    U[l_idx] = 0.5 * (UStaggered[l_idx] + UStaggered[l_xp1_idx]);
+                    V[l_idx] = 0.5 * (VStaggered[l_idx] + VStaggered[l_yp1_idx]);
+                }
+            }
+        }
+    }
+    
+
+    std::cout << "Staggered wind input." << std::endl;
+
+    // Calculate CoordZ
+    std::vector<double> coordZ( 2 * (nz_atm-1) * ny_atm * nx_atm );
+    for (int t=0; t<2; t++) {
+        for (int k=0; k<(nz_atm-1); k++) { 
+            for (int j=0; j<ny_atm; j++) {
+                for (int i=0; i<nx_atm; i++) {
+                    int l_idx = t*((nz_atm-1)*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + j*nx_atm + i;
+                    int l_kp1_idx = t*((nz_atm-1)*ny_atm*nx_atm) + (k+1)*(ny_atm*nx_atm) + j*nx_atm + i;
+                    coordZ[l_idx] = 0.5*(heightData[l_idx] + heightData[l_kp1_idx]);
+                }
+            }
+        }
+    }
+    
+
+
+    //
+    // wind speed sqrt(u*u + v*v);
+    //
+    std::vector<double> wsData( 2 * (nz_atm-1) * ny_atm * nx_atm );
+    for (int t=0; t<2; t++) {
+        for (int k=0; k<(nz_atm-1); k++) { 
+            for (int j=0; j<ny_atm; j++) {
+                for (int i=0; i<nx_atm; i++) {
+                    int l_idx = t*((nz_atm-1)*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + j*nx_atm + i;
+                    wsData[l_idx] = sqrt( U[l_idx]*U[l_idx] + V[l_idx]*V[l_idx] );
+                }
+            }
+        }
+    }
+
+    std::cout << "Wind speed computed." << std::endl;
+
+
+    //
+    // compute wind direction
+    //
+    std::vector<double> wdData( 2 * (nz_atm-1) * ny_atm * nx_atm );
+    for (int t=0; t<2; t++) {
+        for (int k=0; k<(nz_atm-1); k++) { 
+            for (int j=0; j<ny_atm; j++) {
+                for (int i=0; i<nx_atm; i++) {
+                    int l_idx = t*((nz_atm-1)*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + j*nx_atm + i;
+
+                    if (U[l_idx] > 0.0)
+                        wdData[l_idx] = 270.0 - (180.0/mPI) * atan(V[l_idx]/U[l_idx]);
+                    else
+                        wdData[l_idx] = 90.0 - (180.0/mPI) * atan(V[l_idx]/U[l_idx]);
+                }
+            }
+        }
+    }
+
+
+    // TODO
+    // read LU -- depends on if reading the restart or the output file
+    // roughness length...
+
+    
+    
+
+    // % Here we lower minimum altitude to 0 in order to save computational space.
+    // % For the same reason, topography below 50 cm will not be
+    // % considered.
+
+
+    // QUESTIONS:
+    //
+    // What should be choice for min WRF altitudein meter?
+
+    // What is choice for max wrf site altitude - XML or quick vertical domain size
+
+    // Do we plan to use more than 2 time series? -- specify times steps, in XML
+
+    // What is mapping between ZSF fire mesh and the U, V space?
+                    
+    float minWRFAlt = 22;
+    float maxWRFAlt = 330;
+
+    std::vector< stationData > statData;
+
+    std::cout << "nx_atm: " << nx_atm << ", ny_atm = " << ny_atm << std::endl;
+
+    // sampling strategy
+    int stepSize = 12;
+
+    for (int yIdx=0; yIdx<ny_atm; yIdx+=stepSize) {
+        for (int xIdx=0; xIdx<nx_atm; xIdx+=stepSize) {
+
+            // StatData.CoordX(Stat) = x;
+            // StatData.CoordY(Stat) = y;
+            stationData sd;
+            sd.xCoord = xIdx;
+            sd.yCoord = yIdx;
+            sd.profiles.resize(2);  // 2 time series
+
+            for (int t=0; t<2; t++) {
+                
+                // At this X, Y, look through all heights and
+                // accumulate the heights that exist between our min
+                // and max
+                for (int k=0; k<(nz_atm-1); k++) {
+
+                    int l_idx = t*((nz_atm-1)*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + yIdx*nx_atm + xIdx;
+
+                    if (coordZ[l_idx] >= minWRFAlt && coordZ[l_idx] <= maxWRFAlt) {
+                        
+                        profData profEl;
+                        profEl.zCoord = coordZ[ l_idx ];
+                        profEl.ws = wsData[ l_idx ];
+                        profEl.wd = wdData[ l_idx ];
+
+                        sd.profiles[t].push_back( profEl );
+                    }
+                }
+            }
+            
+            statData.push_back( sd );
+        }
+    }
+
+    std::cout << "Size of stat data: " << statData.size() << std::endl;
+    for (int i=0; i<statData.size(); i++) {
+        std::cout << "Station " << i << " (" << statData[i].xCoord << ", " << statData[i].yCoord << ")" << std::endl;
+        for (int t=0; t<2; t++) {
+            std::cout << "\tTime Series: " << t << std::endl;
+            for (int p=0; p<statData[i].profiles[t].size(); p++) {
+                std::cout << "\t" << statData[i].profiles[t][p].zCoord << ", " << statData[i].profiles[t][p].ws << ", " << statData[i].profiles[t][p].wd << std::endl;
+            }
+        }
+    }
+
 }
+
+    
+            
+#if 0        
+        StatData.CoordZ{Stat} = reshape(SimData.CoordZ(y,x,levelk_max,:),numel(levelk_max),size(SimData.CoordZ,4));
+        StatData.nz(Stat) = size(StatData.CoordZ{Stat},1);
+        
+        StatData.WS{Stat} = reshape(SimData.WS(y,x,levelk_max,:),numel(levelk_max),size(SimData.WS,4));
+        StatData.WD{Stat} = reshape(SimData.WD(y,x,levelk_max,:),numel(levelk_max),size(SimData.WD,4));   
+#endif
+
 
