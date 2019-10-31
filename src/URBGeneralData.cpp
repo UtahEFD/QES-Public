@@ -3,7 +3,8 @@
 URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     : output( cudaOutput )
 {
-
+    std::cout << "Initializing URB General Data fields..." << std::endl;
+    
     if ( UID->simParams->upwindCavityFlag == 1)
     {
       lengthf_coeff = 2.0;
@@ -192,6 +193,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     u.resize( numcell_face, 0.0 );
     v.resize( numcell_face, 0.0 );
     w.resize( numcell_face, 0.0 );
+
+    std::cout << "Memory allocation complete." << std::endl;
 
     /// defining ground solid cells (ghost cells below the surface)
     for (int j = 0; j < ny-1; j++)
@@ -531,6 +534,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
 
      wall->setVelocityZero (this);
 
+#if 0
      // Write data to file
      ofstream outdata2;
      outdata2.open("Initial velocity.dat");
@@ -549,7 +553,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
          }
      }
      outdata2.close();
-
+#endif
 
 
     //////////////////////////////////////////////////
@@ -558,7 +562,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     if (output != nullptr) {
 
         // set output fields
-        std::cout<<"Getting output fields"<<std::endl;
+        std::cout<<"Preparing NetCDF output fields..."<<std::endl;
         output_fields = UID->fileOptions->outputFields;
 
         if (output_fields.empty() || output_fields[0]=="all") {
