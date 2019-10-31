@@ -1,0 +1,41 @@
+<simulationParameters>
+  <WRF>/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21</WRF>
+
+	<verticalStretching> 0 </verticalStretching>
+	<totalTimeIncrements> 1 </totalTimeIncrements>
+	<UTCConversion> 0 </UTCConversion>
+	<Epoch> 1510930800 </Epoch>
+	<rooftopFlag> 0 </rooftopFlag>
+	<upwindCavityFlag> 0 </upwindCavityFlag>
+	<streetCanyonFlag> 0 </streetCanyonFlag>
+	<streetIntersectionFlag> 0 </streetIntersectionFlag>
+	<wakeFlag> 0 </wakeFlag>
+	<sidewallFlag> 0 </sidewallFlag>
+	<maxIterations> 500 </maxIterations>
+	<residualReduction> 3 </residualReduction>
+	<meshTypeFlag> 0 </meshTypeFlag> <!-- cut cell -->
+	<useDiffusion> 0 </useDiffusion>
+	<domainRotation> 0 </domainRotation>
+	<UTMX> 0 </UTMX>
+	<UTMY> 0 </UTMY>
+	<UTMZone> 1 </UTMZone>
+	<UTMZoneLetter> 17 </UTMZoneLetter>
+</simulationParameters>
+<metParams>
+	<metInputFlag> 0 </metInputFlag>
+	<num_sites> 1 </num_sites>
+	<maxSizeDataPoints> 1 </maxSizeDataPoints>
+	<siteName> sensor1 </siteName>
+	<fileName> sensor1.inp </fileName>
+	<z0_domain_flag> 0 </z0_domain_flag>            <!-- Distribution of surface roughness for domain (0-uniform, 1-custom -->
+</metParams>
+<fileOptions>
+	<outputFlag>1</outputFlag>
+    <outputFields>u</outputFields> 
+    <outputFields>v</outputFields> 
+    <outputFields>w</outputFields>
+    <outputFields>icell</outputFields>   
+	<massConservedFlag> 0 </massConservedFlag>
+	<sensorVelocityFlag> 0 </sensorVelocityFlag>
+	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+</fileOptions>
