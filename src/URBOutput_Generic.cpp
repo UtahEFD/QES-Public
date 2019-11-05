@@ -240,48 +240,26 @@ void URBOutput_Generic::saveOutputFields()
     
     FMargairaz
    */
-  
-  // dimensons of output. 
-  int nx_out=0;
-  int ny_out=0;
-  int nz_out=0;
-  
-  // query the dimensons of output. 
-  nx_out=dim_scalar_x[0].getSize();
-  ny_out=dim_scalar_y[0].getSize();
-  nz_out=dim_scalar_z[0].getSize();
-  
-  // output size and location
-  std::vector<size_t> scalar_index;
-  std::vector<size_t> scalar_size;
-  std::vector<size_t> vector_index;
-  std::vector<size_t> vector_size;
-  std::vector<size_t> vector_index_2d;
-  std::vector<size_t> vector_size_2d;
-  
-  scalar_index = {static_cast<unsigned long>(output_counter)};
-  scalar_size  = {1};
-  vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
-  vector_size  = {1, static_cast<unsigned long>(nz_out),
-		  static_cast<unsigned long>(ny_out),
-		  static_cast<unsigned long>(nx_out)};
-  vector_index_2d = {0, 0};
-  vector_size_2d  = {static_cast<unsigned long>(ny_out),
-		     static_cast<unsigned long>(nx_out)};
-  
+
   // loop through scalar fields to save
   // -> int
   for (unsigned int i=0; i<output_scalar_int.size(); i++) {
+    std::vector<size_t> scalar_index;
+    scalar_index = {static_cast<unsigned long>(output_counter)};  
     saveField1D(output_scalar_int[i].name, scalar_index,
 		output_scalar_int[i].data);
   }
   // -> float
   for (unsigned int i=0; i<output_scalar_flt.size(); i++) {
+    std::vector<size_t> scalar_index;
+    scalar_index = {static_cast<unsigned long>(output_counter)}; 
     saveField1D(output_scalar_flt[i].name, scalar_index,
 		output_scalar_flt[i].data);
   }
   // -> double
   for (unsigned int i=0; i<output_scalar_dbl.size(); i++) {
+    std::vector<size_t> scalar_index;
+    scalar_index = {static_cast<unsigned long>(output_counter)}; 
     saveField1D(output_scalar_dbl[i].name, scalar_index,
 		output_scalar_dbl[i].data);
   }
@@ -295,11 +273,31 @@ void URBOutput_Generic::saveOutputFields()
     } 
     // 2D (terrain)
     else if (output_vector_int[i].dimensions.size()==2) {
-      saveField2D(output_vector_int[i].name, vector_index_2d,
-		  vector_size_2d, *output_vector_int[i].data);
+      std::vector<size_t> vector_index;
+      std::vector<size_t> vector_size;
+      int ny=output_vector_int[i].dimensions[0].getSize();
+      int nx=output_vector_int[i].dimensions[1].getSize();
+
+      vector_index = {0, 0};
+      vector_size = {static_cast<unsigned long>(ny),
+			 static_cast<unsigned long>(nx)};
+
+      saveField2D(output_vector_int[i].name, vector_index,
+		  vector_size, *output_vector_int[i].data);
     }
     // 4D (u,v,w)
     else if (output_vector_int[i].dimensions.size()==4) {
+      std::vector<size_t> vector_index;
+      std::vector<size_t> vector_size;
+      int nz=output_vector_int[i].dimensions[1].getSize();
+      int ny=output_vector_int[i].dimensions[2].getSize();
+      int nx=output_vector_int[i].dimensions[3].getSize();
+      
+      vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
+      vector_size  = {1, static_cast<unsigned long>(nz),
+		      static_cast<unsigned long>(ny),
+		      static_cast<unsigned long>(nx)};
+      
       saveField2D(output_vector_int[i].name, vector_index,
 		  vector_size, *output_vector_int[i].data);
     }
@@ -312,31 +310,74 @@ void URBOutput_Generic::saveOutputFields()
     } 
     // 2D (terrain)
     else if (output_vector_flt[i].dimensions.size()==2) {
-      saveField2D(output_vector_flt[i].name, vector_index_2d,
-		  vector_size_2d, *output_vector_flt[i].data);
+      std::vector<size_t> vector_index;
+      std::vector<size_t> vector_size;
+      int ny=output_vector_flt[i].dimensions[0].getSize();
+      int nx=output_vector_flt[i].dimensions[1].getSize();
+      
+      vector_index = {0, 0};
+      vector_size = {static_cast<unsigned long>(ny),
+		     static_cast<unsigned long>(nx)};
+      saveField2D(output_vector_flt[i].name, vector_index,
+		  vector_size, *output_vector_flt[i].data);
     }
     // 4D (u,v,w)
     else if (output_vector_flt[i].dimensions.size()==4) {
+      
+      std::vector<size_t> vector_index;
+      std::vector<size_t> vector_size;
+      int nz=output_vector_flt[i].dimensions[1].getSize();
+      int ny=output_vector_flt[i].dimensions[2].getSize();
+      int nx=output_vector_flt[i].dimensions[3].getSize();
+      
+      vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
+      vector_size  = {1, static_cast<unsigned long>(nz),
+		      static_cast<unsigned long>(ny),
+		      static_cast<unsigned long>(nx)};
+      
       saveField2D(output_vector_flt[i].name, vector_index,
 		  vector_size, *output_vector_flt[i].data);
     }
   }
   // -> double
   for (unsigned int i=0; i<output_vector_dbl.size(); i++) {
+
     // 1D (x or z or y)
     if (output_vector_dbl[i].dimensions.size()==1) {
       saveField2D(output_vector_dbl[i].name, *output_vector_dbl[i].data);
     } 
     // 2D (terrain)
     else if (output_vector_dbl[i].dimensions.size()==2) {
-      saveField2D(output_vector_dbl[i].name, vector_index_2d,
-		  vector_size_2d, *output_vector_dbl[i].data);
+      
+      std::vector<size_t> vector_index;
+      std::vector<size_t> vector_size;
+      int ny=output_vector_dbl[i].dimensions[0].getSize();
+      int nx=output_vector_dbl[i].dimensions[1].getSize();
+      
+      vector_index = {0, 0};
+      vector_size  = {static_cast<unsigned long>(ny),
+		      static_cast<unsigned long>(nx)};
+      
+      saveField2D(output_vector_dbl[i].name, vector_index,
+		  vector_size, *output_vector_dbl[i].data);
     }
     // 4D (u,v,w)
     else if (output_vector_dbl[i].dimensions.size()==4) {
+      std::vector<size_t> vector_index;
+      std::vector<size_t> vector_size;
+      int nz=output_vector_dbl[i].dimensions[1].getSize();
+      int ny=output_vector_dbl[i].dimensions[2].getSize();
+      int nx=output_vector_dbl[i].dimensions[3].getSize();
+      
+      vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
+      vector_size  = {1, static_cast<unsigned long>(nz),
+		      static_cast<unsigned long>(ny),
+		      static_cast<unsigned long>(nx)};
+      
       saveField2D(output_vector_dbl[i].name, vector_index,
 		  vector_size, *output_vector_dbl[i].data);
     }
   }
 
 };
+

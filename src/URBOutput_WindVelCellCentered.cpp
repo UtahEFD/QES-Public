@@ -84,6 +84,7 @@ void URBOutput_WindVelCellCentered::save(URBGeneralData *ugd)
   // set time
   time = (double)output_counter;
     
+  
   // get cell-centered values
   for (auto k = 1; k < nz-1; k++){
     for (auto j = 0; j < ny-1; j++){
@@ -100,7 +101,7 @@ void URBOutput_WindVelCellCentered::save(URBGeneralData *ugd)
   
   // save the fields to NetCDF files
   saveOutputFields();
-    
+
   // remove x, y, z from output array after first save
   if (output_counter==0) {
     rmOutputField("x");
