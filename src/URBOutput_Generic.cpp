@@ -247,116 +247,86 @@ void URBOutput_Generic::saveOutputFields()
   // loop through vector fields to save
   // -> int
   for (unsigned int i=0; i<output_vector_int.size(); i++) {
-    // 1D (x or z or y)
-    if (output_vector_int[i].dimensions.size()==1) {
-      saveField2D(output_vector_int[i].name, *output_vector_int[i].data);
-    } 
-    // 2D (terrain)
-    else if (output_vector_int[i].dimensions.size()==2) {
-      std::vector<size_t> vector_index;
-      std::vector<size_t> vector_size;
-      int ny=output_vector_int[i].dimensions[0].getSize();
-      int nx=output_vector_int[i].dimensions[1].getSize();
 
-      vector_index = {0, 0};
-      vector_size = {static_cast<unsigned long>(ny),
-		     static_cast<unsigned long>(nx)};
-
-      saveField2D(output_vector_int[i].name, vector_index,
-		  vector_size, *output_vector_int[i].data);
+    std::vector<size_t> vector_index;
+    std::vector<size_t> vector_size;
+    
+    // if var is time dep -> special treatement for time
+    if(output_vector_int[i].dimensions[0].getName()=="t"){
+      vector_index.push_back(static_cast<size_t>(output_counter));
+      vector_size.push_back(1);
+      for(unsigned int d=1;d<output_vector_int[i].dimensions.size();d++){
+	int dim=output_vector_int[i].dimensions[d].getSize();
+	vector_index.push_back(0);
+	vector_size.push_back(static_cast<unsigned long>(dim));
+      }
     }
-    // 4D (u,v,w)
-    else if (output_vector_int[i].dimensions.size()==4) {
-      std::vector<size_t> vector_index;
-      std::vector<size_t> vector_size;
-      int nz=output_vector_int[i].dimensions[1].getSize();
-      int ny=output_vector_int[i].dimensions[2].getSize();
-      int nx=output_vector_int[i].dimensions[3].getSize();
-      
-      vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
-      vector_size  = {1, static_cast<unsigned long>(nz),
-		      static_cast<unsigned long>(ny),
-		      static_cast<unsigned long>(nx)};
-      
-      saveField2D(output_vector_int[i].name, vector_index,
-		  vector_size, *output_vector_int[i].data);
+    // if var not time dep -> use direct dimensions
+    else{
+      for(unsigned int d=0;d<output_vector_int[i].dimensions.size();d++){
+	int dim=output_vector_int[i].dimensions[d].getSize();
+	vector_index.push_back(0);
+	vector_size.push_back(static_cast<unsigned long>(dim));
+      }
     }
+    
+    saveField2D(output_vector_int[i].name, vector_index,
+		vector_size, *output_vector_int[i].data);
   }
   // -> float
   for (unsigned int i=0; i<output_vector_flt.size(); i++) { 
-    // 1D (x or z or y)
-    if (output_vector_flt[i].dimensions.size()==1) {
-      saveField2D(output_vector_flt[i].name, *output_vector_flt[i].data);
-    } 
-    // 2D (terrain)
-    else if (output_vector_flt[i].dimensions.size()==2) {
-      std::vector<size_t> vector_index;
-      std::vector<size_t> vector_size;
-      int ny=output_vector_flt[i].dimensions[0].getSize();
-      int nx=output_vector_flt[i].dimensions[1].getSize();
-      
-      vector_index = {0, 0};
-      vector_size = {static_cast<unsigned long>(ny),
-		     static_cast<unsigned long>(nx)};
-      saveField2D(output_vector_flt[i].name, vector_index,
-		  vector_size, *output_vector_flt[i].data);
+    std::vector<size_t> vector_index;
+    std::vector<size_t> vector_size;
+    
+    // if var is time dep -> special treatement for time
+    if(output_vector_flt[i].dimensions[0].getName()=="t"){
+      vector_index.push_back(static_cast<size_t>(output_counter));
+      vector_size.push_back(1);
+      for(unsigned int d=1;d<output_vector_flt[i].dimensions.size();d++){
+	int dim=output_vector_flt[i].dimensions[d].getSize();
+	vector_index.push_back(0);
+	vector_size.push_back(static_cast<unsigned long>(dim));
+      }
     }
-    // 4D (u,v,w)
-    else if (output_vector_flt[i].dimensions.size()==4) {
-      
-      std::vector<size_t> vector_index;
-      std::vector<size_t> vector_size;
-      int nz=output_vector_flt[i].dimensions[1].getSize();
-      int ny=output_vector_flt[i].dimensions[2].getSize();
-      int nx=output_vector_flt[i].dimensions[3].getSize();
-      
-      vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
-      vector_size  = {1, static_cast<unsigned long>(nz),
-		      static_cast<unsigned long>(ny),
-		      static_cast<unsigned long>(nx)};
-      
-      saveField2D(output_vector_flt[i].name, vector_index,
-		  vector_size, *output_vector_flt[i].data);
+    // if var not time dep -> use direct dimensions
+    else{
+      for(unsigned int d=0;d<output_vector_flt[i].dimensions.size();d++){
+	int dim=output_vector_flt[i].dimensions[d].getSize();
+	vector_index.push_back(0);
+	vector_size.push_back(static_cast<unsigned long>(dim));
+      }
     }
+    
+    saveField2D(output_vector_flt[i].name, vector_index,
+		vector_size, *output_vector_flt[i].data);
   }
   // -> double
   for (unsigned int i=0; i<output_vector_dbl.size(); i++) {
-
-    // 1D (x or z or y)
-    if (output_vector_dbl[i].dimensions.size()==1) {
-      saveField2D(output_vector_dbl[i].name, *output_vector_dbl[i].data);
-    } 
-    // 2D (terrain)
-    else if (output_vector_dbl[i].dimensions.size()==2) {
-      
-      std::vector<size_t> vector_index;
-      std::vector<size_t> vector_size;
-      int ny=output_vector_dbl[i].dimensions[0].getSize();
-      int nx=output_vector_dbl[i].dimensions[1].getSize();
-      
-      vector_index = {0, 0};
-      vector_size  = {static_cast<unsigned long>(ny),
-		      static_cast<unsigned long>(nx)};
-      
-      saveField2D(output_vector_dbl[i].name, vector_index,
-		  vector_size, *output_vector_dbl[i].data);
+    std::vector<size_t> vector_index;
+    std::vector<size_t> vector_size;
+    
+    // if var is time dep -> special treatement for time
+    if(output_vector_dbl[i].dimensions[0].getName()=="t"){
+      vector_index.push_back(static_cast<size_t>(output_counter));
+      vector_size.push_back(1);
+      for(unsigned int d=1;d<output_vector_dbl[i].dimensions.size();d++){
+	int dim=output_vector_dbl[i].dimensions[d].getSize();
+	vector_index.push_back(0);
+	vector_size.push_back(static_cast<unsigned long>(dim));
+      }
     }
-    // 4D (u,v,w)
-    else if (output_vector_dbl[i].dimensions.size()==4) {
-      std::vector<size_t> vector_index;
-      std::vector<size_t> vector_size;
-      int nz=output_vector_dbl[i].dimensions[1].getSize();
-      int ny=output_vector_dbl[i].dimensions[2].getSize();
-      int nx=output_vector_dbl[i].dimensions[3].getSize();
-      
-      vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
-      vector_size  = {1, static_cast<unsigned long>(nz),
-		      static_cast<unsigned long>(ny),
-		      static_cast<unsigned long>(nx)};
-      
-      saveField2D(output_vector_dbl[i].name, vector_index,
-		  vector_size, *output_vector_dbl[i].data);
+    // if var not time dep -> use direct dimensions
+    else{
+      for(unsigned int d=0;d<output_vector_dbl[i].dimensions.size();d++){
+	int dim=output_vector_dbl[i].dimensions[d].getSize();
+	vector_index.push_back(0);
+	vector_size.push_back(static_cast<unsigned long>(dim));
+      }
     }
+   
+    saveField2D(output_vector_dbl[i].name, vector_index,
+		vector_size, *output_vector_dbl[i].data);
+    
   }
 
 };
