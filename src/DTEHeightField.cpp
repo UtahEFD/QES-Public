@@ -143,17 +143,24 @@ void DTEHeightField::load()
   m_nXSize = poBand->GetXSize();
   m_nYSize = poBand->GetYSize();
 
-  printf( "Size is %dx%dx%d\n",
+  printf( "DEM size is %dx%dx%d\n",
 	  m_nXSize, m_nYSize );
 
   pafScanline = (float *) CPLMalloc(sizeof(float)*m_nXSize*m_nYSize);
 
   // rb->RasterIO(GF_Read, 0, 0, xsize, ysize, buffer, xsize, ysize, GDT_Float32, 0, 0);
-  poBand->RasterIO( GF_Read, 0, 0,
-		    m_nXSize, m_nYSize,
-		    pafScanline,
-		    m_nXSize, m_nYSize, GDT_Float32,
-		    0, 0 );
+  // 
+  // CPLErr - CE_Failure if the access fails, otherwise CE_None.
+  CPLErr rasterErr = poBand->RasterIO( GF_Read, 0, 0,
+                                       m_nXSize, m_nYSize,
+                                       pafScanline,
+                                       m_nXSize, m_nYSize, GDT_Float32,
+                                       0, 0 );
+  if (rasterErr == CE_Failure) {
+      std::cerr << "CPL RasterIO failure during DEM loading. Exiting." << std::endl;
+      exit(EXIT_FAILURE);
+  }
+  
 
   Triangle *tPtr=0;
   m_triList.clear();
@@ -213,12 +220,14 @@ void DTEHeightField::load()
   }
   std::cout << std::endl;
 
-  // At end of loop above, all height field data will have been converted to a triangle mesh, stored in m_triList.
+  // At end of loop above, all height field data will have been
+  // converted to a triangle mesh, stored in m_triList.
 }
 
 DTEHeightField::~DTEHeightField()
 {
-  GDALClose(m_poDataset);
+    if (m_poDataset)
+        GDALClose(m_poDataset);
 }
 
 void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
@@ -229,17 +238,25 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
       max[i] = 0.0f;
     }
 
-    std::cout << "Seting Terrain Boundaries\n";
+    auto start = std::chrono::high_resolution_clock::now(); // Start
+                                                                 // recording
+                                                                 // execution
+                                                                 // time
+
+    std::cout << "Setting Terrain Boundaries\n";
     for (int q = 0; q < 3; q++)
     {
-      if (q == 0)
-        std::cout << "X\n";
-      else if (q == 1)
-        std::cout << "Y\n";
-      else
-        std::cout << "Z\n";
+        // if (q == 0)
+        // std::cout << "in X...";
+        // else if (q == 1)
+        // std::cout << "in Y...";
+        // else
+        // std::cout << "in Z...";
 
-      for (int i = 0; i < m_triList.size(); i++)
+      int triListSize = m_triList.size();
+      
+#pragma acc parallel loop
+      for (int i = 0; i < triListSize; i++)
       {
         if ( (*(m_triList[i]->a))[q] > 0 && (*(m_triList[i]->a))[q] < min[q] )
           min[q] = (*(m_triList[i]->a))[q];
@@ -254,15 +271,14 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
           max[q] = (*(m_triList[i]->b))[q];
         if ( (*(m_triList[i]->c))[q] > max[q] && (*(m_triList[i]->c))[q] < LIMIT)
           max[q] = (*(m_triList[i]->c))[q];
-         printProgress( ( (float)i / (float)m_triList.size()) / 2.0f );
       }
 
-      for (int i = 0; i < m_triList.size(); i++)
+#pragma acc parallel loop
+      for (int i = 0; i < triListSize; i++)
       {
         (*(m_triList[i]->a))[q] -= min[q];
         (*(m_triList[i]->b))[q] -= min[q];
         (*(m_triList[i]->c))[q] -= min[q];
-        printProgress( ( (float)i / (float)m_triList.size()) / 2.0f + 0.5f);
       }
 
       /*if (q != 2)
@@ -282,14 +298,20 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
       /*if (q == 2)
         (*domain)[q] += (int)(50.0f / (float)(*grid)[q]);*/
 
-      std::cout << std::endl;
+      // std::cout << " done." << std::endl;
     }
-    /*if ((*domain)[0] >= (*domain)[1] && (*domain)[0] >= (*domain)[2])
+
+    auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+
+    std::chrono::duration<double> elapsed = finish - start;
+    std::cout << "\telapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
+
+    /* if ((*domain)[0] >= (*domain)[1] && (*domain)[0] >= (*domain)[2])
       (*domain)[1] = (*domain) [2] = (*domain)[0];
     else if ((*domain)[1] >= (*domain)[0] && (*domain)[1] >= (*domain)[2])
       (*domain)[0] = (*domain) [2] = (*domain)[1];
     else
-        (*domain)[0] = (*domain) [1] = (*domain)[2];//*/
+        (*domain)[0] = (*domain) [1] = (*domain)[2]; */
     printf("domain: %d %d %d\n", (*domain)[0], (*domain)[1], (*domain)[2]);
 }
 
@@ -377,8 +399,8 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
 
   std::vector<int> cutCells;
 
-  for (int i = 0; i < nx - 1; i++)
-    for (int j = 0; j < ny - 1; j++)
+  for (int i = 0; i < nx - 2; i++)
+    for (int j = 0; j < ny - 2; j++)
     {
 
       //all work here is done for each column of cells in the z direction from the xy plane.
@@ -420,6 +442,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
 		}
 	}
 
+// #pragma acc parallel loop
   for (int k = 1; k < nz - 1; k++)
   {
     float cellBot = (k - 1) * dz;

@@ -6,6 +6,7 @@ set(BASETESTS
   shpTest
   UIDugdTest
   wrfInputTest
+  wrf2dem
   )
 
 foreach(basetest ${BASETESTS})
@@ -13,7 +14,7 @@ foreach(basetest ${BASETESTS})
 
     target_link_libraries(${basetest} cudaurbcore)
     target_link_libraries(${basetest} cudaurbutil)
-    target_link_libraries(${basetest} ${Boost_PROGRAM_OPTIONS_LIBRARIES})
+    target_link_libraries(${basetest} ${Boost_LIBRARIES})
 
     target_link_libraries(${basetest} ${GDAL_LIBRARY})
     target_link_libraries(${basetest} ${NETCDF_LIBRARIES_CXX})

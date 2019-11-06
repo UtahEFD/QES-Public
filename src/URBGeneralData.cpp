@@ -221,7 +221,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     //    UID->metParams->inputWindProfile(UID, this);
     UID->metParams->sensors[0]->inputWindProfile(UID, this);
 
-    std::cout << "Sensor is done ..." << std::endl;
+    std::cout << "Sensors have been loaded (total sensors = " << UID->metParams->sensors.size() << ")." << std::endl;
 
     max_velmag = 0.0;
     for (auto i=0; i<nx; i++)
@@ -317,7 +317,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
         UID->simParams->SHPData->getLocalDomain( shpDomainSize );
         UID->simParams->SHPData->getMinExtent( minExtent );
 
-        float domainOffset[2] = { 0, 0 };
+        // float domainOffset[2] = { 0, 0 };
         for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
         {
             // convert the global polys to local domain coordinates
@@ -422,6 +422,18 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     mergeSort( effective_height, allBuildingsV, building_id );
 
     // ///////////////////////////////////////
+    // ///////////////////////////////////////
+
+    wall = new Wall();
+
+    std::cout << "Defining Solid Walls...\n";
+    /// Boundary condition for building edges
+    wall->defineWalls(this);
+    std::cout << "Walls Defined...\n";
+
+    wall->solverCoefficients (this);
+
+    // ///////////////////////////////////////
     // Generic Parameterization Related Stuff
     // ///////////////////////////////////////
     for (int i = 0; i < allBuildingsV.size(); i++)
@@ -465,7 +477,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
       std::cout << "Applying street canyon parameterization...\n";
       for (int i = 0; i < allBuildingsV.size(); i++)
       {
-          allBuildingsV[i]->streetCanyon(this);
+        allBuildingsV[building_id[i]]->streetCanyon(this);
       }
       std::cout << "Street canyon parameterization done...\n";
     }
@@ -483,15 +495,31 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
       std::cout << "Sidewall parameterization done...\n";
     }
 
-    // ///////////////////////////////////////
-    // ///////////////////////////////////////
 
-      wall = new Wall();
+    ///////////////////////////////////////////
+    //      Rooftop Parameterization        ///
+    ///////////////////////////////////////////
+    if (UID->simParams->rooftopFlag > 0)
+    {
+      std::cout << "Applying rooftop parameterization...\n";
+      for (int i = 0; i < allBuildingsV.size(); i++)
+      {
+        allBuildingsV[building_id[i]]->rooftop (UID, this);
+      }
+      std::cout << "Rooftop parameterization done...\n";
+    }
 
-      std::cout << "Defining Solid Walls...\n";
-      /// Boundary condition for building edges
-      wall->defineWalls(this);
-      std::cout << "Walls Defined...\n";
+    ///////////////////////////////////////////
+    //         Street Intersection          ///
+    ///////////////////////////////////////////
+    /*if (UID->simParams->streetCanyonFlag > 0 && UID->simParams->streetIntersectionFlag > 0 && allBuildingsV.size() > 0)
+    {
+      std::cout << "Applying Blended Region Parameterization...\n";
+      allBuildingsV[0]->streetIntersection (UID, this);
+      allBuildingsV[0]->poisson (UID, this);
+      std::cout << "Blended Region Parameterization done...\n";
+    }*/
+
 
     /*
      * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
@@ -503,7 +531,25 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
 
      wall->setVelocityZero (this);
 
-     wall->solverCoefficients (this);
+     // Write data to file
+     ofstream outdata2;
+     outdata2.open("Initial velocity.dat");
+     if( !outdata2 ) {                 // File couldn't be opened
+         cerr << "Error: file could not be opened" << endl;
+         exit(1);
+     }
+     // Write data to file
+     for (int k = 0; k < nz; k++){
+         for (int j = 0; j < ny; j++){
+             for (int i = 0; i < nx; i++){
+                 // int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+                 int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
+                 outdata2 << "\t" << i << "\t" << j << "\t" << k <<  "\t \t"<< "\t \t" << u0[icell_face] <<"\t \t"<< "\t \t"<<v0[icell_face]<<"\t \t"<< "\t \t"<<w0[icell_face]<< endl;
+             }
+         }
+     }
+     outdata2.close();
+
 
 
     //////////////////////////////////////////////////

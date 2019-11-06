@@ -63,12 +63,12 @@ public:
 
     virtual void parseValues() = 0;
 
-		virtual void setPolyBuilding(URBGeneralData* UGD)
+		virtual void setPolyBuilding (URBGeneralData* UGD)
 		{
 		}
 
     // Need to finalize the parameters here...
-    virtual void setCellFlags(const URBInputData* UID, URBGeneralData* UGD)
+    virtual void setCellFlags (const URBInputData* UID, URBGeneralData* UGD)
     {
     }
 
@@ -77,20 +77,32 @@ public:
     }
 
 
-    virtual void polygonWake(const URBInputData* UID, URBGeneralData* UGD, int building_id)
+    virtual void polygonWake (const URBInputData* UID, URBGeneralData* UGD, int building_id)
     {
     }
 
-    virtual void canopyVegetation(URBGeneralData *UGD)
+    virtual void canopyVegetation (URBGeneralData *UGD)
     {
     }
 
-		virtual void streetCanyon(URBGeneralData *UGD)
+		virtual void streetCanyon (URBGeneralData *UGD)
 		{
 		}
 
-		virtual void sideWall(const URBInputData* UID, URBGeneralData* UGD)
+		virtual void sideWall (const URBInputData* UID, URBGeneralData* UGD)
 		{
 		}
+
+		virtual void rooftop (const URBInputData* UID, URBGeneralData* UGD)
+		{
+		}
+
+		/*virtual void streetIntersection (const URBInputData* UID, URBGeneralData* UGD)
+		{
+		}
+
+		virtual void poisson (const URBInputData* UID, URBGeneralData* UGD)
+		{
+		}*/
 
 };

@@ -46,7 +46,7 @@ endif()
 # May be necessary to get Win32 version to work
 # SET(Boost_USE_STATIC_LIBS TRUE)
 
-FIND_PACKAGE(Boost REQUIRED date_time program_options system thread unit_test_framework chrono timer)
+FIND_PACKAGE(Boost REQUIRED filesystem date_time program_options system thread unit_test_framework chrono timer)
 IF(${Boost_FOUND})
   INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
   MESSAGE(STATUS "Found Boost Libraries in ${Boost_LIBRARY_DIR}, Version ${Boost_VERSION}")

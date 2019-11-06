@@ -72,10 +72,6 @@ public:
     virtual void parseValues() {}
 
 
-    // make sure virtual functions from "Building" get implemented
-    // here ...
-
-
     /**
      *
      */
@@ -137,6 +133,41 @@ public:
     */
     void sideWall (const URBInputData* UID, URBGeneralData* UGD);
 
+
+    /**
+    *
+    * This function applies the rooftop parameterization to the qualified space on top of buildings defined as polygons.
+    * This function reads in building features like nodes, building height and base height and uses
+    * features of the building defined in the class constructor and setPolyBuilding and setCellsFlag functions. It defines
+    * cells qualified on top of buildings and applies the approperiate parameterization to them.
+    * More information:
+    *
+    */
+    void rooftop (const URBInputData* UID, URBGeneralData* UGD);
+
+
+    /**
+    *
+    * This function applies the rooftop parameterization to the qualified space on top of buildings defined as polygons.
+    * This function reads in building features like nodes, building height and base height and uses
+    * features of the building defined in the class constructor and setPolyBuilding and setCellsFlag functions. It defines
+    * cells qualified on top of buildings and applies the approperiate parameterization to them.
+    * More information:
+    *
+    */
+    //void streetIntersection (const URBInputData* UID, URBGeneralData* UGD);
+
+
+    /**
+    *
+    * This function applies the rooftop parameterization to the qualified space on top of buildings defined as polygons.
+    * This function reads in building features like nodes, building height and base height and uses
+    * features of the building defined in the class constructor and setPolyBuilding and setCellsFlag functions. It defines
+    * cells qualified on top of buildings and applies the approperiate parameterization to them.
+    * More information:
+    *
+    */
+    //void poisson (const URBInputData* UID, URBGeneralData* UGD);
 
 
 

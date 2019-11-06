@@ -31,7 +31,7 @@ public:
 		for (int i = 0; i < 3; i++)
 			values[i] = newV[i];
 	}
-//*/
+*/
 
 	template <typename X> Vector3(const X a, const X b, const X c)
 	{

@@ -1,6 +1,6 @@
 //
 //  output.hpp
-//  
+//
 //  This class handles netcdf output
 //
 //  Created by Jeremy Gibbs on 12/19/18.
@@ -13,12 +13,12 @@ using namespace netCDF;
 using namespace netCDF::exceptions;
 
 Output :: Output(std::string output_file) {
-    
+
     outfile = new NcFile(output_file, NcFile::replace);
 }
 
 NcDim Output :: addDimension(std::string name, int size) {
-    
+
     if (size) {
         return outfile->addDim(name, size);
     } else {
@@ -27,13 +27,13 @@ NcDim Output :: addDimension(std::string name, int size) {
 }
 
 NcDim Output :: getDimension(std::string name) {
-    
+
     return outfile->getDim(name);
 }
 
 void Output :: addField(std::string name, std::string units, std::string long_name,
                         std::vector<NcDim> dims, NcType type) {
- 
+
     NcVar var;
 
     var = outfile->addVar(name, type, dims);
@@ -44,7 +44,7 @@ void Output :: addField(std::string name, std::string units, std::string long_na
 
 void Output :: saveField1D(std::string name, const std::vector<size_t> index,
                            double* data) {
-    
+
     // write output data
     NcVar var = fields[name];
     var.putVar(index, data);
@@ -53,7 +53,7 @@ void Output :: saveField1D(std::string name, const std::vector<size_t> index,
 
 void Output :: saveField2D(std::string name, const std::vector<size_t> index,
                            std::vector<size_t> size, std::vector<double>& data) {
-    
+
     // write output data
     NcVar var = fields[name];
     var.putVar(index, size, &data[0]);
@@ -62,7 +62,7 @@ void Output :: saveField2D(std::string name, const std::vector<size_t> index,
 
 void Output :: saveField2D(std::string name, const std::vector<size_t> index,
                            std::vector<size_t> size, std::vector<int>& data) {
-    
+
     // write output data
     NcVar var = fields[name];
     var.putVar(index, size, &data[0]);
@@ -70,7 +70,7 @@ void Output :: saveField2D(std::string name, const std::vector<size_t> index,
 }
 
 void Output :: saveField2D(std::string name, std::vector<double>& data) {
-    
+
     // write output data
     NcVar var = fields[name];
     var.putVar(&data[0]);

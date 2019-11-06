@@ -28,6 +28,12 @@ CUDA_ADD_LIBRARY( cudaurbcore
   URBOutput_TURBInputFile.cpp
   WRFInput.cpp WRFInput.h
   Wall.cpp Wall.h
+  UpwindCavity.cpp
+  PolygonWake.cpp
+  StreetCanyon.cpp
+  Sidewall.cpp
+  Rooftop.cpp
+  StreetIntersection.cpp
   )
 
 cuda_add_executable( unitTest
