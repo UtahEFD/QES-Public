@@ -1,6 +1,6 @@
-#include "URBOutput_WindVelCellCentered.h"
+#include "URBOutput_VizFields.h"
 
-URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd,std::string output_file)
+URBOutput_VizFields::URBOutput_VizFields(URBGeneralData *ugd,std::string output_file)
   : URBOutput_Generic(output_file)
 {
   std::cout<<"Getting output fields for Cell-Centered data"<<std::endl;
@@ -44,29 +44,45 @@ URBOutput_WindVelCellCentered::URBOutput_WindVelCellCentered(URBGeneralData *ugd
   icellflag_out.resize( numcell_cout, 0.0 );
 
   // set cell-centered data dimensions
+  // scalar dimension 
+  std::vector<NcDim> dim_scal_t;
+  dim_scal_t.push_back(addDimension("t"));
+  std::vector<NcDim> dim_scal_z;
+  dim_scal_z.push_back(addDimension("z",ugd->nz-2));
+  std::vector<NcDim> dim_scal_y;
+  dim_scal_y.push_back(addDimension("y",ugd->ny-1));
+  std::vector<NcDim> dim_scal_x;
+  dim_scal_x.push_back(addDimension("x",ugd->nx-1));
+  
+  // 2D vector (surface, indep of time)
+  std::vector<NcDim> dim_vect_2d;
+  dim_vect_2d.push_back(addDimension("y",ugd->ny-1));
+  dim_vect_2d.push_back(addDimension("x",ugd->nx-1));
+
+  // 3D vector dimension (time dep)
   std::vector<NcDim> dim_vect;
   dim_vect.push_back(addDimension("t"));
   dim_vect.push_back(addDimension("z",ugd->nz-2));
   dim_vect.push_back(addDimension("y",ugd->ny-1));
   dim_vect.push_back(addDimension("x",ugd->nx-1));
-  createDimensions(dim_vect);
 
   // create attributes
-  createAttScalar("t","time","s",dim_scalar_t,&time);
-  createAttVector("x","x-distance","m",dim_scalar_x,&x_out);
-  createAttVector("y","y-distance","m",dim_scalar_y,&y_out);
-  createAttVector("z","z-distance","m",dim_scalar_z,&z_out);
-  createAttVector("u","x-component velocity","m s-1",dim_vector,&u_out);
-  createAttVector("v","y-component velocity","m s-1",dim_vector,&v_out);
-  createAttVector("w","z-component velocity","m s-1",dim_vector,&w_out);
-  createAttVector("icell","icell flag value","--",dim_vector,&icellflag_out);
+  createAttScalar("t","time","s",dim_scal_t,&time);
+  createAttVector("x","x-distance","m",dim_scal_x,&x_out);
+  createAttVector("y","y-distance","m",dim_scal_y,&y_out);
+  createAttVector("z","z-distance","m",dim_scal_z,&z_out);
+  createAttVector("u","x-component velocity","m s-1",dim_vect,&u_out);
+  createAttVector("v","y-component velocity","m s-1",dim_vect,&v_out);
+  createAttVector("w","z-component velocity","m s-1",dim_vect,&w_out);
+  createAttVector("terrain","terrain height","m",dim_vect_2d,&(ugd->terrain));
+  createAttVector("icell","icell flag value","--",dim_vect,&icellflag_out);
 
   // create output fields
   addOutputFields();
 
 }
 
-bool URBOutput_WindVelCellCentered::validateFileOtions()
+bool URBOutput_VizFields::validateFileOtions()
 {
   //check all fileoption specificed to make sure it's possible...
   return true;
@@ -74,7 +90,7 @@ bool URBOutput_WindVelCellCentered::validateFileOtions()
 
   
 // Save output at cell-centered values
-void URBOutput_WindVelCellCentered::save(URBGeneralData *ugd)
+void URBOutput_VizFields::save(URBGeneralData *ugd)
 {
   // get grid size (not output var size)
   int nx = ugd->nx;

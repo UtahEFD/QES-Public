@@ -23,10 +23,9 @@ CUDA_ADD_LIBRARY( cudaurbcore
   Triangle.cpp
   URBInputData.h
   URBGeneralData.cpp URBGeneralData.h
-  URBOutput_Generic.cpp URBOutput_Generic.h
-  URBOutput_Static.cpp URBOutput_Static.h
-  URBOutput_WindVelCellCentered.cpp URBOutput_WindVelCellCentered.h
-  URBOutput_WindVelFaceCentered.cpp URBOutput_WindVelFaceCentered.h
+  URBOutput_Generic.cpp 
+  URBOutput_VizFields.cpp
+  URBOutput_WindVelFaceCentered.cpp
   WRFInput.cpp WRFInput.h
   Wall.cpp Wall.h
   )

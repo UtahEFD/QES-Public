@@ -5,27 +5,6 @@ URBOutput_Generic::URBOutput_Generic(std::string output_file)
 {
 };
 
-
-void URBOutput_Generic::createDimensions(std::vector<NcDim> dim_vect)
-{
-  // scalar dimension 
-  dim_scalar_t.push_back(dim_vect[0]);
-  dim_scalar_z.push_back(dim_vect[1]);
-  dim_scalar_y.push_back(dim_vect[2]);
-  dim_scalar_x.push_back(dim_vect[3]);
-  
-  // 3D vector dimension (time dep)
-  dim_vector.push_back(dim_vect[0]);
-  dim_vector.push_back(dim_vect[1]);
-  dim_vector.push_back(dim_vect[2]);
-  dim_vector.push_back(dim_vect[3]);
-  
-  // 2D vector (surface, indep of time)
-  dim_vector_2d.push_back(dim_vect[2]);
-  dim_vector_2d.push_back(dim_vect[3]);
-  
-}
-
 //----------------------------------------
 // create attribute scalar
 // -> int

@@ -11,8 +11,7 @@
 
 #include "URBInputData.h"
 #include "URBGeneralData.h"
-#include "URBOutput_Static.h"
-#include "URBOutput_WindVelCellCentered.h"
+#include "URBOutput_VizFields.h"
 #include "URBOutput_WindVelFaceCentered.h"
 
 #include "Solver.h"
@@ -70,18 +69,11 @@ int main(int argc, char *argv[])
     URBGeneralData* UGD = new URBGeneralData(UID, output);
 
     // create URB output  
-    URBOutput_Static* output_st = nullptr;
-    if (UID->fileOptions->outputFlag==1) {
-      std::string fname=arguments.netCDFFile;
-      fname.replace(fname.end()-3,fname.end(),"_st.nc");
-      output_st = new URBOutput_Static(UGD,fname);
-      output_st->save(UGD);
-    }
-    URBOutput_WindVelCellCentered* output_cc = nullptr;
+    URBOutput_VizFields* output_cc = nullptr;
     if (UID->fileOptions->outputFlag==1) {
       std::string fname=arguments.netCDFFile;
       fname.replace(fname.end()-3,fname.end(),"_cc.nc");
-      output_cc = new URBOutput_WindVelCellCentered(UGD,fname);
+      output_cc = new URBOutput_VizFields(UGD,fname);
     }
     URBOutput_WindVelFaceCentered* output_fc = nullptr;
     if (UID->fileOptions->outputFlag==1) {

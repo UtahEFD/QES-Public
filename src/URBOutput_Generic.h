@@ -79,9 +79,6 @@ class URBOutput_Generic : public NetCDFOutput
   virtual ~URBOutput_Generic()
     {}
   
-  // create dimenson of output fields
-  void createDimensions(std::vector<NcDim>);
-  
   // create attribute scalar based on type of data
   void createAttScalar(std::string,std::string,std::string,
 		       std::vector<NcDim>,int*);
@@ -121,14 +118,6 @@ class URBOutput_Generic : public NetCDFOutput
      them (i.e. by the function save)
   */
   std::vector<std::string> output_fields;
-
-  // dimensions of output fields in the NetCDF file
-  std::vector<NcDim> dim_scalar_t;
-  std::vector<NcDim> dim_scalar_z;
-  std::vector<NcDim> dim_scalar_y;
-  std::vector<NcDim> dim_scalar_x;
-  std::vector<NcDim> dim_vector;
-  std::vector<NcDim> dim_vector_2d;
 
   /* output fields in the NetCDF file for scalar/vector 
      for each type.

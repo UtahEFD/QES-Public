@@ -18,19 +18,46 @@ URBOutput_WindVelFaceCentered::URBOutput_WindVelFaceCentered(URBGeneralData *ugd
      validateFileOptions();     
   */
   
-    // set face-centered data dimensions
-  std::vector<NcDim> dim_vect;
-  dim_vect.push_back(addDimension("t"));
-  dim_vect.push_back(addDimension("z",ugd->nz));
-  dim_vect.push_back(addDimension("y",ugd->ny));
-  dim_vect.push_back(addDimension("x",ugd->nx));
-  createDimensions(dim_vect); 
-      
+  // set face-centered data dimensions
+  // scalar dimension 
+  std::vector<NcDim> dim_scal_t;
+  dim_scal_t.push_back(addDimension("t"));
+  std::vector<NcDim> dim_scal_z;
+  dim_scal_z.push_back(addDimension("z",ugd->nz-2));
+  std::vector<NcDim> dim_scal_y;
+  dim_scal_y.push_back(addDimension("y",ugd->ny-1));
+  std::vector<NcDim> dim_scal_x;
+  dim_scal_x.push_back(addDimension("x",ugd->nx));
+  
+  // 3D vector dimension (time dep)
+  std::vector<NcDim> dim_vect_fc;
+  dim_vect_fc.push_back(addDimension("t"));
+  dim_vect_fc.push_back(addDimension("z",ugd->nz));
+  dim_vect_fc.push_back(addDimension("y",ugd->ny));
+  dim_vect_fc.push_back(addDimension("x",ugd->nx));
+  
+  
+  // set cell-centered data dimensions
+  // 2D vector (surface, indep of time)
+  std::vector<NcDim> dim_vect_2d;
+  dim_vect_2d.push_back(addDimension("y",ugd->ny-1));
+  dim_vect_2d.push_back(addDimension("x",ugd->nx-1));
+
+  // 3D vector dimension (time dep)
+  std::vector<NcDim> dim_vect_cc;
+  dim_vect_cc.push_back(addDimension("t"));
+  dim_vect_cc.push_back(addDimension("z",ugd->nz-1));
+  dim_vect_cc.push_back(addDimension("y",ugd->ny-1));
+  dim_vect_cc.push_back(addDimension("x",ugd->nx-1));
+        
   // create attributes
-  createAttScalar("t","time","s",dim_scalar_t,&time);
-  createAttVector("u","x-component velocity","m s-1",dim_vector,&(ugd->u));
-  createAttVector("v","y-component velocity","m s-1",dim_vector,&(ugd->v));
-  createAttVector("w","z-component velocity","m s-1",dim_vector,&(ugd->w));
+  createAttScalar("t","time","s",dim_scal_t,&time);
+  createAttVector("u","x-component velocity","m s-1",dim_vect_fc,&(ugd->u));
+  createAttVector("v","y-component velocity","m s-1",dim_vect_fc,&(ugd->v));
+  createAttVector("w","z-component velocity","m s-1",dim_vect_fc,&(ugd->w));
+  createAttVector("terrain","terrain height","m",dim_vect_2d,&(ugd->terrain));
+  createAttVector("icell","icell flag value","--",dim_vect_cc,&(ugd->icellflag));
+  
 
   // create output fields
   addOutputFields();

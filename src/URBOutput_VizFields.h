@@ -8,15 +8,15 @@
 /* Specialized output classes derived from URBOutput_Generic for 
    cell center data (used primarly for vizualization)
 */
-class URBOutput_WindVelCellCentered : public URBOutput_Generic
+class URBOutput_VizFields : public URBOutput_Generic
 {
  public:
- URBOutput_WindVelCellCentered()
+ URBOutput_VizFields()
    : URBOutput_Generic()
     {}
   
-  URBOutput_WindVelCellCentered(URBGeneralData*,std::string);
-  ~URBOutput_WindVelCellCentered()	       
+  URBOutput_VizFields(URBGeneralData*,std::string);
+  ~URBOutput_VizFields()	       
     {}
 
   bool validateFileOtions();
