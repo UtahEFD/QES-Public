@@ -3,7 +3,7 @@
 URBOutput_VizFields::URBOutput_VizFields(URBGeneralData *ugd,std::string output_file)
   : URBOutput_Generic(output_file)
 {
-  std::cout<<"Getting output fields for Cell-Centered data"<<std::endl;
+  std::cout<<"Getting output fields for Vizualization file"<<std::endl;
   //FM -> need to implement the outputFields options here...
   output_fields = {"t","x","y","z","u","v","w","icell","terrain"};
   /* output_fields = UID->fileOptions->outputFields;

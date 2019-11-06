@@ -150,6 +150,7 @@ void URBOutput_Generic::addOutputFields()
 };
 
 
+
 void URBOutput_Generic::rmOutputField(std::string name)
 {
   /*
@@ -259,7 +260,7 @@ void URBOutput_Generic::saveOutputFields()
 
       vector_index = {0, 0};
       vector_size = {static_cast<unsigned long>(ny),
-			 static_cast<unsigned long>(nx)};
+		     static_cast<unsigned long>(nx)};
 
       saveField2D(output_vector_int[i].name, vector_index,
 		  vector_size, *output_vector_int[i].data);

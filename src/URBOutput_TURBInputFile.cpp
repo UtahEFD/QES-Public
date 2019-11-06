@@ -3,21 +3,11 @@
 URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string output_file)
   : URBOutput_Generic(output_file)
 {
-  std::cout<<"Getting output fields for Face-Centered data"<<std::endl;
+  std::cout<<"Setting fields of TURBInputFile file"<<std::endl;
   
-  //FM -> need to implement the outputFields options here...
+  // set list of fields to save, no option available for this file
   output_fields = {"u","v","w","icell","terrain"};
   
-  /* output_fields = UID->fileOptions->outputFields;
-     
-     if (output_fields.empty() || output_fields[0]=="all") {
-     output_fields.clear();
-     output_fields = {"u","v","w","icell"};
-     }
-     
-     validateFileOptions();     
-  */
-
   // set time data dimensions
   std::vector<NcDim> dim_scal_t;
   dim_scal_t.push_back(addDimension("t"));
@@ -52,15 +42,15 @@ URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string
   std::vector<NcDim> dim_vect_2d;
   dim_vect_2d.push_back(dim_scal_y_cc[0]);
   dim_vect_2d.push_back(dim_scal_x_cc[0]);
-
-  // 3D vector dimension (time dep)
+  
+  // 3D vector dimension (time indep)
   std::vector<NcDim> dim_vect_cc;
   dim_vect_cc.push_back(dim_scal_t[0]);
   dim_vect_cc.push_back(dim_scal_z_cc[0]);
   dim_vect_cc.push_back(dim_scal_y_cc[0]);
   dim_vect_cc.push_back(dim_scal_x_cc[0]);
-
-  // create attributes
+  
+  // create attributes 
   createAttScalar("t","time","s",dim_scal_t,&time);
   createAttVector("u","x-component velocity","m s-1",dim_vect_fc,&(ugd->u));
   createAttVector("v","y-component velocity","m s-1",dim_vect_fc,&(ugd->v));
@@ -68,6 +58,9 @@ URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string
   createAttVector("terrain","terrain height","m",dim_vect_2d,&(ugd->terrain));
   createAttVector("icell","icell flag value","--",dim_vect_cc,&(ugd->icellflag));  
 
+  /// attributes for coefficients for SOR solver
+  //createAttVector("icell","icell flag value","--",dim_vect_cc,&(ugd->icellflag));  
+  
   // create output fields
   addOutputFields();
 }

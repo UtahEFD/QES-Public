@@ -17,7 +17,6 @@
 #include "Solver.h"
 #include "CPUSolver.h"
 #include "DynamicParallelism.h"
-#include "Output.hpp"
 
 namespace pt = boost::property_tree;
 
@@ -55,31 +54,26 @@ int main(int argc, char *argv[])
     // Parse the base XML QUIC file -- contains simulation parameters
     URBInputData* UID = parseXMLTree(arguments.quicFile);
     if ( !UID ) {
-        std::cerr << "QUIC Input file: " << arguments.quicFile << " not able to be read successfully." << std::endl;
+        std::cerr << "QUIC Input file: " << arguments.quicFile << 
+	  " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    // Files was successfully read, so create instance of output class
-    Output* output = nullptr;
-    if (UID->fileOptions->outputFlag==1) {
-      output = new Output(arguments.netCDFFile);
-    }
-    
     // Generate the general URB data from all inputs
     URBGeneralData* UGD = new URBGeneralData(UID);
 
-    // create URB output  
+    // create URB output class
     URBOutput_VizFields* output_viz = nullptr;
     if (UID->fileOptions->outputFlag==1) {
       std::string fname=arguments.netCDFFile;
-      fname.replace(fname.end()-3,fname.end(),"_cc.nc");
+      fname.append("_VizFile.nc");
       output_viz = new URBOutput_VizFields(UGD,fname);
     }
-    URBOutput_TURBInputFile* output_fc = nullptr;
+    URBOutput_TURBInputFile* output_turb = nullptr;
     if (UID->fileOptions->outputFlag==1) {
       std::string fname=arguments.netCDFFile;
-      fname.replace(fname.end()-3,fname.end(),"_fc.nc");
-      output_fc = new URBOutput_TURBInputFile(UGD,fname);
+      fname.append("_TURBInputFile.nc");
+      output_turb = new URBOutput_TURBInputFile(UGD,fname);
     }
     
     // //////////////////////////////////////////
@@ -125,16 +119,12 @@ int main(int argc, char *argv[])
     // /////////////////////////////
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
-    // /////////////////////////////
-    /*if (output) {
-      UGD->save();
-      }
-    */
+    // /////////////////////////////    
     if (output_viz) {
       output_viz->save(UGD);
     }
-    if (output_fc) {
-      output_fc->save(UGD);
+    if (output_turb) {
+      output_turb->save(UGD);
     }
 
     exit(EXIT_SUCCESS);
