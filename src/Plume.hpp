@@ -83,7 +83,7 @@ class Plume {
         vec3 matmult(const matrix9& Ainv,const vec3& b);
 
         // might need to create multiple versions depending on the selection of boundary condition types by the inputs
-        void enforceWallBCs(const double& xPos,const double& yPos,const double& zPos,bool &isActive);
+        void enforceWallBCs(double& xPos,double& yPos,double& zPos,bool &isActive);
 
         
         // functions used to average the output concentrations

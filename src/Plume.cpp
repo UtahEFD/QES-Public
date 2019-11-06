@@ -581,7 +581,7 @@ vec3 Plume::matmult(const matrix9& Ainv,const vec3& b)
     return x;
 }
 
-void Plume::enforceWallBCs(const double& xPos,const double& yPos,const double& zPos,bool &isActive)
+void Plume::enforceWallBCs(double& xPos,double& yPos,double& zPos,bool &isActive)
 {
     // this may change as we figure out the reflections vs depositions on buildings and terrain as well as the outer domain
     // probably will become some kind of inherited function or a pointer function that can be chosen at initialization time
@@ -590,6 +590,9 @@ void Plume::enforceWallBCs(const double& xPos,const double& yPos,const double& z
     if( xPos < domainXstart || xPos > domainXend || yPos < domainYstart || yPos > domainYend || zPos < domainZstart || zPos > domainZend )
     {
         isActive = false;
+        xPos = -999.0;
+        yPos = -999.0;
+        zPos = -999.0;
     }
 }
 
