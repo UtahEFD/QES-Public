@@ -1,13 +1,22 @@
 #pragma once
 
+#include <string>
 
-
+#include "URBGeneralData.h"
+#include "URBInputData.h"
+#include "URBOutput_VizFields.h"
+#include "URBOutput_TURBInputFile.h"
 
 class URBOutputData
 {
 public:
-  URBOutput_WindVelFaceCentered uo_fc;
-  URBOutput_WindVelCellCentered uo_cc;
-    
-}
-  
+URBOutputData() {}
+URBOutputData(URBGeneralData*,URBInputData*,std::string);
+~URBOutputData() {}
+void save(URBGeneralData*);
+private:
+URBOutput_VizFields* output_viz;
+URBOutput_TURBInputFile* output_turb;
+
+};
+

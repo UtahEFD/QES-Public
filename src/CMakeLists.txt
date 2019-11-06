@@ -16,13 +16,13 @@ CUDA_ADD_LIBRARY( cudaurbcore
   handleURBArgs.cpp
   Mesh.cpp
   NetCDFOutput.cpp NetCDFOutput.h
-  Output.cpp
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Solver.cpp
   Triangle.cpp
   URBInputData.h
   URBGeneralData.cpp
+  URBOutputData.cpp
   URBOutput_Generic.cpp 
   URBOutput_VizFields.cpp
   URBOutput_TURBInputFile.cpp
