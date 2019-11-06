@@ -69,11 +69,11 @@ int main(int argc, char *argv[])
     URBGeneralData* UGD = new URBGeneralData(UID, output);
 
     // create URB output  
-    URBOutput_VizFields* output_cc = nullptr;
+    URBOutput_VizFields* output_viz = nullptr;
     if (UID->fileOptions->outputFlag==1) {
       std::string fname=arguments.netCDFFile;
       fname.replace(fname.end()-3,fname.end(),"_cc.nc");
-      output_cc = new URBOutput_VizFields(UGD,fname);
+      output_viz = new URBOutput_VizFields(UGD,fname);
     }
     URBOutput_WindVelFaceCentered* output_fc = nullptr;
     if (UID->fileOptions->outputFlag==1) {
@@ -129,8 +129,8 @@ int main(int argc, char *argv[])
     if (output) {
       UGD->save();
     }
-    if (output_cc) {
-      output_cc->save(UGD);
+    if (output_viz) {
+      output_viz->save(UGD);
     }
     if (output_fc) {
       output_fc->save(UGD);
