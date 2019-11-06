@@ -28,7 +28,6 @@ URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string
   dim_vect_fc.push_back(dim_scal_y_fc[0]);
   dim_vect_fc.push_back(dim_scal_x_fc[0]);
   
-  
   // set cell-centered data dimensions
   // scalar dimension
   std::vector<NcDim> dim_scal_z_cc;
