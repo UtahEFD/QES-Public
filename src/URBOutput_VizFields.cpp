@@ -100,7 +100,6 @@ void URBOutput_VizFields::save(URBGeneralData *ugd)
   // set time
   time = (double)output_counter;
     
-  
   // get cell-centered values
   for (auto k = 1; k < nz-1; k++){
     for (auto j = 0; j < ny-1; j++){

@@ -14,9 +14,9 @@ URBOutputData() {}
 URBOutputData(URBGeneralData*,URBInputData*,std::string);
 ~URBOutputData() {}
 void save(URBGeneralData*);
-private:
-URBOutput_VizFields* output_viz;
-URBOutput_TURBInputFile* output_turb;
+
+URBOutput_VizFields* output_viz = nullptr;
+URBOutput_TURBInputFile* output_turb = nullptr;
 
 };
 

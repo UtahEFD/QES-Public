@@ -2,13 +2,12 @@
 
 URBOutputData :: URBOutputData(URBGeneralData* UGD,URBInputData* UID,std::string outname)
 {
-  URBOutput_VizFields* output_viz = nullptr;
   if (UID->fileOptions->outputFlag==1) {
     std::string fname=outname;
     fname.append("_VizFile.nc");
     output_viz = new URBOutput_VizFields(UGD,fname);
   }
-  URBOutput_TURBInputFile* output_turb = nullptr;
+
   if (UID->fileOptions->outputFlag==1) {
     std::string fname=outname;
     fname.append("_TURBInputFile.nc");
@@ -18,6 +17,7 @@ URBOutputData :: URBOutputData(URBGeneralData* UGD,URBInputData* UID,std::string
 
 void URBOutputData::save(URBGeneralData* UGD)
 {
+  std::cout<<"Output ..."<<std::endl;
   if (output_viz) {
     output_viz->save(UGD);
   }
