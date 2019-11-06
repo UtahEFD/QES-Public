@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
     }
     
     // Generate the general URB data from all inputs
-    URBGeneralData* UGD = new URBGeneralData(UID, output);
+    URBGeneralData* UGD = new URBGeneralData(UID);
 
     // create URB output  
     URBOutput_VizFields* output_viz = nullptr;
@@ -126,9 +126,10 @@ int main(int argc, char *argv[])
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    if (output) {
+    /*if (output) {
       UGD->save();
-    }
+      }
+    */
     if (output_viz) {
       output_viz->save(UGD);
     }

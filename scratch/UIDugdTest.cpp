@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     Output* output = nullptr;
 
     // Generate the general URB data from all inputs
-    URBGeneralData* UGD = new URBGeneralData(UID, output);
+    URBGeneralData* UGD = new URBGeneralData(UID);
 }
 
 

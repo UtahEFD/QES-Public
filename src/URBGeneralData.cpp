@@ -1,7 +1,6 @@
 #include "URBGeneralData.h"
 
-URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
-    : output( cudaOutput )
+URBGeneralData::URBGeneralData(const URBInputData* UID)
 {
 
     if ( UID->simParams->upwindCavityFlag == 1)
@@ -174,13 +173,13 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     // /////////////////////////////////////////
     // Output related data --- should be part of some URBOutputData
     // class to separate from Input and GeneralData
-    u_out.resize( numcell_cout, 0.0 );
-    v_out.resize( numcell_cout, 0.0 );
-    w_out.resize( numcell_cout, 0.0 );
+    //u_out.resize( numcell_cout, 0.0 );
+    //v_out.resize( numcell_cout, 0.0 );
+    //w_out.resize( numcell_cout, 0.0 );
 
     terrain.resize( numcell_cout_2d, 0.0 );
     terrain_id.resize( nx*ny, 1 );
-    icellflag_out.resize( numcell_cout, 0.0 );
+    //icellflag_out.resize( numcell_cout, 0.0 );
     /////////////////////////////////////////
 
     // Set the Wind Velocity data elements to be of the correct size
@@ -555,7 +554,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     //////////////////////////////////////////////////
     //      Initialize output information           //
     //////////////////////////////////////////////////
-    if (output != nullptr) {
+    /*if (output != nullptr) {
 
         // set output fields
         std::cout<<"Getting output fields"<<std::endl;
@@ -639,7 +638,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
             output->addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
         }
     }
-
+    */
 }
 
 
@@ -773,7 +772,7 @@ URBGeneralData::~URBGeneralData()
 
 
 // Save output at cell-centered values
-void URBGeneralData::save()
+/*void URBGeneralData::save()
 {
     if (output) {
 
@@ -842,4 +841,4 @@ void URBGeneralData::save()
         // increment for next time insertion
         output_counter +=1;
     }
-}
+    }*/

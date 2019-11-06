@@ -18,14 +18,12 @@
 #include "Wall.h"
 #include <cmath>
 
-#include "Output.hpp"
-
 class URBInputData;
 
 class URBGeneralData {
 public:
     URBGeneralData();
-    URBGeneralData(const URBInputData* UID, Output *cudaOutput);
+    URBGeneralData(const URBInputData* UID);
     ~URBGeneralData();
 
     void mergeSort( std::vector<float> &effective_height, 
@@ -88,8 +86,8 @@ public:
     std::vector<int> icellflag;  /**< Cell index flag (0 = Building, 1 = Fluid, 2 = Terrain, 3 = Upwind_cavity
                                                        4 = Cavity, 5 = Farwake, 6 = Street canyon, 7 = Cut-cells, 9 = Canopy vegetation
                                                        10 = Sidewall) */
-    std::vector<int> icellflag_out;
-    std::vector<double> u_out,v_out,w_out;
+    //std::vector<int> icellflag_out;
+    //std::vector<double> u_out,v_out,w_out;
     std::vector<double> terrain;
     std::vector<int> terrain_id;      // Sensor function
                                       // (inputWindProfile)
@@ -152,7 +150,7 @@ public:
 
 
     /// Declaration of output manager
-    Output *output;
+    /*Output *output;
 
     int output_counter=0;
     double time=0;
@@ -190,5 +188,5 @@ public:
     std::vector<AttScalarDbl> output_scalar_dbl;
     std::vector<AttVectorDbl> output_vector_dbl;
     std::vector<AttVectorInt> output_vector_int;
-
+    */
 };
