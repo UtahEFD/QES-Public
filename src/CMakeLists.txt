@@ -22,10 +22,10 @@ CUDA_ADD_LIBRARY( cudaurbcore
   Solver.cpp
   Triangle.cpp
   URBInputData.h
-  URBGeneralData.cpp URBGeneralData.h
+  URBGeneralData.cpp
   URBOutput_Generic.cpp 
   URBOutput_VizFields.cpp
-  URBOutput_WindVelFaceCentered.cpp
+  URBOutput_TURBInputFile.cpp
   WRFInput.cpp WRFInput.h
   Wall.cpp Wall.h
   )

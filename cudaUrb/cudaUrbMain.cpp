@@ -12,7 +12,7 @@
 #include "URBInputData.h"
 #include "URBGeneralData.h"
 #include "URBOutput_VizFields.h"
-#include "URBOutput_WindVelFaceCentered.h"
+#include "URBOutput_TURBInputFile.h"
 
 #include "Solver.h"
 #include "CPUSolver.h"
@@ -75,11 +75,11 @@ int main(int argc, char *argv[])
       fname.replace(fname.end()-3,fname.end(),"_cc.nc");
       output_viz = new URBOutput_VizFields(UGD,fname);
     }
-    URBOutput_WindVelFaceCentered* output_fc = nullptr;
+    URBOutput_TURBInputFile* output_fc = nullptr;
     if (UID->fileOptions->outputFlag==1) {
       std::string fname=arguments.netCDFFile;
       fname.replace(fname.end()-3,fname.end(),"_fc.nc");
-      output_fc = new URBOutput_WindVelFaceCentered(UGD,fname);
+      output_fc = new URBOutput_TURBInputFile(UGD,fname);
     }
     
     // //////////////////////////////////////////

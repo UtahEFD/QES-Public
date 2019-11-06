@@ -5,7 +5,7 @@ URBOutput_VizFields::URBOutput_VizFields(URBGeneralData *ugd,std::string output_
 {
   std::cout<<"Getting output fields for Cell-Centered data"<<std::endl;
   //FM -> need to implement the outputFields options here...
-  output_fields = {"t","x","y","z","u","v","w","icell"};
+  output_fields = {"t","x","y","z","u","v","w","icell","terrain"};
   /* output_fields = UID->fileOptions->outputFields;
      
      if (output_fields.empty() || output_fields[0]=="all") {
@@ -56,15 +56,15 @@ URBOutput_VizFields::URBOutput_VizFields(URBGeneralData *ugd,std::string output_
   
   // 2D vector (surface, indep of time)
   std::vector<NcDim> dim_vect_2d;
-  dim_vect_2d.push_back(addDimension("y",ugd->ny-1));
-  dim_vect_2d.push_back(addDimension("x",ugd->nx-1));
+  dim_vect_2d.push_back(dim_scal_y[0]);
+  dim_vect_2d.push_back(dim_scal_x[0]);
 
   // 3D vector dimension (time dep)
   std::vector<NcDim> dim_vect;
-  dim_vect.push_back(addDimension("t"));
-  dim_vect.push_back(addDimension("z",ugd->nz-2));
-  dim_vect.push_back(addDimension("y",ugd->ny-1));
-  dim_vect.push_back(addDimension("x",ugd->nx-1));
+  dim_vect.push_back(dim_scal_t[0]);
+  dim_vect.push_back(dim_scal_z[0]);
+  dim_vect.push_back(dim_scal_y[0]);
+  dim_vect.push_back(dim_scal_x[0]);
 
   // create attributes
   createAttScalar("t","time","s",dim_scal_t,&time);
@@ -118,11 +118,13 @@ void URBOutput_VizFields::save(URBGeneralData *ugd)
   // save the fields to NetCDF files
   saveOutputFields();
 
-  // remove x, y, z from output array after first save
+  // remove x, y, z and terrain 
+  // from output array after first save
   if (output_counter==0) {
     rmOutputField("x");
     rmOutputField("y");
     rmOutputField("z");
+    rmOutputField("terrain");
   }
     
   // increment for next time insertion
