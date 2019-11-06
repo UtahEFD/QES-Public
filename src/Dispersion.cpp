@@ -19,10 +19,35 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     dz     = urb->grid.dz;
     dt     = PID->simParams->timeStep;
     dur    = PID->simParams->runTime;
-    numPar = PID->sources->numParticles;
-    srcX   = ((SourcePoint*)PID->sources->sources.at(0))->posX;
-    srcY   = ((SourcePoint*)PID->sources->sources.at(0))->posY;
-    srcZ   = ((SourcePoint*)PID->sources->sources.at(0))->posZ;
+
+
+    addSource(PID->sources, turb, eul);
+
+    // set the isRogueCount to zero
+    isRogueCount = 0.0;
+
+    // calculate the threshold velocity
+    vel_threshold = 10.0*sqrt(maxval(turb->sig));  // might need to write a maxval function, since it has to get the largest value from the entire sig array
+
+    
+    /*
+      Checking if the starting time for the last particle is equal to the duration of
+      the simulation (for continous release ONLY)
+    */
+    if (fabs(tStrt.back()-dur)>EPSILON) {
+        std::cerr<<" Error, in start time of the particles"<<std::endl;
+        exit(1);
+    }
+    
+}
+
+
+void Dispersion::addSource(Sources* source, Turb* turb, Eulerian* eul)
+{
+    numPar = source->numParticles;
+    srcX   = ((SourcePoint*)source->sources.at(0))->posX;
+    srcY   = ((SourcePoint*)source->sources.at(0))->posY;
+    srcZ   = ((SourcePoint*)source->sources.at(0))->posZ;
     
     // set up time details
     numTimeStep = std::ceil(dur/dt);
@@ -43,8 +68,9 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     isActive.resize(numPar);
 
     
-    
-    for(int i=0;i<numPar;i++){
+    for(int i=0;i<numPar;i++)
+    {
+
         pos.at(i).e11=srcX;   // set the source positions for each particle
         pos.at(i).e21=srcY;
         pos.at(i).e31=srcZ;
@@ -92,12 +118,6 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
         
     }
 
-    // set the isRogueCount to zero
-    isRogueCount = 0.0;
-
-    // calculate the threshold velocity
-    vel_threshold = 10.0*sqrt(maxval(turb->sig));  // might need to write a maxval function, since it has to get the largest value from the entire sig array
-
     tStrt.resize(numPar);
     
     parPerTimestep = numPar*dt/dur; 
@@ -117,16 +137,7 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
         tStrt.at(i)=startTime;
         ++parRel;
     }
-    
-    /*
-      Checking if the starting time for the last particle is equal to the duration of
-      the simulation (for continous release ONLY)
-    */
-    if (fabs(tStrt.back()-dur)>EPSILON) {
-        std::cerr<<" Error, in start time of the particles"<<std::endl;
-        exit(1);
-    }
-    
+
 }
 
 
