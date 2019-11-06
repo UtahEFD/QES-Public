@@ -44,39 +44,43 @@ URBOutput_VizFields::URBOutput_VizFields(URBGeneralData *ugd,std::string output_
   icellflag_out.resize( numcell_cout, 0.0 );
 
   // set cell-centered data dimensions
-  // scalar dimension 
-  std::vector<NcDim> dim_scal_t;
-  dim_scal_t.push_back(addDimension("t"));
-  std::vector<NcDim> dim_scal_z;
-  dim_scal_z.push_back(addDimension("z",ugd->nz-2));
-  std::vector<NcDim> dim_scal_y;
-  dim_scal_y.push_back(addDimension("y",ugd->ny-1));
-  std::vector<NcDim> dim_scal_x;
-  dim_scal_x.push_back(addDimension("x",ugd->nx-1));
-  
-  // 2D vector (surface, indep of time)
-  std::vector<NcDim> dim_vect_2d;
-  dim_vect_2d.push_back(dim_scal_y[0]);
-  dim_vect_2d.push_back(dim_scal_x[0]);
-
-  // 3D vector dimension (time dep)
-  std::vector<NcDim> dim_vect;
-  dim_vect.push_back(dim_scal_t[0]);
-  dim_vect.push_back(dim_scal_z[0]);
-  dim_vect.push_back(dim_scal_y[0]);
-  dim_vect.push_back(dim_scal_x[0]);
-
+  // time dimension 
+  std::vector<NcDim> dim_time;
+  dim_time.push_back(addDimension("t"));
   // create attributes
-  createAttScalar("t","time","s",dim_scal_t,&time);
-  createAttVector("x","x-distance","m",dim_scal_x,&x_out);
-  createAttVector("y","y-distance","m",dim_scal_y,&y_out);
-  createAttVector("z","z-distance","m",dim_scal_z,&z_out);
-  createAttVector("u","x-component velocity","m s-1",dim_vect,&u_out);
-  createAttVector("v","y-component velocity","m s-1",dim_vect,&v_out);
-  createAttVector("w","z-component velocity","m s-1",dim_vect,&w_out);
+  createAttScalar("t","time","s",dim_time,&time);
+  
+  // space dimensions 
+  std::vector<NcDim> dim_vect_z;
+  dim_vect_z.push_back(addDimension("z",ugd->nz-2));
+  std::vector<NcDim> dim_vect_y;
+  dim_vect_y.push_back(addDimension("y",ugd->ny-1));
+  std::vector<NcDim> dim_vect_x;
+  dim_vect_x.push_back(addDimension("x",ugd->nx-1)); 
+  // create attributes
+  createAttVector("x","x-distance","m",dim_vect_x,&x_out);
+  createAttVector("y","y-distance","m",dim_vect_y,&y_out);
+  createAttVector("z","z-distance","m",dim_vect_z,&z_out);
+  
+  // 2D vector (time indep)
+  std::vector<NcDim> dim_vect_2d;
+  dim_vect_2d.push_back(dim_vect_y[0]);
+  dim_vect_2d.push_back(dim_vect_x[0]);
+  // create attributes
   createAttVector("terrain","terrain height","m",dim_vect_2d,&(ugd->terrain));
-  createAttVector("icell","icell flag value","--",dim_vect,&icellflag_out);
-
+  
+  // 3D vector (time dep)
+  std::vector<NcDim> dim_vect_3d;
+  dim_vect_3d.push_back(dim_time[0]);
+  dim_vect_3d.push_back(dim_vect_z[0]);
+  dim_vect_3d.push_back(dim_vect_y[0]);
+  dim_vect_3d.push_back(dim_vect_x[0]);
+  // create attributes
+  createAttVector("u","x-component velocity","m s-1",dim_vect_3d,&u_out);
+  createAttVector("v","y-component velocity","m s-1",dim_vect_3d,&v_out);
+  createAttVector("w","z-component velocity","m s-1",dim_vect_3d,&w_out);
+  createAttVector("icell","icell flag value","--",dim_vect_3d,&icellflag_out);
+  
   // create output fields
   addOutputFields();
 
@@ -125,7 +129,7 @@ void URBOutput_VizFields::save(URBGeneralData *ugd)
     rmOutputField("z");
     rmOutputField("terrain");
   }
-    
+  
   // increment for next time insertion
   output_counter +=1;
 };
