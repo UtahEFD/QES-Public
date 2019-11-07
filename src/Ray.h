@@ -5,10 +5,18 @@
 
 class Ray{
   private:
-   Vector3 originVec, dirVec;
+      float origin_x, origin_y, origin_z;
+      Vector2 dirVec;
   public:
-   Ray(Vector3<float> originVec, Vector3<float> dirVec);
+      Ray(float origin_x, float origin_y, float origin_z, Vector3<float> dirVec){
+         this.origin_x = origin_x;
+         this.origin_y = origin_y;
+         this.origin_z = origin_z;
+         this.dirVec = dirVec;
+      }
 
-   Vector3<float> getOrigin() {return originVec;}
-   Vector3<float> getDirection() {return dirVec;}
+      float getOriginX(){return origin_x;}
+      float getOriginY(){return origin_y;}
+      float getOriginZ(){return origin_z;}
+      Vector3<float> getDirection() {return dirVec;}
 };
