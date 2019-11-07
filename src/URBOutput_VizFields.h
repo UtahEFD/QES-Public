@@ -5,6 +5,7 @@
 #include "URBGeneralData.h"
 #include "URBInputData.h"
 #include "URBOutput_Generic.h"
+
 /* Specialized output classes derived from URBOutput_Generic for 
    cell center data (used primarly for vizualization)
 */
@@ -14,7 +15,7 @@ class URBOutput_VizFields : public URBOutput_Generic
  URBOutput_VizFields()
    : URBOutput_Generic()
     {}
-  URBOutput_VizFields(URBGeneralData*,std::string);
+URBOutput_VizFields(URBGeneralData*,URBInputData*,std::string);
   ~URBOutput_VizFields()	       
     {}
   

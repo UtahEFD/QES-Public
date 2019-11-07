@@ -5,7 +5,7 @@ URBOutputData :: URBOutputData(URBGeneralData* UGD,URBInputData* UID,std::string
   if (UID->fileOptions->outputFlag==1) {
     std::string fname=outname;
     fname.append("_VizFile.nc");
-    output_viz = new URBOutput_VizFields(UGD,fname);
+    output_viz = new URBOutput_VizFields(UGD,UID,fname);
   }
 
   if (UID->fileOptions->outputFlag==1) {

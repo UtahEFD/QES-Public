@@ -1,20 +1,21 @@
 #include "URBOutput_VizFields.h"
 
-URBOutput_VizFields::URBOutput_VizFields(URBGeneralData *ugd,std::string output_file)
+URBOutput_VizFields::URBOutput_VizFields(URBGeneralData *ugd,URBInputData* uid,std::string output_file)
   : URBOutput_Generic(output_file)
 {
   std::cout<<"Getting output fields for Vizualization file"<<std::endl;
-  //FM -> need to implement the outputFields options here...
-  output_fields = {"t","x","y","z","u","v","w","icell","terrain"};
-  /* output_fields = UID->fileOptions->outputFields;
+  
+  std::vector<std::string> fileOP= uid->fileOptions->outputFields;
      
-     if (output_fields.empty() || output_fields[0]=="all") {
-     output_fields.clear();
-     output_fields = {"u","v","w","icell"};
-     }
-     
-     validateFileOptions();     
-  */
+  if (fileOP.empty() || fileOP[0]=="all") {
+    output_fields = {"t","x","y","z","u","v","w","icell","terrain"};
+  }else{
+    output_fields={"t","x","y","z"};
+    output_fields.insert(output_fields.end(),fileOP.begin(),fileOP.end());
+  }
+  
+  //validateFileOptions();     
+  
 
   int nx = ugd->nx;
   int ny = ugd->ny;
