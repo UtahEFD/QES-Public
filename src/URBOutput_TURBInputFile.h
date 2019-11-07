@@ -19,8 +19,6 @@ class URBOutput_TURBInputFile : public URBOutput_Generic
   ~URBOutput_TURBInputFile()	       
     {}
 
-  
-  bool validateFileOtions();
   void save(URBGeneralData*);
  
  private:

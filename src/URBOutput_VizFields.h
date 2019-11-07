@@ -15,7 +15,7 @@ class URBOutput_VizFields : public URBOutput_Generic
  URBOutput_VizFields()
    : URBOutput_Generic()
     {}
-URBOutput_VizFields(URBGeneralData*,URBInputData*,std::string);
+  URBOutput_VizFields(URBGeneralData*,URBInputData*,std::string);
   ~URBOutput_VizFields()	       
     {}
   

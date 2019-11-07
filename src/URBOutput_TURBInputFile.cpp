@@ -95,12 +95,6 @@ URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string
   addOutputFields();
 }
 
-bool URBOutput_TURBInputFile::validateFileOtions()
-{
-  //check all fileoption specificed to make sure it's possible...
-  return true;
-}
-
   
 // Save output at cell-centered values
 void URBOutput_TURBInputFile::save(URBGeneralData *ugd)

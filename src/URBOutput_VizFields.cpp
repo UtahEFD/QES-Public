@@ -6,15 +6,21 @@ URBOutput_VizFields::URBOutput_VizFields(URBGeneralData *ugd,URBInputData* uid,s
   std::cout<<"Getting output fields for Vizualization file"<<std::endl;
   
   std::vector<std::string> fileOP= uid->fileOptions->outputFields;
-     
+  bool valid_output;
+
   if (fileOP.empty() || fileOP[0]=="all") {
     output_fields = {"t","x","y","z","u","v","w","icell","terrain"};
+    valid_output=true;
   }else{
     output_fields={"t","x","y","z"};
     output_fields.insert(output_fields.end(),fileOP.begin(),fileOP.end());
+    valid_output=validateFileOtions();
   }
   
-  //validateFileOptions();     
+  if(!valid_output){
+     std::cerr << "Error: invalid output fields for visfields output\n";
+     exit(EXIT_FAILURE);
+  }
   
 
   int nx = ugd->nx;
