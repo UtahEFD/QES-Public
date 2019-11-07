@@ -8,7 +8,7 @@ URBOutputData :: URBOutputData(URBGeneralData* UGD,URBInputData* UID,std::string
     output_viz = new URBOutput_VizFields(UGD,UID,fname);
   }
 
-  if (UID->fileOptions->outputFlag==1) {
+  if (UID->fileOptions->outputTURBInputFile) {
     std::string fname=outname;
     fname.append("_TURBInputFile.nc");
     output_turb = new URBOutput_TURBInputFile(UGD,fname);
