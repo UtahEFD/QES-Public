@@ -76,4 +76,13 @@ public:
 	 * @param tris -list of triangles that will be placed in the structure
 	 */
 	static BVH* createBVH(const std::vector<Triangle*> tris);
+
+        /*
+         *Takes a 3D ray and determines if it intersects this BVH
+         *node's triangle
+         *@return HitRec obj if it has been hit or NULL if not a hit 
+         */
+        HitRecord* rayTriIntersect(Ray* ray);
+        
+
 };

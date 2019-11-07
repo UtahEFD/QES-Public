@@ -7,6 +7,8 @@
 
 #include "Triangle.h"
 #include "BVH.h"
+#include "SphereDirections.h"
+#include "Ray.h"
 
 using std::vector;
 
@@ -36,4 +38,10 @@ public:
 	 */
 	float getHeight(float x, float y);
 
+
+        /*
+         *Caculates the mixing length for all fluid objects 
+         */
+        void calculateMixingLength();
+        
 };
