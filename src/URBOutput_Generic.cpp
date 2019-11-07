@@ -211,6 +211,60 @@ void URBOutput_Generic::rmOutputField(std::string name)
   } 
 };
 
+void URBOutput_Generic::rmTimeIndepFields()
+{
+  /*
+    This function remove time indep field from the output vectors
+    Since the types are not know, one needs to loop through 
+    the 6 output vector to find it.
+    
+    Note: the fields CANNOT be added again.
+    
+    FMargairaz
+  */
+
+  // loop through scalar fields to remove
+  // -> int
+  for (unsigned int i=0; i<output_scalar_int.size(); i++) {
+    if(output_scalar_int[i].dimensions[0].getName()!="t") {
+      output_scalar_int.erase(output_scalar_int.begin()+i);
+    }
+  }
+  // -> float
+  for (unsigned int i=0; i<output_scalar_flt.size(); i++) {
+    if(output_scalar_flt[i].dimensions[0].getName()!="t") {
+      output_scalar_flt.erase(output_scalar_flt.begin()+i);
+    } 
+  }
+  
+  // -> double
+  for (unsigned int i=0; i<output_scalar_dbl.size(); i++) {
+    if(output_scalar_dbl[i].dimensions[0].getName()!="t") {
+      output_scalar_dbl.erase(output_scalar_dbl.begin()+i);
+    } 
+  }
+  
+  // loop through vector fields to remove
+  // -> int
+  for (unsigned int i=0; i<output_vector_int.size(); i++) {
+    if(output_vector_int[i].dimensions[0].getName()!="t") {
+      output_vector_int.erase(output_vector_int.begin()+i);
+    } 
+  }
+  // -> float
+  for (unsigned int i=0; i<output_vector_flt.size(); i++) { 
+    if(output_vector_flt[i].dimensions[0].getName()!="t") {
+      output_vector_flt.erase(output_vector_flt.begin()+i);
+    } 
+  }
+  // -> double
+  for (unsigned int i=0; i<output_vector_dbl.size(); i++) {
+    if(output_vector_dbl[i].dimensions[0].getName()!="t") {
+      output_vector_dbl.erase(output_vector_dbl.begin()+i);
+    } 
+  } 
+};
+
 void URBOutput_Generic::saveOutputFields()
 {
    /*

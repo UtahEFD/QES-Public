@@ -112,13 +112,11 @@ void URBOutput_TURBInputFile::save(URBGeneralData *ugd)
   // save fields
   saveOutputFields();
 
-  // remove terrain 
-  // from output array after first save
+  // remmove time indep from output array after first save
   if (output_counter==0) {
-    rmOutputField("terrain");
+    rmTimeIndepFields();
   }
   
-
   // increment for next time insertion
   output_counter +=1;
 

@@ -125,10 +125,7 @@ void URBOutput_VizFields::save(URBGeneralData *ugd)
   // remove x, y, z and terrain 
   // from output array after first save
   if (output_counter==0) {
-    rmOutputField("x");
-    rmOutputField("y");
-    rmOutputField("z");
-    rmOutputField("terrain");
+    rmTimeIndepFields();
   }
   
   // increment for next time insertion

@@ -99,6 +99,7 @@ class URBOutput_Generic : public NetCDFOutput
   void addOutputFields();
   // removed field
   void rmOutputField(std::string);
+  void rmTimeIndepFields();
   // save fields 
   void saveOutputFields();
 
