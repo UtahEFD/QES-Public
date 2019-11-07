@@ -46,36 +46,41 @@ URBOutput_VizFields::URBOutput_VizFields(URBGeneralData *ugd,URBInputData* uid,s
 
   // set cell-centered data dimensions
   // time dimension 
-  std::vector<NcDim> dim_time;
-  dim_time.push_back(addDimension("t"));
-  // create attributes
-  createAttScalar("t","time","s",dim_time,&time);
-  
+  NcDim NcDim_t=addDimension("t");
   // space dimensions 
-  std::vector<NcDim> dim_vect_z;
-  dim_vect_z.push_back(addDimension("z",ugd->nz-2));
-  std::vector<NcDim> dim_vect_y;
-  dim_vect_y.push_back(addDimension("y",ugd->ny-1));
-  std::vector<NcDim> dim_vect_x;
-  dim_vect_x.push_back(addDimension("x",ugd->nx-1)); 
-  // create attributes
-  createAttVector("x","x-distance","m",dim_vect_x,&x_out);
-  createAttVector("y","y-distance","m",dim_vect_y,&y_out);
-  createAttVector("z","z-distance","m",dim_vect_z,&z_out);
+  NcDim NcDim_x=addDimension("x",ugd->nx-1);
+  NcDim NcDim_y=addDimension("y",ugd->ny-1);
+  NcDim NcDim_z=addDimension("z",ugd->nz-2);
+
+  // create attributes for time dimension 
+  std::vector<NcDim> dim_vect_t;
+  dim_vect_t.push_back(NcDim_t);
+  createAttScalar("t","time","s",dim_vect_t,&time);
   
-  // 2D vector (time indep)
+  // create attributes space dimensions 
+  std::vector<NcDim> dim_vect_x;
+  dim_vect_x.push_back(NcDim_x);
+  createAttVector("x","x-distance","m",dim_vect_x,&x_out);
+  std::vector<NcDim> dim_vect_y;
+  dim_vect_y.push_back(NcDim_y);
+  createAttVector("y","y-distance","m",dim_vect_y,&y_out);  
+  std::vector<NcDim> dim_vect_z;
+  dim_vect_z.push_back(NcDim_z); 
+  createAttVector("z","z-distance","m",dim_vect_z,&z_out);
+
+  // create 2D vector (time indep)
   std::vector<NcDim> dim_vect_2d;
-  dim_vect_2d.push_back(dim_vect_y[0]);
-  dim_vect_2d.push_back(dim_vect_x[0]);
+  dim_vect_2d.push_back(NcDim_y);
+  dim_vect_2d.push_back(NcDim_x);
   // create attributes
   createAttVector("terrain","terrain height","m",dim_vect_2d,&(ugd->terrain));
   
-  // 3D vector (time dep)
+  // create 3D vector (time dep)
   std::vector<NcDim> dim_vect_3d;
-  dim_vect_3d.push_back(dim_time[0]);
-  dim_vect_3d.push_back(dim_vect_z[0]);
-  dim_vect_3d.push_back(dim_vect_y[0]);
-  dim_vect_3d.push_back(dim_vect_x[0]);
+  dim_vect_3d.push_back(NcDim_t);
+  dim_vect_3d.push_back(NcDim_z);
+  dim_vect_3d.push_back(NcDim_y);
+  dim_vect_3d.push_back(NcDim_x);
   // create attributes
   createAttVector("u","x-component velocity","m s-1",dim_vect_3d,&u_out);
   createAttVector("v","y-component velocity","m s-1",dim_vect_3d,&v_out);
