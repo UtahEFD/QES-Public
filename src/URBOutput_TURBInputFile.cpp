@@ -18,7 +18,7 @@ URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string
   // set face-centered data dimensions
   // scalar dimension 
   std::vector<NcDim> dim_vect_z_fc;
-  dim_vect_z_fc.push_back(addDimension("z_fc",ugd->nz-1));
+  dim_vect_z_fc.push_back(addDimension("z_fc",ugd->nz));
   std::vector<NcDim> dim_vect_y_fc;
   dim_vect_y_fc.push_back(addDimension("y_fc",ugd->ny));
   std::vector<NcDim> dim_vect_x_fc;
@@ -50,7 +50,8 @@ URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string
   dim_vect_2d.push_back(dim_vect_x_cc[0]);
   // create attributes 
   createAttVector("terrain","terrain height","m",dim_vect_2d,&(ugd->terrain));
-  
+  createAttVector("terrain","terrain height","m",dim_vect_2d,&(ugd->terrain));
+
   // 3D vector dimension (time dep)
   std::vector<NcDim> dim_vect_cc;
   dim_vect_cc.push_back(dim_time[0]);
@@ -71,6 +72,24 @@ URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string
   createAttVector("h","h cut-cell coefficient","--",dim_vect_cc,&(ugd->h)); 
   createAttVector("m","m cut-cell coefficient","--",dim_vect_cc,&(ugd->m)); 
   createAttVector("n","n cut-cell coefficient","--",dim_vect_cc,&(ugd->n)); 
+  
+  // adding building informations
+  if (ugd->building_id.size()>0) {
+    // add building dimension
+    std::vector<NcDim> dim_building;
+    dim_building.push_back(addDimension("building",ugd->building_id.size()));
+    // vector of dimension for time dep building information 
+    std::vector<NcDim> dim_building_time;
+    dim_building_time.push_back(dim_time[0]);
+    dim_building_time.push_back(dim_building[0]);
+    
+    createAttVector("building_id","ID of building","--",dim_building,&(ugd->building_id)); 
+    output_fields.push_back("building_id");
+
+    createAttVector("effective_height","effective height of building","m",
+		    dim_building_time,&(ugd->effective_height)); 
+    output_fields.push_back("effective_height");
+  }
   
   // create output fields
   addOutputFields();
