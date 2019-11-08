@@ -9,6 +9,7 @@
 #include "BVH.h"
 #include "SphereDirections.h"
 #include "Ray.h"
+#include "HitRecord.h"
 
 using std::vector;
 
