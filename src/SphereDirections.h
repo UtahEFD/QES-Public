@@ -6,7 +6,7 @@
  *tracing 
  */
 
-#include Vector3.h
+#include "Vector3.h"
 
 class SphereDirections{
   private:
@@ -29,7 +29,12 @@ class SphereDirections{
     */
    SphereDirections(int numDir, Vector3<float> bound_vec_x,
                     Vector3<float> bound_vec_y, Vector3<float> bound_vec_z);
-   
+
+
+   /*
+    *@return numDirVec The number of directional vectors generated
+    */
+   int getNumDirVec(){return numDirVec;}
 
    /*
     *Calculates the next directional vector
@@ -37,9 +42,10 @@ class SphereDirections{
     *Returns the next directional vector if vecCount <= numDirVec
     *     returns NULL otherwise
     */
-   Vector3<float> calcNextVector();
+   Vector3<float> getNextDir();
    
    
 };
 
 #endif
+

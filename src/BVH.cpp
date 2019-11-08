@@ -177,7 +177,7 @@ float BVH::heightToTri(float x, float y)
 
 HitRecord* BVH::rayTriangleIntersect(Ray* ray){
    HitRecord *hitrec = NULL;
-   if(tri == 0){
+   if(!isleaf){
       std::cout<<"Not an intersectable triangle."<<endl;
    }else{
       float beta, gamma, t, M, a,b,c,d,e,f,g,h,i,j,k,l;
@@ -212,4 +212,12 @@ HitRecord* BVH::rayTriangleIntersect(Ray* ray){
    }
 
    return hitrec;
+}
+
+
+HitRecord* BVH::rayBoxIntersect(Ray* ray){
+   HitRecord* hitrec = NULL;
+
+   //TODO: Determine if a ray will intersects this BVH node
+
 }

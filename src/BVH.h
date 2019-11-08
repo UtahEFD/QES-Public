@@ -84,6 +84,19 @@ public:
          *@return HitRec obj if it has been hit or NULL if not a hit 
          */
         HitRecord* rayTriIntersect(Ray* ray);
-        
 
+        /*
+         *Takes a 3D ray and determines if it intersects this BVH's
+         *node's bounding box
+         @return HitRecord of the box it hit or NULL if a miss 
+         */
+        HitRecord* rayBoxIntersect(Ray* ray);
+
+        /*
+         *may only temporarily need this until I can make a more
+         *efficient version
+         */
+        bool getIsLeaf(){return isLeaf;}
+        BVH* getLeftBox(){return leftBox;}
+        BVH* getRightBox(){return rightBox;}
 };

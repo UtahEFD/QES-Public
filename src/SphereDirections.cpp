@@ -10,7 +10,7 @@ SphereDirections::SphereDirections(int numDir, Vector3D<float> bound_vect_x,
 
 }
 
-Vector3<float> SphereDirections::calcNextVec(){
+Vector3<float> SphereDirections::getNextDir(){
    Vector3<float> nextVec = NULL;
 
    return nextVec;
