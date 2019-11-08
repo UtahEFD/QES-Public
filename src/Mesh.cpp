@@ -15,7 +15,7 @@ void Mesh::calculateMixingLength(){
       //Create a SphericalDirections obj. that will contain all the
       //dir to iterate over
       SphericalDirections sd = new SphericalDirections();
-      float mixLength;
+      float mixLength = std::numeric_limits<float>::infinity();
       nextBVH = tris;
       //TODO: find out how cells are actually called
       Cell currCell = cell[i];

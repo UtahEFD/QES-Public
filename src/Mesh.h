@@ -10,6 +10,7 @@
 #include "SphereDirections.h"
 #include "Ray.h"
 #include "HitRecord.h"
+#include <limits>
 
 using std::vector;
 
