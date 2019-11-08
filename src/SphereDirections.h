@@ -10,13 +10,15 @@
 
 class SphereDirections{
   private:
-   int numDirVec = 6; //Number of directional vectors
-   int vecCount = 0;
+   int numDirVec; //Number of directional vectors
+   int vecCount;
    float disBtwVectors;
-   Vector3 bound_x;
-   Vector3 bound_y;
-   Vecotr3 bound_z; 
-   Vector3 next; //next directional vector
+   Vector3<float> bound_x;
+   Vector3<float> bound_y;
+   Vector3<float> bound_z;
+Vector3<float> nextList[6];  //temp for 6 cardinal directions 
+
+  //Vector3 next; //next directional vector
   public:
 
    /*Constructor
