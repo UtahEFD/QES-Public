@@ -6,6 +6,7 @@
  */
 
 #include "Triangle.h"
+#include "HitRecord.h"
 #include <vector>
 
 #define GETMIN(x,y) ( (x) < (y) ? (x) : (y))

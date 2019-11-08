@@ -176,10 +176,40 @@ float BVH::heightToTri(float x, float y)
 
 
 HitRecord* BVH::rayTriangleIntersect(Ray* ray){
-   float beta, gamma, t, M, a,b,c,d,e,f,g,h,i,j,k,l;
+   HitRecord *hitrec = NULL;
+   if(tri == 0){
+      std::cout<<"Not an intersectable triangle."<<endl;
+   }else{
+      float beta, gamma, t, M, a,b,c,d,e,f,g,h,i,j,k,l;
 
-   a= (tri.a)[0] - (tri.a)[1];       d = (tri.a)[0] - (tri.a)[2];
-   b= (tri.b)[0] - (tri.b)[1];       e = (tri.b)[0] - (tri.b)[2];
-   c= (tri.c)[0] - (tri.c)[1];       f = (tri.c)[0] - (tri.c)[2];
+      a = (tri.a)[0] - (tri.a)[1];       d = (tri.a)[0] - (tri.a)[2];   g = ray.getDirection()[0];
+      b = (tri.b)[0] - (tri.b)[1];       e = (tri.b)[0] - (tri.b)[2];   h = ray.getDirection()[1];
+      c = (tri.c)[0] - (tri.c)[1];       f = (tri.c)[0] - (tri.c)[2];   i = ray.getDirection()[2];
 
+      j = (tri.a)[0] - ray.getOriginX();
+      k = (tri.b)[0] - ray.getOriginY();
+      l = (tri.c)[0] - ray.getOriginZ();
+
+      float EIHF = (e*i) - (h*f);
+      float GFDI = (g*f) - (d*i);
+      float DHEG = (d*h) - (e*g);
+      float JCAL = (j*c) - (a*l);
+      float BLKC = (b*l) - (k*c);
+      float AKJB = (a*k) - (j*b);
+
+      M = (a*EIHF) + (b*GFDI) + (c*DHEG);
+
+      beta = ((j*EIHF) + (k*GFDI) + (l*DHEG))/M;
+      gamma = ((i*AKJB) + (h*JCAL) + (g*BLKC))/M;
+      t = ((f*AKJB) + (e*JCAL) + d(BLKC))/M;
+
+      if(t < c || t > f || gamma < 0 || gamma > 1 || beta < 0 || beta > (1- gamma)){
+         std::cout<<"No intersection found."<<endl;
+      }else{
+         hitrec = new HitRecord(tri, t);
+      }
+
+   }
+
+   return hitrec;
 }

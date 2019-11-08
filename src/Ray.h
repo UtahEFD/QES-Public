@@ -6,7 +6,7 @@
 class Ray{
   private:
       float origin_x, origin_y, origin_z;
-      Vector2 dirVec;
+      Vector3 dirVec;
   public:
       Ray(float origin_x, float origin_y, float origin_z, Vector3<float> dirVec){
          this.origin_x = origin_x;
