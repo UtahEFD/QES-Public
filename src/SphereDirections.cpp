@@ -12,7 +12,7 @@ SphereDirections::SphereDirections(){
 }
 
 
-SphereDirections::SphereDirections(int numDir, Vector3D<float> bound_vect_x,
+SphereDirections::SphereDirections(int numDir, Vector3<float> bound_vect_x,
                                    Vector3<float> bound_vec_y){
 
    vecCount = 0;

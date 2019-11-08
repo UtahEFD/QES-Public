@@ -16,7 +16,7 @@ class SphereDirections{
    Vector3<float> bound_x;
    Vector3<float> bound_y;
    Vector3<float> bound_z;
-Vector3<float> nextList[6];  //temp for 6 cardinal directions 
+   Vector3<float> nextList[6];  //temp for 6 cardinal directions 
 
   //Vector3 next; //next directional vector
   public:

@@ -8,6 +8,7 @@
 #include "Triangle.h"
 #include "HitRecord.h"
 #include <vector>
+#include <cmath>
 
 #define GETMIN(x,y) ( (x) < (y) ? (x) : (y))
 #define GETMAX(x,y) ( (x) > (y) ? (x) : (y))
