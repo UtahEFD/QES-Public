@@ -17,9 +17,9 @@
 	<nBoxesZ> 40 </nBoxesZ> 
 </collectionParameters>
 <sources>
-    <numParticles>100000</numParticles>
-	<numSources> 1 </numSources>
+    <numSources> 1 </numSources>
 	<pointSource>
+		<numParticles>100000</numParticles>
 		<posX> 75.0 </posX>
 		<posY> 1800.0 </posY>
 		<posZ> 40.0 </posZ>

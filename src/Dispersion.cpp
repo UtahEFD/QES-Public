@@ -22,6 +22,9 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     dt     = PID->simParams->timeStep;
     simDur    = PID->simParams->runTime;
 
+    // have to set the value to something before filling it
+    numPar = 0;
+
     // set up time details
     numTimeStep = std::ceil(simDur/dt);
     timeStepStamp.resize(numTimeStep);
@@ -68,10 +71,6 @@ void Dispersion::addSources(Sources* sources)
     // first get the number of sources from the sources variable
     int numSources = sources->numSources;
 
-    // also grab the number of particles, since that is where this variable is stored for now. I want to eventually move this to the individual sources
-    // then numPar will represent a cumulative number from each source
-    numPar = sources->numParticles;
-
     
     for(int i = 0; i < numSources; i++)
     {
@@ -100,7 +99,12 @@ void Dispersion::addSource(SourcePoint* source)
     // but it isn't setup this way in the input files yet, so I can't do that. But right now I'm forcing a source type
     // so the value isn't inside that storage yet either
     // so going to comment this out for now
-    //numPar = source->numParticles;
+    int currentNumPar = source->numParticles;
+
+    // update the overall list number of particles
+    // keep track of the old number of values so it is easy to update the list in the right way
+    int oldNumPar = numPar;
+    numPar = numPar + currentNumPar;
     
     // these are the source point x, y, and z values from the input source information
     double srcX = source->posX;
@@ -109,12 +113,12 @@ void Dispersion::addSource(SourcePoint* source)
     
     
     // set up source information sizes
-    pos.resize(numPar);
+    pos.resize(numPar); // will this get rid of the old values set in the old size locations?
     tStrt.resize(numPar);
     
 
     // now set source positions
-    for(int i = 0; i < numPar; i++)
+    for(int i = oldNumPar; i < numPar; i++)
     {
 
         pos.at(i).e11 = srcX;   // set the source positions for each particle
@@ -125,14 +129,14 @@ void Dispersion::addSource(SourcePoint* source)
 
     // setup the number of particles per timestep
     // this should eventually be adjusting this value, not adding to it
-    parPerTimestep = numPar*dt/simDur;
+    parPerTimestep = currentNumPar*dt/simDur;
     std::cout << "[Dispersion] \t Emitting " << parPerTimestep << " particles per Time Step" << std::endl;
     
     int parRel = 0;
     double startTime = dt;
     
     // now set source release times
-    for(int i = 0; i < numPar; i++)
+    for(int i = 0; i < currentNumPar; i++)
     {
       /*when number of particles to be released in a particluar time step reaches total 
         number of particles to be released in that time step, then increase the start time 

@@ -36,6 +36,11 @@ class Dispersion {
         // this also holds the full list of particle information, so the dispersion class could probably be renamed to Lagrangian since it is the Lagrangian grid of values
         
         
+        int numPar;        // this is the total number of particles to be released over the whole simulation
+                            // it is the cumulative number of particles from each source, determined from each source
+                            // at some time, need to figure out how to estimate this or update this when sources are added, not by the constructor
+        
+
         int numTimeStep;            // this is the number of timesteps of the simulation
         std::vector<double> timeStepStamp;  // this is the list of times for the simulation
         
@@ -60,11 +65,6 @@ class Dispersion {
         std::vector<bool> isRogue;         // this is false until it becomes true. Should not go true. It is whether a particle has gone rogue or not
         std::vector<bool> isActive;         // this is true until it becomes false. If a particle leaves the domain or runs out of mass, this becomes false. Later we will add a method to start more particles when this has become false
 
-
-        int numPar;        // this is a copy of the input numParticles to be released over the whole simulation
-        // at some point in time, this needs to become the cumulative number of particles from each source, determined from each source
-        // instead of given as a single value that the sources all depend on
-        
 
         // going to have a ton of source functions, this first one will be the source factory operator which calls all the other add source functions
         // depending on the type of source. It should be noted that the end goal will be to get rid of the initialization factory, probably by

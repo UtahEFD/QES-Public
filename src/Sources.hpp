@@ -19,11 +19,10 @@ class Sources : public ParseInterface
     
     public:
     
-    	int numParticles, numSources;
+    	int numSources;
     	std::vector<SourceKind*> sources;
     
     	virtual void parseValues() {
-    		parsePrimitive<int>(true, numParticles, "numParticles");
     		parsePrimitive<int>(true, numSources, "numSources");
     		parseMultiPolymorphs(true, sources, Polymorph<SourceKind, SourcePoint>("pointSource"));
     	}

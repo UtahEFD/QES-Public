@@ -15,10 +15,12 @@ class SourcePoint : public SourceKind
     
     public:
     
+        int numParticles;
     	float posX, posY, posZ, radius; 
     
     	virtual void parseValues() {
         	
+            parsePrimitive<int>(true, numParticles, "numParticles");
             parsePrimitive<float>(true, posX, "posX");
             parsePrimitive<float>(true, posY, "posY");
             parsePrimitive<float>(true, posZ, "posZ");
