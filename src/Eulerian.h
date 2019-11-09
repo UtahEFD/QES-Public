@@ -15,12 +15,14 @@ class Eulerian{
     
 public:
     
-    Eulerian(Urb*,Turb*);   // defines the values for vonKar and zo, then copies the urb grid values for nx, ny, nz, nt, dx, dy, and dz to the Eulerian grid values,
-                            // then calculates the tau gradients and the A1 matrix.
-                            // probably not going to need vonKar or zo anymore. Same with A1 matrix. Eulerian grid accessing functions should be the main use of this class.
+    Eulerian(Urb*,Turb*);   // copies the urb grid values for nx, ny, nz, nt, dx, dy, and dz to the Eulerian grid values,
+                            // then calculates the tau gradients which are then used to calculate the flux_div grid values.
+                            //    Eulerian grid accessing functions should be the main use of this class.
                             // since Urb and Turb stuff is not fully copied into this Eulerian dataset, some Eulerian grid accessing functions should probably be able to do calculations
                             // on datasets that are not stored in this class, but are values at this same Eulerian grid level. That being said, some of them could also be directly 
-                            // put into Urb and Turb, depending on what is needed. I bet some of these functions currently reside in Plume.
+                            // put into Urb and Turb, depending on what is needed.     Since these functions work on Urb, Turb, and Eulerian data, I keep wondering if 
+                            //     they should go somewhere else, but then again the only time data is accessed this way is if Eulerian is around, so maybe it's fine to have the 
+                            // interp functions here.
     
 
     // Still need Tau variables.  They are defined here:
@@ -41,6 +43,7 @@ public:
     void display(const vec3&);       // you would think this should be a function put with the datatype. Seems useful, especially in debug mode
     void display(const diagonal&);       // you would think this should be a function put with the datatype. Seems useful, especially in debug mode
     
+    // just realized, what if urb and turb have different grids? For now assume they are the same grid
     int nx,ny,nz,nt;    // a copy of the urb grid information, the number of values in each dimension, including time
     double dx,dy,dz;    // a copy of the urb grid information, the difference between points in the grid
 
@@ -66,7 +69,8 @@ private:
     int jp;     // this is the counter to the next cell in the y direction, is set to zero to cause calculations to work but not reference outside of arrays if ny = 1
     int kp;     // this is the counter to the next cell in the z direction, is set to zero to cause calculations to work but not reference outside of arrays if nz = 1
 
-        
+    // I keep wondering, since we never use the gradients again since they are just used to calculate flux_div, which is what is used instead
+    // at some point in time should we get rid of storage of the gradient datasets? I guess they are useful for debugging.
     void setDX_Forward(const Turb* turb, const int idx);    // second order forward differencing for calc gradient in the x direction of tau
     void setDY_Forward(const Turb* turb, const int idx);    // second order forward differencing for calc gradient in the y direction of tau
     void setDZ_Forward(const Turb* turb, const int idx);    // second order forward differencing for calc gradient in the z direction of tau

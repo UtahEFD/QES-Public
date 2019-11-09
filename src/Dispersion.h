@@ -59,6 +59,11 @@ class Dispersion {
         std::vector<vec3> delta_prime;    // this is the difference between the current and last iteration of the velocity fluctuations
         std::vector<bool> isRogue;         // this is false until it becomes true. Should not go true. It is whether a particle has gone rogue or not
         std::vector<bool> isActive;         // this is true until it becomes false. If a particle leaves the domain or runs out of mass, this becomes false. Later we will add a method to start more particles when this has become false
+
+
+        int numPar;        // this is a copy of the input numParticles to be released over the whole simulation
+        // at some point in time, this needs to become the cumulative number of particles from each source, determined from each source
+        // instead of given as a single value that the sources all depend on
         
 
         // going to have a ton of source functions, this first one will be the source factory operator which calls all the other add source functions
@@ -78,11 +83,6 @@ class Dispersion {
         double dx,dy,dz;        // these are copies of the Urb grid dx,dy,dz values.            I don't think these are even used
         int dt;             // this is a copy of the input timestep
         double simDur;         // this is a copy of the input runTime, or the total amount of time to run the simulation for
-        
-
-        int numPar;        // this is a copy of the input numParticles to be released over the whole simulation
-        // at some point in time, this needs to become the cumulative number of particles from each source, determined from each source
-        // instead of given as a single value that the sources all depend on
         
 
         // function for finding the largest sig value, which could be used for other similar datatypes if needed

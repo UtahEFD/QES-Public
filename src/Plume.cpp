@@ -15,11 +15,23 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     nx = urb->grid.nx;
     ny = urb->grid.ny;
     nz = urb->grid.nz;
+
+    // calculate the urb domain start and end values, needed for wall boundary condition application
+    // I would guess that it is the first x value in the list of x points, and the last x value from the list of x points
+    // same thing for each of the y and z values
+    domainXstart = urb->grid.x.at(0);
+    domainXend = urb->grid.x.at(nx-1);
+    domainYstart = urb->grid.y.at(0);
+    domainYend = urb->grid.y.at(ny-1);
+    domainZstart = urb->grid.z.at(0);
+    domainZend = urb->grid.z.at(nz-1);
+
     
     /* setup the sampling box concentration information */
 
-    numPar = PID->sources->numParticles;
-    
+    sCBoxTime = PID->colParams->timeStart;
+    avgTime  = PID->colParams->timeAvg;
+
     nBoxesX = PID->colParams->nBoxesX;
     nBoxesY = PID->colParams->nBoxesY;
     nBoxesZ = PID->colParams->nBoxesZ;
@@ -28,7 +40,7 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     boxSizeY = (PID->colParams->boxBoundsY2-PID->colParams->boxBoundsY1)/nBoxesY;	  
     boxSizeZ = (PID->colParams->boxBoundsZ2-PID->colParams->boxBoundsZ1)/nBoxesZ;
     
-    volume=boxSizeX*boxSizeY*boxSizeZ;
+    volume = boxSizeX*boxSizeY*boxSizeZ;
     
     lBndx = PID->colParams->boxBoundsX1;
     uBndx = PID->colParams->boxBoundsX2;
@@ -46,29 +58,35 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     quanZ = (uBndz-lBndz)/(nBoxesZ);
     
     
-    int zR=0;
-    int yR=0;
-    int xR=0;
-    for(int k=0;k<nBoxesZ;++k) {
+    int zR = 0;
+    int yR = 0;
+    int xR = 0;
+    for(int k = 0; k < nBoxesZ; ++k)
+    {
         zBoxCen.at(k) = lBndz + (zR*quanZ) + (boxSizeZ/2.0);        // the .at(k) is different from [k] in that it checks the bounds, throwing an out of range error if outside the bounds of the vector
         zR++;
     }
-    for(int j=0;j<nBoxesY;++j) {
+    for(int j = 0; j < nBoxesY; ++j)
+    {
         yBoxCen.at(j) = lBndy + (yR*quanY) + (boxSizeY/2.0);
         yR++;
     }
-    for(int i=0;i<nBoxesX;++i) {
+    for(int i = 0; i <nBoxesX; ++i)
+    {
         xBoxCen.at(i) = lBndx + (xR*quanX) + (boxSizeX/2.0);
         xR++;
     }
+
+    cBox.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
+    conc.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
     
-    /* make copies of important dispersion information for particle release */
+    
+    /* make copies of important input and dispersion information for particle release */
 
     dt = PID->simParams->timeStep;
-    avgTime  = PID->colParams->timeAvg;
-    
-    sCBoxTime = PID->colParams->timeStart;
     numTimeStep  = dis->numTimeStep;
+
+    numPar = dis->numPar;    
     
     tStrt.resize(numPar);
     tStrt = dis->tStrt;
@@ -76,21 +94,8 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     timeStepStamp.resize(numTimeStep);
     timeStepStamp = dis->timeStepStamp;
     
-    parPerTimestep=dis->parPerTimestep;
+    parPerTimestep = dis->parPerTimestep;
     
-    cBox.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
-    conc.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
-
-
-    // calculate the urb domain start and end values, needed for wall boundary condition application
-    // I would guess that it is the first x value in the list of x points, and the last x value from the list of x points
-    // same thing for each of the y and z values
-    domainXstart = urb->grid.x.at(0);
-    domainXend = urb->grid.x.at(nx-1);
-    domainYstart = urb->grid.y.at(0);
-    domainYend = urb->grid.y.at(ny-1);
-    domainZstart = urb->grid.z.at(0);
-    domainZend = urb->grid.z.at(nz-1);
 
     
     /* setup output information */
@@ -147,29 +152,34 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
 void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID, Output* output)
 {
     
-    std::cout<<"[Plume] \t Advecting particles "<<std::endl;
+    std::cout << "[Plume] \t Advecting particles " << std::endl;
 
     // set some variables before the time integration
-    int parToMove=0;    // this is the loop counter ending point for the particle loop. Looks like it gets adjusted each time to add in the extra particles
+    int parToMove = 0;    // this is the loop counter ending point for the particle loop, which currently adjusts by adding the number of particles to release each timestep to its value. This adjustment method will need to change when particle recycling is figured out
 
     
-    // need to calculate the velFluct threshold value for rogue particles
-    // the threshold velocity fluctuation to define rogue particles
+    // get the threshold velocity fluctuation to define rogue particles from dispersion class
     double vel_threshold = dis->vel_threshold;
     
     // For every time step
-    for(int tStep = 0; tStep < numTimeStep; tStep++) {
+    for(int tStep = 0; tStep < numTimeStep; tStep++)
+    {
         
         // Move each particle for every time step
         parToMove = parToMove + parPerTimestep;     // add the new particles to the total number to be moved each timestep
-        double isRogueCount = dis->isRogueCount;
+        double isRogueCount = dis->isRogueCount;    // This probably could be moved from dispersion to one level back in this for loop
 
-        for(int par=0; par<parToMove;par++) {
+        for(int par = 0; par < parToMove; par++)
+        {
 
-            // first check to see if the particle should even be advected
+            // get the current isRogue and isActive information
+            // in this whole section, the idea of having single value temporary storage instead of just referencing values
+            //  directly from the dispersion class seems a bit strange, but it makes the code easier to read cause smaller variable names
+            //  also, in theory it is faster?
             bool isRogue = dis->isRogue.at(par);
             bool isActive = dis->isActive.at(par);
 
+            // first check to see if the particle should even be advected
             if(isActive == true && isRogue == false)
             {
 
@@ -183,6 +193,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 // hmm, Brian's code just starts out setting these values to zero,
                 // so the prime values are actually the old velFluct. velFluct_old and prime are probably identical and kind of redundant in this implementation
                 // but it shouldn't hurt anything for now, even if it is redundant
+                // besides, it will probably change a bit once I figure out what exactly I want outputted on a regular, and on a debug basis
                 double uPrime = dis->prime.at(par).e11;
                 double vPrime = dis->prime.at(par).e21;
                 double wPrime = dis->prime.at(par).e31;
@@ -207,10 +218,6 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                     will need to use the interp3D function
                     Need to get velMean, CoEps, tao, flux_div
                     Then need to call makeRealizable on tao then calculate inverse tao
-                    
-                    Okay should I use the given inverse tao from Turb or no? I'm going to go with no for now
-
-                    I guess for now, I can just use the old interpolation method
                 */
 
 
@@ -231,6 +238,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 double vMean = velMean.v;
                 double wMean = velMean.w;
                 
+                // this is the current reynolds stress tensor
                 matrix6 tao = eul->interp3D(turb->tau);
                 double txx = tao.e11;
                 double txy = tao.e12;
@@ -239,7 +247,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 double tyz = tao.e23;
                 double tzz = tao.e33;
                 
-                // now need flux_div_vel not the different dtxxdx type components
+                // now need flux_div_vel, not the different dtxxdx type components
                 vec3 flux_div = eul->interp3D(eul->flux_div);
                 double flux_div_x = flux_div.e11;
                 double flux_div_y = flux_div.e21; 
@@ -258,8 +266,6 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 tzz = realizedTao.e33;
 
                 // now need to calculate the inverse values for tao
-                // might be able to get away with currently existing functions for this. May still be good to write my own
-                // again already existing function Eulerian->matrixInv() for matrix6 to matrix 9 seems close to what I want
                 // I'm probably going to write my own function, but it looks like using the structs might be the best way to control output
                 // either that or passing in the variables by reference that need changed
                 matrix9 fullTao;
@@ -328,19 +334,11 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
 
                 // now prepare for the Ax=b calculation by calculating the inverted A matrix
-                // need to prepare the invert function, mayone one already exists in Eulerian since they do an Ax=b calculation
-                // not sure if these inputs and outputs are allowable or make sense either. Seems off somehow to me.
-                // the Eulerian->matrixInv() function for inverting a matrix6 to become a matrix9 looks closest to Brian's matrix inversion function
-                // but there appears to be some differences in the sign stuff, and how to handle if the determinant is too small
-                // the other Eulerian->matrixInv() is for matrix9 in to matrix9 out, but has a bunch of extra stuff that looks kind of like parts of makeRealizable
-
                 matrix9 Ainv = invert3(A);
 
 
                 // now do the Ax=b calculation using the inverted matrix
-                // need to either write this function, or find it in the Eulerian Ax=b stuff
                 // hm, since getting out three values, might be easier to do a pass in by reference thing for the velPrime values
-                // Brian's matmult looks like Eulerian->matrixVecMult, so I guess if the datatypes are right, could use that function
                 vec3 velPrime = matmult(Ainv,b);
                 uPrime = velPrime.e11;
                 vPrime = velPrime.e21;
@@ -371,6 +369,12 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 }
                 
                 // now update the particle position for this iteration
+                // at some point in time, need to do a CFL condition for only moving one eulerian grid cell at a time
+                // as well as a separate CFL condition for the particle timestep
+                // this would mean adding some kind of while loop, with an adaptive timestep, controlling the end of the while loop
+                //  with the sampling time increment. This means all particles can do multiple time iterations, each with their own timestep
+                // but at the sampling timestep, particles are allowed to catch up so they are all calculated by that time
+                // currently, we use the sampling timestep so we may violate the eulerian grid CFL condition. But is simpler to work with when getting started
                 double disX = ((uMean + uPrime)*dt);
                 double disY = ((vMean + vPrime)*dt);
                 double disZ = ((wMean + wPrime)*dt);
@@ -381,7 +385,8 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
 
                 // now apply boundary conditions
-                // we may want to skip this one, or maybe just set the particle to being inactive if it reaches outside the domain
+                // at some point in time, going to have to do a polymorphic inheritance so can have lots of boundary condition types
+                // but so that they can be run without if statements when changing BC types
                 // the reason for this, is Brian's BCs don't match what is normally used for Plume, we don't want reflections or periodic BCs
                 // when we allow different test cases, we will want these options, and a way to choose the boundary condition type
                 // for different regions sometime during the constructor phases.
@@ -412,6 +417,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 dis->tau_old.at(par).e23 = tyz;
                 dis->tau_old.at(par).e33 = tzz;
 
+                // now update the isRogueCount
                 if(isRogue == true)
                 {
                     isRogueCount = isRogueCount + 1;
@@ -426,34 +432,40 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
         // set the isRogueCount for the time iteration in the disperion data
         // hm, I'm almost wondering if this needs to go into dispersion, could just be kept locally,
-        // but declared outside the loop to preserve the value
+        // but declared outside the loop to preserve the value. Depends on the requirements for output and debugging
         dis->isRogueCount = isRogueCount;
 
         
         // this is basically saying, if we are past the time to start averaging values to calculate the concentration,
         // then calculate the average, where average does . . .
-        if(timeStepStamp.at(tStep) >= sCBoxTime){
+        if( timeStepStamp.at(tStep) >= sCBoxTime )
+        {
             average(tStep,dis,urb);
         }
+
         // this is basically saying, if the current time has passed a time that we should be outputting values at,
         // then calculate the concentrations for the sampling boxes, save the output for this timestep, and update time counter for when to do it again.
         // I'm honestly confused why cBox gets set to zero, unless this is meant to cleanup for the next iteration. If this is so, then why do it in a way
         // that you can't output the information if you ever need to debug it? Seems like it should be a temporary variable then.
-        if(timeStepStamp.at(tStep)>= sCBoxTime+avgTime) {
+        if(timeStepStamp.at(tStep) >= sCBoxTime+avgTime )
+        {
             //std::cout<<"loopPrm   :"<<loopPrm<<std::endl;
             //std::cout<<"loopLowestCell :"<<loopLowestCell<<std::endl;
-            double cc=(dt)/(avgTime*volume*numPar);
-            for(int k=0;k<nBoxesZ;k++) {
-                for(int j=0;j<nBoxesY;j++) {
-                    for(int i=0;i<nBoxesX;i++) {
-                        int id=k*nBoxesY*nBoxesX+j*nBoxesX+i;
+            double cc = (dt)/(avgTime*volume*numPar);
+            for(int k = 0; k < nBoxesZ; k++)
+            {
+                for(int j = 0; j < nBoxesY; j++)
+                {
+                    for(int i = 0; i < nBoxesX; i++)
+                    {
+                        int id = k*nBoxesY*nBoxesX + j*nBoxesX + i;
                         conc.at(id) = cBox.at(id)*cc;
                         cBox.at(id) = 0.0;
                     }
                 }
             }
             save(output);
-            avgTime=avgTime+PID->colParams->timeAvg;    // I think this is updating the averaging time for the next loop
+            avgTime = avgTime + PID->colParams->timeAvg;    // I think this is updating the averaging time for the next loop
         }
 
     } // for(tStep=0; tStep<numTimeStep; tStep++)
@@ -598,9 +610,10 @@ void Plume::enforceWallBCs(double& xPos,double& yPos,double& zPos,bool &isActive
 
 
 
-void Plume::save(Output* output) {
+void Plume::save(Output* output)
+{
     
-    std::cout<<"[Plume] \t Saving particle concentrations"<<std::endl;
+    std::cout << "[Plume] \t Saving particle concentrations" << std::endl;
     
     // output size and location
     std::vector<size_t> scalar_index;
@@ -616,54 +629,85 @@ void Plume::save(Output* output) {
     timeOut = (double)output_counter;
     
     // loop through 1D fields to save
-    for (int i=0; i<output_scalar_dbl.size(); i++) {
+    for (int i = 0; i < output_scalar_dbl.size(); i++)
+    {
         output->saveField1D(output_scalar_dbl[i].name, scalar_index, output_scalar_dbl[i].data);
     }
     
     // loop through 2D double fields to save
-    for (int i=0; i<output_vector_dbl.size(); i++) {
+    for (int i = 0; i < output_vector_dbl.size(); i++)
+    {
 
         // x,y,z, terrain saved once with no time component
-        if (i<3 && output_counter==0) {
+        if( i < 3 && output_counter == 0 )
+        {
             output->saveField2D(output_vector_dbl[i].name, *output_vector_dbl[i].data);
-        } else {
+        } else
+        {
             output->saveField2D(output_vector_dbl[i].name, vector_index,
                                 vector_size, *output_vector_dbl[i].data);
         }
     }
 
     // remove x, y, z, terrain from output array after first save
-    if (output_counter==0) {
+    if( output_counter == 0 )
+    {
         output_vector_dbl.erase(output_vector_dbl.begin(),output_vector_dbl.begin()+3);
     }
 
     // increment for next time insertion
     output_counter +=1;
+
 }
 
 
 
-void Plume::average(const int tStep,const Dispersion* dis, const Urb* urb) {
-    for(int i=0;i<numPar;i++) {
-        if(tStrt.at(i)>timeStepStamp.at(tStep)) continue;
-        double xPos=dis->pos.at(i).e11;
-        double yPos=dis->pos.at(i).e21;
-        double zPos=dis->pos.at(i).e31;
-        if(zPos==-1) continue;
-        int iV=int(xPos/urb->grid.dx);
-        int jV=int(yPos/urb->grid.dy);
-        int kV=int(zPos/urb->grid.dz)+1;
-        int idx=(int)((xPos-lBndx)/boxSizeX);
-        int idy=(int)((yPos-lBndy)/boxSizeY);
-        int idz=(int)((zPos-lBndz)/boxSizeZ);
-        if(xPos<lBndx) idx=-1;
-        if(yPos<lBndy) idy=-1;
-        if(zPos<lBndz) idz=-1;
-        int id=0;
-        if(idx>=0 && idx<nBoxesX && idy>=0 && idy<nBoxesY && idz>=0 && idz<nBoxesZ && tStrt.at(i)<=timeStepStamp.at(tStep)) {
-            id=idz*nBoxesY*nBoxesX+idy*nBoxesX+idx;
-            cBox.at(id)=cBox.at(id)+1.0;
+void Plume::average(const int tStep,const Dispersion* dis, const Urb* urb)
+{
+    for(int i = 0; i < numPar; i++)
+    {
+        
+        if( tStrt.at(i) > timeStepStamp.at(tStep) )
+        {
+            continue;
         }
-    }
+        
+        double xPos = dis->pos.at(i).e11;
+        double yPos = dis->pos.at(i).e21;
+        double zPos = dis->pos.at(i).e31;
+        
+        if( zPos == -1 )
+        {
+            continue;
+        }
+
+        int iV = int(xPos/urb->grid.dx);
+        int jV = int(yPos/urb->grid.dy);
+        int kV = int(zPos/urb->grid.dz) + 1;    // why is this + 1 here?
+        int idx = (int)((xPos-lBndx)/boxSizeX);
+        int idy = (int)((yPos-lBndy)/boxSizeY);
+        int idz = (int)((zPos-lBndz)/boxSizeZ);
+        if( xPos < lBndx )
+        {
+            idx = -1;
+        }
+        if( yPos < lBndy )
+        {
+            idy = -1;
+        }
+        if( zPos < lBndz )
+        {
+            idz = -1;
+        }
+
+        int id = 0;
+        if( idx >= 0 && idx < nBoxesX && idy >= 0 && idy < nBoxesY && idz >= 0 && idz < nBoxesZ && tStrt.at(i) <= timeStepStamp.at(tStep) )
+        {
+            id = idz*nBoxesY*nBoxesX + idy*nBoxesX + idx;
+            cBox.at(id) = cBox.at(id) + 1.0;
+        }
+
+    }   // particle loop
+
 }
 
