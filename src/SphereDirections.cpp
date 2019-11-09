@@ -12,28 +12,40 @@ SphereDirections::SphereDirections(){
 }
 
 
-SphereDirections::SphereDirections(int numDir, Vector3<float> bound_vect_x,
-                                   Vector3<float> bound_vec_y){
+SphereDirections::SphereDirections(int numDirVec, float lowerThetaBound, float upperThetaBound, float lowerPhiBound, float upperPhiBound){
 
    vecCount = 0;
-
-   //TODO: Set bounds to phi and theta limits instead
-   //Generate random directional vectors by generating random points
-   //on the surface of a sphere radius 1
-   //Since the radius is 1, the maginitude of all directional vectors
-   //should be 1, meaning that each point generated should be a unit
-   //vector
-   //The number of generated rays should be numDir, which should be
-   //large enough to generate a fairly decent spread of rays to test
+   this.numDirVec = numDirVec;
+   this.lowerThetaBound = lowerThetaBound;
+   this.upperThetaBound = upperThetaBound;
+   this.lowerPhiBound = lowerPhiBound;
+   this.upperPhiBound = upperPhiBound;
 
 }
 
 
-Vector3<float> SphereDirections::getNextDir(){
+Vector3<float> SphereDirections::getNextDirCardinal(){
    //temp for 6 cardinal directions
    Vector3<float> next = nextList[vecCount];
    vecCount++;
-
    return next;
+}
 
+
+Vector2<float> SphereDirections::getNextDir(){
+   //will only work for c++11 and up since I used the
+   //mersenne_twiser_engine to generate uniform rand num
+   //Might need to make sure it is actually generating a uniform rand
+   //float num
+
+   std::random_device rd;
+   std::mt19937 e2(rd());
+   std::uniform_real_distribution<float> theta(lowerThetaBound, upperThetaBound);
+   std::uniform_real_distribution<float> phi(lowerPhiBound, upperThetaBound);
+
+   float dx = std::cos(theta(e2))*std::cos(phi(e2));
+   float dy = std::sin(phi(e2));
+   float dz = std::cos(theta(e2))*std::sin(phi(e2));
+
+   return new Vector3<float> (dx,dy,dz);
 }

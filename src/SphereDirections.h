@@ -7,15 +7,18 @@
  */
 
 #include "Vector3.h"
+#include <cmath>
+#include <random>
 
 class SphereDirections{
   private:
    int numDirVec; //Number of directional vectors
    int vecCount;
    float disBtwVectors;
-   Vector3<float> bound_x;
-   Vector3<float> bound_y;
-   Vector3<float> bound_z;
+   float lowerThetaBound;
+   float upperThetaBound;
+   float lowerPhiBound;
+   float upperPhiBound;
    Vector3<float> nextList[6];  //temp for 6 cardinal directions 
 
   //Vector3 next; //next directional vector
@@ -29,8 +32,7 @@ class SphereDirections{
    /*Constructor
     *will generate specified num of directional vectors bounded by a certain region
     */
-   SphereDirections(int numDir, Vector3<float> bound_vec_x,
-                    Vector3<float> bound_vec_y, Vector3<float> bound_vec_z);
+   SphereDirections(int numDir, float lowerThetaBound, float upperThetaBound, float lowerPhiBound, float upperPhiBound);
 
 
    /*
@@ -39,13 +41,16 @@ class SphereDirections{
    int getNumDirVec(){return numDirVec;}
 
    /*
-    *Calculates the next directional vector
-    *updates local parameters to reflect the next direction it will calculate 
-    *Returns the next directional vector if vecCount <= numDirVec
-    *     returns NULL otherwise
+    *Returns the next cardinal directional vector
+    *Returns NULL if the vecCount > numDirVec
+    */
+   Vector3<float> getNextDirCardinal();
+
+   /*
+    *Gets a randomly generated directional vector based on theta and
+    *phi bounds
     */
    Vector3<float> getNextDir();
-   
    
 };
 
