@@ -97,6 +97,8 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     timeStepStamp.resize(numTimeStep);
     timeStepStamp = dis->timeStepStamp;
     
+
+    parPerTimestep.resize(numTimeStep);
     parPerTimestep = dis->parPerTimestep;
     
 
@@ -169,7 +171,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
     {
         
         // Move each particle for every time step
-        parToMove = parToMove + parPerTimestep;     // add the new particles to the total number to be moved each timestep
+        parToMove = parToMove + parPerTimestep.at(tStep);     // add the new particles to the total number to be moved each timestep
         double isRogueCount = dis->isRogueCount;    // This probably could be moved from dispersion to one level back in this for loop
 
         for(int par = 0; par < parToMove; par++)

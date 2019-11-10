@@ -44,6 +44,14 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     // now that all the sources have added to the particle list, it's time to setup the initial values for each particle using their initial positions
     setParticleVals(turb, eul);
 
+    // now sort the big fat list of particles by time, so we can disperse them easily in the same order
+    // also so that we can calculate the parPerTimestep values
+    sortParticleValsByTime();
+
+    // this function requires the values to be sorted to work correctly, but it goes through finding when the times change,
+    // using the changes to store a number of particles to release for each timestep
+    calc_parPerTimestep();
+
 
     // set the isRogueCount to zero
     isRogueCount = 0.0;
@@ -89,6 +97,7 @@ void Dispersion::addSources(Sources* sources)
 
         // update the overall list number of particles
         // keep track of the old number of values so it is easy to update the list in the right way
+        // for the first source, oldNumPar will come out as 0.
         int oldNumPar = numPar;
         numPar = numPar + currentNumPar;
 
@@ -171,6 +180,132 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul)
     }
 
 
+}
+
+void Dispersion::sortParticleValsByTime()
+{
+    // this is NOT going to be the most efficient sorting algorythm
+    // my idea is to make a copy of the original values, and make a list of the original times
+    // also a list of the new indices for the new particles for moving from the original container to the new container
+    // since the end goal is to fill the actual container, going to do all the sorting on the copy of said container
+
+    // create the required containers of values
+    std::vector<pointInfo> pointListCopy;
+    std::vector<double> sortedTimes;
+    std::vector<int> sortedIndices;
+
+    // now resize the temporary containers
+    pointListCopy.resize(numPar);
+    sortedTimes.resize(numPar);
+    sortedIndices.resize(numPar);
+
+
+    // now fill the temporary containers with copies of the original values
+    for(int i = 0; i < numPar; i++)
+    {
+        pointListCopy.at(i) = pointList.at(i);  // without a proper copy operator, will this work correctly? If not, just break it down into a single copy for each freaking part
+        sortedTimes.at(i) = pointList.at(i).tStrt;
+        sortedIndices.at(i) = i;
+    }
+
+
+    // now go through each copy of the times and the indices, and sort
+    // seems like I just need one loop over the second to the last value, but then an inner while loop
+    // that goes while the current value is smaller than the value before it or till the value is the first in the list
+    // hm, the tricky part is then how to move the values in the containers. I guess technically you don't need a copy 
+    // of the whole container to be sorted this way. Instead, when a current value is found to be smaller than the last value
+    // a temporary storage of the current and last value can be made, then the values can be swapped in the overall container
+    // nice this gets rid of extra storage problems! Except that I have a LOT of values to sort than just the ones that are being
+    // sorted. I want to sort all the values by time, it might be smarter to sort a copy of the times and a set of indices for each time
+    // then a copy of the whole container can fill the original container using the list of sorted indices
+    for(int i = 1; i < numPar; i++)
+    {
+        // set the values needed for the while loop check
+        // these also act as the temporary time storage so the swap is quick and easy in the sorting container
+        int backCount = i;
+        double current_time = sortedTimes.at(backCount);
+        double previous_time = sortedTimes.at(backCount-1);
+        while( backCount > 0 && current_time < previous_time )
+        {
+            // current_time and previous_time need to swap places in the sorting container
+            sortedTimes.at(backCount) = previous_time;
+            sortedTimes.at(backCount-1) = current_time;
+
+            // set temporary storage of the indices for that swap
+            int current_index = sortedIndices.at(backCount);
+            int previous_index = sortedIndices.at(backCount-1);
+
+            // now the current and previous indices need to swap places in the index sorting container
+            sortedIndices.at(backCount) = previous_index;
+            sortedIndices.at(backCount-1) = current_index;
+
+            // update the values needed for the while loop check
+            backCount = backCount - 1;
+            current_time = sortedTimes.at(backCount);
+            // have to watch out for referencing outside the array, unfortunately
+            if(backCount != 0)
+            {
+                previous_time = sortedTimes.at(backCount-1);
+            }
+
+        }
+    }
+
+    // now I have a list of sorted indices and times and the original and a copy of the original values
+    // technically I don't need the sorted times anymore, just the indices. I can use the indices and the copy of the original values
+    // to place values from the copy into the original values using the indices to know where everything goes
+    for(int i = 0; i < numPar; i++)
+    {
+        pointList.at(i) = pointListCopy.at(sortedIndices.at(i));    // will this work without a copy constructor in pointList? if not, can expand for each value type
+    }
+
+}
+
+
+void Dispersion::calc_parPerTimestep()
+{
+    // with the particles sorted by time, go through the list of particle times, and at each particle where the release time
+    // exceeds the current timestep, pushback that number of particles to the particles to release per timestep
+    
+    // first resize the parPerTimestep to be the number of simulation timesteps
+    parPerTimestep.resize(numTimeStep);
+
+    int timeStepCount = 0;  // this will keep track of when the timestep has changed
+    int cumulatedParticles = 0;     // this is also the already counted particles. Also useful for checking to make sure there isn't a problem with the algorythm
+    for(int i = 0; i < numPar; i++)
+    {
+        if( i == numPar-1 )
+        {
+            // use the current number of particles and the number of particles already counted to get the particles per this timestep
+            parPerTimestep.at(timeStepCount) = i - cumulatedParticles + 1;
+
+            // set the cumulated particles for checking at the end if there was a problem with the algorythm
+            cumulatedParticles = cumulatedParticles + parPerTimestep.at(timeStepCount);
+
+            // now update the timeStepCount
+            timeStepCount = timeStepCount + 1;
+            
+        } else if( pointList.at(i).tStrt > timeStepStamp.at(timeStepCount) )
+        {
+            // use the current number of particles and the number of particles already counted to get the particles per this timestep
+            parPerTimestep.at(timeStepCount) = i - cumulatedParticles;
+
+            // set the cumulated particles for checking at the end if there was a problem with the algorythm
+            cumulatedParticles = cumulatedParticles + parPerTimestep.at(timeStepCount);
+
+            // now update the timeStepCount
+            timeStepCount = timeStepCount + 1;
+        }
+    }
+
+    if( cumulatedParticles != numPar)
+    {
+        std::cerr << "Disperion::calc_parPerTimestep Error!\n";
+        std::cerr << "cumulatedParticles not equal to numPar!\n";
+        std::cerr << "cumulatedParticles = \"" << cumulatedParticles << "\", numPar = \"" << numPar << "\"\n";
+        std::cerr << "ENDING PROGRAM!!!\n";
+        exit(1);
+    }
 }
 
 

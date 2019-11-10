@@ -53,7 +53,7 @@ class Dispersion {
         
         // at some point in time, this would probably be better as a vector, so the number can vary for each timestep
         // then, this variable would act like a counter to the full list of particles. Hm, this gets more complex than that when recycling particles
-        int parPerTimestep;             // this is the number of particles to release at each timestep, used to calculate the release time for each particle in Dispersion, and also to update the particle loop counter in Plume.
+        std::vector<int> parPerTimestep;             // this is the number of particles to release at each timestep, used to calculate the release time for each particle in Dispersion, and also to update the particle loop counter in Plume.
         
 
         // the sources can set these values, then the other values are set using urb and turb info using these values
@@ -65,6 +65,14 @@ class Dispersion {
         void addSources(Sources* sources);
 
         void setParticleVals(Turb* turb, Eulerian* eul);
+
+        // this function is required to reorganize the particles by time since multiple sources could be releasing lots of particles at tons of different times
+        // this is also needed to calculate parPerTimestep
+        void sortParticleValsByTime();
+
+        // this function requires the values to be sorted to work correctly, but it goes through finding when the times change,
+        // using the changes to store a number of particles to release for each timestep
+        void calc_parPerTimestep();
         
 
     private:
