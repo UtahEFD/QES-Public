@@ -18,6 +18,9 @@ CUDA_ADD_LIBRARY( cudaplumecore
     Output.cpp
     Urb.cpp
     Turb.cpp
+
+    pointInfo.cpp
+    Source_continuous_uniform_point.cpp
 )
 
 #target_link_libraries (cudaplumecore quicloader) 

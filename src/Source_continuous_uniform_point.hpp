@@ -9,11 +9,26 @@
 #include "util/ParseInterface.h"
 #include "SourceKind.hpp"
 
-class SourcePoint : public SourceKind
+class Source_continuous_uniform_point : public SourceKind
 {
     protected:
     
     public:
+
+        // initializer
+        Source_continuous_uniform_point()
+            : SourceKind()
+        {
+            // What should go here ???  Good to consider this case so we
+            // don't have problems down the line.
+            
+            // My linker is NOT happy without something of these constructor/destructor stuff. Trying to figure out which it is unhappy about
+        }
+
+        // destructor
+        virtual ~Source_continuous_uniform_point()
+        {
+        }
     
         int numParticles;
     	float posX, posY, posZ, radius; 
@@ -26,4 +41,7 @@ class SourcePoint : public SourceKind
             parsePrimitive<float>(true, posZ, "posZ");
             parsePrimitive<float>(true, radius, "radius");
         }
+
+        std::vector<pointInfo> outputPointInfo(const double& dt,const double& simDur);
+
 };

@@ -89,7 +89,10 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     numPar = dis->numPar;    
     
     tStrt.resize(numPar);
-    tStrt = dis->tStrt;
+    for(int i = 0; i < numPar; i++)
+    {
+        tStrt.at(i) = dis->pointList.at(i).tStrt;
+    }
     
     timeStepStamp.resize(numTimeStep);
     timeStepStamp = dis->timeStepStamp;
@@ -176,8 +179,8 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             // in this whole section, the idea of having single value temporary storage instead of just referencing values
             //  directly from the dispersion class seems a bit strange, but it makes the code easier to read cause smaller variable names
             //  also, in theory it is faster?
-            bool isRogue = dis->isRogue.at(par);
-            bool isActive = dis->isActive.at(par);
+            bool isRogue = dis->pointList.at(par).isRogue;
+            bool isActive = dis->pointList.at(par).isActive;
 
             // first check to see if the particle should even be advected
             if(isActive == true && isRogue == false)
@@ -185,32 +188,32 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 // this is getting the current position for where the particle is at for a given time
                 // if it is the first time a particle is ever released, then the value is already set at the initial value
-                double xPos = dis->pos.at(par).e11;
-                double yPos = dis->pos.at(par).e21;
-                double zPos = dis->pos.at(par).e31;
+                double xPos = dis->pointList.at(par).pos.e11;
+                double yPos = dis->pointList.at(par).pos.e21;
+                double zPos = dis->pointList.at(par).pos.e31;
 
                 // this is the old velFluct value
                 // hmm, Brian's code just starts out setting these values to zero,
                 // so the prime values are actually the old velFluct. velFluct_old and prime are probably identical and kind of redundant in this implementation
                 // but it shouldn't hurt anything for now, even if it is redundant
                 // besides, it will probably change a bit once I figure out what exactly I want outputted on a regular, and on a debug basis
-                double uPrime = dis->prime.at(par).e11;
-                double vPrime = dis->prime.at(par).e21;
-                double wPrime = dis->prime.at(par).e31;
+                double uPrime = dis->pointList.at(par).prime.e11;
+                double vPrime = dis->pointList.at(par).prime.e21;
+                double wPrime = dis->pointList.at(par).prime.e31;
 
                 // should also probably grab and store the old values in this same way
                 // these consist of velFluct_old and tao_old
                 // also need to keep track of a delta_velFluct and an isActive flag for each particle
                 // though delta_velFluct doesn't need grabbed as a value till later now that I think on it
-                double uFluct_old = dis->prime_old.at(par).e11;
-                double vFluct_old = dis->prime_old.at(par).e21;
-                double wFluct_old = dis->prime_old.at(par).e31;
-                double txx_old = dis->tau_old.at(par).e11;
-                double txy_old = dis->tau_old.at(par).e12;
-                double txz_old = dis->tau_old.at(par).e13;
-                double tyy_old = dis->tau_old.at(par).e22;
-                double tyz_old = dis->tau_old.at(par).e23;
-                double tzz_old = dis->tau_old.at(par).e33;
+                double uFluct_old = dis->pointList.at(par).prime_old.e11;
+                double vFluct_old = dis->pointList.at(par).prime_old.e21;
+                double wFluct_old = dis->pointList.at(par).prime_old.e31;
+                double txx_old = dis->pointList.at(par).tau_old.e11;
+                double txy_old = dis->pointList.at(par).tau_old.e12;
+                double txz_old = dis->pointList.at(par).tau_old.e13;
+                double tyy_old = dis->pointList.at(par).tau_old.e22;
+                double tyz_old = dis->pointList.at(par).tau_old.e23;
+                double tzz_old = dis->pointList.at(par).tau_old.e33;
                 
                 
                 /*
@@ -223,7 +226,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
                 // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
-                eul->setInterp3Dindexing(dis->pos.at(par));
+                eul->setInterp3Dindexing(dis->pointList.at(par).pos);
 
 
 
@@ -396,26 +399,26 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 // now update the old values and current values in the dispersion storage to be ready for the next iteration
                 // also calculate the velFluct increment
-                dis->prime.at(par).e11 = uPrime;
-                dis->prime.at(par).e21 = vPrime;
-                dis->prime.at(par).e31 = wPrime;
-                dis->pos.at(par).e11 = xPos;
-                dis->pos.at(par).e21 = yPos;
-                dis->pos.at(par).e31 = zPos;
+                dis->pointList.at(par).prime.e11 = uPrime;
+                dis->pointList.at(par).prime.e21 = vPrime;
+                dis->pointList.at(par).prime.e31 = wPrime;
+                dis->pointList.at(par).pos.e11 = xPos;
+                dis->pointList.at(par).pos.e21 = yPos;
+                dis->pointList.at(par).pos.e31 = zPos;
 
-                dis->delta_prime.at(par).e11 = uPrime - uFluct_old;
-                dis->delta_prime.at(par).e21 = vPrime - vFluct_old;
-                dis->delta_prime.at(par).e31 = wPrime - wFluct_old;
-                dis->prime_old.at(par).e11 = uPrime;
-                dis->prime_old.at(par).e21 = vPrime;
-                dis->prime_old.at(par).e31 = wPrime;
+                dis->pointList.at(par).delta_prime.e11 = uPrime - uFluct_old;
+                dis->pointList.at(par).delta_prime.e21 = vPrime - vFluct_old;
+                dis->pointList.at(par).delta_prime.e31 = wPrime - wFluct_old;
+                dis->pointList.at(par).prime_old.e11 = uPrime;
+                dis->pointList.at(par).prime_old.e21 = vPrime;
+                dis->pointList.at(par).prime_old.e31 = wPrime;
 
-                dis->tau_old.at(par).e11 = txx;
-                dis->tau_old.at(par).e12 = txy;
-                dis->tau_old.at(par).e13 = txz;
-                dis->tau_old.at(par).e22 = tyy;
-                dis->tau_old.at(par).e23 = tyz;
-                dis->tau_old.at(par).e33 = tzz;
+                dis->pointList.at(par).tau_old.e11 = txx;
+                dis->pointList.at(par).tau_old.e12 = txy;
+                dis->pointList.at(par).tau_old.e13 = txz;
+                dis->pointList.at(par).tau_old.e22 = tyy;
+                dis->pointList.at(par).tau_old.e23 = tyz;
+                dis->pointList.at(par).tau_old.e33 = tzz;
 
                 // now update the isRogueCount
                 if(isRogue == true)
@@ -423,8 +426,8 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                     isRogueCount = isRogueCount + 1;
                 }
 
-                dis->isRogue.at(par) = isRogue;
-                dis->isActive.at(par) = isActive;
+                dis->pointList.at(par).isRogue = isRogue;
+                dis->pointList.at(par).isActive = isActive;
             
             }   // if isActive == true and isRogue == false
 
@@ -672,9 +675,9 @@ void Plume::average(const int tStep,const Dispersion* dis, const Urb* urb)
             continue;
         }
         
-        double xPos = dis->pos.at(i).e11;
-        double yPos = dis->pos.at(i).e21;
-        double zPos = dis->pos.at(i).e31;
+        double xPos = dis->pointList.at(i).pos.e11;
+        double yPos = dis->pointList.at(i).pos.e21;
+        double zPos = dis->pointList.at(i).pos.e31;
         
         if( zPos == -1 )
         {

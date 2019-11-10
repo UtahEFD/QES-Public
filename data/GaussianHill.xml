@@ -18,13 +18,13 @@
 </collectionParameters>
 <sources>
     <numSources> 1 </numSources>
-	<pointSource>
+	<continuous_uniform_pointSource>
 		<numParticles>100000</numParticles>
 		<posX> 10.0 </posX>
 		<posY> 100.0 </posY>
 		<posZ> 30.0 </posZ>
 		<radius>1.0 </radius>
-	</pointSource>
+	</continuous_uniform_pointSource>
 </sources>
 <fileOptions>
 	<outputFlag>1</outputFlag>

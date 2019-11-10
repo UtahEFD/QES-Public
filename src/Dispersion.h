@@ -15,6 +15,9 @@
 #include "Eulerian.h"
 #include "Random.h"
 
+#include "pointInfo.hpp"
+
+
 #include <helper_math.h>
 
 class Dispersion {
@@ -54,24 +57,12 @@ class Dispersion {
         
 
         // the sources can set these values, then the other values are set using urb and turb info using these values
-        std::vector<vec3> pos;          // pos is the list of particle source positions
-        std::vector<double> tStrt;        // this is the time of release for each set of particles
-        
-        // once positions are known, can set these values
-        std::vector<vec3> prime;     // prime is the velFluct value for a given iteration. Starts out as the initial value until a particle is "released" into the domain
-        std::vector<vec3> prime_old;     // this is the velocity fluctuations from the last iteration. They start out the same as the current values initially
-        std::vector<matrix6> tau_old;       // this is the stress tensor from the last iteration. Starts out as the values at the initial position, the values for the initial iteration
-        std::vector<vec3> delta_prime;    // this is the difference between the current and last iteration of the velocity fluctuations
-        std::vector<bool> isRogue;         // this is false until it becomes true. Should not go true. It is whether a particle has gone rogue or not
-        std::vector<bool> isActive;         // this is true until it becomes false. If a particle leaves the domain or runs out of mass, this becomes false. Later we will add a method to start more particles when this has become false
+        std::vector<pointInfo> pointList;
 
 
-        // going to have a ton of source functions, this first one will be the source factory operator which calls all the other add source functions
-        // depending on the type of source. It should be noted that the end goal will be to get rid of the initialization factory, probably by
-        // putting all the add source functions into the sources themselves, probably as a function that just finds the initial particle positions and release times
-        // probably all the other variables can be set depending on the source positions, maybe, we shall have to see
-        void addSources(Sources* sources);       // this function is for adding a generic source of type . . .
-        void addSource(SourcePoint* source);   // this is the Continuous SourcePoint type
+        // goes through and for each source, runs a virtual function to calculate a pointList with position and release times
+        // for each source, adding these pointList values to the overall pointList storage in dispersion
+        void addSources(Sources* sources);
 
         void setParticleVals(Turb* turb, Eulerian* eul);
         

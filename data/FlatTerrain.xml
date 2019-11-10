@@ -18,13 +18,13 @@
 </collectionParameters>
 <sources>						<!-- this is the source input. Eventually the GUI can help to set up everything, always converting it into a point source using built in tools this is the source input. Eventually the GUI can help to set up everything, always converting it into a point source using built in tools-->
   <numSources> 1 </numSources>			<!-- number of sources, you fill in source information for each source next -->
-  <pointSource>					<!-- source type, probs will always be a point source, converter tools should be able to turn everything into a point source -->
+  <continuous_uniform_pointSource>					<!-- source type, probs will always be a point source, converter tools should be able to turn everything into a point source -->
     <numParticles>100000</numParticles>	<!-- total number of particles to release over some duration (where is duration defined?) -->
   	<posX> 10.0 </posX>
     <posY> 100.0 </posY>
     <posZ> 50.0 </posZ>
     <radius>1.0 </radius>
-  </pointSource>
+  </continuous_uniform_pointSource>
   <!-- 
 	  nevermind, this is choosing a point, and a radius, and releasing equally in a circle. So we WILL need to derive a few more source methods
 	  in fact, probably should make it a class that can be grabbed and used by the GUI, or some of it in the GUI. I think we will need to play

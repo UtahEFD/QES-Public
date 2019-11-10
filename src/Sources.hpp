@@ -11,7 +11,7 @@
 
 #include "util/ParseInterface.h"
 #include "SourceKind.hpp"
-#include "SourcePoint.hpp"
+#include "Source_continuous_uniform_point.hpp"
 
 class Sources : public ParseInterface
 {
@@ -24,7 +24,7 @@ class Sources : public ParseInterface
     
     	virtual void parseValues() {
     		parsePrimitive<int>(true, numSources, "numSources");
-    		parseMultiPolymorphs(true, sources, Polymorph<SourceKind, SourcePoint>("pointSource"));
+    		parseMultiPolymorphs(true, sources, Polymorph<SourceKind, Source_continuous_uniform_point>("continuous_uniform_pointSource"));
     	}
 };
 #endif
