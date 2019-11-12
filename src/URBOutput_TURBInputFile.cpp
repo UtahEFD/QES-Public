@@ -6,9 +6,30 @@ URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string
   std::cout<<"Setting fields of TURBInputFile file"<<std::endl;
   
   // set list of fields to save, no option available for this file
-  output_fields = {"t","u","v","w","icell","terrain",
+  output_fields = {"t","x","y","z","u","v","w","icell","terrain",
 		   "e","f","g","h","m","n"};
+
   
+  int nx = ugd->nx;
+  int ny = ugd->ny;
+  int nz = ugd->nz;
+  
+  // Location of face centers in z-dir
+  z_cc.resize( nz-1 );
+  for (auto k=0; k<nz-1; k++) {
+    z_cc[k] = (k-0.5)*ugd->dz; 
+  }
+  // Location of face centers in x-dir
+  x_cc.resize( nx-1 );
+  for (auto i=0; i<nx-1; i++) {
+    x_cc[i] = (i+0.5)*ugd->dx; 
+  }
+  // Location of face centers in y-dir
+  y_cc.resize( ny-1 );
+  for (auto j=0; j<ny-1; j++) {
+    y_cc[j] = (j+0.5)*ugd->dy; 
+  }
+
   // set time data dimensions
   NcDim NcDim_t=addDimension("t");
   // create attributes for time dimension 
@@ -37,8 +58,19 @@ URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string
   // space dimensions 
   NcDim NcDim_x_cc=addDimension("x_cc",ugd->nx-1);
   NcDim NcDim_y_cc=addDimension("y_cc",ugd->ny-1);
-  NcDim NcDim_z_cc=addDimension("z_cc",ugd->nz-2);
+  NcDim NcDim_z_cc=addDimension("z_cc",ugd->nz-1);
   
+  // create attributes space dimensions 
+  std::vector<NcDim> dim_vect_x_cc;
+  dim_vect_x_cc.push_back(NcDim_x_cc);
+  createAttVector("x","x-distance","m",dim_vect_x_cc,&x_cc);
+  std::vector<NcDim> dim_vect_y_cc;
+  dim_vect_y_cc.push_back(NcDim_y_cc);
+  createAttVector("y","y-distance","m",dim_vect_y_cc,&y_cc);
+  std::vector<NcDim> dim_vect_z_cc;
+  dim_vect_z_cc.push_back(NcDim_z_cc); 
+  createAttVector("z","z-distance","m",dim_vect_z_cc,&z_cc);
+
   // create 2D vector (surface, indep of time)
   std::vector<NcDim> dim_vect_2d;
   dim_vect_2d.push_back(NcDim_y_cc);

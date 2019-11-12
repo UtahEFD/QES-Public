@@ -22,5 +22,5 @@ class URBOutput_TURBInputFile : public URBOutput_Generic
   void save(URBGeneralData*);
  
  private:
-  
+    std::vector<float> x_cc,y_cc,z_cc;
 };
