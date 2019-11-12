@@ -32,7 +32,7 @@ class SphereDirections{
    /*Constructor
     *will generate specified num of directional vectors bounded by a certain region
     */
-   SphereDirections(int numDir, float lowerThetaBound, float upperThetaBound, float lowerPhiBound, float upperPhiBound);
+   SphereDirections(int numDirVec, float lowerThetaBound, float upperThetaBound, float lowerPhiBound, float upperPhiBound);
 
 
    /*

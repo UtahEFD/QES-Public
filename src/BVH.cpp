@@ -219,7 +219,7 @@ HitRecord* BVH::rayBoxIntersect(Ray* ray){
    HitRecord hitrec = NULL;
 
    if(isLeaf){
-      cout<<"This is a leaf node"<<endl;
+      std::cout<<"This is a leaf node"<<endl;
    }else{
       float rOriginX = ray.getOriginX();
       float rOriginY = ray.getOriginY();
@@ -271,7 +271,7 @@ HitRecord* BVH::rayBoxIntersect(Ray* ray){
       }else{
          std::cout<<"Does not hit this BVH bounding box"<<endl;
       }
-
-      return &hitrec;
-
    }
+   return &hitrec;
+
+}

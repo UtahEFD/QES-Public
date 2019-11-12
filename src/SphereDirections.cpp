@@ -26,8 +26,11 @@ SphereDirections::SphereDirections(int numDirVec, float lowerThetaBound, float u
 
 Vector3<float> SphereDirections::getNextDirCardinal(){
    //temp for 6 cardinal directions
-   Vector3<float> next = nextList[vecCount];
-   vecCount++;
+   Vector3<next> = NULL:
+      if(vecCount < numDirVec){
+         next = nextList[vecCount];
+         vecCount++;
+      }
    return next;
 }
 
@@ -38,14 +41,19 @@ Vector2<float> SphereDirections::getNextDir(){
    //Might need to make sure it is actually generating a uniform rand
    //float num
 
-   std::random_device rd;
-   std::mt19937 e2(rd());
-   std::uniform_real_distribution<float> theta(lowerThetaBound, upperThetaBound);
-   std::uniform_real_distribution<float> phi(lowerPhiBound, upperThetaBound);
+   Vector3<float> next = NULL;
+   if(vecCount < numDirVec){
+      std::random_device rd;
+      std::mt19937 e2(rd());
+      std::uniform_real_distribution<float> theta(lowerThetaBound, upperThetaBound);
+      std::uniform_real_distribution<float> phi(lowerPhiBound, upperThetaBound);
 
-   float dx = std::cos(theta(e2))*std::cos(phi(e2));
-   float dy = std::sin(phi(e2));
-   float dz = std::cos(theta(e2))*std::sin(phi(e2));
+      float dx = std::cos(theta(e2))*std::cos(phi(e2));
+      float dy = std::sin(phi(e2));
+      float dz = std::cos(theta(e2))*std::sin(phi(e2));
 
-   return new Vector3<float> (dx,dy,dz);
+      next = new Vector3(dx,dy,dz);
+      vecCount++;
+   }
+   return next;
 }
