@@ -58,3 +58,6 @@ Vector3<float> SphereDirections::getNextDir(){
    }
    return next;
 }
+
+
+int SphereDirections::getNumDirVec(){return numDirVec;}

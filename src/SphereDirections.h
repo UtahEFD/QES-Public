@@ -1,3 +1,5 @@
+#pragma once
+
 #ifndef SDIR_H
 #define SDIR_H
 
@@ -38,7 +40,7 @@ class SphereDirections{
    /*
     *@return numDirVec The number of directional vectors generated
     */
-   int getNumDirVec(){return numDirVec;}
+   int getNumDirVec();
 
    /*
     *Returns the next cardinal directional vector

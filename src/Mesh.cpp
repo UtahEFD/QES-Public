@@ -9,7 +9,7 @@ vector<float> Mesh::calculateMixingLength(int dimX, int dimY,int dimZ, float dx,
 
    vector<float> mixingLengthList(dimX*dimY*dimZ);
 
-   for(int k = 0; k< dimz - 1; k++) {
+   for(int k = 0; k< dimZ - 1; k++) {
       for(int j = 0; j < dimY - 1; j++){
          for(int i = 0; i < dimX -1; i++){
 
@@ -18,59 +18,60 @@ vector<float> Mesh::calculateMixingLength(int dimX, int dimY,int dimZ, float dx,
 
             if(icellflag[icell_idx] == 1){
 
-               SphereDirections sd = new SphereDirections();
+               SphereDirections sd;
                float mixLength = std::numeric_limits<float>::infinity();
 
                //ray's origin = cell's center
-               Ray ray = new Ray((i+0.5)*dx, (j+0.5)*dy, (k+0.5)*dz);
+               Ray ray((i+0.5)*dx, (j+0.5)*dy, (k+0.5)*dz);
 
                HitRecord* hit;
                BVH* nextBVH;
 
                //for all possible directions, determine the distance
-               for(int m = 0, m < sd.getNumDirVec(), m++){
+               for(int m = 0; m < sd.getNumDirVec(); m++){
 
-                  ray.setNextDir(ds.getNextDir());
-                  nextBVH* = tris;
+                  ray.setDir(sd.getNextDir());
+                  nextBVH = tris;
                   hit = NULL;
 
                   //stop if nextBVH is a leaf node or if it didn't intersect anything
-                  while(!nextBVH.getIsLeaf() && nextBVH != NULL){
-                     HitRecord *checkLeft = nextBVH.getLeftBox().rayBoxIntersect();
-                     HitRecord *checkRight = nextBVH.getRightBox().rayBoxIntersect();
+                  while(!(nextBVH->getIsLeaf()) && nextBVH != 0){
+                     HitRecord *checkLeft = (nextBVH->getLeftBox())->rayBoxIntersect(ray);
+                     HitRecord *checkRight = (nextBVH->getRightBox())->rayBoxIntersect(ray);
 
-                     if(checkLeft != NULL && checkRight == NULL){
-                        nextBVH = nextBVH.getLeftBox();
-                     }else if(checkLeft == NULL && checkRight != NULL){
-                        nextBVH = nextBVH.getRightBox();
-                     }else if (checkLeft != NULL && checkRight != NULL){
-                        if(checkLeft.getHitDist() < checkRight.getHitDist()){
-                           nextBVH = nextBVH.getLeftBox();
+                     if(checkLeft != 0 && checkRight == 0){
+                        nextBVH = nextBVH->getLeftBox();
+                     }else if(checkLeft == 0 && checkRight != 0L){
+                        nextBVH = nextBVH->getRightBox();
+                     }else if (checkLeft != 0 && checkRight != 0){
+                        if(checkLeft->getHitDist() < checkRight->getHitDist()){
+                           nextBVH = nextBVH->getLeftBox();
                         }else{
-                           nextBVH = nextBVH.getRightBox();
+                           nextBVH = nextBVH->getRightBox();
                         }
                      }else{
-                        std::cout<<"Ray is outside of bounds. Did not hit any of the bounding boxes"<<endl;
-                        nextBVH == NULL;
+                        std::cout<<"Ray is outside of bounds. Did not hit any of the bounding boxes"<<std::endl;
+                        nextBVH = 0;
                      }
                   }
 
                   //At this point BVH should be a leaf or NULL
                   //if nextBVH is a leaf, it should check if it's the smallest
                   //dist currently
-                  if(nextBVH != NULL){
-                     hit = nextBVH.rayTriIntersect();
-                     if(nextBVH != NULL & hit != NULL){
-                        if(hit.getHitDist() < mixLength){
-                           mixLength = hit.getDist();
+                  if(nextBVH != 0){
+                     hit = nextBVH->rayTriangleIntersect(ray);
+                     if(nextBVH != 0 & hit != 0){
+                        if(hit->getHitDist() < mixLength){
+                           mixLength = hit->getHitDist();
                         }
                      }
                   }
                }
+               std::cout<<"Mixing length for this cell is"<<mixLength<<std::endl;
+               //add to list of vectors
+               mixingLengthList.push_back(mixLength);
             }
-           std:cout<<"Mixing length for this cell is"<<mixLength<<std::endl;
-            //add to list of vectors
-            mixingLengthList.push_back(mixLength);
+
          }
       }
    }

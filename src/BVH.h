@@ -7,12 +7,14 @@
 
 #include "Triangle.h"
 #include "HitRecord.h"
-#include "Ray.h"
 #include <vector>
 #include <cmath>
 
 #define GETMIN(x,y) ( (x) < (y) ? (x) : (y))
 #define GETMAX(x,y) ( (x) > (y) ? (x) : (y))
+
+//class Ray;
+#include "Ray.h"
 
 using std::vector;
 
@@ -85,20 +87,20 @@ public:
          *node's triangle
          *@return HitRec obj if it has been hit or NULL if not a hit 
          */
-        HitRecord* rayTriIntersect(Ray* ray);
+        HitRecord* rayTriangleIntersect(Ray ray);
 
         /*
          *Takes a 3D ray and determines if it intersects this BVH's
          *node's bounding box
          @return HitRecord of the box it hit or NULL if a miss 
          */
-        HitRecord* rayBoxIntersect(Ray* ray);
+        HitRecord* rayBoxIntersect(Ray ray);
 
         /*
          *may only temporarily need this until I can make a more
          *efficient version
          */
-        bool getIsLeaf(){return isLeaf;}
-        BVH* getLeftBox(){return leftBox;}
-        BVH* getRightBox(){return rightBox;}
+        bool getIsLeaf();
+        BVH* getLeftBox();
+        BVH* getRightBox();
 };

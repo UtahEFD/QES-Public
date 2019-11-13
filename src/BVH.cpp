@@ -175,20 +175,21 @@ float BVH::heightToTri(float x, float y)
 
 
 
-HitRecord* BVH::rayTriangleIntersect(Ray* ray){
-   HitRecord hitrec = NULL;
-   if(!isleaf){
-      std::cout<<"Not an intersectable triangle."<<endl;
+HitRecord* BVH::rayTriangleIntersect(Ray ray){
+   HitRecord* hitrec;
+   hitrec = 0;
+   if(!isLeaf){
+      std::cout<<"Not an intersectable triangle."<<std::endl;
    }else{
       float beta, gamma, t, M, a,b,c,d,e,f,g,h,i,j,k,l;
 
-      a = (tri.a)[0] - (tri.a)[1];       d = (tri.a)[0] - (tri.a)[2];   g = ray.getDirection()[0];
-      b = (tri.b)[0] - (tri.b)[1];       e = (tri.b)[0] - (tri.b)[2];   h = ray.getDirection()[1];
-      c = (tri.c)[0] - (tri.c)[1];       f = (tri.c)[0] - (tri.c)[2];   i = ray.getDirection()[2];
+      a = (*(tri->a))[0] - (*(tri->a))[1];       d = (*(tri->a))[0] - (*(tri->a))[2];   g = ray.getDirection()[0];
+      b = (*(tri->b))[0] - (*(tri->b))[1];       e = (*(tri->b))[0] - (*(tri->b))[2];   h = ray.getDirection()[1];
+      c = (*(tri->c))[0] - (*(tri->c))[1];       f = (*(tri->c))[0] - (*(tri->c))[2];   i = ray.getDirection()[2];
 
-      j = (tri.a)[0] - ray.getOriginX();
-      k = (tri.b)[0] - ray.getOriginY();
-      l = (tri.c)[0] - ray.getOriginZ();
+      j = (*(tri->a))[0] - ray.getOriginX();
+      k = (*(tri->b))[0] - ray.getOriginY();
+      l = (*(tri->c))[0] - ray.getOriginZ();
 
       float EIHF = (e*i) - (h*f);
       float GFDI = (g*f) - (d*i);
@@ -201,25 +202,24 @@ HitRecord* BVH::rayTriangleIntersect(Ray* ray){
 
       beta = ((j*EIHF) + (k*GFDI) + (l*DHEG))/M;
       gamma = ((i*AKJB) + (h*JCAL) + (g*BLKC))/M;
-      t = ((f*AKJB) + (e*JCAL) + d(BLKC))/M;
+      t = ((f*AKJB) + (e*JCAL) + (d*BLKC))/M;
 
       if(t < c || t > f || gamma < 0 || gamma > 1 || beta < 0 || beta > (1- gamma)){
-         std::cout<<"No intersection found."<<endl;
+         std::cout<<"No intersection found."<<std::endl;
       }else{
          hitrec = new HitRecord(tri, t);
       }
 
    }
 
-   return &hitrec;
+   return hitrec;
 }
 
 
-HitRecord* BVH::rayBoxIntersect(Ray* ray){
-   HitRecord* hitRec;
-
-   if(isleaf){
-      std::cout<<"This is a leaf node."<<endl;
+HitRecord* BVH::rayBoxIntersect(Ray ray){
+   HitRecord* hitrec;
+   if(isLeaf){
+      std::cout<<"This is a leaf node."<<std::endl;
    }else{
       float rOriginX = ray.getOriginX();
       float rOriginY = ray.getOriginY();
@@ -228,7 +228,7 @@ HitRecord* BVH::rayBoxIntersect(Ray* ray){
 
       float tMinX, tMaxX, tMinY, tMaxY, tMinZ, tMaxZ;
 
-      float ax = 1/dir[0];
+      float aX = 1/dir[0];
       if(aX >= 0){
          tMinX = aX*(xmin - rOriginX);
          tMaxX = aX*(xmax - rOriginX);
@@ -258,12 +258,16 @@ HitRecord* BVH::rayBoxIntersect(Ray* ray){
       //check fail conditions
       if(tMinX > tMaxY || tMinX > tMaxZ || tMinY > tMaxX || tMinY >
          tMaxZ || tMinZ > tMaxX || tMinZ > tMaxY){
-         hitRec = NULL;
+         hitrec = 0;
       }else{
-         magnitude = std::sqrt(pow((tMaxX - tMinX),2)*pow((tMaxY - yMinY),2)*pow((tMaxZ - tMinZ),2));
-         hitRec = new HitRecord(this, magnitude);
+         float magnitude = std::sqrt(pow((tMaxX - tMinX),2)*pow((tMaxY - tMinY),2)*pow((tMaxZ - tMinZ),2));
+         hitrec = new HitRecord((void*) this, magnitude);
       }
 
    }
-   return hitsBox;
+   return hitrec;
 }
+
+bool BVH::getIsLeaf(){return isLeaf;}
+BVH* BVH::getLeftBox(){return leftBox;}
+BVH* BVH::getRightBox(){return rightBox;}

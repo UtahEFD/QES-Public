@@ -1,6 +1,11 @@
+#pragma once
+
 /*
  *Basic definition of a ray 
  */
+#ifndef RAY_H
+#define RAY_H
+
 #include "Vector3.h"
 
 class Ray{
@@ -19,3 +24,6 @@ class Ray{
 
       void setDir(Vector3<float> dir);
 };
+
+
+#endif
