@@ -7,6 +7,7 @@
 
 #include "Triangle.h"
 #include "HitRecord.h"
+#include "Ray.h"
 #include <vector>
 #include <cmath>
 
