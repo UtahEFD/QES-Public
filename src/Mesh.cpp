@@ -5,11 +5,11 @@ float Mesh::getHeight(float x, float y)
    return tris->heightToTri(x,y);
 }
 
-std::vector<float> Mesh::calculateMixingLength(int dimX, int dimY,int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag){
+vector<float> Mesh::calculateMixingLength(int dimX, int dimY,int dimZ, float dx, float dy, float dz, const vector<int> &icellflag){
 
-   std::vector<float> mixingLengthList(dimX*dimY*dimZ);
+   vector<float> mixingLengthList(dimX*dimY*dimZ);
 
-   for(int k=0; k< dimz - 1; k++) {
+   for(int k = 0; k< dimz - 1; k++) {
       for(int j = 0; j < dimY - 1; j++){
          for(int i = 0; i < dimX -1; i++){
 
@@ -28,7 +28,7 @@ std::vector<float> Mesh::calculateMixingLength(int dimX, int dimY,int dimZ, floa
                BVH* nextBVH;
 
                //for all possible directions, determine the distance
-               for(int m=0, m < sd.getNumDirVec(), m++){
+               for(int m = 0, m < sd.getNumDirVec(), m++){
 
                   ray.setNextDir(ds.getNextDir());
                   nextBVH* = tris;

@@ -2,13 +2,14 @@
 
 SphereDirections::SphereDirections(){
    //default cardinal directions for now
-   nextList[0] = new Vector3(1,0,0);
-   nextList[1] = new Vector3(-1,0,0);
-   nextList[2] = new Vector3(0,1,0);
-   nextList[3] = new Vector3(0,-1,0);
-   nextList[4] = new Vector3(0,0,1);
-   nextList[5] = new Vector3(0,0,-1);
+   //nextList[0] = new Vector3(1,0,0);   //front
+   //nextList[1] = new Vector3(-1,0,0);  //back
+   //nextList[2] = new Vector3(0,1,0);   //left
+   //nextList[3] = new Vector3(0,-1,0);  //right
+   //nextList[4] = new Vector3(0,0,1);   //top
+   nextList[0] = new Vector3(0,0,-1);  //bottom
    vecCount = 0;
+   numDirVec = 1;
 }
 
 
@@ -35,7 +36,7 @@ Vector3<float> SphereDirections::getNextDirCardinal(){
 }
 
 
-Vector2<float> SphereDirections::getNextDir(){
+Vector3<float> SphereDirections::getNextDir(){
    //will only work for c++11 and up since I used the
    //mersenne_twiser_engine to generate uniform rand num
    //Might need to make sure it is actually generating a uniform rand
