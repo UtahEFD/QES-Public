@@ -1,4 +1,4 @@
-#include SphereDirections.h
+#include "SphereDirections.h"
 
 SphereDirections::SphereDirections(){
    //default cardinal directions for now
@@ -7,7 +7,7 @@ SphereDirections::SphereDirections(){
    //nextList[2] = new Vector3(0,1,0);   //left
    //nextList[3] = new Vector3(0,-1,0);  //right
    //nextList[4] = new Vector3(0,0,1);   //top
-   nextList[0] = new Vector3(0,0,-1);  //bottom
+   nextList[0] = *(new Vector3<float>(0,0,-1));  //bottom
    vecCount = 0;
    numDirVec = 1;
 }
@@ -16,23 +16,23 @@ SphereDirections::SphereDirections(){
 SphereDirections::SphereDirections(int numDirVec, float lowerThetaBound, float upperThetaBound, float lowerPhiBound, float upperPhiBound){
 
    vecCount = 0;
-   this.numDirVec = numDirVec;
-   this.lowerThetaBound = lowerThetaBound;
-   this.upperThetaBound = upperThetaBound;
-   this.lowerPhiBound = lowerPhiBound;
-   this.upperPhiBound = upperPhiBound;
+   this->numDirVec = numDirVec;
+   this->lowerThetaBound = lowerThetaBound;
+   this->upperThetaBound = upperThetaBound;
+   this->lowerPhiBound = lowerPhiBound;
+   this->upperPhiBound = upperPhiBound;
 
 }
 
 
 Vector3<float> SphereDirections::getNextDirCardinal(){
    //temp for 6 cardinal directions
-   Vector3<next> = NULL:
-      if(vecCount < numDirVec){
-         next = nextList[vecCount];
-         vecCount++;
-      }
-   return next;
+   Vector3<float>* next = NULL;
+   if(vecCount < numDirVec){
+      next = &nextList[vecCount];
+      vecCount++;
+   }
+   return *next;
 }
 
 
@@ -42,7 +42,7 @@ Vector3<float> SphereDirections::getNextDir(){
    //Might need to make sure it is actually generating a uniform rand
    //float num
 
-   Vector3<float> next = NULL;
+   Vector3<float>* next;
    if(vecCount < numDirVec){
       std::random_device rd;
       std::mt19937 e2(rd());
@@ -53,10 +53,12 @@ Vector3<float> SphereDirections::getNextDir(){
       float dy = std::sin(phi(e2));
       float dz = std::cos(theta(e2))*std::sin(phi(e2));
 
-      next = new Vector3(dx,dy,dz);
+      next = new Vector3<float>(dx,dy,dz);
       vecCount++;
+   }else{
+      next = NULL;
    }
-   return next;
+   return *next;
 }
 
 

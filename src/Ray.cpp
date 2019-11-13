@@ -1,16 +1,16 @@
 #include "Ray.h"
 
 Ray::Ray(float origin_x, float origin_y, float origin_z, Vector3<float> dirVec){
-   this.origin_x = origin_x;
-   this.origin_y = origin_y;
-   this.origin_z = origin_z;
-   this.dirVec = dirVec;
+   this->origin_x = origin_x;
+   this->origin_y = origin_y;
+   this->origin_z = origin_z;
+   this->dirVec = dirVec;
 }
 
 Ray::Ray(float origin_x, float origin_y, float origin_z){
-   this.origin_x = origin_x;
-   this.origin_y = origin_y;
-   this.origin_z = origin_z;
+   this->origin_x = origin_x;
+   this->origin_y = origin_y;
+   this->origin_z = origin_z;
 }
 
 float Ray::getOriginX(){return origin_x;}
