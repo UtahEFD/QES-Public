@@ -215,63 +215,52 @@ HitRecord* BVH::rayTriangleIntersect(Ray* ray){
 }
 
 
-HitRecord* BVH::rayBoxIntersect(Ray* ray){
-   HitRecord hitrec = NULL;
+bool BVH::rayBoxIntersect(Ray* ray){
+   bool hitsBox = true;
 
-   if(isLeaf){
-      std::cout<<"This is a leaf node"<<endl;
+   if(isleaf){
+      std::cout<<"This is a leaf node."<<endl;
    }else{
       float rOriginX = ray.getOriginX();
       float rOriginY = ray.getOriginY();
       float rOriginZ = ray.getOriginZ();
+      Vector3<float> dir = ray.getDirection();
 
-      Vector3<float> toTop = std::abs(rOriginZ-zmax)*ray.getDirection();
-      Vector3<float> ptOnTop = new Vector3(rayOriginX +toTop, rayOriginY + toTop, rayOriginZ + toTop);
+      float tMinX, tMaxX, tMinY, tMaxY, tMinZ, tMaxZ;
 
-      Vector3<float> toBottom = std::abs(rOriginZ -zmin)*ray.getDirection();
-      Vector3<float> ptOnBottom = new Vector3(rOriginX + toBottom, rOriginY + toBottom, rOriginZ + toBottom);
-
-      Vector3<float> toLeft = std::abs(rOriginY - ymin) * ray.getDirection();
-      Vector3<float> ptOnLeft = new Vector3(rOriginX + toLeft, rOriginY + toLeft, rOriginZ + toLeft);
-
-      Vector3<float> toRight = std::abs(rOriginY - ymax)* ray.getDirection();
-      Vector3<float> ptOnRight = new Vector3(rOriginX + toRight, rOriginY + toRight, rOriginZ + toRight);
-
-      Vector3<float> toFront = std::abs(rOriginX - xmax)*r.getDirection();
-      Vector3<float> ptOnFront = new Vector3(rOriginX + toFront, rOriginY + toFront, rOriginZ + toFront);
-
-      Vector3<float> toBack = std::abs(rOriginX - xmin)*r.getDirection();
-      Vector3<float> ptOnFront = new Vector3(rOriginX + toBack, rOriginY + toBack, rOriginZ +toBack);
-
-
-      if(ptOnTop[2] == zmax && ptOnTop[0] >= xmin && ptOnTop[0] <= xmax && ptOnTop[1] >= ymin && ptOnTop[1] <= ymax){
-
-         hitrec = new HitRecord(this, std::sqrt((ptToTop[0]*ptToTop[0])+(ptToTop[1]*ptToTop[1])+(ptToTop[2]*ptToTop[2])));
-
-      }else if(ptOnLeft[1] == ymin && ptOnLeft[0] >= xmin && ptOnLeft[0] <= xmax && ptOnLeft[2] >= zmin && ptOnLeft[2] <= zmax){
-
-         hitrec = new HitRecord(this, std::sqrt((ptToLeft[0]*ptToLeft[0])+(ptToLeft[1]*ptToLeft[1])+(ptToLeft[2]*ptToLeft[2])));
-
-      }else if(ptOnFront[0] == xmax && ptToFront[1] >= ymin && ptToFront[1] <= ymax && ptToFront[2] >= zmin && ptToFront[2] <= zmax){
-
-         hitrec = new HitRecord(this, std::sqrt((ptToFront[0]*ptToFront[0])+(ptToFront[1]*ptToFront[1])+(ptToFront[2]*ptToFront[2])));
-
-      }else if(ptOnBottom[2] == zmin && ptOnBottom[0] >= xmin && ptOnBottom[0] <= xmax && ptOnBottom[1] >= ymin && ptOnBottom[1] <=ymax){
-
-         hitrec = new HitRecord(this, std::sqrt((ptToBottom[0]*ptToBottom[0])+(ptToBottom[1]*ptToBottom[1])+(ptToBottom[2]*ptToBottom[2])));
-
-      }else if(ptToRight[1] == ymax && pToRight[0] >= xmin && ptToRight <= xmax && ptToRight[2] >= zmin && ptToRight <= zmax){
-
-         hitrec = new HitRecord(this, std::sqrt((ptToRight[0]*ptToRight[0])+(ptToRight[1]*ptToRight[1])+(ptToRight[2]*ptToRight[2])));
-
-      }else if(ptToBack[0] == xmin && ptToBack[1] >= ymin && ptToBack[1] <= ymax && ptToBack[2] >= zmin && ptToBack[2] <= zmax){
-
-         hitrec = new HitRecord(this, std::sqrt((ptToBack[0]*ptToBack[0])+(ptToBack[1]*ptToBack[1])+(ptToBack[2]*ptToBack[2])));
-
+      float ax = 1/dir[0];
+      if(aX >= 0){
+         tMinX = aX*(xmin - rOriginX);
+         tMaxX = aX*(xmax - rOriginX);
       }else{
-         std::cout<<"Does not hit this BVH bounding box"<<endl;
+         tMinX = aX*(xmax - rOriginX);
+         tMaxX = aX*(xmin - rOriginX);
       }
-   }
-   return &hitrec;
 
+      float aY = 1/dir[1];
+      if(aY >= 0){
+         tMinY = aY*(ymin - rOriginY);
+         tMaxY = aY*(ymax - rOriginY);
+      }else{
+         tMinY = aY*(ymax - rOriginY);
+         tMaxY = aY*(ymin - rOriginY);
+      }
+
+      float aZ = 1/dir[2];
+      if(aZ >= 0){
+         tMinZ = aZ*(zmin - rOriginZ);
+         tMaxZ = aZ*(zmax - rOriginZ);
+      }else{
+         tMinZ = aZ*(zmax - rOriginZ);
+         tMaxZ = aZ*(zmin - rOriginZ);
+      }
+
+      //check fail conditions
+      if(tMinX > tMaxY || tMinX > tMaxZ || tMinY > tMaxX || tMinY >
+         tMaxZ || tMinZ > tMaxX || tMinZ > tMaxY){
+         hitsbox = false;
+      }
+
+   }
+   return hitsBox;
 }
