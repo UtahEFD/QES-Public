@@ -77,7 +77,6 @@ URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string
   dim_vect_2d.push_back(NcDim_x_cc);
   // create attributes 
   createAttVector("terrain","terrain height","m",dim_vect_2d,&(ugd->terrain));
-  createAttVector("terrain","terrain height","m",dim_vect_2d,&(ugd->terrain));
 
   // 3D vector dimension (time dep)
   std::vector<NcDim> dim_vect_cc;
