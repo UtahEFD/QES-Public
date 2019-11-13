@@ -11,9 +11,8 @@ class HitRecord{
    void* hitNode;
    float hitDist;  //distance from ray origin to hit point 
   public:
-   //HitRecord(BVH* hitNode, hitDist);
-   HitRecord(void* hitNode, hitDist);
-   //BVH* getHitNode();
+   
+   HitRecord(void* hitNode, float hitDist);
    void* getHitNode();
    float getHitDist();
    
