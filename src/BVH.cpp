@@ -215,8 +215,8 @@ HitRecord* BVH::rayTriangleIntersect(Ray* ray){
 }
 
 
-bool BVH::rayBoxIntersect(Ray* ray){
-   bool hitsBox = true;
+HitRecord* BVH::rayBoxIntersect(Ray* ray){
+   HitRecord* hitRec;
 
    if(isleaf){
       std::cout<<"This is a leaf node."<<endl;
@@ -258,7 +258,10 @@ bool BVH::rayBoxIntersect(Ray* ray){
       //check fail conditions
       if(tMinX > tMaxY || tMinX > tMaxZ || tMinY > tMaxX || tMinY >
          tMaxZ || tMinZ > tMaxX || tMinZ > tMaxY){
-         hitsbox = false;
+         hitRec = NULL;
+      }else{
+         magnitude = std::sqrt(pow((tMaxX - tMinX),2)*pow((tMaxY - yMinY),2)*pow((tMaxZ - tMinZ),2));
+         hitRec = new HitRecord(this, magnitude);
       }
 
    }

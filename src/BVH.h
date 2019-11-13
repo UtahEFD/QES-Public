@@ -91,7 +91,7 @@ public:
          *node's bounding box
          @return HitRecord of the box it hit or NULL if a miss 
          */
-        bool rayBoxIntersect(Ray* ray);
+        HitRecord* rayBoxIntersect(Ray* ray);
 
         /*
          *may only temporarily need this until I can make a more
