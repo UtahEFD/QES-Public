@@ -5,69 +5,74 @@ float Mesh::getHeight(float x, float y)
    return tris->heightToTri(x,y);
 }
 
-void Mesh::calculateMixingLength(){
+std::vector<float> Mesh::calculateMixingLength(int dimX, int dimY,int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag){
 
-   //add a reference to list of all fluid cells in domain
+   std::vector<float> mixingLengthList(dimX*dimY*dimZ);
 
-   //TODO: reference to fluid cells
-   for(int i=0, i< /*all fluid cells in domiain*/, i++) {
+   for(int k=0; k< dimz - 1; k++) {
+      for(int j = 0; j < dimY - 1; j++){
+         for(int i = 0; i < dimX -1; i++){
 
-      //Create a SphereDirections obj. that will contain all the
-      //directions to iterate over
-      SphereDirections sd = new SphereDirections();
-      float mixLength = std::numeric_limits<float>::infinity();
+            //calculate icell index
+            int icell_idx = i + j*(dimX-1) + k*(dimY-1) * (dimX-1);
 
-      BVH* nextBVH = tris;
+            if(icellflag[icell_idx] == 1){
 
-      //TODO: find out how cells are actually called
-      Cell currCell = cell[i];
+               SphereDirections sd = new SphereDirections();
+               float mixLength = std::numeric_limits<float>::infinity();
 
-      //TODO: might have to calc the cell's midpoint (or center of mass)
-      Ray ray = new Ray(currCell.centerX, currCell.centerY, currCell.centerZ);
+               //ray's origin = cell's center
+               Ray ray = new Ray((i+0.5)*dx, (j+0.5)*dy, (k+0.5)*dz);
 
-      HitRecord* hit=NULL;
-      //for all possible directions, determine the distance
-      for(int j=0, j < sd.getNumDirVec(), j++){
-         ray = new Ray(currCell.center X, currCell.centerY, currCell.centerZ, ds.getNextDir());
-         ray.setNextDir(ds.getNextDir());
+               HitRecord* hit;
+               BVH* nextBVH;
 
-         //stop if nextBVH is a leaf node or if it didn't intersect anything
-         while(!nextBVH.getIsLeaf() && nextBVH != NULL){
-            HitRecord* checkLeft = nextBVH.getLeftBox().rayBoxIntersect();
-            HitRecord* checkRight = nextBVH.getRightBox().rayBoxIntersect();
+               //for all possible directions, determine the distance
+               for(int m=0, m < sd.getNumDirVec(), m++){
 
-            if(checkLeft != NULL && checkRight == NULL){
-               nextBVH = nextBVH.getLeftBox();
-            }else if(checkLeft == NULL && checkRight != NULL){
-               nextBVH = nextBVH.getRightBox();
-            }else if (checkLeft != NULL && checkRight != NULL){
-               if(checkLeft.getHitDist() < checkRight.getHitDist()){
-                  nextBVH = nextBVH.getLeftBox();
-               }else{
-                  nextBVH = nextBVH.getRightBox();
+                  ray.setNextDir(ds.getNextDir());
+                  nextBVH* = tris;
+                  hit = NULL;
+
+                  //stop if nextBVH is a leaf node or if it didn't intersect anything
+                  while(!nextBVH.getIsLeaf() && nextBVH != NULL){
+                     HitRecord *checkLeft = nextBVH.getLeftBox().rayBoxIntersect();
+                     HitRecord *checkRight = nextBVH.getRightBox().rayBoxIntersect();
+
+                     if(checkLeft != NULL && checkRight == NULL){
+                        nextBVH = nextBVH.getLeftBox();
+                     }else if(checkLeft == NULL && checkRight != NULL){
+                        nextBVH = nextBVH.getRightBox();
+                     }else if (checkLeft != NULL && checkRight != NULL){
+                        if(checkLeft.getHitDist() < checkRight.getHitDist()){
+                           nextBVH = nextBVH.getLeftBox();
+                        }else{
+                           nextBVH = nextBVH.getRightBox();
+                        }
+                     }else{
+                        std::cout<<"Ray is outside of bounds. Did not hit any of the bounding boxes"<<endl;
+                        nextBVH == NULL;
+                     }
+                  }
+
+                  //At this point BVH should be a leaf or NULL
+                  //if nextBVH is a leaf, it should check if it's the smallest
+                  //dist currently
+                  if(nextBVH != NULL){
+                     hit = nextBVH.rayTriIntersect();
+                     if(nextBVH != NULL & hit != NULL){
+                        if(hit.getHitDist() < mixLength){
+                           mixLength = hit.getDist();
+                        }
+                     }
+                  }
                }
-            }else{
-               std::cout<<"Ray is outside of bounds. Did not hit any of the bounding boxes"<<endl;
-               nextBVH == NULL;
             }
-         }
-         //At this point BVH should be a leaf or NULL
-         //if nextBVH is a leaf, it should check if it's the smallest
-         //dist currently
-         if(nextBVH != NULL){
-            hit = nextBVH.rayTriIntersect();
-            if(nextBVH != NULL & hit != NULL){
-               if(hit.getHitDist() < mixLength){
-                  mixLength = hit.getDist();
-               }
-            }
+           std:cout<<"Mixing length for this cell is"<<mixLength<<std::endl;
+            //add to list of vectors
+            mixingLengthList.push_back(mixLength);
          }
       }
-
-      //TODO: find proper call
-      cell.mixingLength = mixLength;
-     std:cout<<"Mixing length for this cell is"<<maxLength<<std::endl;
-
-   } //fluid loop end
-
+   }
+   return mixingLengthList;
 }
