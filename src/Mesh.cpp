@@ -24,52 +24,94 @@ vector<float> Mesh::calculateMixingLength(int dimX, int dimY,int dimZ, float dx,
                //ray's origin = cell's center
                Ray ray((i+0.5)*dx, (j+0.5)*dy, (k+0.5)*dz);
 
+
                HitRecord* hit;
-               BVH* nextBVH;
+
+               //BVH* nextBVH;
 
                //for all possible directions, determine the distance
                for(int m = 0; m < sd.getNumDirVec(); m++){
-
+                  std::cout<<"\n\nDirection interation #: "<<m<<std::endl;
                   ray.setDir(sd.getNextDir());
-                  nextBVH = tris;
+                  //nextBVH = tris;
+                  //std::cout<<"nextBVH = "<<nextBVH<<std::endl;
                   hit = NULL;
 
-                  //stop if nextBVH is a leaf node or if it didn't intersect anything
-                  while(!(nextBVH->getIsLeaf()) && nextBVH != 0){
-                     HitRecord *checkLeft = (nextBVH->getLeftBox())->rayBoxIntersect(ray);
-                     HitRecord *checkRight = (nextBVH->getRightBox())->rayBoxIntersect(ray);
+                  bool isHit = tris->rayHit(ray, hit);
 
-                     if(checkLeft != 0 && checkRight == 0){
-                        nextBVH = nextBVH->getLeftBox();
-                     }else if(checkLeft == 0 && checkRight != 0L){
-                        nextBVH = nextBVH->getRightBox();
-                     }else if (checkLeft != 0 && checkRight != 0){
-                        if(checkLeft->getHitDist() < checkRight->getHitDist()){
-                           nextBVH = nextBVH->getLeftBox();
-                        }else{
-                           nextBVH = nextBVH->getRightBox();
-                        }
-                     }else{
-                        std::cout<<"Ray is outside of bounds. Did not hit any of the bounding boxes"<<std::endl;
-                        nextBVH = 0;
+                  if(isHit){
+                     std::cout<<"Hit found."<<std::endl;
+
+                     //compare the mixLengths
+                     if(hit->getHitDist() < mixLength){
+                        mixLength = hit->getHitDist();
                      }
+                  }else{
+                     std::cout<<"Hit not found"<<std::endl;
                   }
 
-                  //At this point BVH should be a leaf or NULL
-                  //if nextBVH is a leaf, it should check if it's the smallest
-                  //dist currently
-                  if(nextBVH != 0){
-                     hit = nextBVH->rayTriangleIntersect(ray);
-                     if(nextBVH != 0 & hit != 0){
-                        if(hit->getHitDist() < mixLength){
-                           mixLength = hit->getHitDist();
-                        }
-                     }
-                  }
+                  /*HitRecord *checkLeft;
+                    HitRecord *checkRight;
+
+                    //stop if nextBVH is a leaf node or if it didn't intersect anything
+                    while(!(nextBVH->getIsLeaf()) && nextBVH != NULL){
+
+                    if(nextBVH->getLeftBox() == NULL || nextBVH->getRightBox() == NULL){
+                    std::cout<<"One/both of the boxes were NULL"<<std::endl;
+                    }else{
+                    checkLeft = (nextBVH->getLeftBox())->rayBoxIntersect(ray);
+                    checkRight = (nextBVH->getRightBox())->rayBoxIntersect(ray);
+
+                    std::cout<<"Check left = "<<checkLeft->getHitNode()<<"\tisHit ="<<checkLeft->getIsHit()<<std::endl;
+                    std::cout<<"Check right = "<<checkRight->getHitNode()<<"\tisHit "<<checkRight->getIsHit()<<std::endl;
+                    if(checkLeft->getIsHit() && !(checkRight->getIsHit())){
+                    nextBVH = nextBVH->getLeftBox();
+                    std::cout<<"Enters left box condition.\t dist = "<<checkLeft->getHitDist()<<std::endl;
+
+                    }else if(!(checkLeft->getIsHit()) && checkRight->getIsHit()){
+                    nextBVH = nextBVH->getRightBox();
+                    //std::cout<<"Enters right box condition.\tdist = "<< checkRight->getHitDist() <<std::endl;
+
+                    }else if (checkLeft->getIsHit() && checkRight->getIsHit()){
+                    std::cout<<"Distance of left = "<<checkLeft->getHitDist()<<"\tright dist = "<<checkRight->getHitDist()<<std::endl;
+                    if(checkLeft->getHitDist() < checkRight->getHitDist()){
+                    std::cout<<"Chose the left box as the one with the shortest distance"<<std::endl;
+                    nextBVH = nextBVH->getLeftBox();
+                    }else{
+                    std::cout<<"Chose the right box as the one witht he shortest distance."<<std::endl;
+                    nextBVH = nextBVH->getRightBox();
+                    }
+                    }else{
+                    std::cout<<"Ray is outside of bounds. Did not hit any of the bounding boxes"<<std::endl;
+                    std::cout<<"isLeaf after bound fail = "<<nextBVH->getIsLeaf()<<std::endl;
+                    nextBVH = 0;
+                    }
+
+                    std::cout<<"isLeaf for the new nextBVH = "<<nextBVH->getIsLeaf()<<std::endl;
+                    std::cout<<"nextBVH after assignment = "<<nextBVH<<std::endl;
+                    }
+                    }
+
+                    std::cout<<"!!!Finished finding leaf node. isLeaf = "<<nextBVH->getIsLeaf()<<std::endl;
+
+                    //At this point BVH should be a leaf or NULL
+                    //if nextBVH is a leaf, it should check if it's the smallest
+                    //dist currently
+                    if(nextBVH != 0){
+                    hit = nextBVH->rayTriangleIntersect(ray);
+                    if(nextBVH != 0 & hit != 0){
+                    if(hit->getHitDist() < mixLength){
+                    mixLength = hit->getHitDist();
+                    }
+                    }
+                    }
+                  */
                }
+
                std::cout<<"Mixing length for this cell is"<<mixLength<<std::endl;
                //add to list of vectors
                mixingLengthList.push_back(mixLength);
+               std::cout<<"\n\n"<<std::endl;
             }
 
          }

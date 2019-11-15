@@ -177,7 +177,7 @@ float BVH::heightToTri(float x, float y)
 
 HitRecord* BVH::rayTriangleIntersect(Ray ray){
    HitRecord* hitrec;
-   hitrec = 0;
+   hitrec = new HitRecord((void*) this, false);
    if(!isLeaf){
       std::cout<<"Not an intersectable triangle."<<std::endl;
    }else{
@@ -207,65 +207,162 @@ HitRecord* BVH::rayTriangleIntersect(Ray ray){
       if(t < c || t > f || gamma < 0 || gamma > 1 || beta < 0 || beta > (1- gamma)){
          std::cout<<"No intersection found."<<std::endl;
       }else{
-         hitrec = new HitRecord(tri, t);
+         hitrec = new HitRecord((void*) this, true, t);
       }
 
    }
-
+   std::cout<<"hitrec in rayTriangleIntersect is "<<hitrec<<std::endl;
    return hitrec;
 }
 
 
 HitRecord* BVH::rayBoxIntersect(Ray ray){
    HitRecord* hitrec;
+   hitrec = new HitRecord((void*) this, false);
    if(isLeaf){
       std::cout<<"This is a leaf node."<<std::endl;
    }else{
+
       float rOriginX = ray.getOriginX();
       float rOriginY = ray.getOriginY();
       float rOriginZ = ray.getOriginZ();
       Vector3<float> dir = ray.getDirection();
-
+      Vector3<float> inv_dir = ray.getInverseDir();
       float tMinX, tMaxX, tMinY, tMaxY, tMinZ, tMaxZ;
+      std::vector<int> signs = ray.getSigns();
+      Vector3<float> bounds[2];
+      bounds[0] = Vector3<float>(xmin, ymin, zmin);
+      bounds[1] = Vector3<float>(xmax, ymax, zmax);
 
-      float aX = 1/dir[0];
-      if(aX >= 0){
-         tMinX = aX*(xmin - rOriginX);
-         tMaxX = aX*(xmax - rOriginX);
+      tMinX = (bounds[signs.at(0)][0] - rOriginX)*inv_dir[0];
+      tMaxX = (bounds[1-(signs.at(0))][0] - rOriginX)*inv_dir[0];
+      tMinY = (bounds[signs.at(1)][1] - rOriginY)*inv_dir[1];
+      tMaxY = (bounds[1-(signs.at(1))][1] - rOriginY)*inv_dir[1];
+
+      if((tMinX > tMaxY) || (tMinY > tMaxX)){
+         hitrec = new HitRecord((void*) this, false);
       }else{
-         tMinX = aX*(xmax - rOriginX);
-         tMaxX = aX*(xmin - rOriginX);
+         if(tMinY > tMinX){
+            tMinX = tMinY;
+         }
+         if(tMaxY < tMaxX){
+            tMaxX = tMaxY;
+         }
+
+         tMinZ = (bounds[signs.at(2)][2] - rOriginZ)*inv_dir[2];
+         tMaxZ = (bounds[1-(signs.at(2))][2] - rOriginZ)*inv_dir[2];
+
+         if((tMinX > tMaxZ) || (tMinZ > tMaxX)){
+            hitrec = new HitRecord((void*) this, false);
+         }else{
+            if(tMinZ > tMinX){
+               tMinX = tMinZ;
+            }
+            if(tMaxZ < tMaxX){
+               tMaxX = tMaxZ;
+            }
+            std::cout<<"*Box was hit."<<std::endl;
+            hitrec = new HitRecord((void*) this, true, tMaxX - tMinX);
+         }
       }
 
-      float aY = 1/dir[1];
-      if(aY >= 0){
-         tMinY = aY*(ymin - rOriginY);
-         tMaxY = aY*(ymax - rOriginY);
-      }else{
-         tMinY = aY*(ymax - rOriginY);
-         tMaxY = aY*(ymin - rOriginY);
-      }
+/*
+  float aX = 1/dir[0];
+  if(aX >= 0){
+  tMinX = aX*(xmin - rOriginX);
+  tMaxX = aX*(xmax - rOriginX);
+  }else{
+  tMinX = aX*(xmax - rOriginX);
+  tMaxX = aX*(xmin - rOriginX);
+  }
 
-      float aZ = 1/dir[2];
-      if(aZ >= 0){
-         tMinZ = aZ*(zmin - rOriginZ);
-         tMaxZ = aZ*(zmax - rOriginZ);
-      }else{
-         tMinZ = aZ*(zmax - rOriginZ);
-         tMaxZ = aZ*(zmin - rOriginZ);
-      }
+  float aY = 1/dir[1];
+  if(aY >= 0){
+  tMinY = aY*(ymin - rOriginY);
+  tMaxY = aY*(ymax - rOriginY);
+  }else{
+  tMinY = aY*(ymax - rOriginY);
+  tMaxY = aY*(ymin - rOriginY);
+  }
 
-      //check fail conditions
-      if(tMinX > tMaxY || tMinX > tMaxZ || tMinY > tMaxX || tMinY >
-         tMaxZ || tMinZ > tMaxX || tMinZ > tMaxY){
-         hitrec = 0;
-      }else{
-         float magnitude = std::sqrt(pow((tMaxX - tMinX),2)*pow((tMaxY - tMinY),2)*pow((tMaxZ - tMinZ),2));
-         hitrec = new HitRecord((void*) this, magnitude);
-      }
+  float aZ = 1/dir[2];
+  if(aZ >= 0){
+  tMinZ = aZ*(zmin - rOriginZ);
+  tMaxZ = aZ*(zmax - rOriginZ);
+  }else{
+  tMinZ = aZ*(zmax - rOriginZ);
+  tMaxZ = aZ*(zmin - rOriginZ);
+  }
+
+  std::cout<<"Variables in box: \ntminX = "<<tMinX<<"\ttmaxX = "<<tMaxX<<"\n\ttminY = "<<tMinY<<"\ttmaxY = "<<tMaxY<<"\n\ttMinZ = "<<tMinZ<<"\ttMaxZ = "<<tMaxZ<<std::endl;
+  //check fail conditions
+  if(tMinX > tMaxY || tMinX > tMaxZ || tMinY > tMaxX || tMinY >
+  tMaxZ || tMinZ > tMaxX || tMinZ > tMaxY){
+  std::cout<<"Failed conditions."<<std::endl;
+  }else{
+  float magnitude = std::sqrt(pow((tMaxX - tMinX),2)*pow((tMaxY - tMinY),2)*pow((tMaxZ - tMinZ),2));
+  std::cout<<"Magnitude = " <<magnitude<<std::endl;
+  hitrec = new HitRecord((void*) this, true, magnitude);
+  }
+*/
+
 
    }
+
+   std::cout<<"hitrec in rayBoxIntersect is "<<hitrec<<std::endl;
    return hitrec;
+}
+
+bool BVH::rayHit(Ray ray, HitRecord* rec){
+   if(!isLeaf){
+      HitRecord* lrec;
+      HitRecord* rrec;
+      lrec = leftBox->rayBoxIntersect(ray);
+      rrec = rightBox->rayBoxIntersect(ray);
+
+      bool hitLeft, hitRight;
+      //check for null boxes
+      if(leftBox != NULL){
+         hitLeft = leftBox->rayHit(ray, lrec);
+      }else{
+         hitLeft = false;
+      }
+
+      if(rightBox != NULL){
+         hitRight = rightBox->rayHit(ray, rrec);
+      }else{
+         hitRight = false;
+      }
+
+      if(rightBox == NULL && leftBox == NULL){
+         std::cout<<"Error? Both boxes are null."<<std::endl;
+      }
+
+      //init rec
+      if(hitLeft && hitRight){
+         if(lrec->getHitDist() < rrec->getHitDist()){
+            rec = lrec;
+         }else{
+            rec = rrec;
+         }
+         return true;
+      }else if(hitLeft){
+         rec = lrec;
+         return true;
+      }else if(hitRight){
+         rec = rrec;
+         return true;
+      }else{
+         return false;
+      }
+   }else{ //it is a leaf node
+      //return the record with the triangle hit distance
+      HitRecord* triHitRec;
+      triHitRec = this->rayTriangleIntersect(ray);
+      rec = triHitRec;
+      return true;
+   }
+
 }
 
 bool BVH::getIsLeaf(){return isLeaf;}

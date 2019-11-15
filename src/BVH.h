@@ -97,6 +97,12 @@ public:
         HitRecord* rayBoxIntersect(Ray ray);
 
         /*
+         *Better version of determining if a hit or not 
+         */
+        bool rayHit(Ray ray, HitRecord* rec);
+
+        
+        /*
          *may only temporarily need this until I can make a more
          *efficient version
          */
