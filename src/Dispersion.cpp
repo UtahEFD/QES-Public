@@ -33,7 +33,18 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
         timeStepStamp.at(i) = i*dt + dt;
     }
 
-
+    // ////////////////////
+#if 0
+    // HARD CODE SOME SOURCE TO TEST...
+    // test out 1 point source at this location... with these rates
+    // and this number of particles... 
+    SourceKind *sPtr = new SourcePoint( vec3(10, 10, 2.5) );
+    sPtr->setEmitRate( 2.3 );
+    allSources->push_back( sPtr );
+#endif
+    // ////////////////////
+    
+    
     // this function goes through each source and adds to the particle list the initial positions and release times
     // this function is an initialization factory calling an add source for each type of source
     // eventually this all needs moved to be a single virtual function inside of sourceKind that is overloaded by each source
@@ -88,7 +99,7 @@ void Dispersion::addSources(Sources* sources)
         // get the position and time info for the current source
         // because of polymorphic inheritance, this virtual function should work regardless of the sourceKind
         // the resulting list of points will vary for each source kind
-        std::vector<pointInfo> currentPointsList = sources->sources.at(i)->outputPointInfo(dt,simDur);
+        std::vector<particle> currentPointsList = sources->sources.at(i)->outputPointInfo(dt,simDur);
 
         // set the number of particles for the current source
         // keeping all these numParticle stuff seperate makes it easier to update the overall point information
@@ -133,7 +144,7 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul)
     for(int i = 0; i < numPar; i++)
     {
 
-        // the size of the vector of pointInfo, the pointList, has already been set. Now just need to fill all the remaining values
+        // the size of the vector of particle, the pointList, has already been set. Now just need to fill all the remaining values
         
         
         // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
@@ -190,7 +201,7 @@ void Dispersion::sortParticleValsByTime()
     // since the end goal is to fill the actual container, going to do all the sorting on the copy of said container
 
     // create the required containers of values
-    std::vector<pointInfo> pointListCopy;
+    std::vector<particle> pointListCopy;
     std::vector<double> sortedTimes;
     std::vector<int> sortedIndices;
 

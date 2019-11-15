@@ -19,7 +19,8 @@ CUDA_ADD_LIBRARY( cudaplumecore
     Urb.cpp
     Turb.cpp
 
-    pointInfo.cpp
+    particle.cpp
+    SourcePoint.cpp SourcePoint.hpp
     Source_continuous_uniform_point.cpp
 )
 

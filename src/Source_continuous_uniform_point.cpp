@@ -2,11 +2,11 @@
 #include "Source_continuous_uniform_point.hpp"
 
 
-std::vector<pointInfo> Source_continuous_uniform_point::outputPointInfo(const double& dt,const double& simDur)
+std::vector<particle> Source_continuous_uniform_point::outputPointInfo(const double& dt,const double& simDur)
 {
 
     // create the output storage values
-    std::vector<pointInfo> outputVect;
+    std::vector<particle> outputVect;
 
 
 
@@ -24,13 +24,13 @@ std::vector<pointInfo> Source_continuous_uniform_point::outputPointInfo(const do
     for(int i = 0; i < numParticles; i++)
     {
 
-        // need to create the single pointInfo storage value that will be pointed to
-        pointInfo current_pointInfo;
+        // need to create the single particle storage value that will be pointed to
+        particle current_particle;
 
         // set the source positions for each particle
-        current_pointInfo.pos.e11 = posX;
-        current_pointInfo.pos.e21 = posY;
-        current_pointInfo.pos.e31 = posZ;
+        current_particle.pos.e11 = posX;
+        current_particle.pos.e21 = posY;
+        current_particle.pos.e31 = posZ;
         
         // set the source times for each particle
         /*when number of particles to be released in a particluar time step reaches total 
@@ -41,7 +41,7 @@ std::vector<pointInfo> Source_continuous_uniform_point::outputPointInfo(const do
             startTime = startTime + dt;
             parRel = 0;
         }
-        current_pointInfo.tStrt = startTime;
+        current_particle.tStrt = startTime;
         ++parRel;
 
         
@@ -49,7 +49,7 @@ std::vector<pointInfo> Source_continuous_uniform_point::outputPointInfo(const do
         // now that all the values for the current particle have been set, need to set a pointer, and stuff it into the output vector
         // how the heck do I do correct syntax for this? I'm just going to do something, even if it causes memory leak problems, then ask Pete or look up later
         // actually, going to attempt to do this not as a pointer, just stuff it into the vector to see if it works
-        outputVect.push_back(current_pointInfo);
+        outputVect.push_back(current_particle);
 
     }
 

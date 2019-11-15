@@ -15,7 +15,7 @@
 #include "Eulerian.h"
 #include "Random.h"
 
-#include "pointInfo.hpp"
+#include "particle.hpp"
 
 
 #include <helper_math.h>
@@ -56,8 +56,15 @@ class Dispersion {
         std::vector<int> parPerTimestep;             // this is the number of particles to release at each timestep, used to calculate the release time for each particle in Dispersion, and also to update the particle loop counter in Plume.
         
 
-        // the sources can set these values, then the other values are set using urb and turb info using these values
-        std::vector<pointInfo> pointList;
+    // 
+    // This the storage for all particles
+    // 
+    // the sources can set these values, then the other values are set using urb and turb info using these values
+    std::vector<particle> pointList;
+
+
+    // ALL Sources that will be used 
+    std::vector< SourceKind* > allSources;
 
 
         // goes through and for each source, runs a virtual function to calculate a pointList with position and release times

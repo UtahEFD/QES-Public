@@ -6,31 +6,51 @@
 //  Created by Jeremy Gibbs on 03/28/19.
 //
 
-#ifndef SOURCEKIND_HPP
-#define SOURCEKIND_HPP
+#pragma once
 
+#include "util/ParseInterface.h"
+#include "particle.hpp"
 
-#include "pointInfo.hpp"
+enum ParticleReleaseType {
+    perTimeStep,
+    perSecond,
+    instantaneous
+};
 
+class SourceKind : public ParseInterface
+{
+protected:
+    int m_totalParticles;
+    ParticleReleaseType m_rType;
 
-class SourceKind : public ParseInterface {
+    // Might need other variables too
+    // int releaseStartTime, releaseEndTime;
     
-    protected:
+public:
+
+    // default constructor
+    SourceKind()
+        : m_totalParticles( 100 ), m_rType( perTimeStep )
+    {
+    }
+
+    // specialized constructor -- all things that are common to all
+    // sources, num particles, the release type
+    SourceKind( int numTotalParticles, ParticleReleaseType rtype )
+        : m_totalParticles( numTotalParticles ), m_rType( rtype )
+    {
+    }
     
-    public:
+    // destructor
+    virtual ~SourceKind()
+    {
+    }
 
-        //initializer
-        SourceKind()
-        {
-        }
+    int setReleaseType() 
+    {
+    }
 
-        // destructor
-        virtual ~SourceKind()
-        {
-        }
-
-    
-    	virtual void parseValues() = 0;
+    virtual void parseValues() = 0;
 
         // hm, I just wanted a copy of the data, but I'm not sure if I can do that, I might have to deal with pointer stuff
         // see the idea is I don't want this list except temporarily for the sources, but I want it permanently for the dispersion class
@@ -44,12 +64,33 @@ class SourceKind : public ParseInterface {
         // after they are done. More confusing logic than calling a delete function, but this would mean passing around fewer values so more efficient
         // oh what the heck, I'm just going to do the easier way for now, a list of values for each source that is carefully cleaned up each time
         // actually, can completely avoid an external function call to clean if it is called every time by 
-        virtual std::vector<pointInfo> outputPointInfo(const double& dt,const double& simDur)
+        virtual std::vector<particle> outputPointInfo(const double& dt,const double& simDur)
         {
             // just output the value, but empty so it doesn't get used in the user functions
-            std::vector<pointInfo> outputVal;
+            std::vector<particle> outputVal;
             return outputVal;
         }
 
+
+    // pure virtual function - enforces that the derived MUST define
+    // this function
+    //
+    // This function appends particles to the provided vector of
+    // particles...
+    // 
+    // This function could return the number of particles emitted or
+    // 0 if some error. 
+    // do something with all the new particles
+    virtual int emitParticles(const float dt, const float currTime, std::vector<particle> &emittedParticles) = 0;
+    
+    // HOW THIS Could be used
+    // 
+    // std::vector<pointInfo> nextSetOfParticles;
+    // ...
+    // nextSetOfParticles.clear();  // empty
+    // for (all sources, source) {
+    // int numParticles = source->emitParticles( nextSetOfParticles );
+    // std::cout << "Emitting " << numParticles << " particles." << std::endl;
+    // }
+    
 };
-#endif

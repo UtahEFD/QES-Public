@@ -169,11 +169,30 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
     // For every time step
     for(int tStep = 0; tStep < numTimeStep; tStep++)
     {
-        
+        // 
+        // Add new particles now
+        // 
+        std::vector<particle> nextSetOfParticles;
+        for (auto sidx=0u; sidx < dis->allSources.size(); sidx++) {
+
+            // need to specify these 
+            float dt = 0.1;
+            float ctime = 1.2;
+            
+            int numParticles = dis->allSources[sidx]->emitParticles( dt, ctime, nextSetOfParticles ); 
+            std::cout << "Emitting " << numParticles << " particles." << std::endl;
+        }
+
+        // append all the new particles on to the big particle
+        // advection list
+
         // Move each particle for every time step
         parToMove = parToMove + parPerTimestep.at(tStep);     // add the new particles to the total number to be moved each timestep
         double isRogueCount = dis->isRogueCount;    // This probably could be moved from dispersion to one level back in this for loop
 
+
+
+        // Advection Loop
         for(int par = 0; par < parToMove; par++)
         {
 
@@ -372,6 +391,10 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                     wPrime = 0.0;
                     isRogue = true;
                 }
+
+                // Do you need this???
+                // ONLY if this should never happen....
+                //    assert( isRogue == false );
                 
                 // now update the particle position for this iteration
                 // at some point in time, need to do a CFL condition for only moving one eulerian grid cell at a time
@@ -433,6 +456,16 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             
             }   // if isActive == true and isRogue == false
 
+
+            // After Advection Post-Processing
+            //
+            // Could be here if we know this for each individual
+            // particle... 
+            // 
+            // * Tag rogue particles
+            // * Tag particles that have left the boundary..
+            // * ..??
+
         } // for (int par=0; par<parToMove;par++)
 
         // set the isRogueCount for the time iteration in the disperion data
@@ -472,6 +505,13 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             save(output);
             avgTime = avgTime + PID->colParams->timeAvg;    // I think this is updating the averaging time for the next loop
         }
+
+
+        // 
+        // For all particles that need to be removed from the particle
+        // advection, remove them now
+        //
+        // Purge the advection list of all the unneccessary particles....
 
     } // for(tStep=0; tStep<numTimeStep; tStep++)
 

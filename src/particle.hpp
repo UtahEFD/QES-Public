@@ -1,34 +1,30 @@
 //
-//  pointInfo.hpp
+//  particle.hpp
 //  
 //  This class represents values stored for each point
 //  At a minimum, this needs to have the point position and release time
 //  Might want to add in more of the desired variables later
-//  Vectors of pointInfo will need to be vectors of pointers to pointInfo, making it a bit complex to run
+//  Vectors of Particle will need to be vectors of pointers to Particle, making it a bit complex to run
 //  but trying to do this as a struct of structs was not working
 //
 //  Created by Loren Atwood on 11/09/19.
 //
 
-#ifndef POINTINFO_HPP
-#define POINTINFO_HPP
-
+#pragma once
 
 #include <vector>
-
 #include "TypeDefs.hpp"
 
-
-class pointInfo
+class particle
 {
 
     public:
 
         // initializer
-        pointInfo();
+        particle();
 
         // destructor
-        ~pointInfo();
+        ~particle();
         
 
         // the point info variables
@@ -54,4 +50,3 @@ class pointInfo
 
 };
 
-#endif

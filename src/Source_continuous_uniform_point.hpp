@@ -42,6 +42,9 @@ class Source_continuous_uniform_point : public SourceKind
             parsePrimitive<float>(true, radius, "radius");
         }
 
-        std::vector<pointInfo> outputPointInfo(const double& dt,const double& simDur);
+        std::vector<particle> outputPointInfo(const double& dt,const double& simDur);
+
+
+       int emitParticles(const float dt, const float currTime, std::vector<particle> &emittedParticles) {}
 
 };
