@@ -13,6 +13,7 @@ vector<float> Mesh::calculateMixingLength(int dimX, int dimY,int dimZ, float dx,
       for(int j = 0; j < dimY - 1; j++){
          for(int i = 0; i < dimX -1; i++){
 
+            std::cout<<"icell "<<k<<","<<j<<","<<i<<std::endl;
             //calculate icell index
             int icell_idx = i + j*(dimX-1) + k*(dimY-1) * (dimX-1);
 

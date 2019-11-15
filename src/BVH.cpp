@@ -220,7 +220,7 @@ HitRecord* BVH::rayBoxIntersect(Ray ray){
    HitRecord* hitrec;
    hitrec = new HitRecord((void*) this, false);
    if(isLeaf){
-      std::cout<<"This is a leaf node."<<std::endl;
+      std::cout<<"In rayBoxIntersect, this is a leaf node."<<std::endl;
    }else{
 
       float rOriginX = ray.getOriginX();
@@ -309,28 +309,32 @@ HitRecord* BVH::rayBoxIntersect(Ray ray){
 
    }
 
-   std::cout<<"hitrec in rayBoxIntersect is "<<hitrec<<std::endl;
+   std::cout<<"hitrec in rayBoxIntersect is @ "<<hitrec<<"\tisHit status = "<<hitrec->getIsHit()<<std::endl;
    return hitrec;
 }
 
 bool BVH::rayHit(Ray ray, HitRecord* rec){
    if(!isLeaf){
+      std::cout<<"In rayHit, this BVH's leaf status = "<<isLeaf<<std::endl;
       HitRecord* lrec;
       HitRecord* rrec;
       lrec = leftBox->rayBoxIntersect(ray);
       rrec = rightBox->rayBoxIntersect(ray);
-
       bool hitLeft, hitRight;
       //check for null boxes
-      if(leftBox != NULL){
+      if(leftBox != NULL && lrec->getIsHit()){
+         std::cout<<"In rayHit, leftbox init."<<std::endl;
          hitLeft = leftBox->rayHit(ray, lrec);
       }else{
+         std::cout<<"In rayHit, rightbox NOT init."<<std::endl;
          hitLeft = false;
       }
 
-      if(rightBox != NULL){
+      if(rightBox != NULL && rrec->getIsHit()){
+         std::cout<<"In rayHit, rightbox init."<<std::endl;
          hitRight = rightBox->rayHit(ray, rrec);
       }else{
+         std::cout<<"In rayHit, rightbox NOT init."<<std::endl;
          hitRight = false;
       }
 
@@ -341,15 +345,19 @@ bool BVH::rayHit(Ray ray, HitRecord* rec){
       //init rec
       if(hitLeft && hitRight){
          if(lrec->getHitDist() < rrec->getHitDist()){
+            std::cout<<"Left rec is the shortest and is, therefore, chosen."<<std::endl;
             rec = lrec;
          }else{
+            std::cout<<"Right rec is chosen."<<std::endl;
             rec = rrec;
          }
          return true;
       }else if(hitLeft){
+         std::cout<<"left box is a hit."<<std::endl;
          rec = lrec;
          return true;
       }else if(hitRight){
+         std::cout<<"right box is a hit."<<std::endl;
          rec = rrec;
          return true;
       }else{
@@ -357,10 +365,10 @@ bool BVH::rayHit(Ray ray, HitRecord* rec){
       }
    }else{ //it is a leaf node
       //return the record with the triangle hit distance
-      HitRecord* triHitRec;
-      triHitRec = this->rayTriangleIntersect(ray);
-      rec = triHitRec;
-      return true;
+      //HitRecord* triHitRec;
+      //triHitRec = this->rayTriangleIntersect(ray);
+      //rec = triHitRec;
+      return false;
    }
 
 }
