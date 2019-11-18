@@ -11,6 +11,7 @@
 
 #include "SourcePoint.hpp"
 #include "SourceLine.hpp"
+#include "SourceUniformDomain.hpp"
 
 Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     : pointList(0)
@@ -41,24 +42,32 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     // HARD CODE SOME SOURCE TO TEST...
     // test out 1 point source at this location... with these rates
     // and this number of particles... 
+#if 0
     vec3 ptSourcePos;
     ptSourcePos.e11 = 40.0;
     ptSourcePos.e21 = 80.0;
     ptSourcePos.e31 = 30.0;
     SourceKind *sPtr0 = new SourcePoint( ptSourcePos, 100000, ParticleReleaseType::instantaneous );
     allSources.push_back( sPtr0 );
+#endif
 
-
+#if 0
     vec3 pt0, pt1;
     pt0.e11 = 25.0;
     pt0.e21 = 175.0;
-    pt0.e31 = 25.0;
+    pt0.e31 = 40.0;
 
     pt1.e11 = 50.0;
     pt1.e21 = 25.0;
     pt1.e31 = 40.0;
     SourceKind *sPtr = new SourceLine( pt0, pt1, 100000, ParticleReleaseType::instantaneous );
     allSources.push_back( sPtr );
+#endif
+
+    // Uniform test case Source
+    SourceKind *sPtr = new SourceUniformDomain( 10, 10, 10, 190, 190, 190, 100000 );
+    allSources.push_back( sPtr );
+    
 
     // ////////////////////
     
