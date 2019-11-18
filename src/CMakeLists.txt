@@ -21,6 +21,7 @@ CUDA_ADD_LIBRARY( cudaplumecore
 
     particle.cpp
     SourcePoint.cpp SourcePoint.hpp
+    SourceLine.cpp SourceLine.hpp
     Source_continuous_uniform_point.cpp
 )
 

@@ -68,7 +68,7 @@ class Plume {
         int numTimeStep;        // a copy of the dispersion number of timesteps for the simulation
         
         // some dispersion variables
-        int numPar;        // this is a copy of the input numParticles to be released over the whole simulation
+//        int numPar;        // this is a copy of the input numParticles to be released over the whole simulation
         std::vector<double> tStrt;  // a copy of the dispersion tStrt, which is the time of release for each set of particles to release in the simulation
         std::vector<double> timeStepStamp;  // a copy of the dispersion timeStepStamp, which is the list of times for the simulation
         std::vector<int> parPerTimestep;     // a copy of the dispersion parPerTimestep, which is the number of particles to release per timestep

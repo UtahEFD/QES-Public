@@ -71,7 +71,7 @@ class Dispersion {
         // for each source, adding these pointList values to the overall pointList storage in dispersion
         void addSources(Sources* sources);
 
-        void setParticleVals(Turb* turb, Eulerian* eul);
+        void setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle>& newParticles);
 
         // this function is required to reorganize the particles by time since multiple sources could be releasing lots of particles at tons of different times
         // this is also needed to calculate parPerTimestep
@@ -87,7 +87,7 @@ class Dispersion {
         // just realized, what if urb and turb have different grids? For now assume they are the same grid
         int nx,ny;              // these are copies of the Urb grid nx and ny values. Not sure why nz isn't included.    I don't think these are even used
         double dx,dy,dz;        // these are copies of the Urb grid dx,dy,dz values.            I don't think these are even used
-        int dt;             // this is a copy of the input timestep
+        double dt;             // this is a copy of the input timestep
         double simDur;         // this is a copy of the input runTime, or the total amount of time to run the simulation for
         
 

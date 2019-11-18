@@ -1,11 +1,11 @@
 <simulationParameters>
 	<runTime> 1000.0 </runTime>		<!-- this is the amount of time to run the simulation, lets you have an arbitrary start time to an arbitrary end time -->
-	<timeStep> 1.0 </timeStep>		<!-- this is the integration timestep. Do we want to do adaptive timestepping in the future? for now, we assume they choose a smart timestep -->
+	<timeStep> 0.1 </timeStep>		<!-- this is the integration timestep. Do we want to do adaptive timestepping in the future? for now, we assume they choose a smart timestep -->
 </simulationParameters>
 <collectionParameters>			<!-- this is for collecting output, calculation does it for everywhere, this grabs what is needed for an area? -->
-	<timeStart> 100.0 </timeStart>
+	<timeStart> 0.0 </timeStart>
 	<timeEnd> 1000.0 </timeEnd>
-	<timeAvg> 899.0 </timeAvg>		<!-- this is for collecting output, calculation does it for everywhere, this grabs what is needed for an area? -->
+	<timeAvg> 999.0 </timeAvg>		<!-- this is for collecting output, calculation does it for everywhere, this grabs what is needed for an area? -->
 	<boxBoundsX1> 0.0 </boxBoundsX1>
 	<boxBoundsX2> 200.0 </boxBoundsX2>
 	<boxBoundsY1> 0.0 </boxBoundsY1>
@@ -20,7 +20,7 @@
   <numSources> 1 </numSources>			<!-- number of sources, you fill in source information for each source next -->
   <continuous_uniform_pointSource>					<!-- source type, probs will always be a point source, converter tools should be able to turn everything into a point source -->
     <numParticles>100000</numParticles>	<!-- total number of particles to release over some duration (where is duration defined?) -->
-  	<posX> 10.0 </posX>
+    <posX> 10.0 </posX>
     <posY> 100.0 </posY>
     <posZ> 50.0 </posZ>
     <radius>1.0 </radius>

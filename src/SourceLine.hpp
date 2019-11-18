@@ -3,27 +3,28 @@
 #include "TypeDefs.hpp"
 #include "SourceKind.hpp"
 
-class SourcePoint : public SourceKind
+class SourceLine : public SourceKind
 {
 private:
-    vec3 m_pt;
+    vec3 m_pt0;
+    vec3 m_pt1;
     
 protected:
     
 public:
 
     // Default constructor
-    SourcePoint()
+    SourceLine()
     {
     }
     
-    SourcePoint( const vec3 &pt, const int numParticles, ParticleReleaseType rType )
+    SourceLine( const vec3 &pt0, const vec3 &pt1, const int numParticles, ParticleReleaseType rType )
         : SourceKind( numParticles, rType ),
-          m_pt( pt )
+          m_pt0( pt0 ), m_pt1( pt1 )
     {
     }
 
-    ~SourcePoint()
+    ~SourceLine()
     {
     }
 
@@ -31,13 +32,6 @@ public:
     {
         // Pete can help fill this in later, but
         // it would need to do the following:
-        
-        // <pointSource>
-        // <numParticles>100000</numParticles>
-        // <posX> 10.0 </posX>
-        // <posY> 100.0 </posY>
-        // <posZ> 50.0 </posZ>
-        // </pointSource>  
     }
     
     int emitParticles(const float dt,

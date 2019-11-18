@@ -10,7 +10,6 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     
     std::cout<<"[Plume] \t Setting up particles "<<std::endl;
     
-    
     // make local copies
     nx = urb->grid.nx;
     ny = urb->grid.ny;
@@ -86,6 +85,7 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     dt = PID->simParams->timeStep;
     numTimeStep  = dis->numTimeStep;
 
+#if 0
     numPar = dis->numPar;    
     
     tStrt.resize(numPar);
@@ -93,6 +93,7 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     {
         tStrt.at(i) = dis->pointList.at(i).tStrt;
     }
+#endif
     
     timeStepStamp.resize(numTimeStep);
     timeStepStamp = dis->timeStepStamp;
@@ -123,11 +124,18 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
 
     // create attributes
     AttScalarDbl att_t     = {&timeOut, "t",    "time",        "s",  dim_scalar_t};
+
     AttVectorDbl att_x     = {&xBoxCen, "x",    "x-distance",  "m",  dim_scalar_x};
     AttVectorDbl att_y     = {&yBoxCen, "y",    "y-distance",  "m",  dim_scalar_y};
     AttVectorDbl att_z     = {&zBoxCen, "z",    "z-distance",  "m",  dim_scalar_z};
-    AttVectorDbl att_conc  = {&conc,    "conc", "concentratio","--", dim_vector};
+    AttVectorDbl att_conc  = {&conc,    "conc", "concentration","--", dim_vector};
 
+#if 0
+    AttVectorDbl att_px     = {&xBoxCen, "xp", "x-position of particle","m",dim_scalar_x};
+    AttVectorDbl att_py     = {&yBoxCen, "yp", "y-position of particle","m",dim_scalar_y};
+    AttVectorDbl att_pz     = {&zBoxCen, "zp", "z-position of particle","m",dim_scalar_z};
+#endif
+    
     // map the name to attributes
     map_att_scalar_dbl.emplace("t", att_t);
     map_att_vector_dbl.emplace("x", att_x);
@@ -156,46 +164,42 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
 
 void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID, Output* output)
 {
-    
     std::cout << "[Plume] \t Advecting particles " << std::endl;
 
-    // set some variables before the time integration
-    int parToMove = 0;    // this is the loop counter ending point for the particle loop, which currently adjusts by adding the number of particles to release each timestep to its value. This adjustment method will need to change when particle recycling is figured out
-
-    
     // get the threshold velocity fluctuation to define rogue particles from dispersion class
     double vel_threshold = dis->vel_threshold;
     
-    // For every time step
+    // //////////////////////////////////////////
+    // TIME Stepping Loop
+    // for every time step
+    // //////////////////////////////////////////
     for(int tStep = 0; tStep < numTimeStep; tStep++)
     {
         // 
         // Add new particles now
+        // - walk over all sources and add the emitted particles from
+        // each source to the overall particle list
         // 
-        std::vector<particle> nextSetOfParticles;
+        std::vector<particle> nextSetOfParticles(0);
         for (auto sidx=0u; sidx < dis->allSources.size(); sidx++) {
-
-            // need to specify these 
-            float dt = 0.1;
-            float ctime = 1.2;
-            
-            int numParticles = dis->allSources[sidx]->emitParticles( dt, ctime, nextSetOfParticles ); 
-            std::cout << "Emitting " << numParticles << " particles." << std::endl;
+            int numParticles = dis->allSources[sidx]->emitParticles( (float)dt, (float)(tStep*dt), nextSetOfParticles );
+            if (numParticles > 0)
+                std::cout << "Emitting " << numParticles << " particles from source " << sidx << std::endl;
         }
 
+        dis->setParticleVals( turb, eul, nextSetOfParticles );
+        
         // append all the new particles on to the big particle
         // advection list
+        dis->pointList.insert( dis->pointList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end() );
 
         // Move each particle for every time step
-        parToMove = parToMove + parPerTimestep.at(tStep);     // add the new particles to the total number to be moved each timestep
         double isRogueCount = dis->isRogueCount;    // This probably could be moved from dispersion to one level back in this for loop
 
-
-
         // Advection Loop
-        for(int par = 0; par < parToMove; par++)
+                
+        for (int par=0; par<dis->pointList.size(); par++)
         {
-
             // get the current isRogue and isActive information
             // in this whole section, the idea of having single value temporary storage instead of just referencing values
             //  directly from the dispersion class seems a bit strange, but it makes the code easier to read cause smaller variable names
@@ -206,7 +210,6 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             // first check to see if the particle should even be advected
             if(isActive == true && isRogue == false)
             {
-
                 // this is getting the current position for where the particle is at for a given time
                 // if it is the first time a particle is ever released, then the value is already set at the initial value
                 double xPos = dis->pointList.at(par).pos.e11;
@@ -411,7 +414,6 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 yPos = yPos + disY;
                 zPos = zPos + disZ;
 
-
                 // now apply boundary conditions
                 // at some point in time, going to have to do a polymorphic inheritance so can have lots of boundary condition types
                 // but so that they can be run without if statements when changing BC types
@@ -457,15 +459,6 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             }   // if isActive == true and isRogue == false
 
 
-            // After Advection Post-Processing
-            //
-            // Could be here if we know this for each individual
-            // particle... 
-            // 
-            // * Tag rogue particles
-            // * Tag particles that have left the boundary..
-            // * ..??
-
         } // for (int par=0; par<parToMove;par++)
 
         // set the isRogueCount for the time iteration in the disperion data
@@ -489,7 +482,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         {
             //std::cout<<"loopPrm   :"<<loopPrm<<std::endl;
             //std::cout<<"loopLowestCell :"<<loopLowestCell<<std::endl;
-            double cc = (dt)/(avgTime*volume*numPar);
+            double cc = (dt)/(avgTime*volume* dis->pointList.size() );
             for(int k = 0; k < nBoxesZ; k++)
             {
                 for(int j = 0; j < nBoxesY; j++)
@@ -709,49 +702,63 @@ void Plume::save(Output* output)
 
 void Plume::average(const int tStep,const Dispersion* dis, const Urb* urb)
 {
-    for(int i = 0; i < numPar; i++)
+    // for all particles see where they are relative to the
+    // concentration collection boxes
+    for(int i = 0; i < dis->pointList.size(); i++)
     {
-        
-        if( tStrt.at(i) > timeStepStamp.at(tStep) )
-        {
-            continue;
-        }
+        // ????
+//        if( tStrt.at(i) > timeStepStamp.at(tStep) )
+//        {
+//            continue;
+//        }
         
         double xPos = dis->pointList.at(i).pos.e11;
         double yPos = dis->pointList.at(i).pos.e21;
         double zPos = dis->pointList.at(i).pos.e31;
         
-        if( zPos == -1 )
-        {
-            continue;
-        }
+        if ( (xPos > 0.0 && yPos > 0.0 && zPos > 0.0) &&
+             (xPos < (urb->grid.nx*urb->grid.dx)) &&
+             (yPos < (urb->grid.ny*urb->grid.dy)) &&
+             (zPos < (urb->grid.nz*urb->grid.dz)) ) {
+            
+            // ????
+            if( zPos == -1 )
+            {
+                continue;
+            }
 
-        int iV = int(xPos/urb->grid.dx);
-        int jV = int(yPos/urb->grid.dy);
-        int kV = int(zPos/urb->grid.dz) + 1;    // why is this + 1 here?
-        int idx = (int)((xPos-lBndx)/boxSizeX);
-        int idy = (int)((yPos-lBndy)/boxSizeY);
-        int idz = (int)((zPos-lBndz)/boxSizeZ);
-        if( xPos < lBndx )
-        {
-            idx = -1;
-        }
-        if( yPos < lBndy )
-        {
-            idy = -1;
-        }
-        if( zPos < lBndz )
-        {
-            idz = -1;
-        }
+            // Calculate which collection box this particle is currently
+            // in
 
-        int id = 0;
-        if( idx >= 0 && idx < nBoxesX && idy >= 0 && idy < nBoxesY && idz >= 0 && idz < nBoxesZ && tStrt.at(i) <= timeStepStamp.at(tStep) )
-        {
-            id = idz*nBoxesY*nBoxesX + idy*nBoxesX + idx;
-            cBox.at(id) = cBox.at(id) + 1.0;
-        }
+            int iV = int(xPos/urb->grid.dx);
+            int jV = int(yPos/urb->grid.dy);
+            int kV = int(zPos/urb->grid.dz) + 1;    // why is this + 1 here?
+            int idx = (int)((xPos-lBndx)/boxSizeX);
+            int idy = (int)((yPos-lBndy)/boxSizeY);
+            int idz = (int)((zPos-lBndz)/boxSizeZ);
 
+            if( xPos < lBndx )
+            {
+                idx = -1;
+            }
+            if( yPos < lBndy )
+            {
+                idy = -1;
+            }
+            if( zPos < lBndz )
+            {
+                idz = -1;
+            }
+
+            int id = 0;
+            // if( idx >= 0 && idx < nBoxesX && idy >= 0 && idy < nBoxesY && idz >= 0 && idz < nBoxesZ && tStrt.at(i) <= timeStepStamp.at(tStep) )
+            if( idx >= 0 && idx < nBoxesX && idy >= 0 && idy < nBoxesY && idz >= 0 && idz < nBoxesZ )
+            {
+                id = idz*nBoxesY*nBoxesX + idy*nBoxesX + idx;
+                cBox.at(id) = cBox.at(id) + 1.0;
+            }
+        }
+        
     }   // particle loop
 
 }

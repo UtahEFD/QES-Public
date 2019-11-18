@@ -4,13 +4,17 @@
 //  This class handles dispersion information
 //
 
-#include "Dispersion.h"
 #include <fstream>
-#define EPSILON 0.00001   
+#include "Dispersion.h"
+
+#define EPSILON 0.00001
+
+#include "SourcePoint.hpp"
+#include "SourceLine.hpp"
 
 Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
+    : pointList(0)
 {
-
     std::cout<<"[Dispersion] \t Setting up sources "<<std::endl;
     
     // make local copies
@@ -34,17 +38,32 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     }
 
     // ////////////////////
-#if 0
     // HARD CODE SOME SOURCE TO TEST...
     // test out 1 point source at this location... with these rates
     // and this number of particles... 
-    SourceKind *sPtr = new SourcePoint( vec3(10, 10, 2.5) );
-    sPtr->setEmitRate( 2.3 );
-    allSources->push_back( sPtr );
-#endif
+    vec3 ptSourcePos;
+    ptSourcePos.e11 = 40.0;
+    ptSourcePos.e21 = 80.0;
+    ptSourcePos.e31 = 30.0;
+    SourceKind *sPtr0 = new SourcePoint( ptSourcePos, 100000, ParticleReleaseType::instantaneous );
+    allSources.push_back( sPtr0 );
+
+
+    vec3 pt0, pt1;
+    pt0.e11 = 25.0;
+    pt0.e21 = 175.0;
+    pt0.e31 = 25.0;
+
+    pt1.e11 = 50.0;
+    pt1.e21 = 25.0;
+    pt1.e31 = 40.0;
+    SourceKind *sPtr = new SourceLine( pt0, pt1, 100000, ParticleReleaseType::instantaneous );
+    allSources.push_back( sPtr );
+
     // ////////////////////
     
     
+#if 0
     // this function goes through each source and adds to the particle list the initial positions and release times
     // this function is an initialization factory calling an add source for each type of source
     // eventually this all needs moved to be a single virtual function inside of sourceKind that is overloaded by each source
@@ -62,7 +81,8 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     // this function requires the values to be sorted to work correctly, but it goes through finding when the times change,
     // using the changes to store a number of particles to release for each timestep
     calc_parPerTimestep();
-
+#endif
+    
 
     // set the isRogueCount to zero
     isRogueCount = 0.0;
@@ -77,17 +97,22 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
       would need to modify this to check all particles, probably better to just do the check at the end of each source, 
       so it is known which source causes the problem
     */
+#if 0
     if ( fabs(pointList.back().tStrt - simDur) > EPSILON )
     {
         std::cerr << " Error, in start time of the particles" << std::endl;
         exit(1);
     }
+#endif
     
 }
 
 
 void Dispersion::addSources(Sources* sources)
 {
+    std::cerr << "Dispersion::addSources should NOT BE CALLED!" << std::endl;
+    exit(EXIT_FAILURE);
+
     // first get the number of sources from the sources variable
     int numSources = sources->numSources;
 
@@ -135,21 +160,15 @@ void Dispersion::addSources(Sources* sources)
 }
 
 
-void Dispersion::setParticleVals(Turb* turb, Eulerian* eul)
+void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle> &newParticles)
 {
-
-    
     // at this time, should be a list of each and every particle that exists
     // might need to vary this to allow for adding sources after the initial constructor
-    for(int i = 0; i < numPar; i++)
+    for(int pIdx=0; pIdx<newParticles.size(); pIdx++)
     {
-
-        // the size of the vector of particle, the pointList, has already been set. Now just need to fill all the remaining values
-        
-        
         // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
         // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
-        eul->setInterp3Dindexing(pointList.at(i).pos);
+        eul->setInterp3Dindexing(newParticles.at(pIdx).pos);
     
         double rann = random::norRan();   // almost didn't see it, but it does use different random numbers for each direction
 
@@ -157,36 +176,36 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul)
         diagonal current_sig = eul->interp3D(turb->sig,"sigma2");
 
         // now set the initial velocity fluctuations for the particle
-        pointList.at(i).prime.e11 = sqrt(current_sig.e11) * rann;  // set the values for the source positions for each particle. Might need to add sqrt of the variance to match Brian's code
+        newParticles.at(pIdx).prime.e11 = sqrt(current_sig.e11) * rann;  // set the values for the source positions for each particle. Might need to add sqrt of the variance to match Brian's code
         rann=random::norRan();
-        pointList.at(i).prime.e21 = sqrt(current_sig.e22) * rann;
+        newParticles.at(pIdx).prime.e21 = sqrt(current_sig.e22) * rann;
         rann=random::norRan();
-        pointList.at(i).prime.e31 = sqrt(current_sig.e33) * rann;
+        newParticles.at(pIdx).prime.e31 = sqrt(current_sig.e33) * rann;
 
         // set the initial values for the old stuff
-        pointList.at(i).prime_old.e11 = pointList.at(i).prime.e11;
-        pointList.at(i).prime_old.e21 = pointList.at(i).prime.e21;
-        pointList.at(i).prime_old.e31 = pointList.at(i).prime.e31;
+        newParticles.at(pIdx).prime_old.e11 = newParticles.at(pIdx).prime.e11;
+        newParticles.at(pIdx).prime_old.e21 = newParticles.at(pIdx).prime.e21;
+        newParticles.at(pIdx).prime_old.e31 = newParticles.at(pIdx).prime.e31;
 
         // get the tau values from the Eulerian grid for the particle value
         matrix6 current_tau = eul->interp3D(turb->tau);
 
         // set tau_old to the interpolated values for each position
-        pointList.at(i).tau_old.e11 = current_tau.e11;
-        pointList.at(i).tau_old.e12 = current_tau.e12;
-        pointList.at(i).tau_old.e13 = current_tau.e13;
-        pointList.at(i).tau_old.e22 = current_tau.e22;
-        pointList.at(i).tau_old.e23 = current_tau.e23;
-        pointList.at(i).tau_old.e33 = current_tau.e33;
+        newParticles.at(pIdx).tau_old.e11 = current_tau.e11;
+        newParticles.at(pIdx).tau_old.e12 = current_tau.e12;
+        newParticles.at(pIdx).tau_old.e13 = current_tau.e13;
+        newParticles.at(pIdx).tau_old.e22 = current_tau.e22;
+        newParticles.at(pIdx).tau_old.e23 = current_tau.e23;
+        newParticles.at(pIdx).tau_old.e33 = current_tau.e33;
 
         // set delta_prime to zero for now
-        pointList.at(i).delta_prime.e11 = 0.0;
-        pointList.at(i).delta_prime.e21 = 0.0;
-        pointList.at(i).delta_prime.e31 = 0.0;
+        newParticles.at(pIdx).delta_prime.e11 = 0.0;
+        newParticles.at(pIdx).delta_prime.e21 = 0.0;
+        newParticles.at(pIdx).delta_prime.e31 = 0.0;
 
         // set isRogue to false and isActive to true for each particle
-        pointList.at(i).isRogue = false;
-        pointList.at(i).isActive = true;
+        newParticles.at(pIdx).isRogue = false;
+        newParticles.at(pIdx).isActive = true;
         
     }
 
