@@ -1,6 +1,6 @@
-#include "SourcePoint.hpp"
+#include "SourceLine.hpp"
 
-int SourcePoint::emitParticles(const float dt,
+int SourceLine::emitParticles(const float dt,
                                const float currTime,
                                std::vector<particle> &emittedParticles)
 {
@@ -12,9 +12,17 @@ int SourcePoint::emitParticles(const float dt,
             for (int pidx=0; pidx<m_totalParticles; pidx++) {
 
                 particle cPar;
-                cPar.pos.e11 = m_pt.e11;
-                cPar.pos.e21 = m_pt.e21;
-                cPar.pos.e31 = m_pt.e31;
+
+                // generate random point on line between m_pt0 and m_pt1
+                vec3 diff;
+                diff.e11 = m_pt1.e11 - m_pt0.e11;
+                diff.e21 = m_pt1.e21 - m_pt0.e21;
+                diff.e31 = m_pt1.e31 - m_pt0.e31;
+
+                float t = drand48();
+                cPar.pos.e11 = m_pt0.e11 + t * diff.e11;
+                cPar.pos.e21 = m_pt0.e21 + t * diff.e21;
+                cPar.pos.e31 = m_pt0.e31 + t * diff.e31;
 
                 cPar.tStrt = currTime;
                 
