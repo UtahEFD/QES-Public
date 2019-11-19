@@ -51,6 +51,7 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     allSources.push_back( sPtr0 );
 #endif
 
+
 #if 0
     vec3 pt0, pt1;
     pt0.e11 = 25.0;
@@ -64,8 +65,15 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     allSources.push_back( sPtr );
 #endif
 
+
     // Uniform test case Source
-    SourceKind *sPtr = new SourceUniformDomain( 10, 10, 10, 190, 190, 190, 100000 );
+    // This will causes a segfault in Eulerian::interp3D due to kk +
+    // kkk being too large
+    // 
+    // SourceKind *sPtr = new SourceUniformDomain( 0, 0, 0, urb->grid.nx, urb->grid.ny, urb->grid.nz-2, 100000 );
+
+    // Otherwise, this will work
+    SourceKind *sPtr = new SourceUniformDomain( 0, 0, 10, urb->grid.nx, urb->grid.ny, urb->grid.nz-10, 100000 );
     allSources.push_back( sPtr );
     
 
