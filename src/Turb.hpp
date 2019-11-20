@@ -49,6 +49,16 @@ class Turb {
         };
         
         Grid grid;
+
+        // these values are calculated from the turb data during construction
+        // useful to compare these with urb values when debugging
+        double domainXstart;    // the urb domain starting x value
+        double domainXend;      // the urb domain ending x value
+        double domainYstart;    // the urb domain starting y value
+        double domainYend;      // the urb domain ending y value
+        double domainZstart;    // the urb domain starting z value
+        double domainZend;      // the urb domain ending z value
+
         
         // wind stress and variance information
         std::vector<diagonal> sig;      // this datatype is a diagonal of the stress tensor, (txx, tyy, tzz)

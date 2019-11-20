@@ -54,6 +54,16 @@ class Urb {
         };
         
         Grid grid;
+
+        // these values are calculated from the urb data during construction
+        // they are used for applying boundary conditions at the walls of the domain
+        double domainXstart;    // the urb domain starting x value
+        double domainXend;      // the urb domain ending x value
+        double domainYstart;    // the urb domain starting y value
+        double domainYend;      // the urb domain ending y value
+        double domainZstart;    // the urb domain starting z value
+        double domainZend;      // the urb domain ending z value
+        
         
         // wind information
         std::vector<Wind> wind;     // this is the set of mean wind values. The data structure is defined in TypeDefs.hpp. Wind is just a struct of u,v,w values. Probably in m/s

@@ -27,6 +27,15 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     dt     = PID->simParams->timeStep;
     simDur    = PID->simParams->runTime;
 
+    // get the urb domain start and end values, needed for source position range checking
+    domainXstart = urb->domainXstart;
+    domainXend = urb->domainXend;
+    domainYstart = urb->domainYstart;
+    domainYend = urb->domainYend;
+    domainZstart = urb->domainZstart;
+    domainZend = urb->domainZend;
+
+
     // have to set the value to something before filling it
     numPar = 0;
 
@@ -70,10 +79,14 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     // This will causes a segfault in Eulerian::interp3D due to kk +
     // kkk being too large
     // 
-    // SourceKind *sPtr = new SourceUniformDomain( 0, 0, 0, urb->grid.nx, urb->grid.ny, urb->grid.nz-2, 100000 );
+    // SourceKind *sPtr = new SourceUniformDomain( urb->grid.nx, urb->grid.ny, urb->grid.nz, urb->grid.dx, urb->grid.dy, urb->grid.dz, 100000, 
+    //                                             domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend
+    //                                             0 ); // last 0 is the fudge factor to force overloading the right constructor
 
     // Otherwise, this will work
-    SourceKind *sPtr = new SourceUniformDomain( 0, 0, 10, urb->grid.nx, urb->grid.ny, urb->grid.nz-10, 100000 );
+    std::cout << "urb->grid.nz = \"" << urb->grid.nz << "\"\n";
+    SourceKind *sPtr = new SourceUniformDomain( 0.5, 0.5, 0.5, 199.5, 199.5, 199.5, 100000, 
+                                                domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
     allSources.push_back( sPtr );
     
 

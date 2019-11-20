@@ -15,16 +15,13 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     ny = urb->grid.ny;
     nz = urb->grid.nz;
 
-    // calculate the urb domain start and end values, needed for wall boundary condition application
-    // I would guess that it is the first x value in the list of x points, and the last x value from the list of x points
-    // same thing for each of the y and z values
-    domainXstart = urb->grid.x.at(0);
-    domainXend = urb->grid.x.at(nx-1);
-    domainYstart = urb->grid.y.at(0);
-    domainYend = urb->grid.y.at(ny-1);
-    domainZstart = urb->grid.z.at(0);
-    domainZend = urb->grid.z.at(nz-1);
-
+    // get the urb domain start and end values, needed for wall boundary condition application
+    domainXstart = urb->domainXstart;
+    domainXend = urb->domainXend;
+    domainYstart = urb->domainYstart;
+    domainYend = urb->domainYend;
+    domainZstart = urb->domainZstart;
+    domainZend = urb->domainZend;
     
     /* setup the sampling box concentration information */
 

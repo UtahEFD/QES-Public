@@ -22,7 +22,13 @@ Eulerian::Eulerian(Urb* urb, Turb* turb) {
     dz = urb->grid.dz;
     dy = urb->grid.dy;
     dx = urb->grid.dx;
+
+    // get the urb domain start and end values, needed for wall boundary condition application
+    domainXstart = urb->domainXstart;
+    domainYstart = urb->domainYstart;
+    domainZstart = urb->domainZstart;
     
+
     // compute stress gradients
     createTauGrads(urb,turb);
 
@@ -235,6 +241,14 @@ void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
     // as this avoids referencing outside of array problems in an efficient manner
     // it also causes some stuff to be multiplied by zero so that interpolation works on any size of data without lots of if statements
 
+
+    // set a particle position corrected by the start of the domain in each direction
+    // the algorythm assumes the list starts at x = 0.
+    vec3 par;
+    par.e11 = xyz_particle.e11 - domainXstart;
+    par.e21 = xyz_particle.e21 - domainYstart;
+    par.e31 = xyz_particle.e31 - domainZstart;
+
     // index of nearest node in negative direction
     // by adding a really small number to dx, it stops it from putting
     // the stuff on the right wall of the cell into the next cell, and
@@ -242,14 +256,17 @@ void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
     // into the left cell. Makes it simpler for interpolation, as without this,
     // the interpolation would reference outside the array if the input position was exactly on
     // nx, ny, or nz.
-    ii = floor(xyz_particle.e11/(dx+1e-9));
-    jj = floor(xyz_particle.e21/(dy+1e-9));
-    kk = floor(xyz_particle.e31/(dz+1e-9));
+    // basically adding a small number to dx shifts the indices so that instead of going
+    // from 0 to nx - 1, they go from 0 to nx - 2. This means that ii + ip can at most be nx - 1
+    // and only if a particle lands directly on the far boundary condition edge
+    ii = floor(par.e11/(dx+1e-9));
+    jj = floor(par.e21/(dy+1e-9));
+    kk = floor(par.e31/(dz+1e-9));
 
     // fractional distance between nearest nodes
-    iw = (xyz_particle.e11/(dx+1e-9) - floor(xyz_particle.e11/(dx+1e-9)));
-    jw = (xyz_particle.e21/(dy+1e-9) - floor(xyz_particle.e21/(dy+1e-9)));
-    kw = (xyz_particle.e31/(dz+1e-9) - floor(xyz_particle.e31/(dz+1e-9)));
+    iw = (par.e11/(dx+1e-9) - floor(par.e11/(dx+1e-9)));
+    jw = (par.e21/(dy+1e-9) - floor(par.e21/(dy+1e-9)));
+    kw = (par.e31/(dz+1e-9) - floor(par.e31/(dz+1e-9)));
 
     // initialize the counters from the indices
     ip = 1;
@@ -279,22 +296,22 @@ void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
     // now check to make sure that the indices are within the Eulerian grid domain
     // Notice that this no longer includes throwing an error if particles touch the far walls
     // because adding a small number to dx in the index calculation forces the index to be completely left side biased
-    if( ii < 0 || ii > nx-1 )
+    if( ii < 0 || ii+ip > nx-1 )
     {
         std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle x position is out of range! x = \"" << xyz_particle.e11 
-            << "\" ii = \"" << ii << "\" nx-1 = \"" << nx-1 << "\"\n";
+            << "\" ii+ip = \"" << ii << "\"+\"" << ip << "\",   nx-1 = \"" << nx-1 << "\"\n";
         exit(1);
     }
-    if( jj < 0 || jj > ny-1 )
+    if( jj < 0 || jj+jp > ny-1 )
     {
         std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle y position is out of range! y = \"" << xyz_particle.e21 
-            << "\" jj = \"" << jj << "\" ny-1 = \"" << ny-1 << "\"\n";
+            << "\" jj+jp = \"" << jj << "\"+\"" << jp << "\",   ny-1 = \"" << ny-1 << "\"\n";
         exit(1);
     }
-    if( kk < 0 || kk > nz-1 )
+    if( kk < 0 || kk+kp > nz-1 )
     {
         std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle z position is out of range! z = \"" << xyz_particle.e31 
-            << "\" kk = \"" << kk << "\" nz-1 = \"" << nz-1 << "\"\n";
+            << "\" kk+kp = \"" << kk << "\"+\"" << kp << "\",   nz-1 = \"" << nz-1 << "\"\n";
         exit(1);
     }
 

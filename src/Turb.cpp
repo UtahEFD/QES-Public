@@ -129,4 +129,34 @@ Turb :: Turb(Input* input) {
     lam7.clear();
     lam8.clear();
     lam9.clear();
+
+
+#if 1
+    // calculate the turb domain start and end values, needed for wall boundary condition application
+    // I would guess that it is the first x value in the list of x points, and the last x value from the list of x points
+    // same thing for each of the y and z values
+    domainXstart = grid.x.at(0);
+    domainXend = grid.x.at(grid.nx-1);
+    domainYstart = grid.y.at(0);
+    domainYend = grid.y.at(grid.ny-1);
+    domainZstart = grid.z.at(0);
+    domainZend = grid.z.at(grid.nz-1);
+
+
+    // the values for some of this are required, but the outputting of them is a useful debugging tool
+    std::cout << "Turb nx = \"" << grid.nx << "\"\n";
+    std::cout << "Turb ny = \"" << grid.ny << "\"\n";
+    std::cout << "Turb nz = \"" << grid.nz << "\"\n";
+    std::cout << "Turb nt = \"" << grid.nt << "\"\n";
+    std::cout << "Turb dx = \"" << grid.dx << "\"\n";
+    std::cout << "Turb dy = \"" << grid.dy << "\"\n";
+    std::cout << "Turb dz = \"" << grid.dz << "\"\n";
+    std::cout << "Turb domainXstart = \"" << domainXstart << "\"\n";
+    std::cout << "Turb domainXend = \"" << domainXend << "\"\n";
+    std::cout << "Turb domainYstart = \"" << domainYstart << "\"\n";
+    std::cout << "Turb domainYend = \"" << domainYend << "\"\n";
+    std::cout << "Turb domainZstart = \"" << domainZstart << "\"\n";
+    std::cout << "Turb domainZend = \"" << domainZend << "\"\n";
+#endif
+
 }

@@ -46,7 +46,10 @@ public:
     // just realized, what if urb and turb have different grids? For now assume they are the same grid
     int nx,ny,nz,nt;    // a copy of the urb grid information, the number of values in each dimension, including time
     double dx,dy,dz;    // a copy of the urb grid information, the difference between points in the grid
-
+    double domainXstart;    // a copy of the urb domain starting x value
+    double domainYstart;    // a copy of the urb domain starting y value
+    double domainZstart;    // a copy of the urb domain starting z value
+    
 
     void setInterp3Dindexing(const vec3& xyz_particle);
     double interp3D(const std::vector<double>& EulerData,const std::string& dataName);

@@ -76,5 +76,35 @@ Urb :: Urb(Input* input) {
     // clean up temporary vectors
     u1.clear();
     u2.clear();
-    u3.clear(); 
+    u3.clear();
+
+
+    // calculate the urb domain start and end values, needed for wall boundary condition application
+    // I would guess that it is the first x value in the list of x points, and the last x value from the list of x points
+    // same thing for each of the y and z values
+    domainXstart = grid.x.at(0);
+    domainXend = grid.x.at(grid.nx-1);
+    domainYstart = grid.y.at(0);
+    domainYend = grid.y.at(grid.ny-1);
+    domainZstart = grid.z.at(0);
+    domainZend = grid.z.at(grid.nz-1);
+
+
+#if 1
+    // the values for this are required, but the outputting of them is a useful debugging tool
+    std::cout << "Urb nx = \"" << grid.nx << "\"\n";
+    std::cout << "Urb ny = \"" << grid.ny << "\"\n";
+    std::cout << "Urb nz = \"" << grid.nz << "\"\n";
+    std::cout << "Urb nt = \"" << grid.nt << "\"\n";
+    std::cout << "Urb dx = \"" << grid.dx << "\"\n";
+    std::cout << "Urb dy = \"" << grid.dy << "\"\n";
+    std::cout << "Urb dz = \"" << grid.dz << "\"\n";
+    std::cout << "Urb domainXstart = \"" << domainXstart << "\"\n";
+    std::cout << "Urb domainXend = \"" << domainXend << "\"\n";
+    std::cout << "Urb domainYstart = \"" << domainYstart << "\"\n";
+    std::cout << "Urb domainYend = \"" << domainYend << "\"\n";
+    std::cout << "Urb domainZstart = \"" << domainZstart << "\"\n";
+    std::cout << "Urb domainZend = \"" << domainZend << "\"\n";
+#endif
+
 }
