@@ -70,7 +70,7 @@ bool Triangle::rayTriangleIntersect(Ray ray, HitRecord& rec){
    gamma = ((I2*AKJB)+(H2*JCAL)+(G2*BLKC))/M;
    t = -(((F*AKJB)+(E*JCAL)+(D*BLKC))/M);
 
-   if(t > 1.4e-4 || gamma < 0 || gamma > 1 || beta < 0 || beta > (1-gamma)){
+   if(gamma < 0 || gamma > 1 || beta < 0 || beta > (1-gamma)){
       return false;
    }else{
       rec.endpt[0] = ray.getOriginX() - (t*ray.getDirection()[0]);
