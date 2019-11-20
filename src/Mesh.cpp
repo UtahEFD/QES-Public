@@ -47,16 +47,17 @@ vector<float> Mesh::calculateMixingLength(int dimX, int dimY,int dimZ, float dx,
                      std::cout<<"Hit found."<<std::endl;
 
                      //compare the mixLengths
-                     if(hit.t < maxLength){
+                     if(hit.hitDist < maxLength){
                         maxLength = hit.t;
                      }
                   }else{
                      std::cout<<"Hit not found"<<std::endl;
+                     //std::cout<<"Hit may not be found but hit.hitDist = "<<hit.hitDist<<std::endl;
                   }
 
                }
 
-               std::cout<<"Mixing length for this cell is"<<maxLength<<std::endl;
+               std::cout<<"Mixing length for this cell is "<<maxLength<<std::endl;
                //add to list of vectors
                mixingLengthList.push_back(maxLength);
                std::cout<<"\n\n"<<std::endl;
