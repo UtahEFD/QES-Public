@@ -56,7 +56,8 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     ptSourcePos.e11 = 40.0;
     ptSourcePos.e21 = 80.0;
     ptSourcePos.e31 = 30.0;
-    SourceKind *sPtr0 = new SourcePoint( ptSourcePos, 100000, ParticleReleaseType::instantaneous );
+    SourceKind *sPtr0 = new SourcePoint( ptSourcePos, 100000, ParticleReleaseType::instantaneous, 
+                                         domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
     allSources.push_back( sPtr0 );
 #endif
 
@@ -70,11 +71,12 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     pt1.e11 = 50.0;
     pt1.e21 = 25.0;
     pt1.e31 = 40.0;
-    SourceKind *sPtr = new SourceLine( pt0, pt1, 100000, ParticleReleaseType::instantaneous );
+    SourceKind *sPtr = new SourceLine( pt0, pt1, 100000, ParticleReleaseType::instantaneous, 
+                                       domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
     allSources.push_back( sPtr );
 #endif
 
-
+#if 1
     // Uniform test case Source
     // This will causes a segfault in Eulerian::interp3D due to kk +
     // kkk being too large
@@ -88,7 +90,7 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     SourceKind *sPtr = new SourceUniformDomain( 0.5, 0.5, 0.5, 199.5, 199.5, 199.5, 100000, 
                                                 domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
     allSources.push_back( sPtr );
-    
+#endif
 
     // ////////////////////
     
