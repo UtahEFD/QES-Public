@@ -418,7 +418,19 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 // when we allow different test cases, we will want these options, and a way to choose the boundary condition type
                 // for different regions sometime during the constructor phases.
                 // I guess just implement one that makes isActive go false if it goes outside the domain
-                enforceWallBCs(xPos,yPos,zPos,isActive);
+                #if 1
+                    enforceWallBCs(xPos,yPos,zPos,isActive);
+                #endif
+                #if 0
+                    enforceWallBCs_periodic(xPos, domainXstart,domainXend);
+                    enforceWallBCs_periodic(yPos, domainYstart,domainYend);
+                    enforceWallBCs_periodic(zPos, domainZstart,domainZend);
+                #endif
+                #if 0
+                    enforceWallBCs_reflection(xPos,uPrime,uFluct_old, domainXstart,domainXend);
+                    enforceWallBCs_reflection(yPos,vPrime,vFluct_old, domainYstart,domainYend);
+                    enforceWallBCs_reflection(zPos,wPrime,wFluct_old, domainZstart,domainZend);
+                #endif
 
 
                 // now update the old values and current values in the dispersion storage to be ready for the next iteration
@@ -641,6 +653,55 @@ void Plume::enforceWallBCs(double& xPos,double& yPos,double& zPos,bool &isActive
         yPos = -999.0;
         zPos = -999.0;
     }
+}
+
+void Plume::enforceWallBCs_periodic(double& pos, const double& domainStart,const double& domainEnd)
+{
+    while( pos < domainStart )
+    {
+        pos = pos + domainEnd;
+    }
+    while( pos > domainEnd )
+    {
+        pos = pos - domainEnd;
+    }
+}
+
+void Plume::enforceWallBCs_reflection(double& pos,double& velPrime,double& velFluct_old, const double& domainStart,const double& domainEnd)
+{
+    int reflectCount = 0;
+    while( pos < domainStart || pos > domainEnd )
+    {
+        if( pos > domainEnd )
+        {
+            pos = domainEnd - (pos - domainEnd);
+            velPrime = -velPrime;
+            velFluct_old = -velFluct_old;
+        } else if( pos < domainStart )
+        {
+            pos = domainStart - (pos - domainStart);
+            velPrime = -velPrime;
+            velFluct_old = -velFluct_old;
+        }
+        reflectCount = reflectCount + 1;
+
+        // if the velocity is so large that the particle would reflect more than 100 times, 
+        // the boundary condition could fail.
+        if( reflectCount == 100 )
+        {
+            if( pos > domainEnd )
+            {
+                std::cerr << "ERROR (Plume::enforceWallBCs_reflection): upper boundary condition failed! pos = \"" << pos << "\"\n";
+                exit(1);
+            }
+            if( pos < domainStart )
+            {
+                std::cerr << "ERROR (Plume::enforceWallBCs_reflection): lower boundary condition failed! xPos = \"" << pos << "\"\n";
+                exit(1);
+            }
+        }
+    }
+
 }
 
 
