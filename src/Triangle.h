@@ -7,7 +7,9 @@
 
 #include "util/ParseInterface.h"
 #include "Vector3.h"
-
+#include "Ray.h"
+#include "HitRecord.h"
+#include <cmath>
 
 
 #define LOWEST_OF_THREE(x,y,z) ( (x) <= (y) && (x) <= (z) ? (x) : ( (y) <= (x) && (y) <= (z) ? (y) : (z) ) )
@@ -53,5 +55,13 @@ public:
 	 */
 	void getBoundaries(float& xmin, float& xmax, float& ymin, float& ymax, float& zmin, float& zmax);
 
+
+        /*
+         *determines if a ray hit the triangle and updates the hitrecord 
+         *@param ray The ray to be checked for intersection
+         @param rec The HitRecord to be updated 
+         */
+        bool rayTriangleIntersect(Ray ray, HitRecord& rec);
+        
 	virtual void parseValues();
 };

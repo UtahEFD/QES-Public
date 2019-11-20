@@ -1,5 +1,10 @@
 #include "HitRecord.h"
 
+HitRecord::HitRecord(){
+   //isHit = false;
+   //hitNode = 0;
+   //hitDist = -1;
+}
 
 HitRecord::HitRecord(void* hitNode, bool isHit){
    this->hitNode = hitNode;

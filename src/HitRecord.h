@@ -8,15 +8,19 @@
 #ifndef HR_H
 #define HR_H
 
+#include "Vector3.h"
 #include <limits>
 
 class HitRecord{
-  private:
+  public:
+//private:
    bool isHit;
    void* hitNode;
    float hitDist;  //distance from ray origin to hit point 
-  public:
-
+   float t;
+   Vector3<float> endpt;
+//public:
+   HitRecord();
    HitRecord(void* hitNode, bool isHit);
    HitRecord(void* hitNode, bool isHit, float hitDist);
    

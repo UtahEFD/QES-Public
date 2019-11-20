@@ -32,6 +32,7 @@ Vector3<float> SphereDirections::getNextDirCardinal(){
       next = &nextList[vecCount];
       vecCount++;
    }
+   std::cout<<"Next Direction: "<<(*next)[0]<<", "<<(*next)[1]<<", "<<(*next)[2]<<std::endl;
    return *next;
 }
 

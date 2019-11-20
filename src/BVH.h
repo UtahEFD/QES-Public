@@ -82,24 +82,17 @@ public:
 	 */
 	static BVH* createBVH(const std::vector<Triangle*> tris);
 
-        /*
-         *Takes a 3D ray and determines if it intersects this BVH
-         *node's triangle
-         *@return HitRec obj if it has been hit or NULL if not a hit 
-         */
-        HitRecord* rayTriangleIntersect(Ray ray);
-
-        /*
+        /*         
          *Takes a 3D ray and determines if it intersects this BVH's
          *node's bounding box
          @return HitRecord of the box it hit or NULL if a miss 
          */
-        HitRecord* rayBoxIntersect(Ray ray);
+        bool rayBoxIntersect(Ray ray);
 
         /*
          *Better version of determining if a hit or not 
          */
-        bool rayHit(Ray ray, HitRecord* rec);
+        bool rayHit(Ray ray, const float t0, float& t1, HitRecord& rec);
 
         
         /*

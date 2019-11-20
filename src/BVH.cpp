@@ -174,204 +174,100 @@ float BVH::heightToTri(float x, float y)
 }
 
 
+bool BVH::rayBoxIntersect(Ray ray){
+   float originX = ray.getOriginX();
+   float originY = ray.getOriginY();
+   float originZ = ray.getOriginZ();
+   Vector3<float> dir = ray.getDirection();
 
-HitRecord* BVH::rayTriangleIntersect(Ray ray){
-   HitRecord* hitrec;
-   hitrec = new HitRecord((void*) this, false);
-   if(!isLeaf){
-      std::cout<<"Not an intersectable triangle."<<std::endl;
+   float tMinX, tMaxX, tMinY, tMaxY, tMinZ, tMaxZ;
+
+   //calc tMinX and tMaxX
+   float aX = 1/dir[0];
+   if(aX >= 0){
+      tMinX = aX*(xmin - originX);
+      tMaxX= aX*(xmax - originX);
    }else{
-      float beta, gamma, t, M, a,b,c,d,e,f,g,h,i,j,k,l;
-
-      a = (*(tri->a))[0] - (*(tri->a))[1];       d = (*(tri->a))[0] - (*(tri->a))[2];   g = ray.getDirection()[0];
-      b = (*(tri->b))[0] - (*(tri->b))[1];       e = (*(tri->b))[0] - (*(tri->b))[2];   h = ray.getDirection()[1];
-      c = (*(tri->c))[0] - (*(tri->c))[1];       f = (*(tri->c))[0] - (*(tri->c))[2];   i = ray.getDirection()[2];
-
-      j = (*(tri->a))[0] - ray.getOriginX();
-      k = (*(tri->b))[0] - ray.getOriginY();
-      l = (*(tri->c))[0] - ray.getOriginZ();
-
-      float EIHF = (e*i) - (h*f);
-      float GFDI = (g*f) - (d*i);
-      float DHEG = (d*h) - (e*g);
-      float JCAL = (j*c) - (a*l);
-      float BLKC = (b*l) - (k*c);
-      float AKJB = (a*k) - (j*b);
-
-      M = (a*EIHF) + (b*GFDI) + (c*DHEG);
-
-      beta = ((j*EIHF) + (k*GFDI) + (l*DHEG))/M;
-      gamma = ((i*AKJB) + (h*JCAL) + (g*BLKC))/M;
-      t = ((f*AKJB) + (e*JCAL) + (d*BLKC))/M;
-
-      if(t < c || t > f || gamma < 0 || gamma > 1 || beta < 0 || beta > (1- gamma)){
-         std::cout<<"No intersection found."<<std::endl;
-      }else{
-         hitrec = new HitRecord((void*) this, true, t);
-      }
-
-   }
-   std::cout<<"hitrec in rayTriangleIntersect is "<<hitrec<<std::endl;
-   return hitrec;
-}
-
-
-HitRecord* BVH::rayBoxIntersect(Ray ray){
-   HitRecord* hitrec;
-   hitrec = new HitRecord((void*) this, false);
-   if(isLeaf){
-      std::cout<<"In rayBoxIntersect, this is a leaf node."<<std::endl;
-   }else{
-
-      float rOriginX = ray.getOriginX();
-      float rOriginY = ray.getOriginY();
-      float rOriginZ = ray.getOriginZ();
-      Vector3<float> dir = ray.getDirection();
-      Vector3<float> inv_dir = ray.getInverseDir();
-      float tMinX, tMaxX, tMinY, tMaxY, tMinZ, tMaxZ;
-      std::vector<int> signs = ray.getSigns();
-      Vector3<float> bounds[2];
-      bounds[0] = Vector3<float>(xmin, ymin, zmin);
-      bounds[1] = Vector3<float>(xmax, ymax, zmax);
-
-      tMinX = (bounds[signs.at(0)][0] - rOriginX)*inv_dir[0];
-      tMaxX = (bounds[1-(signs.at(0))][0] - rOriginX)*inv_dir[0];
-      tMinY = (bounds[signs.at(1)][1] - rOriginY)*inv_dir[1];
-      tMaxY = (bounds[1-(signs.at(1))][1] - rOriginY)*inv_dir[1];
-
-      if((tMinX > tMaxY) || (tMinY > tMaxX)){
-         hitrec = new HitRecord((void*) this, false);
-      }else{
-         if(tMinY > tMinX){
-            tMinX = tMinY;
-         }
-         if(tMaxY < tMaxX){
-            tMaxX = tMaxY;
-         }
-
-         tMinZ = (bounds[signs.at(2)][2] - rOriginZ)*inv_dir[2];
-         tMaxZ = (bounds[1-(signs.at(2))][2] - rOriginZ)*inv_dir[2];
-
-         if((tMinX > tMaxZ) || (tMinZ > tMaxX)){
-            hitrec = new HitRecord((void*) this, false);
-         }else{
-            if(tMinZ > tMinX){
-               tMinX = tMinZ;
-            }
-            if(tMaxZ < tMaxX){
-               tMaxX = tMaxZ;
-            }
-            std::cout<<"*Box was hit."<<std::endl;
-            hitrec = new HitRecord((void*) this, true, tMaxX - tMinX);
-         }
-      }
-
-/*
-  float aX = 1/dir[0];
-  if(aX >= 0){
-  tMinX = aX*(xmin - rOriginX);
-  tMaxX = aX*(xmax - rOriginX);
-  }else{
-  tMinX = aX*(xmax - rOriginX);
-  tMaxX = aX*(xmin - rOriginX);
-  }
-
-  float aY = 1/dir[1];
-  if(aY >= 0){
-  tMinY = aY*(ymin - rOriginY);
-  tMaxY = aY*(ymax - rOriginY);
-  }else{
-  tMinY = aY*(ymax - rOriginY);
-  tMaxY = aY*(ymin - rOriginY);
-  }
-
-  float aZ = 1/dir[2];
-  if(aZ >= 0){
-  tMinZ = aZ*(zmin - rOriginZ);
-  tMaxZ = aZ*(zmax - rOriginZ);
-  }else{
-  tMinZ = aZ*(zmax - rOriginZ);
-  tMaxZ = aZ*(zmin - rOriginZ);
-  }
-
-  std::cout<<"Variables in box: \ntminX = "<<tMinX<<"\ttmaxX = "<<tMaxX<<"\n\ttminY = "<<tMinY<<"\ttmaxY = "<<tMaxY<<"\n\ttMinZ = "<<tMinZ<<"\ttMaxZ = "<<tMaxZ<<std::endl;
-  //check fail conditions
-  if(tMinX > tMaxY || tMinX > tMaxZ || tMinY > tMaxX || tMinY >
-  tMaxZ || tMinZ > tMaxX || tMinZ > tMaxY){
-  std::cout<<"Failed conditions."<<std::endl;
-  }else{
-  float magnitude = std::sqrt(pow((tMaxX - tMinX),2)*pow((tMaxY - tMinY),2)*pow((tMaxZ - tMinZ),2));
-  std::cout<<"Magnitude = " <<magnitude<<std::endl;
-  hitrec = new HitRecord((void*) this, true, magnitude);
-  }
-*/
-
-
+      tMinX = aX*(xmax - originX);
+      tMaxX = aX*(xmin - originX);
    }
 
-   std::cout<<"hitrec in rayBoxIntersect is @ "<<hitrec<<"\tisHit status = "<<hitrec->getIsHit()<<std::endl;
-   return hitrec;
-}
+   //calc tMinY and tMaxY
+   float aY = 1/dir[1];
+   if(aY >= 0){
+      tMinY = aY*(ymin - originY);
+      tMaxY = aY*(ymax - originY);
+   }else{
+      tMinY = aY*(ymax - originY);
+      tMaxY = aY*(ymin - originY);
+   }
 
-bool BVH::rayHit(Ray ray, HitRecord* rec){
-   if(!isLeaf){
-      std::cout<<"In rayHit, this BVH's leaf status = "<<isLeaf<<std::endl;
-      HitRecord* lrec;
-      HitRecord* rrec;
-      lrec = leftBox->rayBoxIntersect(ray);
-      rrec = rightBox->rayBoxIntersect(ray);
-      bool hitLeft, hitRight;
-      //check for null boxes
-      if(leftBox != NULL && lrec->getIsHit()){
-         std::cout<<"In rayHit, leftbox init."<<std::endl;
-         hitLeft = leftBox->rayHit(ray, lrec);
-      }else{
-         std::cout<<"In rayHit, rightbox NOT init."<<std::endl;
-         hitLeft = false;
-      }
+   //calc tMinZ and tMaxZ
+   float aZ = 1/dir[2];
+   if(aZ >= 0){
+      tMinZ = aZ*(zmin - originZ);
+      tMaxZ = aZ*(zmax - originZ);
+   }else{
+      tMinZ = aZ*(zmax - originZ);
+      tMaxZ = aZ*(zmin - originZ);
+   }
 
-      if(rightBox != NULL && rrec->getIsHit()){
-         std::cout<<"In rayHit, rightbox init."<<std::endl;
-         hitRight = rightBox->rayHit(ray, rrec);
-      }else{
-         std::cout<<"In rayHit, rightbox NOT init."<<std::endl;
-         hitRight = false;
-      }
 
-      if(rightBox == NULL && leftBox == NULL){
-         std::cout<<"Error? Both boxes are null."<<std::endl;
-      }
-
-      //init rec
-      if(hitLeft && hitRight){
-         if(lrec->getHitDist() < rrec->getHitDist()){
-            std::cout<<"Left rec is the shortest and is, therefore, chosen."<<std::endl;
-            rec = lrec;
-         }else{
-            std::cout<<"Right rec is chosen."<<std::endl;
-            rec = rrec;
-         }
-         return true;
-      }else if(hitLeft){
-         std::cout<<"left box is a hit."<<std::endl;
-         rec = lrec;
-         return true;
-      }else if(hitRight){
-         std::cout<<"right box is a hit."<<std::endl;
-         rec = rrec;
-         return true;
-      }else{
-         return false;
-      }
-   }else{ //it is a leaf node
-      //return the record with the triangle hit distance
-      //HitRecord* triHitRec;
-      //triHitRec = this->rayTriangleIntersect(ray);
-      //rec = triHitRec;
+   if(tMinX > tMaxY || tMinY > tMaxX ||
+      tMinY > tMaxZ || tMinZ > tMaxY ||
+      tMinZ > tMaxX || tMinX > tMaxZ){
       return false;
+   }else{
+      return true;
    }
-
 }
+
+
+bool BVH::rayHit(Ray ray, const float t0, float& t1, HitRecord& rec){
+   if(!rayBoxIntersect(ray)){
+      std::cout<<"didn't intersect parent"<<std::endl;
+      return false;
+   }else{
+      if(isLeaf){
+         //init rec
+         if(!tri){
+            std::cout<<"Must not be a tri."<<std::endl;
+         }
+         bool triHit = tri->rayTriangleIntersect(ray, rec);
+         std::cout<<"triHit = "<<triHit<<std::endl;
+         return triHit; //if false, then it didn't intersect the primitative
+      }else{  //not a leaf node
+         bool leftHit = false, rightHit = false;
+         HitRecord lrec, rrec;
+
+         //prob don't need to check left due to BVH construction
+         //left should never be null for anything except a leaf node
+         if(leftBox){
+            leftHit = leftBox->rayHit(ray, t0, t1, lrec);
+         }
+
+         if(rightBox){
+            rightHit = rightBox->rayHit(ray, t0, t1, rrec);
+         }
+
+         if(leftHit && rightHit){
+            if(lrec.hitDist < rrec.hitDist){
+               rec = lrec;
+            }else{
+               rec = rrec;
+            }
+         }else if(leftHit){
+            rec = lrec;
+         }else if(rightHit){
+            rec = rrec;
+         }else{
+            return false;
+         }
+      }
+   }
+}
+
+
 
 bool BVH::getIsLeaf(){return isLeaf;}
 BVH* BVH::getLeftBox(){return leftBox;}
