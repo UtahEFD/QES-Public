@@ -158,9 +158,15 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     }
 }
 
-#define BCtype 0    // original
-//#define BCtype 1    // periodic
-//#define BCtype 2    // reflection
+#define xBCtype 0    // original
+//#define xBCtype 1    // periodic
+//#define xBCtype 2    // reflection
+#define yBCtype 0    // original
+//#define yBCtype 1    // periodic
+//#define yBCtype 2    // reflection
+#define zBCtype 0    // original
+//#define zBCtype 1    // periodic
+//#define zBCtype 2    // reflection
 
 
 void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID, Output* output)
@@ -422,24 +428,52 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 // when we allow different test cases, we will want these options, and a way to choose the boundary condition type
                 // for different regions sometime during the constructor phases.
                 // I guess just implement one that makes isActive go false if it goes outside the domain
-                if( BCtype == 0 )
+                if( xBCtype == 0 || yBCtype == 0 || zBCtype == 0 )
                     enforceWallBCs(xPos,yPos,zPos,isActive);
-                else if( BCtype == 1 )
+                else
                 {
-                    enforceWallBCs_periodic(xPos, domainXstart,domainXend);
-                    enforceWallBCs_periodic(yPos, domainYstart,domainYend);
-                    enforceWallBCs_periodic(zPos, domainZstart,domainZend);
-                } else if( BCtype == 2 )
-                {
-                    enforceWallBCs_reflection(xPos,uPrime,uFluct_old,isActive, domainXstart,domainXend);
-                    enforceWallBCs_reflection(yPos,vPrime,vFluct_old,isActive, domainYstart,domainYend);
-                    enforceWallBCs_reflection(zPos,wPrime,wFluct_old,isActive, domainZstart,domainZend);
-                } else
-                {
-                    std::cerr << "ERROR (Plume::enforceWallBCs step): BCtype \"" << BCtype << "\" has not been implemented in the code yet!\n";
-                    std::cerr << "available BCtypes are currently \"0 = original\", \"1 = periodic\", \"2 = reflection\"\n";
-                    exit(1);
-                }
+                    // the domain x direction boundaries
+                    if( xBCtype == 1 )
+                    {
+                        enforceWallBCs_periodic(xPos, domainXstart,domainXend);
+                    } else if( xBCtype == 2 )
+                    {
+                        enforceWallBCs_reflection(xPos,uPrime,uFluct_old,isActive, domainXstart,domainXend);
+                    } else
+                    {
+                        std::cerr << "ERROR (Plume::enforceWallBCs step): xBCtype \"" << xBCtype << "\" has not been implemented in the code yet!\n";
+                        std::cerr << "available xBCtypes are currently \"0 = original\", \"1 = periodic\", \"2 = reflection\"\n";
+                        exit(1);
+                    }
+
+                    // the domain y direction boundaries
+                    if( yBCtype == 1 )
+                    {
+                        enforceWallBCs_periodic(yPos, domainYstart,domainYend);
+                    } else if( yBCtype == 2 )
+                    {
+                        enforceWallBCs_reflection(yPos,vPrime,vFluct_old,isActive, domainYstart,domainYend);
+                    } else
+                    {
+                        std::cerr << "ERROR (Plume::enforceWallBCs step): yBCtype \"" << yBCtype << "\" has not been implemented in the code yet!\n";
+                        std::cerr << "available yBCtypes are currently \"0 = original\", \"1 = periodic\", \"2 = reflection\"\n";
+                        exit(1);
+                    }
+
+                    // the domain z direction boundaries
+                    if( zBCtype == 1 )
+                    {
+                        enforceWallBCs_periodic(zPos, domainZstart,domainZend);
+                    } else if( zBCtype == 2 )
+                    {
+                        enforceWallBCs_reflection(zPos,wPrime,wFluct_old,isActive, domainZstart,domainZend);
+                    } else
+                    {
+                        std::cerr << "ERROR (Plume::enforceWallBCs step): zBCtype \"" << zBCtype << "\" has not been implemented in the code yet!\n";
+                        std::cerr << "available zBCtypes are currently \"0 = original\", \"1 = periodic\", \"2 = reflection\"\n";
+                        exit(1);
+                    }
+                }   // if BCtype is 0, mass leaving, else other types
                 
 
 
@@ -667,13 +701,14 @@ void Plume::enforceWallBCs(double& xPos,double& yPos,double& zPos,bool &isActive
 
 void Plume::enforceWallBCs_periodic(double& pos, const double& domainStart,const double& domainEnd)
 {
+    double domainSize = domainEnd - domainStart;
     while( pos < domainStart )
     {
-        pos = pos + domainEnd;
+        pos = pos + domainSize;
     }
     while( pos > domainEnd )
     {
-        pos = pos - domainEnd;
+        pos = pos - domainSize;
     }
 }
 
