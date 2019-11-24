@@ -5,9 +5,9 @@ float Mesh::getHeight(float x, float y)
    return tris->heightToTri(x,y);
 }
 
-vector<float> Mesh::calculateMixingLength(int dimX, int dimY,int dimZ, float dx, float dy, float dz, const vector<int> &icellflag){
-
-   vector<float> mixingLengthList(dimX*dimY*dimZ);
+void Mesh::calculateMixingLength(int dimX, int dimY,int dimZ, float dx, float dy, float dz, const vector<int> &icellflag, std::vector<float> &mixingLength)
+{
+    // vector<float> mixingLengthList(dimX*dimY*dimZ);
 
    for(int k = 0; k< dimZ - 1; k++) {
       for(int j = 0; j < dimY - 1; j++){
@@ -59,12 +59,12 @@ vector<float> Mesh::calculateMixingLength(int dimX, int dimY,int dimZ, float dx,
 
                std::cout<<"Mixing length for this cell is "<<maxLength<<std::endl;
                //add to list of vectors
-               mixingLengthList.push_back(maxLength);
+               mixingLength[icell_idx] = maxLength;
                std::cout<<"\n\n"<<std::endl;
             }
 
          }
       }
    }
-   return mixingLengthList;
+   // return mixingLengthList;
 }
