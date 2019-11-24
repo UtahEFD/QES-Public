@@ -171,7 +171,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
    icellflag.resize( numcell_cent, 1 );
    ibuilding_flag.resize ( numcell_cent, -1 );
 
-   mixingLength.resize( numcell_cent, 0 );
+   mixingLengths.resize( numcell_cent, 0 );
 
    // /////////////////////////////////////////
    // Output related data --- should be part of some URBOutputData
@@ -595,7 +595,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
       AttVectorDbl att_w = {&w_out, "w", "z-component velocity", "m s-1", dim_vector};
       AttVectorDbl att_h = {&terrain,  "terrain", "terrain height", "m", dim_vector_2d};
       AttVectorInt att_i = {&icellflag_out, "icell", "icell flag value", "--", dim_vector};
-      AttVectorInt att_j = {&mixingLengths, "mixlength", "mixing length value", "--", dim_vector};
+      AttVectorDbl att_j = {&mixingLengths, "mixlength", "mixing length value", "m", dim_vector};
 
       // map the name to attributes
       map_att_scalar_dbl.emplace("t", att_t);
@@ -607,7 +607,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
       map_att_vector_dbl.emplace("w", att_w);
       map_att_vector_dbl.emplace("terrain", att_h);
       map_att_vector_int.emplace("icell", att_i);
-      map_att_vector_dbl.emplace("mixlength", att_i);
+      map_att_vector_dbl.emplace("mixlength", att_j);
 
       // we will always save time and grid lengths
       output_scalar_dbl.push_back(map_att_scalar_dbl["t"]);
