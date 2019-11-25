@@ -48,6 +48,6 @@ public:
         /*
          *Caculates the mixing length for all fluid objects 
          */
-        vector<float> calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const vector<int> &icellflag);
+    void calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const vector<int> &icellflag, vector<double> &mixingLengths);
         
 };

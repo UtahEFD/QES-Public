@@ -5,9 +5,8 @@ float Mesh::getHeight(float x, float y)
    return tris->heightToTri(x,y);
 }
 
-vector<float> Mesh::calculateMixingLength(int dimX, int dimY,int dimZ, float dx, float dy, float dz, const vector<int> &icellflag){
+void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag, std::vector<double> &mixingLength){
 
-   vector<float> mixingLengthList(dimX*dimY*dimZ);
    int flag=0; //temp to just get one distribution for graph
    int cellNum =0;
    std::ofstream mixOutputFile;
@@ -22,6 +21,7 @@ vector<float> Mesh::calculateMixingLength(int dimX, int dimY,int dimZ, float dx,
    }else{
       cellPointsFile.open("cellPointOutput.csv");
    }
+
    for(int k = 0; k< dimZ - 1; k++) {
       for(int j = 0; j < dimY - 1; j++){
          for(int i = 0; i < dimX -1; i++){
@@ -98,14 +98,16 @@ vector<float> Mesh::calculateMixingLength(int dimX, int dimY,int dimZ, float dx,
 
                std::cout<<"Mixing length for this cell is "<<maxLength<<std::endl;
                //add to list of vectors
-               mixingLengthList.push_back(maxLength);
+               mixingLength[icell_idx] = maxLength;
                std::cout<<"\n\n"<<std::endl;
             }
 
          }
       }
    }
+
    cellPointsFile.close();
    mixOutputFile.close();
    return mixingLengthList;
+
 }

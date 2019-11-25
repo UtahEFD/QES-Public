@@ -103,6 +103,8 @@ public:
     std::vector<double> u,v,w;
 
 
+    std::vector<double> mixingLengths;
+
     // Sensor* sensor;      may not need this now
 
 
