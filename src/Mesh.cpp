@@ -108,6 +108,6 @@ void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float d
 
    cellPointsFile.close();
    mixOutputFile.close();
-   return mixingLengthList;
+   // return mixingLengthList;
 
 }
