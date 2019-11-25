@@ -225,7 +225,7 @@ bool BVH::rayBoxIntersect(Ray ray){
 
 bool BVH::rayHit(Ray ray, const float t0, float& t1, HitRecord& rec){
    if(!rayBoxIntersect(ray)){
-      std::cout<<"didn't intersect parent"<<std::endl;
+      //std::cout<<"didn't intersect parent"<<std::endl;
       return false;
    }else{
       if(isLeaf){
@@ -234,7 +234,7 @@ bool BVH::rayHit(Ray ray, const float t0, float& t1, HitRecord& rec){
             std::cout<<"Must not be a tri."<<std::endl;
          }
          bool triHit = tri->rayTriangleIntersect(ray, rec);
-         std::cout<<"triHit = "<<triHit<<std::endl;
+         //std::cout<<"triHit = "<<triHit<<std::endl;
          return triHit; //if false, then it didn't intersect the primitative
       }else{  //not a leaf node
          bool leftHit = false, rightHit = false;

@@ -11,6 +11,10 @@
 #include "Ray.h"
 #include "HitRecord.h"
 #include <limits>
+#define _USE_MATH_DEFINES
+#include <cmath>
+#include <fstream>
+#include <iostream>
 
 using std::vector;
 

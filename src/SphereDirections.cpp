@@ -2,14 +2,14 @@
 
 SphereDirections::SphereDirections(){
    //default cardinal directions for now
-   //nextList[0] = new Vector3(1,0,0);   //front
-   //nextList[1] = new Vector3(-1,0,0);  //back
-   //nextList[2] = new Vector3(0,1,0);   //left
-   //nextList[3] = new Vector3(0,-1,0);  //right
-   //nextList[4] = new Vector3(0,0,1);   //top
-   nextList[0] = *(new Vector3<float>(0,0,-1));  //bottom
+   nextList[0] = *(new Vector3<float>(1,0,0));   //front
+   nextList[1] = *(new Vector3<float>(-1,0,0));  //back
+   nextList[2] = *(new Vector3<float>(0,1,0));   //left
+   nextList[3] = *(new Vector3<float>(0,-1,0));  //right
+   nextList[4] = *(new Vector3<float>(0,0,1));   //top
+   nextList[5] = *(new Vector3<float>(0,0,-1));  //bottom
    vecCount = 0;
-   numDirVec = 1;
+   numDirVec = 6;
 }
 
 
@@ -22,6 +22,8 @@ SphereDirections::SphereDirections(int numDirVec, float lowerThetaBound, float u
    this->lowerPhiBound = lowerPhiBound;
    this->upperPhiBound = upperPhiBound;
 
+   //just to for sure check the bottom direction
+   nextList[0] = *(new Vector3<float>(0,0,-1));
 }
 
 
@@ -44,23 +46,36 @@ Vector3<float> SphereDirections::getNextDir(){
    //float num
 
    Vector3<float>* next;
-   if(vecCount < numDirVec){
+   if(vecCount < numDirVec - 1){
       std::random_device rd;
       std::mt19937 e2(rd());
       std::uniform_real_distribution<float> theta(lowerThetaBound, upperThetaBound);
-      std::uniform_real_distribution<float> phi(lowerPhiBound, upperThetaBound);
+      std::uniform_real_distribution<float> phi(lowerPhiBound, upperPhiBound);
 
-      float dx = std::cos(theta(e2))*std::cos(phi(e2));
+      float theta2 = std::asin(theta(e2));
+
+      float dx = std::cos(theta2)*std::cos(phi(e2));
       float dy = std::sin(phi(e2));
-      float dz = std::cos(theta(e2))*std::sin(phi(e2));
+      float dz = std::cos(theta2)*std::sin(phi(e2));
 
-      next = new Vector3<float>(dx,dy,dz);
+      float magnitude = std::sqrt(std::pow(dx,2)+std::pow(dy,2)+std::pow(dz,2));
+      next = new Vector3<float>(dx/magnitude,dy/magnitude,dz/magnitude);
       vecCount++;
+   }else if(vecCount == numDirVec -1){
+      std::cout<<"bottom direction for sure"<<std::endl;
+      return Vector3<float>(0,0,-1);
    }else{
       next = NULL;
    }
+
    return *next;
 }
 
+Vector3<float> SphereDirections::getNextDir2(){
+   Vector3<float> nextDir;
 
+
+
+   return nextDir;
+}
 int SphereDirections::getNumDirVec(){return numDirVec;}

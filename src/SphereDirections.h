@@ -53,6 +53,12 @@ class SphereDirections{
     *phi bounds
     */
    Vector3<float> getNextDir();
+
+   /*
+    *Gets the next direction with randomized minor nudge
+    *Prevents repeated directions
+    */
+   Vector3<float> getNextDir2();
    
 };
 
