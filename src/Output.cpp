@@ -43,7 +43,7 @@ void Output :: addField(std::string name, std::string units, std::string long_na
 }
 
 void Output :: saveField1D(std::string name, const std::vector<size_t> index,
-                           double* data) {
+                           float* data) {
 
     // write output data
     NcVar var = fields[name];
@@ -52,7 +52,7 @@ void Output :: saveField1D(std::string name, const std::vector<size_t> index,
 }
 
 void Output :: saveField2D(std::string name, const std::vector<size_t> index,
-                           std::vector<size_t> size, std::vector<double>& data) {
+                           std::vector<size_t> size, std::vector<float>& data) {
 
     // write output data
     NcVar var = fields[name];
@@ -69,7 +69,7 @@ void Output :: saveField2D(std::string name, const std::vector<size_t> index,
     outfile->sync();
 }
 
-void Output :: saveField2D(std::string name, std::vector<double>& data) {
+void Output :: saveField2D(std::string name, std::vector<float>& data) {
 
     // write output data
     NcVar var = fields[name];

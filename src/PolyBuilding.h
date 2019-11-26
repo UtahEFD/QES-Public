@@ -3,6 +3,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <math.h>
+#include <algorithm>
 
 #include "util/ParseInterface.h"
 
@@ -84,7 +85,7 @@ public:
     * for building cells. It applies the Stair-step method to define building bounds.
     *
     */
-    void setCellFlags(const URBInputData* UID, URBGeneralData* UGD);
+    void setCellFlags(const URBInputData* UID, URBGeneralData* UGD, int building_number);
 
     /**
     *
@@ -168,6 +169,13 @@ public:
     *
     */
     //void poisson (const URBInputData* UID, URBGeneralData* UGD);
+
+    void reorderPoints(std::vector <cutVert> &face_points, int index);
+
+    void mergeSort(std::vector<float> &angle, std::vector <cutVert> &face_points);
+
+
+    float calculateArea( URBGeneralData* UGD, std::vector <cutVert> &face_points, int cutcell_index, int index);
 
 
 

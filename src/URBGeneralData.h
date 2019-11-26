@@ -77,7 +77,7 @@ public:
     std::vector<float> dz_array;
     std::vector<float> x,y,z;
     std::vector<float> z_face;
-    std::vector<double> x_out,y_out,z_out;
+    std::vector<float> x_out,y_out,z_out;
 
     /// Declaration of coefficients for SOR solver
     std::vector<float> e,f,g,h,m,n;
@@ -85,10 +85,11 @@ public:
     // The following are mostly used for output
     std::vector<int> icellflag;  /**< Cell index flag (0 = Building, 1 = Fluid, 2 = Terrain, 3 = Upwind_cavity
                                                        4 = Cavity, 5 = Farwake, 6 = Street canyon, 7 = Cut-cells, 9 = Canopy vegetation
-                                                       10 = Sidewall) */
+                                                       10 = Sidewall, 11 = Rooftop) */
     std::vector<int> icellflag_out;
-    std::vector<double> u_out,v_out,w_out;
-    std::vector<double> terrain;
+    std::vector<float> volume_frac;
+    std::vector<float> u_out,v_out,w_out;
+    std::vector<float> terrain;
     std::vector<int> terrain_id;      // Sensor function
                                       // (inputWindProfile)
 
@@ -97,10 +98,10 @@ public:
 
     // Initial wind conditions
     /// Declaration of initial wind components (u0,v0,w0)
-    std::vector<double> u0,v0,w0;
+    std::vector<float> u0,v0,w0;
 
     /// Declaration of final velocity field components (u,v,w)
-    std::vector<double> u,v,w;
+    std::vector<float> u,v,w;
 
 
     // Sensor* sensor;      may not need this now
@@ -153,7 +154,7 @@ public:
     Output *output;
 
     int output_counter=0;
-    double time=0;
+    float time=0;
     std::vector<NcDim> dim_scalar_t;
     std::vector<NcDim> dim_scalar_z;
     std::vector<NcDim> dim_scalar_y;
@@ -162,14 +163,14 @@ public:
     std::vector<NcDim> dim_vector_2d;
     std::vector<std::string> output_fields;
     struct AttScalarDbl {
-        double* data;
+        float* data;
         std::string name;
         std::string long_name;
         std::string units;
         std::vector<NcDim> dimensions;
     };
     struct AttVectorDbl {
-        std::vector<double>* data;
+        std::vector<float>* data;
         std::string name;
         std::string long_name;
         std::string units;

@@ -7,6 +7,7 @@
 #include "Cell.h"
 #include "DTEHeightField.h"
 
+
 /**
 * This class basically designed to store and handle information related to the
 * cut-cells.
@@ -27,7 +28,8 @@ public:
 	 */
 	void calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, int nx, int ny, int nz, float dx, float dy, float dz,
 							 std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e,
-							 std::vector<float> &h, std::vector<float> &g, float pi, std::vector<int> &icellflag);
+							 std::vector<float> &h, std::vector<float> &g, float pi, std::vector<int> &icellflag, std::vector<float> &volume_frac,
+						 	 float halo_x, float halo_y);
 
   /**
 	* This function takes in intersection points for each face and reorder them based on angle. It
@@ -49,7 +51,7 @@ private:
 	* This function takes in sorted intersection points and calculates area fraction coefficients
 	* based on polygon area formulation. Then it sets them to related solver coefficients.
 	*/
-	void calculateArea(std::vector< Vector3<float>> &cut_points, int cutcell_index, float dx, float dy, float dz,
+	float calculateArea(std::vector< Vector3<float>> &cut_points, int cutcell_index, float dx, float dy, float dz,
 					  std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e,
 					  std::vector<float> &h, std::vector<float> &g, int index);
 
@@ -67,7 +69,7 @@ private:
 	 * @param coef - the coefficient that should be updated
 	 * @param isBot - states if the area for the bottom or top of the cell should be calculated
 	 */
-	void calculateAreaTopBot(std::vector< Vector3<float> > &terrainPoints,
+	float calculateAreaTopBot(std::vector< Vector3<float> > &terrainPoints,
 							 const std::vector< Edge<int> > &terrainEdges,
 							 const int cellIndex, const float dx, const float dy, const float dz,
 							 Vector3 <float> location, std::vector<float> &coef,

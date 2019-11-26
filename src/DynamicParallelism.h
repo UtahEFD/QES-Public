@@ -38,8 +38,8 @@ public:
 
 protected:
     float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;		/**< Solver coefficients on device (GPU) */
-    double *d_R;              /**< Divergence of initial velocity field on device (GPU) */
-    double *d_lambda, *d_lambda_old;		/**< Lagrange multipliers on device (GPU) */
+    float *d_R;              /**< Divergence of initial velocity field on device (GPU) */
+    float *d_lambda, *d_lambda_old;		/**< Lagrange multipliers on device (GPU) */
 
     virtual void solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWind);
 };
