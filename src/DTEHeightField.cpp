@@ -143,17 +143,24 @@ void DTEHeightField::load()
   m_nXSize = poBand->GetXSize();
   m_nYSize = poBand->GetYSize();
 
-  printf( "Size is %dx%dx%d\n",
+  printf( "DEM size is %dx%dx%d\n",
 	  m_nXSize, m_nYSize );
 
   pafScanline = (float *) CPLMalloc(sizeof(float)*m_nXSize*m_nYSize);
 
   // rb->RasterIO(GF_Read, 0, 0, xsize, ysize, buffer, xsize, ysize, GDT_Float32, 0, 0);
-  poBand->RasterIO( GF_Read, 0, 0,
-		    m_nXSize, m_nYSize,
-		    pafScanline,
-		    m_nXSize, m_nYSize, GDT_Float32,
-		    0, 0 );
+  // 
+  // CPLErr - CE_Failure if the access fails, otherwise CE_None.
+  CPLErr rasterErr = poBand->RasterIO( GF_Read, 0, 0,
+                                       m_nXSize, m_nYSize,
+                                       pafScanline,
+                                       m_nXSize, m_nYSize, GDT_Float32,
+                                       0, 0 );
+  if (rasterErr == CE_Failure) {
+      std::cerr << "CPL RasterIO failure during DEM loading. Exiting." << std::endl;
+      exit(EXIT_FAILURE);
+  }
+  
 
   Triangle *tPtr=0;
   m_triList.clear();
@@ -299,12 +306,12 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
     std::chrono::duration<double> elapsed = finish - start;
     std::cout << "\telapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
 
-    /*if ((*domain)[0] >= (*domain)[1] && (*domain)[0] >= (*domain)[2])
+    /* if ((*domain)[0] >= (*domain)[1] && (*domain)[0] >= (*domain)[2])
       (*domain)[1] = (*domain) [2] = (*domain)[0];
     else if ((*domain)[1] >= (*domain)[0] && (*domain)[1] >= (*domain)[2])
       (*domain)[0] = (*domain) [2] = (*domain)[1];
     else
-        (*domain)[0] = (*domain) [1] = (*domain)[2];//*/
+        (*domain)[0] = (*domain) [1] = (*domain)[2]; */
     printf("domain: %d %d %d\n", (*domain)[0], (*domain)[1], (*domain)[2]);
 }
 
@@ -392,8 +399,8 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
 
   std::vector<int> cutCells;
 
-  for (int i = 0; i < nx - 1; i++)
-    for (int j = 0; j < ny - 1; j++)
+  for (int i = 0; i < nx - 2; i++)
+    for (int j = 0; j < ny - 2; j++)
     {
 
       //all work here is done for each column of cells in the z direction from the xy plane.
@@ -435,7 +442,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
 		}
 	}
 
-//#pragma acc parallel loop
+// #pragma acc parallel loop
   for (int k = 1; k < nz - 1; k++)
   {
     float cellBot = (k - 1) * dz;

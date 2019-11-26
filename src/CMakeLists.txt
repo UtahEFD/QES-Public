@@ -15,13 +15,17 @@ CUDA_ADD_LIBRARY( cudaurbcore
   ESRIShapefile.cpp ESRIShapefile.h
   handleURBArgs.cpp
   Mesh.cpp
-  Output.cpp
+  NetCDFOutput.cpp NetCDFOutput.h
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Solver.cpp
   Triangle.cpp
   URBInputData.h
-  URBGeneralData.cpp URBGeneralData.h
+  URBGeneralData.cpp
+  URBOutputData.cpp
+  URBOutput_Generic.cpp 
+  URBOutput_VizFields.cpp
+  URBOutput_TURBInputFile.cpp
   WRFInput.cpp WRFInput.h
   Wall.cpp Wall.h
   UpwindCavity.cpp

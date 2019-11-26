@@ -18,6 +18,7 @@ private:
 public:
 
 	int outputFlag;
+	bool outputTURBInputFile=false;
 	std::vector<std::string> outputFields;
 	bool massConservedFlag;
 	bool sensorVelocityFlag;
@@ -26,6 +27,7 @@ public:
 	virtual void parseValues()
 	{
 		parsePrimitive<int>(true, outputFlag, "outputFlag");
+		parsePrimitive<bool>(false, outputTURBInputFile, "outputTURBInputFile");
 		parseMultiPrimitives<std::string>(false, outputFields, "outputFields");
 		parsePrimitive<bool>(true, massConservedFlag, "massConservedFlag");
 		parsePrimitive<bool>(true, sensorVelocityFlag, "sensorVelocityFlag");

@@ -18,17 +18,17 @@
 #include "Wall.h"
 #include <cmath>
 
-#include "Output.hpp"
-
 class URBInputData;
 
 class URBGeneralData {
 public:
     URBGeneralData();
-    URBGeneralData(const URBInputData* UID, Output *cudaOutput);
+    URBGeneralData(const URBInputData* UID);
     ~URBGeneralData();
 
-    void mergeSort( std::vector<float> &effective_height, std::vector<Building*> allBuildingsV, std::vector<int> &building_id );
+    void mergeSort( std::vector<float> &effective_height,
+		    std::vector<Building*> allBuildingsV,
+		    std::vector<int> &building_id );
 
 
     /*!
@@ -86,9 +86,7 @@ public:
     std::vector<int> icellflag;  /**< Cell index flag (0 = Building, 1 = Fluid, 2 = Terrain, 3 = Upwind_cavity
                                                        4 = Cavity, 5 = Farwake, 6 = Street canyon, 7 = Cut-cells, 9 = Canopy vegetation
                                                        10 = Sidewall, 11 = Rooftop) */
-    std::vector<int> icellflag_out;
     std::vector<float> volume_frac;
-    std::vector<float> u_out,v_out,w_out;
     std::vector<float> terrain;
     std::vector<int> terrain_id;      // Sensor function
                                       // (inputWindProfile)
@@ -149,6 +147,7 @@ public:
     std::vector<std::vector<int>> num_points;
     std::vector<std::vector<float>> coeff;
 
+<<<<<<< HEAD
 
     /// Declaration of output manager
     Output *output;
@@ -190,4 +189,6 @@ public:
     std::vector<AttVectorDbl> output_vector_dbl;
     std::vector<AttVectorInt> output_vector_int;
 
+=======
+>>>>>>> caf166291ac4aedbe4660d280e28acad8137008c
 };

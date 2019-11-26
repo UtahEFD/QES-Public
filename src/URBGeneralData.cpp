@@ -1,7 +1,6 @@
 #include "URBGeneralData.h"
 
-URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
-    : output( cudaOutput )
+URBGeneralData::URBGeneralData(const URBInputData* UID)
 {
 
     if ( UID->simParams->upwindCavityFlag == 1)
@@ -173,16 +172,9 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     icellflag.resize( numcell_cent, 1 );
     ibuilding_flag.resize ( numcell_cent, -1 );
 
-    // /////////////////////////////////////////
-    // Output related data --- should be part of some URBOutputData
-    // class to separate from Input and GeneralData
-    u_out.resize( numcell_cout, 0.0 );
-    v_out.resize( numcell_cout, 0.0 );
-    w_out.resize( numcell_cout, 0.0 );
-
     terrain.resize( numcell_cout_2d, 0.0 );
     terrain_id.resize( nx*ny, 1 );
-    icellflag_out.resize( numcell_cout, 0.0 );
+
     /////////////////////////////////////////
 
     // Set the Wind Velocity data elements to be of the correct size
@@ -223,7 +215,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     //    UID->metParams->inputWindProfile(UID, this);
     UID->metParams->sensors[0]->inputWindProfile(UID, this);
 
-    std::cout << "Sensor is done ..." << std::endl;
+    std::cout << "Sensors have been loaded (total sensors = " << UID->metParams->sensors.size() << ")." << std::endl;
 
     max_velmag = 0.0;
     for (auto i=0; i<nx; i++)
@@ -320,7 +312,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
         UID->simParams->SHPData->getLocalDomain( shpDomainSize );
         UID->simParams->SHPData->getMinExtent( minExtent );
 
-        float domainOffset[2] = { 0, 0 };
+        // float domainOffset[2] = { 0, 0 };
         for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
         {
             // convert the global polys to local domain coordinates
@@ -534,94 +526,6 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
 
      wall->setVelocityZero (this);
 
-    //////////////////////////////////////////////////
-    //      Initialize output information           //
-    //////////////////////////////////////////////////
-    if (output != nullptr) {
-
-        // set output fields
-        std::cout<<"Getting output fields"<<std::endl;
-        output_fields = UID->fileOptions->outputFields;
-
-        if (output_fields.empty() || output_fields[0]=="all") {
-            output_fields.clear();
-            output_fields = {"u","v","w","icell"};
-        }
-
-        // set cell-centered dimensions
-        NcDim t_dim = output->addDimension("t");
-        NcDim z_dim = output->addDimension("z",nz-2);
-        NcDim y_dim = output->addDimension("y",ny-1);
-        NcDim x_dim = output->addDimension("x",nx-1);
-
-        dim_scalar_t.push_back(t_dim);
-        dim_scalar_z.push_back(z_dim);
-        dim_scalar_y.push_back(y_dim);
-        dim_scalar_x.push_back(x_dim);
-        dim_vector.push_back(t_dim);
-        dim_vector.push_back(z_dim);
-        dim_vector.push_back(y_dim);
-        dim_vector.push_back(x_dim);
-        dim_vector_2d.push_back(y_dim);
-        dim_vector_2d.push_back(x_dim);
-
-        // create attributes
-        AttScalarDbl att_t = {&time,  "t", "time",      "s", dim_scalar_t};
-        AttVectorDbl att_x = {&x_out, "x", "x-distance", "m", dim_scalar_x};
-        AttVectorDbl att_y = {&y_out, "y", "y-distance", "m", dim_scalar_y};
-        AttVectorDbl att_z = {&z_out, "z", "z-distance", "m", dim_scalar_z};
-        AttVectorDbl att_u = {&u_out, "u", "x-component velocity", "m s-1", dim_vector};
-        AttVectorDbl att_v = {&v_out, "v", "y-component velocity", "m s-1", dim_vector};
-        AttVectorDbl att_w = {&w_out, "w", "z-component velocity", "m s-1", dim_vector};
-        AttVectorDbl att_h = {&terrain,  "terrain", "terrain height", "m", dim_vector_2d};
-        AttVectorInt att_i = {&icellflag_out,  "icell", "icell flag value", "--", dim_vector};
-
-        // map the name to attributes
-        map_att_scalar_dbl.emplace("t", att_t);
-        map_att_vector_dbl.emplace("x", att_x);
-        map_att_vector_dbl.emplace("y", att_y);
-        map_att_vector_dbl.emplace("z", att_z);
-        map_att_vector_dbl.emplace("u", att_u);
-        map_att_vector_dbl.emplace("v", att_v);
-        map_att_vector_dbl.emplace("w", att_w);
-        map_att_vector_dbl.emplace("terrain", att_h);
-        map_att_vector_int.emplace("icell", att_i);
-
-        // we will always save time and grid lengths
-        output_scalar_dbl.push_back(map_att_scalar_dbl["t"]);
-        output_vector_dbl.push_back(map_att_vector_dbl["x"]);
-        output_vector_dbl.push_back(map_att_vector_dbl["y"]);
-        output_vector_dbl.push_back(map_att_vector_dbl["z"]);
-        output_vector_dbl.push_back(map_att_vector_dbl["terrain"]);
-
-        // create list of fields to save
-        for (size_t i=0; i<output_fields.size(); i++) {
-            std::string key = output_fields[i];
-            if (map_att_scalar_dbl.count(key)) {
-                output_scalar_dbl.push_back(map_att_scalar_dbl[key]);
-            } else if (map_att_vector_dbl.count(key)) {
-                output_vector_dbl.push_back(map_att_vector_dbl[key]);
-            } else if(map_att_vector_int.count(key)) {
-                output_vector_int.push_back(map_att_vector_int[key]);
-            }
-        }
-
-        // add vector double fields
-        for ( AttScalarDbl att : output_scalar_dbl ) {
-            output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
-        }
-
-        // add vector double fields
-        for ( AttVectorDbl att : output_vector_dbl ) {
-            output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
-        }
-
-        // add vector int fields
-        for ( AttVectorInt att : output_vector_int ) {
-            output->addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
-        }
-    }
-
 }
 
 
@@ -752,6 +656,7 @@ URBGeneralData::~URBGeneralData()
 {
 }
 
+<<<<<<< HEAD
 
 
 // Save output at cell-centered values
@@ -825,3 +730,5 @@ void URBGeneralData::save()
         output_counter +=1;
     }
 }
+=======
+>>>>>>> caf166291ac4aedbe4660d280e28acad8137008c
