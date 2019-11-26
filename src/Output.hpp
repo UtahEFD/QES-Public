@@ -37,10 +37,10 @@ class Output {
         NcDim addDimension(std::string, int size=0);
         NcDim getDimension(std::string);
         void addField(std::string, std::string, std::string, std::vector<NcDim>, NcType);
-        void saveField1D(std::string, const std::vector<size_t>, double*);
-        void saveField2D(std::string, std::vector<double>&);
+        void saveField1D(std::string, const std::vector<size_t>, float*);
+        void saveField2D(std::string, std::vector<float>&);
         void saveField2D(std::string, const std::vector<size_t>,
-                         std::vector<size_t>, std::vector<double>&);
+                         std::vector<size_t>, std::vector<float>&);
         void saveField2D(std::string, const std::vector<size_t>,
                          std::vector<size_t>, std::vector<int>&);
 };

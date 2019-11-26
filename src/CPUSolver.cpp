@@ -16,6 +16,11 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
     int icell_face;          /**< cell-face index */
     int icell_cent;
 
+    R.resize( UGD->numcell_cent, 0.0 );
+
+    lambda.resize( UGD->numcell_cent, 0.0 );
+    lambda_old.resize( UGD->numcell_cent, 0.0 );
+
     for (int k = 1; k < UGD->nz-2; k++)
     {
         for (int j = 0; j < UGD->ny-1; j++)
@@ -35,6 +40,8 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
     }
 
 
+
+
     if (solveWind)
     {
         auto startSolveSection = std::chrono::high_resolution_clock::now();
@@ -45,8 +52,8 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
         //                 SOR solver              //////
         /////////////////////////////////////////////////
         int iter = 0;
-        double error = 1.0;
-    	  double reduced_error = 0.0;
+        float error = 1.0;
+    	  float reduced_error = 0.0;
 
         std::cout << "Solving...\n";
         while (iter < itermax && error > tol && error > reduced_error) {
@@ -71,6 +78,54 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
                               UGD->m[icell_cent] * lambda[icell_cent+(UGD->nx-1)*(UGD->ny-1)] +
                               UGD->n[icell_cent] * lambda[icell_cent-(UGD->nx-1)*(UGD->ny-1)] - R[icell_cent] ) +
                             (1.0 - omega) * lambda[icell_cent];    /// SOR formulation
+
+                            if (isnan (lambda[icell_cent]) /*|| (lambda[icell_cent]-lambda_old[icell_cent]) > 1000*/)
+                            {
+                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "icellflag:" << UGD->icellflag[icell_cent] << std::endl;
+                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "e:" << UGD->e[icell_cent] << std::endl;
+                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "f:" << UGD->f[icell_cent] << std::endl;
+                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "g:" << UGD->g[icell_cent] << std::endl;
+                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "h:" << UGD->h[icell_cent] << std::endl;
+                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "m:" << UGD->m[icell_cent] << std::endl;
+                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "n:" << UGD->n[icell_cent] << std::endl;
+                                break;
+                            }
+
+                            /*if (i == 480 && j == 611 && (k == 1 || k == 2) )
+                            {
+                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent]:" << lambda[icell_cent] << std::endl;
+                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent-1]:" << lambda[icell_cent-1] << std::endl;
+                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "iter:" << iter << std::endl;
+                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "R:" << R[icell_cent] << std::endl;
+                            }
+                            if (i == 480 && j == 610  && (k == 1 || k == 2) )
+                            {
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent]:" << lambda[icell_cent] << std::endl;
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent-1]:" << lambda[icell_cent-1] << std::endl;
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "iter:" << iter << std::endl;
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "R:" << R[icell_cent] << std::endl;
+                            }
+                            if (i == 480 && j == 612  && (k == 1 || k == 2) )
+                            {
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent]:" << lambda[icell_cent] << std::endl;
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent-1]:" << lambda[icell_cent-1] << std::endl;
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "iter:" << iter << std::endl;
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "R:" << R[icell_cent] << std::endl;
+                            }
+                            if (i == 479 && j == 611  && (k == 1 || k == 2) )
+                            {
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent]:" << lambda[icell_cent] << std::endl;
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent-1]:" << lambda[icell_cent-1] << std::endl;
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "iter:" << iter << std::endl;
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "R:" << R[icell_cent] << std::endl;
+                            }
+                            if (i == 481 && j == 611  && (k == 1 || k == 2) )
+                            {
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent]:" << lambda[icell_cent] << std::endl;
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent-1]:" << lambda[icell_cent-1] << std::endl;
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "iter:" << iter << std::endl;
+                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "R:" << R[icell_cent] << std::endl;
+                            }*/
                     }
                 }
             }
@@ -105,6 +160,29 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
         std::cout << "Number of iterations:" << iter << "\n";   // Print the number of iterations
         std::cout << "Error:" << error << "\n";
         std::cout << "Reduced Error:" << reduced_error << "\n";
+
+        /*ofstream outdata2;
+        outdata2.open("coefficients1.dat");
+        if( !outdata2 ) {                 // File couldn't be opened
+            cerr << "Error: file could not be opened" << endl;
+            exit(1);
+        }
+        // Write data to file
+        for (int k = 1; k < UGD->nz-1; k++){
+            for (int j = 0; j < UGD->ny-1; j++){
+                for (int i = 0; i < UGD->nx-1; i++){
+                    int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   /// Lineralized index for cell centered values
+                    int icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;   /// Lineralized index for cell faced values
+                    outdata2 << "\t" << i << "\t" << j << "\t" << k <<  "\t \t"<< "\t \t" << UGD->e[icell_cent] <<"\t \t"<< "\t \t"<<UGD->f[icell_cent]<<"\t \t"<< "\t \t"<<UGD->g[icell_cent]
+                            <<  "\t \t"<< "\t \t" << UGD->h[icell_cent] <<"\t \t"<< "\t \t"<<UGD->m[icell_cent]<<"\t \t"<< "\t \t"<<UGD->n[icell_cent]<<"\t \t"<< "\t \t"<<R[icell_cent]<<"\t \t"<< "\t \t"
+                            <<lambda[icell_cent]<<"\t \t"<< "\t \t"<<lambda_old[icell_cent]<<"\t \t"<< "\t \t"<<UGD->icellflag[icell_cent]<<"\t \t"<< "\t \t"<<UGD->u0[icell_face]<<"\t \t"<< "\t \t"
+                            <<UGD->v0[icell_face]<<"\t \t"<< "\t \t"<<UGD->w0[icell_face]<<endl;
+                }
+            }
+        }
+        outdata2.close();*/
+
+
 
         ////////////////////////////////////////////////////////////////////////
         /////   Update the velocity field using Euler-Lagrange equations   /////

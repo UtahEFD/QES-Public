@@ -168,6 +168,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     m.resize( numcell_cent, 1.0 );
     n.resize( numcell_cent, 1.0 );
 
+    volume_frac.resize( numcell_cent, 1.0 );
+
     icellflag.resize( numcell_cent, 1 );
     ibuilding_flag.resize ( numcell_cent, -1 );
 
@@ -281,12 +283,13 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
 
         if (UID->simParams->meshTypeFlag == 1)
         {
-            // ////////////////////////////////
-            //        Cut-cell method        //
-            // ////////////////////////////////
+            //////////////////////////////////
+            //        Cut-cell method       //
+            //////////////////////////////////
 
             // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
-            cut_cell.calculateCoefficient(cells, UID->simParams->DTE_heightField, nx, ny, nz, dx, dy, dz, n, m, f, e, h, g, pi, icellflag);
+            cut_cell.calculateCoefficient(cells, UID->simParams->DTE_heightField, nx, ny, nz, dx, dy, dz, n, m, f, e, h, g, pi, icellflag,
+                                          volume_frac, UID->simParams->halo_x, UID->simParams->halo_y);
         }
     }
     ///////////////////////////////////////////////////////
@@ -331,20 +334,20 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
         // Setting base height for buildings if there is a DEM file
         if (UID->simParams->DTE_heightField && UID->simParams->DTE_mesh)
         {
-            for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
+            for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
             {
                 // Get base height of every corner of building from terrain height
                 min_height = UID->simParams->DTE_mesh->getHeight(UID->simParams->shpPolygons[pIdx][0].x_poly,
                                                                  UID->simParams->shpPolygons[pIdx][0].y_poly);
-                if (min_height<0)
+                if (min_height < 0)
                 {
                     min_height = 0.0;
                 }
-                for (auto lIdx=1; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
+                for (auto lIdx = 1; lIdx < UID->simParams->shpPolygons[pIdx].size(); lIdx++)
                 {
                     corner_height = UID->simParams->DTE_mesh->getHeight(UID->simParams->shpPolygons[pIdx][lIdx].x_poly,
                                                                         UID->simParams->shpPolygons[pIdx][lIdx].y_poly);
-                    if (corner_height<min_height && corner_height>0.0)
+                    if (corner_height < min_height && corner_height > 0.0)
                     {
                         min_height = corner_height;
                     }
@@ -354,15 +357,15 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
         }
         else
         {
-            for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
+            for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
             {
                 base_height.push_back(0.0);
             }
         }
 
-        for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
+        for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
         {
-            for (auto lIdx=0; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
+            for (auto lIdx=0; lIdx < UID->simParams->shpPolygons[pIdx].size(); lIdx++)
             {
                 UID->simParams->shpPolygons[pIdx][lIdx].x_poly += UID->simParams->halo_x;
                 UID->simParams->shpPolygons[pIdx][lIdx].y_poly += UID->simParams->halo_y;
@@ -371,12 +374,12 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
 
         std::cout << "Creating buildings from shapefile...\n";
         // Loop to create each of the polygon buildings read in from the shapefile
-        for (auto pIdx = 0; pIdx< UID->simParams->shpPolygons.size(); pIdx++)
+        for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
         {
             allBuildingsV.push_back (new PolyBuilding (UID, this, pIdx));
             building_id.push_back(allBuildingsV.size()-1);
             allBuildingsV[pIdx]->setPolyBuilding(this);
-            allBuildingsV[pIdx]->setCellFlags(UID, this);
+            allBuildingsV[pIdx]->setCellFlags(UID, this, pIdx);
             effective_height.push_back (allBuildingsV[pIdx]->height_eff);
         }
         std::cout << "Buildings created from shapefile...\n";
@@ -410,7 +413,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
           int j = allBuildingsV.size()-1;
           building_id.push_back( j );
           allBuildingsV[j]->setPolyBuilding(this);
-          allBuildingsV[j]->setCellFlags(UID, this);
+          allBuildingsV[j]->setCellFlags(UID, this, j);
           effective_height.push_back(allBuildingsV[i]->height_eff);
       }
     }
@@ -427,7 +430,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
     wall = new Wall();
 
     std::cout << "Defining Solid Walls...\n";
-    /// Boundary condition for building edges
+    // Boundary condition for building edges
     wall->defineWalls(this);
     std::cout << "Walls Defined...\n";
 
@@ -530,27 +533,6 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
      //wall->wallLogBC (this);
 
      wall->setVelocityZero (this);
-
-     // Write data to file
-     ofstream outdata2;
-     outdata2.open("Initial velocity.dat");
-     if( !outdata2 ) {                 // File couldn't be opened
-         cerr << "Error: file could not be opened" << endl;
-         exit(1);
-     }
-     // Write data to file
-     for (int k = 0; k < nz; k++){
-         for (int j = 0; j < ny; j++){
-             for (int i = 0; i < nx; i++){
-               int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
-               int icell_face = i + j*nx + k*nx*ny;   /// Lineralized index for cell faced values
-               outdata2 << "\t" << i << "\t" << j << "\t" << k <<  "\t \t"<< "\t \t" << u0[icell_face] <<"\t \t"<< "\t \t"<<v0[icell_face]<<"\t \t"<< "\t \t"<<w0[icell_face]<< endl;
-             }
-         }
-     }
-     outdata2.close();
-
-
 
     //////////////////////////////////////////////////
     //      Initialize output information           //
@@ -716,7 +698,7 @@ float URBGeneralData::canopyBisection(float ustar, float z0, float canopy_top, f
 
     int iter;
     float  uhc, d, d1, d2;
-    double tol, fnew, fi;
+    float tol, fnew, fi;
 
     tol = z0/100;
     fnew = tol*10;
@@ -793,7 +775,7 @@ void URBGeneralData::save()
         vector_size_2d  = {static_cast<unsigned long>(ny-1), static_cast<unsigned long>(nx-1)};
 
         // set time
-        time = (double)output_counter;
+        time = (float)output_counter;
 
         // get cell-centered values
         for (int k = 1; k < nz-1; k++){

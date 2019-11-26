@@ -98,18 +98,18 @@ void PolyBuilding::upwindCavity (const URBInputData* UID, URBGeneralData* UGD)
       uh_rotation = u0_h*cos(effective_gamma[id])+v0_h*sin(effective_gamma[id]);
       vh_rotation = -u0_h*sin(effective_gamma[id])+v0_h*cos(effective_gamma[id]);
       face_length.push_back(sqrt(pow(xf2[id]-xf1[id],2.0)+pow(yf2[id]-yf1[id],2.0)));
-      Lf_face.push_back(abs(UGD->lengthf_coeff*face_length[counter]*cos(upwind_rel_dir[id])/(1+0.8*face_length[counter]/height_eff)));
+      Lf_face.push_back(abs(UGD->lengthf_coeff*face_length[counter]*cos(upwind_rel_dir[id])/(1+0.8*face_length[counter]/H)));
 
       // High-rise Modified Vortex Parameterization (HMVP) (Bagal et al. (2004))
       if (UID->simParams->upwindCavityFlag == 3)
       {
-        vortex_height = MIN_S(face_length[counter],height_eff);
-        retarding_height = height_eff;
+        vortex_height = MIN_S(face_length[counter],H);
+        retarding_height = H;
       }
       else
       {
-        vortex_height = height_eff;
-        retarding_height = height_eff;
+        vortex_height = H;
+        retarding_height = H;
       }
 
       // Defining index related to the height that upwind cavity is being applied

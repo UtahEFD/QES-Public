@@ -85,10 +85,10 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
 
   if (k_ref < UGD->nz-1)
   {
-    // Smaller of (H+base_height) and the effective cross-wind width (Weff)
-    small_dimension = MIN_S(width_eff, H+base_height);
-    // Larger of (H+base_height) and the effective cross-wind width (Weff)
-    long_dimension = MAX_S(width_eff, H+base_height);
+    // Smaller of H and the effective cross-wind width (Weff)
+    small_dimension = MIN_S(width_eff, H);
+    // Larger of H and the effective cross-wind width (Weff)
+    long_dimension = MAX_S(width_eff, H);
     R_scale = pow(small_dimension, (2.0/3.0))*pow(long_dimension, (1.0/3.0));     // Scaling length
     R_cx = 0.9*R_scale;                 // Normalized cavity length
     vd = 0.5*0.22*R_scale;              // Cavity height

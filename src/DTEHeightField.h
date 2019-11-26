@@ -105,16 +105,25 @@ private:
   float queryHeight( float *scanline, int j, int k )  const
   {
     float height;
-    if ( j>m_nXSize || k>m_nYSize)
-    //if (j * m_nXSize + k >= m_nXSize * m_nYSize)
+    if ( j >= m_nXSize || k >= m_nYSize)
+    {
       height = 0.0;
+    }
+    //if (j * m_nXSize + k >= m_nXSize * m_nYSize
     else
+    {
       height = scanline[ k * m_nXSize + j ];
+    }
 
     if (!compareEquality( height, m_rbNoData ))
+    {
       height = height * m_rbScale + m_rbOffset;
+    }
     else
+    {
       height = m_rbMin;
+    }
+
 
     return height;
   }

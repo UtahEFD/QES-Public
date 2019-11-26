@@ -58,9 +58,9 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
     int nx = ugd->nx;
     int ny = ugd->ny;
     int nz = ugd->nz;
-    std::vector<double> &u0 = ugd->u0;
-    std::vector<double> &v0 = ugd->v0;
-    std::vector<double> &w0 = ugd->w0;
+    std::vector<float> &u0 = ugd->u0;
+    std::vector<float> &v0 = ugd->v0;
+    std::vector<float> &w0 = ugd->w0;
 
     const std::vector<float> &z = ugd->z;
 
@@ -74,7 +74,7 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *ugd)
 
     const std::vector<float> &z0_domain = ugd->z0_domain;
     const std::vector<int> &terrain_id = ugd->terrain_id;
-    const std::vector<double> &terrain = ugd->terrain;
+    const std::vector<float> &terrain = ugd->terrain;
     const int z0_domain_flag = UID->metParams->z0_domain_flag;
 
 

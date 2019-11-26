@@ -6,6 +6,7 @@
 */
 #include "util/ParseInterface.h"
 #include "PolygonVertex.h"
+#include "CutVertex.h"
 
 using namespace std;
 
@@ -68,7 +69,7 @@ public:
 		}
 
     // Need to finalize the parameters here...
-    virtual void setCellFlags (const URBInputData* UID, URBGeneralData* UGD)
+    virtual void setCellFlags (const URBInputData* UID, URBGeneralData* UGD, int building_number)
     {
     }
 
