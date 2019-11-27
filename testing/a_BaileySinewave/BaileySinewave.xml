@@ -1,0 +1,35 @@
+<simulationParameters>
+	<runTime> 10.0 </runTime>
+	<timeStep> 0.1 </timeStep>
+</simulationParameters>
+<collectionParameters>
+	<timeStart> 0.0 </timeStart>
+	<timeEnd> 10.0 </timeEnd>
+	<timeAvg> 9.0 </timeAvg>
+	<boxBoundsX1> 1.0 </boxBoundsX1>
+	<boxBoundsX2> 1.0 </boxBoundsX2>
+	<boxBoundsY1> 1.0 </boxBoundsY1>
+	<boxBoundsY2> 1.0 </boxBoundsY2>
+	<boxBoundsZ1> 0.0 </boxBoundsZ1>
+	<boxBoundsZ2> 1.0 </boxBoundsZ2> 				
+	<nBoxesX> 1 </nBoxesX> 								
+	<nBoxesY> 1 </nBoxesY> 							
+	<nBoxesZ> 20 </nBoxesZ> 
+</collectionParameters>
+<sources>
+  <numSources> 1 </numSources>
+  <continuous_uniform_pointSource>
+    <numParticles>100000</numParticles>
+    <posX> 1.0 </posX>
+    <posY> 1.0 </posY>
+    <posZ> 0.5 </posZ>
+    <radius> 0.5 </radius>
+  </continuous_uniform_pointSource>
+</sources>
+<fileOptions>
+	<outputFlag>1</outputFlag>
+    <outputFields>u</outputFields> 
+    <outputFields>v</outputFields> 
+    <outputFields>w</outputFields>
+    <outputFields>icell</outputFields>  
+</fileOptions>
