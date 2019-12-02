@@ -1,6 +1,6 @@
 #pragma once
 
-/* 
+/*
  * This class handles different commandline options and arguments
  * and places the values into variables. This inherits from Argument Parsing
  */
@@ -11,7 +11,7 @@
 enum solverTypes : int
 {CPU_Type = 1, DYNAMIC_P = 2};
 
-class URBArgs : public ArgumentParsing 
+class URBArgs : public ArgumentParsing
 {
 public:
 
@@ -27,10 +27,14 @@ public:
      * @param argv -array of strings for arguments
      */
     void processArguments(int argc, char *argv[]);
-    
+
 
     bool verbose;
-    std::string quicFile = "", netCDFFile = "", demFile = "", iCellOut = "";
+    std::string quicFile = "", demFile = "", iCellOut = "";
+    // netCDFFile_vz for standard cell-center vizalization file
+    std::string netCDFFileVz = "";
+    // netCDFFile_wk for working field use by TURB and Plume
+    std::string netCDFFileWk = "";
     bool cellFace, terrainOut, solveWind;
     int solveType, compareType;
 private:
