@@ -11,9 +11,9 @@
 
 #include "URBInputData.h"
 #include "URBGeneralData.h"
-#include "URBOutputData.h"
-//#include "URBOutput_VizFields.h"
-//#include "URBOutput_TURBInputFile.h"
+//#include "URBOutputData.h"
+#include "URBOutput_VizFields.h"
+#include "URBOutput_TURBInputFile.h"
 
 #include "Solver.h"
 #include "CPUSolver.h"
@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     // Parse the base XML QUIC file -- contains simulation parameters
     URBInputData* UID = parseXMLTree(arguments.quicFile);
     if ( !UID ) {
-        std::cerr << "QUIC Input file: " << arguments.quicFile << 
+        std::cerr << "QUIC Input file: " << arguments.quicFile <<
 	  " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -63,9 +63,16 @@ int main(int argc, char *argv[])
     // Generate the general URB data from all inputs
     URBGeneralData* UGD = new URBGeneralData(UID);
 
-    // create URB output class
-    URBOutputData* URBoutput = new URBOutputData(UGD,UID,arguments.netCDFFile);
-    
+    // create URB output classes
+    URBOutput_VizFields* outputVz = nullptr;
+    if (arguments.netCDFFileVz != "") {
+      outputVz = new URBOutput_VizFields(UGD,UID,arguments.netCDFFileVz);
+    }
+    URBOutput_TURBInputFile* outputWk = nullptr;
+    if (arguments.netCDFFileWk != "") {
+      outputWk = new URBOutput_TURBInputFile(UGD,arguments.netCDFFileWk);
+    }
+
     // //////////////////////////////////////////
     //
     // Run the CUDA-URB Solver
@@ -109,8 +116,13 @@ int main(int argc, char *argv[])
     // /////////////////////////////
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
-    // /////////////////////////////    
-    URBoutput->save(UGD);
+    // /////////////////////////////
+    if (outputVz) {
+      outputVz->save(UGD);
+    }
+    if (outputWk) {
+      outputWk->save(UGD);
+    }
 
     exit(EXIT_SUCCESS);
 }
