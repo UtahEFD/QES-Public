@@ -79,53 +79,6 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
                               UGD->n[icell_cent] * lambda[icell_cent-(UGD->nx-1)*(UGD->ny-1)] - R[icell_cent] ) +
                             (1.0 - omega) * lambda[icell_cent];    /// SOR formulation
 
-                            if (isnan (lambda[icell_cent]) /*|| (lambda[icell_cent]-lambda_old[icell_cent]) > 1000*/)
-                            {
-                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "icellflag:" << UGD->icellflag[icell_cent] << std::endl;
-                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "e:" << UGD->e[icell_cent] << std::endl;
-                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "f:" << UGD->f[icell_cent] << std::endl;
-                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "g:" << UGD->g[icell_cent] << std::endl;
-                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "h:" << UGD->h[icell_cent] << std::endl;
-                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "m:" << UGD->m[icell_cent] << std::endl;
-                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "n:" << UGD->n[icell_cent] << std::endl;
-                                break;
-                            }
-
-                            /*if (i == 480 && j == 611 && (k == 1 || k == 2) )
-                            {
-                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent]:" << lambda[icell_cent] << std::endl;
-                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent-1]:" << lambda[icell_cent-1] << std::endl;
-                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "iter:" << iter << std::endl;
-                                std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "R:" << R[icell_cent] << std::endl;
-                            }
-                            if (i == 480 && j == 610  && (k == 1 || k == 2) )
-                            {
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent]:" << lambda[icell_cent] << std::endl;
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent-1]:" << lambda[icell_cent-1] << std::endl;
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "iter:" << iter << std::endl;
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "R:" << R[icell_cent] << std::endl;
-                            }
-                            if (i == 480 && j == 612  && (k == 1 || k == 2) )
-                            {
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent]:" << lambda[icell_cent] << std::endl;
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent-1]:" << lambda[icell_cent-1] << std::endl;
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "iter:" << iter << std::endl;
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "R:" << R[icell_cent] << std::endl;
-                            }
-                            if (i == 479 && j == 611  && (k == 1 || k == 2) )
-                            {
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent]:" << lambda[icell_cent] << std::endl;
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent-1]:" << lambda[icell_cent-1] << std::endl;
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "iter:" << iter << std::endl;
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "R:" << R[icell_cent] << std::endl;
-                            }
-                            if (i == 481 && j == 611  && (k == 1 || k == 2) )
-                            {
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent]:" << lambda[icell_cent] << std::endl;
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "lambda[icell_cent-1]:" << lambda[icell_cent-1] << std::endl;
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "iter:" << iter << std::endl;
-                              std::cout << "i:  " <<  i << "\t\t" << "j:  " <<  j << "\t\t" << "k:  " <<  k << "\t\t" << "R:" << R[icell_cent] << std::endl;
-                            }*/
                     }
                 }
             }
