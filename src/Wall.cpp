@@ -62,10 +62,36 @@ void Wall::defineWalls(URBGeneralData *UGD)
       for (auto k=1; k<nz-1; k++)
       {
         int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-        if (UGD->icellflag[icell_cent] == 7 && UGD->volume_frac[icell_cent] <= 0.1)
+        if (UGD->icellflag[icell_cent] == 7 && UGD->building_volume_frac[icell_cent] - (1-UGD->terrain_volume_frac[icell_cent]) <= 0.1)
         {
           //std::cout << "icell_cent:  " << icell_cent << std::endl;
-          UGD->icellflag[icell_cent] = 0;
+          if ( (1-UGD->building_volume_frac[icell_cent]) > (1-UGD->terrain_volume_frac[icell_cent]) )
+          {
+            UGD->icellflag[icell_cent] = 0;
+          }
+          if ( (1-UGD->building_volume_frac[icell_cent]) <= (1-UGD->terrain_volume_frac[icell_cent]) )
+          {
+            UGD->icellflag[icell_cent] = 2;
+          }
+          UGD->e[icell_cent] = 1.0;
+          UGD->f[icell_cent] = 1.0;
+          UGD->g[icell_cent] = 1.0;
+          UGD->h[icell_cent] = 1.0;
+          UGD->m[icell_cent] = 1.0;
+          UGD->n[icell_cent] = 1.0;
+        }
+
+        if (UGD->icellflag[icell_cent] == 8 && UGD->building_volume_frac[icell_cent] - (1-UGD->terrain_volume_frac[icell_cent]) <= 0.1)
+        {
+          //std::cout << "icell_cent:  " << icell_cent << std::endl;
+          if ( (1-UGD->building_volume_frac[icell_cent]) > (1-UGD->terrain_volume_frac[icell_cent]) )
+          {
+            UGD->icellflag[icell_cent] = 0;
+          }
+          if ( (1-UGD->building_volume_frac[icell_cent]) <= (1-UGD->terrain_volume_frac[icell_cent]) )
+          {
+            UGD->icellflag[icell_cent] = 2;
+          }
           UGD->e[icell_cent] = 1.0;
           UGD->f[icell_cent] = 1.0;
           UGD->g[icell_cent] = 1.0;
@@ -85,10 +111,25 @@ void Wall::defineWalls(URBGeneralData *UGD)
       {
         int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
         if (UGD->e[icell_cent] == 0.0 && UGD->f[icell_cent] == 0.0 && UGD->g[icell_cent] == 0.0
-            && UGD->h[icell_cent] == 0.0 && UGD->m[icell_cent] == 0.0 && UGD->n[icell_cent] == 0.0)
+            && UGD->h[icell_cent] == 0.0 && UGD->m[icell_cent] == 0.0 && UGD->n[icell_cent] == 0.0 &&
+            UGD->icellflag[icell_cent] == 7)
         {
           //std::cout << "icell_cent:  " << icell_cent << std::endl;
           UGD->icellflag[icell_cent] = 0;
+          UGD->e[icell_cent] = 1.0;
+          UGD->f[icell_cent] = 1.0;
+          UGD->g[icell_cent] = 1.0;
+          UGD->h[icell_cent] = 1.0;
+          UGD->m[icell_cent] = 1.0;
+          UGD->n[icell_cent] = 1.0;
+        }
+
+        if (UGD->e[icell_cent] == 0.0 && UGD->f[icell_cent] == 0.0 && UGD->g[icell_cent] == 0.0
+            && UGD->h[icell_cent] == 0.0 && UGD->m[icell_cent] == 0.0 && UGD->n[icell_cent] == 0.0 &&
+            UGD->icellflag[icell_cent] == 8)
+        {
+          //std::cout << "icell_cent:  " << icell_cent << std::endl;
+          UGD->icellflag[icell_cent] = 2;
           UGD->e[icell_cent] = 1.0;
           UGD->f[icell_cent] = 1.0;
           UGD->g[icell_cent] = 1.0;
@@ -109,23 +150,23 @@ void Wall::defineWalls(URBGeneralData *UGD)
         int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
         int icell_face = i + j*nx + k*nx*ny;
 
-        if (UGD->icellflag[icell_cent] !=0 && UGD->icellflag[icell_cent] !=2)
+        if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
         {
 
           /// Wall below
-          if (UGD->icellflag[icell_cent-(nx-1)*(ny-1)]==0 || UGD->icellflag[icell_cent-(nx-1)*(ny-1)]==2)
+          if (UGD->icellflag[icell_cent-(nx-1)*(ny-1)] == 0 || UGD->icellflag[icell_cent-(nx-1)*(ny-1)] == 2)
           {
             UGD->wall_below_indices.push_back(icell_face);
             UGD->n[icell_cent] = 0.0;
           }
           /// Wall above
-          if (UGD->icellflag[icell_cent+(nx-1)*(ny-1)]==0 || UGD->icellflag[icell_cent+(nx-1)*(ny-1)]==2)
+          if (UGD->icellflag[icell_cent+(nx-1)*(ny-1)] == 0 || UGD->icellflag[icell_cent+(nx-1)*(ny-1)] == 2)
           {
             UGD->wall_above_indices.push_back(icell_face);
             UGD->m[icell_cent] = 0.0;
           }
           /// Wall in back
-          if (UGD->icellflag[icell_cent-1]==0 || UGD->icellflag[icell_cent-1]==2)
+          if (UGD->icellflag[icell_cent-1] == 0 || UGD->icellflag[icell_cent-1] == 2)
           {
             if (i>0)
             {
@@ -134,13 +175,13 @@ void Wall::defineWalls(URBGeneralData *UGD)
             }
           }
           /// Wall in front
-          if (UGD->icellflag[icell_cent+1]==0 || UGD->icellflag[icell_cent+1]==2)
+          if (UGD->icellflag[icell_cent+1] == 0 || UGD->icellflag[icell_cent+1] == 2)
           {
             UGD->wall_front_indices.push_back(icell_face);
             UGD->e[icell_cent] = 0.0;
           }
           /// Wall on right
-          if (UGD->icellflag[icell_cent-(nx-1)]==0 || UGD->icellflag[icell_cent-(nx-1)]==2)
+          if (UGD->icellflag[icell_cent-(nx-1)] == 0 || UGD->icellflag[icell_cent-(nx-1)] == 2)
           {
             if (j>0)
             {
@@ -149,7 +190,7 @@ void Wall::defineWalls(URBGeneralData *UGD)
             }
           }
           /// Wall on left
-          if (UGD->icellflag[icell_cent+(nx-1)]==0 || UGD->icellflag[icell_cent+(nx-1)]==2)
+          if (UGD->icellflag[icell_cent+(nx-1)] == 0 || UGD->icellflag[icell_cent+(nx-1)] == 2)
           {
             UGD->wall_left_indices.push_back(icell_face);
             UGD->g[icell_cent] = 0.0;
@@ -157,17 +198,17 @@ void Wall::defineWalls(URBGeneralData *UGD)
         }
         if (UGD->icellflag[icell_cent] == 1 || UGD->icellflag[icell_cent] == 7)
         {
-          if (UGD->icellflag[icell_cent-(nx-1)*(ny-1)]==7)
+          if (UGD->icellflag[icell_cent-(nx-1)*(ny-1)] == 7)
           {
             UGD->n[icell_cent] = UGD->m[icell_cent-(nx-1)*(ny-1)];
           }
 
-          if (UGD->icellflag[icell_cent+(nx-1)*(ny-1)]==7)
+          if (UGD->icellflag[icell_cent+(nx-1)*(ny-1)] == 7)
           {
             UGD->m[icell_cent] = UGD->n[icell_cent+(nx-1)*(ny-1)];
           }
 
-          if (UGD->icellflag[icell_cent-1]==7)
+          if (UGD->icellflag[icell_cent-1] == 7)
           {
             if (i>0)
             {
@@ -175,12 +216,12 @@ void Wall::defineWalls(URBGeneralData *UGD)
             }
           }
 
-          if (UGD->icellflag[icell_cent+1]==7)
+          if (UGD->icellflag[icell_cent+1] == 7)
           {
             UGD->e[icell_cent] = UGD->f[icell_cent+1];
           }
 
-          if (UGD->icellflag[icell_cent-(nx-1)]==7)
+          if (UGD->icellflag[icell_cent-(nx-1)] == 7)
           {
             if (j>0)
             {
@@ -188,7 +229,46 @@ void Wall::defineWalls(URBGeneralData *UGD)
             }
           }
 
-          if (UGD->icellflag[icell_cent+(nx-1)]==7)
+          if (UGD->icellflag[icell_cent+(nx-1)] == 7)
+          {
+            UGD->g[icell_cent] = UGD->h[icell_cent+(nx-1)];
+          }
+        }
+
+        if (UGD->icellflag[icell_cent] == 1 || UGD->icellflag[icell_cent] == 8)
+        {
+          if (UGD->icellflag[icell_cent-(nx-1)*(ny-1)] == 8)
+          {
+            UGD->n[icell_cent] = UGD->m[icell_cent-(nx-1)*(ny-1)];
+          }
+
+          if (UGD->icellflag[icell_cent+(nx-1)*(ny-1)] == 8)
+          {
+            UGD->m[icell_cent] = UGD->n[icell_cent+(nx-1)*(ny-1)];
+          }
+
+          if (UGD->icellflag[icell_cent-1] == 8)
+          {
+            if (i>0)
+            {
+              UGD->f[icell_cent] = UGD->e[icell_cent-1];
+            }
+          }
+
+          if (UGD->icellflag[icell_cent+1] == 8)
+          {
+            UGD->e[icell_cent] = UGD->f[icell_cent+1];
+          }
+
+          if (UGD->icellflag[icell_cent-(nx-1)] == 8)
+          {
+            if (j>0)
+            {
+              UGD->h[icell_cent] = UGD->g[icell_cent-(nx-1)];
+            }
+          }
+
+          if (UGD->icellflag[icell_cent+(nx-1)] == 8)
           {
             UGD->g[icell_cent] = UGD->h[icell_cent+(nx-1)];
           }
@@ -206,7 +286,8 @@ void Wall::defineWalls(URBGeneralData *UGD)
       {
         int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
         if (UGD->e[icell_cent] == 0.0 && UGD->f[icell_cent] == 0.0 && UGD->g[icell_cent] == 0.0
-            && UGD->h[icell_cent] == 0.0 && UGD->m[icell_cent] == 0.0 && UGD->n[icell_cent] == 0.0)
+            && UGD->h[icell_cent] == 0.0 && UGD->m[icell_cent] == 0.0 && UGD->n[icell_cent] == 0.0 &&
+            UGD->icellflag[icell_cent] == 7)
         {
           //std::cout << "icell_cent:  " << icell_cent << std::endl;
           UGD->icellflag[icell_cent] = 0;
@@ -216,6 +297,30 @@ void Wall::defineWalls(URBGeneralData *UGD)
           UGD->h[icell_cent] = 1.0;
           UGD->m[icell_cent] = 1.0;
           UGD->n[icell_cent] = 1.0;
+        }
+
+        if (UGD->e[icell_cent] == 0.0 && UGD->f[icell_cent] == 0.0 && UGD->g[icell_cent] == 0.0
+            && UGD->h[icell_cent] == 0.0 && UGD->m[icell_cent] == 0.0 && UGD->n[icell_cent] == 0.0 &&
+            UGD->icellflag[icell_cent] == 8)
+        {
+          //std::cout << "icell_cent:  " << icell_cent << std::endl;
+          UGD->icellflag[icell_cent] = 2;
+          UGD->e[icell_cent] = 1.0;
+          UGD->f[icell_cent] = 1.0;
+          UGD->g[icell_cent] = 1.0;
+          UGD->h[icell_cent] = 1.0;
+          UGD->m[icell_cent] = 1.0;
+          UGD->n[icell_cent] = 1.0;
+        }
+        if ( i == 242 && j == 49)
+        {
+          std::cout << "k:  " << k << "\t\t" << "UGD->icellflag[icell_cent]:  " << UGD->icellflag[icell_cent] << std::endl;
+          std::cout << "k:  " << k << "\t\t" << "UGD->e[icell_cent]:  " << UGD->e[icell_cent] << std::endl;
+          std::cout << "k:  " << k << "\t\t" << "UGD->f[icell_cent]:  " << UGD->f[icell_cent] << std::endl;
+          std::cout << "k:  " << k << "\t\t" << "UGD->g[icell_cent]:  " << UGD->g[icell_cent] << std::endl;
+          std::cout << "k:  " << k << "\t\t" << "UGD->h[icell_cent]:  " << UGD->h[icell_cent] << std::endl;
+          std::cout << "k:  " << k << "\t\t" << "UGD->m[icell_cent]:  " << UGD->m[icell_cent] << std::endl;
+          std::cout << "k:  " << k << "\t\t" << "UGD->n[icell_cent]:  " << UGD->n[icell_cent] << std::endl;
         }
       }
     }

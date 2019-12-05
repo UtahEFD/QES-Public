@@ -91,7 +91,7 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
   for (auto k = 1; k < UGD->z.size(); k++)
   {
     k_start = k;
-    if (base_height <= UGD->z[k])
+    if (base_height <= UGD->z_face[k])
     {
       break;
     }
@@ -152,11 +152,16 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
       // if num_crossing is even = cell is inside of the polygon
       if ( (num_crossing%2) != 0 )
       {
+        if ( i == 242 && j == 49)
+        {
+          std::cout << "building_number:  " << building_number << std::endl;
+          std::cout << "base_height:  " << base_height << std::endl;
+          std::cout << "k_start:  " << k_start << std::endl;
+        }
         for (auto k=k_start; k<k_end; k++)
         {
           int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
           UGD->icellflag[icell_cent] = 0;
-
           UGD->ibuilding_flag[icell_cent] = building_number;
         }
 
@@ -508,131 +513,137 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
             for (auto k = k_start; k <= k_cut_end; k++)
             {
               icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-              if (UGD->icellflag[icell_cent] != 7)
+              if (UGD->icellflag[icell_cent] != 2 )
               {
-                UGD->icellflag[icell_cent] = 7;
-                cut_points.push_back( cutCell(icell_cent) );
-                cut_cell_id.push_back( icell_cent );
-                counter = cut_cell_id.size()-1;
-              }
-              else
-              {
-                it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
-                counter = std::distance(cut_cell_id.begin(), it);
-                if (counter == cut_cell_id.size())
+                if (UGD->icellflag[icell_cent] != 7 )
                 {
+                  UGD->icellflag[icell_cent] = 7;
                   cut_points.push_back( cutCell(icell_cent) );
                   cut_cell_id.push_back( icell_cent );
                   counter = cut_cell_id.size()-1;
                 }
-              }
-
-              height_flag = 1;
-              cut_points[counter].z_solid = UGD->dz_array[k];
-              if ( k == k_cut_end )
-              {
-                if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                else
                 {
-                  height_flag = 0;
-                  cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
-                }
-              }
-              for (auto ii = 0; ii < face_intersect.size(); ii++)
-              {
-                cut_points[counter].intersect.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
-                cut_points[counter].face_below.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
-                if (height_flag == 1 )
-                {
-                  cut_points[counter].face_above.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, cut_points[counter].z_solid));
-                }
-                if (face_intersect[ii].x_cut == x1i)
-                {
-                  cut_points[counter].face_behind.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
-                  cut_points[counter].face_behind.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, cut_points[counter].z_solid));
-                }
-                if (face_intersect[ii].x_cut == x2i)
-                {
-                  cut_points[counter].face_front.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
-                  cut_points[counter].face_front.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, cut_points[counter].z_solid));
-                }
-                if (face_intersect[ii].y_cut == y1j)
-                {
-                  cut_points[counter].face_right.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
-                  cut_points[counter].face_right.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, cut_points[counter].z_solid));
-                }
-                if (face_intersect[ii].y_cut == y2j)
-                {
-                  cut_points[counter].face_left.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
-                  cut_points[counter].face_left.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, cut_points[counter].z_solid));
+                  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
+                  counter = std::distance(cut_cell_id.begin(), it);
+                  if (counter == cut_cell_id.size())
+                  {
+                    cut_points.push_back( cutCell(icell_cent) );
+                    cut_cell_id.push_back( icell_cent );
+                    counter = cut_cell_id.size()-1;
+                  }
                 }
               }
 
-              if (x1i_intersect == x1i && x2i_intersect == x1i && y1i_intersect != y2i_intersect &&
-                  y1i_intersect >= y1j && y1i_intersect <= y2j && y2i_intersect >= y1j && y2i_intersect <= y2j)
+              if (UGD->icellflag[icell_cent] == 7 )
               {
-                cut_points[counter].face_below.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, 0.0));
-                cut_points[counter].face_below.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, 0.0));
-                if (height_flag == 1 )
+                height_flag = 1;
+                cut_points[counter].z_solid = UGD->dz_array[k];
+                if ( k == k_cut_end )
                 {
-                  cut_points[counter].face_above.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                  cut_points[counter].face_above.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                  {
+                    height_flag = 0;
+                    cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                  }
                 }
-                cut_points[counter].face_behind.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, 0.0));
-                cut_points[counter].face_behind.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, 0.0));
-                cut_points[counter].face_behind.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                cut_points[counter].face_behind.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                condition = 1;
-              }
+                for (auto ii = 0; ii < face_intersect.size(); ii++)
+                {
+                  cut_points[counter].intersect.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
+                  cut_points[counter].face_below.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
+                  if (height_flag == 1 )
+                  {
+                    cut_points[counter].face_above.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, cut_points[counter].z_solid));
+                  }
+                  if (face_intersect[ii].x_cut == x1i)
+                  {
+                    cut_points[counter].face_behind.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
+                    cut_points[counter].face_behind.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, cut_points[counter].z_solid));
+                  }
+                  if (face_intersect[ii].x_cut == x2i)
+                  {
+                    cut_points[counter].face_front.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
+                    cut_points[counter].face_front.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, cut_points[counter].z_solid));
+                  }
+                  if (face_intersect[ii].y_cut == y1j)
+                  {
+                    cut_points[counter].face_right.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
+                    cut_points[counter].face_right.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, cut_points[counter].z_solid));
+                  }
+                  if (face_intersect[ii].y_cut == y2j)
+                  {
+                    cut_points[counter].face_left.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
+                    cut_points[counter].face_left.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, cut_points[counter].z_solid));
+                  }
+                }
 
-              if (x1i_intersect == x2i && x2i_intersect == x2i && y1i_intersect != y2i_intersect &&
-                  y1i_intersect >= y1j && y1i_intersect <= y2j && y2i_intersect >= y1j && y2i_intersect <= y2j)
-              {
-                cut_points[counter].face_below.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, 0.0));
-                cut_points[counter].face_below.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, 0.0));
-                if (height_flag == 1 )
+                if (x1i_intersect == x1i && x2i_intersect == x1i && y1i_intersect != y2i_intersect &&
+                    y1i_intersect >= y1j && y1i_intersect <= y2j && y2i_intersect >= y1j && y2i_intersect <= y2j)
                 {
-                  cut_points[counter].face_above.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                  cut_points[counter].face_above.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  cut_points[counter].face_below.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_below.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, 0.0));
+                  if (height_flag == 1 )
+                  {
+                    cut_points[counter].face_above.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_above.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  }
+                  cut_points[counter].face_behind.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_behind.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_behind.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  cut_points[counter].face_behind.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  condition = 1;
                 }
-                cut_points[counter].face_front.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, 0.0));
-                cut_points[counter].face_front.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, 0.0));
-                cut_points[counter].face_front.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                cut_points[counter].face_front.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                condition = 1;
-              }
 
-              if (y1j_intersect == y1j && y2j_intersect == y1j && x1j_intersect != x2j_intersect &&
-                  x1j_intersect >= x1i && x1j_intersect <= x2i && x2j_intersect >= x1i && x2j_intersect <= x2i)
-              {
-                cut_points[counter].face_below.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, 0.0));
-                cut_points[counter].face_below.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, 0.0));
-                if (height_flag == 1 )
+                if (x1i_intersect == x2i && x2i_intersect == x2i && y1i_intersect != y2i_intersect &&
+                    y1i_intersect >= y1j && y1i_intersect <= y2j && y2i_intersect >= y1j && y2i_intersect <= y2j)
                 {
-                  cut_points[counter].face_above.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                  cut_points[counter].face_above.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  cut_points[counter].face_below.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_below.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, 0.0));
+                  if (height_flag == 1 )
+                  {
+                    cut_points[counter].face_above.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_above.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  }
+                  cut_points[counter].face_front.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_front.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_front.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  cut_points[counter].face_front.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  condition = 1;
                 }
-                cut_points[counter].face_right.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, 0.0));
-                cut_points[counter].face_right.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, 0.0));
-                cut_points[counter].face_right.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                cut_points[counter].face_right.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                condition = 1;
-              }
 
-              if (y1j_intersect == y2j && y2j_intersect == y2j && x1j_intersect != x2j_intersect &&
-                  x1j_intersect >= x1i && x1j_intersect <= x2i && x2j_intersect >= x1i && x2j_intersect <= x2i)
-              {
-                cut_points[counter].face_below.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, 0.0));
-                cut_points[counter].face_below.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, 0.0));
-                if (height_flag == 1 )
+                if (y1j_intersect == y1j && y2j_intersect == y1j && x1j_intersect != x2j_intersect &&
+                    x1j_intersect >= x1i && x1j_intersect <= x2i && x2j_intersect >= x1i && x2j_intersect <= x2i)
                 {
-                  cut_points[counter].face_above.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                  cut_points[counter].face_above.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  cut_points[counter].face_below.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_below.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, 0.0));
+                  if (height_flag == 1 )
+                  {
+                    cut_points[counter].face_above.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_above.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  }
+                  cut_points[counter].face_right.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_right.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_right.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  cut_points[counter].face_right.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  condition = 1;
                 }
-                cut_points[counter].face_left.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, 0.0));
-                cut_points[counter].face_left.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, 0.0));
-                cut_points[counter].face_left.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                cut_points[counter].face_left.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                condition = 1;
+
+                if (y1j_intersect == y2j && y2j_intersect == y2j && x1j_intersect != x2j_intersect &&
+                    x1j_intersect >= x1i && x1j_intersect <= x2i && x2j_intersect >= x1i && x2j_intersect <= x2i)
+                {
+                  cut_points[counter].face_below.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_below.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, 0.0));
+                  if (height_flag == 1 )
+                  {
+                    cut_points[counter].face_above.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_above.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  }
+                  cut_points[counter].face_left.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_left.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_left.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  cut_points[counter].face_left.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  condition = 1;
+                }
               }
 
             }
@@ -805,24 +816,28 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
               for (auto k = k_start; k <= k_cut_end; k++)
               {
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] != 7)
+                if (UGD->icellflag[icell_cent] != 2 )
                 {
-                  UGD->icellflag[icell_cent] = 7;
-                  cut_points.push_back( cutCell(icell_cent) );
-                  cut_cell_id.push_back( icell_cent );
-                  counter = cut_cell_id.size()-1;
-                }
-                else
-                {
-                  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
-                  counter = std::distance(cut_cell_id.begin(), it);
-                  if (counter == cut_cell_id.size())
+                  if (UGD->icellflag[icell_cent] != 7)
                   {
+                    UGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
                   }
+                  else
+                  {
+                    it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
+                    counter = std::distance(cut_cell_id.begin(), it);
+                    if (counter == cut_cell_id.size())
+                    {
+                      cut_points.push_back( cutCell(icell_cent) );
+                      cut_cell_id.push_back( icell_cent );
+                      counter = cut_cell_id.size()-1;
+                    }
+                  }
                 }
+
                 if (UGD->icellflag[icell_cent] == 7)
                 {
                   cut_points[counter].intersect.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
@@ -916,31 +931,34 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
               for (auto k = k_start; k <= k_cut_end; k++)
               {
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] != 7)
+                if (UGD->icellflag[icell_cent] != 2)
                 {
-                  UGD->icellflag[icell_cent] = 7;
-                  cut_points.push_back( cutCell(icell_cent) );
-                  cut_cell_id.push_back( icell_cent );
-                  counter = cut_cell_id.size()-1;
-                }
-                else
-                {
-                  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
-                  counter = std::distance(cut_cell_id.begin(), it);
-                  if (counter == cut_cell_id.size())
+                  if (UGD->icellflag[icell_cent] != 7)
                   {
+                    UGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
                   }
-                  /*else
+                  else
                   {
-                    if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
-                        cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
+                    it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
+                    counter = std::distance(cut_cell_id.begin(), it);
+                    if (counter == cut_cell_id.size())
                     {
-                      cut_points[counter].pass_number += 1;
+                      cut_points.push_back( cutCell(icell_cent) );
+                      cut_cell_id.push_back( icell_cent );
+                      counter = cut_cell_id.size()-1;
                     }
-                  }*/
+                    /*else
+                    {
+                      if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
+                          cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
+                      {
+                        cut_points[counter].pass_number += 1;
+                      }
+                    }*/
+                  }
                 }
                 if (UGD->icellflag[icell_cent] == 7)
                 {
@@ -1032,32 +1050,36 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
               {
 
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] != 7)
+                if (UGD->icellflag[icell_cent] != 2)
                 {
-                  UGD->icellflag[icell_cent] = 7;
-                  cut_points.push_back( cutCell(icell_cent) );
-                  cut_cell_id.push_back( icell_cent );
-                  counter = cut_cell_id.size()-1;
-                }
-                else
-                {
-                  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
-                  counter = std::distance(cut_cell_id.begin(), it);
-                  if (counter == cut_cell_id.size())
+                  if (UGD->icellflag[icell_cent] != 7)
                   {
+                    UGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
                   }
-                  /*else
+                  else
                   {
-                    if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
-                        cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
+                    it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
+                    counter = std::distance(cut_cell_id.begin(), it);
+                    if (counter == cut_cell_id.size())
                     {
-                      cut_points[counter].pass_number += 1;
+                      cut_points.push_back( cutCell(icell_cent) );
+                      cut_cell_id.push_back( icell_cent );
+                      counter = cut_cell_id.size()-1;
                     }
-                  }*/
+                    /*else
+                    {
+                      if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
+                          cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
+                      {
+                        cut_points[counter].pass_number += 1;
+                      }
+                    }*/
+                  }
                 }
+
                 if (UGD->icellflag[icell_cent] == 7)
                 {
                   cut_points[counter].intersect.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
@@ -1147,32 +1169,36 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
               {
 
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] != 7)
+                if (UGD->icellflag[icell_cent] != 2)
                 {
-                  UGD->icellflag[icell_cent] = 7;
-                  cut_points.push_back( cutCell(icell_cent) );
-                  cut_cell_id.push_back( icell_cent );
-                  counter = cut_cell_id.size()-1;
-                }
-                else
-                {
-                  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
-                  counter = std::distance(cut_cell_id.begin(), it);
-                  if (counter == cut_cell_id.size())
+                  if (UGD->icellflag[icell_cent] != 7)
                   {
+                    UGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
                   }
-                  /*else
+                  else
                   {
-                    if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
-                        cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
+                    it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
+                    counter = std::distance(cut_cell_id.begin(), it);
+                    if (counter == cut_cell_id.size())
                     {
-                      cut_points[counter].pass_number += 1;
+                      cut_points.push_back( cutCell(icell_cent) );
+                      cut_cell_id.push_back( icell_cent );
+                      counter = cut_cell_id.size()-1;
                     }
-                  }*/
+                    /*else
+                    {
+                      if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
+                          cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
+                      {
+                        cut_points[counter].pass_number += 1;
+                      }
+                    }*/
+                  }
                 }
+
                 if (UGD->icellflag[icell_cent] == 7)
                 {
                   cut_points[counter].intersect.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
@@ -1267,32 +1293,36 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
               {
 
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] != 7)
+                if (UGD->icellflag[icell_cent] != 2)
                 {
-                  UGD->icellflag[icell_cent] = 7;
-                  cut_points.push_back( cutCell(icell_cent) );
-                  cut_cell_id.push_back( icell_cent );
-                  counter = cut_cell_id.size()-1;
-                }
-                else
-                {
-                  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
-                  counter = std::distance(cut_cell_id.begin(), it);
-                  if (counter == cut_cell_id.size())
+                  if (UGD->icellflag[icell_cent] != 7)
                   {
+                    UGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
                   }
-                  /*else
+                  else
                   {
-                    if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
-                        cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
+                    it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
+                    counter = std::distance(cut_cell_id.begin(), it);
+                    if (counter == cut_cell_id.size())
                     {
-                      cut_points[counter].pass_number += 1;
+                      cut_points.push_back( cutCell(icell_cent) );
+                      cut_cell_id.push_back( icell_cent );
+                      counter = cut_cell_id.size()-1;
                     }
-                  }*/
+                    /*else
+                    {
+                      if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
+                          cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
+                      {
+                        cut_points[counter].pass_number += 1;
+                      }
+                    }*/
+                  }
                 }
+
                 if (UGD->icellflag[icell_cent] == 7)
                 {
                   cut_points[counter].intersect.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
@@ -1385,32 +1415,36 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
               for (auto k = k_start; k <= k_cut_end; k++)
               {
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] != 7)
+                if (UGD->icellflag[icell_cent] != 2)
                 {
-                  UGD->icellflag[icell_cent] = 7;
-                  cut_points.push_back( cutCell(icell_cent) );
-                  cut_cell_id.push_back( icell_cent );
-                  counter = cut_cell_id.size()-1;
-                }
-                else
-                {
-                  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
-                  counter = std::distance(cut_cell_id.begin(), it);
-                  if (counter == cut_cell_id.size())
+                  if (UGD->icellflag[icell_cent] != 7)
                   {
+                    UGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
                   }
-                  /*else
+                  else
                   {
-                    if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
-                        cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
+                    it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
+                    counter = std::distance(cut_cell_id.begin(), it);
+                    if (counter == cut_cell_id.size())
                     {
-                      cut_points[counter].pass_number += 1;
+                      cut_points.push_back( cutCell(icell_cent) );
+                      cut_cell_id.push_back( icell_cent );
+                      counter = cut_cell_id.size()-1;
                     }
-                  }*/
+                    /*else
+                    {
+                      if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
+                          cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
+                      {
+                        cut_points[counter].pass_number += 1;
+                      }
+                    }*/
+                  }
                 }
+
                 if (UGD->icellflag[icell_cent] == 7)
                 {
                   cut_points[counter].intersect.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
@@ -1467,32 +1501,36 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
               for (auto k = k_start; k <= k_cut_end; k++)
               {
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] != 7)
+                if (UGD->icellflag[icell_cent] != 2)
                 {
-                  UGD->icellflag[icell_cent] = 7;
-                  cut_points.push_back( cutCell(icell_cent) );
-                  cut_cell_id.push_back( icell_cent );
-                  counter = cut_cell_id.size()-1;
-                }
-                else
-                {
-                  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
-                  counter = std::distance(cut_cell_id.begin(), it);
-                  if (counter == cut_cell_id.size())
+                  if (UGD->icellflag[icell_cent] != 7)
                   {
+                    UGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
                   }
-                  /*else
+                  else
                   {
-                    if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
-                        cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
+                    it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
+                    counter = std::distance(cut_cell_id.begin(), it);
+                    if (counter == cut_cell_id.size())
                     {
-                      cut_points[counter].pass_number += 1;
+                      cut_points.push_back( cutCell(icell_cent) );
+                      cut_cell_id.push_back( icell_cent );
+                      counter = cut_cell_id.size()-1;
                     }
-                  }*/
+                    /*else
+                    {
+                      if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
+                          cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
+                      {
+                        cut_points[counter].pass_number += 1;
+                      }
+                    }*/
+                  }
                 }
+
                 if (UGD->icellflag[icell_cent] == 7)
                 {
                   cut_points[counter].intersect.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
@@ -1550,32 +1588,36 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
               for (auto k = k_start; k <= k_cut_end; k++)
               {
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] != 7)
+                if (UGD->icellflag[icell_cent] != 2)
                 {
-                  UGD->icellflag[icell_cent] = 7;
-                  cut_points.push_back( cutCell(icell_cent) );
-                  cut_cell_id.push_back( icell_cent );
-                  counter = cut_cell_id.size()-1;
-                }
-                else
-                {
-                  it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
-                  counter = std::distance(cut_cell_id.begin(), it);
-                  if (counter == cut_cell_id.size())
+                  if (UGD->icellflag[icell_cent] != 7)
                   {
+                    UGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
                   }
-                  /*else
+                  else
                   {
-                    if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
-                        cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
+                    it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
+                    counter = std::distance(cut_cell_id.begin(), it);
+                    if (counter == cut_cell_id.size())
                     {
-                      cut_points[counter].pass_number += 1;
+                      cut_points.push_back( cutCell(icell_cent) );
+                      cut_cell_id.push_back( icell_cent );
+                      counter = cut_cell_id.size()-1;
                     }
-                  }*/
+                    /*else
+                    {
+                      if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
+                          cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
+                      {
+                        cut_points[counter].pass_number += 1;
+                      }
+                    }*/
+                  }
                 }
+
                 if (UGD->icellflag[icell_cent] == 7)
                 {
                   cut_points[counter].intersect.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), 0.0));
@@ -1919,11 +1961,11 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
         solid_V_frac += ((cut_points[id].intersect[0].x_cut*(cut_points[id].ni)*S_cut) + (cut_points[id].intersect[0].y_cut*(cut_points[id].nj)*S_cut)+
                           (cut_points[id].intersect[0].z_cut*(cut_points[id].nk)*S_cut) )/(3*UGD->dx*UGD->dy*UGD->dz_array[k]);
 
-        UGD->volume_frac[cut_cell_id[id]] -= solid_V_frac;
+        UGD->building_volume_frac[cut_cell_id[id]] -= solid_V_frac;
 
-        if (UGD->volume_frac[cut_cell_id[id]] < 0.0)
+        if (UGD->building_volume_frac[cut_cell_id[id]] < 0.0)
         {
-          UGD->volume_frac[cut_cell_id[id]] = 0.0;
+          UGD->building_volume_frac[cut_cell_id[id]] = 0.0;
         }
       }
     }

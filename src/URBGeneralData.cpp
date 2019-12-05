@@ -167,7 +167,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     m.resize( numcell_cent, 1.0 );
     n.resize( numcell_cent, 1.0 );
 
-    volume_frac.resize( numcell_cent, 1.0 );
+    building_volume_frac.resize( numcell_cent, 1.0 );
+    terrain_volume_frac.resize( numcell_cent, 1.0 );
 
     icellflag.resize( numcell_cent, 1 );
     ibuilding_flag.resize ( numcell_cent, -1 );
@@ -196,6 +197,11 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
             icellflag[icell_cent] = 2;
         }
     }
+
+    int halo_index_x = (UID->simParams->halo_x/dx);
+    UID->simParams->halo_x = halo_index_x*dx;
+    int halo_index_y = (UID->simParams->halo_y/dy);
+    UID->simParams->halo_y = halo_index_y*dy;
 
     //////////////////////////////////////////////////////////////////////////////////
     /////    Create sensor velocity profiles and generate initial velocity field /////
@@ -280,8 +286,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
             //////////////////////////////////
 
             // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
-            cut_cell.calculateCoefficient(cells, UID->simParams->DTE_heightField, nx, ny, nz, dx, dy, dz, n, m, f, e, h, g, pi, icellflag,
-                                          volume_frac, UID->simParams->halo_x, UID->simParams->halo_y);
+            cut_cell.calculateCoefficient(cells, UID->simParams->DTE_heightField, nx, ny, nz, dx, dy, dz_array, n, m, f, e, h, g, pi, icellflag,
+                                          terrain_volume_frac, UID->simParams->halo_x, UID->simParams->halo_y);
         }
     }
     ///////////////////////////////////////////////////////
@@ -339,7 +345,12 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
                 {
                     corner_height = UID->simParams->DTE_mesh->getHeight(UID->simParams->shpPolygons[pIdx][lIdx].x_poly,
                                                                         UID->simParams->shpPolygons[pIdx][lIdx].y_poly);
-                    if (corner_height < min_height && corner_height > 0.0)
+                    if (pIdx == 14025)
+                    {
+                      std::cout << "corner_height:  " << corner_height << std::endl;
+                      std::cout << "min_height:  " << min_height << std::endl;
+                    }
+                    if (corner_height < min_height && corner_height >= 0.0)
                     {
                         min_height = corner_height;
                     }
@@ -368,6 +379,14 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
         // Loop to create each of the polygon buildings read in from the shapefile
         for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
         {
+            if (pIdx == 14025)
+            {
+              for (auto lIdx=0; lIdx < UID->simParams->shpPolygons[pIdx].size(); lIdx++)
+              {
+                std::cout << "lIdx:   " << lIdx << "\t\t" << "x:  " << UID->simParams->shpPolygons[pIdx][lIdx].x_poly << " \t\t" << "y:  " << UID->simParams->shpPolygons[pIdx][lIdx].y_poly << std::endl;
+              }
+              std::cout << "base_height:  " << base_height[pIdx] << std::endl;
+            }
             allBuildingsV.push_back (new PolyBuilding (UID, this, pIdx));
             building_id.push_back(allBuildingsV.size()-1);
             allBuildingsV[pIdx]->setPolyBuilding(this);

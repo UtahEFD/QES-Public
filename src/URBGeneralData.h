@@ -83,10 +83,12 @@ public:
     std::vector<float> e,f,g,h,m,n;
 
     // The following are mostly used for output
-    std::vector<int> icellflag;  /**< Cell index flag (0 = Building, 1 = Fluid, 2 = Terrain, 3 = Upwind_cavity
-                                                       4 = Cavity, 5 = Farwake, 6 = Street canyon, 7 = Cut-cells, 9 = Canopy vegetation
-                                                       10 = Sidewall, 11 = Rooftop) */
-    std::vector<float> volume_frac;
+    std::vector<int> icellflag;  /**< Cell index flag (0 = Building, 1 = Fluid, 2 = Terrain, 3 = Upwind cavity
+                                                       4 = Cavity, 5 = Farwake, 6 = Street canyon, 7 = Building cut-cells,
+                                                       8 = Terrain cut-cells, 9 = Sidewall, 10 = Rooftop,
+                                                       11 = Canopy vegetation, 12 = Fire) */
+
+    std::vector<float> building_volume_frac, terrain_volume_frac;
     std::vector<float> terrain;
     std::vector<int> terrain_id;      // Sensor function
                                       // (inputWindProfile)

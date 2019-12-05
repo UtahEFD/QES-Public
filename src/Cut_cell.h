@@ -26,8 +26,8 @@ public:
 	 * It takes in a pointer to cell and terrain information (intersection points) and after sorting them for each
 	 * face of the cell and calculating coefficients, it sets them to the related solver coefficient (e,f,g,h,m,n)
 	 */
-	void calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, int nx, int ny, int nz, float dx, float dy, float dz,
-							 std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e,
+	void calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, int nx, int ny, int nz, float dx, float dy,
+							 std::vector<float> &dz_array, std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e,
 							 std::vector<float> &h, std::vector<float> &g, float pi, std::vector<int> &icellflag, std::vector<float> &volume_frac,
 						 	 float halo_x, float halo_y);
 

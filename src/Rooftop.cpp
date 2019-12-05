@@ -228,7 +228,7 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                     if (w_flag == 1)
                     {
                       icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                      UGD->icellflag[icell_cent] = 11;
+                      UGD->icellflag[icell_cent] = 10;
                     }
                   }
                 }
@@ -242,7 +242,7 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                     if (w_flag == 1)
                     {
                       icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                      UGD->icellflag[icell_cent] = 11;
+                      UGD->icellflag[icell_cent] = 10;
                     }
                   }
                 }
@@ -414,7 +414,7 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                         if (w_flag == 1)
                         {
                           icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                          UGD->icellflag[icell_cent] = 11;
+                          UGD->icellflag[icell_cent] = 10;
                         }
                       }
                       if (hd_u < R_cx && z_roof <= shell_height_u)
@@ -425,7 +425,7 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                         if (w_flag == 1)
                         {
                           icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                          UGD->icellflag[icell_cent] = 11;
+                          UGD->icellflag[icell_cent] = 10;
                         }
                       }
                     }
@@ -440,7 +440,7 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                         if (w_flag == 1)
                         {
                           icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                          UGD->icellflag[icell_cent] = 11;
+                          UGD->icellflag[icell_cent] = 10;
                         }
                       }
                       if (hd_v < R_cx && z_roof <= shell_height_v)
@@ -451,7 +451,7 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                         if (w_flag == 1)
                         {
                           icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                          UGD->icellflag[icell_cent] = 11;
+                          UGD->icellflag[icell_cent] = 10;
                         }
                       }
                     }

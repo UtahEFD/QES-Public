@@ -1,8 +1,12 @@
 <simulationParameters>
 
 	<DEM>../scratch/DEM/askervein.tif</DEM>					<!-- Address to DEM location-->	
-	<domain> 1200 1200 50 </domain>
-	<cellSize> 5.0 5.0 4.0 </cellSize> <!-- Meters-->
+
+  	<halo_x> 50.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
+  	<halo_y> 50.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain)-->
+
+	<domain> 630 630 50 </domain>
+	<cellSize> 10.0 10.0 4.0 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
 	<UTCConversion> 0 </UTCConversion>
