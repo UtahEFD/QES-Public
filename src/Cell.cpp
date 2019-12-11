@@ -42,7 +42,7 @@ Cell::Cell(  std::vector< Vector3<float> >& points,  std::vector< Edge< int > >&
 		if (i == 0)
 		{
 			firstC = 0;
-			secondC = 3; 
+			secondC = 3;
 		}
 		else if (i == 1)
 		{

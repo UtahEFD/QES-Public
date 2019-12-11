@@ -62,7 +62,9 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 		{
 			cut_points.clear();
 			cut_points = cells[cutcell_index[j]].getFaceFluidPoints(i);
-
+			int k = cutcell_index[j]/((nx-1)*(ny-1));
+			int jjj = (cutcell_index[j] - k*(nx-1)*(ny-1))/(nx-1);
+			int iii = cutcell_index[j] - k*(nx-1)*(ny-1) - jjj*(nx-1);
 			//place points in local cell space
 			if (cut_points.size() > 2)
 			{
@@ -74,37 +76,33 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 					}
 				}
 
-				int k = cutcell_index[j]/((nx-1)*(ny-1));
-		    int jjj = (cutcell_index[j] - k*(nx-1)*(ny-1))/(nx-1);
-		    int iii = cutcell_index[j] - k*(nx-1)*(ny-1) - jjj*(nx-1);
+
 
 				//for faces that exist on the side of the cell (not XY planes)
 				if (i < 4)
 				{
 					reorderPoints(cut_points, i, pi);
-
 					if ( i == 0 )
-					{
-						S_behind = calculateArea(cut_points, cutcell_index[j], dx, dy, dz_array[k], n, m, f, e, h, g, i);
-					}
-					if ( i == 1 )
-					{
-						S_front = calculateArea(cut_points, cutcell_index[j], dx, dy, dz_array[k], n, m, f, e, h, g, i);
-					}
-					if ( i == 2 )
 					{
 						S_right = calculateArea(cut_points, cutcell_index[j], dx, dy, dz_array[k], n, m, f, e, h, g, i);
 					}
-					if ( i == 3 )
+					if ( i == 1 )
 					{
 						S_left = calculateArea(cut_points, cutcell_index[j], dx, dy, dz_array[k], n, m, f, e, h, g, i);
 					}
-
+					if ( i == 2 )
+					{
+						S_front = calculateArea(cut_points, cutcell_index[j], dx, dy, dz_array[k], n, m, f, e, h, g, i);
+					}
+					if ( i == 3 )
+					{
+						S_behind = calculateArea(cut_points, cutcell_index[j], dx, dy, dz_array[k], n, m, f, e, h, g, i);
+					}
 				}
 				//for the top and bottom faces of the cell (XY planes)
 				else
 				{
-					if (i == faceXYNeg_CF)
+					if (i == 4)
 					{
 						S_below = calculateAreaTopBot(terrainPoints, terrainEdges,cutcell_index[j],
 											dx, dy, dz_array[k], location, n, true);
@@ -118,16 +116,7 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 
 				}
 
-				if ( iii == 242 && jjj == 49)
-        {
-          std::cout << "k:  " << k << "\t\t" << "UGD->icellflag[cutcell_index[j]]:  " << icellflag[cutcell_index[j]] << std::endl;
-          std::cout << "k:  " << k << "\t\t" << "UGD->e[cutcell_index[j]]:  " << e[cutcell_index[j]] << std::endl;
-          std::cout << "k:  " << k << "\t\t" << "UGD->f[cutcell_index[j]]:  " << f[cutcell_index[j]] << std::endl;
-          std::cout << "k:  " << k << "\t\t" << "UGD->g[cutcell_index[j]]:  " << g[cutcell_index[j]] << std::endl;
-          std::cout << "k:  " << k << "\t\t" << "UGD->h[cutcell_index[j]]:  " << h[cutcell_index[j]] << std::endl;
-          std::cout << "k:  " << k << "\t\t" << "UGD->m[cutcell_index[j]]:  " << m[cutcell_index[j]] << std::endl;
-          std::cout << "k:  " << k << "\t\t" << "UGD->n[cutcell_index[j]]:  " << n[cutcell_index[j]] << std::endl;
-        }
+
 
 				S_cut = sqrt( pow(S_behind - S_front, 2.0) + pow(S_right - S_left, 2.0) + pow(S_below - S_above, 2.0) );
 
@@ -138,34 +127,26 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
           nk = (S_below - S_above)/S_cut;
         }
 
-				if ( iii == 242 && jjj == 49)
-        {
-					for (auto jj = 0; jj < terrainPoints.size(); jj++)
-					{
-						std::cout << "jj:   " << jj << "\t\t" << "x:  " << terrainPoints[jj][0] << " \t\t" << "y:  " << terrainPoints[jj][1] << " \t\t" << "z:  " << terrainPoints[jj][2] << std::endl;
-					}
-				}
-
         solid_V_frac = 0.0;
 
         if (i == 0 )
         {
-					solid_V_frac += (0.0*(-1)*S_behind)/(3*dx*dy*dz_array[k]);
+					solid_V_frac += (0.0*(-1)*S_right)/(3*dx*dy*dz_array[k]);
         }
 
         if (i == 1 )
         {
-					solid_V_frac += (dx*(1)*S_front)/(3*dx*dy*dz_array[k]);
+					solid_V_frac += (dy*(1)*S_left)/(3*dx*dy*dz_array[k]);
         }
 
         if (i == 2 )
         {
-					solid_V_frac += (0.0*(-1)*S_right)/(3*dx*dy*dz_array[k]);
+					solid_V_frac += (dx*(1)*S_front)/(3*dx*dy*dz_array[k]);
         }
 
         if (i == 3 )
         {
-					solid_V_frac += (dy*(1)*S_left)/(3*dx*dy*dz_array[k]);
+					solid_V_frac += (0.0*(-1)*S_behind)/(3*dx*dy*dz_array[k]);
         }
 
         if (i == 4 )
@@ -180,7 +161,7 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 
 				if (terrainPoints.size() != 0)
         {
-					solid_V_frac += (((terrainPoints[0][0]-iii*dx)*ni*S_cut) + ((terrainPoints[0][1]-jjj*dy)*nj*S_cut) + ((terrainPoints[0][2]-(k-1)*dz_array[k])*nk*S_cut) )/(3*dx*dy*dz_array[k]);
+					solid_V_frac += (((terrainPoints[0][0]-location[0])*ni*S_cut) + ((terrainPoints[0][1]-location[1])*nj*S_cut) + ((terrainPoints[0][2]-location[2])*nk*S_cut) )/(3*dx*dy*dz_array[k]);
 				}
 
 
@@ -226,20 +207,20 @@ void Cut_cell::reorderPoints(std::vector< Vector3<float>> &cut_points, int index
 	// Calculate angle between each point and centroid
 	for (int i=0; i<cut_points.size(); i++)
 	{
-		if (index==0 || index==1)
+		if (index==2 || index==3)
 		{
 			angle[i] = (180/pi)*atan2((cut_points[i][2]-centroid[2]),(cut_points[i][1]-centroid[1]));
 
 		}
-		if (index==2 || index==3)
+		if (index==0 || index==1)
 		{
 			angle[i] = (180/pi)*atan2((cut_points[i][2]-centroid[2]),(cut_points[i][0]-centroid[0]));
 		}
-		if (index==4 || index==5)
+		/*if (index==4 || index==5)
 		{
 			angle[i] = (180/pi)*atan2((cut_points[i][1]-centroid[1]),(cut_points[i][0]-centroid[0]));
 
-		}
+		}*/
 	}
 	// Call sort to sort points based on the angles (from -180 to 180)
 	mergeSort(angle, cut_points);
@@ -366,27 +347,27 @@ float Cut_cell::calculateArea(std::vector< Vector3<float>> &cut_points, int cutc
 	}
 	if (coeff >= 0)
 	{
-		if (index == 0)
+		if (index == 3)
 		{
 			S = (1.0 - coeff)*(dy*dz);
 			f[cutcell_index] = coeff;
 		}
-		if (index == 1)
+		if (index == 2)
 		{
 			S = (1.0 - coeff)*(dy*dz);
 			e[cutcell_index] = coeff;
 		}
-		if (index == 2)
+		if (index == 0)
 		{
 			S = (1.0 - coeff)*(dx*dz);
 			h[cutcell_index] = coeff;
 		}
-		if (index == 3)
+		if (index == 1)
 		{
 			S = (1.0 - coeff)*(dx*dz);
 			g[cutcell_index] = coeff;
 		}
-		if (index == 4)
+		/*if (index == 4)
 		{
 			S = (1.0 - coeff)*(dx*dy);
 			n[cutcell_index] = coeff;
@@ -395,7 +376,7 @@ float Cut_cell::calculateArea(std::vector< Vector3<float>> &cut_points, int cutc
 		{
 			S = (1.0 - coeff)*(dx*dy);
 			m[cutcell_index] = coeff;
-		}
+		}*/
 	}
 	return S;
 }

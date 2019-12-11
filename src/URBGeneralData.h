@@ -77,7 +77,7 @@ public:
     std::vector<float> dz_array;
     std::vector<float> x,y,z;
     std::vector<float> z_face;
-    std::vector<float> x_out,y_out,z_out;
+    //std::vector<float> x_out,y_out,z_out;
 
     /// Declaration of coefficients for SOR solver
     std::vector<float> e,f,g,h,m,n;

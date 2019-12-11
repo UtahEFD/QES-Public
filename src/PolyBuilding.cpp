@@ -152,7 +152,7 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
       // if num_crossing is even = cell is inside of the polygon
       if ( (num_crossing%2) != 0 )
       {
-        if ( i == 242 && j == 49)
+        if ( i == 257 && j == 41)
         {
           std::cout << "building_number:  " << building_number << std::endl;
           std::cout << "base_height:  " << base_height << std::endl;
@@ -513,6 +513,16 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
             for (auto k = k_start; k <= k_cut_end; k++)
             {
               icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+              if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+              {
+                UGD->terrain_volume_frac[icell_cent] = 1.0;
+                UGD->e[icell_cent] = 1.0;
+                UGD->f[icell_cent] = 1.0;
+                UGD->g[icell_cent] = 1.0;
+                UGD->h[icell_cent] = 1.0;
+                UGD->m[icell_cent] = 1.0;
+                UGD->n[icell_cent] = 1.0;
+              }
               if (UGD->icellflag[icell_cent] != 2 )
               {
                 if (UGD->icellflag[icell_cent] != 7 )
@@ -815,7 +825,18 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
             {
               for (auto k = k_start; k <= k_cut_end; k++)
               {
+
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                {
+                  UGD->terrain_volume_frac[icell_cent] = 1.0;
+                  UGD->e[icell_cent] = 1.0;
+                  UGD->f[icell_cent] = 1.0;
+                  UGD->g[icell_cent] = 1.0;
+                  UGD->h[icell_cent] = 1.0;
+                  UGD->m[icell_cent] = 1.0;
+                  UGD->n[icell_cent] = 1.0;
+                }
                 if (UGD->icellflag[icell_cent] != 2 )
                 {
                   if (UGD->icellflag[icell_cent] != 7)
@@ -931,6 +952,16 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
               for (auto k = k_start; k <= k_cut_end; k++)
               {
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                {
+                  UGD->terrain_volume_frac[icell_cent] = 1.0;
+                  UGD->e[icell_cent] = 1.0;
+                  UGD->f[icell_cent] = 1.0;
+                  UGD->g[icell_cent] = 1.0;
+                  UGD->h[icell_cent] = 1.0;
+                  UGD->m[icell_cent] = 1.0;
+                  UGD->n[icell_cent] = 1.0;
+                }
                 if (UGD->icellflag[icell_cent] != 2)
                 {
                   if (UGD->icellflag[icell_cent] != 7)
@@ -1048,8 +1079,17 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
             {
               for (auto k = k_start; k <= k_cut_end; k++)
               {
-
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                {
+                  UGD->terrain_volume_frac[icell_cent] = 1.0;
+                  UGD->e[icell_cent] = 1.0;
+                  UGD->f[icell_cent] = 1.0;
+                  UGD->g[icell_cent] = 1.0;
+                  UGD->h[icell_cent] = 1.0;
+                  UGD->m[icell_cent] = 1.0;
+                  UGD->n[icell_cent] = 1.0;
+                }
                 if (UGD->icellflag[icell_cent] != 2)
                 {
                   if (UGD->icellflag[icell_cent] != 7)
@@ -1167,8 +1207,17 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
             {
               for (auto k = k_start; k <= k_cut_end; k++)
               {
-
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                {
+                  UGD->terrain_volume_frac[icell_cent] = 1.0;
+                  UGD->e[icell_cent] = 1.0;
+                  UGD->f[icell_cent] = 1.0;
+                  UGD->g[icell_cent] = 1.0;
+                  UGD->h[icell_cent] = 1.0;
+                  UGD->m[icell_cent] = 1.0;
+                  UGD->n[icell_cent] = 1.0;
+                }
                 if (UGD->icellflag[icell_cent] != 2)
                 {
                   if (UGD->icellflag[icell_cent] != 7)
@@ -1291,8 +1340,17 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
             {
               for (auto k = k_start; k <= k_cut_end; k++)
               {
-
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                {
+                  UGD->terrain_volume_frac[icell_cent] = 1.0;
+                  UGD->e[icell_cent] = 1.0;
+                  UGD->f[icell_cent] = 1.0;
+                  UGD->g[icell_cent] = 1.0;
+                  UGD->h[icell_cent] = 1.0;
+                  UGD->m[icell_cent] = 1.0;
+                  UGD->n[icell_cent] = 1.0;
+                }
                 if (UGD->icellflag[icell_cent] != 2)
                 {
                   if (UGD->icellflag[icell_cent] != 7)
@@ -1415,6 +1473,16 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
               for (auto k = k_start; k <= k_cut_end; k++)
               {
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                {
+                  UGD->terrain_volume_frac[icell_cent] = 1.0;
+                  UGD->e[icell_cent] = 1.0;
+                  UGD->f[icell_cent] = 1.0;
+                  UGD->g[icell_cent] = 1.0;
+                  UGD->h[icell_cent] = 1.0;
+                  UGD->m[icell_cent] = 1.0;
+                  UGD->n[icell_cent] = 1.0;
+                }
                 if (UGD->icellflag[icell_cent] != 2)
                 {
                   if (UGD->icellflag[icell_cent] != 7)
@@ -1501,6 +1569,16 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
               for (auto k = k_start; k <= k_cut_end; k++)
               {
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                {
+                  UGD->terrain_volume_frac[icell_cent] = 1.0;
+                  UGD->e[icell_cent] = 1.0;
+                  UGD->f[icell_cent] = 1.0;
+                  UGD->g[icell_cent] = 1.0;
+                  UGD->h[icell_cent] = 1.0;
+                  UGD->m[icell_cent] = 1.0;
+                  UGD->n[icell_cent] = 1.0;
+                }
                 if (UGD->icellflag[icell_cent] != 2)
                 {
                   if (UGD->icellflag[icell_cent] != 7)
@@ -1584,10 +1662,19 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
           {
             if ( x1j > i*UGD->dx && x1j < (i+1)*UGD->dx && x2j > i*UGD->dx && x2j < (i+1)*UGD->dx)
             {
-
               for (auto k = k_start; k <= k_cut_end; k++)
               {
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                {
+                  UGD->terrain_volume_frac[icell_cent] = 1.0;
+                  UGD->e[icell_cent] = 1.0;
+                  UGD->f[icell_cent] = 1.0;
+                  UGD->g[icell_cent] = 1.0;
+                  UGD->h[icell_cent] = 1.0;
+                  UGD->m[icell_cent] = 1.0;
+                  UGD->n[icell_cent] = 1.0;
+                }
                 if (UGD->icellflag[icell_cent] != 2)
                 {
                   if (UGD->icellflag[icell_cent] != 7)
@@ -1884,6 +1971,7 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
         int k = cut_cell_id[id]/((UGD->nx-1)*(UGD->ny-1));
         int j = (cut_cell_id[id] - k*(UGD->nx-1)*(UGD->ny-1))/(UGD->nx-1);
         int i = cut_cell_id[id] - k*(UGD->nx-1)*(UGD->ny-1) - j*(UGD->nx-1);
+
         if (cut_points[id].face_behind.size() != 0)
         {
           reorderPoints(cut_points[id].face_behind, 0);
@@ -1967,6 +2055,7 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
         {
           UGD->building_volume_frac[cut_cell_id[id]] = 0.0;
         }
+
       }
     }
 

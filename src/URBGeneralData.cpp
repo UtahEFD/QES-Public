@@ -128,26 +128,16 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
         z_face[k] = z_face[k-1] + dz_array[k];
     }
 
-    z_out.resize( nz-2 );
-    for (size_t k=1; k<z.size(); k++)
-    {
-        z_out[k-1] = (float)z[k];    /**< Location of face centers in z-dir */
-    }
-
     x.resize( nx-1 );
-    x_out.resize( nx-1 );
-    for (size_t i=0; i<x.size(); i++)
+    for (size_t i=0; i<nx-1; i++)
     {
-        x_out[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
-        x[i] = (float)x_out[i];
+        x[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
     }
 
     y.resize( ny-1 );
-    y_out.resize( ny-1 );
     for (auto j=0; j<ny-1; j++)
     {
-        y_out[j] = (j+0.5)*dy;          /**< Location of face centers in y-dir */
-        y[j] = (float)y_out[j];
+        y[j] = (j+0.5)*dy;          /**< Location of face centers in y-dir */
     }
 
     // Resize the canopy-related vectors
@@ -379,14 +369,6 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
         // Loop to create each of the polygon buildings read in from the shapefile
         for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
         {
-            if (pIdx == 14025)
-            {
-              for (auto lIdx=0; lIdx < UID->simParams->shpPolygons[pIdx].size(); lIdx++)
-              {
-                std::cout << "lIdx:   " << lIdx << "\t\t" << "x:  " << UID->simParams->shpPolygons[pIdx][lIdx].x_poly << " \t\t" << "y:  " << UID->simParams->shpPolygons[pIdx][lIdx].y_poly << std::endl;
-              }
-              std::cout << "base_height:  " << base_height[pIdx] << std::endl;
-            }
             allBuildingsV.push_back (new PolyBuilding (UID, this, pIdx));
             building_id.push_back(allBuildingsV.size()-1);
             allBuildingsV[pIdx]->setPolyBuilding(this);

@@ -413,26 +413,95 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
        Vector3<float> corners[4]; //stored from top Left in clockwise order
        if (i >= ii && j >= jj && i <= i_domain_end && j <= j_domain_end)
        {
-         corners[0] = Vector3<float>( i * dx, j * dy, CLAMP(0, max[2], queryHeight( pafScanline,  ( (i-ii) * dx)/ pixelSizeX, ((j-jj) * dy) / pixelSizeY) - min[2]) );
-         corners[1] = Vector3<float>( (i + 1) * dx, j * dy, CLAMP(0, max[2], queryHeight( pafScanline, (((i-ii) + 1) * dx) / pixelSizeX, ((j-jj) * dy) / pixelSizeY ) - min[2]) );
+         corners[0] = Vector3<float>( i * dx, j * dy, CLAMP(0, max[2], queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]) );
+         corners[1] = Vector3<float>( i * dx, (j+1) * dy, CLAMP(0, max[2], queryHeight( pafScanline,  ( (i-ii) * dx)/ pixelSizeX, (((j-jj) + 1) * dy) / pixelSizeY) - min[2]) );
          corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, CLAMP(0, max[2], queryHeight( pafScanline , (((i-ii) + 1) * dx) / pixelSizeX,  (((j-jj) + 1) * dy) / pixelSizeY) - min[2]) );
-         corners[3] = Vector3<float>( i * dx, (j + 1) * dy, CLAMP(0, max[2], queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  (((j-jj) + 1) * dy) / pixelSizeY) - min[2]) );
+         corners[3] = Vector3<float>( (i + 1) * dx, j * dy, CLAMP(0, max[2], queryHeight( pafScanline, (((i-ii) + 1) * dx) / pixelSizeX, ((j-jj) * dy) / pixelSizeY ) - min[2]) );
        }
        else
        {
-         corners[0] = Vector3<float>( i * dx, j * dy,  0.0f );
-         corners[1] = Vector3<float>( (i + 1) * dx, j * dy, 0.0f );
-         corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, 0.0f );
-         corners[3] = Vector3<float>( i * dx, (j + 1) * dy, 0.0f );
+         corners[0] = Vector3<float>( i * dx, j * dy,   0.0f);
+         corners[1] = Vector3<float>( i * dx, (j + 1) * dy, 0.0f);
+         corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, 0.0f);
+         corners[3] = Vector3<float>( (i + 1) * dx, j * dy, 0.0f);
+       }
+       /*else if (i < ii)
+       {
+         if (j < jj)
+         {
+           std::cout << "height:  " << queryHeight( pafScanline , ( dx) / pixelSizeX,  ( dy) / pixelSizeY) - min[2] << std::endl;
+           corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , ( dx) / pixelSizeX,  ( dy) / pixelSizeY) - min[2]);
+           corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , ( dx) / pixelSizeX,  ( dy) / pixelSizeY) - min[2]);
+           corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+           corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+         }
+         else if (j > j_domain_end)
+         {
+           corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , ( dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+           corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+           corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+           corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+         }
+         else
+         {
+           corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+           corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+           corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+           corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+         }
        }
 
-       if (i < ii || j < jj)
+       else if (j < jj)
        {
-         /*std::cout<< "corners[0]:  " << corners[0][2] << std::endl;
+         if (i > i_domain_end)
+         {
+           corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+           corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+           corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+           corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+         }
+         else
+         {
+           corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+           corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+           corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+           corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+         }
+       }
+
+       else if (i > i_domain_end)
+       {
+         if (j > j_domain_end)
+         {
+           corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+           corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+           corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , ((i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+           corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , ((i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+         }
+         else
+         {
+           corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , ((i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+           corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+           corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , ((i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+           corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , ((i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+         }
+       }
+
+       else if (j > j_domain_end)
+       {
+         corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+         corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+         corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+         corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+       }
+
+       if ( i == 256 && j == 41)
+       {
+         std::cout<< "corners[0]:  " << corners[0][2] << std::endl;
          std::cout<< "corners[1]:  " << corners[1][2] << std::endl;
          std::cout<< "corners[2]:  " << corners[2][2] << std::endl;
-         std::cout<< "corners[3]:  " << corners[3][2] << std::endl;*/
-       }
+         std::cout<< "corners[3]:  " << corners[3][2] << std::endl;
+       }*/
 
 
        setCellPoints(cells, i, j, nx, ny, nz, dz_array, corners, cutCells);
