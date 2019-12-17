@@ -66,7 +66,8 @@ public:
    * @return -A list of ID values for all cut cells.
    */
   std::vector<int> setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy,
-                            std::vector<float> &dz_array, float halo_x, float halo_y) const;
+                            std::vector<float> &dz_array, std::vector<float> z_face,
+                            float halo_x, float halo_y) const;
 
   /*
    * This function frees the pafScanline. It should be called after all DEM querying has taken place.
@@ -92,7 +93,7 @@ private:
    * @param corners -an array containing the points that representing the DEM elevation at each of the cells corners
    * @param cutCells -a list of all cells which the terrain goes through
    */
-  void setCellPoints(Cell* cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, Vector3<float> corners[], std::vector<int>& cutCells) const;
+  void setCellPoints(Cell* cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3<float> corners[], std::vector<int>& cutCells) const;
 
   void load();
 

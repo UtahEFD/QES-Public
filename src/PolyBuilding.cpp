@@ -152,12 +152,6 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
       // if num_crossing is even = cell is inside of the polygon
       if ( (num_crossing%2) != 0 )
       {
-        if ( i == 257 && j == 41)
-        {
-          std::cout << "building_number:  " << building_number << std::endl;
-          std::cout << "base_height:  " << base_height << std::endl;
-          std::cout << "k_start:  " << k_start << std::endl;
-        }
         for (auto k=k_start; k<k_end; k++)
         {
           int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);

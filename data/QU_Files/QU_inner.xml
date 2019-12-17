@@ -6,8 +6,8 @@
   	<halo_x> 0.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
   	<halo_y> 0.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain)-->
 
-  	<domain>100 100 100</domain>				<!-- Number of cells in x,y and z directions-->
-  	<cellSize> 2.0 2.0 2.0 </cellSize> 		<!-- Mesh resolution (meters)-->
+  	<domain>200 200 200</domain>				<!-- Number of cells in x,y and z directions-->
+  	<cellSize> 1.0 1.0 1.0 </cellSize> 		<!-- Mesh resolution (meters)-->
 	<verticalStretching> 0 </verticalStretching>              <!-- vertical stretching (0-uniform grid, 1-costum grid)-->
 
 	<totalTimeIncrements> 0 </totalTimeIncrements> 				<!-- Number of time steps-->
@@ -83,7 +83,7 @@
 	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
-		<height> 30.0 </height>
+		<height> 20.0 </height>
 		<baseHeight> 0 </baseHeight>
 		<xStart> 70.0 </xStart>
 		<yStart> 70.0 </yStart>
@@ -91,13 +91,13 @@
 		<width> 20.0 </width>
 		<buildingRotation> 0.0 </buildingRotation>
 	</rectangularBuilding>
-	<!--rectangularBuilding>
+	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
-		<height> 21.0 </height>
+		<height> 20.0 </height>
 		<baseHeight> 0 </baseHeight>
-		<xStart> 71.1 </xStart>
-		<yStart> 91.5 </yStart>
+		<xStart> 70.0 </xStart>
+		<yStart> 92.0 </yStart>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
 		<buildingRotation> 0.0 </buildingRotation>
@@ -105,10 +105,10 @@
 	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
-		<height> 21.0 </height>
+		<height> 20.0 </height>
 		<baseHeight> 0 </baseHeight>
-		<xStart> 91.5 </xStart>
-		<yStart> 91.5 </yStart>
+		<xStart> 92.0 </xStart>
+		<yStart> 92.0 </yStart>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
 		<buildingRotation> 0.0 </buildingRotation>
@@ -116,13 +116,13 @@
 	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
-		<height> 21.0 </height>
+		<height> 20.0 </height>
 		<baseHeight> 0 </baseHeight>
-		<xStart> 91.5 </xStart>
-		<yStart> 71.1 </yStart>
+		<xStart> 92.0 </xStart>
+		<yStart> 70.0 </yStart>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
 		<buildingRotation> 0.0 </buildingRotation>
-	</rectangularBuilding-->
+	</rectangularBuilding>
 </buildings>
 

@@ -7,7 +7,7 @@
 void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, int nx, int ny, int nz, float dx, float dy,
 								std::vector<float> &dz_array, std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e,
 								std::vector<float> &h, std::vector<float> &g, float pi, std::vector<int> &icellflag, std::vector<float> &terrain_volume_frac,
-								float halo_x, float halo_y)
+								std::vector<float> &z_face, float halo_x, float halo_y)
 {
 
 	std::vector<int> cutcell_index;							 // Index of cut-cells
@@ -18,7 +18,7 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 
 	cells = new Cell[(nx-1)*(ny-1)*(nz-1)];
 	// Get cut-cell indices from terrain function
-	cutcell_index = DTEHF->setCells(cells, nx, ny, nz, dx, dy, dz_array, halo_x, halo_y);
+	cutcell_index = DTEHF->setCells(cells, nx, ny, nz, dx, dy, dz_array, z_face, halo_x, halo_y);
 
 	std::cout<<"number of cut cells:" << cutcell_index.size() << "\n";
 

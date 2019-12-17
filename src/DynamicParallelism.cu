@@ -55,7 +55,7 @@ __global__ void divergence(float *d_u0, float *d_v0, float *d_w0, float *d_R, fl
 /// SOR RedBlack Kernel.
 ///
 ///
-__global__ void SOR_RB(float *d_lambda, int nx, int ny, int nz, float omega, float  A, float  B, float  dx, float *d_e,
+__global__ void SOR_RB(float *d_lambda, float *d_lambda_old, int nx, int ny, int nz, float omega, float  A, float  B, float  dx, float *d_e,
 						float *d_f, float *d_g, float *d_h, float *d_m, float *d_n, float *d_R, int offset)
 {
     int icell_cent = blockDim.x*blockIdx.x+threadIdx.x;
@@ -208,12 +208,12 @@ __global__ void SOR_iteration (float *d_lambda, float *d_lambda_old, int nx, int
         // SOR part
         int offset = 0;   // red nodes
         // Invoke red-black SOR kernel for red nodes
-        SOR_RB<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m,
+        SOR_RB<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m,
 															d_n, d_R, offset);
         cudaDeviceSynchronize();
         offset = 1;    // black nodes
         // Invoke red-black SOR kernel for black nodes
-        SOR_RB<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m,
+        SOR_RB<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m,
 															d_n, d_R,offset);
         cudaDeviceSynchronize();
         dim3 numberOfBlocks2(ceil(((nx-1)*(ny-1))/(float) (BLOCKSIZE)),1,1);
@@ -224,10 +224,10 @@ __global__ void SOR_iteration (float *d_lambda, float *d_lambda_old, int nx, int
         calculateError<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda,d_lambda_old, nx, ny, nz, d_value,d_bvalue);
         cudaDeviceSynchronize();
 
-		/*if (iter == 100)
-		{
-			omega = 1.0;
-		}*/
+        /*if (iter == 200)
+        {
+          omega = 1.0;
+        }*/
 
         iter += 1;
 

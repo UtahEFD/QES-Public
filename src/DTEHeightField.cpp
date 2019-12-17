@@ -391,7 +391,7 @@ void DTEHeightField::printProgress (float percentage)
 #define CELL(i,j,k) ((i) + (j) * (nx - 1) + (k) * (nx - 1) * (ny - 1))
 #define CLAMP(low, high, x) ( (x) < (low) ? (low) : ( (x) > (high) ? (high) : (x) ))
 
-std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy, std::vector<float> &dz_array, float halo_x, float halo_y) const
+std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy, std::vector<float> &dz_array, std::vector<float> z_face, float halo_x, float halo_y) const
 {
 
   printf("Setting Cell Data...\n");
@@ -504,7 +504,7 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
        }*/
 
 
-       setCellPoints(cells, i, j, nx, ny, nz, dz_array, corners, cutCells);
+       setCellPoints(cells, i, j, nx, ny, nz, dz_array, z_face, corners, cutCells);
 
     }
 
@@ -518,7 +518,7 @@ return cutCells;
 
 }
 
-void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, Vector3<float> corners[], std::vector<int>& cutCells) const
+void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3<float> corners[], std::vector<int>& cutCells) const
 {
    float coordsMin, coordsMax;
    coordsMin = coordsMax = corners[0][2];
@@ -537,7 +537,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
 // #pragma acc parallel loop
   for (int k = 1; k < nz - 1; k++)
   {
-    float cellBot = (k - 1) * dz_array[k];
+    float cellBot = z_face[k-1];
     float cellTop = cellBot + dz_array[k];
 
     /*if ( i < 5  || j < 5)

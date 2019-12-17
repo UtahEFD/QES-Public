@@ -277,7 +277,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
 
             // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
             cut_cell.calculateCoefficient(cells, UID->simParams->DTE_heightField, nx, ny, nz, dx, dy, dz_array, n, m, f, e, h, g, pi, icellflag,
-                                          terrain_volume_frac, UID->simParams->halo_x, UID->simParams->halo_y);
+                                          terrain_volume_frac, z_face, UID->simParams->halo_x, UID->simParams->halo_y);
         }
     }
     ///////////////////////////////////////////////////////
@@ -335,11 +335,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
                 {
                     corner_height = UID->simParams->DTE_mesh->getHeight(UID->simParams->shpPolygons[pIdx][lIdx].x_poly,
                                                                         UID->simParams->shpPolygons[pIdx][lIdx].y_poly);
-                    if (pIdx == 14025)
-                    {
-                      std::cout << "corner_height:  " << corner_height << std::endl;
-                      std::cout << "min_height:  " << min_height << std::endl;
-                    }
+
                     if (corner_height < min_height && corner_height >= 0.0)
                     {
                         min_height = corner_height;
