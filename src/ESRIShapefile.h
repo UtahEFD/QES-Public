@@ -13,7 +13,7 @@ class ESRIShapefile
 public:
     ESRIShapefile();
     ESRIShapefile(const std::string &filename, const std::string &layerName,
-                  std::vector< std::vector< polyVert > >& polygons, std::vector <float> &building_height);
+                  std::vector< std::vector< polyVert > >& polygons, std::vector <float> &building_height, float heightFactor);
     ~ESRIShapefile();
 
     void getLocalDomain( std::vector<float> &dim )
@@ -32,7 +32,7 @@ public:
 
 private:
 
-    void loadVectorData( std::vector< std::vector< polyVert > > &polygons, std::vector <float> &building_height );
+    void loadVectorData( std::vector< std::vector< polyVert > > &polygons, std::vector <float> &building_height, float heightFactor );
 
     std::string m_filename;
     std::string m_layerName;
