@@ -57,9 +57,9 @@ bool Triangle::rayTriangleIntersect(Ray ray, HitRecord& rec){
    K = (*a)[1] - ray.getOriginY();
    L = (*a)[2] - ray.getOriginZ();
 
-   float EIHF = (E*I) - (H2*F);
+   float EIHF = (E*I2) - (H2*F);
    float GFDI = (G2*F) - (D*I2);
-   float DHEG = (D*H) - (E*G);
+   float DHEG = (D*H2) - (E*G2);
    float AKJB = (A*K) - (J*B);
    float JCAL = (J*C) - (A*L);
    float BLKC = (B*L) - (K*C);
@@ -70,20 +70,20 @@ bool Triangle::rayTriangleIntersect(Ray ray, HitRecord& rec){
    gamma = ((I2*AKJB)+(H2*JCAL)+(G2*BLKC))/M;
    t = -(((F*AKJB)+(E*JCAL)+(D*BLKC))/M);
 
-   if(gamma < 0 || gamma > 1 || beta < 0 || beta > (1-gamma)){
+   if(gamma < 0 || gamma > 1 || beta < 0 || beta > (1-gamma) || t < 0.0) {
       return false;
    }else{
-      rec.endpt[0] = ray.getOriginX() - (t*ray.getDirection()[0]);
-      rec.endpt[1] = ray.getOriginY() - (t*ray.getDirection()[1]);
-      rec.endpt[2] = ray.getOriginZ() - (t*ray.getDirection()[2]);
-      rec.hitDist = std::sqrt(std::pow(rec.endpt[0] - ray.getOriginX(),2)
-                              + std::pow(rec.endpt[1] - ray.getOriginY(), 2)
-                              + std::pow(rec.endpt[2] - ray.getOriginZ(), 2));
+       rec.endpt[0] = ray.getOriginX() + (t*ray.getDirection()[0]);
+       rec.endpt[1] = ray.getOriginY() + (t*ray.getDirection()[1]);
+       rec.endpt[2] = ray.getOriginZ() + (t*ray.getDirection()[2]);
+       rec.hitDist = std::sqrt(std::pow(rec.endpt[0] - ray.getOriginX(),2)
+                               + std::pow(rec.endpt[1] - ray.getOriginY(), 2)
+                               + std::pow(rec.endpt[2] - ray.getOriginZ(), 2));
 
-      rec.t = t;
-      return true;
+       rec.t = t;
+       return true;
    }
-
+   
 }
 
 
