@@ -1,5 +1,5 @@
 <simulationParameters>
-  <!--DEM>../scratch/SLC/n41w112_30m/n41w112_30m.tif</DEM-->					<!-- Address to DEM location-->
+  <DEM>../scratch/SLC/n41w112_30m/n41w112_30m.tif</DEM>					<!-- Address to DEM location-->
   <SHP>../scratch/SLC/slc_cut.shp</SHP>				<!-- Address to shapefile location-->
   <SHPBuildingLayer>slc_cut</SHPBuildingLayer>
   <heightFactor> 1.0 </heightFactor>					<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->

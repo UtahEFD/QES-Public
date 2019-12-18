@@ -62,7 +62,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     // Calculation of z0 domain info MAY need to move to UrbInputData
     // or somewhere else once we know the domain size
     // /////////////////////////
-    z0_domain.resize( nx*ny );
+    z0_domain_u.resize( nx*ny );
+    z0_domain_v.resize( nx*ny );
     if (UID->metParams->z0_domain_flag == 0)      // Uniform z0 for the whole domain
     {
         for (auto i=0; i<nx; i++)
@@ -70,7 +71,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
             for (auto j=0; j<ny; j++)
             {
                 id = i+j*nx;
-                z0_domain[id] = UID->metParams->sensors[0]->site_z0;
+                z0_domain_u[id] = UID->metParams->sensors[0]->site_z0;
+                z0_domain_v[id] = UID->metParams->sensors[0]->site_z0;
             }
         }
     }
@@ -81,7 +83,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
             for (auto j=0; j<ny; j++)
             {
                 id = i+j*nx;
-                z0_domain[id] = 0.5;
+                z0_domain_u[id] = 0.5;
+                z0_domain_v[id] = 0.5;
             }
         }
         for (auto i=nx/2; i<nx; i++)
@@ -89,7 +92,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
             for (auto j=0; j<ny; j++)
             {
                 id = i+j*nx;
-                z0_domain[id] = 0.1;
+                z0_domain_u[id] = 0.1;
+                z0_domain_v[id] = 0.1;
             }
         }
     }

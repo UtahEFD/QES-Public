@@ -7,7 +7,7 @@
   <halo_x> 40.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
   <halo_y> 40.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain)-->
 
-  <domain> 300 300 200</domain>				<!-- Number of cells in x,y and z directions-->
+  <domain> 300 300 100</domain>				<!-- Number of cells in x,y and z directions-->
   <cellSize> 5.0 5.0 2.0 </cellSize> 		<!-- Mesh resolution (meters)-->
 
   <verticalStretching> 0 </verticalStretching>		<!-- vertical stretching (0-uniform grid, 1-costum grid)-->

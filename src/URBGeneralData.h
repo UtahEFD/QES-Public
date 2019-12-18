@@ -66,7 +66,7 @@ public:
     long numcell_cent;       /**< Total number of cell-centered values in domain */
     long numcell_face;       /**< Total number of face-centered values in domain */
 
-    std::vector<float> z0_domain;
+    std::vector<float> z0_domain_u, z0_domain_v;
 
     std::vector<int> ibuilding_flag;
     std::vector<int> building_id;
