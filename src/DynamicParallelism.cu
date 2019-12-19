@@ -207,11 +207,13 @@ __global__ void SOR_iteration (float *d_lambda, float *d_lambda_old, int nx, int
         cudaDeviceSynchronize();
         // SOR part
         int offset = 0;   // red nodes
+        offset = ( (iter % 2) + offset ) % 2;
         // Invoke red-black SOR kernel for red nodes
         SOR_RB<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m,
 															d_n, d_R, offset);
         cudaDeviceSynchronize();
         offset = 1;    // black nodes
+        offset = ( (iter % 2) + offset ) % 2;
         // Invoke red-black SOR kernel for black nodes
         SOR_RB<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m,
 															d_n, d_R,offset);
