@@ -62,7 +62,6 @@ Vector3<float> SphereDirections::getNextDir(){
       next = new Vector3<float>(dx/magnitude,dy/magnitude,dz/magnitude);
       vecCount++;
    }else if(vecCount == numDirVec -1){
-      std::cout<<"bottom direction for sure"<<std::endl;
       return Vector3<float>(0,0,-1);
    }else{
       next = NULL;
@@ -74,8 +73,9 @@ Vector3<float> SphereDirections::getNextDir(){
 Vector3<float> SphereDirections::getNextDir2(){
    Vector3<float> nextDir;
 
-
+   //currently in progress
 
    return nextDir;
 }
+
 int SphereDirections::getNumDirVec(){return numDirVec;}

@@ -13,7 +13,7 @@
 #define GETMIN(x,y) ( (x) < (y) ? (x) : (y))
 #define GETMAX(x,y) ( (x) > (y) ? (x) : (y))
 
-//class Ray;
+
 #include "Ray.h"
 
 using std::vector;
@@ -83,23 +83,21 @@ public:
 	static BVH* createBVH(const std::vector<Triangle*> tris);
 
         /*         
-         *Takes a 3D ray and determines if it intersects this BVH's
+         *Takes a 3D ray and determines if it intersects this BVH
          *node's bounding box
-         @return HitRecord of the box it hit or NULL if a miss 
+         *
+         *@param ray -ray to potential hit
+         *@return true if a hit is found and false otherwise 
          */
         bool rayBoxIntersect(Ray ray);
 
         /*
-         *Better version of determining if a hit or not 
+         *Determines if the ray hit the expected parameters and
+         *updates the HitRecord with info on the hit
+         *
+         *@param ray -ray to potential hit
+         *@param rec -the HitRecord to be updated with hit details
+         *@return true if hit is found and false otherwise
          */
         bool rayHit(Ray ray, const float t0, float& t1, HitRecord& rec);
-
-        
-        /*
-         *may only temporarily need this until I can make a more
-         *efficient version
-         */
-        bool getIsLeaf();
-        BVH* getLeftBox();
-        BVH* getRightBox();
 };
