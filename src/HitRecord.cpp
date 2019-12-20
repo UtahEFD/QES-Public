@@ -1,9 +1,8 @@
 #include "HitRecord.h"
 
-HitRecord::HitRecord(){
-   //isHit = false;
-   //hitNode = 0;
-   //hitDist = -1;
+HitRecord::HitRecord()
+    : isHit(false), hitNode(nullptr), hitDist(0.0), t(0.0)
+{
 }
 
 HitRecord::HitRecord(void* hitNode, bool isHit){
