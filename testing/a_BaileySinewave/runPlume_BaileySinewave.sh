@@ -11,6 +11,6 @@
 module load gcc/5.4.0
 ulimit -c unlimited -s
 
-./cudaPlume/cudaPlume -q ../testing/a_BaileySinewave/BaileySinewave.xml -u ../testing/a_BaileySinewave/BaileySinewave_urb.nc -t ../testing/a_BaileySinewave/BaileySinewave_turb.nc -o BaileySinewave_plume.nc
+./cudaPlume/cudaPlume -q ../testing/a_BaileySinewave/BaileySinewave.xml -u ../testing/a_BaileySinewave/BaileySinewave_urb.nc -t ../testing/a_BaileySinewave/BaileySinewave_turb.nc -o ../util/MATLAB/c_CUDA-PlumePlotting/c_plumeOutput/a_sinewave/a_HeteroAnisoExplicitTurb_0o01_10/BaileySinewave_plume.nc -d ../util/MATLAB/c_CUDA-PlumePlotting/c_plumeOutput/a_sinewave/a_HeteroAnisoExplicitTurb_0o01_10
 
 

@@ -46,9 +46,22 @@ Turb :: Turb(Input* input) {
     input->getVariableData("CoEps",start,count,CoEps);
     input->getVariableData("tke",start,count,tke);
     
-    grid.dx = grid.x[1]-grid.x[0];
-    grid.dy = grid.y[1]-grid.y[0];
-    grid.dz = grid.z[1]-grid.z[0];
+    // set the dx values to 1, and correct them if the grid is has more than one value
+    grid.dx = 1;
+    grid.dy = 1;
+    grid.dz = 1;
+    if(grid.nx > 1)
+    {
+        grid.dx = grid.x[1] - grid.x[0];
+    }
+    if(grid.ny > 1)
+    {
+        grid.dy = grid.y[1] - grid.y[0];
+    }
+    if(grid.nz > 1)
+    {
+        grid.dz = grid.z[1] - grid.z[0];
+    }
     
     // read in data
     // set of temporary vectors to hold the stress tensors and inverted stress tensors and variances before putting them into the grid

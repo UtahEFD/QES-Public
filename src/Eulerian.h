@@ -76,6 +76,10 @@ private:
 
     // I keep wondering, since we never use the gradients again since they are just used to calculate flux_div, which is what is used instead
     // at some point in time should we get rid of storage of the gradient datasets? I guess they are useful for debugging.
+    void setDX_1D(const Turb* turb, const int idx);
+    void setDY_1D(const Turb* turb, const int idx);
+    void setDZ_1D(const Turb* turb, const int idx);
+
     void setDX_Forward(const Turb* turb, const int idx);    // second order forward differencing for calc gradient in the x direction of tau
     void setDY_Forward(const Turb* turb, const int idx);    // second order forward differencing for calc gradient in the y direction of tau
     void setDZ_Forward(const Turb* turb, const int idx);    // second order forward differencing for calc gradient in the z direction of tau
@@ -88,6 +92,17 @@ private:
     void createFluxDiv();       // this function takes the TauGrads and turns them into a bunch simpler values to use
     
 };
+
+
+inline void Eulerian::setDX_1D(const Turb* turb, const int idx)
+{
+    taudx.at(idx).e11 = 0.0;
+    taudx.at(idx).e12 = 0.0;
+    taudx.at(idx).e13 = 0.0;
+    taudx.at(idx).e22 = 0.0;
+    taudx.at(idx).e23 = 0.0;
+    taudx.at(idx).e33 = 0.0;
+}
 
 // second order forward differencing for calc gradient in the x direction of tau
 inline void Eulerian::setDX_Forward(const Turb* turb, const int idx)
@@ -117,6 +132,17 @@ inline void Eulerian::setDX_Backward(const Turb* turb, const int idx)
     taudx.at(idx).e33 = ( 3.0*turb->tau.at(idx).e33 - 4.0*turb->tau.at(idx_xm1).e33 + turb->tau.at(idx_xm2).e33 ) * 0.5 / dx;
 }
 
+
+inline void Eulerian::setDY_1D(const Turb* turb, const int idx)
+{
+    taudy.at(idx).e11 = 0.0;
+    taudy.at(idx).e12 = 0.0;
+    taudy.at(idx).e13 = 0.0;
+    taudy.at(idx).e22 = 0.0;
+    taudy.at(idx).e23 = 0.0;
+    taudy.at(idx).e33 = 0.0;
+}
+
 // second order forward differencing for calc gradient in the y direction of tau
 inline void Eulerian::setDY_Forward(const Turb* turb, const int idx)
 {
@@ -143,6 +169,17 @@ inline void Eulerian::setDY_Backward(const Turb* turb, const int idx)
     taudy.at(idx).e22 = ( 3.0*turb->tau.at(idx).e22 - 4.0*turb->tau.at(idx_ym1).e22 + turb->tau.at(idx_ym2).e22 ) * 0.5 / dy;
     taudy.at(idx).e23 = ( 3.0*turb->tau.at(idx).e23 - 4.0*turb->tau.at(idx_ym1).e23 + turb->tau.at(idx_ym2).e23 ) * 0.5 / dy;
     taudy.at(idx).e33 = ( 3.0*turb->tau.at(idx).e33 - 4.0*turb->tau.at(idx_ym1).e33 + turb->tau.at(idx_ym2).e33 ) * 0.5 / dy;
+}
+
+
+inline void Eulerian::setDZ_1D(const Turb* turb, const int idx)
+{
+    taudz.at(idx).e11 = 0.0;
+    taudz.at(idx).e12 = 0.0;
+    taudz.at(idx).e13 = 0.0;
+    taudz.at(idx).e22 = 0.0;
+    taudz.at(idx).e23 = 0.0;
+    taudz.at(idx).e33 = 0.0;
 }
 
 // second order forward differencing for calc gradient in the z direction of tau

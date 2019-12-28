@@ -65,7 +65,10 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
                 int idx = k*ny*nx + j*nx + i;
 
                 // DX components
-                if (i < (nx-2)) {
+                if (nx == 1) {
+                    setDX_1D(turb, idx);
+                }
+                else if (i < (nx-2)) {
                     setDX_Forward(turb, idx);
                 }
                 else { 
@@ -73,7 +76,10 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
                 }
                     
                 // DY components
-                if (j < (ny-2)) {
+                if (ny == 1) {
+                    setDY_1D(turb, idx);
+                }
+                else if (j < (ny-2)) {
                     setDY_Forward(turb, idx);
                 }
                 else { 
@@ -81,7 +87,10 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
                 }
 
                 // DZ components
-                if (k < (nz-2)) {
+                if (nz == 1) {
+                    setDZ_1D(turb, idx);
+                }
+                else if (k < (nz-2)) {
                     setDZ_Forward(turb, idx);
                 }
                 else {

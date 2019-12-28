@@ -160,14 +160,14 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
 
 
 // be careful to set all of these to 0 except for one of each direction type which needs set to 1
-#define xBCtype_exiting 1
-#define xBCtype_periodic 0
+#define xBCtype_exiting 0
+#define xBCtype_periodic 1
 #define xBCtype_reflection 0
-#define yBCtype_exiting 1
-#define yBCtype_periodic 0
+#define yBCtype_exiting 0
+#define yBCtype_periodic 1
 #define yBCtype_reflection 0
-#define zBCtype_exiting 1
-#define zBCtype_periodic 0
+#define zBCtype_exiting 0
+#define zBCtype_periodic 1
 #define zBCtype_reflection 0
 
 
@@ -514,6 +514,12 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             }
             save(output);
             avgTime = avgTime + PID->colParams->timeAvg;    // I think this is updating the averaging time for the next loop
+        }
+
+        int updateFrequency = 1;
+        if( tStep % updateFrequency == 0 || tStep == numTimeStep - 1 )
+        {
+            std::cout << "time = \"" << timeStepStamp.at(tStep) << "\", isRogueCount = \"" << dis->isRogueCount << "\", isActiveCount = \"" << dis->isActiveCount << "\"\n";
         }
 
 
