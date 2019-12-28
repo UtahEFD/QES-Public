@@ -13,7 +13,7 @@
 #include "SourceLine.hpp"
 #include "SourceUniformDomain.hpp"
 
-Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
+Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul, const std::string& debugOutputFolder_val)
     : pointList(0)
 {
     std::cout<<"[Dispersion] \t Setting up sources "<<std::endl;
@@ -86,9 +86,13 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
     //                                             0 ); // last 0 is the fudge factor to force overloading the right constructor
 
     // Otherwise, this will work
-    std::cout << "urb->grid.nz = \"" << urb->grid.nz << "\"\n";
-    SourceKind *sPtr = new SourceUniformDomain( 0.5, 0.5, 0.5, 199.5, 199.5, 199.5, 100000, 
+    //SourceKind *sPtr = new SourceUniformDomain( 0.5, 0.5, 0.5, 199.5, 199.5, 199.5, 100000, 
+    //                                            domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
+
+    // alternative and more appropriate form
+    SourceKind *sPtr = new SourceUniformDomain( domainXstart, domainYstart, domainZstart, domainXend, domainYend, domainZend, 100000, 
                                                 domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
+
     allSources.push_back( sPtr );
 #endif
 
@@ -118,6 +122,7 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
 
     // set the isRogueCount to zero
     isRogueCount = 0.0;
+    isActiveCount = 0.0;
 
     // calculate the threshold velocity
     vel_threshold = 10.0*sqrt(maxval(turb->sig));  // might need to write a maxval function, since it has to get the largest value from the entire sig array
@@ -136,6 +141,9 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul)
         exit(1);
     }
 #endif
+
+    // set the debug variable output folder
+    debugOutputFolder = debugOutputFolder_val;
     
 }
 
@@ -397,4 +405,193 @@ double Dispersion::maxval(const std::vector<diagonal>& vec)
 
     return maximumVal;
     
+}
+
+void Dispersion::outputVarInfo_text()
+{
+    // if the debug output folder is an empty string "", the debug output variables won't be written
+    if( debugOutputFolder == "" )
+    {
+        return;
+    }
+
+    std::cout << "writing Lagrangian debug variables\n";
+
+    // set some variables for use in the function
+    FILE *fzout;    // changing file to which information will be written
+    std::string currentFile = "";
+    
+
+    // now write out the Lagrangian grid information to the debug folder
+    // at some time this could be wrapped up into a bunch of functions, for now just type it all out without functions
+
+
+    // make a variable to keep track of the number of particles
+    int nPar = pointList.size();
+    
+
+
+    currentFile = debugOutputFolder + "/particle_txx_old.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).tau_old.e11);
+    }
+    fclose(fzout);
+
+    currentFile = debugOutputFolder + "/particle_txy_old.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).tau_old.e12);
+    }
+    fclose(fzout);
+
+    currentFile = debugOutputFolder + "/particle_txz_old.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).tau_old.e13);
+    }
+    fclose(fzout);
+
+    currentFile = debugOutputFolder + "/particle_tyy_old.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).tau_old.e22);
+    }
+    fclose(fzout);
+
+    currentFile = debugOutputFolder + "/particle_tyz_old.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).tau_old.e23);
+    }
+    fclose(fzout);
+
+    currentFile = debugOutputFolder + "/particle_tzz_old.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).tau_old.e33);
+    }
+    fclose(fzout);
+
+    currentFile = debugOutputFolder + "/particle_uFluct_old.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).prime_old.e11);
+    }
+    fclose(fzout);
+
+    currentFile = debugOutputFolder + "/particle_vFluct_old.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).prime_old.e21);
+    }
+    fclose(fzout);
+
+    currentFile = debugOutputFolder + "/particle_wFluct_old.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).prime_old.e31);
+    }
+    fclose(fzout);
+
+
+
+    currentFile = debugOutputFolder + "/particle_uFluct.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).prime.e11);
+    }
+    fclose(fzout);
+
+    currentFile = debugOutputFolder + "/particle_vFluct.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).prime.e21);
+    }
+    fclose(fzout);
+
+    currentFile = debugOutputFolder + "/particle_wFluct.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).prime.e31);
+    }
+    fclose(fzout);
+
+    currentFile = debugOutputFolder + "/particle_delta_uFluct.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).delta_prime.e11);
+    }
+    fclose(fzout);
+
+    currentFile = debugOutputFolder + "/particle_delta_vFluct.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).delta_prime.e21);
+    }
+    fclose(fzout);
+
+    currentFile = debugOutputFolder + "/particle_delta_wFluct.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).delta_prime.e31);
+    }
+    fclose(fzout);
+
+
+
+    // note that isActive is not the same as isRogue, but the expected output is isRogue
+    currentFile = debugOutputFolder + "/particle_isActive.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).isRogue);
+    }
+    fclose(fzout);
+
+
+
+    currentFile = debugOutputFolder + "/particle_xPos.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).pos.e11);
+    }
+    fclose(fzout);
+
+    currentFile = debugOutputFolder + "/particle_yPos.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).pos.e21);
+    }
+    fclose(fzout);
+
+    currentFile = debugOutputFolder + "/particle_zPos.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nPar; idx++)
+    {
+        fprintf(fzout,"%lf\n",pointList.at(idx).pos.e31);
+    }
+    fclose(fzout);
+
+
+    // now that all is finished, clean up the file pointer
+    fzout = NULL;
+
 }

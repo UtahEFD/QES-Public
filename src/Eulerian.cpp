@@ -9,7 +9,7 @@
 #include "Urb.hpp"
 #include "Turb.hpp"
 
-Eulerian::Eulerian(Urb* urb, Turb* turb) {
+Eulerian::Eulerian(Urb* urb, Turb* turb, const std::string& debugOutputFolder) {
     
     std::cout<<"[Eulerian] \t Reading CUDA-URB & CUDA-TURB fields "<<std::endl;
     
@@ -34,7 +34,10 @@ Eulerian::Eulerian(Urb* urb, Turb* turb) {
 
     // use the stress gradients to calculate the flux div
     createFluxDiv();
-    
+
+    // if the debug output folder is an empty string "", the debug output variables won't be written
+    outputVarInfo_text(urb,turb,debugOutputFolder);
+
 }
 
 // This is here only so we can test the two versions a bit for
@@ -644,6 +647,386 @@ Wind Eulerian::interp3D(const std::vector<Wind>& EulerData)
     return outputVal;
 
 }
+
+void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outputFolder)
+{
+    // if the debug output folder is an empty string "", the debug output variables won't be written
+    if( outputFolder == "" )
+    {
+        return;
+    }
+
+    std::cout << "writing Eulerian debug variables\n";
+
+
+    // set some variables for use in the function
+    FILE *fzout;    // changing file to which information will be written
+    std::string currentFile = "";
+
+
+    // now write out the Eulerian grid information to the debug folder
+    // at some time this could be wrapped up into a bunch of functions, for now just type it all out without functions
+
+
+
+    currentFile = outputFolder + "/urb_xCellGrid.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nx; idx++)
+    {
+        fprintf(fzout,"%lf\n",urb->grid.x.at(idx));
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/urb_yCellGrid.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < ny; idx++)
+    {
+        fprintf(fzout,"%lf\n",urb->grid.y.at(idx));
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/urb_zCellGrid.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int idx = 0; idx < nz; idx++)
+    {
+        fprintf(fzout,"%lf\n",urb->grid.z.at(idx));
+    }
+    fclose(fzout);
+
+
+
+    currentFile = outputFolder + "/eulerian_uMean.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",urb->wind.at(kk*nx*ny + jj*nx + ii).u);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_vMean.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",urb->wind.at(kk*nx*ny + jj*nx + ii).v);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_wMean.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",urb->wind.at(kk*nx*ny + jj*nx + ii).w);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_sigma2.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",turb->sig.at(kk*nx*ny + jj*nx + ii).e33);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_epps.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",turb->CoEps.at(kk*nx*ny + jj*nx + ii));
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_txx.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",turb->tau.at(kk*nx*ny + jj*nx + ii).e11);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_txy.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",turb->tau.at(kk*nx*ny + jj*nx + ii).e12);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_txz.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",turb->tau.at(kk*nx*ny + jj*nx + ii).e13);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_tyy.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",turb->tau.at(kk*nx*ny + jj*nx + ii).e22);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_tyz.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",turb->tau.at(kk*nx*ny + jj*nx + ii).e23);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_tzz.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",turb->tau.at(kk*nx*ny + jj*nx + ii).e33);
+            }
+        }
+    }
+    fclose(fzout);
+
+
+
+    currentFile = outputFolder + "/eulerian_dtxxdx.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",taudx.at(kk*nx*ny + jj*nx + ii).e11);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_dtxydx.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",taudx.at(kk*nx*ny + jj*nx + ii).e12);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_dtxzdx.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",taudx.at(kk*nx*ny + jj*nx + ii).e13);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_dtxydy.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",taudy.at(kk*nx*ny + jj*nx + ii).e12);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_dtyydy.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",taudy.at(kk*nx*ny + jj*nx + ii).e22);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_dtyzdy.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",taudy.at(kk*nx*ny + jj*nx + ii).e23);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_dtxzdz.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",taudz.at(kk*nx*ny + jj*nx + ii).e13);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_dtyzdz.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",taudz.at(kk*nx*ny + jj*nx + ii).e23);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_dtzzdz.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",taudz.at(kk*nx*ny + jj*nx + ii).e33);
+            }
+        }
+    }
+    fclose(fzout);
+
+
+
+    currentFile = outputFolder + "/eulerian_flux_div_x.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",flux_div.at(kk*nx*ny + jj*nx + ii).e11);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_flux_div_y.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",flux_div.at(kk*nx*ny + jj*nx + ii).e21);
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_flux_div_z.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",flux_div.at(kk*nx*ny + jj*nx + ii).e31);
+            }
+        }
+    }
+    fclose(fzout);
+
+    // now that all is finished, clean up the file pointer
+    fzout = NULL;
+
+}
+
+
 
 
 void Eulerian::display(const matrix9& mat){

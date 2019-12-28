@@ -36,6 +36,7 @@ class Args : public ArgumentParsing
         std::string inputFileUrb = "";
         std::string inputFileTurb = "";
         std::string outputFile = "";
+        std::string debugOutputFolder = "";
     
     private:
 };

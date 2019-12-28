@@ -24,7 +24,7 @@ class Dispersion {
     
     public:
         
-        Dispersion(Urb*,Turb*,PlumeInputData*,Eulerian*); // starts by making copies of nx,ny, dx,dy,dz, timestep, and runTime
+        Dispersion(Urb*,Turb*,PlumeInputData*,Eulerian*,const std::string& debugOutputFolder_val); // starts by making copies of nx,ny, dx,dy,dz, timestep, and runTime
                                                 // then calculates the number of timesteps called numTimeStep from runTime and timestep.
                                                 // then calculates the list of times called timeStepStamp
                                                 // next, it calls addSource() to go through each source and set the initial positions and release times for each particle
@@ -48,6 +48,7 @@ class Dispersion {
         std::vector<double> timeStepStamp;  // this is the list of times for the simulation
         
         double isRogueCount;        // just a total number of rogue particles per time iteration
+        double isActiveCount;       // just a total number of active particles per time iteration
         double vel_threshold;       // the velocity fluctuation threshold velocity used to determine if particles are rogue or no
 
         
@@ -80,6 +81,12 @@ class Dispersion {
         // this function requires the values to be sorted to work correctly, but it goes through finding when the times change,
         // using the changes to store a number of particles to release for each timestep
         void calc_parPerTimestep();
+
+        void outputVarInfo_text();
+
+
+        // this is the output folder for debug variable output
+        std::string debugOutputFolder;
         
 
     private:

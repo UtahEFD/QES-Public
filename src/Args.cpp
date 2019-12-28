@@ -18,6 +18,7 @@ Args::Args(): inputFileUrb("cudaurb.nc"), inputFileTurb("cudaturb.nc"), outputFi
     reg("inputFileUrb",  "specifies input file from cuda-urb",       ArgumentParsing::STRING, 'u');
     reg("inputFileTurb", "specifies input file from cuda-turb",      ArgumentParsing::STRING, 't');
     reg("outputFile",    "select cellface, if not then cell center", ArgumentParsing::STRING, 'o');
+    reg("debugOutputFolder",    "specifies folder for debug output text files", ArgumentParsing::STRING, 'd');
 }
 
 void Args::processArguments(int argc, char *argv[])
@@ -33,4 +34,5 @@ void Args::processArguments(int argc, char *argv[])
     isSet( "inputFileUrb", inputFileUrb );
     isSet( "inputFileTurb", inputFileTurb );    
     isSet( "outputFile", outputFile );
+    isSet( "debugOutputFolder", debugOutputFolder );
 }

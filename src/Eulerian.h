@@ -15,7 +15,7 @@ class Eulerian{
     
 public:
     
-    Eulerian(Urb*,Turb*);   // copies the urb grid values for nx, ny, nz, nt, dx, dy, and dz to the Eulerian grid values,
+    Eulerian(Urb*,Turb*,const std::string& debugOutputFolder);   // copies the urb grid values for nx, ny, nz, nt, dx, dy, and dz to the Eulerian grid values,
                             // then calculates the tau gradients which are then used to calculate the flux_div grid values.
                             //    Eulerian grid accessing functions should be the main use of this class.
                             // since Urb and Turb stuff is not fully copied into this Eulerian dataset, some Eulerian grid accessing functions should probably be able to do calculations
@@ -57,6 +57,8 @@ public:
     diagonal interp3D(const std::vector<diagonal>& EulerData,const std::string& dataName);
     matrix6 interp3D(const std::vector<matrix6>& EulerData);
     Wind interp3D(const std::vector<Wind>& EulerData);
+
+    void outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outputFolder);
     
  
 private:

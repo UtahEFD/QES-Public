@@ -90,6 +90,7 @@ class Plume {
         // functions used to average the output concentrations
         void average(const int, const Dispersion*, const Urb*);     // this one is called right at output. Going to keep. Calculates the concentration averages
         
+        void writeSimInfoFile(Dispersion* dis, const double& current_time);
         
 
         // output manager

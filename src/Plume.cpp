@@ -204,6 +204,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
         // Move each particle for every time step
         double isRogueCount = dis->isRogueCount;    // This probably could be moved from dispersion to one level back in this for loop
+        double isActiveCount = dis->isActiveCount;
 
         // Advection Loop
                 
@@ -462,6 +463,11 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 {
                     isRogueCount = isRogueCount + 1;
                 }
+                if(isActive == false)
+                {
+                    isActiveCount = isActiveCount + 1;
+                }
+
 
                 dis->pointList.at(par).isRogue = isRogue;
                 dis->pointList.at(par).isActive = isActive;
@@ -475,6 +481,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         // hm, I'm almost wondering if this needs to go into dispersion, could just be kept locally,
         // but declared outside the loop to preserve the value. Depends on the requirements for output and debugging
         dis->isRogueCount = isRogueCount;
+        dis->isActiveCount = isActiveCount;
 
         
         // this is basically saying, if we are past the time to start averaging values to calculate the concentration,
@@ -517,6 +524,10 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         // Purge the advection list of all the unneccessary particles....
 
     } // for(tStep=0; tStep<numTimeStep; tStep++)
+
+    // if the debug output folder is an empty string "", the debug output variables won't be written
+    writeSimInfoFile(dis,timeStepStamp.at(numTimeStep-1));
+    dis->outputVarInfo_text();
 
 }
 
@@ -863,3 +874,59 @@ void Plume::average(const int tStep,const Dispersion* dis, const Urb* urb)
 
 }
 
+void Plume::writeSimInfoFile(Dispersion* dis, const double& current_time)
+{
+    std::string outputFolder = dis->debugOutputFolder;
+
+    // if the debug output folder is an empty string "", the debug output variables won't be written
+    if( outputFolder == "" )
+    {
+        return;
+    }
+
+    std::cout << "writing simInfoFile\n";
+
+
+    // set some variables for use in the function
+    FILE *fzout;    // changing file to which information will be written
+    
+
+    // now write out the simulation information to the debug folder
+    
+
+    // comment out to choose which saveBasename to use
+    std::string saveBasename = "sinewave_HeteroAnisoImplicitTurb";
+    //std::string saveBasename = "channel_HeteroAnisoImplicitTurb";
+    //std::string saveBasename = "LES_HeteroAnisoImplicitTurb";
+    double C_0 = 4.0;
+
+    // add timestep to saveBasename variable
+    std::cout << "running to_string on dt to add to saveBasename\n";
+    saveBasename = saveBasename + "_" + std::to_string(dt);
+
+
+    std::string outputFile = outputFolder + "/sim_info.txt";
+    std::cout << "opening simInfoFile for write\n";
+    fzout = fopen(outputFile.c_str(), "w");
+    fprintf(fzout,"\n");    // a purposeful blank line
+    fprintf(fzout,"saveBasename     = %s\n",saveBasename.c_str());
+    fprintf(fzout,"\n");    // a purposeful blank line
+    fprintf(fzout,"C_0              = %lf\n",C_0);
+    fprintf(fzout,"timestep         = %lf\n",dt);
+    fprintf(fzout,"\n");    // a purposeful blank line
+    fprintf(fzout,"current_time     = %lf\n",current_time);
+    fprintf(fzout,"rogueCount       = %0.0lf\n",dis->isRogueCount);
+    fprintf(fzout,"isActiveCount    = %0.0lf\n",dis->isActiveCount);
+    fprintf(fzout,"\n");    // a purposeful blank line
+    fprintf(fzout,"x_nCells         = %d\n",nx);
+    fprintf(fzout,"y_nCells         = %d\n",ny);
+    fprintf(fzout,"z_nCells         = %d\n",nz);
+    fprintf(fzout,"nParticles       = %d\n",dis->pointList.size());
+    fprintf(fzout,"\n");    // a purposeful blank line
+    fclose(fzout);
+
+
+    // now that all is finished, clean up the file pointer
+    fzout = NULL;
+
+}
