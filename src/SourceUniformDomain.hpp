@@ -6,8 +6,8 @@
 class SourceUniformDomain : public SourceKind
 {
 private:
-    float m_rangeX, m_rangeY, m_rangeZ;
-    float m_minX, m_minY, m_minZ;
+    double m_rangeX, m_rangeY, m_rangeZ;
+    double m_minX, m_minY, m_minZ;
     
 protected:
     
@@ -18,11 +18,11 @@ public:
     {
     }
     
-    SourceUniformDomain( float minX, float minY, float minZ,
-                         float maxX, float maxY, float maxZ, const int numParticles,
-                         const double domainXstart, const double domainXend, 
-                         const double domainYstart, const double domainYend,
-                         const double domainZstart, const double domainZend )
+    SourceUniformDomain( const double& minX, const double& minY, const double& minZ,
+                         const double& maxX, const double& maxY, const double& maxZ, const int& numParticles,
+                         const double& domainXstart, const double& domainXend, 
+                         const double& domainYstart, const double& domainYend,
+                         const double& domainZstart, const double& domainZend )
         : SourceKind( numParticles, ParticleReleaseType::instantaneous ),
           m_rangeX( maxX-minX ), m_rangeY( maxY-minY ), m_rangeZ( maxZ-minZ ),
           m_minX( minX ), m_minY( minY ), m_minZ( minZ )
@@ -53,8 +53,8 @@ public:
         }
         if( m_rangeY > domainYend )
         {
-            std::cerr << "ERROR (SourceUniformDomain::SourceUniformDomain): m_rangeY is greater than domainYend! m_rangeX = \"" << m_rangeY 
-                << "\" domainXend = \"" << domainYend << "\"\n";
+            std::cerr << "ERROR (SourceUniformDomain::SourceUniformDomain): m_rangeY is greater than domainYend! m_rangeY = \"" << m_rangeY 
+                << "\" domainYend = \"" << domainYend << "\"\n";
             exit(1);
         }
         if( m_rangeZ > domainZend )
@@ -65,10 +65,10 @@ public:
         }
     }
 
-    SourceUniformDomain( int nx, int ny, int nz, double dx, double dy, double dz, const int numParticles,
-                         const double domainXstart, const double domainXend, 
-                         const double domainYstart, const double domainYend,
-                         const double domainZstart, const double domainZend,
+    SourceUniformDomain( const int& nx, const int& ny, const int& nz, const double& dx, const double& dy, const double& dz, const int& numParticles,
+                         const double& domainXstart, const double& domainXend, 
+                         const double& domainYstart, const double& domainYend,
+                         const double& domainZstart, const double& domainZend,
                          const int fudge )  // for some odd reason adding in the dx, dy, and dz values causes it to overload to this function instead of the other
                                             // so I'm throwing in a fake unused argument to force it to not overload to this but to use the other version
                                             // I'm guessing it has to do with the arguments being the same number, and it is hard to distinguish between int, float, and double?
@@ -102,8 +102,8 @@ public:
         }
         if( m_rangeY > domainYend )
         {
-            std::cerr << "ERROR (SourceUniformDomain::SourceUniformDomain): m_rangeY is greater than domainYend! m_rangeX = \"" << m_rangeY 
-                << "\" domainXend = \"" << domainYend << "\"\n";
+            std::cerr << "ERROR (SourceUniformDomain::SourceUniformDomain): m_rangeY is greater than domainYend! m_rangeY = \"" << m_rangeY 
+                << "\" domainYend = \"" << domainYend << "\"\n";
             exit(1);
         }
         if( m_rangeZ > domainZend )

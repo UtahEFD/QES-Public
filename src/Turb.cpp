@@ -157,19 +157,19 @@ Turb :: Turb(Input* input) {
 
 
     // the values for some of this are required, but the outputting of them is a useful debugging tool
-    std::cout << "Turb nx = \"" << grid.nx << "\"\n";
-    std::cout << "Turb ny = \"" << grid.ny << "\"\n";
-    std::cout << "Turb nz = \"" << grid.nz << "\"\n";
-    std::cout << "Turb nt = \"" << grid.nt << "\"\n";
-    std::cout << "Turb dx = \"" << grid.dx << "\"\n";
-    std::cout << "Turb dy = \"" << grid.dy << "\"\n";
-    std::cout << "Turb dz = \"" << grid.dz << "\"\n";
-    std::cout << "Turb domainXstart = \"" << domainXstart << "\"\n";
-    std::cout << "Turb domainXend = \"" << domainXend << "\"\n";
-    std::cout << "Turb domainYstart = \"" << domainYstart << "\"\n";
-    std::cout << "Turb domainYend = \"" << domainYend << "\"\n";
-    std::cout << "Turb domainZstart = \"" << domainZstart << "\"\n";
-    std::cout << "Turb domainZend = \"" << domainZend << "\"\n";
+    std::cout << "Turb nx = \"" << grid.nx << "\"" << std::endl;
+    std::cout << "Turb ny = \"" << grid.ny << "\"" << std::endl;
+    std::cout << "Turb nz = \"" << grid.nz << "\"" << std::endl;
+    std::cout << "Turb nt = \"" << grid.nt << "\"" << std::endl;
+    std::cout << "Turb dx = \"" << grid.dx << "\"" << std::endl;
+    std::cout << "Turb dy = \"" << grid.dy << "\"" << std::endl;
+    std::cout << "Turb dz = \"" << grid.dz << "\"" << std::endl;
+    std::cout << "Turb domainXstart = \"" << domainXstart << "\"" << std::endl;
+    std::cout << "Turb domainXend = \"" << domainXend << "\"" << std::endl;
+    std::cout << "Turb domainYstart = \"" << domainYstart << "\"" << std::endl;
+    std::cout << "Turb domainYend = \"" << domainYend << "\"" << std::endl;
+    std::cout << "Turb domainZstart = \"" << domainZstart << "\"" << std::endl;
+    std::cout << "Turb domainZend = \"" << domainZend << "\"" << std::endl;
 #endif
 
 }

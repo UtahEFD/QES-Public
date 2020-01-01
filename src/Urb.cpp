@@ -105,19 +105,19 @@ Urb :: Urb(Input* input) {
 
 #if 1
     // the values for this are required, but the outputting of them is a useful debugging tool
-    std::cout << "Urb nx = \"" << grid.nx << "\"\n";
-    std::cout << "Urb ny = \"" << grid.ny << "\"\n";
-    std::cout << "Urb nz = \"" << grid.nz << "\"\n";
-    std::cout << "Urb nt = \"" << grid.nt << "\"\n";
-    std::cout << "Urb dx = \"" << grid.dx << "\"\n";
-    std::cout << "Urb dy = \"" << grid.dy << "\"\n";
-    std::cout << "Urb dz = \"" << grid.dz << "\"\n";
-    std::cout << "Urb domainXstart = \"" << domainXstart << "\"\n";
-    std::cout << "Urb domainXend = \"" << domainXend << "\"\n";
-    std::cout << "Urb domainYstart = \"" << domainYstart << "\"\n";
-    std::cout << "Urb domainYend = \"" << domainYend << "\"\n";
-    std::cout << "Urb domainZstart = \"" << domainZstart << "\"\n";
-    std::cout << "Urb domainZend = \"" << domainZend << "\"\n";
+    std::cout << "Urb nx = \"" << grid.nx << "\"" << std::endl;
+    std::cout << "Urb ny = \"" << grid.ny << "\"" << std::endl;
+    std::cout << "Urb nz = \"" << grid.nz << "\"" << std::endl;
+    std::cout << "Urb nt = \"" << grid.nt << "\"" << std::endl;
+    std::cout << "Urb dx = \"" << grid.dx << "\"" << std::endl;
+    std::cout << "Urb dy = \"" << grid.dy << "\"" << std::endl;
+    std::cout << "Urb dz = \"" << grid.dz << "\"" << std::endl;
+    std::cout << "Urb domainXstart = \"" << domainXstart << "\"" << std::endl;
+    std::cout << "Urb domainXend = \"" << domainXend << "\"" << std::endl;
+    std::cout << "Urb domainYstart = \"" << domainYstart << "\"" << std::endl;
+    std::cout << "Urb domainYend = \"" << domainYend << "\"" << std::endl;
+    std::cout << "Urb domainZstart = \"" << domainZstart << "\"" << std::endl;
+    std::cout << "Urb domainZend = \"" << domainZend << "\"" << std::endl;
 #endif
 
 }

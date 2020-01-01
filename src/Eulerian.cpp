@@ -102,7 +102,7 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
 
     auto timerEnd = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = timerEnd - timerStart;
-    std::cout << "\telapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
+    std::cout << "\telapsed time: " << elapsed.count() << " s" << std::endl;   // Print out elapsed execution time
 }
 
 #else
@@ -217,7 +217,7 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
 
     auto timerEnd = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = timerEnd - timerStart;
-    std::cout << "\telapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
+    std::cout << "\telapsed time: " << elapsed.count() << " s" << std::endl;   // Print out elapsed execution time
 }
 
 #endif
@@ -311,19 +311,19 @@ void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
     if( ii < 0 || ii+ip > nx-1 )
     {
         std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle x position is out of range! x = \"" << xyz_particle.e11 
-            << "\" ii+ip = \"" << ii << "\"+\"" << ip << "\",   nx-1 = \"" << nx-1 << "\"\n";
+            << "\" ii+ip = \"" << ii << "\"+\"" << ip << "\",   nx-1 = \"" << nx-1 << "\"" << std::endl;
         exit(1);
     }
     if( jj < 0 || jj+jp > ny-1 )
     {
         std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle y position is out of range! y = \"" << xyz_particle.e21 
-            << "\" jj+jp = \"" << jj << "\"+\"" << jp << "\",   ny-1 = \"" << ny-1 << "\"\n";
+            << "\" jj+jp = \"" << jj << "\"+\"" << jp << "\",   ny-1 = \"" << ny-1 << "\"" << std::endl;
         exit(1);
     }
     if( kk < 0 || kk+kp > nz-1 )
     {
         std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle z position is out of range! z = \"" << xyz_particle.e31 
-            << "\" kk+kp = \"" << kk << "\"+\"" << kp << "\",   nz-1 = \"" << nz-1 << "\"\n";
+            << "\" kk+kp = \"" << kk << "\"+\"" << kp << "\",   nz-1 = \"" << nz-1 << "\"" << std::endl;
         exit(1);
     }
 
@@ -665,7 +665,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         return;
     }
 
-    std::cout << "writing Eulerian debug variables\n";
+    std::cout << "writing Eulerian debug variables" << std::endl;
 
 
     // set some variables for use in the function
@@ -761,6 +761,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     fclose(fzout);
 
     currentFile = outputFolder + "/eulerian_epps.txt";
+    double C_0 = 4.0;
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -768,7 +769,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",turb->CoEps.at(kk*nx*ny + jj*nx + ii));
+                fprintf(fzout,"%lf\n",turb->CoEps.at(kk*nx*ny + jj*nx + ii)/C_0);
             }
         }
     }

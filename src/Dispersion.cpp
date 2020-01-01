@@ -370,10 +370,10 @@ void Dispersion::calc_parPerTimestep()
 
     if( cumulatedParticles != numPar)
     {
-        std::cerr << "Disperion::calc_parPerTimestep Error!\n";
-        std::cerr << "cumulatedParticles not equal to numPar!\n";
-        std::cerr << "cumulatedParticles = \"" << cumulatedParticles << "\", numPar = \"" << numPar << "\"\n";
-        std::cerr << "ENDING PROGRAM!!!\n";
+        std::cerr << "Disperion::calc_parPerTimestep Error!" << std::endl;
+        std::cerr << "cumulatedParticles not equal to numPar!" << std::endl;
+        std::cerr << "cumulatedParticles = \"" << cumulatedParticles << "\", numPar = \"" << numPar << "\"" << std::endl;
+        std::cerr << "ENDING PROGRAM!!!" << std::endl;
         exit(1);
     }
 }
@@ -415,7 +415,7 @@ void Dispersion::outputVarInfo_text()
         return;
     }
 
-    std::cout << "writing Lagrangian debug variables\n";
+    std::cout << "writing Lagrangian debug variables" << std::endl;
 
     // set some variables for use in the function
     FILE *fzout;    // changing file to which information will be written

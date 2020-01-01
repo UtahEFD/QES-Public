@@ -20,6 +20,8 @@
 #include "TypeDefs.hpp"
 #include "PlumeInputData.hpp"
 
+#include <chrono>
+
 using namespace netCDF;
 using namespace netCDF::exceptions;
 

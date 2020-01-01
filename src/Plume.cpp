@@ -182,6 +182,10 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
     // TIME Stepping Loop
     // for every time step
     // //////////////////////////////////////////
+
+    // I want to get an idea of the overall time of the time integration loop
+    auto timerStart_timeIntegration = std::chrono::high_resolution_clock::now();
+        
     for(int tStep = 0; tStep < numTimeStep; tStep++)
     {
         // 
@@ -189,25 +193,34 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         // - walk over all sources and add the emitted particles from
         // each source to the overall particle list
         // 
+        auto timerStart_particleRelease = std::chrono::high_resolution_clock::now();
         std::vector<particle> nextSetOfParticles(0);
         for (auto sidx=0u; sidx < dis->allSources.size(); sidx++) {
             int numParticles = dis->allSources[sidx]->emitParticles( (float)dt, (float)(tStep*dt), nextSetOfParticles );
             if (numParticles > 0)
                 std::cout << "Emitting " << numParticles << " particles from source " << sidx << std::endl;
         }
-
+        
         dis->setParticleVals( turb, eul, nextSetOfParticles );
         
         // append all the new particles on to the big particle
         // advection list
         dis->pointList.insert( dis->pointList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end() );
 
+        auto timerEnd_particleRelease = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_particleRelease = timerEnd_particleRelease - timerStart_particleRelease;
+        std::cout << "finished emitting particles from sources. Total numParticles = \"" << dis->pointList.size() << "\"" << std::endl;
+        std::cout << "\telapsed time: " << elapsed_particleRelease.count() << " s" << std::endl;   // Print out elapsed execution time
+
         // Move each particle for every time step
         double isRogueCount = dis->isRogueCount;    // This probably could be moved from dispersion to one level back in this for loop
         double isActiveCount = dis->isActiveCount;
 
         // Advection Loop
-                
+
+        // I want to get an idea of the overall time of the advection loop, and different parts of the advection loop
+        auto timerStart_advection = std::chrono::high_resolution_clock::now();
+
         for (int par=0; par<dis->pointList.size(); par++)
         {
             // get the current isRogue and isActive information
@@ -220,6 +233,11 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             // first check to see if the particle should even be advected
             if(isActive == true && isRogue == false)
             {
+
+                // overall particle timer
+                auto timerStart_particle = std::chrono::high_resolution_clock::now();
+
+
                 // this is getting the current position for where the particle is at for a given time
                 // if it is the first time a particle is ever released, then the value is already set at the initial value
                 double xPos = dis->pointList.at(par).pos.e11;
@@ -385,22 +403,22 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 // now check to see if the value is rogue or not
                 if( abs(uPrime) >= vel_threshold || isnan(uPrime) && nx > 1 )
                 {
-                    std::cout << "Particle # " << par << " is rogue.\n";
-                    std::cout << "responsible uFluct was \"" << uPrime << "\"\n";
+                    std::cout << "Particle # " << par << " is rogue." << std::endl;
+                    std::cout << "responsible uFluct was \"" << uPrime << "\"" << std::endl;
                     uPrime = 0.0;
                     isRogue = true;
                 }
                 if( abs(vPrime) >= vel_threshold || isnan(vPrime) && ny > 1 )
                 {
-                    std::cout << "Particle # " << par << " is rogue.\n";
-                    std::cout << "responsible vFluct was \"" << vPrime << "\"\n";
+                    std::cout << "Particle # " << par << " is rogue." << std::endl;
+                    std::cout << "responsible vFluct was \"" << vPrime << "\"" << std::endl;
                     vPrime = 0.0;
                     isRogue = true;
                 }
                 if( abs(wPrime) >= vel_threshold || isnan(wPrime) && nz > 1 )
                 {
-                    std::cout << "Particle # " << par << " is rogue.\n";
-                    std::cout << "responsible wFluct was \"" << wPrime << "\"\n";
+                    std::cout << "Particle # " << par << " is rogue." << std::endl;
+                    std::cout << "responsible wFluct was \"" << wPrime << "\"" << std::endl;
                     wPrime = 0.0;
                     isRogue = true;
                 }
@@ -424,6 +442,11 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 yPos = yPos + disY;
                 zPos = zPos + disZ;
 
+
+                // I want to get an idea of the overall time of the advection loop, and different parts of the advection loop
+                //std::cout << "applying wallBC" << std::endl;
+                //auto timerStart_wallBC = std::chrono::high_resolution_clock::now();
+
                 // now apply boundary conditions
                 // at some point in time, going to have to do a polymorphic inheritance so can have lots of boundary condition types
                 // but so that they can be run without if statements when changing BC types
@@ -433,6 +456,11 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 // I guess just implement one that makes isActive go false if it goes outside the domain
                 enforceWallBCs(xPos,yPos,zPos,uPrime,vPrime,wPrime,uFluct_old,vFluct_old,wFluct_old,isActive);
                 
+                //auto timerEnd_wallBC = std::chrono::high_resolution_clock::now();
+                //std::chrono::duration<double> elapsed_wallBC = timerEnd_wallBC - timerStart_wallBC;
+                //std::cout << "wallBC for particle par[" << par << "] and timeStepStamp[" << timeStepStamp.at(tStep) << "] finished" << std::endl;
+                //std::cout << "\telapsed time: " << elapsed_wallBC.count() << " s" << std::endl;   // Print out elapsed execution time
+
 
 
                 // now update the old values and current values in the dispersion storage to be ready for the next iteration
@@ -471,6 +499,12 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 dis->pointList.at(par).isRogue = isRogue;
                 dis->pointList.at(par).isActive = isActive;
+
+
+                auto timerEnd_particle = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<double> elapsed_particle = timerEnd_particle - timerStart_particle;
+                std::cout << "particle iteration par[" << par << "] finished" << std::endl;
+                std::cout << "\telapsed time: " << elapsed_particle.count() << " s" << std::endl;   // Print out elapsed execution time
             
             }   // if isActive == true and isRogue == false
 
@@ -482,6 +516,13 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         // but declared outside the loop to preserve the value. Depends on the requirements for output and debugging
         dis->isRogueCount = isRogueCount;
         dis->isActiveCount = isActiveCount;
+
+
+        auto timerEnd_advection = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_advection = timerEnd_advection - timerStart_advection;
+        std::cout << "advection loop for timeStepStamp[" << timeStepStamp.at(tStep) << "] finished" << std::endl;
+        std::cout << "\telapsed time: " << elapsed_advection.count() << " s" << std::endl;   // Print out elapsed execution time
+
 
         
         // this is basically saying, if we are past the time to start averaging values to calculate the concentration,
@@ -519,7 +560,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         int updateFrequency = 1;
         if( tStep % updateFrequency == 0 || tStep == numTimeStep - 1 )
         {
-            std::cout << "time = \"" << timeStepStamp.at(tStep) << "\", isRogueCount = \"" << dis->isRogueCount << "\", isActiveCount = \"" << dis->isActiveCount << "\"\n";
+            std::cout << "time = \"" << timeStepStamp.at(tStep) << "\", isRogueCount = \"" << dis->isRogueCount << "\", isActiveCount = \"" << dis->isActiveCount << "\"" << std::endl;
         }
 
 
@@ -530,6 +571,11 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         // Purge the advection list of all the unneccessary particles....
 
     } // for(tStep=0; tStep<numTimeStep; tStep++)
+
+    auto timerEnd_timeIntegration = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_timeIntegration = timerEnd_timeIntegration - timerStart_timeIntegration;
+    std::cout << "time integration loop finished" << std::endl;
+    std::cout << "\telapsed time: " << elapsed_timeIntegration.count() << " s" << std::endl;   // Print out elapsed execution time
 
     // if the debug output folder is an empty string "", the debug output variables won't be written
     writeSimInfoFile(dis,timeStepStamp.at(numTimeStep-1));
@@ -627,7 +673,10 @@ matrix9 Plume::invert3(const matrix9& A)
     if(abs(det) < 1e-10)
     {
         det = 10e10;
-        std::cout << "WARNING (Plume::invert3): matrix nearly singular\n";
+        std::cout << "WARNING (Plume::invert3): matrix nearly singular" << std::endl;
+        std::cout << "A.e11 = \"" << A.e11 << "\", A.e12 = \"" << A.e12 << "\", A.e13 = \"" << A.e13 << "\", A.e21 = \"" 
+            << A.e21 << "\", A.e22 = \"" << A.e22 << "\", A.e23 = \"" << A.e23 << "\", A.31 = \"" << A.e31 << "\" A.e32 = \""
+            << A.e32 << "\", A.e33 = \"" << A.e33 << "\"" << std::endl;
     }
 
     // calculate the inverse
@@ -713,22 +762,42 @@ void Plume::enforceWallBCs_exiting(double& xPos,double& yPos,double& zPos,bool& 
 
 void Plume::enforceWallBCs_periodic(double& pos, const double& domainStart,const double& domainEnd)
 {
+    
     double domainSize = domainEnd - domainStart;
-    while( pos < domainStart )
+    int loopCountLeft = 0;
+    int loopCountRight = 0;
+        
+    std::cout << "enforceWallBCs_periodic starting pos = \"" << pos << "\", domainStart = \"" << domainStart << "\", domainEnd = \"" << domainEnd << "\"" << std::endl;
+
+    if(domainSize != 0)
     {
-        pos = pos + domainSize;
+        while( pos < domainStart )
+        {
+            pos = pos + domainSize;
+            loopCountLeft = loopCountLeft + 1;
+        }
+        while( pos > domainEnd )
+        {
+            pos = pos - domainSize;
+            loopCountRight = loopCountRight + 1;
+        }
     }
-    while( pos > domainEnd )
-    {
-        pos = pos - domainSize;
-    }
+    
+    std::cout << "enforceWallBCs_periodic ending pos = \"" << pos << "\", loopCountLeft = \"" << loopCountLeft << "\", loopCountRight = \"" << std::endl;
+
 }
 
 void Plume::enforceWallBCs_reflection(double& pos,double& velPrime,double& velFluct_old,bool& isActive, const double& domainStart,const double& domainEnd)
 {
     if( isActive == true )
     {
+
+        std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velPrime = \"" << velPrime << "\", velFluct_old = \"" <<
+                velFluct_old << "\", domainStart = \"" << domainStart << "\", domainEnd = \"" << domainEnd << "\"" << std::endl;
+
         int reflectCount = 0;
+        int loopCountLeft = 0;
+        int loopCountRight = 0;
         while( pos < domainStart || pos > domainEnd )
         {
             if( pos > domainEnd )
@@ -736,11 +805,13 @@ void Plume::enforceWallBCs_reflection(double& pos,double& velPrime,double& velFl
                 pos = domainEnd - (pos - domainEnd);
                 velPrime = -velPrime;
                 velFluct_old = -velFluct_old;
+                loopCountLeft = loopCountLeft + 1;
             } else if( pos < domainStart )
             {
                 pos = domainStart - (pos - domainStart);
                 velPrime = -velPrime;
                 velFluct_old = -velFluct_old;
+                loopCountRight = loopCountRight + 1;
             }
             reflectCount = reflectCount + 1;
 
@@ -750,16 +821,21 @@ void Plume::enforceWallBCs_reflection(double& pos,double& velPrime,double& velFl
             {
                 if( pos > domainEnd )
                 {
-                    std::cout << "warning (Plume::enforceWallBCs_reflection): upper boundary condition failed! Setting isActive to false. pos = \"" << pos << "\"\n";
+                    std::cout << "warning (Plume::enforceWallBCs_reflection): upper boundary condition failed! Setting isActive to false. pos = \"" << pos << "\"" << std::endl;
                     isActive = false;
                 }
                 if( pos < domainStart )
                 {
-                    std::cout << "warning (Plume::enforceWallBCs_reflection): lower boundary condition failed! Setting isActive to false. xPos = \"" << pos << "\"\n";
+                    std::cout << "warning (Plume::enforceWallBCs_reflection): lower boundary condition failed! Setting isActive to false. xPos = \"" << pos << "\"" << std::endl;
                     isActive = false;
                 }
             }
         }   // while outside of domain
+
+        std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velPrime = \"" << velPrime << "\", velFluct_old = \"" <<
+                velFluct_old << "\", loopCountLeft = \"" << loopCountLeft << "\", loopCountRight = \"" << loopCountRight << "\", reflectCount = \"" <<
+                reflectCount << "\"" << std::endl;
+
     }   // if isActive == true
 }
 
@@ -890,7 +966,7 @@ void Plume::writeSimInfoFile(Dispersion* dis, const double& current_time)
         return;
     }
 
-    std::cout << "writing simInfoFile\n";
+    std::cout << "writing simInfoFile" << std::endl;
 
 
     // set some variables for use in the function
@@ -907,12 +983,12 @@ void Plume::writeSimInfoFile(Dispersion* dis, const double& current_time)
     double C_0 = 4.0;
 
     // add timestep to saveBasename variable
-    std::cout << "running to_string on dt to add to saveBasename\n";
+    std::cout << "running to_string on dt to add to saveBasename" << std::endl;
     saveBasename = saveBasename + "_" + std::to_string(dt);
 
 
     std::string outputFile = outputFolder + "/sim_info.txt";
-    std::cout << "opening simInfoFile for write\n";
+    std::cout << "opening simInfoFile for write" << std::endl;
     fzout = fopen(outputFile.c_str(), "w");
     fprintf(fzout,"\n");    // a purposeful blank line
     fprintf(fzout,"saveBasename     = %s\n",saveBasename.c_str());
