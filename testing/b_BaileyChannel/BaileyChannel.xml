@@ -1,6 +1,6 @@
 <simulationParameters>
 	<runTime> 18.3 </runTime>
-	<timeStep> 1.83 </timeStep>
+	<timeStep> 0.183 </timeStep>
 </simulationParameters>
 <collectionParameters>
 	<timeStart> 0.0 </timeStart>

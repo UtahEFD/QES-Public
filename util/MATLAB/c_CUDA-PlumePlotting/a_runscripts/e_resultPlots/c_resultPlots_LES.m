@@ -138,13 +138,13 @@ plotOutputDir = sprintf("%s/../../d_plotOutput/c_LES/e_resultPlots",workingDir);
 % this is heterogeneous anisotropic positions
 % other cases repeat this plot in varying ways
 %%% set the index of overall list of values paths for each plot of interest
-fig12plotOutputIndices = [15,14,13, 19,18,17, 23,22,21];
+fig12plotOutputIndices = [4,3,2,1];
 %%% set figure plot filenames
 fig12filename = sprintf("%s/briansFig12Plot.png",plotOutputDir);
 %%% set other needed values
-nSubPlotRows = 3;
-nSubPlotCols = 3;
-subPlotIndices = 1:9;
+nSubPlotRows = 1;
+nSubPlotCols = 4;
+subPlotIndices = 1:4;
 figTitle = "Brians Paper Fig 12";
 dimName = "z";
 nParticleBins = 25;
@@ -166,7 +166,7 @@ pause(3);
 % this is the heterogeneous anisotropic regular statistics
 % is repeating the plots for the other cases to this case
 %%% set the index of overall list of values paths for each plot of interest
-fig15plotOutputIndices = [21,22,23];
+fig15plotOutputIndices = [1,2,3,4];
 %%% set figure plot filenames
 fig15filename = sprintf("%s/briansFig15Plot.png",plotOutputDir);
 %%% set other needed values
@@ -181,7 +181,7 @@ velFluct_variances_Lim = "";
 delta_velFluct_averages_Lim = "";
 %delta_velFluct_variances_Lim = [-5 60];
 delta_velFluct_variances_Lim = "";
-expectedValueIdx = 13;
+expectedValueIdx = 3;
 plotStatisticsFigure(figTitle,dimName,nStatisticBins,  velFluct_averages_Lim,velFluct_variances_Lim,delta_velFluct_averages_Lim,delta_velFluct_variances_Lim,  fileExists_array(fig15plotOutputIndices),  plotBasename_array(fig15plotOutputIndices),  cell2mat(C_0_array(expectedValueIdx)),cell2mat(tzz_data_array(expectedValueIdx)),cell2mat(dtzzdz_data_array(expectedValueIdx)),cell2mat(epps_data_array(expectedValueIdx)),cell2mat(xCellGrid_array(expectedValueIdx)),cell2mat(yCellGrid_array(expectedValueIdx)),cell2mat(zCellGrid_array(expectedValueIdx)),fileExists_array(expectedValueIdx),  current_time_array(fig15plotOutputIndices),timestep_array(fig15plotOutputIndices),  isActive_array(fig15plotOutputIndices),  zPos_array(fig15plotOutputIndices),wFluct_array(fig15plotOutputIndices),delta_wFluct_array(fig15plotOutputIndices));
 % get the current figure handle for saving the figure
 fig = gcf;
@@ -201,7 +201,7 @@ pause(3);
 % unfortunately something is still off with the subfilter scale tke.
 % Probably isn't just sigma2 or tzz
 %%% set the index of overall list of values paths for each plot of interest
-fig13plotOutputIndices = [21,22,23];
+fig13plotOutputIndices = [1,2,3,4];
 %%% set figure plot filenames
 fig13filename = sprintf("%s/briansFig13Plot.png",plotOutputDir);
 %%% set other needed values
@@ -212,7 +212,7 @@ zLim = "";
 subfilter_tke_Lim = "";
 uFluct_wFluct_covariances_Lim = "";
 delta_wFluct_variances_Lim = "";
-expectedValueIdx = 13;
+expectedValueIdx = 3;
 plotStatisticsFigure_LES(figTitle,dimName,nStatisticBins,  zLim,subfilter_tke_Lim,uFluct_wFluct_covariances_Lim,delta_wFluct_variances_Lim,  fileExists_array(fig13plotOutputIndices),  plotBasename_array(fig13plotOutputIndices),  cell2mat(C_0_array(expectedValueIdx)),cell2mat(sigma2_data_array(expectedValueIdx)),cell2mat(txz_data_array(expectedValueIdx)),cell2mat(epps_data_array(expectedValueIdx)),cell2mat(xCellGrid_array(expectedValueIdx)),cell2mat(yCellGrid_array(expectedValueIdx)),cell2mat(zCellGrid_array(expectedValueIdx)),fileExists_array(expectedValueIdx),  current_time_array(fig13plotOutputIndices),timestep_array(fig13plotOutputIndices),  isActive_array(fig13plotOutputIndices),  zPos_array(fig13plotOutputIndices),uFluct_array(fig13plotOutputIndices),wFluct_array(fig13plotOutputIndices),delta_wFluct_array(fig13plotOutputIndices));
 % get the current figure handle for saving the figure
 fig = gcf;
@@ -232,7 +232,7 @@ pause(3);
 % unfortunately something is still off with the subfilter scale tke.
 % Probably isn't just sigma2 or tzz
 %%% set the index of overall list of values paths for each plot of interest
-fig13plotOutputIndices = [21,22,23];
+fig13plotOutputIndices = [1,2,3,4];
 %%% set figure plot filenames
 fig13filename = sprintf("%s/briansFig13Plot_zoomed.png",plotOutputDir);
 %%% set other needed values
@@ -243,7 +243,7 @@ zLim = [0 0.15];
 subfilter_tke_Lim = [0 0.4];
 uFluct_wFluct_covariances_Lim = [-0.1 0];
 delta_wFluct_variances_Lim = [0 0.03];
-expectedValueIdx = 13;
+expectedValueIdx = 3;
 plotStatisticsFigure_LES(figTitle,dimName,nStatisticBins,  zLim,subfilter_tke_Lim,uFluct_wFluct_covariances_Lim,delta_wFluct_variances_Lim,  fileExists_array(fig13plotOutputIndices),  plotBasename_array(fig13plotOutputIndices),  cell2mat(C_0_array(expectedValueIdx)),cell2mat(sigma2_data_array(expectedValueIdx)),cell2mat(txz_data_array(expectedValueIdx)),cell2mat(epps_data_array(expectedValueIdx)),cell2mat(xCellGrid_array(expectedValueIdx)),cell2mat(yCellGrid_array(expectedValueIdx)),cell2mat(zCellGrid_array(expectedValueIdx)),fileExists_array(expectedValueIdx),  current_time_array(fig13plotOutputIndices),timestep_array(fig13plotOutputIndices),  isActive_array(fig13plotOutputIndices),  zPos_array(fig13plotOutputIndices),uFluct_array(fig13plotOutputIndices),wFluct_array(fig13plotOutputIndices),delta_wFluct_array(fig13plotOutputIndices));
 % get the current figure handle for saving the figure
 fig = gcf;

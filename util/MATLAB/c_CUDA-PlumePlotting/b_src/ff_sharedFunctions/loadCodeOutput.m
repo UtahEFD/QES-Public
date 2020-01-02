@@ -650,7 +650,7 @@ function [data] = read1DdataTextFile(filename,nVals)
 
     % need to make sure the input filename exists
     if exist(filename, 'file') ~= 2
-        %error('!!!input filename \"%s\" does not exist or is not a valid .txt file!',filename);
+        warning('!!!input filename \"%s\" does not exist or is not a valid .txt file!',filename);
         data = NaN;
         return;
     end
@@ -658,13 +658,19 @@ function [data] = read1DdataTextFile(filename,nVals)
     % now try to open the file, and scan in the data
     fileID = fopen(filename);
     if fileID == -1
-        %error('could not open \"%s\" file!',filename);
+        warning('could not open \"%s\" file!',filename);
         data = NaN;
         return;
     end
     data_cellPacked = textscan(fileID,'%f');
     dataVals = cell2mat(data_cellPacked);
     fclose(fileID);
+    
+    if length(dataVals) ~= nVals
+        warning('issues with \"%s\" file!',filename);
+        data = NaN;
+        return;
+    end
     
     % now need to put the linearized data into the output data matrix
     data = zeros(1,nVals);

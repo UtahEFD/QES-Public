@@ -380,9 +380,10 @@ double Eulerian::interp3D(const std::vector<double>& EulerData,const std::string
     }
     if( dataName == "CoEps" )
     {
-        if( outputVal <= 1e-7 )
+        double C_0 = 4.0;
+        if( outputVal <= 1e-6*C_0 )
         {
-            outputVal = 1e-7;
+            outputVal = 1e-6*C_0;
         }
     }
 

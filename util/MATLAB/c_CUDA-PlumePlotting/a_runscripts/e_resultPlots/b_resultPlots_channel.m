@@ -137,13 +137,13 @@ plotOutputDir = sprintf("%s/../../d_plotOutput/b_channel/e_resultPlots",workingD
 % this is heterogeneous anisotropic positions
 % is repeating the plots for the LES case for this case
 %%% set the index of overall list of values paths for each plot of interest
-fig12plotOutputIndices = [12,11,10, 15,14,13, 18,17,16];
+fig12plotOutputIndices = [3,2,1];
 %%% set figure plot filenames
 fig12filename = sprintf("%s/channel_briansFig12Plot.png",plotOutputDir);
 %%% set other needed values
-nSubPlotRows = 3;
+nSubPlotRows = 1;
 nSubPlotCols = 3;
-subPlotIndices = 1:9;
+subPlotIndices = 1:3;
 figTitle = "Brians Paper Fig 12";
 dimName = "z";
 nParticleBins = 25;
@@ -164,7 +164,7 @@ pause(3);
 % this is the heterogeneous anisotropic regular statistics
 % is repeating the plots for the LES case for this case
 %%% set the index of overall list of values paths for each plot of interest
-fig15plotOutputIndices = [16,17,18];
+fig15plotOutputIndices = [1,2,3];
 %%% set figure plot filenames
 fig15filename = sprintf("%s/sinewave_briansFig15Plot.png",plotOutputDir);
 %%% set other needed values
@@ -175,7 +175,7 @@ velFluct_averages_Lim = [-0.04, 0.04];
 velFluct_variances_Lim = [0, 0.04];
 delta_velFluct_averages_Lim = [-0.2, 0.8];
 delta_velFluct_variances_Lim = [0, 0.08];
-expectedValueIdx = 10;
+expectedValueIdx = 3;
 plotStatisticsFigure(figTitle,dimName,nStatisticBins,  velFluct_averages_Lim,velFluct_variances_Lim,delta_velFluct_averages_Lim,delta_velFluct_variances_Lim,  fileExists_array(fig15plotOutputIndices),  plotBasename_array(fig15plotOutputIndices),  cell2mat(C_0_array(expectedValueIdx)),cell2mat(tzz_data_array(expectedValueIdx)),cell2mat(dtzzdz_data_array(expectedValueIdx)),cell2mat(epps_data_array(expectedValueIdx)),cell2mat(xCellGrid_array(expectedValueIdx)),cell2mat(yCellGrid_array(expectedValueIdx)),cell2mat(zCellGrid_array(expectedValueIdx)),fileExists_array(expectedValueIdx),  current_time_array(fig15plotOutputIndices),timestep_array(fig15plotOutputIndices),  isActive_array(fig15plotOutputIndices),  zPos_array(fig15plotOutputIndices),wFluct_array(fig15plotOutputIndices),delta_wFluct_array(fig15plotOutputIndices));
 % get the current figure handle for saving the figure
 fig = gcf;
@@ -192,7 +192,7 @@ pause(3);
 % this is the heterogeneous anisotropic other statistics (covariance)
 % is repeating the plots for the LES case for this case
 %%% set the index of overall list of values paths for each plot of interest
-fig13plotOutputIndices = [16,17,18];
+fig13plotOutputIndices = [1,2,3];
 %%% set figure plot filenames
 fig13filename = sprintf("%s/briansFig13Plot.png",plotOutputDir);
 %%% set other needed values
@@ -203,7 +203,7 @@ zLim = "";
 subfilter_tke_Lim = "";
 uFluct_wFluct_covariances_Lim = "";
 delta_wFluct_variances_Lim = "";
-expectedValueIdx = 10;
+expectedValueIdx = 3;
 plotStatisticsFigure_LES(figTitle,dimName,nStatisticBins,  zLim,subfilter_tke_Lim,uFluct_wFluct_covariances_Lim,delta_wFluct_variances_Lim,  fileExists_array(fig13plotOutputIndices),  plotBasename_array(fig13plotOutputIndices),  cell2mat(C_0_array(expectedValueIdx)),cell2mat(sigma2_data_array(expectedValueIdx)),cell2mat(txz_data_array(expectedValueIdx)),cell2mat(epps_data_array(expectedValueIdx)),cell2mat(xCellGrid_array(expectedValueIdx)),cell2mat(yCellGrid_array(expectedValueIdx)),cell2mat(zCellGrid_array(expectedValueIdx)),fileExists_array(expectedValueIdx),  current_time_array(fig13plotOutputIndices),timestep_array(fig13plotOutputIndices),  isActive_array(fig13plotOutputIndices),  zPos_array(fig13plotOutputIndices),uFluct_array(fig13plotOutputIndices),wFluct_array(fig13plotOutputIndices),delta_wFluct_array(fig13plotOutputIndices));
 % get the current figure handle for saving the figure
 fig = gcf;

@@ -305,7 +305,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 // now need flux_div_vel, not the different dtxxdx type components
                 vec3 flux_div = eul->interp3D(eul->flux_div);
                 double flux_div_x = flux_div.e11;
-                double flux_div_y = flux_div.e21; 
+                double flux_div_y = flux_div.e21;
                 double flux_div_z = flux_div.e31;
 
 
@@ -327,12 +327,17 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 fullTao.e11 = txx;
                 fullTao.e12 = txy;
                 fullTao.e13 = txz;
-                fullTao.e21 = txy;
+                //fullTao.e21 = txy;
                 fullTao.e22 = tyy;
                 fullTao.e23 = tyz;
-                fullTao.e31 = txz;
-                fullTao.e32 = tyz;
+                //fullTao.e31 = txz;
+                //fullTao.e32 = tyz;
                 fullTao.e33 = tzz;
+
+                fullTao.e21 = 0.0;
+                fullTao.e31 = 0.0;
+                fullTao.e32 = 0.0;
+
                 // I just noticed that Brian's code always leaves the last three components alone, never filled with new tensor info
                 // even though he keeps everything as a matrix9 datatype. This seems fine for makeRealizable, but I wonder if it
                 // messes with the invert3 stuff since those values are used even though they are empty
@@ -503,7 +508,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 auto timerEnd_particle = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<double> elapsed_particle = timerEnd_particle - timerStart_particle;
-                std::cout << "particle iteration par[" << par << "] finished" << std::endl;
+                std::cout << "particle iteration par[" << par << "] finished. timestep = \"" << timeStepStamp.at(tStep) << "\"" << std::endl;
                 std::cout << "\telapsed time: " << elapsed_particle.count() << " s" << std::endl;   // Print out elapsed execution time
             
             }   // if isActive == true and isRogue == false
@@ -604,6 +609,7 @@ matrix6 Plume::makeRealizable(const matrix6& tau,const double& invarianceTol)
     vec3 invariants = calcInvariants(tau);
     if( invariants.e11 > invarianceTol && invariants.e21 > invarianceTol && invariants.e31 > invarianceTol )
     {
+        std::cout << "tau already realizable" << std::endl;
         return tau;     // tau is already realizable
     }
 
@@ -663,6 +669,10 @@ matrix6 Plume::makeRealizable(const matrix6& tau,const double& invarianceTol)
 
 matrix9 Plume::invert3(const matrix9& A)
 {
+    // note that with Bailey's code, the input A.e21, A.e31, and A.e32 are zeros even though they are used here
+    // at least when using this on tau to calculate the inverse stress tensor. This is not true when calculating the inverse A matrix
+    // for the Ax=b calculation
+
     // set the output value storage
     matrix9 Ainv;
 
@@ -670,13 +680,13 @@ matrix9 Plume::invert3(const matrix9& A)
     double det = A.e11*(A.e22*A.e33 - A.e23*A.e32) - A.e12*(A.e21*A.e33 - A.e23*A.e31) + A.e13*(A.e21*A.e32 - A.e22*A.e31);
 
     // check for near zero value determinants
-    if(abs(det) < 1e-10)
+    if(std::abs(det) < 1e-10)
     {
         det = 10e10;
         std::cout << "WARNING (Plume::invert3): matrix nearly singular" << std::endl;
-        std::cout << "A.e11 = \"" << A.e11 << "\", A.e12 = \"" << A.e12 << "\", A.e13 = \"" << A.e13 << "\", A.e21 = \"" 
-            << A.e21 << "\", A.e22 = \"" << A.e22 << "\", A.e23 = \"" << A.e23 << "\", A.31 = \"" << A.e31 << "\" A.e32 = \""
-            << A.e32 << "\", A.e33 = \"" << A.e33 << "\"" << std::endl;
+        std::cout << "abs(det) = \"" << std::abs(det) << "\",  A.e11 = \"" << A.e11 << "\", A.e12 = \"" << A.e12 << "\", A.e13 = \"" 
+            << A.e13 << "\", A.e21 = \"" << A.e21 << "\", A.e22 = \"" << A.e22 << "\", A.e23 = \"" << A.e23 << "\", A.31 = \"" 
+            << A.e31 << "\" A.e32 = \"" << A.e32 << "\", A.e33 = \"" << A.e33 << "\"" << std::endl;
     }
 
     // calculate the inverse

@@ -130,15 +130,15 @@ end
 
 hozAvg = false;
 
-nonDim = false;
-uMeanLim = "";
-sigma2Lim = "";
-eppsLim = "";
+% % nonDim = false;
+% % uMeanLim = "";
+% % sigma2Lim = "";
+% % eppsLim = "";
 
-% % nonDim = true;
-% % uMeanLim = [0,20];
-% % sigma2Lim = [0,10];
-% % eppsLim = [0,40];
+nonDim = true;
+uMeanLim = [0,20];
+sigma2Lim = [0,10];
+eppsLim = [0,40];
 
 % now used if not nondimensionalizing the plot
 del = 1;
