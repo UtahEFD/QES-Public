@@ -26,6 +26,11 @@
     <radius> 0.5 </radius>
   </continuous_uniform_pointSource>
 </sources>
+<boundaryConditions>
+  <xBCtype>periodic</xBCtype>
+  <yBCtype>periodic</yBCtype>
+  <zBCtype>reflection</zBCtype>
+</boundaryConditions>
 <fileOptions>
 	<outputFlag>1</outputFlag>
     <outputFields>u</outputFields> 

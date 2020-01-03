@@ -31,6 +31,11 @@
 	  more with this to get it right, even for our test cases.
   -->
 </sources>
+<boundaryConditions>
+  <xBCtype>exiting</xBCtype>
+  <yBCtype>exiting</yBCtype>
+  <zBCtype>exiting</zBCtype>
+</boundaryConditions>
 <fileOptions>
   <!-- 
 	I can't figure out how this works. I think somehow you are choosing u,v,w as outputs, as icell, but I can't tell why or how

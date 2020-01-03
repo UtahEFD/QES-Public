@@ -24,6 +24,8 @@ CUDA_ADD_LIBRARY( cudaplumecore
     SourceLine.cpp SourceLine.hpp
     SourceUniformDomain.cpp SourceUniformDomain.hpp
     Source_continuous_uniform_point.cpp
+
+    BoundaryConditions.hpp
 )
 
 #target_link_libraries (cudaplumecore quicloader) 

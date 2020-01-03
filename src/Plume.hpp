@@ -83,10 +83,16 @@ class Plume {
         vec3 matmult(const matrix9& Ainv,const vec3& b);
 
         // might need to create multiple versions depending on the selection of boundary condition types by the inputs
-        void enforceWallBCs(double& xPos,double& yPos,double& zPos,double& uPrime,double& vPrime,double& wPrime,double& uFluct_old,double& vFluct_old,double& wFluct_old,bool& isActive);
-        void enforceWallBCs_exiting(double& xPos,double& yPos,double& zPos,bool& isActive);
-        void enforceWallBCs_periodic(double& pos, const double& domainStart,const double& domainEnd);
+        void setBCfunctions(std::string xBCtype,std::string yBCtype,std::string zBCtype);    // a function used at constructor time to set the pointer function to the desired BC type
+        void (Plume::*enforceWallBCs_x)(double& pos,double& velPrime,double& velFluct_old,bool& isActive, const double& domainStart,const double& domainEnd);  // a pointer to the wallBC function for the x direction. Which function it points at is determined by setBCfunctions and the input xBCtype
+        void (Plume::*enforceWallBCs_y)(double& pos,double& velPrime,double& velFluct_old,bool& isActive, const double& domainStart,const double& domainEnd);  // a pointer to the wallBC function for the y direction. Which function it points at is determined by setBCfunctions and the input yBCtype
+        void (Plume::*enforceWallBCs_z)(double& pos,double& velPrime,double& velFluct_old,bool& isActive, const double& domainStart,const double& domainEnd);  // a pointer to the wallBC function for the z direction. Which function it points at is determined by setBCfunctions and the input zBCtype
+        void enforceWallBCs_exiting(double& pos,double& velPrime,double& velFluct_old,bool& isActive, const double& domainStart,const double& domainEnd);
+        void enforceWallBCs_periodic(double& pos,double& velPrime,double& velFluct_old,bool& isActive, const double& domainStart,const double& domainEnd);
         void enforceWallBCs_reflection(double& pos,double& velPrime,double& velFluct_old,bool& isActive, const double& domainStart,const double& domainEnd);
+
+        // this is called to set the values whenever it is found that a particle is inactive or rogue
+        void setFinishedParticleVals(double& xPos,double& yPos,double& zPos, const bool& isActive, const bool& isRogue);
 
         
         // functions used to average the output concentrations

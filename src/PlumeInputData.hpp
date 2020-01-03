@@ -15,6 +15,8 @@
 #include "CollectionParameters.hpp"
 #include "FileOptions.hpp"
 #include "Sources.hpp"
+#include "BoundaryConditions.hpp"
+
 
 class PlumeInputData : public ParseInterface {
     
@@ -23,6 +25,7 @@ class PlumeInputData : public ParseInterface {
     	CollectionParameters* colParams;
     	FileOptions* fileOptions;
     	Sources* sources;
+		BoundaryConditions* BCs;
     
     
     	PlumeInputData() {
@@ -37,6 +40,8 @@ class PlumeInputData : public ParseInterface {
     	    parseElement<CollectionParameters>(true, colParams, "collectionParameters");
     	    parseElement<FileOptions>(true, fileOptions, "fileOptions");
     	    parseElement<Sources>(false, sources, "sources");
+			parseElement<BoundaryConditions>(true, BCs, "boundaryConditions");
+
     	}
         /**
     	 * This function takes in an URBInputData variable and uses it

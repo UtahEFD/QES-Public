@@ -156,19 +156,18 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     for ( AttVectorDbl att : output_vector_dbl ) {
         output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
     }
+
+
+    // now get the input boundary condition types from the inputs
+    std::string xBCtype = PID->BCs->xBCtype;
+    std::string yBCtype = PID->BCs->yBCtype;
+    std::string zBCtype = PID->BCs->zBCtype;
+
+    // now set the boundary condition function for the plume runs, checking to make sure the input BCtypes are legitimate
+    setBCfunctions(xBCtype,yBCtype,zBCtype);
+
+
 }
-
-
-// be careful to set all of these to 0 except for one of each direction type which needs set to 1
-#define xBCtype_exiting 0
-#define xBCtype_periodic 1
-#define xBCtype_reflection 0
-#define yBCtype_exiting 0
-#define yBCtype_periodic 1
-#define yBCtype_reflection 0
-#define zBCtype_exiting 0
-#define zBCtype_periodic 1
-#define zBCtype_reflection 0
 
 
 void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID, Output* output)
@@ -453,13 +452,14 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 //auto timerStart_wallBC = std::chrono::high_resolution_clock::now();
 
                 // now apply boundary conditions
-                // at some point in time, going to have to do a polymorphic inheritance so can have lots of boundary condition types
-                // but so that they can be run without if statements when changing BC types
-                // the reason for this, is Brian's BCs don't match what is normally used for Plume, we don't want reflections or periodic BCs
-                // when we allow different test cases, we will want these options, and a way to choose the boundary condition type
-                // for different regions sometime during the constructor phases.
-                // I guess just implement one that makes isActive go false if it goes outside the domain
-                enforceWallBCs(xPos,yPos,zPos,uPrime,vPrime,wPrime,uFluct_old,vFluct_old,wFluct_old,isActive);
+                // notice that this is the old fashioned style for calling a pointer function
+                (this->*enforceWallBCs_x)(xPos,uPrime,uFluct_old,isActive, domainXstart,domainXend);
+                (this->*enforceWallBCs_y)(yPos,vPrime,vFluct_old,isActive, domainYstart,domainYend);
+                (this->*enforceWallBCs_z)(zPos,wPrime,wFluct_old,isActive, domainZstart,domainZend);
+                
+                // now set the particle values for if they are rogue or outside the domain
+                setFinishedParticleVals(xPos,yPos,zPos, isActive,isRogue);
+
                 
                 //auto timerEnd_wallBC = std::chrono::high_resolution_clock::now();
                 //std::chrono::duration<double> elapsed_wallBC = timerEnd_wallBC - timerStart_wallBC;
@@ -718,59 +718,78 @@ vec3 Plume::matmult(const matrix9& Ainv,const vec3& b)
 }
 
 
-void Plume::enforceWallBCs(double& xPos,double& yPos,double& zPos,double& uPrime,double& vPrime,double& wPrime,double& uFluct_old,double& vFluct_old,double& wFluct_old,bool& isActive)
+void Plume::setBCfunctions(std::string xBCtype,std::string yBCtype,std::string zBCtype)
 {
+    // the idea is to use the string input BCtype to determine which boundary condition function to use later in the program, and to have a function pointer
+    // point to the required function. I learned about pointer functions from this website: https://www.learncpp.com/cpp-tutorial/78-function-pointers/
+    
+    std::cout << "xBCtype = \"" << xBCtype << "\"" << std::endl;
+    std::cout << "yBCtype = \"" << yBCtype << "\"" << std::endl;
+    std::cout << "zBCtype = \"" << zBCtype << "\"" << std::endl;
+    if(xBCtype == "exiting")
+    {
+        enforceWallBCs_x = &Plume::enforceWallBCs_exiting;  // the enforceWallBCs_x pointer function now points to the enforceWallBCs_exiting function
+    }else if(xBCtype == "periodic")
+    {
+        enforceWallBCs_x = &Plume::enforceWallBCs_periodic;  // the enforceWallBCs_x pointer function now points to the enforceWallBCs_periodic function
+    }else if(xBCtype == "reflection")
+    {
+        enforceWallBCs_x = &Plume::enforceWallBCs_reflection;  // the enforceWallBCs_x pointer function now points to the enforceWallBCs_reflection function
+    }else
+    {
+        std::cerr << "!!! Plume::setBCfunctions() error !!! input xBCtype \"" << xBCtype 
+            << "\" has not been implemented in code! Available xBCtypes are \"exiting\", \"periodic\", \"reflection\"" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    
+    if(yBCtype == "exiting")
+    {
+        enforceWallBCs_y = &Plume::enforceWallBCs_exiting;  // the enforceWallBCs_y pointer function now points to the enforceWallBCs_exiting function
+    }else if(yBCtype == "periodic")
+    {
+        enforceWallBCs_y = &Plume::enforceWallBCs_periodic;  // the enforceWallBCs_y pointer function now points to the enforceWallBCs_periodic function
+    }else if(yBCtype == "reflection")
+    {
+        enforceWallBCs_y = &Plume::enforceWallBCs_reflection;  // the enforceWallBCs_y pointer function now points to the enforceWallBCs_reflection function
+    }else
+    {
+        std::cerr << "!!! Plume::setBCfunctions() error !!! input yBCtype \"" << yBCtype 
+            << "\" has not been implemented in code! Available yBCtypes are \"exiting\", \"periodic\", \"reflection\"" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
-#if xBCtype_periodic
-    enforceWallBCs_periodic(xPos, domainXstart,domainXend);
-#endif
-#if yBCtype_periodic
-    enforceWallBCs_periodic(yPos, domainYstart,domainYend);
-#endif
-#if zBCtype_periodic
-    enforceWallBCs_periodic(zPos, domainZstart,domainZend);
-#endif
-
-#if xBCtype_reflection
-    enforceWallBCs_reflection(xPos,uPrime,uFluct_old,isActive, domainXstart,domainXend);
-#endif
-#if yBCtype_reflection
-    enforceWallBCs_reflection(yPos,vPrime,vFluct_old,isActive, domainYstart,domainYend);
-#endif
-#if zBCtype_reflection
-    enforceWallBCs_reflection(zPos,wPrime,wFluct_old,isActive, domainZstart,domainZend);
-#endif
-
-// reflection changes isActive too, so want to do this last to enforce the reflection one first
-#if xBCtype_exiting
-    enforceWallBCs_exiting(xPos,yPos,zPos,isActive);
-#endif
-#if yBCtype_exiting
-    enforceWallBCs_exiting(xPos,yPos,zPos,isActive);
-#endif
-#if zBCtype_exiting
-    enforceWallBCs_exiting(xPos,yPos,zPos,isActive);
-#endif
-
+    if(zBCtype == "exiting")
+    {
+        enforceWallBCs_z = &Plume::enforceWallBCs_exiting;  // the enforceWallBCs_z pointer function now points to the enforceWallBCs_exiting function
+    }else if(zBCtype == "periodic")
+    {
+        enforceWallBCs_z = &Plume::enforceWallBCs_periodic;  // the enforceWallBCs_z pointer function now points to the enforceWallBCs_periodic function
+    }else if(zBCtype == "reflection")
+    {
+        enforceWallBCs_z = &Plume::enforceWallBCs_reflection;  // the enforceWallBCs_z pointer function now points to the enforceWallBCs_reflection function
+    }else
+    {
+        std::cerr << "!!! Plume::setBCfunctions() error !!! input zBCtype \"" << zBCtype 
+            << "\" has not been implemented in code! Available zBCtypes are \"exiting\", \"periodic\", \"reflection\"" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 }
 
 
-void Plume::enforceWallBCs_exiting(double& xPos,double& yPos,double& zPos,bool& isActive)
+
+void Plume::enforceWallBCs_exiting(double& pos,double& velPrime,double& velFluct_old,bool& isActive, const double& domainStart,const double& domainEnd)
 {
     // this may change as we figure out the reflections vs depositions on buildings and terrain as well as the outer domain
     // probably will become some kind of inherited function or a pointer function that can be chosen at initialization time
     // for now, if it goes out of the domain, set isActive to false
 
-    if( xPos < domainXstart || xPos > domainXend || yPos < domainYstart || yPos > domainYend || zPos < domainZstart || zPos > domainZend )
+    if( pos < domainStart || pos > domainEnd )
     {
         isActive = false;
-        xPos = -999.0;
-        yPos = -999.0;
-        zPos = -999.0;
     }
 }
 
-void Plume::enforceWallBCs_periodic(double& pos, const double& domainStart,const double& domainEnd)
+void Plume::enforceWallBCs_periodic(double& pos,double& velPrime,double& velFluct_old,bool& isActive, const double& domainStart,const double& domainEnd)
 {
     
     double domainSize = domainEnd - domainStart;
@@ -849,6 +868,16 @@ void Plume::enforceWallBCs_reflection(double& pos,double& velPrime,double& velFl
     }   // if isActive == true
 }
 
+
+void Plume::setFinishedParticleVals(double& xPos,double& yPos,double& zPos, const bool& isActive, const bool& isRogue)
+{
+    if(isActive == false || isRogue == true)
+    {
+        xPos = -999.0;
+        yPos = -999.0;
+        zPos = -999.0;
+    }
+}
 
 
 void Plume::save(Output* output)
