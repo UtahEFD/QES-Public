@@ -18,11 +18,20 @@ class SimulationParameters : public ParseInterface {
     
     public:
     
-    	float runTime, timeStep;
+    	float runTime;
+		float timeStep;
+		double invarianceTol;
+		double C_0;
+		int updateFrequency_particleLoop;
+		int updateFrequency_timeLoop;
     	        
     	virtual void parseValues() {
     		parsePrimitive< float >(true, runTime, "runTime");
     		parsePrimitive< float >(true, timeStep, "timeStep");
+			parsePrimitive< double >(true, invarianceTol, "invarianceTol");
+			parsePrimitive< double >(true, C_0, "C_0");
+			parsePrimitive< int >(true, updateFrequency_particleLoop, "updateFrequency_particleLoop");
+			parsePrimitive< int >(true, updateFrequency_timeLoop, "updateFrequency_timeLoop");
     	}
 };
 #endif

@@ -71,7 +71,7 @@ int main(int argc, char** argv)
     Turb* turb = new Turb(inputTurb);
     
     // Create instance of Eulerian class
-    Eulerian* eul = new Eulerian(urb,turb,arguments.debugOutputFolder);
+    Eulerian* eul = new Eulerian(urb,turb,PID,arguments.debugOutputFolder);
     
     // Create instance of Dispersion class
     Dispersion* dis = new Dispersion(urb,turb,PID,eul,arguments.debugOutputFolder);

@@ -4,6 +4,7 @@
 //#include "Util.h"
 #include "Urb.hpp"
 #include "Turb.hpp"
+#include "PlumeInputData.hpp"
 #include "TypeDefs.hpp"
 
 #include <fstream>
@@ -15,7 +16,7 @@ class Eulerian{
     
 public:
     
-    Eulerian(Urb*,Turb*,const std::string& debugOutputFolder);   // copies the urb grid values for nx, ny, nz, nt, dx, dy, and dz to the Eulerian grid values,
+    Eulerian(Urb*,Turb*,PlumeInputData*,const std::string& debugOutputFolder);   // copies the urb grid values for nx, ny, nz, nt, dx, dy, and dz to the Eulerian grid values,
                             // then calculates the tau gradients which are then used to calculate the flux_div grid values.
                             //    Eulerian grid accessing functions should be the main use of this class.
                             // since Urb and Turb stuff is not fully copied into this Eulerian dataset, some Eulerian grid accessing functions should probably be able to do calculations
@@ -49,6 +50,8 @@ public:
     double domainXstart;    // a copy of the urb domain starting x value
     double domainYstart;    // a copy of the urb domain starting y value
     double domainZstart;    // a copy of the urb domain starting z value
+
+    double C_0;                 // used to separate out CoEps into its separate parts when doing debug output
     
 
     void setInterp3Dindexing(const vec3& xyz_particle);

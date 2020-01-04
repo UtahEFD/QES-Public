@@ -1,6 +1,10 @@
 <simulationParameters>
 	<runTime> 1000.0 </runTime>		<!-- this is the amount of time to run the simulation, lets you have an arbitrary start time to an arbitrary end time -->
 	<timeStep> 0.1 </timeStep>		<!-- this is the integration timestep. Do we want to do adaptive timestepping in the future? for now, we assume they choose a smart timestep -->
+	<invarianceTol> 1e-10 </invarianceTol>     <!-- this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle -->
+	<C_0> 4.0 </C_0>				<!-- used to separate out CoEps into its separate parts when doing debug output -->
+	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>	 <!-- used to know how frequently to print out information during the particle loop of the solver -->
+	<updateFrequency_timeLoop> 10 </updateFrequency_timeLoop>	 <!-- used to know how frequently to print out information during the time integration loop of the solver -->
 </simulationParameters>
 <collectionParameters>			<!-- this is for collecting output, calculation does it for everywhere, this grabs what is needed for an area? -->
 	<timeStart> 0.0 </timeStart>

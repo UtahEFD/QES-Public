@@ -1,6 +1,10 @@
 <simulationParameters>
 	<runTime> 10.0 </runTime>
 	<timeStep> 0.1 </timeStep>
+  <invarianceTol> 1e-5 </invarianceTol>
+	<C_0> 4.0 </C_0>
+	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
+	<updateFrequency_timeLoop> 10 </updateFrequency_timeLoop>
 </simulationParameters>
 <collectionParameters>
 	<timeStart> 0.0 </timeStart>

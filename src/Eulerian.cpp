@@ -9,7 +9,7 @@
 #include "Urb.hpp"
 #include "Turb.hpp"
 
-Eulerian::Eulerian(Urb* urb, Turb* turb, const std::string& debugOutputFolder) {
+Eulerian::Eulerian(Urb* urb, Turb* turb, PlumeInputData* PID, const std::string& debugOutputFolder) {
     
     std::cout<<"[Eulerian] \t Reading CUDA-URB & CUDA-TURB fields "<<std::endl;
     
@@ -28,6 +28,8 @@ Eulerian::Eulerian(Urb* urb, Turb* turb, const std::string& debugOutputFolder) {
     domainYstart = urb->domainYstart;
     domainZstart = urb->domainZstart;
     
+    // set additional values from the input
+    C_0 = PID->simParams->C_0;
 
     // compute stress gradients
     createTauGrads(urb,turb);
@@ -380,7 +382,6 @@ double Eulerian::interp3D(const std::vector<double>& EulerData,const std::string
     }
     if( dataName == "CoEps" )
     {
-        double C_0 = 4.0;
         if( outputVal <= 1e-6*C_0 )
         {
             outputVal = 1e-6*C_0;
@@ -762,7 +763,6 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     fclose(fzout);
 
     currentFile = outputFolder + "/eulerian_epps.txt";
-    double C_0 = 4.0;
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {

@@ -100,6 +100,12 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     parPerTimestep = dis->parPerTimestep;
     
 
+    // set additional values from the input
+    invarianceTol = PID->simParams->invarianceTol;
+    C_0 = PID->simParams->C_0;
+    updateFrequency_particleLoop = PID->simParams->updateFrequency_particleLoop;
+    updateFrequency_timeLoop = PID->simParams->updateFrequency_timeLoop;
+    
     
     /* setup output information */
 
@@ -206,10 +212,14 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         // advection list
         dis->pointList.insert( dis->pointList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end() );
 
-        auto timerEnd_particleRelease = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed_particleRelease = timerEnd_particleRelease - timerStart_particleRelease;
-        std::cout << "finished emitting particles from sources. Total numParticles = \"" << dis->pointList.size() << "\"" << std::endl;
-        std::cout << "\telapsed time: " << elapsed_particleRelease.count() << " s" << std::endl;   // Print out elapsed execution time
+        if( nextSetOfParticles.size() != 0 )
+        {
+            auto timerEnd_particleRelease = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed_particleRelease = timerEnd_particleRelease - timerStart_particleRelease;
+            std::cout << "finished emitting \"" << nextSetOfParticles.size() << "\" particles from \"" << dis->allSources.size() 
+                    << "\" sources. Total numParticles = \"" << dis->pointList.size() << "\"" << std::endl;
+            std::cout << "\telapsed time: " << elapsed_particleRelease.count() << " s" << std::endl;   // Print out elapsed execution time
+        }
 
         // Move each particle for every time step
         double isRogueCount = dis->isRogueCount;    // This probably could be moved from dispersion to one level back in this for loop
@@ -217,8 +227,11 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
         // Advection Loop
 
-        // I want to get an idea of the overall time of the advection loop, and different parts of the advection loop
-        auto timerStart_advection = std::chrono::high_resolution_clock::now();
+        //if( tStep % updateFrequency_timeLoop == 0 || tStep == numTimeStep - 1 )
+        //{
+            // I want to get an idea of the overall time of the advection loop, and different parts of the advection loop
+            auto timerStart_advection = std::chrono::high_resolution_clock::now();
+        //}
 
         for (int par=0; par<dis->pointList.size(); par++)
         {
@@ -233,8 +246,11 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             if(isActive == true && isRogue == false)
             {
 
-                // overall particle timer
-                auto timerStart_particle = std::chrono::high_resolution_clock::now();
+                //if( par % updateFrequency_particleLoop == 0 )
+                //{
+                    // overall particle timer
+                    auto timerStart_particle = std::chrono::high_resolution_clock::now();
+                //}
 
 
                 // this is getting the current position for where the particle is at for a given time
@@ -309,9 +325,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
 
                 // now need to call makeRealizable on tao
-                // note that the invarianceTol is hard coded for now, but needs to be added as an overall input to CUDA-Plume
-                double invarianceTol = 1e-10;
-                matrix6 realizedTao = makeRealizable(tao,invarianceTol);
+                matrix6 realizedTao = makeRealizable(tao);
                 txx = realizedTao.e11;
                 txy = realizedTao.e12;
                 txz = realizedTao.e13;
@@ -447,7 +461,6 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 zPos = zPos + disZ;
 
 
-                // I want to get an idea of the overall time of the advection loop, and different parts of the advection loop
                 //std::cout << "applying wallBC" << std::endl;
                 //auto timerStart_wallBC = std::chrono::high_resolution_clock::now();
 
@@ -506,10 +519,13 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 dis->pointList.at(par).isActive = isActive;
 
 
-                auto timerEnd_particle = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<double> elapsed_particle = timerEnd_particle - timerStart_particle;
-                std::cout << "particle iteration par[" << par << "] finished. timestep = \"" << timeStepStamp.at(tStep) << "\"" << std::endl;
-                std::cout << "\telapsed time: " << elapsed_particle.count() << " s" << std::endl;   // Print out elapsed execution time
+                if(  ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == numTimeStep-1 ) && ( par % updateFrequency_particleLoop == 0 || par == 0 || par == dis->pointList.size()-1 )  )
+                {
+                    auto timerEnd_particle = std::chrono::high_resolution_clock::now();
+                    std::chrono::duration<double> elapsed_particle = timerEnd_particle - timerStart_particle;
+                    std::cout << "particle iteration par[" << par << "] finished. timestep = \"" << timeStepStamp.at(tStep) << "\"" << std::endl;
+                    std::cout << "\telapsed time: " << elapsed_particle.count() << " s" << std::endl;   // Print out elapsed execution time
+                }
             
             }   // if isActive == true and isRogue == false
 
@@ -523,10 +539,13 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         dis->isActiveCount = isActiveCount;
 
 
-        auto timerEnd_advection = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed_advection = timerEnd_advection - timerStart_advection;
-        std::cout << "advection loop for timeStepStamp[" << timeStepStamp.at(tStep) << "] finished" << std::endl;
-        std::cout << "\telapsed time: " << elapsed_advection.count() << " s" << std::endl;   // Print out elapsed execution time
+        if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == numTimeStep-1 )
+        {
+            auto timerEnd_advection = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> elapsed_advection = timerEnd_advection - timerStart_advection;
+            std::cout << "advection loop for time = \"" << timeStepStamp.at(tStep) << "\" (timeStepStamp[" << timeStepStamp.at(tStep) << "]) finished" << std::endl;
+            std::cout << "\telapsed time: " << elapsed_advection.count() << " s" << std::endl;   // Print out elapsed execution time
+        }
 
 
         
@@ -562,8 +581,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             avgTime = avgTime + PID->colParams->timeAvg;    // I think this is updating the averaging time for the next loop
         }
 
-        int updateFrequency = 1;
-        if( tStep % updateFrequency == 0 || tStep == numTimeStep - 1 )
+        if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == numTimeStep-1 )
         {
             std::cout << "time = \"" << timeStepStamp.at(tStep) << "\", isRogueCount = \"" << dis->isRogueCount << "\", isActiveCount = \"" << dis->isActiveCount << "\"" << std::endl;
         }
@@ -602,14 +620,14 @@ vec3 Plume::calcInvariants(const matrix6& tau)
     return invariants;
 }
 
-matrix6 Plume::makeRealizable(const matrix6& tau,const double& invarianceTol)
+matrix6 Plume::makeRealizable(const matrix6& tau)
 {
     // first calculate the invariants and see if they are already realizable
 
     vec3 invariants = calcInvariants(tau);
     if( invariants.e11 > invarianceTol && invariants.e21 > invarianceTol && invariants.e31 > invarianceTol )
     {
-        std::cout << "tau already realizable" << std::endl;
+        //std::cout << "tau already realizable" << std::endl;
         return tau;     // tau is already realizable
     }
 
@@ -795,8 +813,10 @@ void Plume::enforceWallBCs_periodic(double& pos,double& velPrime,double& velFluc
     double domainSize = domainEnd - domainStart;
     int loopCountLeft = 0;
     int loopCountRight = 0;
-        
+
+    /*    
     std::cout << "enforceWallBCs_periodic starting pos = \"" << pos << "\", domainStart = \"" << domainStart << "\", domainEnd = \"" << domainEnd << "\"" << std::endl;
+    */
 
     if(domainSize != 0)
     {
@@ -812,7 +832,9 @@ void Plume::enforceWallBCs_periodic(double& pos,double& velPrime,double& velFluc
         }
     }
     
+    /*
     std::cout << "enforceWallBCs_periodic ending pos = \"" << pos << "\", loopCountLeft = \"" << loopCountLeft << "\", loopCountRight = \"" << std::endl;
+    */
 
 }
 
@@ -821,8 +843,10 @@ void Plume::enforceWallBCs_reflection(double& pos,double& velPrime,double& velFl
     if( isActive == true )
     {
 
+        /*
         std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velPrime = \"" << velPrime << "\", velFluct_old = \"" <<
                 velFluct_old << "\", domainStart = \"" << domainStart << "\", domainEnd = \"" << domainEnd << "\"" << std::endl;
+        */
 
         int reflectCount = 0;
         int loopCountLeft = 0;
@@ -861,9 +885,11 @@ void Plume::enforceWallBCs_reflection(double& pos,double& velPrime,double& velFl
             }
         }   // while outside of domain
 
+        /*
         std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velPrime = \"" << velPrime << "\", velFluct_old = \"" <<
                 velFluct_old << "\", loopCountLeft = \"" << loopCountLeft << "\", loopCountRight = \"" << loopCountRight << "\", reflectCount = \"" <<
                 reflectCount << "\"" << std::endl;
+        */
 
     }   // if isActive == true
 }
@@ -1019,8 +1045,7 @@ void Plume::writeSimInfoFile(Dispersion* dis, const double& current_time)
     std::string saveBasename = "sinewave_HeteroAnisoImplicitTurb";
     //std::string saveBasename = "channel_HeteroAnisoImplicitTurb";
     //std::string saveBasename = "LES_HeteroAnisoImplicitTurb";
-    double C_0 = 4.0;
-
+    
     // add timestep to saveBasename variable
     std::cout << "running to_string on dt to add to saveBasename" << std::endl;
     saveBasename = saveBasename + "_" + std::to_string(dt);

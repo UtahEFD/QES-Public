@@ -74,11 +74,16 @@ class Plume {
         std::vector<double> tStrt;  // a copy of the dispersion tStrt, which is the time of release for each set of particles to release in the simulation
         std::vector<double> timeStepStamp;  // a copy of the dispersion timeStepStamp, which is the list of times for the simulation
         std::vector<int> parPerTimestep;     // a copy of the dispersion parPerTimestep, which is the number of particles to release per timestep
+
+        double invarianceTol;       // this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
+        double C_0;                 // used to separate out CoEps into its separate parts when doing debug output
+        int updateFrequency_particleLoop;       // used to know how frequently to print out information during the particle loop of the solver
+        int updateFrequency_timeLoop;       // used to know how frequently to print out information during the time loop of the solver
         
 
         // still need to figure out how this is going to work, especially with the data structures
         vec3 calcInvariants(const matrix6& tau);
-        matrix6 makeRealizable(const matrix6& tau,const double& invarianceTol);
+        matrix6 makeRealizable(const matrix6& tau);
         matrix9 invert3(const matrix9& A);
         vec3 matmult(const matrix9& Ainv,const vec3& b);
 
