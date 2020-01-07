@@ -45,7 +45,7 @@ void Triangle::getBoundaries(float& xmin, float& xmax, float& ymin, float& ymax,
    zmax = HIGHEST_OF_THREE((*a)[2], (*b)[2], (*c)[2]);
 }
 
-bool Triangle::rayTriangleIntersect(Ray ray, HitRecord& rec){
+bool Triangle::rayTriangleIntersect(Ray ray, HitRecord& rec, float t0, float t1){
    float beta, gamma, t, M;
    float A,B,C,D,E,F,G2,H2,I2,J,K,L;
    //note GHI has a 2 beside it to avoid conflicting with macro def above
@@ -73,17 +73,17 @@ bool Triangle::rayTriangleIntersect(Ray ray, HitRecord& rec){
    if(gamma < 0 || gamma > 1 || beta < 0 || beta > (1-gamma) || t < 0.0) {
       return false;
    }else{
-       rec.endpt[0] = ray.getOriginX() + (t*ray.getDirection()[0]);
-       rec.endpt[1] = ray.getOriginY() + (t*ray.getDirection()[1]);
-       rec.endpt[2] = ray.getOriginZ() + (t*ray.getDirection()[2]);
-       rec.hitDist = std::sqrt(std::pow(rec.endpt[0] - ray.getOriginX(),2)
-                               + std::pow(rec.endpt[1] - ray.getOriginY(), 2)
-                               + std::pow(rec.endpt[2] - ray.getOriginZ(), 2));
+      rec.endpt[0] = ray.getOriginX() + (t*ray.getDirection()[0]);
+      rec.endpt[1] = ray.getOriginY() + (t*ray.getDirection()[1]);
+      rec.endpt[2] = ray.getOriginZ() + (t*ray.getDirection()[2]);
+      rec.hitDist = std::sqrt(std::pow(rec.endpt[0] - ray.getOriginX(),2)
+                              + std::pow(rec.endpt[1] - ray.getOriginY(), 2)
+                              + std::pow(rec.endpt[2] - ray.getOriginZ(), 2));
 
-       rec.t = t;
-       return true;
+      rec.t = t;
+      return true;
    }
-   
+
 }
 
 

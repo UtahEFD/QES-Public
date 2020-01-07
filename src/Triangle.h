@@ -57,11 +57,12 @@ public:
 
 
         /*
-         *determines if a ray hit the triangle and updates the hitrecord 
-         *@param ray The ray to be checked for intersection
-         @param rec The HitRecord to be updated 
+         *determines if a ray hit the triangle and updates the hitrecord
+         *
+         *@param ray -the ray to be checked for intersection
+         *@param rec -the HitRecord to be updated 
          */
-        bool rayTriangleIntersect(Ray ray, HitRecord& rec);
+        bool rayTriangleIntersect(Ray ray, HitRecord& rec, float t0, float t1);
         
 	virtual void parseValues();
 };

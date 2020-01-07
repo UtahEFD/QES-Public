@@ -223,63 +223,55 @@ bool BVH::rayBoxIntersect(Ray ray){
 }
 
 
-bool BVH::rayHit(Ray ray, const float t0, float& t1, HitRecord& rec)
-{
-    if(!rayBoxIntersect(ray)) {
-        return false;
-    }
-    
-    if(isLeaf) {
+bool BVH::rayHit(Ray ray, const float t0, float& t1, HitRecord& rec){
+   if(!rayBoxIntersect(ray)) {
+      return false;
+   }
 
-        if(!tri){
-            std::cout<<"Must not be a tri."<<std::endl;  // this is an error!
-        }
-        
-        bool triHit = tri->rayTriangleIntersect(ray, rec, t0, t1);
-        // std::cout<<"triHit = "<<triHit << ", dist = " << rec.hitDist << std::endl;
-        
-        return triHit; //if false, then it didn't intersect the primitive
-        
-    } else {  //not a leaf node
+   if(isLeaf) {
 
-            bool leftHit = false, rightHit = false;
-            HitRecord lrec, rrec;
-            
-            //prob don't need to check left due to BVH construction
-            //left should never be null for anything except a leaf node
-            if(leftBox){
-                leftHit = leftBox->rayHit(ray, t0, t1, lrec);
-            }
-
-            if(rightBox){
-                rightHit = rightBox->rayHit(ray, t0, t1, rrec);
-            }
-
-            // std::cout << "Left Hit: " << leftHit << ", Right Hit: " << rightHit << std::endl;
-
-            if(leftHit && rightHit){
-                if(lrec.hitDist < rrec.hitDist){
-                    rec = lrec;
-                }else{
-                    rec = rrec;
-                }
-                return true;
-            }else if(leftHit){
-                rec = lrec;
-                return true;
-            }else if(rightHit){
-                rec = rrec;
-                return true;
-            }else{
-                // std::cout << "false only else case" << std::endl;
-                return false;
-         }
+      if(!tri){
+         std::cout<<"Must not be a tri."<<std::endl;  // this is an error!
       }
-   
+
+      bool triHit = tri->rayTriangleIntersect(ray, rec, t0, t1);
+      // std::cout<<"triHit = "<<triHit << ", dist = " << rec.hitDist << std::endl;
+
+      return triHit; //if false, then it didn't intersect the primitive
+
+   } else {  //not a leaf node
+
+      bool leftHit = false, rightHit = false;
+      HitRecord lrec, rrec;
+
+      //prob don't need to check left due to BVH construction
+      //left should never be null for anything except a leaf node
+      if(leftBox){
+         leftHit = leftBox->rayHit(ray, t0, t1, lrec);
+      }
+
+      if(rightBox){
+         rightHit = rightBox->rayHit(ray, t0, t1, rrec);
+      }
+
+      // std::cout << "Left Hit: " << leftHit << ", Right Hit: " << rightHit << std::endl;
+
+      if(leftHit && rightHit){
+         if(lrec.hitDist < rrec.hitDist){
+            rec = lrec;
+         }else{
+            rec = rrec;
+         }
+         return true;
+      }else if(leftHit){
+         rec = lrec;
+         return true;
+      }else if(rightHit){
+         rec = rrec;
+         return true;
+      }else{
+         // std::cout << "false only else case" << std::endl;
+         return false;
+      }
+   }
 }
-
-
-
-bool BVH::getIsLeaf(){return isLeaf;}
-BVH* BVH::getLeftBox(){return leftBox;}
-BVH* BVH::getRightBox(){return rightBox;}

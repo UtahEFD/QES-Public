@@ -31,12 +31,13 @@ void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float d
             int icell_idx = i + j*(dimX-1) + k*(dimY-1) * (dimX-1);
 
             if(icellflag[icell_idx] == 1){
-               std::cout<<"==========================================fluid icell "<<i<<","<<j<<","<<k<<" ==================================="<<std::endl;
+                // std::cout<<"==========================================fluid icell "<<i<<","<<j<<","<<k<<" ==================================="<<std::endl;
 
-
-               SphereDirections sd;
+               // SphereDirections sd;
                //SphereDirections sd(1000, 0, 2*M_PI, -M_PI, M_PI);
-               //SphereDirections sd(2000,-1,1, 0, 2*M_PI);
+
+               SphereDirections sd(18, -1,1, 0,2*M_PI);
+               
                float maxLength = std::numeric_limits<float>::infinity();
 
                //ray's origin = cell's center
@@ -56,29 +57,29 @@ void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float d
                   sphereOutputFile.open("spherePts.csv");
                }
                for(int m = 0; m < sd.getNumDirVec(); m++){
-                  std::cout<<"\n\nDirection interation #:"<<m<<std::endl;
+                   // std::cout<<"\n\nDirection interation #:"<<m<<std::endl;
 
-                  ray.setDir(sd.getNextDirCardinal());
-                  //ray.setDir(sd.getNextDir());
+                  // ray.setDir(sd.getNextDirCardinal());
+                  ray.setDir(sd.getNextDir());
 
                   if(flag==0){
                      sphereOutputFile<<ray.getDirection()[0]<<","<<ray.getDirection()[1]<<","<<ray.getDirection()[2]<<std::endl;
                   }
-                  std::cout<<"Direction: <"<<ray.getDirection()[0]<<", "<<ray.getDirection()[1]<<","<<ray.getDirection()[2]<<">"<<std::endl;
+                  // std::cout<<"Direction: <"<<ray.getDirection()[0]<<", "<<ray.getDirection()[1]<<","<<ray.getDirection()[2]<<">"<<std::endl;
                   //Re-init hit?
 
                   bool isHit = tris->rayHit(ray, t0, t1, hit);
 
                   if(isHit){
-                     std::cout<<"Hit found."<<std::endl;
+                      // std::cout<<"Hit found."<<std::endl;
 
                      //compare the mixLengths
                      if(hit.hitDist < maxLength){
                         maxLength = hit.hitDist;
-                        std::cout<<"maxlength updated"<<std::endl;
+                        // std::cout<<"maxlength updated"<<std::endl;
                      }
                   }else{
-                     std::cout<<"Hit not found"<<std::endl;
+                      // std::cout<<"Hit not found"<<std::endl;
                      //std::cout<<"Hit may not be found but hit.hitDist = "<<hit.hitDist<<std::endl;
                   }
 
@@ -96,10 +97,10 @@ void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float d
                   cellNum++;
                }
 
-               std::cout<<"Mixing length for this cell is "<<maxLength<<std::endl;
+               // std::cout<<"Mixing length for this cell is "<<maxLength<<std::endl;
                //add to list of vectors
                mixingLength[icell_idx] = maxLength;
-               std::cout<<"\n\n"<<std::endl;
+               // std::cout<<"\n\n"<<std::endl;
             }
 
          }
@@ -108,6 +109,4 @@ void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float d
 
    cellPointsFile.close();
    mixOutputFile.close();
-   // return mixingLengthList;
-
 }

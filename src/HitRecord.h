@@ -13,13 +13,12 @@
 
 class HitRecord{
   public:
-//private:
    bool isHit;
-   void* hitNode;
-   float hitDist;  //distance from ray origin to hit point 
-   float t;
-   Vector3<float> endpt;
-//public:
+   void* hitNode;          //reference to BVH node that was hit
+   float hitDist;          //distance from ray origin to hit point 
+   float t;                
+   Vector3<float> endpt;   //the intersection point   
+   
    HitRecord();
    HitRecord(void* hitNode, bool isHit);
    HitRecord(void* hitNode, bool isHit, float hitDist);
