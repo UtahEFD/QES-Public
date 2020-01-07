@@ -171,7 +171,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
    icellflag.resize( numcell_cent, 1 );
    ibuilding_flag.resize ( numcell_cent, -1 );
 
-   mixingLengths.resize( numcell_cent, 0 );
+   mixingLengths.resize( numcell_cent, 0.0 );
 
    // /////////////////////////////////////////
    // Output related data --- should be part of some URBOutputData
@@ -183,6 +183,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
    terrain.resize( numcell_cout_2d, 0.0 );
    terrain_id.resize( nx*ny, 1 );
    icellflag_out.resize( numcell_cout, 0.0 );
+   mixlength_out.resize( numcell_cout, 0.0 );
    /////////////////////////////////////////
 
    // Set the Wind Velocity data elements to be of the correct size
@@ -595,7 +596,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, Output *cudaOutput)
       AttVectorDbl att_w = {&w_out, "w", "z-component velocity", "m s-1", dim_vector};
       AttVectorDbl att_h = {&terrain,  "terrain", "terrain height", "m", dim_vector_2d};
       AttVectorInt att_i = {&icellflag_out, "icell", "icell flag value", "--", dim_vector};
-      AttVectorDbl att_j = {&mixingLengths, "mixlength", "mixing length value", "m", dim_vector};
+      AttVectorDbl att_j = {&mixlength_out, "mixlength", "mixing length value", "m", dim_vector};
 
       // map the name to attributes
       map_att_scalar_dbl.emplace("t", att_t);
@@ -814,6 +815,7 @@ void URBGeneralData::save()
                v_out[icell_cent] = 0.5*(v[icell_face+nx]+v[icell_face]);
                w_out[icell_cent] = 0.5*(w[icell_face+nx*ny]+w[icell_face]);
                icellflag_out[icell_cent] = icellflag[icell_cent+((nx-1)*(ny-1))];
+               mixlength_out[icell_cent] = mixingLengths[ icell_cent+((nx-1)*(ny-1)) ];
             }
          }
       }

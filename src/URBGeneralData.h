@@ -104,6 +104,7 @@ public:
 
 
     std::vector<double> mixingLengths;
+    std::vector<double> mixlength_out;
 
     // Sensor* sensor;      may not need this now
 
