@@ -23,13 +23,8 @@ class URBInputData;
 class URBGeneralData {
 public:
     URBGeneralData();
-    URBGeneralData(const URBInputData* UID);
+    URBGeneralData(const URBInputData* UID, bool calcMixLength=false);
     ~URBGeneralData();
-
-    void enableMixingLength() 
-    {
-        m_calcMixingLength = true;
-    }
 
     void mergeSort( std::vector<float> &effective_height,
 		    std::vector<Building*> allBuildingsV,
@@ -42,6 +37,11 @@ public:
     * of the canopy.
     */
     float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
+
+    bool includesMixingLength() 
+    {
+        return m_calcMixingLength;
+    }
 
     /**
     * @brief

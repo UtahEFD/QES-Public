@@ -1,7 +1,7 @@
 #include "URBGeneralData.h"
 
-URBGeneralData::URBGeneralData(const URBInputData* UID)
-    : m_calcMixingLength( false )
+URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
+    : m_calcMixingLength( calcMixLength )
 {
 
    if ( UID->simParams->upwindCavityFlag == 1)
@@ -168,7 +168,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     icellflag.resize( numcell_cent, 1 );
     ibuilding_flag.resize ( numcell_cent, -1 );
 
-    mixingLengths.resize( numcell_cent, 0.0 );
+    if (m_calcMixingLength)
+        mixingLengths.resize( numcell_cent, 0.0 );
 
     terrain.resize( numcell_cout_2d, 0.0 );
     terrain_id.resize( nx*ny, 1 );
@@ -530,8 +531,16 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     wall->setVelocityZero (this);
 
     /*******Add raytrace code here********/
-    // std::vector<float> mixingLengths = 
-    UID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
+    if (m_calcMixingLength){
+        std::cout << "Computing mixing length scales..." << std::endl;
+        auto mlStartTime = std::chrono::high_resolution_clock::now();
+        UID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
+        auto mlEndTime = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
+        std::cout << "\telapsed time: " << mlElapsed.count() << " s\n";
+    }
+    
 }
 
 
