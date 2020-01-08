@@ -37,5 +37,10 @@ public:
     std::string netCDFFileWk = "";
     bool cellFace, terrainOut, solveWind;
     int solveType, compareType;
+
+    // Calculate Mixing Length - currently takes a while so it is
+    // disabled unless this is set.
+    bool calcMixingLength;
+    
 private:
 };

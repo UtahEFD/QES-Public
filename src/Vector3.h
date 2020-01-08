@@ -84,4 +84,8 @@ public:
 	    is >> v.values[0] >> v.values[1] >> v.values[2];
 	    return is;
 	}
+
+        friend Vector3<T> operator-(const Vector3<T>& v1, const Vector3<T>& v2){
+           return Vector3<T> (v1.values[0] - v2.values[0], v1.values[1] - v2.values[1], v1.values[2] - v2.values[2]);
+        }
 };

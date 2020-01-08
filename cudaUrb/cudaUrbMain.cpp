@@ -63,6 +63,13 @@ int main(int argc, char *argv[])
     // Generate the general URB data from all inputs
     URBGeneralData* UGD = new URBGeneralData(UID);
 
+
+    // turn on mixing length calculations for now if enabled
+    // eventually, we will remove this flag
+    if (arguments.calcMixingLength)
+        UGD->enableMixingLength();
+
+
     // create URB output classes
     URBOutput_VizFields* outputVz = nullptr;
     if (arguments.netCDFFileVz != "") {

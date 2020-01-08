@@ -34,6 +34,9 @@ CUDA_ADD_LIBRARY( cudaurbcore
   Sidewall.cpp
   Rooftop.cpp
   StreetIntersection.cpp
+  Ray.cpp
+  SphereDirections.cpp
+  HitRecord.cpp
   )
 
 cuda_add_executable( unitTest

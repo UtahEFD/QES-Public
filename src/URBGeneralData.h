@@ -26,6 +26,11 @@ public:
     URBGeneralData(const URBInputData* UID);
     ~URBGeneralData();
 
+    void enableMixingLength() 
+    {
+        m_calcMixingLength = true;
+    }
+
     void mergeSort( std::vector<float> &effective_height,
 		    std::vector<Building*> allBuildingsV,
 		    std::vector<int> &building_id );
@@ -104,6 +109,9 @@ public:
     std::vector<float> u,v,w;
 
 
+    std::vector<double> mixingLengths;
+    std::vector<double> mixlength_out;
+
     // Sensor* sensor;      may not need this now
 
 
@@ -149,4 +157,7 @@ public:
     std::vector<std::vector<int>> num_points;
     std::vector<std::vector<float>> coeff;
 
+private:
+
+    bool m_calcMixingLength;
 };
