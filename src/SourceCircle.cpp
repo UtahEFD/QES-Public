@@ -1,7 +1,7 @@
-#include "SourcePoint.hpp"
+#include "SourceCircle.hpp"
 
 
-void SourcePoint::checkMetaData( const double& domainXstart, const double& domainXend, 
+void SourceCircle::checkMetaData( const double& domainXstart, const double& domainXend, 
                                  const double& domainYstart, const double& domainYend,
                                  const double& domainZstart, const double& domainZend)
 {
@@ -10,35 +10,43 @@ void SourcePoint::checkMetaData( const double& domainXstart, const double& domai
 
     if( m_numParticles <= 0 )
     {
-        std::cerr << "ERROR (SourcePoint::checkMetaData): input numParticles is <= 0! numParticles = \"" << m_numParticles << "\"" << std::endl;
+        std::cerr << "ERROR (SourceCircle::checkMetaData): input numParticles is <= 0! numParticles = \"" << m_numParticles << "\"" << std::endl;
         exit(1);
     }
 
-    if( posX < domainXstart || posX > domainXend )
+    if( radius < 0 )
     {
-        std::cerr << "ERROR (SourcePoint::checkMetaData): input posX is outside of domain! posX = \"" << posX 
+        std::cerr << "ERROR (SourceCircle::checkMetaData): input radius is negative! radius = \"" << radius << "\"" << std::endl;
+        exit(1);
+    }
+
+    if( (posX-radius) < domainXstart || (posX+radius) > domainXend )
+    {
+        std::cerr << "ERROR (SourceCircle::checkMetaData): input posX+radius is outside of domain! posX = \"" << posX << "\" radius = \"" << radius
             << "\" domainXstart = \"" << domainXstart << "\" domainXend = \"" << domainXend << "\"" << std::endl;
         exit(1);
     }
-    if( posY < domainYstart || posY > domainYend )
+    if( (posY-radius) < domainYstart || (posY+radius) > domainYend )
     {
-        std::cerr << "ERROR (SourcePoint::checkMetaData): input posY is outside of domain! posY = \"" << posY 
+        std::cerr << "ERROR (SourceCircle::checkMetaData): input posY+radius is outside of domain! posY = \"" << posY << "\" radius = \"" << radius
             << "\" domainYstart = \"" << domainYstart << "\" domainYend = \"" << domainYend << "\"" << std::endl;
         exit(1);
     }
-    if( posZ < domainZstart || posZ > domainZend )
+    if( (posZ-radius) < domainZstart || (posZ+radius) > domainZend )
     {
-        std::cerr << "ERROR (SourcePoint::checkMetaData): input posZ is outside of domain! posZ = \"" << posZ 
+        std::cerr << "ERROR (SourceCircle::checkMetaData): input posZ is outside of domain! posZ = \"" << posZ << "\" radius = \"" << radius
             << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"" << std::endl;
         exit(1);
     }
 }
 
 
-int SourcePoint::emitParticles( const float dt,
+int SourceCircle::emitParticles( const float dt,
                                 const float currTime,
                                 std::vector<particle>& emittedParticles)
 {
+
+    // note that this is not complete yet, it is acting like a point till we add in stuff corresponding to the radius
     if (m_rType == ParticleReleaseType::instantaneous) {
 
         // release all particles only if currTime is 0
@@ -60,7 +68,7 @@ int SourcePoint::emitParticles( const float dt,
         
     } else
     {
-        std::cerr << "ERROR (SourcePoint::emitParticles): ParticleReleaseType \"" << m_rType << "\" has not been implemented in code yet!" << std::endl;
+        std::cerr << "ERROR (SourceCircle::emitParticles): ParticleReleaseType \"" << m_rType << "\" has not been implemented in code yet!" << std::endl;
     }
 
     return emittedParticles.size();

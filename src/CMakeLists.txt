@@ -22,8 +22,9 @@ CUDA_ADD_LIBRARY( cudaplumecore
     particle.cpp
     SourcePoint.cpp SourcePoint.hpp
     SourceLine.cpp SourceLine.hpp
-    SourceUniformDomain.cpp SourceUniformDomain.hpp
-    Source_continuous_uniform_point.cpp
+    SourceCircle.cpp SourceCircle.hpp
+    SourceCube.cpp SourceCube.hpp
+    SourceFullDomain.cpp SourceFullDomain.hpp
 
     BoundaryConditions.hpp
 )

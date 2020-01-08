@@ -57,31 +57,20 @@ class Dispersion {
         std::vector<int> parPerTimestep;             // this is the number of particles to release at each timestep, used to calculate the release time for each particle in Dispersion, and also to update the particle loop counter in Plume.
         
 
-    // 
-    // This the storage for all particles
-    // 
-    // the sources can set these values, then the other values are set using urb and turb info using these values
-    std::vector<particle> pointList;
+        // 
+        // This the storage for all particles
+        // 
+        // the sources can set these values, then the other values are set using urb and turb info using these values
+        std::vector<particle> pointList;
 
 
-    // ALL Sources that will be used 
-    std::vector< SourceKind* > allSources;
+        // ALL Sources that will be used 
+        std::vector< SourceKind* > allSources;
 
-
-        // goes through and for each source, runs a virtual function to calculate a pointList with position and release times
-        // for each source, adding these pointList values to the overall pointList storage in dispersion
-        void addSources(Sources* sources);
 
         void setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle>& newParticles);
 
-        // this function is required to reorganize the particles by time since multiple sources could be releasing lots of particles at tons of different times
-        // this is also needed to calculate parPerTimestep
-        void sortParticleValsByTime();
-
-        // this function requires the values to be sorted to work correctly, but it goes through finding when the times change,
-        // using the changes to store a number of particles to release for each timestep
-        void calc_parPerTimestep();
-
+        
         void outputVarInfo_text();
 
 
@@ -103,6 +92,12 @@ class Dispersion {
         double dt;             // this is a copy of the input timestep
         double simDur;         // this is a copy of the input runTime, or the total amount of time to run the simulation for
         
+
+        // this function takes the sources from PlumeInputData and puts them into the allSources vector found in dispersion
+        // this also calls the check metadata function for the input sources before adding them to the list.
+        // the check metadata function should already have been called for all the other sources during the specialized constructor phases used to create them.
+        void getInputSources(PlumeInputData* PID);
+
 
         // function for finding the largest sig value, which could be used for other similar datatypes if needed
         double maxval(const std::vector<diagonal>& vec);

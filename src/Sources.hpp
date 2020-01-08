@@ -11,7 +11,11 @@
 
 #include "util/ParseInterface.h"
 #include "SourceKind.hpp"
-#include "Source_continuous_uniform_point.hpp"
+#include "SourcePoint.hpp"
+#include "SourceLine.hpp"
+#include "SourceCircle.hpp"
+#include "SourceCube.hpp"
+#include "SourceFullDomain.hpp"
 
 class Sources : public ParseInterface
 {
@@ -24,7 +28,11 @@ class Sources : public ParseInterface
     
     	virtual void parseValues() {
     		parsePrimitive<int>(true, numSources, "numSources");
-    		parseMultiPolymorphs(true, sources, Polymorph<SourceKind, Source_continuous_uniform_point>("continuous_uniform_pointSource"));
+			parseMultiPolymorphs(true, sources, Polymorph<SourceKind, SourcePoint>("SourcePoint"));
+			parseMultiPolymorphs(true, sources, Polymorph<SourceKind, SourceLine>("SourceLine"));
+			parseMultiPolymorphs(true, sources, Polymorph<SourceKind, SourceCircle>("SourceCircle"));
+			parseMultiPolymorphs(true, sources, Polymorph<SourceKind, SourceCube>("SourceCube"));
+			parseMultiPolymorphs(true, sources, Polymorph<SourceKind, SourceFullDomain>("SourceFullDomain"));
     	}
 };
 #endif

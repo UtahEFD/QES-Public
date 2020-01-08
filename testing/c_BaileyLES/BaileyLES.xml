@@ -1,7 +1,7 @@
 <simulationParameters>
 	<runTime> 222.0 </runTime>
 	<timeStep> 2.22 </timeStep>
-  <invarianceTol> 1e-5 </invarianceTol>
+  	<invarianceTol> 1e-5 </invarianceTol>
 	<C_0> 4.0 </C_0>
 	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
 	<updateFrequency_timeLoop> 10 </updateFrequency_timeLoop>
@@ -21,19 +21,19 @@
 	<nBoxesZ> 32 </nBoxesZ> 
 </collectionParameters>
 <sources>
-  <numSources> 1 </numSources>
-  <continuous_uniform_pointSource>
-    <numParticles>100000</numParticles>
-    <posX> 3196.6 </posX>
-    <posY> 3141.6 </posY>
-    <posZ> 250.0 </posZ>
-    <radius> 100.0 </radius>
-  </continuous_uniform_pointSource>
+  	<numSources> 1 </numSources>
+  	<SourcePoint>
+		<releaseType>instantaneous</releaseType>
+    	<numParticles>100000</numParticles>
+    	<posX> 3196.6 </posX>
+    	<posY> 3141.6 </posY>
+    	<posZ> 250.0 </posZ>
+    </SourcePoint>
 </sources>
 <boundaryConditions>
-  <xBCtype>periodic</xBCtype>
-  <yBCtype>periodic</yBCtype>
-  <zBCtype>reflection</zBCtype>
+  	<xBCtype>periodic</xBCtype>
+  	<yBCtype>periodic</yBCtype>
+  	<zBCtype>reflection</zBCtype>
 </boundaryConditions>
 <fileOptions>
 	<outputFlag>1</outputFlag>

@@ -11,7 +11,9 @@
 
 #include "SourcePoint.hpp"
 #include "SourceLine.hpp"
-#include "SourceUniformDomain.hpp"
+#include "SourceCircle.hpp"
+#include "SourceCube.hpp"
+#include "SourceFullDomain.hpp"
 
 Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul, const std::string& debugOutputFolder_val)
     : pointList(0)
@@ -52,73 +54,56 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul,
     // test out 1 point source at this location... with these rates
     // and this number of particles... 
 #if 0
-    vec3 ptSourcePos;
-    ptSourcePos.e11 = 40.0;
-    ptSourcePos.e21 = 80.0;
-    ptSourcePos.e31 = 30.0;
-    SourceKind *sPtr0 = new SourcePoint( ptSourcePos, 100000, ParticleReleaseType::instantaneous, 
+    double ptSource_xPos = 40.0;
+    double ptSource_yPos = 80.0;
+    double ptSource_zPos = 30.0;
+    SourceKind *sPtr0 = new SourcePoint( ptSource_xPos, ptSource_yPos, ptSource_zPos, 100000, ParticleReleaseType::instantaneous, 
                                          domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
     allSources.push_back( sPtr0 );
 #endif
 
 
 #if 0
-    vec3 pt0, pt1;
-    pt0.e11 = 25.0;
-    pt0.e21 = 175.0;
-    pt0.e31 = 40.0;
+    double lineSource_xPos0 = 25.0;
+    double lineSource_yPos0 = 175.0;
+    double lineSource_zPos0 = 40.0;
 
-    pt1.e11 = 50.0;
-    pt1.e21 = 25.0;
-    pt1.e31 = 40.0;
-    SourceKind *sPtr = new SourceLine( pt0, pt1, 100000, ParticleReleaseType::instantaneous, 
+    double lineSource_xPos1 = 50.0;
+    double lineSource_yPos1 = 25.0;
+    double lineSource_zPos1 = 40.0;
+    SourceKind *sPtr1 = new SourceLine( lineSource_xPos0, lineSource_yPos0, lineSource_zPos0, lineSource_xPos1, lineSource_yPos1, lineSource_zPos1, 
+                                       100000, ParticleReleaseType::instantaneous, 
                                        domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
-    allSources.push_back( sPtr );
+    allSources.push_back( sPtr1 );
 #endif
 
-#if 1
-    // Uniform test case Source
-    // This will causes a segfault in Eulerian::interp3D due to kk +
-    // kkk being too large
-    // 
-    // SourceKind *sPtr = new SourceUniformDomain( urb->grid.nx, urb->grid.ny, urb->grid.nz, urb->grid.dx, urb->grid.dy, urb->grid.dz, 100000, 
-    //                                             domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend
-    //                                             0 ); // last 0 is the fudge factor to force overloading the right constructor
+#if 0
+    double cubeSource_xMin = 0.5;
+    double cubeSource_yMin = 0.5;
+    double cubeSource_zMin = 0.5;
+    double cubeSource_xMax = 199.5;
+    double cubeSource_yMax = 199.5;
+    double cubeSource_zMax = 199.5;
+    SourceKind *sPtr2 = new SourceCube( cubeSource_xMin, cubeSource_yMin, cubeSource_zMin, cubeSource_xMax, cubeSource_yMax, cubeSource_zMax, 
+                                        100000, ParticleReleaseType::instantaneous, 
+                                        domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
+    allSources.push_back( sPtr2 );
+#endif
 
-    // Otherwise, this will work
-    //SourceKind *sPtr = new SourceUniformDomain( 0.5, 0.5, 0.5, 199.5, 199.5, 199.5, 100000, 
-    //                                            domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
-
-    // alternative and more appropriate form
-    SourceKind *sPtr = new SourceUniformDomain( domainXstart, domainYstart, domainZstart, domainXend, domainYend, domainZend, 100000, 
-                                                domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
-
-    allSources.push_back( sPtr );
+#if 0
+    SourceKind *sPtr3 = new SourceFullDomain( 100000, ParticleReleaseType::instantaneous, 
+                                              domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
+    allSources.push_back( sPtr3 );
 #endif
 
     // ////////////////////
     
-    
-#if 0
-    // this function goes through each source and adds to the particle list the initial positions and release times
-    // this function is an initialization factory calling an add source for each type of source
-    // eventually this all needs moved to be a single virtual function inside of sourceKind that is overloaded by each source
-    // then the if statements in the initialization factory function will go away
-    // I think the new virtual function would need to be called something else though, like generatePointInfo()
-    addSources(PID->sources);
 
-    // now that all the sources have added to the particle list, it's time to setup the initial values for each particle using their initial positions
-    setParticleVals(turb, eul);
+    // get sources from input data and add them to the allSources vector
+    // this also calls the check metadata function for the input sources before adding them to the list.
+    // the check metadata function should already have been called for all the other sources during the specialized constructor phases used to create them.
+    getInputSources(PID);
 
-    // now sort the big fat list of particles by time, so we can disperse them easily in the same order
-    // also so that we can calculate the parPerTimestep values
-    sortParticleValsByTime();
-
-    // this function requires the values to be sorted to work correctly, but it goes through finding when the times change,
-    // using the changes to store a number of particles to release for each timestep
-    calc_parPerTimestep();
-#endif
-    
 
     // set the isRogueCount to zero
     isRogueCount = 0.0;
@@ -127,76 +112,10 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul,
     // calculate the threshold velocity
     vel_threshold = 10.0*sqrt(maxval(turb->sig));  // might need to write a maxval function, since it has to get the largest value from the entire sig array
 
-    
-    /*
-      Checking if the starting time for the last particle is equal to the duration of
-      the simulation (for continous release ONLY)
-      would need to modify this to check all particles, probably better to just do the check at the end of each source, 
-      so it is known which source causes the problem
-    */
-#if 0
-    if ( fabs(pointList.back().tStrt - simDur) > EPSILON )
-    {
-        std::cerr << " Error, in start time of the particles" << std::endl;
-        exit(1);
-    }
-#endif
 
     // set the debug variable output folder
     debugOutputFolder = debugOutputFolder_val;
     
-}
-
-
-void Dispersion::addSources(Sources* sources)
-{
-    std::cerr << "Dispersion::addSources should NOT BE CALLED!" << std::endl;
-    exit(EXIT_FAILURE);
-
-    // first get the number of sources from the sources variable
-    int numSources = sources->numSources;
-
-    
-    for(int i = 0; i < numSources; i++)
-    {
-        // all this should work even if there is no points list output, from what I can tell
-        
-        // get the position and time info for the current source
-        // because of polymorphic inheritance, this virtual function should work regardless of the sourceKind
-        // the resulting list of points will vary for each source kind
-        std::vector<particle> currentPointsList = sources->sources.at(i)->outputPointInfo(dt,simDur);
-
-        // set the number of particles for the current source
-        // keeping all these numParticle stuff seperate makes it easier to update the overall point information
-        // with the current point information from the current source
-        int currentNumPar = currentPointsList.size();
-
-        // update the overall list number of particles
-        // keep track of the old number of values so it is easy to update the list in the right way
-        // for the first source, oldNumPar will come out as 0.
-        int oldNumPar = numPar;
-        numPar = numPar + currentNumPar;
-
-        // now resize the overall list number of particles
-        // hopefully this works to not get rid of the old values set in the old size locations!
-        pointList.resize(numPar);
-
-        // now take the point list information output from the source, and pack it into the overall point list
-        for(int i = 0; i < currentNumPar; i++)
-        {
-
-            // update the position info
-            pointList.at(oldNumPar+i).pos.e11 = currentPointsList.at(i).pos.e11;
-            pointList.at(oldNumPar+i).pos.e21 = currentPointsList.at(i).pos.e21;
-            pointList.at(oldNumPar+i).pos.e31 = currentPointsList.at(i).pos.e31;
-
-            // now update the time info
-            pointList.at(oldNumPar+i).tStrt = currentPointsList.at(i).tStrt;
-
-        }
-
-    }
-
 }
 
 
@@ -249,132 +168,23 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
         
     }
 
-
-}
-
-void Dispersion::sortParticleValsByTime()
-{
-    // this is NOT going to be the most efficient sorting algorythm
-    // my idea is to make a copy of the original values, and make a list of the original times
-    // also a list of the new indices for the new particles for moving from the original container to the new container
-    // since the end goal is to fill the actual container, going to do all the sorting on the copy of said container
-
-    // create the required containers of values
-    std::vector<particle> pointListCopy;
-    std::vector<double> sortedTimes;
-    std::vector<int> sortedIndices;
-
-    // now resize the temporary containers
-    pointListCopy.resize(numPar);
-    sortedTimes.resize(numPar);
-    sortedIndices.resize(numPar);
-
-
-    // now fill the temporary containers with copies of the original values
-    for(int i = 0; i < numPar; i++)
-    {
-        pointListCopy.at(i) = pointList.at(i);  // without a proper copy operator, will this work correctly? If not, just break it down into a single copy for each freaking part
-        sortedTimes.at(i) = pointList.at(i).tStrt;
-        sortedIndices.at(i) = i;
-    }
-
-
-    // now go through each copy of the times and the indices, and sort
-    // seems like I just need one loop over the second to the last value, but then an inner while loop
-    // that goes while the current value is smaller than the value before it or till the value is the first in the list
-    // hm, the tricky part is then how to move the values in the containers. I guess technically you don't need a copy 
-    // of the whole container to be sorted this way. Instead, when a current value is found to be smaller than the last value
-    // a temporary storage of the current and last value can be made, then the values can be swapped in the overall container
-    // nice this gets rid of extra storage problems! Except that I have a LOT of values to sort than just the ones that are being
-    // sorted. I want to sort all the values by time, it might be smarter to sort a copy of the times and a set of indices for each time
-    // then a copy of the whole container can fill the original container using the list of sorted indices
-    for(int i = 1; i < numPar; i++)
-    {
-        // set the values needed for the while loop check
-        // these also act as the temporary time storage so the swap is quick and easy in the sorting container
-        int backCount = i;
-        double current_time = sortedTimes.at(backCount);
-        double previous_time = sortedTimes.at(backCount-1);
-        while( backCount > 0 && current_time < previous_time )
-        {
-            // current_time and previous_time need to swap places in the sorting container
-            sortedTimes.at(backCount) = previous_time;
-            sortedTimes.at(backCount-1) = current_time;
-
-            // set temporary storage of the indices for that swap
-            int current_index = sortedIndices.at(backCount);
-            int previous_index = sortedIndices.at(backCount-1);
-
-            // now the current and previous indices need to swap places in the index sorting container
-            sortedIndices.at(backCount) = previous_index;
-            sortedIndices.at(backCount-1) = current_index;
-
-            // update the values needed for the while loop check
-            backCount = backCount - 1;
-            current_time = sortedTimes.at(backCount);
-            // have to watch out for referencing outside the array, unfortunately
-            if(backCount != 0)
-            {
-                previous_time = sortedTimes.at(backCount-1);
-            }
-
-        }
-    }
-
-    // now I have a list of sorted indices and times and the original and a copy of the original values
-    // technically I don't need the sorted times anymore, just the indices. I can use the indices and the copy of the original values
-    // to place values from the copy into the original values using the indices to know where everything goes
-    for(int i = 0; i < numPar; i++)
-    {
-        pointList.at(i) = pointListCopy.at(sortedIndices.at(i));    // will this work without a copy constructor in pointList? if not, can expand for each value type
-    }
-
 }
 
 
-void Dispersion::calc_parPerTimestep()
+void Dispersion::getInputSources(PlumeInputData* PID)
 {
-    // with the particles sorted by time, go through the list of particle times, and at each particle where the release time
-    // exceeds the current timestep, pushback that number of particles to the particles to release per timestep
-    
-    // first resize the parPerTimestep to be the number of simulation timesteps
-    parPerTimestep.resize(numTimeStep);
-
-    int timeStepCount = 0;  // this will keep track of when the timestep has changed
-    int cumulatedParticles = 0;     // this is also the already counted particles. Also useful for checking to make sure there isn't a problem with the algorythm
-    for(int i = 0; i < numPar; i++)
+    int numSources_Input = PID->sources->sources.size();
+    for(auto sidx=0u; sidx < numSources_Input; sidx++)
     {
-        if( i == numPar-1 )
-        {
-            // use the current number of particles and the number of particles already counted to get the particles per this timestep
-            parPerTimestep.at(timeStepCount) = i - cumulatedParticles + 1;
+        // first point to the input source
+        SourceKind *sPtr = &PID->sources->sources.at(sidx);
 
-            // set the cumulated particles for checking at the end if there was a problem with the algorythm
-            cumulatedParticles = cumulatedParticles + parPerTimestep.at(timeStepCount);
+        // now do anything that is needed to the source via the pointer
+        sPtr->checkMetaData(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
 
-            // now update the timeStepCount
-            timeStepCount = timeStepCount + 1;
-            
-        } else if( pointList.at(i).tStrt > timeStepStamp.at(timeStepCount) )
-        {
-            // use the current number of particles and the number of particles already counted to get the particles per this timestep
-            parPerTimestep.at(timeStepCount) = i - cumulatedParticles;
 
-            // set the cumulated particles for checking at the end if there was a problem with the algorythm
-            cumulatedParticles = cumulatedParticles + parPerTimestep.at(timeStepCount);
-
-            // now update the timeStepCount
-            timeStepCount = timeStepCount + 1;
-        }
-    }
-
-    if( cumulatedParticles != numPar)
-    {
-        std::cerr << "Disperion::calc_parPerTimestep Error!" << std::endl;
-        std::cerr << "cumulatedParticles not equal to numPar!" << std::endl;
-        std::cerr << "cumulatedParticles = \"" << cumulatedParticles << "\", numPar = \"" << numPar << "\"" << std::endl;
-        std::cerr << "ENDING PROGRAM!!!" << std::endl;
-        exit(1);
+        // now add the pointer that points to the source to the list of sources in dispersion
+        allSources.push_back( sPtr );
     }
 }
 

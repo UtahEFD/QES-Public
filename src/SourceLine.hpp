@@ -6,8 +6,17 @@
 class SourceLine : public SourceKind
 {
 private:
-    vec3 m_pt0;
-    vec3 m_pt1;
+
+    // note that this also inherits data members int m_numParticles and ParticleReleaseType m_rType from SourceKind.
+    //  this also inherits data members SourceShape m_sShape and std::string inputReleaseType from SourceKind.
+    // guidelines for how to set these variables within an inherited source are given in SourceKind.
+
+    double posX_0;
+    double posY_0;
+    double posZ_0;
+    double posX_1;
+    double posY_1;
+    double posZ_1;
     
 protected:
     
@@ -18,64 +27,53 @@ public:
     {
     }
     
-    SourceLine( const vec3 &pt0, const vec3 &pt1, const int numParticles, ParticleReleaseType rType,
-                        const double domainXstart, const double domainXend, 
-                        const double domainYstart, const double domainYend,
-                        const double domainZstart, const double domainZend )
+    // specialized constructor with initializer list
+    SourceLine( const double& xPos0, const double& yPos0, const double& zPos0,
+                const double& xPos1, const double& yPos1, const double& zPos1,
+                const int& numParticles, const ParticleReleaseType& rType,
+                const double& domainXstart, const double& domainXend, 
+                const double& domainYstart, const double& domainYend,
+                const double& domainZstart, const double& domainZend )
         : SourceKind( numParticles, rType ),
-          m_pt0( pt0 ), m_pt1( pt1 )
+          posX_0( xPos0 ), posY_0( yPos0 ), posZ_0( zPos0 ),
+          posX_1( xPos1 ), posY_1( yPos1 ), posZ_1( zPos1 )
     {
-        if( pt0.e11 < domainXstart || pt0.e11 > domainXend )
-        {
-            std::cerr << "ERROR (SourceLine::SourceLine): pt0.e11 is outside of domain! pt0.e11 = \"" << pt0.e11 
-                << "\" domainXstart = \"" << domainXstart << "\" domainXend = \"" << domainXend << "\"\n";
-            exit(1);
-        }
-        if( pt0.e21 < domainYstart || pt0.e21 > domainYend )
-        {
-            std::cerr << "ERROR (SourceLine::SourceLine): pt0.e11 is outside of domain! pt0.e21 = \"" << pt0.e21 
-                << "\" domainYstart = \"" << domainYstart << "\" domainYend = \"" << domainYend << "\"\n";
-            exit(1);
-        }
-        if( pt0.e31 < domainZstart || pt0.e31 > domainZend )
-        {
-            std::cerr << "ERROR (SourceLine::SourceLine): pt0.e11 is outside of domain! pt0.e31 = \"" << pt0.e31 
-                << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"\n";
-            exit(1);
-        }
+        m_sShape = SourceShape::line;
 
-        if( pt1.e11 < domainXstart || pt1.e11 > domainXend )
-        {
-            std::cerr << "ERROR (SourceLine::SourceLine): pt1.e11 is outside of domain! pt1.e11 = \"" << pt1.e11 
-                << "\" domainXstart = \"" << domainXstart << "\" domainXend = \"" << domainXend << "\"\n";
-            exit(1);
-        }
-        if( pt1.e21 < domainYstart || pt1.e21 > domainYend )
-        {
-            std::cerr << "ERROR (SourceLine::SourceLine): pt1.e11 is outside of domain! pt1.e21 = \"" << pt1.e21 
-                << "\" domainYstart = \"" << domainYstart << "\" domainYend = \"" << domainYend << "\"\n";
-            exit(1);
-        }
-        if( pt1.e31 < domainZstart || pt1.e31 > domainZend )
-        {
-            std::cerr << "ERROR (SourceLine::SourceLine): pt1.e11 is outside of domain! pt1.e31 = \"" << pt1.e31 
-                << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"\n";
-            exit(1);
-        }
+        checkMetaData(domainXstart,domainXend,domainYstart,domainYend,domainZstart,domainZend);
     }
 
+    // destructor
     ~SourceLine()
     {
     }
 
+
     virtual void parseValues()
     {
-        // Pete can help fill this in later, but
-        // it would need to do the following:
+        m_sShape = SourceShape::line;
+
+        parsePrimitive<std::string>(true, inputReleaseType, "releaseType");
+        parsePrimitive<int>(true, m_numParticles, "numParticles");
+        
+        parsePrimitive<double>(true, posX_0, "posX_0");
+        parsePrimitive<double>(true, posY_0, "posY_0");
+        parsePrimitive<double>(true, posZ_0, "posZ_0");
+        parsePrimitive<double>(true, posX_1, "posX_1");
+        parsePrimitive<double>(true, posY_1, "posY_1");
+        parsePrimitive<double>(true, posZ_1, "posZ_1");
+
+        setReleaseType(inputReleaseType);
     }
+
+
+    void checkMetaData(const double& domainXstart, const double& domainXend, 
+                       const double& domainYstart, const double& domainYend,
+                       const double& domainZstart, const double& domainZend);
+
     
     int emitParticles(const float dt,
                       const float currTime,
-                      std::vector<particle> &emittedParticles);
+                      std::vector<particle>& emittedParticles);
     
 };
