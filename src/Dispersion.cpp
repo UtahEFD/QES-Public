@@ -176,8 +176,12 @@ void Dispersion::getInputSources(PlumeInputData* PID)
     int numSources_Input = PID->sources->sources.size();
     for(auto sidx=0u; sidx < numSources_Input; sidx++)
     {
-        // first point to the input source
-        SourceKind *sPtr = &PID->sources->sources.at(sidx);
+        // first create the pointer to the input source
+        SourceKind *sPtr;
+
+        // now point the pointer at the source
+        sPtr = PID->sources->sources.at(sidx);
+        
 
         // now do anything that is needed to the source via the pointer
         sPtr->checkMetaData(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
