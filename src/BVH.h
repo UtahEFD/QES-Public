@@ -6,10 +6,15 @@
  */
 
 #include "Triangle.h"
+#include "HitRecord.h"
 #include <vector>
+#include <cmath>
 
 #define GETMIN(x,y) ( (x) < (y) ? (x) : (y))
 #define GETMAX(x,y) ( (x) > (y) ? (x) : (y))
+
+
+#include "Ray.h"
 
 using std::vector;
 
@@ -76,4 +81,23 @@ public:
 	 * @param tris -list of triangles that will be placed in the structure
 	 */
 	static BVH* createBVH(const std::vector<Triangle*> tris);
+
+        /*         
+         *Takes a 3D ray and determines if it intersects this BVH
+         *node's bounding box
+         *
+         *@param ray -ray to potential hit
+         *@return true if a hit is found and false otherwise 
+         */
+        bool rayBoxIntersect(Ray ray);
+
+        /*
+         *Determines if the ray hit the expected parameters and
+         *updates the HitRecord with info on the hit
+         *
+         *@param ray -ray to potential hit
+         *@param rec -the HitRecord to be updated with hit details
+         *@return true if hit is found and false otherwise
+         */
+        bool rayHit(Ray ray, const float t0, float& t1, HitRecord& rec);
 };

@@ -1,7 +1,8 @@
 #include "handleURBArgs.h"
 
 URBArgs::URBArgs()
-  : verbose(false), quicFile(""), netCDFFileVz(""), netCDFFileWk(""), cellFace(false), solveType(1), compareType(0)
+    : verbose(false), quicFile(""), netCDFFileVz(""), netCDFFileWk(""), cellFace(false), solveType(1), compareType(0),
+      calcMixingLength( false )
 {
     reg("help", "help/usage information", ArgumentParsing::NONE, '?');
     reg("verbose", "turn on verbose output", ArgumentParsing::NONE, 'v');
@@ -15,6 +16,8 @@ URBArgs::URBArgs()
     reg("icellout", "Specifies that the iCellFlag values should be output, this also will output cutCellFlags if they exist", ArgumentParsing::NONE, 'i');
     reg("terrainout", "Specifies that the triangle mesh for the terrain should be output", ArgumentParsing::NONE, 't');
     reg("windsolveroff", "Turns off the wind solver and wind output", ArgumentParsing::NONE, 'x');
+
+    reg("calcmixlength", "Turns on the mixing length calculations and output", ArgumentParsing::NONE, 'm');    
 }
 
 void URBArgs::processArguments(int argc, char *argv[])
@@ -62,4 +65,7 @@ void URBArgs::processArguments(int argc, char *argv[])
 
     isSet( "demfile", demFile );
     if (demFile != "") std::cout << "DEM input file set to " << demFile << std::endl;
+
+    calcMixingLength = isSet("calcmixlength");
+    if (calcMixingLength) std::cout << "Mixing Length calculations: ON" << std::endl;
 }
