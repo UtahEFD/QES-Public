@@ -6,9 +6,16 @@ URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string
   std::cout<<"Setting fields of TURBInputFile file"<<std::endl;
   
   // set list of fields to save, no option available for this file
-  output_fields = {"t","x","y","z","u","v","w","icell","terrain",
-		   "e","f","g","h","m","n"};
-
+  if (ugd->includesMixingLength()) {
+      output_fields = {"t","x","y","z","u","v","w","icell","terrain",
+                       "mixlength",
+                       "e","f","g","h","m","n"};
+  }
+  else {
+      output_fields = {"t","x","y","z","u","v","w","icell","terrain",
+                       "e","f","g","h","m","n"};
+  }
+  
   
   int nx = ugd->nx;
   int ny = ugd->ny;
@@ -84,8 +91,13 @@ URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string
   dim_vect_cc.push_back(NcDim_z_cc);
   dim_vect_cc.push_back(NcDim_y_cc);
   dim_vect_cc.push_back(NcDim_x_cc);
+
   // create attributes 
-  createAttVector("icell","icell flag value","--",dim_vect_cc,&(ugd->icellflag));  
+  createAttVector("icell","icell flag value","--",dim_vect_cc,&(ugd->icellflag));
+
+  if (ugd->includesMixingLength()) {
+      createAttVector("mixlength","mixing length value","--",dim_vect_cc,&(ugd->mixingLengths));
+  }
 
   // attributes for coefficients for SOR solver
   dim_vect_cc.clear();
