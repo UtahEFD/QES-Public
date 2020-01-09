@@ -11,7 +11,7 @@ void SourceFullDomain::checkMetaData( const double& domainXstart, const double& 
 
     if( m_numParticles <= 0 )
     {
-        std::cerr << "ERROR (SourceCube::checkMetaData): input numParticles is <= 0! numParticles = \"" << m_numParticles << "\"" << std::endl;
+        std::cerr << "ERROR (SourceFullDomain::checkMetaData): input numParticles is <= 0! numParticles = \"" << m_numParticles << "\"" << std::endl;
         exit(1);
     }
 
@@ -22,6 +22,26 @@ void SourceFullDomain::checkMetaData( const double& domainXstart, const double& 
     xDomainEnd = domainXend;
     yDomainEnd = domainYend;
     zDomainEnd = domainZend;
+
+
+    if( xDomainStart > xDomainEnd )
+    {
+        std::cerr << "ERROR (SourceFullDomain::checkMetaData): input xDomainStart is greater than input xDomainEnd! xDomainStart = \"" << xDomainStart 
+            << "\" xDomainEnd = \"" << xDomainEnd << "\"" << std::endl;
+        exit(1);
+    }
+    if( yDomainStart > yDomainEnd )
+    {
+        std::cerr << "ERROR (SourceFullDomain::checkMetaData): input yDomainStart is greater than input yDomainEnd! yDomainStart = \"" << yDomainStart 
+            << "\" yDomainEnd = \"" << yDomainEnd << "\"" << std::endl;
+        exit(1);
+    }
+    if( zDomainStart > zDomainEnd )
+    {
+        std::cerr << "ERROR (SourceFullDomain::checkMetaData): input zDomainStart is greater than input zDomainEnd! zDomainStart = \"" << zDomainStart 
+            << "\" zDomainEnd = \"" << zDomainEnd << "\"" << std::endl;
+        exit(1);
+    }
     
     // unfortunately there is no easy way to check that the input domain sizes are correct, so the code could potentially fail later on
     //  cause there is no easy checking method to be implemented here
@@ -51,9 +71,9 @@ int SourceFullDomain::emitParticles( const float dt,
                 particle cPar;
 
                 // generate uniform dist in domain
-                cPar.pos.e11 = uniformDistr(prng)*xDomainEnd + xDomainStart;
-                cPar.pos.e21 = uniformDistr(prng)*yDomainEnd + yDomainStart;
-                cPar.pos.e31 = uniformDistr(prng)*zDomainEnd + zDomainStart;
+                cPar.pos.e11 = uniformDistr(prng)*(xDomainEnd-xDomainStart) + xDomainStart;
+                cPar.pos.e21 = uniformDistr(prng)*(yDomainEnd-yDomainStart) + yDomainStart;
+                cPar.pos.e31 = uniformDistr(prng)*(zDomainEnd-zDomainStart) + zDomainStart;
 
                 cPar.tStrt = currTime;
                 

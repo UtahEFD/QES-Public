@@ -28,11 +28,11 @@ class Sources : public ParseInterface
     
     	virtual void parseValues() {
     		parsePrimitive<int>(true, numSources, "numSources");
-			parseMultiPolymorphs(true, sources, Polymorph<SourceKind, SourcePoint>("SourcePoint"));
-			parseMultiPolymorphs(true, sources, Polymorph<SourceKind, SourceLine>("SourceLine"));
-			parseMultiPolymorphs(true, sources, Polymorph<SourceKind, SourceCircle>("SourceCircle"));
-			parseMultiPolymorphs(true, sources, Polymorph<SourceKind, SourceCube>("SourceCube"));
-			parseMultiPolymorphs(true, sources, Polymorph<SourceKind, SourceFullDomain>("SourceFullDomain"));
+			parseMultiPolymorphs(false, sources, Polymorph<SourceKind, SourcePoint>("SourcePoint"));
+			parseMultiPolymorphs(false, sources, Polymorph<SourceKind, SourceLine>("SourceLine"));
+			parseMultiPolymorphs(false, sources, Polymorph<SourceKind, SourceCircle>("SourceCircle"));
+			parseMultiPolymorphs(false, sources, Polymorph<SourceKind, SourceCube>("SourceCube"));
+			parseMultiPolymorphs(false, sources, Polymorph<SourceKind, SourceFullDomain>("SourceFullDomain"));
     	}
 };
 #endif

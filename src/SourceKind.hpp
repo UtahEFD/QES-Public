@@ -89,6 +89,7 @@ public:
         {
             std::cerr << "ERROR (SourceKind::setReleaseType): input releaseType is not a valid ParticleReleaseType! releaseType = \"" << releaseType 
                     << "\". Available release types are \"perTimeStep\", \"perSecond\", \"instantaneous\"." << std::endl;
+            exit(1);
         }
     }
 
@@ -102,7 +103,7 @@ public:
     //  as it may be handy to check the total available number of particles with the number of particles desired for each source.
     virtual void checkMetaData(const double& domainXstart, const double& domainXend, 
                                const double& domainYstart, const double& domainYend,
-                               const double& domainZstart, const double& domainZend);
+                               const double& domainZstart, const double& domainZend) = 0;
     
 
     // pure virtual function - enforces that the derived MUST define

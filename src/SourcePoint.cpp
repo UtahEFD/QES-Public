@@ -58,6 +58,25 @@ int SourcePoint::emitParticles( const float dt,
 
         }
         
+    } else if( m_rType == ParticleReleaseType::perTimeStep )
+    {
+
+        //int parPerTimestep = m_numParticles*dt/simDur;
+        int parPerTimestep = 10;  // need to fix this, but requires changes to all sources to get the simDur variable somehow
+                                  // 100,000*0.1/1,000 = 10
+
+        for (int pidx = 0; pidx < parPerTimestep; pidx++) {  // this might also need fixed
+
+            particle cPar;
+            cPar.pos.e11 = posX;
+            cPar.pos.e21 = posY;
+            cPar.pos.e31 = posZ;
+
+            cPar.tStrt = currTime;
+            
+            emittedParticles.push_back( cPar );
+        }
+
     } else
     {
         std::cerr << "ERROR (SourcePoint::emitParticles): ParticleReleaseType \"" << m_rType << "\" has not been implemented in code yet!" << std::endl;

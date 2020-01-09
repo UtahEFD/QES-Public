@@ -22,13 +22,10 @@
 </collectionParameters>
 <sources>
   	<numSources> 1 </numSources>
-  	<SourcePoint>
+  	<SourceFullDomain>
 		<releaseType>instantaneous</releaseType>
     	<numParticles>100000</numParticles>
-    	<posX> 3196.6 </posX>
-    	<posY> 3141.6 </posY>
-    	<posZ> 250.0 </posZ>
-    </SourcePoint>
+  	</SourceFullDomain>
 </sources>
 <boundaryConditions>
   	<xBCtype>periodic</xBCtype>

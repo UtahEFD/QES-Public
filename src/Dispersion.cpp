@@ -174,6 +174,13 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
 void Dispersion::getInputSources(PlumeInputData* PID)
 {
     int numSources_Input = PID->sources->sources.size();
+
+    if( numSources_Input == 0 )
+    {
+        std::cerr << "ERROR (Dispersion::getInputSources): there are no sources in the input file!" << std::endl;
+        exit(1);
+    }
+
     for(auto sidx=0u; sidx < numSources_Input; sidx++)
     {
         // first create the pointer to the input source

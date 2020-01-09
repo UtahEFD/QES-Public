@@ -36,7 +36,7 @@ public:
                 const double& domainZstart, const double& domainZend )
         : SourceKind( numParticles, rType ),
           m_minX( minX ), m_minY( minY ), m_minZ( minZ ),
-          m_maxX( maxX-minX ), m_maxY( maxY-minY ), m_maxZ( maxZ-minZ )
+          m_maxX( maxX ), m_maxY( maxY ), m_maxZ( maxZ )
     {
         // notice that the ParticleReleaseType m_rType is set by the initializer list to always be instantaneous
 
