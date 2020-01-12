@@ -2,8 +2,8 @@
 
 
 void SourceCircle::checkMetaData( const double& domainXstart, const double& domainXend, 
-                                 const double& domainYstart, const double& domainYend,
-                                 const double& domainZstart, const double& domainZend)
+                                  const double& domainYstart, const double& domainYend,
+                                  const double& domainZstart, const double& domainZend)
 {
     // not even sure how to do checks on the ParticleReleaseType. Maybe call a function to check it that is inherited from the overall class that defines it?
     //if ( m_rType )
@@ -42,8 +42,8 @@ void SourceCircle::checkMetaData( const double& domainXstart, const double& doma
 
 
 int SourceCircle::emitParticles( const float dt,
-                                const float currTime,
-                                std::vector<particle>& emittedParticles)
+                                 const float currTime,
+                                 std::vector<particle>& emittedParticles)
 {
 
     // note that this is not complete yet, it is acting like a point till we add in stuff corresponding to the radius
@@ -55,9 +55,9 @@ int SourceCircle::emitParticles( const float dt,
             for (int pidx = 0; pidx < m_numParticles; pidx++) {
 
                 particle cPar;
-                cPar.pos.e11 = posX;
-                cPar.pos.e21 = posY;
-                cPar.pos.e31 = posZ;
+                cPar.xPos = posX;
+                cPar.yPos = posY;
+                cPar.zPos = posZ;
 
                 cPar.tStrt = currTime;
                 

@@ -1,7 +1,8 @@
 #pragma once
 
-#include "TypeDefs.hpp"
+
 #include "SourceKind.hpp"
+
 
 class SourcePoint : public SourceKind
 {

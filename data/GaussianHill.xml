@@ -1,5 +1,5 @@
 <simulationParameters>
-	<runTime> 1000.0 </runTime>
+	<simDur> 1000.0 </simDur>
 	<timeStep> 1.0 </timeStep>
 	<invarianceTol> 1e-10 </invarianceTol>
 	<C_0> 4.0 </C_0>

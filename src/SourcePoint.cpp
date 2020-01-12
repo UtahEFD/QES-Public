@@ -47,9 +47,9 @@ int SourcePoint::emitParticles( const float dt,
             for (int pidx = 0; pidx < m_numParticles; pidx++) {
 
                 particle cPar;
-                cPar.pos.e11 = posX;
-                cPar.pos.e21 = posY;
-                cPar.pos.e31 = posZ;
+                cPar.xPos = posX;
+                cPar.yPos = posY;
+                cPar.zPos = posZ;
 
                 cPar.tStrt = currTime;
                 
@@ -68,9 +68,9 @@ int SourcePoint::emitParticles( const float dt,
         for (int pidx = 0; pidx < parPerTimestep; pidx++) {  // this might also need fixed
 
             particle cPar;
-            cPar.pos.e11 = posX;
-            cPar.pos.e21 = posY;
-            cPar.pos.e31 = posZ;
+            cPar.xPos = posX;
+            cPar.yPos = posY;
+            cPar.zPos = posZ;
 
             cPar.tStrt = currTime;
             

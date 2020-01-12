@@ -4,10 +4,12 @@
 //  This class represents CUDA-TURB fields
 //
 //  Created by Jeremy Gibbs on 03/25/19.
+//  Modified by Loren Atwood on 01/09/20.
 //
 
 #include <iostream>
 #include "Turb.hpp"
+
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
@@ -16,160 +18,97 @@ Turb :: Turb(Input* input) {
     std::cout<<"[Turb] \t\t Loading CUDA-TURB fields "<<std::endl;
     
     // get input dimensions
-    input->getDimensionSize("x",grid.nx);
-    input->getDimensionSize("y",grid.ny);
-    input->getDimensionSize("z",grid.nz);
-    input->getDimensionSize("t",grid.nt);
+    input->getDimensionSize("x",nx);
+    input->getDimensionSize("y",ny);
+    input->getDimensionSize("z",nz);
+    input->getDimensionSize("t",nt);
     
-    int c = grid.nt*grid.nz*grid.ny*grid.nx;    // numValues
     start = {0,0,0,0};      // used for getVariableData() when it is a grid of values
-    count = {static_cast<unsigned long>(grid.nt),
-             static_cast<unsigned long>(grid.nz),
-             static_cast<unsigned long>(grid.ny),
-             static_cast<unsigned long>(grid.nx)};  // the number of values in each grid dimension of the input data, I guess the default is a 4D structure
+    count = {static_cast<unsigned long>(nt),
+             static_cast<unsigned long>(nz),
+             static_cast<unsigned long>(ny),
+             static_cast<unsigned long>(nx)};  // the number of values in each grid dimension of the input data, I guess the default is a 4D structure
     
-    // get input data and information
-    grid.x.resize(grid.nx);
-    grid.y.resize(grid.ny);
-    grid.z.resize(grid.nz);
-    grid.t.resize(grid.nt);
-    tau.resize(grid.nt*grid.nz*grid.ny*grid.nx);
-    sig.resize(grid.nt*grid.nz*grid.ny*grid.nx);
-    lam.resize(grid.nt*grid.nz*grid.ny*grid.nx);
-    CoEps.resize(grid.nt*grid.nz*grid.ny*grid.nx);
-    tke.resize(grid.nt*grid.nz*grid.ny*grid.nx);
-            
-    input->getVariableData("x",grid.x);
-    input->getVariableData("y",grid.y);
-    input->getVariableData("z",grid.z);
-    input->getVariableData("t",grid.t);
+    // set turb data and information storage sizes
+    x.resize(nx);
+    y.resize(ny);
+    z.resize(nz);
+    t.resize(nt);
+    txx.resize(nt*nz*ny*nx);
+    txy.resize(nt*nz*ny*nx);
+    txz.resize(nt*nz*ny*nx);
+    tyy.resize(nt*nz*ny*nx);
+    tyz.resize(nt*nz*ny*nx);
+    tzz.resize(nt*nz*ny*nx);
+    sig_x.resize(nt*nz*ny*nx);
+    sig_y.resize(nt*nz*ny*nx);
+    sig_z.resize(nt*nz*ny*nx);
+    CoEps.resize(nt*nz*ny*nx);
+    tke.resize(nt*nz*ny*nx);
+
+    // get input grid data
+    input->getVariableData("x",x);
+    input->getVariableData("y",y);
+    input->getVariableData("z",z);
+    input->getVariableData("t",t);
+    
+    // set the dx values to 1, and correct them if the grid is has more than one value
+    dx = 1;
+    dy = 1;
+    dz = 1;
+    if(nx > 1)
+    {
+        dx = x.at(1) - x.at(0);
+    }
+    if(ny > 1)
+    {
+        dy = y.at(1) - y.at(0);
+    }
+    if(nz > 1)
+    {
+        dz = z.at(1) - z.at(0);
+    }
+    
+    // get input stress tensor and other turbulence data
+    input->getVariableData("tau_11",start,count,txx);
+    input->getVariableData("tau_12",start,count,txy);
+    input->getVariableData("tau_13",start,count,txz);
+    input->getVariableData("tau_22",start,count,tyy);
+    input->getVariableData("tau_23",start,count,tyz);
+    input->getVariableData("tau_33",start,count,tzz);
+    input->getVariableData("sig_11",start,count,sig_x);
+    input->getVariableData("sig_22",start,count,sig_y);
+    input->getVariableData("sig_33",start,count,sig_z);
     input->getVariableData("CoEps",start,count,CoEps);
     input->getVariableData("tke",start,count,tke);
     
-    // set the dx values to 1, and correct them if the grid is has more than one value
-    grid.dx = 1;
-    grid.dy = 1;
-    grid.dz = 1;
-    if(grid.nx > 1)
-    {
-        grid.dx = grid.x[1] - grid.x[0];
-    }
-    if(grid.ny > 1)
-    {
-        grid.dy = grid.y[1] - grid.y[0];
-    }
-    if(grid.nz > 1)
-    {
-        grid.dz = grid.z[1] - grid.z[0];
-    }
     
-    // read in data
-    // set of temporary vectors to hold the stress tensors and inverted stress tensors and variances before putting them into the grid
-    std::vector<double> tau1(c),tau2(c),tau3(c),tau4(c),tau5(c),tau6(c);
-    std::vector<double> sig1(c),sig2(c),sig3(c);
-    std::vector<double> lam1(c),lam2(c),lam3(c),lam4(c),lam5(c),lam6(c),
-                        lam7(c),lam8(c),lam9(c);
-    
-    input->getVariableData("tau_11",start,count,tau1);
-    input->getVariableData("tau_12",start,count,tau2);
-    input->getVariableData("tau_13",start,count,tau3);
-    input->getVariableData("tau_22",start,count,tau4);
-    input->getVariableData("tau_23",start,count,tau5);
-    input->getVariableData("tau_33",start,count,tau6);
-    input->getVariableData("sig_11",start,count,sig1);
-    input->getVariableData("sig_22",start,count,sig2);
-    input->getVariableData("sig_33",start,count,sig3);
-    input->getVariableData("lam_11",start,count,lam1);
-    input->getVariableData("lam_12",start,count,lam2);
-    input->getVariableData("lam_13",start,count,lam3);
-    input->getVariableData("lam_21",start,count,lam4);
-    input->getVariableData("lam_22",start,count,lam5);
-    input->getVariableData("lam_23",start,count,lam6);
-    input->getVariableData("lam_31",start,count,lam7);
-    input->getVariableData("lam_32",start,count,lam8);
-    input->getVariableData("lam_33",start,count,lam9);
-    
-    // now take the input tensor, inverted tensor, and variance values stored in the vectors, and put them into the data structures found inside Turb
-    int id;
-    for (int n=0;n<grid.nt;n++) {
-        for(int k=0;k<grid.nz;k++) {
-            for(int j=0; j<grid.ny;j++) { 
-                for(int i=0;i<grid.nx;i++){  
-                    
-                    id = i + j*grid.nx + k*grid.nx*grid.ny + n*grid.nx*grid.ny*grid.nz;
-                    
-                    tau.at(id).e11 = tau1.at(id);
-                    tau.at(id).e12 = tau2.at(id);
-                    tau.at(id).e13 = tau3.at(id);
-                    tau.at(id).e22 = tau4.at(id);
-                    tau.at(id).e23 = tau5.at(id);
-                    tau.at(id).e33 = tau6.at(id);
-                    
-                    sig.at(id).e11 = sig1.at(id);
-                    sig.at(id).e22 = sig2.at(id);
-                    sig.at(id).e33 = sig3.at(id);
-                    
-                    lam.at(id).e11 = lam1.at(id);
-                    lam.at(id).e12 = lam2.at(id);
-                    lam.at(id).e13 = lam3.at(id);
-                    lam.at(id).e21 = lam4.at(id);
-                    lam.at(id).e22 = lam5.at(id);
-                    lam.at(id).e23 = lam6.at(id);
-                    lam.at(id).e31 = lam7.at(id);
-                    lam.at(id).e32 = lam8.at(id);
-                    lam.at(id).e33 = lam9.at(id);
-                }
-            }
-        }
-    }
-    
-    // clean up temporary vectors
-    tau1.clear();
-    tau2.clear();
-    tau3.clear();
-    tau4.clear();
-    tau5.clear();
-    tau6.clear();
-    sig1.clear();
-    sig2.clear();
-    sig3.clear();
-    lam1.clear();
-    lam2.clear();
-    lam3.clear();
-    lam4.clear();
-    lam5.clear();
-    lam6.clear();
-    lam7.clear();
-    lam8.clear();
-    lam9.clear();
+    // calculate the turb start and end values, needed for getting the domain end and start for all boundary condition application
+    // I would guess that it is the first x value in the list of x points, and the last x value from the list of x points
+    // same thing for each of the y and z values
+    turbXstart = x.at(0);
+    turbXend = x.at(nx-1);
+    turbYstart = y.at(0);
+    turbYend = y.at(ny-1);
+    turbZstart = z.at(0);
+    turbZend = z.at(nz-1);
 
 
 #if 1
-    // calculate the turb domain start and end values, needed for wall boundary condition application
-    // I would guess that it is the first x value in the list of x points, and the last x value from the list of x points
-    // same thing for each of the y and z values
-    domainXstart = grid.x.at(0);
-    domainXend = grid.x.at(grid.nx-1);
-    domainYstart = grid.y.at(0);
-    domainYend = grid.y.at(grid.ny-1);
-    domainZstart = grid.z.at(0);
-    domainZend = grid.z.at(grid.nz-1);
-
-
     // the values for some of this are required, but the outputting of them is a useful debugging tool
-    std::cout << "Turb nx = \"" << grid.nx << "\"" << std::endl;
-    std::cout << "Turb ny = \"" << grid.ny << "\"" << std::endl;
-    std::cout << "Turb nz = \"" << grid.nz << "\"" << std::endl;
-    std::cout << "Turb nt = \"" << grid.nt << "\"" << std::endl;
-    std::cout << "Turb dx = \"" << grid.dx << "\"" << std::endl;
-    std::cout << "Turb dy = \"" << grid.dy << "\"" << std::endl;
-    std::cout << "Turb dz = \"" << grid.dz << "\"" << std::endl;
-    std::cout << "Turb domainXstart = \"" << domainXstart << "\"" << std::endl;
-    std::cout << "Turb domainXend = \"" << domainXend << "\"" << std::endl;
-    std::cout << "Turb domainYstart = \"" << domainYstart << "\"" << std::endl;
-    std::cout << "Turb domainYend = \"" << domainYend << "\"" << std::endl;
-    std::cout << "Turb domainZstart = \"" << domainZstart << "\"" << std::endl;
-    std::cout << "Turb domainZend = \"" << domainZend << "\"" << std::endl;
+    std::cout << "Turb nx = \"" << nx << "\"" << std::endl;
+    std::cout << "Turb ny = \"" << ny << "\"" << std::endl;
+    std::cout << "Turb nz = \"" << nz << "\"" << std::endl;
+    std::cout << "Turb nt = \"" << nt << "\"" << std::endl;
+    std::cout << "Turb dx = \"" << dx << "\"" << std::endl;
+    std::cout << "Turb dy = \"" << dy << "\"" << std::endl;
+    std::cout << "Turb dz = \"" << dz << "\"" << std::endl;
+    std::cout << "Turb turbXstart = \"" << turbXstart << "\"" << std::endl;
+    std::cout << "Turb turbXend = \"" << turbXend << "\"" << std::endl;
+    std::cout << "Turb turbYstart = \"" << turbYstart << "\"" << std::endl;
+    std::cout << "Turb turbYend = \"" << turbYend << "\"" << std::endl;
+    std::cout << "Turb turbZstart = \"" << turbZstart << "\"" << std::endl;
+    std::cout << "Turb turbZend = \"" << turbZend << "\"" << std::endl;
 #endif
 
 }

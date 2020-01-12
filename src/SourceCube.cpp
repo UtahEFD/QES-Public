@@ -95,9 +95,9 @@ int SourceCube::emitParticles( const float dt,
                 particle cPar;
 
                 // generate uniform dist in domain
-                cPar.pos.e11 = uniformDistr(prng)*(m_maxX-m_minX) + m_minX;
-                cPar.pos.e21 = uniformDistr(prng)*(m_maxY-m_minY) + m_minY;
-                cPar.pos.e31 = uniformDistr(prng)*(m_maxZ-m_minZ) + m_minZ;
+                cPar.xPos = uniformDistr(prng)*(m_maxX-m_minX) + m_minX;
+                cPar.yPos = uniformDistr(prng)*(m_maxY-m_minY) + m_minY;
+                cPar.zPos = uniformDistr(prng)*(m_maxZ-m_minZ) + m_minZ;
 
                 cPar.tStrt = currTime;
                 

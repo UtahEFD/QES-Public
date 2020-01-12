@@ -16,38 +16,14 @@
 #include "SourceFullDomain.hpp"
 
 Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul, const std::string& debugOutputFolder_val)
-    : pointList(0)
+    : pointList(0)  // ???
 {
     std::cout<<"[Dispersion] \t Setting up sources "<<std::endl;
     
-    // make local copies
-    nx     = urb->grid.nx;
-    ny     = urb->grid.ny;
-    dx     = urb->grid.dx;
-    dy     = urb->grid.dy;
-    dz     = urb->grid.dz;
-    dt     = PID->simParams->timeStep;
-    simDur    = PID->simParams->runTime;
 
-    // get the urb domain start and end values, needed for source position range checking
-    domainXstart = urb->domainXstart;
-    domainXend = urb->domainXend;
-    domainYstart = urb->domainYstart;
-    domainYend = urb->domainYend;
-    domainZstart = urb->domainZstart;
-    domainZend = urb->domainZend;
-
-
-    // have to set the value to something before filling it
-    numPar = 0;
-
-    // set up time details
-    numTimeStep = std::ceil(simDur/dt);
-    timeStepStamp.resize(numTimeStep);
-    for(int i = 0; i < numTimeStep; ++i)
-    {
-        timeStepStamp.at(i) = i*dt + dt;
-    }
+    // get the domain start and end values, needed for source position range checking
+    determineDomainSize(urb,turb);
+ 
 
     // ////////////////////
     // HARD CODE SOME SOURCE TO TEST...
@@ -72,8 +48,8 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul,
     double lineSource_yPos1 = 25.0;
     double lineSource_zPos1 = 40.0;
     SourceKind *sPtr1 = new SourceLine( lineSource_xPos0, lineSource_yPos0, lineSource_zPos0, lineSource_xPos1, lineSource_yPos1, lineSource_zPos1, 
-                                       100000, ParticleReleaseType::instantaneous, 
-                                       domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
+                                        100000, ParticleReleaseType::instantaneous, 
+                                        domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
     allSources.push_back( sPtr1 );
 #endif
 
@@ -105,12 +81,12 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul,
     getInputSources(PID);
 
 
-    // set the isRogueCount to zero
+    // set the isRogueCount and isActiveCount to zero
     isRogueCount = 0.0;
     isActiveCount = 0.0;
 
     // calculate the threshold velocity
-    vel_threshold = 10.0*sqrt(maxval(turb->sig));  // might need to write a maxval function, since it has to get the largest value from the entire sig array
+    vel_threshold = 10.0*sqrt(getMaxVariance(turb->sig_x,turb->sig_y,turb->sig_z));
 
 
     // set the debug variable output folder
@@ -119,55 +95,24 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul,
 }
 
 
-void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle> &newParticles)
+void Dispersion::determineDomainSize(Urb* urb, Turb* turb)
 {
-    // at this time, should be a list of each and every particle that exists
-    // might need to vary this to allow for adding sources after the initial constructor
-    for(int pIdx=0; pIdx<newParticles.size(); pIdx++)
-    {
-        // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
-        // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
-        eul->setInterp3Dindexing(newParticles.at(pIdx).pos);
-    
-        double rann = random::norRan();   // almost didn't see it, but it does use different random numbers for each direction
 
-        // get the sigma values from the Eulerian grid for the particle value
-        diagonal current_sig = eul->interp3D(turb->sig,"sigma2");
+    // multiple ways to do this for now. Could just use the turb grid,
+    //  or could determine which grid has the smallest and largest value,
+    //  or could use input information to determine if they are cell centered or
+    //  face centered and use the dx type values to determine the real domain size.
+    // We had a discussion that because there are ghost cells on the grid, probably can
+    //  just pretend the ghost cells are a halo region that can still be used during plume solver
+    //  but ignored when determining output. This could allow particles to reenter the domain as well.
 
-        // now set the initial velocity fluctuations for the particle
-        newParticles.at(pIdx).prime.e11 = sqrt(current_sig.e11) * rann;  // set the values for the source positions for each particle. Might need to add sqrt of the variance to match Brian's code
-        rann=random::norRan();
-        newParticles.at(pIdx).prime.e21 = sqrt(current_sig.e22) * rann;
-        rann=random::norRan();
-        newParticles.at(pIdx).prime.e31 = sqrt(current_sig.e33) * rann;
-
-        // set the initial values for the old stuff
-        newParticles.at(pIdx).prime_old.e11 = newParticles.at(pIdx).prime.e11;
-        newParticles.at(pIdx).prime_old.e21 = newParticles.at(pIdx).prime.e21;
-        newParticles.at(pIdx).prime_old.e31 = newParticles.at(pIdx).prime.e31;
-
-        // get the tau values from the Eulerian grid for the particle value
-        matrix6 current_tau = eul->interp3D(turb->tau);
-
-        // set tau_old to the interpolated values for each position
-        newParticles.at(pIdx).tau_old.e11 = current_tau.e11;
-        newParticles.at(pIdx).tau_old.e12 = current_tau.e12;
-        newParticles.at(pIdx).tau_old.e13 = current_tau.e13;
-        newParticles.at(pIdx).tau_old.e22 = current_tau.e22;
-        newParticles.at(pIdx).tau_old.e23 = current_tau.e23;
-        newParticles.at(pIdx).tau_old.e33 = current_tau.e33;
-
-        // set delta_prime to zero for now
-        newParticles.at(pIdx).delta_prime.e11 = 0.0;
-        newParticles.at(pIdx).delta_prime.e21 = 0.0;
-        newParticles.at(pIdx).delta_prime.e31 = 0.0;
-
-        // set isRogue to false and isActive to true for each particle
-        newParticles.at(pIdx).isRogue = false;
-        newParticles.at(pIdx).isActive = true;
-        
-    }
-
+    // for now, I'm just going to use the urb grid, as having differing grid sizes requires extra info for the interp functions
+    domainXstart = urb->urbXstart;
+    domainXend = urb->urbXend;
+    domainYstart = urb->urbYstart;
+    domainYend = urb->urbYend;
+    domainZstart = urb->urbZstart;
+    domainZend = urb->urbZend;
 }
 
 
@@ -200,33 +145,105 @@ void Dispersion::getInputSources(PlumeInputData* PID)
 }
 
 
-double Dispersion::maxval(const std::vector<diagonal>& vec)
+double getMaxVariance(const std::vector<double>& sigma_x_vals,const std::vector<double>& sigma_y_vals,const std::vector<double>& sigma_z_vals)
 {
     // set the initial maximum value to a very small number. The idea is to go through each value of the data,
     // setting the current value to the max value each time the current value is bigger than the old maximum value
     double maximumVal = -10e-10;
 
-    double nVals = vec.size();
-
-    for(int idx = 0; idx < nVals; idx++)
+    
+    // go through each vector to find the maximum value
+    // each one could potentially be different sizes if the grid is not 3D
+    for(int idx = 0; idx < sigma_x_vals; idx++)
     {
-        if(vec.at(idx).e11 > maximumVal)
+        if(sigma_x_vals.at(idx) > maximumVal)
         {
-            maximumVal = vec.at(idx).e11;
+            maximumVal = sigma_x_vals.at(idx);
         }
-        if(vec.at(idx).e22 > maximumVal)
+    }
+
+    for(int idx = 0; idx < sigma_y_vals; idx++)
+    {
+        if(sigma_y_vals.at(idx) > maximumVal)
         {
-            maximumVal = vec.at(idx).e22;
+            maximumVal = sigma_y_vals.at(idx);
         }
-        if(vec.at(idx).e33 > maximumVal)
+    }
+
+    for(int idx = 0; idx < sigma_z_vals; idx++)
+    {
+        if(sigma_z_vals.at(idx) > maximumVal)
         {
-            maximumVal = vec.at(idx).e33;
+            maximumVal = sigma_z_vals.at(idx);
         }
     }
 
     return maximumVal;
     
 }
+
+
+void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle> &newParticles)
+{
+    // at this time, should be a list of each and every particle that exists at the given time
+    // particles and sources can potentially be added to the list elsewhere
+    for(int pIdx=0; pIdx<newParticles.size(); pIdx++)
+    {
+        // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
+        // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
+        eul->setInterp3Dindexing(newParticles.at(pIdx).xPos,newParticles.at(pIdx).yPos,newParticles.at(pIdx).zPos);
+    
+
+        // almost didn't see it, but it does use different random numbers for each direction
+        double rann = random::norRan();
+
+        // get the sigma values from the Eulerian grid for the particle value
+        double current_sig_x = eul->interp3D(turb->sig_x,"sigma2");
+        double current_sig_y = eul->interp3D(turb->sig_y,"sigma2");
+        double current_sig_z = eul->interp3D(turb->sig_z,"sigma2");
+
+        // now set the initial velocity fluctuations for the particle
+        // The  sqrt of the variance is to match Bailey's code
+        newParticles.at(pIdx).uFluct = sqrt(current_sig_x) * rann;
+        rann=random::norRan();
+        newParticles.at(pIdx).vFluct = sqrt(current_sig_y) * rann;
+        rann=random::norRan();
+        newParticles.at(pIdx).wFluct = sqrt(current_sig_z) * rann;
+
+        // set the initial values for the old velFluct values
+        newParticles.at(pIdx).uFluct_old = newParticles.at(pIdx).uFluct;
+        newParticles.at(pIdx).vFluct_old = newParticles.at(pIdx).vFluct;
+        newParticles.at(pIdx).wFluct_old = newParticles.at(pIdx).wFluct;
+
+        // get the tau values from the Eulerian grid for the particle value
+        double current_txx = eul->interp3D(turb->txx,"tau");
+        double current_txy = eul->interp3D(turb->txy,"tau");
+        double current_txz = eul->interp3D(turb->txz,"tau");
+        double current_tyy = eul->interp3D(turb->tyy,"tau");
+        double current_tyz = eul->interp3D(turb->tyz,"tau");
+        double current_tzz = eul->interp3D(turb->tzz,"tau");
+
+        // set tau_old to the interpolated values for each position
+        newParticles.at(pIdx).txx_old = current_txx;
+        newParticles.at(pIdx).txy_old = current_txy;
+        newParticles.at(pIdx).txz_old = current_txz;
+        newParticles.at(pIdx).tyy_old = current_tyy;
+        newParticles.at(pIdx).tyz_old = current_tyz;
+        newParticles.at(pIdx).tzz_old = current_tzz;
+
+        // set delta_velFluct values to zero for now
+        newParticles.at(pIdx).delta_uFluct = 0.0;
+        newParticles.at(pIdx).delta_vFluct = 0.0;
+        newParticles.at(pIdx).delta_wFluct = 0.0;
+
+        // set isRogue to false and isActive to true for each particle
+        newParticles.at(pIdx).isRogue = false;
+        newParticles.at(pIdx).isActive = true;
+        
+    }
+
+}
+
 
 void Dispersion::outputVarInfo_text()
 {
@@ -247,7 +264,7 @@ void Dispersion::outputVarInfo_text()
     // at some time this could be wrapped up into a bunch of functions, for now just type it all out without functions
 
 
-    // make a variable to keep track of the number of particles
+    // make a variable to keep track of the number of particles. Make sure it is the most updated value
     int nPar = pointList.size();
     
 
@@ -256,7 +273,7 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).tau_old.e11);
+        fprintf(fzout,"%lf\n",pointList.at(idx).txx_old);
     }
     fclose(fzout);
 
@@ -264,7 +281,7 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).tau_old.e12);
+        fprintf(fzout,"%lf\n",pointList.at(idx).txy_old);
     }
     fclose(fzout);
 
@@ -272,7 +289,7 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).tau_old.e13);
+        fprintf(fzout,"%lf\n",pointList.at(idx).txz_old);
     }
     fclose(fzout);
 
@@ -280,7 +297,7 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).tau_old.e22);
+        fprintf(fzout,"%lf\n",pointList.at(idx).tyy_old);
     }
     fclose(fzout);
 
@@ -288,7 +305,7 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).tau_old.e23);
+        fprintf(fzout,"%lf\n",pointList.at(idx).tyz_old);
     }
     fclose(fzout);
 
@@ -296,15 +313,16 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).tau_old.e33);
+        fprintf(fzout,"%lf\n",pointList.at(idx).tzz_old);
     }
     fclose(fzout);
+
 
     currentFile = debugOutputFolder + "/particle_uFluct_old.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).prime_old.e11);
+        fprintf(fzout,"%lf\n",pointList.at(idx).uFluct_old);
     }
     fclose(fzout);
 
@@ -312,7 +330,7 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).prime_old.e21);
+        fprintf(fzout,"%lf\n",pointList.at(idx).vFluct_old);
     }
     fclose(fzout);
 
@@ -320,7 +338,7 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).prime_old.e31);
+        fprintf(fzout,"%lf\n",pointList.at(idx).wFluct_old);
     }
     fclose(fzout);
 
@@ -330,7 +348,7 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).prime.e11);
+        fprintf(fzout,"%lf\n",pointList.at(idx).uFluct);
     }
     fclose(fzout);
 
@@ -338,7 +356,7 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).prime.e21);
+        fprintf(fzout,"%lf\n",pointList.at(idx).vFluct);
     }
     fclose(fzout);
 
@@ -346,15 +364,16 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).prime.e31);
+        fprintf(fzout,"%lf\n",pointList.at(idx).wFluct);
     }
     fclose(fzout);
+
 
     currentFile = debugOutputFolder + "/particle_delta_uFluct.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).delta_prime.e11);
+        fprintf(fzout,"%lf\n",pointList.at(idx).delta_uFluct);
     }
     fclose(fzout);
 
@@ -362,7 +381,7 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).delta_prime.e21);
+        fprintf(fzout,"%lf\n",pointList.at(idx).delta_vFluct);
     }
     fclose(fzout);
 
@@ -370,7 +389,7 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).delta_prime.e31);
+        fprintf(fzout,"%lf\n",pointList.at(idx).delta_wFluct);
     }
     fclose(fzout);
 
@@ -391,7 +410,7 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).pos.e11);
+        fprintf(fzout,"%lf\n",pointList.at(idx).xPos);
     }
     fclose(fzout);
 
@@ -399,7 +418,7 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).pos.e21);
+        fprintf(fzout,"%lf\n",pointList.at(idx).yPos);
     }
     fclose(fzout);
 
@@ -407,7 +426,7 @@ void Dispersion::outputVarInfo_text()
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
-        fprintf(fzout,"%lf\n",pointList.at(idx).pos.e31);
+        fprintf(fzout,"%lf\n",pointList.at(idx).zPos);
     }
     fclose(fzout);
 

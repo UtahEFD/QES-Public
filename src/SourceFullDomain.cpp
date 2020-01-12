@@ -3,8 +3,8 @@
 
 
 void SourceFullDomain::checkMetaData( const double& domainXstart, const double& domainXend, 
-                                         const double& domainYstart, const double& domainYend,
-                                         const double& domainZstart, const double& domainZend)
+                                      const double& domainYstart, const double& domainYend,
+                                      const double& domainZstart, const double& domainZend)
 {
     // not even sure how to do checks on the ParticleReleaseType. Maybe call a function to check it that is inherited from the overall class that defines it?
     //if ( m_rType )
@@ -71,9 +71,9 @@ int SourceFullDomain::emitParticles( const float dt,
                 particle cPar;
 
                 // generate uniform dist in domain
-                cPar.pos.e11 = uniformDistr(prng)*(xDomainEnd-xDomainStart) + xDomainStart;
-                cPar.pos.e21 = uniformDistr(prng)*(yDomainEnd-yDomainStart) + yDomainStart;
-                cPar.pos.e31 = uniformDistr(prng)*(zDomainEnd-zDomainStart) + zDomainStart;
+                cPar.xPos = uniformDistr(prng)*(xDomainEnd-xDomainStart) + xDomainStart;
+                cPar.yPos = uniformDistr(prng)*(yDomainEnd-yDomainStart) + yDomainStart;
+                cPar.zPos = uniformDistr(prng)*(zDomainEnd-zDomainStart) + zDomainStart;
 
                 cPar.tStrt = currTime;
                 

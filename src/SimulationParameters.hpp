@@ -18,7 +18,7 @@ class SimulationParameters : public ParseInterface {
     
     public:
     
-    	float runTime;
+    	float simDur;
 		float timeStep;
 		double invarianceTol;
 		double C_0;
@@ -26,7 +26,7 @@ class SimulationParameters : public ParseInterface {
 		int updateFrequency_timeLoop;
     	        
     	virtual void parseValues() {
-    		parsePrimitive< float >(true, runTime, "runTime");
+    		parsePrimitive< float >(true, simDur, "simDur");
     		parsePrimitive< float >(true, timeStep, "timeStep");
 			parsePrimitive< double >(true, invarianceTol, "invarianceTol");
 			parsePrimitive< double >(true, C_0, "C_0");

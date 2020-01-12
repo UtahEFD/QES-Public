@@ -1,7 +1,8 @@
 #pragma once
 
-#include "TypeDefs.hpp"
+
 #include "SourceKind.hpp"
+
 
 class SourceCircle : public SourceKind
 {
@@ -27,10 +28,10 @@ public:
     
     // specialized constructor with initializer list
     SourceCircle( const double& xPos, const double& yPos, const double& zPos, const double& theRadius, 
-                 const int& numParticles, const ParticleReleaseType& rType,
-                 const double& domainXstart, const double& domainXend, 
-                 const double& domainYstart, const double& domainYend,
-                 const double& domainZstart, const double& domainZend )
+                  const int& numParticles, const ParticleReleaseType& rType,
+                  const double& domainXstart, const double& domainXend, 
+                  const double& domainYstart, const double& domainYend,
+                  const double& domainZstart, const double& domainZend )
         : SourceKind( numParticles, rType ),
           posX( xPos ), posY( yPos), posZ( zPos ), radius( theRadius )
     {

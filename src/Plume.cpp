@@ -10,18 +10,22 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     
     std::cout<<"[Plume] \t Setting up particles "<<std::endl;
     
-    // make local copies
-    nx = urb->grid.nx;
-    ny = urb->grid.ny;
-    nz = urb->grid.nz;
 
-    // get the urb domain start and end values, needed for wall boundary condition application
-    domainXstart = urb->domainXstart;
-    domainXend = urb->domainXend;
-    domainYstart = urb->domainYstart;
-    domainYend = urb->domainYend;
-    domainZstart = urb->domainZstart;
-    domainZend = urb->domainZend;
+    // make local copies of the urb nVals for each dimension
+    nx = urb->nx;
+    ny = urb->ny;
+    nz = urb->nz;
+    dx = urb->dx;
+    dy = urb->dy;
+    dz = urb->dz;
+
+    // get the domain start and end values, needed for wall boundary condition application
+    domainXstart = dis->domainXstart;
+    domainXend = dis->domainXend;
+    domainYstart = dis->domainYstart;
+    domainYend = dis->domainYend;
+    domainZstart = dis->domainZstart;
+    domainZend = dis->domainZend;
     
     /* setup the sampling box concentration information */
 
@@ -31,13 +35,7 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     nBoxesX = PID->colParams->nBoxesX;
     nBoxesY = PID->colParams->nBoxesY;
     nBoxesZ = PID->colParams->nBoxesZ;
-    
-    boxSizeX = (PID->colParams->boxBoundsX2-PID->colParams->boxBoundsX1)/nBoxesX;	  
-    boxSizeY = (PID->colParams->boxBoundsY2-PID->colParams->boxBoundsY1)/nBoxesY;	  
-    boxSizeZ = (PID->colParams->boxBoundsZ2-PID->colParams->boxBoundsZ1)/nBoxesZ;
-    
-    volume = boxSizeX*boxSizeY*boxSizeZ;
-    
+
     lBndx = PID->colParams->boxBoundsX1;
     uBndx = PID->colParams->boxBoundsX2;
     lBndy = PID->colParams->boxBoundsY1;
@@ -45,13 +43,16 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     lBndz = PID->colParams->boxBoundsZ1;
     uBndz = PID->colParams->boxBoundsZ2;
     
+    boxSizeX = (uBndx-lBndx)/(nBoxesX);
+    boxSizeY = (uBndy-lBndy)/(nBoxesY);
+    boxSizeZ = (uBndz-lBndz)/(nBoxesZ);
+    
+    volume = boxSizeX*boxSizeY*boxSizeZ;
+    
+    
     xBoxCen.resize(nBoxesX);
     yBoxCen.resize(nBoxesY);
     zBoxCen.resize(nBoxesZ);
-    
-    quanX = (uBndx-lBndx)/(nBoxesX);
-    quanY = (uBndy-lBndy)/(nBoxesY);
-    quanZ = (uBndz-lBndz)/(nBoxesZ);
     
     
     int zR = 0;
@@ -59,17 +60,17 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     int xR = 0;
     for(int k = 0; k < nBoxesZ; ++k)
     {
-        zBoxCen.at(k) = lBndz + (zR*quanZ) + (boxSizeZ/2.0);        // the .at(k) is different from [k] in that it checks the bounds, throwing an out of range error if outside the bounds of the vector
+        zBoxCen.at(k) = lBndz + (zR*boxSizeZ) + (boxSizeZ/2.0);
         zR++;
     }
     for(int j = 0; j < nBoxesY; ++j)
     {
-        yBoxCen.at(j) = lBndy + (yR*quanY) + (boxSizeY/2.0);
+        yBoxCen.at(j) = lBndy + (yR*boxSizeY) + (boxSizeY/2.0);
         yR++;
     }
     for(int i = 0; i <nBoxesX; ++i)
     {
-        xBoxCen.at(i) = lBndx + (xR*quanX) + (boxSizeX/2.0);
+        xBoxCen.at(i) = lBndx + (xR*boxSizeX) + (boxSizeX/2.0);
         xR++;
     }
 
@@ -77,27 +78,19 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     conc.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
     
     
-    /* make copies of important input and dispersion information for particle release */
+    /* make copies of important input time variables */
 
     dt = PID->simParams->timeStep;
-    numTimeStep  = dis->numTimeStep;
+    simDur = PID->simParams->simDur;
 
-#if 0
-    numPar = dis->numPar;    
-    
-    tStrt.resize(numPar);
-    for(int i = 0; i < numPar; i++)
-    {
-        tStrt.at(i) = dis->pointList.at(i).tStrt;
-    }
-#endif
-    
+
+    // set up time details
+    numTimeStep = std::ceil(simDur/dt);
     timeStepStamp.resize(numTimeStep);
-    timeStepStamp = dis->timeStepStamp;
-    
-
-    parPerTimestep.resize(numTimeStep);
-    parPerTimestep = dis->parPerTimestep;
+    for(int i = 0; i < numTimeStep; ++i)
+    {
+        timeStepStamp.at(i) = i*dt + dt;
+    }
     
 
     // set additional values from the input
@@ -105,6 +98,17 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     C_0 = PID->simParams->C_0;
     updateFrequency_particleLoop = PID->simParams->updateFrequency_particleLoop;
     updateFrequency_timeLoop = PID->simParams->updateFrequency_timeLoop;
+    
+
+    /* setup boundary condition functions */
+
+    // now get the input boundary condition types from the inputs
+    std::string xBCtype = PID->BCs->xBCtype;
+    std::string yBCtype = PID->BCs->yBCtype;
+    std::string zBCtype = PID->BCs->zBCtype;
+
+    // now set the boundary condition function for the plume runs, checking to make sure the input BCtypes are legitimate
+    setBCfunctions(xBCtype,yBCtype,zBCtype);
     
     
     /* setup output information */
@@ -163,16 +167,6 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
         output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
     }
 
-
-    // now get the input boundary condition types from the inputs
-    std::string xBCtype = PID->BCs->xBCtype;
-    std::string yBCtype = PID->BCs->yBCtype;
-    std::string zBCtype = PID->BCs->zBCtype;
-
-    // now set the boundary condition function for the plume runs, checking to make sure the input BCtypes are legitimate
-    setBCfunctions(xBCtype,yBCtype,zBCtype);
-
-
 }
 
 
@@ -190,7 +184,8 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
     // I want to get an idea of the overall time of the time integration loop
     auto timerStart_timeIntegration = std::chrono::high_resolution_clock::now();
-        
+    
+    
     for(int tStep = 0; tStep < numTimeStep; tStep++)
     {
         // 
@@ -221,10 +216,11 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             std::cout << "\telapsed time: " << elapsed_particleRelease.count() << " s" << std::endl;   // Print out elapsed execution time
         }
 
-        // Move each particle for every time step
-        double isRogueCount = dis->isRogueCount;    // This probably could be moved from dispersion to one level back in this for loop
+        // get the isRogue and isActive count from the dispersion class
+        double isRogueCount = dis->isRogueCount;
         double isActiveCount = dis->isActiveCount;
 
+        // Move each particle for every time step
         // Advection Loop
 
         //if( tStep % updateFrequency_timeLoop == 0 || tStep == numTimeStep - 1 )
@@ -255,32 +251,31 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 // this is getting the current position for where the particle is at for a given time
                 // if it is the first time a particle is ever released, then the value is already set at the initial value
-                double xPos = dis->pointList.at(par).pos.e11;
-                double yPos = dis->pointList.at(par).pos.e21;
-                double zPos = dis->pointList.at(par).pos.e31;
+                double xPos = dis->pointList.at(par).xPos;
+                double yPos = dis->pointList.at(par).yPos;
+                double zPos = dis->pointList.at(par).zPos;
 
-                // this is the old velFluct value
-                // hmm, Brian's code just starts out setting these values to zero,
-                // so the prime values are actually the old velFluct. velFluct_old and prime are probably identical and kind of redundant in this implementation
+                // this is the old velFluct value, that will be overwritten during the solver
+                // hmm, Bailey's code just starts out setting these values to zero,
+                // so the velFluct values are actually the old velFluct. velFluct_old and velFluct are probably identical and kind of redundant in this implementation
                 // but it shouldn't hurt anything for now, even if it is redundant
                 // besides, it will probably change a bit once I figure out what exactly I want outputted on a regular, and on a debug basis
-                double uPrime = dis->pointList.at(par).prime.e11;
-                double vPrime = dis->pointList.at(par).prime.e21;
-                double wPrime = dis->pointList.at(par).prime.e31;
+                double uFluct = dis->pointList.at(par).uFluct;
+                double vFluct = dis->pointList.at(par).vFluct;
+                double wFluct = dis->pointList.at(par).wFluct;
 
                 // should also probably grab and store the old values in this same way
                 // these consist of velFluct_old and tao_old
-                // also need to keep track of a delta_velFluct and an isActive flag for each particle
-                // though delta_velFluct doesn't need grabbed as a value till later now that I think on it
-                double uFluct_old = dis->pointList.at(par).prime_old.e11;
-                double vFluct_old = dis->pointList.at(par).prime_old.e21;
-                double wFluct_old = dis->pointList.at(par).prime_old.e31;
-                double txx_old = dis->pointList.at(par).tau_old.e11;
-                double txy_old = dis->pointList.at(par).tau_old.e12;
-                double txz_old = dis->pointList.at(par).tau_old.e13;
-                double tyy_old = dis->pointList.at(par).tau_old.e22;
-                double tyz_old = dis->pointList.at(par).tau_old.e23;
-                double tzz_old = dis->pointList.at(par).tau_old.e33;
+                // also need to keep track of a delta_velFluct, though delta_velFluct doesn't need grabbed as a value till later now that I think on it
+                double uFluct_old = dis->pointList.at(par).uFluct_old;
+                double vFluct_old = dis->pointList.at(par).vFluct_old;
+                double wFluct_old = dis->pointList.at(par).wFluct_old;
+                double txx_old = dis->pointList.at(par).txx_old;
+                double txy_old = dis->pointList.at(par).txy_old;
+                double txz_old = dis->pointList.at(par).txz_old;
+                double tyy_old = dis->pointList.at(par).tyy_old;
+                double tyz_old = dis->pointList.at(par).tyz_old;
+                double tzz_old = dis->pointList.at(par).tzz_old;
                 
                 
                 /*
@@ -293,7 +288,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
                 // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
-                eul->setInterp3Dindexing(dis->pointList.at(par).pos);
+                eul->setInterp3Dindexing(xPos,yPos,zPos);
 
 
 
@@ -303,75 +298,53 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 
                 
                 // this is the current velMean value
-                Wind velMean = eul->interp3D(urb->wind);
-                double uMean = velMean.u;
-                double vMean = velMean.v;
-                double wMean = velMean.w;
+                double uMean = eul->interp3D(urb->u,"velMean");
+                double vMean = eul->interp3D(urb->v,"velMean");
+                double wMean = eul->interp3D(urb->w,"velMean");
                 
                 // this is the current reynolds stress tensor
-                matrix6 tao = eul->interp3D(turb->tau);
-                double txx = tao.e11;
-                double txy = tao.e12;
-                double txz = tao.e13;
-                double tyy = tao.e22;
-                double tyz = tao.e23;
-                double tzz = tao.e33;
+                double txx = eul->interp3D(turb->txx,"tau");
+                double txy = eul->interp3D(turb->txy,"tau");
+                double txz = eul->interp3D(turb->txz,"tau");
+                double tyy = eul->interp3D(turb->tyy,"tau");
+                double tyz = eul->interp3D(turb->tyz,"tau");
+                double tzz = eul->interp3D(turb->tzz,"tau");
                 
-                // now need flux_div_vel, not the different dtxxdx type components
-                vec3 flux_div = eul->interp3D(eul->flux_div);
-                double flux_div_x = flux_div.e11;
-                double flux_div_y = flux_div.e21;
-                double flux_div_z = flux_div.e31;
+                // now need flux_div_dir, not the different dtxxdx type components
+                double flux_div_x = eul->interp3D(eul->flux_div_x,"flux_div");
+                double flux_div_y = eul->interp3D(eul->flux_div_y,"flux_div");
+                double flux_div_z = eul->interp3D(eul->flux_div_z,"flux_div");
 
 
                 // now need to call makeRealizable on tao
-                matrix6 realizedTao = makeRealizable(tao);
-                txx = realizedTao.e11;
-                txy = realizedTao.e12;
-                txz = realizedTao.e13;
-                tyy = realizedTao.e22;
-                tyz = realizedTao.e23;
-                tzz = realizedTao.e33;
-
+                // directly modifies the values of tao
+                makeRealizable(txx,txy,txz,tyy,tyz,tzz);
+                
+                
                 // now need to calculate the inverse values for tao
-                // I'm probably going to write my own function, but it looks like using the structs might be the best way to control output
-                // either that or passing in the variables by reference that need changed
-                matrix9 fullTao;
-                fullTao.e11 = txx;
-                fullTao.e12 = txy;
-                fullTao.e13 = txz;
-                //fullTao.e21 = txy;
-                fullTao.e22 = tyy;
-                fullTao.e23 = tyz;
-                //fullTao.e31 = txz;
-                //fullTao.e32 = tyz;
-                fullTao.e33 = tzz;
-
-                fullTao.e21 = 0.0;
-                fullTao.e31 = 0.0;
-                fullTao.e32 = 0.0;
-
-                // I just noticed that Brian's code always leaves the last three components alone, never filled with new tensor info
-                // even though he keeps everything as a matrix9 datatype. This seems fine for makeRealizable, but I wonder if it
-                // messes with the invert3 stuff since those values are used even though they are empty
-                // going to send in the matrix with all 9 terms anyways, and use the method that assumes they are all filled,
-                // so like Brian's code in method, not the same with the inputs to the function.
-                matrix9 inverseTao = invert3(fullTao);
-                double lxx = inverseTao.e11;
-                double lxy = inverseTao.e12;
-                double lxz = inverseTao.e13;
-                double lyy = inverseTao.e22;
-                double lyz = inverseTao.e23;
-                double lzz = inverseTao.e33;
-
-
+                // directly modifies the values of tao
+                // I just noticed that Bailey's code always leaves the last three components alone, never filled with the symmetrical tensor values
+                // this seems fine for makeRealizable, but I wonder if it messes with the invert3 stuff since those values are used even though they are empty in his code
+                // going to send in 9 terms anyways to try to follow Bailey's method for now
+                double lxx = txx;
+                double lxy = txy;
+                double lxz = txz;
+                //double lyx = txy;
+                double lyx = 0.0;
+                double lyy = tyy;
+                double lyz = tyz;
+                //double lzx = txz;
+                //double lzy = tyz;
+                double lzx = 0.0;
+                double lzy = 0.0;
+                double lzz = tzz;
+                invert3(lxx,lxy,lxz,lyx,lyy,lyz,lzx,lzy,lzz);
 
 
                 // these are the random numbers for each direction
                 double xRandn = random::norRan();
                 double yRandn = random::norRan();
                 double zRandn = random::norRan();
-
 
                 
                 /* now calculate a bunch of values for the current particle */
@@ -385,65 +358,62 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
 
                 /* now calculate and set the A and b matrices for an Ax = b */
-                matrix9 A;
-                vec3 b;
+                double A_11 = -1.0 + 0.50*(-CoEps*lxx + lxx*dtxxdt + lxy*dtxydt + lxz*dtxzdt)*dt;
+                double A_12 =        0.50*(-CoEps*lxy + lxy*dtxxdt + lyy*dtxydt + lyz*dtxzdt)*dt;
+                double A_13 =        0.50*(-CoEps*lxz + lxz*dtxxdt + lyz*dtxydt + lzz*dtxzdt)*dt;
 
-                A.e11 = -1.0 + 0.50*(-CoEps*lxx + lxx*dtxxdt + lxy*dtxydt + lxz*dtxzdt)*dt;
-                A.e12 =        0.50*(-CoEps*lxy + lxy*dtxxdt + lyy*dtxydt + lyz*dtxzdt)*dt;
-                A.e13 =        0.50*(-CoEps*lxz + lxz*dtxxdt + lyz*dtxydt + lzz*dtxzdt)*dt;
-
-                A.e21 =        0.50*(-CoEps*lxy + lxx*dtxydt + lxy*dtyydt + lxz*dtyzdt)*dt;
-                A.e22 = -1.0 + 0.50*(-CoEps*lyy + lxy*dtxydt + lyy*dtyydt + lyz*dtyzdt)*dt;
-                A.e23 =        0.50*(-CoEps*lyz + lxz*dtxydt + lyz*dtyydt + lzz*dtyzdt)*dt;
+                double A_21 =        0.50*(-CoEps*lxy + lxx*dtxydt + lxy*dtyydt + lxz*dtyzdt)*dt;
+                double A_22 = -1.0 + 0.50*(-CoEps*lyy + lxy*dtxydt + lyy*dtyydt + lyz*dtyzdt)*dt;
+                double A_23 =        0.50*(-CoEps*lyz + lxz*dtxydt + lyz*dtyydt + lzz*dtyzdt)*dt;
                 
-                A.e31 =        0.50*(-CoEps*lxz + lxx*dtxzdt + lxy*dtyzdt + lxz*dtzzdt)*dt;
-                A.e32 =        0.50*(-CoEps*lyz + lxy*dtxzdt + lyy*dtyzdt + lyz*dtzzdt)*dt;
-                A.e33 = -1.0 + 0.50*(-CoEps*lzz + lxz*dtxzdt + lyz*dtyzdt + lzz*dtzzdt)*dt;
+                double A_31 =        0.50*(-CoEps*lxz + lxx*dtxzdt + lxy*dtyzdt + lxz*dtzzdt)*dt;
+                double A_32 =        0.50*(-CoEps*lyz + lxy*dtxzdt + lyy*dtyzdt + lyz*dtzzdt)*dt;
+                double A_33 = -1.0 + 0.50*(-CoEps*lzz + lxz*dtxzdt + lyz*dtyzdt + lzz*dtzzdt)*dt;
 
 
-                b.e11 = -uFluct_old - 0.50*flux_div_x*dt - sqrt(CoEps*dt)*xRandn;
-                b.e21 = -vFluct_old - 0.50*flux_div_y*dt - sqrt(CoEps*dt)*yRandn;
-                b.e31 = -wFluct_old - 0.50*flux_div_z*dt - sqrt(CoEps*dt)*zRandn;
+                double b_11 = -uFluct_old - 0.50*flux_div_x*dt - sqrt(CoEps*dt)*xRandn;
+                double b_21 = -vFluct_old - 0.50*flux_div_y*dt - sqrt(CoEps*dt)*yRandn;
+                double b_31 = -wFluct_old - 0.50*flux_div_z*dt - sqrt(CoEps*dt)*zRandn;
 
 
                 // now prepare for the Ax=b calculation by calculating the inverted A matrix
-                matrix9 Ainv = invert3(A);
+                // directly modifies the values of the A matrix
+                invert3(A_11,A_12,A_13,A_21,A_22,A_23,A_31,A_32,A_33);
 
 
                 // now do the Ax=b calculation using the inverted matrix
-                // hm, since getting out three values, might be easier to do a pass in by reference thing for the velPrime values
-                vec3 velPrime = matmult(Ainv,b);
-                uPrime = velPrime.e11;
-                vPrime = velPrime.e21;
-                wPrime = velPrime.e31;
+                // directly modifies the velFluct values, which are passed in by reference as the output x vector
+                matmult(A_11,A_12,A_13,A_21,A_22,A_23,A_31,A_32,A_33,b_11,b_21,b_31, uFluct,vFluct,wFluct);
                 
 
                 // now check to see if the value is rogue or not
-                if( abs(uPrime) >= vel_threshold || isnan(uPrime) && nx > 1 )
+                if( abs(uFluct) >= vel_threshold || isnan(uFluct) && nx > 1 )
                 {
                     std::cout << "Particle # " << par << " is rogue." << std::endl;
-                    std::cout << "responsible uFluct was \"" << uPrime << "\"" << std::endl;
-                    uPrime = 0.0;
+                    std::cout << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
+                    uFluct = 0.0;
                     isRogue = true;
                 }
-                if( abs(vPrime) >= vel_threshold || isnan(vPrime) && ny > 1 )
+                if( abs(vFluct) >= vel_threshold || isnan(vFluct) && ny > 1 )
                 {
                     std::cout << "Particle # " << par << " is rogue." << std::endl;
-                    std::cout << "responsible vFluct was \"" << vPrime << "\"" << std::endl;
-                    vPrime = 0.0;
+                    std::cout << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
+                    vFluct = 0.0;
                     isRogue = true;
                 }
-                if( abs(wPrime) >= vel_threshold || isnan(wPrime) && nz > 1 )
+                if( abs(wFluct) >= vel_threshold || isnan(wFluct) && nz > 1 )
                 {
                     std::cout << "Particle # " << par << " is rogue." << std::endl;
-                    std::cout << "responsible wFluct was \"" << wPrime << "\"" << std::endl;
-                    wPrime = 0.0;
+                    std::cout << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
+                    wFluct = 0.0;
                     isRogue = true;
                 }
 
                 // Do you need this???
                 // ONLY if this should never happen....
                 //    assert( isRogue == false );
+                // maybe implement this after the thesis work. Currently use it to know if something is going wrong
+
                 
                 // now update the particle position for this iteration
                 // at some point in time, need to do a CFL condition for only moving one eulerian grid cell at a time
@@ -452,9 +422,9 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 //  with the sampling time increment. This means all particles can do multiple time iterations, each with their own timestep
                 // but at the sampling timestep, particles are allowed to catch up so they are all calculated by that time
                 // currently, we use the sampling timestep so we may violate the eulerian grid CFL condition. But is simpler to work with when getting started
-                double disX = ((uMean + uPrime)*dt);
-                double disY = ((vMean + vPrime)*dt);
-                double disZ = ((wMean + wPrime)*dt);
+                double disX = ((uMean + uFluct)*dt);
+                double disY = ((vMean + vFluct)*dt);
+                double disZ = ((wMean + wFluct)*dt);
                 
                 xPos = xPos + disX;
                 yPos = yPos + disY;
@@ -466,9 +436,9 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 // now apply boundary conditions
                 // notice that this is the old fashioned style for calling a pointer function
-                (this->*enforceWallBCs_x)(xPos,uPrime,uFluct_old,isActive, domainXstart,domainXend);
-                (this->*enforceWallBCs_y)(yPos,vPrime,vFluct_old,isActive, domainYstart,domainYend);
-                (this->*enforceWallBCs_z)(zPos,wPrime,wFluct_old,isActive, domainZstart,domainZend);
+                (this->*enforceWallBCs_x)(xPos,uFluct,uFluct_old,isActive, domainXstart,domainXend);
+                (this->*enforceWallBCs_y)(yPos,vFluct,vFluct_old,isActive, domainYstart,domainYend);
+                (this->*enforceWallBCs_z)(zPos,wFluct,wFluct_old,isActive, domainZstart,domainZend);
                 
                 // now set the particle values for if they are rogue or outside the domain
                 setFinishedParticleVals(xPos,yPos,zPos, isActive,isRogue);
@@ -483,26 +453,27 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 // now update the old values and current values in the dispersion storage to be ready for the next iteration
                 // also calculate the velFluct increment
-                dis->pointList.at(par).prime.e11 = uPrime;
-                dis->pointList.at(par).prime.e21 = vPrime;
-                dis->pointList.at(par).prime.e31 = wPrime;
-                dis->pointList.at(par).pos.e11 = xPos;
-                dis->pointList.at(par).pos.e21 = yPos;
-                dis->pointList.at(par).pos.e31 = zPos;
+                // this is extremely important for output and the next iteration to work correctly
+                dis->pointList.at(par).uFluct = uFluct;
+                dis->pointList.at(par).vFluct = vFluct;
+                dis->pointList.at(par).wFluct = wFluct;
+                dis->pointList.at(par).xPos = xPos;
+                dis->pointList.at(par).yPos = yPos;
+                dis->pointList.at(par).zPos = zPos;
 
-                dis->pointList.at(par).delta_prime.e11 = uPrime - uFluct_old;
-                dis->pointList.at(par).delta_prime.e21 = vPrime - vFluct_old;
-                dis->pointList.at(par).delta_prime.e31 = wPrime - wFluct_old;
-                dis->pointList.at(par).prime_old.e11 = uPrime;
-                dis->pointList.at(par).prime_old.e21 = vPrime;
-                dis->pointList.at(par).prime_old.e31 = wPrime;
+                dis->pointList.at(par).delta_uFluct = uFluct - uFluct_old;
+                dis->pointList.at(par).delta_vFluct = vFluct - vFluct_old;
+                dis->pointList.at(par).delta_wFluct = wFluct - wFluct_old;
+                dis->pointList.at(par).uFluct_old = uFluct;
+                dis->pointList.at(par).vFluct_old = vFluct;
+                dis->pointList.at(par).wFluct_old = wFluct;
 
-                dis->pointList.at(par).tau_old.e11 = txx;
-                dis->pointList.at(par).tau_old.e12 = txy;
-                dis->pointList.at(par).tau_old.e13 = txz;
-                dis->pointList.at(par).tau_old.e22 = tyy;
-                dis->pointList.at(par).tau_old.e23 = tyz;
-                dis->pointList.at(par).tau_old.e33 = tzz;
+                dis->pointList.at(par).txx_old = txx;
+                dis->pointList.at(par).txy_old = txy;
+                dis->pointList.at(par).txz_old = txz;
+                dis->pointList.at(par).tyy_old = tyy;
+                dis->pointList.at(par).tyz_old = tyz;
+                dis->pointList.at(par).tzz_old = tzz;
 
                 // now update the isRogueCount
                 if(isRogue == true)
@@ -592,6 +563,8 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         // advection, remove them now
         //
         // Purge the advection list of all the unneccessary particles....
+        // 
+        // for now I want to keep them for the thesis work information and debugging
 
     } // for(tStep=0; tStep<numTimeStep; tStep++)
 
@@ -606,26 +579,30 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
 }
 
-vec3 Plume::calcInvariants(const matrix6& tau)
+
+void Plume::calcInvariants(const double& txx,const double& txy,const double& txz,const double& tyy,const double& tyz,const double& tzz,
+                            double& invar_xx,double& invar_yy,double& invar_zz)
 {
+    // since the x doesn't depend on itself, can just set the output without doing any temporary variables
 
-    vec3 invariants;
+    // this is just a copy of what is done in Bailey's code
+    invar_xx = txx + tyy + tzz;
 
-    invariants.e11 = tau.e11 + tau.e22 + tau.e33;
+    invar_yy = txx*tyy + txx*tzz + tyy*tzz - txy*txy - txz*txz - tyz*tyz;
 
-    invariants.e21 = tau.e11*tau.e22 + tau.e11*tau.e33 + tau.e22*tau.e33 - tau.e12*tau.e12 - tau.e13*tau.e13 - tau.e23*tau.e23;
-
-    invariants.e31 = tau.e11*(tau.e22*tau.e33 - tau.e23*tau.e23) - tau.e12*(tau.e12*tau.e33 - tau.e23*tau.e13) + tau.e13*(tau.e12*tau.e23 - tau.e22*tau.e13);
-
-    return invariants;
+    invar_zz = txx*(tyy*tzz - tyz*tyz) - txy*(txy*tzz - tyz*txz) + txz*(txy*tyz - tyy*txz);
 }
 
-matrix6 Plume::makeRealizable(const matrix6& tau)
+void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,double& tyz,double& tzz)
 {
     // first calculate the invariants and see if they are already realizable
+    // the calcInvariants function modifies the values directly, so they always need initialized to something before being sent into said function to be calculated
 
-    vec3 invariants = calcInvariants(tau);
-    if( invariants.e11 > invarianceTol && invariants.e21 > invarianceTol && invariants.e31 > invarianceTol )
+    double invar_xx = 0.0;
+    double invar_yy = 0.0;
+    double invar_zz = 0.0;
+    calcInvariants(txx,txy,txz,tyy,tyz,tzz,  invar_xx,invar_yy,invar_zz);
+    if( invar_xx > invarianceTol && invar_yy > invarianceTol && invar_zz > invarianceTol )
     {
         //std::cout << "tau already realizable" << std::endl;
         return tau;     // tau is already realizable
@@ -634,45 +611,38 @@ matrix6 Plume::makeRealizable(const matrix6& tau)
     // since tau is not already realizable, need to make it realizeable
     // start by making a guess of ks, the subfilter scale tke
     // I keep wondering if we can use the input Turb->tke for this or if we should leave it as is
-    double b = 4.0/3.0*(tau.e11 + tau.e22 + tau.e33);   // I think this is 4.0/3.0*invariants.e11 as well
-    double c = tau.e11*tau.e22 + tau.e11*tau.e33 + tau.e22*tau.e33 - tau.e12*tau.e12 - tau.e13*tau.e13 - tau.e23*tau.e23;   // this is probably invariants.e21
+    double b = 4.0/3.0*(txx + tyy + tzz);   // I think this is 4.0/3.0*invar_xx as well
+    double c = txx*tyy + txx*tzz + tyy*tzz - txy*txy - txz*txz - tyz*tyz;   // this is probably invar_yy
     double ks = 1.01*(-b + sqrt(b*b - 16.0/3.0*c)) / (8.0/3.0);
 
     // if the initial guess is bad, use the straight up invariance.e11 value
     if( ks < invarianceTol || isnan(ks) )
     {
-        ks = 0.5*abs(tau.e11 + tau.e22 + tau.e33);  // looks like 0.5*abs(invariants.e11)
+        ks = 0.5*abs(txx + tyy + tzz);  // looks like 0.5*abs(invar_xx)
     }
 
     // now set the initial values of the new make realizable tau, 
-    // the first iteration of the following loop
+    // since the function modifies tau directly, so tau already exists, can skip this step and just do what is already done inside the loop
     // notice that through all this process, only the diagonals are really increased by a value of 0.05% of the subfilter tke ks
-    matrix6 tau_new;
-    tau_new.e11 = tau.e11 + 2.0/3.0*ks;
-    tau_new.e22 = tau.e22 + 2.0/3.0*ks;
-    tau_new.e33 = tau.e33 + 2.0/3.0*ks;
-    tau_new.e12 = tau.e12;
-    tau_new.e13 = tau.e13;
-    tau_new.e23 = tau.e23;
-
-    // adjust the invariants for the new tau
-    invariants = calcInvariants(tau_new);
-
+    // had to watch carefully, but for once don't need temporary values as there are no multi line dependencies 
+    //  from one component of tau to another the way this is written
+    
     // now adjust the diagonals by 0.05% of the subfilter tke, which is ks, till tau is realizable
-    // or if too many iterations go on, give a warning. I've had trouble with this taking too long
-    // if it isn't realizable, so maybe another approach for when the iterations are reached might be smart
+    // or if too many iterations go on, give a warning.
+    // I've had trouble with this taking too long
+    //  if it isn't realizable, so maybe another approach for when the iterations are reached might be smart
     int iter = 0;
-    while( (invariants.e11 < invarianceTol || invariants.e21 < invarianceTol || invariants.e31 < invarianceTol) && iter < 1000 )
+    while( (invar_xx < invarianceTol || invar_yy < invarianceTol || invarzz < invarianceTol) && iter < 1000 )
     {
         iter = iter + 1;
 
         ks = ks*1.050;      // increase subfilter tke by 5%
 
-        tau_new.e11 = tau.e11 + 2.0/3.0*ks;
-        tau_new.e22 = tau.e22 + 2.0/3.0*ks;
-        tau_new.e33 = tau.e33 + 2.0/3.0*ks;
+        txx = txx + 2.0/3.0*ks;
+        tyy = tyy + 2.0/3.0*ks;
+        tzz = tzz + 2.0/3.0*ks;
 
-        invariants = calcInvariants(tau_new);
+        calcInvariants(txx,txy,txz,tyy,tyz,tzz,  invar_xx,invar_yy,invar_zz);
 
     }
 
@@ -681,58 +651,65 @@ matrix6 Plume::makeRealizable(const matrix6& tau)
         std::cout << "WARNING (Plume::makeRealizable): unable to make stress tensor realizble.";
     }
 
-    return tau_new;
-
 }
 
-matrix9 Plume::invert3(const matrix9& A)
+void Plume::invert3(double& A_11,double& A_12,double& A_13,double& A_21,double& A_22,double& A_23,double& A_31,double& A_32,double& A_33)
 {
-    // note that with Bailey's code, the input A.e21, A.e31, and A.e32 are zeros even though they are used here
+    // note that with Bailey's code, the input A_21, A_31, and A_32 are zeros even though they are used here
     // at least when using this on tau to calculate the inverse stress tensor. This is not true when calculating the inverse A matrix
     // for the Ax=b calculation
 
-    // set the output value storage
-    matrix9 Ainv;
 
     // now calculate the determinant
-    double det = A.e11*(A.e22*A.e33 - A.e23*A.e32) - A.e12*(A.e21*A.e33 - A.e23*A.e31) + A.e13*(A.e21*A.e32 - A.e22*A.e31);
+    double det = A_11*(A_22*A_33 - A_23*A_32) - A_12*(A_21*A_33 - A_23*A_31) + A_13*(A_21*A_32 - A_22*A_31);
 
     // check for near zero value determinants
     if(std::abs(det) < 1e-10)
     {
-        det = 10e10;
         std::cout << "WARNING (Plume::invert3): matrix nearly singular" << std::endl;
-        std::cout << "abs(det) = \"" << std::abs(det) << "\",  A.e11 = \"" << A.e11 << "\", A.e12 = \"" << A.e12 << "\", A.e13 = \"" 
-            << A.e13 << "\", A.e21 = \"" << A.e21 << "\", A.e22 = \"" << A.e22 << "\", A.e23 = \"" << A.e23 << "\", A.31 = \"" 
-            << A.e31 << "\" A.e32 = \"" << A.e32 << "\", A.e33 = \"" << A.e33 << "\"" << std::endl;
+        std::cout << "abs(det) = \"" << std::abs(det) << "\",  A_11 = \"" << A_11 << "\", A_12 = \"" << A_12 << "\", A_13 = \"" 
+            << A_13 << "\", A_21 = \"" << A_21 << "\", A_22 = \"" << A_22 << "\", A_23 = \"" << A_23 << "\", A_31 = \"" 
+            << A_31 << "\" A_32 = \"" << A_32 << "\", A_33 = \"" << A_33 << "\"" << std::endl;
+
+        det = 10e10;
     }
 
-    // calculate the inverse
-    Ainv.e11 =  (A.e22*A.e33 - A.e23*A.e32)/det;
-    Ainv.e12 = -(A.e12*A.e33 - A.e13*A.e32)/det;
-    Ainv.e13 =  (A.e12*A.e23 - A.e22*A.e13)/det;
-    Ainv.e21 = -(A.e21*A.e33 - A.e23*A.e31)/det;
-    Ainv.e22 =  (A.e11*A.e33 - A.e13*A.e31)/det;
-    Ainv.e23 = -(A.e11*A.e23 - A.e13*A.e21)/det;
-    Ainv.e31 =  (A.e21*A.e32 - A.e31*A.e22)/det;
-    Ainv.e32 = -(A.e11*A.e32 - A.e12*A.e31)/det;
-    Ainv.e33 =  (A.e11*A.e22 - A.e12*A.e21)/det;
+    // calculate the inverse. Because the inverted matrix depends on other components of the matrix, 
+    //  need to make a temporary value till all the inverted parts of the matrix are set
+    double Ainv_11 =  (A_22*A_33 - A_23*A_32)/det;
+    double Ainv_12 = -(A_12*A_33 - A_13*A_32)/det;
+    double Ainv_13 =  (A_12*A_23 - A_22*A_13)/det;
+    double Ainv_21 = -(A_21*A_33 - A_23*A_31)/det;
+    double Ainv_22 =  (A_11*A_33 - A_13*A_31)/det;
+    double Ainv_23 = -(A_11*A_23 - A_13*A_21)/det;
+    double Ainv_31 =  (A_21*A_32 - A_31*A_22)/det;
+    double Ainv_32 = -(A_11*A_32 - A_12*A_31)/det;
+    double Ainv_33 =  (A_11*A_22 - A_12*A_21)/det;
 
+    // now set the input reference A matrix to the temporary inverted A matrix values
+    A_11 = Ainv_11;
+    A_12 = Ainv_12;
+    A_13 = Ainv_13;
+    A_21 = Ainv_21;
+    A_22 = Ainv_22;
+    A_23 = Ainv_23;
+    A_31 = Ainv_31;
+    A_32 = Ainv_32;
+    A_33 = Ainv_33;
 
-    return Ainv;
 }
 
-vec3 Plume::matmult(const matrix9& Ainv,const vec3& b)
+void Plume::matmult(const double& A_11,const double& A_12,const double& A_13,const double& A_21,const double& A_22,const double& A_23,
+                    const double& A_31,const double& A_32,const double& A_33,const double& b_11,const double& b_21,const double& b_31,
+                    double& x_11, double& x_21, double& x_31)
 {
-    // initialize output
-    vec3 x;
+    // since the x doesn't depend on itself, can just set the output without doing any temporary variables
 
     // now calculate the Ax=b x value from the input inverse A matrix and b matrix
-    x.e11 = b.e11*Ainv.e11 + b.e21*Ainv.e12 + b.e31*Ainv.e13;
-    x.e21 = b.e11*Ainv.e21 + b.e21*Ainv.e22 + b.e31*Ainv.e23;
-    x.e31 = b.e11*Ainv.e31 + b.e21*Ainv.e32 + b.e31*Ainv.e33;
+    x_11 = b_11*A_11 + b_21*A_12 + b_31*A_13;
+    x_21 = b_11*A_21 + b_21*A_22 + b_31*A_23;
+    x_31 = b_11*A_31 + b_21*A_32 + b_31*A_33;
 
-    return x;
 }
 
 
@@ -964,20 +941,13 @@ void Plume::average(const int tStep,const Dispersion* dis, const Urb* urb)
     // concentration collection boxes
     for(int i = 0; i < dis->pointList.size(); i++)
     {
-        // ????
-//        if( tStrt.at(i) > timeStepStamp.at(tStep) )
-//        {
-//            continue;
-//        }
         
-        double xPos = dis->pointList.at(i).pos.e11;
-        double yPos = dis->pointList.at(i).pos.e21;
-        double zPos = dis->pointList.at(i).pos.e31;
+        double xPos = dis->pointList.at(i).xPos;
+        double yPos = dis->pointList.at(i).yPos;
+        double zPos = dis->pointList.at(i).zPos;
         
         if ( (xPos > 0.0 && yPos > 0.0 && zPos > 0.0) &&
-             (xPos < (urb->grid.nx*urb->grid.dx)) &&
-             (yPos < (urb->grid.ny*urb->grid.dy)) &&
-             (zPos < (urb->grid.nz*urb->grid.dz)) ) {
+             (xPos < (nx*dx)) && (yPos < (ny*dy)) && (zPos < (nz*dz)) ) {
             
             // ????
             if( zPos == -1 )
@@ -988,9 +958,9 @@ void Plume::average(const int tStep,const Dispersion* dis, const Urb* urb)
             // Calculate which collection box this particle is currently
             // in
 
-            int iV = int(xPos/urb->grid.dx);
-            int jV = int(yPos/urb->grid.dy);
-            int kV = int(zPos/urb->grid.dz) + 1;    // why is this + 1 here?
+            int iV = int(xPos/dx);
+            int jV = int(yPos/dy);
+            int kV = int(zPos/dz) + 1;    // why is this + 1 here? Probably is assuming a periodic grid for some dimensions, or to capture a right hand side wall? no idea
             int idx = (int)((xPos-lBndx)/boxSizeX);
             int idy = (int)((yPos-lBndy)/boxSizeY);
             int idz = (int)((zPos-lBndz)/boxSizeZ);
@@ -1009,7 +979,7 @@ void Plume::average(const int tStep,const Dispersion* dis, const Urb* urb)
             }
 
             int id = 0;
-            // if( idx >= 0 && idx < nBoxesX && idy >= 0 && idy < nBoxesY && idz >= 0 && idz < nBoxesZ && tStrt.at(i) <= timeStepStamp.at(tStep) )
+            // if( idx >= 0 && idx < nBoxesX && idy >= 0 && idy < nBoxesY && idz >= 0 && idz < nBoxesZ && dis->pointList.at(i).tStrt <= timeStepStamp.at(tStep) )
             if( idx >= 0 && idx < nBoxesX && idy >= 0 && idy < nBoxesY && idz >= 0 && idz < nBoxesZ )
             {
                 id = idz*nBoxesY*nBoxesX + idy*nBoxesX + idx;

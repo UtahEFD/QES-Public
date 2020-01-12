@@ -12,8 +12,6 @@
 
 #pragma once
 
-#include <vector>
-#include "TypeDefs.hpp"
 
 class particle
 {
@@ -21,25 +19,43 @@ class particle
     public:
 
         // initializer
-        particle();
+        particle()
+        {
+        }
 
         // destructor
-        ~particle();
+        ~particle()
+        {
+        }
         
 
         // the point info variables
         // hm, I'm used to making stuff like this private and creating a bunch of accessor functions
         // so that they all stay the same dimension. But so long as we use them correctly, this isn't a problem
         
-        // the sources can set these values, then the other values are set using urb and turb info using these values
-        vec3 pos;          // pos is the list of particle source positions
-        double tStrt;        // this is the time of release for each set of particles
+        // before the solver runs, the sources can set these values, then the other values are set using urb and turb info using these values
+        // then the solver in plume modifies some of these values as needed
+        double xPos;          // Initially, the initial x component of position for the particle. After the solver starts to run, the current x component of position for the particle.
+        double yPos;          // Initially, the initial y component of position for the particle. After the solver starts to run, the current y component of position for the particle.
+        double zPos;          // Initially, the initial z component of position for the particle. After the solver starts to run, the current z component of position for the particle.
+        double tStrt;         // The time of release for the particle
 
         // once positions are known, can set these values
-        vec3 prime;     // prime is the velFluct value for a given iteration. Starts out as the initial value until a particle is "released" into the domain
-        vec3 prime_old;     // this is the velocity fluctuations from the last iteration. They start out the same as the current values initially
-        matrix6 tau_old;       // this is the stress tensor from the last iteration. Starts out as the values at the initial position, the values for the initial iteration
-        vec3 delta_prime;    // this is the difference between the current and last iteration of the velocity fluctuations
+        double uFluct;      // x component of the velocity fluctuation for a particle for a given iteration. Starts out as the initial value until a particle is "released" into the domain
+        double vFluct;      // v component of the velocity fluctuation for a particle for a given iteration. Starts out as the initial value until a particle is "released" into the domain
+        double wFluct;      // w component of the velocity fluctuation for a particle for a given iteration. Starts out as the initial value until a particle is "released" into the domain
+        double uFluct_old;      // x component of the velocity fluctuation for a particle from the last iteration
+        double vFluct_old;      // v component of the velocity fluctuation for a particle from the last iteration
+        double wFluct_old;      // w component of the velocity fluctuation for a particle from the last iteration
+        double txx_old;         // this is the stress in the x direction on the x face from the last iteration
+        double txy_old;         // this is the stress in the y direction on the x face from the last iteration. Same thing as tyx_old, which is the stress in the x direction on the y face from the last iteration.
+        double txz_old;         // this is the stress in the z direction on the x face from the last iteration. Same thing as tzx_old, which is the stress in the x direction on the z face from the last iteration.
+        double tyy_old;         // this is the stress in the y direction on the y face from the last iteration
+        double tyz_old;         // this is the stress in the z direction on the y face from the last iteration. Same thing as tzy_old, which is the stress in the y direction on the z face from the last iteration.
+        double tzz_old;         // this is the stress in the z direction on the z face from the last iteration
+        double delta_uFluct;    // this is the difference between the current and last iteration of the uFluct variable
+        double delta_vFluct;    // this is the difference between the current and last iteration of the vFluct variable
+        double delta_wFluct;    // this is the difference between the current and last iteration of the wFluct variable
         bool isRogue;         // this is false until it becomes true. Should not go true. It is whether a particle has gone rogue or not
         bool isActive;         // this is true until it becomes false. If a particle leaves the domain or runs out of mass, this becomes false. Later we will add a method to start more particles when this has become false
         

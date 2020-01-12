@@ -19,7 +19,7 @@ CUDA_ADD_LIBRARY( cudaplumecore
     Urb.cpp
     Turb.cpp
 
-    particle.cpp
+    particle.hpp
     SourcePoint.cpp SourcePoint.hpp
     SourceLine.cpp SourceLine.hpp
     SourceCircle.cpp SourceCircle.hpp

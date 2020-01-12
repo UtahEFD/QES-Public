@@ -17,7 +17,6 @@
 #include "Turb.hpp"
 #include "Eulerian.h"
 #include "Dispersion.h"
-#include "TypeDefs.hpp"
 #include "PlumeInputData.hpp"
 
 #include <chrono>
@@ -29,51 +28,59 @@ class Plume {
     
     public:
         
-        Plume(Urb*,Dispersion*,PlumeInputData*,Output*);    // first makes a copy of the urb grid info
+        Plume(Urb*,Dispersion*,PlumeInputData*,Output*);    // first makes a copy of the urb grid number of values and the domain size as determined by dispersion
                                                             // then sets the initial data by first calculating the concentration sampling box information for output
-                                                            // next copies important input time information for dispersion plus copies of the dispersion info
+                                                            // next copies important input time values and calculates needed time information
+                                                            // next sets up the boundary condition functions
                                                             // finally, the output information is setup
-                                                            
+
         void run(Urb*,Turb*,Eulerian*,Dispersion*,PlumeInputData*,Output*); // has a much cleaner solver now, but at some time needs the boundary conditions adapted to vary for more stuff
                                                                             // also needs two CFL conditions, one for each particle time integration (particles have multiple timesteps smaller than the simulation timestep), and one for the eulerian grid go one cell at a time condition
                                                                             // finally, what output should be normally put out, and what output should only be put out when debugging is super important
+
         void save(Output*);
         
     private:
         
         // just realized, what if urb and turb have different grids? For now assume they are the same grid
         // variables set during constructor. Notice that the later list of output manager stuff is also setup during the constructor
-        int nx,ny,nz;       // these are copies of the Urb grid nx, ny, and nz values
+        int nx;       // a copy of the urb grid nx value
+        int ny;       // a copy of the urb grid ny value
+        int nz;       // a copy of the urb grid nz value
+        double dx;       // a copy of the urb grid dx value, eventually could become an array
+        double dy;       // a copy of the urb grid dy value, eventually could become an array
+        double dz;       // a copy of the urb grid dz value, eventually could become an array
 
-        // these values are calculated from the urb data during construction
+
+        // these values are calculated from the urb and turb grids by dispersion
         // they are used for applying boundary conditions at the walls of the domain
-        double domainXstart;    // the urb domain starting x value
-        double domainXend;      // the urb domain ending x value
-        double domainYstart;    // the urb domain starting y value
-        double domainYend;      // the urb domain ending y value
-        double domainZstart;    // the urb domain starting z value
-        double domainZend;      // the urb domain ending z value
+        double domainXstart;    // the domain starting x value, a copy of the value found by dispersion
+        double domainXend;      // the domain ending x value, a copy of the value found by dispersion
+        double domainYstart;    // the domain starting y value, a copy of the value found by dispersion
+        double domainYend;      // the domain ending y value, a copy of the value found by dispersion
+        double domainZstart;    // the domain starting z value, a copy of the value found by dispersion
+        double domainZend;      // the domain ending z value, a copy of the value found by dispersion
+
 
         // output concentration box data
         double sCBoxTime;           // a copy of the input startTime, which is the starting time for averaging of the output concentration sampling
         double avgTime;            // this is a copy of the input timeAvg
         int nBoxesX,nBoxesY,nBoxesZ;    // these are copies of the input nBoxesX,Y, and Z. These parameters are the number of boxes to use in the concentration sampling for output
+        double lBndx,lBndy,lBndz,uBndx,uBndy,uBndz;     // these are copies of the input parameters boxBoundsX1, boxBoundsX2, boxBoundsY1, ... . These are the upper and lower bounds in each direction of the concentration sampling boxes for output
         double boxSizeX,boxSizeY,boxSizeZ;      // these are the box sizes in each direction, taken by dividing the box bounds by the number of boxes to use, where these boxes are for concentration sampling for output
         double volume;      // this is the volume of the boxes to use in the concentration sampling for output. Is nBoxesX*nBoxesY*nBoxesZ
-        double lBndx,lBndy,lBndz,uBndx,uBndy,uBndz;     // these are copies of the input parameters boxBoundsX1, boxBoundsX2, boxBoundsY1, ... . These are the upper and lower bounds in each direction of the concentration sampling boxes for output
-        double quanX,quanY,quanZ;           // funny, these appear to be the same thing as the boxSize variables
         std::vector<double> xBoxCen,yBoxCen,zBoxCen;    // I believe these are the list of x,y, and z points for the concentration sampling box information
         std::vector<double> cBox,conc;      // these are the concentration box and concentration values for the simulation
 
-        // input data used for dispersion
+
+        // input time variables
         double dt;          // this is a copy of the input timeStep
-        int numTimeStep;        // a copy of the dispersion number of timesteps for the simulation
+        double simDur;         // this is a copy of the input simDur, or the total amount of time to run the simulation for
         
-        // some dispersion variables
-//        int numPar;        // this is a copy of the input numParticles to be released over the whole simulation
-        std::vector<double> tStrt;  // a copy of the dispersion tStrt, which is the time of release for each set of particles to release in the simulation
-        std::vector<double> timeStepStamp;  // a copy of the dispersion timeStepStamp, which is the list of times for the simulation
-        std::vector<int> parPerTimestep;     // a copy of the dispersion parPerTimestep, which is the number of particles to release per timestep
+        // these are the calculated time information needed for the simulation
+        int numTimeStep;            // this is the number of timesteps of the simulation, the calculated size of timeStepStamp
+        std::vector<double> timeStepStamp;  // this is the list of times for the simulation
+        
 
         double invarianceTol;       // this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
         double C_0;                 // used to separate out CoEps into its separate parts when doing debug output
@@ -81,11 +88,15 @@ class Plume {
         int updateFrequency_timeLoop;       // used to know how frequently to print out information during the time loop of the solver
         
 
-        // still need to figure out how this is going to work, especially with the data structures
-        vec3 calcInvariants(const matrix6& tau);
-        matrix6 makeRealizable(const matrix6& tau);
-        matrix9 invert3(const matrix9& A);
-        vec3 matmult(const matrix9& Ainv,const vec3& b);
+        // utility functions for the plume solver
+        // hm, this is the one place where it may be helpful to bring back in the complex data types
+        void calcInvariants(const double& txx,const double& txy,const double& txz,const double& tyy,const double& tyz,const double& tzz,
+                            double& invar_xx,double& invar_yy,double& invar_zz);
+        void makeRealizable(double& txx,double& txy,double& txz,double& tyy,double& tyz,double& tzz);
+        void invert3(double& A_11,double& A_12,double& A_13,double& A_21,double& A_22,double& A_23,double& A_31,double& A_32,double& A_33);
+        void matmult(const double& A_11,const double& A_12,const double& A_13,const double& A_21,const double& A_22,const double& A_23,
+                     const double& A_31,const double& A_32,const double& A_33,const double& b_11,const double& b_21,const double& b_31,
+                     double& x_11, double& x_21, double& x_31);
 
         // might need to create multiple versions depending on the selection of boundary condition types by the inputs
         void setBCfunctions(std::string xBCtype,std::string yBCtype,std::string zBCtype);    // a function used at constructor time to set the pointer function to the desired BC type

@@ -9,27 +9,35 @@
 #include "Urb.hpp"
 #include "Turb.hpp"
 
+
 Eulerian::Eulerian(Urb* urb, Turb* turb, PlumeInputData* PID, const std::string& debugOutputFolder) {
     
     std::cout<<"[Eulerian] \t Reading CUDA-URB & CUDA-TURB fields "<<std::endl;
     
     
-    // grid information
-    nt = urb->grid.nt;
-    nz = urb->grid.nz;
-    ny = urb->grid.ny;
-    nx = urb->grid.nx;
-    dz = urb->grid.dz;
-    dy = urb->grid.dy;
-    dx = urb->grid.dx;
+    // copy turb grid information
+    nt = turb->nt;
+    nz = turb->nz;
+    ny = turb->ny;
+    nx = turb->nx;
+    dz = turb->dz;
+    dy = turb->dy;
+    dx = turb->dx;
 
-    // get the urb domain start and end values, needed for wall boundary condition application
-    domainXstart = urb->domainXstart;
-    domainYstart = urb->domainYstart;
-    domainZstart = urb->domainZstart;
+    // get the turb domain start and end values, other turb grid information
+    turbXstart = turb->turbXstart;
+    turbYstart = turb->turbYstart;
+    turbZstart = turb->turbZstart;
+    turbXend = turb->turbXend;
+    turbYend = turb->turbYend;
+    turbZend = turb->turbZend;
+
+    // probably need to do something right here to determine what is the true domain size not just for turb, but for urb as well
+
     
     // set additional values from the input
     C_0 = PID->simParams->C_0;
+
 
     // compute stress gradients
     createTauGrads(urb,turb);
@@ -53,9 +61,18 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
     
     auto timerStart = std::chrono::high_resolution_clock::now();
 
-    taudx.resize(nx*ny*nz, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
-    taudy.resize(nx*ny*nz, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
-    taudz.resize(nx*ny*nz, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+    // set the tau gradient sizes
+    dtxxdx.resize(nx*ny*nz);
+    dtxydy.resize(nx*ny*nz);
+    dtxzdz.resize(nx*ny*nz);
+
+    dtxydx.resize(nx*ny*nz);
+    dtyydy.resize(nx*ny*nz);
+    dtyzdz.resize(nx*ny*nz);
+
+    dtxzdx.resize(nx*ny*nz);
+    dtyzdy.resize(nx*ny*nz);
+    dtzzdz.resize(nx*ny*nz);
     
     // Loop over all cells in the domain up to 2 in from the edge
     for(int k=0; k<nz; ++k) {
@@ -115,9 +132,18 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
     
     auto timerStart = std::chrono::high_resolution_clock::now();
 
-    taudx.resize(nx*ny*nz, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
-    taudy.resize(nx*ny*nz, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
-    taudz.resize(nx*ny*nz, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+    // set the tau gradient sizes
+    dtxxdx.resize(nx*ny*nz);
+    dtxydy.resize(nx*ny*nz);
+    dtxzdz.resize(nx*ny*nz);
+
+    dtxydx.resize(nx*ny*nz);
+    dtyydy.resize(nx*ny*nz);
+    dtyzdz.resize(nx*ny*nz);
+
+    dtxzdx.resize(nx*ny*nz);
+    dtyzdy.resize(nx*ny*nz);
+    dtzzdz.resize(nx*ny*nz);
     
     // 2nd order Forward differencing up to 2 in from the edge in the direction of the gradient,
     // 2nd order Backward differencing for the last two in the direction of the gradient,
@@ -230,19 +256,22 @@ void Eulerian::createFluxDiv()
     std::cout << "[Eulerian] \t Computing flux_div values " << std::endl;
 
     // set the flux_div to the right size
-    flux_div.resize(nx*ny*nz, {0.0, 0.0, 0.0});
+    flux_div_x.resize(nx*ny*nz);
+    flux_div_y.resize(nx*ny*nz);
+    flux_div_z.resize(nx*ny*nz);
 
     // loop through each cell and calculate the flux_div from the gradients of tao
     for(int idx = 0; idx < nx*ny*nz; idx++) {
-        flux_div.at(idx).e11 = taudx.at(idx).e11 + taudy.at(idx).e12 + taudz.at(idx).e13;
-        flux_div.at(idx).e21 = taudx.at(idx).e12 + taudy.at(idx).e22 + taudz.at(idx).e23;
-        flux_div.at(idx).e31 = taudx.at(idx).e13 + taudy.at(idx).e23 + taudz.at(idx).e33;
+        flux_div_x.at(idx) = dtxxdx.at(idx) + dtxydy.at(idx) + dtxzdz.at(idx);
+        flux_div_y.at(idx) = dtxydx.at(idx) + dtyydy.at(idx) + dtyzdz.at(idx);
+        flux_div_z.at(idx) = dtxzdx.at(idx) + dtyzdy.at(idx) + dtzzdz.at(idx);
     }
 }
 
+
 // this gets around the problem of repeated or not repeated information, just needs called once before each interpolation,
 // then intepolation on all kinds of datatypes can be done
-void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
+void Eulerian::setInterp3Dindexing(const double& par_xPos, const double& par_yPos, const double& par_zPos)
 {
 
     // the next steps are to figure out the right indices to grab the values for cube from the data, 
@@ -258,10 +287,9 @@ void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
 
     // set a particle position corrected by the start of the domain in each direction
     // the algorythm assumes the list starts at x = 0.
-    vec3 par;
-    par.e11 = xyz_particle.e11 - domainXstart;
-    par.e21 = xyz_particle.e21 - domainYstart;
-    par.e31 = xyz_particle.e31 - domainZstart;
+    double par_x = par_xPos - turbXstart;
+    double par_y = par_yPos - turbYstart;
+    double par_z = par_zPos - turbZstart;
 
     // index of nearest node in negative direction
     // by adding a really small number to dx, it stops it from putting
@@ -273,14 +301,14 @@ void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
     // basically adding a small number to dx shifts the indices so that instead of going
     // from 0 to nx - 1, they go from 0 to nx - 2. This means that ii + ip can at most be nx - 1
     // and only if a particle lands directly on the far boundary condition edge
-    ii = floor(par.e11/(dx+1e-9));
-    jj = floor(par.e21/(dy+1e-9));
-    kk = floor(par.e31/(dz+1e-9));
+    ii = floor(par_x/(dx+1e-9));
+    jj = floor(par_y/(dy+1e-9));
+    kk = floor(par_z/(dz+1e-9));
 
     // fractional distance between nearest nodes
-    iw = (par.e11/(dx+1e-9) - floor(par.e11/(dx+1e-9)));
-    jw = (par.e21/(dy+1e-9) - floor(par.e21/(dy+1e-9)));
-    kw = (par.e31/(dz+1e-9) - floor(par.e31/(dz+1e-9)));
+    iw = (par_x/(dx+1e-9) - floor(par_x/(dx+1e-9)));
+    jw = (par_y/(dy+1e-9) - floor(par_y/(dy+1e-9)));
+    kw = (par_z/(dz+1e-9) - floor(par_z/(dz+1e-9)));
 
     // initialize the counters from the indices
     ip = 1;
@@ -312,19 +340,19 @@ void Eulerian::setInterp3Dindexing(const vec3& xyz_particle)
     // because adding a small number to dx in the index calculation forces the index to be completely left side biased
     if( ii < 0 || ii+ip > nx-1 )
     {
-        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle x position is out of range! x = \"" << xyz_particle.e11 
+        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle x position is out of range! x = \"" << par_xPos 
             << "\" ii+ip = \"" << ii << "\"+\"" << ip << "\",   nx-1 = \"" << nx-1 << "\"" << std::endl;
         exit(1);
     }
     if( jj < 0 || jj+jp > ny-1 )
     {
-        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle y position is out of range! y = \"" << xyz_particle.e21 
+        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle y position is out of range! y = \"" << par_yPos 
             << "\" jj+jp = \"" << jj << "\"+\"" << jp << "\",   ny-1 = \"" << ny-1 << "\"" << std::endl;
         exit(1);
     }
     if( kk < 0 || kk+kp > nz-1 )
     {
-        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle z position is out of range! z = \"" << xyz_particle.e31 
+        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle z position is out of range! z = \"" << par_zPos 
             << "\" kk+kp = \"" << kk << "\"+\"" << kp << "\",   nz-1 = \"" << nz-1 << "\"" << std::endl;
         exit(1);
     }
@@ -392,272 +420,6 @@ double Eulerian::interp3D(const std::vector<double>& EulerData,const std::string
 
 }
 
-// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-vec3 Eulerian::interp3D(const std::vector<vec3>& EulerData)
-{
-
-    // initialize the output value
-    vec3 outputVal;
-    outputVal.e11 = 0.0;
-    outputVal.e21 = 0.0;
-    outputVal.e31 = 0.0;
-    
-
-    // first set a cube of size two to zero.
-    // This is important because if nx, ny, or nz are only size 1, referencing two spots in cube won't reference outside the array.
-    // the next steps are to figure out the right indices to grab the values for cube from the data, 
-    // where indices are forced to be special if nx, ny, or nz are zero.
-    // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
-
-    
-    // now set the cube to zero, then fill it using the indices and the counters from the indices
-    double cube_e11[2][2][2] = {0.0};
-    double cube_e21[2][2][2] = {0.0};
-    double cube_e31[2][2][2] = {0.0};
-
-    // now set the cube values
-    for(int kkk = 0; kkk <= kp; kkk++)
-    {
-        for(int jjj = 0; jjj <= jp; jjj++)
-        {
-            for(int iii = 0; iii <= ip; iii++)
-            {
-                // set the actual indices to use for the linearized Euler data
-                int idx = (kk+kkk)*ny*nx + (jj+jjj)*nx + (ii+iii);
-                cube_e11[iii][jjj][kkk] = EulerData.at(idx).e11;
-                cube_e21[iii][jjj][kkk] = EulerData.at(idx).e21;
-                cube_e31[iii][jjj][kkk] = EulerData.at(idx).e31;
-            }
-        }
-    }
-
-    // now do the interpolation, with the cube, the counters from the indices,
-    // and the normalized width between the point locations and the closest cell left walls
-    double u_low  = (1-iw)*(1-jw)*cube_e11[0][0][0] + iw*(1-jw)*cube_e11[1][0][0] + iw*jw*cube_e11[1][1][0] + (1-iw)*jw*cube_e11[0][1][0];
-    double u_high = (1-iw)*(1-jw)*cube_e11[0][0][1] + iw*(1-jw)*cube_e11[1][0][1] + iw*jw*cube_e11[1][1][1] + (1-iw)*jw*cube_e11[0][1][1];
-    outputVal.e11 = (u_high-u_low)*kw + u_low;
-
-    u_low         = (1-iw)*(1-jw)*cube_e21[0][0][0] + iw*(1-jw)*cube_e21[1][0][0] + iw*jw*cube_e21[1][1][0] + (1-iw)*jw*cube_e21[0][1][0];
-    u_high        = (1-iw)*(1-jw)*cube_e21[0][0][1] + iw*(1-jw)*cube_e21[1][0][1] + iw*jw*cube_e21[1][1][1] + (1-iw)*jw*cube_e21[0][1][1];
-    outputVal.e21 = (u_high-u_low)*kw + u_low;
-    
-    u_low         = (1-iw)*(1-jw)*cube_e31[0][0][0] + iw*(1-jw)*cube_e31[1][0][0] + iw*jw*cube_e31[1][1][0] + (1-iw)*jw*cube_e31[0][1][0];
-    u_high        = (1-iw)*(1-jw)*cube_e31[0][0][1] + iw*(1-jw)*cube_e31[1][0][1] + iw*jw*cube_e31[1][1][1] + (1-iw)*jw*cube_e31[0][1][1];
-    outputVal.e31 = (u_high-u_low)*kw + u_low;
-
-    return outputVal;
-
-}
-
-// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-// the extra dataName is so that if the input is sigma2, the value is not allowed to be zero, but is set to two orders of magnitude smaller than eps
-diagonal Eulerian::interp3D(const std::vector<diagonal>& EulerData,const std::string& dataName)
-{
-    
-    // initialize the output value
-    diagonal outputVal;
-    outputVal.e11 = 0.0;
-    outputVal.e22 = 0.0;
-    outputVal.e33 = 0.0;
-    
-
-    // first set a cube of size two to zero.
-    // This is important because if nx, ny, or nz are only size 1, referencing two spots in cube won't reference outside the array.
-    // the next steps are to figure out the right indices to grab the values for cube from the data, 
-    // where indices are forced to be special if nx, ny, or nz are zero.
-    // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
-
-    
-    // now set the cube to zero, then fill it using the indices and the counters from the indices
-    double cube_e11[2][2][2] = {0.0};
-    double cube_e22[2][2][2] = {0.0};
-    double cube_e33[2][2][2] = {0.0};
-
-    // now set the cube values
-    for(int kkk = 0; kkk <= kp; kkk++)
-    {
-        for(int jjj = 0; jjj <= jp; jjj++)
-        {
-            for(int iii = 0; iii <= ip; iii++)
-            {
-                // set the actual indices to use for the linearized Euler data
-                int idx = (kk+kkk)*ny*nx + (jj+jjj)*nx + (ii+iii);
-                cube_e11[iii][jjj][kkk] = EulerData.at(idx).e11;
-                cube_e22[iii][jjj][kkk] = EulerData.at(idx).e22;
-                cube_e33[iii][jjj][kkk] = EulerData.at(idx).e33;
-            }
-        }
-    }
-
-    // now do the interpolation, with the cube, the counters from the indices,
-    // and the normalized width between the point locations and the closest cell left walls
-    double u_low  = (1-iw)*(1-jw)*cube_e11[0][0][0] + iw*(1-jw)*cube_e11[1][0][0] + iw*jw*cube_e11[1][1][0] + (1-iw)*jw*cube_e11[0][1][0];
-    double u_high = (1-iw)*(1-jw)*cube_e11[0][0][1] + iw*(1-jw)*cube_e11[1][0][1] + iw*jw*cube_e11[1][1][1] + (1-iw)*jw*cube_e11[0][1][1];
-    outputVal.e11 = (u_high-u_low)*kw + u_low;
-
-    u_low         = (1-iw)*(1-jw)*cube_e22[0][0][0] + iw*(1-jw)*cube_e22[1][0][0] + iw*jw*cube_e22[1][1][0] + (1-iw)*jw*cube_e22[0][1][0];
-    u_high        = (1-iw)*(1-jw)*cube_e22[0][0][1] + iw*(1-jw)*cube_e22[1][0][1] + iw*jw*cube_e22[1][1][1] + (1-iw)*jw*cube_e22[0][1][1];
-    outputVal.e22 = (u_high-u_low)*kw + u_low;
-    
-    u_low         = (1-iw)*(1-jw)*cube_e33[0][0][0] + iw*(1-jw)*cube_e33[1][0][0] + iw*jw*cube_e33[1][1][0] + (1-iw)*jw*cube_e33[0][1][0];
-    u_high        = (1-iw)*(1-jw)*cube_e33[0][0][1] + iw*(1-jw)*cube_e33[1][0][1] + iw*jw*cube_e33[1][1][1] + (1-iw)*jw*cube_e33[0][1][1];
-    outputVal.e33 = (u_high-u_low)*kw + u_low;
-
-    // make sure sigma is always bigger than zero, and two orders of magnitude smaller than Eps
-    if( dataName == "sigma2" )
-    {
-        if( outputVal.e11 == 0.0 )
-        {
-            outputVal.e11 = 1e-8;
-        }
-        if( outputVal.e22 == 0.0 )
-        {
-            outputVal.e22 = 1e-8;
-        }
-        if( outputVal.e33 == 0.0 )
-        {
-            outputVal.e33 = 1e-8;
-        }
-    }
-
-    return outputVal;
-    
-}
-
-// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-matrix6 Eulerian::interp3D(const std::vector<matrix6>& EulerData)
-{
-
-    // initialize the output value
-    matrix6 outputVal;
-    outputVal.e11 = 0.0;
-    outputVal.e12 = 0.0;
-    outputVal.e13 = 0.0;
-    outputVal.e22 = 0.0;
-    outputVal.e23 = 0.0;
-    outputVal.e33 = 0.0;
-    
-
-    // first set a cube of size two to zero.
-    // This is important because if nx, ny, or nz are only size 1, referencing two spots in cube won't reference outside the array.
-    // the next steps are to figure out the right indices to grab the values for cube from the data, 
-    // where indices are forced to be special if nx, ny, or nz are zero.
-    // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
-
-    
-    // now set the cube to zero, then fill it using the indices and the counters from the indices
-    double cube_e11[2][2][2] = {0.0};
-    double cube_e12[2][2][2] = {0.0};
-    double cube_e13[2][2][2] = {0.0};
-    double cube_e22[2][2][2] = {0.0};
-    double cube_e23[2][2][2] = {0.0};
-    double cube_e33[2][2][2] = {0.0};
-
-    // now set the cube values
-    for(int kkk = 0; kkk <= kp; kkk++)
-    {
-        for(int jjj = 0; jjj <= jp; jjj++)
-        {
-            for(int iii = 0; iii <= ip; iii++)
-            {
-                // set the actual indices to use for the linearized Euler data
-                int idx = (kk+kkk)*ny*nx + (jj+jjj)*nx + (ii+iii);
-                cube_e11[iii][jjj][kkk] = EulerData.at(idx).e11;
-                cube_e12[iii][jjj][kkk] = EulerData.at(idx).e12;
-                cube_e13[iii][jjj][kkk] = EulerData.at(idx).e13;
-                cube_e22[iii][jjj][kkk] = EulerData.at(idx).e22;
-                cube_e23[iii][jjj][kkk] = EulerData.at(idx).e23;
-                cube_e33[iii][jjj][kkk] = EulerData.at(idx).e33;
-            }
-        }
-    }
-
-    // now do the interpolation, with the cube, the counters from the indices,
-    // and the normalized width between the point locations and the closest cell left walls
-    double u_low  = (1-iw)*(1-jw)*cube_e11[0][0][0] + iw*(1-jw)*cube_e11[1][0][0] + iw*jw*cube_e11[1][1][0] + (1-iw)*jw*cube_e11[0][1][0];
-    double u_high = (1-iw)*(1-jw)*cube_e11[0][0][1] + iw*(1-jw)*cube_e11[1][0][1] + iw*jw*cube_e11[1][1][1] + (1-iw)*jw*cube_e11[0][1][1];
-    outputVal.e11 = (u_high-u_low)*kw + u_low;
-
-    u_low         = (1-iw)*(1-jw)*cube_e12[0][0][0] + iw*(1-jw)*cube_e12[1][0][0] + iw*jw*cube_e12[1][1][0] + (1-iw)*jw*cube_e12[0][1][0];
-    u_high        = (1-iw)*(1-jw)*cube_e12[0][0][1] + iw*(1-jw)*cube_e12[1][0][1] + iw*jw*cube_e12[1][1][1] + (1-iw)*jw*cube_e12[0][1][1];
-    outputVal.e12 = (u_high-u_low)*kw + u_low;
-
-    u_low         = (1-iw)*(1-jw)*cube_e13[0][0][0] + iw*(1-jw)*cube_e13[1][0][0] + iw*jw*cube_e13[1][1][0] + (1-iw)*jw*cube_e13[0][1][0];
-    u_high        = (1-iw)*(1-jw)*cube_e13[0][0][1] + iw*(1-jw)*cube_e13[1][0][1] + iw*jw*cube_e13[1][1][1] + (1-iw)*jw*cube_e13[0][1][1];
-    outputVal.e13 = (u_high-u_low)*kw + u_low;
-
-    u_low         = (1-iw)*(1-jw)*cube_e22[0][0][0] + iw*(1-jw)*cube_e22[1][0][0] + iw*jw*cube_e22[1][1][0] + (1-iw)*jw*cube_e22[0][1][0];
-    u_high        = (1-iw)*(1-jw)*cube_e22[0][0][1] + iw*(1-jw)*cube_e22[1][0][1] + iw*jw*cube_e22[1][1][1] + (1-iw)*jw*cube_e22[0][1][1];
-    outputVal.e22 = (u_high-u_low)*kw + u_low;
-
-    u_low         = (1-iw)*(1-jw)*cube_e23[0][0][0] + iw*(1-jw)*cube_e23[1][0][0] + iw*jw*cube_e23[1][1][0] + (1-iw)*jw*cube_e23[0][1][0];
-    u_high        = (1-iw)*(1-jw)*cube_e23[0][0][1] + iw*(1-jw)*cube_e23[1][0][1] + iw*jw*cube_e23[1][1][1] + (1-iw)*jw*cube_e23[0][1][1];
-    outputVal.e23 = (u_high-u_low)*kw + u_low;
-    
-    u_low         = (1-iw)*(1-jw)*cube_e33[0][0][0] + iw*(1-jw)*cube_e33[1][0][0] + iw*jw*cube_e33[1][1][0] + (1-iw)*jw*cube_e33[0][1][0];
-    u_high        = (1-iw)*(1-jw)*cube_e33[0][0][1] + iw*(1-jw)*cube_e33[1][0][1] + iw*jw*cube_e33[1][1][1] + (1-iw)*jw*cube_e33[0][1][1];
-    outputVal.e33 = (u_high-u_low)*kw + u_low;
-
-    return outputVal;
-
-}
-
-// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-Wind Eulerian::interp3D(const std::vector<Wind>& EulerData)
-{
-
-    // initialize the output value
-    Wind outputVal;
-    outputVal.u = 0.0;
-    outputVal.v = 0.0;
-    outputVal.w = 0.0;
-    
-
-    // first set a cube of size two to zero.
-    // This is important because if nx, ny, or nz are only size 1, referencing two spots in cube won't reference outside the array.
-    // the next steps are to figure out the right indices to grab the values for cube from the data, 
-    // where indices are forced to be special if nx, ny, or nz are zero.
-    // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
-
-    
-    // now set the cube to zero, then fill it using the indices and the counters from the indices
-    double cube_u[2][2][2] = {0.0};
-    double cube_v[2][2][2] = {0.0};
-    double cube_w[2][2][2] = {0.0};
-
-    // now set the cube values
-    for(int kkk = 0; kkk <= kp; kkk++)
-    {
-        for(int jjj = 0; jjj <= jp; jjj++)
-        {
-            for(int iii = 0; iii <= ip; iii++)
-            {
-                // set the actual indices to use for the linearized Euler data
-                int idx = (kk+kkk)*ny*nx + (jj+jjj)*nx + (ii+iii);
-                cube_u[iii][jjj][kkk] = EulerData.at(idx).u;
-                cube_v[iii][jjj][kkk] = EulerData.at(idx).v;
-                cube_w[iii][jjj][kkk] = EulerData.at(idx).w;
-            }
-        }
-    }
-
-    // now do the interpolation, with the cube, the counters from the indices,
-    // and the normalized width between the point locations and the closest cell left walls
-    double u_low  = (1-iw)*(1-jw)*cube_u[0][0][0] + iw*(1-jw)*cube_u[1][0][0] + iw*jw*cube_u[1][1][0] + (1-iw)*jw*cube_u[0][1][0];
-    double u_high = (1-iw)*(1-jw)*cube_u[0][0][1] + iw*(1-jw)*cube_u[1][0][1] + iw*jw*cube_u[1][1][1] + (1-iw)*jw*cube_u[0][1][1];
-    outputVal.u = (u_high-u_low)*kw + u_low;
-
-    u_low         = (1-iw)*(1-jw)*cube_v[0][0][0] + iw*(1-jw)*cube_v[1][0][0] + iw*jw*cube_v[1][1][0] + (1-iw)*jw*cube_v[0][1][0];
-    u_high        = (1-iw)*(1-jw)*cube_v[0][0][1] + iw*(1-jw)*cube_v[1][0][1] + iw*jw*cube_v[1][1][1] + (1-iw)*jw*cube_v[0][1][1];
-    outputVal.v = (u_high-u_low)*kw + u_low;
-    
-    u_low         = (1-iw)*(1-jw)*cube_w[0][0][0] + iw*(1-jw)*cube_w[1][0][0] + iw*jw*cube_w[1][1][0] + (1-iw)*jw*cube_w[0][1][0];
-    u_high        = (1-iw)*(1-jw)*cube_w[0][0][1] + iw*(1-jw)*cube_w[1][0][1] + iw*jw*cube_w[1][1][1] + (1-iw)*jw*cube_w[0][1][1];
-    outputVal.w = (u_high-u_low)*kw + u_low;
-
-    return outputVal;
-
-}
 
 void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outputFolder)
 {
@@ -684,7 +446,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nx; idx++)
     {
-        fprintf(fzout,"%lf\n",urb->grid.x.at(idx));
+        fprintf(fzout,"%lf\n",urb->x.at(idx));
     }
     fclose(fzout);
 
@@ -692,7 +454,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < ny; idx++)
     {
-        fprintf(fzout,"%lf\n",urb->grid.y.at(idx));
+        fprintf(fzout,"%lf\n",urb->y.at(idx));
     }
     fclose(fzout);
 
@@ -700,7 +462,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nz; idx++)
     {
-        fprintf(fzout,"%lf\n",urb->grid.z.at(idx));
+        fprintf(fzout,"%lf\n",urb->z.at(idx));
     }
     fclose(fzout);
 
@@ -714,7 +476,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",urb->wind.at(kk*nx*ny + jj*nx + ii).u);
+                fprintf(fzout,"%lf\n",urb->u.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -728,7 +490,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",urb->wind.at(kk*nx*ny + jj*nx + ii).v);
+                fprintf(fzout,"%lf\n",urb->v.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -742,7 +504,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",urb->wind.at(kk*nx*ny + jj*nx + ii).w);
+                fprintf(fzout,"%lf\n",urb->w.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -756,7 +518,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",turb->sig.at(kk*nx*ny + jj*nx + ii).e33);
+                fprintf(fzout,"%lf\n",turb->sig_z.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -784,7 +546,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",turb->tau.at(kk*nx*ny + jj*nx + ii).e11);
+                fprintf(fzout,"%lf\n",turb->txx.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -798,7 +560,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",turb->tau.at(kk*nx*ny + jj*nx + ii).e12);
+                fprintf(fzout,"%lf\n",turb->txy.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -812,7 +574,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",turb->tau.at(kk*nx*ny + jj*nx + ii).e13);
+                fprintf(fzout,"%lf\n",turb->txz.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -826,7 +588,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",turb->tau.at(kk*nx*ny + jj*nx + ii).e22);
+                fprintf(fzout,"%lf\n",turb->tyy.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -840,7 +602,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",turb->tau.at(kk*nx*ny + jj*nx + ii).e23);
+                fprintf(fzout,"%lf\n",turb->tyz.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -854,7 +616,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",turb->tau.at(kk*nx*ny + jj*nx + ii).e33);
+                fprintf(fzout,"%lf\n",turb->tzz.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -870,35 +632,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",taudx.at(kk*nx*ny + jj*nx + ii).e11);
-            }
-        }
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "/eulerian_dtxydx.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int kk = 0; kk < nz; kk++)
-    {
-        for(int jj = 0; jj < ny; jj++)
-        {
-            for(int ii = 0; ii < nx; ii++)
-            {
-                fprintf(fzout,"%lf\n",taudx.at(kk*nx*ny + jj*nx + ii).e12);
-            }
-        }
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "/eulerian_dtxzdx.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int kk = 0; kk < nz; kk++)
-    {
-        for(int jj = 0; jj < ny; jj++)
-        {
-            for(int ii = 0; ii < nx; ii++)
-            {
-                fprintf(fzout,"%lf\n",taudx.at(kk*nx*ny + jj*nx + ii).e13);
+                fprintf(fzout,"%lf\n",dtxxdx.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -912,35 +646,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",taudy.at(kk*nx*ny + jj*nx + ii).e12);
-            }
-        }
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "/eulerian_dtyydy.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int kk = 0; kk < nz; kk++)
-    {
-        for(int jj = 0; jj < ny; jj++)
-        {
-            for(int ii = 0; ii < nx; ii++)
-            {
-                fprintf(fzout,"%lf\n",taudy.at(kk*nx*ny + jj*nx + ii).e22);
-            }
-        }
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "/eulerian_dtyzdy.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int kk = 0; kk < nz; kk++)
-    {
-        for(int jj = 0; jj < ny; jj++)
-        {
-            for(int ii = 0; ii < nx; ii++)
-            {
-                fprintf(fzout,"%lf\n",taudy.at(kk*nx*ny + jj*nx + ii).e23);
+                fprintf(fzout,"%lf\n",dtxydy.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -954,7 +660,36 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",taudz.at(kk*nx*ny + jj*nx + ii).e13);
+                fprintf(fzout,"%lf\n",dtxzdz.at(kk*nx*ny + jj*nx + ii));
+            }
+        }
+    }
+    fclose(fzout);
+
+
+    currentFile = outputFolder + "/eulerian_dtxydx.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",dtxydx.at(kk*nx*ny + jj*nx + ii));
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_dtyydy.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",dtyydy.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -968,7 +703,36 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",taudz.at(kk*nx*ny + jj*nx + ii).e23);
+                fprintf(fzout,"%lf\n",dtyzdz.at(kk*nx*ny + jj*nx + ii));
+            }
+        }
+    }
+    fclose(fzout);
+
+
+    currentFile = outputFolder + "/eulerian_dtxzdx.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",dtxzdx.at(kk*nx*ny + jj*nx + ii));
+            }
+        }
+    }
+    fclose(fzout);
+
+    currentFile = outputFolder + "/eulerian_dtyzdy.txt";
+    fzout = fopen(currentFile.c_str(), "w");
+    for(int kk = 0; kk < nz; kk++)
+    {
+        for(int jj = 0; jj < ny; jj++)
+        {
+            for(int ii = 0; ii < nx; ii++)
+            {
+                fprintf(fzout,"%lf\n",dtyzdy.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -982,7 +746,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",taudz.at(kk*nx*ny + jj*nx + ii).e33);
+                fprintf(fzout,"%lf\n",dtzzdz.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -998,7 +762,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",flux_div.at(kk*nx*ny + jj*nx + ii).e11);
+                fprintf(fzout,"%lf\n",flux_div_x.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -1012,7 +776,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",flux_div.at(kk*nx*ny + jj*nx + ii).e21);
+                fprintf(fzout,"%lf\n",flux_div_y.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
@@ -1026,44 +790,15 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
         {
             for(int ii = 0; ii < nx; ii++)
             {
-                fprintf(fzout,"%lf\n",flux_div.at(kk*nx*ny + jj*nx + ii).e31);
+                fprintf(fzout,"%lf\n",flux_div_z.at(kk*nx*ny + jj*nx + ii));
             }
         }
     }
     fclose(fzout);
+    
 
     // now that all is finished, clean up the file pointer
     fzout = NULL;
 
 }
 
-
-
-
-void Eulerian::display(const matrix9& mat){
-    std::cout<<std::endl;
-    std::cout<<mat.e11<<"  "<<mat.e12<<"  "<<mat.e13<<"  "<<std::endl;
-    std::cout<<mat.e21<<"  "<<mat.e22<<"  "<<mat.e23<<"  "<<std::endl;
-    std::cout<<mat.e31<<"  "<<mat.e32<<"  "<<mat.e33<<"  "<<std::endl;
-}
-
-void Eulerian::display(const matrix6& mat){
-    std::cout<<std::endl;
-    std::cout<<mat.e11<<"  "<<mat.e12<<"  "<<mat.e13<<"  "<<std::endl;
-    std::cout<<mat.e12<<"  "<<mat.e22<<"  "<<mat.e23<<"  "<<std::endl;
-    std::cout<<mat.e13<<"  "<<mat.e23<<"  "<<mat.e33<<"  "<<std::endl;
-}
-
-void Eulerian::display(const vec3& vec){
-    std::cout<<std::endl;
-    std::cout<<vec.e11<<std::endl;
-    std::cout<<vec.e21<<std::endl;
-    std::cout<<vec.e31<<std::endl;
-}
-
-void Eulerian::display(const diagonal& mat){
-    std::cout<<std::endl;
-    std::cout<<mat.e11<<"  "<<"0"<<"  "<<"0"<<"  "<<std::endl;
-    std::cout<<"0"<<"  "<<mat.e22<<"  "<<"0"<<"  "<<std::endl;
-    std::cout<<"0"<<"  "<<"0"<<"  "<<mat.e33<<"  "<<std::endl;
-}

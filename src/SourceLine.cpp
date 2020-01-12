@@ -68,15 +68,14 @@ int SourceLine::emitParticles( const float dt,
                 particle cPar;
 
                 // generate random point on line between m_pt0 and m_pt1
-                vec3 diff;
-                diff.e11 = posX_1 - posX_0;
-                diff.e21 = posY_1 - posY_0;
-                diff.e31 = posZ_1 - posZ_0;
+                double diffX = posX_1 - posX_0;
+                double diffY = posY_1 - posY_0;
+                double diffZ = posZ_1 - posZ_0;
 
                 float t = drand48();
-                cPar.pos.e11 = posX_0 + t * diff.e11;
-                cPar.pos.e21 = posY_0 + t * diff.e21;
-                cPar.pos.e31 = posZ_0 + t * diff.e31;
+                cPar.xPos = posX_0 + t * diffX;
+                cPar.yPos = posY_0 + t * diffY;
+                cPar.zPos = posZ_0 + t * diffZ;
 
                 cPar.tStrt = currTime;
                 
