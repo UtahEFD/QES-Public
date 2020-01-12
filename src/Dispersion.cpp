@@ -145,7 +145,7 @@ void Dispersion::getInputSources(PlumeInputData* PID)
 }
 
 
-double getMaxVariance(const std::vector<double>& sigma_x_vals,const std::vector<double>& sigma_y_vals,const std::vector<double>& sigma_z_vals)
+double Dispersion::getMaxVariance(const std::vector<double>& sigma_x_vals,const std::vector<double>& sigma_y_vals,const std::vector<double>& sigma_z_vals)
 {
     // set the initial maximum value to a very small number. The idea is to go through each value of the data,
     // setting the current value to the max value each time the current value is bigger than the old maximum value
@@ -154,7 +154,7 @@ double getMaxVariance(const std::vector<double>& sigma_x_vals,const std::vector<
     
     // go through each vector to find the maximum value
     // each one could potentially be different sizes if the grid is not 3D
-    for(int idx = 0; idx < sigma_x_vals; idx++)
+    for(int idx = 0; idx < sigma_x_vals.size(); idx++)
     {
         if(sigma_x_vals.at(idx) > maximumVal)
         {
@@ -162,7 +162,7 @@ double getMaxVariance(const std::vector<double>& sigma_x_vals,const std::vector<
         }
     }
 
-    for(int idx = 0; idx < sigma_y_vals; idx++)
+    for(int idx = 0; idx < sigma_y_vals.size(); idx++)
     {
         if(sigma_y_vals.at(idx) > maximumVal)
         {
@@ -170,7 +170,7 @@ double getMaxVariance(const std::vector<double>& sigma_x_vals,const std::vector<
         }
     }
 
-    for(int idx = 0; idx < sigma_z_vals; idx++)
+    for(int idx = 0; idx < sigma_z_vals.size(); idx++)
     {
         if(sigma_z_vals.at(idx) > maximumVal)
         {

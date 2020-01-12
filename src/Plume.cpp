@@ -605,7 +605,7 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
     if( invar_xx > invarianceTol && invar_yy > invarianceTol && invar_zz > invarianceTol )
     {
         //std::cout << "tau already realizable" << std::endl;
-        return tau;     // tau is already realizable
+        return;     // tau is already realizable
     }
 
     // since tau is not already realizable, need to make it realizeable
@@ -632,7 +632,7 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
     // I've had trouble with this taking too long
     //  if it isn't realizable, so maybe another approach for when the iterations are reached might be smart
     int iter = 0;
-    while( (invar_xx < invarianceTol || invar_yy < invarianceTol || invarzz < invarianceTol) && iter < 1000 )
+    while( (invar_xx < invarianceTol || invar_yy < invarianceTol || invar_zz < invarianceTol) && iter < 1000 )
     {
         iter = iter + 1;
 
