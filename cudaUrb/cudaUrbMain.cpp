@@ -11,11 +11,13 @@
 
 #include "URBInputData.h"
 #include "URBGeneralData.h"
+//#include "URBOutputData.h"
+#include "URBOutput_VizFields.h"
+#include "URBOutput_TURBInputFile.h"
 
 #include "Solver.h"
 #include "CPUSolver.h"
 #include "DynamicParallelism.h"
-#include "Output.hpp"
 
 namespace pt = boost::property_tree;
 
@@ -53,18 +55,28 @@ int main(int argc, char *argv[])
     // Parse the base XML QUIC file -- contains simulation parameters
     URBInputData* UID = parseXMLTree(arguments.quicFile);
     if ( !UID ) {
-        std::cerr << "QUIC Input file: " << arguments.quicFile << " not able to be read successfully." << std::endl;
+        std::cerr << "QUIC Input file: " << arguments.quicFile <<
+	  " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    // Files was successfully read, so create instance of output class
-    Output* output = nullptr;
-    if (UID->fileOptions->outputFlag==1) {
-        output = new Output(arguments.netCDFFile);
-    }
-
     // Generate the general URB data from all inputs
-    URBGeneralData* UGD = new URBGeneralData(UID, output);
+    // - turn on mixing length calculations for now if enabled
+    // eventually, we will remove this flag and 2nd argument
+    if (arguments.calcMixingLength) {
+        std::cout << "Enabling mixing length calculation." << std::endl;
+    }
+    URBGeneralData* UGD = new URBGeneralData(UID, arguments.calcMixingLength);
+
+    // create URB output classes
+    URBOutput_VizFields* outputVz = nullptr;
+    if (arguments.netCDFFileVz != "") {
+      outputVz = new URBOutput_VizFields(UGD,UID,arguments.netCDFFileVz);
+    }
+    URBOutput_TURBInputFile* outputWk = nullptr;
+    if (arguments.netCDFFileWk != "") {
+      outputWk = new URBOutput_TURBInputFile(UGD,arguments.netCDFFileWk);
+    }
 
     // //////////////////////////////////////////
     //
@@ -110,9 +122,13 @@ int main(int argc, char *argv[])
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    if (output) {
-        UGD->save();
+    if (outputVz) {
+      outputVz->save(UGD);
     }
+    if (outputWk) {
+      outputWk->save(UGD);
+    }
+
     exit(EXIT_SUCCESS);
 }
 

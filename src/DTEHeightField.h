@@ -65,12 +65,17 @@ public:
    * @param dz -size of a cell in the Z axis
    * @return -A list of ID values for all cut cells.
    */
-  std::vector<int> setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy, float dz) const;
+  std::vector<int> setCells(Cell* cells, int nx, int ny, int nz, float dx, float dy,
+                            std::vector<float> &dz_array, std::vector<float> z_face,
+                            float halo_x, float halo_y) const;
 
   /*
    * This function frees the pafScanline. It should be called after all DEM querying has taken place.
    */
   void closeScanner();
+
+  int m_nXSize, m_nYSize;
+  float pixelSizeX, pixelSizeY;
 
 private:
 
@@ -88,7 +93,7 @@ private:
    * @param corners -an array containing the points that representing the DEM elevation at each of the cells corners
    * @param cutCells -a list of all cells which the terrain goes through
    */
-  void setCellPoints(Cell* cells, int i, int j, int nx, int ny, int nz, float dz, Vector3<float> corners[], std::vector<int>& cutCells) const;
+  void setCellPoints(Cell* cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3<float> corners[], std::vector<int>& cutCells) const;
 
   void load();
 
@@ -105,16 +110,28 @@ private:
   float queryHeight( float *scanline, int j, int k )  const
   {
     float height;
-    if ( j>m_nXSize || k>m_nYSize)
-    //if (j * m_nXSize + k >= m_nXSize * m_nYSize)
+    if ( j >= m_nXSize || k >= m_nYSize)
+    {
       height = 0.0;
+    }
+    //if (j * m_nXSize + k >= m_nXSize * m_nYSize
     else
+    {
       height = scanline[ k * m_nXSize + j ];
+    }
+
+    //std::cout << "domainx:   " << m_nXSize << std::endl;
+  	//std::cout << "domainy:   " << m_nYSize << std::endl;
 
     if (!compareEquality( height, m_rbNoData ))
+    {
       height = height * m_rbScale + m_rbOffset;
+    }
     else
+    {
       height = m_rbMin;
+    }
+
 
     return height;
   }
@@ -138,7 +155,7 @@ private:
   GDALDataset  *m_poDataset;
   double m_geoTransform[6];
 
-  int m_nXSize, m_nYSize;
+  //int m_nXSize, m_nYSize;
   double m_rbScale, m_rbOffset, m_rbNoData, m_rbMin;
 
   // Texture relative information
@@ -146,7 +163,7 @@ private:
   int m_imageXSize, m_imageYSize;
   double m_imageGeoTransform[6];
 
-  float pixelSizeX, pixelSizeY;
+  //float pixelSizeX, pixelSizeY;
   float cellSizeX, cellSizeY;
 
   std::vector<Triangle*> m_triList;

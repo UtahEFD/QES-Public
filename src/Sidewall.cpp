@@ -146,7 +146,7 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
                   v0_right = UGD->v0[icell_face];
                 }
                 // If the cell is air, upwind or canopy vegetation
-                else if (UGD->icellflag[icell_cent] == 1 || UGD->icellflag[icell_cent] == 3 || UGD->icellflag[icell_cent] == 9)
+                else if (UGD->icellflag[icell_cent] == 1 || UGD->icellflag[icell_cent] == 3 || UGD->icellflag[icell_cent] == 11)
                 {
                 }
                 // If the cell is anything else (not eligible for the sidewall)
@@ -238,7 +238,7 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
                     internal_BL_width = y_pref*sqrt(xp_c);
                     if (abs(yp_c) <= shell_width || abs(yp_c) <= internal_BL_width)
                     {
-                      UGD->icellflag[icell_cent] = 10;        // Cell marked as sidewall cell
+                      UGD->icellflag[icell_cent] = 9;        // Cell marked as sidewall cell
                     }
                   }
                 }
@@ -263,7 +263,7 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
                   v0_left = UGD->v0[icell_face];
                 }
                 // If the cell is air, upwind or canopy vegetation
-                else if (UGD->icellflag[icell_cent] == 1 || UGD->icellflag[icell_cent] == 3 || UGD->icellflag[icell_cent] == 9)
+                else if (UGD->icellflag[icell_cent] == 1 || UGD->icellflag[icell_cent] == 3 || UGD->icellflag[icell_cent] == 11)
                 {
                 }
                 // If the cell anything else (not eligible for the parameterization)
@@ -355,7 +355,7 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
                     internal_BL_width = y_pref*sqrt(xp_c);
                     if (abs(yp_c) <= shell_width || abs(yp_c) <= internal_BL_width)
                     {
-                      UGD->icellflag[icell_cent] = 10;            // Cell marked as sidewall cell
+                      UGD->icellflag[icell_cent] = 9;            // Cell marked as sidewall cell
                     }
                   }
                 }

@@ -1,14 +1,14 @@
 <simulationParameters>
-  <DEM>../scratch/SLC/n41w112_30m/n41w112_30m.tif</DEM>					<!-- Address to DEM location-->
-  <SHP>../scratch/SLC/slc_cut.shp</SHP>				<!-- Address to shapefile location-->
-  <SHPBuildingLayer>slc_cut</SHPBuildingLayer>
+  <!--DEM>../scratch/SLC/n41w112_30m/n41w112_30m.tif</DEM-->					<!-- Address to DEM location-->
+  <SHP>../scratch/OKCSmallDomain/OKCSmallDomainJU2003.shp</SHP>				<!-- Address to shapefile location-->
+  <SHPBuildingLayer>OKCSmallDomainJU2003</SHPBuildingLayer>
   <heightFactor> 1.0 </heightFactor>					<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
 
   <halo_x> 40.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
   <halo_y> 40.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain)-->
 
-  <domain> 600 680 100</domain>				<!-- Number of cells in x,y and z directions-->
-  <cellSize> 2.0 2.0 2.0 </cellSize> 		<!-- Mesh resolution (meters)-->
+  <domain> 300 300 100</domain>				<!-- Number of cells in x,y and z directions-->
+  <cellSize> 5.0 5.0 2.0 </cellSize> 		<!-- Mesh resolution (meters)-->
 
   <verticalStretching> 0 </verticalStretching>		<!-- vertical stretching (0-uniform grid, 1-costum grid)-->
   <totalTimeIncrements> 1 </totalTimeIncrements> 				<!-- Number of time steps-->
@@ -19,9 +19,9 @@
   <wakeFlag> 2 </wakeFlag> 												<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle, 3-Area Scaled) -->
   <sidewallFlag> 0 </sidewallFlag> 								<!-- Sidewall flag (0-off, 1-on) -->
 
-  <maxIterations> 500 </maxIterations> 						<!-- Maximum number of iterations -->
+  <maxIterations> 10 </maxIterations> 						<!-- Maximum number of iterations -->
   <residualReduction> 3 </residualReduction> 			<!-- Residual Reduction (Orders of Magnitude) -->
-  <meshTypeFlag> 0 </meshTypeFlag> 								<!-- Type of meshing scheme (0-Stair step (origional QUIC), 1-Cut-cell method -->
+  <meshTypeFlag> 1 </meshTypeFlag> 								<!-- Type of meshing scheme (0-Stair step (origional QUIC), 1-Cut-cell method -->
   <useDiffusion> 0 </useDiffusion>
   <domainRotation> 0 </domainRotation>  					<!-- Rotation angle of domain relative to true north -->
 

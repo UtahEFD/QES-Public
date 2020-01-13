@@ -40,6 +40,7 @@ public:
     int meshTypeFlag;
     float halo_x = 0.0;
     float halo_y = 0.0;
+    float heightFactor = 1.0;
 
     // DTE - digital elevation model details
     std::string demFile;    // DEM file name
@@ -101,6 +102,8 @@ public:
         parsePrimitive<int>(false, UTMZoneLetter, "UTMZoneLetter");
         parsePrimitive<float>(false, halo_x, "halo_x");
         parsePrimitive<float>(false, halo_y, "halo_y");
+        parsePrimitive<float>(false, heightFactor, "heightFactor");
+        
         demFile = "";
         parsePrimitive<std::string>(false, demFile, "DEM");
 
@@ -162,7 +165,7 @@ public:
 
             // Read polygon node coordinates and building height from shapefile
             SHPData = new ESRIShapefile( shpFile, shpBuildingLayerName,
-                                         shpPolygons, shpBuildingHeight );
+                                         shpPolygons, shpBuildingHeight, heightFactor );
         }
     }
 };
