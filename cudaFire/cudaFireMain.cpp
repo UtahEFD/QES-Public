@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
         
         // loop 2 times for fire
         int loop = 0;
-        while (loop<1) {
+        while (loop<2) {
             
             // run Balbi model to get new w0
             fire->run(solver, UGD);
@@ -191,9 +191,10 @@ int main(int argc, char *argv[])
             // run wind solver
             solver->solve(UID, UGD, !arguments.solveWind);
             
-            // set u0,v0 to current solution
-            UGD->u0 = UGD->u;
-            UGD->v0 = UGD->v;
+            // Superimpose u0 and v0 onto windfield
+            //UGD->u0 = UGD->u;
+            //UGD->v0 = UGD->v;
+	    
             
             //increment fire loop
             loop += 1;

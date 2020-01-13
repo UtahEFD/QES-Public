@@ -10,6 +10,8 @@
 
 using namespace std;
 
+
+double PI = 3.14159265359;
 Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     
     // get domain information
@@ -31,6 +33,12 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     xNorm.resize((nx-1)*(ny-1));
     yNorm.resize((nx-1)*(ny-1));
     Force.resize((nx-1)*(ny-1));
+
+    // set-up potential field array
+    Pot_u.resize(nx*ny*nz);
+    Pot_v.resize(nx*ny*nz);
+    Pot_w.resize(nx*ny*nz);
+
 
     /**
      * Set initial fire info
@@ -210,6 +218,44 @@ double Fire :: computeTimeStep() {
  */
 void Fire :: run(Solver* solver, URBGeneralData* UGD) {
     /**
+     * Read netCDF file for Potential Field from heat release
+     **/
+    // Open netCDF for Potential Field as read only
+    NcFile Potential("../data/HeatPot.nc", NcFile::read);
+
+    // Get size of netCDF data
+    int pot_z = Potential.getVar("u_r").getDim(0).getSize();
+    int pot_r = Potential.getVar("u_r").getDim(1).getSize();
+    int pot_G = Potential.getVar("G").getDim(0).getSize();
+    int pot_rStar = Potential.getVar("rStar").getDim(0).getSize();
+    int pot_zStar = Potential.getVar("zStar").getDim(0).getSize();
+    // Allocate variable arrays
+    std::vector<double> u_r(pot_z * pot_r);
+    std::vector<double> u_z(pot_z * pot_r);
+    std::vector<double> G(pot_G);
+    std::vector<double> Gprime(pot_G);
+    std::vector<double> rStar(pot_rStar);
+    std::vector<double> zStar(pot_zStar);
+    // Read start index and length to read
+    std::vector<size_t> startIdxField = {0,0};
+    std::vector<size_t> countsField = {static_cast<unsigned long>(pot_z),
+                                       static_cast<unsigned long>(pot_r)};
+
+
+    // Get variables from netCDF file
+    Potential.getVar("u_r").getVar(startIdxField, countsField, u_r.data());
+    Potential.getVar("u_z").getVar(startIdxField, countsField, u_z.data());
+
+    Potential.getVar("G").getVar({0}, {pot_G}, G.data());
+    Potential.getVar("Gprime").getVar({0}, {pot_G}, Gprime.data());
+    Potential.getVar("rStar").getVar({0}, {pot_rStar}, rStar.data());
+    Potential.getVar("zStar").getVar({0}, {pot_zStar}, zStar.data());
+
+    // dr and dz, assume linear spacing between
+    float drStar = rStar[1]-rStar[0];
+    float dzStar = zStar[1]-zStar[0];
+
+    /**
      * Calculate level set gradient and norm (Chapter 6, Sethian 2008)
      */
     double dmx, dpx, dmy, dpy, n_star_x, n_star_y;
@@ -279,7 +325,11 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
             return f.state.burn_flag == burn;
         }
     };
-    
+    // reset potential fields
+    std::fill (Pot_u.begin(),Pot_u.end(),0);
+    std::fill (Pot_v.begin(),Pot_v.end(),0);
+    std::fill (Pot_w.begin(),Pot_w.end(),0);
+
     // get indices of burning cells
     std::vector<FireCell>::iterator it = std::find_if(fire_cells.begin(),fire_cells.end(),find_burn(1));
     while ( it != fire_cells.end()) {
@@ -331,8 +381,91 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
         struct FireProperties fp = balbi(fuel,u,v,x_norm,y_norm,0.0,0.0650);
         fire_cells[id].properties = fp;
         
+	/**
+	 * Calculate Potential field based on heat release
+	 * Baum and McCaffrey plume model
+	**/
+
+
+      
+	// Loop through horizontal domain
+	double ur, uz; 
+	double u_p; 	 					///< u velocity from potential field in target cell
+	double v_p; 						///< v velocity from potential field in target cell
+	double w_p;						///< w velocity from potential field in target cell
+	for (int ipot = 0; ipot<nx-1; ipot++) {
+	  for (int jpot = 0; jpot<ny-1; jpot++){
+	    double deltaX = (ipot-ii)*dx/fp.L_c;                      ///< distance between fire cell and target cell k in x direction
+	    double deltaY = (jpot-jj)*dy/fp.L_c;                      ///< distance between fire cell and target cell k in y direction
+	    double h_k = sqrt(deltaX*deltaX + deltaY*deltaY);         ///< radial distance from fire cell and target cell k in horizontal
+	    // Loop through vertical cells
+	    for (int kpot = 1; kpot<nz-1; kpot++) {
+	      double z_k = (kpot-1)*dz/fp.L_c;                            ///< vertical distance between fire cell and target cell k
+	      if (h_k == 0){
+
+		float zMinIdx = floor(z_k/dzStar);
+		float zMaxIdx = ceil(z_k/dzStar);
+
+		ur = 0.5*(u_r[zMinIdx*pot_r]+u_r[zMaxIdx*pot_r]);
+		uz = 0.5*(u_z[zMinIdx*pot_r]+u_z[zMaxIdx*pot_r]);0;
+		u_p = fp.U_c*ur;                         
+		v_p = fp.U_c*ur;                         
+		w_p = fp.U_c*uz;                         
+	      }
+	      else if (z_k <= 60 && h_k <= 30){ 
+		// indices for lookup
+		float rMinIdx = floor(h_k/drStar);
+		float rMaxIdx = ceil(h_k/drStar);
+		
+		float zMinIdx = floor(z_k/dzStar);
+		float zMaxIdx = ceil(z_k/dzStar);
+		
+		ur = 0.25*(u_r[rMinIdx+zMinIdx*pot_r]+u_r[rMinIdx+zMaxIdx*pot_r]+u_r[rMaxIdx+zMinIdx*pot_r]+u_r[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_r, linear interpolate between values
+		uz = 0.25*(u_z[rMinIdx+zMinIdx*pot_r]+u_z[rMinIdx+zMaxIdx*pot_r]+u_z[rMaxIdx+zMinIdx*pot_r]+u_z[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_z, linear interpolate between values
+		u_p = fp.U_c*ur*deltaX/h_k;          
+		v_p = fp.U_c*ur*deltaY/h_k;          
+		w_p = fp.U_c*uz;                         
+		
+	      }
+	      else {
+		// asymptote functions
+		double zeta = sqrt(h_k*h_k + z_k*z_k);
+		double x1 = (1+cos(atan(h_k/z_k)))/2;
+		// lookup indices for G(x) and G'(x) - spans 0.5 to 1.0
+		int gMinIdx = floor(pot_G*(x1-.5)/.5);
+		int gMaxIdx = ceil(pot_G*(x1-.5)/.5);
+		// values for G and G'
+                double g_x = 0.5*(G[gMinIdx]+G[gMaxIdx]);
+		double gprime_x = 0.5*(G[gMinIdx]+G[gMaxIdx]);
+
+		ur = h_k/(2*PI*pow(zeta,(3/2))) + pow(zeta,(-1/3))*((5/6)*(1-2*x1)/sqrt(x1*(1-x1))*g_x - sqrt(x1*(1-x1))*gprime_x);
+		uz = z_k/(2*PI*pow(zeta,(3/2))) + pow(zeta,(-1/3))*((5/3)*g_x + (1-2*x1)/2*gprime_x);
+		u_p = fp.U_c*ur*deltaX/h_k;            
+		v_p = fp.U_c*ur*deltaY/h_k;            
+		w_p = fp.U_c*uz;                      
+	      }		
+	      
+	      // modify potential fields
+	      
+	      int cellFacePot = ipot + jpot*nx + (kpot)*nx*ny;
+	      Pot_u[cellFacePot] += u_p;
+	      Pot_u[cellFacePot+1] += u_p;
+
+	      Pot_v[cellFacePot] += v_p;
+	      Pot_v[cellFacePot+nx] += v_p;
+
+	      Pot_w[cellFacePot] += w_p;
+	      //Pot_w[cellFacePot+nx*ny] += w_p;
+	      
+	      
+	    }
+	  }
+	}
+
+
         // modify w0 in solver (adjust to use faces)
-        for (int k=0; k<=kh; k++) {
+        /*
+	for (int k=0; k<=nz-2; k++) {
             
 	  int idf  = ii + (jj)*(nx) + (k+2)*(nx)*(ny);
             int idxF = idf+1;
@@ -344,28 +477,26 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
             double u = UGD->u0[idf];
             double v = UGD->v0[idf];
             double u_uw, v_uw;
-            
-            /*if (u>0 && iiB>=0) {
-                u_uw = UGD->u0[idxB];
-                UGD->u0[idf] = u_uw * std::exp(-K*dx);
-            }
-            if (u<0 && iiF <= nx) {
-                u_uw = UGD->u0[idxF];
-                UGD->u0[idf] = u_uw * std::exp(-K*dx);
-            }
-            if (v>0 && jjB>=0) {
-                v_uw = UGD->v0[idyB];
-                UGD->v0[idf] = v_uw * std::exp(-K*dy);
-            }
-            if (v<0 && jjF <= ny) {
-                v_uw = UGD->v0[idyF];
-                UGD->v0[idf] = v_uw * std::exp(-K*dy);
-            }
-            */
+              
             UGD->w0[idf] = fp.w;
 	    //UGD->w0[cell_face + (k+1)*nx*ny] = fp.w;
         }
+	*/
+	
     }
+    
+    // Modify u,v,w in solver
+    for (int i=0; i<nx; i++){
+      for (int j=0; j<ny; j++){
+	for (int k=0; k<nz; k++){
+	  int IDX = i+j*nx+k*nx*ny;
+	  UGD->u0[IDX] = UGD->u0[IDX] + Pot_u[IDX];
+	  UGD->v0[IDX] = UGD->v0[IDX] + Pot_v[IDX];
+	  UGD->w0[IDX] = UGD->w0[IDX] + Pot_w[IDX];
+	}
+      }
+    }
+    
 }
 
 /** 
@@ -491,33 +622,6 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     double psi    = 0;                          ///< angle between wind and flame front [rad]
     double phi    = 0;                          ///< angle between flame front vector and slope vector [rad]
 
-
-    /*
-     * Calculate wind velocity angle.
-     double psi_wind, psi_norm;
-    if (u_mid>=0 && v_mid>=0) {
-        psi_wind = atan(v_mid/u_mid);
-    } else if (u_mid<0 && v_mid>0) {
-        psi_wind = pi + atan(v_mid/u_mid);
-    } else if (u_mid<0 && v_mid<0) {
-        psi_wind = pi + atan(v_mid/u_mid);
-    } else {
-        psi_wind = 2*pi + atan(v_mid/u_mid);
-    }
-   
-     * Calculate level set norm angle.
-     
-    if (x_norm>=0 && y_norm>=0) {
-        psi_norm = atan(y_norm/x_norm);
-    } else if (x_norm<0 && y_norm>0) {
-        psi_norm = pi + atan(y_norm/x_norm);
-    } else if (x_norm<0 && y_norm<0) {
-        psi_norm = pi + atan(y_norm/x_norm);
-    } else {
-        psi_norm = 2*pi + atan(y_norm/x_norm);
-    }
-    psi = psi_wind-psi_norm;
-    */
     double cos_psi = (u_mid*x_norm + v_mid*y_norm)/(sqrt(u_mid*u_mid + v_mid*v_mid)*sqrt(x_norm*x_norm + y_norm*y_norm));
    
     double KDrag = K1*betaT*fmin(fueldepthm/lv,1);  ///< Drag force coefficient [eq.7]
@@ -583,6 +687,12 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
         
     // calculate flame depth
     double L = R*tau;
+    // calculate heat release
+    double Q0 = cmbcnst*fgi*dx*dy/tau;
+    double H0 = (1-Chi)*Q0;
+    // calculate plume centerline characteristic velocity and length
+    double U_c = pow(g*g*H0/rhoAir/T_a/C_p, 1/5);
+    double L_c = pow(H0/rhoAir/C_p/T_a/pow(g, 1/2), 2/5);
 
     // struct to hold computed fire properties
     struct FireProperties fp;
@@ -595,7 +705,10 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     fp.T    = TFlame;
     fp.tau  = tau;
     fp.K    = KDrag;
-    
+    fp.H0   = H0;
+    fp.U_c  = U_c;
+    fp.L_c  = L_c;
+
     return fp;
 }
 

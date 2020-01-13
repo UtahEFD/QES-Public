@@ -21,6 +21,10 @@
 #include <vector>
 #include <math.h>
 #include <cmath>
+#include <netcdf>
+
+using namespace netCDF;
+using namespace netCDF::exceptions;
 
 class FuelProperties;
 
@@ -32,7 +36,7 @@ class Fire {
         Fire(URBInputData*, URBGeneralData*, Output*);
         
         struct FireProperties {
-            double  w, h, d, r, T, tau, K;
+	  double  w, h, d, r, T, tau, K, H0, U_c, L_c;
         };
         
         struct FireState {
@@ -66,9 +70,23 @@ class Fire {
         std::vector<double> yNorm;
 
         std::vector<double> Force;
-        
+  
+        std::vector<double> Pot_u;
+        std::vector<double> Pot_v;
+        std::vector<double> Pot_w;
+
+  // Potential field
+        int pot_z, pot_r, pot_G, pot_rStar, pot_zStar;
+        float drStar, dzStar;
+        std::vector<double> u_r;
+        std::vector<double> u_z;
+        std::vector<double> G;
+        std::vector<double> Gprime;
+        std::vector<double> rStar;
+        std::vector<double> zStar;
+      
         void run(Solver*, URBGeneralData*);
-  void move(Solver*, URBGeneralData*);      
+        void move(Solver*, URBGeneralData*);      
         void save(Output*);
         double computeTimeStep();
         
@@ -83,7 +101,7 @@ class Fire {
         float x_start, y_start;
         float L, W, H, baseHeight, courant;
         int i_start, i_end, j_start, j_end, k_end,k_start;
-        
+
         double rothermel(FuelProperties*, double, double, double);
                      
         FireProperties balbi(FuelProperties*, double, double, double, double, double, double);

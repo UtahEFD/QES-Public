@@ -38,7 +38,7 @@
 		<reciprocal> 0.0 </reciprocal>
 		<height> 1.0 </height>
 		<speed> 5.1 </speed>
-		<direction> 45.00 </direction>
+		<direction> 90.00 </direction>
 	</sensor>
 </metParams>
 <fires>
