@@ -23,7 +23,7 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     dy = UGD->dy;
     dz = UGD->dz;
 
-    // set-up the mapper array
+    // set-up the mapper array - cell centered
     fire_cells.resize((nx-1)*(ny-1));
     burn_flag.resize((nx-1)*(ny-1));
     burn_out.resize((nx-1)*(ny-1));
@@ -34,10 +34,10 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     yNorm.resize((nx-1)*(ny-1));
     Force.resize((nx-1)*(ny-1));
 
-    // set-up potential field array
-    Pot_u.resize(nx*ny*nz);
-    Pot_v.resize(nx*ny*nz);
-    Pot_w.resize(nx*ny*nz);
+    // set-up potential field array - cell centered
+    Pot_u.resize((nx-1)*(ny-1)*(nz-1));
+    Pot_v.resize((nx-1)*(ny-1)*(nz-1));
+    Pot_w.resize((nx-1)*(ny-1)*(nz-1));
 
 
     /**
@@ -357,7 +357,7 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
         double T = UGD->terrain[id];
         double D = fuel->fueldepthm;
         
-        double FD = H + T + D;
+        double FD = H/2 + T + D;
         
         if (H==0) {
             kh = 1;
@@ -381,12 +381,16 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
         struct FireProperties fp = balbi(fuel,u,v,x_norm,y_norm,0.0,0.0650);
         fire_cells[id].properties = fp;
         
+	// update icell value for flame
+	for (int k=1; k<= kh; k++){
+	  int icell_cent = ii + jj*(nx-1) + (k-1)*(nx-1)*(ny-1);
+          UGD->icellflag[icell_cent] = 12;
+	}
+
 	/**
 	 * Calculate Potential field based on heat release
 	 * Baum and McCaffrey plume model
 	**/
-
-
       
 	// Loop through horizontal domain
 	double ur, uz; 
@@ -401,6 +405,7 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
 	    // Loop through vertical cells
 	    for (int kpot = 1; kpot<nz-1; kpot++) {
 	      double z_k = (kpot-1)*dz/fp.L_c;                            ///< vertical distance between fire cell and target cell k
+	      // if radius = 0
 	      if (h_k == 0){
 
 		float zMinIdx = floor(z_k/dzStar);
@@ -412,7 +417,8 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
 		v_p = fp.U_c*ur;                         
 		w_p = fp.U_c*uz;                         
 	      }
-	      else if (z_k <= 60 && h_k <= 30){ 
+	      // if in potential field lookup, r*(h_k) < 30 and z*(z_k) < 60
+	      else if (z_k < 60 && h_k < 30){ 
 		// indices for lookup
 		float rMinIdx = floor(h_k/drStar);
 		float rMaxIdx = ceil(h_k/drStar);
@@ -427,8 +433,8 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
 		w_p = fp.U_c*uz;                         
 		
 	      }
+	      // if outside potential field lookup use asymptotic functions for potential field
 	      else {
-		// asymptote functions
 		double zeta = sqrt(h_k*h_k + z_k*z_k);
 		double x1 = (1+cos(atan(h_k/z_k)))/2;
 		// lookup indices for G(x) and G'(x) - spans 0.5 to 1.0
@@ -447,27 +453,20 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
 	      
 	      // modify potential fields
 	      
-	      int cellFacePot = ipot + jpot*nx + (kpot)*nx*ny;
-	      Pot_u[cellFacePot] += u_p;
-	      Pot_u[cellFacePot+1] += u_p;
-
-	      Pot_v[cellFacePot] += v_p;
-	      Pot_v[cellFacePot+nx] += v_p;
-
-	      Pot_w[cellFacePot] += w_p;
-	      //Pot_w[cellFacePot+nx*ny] += w_p;
-	      
-	      
+	      int cellCentPot = ipot + jpot*(nx-1) + (kpot)*(nx-1)*(ny-1);
+	      Pot_u[cellCentPot] += u_p;
+	      Pot_v[cellCentPot] += v_p;
+	      Pot_w[cellCentPot] += w_p;
 	    }
 	  }
 	}
 
 
-        // modify w0 in solver (adjust to use faces)
+        // modify w0 in solver (adjust to use faces)- bottom cell only
         /*
-	for (int k=0; k<=nz-2; k++) {
+	for (int k=0; k<1; k++) {
             
-	  int idf  = ii + (jj)*(nx) + (k+2)*(nx)*(ny);
+	  int idf  = ii + (jj)*(nx) + (k+1)*(nx)*(ny);
             int idxF = idf+1;
             int idxB = idf-1;
             int idyF = idf+(nx);
@@ -479,23 +478,25 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
             double u_uw, v_uw;
               
             UGD->w0[idf] = fp.w;
-	    //UGD->w0[cell_face + (k+1)*nx*ny] = fp.w;
+	    
         }
 	*/
-	
+   
     }
     
-    // Modify u,v,w in solver
-    for (int i=0; i<nx; i++){
-      for (int j=0; j<ny; j++){
-	for (int k=0; k<nz; k++){
-	  int IDX = i+j*nx+k*nx*ny;
-	  UGD->u0[IDX] = UGD->u0[IDX] + Pot_u[IDX];
-	  UGD->v0[IDX] = UGD->v0[IDX] + Pot_v[IDX];
-	  UGD->w0[IDX] = UGD->w0[IDX] + Pot_w[IDX];
+    // Modify u,v,w in solver - superimpose Potential field onto velocity field (interpolate from potential cell centered values)
+    for (int i=1; i<nx; i++){
+      for (int j=1; j<ny; j++){
+	for (int k=2; k<nz; k++){
+	  int cell_face = i + j*nx + k*nx*ny;
+	  int cell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+	  UGD->u0[cell_face] = UGD->u0[cell_face] + 0.5*(Pot_u[cell_cent]+Pot_u[cell_cent+1]);
+	  UGD->v0[cell_face] = UGD->v0[cell_face] + 0.5*(Pot_v[cell_cent]+Pot_v[cell_cent+(nx-1)]);
+	  UGD->w0[cell_face] = UGD->w0[cell_face] + 0.5*(Pot_w[cell_cent]+Pot_w[cell_cent+(nx-1)*(ny-1)]);
 	}
       }
     }
+	
     
 }
 
