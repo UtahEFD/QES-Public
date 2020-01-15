@@ -13,18 +13,29 @@ function [posOverL,pos_nCells] = makePosOverL(posCellGrid)
         error('!!! makePosOverL error !!! input posCellGrid is not a row or a column vector!');
     end
     
+    % have to correct for the isRogue or not isActive particles
+    % these will have a position value of -999 or some big negative number
+    % this will throw off the grid correction! Probably need a better fix
+    % later
+    isActive_indices = find(posCellGrid ~= -999.0);
+    if isempty(isActive_indices)
+        error('!!! makePosOverL error !!! input posCellGrid has no positions that are considered active!');
+    end
+    active_posCellGrid = posCellGrid(isActive_indices);
     
     % correct the cell grids to be posOverL if they aren't already 
-    %  posOverL grids
+    %  posOverL grids. Watch out for isRogue or not isActive problems
     posOverL = posCellGrid;
-    if min(posOverL) ~= 0
+    if min(active_posCellGrid) ~= 0
         % correct it to be starting at zero
-        posOverL = posOverL - min(posOverL);
+        active_posCellGrid = active_posCellGrid - min(active_posCellGrid);
+        posOverL(isActive_indices) = active_posCellGrid;
     end
     pos_nCells = length(posOverL);
-    if max(posOverL) ~= 1
+    if max(active_posCellGrid) ~= 1
         % correct it to be posOverL
-        posOverL = posOverL/max(posOverL);
+        active_posCellGrid = active_posCellGrid/max(active_posCellGrid);
+        posOverL(isActive_indices) = active_posCellGrid;
     end
     
     

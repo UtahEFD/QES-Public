@@ -371,9 +371,9 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 double A_33 = -1.0 + 0.50*(-CoEps*lzz + lxz*dtxzdt + lyz*dtyzdt + lzz*dtzzdt)*dt;
 
 
-                double b_11 = -uFluct_old - 0.50*flux_div_x*dt - sqrt(CoEps*dt)*xRandn;
-                double b_21 = -vFluct_old - 0.50*flux_div_y*dt - sqrt(CoEps*dt)*yRandn;
-                double b_31 = -wFluct_old - 0.50*flux_div_z*dt - sqrt(CoEps*dt)*zRandn;
+                double b_11 = -uFluct_old - 0.50*flux_div_x*dt - std::sqrt(CoEps*dt)*xRandn;
+                double b_21 = -vFluct_old - 0.50*flux_div_y*dt - std::sqrt(CoEps*dt)*yRandn;
+                double b_31 = -wFluct_old - 0.50*flux_div_z*dt - std::sqrt(CoEps*dt)*zRandn;
 
 
                 // now prepare for the Ax=b calculation by calculating the inverted A matrix
@@ -387,21 +387,21 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 
 
                 // now check to see if the value is rogue or not
-                if( abs(uFluct) >= vel_threshold || isnan(uFluct) && nx > 1 )
+                if( ( std::abs(uFluct) >= vel_threshold || isnan(uFluct) ) && nx > 1 )
                 {
                     std::cout << "Particle # " << par << " is rogue." << std::endl;
                     std::cout << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
                     uFluct = 0.0;
                     isRogue = true;
                 }
-                if( abs(vFluct) >= vel_threshold || isnan(vFluct) && ny > 1 )
+                if( ( std::abs(vFluct) >= vel_threshold || isnan(vFluct) ) && ny > 1 )
                 {
                     std::cout << "Particle # " << par << " is rogue." << std::endl;
                     std::cout << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
                     vFluct = 0.0;
                     isRogue = true;
                 }
-                if( abs(wFluct) >= vel_threshold || isnan(wFluct) && nz > 1 )
+                if( ( std::abs(wFluct) >= vel_threshold || isnan(wFluct) ) && nz > 1 )
                 {
                     std::cout << "Particle # " << par << " is rogue." << std::endl;
                     std::cout << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
@@ -422,9 +422,9 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 //  with the sampling time increment. This means all particles can do multiple time iterations, each with their own timestep
                 // but at the sampling timestep, particles are allowed to catch up so they are all calculated by that time
                 // currently, we use the sampling timestep so we may violate the eulerian grid CFL condition. But is simpler to work with when getting started
-                double disX = ((uMean + uFluct)*dt);
-                double disY = ((vMean + vFluct)*dt);
-                double disZ = ((wMean + wFluct)*dt);
+                double disX = (uMean + uFluct)*dt;
+                double disY = (vMean + vFluct)*dt;
+                double disZ = (wMean + wFluct)*dt;
                 
                 xPos = xPos + disX;
                 yPos = yPos + disY;
@@ -613,12 +613,12 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
     // I keep wondering if we can use the input Turb->tke for this or if we should leave it as is
     double b = 4.0/3.0*(txx + tyy + tzz);   // I think this is 4.0/3.0*invar_xx as well
     double c = txx*tyy + txx*tzz + tyy*tzz - txy*txy - txz*txz - tyz*tyz;   // this is probably invar_yy
-    double ks = 1.01*(-b + sqrt(b*b - 16.0/3.0*c)) / (8.0/3.0);
+    double ks = 1.01*(-b + std::sqrt(b*b - 16.0/3.0*c)) / (8.0/3.0);
 
     // if the initial guess is bad, use the straight up invariance.e11 value
     if( ks < invarianceTol || isnan(ks) )
     {
-        ks = 0.5*abs(txx + tyy + tzz);  // looks like 0.5*abs(invar_xx)
+        ks = 0.5*std::abs(txx + tyy + tzz);  // looks like 0.5*abs(invar_xx)
     }
 
     // now set the initial values of the new make realizable tau, 
@@ -772,7 +772,7 @@ void Plume::setBCfunctions(std::string xBCtype,std::string yBCtype,std::string z
 
 
 
-void Plume::enforceWallBCs_exiting(double& pos,double& velPrime,double& velFluct_old,bool& isActive, const double& domainStart,const double& domainEnd)
+void Plume::enforceWallBCs_exiting(double& pos,double& velFluct,double& velFluct_old,bool& isActive, const double& domainStart,const double& domainEnd)
 {
     // this may change as we figure out the reflections vs depositions on buildings and terrain as well as the outer domain
     // probably will become some kind of inherited function or a pointer function that can be chosen at initialization time
@@ -784,7 +784,7 @@ void Plume::enforceWallBCs_exiting(double& pos,double& velPrime,double& velFluct
     }
 }
 
-void Plume::enforceWallBCs_periodic(double& pos,double& velPrime,double& velFluct_old,bool& isActive, const double& domainStart,const double& domainEnd)
+void Plume::enforceWallBCs_periodic(double& pos,double& velFluct,double& velFluct_old,bool& isActive, const double& domainStart,const double& domainEnd)
 {
     
     double domainSize = domainEnd - domainStart;
@@ -815,13 +815,13 @@ void Plume::enforceWallBCs_periodic(double& pos,double& velPrime,double& velFluc
 
 }
 
-void Plume::enforceWallBCs_reflection(double& pos,double& velPrime,double& velFluct_old,bool& isActive, const double& domainStart,const double& domainEnd)
+void Plume::enforceWallBCs_reflection(double& pos,double& velFluct,double& velFluct_old,bool& isActive, const double& domainStart,const double& domainEnd)
 {
     if( isActive == true )
     {
 
         /*
-        std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velPrime = \"" << velPrime << "\", velFluct_old = \"" <<
+        std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velFluct = \"" << velFluct << "\", velFluct_old = \"" <<
                 velFluct_old << "\", domainStart = \"" << domainStart << "\", domainEnd = \"" << domainEnd << "\"" << std::endl;
         */
 
@@ -833,13 +833,13 @@ void Plume::enforceWallBCs_reflection(double& pos,double& velPrime,double& velFl
             if( pos > domainEnd )
             {
                 pos = domainEnd - (pos - domainEnd);
-                velPrime = -velPrime;
+                velFluct = -velFluct;
                 velFluct_old = -velFluct_old;
                 loopCountLeft = loopCountLeft + 1;
             } else if( pos < domainStart )
             {
                 pos = domainStart - (pos - domainStart);
-                velPrime = -velPrime;
+                velFluct = -velFluct;
                 velFluct_old = -velFluct_old;
                 loopCountRight = loopCountRight + 1;
             }
@@ -859,11 +859,12 @@ void Plume::enforceWallBCs_reflection(double& pos,double& velPrime,double& velFl
                     std::cout << "warning (Plume::enforceWallBCs_reflection): lower boundary condition failed! Setting isActive to false. xPos = \"" << pos << "\"" << std::endl;
                     isActive = false;
                 }
+                break;
             }
         }   // while outside of domain
 
         /*
-        std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velPrime = \"" << velPrime << "\", velFluct_old = \"" <<
+        std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velFluct = \"" << velFluct << "\", velFluct_old = \"" <<
                 velFluct_old << "\", loopCountLeft = \"" << loopCountLeft << "\", loopCountRight = \"" << loopCountRight << "\", reflectCount = \"" <<
                 reflectCount << "\"" << std::endl;
         */

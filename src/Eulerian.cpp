@@ -401,6 +401,13 @@ double Eulerian::interp3D(const std::vector<double>& EulerData,const std::string
 
     // make sure CoEps is always bigger than zero, and eps is two orders of magnitude bigger than sigma2
     // I guess since this is actually CoEps, the value needs to be one order of magnitutde bigger than sigma2
+    if( dataName == "sigma2" )
+    {
+        if( outputVal == 0.0 )
+        {
+            outputVal = 1e-8;
+        }
+    }
     if( dataName == "Eps" )
     {
         if( outputVal <= 1e-6 )

@@ -86,7 +86,7 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul,
     isActiveCount = 0.0;
 
     // calculate the threshold velocity
-    vel_threshold = 10.0*sqrt(getMaxVariance(turb->sig_x,turb->sig_y,turb->sig_z));
+    vel_threshold = 10.0*std::sqrt(getMaxVariance(turb->sig_x,turb->sig_y,turb->sig_z));
 
 
     // set the debug variable output folder
@@ -183,7 +183,7 @@ double Dispersion::getMaxVariance(const std::vector<double>& sigma_x_vals,const 
 }
 
 
-void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle> &newParticles)
+void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle>& newParticles)
 {
     // at this time, should be a list of each and every particle that exists at the given time
     // particles and sources can potentially be added to the list elsewhere
@@ -204,11 +204,11 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
 
         // now set the initial velocity fluctuations for the particle
         // The  sqrt of the variance is to match Bailey's code
-        newParticles.at(pIdx).uFluct = sqrt(current_sig_x) * rann;
+        newParticles.at(pIdx).uFluct = std::sqrt(current_sig_x) * rann;
         rann=random::norRan();
-        newParticles.at(pIdx).vFluct = sqrt(current_sig_y) * rann;
+        newParticles.at(pIdx).vFluct = std::sqrt(current_sig_y) * rann;
         rann=random::norRan();
-        newParticles.at(pIdx).wFluct = sqrt(current_sig_z) * rann;
+        newParticles.at(pIdx).wFluct = std::sqrt(current_sig_z) * rann;
 
         // set the initial values for the old velFluct values
         newParticles.at(pIdx).uFluct_old = newParticles.at(pIdx).uFluct;
