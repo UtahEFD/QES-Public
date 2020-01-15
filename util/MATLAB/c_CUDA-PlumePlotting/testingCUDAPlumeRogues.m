@@ -3,6 +3,10 @@
 %%% particle goes rogue
 
 dt = 2.22
+C0 = 4.0
+invariantTol = 10e-5
+
+
 uFluct = 15.6031
 vFluct = -35.6785
 wFluct = 1.73429
@@ -193,6 +197,92 @@ mat_velFluct = mat_A\mat_b
 %%% desired interp3D function, and defining the cell grids the same, so
 %%% watch out for these pitfalls
 
+%%% to do this, I ran the old matlab code, pausing at the end of the first
+%%% iteration, for the same case as done in the CUDA-Plume code (LES
+%%% heterogeneous anisotropic), with the gradients calculated using the
+%%% same method (2nd order forward and backward differencing). Then after
+%%% that pause, since I had the same cell grid as well, I copied and pasted
+%%% the interp3D calls to the datasets I have for CUDA-Plume debug output,
+%%% but replacing the current positions with the positions I am using here.
+%%% Then after editing, I copied and pasted the desired lines of code into
+%%% the command window and did comparisons.
+%%% Because this will cause me trouble running other things, I've included
+%%% the interp3D lines of code here in comments
+
+%%% compare mat_uMean with CUDA-Plume uMean
+%%% compare mat_tao_before with CUDA-Plume tao_before
+%%% compare mat_flux_div_dir with CUDA-Plume flux_div_dir
+%%% compare mat_CoEps with CUDA-Plume CoEps, but make sure the C0 is the
+%%% same for both before this
+
+% % % mat_uMean = interp3D(uMean_data,'u',xPos,yPos,zPos,cellGrid_dx,cellGrid_dy,cellGrid_dz,x_nCells,y_nCells,z_nCells)
+% % % mat_vMean = interp3D(vMean_data,'v',xPos,yPos,zPos,cellGrid_dx,cellGrid_dy,cellGrid_dz,x_nCells,y_nCells,z_nCells)
+% % % mat_wMean = interp3D(wMean_data,'w',xPos,yPos,zPos,cellGrid_dx,cellGrid_dy,cellGrid_dz,x_nCells,y_nCells,z_nCells)
+% % % mat_CoEps = C0*interp3D(epps_data,'epps',xPos,yPos,zPos,cellGrid_dx,cellGrid_dy,cellGrid_dz,x_nCells,y_nCells,z_nCells)
+% % % 
+% % % mat_txx_before = interp3D(txx_data,'txx',xPos,yPos,zPos,cellGrid_dx,cellGrid_dy,cellGrid_dz,x_nCells,y_nCells,z_nCells)
+% % % mat_txy_before = interp3D(txy_data,'txy',xPos,yPos,zPos,cellGrid_dx,cellGrid_dy,cellGrid_dz,x_nCells,y_nCells,z_nCells)
+% % % mat_txz_before = interp3D(txz_data,'txz',xPos,yPos,zPos,cellGrid_dx,cellGrid_dy,cellGrid_dz,x_nCells,y_nCells,z_nCells)
+% % % mat_tyy_before = interp3D(tyy_data,'tyy',xPos,yPos,zPos,cellGrid_dx,cellGrid_dy,cellGrid_dz,x_nCells,y_nCells,z_nCells)
+% % % mat_tyz_before = interp3D(tyz_data,'tyz',xPos,yPos,zPos,cellGrid_dx,cellGrid_dy,cellGrid_dz,x_nCells,y_nCells,z_nCells)
+% % % mat_tzz_before = interp3D(tzz_data,'tzz',xPos,yPos,zPos,cellGrid_dx,cellGrid_dy,cellGrid_dz,x_nCells,y_nCells,z_nCells)
+% % % 
+% % % mat_flux_div_x = interp3D(flux_div_x_data,'flux_div_x',xPos,yPos,zPos,cellGrid_dx,cellGrid_dy,cellGrid_dz,x_nCells,y_nCells,z_nCells)
+% % % mat_flux_div_y = interp3D(flux_div_y_data,'flux_div_y',xPos,yPos,zPos,cellGrid_dx,cellGrid_dy,cellGrid_dz,x_nCells,y_nCells,z_nCells)
+% % % mat_flux_div_z = interp3D(flux_div_z_data,'flux_div_z',xPos,yPos,zPos,cellGrid_dx,cellGrid_dy,cellGrid_dz,x_nCells,y_nCells,z_nCells)
+
+%%% sweeeeet!!! Looks like the interp3D came out with the same values, even
+%%% for tao_before and flux_div, at least to the fourth decimal places. This means
+%%% that the problem is not in the interp3D functions, but in how the
+%%% interpolated data is handled leading up to the throwing stuff into the
+%%% A and b matrices. 
+%%% This means the problem is either the inverse matrix
+%%% calculations, the dtaodt time derivative or change in tao between
+%%% iterations, or the random number generation.
+%%% it is not so easy to test the dtaodt time derivative of the stress
+%%% tensor, or the random number generation, but the tensor inverse can be
+%%% checked here.
+
+
+%%% makes sense to just try to do like I did with the interp3D functions.
+%%% So I need to run the old matlab code, pausing at the end of the first
+%%% iteration, for the same case as done in the CUDA-Plume code (LES
+%%% heterogeneous anisotropic), with the gradients calculated using the
+%%% same method (2nd order forward and backward differencing).
+%%% Then after that pause, to run copies of the matlab makeRealizable and
+%%% invert3 on the CUDA-Plume debug output, comparing the results with
+%%% CUDA-Plume debug output.
+%%% going to have to copy and paste these matlab functions, edit them, then
+%%% copy into the command window for the comparisons.
+%%% Then after editing, I copied and pasted the desired lines of code into
+%%% the command window and did comparisons.
+%%% Because this will cause me trouble running other things, I've included
+%%% the makeRealizeable and interp3 matlab lines of code here in comments
+
+
+%%% notice that makeTaoRealizable uses tao_before as input to get tao out
+%%% this works because tao_before is confirmed to be the correct value
+%%% make sure invarianceTol is the same as the CUDA-Plume
+%%% compare mat_tao with CUDA-Plume tao (not tao_before)
+% % % [mat_txx,mat_txy,mat_txz,mat_tyy,mat_tyz,mat_tzz] = makeTaoRealizable(txx_before,txy_before,txz_before,tyy_before,tyz_before,tzz_before,invariantTol)
+
+
+%%% notice that makeTaoRealizable uses tao as input to get lao out because
+%%% tao is assumed to be the same as input
+%%% compare mat_lao (txx now lxx, inverse tao) with CUDA-Plume lao
+% % % makeRealizable = true;
+% % % [mat_lxx,mat_lxy,mat_lxz,mat_lyy,mat_lyz,mat_lzz] = invertStressTensor(txx,txy,txz,tyy,tyz,tzz,makeRealizable)
+
+
+
+%%% woah, it looks like makeTaoRealizable gets the same values as the
+%%% CUDA-Plume data for the off diagonals of tao, but has completely
+%%% differnt values for the diagonals of tao. So something is definitely
+%%% going on in makeRealizeable.
+
+%%% fortunately it looks like invert3 is still working correctly. The lao
+%%% values matched between the matlab and CUDA-Plume code. Now I just have
+%%% to figure out what is wrong with makeRealizable
 
 
 
