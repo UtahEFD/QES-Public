@@ -4,7 +4,7 @@
 #SBATCH --qos=efd-np
 #SBATCH --job-name=plume_BaileyLES
 #SBATCH --nodes=1
-#SBATCH --time=01:00:00
+#SBATCH --time=01:30:00
 #SBATCH -e plume_error.log
 #SBATCH -o plume_slurm.log
 

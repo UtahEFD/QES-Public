@@ -303,12 +303,12 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 double wMean = eul->interp3D(urb->w,"velMean");
                 
                 // this is the current reynolds stress tensor
-                double txx = eul->interp3D(turb->txx,"tau");
-                double txy = eul->interp3D(turb->txy,"tau");
-                double txz = eul->interp3D(turb->txz,"tau");
-                double tyy = eul->interp3D(turb->tyy,"tau");
-                double tyz = eul->interp3D(turb->tyz,"tau");
-                double tzz = eul->interp3D(turb->tzz,"tau");
+                double txx_before = eul->interp3D(turb->txx,"tau");
+                double txy_before = eul->interp3D(turb->txy,"tau");
+                double txz_before = eul->interp3D(turb->txz,"tau");
+                double tyy_before = eul->interp3D(turb->tyy,"tau");
+                double tyz_before = eul->interp3D(turb->tyz,"tau");
+                double tzz_before = eul->interp3D(turb->tzz,"tau");
                 
                 // now need flux_div_dir, not the different dtxxdx type components
                 double flux_div_x = eul->interp3D(eul->flux_div_x,"flux_div");
@@ -318,6 +318,12 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 // now need to call makeRealizable on tao
                 // directly modifies the values of tao
+                double txx = txx_before;
+                double txy = txy_before;
+                double txz = txz_before;
+                double tyy = tyy_before;
+                double tyz = tyz_before;
+                double tzz = tzz_before;
                 makeRealizable(txx,txy,txz,tyy,tyz,tzz);
                 
                 
@@ -391,6 +397,23 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 {
                     std::cout << "Particle # " << par << " is rogue." << std::endl;
                     std::cout << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
+
+                    std::cout << "  for info:" << std::endl;
+                    std::cout << "  uFluct = \"" << uFluct << "\", vFluct = \"" << vFluct << "\", wFluct = \"" << wFluct << "\"" << std::endl;
+                    std::cout << "  xPos = \"" << xPos << "\", yPos = \"" << yPos << "\", zPos = \"" << zPos << "\"" << std::endl;
+                    std::cout << "  uFluct_old = \"" << uFluct_old << "\", vFluct_old = \"" << vFluct_old << "\", wFluct_old = \"" << wFluct_old << "\"" << std::endl;
+                    std::cout << "  txx_old = \"" << txx_old << "\", txy_old = \"" << txy_old << "\", txz_old = \"" << txz_old << "\"" << std::endl;
+                    std::cout << "  tyy_old = \"" << tyy_old << "\", tyz_old = \"" << tyz_old << "\", tzz_old = \"" << tzz_old << "\"" << std::endl;
+                    std::cout << "  CoEps = \"" << CoEps << "\", uMean = \"" << uMean << "\", vMean = \"" << vMean << "\", wMean = \"" << wMean << std::endl;
+                    std::cout << "  txx_before = \"" << txx_before << "\", txy_before = \"" << txy_before << "\", txz_before = \"" << txz_before << "\"" << std::endl;
+                    std::cout << "  tyy_before = \"" << tyy_before << "\", tyz_before = \"" << tyz_before << "\", tzz_before = \"" << tzz_before << "\"" << std::endl;
+                    std::cout << "  flux_div_x = \"" << flux_div_x << "\", flux_div_y = \"" << flux_div_y << "\", flux_div_z = \"" << flux_div_z << "\"" << std::endl;
+                    std::cout << "  txx = \"" << txx << "\", txy = \"" << txy << "\", txz = \"" << txz << "\"" << std::endl;
+                    std::cout << "  tyy = \"" << tyy << "\", tyz = \"" << tyz << "\", tzz = \"" << tzz << "\"" << std::endl;
+                    std::cout << "  lxx = \"" << lxx << "\", lxy = \"" << lxy << "\", lxz = \"" << lxz << "\"" << std::endl;
+                    std::cout << "  lyy = \"" << lyy << "\", lyz = \"" << lyz << "\", lzz = \"" << lzz << "\"" << std::endl;
+                    std::cout << "  xRandn = \"" << xRandn << "\", yRandn = \"" << yRandn << "\", zRandn = \"" << zRandn << "\"" << std::endl;
+
                     uFluct = 0.0;
                     isRogue = true;
                 }
@@ -398,6 +421,23 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 {
                     std::cout << "Particle # " << par << " is rogue." << std::endl;
                     std::cout << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
+
+                    std::cout << "  for info:" << std::endl;
+                    std::cout << "  uFluct = \"" << uFluct << "\", vFluct = \"" << vFluct << "\", wFluct = \"" << wFluct << "\"" << std::endl;
+                    std::cout << "  xPos = \"" << xPos << "\", yPos = \"" << yPos << "\", zPos = \"" << zPos << "\"" << std::endl;
+                    std::cout << "  uFluct_old = \"" << uFluct_old << "\", vFluct_old = \"" << vFluct_old << "\", wFluct_old = \"" << wFluct_old << "\"" << std::endl;
+                    std::cout << "  txx_old = \"" << txx_old << "\", txy_old = \"" << txy_old << "\", txz_old = \"" << txz_old << "\"" << std::endl;
+                    std::cout << "  tyy_old = \"" << tyy_old << "\", tyz_old = \"" << tyz_old << "\", tzz_old = \"" << tzz_old << "\"" << std::endl;
+                    std::cout << "  CoEps = \"" << CoEps << "\", uMean = \"" << uMean << "\", vMean = \"" << vMean << "\", wMean = \"" << wMean << std::endl;
+                    std::cout << "  txx_before = \"" << txx_before << "\", txy_before = \"" << txy_before << "\", txz_before = \"" << txz_before << "\"" << std::endl;
+                    std::cout << "  tyy_before = \"" << tyy_before << "\", tyz_before = \"" << tyz_before << "\", tzz_before = \"" << tzz_before << "\"" << std::endl;
+                    std::cout << "  flux_div_x = \"" << flux_div_x << "\", flux_div_y = \"" << flux_div_y << "\", flux_div_z = \"" << flux_div_z << "\"" << std::endl;
+                    std::cout << "  txx = \"" << txx << "\", txy = \"" << txy << "\", txz = \"" << txz << "\"" << std::endl;
+                    std::cout << "  tyy = \"" << tyy << "\", tyz = \"" << tyz << "\", tzz = \"" << tzz << "\"" << std::endl;
+                    std::cout << "  lxx = \"" << lxx << "\", lxy = \"" << lxy << "\", lxz = \"" << lxz << "\"" << std::endl;
+                    std::cout << "  lyy = \"" << lyy << "\", lyz = \"" << lyz << "\", lzz = \"" << lzz << "\"" << std::endl;
+                    std::cout << "  xRandn = \"" << xRandn << "\", yRandn = \"" << yRandn << "\", zRandn = \"" << zRandn << "\"" << std::endl;
+
                     vFluct = 0.0;
                     isRogue = true;
                 }
@@ -405,6 +445,23 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 {
                     std::cout << "Particle # " << par << " is rogue." << std::endl;
                     std::cout << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
+
+                    std::cout << "  for info:" << std::endl;
+                    std::cout << "  uFluct = \"" << uFluct << "\", vFluct = \"" << vFluct << "\", wFluct = \"" << wFluct << "\"" << std::endl;
+                    std::cout << "  xPos = \"" << xPos << "\", yPos = \"" << yPos << "\", zPos = \"" << zPos << "\"" << std::endl;
+                    std::cout << "  uFluct_old = \"" << uFluct_old << "\", vFluct_old = \"" << vFluct_old << "\", wFluct_old = \"" << wFluct_old << "\"" << std::endl;
+                    std::cout << "  txx_old = \"" << txx_old << "\", txy_old = \"" << txy_old << "\", txz_old = \"" << txz_old << "\"" << std::endl;
+                    std::cout << "  tyy_old = \"" << tyy_old << "\", tyz_old = \"" << tyz_old << "\", tzz_old = \"" << tzz_old << "\"" << std::endl;
+                    std::cout << "  CoEps = \"" << CoEps << "\", uMean = \"" << uMean << "\", vMean = \"" << vMean << "\", wMean = \"" << wMean << std::endl;
+                    std::cout << "  txx_before = \"" << txx_before << "\", txy_before = \"" << txy_before << "\", txz_before = \"" << txz_before << "\"" << std::endl;
+                    std::cout << "  tyy_before = \"" << tyy_before << "\", tyz_before = \"" << tyz_before << "\", tzz_before = \"" << tzz_before << "\"" << std::endl;
+                    std::cout << "  flux_div_x = \"" << flux_div_x << "\", flux_div_y = \"" << flux_div_y << "\", flux_div_z = \"" << flux_div_z << "\"" << std::endl;
+                    std::cout << "  txx = \"" << txx << "\", txy = \"" << txy << "\", txz = \"" << txz << "\"" << std::endl;
+                    std::cout << "  tyy = \"" << tyy << "\", tyz = \"" << tyz << "\", tzz = \"" << tzz << "\"" << std::endl;
+                    std::cout << "  lxx = \"" << lxx << "\", lxy = \"" << lxy << "\", lxz = \"" << lxz << "\"" << std::endl;
+                    std::cout << "  lyy = \"" << lyy << "\", lyz = \"" << lyz << "\", lzz = \"" << lzz << "\"" << std::endl;
+                    std::cout << "  xRandn = \"" << xRandn << "\", yRandn = \"" << yRandn << "\", zRandn = \"" << zRandn << "\"" << std::endl;
+
                     wFluct = 0.0;
                     isRogue = true;
                 }
