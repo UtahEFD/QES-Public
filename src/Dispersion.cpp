@@ -205,7 +205,7 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
         // now set the initial velocity fluctuations for the particle
         // The  sqrt of the variance is to match Bailey's code
         newParticles.at(pIdx).uFluct = std::sqrt(current_sig_x) * rann;
-        rann=random::norRan();
+        rann=random::norRan();      // should be randn() matlab equivalent, which is a normally distributed random number
         newParticles.at(pIdx).vFluct = std::sqrt(current_sig_y) * rann;
         rann=random::norRan();
         newParticles.at(pIdx).wFluct = std::sqrt(current_sig_z) * rann;
