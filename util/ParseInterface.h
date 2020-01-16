@@ -230,9 +230,10 @@ inline void ParseInterface::parseElement(bool isReq, T*& ele, const std::string 
         ele->setParents(treeParents + "::" + tag);
         ele->parseValues();
     }
-    else
+    else{
         if (isReq)
             throw(ParseException("Could not find " + treeParents + "::" + tag));
+    }
 }
 
 template <typename T>

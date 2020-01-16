@@ -81,7 +81,14 @@ public:
 
     virtual void parseValues()
     {
-        parseElement< Vector3<int> >(false, domain, "domain");
+        parseElement< Vector3<int> >(false, domain, "domain");   // when
+                                                                 // parseElement
+                                                                 // isn't
+                                                                 // called,
+                                                                 // how
+                                                                 // does
+                                                                 // this
+                                                                 // get allocated?
         parseElement< Vector3<float> >(false, grid, "cellSize");
         parsePrimitive<int>(true, verticalStretching, "verticalStretching");
         parseMultiPrimitives<float>(false, dz_value, "dz_value");
@@ -120,6 +127,7 @@ public:
         if (wrfFile != "") {
             std::cout << "Processing WRF data for terrain and met param sensors from " << wrfFile << std::endl;
             wrfInputData = new WRFInput( wrfFile );
+            std::cout << "WRF Input Data processing completed." << std::endl;
         }
         
         // For now wrf and dem are exclusive 
