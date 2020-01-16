@@ -14,21 +14,32 @@
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
-Urb :: Urb(Input* input) {
+Urb :: Urb(NetCDFInput* input) {
 
     std::cout<<"[Urb] \t\t Loading CUDA-URB fields "<<std::endl;
+
+    // face-center grid size
+    int nx_fc,ny_fc,nz_fc;
     
     // get input dimensions
-    input->getDimensionSize("x",nx);
-    input->getDimensionSize("y",ny);
-    input->getDimensionSize("z",nz);
+    input->getDimensionSize("x",nx_fc);
+    input->getDimensionSize("y",ny_fc);
+    input->getDimensionSize("z",nz_fc);
     input->getDimensionSize("t",nt);
+
+    nx = nx_fc-1;
+    ny = ny_fc-1;
+    nz = nz_fc-2;
     
     start = {0,0,0,0};      // used for getVariableData() when it is a grid of values
-    count = {static_cast<unsigned long>(nt),
-             static_cast<unsigned long>(nz),
-             static_cast<unsigned long>(ny),
-             static_cast<unsigned long>(nx)};  // the number of values in each grid dimension of the input data, I guess the default is a 4D structure
+    countfc = {static_cast<unsigned long>(nt),
+               static_cast<unsigned long>(nz_fc),
+               static_cast<unsigned long>(ny_fc),
+               static_cast<unsigned long>(nx_fc)};  // the number of values in each grid dimension of the input data, I guess the default is a 4D structure
+    countcc = {static_cast<unsigned long>(nt) ,
+               static_cast<unsigned long>(nz),
+               static_cast<unsigned long>(ny),
+               static_cast<unsigned long>(nx)};
     count2d = {static_cast<unsigned long>(ny),
                static_cast<unsigned long>(nx)};  // the number of values in each grid dimension of the input data, for a 2D structure
     
@@ -43,13 +54,43 @@ Urb :: Urb(Input* input) {
     v.resize(nt*nz*ny*nx);
     w.resize(nt*nz*ny*nx);
     
+    
     // get input grid data and information
-    input->getVariableData("x",x);
-    input->getVariableData("y",y);
-    input->getVariableData("z",z);
+
+    // FM -> need to change this when grid is matching between modules
+    std::vector<float> temp_x(nx);
+    input->getVariableData("x",temp_x);
+    for(int i=0;i<nx;i++)
+      x.at(i)=temp_x.at(i);
+    temp_x.clear();
+
+    std::vector<float> temp_y(ny);
+    input->getVariableData("y",temp_y);
+    for(int j=0;j<ny;j++)
+      y.at(j)=temp_y.at(j);
+    temp_y.clear();
+
+    std::vector<float> temp_z(nz+1);
+    input->getVariableData("z",temp_z);
+    for(int k=0;k<nz;k++)
+      z.at(k)=temp_z.at(k+1);
+    temp_z.clear();
+    
     input->getVariableData("t",t);
-    input->getVariableData("icell",start,count,icell);
-    input->getVariableData("terrain",start,count2d,terrain);
+    input->getVariableData("icell",start,countcc,icell);
+
+    // FM -> need to change this as URB is float only
+    std::vector<float> temp_terrain(ny*nx);
+    input->getVariableData("terrain",start,count2d,temp_terrain);
+    for(int j=0; j<ny; j++) {
+      for(int i=0; i<nx; i++) {
+          int id = i + j*nx;
+          terrain.at(id)=temp_terrain.at(id);
+      }
+    }
+    temp_terrain.clear();
+
+
 
     // set the dx values to 1, and correct them if the grid is has more than one value
     dx = 1;
@@ -68,10 +109,44 @@ Urb :: Urb(Input* input) {
         dz = z.at(1) - z.at(0);
     }
     
+
+
     // get input velocity data
-    input->getVariableData("u",start,count,u);
-    input->getVariableData("v",start,count,v);
-    input->getVariableData("w",start,count,w);
+    // use temporary vectors to hold the velocities before putting them into the grid because they need interpolated
+    std::vector<float> u1(nt*nz_fc*ny_fc*nx_fc);
+    std::vector<float> u2(nt*nz_fc*ny_fc*nx_fc);
+    std::vector<float> u3(nt*nz_fc*ny_fc*nx_fc);
+
+    input->getVariableData("u",start,countfc,u1);
+    input->getVariableData("v",start,countfc,u2);
+    input->getVariableData("w",start,countfc,u3);
+
+    // now take the input wind values stored in the temporary vectors, and put them into the Wind grid data structure
+    for (int n=0;n<nt;n++) {
+        for(int k=0;k<nz;k++) {
+            for(int j=0; j<ny;j++) {
+              for(int i=0;i<nx;i++){
+
+                // FM quick fix for missmatched grid
+                // id1 -> Plume grid
+                int id1 = i + j*nx + k*nx*ny + n*nx*ny*nz;
+                // id2 -> URB grid
+                int id2 = i + j*nx_fc + (k+1)*nx_fc*ny_fc + n*nx_fc*ny_fc*nz_fc;
+
+                // interpolation of the face-center velocity field
+                u.at(id1) = 0.5*(u1.at(id2)+u1.at(id2+1));
+                v.at(id1) = 0.5*(u2.at(id2)+u2.at(id2+nx_fc));
+                w.at(id1) = 0.5*(u3.at(id2)+u3.at(id2+nx_fc*ny_fc));
+              }
+            }
+        }
+    }
+
+    // clean up temporary vectors
+    u1.clear();
+    u2.clear();
+    u3.clear();
+
     
 
     // calculate the urb start and end values, needed for getting the domain end and start for all boundary condition application

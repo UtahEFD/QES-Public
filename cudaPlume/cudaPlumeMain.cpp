@@ -1,3 +1,8 @@
+
+
+#define USE_PREVIOUSCODE 1
+
+
 #include <iostream>
 #include <netcdf>
 
@@ -7,9 +12,21 @@
 
 #include "Plume.hpp"
 #include "Args.hpp"
+
+#if USE_PREVIOUSCODE
+
+#include "Urb_old.hpp"
+#include "Turb_old.hpp"
+#include "Input.hpp"
+
+#else
+
 #include "Urb.hpp"
 #include "Turb.hpp"
-#include "Input.hpp"
+#include "NetCDFInput.h"
+
+#endif
+
 #include "Output.hpp"
 #include "Eulerian.h"
 #include "Dispersion.h"
@@ -54,12 +71,26 @@ int main(int argc, char** argv)
         std::cerr << "QUIC-Plume input file: " << arguments.quicFile << " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
-        
+
+
+
+#if USE_PREVIOUSCODE
+
     // Create instance of cudaUrb input class
     Input* inputUrb = new Input(arguments.inputFileUrb);
     
     // Create instance of cudaTurb input class
     Input* inputTurb = new Input(arguments.inputFileTurb);
+
+#else
+
+    // Create instance of cudaUrb input class
+    NetCDFInput* inputUrb = new NetCDFInput(arguments.inputFileUrb);
+
+    // Create instance of cudaTurb input class
+    NetCDFInput* inputTurb = new NetCDFInput(arguments.inputFileTurb);
+
+#endif
 
     // Create instance of output class
     Output* output = new Output(arguments.outputFile);

@@ -7,14 +7,13 @@
 //  Modified by Loren Atwood on 01/09/2020.
 //
 
-#ifndef TURB_HPP
-#define TURB_HPP
+#ifndef TURB_OLD_HPP
+#define TURB_OLD_HPP
 
 #include <string>
 #include <vector>
-#include <math.h>
 #include <netcdf>
-#include "NetCDFInput.h"
+#include "Input.hpp"
 
 
 using namespace netCDF;
@@ -33,7 +32,7 @@ class Turb {
     public:
     
         // initializer
-        Turb(NetCDFInput*);   // looks like this just grabs the input turb stuff, and stuffs it into the appropriate variables
+        Turb(Input*);   // looks like this just grabs the input turb stuff, and stuffs it into the appropriate variables
                         // the variables may be different than the input ones, so eventually we may want to change that, but is almost there
                         // most of the temporary variables are used as intermediates between the two different types of data structures
         

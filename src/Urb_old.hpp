@@ -7,13 +7,13 @@
 //  Modified by Loren Atwood on 01/09/20.
 //
 
-#ifndef URB_HPP
-#define URB_HPP
+#ifndef URB_OLD_HPP
+#define URB_OLD_HPP
 
 #include <string>
 #include <vector>
 #include <netcdf>
-#include "NetCDFInput.h"
+#include "Input.hpp"
 
 
 using namespace netCDF;
@@ -26,13 +26,13 @@ class Urb {
         // netCDF variables
         // do these need moved into the function itself since they are used only once?
         std::vector<size_t> start;      // used for getVariableData() when it is a grid of values. The starting values in each dimension of the grid of input data. I would guess it is changed each time data is read from the input data
-        std::vector<size_t> countfc,countcc,count2d;  // the number of values in each grid dimension of the input data, I guess the default is a 4D structure, but there is a variable for a 2D structure here as well
+        std::vector<size_t> count,count2d;  // the number of values in each grid dimension of the input data, I guess the default is a 4D structure, but there is a variable for a 2D structure here as well
         
         
     public:
     
         // initializer
-        Urb(NetCDFInput*);    // looks like this just grabs the input urb stuff, and stuffs it into the appropriate variables
+        Urb(Input*);    // looks like this just grabs the input urb stuff, and stuffs it into the appropriate variables
                         // the variables may be different than the input ones, so eventually we may want to change that, but is almost there
                         // most of the temporary variables are used as intermediates between the two different types of data structures
         
