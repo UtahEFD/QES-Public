@@ -69,3 +69,8 @@ may not have boost libraries that can be loaded in with module load.
 
 Note that the first of the cmake commands seems to be more stable right now.
 
+
+Finally, to run the program on chpc, run sbatch on the runPlume_FlatTerrain.sh file found in the data folder. There are also a few other slurm files found in the testing directory.
+
+
+

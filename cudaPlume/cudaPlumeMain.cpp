@@ -1,8 +1,4 @@
 
-
-#define USE_PREVIOUSCODE 1
-
-
 #include <iostream>
 #include <netcdf>
 
@@ -12,21 +8,10 @@
 
 #include "Plume.hpp"
 #include "Args.hpp"
-
-#if USE_PREVIOUSCODE
-
-#include "Urb_old.hpp"
-#include "Turb_old.hpp"
-#include "Input.hpp"
-
-#else
-
 #include "Urb.hpp"
 #include "Turb.hpp"
+#include "Input.hpp"
 #include "NetCDFInput.h"
-
-#endif
-
 #include "Output.hpp"
 #include "Eulerian.h"
 #include "Dispersion.h"
@@ -72,6 +57,8 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
+
+#define USE_PREVIOUSCODE 0
 
 
 #if USE_PREVIOUSCODE
