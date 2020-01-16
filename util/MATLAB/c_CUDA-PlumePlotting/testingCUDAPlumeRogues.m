@@ -4,7 +4,7 @@
 
 dt = 2.22
 C0 = 4.0
-invariantTol = 10e-5
+invariantTol = 1e-5
 
 
 uFluct = 15.6031
@@ -273,7 +273,13 @@ mat_velFluct = mat_A\mat_b
 % % % makeRealizable = true;
 % % % [mat_lxx,mat_lxy,mat_lxz,mat_lyy,mat_lyz,mat_lzz] = invertStressTensor(txx,txy,txz,tyy,tyz,tzz,makeRealizable)
 
-
+% how big is the difference if using the "better" madeRealizable tao
+% % % [lxx,lxy,lxz,lyy,lyz,lzz] = invertStressTensor(mat_txx,mat_txy,mat_txz,mat_tyy,mat_tyz,mat_tzz,makeRealizable)
+% looks like completely different results. Now use these values to again
+% run the Ax=b stuff
+% here's the result of the Ax=b stuff, so definitely fixing this problem
+% with makeRealizable can make a huge difference!
+% % %mat_velFluct = [-0.1746, 0.2595, -0.0859]
 
 %%% woah, it looks like makeTaoRealizable gets the same values as the
 %%% CUDA-Plume data for the off diagonals of tao, but has completely
@@ -283,6 +289,58 @@ mat_velFluct = mat_A\mat_b
 %%% fortunately it looks like invert3 is still working correctly. The lao
 %%% values matched between the matlab and CUDA-Plume code. Now I just have
 %%% to figure out what is wrong with makeRealizable
+
+
+
+%%% kind of hard to figure out what is going on. Going to copy and paste
+%%% stuff from the CUDA-Plume code, and compare to values when calling
+%%% makeRealizable from the matlab code as described above, pausing at
+%%% debug points to compare values. Here's the matlab version again for
+%%% debugging purposes
+
+% % % [mat_txx,mat_txy,mat_txz,mat_tyy,mat_tyz,mat_tzz] = makeTaoRealizable(txx_before,txy_before,txz_before,tyy_before,tyz_before,tzz_before,invariantTol)
+
+%%% now the 
+invar_xx = txx_before + tyy_before + tzz_before
+invar_yy = txx_before*tyy_before + txx_before*tzz_before + tyy_before*tzz_before - txy_before*txy_before - txz_before*txz_before - tyz_before*tyz_before
+invar_zz = txx_before*(tyy_before*tzz_before - tyz_before*tyz_before) - txy_before*(txy_before*tzz_before - tyz_before*txz_before) + txz_before*(txy_before*tyz_before - tyy_before*txz_before)
+
+invar_b = 4.0/3.0*(txx_before + tyy_before + tzz_before)
+invar_c = txx_before*tyy_before + txx_before*tzz_before + tyy_before*tzz_before - txy_before*txy_before - txz_before*txz_before - tyz_before*tyz_before
+invar_ks = 1.01*(-invar_b + sqrt(invar_b*invar_b - 16.0/3.0*invar_c)) / (8.0/3.0)
+
+invar_ks = 0.5*abs(txx_before + tyy_before + tzz_before)
+
+
+%invar_xx = 0.0488;
+%invar_yy = -3.1817e-04;
+%invar_zz = -7.0179e-06;
+
+%%% looks like the initial invariants come out to be the same in the matlab
+%%% code. Starting to think I might need to output the invarianceTol
+
+%invar_b = 0.0651;
+%invar_c = -3.1817e-04;
+%invar_ks = 0.0045;
+
+%%% also came out the same for the first iteration
+
+%invar_ks = 0.0244;
+
+%%% so either invarianceTol isn't the same, or the evalutation comes out
+%%% different in C++.
+
+
+
+%%% so I tried running CUDA-Plume, with these values thrown in when running
+%%% the makeRealizable function. And I got the exact save invar_xx,
+%%% invar_yy, invar_zz, invar_b, invar_c, and invar_ks. So what the heck
+%%% causes the result to come out wrong if the first iteration makes it
+%%% look like it is working?
+
+
+%%% somehow it is different during each iteration. Ah, I found it, was
+%%% increasing by tao_new and ks, not by just ks.
 
 
 

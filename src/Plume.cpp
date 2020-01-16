@@ -694,6 +694,14 @@ void Plume::calcInvariants(const double& txx,const double& txy,const double& txz
 
 void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,double& tyz,double& tzz)
 {
+    // force it to be the debug values for tao and see if the resulting values are what they are supposed to be
+    txx = 0.00619544;
+    txy = 0.00857066;
+    txz = -0.000896642;
+    tyy = -0.00955689;
+    tyz = 0.00305634;
+    tzz = 0.0521669;
+
     // first calculate the invariants and see if they are already realizable
     // the calcInvariants function modifies the values directly, so they always need initialized to something before being sent into said function to be calculated
 
@@ -701,6 +709,10 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
     double invar_yy = 0.0;
     double invar_zz = 0.0;
     calcInvariants(txx,txy,txz,tyy,tyz,tzz,  invar_xx,invar_yy,invar_zz);
+    std::cout << "invar_xx = " << invar_xx << std::endl;
+    std::cout << "invar_yy = " << invar_yy << std::endl;
+    std::cout << "invar_zz = " << invar_zz << std::endl;
+    std::cout << "invarianceTol = " << invarianceTol << std::endl;
     if( invar_xx > invarianceTol && invar_yy > invarianceTol && invar_zz > invarianceTol )
     {
         //std::cout << "tau already realizable" << std::endl;
@@ -714,12 +726,19 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
     double c = txx*tyy + txx*tzz + tyy*tzz - txy*txy - txz*txz - tyz*tyz;   // this is probably invar_yy
     double ks = 1.01*(-b + std::sqrt(b*b - 16.0/3.0*c)) / (8.0/3.0);
 
+    std::cout << "b = " << b << std::endl;
+    std::cout << "c = " << c << std::endl;
+    std::cout << "ks = " << ks << std::endl;
+
     // if the initial guess is bad, use the straight up invariance.e11 value
     if( ks < invarianceTol || isnan(ks) )
     {
         ks = 0.5*std::abs(txx + tyy + tzz);  // looks like 0.5*abs(invar_xx)
     }
 
+    std::cout << "ks = " << ks << std::endl;
+    
+    
     // now set the initial values of the new make realizable tau, 
     // since the function modifies tau directly, so tau already exists, can skip this step and just do what is already done inside the loop
     // notice that through all this process, only the diagonals are really increased by a value of 0.05% of the subfilter tke ks
@@ -735,15 +754,28 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
     {
         iter = iter + 1;
 
-        ks = ks*1.050;      // increase subfilter tke by 5%
-
         txx = txx + 2.0/3.0*ks;
         tyy = tyy + 2.0/3.0*ks;
         tzz = tzz + 2.0/3.0*ks;
+        
+        ks = ks*1.050;      // increase subfilter tke by 5%
 
         calcInvariants(txx,txy,txz,tyy,tyz,tzz,  invar_xx,invar_yy,invar_zz);
 
+        std::cout << "iter = " << iter << std::endl;
+        std::cout << "invar_xx = " << invar_xx << std::endl;
+        std::cout << "invar_yy = " << invar_yy << std::endl;
+        std::cout << "invar_zz = " << invar_zz << std::endl;
+        std::cout << "ks = " << ks << std::endl;
+        std::cout << "txx = " << txx << std::endl;
+        std::cout << "tyy = " << tyy << std::endl;
+        std::cout << "tzz = " << tzz << std::endl;
+        std::cout << "\n";
+
     }
+
+    std::cout << "closing the program now";
+    exit(1);
 
     if( iter == 999 )
     {
@@ -1138,6 +1170,8 @@ void Plume::writeSimInfoFile(Dispersion* dis, const double& current_time)
     fprintf(fzout,"y_nCells         = %d\n",ny);
     fprintf(fzout,"z_nCells         = %d\n",nz);
     fprintf(fzout,"nParticles       = %d\n",dis->pointList.size());
+    fprintf(fzout,"\n");    // a purposeful blank line
+    fprintf(fzout,"invarianceTol    = %lf\n",invarianceTol);
     fprintf(fzout,"\n");    // a purposeful blank line
     fclose(fzout);
 
