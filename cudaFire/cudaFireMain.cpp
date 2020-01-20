@@ -1,3 +1,4 @@
+
 #include <iostream>
 
 #include <boost/foreach.hpp>
@@ -19,6 +20,8 @@
 
 #include "Fire.hpp"
 //#include "DTEHeightField.h"
+
+
 
 namespace pt = boost::property_tree;
 
@@ -168,9 +171,9 @@ int main(int argc, char *argv[])
     while (t<UID->simParams->totalTimeIncrements) {
         
         std::cout<<"Processing time t = "<<t<<std::endl;
-        
         // re-set initial fields after first time step
         if (t>0) {
+
 	  //UGD->u0 = u0;
 	  //UGD->v0 = v0;
 	    UID->metParams->z0_domain_flag=1;
@@ -187,6 +190,10 @@ int main(int argc, char *argv[])
             
             // run Balbi model to get new w0
             fire->run(solver, UGD);
+            
+	    // calculate plume potential
+
+	    fire->potential(UGD);
             
             // run wind solver
             solver->solve(UID, UGD, !arguments.solveWind);
@@ -212,12 +219,13 @@ int main(int argc, char *argv[])
         
         // save any fire data
         fire->save(output);
-        
+
         // advance time 
         t = fire->time;
         
-        std::cout<<"===================="<<std::endl;
+
     }
+
     
     exit(EXIT_SUCCESS);
 }

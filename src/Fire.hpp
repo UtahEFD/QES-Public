@@ -86,7 +86,8 @@ class Fire {
         std::vector<double> zStar;
       
         void run(Solver*, URBGeneralData*);
-        void move(Solver*, URBGeneralData*);      
+        void move(Solver*, URBGeneralData*);   
+	void potential(URBGeneralData*);   
         void save(Output*);
         double computeTimeStep();
         
@@ -114,7 +115,7 @@ class Fire {
         
         /// Declaration of output manager
         int output_counter=0;
-        std::vector<NcDim> dim_scalar_1,dim_scalar_3;
+        std::vector<NcDim> dim_scalar_1,dim_scalar_3,dim_scalar_4;
         std::vector<std::string> output_fields;
         
         struct AttScalarDbl {
