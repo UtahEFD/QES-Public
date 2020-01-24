@@ -107,7 +107,8 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     std::string yBCtype = PID->BCs->yBCtype;
     std::string zBCtype = PID->BCs->zBCtype;
 
-    // now set the boundary condition function for the plume runs, checking to make sure the input BCtypes are legitimate
+    // now set the boundary condition function for the plume runs, 
+    // & checking to make sure the input BCtypes are legitimate
     setBCfunctions(xBCtype,yBCtype,zBCtype);
     
     
@@ -197,8 +198,10 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         std::vector<particle> nextSetOfParticles(0);
         for (auto sidx=0u; sidx < dis->allSources.size(); sidx++) {
             int numParticles = dis->allSources[sidx]->emitParticles( (float)dt, (float)(tStep*dt), nextSetOfParticles );
-            if (numParticles > 0)
+            /* FM -> need to clean that
+	      if (numParticles > 0)
                 std::cout << "Emitting " << numParticles << " particles from source " << sidx << std::endl;
+	    */
         }
         
         dis->setParticleVals( turb, eul, nextSetOfParticles );
@@ -211,9 +214,11 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         {
             auto timerEnd_particleRelease = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed_particleRelease = timerEnd_particleRelease - timerStart_particleRelease;
-            std::cout << "finished emitting \"" << nextSetOfParticles.size() << "\" particles from \"" << dis->allSources.size() 
+            /* FM -> need to clean that
+	      std::cout << "finished emitting \"" << nextSetOfParticles.size() << "\" particles from \"" << dis->allSources.size() 
                     << "\" sources. Total numParticles = \"" << dis->pointList.size() << "\"" << std::endl;
-            std::cout << "\telapsed time: " << elapsed_particleRelease.count() << " s" << std::endl;   // Print out elapsed execution time
+		    std::cout << "\telapsed time: " << elapsed_particleRelease.count() << " s" << std::endl;   // Print out elapsed execution time
+	    */
         }
 
         // get the isRogue and isActive count from the dispersion class
@@ -631,29 +636,37 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         // I'm honestly confused why cBox gets set to zero, unless this is meant to cleanup for the next iteration. If this is so, then why do it in a way
         // that you can't output the information if you ever need to debug it? Seems like it should be a temporary variable then.
         if(timeStepStamp.at(tStep) >= sCBoxTime+avgTime )
-        {
+	  {
             //std::cout<<"loopPrm   :"<<loopPrm<<std::endl;
             //std::cout<<"loopLowestCell :"<<loopLowestCell<<std::endl;
-            double cc = (dt)/(avgTime*volume* dis->pointList.size() );
-            for(int k = 0; k < nBoxesZ; k++)
-            {
+	    
+	    // FM -> need ajust - multiply by the mass of the particle 
+	    //double cc = (dt)/(avgTime*volume* dis->pointList.size() );
+	    
+	    // FM - here: cc => in #/m3 
+	    double cc = (dt)/(PID->colParams->timeAvg*volume);
+	    
+	    for(int k = 0; k < nBoxesZ; k++)
+	      {
                 for(int j = 0; j < nBoxesY; j++)
-                {
+		  {
                     for(int i = 0; i < nBoxesX; i++)
-                    {
+		      {
                         int id = k*nBoxesY*nBoxesX + j*nBoxesX + i;
                         conc.at(id) = cBox.at(id)*cc;
                         cBox.at(id) = 0.0;
-                    }
+		      }
                 }
             }
-            save(output);
-            avgTime = avgTime + PID->colParams->timeAvg;    // I think this is updating the averaging time for the next loop
+            save(output,avgTime);
+	    // avgTime - updated to the time for the next average output
+            avgTime = avgTime + PID->colParams->timeAvg;    
         }
 
         if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == numTimeStep-1 )
         {
-            std::cout << "time = \"" << timeStepStamp.at(tStep) << "\", isRogueCount = \"" << dis->isRogueCount << "\", isActiveCount = \"" << dis->isActiveCount << "\"" << std::endl;
+            std::cout << "time = \"" << timeStepStamp.at(tStep) << "\", isRogueCount = \"" 
+		      << dis->isRogueCount << "\", isActiveCount = \"" << dis->isActiveCount << "\"" << std::endl;
         }
 
 
@@ -665,12 +678,13 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         // 
         // for now I want to keep them for the thesis work information and debugging
 
-    } // for(tStep=0; tStep<numTimeStep; tStep++)
+    } // end of loop: for(tStep=0; tStep<numTimeStep; tStep++)
 
     auto timerEnd_timeIntegration = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_timeIntegration = timerEnd_timeIntegration - timerStart_timeIntegration;
     std::cout << "time integration loop finished" << std::endl;
-    std::cout << "\telapsed time: " << elapsed_timeIntegration.count() << " s" << std::endl;   // Print out elapsed execution time
+    // Print out elapsed execution time
+    std::cout << "\telapsed time: " << elapsed_timeIntegration.count() << " s" << std::endl;   
 
     // if the debug output folder is an empty string "", the debug output variables won't be written
     writeSimInfoFile(dis,timeStepStamp.at(numTimeStep-1));
@@ -999,7 +1013,7 @@ void Plume::setFinishedParticleVals(double& xPos,double& yPos,double& zPos, cons
 }
 
 
-void Plume::save(Output* output)
+void Plume::save(Output* output,double time)
 {
     
     std::cout << "[Plume] \t Saving particle concentrations" << std::endl;
@@ -1015,7 +1029,8 @@ void Plume::save(Output* output)
     vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
     vector_size  = {1, static_cast<unsigned long>(nBoxesZ),static_cast<unsigned long>(nBoxesY), static_cast<unsigned long>(nBoxesX)};
     
-    timeOut = (double)output_counter;
+    timeOut=time;
+    //timeOut = (double)output_counter;
     
     // loop through 1D fields to save
     for (int i = 0; i < output_scalar_dbl.size(); i++)

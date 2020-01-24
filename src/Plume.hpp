@@ -38,7 +38,7 @@ class Plume {
                                                                             // also needs two CFL conditions, one for each particle time integration (particles have multiple timesteps smaller than the simulation timestep), and one for the eulerian grid go one cell at a time condition
                                                                             // finally, what output should be normally put out, and what output should only be put out when debugging is super important
 
-        void save(Output*);
+  void save(Output*,double);
         
     private:
         

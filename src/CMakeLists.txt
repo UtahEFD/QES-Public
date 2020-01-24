@@ -16,11 +16,14 @@ CUDA_ADD_LIBRARY( cudaplumecore
     Args.cpp
     Input.cpp
     NetCDFInput.cpp
+    NetCDFOutput.cpp
+    NetCDFOutputGeneric.cpp	
     Output.cpp
     Urb.cpp
     Turb.cpp
-    
+   
     particle.hpp
+
     SourcePoint.cpp SourcePoint.hpp
     SourceLine.cpp SourceLine.hpp
     SourceCircle.cpp SourceCircle.hpp
