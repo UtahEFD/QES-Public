@@ -1,7 +1,7 @@
 /**
 *  Fire.cpp
 *  
-*  This class models fire spread rate using Balbi (2019)
+*  This class models fire spread rate in QUIC using Balbi (2019), Baum & McCaffrey (1988), level set: Sethian
 *
 *  Created by Matthew Moody, Jeremy Gibbs on 12/27/18.
 */
@@ -11,7 +11,7 @@
 using namespace std;
 
 
-double PI = 3.14159265359;
+float PI = 3.14159265359;
 Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     
     // get domain information
@@ -106,7 +106,7 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     /**
      * Set up initial level set. Use signed distance function: swap to fast marching method in future.
      */
-    double sdf, sdf_min;
+    float sdf, sdf_min;
     for (int j = 0; j < ny-1; j++){
         for (int i = 0; i < nx-1; i++){
 	  int idx = i + j*(nx-1);
@@ -205,10 +205,10 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
 /**
  * Compute adaptive time step. Based on Courant criteria.
  */
-double Fire :: computeTimeStep() {
+float Fire :: computeTimeStep() {
     
     // spread rates
-    double r, r_max;
+    float r, r_max;
     
     // get max spread rate
     for (int j = 0; j < ny-1; j++){
@@ -230,16 +230,16 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
     /**
      * Calculate level set gradient and norm (Chapter 6, Sethian 2008)
      */
-    double dmx, dpx, dmy, dpy, n_star_x, n_star_y;
+    float dmx, dpx, dmy, dpy, n_star_x, n_star_y;
     for (int j = 1; j < ny-2; j++){
         for (int i = 1; i < nx-2; i++){
 	  int idx = i + j*(nx-1);       
 	  int idxjp = i + (j+1)*(nx-1);
 	  int idxjm = i + (j-1)*(nx-1);
-            dmx = (front_map[idx] - front_map[idxjm])/dx;
-            dpx = (front_map[idxjp] - front_map[idx])/dx;
-            dmy = (front_map[idx] - front_map[idx-1])/dy;
-            dpy = (front_map[idx+1] - front_map[idx])/dy;
+            dmy = (front_map[idx] - front_map[idxjm])/dx;
+            dpy = (front_map[idxjp] - front_map[idx])/dx;
+            dmx = (front_map[idx] - front_map[idx-1])/dy;
+            dpx = (front_map[idx+1] - front_map[idx])/dy;
             del_plus[idx] = sqrt(fmax(dmx,0)*fmax(dmx,0) + fmin(dpx,0)*fmin(dpx,0) + fmax(dmy,0)*fmax(dmy,0) + fmin(dpy,0)*fmin(dpy,0));
             del_min[idx] = sqrt(fmax(dpx,0)*fmax(dpx,0) + fmin(dmx,0)*fmin(dmx,0) + fmax(dpy,0)*fmax(dpy,0) + fmin(dmy,0)*fmin(dmy,0));
             n_star_x = dpx/sqrt(dpx*dpx + dpy*dpy) + dmx/sqrt(dmx*dmx + dpy*dpy) + dpx/sqrt(dpx*dpx + dmy*dmy) + dmx/sqrt(dmx*dmx + dmy*dmy);
@@ -259,10 +259,10 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
             struct FuelProperties* fuel = fire_cells[idx].fuel;
             // calculate mid-flame height
             int kh   = 0;
-            double H = fire_cells[idx].properties.h;
-            double T = UGD->terrain[idx];
-            double D = fuel->fueldepthm;
-            double FD = H + T + D;
+            float H = fire_cells[idx].properties.h;
+            float T = UGD->terrain[idx];
+            float D = fuel->fueldepthm;
+            float FD = H + T + D;
         
             if (H==0) {
                 kh = 1;
@@ -271,12 +271,12 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
             }
 
             // call u and v from URB General Data
-	    double cell_face = i + j*nx + kh*nx*ny;
-            double u = 0.5*(UGD->u[cell_face] + UGD->u[cell_face+1]);
-            double v = 0.5*(UGD->v[cell_face] + UGD->v[cell_face+nx]);
+	    int cell_face = i + j*nx + kh*nx*ny;
+            float u = 0.5*(UGD->u[cell_face] + UGD->u[cell_face+1]);
+            float v = 0.5*(UGD->v[cell_face] + UGD->v[cell_face+nx]);
             // call norm for cells
-            double x_norm = xNorm[idx];
-            double y_norm = yNorm[idx];
+            float x_norm = xNorm[idx];
+            float y_norm = yNorm[idx];
             // run Balbi model
             struct FireProperties fp = balbi(fuel,u,v,x_norm,y_norm,0.0,0.0650);
             fire_cells[idx].properties = fp;
@@ -291,7 +291,7 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
     
     // search predicate for burn state
     struct find_burn : std::unary_function<FireCell, bool> {
-        double burn;
+        float burn;
         find_burn(int burn):burn(burn) { }
         bool operator()(FireCell const& f) const {
             return f.state.burn_flag == burn;
@@ -323,13 +323,13 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
         int kh   = 0;                      ///< mid-flame height
 	int maxkh = 0;                     ///< max flame height
         //modify flame height by time on fire (assume linear functionality)
-        double H = fire_cells[id].properties.h*(1-(fire_cells[id].state.burn_time/fire_cells[id].properties.tau));
-	double maxH = fire_cells[id].properties.h;       
-	double T = UGD->terrain[id];
-        double D = fuel->fueldepthm;
+        float H = fire_cells[id].properties.h*(1-(fire_cells[id].state.burn_time/fire_cells[id].properties.tau));
+	float maxH = fire_cells[id].properties.h;       
+	float T = UGD->terrain[id];
+        float D = fuel->fueldepthm;
         
-        double FD = H/2.0 + T + D;
-	double MFD = maxH + T + D;
+        float FD = H/2.0 + T + D;
+	float MFD = maxH + T + D;
        
 
         if (H==0) {
@@ -348,14 +348,14 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
         int jj  = (id / (nx-1)) % (ny-1);
                         
         // get horizontal wind at flame height
-	double cell_face = ii + jj*nx + kh*ny*nx;
-        double u = 0.5*(UGD->u[cell_face] + UGD->u[cell_face+1]);
-        double v = 0.5*(UGD->v[cell_face] + UGD->v[cell_face+nx]);
+	int cell_face = ii + jj*nx + kh*ny*nx;
+        float u = 0.5*(UGD->u[cell_face] + UGD->u[cell_face+1]);
+        float v = 0.5*(UGD->v[cell_face] + UGD->v[cell_face+nx]);
         
         // run Balbi model
-        double x_norm = xNorm[id];
-        double y_norm = yNorm[id];
-        double burnTime = fire_cells[id].state.burn_time;
+        float x_norm = xNorm[id];
+        float y_norm = yNorm[id];
+        float burnTime = fire_cells[id].state.burn_time;
         struct FireProperties fp = balbi(fuel,u,v,x_norm,y_norm,0.0,0.0650);
         fire_cells[id].properties = fp;
         
@@ -417,12 +417,12 @@ void Fire :: potential(URBGeneralData* UGD){
     int pot_rStar = Potential.getVar("rStar").getDim(0).getSize();
     int pot_zStar = Potential.getVar("zStar").getDim(0).getSize();
     // Allocate variable arrays
-    std::vector<double> u_r(pot_z * pot_r);
-    std::vector<double> u_z(pot_z * pot_r);
-    std::vector<double> G(pot_G);
-    std::vector<double> Gprime(pot_G);
-    std::vector<double> rStar(pot_rStar);
-    std::vector<double> zStar(pot_zStar);
+    std::vector<float> u_r(pot_z * pot_r);
+    std::vector<float> u_z(pot_z * pot_r);
+    std::vector<float> G(pot_G);
+    std::vector<float> Gprime(pot_G);
+    std::vector<float> rStar(pot_rStar);
+    std::vector<float> zStar(pot_zStar);
     // Read start index and length to read
     std::vector<size_t> startIdxField = {0,0};
     std::vector<size_t> countsField = {static_cast<unsigned long>(pot_z),
@@ -457,19 +457,19 @@ void Fire :: potential(URBGeneralData* UGD){
 	if (burn_flag[id] == 1){
 	struct FireProperties fp = fire_cells[id].properties;
 	// Loop through horizontal domain
-	double ur, uz; 
-	double u_p; 	 					///< u velocity from potential field in target cell
-	double v_p; 						///< v velocity from potential field in target cell
-	double w_p;						///< w velocity from potential field in target cell
+	float ur, uz; 
+	float u_p; 	 					///< u velocity from potential field in target cell
+	float v_p; 						///< v velocity from potential field in target cell
+	float w_p;						///< w velocity from potential field in target cell
 
 	for (int ipot = 0; ipot<nx-1; ipot++) {
 	  for (int jpot = 0; jpot<ny-1; jpot++){
-	    double deltaX = (ipot-ii)*dx/fp.L_c;                      ///< distance between fire cell and target cell k in x direction
-	    double deltaY = (jpot-jj)*dy/fp.L_c;                      ///< distance between fire cell and target cell k in y direction
-	    double h_k = sqrt(deltaX*deltaX + deltaY*deltaY);         ///< radial distance from fire cell and target cell k in horizontal
+	    float deltaX = (ipot-ii)*dx/fp.L_c;                      ///< distance between fire cell and target cell k in x direction
+	    float deltaY = (jpot-jj)*dy/fp.L_c;                      ///< distance between fire cell and target cell k in y direction
+	    float h_k = sqrt(deltaX*deltaX + deltaY*deltaY);         ///< radial distance from fire cell and target cell k in horizontal
 	    // Loop through vertical cells
 	    for (int kpot = 1; kpot<nz-2; kpot++) {
-	      double z_k = (kpot)*dz/fp.L_c;                            ///< vertical distance between fire cell and target cell k
+	      float z_k = (kpot)*dz/fp.L_c;                            ///< vertical distance between fire cell and target cell k
 	      // if radius = 0
 	      if (h_k < 0.00001){
 
@@ -491,11 +491,14 @@ void Fire :: potential(URBGeneralData* UGD){
 		float zMinIdx = floor(z_k/dzStar);
 		float zMaxIdx = ceil(z_k/dzStar);
 		
-		ur = 0.25*(u_r[rMinIdx+zMinIdx*pot_r]+u_r[rMinIdx+zMaxIdx*pot_r]+u_r[rMaxIdx+zMinIdx*pot_r]+u_r[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_r, linear interpolate between values
+		//ur = 0.25*(u_r[rMinIdx+zMinIdx*pot_r]+u_r[rMinIdx+zMaxIdx*pot_r]+u_r[rMaxIdx+zMinIdx*pot_r]+u_r[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_r, linear interpolate between values
+
+		ur = 0.5*(u_r[rMinIdx + zMinIdx*pot_r]+u_r[rMaxIdx + zMinIdx*pot_r]);
 
 		//uz = 0.25*(u_z[rMinIdx+zMinIdx*pot_r]+u_z[rMinIdx+zMaxIdx*pot_r]+u_z[rMaxIdx+zMinIdx*pot_r]+u_z[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_z, linear interpolate between values
 
 		uz = 0.5*(u_z[rMinIdx + zMinIdx*pot_r]+u_z[rMinIdx + zMaxIdx*pot_r]);
+		
 		u_p = fp.U_c*ur*deltaX/h_k;          
 		v_p = fp.U_c*ur*deltaY/h_k;          
 		w_p = fp.U_c*uz;                         
@@ -503,14 +506,14 @@ void Fire :: potential(URBGeneralData* UGD){
 	      }
 	      // if outside potential field lookup use asymptotic functions for potential field
 	      else {
-		double zeta = sqrt(h_k*h_k + z_k*z_k);
-		double x1 = (1+cos(atan(h_k/z_k)))/2.0;
+		float zeta = sqrt(h_k*h_k + z_k*z_k);
+		float x1 = (1+cos(atan(h_k/z_k)))/2.0;
 		// lookup indices for G(x) and G'(x) - spans 0.5 to 1.0
 		int gMinIdx = floor(pot_G*(x1-.5)/.5);
 		int gMaxIdx = ceil(pot_G*(x1-.5)/.5);
 		// values for G and G'
-                double g_x = 0.5*(G[gMinIdx]+G[gMaxIdx]);
-		double gprime_x = 0.5*(G[gMinIdx]+G[gMaxIdx]);
+                float g_x = 0.5*(G[gMinIdx]+G[gMaxIdx]);
+		float gprime_x = 0.5*(G[gMinIdx]+G[gMaxIdx]);
 
 		ur = h_k/(2*PI*pow(zeta,(3/2.0))) + pow(zeta,(-1/3.0))*((5/6.0)*(1-2*x1)/sqrt(x1*(1-x1))*g_x - sqrt(x1*(1-x1))*gprime_x);
 		uz = z_k/(2*PI*pow(zeta,(3/2.0))) + pow(zeta,(-1/3.0))*((5/3.0)*g_x + (1-2*x1)/2.0*gprime_x);
@@ -588,122 +591,122 @@ void Fire :: move(Solver* solver, URBGeneralData* UGD){
 
 
 // Rothermel (1972) flame propgation model used for initial guess to Balbi
-double Fire :: rothermel(FuelProperties* fuel, double max_wind, double tanphi,double fmc_g) {
+float Fire :: rothermel(FuelProperties* fuel, float max_wind, float tanphi, float fmc_g) {
     
     // fuel properties
     int savr          = fuel->savr;
     int fueldens      = fuel->fueldens;
-    double st         = fuel->st;
-    double se         = fuel->se;
-    double fgi        = fuel->fgi;        
-    double fuelmce    = fuel->fuelmce;
-    double fuelheat   = fuel->fuelheat;
-    double fueldepthm = fuel->fueldepthm;
+    float st         = fuel->st;
+    float se         = fuel->se;
+    float fgi        = fuel->fgi;        
+    float fuelmce    = fuel->fuelmce;
+    float fuelheat   = fuel->fuelheat;
+    float fueldepthm = fuel->fueldepthm;
     
     // local fire variables
-    double bmst      = fmc_g/(1+fmc_g);
-    double fuelloadm = (1.-bmst)*fgi;
-    double fuelload  = fuelloadm*(pow(.3048, 2.0))*2.205;               // convert fuel load to lb/ft^2
-    double fueldepth = fueldepthm/0.3048;                               // to ft
-    double betafl    = fuelload/(fueldepth * fueldens);                 // packing ratio  jm: lb/ft^2/(ft * lb*ft^3) = 1
-    double betaop    = 3.348 * pow(savr, -0.8189);                      // optimum packing ratio jm: units?? 
-    double qig       = 250. + 1116.*fmc_g;                              // heat of preignition, btu/lb
-    double epsilon   = exp(-138./savr );                                // effective heating number
-    double rhob      = fuelload/fueldepth;                              // ovendry bulk density, lb/ft^3
-    double rtemp2    = pow(savr, 1.5);
-    double gammax    = rtemp2/(495. + 0.0594*rtemp2);                   // maximum rxn vel, 1/min
-    double ar        = 1./(4.774 * (pow(savr, 0.1)) - 7.27);            // coef for optimum rxn vel
-    double ratio     = betafl/betaop;   
-    double gamma     = gammax*((pow(ratio, ar))*(exp(ar*(1.-ratio))));  // optimum rxn vel, 1/min
-    double wn        = fuelload/(1 + st);                               // net fuel loading, lb/ft^2
-    double rtemp1    = fmc_g/fuelmce;
-    double etam      = 1.-2.59*rtemp1 +5.11*(pow(rtemp1, 2)) -3.52*(pow(rtemp1, 3));  // moist damp coef
-    double etas      = 0.174* pow(se, -0.19);                           // mineral damping coef
-    double ir        = gamma * wn * fuelheat * etam * etas;             // rxn intensity,btu/ft^2 min
-    double xifr      = exp((0.792 + 0.681*(pow(savr, 0.5)))*(betafl+0.1))/(192.+0.2595*savr);// propagating flux ratio   
-    double rothR0    = ir*xifr/(rhob*epsilon*qig);                      // SPREAD RATE [ft/s]
-    double R0        = rothR0 * .005080;                                // SPREAD RATE [m/s]
+    float bmst      = fmc_g/(1+fmc_g);
+    float fuelloadm = (1.-bmst)*fgi;
+    float fuelload  = fuelloadm*(pow(.3048, 2.0))*2.205;               // convert fuel load to lb/ft^2
+    float fueldepth = fueldepthm/0.3048;                               // to ft
+    float betafl    = fuelload/(fueldepth * fueldens);                 // packing ratio  jm: lb/ft^2/(ft * lb*ft^3) = 1
+    float betaop    = 3.348 * pow(savr, -0.8189);                      // optimum packing ratio jm: units?? 
+    float qig       = 250. + 1116.*fmc_g;                              // heat of preignition, btu/lb
+    float epsilon   = exp(-138./savr );                                // effective heating number
+    float rhob      = fuelload/fueldepth;                              // ovendry bulk density, lb/ft^3
+    float rtemp2    = pow(savr, 1.5);
+    float gammax    = rtemp2/(495. + 0.0594*rtemp2);                   // maximum rxn vel, 1/min
+    float ar        = 1./(4.774 * (pow(savr, 0.1)) - 7.27);            // coef for optimum rxn vel
+    float ratio     = betafl/betaop;   
+    float gamma     = gammax*((pow(ratio, ar))*(exp(ar*(1.-ratio))));  // optimum rxn vel, 1/min
+    float wn        = fuelload/(1 + st);                               // net fuel loading, lb/ft^2
+    float rtemp1    = fmc_g/fuelmce;
+    float etam      = 1.-2.59*rtemp1 +5.11*(pow(rtemp1, 2)) -3.52*(pow(rtemp1, 3));  // moist damp coef
+    float etas      = 0.174* pow(se, -0.19);                           // mineral damping coef
+    float ir        = gamma * wn * fuelheat * etam * etas;             // rxn intensity,btu/ft^2 min
+    float xifr      = exp((0.792 + 0.681*(pow(savr, 0.5)))*(betafl+0.1))/(192.+0.2595*savr);// propagating flux ratio   
+    float rothR0    = ir*xifr/(rhob*epsilon*qig);                      // SPREAD RATE [ft/s]
+    float R0        = rothR0 * .005080;                                // SPREAD RATE [m/s]
     
     return R0;
 
 }
 
 // Balbi (2019) fire propagation model
-struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, double v_mid, 
-                                          double x_norm, double y_norm, double tanphi,double fmc_g) {
+struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, float v_mid, 
+                                          float x_norm, float y_norm, float tanphi, float fmc_g) {
         
     // fuel properties
-    double fgi        = fuel->fgi;              ///< initial total mass of surface fuel [kg/m**2]
-    double fueldepthm = fuel->fueldepthm;       ///< fuel depth [m]
+    float fgi        = fuel->fgi;              ///< initial total mass of surface fuel [kg/m**2]
+    float fueldepthm = fuel->fueldepthm;       ///< fuel depth [m]
     int savr          = fuel->savr;             ///< fuel particle surface-area-to-volume ratio, [1/ft]
     int cmbcnst       = fuel->cmbcnst;          ///< joules per kg of dry fuel [J/kg]
     
     // universal constants
-    double g        = 9.81;                     ///< gravity 
-    double pi       = 3.14159265358979323846;   ///< pi
-    double s        = 17;                       ///< stoichiometric constant - Balbi 2018
-    double Chi_0    = 0.3;                      ///< thin flame radiant fraction - Balbi 2009
-    double B        = 5.67e-8;                  ///< Stefan-Boltzman 
-    double Deltah_v = 2.257e6;                  ///< water evap enthalpy [J/kg]
-    double C_p      = 2e3;                      ///< calorific capacity [J/kg] - Balbi 2009  
-    double C_pa     = 1150;                     ///< specific heat of air [J/Kg/K]
-    double tau_0    = 75591;                    ///< residence time coefficient - Anderson 196?
-    double tau      = 75591/(savr/0.3048);
+    float g        = 9.81;                     ///< gravity 
+    float pi       = 3.14159265358979323846;   ///< pi
+    float s        = 17;                       ///< stoichiometric constant - Balbi 2018
+    float Chi_0    = 0.3;                      ///< thin flame radiant fraction - Balbi 2009
+    float B        = 5.67e-8;                  ///< Stefan-Boltzman 
+    float Deltah_v = 2.257e6;                  ///< water evap enthalpy [J/kg]
+    float C_p      = 2e3;                      ///< calorific capacity [J/kg] - Balbi 2009  
+    float C_pa     = 1150;                     ///< specific heat of air [J/Kg/K]
+    float tau_0    = 75591;                    ///< residence time coefficient - Anderson 196?
+    float tau      = 75591/(savr/0.3048);
 
     // fuel constants
-    double m        = fmc_g;                    ///< fuel particle moisture content [0-1]
-    double sigma    = fgi;                      ///< dead fuel load [kg/m^2]
-    double sigmaT   = sigma;                    ///< total fuel load [kg/m^2]
-    double rhoFuel  = 1500;                     ///< fuel density [kg/m^3]
-    double T_i      = 600;                      ///< ignition temp [k]
+    float m        = fmc_g;                    ///< fuel particle moisture content [0-1]
+    float sigma    = fgi;                      ///< dead fuel load [kg/m^2]
+    float sigmaT   = sigma;                    ///< total fuel load [kg/m^2]
+    float rhoFuel  = 1500;                     ///< fuel density [kg/m^3]
+    float T_i      = 600;                      ///< ignition temp [k]
     
     // model parameters
-    double beta  = sigma/(fueldepthm*rhoFuel);  ///< packing ratio of dead fuel [eq.1]
-    double betaT = sigmaT/(fueldepthm*rhoFuel); ///< total packing ratio [eq.2]
-    double SAV   = savr/0.3048;                 ///< surface area to volume ratio [m^2/m^3]
-    double lai   = (SAV*fueldepthm*beta)/2;     ///< leaf Area Index for dead fuel [eq.3]
-    double nu    = fmin(2*lai,2*pi*beta/betaT); ///< absorption coefficient [eq.5]
-    double lv    = fueldepthm;                  ///< fuel length [m] ?? need better parameterization here
-    double K1    = 100;                         ///< drag force coefficient: 100 for field, 1400 for lab 
-    double r_00  = 2.5e-5;                      ///< model parameter ??
+    float beta  = sigma/(fueldepthm*rhoFuel);  ///< packing ratio of dead fuel [eq.1]
+    float betaT = sigmaT/(fueldepthm*rhoFuel); ///< total packing ratio [eq.2]
+    float SAV   = savr/0.3048;                 ///< surface area to volume ratio [m^2/m^3]
+    float lai   = (SAV*fueldepthm*beta)/2;     ///< leaf Area Index for dead fuel [eq.3]
+    float nu    = fmin(2*lai,2*pi*beta/betaT); ///< absorption coefficient [eq.5]
+    float lv    = fueldepthm;                  ///< fuel length [m] ?? need better parameterization here
+    float K1    = 100;                         ///< drag force coefficient: 100 for field, 1400 for lab 
+    float r_00  = 2.5e-5;                      ///< model parameter ??
     
     // Environmental Constants
-    double rhoAir = 1.125;                      ///< air Density [Kg/m^3]
-    double T_a    = 293.15;                     ///< air Temp [K]
-    double alpha = atan(tanphi);               ///< slope angle [rad]
-    double psi    = 0;                          ///< angle between wind and flame front [rad]
-    double phi    = 0;                          ///< angle between flame front vector and slope vector [rad]
+    float rhoAir = 1.125;                      ///< air Density [Kg/m^3]
+    float T_a    = 293.15;                     ///< air Temp [K]
+    float alpha = atan(tanphi);               ///< slope angle [rad]
+    float psi    = 0;                          ///< angle between wind and flame front [rad]
+    float phi    = 0;                          ///< angle between flame front vector and slope vector [rad]
 
-    double cos_psi = (u_mid*x_norm + v_mid*y_norm)/(sqrt(u_mid*u_mid + v_mid*v_mid)*sqrt(x_norm*x_norm + y_norm*y_norm));
+    float cos_psi = (u_mid*x_norm + v_mid*y_norm)/(sqrt(u_mid*u_mid + v_mid*v_mid)*sqrt(x_norm*x_norm + y_norm*y_norm));
    
-    double KDrag = K1*betaT*fmin(fueldepthm/lv,1);  ///< Drag force coefficient [eq.7]
+    float KDrag = K1*betaT*fmin(fueldepthm/lv,1);  ///< Drag force coefficient [eq.7]
 
-    double q = C_p*(T_i - T_a) + m*Deltah_v;        ///< Activation energy [eq.14]
+    float q = C_p*(T_i - T_a) + m*Deltah_v;        ///< Activation energy [eq.14]
 
-    double A = fmin(SAV/(2*pi),beta/betaT)*Chi_0*cmbcnst/(4*q);     ///< Radiant coefficient [eq.13]
+    float A = fmin(SAV/(2*pi),beta/betaT)*Chi_0*cmbcnst/(4*q);     ///< Radiant coefficient [eq.13]
     
     // Initial guess = Rothermel ROS 
-    double R = rothermel(fuel,max(u_mid,v_mid),tanphi,fmc_g);       ///< Total Rate of Spread (ROS) [m/s]
+    float R = rothermel(fuel,max(u_mid,v_mid),tanphi,fmc_g);       ///< Total Rate of Spread (ROS) [m/s]
     
     // Initial tilt angle guess = slope angle
-    double gamma  = alpha;    ///< Flame tilt angle
-    double maxIter = 100;
-    double R_tol   = 1e-5;
-    double iter    = 1;
-    double error   = 1;
-    double R_old   = R;
+    float gamma  = alpha;    ///< Flame tilt angle
+    float maxIter = 100;
+    float R_tol   = 1e-5;
+    float iter    = 1;
+    float error   = 1;
+    float R_old   = R;
     
     // find spread rates
-    double Chi;                     ///< Radiative fraction [-]
-    double TFlame;                  ///< Flame Temp [K]
-    double u0;                      ///< Upward gas velocity [m/s] 
-    double H;                       ///< Flame height [m]
-    double b;                       ///< Convective coefficient [-]
-    double ROSBase;                 ///< ROS from base radiation [m/s]
-    double ROSFlame;                ///< ROS from flame radiation [m/s]
-    double ROSConv;                 ///< ROS from convection [m/s] 
+    float Chi;                     ///< Radiative fraction [-]
+    float TFlame;                  ///< Flame Temp [K]
+    float u0;                      ///< Upward gas velocity [m/s] 
+    float H;                       ///< Flame height [m]
+    float b;                       ///< Convective coefficient [-]
+    float ROSBase;                 ///< ROS from base radiation [m/s]
+    float ROSFlame;                ///< ROS from flame radiation [m/s]
+    float ROSConv;                 ///< ROS from convection [m/s] 
     
-    double V_mid = sqrt(u_mid*u_mid + v_mid*v_mid);         ///< Midflame Wind Velocity [m/s]
+    float V_mid = sqrt(u_mid*u_mid + v_mid*v_mid);         ///< Midflame Wind Velocity [m/s]
     while (iter < maxIter && error > R_tol){
         Chi = Chi_0/(1 + R*cos(gamma)/(SAV*r_00));          //[eq.20]
         
@@ -738,13 +741,13 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,double u_mid, dou
     }
         
     // calculate flame depth
-    double L = R*tau;
+    float L = R*tau;
     // calculate heat release
-    double Q0 = cmbcnst*fgi*dx*dy/tau;
-    double H0 = (1-Chi)*Q0;
+    float Q0 = cmbcnst*fgi*dx*dy/tau;
+    float H0 = (1-Chi)*Q0;
     // calculate plume centerline characteristic velocity and length
-    double U_c = pow(g*g*H0/rhoAir/T_a/C_p, 1/5);
-    double L_c = pow(H0/rhoAir/C_p/T_a/pow(g, 1/2), 2/5);
+    float U_c = pow(g*g*H0/rhoAir/T_a/C_p, 1/5);
+    float L_c = pow(H0/rhoAir/C_p/T_a/pow(g, 1/2), 2/5);
 
     // struct to hold computed fire properties
     struct FireProperties fp;

@@ -1,6 +1,6 @@
 <simulationParameters>
-	<domain> 50 50 40 </domain>
-	<cellSize> 1.0 1.0 0.25 </cellSize> <!-- Meters-->
+	<domain> 100 100 160 </domain>
+	<cellSize> 1.0 1.0 .25 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 120 </totalTimeIncrements>
 	<UTCConversion> 0 </UTCConversion>
@@ -46,8 +46,8 @@
 	<fuelType>4</fuelType>
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight>
-    <xStart> 25.0 </xStart>
-    <yStart> 25.0 </yStart>
+    <xStart> 50.0 </xStart>
+    <yStart> 50.0 </yStart>
     <length> 1.0 </length>
     <width>  1.0 </width>
     <courant> 0.25 </courant>
@@ -57,7 +57,6 @@
 	<outputFields>u</outputFields> 
 	<outputFields>v</outputFields> 
 	<outputFields>w</outputFields>
-	<outputFields>wp</outputFields>
 	<outputFields>icell</outputFields>
 	<outputFields>burn</outputFields> 
 	<outputFields>time</outputFields> 

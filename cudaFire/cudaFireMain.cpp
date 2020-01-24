@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
     Fire* fire = new Fire(UID, UGD, output);
     
     // set base w in fire model to initial w0
-    fire->w_base = w0;
+    //fire->w_base = w0;
     
     // Run initial solver to generate full field
     solver->solve(UID, UGD, !arguments.solveWind);
@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
 	  //UGD->v0 = v0;
 	    UID->metParams->z0_domain_flag=1;
 	    UID->metParams->sensors[0]->inputWindProfile(UID, UGD);
-            UGD->w0 = w0;
+            //UGD->w0 = w0;
 	    
             solver->solve(UID, UGD, !arguments.solveWind);
 	    
