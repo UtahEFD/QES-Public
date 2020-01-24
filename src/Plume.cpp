@@ -6,7 +6,8 @@
 
 #include "Plume.hpp"
 
-Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
+Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output,
+	     PlumeOutputEulerian* outputEul) {
     
     std::cout<<"[Plume] \t Setting up particles "<<std::endl;
     
@@ -171,7 +172,8 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
 }
 
 
-void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID, Output* output)
+void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID, Output* output,
+	        PlumeOutputEulerian* outputEul)
 {
     std::cout << "[Plume] \t Advecting particles " << std::endl;
 
@@ -613,7 +615,9 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         dis->isRogueCount = isRogueCount;
         dis->isActiveCount = isActiveCount;
 
-
+	// FM -> EulerianFiles output
+	outputEul->save(dis,timeStepStamp.at(tStep));
+	
         if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == numTimeStep-1 )
         {
             auto timerEnd_advection = std::chrono::high_resolution_clock::now();

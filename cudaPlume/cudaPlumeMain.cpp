@@ -12,6 +12,11 @@
 #include "Turb.hpp"
 #include "Input.hpp"
 #include "NetCDFInput.h"
+
+#include "NetCDFOutputGeneric.h"
+#include "PlumeOutputEulerian.h"
+
+
 #include "Output.hpp"
 #include "Eulerian.h"
 #include "Dispersion.h"
@@ -81,7 +86,8 @@ int main(int argc, char** argv)
 
     // Create instance of output class
     Output* output = new Output(arguments.outputFile);
-    
+   
+
     // Create instance of cudaUrb class
     Urb* urb = new Urb(inputUrb);
     
@@ -93,12 +99,17 @@ int main(int argc, char** argv)
     
     // Create instance of Dispersion class
     Dispersion* dis = new Dispersion(urb,turb,PID,eul,arguments.debugOutputFolder);
-    
+       
+    // FM create output instance
+    std::string fname=arguments.outputFile;
+    fname.append("_test.nc");
+    PlumeOutputEulerian* outputEul= new PlumeOutputEulerian(dis,PID,fname);
+
     // Create instance of Plume model class
-    Plume* plume = new Plume(urb,dis,PID,output);
+    Plume* plume = new Plume(urb,dis,PID,output,outputEul);
     
     // Run plume advection model
-    plume->run(urb,turb,eul,dis,PID,output);
+    plume->run(urb,turb,eul,dis,PID,output,outputEul);
     
     // compute run time information
     clock_gettime(CLOCK_MONOTONIC, &finish);
