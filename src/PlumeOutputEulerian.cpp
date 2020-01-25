@@ -1,13 +1,13 @@
 #include "PlumeOutputEulerian.h"
 
-PlumeOutputEulerian::PlumeOutputEulerian(const Dispersion* disp,const PlumeInputData* PID,std::string output_file)
+PlumeOutputEulerian::PlumeOutputEulerian(Dispersion* dis,PlumeInputData* PID,std::string output_file)
   : NetCDFOutputGeneric(output_file)
 {
   
   /* --------------------------------------------------------
      setup the sampling box concentration information 
      -------------------------------------------------------- */
-  
+
   // time to start averaging the concentration
   sCBoxTime = PID->colParams->timeStart;
   // time to output the concentration (1st output -> updated each time)
@@ -36,8 +36,7 @@ PlumeOutputEulerian::PlumeOutputEulerian(const Dispersion* disp,const PlumeInput
   xBoxCen.resize(nBoxesX);
   yBoxCen.resize(nBoxesY);
   zBoxCen.resize(nBoxesZ);
-  
-  
+
   int zR = 0, yR = 0, xR = 0;
   for(int k = 0; k < nBoxesZ; ++k) {
     zBoxCen.at(k) = lBndz + (zR*boxSizeZ) + (boxSizeZ/2.0);
@@ -56,6 +55,9 @@ PlumeOutputEulerian::PlumeOutputEulerian(const Dispersion* disp,const PlumeInput
   cBox.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
   conc.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
   
+  // copy of disp pointer
+  disp=dis;
+
   /* --------------------------------------------------------
      setup the output information 
      -------------------------------------------------------- */
@@ -102,7 +104,7 @@ PlumeOutputEulerian::PlumeOutputEulerian(const Dispersion* disp,const PlumeInput
 }
 
 // Save output at cell-centered values
-void PlumeOutputEulerian::save(const Dispersion *disp,const float currentTime)
+void PlumeOutputEulerian::save(float currentTime)
 {
   // if past the time to start averaging => calculate the concentration
   // count particule in sampling box

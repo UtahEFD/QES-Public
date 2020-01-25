@@ -103,13 +103,17 @@ class NetCDFOutputGeneric : public NetCDFOutput
   // save fields 
   void saveOutputFields();
 
+  // main save function 
+  virtual void save(float) = 0;
+
  protected:
   
   virtual bool validateFileOtions() 
   {
     return true;
   };
-  
+
+
   int output_counter=0;
   double time=0;
 

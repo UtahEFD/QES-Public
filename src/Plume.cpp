@@ -616,7 +616,7 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         dis->isActiveCount = isActiveCount;
 
 	// FM -> EulerianFiles output
-	outputEul->save(dis,timeStepStamp.at(tStep));
+	outputEul->save(timeStepStamp.at(tStep));
 	
         if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == numTimeStep-1 )
         {

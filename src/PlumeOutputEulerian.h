@@ -17,12 +17,12 @@ class PlumeOutputEulerian : public NetCDFOutputGeneric
  PlumeOutputEulerian()
    : NetCDFOutputGeneric()
     {}
-  PlumeOutputEulerian(const Dispersion*,const PlumeInputData*,std::string);
+  PlumeOutputEulerian(Dispersion*,PlumeInputData*,std::string);
   ~PlumeOutputEulerian()	       
     {}
   
   // output averaged concentration (call called from outside)
-  void save(const Dispersion*,const float);
+  void save(float);
   
  private:
   // count number of particule in sampling box (can only be called by member)
@@ -59,4 +59,5 @@ class PlumeOutputEulerian : public NetCDFOutputGeneric
   // concentration values (for output)
   std::vector<float> conc;      
   
+  Dispersion* disp;
 };
