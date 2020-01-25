@@ -72,6 +72,10 @@ public:
     {
     }
 
+  int getNumParticles() {
+    return m_numParticles;
+  }
+
     // this function lets you take a string version of the release type and convert it to the enum data type
     // useful for processing inputs from an xml file that use strings instead of the enum version of the ParticleReleaseTypes
     void setReleaseType(std::string releaseType)
