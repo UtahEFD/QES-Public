@@ -31,19 +31,17 @@ class Plume {
     
     public:
         
-  Plume(Urb*,Dispersion*,PlumeInputData*,Output*);
+  Plume(Urb*,Dispersion*,PlumeInputData*);
   // first makes a copy of the urb grid number of values and the domain size as determined by dispersion
   // then sets the initial data by first calculating the concentration sampling box information for output
   // next copies important input time values and calculates needed time information
   // next sets up the boundary condition functions
   // finally, the output information is setup
   
-  void run(Urb*,Turb*,Eulerian*,Dispersion*,PlumeInputData*,Output*,std::vector<NetCDFOutputGeneric*>);
+  void run(Urb*,Turb*,Eulerian*,Dispersion*,PlumeInputData*,std::vector<NetCDFOutputGeneric*>);
   // has a much cleaner solver now, but at some time needs the boundary conditions adapted to vary for more stuff
   // also needs two CFL conditions, one for each particle time integration (particles have multiple timesteps smaller than the simulation timestep), and one for the eulerian grid go one cell at a time condition
   // finally, what output should be normally put out, and what output should only be put out when debugging is super important
-  
-  void save(Output*,double);
         
     private:
         
@@ -65,18 +63,6 @@ class Plume {
         double domainYend;      // the domain ending y value, a copy of the value found by dispersion
         double domainZstart;    // the domain starting z value, a copy of the value found by dispersion
         double domainZend;      // the domain ending z value, a copy of the value found by dispersion
-
-
-        // output concentration box data
-        double sCBoxTime;           // a copy of the input startTime, which is the starting time for averaging of the output concentration sampling
-        double avgTime;            // this is a copy of the input timeAvg
-        int nBoxesX,nBoxesY,nBoxesZ;    // these are copies of the input nBoxesX,Y, and Z. These parameters are the number of boxes to use in the concentration sampling for output
-        double lBndx,lBndy,lBndz,uBndx,uBndy,uBndz;     // these are copies of the input parameters boxBoundsX1, boxBoundsX2, boxBoundsY1, ... . These are the upper and lower bounds in each direction of the concentration sampling boxes for output
-        double boxSizeX,boxSizeY,boxSizeZ;      // these are the box sizes in each direction, taken by dividing the box bounds by the number of boxes to use, where these boxes are for concentration sampling for output
-        double volume;      // this is the volume of the boxes to use in the concentration sampling for output. Is nBoxesX*nBoxesY*nBoxesZ
-        std::vector<double> xBoxCen,yBoxCen,zBoxCen;    // I believe these are the list of x,y, and z points for the concentration sampling box information
-        std::vector<double> cBox,conc;      // these are the concentration box and concentration values for the simulation
-
 
         // input time variables
         double dt;          // this is a copy of the input timeStep
@@ -116,42 +102,7 @@ class Plume {
         void setFinishedParticleVals(double& xPos,double& yPos,double& zPos, const bool& isActive, const bool& isRogue);
 
         
-        // functions used to average the output concentrations
-        void average(const int, const Dispersion*, const Urb*);     // this one is called right at output. Going to keep. Calculates the concentration averages
-        
         void writeSimInfoFile(Dispersion* dis, const double& current_time);
         
-
-        // output manager
-        // looks like the main variables to output are concentration at each x,y, and z position for each time
-        // where the values are only for the concentration sampling boxes and concentration sampling times as calculated during the constructor setup
-        int output_counter = 0;
-        double timeOut = 0;
-        std::vector<NcDim> dim_scalar_t;
-        std::vector<NcDim> dim_scalar_z;
-        std::vector<NcDim> dim_scalar_y;
-        std::vector<NcDim> dim_scalar_x;
-        std::vector<NcDim> dim_vector;
-        
-        struct AttScalarDbl {
-            double* data;
-            std::string name;
-            std::string long_name;
-            std::string units;
-            std::vector<NcDim> dimensions;
-        };
-        
-        struct AttVectorDbl {
-            std::vector<double>* data;
-            std::string name;
-            std::string long_name;
-            std::string units;
-            std::vector<NcDim> dimensions;
-        };
-        std::map<std::string,AttScalarDbl> map_att_scalar_dbl;
-        std::map<std::string,AttVectorDbl> map_att_vector_dbl; 
-        std::vector<AttScalarDbl> output_scalar_dbl;       
-        std::vector<AttVectorDbl> output_vector_dbl;
-
 };
 #endif

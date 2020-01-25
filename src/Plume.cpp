@@ -6,7 +6,7 @@
 
 #include "Plume.hpp"
 
-Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
+Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID) {
     
     std::cout<<"[Plume] \t Setting up particles "<<std::endl;
     
@@ -25,58 +25,7 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     domainYstart = dis->domainYstart;
     domainYend = dis->domainYend;
     domainZstart = dis->domainZstart;
-    domainZend = dis->domainZend;
-    
-    /* setup the sampling box concentration information */
-
-    sCBoxTime = PID->colParams->timeStart;
-    avgTime  = PID->colParams->timeAvg;
-
-    nBoxesX = PID->colParams->nBoxesX;
-    nBoxesY = PID->colParams->nBoxesY;
-    nBoxesZ = PID->colParams->nBoxesZ;
-
-    lBndx = PID->colParams->boxBoundsX1;
-    uBndx = PID->colParams->boxBoundsX2;
-    lBndy = PID->colParams->boxBoundsY1;
-    uBndy = PID->colParams->boxBoundsY2;
-    lBndz = PID->colParams->boxBoundsZ1;
-    uBndz = PID->colParams->boxBoundsZ2;
-    
-    boxSizeX = (uBndx-lBndx)/(nBoxesX);
-    boxSizeY = (uBndy-lBndy)/(nBoxesY);
-    boxSizeZ = (uBndz-lBndz)/(nBoxesZ);
-    
-    volume = boxSizeX*boxSizeY*boxSizeZ;
-    
-    
-    xBoxCen.resize(nBoxesX);
-    yBoxCen.resize(nBoxesY);
-    zBoxCen.resize(nBoxesZ);
-    
-    
-    int zR = 0;
-    int yR = 0;
-    int xR = 0;
-    for(int k = 0; k < nBoxesZ; ++k)
-    {
-        zBoxCen.at(k) = lBndz + (zR*boxSizeZ) + (boxSizeZ/2.0);
-        zR++;
-    }
-    for(int j = 0; j < nBoxesY; ++j)
-    {
-        yBoxCen.at(j) = lBndy + (yR*boxSizeY) + (boxSizeY/2.0);
-        yR++;
-    }
-    for(int i = 0; i <nBoxesX; ++i)
-    {
-        xBoxCen.at(i) = lBndx + (xR*boxSizeX) + (boxSizeX/2.0);
-        xR++;
-    }
-
-    cBox.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
-    conc.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
-    
+    domainZend = dis->domainZend; 
     
     /* make copies of important input time variables */
 
@@ -92,7 +41,6 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
         timeStepStamp.at(i) = i*dt + dt;
     }
     
-
     // set additional values from the input
     invarianceTol = PID->simParams->invarianceTol;
     C_0 = PID->simParams->C_0;
@@ -110,68 +58,11 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     // now set the boundary condition function for the plume runs, 
     // & checking to make sure the input BCtypes are legitimate
     setBCfunctions(xBCtype,yBCtype,zBCtype);
-    
-    
-    /* setup output information */
-
-    // set cell-centered dimensions
-    NcDim t_dim = output->addDimension("t");
-    NcDim z_dim = output->addDimension("z",nBoxesZ);
-    NcDim y_dim = output->addDimension("y",nBoxesY);
-    NcDim x_dim = output->addDimension("x",nBoxesX);
-
-    dim_scalar_t.push_back(t_dim);
-    dim_scalar_z.push_back(z_dim);
-    dim_scalar_y.push_back(y_dim);
-    dim_scalar_x.push_back(x_dim);
-    
-    dim_vector.push_back(t_dim);
-    dim_vector.push_back(z_dim);
-    dim_vector.push_back(y_dim);
-    dim_vector.push_back(x_dim);
-
-    // create attributes
-    AttScalarDbl att_t     = {&timeOut, "t",    "time",        "s",  dim_scalar_t};
-
-    AttVectorDbl att_x     = {&xBoxCen, "x",    "x-distance",  "m",  dim_scalar_x};
-    AttVectorDbl att_y     = {&yBoxCen, "y",    "y-distance",  "m",  dim_scalar_y};
-    AttVectorDbl att_z     = {&zBoxCen, "z",    "z-distance",  "m",  dim_scalar_z};
-    AttVectorDbl att_conc  = {&conc,    "conc", "concentration","--", dim_vector};
-
-#if 0
-    AttVectorDbl att_px     = {&xBoxCen, "xp", "x-position of particle","m",dim_scalar_x};
-    AttVectorDbl att_py     = {&yBoxCen, "yp", "y-position of particle","m",dim_scalar_y};
-    AttVectorDbl att_pz     = {&zBoxCen, "zp", "z-position of particle","m",dim_scalar_z};
-#endif
-    
-    // map the name to attributes
-    map_att_scalar_dbl.emplace("t", att_t);
-    map_att_vector_dbl.emplace("x", att_x);
-    map_att_vector_dbl.emplace("y", att_y);
-    map_att_vector_dbl.emplace("z", att_z);
-    map_att_vector_dbl.emplace("conc", att_conc);
-    
-    // stage fields for output
-    output_scalar_dbl.push_back(map_att_scalar_dbl["t"]);
-    output_vector_dbl.push_back(map_att_vector_dbl["x"]);
-    output_vector_dbl.push_back(map_att_vector_dbl["y"]);
-    output_vector_dbl.push_back(map_att_vector_dbl["z"]);
-    output_vector_dbl.push_back(map_att_vector_dbl["conc"]);
-
-    // add scalar double fields
-    for ( AttScalarDbl att : output_scalar_dbl ) {
-        output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
-    }
-
-    // add vector double fields
-    for ( AttVectorDbl att : output_vector_dbl ) {
-        output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
-    }
 
 }
 
 
-void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID, Output* output,
+void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID,
 	        std::vector<NetCDFOutputGeneric*> outputVec)
 {
     std::cout << "[Plume] \t Advecting particles " << std::endl;
@@ -626,47 +517,6 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
             std::cout << "\telapsed time: " << elapsed_advection.count() << " s" << std::endl;   // Print out elapsed execution time
         }
 
-
-        
-        // this is basically saying, if we are past the time to start averaging values to calculate the concentration,
-        // then calculate the average, where average does . . .
-        if( timeStepStamp.at(tStep) >= sCBoxTime )
-        {
-            average(tStep,dis,urb);
-        }
-
-        // this is basically saying, if the current time has passed a time that we should be outputting values at,
-        // then calculate the concentrations for the sampling boxes, save the output for this timestep, and update time counter for when to do it again.
-        // I'm honestly confused why cBox gets set to zero, unless this is meant to cleanup for the next iteration. If this is so, then why do it in a way
-        // that you can't output the information if you ever need to debug it? Seems like it should be a temporary variable then.
-        if(timeStepStamp.at(tStep) >= sCBoxTime+avgTime )
-	  {
-            //std::cout<<"loopPrm   :"<<loopPrm<<std::endl;
-            //std::cout<<"loopLowestCell :"<<loopLowestCell<<std::endl;
-	    
-	    // FM -> need ajust - multiply by the mass of the particle 
-	    //double cc = (dt)/(avgTime*volume* dis->pointList.size() );
-	    
-	    // FM - here: cc => in #/m3 
-	    double cc = (dt)/(PID->colParams->timeAvg*volume);
-	    
-	    for(int k = 0; k < nBoxesZ; k++)
-	      {
-                for(int j = 0; j < nBoxesY; j++)
-		  {
-                    for(int i = 0; i < nBoxesX; i++)
-		      {
-                        int id = k*nBoxesY*nBoxesX + j*nBoxesX + i;
-                        conc.at(id) = cBox.at(id)*cc;
-                        cBox.at(id) = 0.0;
-		      }
-                }
-            }
-            save(output,avgTime);
-	    // avgTime - updated to the time for the next average output
-            avgTime = avgTime + PID->colParams->timeAvg;    
-        }
-
         if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == numTimeStep-1 )
         {
             std::cout << "time = \"" << timeStepStamp.at(tStep) << "\", isRogueCount = \"" 
@@ -1014,116 +864,6 @@ void Plume::setFinishedParticleVals(double& xPos,double& yPos,double& zPos, cons
         yPos = -999.0;
         zPos = -999.0;
     }
-}
-
-
-void Plume::save(Output* output,double time)
-{
-    
-    std::cout << "[Plume] \t Saving particle concentrations" << std::endl;
-    
-    // output size and location
-    std::vector<size_t> scalar_index;
-    std::vector<size_t> scalar_size;
-    std::vector<size_t> vector_index;
-    std::vector<size_t> vector_size;
-    
-    scalar_index = {static_cast<unsigned long>(output_counter)};
-    scalar_size  = {1};
-    vector_index = {static_cast<size_t>(output_counter), 0, 0, 0};
-    vector_size  = {1, static_cast<unsigned long>(nBoxesZ),static_cast<unsigned long>(nBoxesY), static_cast<unsigned long>(nBoxesX)};
-    
-    timeOut=time;
-    //timeOut = (double)output_counter;
-    
-    // loop through 1D fields to save
-    for (int i = 0; i < output_scalar_dbl.size(); i++)
-    {
-        output->saveField1D(output_scalar_dbl[i].name, scalar_index, output_scalar_dbl[i].data);
-    }
-    
-    // loop through 2D double fields to save
-    for (int i = 0; i < output_vector_dbl.size(); i++)
-    {
-
-        // x,y,z, terrain saved once with no time component
-        if( i < 3 && output_counter == 0 )
-        {
-            output->saveField2D(output_vector_dbl[i].name, *output_vector_dbl[i].data);
-        } else
-        {
-            output->saveField2D(output_vector_dbl[i].name, vector_index,
-                                vector_size, *output_vector_dbl[i].data);
-        }
-    }
-
-    // remove x, y, z, terrain from output array after first save
-    if( output_counter == 0 )
-    {
-        output_vector_dbl.erase(output_vector_dbl.begin(),output_vector_dbl.begin()+3);
-    }
-
-    // increment for next time insertion
-    output_counter +=1;
-
-}
-
-
-
-void Plume::average(const int tStep,const Dispersion* dis, const Urb* urb)
-{
-    // for all particles see where they are relative to the
-    // concentration collection boxes
-    for(int i = 0; i < dis->pointList.size(); i++)
-    {
-        
-        double xPos = dis->pointList.at(i).xPos;
-        double yPos = dis->pointList.at(i).yPos;
-        double zPos = dis->pointList.at(i).zPos;
-        
-        if ( (xPos > 0.0 && yPos > 0.0 && zPos > 0.0) &&
-             (xPos < (nx*dx)) && (yPos < (ny*dy)) && (zPos < (nz*dz)) ) {
-            
-            // ????
-            if( zPos == -1 )
-            {
-                continue;
-            }
-
-            // Calculate which collection box this particle is currently
-            // in
-
-            int iV = int(xPos/dx);
-            int jV = int(yPos/dy);
-            int kV = int(zPos/dz) + 1;    // why is this + 1 here? Probably is assuming a periodic grid for some dimensions, or to capture a right hand side wall? no idea
-            int idx = (int)((xPos-lBndx)/boxSizeX);
-            int idy = (int)((yPos-lBndy)/boxSizeY);
-            int idz = (int)((zPos-lBndz)/boxSizeZ);
-
-            if( xPos < lBndx )
-            {
-                idx = -1;
-            }
-            if( yPos < lBndy )
-            {
-                idy = -1;
-            }
-            if( zPos < lBndz )
-            {
-                idz = -1;
-            }
-
-            int id = 0;
-            // if( idx >= 0 && idx < nBoxesX && idy >= 0 && idy < nBoxesY && idz >= 0 && idz < nBoxesZ && dis->pointList.at(i).tStrt <= timeStepStamp.at(tStep) )
-            if( idx >= 0 && idx < nBoxesX && idy >= 0 && idy < nBoxesY && idz >= 0 && idz < nBoxesZ )
-            {
-                id = idz*nBoxesY*nBoxesX + idy*nBoxesX + idx;
-                cBox.at(id) = cBox.at(id) + 1.0;
-            }
-        }
-        
-    }   // particle loop
-
 }
 
 void Plume::writeSimInfoFile(Dispersion* dis, const double& current_time)
