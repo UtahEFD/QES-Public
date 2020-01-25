@@ -31,14 +31,14 @@ class Plume {
     
     public:
         
-  Plume(Urb*,Dispersion*,PlumeInputData*,Output*,PlumeOutputEulerian*);
+  Plume(Urb*,Dispersion*,PlumeInputData*,Output*);
   // first makes a copy of the urb grid number of values and the domain size as determined by dispersion
   // then sets the initial data by first calculating the concentration sampling box information for output
   // next copies important input time values and calculates needed time information
   // next sets up the boundary condition functions
   // finally, the output information is setup
   
-  void run(Urb*,Turb*,Eulerian*,Dispersion*,PlumeInputData*,Output*,PlumeOutputEulerian*);
+  void run(Urb*,Turb*,Eulerian*,Dispersion*,PlumeInputData*,Output*,std::vector<NetCDFOutputGeneric*>);
   // has a much cleaner solver now, but at some time needs the boundary conditions adapted to vary for more stuff
   // also needs two CFL conditions, one for each particle time integration (particles have multiple timesteps smaller than the simulation timestep), and one for the eulerian grid go one cell at a time condition
   // finally, what output should be normally put out, and what output should only be put out when debugging is super important

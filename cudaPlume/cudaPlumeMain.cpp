@@ -101,15 +101,17 @@ int main(int argc, char** argv)
     Dispersion* dis = new Dispersion(urb,turb,PID,eul,arguments.debugOutputFolder);
        
     // FM create output instance
+    std::vector<NetCDFOutputGeneric*> outputVec;
+
     std::string fname=arguments.outputFile;
     fname.append("_test.nc");
-    PlumeOutputEulerian* outputEul= new PlumeOutputEulerian(dis,PID,fname);
-
+    outputVec.push_back(new PlumeOutputEulerian(dis,PID,fname));
+    
     // Create instance of Plume model class
-    Plume* plume = new Plume(urb,dis,PID,output,outputEul);
+    Plume* plume = new Plume(urb,dis,PID,output);
     
     // Run plume advection model
-    plume->run(urb,turb,eul,dis,PID,output,outputEul);
+    plume->run(urb,turb,eul,dis,PID,output,outputVec);
     
     // compute run time information
     clock_gettime(CLOCK_MONOTONIC, &finish);

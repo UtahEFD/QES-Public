@@ -6,8 +6,7 @@
 
 #include "Plume.hpp"
 
-Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output,
-	     PlumeOutputEulerian* outputEul) {
+Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output) {
     
     std::cout<<"[Plume] \t Setting up particles "<<std::endl;
     
@@ -173,7 +172,7 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID, Output* output,
 
 
 void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID, Output* output,
-	        PlumeOutputEulerian* outputEul)
+	        std::vector<NetCDFOutputGeneric*> outputVec)
 {
     std::cout << "[Plume] \t Advecting particles " << std::endl;
 
@@ -616,7 +615,8 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         dis->isActiveCount = isActiveCount;
 
 	// FM -> EulerianFiles output
-	outputEul->save(timeStepStamp.at(tStep));
+	for(auto id_out=0;id_out<outputVec.size();id_out++)
+	  outputVec.at(id_out)->save(timeStepStamp.at(tStep));
 	
         if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == numTimeStep-1 )
         {
