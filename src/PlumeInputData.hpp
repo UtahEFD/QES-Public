@@ -40,7 +40,7 @@ class PlumeInputData : public ParseInterface {
     	    parseElement<CollectionParameters>(true, colParams, "collectionParameters");
     	    parseElement<FileOptions>(true, fileOptions, "fileOptions");
     	    parseElement<Sources>(false, sources, "sources");
-			parseElement<BoundaryConditions>(true, BCs, "boundaryConditions");
+	    parseElement<BoundaryConditions>(true, BCs, "boundaryConditions");
 
     	}
         /**

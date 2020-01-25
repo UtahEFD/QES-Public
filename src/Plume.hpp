@@ -97,8 +97,8 @@ private:
 	       double& A_23,double& A_31,double& A_32,double& A_33);
   void matmult(const double& A_11,const double& A_12,const double& A_13,
 	       const double& A_21,const double& A_22,const double& A_23,
-	       const double& A_31,const double& A_32,const double& A_33,c
-	       onst double& b_11,const double& b_21,const double& b_31,
+	       const double& A_31,const double& A_32,const double& A_33,
+	       const double& b_11,const double& b_21,const double& b_31,
 	       double& x_11, double& x_21, double& x_31);
   
   // might need to create multiple versions depending on the selection of boundary condition types by the inputs
