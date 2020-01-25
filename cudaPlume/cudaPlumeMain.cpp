@@ -84,8 +84,8 @@ int main(int argc, char** argv)
 
 #endif
 
-    // Create instance of output class
-    Output* output = new Output(arguments.outputFile);
+    // Create instance of output class (obsolete)
+    //Output* output = new Output(arguments.outputFile);
    
 
     // Create instance of cudaUrb class
@@ -102,16 +102,13 @@ int main(int argc, char** argv)
        
     // FM create output instance
     std::vector<NetCDFOutputGeneric*> outputVec;
-
-    std::string fname=arguments.outputFile;
-    fname.append("_test.nc");
-    outputVec.push_back(new PlumeOutputEulerian(dis,PID,fname));
+    outputVec.push_back(new PlumeOutputEulerian(dis,PID,arguments.outputFile));
     
     // Create instance of Plume model class
-    Plume* plume = new Plume(urb,dis,PID,output);
+    Plume* plume = new Plume(urb,dis,PID);
     
     // Run plume advection model
-    plume->run(urb,turb,eul,dis,PID,output,outputVec);
+    plume->run(urb,turb,eul,dis,PID,outputVec);
     
     // compute run time information
     clock_gettime(CLOCK_MONOTONIC, &finish);
