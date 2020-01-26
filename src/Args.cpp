@@ -11,13 +11,14 @@
 
 #include "Args.hpp"
 
-Args::Args(): inputFileUrb("cudaurb.nc"), inputFileTurb("cudaturb.nc"), outputFile("cudaplume.nc")
+Args::Args(): inputFileUrb("cudaurb.nc"), inputFileTurb("cudaturb.nc")
 {
-    reg("help",          "help/usage information",                   ArgumentParsing::NONE,   '?');
+  reg("help",          "help/usage information",                   ArgumentParsing::NONE,   '?');
     reg("quicFile",      "specifies xml settings file",              ArgumentParsing::STRING, 'q');
     reg("inputFileUrb",  "specifies input file from cuda-urb",       ArgumentParsing::STRING, 'u');
     reg("inputFileTurb", "specifies input file from cuda-turb",      ArgumentParsing::STRING, 't');
-    reg("outputFile",    "select cellface, if not then cell center", ArgumentParsing::STRING, 'o');
+    reg("outputFileEul", "select output file for Eulerian data",     ArgumentParsing::STRING, 'o');
+    reg("outputFileLag", "select output file for Lagrangian data",   ArgumentParsing::STRING, 'l');
     reg("debugOutputFolder",    "specifies folder for debug output text files", ArgumentParsing::STRING, 'd');
 }
 
@@ -33,6 +34,7 @@ void Args::processArguments(int argc, char *argv[])
     isSet( "quicFile", quicFile );
     isSet( "inputFileUrb", inputFileUrb );
     isSet( "inputFileTurb", inputFileTurb );    
-    isSet( "outputFile", outputFile );
+    isSet( "outputFileEul", outputFileEul );
+    isSet( "outputFileLag", outputFileLag );
     isSet( "debugOutputFolder", debugOutputFolder );
 }

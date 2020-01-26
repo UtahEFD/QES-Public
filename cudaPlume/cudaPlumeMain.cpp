@@ -15,6 +15,7 @@
 
 #include "NetCDFOutputGeneric.h"
 #include "PlumeOutputEulerian.h"
+#include "PlumeOutputLagrangian.h"
 
 
 #include "Output.hpp"
@@ -99,10 +100,13 @@ int main(int argc, char** argv)
     
     // Create instance of Dispersion class
     Dispersion* dis = new Dispersion(urb,turb,PID,eul,arguments.debugOutputFolder);
-       
+    
     // FM create output instance
     std::vector<NetCDFOutputGeneric*> outputVec;
-    outputVec.push_back(new PlumeOutputEulerian(dis,PID,arguments.outputFile));
+    if( !(arguments.outputFileEul == "") ) 
+      outputVec.push_back(new PlumeOutputEulerian(dis,PID,arguments.outputFileEul));
+    if( !(arguments.outputFileLag == "") ) 
+      outputVec.push_back(new PlumeOutputLagrangian(dis,PID,arguments.outputFileLag));
     
     // Create instance of Plume model class
     Plume* plume = new Plume(urb,dis,PID);
