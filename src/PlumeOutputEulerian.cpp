@@ -4,6 +4,8 @@ PlumeOutputEulerian::PlumeOutputEulerian(Dispersion* dis,PlumeInputData* PID,std
   : NetCDFOutputGeneric(output_file)
 {
   
+  std::cout<<"[PlumeOutputEulerian] set up NetCDF file "<<output_file<<std::endl;
+
   /* --------------------------------------------------------
      setup the sampling box concentration information 
      -------------------------------------------------------- */

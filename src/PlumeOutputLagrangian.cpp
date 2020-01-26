@@ -4,6 +4,8 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(Dispersion* dis,PlumeInputData* PID
   : NetCDFOutputGeneric(output_file)
 {
   
+  std::cout<<"[PlumeOutputLagrangian] set up NetCDF file "<<output_file<<std::endl;
+  
   /* --------------------------------------------------------
      setup the output times 
      -------------------------------------------------------- */
