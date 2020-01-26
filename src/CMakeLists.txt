@@ -25,6 +25,7 @@ CUDA_ADD_LIBRARY( cudaplumecore
     particle.hpp
 
     PlumeOutputEulerian.cpp
+    PlumeOutputLagrangian.cpp	    
     SourcePoint.cpp SourcePoint.hpp
     SourceLine.cpp SourceLine.hpp
     SourceCircle.cpp SourceCircle.hpp
