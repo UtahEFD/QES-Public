@@ -129,6 +129,9 @@ void PlumeOutputEulerian::save(float currentTime)
 	cBox.at(id) = 0.0;
       }
 
+      // set output time
+      time=currentTime;
+
       // save the fields to NetCDF files
       saveOutputFields();
       
