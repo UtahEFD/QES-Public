@@ -2,21 +2,18 @@
 
 #include <cmath>
 #include "util/ParseInterface.h"
-#include "PolyBuilding.h"
+#include "Canopy.h"
 
-class Canopy : public PolyBuilding
+class CanopyCionco : public Canopy
 {
  public:
     
-  Canopy()
+  CanopyCionco()
     {
       
     }
-  virtual ~Canopy()
-    {
-    }
-
-  /*
+  
+  
   virtual void parseValues()
   {
     parsePrimitive<float>(true, atten, "attenuationCoefficient");
@@ -46,7 +43,7 @@ class Canopy : public PolyBuilding
   }
   
   void canopyVegetation(URBGeneralData *ugd);
-  */
+  
   
   /*!
    * This function takes in variables read in from input files and initializes required variables for definig
@@ -56,14 +53,35 @@ class Canopy : public PolyBuilding
   //	std::vector<std::vector<std::vector<float>>> &canopy_atten,std::vector<std::vector<float>> &canopy_top);
   
   
- protected: 
+ private:
+  
+  float atten;
+
+  /*!
+   * This function takes in icellflag defined in the defineCanopy function along with variables initialized in
+   * the readCanopy function and initial velocity field components (u0 and v0). This function applies the urban 
+   * canopy parameterization and returns modified initial velocity field components.
+   */
+  void plantInitial(URBGeneralData *ugd);
+  
+  /*!
+   * This function is being call from the plantInitial function and uses linear regression method to define 
+   * ustar and surface roughness of the canopy.
+   */
+  void regression(URBGeneralData *ugd);
+  
+  
+  /*!
+   * This is a new function wrote by Lucas Ulmer and is being called from the plantInitial function. The purpose 
+   * of this function is to use bisection method to find root of the specified equation. It calculates the 
+   * displacement height when the bisection function is not finding it.
+   */
+  float canopy_slope_match(float z0, float canopy_top, float canopy_atten);
+  
   /*!
    * This function takes in variables initialized by the readCanopy function and sets the boundaries of 
    * the canopy and defines initial values for the canopy height and attenuation.
    */
-  void defineCanopy(URBGeneralData *ugd);
-  
-  
- private:
+  //void defineCanopy(URBGeneralData *ugd);
 
 };

@@ -7,6 +7,7 @@ add_subdirectory( unitTests )
 CUDA_ADD_LIBRARY( cudaurbcore
   BVH.cpp
   Canopy.cpp
+  CanopyCionco.cpp
   Cell.cpp
   CPUSolver.cpp
   Cut_cell.cpp

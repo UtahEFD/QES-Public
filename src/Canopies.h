@@ -8,20 +8,20 @@
 
 class Canopies : public ParseInterface
 {
-private:
+ private:
+  
+  
+  
+ public:
+  
+  int num_canopies;
+  std::vector<Building*> canopies;
+  
 
-
-
-public:
-
-	int num_canopies;
-	std::vector<Building*> canopies;
-
-
-	virtual void parseValues()
-	{
-		parsePrimitive<int>(true, num_canopies, "num_canopies");
-		parseMultiPolymorphs(true, canopies, Polymorph<Building, Canopy>("canopy"));
-
-	}
+  virtual void parseValues()
+  {
+    parsePrimitive<int>(true, num_canopies, "num_canopies");
+    parseMultiPolymorphs(true, canopies, Polymorph<Building, Canopy>("canopy"));
+    
+  }
 };
