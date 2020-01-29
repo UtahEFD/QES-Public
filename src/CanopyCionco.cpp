@@ -143,14 +143,14 @@
 // Based on the version contain Lucas Ulmer's modifications
 void CanopyCionco::plantInitial(URBGeneralData* UGD)
 {
-
+  
   float avg_atten;     /**< average attenuation of the canopy */
   float veg_vel_frac;  /**< vegetation velocity fraction */
   int num_atten;
-
+  
   // Call regression to define ustar and surface roughness of the canopy
   regression(UGD);
-
+  
   for (auto j=j_start; j<j_end-1; j++) {
     for (auto i=i_start; i<i_end-1; i++) {
       int id = i+j*(UGD->nx-1);
@@ -196,7 +196,7 @@ void CanopyCionco::plantInitial(URBGeneralData* UGD)
 	      veg_vel_frac = log((UGD->canopy_top[id] - UGD->canopy_d[id])/
 				 UGD->canopy_z0[id])*exp(avg_atten*((UGD->z[k]/UGD->canopy_top[id])-1))/
 		log(UGD->z[k]/UGD->canopy_z0[id]);
-
+              
 	      if (veg_vel_frac > 1 || veg_vel_frac < 0) {
 		veg_vel_frac = 1;
 	      }
@@ -231,10 +231,9 @@ void CanopyCionco::plantInitial(URBGeneralData* UGD)
 	      }
 	    }
 	    if (i < UGD->nx-2) {
-	      if (UGD->canopy_atten[icell_cent+1] == 0)
-		{
-		  UGD->u0[icell_face+1] *= veg_vel_frac;
-		}
+	      if (UGD->canopy_atten[icell_cent+1] == 0) {
+                UGD->u0[icell_face+1] *= veg_vel_frac;
+              }
 	    }
 	  }
 	}
@@ -246,11 +245,11 @@ void CanopyCionco::plantInitial(URBGeneralData* UGD)
 
 void CanopyCionco::regression(URBGeneralData* UGD)
 {
-
+  
   int k_top, counter;
   float sum_x, sum_y, sum_xy, sum_x_sq, local_mag;
   float y, xm, ym;
-
+  
   for (auto j=j_start; j<j_end-1; j++) {
     for (auto i=i_start; i<i_end-1; i++) {
       int id = i+j*(UGD->nx-1);
@@ -286,7 +285,7 @@ void CanopyCionco::regression(URBGeneralData* UGD)
 	  sum_xy += local_mag*y;
 	  sum_x_sq += pow(local_mag,2.0);
 	}
-
+        
 	UGD->canopy_ustar[id] = UGD->vk*(((counter*sum_x_sq)-pow(sum_x,2.0))/((counter*sum_xy)-(sum_x*sum_y)));
 	xm = sum_x/counter;
 	ym = sum_y/counter;
@@ -298,15 +297,15 @@ void CanopyCionco::regression(URBGeneralData* UGD)
 
 float CanopyCionco::canopy_slope_match(float z0, float canopy_top, float canopy_atten)
 {
-
+  
   int iter;
   float tol, d, d1, d2, f;
-
+  
   tol = z0/100;
   // f is the root of the equation (to find d)
   // log[(H-d)/z0] = H/[a(H-d)] 
   f = tol*10;
-
+  
   // initial bound for bisection method (d1,d2)
   // d1 min displacement possible
   // d2 max displacement possible - canopy top
@@ -339,7 +338,7 @@ float CanopyCionco::canopy_slope_match(float z0, float canopy_top, float canopy_
     // return this if attenuation coeff is 0.
     d = 10000;
   }
-
+  
   // return displacement height
   return d;
 }
@@ -347,16 +346,16 @@ float CanopyCionco::canopy_slope_match(float z0, float canopy_top, float canopy_
 
 void CanopyCionco::canopyVegetation(URBGeneralData* UGD)
 {
-
+  
   // When THIS canopy calls this function, we need to do the
   // following:
   //readCanopy(nx, ny, nz, landuse_flag, num_canopies, lu_canopy_flag,
   //canopy_atten, canopy_top);
-
+  
   // here because the array that holds this all Building*
   defineCanopy(UGD);
-
+  
   // Apply canopy parameterization
   plantInitial(UGD);		
-
+  
 }
