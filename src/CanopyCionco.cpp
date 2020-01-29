@@ -24,7 +24,8 @@
   }
 
 
-  }*/
+  }
+*/
 
 /*
   void CanopyCianco::defineCanopy(URBGeneralData* UGD)
@@ -137,11 +138,27 @@
   }
 */
 
-
+// set et attenuation coefficient 
+void CanopyCionco::canopyInitial(URBGeneralData *UGD)
+{
+  for (auto j=j_start; j<j_end-1; j++) {
+    for (auto i=i_start; i<i_end-1; i++) {
+      for (auto k=k_start; k<k_end; k++) {
+        int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+        // if the cell is defined as canopy
+        if (UGD->icellflag[icell_cent] == cellFlagCionco) {
+          int id = i+j*(UGD->nx-1);		       
+          // initiate all attenuation coefficients to the canopy coefficient
+          UGD->canopy_atten[icell_cent] = attenuationCoeff;     
+        }
+      }
+    }
+  } 
+}
 
 // Function to apply the urban canopy parameterization
 // Based on the version contain Lucas Ulmer's modifications
-void CanopyCionco::plantInitial(URBGeneralData* UGD)
+void CanopyCionco::canopyParam(URBGeneralData* UGD)
 {
   
   float avg_atten;     /**< average attenuation of the canopy */
@@ -149,7 +166,7 @@ void CanopyCionco::plantInitial(URBGeneralData* UGD)
   int num_atten;
   
   // Call regression to define ustar and surface roughness of the canopy
-  regression(UGD);
+  canopyRegression(UGD);
   
   for (auto j=j_start; j<j_end-1; j++) {
     for (auto i=i_start; i<i_end-1; i++) {
@@ -163,8 +180,8 @@ void CanopyCionco::plantInitial(URBGeneralData* UGD)
 	//std::cout << "UGD->canopy_atten[icell_cent]:" << UGD->canopy_atten[icell_cent] << "\n";
 	if (UGD->canopy_d[id] == 10000) {
 	  std::cout << "bisection failed to converge" << "\n";
-	  UGD->canopy_d[id] = canopy_slope_match(UGD->canopy_z0[id],UGD->canopy_top[id],
-						 UGD->canopy_atten[icell_cent]);
+	  UGD->canopy_d[id] = canopySlopeMatch(UGD->canopy_z0[id],UGD->canopy_top[id],
+                                               UGD->canopy_atten[icell_cent]);
 	}
 	
 	/**< velocity at the height of the canopy */
@@ -243,7 +260,7 @@ void CanopyCionco::plantInitial(URBGeneralData* UGD)
 }
 
 
-void CanopyCionco::regression(URBGeneralData* UGD)
+void CanopyCionco::canopyRegression(URBGeneralData* UGD)
 {
   
   int k_top, counter;
@@ -295,7 +312,7 @@ void CanopyCionco::regression(URBGeneralData* UGD)
   } 
 }
 
-float CanopyCionco::canopy_slope_match(float z0, float canopy_top, float canopy_atten)
+float CanopyCionco::canopySlopeMatch(float z0, float canopy_top, float canopy_atten)
 {
   
   int iter;
@@ -353,9 +370,10 @@ void CanopyCionco::canopyVegetation(URBGeneralData* UGD)
   //canopy_atten, canopy_top);
   
   // here because the array that holds this all Building*
-  defineCanopy(UGD);
+  canopyDefineBoundary(UGD,cellFlagCionco);
+  canopyInitial(UGD);
   
   // Apply canopy parameterization
-  plantInitial(UGD);		
+  canopyParam(UGD);		
   
 }

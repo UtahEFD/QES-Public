@@ -6,17 +6,17 @@
 
 class CanopyCionco : public Canopy
 {
- public:
+public:
     
   CanopyCionco()
-    {
+  {
       
-    }
+  }
   
   
   virtual void parseValues()
   {
-    parsePrimitive<float>(true, atten, "attenuationCoefficient");
+    parsePrimitive<float>(true, attenuationCoeff, "attenuationCoefficient");
     parsePrimitive<float>(true, H, "height");
     parsePrimitive<float>(true, base_height, "baseHeight");
     parsePrimitive<float>(true, x_start, "xStart");
@@ -53,22 +53,29 @@ class CanopyCionco : public Canopy
   //	std::vector<std::vector<std::vector<float>>> &canopy_atten,std::vector<std::vector<float>> &canopy_top);
   
   
- private:
+private:
   
-  float atten;
+  float attenuationCoeff;
+  const int cellFlagCionco=11;
+
+  /*!
+   * This function takes in icellflag defined in the defineCanopy function and initialize the 
+   * attenuation coefficient 
+   */
+  void canopyInitial(URBGeneralData *ugd);
 
   /*!
    * This function takes in icellflag defined in the defineCanopy function along with variables initialized in
    * the readCanopy function and initial velocity field components (u0 and v0). This function applies the urban 
    * canopy parameterization and returns modified initial velocity field components.
    */
-  void plantInitial(URBGeneralData *ugd);
+  void canopyParam(URBGeneralData *ugd);
   
   /*!
    * This function is being call from the plantInitial function and uses linear regression method to define 
    * ustar and surface roughness of the canopy.
    */
-  void regression(URBGeneralData *ugd);
+  void canopyRegression(URBGeneralData *ugd);
   
   
   /*!
@@ -76,12 +83,6 @@ class CanopyCionco : public Canopy
    * of this function is to use bisection method to find root of the specified equation. It calculates the 
    * displacement height when the bisection function is not finding it.
    */
-  float canopy_slope_match(float z0, float canopy_top, float canopy_atten);
-  
-  /*!
-   * This function takes in variables initialized by the readCanopy function and sets the boundaries of 
-   * the canopy and defines initial values for the canopy height and attenuation.
-   */
-  //void defineCanopy(URBGeneralData *ugd);
+  float canopySlopeMatch(float z0, float canopy_top, float canopy_atten);
 
 };
