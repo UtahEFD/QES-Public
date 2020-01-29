@@ -3,30 +3,7 @@
 #include "URBInputData.h"
 #include "URBGeneralData.h"
 
-/*void Canopy::readCanopy(int nx, int ny, int nz, int landuse_flag, int num_canopies,int &lu_canopy_flag,
-  std::vector<std::vector<std::vector<float>>> &canopy_atten,std::vector<std::vector<float>> &canopy_top)
-  {
-
-  // This function needs to be updated when we can read land use data fom WRF or
-  // other sources
-  if (landuse_flag == 1)
-  {
-  }
-  else
-  {
-  landuse_veg_flag=0;
-  landuse_urb_flag=0;
-  lu_canopy_flag=0;
-  }
-
-  if (lu_canopy_flag > 0)
-  {
-  }
-
-
-  }*/
-
-void Canopy::defineCanopy(URBGeneralData* UGD)
+void Canopy::canopyDefineBoundary(URBGeneralData* UGD,int cellFlagToUse)
 {
 
   float ray_intersect;
@@ -110,7 +87,7 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
 	  int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
 	  if( UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2) {
 	    // Canopy cell
-	    UGD->icellflag[icell_cent] = 11;             
+	    UGD->icellflag[icell_cent] = cellFlagToUse;             
 	  }
 	}
       } // end define icellflag!
@@ -122,14 +99,11 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
       for (auto k=k_start; k<k_end; k++) {
 	int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
 	// if the cell is defined as canopy
-	if (UGD->icellflag[icell_cent] == 11)       
-	  {
-	    int id = i+j*(UGD->nx-1);		       
-	    // define height of the canopy (above the surface)
-	    UGD->canopy_top[id] = base_height+H;
-	    // initiate all attenuation coefficients to the canopy coefficient
-	    //UGD->canopy_atten[icell_cent] = atten;     
-	  }
+	if (UGD->icellflag[icell_cent] == cellFlagToUse) {
+          int id = i+j*(UGD->nx-1);		       
+          // define height of the canopy (above the surface)
+          UGD->canopy_top[id] = base_height+H; 
+        }
       }
     }
   }
