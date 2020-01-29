@@ -38,9 +38,8 @@ public:
     {
         m_sShape = SourceShape::cube;
         
-        parsePolymorph(false, rType_instantaneous, Polymorph<ReleaseType, ReleaseType_instantaneous>("ReleaseType_instantaneous"));
-        //parsePolymorph(false, rType_perSecond, Polymorph<ReleaseType, ReleaseType_perSecond>("ReleaseType_perSecond"));
-        parsePolymorph(false, rType_perTimeStep, Polymorph<ReleaseType, ReleaseType_perTimeStep>("ReleaseType_perTimeStep"));
+        parseMultiPolymorphs(false, rType_tmp, Polymorph<ReleaseType, ReleaseType_instantaneous>("ReleaseType_instantaneous"));
+        parseMultiPolymorphs(false, rType_tmp, Polymorph<ReleaseType, ReleaseType_perTimeStep>("ReleaseType_perTimeStep"));
         setReleaseType();
 
         parsePrimitive<double>(true, m_minX, "minX");

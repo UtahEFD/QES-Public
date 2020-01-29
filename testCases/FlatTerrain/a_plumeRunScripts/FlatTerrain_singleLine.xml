@@ -24,7 +24,7 @@
 	<numSources> 1 </numSources>
   	<SourceLine>
     	<ReleaseType_perTimeStep>
-			<parPerTimestep>100000</parPerTimestep>
+			<parPerTimestep>10</parPerTimestep>
 		</ReleaseType_perTimeStep>
     	<posX_0> 25.0 </posX_0>
     	<posY_0> 175.0 </posY_0>

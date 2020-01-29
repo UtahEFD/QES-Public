@@ -24,7 +24,7 @@
 	<numSources> 1 </numSources>			<!-- number of sources, you fill in source information for each source next -->
   	<SourcePoint>					<!-- source type -->
     	<ReleaseType_perTimeStep>
-			<parPerTimestep>100000</parPerTimestep>
+			<parPerTimestep>10</parPerTimestep>
 		</ReleaseType_perTimeStep>
     	<posX> 10.0 </posX>
     	<posY> 100.0 </posY>

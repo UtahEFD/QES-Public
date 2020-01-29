@@ -31,9 +31,7 @@ protected:
 
     // these are expected to be set by parseInterface() in each source, with a call to setReleaseType() to set the m_rType using this variable.
     // there's got to be a better way to do this with the interface function, and I just am not understanding yet
-    ReleaseType* rType_instantaneous;
-    //ReleaseType* rType_perSecond;
-    ReleaseType* rType_perTimeStep;
+    std::vector<ReleaseType*> rType_tmp;
     
     
 public:
@@ -64,38 +62,20 @@ public:
     // useful for processing inputs from an xml file that use strings instead of the enum version of the ParticleReleaseTypes
     void setReleaseType()
     {
-        // first count the number of non null release types to find out how many release types were parsed
-        int rTypeCount = 0;
-        if( rType_instantaneous != NULL )
-        {
-            rTypeCount = rTypeCount + 1;
-        }
-        if( rType_perTimeStep != NULL )
-        {
-            rTypeCount = rTypeCount + 1;
-        }
-
-        // now if the number of release types is not 1, there was a problem, need to quit with an error
-        if( rTypeCount == 0 )
+                // now if the number of release types is not 1, there was a problem, need to quit with an error
+        if( rType_tmp.size() == 0 )
         {
             std::cerr << "ERROR (SourceKind::setReleaseType): there was no input releaseType!" << std::endl;
             exit(1);
         }
-        if( rTypeCount > 1 )
+        if( rType_tmp.size() > 1 )
         {
             std::cerr << "ERROR (SourceKind::setReleaseType): there was more than one input releaseType!" << std::endl;
             exit(1);
         }
 
         // seems like the number of release types is 1, so now set the actual public release type to be the one that we have
-        if( rType_instantaneous != NULL )
-        {
-            m_rType = rType_instantaneous;
-        }
-        if( rType_perTimeStep != NULL )
-        {
-            m_rType = rType_perTimeStep;
-        }
+        m_rType = rType_tmp.at(0);
 
     }
 

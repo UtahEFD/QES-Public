@@ -64,7 +64,7 @@ or
 ```
 cmake ../CUDA-Plume -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_ROOTDIR -DCUDA_SDK_ROOT_DIR=$CUDA_ROOTDIR -DCUDA_SDK_ROOT_DIR=$CUDA_ROOTDIR -DBOOST_ROOT=$BOOST_DIR
 ```
-Then can run make the same as normal and it should work
+Then run make the same as normal and it should work
 ```
 make
 ```
@@ -81,14 +81,16 @@ sbatch ../testCases/FlatTerrain/a_plumeRunScripts/runPlume_FlatTerrain_singlePoi
 squeue -u <uID>
 ```
 
-Note that this will not work unless you copy the required urb and turb output netcdf files to the testCases/FlatTerrain/b_plumeInputs directory.
+Note that this will not work unless you copy the required urb and turb netcdf files to the testCases/FlatTerrain/b_plumeInputs directory. These files are generated output files from CUDA-URB and CUDA-Turb.
 
 
 The testCases directory holds each of the current test cases. The top level directory for each test case gives the test case name and contains three main folders: a_plumeRunScripts, b_plumeInputs, and c_plumeOutputs. The a_plumeRunScripts folder contains the .xml and .sh batch scripts for each currently available variation of the test case. The b_plumeInputs folder contains common urb and turb netcdf files required for each variation of the test case. The c_plumeOutputs folder is where CUDA-Plume will place outputs for each available variation of the test cases.
 
 The Bailey test cases are a bit different from the other test cases, in that there are additional folders d_matlabPlotRunScripts and e_matlabPlotOutput in each Bailey test case. The idea is that you can run sbatch on the batch scripts found in the d_matlabPlotRunScripts folder after generating all the data for each variation of the test case in the c_plumeOutputs folder. The batch scripts in the d_matlabPlotRunScripts folder use the CUDA-PlumePlotting MATLAB utility functions found in the /util/MATLAB/c_CUDA-PlumePlotting directory to generate the plots from Bailey's 2017 Rogue Trajectory elimination paper. The plots are output to the e_matlabPlotOutput folder for each Bailey test case.
 
-If you wish to make your own test cases, study each of the files for each of the current test cases, paying particular attention to how the paths are setup. It may also be a good idea to eventually add visitPlotRunScripts and visitPlotOutput folders to each of the test cases if utility scripts to automate some of the visit plotting are ever added to the util directory.
+If you wish to make your own test cases, study each of the files for each of the current test cases, paying particular attention to how the paths are setup.
+
+It may also be a good idea to eventually add visitPlotRunScripts and visitPlotOutput folders to each of the test cases if utility scripts to automate some of the visit plotting are ever added to the util directory.
 
 
 Be aware that while the .xml and .sh batch files are tracked for each test case, the urb and turb netcdf files are only tracked for the Bailey test cases. You will need to generate your own urb and turb files for the other test cases before running CUDA-Plume on those cases.

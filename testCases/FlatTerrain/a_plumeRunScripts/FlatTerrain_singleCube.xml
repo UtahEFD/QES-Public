@@ -24,7 +24,7 @@
 	<numSources> 1 </numSources>
   	<SourceCube>
     	<ReleaseType_perTimeStep>
-			<parPerTimestep>100000</parPerTimestep>
+			<parPerTimestep>10</parPerTimestep>
 		</ReleaseType_perTimeStep>
     	<minX> 75.0 </minX>
     	<minY> 25.0 </minY>

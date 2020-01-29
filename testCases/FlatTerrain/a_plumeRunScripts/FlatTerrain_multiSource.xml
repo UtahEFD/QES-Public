@@ -24,7 +24,7 @@
 	<numSources> 4 </numSources>
   	<SourcePoint>
     	<ReleaseType_perTimeStep>
-			<parPerTimestep>100000</parPerTimestep>
+			<parPerTimestep>10</parPerTimestep>
 		</ReleaseType_perTimeStep>
     	<posX> 40.0 </posX>
     	<posY> 80.0 </posY>
@@ -32,7 +32,7 @@
   	</SourcePoint>
 	<SourcePoint>
     	<ReleaseType_perTimeStep>
-			<parPerTimestep>100000</parPerTimestep>
+			<parPerTimestep>10</parPerTimestep>
 		</ReleaseType_perTimeStep>
     	<posX> 10.0 </posX>
     	<posY> 100.0 </posY>
@@ -40,7 +40,7 @@
   	</SourcePoint>
 	<SourceLine>
     	<ReleaseType_perTimeStep>
-			<parPerTimestep>100000</parPerTimestep>
+			<parPerTimestep>10</parPerTimestep>
 		</ReleaseType_perTimeStep>
     	<posX_0> 25.0 </posX_0>
     	<posY_0> 175.0 </posY_0>
@@ -51,7 +51,7 @@
   	</SourceLine>
 	<SourceCube>
     	<ReleaseType_perTimeStep>
-			<parPerTimestep>100000</parPerTimestep>
+			<parPerTimestep>10</parPerTimestep>
 		</ReleaseType_perTimeStep>
     	<minX> 75.0 </minX>
     	<minY> 25.0 </minY>
