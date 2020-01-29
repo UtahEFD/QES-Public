@@ -27,7 +27,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(Dispersion* dis,PlumeInputData* PID
   // get total number of particle to be released 
   int numPar_=0;
   for (auto sidx=0; sidx < disp_->allSources.size(); sidx++) {
-    numPar_+=disp_->allSources.at(sidx)->getNumParticles();
+    numPar_+=disp_->allSources.at(sidx)->m_rType->m_numPar;
   }
 
   std::cout<<"[PlumeOutputLagrangian] total number of particle to be save in file "<<numPar_<<std::endl;

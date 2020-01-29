@@ -32,13 +32,13 @@ addpath(mainCodeDir,sharedFunctionsDir );
 
 
 %%% set the input file directory (codeInputDir) as well as the file base names
-baseCodeInputDir = sprintf("%s/../../c_plumeOutput/a_sinewave",workingDir);
+baseCodeInputDir = sprintf("%s/../../../../../testCases/Bailey/a_sinewave/c_plumeOutputs",workingDir);
 codeInputFolders = [
     
-    "a_HeteroAnisoExplicitTurb_0o01_10";      % 1
-    "b_HeteroAnisoExplicitTurb_0o05_10";      % 2
-    "c_HeteroAnisoExplicitTurb_0o1_10";       % 3
-    "d_HeteroAnisoExplicitTurb_4_10";         % 4
+    "a_0o01_10";      % 1
+    "b_0o05_10";      % 2
+    "c_0o1_10";       % 3
+    "d_4_10";         % 4
 
     ];
 nCodeInputFiles = length(codeInputFolders);
@@ -118,7 +118,7 @@ codeInputFiles(2) = {folderFileNames};
 
 
 %%% set the plotOutputDir
-plotOutputDir = sprintf("%s/../../d_plotOutput/a_sinewave/e_resultPlots",workingDir);
+plotOutputDir = sprintf("%s/../../../../../testCases/Bailey/a_sinewave/e_matlabPlotOutput/e_resultPlots",workingDir);
 
 
 

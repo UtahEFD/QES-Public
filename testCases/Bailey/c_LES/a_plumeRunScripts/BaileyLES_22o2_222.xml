@@ -1,0 +1,42 @@
+<simulationParameters>
+	<simDur> 222.0 </simDur>
+	<timeStep> 22.2 </timeStep>
+  	<invarianceTol> 1e-5 </invarianceTol>
+	<C_0> 4.0 </C_0>
+	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
+	<updateFrequency_timeLoop> 1 </updateFrequency_timeLoop>
+</simulationParameters>
+<collectionParameters>
+	<timeStart> 0.0 </timeStart>
+	<timeEnd> 222.0 </timeEnd>
+	<timeAvg> 219.78 </timeAvg>
+	<boxBoundsX1> 0.0 </boxBoundsX1>
+	<boxBoundsX2> 6393.2 </boxBoundsX2>
+	<boxBoundsY1> 0.0 </boxBoundsY1>
+	<boxBoundsY2> 6283.2 </boxBoundsY2>
+	<boxBoundsZ1> 0.0 </boxBoundsZ1>
+	<boxBoundsZ2> 1000.0 </boxBoundsZ2> 				
+	<nBoxesX> 32 </nBoxesX> 								
+	<nBoxesY> 32 </nBoxesY> 							
+	<nBoxesZ> 32 </nBoxesZ> 
+</collectionParameters>
+<sources>
+  	<numSources> 1 </numSources>
+  	<SourceFullDomain>
+		<ReleaseType_instantaneous>
+			<numPar>100000</numPar>
+		</ReleaseType_instantaneous>
+  	</SourceFullDomain>
+</sources>
+<boundaryConditions>
+  	<xBCtype>periodic</xBCtype>
+  	<yBCtype>periodic</yBCtype>
+  	<zBCtype>reflection</zBCtype>
+</boundaryConditions>
+<fileOptions>
+	<outputFlag>1</outputFlag>
+    <outputFields>u</outputFields> 
+    <outputFields>v</outputFields> 
+    <outputFields>w</outputFields>
+    <outputFields>icell</outputFields>  
+</fileOptions>

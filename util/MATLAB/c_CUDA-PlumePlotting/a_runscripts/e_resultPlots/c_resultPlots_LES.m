@@ -32,13 +32,13 @@ addpath(mainCodeDir,sharedFunctionsDir );
 
 
 %%% set the input file directory (codeInputDir) as well as the file base names
-baseCodeInputDir = sprintf("%s/../../c_plumeOutput/c_LES",workingDir);
+baseCodeInputDir = sprintf("%s/../../../../../testCases/Bailey/c_LES/c_plumeOutputs",workingDir);
 codeInputFolders = [
     
-    "a_HeteroAnisoExplicitTurb_0o0222_222";         % 1
-    "b_HeteroAnisoExplicitTurb_0o222_222";          % 2
-    "c_HeteroAnisoExplicitTurb_2o22_222";           % 3
-    "d_HeteroAnisoExplicitTurb_22o2_222";           % 4
+    "a_0o0222_222";         % 1
+    "b_0o222_222";          % 2
+    "c_2o22_222";           % 3
+    "d_22o2_222";           % 4
     
     ];
 nCodeInputFiles = length(codeInputFolders);
@@ -118,7 +118,7 @@ codeInputFiles(2) = {folderFileNames};
 
 
 %%% set the plotOutputDir
-plotOutputDir = sprintf("%s/../../d_plotOutput/c_LES/e_resultPlots",workingDir);
+plotOutputDir = sprintf("%s/../../../../../testCases/Bailey/c_LES/e_matlabPlotOutput/e_resultPlots",workingDir);
 
 
 

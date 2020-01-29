@@ -8,8 +8,8 @@ class SourceLine : public SourceKind
 {
 private:
 
-    // note that this also inherits data members int m_numParticles and ParticleReleaseType m_rType from SourceKind.
-    //  this also inherits data members SourceShape m_sShape and std::string inputReleaseType from SourceKind.
+    // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
+    //  this also inherits protected data members ReleaseType* rType_instantaneous and ReleaseType* rType_perTimeStep from SourceKind.
     // guidelines for how to set these variables within an inherited source are given in SourceKind.
 
     double posX_0;
@@ -28,22 +28,6 @@ public:
     {
     }
     
-    // specialized constructor with initializer list
-    SourceLine( const double& xPos0, const double& yPos0, const double& zPos0,
-                const double& xPos1, const double& yPos1, const double& zPos1,
-                const int& numParticles, const ParticleReleaseType& rType,
-                const double& domainXstart, const double& domainXend, 
-                const double& domainYstart, const double& domainYend,
-                const double& domainZstart, const double& domainZend )
-        : SourceKind( numParticles, rType ),
-          posX_0( xPos0 ), posY_0( yPos0 ), posZ_0( zPos0 ),
-          posX_1( xPos1 ), posY_1( yPos1 ), posZ_1( zPos1 )
-    {
-        m_sShape = SourceShape::line;
-
-        checkMetaData(domainXstart,domainXend,domainYstart,domainYend,domainZstart,domainZend);
-    }
-
     // destructor
     ~SourceLine()
     {
@@ -54,8 +38,10 @@ public:
     {
         m_sShape = SourceShape::line;
 
-        parsePrimitive<std::string>(true, inputReleaseType, "releaseType");
-        parsePrimitive<int>(true, m_numParticles, "numParticles");
+        parsePolymorph(false, rType_instantaneous, Polymorph<ReleaseType, ReleaseType_instantaneous>("ReleaseType_instantaneous"));
+        //parsePolymorph(false, rType_perSecond, Polymorph<ReleaseType, ReleaseType_perSecond>("ReleaseType_perSecond"));
+        parsePolymorph(false, rType_perTimeStep, Polymorph<ReleaseType, ReleaseType_perTimeStep>("ReleaseType_perTimeStep"));
+        setReleaseType();
         
         parsePrimitive<double>(true, posX_0, "posX_0");
         parsePrimitive<double>(true, posY_0, "posY_0");
@@ -63,8 +49,7 @@ public:
         parsePrimitive<double>(true, posX_1, "posX_1");
         parsePrimitive<double>(true, posY_1, "posY_1");
         parsePrimitive<double>(true, posZ_1, "posZ_1");
-
-        setReleaseType(inputReleaseType);
+        
     }
 
 

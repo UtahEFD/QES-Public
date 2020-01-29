@@ -25,7 +25,16 @@ CUDA_ADD_LIBRARY( cudaplumecore
     particle.hpp
 
     PlumeOutputEulerian.cpp
-    PlumeOutputLagrangian.cpp	    
+    PlumeOutputLagrangian.cpp
+
+    Sources.hpp
+    SourceKind.hpp
+    
+    ReleaseType.hpp
+    ReleaseType_perTimeStep.hpp
+    #ReleaseType_perSecond.hpp
+    ReleaseType_instantaneous.hpp
+    
     SourcePoint.cpp SourcePoint.hpp
     SourceLine.cpp SourceLine.hpp
     SourceCircle.cpp SourceCircle.hpp

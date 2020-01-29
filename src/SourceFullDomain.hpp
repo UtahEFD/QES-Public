@@ -8,8 +8,8 @@ class SourceFullDomain : public SourceKind
 {
 private:
 
-    // note that this also inherits data members int m_numParticles and ParticleReleaseType m_rType from SourceKind.
-    //  this also inherits data members SourceShape m_sShape and std::string inputReleaseType from SourceKind.
+    // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
+    //  this also inherits protected data members ReleaseType* rType_instantaneous and ReleaseType* rType_perTimeStep from SourceKind.
     // guidelines for how to set these variables within an inherited source are given in SourceKind.
 
     // this source is a bit weird because the domain size has to be obtained after the input parser.
@@ -30,21 +30,6 @@ public:
     SourceFullDomain()
     {
     }
-    
-    // specialized constructor with initializer list
-    SourceFullDomain( const int& numParticles, const ParticleReleaseType& rType,
-                      const double& domainXstart, const double& domainXend, 
-                      const double& domainYstart, const double& domainYend,
-                      const double& domainZstart, const double& domainZend )
-        : SourceKind( numParticles, rType )
-    {
-        m_sShape = SourceShape::fullDomain;
-
-        // notice that the initializer list does not set the domain start and domain end variables 
-        //  like it is done in other source types, where the position range type variables are set in the initializer list
-        //  instead, they will be set in checkMetaData(), which is not a standard use of checkMetaData() for most sources
-        checkMetaData(domainXstart,domainXend,domainYstart,domainYend,domainZstart,domainZend);
-    }
 
     // destructor
     ~SourceFullDomain()
@@ -56,10 +41,12 @@ public:
     {
         m_sShape = SourceShape::fullDomain;
 
-        parsePrimitive<std::string>(true, inputReleaseType, "releaseType");
-        parsePrimitive<int>(true, m_numParticles, "numParticles");
+        parsePolymorph(false, rType_instantaneous, Polymorph<ReleaseType, ReleaseType_instantaneous>("ReleaseType_instantaneous"));
+        //parsePolymorph(false, rType_perSecond, Polymorph<ReleaseType, ReleaseType_perSecond>("ReleaseType_perSecond"));
+        parsePolymorph(false, rType_perTimeStep, Polymorph<ReleaseType, ReleaseType_perTimeStep>("ReleaseType_perTimeStep"));
+        setReleaseType();
 
-        setReleaseType(inputReleaseType);
+
     }
 
 

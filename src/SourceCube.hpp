@@ -8,8 +8,8 @@ class SourceCube : public SourceKind
 {
 private:
 
-    // note that this also inherits data members int m_numParticles and ParticleReleaseType m_rType from SourceKind.
-    //  this also inherits data members SourceShape m_sShape and std::string inputReleaseType from SourceKind.
+    // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
+    //  this also inherits protected data members ReleaseType* rType_instantaneous and ReleaseType* rType_perTimeStep from SourceKind.
     // guidelines for how to set these variables within an inherited source are given in SourceKind.
 
     double m_minX;
@@ -27,24 +27,6 @@ public:
     SourceCube()
     {
     }
-    
-    // specialized constructor with initializer list
-    SourceCube( const double& minX, const double& minY, const double& minZ,
-                const double& maxX, const double& maxY, const double& maxZ,
-                const int& numParticles, const ParticleReleaseType& rType,
-                const double& domainXstart, const double& domainXend, 
-                const double& domainYstart, const double& domainYend,
-                const double& domainZstart, const double& domainZend )
-        : SourceKind( numParticles, rType ),
-          m_minX( minX ), m_minY( minY ), m_minZ( minZ ),
-          m_maxX( maxX ), m_maxY( maxY ), m_maxZ( maxZ )
-    {
-        // notice that the ParticleReleaseType m_rType is set by the initializer list to always be instantaneous
-
-        m_sShape = SourceShape::cube;
-
-        checkMetaData(domainXstart,domainXend,domainYstart,domainYend,domainZstart,domainZend);
-    }
 
     // destructor
     ~SourceCube()
@@ -56,8 +38,10 @@ public:
     {
         m_sShape = SourceShape::cube;
         
-        parsePrimitive<std::string>(true, inputReleaseType, "releaseType");
-        parsePrimitive<int>(true, m_numParticles, "numParticles");
+        parsePolymorph(false, rType_instantaneous, Polymorph<ReleaseType, ReleaseType_instantaneous>("ReleaseType_instantaneous"));
+        //parsePolymorph(false, rType_perSecond, Polymorph<ReleaseType, ReleaseType_perSecond>("ReleaseType_perSecond"));
+        parsePolymorph(false, rType_perTimeStep, Polymorph<ReleaseType, ReleaseType_perTimeStep>("ReleaseType_perTimeStep"));
+        setReleaseType();
 
         parsePrimitive<double>(true, m_minX, "minX");
         parsePrimitive<double>(true, m_minY, "minY");
@@ -66,7 +50,6 @@ public:
         parsePrimitive<double>(true, m_maxY, "maxY");
         parsePrimitive<double>(true, m_maxZ, "maxZ");
 
-        setReleaseType(inputReleaseType);
     }
 
 

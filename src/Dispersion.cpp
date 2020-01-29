@@ -7,7 +7,6 @@
 #include <fstream>
 #include "Dispersion.h"
 
-#define EPSILON 0.00001
 
 #include "SourcePoint.hpp"
 #include "SourceLine.hpp"
@@ -23,57 +22,7 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul,
 
     // get the domain start and end values, needed for source position range checking
     determineDomainSize(urb,turb);
- 
 
-    // ////////////////////
-    // HARD CODE SOME SOURCE TO TEST...
-    // test out 1 point source at this location... with these rates
-    // and this number of particles... 
-#if 0
-    double ptSource_xPos = 40.0;
-    double ptSource_yPos = 80.0;
-    double ptSource_zPos = 30.0;
-    SourceKind *sPtr0 = new SourcePoint( ptSource_xPos, ptSource_yPos, ptSource_zPos, 100000, ParticleReleaseType::instantaneous, 
-                                         domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
-    allSources.push_back( sPtr0 );
-#endif
-
-
-#if 0
-    double lineSource_xPos0 = 25.0;
-    double lineSource_yPos0 = 175.0;
-    double lineSource_zPos0 = 40.0;
-
-    double lineSource_xPos1 = 50.0;
-    double lineSource_yPos1 = 25.0;
-    double lineSource_zPos1 = 40.0;
-    SourceKind *sPtr1 = new SourceLine( lineSource_xPos0, lineSource_yPos0, lineSource_zPos0, lineSource_xPos1, lineSource_yPos1, lineSource_zPos1, 
-                                        100000, ParticleReleaseType::instantaneous, 
-                                        domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
-    allSources.push_back( sPtr1 );
-#endif
-
-#if 0
-    double cubeSource_xMin = 0.5;
-    double cubeSource_yMin = 0.5;
-    double cubeSource_zMin = 0.5;
-    double cubeSource_xMax = 199.5;
-    double cubeSource_yMax = 199.5;
-    double cubeSource_zMax = 199.5;
-    SourceKind *sPtr2 = new SourceCube( cubeSource_xMin, cubeSource_yMin, cubeSource_zMin, cubeSource_xMax, cubeSource_yMax, cubeSource_zMax, 
-                                        100000, ParticleReleaseType::instantaneous, 
-                                        domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
-    allSources.push_back( sPtr2 );
-#endif
-
-#if 0
-    SourceKind *sPtr3 = new SourceFullDomain( 100000, ParticleReleaseType::instantaneous, 
-                                              domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend );
-    allSources.push_back( sPtr3 );
-#endif
-
-    // ////////////////////
-    
 
     // get sources from input data and add them to the allSources vector
     // this also calls the check metadata function for the input sources before adding them to the list.
@@ -136,6 +85,8 @@ void Dispersion::getInputSources(PlumeInputData* PID)
         
 
         // now do anything that is needed to the source via the pointer
+        sPtr->m_rType->calcReleaseInfo(PID->simParams->timeStep, PID->simParams->simDur);
+        sPtr->m_rType->checkReleaseInfo(PID->simParams->timeStep, PID->simParams->simDur);
         sPtr->checkMetaData(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
 
 

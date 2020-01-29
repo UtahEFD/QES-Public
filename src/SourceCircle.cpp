@@ -5,15 +5,6 @@ void SourceCircle::checkMetaData( const double& domainXstart, const double& doma
                                   const double& domainYstart, const double& domainYend,
                                   const double& domainZstart, const double& domainZend)
 {
-    // not even sure how to do checks on the ParticleReleaseType. Maybe call a function to check it that is inherited from the overall class that defines it?
-    //if ( m_rType )
-
-    if( m_numParticles <= 0 )
-    {
-        std::cerr << "ERROR (SourceCircle::checkMetaData): input numParticles is <= 0! numParticles = \"" << m_numParticles << "\"" << std::endl;
-        exit(1);
-    }
-
     if( radius < 0 )
     {
         std::cerr << "ERROR (SourceCircle::checkMetaData): input radius is negative! radius = \"" << radius << "\"" << std::endl;
@@ -45,30 +36,23 @@ int SourceCircle::emitParticles( const float dt,
                                  const float currTime,
                                  std::vector<particle>& emittedParticles)
 {
-
-    // note that this is not complete yet, it is acting like a point till we add in stuff corresponding to the radius
-    if (m_rType == ParticleReleaseType::instantaneous) {
-
-        // release all particles only if currTime is 0
-        if (currTime < dt) {
-
-            for (int pidx = 0; pidx < m_numParticles; pidx++) {
-
-                particle cPar;
-                cPar.xPos = posX;
-                cPar.yPos = posY;
-                cPar.zPos = posZ;
-
-                cPar.tStrt = currTime;
-                
-                emittedParticles.push_back( cPar );
-            }
-
-        }
-        
-    } else
+    // warning!!! this is still a point source! Need to work out the geometry details still
+    // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
+    if( currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime )
     {
-        std::cerr << "ERROR (SourceCircle::emitParticles): ParticleReleaseType \"" << m_rType << "\" has not been implemented in code yet!" << std::endl;
+
+        for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
+
+            particle cPar;
+            cPar.xPos = posX;
+            cPar.yPos = posY;
+            cPar.zPos = posZ;
+
+            cPar.tStrt = currTime;
+            
+            emittedParticles.push_back( cPar );
+        }
+
     }
 
     return emittedParticles.size();
