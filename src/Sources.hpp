@@ -9,13 +9,16 @@
 #ifndef SOURCES_HPP
 #define SOURCES_HPP
 
-#include "util/ParseInterface.h"
+
 #include "SourceKind.hpp"
 #include "SourcePoint.hpp"
 #include "SourceLine.hpp"
 #include "SourceCircle.hpp"
 #include "SourceCube.hpp"
 #include "SourceFullDomain.hpp"
+
+#include "util/ParseInterface.h"
+
 
 class Sources : public ParseInterface
 {

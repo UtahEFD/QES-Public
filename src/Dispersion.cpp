@@ -4,15 +4,8 @@
 //  This class handles dispersion information
 //
 
-#include <fstream>
 #include "Dispersion.h"
 
-
-#include "SourcePoint.hpp"
-#include "SourceLine.hpp"
-#include "SourceCircle.hpp"
-#include "SourceCube.hpp"
-#include "SourceFullDomain.hpp"
 
 Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul, const std::string& debugOutputFolder_val)
     : pointList(0)  // ???

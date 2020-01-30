@@ -4,28 +4,25 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 #LINK_DIRECTORIES (${CMAKE_BINARY_DIR}/quicutil/)
 
 CUDA_ADD_LIBRARY( cudaplumecore
-    #shader/particle/shaders.cpp kernel/kernel_interface.cu 
-    #shader/particle/render_particles.cpp  
-    #plumeSystem.cpp  
-    Plume.cpp
-    Eulerian.cpp
-    #Util.cpp
-    #advectPar.cpp
+    
     Random.cpp
-    Dispersion.cpp
+    
     Args.cpp
     Input.cpp
     NetCDFInput.cpp
-    NetCDFOutput.cpp
-    NetCDFOutputGeneric.cpp	
-    Output.cpp
     Urb.cpp
     Turb.cpp
-   
-    particle.hpp
-
+    Eulerian.cpp
+    Dispersion.cpp
+    Plume.cpp
+    NetCDFOutput.cpp
+    NetCDFOutputGeneric.cpp	
     PlumeOutputEulerian.cpp
     PlumeOutputLagrangian.cpp
+
+    BoundaryConditions.hpp
+    
+    particle.hpp
 
     Sources.hpp
     SourceKind.hpp
@@ -41,7 +38,6 @@ CUDA_ADD_LIBRARY( cudaplumecore
     SourceCube.cpp SourceCube.hpp
     SourceFullDomain.cpp SourceFullDomain.hpp
 
-    BoundaryConditions.hpp
 )
 
 #target_link_libraries (cudaplumecore quicloader) 

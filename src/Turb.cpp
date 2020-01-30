@@ -7,7 +7,6 @@
 //  Modified by Loren Atwood on 01/09/20.
 //
 
-#include <iostream>
 #include "Turb.hpp"
 
 

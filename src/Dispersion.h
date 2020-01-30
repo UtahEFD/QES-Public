@@ -11,14 +11,23 @@
 #include <vector>
 #include <iostream>
 #include <cmath>
-#include "PlumeInputData.hpp"
-#include "Eulerian.h"
+#include <fstream>
+#include <helper_math.h>
+
+
 #include "Random.h"
 
 #include "particle.hpp"
 
+#include "SourcePoint.hpp"
+#include "SourceLine.hpp"
+#include "SourceCircle.hpp"
+#include "SourceCube.hpp"
+#include "SourceFullDomain.hpp"
 
-#include <helper_math.h>
+#include "PlumeInputData.hpp"
+#include "Eulerian.h"
+
 
 class Dispersion {
     

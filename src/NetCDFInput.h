@@ -8,10 +8,13 @@
 
 #pragma once
 
+
+#include <iostream>
 #include <string>
 #include <vector>
 #include <map>
 #include <netcdf>
+
 
 /**
  * This class handles reading input files.

@@ -1,13 +1,5 @@
-#include <iostream>
-#include <ctime>
-#include <cmath>
-
-#include <chrono>
 
 #include "Eulerian.h"
-#include "Random.h"
-#include "Urb.hpp"
-#include "Turb.hpp"
 
 
 Eulerian::Eulerian(Urb* urb, Turb* turb, PlumeInputData* PID, const std::string& debugOutputFolder) {

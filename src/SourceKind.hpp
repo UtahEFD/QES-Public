@@ -8,13 +8,18 @@
 
 #pragma once
 
-#include "util/ParseInterface.h"
-#include "particle.hpp"
 
 #include "ReleaseType.hpp"
 #include "ReleaseType_perTimeStep.hpp"
 //#include "ReleaseType_perSecond.hpp"
 #include "ReleaseType_instantaneous.hpp"
+
+
+#include <random>
+#include "particle.hpp"
+
+
+#include "util/ParseInterface.h"
 
 
 enum SourceShape {

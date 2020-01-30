@@ -1,6 +1,6 @@
+
 #include "NetCDFOutput.h"
 
-#include <iostream>
 
 using namespace netCDF;
 using namespace netCDF::exceptions;

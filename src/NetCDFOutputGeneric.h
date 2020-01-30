@@ -1,4 +1,6 @@
+
 #pragma once
+
 
 #include <string>
 #include <algorithm>
@@ -6,7 +8,9 @@
 #include <map>
 #include <netcdf>
 
+
 #include "NetCDFOutput.h"
+
 
 /*
   This class handles saving output files.

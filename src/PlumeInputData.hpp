@@ -9,13 +9,15 @@
 #ifndef PLUMEINPUTDATA_HPP
 #define PLUMEINPUTDATA_HPP
 
-#include "util/ParseInterface.h"
 
 #include "SimulationParameters.hpp"
 #include "CollectionParameters.hpp"
 #include "FileOptions.hpp"
 #include "Sources.hpp"
 #include "BoundaryConditions.hpp"
+
+
+#include "util/ParseInterface.h"
 
 
 class PlumeInputData : public ParseInterface {
@@ -40,7 +42,7 @@ class PlumeInputData : public ParseInterface {
     	    parseElement<CollectionParameters>(true, colParams, "collectionParameters");
     	    parseElement<FileOptions>(true, fileOptions, "fileOptions");
     	    parseElement<Sources>(false, sources, "sources");
-	    parseElement<BoundaryConditions>(true, BCs, "boundaryConditions");
+	    	parseElement<BoundaryConditions>(true, BCs, "boundaryConditions");
 
     	}
         /**

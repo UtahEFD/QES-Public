@@ -2,14 +2,20 @@
 #define EULERIAN_H
 
 
-#include "Urb.hpp"
-#include "Turb.hpp"
-#include "PlumeInputData.hpp"
-
-
+#include <iostream>
+#include <ctime>
+#include <cmath>
 #include <fstream>
 #include <string>
 #include <vector>
+
+#include <chrono>
+
+#include "Random.h"
+
+#include "PlumeInputData.hpp"
+#include "Urb.hpp"
+#include "Turb.hpp"
 
 
 class Eulerian{

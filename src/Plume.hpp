@@ -12,17 +12,18 @@
 #include <vector>
 #include <cmath>
 #include <cstring>
-#include "Output.hpp"
-#include "Urb.hpp"
-#include "Turb.hpp"
-#include "Eulerian.h"
-#include "Dispersion.h"
-#include "PlumeInputData.hpp"
+#include <chrono>
+
 
 #include "NetCDFOutputGeneric.h"
 #include "PlumeOutputEulerian.h"
 
-#include <chrono>
+#include "PlumeInputData.hpp"
+#include "Urb.hpp"
+#include "Turb.hpp"
+#include "Eulerian.h"
+#include "Dispersion.h"
+
 
 using namespace netCDF;
 using namespace netCDF::exceptions;

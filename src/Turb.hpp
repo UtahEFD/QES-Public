@@ -10,10 +10,13 @@
 #ifndef TURB_HPP
 #define TURB_HPP
 
+#include <iostream>
 #include <string>
 #include <vector>
 #include <math.h>
 #include <netcdf>
+
+
 #include "Input.hpp"
 #include "NetCDFInput.h"
 

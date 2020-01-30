@@ -1,5 +1,5 @@
 //
-//  FileOptions.hpp
+//  CollectionParamters.hpp
 //  
 //  This class handles xml collection box options
 //

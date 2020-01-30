@@ -10,9 +10,12 @@
 #ifndef URB_HPP
 #define URB_HPP
 
+#include <iostream>
 #include <string>
 #include <vector>
 #include <netcdf>
+
+
 #include "Input.hpp"
 #include "NetCDFInput.h"
 

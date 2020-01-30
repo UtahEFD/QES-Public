@@ -6,8 +6,9 @@
 //  Created by Jeremy Gibbs on 03/15/19.
 //
 
-#include <iostream>
+
 #include "Input.hpp"
+
 
 using namespace netCDF;
 using namespace netCDF::exceptions;

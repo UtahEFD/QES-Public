@@ -1,5 +1,4 @@
 #include "Random.h"
-#include <iostream>
 
 random::random(){
   m_normal_value=false;
