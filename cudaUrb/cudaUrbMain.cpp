@@ -7,13 +7,14 @@
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
+#include "NetCDFOutputGeneric.h"
+
 #include "handleURBArgs.h"
 
 #include "URBInputData.h"
 #include "URBGeneralData.h"
-//#include "URBOutputData.h"
-#include "URBOutput_VizFields.h"
-#include "URBOutput_TURBInputFile.h"
+#include "URBOutputVisualization.h"
+#include "URBOutputWorkspace.h"
 
 #include "Solver.h"
 #include "CPUSolver.h"
@@ -69,13 +70,13 @@ int main(int argc, char *argv[])
     URBGeneralData* UGD = new URBGeneralData(UID, arguments.calcMixingLength);
 
     // create URB output classes
-    URBOutput_VizFields* outputVz = nullptr;
+    URBOutputVisualization* outputVz = nullptr;
     if (arguments.netCDFFileVz != "") {
-      outputVz = new URBOutput_VizFields(UGD,UID,arguments.netCDFFileVz);
+      outputVz = new URBOutputVisualization(UGD,UID,arguments.netCDFFileVz);
     }
-    URBOutput_TURBInputFile* outputWk = nullptr;
+    URBOutputWorkspace* outputWk = nullptr;
     if (arguments.netCDFFileWk != "") {
-      outputWk = new URBOutput_TURBInputFile(UGD,arguments.netCDFFileWk);
+      outputWk = new URBOutputWorkspace(UGD,arguments.netCDFFileWk);
     }
 
     // //////////////////////////////////////////
@@ -123,10 +124,10 @@ int main(int argc, char *argv[])
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
     if (outputVz) {
-      outputVz->save(UGD);
+      outputVz->save(0.0);
     }
     if (outputWk) {
-      outputWk->save(UGD);
+      outputWk->save(0.0);
     }
 
     exit(EXIT_SUCCESS);

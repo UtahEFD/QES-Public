@@ -70,13 +70,13 @@ struct AttVectorDbl {
   std::vector<NcDim> dimensions;
 };
 
-class URBOutput_Generic : public NetCDFOutput
+class NetCDFOutputGeneric : public NetCDFOutput
 {
  public:
-  URBOutput_Generic()
+  NetCDFOutputGeneric()
     {}
-  URBOutput_Generic(std::string);
-  virtual ~URBOutput_Generic()
+  NetCDFOutputGeneric(std::string);
+  virtual ~NetCDFOutputGeneric()
     {}
   
   // create attribute scalar based on type of data
@@ -110,6 +110,8 @@ class URBOutput_Generic : public NetCDFOutput
     return true;
   };
   
+  virtual void save(float) = 0;
+
   int output_counter=0;
   double time=0;
 
