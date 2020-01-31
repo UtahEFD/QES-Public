@@ -9,7 +9,7 @@ URBOutputVisualization::URBOutputVisualization(URBGeneralData *ugd,URBInputData*
   bool valid_output;
 
   if (fileOP.empty() || fileOP[0]=="all") {
-    output_fields = {"t","x","y","z","u","v","w","icell","terrain"};
+    output_fields = allOutputFields;
     valid_output=true;
   }else{
     output_fields={"t","x","y","z"};
@@ -103,8 +103,18 @@ URBOutputVisualization::URBOutputVisualization(URBGeneralData *ugd,URBInputData*
 
 bool URBOutputVisualization::validateFileOtions()
 {
-  //check all fileoption specificed to make sure it's possible...
-  return true;
+  
+  // check if all fileOptions->outputFields are possible
+  bool doContains(true);
+  std::size_t iter = 0, maxiter = output_fields.size();
+  
+  while(doContains && iter<maxiter) {
+    doContains = find(allOutputFields.begin(),allOutputFields.end(),
+                  output_fields.at(iter)) != allOutputFields.end();
+    iter++;
+  }
+  
+  return doContains;
 }
 
 

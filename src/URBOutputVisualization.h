@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <vector>
+#include <algorithm>
 
 #include "URBGeneralData.h"
 #include "URBInputData.h"
@@ -31,4 +33,7 @@ private:
 
   URBGeneralData* ugd_;
   
+  // all possible output fields need to be add to this list
+  std::vector<std::string> allOutputFields = {"t","x","y","z","u","v","w","icell","terrain"};
+
 };

@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    for(auto id_out=0;id_out<outputVec.size();id_out++)
+    for(auto id_out=0u;id_out<outputVec.size();id_out++)
       outputVec.at(id_out)->save(0.0); // need to replace 0.0 with timestep
     
     
