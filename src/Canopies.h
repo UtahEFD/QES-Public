@@ -3,6 +3,7 @@
 #include "util/ParseInterface.h"
 #include "Building.h"
 #include "Canopy.h"
+#include "CanopyCionco.h"
 #include "URBInputData.h"
 #include "URBGeneralData.h"
 
@@ -21,7 +22,8 @@ class Canopies : public ParseInterface
   virtual void parseValues()
   {
     parsePrimitive<int>(true, num_canopies, "num_canopies");
-    parseMultiPolymorphs(true, canopies, Polymorph<Building, Canopy>("canopy"));
-    
+    // read the input data for canopies
+    parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyCionco>("CanopyCionco"));
+    // add other type of canopy here
   }
 };

@@ -147,7 +147,6 @@ void CanopyCionco::canopyInitial(URBGeneralData *UGD)
         int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
         // if the cell is defined as canopy
         if (UGD->icellflag[icell_cent] == cellFlagCionco) {
-          int id = i+j*(UGD->nx-1);		       
           // initiate all attenuation coefficients to the canopy coefficient
           UGD->canopy_atten[icell_cent] = attenuationCoeff;     
         }
