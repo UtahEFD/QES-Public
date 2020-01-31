@@ -18,7 +18,6 @@ private:
 public:
 
   int outputFlag;
-  bool outputTURBInputFile=false;
   std::vector<std::string> outputFields;
   bool massConservedFlag;
   bool sensorVelocityFlag;
