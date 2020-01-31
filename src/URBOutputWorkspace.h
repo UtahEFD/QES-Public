@@ -18,7 +18,8 @@ public:
   URBOutputWorkspace(URBGeneralData*,std::string);
   ~URBOutputWorkspace()	       
   {}
-
+  
+  //save function be call outside 
   void save(float);
  
 private:

@@ -70,13 +70,12 @@ int main(int argc, char *argv[])
     URBGeneralData* UGD = new URBGeneralData(UID, arguments.calcMixingLength);
 
     // create URB output classes
-    URBOutputVisualization* outputVz = nullptr;
+    std::vector<NetCDFOutputGeneric*> outputVec;
     if (arguments.netCDFFileVz != "") {
-      outputVz = new URBOutputVisualization(UGD,UID,arguments.netCDFFileVz);
+      outputVec.push_back(new URBOutputVisualization(UGD,UID,arguments.netCDFFileVz));
     }
-    URBOutputWorkspace* outputWk = nullptr;
     if (arguments.netCDFFileWk != "") {
-      outputWk = new URBOutputWorkspace(UGD,arguments.netCDFFileWk);
+      outputVec.push_back(new URBOutputWorkspace(UGD,arguments.netCDFFileWk));
     }
 
     // //////////////////////////////////////////
@@ -123,13 +122,10 @@ int main(int argc, char *argv[])
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    if (outputVz) {
-      outputVz->save(0.0);
-    }
-    if (outputWk) {
-      outputWk->save(0.0);
-    }
-
+    for(auto id_out=0;id_out<outputVec.size();id_out++)
+      outputVec.at(id_out)->save(0.0); // need to replace 0.0 with timestep
+    
+    
     exit(EXIT_SUCCESS);
 }
 

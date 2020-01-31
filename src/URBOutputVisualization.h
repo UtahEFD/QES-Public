@@ -11,18 +11,20 @@
 */
 class URBOutputVisualization : public NetCDFOutputGeneric
 {
- public:
- URBOutputVisualization()
-   : NetCDFOutputGeneric()
-    {}
+public:
+  URBOutputVisualization()
+    : NetCDFOutputGeneric()
+  {}
   URBOutputVisualization(URBGeneralData*,URBInputData*,std::string);
   ~URBOutputVisualization()	       
-    {}
+  {}
   
-  bool validateFileOtions();
   void save(float);
   
- private:
+protected:
+  bool validateFileOtions();
+  
+private:
   std::vector<float> x_out,y_out,z_out;
   std::vector<int> icellflag_out;
   std::vector<double> u_out,v_out,w_out;
