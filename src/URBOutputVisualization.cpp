@@ -18,7 +18,7 @@ URBOutputVisualization::URBOutputVisualization(URBGeneralData *ugd,URBInputData*
   }
 
   if(!valid_output){
-     std::cerr << "Error: invalid output fields for visfields output\n";
+     std::cerr << "Error: invalid output fields for visulization fields output\n";
      exit(EXIT_FAILURE);
   }
 
@@ -120,25 +120,22 @@ void URBOutputVisualization::save(float timeOut)
   time = (double)timeOut;
 
   // get cell-centered values
-  for (auto k = 1; k < nz-1; k++)
-  {
-    for (auto j = 0; j < ny-1; j++)
-    {
-      for (auto i = 0; i < nx-1; i++)
-      {
+  for (auto k = 1; k < nz-1; k++) {
+    for (auto j = 0; j < ny-1; j++) {
+      for (auto i = 0; i < nx-1; i++) {
         int icell_face = i + j*nx + k*nx*ny;
-	      int icell_cent = i + j*(nx-1) + (k-1)*(nx-1)*(ny-1);
-	      u_out[icell_cent] = 0.5*(ugd_->u[icell_face+1]+ugd_->u[icell_face]);
-	      v_out[icell_cent] = 0.5*(ugd_->v[icell_face+nx]+ugd_->v[icell_face]);
-	      w_out[icell_cent] = 0.5*(ugd_->w[icell_face+nx*ny]+ugd_->w[icell_face]);
-	      icellflag_out[icell_cent] = ugd_->icellflag[icell_cent+((nx-1)*(ny-1))];
+        int icell_cent = i + j*(nx-1) + (k-1)*(nx-1)*(ny-1);
+        u_out[icell_cent] = 0.5*(ugd_->u[icell_face+1]+ugd_->u[icell_face]);
+        v_out[icell_cent] = 0.5*(ugd_->v[icell_face+nx]+ugd_->v[icell_face]);
+        w_out[icell_cent] = 0.5*(ugd_->w[icell_face+nx*ny]+ugd_->w[icell_face]);
+        icellflag_out[icell_cent] = ugd_->icellflag[icell_cent+((nx-1)*(ny-1))];
       }
     }
   }
-
+  
   // save the fields to NetCDF files
   saveOutputFields();
-
+  
   // remove x, y, z and terrain
   // from output array after first save
   if (output_counter==0) {
