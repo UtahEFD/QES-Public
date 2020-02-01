@@ -28,7 +28,7 @@ class Urb {
     private:
         
         // netCDF variables
-        // do these need moved into the function itself since they are used only once?
+        // LA-do these need moved into the function itself since they are used only once?
         std::vector<size_t> start;      // used for getVariableData() when it is a grid of values. The starting values in each dimension of the grid of input data. I would guess it is changed each time data is read from the input data
         std::vector<size_t> countfc,countcc,count2d;  // the number of values in each grid dimension of the input data, I guess the default is a 4D structure, but there is a variable for a 2D structure here as well
         

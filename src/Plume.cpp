@@ -34,18 +34,22 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID) {
 
 
     // set up time details
-    numTimeStep = std::ceil(simDur/dt);
-    timeStepStamp.resize(numTimeStep);
-    for(int i = 0; i < numTimeStep; ++i)
+    // LA future work: note that there is something off with the way this time list 
+    //  or how some counter relating to the timelist is set. I've had a few too many 
+    //  times during a few simulation runs. Be aware that what changes here needs changed
+    //  in the source release types as well or problems may occur.
+    nTimes = std::ceil(simDur/dt);
+    times.resize(nTimes);
+    for(int i = 0; i < nTimes; ++i)
     {
-        timeStepStamp.at(i) = i*dt + dt;
+        times.at(i) = i*dt + dt;
     }
     
     // set additional values from the input
     invarianceTol = PID->simParams->invarianceTol;
     C_0 = PID->simParams->C_0;
-    updateFrequency_particleLoop = PID->simParams->updateFrequency_particleLoop;
     updateFrequency_timeLoop = PID->simParams->updateFrequency_timeLoop;
+    updateFrequency_particleLoop = PID->simParams->updateFrequency_particleLoop;
     
 
     /* setup boundary condition functions */
@@ -56,12 +60,14 @@ Plume::Plume(Urb* urb,Dispersion* dis, PlumeInputData* PID) {
     std::string zBCtype = PID->BCs->zBCtype;
 
     // now set the boundary condition function for the plume runs, 
-    // & checking to make sure the input BCtypes are legitimate
+    // and check to make sure the input BCtypes are legitimate
     setBCfunctions(xBCtype,yBCtype,zBCtype);
 
 }
 
-
+// LA note: in this whole section, the idea of having single value temporary storage instead of just referencing values
+//  directly from the dispersion class seems a bit strange, but it makes the code easier to read cause smaller variable names.
+//  Also, it is theoretically faster?
 void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInputData* PID,
 	        std::vector<NetCDFOutputGeneric*> outputVec)
 {
@@ -72,28 +78,33 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
     
     // //////////////////////////////////////////
     // TIME Stepping Loop
-    // for every time step
+    // for every simulation time step
     // //////////////////////////////////////////
 
-    // I want to get an idea of the overall time of the time integration loop
+    // get the amount of time it takes to perform the simulation time integration loop
     auto timerStart_timeIntegration = std::chrono::high_resolution_clock::now();
     
     
-    for(int tStep = 0; tStep < numTimeStep; tStep++)
+    for(int tStep = 0; tStep < nTimes; tStep++)
     {
+
         // 
         // Add new particles now
         // - walk over all sources and add the emitted particles from
         // each source to the overall particle list
         // 
+        // get the amount of time it takes to release the particles, but only output the result when updateFrequency allows
+        // LA note: would love to put an if statement on this, but then it goes out of scope.
+        //  Probably more efficient to start the timer and let it die each iteration than to introduce another if statement
         auto timerStart_particleRelease = std::chrono::high_resolution_clock::now();
         std::vector<particle> nextSetOfParticles(0);
         for (auto sidx=0u; sidx < dis->allSources.size(); sidx++) {
             int numParticles = dis->allSources[sidx]->emitParticles( (float)dt, (float)(tStep*dt), nextSetOfParticles );
-            /* FM -> need to clean that
-	      if (numParticles > 0)
+            // particles are added each time if available, but only output the information when the updateFrequency allows
+	        if( numParticles > 0 && ( tStep % updateFrequency_timeLoop == 0 || tStep == nTimes - 1 ) )
+            {
                 std::cout << "Emitting " << numParticles << " particles from source " << sidx << std::endl;
-	    */
+            }
         }
         
         dis->setParticleVals( turb, eul, nextSetOfParticles );
@@ -102,43 +113,49 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
         // advection list
         dis->pointList.insert( dis->pointList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end() );
 
-        if( nextSetOfParticles.size() != 0 )
+        // only output the information when the updateFrequency allows and when there are actually released particles
+        // LA future work: this also needs to only happen when running in debug mode since this is timer related info.
+        if( nextSetOfParticles.size() != 0 && ( tStep % updateFrequency_timeLoop == 0 || tStep == nTimes - 1 ) )
         {
             auto timerEnd_particleRelease = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed_particleRelease = timerEnd_particleRelease - timerStart_particleRelease;
-            /* FM -> need to clean that
-	      std::cout << "finished emitting \"" << nextSetOfParticles.size() << "\" particles from \"" << dis->allSources.size() 
-                    << "\" sources. Total numParticles = \"" << dis->pointList.size() << "\"" << std::endl;
-		    std::cout << "\telapsed time: " << elapsed_particleRelease.count() << " s" << std::endl;   // Print out elapsed execution time
-	    */
+            std::cout << "finished emitting \"" << nextSetOfParticles.size() << "\" particles from \"" << dis->allSources.size() 
+                      << "\" sources. Total numParticles = \"" << dis->pointList.size() << "\"" << std::endl;
+		    std::cout << "\telapsed time for particle release: " << elapsed_particleRelease.count() << " s" << std::endl;
         }
 
-        // get the isRogue and isActive count from the dispersion class
-        double isRogueCount = dis->isRogueCount;
-        double isActiveCount = dis->isActiveCount;
 
         // Move each particle for every time step
         // Advection Loop
 
-        //if( tStep % updateFrequency_timeLoop == 0 || tStep == numTimeStep - 1 )
+        // get the amount of time it takes to advect each set of particles for a given timestep,
+        //  but only output the result when updateFrequency allows
+        // LA note: would love to put an if statement on this, but then it goes out of scope.
+        //  Probably more efficient to start the timer and let it die each iteration than to introduce another if statement
+        //if( tStep % updateFrequency_timeLoop == 0 || tStep == nTimes - 1 )
         //{
-            // I want to get an idea of the overall time of the advection loop, and different parts of the advection loop
             auto timerStart_advection = std::chrono::high_resolution_clock::now();
         //}
 
+        // get the isRogue and isNotActive count from the dispersion class for use in each particle iteration
+        double isRogueCount = dis->isRogueCount;
+        double isNotActiveCount = dis->isNotActiveCount;
+
         for (int par=0; par<dis->pointList.size(); par++)
         {
+
             // get the current isRogue and isActive information
-            // in this whole section, the idea of having single value temporary storage instead of just referencing values
-            //  directly from the dispersion class seems a bit strange, but it makes the code easier to read cause smaller variable names
-            //  also, in theory it is faster?
             bool isRogue = dis->pointList.at(par).isRogue;
             bool isActive = dis->pointList.at(par).isActive;
 
-            // first check to see if the particle should even be advected
+
+            // first check to see if the particle should even be advected and skip it if it should not be advected
             if(isActive == true && isRogue == false)
             {
 
+                // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
+                // LA note: would love to put an if statement on this, but then it goes out of scope.
+                //  Probably more efficient to start the timer and let it die each iteration than to introduce another if statement
                 //if( par % updateFrequency_particleLoop == 0 )
                 //{
                     // overall particle timer
@@ -146,24 +163,28 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 //}
 
 
-                // this is getting the current position for where the particle is at for a given time
+                // getting the current position for where the particle is at for a given time
                 // if it is the first time a particle is ever released, then the value is already set at the initial value
+                // LA notes: technically this value is the old position to be overwritten with the new position.
+                //  I've been tempted for a while to store both. Might have to for correctly implementing reflective building BCs
                 double xPos = dis->pointList.at(par).xPos;
                 double yPos = dis->pointList.at(par).yPos;
                 double zPos = dis->pointList.at(par).zPos;
 
-                // this is the old velFluct value, that will be overwritten during the solver
-                // hmm, Bailey's code just starts out setting these values to zero,
-                // so the velFluct values are actually the old velFluct. velFluct_old and velFluct are probably identical and kind of redundant in this implementation
-                // but it shouldn't hurt anything for now, even if it is redundant
-                // besides, it will probably change a bit once I figure out what exactly I want outputted on a regular, and on a debug basis
+                // grab the velFluct values.
+                // LA notes: hmm, Bailey's code just starts out setting these values to zero,
+                //  so the velFluct values are actually the old velFluct, that will be overwritten during the solver.
+                //  velFluct_old and velFluct are probably identical and kind of redundant in this implementation
+                //  but it shouldn't hurt anything for now, even if it is redundant
+                //  besides, it will probably change a bit if we decide to change what is outputted on a regular, and on a debug basis
                 double uFluct = dis->pointList.at(par).uFluct;
                 double vFluct = dis->pointList.at(par).vFluct;
                 double wFluct = dis->pointList.at(par).wFluct;
 
-                // should also probably grab and store the old values in this same way
-                // these consist of velFluct_old and tao_old
-                // also need to keep track of a delta_velFluct, though delta_velFluct doesn't need grabbed as a value till later now that I think on it
+                // get all other values for the particle
+                // in this case this, all the old velocity fluctuations and old stress tensor values for the particle
+                // LA note: also need to keep track of a delta_velFluct, 
+                //  but since delta_velFluct is never used, just set later on, it doesn't need grabbed as a value till later
                 double uFluct_old = dis->pointList.at(par).uFluct_old;
                 double vFluct_old = dis->pointList.at(par).vFluct_old;
                 double wFluct_old = dis->pointList.at(par).wFluct_old;
@@ -176,10 +197,8 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 
                 
                 /*
-                    now get the values for the current iteration
+                    now get the Lagrangian values for the current iteration from the Eulerian grid
                     will need to use the interp3D function
-                    Need to get velMean, CoEps, tao, flux_div
-                    Then need to call makeRealizable on tao then calculate inverse tao
                 */
 
 
@@ -190,6 +209,8 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
 
                 // this is the Co times Eps for the particle
+                // LA note: because Bailey's code uses Eps by itself and this does not, I wanted an option to switch between the two if necessary
+                //  it's looking more and more like we will just use CoEps.
                 double CoEps = eul->interp3D(turb->CoEps,"CoEps");
                 //double CoEps = eul->interp3D(turb->CoEps,"Eps");
                 
@@ -215,6 +236,8 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 // now need to call makeRealizable on tao
                 // directly modifies the values of tao
+                // LA note: because the tau values before and after the function call are useful when particles go rogue,
+                //  I decided to store them separate using a copy for the function call
                 double txx = txx_before;
                 double txy = txy_before;
                 double txz = txz_before;
@@ -226,9 +249,10 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 
                 // now need to calculate the inverse values for tao
                 // directly modifies the values of tao
-                // I just noticed that Bailey's code always leaves the last three components alone, never filled with the symmetrical tensor values
-                // this seems fine for makeRealizable, but I wonder if it messes with the invert3 stuff since those values are used even though they are empty in his code
-                // going to send in 9 terms anyways to try to follow Bailey's method for now
+                // LA warn: I just noticed that Bailey's code always leaves the last three components alone, 
+                //  never filled with the symmetrical tensor values. This seems fine for makeRealizable, 
+                //  but I wonder if it messes with the invert3 stuff since those values are used even though they are empty in his code
+                //  going to send in 9 terms anyways to try to follow Bailey's method for now
                 double lxx = txx;
                 double lxy = txy;
                 double lxz = txz;
@@ -245,7 +269,10 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
 
                 // these are the random numbers for each direction
-                double xRandn = random::norRan();   // should be randn() matlab equivalent, which is a normally distributed random number
+                // LA note: should be randn() matlab equivalent, which is a normally distributed random number
+                // LA future work: it is possible the rogue particles are caused by the random number generator stuff.
+                //  Need to look into it at some time.
+                double xRandn = random::norRan();
                 double yRandn = random::norRan();
                 double zRandn = random::norRan();
 
@@ -281,6 +308,8 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 // now prepare for the Ax=b calculation by calculating the inverted A matrix
                 // directly modifies the values of the A matrix
+                // LA note: because the A values before and after the function call are useful when particles go rogue,
+                //  I decided to store them separate using a copy for the function call
                 double A_11_inv = A_11;
                 double A_12_inv = A_12;
                 double A_13_inv = A_13;
@@ -295,10 +324,16 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
                 // now do the Ax=b calculation using the inverted matrix
                 // directly modifies the velFluct values, which are passed in by reference as the output x vector
+                // LA note: since velFluct_old keeps track of the velFluct values before this function call,
+                //  I just used the velFluct values directly in the function call
                 matmult(A_11_inv,A_12_inv,A_13_inv,A_21_inv,A_22_inv,A_23_inv,A_31_inv,A_32_inv,A_33_inv,b_11,b_21,b_31, uFluct,vFluct,wFluct);
                 
 
                 // now check to see if the value is rogue or not
+                // if it is rogue, output a ton of information that can be copied into matlab
+                // LA note: I tried to keep the format really nice to reduce the amount of reformulating work done in matlab.
+                //  I wanted to turn it into a function, but there are sooo many variables that would need to be passed into that function call
+                //  so it made more sense to write them out directly.
                 if( ( std::abs(uFluct) >= vel_threshold || isnan(uFluct) ) && nx > 1 )
                 {
                     std::cout << "Particle # " << par << " is rogue." << std::endl;
@@ -405,19 +440,23 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                     isRogue = true;
                 }
 
-                // Do you need this???
+                // Pete: Do you need this???
                 // ONLY if this should never happen....
                 //    assert( isRogue == false );
-                // maybe implement this after the thesis work. Currently use it to know if something is going wrong
+                // LA reply: maybe implement this after the thesis work. Currently use it to know if something is going wrong
+                //  I think we are still a long ways from being able to throw this out.
 
                 
                 // now update the particle position for this iteration
-                // at some point in time, need to do a CFL condition for only moving one eulerian grid cell at a time
-                // as well as a separate CFL condition for the particle timestep
-                // this would mean adding some kind of while loop, with an adaptive timestep, controlling the end of the while loop
-                //  with the sampling time increment. This means all particles can do multiple time iterations, each with their own timestep
-                // but at the sampling timestep, particles are allowed to catch up so they are all calculated by that time
-                // currently, we use the sampling timestep so we may violate the eulerian grid CFL condition. But is simpler to work with when getting started
+                // LA future work: at some point in time, need to do a CFL condition for only moving one eulerian grid cell at a time
+                //  this would mean adding some kind of while loop, with an adaptive timestep, controlling the end of the while loop
+                //   with the simulation time increment. This means all particles can do multiple time iterations, each with their own adaptive timestep.
+                //  To make this work, particles would need to be required to catch up so they are all calculated by a given simulation timestep.
+                // LA warn: currently, we use the simulation timestep so we may violate the eulerian grid CFL condition. 
+                //  but is simpler to work with when getting started
+                // LA future work: instead of using an adaptive timestep that adapts the timestep when checking if distX is too big or small,
+                //  we should use a courant number to precalculate the required adaptive timestep. Means less if statements and the error associated
+                //  with CFL conditions would just come out as the accuracy of the particle statistics.
                 double disX = (uMean + uFluct)*dt;
                 double disY = (vMean + vFluct)*dt;
                 double disZ = (wMean + wFluct)*dt;
@@ -427,29 +466,49 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 zPos = zPos + disZ;
 
 
+                // LA-note: at one time I thought it would be useful to time the boundary condition calculations
+                //  may still try to do this and so here is the leftover. If we were to do this again,
+                //  it should be a debug option that only displays based on the updateFrequency variables
                 //std::cout << "applying wallBC" << std::endl;
                 //auto timerStart_wallBC = std::chrono::high_resolution_clock::now();
 
                 // now apply boundary conditions
-                // notice that this is the old fashioned style for calling a pointer function
+                // LA note: notice that this is the old fashioned style for calling a pointer function
+                // LA future work: going to need to implement boundary conditions differently if we want to add in building and terrain reflections
+                //  first off, the boundary conditions need to be enforced for all component directions in a single call.
+                //  second off, an if statement to figure out where the particle is at in the domain,
+                //   would be required to determine which type of BC function to use
+                //  thirdly, I can't see that section of if statements being efficient at all,
+                //   it may be better to keep track of the particle index, and have an eulerian grid of pointer functions for which BC to use for each cell
+                //  lastly, this might get complicated because some BC functions may need to know from where a particle came to enter their location.
+                //   Not sure if this means that they need to know the old BC info or not, still working out those details,
+                //   but I can see this getting complicated real fast
+                //  one last note. The reflective BCs probably need to be iterative till they use up a dist to travel variable.
+                //   technically the eulerian velocity changes each new cell the particle enters, but we can assume that is a truncation error
+                //   that goes down as the user uses higher resolution grids and smaller timesteps. We may also just do a first pass
+                //   that ignores the exact location of the boundaries in a cell, just assuming each cell is either a bouncing spot or air.
                 (this->*enforceWallBCs_x)(xPos,uFluct,uFluct_old,isActive, domainXstart,domainXend);
                 (this->*enforceWallBCs_y)(yPos,vFluct,vFluct_old,isActive, domainYstart,domainYend);
                 (this->*enforceWallBCs_z)(zPos,wFluct,wFluct_old,isActive, domainZstart,domainZend);
                 
+
                 // now set the particle values for if they are rogue or outside the domain
                 setFinishedParticleVals(xPos,yPos,zPos, isActive,isRogue);
 
                 
+                // LA-note: at one time I thought it would be useful to time the boundary condition calculations
+                //  may still try to do this and so here is the leftover. If we were to do this again,
+                //  it should be a debug option that only displays based on the updateFrequency variables
                 //auto timerEnd_wallBC = std::chrono::high_resolution_clock::now();
                 //std::chrono::duration<double> elapsed_wallBC = timerEnd_wallBC - timerStart_wallBC;
-                //std::cout << "wallBC for particle par[" << par << "] and timeStepStamp[" << timeStepStamp.at(tStep) << "] finished" << std::endl;
+                //std::cout << "wallBC for particle par[" << par << "] and times[" << times.at(tStep) << "] finished" << std::endl;
                 //std::cout << "\telapsed time: " << elapsed_wallBC.count() << " s" << std::endl;   // Print out elapsed execution time
 
 
 
                 // now update the old values and current values in the dispersion storage to be ready for the next iteration
                 // also calculate the velFluct increment
-                // this is extremely important for output and the next iteration to work correctly
+                // !!! this is extremely important for output and the next iteration to work correctly
                 dis->pointList.at(par).uFluct = uFluct;
                 dis->pointList.at(par).vFluct = vFluct;
                 dis->pointList.at(par).wFluct = wFluct;
@@ -471,14 +530,14 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 dis->pointList.at(par).tyz_old = tyz;
                 dis->pointList.at(par).tzz_old = tzz;
 
-                // now update the isRogueCount
+                // now update the isRogueCount and isNotActiveCount
                 if(isRogue == true)
                 {
                     isRogueCount = isRogueCount + 1;
                 }
                 if(isActive == false)
                 {
-                    isActiveCount = isActiveCount + 1;
+                    isNotActiveCount = isNotActiveCount + 1;
                 }
 
 
@@ -486,11 +545,14 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
                 dis->pointList.at(par).isActive = isActive;
 
 
-                if(  ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == numTimeStep-1 ) && ( par % updateFrequency_particleLoop == 0 || par == 0 || par == dis->pointList.size()-1 )  )
+                // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
+                // LA future work: because this has timer related info, this probably needs to also be limited to when the user specifies they want debug mode
+                // LA future work: there is something off with the list of times or the indices or something, the output still looks a bit funky
+                if(  ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-1 ) && ( par % updateFrequency_particleLoop == 0 || par == 0 || par == dis->pointList.size()-1 )  )
                 {
                     auto timerEnd_particle = std::chrono::high_resolution_clock::now();
                     std::chrono::duration<double> elapsed_particle = timerEnd_particle - timerStart_particle;
-                    std::cout << "particle iteration par[" << par << "] finished. timestep = \"" << timeStepStamp.at(tStep) << "\"" << std::endl;
+                    std::cout << "particle iteration par[" << par << "] finished. timestep = \"" << times.at(tStep) << "\"" << std::endl;
                     std::cout << "\telapsed time: " << elapsed_particle.count() << " s" << std::endl;   // Print out elapsed execution time
                 }
             
@@ -499,49 +561,66 @@ void Plume::run(Urb* urb, Turb* turb, Eulerian* eul, Dispersion* dis, PlumeInput
 
         } // for (int par=0; par<parToMove;par++)
 
-        // set the isRogueCount for the time iteration in the disperion data
-        // hm, I'm almost wondering if this needs to go into dispersion, could just be kept locally,
-        // but declared outside the loop to preserve the value. Depends on the requirements for output and debugging
+        // set the isRogueCount and isNotActiveCount for the time iteration in the disperion data
+        // !!! this needs set for the output to work properly
         dis->isRogueCount = isRogueCount;
-        dis->isActiveCount = isActiveCount;
+        dis->isNotActiveCount = isNotActiveCount;
 
-	// FM -> EulerianFiles output
-	for(auto id_out=0;id_out<outputVec.size();id_out++)
-	  outputVec.at(id_out)->save(timeStepStamp.at(tStep));
-	
-        if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == numTimeStep-1 )
+
+        // FM -> EulerianFiles output
+        for(auto id_out=0;id_out<outputVec.size();id_out++)
+        {
+            outputVec.at(id_out)->save(times.at(tStep));
+        }
+
+        
+        // get the amount of time it takes to advect each set of particles for a given timestep,
+        //  but only output the result when updateFrequency allows
+        // LA future work: probably needs to be debug information only
+        // LA future work: something still seems off with the time and particle lists or the indices, the command line output looks funky
+        if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-1 )
         {
             auto timerEnd_advection = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double> elapsed_advection = timerEnd_advection - timerStart_advection;
-            std::cout << "advection loop for time = \"" << timeStepStamp.at(tStep) << "\" (timeStepStamp[" << timeStepStamp.at(tStep) << "]) finished" << std::endl;
+            std::cout << "advection loop for time = \"" << times.at(tStep) << "\" (times[" << times.at(tStep) << "]) finished" << std::endl;
             std::cout << "\telapsed time: " << elapsed_advection.count() << " s" << std::endl;   // Print out elapsed execution time
         }
 
-        if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == numTimeStep-1 )
+        // output the time, isRogueCount, and isNotActiveCount information for all simulations,
+        //  but only when the updateFrequency allows
+        if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-1 )
         {
-            std::cout << "time = \"" << timeStepStamp.at(tStep) << "\", isRogueCount = \"" 
-		      << dis->isRogueCount << "\", isActiveCount = \"" << dis->isActiveCount << "\"" << std::endl;
+            std::cout << "time = \"" << times.at(tStep) << "\", isRogueCount = \"" 
+            << dis->isRogueCount << "\", isNotActiveCount = \"" << dis->isNotActiveCount << "\"" << std::endl;
         }
 
 
         // 
+        // Pete's notes:
         // For all particles that need to be removed from the particle
         // advection, remove them now
         //
         // Purge the advection list of all the unneccessary particles....
         // 
-        // for now I want to keep them for the thesis work information and debugging
+        // Loren's Notes: for now I want to keep them for the thesis work information and debugging
+        //  Also, would it not be easier to do at the start of the loop rather than at the end?
+        //  Need to think more on this when we get to it.
 
-    } // end of loop: for(tStep=0; tStep<numTimeStep; tStep++)
 
+    } // end of loop: for(tStep=0; tStep<nTimes; tStep++)
+
+
+    // get the amount of time it takes to perform the simulation time integration loop
+    // LA note: this is probably a debug output thing.
     auto timerEnd_timeIntegration = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_timeIntegration = timerEnd_timeIntegration - timerStart_timeIntegration;
     std::cout << "time integration loop finished" << std::endl;
     // Print out elapsed execution time
-    std::cout << "\telapsed time: " << elapsed_timeIntegration.count() << " s" << std::endl;   
+    std::cout << "\telapsed time: " << elapsed_timeIntegration.count() << " s" << std::endl;
+
 
     // if the debug output folder is an empty string "", the debug output variables won't be written
-    writeSimInfoFile(dis,timeStepStamp.at(numTimeStep-1));
+    writeSimInfoFile(dis,times.at(nTimes-1));
     dis->outputVarInfo_text();
 
 }
@@ -649,6 +728,8 @@ void Plume::invert3(double& A_11,double& A_12,double& A_13,double& A_21,double& 
     double det = A_11*(A_22*A_33 - A_23*A_32) - A_12*(A_21*A_33 - A_23*A_31) + A_13*(A_21*A_32 - A_22*A_31);
 
     // check for near zero value determinants
+    // LA future work: I'm still debating whether this warning needs to be limited by the updateFrequency information
+    //  if so, how would we go about limiting that info? Would probably need to make the loop counter variables actual data members of the class
     if(std::abs(det) < 1e-10)
     {
         std::cout << "WARNING (Plume::invert3): matrix nearly singular" << std::endl;
@@ -705,6 +786,7 @@ void Plume::setBCfunctions(std::string xBCtype,std::string yBCtype,std::string z
     // the idea is to use the string input BCtype to determine which boundary condition function to use later in the program, and to have a function pointer
     // point to the required function. I learned about pointer functions from this website: https://www.learncpp.com/cpp-tutorial/78-function-pointers/
     
+    // output some debug information
     std::cout << "xBCtype = \"" << xBCtype << "\"" << std::endl;
     std::cout << "yBCtype = \"" << yBCtype << "\"" << std::endl;
     std::cout << "zBCtype = \"" << zBCtype << "\"" << std::endl;
@@ -895,6 +977,10 @@ void Plume::writeSimInfoFile(Dispersion* dis, const double& current_time)
     
 
     // comment out to choose which saveBasename to use
+    // LA future work: I'm really annoyed that this one thing is still hard coded into there
+    //  I guess it is all right, so long as the user remembers to modify the contents of the simInfo file
+    //  if they ever forget to set these variables.
+    //  But I think the real fix needs to be a change to the command line input to plume.
     std::string saveBasename = "sinewave_HeteroAnisoImplicitTurb";
     //std::string saveBasename = "channel_HeteroAnisoImplicitTurb";
     //std::string saveBasename = "LES_HeteroAnisoImplicitTurb";

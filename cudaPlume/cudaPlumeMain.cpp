@@ -64,6 +64,13 @@ int main(int argc, char** argv)
     }
 
 
+// leave this as 0 if you are using input urb and turb files from current urb and turb
+// set this to 1 if you are using input urb and turb files from past urb and turb
+// LA future work: the Bailey test cases are currently using past urb and turb file formats. Work needs done to 
+//  update their format to the current urb and turb formats, then we can just use one input constructor.
+//  I'm waiting to do this because I want to figure out why there are still rogue trajectories for the LES case before I complicate
+//  things by varying the file formats. Changing formats for the Bailey test cases would require a grid shift, 
+//  meaning careful placement and choice for an extra value in each dimension.
 #define USE_PREVIOUSCODE 0
 
 

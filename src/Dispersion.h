@@ -2,6 +2,8 @@
 //  Dispersion.h
 //  
 //  This class handles dispersion information
+//  So it contains and manages the overall particle list and overall source list
+//  Plume updates the particle list during the simulation using the dispersion information
 //
 
 #ifndef DISPERSION_H
@@ -33,21 +35,20 @@ class Dispersion {
     
     public:
         
-        Dispersion(Urb*,Turb*,PlumeInputData*,Eulerian*,const std::string& debugOutputFolder_val); // starts by determining the domain size from the urb and turb grid information
-                                                                                        // then there are some lines that can be activated by changing the compiler flag to 1 to manually add 
-                                                                                        //  some source directly from specialized constructors for debugging
-                                                                                        // then the sources created from the input .xml files by parse interface are taken and added to the list of sources
-                                                                                        // finally some of the important overall metadata for the set of particles is set to initial values
 
-                                                
-        // looks like this is just defining a list of information for Plume to use to know where and when to release different particles.
-        // so defining where and when every single particle is released over the entire simulation.
-        // this also holds the full list of particle information, so the dispersion class could probably be renamed to Lagrangian since it is the Lagrangian grid of values
-        
+        // constructor
+        // starts by determining the domain size from the urb and turb grid information
+        // then the sources created from the input .xml files by parse interface are taken and added to the list of sources
+        // finally some of the important overall metadata for the set of particles is set to initial values
+        //  and all metadata is calculated and checked for each source.
+        //  At the same time as calculating and checking the metadata for each source, the total number of particles to release is calculated.
+        Dispersion(Urb*,Turb*,PlumeInputData*,Eulerian*,const std::string& debugOutputFolder_val);
 
-        // yup, need the domain size in this, for the checkPosInfo() function
-        // so need to write a function that figures out the domain size from the urb and turb grids
-        // maybe for now just use the preexisting turb grid just to be safe
+
+
+        // these are not technically the same as the input urb and turb grid start and end variables
+        // the domain size variables are determined from the input urb and turb grid start and end values
+        //  using the determineDomainSize() function.
         double domainXstart;    // the domain starting x value found by the determineDomainSize() function
         double domainXend;      // the domain ending x value found by the determineDomainSize() function
         double domainYstart;    // the domain starting y value found by the determineDomainSize() function
@@ -68,9 +69,14 @@ class Dispersion {
         std::vector< SourceKind* > allSources;
 
 
+        // this is the total number of particles expected to be released during the simulation
+        // !!! this has to be calculated carefully inside the getInputSources() function
+        int totalParsToRelease;
+
+
         // some overall metadata for the set of particles
         double isRogueCount;        // just a total number of rogue particles per time iteration
-        double isActiveCount;       // just a total number of active particles per time iteration
+        double isNotActiveCount;       // just a total number of inactive active particles per time iteration
         double vel_threshold;       // the velocity fluctuation threshold velocity used to determine if particles are rogue or no
 
 
@@ -89,13 +95,15 @@ class Dispersion {
         // get the domain size from the input urb and turb grids
         void determineDomainSize(Urb* urb, Turb* turb);
 
-        // this function takes the sources from PlumeInputData and puts them into the allSources vector found in dispersion
-        // this also calls the check metadata function for the input sources before adding them to the list.
-        // the check metadata function should already have been called for all the other sources during the specialized constructor phases used to create them.
+        // this function gets sources from input data and adds them to the allSources vector
+        // this function also calls the many check and calc functions for all the input sources
+        // !!! note that these check and calc functions have to be called here 
+        //  because each source requires extra data not found in the individual source data
+        // !!! totalParsToRelease needs calculated very carefully here using information from each of the sources
         void getInputSources(PlumeInputData* PID);
 
 
-        // function for finding the largest sig value, which could be used for other similar datatypes if needed
+        // function for finding the largest sig value
         double getMaxVariance(const std::vector<double>& sigma_x_vals,const std::vector<double>& sigma_y_vals,const std::vector<double>& sigma_z_vals);
 
 };

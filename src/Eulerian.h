@@ -22,8 +22,11 @@ class Eulerian{
     
     public:
         
-        Eulerian(Urb*,Turb*,PlumeInputData*,const std::string& debugOutputFolder);   // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the Eulerian grid values,
-                                // then calculates the tau gradients which are then used to calculate the flux_div grid values.
+        
+        // constructor
+        // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the Eulerian grid values,
+        // then calculates the tau gradients which are then used to calculate the flux_div grid values.
+        Eulerian(Urb*,Turb*,PlumeInputData*,const std::string& debugOutputFolder);
         
 
         // the Eulerian data held in this class is on the turb grid, so these are copies of the turb grid values
@@ -90,8 +93,11 @@ class Eulerian{
         std::vector<double> dtzzdz; // dtzzyz
 
         
-        // I keep wondering, since we never use the gradients again since they are just used to calculate flux_div, which is what is used instead
-        // at some point in time should we get rid of storage of the gradient datasets? I guess they are useful for debugging.
+        // these are for calculating the gradients more efficiently
+        // LA future work: I keep wondering, since we never use the gradients again since they are just used to calculate flux_div, 
+        //  which is what is used instead at some point in time should we get rid of storage of the gradient datasets?
+        //  I guess they are useful for debugging. Also, it would be tough to do the calculation as efficiently 
+        //  because each component would need passed each and every time.
         void setDX_1D(const Turb* turb, const int idx);
         void setDY_1D(const Turb* turb, const int idx);
         void setDZ_1D(const Turb* turb, const int idx);

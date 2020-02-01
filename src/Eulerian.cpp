@@ -24,7 +24,7 @@ Eulerian::Eulerian(Urb* urb, Turb* turb, PlumeInputData* PID, const std::string&
     turbYend = turb->turbYend;
     turbZend = turb->turbZend;
 
-    // probably need to do something right here to determine what is the true domain size not just for turb, but for urb as well
+    // LA future work: probably need to do something right here to determine what is the true domain size not just for turb, but for urb as well
 
     
     // set additional values from the input

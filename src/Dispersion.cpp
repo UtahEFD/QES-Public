@@ -13,19 +13,21 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul,
     std::cout<<"[Dispersion] \t Setting up sources "<<std::endl;
     
 
-    // get the domain start and end values, needed for source position range checking
+    // calculate the domain start and end values, needed for source position range checking
     determineDomainSize(urb,turb);
 
 
     // get sources from input data and add them to the allSources vector
-    // this also calls the check metadata function for the input sources before adding them to the list.
-    // the check metadata function should already have been called for all the other sources during the specialized constructor phases used to create them.
+    // this also calls the many check and calc functions for all the input sources
+    // !!! note that these check and calc functions have to be called here 
+    //  because each source requires extra data not found in the individual source data
+    // !!! totalParsToRelease needs calculated very carefully here using information from each of the sources
     getInputSources(PID);
 
 
-    // set the isRogueCount and isActiveCount to zero
+    // set the isRogueCount and isNotActiveCount to zero
     isRogueCount = 0.0;
-    isActiveCount = 0.0;
+    isNotActiveCount = 0.0;
 
     // calculate the threshold velocity
     vel_threshold = 10.0*std::sqrt(getMaxVariance(turb->sig_x,turb->sig_y,turb->sig_z));
@@ -68,6 +70,9 @@ void Dispersion::getInputSources(PlumeInputData* PID)
         exit(1);
     }
 
+    // start at zero particles to release and increment as the number per source is found out
+    totalParsToRelease = 0;
+
     for(auto sidx=0u; sidx < numSources_Input; sidx++)
     {
         // first create the pointer to the input source
@@ -81,6 +86,9 @@ void Dispersion::getInputSources(PlumeInputData* PID)
         sPtr->m_rType->calcReleaseInfo(PID->simParams->timeStep, PID->simParams->simDur);
         sPtr->m_rType->checkReleaseInfo(PID->simParams->timeStep, PID->simParams->simDur);
         sPtr->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+
+        // now determine the number of particles to release for the source and update the overall count
+        totalParsToRelease = totalParsToRelease + sPtr->m_rType->m_numPar;
 
 
         // now add the pointer that points to the source to the list of sources in dispersion
