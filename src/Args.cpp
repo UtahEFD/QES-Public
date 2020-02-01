@@ -13,7 +13,7 @@
 
 Args::Args(): inputFileUrb("cudaurb.nc"), inputFileTurb("cudaturb.nc")
 {
-  reg("help",          "help/usage information",                   ArgumentParsing::NONE,   '?');
+    reg("help",          "help/usage information",                   ArgumentParsing::NONE,   '?');
     reg("quicFile",      "specifies xml settings file",              ArgumentParsing::STRING, 'q');
     reg("inputFileUrb",  "specifies input file from cuda-urb",       ArgumentParsing::STRING, 'u');
     reg("inputFileTurb", "specifies input file from cuda-turb",      ArgumentParsing::STRING, 't');

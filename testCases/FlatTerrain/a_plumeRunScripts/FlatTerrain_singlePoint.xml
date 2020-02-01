@@ -1,31 +1,31 @@
 <simulationParameters>
 	<simDur> 1000.0 </simDur>		<!-- this is the amount of time to run the simulation, lets you have an arbitrary start time to an arbitrary end time -->
-	<timeStep> 0.1 </timeStep>		<!-- this is the integration timestep. Do we want to do adaptive timestepping in the future? for now, we assume they choose a smart timestep -->
+	<timeStep> 0.1 </timeStep>		<!-- this is the overall integration timestep -->
 	<invarianceTol> 1e-10 </invarianceTol>     <!-- this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle -->
-	<C_0> 4.0 </C_0>				<!-- used to separate out CoEps into its separate parts when doing debug output -->
-	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>	 <!-- used to know how frequently to print out information during the particle loop of the solver -->
-	<updateFrequency_timeLoop> 10 </updateFrequency_timeLoop>	 <!-- used to know how frequently to print out information during the time integration loop of the solver -->
+	<C_0> 4.0 </C_0>				<!-- this is used to separate out CoEps into its separate parts when doing debug output -->
+	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>	 <!-- this is used to know how frequently to print out information during the particle loop of the solver -->
+	<updateFrequency_timeLoop> 10 </updateFrequency_timeLoop>	 <!-- this is used to know how frequently to print out information during the time integration loop of the solver -->
 </simulationParameters>
-<collectionParameters>			<!-- this is for collecting output, calculation does it for everywhere, this grabs what is needed for an area? -->
+<collectionParameters>			<!-- this is for collecting output from Lagrangian particle values to Eulerian values like concentration -->
 	<timeStart> 0.0 </timeStart>
 	<timeEnd> 1000.0 </timeEnd>
-	<timeAvg> 999.0 </timeAvg>		<!-- this is for collecting output, calculation does it for everywhere, this grabs what is needed for an area? -->
+	<timeAvg> 999.0 </timeAvg>		<!-- Still confused why, but I think this usually needs set to be (timeEnd-timeStart) - timeStep. Something to look into in the future -->
 	<boxBoundsX1> 0.0 </boxBoundsX1>
 	<boxBoundsX2> 200.0 </boxBoundsX2>
 	<boxBoundsY1> 0.0 </boxBoundsY1>
 	<boxBoundsY2> 200.0 </boxBoundsY2>
 	<boxBoundsZ1> 0.0 </boxBoundsZ1>
-	<boxBoundsZ2> 200.0 </boxBoundsZ2> 				
-	<nBoxesX> 200 </nBoxesX> 								
-	<nBoxesY> 200 </nBoxesY> 							
-	<nBoxesZ> 200 </nBoxesZ> 
+	<boxBoundsZ2> 200.0 </boxBoundsZ2>
+	<nBoxesX> 200 </nBoxesX>
+	<nBoxesY> 200 </nBoxesY>
+	<nBoxesZ> 200 </nBoxesZ>
 </collectionParameters>
 <sources>						<!-- this is the source input. Eventually the GUI can help to set up everything, always converting it into some form of a point source using builtin tools. -->
 	<numSources> 1 </numSources>			<!-- number of sources, you fill in source information for each source next -->
   	<SourcePoint>					<!-- source type -->
-    	<ReleaseType_perTimeStep>
+    	<ReleaseType_continuous>
 			<parPerTimestep>10</parPerTimestep>
-		</ReleaseType_perTimeStep>
+		</ReleaseType_continuous>
     	<posX> 10.0 </posX>
     	<posY> 100.0 </posY>
     	<posZ> 50.0 </posZ>
@@ -36,15 +36,3 @@
   	<yBCtype>exiting</yBCtype>
   	<zBCtype>exiting</zBCtype>
 </boundaryConditions>
-<fileOptions>
-  <!-- 
-	I can't figure out how this works. I think somehow you are choosing u,v,w as outputs, as icell, but I can't tell why or how
-	it honestly almost looks like there is nothing in here that is used. I guess I'll ask Pete more when I get there.
-	I did find something that looks like this, in Urb.hpp
-  -->
-	<outputFlag>1</outputFlag>
-    <outputFields>u</outputFields> 
-    <outputFields>v</outputFields> 
-    <outputFields>w</outputFields>
-    <outputFields>icell</outputFields>  
-</fileOptions>

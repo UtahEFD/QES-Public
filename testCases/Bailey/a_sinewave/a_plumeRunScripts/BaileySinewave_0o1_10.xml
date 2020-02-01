@@ -15,10 +15,10 @@
 	<boxBoundsY1> 1.0 </boxBoundsY1>
 	<boxBoundsY2> 1.0 </boxBoundsY2>
 	<boxBoundsZ1> 0.0 </boxBoundsZ1>
-	<boxBoundsZ2> 1.0 </boxBoundsZ2> 				
-	<nBoxesX> 1 </nBoxesX> 								
-	<nBoxesY> 1 </nBoxesY> 							
-	<nBoxesZ> 20 </nBoxesZ> 
+	<boxBoundsZ2> 1.0 </boxBoundsZ2>
+	<nBoxesX> 1 </nBoxesX>
+	<nBoxesY> 1 </nBoxesY>
+	<nBoxesZ> 20 </nBoxesZ>
 </collectionParameters>
 <sources>
   	<numSources> 1 </numSources>
@@ -33,10 +33,3 @@
   	<yBCtype>periodic</yBCtype>
   	<zBCtype>periodic</zBCtype>
 </boundaryConditions>
-<fileOptions>
-	<outputFlag>1</outputFlag>
-    <outputFields>u</outputFields> 
-    <outputFields>v</outputFields> 
-    <outputFields>w</outputFields>
-    <outputFields>icell</outputFields>  
-</fileOptions>

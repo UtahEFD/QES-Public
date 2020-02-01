@@ -80,7 +80,7 @@ void Dispersion::getInputSources(PlumeInputData* PID)
         // now do anything that is needed to the source via the pointer
         sPtr->m_rType->calcReleaseInfo(PID->simParams->timeStep, PID->simParams->simDur);
         sPtr->m_rType->checkReleaseInfo(PID->simParams->timeStep, PID->simParams->simDur);
-        sPtr->checkMetaData(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
+        sPtr->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
 
 
         // now add the pointer that points to the source to the list of sources in dispersion

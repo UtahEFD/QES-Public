@@ -23,9 +23,9 @@
 <sources>
 	<numSources> 1 </numSources>
   	<SourceLine>
-    	<ReleaseType_perTimeStep>
+    	<ReleaseType_continuous>
 			<parPerTimestep>10</parPerTimestep>
-		</ReleaseType_perTimeStep>
+		</ReleaseType_continuous>
     	<posX_0> 25.0 </posX_0>
     	<posY_0> 175.0 </posY_0>
     	<posZ_0> 40.0 </posZ_0>
@@ -39,10 +39,3 @@
   	<yBCtype>exiting</yBCtype>
   	<zBCtype>exiting</zBCtype>
 </boundaryConditions>
-<fileOptions>
-	<outputFlag>1</outputFlag>
-    <outputFields>u</outputFields>
-    <outputFields>v</outputFields>
-    <outputFields>w</outputFields>
-    <outputFields>icell</outputFields>
-</fileOptions>

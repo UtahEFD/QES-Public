@@ -28,9 +28,9 @@ CUDA_ADD_LIBRARY( cudaplumecore
     SourceKind.hpp
     
     ReleaseType.hpp
-    ReleaseType_perTimeStep.hpp
-    #ReleaseType_perSecond.hpp
     ReleaseType_instantaneous.hpp
+    ReleaseType_continuous.hpp
+    ReleaseType_duration.hpp
     
     SourcePoint.cpp SourcePoint.hpp
     SourceLine.cpp SourceLine.hpp

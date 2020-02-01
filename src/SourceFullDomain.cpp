@@ -2,9 +2,9 @@
 #include "SourceFullDomain.hpp"
 
 
-void SourceFullDomain::checkMetaData( const double& domainXstart, const double& domainXend, 
-                                      const double& domainYstart, const double& domainYend,
-                                      const double& domainZstart, const double& domainZend)
+void SourceFullDomain::checkPosInfo( const double& domainXstart, const double& domainXend, 
+                                     const double& domainYstart, const double& domainYend,
+                                     const double& domainZstart, const double& domainZend)
 {
     
     // notice that setting the variables as I am doing right now is not the standard way of doing this function
@@ -18,19 +18,19 @@ void SourceFullDomain::checkMetaData( const double& domainXstart, const double& 
 
     if( xDomainStart > xDomainEnd )
     {
-        std::cerr << "ERROR (SourceFullDomain::checkMetaData): input xDomainStart is greater than input xDomainEnd! xDomainStart = \"" << xDomainStart 
+        std::cerr << "ERROR (SourceFullDomain::checkPosInfo): input xDomainStart is greater than input xDomainEnd! xDomainStart = \"" << xDomainStart 
             << "\" xDomainEnd = \"" << xDomainEnd << "\"" << std::endl;
         exit(1);
     }
     if( yDomainStart > yDomainEnd )
     {
-        std::cerr << "ERROR (SourceFullDomain::checkMetaData): input yDomainStart is greater than input yDomainEnd! yDomainStart = \"" << yDomainStart 
+        std::cerr << "ERROR (SourceFullDomain::checkPosInfo): input yDomainStart is greater than input yDomainEnd! yDomainStart = \"" << yDomainStart 
             << "\" yDomainEnd = \"" << yDomainEnd << "\"" << std::endl;
         exit(1);
     }
     if( zDomainStart > zDomainEnd )
     {
-        std::cerr << "ERROR (SourceFullDomain::checkMetaData): input zDomainStart is greater than input zDomainEnd! zDomainStart = \"" << zDomainStart 
+        std::cerr << "ERROR (SourceFullDomain::checkPosInfo): input zDomainStart is greater than input zDomainEnd! zDomainStart = \"" << zDomainStart 
             << "\" zDomainEnd = \"" << zDomainEnd << "\"" << std::endl;
         exit(1);
     }
@@ -44,7 +44,7 @@ int SourceFullDomain::emitParticles( const float dt,
                                      const float currTime,
                                      std::vector<particle>& emittedParticles)
 {
-    // this function WILL fail if checkMetaData() is not called, because for once checkMetaData() acts to set the required data for using this function
+    // this function WILL fail if checkPosInfo() is not called, because for once checkPosInfo() acts to set the required data for using this function
     
     // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
     if( currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime )

@@ -10,7 +10,6 @@ class SourceLine : public SourceKind
 private:
 
     // note that this also inherits public data members ReleaseType* m_rType and SourceShape m_sShape.
-    //  this also inherits protected data members ReleaseType* rType_instantaneous and ReleaseType* rType_perTimeStep from SourceKind.
     // guidelines for how to set these variables within an inherited source are given in SourceKind.
 
     double posX_0;
@@ -39,8 +38,6 @@ public:
     {
         m_sShape = SourceShape::line;
 
-        parseMultiPolymorphs(false, rType_tmp, Polymorph<ReleaseType, ReleaseType_instantaneous>("ReleaseType_instantaneous"));
-        parseMultiPolymorphs(false, rType_tmp, Polymorph<ReleaseType, ReleaseType_perTimeStep>("ReleaseType_perTimeStep"));
         setReleaseType();
         
         parsePrimitive<double>(true, posX_0, "posX_0");
@@ -53,7 +50,7 @@ public:
     }
 
 
-    void checkMetaData(const double& domainXstart, const double& domainXend, 
+    void checkPosInfo( const double& domainXstart, const double& domainXend, 
                        const double& domainYstart, const double& domainYend,
                        const double& domainZstart, const double& domainZend);
 

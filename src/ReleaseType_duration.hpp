@@ -5,7 +5,7 @@
 #include "ReleaseType.hpp"
 
 
-class ReleaseType_perTimeStep : public ReleaseType
+class ReleaseType_duration : public ReleaseType
 {
 private:
 
@@ -13,6 +13,8 @@ private:
     //  double m_releaseEndTime, and int m_numPar from ReleaseType.
     // guidelines for how to set these variables within an inherited ReleaseType are given in ReleaseType.hpp.
 
+    double releaseStartTime;
+    double releaseEndTime;
     int parPerTimestep;
     
     
@@ -21,20 +23,22 @@ protected:
 public:
 
     // Default constructor
-    ReleaseType_perTimeStep()
+    ReleaseType_duration()
     {
     }
 
     // destructor
-    ~ReleaseType_perTimeStep()
+    ~ReleaseType_duration()
     {
     }
 
 
     virtual void parseValues()
     {
-        parReleaseType = ParticleReleaseType::perTimeStep;
+        parReleaseType = ParticleReleaseType::duration;
 
+        parsePrimitive<double>(true, releaseStartTime, "releaseStartTime");
+        parsePrimitive<double>(true, releaseEndTime, "releaseEndTime");
         parsePrimitive<int>(true, parPerTimestep, "parPerTimestep");
         
     }
@@ -44,9 +48,10 @@ public:
     {
         // set the overall releaseType variables from the variables found in this class
         m_parPerTimestep = parPerTimestep;
-        m_releaseStartTime = 0;
-        m_releaseEndTime = simDur;
-        int releaseSteps = std::ceil(simDur/timestep);
+        m_releaseStartTime = releaseStartTime;
+        m_releaseEndTime = releaseEndTime;
+        double releaseDur = releaseEndTime - releaseStartTime;
+        int releaseSteps = std::ceil(releaseDur/timestep);
         m_numPar = parPerTimestep*releaseSteps;
     }
 

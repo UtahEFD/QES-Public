@@ -2,25 +2,25 @@
 #include "SourcePoint.hpp"
 
 
-void SourcePoint::checkMetaData( const double& domainXstart, const double& domainXend, 
-                                 const double& domainYstart, const double& domainYend,
-                                 const double& domainZstart, const double& domainZend)
+void SourcePoint::checkPosInfo( const double& domainXstart, const double& domainXend, 
+                                const double& domainYstart, const double& domainYend,
+                                const double& domainZstart, const double& domainZend)
 {
     if( posX < domainXstart || posX > domainXend )
     {
-        std::cerr << "ERROR (SourcePoint::checkMetaData): input posX is outside of domain! posX = \"" << posX 
+        std::cerr << "ERROR (SourcePoint::checkPosInfo): input posX is outside of domain! posX = \"" << posX 
             << "\" domainXstart = \"" << domainXstart << "\" domainXend = \"" << domainXend << "\"" << std::endl;
         exit(1);
     }
     if( posY < domainYstart || posY > domainYend )
     {
-        std::cerr << "ERROR (SourcePoint::checkMetaData): input posY is outside of domain! posY = \"" << posY 
+        std::cerr << "ERROR (SourcePoint::checkPosInfo): input posY is outside of domain! posY = \"" << posY 
             << "\" domainYstart = \"" << domainYstart << "\" domainYend = \"" << domainYend << "\"" << std::endl;
         exit(1);
     }
     if( posZ < domainZstart || posZ > domainZend )
     {
-        std::cerr << "ERROR (SourcePoint::checkMetaData): input posZ is outside of domain! posZ = \"" << posZ 
+        std::cerr << "ERROR (SourcePoint::checkPosInfo): input posZ is outside of domain! posZ = \"" << posZ 
             << "\" domainZstart = \"" << domainZstart << "\" domainZend = \"" << domainZend << "\"" << std::endl;
         exit(1);
     }

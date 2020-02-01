@@ -4,15 +4,16 @@
 //  This class represents a generic source
 //
 //  Created by Jeremy Gibbs on 03/28/19.
+//  Updated by Loren Atwood on 01/31/20.
 //
 
 #pragma once
 
 
 #include "ReleaseType.hpp"
-#include "ReleaseType_perTimeStep.hpp"
-//#include "ReleaseType_perSecond.hpp"
 #include "ReleaseType_instantaneous.hpp"
+#include "ReleaseType_continuous.hpp"
+#include "ReleaseType_duration.hpp"
 
 
 #include <random>
@@ -34,22 +35,34 @@ class SourceKind : public ParseInterface
 {
 protected:
 
-    // these are expected to be set by parseInterface() in each source, with a call to setReleaseType() to set the m_rType using this variable.
-    // there's got to be a better way to do this with the interface function, and I just am not understanding yet
+    // this variable is a temporary variable to be used by setReleaseType() to set the publicly available variable m_rType. 
+    // !!! To make this happen, each source is expected to call the function setReleaseType() inside their call of the function parseValues()
+    //  setReleaseType uses parseMultiPolymorph() to fill this variable, then checks to make sure it is size 1 as only 1 release type is allowed,
+    //  then setReleaseType() sets the variable m_rType to be the one value found in this variable.
     std::vector<ReleaseType*> rType_tmp;
     
     
 public:
 
 
-    // this is a pointer to the release type, which is chosen by parseInterface() by each source
+    // this is a description variable for determining the source shape. May or may not be used.
+    // !!! this needs set by parseValues() in each source generated from input files.
+    SourceShape m_sShape;
+    
+    // this is a pointer to the release type, which is expected to be chosen by parseValues() by each source via a call to setReleaseType().
     // this data structure holds information like the total number of particles to be released by the source, the number of particles to release
     // per time for each source, and the start and end times to be releasing from the source.
+    // !!! this needs set by parseValues() in each source generated from input files by a call to the setReleaseType() function
     ReleaseType* m_rType;
 
-    // this needs set by parseInterface() in each source generated from input files, 
-    //  and set each specialized constructor for each source generated via specialized constructor
-    SourceShape m_sShape;
+    // LA-future work: need a class similar to ReleaseType that describes the input source mass.
+    //  This could be mass, mass per time, volume with a density, and volume per time with a density.
+
+    // LA-future work: need a class similar to ReleaseType that describes how to distribute the particles along the source geometry
+    //  This could be uniform, random normal distribution, ... I still need to think of more distributions.
+    // On second thought, this may not be possible to do like ReleaseType, it may need to be specific to each source geometry.
+    //  so maybe it needs to be more like BoundaryConditions, where each source determines which pointer function to choose for emitting particles
+    //  based on a string input describing the distribution. Really depends on how easy the implementation details become.
     
 
     // default constructor
@@ -63,11 +76,20 @@ public:
     }
 
 
-    // this function lets you take a string version of the release type and convert it to the enum data type
-    // useful for processing inputs from an xml file that use strings instead of the enum version of the ParticleReleaseTypes
+    // This function uses the temporary variable rType_tmp to parse all the release types found in the .xml file for a given source,
+    // then checks to make sure rType_tmp is size 1 as only 1 release type is allowed,
+    // finally this function sets the public variable m_rType to be the one value found in rType_tmp.
+    // !!! To make this happen, each source is expected to call the function setReleaseType() inside their call of the function parseValues().
+    // LA-notes: it may be possible to move rType_tmp into this function,
+    //  but I'm not sure how two pointers pointing to the same variable will act once out of scope.
     void setReleaseType()
     {
-                // now if the number of release types is not 1, there was a problem, need to quit with an error
+        // first parse all the release types into the temporary variable rType_tmp
+        parseMultiPolymorphs(false, rType_tmp, Polymorph<ReleaseType, ReleaseType_instantaneous>("ReleaseType_instantaneous"));
+        parseMultiPolymorphs(false, rType_tmp, Polymorph<ReleaseType, ReleaseType_continuous>("ReleaseType_continuous"));
+        parseMultiPolymorphs(false, rType_tmp, Polymorph<ReleaseType, ReleaseType_duration>("ReleaseType_duration"));
+        
+        // now if the number of release types is not 1, there was a problem, need to quit with an error
         if( rType_tmp.size() == 0 )
         {
             std::cerr << "ERROR (SourceKind::setReleaseType): there was no input releaseType!" << std::endl;
@@ -79,47 +101,48 @@ public:
             exit(1);
         }
 
-        // seems like the number of release types is 1, so now set the actual public release type to be the one that we have
+        // the number of release types is 1, so now set the public release type to be the one that we have
         m_rType = rType_tmp.at(0);
-
     }
 
 
-    // each source needs to overload this function with their own version. This allows differences in the input types for each source to be handled by parseInterface()
-    // or by specialized constructors. The = 0 at the end should force each inheriting class to require their own version of this function
+    // this function is used to parse all the variables for each source from the input .xml file
+    // each source overloads this function with their own version, allowing different combinations of input variables for each source, 
+    // all these differences handled by parseInterface().
+    // The = 0 at the end should force each inheriting class to require their own version of this function
+    // !!! in order for all the different combinations of input variables to work properly for each source, this function requires calls to the 
+    //  setReleaseType() function and manually setting the variable m_sShape in each version found in sources that inherit from this class.
+    //  This is in addition to any other variables required for an individual source that inherits from this class.
     virtual void parseValues() = 0;
 
 
-    // this is for checking the metadata. Sources generated by parse interface need this called manually. Sources generated by specialized constructors
-    //  could run this function automatically at constructor time. I'm thinking of requiring this to be called manually for all sources
-    //  as it may be handy to check the total available number of particles with the number of particles desired for each source.
-    virtual void checkMetaData(const double& domainXstart, const double& domainXend, 
+    // this function is for checking the source metadata to make sure all particles will be released within the domain.
+    // There is one source so far (SourceFullDomain) that actually uses this function to set a few metaData variables
+    //  specific to that source as well as to do checks to make sure particles stay within the domain. This is not a problem
+    //  so long as it is done this way with with future sources very sparingly.
+    //  In other words, avoid using this function to set variables unless you have to.
+    // !!! each source needs to have this function manually called for them by whatever class sets up a vector of this class.
+    virtual void checkPosInfo( const double& domainXstart, const double& domainXend, 
                                const double& domainYstart, const double& domainYend,
                                const double& domainZstart, const double& domainZend) = 0;
     
 
-    // pure virtual function - enforces that the derived MUST define
-    // this function
-    //
-    // This function appends particles to the provided vector of
-    // particles...
-    // 
-    // This function could return the number of particles emitted or
-    // 0 if some error. 
-    // do something with all the new particles
-    // the = 0 at the end should require each inheriting class to require their own version of this function
+    // this function is for appending a new set of particles to the provided vector of particles
+    // the way this is done differs for each source inheriting from this class, but in general
+    //  the idea is to determine whether the input time is within the time range particles should be released
+    //  then the particle positions are set using the particles to release per time, geometry information, and
+    //  distribution information.
+    // !!! only the particle positions and release time are set, other particle information needs set by whatever called this function right
+    //  right after the call to this function to make it work correctly.
+    // Note that this is a pure virtual function - enforces that the derived class MUST define this function
+    //  this is done by the = 0 at the end of the function
+    // LA-future work: There is still room for improvement to this function for each different source.
+    //  It requires determining additional input .xml file information for each source, which still needs worked out.
+    // LA-other notes: currently this is outputting the number of particles appended to the list, but according to Pete,
+    //  the int output could be used for returning error messages, kind of like the exit success or exit failure return methods.
+    //   Because the input vector is usually empty, the size of the vector after this function call gives the number of particles appended.
+    //   If this were to change and the overall particle list were used directly, the output would actually be the new size of the particle list,
+    //   NOT the number of particles added to the list.
     virtual int emitParticles(const float dt, const float currTime, std::vector<particle>& emittedParticles) = 0;
     
-    // HOW THIS Could be used
-    // 
-    // std::vector<pointInfo> nextSetOfParticles;
-    // ...
-    // nextSetOfParticles.clear();  // empty
-    // for (all sources, source) {
-    // int numParticles = source->emitParticles( nextSetOfParticles );
-    // std::cout << "Emitting " << numParticles << " particles." << std::endl;
-    // }
-    //
-    // could also use this output int for returning error messages, kind of the like the exit success or exit failure return methods.
-
 };

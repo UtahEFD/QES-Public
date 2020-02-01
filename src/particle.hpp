@@ -1,11 +1,8 @@
 //
 //  particle.hpp
 //  
-//  This class represents values stored for each point
-//  At a minimum, this needs to have the point position and release time
-//  Might want to add in more of the desired variables later
-//  Vectors of Particle will need to be vectors of pointers to Particle, making it a bit complex to run
-//  but trying to do this as a struct of structs was not working
+//  This class represents information stored for each particle
+//  Where particles represent Lagrangian data
 //
 //  Created by Loren Atwood on 11/09/19.
 //
@@ -30,17 +27,16 @@ class particle
         
 
         // the point info variables
-        // hm, I'm used to making stuff like this private and creating a bunch of accessor functions
-        // so that they all stay the same dimension. But so long as we use them correctly, this isn't a problem
+        // LA: I'm used to making stuff like this private and creating a bunch of accessor functions
+        //  so that they all get edited together. But so long as we use them correctly, this isn't a problem
         
-        // before the solver runs, the sources can set these values, then the other values are set using urb and turb info using these values
-        // then the solver in plume modifies some of these values as needed
+        // values set by emitParticles() by each source
         double xPos;          // Initially, the initial x component of position for the particle. After the solver starts to run, the current x component of position for the particle.
         double yPos;          // Initially, the initial y component of position for the particle. After the solver starts to run, the current y component of position for the particle.
         double zPos;          // Initially, the initial z component of position for the particle. After the solver starts to run, the current z component of position for the particle.
         double tStrt;         // The time of release for the particle
 
-        // once positions are known, can set these values
+        // once positions are known, can set these values using urb and turb info
         double uFluct;      // x component of the velocity fluctuation for a particle for a given iteration. Starts out as the initial value until a particle is "released" into the domain
         double vFluct;      // v component of the velocity fluctuation for a particle for a given iteration. Starts out as the initial value until a particle is "released" into the domain
         double wFluct;      // w component of the velocity fluctuation for a particle for a given iteration. Starts out as the initial value until a particle is "released" into the domain

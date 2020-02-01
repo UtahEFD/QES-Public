@@ -45,7 +45,7 @@ class Dispersion {
         // this also holds the full list of particle information, so the dispersion class could probably be renamed to Lagrangian since it is the Lagrangian grid of values
         
 
-        // yup, need the domain size in this, for the checkMetaData() function
+        // yup, need the domain size in this, for the checkPosInfo() function
         // so need to write a function that figures out the domain size from the urb and turb grids
         // maybe for now just use the preexisting turb grid just to be safe
         double domainXstart;    // the domain starting x value found by the determineDomainSize() function

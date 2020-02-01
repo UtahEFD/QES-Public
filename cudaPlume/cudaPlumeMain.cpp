@@ -85,10 +85,7 @@ int main(int argc, char** argv)
 
 #endif
 
-    // Create instance of output class (obsolete)
-    //Output* output = new Output(arguments.outputFile);
-   
-
+    
     // Create instance of cudaUrb class
     Urb* urb = new Urb(inputUrb);
     

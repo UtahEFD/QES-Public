@@ -2,6 +2,7 @@
 //  CollectionParamters.hpp
 //  
 //  This class handles xml collection box options
+//  this is for collecting output from Lagrangian particle values to Eulerian values like concentration
 //
 //  Created by Jeremy Gibbs on 03/25/19.
 //
@@ -21,7 +22,7 @@ class CollectionParameters : public ParseInterface {
         int nBoxesX, nBoxesY, nBoxesZ;
         float boxBoundsX1, boxBoundsY1, boxBoundsZ1;
         float boxBoundsX2, boxBoundsY2, boxBoundsZ2;
-        float timeStart, timeEnd, timeAvg ;
+        float timeStart, timeEnd, timeAvg ;		// Still confused why, but I think timeAvg usually needs set to be (timeEnd-timeStart) - timeStep. Something to look into in the future
     	        
     	virtual void parseValues() {
         	parsePrimitive< float >(true, timeStart,   "timeStart");

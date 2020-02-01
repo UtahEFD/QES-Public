@@ -23,25 +23,25 @@
 <sources>
 	<numSources> 4 </numSources>
   	<SourcePoint>
-    	<ReleaseType_perTimeStep>
+    	<ReleaseType_continuous>
 			<parPerTimestep>10</parPerTimestep>
-		</ReleaseType_perTimeStep>
+		</ReleaseType_continuous>
     	<posX> 40.0 </posX>
     	<posY> 80.0 </posY>
     	<posZ> 30.0 </posZ>
   	</SourcePoint>
 	<SourcePoint>
-    	<ReleaseType_perTimeStep>
+    	<ReleaseType_continuous>
 			<parPerTimestep>10</parPerTimestep>
-		</ReleaseType_perTimeStep>
+		</ReleaseType_continuous>
     	<posX> 10.0 </posX>
     	<posY> 100.0 </posY>
     	<posZ> 50.0 </posZ>
   	</SourcePoint>
 	<SourceLine>
-    	<ReleaseType_perTimeStep>
+    	<ReleaseType_continuous>
 			<parPerTimestep>10</parPerTimestep>
-		</ReleaseType_perTimeStep>
+		</ReleaseType_continuous>
     	<posX_0> 25.0 </posX_0>
     	<posY_0> 175.0 </posY_0>
     	<posZ_0> 40.0 </posZ_0>
@@ -50,9 +50,9 @@
     	<posZ_1> 40.0 </posZ_1>
   	</SourceLine>
 	<SourceCube>
-    	<ReleaseType_perTimeStep>
+    	<ReleaseType_continuous>
 			<parPerTimestep>10</parPerTimestep>
-		</ReleaseType_perTimeStep>
+		</ReleaseType_continuous>
     	<minX> 75.0 </minX>
     	<minY> 25.0 </minY>
     	<minZ> 70.0 </minZ>
@@ -66,10 +66,3 @@
   	<yBCtype>exiting</yBCtype>
   	<zBCtype>exiting</zBCtype>
 </boundaryConditions>
-<fileOptions>
-	<outputFlag>1</outputFlag>
-    <outputFields>u</outputFields>
-    <outputFields>v</outputFields>
-    <outputFields>w</outputFields>
-    <outputFields>icell</outputFields>
-</fileOptions>
