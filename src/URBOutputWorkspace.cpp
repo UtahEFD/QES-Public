@@ -117,6 +117,7 @@ URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_fi
   createAttVector("n","n cut-cell coefficient","--",dim_vect_cc,&(ugd_->n)); 
   
   // adding building informations
+  /* FM -> commented in workingBranch
   if (ugd_->allBuildingsV.size()>0) {
     // building dimension
     NcDim NcDim_building=addDimension("building",ugd_->allBuildingsV.size());
@@ -134,7 +135,8 @@ URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_fi
     output_fields.push_back("effective_height");
     
   }
-  
+  */
+
   // create output fields
   addOutputFields();
 }
