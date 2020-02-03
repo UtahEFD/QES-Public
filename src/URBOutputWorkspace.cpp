@@ -117,17 +117,13 @@ URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_fi
   createAttVector("n","n cut-cell coefficient","--",dim_vect_cc,&(ugd_->n)); 
   
   // adding building informations
-  if (ugd_->building_id.size()>0) {
+  if (ugd_->allBuildingsV.size()>0) {
     // building dimension
-    NcDim NcDim_building=addDimension("building",ugd_->building_id.size());
+    NcDim NcDim_building=addDimension("building",ugd_->allBuildingsV.size());
     // vector of dimension for building information 
     std::vector<NcDim> dim_vect_building;
     dim_vect_building.push_back(NcDim_building);
-    // create attributes
-    createAttVector("building_id","ID of building","--",dim_vect_building,&(ugd_->building_id)); 
-    // add to output fields
-    output_fields.push_back("building_id");
-    
+        
     // vector of dimension for time dep building information 
     std::vector<NcDim> dim_vect_building_t;
     dim_vect_building_t.push_back(NcDim_t);
@@ -135,8 +131,8 @@ URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_fi
     // create attributes
     createAttVector("effective_height","effective height of building","m",
 		    dim_vect_building_t,&(ugd_->effective_height)); 
-    // add to output fields
     output_fields.push_back("effective_height");
+    
   }
   
   // create output fields
