@@ -34,9 +34,11 @@ CUDA_ADD_LIBRARY( cudaurbcore
   Sidewall.cpp
   Rooftop.cpp
   StreetIntersection.cpp
-  Ray.cpp
-  SphereDirections.cpp
-  HitRecord.cpp
+  Ray.cpp Ray.h
+  SphereDirections.cpp SphereDirections.h
+  HitRecord.cpp HitRecord.h
+ 
+  OptixRayTrace.cpp OptixRayTrace.h
   )
 
 cuda_add_executable( unitTest
