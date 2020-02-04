@@ -286,7 +286,11 @@ void OptixRayTrace::createSBT(RayTracingState& state){
 }
 
 void OptixRayTrace::initLaunchParams(RayTracingState& state){
-//will differ based on purposes
+   CUDA_CHECK(cudaStreamCreate(&state.stream));
+   Params* d_params = 0;
+   Params* d_params_translated = 0;
+
+
 }
 
 void OptixRayTrace::cleanState(RayTracing& state){

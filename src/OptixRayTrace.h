@@ -25,7 +25,7 @@
 
 struct RayTracingState{
    OptixDeviceContext context = 0;
-   //CUDA stream needed?
+   CUstream stream = 0;
    
    OptixModule ptx_module  = 0;
    OptixPipelineCompileOptions pipeline_compile_options = {};
