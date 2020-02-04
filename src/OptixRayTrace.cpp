@@ -167,8 +167,7 @@ void OptixRayTrace::createProgramGroups(RayTracingState& state){
    OptixProgramGroupDesc raygen_prog_group_desc = {};
    raygen_prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_RAYGEN;
    raygen_prog_group_desc.raygen.module = state.ptx_module;
-   raygen_prog_group_desc.raygen.entryFunctionName =
-      "__raygen__from_buffer";//could name something else
+   raygen_prog_group_desc.raygen.entryFunctionName = "__raygen__from_cell";
 
    OPTIX_CHECK_LOG(optixProgramGroupCreate(state.context,
                                            &raygen_prog_group_desc,
@@ -181,7 +180,7 @@ void OptixRayTrace::createProgramGroups(RayTracingState& state){
    OptixProgramGroupDesc miss_prog_group_desc = {};
    miss_prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_MISS;
    miss_prog_group_desc.miss.module = state.ptx_module;
-   miss_prog_group_desc.miss.entryFunctionName = "__miss__";
+   miss_prog_group_desc.miss.entryFunctionName = "__miss__miss"; //need this one?
 
    OPTIX_CHECK_LOG(optixProgramGroupCreate(state.context,
                                            &miss_prog_group_desc,
@@ -190,11 +189,11 @@ void OptixRayTrace::createProgramGroups(RayTracingState& state){
                                            log,
                                            &sizeof_log,
                                            &state.miss_prog_group));
-//memset miss needed?
+
    OptixProgramGroupDesc hit_prog_group_desc = ();
    hit_prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
    hit_prog_group_desc.hitgroup.moduleCH = state.ptx_module;
-   hit_prog_group_desc.hitgroup.entryFunctionNameCH = "__closesthit__";
+   hit_prog_group_desc.hitgroup.entryFunctionNameCH = "__closesthit__mixlength";
    OPTIX_CHECK_LOG(optixProgramGroupCreate(state.context,
                                            &hit_prog_group_desc,
                                            1,
@@ -202,9 +201,6 @@ void OptixRayTrace::createProgramGroups(RayTracingState& state){
                                            log,
                                            &sizeof_log,
                                            &state.hit_prog_group));
-   //last line may change
-   //memset needed?
-
 }
 
 void OptixRayTrace::createPipeline(RayTracingState& state){
