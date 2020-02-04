@@ -208,14 +208,16 @@ void OptixRayTrace::createPipeline(RayTracingState& state){
    char log[2048];
    size_t sizeof_log = sizeof(log);
 
-   OptixProgramGroup program_groups[] = {
-      //list needed program groups
+   OptixProgramGroup program_groups[3] = {
+      state.raygen_prog_group,
+      state.miss_prog_group,
+      state._hit_prog_group
    };
 
    OptixPipelineLinkOptions pipeline_link_options = {};
-   //pipelink_link_options.maxTraceDepth =
+   pipelink_link_options.maxTraceDepth = 1;
    pipeline_link_options.debugLevel = OPTIX_COMPILE_DEBUG_LEVEL_FULL;
-   pipeline_link_options.ovrideUsesMotionBlur = false;
+   pipeline_link_options.ovrrideUsesMotionBlur = false;
 
    OPTIX_CHECK_LOG(optixPipelineCreate(state.context,
                                        &state.pipeline_compile_options,
@@ -225,11 +227,6 @@ void OptixRayTrace::createPipeline(RayTracingState& state){
                                        log,
                                        &sizeof_log,
                                        &state.pipeline));
-   //if more than 1 pipeline then more code is needed (look at
-   //ray casting example)
-
-   //if like Pathtracer example, depts of more than 1 (presumably)
-   //need to specify max traversial depth
 }
 
 void OptixRayTrace::createSBT(RayTracingState& state){
