@@ -48,6 +48,7 @@ struct RayTracingState{
 template <typename T>
 struct Record{
    __align__(OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
+   T data;
 };
 
 struct Params{
@@ -58,6 +59,20 @@ struct Params{
 
 struct Vertex{
    float x, y, z;
+};
+
+struct RayGenData{
+   //should cell stuff go here?
+};
+
+struct MissData{
+   //is this even needed?
+   //is there anything to do when a miss happens
+};
+
+struct HitGroupData{
+   //what should be included in here?
+   //can the distance be retireved by the device-side functions instead?
 };
 
 class OptixRayTrace : public RayTraceInterface{
@@ -78,5 +93,7 @@ class OptixRayTrace : public RayTraceInterface{
     *Helper function to convert vector<Triangle*> to array<float, 3>
     */
    void convertVecMeshType(std::vector<Triangle*> &tris, std::vector<Vertex> &trisArray);
-   
+   typedef Record<RayGenData> RayGenRecord;
+   typedef Record<MissData> MissRecord;
+   typedef Record<HitGroupData> HitGroupRecord;
 };

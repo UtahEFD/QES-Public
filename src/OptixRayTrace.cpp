@@ -230,12 +230,59 @@ void OptixRayTrace::createPipeline(RayTracingState& state){
 }
 
 void OptixRayTrace::createSBT(RayTracingState& state){
-   //CUdeviceptr d_raygen_record =
-   //const size_t raygen_record_size = sizeof();
-   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_raygen_record), raygen_record_size));
+   //raygen
+   CUdeviceptr d_raygen_record = 0;
 
-   //will differ depending on needs
+   const size_t raygen_record_size = sizeof(RayGenRecord);
 
+   CUDACHECK(cudaMalloc(reinterpret_cast<void**>(&d_raygen_record), raygen_record_size));
+
+   RayGenRecord sbt_raygen;
+
+   OPTIX_CHECK(optixSbtRecordPackHeader(state.raygen_prog_group, &sbt_raygen));
+
+   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void**> (&d_raygen_record),
+                         &sbt_raygen,
+                         raygen_record_size,
+                         cudaMemcpyHostToDevice));
+
+   //miss
+   CUdeviceptr d_miss_record = 0;
+
+   const size_t miss_record_size = sizeof(MissRecord);
+
+   MissRecord sbt_miss;
+
+   CUDACHECK(cudaMalloc(reinterpret_cast<void**>(&d_miss_record), miss_record_size));
+
+   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void**> (&d_miss_record),
+                         &sbt_miss,
+                         miss_record_size,
+                         cudaMemcpyHostToDevice));
+
+   //hit
+   CUdeviceptr d_hit_record = 0;
+
+   const size_t hit_record_size = sizeof(HitGroupRecord);
+
+   HitGroupRecord sbt_hit;
+   CUDACHECK(cudaMalloc(reinterpret_cast<void**>(&d_hit_record), hit_record_size));
+
+   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void**>(&d_hit_record),
+                         sbt_hit,
+                         hit_record_size,
+                         cudaMemcpyHostToDevice));
+
+   //update state
+   state.sbt.raygenRecord = d_raygen_record;
+
+   state.sbt.missRecordBase = d_miss_record;
+   state.sbt.missRecordStrideInBytes = static_cast<uint32_t>(miss_record_size);
+   state.sbt.missRecordCount = 1;
+
+   state.sbt.hitgroupRecordBase = d_hit_record;
+   state.sbt.hitgroupRecordStrideInBytes = static_cast<uint32_t>(hit_record_size);
+   state.sbt.hitgroupRecordCount = 1;
 }
 
 void OptixRayTrace::initLaunchParams(RayTracingState& state){
