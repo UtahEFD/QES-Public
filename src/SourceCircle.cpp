@@ -56,6 +56,6 @@ int SourceCircle::emitParticles( const float dt,
 
     }
 
-    return emittedParticles.size();
+    return m_rType->m_parPerTimestep;
     
 }

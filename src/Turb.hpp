@@ -37,14 +37,17 @@ class Turb {
     public:
     
         // initializer
-        Turb(Input*);   // looks like this just grabs the input turb stuff, and stuffs it into the appropriate variables
-                        // the variables may be different than the input ones, so eventually we may want to change that, but is almost there
-                        // most of the temporary variables are used as intermediates between the two different types of data structures
-                        
+        // looks like this just grabs the input turb stuff, and stuffs it into the appropriate variables
+        // the variables may be different than the input ones, so eventually we may want to change that, but is almost there
+        // most of the temporary variables are used as intermediates between the two different types of data structures
+        Turb(Input* input, const bool& debug);
+
         // initializer
-        Turb(NetCDFInput*);   // looks like this just grabs the input turb stuff, and stuffs it into the appropriate variables
-                        // the variables may be different than the input ones, so eventually we may want to change that, but is almost there
-                        // most of the temporary variables are used as intermediates between the two different types of data structures
+        // looks like this just grabs the input turb stuff, and stuffs it into the appropriate variables
+        // the variables may be different than the input ones, so eventually we may want to change that, but is almost there
+        // most of the temporary variables are used as intermediates between the two different types of data structures
+        Turb(NetCDFInput* input, const bool& debug);
+        
         
         // urb grid information
         int nx;     // this is the number of points in the x dimension

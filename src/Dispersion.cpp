@@ -7,10 +7,16 @@
 #include "Dispersion.h"
 
 
-Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul, const std::string& debugOutputFolder_val)
+Dispersion::Dispersion( PlumeInputData* PID,Urb* urb,Turb* turb,Eulerian* eul,
+                        const bool& outputLagrData_val,const std::string& outputFolder_val, const bool& debug_val)
     : pointList(0)  // ???
 {
     std::cout<<"[Dispersion] \t Setting up sources "<<std::endl;
+
+    // copy debug information
+    outputLagrData = outputLagrData_val;
+    outputFolder = outputFolder_val;
+    debug = debug_val;
     
 
     // calculate the domain start and end values, needed for source position range checking
@@ -31,10 +37,6 @@ Dispersion::Dispersion(Urb* urb, Turb* turb, PlumeInputData* PID, Eulerian* eul,
 
     // calculate the threshold velocity
     vel_threshold = 10.0*std::sqrt(getMaxVariance(turb->sig_x,turb->sig_y,turb->sig_z));
-
-
-    // set the debug variable output folder
-    debugOutputFolder = debugOutputFolder_val;
     
 }
 
@@ -199,8 +201,8 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
 
 void Dispersion::outputVarInfo_text()
 {
-    // if the debug output folder is an empty string "", the debug output variables won't be written
-    if( debugOutputFolder == "" )
+    // if this output is not desired, skip outputting these files
+    if( outputLagrData == false )
     {
         return;
     }
@@ -221,7 +223,7 @@ void Dispersion::outputVarInfo_text()
     
 
 
-    currentFile = debugOutputFolder + "/particle_txx_old.txt";
+    currentFile = outputFolder + "particle_txx_old.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -229,7 +231,7 @@ void Dispersion::outputVarInfo_text()
     }
     fclose(fzout);
 
-    currentFile = debugOutputFolder + "/particle_txy_old.txt";
+    currentFile = outputFolder + "particle_txy_old.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -237,7 +239,7 @@ void Dispersion::outputVarInfo_text()
     }
     fclose(fzout);
 
-    currentFile = debugOutputFolder + "/particle_txz_old.txt";
+    currentFile = outputFolder + "particle_txz_old.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -245,7 +247,7 @@ void Dispersion::outputVarInfo_text()
     }
     fclose(fzout);
 
-    currentFile = debugOutputFolder + "/particle_tyy_old.txt";
+    currentFile = outputFolder + "particle_tyy_old.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -253,7 +255,7 @@ void Dispersion::outputVarInfo_text()
     }
     fclose(fzout);
 
-    currentFile = debugOutputFolder + "/particle_tyz_old.txt";
+    currentFile = outputFolder + "particle_tyz_old.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -261,7 +263,7 @@ void Dispersion::outputVarInfo_text()
     }
     fclose(fzout);
 
-    currentFile = debugOutputFolder + "/particle_tzz_old.txt";
+    currentFile = outputFolder + "particle_tzz_old.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -270,7 +272,7 @@ void Dispersion::outputVarInfo_text()
     fclose(fzout);
 
 
-    currentFile = debugOutputFolder + "/particle_uFluct_old.txt";
+    currentFile = outputFolder + "particle_uFluct_old.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -278,7 +280,7 @@ void Dispersion::outputVarInfo_text()
     }
     fclose(fzout);
 
-    currentFile = debugOutputFolder + "/particle_vFluct_old.txt";
+    currentFile = outputFolder + "particle_vFluct_old.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -286,7 +288,7 @@ void Dispersion::outputVarInfo_text()
     }
     fclose(fzout);
 
-    currentFile = debugOutputFolder + "/particle_wFluct_old.txt";
+    currentFile = outputFolder + "particle_wFluct_old.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -296,7 +298,7 @@ void Dispersion::outputVarInfo_text()
 
 
 
-    currentFile = debugOutputFolder + "/particle_uFluct.txt";
+    currentFile = outputFolder + "particle_uFluct.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -304,7 +306,7 @@ void Dispersion::outputVarInfo_text()
     }
     fclose(fzout);
 
-    currentFile = debugOutputFolder + "/particle_vFluct.txt";
+    currentFile = outputFolder + "particle_vFluct.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -312,7 +314,7 @@ void Dispersion::outputVarInfo_text()
     }
     fclose(fzout);
 
-    currentFile = debugOutputFolder + "/particle_wFluct.txt";
+    currentFile = outputFolder + "particle_wFluct.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -321,7 +323,7 @@ void Dispersion::outputVarInfo_text()
     fclose(fzout);
 
 
-    currentFile = debugOutputFolder + "/particle_delta_uFluct.txt";
+    currentFile = outputFolder + "particle_delta_uFluct.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -329,7 +331,7 @@ void Dispersion::outputVarInfo_text()
     }
     fclose(fzout);
 
-    currentFile = debugOutputFolder + "/particle_delta_vFluct.txt";
+    currentFile = outputFolder + "particle_delta_vFluct.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -337,7 +339,7 @@ void Dispersion::outputVarInfo_text()
     }
     fclose(fzout);
 
-    currentFile = debugOutputFolder + "/particle_delta_wFluct.txt";
+    currentFile = outputFolder + "particle_delta_wFluct.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -348,7 +350,7 @@ void Dispersion::outputVarInfo_text()
 
 
     // note that isActive is not the same as isRogue, but the expected output is isRogue
-    currentFile = debugOutputFolder + "/particle_isActive.txt";
+    currentFile = outputFolder + "particle_isActive.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -358,7 +360,7 @@ void Dispersion::outputVarInfo_text()
 
 
 
-    currentFile = debugOutputFolder + "/particle_xPos.txt";
+    currentFile = outputFolder + "particle_xPos.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -366,7 +368,7 @@ void Dispersion::outputVarInfo_text()
     }
     fclose(fzout);
 
-    currentFile = debugOutputFolder + "/particle_yPos.txt";
+    currentFile = outputFolder + "particle_yPos.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {
@@ -374,7 +376,7 @@ void Dispersion::outputVarInfo_text()
     }
     fclose(fzout);
 
-    currentFile = debugOutputFolder + "/particle_zPos.txt";
+    currentFile = outputFolder + "particle_zPos.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nPar; idx++)
     {

@@ -36,14 +36,17 @@ class Urb {
     public:
     
         // initializer
-        Urb(Input*);    // looks like this just grabs the input urb stuff, and stuffs it into the appropriate variables
-                        // the variables may be different than the input ones, so eventually we may want to change that, but is almost there
-                        // most of the temporary variables are used as intermediates between the two different types of data structures
-                        
+        // looks like this just grabs the input urb stuff, and stuffs it into the appropriate variables
+        // the variables may be different than the input ones, so eventually we may want to change that, but is almost there
+        // most of the temporary variables are used as intermediates between the two different types of data structures
+        Urb(Input* input, const bool& debug);
+
         // initializer
-        Urb(NetCDFInput*);    // looks like this just grabs the input urb stuff, and stuffs it into the appropriate variables
-                        // the variables may be different than the input ones, so eventually we may want to change that, but is almost there
-                        // most of the temporary variables are used as intermediates between the two different types of data structures
+        // looks like this just grabs the input urb stuff, and stuffs it into the appropriate variables
+        // the variables may be different than the input ones, so eventually we may want to change that, but is almost there
+        // most of the temporary variables are used as intermediates between the two different types of data structures
+        Urb(NetCDFInput* input, const bool& debug);
+
         
         // urb grid information
         int nx;     // this is the number of points in the x dimension

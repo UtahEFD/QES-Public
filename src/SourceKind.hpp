@@ -132,17 +132,18 @@ public:
     //  the idea is to determine whether the input time is within the time range particles should be released
     //  then the particle positions are set using the particles to release per time, geometry information, and
     //  distribution information.
-    // !!! only the particle positions and release time are set, other particle information needs set by whatever called this function right
+    // !!! only the particle positions and release time are set, other particle information needs set by whatever called this function 
     //  right after the call to this function to make it work correctly.
     // Note that this is a pure virtual function - enforces that the derived class MUST define this function
     //  this is done by the = 0 at the end of the function
     // LA-future work: There is still room for improvement to this function for each different source.
     //  It requires determining additional input .xml file information for each source, which still needs worked out.
-    // LA-other notes: currently this is outputting the number of particles appended to the list, but according to Pete,
-    //  the int output could be used for returning error messages, kind of like the exit success or exit failure return methods.
-    //   Because the input vector is usually empty, the size of the vector after this function call gives the number of particles appended.
-    //   If this were to change and the overall particle list were used directly, the output would actually be the new size of the particle list,
-    //   NOT the number of particles added to the list.
+    // LA-other notes: currently this is outputting the number of particles to release per time, which is the number of particles
+    //  appended to the list. According to Pete, the int output could be used for returning error messages,
+    //  kind of like the exit success or exit failure return methods.
+    // !!! Because the input vector is never empty if there is more than one source,
+    //   the size of the vector should NOT be used for output for this function!
+    //  In order to make this function work correctly, the number of particles to release per timestep needs to be the output
     virtual int emitParticles(const float dt, const float currTime, std::vector<particle>& emittedParticles) = 0;
     
 };

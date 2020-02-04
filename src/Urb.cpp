@@ -14,7 +14,8 @@ using namespace netCDF;
 using namespace netCDF::exceptions;
 
 
-Urb :: Urb(Input* input) {
+Urb::Urb(Input* input, const bool& debug)
+{
 
     std::cout<<"[Urb] \t\t Loading CUDA-URB fields "<<std::endl;
     
@@ -85,27 +86,29 @@ Urb :: Urb(Input* input) {
     urbZend = z.at(nz-1);
 
 
-#if 1
-    // the values for this are required, but the outputting of them is a useful debugging tool
-    std::cout << "Urb nx = \"" << nx << "\"" << std::endl;
-    std::cout << "Urb ny = \"" << ny << "\"" << std::endl;
-    std::cout << "Urb nz = \"" << nz << "\"" << std::endl;
-    std::cout << "Urb nt = \"" << nt << "\"" << std::endl;
-    std::cout << "Urb dx = \"" << dx << "\"" << std::endl;
-    std::cout << "Urb dy = \"" << dy << "\"" << std::endl;
-    std::cout << "Urb dz = \"" << dz << "\"" << std::endl;
-    std::cout << "Urb urbXstart = \"" << urbXstart << "\"" << std::endl;
-    std::cout << "Urb urbXend = \"" << urbXend << "\"" << std::endl;
-    std::cout << "Urb urbYstart = \"" << urbYstart << "\"" << std::endl;
-    std::cout << "Urb urbYend = \"" << urbYend << "\"" << std::endl;
-    std::cout << "Urb urbZstart = \"" << urbZstart << "\"" << std::endl;
-    std::cout << "Urb urbZend = \"" << urbZend << "\"" << std::endl;
-#endif
+    if( debug == true )
+    {
+        // the values for this are required, but the outputting of them is a useful debugging tool
+        std::cout << "Urb nx = \"" << nx << "\"" << std::endl;
+        std::cout << "Urb ny = \"" << ny << "\"" << std::endl;
+        std::cout << "Urb nz = \"" << nz << "\"" << std::endl;
+        std::cout << "Urb nt = \"" << nt << "\"" << std::endl;
+        std::cout << "Urb dx = \"" << dx << "\"" << std::endl;
+        std::cout << "Urb dy = \"" << dy << "\"" << std::endl;
+        std::cout << "Urb dz = \"" << dz << "\"" << std::endl;
+        std::cout << "Urb urbXstart = \"" << urbXstart << "\"" << std::endl;
+        std::cout << "Urb urbXend = \"" << urbXend << "\"" << std::endl;
+        std::cout << "Urb urbYstart = \"" << urbYstart << "\"" << std::endl;
+        std::cout << "Urb urbYend = \"" << urbYend << "\"" << std::endl;
+        std::cout << "Urb urbZstart = \"" << urbZstart << "\"" << std::endl;
+        std::cout << "Urb urbZend = \"" << urbZend << "\"" << std::endl;
+    }
 
 }
 
 
-Urb :: Urb(NetCDFInput* input) {
+Urb::Urb(NetCDFInput* input, const bool& debug)
+{
 
     std::cout<<"[Urb] \t\t Loading CUDA-URB fields "<<std::endl;
 
@@ -251,21 +254,22 @@ Urb :: Urb(NetCDFInput* input) {
     urbZend = z.at(nz-1);
 
 
-#if 1
-    // the values for this are required, but the outputting of them is a useful debugging tool
-    std::cout << "Urb nx = \"" << nx << "\"" << std::endl;
-    std::cout << "Urb ny = \"" << ny << "\"" << std::endl;
-    std::cout << "Urb nz = \"" << nz << "\"" << std::endl;
-    std::cout << "Urb nt = \"" << nt << "\"" << std::endl;
-    std::cout << "Urb dx = \"" << dx << "\"" << std::endl;
-    std::cout << "Urb dy = \"" << dy << "\"" << std::endl;
-    std::cout << "Urb dz = \"" << dz << "\"" << std::endl;
-    std::cout << "Urb urbXstart = \"" << urbXstart << "\"" << std::endl;
-    std::cout << "Urb urbXend = \"" << urbXend << "\"" << std::endl;
-    std::cout << "Urb urbYstart = \"" << urbYstart << "\"" << std::endl;
-    std::cout << "Urb urbYend = \"" << urbYend << "\"" << std::endl;
-    std::cout << "Urb urbZstart = \"" << urbZstart << "\"" << std::endl;
-    std::cout << "Urb urbZend = \"" << urbZend << "\"" << std::endl;
-#endif
+    if( debug == true )
+    {
+        // the values for this are required, but the outputting of them is a useful debugging tool
+        std::cout << "Urb nx = \"" << nx << "\"" << std::endl;
+        std::cout << "Urb ny = \"" << ny << "\"" << std::endl;
+        std::cout << "Urb nz = \"" << nz << "\"" << std::endl;
+        std::cout << "Urb nt = \"" << nt << "\"" << std::endl;
+        std::cout << "Urb dx = \"" << dx << "\"" << std::endl;
+        std::cout << "Urb dy = \"" << dy << "\"" << std::endl;
+        std::cout << "Urb dz = \"" << dz << "\"" << std::endl;
+        std::cout << "Urb urbXstart = \"" << urbXstart << "\"" << std::endl;
+        std::cout << "Urb urbXend = \"" << urbXend << "\"" << std::endl;
+        std::cout << "Urb urbYstart = \"" << urbYstart << "\"" << std::endl;
+        std::cout << "Urb urbYend = \"" << urbYend << "\"" << std::endl;
+        std::cout << "Urb urbZstart = \"" << urbZstart << "\"" << std::endl;
+        std::cout << "Urb urbZend = \"" << urbZend << "\"" << std::endl;
+    }
 
 }

@@ -12,7 +12,8 @@
 #include <vector>
 #include <cmath>
 #include <cstring>
-#include <chrono>
+
+#include "util/calcTime.h"
 
 
 #include "NetCDFOutputGeneric.h"
@@ -38,7 +39,8 @@ class Plume {
         // then sets up the concentration sampling box information for output
         // next copies important input time values and calculates needed time information 
         // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
-        Plume(Urb*,Dispersion*,PlumeInputData*);
+        Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis,
+               const bool& outputSimInfoFile_val,const std::string& outputFolder_val,const std::string& caseBaseName_val, const bool& debug_val);
 
 
         // this is the plume solver. It performs a time integration of the particle positions and particle velocity fluctuations
@@ -57,7 +59,7 @@ class Plume {
         //  an array of boundary condition functions that are set at constructor time and accessed just by knowing the current
         //  and last particle indices of the Eulerian grid. Would also need another for loop for some of these reflective BCs
         //  to iterate until a distX has been completely travelled.
-        void run(Urb*,Turb*,Eulerian*,Dispersion*,PlumeInputData*,std::vector<NetCDFOutputGeneric*>);
+        void run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<NetCDFOutputGeneric*> outputVec);
 
 
     private:
@@ -97,6 +99,16 @@ class Plume {
         double C_0;           // used to separate out CoEps into its separate parts when doing debug output
         int updateFrequency_timeLoop;     // used to know how frequently to print out information during the time loop of the solver
         int updateFrequency_particleLoop; // used to know how frequently to print out information during the particle loop of the solver
+
+
+        // timer class useful for debugging and timing different operations
+        calcTime timers;
+
+        // copies of debug related information from the input arguments
+        bool outputSimInfoFile;
+        std::string outputFolder;
+        std::string caseBaseName;
+        bool debug;
         
 
         // utility functions for the plume solver

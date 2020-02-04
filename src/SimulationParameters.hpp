@@ -22,7 +22,7 @@ class SimulationParameters : public ParseInterface {
 		float timeStep;			// this is the overall integration timestep
 		double invarianceTol;		// this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
 		double C_0;				// this is used to separate out CoEps into its separate parts when doing debug output
-		int updateFrequency_particleLoop;		// this is used to know how frequently to print out information during the particle loop of the solver
+		int updateFrequency_particleLoop;		// this is used to know how frequently to print out information during the particle loop of the solver. Only used during debug mode
 		int updateFrequency_timeLoop;		// this is used to know how frequently to print out information during the time integration loop of the solver
     	        
     	virtual void parseValues() {

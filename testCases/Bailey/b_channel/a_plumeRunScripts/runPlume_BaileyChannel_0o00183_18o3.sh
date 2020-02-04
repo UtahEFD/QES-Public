@@ -11,5 +11,5 @@
 module load gcc/5.4.0
 ulimit -c unlimited -s
 
-./cudaPlume/cudaPlume -q ../testCases/Bailey/b_channel/a_plumeRunScripts/BaileyChannel_0o00183_18o3.xml -u ../testCases/Bailey/b_channel/b_plumeInputs/BaileyChannel_urb.nc -t ../testCases/Bailey/b_channel/b_plumeInputs/BaileyChannel_turb.nc -o ../testCases/Bailey/b_channel/c_plumeOutputs/a_0o00183_18o3/BaileyChannel_plume_0o00183_18o3.nc -d ../testCases/Bailey/b_channel/c_plumeOutputs/a_0o00183_18o3
+./cudaPlume/cudaPlume -q ../testCases/Bailey/b_channel/a_plumeRunScripts/BaileyChannel_0o00183_18o3.xml -u ../testCases/Bailey/b_channel/b_plumeInputs/BaileyChannel_urb.nc -t ../testCases/Bailey/b_channel/b_plumeInputs/BaileyChannel_turb.nc -o ../testCases/Bailey/b_channel/c_plumeOutputs/a_0o00183_18o3/ -b channel -e -l -s -d
 

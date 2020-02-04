@@ -11,5 +11,5 @@
 module load gcc/5.4.0
 ulimit -c unlimited -s
 
-./cudaPlume/cudaPlume -q ../testCases/Bailey/a_sinewave/a_plumeRunScripts/BaileySinewave_0o05_10.xml -u ../testCases/Bailey/a_sinewave/b_plumeInputs/BaileySinewave_urb.nc -t ../testCases/Bailey/a_sinewave/b_plumeInputs/BaileySinewave_turb.nc -o ../testCases/Bailey/a_sinewave/c_plumeOutputs/b_0o05_10/BaileySinewave_plume_0o05_10.nc -d ../testCases/Bailey/a_sinewave/c_plumeOutputs/b_0o05_10
+./cudaPlume/cudaPlume -q ../testCases/Bailey/a_sinewave/a_plumeRunScripts/BaileySinewave_0o05_10.xml -u ../testCases/Bailey/a_sinewave/b_plumeInputs/BaileySinewave_urb.nc -t ../testCases/Bailey/a_sinewave/b_plumeInputs/BaileySinewave_turb.nc -o ../testCases/Bailey/a_sinewave/c_plumeOutputs/b_0o05_10/ -b sinewave -e -l -s -d
 

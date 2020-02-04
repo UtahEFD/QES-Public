@@ -2,10 +2,16 @@
 #include "Eulerian.h"
 
 
-Eulerian::Eulerian(Urb* urb, Turb* turb, PlumeInputData* PID, const std::string& debugOutputFolder) {
+Eulerian::Eulerian( PlumeInputData* PID,Urb* urb,Turb* turb,
+                    const bool& outputEulData_val,const std::string& outputFolder_val, const bool& debug_val)
+{
     
     std::cout<<"[Eulerian] \t Reading CUDA-URB & CUDA-TURB fields "<<std::endl;
     
+    // copy debug information
+    outputEulData = outputEulData_val;
+    outputFolder = outputFolder_val;
+    debug = debug_val;
     
     // copy turb grid information
     nt = turb->nt;
@@ -38,7 +44,7 @@ Eulerian::Eulerian(Urb* urb, Turb* turb, PlumeInputData* PID, const std::string&
     createFluxDiv();
 
     // if the debug output folder is an empty string "", the debug output variables won't be written
-    outputVarInfo_text(urb,turb,debugOutputFolder);
+    outputVarInfo_text(urb,turb);
 
 }
 
@@ -51,7 +57,11 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
 {
     std::cout<<"[Eulerian] \t Computing stress gradients "<<std::endl;
     
-    auto timerStart = std::chrono::high_resolution_clock::now();
+    // start recording execution time
+    if( debug == true )
+    {
+        timers.startNewTimer("calcGradient");
+    }
 
     // set the tau gradient sizes
     dtxxdx.resize(nx*ny*nz);
@@ -111,9 +121,11 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
         }
     }
 
-    auto timerEnd = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = timerEnd - timerStart;
-    std::cout << "\telapsed time: " << elapsed.count() << " s" << std::endl;   // Print out elapsed execution time
+    // print out elapsed execution time
+    if( debug == true )
+    {
+        timers.printStoredTime("calcGradient");
+    }
 }
 
 #else
@@ -122,7 +134,11 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
 {
     std::cout<<"[Eulerian] \t Computing stress gradients "<<std::endl;
     
-    auto timerStart = std::chrono::high_resolution_clock::now();
+    // start recording execution time
+    if( debug == true )
+    {
+        timers.startNewTimer("calcGradient");
+    }
 
     // set the tau gradient sizes
     dtxxdx.resize(nx*ny*nz);
@@ -234,10 +250,11 @@ void Eulerian::createTauGrads(Urb* urb, Turb* turb)
         }
     }
 
-
-    auto timerEnd = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = timerEnd - timerStart;
-    std::cout << "\telapsed time: " << elapsed.count() << " s" << std::endl;   // Print out elapsed execution time
+    // print out elapsed execution time
+    if( debug == true )
+    {
+        timers.printStoredTime("calcGradient");
+    }
 }
 
 #endif
@@ -420,10 +437,10 @@ double Eulerian::interp3D(const std::vector<double>& EulerData,const std::string
 }
 
 
-void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outputFolder)
+void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb)
 {
-    // if the debug output folder is an empty string "", the debug output variables won't be written
-    if( outputFolder == "" )
+    // if this output is not desired, skip outputting these files
+    if( outputEulData == false )
     {
         return;
     }
@@ -441,7 +458,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
 
 
 
-    currentFile = outputFolder + "/urb_xCellGrid.txt";
+    currentFile = outputFolder + "urb_xCellGrid.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nx; idx++)
     {
@@ -449,7 +466,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/urb_yCellGrid.txt";
+    currentFile = outputFolder + "urb_yCellGrid.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < ny; idx++)
     {
@@ -457,7 +474,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/urb_zCellGrid.txt";
+    currentFile = outputFolder + "urb_zCellGrid.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int idx = 0; idx < nz; idx++)
     {
@@ -467,7 +484,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
 
 
 
-    currentFile = outputFolder + "/eulerian_uMean.txt";
+    currentFile = outputFolder + "eulerian_uMean.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -481,7 +498,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_vMean.txt";
+    currentFile = outputFolder + "eulerian_vMean.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -495,7 +512,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_wMean.txt";
+    currentFile = outputFolder + "eulerian_wMean.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -509,7 +526,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_sigma2.txt";
+    currentFile = outputFolder + "eulerian_sigma2.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -523,7 +540,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_epps.txt";
+    currentFile = outputFolder + "eulerian_epps.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -537,7 +554,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_txx.txt";
+    currentFile = outputFolder + "eulerian_txx.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -551,7 +568,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_txy.txt";
+    currentFile = outputFolder + "eulerian_txy.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -565,7 +582,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_txz.txt";
+    currentFile = outputFolder + "eulerian_txz.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -579,7 +596,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_tyy.txt";
+    currentFile = outputFolder + "eulerian_tyy.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -593,7 +610,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_tyz.txt";
+    currentFile = outputFolder + "eulerian_tyz.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -607,7 +624,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_tzz.txt";
+    currentFile = outputFolder + "eulerian_tzz.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -623,7 +640,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
 
 
 
-    currentFile = outputFolder + "/eulerian_dtxxdx.txt";
+    currentFile = outputFolder + "eulerian_dtxxdx.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -637,7 +654,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_dtxydy.txt";
+    currentFile = outputFolder + "eulerian_dtxydy.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -651,7 +668,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_dtxzdz.txt";
+    currentFile = outputFolder + "eulerian_dtxzdz.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -666,7 +683,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     fclose(fzout);
 
 
-    currentFile = outputFolder + "/eulerian_dtxydx.txt";
+    currentFile = outputFolder + "eulerian_dtxydx.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -680,7 +697,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_dtyydy.txt";
+    currentFile = outputFolder + "eulerian_dtyydy.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -694,7 +711,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_dtyzdz.txt";
+    currentFile = outputFolder + "eulerian_dtyzdz.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -709,7 +726,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     fclose(fzout);
 
 
-    currentFile = outputFolder + "/eulerian_dtxzdx.txt";
+    currentFile = outputFolder + "eulerian_dtxzdx.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -723,7 +740,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_dtyzdy.txt";
+    currentFile = outputFolder + "eulerian_dtyzdy.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -737,7 +754,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_dtzzdz.txt";
+    currentFile = outputFolder + "eulerian_dtzzdz.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -753,7 +770,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
 
 
 
-    currentFile = outputFolder + "/eulerian_flux_div_x.txt";
+    currentFile = outputFolder + "eulerian_flux_div_x.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -767,7 +784,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_flux_div_y.txt";
+    currentFile = outputFolder + "eulerian_flux_div_y.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {
@@ -781,7 +798,7 @@ void Eulerian::outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outpu
     }
     fclose(fzout);
 
-    currentFile = outputFolder + "/eulerian_flux_div_z.txt";
+    currentFile = outputFolder + "eulerian_flux_div_z.txt";
     fzout = fopen(currentFile.c_str(), "w");
     for(int kk = 0; kk < nz; kk++)
     {

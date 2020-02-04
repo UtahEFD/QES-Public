@@ -5,12 +5,13 @@
 #include <cstdlib>
 #include <cstdio>
 #include <algorithm>
-#include <ctime>
 
 
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+
+#include "util/calcTime.h"
 
 
 #include "Args.hpp"
@@ -39,10 +40,10 @@ PlumeInputData* parseXMLTree(const std::string fileName);
 ////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char** argv) 
 {
-    // set up time information
-    double elapsed;
-    struct timespec start, finish;
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    // set up timer information for the simulation runtime
+    calcTime timers;
+    timers.startNewTimer("CUDA-Plume total runtime"); // start recording execution time
+
     
     // print a nice little welcome message
     std::cout << std::endl;
@@ -57,9 +58,9 @@ int main(int argc, char** argv)
     arguments.processArguments(argc, argv);
     
     // parse xml settings
-    PlumeInputData* PID = parseXMLTree(arguments.quicFile);
+    PlumeInputData* PID = parseXMLTree(arguments.inputQuicFile);
     if ( !PID ) {
-        std::cerr << "QUIC-Plume input file: " << arguments.quicFile << " not able to be read successfully." << std::endl;
+        std::cerr << "QUIC-Plume input file: " << arguments.inputQuicFile << " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -77,52 +78,61 @@ int main(int argc, char** argv)
 #if USE_PREVIOUSCODE
 
     // Create instance of cudaUrb input class
-    Input* inputUrb = new Input(arguments.inputFileUrb);
+    Input* inputUrb = new Input(arguments.inputUrbFile);
     
     // Create instance of cudaTurb input class
-    Input* inputTurb = new Input(arguments.inputFileTurb);
+    Input* inputTurb = new Input(arguments.inputTurbFile);
 
 #else
 
     // Create instance of cudaUrb input class
-    NetCDFInput* inputUrb = new NetCDFInput(arguments.inputFileUrb);
+    NetCDFInput* inputUrb = new NetCDFInput(arguments.inputUrbFile);
 
     // Create instance of cudaTurb input class
-    NetCDFInput* inputTurb = new NetCDFInput(arguments.inputFileTurb);
+    NetCDFInput* inputTurb = new NetCDFInput(arguments.inputTurbFile);
 
 #endif
 
     
     // Create instance of cudaUrb class
-    Urb* urb = new Urb(inputUrb);
+    Urb* urb = new Urb(inputUrb, arguments.debug);
     
     // Create instance of cudaTurb class
-    Turb* turb = new Turb(inputTurb);
+    Turb* turb = new Turb(inputTurb, arguments.debug);
     
     // Create instance of Eulerian class
-    Eulerian* eul = new Eulerian(urb,turb,PID,arguments.debugOutputFolder);
+    Eulerian* eul = new Eulerian(PID,urb,turb, arguments.outputEulData,arguments.outputFolder, arguments.debug);
     
     // Create instance of Dispersion class
-    Dispersion* dis = new Dispersion(urb,turb,PID,eul,arguments.debugOutputFolder);
+    Dispersion* dis = new Dispersion(PID,urb,turb,eul, arguments.outputLagrData,arguments.outputFolder, arguments.debug);
     
+
+    // LA setup output filenames for the netcdf output
+    std::string outputEulerianFile = arguments.outputFolder + arguments.caseBaseName + "_conc.nc";
+    // LA note: comment this one out cause not sure how it is used yet. Pretty sure it isn't used yet
+    //std::string outputLagrangianFile = arguments.outputFolder + arguments.caseBaseName + "_particleInfo.nc";
+    std::string outputLagrangianFile = "";
+
     // FM create output instance
     std::vector<NetCDFOutputGeneric*> outputVec;
-    if( !(arguments.outputFileEul == "") ) 
-      outputVec.push_back(new PlumeOutputEulerian(dis,PID,arguments.outputFileEul));
-    if( !(arguments.outputFileLag == "") ) 
-      outputVec.push_back(new PlumeOutputLagrangian(dis,PID,arguments.outputFileLag));
+    if( !(outputEulerianFile == "") )
+    {
+        outputVec.push_back(new PlumeOutputEulerian(dis,PID,outputEulerianFile));
+    }
+    if( !(outputLagrangianFile == "") )
+    {
+        outputVec.push_back(new PlumeOutputLagrangian(dis,PID,outputLagrangianFile));
+    }
     
     // Create instance of Plume model class
-    Plume* plume = new Plume(urb,dis,PID);
+    Plume* plume = new Plume(PID,urb,dis, arguments.outputSimInfoFile,arguments.outputFolder,arguments.caseBaseName, arguments.debug);
     
     // Run plume advection model
-    plume->run(urb,turb,eul,dis,PID,outputVec);
+    plume->run(urb,turb,eul,dis,outputVec);
     
-    // compute run time information
-    clock_gettime(CLOCK_MONOTONIC, &finish);
-    elapsed = (finish.tv_sec - start.tv_sec);
-    elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
-    std::cout<<"[CUDA-Plume] \t Finished in "<<elapsed<<" seconds!"<<std::endl;
+    // compute run time information and print the elapsed execution time
+    std::cout<<"[CUDA-Plume] \t Finished."<<std::endl;
+    timers.printStoredTime("CUDA-Plume total runtime");
     std::cout<<"##############################################################"<<std::endl;
     
     exit(EXIT_SUCCESS);

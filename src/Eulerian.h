@@ -9,8 +9,7 @@
 #include <string>
 #include <vector>
 
-#include <chrono>
-
+#include "util/calcTime.h"
 #include "Random.h"
 
 #include "PlumeInputData.hpp"
@@ -22,11 +21,12 @@ class Eulerian{
     
     public:
         
-        
+
         // constructor
         // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the Eulerian grid values,
         // then calculates the tau gradients which are then used to calculate the flux_div grid values.
-        Eulerian(Urb*,Turb*,PlumeInputData*,const std::string& debugOutputFolder);
+        Eulerian( PlumeInputData* PID,Urb* urb,Turb* turb,
+                  const bool& outputEulData_val,const std::string& outputFolder_val, const bool& debug_val);
         
 
         // the Eulerian data held in this class is on the turb grid, so these are copies of the turb grid values
@@ -115,7 +115,16 @@ class Eulerian{
         void createFluxDiv();       // this function takes the TauGrads and turns them into a bunch simpler values to use
         
 
-        void outputVarInfo_text(Urb* urb, Turb* turb, const std::string& outputFolder);
+        void outputVarInfo_text(Urb* urb, Turb* turb);
+
+
+        // timer class useful for debugging and timing different operations
+        calcTime timers;
+
+        // copies of debug related information from the input arguments
+        bool outputEulData;
+        std::string outputFolder;
+        bool debug;
     
 };
 

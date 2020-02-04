@@ -14,7 +14,8 @@ using namespace netCDF;
 using namespace netCDF::exceptions;
 
 
-Turb :: Turb(Input* input) {
+Turb::Turb(Input* input, const bool& debug)
+{
     std::cout<<"[Turb] \t\t Loading CUDA-TURB fields "<<std::endl;
     
     // get input dimensions
@@ -94,28 +95,30 @@ Turb :: Turb(Input* input) {
     turbZend = z.at(nz-1);
 
 
-#if 1
-    // the values for some of this are required, but the outputting of them is a useful debugging tool
-    std::cout << "Turb nx = \"" << nx << "\"" << std::endl;
-    std::cout << "Turb ny = \"" << ny << "\"" << std::endl;
-    std::cout << "Turb nz = \"" << nz << "\"" << std::endl;
-    std::cout << "Turb nt = \"" << nt << "\"" << std::endl;
-    std::cout << "Turb dx = \"" << dx << "\"" << std::endl;
-    std::cout << "Turb dy = \"" << dy << "\"" << std::endl;
-    std::cout << "Turb dz = \"" << dz << "\"" << std::endl;
-    std::cout << "Turb turbXstart = \"" << turbXstart << "\"" << std::endl;
-    std::cout << "Turb turbXend = \"" << turbXend << "\"" << std::endl;
-    std::cout << "Turb turbYstart = \"" << turbYstart << "\"" << std::endl;
-    std::cout << "Turb turbYend = \"" << turbYend << "\"" << std::endl;
-    std::cout << "Turb turbZstart = \"" << turbZstart << "\"" << std::endl;
-    std::cout << "Turb turbZend = \"" << turbZend << "\"" << std::endl;
-#endif
+    if( debug == true )
+    {
+        // the values for some of this are required, but the outputting of them is a useful debugging tool
+        std::cout << "Turb nx = \"" << nx << "\"" << std::endl;
+        std::cout << "Turb ny = \"" << ny << "\"" << std::endl;
+        std::cout << "Turb nz = \"" << nz << "\"" << std::endl;
+        std::cout << "Turb nt = \"" << nt << "\"" << std::endl;
+        std::cout << "Turb dx = \"" << dx << "\"" << std::endl;
+        std::cout << "Turb dy = \"" << dy << "\"" << std::endl;
+        std::cout << "Turb dz = \"" << dz << "\"" << std::endl;
+        std::cout << "Turb turbXstart = \"" << turbXstart << "\"" << std::endl;
+        std::cout << "Turb turbXend = \"" << turbXend << "\"" << std::endl;
+        std::cout << "Turb turbYstart = \"" << turbYstart << "\"" << std::endl;
+        std::cout << "Turb turbYend = \"" << turbYend << "\"" << std::endl;
+        std::cout << "Turb turbZstart = \"" << turbZstart << "\"" << std::endl;
+        std::cout << "Turb turbZend = \"" << turbZend << "\"" << std::endl;
+    }
 
 }
 
 
 
-Turb :: Turb(NetCDFInput* input) {
+Turb::Turb(NetCDFInput* input, const bool& debug)
+{
     std::cout<<"[Turb] \t\t Loading CUDA-TURB fields "<<std::endl;
     
     // get input dimensions
@@ -278,21 +281,22 @@ Turb :: Turb(NetCDFInput* input) {
     turbZend = z.at(nz-1);
 
 
-#if 1
-    // the values for some of this are required, but the outputting of them is a useful debugging tool
-    std::cout << "Turb nx = \"" << nx << "\"" << std::endl;
-    std::cout << "Turb ny = \"" << ny << "\"" << std::endl;
-    std::cout << "Turb nz = \"" << nz << "\"" << std::endl;
-    std::cout << "Turb nt = \"" << nt << "\"" << std::endl;
-    std::cout << "Turb dx = \"" << dx << "\"" << std::endl;
-    std::cout << "Turb dy = \"" << dy << "\"" << std::endl;
-    std::cout << "Turb dz = \"" << dz << "\"" << std::endl;
-    std::cout << "Turb turbXstart = \"" << turbXstart << "\"" << std::endl;
-    std::cout << "Turb turbXend = \"" << turbXend << "\"" << std::endl;
-    std::cout << "Turb turbYstart = \"" << turbYstart << "\"" << std::endl;
-    std::cout << "Turb turbYend = \"" << turbYend << "\"" << std::endl;
-    std::cout << "Turb turbZstart = \"" << turbZstart << "\"" << std::endl;
-    std::cout << "Turb turbZend = \"" << turbZend << "\"" << std::endl;
-#endif
+    if( debug == true )
+    {
+        // the values for some of this are required, but the outputting of them is a useful debugging tool
+        std::cout << "Turb nx = \"" << nx << "\"" << std::endl;
+        std::cout << "Turb ny = \"" << ny << "\"" << std::endl;
+        std::cout << "Turb nz = \"" << nz << "\"" << std::endl;
+        std::cout << "Turb nt = \"" << nt << "\"" << std::endl;
+        std::cout << "Turb dx = \"" << dx << "\"" << std::endl;
+        std::cout << "Turb dy = \"" << dy << "\"" << std::endl;
+        std::cout << "Turb dz = \"" << dz << "\"" << std::endl;
+        std::cout << "Turb turbXstart = \"" << turbXstart << "\"" << std::endl;
+        std::cout << "Turb turbXend = \"" << turbXend << "\"" << std::endl;
+        std::cout << "Turb turbYstart = \"" << turbYstart << "\"" << std::endl;
+        std::cout << "Turb turbYend = \"" << turbYend << "\"" << std::endl;
+        std::cout << "Turb turbZstart = \"" << turbZstart << "\"" << std::endl;
+        std::cout << "Turb turbZend = \"" << turbZend << "\"" << std::endl;
+    }
 
 }

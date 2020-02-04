@@ -3,8 +3,8 @@
 	<timeStep> 0.1 </timeStep>		<!-- this is the overall integration timestep -->
 	<invarianceTol> 1e-10 </invarianceTol>     <!-- this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle -->
 	<C_0> 4.0 </C_0>				<!-- this is used to separate out CoEps into its separate parts when doing debug output -->
-	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>	 <!-- this is used to know how frequently to print out information during the particle loop of the solver -->
-	<updateFrequency_timeLoop> 10 </updateFrequency_timeLoop>	 <!-- this is used to know how frequently to print out information during the time integration loop of the solver -->
+	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>	 <!-- this is used to know how frequently to print out information during the particle loop of the solver. Only used during debug mode. -->
+	<updateFrequency_timeLoop> 100 </updateFrequency_timeLoop>	 <!-- this is used to know how frequently to print out information during the time integration loop of the solver -->
 </simulationParameters>
 <collectionParameters>			<!-- this is for collecting output from Lagrangian particle values to Eulerian values like concentration -->
 	<timeStart> 0.0 </timeStart>
