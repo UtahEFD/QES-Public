@@ -129,20 +129,21 @@ void OptixRayTrace::createModule(RayTracingState& state){
 
    //pipeline compile options
    state.pipeline_compile_options.usesMotionBlur = false;
-   //TODO: set state.pipeline_compile_options.traversableGraphFlags
+   state.pipeline_compile_options.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
    //TODO: set state.pipeline_compile_options.numPayloadValues
-   //TODO: set state.pipeline_compile_options.numAttributeValues
+   state.pipeline_compile_options.numAttributeValues = 2;
    state.pipeline_compile_options.exceptionFlags = OPTIX_EXEPTION_FLAG_NONE;
-   //can also set to OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW or
-   //OPTIX_EXCEPTION_FLAG_DEBUG
+
    state.pipeline_compile_options.pipelineLaunchParamsVariableName = "params";
 
    //TODO: create optixRayTracing.cu file to set string ptx to
 
 
    //OptiX error reporting
-   char log[2048];
-   size_t sizeof_log = sizeof(log);
+   char log[2048]; size_t sizeof_log = sizeof(log);
+
+   std::string ptx = sutil::getPtxString(OPTIX_SAMPLE_NAME, "OptixRayTracing.cu");
+
    OPTIX_CHECK_LOG(optixModuleCreateFromPTX(
                       state.context,
                       &module_compile_options,

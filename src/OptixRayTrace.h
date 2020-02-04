@@ -25,12 +25,24 @@
 
 struct RayTracingState{
    OptixDeviceContext context = 0;
+   //CUDA stream needed?
+   
+   OptixModule ptx_module  = 0;
    OptixPipelineCompileOptions pipeline_compile_options = {};
 
+   OptixPipeline pipeline = 0;
+   
    OptixTraversableHandle gas_handle = 0;
    CUdeviceptr d_gas_output_buffer = 0;
    CUdeviceptr d_tris;  //converted mesh list 
 
+   OptixProgramGroup raygen_prog_group = 0;
+   OptixProgramGroup miss_prog_group = 0;
+   OptixProgramGroup hit_prog_group = 0;
+
+   Params params = {};
+   //another var to params needed?
+   OptixShaderBindingTable sbt = {};
 };
 
 template <typename T>
