@@ -42,16 +42,28 @@ Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis,
 
 
     // set up time details
-    // LA future work: note that there is something off with the way this time list 
-    //  or how some counter relating to the timelist is set. I've had a few too many 
-    //  times during a few simulation runs. Be aware that what changes here needs changed
-    //  in the source release types as well or problems may occur.
-    nTimes = std::ceil(simDur/dt);
-    times.resize(nTimes);
-    for(int i = 0; i < nTimes; ++i)
+    // LA note: the method I am now using to calculate times is kind of strange.
+    //  the goal was to find a method that would keep the times going from the simulation startTime 
+    //  to the simulation endTime. I found that std::ceil(simDur/dt) gives one timestep too few.
+    //  But that is a good thing, cause now the times calculation loop will always start from 0
+    //  and stop at one less than the end time for each and every case. So then the endTime just needs
+    //  appended to the times loop right after the times calculation loop.
+    // LA possible future work: if the startTime stops being zero, I think the method here will still stand,
+    //  but instead of using dt*i for the times calculation in the loop, you would need startTime + dt*i.
+    if( debug == true )
     {
-        times.at(i) = i*dt + dt;
+        std::cout << "creating times list" << std::endl;
     }
+    nTimes = std::ceil(simDur/dt)+1;
+    times.resize(nTimes);
+    for(int i = 0; i < nTimes-1; ++i)   // end one time early
+    {
+        times.at(i) = dt*i;
+        //std::cout << "times[" << i << "] = \"" << times.at(i) << "\"" << std::endl;
+    }
+    times.at(nTimes-1) = simDur;
+    //std::cout << "times[" << nTimes-1 << "] = \"" << times.at(nTimes-1) << "\"" << std::endl;
+
     
     // set additional values from the input
     invarianceTol = PID->simParams->invarianceTol;
@@ -103,7 +115,16 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<Ne
     }
     
     
-    for(int tStep = 0; tStep < nTimes; tStep++)
+    // LA note: that this loop goes from 0 to nTimes-2, not nTimes-1. This is because
+    //  a given time iteration is calculating where particles for the current time end up for the next time
+    //  so in essence each time iteration is calculating stuff for one timestep ahead of the loop.
+    //  This also comes out in making sure the numPar to release makes sense. A list of times from 0 to 10 with timestep of 1
+    //  means that nTimes is 11. So if the loop went from times 0 to 10 in that case, if 10 pars were released each time, 110 particles, not 100
+    //  particles would end up being released.
+    // LA note on debug timers: because the loop is doing stuff for the next time, and particles start getting released at time zero,
+    //  this means that the updateFrequency needs to match with tStep+1, not tStep. At the same time, the current time output to consol
+    //  output and to function calls need to also be set to tStep+1.
+    for(int tStep = 0; tStep < nTimes-1; tStep++)
     {
 
         // 
@@ -115,7 +136,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<Ne
         // LA future work: probably should wrap the current if statement inside of a single debug if statement
         if( debug == true )
         {
-            if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-1 )
+            if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 )
             {
                 timers.resetStoredTimer("particle release");
             }
@@ -123,12 +144,12 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<Ne
 
         std::vector<particle> nextSetOfParticles(0);
         for (auto sidx=0u; sidx < dis->allSources.size(); sidx++) {
-            int numNewParticles = dis->allSources[sidx]->emitParticles( (float)dt, (float)(tStep*dt), nextSetOfParticles );
+            int numNewParticles = dis->allSources.at(sidx)->emitParticles( (float)dt, (float)( times.at(tStep) ), nextSetOfParticles );
         
             // particles are added each time if available, but only output the information when the updateFrequency allows
-	        if(  numNewParticles > 0 && ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-1 )  )
+	        if(  numNewParticles > 0 && ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 )  )
             {
-                std::cout << "time[" << tStep << "] = \"" << times.at(tStep) << "\". Emitting " 
+                std::cout << "time[" << tStep+1 << "] = \"" << times.at(tStep+1) << "\". Emitting " 
                             << numNewParticles << " particles from source " << sidx << std::endl;
             }
         }
@@ -140,9 +161,9 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<Ne
         dis->pointList.insert( dis->pointList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end() );
 
         // only output the information when the updateFrequency allows and when there are actually released particles
-        if(  nextSetOfParticles.size() != 0 && ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-1 )  )
+        if(  nextSetOfParticles.size() != 0 && ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 )  )
         {
-            std::cout << "time[" << tStep << "] = \"" << times.at(tStep) << "\". finished emitting \"" 
+            std::cout << "time[" << tStep+1 << "] = \"" << times.at(tStep+1) << "\". finished emitting \"" 
                         << nextSetOfParticles.size() << "\" particles from \"" << dis->allSources.size() 
                         << "\" sources. Total numParticles = \"" << dis->pointList.size() << "\"" << std::endl;
             // output particle emission runtime if in debug mode
@@ -161,7 +182,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<Ne
         // LA future work: would love to put this into a debug if statement wrapper
         if( debug == true )
         {
-            if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-1 )
+            if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 )
             {
                 timers.resetStoredTimer("advection loop");
             }
@@ -187,7 +208,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<Ne
                 //  and when debugging
                 if( debug == true )
                 {
-                    if(  ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-1 ) && ( par % updateFrequency_particleLoop == 0 || par == 0 || par == dis->pointList.size()-1 )  )
+                    if(  ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 ) && ( par % updateFrequency_particleLoop == 0 || par == dis->pointList.size()-1 )  )
                     {
                         // overall particle timer
                         timers.resetStoredTimer("particle iteration");
@@ -503,9 +524,9 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<Ne
                 //  it should be a debug option that only displays based on the updateFrequency variables
                 if( debug == true )
                 {
-                    if(  ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-1 ) && ( par % updateFrequency_particleLoop == 0 || par == 0 || par == dis->pointList.size()-1 )  )
+                    if(  ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 ) && ( par % updateFrequency_particleLoop == 0 || par == dis->pointList.size()-1 )  )
                     {
-                        std::cout << "time[" << tStep << "] = \"" << times.at(tStep) << "\", par[" << par << "]. applying wallBCs" << std::endl;
+                        std::cout << "time[" << tStep+1 << "] = \"" << times.at(tStep+1) << "\", par[" << par << "]. applying wallBCs" << std::endl;
                         timers.resetStoredTimer("wall BC functions");
                     }
                 }
@@ -539,9 +560,9 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<Ne
                 //  it should be a debug option that only displays based on the updateFrequency variables
                 if( debug == true )
                 {
-                    if(  ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-1 ) && ( par % updateFrequency_particleLoop == 0 || par == 0 || par == dis->pointList.size()-1 )  )
+                    if(  ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 ) && ( par % updateFrequency_particleLoop == 0 || par == dis->pointList.size()-1 )  )
                     {
-                        std::cout << "time[" << tStep << "] = \"" << times.at(tStep) << "\", par[" << par << "]. finished applying wallBCs" << std::endl;
+                        std::cout << "time[" << tStep+1 << "] = \"" << times.at(tStep+1) << "\", par[" << par << "]. finished applying wallBCs" << std::endl;
                         timers.printStoredTime("wall BC functions");
                     }
                 }
@@ -589,12 +610,11 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<Ne
 
                 // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
                 // LA future work: because this has timer related info, this probably needs to also be limited to when the user specifies they want debug mode
-                // LA future work: there is something off with the list of times or the indices or something, the output still looks a bit funky
                 if( debug == true )
                 {
-                    if(  ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-1 ) && ( par % updateFrequency_particleLoop == 0 || par == 0 || par == dis->pointList.size()-1 )  )
+                    if(  ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 ) && ( par % updateFrequency_particleLoop == 0 || par == dis->pointList.size()-1 )  )
                     {
-                        std::cout << "time[" << tStep << "] = \"" << times.at(tStep) << "\", par[" << par << "]. finished particle iteration" << std::endl;
+                        std::cout << "time[" << tStep+1 << "] = \"" << times.at(tStep+1) << "\", par[" << par << "]. finished particle iteration" << std::endl;
                         timers.printStoredTime("particle iteration");
                     }
                 }
@@ -619,10 +639,9 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<Ne
         
         // output the time, isRogueCount, and isNotActiveCount information for all simulations,
         //  but only when the updateFrequency allows
-        // LA future work: something still seems off with the time and particle lists or the indices, the command line output looks funky
-        if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-1 )
+        if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 )
         {
-            std::cout << "time[" << tStep << "] = \"" << times.at(tStep) << "\". finished advection iteration. isRogueCount = \"" 
+            std::cout << "time[" << tStep+1 << "] = \"" << times.at(tStep+1) << "\". finished advection iteration. isRogueCount = \"" 
                 << dis->isRogueCount << "\", isNotActiveCount = \"" << dis->isNotActiveCount << "\"" << std::endl;
             // output advection loop runtime if in debug mode
             if( debug == true )
@@ -657,7 +676,9 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<Ne
     }
 
 
-    // if the debug output folder is an empty string "", the debug output variables won't be written
+    // only outputs if the required booleans from input args are set
+    // LA note: the current time put in here is one past when the simulation time loop ends
+    //  this is because the loop always calculates info for one time ahead of the loop time.
     writeSimInfoFile(dis,times.at(nTimes-1));
     dis->outputVarInfo_text();
 

@@ -72,7 +72,14 @@ public:
     // !!! Care must be taken to set all these variables in each inherited version of this function, where the calculated values
     //  will be able to pass the call to checkReleaseInfo() by the class setting up a vector of all the sources.
     // !!! each release type needs to have this function manually called for them by whatever class sets up a vector of this class.
-    // LA-future work: The specific way time is handled still needs to be worked out to stay consistent throughout the entire program.
+    // !!! LA note and warn: the numPar is a bit tricky to calculate correctly because the nReleaseTimes is tough to calculate correctly
+    //  if the simulation list of times has a major change, this may lead to a change in the way numPar is calculated.
+    //  For now, the method is as follows: if you have times 0 to 10 with timestep 1, the nTimes should be 11
+    //  BUT releasing 10 particles at each of the times up to nTimes would result in 110 particles. At the same time, the 
+    //  simultion time loop goes from 0 to nTimes-2 NOT 0 to nTimes-1 BECAUSE each time iteration is actually calculating particles positions
+    //  for the next time, not the current time. THIS MEANS particles should be released over nTimes-1, NOT over nTimes like you would think.
+    //  For both a list of times from 0 to 10 with timesteps 1 and 4, std::ceil(releaseDur/dt) = nTimes-1 NOT nTimes, which is EXACTLy what we want.
+    //  !!! Care should be taken to use nReleaseTimes = std::ceil(releaseDur/dt) each instance to get the correct number of times particles should be released.
     virtual void calcReleaseInfo(const double& timestep, const double& simDur) = 0;
 
 
@@ -82,9 +89,14 @@ public:
     //  Maybe a better name for this function would be something like checkReleaseTypeInfo().
     // LA-warn: should this be virtual? The idea is that I want it to stay as this function no matter what ReleaseType is chosen,
     //  I don't want this function overloaded by any classes inheriting this class.
-    // LA-future work: the methods for calculating the times is off, I see one too many timesteps in some of my output plots.
-    //  so this means that some of the methods for checking the number of particles needs to change cause they depend on a time calculation that 
-    //  needs to change.
+    // !!! LA note and warn: the numPar is a bit tricky to calculate correctly because the nReleaseTimes is tough to calculate correctly
+    //  if the simulation list of times has a major change, this may lead to a change in the way numPar is calculated.
+    //  For now, the method is as follows: if you have times 0 to 10 with timestep 1, the nTimes should be 11
+    //  BUT releasing 10 particles at each of the times up to nTimes would result in 110 particles. At the same time, the 
+    //  simultion time loop goes from 0 to nTimes-2 NOT 0 to nTimes-1 BECAUSE each time iteration is actually calculating particles positions
+    //  for the next time, not the current time. THIS MEANS particles should be released over nTimes-1, NOT over nTimes like you would think.
+    //  For both a list of times from 0 to 10 with timesteps 1 and 4, std::ceil(releaseDur/dt) = nTimes-1 NOT nTimes, which is EXACTLy what we want.
+    //  !!! Care should be taken to use nReleaseTimes = std::ceil(releaseDur/dt) each instance to get the correct number of times particles should be released.
     virtual void checkReleaseInfo(const double& timestep, const double& simDur)
     {
         if( m_parPerTimestep <= 0 )
@@ -133,17 +145,18 @@ public:
         {
             // Again, the way the number of timesteps for a given release 
             //  is calculated needs to be watched carefully to make sure it is consistent throughout the program
-            int releaseSteps = std::ceil(releaseDur/timestep);
-            if( releaseSteps == 0 )
+            int nReleaseTimes = std::ceil(releaseDur/timestep);
+            if( nReleaseTimes == 0 )
             {
-                std::cerr << "ERROR (ReleaseType::checkReleaseInfo): input ParticleReleaseType is not instantaneous but calculated releaseSteps is zero!";
-                std::cerr << " releaseDur = \"" << releaseDur << "\", timestep = \"" << timestep << "\"" << std::endl;
+                std::cerr << "ERROR (ReleaseType::checkReleaseInfo): input ParticleReleaseType is not instantaneous but calculated nReleaseTimes is zero!";
+                std::cerr << " nReleaseTimes = \"" << nReleaseTimes << "\", releaseDur = \"" << releaseDur 
+                        << "\", timestep = \"" << timestep << "\"" << std::endl;
                 exit(1);
             }
-            if( m_parPerTimestep*releaseSteps != m_numPar )
+            if( m_parPerTimestep*nReleaseTimes != m_numPar )
             {
                 std::cerr << "ERROR (ReleaseType::checkReleaseInfo): calculated particles for release does not match input m_numPar!";
-                std::cerr << " m_parPerTimestep = \"" << m_parPerTimestep << "\", releaseSteps = \"" << releaseSteps 
+                std::cerr << " m_parPerTimestep = \"" << m_parPerTimestep << "\", nReleaseTimes = \"" << nReleaseTimes 
                         << "\", m_numPar = \"" << m_numPar << "\"" << std::endl;
                 exit(1);
             }

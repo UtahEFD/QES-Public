@@ -51,8 +51,8 @@ public:
         m_releaseStartTime = releaseStartTime;
         m_releaseEndTime = releaseEndTime;
         double releaseDur = releaseEndTime - releaseStartTime;
-        int releaseSteps = std::ceil(releaseDur/timestep);
-        m_numPar = parPerTimestep*releaseSteps;
+        int nReleaseTimes = std::ceil(releaseDur/timestep);
+        m_numPar = parPerTimestep*nReleaseTimes;
     }
 
     

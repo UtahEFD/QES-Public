@@ -46,8 +46,8 @@ public:
         m_parPerTimestep = parPerTimestep;
         m_releaseStartTime = 0;
         m_releaseEndTime = simDur;
-        int releaseSteps = std::ceil(simDur/timestep);
-        m_numPar = parPerTimestep*releaseSteps;
+        int nReleaseTimes = std::ceil(simDur/timestep);
+        m_numPar = parPerTimestep*nReleaseTimes;
     }
 
     
