@@ -70,16 +70,21 @@ struct AttVectorDbl {
   std::vector<NcDim> dimensions;
 };
 
-class URBOutput_Generic : public NetCDFOutput
+class NetCDFOutputGeneric : public NetCDFOutput
 {
  public:
-  URBOutput_Generic()
+  NetCDFOutputGeneric()
     {}
-  URBOutput_Generic(std::string);
-  virtual ~URBOutput_Generic()
+  NetCDFOutputGeneric(std::string);
+  virtual ~NetCDFOutputGeneric()
     {}
   
-  // create attribute scalar based on type of data
+  //save function be call outside 
+  virtual void save(float) = 0;
+
+ protected:
+  
+    // create attribute scalar based on type of data
   void createAttScalar(std::string,std::string,std::string,
 		       std::vector<NcDim>,int*);
   void createAttScalar(std::string,std::string,std::string,
@@ -103,8 +108,6 @@ class URBOutput_Generic : public NetCDFOutput
   // save fields 
   void saveOutputFields();
 
- protected:
-  
   virtual bool validateFileOtions() 
   {
     return true;

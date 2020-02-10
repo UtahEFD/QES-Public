@@ -132,7 +132,7 @@ In case things don't go as planned with these instructions, here are some tips f
 After the build is configured the Doxygen documentation can be built. The output from this process is the updating of the _html_ and _latex_ folders in the top-level _docs_ folders.
 
 ```
-make doc
+make urbdoc
 ```
 
 

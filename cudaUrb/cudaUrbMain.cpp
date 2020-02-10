@@ -7,13 +7,14 @@
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
+#include "NetCDFOutputGeneric.h"
+
 #include "handleURBArgs.h"
 
 #include "URBInputData.h"
 #include "URBGeneralData.h"
-//#include "URBOutputData.h"
-#include "URBOutput_VizFields.h"
-#include "URBOutput_TURBInputFile.h"
+#include "URBOutputVisualization.h"
+#include "URBOutputWorkspace.h"
 
 #include "Solver.h"
 #include "CPUSolver.h"
@@ -69,13 +70,12 @@ int main(int argc, char *argv[])
     URBGeneralData* UGD = new URBGeneralData(UID, arguments.calcMixingLength);
 
     // create URB output classes
-    URBOutput_VizFields* outputVz = nullptr;
+    std::vector<NetCDFOutputGeneric*> outputVec;
     if (arguments.netCDFFileVz != "") {
-      outputVz = new URBOutput_VizFields(UGD,UID,arguments.netCDFFileVz);
+      outputVec.push_back(new URBOutputVisualization(UGD,UID,arguments.netCDFFileVz));
     }
-    URBOutput_TURBInputFile* outputWk = nullptr;
     if (arguments.netCDFFileWk != "") {
-      outputWk = new URBOutput_TURBInputFile(UGD,arguments.netCDFFileWk);
+      outputVec.push_back(new URBOutputWorkspace(UGD,arguments.netCDFFileWk));
     }
 
     // //////////////////////////////////////////
@@ -122,13 +122,10 @@ int main(int argc, char *argv[])
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    if (outputVz) {
-      outputVz->save(UGD);
-    }
-    if (outputWk) {
-      outputWk->save(UGD);
-    }
-
+    for(auto id_out=0u;id_out<outputVec.size();id_out++)
+      outputVec.at(id_out)->save(0.0); // need to replace 0.0 with timestep
+    
+    
     exit(EXIT_SUCCESS);
 }
 
