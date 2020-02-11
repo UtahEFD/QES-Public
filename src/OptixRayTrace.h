@@ -1,7 +1,8 @@
 /*
  *This class uses OptiX 7.0
  */
-#include <cuda_gl_interlop.h>
+
+/*#include <cuda_gl_interlop.h>
 #include <cuda_runtime.h>
 
 
@@ -12,26 +13,30 @@
 #include <sutil/CUDAOutputBuffer.h>
 #include <sutil/Exception.h>
 #include <sutil/sutil.h>
-
+*/
 #include <vector>
 #include <iomanip>
 #include <iostream>
 #include <string>
 
-#include "RayTraceInterface.h"
-#include "Vec3D.h"
-#include "Vector3D.h"
+
 #include "Triangle.cpp"
+
+
+//context create buffer
 
 struct RayTracingState{
    OptixDeviceContext context = 0;
    CUstream stream = 0;
-   
+
+   int width = 0;   //Note: this will most likely be "world" params
+   int height = 0;
+
    OptixModule ptx_module  = 0;
    OptixPipelineCompileOptions pipeline_compile_options = {};
 
    OptixPipeline pipeline = 0;
-   
+
    OptixTraversableHandle gas_handle = 0;
    CUdeviceptr d_gas_output_buffer = 0;
    CUdeviceptr d_tris;  //converted mesh list 
@@ -41,14 +46,27 @@ struct RayTracingState{
    OptixProgramGroup hit_prog_group = 0;
 
    Params params = {};
-   //another var to params needed?
    OptixShaderBindingTable sbt = {};
+
+   int samples_per_cell;  //can change to bigger type value if needed 
 };
 
 template <typename T>
 struct Record{
    __align__(OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
    T data;
+};
+
+struct Ray{
+   float3 origin;
+   float tmin;
+   float3 dir;
+   float tmax;
+};
+
+struct Hit{
+   float t;
+   float3 geom_normal; //probably don't need this 
 };
 
 struct Params{
@@ -66,8 +84,7 @@ struct RayGenData{
 };
 
 struct MissData{
-   //is this even needed?
-   //is there anything to do when a miss happens
+   //a miss sets it to a large num
 };
 
 struct HitGroupData{
@@ -77,23 +94,34 @@ struct HitGroupData{
 
 class OptixRayTrace : public RayTraceInterface{
   public:
-   void buildAS(RayTracingState& state, std::vector<Triangle*> tris);
-   void calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const vector<int> &icellflag, std::vector<double> &mixingLengths);
-
+   void buildAS(std::vector<Triangle*> tris);
+   void calculateMixingLength(int numSamples, int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag, std::vector<double> &mixingLengths);
   private:
-//TODO: add typedef Record<...> recordName;
-   void createModule(RayTracingState& state);
-   void createProgramGroups(RayTracingState& state);
-   void createPipeline(RayTraceingState& state);
-   void createSBT(RayTracingState& state);
-   void initLaunchParams(RayTracingState& state);
-   void cleanState(RayTracingState& state);
+   RayTracingState state; //needs to be accessable though out program
 
-   /*
-    *Helper function to convert vector<Triangle*> to array<float, 3>
-    */
-   void convertVecMeshType(std::vector<Triangle*> &tris, std::vector<Vertex> &trisArray);
    typedef Record<RayGenData> RayGenRecord;
    typedef Record<MissData> MissRecord;
    typedef Record<HitGroupData> HitGroupRecord;
+
+   
+   
+   void createContext();
+   void createModule();
+   void createProgramGroups();
+   void createPipeline();
+   void createSBT();
+   void initLaunchParams();
+   void cleanState();
+
+    /*
+    *Helper function to convert vector<Triangle*> to array<float, 3>
+    */
+   void convertVecMeshType(std::vector<Triangle*> &tris, std::vector<Vertex> &trisArray);
+
+   /*
+    *Initializes Ray* rays based on the given cell data 
+    */
+   void initParams(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag);
+   
+ 
 };
