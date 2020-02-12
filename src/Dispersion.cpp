@@ -7,15 +7,12 @@
 #include "Dispersion.h"
 
 
-Dispersion::Dispersion( PlumeInputData* PID,Urb* urb,Turb* turb,Eulerian* eul,
-                        const bool& outputLagrData_val,const std::string& outputFolder_val, const bool& debug_val)
+Dispersion::Dispersion( PlumeInputData* PID,Urb* urb,Turb* turb,Eulerian* eul, const bool& debug_val)
     : pointList(0)  // ???
 {
     std::cout<<"[Dispersion] \t Setting up sources "<<std::endl;
 
     // copy debug information
-    outputLagrData = outputLagrData_val;
-    outputFolder = outputFolder_val;
     debug = debug_val;
     
 
@@ -85,6 +82,7 @@ void Dispersion::getInputSources(PlumeInputData* PID)
         
 
         // now do anything that is needed to the source via the pointer
+        sPtr->setSourceIdx(sidx);
         sPtr->m_rType->calcReleaseInfo(PID->simParams->timeStep, PID->simParams->simDur);
         sPtr->m_rType->checkReleaseInfo(PID->simParams->timeStep, PID->simParams->simDur);
         sPtr->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
@@ -145,8 +143,12 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
     {
         // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
         // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
-        eul->setInterp3Dindexing(newParticles.at(pIdx).xPos,newParticles.at(pIdx).yPos,newParticles.at(pIdx).zPos);
+        eul->setInterp3Dindexing(newParticles.at(pIdx).xPos_init,newParticles.at(pIdx).yPos_init,newParticles.at(pIdx).zPos_init);
     
+        // set the positions to be used by the simulation to the initial positions
+        newParticles.at(pIdx).xPos = newParticles.at(pIdx).xPos_init;
+        newParticles.at(pIdx).yPos = newParticles.at(pIdx).yPos_init;
+        newParticles.at(pIdx).zPos = newParticles.at(pIdx).zPos_init;
 
         // almost didn't see it, but it does use different random numbers for each direction
         double rann = random::norRan();
@@ -195,197 +197,5 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
         newParticles.at(pIdx).isActive = true;
         
     }
-
-}
-
-
-void Dispersion::outputVarInfo_text()
-{
-    // if this output is not desired, skip outputting these files
-    if( outputLagrData == false )
-    {
-        return;
-    }
-
-    std::cout << "writing Lagrangian debug variables" << std::endl;
-
-    // set some variables for use in the function
-    FILE *fzout;    // changing file to which information will be written
-    std::string currentFile = "";
-    
-
-    // now write out the Lagrangian grid information to the debug folder
-    // at some time this could be wrapped up into a bunch of functions, for now just type it all out without functions
-
-
-    // make a variable to keep track of the number of particles. Make sure it is the most updated value
-    int nPar = pointList.size();
-    
-
-
-    currentFile = outputFolder + "particle_txx_old.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).txx_old);
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "particle_txy_old.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).txy_old);
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "particle_txz_old.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).txz_old);
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "particle_tyy_old.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).tyy_old);
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "particle_tyz_old.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).tyz_old);
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "particle_tzz_old.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).tzz_old);
-    }
-    fclose(fzout);
-
-
-    currentFile = outputFolder + "particle_uFluct_old.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).uFluct_old);
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "particle_vFluct_old.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).vFluct_old);
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "particle_wFluct_old.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).wFluct_old);
-    }
-    fclose(fzout);
-
-
-
-    currentFile = outputFolder + "particle_uFluct.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).uFluct);
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "particle_vFluct.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).vFluct);
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "particle_wFluct.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).wFluct);
-    }
-    fclose(fzout);
-
-
-    currentFile = outputFolder + "particle_delta_uFluct.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).delta_uFluct);
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "particle_delta_vFluct.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).delta_vFluct);
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "particle_delta_wFluct.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).delta_wFluct);
-    }
-    fclose(fzout);
-
-
-
-    // note that isActive is not the same as isRogue, but the expected output is isRogue
-    currentFile = outputFolder + "particle_isActive.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).isRogue);
-    }
-    fclose(fzout);
-
-
-
-    currentFile = outputFolder + "particle_xPos.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).xPos);
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "particle_yPos.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).yPos);
-    }
-    fclose(fzout);
-
-    currentFile = outputFolder + "particle_zPos.txt";
-    fzout = fopen(currentFile.c_str(), "w");
-    for(int idx = 0; idx < nPar; idx++)
-    {
-        fprintf(fzout,"%lf\n",pointList.at(idx).zPos);
-    }
-    fclose(fzout);
-
-
-    // now that all is finished, clean up the file pointer
-    fzout = NULL;
 
 }

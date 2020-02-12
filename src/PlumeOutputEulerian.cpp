@@ -1,212 +1,188 @@
+//
+//  NetCDFOutputEulerian.cpp
+//  
+//  This class handles saving output files for input Eulerian data
+//  This is a specialized output class derived 
+//   and inheriting from NetCDFOutputGeneric.
+//
+//  Created by Fabien Margairaz on 01/25/20
+//  Modified by Loren Atwood 02/08/20
+//
+
 
 #include "PlumeOutputEulerian.h"
 
 
-PlumeOutputEulerian::PlumeOutputEulerian(Dispersion* dis,PlumeInputData* PID,std::string output_file)
-  : NetCDFOutputGeneric(output_file)
+// note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
+PlumeOutputEulerian::PlumeOutputEulerian(PlumeInputData* PID,Urb* urb_ptr,Turb* turb_ptr,Eulerian* eul_ptr,std::string output_file,bool doFileOutput_val)
+  : NetCDFOutputGeneric(output_file,doFileOutput_val)
 {
-  
-  std::cout<<"[PlumeOutputEulerian] set up NetCDF file "<<output_file<<std::endl;
+    
+    // return not doing anything if this file is not desired
+    // in essence acting like an empty constructor
+    if( doFileOutput == false )
+    {
+        return;
+    }
 
-  /* --------------------------------------------------------
-     setup the sampling box concentration information 
-     -------------------------------------------------------- */
+    std::cout << "[PlumeOutputEulerian] set up NetCDF file " << output_file << std::endl;
 
-  // time to start averaging the concentration
-  sCBoxTime = PID->colParams->timeStart;
-  // time to output the concentration (1st output -> updated each time)
-  avgOutTime  = sCBoxTime+PID->colParams->timeAvg;
-  // Copy of the input timeAvg and timeStep
-  timeAvg=PID->colParams->timeAvg;
-  timeStep=PID->simParams->timeStep;
 
-  nBoxesX = PID->colParams->nBoxesX;
-  nBoxesY = PID->colParams->nBoxesY;
-  nBoxesZ = PID->colParams->nBoxesZ;
-  
-  lBndx = PID->colParams->boxBoundsX1;
-  uBndx = PID->colParams->boxBoundsX2;
-  lBndy = PID->colParams->boxBoundsY1;
-  uBndy = PID->colParams->boxBoundsY2;
-  lBndz = PID->colParams->boxBoundsZ1;
-  uBndz = PID->colParams->boxBoundsZ2;
-  
-  boxSizeX = (uBndx-lBndx)/(nBoxesX);
-  boxSizeY = (uBndy-lBndy)/(nBoxesY);
-  boxSizeZ = (uBndz-lBndz)/(nBoxesZ);
-  
-  volume = boxSizeX*boxSizeY*boxSizeZ;
-  
-  xBoxCen.resize(nBoxesX);
-  yBoxCen.resize(nBoxesY);
-  zBoxCen.resize(nBoxesZ);
+    // no need for output frequency for this output, it is expected to only happen once, assumed to be at time zero
+    
 
-  int zR = 0, yR = 0, xR = 0;
-  for(int k = 0; k < nBoxesZ; ++k) {
-    zBoxCen.at(k) = lBndz + (zR*boxSizeZ) + (boxSizeZ/2.0);
-    zR++;
-  }
-  for(int j = 0; j < nBoxesY; ++j) {
-    yBoxCen.at(j) = lBndy + (yR*boxSizeY) + (boxSizeY/2.0);
-    yR++;
-  }
-  for(int i = 0; i <nBoxesX; ++i) {
-    xBoxCen.at(i) = lBndx + (xR*boxSizeX) + (boxSizeX/2.0);
-    xR++;
-  }
-  
-  // initialization of the container
-  cBox.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
-  conc.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
-  
-  // copy of disp pointer
-  disp=dis;
+    // setup copy of pointers to the classes that save needs so output data can be grabbed directly
+    urb = urb_ptr;
+    turb = turb_ptr;
+    eul = eul_ptr;
 
-  /* --------------------------------------------------------
-     setup the output information 
-     -------------------------------------------------------- */
-  
-  // setup output fields
-  output_fields = {"t","x","y","z","conc"};
 
-  // set cell-centered data dimensions
-  // time dimension
-  NcDim NcDim_t=addDimension("t");
-  // space dimensions
-  NcDim NcDim_x=addDimension("x",nBoxesX);
-  NcDim NcDim_y=addDimension("y",nBoxesY);
-  NcDim NcDim_z=addDimension("z",nBoxesZ);
+    // --------------------------------------------------------
+    // setup the output information storage
+    // --------------------------------------------------------
 
-  // create attributes for time dimension
-  std::vector<NcDim> dim_vect_t;
-  dim_vect_t.push_back(NcDim_t);
-  createAttScalar("t","time","s",dim_vect_t,&time);
+    // get the grid number of points
+    // LA future work: this whole structure will have to change when we finally adjust the inputs for the true grids
+    //  would mean cell centered urb data and face centered turb data. For now, decided just to assume they have the same grid
+    int nx = urb->nx;
+    int ny = urb->ny;
+    int nz = urb->nz;
+    int nCells = nz*ny*nx;
 
-  // create attributes space dimensions
-  std::vector<NcDim> dim_vect_x;
-  dim_vect_x.push_back(NcDim_x);
-  createAttVector("x","x-distance","m",dim_vect_x,&xBoxCen);
-  std::vector<NcDim> dim_vect_y;
-  dim_vect_y.push_back(NcDim_y);
-  createAttVector("y","y-distance","m",dim_vect_y,&yBoxCen);
-  std::vector<NcDim> dim_vect_z;
-  dim_vect_z.push_back(NcDim_z);
-  createAttVector("z","z-distance","m",dim_vect_z,&zBoxCen);
+    // initialization of the other particle data containers, setting initial vals to different noDataVals
+    epps.resize(nCells,-999.0);
 
-  // create 3D vector (time dep)
-  std::vector<NcDim> dim_vect_3d;
-  dim_vect_3d.push_back(NcDim_t);
-  dim_vect_3d.push_back(NcDim_z);
-  dim_vect_3d.push_back(NcDim_y);
-  dim_vect_3d.push_back(NcDim_x);
-  // create attributes
-  createAttVector("conc","concentration","# m-3",dim_vect_3d,&conc);
 
-  // create output fields
-  addOutputFields();
+    // need to set the epps vars now
+    for( int kk = 0; kk < nz; kk++ )
+    {
+        for( int jj = 0; jj < ny; jj++ )
+        {
+            for( int ii = 0; ii < nx; ii++ )
+            {
+                int idx = kk*ny*nx + jj*nx + ii;
+                epps.at(idx) = turb->CoEps.at(idx)/eul->C_0;
+            }
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // setup the netcdf output information storage
+    // --------------------------------------------------------
+
+    // setup desired output fields string
+    // LA future work: can be added in fileOptions at some point
+    output_fields = {   "t","x","y","z",
+                        "u","v","w",
+                        "sig_x","sig_y","sig_z","epps","tke",
+                        "txx","txy","txz","tyy","tyz","tzz"
+                        "dtxxdx","dtxydy","dtxzdz",
+                        "dtxydx","dtyydy","dtyzdz",
+                        "dtxzdx","dtyzdy","dtzzdz",
+                        "flux_div_x","flux_div_y","flux_div_z"};
+
+
+    // set data dimensions, which in this case are cell-centered dimensions
+    // time dimension
+    NcDim NcDim_t = addDimension("t");
+    // space dimensions
+    NcDim NcDim_x = addDimension("x",nx);
+    NcDim NcDim_y = addDimension("y",ny);
+    NcDim NcDim_z = addDimension("z",nz);
+    
+    // create attributes for time dimension
+    std::vector<NcDim> dim_vect_t;
+    dim_vect_t.push_back(NcDim_t);
+    createAttScalar("t","time","s",dim_vect_t,&time);
+
+    // create attributes space dimensions
+    std::vector<NcDim> dim_vect_x;
+    dim_vect_x.push_back(NcDim_x);
+    createAttVector("x","x-distance","m",dim_vect_x,&(urb->x));
+    std::vector<NcDim> dim_vect_y;
+    dim_vect_y.push_back(NcDim_y);
+    createAttVector("y","y-distance","m",dim_vect_y,&(urb->y));
+    std::vector<NcDim> dim_vect_z;
+    dim_vect_z.push_back(NcDim_z);
+    createAttVector("z","z-distance","m",dim_vect_z,&(urb->z));
+
+
+    // create 3D vector and put in the dimensions (nt,nz,ny,nx).
+    // !!! make sure the order is specificall nt,nz,ny,nx in this spot,
+    //  the order doesn't seem to matter for other spots
+    std::vector<NcDim> dim_vect_3d;
+    dim_vect_3d.push_back(NcDim_t);
+    dim_vect_3d.push_back(NcDim_z);
+    dim_vect_3d.push_back(NcDim_y);
+    dim_vect_3d.push_back(NcDim_x);
+    
+
+    // create attributes for all output information
+    createAttVector("u","x-component mean velocity","m s-1",dim_vect_3d,&urb->u);
+    createAttVector("v","y-component mean velocity","m s-1",dim_vect_3d,&urb->v);
+    createAttVector("w","z-component mean velocity","m s-1",dim_vect_3d,&urb->w);
+    createAttVector("sig_x","x-component variance","m2 s-2",dim_vect_3d,&turb->sig_x);
+    createAttVector("sig_y","y-component variance","m2 s-2",dim_vect_3d,&turb->sig_y);
+    createAttVector("sig_z","z-component variance","m2 s-2",dim_vect_3d,&turb->sig_z);
+    createAttVector("epps","dissipation rate","m2 s-3",dim_vect_3d,&epps);
+    createAttVector("tke","turbulent kinetic energy","m2 s-2",dim_vect_3d,&turb->tke);
+    createAttVector("txx","uu-component of stress tensor","m2 s-2",dim_vect_3d,&turb->txx);
+    createAttVector("txy","uv-component of stress tensor","m2 s-2",dim_vect_3d,&turb->txy);
+    createAttVector("txz","uw-component of stress tensor","m2 s-2",dim_vect_3d,&turb->txz);
+    createAttVector("tyy","vv-component of stress tensor","m2 s-2",dim_vect_3d,&turb->tyy);
+    createAttVector("tyz","vw-component of stress tensor","m2 s-2",dim_vect_3d,&turb->tyz);
+    createAttVector("tzz","ww-component of stress tensor","m2 s-2",dim_vect_3d,&turb->tzz);
+    createAttVector("dtxxdx","derivative of txx in the x direction","m s-2",dim_vect_3d,&eul->dtxxdx);
+    createAttVector("dtxydy","derivative of txy in the y direction","m s-2",dim_vect_3d,&eul->dtxydy);
+    createAttVector("dtxzdz","derivative of txz in the z direction","m s-2",dim_vect_3d,&eul->dtxzdz);
+    createAttVector("dtxydx","derivative of txy in the x direction","m s-2",dim_vect_3d,&eul->dtxydx);
+    createAttVector("dtyydy","derivative of tyy in the y direction","m s-2",dim_vect_3d,&eul->dtyydy);
+    createAttVector("dtyzdz","derivative of tyz in the z direction","m s-2",dim_vect_3d,&eul->dtyzdz);
+    createAttVector("dtxzdx","derivative of txz in the x direction","m s-2",dim_vect_3d,&eul->dtxzdx);
+    createAttVector("dtyzdy","derivative of tyz in the y direction","m s-2",dim_vect_3d,&eul->dtyzdy);
+    createAttVector("dtzzdz","derivative of tzz in the z direction","m s-2",dim_vect_3d,&eul->dtzzdz);
+    createAttVector("flux_div_x","momentum flux through the x-plane","m s-2",dim_vect_3d,&eul->flux_div_x);
+    createAttVector("flux_div_y","momentum flux through the y-plane","m s-2",dim_vect_3d,&eul->flux_div_y);
+    createAttVector("flux_div_z","momentum flux through the z-plane","m s-2",dim_vect_3d,&eul->flux_div_z);
+
+
+    // create output fields
+    addOutputFields();
 
 }
 
 // Save output at cell-centered values
 void PlumeOutputEulerian::save(float currentTime)
 {
-  // if past the time to start averaging => calculate the concentration
-  // count particule in sampling box
-  if( currentTime >= sCBoxTime ){
-    boxCount(disp);
-  }
-  
-  // if the current time = time to output => output concentration and 
-  // reinitialze counter (cBox)
-  if( currentTime >= avgOutTime )
+
+    // return not doing anything if this file is not desired
+    // in essence acting like this is an empty function
+    if( doFileOutput == false )
     {
-      // FM -> need ajust - multiply by the mass of the particle 
-      // cc = dt/T_avf * mass_of_part/vol => in kg/m3 
-      //double cc = (dt)/(avgTime*volume* dis->pointList.size() );
-      
-      // FM - here: number of particles in volume
-      // cc = dt/T_avf * 1/vol => in #/m3 
-      double cc = (timeStep)/(timeAvg*volume);
-      
-      for(auto id=0;id<conc.size();id++) {
-	conc.at(id) = cBox.at(id)*cc;
-	cBox.at(id) = 0.0;
-      }
-
-      // set output time
-      time=currentTime;
-
-      // save the fields to NetCDF files
-      saveOutputFields();
-      
-      // remove x, y, z
-      // from output array after first save
-      if (output_counter==0) {
-	rmTimeIndepFields();
-      }
-      
-      // increment for next time insertion
-      output_counter +=1;
-      
-      // avgTime - updated to the time for the next average output
-      avgOutTime = avgOutTime+timeAvg;    
-      
+        return;
     }
+
+
+    // all the values should already be set by the constructor and by the Eulerian class
+    // so just output what is found in the containers
+
+
+    // set output time for correct netcdf output
+    time = currentTime;
+
+    // save the fields to NetCDF files
+    saveOutputFields();
+
+
+    // FM: only remove time dep variables from output array after first save
+    // LA note: the output counter is an inherited variable
+    if( output_counter == 0 )
+    {
+        rmTimeIndepFields();
+    }
+
+    // increment inherited output counter for next time insertion
+    output_counter += 1;
+
 };
-
-void PlumeOutputEulerian::boxCount(const Dispersion* disp)
-{
-  // for all particles see where they are relative to the
-  // concentration collection boxes
-  for(int i = 0; i < disp->pointList.size(); i++) {
-        
-    double xPos = disp->pointList.at(i).xPos;
-    double yPos = disp->pointList.at(i).yPos;
-    double zPos = disp->pointList.at(i).zPos;
-    
-    /* FM 
-       -> why check here? sampling box can be smaller 
-       -> this add a few check for nothting (and complicate the call because need URB/TURB info)
-       if ( (xPos > 0.0 && yPos > 0.0 && zPos > 0.0) &&
-       (xPos < (nx*dx)) && (yPos < (ny*dy)) && (zPos < (nz*dz)) ) {
-    */
-    
-    // ????
-    if( zPos == -1 ) {
-      continue;
-    }
-    
-    // Calculate which collection box this particle is currently in
-    // x-direction
-    int idx = -1;
-    if( xPos >= lBndx && xPos <= uBndx) {
-      idx = (int)((xPos-lBndx)/boxSizeX);      
-    }
-    
-    // y-direction
-    int idy = -1;
-    if( yPos >= lBndy && yPos <= uBndy) {
-      idy = (int)((yPos-lBndy)/boxSizeY);
-    }
-    // z-direction
-    int idz = -1;
-    if( zPos >= lBndz && zPos <= uBndz) {
-      idz = (int)((zPos-lBndz)/boxSizeZ);
-    }
-    
-    /* FM
-       - a particle has the potential to be on the limit of the last box
-       -> in that case id*=nBoxes* and the particle will not be counted
-       -> how to solve this issue?
-     */
-
-    if( idx >= 0 && idx < nBoxesX && 
-	idy >= 0 && idy < nBoxesY && 
-	idz >= 0 && idz < nBoxesZ ) {
-      int id = idz*nBoxesY*nBoxesX + idy*nBoxesX + idx;
-      cBox.at(id) = cBox.at(id) + 1.0;
-    }
-    
-  }   // particle loop
-  
-}

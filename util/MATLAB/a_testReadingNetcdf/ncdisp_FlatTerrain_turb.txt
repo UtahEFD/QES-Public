@@ -1,243 +1,145 @@
 Source:
-           .\FlatTerrain_turb.nc
+           FlatTerrain_turb.nc
 Format:
            netcdf4
 Global Attributes:
            _NCProperties = 'version=1|netcdflibversion=4.4.1|hdf5libversion=1.8.17'
 Dimensions:
-           t = 1
-           z = 200
-           y = 200
+           t = 1     (UNLIMITED)
            x = 200
+           y = 200
+           z = 201
 Variables:
-    t     
+    t    
            Size:       1x1
            Dimensions: t
            Datatype:   double
            Attributes:
                        units     = 's'
                        long_name = 'time'
-    x     
+    x    
            Size:       200x1
            Dimensions: x
-           Datatype:   double
+           Datatype:   single
            Attributes:
                        units     = 'm'
                        long_name = 'x-distance'
-    y     
+    y    
            Size:       200x1
            Dimensions: y
-           Datatype:   double
+           Datatype:   single
            Attributes:
                        units     = 'm'
                        long_name = 'y-distance'
-    z     
-           Size:       200x1
+    z    
+           Size:       201x1
            Dimensions: z
-           Datatype:   double
+           Datatype:   single
            Attributes:
                        units     = 'm'
                        long_name = 'z-distance'
-    tau_11
-           Size:       200x200x200x1
+    S11  
+           Size:       200x200x201x1
            Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'kg m-1 s-2'
-                       long_name = 'uu stress'
-    tau_12
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'kg m-1 s-2'
-                       long_name = 'uv stress'
-    tau_13
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'kg m-1 s-2'
-                       long_name = 'uw stress'
-    tau_22
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'kg m-1 s-2'
-                       long_name = 'vv stress'
-    tau_23
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'kg m-1 s-2'
-                       long_name = 'vw stress'
-    tau_33
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'kg m-1 s-2'
-                       long_name = 'ww stress'
-    sig_11
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'm s-1'
-                       long_name = 'uu sigma'
-    sig_22
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'm s-1'
-                       long_name = 'vv sigma'
-    sig_33
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'm s-1'
-                       long_name = 'ww sigma'
-    lam_11
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'm s2 kg-1'
-                       long_name = 'uu lambda'
-    lam_12
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'm s2 kg-1'
-                       long_name = 'uv lambda'
-    lam_13
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'm s2 kg-1'
-                       long_name = 'uw lambda'
-    lam_21
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'm s2 kg-1'
-                       long_name = 'vu lambda'
-    lam_22
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'm s2 kg-1'
-                       long_name = 'vv lambda'
-    lam_23
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'm s2 kg-1'
-                       long_name = 'vw lambda'
-    lam_31
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'm s2 kg-1'
-                       long_name = 'wu lambda'
-    lam_32
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'm s2 kg-1'
-                       long_name = 'wv lambda'
-    lam_33
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
-           Attributes:
-                       units     = 'm s2 kg-1'
-                       long_name = 'ww lambda'
-    dudx  
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   double
+           Datatype:   single
            Attributes:
                        units     = 's-1'
-                       long_name = 'dudx'
-    dudy  
-           Size:       200x200x200x1
+                       long_name = 'uu-component of strain-rate tensor'
+    S22  
+           Size:       200x200x201x1
            Dimensions: x,y,z,t
-           Datatype:   double
+           Datatype:   single
            Attributes:
                        units     = 's-1'
-                       long_name = 'dudy'
-    dudz  
-           Size:       200x200x200x1
+                       long_name = 'vv-component of strain-rate tensor'
+    S33  
+           Size:       200x200x201x1
            Dimensions: x,y,z,t
-           Datatype:   double
+           Datatype:   single
            Attributes:
                        units     = 's-1'
-                       long_name = 'dudz'
-    dvdx  
-           Size:       200x200x200x1
+                       long_name = 'ww-component of strain-rate tensor'
+    S12  
+           Size:       200x200x201x1
            Dimensions: x,y,z,t
-           Datatype:   double
+           Datatype:   single
            Attributes:
                        units     = 's-1'
-                       long_name = 'dvdx'
-    dvdy  
-           Size:       200x200x200x1
+                       long_name = 'uv-component of strain-rate tensor'
+    S13  
+           Size:       200x200x201x1
            Dimensions: x,y,z,t
-           Datatype:   double
+           Datatype:   single
            Attributes:
                        units     = 's-1'
-                       long_name = 'dvdy'
-    dvdz  
-           Size:       200x200x200x1
+                       long_name = 'uw-component of strain-rate tensor'
+    S23  
+           Size:       200x200x201x1
            Dimensions: x,y,z,t
-           Datatype:   double
+           Datatype:   single
            Attributes:
                        units     = 's-1'
-                       long_name = 'dvdz'
-    dwdx  
-           Size:       200x200x200x1
+                       long_name = 'vw-component of strain-rate tensor'
+    L    
+           Size:       200x200x201x1
            Dimensions: x,y,z,t
-           Datatype:   double
+           Datatype:   single
            Attributes:
-                       units     = 's-1'
-                       long_name = 'dwdx'
-    dwdy  
-           Size:       200x200x200x1
+                       units     = '--'
+                       long_name = 'mixing length'
+    tau11
+           Size:       200x200x201x1
            Dimensions: x,y,z,t
-           Datatype:   double
+           Datatype:   single
            Attributes:
-                       units     = 's-1'
-                       long_name = 'dwdy'
-    dwdz  
-           Size:       200x200x200x1
+                       units     = 'm2s-2'
+                       long_name = 'uu-component of stress tensor'
+    tau12
+           Size:       200x200x201x1
            Dimensions: x,y,z,t
-           Datatype:   double
+           Datatype:   single
            Attributes:
-                       units     = 's-1'
-                       long_name = 'dwdz'
-    CoEps 
-           Size:       200x200x200x1
+                       units     = 'm2s-2'
+                       long_name = 'uv-component of stress tensor'
+    tau13
+           Size:       200x200x201x1
            Dimensions: x,y,z,t
-           Datatype:   double
+           Datatype:   single
            Attributes:
-                       units     = 'm2 s-3'
-                       long_name = 'CoEps'
-    tke   
-           Size:       200x200x200x1
+                       units     = 'm2s-2'
+                       long_name = 'uw-component of stress tensor'
+    tau23
+           Size:       200x200x201x1
            Dimensions: x,y,z,t
-           Datatype:   double
+           Datatype:   single
            Attributes:
-                       units     = 'm2 s-2'
-                       long_name = 'tke'
+                       units     = 'm2s-2'
+                       long_name = 'vw-component of stress tensor'
+    tau22
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 'm2s-2'
+                       long_name = 'vv-component of stress tensor'
+    tau33
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 'm2s-2'
+                       long_name = 'ww-component of stress tensor'
+    tke  
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 'm2s-2'
+                       long_name = 'turbulent kinetic energy'
+    CoEps
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 'm2s-3'
+                       long_name = 'dissipation rate'

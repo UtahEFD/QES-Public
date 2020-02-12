@@ -42,8 +42,7 @@ class Dispersion {
         // finally some of the important overall metadata for the set of particles is set to initial values
         //  and all metadata is calculated and checked for each source.
         //  At the same time as calculating and checking the metadata for each source, the total number of particles to release is calculated.
-        Dispersion( PlumeInputData* PID,Urb* urb,Turb* turb,Eulerian* eul,
-                    const bool& outputLagrData_val,const std::string& outputFolder_val, const bool& debug_val);
+        Dispersion( PlumeInputData* PID,Urb* urb,Turb* turb,Eulerian* eul, const bool& debug_val);
 
 
 
@@ -84,9 +83,6 @@ class Dispersion {
         void setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle>& newParticles);
 
         
-        void outputVarInfo_text();
-
-
     private:
     
 
@@ -106,8 +102,6 @@ class Dispersion {
 
 
         // copies of debug related information from the input arguments
-        bool outputLagrData;
-        std::string outputFolder;
         bool debug;
         
 };

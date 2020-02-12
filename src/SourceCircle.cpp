@@ -45,11 +45,13 @@ int SourceCircle::emitParticles( const float dt,
         for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
             particle cPar;
-            cPar.xPos = posX;
-            cPar.yPos = posY;
-            cPar.zPos = posZ;
+            cPar.xPos_init = posX;
+            cPar.yPos_init = posY;
+            cPar.zPos_init = posZ;
 
             cPar.tStrt = currTime;
+
+            cPar.sourceIdx = sourceIdx;
             
             emittedParticles.push_back( cPar );
         }

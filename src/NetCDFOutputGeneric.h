@@ -79,7 +79,7 @@ class NetCDFOutputGeneric : public NetCDFOutput
  public:
   NetCDFOutputGeneric()
     {}
-  NetCDFOutputGeneric(std::string);
+  NetCDFOutputGeneric(std::string,bool);
   virtual ~NetCDFOutputGeneric()
     {}
   

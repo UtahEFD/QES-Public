@@ -7,22 +7,22 @@ function textToNetcdf(outputDir,outputBaseName,  x_turb_domainStart,x_turb_domai
     
     % if the input BCtypes are "", replace them with default values
     if x_turb_BCtype == ""
-        x_turb_BCtype = "exiting";
+        x_turb_BCtype = "periodic";
     end
     if y_turb_BCtype == ""
-        y_turb_BCtype = "exiting";
+        y_turb_BCtype = "periodic";
     end
     if z_turb_BCtype == ""
-        z_turb_BCtype = "exiting";
+        z_turb_BCtype = "periodic";
     end
     if x_urb_BCtype == ""
-        x_urb_BCtype = "exiting";
+        x_urb_BCtype = "periodic";
     end
     if y_urb_BCtype == ""
-        y_urb_BCtype = "exiting";
+        y_urb_BCtype = "periodic";
     end
     if z_urb_BCtype == ""
-        z_urb_BCtype = "exiting";
+        z_urb_BCtype = "periodic";
     end
     
     
@@ -37,20 +37,28 @@ function textToNetcdf(outputDir,outputBaseName,  x_turb_domainStart,x_turb_domai
     tzz = readLinearized3DdataTextFile(tzz_file,x_turb_nCells,y_turb_nCells,z_turb_nCells);
     
     % now create the turb position grid values
+    % LA: turns out Bailey's code never uses the xCellGrid directly, just
+    % the dx values. This means that for the periodic directions (the x and y
+    % dimensions), the grid actually is like going from 0 to 1, but with
+    % one extra cell, where the last cell is the same thing as the first
+    % cell. I could change it now, and just do the grids to one step short,
+    % but then particles would be confused about where the domain is
+    % actually at. At least these current grids, even if not correct, have
+    % been working pretty well in the past matlab code.
     %if x_turb_BCtype == "periodic"
-        dx_turb = (x_turb_domainEnd - x_turb_domainStart)/(x_turb_nCells - 1);
-    %else
     %    dx_turb = (x_turb_domainEnd - x_turb_domainStart)/(x_turb_nCells);
+    %else
+        dx_turb = (x_turb_domainEnd - x_turb_domainStart)/(x_turb_nCells - 1);
     %end
     %if y_turb_BCtype == "periodic"
-        dy_turb = (y_turb_domainEnd - y_turb_domainStart)/(y_turb_nCells - 1);
-    %else
     %    dy_turb = (y_turb_domainEnd - y_turb_domainStart)/(y_turb_nCells);
+    %else
+        dy_turb = (y_turb_domainEnd - y_turb_domainStart)/(y_turb_nCells - 1);
     %end
     %if z_turb_BCtype == "periodic"
-        dz_turb = (z_turb_domainEnd - z_turb_domainStart)/(z_turb_nCells - 1);
-    %else
     %    dz_turb = (z_turb_domainEnd - z_turb_domainStart)/(z_turb_nCells);
+    %else
+        dz_turb = (z_turb_domainEnd - z_turb_domainStart)/(z_turb_nCells - 1);
     %end
     if x_turb_nCells == 1
         dx_turb = 1;

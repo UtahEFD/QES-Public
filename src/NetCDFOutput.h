@@ -27,9 +27,17 @@ public:
   NetCDFOutput()
     {}
   // initializer
-  NetCDFOutput(std::string);
+  NetCDFOutput(std::string,bool);
   virtual ~NetCDFOutput()
     {}
+
+
+    // bool value for determining whether the netcdf file should be output or no, a copy of the input value
+    // !!! needs to be set at constructor time till a new way to deal with wanting a file or no is figured out
+    // !!! each instance of an inherited class where this value is allowed to be true or false needs to
+    //  have a call to check this value and if false, to return, in their constructor, and in their call to save
+    //  The idea is to make it act like an empty constructor in that instance.
+    bool doFileOutput;
 
   // setter
   NcDim addDimension(std::string, int size=0);

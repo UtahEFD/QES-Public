@@ -31,12 +31,16 @@ class particle
         //  so that they all get edited together. But so long as we use them correctly, this isn't a problem
         
         // values set by emitParticles() by each source
+        double xPos_init;          // the initial x component of position for the particle, to not be changed after the simulation starts
+        double yPos_init;          // the initial y component of position for the particle, to not be changed after the simulation starts
+        double zPos_init;          // the initial z component of position for the particle, to not be changed after the simulation starts
+        double tStrt;           // the time of release for the particle
+        int sourceIdx;       // the index of the source the particle came from
+
+        // once initial positions are known, can set these values using urb and turb info
         double xPos;          // Initially, the initial x component of position for the particle. After the solver starts to run, the current x component of position for the particle.
         double yPos;          // Initially, the initial y component of position for the particle. After the solver starts to run, the current y component of position for the particle.
         double zPos;          // Initially, the initial z component of position for the particle. After the solver starts to run, the current z component of position for the particle.
-        double tStrt;         // The time of release for the particle
-
-        // once positions are known, can set these values using urb and turb info
         double uFluct;      // x component of the velocity fluctuation for a particle for a given iteration. Starts out as the initial value until a particle is "released" into the domain
         double vFluct;      // v component of the velocity fluctuation for a particle for a given iteration. Starts out as the initial value until a particle is "released" into the domain
         double wFluct;      // w component of the velocity fluctuation for a particle for a given iteration. Starts out as the initial value until a particle is "released" into the domain

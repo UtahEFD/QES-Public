@@ -1,14 +1,17 @@
 Source:
-           .\FlatTerrain_urb.nc
+           FlatTerrain_urb.nc
 Format:
            netcdf4
 Global Attributes:
            _NCProperties = 'version=1|netcdflibversion=4.4.1|hdf5libversion=1.8.17'
 Dimensions:
-           t = 1     (UNLIMITED)
-           z = 200
-           y = 200
-           x = 200
+           t    = 1     (UNLIMITED)
+           x    = 201
+           y    = 201
+           z    = 202
+           x_cc = 200
+           y_cc = 200
+           z_cc = 201
 Variables:
     t      
            Size:       1x1
@@ -17,59 +20,101 @@ Variables:
            Attributes:
                        units     = 's'
                        long_name = 'time'
+    icell  
+           Size:       200x200x201x1
+           Dimensions: x_cc,y_cc,z_cc,t
+           Datatype:   int32
+           Attributes:
+                       units     = '--'
+                       long_name = 'icell flag value'
     x      
            Size:       200x1
-           Dimensions: x
-           Datatype:   double
+           Dimensions: x_cc
+           Datatype:   single
            Attributes:
                        units     = 'm'
                        long_name = 'x-distance'
     y      
            Size:       200x1
-           Dimensions: y
-           Datatype:   double
+           Dimensions: y_cc
+           Datatype:   single
            Attributes:
                        units     = 'm'
                        long_name = 'y-distance'
     z      
-           Size:       200x1
-           Dimensions: z
-           Datatype:   double
+           Size:       201x1
+           Dimensions: z_cc
+           Datatype:   single
            Attributes:
                        units     = 'm'
                        long_name = 'z-distance'
-    terrain
-           Size:       200x200
-           Dimensions: x,y
-           Datatype:   double
-           Attributes:
-                       units     = 'm'
-                       long_name = 'terrain height'
     u      
-           Size:       200x200x200x1
+           Size:       201x201x202x1
            Dimensions: x,y,z,t
-           Datatype:   double
+           Datatype:   single
            Attributes:
                        units     = 'm s-1'
                        long_name = 'x-component velocity'
     v      
-           Size:       200x200x200x1
+           Size:       201x201x202x1
            Dimensions: x,y,z,t
-           Datatype:   double
+           Datatype:   single
            Attributes:
                        units     = 'm s-1'
                        long_name = 'y-component velocity'
     w      
-           Size:       200x200x200x1
+           Size:       201x201x202x1
            Dimensions: x,y,z,t
-           Datatype:   double
+           Datatype:   single
            Attributes:
                        units     = 'm s-1'
                        long_name = 'z-component velocity'
-    icell  
-           Size:       200x200x200x1
-           Dimensions: x,y,z,t
-           Datatype:   int32
+    terrain
+           Size:       200x200
+           Dimensions: x_cc,y_cc
+           Datatype:   single
+           Attributes:
+                       units     = 'm'
+                       long_name = 'terrain height'
+    e      
+           Size:       200x200x201
+           Dimensions: x_cc,y_cc,z_cc
+           Datatype:   single
            Attributes:
                        units     = '--'
-                       long_name = 'icell flag value'
+                       long_name = 'e cut-cell coefficient'
+    f      
+           Size:       200x200x201
+           Dimensions: x_cc,y_cc,z_cc
+           Datatype:   single
+           Attributes:
+                       units     = '--'
+                       long_name = 'f cut-cell coefficient'
+    g      
+           Size:       200x200x201
+           Dimensions: x_cc,y_cc,z_cc
+           Datatype:   single
+           Attributes:
+                       units     = '--'
+                       long_name = 'g cut-cell coefficient'
+    h      
+           Size:       200x200x201
+           Dimensions: x_cc,y_cc,z_cc
+           Datatype:   single
+           Attributes:
+                       units     = '--'
+                       long_name = 'h cut-cell coefficient'
+    m      
+           Size:       200x200x201
+           Dimensions: x_cc,y_cc,z_cc
+           Datatype:   single
+           Attributes:
+                       units     = '--'
+                       long_name = 'm cut-cell coefficient'
+    n      
+           Size:       200x200x201
+           Dimensions: x_cc,y_cc,z_cc
+           Datatype:   single
+           Attributes:
+                       units     = '--'
+                       long_name = 'n cut-cell coefficient'

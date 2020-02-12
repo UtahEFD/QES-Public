@@ -58,11 +58,13 @@ int SourceFullDomain::emitParticles( const float dt,
             particle cPar;
 
             // generate uniform dist in domain
-            cPar.xPos = uniformDistr(prng)*(xDomainEnd-xDomainStart) + xDomainStart;
-            cPar.yPos = uniformDistr(prng)*(yDomainEnd-yDomainStart) + yDomainStart;
-            cPar.zPos = uniformDistr(prng)*(zDomainEnd-zDomainStart) + zDomainStart;
+            cPar.xPos_init = uniformDistr(prng)*(xDomainEnd-xDomainStart) + xDomainStart;
+            cPar.yPos_init = uniformDistr(prng)*(yDomainEnd-yDomainStart) + yDomainStart;
+            cPar.zPos_init = uniformDistr(prng)*(zDomainEnd-zDomainStart) + zDomainStart;
 
             cPar.tStrt = currTime;
+
+            cPar.sourceIdx = sourceIdx;
             
             emittedParticles.push_back( cPar );
         }

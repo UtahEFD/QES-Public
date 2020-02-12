@@ -21,6 +21,7 @@
 #include "NetCDFInput.h"
 
 
+// LA are these needed here???
 using namespace netCDF;
 using namespace netCDF::exceptions;
 

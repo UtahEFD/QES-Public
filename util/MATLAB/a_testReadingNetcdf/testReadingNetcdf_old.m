@@ -24,9 +24,9 @@ cd(pathstr);
 workingDir = pwd;
 
 
-netcdfFile_urb_FlatTerrain = sprintf('%s/FlatTerrain_urb.nc',workingDir);
-netcdfFile_turb_FlatTerrain = sprintf('%s/FlatTerrain_turb.nc',workingDir);
-netcdfFile_plume_FlatTerrain = sprintf('%s/FlatTerrain_plume.nc',workingDir);
+netcdfFile_urb_FlatTerrain = sprintf('%s/FlatTerrain_urb_old.nc',workingDir);
+netcdfFile_turb_FlatTerrain = sprintf('%s/FlatTerrain_turb_old.nc',workingDir);
+netcdfFile_plume_FlatTerrain = sprintf('%s/FlatTerrain_plume_old.nc',workingDir);
 
 
 %% read urb netcdf file

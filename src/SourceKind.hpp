@@ -45,6 +45,11 @@ protected:
 public:
 
 
+    // this is the index of the source in the dispersion class overall list of sources
+    // this is used to set the source ID for a given particle, to know from which source each particle comes from
+    // !!! this will only be set correctly if a call to setSourceIdx() is done by the class that sets up a vector of this class.
+    int sourceIdx;
+
     // this is a description variable for determining the source shape. May or may not be used.
     // !!! this needs set by parseValues() in each source generated from input files.
     SourceShape m_sShape;
@@ -116,6 +121,16 @@ public:
     virtual void parseValues() = 0;
 
 
+    // this function is used for setting the sourceIdx variable of this class, and has to be called by the class that sets up a vector of this class.
+    // this is required since each source does NOT know which index it has in the list without information from outside the parsing classes
+    // !!! this needs called by the class that sets up a vector of this class, using the index of the source from the vector
+    // LA note: could set this value directly without a function call, but this makes it seem more deliberate
+    void setSourceIdx(const int& sourceIdx_val)
+    {
+        sourceIdx = sourceIdx_val;
+    }
+
+
     // this function is for checking the source metadata to make sure all particles will be released within the domain.
     // There is one source so far (SourceFullDomain) that actually uses this function to set a few metaData variables
     //  specific to that source as well as to do checks to make sure particles stay within the domain. This is not a problem
@@ -132,7 +147,8 @@ public:
     //  the idea is to determine whether the input time is within the time range particles should be released
     //  then the particle positions are set using the particles to release per time, geometry information, and
     //  distribution information.
-    // !!! only the particle positions and release time are set, other particle information needs set by whatever called this function 
+    // !!! only the particle initial positions, release time, and soureIdx are set for each particle, 
+    //  other particle information needs set by whatever called this function 
     //  right after the call to this function to make it work correctly.
     // Note that this is a pure virtual function - enforces that the derived class MUST define this function
     //  this is done by the = 0 at the end of the function

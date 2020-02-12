@@ -88,7 +88,7 @@ Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis,
 // LA note: in this whole section, the idea of having single value temporary storage instead of just referencing values
 //  directly from the dispersion class seems a bit strange, but it makes the code easier to read cause smaller variable names.
 //  Also, it is theoretically faster?
-void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<NetCDFOutputGeneric*> outputVec)
+void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lagrOutput)
 {
     std::cout << "[Plume] \t Advecting particles " << std::endl;
 
@@ -630,11 +630,10 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<Ne
         dis->isNotActiveCount = isNotActiveCount;
 
 
-        // FM -> EulerianFiles output
-        for(auto id_out=0;id_out<outputVec.size();id_out++)
-        {
-            outputVec.at(id_out)->save(times.at(tStep));
-        }
+        // netcdf output for a given timestep
+        // LA note: output frequency is probably controlled by variable inside the class itself, set at constructor time
+        lagrToEulOutput->save(times.at(tStep));
+        lagrOutput->save(times.at(tStep));
 
         
         // output the time, isRogueCount, and isNotActiveCount information for all simulations,
@@ -680,7 +679,6 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<Ne
     // LA note: the current time put in here is one past when the simulation time loop ends
     //  this is because the loop always calculates info for one time ahead of the loop time.
     writeSimInfoFile(dis,times.at(nTimes-1));
-    dis->outputVarInfo_text();
 
 }
 

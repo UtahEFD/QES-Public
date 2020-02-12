@@ -16,8 +16,9 @@
 #include "util/calcTime.h"
 
 
-#include "NetCDFOutputGeneric.h"
-#include "PlumeOutputEulerian.h"
+//#include "NetCDFOutputGeneric.h"
+#include "PlumeOutputLagrToEul.h"
+#include "PlumeOutputLagrangian.h"
 
 #include "PlumeInputData.hpp"
 #include "Urb.hpp"
@@ -26,6 +27,7 @@
 #include "Dispersion.h"
 
 
+// LA do we need these here???
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
@@ -59,7 +61,7 @@ class Plume {
         //  an array of boundary condition functions that are set at constructor time and accessed just by knowing the current
         //  and last particle indices of the Eulerian grid. Would also need another for loop for some of these reflective BCs
         //  to iterate until a distX has been completely travelled.
-        void run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<NetCDFOutputGeneric*> outputVec);
+        void run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lagrOutput);
 
 
     private:

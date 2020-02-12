@@ -63,11 +63,13 @@ int SourceLine::emitParticles( const float dt,
             double diffZ = posZ_1 - posZ_0;
 
             float t = drand48();
-            cPar.xPos = posX_0 + t * diffX;
-            cPar.yPos = posY_0 + t * diffY;
-            cPar.zPos = posZ_0 + t * diffZ;
+            cPar.xPos_init = posX_0 + t * diffX;
+            cPar.yPos_init = posY_0 + t * diffY;
+            cPar.zPos_init = posZ_0 + t * diffZ;
 
             cPar.tStrt = currTime;
+
+            cPar.sourceIdx = sourceIdx;
             
             emittedParticles.push_back( cPar );
         }

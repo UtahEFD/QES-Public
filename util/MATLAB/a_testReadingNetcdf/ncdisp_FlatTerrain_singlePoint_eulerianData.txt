@@ -1,0 +1,208 @@
+Source:
+           FlatTerrain_singlePoint_eulerianData.nc
+Format:
+           netcdf4
+Global Attributes:
+           _NCProperties = 'version=1|netcdflibversion=4.4.1|hdf5libversion=1.8.17'
+Dimensions:
+           t = 1     (UNLIMITED)
+           x = 200
+           y = 200
+           z = 200
+Variables:
+    t         
+           Size:       1x1
+           Dimensions: t
+           Datatype:   double
+           Attributes:
+                       units     = 's'
+                       long_name = 'time'
+    epps      
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 'm2 s-3'
+                       long_name = 'dissipation rate'
+    x         
+           Size:       200x1
+           Dimensions: x
+           Datatype:   double
+           Attributes:
+                       units     = 'm'
+                       long_name = 'x-distance'
+    y         
+           Size:       200x1
+           Dimensions: y
+           Datatype:   double
+           Attributes:
+                       units     = 'm'
+                       long_name = 'y-distance'
+    z         
+           Size:       200x1
+           Dimensions: z
+           Datatype:   double
+           Attributes:
+                       units     = 'm'
+                       long_name = 'z-distance'
+    u         
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-1'
+                       long_name = 'x-component mean velocity'
+    v         
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-1'
+                       long_name = 'y-component mean velocity'
+    w         
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-1'
+                       long_name = 'z-component mean velocity'
+    sig_x     
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm2 s-2'
+                       long_name = 'x-component variance'
+    sig_y     
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm2 s-2'
+                       long_name = 'y-component variance'
+    sig_z     
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm2 s-2'
+                       long_name = 'z-component variance'
+    tke       
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm2 s-2'
+                       long_name = 'turbulent kinetic energy'
+    txx       
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm2 s-2'
+                       long_name = 'uu-component of stress tensor'
+    txy       
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm2 s-2'
+                       long_name = 'uv-component of stress tensor'
+    txz       
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm2 s-2'
+                       long_name = 'uw-component of stress tensor'
+    tyy       
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm2 s-2'
+                       long_name = 'vv-component of stress tensor'
+    tyz       
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm2 s-2'
+                       long_name = 'vw-component of stress tensor'
+    dtxydy    
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-2'
+                       long_name = 'derivative of txy in the y direction'
+    dtxzdz    
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-2'
+                       long_name = 'derivative of txz in the z direction'
+    dtxydx    
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-2'
+                       long_name = 'derivative of txy in the x direction'
+    dtyydy    
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-2'
+                       long_name = 'derivative of tyy in the y direction'
+    dtyzdz    
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-2'
+                       long_name = 'derivative of tyz in the z direction'
+    dtxzdx    
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-2'
+                       long_name = 'derivative of txz in the x direction'
+    dtyzdy    
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-2'
+                       long_name = 'derivative of tyz in the y direction'
+    dtzzdz    
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-2'
+                       long_name = 'derivative of tzz in the z direction'
+    flux_div_x
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-2'
+                       long_name = 'momentum flux through the x-plane'
+    flux_div_y
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-2'
+                       long_name = 'momentum flux through the y-plane'
+    flux_div_z
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-2'
+                       long_name = 'momentum flux through the z-plane'

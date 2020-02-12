@@ -27,9 +27,11 @@
 
 #include "NetCDFOutputGeneric.h"
 #include "PlumeOutputEulerian.h"
+#include "PlumeOutputLagrToEul.h"
 #include "PlumeOutputLagrangian.h"
 
 
+// LA do these need to be here???
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
@@ -101,34 +103,26 @@ int main(int argc, char** argv)
     Turb* turb = new Turb(inputTurb, arguments.debug);
     
     // Create instance of Eulerian class
-    Eulerian* eul = new Eulerian(PID,urb,turb, arguments.outputEulData,arguments.outputFolder, arguments.debug);
+    Eulerian* eul = new Eulerian(PID,urb,turb, arguments.debug);
     
     // Create instance of Dispersion class
-    Dispersion* dis = new Dispersion(PID,urb,turb,eul, arguments.outputLagrData,arguments.outputFolder, arguments.debug);
+    Dispersion* dis = new Dispersion(PID,urb,turb,eul, arguments.debug);
     
 
-    // LA setup output filenames for the netcdf output
-    std::string outputEulerianFile = arguments.outputFolder + arguments.caseBaseName + "_conc.nc";
-    // LA note: comment this one out cause not sure how it is used yet. Pretty sure it isn't used yet
-    //std::string outputLagrangianFile = arguments.outputFolder + arguments.caseBaseName + "_particleInfo.nc";
-    std::string outputLagrangianFile = "";
+    // create output instance
+    PlumeOutputEulerian* eulOutput = new PlumeOutputEulerian(PID,urb,turb,eul,arguments.outputEulerianFile,arguments.doEulDataOutput);
+    PlumeOutputLagrToEul* lagrToEulOutput = new PlumeOutputLagrToEul(PID,dis,arguments.outputLagrToEulFile);
+    PlumeOutputLagrangian* lagrOutput = new PlumeOutputLagrangian(PID,dis,arguments.outputLagrangianFile,arguments.doLagrDataOutput);
 
-    // FM create output instance
-    std::vector<NetCDFOutputGeneric*> outputVec;
-    if( !(outputEulerianFile == "") )
-    {
-        outputVec.push_back(new PlumeOutputEulerian(dis,PID,outputEulerianFile));
-    }
-    if( !(outputLagrangianFile == "") )
-    {
-        outputVec.push_back(new PlumeOutputLagrangian(dis,PID,outputLagrangianFile));
-    }
+    // output Eulerian data. Use time zero
+    // Since boolean to output or not was already set at constructor time, will only actually do output if output is required
+    eulOutput->save(0.0);
     
     // Create instance of Plume model class
-    Plume* plume = new Plume(PID,urb,dis, arguments.outputSimInfoFile,arguments.outputFolder,arguments.caseBaseName, arguments.debug);
+    Plume* plume = new Plume(PID,urb,dis, arguments.doSimInfoFileOutput,arguments.outputFolder,arguments.caseBaseName, arguments.debug);
     
     // Run plume advection model
-    plume->run(urb,turb,eul,dis,outputVec);
+    plume->run(urb,turb,eul,dis,lagrToEulOutput,lagrOutput);
     
     // compute run time information and print the elapsed execution time
     std::cout<<"[CUDA-Plume] \t Finished."<<std::endl;

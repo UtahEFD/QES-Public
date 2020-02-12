@@ -25,8 +25,7 @@ class Eulerian{
         // constructor
         // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the Eulerian grid values,
         // then calculates the tau gradients which are then used to calculate the flux_div grid values.
-        Eulerian( PlumeInputData* PID,Urb* urb,Turb* turb,
-                  const bool& outputEulData_val,const std::string& outputFolder_val, const bool& debug_val);
+        Eulerian( PlumeInputData* PID,Urb* urb,Turb* turb, const bool& debug_val);
         
 
         // the Eulerian data held in this class is on the turb grid, so these are copies of the turb grid values
@@ -49,6 +48,26 @@ class Eulerian{
         double C_0;     // a copy of the turb grid information. This is used to separate out CoEps into its separate parts when doing debug output
 
 
+        // these are the gradients of many components of tau in many different direction. Tau is still kept inside Turb
+        // this is only the derivatives that matter for calculating the flux_div
+        // since this is just a temporary variable for calculating flux_div, it may be better to move this into the functions directly at some point
+        // units are probably m/s^2
+        // notice that tau is a symmetric tensor, so the flux div for each direction is taking a given x, y, or z face, 
+        //  then calculating the derivative of each stress on that face in the given direction of that stress.
+        //  because of symmetry, the storage names don't always show this, so the symmetrical names are given in comments to make it clearer.
+        std::vector<double> dtxxdx; // dtxxdx
+        std::vector<double> dtxydy; // dtxydy
+        std::vector<double> dtxzdz; // dtxzdz
+
+        std::vector<double> dtxydx; // dtyxdx
+        std::vector<double> dtyydy; // dtyydy
+        std::vector<double> dtyzdz; // dtyzdz
+
+        std::vector<double> dtxzdx; // dtzxdx
+        std::vector<double> dtyzdy; // dtzydy
+        std::vector<double> dtzzdz; // dtzzyz
+
+        
         // my description of the flux_div might need to be corrected
         std::vector<double> flux_div_x;     // this is like the derivative of the forces acting on the x face
         std::vector<double> flux_div_y;     // this is like the derivative of the forces acting on the y face
@@ -73,25 +92,6 @@ class Eulerian{
         int kp;     // this is the counter to the next cell in the z direction, is set to zero to cause calculations to work but not reference outside of arrays if nz = 1
 
 
-        // these are the gradients of many components of tau in many different direction. Tau is still kept inside Turb
-        // this is only the derivatives that matter for calculating the flux_div
-        // since this is just a temporary variable for calculating flux_div, it may be better to move this into the functions directly at some point
-        // units are probably m/s^2
-        // notice that tau is a symmetric tensor, so the flux div for each direction is taking a given x, y, or z face, 
-        //  then calculating the derivative of each stress on that face in the given direction of that stress.
-        //  because of symmetry, the storage names don't always show this, so the symmetrical names are given in comments to make it clearer.
-        std::vector<double> dtxxdx; // dtxxdx
-        std::vector<double> dtxydy; // dtxydy
-        std::vector<double> dtxzdz; // dtxzdz
-
-        std::vector<double> dtxydx; // dtyxdx
-        std::vector<double> dtyydy; // dtyydy
-        std::vector<double> dtyzdz; // dtyzdz
-
-        std::vector<double> dtxzdx; // dtzxdx
-        std::vector<double> dtyzdy; // dtzydy
-        std::vector<double> dtzzdz; // dtzzyz
-
         
         // these are for calculating the gradients more efficiently
         // LA future work: I keep wondering, since we never use the gradients again since they are just used to calculate flux_div, 
@@ -115,15 +115,10 @@ class Eulerian{
         void createFluxDiv();       // this function takes the TauGrads and turns them into a bunch simpler values to use
         
 
-        void outputVarInfo_text(Urb* urb, Turb* turb);
-
-
         // timer class useful for debugging and timing different operations
         calcTime timers;
 
         // copies of debug related information from the input arguments
-        bool outputEulData;
-        std::string outputFolder;
         bool debug;
     
 };
