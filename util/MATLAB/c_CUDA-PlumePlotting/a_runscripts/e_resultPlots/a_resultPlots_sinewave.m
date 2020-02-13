@@ -32,6 +32,7 @@ addpath(mainCodeDir,sharedFunctionsDir );
 
 
 %%% set the input file directory (codeInputDir) as well as the file base names
+caseBaseName = "sinewave";
 baseCodeInputDir = sprintf("%s/../../../../../testCases/Bailey/a_sinewave/c_plumeOutputs",workingDir);
 codeInputFolders = [
     
@@ -54,60 +55,9 @@ folderFileNames = [
     
     "sim_info.txt";      % 1
     
-    "urb_xCellGrid.txt";    % 2
-    "urb_yCellGrid.txt";    % 3
-    "urb_zCellGrid.txt";    % 4
-    
-    "eulerian_uMean.txt";       % 5
-    "eulerian_vMean.txt";       % 6
-    "eulerian_wMean.txt";       % 7
-    "eulerian_sigma2.txt";      % 8
-    "eulerian_epps.txt";        % 9
-    "eulerian_txx.txt";        % 10
-    "eulerian_txy.txt";        % 11
-    "eulerian_txz.txt";        % 12
-    "eulerian_tyy.txt";        % 13
-    "eulerian_tyz.txt";        % 14
-    "eulerian_tzz.txt";        % 15
-    
-    "eulerian_dtxxdx.txt";      % 16
-    "eulerian_dtxydx.txt";      % 17
-    "eulerian_dtxzdx.txt";      % 18
-    "eulerian_dtxydy.txt";      % 19
-    "eulerian_dtyydy.txt";      % 20
-    "eulerian_dtyzdy.txt";      % 21
-    "eulerian_dtxzdz.txt";      % 22
-    "eulerian_dtyzdz.txt";      % 23
-    "eulerian_dtzzdz.txt";      % 24
-    
-    "eulerian_flux_div_x.txt";      % 25
-    "eulerian_flux_div_y.txt";      % 26
-    "eulerian_flux_div_z.txt";      % 27
-    
-    
-    "particle_txx_old.txt";      % 28
-    "particle_txy_old.txt";      % 29
-    "particle_txz_old.txt";      % 30
-    "particle_tyy_old.txt";      % 31
-    "particle_tyz_old.txt";      % 32
-    "particle_tzz_old.txt";      % 33
-    "particle_uFluct_old.txt";      % 34
-    "particle_vFluct_old.txt";      % 35
-    "particle_wFluct_old.txt";      % 36
-    
-    
-    "particle_uFluct.txt";      % 37
-    "particle_vFluct.txt";      % 38
-    "particle_wFluct.txt";      % 39
-    "particle_delta_uFluct.txt";      % 40
-    "particle_delta_vFluct.txt";      % 41
-    "particle_delta_wFluct.txt";      % 42
-    
-    "particle_isActive.txt";      % 43
-    
-    "particle_xPos.txt";      % 44
-    "particle_yPos.txt";      % 45
-    "particle_zPos.txt";      % 46
+    sprintf("%s_eulerianData.nc",caseBaseName);    % 2
+    sprintf("%s_conc.nc",caseBaseName);            % 3
+    sprintf("%s_particleInfo.nc",caseBaseName);    % 4
     
     ];
 
@@ -127,7 +77,7 @@ plotOutputDir = sprintf("%s/../../../../../testCases/Bailey/a_sinewave/e_matlabP
 
 
 % now load in data
-[fileExists_array, saveBasename_array,  current_time_array,timestep_array,  C_0_array,nParticles_array,  xCellGrid_array,yCellGrid_array,zCellGrid_array,  uMean_data_array,vMean_data_array,wMean_data_array,sigma2_data_array,epps_data_array,txx_data_array,txy_data_array,txz_data_array,tyy_data_array,tyz_data_array,tzz_data_array,  dtxxdx_data_array,dtxydx_data_array,dtxzdx_data_array,dtxydy_data_array,dtyydy_data_array,dtyzdy_data_array,dtxzdz_data_array,dtyzdz_data_array,dtzzdz_data_array,  flux_div_x_data_array,flux_div_y_data_array,flux_div_z_data_array,  txx_old_array,txy_old_array,txz_old_array,tyy_old_array,tyz_old_array,tzz_old_array,uFluct_old_array,vFluct_old_array,wFluct_old_array,  uFluct_array,vFluct_array,wFluct_array,delta_uFluct_array,delta_vFluct_array,delta_wFluct_array,  rogueCount_array,isActive_array,  xPos_array,yPos_array,zPos_array] = loadCodeOutput(codeInputFiles);
+[fileExists_array, saveBasename_array,  current_time_array,timestep_array,  C_0_array,nParticles_array,  xCellGrid_array,yCellGrid_array,zCellGrid_array,  uMean_data_array,vMean_data_array,wMean_data_array,sigma2_data_array,epps_data_array,txx_data_array,txy_data_array,txz_data_array,tyy_data_array,tyz_data_array,tzz_data_array,  dtxxdx_data_array,dtxydx_data_array,dtxzdx_data_array,dtxydy_data_array,dtyydy_data_array,dtyzdy_data_array,dtxzdz_data_array,dtyzdz_data_array,dtzzdz_data_array,  flux_div_x_data_array,flux_div_y_data_array,flux_div_z_data_array,  uFluct_array,vFluct_array,wFluct_array,delta_uFluct_array,delta_vFluct_array,delta_wFluct_array,  rogueCount_array,isActive_array,  xPos_array,yPos_array,zPos_array] = loadCodeOutput(codeInputFiles);
 
 % take the saveBasename_array and create the plotBasename_array
 [plotBasename_array] = saveToPlotBasename(fileExists_array,saveBasename_array);

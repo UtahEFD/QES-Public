@@ -1,4 +1,4 @@
-function [simVarsExist,  saveBasename,  C_0,timestep,  current_time,rogueCount,  x_nCells,y_nCells,z_nCells,nParticles] = readSimInfoFile(simInfoFile)
+function [simVarsExist,  saveBasename,  C_0,timestep,  current_time,rogueCount] = readSimInfoFile(simInfoFile)
     
     %%% needed to turn this into a function because the files aren't always
     %%% guaranteed to be the exact same every time
@@ -22,11 +22,6 @@ function [simVarsExist,  saveBasename,  C_0,timestep,  current_time,rogueCount, 
         
         current_time = NaN;
         rogueCount = NaN;
-        
-        x_nCells = NaN;
-        y_nCells = NaN;
-        z_nCells = NaN;
-        nParticles = NaN;
         
         return;
     end
@@ -87,24 +82,6 @@ function [simVarsExist,  saveBasename,  C_0,timestep,  current_time,rogueCount, 
     end
     
     
-    x_nCells = findVar("x_nCells", varNames,varValues,nLines);
-    if ~isstring(x_nCells)
-        error("!!! readSimInfoFile error !!! Nx variable not found in input simInfoFile!");
-    end
-    y_nCells = findVar("y_nCells", varNames,varValues,nLines);
-    if ~isstring(y_nCells)
-        error("!!! readSimInfoFile error !!! Ny variable not found in input simInfoFile!");
-    end
-    z_nCells = findVar("z_nCells", varNames,varValues,nLines);
-    if ~isstring(z_nCells)
-        error("!!! readSimInfoFile error !!! Nz variable not found in input simInfoFile!");
-    end
-    nParticles = findVar("nParticles", varNames,varValues,nLines);
-    if ~isstring(nParticles)
-        error("!!! readSimInfoFile error !!! nParticles variable not found in input simInfoFile!");
-    end
-    
-    
     %%% now need to overwrite the variable values that are not supposed to
     %%% be strings, with their converted values
     
@@ -112,12 +89,7 @@ function [simVarsExist,  saveBasename,  C_0,timestep,  current_time,rogueCount, 
     timestep = str2double(timestep);
     
     current_time = str2double(current_time);
-    rogueCount = str2double(rogueCount); 
-    
-    x_nCells = str2double(x_nCells);
-    y_nCells = str2double(y_nCells);
-    z_nCells = str2double(z_nCells);
-    nParticles = str2double(nParticles);
+    rogueCount = str2double(rogueCount);
     
 end
 
