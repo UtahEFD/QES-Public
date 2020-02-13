@@ -43,5 +43,5 @@ Variables:
            Dimensions: x,y,z,t
            Datatype:   single
            Attributes:
-                       units     = '# m-3'
+                       units     = '#ofPar m-3'
                        long_name = 'concentration'

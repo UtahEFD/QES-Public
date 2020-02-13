@@ -129,6 +129,20 @@ Variables:
            Attributes:
                        units     = 'm2 s-2'
                        long_name = 'vw-component of stress tensor'
+    tzz       
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm2 s-2'
+                       long_name = 'ww-component of stress tensor'
+    dtxxdx    
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-2'
+                       long_name = 'derivative of txx in the x direction'
     dtxydy    
            Size:       200x200x200x1
            Dimensions: x,y,z,t

@@ -117,7 +117,7 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,Dispersion* dis,s
     dim_vect_3d.push_back(NcDim_y);
     dim_vect_3d.push_back(NcDim_x);
     // create attributes
-    createAttVector("conc","concentration","# m-3",dim_vect_3d,&conc);
+    createAttVector("conc","concentration","#ofPar m-3",dim_vect_3d,&conc);
 
     // create output fields
     addOutputFields();

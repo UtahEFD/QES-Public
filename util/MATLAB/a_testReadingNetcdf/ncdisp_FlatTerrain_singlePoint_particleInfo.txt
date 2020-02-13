@@ -21,7 +21,7 @@ Variables:
            Datatype:   int32
            Attributes:
                        units     = '--'
-                       long_name = 'Paricle ID'
+                       long_name = 'particle ID'
     sourceIdx   
            Size:       100000x100
            Dimensions: parID,t
@@ -120,6 +120,13 @@ Variables:
            Attributes:
                        units     = 'm s-1'
                        long_name = 'uFluct-difference'
+    delta_vFluct
+           Size:       100000x100
+           Dimensions: parID,t
+           Datatype:   single
+           Attributes:
+                       units     = 'm s-1'
+                       long_name = 'vFluct-difference'
     delta_wFluct
            Size:       100000x100
            Dimensions: parID,t

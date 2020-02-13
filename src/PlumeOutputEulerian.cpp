@@ -76,7 +76,7 @@ PlumeOutputEulerian::PlumeOutputEulerian(PlumeInputData* PID,Urb* urb_ptr,Turb* 
     output_fields = {   "t","x","y","z",
                         "u","v","w",
                         "sig_x","sig_y","sig_z","epps","tke",
-                        "txx","txy","txz","tyy","tyz","tzz"
+                        "txx","txy","txz","tyy","tyz","tzz",
                         "dtxxdx","dtxydy","dtxzdz",
                         "dtxydx","dtyydy","dtyzdz",
                         "dtxzdx","dtyzdy","dtzzdz",

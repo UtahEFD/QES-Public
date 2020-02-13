@@ -96,13 +96,13 @@ class Turb {
         std::vector<double>CoEps;       // this is a single value at the same locations as the sig, tau, and lam. It represents Co*Eps
                                         // where Co is a universal constant and Eps is the mean dissipation rate of turbulent kinetic energy
                                         // because Co is a constant, and the two always go together, Co*Eps is treated as a single value
-                                        // units are m^2/s^3? Need to double check this one and all the other units as well
+                                        // units are probably m^2/s^3
 
         std::vector<double>tke;         // this is the turbulent kinetic energy, not to be mixed up with Eps. The tke is estimated using tau,
                                         // then Eps is estimated from the tke, Co, and ustar (the friction velocity). CoEps is the Eps derived using
                                         // these things, but then multiplied by another Co. Not sure if this is mean tke or subfilter tke,
                                         // or just the straight up tke. It isn't really used in Bailey's code, though it potentially could be used in makeRealizable
-                                        // units are ?
+                                        // units are probably m^2/s^2
 };
 
 #endif

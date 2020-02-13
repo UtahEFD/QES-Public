@@ -89,7 +89,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis
     // setup desired output fields string
     // FM future work: can be added in fileOptions at some point
     output_fields = {   "t","parID","xPos_init","yPos_init","zPos_init","tStrt","sourceIdx", 
-                        "xPos","yPos","zPos","uFluct","vFluct","wFluct","delta_uFluct","delta_wFluct",
+                        "xPos","yPos","zPos","uFluct","vFluct","wFluct","delta_uFluct","delta_vFluct","delta_wFluct",
                         "isRogue","isActive"};
 
 
@@ -107,10 +107,12 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis
     // create attributes space dimensions
     std::vector<NcDim> dim_vect_par;
     dim_vect_par.push_back(NcDim_par);
-    createAttVector("parID","Paricle ID","--",dim_vect_par,&parID);
+    createAttVector("parID","particle ID","--",dim_vect_par,&parID);
 
 
     // create 2D vector and put in the dimensions (time,par).
+    // !!! make sure the order is specificall nt,nPar in this spot,
+    //  the order doesn't seem to matter for other spots
     std::vector<NcDim> dim_vect_2d;
     dim_vect_2d.push_back(NcDim_t);
     dim_vect_2d.push_back(NcDim_par);
