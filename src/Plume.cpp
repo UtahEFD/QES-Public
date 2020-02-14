@@ -224,6 +224,11 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                 double yPos = dis->pointList.at(par).yPos;
                 double zPos = dis->pointList.at(par).zPos;
 
+                // getting the initial position, for use in setting finished particles
+                double xPos_init = dis->pointList.at(par).xPos_init;
+                double yPos_init = dis->pointList.at(par).yPos_init;
+                double zPos_init = dis->pointList.at(par).zPos_init;
+
                 // grab the velFluct values.
                 // LA notes: hmm, Bailey's code just starts out setting these values to zero,
                 //  so the velFluct values are actually the old velFluct, that will be overwritten during the solver.
@@ -552,7 +557,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                 
 
                 // now set the particle values for if they are rogue or outside the domain
-                setFinishedParticleVals(xPos,yPos,zPos, isActive,isRogue);
+                setFinishedParticleVals(xPos,yPos,zPos, isActive,isRogue, xPos_init,yPos_init,zPos_init);
 
                 
                 // LA-note: at one time I thought it would be useful to time the boundary condition calculations
@@ -1006,13 +1011,14 @@ void Plume::enforceWallBCs_reflection(double& pos,double& velFluct,double& velFl
 
 
 void Plume::setFinishedParticleVals(double& xPos,double& yPos,double& zPos,
-				    const bool& isActive,const bool& isRogue)
+				                    const bool& isActive,const bool& isRogue,
+                                    const double& xPos_init, const double& yPos_init, const double& zPos_init)
 {
     if(isActive == false || isRogue == true)
     {
-        xPos = -999.0;
-        yPos = -999.0;
-        zPos = -999.0;
+        xPos = xPos_init;
+        yPos = yPos_init;
+        zPos = zPos_init;
     }
 }
 
@@ -1050,14 +1056,10 @@ void Plume::writeSimInfoFile(Dispersion* dis, const double& current_time)
     fprintf(fzout,"\n");    // a purposeful blank line
     fprintf(fzout,"current_time     = %lf\n",current_time);
     fprintf(fzout,"rogueCount       = %0.0lf\n",dis->isRogueCount);
-    fprintf(fzout,"isActiveCount    = %0.0lf\n",dis->isNotActiveCount);
-    fprintf(fzout,"\n");    // a purposeful blank line
-    fprintf(fzout,"x_nCells         = %d\n",nx);
-    fprintf(fzout,"y_nCells         = %d\n",ny);
-    fprintf(fzout,"z_nCells         = %d\n",nz);
-    fprintf(fzout,"nParticles       = %d\n",dis->pointList.size());
+    fprintf(fzout,"isNotActiveCount = %0.0lf\n",dis->isNotActiveCount);
     fprintf(fzout,"\n");    // a purposeful blank line
     fprintf(fzout,"invarianceTol    = %lf\n",invarianceTol);
+    fprintf(fzout,"velThreshold     = %lf\n",dis->vel_threshold);
     fprintf(fzout,"\n");    // a purposeful blank line
     fclose(fzout);
 

@@ -1,4 +1,4 @@
-function [simVarsExist,  saveBasename,  C_0,timestep,  current_time,rogueCount] = readSimInfoFile(simInfoFile)
+function [simVarsExist,  saveBasename,  C_0,timestep,  current_time,rogueCount,isNotActiveCount,  invarianceTol,velThreshold] = readSimInfoFile(simInfoFile)
     
     %%% needed to turn this into a function because the files aren't always
     %%% guaranteed to be the exact same every time
@@ -22,6 +22,10 @@ function [simVarsExist,  saveBasename,  C_0,timestep,  current_time,rogueCount] 
         
         current_time = NaN;
         rogueCount = NaN;
+        isNotActiveCount = NaN;
+    
+        invarianceTol = NaN;
+        velThreshold = NaN;
         
         return;
     end
@@ -80,6 +84,19 @@ function [simVarsExist,  saveBasename,  C_0,timestep,  current_time,rogueCount] 
     if ~isstring(rogueCount)
         error("!!! readSimInfoFile error !!! rogueCount variable not found in input simInfoFile!");
     end
+    isNotActiveCount = findVar("isNotActiveCount", varNames,varValues,nLines);
+    if ~isstring(isNotActiveCount)
+        error("!!! readSimInfoFile error !!! isNotActiveCount variable not found in input simInfoFile!");
+    end
+    
+    invarianceTol = findVar("invarianceTol", varNames,varValues,nLines);
+    if ~isstring(invarianceTol)
+        error("!!! readSimInfoFile error !!! invarianceTol variable not found in input simInfoFile!");
+    end
+    velThreshold = findVar("velThreshold", varNames,varValues,nLines);
+    if ~isstring(velThreshold)
+        error("!!! readSimInfoFile error !!! velThreshold variable not found in input simInfoFile!");
+    end
     
     
     %%% now need to overwrite the variable values that are not supposed to
@@ -90,6 +107,10 @@ function [simVarsExist,  saveBasename,  C_0,timestep,  current_time,rogueCount] 
     
     current_time = str2double(current_time);
     rogueCount = str2double(rogueCount);
+    isNotActiveCount = str2double(isNotActiveCount);
+    
+    invarianceTol = str2double(invarianceTol);
+    velThreshold = str2double(velThreshold);
     
 end
 

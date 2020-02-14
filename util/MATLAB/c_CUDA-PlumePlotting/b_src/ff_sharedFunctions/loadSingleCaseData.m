@@ -1,4 +1,4 @@
-function [doesSimExist,     saveBasename, C_0,timestep, current_time,rogueCount,    urb_times,urb_x,urb_y,urb_z, urb_u,urb_v,urb_w,turb_sig_x,turb_sig_y,turb_sig_z,turb_txx,turb_txy,turb_txz,turb_tyy,turb_tyz,turb_tzz,turb_epps,turb_tke,eul_dtxxdx,eul_dtxydy,eul_dtxzdz,eul_dtxydx,eul_dtyydy,eul_dtyzdz,eul_dtxzdx,eul_dtyzdy,eul_dtzzdz,eul_flux_div_x,eul_flux_div_y,eul_flux_div_z,   lagrToEul_times,lagrToEul_x,lagrToEul_y,lagrToEul_z, lagrToEul_conc,    lagr_times,lagr_parID,  lagr_xPos_init,lagr_yPos_init,lagr_zPos_init,lagr_tStrt,lagr_sourceIdx,  lagr_xPos,lagr_yPos,lagr_zPos,lagr_uFluct,lagr_vFluct,lagr_wFluct,lagr_delta_uFluct,lagr_delta_vFluct,lagr_delta_wFluct,lagr_isRogue,lagr_isActive] = loadSingleCaseData(codeInputDir,folderFileNames)
+function [doesSimExist,     saveBasename, C_0,timestep, current_time,rogueCount,isNotActiveCount, invarianceTol,velThreshold,    urb_times,urb_x,urb_y,urb_z, urb_u,urb_v,urb_w,turb_sig_x,turb_sig_y,turb_sig_z,turb_txx,turb_txy,turb_txz,turb_tyy,turb_tyz,turb_tzz,turb_epps,turb_tke,eul_dtxxdx,eul_dtxydy,eul_dtxzdz,eul_dtxydx,eul_dtyydy,eul_dtyzdz,eul_dtxzdx,eul_dtyzdy,eul_dtzzdz,eul_flux_div_x,eul_flux_div_y,eul_flux_div_z,   lagrToEul_times,lagrToEul_x,lagrToEul_y,lagrToEul_z, lagrToEul_conc,    lagr_times,lagr_parID,  lagr_xPos_init,lagr_yPos_init,lagr_zPos_init,lagr_tStrt,lagr_sourceIdx,  lagr_xPos,lagr_yPos,lagr_zPos,lagr_uFluct,lagr_vFluct,lagr_wFluct,lagr_delta_uFluct,lagr_delta_vFluct,lagr_delta_wFluct,lagr_isRogue,lagr_isActive] = loadSingleCaseData(codeInputDir,folderFileNames)
 
     
 
@@ -58,6 +58,10 @@ function [doesSimExist,     saveBasename, C_0,timestep, current_time,rogueCount,
 
     current_time = NaN;
     rogueCount = NaN;
+    isNotActiveCount = NaN;
+    
+    invarianceTol = NaN;
+    velThreshold = NaN;
 
     
     
@@ -130,7 +134,7 @@ function [doesSimExist,     saveBasename, C_0,timestep, current_time,rogueCount,
 
     % now read in the required information from the simInfoFile
     simInfoFile = sprintf("%s/%s",codeInputDir,folderFileNames(1));
-    [simVarsExist,  saveBasename,  C_0,timestep,  current_time,rogueCount] = readSimInfoFile(simInfoFile);
+    [simVarsExist,  saveBasename,  C_0,timestep,  current_time,rogueCount,isNotActiveCount,  invarianceTol,velThreshold] = readSimInfoFile(simInfoFile);
     % verify the sim info exists
     if simVarsExist == false
         doesSimExist = false;
