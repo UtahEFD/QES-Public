@@ -66,8 +66,8 @@ WRFInput::WRFInput(const std::string& filename)
     // Fire Mesh Terrain Nodes
     //
     int fm_nt = wrfInputFile.getVar("FXLONG").getDim(0).getSize();
-    int fm_ny = wrfInputFile.getVar("FXLONG").getDim(1).getSize();
-    int fm_nx = wrfInputFile.getVar("FXLONG").getDim(2).getSize();
+    fm_ny = wrfInputFile.getVar("FXLONG").getDim(1).getSize();
+    fm_nx = wrfInputFile.getVar("FXLONG").getDim(2).getSize();
 
     std::vector<size_t> startIdx = {0,0,0,0};
     std::vector<size_t> counts = {1,
@@ -79,7 +79,7 @@ WRFInput::WRFInput(const std::string& filename)
     wrfInputFile.getVar("FXLONG").getVar(startIdx, counts, fxlong.data());
     wrfInputFile.getVar("FXLAT").getVar(startIdx, counts, fxlat.data());
     
-    std::vector<double> fmHeight( fm_nx * fm_ny );
+    fmHeight.resize( fm_nx * fm_ny );
     wrfInputFile.getVar("ZSF").getVar(startIdx, counts, fmHeight.data());
 
     int sizeHGT_x = wrfInputFile.getVar("HGT").getDim(2).getSize();

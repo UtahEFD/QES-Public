@@ -25,6 +25,9 @@ public:
 
   DTEHeightField();
   DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN);
+
+    DTEHeightField(const std::vector<double> &heightField, int dimX, int dimY, double cellSizeXN, double cellSizeYN);
+    
   ~DTEHeightField();
 
   std::vector<Triangle*> getTris() const {return m_triList;}

@@ -161,6 +161,8 @@ public:
      */
     void setWRFDataPoint();
     
+    int fm_nx, fm_ny;
+    std::vector<double> fmHeight;
 
 private:
 

@@ -128,6 +128,23 @@ public:
             std::cout << "Processing WRF data for terrain and met param sensors from " << wrfFile << std::endl;
             wrfInputData = new WRFInput( wrfFile );
             std::cout << "WRF Input Data processing completed." << std::endl;
+
+            // In the current setup, grid may NOT be set... be careful
+            // may need to initialize it here if nullptr is true for grid
+
+            // utilize the wrf information to construct a
+            // DTE_heightfield
+            std::cout << "Constructing DTE from WRF Input" << std::endl;
+            DTE_heightField = new DTEHeightField(wrfInputData->fmHeight,
+                                                 wrfInputData->fm_nx,
+                                                 wrfInputData->fm_ny,
+                                                 (*(grid))[0],
+                                                 (*(grid))[1]);
+
+            // domain = new Vector3<int>( wrfInputData->fm_nx, wrfInputData->fm_nx, 100 );
+            DTE_heightField->setDomain(domain, grid);
+            DTE_mesh = new Mesh(DTE_heightField->getTris());
+            std::cout << "Mesh complete\n";
         }
         
         // For now wrf and dem are exclusive 
