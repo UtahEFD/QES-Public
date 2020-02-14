@@ -109,17 +109,32 @@ int main(int argc, char** argv)
     Dispersion* dis = new Dispersion(PID,urb,turb,eul, arguments.debug);
     
 
+
     // create output instance
-    PlumeOutputEulerian* eulOutput = new PlumeOutputEulerian(PID,urb,turb,eul,arguments.outputEulerianFile,arguments.doEulDataOutput);
-    PlumeOutputLagrToEul* lagrToEulOutput = new PlumeOutputLagrToEul(PID,dis,arguments.outputLagrToEulFile);
-    PlumeOutputLagrangian* lagrOutput = new PlumeOutputLagrangian(PID,dis,arguments.outputLagrangianFile,arguments.doLagrDataOutput);
+    // LA note: start it out as NULL, then make it point to what we want later if the file is supposed to exist
+    PlumeOutputEulerian* eulOutput = NULL;
+    PlumeOutputLagrToEul* lagrToEulOutput = NULL;
+    PlumeOutputLagrangian* lagrOutput = NULL;
+    if( arguments.doEulDataOutput == true )
+    {
+        eulOutput = new PlumeOutputEulerian(PID,urb,turb,eul,arguments.outputEulerianFile);
+    }
+    // always supposed to output lagrToEulOutput data
+    lagrToEulOutput = new PlumeOutputLagrToEul(PID,dis,arguments.outputLagrToEulFile);
+    if( arguments.doLagrDataOutput == true )
+    {
+        lagrOutput = new PlumeOutputLagrangian(PID,dis,arguments.outputLagrangianFile);
+    }
 
     // output Eulerian data. Use time zero
-    // Since boolean to output or not was already set at constructor time, will only actually do output if output is required
-    eulOutput->save(0.0);
+    if( arguments.doEulDataOutput == true )
+    {
+        eulOutput->save(0.0);
+    }
+
     
     // Create instance of Plume model class
-    Plume* plume = new Plume(PID,urb,dis, arguments.doSimInfoFileOutput,arguments.outputFolder,arguments.caseBaseName, arguments.debug);
+    Plume* plume = new Plume(PID,urb,dis, arguments.doLagrDataOutput, arguments.doSimInfoFileOutput,arguments.outputFolder,arguments.caseBaseName, arguments.debug);
     
     // Run plume advection model
     plume->run(urb,turb,eul,dis,lagrToEulOutput,lagrOutput);

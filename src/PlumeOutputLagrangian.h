@@ -34,7 +34,7 @@ class PlumeOutputLagrangian : public NetCDFOutputGeneric
         }
 
         // specialized constructor
-        PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis_ptr,std::string output_file,bool doFileOutput_val);
+        PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis_ptr,std::string output_file);
 
         // deconstructor
         ~PlumeOutputLagrangian()	       

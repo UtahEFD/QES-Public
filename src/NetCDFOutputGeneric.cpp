@@ -2,8 +2,8 @@
 #include "NetCDFOutputGeneric.h"
 
 
-NetCDFOutputGeneric::NetCDFOutputGeneric(std::string output_file,bool doFileOutput_val) 
-  : NetCDFOutput(output_file,doFileOutput_val)
+NetCDFOutputGeneric::NetCDFOutputGeneric(std::string output_file) 
+  : NetCDFOutput(output_file)
 {
 };
 

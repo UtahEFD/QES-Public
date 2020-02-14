@@ -35,7 +35,7 @@ class PlumeOutputEulerian : public NetCDFOutputGeneric
         }
 
         // specialized constructor
-        PlumeOutputEulerian(PlumeInputData* PID,Urb* urb_ptr,Turb* turb_ptr,Eulerian* eul_ptr,std::string output_file,bool doFileOutput_val);
+        PlumeOutputEulerian(PlumeInputData* PID,Urb* urb_ptr,Turb* turb_ptr,Eulerian* eul_ptr,std::string output_file);
 
         // deconstructor
         ~PlumeOutputEulerian()

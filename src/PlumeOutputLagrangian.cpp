@@ -14,16 +14,9 @@
 
 
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
-PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis_ptr,std::string output_file,bool doFileOutput_val)
-  : NetCDFOutputGeneric(output_file,doFileOutput_val)
+PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis_ptr,std::string output_file)
+  : NetCDFOutputGeneric(output_file)
 {
-
-    // return not doing anything if this file is not desired
-    // in essence acting like an empty constructor
-    if( doFileOutput == false )
-    {
-        return;
-    }
 
     std::cout << "[PlumeOutputLagrangian] set up NetCDF file "<< output_file << std::endl;
 
@@ -145,13 +138,6 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis
 
 void PlumeOutputLagrangian::save(float currentTime)
 {
-
-    // return not doing anything if this file is not desired
-    // in essence acting like this is an empty function
-    if( doFileOutput == false )
-    {
-        return;
-    }
 
     if( currentTime >= nextOutputTime && currentTime <= outputEndTime )
     {

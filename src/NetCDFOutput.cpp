@@ -6,19 +6,8 @@ using namespace netCDF;
 using namespace netCDF::exceptions;
 
 // constructor, linked to NetCDF file, replace mode only
-NetCDFOutput :: NetCDFOutput(std::string output_file,bool doFileOutput_val) {
+NetCDFOutput :: NetCDFOutput(std::string output_file) {
 
-    // first set the doFileOutput variable since it would be used by everything
-    // even if a file is not created
-    doFileOutput = doFileOutput_val;
-
-    // return not doing anything if this file is not desired
-    // in essence acting like an empty constructor
-    if( doFileOutput == false )
-    {
-        return;
-    }
-    
     outfile = new NcFile(output_file, NcFile::replace);
 }
 

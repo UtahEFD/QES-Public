@@ -17,7 +17,7 @@
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
 // in this case, output should always be done, so the bool for whether to do output is set to true
 PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,Dispersion* dis,std::string output_file)
-  : NetCDFOutputGeneric(output_file,true)
+  : NetCDFOutputGeneric(output_file)
 {
 
     std::cout << "[PlumeOutputLagrToEul] set up NetCDF file " << output_file << std::endl;

@@ -6,7 +6,7 @@
 
 #include "Plume.hpp"
 
-Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis,
+Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, const bool& doLagrDataOutput_val,
               const bool& outputSimInfoFile_val,const std::string& outputFolder_val,const std::string& caseBaseName_val, const bool& debug_val)
 {
     
@@ -14,6 +14,7 @@ Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis,
     
 
     // copy debug information
+    doLagrDataOutput = doLagrDataOutput_val;
     outputSimInfoFile = outputSimInfoFile_val;
     outputFolder = outputFolder_val;
     caseBaseName = caseBaseName_val;
@@ -638,7 +639,10 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
         // netcdf output for a given timestep
         // LA note: output frequency is probably controlled by variable inside the class itself, set at constructor time
         lagrToEulOutput->save(times.at(tStep));
-        lagrOutput->save(times.at(tStep));
+        if( doLagrDataOutput == true )
+        {
+            lagrOutput->save(times.at(tStep));
+        }
 
         
         // output the time, isRogueCount, and isNotActiveCount information for all simulations,

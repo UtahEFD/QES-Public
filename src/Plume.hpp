@@ -41,7 +41,7 @@ class Plume {
         // then sets up the concentration sampling box information for output
         // next copies important input time values and calculates needed time information 
         // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
-        Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis,
+        Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, const bool& doLagrDataOutput_val,
                const bool& outputSimInfoFile_val,const std::string& outputFolder_val,const std::string& caseBaseName_val, const bool& debug_val);
 
 
@@ -107,6 +107,7 @@ class Plume {
         calcTime timers;
 
         // copies of debug related information from the input arguments
+        bool doLagrDataOutput;
         bool outputSimInfoFile;
         std::string outputFolder;
         std::string caseBaseName;
