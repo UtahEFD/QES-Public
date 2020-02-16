@@ -70,7 +70,7 @@ ENDIF(${GDAL_FOUND})
 SET(CUDA_SEPARABLE_COMPILATION ON)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall --std=c++11")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;" )
+#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;" )
 
 FIND_PACKAGE(CUDA REQUIRED)
 
@@ -82,6 +82,45 @@ IF(CUDA_FOUND)
 ELSE (CUDA_FOUND)
   MESSAGE(FATAL_ERROR "CUDA is required for compiling this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories.")
 ENDIF(CUDA_FOUND)
+
+
+#
+#NVIDIA OptiX
+#
+
+#use fast math option is required for OptiX
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;--use_fast_math")
+
+FIND_PACKAGE(OptiX REQUIRED)
+
+include_directories(
+  "${OptiX_INCLUDE}"
+  )
+
+function(OPTIX_add_library target_name)
+  source_group("PTX Files" REGULAR_EXPRESSION ".+\\.ptx$")
+  source_group("CUDA Files" REGULAR_EXPRESSION ".+\\.cu$")
+
+  CUDA_GET_SOURCES_AND_OPTIONS(source_files cmake_options options ${ARGN})
+
+  CUDA_WRAP_SRCS(${target_name}
+    PTX generated_files ${source_files} ${cmake_options}
+    OPTIONS ${options}
+    )
+
+  add_library(${target_name}
+    ${source_files}
+    ${generated_files}
+    ${cmake_options}
+    )
+
+  target_link_libraries(
+    optix
+    ${optix_rpath}
+    )
+  
+endfunction()
+
 
 #
 # Find doxygen so we can add a target for building
