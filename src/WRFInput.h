@@ -162,7 +162,11 @@ public:
     void setWRFDataPoint();
     
     int fm_nx, fm_ny;
+    double fm_dx, fm_dy;
     std::vector<double> fmHeight;
+
+    int atm_nx, atm_ny;
+    double atm_dx, atm_dy;
 
     std::vector< stationData > statData;
 

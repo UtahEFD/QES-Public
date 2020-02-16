@@ -96,6 +96,8 @@ WRFInput::WRFInput(const std::string& filename)
 
     std::cout << "WRF Fire Mesh Domain is " << fm_nx << " X " << fm_ny << std::endl;
     std::cout << "WRF Fire Mesh Resolution (dx, dy) is (" << dxf << ", " << dyf << ")" << std::endl;
+    fm_dx = dxf;
+    fm_dx = dyf;    
     
     double minHt = std::numeric_limits<double>::max(),
         maxHt = std::numeric_limits<double>::min();
@@ -302,17 +304,21 @@ WRFInput::WRFInput(const std::string& filename)
     int nx_atm = xDim[1];
     int ny_atm = yDim[1];    
 
+    // current class variables -- clean all this up soon
+    atm_nx = nx_atm;
+    atm_ny = ny_atm;
+
     int srx = int(nx/(nx_atm+1));
     int sry = int(ny/(ny_atm+1));
     
     int nx_fire = nx - srx;
     int ny_fire = ny - sry;
     
-    float dx_atm = cellSize[0];
-    float dy_atm = cellSize[1];
+    float atm_dx = cellSize[0];
+    float atm_dy = cellSize[1];
 
-    float dx_fire = dx_atm/(float)srx;
-    float dy_fire = dy_atm/(float)sry;
+    float dx_fire = atm_dx/(float)srx;
+    float dy_fire = atm_dy/(float)sry;
     
     double t_x0_fire = -nx_fire / 2. * dx_fire + lon2eastings[0];
     double t_y1_fire = (ny_fire / 2. + sry) * dy_fire + lat2northings[0];
@@ -324,9 +330,9 @@ WRFInput::WRFInput(const std::string& filename)
     
     
 
-    // nx_atm / 2. * dx_atm + e
+    // nx_atm / 2. * atm_dx + e
     double x0_fire = t_x0_fire; // -fm_nx / 2.0 * dxf + lon2eastings[0]; 
-    // ny_atm / 2. * dy_atm + n 
+    // ny_atm / 2. * atm_dy + n 
     double y1_fire = t_y1_fire; // -fm_ny / 2.0 * dyf + lat2northings[0];
 
 #if 0
@@ -549,14 +555,17 @@ WRFInput::WRFInput(const std::string& filename)
     // sampling strategy
     int stepSize = 12;
 
+    //
+    // Walk over the atm mesh, extract wind profiles for stations
+    //
     for (int yIdx=0; yIdx<ny_atm; yIdx+=stepSize) {
         for (int xIdx=0; xIdx<nx_atm; xIdx+=stepSize) {
 
             // StatData.CoordX(Stat) = x;
             // StatData.CoordY(Stat) = y;
             stationData sd;
-            sd.xCoord = xIdx;
-            sd.yCoord = yIdx;
+            sd.xCoord = xIdx * atm_dx;  // use actual position
+            sd.yCoord = yIdx * atm_dy;  // "
             sd.profiles.resize(2);  // 2 time series
 
             for (int t=0; t<2; t++) {
@@ -583,19 +592,6 @@ WRFInput::WRFInput(const std::string& filename)
             statData.push_back( sd );
         }
     }
-
-#if 0
-    std::cout << "Size of stat data: " << statData.size() << std::endl;
-    for (int i=0; i<statData.size(); i++) {
-        std::cout << "Station " << i << " (" << statData[i].xCoord << ", " << statData[i].yCoord << ")" << std::endl;
-        for (int t=0; t<2; t++) {
-            std::cout << "\tTime Series: " << t << std::endl;
-            for (int p=0; p<statData[i].profiles[t].size(); p++) {
-                std::cout << "\t" << statData[i].profiles[t][p].zCoord << ", " << statData[i].profiles[t][p].ws << ", " << statData[i].profiles[t][p].wd << std::endl;
-            }
-        }
-    }
-#endif
 
 }
 

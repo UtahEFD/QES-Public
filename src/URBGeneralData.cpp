@@ -78,8 +78,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
             if (!UID->metParams->sensors[i])
                 UID->metParams->sensors[i] = new Sensor();
                 
-            UID->metParams->sensors[i]->site_xcoord = wrf_ptr->statData[i].xCoord * 3.0;
-            UID->metParams->sensors[i]->site_ycoord = wrf_ptr->statData[i].yCoord * 3.0;            
+            UID->metParams->sensors[i]->site_xcoord = wrf_ptr->statData[i].xCoord;
+            UID->metParams->sensors[i]->site_ycoord = wrf_ptr->statData[i].yCoord;            
 
             // 1 time series for now
             for (int t=0; t<1; t++) {
@@ -105,8 +105,6 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
         }
 
     }
-    
-
 
     // /////////////////////////
     // Calculation of z0 domain info MAY need to move to UrbInputData
