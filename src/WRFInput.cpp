@@ -544,8 +544,6 @@ WRFInput::WRFInput(const std::string& filename)
     float minWRFAlt = 22;
     float maxWRFAlt = 330;
 
-    std::vector< stationData > statData;
-
     std::cout << "nx_atm: " << nx_atm << ", ny_atm = " << ny_atm << std::endl;
 
     // sampling strategy
@@ -586,6 +584,7 @@ WRFInput::WRFInput(const std::string& filename)
         }
     }
 
+#if 0
     std::cout << "Size of stat data: " << statData.size() << std::endl;
     for (int i=0; i<statData.size(); i++) {
         std::cout << "Station " << i << " (" << statData[i].xCoord << ", " << statData[i].yCoord << ")" << std::endl;
@@ -596,7 +595,7 @@ WRFInput::WRFInput(const std::string& filename)
             }
         }
     }
-
+#endif
 
 }
 

@@ -164,6 +164,8 @@ public:
     int fm_nx, fm_ny;
     std::vector<double> fmHeight;
 
+    std::vector< stationData > statData;
+
 private:
 
     NcFile wrfInputFile;
