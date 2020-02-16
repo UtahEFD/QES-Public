@@ -120,7 +120,7 @@ int main(int argc, char** argv)
         eulOutput = new PlumeOutputEulerian(PID,urb,turb,eul,arguments.outputEulerianFile);
     }
     // always supposed to output lagrToEulOutput data
-    lagrToEulOutput = new PlumeOutputLagrToEul(PID,dis,arguments.outputLagrToEulFile);
+    lagrToEulOutput = new PlumeOutputLagrToEul(PID,urb,dis,arguments.outputLagrToEulFile);
     if( arguments.doLagrDataOutput == true )
     {
         lagrOutput = new PlumeOutputLagrangian(PID,dis,arguments.outputLagrangianFile);

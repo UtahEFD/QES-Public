@@ -56,6 +56,7 @@ class PlumeOutputEulerian : public NetCDFOutputGeneric
         Urb* urb;
         Turb* turb;
         Eulerian* eul;
+        
 
         // main output metadata
         // LA future work: this whole structure will have to change when we finally adjust the inputs for the true grids

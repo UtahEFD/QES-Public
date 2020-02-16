@@ -49,7 +49,7 @@ class PlumeOutputLagrangian : public NetCDFOutputGeneric
     private:
 
         // Output frequency control information
-        // FM -> meed ot create dedicated input variables
+        // FM -> need to create dedicated input variables
         float outputStartTime;   // time to start output
         float outputEndTime;  // time to end output
         float outputFrequency;  // output frequency
@@ -59,6 +59,7 @@ class PlumeOutputLagrangian : public NetCDFOutputGeneric
 
         // pointer to the class that save needs to use to get the data for the concentration calculation
         Dispersion* disp;
+
 
         // main particle metadata, almost a copy of what is in the "particle" class
         int numPar;     // total number of particle to be released 

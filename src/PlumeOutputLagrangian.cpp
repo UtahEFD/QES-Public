@@ -139,6 +139,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis
 void PlumeOutputLagrangian::save(float currentTime)
 {
 
+    // only output if it is during the next output time but before the end time
     if( currentTime >= nextOutputTime && currentTime <= outputEndTime )
     {
         // copy particle info into the required output storage containers

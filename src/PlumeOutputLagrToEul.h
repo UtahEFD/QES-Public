@@ -18,6 +18,7 @@
 
 
 #include "PlumeInputData.hpp"
+#include "Urb.hpp"
 #include "Dispersion.h"
 
 
@@ -34,7 +35,7 @@ class PlumeOutputLagrToEul : public NetCDFOutputGeneric
         }
 
         // specialized constructor
-        PlumeOutputLagrToEul(PlumeInputData* PID,Dispersion* dis,std::string output_file);
+        PlumeOutputLagrToEul(PlumeInputData* PID,Urb* urb_ptr,Dispersion* dis_ptr,std::string output_file);
 
         // deconstructor
         ~PlumeOutputLagrToEul()
@@ -48,41 +49,44 @@ class PlumeOutputLagrToEul : public NetCDFOutputGeneric
 
     private:
 
-        // count number of particule in sampling box (can only be called by member)
-        void boxCount(const Dispersion* disp);
+        // Output frequency control information
+        // in this case, this is also the averaging control information
+        float timeAvgStart;     // time to start concentration averaging and output
+        float timeAvgEnd;       // time to end concentration averaging and output
+        float timeAvgFreq;      // time averaging frequency and output frequency
+        
 
-        /*
-            Sampling box variables for concentration data
-        */
-
-        // Copy of the input startTime, 
-        // Starting time for averaging for concentration sampling
-        float sCBoxTime;
-        // Copy of the input timeAvg and timeStep
-        float timeAvg,timeStep;
-        // time of the concentration output
-        float avgOutTime;
-            
-        // Copies of the input nBoxesX, Y, and Z. 
-        // Number of boxes to use for the sampling box
-        int nBoxesX,nBoxesY,nBoxesZ;    
-
-        // Copies of the input parameters: boxBoundsX1, boxBoundsX2, boxBoundsY1, ... . 
-        // upper & lower bounds in each direction of the sampling boxes
-        float lBndx,lBndy,lBndz,uBndx,uBndy,uBndz;     
-
-        // these are the box sizes in each direction
-        float boxSizeX,boxSizeY,boxSizeZ;
-        // volume of the sampling boxes (=nBoxesX*nBoxesY*nBoxesZ)
-        float volume;      
-        // list of x,y, and z points for the concentration sampling box information
-        std::vector<float> xBoxCen,yBoxCen,zBoxCen;
-        // sampling box particle counter (for average)
-        std::vector<float> cBox;
-        // concentration values (for output)
-        std::vector<float> conc;      
-
+        // next averaging time value that is updated each time save is called and averaging occurs
+        // is also the next output time value
+        float nextAvgTime;
+        
         // pointer to the class that save needs to use to get the data for the concentration calculation
         Dispersion* disp;
+
+
+        // need nx, ny, nz of the domain to make sure the output handles domains that are not three dimensional
+        // for now these are a copy of the input urb values
+        int nx;
+        int ny;
+        int nz;
+
+        // need the simulation timeStep for use in concentration averaging
+        float timeStep;
+
+
+        // Sampling box variables for calculating concentration data
+        int nBoxesX,nBoxesY,nBoxesZ;    // Copies of the input nBoxesX, Y, and Z. // Number of boxes to use for the sampling box
+        float lBndx,lBndy,lBndz,uBndx,uBndy,uBndz;  // Copies of the input parameters: boxBoundsX1, boxBoundsX2, boxBoundsY1, upper & lower bounds in each direction of the sampling boxes
+        float boxSizeX,boxSizeY,boxSizeZ;   // these are the box sizes in each direction, calculated from nBoxes, lBnd, and uBnd variables
+        float volume;   // volume of the sampling boxes (=nBoxesX*nBoxesY*nBoxesZ)
+        
+        // output concentration storage variables
+        std::vector<float> xBoxCen,yBoxCen,zBoxCen;     // list of x,y, and z points for the concentration sampling box information
+        std::vector<float> cBox;    // sampling box particle counter (for average)
+        std::vector<float> conc;    // concentration values (for output)
+
+
+        // function for counting the number of particles in the sampling boxes
+        void boxCount();
 
 };
