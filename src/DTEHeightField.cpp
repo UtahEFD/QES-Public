@@ -43,7 +43,7 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField, int dimX,
 
             int idx = j * dimX + i;
             if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            std::cout << "(" << i << ", " << j << ") = " << heightField[idx] << std::endl;
+            // std::cout << "(" << i << ", " << j << ") = " << heightField[idx] << std::endl;
 
             Vector3<float> tv0( i, j, (float)heightField[ idx ] ); // queryHeight( pafScanline, Xpixel,  Yline));
 
