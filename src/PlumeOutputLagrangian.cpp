@@ -23,13 +23,13 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis
 
     // setup output frequency control information
     // FM future work: need to create dedicated input variables
-    //  for now, use the simulation start and end times, as well as the simulation timestep
-    // LA for now, use the updateFrequency_timeLoop variable for the outputFrequency.
-    //  because the time counter in this class uses time and not a timeIdx, also need to use the timestep
+    //  LA: we want output from the simulation start time to the end so the only dedicated input variable still needed
+    //   would be an output frequency. For now, use the updateFrequency_timeLoop variable for the outputFrequency.
+    // LA note: because the time counter in this class uses time and not a timeIdx, also need to use the timestep
     outputStartTime = 0;     // time to start output
     outputEndTime =  PID->simParams->simDur;      // time to end output
     outputFrequency = PID->simParams->updateFrequency_timeLoop*PID->simParams->timeStep;        // output frequency
-    std::cout << "outputFrequency = \"" << outputFrequency << "\"" << std::endl;
+    
 
     // set the initial next output time value
     nextOutputTime = outputStartTime;
@@ -68,45 +68,53 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis
     isRogue.resize(numPar,-999);
     isActive.resize(numPar,-999);
 
+    for( int par = 0; par < disp->pointList.size(); par++ )
+    {
+        std::cout << "par[" << par << "]" << std::endl;
+        std::cout << "xPos_init = \"" << disp->pointList.at(par).xPos_init << "\"" << std::endl;
+        std::cout << "yPos_init = \"" << disp->pointList.at(par).yPos_init << "\"" << std::endl;
+        std::cout << "zPos_init = \"" << disp->pointList.at(par).zPos_init << "\"" << std::endl;
+    }
+
 
     // need to set/create the parId vars now
     // also, now that the full list of particles is initialized in the dispersion class,
     // can change all the initial values for all the particle output to be the 
     // initial values that are already given to each particle
-    for( int parIdx = 0; parIdx < numPar; parIdx++)
+    for( int par = 0; par < numPar; par++)
     {
-        parID.at(parIdx) = parIdx;
+        parID.at(par) = par;
 
-        xPos_init.at(parIdx) = disp->pointList.at(parIdx).xPos_init;
-        yPos_init.at(parIdx) = disp->pointList.at(parIdx).yPos_init;
-        zPos_init.at(parIdx) = disp->pointList.at(parIdx).zPos_init;
-        tStrt.at(parIdx) = disp->pointList.at(parIdx).tStrt;
-        sourceIdx.at(parIdx) = disp->pointList.at(parIdx).sourceIdx;
+        xPos_init.at(par) = disp->pointList.at(par).xPos_init;
+        yPos_init.at(par) = disp->pointList.at(par).yPos_init;
+        zPos_init.at(par) = disp->pointList.at(par).zPos_init;
+        tStrt.at(par) = disp->pointList.at(par).tStrt;
+        sourceIdx.at(par) = disp->pointList.at(par).sourceIdx;
 
-        xPos.at(parIdx) = disp->pointList.at(parIdx).xPos;
-        yPos.at(parIdx) = disp->pointList.at(parIdx).yPos;
-        zPos.at(parIdx) = disp->pointList.at(parIdx).zPos;
-        uFluct.at(parIdx) = disp->pointList.at(parIdx).uFluct;
-        vFluct.at(parIdx) = disp->pointList.at(parIdx).vFluct;
-        wFluct.at(parIdx) = disp->pointList.at(parIdx).wFluct;
-        delta_uFluct.at(parIdx) = disp->pointList.at(parIdx).delta_uFluct;
-        delta_vFluct.at(parIdx) = disp->pointList.at(parIdx).delta_vFluct;
-        delta_wFluct.at(parIdx) = disp->pointList.at(parIdx).delta_wFluct;
+        xPos.at(par) = disp->pointList.at(par).xPos;
+        yPos.at(par) = disp->pointList.at(par).yPos;
+        zPos.at(par) = disp->pointList.at(par).zPos;
+        uFluct.at(par) = disp->pointList.at(par).uFluct;
+        vFluct.at(par) = disp->pointList.at(par).vFluct;
+        wFluct.at(par) = disp->pointList.at(par).wFluct;
+        delta_uFluct.at(par) = disp->pointList.at(par).delta_uFluct;
+        delta_vFluct.at(par) = disp->pointList.at(par).delta_vFluct;
+        delta_wFluct.at(par) = disp->pointList.at(par).delta_wFluct;
         
         // since no boolean output exists, going to have to convert the values to ints
-        if( disp->pointList.at(parIdx).isRogue == true )
+        if( disp->pointList.at(par).isRogue == true )
         {
-            isRogue.at(parIdx) = 1;
+            isRogue.at(par) = 1;
         } else
         {
-            isRogue.at(parIdx) = 0;
+            isRogue.at(par) = 0;
         }
-        if( disp->pointList.at(parIdx).isActive == true )
+        if( disp->pointList.at(par).isActive == true )
         {
-            isActive.at(parIdx) = 1;
+            isActive.at(par) = 1;
         } else
         {
-            isActive.at(parIdx) = 0;
+            isActive.at(par) = 0;
         }
     }
 

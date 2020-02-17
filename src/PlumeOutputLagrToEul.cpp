@@ -166,7 +166,7 @@ void PlumeOutputLagrToEul::save(float currentTime)
     //   just bin twice for the timeAvgStart time, once on each time average period that falls on that time.
     if( currentTime > timeAvgStart && currentTime <= timeAvgEnd )
     {
-        boxCount();
+        boxCount(currentTime);
     }
 
     // only calculate the concentration and do output if it is during the next averaging (output) time
@@ -223,14 +223,15 @@ void PlumeOutputLagrToEul::save(float currentTime)
 
 };
 
-void PlumeOutputLagrToEul::boxCount()
+void PlumeOutputLagrToEul::boxCount(float currentTime)
 {
 
     // for all particles see where they are relative to the
     // concentration collection boxes
     for(int i = 0; i < disp->pointList.size(); i++)
     {
-        if( disp->pointList.at(i).isActive == true )
+        // because particles all start out as active now, need to also check the release time
+        if( currentTime >= disp->pointList.at(i).tStrt && disp->pointList.at(i).isActive == true )
         {
 
             // get the current position of the particle

@@ -87,6 +87,6 @@ class PlumeOutputLagrToEul : public NetCDFOutputGeneric
 
 
         // function for counting the number of particles in the sampling boxes
-        void boxCount();
+        void boxCount(float currentTime);
 
 };

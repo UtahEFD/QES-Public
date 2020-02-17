@@ -175,7 +175,7 @@ void Dispersion::generateParticleList(Turb* turb, Eulerian* eul)
     for(int tStep = 0; tStep < nTimes-1; tStep++)
     {
 
-        std::vector<particle> nextSetOfParticles(0);
+        std::vector<particle> nextSetOfParticles;
         for (auto sidx=0u; sidx < allSources.size(); sidx++) {
             int numNewParticles = allSources.at(sidx)->emitParticles( (float)dt, (float)( times.at(tStep) ), nextSetOfParticles );
         }

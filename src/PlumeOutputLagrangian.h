@@ -49,7 +49,6 @@ class PlumeOutputLagrangian : public NetCDFOutputGeneric
     private:
 
         // Output frequency control information
-        // FM -> need to create dedicated input variables
         float outputStartTime;   // time to start output
         float outputEndTime;  // time to end output
         float outputFrequency;  // output frequency
