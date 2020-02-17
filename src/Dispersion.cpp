@@ -20,6 +20,32 @@ Dispersion::Dispersion( PlumeInputData* PID,Urb* urb,Turb* turb,Eulerian* eul, c
     determineDomainSize(urb,turb);
 
 
+    // make copies of important input time variables
+    dt = PID->simParams->timeStep;
+    simDur = PID->simParams->simDur;
+
+
+    // set up time details
+    // LA note: the method I am now using to calculate times is kind of strange.
+    //  the goal was to find a method that would keep the times going from the simulation startTime 
+    //  to the simulation endTime. I found that std::ceil(simDur/dt) gives one timestep too few.
+    //  But that is a good thing, cause now the times calculation loop will always start from 0
+    //  and stop at one less than the end time for each and every case. So then the endTime just needs
+    //  appended to the times loop right after the times calculation loop.
+    // LA possible future work: if the startTime stops being zero, I think the method here will still stand,
+    //  but instead of using dt*i for the times calculation in the loop, you would need startTime + dt*i.
+    nTimes = std::ceil(simDur/dt)+1;
+    times.resize(nTimes);
+    for(int i = 0; i < nTimes-1; ++i)   // end one time early
+    {
+        times.at(i) = dt*i;
+        //std::cout << "times[" << i << "] = \"" << times.at(i) << "\"" << std::endl;
+    }
+    times.at(nTimes-1) = simDur;
+    //std::cout << "times[" << nTimes-1 << "] = \"" << times.at(nTimes-1) << "\"" << std::endl;
+
+
+
     // get sources from input data and add them to the allSources vector
     // this also calls the many check and calc functions for all the input sources
     // !!! note that these check and calc functions have to be called here 
@@ -34,6 +60,12 @@ Dispersion::Dispersion( PlumeInputData* PID,Urb* urb,Turb* turb,Eulerian* eul, c
 
     // calculate the threshold velocity
     vel_threshold = 10.0*std::sqrt(getMaxVariance(turb->sig_x,turb->sig_y,turb->sig_z));
+
+
+    // to make sure the output knows the initial positions and particle sourceIDs for each time iteration
+    // ahead of release time, the entire list of particles is generated now, and given initial values
+    // this also includes creation of a vector of number of particles to release at a given time
+    generateParticleList(turb, eul);
     
 }
 
@@ -132,6 +164,33 @@ double Dispersion::getMaxVariance(const std::vector<double>& sigma_x_vals,const 
 
     return maximumVal;
     
+}
+
+void Dispersion::generateParticleList(Turb* turb, Eulerian* eul)
+{
+
+    // Add new particles now
+    // - walk over all sources and add the emitted particles from
+    // each source to the overall particle list
+    for(int tStep = 0; tStep < nTimes-1; tStep++)
+    {
+
+        std::vector<particle> nextSetOfParticles(0);
+        for (auto sidx=0u; sidx < allSources.size(); sidx++) {
+            int numNewParticles = allSources.at(sidx)->emitParticles( (float)dt, (float)( times.at(tStep) ), nextSetOfParticles );
+        }
+        
+        setParticleVals( turb, eul, nextSetOfParticles );
+        
+        // append all the new particles on to the big particle
+        // advection list
+        pointList.insert( pointList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end() );
+
+        // now calculate the number of particles to release for this timestep
+        nParsToRelease.push_back(nextSetOfParticles.size());
+
+    }   // end for timeIdx loop
+
 }
 
 

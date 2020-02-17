@@ -85,16 +85,17 @@ class Plume {
         double domainZstart;    // the domain starting z value, a copy of the value found by dispersion
         double domainZend;      // the domain ending z value, a copy of the value found by dispersion
 
-        // input time variables
-        double dt;       // this is a copy of the input timeStep
-        double simDur;   // this is a copy of the input simDur, or the total amount of time to run the simulation for
 
-        // these are the calculated time information needed for the simulation
-        // LA future work: there is something off with the times when looking at the command line output. This means the
-        //  methods for calculating these variables needs looked at. Be aware that if you change the methods for calculating
-        //  these variables here, you also need to use the same method in the source release type methods.
+        // important time variables
+        // copied from dispersion (and some of them copied to dispersion from input)
+        double dt;       // the timestep
+        double simDur;   // the total amount of time to run the simulation for
         int nTimes; // this is the number of timesteps of the simulation, the calculated size of times
         std::vector<double> times;  // this is the list of times for the simulation
+
+        // copy of dispersion number of pars to release for each timestep,
+        // used for updating the particle loop counter in Plume
+        std::vector<int> nParsToRelease;
 
 
         double invarianceTol; // this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle

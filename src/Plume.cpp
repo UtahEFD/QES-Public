@@ -36,34 +36,17 @@ Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, const bool& doLagrDa
     domainZstart = dis->domainZstart;
     domainZend = dis->domainZend; 
     
-    /* make copies of important input time variables */
 
-    dt = PID->simParams->timeStep;
-    simDur = PID->simParams->simDur;
+    // make copies of important dispersion time variables
+    dt = dis->dt;
+    simDur = dis->simDur;
+    nTimes = dis->nTimes;
+    times.resize(nTimes);   // first need to get the vector size right for the copy
+    times = dis->times;
 
-
-    // set up time details
-    // LA note: the method I am now using to calculate times is kind of strange.
-    //  the goal was to find a method that would keep the times going from the simulation startTime 
-    //  to the simulation endTime. I found that std::ceil(simDur/dt) gives one timestep too few.
-    //  But that is a good thing, cause now the times calculation loop will always start from 0
-    //  and stop at one less than the end time for each and every case. So then the endTime just needs
-    //  appended to the times loop right after the times calculation loop.
-    // LA possible future work: if the startTime stops being zero, I think the method here will still stand,
-    //  but instead of using dt*i for the times calculation in the loop, you would need startTime + dt*i.
-    if( debug == true )
-    {
-        std::cout << "creating times list" << std::endl;
-    }
-    nTimes = std::ceil(simDur/dt)+1;
-    times.resize(nTimes);
-    for(int i = 0; i < nTimes-1; ++i)   // end one time early
-    {
-        times.at(i) = dt*i;
-        //std::cout << "times[" << i << "] = \"" << times.at(i) << "\"" << std::endl;
-    }
-    times.at(nTimes-1) = simDur;
-    //std::cout << "times[" << nTimes-1 << "] = \"" << times.at(nTimes-1) << "\"" << std::endl;
+    // make copy of dispersion number of particles to release at each timestep
+    nParsToRelease.resize(nTimes-1);    // first need to get the vector size right for the copy. Note it is one less than times because the time loop ends one time early.
+    nParsToRelease = dis->nParsToRelease;
 
     
     // set additional values from the input
@@ -109,12 +92,16 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
 
         // start additional timers that need to be reset at different times during the following loops
         // LA future work: probably should wrap all of these in a debug if statement
-        timers.startNewTimer("particle release");
         timers.startNewTimer("advection loop");
         timers.startNewTimer("particle iteration");
         timers.startNewTimer("wall BC functions");
     }
-    
+
+
+    // because particle list is the desired size before the simulation, and the number of particles to move changes
+    // each time, need to set the loop counter for the number of particles to move before the simulation time loop
+    // !!! note that this is dispersion's value so that the output can get the number of released particles right!
+    dis->nParsReleased = 0;
     
     // LA note: that this loop goes from 0 to nTimes-2, not nTimes-1. This is because
     //  a given time iteration is calculating where particles for the current time end up for the next time
@@ -127,51 +114,17 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
     //  output and to function calls need to also be set to tStep+1.
     for(int tStep = 0; tStep < nTimes-1; tStep++)
     {
-
-        // 
-        // Add new particles now
-        // - walk over all sources and add the emitted particles from
-        // each source to the overall particle list
-        // 
-        // start recording the amount of time it takes to release the particles, but only output the result when updateFrequency allows
-        // LA future work: probably should wrap the current if statement inside of a single debug if statement
-        if( debug == true )
-        {
-            if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 )
-            {
-                timers.resetStoredTimer("particle release");
-            }
-        }
-
-        std::vector<particle> nextSetOfParticles(0);
-        for (auto sidx=0u; sidx < dis->allSources.size(); sidx++) {
-            int numNewParticles = dis->allSources.at(sidx)->emitParticles( (float)dt, (float)( times.at(tStep) ), nextSetOfParticles );
+     
+        // Add new particles to the number to move
+        // !!! note that this is dispersion's value so that the output can get the number of released particles right!
+        dis->nParsReleased = dis->nParsReleased + nParsToRelease.at(tStep);
         
-            // particles are added each time if available, but only output the information when the updateFrequency allows
-	        if(  numNewParticles > 0 && ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 )  )
-            {
-                std::cout << "time[" << tStep+1 << "] = \"" << times.at(tStep+1) << "\". Emitting " 
-                            << numNewParticles << " particles from source " << sidx << std::endl;
-            }
-        }
-        
-        dis->setParticleVals( turb, eul, nextSetOfParticles );
-        
-        // append all the new particles on to the big particle
-        // advection list
-        dis->pointList.insert( dis->pointList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end() );
-
         // only output the information when the updateFrequency allows and when there are actually released particles
-        if(  nextSetOfParticles.size() != 0 && ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 )  )
+        if(  nParsToRelease.at(tStep) != 0 && ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 )  )
         {
             std::cout << "time[" << tStep+1 << "] = \"" << times.at(tStep+1) << "\". finished emitting \"" 
-                        << nextSetOfParticles.size() << "\" particles from \"" << dis->allSources.size() 
-                        << "\" sources. Total numParticles = \"" << dis->pointList.size() << "\"" << std::endl;
-            // output particle emission runtime if in debug mode
-		    if( debug == true )
-            {
-                timers.printStoredTime("particle release");
-            }
+                        << nParsToRelease.at(tStep) << "\" particles from \"" << dis->allSources.size() 
+                        << "\" sources. Total numParticles = \"" << dis->nParsReleased << "\"" << std::endl;
         }
 
 
@@ -193,7 +146,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
         double isRogueCount = dis->isRogueCount;
         double isNotActiveCount = dis->isNotActiveCount;
 
-        for (int par=0; par<dis->pointList.size(); par++)
+        for( int par = 0; par < dis->nParsReleased; par++ )
         {
 
             // get the current isRogue and isActive information
@@ -628,7 +581,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
             }   // if isActive == true and isRogue == false
 
 
-        } // for (int par=0; par<parToMove;par++)
+        } // for(int par = 0; par < dis->nParsReleased; par++ )
 
         // set the isRogueCount and isNotActiveCount for the time iteration in the disperion data
         // !!! this needs set for the output to work properly
@@ -638,10 +591,10 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
 
         // netcdf output for a given timestep
         // LA note: output frequency is probably controlled by variable inside the class itself, set at constructor time
-        lagrToEulOutput->save(times.at(tStep));
+        lagrToEulOutput->save(times.at(tStep+1));
         if( doLagrDataOutput == true )
         {
-            lagrOutput->save(times.at(tStep));
+            lagrOutput->save(times.at(tStep+1));
         }
 
         

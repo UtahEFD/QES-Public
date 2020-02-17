@@ -56,6 +56,23 @@ class Dispersion {
         double domainZstart;    // the domain starting z value found by the determineDomainSize() function
         double domainZend;      // the domain ending z value found by the determineDomainSize() function
 
+
+        // input time variables
+        double dt;       // this is a copy of the input timeStep
+        double simDur;   // this is a copy of the input simDur, or the total amount of time to run the simulation for
+
+        // these are the calculated time information needed for the simulation
+        int nTimes; // this is the number of timesteps of the simulation, the calculated size of times
+        std::vector<double> times;  // this is the list of times for the simulation
+
+        // this is the number of particles to release at each timestep, 
+        // used for updating the particle loop counter in Plume.
+        std::vector<int> nParsToRelease;
+
+        // this is the number of particles released during the current timestep
+        // needed for output of particle information
+        // !!! plume run needs to update this variable in this spot each time during the loop!
+        int nParsReleased;
         
         
         // 
@@ -100,6 +117,11 @@ class Dispersion {
         // function for finding the largest sig value
         double getMaxVariance(const std::vector<double>& sigma_x_vals,const std::vector<double>& sigma_y_vals,const std::vector<double>& sigma_z_vals);
 
+        // function for generating full particle list before starting the plume simulations
+        // also generates a vector for the number of particles to release at a given time
+        // !!! this function is required to make sure the output knows the initial positions and particle sourceIDs
+        //  for each time iteration ahead of release time
+        void generateParticleList(Turb* turb, Eulerian* eul);
 
         // copies of debug related information from the input arguments
         bool debug;

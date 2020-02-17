@@ -68,10 +68,46 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis
     isRogue.resize(numPar,-999);
     isActive.resize(numPar,-999);
 
-    // need to set the parId vars now
-    for( int k = 0; k < numPar; k++)
+
+    // need to set/create the parId vars now
+    // also, now that the full list of particles is initialized in the dispersion class,
+    // can change all the initial values for all the particle output to be the 
+    // initial values that are already given to each particle
+    for( int parIdx = 0; parIdx < numPar; parIdx++)
     {
-        parID.at(k) = k;
+        parID.at(parIdx) = parIdx;
+
+        xPos_init.at(parIdx) = disp->pointList.at(parIdx).xPos_init;
+        yPos_init.at(parIdx) = disp->pointList.at(parIdx).yPos_init;
+        zPos_init.at(parIdx) = disp->pointList.at(parIdx).zPos_init;
+        tStrt.at(parIdx) = disp->pointList.at(parIdx).tStrt;
+        sourceIdx.at(parIdx) = disp->pointList.at(parIdx).sourceIdx;
+
+        xPos.at(parIdx) = disp->pointList.at(parIdx).xPos;
+        yPos.at(parIdx) = disp->pointList.at(parIdx).yPos;
+        zPos.at(parIdx) = disp->pointList.at(parIdx).zPos;
+        uFluct.at(parIdx) = disp->pointList.at(parIdx).uFluct;
+        vFluct.at(parIdx) = disp->pointList.at(parIdx).vFluct;
+        wFluct.at(parIdx) = disp->pointList.at(parIdx).wFluct;
+        delta_uFluct.at(parIdx) = disp->pointList.at(parIdx).delta_uFluct;
+        delta_vFluct.at(parIdx) = disp->pointList.at(parIdx).delta_vFluct;
+        delta_wFluct.at(parIdx) = disp->pointList.at(parIdx).delta_wFluct;
+        
+        // since no boolean output exists, going to have to convert the values to ints
+        if( disp->pointList.at(parIdx).isRogue == true )
+        {
+            isRogue.at(parIdx) = 1;
+        } else
+        {
+            isRogue.at(parIdx) = 0;
+        }
+        if( disp->pointList.at(parIdx).isActive == true )
+        {
+            isActive.at(parIdx) = 1;
+        } else
+        {
+            isActive.at(parIdx) = 0;
+        }
     }
 
     
@@ -143,7 +179,7 @@ void PlumeOutputLagrangian::save(float currentTime)
     if( currentTime >= nextOutputTime && currentTime <= outputEndTime )
     {
         // copy particle info into the required output storage containers
-        for( int par = 0; par < disp->pointList.size(); par++ )
+        for( int par = 0; par < disp->nParsReleased; par++ )
         {
             xPos_init.at(par) = disp->pointList.at(par).xPos_init;
             yPos_init.at(par) = disp->pointList.at(par).yPos_init;
