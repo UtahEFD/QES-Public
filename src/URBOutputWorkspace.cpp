@@ -1,33 +1,45 @@
-#include "URBOutput_TURBInputFile.h"
+#include "URBOutputWorkspace.h"
 
-URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string output_file)
-  : URBOutput_Generic(output_file)
+URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_file)
+  : NetCDFOutputGeneric(output_file)
 {
   std::cout<<"Setting fields of TURBInputFile file"<<std::endl;
   
   // set list of fields to save, no option available for this file
-  output_fields = {"t","x","y","z","u","v","w","icell","terrain",
-		   "e","f","g","h","m","n"};
+  if (ugd->includesMixingLength()) {
+      output_fields = {"t","x_cc","y_cc","z_cc","u","v","w","icell","terrain",
+                       "mixlength",
+                       "e","f","g","h","m","n"};
+  }
+  else {
+      output_fields = {"t","x_cc","y_cc","z_cc","u","v","w","icell","terrain",
+                       "e","f","g","h","m","n"};
+  }
+  
+  // copy of ugd pointer
+  ugd_=ugd;
 
-  
-  int nx = ugd->nx;
-  int ny = ugd->ny;
-  int nz = ugd->nz;
-  
+  int nx = ugd_->nx;
+  int ny = ugd_->ny;
+  int nz = ugd_->nz;
+
+  // copy of ugd pointer
+  ugd_=ugd;
+
   // Location of face centers in z-dir
   z_cc.resize( nz-1 );
   for (auto k=0; k<nz-1; k++) {
-    z_cc[k] = (k-0.5)*ugd->dz; 
+    z_cc[k] = (k-0.5)*ugd_->dz; 
   }
   // Location of face centers in x-dir
   x_cc.resize( nx-1 );
   for (auto i=0; i<nx-1; i++) {
-    x_cc[i] = (i+0.5)*ugd->dx; 
+    x_cc[i] = (i+0.5)*ugd_->dx; 
   }
   // Location of face centers in y-dir
   y_cc.resize( ny-1 );
   for (auto j=0; j<ny-1; j++) {
-    y_cc[j] = (j+0.5)*ugd->dy; 
+    y_cc[j] = (j+0.5)*ugd_->dy; 
   }
 
   // set time data dimensions
@@ -39,9 +51,9 @@ URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string
 
   // set face-centered data dimensions
   // space dimensions 
-  NcDim NcDim_x_fc=addDimension("x",ugd->nx);
-  NcDim NcDim_y_fc=addDimension("y",ugd->ny);
-  NcDim NcDim_z_fc=addDimension("z",ugd->nz);
+  NcDim NcDim_x_fc=addDimension("x",ugd_->nx);
+  NcDim NcDim_y_fc=addDimension("y",ugd_->ny);
+  NcDim NcDim_z_fc=addDimension("z",ugd_->nz);
   
   // 3D vector dimension (time dep)
   std::vector<NcDim> dim_vect_fc;
@@ -50,33 +62,33 @@ URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string
   dim_vect_fc.push_back(NcDim_y_fc);
   dim_vect_fc.push_back(NcDim_x_fc);
   // create attributes
-  createAttVector("u","x-component velocity","m s-1",dim_vect_fc,&(ugd->u));
-  createAttVector("v","y-component velocity","m s-1",dim_vect_fc,&(ugd->v));
-  createAttVector("w","z-component velocity","m s-1",dim_vect_fc,&(ugd->w));
+  createAttVector("u","x-component velocity","m s-1",dim_vect_fc,&(ugd_->u));
+  createAttVector("v","y-component velocity","m s-1",dim_vect_fc,&(ugd_->v));
+  createAttVector("w","z-component velocity","m s-1",dim_vect_fc,&(ugd_->w));
 
   // set cell-centered data dimensions
   // space dimensions 
-  NcDim NcDim_x_cc=addDimension("x_cc",ugd->nx-1);
-  NcDim NcDim_y_cc=addDimension("y_cc",ugd->ny-1);
-  NcDim NcDim_z_cc=addDimension("z_cc",ugd->nz-1);
+  NcDim NcDim_x_cc=addDimension("x_cc",ugd_->nx-1);
+  NcDim NcDim_y_cc=addDimension("y_cc",ugd_->ny-1);
+  NcDim NcDim_z_cc=addDimension("z_cc",ugd_->nz-1);
   
   // create attributes space dimensions 
   std::vector<NcDim> dim_vect_x_cc;
   dim_vect_x_cc.push_back(NcDim_x_cc);
-  createAttVector("x","x-distance","m",dim_vect_x_cc,&x_cc);
+  createAttVector("x_cc","x-distance","m",dim_vect_x_cc,&x_cc);
   std::vector<NcDim> dim_vect_y_cc;
   dim_vect_y_cc.push_back(NcDim_y_cc);
-  createAttVector("y","y-distance","m",dim_vect_y_cc,&y_cc);
+  createAttVector("y_cc","y-distance","m",dim_vect_y_cc,&y_cc);
   std::vector<NcDim> dim_vect_z_cc;
   dim_vect_z_cc.push_back(NcDim_z_cc); 
-  createAttVector("z","z-distance","m",dim_vect_z_cc,&z_cc);
+  createAttVector("z_cc","z-distance","m",dim_vect_z_cc,&z_cc);
 
   // create 2D vector (surface, indep of time)
   std::vector<NcDim> dim_vect_2d;
   dim_vect_2d.push_back(NcDim_y_cc);
   dim_vect_2d.push_back(NcDim_x_cc);
   // create attributes 
-  createAttVector("terrain","terrain height","m",dim_vect_2d,&(ugd->terrain));
+  createAttVector("terrain","terrain height","m",dim_vect_2d,&(ugd_->terrain));
 
   // 3D vector dimension (time dep)
   std::vector<NcDim> dim_vect_cc;
@@ -84,55 +96,54 @@ URBOutput_TURBInputFile::URBOutput_TURBInputFile(URBGeneralData *ugd,std::string
   dim_vect_cc.push_back(NcDim_z_cc);
   dim_vect_cc.push_back(NcDim_y_cc);
   dim_vect_cc.push_back(NcDim_x_cc);
+
   // create attributes 
-  createAttVector("icell","icell flag value","--",dim_vect_cc,&(ugd->icellflag));  
+  createAttVector("icell","icell flag value","--",dim_vect_cc,&(ugd_->icellflag));
+
+  if (ugd->includesMixingLength()) {
+      createAttVector("mixlength","mixing length value","--",dim_vect_cc,&(ugd_->mixingLengths));
+  }
 
   // attributes for coefficients for SOR solver
-  dim_vect_cc.clear();
-  dim_vect_cc.push_back(NcDim_z_cc);
-  dim_vect_cc.push_back(NcDim_y_cc);
-  dim_vect_cc.push_back(NcDim_x_cc);
-  createAttVector("e","e cut-cell coefficient","--",dim_vect_cc,&(ugd->e));  
-  createAttVector("f","f cut-cell coefficient","--",dim_vect_cc,&(ugd->f)); 
-  createAttVector("g","g cut-cell coefficient","--",dim_vect_cc,&(ugd->g)); 
-  createAttVector("h","h cut-cell coefficient","--",dim_vect_cc,&(ugd->h)); 
-  createAttVector("m","m cut-cell coefficient","--",dim_vect_cc,&(ugd->m)); 
-  createAttVector("n","n cut-cell coefficient","--",dim_vect_cc,&(ugd->n)); 
+  createAttVector("e","e cut-cell coefficient","--",dim_vect_cc,&(ugd_->e));  
+  createAttVector("f","f cut-cell coefficient","--",dim_vect_cc,&(ugd_->f)); 
+  createAttVector("g","g cut-cell coefficient","--",dim_vect_cc,&(ugd_->g)); 
+  createAttVector("h","h cut-cell coefficient","--",dim_vect_cc,&(ugd_->h)); 
+  createAttVector("m","m cut-cell coefficient","--",dim_vect_cc,&(ugd_->m)); 
+  createAttVector("n","n cut-cell coefficient","--",dim_vect_cc,&(ugd_->n)); 
   
   // adding building informations
-  if (ugd->building_id.size()>0) {
+  /* FM -> commented in workingBranch
+  if (ugd_->allBuildingsV.size()>0) {
     // building dimension
-    NcDim NcDim_building=addDimension("building",ugd->building_id.size());
+    NcDim NcDim_building=addDimension("building",ugd_->allBuildingsV.size());
     // vector of dimension for building information 
     std::vector<NcDim> dim_vect_building;
     dim_vect_building.push_back(NcDim_building);
-    // create attributes
-    createAttVector("building_id","ID of building","--",dim_vect_building,&(ugd->building_id)); 
-    // add to output fields
-    output_fields.push_back("building_id");
-    
+        
     // vector of dimension for time dep building information 
     std::vector<NcDim> dim_vect_building_t;
     dim_vect_building_t.push_back(NcDim_t);
     dim_vect_building_t.push_back(NcDim_building);
     // create attributes
     createAttVector("effective_height","effective height of building","m",
-		    dim_vect_building_t,&(ugd->effective_height)); 
-    // add to output fields
+		    dim_vect_building_t,&(ugd_->effective_height)); 
     output_fields.push_back("effective_height");
+    
   }
-  
+  */
+
   // create output fields
   addOutputFields();
 }
 
   
 // Save output at cell-centered values
-void URBOutput_TURBInputFile::save(URBGeneralData *ugd)
+void URBOutputWorkspace::save(float timeOut)
 {
   
   // set time
-  time = (double)output_counter;
+  time = (double)timeOut;
   
   // save fields
   saveOutputFields();

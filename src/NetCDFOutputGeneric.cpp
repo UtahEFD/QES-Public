@@ -1,6 +1,6 @@
-#include "URBOutput_Generic.h"
+#include "NetCDFOutputGeneric.h"
 
-URBOutput_Generic::URBOutput_Generic(std::string output_file) 
+NetCDFOutputGeneric::NetCDFOutputGeneric(std::string output_file) 
   : NetCDFOutput(output_file)
 {
 };
@@ -8,7 +8,7 @@ URBOutput_Generic::URBOutput_Generic(std::string output_file)
 //----------------------------------------
 // create attribute scalar
 // -> int
-void URBOutput_Generic::createAttScalar(std::string name,
+void NetCDFOutputGeneric::createAttScalar(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
@@ -21,7 +21,7 @@ void URBOutput_Generic::createAttScalar(std::string name,
 
 }
 // -> float
-void URBOutput_Generic::createAttScalar(std::string name,
+void NetCDFOutputGeneric::createAttScalar(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
@@ -33,7 +33,7 @@ void URBOutput_Generic::createAttScalar(std::string name,
   
 }
 // -> double
-void URBOutput_Generic::createAttScalar(std::string name,
+void NetCDFOutputGeneric::createAttScalar(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
@@ -47,7 +47,7 @@ void URBOutput_Generic::createAttScalar(std::string name,
 //----------------------------------------
 // create attribute Vector
 // -> int
-void URBOutput_Generic::createAttVector(std::string name,
+void NetCDFOutputGeneric::createAttVector(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
@@ -59,7 +59,7 @@ void URBOutput_Generic::createAttVector(std::string name,
   
 }
 // -> float
-void URBOutput_Generic::createAttVector(std::string name,
+void NetCDFOutputGeneric::createAttVector(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
@@ -71,7 +71,7 @@ void URBOutput_Generic::createAttVector(std::string name,
   
 }
 // -> double
-void URBOutput_Generic::createAttVector(std::string name,
+void NetCDFOutputGeneric::createAttVector(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
@@ -83,7 +83,7 @@ void URBOutput_Generic::createAttVector(std::string name,
 }
 
 //----------------------------------------
-void URBOutput_Generic::addOutputFields()
+void NetCDFOutputGeneric::addOutputFields()
 {
    /*
     This function add the  fields to the output vectors
@@ -151,7 +151,7 @@ void URBOutput_Generic::addOutputFields()
 
 
 
-void URBOutput_Generic::rmOutputField(std::string name)
+void NetCDFOutputGeneric::rmOutputField(std::string name)
 {
   /*
     This function remove a field from the output vectors
@@ -211,7 +211,7 @@ void URBOutput_Generic::rmOutputField(std::string name)
   } 
 };
 
-void URBOutput_Generic::rmTimeIndepFields()
+void NetCDFOutputGeneric::rmTimeIndepFields()
 {
   /*
     This function remove time indep field from the output vectors
@@ -265,7 +265,7 @@ void URBOutput_Generic::rmTimeIndepFields()
   } 
 };
 
-void URBOutput_Generic::saveOutputFields()
+void NetCDFOutputGeneric::saveOutputFields()
 {
    /*
     This function save the fields from the output vectors

@@ -16,16 +16,15 @@ CUDA_ADD_LIBRARY( cudaurbcore
   handleURBArgs.cpp
   Mesh.cpp
   NetCDFOutput.cpp NetCDFOutput.h
+  NetCDFOutputGeneric.cpp 
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Solver.cpp
   Triangle.cpp
   URBInputData.h
   URBGeneralData.cpp
-  URBOutputData.cpp
-  URBOutput_Generic.cpp 
-  URBOutput_VizFields.cpp
-  URBOutput_TURBInputFile.cpp
+  URBOutputVisualization.cpp
+  URBOutputWorkspace.cpp
   WRFInput.cpp WRFInput.h
   Wall.cpp Wall.h
   UpwindCavity.cpp
@@ -34,6 +33,9 @@ CUDA_ADD_LIBRARY( cudaurbcore
   Sidewall.cpp
   Rooftop.cpp
   StreetIntersection.cpp
+  Ray.cpp
+  SphereDirections.cpp
+  HitRecord.cpp
   )
 
 cuda_add_executable( unitTest
