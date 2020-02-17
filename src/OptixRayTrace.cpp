@@ -116,17 +116,17 @@ void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::vector
    Vertex tempVertexA, tempVertexB, tempVertexC;
    for(int i = 0; i < tris.size(); i++){ //get access to the Triangle at index
 
-      tempVertexA.x = tris[i]->a[0][0];
-      tempVertexA.y = tris[i]->a[0][1];
-      tempVertexA.z = tris[i]->a[0][2];
+      tempVertexA.x = *(tris[i]->a)[0];
+      tempVertexA.y = *(tris[i]->a)[1];
+      tempVertexA.z = *(tris[i]->a)[2];
 
-      tempVertexB.x = tris[i]->b[1][0];
-      tempVertexB.y = tris[i]->b[1][1];
-      tempVertexB.z = tris[i]->b[1][2];
+      tempVertexB.x = *(tris[i]->b)[0];
+      tempVertexB.y = *(tris[i]->b)[1];
+      tempVertexB.z = *(tris[i]->b)[2];
 
-      tempVertexC.x = tris[i]->c[2][0];
-      tempVertexC.y = tris[i]->c[2][1];
-      tempVertexC.z = tris[i]->c[2][2];
+      tempVertexC.x = *(tris[i]->c)[0];
+      tempVertexC.y = *(tris[i]->c)[1];
+      tempVertexC.z = *(tris[i]->c)[2];
 
       trisArray.push_back(tempVertexA);
       trisArray.push_back(tempVertexB);
@@ -375,7 +375,7 @@ void OptixRayTrace::initLaunchParams(){
 
 void OptixRayTrace::cleanState(){
    //destroy pipeline
-   OPTIX_CHECK(optixPipelineDestory(state.pipeline));
+   OPTIX_CHECK(optixPipelineDestroy(state.pipeline));
 
    //destory program groups
    OPTIX_CHECK(optixProgramGroupDestroy(state.raygen_prog_group));

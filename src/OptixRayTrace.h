@@ -2,18 +2,15 @@
  *This class uses OptiX 7.0
  */
 
-/*#include <cuda_gl_interlop.h>
-#include <cuda_runtime.h>
+//#include <cuda_gl_interlop.h>
 
+#pragma once
+#include <cuda_runtime.h>
 
 #include <optix.h>
 #include <optix_function_table_definition.h>
 #include <optix_stubs.h>
 
-#include <sutil/CUDAOutputBuffer.h>
-#include <sutil/Exception.h>
-#include <sutil/sutil.h>
-*/
 #include <vector>
 #include <iomanip>
 #include <iostream>
@@ -23,33 +20,6 @@
 #include "Triangle.cpp"
 
 
-//context create buffer
-
-struct RayTracingState{
-   OptixDeviceContext context = 0;
-   CUstream stream = 0;
-
-   int width = 0;   //Note: this will most likely be "world" params
-   int height = 0;
-
-   OptixModule ptx_module  = 0;
-   OptixPipelineCompileOptions pipeline_compile_options = {};
-
-   OptixPipeline pipeline = 0;
-
-   OptixTraversableHandle gas_handle = 0;
-   CUdeviceptr d_gas_output_buffer = 0;
-   CUdeviceptr d_tris;  //converted mesh list 
-
-   OptixProgramGroup raygen_prog_group = 0;
-   OptixProgramGroup miss_prog_group = 0;
-   OptixProgramGroup hit_prog_group = 0;
-
-   Params params = {};
-   OptixShaderBindingTable sbt = {};
-
-   int samples_per_cell;  //can change to bigger type value if needed 
-};
 
 template <typename T>
 struct Record{
@@ -57,7 +27,7 @@ struct Record{
    T data;
 };
 
-struct Ray{
+struct OptixRay{
    float3 origin;
    float tmin;
    float3 dir;
@@ -92,7 +62,37 @@ struct HitGroupData{
    //can the distance be retireved by the device-side functions instead?
 };
 
-class OptixRayTrace : public RayTraceInterface{
+
+
+struct RayTracingState{
+   OptixDeviceContext context = 0;
+   CUstream stream = 0;
+
+   int width = 0;   //Note: this will most likely be "world" params
+   int height = 0;
+
+   OptixModule ptx_module  = 0;
+   OptixPipelineCompileOptions pipeline_compile_options = {};
+
+   OptixPipeline pipeline = 0;
+
+   OptixTraversableHandle gas_handle = 0;
+   CUdeviceptr d_gas_output_buffer = 0;
+   CUdeviceptr d_tris;  //converted mesh list 
+
+   OptixProgramGroup raygen_prog_group = 0;
+   OptixProgramGroup miss_prog_group = 0;
+   OptixProgramGroup hit_prog_group = 0;
+
+   Params params;
+   OptixShaderBindingTable sbt = {};
+
+   int samples_per_cell;  //can change to bigger type value if needed 
+};
+
+
+
+class OptixRayTrace{
   public:
    void buildAS(std::vector<Triangle*> tris);
    void calculateMixingLength(int numSamples, int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag, std::vector<double> &mixingLengths);
@@ -123,5 +123,5 @@ class OptixRayTrace : public RayTraceInterface{
     */
    void initParams(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag);
    
- 
+   
 };
