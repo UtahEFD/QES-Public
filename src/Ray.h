@@ -3,11 +3,10 @@
 /*
  *Basic definition of a ray 
  */
-#ifndef RAY_H
-#define RAY_H
 
-#include "Vector3.h"
 #include <vector>
+#include "Vec3D.h"
+
 class Ray{
   private:
       float origin_x, origin_y, origin_z;
