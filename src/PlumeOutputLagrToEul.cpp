@@ -63,7 +63,12 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,Urb* urb_ptr,Disp
     // and outputStartTime to avoid slicing off an averaging and output time unless we have to.
     float avgDur = timeAvgEnd - timeAvgStart;
     // if doesn't divide evenly, need to adjust timeAvgStart
-    if( avgDur % timeAvgFreq != 0 )
+    // can determine if it divides evenly by comparing the quotient with the decimal division result
+    //  if the values do not match, the division has a remainder
+    //  here's hoping numerical error doesn't play a role
+    float quotient = std::floor(avgDur/timeAvgFreq);
+    float decDivResult = avgDur/timeAvgFreq;
+    if( quotient != decDivResult )
     {
         // clever algorythm that always gets the exact number of time averages (and outputs) 
         // when the time averaging duration divides evenly by the time averaging frequency

@@ -42,7 +42,12 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis
     // to avoid slicing off an output time unless we have to.
     float outputDur = outputEndTime - outputStartTime;
     // if doesn't divide evenly, need to adjust outputStartTime
-    if( outputDur % outputFrequency != 0 )
+    // can determine if it divides evenly by comparing the quotient with the decimal division result
+    //  if the values do not match, the division has a remainder
+    //  here's hoping numerical error doesn't play a role
+    float quotient = std::floor(outputDur/outputFrequency);
+    float decDivResult = outputDur/outputFrequency;
+    if( quotient != decDivResult )
     {
         // clever algorythm that always gets the exact number of outputs when output duration divides evenly by output frequency
         // and rounds the number of outputs down to what it would be if the start time were the next smallest evenly dividing number
@@ -88,15 +93,6 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis
     // get total number of particle to be released 
     numPar = disp->totalParsToRelease;
     std::cout << "[PlumeOutputLagrangian] total number of particle to be saved in file " << numPar << std::endl;
-
-    
-    for( int par = 0; par < disp->pointList.size(); par++ )
-    {
-        std::cout << "par[" << par << "]" << std::endl;
-        std::cout << "xPos_init = \"" << disp->pointList.at(par).xPos_init << "\"" << std::endl;
-        std::cout << "yPos_init = \"" << disp->pointList.at(par).yPos_init << "\"" << std::endl;
-        std::cout << "zPos_init = \"" << disp->pointList.at(par).zPos_init << "\"" << std::endl;
-    }
 
 
     // initialize all the output containers
@@ -244,15 +240,7 @@ void PlumeOutputLagrangian::save(float currentTime)
             }
         }
 
-        for( int par = 0; par < disp->pointList.size(); par++ )
-        {
-            std::cout << "par[" << par << "]" << std::endl;
-            std::cout << "xPos_init = \"" << disp->pointList.at(par).xPos_init << "\"" << std::endl;
-            std::cout << "yPos_init = \"" << disp->pointList.at(par).yPos_init << "\"" << std::endl;
-            std::cout << "zPos_init = \"" << disp->pointList.at(par).zPos_init << "\"" << std::endl;
-        }
-
-
+        
         // set output time for correct netcdf output
         time = currentTime;
 

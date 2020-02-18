@@ -140,7 +140,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
         dis->nParsReleased = nPastPars + nParsToRelease.at(tStep);
 
         // need to set the new particles isActive values to true
-        for( int par = nPastPars; par < dis->nParsToRelease; par++ )
+        for( int par = nPastPars; par < dis->nParsReleased; par++ )
         {
             dis->pointList.at(par).isActive = true;
         }
