@@ -102,7 +102,24 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
     // each time, need to set the loop counter for the number of particles to move before the simulation time loop
     // !!! note that this is dispersion's value so that the output can get the number of released particles right!
     dis->nParsReleased = 0;
+
+    // want to output the particle information for the first timestep for where particles are without moving
+    // so going to temporarily set nParsReleased to the number of particles released at the first time
+    // do an output for the first time, then put the value back to zero so the particle loop will work correctly
+    // this means I need to set the isActive value to true for the first set of particles right here
+    dis->nParsReleased = nParsToRelease.at(0);
+    for( int par = 0; par < nParsToRelease.at(0); par++ )
+    {
+        dis->pointList.at(par).isActive = true;
+    }
+    lagrToEulOutput->save(times.at(0));
+    if( doLagrDataOutput == true )
+    {
+        lagrOutput->save(times.at(0));
+    }
+    dis->nParsReleased = 0;
     
+
     // LA note: that this loop goes from 0 to nTimes-2, not nTimes-1. This is because
     //  a given time iteration is calculating where particles for the current time end up for the next time
     //  so in essence each time iteration is calculating stuff for one timestep ahead of the loop.
@@ -115,10 +132,20 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
     for(int tStep = 0; tStep < nTimes-1; tStep++)
     {
      
+        // need to release new particles
         // Add new particles to the number to move
-        // !!! note that this is dispersion's value so that the output can get the number of released particles right!
-        dis->nParsReleased = dis->nParsReleased + nParsToRelease.at(tStep);
+        // !!! note that the updated number of particles is dispersion's value 
+        //  so that the output can get the number of released particles right
+        int nPastPars = dis->nParsReleased;
+        dis->nParsReleased = nPastPars + nParsToRelease.at(tStep);
+
+        // need to set the new particles isActive values to true
+        for( int par = nPastPars; par < dis->nParsToRelease; par++ )
+        {
+            dis->pointList.at(par).isActive = true;
+        }
         
+
         // only output the information when the updateFrequency allows and when there are actually released particles
         if(  nParsToRelease.at(tStep) != 0 && ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 )  )
         {
@@ -590,7 +617,8 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
 
 
         // netcdf output for a given timestep
-        // LA note: output frequency is probably controlled by variable inside the class itself, set at constructor time
+        // note that the first time is already output, so this is the time the loop iteration 
+        //  is calculating, not the input time to the loop iteration
         lagrToEulOutput->save(times.at(tStep+1));
         if( doLagrDataOutput == true )
         {

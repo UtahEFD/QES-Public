@@ -49,16 +49,15 @@ class PlumeOutputLagrToEul : public NetCDFOutputGeneric
 
     private:
 
-        // Output frequency control information
-        // in this case, this is also the averaging control information
-        float timeAvgStart;     // time to start concentration averaging and output
+        // time averaging frequency control information
+        // in this case, this is also the output control information
+        float timeAvgStart;     // time to start concentration averaging, not the time to start output. Adjusted if the time averaging duration does not divide evenly by the averaging frequency
         float timeAvgEnd;       // time to end concentration averaging and output
         float timeAvgFreq;      // time averaging frequency and output frequency
         
 
-        // next averaging time value that is updated each time save is called and averaging occurs
-        // is also the next output time value
-        float nextAvgTime;
+        // variables needed for getting proper averaging and output time control
+        float nextOutputTime;   // next output time value that is updated each time save is called and output occurs. Also initializes a restart of the particle binning for the next time averaging period
         
         // pointer to the class that save needs to use to get the data for the concentration calculation
         Dispersion* disp;
@@ -87,6 +86,6 @@ class PlumeOutputLagrToEul : public NetCDFOutputGeneric
 
 
         // function for counting the number of particles in the sampling boxes
-        void boxCount(float currentTime);
+        void boxCount();
 
 };

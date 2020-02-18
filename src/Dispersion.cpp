@@ -251,9 +251,11 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
         newParticles.at(pIdx).delta_vFluct = 0.0;
         newParticles.at(pIdx).delta_wFluct = 0.0;
 
-        // set isRogue to false and isActive to true for each particle
+        // set isRogue to false and isActive to false for each particle
+        // LA note: I want isActive to be true, but this function is now called 
+        //  for all particles before they are released so it needs to start out as false
         newParticles.at(pIdx).isRogue = false;
-        newParticles.at(pIdx).isActive = true;
+        newParticles.at(pIdx).isActive = false;
         
     }
 

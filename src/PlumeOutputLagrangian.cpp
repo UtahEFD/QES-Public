@@ -21,14 +21,56 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis
     std::cout << "[PlumeOutputLagrangian] set up NetCDF file "<< output_file << std::endl;
 
 
+    // this is the current simulation start time
+    // LA note: this would need adjusted if we ever change the 
+    //  input simulation parameters to include a simStartTime
+    //  instead of just using simDur
+    float simStartTime = 0.0;
+    
     // setup output frequency control information
     // FM future work: need to create dedicated input variables
     //  LA: we want output from the simulation start time to the end so the only dedicated input variable still needed
     //   would be an output frequency. For now, use the updateFrequency_timeLoop variable for the outputFrequency.
     // LA note: because the time counter in this class uses time and not a timeIdx, also need to use the timestep
-    outputStartTime = 0;     // time to start output
+    outputStartTime = simStartTime;     // time to start output, adjusted if the output duration does not divide evenly by the output frequency
     outputEndTime =  PID->simParams->simDur;      // time to end output
     outputFrequency = PID->simParams->updateFrequency_timeLoop*PID->simParams->timeStep;        // output frequency
+    
+    
+    // Determine whether outputStartTime needs adjusted to make the output duration divide evenly by the output frequency
+    // This is essentially always keeping the outputEndTime at what it is (end of the simulation), and adjusting the outputStartTime
+    // to avoid slicing off an output time unless we have to.
+    float outputDur = outputEndTime - outputStartTime;
+    // if doesn't divide evenly, need to adjust outputStartTime
+    if( outputDur % outputFrequency != 0 )
+    {
+        // clever algorythm that always gets the exact number of outputs when output duration divides evenly by output frequency
+        // and rounds the number of outputs down to what it would be if the start time were the next smallest evenly dividing number
+        int nOutputs = std::floor(outputDur/outputFrequency) + 1;
+    
+        // clever algorythm to always calculate the desired output start time based off the number of outputs
+        // the outputStartTime if not adjusting nOutputs
+        float current_outputStartTime = outputEndTime - outputFrequency*(nOutputs-1);
+        // the outputStartTime if adjusting nOutputs. Note nOutputs has one extra outputs
+        float adjusted_outputStartTime = outputEndTime - outputFrequency*(nOutputs);
+        if( adjusted_outputStartTime >= simStartTime )
+        {
+            // need to adjust the outputStartTime to be the adjusted_outputStartTime
+            // warn the user that the outputStartTime is being adjusted before adjusting outputStartTime
+            std::cout << "[PlumeOutputLagrangian]: adjusting outputStartTime because output duration did not divide evenly by outputFrequency" << std::endl;
+            std::cout << "  original outputStartTime = \"" << outputStartTime << "\", outputEndTime = \"" << outputEndTime 
+                    << "\", outputFrequency = \"" << outputFrequency << "\", new outputStartTime = \"" << adjusted_outputStartTime << "\"" << std::endl;
+            outputStartTime = adjusted_outputStartTime;
+        } else
+        {
+            // need to adjust the outputStartTime to be the current_outputStartTime
+            // warn the user that the outputStartTime is being adjusted before adjusting outputStartTime
+            std::cout << "[PlumeOutputLagrangian]: adjusting outputStartTime because output duration did not divide evenly by outputFrequency" << std::endl;
+            std::cout << "  original outputStartTime = \"" << outputStartTime << "\", outputEndTime = \"" << outputEndTime 
+                    << "\", outputFrequency = \"" << outputFrequency << "\", new outputStartTime = \"" << current_outputStartTime << "\"" << std::endl;
+            outputStartTime = current_outputStartTime;
+        }
+    } // else does divide evenly, no need to adjust anything so no else
     
 
     // set the initial next output time value
@@ -47,27 +89,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis
     numPar = disp->totalParsToRelease;
     std::cout << "[PlumeOutputLagrangian] total number of particle to be saved in file " << numPar << std::endl;
 
-    // initialization of the main particle metadata containers, setting initial vals to different noDataVals
-    parID.resize(numPar,-999);
-    xPos_init.resize(numPar,-999.0);
-    yPos_init.resize(numPar,-999.0);
-    zPos_init.resize(numPar,-999.0);
-    tStrt.resize(numPar,-999.0);
-    sourceIdx.resize(numPar,-999);
-
-    // initialization of the other particle data containers, setting initial vals to different noDataVals
-    xPos.resize(numPar,-999.0);
-    yPos.resize(numPar,-999.0);
-    zPos.resize(numPar,-999.0);
-    uFluct.resize(numPar,-999.0);
-    vFluct.resize(numPar,-999.0);
-    wFluct.resize(numPar,-999.0);
-    delta_uFluct.resize(numPar,-999.0);
-    delta_vFluct.resize(numPar,-999.0);
-    delta_wFluct.resize(numPar,-999.0);
-    isRogue.resize(numPar,-999);
-    isActive.resize(numPar,-999);
-
+    
     for( int par = 0; par < disp->pointList.size(); par++ )
     {
         std::cout << "par[" << par << "]" << std::endl;
@@ -77,44 +99,44 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis
     }
 
 
-    // need to set/create the parId vars now
-    // also, now that the full list of particles is initialized in the dispersion class,
-    // can change all the initial values for all the particle output to be the 
-    // initial values that are already given to each particle
+    // initialize all the output containers
+    // normally this is done by doing a resize, then setting values later,
+    // but the full output needs initial values that match the particle values from the get go
+    // so I will add them by pushback
     for( int par = 0; par < numPar; par++)
     {
-        parID.at(par) = par;
+        parID.push_back(par);
 
-        xPos_init.at(par) = disp->pointList.at(par).xPos_init;
-        yPos_init.at(par) = disp->pointList.at(par).yPos_init;
-        zPos_init.at(par) = disp->pointList.at(par).zPos_init;
-        tStrt.at(par) = disp->pointList.at(par).tStrt;
-        sourceIdx.at(par) = disp->pointList.at(par).sourceIdx;
+        xPos_init.push_back(disp->pointList.at(par).xPos_init);
+        yPos_init.push_back(disp->pointList.at(par).yPos_init);
+        zPos_init.push_back(disp->pointList.at(par).zPos_init);
+        tStrt.push_back(disp->pointList.at(par).tStrt);
+        sourceIdx.push_back(disp->pointList.at(par).sourceIdx);
 
-        xPos.at(par) = disp->pointList.at(par).xPos;
-        yPos.at(par) = disp->pointList.at(par).yPos;
-        zPos.at(par) = disp->pointList.at(par).zPos;
-        uFluct.at(par) = disp->pointList.at(par).uFluct;
-        vFluct.at(par) = disp->pointList.at(par).vFluct;
-        wFluct.at(par) = disp->pointList.at(par).wFluct;
-        delta_uFluct.at(par) = disp->pointList.at(par).delta_uFluct;
-        delta_vFluct.at(par) = disp->pointList.at(par).delta_vFluct;
-        delta_wFluct.at(par) = disp->pointList.at(par).delta_wFluct;
+        xPos.push_back(disp->pointList.at(par).xPos);
+        yPos.push_back(disp->pointList.at(par).yPos);
+        zPos.push_back(disp->pointList.at(par).zPos);
+        uFluct.push_back(disp->pointList.at(par).uFluct);
+        vFluct.push_back(disp->pointList.at(par).vFluct);
+        wFluct.push_back(disp->pointList.at(par).wFluct);
+        delta_uFluct.push_back(disp->pointList.at(par).delta_uFluct);
+        delta_vFluct.push_back(disp->pointList.at(par).delta_vFluct);
+        delta_wFluct.push_back(disp->pointList.at(par).delta_wFluct);
         
         // since no boolean output exists, going to have to convert the values to ints
         if( disp->pointList.at(par).isRogue == true )
         {
-            isRogue.at(par) = 1;
+            isRogue.push_back(1);
         } else
         {
-            isRogue.at(par) = 0;
+            isRogue.push_back(0);
         }
         if( disp->pointList.at(par).isActive == true )
         {
-            isActive.at(par) = 1;
+            isActive.push_back(1);
         } else
         {
-            isActive.at(par) = 0;
+            isActive.push_back(0);
         }
     }
 
@@ -220,6 +242,14 @@ void PlumeOutputLagrangian::save(float currentTime)
             {
                 isActive.at(par) = 0;
             }
+        }
+
+        for( int par = 0; par < disp->pointList.size(); par++ )
+        {
+            std::cout << "par[" << par << "]" << std::endl;
+            std::cout << "xPos_init = \"" << disp->pointList.at(par).xPos_init << "\"" << std::endl;
+            std::cout << "yPos_init = \"" << disp->pointList.at(par).yPos_init << "\"" << std::endl;
+            std::cout << "zPos_init = \"" << disp->pointList.at(par).zPos_init << "\"" << std::endl;
         }
 
 

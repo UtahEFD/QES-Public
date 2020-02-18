@@ -7,9 +7,8 @@
 	<updateFrequency_timeLoop> 100 </updateFrequency_timeLoop>	 <!-- this is used to know how frequently to print out information during the time integration loop of the solver -->
 </simulationParameters>
 <collectionParameters>			<!-- this is for collecting output from Lagrangian particle values to Eulerian values like concentration -->
-	<timeStart> 0.0 </timeStart>
-	<timeEnd> 1000.0 </timeEnd>
-	<timeAvg> 999.0 </timeAvg>		<!-- Still confused why, but I think this usually needs set to be (timeEnd-timeStart) - timeStep. Something to look into in the future -->
+	<timeAvgStart> 0.0 </timeAvgStart>      <!-- time to start concentration averaging, not the time to start output. Adjusted if the time averaging duration does not divide evenly by the averaging frequency -->
+	<timeAvgFreq> 999.0 </timeAvgFreq>		<!-- time averaging frequency and output frequency -->
 	<boxBoundsX1> 0.0 </boxBoundsX1>
 	<boxBoundsX2> 200.0 </boxBoundsX2>
 	<boxBoundsY1> 0.0 </boxBoundsY1>

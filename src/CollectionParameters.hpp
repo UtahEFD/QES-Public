@@ -5,6 +5,7 @@
 //  this is for collecting output from Lagrangian particle values to Eulerian values like concentration
 //
 //  Created by Jeremy Gibbs on 03/25/19.
+//  Modified by Loren Atwood on 02/18/20.
 //
 
 #ifndef COLLECTIONPARAMETERS_HPP
@@ -23,12 +24,12 @@ class CollectionParameters : public ParseInterface {
         int nBoxesX, nBoxesY, nBoxesZ;
         float boxBoundsX1, boxBoundsY1, boxBoundsZ1;
         float boxBoundsX2, boxBoundsY2, boxBoundsZ2;
-        float timeStart, timeEnd, timeAvg ;		// Still confused why, but I think timeAvg usually needs set to be (timeEnd-timeStart) - timeStep. Something to look into in the future
+        float timeAvgStart;     // time to start concentration averaging, not the time to start output. Adjusted if the time averaging duration does not divide evenly by the averaging frequency
+        float timeAvgFreq;      // time averaging frequency and output frequency
     	        
     	virtual void parseValues() {
-        	parsePrimitive< float >(true, timeStart,   "timeStart");
-    		parsePrimitive< float >(true, timeEnd,     "timeEnd");
-    		parsePrimitive< float >(true, timeAvg,     "timeAvg");
+        	parsePrimitive< float >(true, timeAvgStart,   "timeAvgStart");
+    		parsePrimitive< float >(true, timeAvgFreq,    "timeAvgFreq");
         	parsePrimitive< float >(true, boxBoundsX1, "boxBoundsX1");
     		parsePrimitive< float >(true, boxBoundsY1, "boxBoundsY1");
     		parsePrimitive< float >(true, boxBoundsZ1, "boxBoundsZ1");
@@ -46,22 +47,16 @@ class CollectionParameters : public ParseInterface {
         void checkParsedValues()
         {
             // make sure that all variables are greater than 0 except where they need to be at least 0
-            if( timeStart < 0 )
+            if( timeAvgStart < 0 )
             {
-                std::cerr << "(CollectionParameters::checkParsedValues): input timeStart must be greater than or equal to zero!";
-                std::cerr << " timeStart = \"" << timeStart << "\"" << std::endl;
+                std::cerr << "(CollectionParameters::checkParsedValues): input timeAvgStart must be greater than or equal to zero!";
+                std::cerr << " timeAvgStart = \"" << timeAvgStart << "\"" << std::endl;
                 exit(EXIT_FAILURE);
             }
-            if( timeEnd <= 0 )
+            if( timeAvgFreq <= 0 )
             {
-                std::cerr << "(CollectionParameters::checkParsedValues): input timeEnd must be greater than zero!";
-                std::cerr << " timeEnd = \"" << timeEnd << "\"" << std::endl;
-                exit(EXIT_FAILURE);
-            }
-            if( timeAvg <= 0 )
-            {
-                std::cerr << "(CollectionParameters::checkParsedValues): input timeAvg must be greater than zero!";
-                std::cerr << " timeAvg = \"" << timeAvg << "\"" << std::endl;
+                std::cerr << "(CollectionParameters::checkParsedValues): input timeAvgFreq must be greater than zero!";
+                std::cerr << " timeAvgFreq = \"" << timeAvgFreq << "\"" << std::endl;
                 exit(EXIT_FAILURE);
             }
             if( boxBoundsX1 < 0 )
@@ -120,14 +115,11 @@ class CollectionParameters : public ParseInterface {
             }
 
 
-            // make sure the input timeStart is not greater than the timeStart
-            if( timeStart >= timeEnd )
-            {
-                std::cerr << "(CollectionParameters::checkParsedValues): input timeStart must be smaller than input timeEnd!";
-                std::cerr << " timeStart = \"" << timeStart << "\", timeEnd = \"" << timeEnd << "\"" << std::endl;
-                exit(EXIT_FAILURE);
-            }
-
+            // make sure the input timeAvgStart is not greater than the timeEnd
+            // LA note: since the timeAvgEnd is not an input anymore, but is the simulation duration
+            //  (now always ending output and averaging at simulation end time), and since the simulation
+            //  duration is not known at parse time, !!! This check needs done in the time averaging output at constructor time
+            
             // make sure the boxBounds1 is not greater than the boxBounds2 for each dimension
             if( boxBoundsX1 > boxBoundsX2 )
             {
@@ -149,15 +141,12 @@ class CollectionParameters : public ParseInterface {
             }
 
             
-            // make sure timeAvg is not bigger than the collection duration
-            // LA note: this is not the same way an nTimes variable is calculated in plume, I'm assuming that zero doesn't matter
-            float collectionDur = timeEnd - timeStart;
-            if( timeAvg > collectionDur )
-            {
-                std::cerr << "(CollectionParameters::checkParsedValues): input timeAvg must be smaller than or equal to calculated collectionDur!";
-                std::cerr << " timeAvg = \"" << timeAvg << "\", collectionDur = \"" << collectionDur << "\"" << std::endl;
-            }
-
+            // make sure timeAvgFreq is not bigger than the simulation duration
+            // LA note: timeAvgFreq can be as big as the collection duration, or even smaller than the collection duration
+            //  IF timeAvgFreq is at least the same size or smaller than the simulation duration
+            //  UNFORTUNATELY, variables related to the simulation duration are not available here. 
+            //  This means this should probably be checked in the time averaging output at constructor time
+            
         }
 
 };

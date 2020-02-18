@@ -23,14 +23,81 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,Urb* urb_ptr,Disp
     std::cout << "[PlumeOutputLagrToEul] set up NetCDF file " << output_file << std::endl;
 
 
+    // this is the current simulation start time
+    // LA note: this would need adjusted if we ever change the 
+    //  input simulation parameters to include a simStartTime
+    //  instead of just using simDur
+    float simStartTime = 0.0;
+
     // setup output frequency control information
-    timeAvgStart = PID->colParams->timeStart;       // time to start concentration averaging and output
-    timeAvgEnd = PID->colParams->timeEnd;           // time to end concentration averaging and output
-    timeAvgFreq = PID->colParams->timeAvg;          // time averaging frequency and output frequency
+    timeAvgStart = PID->colParams->timeAvgStart;       // time to start concentration averaging, not the time to start output. Adjusted if the time averaging duration does not divide evenly by the averaging frequency
+    timeAvgEnd = PID->simParams->simDur;           // time to end concentration averaging and output. Notice that this is now always the simulation end time
+    timeAvgFreq = PID->colParams->timeAvgFreq;          // time averaging frequency and output frequency
+
+
+    // !!! Because collection parameters could not know anything about simulation duration at parse time,
+    //  need to make this check now
+    // Make sure the timeAvgStart is not greater than the simulation end time
+    if( timeAvgStart > PID->simParams->simDur )
+    {
+        std::cerr << "(CollectionParameters checked during PlumeOutputLagrToEul): input timeAvgStart must be smaller than or equal to the input simulation duration!";
+        std::cerr << " timeAvgStart = \"" << timeAvgStart << "\", simDur = \"" << PID->simParams->simDur << "\"" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    // !!! Because collection parameters could not know anything 
+    //  about the simulation duration at parse time, need to make this check now
+    // Make sure timeAvgFreq is not bigger than the simulation duration
+    // LA note: timeAvgFreq can be as big as the collection duration, or even smaller than the collection duration
+    //  IF timeAvgFreq is at least the same size or smaller than the simulation duration
+    if( timeAvgFreq > PID->simParams->simDur )
+    {
+        std::cerr << "(CollectionParameters checked during PlumeOutputLagrToEul): input timeAvgFreq must be smaller than or equal to the input simulation duration!";
+        std::cerr << " timeAvgFreq = \"" << timeAvgFreq << "\", simDur = \"" << PID->simParams->simDur << "\"" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
     
-    // set the initial next averaging time value, which is also the next output time value
-    nextAvgTime = timeAvgStart + timeAvgFreq;
+    // Determine whether timeAvgStart needs adjusted to make the time average duration divide evenly by the averaging frequency
+    // This is essentially always keeping the timeAvgEnd at what it is (end of the simulation), and adjusting the timeAvgStart
+    // and outputStartTime to avoid slicing off an averaging and output time unless we have to.
+    float avgDur = timeAvgEnd - timeAvgStart;
+    // if doesn't divide evenly, need to adjust timeAvgStart
+    if( avgDur % timeAvgFreq != 0 )
+    {
+        // clever algorythm that always gets the exact number of time averages (and outputs) 
+        // when the time averaging duration divides evenly by the time averaging frequency
+        // and rounds the number of time averages down to what it would be if the start time 
+        // were the next smallest evenly dividing number
+        int nAvgs = std::floor(avgDur/timeAvgFreq);
+    
+        // clever algorythm to always calculate the desired averaging start time based off the number of time averages
+        // the timeAvgStart if not adjusting nAvgs
+        float current_timeAvgStart = timeAvgEnd - timeAvgFreq*(nAvgs);
+        // the timeAvgStart if adjusting nAvgs. Note nAvgs has one extra averaging period
+        float adjusted_timeAvgStart = timeAvgEnd - timeAvgFreq*(nAvgs+1);
+        if( adjusted_timeAvgStart >= simStartTime )
+        {
+            // need to adjust the timeAvgStart to be the adjustedTimeAvgStart
+            // warn the user that the timeAvgStart is being adjusted before adjusting timeAvgStart
+            std::cout << "[PlumeOutputLagrangian]: adjusting timeAvgStart because time averaging duration did not divide evenly by timeAvgFreq" << std::endl;
+            std::cout << "  original timeAvgStart = \"" << timeAvgStart << "\", timeAvgEnd = \"" << timeAvgEnd 
+                    << "\", timeAvgFreq = \"" << timeAvgFreq << "\", new timeAvgStart = \"" << adjusted_timeAvgStart << "\"" << std::endl;
+            timeAvgStart = adjusted_timeAvgStart;
+        } else
+        {
+            // need to adjust the timeAvgStart to be the currentTimeAvgStart
+            // warn the user that the timeAvgStart is being adjusted before adjusting timeAvgStart
+            std::cout << "[PlumeOutputLagrangian]: adjusting timeAvgStart because time averaging duration did not divide evenly by timeAvgFreq" << std::endl;
+            std::cout << "  original timeAvgStart = \"" << timeAvgStart << "\", timeAvgEnd = \"" << timeAvgEnd 
+                    << "\", timeAvgFreq = \"" << timeAvgFreq << "\", new timeAvgStart = \"" << current_timeAvgStart << "\"" << std::endl;
+            timeAvgStart = current_timeAvgStart;
+        }
+    } // else does divide evenly, no need to adjust anything so no else
+
+
+    // set the initial next output time value
+    nextOutputTime = timeAvgStart + timeAvgFreq;
     
     
     // setup copy of disp pointer so output data can be grabbed directly
@@ -166,13 +233,13 @@ void PlumeOutputLagrToEul::save(float currentTime)
     //   just bin twice for the timeAvgStart time, once on each time average period that falls on that time.
     if( currentTime > timeAvgStart && currentTime <= timeAvgEnd )
     {
-        boxCount(currentTime);
+        boxCount();
     }
 
-    // only calculate the concentration and do output if it is during the next averaging (output) time
-    //  also reinitialize the counter (cBox) in prep of the next concentration averaging (output) time
+    // only calculate the concentration and do output if it is during the next output time
+    //  also reinitialize the counter (cBox) in prep of the next concentration time averaging period
     // LA note: No need to adjust this one to be > instead of >=, just the binning.
-    if( currentTime >= nextAvgTime && currentTime <= timeAvgEnd )
+    if( currentTime >= nextOutputTime && currentTime <= timeAvgEnd )
     {
         // FM, updated by LA, future work, need to adjust: the current output 
         //  is particle per volume, not mass per volume
@@ -191,7 +258,7 @@ void PlumeOutputLagrToEul::save(float currentTime)
         for( auto id = 0; id <  conc.size();id++ )
         {
             conc.at(id) = cBox.at(id)*cc;
-            // notice that the number of particles per box is reset for the next averaging time
+            // notice that the number of particles per box is reset for the next averaging period
             cBox.at(id) = 0.0;
         }
 
@@ -216,14 +283,15 @@ void PlumeOutputLagrToEul::save(float currentTime)
         output_counter +=1;
 
 
-        // update the next averaging (output) time so averaging (output) only happens at averaging (output) frequency
-        nextAvgTime = nextAvgTime + timeAvgFreq;    
+        // update the next output time value 
+        // so averaging and output only happens at the averaging frequency
+        nextOutputTime = nextOutputTime + timeAvgFreq;
 
     }
 
 };
 
-void PlumeOutputLagrToEul::boxCount(float currentTime)
+void PlumeOutputLagrToEul::boxCount()
 {
 
     // for all particles see where they are relative to the
@@ -231,7 +299,7 @@ void PlumeOutputLagrToEul::boxCount(float currentTime)
     for(int i = 0; i < disp->pointList.size(); i++)
     {
         // because particles all start out as active now, need to also check the release time
-        if( currentTime >= disp->pointList.at(i).tStrt && disp->pointList.at(i).isActive == true )
+        if( disp->pointList.at(i).isActive == true )
         {
 
             // get the current position of the particle

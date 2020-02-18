@@ -7,9 +7,8 @@
 	<updateFrequency_timeLoop> 100 </updateFrequency_timeLoop>
 </simulationParameters>
 <collectionParameters>
-	<timeStart> 0.0 </timeStart>
-	<timeEnd> 1000.0 </timeEnd>
-	<timeAvg> 999.0 </timeAvg>
+	<timeAvgStart> 0.0 </timeAvgStart>
+	<timeAvgFreq> 999.0 </timeAvgFreq>
 	<boxBoundsX1> 0.0 </boxBoundsX1>
 	<boxBoundsX2> 200.0 </boxBoundsX2>
 	<boxBoundsY1> 0.0 </boxBoundsY1>

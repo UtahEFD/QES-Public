@@ -49,12 +49,13 @@ class PlumeOutputLagrangian : public NetCDFOutputGeneric
     private:
 
         // Output frequency control information
-        float outputStartTime;   // time to start output
+        float outputStartTime;   // time to start output, adjusted if the output duration does not divide evenly by the output frequency
         float outputEndTime;  // time to end output
         float outputFrequency;  // output frequency
 
-        // next output time value that is updated each time save is called and there is output
-        float nextOutputTime;
+
+        // variables needed for getting proper output time control
+        float nextOutputTime;   // next output time value that is updated each time save is called and there is output
 
         // pointer to the class that save needs to use to get the data for the concentration calculation
         Dispersion* disp;
