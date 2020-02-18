@@ -35,7 +35,7 @@ public:
 		parsePrimitive<int>(true, z0_domain_flag, "z0_domain_flag");
 		parsePrimitive<std::string>(false, siteName, "siteName");
 		parsePrimitive<std::string>(false, fileName, "fileName");
-		parseMultiElements<Sensor>(true, sensors, "sensor");
+		parseMultiElements<Sensor>(false, sensors, "sensor");
 
 	}
 };
