@@ -9,6 +9,7 @@ void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float d
 
    int cellNum =0;
 
+#pragma acc parallel loop independent
    for(int k = 0; k< dimZ - 1; k++) {
       for(int j = 0; j < dimY - 1; j++){
          for(int i = 0; i < dimX -1; i++){
