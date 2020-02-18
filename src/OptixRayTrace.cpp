@@ -128,18 +128,17 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
 void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::vector<Vertex> &trisArray){
    Vertex tempVertexA, tempVertexB, tempVertexC;
    for(int i = 0; i < tris.size(); i++){ //get access to the Triangle at index
+      tempVertexA.x = (*(tris[i]->a))[0];
+      tempVertexA.y = (*(tris[i]->a))[1];
+      tempVertexA.z = (*(tris[i]->a))[2];
 
-      tempVertexA.x = *(tris[i]->a)[0];
-      tempVertexA.y = *(tris[i]->a)[1];
-      tempVertexA.z = *(tris[i]->a)[2];
+      tempVertexB.x = (*(tris[i]->b))[0];
+      tempVertexB.y = (*(tris[i]->b))[1];
+      tempVertexB.z = (*(tris[i]->b))[2];
 
-      tempVertexB.x = *(tris[i]->b)[0];
-      tempVertexB.y = *(tris[i]->b)[1];
-      tempVertexB.z = *(tris[i]->b)[2];
-
-      tempVertexC.x = *(tris[i]->c)[0];
-      tempVertexC.y = *(tris[i]->c)[1];
-      tempVertexC.z = *(tris[i]->c)[2];
+      tempVertexC.x = (*(tris[i]->c))[0];
+      tempVertexC.y = (*(tris[i]->c))[1];
+      tempVertexC.z = (*(tris[i]->c))[2];
 
       trisArray.push_back(tempVertexA);
       trisArray.push_back(tempVertexB);
@@ -224,13 +223,9 @@ void OptixRayTrace::createModule(){
 
    state.pipeline_compile_options.pipelineLaunchParamsVariableName = "params";
 
-   //TODO: create optixRayTracing.cu file to set string ptx to
-
 
    //OptiX error reporting
    char log[2048]; size_t sizeof_log = sizeof(log);
-
-   std::string ptx = sutil::getPtxString(OPTIX_SAMPLE_NAME, "OptixRayTrace.cu");
 
    optixModuleCreateFromPTX(
       state.context,
@@ -356,7 +351,7 @@ void OptixRayTrace::createSBT(){
    //TODO: make sure that the hitgroup record size is correct
    //TODO: do I need to initialize anything in hit record here?
 
-   const size_t hit_record_size = sizeof(HitGroupRecord) * state.samples_per_cell *state.num_cells;
+   const size_t hit_record_size = sizeof(HitGroupRecord) * state.samples_per_cell * state.num_cells;
 
    HitGroupRecord sbt_hit;
 

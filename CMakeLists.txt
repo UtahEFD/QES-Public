@@ -98,9 +98,11 @@ include_directories(
   "${OptiX_INCLUDE}"
   )
 
-set(SAMPLES_PTX_DIR "${CMAKE_BINARY_DIR}/lib/ptx")
-set(SAMPLES_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-set(CUDA_GENERATED_OUTPUT_DIR ${SAMPLES_PTX_DIR})
+#set(SAMPLES_PTX_DIR "${CMAKE_BINARY_DIR}/lib/ptx")
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ptx") #ptx files located here 
+add_definitions(-DPTX_DIR="${CMAKE_CURRENT_BINARY_DIR}/ptx") #PTX_DIR
+#set(SAMPLES_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+#set(CUDA_GENERATED_OUTPUT_DIR ${SAMPLES_PTX_DIR})
 
 
 function(OPTIX_add_library target_name)

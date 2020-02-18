@@ -12,10 +12,10 @@ extern "C" {
 __constant__ Params params;
 }
 
-extern "C" __global__void__raygen__from_cell(){
+extern "C" __global__ void __raygen__from_cell(){
   const uint3 idx = optixGetLaunchIndex();
   const uint3 dim = optixGetLaunchDimensions();
-  const unit32_t linear_idx = (idx.z*dim.x*dim.y) + (idx.y*dim.x) + idx.x;
+  const uint32_t linear_idx = (idx.z*dim.x*dim.y) + (idx.y*dim.x) + idx.x;
 
   uint32_t t;
 
@@ -49,8 +49,11 @@ extern "C" __global__void__raygen__from_cell(){
    //    float dx, dy, dx;
 
    //    //add random sphere direction functionality
-      
-   //    params.rays[linear_idx].dir = make_float3(dx, dy, dz);
+    //  Vertex vdir;
+     // vdir.x = dx;
+     // vdir.y = dy;
+     // vdir.z = dz;
+   //    params.rays[linear_idx].dir = vdir;
 
    //    optixTrace(params.handle,
    //           params.rays[linear_idx].origin,
@@ -82,11 +85,11 @@ extern "C" __global__void__raygen__from_cell(){
    //multiple samples version end
 }
 
-extern "C" __global__void__miss__miss(){
+extern "C" __global__ void __miss__miss(){
   optixSetPayload_0(); //need to set to a large number 
 }
 
-extern "C" __global__void__closesthit__mixlength(){
+extern "C" __global__ void __closesthit__mixlength(){
 HitGroupData rt_data = (HitGroupData *)optixGetSbtDataPointer();
 const uint32_t t = optixGetRayTmax();
 

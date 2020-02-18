@@ -66,10 +66,7 @@ struct HitGroupData{
 struct RayTracingState{
    OptixDeviceContext context = 0;
    CUstream stream = 0;
-
-   int width = 0;   //Note: this will most likely be "world" params
-   int height = 0;
-
+   
    OptixModule ptx_module  = 0;
    OptixPipelineCompileOptions pipeline_compile_options = {};
 
@@ -126,5 +123,8 @@ class OptixRayTrace{
 
    size_t roundUp(size_t x, size_t y);
    
-   
+
+   //ptx string definition (this is a hardcoded version, since there
+   //is only one .cu file
+   std::string ptx = PTX_DIR + "OptixRayTrace.cu.ptx";
 };
