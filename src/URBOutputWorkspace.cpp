@@ -7,12 +7,12 @@ URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_fi
   
   // set list of fields to save, no option available for this file
   if (ugd->includesMixingLength()) {
-      output_fields = {"t","x","y","z","u","v","w","icell","terrain",
+      output_fields = {"t","x_cc","y_cc","z_cc","u","v","w","icell","terrain",
                        "mixlength",
                        "e","f","g","h","m","n"};
   }
   else {
-      output_fields = {"t","x","y","z","u","v","w","icell","terrain",
+      output_fields = {"t","x_cc","y_cc","z_cc","u","v","w","icell","terrain",
                        "e","f","g","h","m","n"};
   }
   
@@ -75,13 +75,13 @@ URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_fi
   // create attributes space dimensions 
   std::vector<NcDim> dim_vect_x_cc;
   dim_vect_x_cc.push_back(NcDim_x_cc);
-  createAttVector("x","x-distance","m",dim_vect_x_cc,&x_cc);
+  createAttVector("x_cc","x-distance","m",dim_vect_x_cc,&x_cc);
   std::vector<NcDim> dim_vect_y_cc;
   dim_vect_y_cc.push_back(NcDim_y_cc);
-  createAttVector("y","y-distance","m",dim_vect_y_cc,&y_cc);
+  createAttVector("y_cc","y-distance","m",dim_vect_y_cc,&y_cc);
   std::vector<NcDim> dim_vect_z_cc;
   dim_vect_z_cc.push_back(NcDim_z_cc); 
-  createAttVector("z","z-distance","m",dim_vect_z_cc,&z_cc);
+  createAttVector("z_cc","z-distance","m",dim_vect_z_cc,&z_cc);
 
   // create 2D vector (surface, indep of time)
   std::vector<NcDim> dim_vect_2d;
@@ -105,10 +105,6 @@ URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_fi
   }
 
   // attributes for coefficients for SOR solver
-  dim_vect_cc.clear();
-  dim_vect_cc.push_back(NcDim_z_cc);
-  dim_vect_cc.push_back(NcDim_y_cc);
-  dim_vect_cc.push_back(NcDim_x_cc);
   createAttVector("e","e cut-cell coefficient","--",dim_vect_cc,&(ugd_->e));  
   createAttVector("f","f cut-cell coefficient","--",dim_vect_cc,&(ugd_->f)); 
   createAttVector("g","g cut-cell coefficient","--",dim_vect_cc,&(ugd_->g)); 

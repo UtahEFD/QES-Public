@@ -120,7 +120,7 @@ private:
     //if (j * m_nXSize + k >= m_nXSize * m_nYSize
     else
     {
-      height = scanline[ k * m_nXSize + j ];
+      height = scanline[ abs(k-m_nYSize) * m_nXSize + j ];
     }
 
     //std::cout << "domainx:   " << m_nXSize << std::endl;
