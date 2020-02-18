@@ -59,7 +59,6 @@
   <outputFields>v</outputFields> 
   <outputFields>w</outputFields>
   <outputFields>icell</outputFields>
-  <outputFields>mixlength</outputFields> 
   <massConservedFlag> 0 </massConservedFlag>
   <sensorVelocityFlag> 0 </sensorVelocityFlag>
   <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
