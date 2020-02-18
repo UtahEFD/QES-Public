@@ -86,6 +86,7 @@ ENDIF(CUDA_FOUND)
 
 #
 #NVIDIA OptiX
+#   current version used in project: 7.0
 #
 
 #use fast math option is required for OptiX
@@ -96,6 +97,11 @@ FIND_PACKAGE(OptiX REQUIRED)
 include_directories(
   "${OptiX_INCLUDE}"
   )
+
+set(SAMPLES_PTX_DIR "${CMAKE_BINARY_DIR}/lib/ptx")
+set(SAMPLES_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(CUDA_GENERATED_OUTPUT_DIR ${SAMPLES_PTX_DIR})
+
 
 function(OPTIX_add_library target_name)
   source_group("PTX Files" REGULAR_EXPRESSION ".+\\.ptx$")
@@ -114,7 +120,7 @@ function(OPTIX_add_library target_name)
     ${cmake_options}
     )
 
-  target_link_libraries(
+  target_link_libraries(${target_name}
     optix
     ${optix_rpath}
     )
