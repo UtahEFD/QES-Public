@@ -18,7 +18,7 @@ void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float d
 
              if(icellflag[icell_idx] == 1){
 
-               SphereDirections sd(18, -1,1, 0,2*M_PI);
+               SphereDirections sd(128, -1,1, 0,2*M_PI);
                
                float maxLength = std::numeric_limits<float>::infinity();
 
@@ -26,8 +26,8 @@ void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float d
                Ray ray((i+0.5)*dx, (j+0.5)*dy, (k+0.5)*dz);
 
                HitRecord hit;
-               float t1 = -1;
-               float t0 = 0;
+//               float t1 = -1;
+//               float t0 = 0;
 
                //for all possible directions, determine the distance
 
@@ -36,7 +36,7 @@ void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float d
                   // ray.setDir(sd.getNextDirCardinal());
                   ray.setDir(sd.getNextDir());
 
-                  bool isHit = tris->rayHit(ray, t0, t1, hit);
+                  bool isHit = tris->rayHit(ray, hit);
 
                   if(isHit){
                       // std::cout<<"Hit found."<<std::endl;

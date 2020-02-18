@@ -65,7 +65,9 @@ private:
         numDirs = numDV + 5;
         nextList = new Vec3D[ numDirs ];
 
-        for (int i=0; i<numDV; i++) {
+        // for (int i=0; i<numDV; i++) {
+        int i = 0;
+        while (i < numDV) {
 
             float theta2 = std::asin(theta(e2));
 
@@ -75,7 +77,16 @@ private:
             
             float magnitude = std::sqrt(dx*dx + dy*dy + dz*dz);
 
-            nextList[i] = Vec3D(dx/magnitude,dy/magnitude,dz/magnitude);
+            // only send rays mostly down but a little up... can use
+            // dot product between (0, 0, 1) and vector
+            Vec3D dirVec( dx/magnitude,dy/magnitude,dz/magnitude );
+
+            float dotProd = dirVec[0]*0.0f + dirVec[1]*0.0f + dirVec[2]*1.0f;
+                
+            if (dotProd < 0.20) {
+                nextList[i] = Vec3D(dx/magnitude,dy/magnitude,dz/magnitude);
+                i++;
+            }
         }
         
         // Then make sure the cardinal directions that may matter are
