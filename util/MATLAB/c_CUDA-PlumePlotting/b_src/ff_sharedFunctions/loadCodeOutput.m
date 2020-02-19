@@ -159,7 +159,7 @@ function [fileExists_array, saveBasename_array,  current_time_array,timestep_arr
         
         
         % now get the dimensions of the data
-        nTimes = length(urb_times);
+        nTimes = length(lagr_times);
         %nx = length(urb_x);
         %ny = length(urb_y);
         %nz = length(urb_z);
