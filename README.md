@@ -96,5 +96,67 @@ It may also be a good idea to eventually add visitPlotRunScripts and visitPlotOu
 Be aware that while the .xml and .sh batch files are tracked for each test case, the urb and turb netcdf files are only tracked for the Bailey test cases. You will need to generate your own urb and turb files for the other test cases before running CUDA-Plume on those cases.
 
 
+\
+\
+\
+
+An extra set of plot tools has just been started in the /util/MATLAB/c_CUDA-PlumePlotting/a_runscripts/c_particlePlots directory. The idea is that these scripts can be a starting point for visualizing lagrangian particle data. Once the plotting methods get more generalized, they should be wrapped up into functions, but for now the idea is to do whatever you need to do to load in data from a simulation, and start plotting particle information. This example also shows how to create videos of the plot output in matlab.
+
+
+
+### Useful chpc information
+
+Normally you run scripts by finding the created script executable (in this case plume) and running:
+```
+./plume
+```
+But on chpc, you need to create a proper batch script (in this case runscript.sh), then call the batch script with:
+```
+sbatch runscript.sh
+```
+You can then query the run by calling one of these two lines of code:
+
+```
+squeue -u uID
+or
+squeue -A account
+```
+You can then cancel the run early or let it run to completion. Once it starts to run, it produces a slurm file with the results of the run. To cancel the run, use squeue to find the processID, then call:
+
+```
+scancel processID
+```
+
+\
+\
+Modifying the runscript file to get the right account, partition, and qos can be tricky. Use the following command to see what is available to you:
+```
+sacctmgr -p show assoc user=uID
+```
+You can paste the result in excel and use Data/text-to-column with the "|" char to get it easy to read. It doesn't list the partition, but qos is the same thing as the partition. You can find more information about all available accounts and partitions at: https://www.chpc.utah.edu/documentation/policies/2.1GeneralHPCClusterPolicies.php
+
+
+Getting the right type of gpu is also tricky. Basically different accounts have access to different resources. It's kind of trial and error looking up information, or trying things out, but this website at least tells you some of the possible combinations: https://www.chpc.utah.edu/documentation/guides/gpus-accelerators.php
+
+
+The example runscript files may or may not work for you, but they are the starting spot to figure out combinations that should work for you. If they have kp in the name, they are for kingspeak. If np, they are for notchpeak. If they have cpu, they are for cpu only computations. If they have gpu in the name, they are for a mix of cpu and gpu computations. Note even if the code has been pre-built, you will need to repeat the module loads as if compiling the script the first time you run the code from a new login session.
+
+
+\
+\
+It can be tricky to transfer files back and forth with chpc. To access kingspeak or notchpeak, do one of these two lines of code, putting in your uID:
+```
+ssh uID@kingspeak.chpc.utah.edu
+or
+ssh uID@notchpeak.chpc.utah.edu
+```
+After you figure out where you want to send files on the chpc server, and you are in the directory of the folder you want to send (in this case one folder above CUDA-Plume), do the following:
+```
+scp -r ./CUDA-Plume/ uID@kingspeak.chpc.utah.edu:CUDA-Plume/
+```
+
+
+
+
 
 
