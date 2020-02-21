@@ -23,6 +23,7 @@ public:
   void save(float);
  
 private:
+
   std::vector<float> x_cc,y_cc,z_cc;
 
   URBGeneralData* ugd_;

@@ -3,17 +3,15 @@
 URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_file)
   : NetCDFOutputGeneric(output_file)
 {
-  std::cout<<"Setting fields of TURBInputFile file"<<std::endl;
+  std::cout<<"Setting fields of workspace file"<<std::endl;
   
   // set list of fields to save, no option available for this file
+  output_fields = {"t","x_cc","y_cc","z_cc","u","v","w","icell",
+                   "terrain","z0_u","z0_v",
+                   "e","f","g","h","m","n"};
+  
   if (ugd->includesMixingLength()) {
-      output_fields = {"t","x_cc","y_cc","z_cc","u","v","w","icell","terrain",
-                       "mixlength",
-                       "e","f","g","h","m","n"};
-  }
-  else {
-      output_fields = {"t","x_cc","y_cc","z_cc","u","v","w","icell","terrain",
-                       "e","f","g","h","m","n"};
+    output_fields.push_back("mixlength");
   }
   
   // copy of ugd pointer
@@ -89,6 +87,8 @@ URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_fi
   dim_vect_2d.push_back(NcDim_x_cc);
   // create attributes 
   createAttVector("terrain","terrain height","m",dim_vect_2d,&(ugd_->terrain));
+  createAttVector("z0_u","terrain areo roughness, u","m",dim_vect_2d,&(ugd_->z0_domain_u));
+  createAttVector("z0_v","terrain areo roughness, v","m",dim_vect_2d,&(ugd_->z0_domain_v));
 
   // 3D vector dimension (time dep)
   std::vector<NcDim> dim_vect_cc;
@@ -114,23 +114,23 @@ URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_fi
   
   // adding building informations
   /* FM -> commented in workingBranch
-  if (ugd_->allBuildingsV.size()>0) {
-    // building dimension
-    NcDim NcDim_building=addDimension("building",ugd_->allBuildingsV.size());
-    // vector of dimension for building information 
-    std::vector<NcDim> dim_vect_building;
-    dim_vect_building.push_back(NcDim_building);
+     if (ugd_->allBuildingsV.size()>0) {
+     // building dimension
+     NcDim NcDim_building=addDimension("building",ugd_->allBuildingsV.size());
+     // vector of dimension for building information 
+     std::vector<NcDim> dim_vect_building;
+     dim_vect_building.push_back(NcDim_building);
         
-    // vector of dimension for time dep building information 
-    std::vector<NcDim> dim_vect_building_t;
-    dim_vect_building_t.push_back(NcDim_t);
-    dim_vect_building_t.push_back(NcDim_building);
-    // create attributes
-    createAttVector("effective_height","effective height of building","m",
-		    dim_vect_building_t,&(ugd_->effective_height)); 
-    output_fields.push_back("effective_height");
+     // vector of dimension for time dep building information 
+     std::vector<NcDim> dim_vect_building_t;
+     dim_vect_building_t.push_back(NcDim_t);
+     dim_vect_building_t.push_back(NcDim_building);
+     // create attributes
+     createAttVector("effective_height","effective height of building","m",
+     dim_vect_building_t,&(ugd_->effective_height)); 
+     output_fields.push_back("effective_height");
     
-  }
+     }
   */
 
   // create output fields
