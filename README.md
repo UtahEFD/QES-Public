@@ -98,8 +98,6 @@ Be aware that while the .xml and .sh batch files are tracked for each test case,
 
 \
 \
-\
-
 An extra set of plot tools has just been started in the /util/MATLAB/c_CUDA-PlumePlotting/a_runscripts/c_particlePlots directory. The idea is that these scripts can be a starting point for visualizing lagrangian particle data. Once the plotting methods get more generalized, they should be wrapped up into functions, but for now the idea is to do whatever you need to do to load in data from a simulation, and start plotting particle information. This example also shows how to create videos of the plot output in matlab.
 
 
