@@ -113,25 +113,18 @@ URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_fi
   createAttVector("n","n cut-cell coefficient","--",dim_vect_cc,&(ugd_->n)); 
   
   // adding building informations
-  /* FM -> commented in workingBranch
-     if (ugd_->allBuildingsV.size()>0) {
-     // building dimension
-     NcDim NcDim_building=addDimension("building",ugd_->allBuildingsV.size());
-     // vector of dimension for building information 
-     std::vector<NcDim> dim_vect_building;
-     dim_vect_building.push_back(NcDim_building);
-        
-     // vector of dimension for time dep building information 
-     std::vector<NcDim> dim_vect_building_t;
-     dim_vect_building_t.push_back(NcDim_t);
-     dim_vect_building_t.push_back(NcDim_building);
-     // create attributes
-     createAttVector("effective_height","effective height of building","m",
-     dim_vect_building_t,&(ugd_->effective_height)); 
-     output_fields.push_back("effective_height");
+  if (ugd_->allBuildingsV.size()>0) {
+    std::cout<<"Setting building fields in workspace file"<<std::endl;
+     
+    // set building dimension
+    NcDim NcDim_building=addDimension("building",ugd_->allBuildingsV.size());
     
-     }
-  */
+    // set building information fields (everything in the vector allBuildingsV)
+    setBuildingFields(&NcDim_t,&NcDim_building);
+    
+    // set flag for save function
+    buildingFieldsSet = true;    
+  }
 
   // create output fields
   addOutputFields();
@@ -145,6 +138,11 @@ void URBOutputWorkspace::save(float timeOut)
   // set time
   time = (double)timeOut;
   
+  // fetching building information if fields are set.
+  if(buildingFieldsSet) {
+    getBuildingFields();
+  }
+
   // save fields
   saveOutputFields();
 
@@ -158,3 +156,153 @@ void URBOutputWorkspace::save(float timeOut)
 
   
 };
+
+void URBOutputWorkspace::setBuildingFields(NcDim* NcDim_t,NcDim* NcDim_building)
+{
+  int nBuildings=ugd_->allBuildingsV.size();
+  std::vector<string> tmp_fields;
+
+  building_rotation.resize(nBuildings,0.0);
+  canopy_rotation.resize(nBuildings,0.0);
+
+  L.resize(nBuildings,0.0);
+  W.resize(nBuildings,0.0);
+  H.resize(nBuildings,0.0);
+  
+  length_eff.resize(nBuildings,0.0);
+  width_eff.resize(nBuildings,0.0);
+  height_eff.resize(nBuildings,0.0);
+  base_height.resize(nBuildings,0.0); 
+
+  building_cent_x.resize(nBuildings,0.0);
+  building_cent_y.resize(nBuildings,0.0);
+  
+  i_start.resize(nBuildings,0);
+  i_end.resize(nBuildings,0);
+  j_start.resize(nBuildings,0);
+  j_end.resize(nBuildings,0);
+  k_end.resize(nBuildings,0);
+
+  i_cut_start.resize(nBuildings,0);
+  i_cut_end.resize(nBuildings,0);
+  j_cut_start.resize(nBuildings,0);
+  j_cut_end.resize(nBuildings,0);
+  k_cut_end.resize(nBuildings,0);
+
+  i_building_cent.resize(nBuildings,0);
+  j_building_cent.resize(nBuildings,0);
+  
+  upwind_dir.resize(nBuildings,0.0);
+  Lr.resize(nBuildings,0.0);
+
+  // vector of dimension for building information 
+  std::vector<NcDim> dim_vect_building;
+  dim_vect_building.push_back(*NcDim_building);
+  
+  // create attributes
+  createAttVector("building_rotation","rotation of building","rad",dim_vect_building,&building_rotation);
+  createAttVector("canopy_rotation","rotation of canopy","rad",dim_vect_building,&building_rotation); 
+
+  createAttVector("L","length of building","m",dim_vect_building,&L); 
+  createAttVector("W","width of building","m",dim_vect_building,&L); 
+  createAttVector("H","height of building","m",dim_vect_building,&H); 
+
+  createAttVector("height_eff","effective height","m",dim_vect_building,&height_eff);
+  createAttVector("base_height","base height","m",dim_vect_building,&base_height);
+
+  createAttVector("building_cent_x","x-coordinate of centroid","m",dim_vect_building,&building_cent_x);
+  createAttVector("building_cent_y","y-coordinate of centroid","m",dim_vect_building,&building_cent_y);
+  
+  createAttVector("i_start","x-index start","--",dim_vect_building,&i_start);
+  createAttVector("i_end","x-index end","--",dim_vect_building,&i_end);
+  createAttVector("j_start","y-index start","--",dim_vect_building,&j_start);
+  createAttVector("j_end","y-index end","--",dim_vect_building,&j_end);
+  createAttVector("k_start","z-index end","--",dim_vect_building,&k_end);
+
+  createAttVector("i_cut_start","x-index start cut-cell","--",dim_vect_building,&i_cut_start);
+  createAttVector("i_cut_end","x-index end cut-cell","--",dim_vect_building,&i_cut_end);
+  createAttVector("j_cut_start","y-index start cut-cell","--",dim_vect_building,&j_cut_start);
+  createAttVector("j_cut_end","y-index end cut-cell","--",dim_vect_building,&j_cut_end);
+  createAttVector("k_cut_start","z-index end cut-cell","--",dim_vect_building,&k_cut_end);
+
+  createAttVector("i_building_cent","x-index of centroid","--",dim_vect_building,&i_building_cent);
+  createAttVector("i_building_cent","y-index of centroid","--",dim_vect_building,&i_building_cent);  
+ 
+  tmp_fields.clear();  // clear the vector 
+  tmp_fields={"building_rotation","canopy_rotation","L","W","H","height_eff","base_height",
+              "building_cent_x","building_cent_y",
+              "i_start","i_end","j_start","j_end","k_start",
+              "i_cut_start","i_cut_end","j_cut_start","j_cut_end","k_cut_start",
+              "i_building_cent","j_building_cent"};
+  output_fields.insert(output_fields.end(),tmp_fields.begin(),tmp_fields.end());
+
+  // vector of dimension for time dep building information 
+  std::vector<NcDim> dim_vect_building_t;
+  dim_vect_building_t.push_back(*NcDim_t);
+  dim_vect_building_t.push_back(*NcDim_building);
+  
+  // create attributes
+  createAttVector("length_eff","effective length","m",dim_vect_building_t,&length_eff);
+  createAttVector("width_eff","effective width","m",dim_vect_building_t,&width_eff);
+
+  createAttVector("upwind_dir","upwind wind direction","rad",dim_vect_building_t,&upwind_dir);
+  createAttVector("Lr","Length of far wake zone","m",dim_vect_building_t,&Lr);
+
+  tmp_fields.clear();  // clear the vector 
+  tmp_fields={"length_eff","width_eff","upwind_dir","Lr"};
+  output_fields.insert(output_fields.end(),tmp_fields.begin(),tmp_fields.end());
+
+  
+
+  return;
+}
+
+void URBOutputWorkspace::getBuildingFields()
+{
+  int nBuildings=ugd_->allBuildingsV.size();
+  
+  // information only needed once (at output_counter==0)
+  if (output_counter==0) {
+    // copy time independent fields
+    for(int id=0;id<nBuildings;++id) {
+      building_rotation[id]=ugd_->allBuildingsV[id]->building_rotation;
+      canopy_rotation[id]=ugd_->allBuildingsV[id]->canopy_rotation;
+      
+      L[id]=ugd_->allBuildingsV[id]->L;
+      W[id]=ugd_->allBuildingsV[id]->W;
+      H[id]=ugd_->allBuildingsV[id]->H;
+
+      height_eff[id]=ugd_->allBuildingsV[id]->height_eff;
+      base_height[id]=ugd_->allBuildingsV[id]->base_height;
+      
+      building_cent_x[id]=ugd_->allBuildingsV[id]->building_cent_x;
+      building_cent_y[id]=ugd_->allBuildingsV[id]->building_cent_y;
+      
+      i_start[id]=ugd_->allBuildingsV[id]->i_start;
+      i_end[id]=ugd_->allBuildingsV[id]->i_end;
+      j_start[id]=ugd_->allBuildingsV[id]->j_start;
+      j_end[id]=ugd_->allBuildingsV[id]->j_end;
+      k_end[id]=ugd_->allBuildingsV[id]->k_end;
+
+      i_cut_start[id]=ugd_->allBuildingsV[id]->i_cut_start;
+      i_cut_end[id]=ugd_->allBuildingsV[id]->i_cut_end;
+      j_cut_start[id]=ugd_->allBuildingsV[id]->j_cut_start;
+      j_cut_end[id]=ugd_->allBuildingsV[id]->j_cut_end;
+      k_cut_end[id]=ugd_->allBuildingsV[id]->k_cut_end;
+
+      i_building_cent[id]=ugd_->allBuildingsV[id]->i_building_cent;
+      j_building_cent[id]=ugd_->allBuildingsV[id]->j_building_cent;
+    }
+  }
+  
+  // copy time dependent fields
+  for(int id=0;id<nBuildings;++id) {
+       length_eff[id]=ugd_->allBuildingsV[id]->length_eff;
+       width_eff[id]=ugd_->allBuildingsV[id]->width_eff;
+       
+       upwind_dir[id]=ugd_->allBuildingsV[id]->upwind_dir;
+       Lr[id]=ugd_->allBuildingsV[id]->Lr;
+  }
+  
+  return;
+}
