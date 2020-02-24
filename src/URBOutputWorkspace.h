@@ -28,12 +28,16 @@ private:
 
   URBGeneralData* ugd_;
 
-  // Building data
+  // Building data functions:
   void setBuildingFields(NcDim*,NcDim*);
   void getBuildingFields();
   
+  // Buidling data variables
   bool buildingFieldsSet = false;
 
+  // These variables are used to convert data structure in array so it can be stored in 
+  // NetCDF file. (Canopy can be building, need to specify)
+  // size of these vector = number of buidlings
   std::vector<float> building_rotation,canopy_rotation;
 
   std::vector<float> L,W,H;

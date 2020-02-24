@@ -8,7 +8,7 @@ URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_fi
   // set list of fields to save, no option available for this file
   output_fields = {"t","x_cc","y_cc","z_cc","u","v","w","icell",
                    "terrain","z0_u","z0_v",
-                   "e","f","g","h","m","n"};
+                   "e","f","g","h","m","n","building_volume_frac","terrain_volume_frac"};
   
   if (ugd->includesMixingLength()) {
     output_fields.push_back("mixlength");
@@ -17,12 +17,10 @@ URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_fi
   // copy of ugd pointer
   ugd_=ugd;
 
+  // domain size information:
   int nx = ugd_->nx;
   int ny = ugd_->ny;
   int nz = ugd_->nz;
-
-  // copy of ugd pointer
-  ugd_=ugd;
 
   // Location of face centers in z-dir
   z_cc.resize( nz-1 );
@@ -112,6 +110,10 @@ URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_fi
   createAttVector("m","m cut-cell coefficient","--",dim_vect_cc,&(ugd_->m)); 
   createAttVector("n","n cut-cell coefficient","--",dim_vect_cc,&(ugd_->n)); 
   
+  // attribute for the volume fraction (cut-cell)
+  createAttVector("building_volume_frac","building volume fraction","--",dim_vect_cc,&(ugd_->building_volume_frac)); 
+  createAttVector("terrain_volume_frac","terrain volume fraction","--",dim_vect_cc,&(ugd_->terrain_volume_frac)); 
+
   // adding building informations
   if (ugd_->allBuildingsV.size()>0) {
     std::cout<<"Setting building fields in workspace file"<<std::endl;
@@ -153,14 +155,12 @@ void URBOutputWorkspace::save(float timeOut)
   
   // increment for next time insertion
   output_counter +=1;
-
   
 };
 
 void URBOutputWorkspace::setBuildingFields(NcDim* NcDim_t,NcDim* NcDim_building)
 {
   int nBuildings=ugd_->allBuildingsV.size();
-  std::vector<string> tmp_fields;
 
   building_rotation.resize(nBuildings,0.0);
   canopy_rotation.resize(nBuildings,0.0);
@@ -228,6 +228,8 @@ void URBOutputWorkspace::setBuildingFields(NcDim* NcDim_t,NcDim* NcDim_building)
   createAttVector("i_building_cent","x-index of centroid","--",dim_vect_building,&i_building_cent);
   createAttVector("i_building_cent","y-index of centroid","--",dim_vect_building,&i_building_cent);  
  
+  // temporary vector to add the fields into output_fields for output.
+  std::vector<string> tmp_fields;
   tmp_fields.clear();  // clear the vector 
   tmp_fields={"building_rotation","canopy_rotation","L","W","H","height_eff","base_height",
               "building_cent_x","building_cent_y",
@@ -248,11 +250,10 @@ void URBOutputWorkspace::setBuildingFields(NcDim* NcDim_t,NcDim* NcDim_building)
   createAttVector("upwind_dir","upwind wind direction","rad",dim_vect_building_t,&upwind_dir);
   createAttVector("Lr","Length of far wake zone","m",dim_vect_building_t,&Lr);
 
+  // temporary vector to add the fields into output_fields for output.
   tmp_fields.clear();  // clear the vector 
   tmp_fields={"length_eff","width_eff","upwind_dir","Lr"};
   output_fields.insert(output_fields.end(),tmp_fields.begin(),tmp_fields.end());
-
-  
 
   return;
 }
