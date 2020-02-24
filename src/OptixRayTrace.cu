@@ -3,6 +3,7 @@
 #include <optix.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <float.h>
 #include <vector>
 
 #include "OptixRayTrace.h"
@@ -14,7 +15,7 @@ __constant__ Params params;
 
 extern "C" __global__ void __raygen__from_cell(){
   const uint3 idx = optixGetLaunchIndex();
-  const uint3 dim = optixGetLaunchDimensions();
+   const uint3 dim = optixGetLaunchDimensions();
   const uint32_t linear_idx = (idx.z*dim.x*dim.y) + (idx.y*dim.x) + idx.x;
 
   uint32_t t;
@@ -27,11 +28,11 @@ extern "C" __global__ void __raygen__from_cell(){
              params.rays[linear_idx].tmin,
              params.rays[linear_idx].tmax,
              0.0f,
-             OptixTraceVisibilityMask(1),
+             OptixVisibilityMask(1),
              OPTIX_RAY_FLAG_NONE,
-             RAY_TYPE_RADIANCE,
-             RAY_TYPE_COUNT,
-             RAY_TYPE_RADIANCE,
+             0,
+             2,
+             0,
              t);
 
       Hit hit;
@@ -86,11 +87,11 @@ extern "C" __global__ void __raygen__from_cell(){
 }
 
 extern "C" __global__ void __miss__miss(){
-  optixSetPayload_0(); //need to set to a large number 
+   optixSetPayload_0(float_as_int(FLT_MAX)); //need to set to a large number 
 }
 
 extern "C" __global__ void __closesthit__mixlength(){
-HitGroupData rt_data = (HitGroupData *)optixGetSbtDataPointer();
+HitGroupData *rt_data = (HitGroupData *)optixGetSbtDataPointer();
 const uint32_t t = optixGetRayTmax();
 
 optixSetPayload_0(float_as_int(t));

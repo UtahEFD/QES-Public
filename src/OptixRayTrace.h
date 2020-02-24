@@ -32,9 +32,11 @@ struct Vertex{
 };
 
 struct OptixRay{
-   Vertex origin;
+   //Vertex origin;
+   float3 origin;
    float tmin;
-   Vertex dir;
+   //Vertex dir;
+   float3 dir;
    float tmax;
 };
 
@@ -85,6 +87,7 @@ struct RayTracingState{
 
    int samples_per_cell;  //can change to bigger type value if needed 
    int num_cells;
+
 };
 
 
@@ -108,7 +111,7 @@ class OptixRayTrace{
    void createProgramGroups();
    void createPipeline();
    void createSBT();
-   void initLaunchParams();
+   void launch();
    void cleanState();
 
     /*
@@ -126,5 +129,5 @@ class OptixRayTrace{
 
    //ptx string definition (this is a hardcoded version, since there
    //is only one .cu file
-   std::string ptx = PTX_DIR + "OptixRayTrace.cu.ptx";
+   std::string ptx = (std::string) PTX_DIR + "/OptixRayTrace.cu.ptx";
 };

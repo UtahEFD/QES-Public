@@ -10,6 +10,8 @@
 #include "SphereDirections.h"
 #include "Ray.h"
 #include "HitRecord.h"
+//#include "OptixRayTrace.h"
+
 #include <limits>
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -23,6 +25,11 @@ class Mesh
 public:
 	BVH* tris;
 
+
+        //temp var for Optix
+        //OptixRayTrace *optixRayTracer;
+        vector<Triangle*> optixTris;
+        
 	/*
 	 * Creates a BVH out of a list of Triangles
 	 *
@@ -30,9 +37,12 @@ public:
 	 */
 	Mesh(vector<Triangle*> tris)
 	{
-
 		this->tris = BVH::createBVH(tris);
-	}
+
+                //temp var for Optix
+                // this->optixRayTracer = new OptixRayTrace(tris);
+                       optixTris = tris;
+        }
 
 	/*
 	 * Gets the height from a location on the xy plane
@@ -59,4 +69,14 @@ public:
          */
         void calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const vector<int> &icellflag, vector<double> &mixingLengths);
         
+        void tempOPTIXMethod(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const vector<int> &icellflag, vector<double> &mixingLengths){
+           //         OptixRayTrace optixRayTracer(optixTris); 
+           //optixRayTracer.calculateMixingLength(10, dimX, dimY, dimZ, dx, dy, dz, icellflag, mixingLengths);
+        }
+
+
+        //temporary getter for the list of Triangles
+        vector<Triangle *> getMeshTriList(){
+           return optixTris;
+        }
 };

@@ -51,8 +51,9 @@ cuda_add_executable( unitTest
   unitTests/testsMain.cpp
   )
 
-target_link_libraries(unitTest cudaurbcore )
+
 target_link_libraries(unitTest ${target_name})
+target_link_libraries(unitTest cudaurbcore)
 target_link_libraries(unitTest cudaurbutil)
 target_link_libraries(unitTest unitTestLib)
 target_link_libraries(unitTest ${Boost_PROGRAM_OPTIONS_LIBRARIES})
@@ -63,5 +64,6 @@ target_link_libraries(unitTest cudadevrt)
 target_link_libraries(unitTest ${CUDA_LIBRARIES})
 
 add_test(unitTest unitTest)
+
 
 

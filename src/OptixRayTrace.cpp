@@ -157,21 +157,48 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 
    initParams(dimX, dimY, dimZ, dx, dy, dz, icellflag);
 
-   initLaunchParams();
+   launch();
 
+
+   //Hits should be init
+   for(int i = 0; i < state.num_cells; i++){
+      mixingLengths.push_back(state.params.hits[i].t);
+      std::cout<<"Hit at index "<<i<<" = "<<state.params.hits[i].t<<std::endl;
+   }
 
 }
 
 void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag){
    //memory allocation
    OptixRay* rays_d = 0;
-   size_t rays_size_in_bytes = sizeof(OptixRay)*state.width*state.height;
-   cudaMalloc(&rays_d, rays_size_in_bytes);
+
+
+
+   //TODO: optimize
+   //Really, really inefficient way of getting the number of cells to
+   //set the ray size
+   //init ray data
 
    int numCells = 0;
+   for(int k = 0; k < dimZ -1; k++){
+      for(int j = 0; j < dimY -1; j++){
+         for(int i = 0; i < dimX -1; i++){
+            int icell_idx = i + j*(dimX-1) + k*(dimY -1)*(dimX-1);
+
+            if(icellflag[icell_idx] == 1){ //only want air cells
+               numCells++;
+            }
+         }
+      }
+   }
+
+
+   size_t rays_size_in_bytes = sizeof(OptixRay)*numCells;
+   cudaMalloc(&rays_d, rays_size_in_bytes);
+
 
    Hit* hits_d = 0;
-   size_t hits_size_in_bytes = sizeof(Hit)*state.width*state.height;
+   size_t hits_size_in_bytes = sizeof(Hit)*numCells;
    cudaMalloc(&hits_d, hits_size_in_bytes);
 
 
@@ -182,15 +209,13 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
             int icell_idx = i + j*(dimX-1) + k*(dimY -1)*(dimX-1);
 
             if(icellflag[icell_idx] == 1){ //only want air cells
-               rays_d[icell_idx].origin = Vertex{(i+0.5)*dx,(j+0.5)*dy,(k+05)*dz};
+               rays_d[icell_idx].origin = {(i+0.5)*dx,(j+0.5)*dy,(k+05)*dz};
                rays_d[icell_idx].tmin = 0.0f;
 
-               Vertex defaultDir = {0,0,-1};
-
-               rays_d[icell_idx].dir = defaultDir; //set to bottom direction for now
+               rays_d[icell_idx].dir = {0,0,-1}; //set to bottom direction for now
                rays_d[icell_idx].tmax = std::numeric_limits<float>::max();
 
-               numCells++;
+               //numCells++;
             }
          }
       }
@@ -263,7 +288,7 @@ void OptixRayTrace::createProgramGroups(){
    OptixProgramGroupDesc miss_prog_group_desc = {};
    miss_prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_MISS;
    miss_prog_group_desc.miss.module = state.ptx_module;
-   miss_prog_group_desc.miss.entryFunctionName = "__miss__miss"; //need this one?
+   miss_prog_group_desc.miss.entryFunctionName = "__miss__miss";
 
    optixProgramGroupCreate(state.context,
                            &miss_prog_group_desc,
@@ -348,9 +373,6 @@ void OptixRayTrace::createSBT(){
    //hit
    CUdeviceptr d_hit_record = 0;
 
-   //TODO: make sure that the hitgroup record size is correct
-   //TODO: do I need to initialize anything in hit record here?
-
    const size_t hit_record_size = sizeof(HitGroupRecord) * state.samples_per_cell * state.num_cells;
 
    HitGroupRecord sbt_hit;
@@ -374,7 +396,7 @@ void OptixRayTrace::createSBT(){
    state.sbt.hitgroupRecordCount = 1;  //TODO: change this to the right amount
 }
 
-void OptixRayTrace::initLaunchParams(){
+void OptixRayTrace::launch(){
    //create the CUDA stream
    cudaStreamCreate(&state.stream);
 
@@ -391,8 +413,8 @@ void OptixRayTrace::initLaunchParams(){
                reinterpret_cast<CUdeviceptr>(d_params),
                sizeof(Params),
                &state.sbt,
-               state.width,
-               state.height,
+               state.num_cells,
+               state.samples_per_cell,
                1);
    cudaFree(reinterpret_cast<void*>(d_params));
 }
@@ -401,7 +423,7 @@ void OptixRayTrace::cleanState(){
    //destroy pipeline
    optixPipelineDestroy(state.pipeline);
 
-   //destory program groups
+   //destroy program groups
    optixProgramGroupDestroy(state.raygen_prog_group);
    optixProgramGroupDestroy(state.miss_prog_group);
    optixProgramGroupDestroy(state.hit_prog_group);
