@@ -38,6 +38,7 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     Pot_u.resize((nx-1)*(ny-1)*(nz-2));
     Pot_v.resize((nx-1)*(ny-1)*(nz-2));
     Pot_w.resize((nx-1)*(ny-1)*(nz-2));
+    //Pot_w_out.resize((nx-1)*(ny-1)*(nz-3));
 
 
     /**
@@ -138,7 +139,7 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     
     if (output_fields[0]=="all") {
         output_fields.erase(output_fields.begin());
-        output_fields = {"time","burn"/*,"ros"*/};
+        output_fields = {"time","burn","wp"};
     }
     
     // set cell-centered dimensions
@@ -164,7 +165,7 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     // create attributes
     AttScalarDbl att_t = {&time,      "time", "time[s]",         "--", dim_scalar_1};
     AttVectorDbl att_b = {&burn_out, "burn", "burn flag value", "--", dim_scalar_3};
-    //AttVectorDbl att_w = {&Pot_w, "wp", "potential w", "--", dim_scalar_4};
+    //AttVectorDbl att_w = {&Pot_w_out, "wp", "potential w", "--", dim_scalar_4};
 
 
 
@@ -218,6 +219,7 @@ float Fire :: computeTimeStep() {
             r_max   = r > r_max ? r : r_max;
         }
     }
+    std::cout<<"max ROS = "<<r_max<<std::endl;
     return courant * dx / r_max;
 }
 
@@ -368,35 +370,7 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
 	    UGD->icellflag[icell_cent] = 1;
 	  }
 	}
-
-
-
-
-        // modify w0 in solver (adjust to use faces)- bottom cell only - Balbi velocity
-        /*
-	for (int k=0; k<1; k++) {
-            
-	  int idf  = ii + (jj)*(nx) + (k+1)*(nx)*(ny);
-            int idxF = idf+1;
-            int idxB = idf-1;
-            int idyF = idf+(nx);
-            int idyB = idf-(nx);
-            
-            double K = fire_cells[id].properties.K;            
-            double u = UGD->u0[idf];
-            double v = UGD->v0[idf];
-            double u_uw, v_uw;
-              
-            UGD->w0[idf] = fp.w;
-	    
-        }
-	*/
-   
     }
-
-
-
-    
 }
 
 /**
@@ -446,44 +420,111 @@ void Fire :: potential(URBGeneralData* UGD){
     std::fill (Pot_u.begin(),Pot_u.end(),0);
     std::fill (Pot_v.begin(),Pot_v.end(),0);
     std::fill (Pot_w.begin(),Pot_w.end(),0);
-	/**
-	 * Calculate Potential field based on heat release
-	 * Baum and McCaffrey plume model
-	**/
+	
+    /**
+     * Calculate Potential field based on heat release
+     * Baum and McCaffrey plume model
+     **/
+    
+    // loop through burning cells to get heat release 
 
+    /*
+    // indices for burning cells
+    std::vector<int> cells_burning;
+    
+    // search predicate for burn state
+    struct find_burn : std::unary_function<FireCell, bool> {
+        float burn;
+        find_burn(int burn):burn(burn) { }
+        bool operator()(FireCell const& f) const {
+            return f.state.burn_flag == burn;
+        }
+    };
+        // get indices of burning cells
+    std::vector<FireCell>::iterator it = std::find_if(fire_cells.begin(),fire_cells.end(),find_burn(1));
+    while ( it != fire_cells.end()) {
+        
+        if (it!=fire_cells.end()) {
+            cells_burning.push_back(std::distance(fire_cells.begin(), it));
+        }
+        
+        it = std::find_if (++it, fire_cells.end(),find_burn(1)); 
+    }
+    */
+    float H0 = 0;                                   ///< heat release
+    float fa = 0;                                   ///< fire area
+    int cent = 0;
+    int icent = 0;
+    int jcent = 0;
+    int counter = 0;
+    int firei;
+    int firej;
     for (int ii = 0; ii < nx-1; ii++){
 	for (int jj = 0; jj < ny-1; jj++){
-  	int id = ii + jj*(nx-1);
-	if (burn_flag[id] == 1){
-	struct FireProperties fp = fire_cells[id].properties;
+  	    int id = ii + jj*(nx-1);
+	    if (burn_flag[id] == 1){
+		//std::cout<<"cell ["<<ii<<"]["<<jj<<"]"<<std::endl;
+		counter += 1;
+		icent += ii;
+		jcent += jj;
+		H0 += fire_cells[id].properties.H0;
+		fa += dx*dy;
+	    }
+	}
+    }
+    if(H0 != 0){
+    std::cout<<"H0 = "<<H0<<"[w]"<<std::endl;
+    std::cout<<"fire area = "<<fa<<"[m^2]"<<std::endl;
+    firei = icent/counter;
+    firej = jcent/counter;
+    std::cout<<"icent = "<<icent<<", jcent = "<<jcent<<std::endl;
+    std::cout<<"counter = "<<counter<<std::endl;
+    std::cout<<"center of fire = ["<<firei*dx<<"]["<<firej*dy<<"]"<<std::endl;
+
+    float g = 9.81;
+    float rhoAir = 1.125;
+    float C_pa = 1150;
+    //float C_p = 2000;
+    float T_a = 393.15;
+    float U_c = pow(g*g*H0/rhoAir/T_a/C_pa, 1.0/5.0);
+    float L_c = pow(H0/rhoAir/C_pa/T_a/pow(g, 1.0/2.0), 2.0/5.0);
+    std::cout<<"U_c = "<<U_c<<std::endl;
+    std::cout<<"L_c = "<<L_c<<std::endl;
+    int centroid = 1;
+    if (centroid == 1){
 	// Loop through horizontal domain
 	float ur, uz; 
 	float u_p; 	 					///< u velocity from potential field in target cell
 	float v_p; 						///< v velocity from potential field in target cell
 	float w_p;						///< w velocity from potential field in target cell
-
+	//int ii = firei;
+	//int jj = firej;
 	for (int ipot = 0; ipot<nx-1; ipot++) {
 	  for (int jpot = 0; jpot<ny-1; jpot++){
-	    float deltaX = (ipot-ii)*dx/fp.L_c;                      ///< distance between fire cell and target cell k in x direction
-	    float deltaY = (jpot-jj)*dy/fp.L_c;                      ///< distance between fire cell and target cell k in y direction
-	    float h_k = sqrt(deltaX*deltaX + deltaY*deltaY);         ///< radial distance from fire cell and target cell k in horizontal
+	    float deltaX = (ipot-firei)*dx/L_c;                      ///< non-dim distance between fire cell and target cell k in x direction
+	    float deltaY = (jpot-firej)*dy/L_c;                      ///< non-dim distance between fire cell and target cell k in y direction
+	    float h_k = sqrt(deltaX*deltaX + deltaY*deltaY);         ///< non-dim radial distance from fire cell and target cell k in horizontal
 	    // Loop through vertical cells
 	    for (int kpot = 1; kpot<nz-2; kpot++) {
-	      float z_k = (kpot)*dz/fp.L_c;                            ///< vertical distance between fire cell and target cell k
+	      float z_k = (kpot)*dz/L_c;                            ///< non-dim vertical distance between fire cell and target cell k
 	      // if radius = 0
 	      if (h_k < 0.00001){
-
+		
 		float zMinIdx = floor(z_k/dzStar);
 		float zMaxIdx = ceil(z_k/dzStar);
 
-		ur = 0.5*(u_r[zMinIdx*pot_r]+u_r[zMaxIdx*pot_r]);
+		//ur = 0.5*(u_r[zMinIdx*pot_r]+u_r[zMaxIdx*pot_r]);
+		ur = 0.0;		
 		uz = 0.5*(u_z[zMinIdx*pot_r]+u_z[zMaxIdx*pot_r]);
-		u_p = fp.U_c*ur;                         
-		v_p = fp.U_c*ur;                         
-		w_p = fp.U_c*uz;                         
+		u_p = U_c*ur;                         
+		v_p = U_c*ur;                         
+		w_p = U_c*uz; 
+		//std::cout<<"k = "<<kpot*dz<<" [m]"<<std::endl;
+		//std::cout<<"u_z = "<<uz<<" [m/s]"<<std::endl;
 	      }
 	      // if in potential field lookup, r*(h_k) < 30 and z*(z_k) < 60
 	      else if (z_k < 60 && h_k < 30){ 
+		
 		// indices for lookup
 		float rMinIdx = floor(h_k/drStar);
 		float rMaxIdx = ceil(h_k/drStar);
@@ -499,10 +540,9 @@ void Fire :: potential(URBGeneralData* UGD){
 
 		uz = 0.5*(u_z[rMinIdx + zMinIdx*pot_r]+u_z[rMinIdx + zMaxIdx*pot_r]);
 		
-		u_p = fp.U_c*ur*deltaX/h_k;          
-		v_p = fp.U_c*ur*deltaY/h_k;          
-		w_p = fp.U_c*uz;                         
-		
+		u_p = U_c*ur*deltaX/h_k;          
+		v_p = U_c*ur*deltaY/h_k;          
+		w_p = U_c*uz;                         
 	      }
 	      // if outside potential field lookup use asymptotic functions for potential field
 	      else {
@@ -517,11 +557,96 @@ void Fire :: potential(URBGeneralData* UGD){
 
 		ur = h_k/(2*PI*pow(zeta,(3/2.0))) + pow(zeta,(-1/3.0))*((5/6.0)*(1-2*x1)/sqrt(x1*(1-x1))*g_x - sqrt(x1*(1-x1))*gprime_x);
 		uz = z_k/(2*PI*pow(zeta,(3/2.0))) + pow(zeta,(-1/3.0))*((5/3.0)*g_x + (1-2*x1)/2.0*gprime_x);
-		u_p = fp.U_c*ur*deltaX/h_k;            
-		v_p = fp.U_c*ur*deltaY/h_k;            
-		w_p = fp.U_c*uz;
-		                      
-	      }		
+		u_p = U_c*ur*deltaX/h_k;            
+		v_p = U_c*ur*deltaY/h_k;            
+		w_p = U_c*uz;
+       	      }		
+	      
+	      // modify potential fields
+	      
+	      int cellCentPot = ipot + jpot*(nx-1) + (kpot-1)*(nx-1)*(ny-1);
+	      Pot_u[cellCentPot] += u_p;
+	      Pot_v[cellCentPot] += v_p;
+	      Pot_w[cellCentPot] += w_p;
+	    }
+	  }
+	}	
+    }
+    else{
+    for (int ii = 0; ii < nx-1; ii++){
+	for (int jj = 0; jj < ny-1; jj++){
+  	int id = ii + jj*(nx-1);
+	if (burn_flag[id] == 1){
+	struct FireProperties fp = fire_cells[id].properties;
+	H0 = fp.H0;
+	U_c = pow(g*g*H0/rhoAir/T_a/C_pa, 1.0/5.0);
+    	L_c = pow(H0/rhoAir/C_pa/T_a/pow(g, 1.0/2.0), 2.0/5.0);
+	// Loop through horizontal domain
+	float ur, uz; 
+	float u_p; 	 					///< u velocity from potential field in target cell
+	float v_p; 						///< v velocity from potential field in target cell
+	float w_p;						///< w velocity from potential field in target cell
+	
+	for (int ipot = 0; ipot<nx-1; ipot++) {
+	  for (int jpot = 0; jpot<ny-1; jpot++){
+	    float deltaX = (ipot-ii)*dx/L_c;                      ///< non-dim distance between fire cell and target cell k in x direction
+	    float deltaY = (jpot-jj)*dy/L_c;                      ///< non-dim distance between fire cell and target cell k in y direction
+	    float h_k = sqrt(deltaX*deltaX + deltaY*deltaY);         ///< non-dim radial distance from fire cell and target cell k in horizontal
+	    // Loop through vertical cells
+	    for (int kpot = 1; kpot<nz-2; kpot++) {
+	      float z_k = (kpot)*dz/L_c;                            ///< non-dim vertical distance between fire cell and target cell k
+	      // if radius = 0
+	      if (h_k < 0.00001){
+		
+		float zMinIdx = floor(z_k/dzStar);
+		float zMaxIdx = ceil(z_k/dzStar);
+
+		//ur = 0.5*(u_r[zMinIdx*pot_r]+u_r[zMaxIdx*pot_r]);
+		ur = 0.0;		
+		uz = 0.5*(u_z[zMinIdx*pot_r]+u_z[zMaxIdx*pot_r]);
+		u_p = U_c*ur;                         
+		v_p = U_c*ur;                         
+		w_p = U_c*uz;
+	      }
+	      // if in potential field lookup, r*(h_k) < 30 and z*(z_k) < 60
+	      else if (z_k < 60 && h_k < 30){ 
+		
+		// indices for lookup
+		float rMinIdx = floor(h_k/drStar);
+		float rMaxIdx = ceil(h_k/drStar);
+		
+		float zMinIdx = floor(z_k/dzStar);
+		float zMaxIdx = ceil(z_k/dzStar);
+		
+		//ur = 0.25*(u_r[rMinIdx+zMinIdx*pot_r]+u_r[rMinIdx+zMaxIdx*pot_r]+u_r[rMaxIdx+zMinIdx*pot_r]+u_r[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_r, linear interpolate between values
+
+		ur = 0.5*(u_r[rMinIdx + zMinIdx*pot_r]+u_r[rMaxIdx + zMinIdx*pot_r]);
+
+		//uz = 0.25*(u_z[rMinIdx+zMinIdx*pot_r]+u_z[rMinIdx+zMaxIdx*pot_r]+u_z[rMaxIdx+zMinIdx*pot_r]+u_z[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_z, linear interpolate between values
+
+		uz = 0.5*(u_z[rMinIdx + zMinIdx*pot_r]+u_z[rMinIdx + zMaxIdx*pot_r]);
+		
+		u_p = U_c*ur*deltaX/h_k;          
+		v_p = U_c*ur*deltaY/h_k;          
+		w_p = U_c*uz;                         
+	      }
+	      // if outside potential field lookup use asymptotic functions for potential field
+	      else {
+		float zeta = sqrt(h_k*h_k + z_k*z_k);
+		float x1 = (1+cos(atan(h_k/z_k)))/2.0;
+		// lookup indices for G(x) and G'(x) - spans 0.5 to 1.0
+		int gMinIdx = floor(pot_G*(x1-.5)/.5);
+		int gMaxIdx = ceil(pot_G*(x1-.5)/.5);
+		// values for G and G'
+                float g_x = 0.5*(G[gMinIdx]+G[gMaxIdx]);
+		float gprime_x = 0.5*(G[gMinIdx]+G[gMaxIdx]);
+
+		ur = h_k/(2*PI*pow(zeta,(3/2.0))) + pow(zeta,(-1/3.0))*((5/6.0)*(1-2*x1)/sqrt(x1*(1-x1))*g_x - sqrt(x1*(1-x1))*gprime_x);
+		uz = z_k/(2*PI*pow(zeta,(3/2.0))) + pow(zeta,(-1/3.0))*((5/3.0)*g_x + (1-2*x1)/2.0*gprime_x);
+		u_p = U_c*ur*deltaX/h_k;            
+		v_p = U_c*ur*deltaY/h_k;            
+		w_p = U_c*uz;
+       	      }		
 	      
 	      // modify potential fields
 	      
@@ -532,7 +657,9 @@ void Fire :: potential(URBGeneralData* UGD){
 	    }
 	  }
 	}
+      }  
     }
+  }
 }
 }
 
@@ -544,7 +671,7 @@ void Fire :: potential(URBGeneralData* UGD){
 	  int cell_cent = iadd + jadd*(nx-1) + (kadd-1)*(nx-1)*(ny-1);
 	  UGD->u0[cell_face] = UGD->u0[cell_face] + 0.5*(Pot_u[cell_cent]+Pot_u[cell_cent+1]);
 	  UGD->v0[cell_face] = UGD->v0[cell_face] + 0.5*(Pot_v[cell_cent]+Pot_v[cell_cent+(nx-1)]);
-	  UGD->w0[cell_face] = UGD->w0[cell_face] + Pot_w[cell_cent];
+	  UGD->w0[cell_face] = UGD->w0[cell_face] + 0.5*(Pot_w[cell_cent]+Pot_w[cell_cent+(nx-1)*(ny-1)]);
 	  
 	}
       }
@@ -569,7 +696,7 @@ void Fire :: move(Solver* solver, URBGeneralData* UGD){
                 fire_cells[idx].state.burn_flag = 0.5;
             }
             // if level set < threshold, set burn flag to 1
-            if (front_map[idx] <= 0.01 && burn_flag[idx] < 1){
+            if (front_map[idx] <= 0.1 && burn_flag[idx] < 1){
                 fire_cells[idx].state.burn_flag = 1;
             }
             // if burn flag = 1, update burn time
@@ -742,12 +869,18 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, floa
         
     // calculate flame depth
     float L = R*tau;
+    if (isnan(L)){
+      L = dx;
+    }
+    // compute time step
+    //float dt = computeTimeStep();
     // calculate heat release
+    //float time_ave = log(tau)*tau;
     float Q0 = cmbcnst*fgi*dx*dy/tau;
-    float H0 = (1-Chi)*Q0;
+    float H0 = (1.0-Chi)*Q0;
     // calculate plume centerline characteristic velocity and length
-    float U_c = pow(g*g*H0/rhoAir/T_a/C_p, 1/5);
-    float L_c = pow(H0/rhoAir/C_p/T_a/pow(g, 1/2), 2/5);
+    //float U_c = pow(g*g*H0/rhoAir/T_a/C_p, 1.0/5.0);
+    //float L_c = pow(H0/rhoAir/C_p/T_a/pow(g, 1.0/2.0), 2.0/5.0);
 
     // struct to hold computed fire properties
     struct FireProperties fp;
@@ -761,8 +894,8 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, floa
     fp.tau  = tau;
     fp.K    = KDrag;
     fp.H0   = H0;
-    fp.U_c  = U_c;
-    fp.L_c  = L_c;
+    //fp.U_c  = U_c;
+    //fp.L_c  = L_c;
 
     return fp;
 }

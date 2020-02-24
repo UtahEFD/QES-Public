@@ -1,5 +1,5 @@
 <simulationParameters>
-	<domain> 100 100 160 </domain>
+  <domain> 120 120 80 </domain> <!-- nx,ny,nz-->
 	<cellSize> 1.0 1.0 .25 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 120 </totalTimeIncrements>
@@ -36,20 +36,20 @@
 		<boundaryLayerFlag> 1 </boundaryLayerFlag>
 		<siteZ0> 0.01 </siteZ0>
 		<reciprocal> 0.0 </reciprocal>
-		<height> 1.0 </height>
-		<speed> 5 </speed>
+		<height> 10.0 </height>
+		<speed> 5.0 </speed>
 		<direction> 90.00 </direction>
 	</sensor>
 </metParams>
 <fires>
 	<numFires>1</numFires>
-	<fuelType>4</fuelType>
+	<fuelType>3</fuelType>
     <height> 0.25 </height>
-    <baseHeight> 0 </baseHeight>
-    <xStart> 50.0 </xStart>
-    <yStart> 50.0 </yStart>
-    <length> 1.0 </length>
-    <width>  1.0 </width>
+    <baseHeight> 0 </baseHeight> <!--meters-->
+    <xStart> 60.0 </xStart> <!--meters-->
+    <yStart> 60.0 </yStart> <!--meters-->
+    <length> 2.0 </length> <!--meters-->
+    <width>  2.0 </width> <!--meters-->
     <courant> 0.25 </courant>
 </fires>
 <fileOptions>

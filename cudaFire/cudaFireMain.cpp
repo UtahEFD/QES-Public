@@ -164,6 +164,9 @@ int main(int argc, char *argv[])
     // save any fire data
     fire->save(output);
     
+    // Load in plume potential data
+    //fire->loadPotential;
+	
     // Run urb simulation code
     std::cout<<"===================="<<std::endl;
     double t = 0;
@@ -174,28 +177,32 @@ int main(int argc, char *argv[])
         // re-set initial fields after first time step
         if (t>0) {
 
-	  //UGD->u0 = u0;
-	  //UGD->v0 = v0;
+	    
+	    UGD->u0 = u0;
+	    UGD->v0 = v0;
+	    UGD->w0 = w0;
+	    
+	    /*
 	    UID->metParams->z0_domain_flag=1;
 	    UID->metParams->sensors[0]->inputWindProfile(UID, UGD);
-            //UGD->w0 = w0;
-	    
             solver->solve(UID, UGD, !arguments.solveWind);
-	    
+	    */
         }
         
         // loop 2 times for fire
         int loop = 0;
-        while (loop<2) {
+        while (loop<1) {
             
-            // run Balbi model to get new w0
+            // run Balbi model to get new spread rate and fire properties
             fire->run(solver, UGD);
             
 	    // calculate plume potential
-
+	
+	    std::cout<<"plume start"<<std::endl;
 	    fire->potential(UGD);
-            
-            // run wind solver
+	    std::cout<<"plume end"<<std::endl;
+	  
+	    // run wind solver
             solver->solve(UID, UGD, !arguments.solveWind);
             
             // Superimpose u0 and v0 onto windfield

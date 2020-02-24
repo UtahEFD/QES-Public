@@ -112,6 +112,7 @@ class Fire {
         // output fields
         std::vector<double> burn_flag;
         std::vector<double> burn_out;
+	std::vector<double> Pot_w_out;	
         
         /// Declaration of output manager
         int output_counter=0;
