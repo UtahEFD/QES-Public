@@ -535,12 +535,6 @@ WRFInput::WRFInput(const std::string& filename)
             sd.xCoord = xIdx * atm_dx;  // use actual position
             sd.yCoord = yIdx * atm_dy;  // "
 
-            // grab z0 and store...
-            // x and y in atm mesh is xf and yf in fire mesh
-//            int xf = (int)floor( (xIdx * atm_dx) / (float)fm_nx );
-//            int yf = (int)floor( (xIdx * atm_dx) / (float)fm_nx );
-//            std::cout << "Z0 = " << fmZ0[ yf * fm_nx + xf ] << std::endl;
-
             // Pull Z0 
             sd.z0 = z0Data[ yIdx * atm_nx + xIdx ];
 
