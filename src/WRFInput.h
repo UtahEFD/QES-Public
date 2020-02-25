@@ -45,6 +45,8 @@ public:
     ~stationData() {}
 
     float xCoord, yCoord;
+    float z0;
+    
     std::vector< std::vector< profData > > profiles;
 
 private:
@@ -58,6 +60,28 @@ public:
 
     WRFInput(const std::string& filename);
     ~WRFInput();
+
+    // Fire Mesh Related Data
+    bool hasFireMesh;
+    
+    int fm_nx, fm_ny;
+    double fm_dx, fm_dy;
+    std::vector<double> fmHeight;
+
+    // Not really used with WRF so do not read in
+    // std::vector<double> fmZ0;
+
+    // Atmospheric Mesh
+    int atm_nx, atm_ny, atm_nz;
+    double atm_dx, atm_dy;
+
+    // Station (i.e. Sensor) Data
+    std::vector< stationData > statData;
+
+    float atm_minWRFAlt, fm_minWRFAlt;
+    float atm_maxWRFAlt, fm_maxWRFAlt;
+
+    int maxSensors;
 
     /**
      * Reading WRF data - ReadDomainInfo.m
@@ -161,14 +185,7 @@ public:
      */
     void setWRFDataPoint();
     
-    int fm_nx, fm_ny;
-    double fm_dx, fm_dy;
-    std::vector<double> fmHeight;
-
-    int atm_nx, atm_ny;
-    double atm_dx, atm_dy;
-
-    std::vector< stationData > statData;
+    float lookupLandUse( int luIdx );
 
 private:
 

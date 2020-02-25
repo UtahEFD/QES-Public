@@ -30,6 +30,7 @@ WRFInput::WRFInput(const std::string& filename)
 {
     std::cout << "WRF Input Processor - reading data from " << filename << std::endl;
 
+    // Acquire some global attributes from the WRF system
     std::multimap<std::string,NcGroupAtt> globalAttributes = wrfInputFile.getAtts();
     
     // Grab the Stored end of the dimension and subtract 1.
@@ -46,11 +47,11 @@ WRFInput::WRFInput(const std::string& filename)
     gblAttIter->second.getValues( yDim+1 );
     yDim[1] -= 1;
     
-    // Compute nx and ny
-    int nx = xDim[1] - xDim[0] + 1;
-    int ny = yDim[1] - yDim[0] + 1;
+    // Compute nx and ny from the Atmospheric Mesh of WRF
+    atm_nx = xDim[1] - xDim[0] + 1;
+    atm_ny = yDim[1] - yDim[0] + 1;
 
-    std::cout << "WRF Atmos Domain is " << nx << " X " << ny << " cells." << std::endl;
+    std::cout << "WRF Atmos Domain is " << atm_nx << " X " << atm_ny << " cells." << std::endl;
     
     // Pull DX and DY
     double cellSize[2] = {1, 1};
@@ -59,8 +60,11 @@ WRFInput::WRFInput(const std::string& filename)
     
     gblAttIter = globalAttributes.find("DY");
     gblAttIter->second.getValues( cellSize+1 );
+
+    atm_dx = cellSize[0];
+    atm_dy = cellSize[1];
     
-    std::cout << "WRF Atmos Resolution (dx,dy) is ("<< cellSize[0] << ", " << cellSize[1] << ")" << std::endl;
+    std::cout << "WRF Atmos Resolution (dx,dy) is ("<< atm_dx << ", " << atm_dy << ")" << std::endl;
 
     // 
     // Fire Mesh Terrain Nodes
@@ -82,6 +86,14 @@ WRFInput::WRFInput(const std::string& filename)
     fmHeight.resize( fm_nx * fm_ny );
     wrfInputFile.getVar("ZSF").getVar(startIdx, counts, fmHeight.data());
 
+    // This is not used in most WRF runs, as outlined by Adam K.
+    // fmZ0.resize( fm_nx * fm_ny );
+    // wrfInputFile.getVar("FZ0").getVar(startIdx, counts, fmZ0.data());
+    // for (int i=0; i<fm_nx*fm_ny; i++) {
+    // std::cout << "fmZ0 = " << fmZ0[i] <<std::endl;
+    // }
+    
+    // From Jan and students
     int sizeHGT_x = wrfInputFile.getVar("HGT").getDim(2).getSize();
     int sizeHGT_y = wrfInputFile.getVar("HGT").getDim(1).getSize();
     int sizeZSF_x = wrfInputFile.getVar("ZSF").getDim(2).getSize();
@@ -90,31 +102,31 @@ WRFInput::WRFInput(const std::string& filename)
     float sr_x = sizeZSF_x/(sizeHGT_x+1);
     float sr_y = sizeZSF_y/(sizeHGT_y+1);
 
-    float dxf = cellSize[0] / sr_x;
-    float dyf = cellSize[1] / sr_y;    
+    fm_dx = cellSize[0] / sr_x;
+    fm_dy = cellSize[1] / sr_y;    
     // Then dxf=DX/sr_x, dyf=DY/sr_y
 
     std::cout << "WRF Fire Mesh Domain is " << fm_nx << " X " << fm_ny << std::endl;
-    std::cout << "WRF Fire Mesh Resolution (dx, dy) is (" << dxf << ", " << dyf << ")" << std::endl;
-    fm_dx = dxf;
-    fm_dx = dyf;    
+    std::cout << "WRF Fire Mesh Resolution (dx, dy) is (" << fm_dx << ", " << fm_dy << ")" << std::endl;
     
-    double minHt = std::numeric_limits<double>::max(),
-        maxHt = std::numeric_limits<double>::min();
+    double fm_minWRFAlt = std::numeric_limits<double>::max(),
+        fm_maxWRFAlt = std::numeric_limits<double>::min();
     
+    // Scan the fire mesh to determine heights
     for (int i=0; i<fm_nx; i++) {
         for (int j=0; j<fm_ny; j++) {
             
             int l_idx = i + j*fm_nx;
 
-            if (fmHeight[l_idx] > maxHt) maxHt = fmHeight[l_idx];
-            if (fmHeight[l_idx] < minHt) minHt = fmHeight[l_idx];
+            if (fmHeight[l_idx] > fm_maxWRFAlt) fm_maxWRFAlt = fmHeight[l_idx];
+            if (fmHeight[l_idx] < fm_minWRFAlt) fm_minWRFAlt = fmHeight[l_idx];
         }
     }
 
-    double rangeHt = maxHt - minHt;
-    std::cout << "Terrain Min Ht: " << minHt << ", Max Ht: " << maxHt << std::endl;
+    double rangeHt = fm_maxWRFAlt - fm_minWRFAlt;
+    std::cout << "Terrain Min Ht: " << fm_minWRFAlt << ", Max Ht: " << fm_maxWRFAlt << std::endl;
 
+    // From 
     int UTMZone = (int)floor((fxlong[0] + 180) / 6) + 1;
     
     std::cout << "UTM Zone: " << UTMZone << std::endl;
@@ -123,27 +135,10 @@ WRFInput::WRFInput(const std::string& filename)
     std::cout << "(Lat,Long) at [0][ny-1] = " << fxlat[(fm_ny-1)*fm_nx] << ", " << fxlong[(fm_ny-1)*fm_nx] << std::endl;
     std::cout << "(Lat,Long) at [nx-1][ny-1] = " << fxlat[fm_nx-1 + (fm_ny-1)*fm_nx] << ", " << fxlong[fm_nx-1 + (fm_ny-1)*fm_nx] << std::endl;
 
-#if 0
 
-   GDALAllRegister(); 
 
-   const char *pszFormat = "GTiff";
-   GDALDriver *poDriver;
-   char **papszMetadata;
-   poDriver = GetGDALDriverManager()->GetDriverByName(pszFormat);
-   if( poDriver == NULL ) {
-       std::cerr << "No GTiff driver." << std::endl;
-       exit( 1 );
-   }
-    
-    papszMetadata = poDriver->GetMetadata();
-
-    GDALDataset *poDstDS;
-    GDALRasterBand *poBand;
-    char **papszOptions = NULL;
-    poDstDS = poDriver->Create( outFilename.c_str(), fm_nx, fm_ny, 1, GDT_UInt16, papszOptions );
-#endif
-    
+    // 
+    // Need this anymore? ???
     std::vector<float> abyRaster( fm_nx * fm_ny );
     for (int i=0; i<fm_nx; i++) {
         for (int j=0; j<fm_ny; j++) {
@@ -297,26 +292,12 @@ WRFInput::WRFInput(const std::string& filename)
     double lon2eastings[1] = { clon };
     double lat2northings[1] = { clat };
 
-
-    nx = fm_nx;
-    ny = fm_ny;
+    int srx = int(fm_nx/(atm_nx+1));
+    int sry = int(fm_ny/(atm_ny+1));
     
-    int nx_atm = xDim[1];
-    int ny_atm = yDim[1];    
-
-    // current class variables -- clean all this up soon
-    atm_nx = nx_atm;
-    atm_ny = ny_atm;
-
-    int srx = int(nx/(nx_atm+1));
-    int sry = int(ny/(ny_atm+1));
+    int nx_fire = fm_nx - srx;
+    int ny_fire = fm_ny - sry;
     
-    int nx_fire = nx - srx;
-    int ny_fire = ny - sry;
-    
-    float atm_dx = cellSize[0];
-    float atm_dy = cellSize[1];
-
     float dx_fire = atm_dx/(float)srx;
     float dy_fire = atm_dy/(float)sry;
     
@@ -327,53 +308,11 @@ WRFInput::WRFInput(const std::string& filename)
               << "; " << nx_fire << ", " << ny_fire
               << "; " << dx_fire << ", " << dy_fire
               << "; " << t_x0_fire << ", " << t_y1_fire << std::endl;
-    
-    
 
     // nx_atm / 2. * atm_dx + e
     double x0_fire = t_x0_fire; // -fm_nx / 2.0 * dxf + lon2eastings[0]; 
     // ny_atm / 2. * atm_dy + n 
     double y1_fire = t_y1_fire; // -fm_ny / 2.0 * dyf + lat2northings[0];
-
-#if 0
-    double geoTransform_fireMesh[6] = { x0_fire, dxf, 0, y1_fire, 0, -dyf };    
-    poDstDS->SetGeoTransform( geoTransform_fireMesh );
-
-    // [0] is lower left, [1] is pixel width, [2] is , [3] is 
-    // Need to automate this conversion
-//    double adfGeoTransform[6] = { lon2eastings[0], dxf, 0, lat2northings[0], 0, -dyf };
-//    poDstDS->SetGeoTransform( adfGeoTransform );
-
-
-    char *pszSRS_WKT = NULL;
-    wgs84.exportToWkt( &pszSRS_WKT );
-    poDstDS->SetProjection( pszSRS_WKT );
-    CPLFree( pszSRS_WKT );
-
-    poBand = poDstDS->GetRasterBand(1);
-    poBand->RasterIO( GF_Write, 0, 0, fm_nx, fm_ny,
-                      abyRaster.data(), fm_nx, fm_ny, GDT_UInt16, 0, 0 );
-    
-    /* Once we're done, close properly the dataset */
-    GDALClose( (GDALDatasetH) poDstDS );
-
-    std::string xmlOutput = outFilenamePath.filename().string() + ".xml";
-    std::cout << "\twriting XML data to " << xmlOutput << std::endl;
-
-    std::string stage1XML = "<simulationParameters>\n\t<DEM>";
-    std::string stage2XML = "</DEM>\n\t<halo_x> 40.0 </halo_x>\n\t<halo_y> 40.0 </halo_y>\n";
-    std::string stage3XML = "\t<verticalStretching> 0 </verticalStretching>\n\t<totalTimeIncrements> 1 </totalTimeIncrements>\n\t<UTCConversion> 0 </UTCConversion>\n\t<Epoch> 1510930800 </Epoch>\n\t<rooftopFlag> 0 </rooftopFlag>\n\t<upwindCavityFlag> 0 </upwindCavityFlag>\n\t<streetCanyonFlag> 0 </streetCanyonFlag>\n\t<streetIntersectionFlag> 0 </streetIntersectionFlag>\n\t<wakeFlag> 0 </wakeFlag>\n\t<sidewallFlag> 0 </sidewallFlag>\n\t<maxIterations> 500 </maxIterations>\n\t<residualReduction> 3 </residualReduction>\n\t<meshTypeFlag> 0 </meshTypeFlag> <!-- cut cell -->\n\t<useDiffusion> 0 </useDiffusion>\n\t<domainRotation> 0 </domainRotation>\n\t<UTMX> 0 </UTMX>\n\t<UTMY> 0 </UTMY>\n\t<UTMZone> 1 </UTMZone>\n\t<UTMZoneLetter> 17 </UTMZoneLetter>\n\t</simulationParameters>\n<metParams>\n\t<metInputFlag> 0 </metInputFlag>\n\t<num_sites> 1 </num_sites>\n\t<maxSizeDataPoints> 1 </maxSizeDataPoints>\n\t<siteName> sensor1 </siteName>\n\t<fileName> sensor1.inp </fileName>\n\t<z0_domain_flag> 0 </z0_domain_flag>            <!-- Distribution of surface roughness for domain (0-uniform, 1-custom -->\n\t<sensor>\n\t<site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->\n\t<site_xcoord> 1.0  </site_xcoord> 					<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->\n\t<site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->\n\t<site_UTM_x> 2.0 </site_UTM_x> 								<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->\n\t<site_UTM_y> 2.0 </site_UTM_y> 								<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->\n\t<site_UTM_zone> 0 </site_UTM_zone> 						<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->\n\t <boundaryLayerFlag> 1 </boundaryLayerFlag> 			<!-- Site boundary layer flag (1-log, 2-exp, 3-urban canopy, 4-data entry) -->\n\t<siteZ0> 0.1 </siteZ0> 									<!-- Site z0 -->\n\t<reciprocal> 0.0 </reciprocal> 						<!-- Reciprocal Monin-Obukhov Length (1/m) -->\n\t<height> 10.0 </height> 										<!-- Height of the sensor -->\n\t<speed> 5.0 </speed> 											<!-- Measured speed at the sensor height -->\n\t<direction> 360.0 </direction> 						<!-- Wind direction of sensor -->\n\t</sensor>                       	<!-- Wnd of sensor section -->\n</metParams>\n<fileOptions>\n\t<outputFlag>1</outputFlag>\n\t<outputFields>u</outputFields> \n\t<outputFields>v</outputFields> \n\t<outputFields>w</outputFields>\n\t<outputFields>icell</outputFields>   \n\t<massConservedFlag> 0 </massConservedFlag>\n\t<sensorVelocityFlag> 0 </sensorVelocityFlag>\n\t<staggerdVelocityFlag> 0 </staggerdVelocityFlag>\n</fileOptions>\n";
-    
-    ofstream xmlout;
-    xmlout.open( xmlOutput, std::ofstream::out );
-
-    xmlout << stage1XML;
-    xmlout << outFilenamePath.filename();
-    xmlout << stage2XML;
-    xmlout << "\t<domain> " << fm_nx << " " << fm_ny << " " << 300 << "</domain>\n\t<cellSize> " << dxf << " " << dyf << " 1.0 </cellSize>\n";
-    xmlout << stage3XML;
-    xmlout.close();
-#endif
 
     //
     // remainder of code is for pulling out wind profiles
@@ -381,13 +320,20 @@ WRFInput::WRFInput(const std::string& filename)
 
     // Need atm mesh sizes, stored in nx_atm and ny_atm
     // top grid dimension stored in BOTTOM-TOP_GRID_DIMENSION
-    int nz_atm = 1;
+    atm_nz = 1;
     gblAttIter = globalAttributes.find("BOTTOM-TOP_GRID_DIMENSION");
-    gblAttIter->second.getValues( &nz_atm );
+    gblAttIter->second.getValues( &atm_nz );
     
-    std::cout << "Atmos NZ = " << nz_atm << std::endl;
-    std::cout << "Atmos NY = " << ny_atm << std::endl;
-    std::cout << "Atmos NX = " << nx_atm << std::endl;
+    std::cout << "Atmos NZ = " << atm_nz << std::endl;
+    std::cout << "Atmos NY = " << atm_ny << std::endl;
+    std::cout << "Atmos NX = " << atm_nx << std::endl;
+
+
+    // Note
+    // This code does not implement the new domain borders option that
+    // Matthieu put in the Matlab code
+    // 
+
 
     // Wind data vertical positions, stored in PHB and PH
     // 
@@ -400,14 +346,14 @@ WRFInput::WRFInput(const std::string& filename)
     //
     std::vector<size_t> atmStartIdx = {0,0,0,0};
     std::vector<size_t> atmCounts = {2,
-                                     static_cast<unsigned long>(nz_atm),
-                                     static_cast<unsigned long>(ny_atm),
-                                     static_cast<unsigned long>(nx_atm)};
+                                     static_cast<unsigned long>(atm_nz),
+                                     static_cast<unsigned long>(atm_ny),
+                                     static_cast<unsigned long>(atm_nx)};
 
-    std::vector<double> phbData( 2 * nz_atm * ny_atm * nx_atm );
+    std::vector<double> phbData( 2 * atm_nz * atm_ny * atm_nx );
     wrfInputFile.getVar("PHB").getVar(atmStartIdx, atmCounts, phbData.data());
 
-    std::vector<double> phData( 2 * nz_atm * ny_atm * nx_atm );
+    std::vector<double> phData( 2 * atm_nz * atm_ny * atm_nx );
     wrfInputFile.getVar("PH").getVar(atmStartIdx, atmCounts, phData.data());
 
     std::cout << "PHB and PH read in..." << std::endl;
@@ -415,51 +361,51 @@ WRFInput::WRFInput(const std::string& filename)
     //
     // Calculate the height  (PHB + PH) / 9.81
     //
-    std::vector<double> heightData( 2 * nz_atm * ny_atm * nx_atm );
+    std::vector<double> heightData( 2 * atm_nz * atm_ny * atm_nx );
     for (int t=0; t<2; t++) {
-        for (int k=0; k<nz_atm; k++) { 
-            for (int j=0; j<ny_atm; j++) {
-                for (int i=0; i<nx_atm; i++) {
-                    int l_idx = t*(nz_atm*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + j*nx_atm + i;
+        for (int k=0; k<atm_nz; k++) { 
+            for (int j=0; j<atm_ny; j++) {
+                for (int i=0; i<atm_nx; i++) {
+                    int l_idx = t*(atm_nz*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + j*atm_nx + i;
                     heightData[ l_idx ] = (phbData[l_idx] + phData[l_idx]) / 9.81;
                 }
             }
         }
     }
-    std::cout << "Height computed." << std::endl;
+    std::cout << "Pressure-based Height computed." << std::endl;
 
-    // use winds straight from atmospheric 
-
-    // calculate number of altitudes to store, while reset
-    atmCounts[1] = nz_atm - 1;
+    // calculate number of altitudes to store, which is one less than
+    // nz
+    atmCounts[1] = atm_nz - 1;
 
     //
     // Wind components are on staggered grid in U and V
     //
     // When these are read in, we will read one additional cell in X
     // and Y, for U and V, respectively.
-    atmCounts[3] = nx_atm + 1;
-    std::vector<double> UStaggered( 2 * (nz_atm-1) * ny_atm * (nx_atm+1) );
+    atmCounts[3] = atm_nx + 1;
+    std::vector<double> UStaggered( 2 * (atm_nz-1) * atm_ny * (atm_nx+1) );
     wrfInputFile.getVar("U").getVar(atmStartIdx, atmCounts, UStaggered.data());
     
-    atmCounts[2] = ny_atm + 1;
-    atmCounts[3] = nx_atm;
-    std::vector<double> VStaggered( 2 * (nz_atm-1) * (ny_atm+1) * nx_atm );
+    atmCounts[2] = atm_ny + 1;
+    atmCounts[3] = atm_nx;
+    std::vector<double> VStaggered( 2 * (atm_nz-1) * (atm_ny+1) * atm_nx );
     wrfInputFile.getVar("V").getVar(atmStartIdx, atmCounts, VStaggered.data());
-    atmCounts[2] = ny_atm;  // reset to ny_atm
+    atmCounts[2] = atm_ny;  // reset to atm_ny
     
-    // But then, U and V are on standard nx and ny atmos mesh
-    std::vector<double> U( 2 * (nz_atm-1) * ny_atm * nx_atm );
-    std::vector<double> V( 2 * (nz_atm-1) * ny_atm * nx_atm );
+    // But then, U and V are on standard nx and ny atmos mesh, cell
+    // centered space
+    std::vector<double> U( 2 * (atm_nz-1) * atm_ny * atm_nx );
+    std::vector<double> V( 2 * (atm_nz-1) * atm_ny * atm_nx );
     for (int t=0; t<2; t++) {
-        for (int k=0; k<(nz_atm-1); k++) { 
-            for (int j=0; j<ny_atm; j++) {
-                for (int i=0; i<nx_atm; i++) {
+        for (int k=0; k<(atm_nz-1); k++) { 
+            for (int j=0; j<atm_ny; j++) {
+                for (int i=0; i<atm_nx; i++) {
                     
-                    int l_idx = t*((nz_atm-1)*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + j*nx_atm + i;
+                    int l_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + j*atm_nx + i;
 
-                    int l_xp1_idx = t*((nz_atm-1)*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + j*nx_atm + i+1;
-                    int l_yp1_idx = t*((nz_atm-1)*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + (j+1)*nx_atm + i;
+                    int l_xp1_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + j*atm_nx + i+1;
+                    int l_yp1_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + (j+1)*atm_nx + i;
                     
                     U[l_idx] = 0.5 * (UStaggered[l_idx] + UStaggered[l_xp1_idx]);
                     V[l_idx] = 0.5 * (VStaggered[l_idx] + VStaggered[l_yp1_idx]);
@@ -469,16 +415,16 @@ WRFInput::WRFInput(const std::string& filename)
     }
     
 
-    std::cout << "Staggered wind input." << std::endl;
+    std::cout << "Staggered wind input complete." << std::endl;
 
     // Calculate CoordZ
-    std::vector<double> coordZ( 2 * (nz_atm-1) * ny_atm * nx_atm );
+    std::vector<double> coordZ( 2 * (atm_nz-1) * atm_ny * atm_nx );
     for (int t=0; t<2; t++) {
-        for (int k=0; k<(nz_atm-1); k++) { 
-            for (int j=0; j<ny_atm; j++) {
-                for (int i=0; i<nx_atm; i++) {
-                    int l_idx = t*((nz_atm-1)*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + j*nx_atm + i;
-                    int l_kp1_idx = t*((nz_atm-1)*ny_atm*nx_atm) + (k+1)*(ny_atm*nx_atm) + j*nx_atm + i;
+        for (int k=0; k<(atm_nz-1); k++) { 
+            for (int j=0; j<atm_ny; j++) {
+                for (int i=0; i<atm_nx; i++) {
+                    int l_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + j*atm_nx + i;
+                    int l_kp1_idx = t*((atm_nz-1)*atm_ny*atm_nx) + (k+1)*(atm_ny*atm_nx) + j*atm_nx + i;
                     coordZ[l_idx] = 0.5*(heightData[l_idx] + heightData[l_kp1_idx]);
                 }
             }
@@ -490,12 +436,12 @@ WRFInput::WRFInput(const std::string& filename)
     //
     // wind speed sqrt(u*u + v*v);
     //
-    std::vector<double> wsData( 2 * (nz_atm-1) * ny_atm * nx_atm );
+    std::vector<double> wsData( 2 * (atm_nz-1) * atm_ny * atm_nx );
     for (int t=0; t<2; t++) {
-        for (int k=0; k<(nz_atm-1); k++) { 
-            for (int j=0; j<ny_atm; j++) {
-                for (int i=0; i<nx_atm; i++) {
-                    int l_idx = t*((nz_atm-1)*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + j*nx_atm + i;
+        for (int k=0; k<(atm_nz-1); k++) { 
+            for (int j=0; j<atm_ny; j++) {
+                for (int i=0; i<atm_nx; i++) {
+                    int l_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + j*atm_nx + i;
                     wsData[l_idx] = sqrt( U[l_idx]*U[l_idx] + V[l_idx]*V[l_idx] );
                 }
             }
@@ -508,12 +454,12 @@ WRFInput::WRFInput(const std::string& filename)
     //
     // compute wind direction
     //
-    std::vector<double> wdData( 2 * (nz_atm-1) * ny_atm * nx_atm );
+    std::vector<double> wdData( 2 * (atm_nz-1) * atm_ny * atm_nx );
     for (int t=0; t<2; t++) {
-        for (int k=0; k<(nz_atm-1); k++) { 
-            for (int j=0; j<ny_atm; j++) {
-                for (int i=0; i<nx_atm; i++) {
-                    int l_idx = t*((nz_atm-1)*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + j*nx_atm + i;
+        for (int k=0; k<(atm_nz-1); k++) { 
+            for (int j=0; j<atm_ny; j++) {
+                for (int i=0; i<atm_nx; i++) {
+                    int l_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + j*atm_nx + i;
 
                     if (U[l_idx] > 0.0)
                         wdData[l_idx] = 270.0 - (180.0/c_PI) * atan(V[l_idx]/U[l_idx]);
@@ -524,33 +470,55 @@ WRFInput::WRFInput(const std::string& filename)
         }
     }
 
+    std::cout << "Wind direction computed." << std::endl;
 
-    // TODO
     // read LU -- depends on if reading the restart or the output file
     // roughness length...
+    // LU = ncread(WRFFile,'LU_INDEX');
+    // SimData.LU = LU(SimData.XSTART:SimData.XEND, SimData.YSTART:SimData.YEND,1)'; 
+    std::vector<size_t> atmStartIdx_2D = {0,0,0};
+    std::vector<size_t> atmCounts_2D = {1,
+                                        static_cast<unsigned long>(atm_ny),
+                                        static_cast<unsigned long>(atm_nx)};
 
+    std::vector<float> luData( atm_ny * atm_nx );
+    wrfInputFile.getVar("LU_INDEX").getVar(atmStartIdx_2D, atmCounts_2D, luData.data());
     
+    // Computes a roughness length array covering each point of the grid
+    // % In case 1 INPUT file must be WRF RESTART file
+    // % In case 2 INPUT file must be WRF OUTPUT
+    // % In case 3 INPUT variable is a constant value
+    std::vector<float> z0Data( atm_ny * atm_nx, 0.0 );
+    if (m_Z0Flag == 1) {
+        // supposed to come from the WRF restart file in the "Z0" field
+        wrfInputFile.getVar("Z0").getVar(atmStartIdx_2D, atmCounts_2D, z0Data.data());
+    }
+    else if (m_Z0Flag == 2) {
+
+        for (int j=0; j<atm_ny; j++) {
+            for (int i=0; i<atm_nx; i++) {
+                int l_idx = j*atm_nx + i;
+                
+                z0Data[ l_idx ] = lookupLandUse( luData[l_idx] );
+            }
+        }
+        
+    }
+    else if (m_Z0Flag == 3) {
+        // supposed to be some other data source
+        std::fill(z0Data.begin(), z0Data.end(), 0.1); 
+    }
+    else {
+        std::cerr << "Unknown Z0Flag..." << std::endl;
+        assert(m_Z0Flag > 0 && m_Z0Flag < 4);
+    }
     
 
-    // % Here we lower minimum altitude to 0 in order to save computational space.
-    // % For the same reason, topography below 50 cm will not be
-    // % considered.
-
-
-    // QUESTIONS:
-    //
-    // What should be choice for min WRF altitudein meter?
-
-    // What is choice for max wrf site altitude - XML or quick vertical domain size
-
-    // Do we plan to use more than 2 time series? -- specify times steps, in XML
-
-    // What is mapping between ZSF fire mesh and the U, V space?
-                    
+    // ////////////////////////
+    
     float minWRFAlt = 22;
     float maxWRFAlt = 330;
-
-    std::cout << "nx_atm: " << nx_atm << ", ny_atm = " << ny_atm << std::endl;
+    std::cout << "atm_nx: " << atm_nx << ", atm_ny = " << atm_ny << std::endl;
 
     // sampling strategy
     int stepSize = 12;
@@ -558,14 +526,18 @@ WRFInput::WRFInput(const std::string& filename)
     //
     // Walk over the atm mesh, extract wind profiles for stations
     //
-    for (int yIdx=0; yIdx<ny_atm; yIdx+=stepSize) {
-        for (int xIdx=0; xIdx<nx_atm; xIdx+=stepSize) {
+    for (int yIdx=0; yIdx<atm_ny; yIdx+=stepSize) {
+        for (int xIdx=0; xIdx<atm_nx; xIdx+=stepSize) {
 
             // StatData.CoordX(Stat) = x;
             // StatData.CoordY(Stat) = y;
             stationData sd;
             sd.xCoord = xIdx * atm_dx;  // use actual position
             sd.yCoord = yIdx * atm_dy;  // "
+
+            // Pull Z0 
+            sd.z0 = z0Data[ yIdx * atm_nx + xIdx ];
+
             sd.profiles.resize(2);  // 2 time series
 
             for (int t=0; t<2; t++) {
@@ -573,9 +545,9 @@ WRFInput::WRFInput(const std::string& filename)
                 // At this X, Y, look through all heights and
                 // accumulate the heights that exist between our min
                 // and max
-                for (int k=0; k<(nz_atm-1); k++) {
+                for (int k=0; k<(atm_nz-1); k++) {
 
-                    int l_idx = t*((nz_atm-1)*ny_atm*nx_atm) + k*(ny_atm*nx_atm) + yIdx*nx_atm + xIdx;
+                    int l_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + yIdx*atm_nx + xIdx;
 
                     if (coordZ[l_idx] >= minWRFAlt && coordZ[l_idx] <= maxWRFAlt) {
                         
@@ -627,6 +599,7 @@ void WRFInput::readDomainInfo()
     // FXLONG
     // FXLAT
     // FWH
+
     // FZ0
     
 
@@ -1593,4 +1566,57 @@ void WRFInput::minimizeDomainHeight()
     // SimData.NewTopoMax = max(max(SimData.Relief));
     // SimData.CoordZ = SimData.CoordZ - SimData.OldTopoMin;
 
+}
+
+
+float WRFInput::lookupLandUse(int luIdx)
+{
+    switch (luIdx) {
+        
+    case 1:  // %%% Evergreen needleleaf forest
+        return 0.5;
+    case 2:  // %%% Evergreeen broadleaf forest
+        return 0.5;
+    case 3:  // %%% Deciduous needleleaf forest
+        return 0.5;
+    case 4:  // %%% Deciduous broadleaf forest
+        return 0.5;
+    case 5:  // %%% Mixed forests
+        return 0.5;
+    case 6:  // %%% Closed Shrublands
+        return 0.1;
+    case 7:  // %%% Open Shrublands
+        return 0.1;
+    case 8:  // %%% Woody Savannas
+        return 0.15;
+    case 9:  // %%% Savannas
+        return 0.15;
+    case 10:  // %%% Grasslands
+        return 0.075;
+    case 11:  // %%% Permanent wetlands
+        return 0.3;
+    case 12:  // %%% Croplands
+        return 0.075;
+    case 13:  // %%% Urban and built-up land
+        return 0.5;
+    case 14:  // %%% Cropland/natural vegetation mosaic
+        return 0.065;
+    case 15:  // %%% Snow or ice
+        return 0.01;
+    case 16:  // %%% Barren or sparsely vegetated
+        return 0.065;
+    case 17:  // %%% Water
+        return 0.0001;
+    case 18:  // %%% Wooded tundra
+        return 0.15;
+    case 19:  // %%% Mixed tundra
+        return 0.1;
+    case 20:  // %%% Barren tundra
+        return 0.06;
+    case 21:  // %%% Lakes
+        return 0.0001;
+
+    default:
+        return 0.1;
+    }
 }
