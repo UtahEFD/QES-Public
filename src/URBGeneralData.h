@@ -117,8 +117,9 @@ public:
 
     int id;
 
-    std::vector<float> site_canopy_H;
-    std::vector<float> site_atten_coeff;
+  // [FM Feb.28.2020] there 2 variables are not used anywhere 
+  //std::vector<float> site_canopy_H;
+  //std::vector<float> site_atten_coeff;
 
     float convergence;
     // Canopy functions
