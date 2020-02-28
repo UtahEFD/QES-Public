@@ -12,6 +12,7 @@ URBArgs::URBArgs()
     reg("quicproj", "Specifies the QUIC Proj file", ArgumentParsing::STRING, 'q');
     reg("netcdfvzout", "Specifies the netcdf file to write vizulatization results to", ArgumentParsing::STRING, 'o');
     reg("netcdfwkout", "Specifies the netcdf file to write wroking file to", ArgumentParsing::STRING, 'w');
+    reg("netcdfturbout", "Specifies the netcdf file to write turbulence file to", ArgumentParsing::STRING, 'r');   
     reg("demfile", "Specifies the DEM file that should be used for terrain", ArgumentParsing::STRING, 'd');
     reg("icellout", "Specifies that the iCellFlag values should be output, this also will output cutCellFlags if they exist", ArgumentParsing::NONE, 'i');
     reg("terrainout", "Specifies that the triangle mesh for the terrain should be output", ArgumentParsing::NONE, 't');
@@ -40,8 +41,11 @@ void URBArgs::processArguments(int argc, char *argv[])
     isSet( "netcdfvzout", netCDFFileVz );
     if (netCDFFileVz != "") std::cout << "vizulatization netCDF output file set to " << netCDFFileVz << std::endl;
 
-		isSet( "netcdfwkout", netCDFFileWk );
+    isSet( "netcdfwkout", netCDFFileWk );
     if (netCDFFileWk != "") std::cout << "wroking file netCDF output file set to " << netCDFFileWk << std::endl;
+    
+    isSet( "netcdfturbout", netCDFFileTurb );
+    if (netCDFFileTurb != "") std::cout << "turb file netCDF output file set to " << netCDFFileTurb << std::endl;
 
     cellFace = isSet("cellface");
     if (cellFace) std::cout << "Cell face computations: ON" << std::endl;

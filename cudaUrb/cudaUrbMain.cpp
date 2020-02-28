@@ -16,6 +16,9 @@
 #include "URBOutputVisualization.h"
 #include "URBOutputWorkspace.h"
 
+#include "TURBGeneralData.h"
+#include "TURBOutput.h"
+
 #include "Solver.h"
 #include "CPUSolver.h"
 #include "DynamicParallelism.h"
@@ -38,29 +41,29 @@ int main(int argc, char *argv[])
     // CUDA-Urb - Version output information
     std::string Revision = "0";
     std::cout << "cudaUrb " << "0.8.0" << std::endl;
-
+    
     // ///////////////////////////////////
     // Parse Command Line arguments
     // ///////////////////////////////////
-
+    
     // Command line arguments are processed in a uniform manner using
     // cross-platform code.  Check the URBArgs class for details on
     // how to extend the arguments.
     URBArgs arguments;
     arguments.processArguments(argc, argv);
-
+    
     // ///////////////////////////////////
     // Read and Process any Input for the system
     // ///////////////////////////////////
-
+    
     // Parse the base XML QUIC file -- contains simulation parameters
     URBInputData* UID = parseXMLTree(arguments.quicFile);
     if ( !UID ) {
         std::cerr << "QUIC Input file: " << arguments.quicFile <<
-	  " not able to be read successfully." << std::endl;
+            " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
-
+    
     // Generate the general URB data from all inputs
     // - turn on mixing length calculations for now if enabled
     // eventually, we will remove this flag and 2nd argument
@@ -68,16 +71,22 @@ int main(int argc, char *argv[])
         std::cout << "Enabling mixing length calculation." << std::endl;
     }
     URBGeneralData* UGD = new URBGeneralData(UID, arguments.calcMixingLength);
-
+    
     // create URB output classes
     std::vector<NetCDFOutputGeneric*> outputVec;
     if (arguments.netCDFFileVz != "") {
-      outputVec.push_back(new URBOutputVisualization(UGD,UID,arguments.netCDFFileVz));
+        outputVec.push_back(new URBOutputVisualization(UGD,UID,arguments.netCDFFileVz));
     }
     if (arguments.netCDFFileWk != "") {
-      outputVec.push_back(new URBOutputWorkspace(UGD,arguments.netCDFFileWk));
+        outputVec.push_back(new URBOutputWorkspace(UGD,arguments.netCDFFileWk));
     }
-
+    
+    TURBGeneralData* TGD = nullptr;
+    if (arguments.netCDFFileTurb != "") {
+        TGD = new TURBGeneralData(UGD);
+        outputVec.push_back(new TURBOutput(TGD,arguments.netCDFFileTurb));
+    }
+    
     // //////////////////////////////////////////
     //
     // Run the CUDA-URB Solver
@@ -89,33 +98,38 @@ int main(int argc, char *argv[])
     else if (arguments.solveType == DYNAMIC_P)
         solver = new DynamicParallelism(UID, UGD);
     else
-    {
-        std::cerr << "Error: invalid solve type\n";
-        exit(EXIT_FAILURE);
-    }
-
-    //check for comparison
-    if (arguments.compareType)
-    {
-        if (arguments.compareType == CPU_Type)
-            solverC = new CPUSolver(UID, UGD);
-        else if (arguments.compareType == DYNAMIC_P)
-            solverC = new DynamicParallelism(UID, UGD);
-        else
         {
-            std::cerr << "Error: invalid comparison type\n";
+            std::cerr << "Error: invalid solve type\n";
             exit(EXIT_FAILURE);
         }
-    }
+    
+    //check for comparison
+    if (arguments.compareType)
+        {
+            if (arguments.compareType == CPU_Type)
+                solverC = new CPUSolver(UID, UGD);
+            else if (arguments.compareType == DYNAMIC_P)
+                solverC = new DynamicParallelism(UID, UGD);
+            else
+                {
+                    std::cerr << "Error: invalid comparison type\n";
+                    exit(EXIT_FAILURE);
+                }
+        }
     // Run urb simulation code
     solver->solve(UID, UGD, !arguments.solveWind );
-
+    
     std::cout << "Solver done!\n";
-
+    
     if (solverC != nullptr)
-    {
-        std::cout << "Running comparson type...\n";
-        solverC->solve(UID, UGD, !arguments.solveWind);
+        {
+            std::cout << "Running comparson type...\n";
+            solverC->solve(UID, UGD, !arguments.solveWind);
+        }
+    
+    // Run turbulence
+    if(TGD) {
+        TGD->run(UGD);
     }
 
     // /////////////////////////////
@@ -123,7 +137,7 @@ int main(int argc, char *argv[])
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
     for(auto id_out=0u;id_out<outputVec.size();id_out++)
-      outputVec.at(id_out)->save(0.0); // need to replace 0.0 with timestep
+        outputVec.at(id_out)->save(0.0); // need to replace 0.0 with timestep
     
     
     exit(EXIT_SUCCESS);

@@ -28,13 +28,16 @@ private:
 
   URBGeneralData* ugd_;
 
+  // [FM] Feb.28.2020 OBSOLETE
   // Building data functions:
   void setBuildingFields(NcDim*,NcDim*);
   void getBuildingFields();
   
+  // [FM] Feb.28.2020 OBSOLETE
   // Buidling data variables
   bool buildingFieldsSet = false;
 
+  // [FM] Feb.28.2020 OBSOLETE
   // These variables are used to convert data structure in array so it can be stored in 
   // NetCDF file. (Canopy can be building, need to specify)
   // size of these vector = number of buidlings

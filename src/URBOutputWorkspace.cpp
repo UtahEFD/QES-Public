@@ -114,20 +114,6 @@ URBOutputWorkspace::URBOutputWorkspace(URBGeneralData *ugd,std::string output_fi
   createAttVector("building_volume_frac","building volume fraction","--",dim_vect_cc,&(ugd_->building_volume_frac)); 
   createAttVector("terrain_volume_frac","terrain volume fraction","--",dim_vect_cc,&(ugd_->terrain_volume_frac)); 
 
-  // adding building informations
-  if (ugd_->allBuildingsV.size()>0) {
-    std::cout<<"Setting building fields in workspace file"<<std::endl;
-     
-    // set building dimension
-    NcDim NcDim_building=addDimension("building",ugd_->allBuildingsV.size());
-    
-    // set building information fields (everything in the vector allBuildingsV)
-    setBuildingFields(&NcDim_t,&NcDim_building);
-    
-    // set flag for save function
-    buildingFieldsSet = true;    
-  }
-
   // create output fields
   addOutputFields();
 }
@@ -140,11 +126,6 @@ void URBOutputWorkspace::save(float timeOut)
   // set time
   time = (double)timeOut;
   
-  // fetching building information if fields are set.
-  if(buildingFieldsSet) {
-    getBuildingFields();
-  }
-
   // save fields
   saveOutputFields();
 
@@ -158,6 +139,9 @@ void URBOutputWorkspace::save(float timeOut)
   
 };
 
+
+
+// [FM] Feb.28.2020 OBSOLETE
 void URBOutputWorkspace::setBuildingFields(NcDim* NcDim_t,NcDim* NcDim_building)
 {
   int nBuildings=ugd_->allBuildingsV.size();
@@ -258,6 +242,7 @@ void URBOutputWorkspace::setBuildingFields(NcDim* NcDim_t,NcDim* NcDim_building)
   return;
 }
 
+// [FM] Feb.28.2020 OBSOLETE
 void URBOutputWorkspace::getBuildingFields()
 {
   int nBuildings=ugd_->allBuildingsV.size();

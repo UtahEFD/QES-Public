@@ -33,8 +33,11 @@ public:
     std::string quicFile = "", demFile = "", iCellOut = "";
     // netCDFFile_vz for standard cell-center vizalization file
     std::string netCDFFileVz = "";
-    // netCDFFile_wk for working field use by TURB and Plume
+    // netCDFFile_wk for working field used by Plume
     std::string netCDFFileWk = "";
+    // netCDFFile_turb for turbulence field used by Plume
+    std::string netCDFFileTurb = "";
+
     bool cellFace, terrainOut, solveWind;
     int solveType, compareType;
 

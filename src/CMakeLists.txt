@@ -21,6 +21,12 @@ CUDA_ADD_LIBRARY( cudaurbcore
   Sensor.cpp
   Solver.cpp
   Triangle.cpp
+  TURBGeneralData.cpp
+  TURBOutput.cpp
+  TURBLocalMixing.cpp
+  TURBWall.cpp
+  TURBWallBuilding.cpp
+  TURBWallTerrain.cpp
   URBInputData.h
   URBGeneralData.cpp
   URBOutputVisualization.cpp
