@@ -1,8 +1,8 @@
 <simulationParameters>
   <DEM>../scratch/Gangnam/w001001.adf</DEM>					<!-- Address to DEM location-->
-  <SHP>../scratch/Gangnam/building.shp</SHP>				<!-- Address to shapefile location-->
-  <SHPBuildingLayer>building</SHPBuildingLayer>
-  <heightFactor> 3.0 </heightFactor>					<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
+  <!--SHP>../scratch/Gangnam/building.shp</SHP-->				<!-- Address to shapefile location-->
+  <!--SHPBuildingLayer>building</SHPBuildingLayer-->
+  <!--heightFactor> 3.0 </heightFactor-->					<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
 
   <halo_x> 40.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
   <halo_y> 40.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain)-->
@@ -10,7 +10,7 @@
   <domain>1152 720 80</domain>				<!-- Number of cells in x,y and z directions-->
   <cellSize> 4.0 4.0 3.0 </cellSize> 		<!-- Mesh resolution (meters)-->
 
-  <verticalStretching> 1 </verticalStretching>              <!-- vertical stretching (0-uniform grid, 1-costum grid)-->
+  <verticalStretching> 0 </verticalStretching>              <!-- vertical stretching (0-uniform grid, 1-costum grid)-->
 	<dz_value> 2.0 </dz_value>
 	<dz_value> 2.0 </dz_value>
 	<dz_value> 2.0 </dz_value>
@@ -103,7 +103,7 @@
 
   <maxIterations> 500 </maxIterations> 						<!-- Maximum number of iterations -->
   <residualReduction> 3 </residualReduction> 			<!-- Residual Reduction (Orders of Magnitude) -->
-  <meshTypeFlag> 1 </meshTypeFlag> 								<!-- Type of meshing scheme (0-Stair step (origional QUIC), 1-Cut-cell method -->
+  <meshTypeFlag> 0 </meshTypeFlag> 								<!-- Type of meshing scheme (0-Stair step (origional QUIC), 1-Cut-cell method -->
   <useDiffusion> 0 </useDiffusion>
   <domainRotation> 0 </domainRotation>  					<!-- Rotation angle of domain relative to true north -->
 

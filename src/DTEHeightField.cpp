@@ -22,6 +22,66 @@ DTEHeightField::DTEHeightField(const std::string &filename, double cellSizeXN, d
   load();
 }
 
+DTEHeightField::DTEHeightField(const std::vector<double> &heightField, int dimX, int dimY, double cellSizeXN, double cellSizeYN)
+{
+    Triangle *tPtr=0;
+    m_triList.clear();
+
+    Vector3<float> tc0, tc1, tc2;
+
+    std::cout << "DEM Loading from height field\n";
+    std::cout << "dimX = " << dimX << ", dimY = " << dimY << std::endl;
+    std::cout << "size of heightField = " << heightField.size() << std::endl;
+
+    // eventually need the fm_dx and fm_dy so we can multiply into
+    // correct dimensions
+
+    int step = cellSizeXN;
+
+    for (float j = 0; j < dimY-1; j+=step) {
+        for (float i = 0; i < dimX-1; i+=step) {
+
+            int idx = j * dimX + i;
+            if (idx > heightField.size() - 1) idx = heightField.size()-1;
+            // std::cout << "(" << i << ", " << j << ") = " << heightField[idx] << std::endl;
+
+            Vector3<float> tv0( i, j, (float)heightField[ idx ] ); // queryHeight( pafScanline, Xpixel,  Yline));
+
+            idx = j * dimX + (i + step);
+            if (idx > heightField.size() - 1) idx = heightField.size()-1;
+            Vector3<float> tv1( i+step, j, (float)heightField[ idx ] ); // queryHeight( pafScanline,  (int)(iXpixel + stepX ), Yline ) );
+
+            idx = (j+step) * dimX + i;
+            if (idx > heightField.size() - 1) idx = heightField.size()-1;
+            Vector3<float> tv2( i, j+step, (float)heightField[ idx] ); // queryHeight( pafScanline, Xpixel, (int)(iYline + stepY) ));
+
+            tPtr = new Triangle( tv0, tv1, tv2 );
+            m_triList.push_back(tPtr);
+
+            idx = (j+step) * dimX + i;
+            if (idx > heightField.size() - 1) idx = heightField.size()-1;
+            Vector3<float> tv3( i, j+step, (float)heightField[ idx ] );// queryHeight( pafScanline,  Xpixel, (int)(iYline + stepY) ) );
+
+            idx = j * dimX + (i+step);
+            if (idx > heightField.size() - 1) idx = heightField.size()-1;
+            Vector3<float> tv4( i+step, j, (float)heightField[ idx ] ); //  queryHeight( pafScanline,  (int)(iXpixel + stepX) , Yline ) );
+
+            idx = (j+step) * dimX + (i+step);
+            if (idx > heightField.size() - 1) idx = heightField.size()-1;
+            Vector3<float> tv5( i+step, j+step, (float)heightField[ idx ] ); // queryHeight( pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY) ) );
+
+            tPtr = new Triangle( tv3, tv4, tv5 );
+            m_triList.push_back(tPtr);
+        }
+    }
+    
+    std::cout << "... completed." << std::endl;
+
+  // At end of loop above, all height field data will have been
+  // converted to a triangle mesh, stored in m_triList.
+
+}
+
 #if 0
 void DTEHeightField::loadImage()
 {

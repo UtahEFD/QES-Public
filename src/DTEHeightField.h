@@ -25,6 +25,9 @@ public:
 
   DTEHeightField();
   DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN);
+
+    DTEHeightField(const std::vector<double> &heightField, int dimX, int dimY, double cellSizeXN, double cellSizeYN);
+    
   ~DTEHeightField();
 
   std::vector<Triangle*> getTris() const {return m_triList;}
@@ -117,7 +120,7 @@ private:
     //if (j * m_nXSize + k >= m_nXSize * m_nYSize
     else
     {
-      height = scanline[ k * m_nXSize + j ];
+      height = scanline[ abs(k-m_nYSize) * m_nXSize + j ];
     }
 
     //std::cout << "domainx:   " << m_nXSize << std::endl;

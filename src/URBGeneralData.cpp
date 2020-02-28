@@ -3,7 +3,6 @@
 URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     : m_calcMixingLength( calcMixLength )
 {
-
    if ( UID->simParams->upwindCavityFlag == 1)
    {
       lengthf_coeff = 2.0;
@@ -58,6 +57,63 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     numcell_cout_2d = (nx-1)*(ny-1);               /**< Total number of horizontal cell-centered values in domain */
     numcell_cent    = (nx-1)*(ny-1)*(nz-1);        /**< Total number of cell-centered values in domain */
     numcell_face    = nx*ny*nz;                    /**< Total number of face-centered values in domain */
+
+
+    // where should this really go?
+    //
+    // Need to now take all WRF station data and convert to
+    // sensors
+    if (UID->simParams->wrfInputData) {
+        
+        WRFInput *wrf_ptr = UID->simParams->wrfInputData;
+
+        std::cout << "Size of stat data: " << wrf_ptr->statData.size() << std::endl;
+        UID->metParams->sensors.resize( wrf_ptr->statData.size() );
+            
+        for (int i=0; i<wrf_ptr->statData.size(); i++) {
+            std::cout << "Station " << i << " ("
+                      << wrf_ptr->statData[i].xCoord << ", "
+                      << wrf_ptr->statData[i].yCoord << ")" << std::endl;
+
+            if (!UID->metParams->sensors[i])
+                UID->metParams->sensors[i] = new Sensor();
+                
+            UID->metParams->sensors[i]->site_xcoord = wrf_ptr->statData[i].xCoord;
+            UID->metParams->sensors[i]->site_ycoord = wrf_ptr->statData[i].yCoord;
+
+            // WRF profile data -- sensor blayer flag is 4
+            UID->metParams->sensors[i]->site_blayer_flag = 4;
+
+            // Make sure to set size_z0 to be z0 from WRF cell
+            UID->metParams->sensors[i]->site_z0 = wrf_ptr->statData[i].z0;
+            
+            //
+            // 1 time series for now - how do we deal with this for
+            // new time steps???  Need to figure out ASAP.
+            //
+            for (int t=0; t<1; t++) {
+                std::cout << "\tTime Series: " << t << std::endl;
+
+                int profDataSz = wrf_ptr->statData[i].profiles[t].size();
+                UID->metParams->sensors[i]->site_wind_dir.resize( profDataSz );
+                UID->metParams->sensors[i]->site_z_ref.resize( profDataSz );
+                UID->metParams->sensors[i]->site_U_ref.resize( profDataSz );
+
+                
+                for (int p=0; p<wrf_ptr->statData[i].profiles[t].size(); p++) {
+                    std::cout << "\t" << wrf_ptr->statData[i].profiles[t][p].zCoord
+                              << ", " << wrf_ptr->statData[i].profiles[t][p].ws
+                              << ", " << wrf_ptr->statData[i].profiles[t][p].wd << std::endl;
+
+                    UID->metParams->sensors[i]->site_z_ref[p] = wrf_ptr->statData[i].profiles[t][p].zCoord;
+                    UID->metParams->sensors[i]->site_U_ref[p] = wrf_ptr->statData[i].profiles[t][p].ws;
+                    UID->metParams->sensors[i]->site_wind_dir[p] = wrf_ptr->statData[i].profiles[t][p].wd;
+                    
+                }
+            }
+        }
+
+    }
 
     // /////////////////////////
     // Calculation of z0 domain info MAY need to move to UrbInputData
@@ -185,6 +241,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     u.resize( numcell_face, 0.0 );
     v.resize( numcell_face, 0.0 );
     w.resize( numcell_face, 0.0 );
+
+    std::cout << "Memory allocation complete." << std::endl;
 
     /// defining ground solid cells (ghost cells below the surface)
     for (int j = 0; j < ny-1; j++)
