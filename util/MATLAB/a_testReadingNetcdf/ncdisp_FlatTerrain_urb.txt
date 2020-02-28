@@ -27,21 +27,21 @@ Variables:
            Attributes:
                        units     = '--'
                        long_name = 'icell flag value'
-    x      
+    x_cc   
            Size:       200x1
            Dimensions: x_cc
            Datatype:   single
            Attributes:
                        units     = 'm'
                        long_name = 'x-distance'
-    y      
+    y_cc   
            Size:       200x1
            Dimensions: y_cc
            Datatype:   single
            Attributes:
                        units     = 'm'
                        long_name = 'y-distance'
-    z      
+    z_cc   
            Size:       201x1
            Dimensions: z_cc
            Datatype:   single
@@ -77,43 +77,43 @@ Variables:
                        units     = 'm'
                        long_name = 'terrain height'
     e      
-           Size:       200x200x201
-           Dimensions: x_cc,y_cc,z_cc
+           Size:       200x200x201x1
+           Dimensions: x_cc,y_cc,z_cc,t
            Datatype:   single
            Attributes:
                        units     = '--'
                        long_name = 'e cut-cell coefficient'
     f      
-           Size:       200x200x201
-           Dimensions: x_cc,y_cc,z_cc
+           Size:       200x200x201x1
+           Dimensions: x_cc,y_cc,z_cc,t
            Datatype:   single
            Attributes:
                        units     = '--'
                        long_name = 'f cut-cell coefficient'
     g      
-           Size:       200x200x201
-           Dimensions: x_cc,y_cc,z_cc
+           Size:       200x200x201x1
+           Dimensions: x_cc,y_cc,z_cc,t
            Datatype:   single
            Attributes:
                        units     = '--'
                        long_name = 'g cut-cell coefficient'
     h      
-           Size:       200x200x201
-           Dimensions: x_cc,y_cc,z_cc
+           Size:       200x200x201x1
+           Dimensions: x_cc,y_cc,z_cc,t
            Datatype:   single
            Attributes:
                        units     = '--'
                        long_name = 'h cut-cell coefficient'
     m      
-           Size:       200x200x201
-           Dimensions: x_cc,y_cc,z_cc
+           Size:       200x200x201x1
+           Dimensions: x_cc,y_cc,z_cc,t
            Datatype:   single
            Attributes:
                        units     = '--'
                        long_name = 'm cut-cell coefficient'
     n      
-           Size:       200x200x201
-           Dimensions: x_cc,y_cc,z_cc
+           Size:       200x200x201x1
+           Dimensions: x_cc,y_cc,z_cc,t
            Datatype:   single
            Attributes:
                        units     = '--'

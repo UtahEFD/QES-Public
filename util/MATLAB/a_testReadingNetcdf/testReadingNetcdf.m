@@ -25,6 +25,7 @@ workingDir = pwd;
 
 
 netcdfFile_urb_FlatTerrain = sprintf('%s/FlatTerrain_urb.nc',workingDir);
+netcdfFile_urb_vis_FlatTerrain = sprintf('%s/FlatTerrain_urb_vis.nc',workingDir);
 netcdfFile_turb_FlatTerrain = sprintf('%s/FlatTerrain_turb.nc',workingDir);
 netcdfFile_conc_FlatTerrain = sprintf('%s/FlatTerrain_singlePoint_conc.nc',workingDir);
 netcdfFile_eulerian_FlatTerrain = sprintf('%s/FlatTerrain_singlePoint_eulerianData.nc',workingDir);
@@ -39,9 +40,9 @@ ncdisp(netcdfFile_urb_FlatTerrain);
 %%% ncdisp shows variables t, x, y, z, x_cc, y_cc, z_cc,  terrain, icell, u, v, w, 
 %%%  e, f, g, h, m, n
 %%% where t is size 1x1 in dimensions (t) with units 's' and long_name 'time' with datatype double, 
-%%% where x is size 200x1 in dimensions (x_cc) with units 'm' and long_name 'x-distance' with datatype single,
-%%% where y is size 200x1 in dimensions (y_cc) with units 'm' and long_name 'y-distance' with datatype single,
-%%% where z is size 201x1 in dimensions (z_cc) with units 'm' and long_name 'z-distance' with datatype single,
+%%% where x_cc is size 200x1 in dimensions (x_cc) with units 'm' and long_name 'x-distance' with datatype single,
+%%% where y_cc is size 200x1 in dimensions (y_cc) with units 'm' and long_name 'y-distance' with datatype single,
+%%% where z_cc is size 201x1 in dimensions (z_cc) with units 'm' and long_name 'z-distance' with datatype single,
 %%% where terrain is size 200x200 in dimensions (x_cc,y_cc) with units 'm' and long_name 'terrain height' with datatype single,
 %%% where icell is size 200x200x201x1 in dimensions (x_cc,y_cc,z_cc,t) with units '--' and long_name 'icell flag value' with datatype int32,
 %%% where u is size 201x201x202x1 in dimensions (x,y,z,t) with units 'm s-1' and long_name 'x-component velocity' with datatype single,
@@ -55,18 +56,18 @@ ncdisp(netcdfFile_urb_FlatTerrain);
 %%% where n is size 200x200x201x1 in dimensions (x_cc,y_cc,z_cc) with units '--' and long_name 'n cut-cell coefficient' with datatype single.
 %%% note that the terrain is full of straight zeros and the icell is full
 %%% of only ones except for the first layer which is full of twos.
-%%% t is just a zero. x, y, and z just have the
-%%% linspace from domainStart to domainEnd
+%%% t is just a zero. x and y are linspaces from domainStart+dx/2 to domainEnd-dx/2 spaced by the corresponding dx
+%%% while z is a linspace from domainStart-dx*3/2 to domainEnd-dx/2 spaced by the corresponding dx
 
 urb_t = ncread(netcdfFile_urb_FlatTerrain,'t');
-urb_x = ncread(netcdfFile_urb_FlatTerrain,'x');
-urb_y = ncread(netcdfFile_urb_FlatTerrain,'y');
-urb_z = ncread(netcdfFile_urb_FlatTerrain,'z');
 %%% these next three are NOT found in the file, even though they
 %%% technically are? Weird
-%urb_x_cc = ncread(netcdfFile_urb_FlatTerrain,'x_cc');
-%urb_y_cc = ncread(netcdfFile_urb_FlatTerrain,'y_cc');
-%urb_z_cc = ncread(netcdfFile_urb_FlatTerrain,'z_cc');
+%urb_x = ncread(netcdfFile_urb_FlatTerrain,'x');
+%urb_y = ncread(netcdfFile_urb_FlatTerrain,'y');
+%urb_z = ncread(netcdfFile_urb_FlatTerrain,'z');
+urb_x_cc = ncread(netcdfFile_urb_FlatTerrain,'x_cc');
+urb_y_cc = ncread(netcdfFile_urb_FlatTerrain,'y_cc');
+urb_z_cc = ncread(netcdfFile_urb_FlatTerrain,'z_cc');
 urb_terrain = ncread(netcdfFile_urb_FlatTerrain,'terrain');
 urb_icell = ncread(netcdfFile_urb_FlatTerrain,'icell');
 urb_u = ncread(netcdfFile_urb_FlatTerrain,'u');
@@ -82,24 +83,53 @@ urb_m = ncread(netcdfFile_urb_FlatTerrain,'m');
 urb_n = ncread(netcdfFile_urb_FlatTerrain,'n');
 
 
+%% read urb vis netcdf file
+
+% now get info about the urb file
+ncdisp(netcdfFile_urb_vis_FlatTerrain);
+
+%%% ncdisp shows variables t, x, y, z, icell, u, v, w
+%%% where t is size 1x1 in dimensions (t) with units 's' and long_name 'time' with datatype double, 
+%%% where x is size 200x1 in dimensions (x) with units 'm' and long_name 'x-distance' with datatype single,
+%%% where y is size 200x1 in dimensions (y) with units 'm' and long_name 'y-distance' with datatype single,
+%%% where z is size 200x1 in dimensions (z) with units 'm' and long_name 'z-distance' with datatype single,
+%%% where icell is size 200x200x200x1 in dimensions (x,y,z,t) with units '--' and long_name 'icell flag value' with datatype int32,
+%%% where u is size 200x200x200x1 in dimensions (x,y,z,t) with units 'm s-1' and long_name 'x-component velocity' with datatype double,
+%%% where v is size 200x200x200x1 in dimensions (x,y,z,t) with units 'm s-1' and long_name 'y-component velocity' with datatype double,
+%%% where w is size 200x200x200x1 in dimensions (x,y,z,t) with units 'm s-1' and long_name 'z-component velocity' with datatype double,
+%%% note that the icell is full of only ones except for the first layer which is full of twos.
+%%% t is just a zero. x, y, and z are linspaces from domainStart+dx/2 
+%%% to domainEnd-dx/2 spaced by the corresponding dx
+
+urb_vis_t = ncread(netcdfFile_urb_vis_FlatTerrain,'t');
+urb_vis_x = ncread(netcdfFile_urb_vis_FlatTerrain,'x');
+urb_vis_y = ncread(netcdfFile_urb_vis_FlatTerrain,'y');
+urb_vis_z = ncread(netcdfFile_urb_vis_FlatTerrain,'z');
+urb_vis_icell = ncread(netcdfFile_urb_vis_FlatTerrain,'icell');
+urb_vis_u = ncread(netcdfFile_urb_vis_FlatTerrain,'u');
+urb_vis_v = ncread(netcdfFile_urb_vis_FlatTerrain,'v');
+urb_vis_w = ncread(netcdfFile_urb_vis_FlatTerrain,'w');
+
+
 %% read turb netcdf file
 
 % now get info about the urb file
 ncdisp(netcdfFile_turb_FlatTerrain);
 
-%%% ncdisp shows variables t, x, y, z,  S11, S12, S13, S22, S23, S33, L,
-%%%  tau11, tau12, tau13, tau22, tau23, tau33, CoEps, tke
+%%% ncdisp shows variables t, x, y, z,  iturbflag,  S11, S12, S13, S22, 
+%%%  S23, S33, L, tau11, tau12, tau13, tau22, tau23, tau33, CoEps, tke
 %%% where t is size 1x1 in dimensions (t) with units 's' and long_name 'time' with datatype double, 
 %%% where x is size 200x1 in dimensions (x) with units 'm' and long_name 'x-distance' with datatype single,
 %%% where y is size 200x1 in dimensions (y) with units 'm' and long_name 'y-distance' with datatype single,
 %%% where z is size 201x1 in dimensions (z) with units 'm' and long_name 'z-distance' with datatype single,
+%%% where iturbflag is size 200x200x201x1 in dimensions (x,y,z,t) with units '--' and long_name 'icell turb flag' with datatype int32,
 %%% where S11 is size 200x200x201x1 in dimensions (x,y,z,t) with units 's-1' and long_name 'uu-component of strain-rate tensor' with datatype single,
 %%% where S12 is size 200x200x201x1 in dimensions (x,y,z,t) with units 's-1' and long_name 'uv-component of strain-rate tensor' with datatype single,
 %%% where S13 is size 200x200x201x1 in dimensions (x,y,z,t) with units 's-1' and long_name 'uw-component of strain-rate tensor' with datatype single,
 %%% where S22 is size 200x200x201x1 in dimensions (x,y,z,t) with units 's-1' and long_name 'vv-component of strain-rate tensor' with datatype single,
 %%% where S23 is size 200x200x201x1 in dimensions (x,y,z,t) with units 's-1' and long_name 'vw-component of strain-rate tensor' with datatype single,
 %%% where S33 is size 200x200x201x1 in dimensions (x,y,z,t) with units 's-1' and long_name 'ww-component of strain-rate tensor' with datatype single,
-%%% where L is size 200x200x201x1 in dimensions (x,y,z,t) with units '--' and long_name 'mixing length' with datatype single,
+%%% where L is size 200x200x201x1 in dimensions (x,y,z,t) with units 'm' and long_name 'mixing length' with datatype single,
 %%% where tau11 is size 200x200x201x1 in dimensions (x,y,z,t) with units 'm2 s-2' and long_name 'uu-component of stress tensor' with datatype single,
 %%% where tau12 is size 200x200x201x1 in dimensions (x,y,z,t) with units 'm2 s-2' and long_name 'uv-component of stress tensor' with datatype single,
 %%% where tau13 is size 200x200x201x1 in dimensions (x,y,z,t) with units 'm2 s-2' and long_name 'uw-component of stress tensor' with datatype single,
@@ -108,12 +138,14 @@ ncdisp(netcdfFile_turb_FlatTerrain);
 %%% where tau33 is size 200x200x201x1 in dimensions (x,y,z,t) with units 'm2 s-2' and long_name 'ww-component of stress tensor' with datatype single,
 %%% where CoEps is size 200x200x201x1 in dimensions (x,y,z,t) with units 'm2 s-3' and long_name dissipation rate' with datatype single,
 %%% where tke is size 200x200x201x1 in dimensions (x,y,z,t) with units 'm2 s-2' and long_name 'turbulent kinetic energy' with datatype single.
-%%% t is zero and x,y, and z go from domainStart to domainEnd
+%%% t is just a zero. x and y are linspaces from domainStart+dx/2 to domainEnd-dx/2 spaced by the corresponding dx
+%%% while z is a linspace from domainStart-dx*3/2 to domainEnd-dx/2 spaced by the corresponding dx
 
 turb_t = ncread(netcdfFile_turb_FlatTerrain,'t');
 turb_x = ncread(netcdfFile_turb_FlatTerrain,'x');
 turb_y = ncread(netcdfFile_turb_FlatTerrain,'y');
 turb_z = ncread(netcdfFile_turb_FlatTerrain,'z');
+turb_iturbflag = ncread(netcdfFile_turb_FlatTerrain,'iturbflag');
 turb_S11 = ncread(netcdfFile_turb_FlatTerrain,'S11');
 turb_S12 = ncread(netcdfFile_turb_FlatTerrain,'S12');
 turb_S13 = ncread(netcdfFile_turb_FlatTerrain,'S13');

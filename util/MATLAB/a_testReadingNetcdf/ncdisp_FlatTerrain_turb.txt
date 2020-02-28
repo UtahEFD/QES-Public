@@ -10,133 +10,140 @@ Dimensions:
            y = 200
            z = 201
 Variables:
-    t    
+    t        
            Size:       1x1
            Dimensions: t
            Datatype:   double
            Attributes:
                        units     = 's'
                        long_name = 'time'
-    x    
+    iturbflag
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   int32
+           Attributes:
+                       units     = '--'
+                       long_name = 'icell turb flag'
+    x        
            Size:       200x1
            Dimensions: x
            Datatype:   single
            Attributes:
                        units     = 'm'
                        long_name = 'x-distance'
-    y    
+    y        
            Size:       200x1
            Dimensions: y
            Datatype:   single
            Attributes:
                        units     = 'm'
                        long_name = 'y-distance'
-    z    
+    z        
            Size:       201x1
            Dimensions: z
            Datatype:   single
            Attributes:
                        units     = 'm'
                        long_name = 'z-distance'
-    S11  
+    S11      
            Size:       200x200x201x1
            Dimensions: x,y,z,t
            Datatype:   single
            Attributes:
                        units     = 's-1'
                        long_name = 'uu-component of strain-rate tensor'
-    S22  
+    S22      
            Size:       200x200x201x1
            Dimensions: x,y,z,t
            Datatype:   single
            Attributes:
                        units     = 's-1'
                        long_name = 'vv-component of strain-rate tensor'
-    S33  
+    S33      
            Size:       200x200x201x1
            Dimensions: x,y,z,t
            Datatype:   single
            Attributes:
                        units     = 's-1'
                        long_name = 'ww-component of strain-rate tensor'
-    S12  
+    S12      
            Size:       200x200x201x1
            Dimensions: x,y,z,t
            Datatype:   single
            Attributes:
                        units     = 's-1'
                        long_name = 'uv-component of strain-rate tensor'
-    S13  
+    S13      
            Size:       200x200x201x1
            Dimensions: x,y,z,t
            Datatype:   single
            Attributes:
                        units     = 's-1'
                        long_name = 'uw-component of strain-rate tensor'
-    S23  
+    S23      
            Size:       200x200x201x1
            Dimensions: x,y,z,t
            Datatype:   single
            Attributes:
                        units     = 's-1'
                        long_name = 'vw-component of strain-rate tensor'
-    L    
+    L        
            Size:       200x200x201x1
            Dimensions: x,y,z,t
            Datatype:   single
            Attributes:
-                       units     = '--'
+                       units     = 'm'
                        long_name = 'mixing length'
-    tau11
+    tau11    
            Size:       200x200x201x1
            Dimensions: x,y,z,t
            Datatype:   single
            Attributes:
                        units     = 'm2s-2'
                        long_name = 'uu-component of stress tensor'
-    tau12
+    tau12    
            Size:       200x200x201x1
            Dimensions: x,y,z,t
            Datatype:   single
            Attributes:
                        units     = 'm2s-2'
                        long_name = 'uv-component of stress tensor'
-    tau13
+    tau13    
            Size:       200x200x201x1
            Dimensions: x,y,z,t
            Datatype:   single
            Attributes:
                        units     = 'm2s-2'
                        long_name = 'uw-component of stress tensor'
-    tau23
+    tau23    
            Size:       200x200x201x1
            Dimensions: x,y,z,t
            Datatype:   single
            Attributes:
                        units     = 'm2s-2'
                        long_name = 'vw-component of stress tensor'
-    tau22
+    tau22    
            Size:       200x200x201x1
            Dimensions: x,y,z,t
            Datatype:   single
            Attributes:
                        units     = 'm2s-2'
                        long_name = 'vv-component of stress tensor'
-    tau33
+    tau33    
            Size:       200x200x201x1
            Dimensions: x,y,z,t
            Datatype:   single
            Attributes:
                        units     = 'm2s-2'
                        long_name = 'ww-component of stress tensor'
-    tke  
+    tke      
            Size:       200x200x201x1
            Dimensions: x,y,z,t
            Datatype:   single
            Attributes:
                        units     = 'm2s-2'
                        long_name = 'turbulent kinetic energy'
-    CoEps
+    CoEps    
            Size:       200x200x201x1
            Dimensions: x,y,z,t
            Datatype:   single

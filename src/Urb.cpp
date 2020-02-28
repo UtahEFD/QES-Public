@@ -154,19 +154,19 @@ Urb::Urb(NetCDFInput* input, const bool& debug)
 
     // FM -> need to change this when grid is matching between modules
     std::vector<float> temp_x(nx);
-    input->getVariableData("x",temp_x);
+    input->getVariableData("x_cc",temp_x);
     for(int i=0;i<nx;i++)
       x.at(i)=temp_x.at(i);
     temp_x.clear();
 
     std::vector<float> temp_y(ny);
-    input->getVariableData("y",temp_y);
+    input->getVariableData("y_cc",temp_y);
     for(int j=0;j<ny;j++)
       y.at(j)=temp_y.at(j);
     temp_y.clear();
 
     std::vector<float> temp_z(nz+1);
-    input->getVariableData("z",temp_z);
+    input->getVariableData("z_cc",temp_z);
     for(int k=0;k<nz;k++)
       z.at(k)=temp_z.at(k+1);
     temp_z.clear();
