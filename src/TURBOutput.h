@@ -3,26 +3,26 @@
 #include <string>
 
 #include "TURBGeneralData.h"
-#include "NetCDFOutputGeneric.h"
+#include "QESNetCDFOutput.h"
 
-/* Specialized output classes derived from URBOutput_Generic for 
+/* Specialized output classes derived from QESNetCDFOutput for 
    cell center data (used primarly for vizualization)
 */
-class TURBOutput : public NetCDFOutputGeneric
+class TURBOutput : public QESNetCDFOutput
 {
 public:
-  TURBOutput()
-    : NetCDFOutputGeneric()
-  {}
-  
-  TURBOutput(TURBGeneralData*,std::string);
-  ~TURBOutput()	       
-  {}
-  
-  void save(float);
-  
+    TURBOutput()
+        : QESNetCDFOutput()
+    {}
+    
+    TURBOutput(TURBGeneralData*,std::string);
+    ~TURBOutput()	       
+    {}
+    
+    void save(float);
+    
 private:
-  
-  TURBGeneralData* tgd_;  
-  
+    
+    TURBGeneralData* tgd_;  
+    
 };

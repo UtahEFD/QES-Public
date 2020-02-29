@@ -1,9 +1,9 @@
-#include "URBOutputVisualization.h"
+#include "WINDSOutputVisualization.h"
 
-URBOutputVisualization::URBOutputVisualization(URBGeneralData *ugd,URBInputData* uid,std::string output_file)
-  : NetCDFOutputGeneric(output_file)
+WINDSOutputVisualization::WINDSOutputVisualization(URBGeneralData *ugd,URBInputData* uid,std::string output_file)
+  : QESNetCDFOutput(output_file)
 {
-  std::cout<<"Getting output fields for Vizualization file"<<std::endl;
+  std::cout<<"[WINDS] \t Getting output fields for Vizualization file"<<std::endl;
 
   std::vector<std::string> fileOP= uid->fileOptions->outputFields;
   bool valid_output;
@@ -101,7 +101,7 @@ URBOutputVisualization::URBOutputVisualization(URBGeneralData *ugd,URBInputData*
 
 }
 
-bool URBOutputVisualization::validateFileOtions()
+bool WINDSOutputVisualization::validateFileOtions()
 {
   
   // check if all fileOptions->outputFields are possible
@@ -119,7 +119,7 @@ bool URBOutputVisualization::validateFileOtions()
 
 
 // Save output at cell-centered values
-void URBOutputVisualization::save(float timeOut)
+void WINDSOutputVisualization::save(float timeOut)
 {
   // get grid size (not output var size)
   int nx = ugd_->nx;

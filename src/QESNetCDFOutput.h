@@ -70,13 +70,13 @@ struct AttVectorDbl {
   std::vector<NcDim> dimensions;
 };
 
-class NetCDFOutputGeneric : public NetCDFOutput
+class QESNetCDFOutput : public NetCDFOutput
 {
  public:
-  NetCDFOutputGeneric()
+  QESNetCDFOutput()
     {}
-  NetCDFOutputGeneric(std::string);
-  virtual ~NetCDFOutputGeneric()
+  QESNetCDFOutput(std::string);
+  virtual ~QESNetCDFOutput()
     {}
   
   //save function be call outside 

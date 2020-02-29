@@ -1,7 +1,7 @@
 #include "TURBOutput.h"
 
 TURBOutput::TURBOutput(TURBGeneralData *tgd,std::string output_file)
-  : NetCDFOutputGeneric(output_file)
+  : QESNetCDFOutput(output_file)
 {
   std::cout<<"[TURBOutput] \t Setting output fields for Turbulence data"<<std::endl;
 

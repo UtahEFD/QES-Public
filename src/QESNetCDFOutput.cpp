@@ -1,6 +1,6 @@
-#include "NetCDFOutputGeneric.h"
+#include "QESNetCDFOutput.h"
 
-NetCDFOutputGeneric::NetCDFOutputGeneric(std::string output_file) 
+QESNetCDFOutput::QESNetCDFOutput(std::string output_file) 
   : NetCDFOutput(output_file)
 {
 };
@@ -8,7 +8,7 @@ NetCDFOutputGeneric::NetCDFOutputGeneric(std::string output_file)
 //----------------------------------------
 // create attribute scalar
 // -> int
-void NetCDFOutputGeneric::createAttScalar(std::string name,
+void QESNetCDFOutput::createAttScalar(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
@@ -21,7 +21,7 @@ void NetCDFOutputGeneric::createAttScalar(std::string name,
 
 }
 // -> float
-void NetCDFOutputGeneric::createAttScalar(std::string name,
+void QESNetCDFOutput::createAttScalar(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
@@ -33,7 +33,7 @@ void NetCDFOutputGeneric::createAttScalar(std::string name,
   
 }
 // -> double
-void NetCDFOutputGeneric::createAttScalar(std::string name,
+void QESNetCDFOutput::createAttScalar(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
@@ -47,7 +47,7 @@ void NetCDFOutputGeneric::createAttScalar(std::string name,
 //----------------------------------------
 // create attribute Vector
 // -> int
-void NetCDFOutputGeneric::createAttVector(std::string name,
+void QESNetCDFOutput::createAttVector(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
@@ -59,7 +59,7 @@ void NetCDFOutputGeneric::createAttVector(std::string name,
   
 }
 // -> float
-void NetCDFOutputGeneric::createAttVector(std::string name,
+void QESNetCDFOutput::createAttVector(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
@@ -71,7 +71,7 @@ void NetCDFOutputGeneric::createAttVector(std::string name,
   
 }
 // -> double
-void NetCDFOutputGeneric::createAttVector(std::string name,
+void QESNetCDFOutput::createAttVector(std::string name,
 					std::string long_name,
 					std::string units,
 					std::vector<NcDim> dims,
@@ -83,7 +83,7 @@ void NetCDFOutputGeneric::createAttVector(std::string name,
 }
 
 //----------------------------------------
-void NetCDFOutputGeneric::addOutputFields()
+void QESNetCDFOutput::addOutputFields()
 {
    /*
     This function add the  fields to the output vectors
@@ -151,7 +151,7 @@ void NetCDFOutputGeneric::addOutputFields()
 
 
 
-void NetCDFOutputGeneric::rmOutputField(std::string name)
+void QESNetCDFOutput::rmOutputField(std::string name)
 {
   /*
     This function remove a field from the output vectors
@@ -211,7 +211,7 @@ void NetCDFOutputGeneric::rmOutputField(std::string name)
   } 
 };
 
-void NetCDFOutputGeneric::rmTimeIndepFields()
+void QESNetCDFOutput::rmTimeIndepFields()
 {
   /*
     This function remove time indep field from the output vectors
@@ -265,7 +265,7 @@ void NetCDFOutputGeneric::rmTimeIndepFields()
   } 
 };
 
-void NetCDFOutputGeneric::saveOutputFields()
+void QESNetCDFOutput::saveOutputFields()
 {
    /*
     This function save the fields from the output vectors

@@ -7,14 +7,14 @@
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
-#include "NetCDFOutputGeneric.h"
+#include "QESNetCDFOutput.h"
 
 #include "handleURBArgs.h"
 
 #include "URBInputData.h"
 #include "URBGeneralData.h"
-#include "URBOutputVisualization.h"
-#include "URBOutputWorkspace.h"
+#include "WINDSOutputVisualization.h"
+#include "WINDSOutputWorkspace.h"
 
 #include "TURBGeneralData.h"
 #include "TURBOutput.h"
@@ -73,14 +73,17 @@ int main(int argc, char *argv[])
     URBGeneralData* UGD = new URBGeneralData(UID, arguments.calcMixingLength);
     
     // create URB output classes
-    std::vector<NetCDFOutputGeneric*> outputVec;
+    std::vector<QESNetCDFOutput*> outputVec;
     if (arguments.netCDFFileVz != "") {
-        outputVec.push_back(new URBOutputVisualization(UGD,UID,arguments.netCDFFileVz));
+        outputVec.push_back(new WINDSOutputVisualization(UGD,UID,arguments.netCDFFileVz));
     }
     if (arguments.netCDFFileWk != "") {
-        outputVec.push_back(new URBOutputWorkspace(UGD,arguments.netCDFFileWk));
+        outputVec.push_back(new WINDSOutputWorkspace(UGD,arguments.netCDFFileWk));
     }
     
+    
+    // Generate the general TURB data from URB data
+    // based on if the turbulence output file is defined
     TURBGeneralData* TGD = nullptr;
     if (arguments.netCDFFileTurb != "") {
         TGD = new TURBGeneralData(UGD);
@@ -93,39 +96,38 @@ int main(int argc, char *argv[])
     //
     // //////////////////////////////////////////
     Solver *solver, *solverC = nullptr;
-    if (arguments.solveType == CPU_Type)
+    if (arguments.solveType == CPU_Type) {
+        std::cout << "Run CPU Solver ..." << std::endl;
         solver = new CPUSolver(UID, UGD);
-    else if (arguments.solveType == DYNAMIC_P)
+    } else if (arguments.solveType == DYNAMIC_P) {
+        std::cout << "Run GPU Solver ..." << std::endl;
         solver = new DynamicParallelism(UID, UGD);
-    else
-        {
-            std::cerr << "Error: invalid solve type\n";
-            exit(EXIT_FAILURE);
-        }
+    } else {
+        std::cerr << "Error: invalid solve type\n";
+        exit(EXIT_FAILURE);
+    }
     
     //check for comparison
-    if (arguments.compareType)
-        {
-            if (arguments.compareType == CPU_Type)
-                solverC = new CPUSolver(UID, UGD);
-            else if (arguments.compareType == DYNAMIC_P)
-                solverC = new DynamicParallelism(UID, UGD);
-            else
-                {
-                    std::cerr << "Error: invalid comparison type\n";
-                    exit(EXIT_FAILURE);
-                }
+    if (arguments.compareType) {
+        if (arguments.compareType == CPU_Type)
+            solverC = new CPUSolver(UID, UGD);
+        else if (arguments.compareType == DYNAMIC_P)
+            solverC = new DynamicParallelism(UID, UGD);
+        else {
+            std::cerr << "Error: invalid comparison type\n";
+            exit(EXIT_FAILURE);
         }
+    }
+    
     // Run urb simulation code
     solver->solve(UID, UGD, !arguments.solveWind );
     
     std::cout << "Solver done!\n";
     
-    if (solverC != nullptr)
-        {
-            std::cout << "Running comparson type...\n";
-            solverC->solve(UID, UGD, !arguments.solveWind);
-        }
+    if (solverC != nullptr) {
+        std::cout << "Running comparson type...\n";
+        solverC->solve(UID, UGD, !arguments.solveWind);
+    }
     
     // Run turbulence
     if(TGD) {

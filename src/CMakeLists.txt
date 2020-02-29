@@ -16,7 +16,7 @@ CUDA_ADD_LIBRARY( cudaurbcore
   handleURBArgs.cpp
   Mesh.cpp
   NetCDFOutput.cpp NetCDFOutput.h
-  NetCDFOutputGeneric.cpp 
+  QESNetCDFOutput.cpp 
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Solver.cpp
@@ -29,8 +29,8 @@ CUDA_ADD_LIBRARY( cudaurbcore
   TURBWallTerrain.cpp
   URBInputData.h
   URBGeneralData.cpp
-  URBOutputVisualization.cpp
-  URBOutputWorkspace.cpp
+  WINDSOutputVisualization.cpp
+  WINDSOutputWorkspace.cpp
   WRFInput.cpp WRFInput.h
   Wall.cpp Wall.h
   UpwindCavity.cpp

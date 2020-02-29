@@ -6,19 +6,19 @@
 
 #include "URBGeneralData.h"
 #include "URBInputData.h"
-#include "NetCDFOutputGeneric.h"
+#include "QESNetCDFOutput.h"
 
-/* Specialized output classes derived from NetCDFOutputGeneric for 
+/* Specialized output classes derived from QESNetCDFOutput for 
    cell center data (used primarly for vizualization)
 */
-class URBOutputVisualization : public NetCDFOutputGeneric
+class WINDSOutputVisualization : public QESNetCDFOutput
 {
 public:
-  URBOutputVisualization()
-    : NetCDFOutputGeneric()
+  WINDSOutputVisualization()
+    : QESNetCDFOutput()
   {}
-  URBOutputVisualization(URBGeneralData*,URBInputData*,std::string);
-  ~URBOutputVisualization()	       
+  WINDSOutputVisualization(URBGeneralData*,URBInputData*,std::string);
+  ~WINDSOutputVisualization()	       
   {}
   
   void save(float);
