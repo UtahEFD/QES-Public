@@ -3,7 +3,7 @@
 TURBOutput::TURBOutput(TURBGeneralData *tgd,std::string output_file)
   : QESNetCDFOutput(output_file)
 {
-  std::cout<<"[TURBOutput] \t Setting output fields for Turbulence data"<<std::endl;
+  std::cout<<"[Output] \t Setting output fields for Turbulence data"<<std::endl;
 
   output_fields = {"t","x","y","z","iturbflag",
 		   "S11","S22","S33","S12","S13","S23","L",

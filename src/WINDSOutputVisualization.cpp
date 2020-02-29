@@ -3,7 +3,7 @@
 WINDSOutputVisualization::WINDSOutputVisualization(URBGeneralData *ugd,URBInputData* uid,std::string output_file)
   : QESNetCDFOutput(output_file)
 {
-  std::cout<<"[WINDS] \t Getting output fields for Vizualization file"<<std::endl;
+  std::cout<<"[Output] \t Getting output fields for Vizualization file"<<std::endl;
 
   std::vector<std::string> fileOP= uid->fileOptions->outputFields;
   bool valid_output;

@@ -3,7 +3,7 @@
 WINDSOutputWorkspace::WINDSOutputWorkspace(URBGeneralData *ugd,std::string output_file)
     : QESNetCDFOutput(output_file)
 {
-    std::cout<<"[WINDS] \t Setting fields of workspace file"<<std::endl;
+    std::cout<<"[Output] \t Setting fields of workspace file"<<std::endl;
     
     // set list of fields to save, no option available for this file
     output_fields = {"t","x_cc","y_cc","z_cc","u","v","w","icell",
