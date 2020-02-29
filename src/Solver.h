@@ -45,8 +45,8 @@ protected:
     const float omega = 1.78f;   /**< Over-relaxation factor */
 
     // SOLVER-based parameters
-    std::vector<double> R;           /**< Divergence of initial velocity field */
-    std::vector<double> lambda, lambda_old;
+    std::vector<float> R;           /**< Divergence of initial velocity field */
+    std::vector<float> lambda, lambda_old;
 
     int itermax;		/**< Maximum number of iterations */
 
@@ -63,19 +63,5 @@ public:
     Solver(const URBInputData* UID, URBGeneralData* UGD);
 
     virtual void solve(const URBInputData *UID, URBGeneralData* UGD, bool solveWind) = 0;
-
-    /**
-     * @brief
-     *
-     * This function takes in values necessary for cut-cell method for
-     * buildings and then calculates the area fraction coefficients,
-     * sets them to approperiate solver coefficients and finally sets
-     * related coefficients to zero to define solid walls for non
-     * cut-cells.
-     */
-    void calculateCoefficients(float dx, float dy, float dz, int nx, int ny, int nz, std::vector<int> &icellflag, float* n, float* m,
-                     float* f, float* e, float* h, float* g, std::vector<std::vector<std::vector<float>>> x_cut,
-                     std::vector<std::vector<std::vector<float>>>y_cut,std::vector<std::vector<std::vector<float>>> z_cut,
-                     std::vector<std::vector<int>> num_points, std::vector<std::vector<float>> coeff);
 
 };
