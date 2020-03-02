@@ -25,11 +25,11 @@ public:
     URBGeneralData();
     URBGeneralData(const URBInputData* UID, bool calcMixLength=false);
     ~URBGeneralData();
-
+    
     void mergeSort( std::vector<float> &effective_height,
-		    std::vector<Building*> allBuildingsV,
-		    std::vector<int> &building_id );
-
+                    std::vector<Building*> allBuildingsV,
+                    std::vector<int> &building_id );
+    
 
     /*!
     * This function is being called from the plantInitial function
@@ -42,7 +42,7 @@ public:
     {
         return m_calcMixingLength;
     }
-
+    
     /**
     * @brief
     *
@@ -117,9 +117,9 @@ public:
 
     int id;
 
-  // [FM Feb.28.2020] there 2 variables are not used anywhere 
-  //std::vector<float> site_canopy_H;
-  //std::vector<float> site_atten_coeff;
+    // [FM Feb.28.2020] there 2 variables are not used anywhere 
+    //std::vector<float> site_canopy_H;
+    //std::vector<float> site_atten_coeff;
 
     float convergence;
     // Canopy functions
