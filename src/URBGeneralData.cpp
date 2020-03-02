@@ -3,27 +3,21 @@
 URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     : m_calcMixingLength( calcMixLength )
 {
-   if ( UID->simParams->upwindCavityFlag == 1)
-   {
-      lengthf_coeff = 2.0;
-   }
-   else
-   {
-      lengthf_coeff = 1.5;
+    if ( UID->simParams->upwindCavityFlag == 1) {
+        lengthf_coeff = 2.0;
+    } else {
+        lengthf_coeff = 1.5;
     }
-
+    
     // Determines how wakes behind buildings are calculated
-    if ( UID->simParams->wakeFlag > 1)
-    {
+    if ( UID->simParams->wakeFlag > 1) {
         cavity_factor = 1.1;
         wake_factor = 0.1;
-    }
-    else
-    {
+    } else {
         cavity_factor = 1.0;
         wake_factor = 0.0;
     }
-
+    
     // converting the domain rotation to radians from degrees -- input
     // assumes degrees
     theta = (UID->simParams->domainRotation * pi / 180.0);
