@@ -15,8 +15,8 @@ CUDA_ADD_LIBRARY( cudaurbcore
   ESRIShapefile.cpp ESRIShapefile.h
   handleURBArgs.cpp
   Mesh.cpp
-  NetCDFOutput.cpp NetCDFOutput.h
-  QESNetCDFOutput.cpp 
+  NetCDFOutput.cpp 
+  QESNetCDFOutput.cpp   
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Solver.cpp

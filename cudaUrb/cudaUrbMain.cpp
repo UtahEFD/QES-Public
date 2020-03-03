@@ -129,8 +129,12 @@ int main(int argc, char *argv[])
         solverC->solve(UID, UGD, !arguments.solveWind);
     }
     
+    // /////////////////////////////
+    //
     // Run turbulence
-    if(TGD) {
+    //
+    // /////////////////////////////
+    if(TGD != nullptr) {
         TGD->run(UGD);
     }
 
