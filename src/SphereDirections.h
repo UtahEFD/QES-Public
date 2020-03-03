@@ -10,6 +10,7 @@
 
 #include "Vector3.h"
 #include <cmath>
+#include <cfloat>
 #include <random>
 
 class SphereDirections{
@@ -24,7 +25,7 @@ class SphereDirections{
    float upperPhiBound;
    
    Vector3<float> nextList[6];  //holds vectors of the 6 cardinal directions
-
+   Vector3<float> prevDir;
   public:
 
    /*
@@ -37,6 +38,11 @@ class SphereDirections{
     */
    SphereDirections(int numDirVec, float lowerThetaBound, float upperThetaBound, float lowerPhiBound, float upperPhiBound);
 
+
+   /*Constructor for the Mitchell's Best Candidate Algorithm test 
+    */
+   SphereDirections(int numDirVec);
+   
 
    /*
     *@return numDirVec -the number of directional vectors generated
@@ -56,12 +62,14 @@ class SphereDirections{
     */
    Vector3<float> getNextDir();
 
-   /*
+   /*Mitchel's Best Algorithm 
     *Gets the next unique direction 
     *@return the next non-repeated directional vector
     */
    Vector3<float> getNextDir2();
-   
+   Vector3<float> genRandSpherePt();
+   Vector3<float> polarToCartesian(float theta, float phi);
+   Vector3<float> furthestPoint(Vector3<float> *samplePtList, Vector3<float> existingPt, const int listSize);
 };
 
 #endif

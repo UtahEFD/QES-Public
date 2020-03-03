@@ -10,6 +10,7 @@ CUDA_ADD_EXECUTABLE( cudaUrb
 
 target_link_libraries(cudaUrb cudaurbcore)
 target_link_libraries(cudaUrb cudaurbutil)
+target_link_libraries(cudaUrb target_name)
 target_link_libraries(cudaUrb ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(cudaUrb ${GDAL_LIBRARY})
 target_link_libraries(cudaUrb ${NETCDF_LIBRARIES_CXX})
