@@ -5,12 +5,41 @@
 #include <stdint.h>
 #include <float.h>
 #include <vector>
+#include <time.h>
 
 #include "OptixRayTrace.h"
 
 
 extern "C" {
 __constant__ Params params;
+}
+
+
+static __forceinline__ __device__ uint32_t thomas_wang_hash(uint32_t seed){
+       seed = (seed ^ 61) ^ (seed >> 16);
+       seed = seed + (seed << 3);
+       seed = seed ^ (seed >> 4);
+       seed *= 0x27d4eb2d;
+       seed = seed ^ (seed >>15);
+       return seed;
+}
+
+static __forceinline__ __device__ uint32_t genSeed(uint32_t val){
+       time_t gmTime;
+       struct tm *gmTimeInfo;
+       time(&gmTime);
+       gmTimeInfo = gmtime(&gmTime);
+
+       uint32_t seed = gmTimeInfo->tm_hour + gmTimeInfo->tm_sec/gmTimeInfo->tm_year*val;
+
+       //for(int i = 0; i < 3; i++){
+         seed = thomas_wang_hash(seed);
+       //}
+       return seed;
+}
+
+static __forceinline__ __device__ float rndNum(){
+   return 1.0;
 }
 
 extern "C" __global__ void __raygen__from_cell(){
@@ -48,10 +77,10 @@ extern "C" __global__ void __raygen__from_cell(){
    // Hit tempHits[state.samples_per_cell];   
    // for(int i = 0; i < state.samples_per_cell; i++){
    //    float dx, dy, dx;
-
    //    //add random sphere direction functionality
-    //  Vertex vdir;
-     // vdir.x = dx;
+         //uint32_t seed = genSeed(i+idx.x);
+      //Vertex vdir;
+       // vdir.x = dx;
      // vdir.y = dy;
      // vdir.z = dz;
    //    params.rays[linear_idx].dir = vdir;

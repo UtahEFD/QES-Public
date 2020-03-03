@@ -69,14 +69,5 @@ public:
          */
         void calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const vector<int> &icellflag, vector<double> &mixingLengths);
         
-        void tempOPTIXMethod(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const vector<int> &icellflag, vector<double> &mixingLengths){
-           //         OptixRayTrace optixRayTracer(optixTris); 
-           //optixRayTracer.calculateMixingLength(10, dimX, dimY, dimZ, dx, dy, dz, icellflag, mixingLengths);
-        }
-
-
-        //temporary getter for the list of Triangles
-        vector<Triangle *> getMeshTriList(){
-           return optixTris;
-        }
+        void tempOPTIXMethod(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const vector<int> &icellflag, vector<double> &mixingLengths);
 };

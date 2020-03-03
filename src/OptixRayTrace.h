@@ -8,16 +8,18 @@
 #include <cuda_runtime.h>
 
 #include <optix.h>
-#include <optix_function_table_definition.h>
+
 #include <optix_stubs.h>
 
+#include <stdexcept>
+#include <sstream>
 #include <vector>
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <limits>
 
-#include "Triangle.cpp"
+#include "Triangle.h"
 
 
 
