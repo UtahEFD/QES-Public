@@ -32,11 +32,11 @@ void TURBWallBuilding::setWallsBC(URBGeneralData *UGD,TURBGeneralData *TGD){
     - only stair-step is implemented
     - need to do: cut-cell for building
   */
-  
+
   if(!use_cutcell) {
-    float z0=0.01;
+    
     for (size_t id=0; id < stairstep_wall_id.size(); ++id){
-      set_loglaw_stairstep_at_id_cc(UGD,TGD,stairstep_wall_id[id],icellflag_building,z0);
+      set_loglaw_stairstep_at_id_cc(UGD,TGD,stairstep_wall_id[id],icellflag_building,UGD->z0);
     }
   } else {
     //[FM] temporary fix because the cut-cell are messing with the wall

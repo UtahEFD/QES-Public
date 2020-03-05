@@ -103,9 +103,8 @@ TURBGeneralData::TURBGeneralData(URBGeneralData* UGD){
     }
   }
   
-  // compute mixing length here!
-  // FM - obsolete
-  //if(arguments->compML) {
+  // compute local mixing length here!
+  // FM - this need to be used only in case the code rin in serial mode (slow)
   if(false) {
     std::cout << "[TURB] \t\t Computing Local Mixing Length using serial code...\n";
     LocalMixing = new TURBLocalMixing();

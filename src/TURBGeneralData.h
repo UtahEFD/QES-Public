@@ -2,7 +2,6 @@
 
 #include <math.h>
 #include <vector>
-//#include "Args.hpp"
 #include "URBGeneralData.h"
 #include "TURBLocalMixing.h"
 #include "TURBWall.h"
@@ -19,7 +18,6 @@ class TURBGeneralData {
 public:
   TURBGeneralData()
   {}
-  //TURBGeneralData(Args*,URBGeneralData*);
   TURBGeneralData(URBGeneralData*);
   virtual ~TURBGeneralData()
     {}
@@ -76,7 +74,7 @@ public:
  protected:
 
  private:
-  // FM -> obsolete
+  // FM -> obsolete sould be relocated
   TURBLocalMixing *LocalMixing;
 
   // store the wall classes

@@ -2,7 +2,7 @@
 #include "TURBGeneralData.h"
 
 void TURBLocalMixing::defineLength(URBGeneralData *UGD,TURBGeneralData *TGD) {
-
+  
   float vonKar=0.41;
 
   int nx = TGD->nx;
@@ -20,7 +20,7 @@ void TURBLocalMixing::defineLength(URBGeneralData *UGD,TURBGeneralData *TGD) {
   for (int i=1; i<nx-2; i++) {
     for (int j=1; j<ny-2; j++) {
       for (int k=0; k<nz-2; k++) {
-	int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
         if ( (UGD->icellflag[icell_cent] ==0 || UGD->icellflag[icell_cent] ==2) &&
              max_z < TGD->z_cc[k]) {
           max_z=TGD->z_cc[k];
@@ -36,7 +36,7 @@ void TURBLocalMixing::defineLength(URBGeneralData *UGD,TURBGeneralData *TGD) {
       break;
     }
   }
-
+  
   //seeding Local Mixing Length with the verical distance to the terrain (up to 2*max_z)
   for(size_t id=0;id<TGD->icellfluid.size();id++) {
     int id_cc=TGD->icellfluid[id];
@@ -51,7 +51,7 @@ void TURBLocalMixing::defineLength(URBGeneralData *UGD,TURBGeneralData *TGD) {
   }
 
   getMinDistWall(UGD,TGD,max_height);
-
+  
   //linear interpolation between 2.0*max_z and 2.4*max_z
   std::cout << "[MixLength] \t linear interp of mixing length" << std::endl;
   int k1 = std::min(max_height-1,nz-2);
@@ -64,8 +64,8 @@ void TURBLocalMixing::defineLength(URBGeneralData *UGD,TURBGeneralData *TGD) {
       float slope=(TGD->Lm[id2]-TGD->Lm[id1])/(TGD->z_cc[k2]-TGD->z_cc[k1]);
       // linear interp: L(z) = L(z1) + m*(z-z1)
       for(int k=k1;k<k2;++k){
-	int id_cc=i + j*(nx-1) + k*(nx-1)*(ny-1);
-	TGD->Lm[id_cc]=TGD->Lm[id1]+(TGD->z_cc[k]-TGD->z_cc[k1])*slope;
+        int id_cc=i + j*(nx-1) + k*(nx-1)*(ny-1);
+        TGD->Lm[id_cc]=TGD->Lm[id1]+(TGD->z_cc[k]-TGD->z_cc[k1])*slope;
       }
     }
   }
@@ -83,34 +83,34 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
   for (int i=1; i<nx-2; i++) {
     for (int j=1; j<ny-2; j++) {
       for (int k=1; k<nz-2; k++) {
-	int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
         
-	if (UGD->icellflag[icell_cent] !=0 && UGD->icellflag[icell_cent] !=2) {
-	  /// Wall below
-	  if (UGD->icellflag[icell_cent-(nx-1)*(ny-1)]==0 || UGD->icellflag[icell_cent-(nx-1)*(ny-1)]==2) {
-	    wall_below_indices.push_back(icell_cent);
-	  }
-           /// Wall above
-	  if (UGD->icellflag[icell_cent+(nx-1)*(ny-1)]==0 || UGD->icellflag[icell_cent+(nx-1)*(ny-1)]==2) {
-	    wall_above_indices.push_back(icell_cent);
-	  }
-	  /// Wall in back
-	  if (UGD->icellflag[icell_cent-1]==0 || UGD->icellflag[icell_cent-1]==2) {
-	    wall_back_indices.push_back(icell_cent);
-	  }
-	  /// Wall in front
-	  if (UGD->icellflag[icell_cent+1]==0 || UGD->icellflag[icell_cent+1]==2) {
-	    wall_front_indices.push_back(icell_cent);
-	  }
-	  /// Wall on right
-	  if (UGD->icellflag[icell_cent-(nx-1)]==0 || UGD->icellflag[icell_cent-(nx-1)]==2) {
-	    wall_right_indices.push_back(icell_cent);
-	  }
-	  /// Wall on left
-	  if (UGD->icellflag[icell_cent+(nx-1)]==0 || UGD->icellflag[icell_cent+(nx-1)]==2) {
-	    wall_left_indices.push_back(icell_cent);
-	  }
-	}
+        if (UGD->icellflag[icell_cent] !=0 && UGD->icellflag[icell_cent] !=2) {
+          /// Wall below
+          if (UGD->icellflag[icell_cent-(nx-1)*(ny-1)]==0 || UGD->icellflag[icell_cent-(nx-1)*(ny-1)]==2) {
+            wall_below_indices.push_back(icell_cent);
+          }
+          /// Wall above
+          if (UGD->icellflag[icell_cent+(nx-1)*(ny-1)]==0 || UGD->icellflag[icell_cent+(nx-1)*(ny-1)]==2) {
+            wall_above_indices.push_back(icell_cent);
+          }
+          /// Wall in back
+          if (UGD->icellflag[icell_cent-1]==0 || UGD->icellflag[icell_cent-1]==2) {
+            wall_back_indices.push_back(icell_cent);
+          }
+          /// Wall in front
+          if (UGD->icellflag[icell_cent+1]==0 || UGD->icellflag[icell_cent+1]==2) {
+            wall_front_indices.push_back(icell_cent);
+          }
+          /// Wall on right
+          if (UGD->icellflag[icell_cent-(nx-1)]==0 || UGD->icellflag[icell_cent-(nx-1)]==2) {
+            wall_right_indices.push_back(icell_cent);
+          }
+          /// Wall on left
+          if (UGD->icellflag[icell_cent+(nx-1)]==0 || UGD->icellflag[icell_cent+(nx-1)]==2) {
+            wall_left_indices.push_back(icell_cent);
+          }
+        }
       }
     }
   }
@@ -146,7 +146,7 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
        UGD->icellflag[idyp]==2 && UGD->icellflag[idym]==2) {
       // terrain on all 4 corner -> nothing to do
     }else if(UGD->icellflag[idxp]==0 && UGD->icellflag[idxm]==0 &&
-	     UGD->icellflag[idyp]==0 && UGD->icellflag[idym]==0) {
+             UGD->icellflag[idyp]==0 && UGD->icellflag[idym]==0) {
       // building on all 4 corner -> propagate verically
       for (int kk=0; kk<=maxdist; kk++) {        
         int id=i + j*(nx-1) + (kk+k)*(nx-1)*(ny-1);
@@ -162,20 +162,20 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
         
         //propagate to the whole domaine 
         int i1 = std::max(i-maxdist-kk,1);
-	int i2 = std::min(i+maxdist+kk,nx-2);
-	int j1 = std::max(j-maxdist-kk,1);
-	int j2 = std::min(j+maxdist+kk,ny-2);
+        int i2 = std::min(i+maxdist+kk,nx-2);
+        int j1 = std::max(j-maxdist-kk,1);
+        int j2 = std::min(j+maxdist+kk,ny-2);
 
-	for (int jj=j1; jj<=j2; jj++) {
-	  for (int ii=i1; ii<=i2; ii++) {
-	    int id=ii + jj*(nx-1) + (kk+k)*(nx-1)*(ny-1);
-	    float x2 = TGD->x_cc.at(ii);
-	    float y2 = TGD->y_cc.at(jj);
-	    float z2 = TGD->z_cc.at(kk+k);
-	    float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-	    TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
-	  }
-	}
+        for (int jj=j1; jj<=j2; jj++) {
+          for (int ii=i1; ii<=i2; ii++) {
+            int id=ii + jj*(nx-1) + (kk+k)*(nx-1)*(ny-1);
+            float x2 = TGD->x_cc.at(ii);
+            float y2 = TGD->y_cc.at(jj);
+            float z2 = TGD->z_cc.at(kk+k);
+            float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
+            TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
+          }
+        }
       }
     }
   }
@@ -211,14 +211,14 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
 
 
       for (int jj=j1; jj<=j2; jj++) {
-	for (int kk=k1; kk<=k2; kk++) {
-	  int id=(i+ii) + jj*(nx-1) + (kk)*(nx-1)*(ny-1);
-	  float x2 = TGD->x_cc.at(ii+i);
-	  float y2 = TGD->y_cc.at(jj);
-	  float z2 = TGD->z_cc.at(kk);
-	  float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-	  TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
-	}
+        for (int kk=k1; kk<=k2; kk++) {
+          int id=(i+ii) + jj*(nx-1) + (kk)*(nx-1)*(ny-1);
+          float x2 = TGD->x_cc.at(ii+i);
+          float y2 = TGD->y_cc.at(jj);
+          float z2 = TGD->z_cc.at(kk);
+          float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
+          TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
+        }
       }
     }
   }
@@ -253,14 +253,14 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
       int k1(k),k2(k);
       
       for (int jj=j1; jj<=j2; jj++) {
-	for (int kk=k1; kk<=k2; kk++) {
-	  int id=(i+1+ii) + jj*(nx-1) + (kk)*(nx-1)*(ny-1);
-	  float x2 = TGD->x_cc.at(i+ii+1);
-	  float y2 = TGD->y_cc.at(jj);
-	  float z2 = TGD->z_cc.at(kk);
-	  float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-	  TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
-	}
+        for (int kk=k1; kk<=k2; kk++) {
+          int id=(i+1+ii) + jj*(nx-1) + (kk)*(nx-1)*(ny-1);
+          float x2 = TGD->x_cc.at(i+ii+1);
+          float y2 = TGD->y_cc.at(jj);
+          float z2 = TGD->z_cc.at(kk);
+          float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
+          TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
+        }
       }
     }
   }
@@ -295,14 +295,14 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
       int k1(k),k2(k);
 
       for (int ii=i1; ii<=i2; ii++) {
-	for (int kk=k1; kk<=k2; kk++) {
-	  int id=ii + (j+jj)*(nx-1) + (kk)*(nx-1)*(ny-1);
-	  float x2 = TGD->x_cc.at(ii);
-	  float y2 = TGD->y_cc.at(j+jj);
-	  float z2 = TGD->z_cc.at(kk);
-	  float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-	  TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
-	}
+        for (int kk=k1; kk<=k2; kk++) {
+          int id=ii + (j+jj)*(nx-1) + (kk)*(nx-1)*(ny-1);
+          float x2 = TGD->x_cc.at(ii);
+          float y2 = TGD->y_cc.at(j+jj);
+          float z2 = TGD->z_cc.at(kk);
+          float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
+          TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
+        }
       }
     }
   }
@@ -338,84 +338,17 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
       int k1(k),k2(k);
 
       for (int ii=i1; ii<=i2; ii++) {
-	for (int kk=k1; kk<=k2; kk++) {
-	  int id=ii + (j+1+jj)*(nx-1) + (kk)*(nx-1)*(ny-1);
-	  float x2 = TGD->x_cc.at(ii);
-	  float y2 = TGD->y_cc.at(j+1+jj);
-	  float z2 = TGD->z_cc.at(kk);
-	  float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-	  TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
-	}
+        for (int kk=k1; kk<=k2; kk++) {
+          int id=ii + (j+1+jj)*(nx-1) + (kk)*(nx-1)*(ny-1);
+          float x2 = TGD->x_cc.at(ii);
+          float y2 = TGD->y_cc.at(j+1+jj);
+          float z2 = TGD->z_cc.at(kk);
+          float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
+          TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
+        }
       }
     }
   }
   std::cout <<"[MixLength] \t cells with wall to the left: DONE " << std::endl;
 }
 
-
-
-float TURBLocalMixing::getMinDist_brute(unsigned int id_cc,URBGeneralData *UGD,TURBGeneralData *TGD) {
-  return 0;
-  /*
-  int nx = TGD->nx;
-  int ny = TGD->ny;
-  int nz = TGD->nz;
-
-  std::vector<float> testdist;
-
-  int k = (id_cc / ((nx-1)*(ny-1)));
-  int j = (id_cc - k*(nx-1)*(ny-1))/(nx-1);
-  int i = id_cc -  j*(nx-1) - k*(nx-1)*(ny-1);
-
-  //std::cout<<i<<" "<<j<<" "<<k<<std::endl;
-
-  // get physical location of point
-  float x1 = TGD->x_cc.at(i);
-  float y1 = TGD->y_cc.at(j);
-  float z1 = TGD->z_cc.at(k)-UGD->terrain.at(i + j*(nx-1));
-
-  //std::cout<<x1<<" "<<y1<<" "<<z1<<std::endl;
-
-  // max length scale is height above gorund
-  //float maxDist = z1;
-
-  // set length of search in x and y
-  int ilen = 4;//std::ceil(maxDist/dx);
-  int jlen = 4;//std::ceil(maxDist/dy);
-  int klen = 4;
-
-  // set start and ending points of search in x and y
-  int i1 = std::max(i-ilen,0);
-  int i2 = std::min(i+ilen,nx-2);
-  int j1 = std::max(j-jlen,0);
-  int j2 = std::min(j+jlen,ny-2);
-  int k1 = std::max(k-klen,1);
-  int k2 = std::min(k+klen,nz-3);
-
-  // search in x direction
-  float minDistance = z1;
-  for (int kk=k1; kk<=k2; kk++) {
-    for (int jj=j1; jj<=j2; jj++) {
-      for (int ii=i1; ii<=i2; ii++) {
-	int id=ii + jj*(nx-1) + k*(nx-1)*(ny-1);
-	if(UGD->icellflag[id] ==0 || UGD->icellflag[id] ==2) {
-	  float x2 = TGD->x_cc.at(ii);
-	  float y2 = TGD->y_cc.at(jj);
-	  float z2 = TGD->z_cc.at(kk);
-	  float dist = sqrt(pow((x2 - x1),2)
-			     + pow((y2 - y1),2)
-			     + pow((z2 - z1),2));
-	  if(dist!=0){
-	    testdist.push_back(dist);
-	  }
-	}
-      }
-    }
-  }
-  if(testdist.size()>0){
-    std::sort(testdist.begin(),testdist.end());
-    minDistance=std::min(testdist[0],minDistance);
-  }
-  return minDistance;
-  */
-}

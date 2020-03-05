@@ -133,13 +133,13 @@ void Wall::defineWalls(URBGeneralData *UGD)
           /// Wall below
           if (UGD->icellflag[icell_cent-(nx-1)*(ny-1)] == 0 || UGD->icellflag[icell_cent-(nx-1)*(ny-1)] == 2)
           {
-            UGD->wall_below_indices.push_back(icell_face);
+            //UGD->wall_below_indices.push_back(icell_face);
             UGD->n[icell_cent] = 0.0;
           }
           /// Wall above
           if (UGD->icellflag[icell_cent+(nx-1)*(ny-1)] == 0 || UGD->icellflag[icell_cent+(nx-1)*(ny-1)] == 2)
           {
-            UGD->wall_above_indices.push_back(icell_face);
+            //UGD->wall_above_indices.push_back(icell_face);
             UGD->m[icell_cent] = 0.0;
           }
           /// Wall in back
@@ -147,14 +147,14 @@ void Wall::defineWalls(URBGeneralData *UGD)
           {
             if (i>0)
             {
-              UGD->wall_back_indices.push_back(icell_face);
+              //UGD->wall_back_indices.push_back(icell_face);
               UGD->f[icell_cent] = 0.0;
             }
           }
           /// Wall in front
           if (UGD->icellflag[icell_cent+1] == 0 || UGD->icellflag[icell_cent+1] == 2)
           {
-            UGD->wall_front_indices.push_back(icell_face);
+            //UGD->wall_front_indices.push_back(icell_face);
             UGD->e[icell_cent] = 0.0;
           }
           /// Wall on right
@@ -162,14 +162,14 @@ void Wall::defineWalls(URBGeneralData *UGD)
           {
             if (j>0)
             {
-              UGD->wall_right_indices.push_back(icell_face);
+              //UGD->wall_right_indices.push_back(icell_face);
               UGD->h[icell_cent] = 0.0;
             }
           }
           /// Wall on left
           if (UGD->icellflag[icell_cent+(nx-1)] == 0 || UGD->icellflag[icell_cent+(nx-1)] == 2)
           {
-            UGD->wall_left_indices.push_back(icell_face);
+            //UGD->wall_left_indices.push_back(icell_face);
             UGD->g[icell_cent] = 0.0;
           }
         }
@@ -351,9 +351,6 @@ void Wall::defineWalls(URBGeneralData *UGD)
       }
     }
   }
-
-
-
 }
 
 
