@@ -21,31 +21,31 @@ class TURBWallTerrain : public TURBWall
 protected:
 public:
   
-  TURBWallTerrain()
-  {}
-  ~TURBWallTerrain()
-  {}
+    TURBWallTerrain()
+    {}
+    ~TURBWallTerrain()
+    {}
   
-  /**
-   * @brief
-   *
-   * This function takes in the icellflags set by setCellsFlag
-   * function for stair-step method and sets related coefficients to
-   * zero to define solid walls. It also creates vectors of indices
-   * of the cells that have wall to right/left, wall above/bellow
-   * and wall in front/back
-   *
-   */
-  void defineWalls(URBGeneralData*,TURBGeneralData*);
-  void setWallsBC(URBGeneralData*,TURBGeneralData*);
+    /**
+     * @brief
+     *
+     * This function takes in the icellflags set by setCellsFlag
+     * function for stair-step method and sets related coefficients to
+     * zero to define solid walls. It also creates vectors of indices
+     * of the cells that have wall to right/left, wall above/bellow
+     * and wall in front/back
+     *
+     */
+    void defineWalls(URBGeneralData*,TURBGeneralData*);
+    void setWallsBC(URBGeneralData*,TURBGeneralData*);
   
 private:
-  const int icellflag_terrain = 2;
-  const int icellflag_cutcell = 8;
+    const int icellflag_terrain = 2;
+    const int icellflag_cutcell = 8;
 
-  const int iturbflag_stairstep = 2;
-  const int iturbflag_cutcell = 3;
+    const int iturbflag_stairstep = 2;
+    const int iturbflag_cutcell = 3;
   
-  bool use_cutcell = false;
+    bool use_cutcell = false;
   
 };

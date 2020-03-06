@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
     if(TGD != nullptr) {
         TGD->run(UGD);
     }
-
+    
     // /////////////////////////////
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
