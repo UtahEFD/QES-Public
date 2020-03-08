@@ -170,7 +170,7 @@ public:
         if (arguments.terrainOut) {
             if (DTEHF) {
                 std::cout << "Creating terrain OBJ....\n";
-                DTEHF->outputOBJ("terrain.obj");
+                DTEHF->outputOBJ(arguments.filenameTerrain);
                 std::cout << "OBJ created....\n";
             }
             else {

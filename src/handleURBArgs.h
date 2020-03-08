@@ -30,17 +30,28 @@ public:
 
 
     bool verbose;
-    std::string quicFile = "", demFile = "", iCellOut = "";
-    // netCDFFile_vz for standard cell-center vizalization file
-    std::string netCDFFileVz = "";
-    // netCDFFile_wk for working field used by Plume
-    std::string netCDFFileWk = "";
-    // netCDFFile_turb for turbulence field used by Plume
-    std::string netCDFFileTurb = "";
+    
+    // input files (from the command line)
+    std::string quicFile = "", demFile = "";
+    
+    // Base name for all NetCDF output files
+    std::string netCDFFileBasename = "";
 
-    bool cellFace, terrainOut, solveWind;
+    // flag to turn on/off different modules
+    bool solveWind,compTurb;
     int solveType, compareType;
-
+    
+    bool visuOutput,wkspOutput,turbOutput,terrainOut;
+    // netCDFFile for standard cell-center vizalization file
+    std::string netCDFFileVisu = "";
+    // netCDFFile for working field used by Plume
+    std::string netCDFFileWksp = "";
+    // netCDFFile for turbulence field used by Plume
+    std::string netCDFFileTurb = "";
+    // filename for terrain output
+    std::string filenameTerrain = "";
+    
+    
     // Calculate Mixing Length - currently takes a while so it is
     // disabled unless this is set.
     bool calcMixingLength;

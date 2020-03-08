@@ -74,19 +74,21 @@ int main(int argc, char *argv[])
     
     // create URB output classes
     std::vector<QESNetCDFOutput*> outputVec;
-    if (arguments.netCDFFileVz != "") {
-        outputVec.push_back(new WINDSOutputVisualization(UGD,UID,arguments.netCDFFileVz));
+    if (arguments.visuOutput) {
+        outputVec.push_back(new WINDSOutputVisualization(UGD,UID,arguments.netCDFFileVisu));
     }
-    if (arguments.netCDFFileWk != "") {
-        outputVec.push_back(new WINDSOutputWorkspace(UGD,arguments.netCDFFileWk));
+    if (arguments.wkspOutput) {
+        outputVec.push_back(new WINDSOutputWorkspace(UGD,arguments.netCDFFileWksp));
     }
     
     
     // Generate the general TURB data from URB data
     // based on if the turbulence output file is defined
     TURBGeneralData* TGD = nullptr;
-    if (arguments.netCDFFileTurb != "") {
+    if (arguments.compTurb) {
         TGD = new TURBGeneralData(UGD);
+    }
+    if (arguments.compTurb && arguments.turbOutput) {
         outputVec.push_back(new TURBOutput(TGD,arguments.netCDFFileTurb));
     }
     
