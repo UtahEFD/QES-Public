@@ -3,7 +3,7 @@
 
 void TURBLocalMixing::defineLength(URBGeneralData *UGD,TURBGeneralData *TGD) {
   
-    float vonKar=0.41;
+    //float vonKar=0.41;
 
     int nx = TGD->nx;
     int ny = TGD->ny;
@@ -30,8 +30,8 @@ void TURBLocalMixing::defineLength(URBGeneralData *UGD,TURBGeneralData *TGD) {
     }
     // maximum height of local mixing length = 2*max z of objects
     int max_height=nz-2;
-    for(int k=0;k<nz;++k){
-        if(TGD->z_cc[k]>2.0*max_z){
+    for(int k=0;k<nz;++k) {
+        if(TGD->z_cc[k]>2.0*max_z) {
             max_height=k;
             break;
         }
@@ -43,11 +43,11 @@ void TURBLocalMixing::defineLength(URBGeneralData *UGD,TURBGeneralData *TGD) {
         int k = (id_cc / ((nx-1)*(ny-1)));
         int j = (id_cc - k*(nx-1)*(ny-1))/(nx-1);
         int i = id_cc -  j*(nx-1) - k*(nx-1)*(ny-1);
-    
+        
         if(k<max_height)
-            TGD->Lm[id_cc] = vonKar*abs(TGD->z_cc[k]-UGD->terrain[i + j*(nx-1)]);
+            TGD->Lm[id_cc] = abs(TGD->z_cc[k]-UGD->terrain[i + j*(nx-1)]);
         else
-            TGD->Lm[id_cc] = vonKar*(TGD->z_cc[k]);
+            TGD->Lm[id_cc] = TGD->z_cc[k];
     }
 
     getMinDistWall(UGD,TGD,max_height);
@@ -112,7 +112,8 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
                     }
                     /// Wall on right
                     if (UGD->icellflag[icell_cent-(nx-1)]==0 || 
-                        UGD->icellflag[icell_cent-(nx-1)]==2) {
+                        UGD->icellflag[icell_cent-(nx-1)]==2) 
+                    {
                         wall_right_indices.push_back(icell_cent);
                     }
                     /// Wall on left
@@ -147,7 +148,7 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
         int i = id_cc -  j*(nx-1) - k*(nx-1)*(ny-1);
         int maxdist=max_height-k;
 
-        TGD->Lm[id_cc]=vonKar*(TGD->z_cc.at(k)-TGD->z_fc.at(k));
+        TGD->Lm[id_cc]=TGD->z_cc.at(k)-TGD->z_fc.at(k);
 
         float x1 = TGD->x_cc.at(i);
         float y1 = TGD->y_cc.at(j);
@@ -165,7 +166,7 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
                 float y2 = TGD->y_cc.at(j);
                 float z2 = TGD->z_cc.at(kk+k);
                 float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
+                TGD->Lm[id]=std::min(dist,TGD->Lm[id]);
             }
         }else{
             // propagate in all direction
@@ -184,7 +185,7 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
                         float y2 = TGD->y_cc.at(jj);
                         float z2 = TGD->z_cc.at(kk+k);
                         float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                        TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
+                        TGD->Lm[id]=std::min(dist,TGD->Lm[id]);
                     }
                 }
             }
@@ -206,7 +207,7 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
             maxdist=nx-1-i;
         }
 
-        TGD->Lm[id_cc]=vonKar*(TGD->x_cc.at(i)-TGD->x_fc.at(i));
+        TGD->Lm[id_cc]=TGD->x_cc.at(i)-TGD->x_fc.at(i);
 
         float x1 = TGD->x_fc.at(i);
         float y1 = TGD->y_cc.at(j);
@@ -228,7 +229,7 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
                     float y2 = TGD->y_cc.at(jj);
                     float z2 = TGD->z_cc.at(kk);
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                    TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
+                    TGD->Lm[id]=std::min(dist,TGD->Lm[id]);
                 }
             }
         }
@@ -249,7 +250,7 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
             maxdist=i;
         }
 
-        TGD->Lm[id_cc]=vonKar*(TGD->x_fc.at(i+1)-TGD->x_cc.at(i));
+        TGD->Lm[id_cc]=TGD->x_fc.at(i+1)-TGD->x_cc.at(i);
 
         float x1 = TGD->x_fc.at(i+1);
         float y1 = TGD->y_cc.at(j);
@@ -270,7 +271,7 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
                     float y2 = TGD->y_cc.at(jj);
                     float z2 = TGD->z_cc.at(kk);
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                    TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
+                    TGD->Lm[id]=std::min(dist,TGD->Lm[id]);
                 }
             }
         }
@@ -291,7 +292,7 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
             maxdist=ny-1-j;
         }
 
-        TGD->Lm[id_cc]=vonKar*(TGD->y_cc.at(j)-TGD->y_fc.at(j));
+        TGD->Lm[id_cc]=TGD->y_cc.at(j)-TGD->y_fc.at(j);
 
         float x1 = TGD->x_cc.at(i);
         float y1 = TGD->y_fc.at(j);
@@ -312,7 +313,7 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
                     float y2 = TGD->y_cc.at(j+jj);
                     float z2 = TGD->z_cc.at(kk);
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                    TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
+                    TGD->Lm[id]=std::min(dist,TGD->Lm[id]);
                 }
             }
         }
@@ -333,7 +334,7 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
             maxdist=j;
         }
 
-        TGD->Lm[id_cc]=vonKar*(TGD->y_fc.at(j+1)-TGD->y_cc.at(j));
+        TGD->Lm[id_cc]=TGD->y_fc.at(j+1)-TGD->y_cc.at(j);
 
         float x1 = TGD->x_cc.at(i);
         float y1 = TGD->y_fc.at(j+1);
@@ -355,7 +356,7 @@ void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,in
                     float y2 = TGD->y_cc.at(j+1+jj);
                     float z2 = TGD->z_cc.at(kk);
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                    TGD->Lm[id]=std::min(vonKar*dist,TGD->Lm[id]);
+                    TGD->Lm[id]=std::min(dist,TGD->Lm[id]);
                 }
             }
         }
