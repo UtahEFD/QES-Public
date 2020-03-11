@@ -251,7 +251,7 @@ void PolyBuilding::upwindCavity (const URBInputData* UID, URBGeneralData* UGD)
                 if ( (x_w-x_intersect_w>=x_ellipse_w) && (x_w-x_intersect_w<=0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0) && (UGD->icellflag[icell_cent] != 2))
                 {
                   UGD->w0[icell_face] = 0.0;
-                  if (i < UGD->nx-1 && j < UGD->ny-1 && k < UGD->nz-2)
+                  if (i < UGD->nx-1 && j < UGD->ny-1 && k < UGD->nz-2 && (UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
                   {
                     UGD->icellflag[icell_cent] = 3;
                   }
@@ -262,7 +262,7 @@ void PolyBuilding::upwindCavity (const URBInputData* UID, URBGeneralData* UGD)
                 if ( (x_w-x_intersect_w>=x_ellipse_w) && (x_w-x_intersect_w < length_factor*x_ellipse_w) && (UGD->icellflag[icell_cent] != 0) && (UGD->icellflag[icell_cent] != 2))
                 {
                   UGD->w0[icell_face] *= retarding_factor;
-                  if (i < UGD->nx-1 && j < UGD->ny-1 && k < UGD->nz-2)
+                  if (i < UGD->nx-1 && j < UGD->ny-1 && k < UGD->nz-2 && (UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
                   {
                     UGD->icellflag[icell_cent] = 3;
                   }
@@ -270,7 +270,7 @@ void PolyBuilding::upwindCavity (const URBInputData* UID, URBGeneralData* UGD)
                 if ( (x_w-x_intersect_w >= length_factor*x_ellipse_w) && (x_w-x_intersect_w <= 0.1*UGD->dxy) && (UGD->icellflag[icell_cent] != 0) && (UGD->icellflag[icell_cent] != 2))
                 {
                   UGD->w0[icell_face] = -sqrt(pow(u0_h,2.0)+pow(v0_h,2.0))*(0.1*cos(M_PI*abs(x_w-x_intersect_w)/(length_factor*Lf_face[counter]))-0.05);
-                  if (i < UGD->nx-1 && j < UGD->ny-1 && k < UGD->nz-2)
+                  if (i < UGD->nx-1 && j < UGD->ny-1 && k < UGD->nz-2 && (UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
                   {
                     UGD->icellflag[icell_cent] = 3;
                   }

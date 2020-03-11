@@ -7,8 +7,8 @@
   	<halo_x> 0.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
   	<halo_y> 0.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain)-->
 
-  	<domain>40 40 100</domain>				<!-- Number of cells in x,y and z directions-->
-  	<cellSize> 5.0 5.0 2.0 </cellSize> 		<!-- Mesh resolution (meters)-->
+  	<domain>100 100 100</domain>				<!-- Number of cells in x,y and z directions-->
+  	<cellSize> 2.0 2.0 2.0 </cellSize> 		<!-- Mesh resolution (meters)-->
 	<verticalStretching> 0 </verticalStretching>              <!-- vertical stretching (0-uniform grid, 1-costum grid)-->
 
 	<totalTimeIncrements> 0 </totalTimeIncrements> 				<!-- Number of time steps-->
@@ -20,7 +20,7 @@
 	<sidewallFlag> 1 </sidewallFlag> 								<!-- Sidewall flag (0-off, 1-on) -->
 	<maxIterations> 500 </maxIterations> 						<!-- Maximum number of iterations -->
 	<residualReduction> 3 </residualReduction> 			<!-- Residual Reduction (Orders of Magnitude) -->
-	<meshTypeFlag> 0 </meshTypeFlag> 								<!-- Type of meshing scheme (0-Stair step (origional QUIC), 1-Cut-cell method -->
+	<meshTypeFlag> 1 </meshTypeFlag> 								<!-- Type of meshing scheme (0-Stair step (origional QUIC), 1-Cut-cell method -->
 	<useDiffusion> 0 </useDiffusion>
 	<domainRotation> 0 </domainRotation>  					<!-- Rotation angle of domain relative to true north -->
 	<UTMx> 0 </UTMx> 														<!-- x component (m) in UTM -->
@@ -77,22 +77,22 @@
   <sensorVelocityFlag> 0 </sensorVelocityFlag>
   <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
-<!--buildings>
+<buildings>
 	<wallRoughness> 0.1 </wallRoughness>
 	<numBuildings> 2 </numBuildings>
 	<numPolygonNodes> 0 </numPolygonNodes>
 	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
-		<height> 33.0 </height>
+		<height> 73.0 </height>
 		<baseHeight> 0 </baseHeight>
-		<xStart> 88.0 </xStart>
-		<yStart> 83.0 </yStart>
+		<xStart> 87.0 </xStart>
+		<yStart> 81.0 </yStart>
 		<length> 28.0 </length>
-		<width> 27.0 </width>
+		<width> 28.0 </width>
 		<buildingRotation> 0.0 </buildingRotation>
 	</rectangularBuilding>
-	<rectangularBuilding>
+	<!--rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
 		<height> 33.0 </height>
@@ -102,6 +102,6 @@
 		<length> 28.0 </length>
 		<width> 27.0 </width>
 		<buildingRotation> 0.0 </buildingRotation>
-	</rectangularBuilding>
-</buildings-->
+	</rectangularBuilding-->
+</buildings>
 
