@@ -32,7 +32,7 @@ public:
     bool verbose;
     
     // input files (from the command line)
-    std::string quicFile = "", demFile = "";
+    std::string quicFile = "";
     
     // Base name for all NetCDF output files
     std::string netCDFFileBasename = "";

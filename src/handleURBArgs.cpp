@@ -16,7 +16,6 @@ URBArgs::URBArgs()
     reg("turbcomp", "Turns on the computation of turbulent fields", ArgumentParsing::NONE, 't');
 
     reg("quicproj", "Specifies the QUIC Proj file", ArgumentParsing::STRING, 'q');
-    reg("demfile", "Specifies the DEM file that should be used for terrain", ArgumentParsing::STRING, 'd');
 
     reg("outbasename", "Specifies the basename for netcdf files", ArgumentParsing::STRING, 'o');
     reg("visuout", "Turns on the netcdf file to write visulatization results", ArgumentParsing::NONE, 'z');
@@ -61,10 +60,7 @@ void URBArgs::processArguments(int argc, char *argv[])
 
     isSet( "quicproj", quicFile );
     if (quicFile != "") std::cout << "quicproj set to " << quicFile << std::endl;
-    
-    isSet( "demfile", demFile );
-    if (demFile != "") std::cout << "DEM input file set to " << demFile << std::endl;
-    
+        
     isSet( "outbasename", netCDFFileBasename);
     if(netCDFFileBasename != "") {
         visuOutput= isSet("visuout");
