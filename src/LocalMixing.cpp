@@ -1,7 +1,7 @@
-#include "TURBLocalMixing.h"
+#include "LocalMixing.h"
 #include "TURBGeneralData.h"
 
-void TURBLocalMixing::defineLength(URBGeneralData *UGD,TURBGeneralData *TGD) {
+void LocalMixing::defineLength(URBGeneralData *UGD,TURBGeneralData *TGD) {
   
     //float vonKar=0.41;
 
@@ -71,7 +71,7 @@ void TURBLocalMixing::defineLength(URBGeneralData *UGD,TURBGeneralData *TGD) {
     }
 }
 
-void TURBLocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,int max_height) {
+void LocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,int max_height) {
 
     float vonKar=0.41;
 

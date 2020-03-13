@@ -107,8 +107,8 @@ TURBGeneralData::TURBGeneralData(URBGeneralData* UGD){
     // FM - this need to be used only in case the code rin in serial mode (slow)
     if(false) {
         std::cout << "[TURB] \t\t Computing Local Mixing Length using serial code...\n";
-        LocalMixing = new TURBLocalMixing();
-        LocalMixing->defineLength(UGD,this);
+        localMixing = new LocalMixing();
+        localMixing->defineLength(UGD,this);
         std::cout << "[TURB] \t\t Local Mixing Defined...\n";
     }
   

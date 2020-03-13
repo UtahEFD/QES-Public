@@ -14,6 +14,7 @@ CUDA_ADD_LIBRARY( cudaurbcore
   DynamicParallelism.cu
   ESRIShapefile.cpp ESRIShapefile.h
   handleURBArgs.cpp
+  LocalMixing.cpp
   Mesh.cpp
   NetCDFOutput.cpp 
   QESNetCDFOutput.cpp   
@@ -23,7 +24,6 @@ CUDA_ADD_LIBRARY( cudaurbcore
   Triangle.cpp
   TURBGeneralData.cpp
   TURBOutput.cpp
-  TURBLocalMixing.cpp
   TURBWall.cpp
   TURBWallBuilding.cpp
   TURBWallTerrain.cpp

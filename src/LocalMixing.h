@@ -19,7 +19,7 @@
 // may need to forward reference
 class TURBGeneralData;
 
-class TURBLocalMixing
+class LocalMixing
 { 
 private:
   
@@ -47,9 +47,9 @@ protected:
 
 public:
   
-    TURBLocalMixing()
+    LocalMixing()
     {}
-    ~TURBLocalMixing()
+    ~LocalMixing()
     {}
   
     /*
