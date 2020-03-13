@@ -20,13 +20,10 @@ URBArgs::URBArgs()
     reg("outbasename", "Specifies the basename for netcdf files", ArgumentParsing::STRING, 'o');
     reg("visuout", "Turns on the netcdf file to write visulatization results", ArgumentParsing::NONE, 'z');
     reg("wkout", "Turns on the netcdf file to write wroking file", ArgumentParsing::NONE, 'w');
+    // [FM] the output of turbulence field linked to the flag compTurb
     //reg("turbout", "Turns on the netcdf file to write turbulence file", ArgumentParsing::NONE, 'r');   
     reg("terrainout", "Turn on the output of the triangle mesh for the terrain", ArgumentParsing::NONE, 'h');
 
-    //reg("netcdfvzout", "Specifies the netcdf file to write vizulatization results to", ArgumentParsing::STRING, 'o');
-    //reg("netcdfwkout", "Specifies the netcdf file to write wroking file to", ArgumentParsing::STRING, 'w');
-    //reg("netcdfturbout", "Specifies the netcdf file to write turbulence file to", ArgumentParsing::STRING, 'r');   
-    
     reg("calcmixlength", "Turns on the mixing length calculations and output", ArgumentParsing::NONE, 'm');    
 }
 
