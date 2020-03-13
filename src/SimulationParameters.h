@@ -110,7 +110,7 @@ public:
         parsePrimitive<float>(false, halo_x, "halo_x");
         parsePrimitive<float>(false, halo_y, "halo_y");
         parsePrimitive<float>(false, heightFactor, "heightFactor");
-        
+
         demFile = "";
         parsePrimitive<std::string>(false, demFile, "DEM");
 
@@ -146,8 +146,8 @@ public:
             DTE_mesh = new Mesh(DTE_heightField->getTris());
             std::cout << "Mesh complete\n";
         }
-        
-        // For now wrf and dem are exclusive 
+
+        // For now wrf and dem are exclusive
         else if (demFile != "") {
             std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
             DTE_heightField = new DTEHeightField(demFile,
@@ -166,19 +166,6 @@ public:
             DTE_mesh = nullptr;
         }
 
-#if 0
-        if (arguments.terrainOut) {
-            if (DTEHF) {
-                std::cout << "Creating terrain OBJ....\n";
-                DTEHF->outputOBJ("terrain.obj");
-                std::cout << "OBJ created....\n";
-            }
-            else {
-                std::cerr << "Error: No dem file specified as input\n";
-                return -1;
-            }
-        }
-#endif
 
 
         //
