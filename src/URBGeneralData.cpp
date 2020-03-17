@@ -64,12 +64,12 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     // Need to now take all WRF station data and convert to
     // sensors
     if (UID->simParams->wrfInputData) {
-        
+
         WRFInput *wrf_ptr = UID->simParams->wrfInputData;
 
         std::cout << "Size of stat data: " << wrf_ptr->statData.size() << std::endl;
         UID->metParams->sensors.resize( wrf_ptr->statData.size() );
-            
+
         for (int i=0; i<wrf_ptr->statData.size(); i++) {
             std::cout << "Station " << i << " ("
                       << wrf_ptr->statData[i].xCoord << ", "
@@ -77,7 +77,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
 
             if (!UID->metParams->sensors[i])
                 UID->metParams->sensors[i] = new Sensor();
-                
+
             UID->metParams->sensors[i]->site_xcoord = wrf_ptr->statData[i].xCoord;
             UID->metParams->sensors[i]->site_ycoord = wrf_ptr->statData[i].yCoord;
 
@@ -86,7 +86,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
 
             // Make sure to set size_z0 to be z0 from WRF cell
             UID->metParams->sensors[i]->site_z0 = wrf_ptr->statData[i].z0;
-            
+
             //
             // 1 time series for now - how do we deal with this for
             // new time steps???  Need to figure out ASAP.
@@ -99,7 +99,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
                 UID->metParams->sensors[i]->site_z_ref.resize( profDataSz );
                 UID->metParams->sensors[i]->site_U_ref.resize( profDataSz );
 
-                
+
                 for (int p=0; p<wrf_ptr->statData[i].profiles[t].size(); p++) {
                     std::cout << "\t" << wrf_ptr->statData[i].profiles[t][p].zCoord
                               << ", " << wrf_ptr->statData[i].profiles[t][p].ws
@@ -108,7 +108,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
                     UID->metParams->sensors[i]->site_z_ref[p] = wrf_ptr->statData[i].profiles[t][p].zCoord;
                     UID->metParams->sensors[i]->site_U_ref[p] = wrf_ptr->statData[i].profiles[t][p].ws;
                     UID->metParams->sensors[i]->site_wind_dir[p] = wrf_ptr->statData[i].profiles[t][p].wd;
-                    
+
                 }
             }
         }
@@ -314,7 +314,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
                     terrain[idx] = 0.0;
                 }
                 id = i+j*nx;
-                for (auto k=0; k<z.size(); k++)
+                for (auto k=0; k<z.size()-1; k++)
                 {
                     terrain_id[id] = k+1;
                     if (terrain[idx] < z[k+1])
@@ -328,7 +328,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
                         // ////////////////////////////////
                         int ii = i+UID->simParams->halo_x/dx;
                         int jj = j+UID->simParams->halo_y/dy;
-                        int icell_cent = ii+jj*(nx-1)+(k+1)*(nx-1)*(ny-1);
+                        int icell_cent = ii+jj*(nx-1)+k*(nx-1)*(ny-1);
                         icellflag[icell_cent] = 2;
                     }
                 }
@@ -401,7 +401,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
               {
                   corner_height = UID->simParams->DTE_mesh->getHeight(UID->simParams->shpPolygons[pIdx][lIdx].x_poly,
                                                                       UID->simParams->shpPolygons[pIdx][lIdx].y_poly);
-                  
+
                   if (corner_height < min_height && corner_height >= 0.0)
                   {
                       min_height = corner_height;
@@ -417,7 +417,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
               base_height.push_back(0.0);
           }
       }
-      
+
       for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
       {
           for (auto lIdx=0; lIdx < UID->simParams->shpPolygons[pIdx].size(); lIdx++)
@@ -426,7 +426,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
               UID->simParams->shpPolygons[pIdx][lIdx].y_poly += UID->simParams->halo_y;
           }
       }
-      
+
         std::cout << "Creating buildings from shapefile...\n";
         // Loop to create each of the polygon buildings read in from the shapefile
         for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
@@ -499,7 +499,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
         // for now this does the canopy stuff for us
         allBuildingsV[building_id[i]]->canopyVegetation(this);
     }
-    
+
     ///////////////////////////////////////////
     //   Upwind Cavity Parameterization     ///
     ///////////////////////////////////////////
@@ -598,7 +598,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
         std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
         std::cout << "\telapsed time: " << mlElapsed.count() << " s\n";
     }
-    
+
 }
 
 
