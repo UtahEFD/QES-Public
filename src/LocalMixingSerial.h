@@ -9,7 +9,6 @@
 #include <chrono>
 #include <limits>
 
-#include "URBGeneralData.h"
 #include "LocalMixing.h"
 
 /*
@@ -17,10 +16,12 @@
   Date: Feb. 2020
 */
 
+class URBInputData;
+class URBGeneralData;
+
 class LocalMixingSerial : public LocalMixing
-{ 
-private:
-  
+{
+private:   
     std::vector<int> wall_right_indices, wall_left_indices;
     std::vector<int> wall_back_indices,  wall_front_indices;
     std::vector<int> wall_below_indices, wall_above_indices;
@@ -52,7 +53,6 @@ public:
      * [FM] This method define the mixing length with the serial 
      * methode (CANNOT be parallelized)
      */
-    void defineMixingLength(URBGeneralData*);   
+    void defineMixingLength(const URBInputData*,URBGeneralData*);   
     
 };
-

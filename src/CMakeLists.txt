@@ -15,7 +15,8 @@ CUDA_ADD_LIBRARY( cudaurbcore
   DynamicParallelism.cu
   ESRIShapefile.cpp ESRIShapefile.h
   handleURBArgs.cpp
-  LocalMixing.h
+  LocalMixingParam.h
+  LocalMixing.cpp   
   LocalMixingSerial.cpp
   Mesh.cpp
   NetCDFOutput.cpp 

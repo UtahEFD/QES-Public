@@ -1,9 +1,11 @@
 #include "LocalMixingSerial.h"
 
-void LocalMixingSerial::defineMixingLength(URBGeneralData *UGD) {
-  
-    //float vonKar=0.41;
+// These take care of the circular reference
+#include "URBInputData.h"
+#include "URBGeneralData.h"
 
+void LocalMixingSerial::defineMixingLength(const URBInputData* UID,URBGeneralData* UGD) 
+{
     int nx = UGD->nx;
     int ny = UGD->ny;
     int nz = UGD->nz;
@@ -92,12 +94,12 @@ void LocalMixingSerial::defineMixingLength(URBGeneralData *UGD) {
                 int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
                 if ( (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2) ) {
                     if(k<max_height) {
-                        UGD->mixingLengths[icell_cent] = abs(z_cc[k]-UGD->terrain[i + j*(nx-1)]);
+                        UGD->mixingLengths[icell_cent] = z_cc[k]-UGD->terrain[i + j*(nx-1)];
                     } else {
                         UGD->mixingLengths[icell_cent] = z_cc[k];
                     }
-                    if(UGD->mixingLengths[icell_cent] < 0) {
-                        UGD->mixingLengths[icell_cent] = 0;
+                    if(UGD->mixingLengths[icell_cent] < 0.0) {
+                        UGD->mixingLengths[icell_cent] = 0.0;
                     }
                 }
             }
@@ -123,11 +125,15 @@ void LocalMixingSerial::defineMixingLength(URBGeneralData *UGD) {
             }
         }
     }
+    
+    if(UID->localMixingParam->save2file){
+        saveMixingLength(UID,UGD);
+    }
+    
+    return;
 }
 
 void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
-
-    float vonKar=0.41;
 
     int nx = UGD->nx;
     int ny = UGD->ny;

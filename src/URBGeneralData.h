@@ -112,7 +112,7 @@ public:
     std::vector<float> u,v,w;
 
     // local Mixing class and data
-    LocalMixing* localMixing;
+    //LocalMixing* localMixing;
     std::vector<double> mixingLengths;
     std::vector<double> mixlength_out;
 

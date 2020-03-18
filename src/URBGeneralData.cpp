@@ -218,8 +218,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     icellflag.resize( numcell_cent, 1 );
     ibuilding_flag.resize ( numcell_cent, -1 );
 
-    if (m_calcMixingLength)
-        mixingLengths.resize( numcell_cent, 0.0 );
+    mixingLengths.resize( numcell_cent, 0.0 );
 
     terrain.resize( numcell_cout_2d, 0.0 );
     terrain_id.resize( nx*ny, 1 );
@@ -584,25 +583,32 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
 
     // compute local mixing length here!
     // FM - this need to be used only in case the code rin in serial mode (slow)
-    if(false) {
-        std::cout << "[WINDS] \t\t Computing Local Mixing Length using serial code...\n";
-        localMixing = new LocalMixingSerial();
-        localMixing->defineMixingLength(this);
-        std::cout << "[WINDS] \t\t Local Mixing Defined...\n";
+    if(UID->localMixingParam) {
+        
+        if(UID->localMixingParam->methodLocalMixing == 1) {
+            std::cout << "[MixLength] \t Computing Local Mixing Length using serial code...\n";
+            //localMixing = new LocalMixingSerial();
+            //localMixing->defineMixingLength(UID,this);
+            std::cout << "[MixLength] \t Local Mixing Defined...\n";
+        } else if (UID->localMixingParam->methodLocalMixing == 2) {
+            /*******Add raytrace code here********/
+            std::cout << "Computing mixing length scales..." << std::endl;
+            auto mlStartTime = std::chrono::high_resolution_clock::now();
+            UID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
+            auto mlEndTime = std::chrono::high_resolution_clock::now();
+            
+            std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
+            std::cout << "\telapsed time: " << mlElapsed.count() << " s\n";
+        } else if (UID->localMixingParam->methodLocalMixing == 3) {
+            // not implemented here (OptiX)
+            
+            
+        } else {
+            
+        }   
     }
 
-
-    /*******Add raytrace code here********/
-    if (m_calcMixingLength){
-        std::cout << "Computing mixing length scales..." << std::endl;
-        auto mlStartTime = std::chrono::high_resolution_clock::now();
-        UID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
-        auto mlEndTime = std::chrono::high_resolution_clock::now();
-
-        std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
-        std::cout << "\telapsed time: " << mlElapsed.count() << " s\n";
-    }
-    
+    return;
 }
 
 
