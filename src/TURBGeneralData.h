@@ -2,7 +2,7 @@
 
 #include <math.h>
 #include <vector>
-#include "LocalMixing.h"
+
 #include "URBGeneralData.h"
 #include "TURBWall.h"
 #include "TURBWallBuilding.h"
@@ -74,9 +74,6 @@ public:
 protected:
 
 private:
-    // FM -> obsolete sould be relocated
-    LocalMixing *localMixing;
-
     // store the wall classes
     std::vector<TURBWall *>wallVec;
 

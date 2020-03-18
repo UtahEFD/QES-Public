@@ -1,17 +1,60 @@
-#include "LocalMixing.h"
-#include "TURBGeneralData.h"
+#include "LocalMixingSerial.h"
 
-void LocalMixing::defineLength(URBGeneralData *UGD,TURBGeneralData *TGD) {
+void LocalMixingSerial::defineMixingLength(URBGeneralData *UGD) {
   
     //float vonKar=0.41;
-
-
 
     int nx = UGD->nx;
     int ny = UGD->ny;
     int nz = UGD->nz;
-
     
+    float dz = UGD->dz;
+    float dy = UGD->dy;
+    float dx = UGD->dx;
+
+    // x-grid (face-center & cell-center)
+    x_fc.resize(nx, 0);
+    x_cc.resize(nx-1, 0);
+
+    // y-grid (face-center & cell-center)
+    y_fc.resize(ny, 0);
+    y_cc.resize(ny-1, 0);
+
+    // z-grid (face-center & cell-center)
+    z_fc.resize(nz, 0);
+    z_cc.resize(nz-1, 0);
+
+    /*
+      The face-center x,y,z are defined here as a place holder, will have to be imported
+      form URB when non-uniform grid is used
+    */
+
+    // x face-center
+    for(int i=1;i<nx-1;i++) {
+        x_fc[i]= 0.5*(UGD->x[i-1]+UGD->x[i]);
+    }
+    x_fc[0] = x_fc[1]-dx;
+    x_fc[nx-1] = x_fc[nx-2]+dx;
+    // x cell-center
+    x_cc = UGD->x;
+
+    // y face-center
+    for(int i=1;i<ny-1;i++) {
+        y_fc[i] = 0.5*(UGD->y[i-1]+UGD->y[i]);
+    }
+    y_fc[0] = y_fc[1]-dy;
+    y_fc[ny-1] = y_fc[ny-2]+dy;
+    // y cell-center
+    y_cc = UGD->y;
+
+    // z face-center (with ghost cell under the ground)
+    for(int i=1;i<nz-1;i++) {
+        z_fc[i] = 0.5*(UGD->z[i-1]+UGD->z[i]);
+    }
+    z_fc[0] = z_fc[1]-dz;
+    z_fc[nz-1] = z_fc[nz-2]+dz;
+    // z cell-center
+    z_cc = UGD->z;
 
     // find max height of solid objects in the domaine (max_z)
     /*
@@ -26,35 +69,42 @@ void LocalMixing::defineLength(URBGeneralData *UGD,TURBGeneralData *TGD) {
             for (int k=0; k<nz-2; k++) {
                 int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
                 if ( (UGD->icellflag[icell_cent] ==0 || UGD->icellflag[icell_cent] ==2) &&
-                     max_z < TGD->z_cc[k]) {
-                    max_z=TGD->z_cc[k];
+                     max_z < z_cc[k]) {
+                    max_z=z_cc[k];
                 }
             }
         }
     }
+    
     // maximum height of local mixing length = 2*max z of objects
     int max_height=nz-2;
     for(int k=0;k<nz;++k) {
-        if(TGD->z_cc[k]>2.0*max_z) {
+        if(z_cc[k]>2.0*max_z) {
             max_height=k;
             break;
         }
     }
   
     //seeding Local Mixing Length with the verical distance to the terrain (up to 2*max_z)
-    for(size_t id=0;id<TGD->icellfluid.size();id++) {
-        int id_cc=TGD->icellfluid[id];
-        int k = (id_cc / ((nx-1)*(ny-1)));
-        int j = (id_cc - k*(nx-1)*(ny-1))/(nx-1);
-        int i = id_cc -  j*(nx-1) - k*(nx-1)*(ny-1);
-        
-        if(k<max_height)
-            TGD->Lm[id_cc] = abs(TGD->z_cc[k]-UGD->terrain[i + j*(nx-1)]);
-        else
-            TGD->Lm[id_cc] = TGD->z_cc[k];
+    for (int i=1; i<nx-2; i++) {
+        for (int j=1; j<ny-2; j++) {
+            for (int k=0; k<nz-2; k++) {
+                int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+                if ( (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2) ) {
+                    if(k<max_height) {
+                        UGD->mixingLengths[icell_cent] = abs(z_cc[k]-UGD->terrain[i + j*(nx-1)]);
+                    } else {
+                        UGD->mixingLengths[icell_cent] = z_cc[k];
+                    }
+                    if(UGD->mixingLengths[icell_cent] < 0) {
+                        UGD->mixingLengths[icell_cent] = 0;
+                    }
+                }
+            }
+        }
     }
-
-    getMinDistWall(UGD,TGD,max_height);
+    
+    getMinDistWall(UGD,max_height);
   
     //linear interpolation between 2.0*max_z and 2.4*max_z
     std::cout << "[MixLength] \t linear interp of mixing length" << std::endl;
@@ -65,23 +115,23 @@ void LocalMixing::defineLength(URBGeneralData *UGD,TURBGeneralData *TGD) {
             int id1 = i + j*(nx-1) + k1*(nx-1)*(ny-1);
             int id2 = i + j*(nx-1) + k2*(nx-1)*(ny-1);
             // slope m = (L(z2)-L(z1))/(z2-z1)
-            float slope=(TGD->Lm[id2]-TGD->Lm[id1])/(TGD->z_cc[k2]-TGD->z_cc[k1]);
+            float slope=(UGD->mixingLengths[id2]-UGD->mixingLengths[id1])/(z_cc[k2]-z_cc[k1]);
             // linear interp: L(z) = L(z1) + m*(z-z1)
             for(int k=k1;k<k2;++k){
                 int id_cc=i + j*(nx-1) + k*(nx-1)*(ny-1);
-                TGD->Lm[id_cc]=TGD->Lm[id1]+(TGD->z_cc[k]-TGD->z_cc[k1])*slope;
+                UGD->mixingLengths[id_cc]=UGD->mixingLengths[id1]+(z_cc[k]-z_cc[k1])*slope;
             }
         }
     }
 }
 
-void LocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,int max_height) {
+void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
 
     float vonKar=0.41;
 
-    int nx = TGD->nx;
-    int ny = TGD->ny;
-    int nz = TGD->nz;
+    int nx = UGD->nx;
+    int ny = UGD->ny;
+    int nz = UGD->nz;
 
     // defining the walls
     for (int i=1; i<nx-2; i++) {
@@ -152,11 +202,11 @@ void LocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,int ma
         int i = id_cc -  j*(nx-1) - k*(nx-1)*(ny-1);
         int maxdist=max_height-k;
 
-        TGD->Lm[id_cc]=TGD->z_cc.at(k)-TGD->z_fc.at(k);
+        UGD->mixingLengths[id_cc]=z_cc.at(k)-z_fc.at(k);
 
-        float x1 = TGD->x_cc.at(i);
-        float y1 = TGD->y_cc.at(j);
-        float z1 = TGD->z_fc.at(k);
+        float x1 = x_cc.at(i);
+        float y1 = y_cc.at(j);
+        float z1 = z_fc.at(k);
 
         if(UGD->icellflag[idxp]==2 && UGD->icellflag[idxm]==2 &&
            UGD->icellflag[idyp]==2 && UGD->icellflag[idym]==2) {
@@ -166,11 +216,11 @@ void LocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,int ma
             // building on all 4 corner -> propagate verically
             for (int kk=0; kk<=maxdist; kk++) {        
                 int id=i + j*(nx-1) + (kk+k)*(nx-1)*(ny-1);
-                float x2 = TGD->x_cc.at(i);
-                float y2 = TGD->y_cc.at(j);
-                float z2 = TGD->z_cc.at(kk+k);
+                float x2 = x_cc.at(i);
+                float y2 = y_cc.at(j);
+                float z2 = z_cc.at(kk+k);
                 float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                TGD->Lm[id]=std::min(dist,TGD->Lm[id]);
+                UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
             }
         }else{
             // propagate in all direction
@@ -185,11 +235,11 @@ void LocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,int ma
                 for (int jj=j1; jj<=j2; jj++) {
                     for (int ii=i1; ii<=i2; ii++) {
                         int id=ii + jj*(nx-1) + (kk+k)*(nx-1)*(ny-1);
-                        float x2 = TGD->x_cc.at(ii);
-                        float y2 = TGD->y_cc.at(jj);
-                        float z2 = TGD->z_cc.at(kk+k);
+                        float x2 = x_cc.at(ii);
+                        float y2 = y_cc.at(jj);
+                        float z2 = z_cc.at(kk+k);
                         float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                        TGD->Lm[id]=std::min(dist,TGD->Lm[id]);
+                        UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
                     }
                 }
             }
@@ -211,11 +261,11 @@ void LocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,int ma
             maxdist=nx-1-i;
         }
 
-        TGD->Lm[id_cc]=TGD->x_cc.at(i)-TGD->x_fc.at(i);
+        UGD->mixingLengths[id_cc]=x_cc.at(i)-x_fc.at(i);
 
-        float x1 = TGD->x_fc.at(i);
-        float y1 = TGD->y_cc.at(j);
-        float z1 = TGD->z_cc.at(k);
+        float x1 = x_fc.at(i);
+        float y1 = y_cc.at(j);
+        float z1 = z_cc.at(k);
 
         for (int ii=0; ii<=maxdist; ii++) {
 
@@ -229,11 +279,11 @@ void LocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,int ma
             for (int jj=j1; jj<=j2; jj++) {
                 for (int kk=k1; kk<=k2; kk++) {
                     int id=(i+ii) + jj*(nx-1) + (kk)*(nx-1)*(ny-1);
-                    float x2 = TGD->x_cc.at(ii+i);
-                    float y2 = TGD->y_cc.at(jj);
-                    float z2 = TGD->z_cc.at(kk);
+                    float x2 = x_cc.at(ii+i);
+                    float y2 = y_cc.at(jj);
+                    float z2 = z_cc.at(kk);
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                    TGD->Lm[id]=std::min(dist,TGD->Lm[id]);
+                    UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
                 }
             }
         }
@@ -254,11 +304,11 @@ void LocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,int ma
             maxdist=i;
         }
 
-        TGD->Lm[id_cc]=TGD->x_fc.at(i+1)-TGD->x_cc.at(i);
+        UGD->mixingLengths[id_cc]=x_fc.at(i+1)-x_cc.at(i);
 
-        float x1 = TGD->x_fc.at(i+1);
-        float y1 = TGD->y_cc.at(j);
-        float z1 = TGD->z_cc.at(k);
+        float x1 = x_fc.at(i+1);
+        float y1 = y_cc.at(j);
+        float z1 = z_cc.at(k);
 
         for (int ii=0; ii>=-maxdist; ii--) {
       
@@ -271,11 +321,11 @@ void LocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,int ma
             for (int jj=j1; jj<=j2; jj++) {
                 for (int kk=k1; kk<=k2; kk++) {
                     int id=(i+1+ii) + jj*(nx-1) + (kk)*(nx-1)*(ny-1);
-                    float x2 = TGD->x_cc.at(i+ii+1);
-                    float y2 = TGD->y_cc.at(jj);
-                    float z2 = TGD->z_cc.at(kk);
+                    float x2 = x_cc.at(i+ii+1);
+                    float y2 = y_cc.at(jj);
+                    float z2 = z_cc.at(kk);
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                    TGD->Lm[id]=std::min(dist,TGD->Lm[id]);
+                    UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
                 }
             }
         }
@@ -296,11 +346,11 @@ void LocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,int ma
             maxdist=ny-1-j;
         }
 
-        TGD->Lm[id_cc]=TGD->y_cc.at(j)-TGD->y_fc.at(j);
+        UGD->mixingLengths[id_cc]=y_cc.at(j)-y_fc.at(j);
 
-        float x1 = TGD->x_cc.at(i);
-        float y1 = TGD->y_fc.at(j);
-        float z1 = TGD->z_cc.at(k);
+        float x1 = x_cc.at(i);
+        float y1 = y_fc.at(j);
+        float z1 = z_cc.at(k);
 
         for (int jj=0; jj<=maxdist; jj++) {
 
@@ -313,11 +363,11 @@ void LocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,int ma
             for (int ii=i1; ii<=i2; ii++) {
                 for (int kk=k1; kk<=k2; kk++) {
                     int id=ii + (j+jj)*(nx-1) + (kk)*(nx-1)*(ny-1);
-                    float x2 = TGD->x_cc.at(ii);
-                    float y2 = TGD->y_cc.at(j+jj);
-                    float z2 = TGD->z_cc.at(kk);
+                    float x2 = x_cc.at(ii);
+                    float y2 = y_cc.at(j+jj);
+                    float z2 = z_cc.at(kk);
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                    TGD->Lm[id]=std::min(dist,TGD->Lm[id]);
+                    UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
                 }
             }
         }
@@ -338,11 +388,11 @@ void LocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,int ma
             maxdist=j;
         }
 
-        TGD->Lm[id_cc]=TGD->y_fc.at(j+1)-TGD->y_cc.at(j);
+        UGD->mixingLengths[id_cc]=y_fc.at(j+1)-y_cc.at(j);
 
-        float x1 = TGD->x_cc.at(i);
-        float y1 = TGD->y_fc.at(j+1);
-        float z1 = TGD->z_cc.at(k);
+        float x1 = x_cc.at(i);
+        float y1 = y_fc.at(j+1);
+        float z1 = z_cc.at(k);
 
         for (int jj=0; jj>=-maxdist; jj--) {
 
@@ -356,11 +406,11 @@ void LocalMixing::getMinDistWall(URBGeneralData *UGD,TURBGeneralData *TGD,int ma
             for (int ii=i1; ii<=i2; ii++) {
                 for (int kk=k1; kk<=k2; kk++) {
                     int id=ii + (j+1+jj)*(nx-1) + (kk)*(nx-1)*(ny-1);
-                    float x2 = TGD->x_cc.at(ii);
-                    float y2 = TGD->y_cc.at(j+1+jj);
-                    float z2 = TGD->z_cc.at(kk);
+                    float x2 = x_cc.at(ii);
+                    float y2 = y_cc.at(j+1+jj);
+                    float z2 = z_cc.at(kk);
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                    TGD->Lm[id]=std::min(dist,TGD->Lm[id]);
+                    UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
                 }
             }
         }

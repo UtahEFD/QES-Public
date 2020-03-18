@@ -582,6 +582,16 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
 
     wall->setVelocityZero (this);
 
+    // compute local mixing length here!
+    // FM - this need to be used only in case the code rin in serial mode (slow)
+    if(false) {
+        std::cout << "[WINDS] \t\t Computing Local Mixing Length using serial code...\n";
+        localMixing = new LocalMixingSerial();
+        localMixing->defineMixingLength(this);
+        std::cout << "[WINDS] \t\t Local Mixing Defined...\n";
+    }
+
+
     /*******Add raytrace code here********/
     if (m_calcMixingLength){
         std::cout << "Computing mixing length scales..." << std::endl;

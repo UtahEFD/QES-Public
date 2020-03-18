@@ -1,4 +1,5 @@
 include_directories(${CMAKE_SOURCE_DIR})
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/unitTests)
 
@@ -14,7 +15,8 @@ CUDA_ADD_LIBRARY( cudaurbcore
   DynamicParallelism.cu
   ESRIShapefile.cpp ESRIShapefile.h
   handleURBArgs.cpp
-  LocalMixing.cpp
+  LocalMixing.h
+  LocalMixingSerial.cpp
   Mesh.cpp
   NetCDFOutput.cpp 
   QESNetCDFOutput.cpp   

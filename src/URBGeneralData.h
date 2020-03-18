@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <netcdf>
+#include <cmath>
 
 // #include "URBInputData.h"
 
@@ -12,11 +13,13 @@
 #include "URBInputData.h"
 #include "Building.h"
 #include "Canopy.h"
+#include "LocalMixing.h"
+#include "LocalMixingSerial.h"
 #include "Mesh.h"
 #include "DTEHeightField.h"
 #include "Cut_cell.h"
 #include "Wall.h"
-#include <cmath>
+
 
 class URBInputData;
 
@@ -108,7 +111,8 @@ public:
     /// Declaration of final velocity field components (u,v,w)
     std::vector<float> u,v,w;
 
-
+    // local Mixing class and data
+    LocalMixing* localMixing;
     std::vector<double> mixingLengths;
     std::vector<double> mixlength_out;
 
