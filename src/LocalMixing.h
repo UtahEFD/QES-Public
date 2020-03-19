@@ -8,7 +8,9 @@
 #include <vector>
 #include <chrono>
 #include <limits>
+#include <netcdf>
 
+#include "NetCDFOutput.h"
 
 /*
   Author: Fabien Margairaz
@@ -18,12 +20,11 @@
 
 class URBInputData;
 class URBGeneralData;
-//class MixingLengthOutput;
 
 class LocalMixing
 {
 private:
-    //MixingLengthOutput* mixLengthOut;
+    NetCDFOutput* mixLengthOut;
 
 protected:
     void saveMixingLength(const URBInputData*,URBGeneralData*);
