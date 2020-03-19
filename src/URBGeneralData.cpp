@@ -584,7 +584,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     // compute local mixing length here!
     if(UID->localMixingParam) {
         if (UID->localMixingParam->methodLocalMixing == 0) {
-            // need to implement defult method
+            localMixing = new LocalMixingDefault();
+            localMixing->defineMixingLength(UID,this);
         } else if(UID->localMixingParam->methodLocalMixing == 1) {
             std::cout << "[MixLength] \t Computing Local Mixing Length using serial code...\n";
             auto mlStartTime = std::chrono::high_resolution_clock::now();

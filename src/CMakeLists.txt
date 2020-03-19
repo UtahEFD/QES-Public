@@ -17,6 +17,7 @@ CUDA_ADD_LIBRARY( cudaurbcore
   handleURBArgs.cpp
   LocalMixingParam.h
   LocalMixing.cpp   
+  LocalMixingDefault.cpp   
   LocalMixingSerial.cpp
   Mesh.cpp
   NetCDFOutput.cpp 
