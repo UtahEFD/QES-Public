@@ -63,14 +63,14 @@ void URBArgs::processArguments(int argc, char *argv[])
         visuOutput= isSet("visuout");
         if(visuOutput) {
             netCDFFileVisu = netCDFFileBasename;
-            netCDFFileVisu.append("_urbOut.nc");
+            netCDFFileVisu.append("_windsOut.nc");
             std::cout << "Visualization NetCDF output file set to " << netCDFFileVisu << std::endl;
         }
 
         wkspOutput=isSet("wkout");
         if(wkspOutput) {
             netCDFFileWksp = netCDFFileBasename;
-            netCDFFileWksp.append("_urbWk.nc");
+            netCDFFileWksp.append("_windsWk.nc");
             std::cout << "Workspace NetCDF output file set to " << netCDFFileWksp << std::endl;
         }
         
