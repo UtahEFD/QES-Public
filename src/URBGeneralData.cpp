@@ -582,13 +582,17 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     wall->setVelocityZero (this);
 
     // compute local mixing length here!
-    // FM - this need to be used only in case the code rin in serial mode (slow)
     if(UID->localMixingParam) {
-        
-        if(UID->localMixingParam->methodLocalMixing == 1) {
+        if (UID->localMixingParam->methodLocalMixing == 0) {
+            // need to implement defult method
+        } else if(UID->localMixingParam->methodLocalMixing == 1) {
             std::cout << "[MixLength] \t Computing Local Mixing Length using serial code...\n";
-            //localMixing = new LocalMixingSerial();
-            //localMixing->defineMixingLength(UID,this);
+            auto mlStartTime = std::chrono::high_resolution_clock::now();
+            localMixing = new LocalMixingSerial();
+            localMixing->defineMixingLength(UID,this);
+            auto mlEndTime = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
+            std::cout << "\t\telapsed time: " << mlElapsed.count() << " s\n";
             std::cout << "[MixLength] \t Local Mixing Defined...\n";
         } else if (UID->localMixingParam->methodLocalMixing == 2) {
             /*******Add raytrace code here********/
@@ -596,17 +600,19 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
             auto mlStartTime = std::chrono::high_resolution_clock::now();
             UID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
             auto mlEndTime = std::chrono::high_resolution_clock::now();
-            
             std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
             std::cout << "\telapsed time: " << mlElapsed.count() << " s\n";
         } else if (UID->localMixingParam->methodLocalMixing == 3) {
             // not implemented here (OptiX)
-            
-            
+        } else if (UID->localMixingParam->methodLocalMixing == 4) {
+            // need to implement file input
         } else {
-            
-        }   
+            //this should not happen
+        }
+        // once all methods are implemented...
+        // should be moved here: localMixing->defineMixingLength(UID,this);
     }
+    
 
     return;
 }

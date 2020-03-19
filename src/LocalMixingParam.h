@@ -40,9 +40,23 @@ public:
         save2file = "false";
         parsePrimitive<bool>(false, save2file, "save");
         filename = "";
-        parsePrimitive<std::string>(false, filename, "LM");
-        filename = "mixlength"; // default name
+        parsePrimitive<std::string>(false, filename, "LMfile");
+        varname = "mixlength"; // default name
         parsePrimitive<std::string>(false, varname, "varname");
+        
+        if(methodLocalMixing < 0 || methodLocalMixing > 4) {
+            std::cout << "[WARNING] unknown local mixing method -> set method to 0 (height above terrain)" << std::endl;
+            methodLocalMixing == 0;
+        }
+
+        if( (methodLocalMixing == 4 || save2file == 'true') && ( filename == "" ) ) {
+            std::cout << "[WARNING] no local mixing file provided -> set method to 0 (height above terrain)" << std::endl;
+            methodLocalMixing == 0;
+        }
+        if(methodLocalMixing == 0 || methodLocalMixing == 4) {
+            save2file = "false";  
+        }
+        
     }
   
 };
