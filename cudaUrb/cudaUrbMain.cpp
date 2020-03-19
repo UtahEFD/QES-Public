@@ -63,7 +63,19 @@ int main(int argc, char *argv[])
             " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
-    
+
+    if (arguments.terrainOut) {
+        if (UID->simParams->DTE_heightField) {
+            std::cout << "Creating terrain OBJ....\n";
+            UID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
+            std::cout << "OBJ created....\n";
+        }
+        else {
+            std::cerr << "Error: No dem file specified as input\n";
+            return -1;
+        }
+    }
+
     // Generate the general URB data from all inputs
     // - turn on mixing length calculations for now if enabled
     // eventually, we will remove this flag and 2nd argument
@@ -144,10 +156,12 @@ int main(int argc, char *argv[])
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    for(auto id_out=0u;id_out<outputVec.size();id_out++)
+    for(auto id_out=0u;id_out<outputVec.size();id_out++) {
         outputVec.at(id_out)->save(0.0); // need to replace 0.0 with timestep
-    
-    
+    }
+
+
+    // /////////////////////////////
     exit(EXIT_SUCCESS);
 }
 

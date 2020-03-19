@@ -460,13 +460,9 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
                       UGD->w0[icell_face] = abs(0.5*cross_vel_mag*(1-2*x_pos/s))*(1-2*(s-x_pos)/s);
                     }
                   }
-                  UGD->icellflag[icell_cent] = 6;
-                  if (i == 94 && j == 94 && k == 20)
+                  if ((UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
                   {
-                    /*std::cout << "v0_h:   " << v0_h << std::endl;
-                    std::cout << "MIN_S(pow((1.0-xv/(UGD->cavity_factor*dn_v)),2.0),1.0):   " << MIN_S(pow((1.0-xv/(UGD->cavity_factor*dn_v)),2.0),1.0) << std::endl;
-                    std::cout << "MIN_S(sqrt(1.0-abs(yv/y_norm)),1.0):   " << MIN_S(sqrt(1.0-abs(yv/y_norm)),1.0) << std::endl;*/
-                    std::cout << "UGD->icellflag[icell_cent]:   " << UGD->icellflag[icell_cent] << std::endl;
+                    UGD->icellflag[icell_cent] = 6;
                   }
                 }
               }
