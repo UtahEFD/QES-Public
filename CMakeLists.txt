@@ -93,17 +93,16 @@ ENDIF(CUDA_FOUND)
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;--use_fast_math")
 
 FIND_PACKAGE(OptiX REQUIRED)
-
+MESSAGE("lib64 is in path = " ${OptiX_INSTALL_DIR}/lib64)
+LINK_DIRECTORIES(${OptiX_INSTALL_DIR}/lib64)
 include_directories(
   "${OptiX_INCLUDE}"
   )
 
-#set(SAMPLES_PTX_DIR "${CMAKE_BINARY_DIR}/lib/ptx")
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ptx") #ptx files located here 
-add_definitions(-DPTX_DIR="${CMAKE_CURRENT_BINARY_DIR}/ptx") #PTX_DIR
-#set(SAMPLES_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-#set(CUDA_GENERATED_OUTPUT_DIR ${SAMPLES_PTX_DIR})
-
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/ptx") #ptx files located here
+add_definitions(-DPTX_DIR="${CMAKE_BINARY_DIR}/ptx") #PTX_DIR
+set(PTX_DIR "${CMAKE_BINARY_DIR}/ptx")
+set(CUDA_GENERATED_OUTPUT_DIR ${PTX_DIR})
 
 function(OPTIX_add_library target_name)
   source_group("PTX Files" REGULAR_EXPRESSION ".+\\.ptx$")
@@ -116,18 +115,46 @@ function(OPTIX_add_library target_name)
     OPTIONS ${options}
     )
 
+  CUDA_COMPILE_PTX(ptx_files ${source_files})
+  
   add_library(${target_name}
+    ${ptx_files}
     ${source_files}
     ${generated_files}
     ${cmake_options}
     )
 
   target_link_libraries(${target_name}
-    #optix
+    ${optix}
     ${optix_rpath}
     )
-  
+
+  include_directories(${OptiX_INCLUDE}/optixu
+    ${OptiX_INSTALL_DIR}/include
+    )
+
+  MESSAGE("OptiX_INCLUDE = " ${OptiX_INCLUDE})
 endfunction()
+
+
+#add dll to build
+
+#get_filename_component(path_to_optix_dll ${optix_DLL} PATH)
+#file(GLOB dlls "${path_to_optix_dll}/*.dll")
+MESSAGE("Optix_install_dir = " ${OptiX_INSTALL_DIR})
+MESSAGE("dll path? = " ${OptiX_INSTALL_DIR}/bin${bit_dest}/*.dll)
+
+file(GLOB dlls "${OptiX_INSTALL_DIR}/bin${bit_dest}/*.dll")
+foreach(file ${dlls})
+  get_filename_component(name "${file}" NAME)
+  set(dest "${CUDA_GENERATED_OUTPUT_DIR}/${name}")
+  execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${file}" "${dest}" RESULT_VARIABLE result)
+
+if(result)
+  message(FATAL_ERROR "dll copying error")
+endif()
+
+endforeach()
 
 
 #

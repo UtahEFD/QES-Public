@@ -31,20 +31,12 @@
    }while(0)
 
 OptixRayTrace::OptixRayTrace(std::vector<Triangle*> tris){
-
-
-   std::cout<<"Before optixInit in constructor"<<std::endl;
-
    OPTIX_CHECK(optixInit());
-
-   std::cout<<"After optixInit in constructor"<<std::endl;
-
 
    createContext();
 
-   std::cout<<"In OptixTrace constructor before buildAS"<<std::endl;
    buildAS(tris);
-   std::cout<<"\nEnd of building acceleration structure"<<std::endl;
+
 }
 
 static void context_log_cb(unsigned int level, const char* tag,
@@ -60,33 +52,15 @@ void OptixRayTrace::createContext(){
 
    std::cout<<"Enters createContext()"<<std::endl;
 
-
    CUDA_CHECK(cudaFree(0));
-
-   std::cout<<"Before init context options in createContext"<<std::endl;
 
    OptixDeviceContext context;
    CUcontext cuCtx = 0; //0 = current context
-
-   std::cout<<"1"<<std::endl;
-
    OptixDeviceContextOptions  options = {};
-
-   std::cout<<"2"<<std::endl;
-
-
    options.logCallbackFunction = &context_log_cb;
-
-   std::cout<<"3"<<std::endl;
-
-
    options.logCallbackLevel = 4;
 
-   std::cout<<"4"<<std::endl;
-
    OPTIX_CHECK(optixDeviceContextCreate(cuCtx, &options, &context));
-
-   std::cout<<"5"<<std::endl;
 
    state.context = context;
 
@@ -109,17 +83,23 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
    accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
 
 //need to translate tris --> to a vector array of measurable size type
-   std::vector<Vertex> trisArray(tris.size()*3);
+   std::vector<Vertex> trisArray(tris.size()*3);  //each triangle 3 Vertex-es
    convertVecMeshType(tris, trisArray);
 
    const size_t tris_size = sizeof(Vertex)*trisArray.size();
    CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&state.d_tris), tris_size));
-//TODO: make sure memory allocation is actually working
-   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(&state.d_tris),
-                         &trisArray[0],
+
+   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(state.d_tris),
+                         trisArray.data(),
                          tris_size,
                          cudaMemcpyHostToDevice)
               );
+
+
+
+   std::cout<<"In buildAS, finishes memory allocation for list of triangles"<<std::endl;
+
+
    const uint32_t triangle_input_flags[1] ={OPTIX_GEOMETRY_FLAG_NONE};
 //could add flag to disable anyhit (above)
 
@@ -132,12 +112,20 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
    triangle_input.triangleArray.flags = triangle_input_flags;
    triangle_input.triangleArray.numSbtRecords = 1;
 
+
+   std::cout<<"In buildAS, finishes init options for triangle_input"<<std::endl;
+
+
+
+
    OptixAccelBufferSizes gas_buffer_sizes;
-   optixAccelComputeMemoryUsage(state.context,
-                                &accel_options,
-                                &triangle_input,
-                                1,
-                                &gas_buffer_sizes);
+   OPTIX_CHECK(optixAccelComputeMemoryUsage(state.context,
+                                            &accel_options,
+                                            &triangle_input,
+                                            1,
+                                            &gas_buffer_sizes)
+               );
+
    CUdeviceptr d_temp_buffer_gas;
    CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_temp_buffer_gas),
                          gas_buffer_sizes.tempSizeInBytes)
@@ -193,6 +181,10 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
    }else{
       state.d_gas_output_buffer = d_buffer_temp_output_gas_and_compacted_size;
    }
+
+
+   std::cout<<"In buildAS, finsihes building"<<std::endl;
+
 }
 
 void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::vector<Vertex> &trisArray){
@@ -223,14 +215,34 @@ void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::vector
 
 void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag, std::vector<double> &mixingLengths){
    state.samples_per_cell = numSamples;
+
    createModule();
+
+   std::cout<<"In calculateMixingLength, createModule() done"<<std::endl;
+
    createProgramGroups();
+
+   std::cout<<"In calculateMixingLength, createProgramGroups() done"<<std::endl;
+
    createPipeline();
+
+   std::cout<<"In calculateMixingLength, createPipeline() done"<<std::endl;
+
+
    createSBT();
+
+
+   std::cout<<"In calculateMixingLength, createSBT() done"<<std::endl;
+
 
    initParams(dimX, dimY, dimZ, dx, dy, dz, icellflag);
 
+   std::cout<<"In calculateMixingLength, initParams() done"<<std::endl;
+
+
    launch();
+
+   std::cout<<"In calculateMixingLength, launch() done"<<std::endl;
 
 
    //Hits should be init
@@ -267,12 +279,12 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
 
 
    size_t rays_size_in_bytes = sizeof(OptixRay)*numCells;
-   cudaMalloc(&rays_d, rays_size_in_bytes);
+   CUDA_CHECK(cudaMalloc(&rays_d, rays_size_in_bytes));
 
 
    Hit* hits_d = 0;
    size_t hits_size_in_bytes = sizeof(Hit)*numCells;
-   cudaMalloc(&hits_d, hits_size_in_bytes);
+   CUDA_CHECK(cudaMalloc(&hits_d, hits_size_in_bytes));
 
 
    //init ray data
@@ -302,8 +314,6 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
    state.num_cells = numCells;
 }
 
-
-
 void OptixRayTrace::createModule(){
 
    //module compile options
@@ -325,15 +335,19 @@ void OptixRayTrace::createModule(){
    //OptiX error reporting
    char log[2048]; size_t sizeof_log = sizeof(log);
 
-   optixModuleCreateFromPTX(
-      state.context,
-      &module_compile_options,
-      &state.pipeline_compile_options,
-      ptx.c_str(),
-      ptx.size(),
-      log,
-      &sizeof_log,
-      &state.ptx_module);
+
+   std::cout<<"PTX String: "<<ptx<<std::endl;
+
+   OPTIX_CHECK(optixModuleCreateFromPTX(
+                  state.context,
+                  &module_compile_options,
+                  &state.pipeline_compile_options,
+                  ptx.c_str(),
+                  ptx.size(),
+                  log,
+                  &sizeof_log,
+                  &state.ptx_module)
+               );
 }
 
 void OptixRayTrace::createProgramGroups(){
@@ -350,38 +364,41 @@ void OptixRayTrace::createProgramGroups(){
    raygen_prog_group_desc.raygen.module = state.ptx_module;
    raygen_prog_group_desc.raygen.entryFunctionName = "__raygen__from_cell";
 
-   optixProgramGroupCreate(state.context,
-                           &raygen_prog_group_desc,
-                           1,
-                           &program_group_options,
-                           log,
-                           &sizeof_log,
-                           &state.raygen_prog_group);
+   OPTIX_CHECK(optixProgramGroupCreate(state.context,
+                                       &raygen_prog_group_desc,
+                                       1,
+                                       &program_group_options,
+                                       log,
+                                       &sizeof_log,
+                                       &state.raygen_prog_group)
+               );
 
    OptixProgramGroupDesc miss_prog_group_desc = {};
    miss_prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_MISS;
    miss_prog_group_desc.miss.module = state.ptx_module;
    miss_prog_group_desc.miss.entryFunctionName = "__miss__miss";
 
-   optixProgramGroupCreate(state.context,
-                           &miss_prog_group_desc,
-                           1,
-                           &program_group_options,
-                           log,
-                           &sizeof_log,
-                           &state.miss_prog_group);
+   OPTIX_CHECK(optixProgramGroupCreate(state.context,
+                                       &miss_prog_group_desc,
+                                       1,
+                                       &program_group_options,
+                                       log,
+                                       &sizeof_log,
+                                       &state.miss_prog_group)
+               );
 
    OptixProgramGroupDesc hit_prog_group_desc = {};
    hit_prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
    hit_prog_group_desc.hitgroup.moduleCH = state.ptx_module;
    hit_prog_group_desc.hitgroup.entryFunctionNameCH = "__closesthit__mixlength";
-   optixProgramGroupCreate(state.context,
-                           &hit_prog_group_desc,
-                           1,
-                           &program_group_options,
-                           log,
-                           &sizeof_log,
-                           &state.hit_prog_group);
+   OPTIX_CHECK(optixProgramGroupCreate(state.context,
+                                       &hit_prog_group_desc,
+                                       1,
+                                       &program_group_options,
+                                       log,
+                                       &sizeof_log,
+                                       &state.hit_prog_group)
+               );
 }
 
 void OptixRayTrace::createPipeline(){
@@ -400,14 +417,15 @@ void OptixRayTrace::createPipeline(){
    pipeline_link_options.debugLevel = OPTIX_COMPILE_DEBUG_LEVEL_FULL;
    pipeline_link_options.overrideUsesMotionBlur = false;
 
-   optixPipelineCreate(state.context,
-                       &state.pipeline_compile_options,
-                       &pipeline_link_options,
-                       program_groups,
-                       sizeof(program_groups)/sizeof(program_groups[0]),
-                       log,
-                       &sizeof_log,
-                       &state.pipeline);
+   OPTIX_CHECK(optixPipelineCreate(state.context,
+                                   &state.pipeline_compile_options,
+                                   &pipeline_link_options,
+                                   program_groups,
+                                   sizeof(program_groups)/sizeof(program_groups[0]),
+                                   log,
+                                   &sizeof_log,
+                                   &state.pipeline)
+               );
 }
 
 void OptixRayTrace::createSBT(){
@@ -416,16 +434,17 @@ void OptixRayTrace::createSBT(){
 
    const size_t raygen_record_size = sizeof(RayGenRecord);
 
-   cudaMalloc(reinterpret_cast<void**>(&d_raygen_record), raygen_record_size);
+   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_raygen_record), raygen_record_size));
 
    RayGenRecord sbt_raygen;
 
-   optixSbtRecordPackHeader(state.raygen_prog_group, &sbt_raygen);
+   OPTIX_CHECK(optixSbtRecordPackHeader(state.raygen_prog_group, &sbt_raygen));
 
-   cudaMemcpy(reinterpret_cast<void*> (&d_raygen_record),
-              &sbt_raygen,
-              raygen_record_size,
-              cudaMemcpyHostToDevice);
+   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*> (&d_raygen_record),
+                         &sbt_raygen,
+                         raygen_record_size,
+                         cudaMemcpyHostToDevice)
+              );
 
    //miss
    CUdeviceptr d_miss_record = 0;
@@ -434,14 +453,15 @@ void OptixRayTrace::createSBT(){
 
    MissRecord sbt_miss;
 
-   optixSbtRecordPackHeader(state.miss_prog_group, &sbt_miss);
+   OPTIX_CHECK(optixSbtRecordPackHeader(state.miss_prog_group, &sbt_miss));
 
-   cudaMalloc(reinterpret_cast<void**>(&d_miss_record), miss_record_size);
+   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_miss_record), miss_record_size));
 
-   cudaMemcpy(reinterpret_cast<void*> (&d_miss_record),
-              &sbt_miss,
-              miss_record_size,
-              cudaMemcpyHostToDevice);
+   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*> (&d_miss_record),
+                         &sbt_miss,
+                         miss_record_size,
+                         cudaMemcpyHostToDevice)
+              );
 
    //hit
    CUdeviceptr d_hit_record = 0;
@@ -450,12 +470,13 @@ void OptixRayTrace::createSBT(){
 
    HitGroupRecord sbt_hit;
 
-   cudaMalloc(reinterpret_cast<void**>(&d_hit_record), hit_record_size);
+   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_hit_record), hit_record_size));
 
-   cudaMemcpy(reinterpret_cast<void*>(&d_hit_record),
-              &sbt_hit,
-              hit_record_size,
-              cudaMemcpyHostToDevice);
+   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(&d_hit_record),
+                         &sbt_hit,
+                         hit_record_size,
+                         cudaMemcpyHostToDevice)
+              );
 
    //update state
    state.sbt.raygenRecord = d_raygen_record;
@@ -471,46 +492,48 @@ void OptixRayTrace::createSBT(){
 
 void OptixRayTrace::launch(){
    //create the CUDA stream
-   cudaStreamCreate(&state.stream);
+   CUDA_CHECK(cudaStreamCreate(&state.stream));
 
    Params* d_params = 0;
-   cudaMalloc(reinterpret_cast<void**>(&d_params), sizeof(Params));
-   cudaMemcpyAsync(reinterpret_cast<void*>(d_params),
-                   &state.params,
-                   sizeof(Params),
-                   cudaMemcpyHostToDevice,
-                   state.stream);
+   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_params), sizeof(Params)));
+   CUDA_CHECK(cudaMemcpyAsync(reinterpret_cast<void*>(d_params),
+                              &state.params,
+                              sizeof(Params),
+                              cudaMemcpyHostToDevice,
+                              state.stream)
+              );
 
-   optixLaunch(state.pipeline,
-               state.stream,
-               reinterpret_cast<CUdeviceptr>(d_params),
-               sizeof(Params),
-               &state.sbt,
-               state.num_cells,
-               state.samples_per_cell,
-               1);
-   cudaFree(reinterpret_cast<void*>(d_params));
+   OPTIX_CHECK(optixLaunch(state.pipeline,
+                           state.stream,
+                           reinterpret_cast<CUdeviceptr>(d_params),
+                           sizeof(Params),
+                           &state.sbt,
+                           state.num_cells,
+                           state.samples_per_cell,
+                           1)
+               );
+   CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_params)));
 }
 
 void OptixRayTrace::cleanState(){
    //destroy pipeline
-   optixPipelineDestroy(state.pipeline);
+   OPTIX_CHECK(optixPipelineDestroy(state.pipeline));
 
    //destroy program groups
-   optixProgramGroupDestroy(state.raygen_prog_group);
-   optixProgramGroupDestroy(state.miss_prog_group);
-   optixProgramGroupDestroy(state.hit_prog_group);
+   OPTIX_CHECK(optixProgramGroupDestroy(state.raygen_prog_group));
+   OPTIX_CHECK(optixProgramGroupDestroy(state.miss_prog_group));
+   OPTIX_CHECK(optixProgramGroupDestroy(state.hit_prog_group));
 
    //destroy module
-   optixModuleDestroy(state.ptx_module);
+   OPTIX_CHECK(optixModuleDestroy(state.ptx_module));
 
    //destroy context
-   optixDeviceContextDestroy(state.context);
+   OPTIX_CHECK(optixDeviceContextDestroy(state.context));
 
    //free cuda stuff
-   cudaFree(reinterpret_cast<void*>(state.params.rays));
-   cudaFree(reinterpret_cast<void*>(state.params.hits));
-   cudaFree(reinterpret_cast<void*>(state.sbt.raygenRecord));
-   cudaFree(reinterpret_cast<void*>(state.sbt.missRecordBase));
-   cudaFree(reinterpret_cast<void*>(state.sbt.hitgroupRecordBase));
+   CUDA_CHECK(cudaFree(reinterpret_cast<void*>(state.params.rays)));
+   CUDA_CHECK(cudaFree(reinterpret_cast<void*>(state.params.hits)));
+   CUDA_CHECK(cudaFree(reinterpret_cast<void*>(state.sbt.raygenRecord)));
+   CUDA_CHECK(cudaFree(reinterpret_cast<void*>(state.sbt.missRecordBase)));
+   CUDA_CHECK(cudaFree(reinterpret_cast<void*>(state.sbt.hitgroupRecordBase)));
 }
