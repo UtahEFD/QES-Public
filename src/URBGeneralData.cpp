@@ -583,35 +583,34 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
 
     // compute local mixing length here!
     if(UID->localMixingParam) {
+        auto mlStartTime = std::chrono::high_resolution_clock::now();
         if (UID->localMixingParam->methodLocalMixing == 0) {
+            std::cout << "[MixLength] \t Default Local Mixing Length...\n";
             localMixing = new LocalMixingDefault();
             localMixing->defineMixingLength(UID,this);
         } else if(UID->localMixingParam->methodLocalMixing == 1) {
-            std::cout << "[MixLength] \t Computing Local Mixing Length using serial code...\n";
-            auto mlStartTime = std::chrono::high_resolution_clock::now();
+            std::cout << "[MixLength] \t Computing Local Mixing Length using serial code...\n";   
             localMixing = new LocalMixingSerial();
             localMixing->defineMixingLength(UID,this);
-            auto mlEndTime = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
-            std::cout << "\t\telapsed time: " << mlElapsed.count() << " s\n";
-            std::cout << "[MixLength] \t Local Mixing Defined...\n";
         } else if (UID->localMixingParam->methodLocalMixing == 2) {
             /*******Add raytrace code here********/
             std::cout << "Computing mixing length scales..." << std::endl;
-            auto mlStartTime = std::chrono::high_resolution_clock::now();
             UID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
-            auto mlEndTime = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
-            std::cout << "\telapsed time: " << mlElapsed.count() << " s\n";
         } else if (UID->localMixingParam->methodLocalMixing == 3) {
             // not implemented here (OptiX)
         } else if (UID->localMixingParam->methodLocalMixing == 4) {
-            // need to implement file input
+            std::cout << "[MixLength] \t Loading Local Mixing Length data form NetCDF...\n";   
+            localMixing = new LocalMixingNetCDF();
+            localMixing->defineMixingLength(UID,this);
         } else {
-            //this should not happen
+            //this should not happen (checked in LocalMixingParam) 
         }
         // once all methods are implemented...
         // should be moved here: localMixing->defineMixingLength(UID,this);
+        auto mlEndTime = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
+        std::cout << "[MixLength] \t Local Mixing Defined...\n";
+        std::cout << "\t\t elapsed time: " << mlElapsed.count() << " s\n";
     }
 
     return;

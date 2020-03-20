@@ -37,7 +37,7 @@ public:
     {
         methodLocalMixing=0;
         parsePrimitive<int>(true, methodLocalMixing, "method");
-        save2file = "false";
+        save2file = false;
         parsePrimitive<bool>(false, save2file, "save");
         filename = "";
         parsePrimitive<std::string>(false, filename, "LMfile");
@@ -46,12 +46,12 @@ public:
         
         if(methodLocalMixing < 0 || methodLocalMixing > 4) {
             std::cout << "[WARNING] unknown local mixing method -> set method to 0 (height above terrain)" << std::endl;
-            methodLocalMixing == 0;
+            methodLocalMixing = 0;
         }
 
-        if( (methodLocalMixing == 4 || save2file == 'true') && ( filename == "" ) ) {
+        if( (methodLocalMixing == 4 || save2file == true ) && ( filename == "" ) ) {
             std::cout << "[WARNING] no local mixing file provided -> set method to 0 (height above terrain)" << std::endl;
-            methodLocalMixing == 0;
+            methodLocalMixing = 0;
         }
         if(methodLocalMixing == 0 || methodLocalMixing == 4) {
             save2file = "false";  

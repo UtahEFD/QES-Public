@@ -15,6 +15,7 @@
 #include "Canopy.h"
 #include "LocalMixing.h"
 #include "LocalMixingDefault.h"
+#include "LocalMixingNetCDF.h"
 #include "LocalMixingSerial.h"
 #include "Mesh.h"
 #include "DTEHeightField.h"
