@@ -157,8 +157,8 @@ class Plume {
 
 
         // this is called to set the values whenever it is found that a particle is inactive or rogue
-        void setFinishedParticleVals( double& xPos,double& yPos,double& zPos,
-                                      const bool& isActive,const bool& isRogue,
+        void setFinishedParticleVals( double& xPos,double& yPos,double& zPos,bool& isActive,
+                                      const bool& isRogue,
                                       const double& xPos_init, const double& yPos_init, const double& zPos_init);
 
         // this is for writing an output simulation info file separate from the regular command line output

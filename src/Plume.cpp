@@ -182,7 +182,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
 
 
             // first check to see if the particle should even be advected and skip it if it should not be advected
-            if(isActive == true && isRogue == false)
+            if( isActive == true )
             {
 
                 // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
@@ -538,7 +538,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                 
 
                 // now set the particle values for if they are rogue or outside the domain
-                setFinishedParticleVals(xPos,yPos,zPos, isActive,isRogue, xPos_init,yPos_init,zPos_init);
+                setFinishedParticleVals(xPos,yPos,zPos,isActive, isRogue, xPos_init,yPos_init,zPos_init);
 
                 
                 // LA-note: at one time I thought it would be useful to time the boundary condition calculations
@@ -995,11 +995,17 @@ void Plume::enforceWallBCs_reflection(double& pos,double& velFluct,double& velFl
 }
 
 
-void Plume::setFinishedParticleVals(double& xPos,double& yPos,double& zPos,
-				                    const bool& isActive,const bool& isRogue,
+void Plume::setFinishedParticleVals(double& xPos,double& yPos,double& zPos,bool& isActive,
+                                    const bool& isRogue,
                                     const double& xPos_init, const double& yPos_init, const double& zPos_init)
 {
-    if(isActive == false || isRogue == true)
+    // need to set all rogue particles to inactive
+    if( isRogue == true )
+    {
+        isActive = false;
+    }
+    // now any inactive particles need set to the initial position
+    if( isActive == false )
     {
         xPos = xPos_init;
         yPos = yPos_init;
