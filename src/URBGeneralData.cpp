@@ -328,7 +328,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
                         // ////////////////////////////////
                         int ii = i+UID->simParams->halo_x/dx;
                         int jj = j+UID->simParams->halo_y/dy;
-                        int icell_cent = ii+jj*(nx-1)+k*(nx-1)*(ny-1);
+                        int icell_cent = ii+jj*(nx-1)+(k+1)*(nx-1)*(ny-1);
                         icellflag[icell_cent] = 2;
                     }
                 }
@@ -454,7 +454,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
          effective_height.push_back(allBuildingsV[i]->height_eff);
          building_id.push_back(allBuildingsV.size()-1);
       }
-   }
+    }
 
 
    // Add all the Building* that were read in from XML to this list
@@ -497,7 +497,9 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     for (int i = 0; i < allBuildingsV.size(); i++)
     {
         // for now this does the canopy stuff for us
+        std::cout << "Applying canopy vegetation parameterization...\n";
         allBuildingsV[building_id[i]]->canopyVegetation(this);
+        std::cout << "Canopy vegetation parameterization done...\n";
     }
 
     ///////////////////////////////////////////

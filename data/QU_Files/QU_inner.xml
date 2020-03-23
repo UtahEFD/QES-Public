@@ -52,7 +52,7 @@
   </sensor>                       	<!-- Wnd of sensor section -->
 
 </metParams>								<!-- End of meteorological parameters -->
-<!--canopies>
+<canopies>
 	<num_canopies> 1 </num_canopies>
 	<landuseFlag> 0 </landuseFlag>
 	<landuseVegetationFlag> 0 </landuseVegetationFlag>
@@ -65,8 +65,9 @@
 		<yStart> 90.0 </yStart>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
+		<canopyRotation> 0.0 </canopyRotation>
 	</canopy>
-</canopies-->
+</canopies>
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 
@@ -77,7 +78,7 @@
   <sensorVelocityFlag> 0 </sensorVelocityFlag>
   <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
-<buildings>
+<!--buildings>
 	<wallRoughness> 0.1 </wallRoughness>
 	<numBuildings> 2 </numBuildings>
 	<numPolygonNodes> 0 </numPolygonNodes>
@@ -92,7 +93,7 @@
 		<width> 28.0 </width>
 		<buildingRotation> 0.0 </buildingRotation>
 	</rectangularBuilding>
-	<!--rectangularBuilding>
+	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
 		<height> 33.0 </height>
@@ -102,6 +103,6 @@
 		<length> 28.0 </length>
 		<width> 27.0 </width>
 		<buildingRotation> 0.0 </buildingRotation>
-	</rectangularBuilding-->
-</buildings>
+	</rectangularBuilding>
+</buildings-->
 
