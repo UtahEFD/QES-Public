@@ -27,7 +27,7 @@ public:
   DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN);
 
     DTEHeightField(const std::vector<double> &heightField, int dimX, int dimY, double cellSizeXN, double cellSizeYN);
-    
+
   ~DTEHeightField();
 
   std::vector<Triangle*> getTris() const {return m_triList;}
@@ -123,8 +123,10 @@ private:
       height = scanline[ abs(k-m_nYSize) * m_nXSize + j ];
     }
 
-    //std::cout << "domainx:   " << m_nXSize << std::endl;
-  	//std::cout << "domainy:   " << m_nYSize << std::endl;
+    if (height < 0.0 || isnan(abs(height)))
+    {
+      height = 0.0;
+    }
 
     if (!compareEquality( height, m_rbNoData ))
     {

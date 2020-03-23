@@ -489,7 +489,7 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
        {
          if (j < jj)
          {
-           std::cout << "height:  " << queryHeight( pafScanline , ( dx) / pixelSizeX,  ( dy) / pixelSizeY) - min[2] << std::endl;
+           //std::cout << "height:  " << queryHeight( pafScanline , ( dx) / pixelSizeX,  ( dy) / pixelSizeY) - min[2] << std::endl;
            corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , ( dx) / pixelSizeX,  ( dy) / pixelSizeY) - min[2]);
            corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , ( dx) / pixelSizeX,  ( dy) / pixelSizeY) - min[2]);
            corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
@@ -555,14 +555,16 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
          corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
        }
 
-       if ( i == 256 && j == 41)
+       if (i==319 && j==10)
        {
-         std::cout<< "corners[0]:  " << corners[0][2] << std::endl;
-         std::cout<< "corners[1]:  " << corners[1][2] << std::endl;
-         std::cout<< "corners[2]:  " << corners[2][2] << std::endl;
-         std::cout<< "corners[3]:  " << corners[3][2] << std::endl;
+         std::cout << "((i-ii) + 1) * dx) / pixelSizeX:  " << ((i-ii) + 1) * dx / pixelSizeX << std::endl;
+         std::cout << "((j-jj) * dy) / pixelSizeY:  " << ((j-jj) * dy) / pixelSizeY << std::endl;
+         std::cout << "(j_domain_end-jj-1):  " << (j_domain_end-jj-1) << std::endl;
+         std::cout << "corners[0]:  " << corners[0][2] << std::endl;
+         std::cout << "corners[1]:  " << corners[1][2] << std::endl;
+         std::cout << "corners[2]:  " << corners[2][2] << std::endl;
+         std::cout << "corners[3]:  " << corners[3][2] << std::endl;
        }*/
-
 
        setCellPoints(cells, i, j, nx, ny, nz, dz_array, z_face, corners, cutCells);
 
@@ -607,10 +609,10 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
       std::cout << "k: " << k << "\t\t" << "coordsMin:  " << coordsMin << std::endl;
     }*/
 
-    if ( cellTop < coordsMin)
+    if ( cellTop <= coordsMin)
       cells[CELL(i,j,k)] = Cell(terrain_CT, Vector3<float>(corners[0][0], corners[0][1], cellBot),
                                             Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
-    else if ( cellBot > coordsMax)
+    else if ( cellBot >= coordsMax)
       cells[CELL(i,j,k)] = Cell(air_CT, Vector3<float>(corners[0][0], corners[0][1], cellBot),
                                             Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
     else

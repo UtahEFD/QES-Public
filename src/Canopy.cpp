@@ -185,7 +185,7 @@ void Canopy::plantInitial(URBGeneralData* UGD)
                 //
                 // float u_H = (UGD->canopy_ustar[id]/UGD->vk)*log((UGD->canopy_top[id]-UGD->canopy_d[id])/UGD->canopy_z0[id]);
 
-                for (auto k=1; k < UGD->nz; k++)
+                for (auto k=1; k < UGD->nz-1; k++)
                 {
                     if (UGD->z[k] < UGD->canopy_top[id])
                     {
