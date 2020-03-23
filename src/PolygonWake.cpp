@@ -17,7 +17,7 @@
 */
 void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD, int building_id)
 {
-
+    
   std::vector<float> Lr_face, Lr_node;
   std::vector<int> perpendicular_flag;
   Lr_face.resize (polygonVertices.size(), -1.0);       // Length of wake for each face

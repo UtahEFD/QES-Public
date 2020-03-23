@@ -40,6 +40,7 @@ CUDA_ADD_LIBRARY( cudaurbcore
   WRFInput.cpp WRFInput.h
   Wall.cpp Wall.h
   UpwindCavity.cpp
+  NonLocalMixing.cpp
   PolygonWake.cpp
   StreetCanyon.cpp
   Sidewall.cpp

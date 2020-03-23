@@ -178,5 +178,12 @@ public:
     float calculateArea( URBGeneralData* UGD, std::vector <cutVert> &face_points, int cutcell_index, int index);
 
 
+    /**
+    *
+    * This function applies the non local mixing length model.
+    * More information: William et al. 2004
+    *
+    */
+    void NonLocalMixing (const URBInputData* UID, URBGeneralData* UGD, TURBGeneralData* TGD);
 
 };
