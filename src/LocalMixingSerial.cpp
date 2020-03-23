@@ -80,13 +80,14 @@ void LocalMixingSerial::defineMixingLength(const URBInputData* UID,URBGeneralDat
     
     // maximum height of local mixing length = 2*max z of objects
     int max_height=nz-2;
-    for(int k=0;k<nz;++k) {
-        if(z_cc[k]>2.0*max_z) {
+    
+    for(int k=0;k<nz-1;++k) {
+        if(z_cc[k]>3.0*max_z) {
             max_height=k;
             break;
         }
     }
-  
+    
     //seeding Local Mixing Length with the verical distance to the terrain (up to 2*max_z)
     for (int i=1; i<nx-2; i++) {
         for (int j=1; j<ny-2; j++) {

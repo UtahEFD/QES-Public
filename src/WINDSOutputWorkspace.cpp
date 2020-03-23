@@ -8,11 +8,12 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(URBGeneralData *ugd,std::string outpu
     // set list of fields to save, no option available for this file
     output_fields = {"t","x_cc","y_cc","z_cc","u","v","w","icell",
                      "terrain","z0_u","z0_v",
-                     "e","f","g","h","m","n","building_volume_frac","terrain_volume_frac"};
+                     "e","f","g","h","m","n","building_volume_frac","terrain_volume_frac",
+                     "mixlength"};
     
-    if (ugd->includesMixingLength()) {
-        output_fields.push_back("mixlength");
-    }
+    //if (ugd->includesMixingLength()) {
+    //    output_fields.push_back("mixlength");
+    //}
     
     // copy of ugd pointer
     ugd_=ugd;
@@ -88,6 +89,8 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(URBGeneralData *ugd,std::string outpu
     createAttVector("z0_u","terrain areo roughness, u","m",dim_vect_2d,&(ugd_->z0_domain_u));
     createAttVector("z0_v","terrain areo roughness, v","m",dim_vect_2d,&(ugd_->z0_domain_v));
 
+    createAttVector("mixlength","distance to nearest object","m",{NcDim_z_cc,NcDim_y_cc,NcDim_x_cc},&(ugd_->mixingLengths));
+
     // 3D vector dimension (time dep)
     std::vector<NcDim> dim_vect_cc;
     dim_vect_cc.push_back(NcDim_t);
@@ -97,10 +100,6 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(URBGeneralData *ugd,std::string outpu
 
     // create attributes 
     createAttVector("icell","icell flag value","--",dim_vect_cc,&(ugd_->icellflag));
-
-    if (ugd->includesMixingLength()) {
-        createAttVector("mixlength","mixing length value","--",dim_vect_cc,&(ugd_->mixingLengths));
-    }
 
     // attributes for coefficients for SOR solver
     createAttVector("e","e cut-cell coefficient","--",dim_vect_cc,&(ugd_->e));  

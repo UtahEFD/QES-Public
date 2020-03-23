@@ -9,8 +9,8 @@ void TURBWall::get_stairstep_wall_id(URBGeneralData* UGD,int cellflag)
     
     // container for cell above terrain (needed to remove dublicate for the wall law)
     // -> need to treat the wall all at once because of strain-rate tensor
-    for (int i=1; i<nx-1; i++) {
-        for (int j=1; j<ny-1; j++) {
+    for (int i=1; i<nx-2; i++) {
+        for (int j=1; j<ny-2; j++) {
             for (int k=1; k<nz-2; k++) {
                 int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
               
