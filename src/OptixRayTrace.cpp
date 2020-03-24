@@ -255,7 +255,7 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 
 void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag){
    //memory allocation
-   OptixRay* rays_d = 0;
+   OptixRay* rays_d;
 
 
 
@@ -264,28 +264,41 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
    //set the ray size
    //init ray data
 
-   int numCells = 0;
-   for(int k = 0; k < dimZ -1; k++){
-      for(int j = 0; j < dimY -1; j++){
-         for(int i = 0; i < dimX -1; i++){
-            int icell_idx = i + j*(dimX-1) + k*(dimY -1)*(dimX-1);
+   int numAirCells = 0;
 
-            if(icellflag[icell_idx] == 1){ //only want air cells
-               numCells++;
-            }
-         }
-      }
-   }
+   /*for(int k = 0; k < dimZ -1; k++){
+     for(int j = 0; j < dimY -1; j++){
+     for(int i = 0; i < dimX -1; i++){
+     int icell_idx = i + j*(dimX-1) + k*(dimY -1)*(dimX-1);
 
+     if(icellflag[icell_idx] == 1){ //only want air cells
+     numCells++;
+     }
+     }
+     }
+     }*/
 
-   size_t rays_size_in_bytes = sizeof(OptixRay)*numCells;
-   CUDA_CHECK(cudaMalloc(&rays_d, rays_size_in_bytes));
+   //std::cout<<"In initParams(), finished counting air cells:"<<numCells<<std::endl;
 
+   std::cout<<"In initParams(), icellflag size = "<<icellflag.size()<<std::endl;
+   //OptixRay rays_d[icellflag.size()];
+   //size_t rays_size_in_bytes = sizeof(OptixRay)*numCells;
+   size_t rays_size_in_bytes = sizeof(OptixRay)*icellflag.size();
+
+   //CUDA_CHECK(cudaMalloc(&rays_d, rays_size_in_bytes));
+   rays_d = (OptixRay*) malloc(rays_size_in_bytes);
+
+   std::cout<<"In initParams(), init ray_size_in_bytes"<<std::endl;
 
    Hit* hits_d = 0;
-   size_t hits_size_in_bytes = sizeof(Hit)*numCells;
-   CUDA_CHECK(cudaMalloc(&hits_d, hits_size_in_bytes));
+//   size_t hits_size_in_bytes = sizeof(Hit)*numCells;
+   size_t hits_size_in_bytes = sizeof(Hit)*icellflag.size();
 
+   //CUDA_CHECK(cudaMalloc(&hits_d, hits_size_in_bytes));
+   hits_d = (Hit*) malloc(hits_size_in_bytes);
+   std::cout<<"In initParams(), init hits_size_in_bytes"<<std::endl;
+
+   std::cout<<"size of rays_d = "<<sizeof(rays_d)/sizeof(rays_d[0])<<std::endl;
 
    //init ray data
    for(int k = 0; k < dimZ -1; k++){
@@ -293,26 +306,39 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
          for(int i = 0; i < dimX -1; i++){
             int icell_idx = i + j*(dimX-1) + k*(dimY -1)*(dimX-1);
 
+
             if(icellflag[icell_idx] == 1){ //only want air cells
+
                rays_d[icell_idx].origin = {(i+0.5)*dx,(j+0.5)*dy,(k+05)*dz};
+               //rays_d[icell_idx].origin = make_float3((i+0.5)*dx,(j+0.5)*dy,(k+05)*dz);
+
+               //(rays_d+icell_idx)->origin = {(i+0.5)*dx,(j+0.5)*dy,(k+05)*dz};
+
+
                rays_d[icell_idx].tmin = 0.0f;
 
                rays_d[icell_idx].dir = {0,0,-1}; //set to bottom direction for now
                rays_d[icell_idx].tmax = std::numeric_limits<float>::max();
 
-               //numCells++;
+               numAirCells++;
             }
          }
       }
    }
+
+   std::cout<<"In initParams(), finished init ray data"<<std::endl;
 
 
    //init params
    state.params.handle = state.gas_handle;
    state.params.rays = rays_d;
    state.params.hits = hits_d;
-   state.num_cells = numCells;
+   state.num_cells = numAirCells;
+   std::cout<<"In initParams(), updated state params"<<std::endl;
+
 }
+
+extern "C" char embedded_ptx_code[];
 
 void OptixRayTrace::createModule(){
 
@@ -325,7 +351,7 @@ void OptixRayTrace::createModule(){
    //pipeline compile options
    state.pipeline_compile_options.usesMotionBlur = false;
    state.pipeline_compile_options.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
-   //TODO: set state.pipeline_compile_options.numPayloadValues
+   state.pipeline_compile_options.numPayloadValues = 1;
    state.pipeline_compile_options.numAttributeValues = 2;
    state.pipeline_compile_options.exceptionFlags = OPTIX_EXCEPTION_FLAG_NONE;
 
@@ -336,7 +362,8 @@ void OptixRayTrace::createModule(){
    char log[2048]; size_t sizeof_log = sizeof(log);
 
 
-   std::cout<<"PTX String: "<<ptx<<std::endl;
+   ptx = embedded_ptx_code;
+   // std::cout<<"PTX String: "<<ptx<<std::endl;
 
    OPTIX_CHECK(optixModuleCreateFromPTX(
                   state.context,
@@ -440,11 +467,14 @@ void OptixRayTrace::createSBT(){
 
    OPTIX_CHECK(optixSbtRecordPackHeader(state.raygen_prog_group, &sbt_raygen));
 
-   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*> (&d_raygen_record),
+   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*> (d_raygen_record),
                          &sbt_raygen,
                          raygen_record_size,
                          cudaMemcpyHostToDevice)
               );
+
+
+   std::cout<<"In createSBT(), raygen record created"<<std::endl;
 
    //miss
    CUdeviceptr d_miss_record = 0;
@@ -457,28 +487,33 @@ void OptixRayTrace::createSBT(){
 
    CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_miss_record), miss_record_size));
 
-   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*> (&d_miss_record),
+   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*> (d_miss_record),
                          &sbt_miss,
                          miss_record_size,
                          cudaMemcpyHostToDevice)
               );
 
-   //hit
+
+   std::cout<<"In createSBT(), miss record created"<<std::endl;
+
+//hit
    CUdeviceptr d_hit_record = 0;
+   const size_t hit_record_size = sizeof(HitGroupRecord);
 
-   const size_t hit_record_size = sizeof(HitGroupRecord) * state.samples_per_cell * state.num_cells;
 
-   HitGroupRecord sbt_hit;
+   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_hit_record), hit_record_size*RAY_TYPE_COUNT));
 
-   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_hit_record), hit_record_size));
+   HitGroupRecord hit_records[RAY_TYPE_COUNT];
 
-   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(&d_hit_record),
-                         &sbt_hit,
-                         hit_record_size,
+   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(d_hit_record),
+                         hit_records,
+                         hit_record_size*RAY_TYPE_COUNT,
                          cudaMemcpyHostToDevice)
               );
 
-   //update state
+   std::cout<<"In createSBT(), hit record created"<<std::endl;
+
+//update state
    state.sbt.raygenRecord = d_raygen_record;
 
    state.sbt.missRecordBase = d_miss_record;
@@ -487,8 +522,13 @@ void OptixRayTrace::createSBT(){
 
    state.sbt.hitgroupRecordBase = d_hit_record;
    state.sbt.hitgroupRecordStrideInBytes = static_cast<uint32_t>(hit_record_size);
-   state.sbt.hitgroupRecordCount = 1;  //TODO: change this to the right amount
+   state.sbt.hitgroupRecordCount = RAY_TYPE_COUNT;
+
+   std::cout<<"In createSBT(), state records updated"<<std::endl;
+
+
 }
+
 
 void OptixRayTrace::launch(){
    //create the CUDA stream
@@ -509,9 +549,10 @@ void OptixRayTrace::launch(){
                            sizeof(Params),
                            &state.sbt,
                            state.num_cells,
-                           state.samples_per_cell,
+                           1,//state.num_cells,//state.samples_per_cell,
                            1)
                );
+   CUDA_SYNC_CHECK();
    CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_params)));
 }
 

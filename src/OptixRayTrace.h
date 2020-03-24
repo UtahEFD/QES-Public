@@ -23,6 +23,10 @@
 
 
 
+#define RAY_TYPE_COUNT 2
+#define RAY_TYPE_RADIENCE 0
+
+
 template <typename T>
 struct Record{
    __align__(OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
@@ -88,7 +92,7 @@ struct RayTracingState{
    OptixShaderBindingTable sbt = {};
 
    int samples_per_cell;  //can change to bigger type value if needed 
-   int num_cells;
+   int num_cells;         //number of air cells 
 
 };
 
@@ -131,7 +135,7 @@ class OptixRayTrace{
 
    //ptx string definition (this is a hardcoded version, since there
    //is only one .cu file
-   std::string ptx = (std::string) PTX_DIR + "/target_name_generated_OptixRayTrace.cu.ptx";
-//std::string ptx = (std::string) PTX_DIR + "/cuda_compile_ptx_generated_OptixRayTrace.cu.ptx";
-
+   //std::string ptx = (std::string) PTX_DIR + "/target_name_generated_OptixRayTrace.cu.ptx";
+   std::string ptx = (std::string) PTX_DIR + "/cuda_compile_ptx_generated_OptixRayTrace.cu.ptx";
+      
 };

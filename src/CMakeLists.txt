@@ -39,13 +39,20 @@ CUDA_ADD_LIBRARY( cudaurbcore
   HitRecord.cpp HitRecord.h
   )
 
-OPTIX_add_library(target_name 
-  OptixRayTrace.cu
-  OptixRayTrace.cpp
-  OptixRayTrace.h
-  
-  )
+#OPTIX_add_library(target_name 
+ # OptixRayTrace.cu
+  #OptixRayTrace.cpp
+  #OptixRayTrace.h
+ # )
 
+ include_directories(${OptiX_INCLUDE})
+ 
+ cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
+ add_library(target_name
+   ${embedded_ptx_code}
+   OptixRayTrace.h
+   OptixRayTrace.cpp
+   )
 
 cuda_add_executable( unitTest
   unitTests/testsMain.cpp
@@ -53,6 +60,8 @@ cuda_add_executable( unitTest
 
 
 target_link_libraries(unitTest ${target_name})
+#target_link_libraries(unitTest ${optix_raytrace})
+#target_link_libraries(unitTest ${optix_LIBRARY})
 target_link_libraries(unitTest cudaurbcore)
 target_link_libraries(unitTest cudaurbutil)
 target_link_libraries(unitTest unitTestLib)

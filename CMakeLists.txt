@@ -90,19 +90,54 @@ ENDIF(CUDA_FOUND)
 #
 
 #use fast math option is required for OptiX
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;--use_fast_math")
+#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;--use_fast_math;--keep-device-functions")
 
-FIND_PACKAGE(OptiX REQUIRED)
-MESSAGE("lib64 is in path = " ${OptiX_INSTALL_DIR}/lib64)
-LINK_DIRECTORIES(${OptiX_INSTALL_DIR}/lib64)
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode=arch=compute_75,code=sm_75;-rdc=true;--use_fast_math;--keep-device-functions")
+
+#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_35;-rdc=true;--use_fast_math;--keep-device-functions")
+
+FIND_PACKAGE(OptiX REQUIRED VERSION 7.0)
+
 include_directories(
-  "${OptiX_INCLUDE}"
+  ${OptiX_INCLUDE}
   )
+
+MESSAGE("OptiX_INCLUDE = " ${OptiX_INCLUDE})
 
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/ptx") #ptx files located here
 add_definitions(-DPTX_DIR="${CMAKE_BINARY_DIR}/ptx") #PTX_DIR
 set(PTX_DIR "${CMAKE_BINARY_DIR}/ptx")
 set(CUDA_GENERATED_OUTPUT_DIR ${PTX_DIR})
+
+find_program(BIN2C bin2c DOC "Path to the cuda-sdk bin2c executable.")
+
+# this macro defines cmake rules that execute the following four steps:
+# 1) compile the given cuda file ${cuda_file} to an intermediary PTX file
+# 2) use the 'bin2c' tool (that comes with CUDA) to
+#    create a second intermediary (.c-)file which defines a const string variable
+#    (named '${c_var_name}') whose (constant) value is the PTX output
+#    from the previous step.
+# 3) compile the given .c file to an intermediary object file (why thus has
+#    that PTX string 'embedded' as a global constant.
+# 4) assign the name of the intermediary .o file to the cmake variable
+#    'output_var', which can then be added to cmake targets.
+macro(cuda_compile_and_embed output_var cuda_file)
+  set(c_var_name ${output_var})
+  cuda_compile_ptx(ptx_files ${cuda_file})
+  list(GET ptx_files 0 ptx_file)
+  set(embedded_file ${ptx_file}_embedded.c)
+#  message("adding rule to compile and embed ${cuda_file} to \"const char ${var_name}[];\"")
+  add_custom_command(
+    OUTPUT ${embedded_file}
+    COMMAND ${BIN2C} -c --padd 0 --type char --name ${c_var_name} ${ptx_file} > ${embedded_file}
+    DEPENDS ${ptx_file}
+    COMMENT "compiling (and embedding ptx from) ${cuda_file}"
+    )
+  set(${output_var} ${embedded_file})
+endmacro()
+
+
+
 
 function(OPTIX_add_library target_name)
   source_group("PTX Files" REGULAR_EXPRESSION ".+\\.ptx$")
@@ -115,46 +150,35 @@ function(OPTIX_add_library target_name)
     OPTIONS ${options}
     )
 
-  CUDA_COMPILE_PTX(ptx_files ${source_files})
+  #CUDA_COMPILE_PTX(ptx_files ${source_files})
   
   add_library(${target_name}
-    ${ptx_files}
+    #${ptx_files}
     ${source_files}
     ${generated_files}
     ${cmake_options}
     )
 
   target_link_libraries(${target_name}
-    ${optix}
-    ${optix_rpath}
+    #optix
+    #${optix_rpath}
+    #${optix_LIBRARY}
+    #${optixu_LIBRARY}
     )
 
-  include_directories(${OptiX_INCLUDE}/optixu
-    ${OptiX_INSTALL_DIR}/include
+    include_directories(${OptiX_INCLUDE}/optixu
+   # ${OptiX_INSTALL_DIR}/include
     )
 
-  MESSAGE("OptiX_INCLUDE = " ${OptiX_INCLUDE})
+  if(USING_GNU_CXX)
+    target_link_libaries(${target_name} m)
+  endif()
+  
+  MESSAGE("optix_rpath = " ${optix_rpath})
+  MESSAGE("optix = " ${optix})
+  MESSAGE("OptiX_INSTALL_DIR = " ${OptiX_INSTALL_DIR})
 endfunction()
 
-
-#add dll to build
-
-#get_filename_component(path_to_optix_dll ${optix_DLL} PATH)
-#file(GLOB dlls "${path_to_optix_dll}/*.dll")
-MESSAGE("Optix_install_dir = " ${OptiX_INSTALL_DIR})
-MESSAGE("dll path? = " ${OptiX_INSTALL_DIR}/bin${bit_dest}/*.dll)
-
-file(GLOB dlls "${OptiX_INSTALL_DIR}/bin${bit_dest}/*.dll")
-foreach(file ${dlls})
-  get_filename_component(name "${file}" NAME)
-  set(dest "${CUDA_GENERATED_OUTPUT_DIR}/${name}")
-  execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${file}" "${dest}" RESULT_VARIABLE result)
-
-if(result)
-  message(FATAL_ERROR "dll copying error")
-endif()
-
-endforeach()
 
 
 #
