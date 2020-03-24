@@ -21,6 +21,7 @@ class SimulationParameters : public ParseInterface {
     
     	float simDur;		// this is the amount of time to run the simulation, lets you have an arbitrary start time to an arbitrary end time
 		float timeStep;			// this is the overall integration timestep
+        float CourantNum;       // this is the Courant Number for the simulation, how to divide the timestep up for each particle to keep them moving one grid cell at a time
 		double invarianceTol;		// this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
 		double C_0;				// this is used to separate out CoEps into its separate parts when doing debug output
 		int updateFrequency_particleLoop;		// this is used to know how frequently to print out information during the particle loop of the solver. Only used during debug mode
@@ -29,6 +30,7 @@ class SimulationParameters : public ParseInterface {
     	virtual void parseValues() {
     		parsePrimitive< float >(true, simDur, "simDur");
     		parsePrimitive< float >(true, timeStep, "timeStep");
+            parsePrimitive< float >(true, CourantNum, "CourantNumber");
 			parsePrimitive< double >(true, invarianceTol, "invarianceTol");
 			parsePrimitive< double >(true, C_0, "C_0");
 			parsePrimitive< int >(true, updateFrequency_particleLoop, "updateFrequency_particleLoop");
@@ -51,6 +53,12 @@ class SimulationParameters : public ParseInterface {
             {
                 std::cerr << "(SimulationParameters::checkParsedValues): input timeStep must be greater than zero!";
                 std::cerr << " timeStep = \"" << timeStep << "\"" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            if( CourantNum < 0.0 || CourantNum > 1.0 )
+            {
+                std::cerr << "(SimulationParameters::checkParsedValues): input CourantNumber must be greater than or equal to zero but less than or equal to one!";
+                std::cerr << " CourantNumber = \"" << CourantNum << "\"" << std::endl;
                 exit(EXIT_FAILURE);
             }
             if( invarianceTol <= 0 )

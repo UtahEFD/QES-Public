@@ -1,10 +1,13 @@
 #!/bin/bash
 #SBATCH --account=efd-np
-#SBATCH --partition=efd-np
+#SBATCH --partition=efd-shared-np
 #SBATCH --qos=efd-np
 #SBATCH --job-name=plume_BaileyLES_0o0222_222
 #SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --mem=1G
 #SBATCH --time=01:30:00
+#SBATCH --exclude=notch055
 #SBATCH -e plume_error_BaileyLES.log
 #SBATCH -o plume_slurm_BaileyLES.log
 

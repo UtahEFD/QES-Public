@@ -86,12 +86,14 @@ class Plume {
         double domainZend;      // the domain ending z value, a copy of the value found by dispersion
 
 
-        // important time variables
-        // copied from dispersion (and some of them copied to dispersion from input)
-        double dt;       // the timestep
+        // important time variables copied from dispersion (and some of them copied to dispersion from input)
+        double sim_dt;       // the simulation timestep
         double simDur;   // the total amount of time to run the simulation for
-        int nTimes; // this is the number of timesteps of the simulation, the calculated size of times
-        std::vector<double> times;  // this is the list of times for the simulation
+        int nSimTimes; // this is the number of timesteps of the simulation, the calculated size of times
+        std::vector<double> simTimes;  // this is the list of times for the simulation
+
+        // important time variables not copied from dispersion
+        double CourantNum;  // the Courant number, used to know how to divide up the simulation timestep into smaller per particle timesteps. Copied from input
 
         // copy of dispersion number of pars to release for each timestep,
         // used for updating the particle loop counter in Plume
@@ -113,6 +115,12 @@ class Plume {
         std::string outputFolder;
         std::string caseBaseName;
         bool debug;
+
+
+        // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,
+        // and the grid size. Forces particles to always move only at one timestep at at time.
+        // Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
+        double calcCourantTimestep(const double& uFluct,const double& vFluct,const double& wFluct,const double& timeRemainder);
         
 
         // utility functions for the plume solver

@@ -38,14 +38,17 @@ Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, const bool& doLagrDa
     
 
     // make copies of important dispersion time variables
-    dt = dis->dt;
+    sim_dt = dis->sim_dt;
     simDur = dis->simDur;
-    nTimes = dis->nTimes;
-    times.resize(nTimes);   // first need to get the vector size right for the copy
-    times = dis->times;
+    nSimTimes = dis->nSimTimes;
+    simTimes.resize(nSimTimes);   // first need to get the vector size right for the copy
+    simTimes = dis->simTimes;
 
-    // make copy of dispersion number of particles to release at each timestep
-    nParsToRelease.resize(nTimes-1);    // first need to get the vector size right for the copy. Note it is one less than times because the time loop ends one time early.
+    // other important time variables not from dispersion
+    CourantNum = PID->simParams->CourantNum;
+
+    // make copy of dispersion number of particles to release at each simulation timestep
+    nParsToRelease.resize(nSimTimes-1);    // first need to get the vector size right for the copy. Note it is one less than times because the time loop ends one time early.
     nParsToRelease = dis->nParsToRelease;
 
     
@@ -94,7 +97,6 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
         // LA future work: probably should wrap all of these in a debug if statement
         timers.startNewTimer("advection loop");
         timers.startNewTimer("particle iteration");
-        timers.startNewTimer("wall BC functions");
     }
 
 
@@ -108,14 +110,14 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
     // do an output for the first time, then put the value back to zero so the particle loop will work correctly
     // this means I need to set the isActive value to true for the first set of particles right here
     dis->nParsReleased = nParsToRelease.at(0);
-    for( int par = 0; par < nParsToRelease.at(0); par++ )
+    for( int parIdx = 0; parIdx < nParsToRelease.at(0); parIdx++ )
     {
-        dis->pointList.at(par).isActive = true;
+        dis->pointList.at(parIdx).isActive = true;
     }
-    lagrToEulOutput->save(times.at(0));
+    lagrToEulOutput->save(simTimes.at(0));
     if( doLagrDataOutput == true )
     {
-        lagrOutput->save(times.at(0));
+        lagrOutput->save(simTimes.at(0));
     }
     dis->nParsReleased = 0;
     
@@ -129,7 +131,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
     // LA note on debug timers: because the loop is doing stuff for the next time, and particles start getting released at time zero,
     //  this means that the updateFrequency needs to match with tStep+1, not tStep. At the same time, the current time output to consol
     //  output and to function calls need to also be set to tStep+1.
-    for(int tStep = 0; tStep < nTimes-1; tStep++)
+    for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)
     {
      
         // need to release new particles
@@ -137,33 +139,33 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
         // !!! note that the updated number of particles is dispersion's value 
         //  so that the output can get the number of released particles right
         int nPastPars = dis->nParsReleased;
-        dis->nParsReleased = nPastPars + nParsToRelease.at(tStep);
+        dis->nParsReleased = nPastPars + nParsToRelease.at(sim_tIdx);
 
         // need to set the new particles isActive values to true
-        for( int par = nPastPars; par < dis->nParsReleased; par++ )
+        for( int parIdx = nPastPars; parIdx < dis->nParsReleased; parIdx++ )
         {
-            dis->pointList.at(par).isActive = true;
+            dis->pointList.at(parIdx).isActive = true;
         }
         
 
         // only output the information when the updateFrequency allows and when there are actually released particles
-        if(  nParsToRelease.at(tStep) != 0 && ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 )  )
+        if(  nParsToRelease.at(sim_tIdx) != 0 && ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )  )
         {
-            std::cout << "time[" << tStep+1 << "] = \"" << times.at(tStep+1) << "\". finished emitting \"" 
-                        << nParsToRelease.at(tStep) << "\" particles from \"" << dis->allSources.size() 
+            std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) << "\". finished emitting \"" 
+                        << nParsToRelease.at(sim_tIdx) << "\" particles from \"" << dis->allSources.size() 
                         << "\" sources. Total numParticles = \"" << dis->nParsReleased << "\"" << std::endl;
         }
 
 
-        // Move each particle for every time step
+        // Move each particle for every simulation time step
         // Advection Loop
 
-        // start recording the amount of time it takes to advect each set of particles for a given timestep,
+        // start recording the amount of time it takes to advect each set of particles for a given simulation timestep,
         //  but only output the result when updateFrequency allows
         // LA future work: would love to put this into a debug if statement wrapper
         if( debug == true )
         {
-            if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 )
+            if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )
             {
                 timers.resetStoredTimer("advection loop");
             }
@@ -173,12 +175,12 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
         double isRogueCount = dis->isRogueCount;
         double isNotActiveCount = dis->isNotActiveCount;
 
-        for( int par = 0; par < dis->nParsReleased; par++ )
+        for( int parIdx = 0; parIdx < dis->nParsReleased; parIdx++ )
         {
 
             // get the current isRogue and isActive information
-            bool isRogue = dis->pointList.at(par).isRogue;
-            bool isActive = dis->pointList.at(par).isActive;
+            bool isRogue = dis->pointList.at(parIdx).isRogue;
+            bool isActive = dis->pointList.at(parIdx).isActive;
 
 
             // first check to see if the particle should even be advected and skip it if it should not be advected
@@ -189,7 +191,8 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                 //  and when debugging
                 if( debug == true )
                 {
-                    if(  ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 ) && ( par % updateFrequency_particleLoop == 0 || par == dis->pointList.size()-1 )  )
+                    if(  ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) 
+                      && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )  )
                     {
                         // overall particle timer
                         timers.resetStoredTimer("particle iteration");
@@ -201,14 +204,14 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                 // if it is the first time a particle is ever released, then the value is already set at the initial value
                 // LA notes: technically this value is the old position to be overwritten with the new position.
                 //  I've been tempted for a while to store both. Might have to for correctly implementing reflective building BCs
-                double xPos = dis->pointList.at(par).xPos;
-                double yPos = dis->pointList.at(par).yPos;
-                double zPos = dis->pointList.at(par).zPos;
+                double xPos = dis->pointList.at(parIdx).xPos;
+                double yPos = dis->pointList.at(parIdx).yPos;
+                double zPos = dis->pointList.at(parIdx).zPos;
 
                 // getting the initial position, for use in setting finished particles
-                double xPos_init = dis->pointList.at(par).xPos_init;
-                double yPos_init = dis->pointList.at(par).yPos_init;
-                double zPos_init = dis->pointList.at(par).zPos_init;
+                double xPos_init = dis->pointList.at(parIdx).xPos_init;
+                double yPos_init = dis->pointList.at(parIdx).yPos_init;
+                double zPos_init = dis->pointList.at(parIdx).zPos_init;
 
                 // grab the velFluct values.
                 // LA notes: hmm, Bailey's code just starts out setting these values to zero,
@@ -216,368 +219,406 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                 //  velFluct_old and velFluct are probably identical and kind of redundant in this implementation
                 //  but it shouldn't hurt anything for now, even if it is redundant
                 //  besides, it will probably change a bit if we decide to change what is outputted on a regular, and on a debug basis
-                double uFluct = dis->pointList.at(par).uFluct;
-                double vFluct = dis->pointList.at(par).vFluct;
-                double wFluct = dis->pointList.at(par).wFluct;
+                double uFluct = dis->pointList.at(parIdx).uFluct;
+                double vFluct = dis->pointList.at(parIdx).vFluct;
+                double wFluct = dis->pointList.at(parIdx).wFluct;
 
                 // get all other values for the particle
                 // in this case this, all the old velocity fluctuations and old stress tensor values for the particle
                 // LA note: also need to keep track of a delta_velFluct, 
                 //  but since delta_velFluct is never used, just set later on, it doesn't need grabbed as a value till later
-                double uFluct_old = dis->pointList.at(par).uFluct_old;
-                double vFluct_old = dis->pointList.at(par).vFluct_old;
-                double wFluct_old = dis->pointList.at(par).wFluct_old;
-                double txx_old = dis->pointList.at(par).txx_old;
-                double txy_old = dis->pointList.at(par).txy_old;
-                double txz_old = dis->pointList.at(par).txz_old;
-                double tyy_old = dis->pointList.at(par).tyy_old;
-                double tyz_old = dis->pointList.at(par).tyz_old;
-                double tzz_old = dis->pointList.at(par).tzz_old;
-                
-                
-                /*
-                    now get the Lagrangian values for the current iteration from the Eulerian grid
-                    will need to use the interp3D function
-                */
+                double uFluct_old = dis->pointList.at(parIdx).uFluct_old;
+                double vFluct_old = dis->pointList.at(parIdx).vFluct_old;
+                double wFluct_old = dis->pointList.at(parIdx).wFluct_old;
+                double txx_old = dis->pointList.at(parIdx).txx_old;
+                double txy_old = dis->pointList.at(parIdx).txy_old;
+                double txz_old = dis->pointList.at(parIdx).txz_old;
+                double tyy_old = dis->pointList.at(parIdx).tyy_old;
+                double tyz_old = dis->pointList.at(parIdx).tyz_old;
+                double tzz_old = dis->pointList.at(parIdx).tzz_old;
 
 
-                // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
-                // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
-                eul->setInterp3Dindexing(xPos,yPos,zPos);
+                // need to avoid current tao values going out of scope now that I've added the particle timestep loop
+                // so initialize their values to the tao_old values. They will be overwritten with the Eulerian grid value
+                // at each iteration in the particle timestep loop
+                double txx = txx_old;
+                double txy = txy_old;
+                double txz = txz_old;
+                double tyy = tyy_old;
+                double tyz = tyz_old;
+                double tzz = tzz_old;
 
 
-
-                // this is the Co times Eps for the particle
-                // LA note: because Bailey's code uses Eps by itself and this does not, I wanted an option to switch between the two if necessary
-                //  it's looking more and more like we will just use CoEps.
-                double CoEps = eul->interp3D(turb->CoEps,"CoEps");
-                //double CoEps = eul->interp3D(turb->CoEps,"Eps");
-                
-                
-                // this is the current velMean value
-                double uMean = eul->interp3D(urb->u,"velMean");
-                double vMean = eul->interp3D(urb->v,"velMean");
-                double wMean = eul->interp3D(urb->w,"velMean");
-                
-                // this is the current reynolds stress tensor
-                double txx_before = eul->interp3D(turb->txx,"tau");
-                double txy_before = eul->interp3D(turb->txy,"tau");
-                double txz_before = eul->interp3D(turb->txz,"tau");
-                double tyy_before = eul->interp3D(turb->tyy,"tau");
-                double tyz_before = eul->interp3D(turb->tyz,"tau");
-                double tzz_before = eul->interp3D(turb->tzz,"tau");
-                
-                // now need flux_div_dir, not the different dtxxdx type components
-                double flux_div_x = eul->interp3D(eul->flux_div_x,"flux_div");
-                double flux_div_y = eul->interp3D(eul->flux_div_y,"flux_div");
-                double flux_div_z = eul->interp3D(eul->flux_div_z,"flux_div");
-
-
-                // now need to call makeRealizable on tao
-                // directly modifies the values of tao
-                // LA note: because the tau values before and after the function call are useful when particles go rogue,
-                //  I decided to store them separate using a copy for the function call
-                double txx = txx_before;
-                double txy = txy_before;
-                double txz = txz_before;
-                double tyy = tyy_before;
-                double tyz = tyz_before;
-                double tzz = tzz_before;
-                makeRealizable(txx,txy,txz,tyy,tyz,tzz);
-                
-                
-                // now need to calculate the inverse values for tao
-                // directly modifies the values of tao
-                // LA warn: I just noticed that Bailey's code always leaves the last three components alone, 
-                //  never filled with the symmetrical tensor values. This seems fine for makeRealizable, 
-                //  but I wonder if it messes with the invert3 stuff since those values are used even though they are empty in his code
-                //  going to send in 9 terms anyways to try to follow Bailey's method for now
-                double lxx = txx;
-                double lxy = txy;
-                double lxz = txz;
-                //double lyx = txy;
-                double lyx = 0.0;
-                double lyy = tyy;
-                double lyz = tyz;
-                //double lzx = txz;
-                //double lzy = tyz;
-                double lzx = 0.0;
-                double lzy = 0.0;
-                double lzz = tzz;
-                invert3(lxx,lxy,lxz,lyx,lyy,lyz,lzx,lzy,lzz);
-
-
-                // these are the random numbers for each direction
-                // LA note: should be randn() matlab equivalent, which is a normally distributed random number
-                // LA future work: it is possible the rogue particles are caused by the random number generator stuff.
-                //  Need to look into it at some time.
-                double xRandn = random::norRan();
-                double yRandn = random::norRan();
-                double zRandn = random::norRan();
-
-                
-                /* now calculate a bunch of values for the current particle */
-                // calculate the d_tao_dt values, which are the (tao_current - tao_old)/dt
-                double dtxxdt = (txx - txx_old)/dt;
-                double dtxydt = (txy - txy_old)/dt;
-                double dtxzdt = (txz - txz_old)/dt;
-                double dtyydt = (tyy - tyy_old)/dt;
-                double dtyzdt = (tyz - tyz_old)/dt;
-                double dtzzdt = (tzz - tzz_old)/dt;
-
-
-                /* now calculate and set the A and b matrices for an Ax = b */
-                double A_11 = -1.0 + 0.50*(-CoEps*lxx + lxx*dtxxdt + lxy*dtxydt + lxz*dtxzdt)*dt;
-                double A_12 =        0.50*(-CoEps*lxy + lxy*dtxxdt + lyy*dtxydt + lyz*dtxzdt)*dt;
-                double A_13 =        0.50*(-CoEps*lxz + lxz*dtxxdt + lyz*dtxydt + lzz*dtxzdt)*dt;
-
-                double A_21 =        0.50*(-CoEps*lxy + lxx*dtxydt + lxy*dtyydt + lxz*dtyzdt)*dt;
-                double A_22 = -1.0 + 0.50*(-CoEps*lyy + lxy*dtxydt + lyy*dtyydt + lyz*dtyzdt)*dt;
-                double A_23 =        0.50*(-CoEps*lyz + lxz*dtxydt + lyz*dtyydt + lzz*dtyzdt)*dt;
-                
-                double A_31 =        0.50*(-CoEps*lxz + lxx*dtxzdt + lxy*dtyzdt + lxz*dtzzdt)*dt;
-                double A_32 =        0.50*(-CoEps*lyz + lxy*dtxzdt + lyy*dtyzdt + lyz*dtzzdt)*dt;
-                double A_33 = -1.0 + 0.50*(-CoEps*lzz + lxz*dtxzdt + lyz*dtyzdt + lzz*dtzzdt)*dt;
-
-
-                double b_11 = -uFluct_old - 0.50*flux_div_x*dt - std::sqrt(CoEps*dt)*xRandn;
-                double b_21 = -vFluct_old - 0.50*flux_div_y*dt - std::sqrt(CoEps*dt)*yRandn;
-                double b_31 = -wFluct_old - 0.50*flux_div_z*dt - std::sqrt(CoEps*dt)*zRandn;
-
-
-                // now prepare for the Ax=b calculation by calculating the inverted A matrix
-                // directly modifies the values of the A matrix
-                // LA note: because the A values before and after the function call are useful when particles go rogue,
-                //  I decided to store them separate using a copy for the function call
-                double A_11_inv = A_11;
-                double A_12_inv = A_12;
-                double A_13_inv = A_13;
-                double A_21_inv = A_21;
-                double A_22_inv = A_22;
-                double A_23_inv = A_23;
-                double A_31_inv = A_31;
-                double A_32_inv = A_32;
-                double A_33_inv = A_33;
-                invert3(A_11_inv,A_12_inv,A_13_inv,A_21_inv,A_22_inv,A_23_inv,A_31_inv,A_32_inv,A_33_inv);
-
-
-                // now do the Ax=b calculation using the inverted matrix
-                // directly modifies the velFluct values, which are passed in by reference as the output x vector
-                // LA note: since velFluct_old keeps track of the velFluct values before this function call,
-                //  I just used the velFluct values directly in the function call
-                matmult(A_11_inv,A_12_inv,A_13_inv,A_21_inv,A_22_inv,A_23_inv,A_31_inv,A_32_inv,A_33_inv,b_11,b_21,b_31, uFluct,vFluct,wFluct);
-                
-
-                // now check to see if the value is rogue or not
-                // if it is rogue, output a ton of information that can be copied into matlab
-                // LA note: I tried to keep the format really nice to reduce the amount of reformulating work done in matlab.
-                //  I wanted to turn it into a function, but there are sooo many variables that would need to be passed into that function call
-                //  so it made more sense to write them out directly.
-                if( ( std::abs(uFluct) >= vel_threshold || isnan(uFluct) ) && nx > 1 )
+                // time to do a particle timestep loop. start the time remainder as the simulation timestep.
+                // at each particle timestep loop iteration the time remainder gets closer and closer to zero.
+                // the particle timestep for a given particle timestep loop is either the time remainder or the value calculated
+                // from the Courant Number, whichever is smaller.
+                // particles can go inactive too, so need to use that as a condition to quit early too
+                // LA important note: can't use the simulation timestep for the timestep remainder, the last simulation timestep
+                //  is potentially smaller than the simulation timestep. So need to use the simTimes.at(nSimTimes-1)-simTimes.at(nSimTimes-2)
+                //  for the last simulation timestep. The problem is that simTimes.at(nSimTimes-1) is greater than simTimes.at(nSimTimes-2) + sim_dt.
+                double timeRemainder = sim_dt;
+                if( sim_tIdx == nSimTimes-2 )   // at the final timestep
                 {
-                    std::cout << "Particle # " << par << " is rogue." << std::endl;
-                    std::cout << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
-
-                    std::cout << "\tinfo for matlab script copy:" << std::endl;
-                    std::cout << "uFluct = " << uFluct << "\nvFluct = " << vFluct << "\nwFluct = " << wFluct << std::endl;
-                    std::cout << "xPos = " << xPos << "\nyPos = " << yPos << "\nzPos = " << zPos << std::endl;
-                    std::cout << "uFluct_old = " << uFluct_old << "\nvFluct_old = " << vFluct_old << "\nwFluct_old = " << wFluct_old << std::endl;
-                    std::cout << "txx_old = " << txx_old << "\ntxy_old = " << txy_old << "\ntxz_old = " << txz_old << std::endl;
-                    std::cout << "tyy_old = " << tyy_old << "\ntyz_old = " << tyz_old << "\ntzz_old = " << tzz_old << std::endl;
-                    std::cout << "CoEps = " << CoEps << std::endl;
-                    std::cout << "uMean = " << uMean << "\nvMean = " << vMean << "\nwMean = " << wMean << std::endl;
-                    std::cout << "txx_before = " << txx_before << "\ntxy_before = " << txy_before << "\ntxz_before = " << txz_before << std::endl;
-                    std::cout << "tyy_before = " << tyy_before << "\ntyz_before = " << tyz_before << "\ntzz_before = " << tzz_before << std::endl;
-                    std::cout << "flux_div_x = " << flux_div_x << "\nflux_div_y = " << flux_div_y << "\nflux_div_z = " << flux_div_z << std::endl;
-                    std::cout << "txx = " << txx << "\ntxy = " << txy << "\ntxz = " << txz << std::endl;
-                    std::cout << "tyy = " << tyy << "\ntyz = " << tyz << "\ntzz = " << tzz << std::endl;
-                    std::cout << "lxx = " << lxx << "\nlxy = " << lxy << "\nlxz = " << lxz << std::endl;
-                    std::cout << "lyy = " << lyy << "\nlyz = " << lyz << "\nlzz = " << lzz << std::endl;
-                    std::cout << "xRandn = " << xRandn << "\nyRandn = " << yRandn << "\nzRandn = " << zRandn << std::endl;
-                    std::cout << "dtxxdt = " << dtxxdt << "\ndtxydt = " << dtxydt << "\ndtxzdt = " << dtxzdt << std::endl;
-                    std::cout << "dtyydt = " << dtyydt << "\ndtyzdt = " << dtyzdt << "\ndtzzdt = " << dtzzdt << std::endl;
-                    std::cout << "A_11 = " << A_11 << "\nA_12 = " << A_12 << "\nA_13 = " << A_13 << std::endl;
-                    std::cout << "A_21 = " << A_21 << "\nA_22 = " << A_22 << "\nA_23 = " << A_23 << std::endl;
-                    std::cout << "A_31 = " << A_31 << "\nA_32 = " << A_32 << "\nA_33 = " << A_33 << std::endl;
-                    std::cout << "b_11 = " << b_11 << "\nb_21 = " << b_21 << "\nb_31 = " << b_31 << std::endl;
-                    std::cout << "A_11_inv = " << A_11_inv << "\nA_12_inv = " << A_12_inv << "\nA_13_inv = " << A_13_inv << std::endl;
-                    std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
-                    std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
-                    std::cout << "\t finished info" << std::endl;
-
-                    uFluct = 0.0;
-                    isRogue = true;
+                    timeRemainder = simTimes.at(nSimTimes-1) - simTimes.at(nSimTimes-2);
                 }
-                if( ( std::abs(vFluct) >= vel_threshold || isnan(vFluct) ) && ny > 1 )
+                double par_time = simTimes.at(sim_tIdx);    // the current time, updated in this loop with each new par_dt. Will end at simTimes.at(sim_tIdx+1) at the end of this particle loop
+                while( isActive == true && timeRemainder > 0.0 )
                 {
-                    std::cout << "Particle # " << par << " is rogue." << std::endl;
-                    std::cout << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
 
-                    std::cout << "\tinfo for matlab script copy:" << std::endl;
-                    std::cout << "uFluct = " << uFluct << "\nvFluct = " << vFluct << "\nwFluct = " << wFluct << std::endl;
-                    std::cout << "xPos = " << xPos << "\nyPos = " << yPos << "\nzPos = " << zPos << std::endl;
-                    std::cout << "uFluct_old = " << uFluct_old << "\nvFluct_old = " << vFluct_old << "\nwFluct_old = " << wFluct_old << std::endl;
-                    std::cout << "txx_old = " << txx_old << "\ntxy_old = " << txy_old << "\ntxz_old = " << txz_old << std::endl;
-                    std::cout << "tyy_old = " << tyy_old << "\ntyz_old = " << tyz_old << "\ntzz_old = " << tzz_old << std::endl;
-                    std::cout << "CoEps = " << CoEps << std::endl;
-                    std::cout << "uMean = " << uMean << "\nvMean = " << vMean << "\nwMean = " << wMean << std::endl;
-                    std::cout << "txx_before = " << txx_before << "\ntxy_before = " << txy_before << "\ntxz_before = " << txz_before << std::endl;
-                    std::cout << "tyy_before = " << tyy_before << "\ntyz_before = " << tyz_before << "\ntzz_before = " << tzz_before << std::endl;
-                    std::cout << "flux_div_x = " << flux_div_x << "\nflux_div_y = " << flux_div_y << "\nflux_div_z = " << flux_div_z << std::endl;
-                    std::cout << "txx = " << txx << "\ntxy = " << txy << "\ntxz = " << txz << std::endl;
-                    std::cout << "tyy = " << tyy << "\ntyz = " << tyz << "\ntzz = " << tzz << std::endl;
-                    std::cout << "lxx = " << lxx << "\nlxy = " << lxy << "\nlxz = " << lxz << std::endl;
-                    std::cout << "lyy = " << lyy << "\nlyz = " << lyz << "\nlzz = " << lzz << std::endl;
-                    std::cout << "xRandn = " << xRandn << "\nyRandn = " << yRandn << "\nzRandn = " << zRandn << std::endl;
-                    std::cout << "dtxxdt = " << dtxxdt << "\ndtxydt = " << dtxydt << "\ndtxzdt = " << dtxzdt << std::endl;
-                    std::cout << "dtyydt = " << dtyydt << "\ndtyzdt = " << dtyzdt << "\ndtzzdt = " << dtzzdt << std::endl;
-                    std::cout << "A_11 = " << A_11 << "\nA_12 = " << A_12 << "\nA_13 = " << A_13 << std::endl;
-                    std::cout << "A_21 = " << A_21 << "\nA_22 = " << A_22 << "\nA_23 = " << A_23 << std::endl;
-                    std::cout << "A_31 = " << A_31 << "\nA_32 = " << A_32 << "\nA_33 = " << A_33 << std::endl;
-                    std::cout << "b_11 = " << b_11 << "\nb_21 = " << b_21 << "\nb_31 = " << b_31 << std::endl;
-                    std::cout << "A_11_inv = " << A_11_inv << "\nA_12_inv = " << A_12_inv << "\nA_13_inv = " << A_13_inv << std::endl;
-                    std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
-                    std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
-                    std::cout << "\t finished info" << std::endl;
+                    // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
+                    // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
+                    double par_dt = calcCourantTimestep(uFluct,vFluct,wFluct,timeRemainder);
 
-                    vFluct = 0.0;
-                    isRogue = true;
-                }
-                if( ( std::abs(wFluct) >= vel_threshold || isnan(wFluct) ) && nz > 1 )
-                {
-                    std::cout << "Particle # " << par << " is rogue." << std::endl;
-                    std::cout << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
+                    // update the par_time, useful for debugging
+                    par_time = par_time + par_dt;
 
-                    std::cout << "\tinfo for matlab script copy:" << std::endl;
-                    std::cout << "uFluct = " << uFluct << "\nvFluct = " << vFluct << "\nwFluct = " << wFluct << std::endl;
-                    std::cout << "xPos = " << xPos << "\nyPos = " << yPos << "\nzPos = " << zPos << std::endl;
-                    std::cout << "uFluct_old = " << uFluct_old << "\nvFluct_old = " << vFluct_old << "\nwFluct_old = " << wFluct_old << std::endl;
-                    std::cout << "txx_old = " << txx_old << "\ntxy_old = " << txy_old << "\ntxz_old = " << txz_old << std::endl;
-                    std::cout << "tyy_old = " << tyy_old << "\ntyz_old = " << tyz_old << "\ntzz_old = " << tzz_old << std::endl;
-                    std::cout << "CoEps = " << CoEps << std::endl;
-                    std::cout << "uMean = " << uMean << "\nvMean = " << vMean << "\nwMean = " << wMean << std::endl;
-                    std::cout << "txx_before = " << txx_before << "\ntxy_before = " << txy_before << "\ntxz_before = " << txz_before << std::endl;
-                    std::cout << "tyy_before = " << tyy_before << "\ntyz_before = " << tyz_before << "\ntzz_before = " << tzz_before << std::endl;
-                    std::cout << "flux_div_x = " << flux_div_x << "\nflux_div_y = " << flux_div_y << "\nflux_div_z = " << flux_div_z << std::endl;
-                    std::cout << "txx = " << txx << "\ntxy = " << txy << "\ntxz = " << txz << std::endl;
-                    std::cout << "tyy = " << tyy << "\ntyz = " << tyz << "\ntzz = " << tzz << std::endl;
-                    std::cout << "lxx = " << lxx << "\nlxy = " << lxy << "\nlxz = " << lxz << std::endl;
-                    std::cout << "lyy = " << lyy << "\nlyz = " << lyz << "\nlzz = " << lzz << std::endl;
-                    std::cout << "xRandn = " << xRandn << "\nyRandn = " << yRandn << "\nzRandn = " << zRandn << std::endl;
-                    std::cout << "dtxxdt = " << dtxxdt << "\ndtxydt = " << dtxydt << "\ndtxzdt = " << dtxzdt << std::endl;
-                    std::cout << "dtyydt = " << dtyydt << "\ndtyzdt = " << dtyzdt << "\ndtzzdt = " << dtzzdt << std::endl;
-                    std::cout << "A_11 = " << A_11 << "\nA_12 = " << A_12 << "\nA_13 = " << A_13 << std::endl;
-                    std::cout << "A_21 = " << A_21 << "\nA_22 = " << A_22 << "\nA_23 = " << A_23 << std::endl;
-                    std::cout << "A_31 = " << A_31 << "\nA_32 = " << A_32 << "\nA_33 = " << A_33 << std::endl;
-                    std::cout << "b_11 = " << b_11 << "\nb_21 = " << b_21 << "\nb_31 = " << b_31 << std::endl;
-                    std::cout << "A_11_inv = " << A_11_inv << "\nA_12_inv = " << A_12_inv << "\nA_13_inv = " << A_13_inv << std::endl;
-                    std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
-                    std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
-                    std::cout << "\t finished info" << std::endl;
-
-                    wFluct = 0.0;
-                    isRogue = true;
-                }
-
-                // Pete: Do you need this???
-                // ONLY if this should never happen....
-                //    assert( isRogue == false );
-                // LA reply: maybe implement this after the thesis work. Currently use it to know if something is going wrong
-                //  I think we are still a long ways from being able to throw this out.
-
-                
-                // now update the particle position for this iteration
-                // LA future work: at some point in time, need to do a CFL condition for only moving one eulerian grid cell at a time
-                //  this would mean adding some kind of while loop, with an adaptive timestep, controlling the end of the while loop
-                //   with the simulation time increment. This means all particles can do multiple time iterations, each with their own adaptive timestep.
-                //  To make this work, particles would need to be required to catch up so they are all calculated by a given simulation timestep.
-                // LA warn: currently, we use the simulation timestep so we may violate the eulerian grid CFL condition. 
-                //  but is simpler to work with when getting started
-                // LA future work: instead of using an adaptive timestep that adapts the timestep when checking if distX is too big or small,
-                //  we should use a courant number to precalculate the required adaptive timestep. Means less if statements and the error associated
-                //  with CFL conditions would just come out as the accuracy of the particle statistics.
-                double disX = (uMean + uFluct)*dt;
-                double disY = (vMean + vFluct)*dt;
-                double disZ = (wMean + wFluct)*dt;
-                
-                xPos = xPos + disX;
-                yPos = yPos + disY;
-                zPos = zPos + disZ;
+                    
+                    
+                    /*
+                        now get the Lagrangian values for the current iteration from the Eulerian grid
+                        will need to use the interp3D function
+                    */
 
 
-                // LA-note: at one time I thought it would be useful to time the boundary condition calculations
-                //  may still try to do this and so here is the leftover. If we were to do this again,
-                //  it should be a debug option that only displays based on the updateFrequency variables
-                if( debug == true )
-                {
-                    if(  ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 ) && ( par % updateFrequency_particleLoop == 0 || par == dis->pointList.size()-1 )  )
+                    // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
+                    // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
+                    eul->setInterp3Dindexing(xPos,yPos,zPos);
+
+
+
+                    // this is the Co times Eps for the particle
+                    // LA note: because Bailey's code uses Eps by itself and this does not, I wanted an option to switch between the two if necessary
+                    //  it's looking more and more like we will just use CoEps.
+                    double CoEps = eul->interp3D(turb->CoEps,"CoEps");
+                    //double CoEps = eul->interp3D(turb->CoEps,"Eps");
+                    
+                    
+                    // this is the current velMean value
+                    double uMean = eul->interp3D(urb->u,"velMean");
+                    double vMean = eul->interp3D(urb->v,"velMean");
+                    double wMean = eul->interp3D(urb->w,"velMean");
+                    
+                    // this is the current reynolds stress tensor
+                    double txx_before = eul->interp3D(turb->txx,"tau");
+                    double txy_before = eul->interp3D(turb->txy,"tau");
+                    double txz_before = eul->interp3D(turb->txz,"tau");
+                    double tyy_before = eul->interp3D(turb->tyy,"tau");
+                    double tyz_before = eul->interp3D(turb->tyz,"tau");
+                    double tzz_before = eul->interp3D(turb->tzz,"tau");
+                    
+                    // now need flux_div_dir, not the different dtxxdx type components
+                    double flux_div_x = eul->interp3D(eul->flux_div_x,"flux_div");
+                    double flux_div_y = eul->interp3D(eul->flux_div_y,"flux_div");
+                    double flux_div_z = eul->interp3D(eul->flux_div_z,"flux_div");
+
+
+                    // now need to call makeRealizable on tao
+                    // directly modifies the values of tao
+                    // LA note: because the tau values before and after the function call are useful when particles go rogue,
+                    //  I decided to store them separate using a copy for the function call
+                    // note that these values are what is used to set the particle list values, they go out of scope if declared here
+                    // so they are now declared outside the particle timestep iteration loop
+                    txx = txx_before;
+                    txy = txy_before;
+                    txz = txz_before;
+                    tyy = tyy_before;
+                    tyz = tyz_before;
+                    tzz = tzz_before;
+                    makeRealizable(txx,txy,txz,tyy,tyz,tzz);
+                    
+                    
+                    // now need to calculate the inverse values for tao
+                    // directly modifies the values of tao
+                    // LA warn: I just noticed that Bailey's code always leaves the last three components alone, 
+                    //  never filled with the symmetrical tensor values. This seems fine for makeRealizable, 
+                    //  but I wonder if it messes with the invert3 stuff since those values are used even though they are empty in his code
+                    //  going to send in 9 terms anyways to try to follow Bailey's method for now
+                    double lxx = txx;
+                    double lxy = txy;
+                    double lxz = txz;
+                    //double lyx = txy;
+                    double lyx = 0.0;
+                    double lyy = tyy;
+                    double lyz = tyz;
+                    //double lzx = txz;
+                    //double lzy = tyz;
+                    double lzx = 0.0;
+                    double lzy = 0.0;
+                    double lzz = tzz;
+                    invert3(lxx,lxy,lxz,lyx,lyy,lyz,lzx,lzy,lzz);
+
+
+                    // these are the random numbers for each direction
+                    // LA note: should be randn() matlab equivalent, which is a normally distributed random number
+                    // LA future work: it is possible the rogue particles are caused by the random number generator stuff.
+                    //  Need to look into it at some time.
+                    double xRandn = random::norRan();
+                    double yRandn = random::norRan();
+                    double zRandn = random::norRan();
+
+                    
+                    /* now calculate a bunch of values for the current particle */
+                    // calculate the d_tao_dt values, which are the (tao_current - tao_old)/dt
+                    double dtxxdt = (txx - txx_old)/par_dt;
+                    double dtxydt = (txy - txy_old)/par_dt;
+                    double dtxzdt = (txz - txz_old)/par_dt;
+                    double dtyydt = (tyy - tyy_old)/par_dt;
+                    double dtyzdt = (tyz - tyz_old)/par_dt;
+                    double dtzzdt = (tzz - tzz_old)/par_dt;
+
+
+                    /* now calculate and set the A and b matrices for an Ax = b */
+                    double A_11 = -1.0 + 0.50*(-CoEps*lxx + lxx*dtxxdt + lxy*dtxydt + lxz*dtxzdt)*par_dt;
+                    double A_12 =        0.50*(-CoEps*lxy + lxy*dtxxdt + lyy*dtxydt + lyz*dtxzdt)*par_dt;
+                    double A_13 =        0.50*(-CoEps*lxz + lxz*dtxxdt + lyz*dtxydt + lzz*dtxzdt)*par_dt;
+
+                    double A_21 =        0.50*(-CoEps*lxy + lxx*dtxydt + lxy*dtyydt + lxz*dtyzdt)*par_dt;
+                    double A_22 = -1.0 + 0.50*(-CoEps*lyy + lxy*dtxydt + lyy*dtyydt + lyz*dtyzdt)*par_dt;
+                    double A_23 =        0.50*(-CoEps*lyz + lxz*dtxydt + lyz*dtyydt + lzz*dtyzdt)*par_dt;
+                    
+                    double A_31 =        0.50*(-CoEps*lxz + lxx*dtxzdt + lxy*dtyzdt + lxz*dtzzdt)*par_dt;
+                    double A_32 =        0.50*(-CoEps*lyz + lxy*dtxzdt + lyy*dtyzdt + lyz*dtzzdt)*par_dt;
+                    double A_33 = -1.0 + 0.50*(-CoEps*lzz + lxz*dtxzdt + lyz*dtyzdt + lzz*dtzzdt)*par_dt;
+
+
+                    double b_11 = -uFluct_old - 0.50*flux_div_x*par_dt - std::sqrt(CoEps*par_dt)*xRandn;
+                    double b_21 = -vFluct_old - 0.50*flux_div_y*par_dt - std::sqrt(CoEps*par_dt)*yRandn;
+                    double b_31 = -wFluct_old - 0.50*flux_div_z*par_dt - std::sqrt(CoEps*par_dt)*zRandn;
+
+
+                    // now prepare for the Ax=b calculation by calculating the inverted A matrix
+                    // directly modifies the values of the A matrix
+                    // LA note: because the A values before and after the function call are useful when particles go rogue,
+                    //  I decided to store them separate using a copy for the function call
+                    double A_11_inv = A_11;
+                    double A_12_inv = A_12;
+                    double A_13_inv = A_13;
+                    double A_21_inv = A_21;
+                    double A_22_inv = A_22;
+                    double A_23_inv = A_23;
+                    double A_31_inv = A_31;
+                    double A_32_inv = A_32;
+                    double A_33_inv = A_33;
+                    invert3(A_11_inv,A_12_inv,A_13_inv,A_21_inv,A_22_inv,A_23_inv,A_31_inv,A_32_inv,A_33_inv);
+
+
+                    // now do the Ax=b calculation using the inverted matrix
+                    // directly modifies the velFluct values, which are passed in by reference as the output x vector
+                    // LA note: since velFluct_old keeps track of the velFluct values before this function call,
+                    //  I just used the velFluct values directly in the function call
+                    matmult(A_11_inv,A_12_inv,A_13_inv,A_21_inv,A_22_inv,A_23_inv,A_31_inv,A_32_inv,A_33_inv,b_11,b_21,b_31, uFluct,vFluct,wFluct);
+                    
+
+                    // now check to see if the value is rogue or not
+                    // if it is rogue, output a ton of information that can be copied into matlab
+                    // LA note: I tried to keep the format really nice to reduce the amount of reformulating work done in matlab.
+                    //  I wanted to turn it into a function, but there are sooo many variables that would need to be passed into that function call
+                    //  so it made more sense to write them out directly.
+                    if( ( std::abs(uFluct) >= vel_threshold || isnan(uFluct) ) && nx > 1 )
                     {
-                        std::cout << "time[" << tStep+1 << "] = \"" << times.at(tStep+1) << "\", par[" << par << "]. applying wallBCs" << std::endl;
-                        timers.resetStoredTimer("wall BC functions");
+                        std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
+                        std::cout << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
+
+                        std::cout << "\tinfo for matlab script copy:" << std::endl;
+                        std::cout << "uFluct = " << uFluct << "\nvFluct = " << vFluct << "\nwFluct = " << wFluct << std::endl;
+                        std::cout << "xPos = " << xPos << "\nyPos = " << yPos << "\nzPos = " << zPos << std::endl;
+                        std::cout << "uFluct_old = " << uFluct_old << "\nvFluct_old = " << vFluct_old << "\nwFluct_old = " << wFluct_old << std::endl;
+                        std::cout << "txx_old = " << txx_old << "\ntxy_old = " << txy_old << "\ntxz_old = " << txz_old << std::endl;
+                        std::cout << "tyy_old = " << tyy_old << "\ntyz_old = " << tyz_old << "\ntzz_old = " << tzz_old << std::endl;
+                        std::cout << "CoEps = " << CoEps << std::endl;
+                        std::cout << "uMean = " << uMean << "\nvMean = " << vMean << "\nwMean = " << wMean << std::endl;
+                        std::cout << "txx_before = " << txx_before << "\ntxy_before = " << txy_before << "\ntxz_before = " << txz_before << std::endl;
+                        std::cout << "tyy_before = " << tyy_before << "\ntyz_before = " << tyz_before << "\ntzz_before = " << tzz_before << std::endl;
+                        std::cout << "flux_div_x = " << flux_div_x << "\nflux_div_y = " << flux_div_y << "\nflux_div_z = " << flux_div_z << std::endl;
+                        std::cout << "txx = " << txx << "\ntxy = " << txy << "\ntxz = " << txz << std::endl;
+                        std::cout << "tyy = " << tyy << "\ntyz = " << tyz << "\ntzz = " << tzz << std::endl;
+                        std::cout << "lxx = " << lxx << "\nlxy = " << lxy << "\nlxz = " << lxz << std::endl;
+                        std::cout << "lyy = " << lyy << "\nlyz = " << lyz << "\nlzz = " << lzz << std::endl;
+                        std::cout << "xRandn = " << xRandn << "\nyRandn = " << yRandn << "\nzRandn = " << zRandn << std::endl;
+                        std::cout << "dtxxdt = " << dtxxdt << "\ndtxydt = " << dtxydt << "\ndtxzdt = " << dtxzdt << std::endl;
+                        std::cout << "dtyydt = " << dtyydt << "\ndtyzdt = " << dtyzdt << "\ndtzzdt = " << dtzzdt << std::endl;
+                        std::cout << "A_11 = " << A_11 << "\nA_12 = " << A_12 << "\nA_13 = " << A_13 << std::endl;
+                        std::cout << "A_21 = " << A_21 << "\nA_22 = " << A_22 << "\nA_23 = " << A_23 << std::endl;
+                        std::cout << "A_31 = " << A_31 << "\nA_32 = " << A_32 << "\nA_33 = " << A_33 << std::endl;
+                        std::cout << "b_11 = " << b_11 << "\nb_21 = " << b_21 << "\nb_31 = " << b_31 << std::endl;
+                        std::cout << "A_11_inv = " << A_11_inv << "\nA_12_inv = " << A_12_inv << "\nA_13_inv = " << A_13_inv << std::endl;
+                        std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
+                        std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
+                        std::cout << "\t finished info" << std::endl;
+
+                        uFluct = 0.0;
+                        isRogue = true;
                     }
-                }
-
-                // now apply boundary conditions
-                // LA note: notice that this is the old fashioned style for calling a pointer function
-                // LA future work: going to need to implement boundary conditions differently if we want to add in building and terrain reflections
-                //  first off, the boundary conditions need to be enforced for all component directions in a single call.
-                //  second off, an if statement to figure out where the particle is at in the domain,
-                //   would be required to determine which type of BC function to use
-                //  thirdly, I can't see that section of if statements being efficient at all,
-                //   it may be better to keep track of the particle index, and have an eulerian grid of pointer functions for which BC to use for each cell
-                //  lastly, this might get complicated because some BC functions may need to know from where a particle came to enter their location.
-                //   Not sure if this means that they need to know the old BC info or not, still working out those details,
-                //   but I can see this getting complicated real fast
-                //  one last note. The reflective BCs probably need to be iterative till they use up a dist to travel variable.
-                //   technically the eulerian velocity changes each new cell the particle enters, but we can assume that is a truncation error
-                //   that goes down as the user uses higher resolution grids and smaller timesteps. We may also just do a first pass
-                //   that ignores the exact location of the boundaries in a cell, just assuming each cell is either a bouncing spot or air.
-                (this->*enforceWallBCs_x)(xPos,uFluct,uFluct_old,isActive, domainXstart,domainXend);
-                (this->*enforceWallBCs_y)(yPos,vFluct,vFluct_old,isActive, domainYstart,domainYend);
-                (this->*enforceWallBCs_z)(zPos,wFluct,wFluct_old,isActive, domainZstart,domainZend);
-                
-
-                // now set the particle values for if they are rogue or outside the domain
-                setFinishedParticleVals(xPos,yPos,zPos,isActive, isRogue, xPos_init,yPos_init,zPos_init);
-
-                
-                // LA-note: at one time I thought it would be useful to time the boundary condition calculations
-                //  may still try to do this and so here is the leftover. If we were to do this again,
-                //  it should be a debug option that only displays based on the updateFrequency variables
-                if( debug == true )
-                {
-                    if(  ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 ) && ( par % updateFrequency_particleLoop == 0 || par == dis->pointList.size()-1 )  )
+                    if( ( std::abs(vFluct) >= vel_threshold || isnan(vFluct) ) && ny > 1 )
                     {
-                        std::cout << "time[" << tStep+1 << "] = \"" << times.at(tStep+1) << "\", par[" << par << "]. finished applying wallBCs" << std::endl;
-                        timers.printStoredTime("wall BC functions");
+                        std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
+                        std::cout << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
+
+                        std::cout << "\tinfo for matlab script copy:" << std::endl;
+                        std::cout << "uFluct = " << uFluct << "\nvFluct = " << vFluct << "\nwFluct = " << wFluct << std::endl;
+                        std::cout << "xPos = " << xPos << "\nyPos = " << yPos << "\nzPos = " << zPos << std::endl;
+                        std::cout << "uFluct_old = " << uFluct_old << "\nvFluct_old = " << vFluct_old << "\nwFluct_old = " << wFluct_old << std::endl;
+                        std::cout << "txx_old = " << txx_old << "\ntxy_old = " << txy_old << "\ntxz_old = " << txz_old << std::endl;
+                        std::cout << "tyy_old = " << tyy_old << "\ntyz_old = " << tyz_old << "\ntzz_old = " << tzz_old << std::endl;
+                        std::cout << "CoEps = " << CoEps << std::endl;
+                        std::cout << "uMean = " << uMean << "\nvMean = " << vMean << "\nwMean = " << wMean << std::endl;
+                        std::cout << "txx_before = " << txx_before << "\ntxy_before = " << txy_before << "\ntxz_before = " << txz_before << std::endl;
+                        std::cout << "tyy_before = " << tyy_before << "\ntyz_before = " << tyz_before << "\ntzz_before = " << tzz_before << std::endl;
+                        std::cout << "flux_div_x = " << flux_div_x << "\nflux_div_y = " << flux_div_y << "\nflux_div_z = " << flux_div_z << std::endl;
+                        std::cout << "txx = " << txx << "\ntxy = " << txy << "\ntxz = " << txz << std::endl;
+                        std::cout << "tyy = " << tyy << "\ntyz = " << tyz << "\ntzz = " << tzz << std::endl;
+                        std::cout << "lxx = " << lxx << "\nlxy = " << lxy << "\nlxz = " << lxz << std::endl;
+                        std::cout << "lyy = " << lyy << "\nlyz = " << lyz << "\nlzz = " << lzz << std::endl;
+                        std::cout << "xRandn = " << xRandn << "\nyRandn = " << yRandn << "\nzRandn = " << zRandn << std::endl;
+                        std::cout << "dtxxdt = " << dtxxdt << "\ndtxydt = " << dtxydt << "\ndtxzdt = " << dtxzdt << std::endl;
+                        std::cout << "dtyydt = " << dtyydt << "\ndtyzdt = " << dtyzdt << "\ndtzzdt = " << dtzzdt << std::endl;
+                        std::cout << "A_11 = " << A_11 << "\nA_12 = " << A_12 << "\nA_13 = " << A_13 << std::endl;
+                        std::cout << "A_21 = " << A_21 << "\nA_22 = " << A_22 << "\nA_23 = " << A_23 << std::endl;
+                        std::cout << "A_31 = " << A_31 << "\nA_32 = " << A_32 << "\nA_33 = " << A_33 << std::endl;
+                        std::cout << "b_11 = " << b_11 << "\nb_21 = " << b_21 << "\nb_31 = " << b_31 << std::endl;
+                        std::cout << "A_11_inv = " << A_11_inv << "\nA_12_inv = " << A_12_inv << "\nA_13_inv = " << A_13_inv << std::endl;
+                        std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
+                        std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
+                        std::cout << "\t finished info" << std::endl;
+
+                        vFluct = 0.0;
+                        isRogue = true;
                     }
-                }
+                    if( ( std::abs(wFluct) >= vel_threshold || isnan(wFluct) ) && nz > 1 )
+                    {
+                        std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
+                        std::cout << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
+
+                        std::cout << "\tinfo for matlab script copy:" << std::endl;
+                        std::cout << "uFluct = " << uFluct << "\nvFluct = " << vFluct << "\nwFluct = " << wFluct << std::endl;
+                        std::cout << "xPos = " << xPos << "\nyPos = " << yPos << "\nzPos = " << zPos << std::endl;
+                        std::cout << "uFluct_old = " << uFluct_old << "\nvFluct_old = " << vFluct_old << "\nwFluct_old = " << wFluct_old << std::endl;
+                        std::cout << "txx_old = " << txx_old << "\ntxy_old = " << txy_old << "\ntxz_old = " << txz_old << std::endl;
+                        std::cout << "tyy_old = " << tyy_old << "\ntyz_old = " << tyz_old << "\ntzz_old = " << tzz_old << std::endl;
+                        std::cout << "CoEps = " << CoEps << std::endl;
+                        std::cout << "uMean = " << uMean << "\nvMean = " << vMean << "\nwMean = " << wMean << std::endl;
+                        std::cout << "txx_before = " << txx_before << "\ntxy_before = " << txy_before << "\ntxz_before = " << txz_before << std::endl;
+                        std::cout << "tyy_before = " << tyy_before << "\ntyz_before = " << tyz_before << "\ntzz_before = " << tzz_before << std::endl;
+                        std::cout << "flux_div_x = " << flux_div_x << "\nflux_div_y = " << flux_div_y << "\nflux_div_z = " << flux_div_z << std::endl;
+                        std::cout << "txx = " << txx << "\ntxy = " << txy << "\ntxz = " << txz << std::endl;
+                        std::cout << "tyy = " << tyy << "\ntyz = " << tyz << "\ntzz = " << tzz << std::endl;
+                        std::cout << "lxx = " << lxx << "\nlxy = " << lxy << "\nlxz = " << lxz << std::endl;
+                        std::cout << "lyy = " << lyy << "\nlyz = " << lyz << "\nlzz = " << lzz << std::endl;
+                        std::cout << "xRandn = " << xRandn << "\nyRandn = " << yRandn << "\nzRandn = " << zRandn << std::endl;
+                        std::cout << "dtxxdt = " << dtxxdt << "\ndtxydt = " << dtxydt << "\ndtxzdt = " << dtxzdt << std::endl;
+                        std::cout << "dtyydt = " << dtyydt << "\ndtyzdt = " << dtyzdt << "\ndtzzdt = " << dtzzdt << std::endl;
+                        std::cout << "A_11 = " << A_11 << "\nA_12 = " << A_12 << "\nA_13 = " << A_13 << std::endl;
+                        std::cout << "A_21 = " << A_21 << "\nA_22 = " << A_22 << "\nA_23 = " << A_23 << std::endl;
+                        std::cout << "A_31 = " << A_31 << "\nA_32 = " << A_32 << "\nA_33 = " << A_33 << std::endl;
+                        std::cout << "b_11 = " << b_11 << "\nb_21 = " << b_21 << "\nb_31 = " << b_31 << std::endl;
+                        std::cout << "A_11_inv = " << A_11_inv << "\nA_12_inv = " << A_12_inv << "\nA_13_inv = " << A_13_inv << std::endl;
+                        std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
+                        std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
+                        std::cout << "\t finished info" << std::endl;
+
+                        wFluct = 0.0;
+                        isRogue = true;
+                    }
+
+                    // Pete: Do you need this???
+                    // ONLY if this should never happen....
+                    //    assert( isRogue == false );
+                    // LA reply: maybe implement this after the thesis work. Currently use it to know if something is going wrong
+                    //  I think we are still a long ways from being able to throw this out.
+
+                    
+                    // now update the particle position for this iteration
+                    // LA future work: at some point in time, need to do a CFL condition for only moving one eulerian grid cell at a time
+                    //  this would mean adding some kind of while loop, with an adaptive timestep, controlling the end of the while loop
+                    //   with the simulation time increment. This means all particles can do multiple time iterations, each with their own adaptive timestep.
+                    //  To make this work, particles would need to be required to catch up so they are all calculated by a given simulation timestep.
+                    // LA warn: currently, we use the simulation timestep so we may violate the eulerian grid CFL condition. 
+                    //  but is simpler to work with when getting started
+                    // LA future work: instead of using an adaptive timestep that adapts the timestep when checking if distX is too big or small,
+                    //  we should use a courant number to precalculate the required adaptive timestep. Means less if statements and the error associated
+                    //  with CFL conditions would just come out as the accuracy of the particle statistics.
+                    double disX = (uMean + uFluct)*par_dt;
+                    double disY = (vMean + vFluct)*par_dt;
+                    double disZ = (wMean + wFluct)*par_dt;
+                    
+                    xPos = xPos + disX;
+                    yPos = yPos + disY;
+                    zPos = zPos + disZ;
+
+
+                    
+                    // now apply boundary conditions
+                    // LA note: notice that this is the old fashioned style for calling a pointer function
+                    // LA future work: going to need to implement boundary conditions differently if we want to add in building and terrain reflections
+                    //  first off, the boundary conditions need to be enforced for all component directions in a single call.
+                    //  second off, an if statement to figure out where the particle is at in the domain,
+                    //   would be required to determine which type of BC function to use
+                    //  thirdly, I can't see that section of if statements being efficient at all,
+                    //   it may be better to keep track of the particle index, and have an eulerian grid of pointer functions for which BC to use for each cell
+                    //  lastly, this might get complicated because some BC functions may need to know from where a particle came to enter their location.
+                    //   Not sure if this means that they need to know the old BC info or not, still working out those details,
+                    //   but I can see this getting complicated real fast
+                    //  one last note. The reflective BCs probably need to be iterative till they use up a dist to travel variable.
+                    //   technically the eulerian velocity changes each new cell the particle enters, but we can assume that is a truncation error
+                    //   that goes down as the user uses higher resolution grids and smaller timesteps. We may also just do a first pass
+                    //   that ignores the exact location of the boundaries in a cell, just assuming each cell is either a bouncing spot or air.
+                    (this->*enforceWallBCs_x)(xPos,uFluct,uFluct_old,isActive, domainXstart,domainXend);
+                    (this->*enforceWallBCs_y)(yPos,vFluct,vFluct_old,isActive, domainYstart,domainYend);
+                    (this->*enforceWallBCs_z)(zPos,wFluct,wFluct_old,isActive, domainZstart,domainZend);
+                    
+
+                    // now set the particle values for if they are rogue or outside the domain
+                    setFinishedParticleVals(xPos,yPos,zPos,isActive, isRogue, xPos_init,yPos_init,zPos_init);
+
+                    // now set the time remainder for the next loop
+                    // if the par_dt calculated from the Courant Number is greater than the timeRemainder,
+                    // the function for calculating par_dt will use the timeRemainder for the output par_dt
+                    // so this should result in a timeRemainder of exactly zero, no need for a tol.
+                    timeRemainder = timeRemainder - par_dt;
+
+
+                    // print info about the current particle time iteration
+                    // but only if debug is set to true and this is the right updateFrequency time
+                    if( debug == true )
+                    {
+                        if(  ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) 
+                          && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )  )
+                        {
+                            std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) 
+                                    << "\", par[" << parIdx << "]. Finished particle timestep \"" << par_dt 
+                                    << "\" for time = \"" << par_time << "\"" << std::endl;
+                        }
+                    }
+                    
+
+                }   // while( isActive == true && timeRemainder > 0.0 )
 
 
 
                 // now update the old values and current values in the dispersion storage to be ready for the next iteration
                 // also calculate the velFluct increment
                 // !!! this is extremely important for output and the next iteration to work correctly
-                dis->pointList.at(par).uFluct = uFluct;
-                dis->pointList.at(par).vFluct = vFluct;
-                dis->pointList.at(par).wFluct = wFluct;
-                dis->pointList.at(par).xPos = xPos;
-                dis->pointList.at(par).yPos = yPos;
-                dis->pointList.at(par).zPos = zPos;
+                dis->pointList.at(parIdx).uFluct = uFluct;
+                dis->pointList.at(parIdx).vFluct = vFluct;
+                dis->pointList.at(parIdx).wFluct = wFluct;
+                dis->pointList.at(parIdx).xPos = xPos;
+                dis->pointList.at(parIdx).yPos = yPos;
+                dis->pointList.at(parIdx).zPos = zPos;
 
-                dis->pointList.at(par).delta_uFluct = uFluct - uFluct_old;
-                dis->pointList.at(par).delta_vFluct = vFluct - vFluct_old;
-                dis->pointList.at(par).delta_wFluct = wFluct - wFluct_old;
-                dis->pointList.at(par).uFluct_old = uFluct;
-                dis->pointList.at(par).vFluct_old = vFluct;
-                dis->pointList.at(par).wFluct_old = wFluct;
+                dis->pointList.at(parIdx).delta_uFluct = uFluct - uFluct_old;
+                dis->pointList.at(parIdx).delta_vFluct = vFluct - vFluct_old;
+                dis->pointList.at(parIdx).delta_wFluct = wFluct - wFluct_old;
+                dis->pointList.at(parIdx).uFluct_old = uFluct;
+                dis->pointList.at(parIdx).vFluct_old = vFluct;
+                dis->pointList.at(parIdx).wFluct_old = wFluct;
 
-                dis->pointList.at(par).txx_old = txx;
-                dis->pointList.at(par).txy_old = txy;
-                dis->pointList.at(par).txz_old = txz;
-                dis->pointList.at(par).tyy_old = tyy;
-                dis->pointList.at(par).tyz_old = tyz;
-                dis->pointList.at(par).tzz_old = tzz;
+                dis->pointList.at(parIdx).txx_old = txx;
+                dis->pointList.at(parIdx).txy_old = txy;
+                dis->pointList.at(parIdx).txz_old = txz;
+                dis->pointList.at(parIdx).tyy_old = tyy;
+                dis->pointList.at(parIdx).tyz_old = tyz;
+                dis->pointList.at(parIdx).tzz_old = tzz;
 
                 // now update the isRogueCount and isNotActiveCount
                 if(isRogue == true)
@@ -590,17 +631,19 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                 }
 
 
-                dis->pointList.at(par).isRogue = isRogue;
-                dis->pointList.at(par).isActive = isActive;
+                dis->pointList.at(parIdx).isRogue = isRogue;
+                dis->pointList.at(parIdx).isActive = isActive;
 
 
                 // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
                 // LA future work: because this has timer related info, this probably needs to also be limited to when the user specifies they want debug mode
                 if( debug == true )
                 {
-                    if(  ( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 ) && ( par % updateFrequency_particleLoop == 0 || par == dis->pointList.size()-1 )  )
+                    if(  ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) 
+                      && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )  )
                     {
-                        std::cout << "time[" << tStep+1 << "] = \"" << times.at(tStep+1) << "\", par[" << par << "]. finished particle iteration" << std::endl;
+                        std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) 
+                                  << "\", par[" << parIdx << "]. finished particle iteration" << std::endl;
                         timers.printStoredTime("particle iteration");
                     }
                 }
@@ -608,7 +651,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
             }   // if isActive == true and isRogue == false
 
 
-        } // for(int par = 0; par < dis->nParsReleased; par++ )
+        } // for(int parIdx = 0; parIdx < dis->nParsReleased; parIdx++ )
 
         // set the isRogueCount and isNotActiveCount for the time iteration in the disperion data
         // !!! this needs set for the output to work properly
@@ -616,21 +659,21 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
         dis->isNotActiveCount = isNotActiveCount;
 
 
-        // netcdf output for a given timestep
+        // netcdf output for a given simulation timestep
         // note that the first time is already output, so this is the time the loop iteration 
         //  is calculating, not the input time to the loop iteration
-        lagrToEulOutput->save(times.at(tStep+1));
+        lagrToEulOutput->save(simTimes.at(sim_tIdx+1));
         if( doLagrDataOutput == true )
         {
-            lagrOutput->save(times.at(tStep+1));
+            lagrOutput->save(simTimes.at(sim_tIdx+1));
         }
 
         
         // output the time, isRogueCount, and isNotActiveCount information for all simulations,
         //  but only when the updateFrequency allows
-        if( (tStep+1) % updateFrequency_timeLoop == 0 || tStep == 0 || tStep == nTimes-2 )
+        if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )
         {
-            std::cout << "time[" << tStep+1 << "] = \"" << times.at(tStep+1) << "\". finished advection iteration. isRogueCount = \"" 
+            std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) << "\". finished advection iteration. isRogueCount = \"" 
                 << dis->isRogueCount << "\", isNotActiveCount = \"" << dis->isNotActiveCount << "\"" << std::endl;
             // output advection loop runtime if in debug mode
             if( debug == true )
@@ -652,7 +695,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
         //  Need to think more on this when we get to it.
 
 
-    } // end of loop: for(tStep=0; tStep<nTimes; tStep++)
+    } // end of loop: for(sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)
 
 
     // get the amount of time it takes to perform the simulation time integration loop
@@ -668,8 +711,49 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
     // only outputs if the required booleans from input args are set
     // LA note: the current time put in here is one past when the simulation time loop ends
     //  this is because the loop always calculates info for one time ahead of the loop time.
-    writeSimInfoFile(dis,times.at(nTimes-1));
+    writeSimInfoFile(dis,simTimes.at(nSimTimes-1));
 
+}
+
+
+double Plume::calcCourantTimestep(const double& uFluct,const double& vFluct,const double& wFluct,const double& timeRemainder)
+{
+    // if the Courant Number is set to 0.0, we want to exit using the timeRemainder (first time through that is the simTime)
+    if( CourantNum == 0.0 )
+    {
+        return timeRemainder;
+    }
+
+    // set the output dt_par val to the timeRemainder
+    // then if any of the Courant number values end up smaller, use that value instead
+    double dt_par = timeRemainder;
+
+    // LA-note: what to do if the velocity fluctuation is zero?
+    //  I forced them to zero to check dt_x, dt_y, and dt_z would get values of "inf". It ends up keeping dt_par as the timeRemainder
+    double dt_x = CourantNum*dx/std::abs(uFluct);
+    double dt_y = CourantNum*dy/std::abs(vFluct);
+    double dt_z = CourantNum*dz/std::abs(wFluct);
+
+    // now find which dt is the smallest
+    // one of the Courant Number ones, or the timeRemainder
+    // if any dt is smaller than the already chosen output value
+    // set that dt to the output dt value
+    if( dt_x < dt_par )
+    {
+        dt_par = dt_x;
+    }
+    if( dt_y < dt_par )
+    {
+        dt_par = dt_y;
+    }
+    if( dt_z < dt_par )
+    {
+        dt_par = dt_z;
+    }
+
+
+    return dt_par;
+    
 }
 
 
@@ -813,9 +897,9 @@ void Plume::invert3(double& A_11,double& A_12,double& A_13,double& A_21,double& 
 }
 
 void Plume::matmult(const double& A_11,const double& A_12,const double& A_13,
-		    const double& A_21,const double& A_22,const double& A_23,
+		            const double& A_21,const double& A_22,const double& A_23,
                     const double& A_31,const double& A_32,const double& A_33,
-		    const double& b_11,const double& b_21,const double& b_31,
+		            const double& b_11,const double& b_21,const double& b_31,
                     double& x_11, double& x_21, double& x_31)
 {
     // since the x doesn't depend on itself, can just set the output without doing any temporary variables
@@ -1034,7 +1118,7 @@ void Plume::writeSimInfoFile(Dispersion* dis, const double& current_time)
     std::string saveBasename = caseBaseName;
 
     // add timestep to saveBasename variable
-    saveBasename = saveBasename + "_" + std::to_string(dt);
+    saveBasename = saveBasename + "_" + std::to_string(sim_dt);
 
 
     std::string outputFile = outputFolder + "/sim_info.txt";
@@ -1043,7 +1127,7 @@ void Plume::writeSimInfoFile(Dispersion* dis, const double& current_time)
     fprintf(fzout,"saveBasename     = %s\n",saveBasename.c_str());
     fprintf(fzout,"\n");    // a purposeful blank line
     fprintf(fzout,"C_0              = %lf\n",C_0);
-    fprintf(fzout,"timestep         = %lf\n",dt);
+    fprintf(fzout,"timestep         = %lf\n",sim_dt);
     fprintf(fzout,"\n");    // a purposeful blank line
     fprintf(fzout,"current_time     = %lf\n",current_time);
     fprintf(fzout,"rogueCount       = %0.0lf\n",dis->isRogueCount);

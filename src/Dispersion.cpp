@@ -21,7 +21,7 @@ Dispersion::Dispersion( PlumeInputData* PID,Urb* urb,Turb* turb,Eulerian* eul, c
 
 
     // make copies of important input time variables
-    dt = PID->simParams->timeStep;
+    sim_dt = PID->simParams->timeStep;
     simDur = PID->simParams->simDur;
 
 
@@ -34,15 +34,15 @@ Dispersion::Dispersion( PlumeInputData* PID,Urb* urb,Turb* turb,Eulerian* eul, c
     //  appended to the times loop right after the times calculation loop.
     // LA possible future work: if the startTime stops being zero, I think the method here will still stand,
     //  but instead of using dt*i for the times calculation in the loop, you would need startTime + dt*i.
-    nTimes = std::ceil(simDur/dt)+1;
-    times.resize(nTimes);
-    for(int i = 0; i < nTimes-1; ++i)   // end one time early
+    nSimTimes = std::ceil(simDur/sim_dt)+1;
+    simTimes.resize(nSimTimes);
+    for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)   // end one time early
     {
-        times.at(i) = dt*i;
-        //std::cout << "times[" << i << "] = \"" << times.at(i) << "\"" << std::endl;
+        simTimes.at(sim_tIdx) = sim_dt*sim_tIdx;
+        //std::cout << "simTimes[" << sim_tIdx << "] = \"" << simTimes.at(sim_tIdx) << "\"" << std::endl;
     }
-    times.at(nTimes-1) = simDur;
-    //std::cout << "times[" << nTimes-1 << "] = \"" << times.at(nTimes-1) << "\"" << std::endl;
+    simTimes.at(nSimTimes-1) = simDur;
+    //std::cout << "simTimes[" << nSimTimes-1 << "] = \"" << simTimes.at(nSimTimes-1) << "\"" << std::endl;
 
 
 
@@ -104,17 +104,17 @@ void Dispersion::getInputSources(PlumeInputData* PID)
     // start at zero particles to release and increment as the number per source is found out
     totalParsToRelease = 0;
 
-    for(auto sidx=0u; sidx < numSources_Input; sidx++)
+    for(auto sIdx = 0u; sIdx < numSources_Input; sIdx++)
     {
         // first create the pointer to the input source
         SourceKind *sPtr;
 
         // now point the pointer at the source
-        sPtr = PID->sources->sources.at(sidx);
+        sPtr = PID->sources->sources.at(sIdx);
         
 
         // now do anything that is needed to the source via the pointer
-        sPtr->setSourceIdx(sidx);
+        sPtr->setSourceIdx(sIdx);
         sPtr->m_rType->calcReleaseInfo(PID->simParams->timeStep, PID->simParams->simDur);
         sPtr->m_rType->checkReleaseInfo(PID->simParams->timeStep, PID->simParams->simDur);
         sPtr->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
@@ -172,12 +172,13 @@ void Dispersion::generateParticleList(Turb* turb, Eulerian* eul)
     // Add new particles now
     // - walk over all sources and add the emitted particles from
     // each source to the overall particle list
-    for(int tStep = 0; tStep < nTimes-1; tStep++)
+    for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)
     {
 
         std::vector<particle> nextSetOfParticles;
-        for (auto sidx=0u; sidx < allSources.size(); sidx++) {
-            int numNewParticles = allSources.at(sidx)->emitParticles( (float)dt, (float)( times.at(tStep) ), nextSetOfParticles );
+        for(auto sIdx = 0u; sIdx < allSources.size(); sIdx++)
+        {
+            int numNewParticles = allSources.at(sIdx)->emitParticles( (float)sim_dt, (float)( simTimes.at(sim_tIdx) ), nextSetOfParticles );
         }
         
         setParticleVals( turb, eul, nextSetOfParticles );
@@ -198,16 +199,16 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
 {
     // at this time, should be a list of each and every particle that exists at the given time
     // particles and sources can potentially be added to the list elsewhere
-    for(int pIdx=0; pIdx<newParticles.size(); pIdx++)
+    for(int parIdx = 0; parIdx < newParticles.size(); parIdx++)
     {
         // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
         // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
-        eul->setInterp3Dindexing(newParticles.at(pIdx).xPos_init,newParticles.at(pIdx).yPos_init,newParticles.at(pIdx).zPos_init);
+        eul->setInterp3Dindexing(newParticles.at(parIdx).xPos_init,newParticles.at(parIdx).yPos_init,newParticles.at(parIdx).zPos_init);
     
         // set the positions to be used by the simulation to the initial positions
-        newParticles.at(pIdx).xPos = newParticles.at(pIdx).xPos_init;
-        newParticles.at(pIdx).yPos = newParticles.at(pIdx).yPos_init;
-        newParticles.at(pIdx).zPos = newParticles.at(pIdx).zPos_init;
+        newParticles.at(parIdx).xPos = newParticles.at(parIdx).xPos_init;
+        newParticles.at(parIdx).yPos = newParticles.at(parIdx).yPos_init;
+        newParticles.at(parIdx).zPos = newParticles.at(parIdx).zPos_init;
 
         // almost didn't see it, but it does use different random numbers for each direction
         double rann = random::norRan();
@@ -219,16 +220,16 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
 
         // now set the initial velocity fluctuations for the particle
         // The  sqrt of the variance is to match Bailey's code
-        newParticles.at(pIdx).uFluct = std::sqrt(current_sig_x) * rann;
+        newParticles.at(parIdx).uFluct = std::sqrt(current_sig_x) * rann;
         rann=random::norRan();      // should be randn() matlab equivalent, which is a normally distributed random number
-        newParticles.at(pIdx).vFluct = std::sqrt(current_sig_y) * rann;
+        newParticles.at(parIdx).vFluct = std::sqrt(current_sig_y) * rann;
         rann=random::norRan();
-        newParticles.at(pIdx).wFluct = std::sqrt(current_sig_z) * rann;
+        newParticles.at(parIdx).wFluct = std::sqrt(current_sig_z) * rann;
 
         // set the initial values for the old velFluct values
-        newParticles.at(pIdx).uFluct_old = newParticles.at(pIdx).uFluct;
-        newParticles.at(pIdx).vFluct_old = newParticles.at(pIdx).vFluct;
-        newParticles.at(pIdx).wFluct_old = newParticles.at(pIdx).wFluct;
+        newParticles.at(parIdx).uFluct_old = newParticles.at(parIdx).uFluct;
+        newParticles.at(parIdx).vFluct_old = newParticles.at(parIdx).vFluct;
+        newParticles.at(parIdx).wFluct_old = newParticles.at(parIdx).wFluct;
 
         // get the tau values from the Eulerian grid for the particle value
         double current_txx = eul->interp3D(turb->txx,"tau");
@@ -239,23 +240,23 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
         double current_tzz = eul->interp3D(turb->tzz,"tau");
 
         // set tau_old to the interpolated values for each position
-        newParticles.at(pIdx).txx_old = current_txx;
-        newParticles.at(pIdx).txy_old = current_txy;
-        newParticles.at(pIdx).txz_old = current_txz;
-        newParticles.at(pIdx).tyy_old = current_tyy;
-        newParticles.at(pIdx).tyz_old = current_tyz;
-        newParticles.at(pIdx).tzz_old = current_tzz;
+        newParticles.at(parIdx).txx_old = current_txx;
+        newParticles.at(parIdx).txy_old = current_txy;
+        newParticles.at(parIdx).txz_old = current_txz;
+        newParticles.at(parIdx).tyy_old = current_tyy;
+        newParticles.at(parIdx).tyz_old = current_tyz;
+        newParticles.at(parIdx).tzz_old = current_tzz;
 
         // set delta_velFluct values to zero for now
-        newParticles.at(pIdx).delta_uFluct = 0.0;
-        newParticles.at(pIdx).delta_vFluct = 0.0;
-        newParticles.at(pIdx).delta_wFluct = 0.0;
+        newParticles.at(parIdx).delta_uFluct = 0.0;
+        newParticles.at(parIdx).delta_vFluct = 0.0;
+        newParticles.at(parIdx).delta_wFluct = 0.0;
 
         // set isRogue to false and isActive to false for each particle
         // LA note: I want isActive to be true, but this function is now called 
         //  for all particles before they are released so it needs to start out as false
-        newParticles.at(pIdx).isRogue = false;
-        newParticles.at(pIdx).isActive = false;
+        newParticles.at(parIdx).isRogue = false;
+        newParticles.at(parIdx).isActive = false;
         
     }
 

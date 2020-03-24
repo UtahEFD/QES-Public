@@ -1,10 +1,13 @@
 #!/bin/bash
 #SBATCH --account=efd-np
-#SBATCH --partition=efd-np
+#SBATCH --partition=efd-shared-np
 #SBATCH --qos=efd-np
 #SBATCH --job-name=plume_BaileySinewave_0o1_10
 #SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --mem=1G
 #SBATCH --time=01:00:00
+#SBATCH --exclude=notch055
 #SBATCH -e plume_error_BaileySinewave.log
 #SBATCH -o plume_slurm_BaileySinewave.log
 

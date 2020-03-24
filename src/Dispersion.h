@@ -58,12 +58,12 @@ class Dispersion {
 
 
         // input time variables
-        double dt;       // this is a copy of the input timeStep
+        double sim_dt;       // this is a copy of the input simulation timeStep
         double simDur;   // this is a copy of the input simDur, or the total amount of time to run the simulation for
 
         // these are the calculated time information needed for the simulation
-        int nTimes; // this is the number of timesteps of the simulation, the calculated size of times
-        std::vector<double> times;  // this is the list of times for the simulation
+        int nSimTimes; // this is the number of timesteps of the simulation, the calculated size of times
+        std::vector<double> simTimes;  // this is the list of times for the simulation
 
         // this is the number of particles to release at each timestep, 
         // used for updating the particle loop counter in Plume.

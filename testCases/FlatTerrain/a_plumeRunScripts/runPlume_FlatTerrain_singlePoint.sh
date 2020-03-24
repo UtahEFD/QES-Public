@@ -1,10 +1,13 @@
 #!/bin/bash
 #SBATCH --account=efd-np
-#SBATCH --partition=efd-np
+#SBATCH --partition=efd-shared-np
 #SBATCH --qos=efd-np
 #SBATCH --job-name=plume_FlatTerrain_singlePoint
 #SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --mem=2G
 #SBATCH --time=01:00:00
+#SBATCH --exclude=notch055
 #SBATCH -e plume_error_FlatTerrain.log
 #SBATCH -o plume_slurm_FlatTerrain.log
 
