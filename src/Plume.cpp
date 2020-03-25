@@ -248,6 +248,13 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                 double tyz = tyz_old;
                 double tzz = tzz_old;
 
+                // need to get the delta velFluct values right by doing the calculation inside the particle loop
+                // these values go out of scope unless initialized here. So initialize them to zero (velFluct - velFluct_old = 0 right now)
+                // they will be overwritten with the actual values in the particle timestep loop
+                double delta_uFluct = 0.0;
+                double delta_vFluct = 0.0;
+                double delta_wFluct = 0.0;
+
 
                 // time to do a particle timestep loop. start the time remainder as the simulation timestep.
                 // at each particle timestep loop iteration the time remainder gets closer and closer to zero.
@@ -273,8 +280,6 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                     // update the par_time, useful for debugging
                     par_time = par_time + par_dt;
 
-                    
-                    
                     /*
                         now get the Lagrangian values for the current iteration from the Eulerian grid
                         will need to use the interp3D function
@@ -571,6 +576,28 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                     // now set the particle values for if they are rogue or outside the domain
                     setFinishedParticleVals(xPos,yPos,zPos,isActive, isRogue, xPos_init,yPos_init,zPos_init);
 
+
+                    // now update the old values to be ready for the next particle time iteration
+                    // the current values are already set for the next iteration by the above calculations
+                    // note: it may look strange to set the old values to the current values, then to use these
+                    //  old values when setting the storage values, but that is what the old code was technically doing
+                    //  we are already done using the old _old values by this point and need to use the current ones
+                    // but we do need to set the delta velFluct values before setting the velFluct_old values to the current velFluct values
+                    // !!! this is extremely important for the next iteration to work accurately
+                    delta_uFluct = uFluct - uFluct_old;
+                    delta_vFluct = vFluct - vFluct_old;
+                    delta_wFluct = wFluct - wFluct_old;
+                    uFluct_old = uFluct;
+                    vFluct_old = vFluct;
+                    wFluct_old = wFluct;
+                    txx_old = txx;
+                    txy_old = txy;
+                    txz_old = txz;
+                    tyy_old = tyy;
+                    tyz_old = tyz;
+                    tzz_old = tzz;
+
+
                     // now set the time remainder for the next loop
                     // if the par_dt calculated from the Courant Number is greater than the timeRemainder,
                     // the function for calculating par_dt will use the timeRemainder for the output par_dt
@@ -597,7 +624,9 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
 
 
                 // now update the old values and current values in the dispersion storage to be ready for the next iteration
-                // also calculate the velFluct increment
+                // also throw in the already calculated velFluct increment
+                // notice that the values from the particle timestep loop are used directly here, 
+                //  just need to put the existing vals into storage
                 // !!! this is extremely important for output and the next iteration to work correctly
                 dis->pointList.at(parIdx).uFluct = uFluct;
                 dis->pointList.at(parIdx).vFluct = vFluct;
@@ -606,19 +635,19 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                 dis->pointList.at(parIdx).yPos = yPos;
                 dis->pointList.at(parIdx).zPos = zPos;
 
-                dis->pointList.at(parIdx).delta_uFluct = uFluct - uFluct_old;
-                dis->pointList.at(parIdx).delta_vFluct = vFluct - vFluct_old;
-                dis->pointList.at(parIdx).delta_wFluct = wFluct - wFluct_old;
-                dis->pointList.at(parIdx).uFluct_old = uFluct;
-                dis->pointList.at(parIdx).vFluct_old = vFluct;
-                dis->pointList.at(parIdx).wFluct_old = wFluct;
+                dis->pointList.at(parIdx).delta_uFluct = delta_uFluct;
+                dis->pointList.at(parIdx).delta_vFluct = delta_vFluct;
+                dis->pointList.at(parIdx).delta_wFluct = delta_wFluct;
+                dis->pointList.at(parIdx).uFluct_old = uFluct_old;  // these are the current velFluct values by this point
+                dis->pointList.at(parIdx).vFluct_old = vFluct_old;
+                dis->pointList.at(parIdx).wFluct_old = wFluct_old;
 
-                dis->pointList.at(parIdx).txx_old = txx;
-                dis->pointList.at(parIdx).txy_old = txy;
-                dis->pointList.at(parIdx).txz_old = txz;
-                dis->pointList.at(parIdx).tyy_old = tyy;
-                dis->pointList.at(parIdx).tyz_old = tyz;
-                dis->pointList.at(parIdx).tzz_old = tzz;
+                dis->pointList.at(parIdx).txx_old = txx_old;
+                dis->pointList.at(parIdx).txy_old = txy_old;
+                dis->pointList.at(parIdx).txz_old = txz_old;
+                dis->pointList.at(parIdx).tyy_old = tyy_old;
+                dis->pointList.at(parIdx).tyz_old = tyz_old;
+                dis->pointList.at(parIdx).tzz_old = tzz_old;
 
                 // now update the isRogueCount and isNotActiveCount
                 if(isRogue == true)
