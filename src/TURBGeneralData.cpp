@@ -95,12 +95,10 @@ TURBGeneralData::TURBGeneralData(URBGeneralData* UGD){
     Lm.resize(np_cc,0.0);
     // make a copy as mixing length will be modifiy by non local 
     // (need to be reset at each time instances)
-    if(UGD->includesMixingLength()) {
-        std::cout << "[TURB] \t\t Defining Local Mixing Length...\n";
-        for(auto id=0u;id<icellfluid.size();id++) {
-            int idcc=icellfluid[id];
-            Lm[idcc]=vonKar*UGD->mixingLengths[idcc];
-        }
+    std::cout << "[TURB] \t\t Defining Local Mixing Length...\n";
+    for(auto id=0u;id<icellfluid.size();id++) {
+        int idcc=icellfluid[id];
+        Lm[idcc]=vonKar*UGD->mixingLengths[idcc];
     }
   
     // comp. of the strain rate tensor
@@ -142,6 +140,12 @@ void TURBGeneralData::run(URBGeneralData* UGD){
     getStressTensor();
     std::cout<<"[TURB] \t\t Stress Tensor computed..."<<std::endl;
 
+    std::cout << "Applying non local mixing...\n";
+    for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
+    {
+        UGD->allBuildingsV[UGD->building_id[i]]->NonLocalMixing(UGD, this);
+    }
+    
 }
 
 

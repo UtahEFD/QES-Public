@@ -184,6 +184,6 @@ public:
     * More information: William et al. 2004
     *
     */
-    void NonLocalMixing (const URBInputData* UID, URBGeneralData* UGD, TURBGeneralData* TGD);
+    void NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD);
 
 };

@@ -107,7 +107,7 @@ public:
 		{
 		}*/
 
-    virtual void NonLocalMixing (const URBInputData* UID, URBGeneralData* UGD, TURBGeneralData* TGD)
+    virtual void NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD)
     {
     }
 };
