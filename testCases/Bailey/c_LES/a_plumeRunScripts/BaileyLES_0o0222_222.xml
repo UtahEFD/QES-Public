@@ -29,7 +29,13 @@
   	</SourceFullDomain>
 </sources>
 <boundaryConditions>
-  	<xBCtype>periodic</xBCtype>
-  	<yBCtype>periodic</yBCtype>
-  	<zBCtype>reflection</zBCtype>
+  	<xDomainStartBCtype>periodic</xDomainStartBCtype>
+    <xDomainEndBCtype>periodic</xDomainEndBCtype>
+  	<yDomainStartBCtype>periodic</yDomainStartBCtype>
+    <yDomainEndBCtype>periodic</yDomainEndBCtype>
+  	<zDomainStartBCtype>reflection</zDomainStartBCtype>
+  	<zDomainEndBCtype>reflection</zDomainEndBCtype>
+    <buildingCutCell_reflectionType>simpleStairStep</buildingCutCell_reflectionType>
+    <terrainCutCell_reflectionType>simpleStairStep</terrainCutCell_reflectionType>
+    <doDepositions>false</doDepositions>
 </boundaryConditions>

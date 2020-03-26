@@ -274,7 +274,10 @@ void Eulerian::createFluxDiv()
 
 // this gets around the problem of repeated or not repeated information, just needs called once before each interpolation,
 // then intepolation on all kinds of datatypes can be done
-void Eulerian::setInterp3Dindexing(const double& par_xPos, const double& par_yPos, const double& par_zPos)
+void Eulerian::setInterp3Dindexing( const double& par_xPos, const double& par_yPos, const double& par_zPos,
+                                    int& cellIdx, int& ii, int& jj, int& kk,
+                                    double& iw, double& jw, double& kw,
+                                    int& ip, int& jp, int& kp )
 {
 
     // the next steps are to figure out the right indices to grab the values for cube from the data, 
@@ -360,12 +363,18 @@ void Eulerian::setInterp3Dindexing(const double& par_xPos, const double& par_yPo
         exit(1);
     }
 
+    // set the cell index
+    cellIdx = kk*ny*nx + jj*nx + ii;
+
 }
 
 // always call this after setting the interpolation indices with the setInterp3Dindexing() function!
 // the extra dataName is so that if the input is eps, the value is not allowed to be zero, but is set to two orders of magnitude bigger than sigma2
 // since this would actually be CoEps, the value actually needs to be one order of magnitude bigger than sigma2?
-double Eulerian::interp3D(const std::vector<double>& EulerData,const std::string& dataName)
+double Eulerian::interp3D( const std::vector<double>& EulerData,const std::string& dataName,
+                           const int& ii, const int& jj, const int& kk,
+                           const double& iw, const double& jw, const double& kw,
+                           const int& ip, const int& jp, const int& kp )
 {
 
     // initialize the output value

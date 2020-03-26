@@ -74,23 +74,17 @@ class Eulerian{
         std::vector<double> flux_div_z;     // this is like the derivative of the forces acting on the z face
 
 
-        void setInterp3Dindexing(const double& par_xPos, const double& par_yPos, const double& par_zPos);
-        double interp3D(const std::vector<double>& EulerData,const std::string& dataName);
+        void setInterp3Dindexing( const double& par_xPos, const double& par_yPos, const double& par_zPos,
+                                  int& cellIdx, int& ii, int& jj, int& kk,
+                                  double& iw, double& jw, double& kw,
+                                  int& ip, int& jp, int& kp );
+        double interp3D( const std::vector<double>& EulerData,const std::string& dataName,
+                         const int& ii, const int& jj, const int& kk,
+                         const double& iw, const double& jw, const double& kw,
+                         const int& ip, const int& jp, const int& kp );
 
         
     private:
-
-        // these are the current interp3D variables, as they are used for multiple interpolations for each particle
-        int ii;     // this is the nearest cell index to the left in the x direction
-        int jj;     // this is the nearest cell index to the left in the y direction
-        int kk;     // this is the nearest cell index to the left in the z direction
-        double iw;     // this is the normalized distance to the nearest cell index to the left in the x direction
-        double jw;     // this is the normalized distance to the nearest cell index to the left in the y direction
-        double kw;     // this is the normalized distance to the nearest cell index to the left in the z direction
-        int ip;     // this is the counter to the next cell in the x direction, is set to zero to cause calculations to work but not reference outside of arrays if nx = 1
-        int jp;     // this is the counter to the next cell in the y direction, is set to zero to cause calculations to work but not reference outside of arrays if ny = 1
-        int kp;     // this is the counter to the next cell in the z direction, is set to zero to cause calculations to work but not reference outside of arrays if nz = 1
-
 
         
         // these are for calculating the gradients more efficiently

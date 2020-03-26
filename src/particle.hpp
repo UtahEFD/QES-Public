@@ -58,6 +58,19 @@ class particle
         double delta_wFluct;    // this is the difference between the current and last iteration of the wFluct variable
         bool isRogue;         // this is false until it becomes true. Should not go true. It is whether a particle has gone rogue or not
         bool isActive;         // this is true until it becomes false. If a particle leaves the domain or runs out of mass, this becomes false. Later we will add a method to start more particles when this has become false
+
+        // current eulerian grid information, usually calculated by interp3D functions
+        // the old values are tracked in the particle loop, not here
+        int cellIdx;        // the current eulerian grid cell index, a linearized 3D value
+        int ii;     // this is the nearest cell index to the left in the x direction
+        int jj;     // this is the nearest cell index to the left in the y direction
+        int kk;     // this is the nearest cell index to the left in the z direction
+        double iw;     // this is the normalized distance to the nearest cell index to the left in the x direction
+        double jw;     // this is the normalized distance to the nearest cell index to the left in the y direction
+        double kw;     // this is the normalized distance to the nearest cell index to the left in the z direction
+        int ip;     // this is the counter to the next cell in the x direction, if nx = 1 it is set to zero to cause calculations to work but not reference outside of arrays
+        int jp;     // this is the counter to the next cell in the y direction, if ny = 1 it is set to zero to cause calculations to work but not reference outside of arrays
+        int kp;     // this is the counter to the next cell in the z direction, if nz = 1 it is set to zero to cause calculations to work but not reference outside of arrays
         
 
     private:

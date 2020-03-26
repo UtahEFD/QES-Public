@@ -201,22 +201,48 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
     // particles and sources can potentially be added to the list elsewhere
     for(int parIdx = 0; parIdx < newParticles.size(); parIdx++)
     {
+        // set the cell index values separate to make things easier to read and pass around
+        int cellIdx = 0;        // the current eulerian grid cell index, a linearized 3D value
+        int ii = 0;     // this is the nearest cell index to the left in the x direction
+        int jj = 0;     // this is the nearest cell index to the left in the y direction
+        int kk = 0;     // this is the nearest cell index to the left in the z direction
+        double iw = 0.0;     // this is the normalized distance to the nearest cell index to the left in the x direction
+        double jw = 0.0;     // this is the normalized distance to the nearest cell index to the left in the y direction
+        double kw = 0.0;     // this is the normalized distance to the nearest cell index to the left in the z direction
+        int ip = 0;     // this is the counter to the next cell in the x direction, if nx = 1 it is set to zero to cause calculations to work but not reference outside of arrays
+        int jp = 0;     // this is the counter to the next cell in the y direction, if ny = 1 it is set to zero to cause calculations to work but not reference outside of arrays
+        int kp = 0;     // this is the counter to the next cell in the z direction, if nz = 1 it is set to zero to cause calculations to work but not reference outside of arrays
+
         // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
         // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
-        eul->setInterp3Dindexing(newParticles.at(parIdx).xPos_init,newParticles.at(parIdx).yPos_init,newParticles.at(parIdx).zPos_init);
+        eul->setInterp3Dindexing( newParticles.at(parIdx).xPos_init, newParticles.at(parIdx).yPos_init, newParticles.at(parIdx).zPos_init,
+                                  cellIdx, ii, jj, kk, iw, jw, kw, ip, jp, kp);
     
         // set the positions to be used by the simulation to the initial positions
         newParticles.at(parIdx).xPos = newParticles.at(parIdx).xPos_init;
         newParticles.at(parIdx).yPos = newParticles.at(parIdx).yPos_init;
         newParticles.at(parIdx).zPos = newParticles.at(parIdx).zPos_init;
 
+        // set the particle current cell index values
+        newParticles.at(parIdx).cellIdx = cellIdx;
+        newParticles.at(parIdx).ii = ii;
+        newParticles.at(parIdx).jj = jj;
+        newParticles.at(parIdx).kk = kk;
+        newParticles.at(parIdx).iw = iw;
+        newParticles.at(parIdx).jw = jw;
+        newParticles.at(parIdx).kw = kw;
+        newParticles.at(parIdx).ip = ip;
+        newParticles.at(parIdx).jp = jp;
+        newParticles.at(parIdx).kp = kp;
+
+
         // almost didn't see it, but it does use different random numbers for each direction
         double rann = random::norRan();
 
         // get the sigma values from the Eulerian grid for the particle value
-        double current_sig_x = eul->interp3D(turb->sig_x,"sigma2");
-        double current_sig_y = eul->interp3D(turb->sig_y,"sigma2");
-        double current_sig_z = eul->interp3D(turb->sig_z,"sigma2");
+        double current_sig_x = eul->interp3D(turb->sig_x,"sigma2", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+        double current_sig_y = eul->interp3D(turb->sig_y,"sigma2", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+        double current_sig_z = eul->interp3D(turb->sig_z,"sigma2", ii, jj, kk, iw, jw, kw, ip, jp, kp);
 
         // now set the initial velocity fluctuations for the particle
         // The  sqrt of the variance is to match Bailey's code
@@ -232,12 +258,12 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
         newParticles.at(parIdx).wFluct_old = newParticles.at(parIdx).wFluct;
 
         // get the tau values from the Eulerian grid for the particle value
-        double current_txx = eul->interp3D(turb->txx,"tau");
-        double current_txy = eul->interp3D(turb->txy,"tau");
-        double current_txz = eul->interp3D(turb->txz,"tau");
-        double current_tyy = eul->interp3D(turb->tyy,"tau");
-        double current_tyz = eul->interp3D(turb->tyz,"tau");
-        double current_tzz = eul->interp3D(turb->tzz,"tau");
+        double current_txx = eul->interp3D(turb->txx,"tau", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+        double current_txy = eul->interp3D(turb->txy,"tau", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+        double current_txz = eul->interp3D(turb->txz,"tau", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+        double current_tyy = eul->interp3D(turb->tyy,"tau", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+        double current_tyz = eul->interp3D(turb->tyz,"tau", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+        double current_tzz = eul->interp3D(turb->tzz,"tau", ii, jj, kk, iw, jw, kw, ip, jp, kp);
 
         // set tau_old to the interpolated values for each position
         newParticles.at(parIdx).txx_old = current_txx;

@@ -6,11 +6,18 @@
 
 #include "Plume.hpp"
 
-Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, const bool& doLagrDataOutput_val,
+Plume::Plume( PlumeInputData* PID,Urb* urb_ptr,Turb* turb_ptr,Eulerian* eul_ptr,Dispersion* dis_ptr, const bool& doLagrDataOutput_val,
               const bool& outputSimInfoFile_val,const std::string& outputFolder_val,const std::string& caseBaseName_val, const bool& debug_val)
 {
     
     std::cout<<"[Plume] \t Setting up simulation details "<<std::endl;
+
+
+    // setup copies of reusable class pointers so don't have to input them again at run() command
+    urb = urb_ptr;
+    turb = turb_ptr;
+    eul = eul_ptr;
+    dis = dis_ptr;
     
 
     // copy debug information
@@ -61,21 +68,16 @@ Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, const bool& doLagrDa
 
     /* setup boundary condition functions */
 
-    // now get the input boundary condition types from the inputs
-    std::string xBCtype = PID->BCs->xBCtype;
-    std::string yBCtype = PID->BCs->yBCtype;
-    std::string zBCtype = PID->BCs->zBCtype;
-
     // now set the boundary condition function for the plume runs, 
     // and check to make sure the input BCtypes are legitimate
-    setBCfunctions(xBCtype,yBCtype,zBCtype);
+    setBCfunctions(PID);
 
 }
 
 // LA note: in this whole section, the idea of having single value temporary storage instead of just referencing values
 //  directly from the dispersion class seems a bit strange, but it makes the code easier to read cause smaller variable names.
 //  Also, it is theoretically faster?
-void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lagrOutput)
+void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lagrOutput)
 {
     std::cout << "[Plume] \t Advecting particles " << std::endl;
 
@@ -256,6 +258,20 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                 double delta_wFluct = 0.0;
 
 
+                // get the current cell index values for each iteration
+                int cellIdx = dis->pointList.at(parIdx).cellIdx;
+                int ii = dis->pointList.at(parIdx).ii;
+                int jj = dis->pointList.at(parIdx).jj;
+                int kk = dis->pointList.at(parIdx).kk;
+                double iw = dis->pointList.at(parIdx).iw;
+                double jw = dis->pointList.at(parIdx).jw;
+                double kw = dis->pointList.at(parIdx).kw;
+                int ip = dis->pointList.at(parIdx).ip;
+                int jp = dis->pointList.at(parIdx).jp;
+                int kp = dis->pointList.at(parIdx).kp;
+
+                
+
                 // time to do a particle timestep loop. start the time remainder as the simulation timestep.
                 // at each particle timestep loop iteration the time remainder gets closer and closer to zero.
                 // the particle timestep for a given particle timestep loop is either the time remainder or the value calculated
@@ -286,36 +302,34 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                     */
 
 
-                    // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
-                    // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
-                    eul->setInterp3Dindexing(xPos,yPos,zPos);
-
-
+                    // LA-Important Note: particles are already initialized with their current eulerian grid cell indices
+                    // and eulerian grid cell indices for already released particles were updated at the end of the loop
+                    
 
                     // this is the Co times Eps for the particle
                     // LA note: because Bailey's code uses Eps by itself and this does not, I wanted an option to switch between the two if necessary
                     //  it's looking more and more like we will just use CoEps.
-                    double CoEps = eul->interp3D(turb->CoEps,"CoEps");
-                    //double CoEps = eul->interp3D(turb->CoEps,"Eps");
+                    double CoEps = eul->interp3D(turb->CoEps,"CoEps", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+                    //double CoEps = eul->interp3D(turb->CoEps,"Eps", ii, jj, kk, iw, jw, kw, ip, jp, kp);
                     
                     
                     // this is the current velMean value
-                    double uMean = eul->interp3D(urb->u,"velMean");
-                    double vMean = eul->interp3D(urb->v,"velMean");
-                    double wMean = eul->interp3D(urb->w,"velMean");
+                    double uMean = eul->interp3D(urb->u,"velMean", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+                    double vMean = eul->interp3D(urb->v,"velMean", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+                    double wMean = eul->interp3D(urb->w,"velMean", ii, jj, kk, iw, jw, kw, ip, jp, kp);
                     
                     // this is the current reynolds stress tensor
-                    double txx_before = eul->interp3D(turb->txx,"tau");
-                    double txy_before = eul->interp3D(turb->txy,"tau");
-                    double txz_before = eul->interp3D(turb->txz,"tau");
-                    double tyy_before = eul->interp3D(turb->tyy,"tau");
-                    double tyz_before = eul->interp3D(turb->tyz,"tau");
-                    double tzz_before = eul->interp3D(turb->tzz,"tau");
+                    double txx_before = eul->interp3D(turb->txx,"tau", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+                    double txy_before = eul->interp3D(turb->txy,"tau", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+                    double txz_before = eul->interp3D(turb->txz,"tau", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+                    double tyy_before = eul->interp3D(turb->tyy,"tau", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+                    double tyz_before = eul->interp3D(turb->tyz,"tau", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+                    double tzz_before = eul->interp3D(turb->tzz,"tau", ii, jj, kk, iw, jw, kw, ip, jp, kp);
                     
                     // now need flux_div_dir, not the different dtxxdx type components
-                    double flux_div_x = eul->interp3D(eul->flux_div_x,"flux_div");
-                    double flux_div_y = eul->interp3D(eul->flux_div_y,"flux_div");
-                    double flux_div_z = eul->interp3D(eul->flux_div_z,"flux_div");
+                    double flux_div_x = eul->interp3D(eul->flux_div_x,"flux_div", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+                    double flux_div_y = eul->interp3D(eul->flux_div_y,"flux_div", ii, jj, kk, iw, jw, kw, ip, jp, kp);
+                    double flux_div_z = eul->interp3D(eul->flux_div_z,"flux_div", ii, jj, kk, iw, jw, kw, ip, jp, kp);
 
 
                     // now need to call makeRealizable on tao
@@ -534,43 +548,61 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
 
                     
                     // now update the particle position for this iteration
-                    // LA future work: at some point in time, need to do a CFL condition for only moving one eulerian grid cell at a time
-                    //  this would mean adding some kind of while loop, with an adaptive timestep, controlling the end of the while loop
-                    //   with the simulation time increment. This means all particles can do multiple time iterations, each with their own adaptive timestep.
-                    //  To make this work, particles would need to be required to catch up so they are all calculated by a given simulation timestep.
-                    // LA warn: currently, we use the simulation timestep so we may violate the eulerian grid CFL condition. 
-                    //  but is simpler to work with when getting started
-                    // LA future work: instead of using an adaptive timestep that adapts the timestep when checking if distX is too big or small,
-                    //  we should use a courant number to precalculate the required adaptive timestep. Means less if statements and the error associated
-                    //  with CFL conditions would just come out as the accuracy of the particle statistics.
-                    double disX = (uMean + uFluct)*par_dt;
-                    double disY = (vMean + vFluct)*par_dt;
-                    double disZ = (wMean + wFluct)*par_dt;
-                    
-                    xPos = xPos + disX;
-                    yPos = yPos + disY;
-                    zPos = zPos + disZ;
+                    // keep the particle position changing until the distance it is supposed to travel is used up
+                    // distDir is the distance the particle needs to travel, the boundary condition functions should
+                    //  eventually set it to zero as the particle finishes travelling
+                    double distX = (uMean + uFluct)*par_dt;
+                    double distY = (vMean + vFluct)*par_dt;
+                    double distZ = (wMean + wFluct)*par_dt;
+                    while( isRogue == false && isActive == true && distX != 0.0 && distY != 0 && distZ != 0 )
+                    {
+                        // make sure the particle isn't going more than one cell in a given direction
+                        double distX_inc = distX;
+                        double distY_inc = distY;
+                        double distZ_inc = distZ;
+                        if( distX_inc > dx )
+                        {
+                            distX_inc = dx; // do I need to subtract 1e-9?
+                        }
+                        if( distY_inc > dy )
+                        {
+                            distY_inc = dy;
+                        }
+                        if( distZ_inc > dz )
+                        {
+                            distZ_inc = dz;
+                        }
 
 
-                    
-                    // now apply boundary conditions
-                    // LA note: notice that this is the old fashioned style for calling a pointer function
-                    // LA future work: going to need to implement boundary conditions differently if we want to add in building and terrain reflections
-                    //  first off, the boundary conditions need to be enforced for all component directions in a single call.
-                    //  second off, an if statement to figure out where the particle is at in the domain,
-                    //   would be required to determine which type of BC function to use
-                    //  thirdly, I can't see that section of if statements being efficient at all,
-                    //   it may be better to keep track of the particle index, and have an eulerian grid of pointer functions for which BC to use for each cell
-                    //  lastly, this might get complicated because some BC functions may need to know from where a particle came to enter their location.
-                    //   Not sure if this means that they need to know the old BC info or not, still working out those details,
-                    //   but I can see this getting complicated real fast
-                    //  one last note. The reflective BCs probably need to be iterative till they use up a dist to travel variable.
-                    //   technically the eulerian velocity changes each new cell the particle enters, but we can assume that is a truncation error
-                    //   that goes down as the user uses higher resolution grids and smaller timesteps. We may also just do a first pass
-                    //   that ignores the exact location of the boundaries in a cell, just assuming each cell is either a bouncing spot or air.
-                    (this->*enforceWallBCs_x)(xPos,uFluct,uFluct_old,isActive, domainXstart,domainXend);
-                    (this->*enforceWallBCs_y)(yPos,vFluct,vFluct_old,isActive, domainYstart,domainYend);
-                    (this->*enforceWallBCs_z)(zPos,wFluct,wFluct_old,isActive, domainZstart,domainZend);
+                        // now apply boundary conditions
+                        // now I'm expecting a single function call for the current cellIdx, passing in the current and last cellIdx and whatever info
+                        //  is common for each and every boundary condition function
+                        // LA note: notice that this is the old fashioned style for calling a pointer function
+                        //  one last note. The reflective BCs probably need to be iterative till they use up a dist to travel variable.
+                        //   technically the eulerian velocity changes each new cell the particle enters, but we can assume that is a truncation error
+                        //   that goes down as the user uses higher resolution grids and smaller timesteps. We may also just do a first pass
+                        //   that ignores the exact location of the boundaries in a cell, just assuming each cell is either a bouncing spot or air.
+                        (this->*BCpointerFunctions.at(cellIdx))( distX_inc,distY_inc,distZ_inc,
+                                                                 cellIdx,ii,jj,kk,iw,jw,kw,ip,jp,kp,
+                                                                 xPos,yPos,zPos,uFluct,vFluct,wFluct, 
+                                                                 uFluct_old,vFluct_old,wFluct_old,isActive,
+                                                                 xDomainEdgePointerFunctions.at(cellIdx),
+                                                                 yDomainEdgePointerFunctions.at(cellIdx),
+                                                                 zDomainEdgePointerFunctions.at(cellIdx) );
+                        
+
+                        // the BC function already modifies the eulerian grid cell info,
+                        //  the position, the velocity fluctuations, and isActive value
+                        // So the only thing left to do is update the distX values using the updated distX_inc values
+                        
+                        // now update the distance left to travel using the distance actually travelled
+                        // in preparation for the next iteration
+                        // distX_traveled may be anything as big as or smaller than distX_inc.
+                        distX = distX - distX_inc;
+                        distY = distY - distY_inc;
+                        distZ = distZ - distZ_inc;
+
+                    }   // while( isRogue == false && isActive == true && distX != 0.0 && distY != 0 && distZ != 0 )
                     
 
                     // now set the particle values for if they are rogue or outside the domain
@@ -648,6 +680,19 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                 dis->pointList.at(parIdx).tyy_old = tyy_old;
                 dis->pointList.at(parIdx).tyz_old = tyz_old;
                 dis->pointList.at(parIdx).tzz_old = tzz_old;
+
+                // also need to set the current cell index values for each iteration
+                dis->pointList.at(parIdx).cellIdx = cellIdx;
+                dis->pointList.at(parIdx).ii = ii;
+                dis->pointList.at(parIdx).jj = jj;
+                dis->pointList.at(parIdx).kk = kk;
+                dis->pointList.at(parIdx).iw = iw;
+                dis->pointList.at(parIdx).jw = jw;
+                dis->pointList.at(parIdx).kw = kw;
+                dis->pointList.at(parIdx).ip = ip;
+                dis->pointList.at(parIdx).jp = jp;
+                dis->pointList.at(parIdx).kp = kp;
+
 
                 // now update the isRogueCount and isNotActiveCount
                 if(isRogue == true)
@@ -941,171 +986,1118 @@ void Plume::matmult(const double& A_11,const double& A_12,const double& A_13,
 }
 
 
-void Plume::setBCfunctions(std::string xBCtype,std::string yBCtype,std::string zBCtype)
+void Plume::setBCfunctions( PlumeInputData* PID )
 {
     // the idea is to use the string input BCtype to determine which boundary condition function to use later in the program, and to have a function pointer
     // point to the required function. I learned about pointer functions from this website: https://www.learncpp.com/cpp-tutorial/78-function-pointers/
+    // more info for doing a vector of pointers to member functions here: https://stackoverflow.com/questions/21110211/vector-of-pointer-to-member-functions.
     
+    // now we are doing a vector of pointer functions, one for each eulerian cellIdx. Will use the icellflag for a given cell
+    // and string input BCtype information to determine which boundary condition function to use for each cellIdx.
+    // some are set to always be a certain way here, can be modified later as desired and available boundary condition
+    // types and functions are added to the program
+
+
+    // now get the input boundary condition types from the inputs
+    std::string xDomainStartBCtype = PID->BCs->xDomainStartBCtype;
+    std::string yDomainStartBCtype = PID->BCs->yDomainStartBCtype;
+    std::string zDomainStartBCtype = PID->BCs->zDomainStartBCtype;
+    std::string xDomainEndBCtype = PID->BCs->xDomainEndBCtype;
+    std::string yDomainEndBCtype = PID->BCs->xDomainEndBCtype;
+    std::string zDomainEndBCtype = PID->BCs->xDomainEndBCtype;
+
+    // now get the other input boundary condition information from the inputs
+    std::string buildingCutCell_reflectionType = PID->BCs->buildingCutCell_reflectionType;
+    std::string terrainCutCell_reflectionType = PID->BCs->terrainCutCell_reflectionType;
+    doDepositions = PID->BCs->doDepositions;
+
+
     // output some debug information
     if( debug == true )
     {
-        std::cout << "xBCtype = \"" << xBCtype << "\"" << std::endl;
-        std::cout << "yBCtype = \"" << yBCtype << "\"" << std::endl;
-        std::cout << "zBCtype = \"" << zBCtype << "\"" << std::endl;
+        std::cout << "setting BC functions array" << std::endl;
+        std::cout << "xDomainStartBCtype = \"" << xDomainStartBCtype << "\"" << std::endl;
+        std::cout << "xDomainEndBCtype = \"" << xDomainEndBCtype << "\"" << std::endl;
+        std::cout << "yDomainStartBCtype = \"" << yDomainStartBCtype << "\"" << std::endl;
+        std::cout << "yDomainEndBCtype = \"" << yDomainEndBCtype << "\"" << std::endl;
+        std::cout << "zDomainStartBCtype = \"" << zDomainStartBCtype << "\"" << std::endl;
+        std::cout << "zDomainEndBCtype = \"" << zDomainEndBCtype << "\"" << std::endl;
+        std::cout << "buildingCutCell_reflectionType = \"" << buildingCutCell_reflectionType << "\"" << std::endl;
+        std::cout << "terrainCutCell_reflectionType = \"" << terrainCutCell_reflectionType << "\"" << std::endl;
+        std::cout << "doDepositions = \"" << doDepositions << "\"" << std::endl;
     }
-    if(xBCtype == "exiting") {
-      // the enforceWallBCs_x pointer function now points to the enforceWallBCs_exiting function
-      enforceWallBCs_x = &Plume::enforceWallBCs_exiting;  
-    } else if(xBCtype == "periodic") {
-      // the enforceWallBCs_x pointer function now points to the enforceWallBCs_periodic function
-      enforceWallBCs_x = &Plume::enforceWallBCs_periodic;  
-    } else if(xBCtype == "reflection") {
-      // the enforceWallBCs_x pointer function now points to the enforceWallBCs_reflection function
-      enforceWallBCs_x = &Plume::enforceWallBCs_reflection;  
-    } else {
-      std::cerr << "!!! Plume::setBCfunctions() error !!! input xBCtype \"" << xBCtype 
-		<< "\" has not been implemented in code! Available xBCtypes are "
-		<< "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
-      exit(EXIT_FAILURE);
-    }
-    
-    if(yBCtype == "exiting") {
-      // the enforceWallBCs_y pointer function now points to the enforceWallBCs_exiting function
-      enforceWallBCs_y = &Plume::enforceWallBCs_exiting;  
-    } else if(yBCtype == "periodic") {
-      // the enforceWallBCs_y pointer function now points to the enforceWallBCs_periodic function
-      enforceWallBCs_y = &Plume::enforceWallBCs_periodic;  
-    } else if(yBCtype == "reflection") {
-      // the enforceWallBCs_y pointer function now points to the enforceWallBCs_reflection function
-      enforceWallBCs_y = &Plume::enforceWallBCs_reflection;  
-    } else {
-      std::cerr << "!!! Plume::setBCfunctions() error !!! input yBCtype \"" << yBCtype 
-		<< "\" has not been implemented in code! Available yBCtypes are "
-		<< "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
-      exit(EXIT_FAILURE);
-    }
-    
-    if(zBCtype == "exiting") {
-      // the enforceWallBCs_z pointer function now points to the enforceWallBCs_exiting function
-      enforceWallBCs_z = &Plume::enforceWallBCs_exiting;  
-    } else if(zBCtype == "periodic") {
-      // the enforceWallBCs_z pointer function now points to the enforceWallBCs_periodic function
-      enforceWallBCs_z = &Plume::enforceWallBCs_periodic;  
-    } else if(zBCtype == "reflection") {
-      // the enforceWallBCs_z pointer function now points to the enforceWallBCs_reflection function
-        enforceWallBCs_z = &Plume::enforceWallBCs_reflection;  
-    } else {
-      std::cerr << "!!! Plume::setBCfunctions() error !!! input zBCtype \"" << zBCtype 
-		<< "\" has not been implemented in code! Available zBCtypes are "
-		<< "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
-      exit(EXIT_FAILURE);
-    }
-}
 
 
-
-void Plume::enforceWallBCs_exiting(double& pos,double& velFluct,double& velFluct_old,bool& isActive,
-				   const double& domainStart,const double& domainEnd)
-{
-  /*
-    this may change as we figure out the reflections vs depositions on buildings and terrain as well as 
-    the outer domain probably will become some kind of inherited function or a pointer function that can 
-    be chosen at initialization time for now, if it goes out of the domain, set isActive to false
-  */
-  if( pos < domainStart || pos > domainEnd ) {
-    isActive = false;
-  }
-}
-
-void Plume::enforceWallBCs_periodic(double& pos,double& velFluct,double& velFluct_old,bool& isActive,
-				    const double& domainStart,const double& domainEnd)
-{
-    
-    double domainSize = domainEnd - domainStart;
-    int loopCountLeft = 0;
-    int loopCountRight = 0;
-
-    /*    
-    std::cout << "enforceWallBCs_periodic starting pos = \"" << pos << "\", domainStart = \"" << domainStart << "\", domainEnd = \"" << domainEnd << "\"" << std::endl;
-    */
-
-    if(domainSize != 0)
+    // Loop over all cells in the domain up to 2 in from the edge
+    for(int k = 0; k < nz; k++)
     {
-        while( pos < domainStart )
+        for(int j = 0; j < ny; j++)
         {
-            pos = pos + domainSize;
-            loopCountLeft = loopCountLeft + 1;
-        }
-        while( pos > domainEnd )
-        {
-            pos = pos - domainSize;
-            loopCountRight = loopCountRight + 1;
-        }
+            for(int i = 0; i < nx; i++)
+            {
+    
+                // a linear index based on the 3D (i, j, k)
+                // done the same way as in the Eulerian class
+                int cellIdx = k*ny*nx + j*nx + i;
+                int icellFlag = urb->icell.at(cellIdx);
+
+                
+                // initialize the pointer functions for the current eulerian grid cell for the domain edge BC pointer function lists
+                xDomainEdgeBCptrFunction currentPointerFunction_xDomainEdge;
+                yDomainEdgeBCptrFunction currentPointerFunction_yDomainEdge;
+                zDomainEdgeBCptrFunction currentPointerFunction_zDomainEdge;
+
+                // now determine which functions the current pointer functions for the different domain edges should point at
+                if( i == 0 || j == 0 || k == 0 )
+                {
+                    // on the outer domain edges
+                    // specifically those at the start side
+
+                    if( xDomainStartBCtype == "exiting" )
+                    {
+                        // the currentPointerFunction_xDomainEdge pointer function now points to the xDomainStartBC_exiting function
+                        currentPointerFunction_xDomainEdge = &Plume::xDomainStartBC_exiting;
+                    } else if( xDomainStartBCtype == "periodic" )
+                    {
+                        // the currentPointerFunction_xDomainEdge pointer function now points to the xDomainStartBC_periodic function
+                        currentPointerFunction_xDomainEdge = &Plume::xDomainStartBC_periodic;
+                    } else if( xDomainStartBCtype == "reflection" )
+                    {
+                        // the currentPointerFunction_xDomainEdge pointer function now points to the xDomainStartBC_reflection function
+                        currentPointerFunction_xDomainEdge = &Plume::xDomainStartBC_reflection;
+                    } else
+                    {
+                        std::cerr << "!!! Plume::setBCfunctions() error !!! input xDomainStartBCtype \"" << xDomainStartBCtype 
+                            << "\" has not been implemented in code! Available xDomainStartBCtype are "
+                            << "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+
+                    if( yDomainStartBCtype == "exiting" )
+                    {
+                        // the currentPointerFunction_yDomainEdge pointer function now points to the yDomainStartBC_exiting function
+                        currentPointerFunction_yDomainEdge = &Plume::yDomainStartBC_exiting;
+                    } else if( yDomainStartBCtype == "periodic" )
+                    {
+                        // the currentPointerFunction_yDomainEdge pointer function now points to the yDomainStartBC_periodic function
+                        currentPointerFunction_yDomainEdge = &Plume::yDomainStartBC_periodic;
+                    } else if( yDomainStartBCtype == "reflection" )
+                    {
+                        // the currentPointerFunction_yDomainEdge pointer function now points to the yDomainStartBC_reflection function
+                        currentPointerFunction_yDomainEdge = &Plume::yDomainStartBC_reflection;
+                    } else
+                    {
+                        std::cerr << "!!! Plume::setBCfunctions() error !!! input yDomainStartBCtype \"" << yDomainStartBCtype 
+                            << "\" has not been implemented in code! Available yDomainStartBCtype are "
+                            << "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+
+                    if( zDomainStartBCtype == "exiting" )
+                    {
+                        // the currentPointerFunction_zDomainEdge pointer function now points to the zDomainStartBC_exiting function
+                        currentPointerFunction_zDomainEdge = &Plume::zDomainStartBC_exiting;
+                    } else if( zDomainStartBCtype == "periodic" )
+                    {
+                        // the currentPointerFunction_zDomainEdge pointer function now points to the zDomainStartBC_periodic function
+                        currentPointerFunction_zDomainEdge = &Plume::zDomainStartBC_periodic;
+                    } else if( zDomainStartBCtype == "reflection" )
+                    {
+                        // the currentPointerFunction_zDomainEdge pointer function now points to the zDomainStartBC_reflection function
+                        currentPointerFunction_zDomainEdge = &Plume::zDomainStartBC_reflection;
+                    } else
+                    {
+                        std::cerr << "!!! Plume::setBCfunctions() error !!! input zDomainStartBCtype \"" << zDomainStartBCtype 
+                            << "\" has not been implemented in code! Available zDomainStartBCtype are "
+                            << "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+
+                } else if( i == nx-1 || j == ny-1 || k == nz-1 )
+                {
+                    // on the outer domain edges
+                    // specifically those at the end side
+
+                    if( xDomainEndBCtype == "exiting" )
+                    {
+                        // currentPointerFunction_xDomainEdge pointer function now points to the xDomainEndBC_exiting function
+                        currentPointerFunction_xDomainEdge = &Plume::xDomainEndBC_exiting;
+                    } else if( xDomainEndBCtype == "periodic" )
+                    {
+                        // the currentPointerFunction_xDomainEdge pointer function now points to the xDomainEndBC_periodic function
+                        currentPointerFunction_xDomainEdge = &Plume::xDomainEndBC_periodic;
+                    } else if( xDomainEndBCtype == "reflection" )
+                    {
+                        // the currentPointerFunction_xDomainEdge pointer function now points to the xDomainEndBC_reflection function
+                        currentPointerFunction_xDomainEdge = &Plume::xDomainEndBC_reflection;
+                    } else
+                    {
+                        std::cerr << "!!! Plume::setBCfunctions() error !!! input xDomainEndBCtype \"" << xDomainEndBCtype 
+                            << "\" has not been implemented in code! Available xDomainEndBCtype are "
+                            << "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+
+                    if( yDomainEndBCtype == "exiting" )
+                    {
+                        // currentPointerFunction_yDomainEdge pointer function now points to the yDomainEndBC_exiting function
+                        currentPointerFunction_yDomainEdge = &Plume::yDomainEndBC_exiting;
+                    } else if( yDomainEndBCtype == "periodic" )
+                    {
+                        // the currentPointerFunction_yDomainEdge pointer function now points to the yDomainEndBC_periodic function
+                        currentPointerFunction_yDomainEdge = &Plume::yDomainEndBC_periodic;
+                    } else if( yDomainEndBCtype == "reflection" )
+                    {
+                        // the currentPointerFunction_yDomainEdge pointer function now points to the yDomainEndBC_reflection function
+                        currentPointerFunction_yDomainEdge = &Plume::yDomainEndBC_reflection;
+                    } else
+                    {
+                        std::cerr << "!!! Plume::setBCfunctions() error !!! input yDomainEndBCtype \"" << yDomainEndBCtype 
+                            << "\" has not been implemented in code! Available yDomainEndBCtype are "
+                            << "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+
+                    if( zDomainEndBCtype == "exiting" )
+                    {
+                        // currentPointerFunction_zDomainEdge pointer function now points to the zDomainEndBC_exiting function
+                        currentPointerFunction_zDomainEdge = &Plume::zDomainEndBC_exiting;
+                    } else if( zDomainEndBCtype == "periodic" )
+                    {
+                        // the currentPointerFunction_zDomainEdge pointer function now points to the zDomainEndBC_periodic function
+                        currentPointerFunction_zDomainEdge = &Plume::zDomainEndBC_periodic;
+                    } else if( zDomainEndBCtype == "reflection" )
+                    {
+                        // the currentPointerFunction_zDomainEdge pointer function now points to the zDomainEndBC_reflection function
+                        currentPointerFunction_zDomainEdge = &Plume::zDomainEndBC_reflection;
+                    } else
+                    {
+                        std::cerr << "!!! Plume::setBCfunctions() error !!! input zDomainEndBCtype \"" << zDomainEndBCtype 
+                            << "\" has not been implemented in code! Available zDomainEndBCtype are "
+                            << "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+
+                } else
+                {
+                    // is now only the interior nodes, not the outer domain
+                    
+                    // it is within the domain center, so need to set them to the no BC edge type functions
+                    // the currentPointerFunction_xDomainEdge pointer function now points to the xNotDomainEdgeBC function
+                    currentPointerFunction_xDomainEdge = &Plume::xNotDomainEdgeBC;
+                    // the currentPointerFunction_yDomainEdge pointer function now points to the yNotDomainEdgeBC function
+                    currentPointerFunction_yDomainEdge = &Plume::yNotDomainEdgeBC;
+                    // the currentPointerFunction_zDomainEdge pointer function now points to the zNotDomainEdgeBC function
+                    currentPointerFunction_zDomainEdge = &Plume::zNotDomainEdgeBC;
+                }
+
+                // now stuff the current pointer functions into the vectors of boundary condition pointer functions
+                xDomainEdgePointerFunctions.push_back(currentPointerFunction_xDomainEdge);
+                yDomainEdgePointerFunctions.push_back(currentPointerFunction_yDomainEdge);
+                zDomainEdgePointerFunctions.push_back(currentPointerFunction_zDomainEdge);
+
+
+
+                // initialize the pointer function for the current eulerian grid cell for the overall BC pointer function list
+                BCptrFunction currentPointerFunction;
+                
+                // now determine which function the current pointer function should point at
+                if( i == 0 || j == 0 || k == 0 || i == nx-1 || j == ny-1|| k == nz-1 )
+                {
+                    // on the outer domain edges
+
+                    // the currentPointerFunction pointer function now points to the domainEdgeBC function
+                    currentPointerFunction = &Plume::domainEdgeBC;
+                } else 
+                {
+                    // is now only the interior nodes, not the outer domain
+
+                    if( icellFlag == 0 )
+                    {
+                        // 0  "Building"
+                        // the currentPointerFunction pointer function now points to the innerCellBC_simpleStairStepReflection function
+                        currentPointerFunction = &Plume::innerCellBC_simpleStairStepReflection;
+                    } else if( icellFlag == 1 )
+                    {
+                        // 1  "Fluid"
+                        // the currentPointerFunction pointer function now points to the innerCellBC_passthrough function
+                        currentPointerFunction = &Plume::innerCellBC_passthrough;
+                    } else if( icellFlag == 2 )
+                    {
+                        // 2  "Terrain"
+                        //  if you don't want reflections off of the terrain or the terrain cutcells
+                        //  need to specify no terrain in the input icellflags
+                        // the currentPointerFunction pointer function now points to the innerCellBC_simpleStairStepReflection function
+                        currentPointerFunction = &Plume::innerCellBC_simpleStairStepReflection;
+                    } else if( icellFlag == 7 )
+                    {
+                        // 7  "Building cut-cells"
+                        if( buildingCutCell_reflectionType == "simpleStairStep" )
+                        {
+                            // the currentPointerFunction pointer function now points to the innerCellBC_simpleStairStepReflection function
+                            currentPointerFunction = &Plume::innerCellBC_simpleStairStepReflection;
+                        } else if( buildingCutCell_reflectionType == "simpleCutCell" )
+                        {
+                            std::cerr << "!!! Plume::setBCfunctions() error !!! input buildingCutCell_reflectionType \"" << buildingCutCell_reflectionType 
+                                << "\" has not been implemented in code yet! Available buildingCutCell_reflectionType are "
+                                << "\"simpleStairStep\"" << std::endl;
+                            exit(EXIT_FAILURE);
+                        } else if( buildingCutCell_reflectionType == "normalCutCell" )
+                        {
+                            std::cerr << "!!! Plume::setBCfunctions() error !!! input buildingCutCell_reflectionType \"" << buildingCutCell_reflectionType 
+                                << "\" has not been implemented in code yet! Available buildingCutCell_reflectionType are "
+                                << "\"simpleStairStep\"" << std::endl;
+                            exit(EXIT_FAILURE);
+                        } else
+                        {
+                            std::cerr << "!!! Plume::setBCfunctions() error !!! input buildingCutCell_reflectionType \"" << buildingCutCell_reflectionType 
+                                << "\" has not been implemented in code yet! Available buildingCutCell_reflectionType are "
+                                << "\"simpleStairStep\", \"simpleCutCell\", \"normalCutCell\"" << std::endl;
+                            exit(EXIT_FAILURE);
+                        }
+                    } else if( icellFlag == 8 )
+                    {
+                        // 8  "Terrain cut-cells"
+                        //  if you don't want reflections off of the terrain or the terrain cutcells
+                        //  need to specify no terrain in the input icellflags
+                        if( terrainCutCell_reflectionType == "simpleStairStep" )
+                        {
+                            // the currentPointerFunction pointer function now points to the innerCellBC_simpleStairStepReflection function
+                            currentPointerFunction = &Plume::innerCellBC_simpleStairStepReflection;
+                        } else if( terrainCutCell_reflectionType == "simpleCutCell" )
+                        {
+                            std::cerr << "!!! Plume::setBCfunctions() error !!! input terrainCutCell_reflectionType \"" << terrainCutCell_reflectionType 
+                                << "\" has not been implemented in code yet! Available terrainCutCell_reflectionType are "
+                                << "\"simpleStairStep\"" << std::endl;
+                            exit(EXIT_FAILURE);
+                        } else if( terrainCutCell_reflectionType == "normalCutCell" )
+                        {
+                            std::cerr << "!!! Plume::setBCfunctions() error !!! input terrainCutCell_reflectionType \"" << terrainCutCell_reflectionType 
+                                << "\" has not been implemented in code yet! Available terrainCutCell_reflectionType are "
+                                << "\"simpleStairStep\"" << std::endl;
+                            exit(EXIT_FAILURE);
+                        } else
+                        {
+                            std::cerr << "!!! Plume::setBCfunctions() error !!! input terrainCutCell_reflectionType \"" << terrainCutCell_reflectionType 
+                                << "\" has not been implemented in code yet! Available terrainCutCell_reflectionType are "
+                                << "\"simpleStairStep\", \"simpleCutCell\", \"normalCutCell\"" << std::endl;
+                            exit(EXIT_FAILURE);
+                        }
+                    } else if( icellFlag == 11 )
+                    {
+                        // 11 "Canopy vegetation"
+                        if( doDepositions == false )
+                        {
+                            // the currentPointerFunction pointer function now points to the innerCellBC_passthrough function
+                            currentPointerFunction = &Plume::innerCellBC_passthrough;
+                        } else
+                        {
+                            std::cerr << "!!! Plume::setBCfunctions() error !!! input doDepositions \"" << doDepositions 
+                                << "\" has not been implemented in code yet! Set input doDepositions to \"false\"" << std::endl;
+                            exit(EXIT_FAILURE);
+                        }
+                    } else
+                    {
+                        // 3  "Upwind cavity"
+                        // 4  "Cavity"
+                        // 5  "Farwake"
+                        // 6  "Street canyon"
+                        // 9  "Sidewall"
+                        // 10 "Rooftop"
+                        // 12 "Fire"
+                        // any icellFlag error values not included
+                        // the currentPointerFunction pointer function now points to the innerCellBC_passthrough function
+                        currentPointerFunction = &Plume::innerCellBC_passthrough;
+                    }
+                }
+
+                // now stuff the current pointer function into the vector of boundary condition pointer functions
+                BCpointerFunctions.push_back(currentPointerFunction);
+
+
+
+            }   // for i = 0 to nx-1
+        }   // for j = 0 to ny-1
+    }   // for k = 0 to nz-1
+
+}
+
+
+// the domain start and end boundary condition functions
+void Plume::xDomainStartBC_exiting( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
+{
+
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  throw the particle out by setting isActive to false
+    // No need to modify velocities, just the position
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    xPos = xPos + distX_inc;
+    
+    
+    // if it goes out of the domain, set isActive to false
+    //  there is no need to change any other variables cause they will be ignored
+    if( xPos < domainXstart )
+    {
+        isActive = false;
+    }
+
+}
+void Plume::xDomainEndBC_exiting( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
+{
+
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  throw the particle out by setting isActive to false
+    // No need to modify velocities, just the position
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    xPos = xPos + distX_inc;
+    
+    
+    // if it goes out of the domain, set isActive to false
+    //  there is no need to change any other variables cause they will be ignored
+    if( xPos > domainXend )
+    {
+        isActive = false;
     }
     
-    /*
-    std::cout << "enforceWallBCs_periodic ending pos = \"" << pos << "\", loopCountLeft = \"" << loopCountLeft << "\", loopCountRight = \"" << std::endl;
-    */
-
 }
-
-void Plume::enforceWallBCs_reflection(double& pos,double& velFluct,double& velFluct_old,bool& isActive,
-				      const double& domainStart,const double& domainEnd)
+void Plume::xDomainStartBC_periodic( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
 {
-    if( isActive == true )
+
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  modify the component position to send the particle to the opposite side of the domain 
+    // No need to modify velocities, just the position
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    xPos = xPos + distX_inc;
+
+    // need the domain size for sending the particle across the domain
+    double domainXsize = domainXend - domainXstart;
+
+    // check to make sure this dimension actually has a size
+    if(domainXsize != 0)
     {
-
-        /*
-        std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velFluct = \"" << velFluct << "\", velFluct_old = \"" <<
-                velFluct_old << "\", domainStart = \"" << domainStart << "\", domainEnd = \"" << domainEnd << "\"" << std::endl;
-        */
-
-        int reflectCount = 0;
-        int loopCountLeft = 0;
-        int loopCountRight = 0;
-        while( pos < domainStart || pos > domainEnd )
+        // if it goes out of the domain, send it to the other side of the domain
+        //  there is no need to change any other variables cause they will be ignored
+        // since just moving at most one cell size, this doesn't need to be a while loop
+        if( xPos < domainXstart )
         {
-            if( pos > domainEnd )
-            {
-                pos = domainEnd - (pos - domainEnd);
-                velFluct = -velFluct;
-                velFluct_old = -velFluct_old;
-                loopCountLeft = loopCountLeft + 1;
-            } else if( pos < domainStart )
-            {
-                pos = domainStart - (pos - domainStart);
-                velFluct = -velFluct;
-                velFluct_old = -velFluct_old;
-                loopCountRight = loopCountRight + 1;
-            }
-            reflectCount = reflectCount + 1;
+            xPos = xPos + domainXsize;
+        }
+    }
 
-            // if the velocity is so large that the particle would reflect more than 100 times, 
-            // the boundary condition could fail.
-            if( reflectCount == 10 )    // use 10 since 100 is really expensive right now!
-            {
-                if( pos > domainEnd )
-                {
-                    std::cout << "warning (Plume::enforceWallBCs_reflection): upper boundary condition failed! Setting isActive to false. pos = \"" << pos << "\"" << std::endl;
-                    isActive = false;
-                }
-                if( pos < domainStart )
-                {
-                    std::cout << "warning (Plume::enforceWallBCs_reflection): lower boundary condition failed! Setting isActive to false. xPos = \"" << pos << "\"" << std::endl;
-                    isActive = false;
-                }
-                break;
-            }
-        }   // while outside of domain
-
-        /*
-        std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velFluct = \"" << velFluct << "\", velFluct_old = \"" <<
-                velFluct_old << "\", loopCountLeft = \"" << loopCountLeft << "\", loopCountRight = \"" << loopCountRight << "\", reflectCount = \"" <<
-                reflectCount << "\"" << std::endl;
-        */
-
-    }   // if isActive == true
 }
+void Plume::xDomainEndBC_periodic( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
+{
+    
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  modify the component position to send the particle to the opposite side of the domain 
+    // No need to modify velocities, just the position
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    xPos = xPos + distX_inc;
+
+    // need the domain size for sending the particle across the domain
+    double domainXsize = domainXend - domainXstart;
+    
+    // check to make sure this dimension actually has a size
+    if(domainXsize != 0)
+    {
+        // if it goes out of the domain, send it to the other side of the domain
+        //  there is no need to change any other variables cause they will be ignored
+        // since just moving at most one cell size, this doesn't need to be a while loop
+        if( xPos > domainXend )
+        {
+            xPos = xPos - domainXsize;
+        }
+    }
+
+}
+void Plume::xDomainStartBC_reflection( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
+{
+
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  modify the component position by reflecting it on the domain edge
+    //  this also includes reflecting the velocities
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    xPos = xPos + distX_inc;
+
+    // if it goes out of the domain, reflect the particle on the domain wall
+    //  this includes reflecting the component velocity
+    // since just moving at most one cell size, this doesn't need to be a while loop
+    if( xPos < domainXstart )
+    {
+        xPos = domainXstart - (xPos - domainXstart);
+        uFluct = -uFluct;
+        uFluct_old = -uFluct_old;
+    }
+
+}
+void Plume::xDomainEndBC_reflection( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
+{
+
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  modify the component position by reflecting it on the domain edge
+    //  this also includes reflecting the velocities
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    xPos = xPos + distX_inc;
+
+    // if it goes out of the domain, reflect the particle on the domain wall
+    //  this includes reflecting the component velocity
+    // since just moving at most one cell size, this doesn't need to be a while loop
+    if( xPos > domainXend )
+    {
+        xPos = domainXend - (xPos - domainXend);
+        uFluct = -uFluct;
+        uFluct_old = -uFluct_old;
+    }
+
+}
+void Plume::yDomainStartBC_exiting( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
+{
+
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  throw the particle out by setting isActive to false
+    // No need to modify velocities, just the position
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    yPos = yPos + distY_inc;
+    
+    
+    // if it goes out of the domain, set isActive to false
+    //  there is no need to change any other variables cause they will be ignored
+    if( yPos < domainYstart )
+    {
+        isActive = false;
+    }
+
+}
+void Plume::yDomainEndBC_exiting( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
+{
+    
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  throw the particle out by setting isActive to false
+    // No need to modify velocities, just the position
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    yPos = yPos + distY_inc;
+    
+    
+    // if it goes out of the domain, set isActive to false
+    //  there is no need to change any other variables cause they will be ignored
+    if( yPos > domainYend )
+    {
+        isActive = false;
+    }
+
+}
+void Plume::yDomainStartBC_periodic( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
+{
+
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  modify the component position to send the particle to the opposite side of the domain 
+    // No need to modify velocities, just the position
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    yPos = yPos + distY_inc;
+
+    // need the domain size for sending the particle across the domain
+    double domainYsize = domainYend - domainYstart;
+
+    // check to make sure this dimension actually has a size
+    if(domainYsize != 0)
+    {
+        // if it goes out of the domain, send it to the other side of the domain
+        //  there is no need to change any other variables cause they will be ignored
+        // since just moving at most one cell size, this doesn't need to be a while loop
+        if( yPos < domainYstart )
+        {
+            yPos = yPos + domainYsize;
+        }
+    }
+
+}
+void Plume::yDomainEndBC_periodic( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
+{
+
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  modify the component position to send the particle to the opposite side of the domain 
+    // No need to modify velocities, just the position
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    yPos = yPos + distY_inc;
+
+    // need the domain size for sending the particle across the domain
+    double domainYsize = domainYend - domainYstart;
+
+    // check to make sure this dimension actually has a size
+    if(domainYsize != 0)
+    {
+        // if it goes out of the domain, send it to the other side of the domain
+        //  there is no need to change any other variables cause they will be ignored
+        // since just moving at most one cell size, this doesn't need to be a while loop
+        if( yPos > domainYend )
+        {
+            yPos = yPos - domainYsize;
+        }
+    }
+
+}
+void Plume::yDomainStartBC_reflection( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
+{
+
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  modify the component position by reflecting it on the domain edge
+    //  this also includes reflecting the velocities
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    yPos = yPos + distY_inc;
+
+    // if it goes out of the domain, reflect the particle on the domain wall
+    //  this includes reflecting the component velocity
+    // since just moving at most one cell size, this doesn't need to be a while loop
+    if( yPos < domainYstart )
+    {
+        yPos = domainYstart - (yPos - domainYstart);
+        vFluct = -vFluct;
+        vFluct_old = -vFluct_old;
+    }
+
+}
+void Plume::yDomainEndBC_reflection( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
+{
+    
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  modify the component position by reflecting it on the domain edge
+    //  this also includes reflecting the velocities
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    yPos = yPos + distY_inc;
+
+    // if it goes out of the domain, reflect the particle on the domain wall
+    //  this includes reflecting the component velocity
+    // since just moving at most one cell size, this doesn't need to be a while loop
+    if( yPos > domainYend )
+    {
+        yPos = domainYend - (yPos - domainYend);
+        vFluct = -vFluct;
+        vFluct_old = -vFluct_old;
+    }
+    
+}
+void Plume::zDomainStartBC_exiting( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
+{
+    
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  throw the particle out by setting isActive to false
+    // No need to modify velocities, just the position
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    zPos = zPos + distZ_inc;
+    
+    
+    // if it goes out of the domain, set isActive to false
+    //  there is no need to change any other variables cause they will be ignored
+    if( zPos < domainZstart )
+    {
+        isActive = false;
+    }
+    
+}
+void Plume::zDomainEndBC_exiting( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
+{
+    
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  throw the particle out by setting isActive to false
+    // No need to modify velocities, just the position
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    zPos = zPos + distZ_inc;
+    
+    
+    // if it goes out of the domain, set isActive to false
+    //  there is no need to change any other variables cause they will be ignored
+    if( zPos > domainZend )
+    {
+        isActive = false;
+    }
+    
+}
+void Plume::zDomainStartBC_periodic( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
+{
+
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  modify the component position to send the particle to the opposite side of the domain 
+    // No need to modify velocities, just the position
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    zPos = zPos + distZ_inc;
+
+    // need the domain size for sending the particle across the domain
+    double domainZsize = domainZend - domainZstart;
+
+    // check to make sure this dimension actually has a size
+    if(domainZsize != 0)
+    {
+        // if it goes out of the domain, send it to the other side of the domain
+        //  there is no need to change any other variables cause they will be ignored
+        // since just moving at most one cell size, this doesn't need to be a while loop
+        if( zPos < domainZstart )
+        {
+            zPos = zPos + domainZsize;
+        }
+    }
+
+}
+void Plume::zDomainEndBC_periodic( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
+{
+
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  modify the component position to send the particle to the opposite side of the domain 
+    // No need to modify velocities, just the position
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    zPos = zPos + distZ_inc;
+
+    // need the domain size for sending the particle across the domain
+    double domainZsize = domainZend - domainZstart;
+
+    // check to make sure this dimension actually has a size
+    if(domainZsize != 0)
+    {
+        // if it goes out of the domain, send it to the other side of the domain
+        //  there is no need to change any other variables cause they will be ignored
+        // since just moving at most one cell size, this doesn't need to be a while loop
+        if( zPos > domainZend )
+        {
+            zPos = zPos - domainZsize;
+        }
+    }
+
+}
+void Plume::zDomainStartBC_reflection( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
+{
+    
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  modify the component position by reflecting it on the domain edge
+    //  this also includes reflecting the velocities
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    zPos = zPos + distZ_inc;
+
+    // if it goes out of the domain, reflect the particle on the domain wall
+    //  this includes reflecting the component velocity
+    // since just moving at most one cell size, this doesn't need to be a while loop
+    if( zPos < domainZstart )
+    {
+        zPos = domainZstart - (zPos - domainZstart);
+        wFluct = -wFluct;
+        wFluct_old = -wFluct_old;
+    }
+    
+}
+void Plume::zDomainEndBC_reflection( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
+{
+    
+    // calculate the new component position for all particles that run this BC function
+    //  then if the new component position would put it out of the domain
+    //  modify the component position by reflecting it on the domain edge
+    //  this also includes reflecting the velocities
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    zPos = zPos + distZ_inc;
+
+    // if it goes out of the domain, reflect the particle on the domain wall
+    //  this includes reflecting the component velocity
+    // since just moving at most one cell size, this doesn't need to be a while loop
+    if( zPos > domainZend )
+    {
+        zPos = domainZend - (zPos - domainZend);
+        wFluct = -wFluct;
+        wFluct_old = -wFluct_old;
+    }
+
+}
+
+
+
+// boundary condition function types to be pointed to by pointer functions in the BCpointerFunctions vector
+// so to be pointed to by a BCptrFunction type variable
+void Plume::domainEdgeBC( const double& distX_inc, const double& distY_inc, const double& distZ_inc,
+                          int& cellIdx, int& ii, int& jj, int& kk,
+                          double& iw, double& jw, double& kw,
+                          int& ip, int& jp, int& kp, 
+                          double& xPos, double& yPos, double& zPos, 
+                          double& uFluct, double& vFluct, double& wFluct, 
+                          double& uFluct_old, double& vFluct_old, double& wFluct_old, 
+                          bool& isActive, 
+                          xDomainEdgeBCptrFunction xDomainEdgeBC, yDomainEdgeBCptrFunction yDomainEdgeBC, 
+                          zDomainEdgeBCptrFunction zDomainEdgeBC )
+{
+    // go position component by component and calculate the next position components, modified by the 
+    // domain edge boundary condition
+    // then update the cellIdx information for the newly updated position
+    // no need to modify the velFluct values here, they would be modified by the domain edge BC functions
+    // they modify everything except for the cellIdx info
+    // because particles have the chance of going out of the domain, only modify the eulerian cellIdx info
+    // if isActive stays true through each of the domain edge BC functions
+
+    // first the x direction components
+    (this->*xDomainEdgeBC)(distX_inc,xPos,uFluct,uFluct_old,isActive);
+    // second the y direction components
+    (this->*yDomainEdgeBC)(distY_inc,yPos,vFluct,vFluct_old,isActive);
+    // third the z direction components
+    (this->*zDomainEdgeBC)(distZ_inc,zPos,wFluct,wFluct_old,isActive);
+    
+    if( isActive = true )
+    {
+        // the expected particle positions are the desired output particle positions
+        // now calculate the eulerian grid cell info for these expected particle positions
+        // no need to modify the velocity info
+        eul->setInterp3Dindexing(xPos,yPos,zPos,  cellIdx, ii, jj, kk, iw, jw, kw, ip, jp, kp);
+    }
+
+}
+// the interior cell boundary condition functions, the ones chosen depending on the icellflag of the given cell
+void Plume::innerCellBC_passthrough( const double& distX_inc, const double& distY_inc, const double& distZ_inc,
+                                     int& cellIdx, int& ii, int& jj, int& kk,
+                                     double& iw, double& jw, double& kw,
+                                     int& ip, int& jp, int& kp, 
+                                     double& xPos, double& yPos, double& zPos, 
+                                     double& uFluct, double& vFluct, double& wFluct, 
+                                     double& uFluct_old, double& vFluct_old, double& wFluct_old, 
+                                     bool& isActive, 
+                                     xDomainEdgeBCptrFunction xDomainEdgeBC, yDomainEdgeBCptrFunction yDomainEdgeBC, 
+                                     zDomainEdgeBCptrFunction zDomainEdgeBC )
+{
+    // calculate the new component position for all particles that run this BC function
+    //  don't need to do anything else, nothing else needs modified
+    //  we are just letting the particle go on its merry way
+    // still need to update the cellIdx info right after calculating the new position
+
+    // start by setting the current particle component positions to the expected particle component positions
+    xPos = xPos + distX_inc;
+    yPos = yPos + distY_inc;
+    zPos = zPos + distZ_inc;
+    
+    // the expected particle positions are the desired output particle positions
+    // now calculate the eulerian grid cell info for these expected particle positions
+    // no need to modify the velocity info
+    eul->setInterp3Dindexing(xPos,yPos,zPos,  cellIdx, ii, jj, kk, iw, jw, kw, ip, jp, kp);
+
+    
+}
+void Plume::innerCellBC_simpleStairStepReflection( const double& distX_inc, const double& distY_inc, const double& distZ_inc,
+                                                   int& cellIdx, int& ii, int& jj, int& kk,
+                                                   double& iw, double& jw, double& kw,
+                                                   int& ip, int& jp, int& kp, 
+                                                   double& xPos, double& yPos, double& zPos, 
+                                                   double& uFluct, double& vFluct, double& wFluct, 
+                                                   double& uFluct_old, double& vFluct_old, double& wFluct_old, 
+                                                   bool& isActive, 
+                                                   xDomainEdgeBCptrFunction xDomainEdgeBC, yDomainEdgeBCptrFunction yDomainEdgeBC, 
+                                                   zDomainEdgeBCptrFunction zDomainEdgeBC )
+{
+    // set the current eulerian grid cell info to the old values, 
+    // cause going to update the current eulerian grid cell info using the new expected position
+    int cellIdx_old = cellIdx;
+    int ii_old = ii;
+    int jj_old = jj;
+    int kk_old = kk;
+    double iw_old = iw;
+    double jw_old = jw;
+    double kw_old = kw;
+    int ip_old = ip;
+    int jp_old = jp;
+    int kp_old = kp;
+
+    // also set/store the current particle position values to the old values,
+    // cause going to update the current particle position to be the new expected position
+    double xPos_old = xPos;
+    double yPos_old = yPos;
+    double zPos_old = zPos;
+
+    // now set the current particle positions to the expected particle positions
+    xPos = xPos + distX_inc;
+    yPos = yPos + distY_inc;
+    zPos = zPos + distZ_inc;
+    
+    // now calculate the eulerian grid cell info for these expected particle positions
+    eul->setInterp3Dindexing(xPos,yPos,zPos,  cellIdx, ii, jj, kk, iw, jw, kw, ip, jp, kp);
+
+
+    // now do the BC algorythm to know whether the expected positions are good enough
+    // or if they and maybe the velocity values need modified by the boundary condition
+
+    // use the difference between the old and the current cellIdx to know what to do with the
+    // particle positions and velocities
+    int cellIdx_diff = cellIdx - cellIdx_old;
+    if( cellIdx_diff == 1 )
+    {
+        // particle came in from the -x dir
+        // reflect only in the x direction, off the -x eulerian cell face
+        // y and z component positions and velocities stay the same
+        double xReflectPos = xPos - iw;
+        xPos = xReflectPos - (xPos - xReflectPos);
+        uFluct = -uFluct;
+        uFluct_old = -uFluct_old;
+        if( doDepositions == true )
+        {
+            // do deposition stuff on the -x eulerian cell face
+            // does nothing for now. The input probably won't allow true to be set yet
+        }
+    } else if( cellIdx_diff == -1 )
+    {
+        // particle came in from the +x dir
+        // reflect only in the x direction, off the +x eulerian cell face
+        // y and z component positions and velocities stay the same
+        double xReflectPos = xPos + (1-iw);
+        xPos = xReflectPos - (xPos - xReflectPos);
+        uFluct = -uFluct;
+        uFluct_old = -uFluct_old;
+        if( doDepositions == true )
+        {
+            // do deposition stuff on the +x eulerian cell face
+            // does nothing for now. The input probably won't allow true to be set yet
+        }
+    } else if( cellIdx_diff == nx )
+    {
+        // particle came in from the -y dir
+        // reflect only in the y direction, off the -y eulerian cell face
+        // x and z component positions and velocities stay the same
+        double yReflectPos = yPos - jw;
+        yPos = yReflectPos - (yPos - yReflectPos);
+        vFluct = -vFluct;
+        vFluct_old = -vFluct_old;
+        if( doDepositions == true )
+        {
+            // do deposition stuff on the -y eulerian cell face
+            // does nothing for now. The input probably won't allow true to be set yet
+        }
+    } else if( cellIdx_diff == -nx )
+    {
+        // particle came in from the +y dir
+        // reflect only in the y direction, off the +y eulerian cell face
+        // x and z component positions and velocities stay the same
+        double yReflectPos = yPos + (1-jw);
+        yPos = yReflectPos - (yPos - yReflectPos);
+        vFluct = -vFluct;
+        vFluct_old = -vFluct_old;
+        if( doDepositions == true )
+        {
+            // do deposition stuff on the +y eulerian cell face
+            // does nothing for now. The input probably won't allow true to be set yet
+        }
+    } else if( cellIdx_diff == ny*nx )
+    {
+        // particle came in from the -z dir
+        // reflect only in the z direction, off the -z eulerian cell face
+        // x and y component positions and velocities stay the same
+        double zReflectPos = zPos - kw;
+        zPos = zReflectPos - (zPos - zReflectPos);
+        wFluct = -wFluct;
+        wFluct_old = -wFluct_old;
+        if( doDepositions == true )
+        {
+            // do deposition stuff on the -z eulerian cell face
+            // does nothing for now. The input probably won't allow true to be set yet
+        }
+    } else if( cellIdx_diff == -ny*nx )
+    {
+        // particle came in from the +z dir
+        // reflect only in the z direction, off the +z eulerian cell face
+        // x and y component positions and velocities stay the same
+        double zReflectPos = zPos + (1-kw);
+        zPos = zReflectPos - (zPos - zReflectPos);
+        wFluct = -wFluct;
+        wFluct_old = -wFluct_old;
+        if( doDepositions == true )
+        {
+            // do deposition stuff on the +z eulerian cell face
+            // does nothing for now. The input probably won't allow true to be set yet
+        }
+    } else if( cellIdx_diff == 0 )
+    {
+        // particle stayed in the same cell
+        std::cout << "WARNING (Plume::innerCellBC_simpleStairStepReflection): particle stayed in the same cell" << std::endl;
+    } else
+    {
+        // particle moved more than one cell at a time
+        std::cout << "WARNING (Plume::innerCellBC_simpleStairStepReflection): particle moved more than one cell at a time" << std::endl;
+    }
+
+    // now that the particle has a modified and final reflected position, 
+    // recalculate the eulerian grid cell info for these final particle positions for the next iteration
+    eul->setInterp3Dindexing(xPos,yPos,zPos,  cellIdx, ii, jj, kk, iw, jw, kw, ip, jp, kp);
+    
+}
+// more will be coming soon
+
+
 
 
 void Plume::setFinishedParticleVals(double& xPos,double& yPos,double& zPos,bool& isActive,

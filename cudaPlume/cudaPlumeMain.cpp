@@ -134,10 +134,10 @@ int main(int argc, char** argv)
 
     
     // Create instance of Plume model class
-    Plume* plume = new Plume(PID,urb,dis, arguments.doLagrDataOutput, arguments.doSimInfoFileOutput,arguments.outputFolder,arguments.caseBaseName, arguments.debug);
+    Plume* plume = new Plume(PID,urb,turb,eul,dis, arguments.doLagrDataOutput, arguments.doSimInfoFileOutput,arguments.outputFolder,arguments.caseBaseName, arguments.debug);
     
     // Run plume advection model
-    plume->run(urb,turb,eul,dis,lagrToEulOutput,lagrOutput);
+    plume->run(lagrToEulOutput,lagrOutput);
     
     // compute run time information and print the elapsed execution time
     std::cout<<"[CUDA-Plume] \t Finished."<<std::endl;
