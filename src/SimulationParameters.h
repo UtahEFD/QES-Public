@@ -56,10 +56,25 @@ public:
                                                   // buildings
 
     // WRF File Parameters
-    // - if a WRF element is supplied, we do not load a DEM (at the
-    // moment), but extract the DEM from the WRF Fire Mesh.  Metparmas
-    // related to stations/sensors are pulled from the wind profile
-    // supplied by WRF.
+    // 
+    // Two use-cases are now supported:
+    //
+    // (1) Only a WRF file is supplied.
+    // If only a WRF data output file is supplied in the XML, the
+    // elevation, terrain model is acquired from the WRF Fire Mesh.
+    // Metparmas related to stations/sensors are pulled from the wind
+    // profile supplied by WRF.
+    // Issues:
+    // - We are not yet checking if no fire mesh is specified.  If no
+    // fire mesh is available, the terrain height could come from the
+    // atmos mesh.
+    //
+    // (2) Both a DEM and a WRF file are supplied.  With both a DEM
+    // and WRF file, the DEM will be used for creating the terrain and
+    // the WRF file will only be used to extract stations/sensors
+    // pulled from the wind profile in the WRF atmospheric mesh.
+    //
+    
     std::string wrfFile;
     WRFInput *wrfInputData = nullptr;
 
@@ -123,6 +138,16 @@ public:
         shpBuildingLayerName = "buildings";  // defaults
         parsePrimitive<std::string>(false, shpBuildingLayerName, "SHPBuildingLayer");
 
+        // Determine which use case to use for WRF/DEM combinations
+        if ((demFile != "") && (wrfFile != "")) {
+            // DEM - read in terrain
+            // WRF - retrieve wind profiles only
+        }
+        else if ((demFile == "") && (wrfFile != "")) {
+            // WRF - pull terrain and retrieve wind profiles 
+        }
+
+        // WRF File is specifie
         // Read in height field
         if (wrfFile != "") {
             std::cout << "Processing WRF data for terrain and met param sensors from " << wrfFile << std::endl;
