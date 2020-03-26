@@ -14,7 +14,7 @@
 	<sidewallFlag> 0 </sidewallFlag>
 	<maxIterations> 500 </maxIterations>
 	<residualReduction> 3 </residualReduction>
-	<meshTypeFlag> 0 </meshTypeFlag> <!-- 0 is stair; 1 is cut-cell  -->
+	<meshTypeFlag> 1 </meshTypeFlag> <!-- 0 is stair; 1 is cut-cell  -->
 	<useDiffusion> 0 </useDiffusion>
 	<domainRotation> 0 </domainRotation>
 	<UTMX> 0 </UTMX>
@@ -28,7 +28,7 @@
 	<maxSizeDataPoints> 1 </maxSizeDataPoints>
 	<siteName> sensor1 </siteName>
 	<fileName> sensor1.inp </fileName>
-	<z0_domain_flag> 1 </z0_domain_flag>            <!-- Distribution of sueface roughness for domain (0-uniform, 1-custom -->
+	<z0_domain_flag> 0 </z0_domain_flag>            <!-- Distribution of sueface roughness for domain (0-uniform, 1-custom -->
 	<sensor>
 		<site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->
 		<site_xcoord> 1.0</site_xcoord>
@@ -46,26 +46,26 @@
 	</sensor>
 </metParams>
 <fileOptions>
-	<outputFlag>1</outputFlag>
-    <outputFields>u</outputFields> 
-    <outputFields>v</outputFields> 
-    <outputFields>w</outputFields>
-    <outputFields>icell</outputFields>
-    <outputFields>mixlength</outputFields>  
-	<massConservedFlag> 0 </massConservedFlag>
-	<sensorVelocityFlag> 0 </sensorVelocityFlag>
-	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+  <outputFlag>1</outputFlag>
+  <outputFields>all</outputFields> 
+  <outputFields>v</outputFields> 
+  <outputFields>w</outputFields>
+  <outputFields>icell</outputFields> 
+  <massConservedFlag> 0 </massConservedFlag>
+  <sensorVelocityFlag> 0 </sensorVelocityFlag>
+  <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
 <!--buildings>
 	<wallRoughness> 0.1 </wallRoughness>
 	<numBuildings> 1 </numBuildings>
+	<numPolygonNodes> 0 </numPolygonNodes>
 	<rectangularBuilding>
-		<height> 20.0 </height>
+		<height> 5.0 </height>
 		<baseHeight> 0 </baseHeight>
-		<xStart> 90.0 </xStart>
-		<yStart> 90.0 </yStart>
-		<length> 20.0 </length>
-		<width> 20.0 </width>
-		<buildingRotation> 20.0 </buildingRotation>
+		<xStart> 80.5 </xStart>
+		<yStart> 80.5 </yStart>
+		<length> 5.0 </length>
+		<width> 5.0 </width>
+		<buildingRotation> 0.0 </buildingRotation>
 	</rectangularBuilding>
 </buildings-->

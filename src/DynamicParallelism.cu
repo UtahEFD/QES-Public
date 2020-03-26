@@ -147,7 +147,7 @@ __global__ void finalVelocity(float *d_u0, float *d_v0, float *d_w0, float *d_la
     int i = icell_face - k*nx*ny - j*nx;
     int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
 
-    if((i>= 0) && (j>= 0) && (k >= 0) && (i<nx)&&(j<ny)&&(k<nz)){
+    if((i>= 0) && (j>= 0) && (k >= 0) && (i<nx)&&(j<ny)&&(k<nz-1)){
 
         d_u[icell_face] = d_u0[icell_face];
         d_v[icell_face] = d_v0[icell_face];
@@ -156,13 +156,13 @@ __global__ void finalVelocity(float *d_u0, float *d_v0, float *d_w0, float *d_la
     }
 
 
-    if ((i > 0) && (i < nx-1) && (j > 0) && (j < ny-1) && (k < nz-1) && (k > 0)) {
+    if ((i > 0) && (i < nx-1) && (j > 0) && (j < ny-1) && (k < nz-2) && (k > 0)) {
 
-        d_u[icell_face] = d_u0[icell_face]+(1/(2*pow(alpha1, 2.0)))*d_f[icell_cent]*dx*
+        d_u[icell_face] = d_f[icell_cent]*dx*dx*d_u0[icell_face]+(1/(2*pow(alpha1, 2.0)))*d_f[icell_cent]*dx*
 						 (d_lambda[icell_cent]-d_lambda[icell_cent-1]);
-        d_v[icell_face] = d_v0[icell_face]+(1/(2*pow(alpha1, 2.0)))*d_h[icell_cent]*dy*
+        d_v[icell_face] = d_h[icell_cent]*dy*dy*d_v0[icell_face]+(1/(2*pow(alpha1, 2.0)))*d_h[icell_cent]*dy*
 						 (d_lambda[icell_cent]-d_lambda[icell_cent - (nx-1)]);
-        d_w[icell_face] = d_w0[icell_face]+(1/(2*pow(alpha2, 2.0)))*d_n[icell_cent]*d_dz_array[k]*
+        d_w[icell_face] = d_n[icell_cent]*d_dz_array[k]*d_dz_array[k]*d_w0[icell_face]+(1/(2*pow(alpha2, 2.0)))*d_n[icell_cent]*d_dz_array[k]*
 						 (d_lambda[icell_cent]-d_lambda[icell_cent - (nx-1)*(ny-1)]);
 
     }
@@ -355,8 +355,6 @@ void DynamicParallelism::solve(const URBInputData* UID, URBGeneralData* UGD, boo
             }
         }
         outdata2.close();*/
-
-
 
     cudaFree (d_lambda);
     cudaFree (d_e);
