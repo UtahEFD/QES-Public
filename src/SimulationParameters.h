@@ -55,7 +55,9 @@ public:
     std::vector <float> shpBuildingHeight;        // Height of
                                                   // buildings
 
+    // //////////////////////////////////////////
     // WRF File Parameters
+    // //////////////////////////////////////////
     // 
     // Two use-cases are now supported:
     //
@@ -64,7 +66,7 @@ public:
     // elevation, terrain model is acquired from the WRF Fire Mesh.
     // Metparmas related to stations/sensors are pulled from the wind
     // profile supplied by WRF.
-    // Issues:
+    // * Issues:
     // - We are not yet checking if no fire mesh is specified.  If no
     // fire mesh is available, the terrain height could come from the
     // atmos mesh.
@@ -72,11 +74,20 @@ public:
     // (2) Both a DEM and a WRF file are supplied.  With both a DEM
     // and WRF file, the DEM will be used for creating the terrain and
     // the WRF file will only be used to extract stations/sensors
-    // pulled from the wind profile in the WRF atmospheric mesh.
+    // pulled from the wind profile in the WRF atmospheric mesh. Thus,
+    // no terrain will be queried from the WRF file.
     //
     
     std::string wrfFile;
     WRFInput *wrfInputData = nullptr;
+
+    enum DomainInputType {
+        WRFOnly,
+        WRFDEM,
+        DEMOnly,
+        UNKNOWN
+    };
+    DomainInputType m_domIType;
 
     SimulationParameters()
     {
@@ -140,16 +151,32 @@ public:
 
         // Determine which use case to use for WRF/DEM combinations
         if ((demFile != "") && (wrfFile != "")) {
+            // Both specified
             // DEM - read in terrain
             // WRF - retrieve wind profiles only
+            m_domIType = WRFDEM;
         }
         else if ((demFile == "") && (wrfFile != "")) {
-            // WRF - pull terrain and retrieve wind profiles 
+            // Only WRF Specified
+            // WRF - pull terrain and retrieve wind profiles
+            m_domIType = WRFOnly;
+        }
+        else if (demFile != "") {
+            // Only DEM Specified - nothing set for WRF Input
+            m_domIType = DEMOnly;
+        }
+        else {
+            m_domIType = UNKNOWN;
         }
 
-        // WRF File is specifie
-        // Read in height field
-        if (wrfFile != "") {
+        //
+        // Process the data files based on the state determined above
+        //
+        if (m_domIType == WRFOnly) {
+            //
+            // WRF File is specified 
+            // Read in height field
+            //
             std::cout << "Processing WRF data for terrain and met param sensors from " << wrfFile << std::endl;
             wrfInputData = new WRFInput( wrfFile );
             std::cout << "WRF Input Data processing completed." << std::endl;
@@ -171,9 +198,30 @@ public:
             DTE_mesh = new Mesh(DTE_heightField->getTris());
             std::cout << "Mesh complete\n";
         }
+        else if (m_domIType == WRFDEM) {
 
-        // For now wrf and dem are exclusive
-        else if (demFile != "") {
+            std::cout << "Reading DEM and processing WRF data for met param sensors from " << wrfFile << std::endl;
+
+            // First read DEM as usual
+            std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
+            DTE_heightField = new DTEHeightField(demFile,
+                                                 (*(grid))[0],
+                                                 (*(grid))[1] );
+            assert(DTE_heightField);
+
+            std::cout << "Forming triangle mesh...\n";
+            DTE_heightField->setDomain(domain, grid);
+            DTE_mesh = new Mesh(DTE_heightField->getTris());
+            std::cout << "Mesh complete\n";
+
+            
+            // Then, read WRF File extracting ONLY the sensor data
+            bool onlySensorData = true;
+            wrfInputData = new WRFInput( wrfFile, onlySensorData );
+            std::cout << "WRF Wind Velocity Profile Data processing completed." << std::endl;
+        }
+        
+        else if (m_domIType = DEMOnly) {
             std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
             DTE_heightField = new DTEHeightField(demFile,
                                                  (*(grid))[0],
@@ -189,8 +237,8 @@ public:
             // No DEM, so make sure these are null
             DTE_heightField = nullptr;
             DTE_mesh = nullptr;
+            wrfInputData = nullptr;
         }
-
 
 
         //

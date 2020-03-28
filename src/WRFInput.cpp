@@ -23,8 +23,9 @@
 #include "gdal_priv.h"
 #include "cpl_conv.h" // for CPLMalloc()
 
-WRFInput::WRFInput(const std::string& filename)
-    : wrfInputFile( filename, NcFile::read ),
+WRFInput::WRFInput(const std::string& filename, bool sensorsOnly)
+    : m_processOnlySensorData( sensorsOnly ),
+      wrfInputFile( filename, NcFile::read ),
       m_minWRFAlt( 22 ), m_maxWRFAlt( 330 ), m_maxTerrainSize( 10001 ), m_maxNbStat( 156 ),
       m_TerrainFlag(1), m_BdFlag(0), m_VegFlag(0), m_Z0Flag(2)
 {
@@ -65,6 +66,8 @@ WRFInput::WRFInput(const std::string& filename)
     atm_dy = cellSize[1];
     
     std::cout << "WRF Atmos Resolution (dx,dy) is ("<< atm_dx << ", " << atm_dy << ")" << std::endl;
+
+    if (m_processOnlySensorData == false) {
 
     // 
     // Fire Mesh Terrain Nodes
@@ -313,7 +316,8 @@ WRFInput::WRFInput(const std::string& filename)
     double x0_fire = t_x0_fire; // -fm_nx / 2.0 * dxf + lon2eastings[0]; 
     // ny_atm / 2. * atm_dy + n 
     double y1_fire = t_y1_fire; // -fm_ny / 2.0 * dyf + lat2northings[0];
-
+    }
+    
     //
     // remainder of code is for pulling out wind profiles
     //
