@@ -147,7 +147,12 @@ void DTEHeightField::load()
 	  m_poDataset->GetRasterXSize(), m_poDataset->GetRasterYSize(),
 	  m_poDataset->GetRasterCount() );
 
-  if( m_poDataset->GetProjectionRef()  != NULL )
+  // Attempt to get the spatial reference from this dataset -
+  // which will help us convert into lat/long
+  // In GDAL 3.0+ we can use
+  // spatialRef = m_poDataset->GetSpatialRef, but in pre-3.0 versions,
+  // this comes from GetProjectionRef
+  if( m_poDataset->GetProjectionRef() != NULL )
     printf( "\tProjection is `%s'\n", m_poDataset->GetProjectionRef() );
 
   if( m_poDataset->GetGeoTransform( m_geoTransform ) == CE_None )
@@ -205,6 +210,24 @@ void DTEHeightField::load()
 
   printf( "DEM size is %dx%dx%d\n",
 	  m_nXSize, m_nYSize );
+
+  // Xgeo = GT(0) + Xpixel*GT(1) + Yline*GT(2)
+  // Ygeo = GT(3) + Xpixel*GT(4) + Yline*GT(5)
+  // OGRCoordinateTransformationH hTransform
+
+  std::cout << "Mapping between raster coordinates and geo-referenced coordinates" << std::endl;
+  double xGeo(0.0), yGeo(0.0);
+  convertRasterToGeo( 0, 0, xGeo, yGeo );
+  printf("Raster Coordinate (0, 0):\t(%12.7f, %12.7f)\n", xGeo, yGeo);
+
+  convertRasterToGeo( m_nXSize-1, 0, xGeo, yGeo );
+  printf("Raster Coordinate (%d, 0):\t(%12.7f, %12.7f)\n", m_nXSize-1, xGeo, yGeo);
+  
+  convertRasterToGeo( m_nXSize-1, m_nYSize-1, xGeo, yGeo );
+  printf("Raster Coordinate (%d, %d):\t(%12.7f, %12.7f)\n", m_nXSize-1, m_nYSize-1, xGeo, yGeo);
+
+  convertRasterToGeo( 0, m_nYSize-1, xGeo, yGeo );
+  printf("Raster Coordinate (0, %d):\t(%12.7f, %12.7f)\n", m_nYSize-1, xGeo, yGeo);
 
   pafScanline = (float *) CPLMalloc(sizeof(float)*m_nXSize*m_nYSize);
 
