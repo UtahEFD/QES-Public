@@ -2,10 +2,10 @@
 
 	<DEM>../scratch/DEM/askervein.tif</DEM>					<!-- Address to DEM location-->	
 
-  	<halo_x> 40.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
-  	<halo_y> 40.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain)-->
+  	<halo_x> 0.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
+  	<halo_y> 0.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain)-->
 
-	<domain> 610 610 70 </domain>
+	<domain> 600 600 70 </domain>
 	<cellSize> 10.0 10.0 5.0 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>

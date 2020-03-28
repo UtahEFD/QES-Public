@@ -54,17 +54,18 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 		S_front = S_behind = S_right = S_left = S_below = S_above = 0.0;
 		S_cut = 0.0;
 		ni = nj = nk = 0.0;
+		solid_V_frac = 0.0;
 		location = cells[cutcell_index[j]].getLocationPoints();
 		terrainEdges = cells[cutcell_index[j]].getTerrainEdges();
 		std::vector< Vector3<float> > terrainPoints = cells[cutcell_index[j]].getTerrainPoints();
+		int k = cutcell_index[j]/((nx-1)*(ny-1));
+		int jjj = (cutcell_index[j] - k*(nx-1)*(ny-1))/(nx-1);
+		int iii = cutcell_index[j] - k*(nx-1)*(ny-1) - jjj*(nx-1);
 		//for every face
 		for (int i = 0; i < 6; i++)
 		{
 			cut_points.clear();
 			cut_points = cells[cutcell_index[j]].getFaceFluidPoints(i);
-			int k = cutcell_index[j]/((nx-1)*(ny-1));
-			int jjj = (cutcell_index[j] - k*(nx-1)*(ny-1))/(nx-1);
-			int iii = cutcell_index[j] - k*(nx-1)*(ny-1) - jjj*(nx-1);
 			//place points in local cell space
 			if (cut_points.size() > 2)
 			{
@@ -75,8 +76,6 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 						cut_points[jj][l] = cut_points[jj][l] - location[l];
 					}
 				}
-
-
 
 				//for faces that exist on the side of the cell (not XY planes)
 				if (i < 4)
@@ -99,84 +98,74 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 						S_behind = calculateArea(cut_points, cutcell_index[j], dx, dy, dz_array[k], n, m, f, e, h, g, i);
 					}
 				}
+			}
 				//for the top and bottom faces of the cell (XY planes)
-				else
-				{
-					if (i == 4)
-					{
-						S_below = calculateAreaTopBot(terrainPoints, terrainEdges,cutcell_index[j],
+
+			if (i == 4)
+			{
+				S_below = calculateAreaTopBot(terrainPoints, terrainEdges,cutcell_index[j],
 											dx, dy, dz_array[k], location, n, true);
-					}
-
-					else
-					{
-						S_above = calculateAreaTopBot(terrainPoints, terrainEdges,cutcell_index[j],
-											dx, dy, dz_array[k], location, m, false);
-					}
-
-				}
-
-
-
-				S_cut = sqrt( pow(S_behind - S_front, 2.0) + pow(S_right - S_left, 2.0) + pow(S_below - S_above, 2.0) );
-
-        if (S_cut != 0.0)
-        {
-          ni = (S_behind - S_front)/S_cut;
-          nj = (S_right - S_left)/S_cut;
-          nk = (S_below - S_above)/S_cut;
-        }
-
-        solid_V_frac = 0.0;
-
-        if (i == 0 )
-        {
-					solid_V_frac += (0.0*(-1)*S_right)/(3*dx*dy*dz_array[k]);
-        }
-
-        if (i == 1 )
-        {
-					solid_V_frac += (dy*(1)*S_left)/(3*dx*dy*dz_array[k]);
-        }
-
-        if (i == 2 )
-        {
-					solid_V_frac += (dx*(1)*S_front)/(3*dx*dy*dz_array[k]);
-        }
-
-        if (i == 3 )
-        {
-					solid_V_frac += (0.0*(-1)*S_behind)/(3*dx*dy*dz_array[k]);
-        }
-
-        if (i == 4 )
-        {
-					solid_V_frac += (0.0*(-1)*S_below)/(3*dx*dy*dz_array[k]);
-        }
-
-        if (i == 5 )
-        {
-					solid_V_frac += (dz_array[k]*(1)*S_above)/(3*dx*dy*dz_array[k]);
-        }
-
-				if (terrainPoints.size() != 0)
-        {
-					solid_V_frac += (((terrainPoints[0][0]-location[0])*ni*S_cut) + ((terrainPoints[0][1]-location[1])*nj*S_cut) + ((terrainPoints[0][2]-location[2])*nk*S_cut) )/(3*dx*dy*dz_array[k]);
-				}
-
-
-      	terrain_volume_frac[cutcell_index[j]] -= solid_V_frac;
-
-        if (terrain_volume_frac[cutcell_index[j]] < 0.0)
-        {
-          terrain_volume_frac[cutcell_index[j]] = 0.0;
-        }
-
 			}
 
-		}
-	}
+			if (i == 5)
+			{
+				S_above = calculateAreaTopBot(terrainPoints, terrainEdges,cutcell_index[j],
+											dx, dy, dz_array[k], location, m, false);
+			}
 
+			S_cut = sqrt( pow(S_behind - S_front, 2.0) + pow(S_right - S_left, 2.0) + pow(S_below - S_above, 2.0) );
+
+      if (S_cut != 0.0)
+      {
+        ni = (S_behind - S_front)/S_cut;
+        nj = (S_right - S_left)/S_cut;
+        nk = (S_below - S_above)/S_cut;
+      }
+
+      if (i == 0 )
+      {
+				solid_V_frac += (0.0*(-1)*S_right)/(3*dx*dy*dz_array[k]);
+      }
+
+      if (i == 1 )
+      {
+				solid_V_frac += (dy*(1)*S_left)/(3*dx*dy*dz_array[k]);
+      }
+
+      if (i == 2 )
+      {
+				solid_V_frac += (dx*(1)*S_front)/(3*dx*dy*dz_array[k]);
+      }
+
+      if (i == 3 )
+      {
+				solid_V_frac += (0.0*(-1)*S_behind)/(3*dx*dy*dz_array[k]);
+      }
+
+      if (i == 4 )
+      {
+				solid_V_frac += (0.0*(-1)*S_below)/(3*dx*dy*dz_array[k]);
+      }
+
+      if (i == 5 )
+      {
+				solid_V_frac += (dz_array[k]*(1)*S_above)/(3*dx*dy*dz_array[k]);
+      }
+		}
+
+		if (terrainPoints.size() != 0)
+    {
+			solid_V_frac += (((terrainPoints[0][0]-location[0])*ni*S_cut) + ((terrainPoints[0][1]-location[1])*nj*S_cut) + ((terrainPoints[0][2]-location[2])*nk*S_cut) )/(3*dx*dy*dz_array[k]);
+		}
+
+    terrain_volume_frac[cutcell_index[j]] -= solid_V_frac;
+
+    if (terrain_volume_frac[cutcell_index[j]] < 0.0)
+    {
+      terrain_volume_frac[cutcell_index[j]] = 0.0;
+    }
+
+	}
 }
 
 
@@ -216,11 +205,11 @@ void Cut_cell::reorderPoints(std::vector< Vector3<float>> &cut_points, int index
 		{
 			angle[i] = (180/pi)*atan2((cut_points[i][2]-centroid[2]),(cut_points[i][0]-centroid[0]));
 		}
-		/*if (index==4 || index==5)
+		if (index==4 || index==5)
 		{
 			angle[i] = (180/pi)*atan2((cut_points[i][1]-centroid[1]),(cut_points[i][0]-centroid[0]));
 
-		}*/
+		}
 	}
 	// Call sort to sort points based on the angles (from -180 to 180)
 	mergeSort(angle, cut_points);

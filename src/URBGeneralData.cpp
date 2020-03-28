@@ -290,11 +290,13 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     // Handle remaining Terrain processing components here
     ////////////////////////////////////////////////////////
 
+
     if (UID->simParams->DTE_heightField)
     {
         // ////////////////////////////////
         // Retrieve terrain height field //
         // ////////////////////////////////
+        auto start_stair = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < nx-1; i++)
         {
             for (int j = 0; j < ny-1; j++)
@@ -328,15 +330,27 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
             }
         }
 
+        auto finish_stair = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+
+        std::chrono::duration<float> elapsed_stair = finish_stair - start_stair;
+        std::cout << "Elapsed time for terrain with stair-step: " << elapsed_stair.count() << " s\n";
+
         if (UID->simParams->meshTypeFlag == 1)
         {
             //////////////////////////////////
             //        Cut-cell method       //
             //////////////////////////////////
 
+            auto start_cut = std::chrono::high_resolution_clock::now();
+
             // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
             cut_cell.calculateCoefficient(cells, UID->simParams->DTE_heightField, nx, ny, nz, dx, dy, dz_array, n, m, f, e, h, g, pi, icellflag,
                                           terrain_volume_frac, z_face, UID->simParams->halo_x, UID->simParams->halo_y);
+
+            auto finish_cut = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+
+            std::chrono::duration<float> elapsed_cut = finish_cut - start_cut;
+            std::cout << "Elapsed time for terrain with cut-cell: " << elapsed_cut.count() << " s\n";
         }
     }
     ///////////////////////////////////////////////////////
@@ -455,14 +469,41 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
    // from Building in the end...
    if ( UID->buildings )
    {
+      float corner_height, min_height;
       for (int i = 0; i < UID->buildings->buildings.size(); i++)
       {
-          allBuildingsV.push_back( UID->buildings->buildings[i] );
-          int j = allBuildingsV.size()-1;
-          building_id.push_back( j );
-          allBuildingsV[j]->setPolyBuilding(this);
-          allBuildingsV[j]->setCellFlags(UID, this, j);
-          effective_height.push_back(allBuildingsV[i]->height_eff);
+        allBuildingsV.push_back( UID->buildings->buildings[i] );
+        int j = allBuildingsV.size()-1;
+        building_id.push_back( j );
+        // Setting base height for buildings if there is a DEM file
+        if (UID->simParams->DTE_heightField && UID->simParams->DTE_mesh)
+        {
+          // Get base height of every corner of building from terrain height
+          min_height = UID->simParams->DTE_mesh->getHeight(allBuildingsV[j]->polygonVertices[0].x_poly,
+                                                           allBuildingsV[j]->polygonVertices[0].y_poly);
+          if (min_height < 0)
+          {
+            min_height = 0.0;
+          }
+          for (auto lIdx = 1; lIdx < allBuildingsV[j]->polygonVertices.size(); lIdx++)
+          {
+            corner_height = UID->simParams->DTE_mesh->getHeight(allBuildingsV[j]->polygonVertices[lIdx].x_poly,
+                                                                  allBuildingsV[j]->polygonVertices[lIdx].y_poly);
+
+            if (corner_height < min_height && corner_height >= 0.0)
+            {
+              min_height = corner_height;
+            }
+          }
+          allBuildingsV[j]->base_height = min_height;
+        }
+        else
+        {
+          allBuildingsV[j]->base_height = 0.0;
+        }
+        allBuildingsV[j]->setPolyBuilding(this);
+        allBuildingsV[j]->setCellFlags(UID, this, j);
+        effective_height.push_back(allBuildingsV[i]->height_eff);
       }
     }
 
@@ -490,9 +531,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     for (int i = 0; i < allBuildingsV.size(); i++)
     {
         // for now this does the canopy stuff for us
-        std::cout << "Applying canopy vegetation parameterization...\n";
         allBuildingsV[building_id[i]]->canopyVegetation(this);
-        std::cout << "Canopy vegetation parameterization done...\n";
     }
 
     ///////////////////////////////////////////

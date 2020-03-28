@@ -68,17 +68,6 @@ void Wall::defineWalls(URBGeneralData *UGD)
           UGD->m[icell_cent] = 1.0;
           UGD->n[icell_cent] = 1.0;
         }
-        if (UGD->icellflag[icell_cent] == 8 && UGD->terrain_volume_frac[icell_cent] <= 0.1)
-        {
-          //std::cout << "icell_cent:  " << icell_cent << std::endl;
-          UGD->icellflag[icell_cent] = 2;
-          UGD->e[icell_cent] = 1.0;
-          UGD->f[icell_cent] = 1.0;
-          UGD->g[icell_cent] = 1.0;
-          UGD->h[icell_cent] = 1.0;
-          UGD->m[icell_cent] = 1.0;
-          UGD->n[icell_cent] = 1.0;
-        }
       }
     }
   }
@@ -102,18 +91,7 @@ void Wall::defineWalls(URBGeneralData *UGD)
           UGD->m[icell_cent] = 1.0;
           UGD->n[icell_cent] = 1.0;
         }
-        if (UGD->e[icell_cent] == 0.0 && UGD->f[icell_cent] == 0.0 && UGD->g[icell_cent] == 0.0
-            && UGD->h[icell_cent] == 0.0 && UGD->m[icell_cent] == 0.0 && UGD->n[icell_cent] == 0.0 &&
-            UGD->icellflag[icell_cent] == 8)
-        {
-          UGD->icellflag[icell_cent] = 2;
-          UGD->e[icell_cent] = 1.0;
-          UGD->f[icell_cent] = 1.0;
-          UGD->g[icell_cent] = 1.0;
-          UGD->h[icell_cent] = 1.0;
-          UGD->m[icell_cent] = 1.0;
-          UGD->n[icell_cent] = 1.0;
-        }
+
       }
     }
   }

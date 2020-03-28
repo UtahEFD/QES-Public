@@ -141,7 +141,7 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
         /////   Update the velocity field using Euler-Lagrange equations   /////
         ////////////////////////////////////////////////////////////////////////
 
-        for (int k = 0; k < UGD->nz; k++)
+        for (int k = 0; k < UGD->nz-1; k++)
         {
             for (int j = 0; j < UGD->ny; j++)
             {
@@ -159,7 +159,7 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
         // /////////////////////////////////////////////
     	  /// Update velocity field using Euler equations
         // /////////////////////////////////////////////
-        for (int k = 1; k < UGD->nz-1; k++)
+        for (int k = 1; k < UGD->nz-2; k++)
         {
             for (int j = 1; j < UGD->ny-1; j++)
             {
@@ -168,14 +168,14 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
                     icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   /// Lineralized index for cell centered values
                     icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;               /// Lineralized index for cell faced values
 
-                    UGD->u[icell_face] = UGD->u0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
+                    UGD->u[icell_face] = UGD->f[icell_cent]*UGD->dx*UGD->dx*UGD->u0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
                         UGD->f[icell_cent]*UGD->dx*(lambda[icell_cent]-lambda[icell_cent-1]);
 
                         // Calculate correct wind velocity
-                    UGD->v[icell_face] = UGD->v0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
+                    UGD->v[icell_face] = UGD->h[icell_cent]*UGD->dy*UGD->dy*UGD->v0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
                         UGD->h[icell_cent]*UGD->dy*(lambda[icell_cent]-lambda[icell_cent - (UGD->nx-1)]);
 
-                    UGD->w[icell_face] = UGD->w0[icell_face]+(1/(2*pow(alpha2, 2.0))) *
+                    UGD->w[icell_face] = UGD->n[icell_cent]*UGD->dz_array[k]*UGD->dz_array[k]*UGD->w0[icell_face]+(1/(2*pow(alpha2, 2.0))) *
                         UGD->n[icell_cent]*UGD->dz_array[k]*(lambda[icell_cent]-lambda[icell_cent - (UGD->nx-1)*(UGD->ny-1)]);
                 }
             }
