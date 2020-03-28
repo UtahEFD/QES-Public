@@ -139,23 +139,23 @@ void DTEHeightField::load()
       exit( EXIT_FAILURE );
     }
 
-  printf( "Driver: %s/%s\n",
+  printf( "GDAL Driver: %s/%s\n",
 	  m_poDataset->GetDriver()->GetDescription(),
 	  m_poDataset->GetDriver()->GetMetadataItem( GDAL_DMD_LONGNAME ) );
 
-  printf( "Size is %dx%dx%d\n",
+  printf( "\tRaster Size is %dx%dx%d\n",
 	  m_poDataset->GetRasterXSize(), m_poDataset->GetRasterYSize(),
 	  m_poDataset->GetRasterCount() );
 
   if( m_poDataset->GetProjectionRef()  != NULL )
-    printf( "Projection is `%s'\n", m_poDataset->GetProjectionRef() );
+    printf( "\tProjection is `%s'\n", m_poDataset->GetProjectionRef() );
 
   if( m_poDataset->GetGeoTransform( m_geoTransform ) == CE_None )
     {
-      printf( "Origin = (%.6f,%.6f)\n",
+      printf( "\tOrigin = (%.6f,%.6f)\n",
 	      m_geoTransform[0], m_geoTransform[3] );
 
-      printf( "Pixel Size = (%.6f,%.6f)\n",
+      printf( "\tPixel Size = (%.6f,%.6f)\n",
 	      m_geoTransform[1], m_geoTransform[5] );
       pixelSizeX = abs(m_geoTransform[1]);
       pixelSizeY = abs(m_geoTransform[5]);
@@ -171,7 +171,7 @@ void DTEHeightField::load()
 
   poBand = m_poDataset->GetRasterBand( 1 );
   poBand->GetBlockSize( &nBlockXSize, &nBlockYSize );
-  printf( "Block=%dx%d Type=%s, ColorInterp=%s\n",
+  printf( "\tRaster Block=%dx%d Type=%s, ColorInterp=%s\n",
 	  nBlockXSize, nBlockYSize,
 	  GDALGetDataTypeName(poBand->GetRasterDataType()),
 	  GDALGetColorInterpretationName(poBand->GetColorInterpretation()) );
@@ -181,13 +181,13 @@ void DTEHeightField::load()
   if( ! (bGotMin && bGotMax) )
     GDALComputeRasterMinMax((GDALRasterBandH)poBand, TRUE, adfMinMax);
 
-  printf( "Min=%.3fd, Max=%.3f\n", adfMinMax[0], adfMinMax[1] );
+  printf( "\tRaster Min=%.3fd and Max=%.3f\n", adfMinMax[0], adfMinMax[1] );
 
   if( poBand->GetOverviewCount() > 0 )
-    printf( "Band has %d overviews.\n", poBand->GetOverviewCount() );
+    printf( "\tBand has %d overviews.\n", poBand->GetOverviewCount() );
 
   if( poBand->GetColorTable() != NULL )
-    printf( "Band has a color table with %d entries.\n",
+    printf( "\tBand has a color table with %d entries.\n",
 	    poBand->GetColorTable()->GetColorEntryCount() );
 
   m_rbScale = poBand->GetScale();
