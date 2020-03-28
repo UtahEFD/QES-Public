@@ -217,14 +217,13 @@ public:
             // To proceed and cull sensors appropriately, we will need
             // the lower-left bounds from the DEM
             
-            
             // Then, read WRF File extracting ONLY the sensor data
             bool onlySensorData = true;
             wrfInputData = new WRFInput( wrfFile, onlySensorData );
             std::cout << "WRF Wind Velocity Profile Data processing completed." << std::endl;
         }
         
-        else if (m_domIType = DEMOnly) {
+        else if (m_domIType == DEMOnly) {
             std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
             DTE_heightField = new DTEHeightField(demFile,
                                                  (*(grid))[0],
