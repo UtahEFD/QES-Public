@@ -1,6 +1,10 @@
 //Contains all the functions to be used in OptixRayTrace
 
+
 #include <optix.h>
+#include <optix_stubs.h>
+#include <optix_device.h>
+
 #include <stdio.h>
 #include <stdint.h>
 #include <float.h>
@@ -9,12 +13,11 @@
 
 #include "OptixRayTrace.h"
 
-
 extern "C" {
 __constant__ Params params;
 }
 
-
+/*
 static __forceinline__ __device__ uint32_t thomas_wang_hash(uint32_t seed){
        seed = (seed ^ 61) ^ (seed >> 16);
        seed = seed + (seed << 3);
@@ -41,6 +44,7 @@ static __forceinline__ __device__ uint32_t genSeed(uint32_t val){
 static __forceinline__ __device__ float rndNum(){
    return 1.0;
 }
+*/
 
 extern "C" __global__ void __raygen__from_cell(){
   const uint3 idx = optixGetLaunchIndex();
@@ -59,9 +63,9 @@ extern "C" __global__ void __raygen__from_cell(){
              0.0f,
              OptixVisibilityMask(1),
              OPTIX_RAY_FLAG_NONE,
-             0,
-             2,
-             0,
+             RAY_TYPE_RADIENCE,
+             RAY_TYPE_COUNT,
+             RAY_TYPE_RADIENCE,
              t);
 
       Hit hit;

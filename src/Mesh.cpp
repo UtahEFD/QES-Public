@@ -40,9 +40,8 @@ void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float d
 
                // SphereDirections sd;
                //SphereDirections sd(1000, 0, 2*M_PI, -M_PI, M_PI);
-
                //SphereDirections sd(18, -1,1, 0,2*M_PI);
-               SphereDirections sd(100);
+               SphereDirections sd(1000);
 
                float maxLength = std::numeric_limits<float>::infinity();
 

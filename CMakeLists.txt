@@ -90,9 +90,9 @@ ENDIF(CUDA_FOUND)
 #
 
 #use fast math option is required for OptiX
-#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;--use_fast_math;--keep-device-functions")
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;--use_fast_math;--keep-device-functions")
 
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode=arch=compute_75,code=sm_75;-rdc=true;--use_fast_math;--keep-device-functions")
+#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode=arch=compute_75,code=sm_75;-rdc=true;--use_fast_math;--keep-device-functions")
 
 #set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_35;-rdc=true;--use_fast_math;--keep-device-functions")
 

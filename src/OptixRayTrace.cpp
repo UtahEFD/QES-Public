@@ -17,6 +17,19 @@
    }while (0);
 
 
+#define CUDA_SYNC_CHECK()                                       \
+   do{                                                          \
+      cudaDeviceSynchronize();                                  \
+      cudaError_t error = cudaGetLastError();                   \
+      if(error != cudaSuccess) {                                \
+         std::stringstream strStream;                           \
+         strStream << "CUDA error on synchronize with error '"  \
+                   << cudaGetErrorString(error)                 \
+                   <<"' ("__FILE__<<":"<<__LINE__<<")\n";       \
+         throw std::runtime_error(strStream.str().c_str());     \
+      }                                                         \
+   }while(0)
+
 #define OPTIX_CHECK(call)                                       \
    do {                                                         \
       OptixResult res = call;                                   \
@@ -552,6 +565,7 @@ void OptixRayTrace::launch(){
                            1,//state.num_cells,//state.samples_per_cell,
                            1)
                );
+   CUDA_CHECK(cudaDeviceSetLimit(cudaLimitMallocHeapSize, state.num_cells*state.samples_per_cell));
    CUDA_SYNC_CHECK();
    CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_params)));
 }
