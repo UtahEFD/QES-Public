@@ -7,8 +7,11 @@
 #include <string>
 #include "Triangle.h"
 #include "Vector3.h"
+
 #include "gdal_priv.h"
 #include "cpl_conv.h" // for CPLMalloc()
+#include "ogrsf_frmts.h"
+
 #include "Cell.h"
 #include "Edge.h"
 #include <iostream>
@@ -76,6 +79,15 @@ public:
    * This function frees the pafScanline. It should be called after all DEM querying has taken place.
    */
   void closeScanner();
+
+    void convertRasterToGeo( double rasterX, double rasterY, double &geoX, double &geoY )
+    {
+        // Affine transformation from the GDAL geotransform:
+        // https://gdal.org/user/raster_data_model.html
+        geoX = m_geoTransform[0] + rasterX * m_geoTransform[1] + rasterY * m_geoTransform[2];
+        geoY = m_geoTransform[3] + rasterX * m_geoTransform[4] + rasterY * m_geoTransform[5];
+    }
+    
 
   int m_nXSize, m_nYSize;
   float pixelSizeX, pixelSizeY;

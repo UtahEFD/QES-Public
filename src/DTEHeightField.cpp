@@ -139,23 +139,28 @@ void DTEHeightField::load()
       exit( EXIT_FAILURE );
     }
 
-  printf( "Driver: %s/%s\n",
+  printf( "GDAL Driver: %s/%s\n",
 	  m_poDataset->GetDriver()->GetDescription(),
 	  m_poDataset->GetDriver()->GetMetadataItem( GDAL_DMD_LONGNAME ) );
 
-  printf( "Size is %dx%dx%d\n",
+  printf( "\tRaster Size is %dx%dx%d\n",
 	  m_poDataset->GetRasterXSize(), m_poDataset->GetRasterYSize(),
 	  m_poDataset->GetRasterCount() );
 
-  if( m_poDataset->GetProjectionRef()  != NULL )
-    printf( "Projection is `%s'\n", m_poDataset->GetProjectionRef() );
+  // Attempt to get the spatial reference from this dataset -
+  // which will help us convert into lat/long
+  // In GDAL 3.0+ we can use
+  // spatialRef = m_poDataset->GetSpatialRef, but in pre-3.0 versions,
+  // this comes from GetProjectionRef
+  if( m_poDataset->GetProjectionRef() != NULL )
+    printf( "\tProjection is `%s'\n", m_poDataset->GetProjectionRef() );
 
   if( m_poDataset->GetGeoTransform( m_geoTransform ) == CE_None )
     {
-      printf( "Origin = (%.6f,%.6f)\n",
+      printf( "\tOrigin = (%.6f,%.6f)\n",
 	      m_geoTransform[0], m_geoTransform[3] );
 
-      printf( "Pixel Size = (%.6f,%.6f)\n",
+      printf( "\tPixel Size = (%.6f,%.6f)\n",
 	      m_geoTransform[1], m_geoTransform[5] );
       pixelSizeX = abs(m_geoTransform[1]);
       pixelSizeY = abs(m_geoTransform[5]);
@@ -171,7 +176,7 @@ void DTEHeightField::load()
 
   poBand = m_poDataset->GetRasterBand( 1 );
   poBand->GetBlockSize( &nBlockXSize, &nBlockYSize );
-  printf( "Block=%dx%d Type=%s, ColorInterp=%s\n",
+  printf( "\tRaster Block=%dx%d Type=%s, ColorInterp=%s\n",
 	  nBlockXSize, nBlockYSize,
 	  GDALGetDataTypeName(poBand->GetRasterDataType()),
 	  GDALGetColorInterpretationName(poBand->GetColorInterpretation()) );
@@ -181,13 +186,13 @@ void DTEHeightField::load()
   if( ! (bGotMin && bGotMax) )
     GDALComputeRasterMinMax((GDALRasterBandH)poBand, TRUE, adfMinMax);
 
-  printf( "Min=%.3fd, Max=%.3f\n", adfMinMax[0], adfMinMax[1] );
+  printf( "\tRaster Min=%.3fd and Max=%.3f\n", adfMinMax[0], adfMinMax[1] );
 
   if( poBand->GetOverviewCount() > 0 )
-    printf( "Band has %d overviews.\n", poBand->GetOverviewCount() );
+    printf( "\tBand has %d overviews.\n", poBand->GetOverviewCount() );
 
   if( poBand->GetColorTable() != NULL )
-    printf( "Band has a color table with %d entries.\n",
+    printf( "\tBand has a color table with %d entries.\n",
 	    poBand->GetColorTable()->GetColorEntryCount() );
 
   m_rbScale = poBand->GetScale();
@@ -205,6 +210,24 @@ void DTEHeightField::load()
 
   printf( "DEM size is %dx%dx%d\n",
 	  m_nXSize, m_nYSize );
+
+  // Xgeo = GT(0) + Xpixel*GT(1) + Yline*GT(2)
+  // Ygeo = GT(3) + Xpixel*GT(4) + Yline*GT(5)
+  // OGRCoordinateTransformationH hTransform
+
+  std::cout << "Mapping between raster coordinates and geo-referenced coordinates" << std::endl;
+  double xGeo(0.0), yGeo(0.0);
+  convertRasterToGeo( 0, 0, xGeo, yGeo );
+  printf("Raster Coordinate (0, 0):\t(%12.7f, %12.7f)\n", xGeo, yGeo);
+
+  convertRasterToGeo( m_nXSize-1, 0, xGeo, yGeo );
+  printf("Raster Coordinate (%d, 0):\t(%12.7f, %12.7f)\n", m_nXSize-1, xGeo, yGeo);
+  
+  convertRasterToGeo( m_nXSize-1, m_nYSize-1, xGeo, yGeo );
+  printf("Raster Coordinate (%d, %d):\t(%12.7f, %12.7f)\n", m_nXSize-1, m_nYSize-1, xGeo, yGeo);
+
+  convertRasterToGeo( 0, m_nYSize-1, xGeo, yGeo );
+  printf("Raster Coordinate (0, %d):\t(%12.7f, %12.7f)\n", m_nYSize-1, xGeo, yGeo);
 
   pafScanline = (float *) CPLMalloc(sizeof(float)*m_nXSize*m_nYSize);
 

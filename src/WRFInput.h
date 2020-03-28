@@ -58,8 +58,12 @@ public:
 
     const double c_PI = 3.14159265358979323846;
 
-    WRFInput(const std::string& filename);
+    WRFInput(const std::string& filename, bool sensorsOnly=false);
     ~WRFInput();
+
+    // If set to true, ONLY the sensor data will be pulled from WRF
+    // Atmos Mesh.
+    bool m_processOnlySensorData;
 
     // Fire Mesh Related Data
     bool hasFireMesh;

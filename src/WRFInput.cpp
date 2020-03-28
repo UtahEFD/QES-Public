@@ -23,8 +23,9 @@
 #include "gdal_priv.h"
 #include "cpl_conv.h" // for CPLMalloc()
 
-WRFInput::WRFInput(const std::string& filename)
-    : wrfInputFile( filename, NcFile::read ),
+WRFInput::WRFInput(const std::string& filename, bool sensorsOnly)
+    : m_processOnlySensorData( sensorsOnly ),
+      wrfInputFile( filename, NcFile::read ),
       m_minWRFAlt( 22 ), m_maxWRFAlt( 330 ), m_maxTerrainSize( 10001 ), m_maxNbStat( 156 ),
       m_TerrainFlag(1), m_BdFlag(0), m_VegFlag(0), m_Z0Flag(2)
 {
@@ -65,6 +66,8 @@ WRFInput::WRFInput(const std::string& filename)
     atm_dy = cellSize[1];
     
     std::cout << "WRF Atmos Resolution (dx,dy) is ("<< atm_dx << ", " << atm_dy << ")" << std::endl;
+
+    if (m_processOnlySensorData == false) {
 
     // 
     // Fire Mesh Terrain Nodes
@@ -313,7 +316,8 @@ WRFInput::WRFInput(const std::string& filename)
     double x0_fire = t_x0_fire; // -fm_nx / 2.0 * dxf + lon2eastings[0]; 
     // ny_atm / 2. * atm_dy + n 
     double y1_fire = t_y1_fire; // -fm_ny / 2.0 * dyf + lat2northings[0];
-
+    }
+    
     //
     // remainder of code is for pulling out wind profiles
     //
@@ -516,12 +520,18 @@ WRFInput::WRFInput(const std::string& filename)
 
     // ////////////////////////
     
+    // These hard-coded values do not seem like they should exist for
+    // ALL cases -- they were in Matthieu's original code.  We need to
+    // change to something per domain or calculated per domain. -Pete
     float minWRFAlt = 22;
     float maxWRFAlt = 330;
-    std::cout << "atm_nx: " << atm_nx << ", atm_ny = " << atm_ny << std::endl;
 
     // sampling strategy
     int stepSize = 12;
+
+    // Only need to keep track of sensors that are WITHIN our actual
+    // domain space related to the nx X ny of the QES domain.  The
+    // atm_nx and atm_ny may be quite a bit larger.
 
     //
     // Walk over the atm mesh, extract wind profiles for stations
@@ -534,6 +544,9 @@ WRFInput::WRFInput(const std::string& filename)
             stationData sd;
             sd.xCoord = xIdx * atm_dx;  // use actual position
             sd.yCoord = yIdx * atm_dy;  // "
+
+
+
 
             // Pull Z0 
             sd.z0 = z0Data[ yIdx * atm_nx + xIdx ];
