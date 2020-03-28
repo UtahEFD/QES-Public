@@ -520,12 +520,18 @@ WRFInput::WRFInput(const std::string& filename, bool sensorsOnly)
 
     // ////////////////////////
     
+    // These hard-coded values do not seem like they should exist for
+    // ALL cases -- they were in Matthieu's original code.  We need to
+    // change to something per domain or calculated per domain. -Pete
     float minWRFAlt = 22;
     float maxWRFAlt = 330;
-    std::cout << "atm_nx: " << atm_nx << ", atm_ny = " << atm_ny << std::endl;
 
     // sampling strategy
     int stepSize = 12;
+
+    // Only need to keep track of sensors that are WITHIN our actual
+    // domain space related to the nx X ny of the QES domain.  The
+    // atm_nx and atm_ny may be quite a bit larger.
 
     //
     // Walk over the atm mesh, extract wind profiles for stations
@@ -538,6 +544,9 @@ WRFInput::WRFInput(const std::string& filename, bool sensorsOnly)
             stationData sd;
             sd.xCoord = xIdx * atm_dx;  // use actual position
             sd.yCoord = yIdx * atm_dy;  // "
+
+
+
 
             // Pull Z0 
             sd.z0 = z0Data[ yIdx * atm_nx + xIdx ];

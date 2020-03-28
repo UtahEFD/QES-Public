@@ -214,6 +214,9 @@ public:
             DTE_mesh = new Mesh(DTE_heightField->getTris());
             std::cout << "Mesh complete\n";
 
+            // To proceed and cull sensors appropriately, we will need
+            // the lower-left bounds from the DEM
+            
             
             // Then, read WRF File extracting ONLY the sensor data
             bool onlySensorData = true;
