@@ -145,6 +145,6 @@ class OptixRayTrace{
    //ptx string definition (this is a hardcoded version, since there
    //is only one .cu file
    //std::string ptx = (std::string) PTX_DIR + "/target_name_generated_OptixRayTrace.cu.ptx";
-   std::string ptx = (std::string) PTX_DIR + "/cuda_compile_ptx_generated_OptixRayTrace.cu.ptx";
-      
+   //std::string ptx = (std::string) PTX_DIR + "/cuda_compile_ptx_generated_OptixRayTrace.cu.ptx";
+   std::string ptx; 
 };

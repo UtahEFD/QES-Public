@@ -92,17 +92,12 @@ ENDIF(CUDA_FOUND)
 #use fast math option is required for OptiX
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;--use_fast_math;--keep-device-functions")
 
-#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode=arch=compute_75,code=sm_75;-rdc=true;--use_fast_math;--keep-device-functions")
-
-#set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_35;-rdc=true;--use_fast_math;--keep-device-functions")
-
 FIND_PACKAGE(OptiX REQUIRED VERSION 7.0)
 
 include_directories(
   ${OptiX_INCLUDE}
   )
 
-MESSAGE("OptiX_INCLUDE = " ${OptiX_INCLUDE})
 
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/ptx") #ptx files located here
 add_definitions(-DPTX_DIR="${CMAKE_BINARY_DIR}/ptx") #PTX_DIR
@@ -135,50 +130,6 @@ macro(cuda_compile_and_embed output_var cuda_file)
     )
   set(${output_var} ${embedded_file})
 endmacro()
-
-
-
-
-function(OPTIX_add_library target_name)
-  source_group("PTX Files" REGULAR_EXPRESSION ".+\\.ptx$")
-  source_group("CUDA Files" REGULAR_EXPRESSION ".+\\.cu$")
-
-  CUDA_GET_SOURCES_AND_OPTIONS(source_files cmake_options options ${ARGN})
-
-  CUDA_WRAP_SRCS(${target_name}
-    PTX generated_files ${source_files} ${cmake_options}
-    OPTIONS ${options}
-    )
-
-  #CUDA_COMPILE_PTX(ptx_files ${source_files})
-  
-  add_library(${target_name}
-    #${ptx_files}
-    ${source_files}
-    ${generated_files}
-    ${cmake_options}
-    )
-
-  target_link_libraries(${target_name}
-    #optix
-    #${optix_rpath}
-    #${optix_LIBRARY}
-    #${optixu_LIBRARY}
-    )
-
-    include_directories(${OptiX_INCLUDE}/optixu
-   # ${OptiX_INSTALL_DIR}/include
-    )
-
-  if(USING_GNU_CXX)
-    target_link_libaries(${target_name} m)
-  endif()
-  
-  MESSAGE("optix_rpath = " ${optix_rpath})
-  MESSAGE("optix = " ${optix})
-  MESSAGE("OptiX_INSTALL_DIR = " ${OptiX_INSTALL_DIR})
-endfunction()
-
 
 
 #
