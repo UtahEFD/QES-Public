@@ -48,7 +48,7 @@ CUDA_ADD_LIBRARY( cudaurbcore
 # include_directories(${OptiX_INCLUDE})
  
  cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
- add_library(target_name
+ add_library(optix_lib
    ${embedded_ptx_code}
    OptixRayTrace.h
    OptixRayTrace.cpp
@@ -59,7 +59,7 @@ cuda_add_executable( unitTest
   )
 
 
-target_link_libraries(unitTest ${target_name})
+target_link_libraries(unitTest optix_lib)
 target_link_libraries(unitTest cudaurbcore)
 target_link_libraries(unitTest cudaurbutil)
 target_link_libraries(unitTest unitTestLib)
