@@ -544,9 +544,14 @@ WRFInput::WRFInput(const std::string& filename, bool sensorsOnly)
             stationData sd;
             sd.xCoord = xIdx * atm_dx;  // use actual position
             sd.yCoord = yIdx * atm_dy;  // "
-
-
-
+            
+            // Assuming I have lat/long or UTM for station data...
+            
+            // If geoStationData is within [UTMX,UTMY] X [UTMX+(numMetersFromDEM_x), UTMY+(numMetersFromDEM_y)]
+            // then
+            //   convert geoStationData to local QES coord
+            //   lXCoord = geo_xCoord_UTMx - UTMx + halo_x
+            //   lYCoord = geo_yCoord_UTMy - UTMy + halo_y
 
             // Pull Z0 
             sd.z0 = z0Data[ yIdx * atm_nx + xIdx ];
