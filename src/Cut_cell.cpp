@@ -23,6 +23,7 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 	std::cout<<"number of cut cells:" << cutcell_index.size() << "\n";
 
 	// Set icellflag value for terrain cells
+#pragma acc parallel loop independent
 	for (int i=0; i<nx-1; i++)
 	{
 		for (int j=0; j<ny-1; j++)
@@ -38,6 +39,7 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 		}
 	}
 
+#pragma acc parallel loop independent
 	for (auto i = 0; i < cutcell_index.size(); i++)
 	{
 		icellflag[cutcell_index[i]] = 8;
