@@ -34,7 +34,9 @@ struct Record{
 };
 
 struct Vertex{
-   float x, y, z;
+   float x;
+   float y;
+   float z;
 };
 
 struct OptixRay{
@@ -94,6 +96,9 @@ struct RayTracingState{
    int samples_per_cell;  //can change to bigger type value if needed 
    int num_cells;         //number of air cells 
 
+
+   float nx, ny, nz;
+ 
 };
 
 
@@ -103,8 +108,10 @@ class OptixRayTrace{
    void buildAS(std::vector<Triangle*> tris);
    void calculateMixingLength(int numSamples, int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag, std::vector<double> &mixingLengths);
   private:
+   
    OptixRayTrace();  //cannot have an empty constructor (have to pass in a mesh to build)
 
+    
    RayTracingState state; //needs to be accessable though out program
 
    typedef Record<RayGenData> RayGenRecord;
@@ -124,7 +131,9 @@ class OptixRayTrace{
     *Helper function to convert vector<Triangle*> to array<float, 3>
     */
    void convertVecMeshType(std::vector<Triangle*> &tris, std::vector<Vertex> &trisArray);
+   
 
+   
    /*
     *Initializes Ray* rays based on the given cell data 
     */

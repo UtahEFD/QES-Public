@@ -46,6 +46,8 @@
 OptixRayTrace::OptixRayTrace(std::vector<Triangle*> tris){
    OPTIX_CHECK(optixInit());
 
+   //num_tri = tris.size();
+
    createContext();
 
    buildAS(tris);
@@ -61,6 +63,9 @@ static void context_log_cb(unsigned int level, const char* tag,
             <<level<<", "<<tag<<", "<<message<<"]"<<"\n";
 }
 
+
+//creates and configures a optix device context for primary GPU device
+//only
 void OptixRayTrace::createContext(){
 
    std::cout<<"Enters createContext()"<<std::endl;
@@ -98,6 +103,12 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
 //need to translate tris --> to a vector array of measurable size type
    std::vector<Vertex> trisArray(tris.size()*3);  //each triangle 3 Vertex-es
    convertVecMeshType(tris, trisArray);
+
+   std::cout<<"tris.size() = "<<tris.size()<<std::endl;
+
+
+
+
 
    const size_t tris_size = sizeof(Vertex)*trisArray.size();
    CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&state.d_tris), tris_size));
@@ -201,33 +212,34 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
 }
 
 void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::vector<Vertex> &trisArray){
+//void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::array<Vertex, num_tri*3> &trisArray){
 
    std::cout<<"\tconverting Triangle mesh to Optix Triangles"<<std::endl;
 
-   Vertex tempVertexA, tempVertexB, tempVertexC;
+
+   int tempIdx = 0;
    for(int i = 0; i < tris.size(); i++){ //get access to the Triangle at index
-      tempVertexA.x = (*(tris[i]->a))[0];
-      tempVertexA.y = (*(tris[i]->a))[1];
-      tempVertexA.z = (*(tris[i]->a))[2];
 
-      tempVertexB.x = (*(tris[i]->b))[0];
-      tempVertexB.y = (*(tris[i]->b))[1];
-      tempVertexB.z = (*(tris[i]->b))[2];
 
-      tempVertexC.x = (*(tris[i]->c))[0];
-      tempVertexC.y = (*(tris[i]->c))[1];
-      tempVertexC.z = (*(tris[i]->c))[2];
-
-      trisArray.push_back(tempVertexA);
-      trisArray.push_back(tempVertexB);
-      trisArray.push_back(tempVertexC);
+      trisArray[tempIdx] = {(*(tris[i]->a))[0], (*(tris[i]->a))[1],(*(tris[i]->a))[2]};
+      tempIdx++;
+      trisArray[tempIdx] = {(*(tris[i]->b))[0], (*(tris[i]->b))[1], (*(tris[i]->b))[2]};
+      tempIdx++;
+      trisArray[tempIdx] = {(*(tris[i]->c))[0], (*(tris[i]->c))[1], (*(tris[i]->c))[2]};
+      tempIdx++;
 
    }
+
+
 }
 
 
 void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag, std::vector<double> &mixingLengths){
    state.samples_per_cell = numSamples;
+
+   state.nx = dimX;
+   state.ny = dimY;
+   state.nz = dimZ;
 
    createModule();
 
@@ -261,8 +273,14 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
    //Hits should be init
    for(int i = 0; i < state.num_cells; i++){
       mixingLengths.push_back(state.params.hits[i].t);
-      std::cout<<"Hit at index "<<i<<" = "<<state.params.hits[i].t<<std::endl;
+
+      if(i < 25){
+         std::cout<<"Hit at index "<<i<<" = "<<state.params.hits[i].t<<std::endl;
+      }
    }
+
+   cleanState();
+
 
 }
 
@@ -272,26 +290,9 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
 
 
 
-   //TODO: optimize
-   //Really, really inefficient way of getting the number of cells to
-   //set the ray size
-   //init ray data
 
    int numAirCells = 0;
 
-   /*for(int k = 0; k < dimZ -1; k++){
-     for(int j = 0; j < dimY -1; j++){
-     for(int i = 0; i < dimX -1; i++){
-     int icell_idx = i + j*(dimX-1) + k*(dimY -1)*(dimX-1);
-
-     if(icellflag[icell_idx] == 1){ //only want air cells
-     numCells++;
-     }
-     }
-     }
-     }*/
-
-   //std::cout<<"In initParams(), finished counting air cells:"<<numCells<<std::endl;
 
    std::cout<<"In initParams(), icellflag size = "<<icellflag.size()<<std::endl;
    //OptixRay rays_d[icellflag.size()];
@@ -561,13 +562,14 @@ void OptixRayTrace::launch(){
                            reinterpret_cast<CUdeviceptr>(d_params),
                            sizeof(Params),
                            &state.sbt,
-                           state.num_cells,
-                           1,//state.num_cells,//state.samples_per_cell,
-                           1)
+                           state.nx, //state.num_cells,
+                           state.ny,//1,//state.num_cells,//state.samples_per_cell,
+                           state.nz//1
+                           )
                );
-   CUDA_CHECK(cudaDeviceSetLimit(cudaLimitMallocHeapSize, state.num_cells*state.samples_per_cell));
-   CUDA_SYNC_CHECK();
-   CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_params)));
+   //CUDA_CHECK(cudaDeviceSetLimit(cudaLimitMallocHeapSize, state.num_cells*state.samples_per_cell));
+   //CUDA_SYNC_CHECK();
+   //CUDA_CHECK(cudaFree(reinterpret_cast<void*>(d_params)));
 }
 
 void OptixRayTrace::cleanState(){
