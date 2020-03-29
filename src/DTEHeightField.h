@@ -135,7 +135,7 @@ private:
       height = scanline[ abs(k-m_nYSize) * m_nXSize + j ];
     }
 
-    if (height < 0.0 || isnan(abs(height)))
+    if (height < 0.0 || std::isnan(abs(height)))
     {
       height = 0.0;
     }
