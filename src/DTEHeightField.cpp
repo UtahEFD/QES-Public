@@ -204,16 +204,21 @@ void DTEHeightField::load()
   m_rbNoData = poBand->GetNoDataValue();
   printf( "Band has NoData value: %.4f\n", m_rbNoData );
 
-
   m_nXSize = poBand->GetXSize();
   m_nYSize = poBand->GetYSize();
 
   printf( "DEM size is %dx%dx%d\n",
 	  m_nXSize, m_nYSize );
 
-  // Xgeo = GT(0) + Xpixel*GT(1) + Yline*GT(2)
-  // Ygeo = GT(3) + Xpixel*GT(4) + Yline*GT(5)
-  // OGRCoordinateTransformationH hTransform
+  // UTMx will be correct, but need to subtract halo
+  //      demMinX == UTMx - halo_x
+  // UTMy needs to have domain "Y" amount added to it first
+  //      demMinY = (UTMy + m_nYSize * perPixelDim) - halo_y
+  //
+  // then, use demMinX for transform[0] and
+  //           demMinY for transform[1]
+  // 
+  // if (we have utm, override the transofmr[0] and [3] parts...
 
   std::cout << "Mapping between raster coordinates and geo-referenced coordinates" << std::endl;
   double xGeo(0.0), yGeo(0.0);
