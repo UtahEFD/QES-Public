@@ -197,6 +197,8 @@ class Plume {
             std::cerr << "ERROR (Plume::xNotDomainEdgeBC): this is a xNotDomainEdgeBC function that should not be used by anything that points to it. exiting program!" << std::endl;
             exit(EXIT_FAILURE);
         }
+        // also made one for when particles move along a line along the domain wall plane
+        void xDomainWallLineBC_passthrough( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive );
         void xDomainStartBC_exiting( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive );
         void xDomainEndBC_exiting( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive );
         void xDomainStartBC_periodic( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive );
@@ -210,6 +212,8 @@ class Plume {
             std::cerr << "ERROR (Plume::yNotDomainEdgeBC): this is a yNotDomainEdgeBC function that should not be used by anything that points to it. exiting program!" << std::endl;
             exit(EXIT_FAILURE);
         }
+        // also made one for when particles move along a line along the domain wall plane
+        void yDomainWallLineBC_passthrough( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive );
         void yDomainStartBC_exiting( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive );
         void yDomainEndBC_exiting( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive );
         void yDomainStartBC_periodic( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive );
@@ -223,6 +227,8 @@ class Plume {
             std::cerr << "ERROR (Plume::zNotDomainEdgeBC): this is a zNotDomainEdgeBC function that should not be used by anything that points to it. exiting program!" << std::endl;
             exit(EXIT_FAILURE);
         }
+        // also made one for when particles move along a line along the domain wall plane
+        void zDomainWallLineBC_passthrough( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive );
         void zDomainStartBC_exiting( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive );
         void zDomainEndBC_exiting( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive );
         void zDomainStartBC_periodic( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive );
@@ -278,6 +284,11 @@ class Plume {
 
         // this is for writing an output simulation info file separate from the regular command line output
         void writeSimInfoFile(Dispersion* dis,const double& current_time);
+
+
+        // testing var for getting different statements shown in many called functions
+        // but just for one particle or one set of information at a time so the console output isn't overwhelmed with debug info
+        bool extraDebug;
   
 };
 #endif

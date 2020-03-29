@@ -554,25 +554,94 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                     double distX = (uMean + uFluct)*par_dt;
                     double distY = (vMean + vFluct)*par_dt;
                     double distZ = (wMean + wFluct)*par_dt;
-                    while( isRogue == false && isActive == true && distX != 0.0 && distY != 0 && distZ != 0 )
+
+
+                    // control the extra debug output however you want, to allow output in functions as well as this loop
+                    // make sure it matches the if statement as the spot where extraDebug is set back to false
+                    //if( parIdx == 0 )
+                    //{
+                        //extraDebug = true;
+                        extraDebug = false;
+                    //}
+
+
+                    // only see this statement for a given particle or set of particles over a given time or sets of time,
+                    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+                    // trying to see what is going on inside many functions, but without overwhelming the console output
+                    if( extraDebug == true )
+                    {
+                        std::cout << "      simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) 
+                            << "\", par[" << parIdx << "], particle timestep \"" << par_dt 
+                            << "\" for time = \"" << par_time << "\". starting dist calc." << std::endl;
+                        std::cout << "distX = \"" << distX << "\", distY = \"" << distY << "\", distZ = \"" << distZ << "\"" << std::endl;
+                    }
+
+
+                    // now iterate till the particle has finished moving
+                    while(  isRogue == false && isActive == true  &&  ( distX != 0.0 || distY != 0 || distZ != 0 )  )
                     {
                         // make sure the particle isn't going more than one cell in a given direction
+                        // and that it is ignored if the domain is size one in a given direction
                         double distX_inc = distX;
                         double distY_inc = distY;
                         double distZ_inc = distZ;
-                        if( distX_inc > dx )
+                        if( nx == 1 )
                         {
-                            distX_inc = dx; // do I need to subtract 1e-9?
+                            distX = 0.0;
+                            distX_inc = 0.0;
+                        } else if( std::abs(distX_inc) > dx )
+                        {
+                            if( distX_inc >= 0.0 )
+                            {
+                                distX_inc = dx; // do I need to subtract 1e-9?
+                            } else
+                            {
+                                distX_inc = -dx;
+                            }
                         }
-                        if( distY_inc > dy )
+                        if( ny == 1 )
                         {
-                            distY_inc = dy;
+                            distY = 0.0;
+                            distY_inc = 0.0;
+                        } else if( std::abs(distY_inc) > dy )
+                        {
+                            if( distY_inc >= 0.0 )
+                            {
+                                distY_inc = dy; // do I need to subtract 1e-9?
+                            } else
+                            {
+                                distY_inc = -dy;
+                            }
                         }
-                        if( distZ_inc > dz )
+                        if( nz == 1 )
                         {
-                            distZ_inc = dz;
+                            distZ = 0.0;
+                            distZ_inc = 0.0;
+                        } else if( std::abs(distZ_inc) > dz )
+                        {
+                            if( distZ_inc >= 0.0 )
+                            {
+                                distZ_inc = dz; // do I need to subtract 1e-9?
+                            } else
+                            {
+                                distZ_inc = -dz;
+                            }
                         }
 
+
+                        // only see this statement for a given particle or set of particles over a given time or sets of time,
+                        // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+                        // trying to see what is going on inside many functions, but without overwhelming the console output
+                        if( extraDebug == true )
+                        {
+                            std::cout << "  before BC function: " << std::endl;
+                            std::cout << "distX_inc = \"" << distX_inc << "\", distY_inc = \"" << distY_inc << "\", distZ_inc = \"" << distZ_inc << "\"" << std::endl;
+                            std::cout << "xPos = \"" << xPos << "\", yPos = \"" << yPos << "\", zPos = \"" << zPos << "\"" << std::endl;
+                            std::cout << "uFluct = \"" << uFluct << "\", vFluct = \"" << vFluct << "\", wFluct = \"" << wFluct << "\"" << std::endl;
+                            std::cout << "uFluct_old = \"" << uFluct_old << "\", vFluct_old = \"" << vFluct_old << "\", wFluct_old = \"" << wFluct_old << "\"" << std::endl;
+                            std::cout << "isActive = \"" << isActive << "\"" << std::endl;
+                        }
+                        
 
                         // now apply boundary conditions
                         // now I'm expecting a single function call for the current cellIdx, passing in the current and last cellIdx and whatever info
@@ -602,8 +671,36 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                         distY = distY - distY_inc;
                         distZ = distZ - distZ_inc;
 
+                        
+                        // only see this statement for a given particle or set of particles over a given time or sets of time,
+                        // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+                        // trying to see what is going on inside many functions, but without overwhelming the console output
+                        if( extraDebug == true )
+                        {
+                            std::cout << "  after BC function: " << std::endl;
+                            std::cout << "distX = \"" << distX << "\", distY = \"" << distY << "\", distZ = \"" << distZ << "\"" << std::endl;
+                        }
+
+                        
                     }   // while( isRogue == false && isActive == true && distX != 0.0 && distY != 0 && distZ != 0 )
-                    
+
+                    // only see this statement for a given particle or set of particles over a given time or sets of time,
+                    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+                    // trying to see what is going on inside many functions, but without overwhelming the console output
+                    if( extraDebug == true )
+                    {
+                        std::cout << "      simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) 
+                                << "\", par[" << parIdx << "], particle timestep \"" << par_dt 
+                                << "\" for time = \"" << par_time << "\". finished dist calc." << std::endl;
+                    }
+
+                    // control the extra debug output however you want, to allow output in functions as well as this loop
+                    // make sure it matches the if statement as the spot where extraDebug is first set to true
+                    //if( parIdx == 0 )
+                    //{
+                        extraDebug = false;
+                    //}
+
 
                     // now set the particle values for if they are rogue or outside the domain
                     setFinishedParticleVals(xPos,yPos,zPos,isActive, isRogue, xPos_init,yPos_init,zPos_init);
@@ -991,6 +1088,7 @@ void Plume::setBCfunctions( PlumeInputData* PID )
     // the idea is to use the string input BCtype to determine which boundary condition function to use later in the program, and to have a function pointer
     // point to the required function. I learned about pointer functions from this website: https://www.learncpp.com/cpp-tutorial/78-function-pointers/
     // more info for doing a vector of pointers to member functions here: https://stackoverflow.com/questions/21110211/vector-of-pointer-to-member-functions.
+    // didn't use this, but looking back on it, it seems helpful: https://isocpp.org/wiki/faq/pointers-to-members
     
     // now we are doing a vector of pointer functions, one for each eulerian cellIdx. Will use the icellflag for a given cell
     // and string input BCtype information to determine which boundary condition function to use for each cellIdx.
@@ -1041,6 +1139,9 @@ void Plume::setBCfunctions( PlumeInputData* PID )
                 int cellIdx = k*ny*nx + j*nx + i;
                 int icellFlag = urb->icell.at(cellIdx);
 
+                //std::cout << "i = \"" << i << ", j = \"" << j << "\", k = \"" << k << "\", cellIdx = \"" << cellIdx << "\"" << std::endl;
+                //std::cout << "icellFlag = \"" << icellFlag << "\"" << std::endl;
+
                 
                 // initialize the pointer functions for the current eulerian grid cell for the domain edge BC pointer function lists
                 xDomainEdgeBCptrFunction currentPointerFunction_xDomainEdge;
@@ -1048,23 +1149,26 @@ void Plume::setBCfunctions( PlumeInputData* PID )
                 zDomainEdgeBCptrFunction currentPointerFunction_zDomainEdge;
 
                 // now determine which functions the current pointer functions for the different domain edges should point at
-                if( i == 0 || j == 0 || k == 0 )
+                // start with the x domain component edges
+                if( i == 0 )
                 {
                     // on the outer domain edges
                     // specifically those at the start side
-
                     if( xDomainStartBCtype == "exiting" )
                     {
                         // the currentPointerFunction_xDomainEdge pointer function now points to the xDomainStartBC_exiting function
                         currentPointerFunction_xDomainEdge = &Plume::xDomainStartBC_exiting;
+                        //std::cout << "xDomainEdgePointerFunctions[" << cellIdx << "] = \"xDomainStartBC_exiting\"" << std::endl;
                     } else if( xDomainStartBCtype == "periodic" )
                     {
                         // the currentPointerFunction_xDomainEdge pointer function now points to the xDomainStartBC_periodic function
                         currentPointerFunction_xDomainEdge = &Plume::xDomainStartBC_periodic;
+                        //std::cout << "xDomainEdgePointerFunctions[" << cellIdx << "] = \"xDomainStartBC_periodic\"" << std::endl;
                     } else if( xDomainStartBCtype == "reflection" )
                     {
                         // the currentPointerFunction_xDomainEdge pointer function now points to the xDomainStartBC_reflection function
                         currentPointerFunction_xDomainEdge = &Plume::xDomainStartBC_reflection;
+                        //std::cout << "xDomainEdgePointerFunctions[" << cellIdx << "] = \"xDomainStartBC_reflection\"" << std::endl;
                     } else
                     {
                         std::cerr << "!!! Plume::setBCfunctions() error !!! input xDomainStartBCtype \"" << xDomainStartBCtype 
@@ -1073,63 +1177,25 @@ void Plume::setBCfunctions( PlumeInputData* PID )
                         exit(EXIT_FAILURE);
                     }
 
-                    if( yDomainStartBCtype == "exiting" )
-                    {
-                        // the currentPointerFunction_yDomainEdge pointer function now points to the yDomainStartBC_exiting function
-                        currentPointerFunction_yDomainEdge = &Plume::yDomainStartBC_exiting;
-                    } else if( yDomainStartBCtype == "periodic" )
-                    {
-                        // the currentPointerFunction_yDomainEdge pointer function now points to the yDomainStartBC_periodic function
-                        currentPointerFunction_yDomainEdge = &Plume::yDomainStartBC_periodic;
-                    } else if( yDomainStartBCtype == "reflection" )
-                    {
-                        // the currentPointerFunction_yDomainEdge pointer function now points to the yDomainStartBC_reflection function
-                        currentPointerFunction_yDomainEdge = &Plume::yDomainStartBC_reflection;
-                    } else
-                    {
-                        std::cerr << "!!! Plume::setBCfunctions() error !!! input yDomainStartBCtype \"" << yDomainStartBCtype 
-                            << "\" has not been implemented in code! Available yDomainStartBCtype are "
-                            << "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
-                        exit(EXIT_FAILURE);
-                    }
-
-                    if( zDomainStartBCtype == "exiting" )
-                    {
-                        // the currentPointerFunction_zDomainEdge pointer function now points to the zDomainStartBC_exiting function
-                        currentPointerFunction_zDomainEdge = &Plume::zDomainStartBC_exiting;
-                    } else if( zDomainStartBCtype == "periodic" )
-                    {
-                        // the currentPointerFunction_zDomainEdge pointer function now points to the zDomainStartBC_periodic function
-                        currentPointerFunction_zDomainEdge = &Plume::zDomainStartBC_periodic;
-                    } else if( zDomainStartBCtype == "reflection" )
-                    {
-                        // the currentPointerFunction_zDomainEdge pointer function now points to the zDomainStartBC_reflection function
-                        currentPointerFunction_zDomainEdge = &Plume::zDomainStartBC_reflection;
-                    } else
-                    {
-                        std::cerr << "!!! Plume::setBCfunctions() error !!! input zDomainStartBCtype \"" << zDomainStartBCtype 
-                            << "\" has not been implemented in code! Available zDomainStartBCtype are "
-                            << "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
-                        exit(EXIT_FAILURE);
-                    }
-
-                } else if( i == nx-1 || j == ny-1 || k == nz-1 )
+                } else if( i == nx-1 || i == nx-2 )
                 {
                     // on the outer domain edges
                     // specifically those at the end side
-
                     if( xDomainEndBCtype == "exiting" )
                     {
                         // currentPointerFunction_xDomainEdge pointer function now points to the xDomainEndBC_exiting function
                         currentPointerFunction_xDomainEdge = &Plume::xDomainEndBC_exiting;
+                        //std::cout << "xDomainEdgePointerFunctions[" << cellIdx << "] = \"xDomainEndBC_exiting\"" << std::endl;
                     } else if( xDomainEndBCtype == "periodic" )
                     {
                         // the currentPointerFunction_xDomainEdge pointer function now points to the xDomainEndBC_periodic function
                         currentPointerFunction_xDomainEdge = &Plume::xDomainEndBC_periodic;
+                        //std::cout << "xDomainEdgePointerFunctions[" << cellIdx << "] = \"xDomainEndBC_periodic\"" << std::endl;
                     } else if( xDomainEndBCtype == "reflection" )
                     {
                         // the currentPointerFunction_xDomainEdge pointer function now points to the xDomainEndBC_reflection function
                         currentPointerFunction_xDomainEdge = &Plume::xDomainEndBC_reflection;
+                        //std::cout << "xDomainEdgePointerFunctions[" << cellIdx << "] = \"xDomainEndBC_reflection\"" << std::endl;
                     } else
                     {
                         std::cerr << "!!! Plume::setBCfunctions() error !!! input xDomainEndBCtype \"" << xDomainEndBCtype 
@@ -1138,18 +1204,74 @@ void Plume::setBCfunctions( PlumeInputData* PID )
                         exit(EXIT_FAILURE);
                     }
 
+                } else if( j == 0 || j == ny-1 || j == ny-2 || k == 0 || k == nz-1 || k == nz-2 )
+                {
+                    // this is the lines along the edges between two different domain edges
+                    // currentPointerFunction_xDomainEdge pointer function now points to the xDomainWallLineBC_passthrough function
+                    currentPointerFunction_xDomainEdge = &Plume::xDomainWallLineBC_passthrough;
+                    //std::cout << "xDomainEdgePointerFunctions[" << cellIdx << "] = \"xDomainWallLineBC_passthrough\"" << std::endl;
+
+                } else
+                {
+                    // is now only the interior nodes, not the outer domain
+                    // it is within the domain center, so need to set them to the no BC edge type functions
+                    // the currentPointerFunction_xDomainEdge pointer function now points to the xNotDomainEdgeBC function
+                    currentPointerFunction_xDomainEdge = &Plume::xNotDomainEdgeBC;
+                    //std::cout << "xDomainEdgePointerFunctions[" << cellIdx << "] = \"xNotDomainEdgeBC\"" << std::endl;
+                    
+                }
+
+                // now stuff the current x pointer function into the vector of x boundary condition pointer functions
+                xDomainEdgePointerFunctions.push_back(currentPointerFunction_xDomainEdge);
+
+
+                // now do the y domain component edges
+                if( j == 0 )
+                {
+                    // on the outer domain edges
+                    // specifically those at the start side
+                    if( yDomainStartBCtype == "exiting" )
+                    {
+                        // the currentPointerFunction_yDomainEdge pointer function now points to the yDomainStartBC_exiting function
+                        currentPointerFunction_yDomainEdge = &Plume::yDomainStartBC_exiting;
+                        //std::cout << "yDomainEdgePointerFunctions[" << cellIdx << "] = \"yDomainStartBC_exiting\"" << std::endl;
+                    } else if( yDomainStartBCtype == "periodic" )
+                    {
+                        // the currentPointerFunction_yDomainEdge pointer function now points to the yDomainStartBC_periodic function
+                        currentPointerFunction_yDomainEdge = &Plume::yDomainStartBC_periodic;
+                        //std::cout << "yDomainEdgePointerFunctions[" << cellIdx << "] = \"yDomainStartBC_periodic\"" << std::endl;
+                    } else if( yDomainStartBCtype == "reflection" )
+                    {
+                        // the currentPointerFunction_yDomainEdge pointer function now points to the yDomainStartBC_reflection function
+                        currentPointerFunction_yDomainEdge = &Plume::yDomainStartBC_reflection;
+                        //std::cout << "yDomainEdgePointerFunctions[" << cellIdx << "] = \"yDomainStartBC_reflection\"" << std::endl;
+                    } else
+                    {
+                        std::cerr << "!!! Plume::setBCfunctions() error !!! input yDomainStartBCtype \"" << yDomainStartBCtype 
+                            << "\" has not been implemented in code! Available yDomainStartBCtype are "
+                            << "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+
+                } else if( j == ny-1 || j == ny-2 )
+                {
+                    // on the outer domain edges
+                    // specifically those at the end side
                     if( yDomainEndBCtype == "exiting" )
                     {
                         // currentPointerFunction_yDomainEdge pointer function now points to the yDomainEndBC_exiting function
                         currentPointerFunction_yDomainEdge = &Plume::yDomainEndBC_exiting;
+                        //std::cout << "yDomainEdgePointerFunctions[" << cellIdx << "] = \"yDomainEndBC_exiting\"" << std::endl;
                     } else if( yDomainEndBCtype == "periodic" )
                     {
                         // the currentPointerFunction_yDomainEdge pointer function now points to the yDomainEndBC_periodic function
                         currentPointerFunction_yDomainEdge = &Plume::yDomainEndBC_periodic;
+                        //std::cout << "yDomainEdgePointerFunctions[" << cellIdx << "] = \"yDomainEndBC_periodic\"" << std::endl;
                     } else if( yDomainEndBCtype == "reflection" )
                     {
                         // the currentPointerFunction_yDomainEdge pointer function now points to the yDomainEndBC_reflection function
                         currentPointerFunction_yDomainEdge = &Plume::yDomainEndBC_reflection;
+                        //std::cout << "yDomainEdgePointerFunctions[" << cellIdx << "] = \"yDomainEndBC_reflection\"" << std::endl;
                     } else
                     {
                         std::cerr << "!!! Plume::setBCfunctions() error !!! input yDomainEndBCtype \"" << yDomainEndBCtype 
@@ -1158,18 +1280,74 @@ void Plume::setBCfunctions( PlumeInputData* PID )
                         exit(EXIT_FAILURE);
                     }
 
+                } else if( i == 0 || i == nx-1 || i == nx-2 || k == 0 || k == nz-1 || k == nz-2 )
+                {
+                    // this is the lines along the edges between two different domain edges
+                    // currentPointerFunction_yDomainEdge pointer function now points to the yDomainWallLineBC_passthrough function
+                    currentPointerFunction_yDomainEdge = &Plume::yDomainWallLineBC_passthrough;
+                    //std::cout << "yDomainEdgePointerFunctions[" << cellIdx << "] = \"yDomainWallLineBC_passthrough\"" << std::endl;
+
+                } else
+                {
+                    // is now only the interior nodes, not the outer domain
+                    // it is within the domain center, so need to set them to the no BC edge type functions
+                    // the currentPointerFunction_yDomainEdge pointer function now points to the yNotDomainEdgeBC function
+                    currentPointerFunction_yDomainEdge = &Plume::yNotDomainEdgeBC;
+                    //std::cout << "yDomainEdgePointerFunctions[" << cellIdx << "] = \"yNotDomainEdgeBC\"" << std::endl;
+                    
+                }
+
+                // now stuff the current y pointer function into the vector of y boundary condition pointer functions
+                yDomainEdgePointerFunctions.push_back(currentPointerFunction_yDomainEdge);
+                
+
+                // now do the z domain component edges
+                if( k == 0 )
+                {
+                    // on the outer domain edges
+                    // specifically those at the start side
+                    if( zDomainStartBCtype == "exiting" )
+                    {
+                        // the currentPointerFunction_zDomainEdge pointer function now points to the zDomainStartBC_exiting function
+                        currentPointerFunction_zDomainEdge = &Plume::zDomainStartBC_exiting;
+                        //std::cout << "zDomainEdgePointerFunctions[" << cellIdx << "] = \"zDomainStartBC_exiting\"" << std::endl;
+                    } else if( zDomainStartBCtype == "periodic" )
+                    {
+                        // the currentPointerFunction_zDomainEdge pointer function now points to the zDomainStartBC_periodic function
+                        currentPointerFunction_zDomainEdge = &Plume::zDomainStartBC_periodic;
+                        //std::cout << "zDomainEdgePointerFunctions[" << cellIdx << "] = \"zDomainStartBC_periodic\"" << std::endl;
+                    } else if( zDomainStartBCtype == "reflection" )
+                    {
+                        // the currentPointerFunction_zDomainEdge pointer function now points to the zDomainStartBC_reflection function
+                        currentPointerFunction_zDomainEdge = &Plume::zDomainStartBC_reflection;
+                        //std::cout << "zDomainEdgePointerFunctions[" << cellIdx << "] = \"zDomainStartBC_reflection\"" << std::endl;
+                    } else
+                    {
+                        std::cerr << "!!! Plume::setBCfunctions() error !!! input zDomainStartBCtype \"" << zDomainStartBCtype 
+                            << "\" has not been implemented in code! Available zDomainStartBCtype are "
+                            << "\"exiting\", \"periodic\", \"reflection\"" << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+
+                } else if( k == nz-1 || k == nz-2 )
+                {
+                    // on the outer domain edges
+                    // specifically those at the end side
                     if( zDomainEndBCtype == "exiting" )
                     {
                         // currentPointerFunction_zDomainEdge pointer function now points to the zDomainEndBC_exiting function
                         currentPointerFunction_zDomainEdge = &Plume::zDomainEndBC_exiting;
+                        //std::cout << "zDomainEdgePointerFunctions[" << cellIdx << "] = \"zDomainEndBC_exiting\"" << std::endl;
                     } else if( zDomainEndBCtype == "periodic" )
                     {
                         // the currentPointerFunction_zDomainEdge pointer function now points to the zDomainEndBC_periodic function
                         currentPointerFunction_zDomainEdge = &Plume::zDomainEndBC_periodic;
+                        //std::cout << "zDomainEdgePointerFunctions[" << cellIdx << "] = \"zDomainEndBC_periodic\"" << std::endl;
                     } else if( zDomainEndBCtype == "reflection" )
                     {
                         // the currentPointerFunction_zDomainEdge pointer function now points to the zDomainEndBC_reflection function
                         currentPointerFunction_zDomainEdge = &Plume::zDomainEndBC_reflection;
+                        //std::cout << "zDomainEdgePointerFunctions[" << cellIdx << "] = \"zDomainEndBC_reflection\"" << std::endl;
                     } else
                     {
                         std::cerr << "!!! Plume::setBCfunctions() error !!! input zDomainEndBCtype \"" << zDomainEndBCtype 
@@ -1178,22 +1356,24 @@ void Plume::setBCfunctions( PlumeInputData* PID )
                         exit(EXIT_FAILURE);
                     }
 
+                } else if( i == 0 || i == nx-1 || i == nx-2 || j == 0 || j == ny-1 || j == ny-2 )
+                {
+                    // this is the lines along the edges between two different domain edges
+                    // currentPointerFunction_zDomainEdge pointer function now points to the zDomainWallLineBC_passthrough function
+                    currentPointerFunction_zDomainEdge = &Plume::zDomainWallLineBC_passthrough;
+                    //std::cout << "zDomainEdgePointerFunctions[" << cellIdx << "] = \"zDomainWallLineBC_passthrough\"" << std::endl;
+
                 } else
                 {
                     // is now only the interior nodes, not the outer domain
-                    
                     // it is within the domain center, so need to set them to the no BC edge type functions
-                    // the currentPointerFunction_xDomainEdge pointer function now points to the xNotDomainEdgeBC function
-                    currentPointerFunction_xDomainEdge = &Plume::xNotDomainEdgeBC;
-                    // the currentPointerFunction_yDomainEdge pointer function now points to the yNotDomainEdgeBC function
-                    currentPointerFunction_yDomainEdge = &Plume::yNotDomainEdgeBC;
-                    // the currentPointerFunction_zDomainEdge pointer function now points to the zNotDomainEdgeBC function
+                     // the currentPointerFunction_zDomainEdge pointer function now points to the zNotDomainEdgeBC function
                     currentPointerFunction_zDomainEdge = &Plume::zNotDomainEdgeBC;
+                    //std::cout << "zDomainEdgePointerFunctions[" << cellIdx << "] = \"zNotDomainEdgeBC\"" << std::endl;
+
                 }
 
-                // now stuff the current pointer functions into the vectors of boundary condition pointer functions
-                xDomainEdgePointerFunctions.push_back(currentPointerFunction_xDomainEdge);
-                yDomainEdgePointerFunctions.push_back(currentPointerFunction_yDomainEdge);
+                // now stuff the current z pointer function into the vector of z boundary condition pointer functions
                 zDomainEdgePointerFunctions.push_back(currentPointerFunction_zDomainEdge);
 
 
@@ -1202,13 +1382,14 @@ void Plume::setBCfunctions( PlumeInputData* PID )
                 BCptrFunction currentPointerFunction;
                 
                 // now determine which function the current pointer function should point at
-                if( i == 0 || j == 0 || k == 0 || i == nx-1 || j == ny-1|| k == nz-1 )
+                if( i == 0 || j == 0 || k == 0 || i == nx-1 || i == nx-2 || j == ny-1 || j == ny-2 || k == nz-1 || k == nz-2 )
                 {
                     // on the outer domain edges
 
                     // the currentPointerFunction pointer function now points to the domainEdgeBC function
                     currentPointerFunction = &Plume::domainEdgeBC;
-                } else 
+                    //std::cout << "BCpointerFunctions[" << cellIdx << "] = \"domainEdgeBC\"" << std::endl;
+                } else
                 {
                     // is now only the interior nodes, not the outer domain
 
@@ -1217,11 +1398,13 @@ void Plume::setBCfunctions( PlumeInputData* PID )
                         // 0  "Building"
                         // the currentPointerFunction pointer function now points to the innerCellBC_simpleStairStepReflection function
                         currentPointerFunction = &Plume::innerCellBC_simpleStairStepReflection;
+                        //std::cout << "BCpointerFunctions[" << cellIdx << "] = \"innerCellBC_simpleStairStepReflection\"" << std::endl;
                     } else if( icellFlag == 1 )
                     {
                         // 1  "Fluid"
                         // the currentPointerFunction pointer function now points to the innerCellBC_passthrough function
                         currentPointerFunction = &Plume::innerCellBC_passthrough;
+                        //std::cout << "BCpointerFunctions[" << cellIdx << "] = \"innerCellBC_passthrough\"" << std::endl;
                     } else if( icellFlag == 2 )
                     {
                         // 2  "Terrain"
@@ -1229,6 +1412,7 @@ void Plume::setBCfunctions( PlumeInputData* PID )
                         //  need to specify no terrain in the input icellflags
                         // the currentPointerFunction pointer function now points to the innerCellBC_simpleStairStepReflection function
                         currentPointerFunction = &Plume::innerCellBC_simpleStairStepReflection;
+                        //std::cout << "BCpointerFunctions[" << cellIdx << "] = \"innerCellBC_simpleStairStepReflection\"" << std::endl;
                     } else if( icellFlag == 7 )
                     {
                         // 7  "Building cut-cells"
@@ -1236,6 +1420,7 @@ void Plume::setBCfunctions( PlumeInputData* PID )
                         {
                             // the currentPointerFunction pointer function now points to the innerCellBC_simpleStairStepReflection function
                             currentPointerFunction = &Plume::innerCellBC_simpleStairStepReflection;
+                            //std::cout << "BCpointerFunctions[" << cellIdx << "] = \"innerCellBC_simpleStairStepReflection\"" << std::endl;
                         } else if( buildingCutCell_reflectionType == "simpleCutCell" )
                         {
                             std::cerr << "!!! Plume::setBCfunctions() error !!! input buildingCutCell_reflectionType \"" << buildingCutCell_reflectionType 
@@ -1264,6 +1449,7 @@ void Plume::setBCfunctions( PlumeInputData* PID )
                         {
                             // the currentPointerFunction pointer function now points to the innerCellBC_simpleStairStepReflection function
                             currentPointerFunction = &Plume::innerCellBC_simpleStairStepReflection;
+                            //std::cout << "BCpointerFunctions[" << cellIdx << "] = \"innerCellBC_simpleStairStepReflection\"" << std::endl;
                         } else if( terrainCutCell_reflectionType == "simpleCutCell" )
                         {
                             std::cerr << "!!! Plume::setBCfunctions() error !!! input terrainCutCell_reflectionType \"" << terrainCutCell_reflectionType 
@@ -1290,6 +1476,7 @@ void Plume::setBCfunctions( PlumeInputData* PID )
                         {
                             // the currentPointerFunction pointer function now points to the innerCellBC_passthrough function
                             currentPointerFunction = &Plume::innerCellBC_passthrough;
+                            //std::cout << "BCpointerFunctions[" << cellIdx << "] = \"innerCellBC_passthrough\"" << std::endl;
                         } else
                         {
                             std::cerr << "!!! Plume::setBCfunctions() error !!! input doDepositions \"" << doDepositions 
@@ -1308,6 +1495,7 @@ void Plume::setBCfunctions( PlumeInputData* PID )
                         // any icellFlag error values not included
                         // the currentPointerFunction pointer function now points to the innerCellBC_passthrough function
                         currentPointerFunction = &Plume::innerCellBC_passthrough;
+                        //std::cout << "BCpointerFunctions[" << cellIdx << "] = \"innerCellBC_passthrough\"" << std::endl;
                     }
                 }
 
@@ -1320,10 +1508,45 @@ void Plume::setBCfunctions( PlumeInputData* PID )
         }   // for j = 0 to ny-1
     }   // for k = 0 to nz-1
 
+    // only want to see map of BC functions, exit now
+    //exit(EXIT_SUCCESS);
+
 }
 
 
 // the domain start and end boundary condition functions
+void Plume::xDomainWallLineBC_passthrough( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
+{
+
+    // calculate the new component position for all particles that run this BC function
+    //  don't need to do anything else, nothing else needs modified
+    //  we are just letting the particle go on its merry way
+    // No need to modify velocities, just the position
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    xPos = xPos + distX_inc;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  xDomainWallLineBC_passthrough" << std::endl;
+    }
+    
+
+    // is done, calculating the next cellIdx is done by the function that calls this function
+
+}
 void Plume::xDomainStartBC_exiting( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
 {
 
@@ -1342,6 +1565,15 @@ void Plume::xDomainStartBC_exiting( const double& distX_inc, double& xPos, doubl
 
     // start by setting the current particle component position to the expected particle component position
     xPos = xPos + distX_inc;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  xDomainStartBC_exiting" << std::endl;
+    }
     
     
     // if it goes out of the domain, set isActive to false
@@ -1370,6 +1602,15 @@ void Plume::xDomainEndBC_exiting( const double& distX_inc, double& xPos, double&
 
     // start by setting the current particle component position to the expected particle component position
     xPos = xPos + distX_inc;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  xDomainEndBC_exiting" << std::endl;
+    }
     
     
     // if it goes out of the domain, set isActive to false
@@ -1401,6 +1642,16 @@ void Plume::xDomainStartBC_periodic( const double& distX_inc, double& xPos, doub
 
     // need the domain size for sending the particle across the domain
     double domainXsize = domainXend - domainXstart;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  xDomainStartBC_periodic" << std::endl;
+    }
+
 
     // check to make sure this dimension actually has a size
     if(domainXsize != 0)
@@ -1436,6 +1687,16 @@ void Plume::xDomainEndBC_periodic( const double& distX_inc, double& xPos, double
 
     // need the domain size for sending the particle across the domain
     double domainXsize = domainXend - domainXstart;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  xDomainEndBC_periodic" << std::endl;
+    }
+
     
     // check to make sure this dimension actually has a size
     if(domainXsize != 0)
@@ -1469,6 +1730,16 @@ void Plume::xDomainStartBC_reflection( const double& distX_inc, double& xPos, do
     // start by setting the current particle component position to the expected particle component position
     xPos = xPos + distX_inc;
 
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  xDomainStartBC_reflection" << std::endl;
+    }
+
+
     // if it goes out of the domain, reflect the particle on the domain wall
     //  this includes reflecting the component velocity
     // since just moving at most one cell size, this doesn't need to be a while loop
@@ -1499,6 +1770,16 @@ void Plume::xDomainEndBC_reflection( const double& distX_inc, double& xPos, doub
     // start by setting the current particle component position to the expected particle component position
     xPos = xPos + distX_inc;
 
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  xDomainEndBC_reflection" << std::endl;
+    }
+
+
     // if it goes out of the domain, reflect the particle on the domain wall
     //  this includes reflecting the component velocity
     // since just moving at most one cell size, this doesn't need to be a while loop
@@ -1508,6 +1789,38 @@ void Plume::xDomainEndBC_reflection( const double& distX_inc, double& xPos, doub
         uFluct = -uFluct;
         uFluct_old = -uFluct_old;
     }
+
+}
+void Plume::yDomainWallLineBC_passthrough( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
+{
+
+    // calculate the new component position for all particles that run this BC function
+    //  don't need to do anything else, nothing else needs modified
+    //  we are just letting the particle go on its merry way
+    // No need to modify velocities, just the position
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    yPos = yPos + distY_inc;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  yDomainWallLineBC_passthrough" << std::endl;
+    }
+    
+
+    // is done, calculating the next cellIdx is done by the function that calls this function
 
 }
 void Plume::yDomainStartBC_exiting( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
@@ -1528,6 +1841,15 @@ void Plume::yDomainStartBC_exiting( const double& distY_inc, double& yPos, doubl
 
     // start by setting the current particle component position to the expected particle component position
     yPos = yPos + distY_inc;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  yDomainStartBC_exiting" << std::endl;
+    }
     
     
     // if it goes out of the domain, set isActive to false
@@ -1556,6 +1878,15 @@ void Plume::yDomainEndBC_exiting( const double& distY_inc, double& yPos, double&
 
     // start by setting the current particle component position to the expected particle component position
     yPos = yPos + distY_inc;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  yDomainEndBC_exiting" << std::endl;
+    }
     
     
     // if it goes out of the domain, set isActive to false
@@ -1587,6 +1918,16 @@ void Plume::yDomainStartBC_periodic( const double& distY_inc, double& yPos, doub
 
     // need the domain size for sending the particle across the domain
     double domainYsize = domainYend - domainYstart;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  yDomainStartBC_periodic" << std::endl;
+    }
+
 
     // check to make sure this dimension actually has a size
     if(domainYsize != 0)
@@ -1623,6 +1964,16 @@ void Plume::yDomainEndBC_periodic( const double& distY_inc, double& yPos, double
     // need the domain size for sending the particle across the domain
     double domainYsize = domainYend - domainYstart;
 
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  yDomainEndBC_periodic" << std::endl;
+    }
+
+
     // check to make sure this dimension actually has a size
     if(domainYsize != 0)
     {
@@ -1655,6 +2006,16 @@ void Plume::yDomainStartBC_reflection( const double& distY_inc, double& yPos, do
     // start by setting the current particle component position to the expected particle component position
     yPos = yPos + distY_inc;
 
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  yDomainStartBC_reflection" << std::endl;
+    }
+
+
     // if it goes out of the domain, reflect the particle on the domain wall
     //  this includes reflecting the component velocity
     // since just moving at most one cell size, this doesn't need to be a while loop
@@ -1685,6 +2046,16 @@ void Plume::yDomainEndBC_reflection( const double& distY_inc, double& yPos, doub
     // start by setting the current particle component position to the expected particle component position
     yPos = yPos + distY_inc;
 
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  yDomainEndBC_reflection" << std::endl;
+    }
+
+
     // if it goes out of the domain, reflect the particle on the domain wall
     //  this includes reflecting the component velocity
     // since just moving at most one cell size, this doesn't need to be a while loop
@@ -1695,6 +2066,38 @@ void Plume::yDomainEndBC_reflection( const double& distY_inc, double& yPos, doub
         vFluct_old = -vFluct_old;
     }
     
+}
+void Plume::zDomainWallLineBC_passthrough( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
+{
+
+    // calculate the new component position for all particles that run this BC function
+    //  don't need to do anything else, nothing else needs modified
+    //  we are just letting the particle go on its merry way
+    // No need to modify velocities, just the position
+    // cellIdx info will be modified by the function calling this function 
+    //  after it has called a domain edge BC function for each component direction
+
+    // don't need the old particle position info for this BC function
+    // since particle could leave the domain, the expected cellIdx value should not be calculated
+    // until after it is determined the particle is staying in the domain
+    // and all component positions are finished calculating for the particle
+
+
+    // start by setting the current particle component position to the expected particle component position
+    zPos = zPos + distZ_inc;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  zDomainWallLineBC_passthrough" << std::endl;
+    }
+    
+
+    // is done, calculating the next cellIdx is done by the function that calls this function
+
 }
 void Plume::zDomainStartBC_exiting( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
 {
@@ -1714,6 +2117,15 @@ void Plume::zDomainStartBC_exiting( const double& distZ_inc, double& zPos, doubl
 
     // start by setting the current particle component position to the expected particle component position
     zPos = zPos + distZ_inc;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  zDomainStartBC_exiting" << std::endl;
+    }
     
     
     // if it goes out of the domain, set isActive to false
@@ -1742,6 +2154,15 @@ void Plume::zDomainEndBC_exiting( const double& distZ_inc, double& zPos, double&
 
     // start by setting the current particle component position to the expected particle component position
     zPos = zPos + distZ_inc;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  zDomainEndBC_exiting" << std::endl;
+    }
     
     
     // if it goes out of the domain, set isActive to false
@@ -1773,6 +2194,17 @@ void Plume::zDomainStartBC_periodic( const double& distZ_inc, double& zPos, doub
 
     // need the domain size for sending the particle across the domain
     double domainZsize = domainZend - domainZstart;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  zDomainStartBC_periodic" << std::endl;
+        std::cout << "domainZstart = \"" << domainZstart << "\", domainZend = \"" << domainZend << "\", domainZsize = \"" << domainZsize << "\"" << std::endl;
+    }
+
 
     // check to make sure this dimension actually has a size
     if(domainZsize != 0)
@@ -1809,6 +2241,17 @@ void Plume::zDomainEndBC_periodic( const double& distZ_inc, double& zPos, double
     // need the domain size for sending the particle across the domain
     double domainZsize = domainZend - domainZstart;
 
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  zDomainEndBC_periodic" << std::endl;
+        std::cout << "domainZstart = \"" << domainZstart << "\", domainZend = \"" << domainZend << "\", domainZsize = \"" << domainZsize << "\"" << std::endl;
+    }
+
+
     // check to make sure this dimension actually has a size
     if(domainZsize != 0)
     {
@@ -1841,6 +2284,16 @@ void Plume::zDomainStartBC_reflection( const double& distZ_inc, double& zPos, do
     // start by setting the current particle component position to the expected particle component position
     zPos = zPos + distZ_inc;
 
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  zDomainStartBC_reflection" << std::endl;
+    }
+
+
     // if it goes out of the domain, reflect the particle on the domain wall
     //  this includes reflecting the component velocity
     // since just moving at most one cell size, this doesn't need to be a while loop
@@ -1870,6 +2323,16 @@ void Plume::zDomainEndBC_reflection( const double& distZ_inc, double& zPos, doub
 
     // start by setting the current particle component position to the expected particle component position
     zPos = zPos + distZ_inc;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  zDomainEndBC_reflection" << std::endl;
+    }
+
 
     // if it goes out of the domain, reflect the particle on the domain wall
     //  this includes reflecting the component velocity
@@ -1912,8 +2375,22 @@ void Plume::domainEdgeBC( const double& distX_inc, const double& distY_inc, cons
     (this->*yDomainEdgeBC)(distY_inc,yPos,vFluct,vFluct_old,isActive);
     // third the z direction components
     (this->*zDomainEdgeBC)(distZ_inc,zPos,wFluct,wFluct_old,isActive);
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  domainEdgeBC, after BC calcs, before setInterp3Dindexing" << std::endl;
+        std::cout << "xPos = \"" << xPos << "\", yPos = \"" << yPos << "\", zPos = \"" << zPos << "\"" << std::endl;
+        std::cout << "uFluct = \"" << uFluct << "\", vFluct = \"" << vFluct << "\", wFluct = \"" << wFluct << "\"" << std::endl;
+        std::cout << "uFluct_old = \"" << uFluct_old << "\", vFluct_old = \"" << vFluct_old << "\", wFluct_old = \"" << wFluct_old << "\"" << std::endl;
+        std::cout << "isActive = \"" << isActive << "\"" << std::endl;
+    }
     
-    if( isActive = true )
+    
+    if( isActive == true )
     {
         // the expected particle positions are the desired output particle positions
         // now calculate the eulerian grid cell info for these expected particle positions
@@ -1943,7 +2420,21 @@ void Plume::innerCellBC_passthrough( const double& distX_inc, const double& dist
     xPos = xPos + distX_inc;
     yPos = yPos + distY_inc;
     zPos = zPos + distZ_inc;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  innerCellBC_passthrough, after BC calcs, before setInterp3Dindexing" << std::endl;
+        std::cout << "xPos = \"" << xPos << "\", yPos = \"" << yPos << "\", zPos = \"" << zPos << "\"" << std::endl;
+        std::cout << "uFluct = \"" << uFluct << "\", vFluct = \"" << vFluct << "\", wFluct = \"" << wFluct << "\"" << std::endl;
+        std::cout << "uFluct_old = \"" << uFluct_old << "\", vFluct_old = \"" << vFluct_old << "\", wFluct_old = \"" << wFluct_old << "\"" << std::endl;
+        std::cout << "isActive = \"" << isActive << "\"" << std::endl;
+    }
     
+
     // the expected particle positions are the desired output particle positions
     // now calculate the eulerian grid cell info for these expected particle positions
     // no need to modify the velocity info
@@ -1985,9 +2476,24 @@ void Plume::innerCellBC_simpleStairStepReflection( const double& distX_inc, cons
     xPos = xPos + distX_inc;
     yPos = yPos + distY_inc;
     zPos = zPos + distZ_inc;
+
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  innerCellBC_passthrough, after some calcs, before first setInterp3Dindexing" << std::endl;
+        std::cout << "xPos = \"" << xPos << "\", yPos = \"" << yPos << "\", zPos = \"" << zPos << "\"" << std::endl;
+        std::cout << "uFluct = \"" << uFluct << "\", vFluct = \"" << vFluct << "\", wFluct = \"" << wFluct << "\"" << std::endl;
+        std::cout << "uFluct_old = \"" << uFluct_old << "\", vFluct_old = \"" << vFluct_old << "\", wFluct_old = \"" << wFluct_old << "\"" << std::endl;
+        std::cout << "isActive = \"" << isActive << "\"" << std::endl;
+    }
+
     
     // now calculate the eulerian grid cell info for these expected particle positions
     eul->setInterp3Dindexing(xPos,yPos,zPos,  cellIdx, ii, jj, kk, iw, jw, kw, ip, jp, kp);
+
 
 
     // now do the BC algorythm to know whether the expected positions are good enough
@@ -2090,10 +2596,25 @@ void Plume::innerCellBC_simpleStairStepReflection( const double& distX_inc, cons
         std::cout << "WARNING (Plume::innerCellBC_simpleStairStepReflection): particle moved more than one cell at a time" << std::endl;
     }
 
+
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    if( extraDebug == true )
+    {
+        std::cout << "  innerCellBC_passthrough, after BC calcs, before final setInterp3Dindexing" << std::endl;
+        std::cout << "xPos = \"" << xPos << "\", yPos = \"" << yPos << "\", zPos = \"" << zPos << "\"" << std::endl;
+        std::cout << "uFluct = \"" << uFluct << "\", vFluct = \"" << vFluct << "\", wFluct = \"" << wFluct << "\"" << std::endl;
+        std::cout << "uFluct_old = \"" << uFluct_old << "\", vFluct_old = \"" << vFluct_old << "\", wFluct_old = \"" << wFluct_old << "\"" << std::endl;
+        std::cout << "isActive = \"" << isActive << "\"" << std::endl;
+    }
+
+
     // now that the particle has a modified and final reflected position, 
     // recalculate the eulerian grid cell info for these final particle positions for the next iteration
     eul->setInterp3Dindexing(xPos,yPos,zPos,  cellIdx, ii, jj, kk, iw, jw, kw, ip, jp, kp);
     
+
 }
 // more will be coming soon
 

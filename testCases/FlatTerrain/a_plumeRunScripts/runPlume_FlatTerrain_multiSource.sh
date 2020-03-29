@@ -5,7 +5,7 @@
 #SBATCH --job-name=plume_FlatTerrain_multiSource
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --mem=2G
+#SBATCH --mem=3G
 #SBATCH --time=01:30:00
 #SBATCH --exclude=notch055
 #SBATCH -e plume_error_FlatTerrain.log
