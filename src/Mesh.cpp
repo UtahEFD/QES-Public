@@ -19,7 +19,7 @@ void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float d
 
              if(icellflag[icell_idx] == 1){
 
-               SphereDirections sd(128, -1,1, 0,2*M_PI);
+               SphereDirections sd(512, -1,1, 0,2*M_PI);
                
                float maxLength = std::numeric_limits<float>::infinity();
 

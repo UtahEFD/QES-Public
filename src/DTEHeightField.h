@@ -132,7 +132,8 @@ private:
     //if (j * m_nXSize + k >= m_nXSize * m_nYSize
     else
     {
-      height = scanline[ abs(k-m_nYSize) * m_nXSize + j ];
+        // height = scanline[ abs(k-m_nYSize) * m_nXSize + j ];
+        height = scanline[(m_nYSize-k-1) * m_nXSize + j ];
     }
 
     if (height < 0.0 || std::isnan(abs(height)))

@@ -178,7 +178,7 @@ public:
             // Read in height field
             //
             std::cout << "Processing WRF data for terrain and met param sensors from " << wrfFile << std::endl;
-            wrfInputData = new WRFInput( wrfFile );
+            wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, 0, 0 );
             std::cout << "WRF Input Data processing completed." << std::endl;
 
             // In the current setup, grid may NOT be set... be careful
@@ -215,11 +215,34 @@ public:
             std::cout << "Mesh complete\n";
 
             // To proceed and cull sensors appropriately, we will need
-            // the lower-left bounds from the DEM
+            // the lower-left bounds from the DEM if UTMx and UTMy and
+            // UTMZone are not all 0
+            // 
+            // ??? Parse primitive should return true or false if a
+            // value was parsed, rather than this
+            // ??? can refactor that later.
+            bool useUTM_for_DEMLocation = false;
+            float uEps = 0.001;
+            if (((UTMx > -uEps) && (UTMx < uEps)) &&
+                ((UTMy > -uEps) && (UTMy < uEps)) &&
+                (UTMZone == 0)) {
+                useUTM_for_DEMLocation = true;
+                std::cout << "UTM (" << UTMx << ", " << UTMy << "), Zone: " << UTMZone << " will be used as lower-left location for DEM." << std::endl;
+            }
             
+            // Note from Pete:
+            // Normally, will want to see if UTMx and UTMy are valid
+            // in the DEM and if so, pass that UTMx and UTMy into the
+            // WRFInput.  Passing 0s for these should not likely cause
+            // issues since we're either adding or subtracting these
+            // values.
+
             // Then, read WRF File extracting ONLY the sensor data
             bool onlySensorData = true;
-            wrfInputData = new WRFInput( wrfFile, onlySensorData );
+            float dimX = (*(domain))[0] * (*(grid))[0];
+            float dimY = (*(domain))[1] * (*(grid))[1];
+            std::cout << "dimX = " << dimX << ", dimY = " << dimY << std::endl;
+            wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, dimX, dimY, onlySensorData );
             std::cout << "WRF Wind Velocity Profile Data processing completed." << std::endl;
         }
         

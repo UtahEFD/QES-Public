@@ -58,7 +58,7 @@ public:
 
     const double c_PI = 3.14159265358979323846;
 
-    WRFInput(const std::string& filename, bool sensorsOnly=false);
+    WRFInput(const std::string& filename, double domainUTMx, double domainUTMy, float dimX, float dimY, bool sensorsOnly=false);
     ~WRFInput();
 
     // If set to true, ONLY the sensor data will be pulled from WRF

@@ -83,10 +83,10 @@ private:
 
             float dotProd = dirVec[0]*0.0f + dirVec[1]*0.0f + dirVec[2]*1.0f;
                 
-            if (dotProd < 0.20) {
+            //if (dotProd < 0.20) {
                 nextList[i] = Vec3D(dx/magnitude,dy/magnitude,dz/magnitude);
                 i++;
-            }
+                // }
         }
         
         // Then make sure the cardinal directions that may matter are
