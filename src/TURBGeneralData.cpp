@@ -143,7 +143,7 @@ void TURBGeneralData::run(URBGeneralData* UGD){
     std::cout << "Applying non local mixing...\n";
     for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
     {
-        UGD->allBuildingsV[UGD->building_id[i]]->NonLocalMixing(UGD, this);
+        UGD->allBuildingsV[UGD->building_id[i]]->NonLocalMixing(UGD, this,UGD->building_id[i]);
     }
     
 }

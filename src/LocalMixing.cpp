@@ -24,7 +24,7 @@ void LocalMixing::saveMixingLength(const URBInputData* UID,URBGeneralData* UGD)
     
     // create NetCDF filed in file
     mixLengthOut->addField(UID->localMixingParam->varname,"m","distance to nearest object",
-                           {NcDim_z,NcDim_y,NcDim_z},ncFloat);    
+                           {NcDim_z,NcDim_y,NcDim_x},ncFloat);    
     
     // dump mixingLengths to file
     mixLengthOut->saveField2D(UID->localMixingParam->varname,vector_index,vector_size,UGD->mixingLengths);
