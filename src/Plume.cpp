@@ -112,7 +112,8 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
     // do an output for the first time, then put the value back to zero so the particle loop will work correctly
     // this means I need to set the isActive value to true for the first set of particles right here
     dis->nParsReleased = nParsToRelease.at(0);
-    for( int parIdx = 0; parIdx < nParsToRelease.at(0); parIdx++ )
+    // LA important: to make debugging easier, I made the loop var a data member
+    for( parIdx = 0; parIdx < nParsToRelease.at(0); parIdx++ )
     {
         dis->pointList.at(parIdx).isActive = true;
     }
@@ -133,8 +134,15 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
     // LA note on debug timers: because the loop is doing stuff for the next time, and particles start getting released at time zero,
     //  this means that the updateFrequency needs to match with tStep+1, not tStep. At the same time, the current time output to consol
     //  output and to function calls need to also be set to tStep+1.
-    for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)
+    // LA important: to make debugging easier, I made the loop var a data member
+    for( sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++ )
     {
+
+        // set the var to allow console output in multiple functions when the sim_tIdx hits the updateFrequency
+        if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )
+        {
+            updateFrequency_timeLoop_output = true;
+        }
      
         // need to release new particles
         // Add new particles to the number to move
@@ -144,14 +152,15 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
         dis->nParsReleased = nPastPars + nParsToRelease.at(sim_tIdx);
 
         // need to set the new particles isActive values to true
-        for( int parIdx = nPastPars; parIdx < dis->nParsReleased; parIdx++ )
+        // LA important: to make debugging easier, I made the loop var a data member
+        for( parIdx = nPastPars; parIdx < dis->nParsReleased; parIdx++ )
         {
             dis->pointList.at(parIdx).isActive = true;
         }
         
 
         // only output the information when the updateFrequency allows and when there are actually released particles
-        if(  nParsToRelease.at(sim_tIdx) != 0 && ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )  )
+        if( nParsToRelease.at(sim_tIdx) != 0 && updateFrequency_timeLoop_output == true )
         {
             std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) << "\". finished emitting \"" 
                         << nParsToRelease.at(sim_tIdx) << "\" particles from \"" << dis->allSources.size() 
@@ -167,7 +176,7 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
         // LA future work: would love to put this into a debug if statement wrapper
         if( debug == true )
         {
-            if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )
+            if( updateFrequency_timeLoop_output == true )
             {
                 timers.resetStoredTimer("advection loop");
             }
@@ -177,8 +186,15 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
         double isRogueCount = dis->isRogueCount;
         double isNotActiveCount = dis->isNotActiveCount;
 
-        for( int parIdx = 0; parIdx < dis->nParsReleased; parIdx++ )
+        for( parIdx = 0; parIdx < dis->nParsReleased; parIdx++ )
         {
+
+            // set the var to allow console output in multiple functions when the parIdx hits the updateFrequency
+            if( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )
+            {
+                updateFrequency_particleLoop_output = true;
+            }
+
 
             // get the current isRogue and isActive information
             bool isRogue = dis->pointList.at(parIdx).isRogue;
@@ -193,8 +209,7 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                 //  and when debugging
                 if( debug == true )
                 {
-                    if(  ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) 
-                      && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )  )
+                    if( updateFrequency_timeLoop_output == true && updateFrequency_particleLoop_output == true )
                     {
                         // overall particle timer
                         timers.resetStoredTimer("particle iteration");
@@ -280,12 +295,12 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                 // LA important note: can't use the simulation timestep for the timestep remainder, the last simulation timestep
                 //  is potentially smaller than the simulation timestep. So need to use the simTimes.at(nSimTimes-1)-simTimes.at(nSimTimes-2)
                 //  for the last simulation timestep. The problem is that simTimes.at(nSimTimes-1) is greater than simTimes.at(nSimTimes-2) + sim_dt.
-                double timeRemainder = sim_dt;
+                timeRemainder = sim_dt;
                 if( sim_tIdx == nSimTimes-2 )   // at the final timestep
                 {
                     timeRemainder = simTimes.at(nSimTimes-1) - simTimes.at(nSimTimes-2);
                 }
-                double par_time = simTimes.at(sim_tIdx);    // the current time, updated in this loop with each new par_dt. Will end at simTimes.at(sim_tIdx+1) at the end of this particle loop
+                par_time = simTimes.at(sim_tIdx);    // the current time, updated in this loop with each new par_dt. Will end at simTimes.at(sim_tIdx+1) at the end of this particle loop
                 while( isActive == true && timeRemainder > 0.0 )
                 {
 
@@ -558,11 +573,11 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
 
                     // control the extra debug output however you want, to allow output in functions as well as this loop
                     // make sure it matches the if statement as the spot where extraDebug is set back to false
-                    //if( parIdx == 0 )
-                    //{
-                        //extraDebug = true;
-                        extraDebug = false;
-                    //}
+                    if( updateFrequency_timeLoop_output == true && updateFrequency_particleLoop_output == true )
+                    {
+                        extraDebug = true;
+                        //extraDebug = false;
+                    }
 
 
                     // only see this statement for a given particle or set of particles over a given time or sets of time,
@@ -651,7 +666,7 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                         //   technically the eulerian velocity changes each new cell the particle enters, but we can assume that is a truncation error
                         //   that goes down as the user uses higher resolution grids and smaller timesteps. We may also just do a first pass
                         //   that ignores the exact location of the boundaries in a cell, just assuming each cell is either a bouncing spot or air.
-                        (this->*BCpointerFunctions.at(cellIdx))( distX_inc,distY_inc,distZ_inc,
+                        (this->*BCpointerFunctions.at(cellIdx))( distX,distY,distZ,distX_inc,distY_inc,distZ_inc,
                                                                  cellIdx,ii,jj,kk,iw,jw,kw,ip,jp,kp,
                                                                  xPos,yPos,zPos,uFluct,vFluct,wFluct, 
                                                                  uFluct_old,vFluct_old,wFluct_old,isActive,
@@ -696,10 +711,10 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
 
                     // control the extra debug output however you want, to allow output in functions as well as this loop
                     // make sure it matches the if statement as the spot where extraDebug is first set to true
-                    //if( parIdx == 0 )
-                    //{
+                    if( updateFrequency_timeLoop_output == true && updateFrequency_particleLoop_output == true )
+                    {
                         extraDebug = false;
-                    //}
+                    }
 
 
                     // now set the particle values for if they are rogue or outside the domain
@@ -738,8 +753,7 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                     // but only if debug is set to true and this is the right updateFrequency time
                     if( debug == true )
                     {
-                        if(  ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) 
-                          && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )  )
+                        if( updateFrequency_timeLoop_output == true && updateFrequency_particleLoop_output == true )
                         {
                             std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) 
                                     << "\", par[" << parIdx << "]. Finished particle timestep \"" << par_dt 
@@ -810,8 +824,7 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                 // LA future work: because this has timer related info, this probably needs to also be limited to when the user specifies they want debug mode
                 if( debug == true )
                 {
-                    if(  ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) 
-                      && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )  )
+                    if( updateFrequency_timeLoop_output == true && updateFrequency_particleLoop_output == true )
                     {
                         std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) 
                                   << "\", par[" << parIdx << "]. finished particle iteration" << std::endl;
@@ -822,7 +835,15 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
             }   // if isActive == true and isRogue == false
 
 
-        } // for(int parIdx = 0; parIdx < dis->nParsReleased; parIdx++ )
+            // reset the var to allow console output in multiple functions when the parIdx hits the updateFrequency
+            // so reset it for the next iteration to only allow console output at updateFrequency
+            if( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )
+            {
+                updateFrequency_particleLoop_output = false;
+            }
+
+
+        } // for( parIdx = 0; parIdx < dis->nParsReleased; parIdx++ )
 
         // set the isRogueCount and isNotActiveCount for the time iteration in the disperion data
         // !!! this needs set for the output to work properly
@@ -842,7 +863,7 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
         
         // output the time, isRogueCount, and isNotActiveCount information for all simulations,
         //  but only when the updateFrequency allows
-        if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )
+        if( updateFrequency_timeLoop_output == true )
         {
             std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) << "\". finished advection iteration. isRogueCount = \"" 
                 << dis->isRogueCount << "\", isNotActiveCount = \"" << dis->isNotActiveCount << "\"" << std::endl;
@@ -851,6 +872,14 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
             {
                 timers.printStoredTime("advection loop");
             }
+        }
+
+
+        // reset the var to allow console output in multiple functions when the sim_tIdx hits the updateFrequency
+        // so reset it for the next iteration to only allow console output at updateFrequency
+        if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )
+        {
+            updateFrequency_timeLoop_output = false;
         }
 
 
@@ -1101,8 +1130,8 @@ void Plume::setBCfunctions( PlumeInputData* PID )
     std::string yDomainStartBCtype = PID->BCs->yDomainStartBCtype;
     std::string zDomainStartBCtype = PID->BCs->zDomainStartBCtype;
     std::string xDomainEndBCtype = PID->BCs->xDomainEndBCtype;
-    std::string yDomainEndBCtype = PID->BCs->xDomainEndBCtype;
-    std::string zDomainEndBCtype = PID->BCs->xDomainEndBCtype;
+    std::string yDomainEndBCtype = PID->BCs->yDomainEndBCtype;
+    std::string zDomainEndBCtype = PID->BCs->zDomainEndBCtype;
 
     // now get the other input boundary condition information from the inputs
     std::string buildingCutCell_reflectionType = PID->BCs->buildingCutCell_reflectionType;
@@ -1515,7 +1544,7 @@ void Plume::setBCfunctions( PlumeInputData* PID )
 
 
 // the domain start and end boundary condition functions
-void Plume::xDomainWallLineBC_passthrough( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
+void Plume::xDomainWallLineBC_passthrough( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
 {
 
     // calculate the new component position for all particles that run this BC function
@@ -1547,7 +1576,7 @@ void Plume::xDomainWallLineBC_passthrough( const double& distX_inc, double& xPos
     // is done, calculating the next cellIdx is done by the function that calls this function
 
 }
-void Plume::xDomainStartBC_exiting( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
+void Plume::xDomainStartBC_exiting( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
 {
 
     // calculate the new component position for all particles that run this BC function
@@ -1584,7 +1613,7 @@ void Plume::xDomainStartBC_exiting( const double& distX_inc, double& xPos, doubl
     }
 
 }
-void Plume::xDomainEndBC_exiting( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
+void Plume::xDomainEndBC_exiting( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
 {
 
     // calculate the new component position for all particles that run this BC function
@@ -1621,7 +1650,7 @@ void Plume::xDomainEndBC_exiting( const double& distX_inc, double& xPos, double&
     }
     
 }
-void Plume::xDomainStartBC_periodic( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
+void Plume::xDomainStartBC_periodic( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
 {
 
     // calculate the new component position for all particles that run this BC function
@@ -1666,7 +1695,7 @@ void Plume::xDomainStartBC_periodic( const double& distX_inc, double& xPos, doub
     }
 
 }
-void Plume::xDomainEndBC_periodic( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
+void Plume::xDomainEndBC_periodic( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
 {
     
     // calculate the new component position for all particles that run this BC function
@@ -1711,13 +1740,14 @@ void Plume::xDomainEndBC_periodic( const double& distX_inc, double& xPos, double
     }
 
 }
-void Plume::xDomainStartBC_reflection( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
+void Plume::xDomainStartBC_reflection( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
 {
 
     // calculate the new component position for all particles that run this BC function
     //  then if the new component position would put it out of the domain
     //  modify the component position by reflecting it on the domain edge
     //  this also includes reflecting the velocities
+    //  also needs to reflect the component dist and dist_inc variables
     // cellIdx info will be modified by the function calling this function 
     //  after it has called a domain edge BC function for each component direction
 
@@ -1742,22 +1772,26 @@ void Plume::xDomainStartBC_reflection( const double& distX_inc, double& xPos, do
 
     // if it goes out of the domain, reflect the particle on the domain wall
     //  this includes reflecting the component velocity
+    //  also needs to reflect the component dist and dist_inc variables
     // since just moving at most one cell size, this doesn't need to be a while loop
     if( xPos < domainXstart )
     {
         xPos = domainXstart - (xPos - domainXstart);
         uFluct = -uFluct;
         uFluct_old = -uFluct_old;
+        distX = -distX;
+        distX_inc = -distX_inc;
     }
 
 }
-void Plume::xDomainEndBC_reflection( const double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
+void Plume::xDomainEndBC_reflection( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
 {
 
     // calculate the new component position for all particles that run this BC function
     //  then if the new component position would put it out of the domain
     //  modify the component position by reflecting it on the domain edge
     //  this also includes reflecting the velocities
+    //  also needs to reflect the component dist and dist_inc variables
     // cellIdx info will be modified by the function calling this function 
     //  after it has called a domain edge BC function for each component direction
 
@@ -1782,16 +1816,19 @@ void Plume::xDomainEndBC_reflection( const double& distX_inc, double& xPos, doub
 
     // if it goes out of the domain, reflect the particle on the domain wall
     //  this includes reflecting the component velocity
+    //  also needs to reflect the component dist and dist_inc variables
     // since just moving at most one cell size, this doesn't need to be a while loop
     if( xPos > domainXend )
     {
         xPos = domainXend - (xPos - domainXend);
         uFluct = -uFluct;
         uFluct_old = -uFluct_old;
+        distX = -distX;
+        distX_inc = -distX_inc;
     }
 
 }
-void Plume::yDomainWallLineBC_passthrough( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
+void Plume::yDomainWallLineBC_passthrough( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
 {
 
     // calculate the new component position for all particles that run this BC function
@@ -1823,7 +1860,7 @@ void Plume::yDomainWallLineBC_passthrough( const double& distY_inc, double& yPos
     // is done, calculating the next cellIdx is done by the function that calls this function
 
 }
-void Plume::yDomainStartBC_exiting( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
+void Plume::yDomainStartBC_exiting( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
 {
 
     // calculate the new component position for all particles that run this BC function
@@ -1860,7 +1897,7 @@ void Plume::yDomainStartBC_exiting( const double& distY_inc, double& yPos, doubl
     }
 
 }
-void Plume::yDomainEndBC_exiting( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
+void Plume::yDomainEndBC_exiting( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
 {
     
     // calculate the new component position for all particles that run this BC function
@@ -1897,7 +1934,7 @@ void Plume::yDomainEndBC_exiting( const double& distY_inc, double& yPos, double&
     }
 
 }
-void Plume::yDomainStartBC_periodic( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
+void Plume::yDomainStartBC_periodic( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
 {
 
     // calculate the new component position for all particles that run this BC function
@@ -1942,7 +1979,7 @@ void Plume::yDomainStartBC_periodic( const double& distY_inc, double& yPos, doub
     }
 
 }
-void Plume::yDomainEndBC_periodic( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
+void Plume::yDomainEndBC_periodic( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
 {
 
     // calculate the new component position for all particles that run this BC function
@@ -1987,13 +2024,14 @@ void Plume::yDomainEndBC_periodic( const double& distY_inc, double& yPos, double
     }
 
 }
-void Plume::yDomainStartBC_reflection( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
+void Plume::yDomainStartBC_reflection( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
 {
 
     // calculate the new component position for all particles that run this BC function
     //  then if the new component position would put it out of the domain
     //  modify the component position by reflecting it on the domain edge
     //  this also includes reflecting the velocities
+    //  also needs to reflect the component dist and dist_inc variables
     // cellIdx info will be modified by the function calling this function 
     //  after it has called a domain edge BC function for each component direction
 
@@ -2018,22 +2056,26 @@ void Plume::yDomainStartBC_reflection( const double& distY_inc, double& yPos, do
 
     // if it goes out of the domain, reflect the particle on the domain wall
     //  this includes reflecting the component velocity
+    //  also needs to reflect the component dist and dist_inc variables
     // since just moving at most one cell size, this doesn't need to be a while loop
     if( yPos < domainYstart )
     {
         yPos = domainYstart - (yPos - domainYstart);
         vFluct = -vFluct;
         vFluct_old = -vFluct_old;
+        distY = -distY;
+        distY_inc = -distY_inc;
     }
 
 }
-void Plume::yDomainEndBC_reflection( const double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
+void Plume::yDomainEndBC_reflection( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
 {
     
     // calculate the new component position for all particles that run this BC function
     //  then if the new component position would put it out of the domain
     //  modify the component position by reflecting it on the domain edge
     //  this also includes reflecting the velocities
+    //  also needs to reflect the component dist and dist_inc variables
     // cellIdx info will be modified by the function calling this function 
     //  after it has called a domain edge BC function for each component direction
 
@@ -2058,16 +2100,19 @@ void Plume::yDomainEndBC_reflection( const double& distY_inc, double& yPos, doub
 
     // if it goes out of the domain, reflect the particle on the domain wall
     //  this includes reflecting the component velocity
+    //  also needs to reflect the component dist and dist_inc variables
     // since just moving at most one cell size, this doesn't need to be a while loop
     if( yPos > domainYend )
     {
         yPos = domainYend - (yPos - domainYend);
         vFluct = -vFluct;
         vFluct_old = -vFluct_old;
+        distY = -distY;
+        distY_inc = -distY_inc;
     }
     
 }
-void Plume::zDomainWallLineBC_passthrough( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
+void Plume::zDomainWallLineBC_passthrough( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
 {
 
     // calculate the new component position for all particles that run this BC function
@@ -2099,7 +2144,7 @@ void Plume::zDomainWallLineBC_passthrough( const double& distZ_inc, double& zPos
     // is done, calculating the next cellIdx is done by the function that calls this function
 
 }
-void Plume::zDomainStartBC_exiting( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
+void Plume::zDomainStartBC_exiting( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
 {
     
     // calculate the new component position for all particles that run this BC function
@@ -2136,7 +2181,7 @@ void Plume::zDomainStartBC_exiting( const double& distZ_inc, double& zPos, doubl
     }
     
 }
-void Plume::zDomainEndBC_exiting( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
+void Plume::zDomainEndBC_exiting( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
 {
     
     // calculate the new component position for all particles that run this BC function
@@ -2173,7 +2218,7 @@ void Plume::zDomainEndBC_exiting( const double& distZ_inc, double& zPos, double&
     }
     
 }
-void Plume::zDomainStartBC_periodic( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
+void Plume::zDomainStartBC_periodic( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
 {
 
     // calculate the new component position for all particles that run this BC function
@@ -2219,7 +2264,7 @@ void Plume::zDomainStartBC_periodic( const double& distZ_inc, double& zPos, doub
     }
 
 }
-void Plume::zDomainEndBC_periodic( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
+void Plume::zDomainEndBC_periodic( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
 {
 
     // calculate the new component position for all particles that run this BC function
@@ -2265,13 +2310,14 @@ void Plume::zDomainEndBC_periodic( const double& distZ_inc, double& zPos, double
     }
 
 }
-void Plume::zDomainStartBC_reflection( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
+void Plume::zDomainStartBC_reflection( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
 {
     
     // calculate the new component position for all particles that run this BC function
     //  then if the new component position would put it out of the domain
     //  modify the component position by reflecting it on the domain edge
     //  this also includes reflecting the velocities
+    //  also needs to reflect the component dist and dist_inc variables
     // cellIdx info will be modified by the function calling this function 
     //  after it has called a domain edge BC function for each component direction
 
@@ -2296,22 +2342,26 @@ void Plume::zDomainStartBC_reflection( const double& distZ_inc, double& zPos, do
 
     // if it goes out of the domain, reflect the particle on the domain wall
     //  this includes reflecting the component velocity
+    //  also needs to reflect the component dist and dist_inc variables
     // since just moving at most one cell size, this doesn't need to be a while loop
     if( zPos < domainZstart )
     {
         zPos = domainZstart - (zPos - domainZstart);
         wFluct = -wFluct;
         wFluct_old = -wFluct_old;
+        distZ = -distZ;
+        distZ_inc = -distZ_inc;
     }
     
 }
-void Plume::zDomainEndBC_reflection( const double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
+void Plume::zDomainEndBC_reflection( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
 {
     
     // calculate the new component position for all particles that run this BC function
     //  then if the new component position would put it out of the domain
     //  modify the component position by reflecting it on the domain edge
     //  this also includes reflecting the velocities
+    //  also needs to reflect the component dist and dist_inc variables
     // cellIdx info will be modified by the function calling this function 
     //  after it has called a domain edge BC function for each component direction
 
@@ -2336,12 +2386,15 @@ void Plume::zDomainEndBC_reflection( const double& distZ_inc, double& zPos, doub
 
     // if it goes out of the domain, reflect the particle on the domain wall
     //  this includes reflecting the component velocity
+    //  also needs to reflect the component dist and dist_inc variables
     // since just moving at most one cell size, this doesn't need to be a while loop
     if( zPos > domainZend )
     {
         zPos = domainZend - (zPos - domainZend);
         wFluct = -wFluct;
         wFluct_old = -wFluct_old;
+        distZ = -distZ;
+        distZ_inc = -distZ_inc;
     }
 
 }
@@ -2350,7 +2403,8 @@ void Plume::zDomainEndBC_reflection( const double& distZ_inc, double& zPos, doub
 
 // boundary condition function types to be pointed to by pointer functions in the BCpointerFunctions vector
 // so to be pointed to by a BCptrFunction type variable
-void Plume::domainEdgeBC( const double& distX_inc, const double& distY_inc, const double& distZ_inc,
+void Plume::domainEdgeBC( double& distX, double& distY, double& distZ,
+                          double& distX_inc, double& distY_inc, double& distZ_inc,
                           int& cellIdx, int& ii, int& jj, int& kk,
                           double& iw, double& jw, double& kw,
                           int& ip, int& jp, int& kp, 
@@ -2370,11 +2424,11 @@ void Plume::domainEdgeBC( const double& distX_inc, const double& distY_inc, cons
     // if isActive stays true through each of the domain edge BC functions
 
     // first the x direction components
-    (this->*xDomainEdgeBC)(distX_inc,xPos,uFluct,uFluct_old,isActive);
+    (this->*xDomainEdgeBC)(distX,distX_inc,xPos,uFluct,uFluct_old,isActive);
     // second the y direction components
-    (this->*yDomainEdgeBC)(distY_inc,yPos,vFluct,vFluct_old,isActive);
+    (this->*yDomainEdgeBC)(distY,distY_inc,yPos,vFluct,vFluct_old,isActive);
     // third the z direction components
-    (this->*zDomainEdgeBC)(distZ_inc,zPos,wFluct,wFluct_old,isActive);
+    (this->*zDomainEdgeBC)(distZ,distZ_inc,zPos,wFluct,wFluct_old,isActive);
 
 
     // only see this statement for a given particle or set of particles over a given time or sets of time,
@@ -2400,7 +2454,8 @@ void Plume::domainEdgeBC( const double& distX_inc, const double& distY_inc, cons
 
 }
 // the interior cell boundary condition functions, the ones chosen depending on the icellflag of the given cell
-void Plume::innerCellBC_passthrough( const double& distX_inc, const double& distY_inc, const double& distZ_inc,
+void Plume::innerCellBC_passthrough( double& distX, double& distY, double& distZ,
+                                     double& distX_inc, double& distY_inc, double& distZ_inc,
                                      int& cellIdx, int& ii, int& jj, int& kk,
                                      double& iw, double& jw, double& kw,
                                      int& ip, int& jp, int& kp, 
@@ -2442,7 +2497,8 @@ void Plume::innerCellBC_passthrough( const double& distX_inc, const double& dist
 
     
 }
-void Plume::innerCellBC_simpleStairStepReflection( const double& distX_inc, const double& distY_inc, const double& distZ_inc,
+void Plume::innerCellBC_simpleStairStepReflection( double& distX, double& distY, double& distZ,
+                                                   double& distX_inc, double& distY_inc, double& distZ_inc,
                                                    int& cellIdx, int& ii, int& jj, int& kk,
                                                    double& iw, double& jw, double& kw,
                                                    int& ip, int& jp, int& kp, 
@@ -2501,6 +2557,7 @@ void Plume::innerCellBC_simpleStairStepReflection( const double& distX_inc, cons
 
     // use the difference between the old and the current cellIdx to know what to do with the
     // particle positions and velocities
+    //  also needs to reflect the component dist and dist_inc variables
     int cellIdx_diff = cellIdx - cellIdx_old;
     if( cellIdx_diff == 1 )
     {
@@ -2511,6 +2568,8 @@ void Plume::innerCellBC_simpleStairStepReflection( const double& distX_inc, cons
         xPos = xReflectPos - (xPos - xReflectPos);
         uFluct = -uFluct;
         uFluct_old = -uFluct_old;
+        distX = -distX;
+        distX_inc = -distX_inc;
         if( doDepositions == true )
         {
             // do deposition stuff on the -x eulerian cell face
@@ -2525,6 +2584,8 @@ void Plume::innerCellBC_simpleStairStepReflection( const double& distX_inc, cons
         xPos = xReflectPos - (xPos - xReflectPos);
         uFluct = -uFluct;
         uFluct_old = -uFluct_old;
+        distX = -distX;
+        distX_inc = -distX_inc;
         if( doDepositions == true )
         {
             // do deposition stuff on the +x eulerian cell face
@@ -2539,6 +2600,8 @@ void Plume::innerCellBC_simpleStairStepReflection( const double& distX_inc, cons
         yPos = yReflectPos - (yPos - yReflectPos);
         vFluct = -vFluct;
         vFluct_old = -vFluct_old;
+        distY = -distY;
+        distY_inc = -distY_inc;
         if( doDepositions == true )
         {
             // do deposition stuff on the -y eulerian cell face
@@ -2553,6 +2616,8 @@ void Plume::innerCellBC_simpleStairStepReflection( const double& distX_inc, cons
         yPos = yReflectPos - (yPos - yReflectPos);
         vFluct = -vFluct;
         vFluct_old = -vFluct_old;
+        distY = -distY;
+        distY_inc = -distY_inc;
         if( doDepositions == true )
         {
             // do deposition stuff on the +y eulerian cell face
@@ -2567,6 +2632,8 @@ void Plume::innerCellBC_simpleStairStepReflection( const double& distX_inc, cons
         zPos = zReflectPos - (zPos - zReflectPos);
         wFluct = -wFluct;
         wFluct_old = -wFluct_old;
+        distZ = -distZ;
+        distZ_inc = -distZ_inc;
         if( doDepositions == true )
         {
             // do deposition stuff on the -z eulerian cell face
@@ -2581,6 +2648,8 @@ void Plume::innerCellBC_simpleStairStepReflection( const double& distX_inc, cons
         zPos = zReflectPos - (zPos - zReflectPos);
         wFluct = -wFluct;
         wFluct_old = -wFluct_old;
+        distZ = -distZ;
+        distZ_inc = -distZ_inc;
         if( doDepositions == true )
         {
             // do deposition stuff on the +z eulerian cell face
