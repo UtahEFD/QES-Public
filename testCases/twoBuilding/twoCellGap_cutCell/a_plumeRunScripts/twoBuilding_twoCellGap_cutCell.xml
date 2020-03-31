@@ -1,0 +1,44 @@
+<simulationParameters>
+    <simDur> 1000.0 </simDur>
+    <timeStep> 0.1 </timeStep>
+    <CourantNumber> 1 </CourantNumber>
+    <invarianceTol> 1e-10 </invarianceTol>
+    <C_0> 4.0 </C_0>
+    <updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
+    <updateFrequency_timeLoop> 100 </updateFrequency_timeLoop>
+</simulationParameters>
+<collectionParameters>
+    <timeAvgStart> 0.0 </timeAvgStart>
+    <timeAvgFreq> 60.0 </timeAvgFreq>
+    <boxBoundsX1> 0.0 </boxBoundsX1>
+    <boxBoundsX2> 200.0 </boxBoundsX2>
+    <boxBoundsY1> 0.0 </boxBoundsY1>
+    <boxBoundsY2> 200.0 </boxBoundsY2>
+    <boxBoundsZ1> 0.0 </boxBoundsZ1>
+    <boxBoundsZ2> 200.0 </boxBoundsZ2>
+    <nBoxesX> 200 </nBoxesX>
+    <nBoxesY> 200 </nBoxesY>
+    <nBoxesZ> 200 </nBoxesZ>
+</collectionParameters>
+<sources>
+    <numSources> 1 </numSources>
+    <SourcePoint>
+        <ReleaseType_continuous>
+            <parPerTimestep>10</parPerTimestep>
+        </ReleaseType_continuous>
+        <posX> 10.0 </posX>
+        <posY> 100.0 </posY>
+        <posZ> 25.0 </posZ>
+    </SourcePoint>
+</sources>
+<boundaryConditions>
+    <xDomainStartBCtype>exiting</xDomainStartBCtype>
+    <xDomainEndBCtype>exiting</xDomainEndBCtype>
+  	<yDomainStartBCtype>exiting</yDomainStartBCtype>
+    <yDomainEndBCtype>exiting</yDomainEndBCtype>
+  	<zDomainStartBCtype>exiting</zDomainStartBCtype>
+  	<zDomainEndBCtype>exiting</zDomainEndBCtype>
+    <buildingCutCell_reflectionType>simpleStairStep</buildingCutCell_reflectionType>
+    <terrainCutCell_reflectionType>simpleStairStep</terrainCutCell_reflectionType>
+    <doDepositions>false</doDepositions>
+</boundaryConditions>

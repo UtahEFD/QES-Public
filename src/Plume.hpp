@@ -70,17 +70,15 @@ class Plume {
 
 
         // types needed for implementing domainEdgeBC functions of varying functions
-        typedef void (Plume::*xDomainEdgeBCptrFunction)( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive );
-        typedef void (Plume::*yDomainEdgeBCptrFunction)( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive );
-        typedef void (Plume::*zDomainEdgeBCptrFunction)( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive );
+        typedef void (Plume::*xDomainEdgeBCptrFunction)( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive );
+        typedef void (Plume::*yDomainEdgeBCptrFunction)( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive );
+        typedef void (Plume::*zDomainEdgeBCptrFunction)( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive );
 
         // type needed for vector of pointer functions
         typedef void (Plume::*BCptrFunction)( double& distX, double& distY, double& distZ,
                                               double& distX_inc, double& distY_inc, double& distZ_inc,
-                                              int& cellIdx, int& ii, int& jj, int& kk,
-                                              double& iw, double& jw, double& kw,
-                                              int& ip, int& jp, int& kp, 
                                               double& xPos, double& yPos, double& zPos, 
+                                              const double& xPos_old, const double& yPos_old, const double& zPos_old, 
                                               double& uFluct, double& vFluct, double& wFluct, 
                                               double& uFluct_old, double& vFluct_old, double& wFluct_old, 
                                               bool& isActive, 
@@ -202,49 +200,49 @@ class Plume {
         
         // the domain start and end boundary condition functions to be pointed to by a given xDomainEdgeBCptrFunction variable
         // also made an empty one for use by cells that are not at the domain edges
-        void xNotDomainEdgeBC( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive )
+        void xNotDomainEdgeBC( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive )
         {
             std::cerr << "ERROR (Plume::xNotDomainEdgeBC): this is a xNotDomainEdgeBC function that should not be used by anything that points to it. exiting program!" << std::endl;
             exit(EXIT_FAILURE);
         }
         // also made one for when particles move along a line along the domain wall plane
-        void xDomainWallLineBC_passthrough( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive );
-        void xDomainStartBC_exiting( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive );
-        void xDomainEndBC_exiting( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive );
-        void xDomainStartBC_periodic( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive );
-        void xDomainEndBC_periodic( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive );
-        void xDomainStartBC_reflection( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive );
-        void xDomainEndBC_reflection( double& distX, double& distX_inc, double& xPos, double& uFluct, double& uFluct_old, bool& isActive );
+        void xDomainWallLineBC_passthrough( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive );
+        void xDomainStartBC_exiting( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive );
+        void xDomainEndBC_exiting( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive );
+        void xDomainStartBC_periodic( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive );
+        void xDomainEndBC_periodic( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive );
+        void xDomainStartBC_reflection( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive );
+        void xDomainEndBC_reflection( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive );
         // the domain start and end boundary condition functions to be pointed to by a given yDomainEdgeBCptrFunction variable
         // also made an empty one for use by cells that are not at the domain edges
-        void yNotDomainEdgeBC( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive )
+        void yNotDomainEdgeBC( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive )
         {
             std::cerr << "ERROR (Plume::yNotDomainEdgeBC): this is a yNotDomainEdgeBC function that should not be used by anything that points to it. exiting program!" << std::endl;
             exit(EXIT_FAILURE);
         }
         // also made one for when particles move along a line along the domain wall plane
-        void yDomainWallLineBC_passthrough( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive );
-        void yDomainStartBC_exiting( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive );
-        void yDomainEndBC_exiting( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive );
-        void yDomainStartBC_periodic( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive );
-        void yDomainEndBC_periodic( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive );
-        void yDomainStartBC_reflection( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive );
-        void yDomainEndBC_reflection( double& distY, double& distY_inc, double& yPos, double& vFluct, double& vFluct_old, bool& isActive );
+        void yDomainWallLineBC_passthrough( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive );
+        void yDomainStartBC_exiting( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive );
+        void yDomainEndBC_exiting( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive );
+        void yDomainStartBC_periodic( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive );
+        void yDomainEndBC_periodic( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive );
+        void yDomainStartBC_reflection( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive );
+        void yDomainEndBC_reflection( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive );
         // the domain start and end boundary condition functions to be pointed to by a given zDomainEdgeBCptrFunction variable
         // also made an empty one for use by cells that are not at the domain edges
-        void zNotDomainEdgeBC( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive )
+        void zNotDomainEdgeBC( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive )
         {
             std::cerr << "ERROR (Plume::zNotDomainEdgeBC): this is a zNotDomainEdgeBC function that should not be used by anything that points to it. exiting program!" << std::endl;
             exit(EXIT_FAILURE);
         }
         // also made one for when particles move along a line along the domain wall plane
-        void zDomainWallLineBC_passthrough( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive );
-        void zDomainStartBC_exiting( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive );
-        void zDomainEndBC_exiting( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive );
-        void zDomainStartBC_periodic( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive );
-        void zDomainEndBC_periodic( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive );
-        void zDomainStartBC_reflection( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive );
-        void zDomainEndBC_reflection( double& distZ, double& distZ_inc, double& zPos, double& wFluct, double& wFluct_old, bool& isActive );
+        void zDomainWallLineBC_passthrough( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive );
+        void zDomainStartBC_exiting( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive );
+        void zDomainEndBC_exiting( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive );
+        void zDomainStartBC_periodic( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive );
+        void zDomainEndBC_periodic( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive );
+        void zDomainStartBC_reflection( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive );
+        void zDomainEndBC_reflection( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive );
 
         // boundary condition function types to be pointed to by pointer functions in the BCpointerFunctions vector
         // so to be pointed to by a BCptrFunction type variable
@@ -254,10 +252,8 @@ class Plume {
         //  kind of like is done for sources
         void domainEdgeBC( double& distX, double& distY, double& distZ,
                            double& distX_inc, double& distY_inc, double& distZ_inc,
-                           int& cellIdx, int& ii, int& jj, int& kk,
-                           double& iw, double& jw, double& kw,
-                           int& ip, int& jp, int& kp, 
                            double& xPos, double& yPos, double& zPos, 
+                           const double& xPos_old, const double& yPos_old, const double& zPos_old, 
                            double& uFluct, double& vFluct, double& wFluct, 
                            double& uFluct_old, double& vFluct_old, double& wFluct_old, 
                            bool& isActive, 
@@ -266,10 +262,8 @@ class Plume {
         // now the interior cell boundary condition functions, the ones chosen depending on the icellflag of the given cell
         void innerCellBC_passthrough( double& distX, double& distY, double& distZ,
                                       double& distX_inc, double& distY_inc, double& distZ_inc,
-                                      int& cellIdx, int& ii, int& jj, int& kk,
-                                      double& iw, double& jw, double& kw,
-                                      int& ip, int& jp, int& kp, 
                                       double& xPos, double& yPos, double& zPos, 
+                                      const double& xPos_old, const double& yPos_old, const double& zPos_old, 
                                       double& uFluct, double& vFluct, double& wFluct, 
                                       double& uFluct_old, double& vFluct_old, double& wFluct_old, 
                                       bool& isActive, 
@@ -277,10 +271,8 @@ class Plume {
                                       zDomainEdgeBCptrFunction zDomainEdgeBC );
         void innerCellBC_simpleStairStepReflection( double& distX, double& distY, double& distZ,
                                                     double& distX_inc, double& distY_inc, double& distZ_inc,
-                                                    int& cellIdx, int& ii, int& jj, int& kk,
-                                                    double& iw, double& jw, double& kw,
-                                                    int& ip, int& jp, int& kp, 
                                                     double& xPos, double& yPos, double& zPos, 
+                                                    const double& xPos_old, const double& yPos_old, const double& zPos_old, 
                                                     double& uFluct, double& vFluct, double& wFluct, 
                                                     double& uFluct_old, double& vFluct_old, double& wFluct_old, 
                                                     bool& isActive, 

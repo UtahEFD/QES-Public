@@ -223,18 +223,6 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
         newParticles.at(parIdx).yPos = newParticles.at(parIdx).yPos_init;
         newParticles.at(parIdx).zPos = newParticles.at(parIdx).zPos_init;
 
-        // set the particle current cell index values
-        newParticles.at(parIdx).cellIdx = cellIdx;
-        newParticles.at(parIdx).ii = ii;
-        newParticles.at(parIdx).jj = jj;
-        newParticles.at(parIdx).kk = kk;
-        newParticles.at(parIdx).iw = iw;
-        newParticles.at(parIdx).jw = jw;
-        newParticles.at(parIdx).kw = kw;
-        newParticles.at(parIdx).ip = ip;
-        newParticles.at(parIdx).jp = jp;
-        newParticles.at(parIdx).kp = kp;
-
 
         // almost didn't see it, but it does use different random numbers for each direction
         double rann = random::norRan();
