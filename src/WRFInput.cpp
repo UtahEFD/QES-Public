@@ -813,7 +813,7 @@ WRFInput::WRFInput(const std::string& filename, double domainUTMx, double domain
     // ALL cases -- they were in Matthieu's original code.  We need to
     // change to something per domain or calculated per domain. -Pete
     float minWRFAlt = 20;
-    float maxWRFAlt = 300;
+    float maxWRFAlt = 250;
 
     // sampling strategy
     int stepSize = 1;
