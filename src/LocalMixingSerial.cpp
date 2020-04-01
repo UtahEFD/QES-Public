@@ -25,39 +25,33 @@ void LocalMixingSerial::defineMixingLength(const URBInputData* UID,URBGeneralDat
     // z-grid (face-center & cell-center)
     z_fc.resize(nz, 0);
     z_cc.resize(nz-1, 0);
-
-    /*
-      The face-center x,y,z are defined here as a place holder, will have to be imported
-      form URB when non-uniform grid is used
-    */
-
-    // x face-center
+    
+    // x cell-center
+    x_cc = UGD->x;
+    // x face-center (this assume constant dx for the moment, same as QES-winds)
     for(int i=1;i<nx-1;i++) {
         x_fc[i]= 0.5*(UGD->x[i-1]+UGD->x[i]);
     }
     x_fc[0] = x_fc[1]-dx;
     x_fc[nx-1] = x_fc[nx-2]+dx;
-    // x cell-center
-    x_cc = UGD->x;
-
-    // y face-center
+    
+    // y cell-center
+    y_cc = UGD->y;
+    // y face-center (this assume constant dy for the moment, same as QES-winds)   
     for(int i=1;i<ny-1;i++) {
         y_fc[i] = 0.5*(UGD->y[i-1]+UGD->y[i]);
     }
     y_fc[0] = y_fc[1]-dy;
     y_fc[ny-1] = y_fc[ny-2]+dy;
-    // y cell-center
-    y_cc = UGD->y;
-
-    // z face-center (with ghost cell under the ground)
-    for(int i=1;i<nz-1;i++) {
-        z_fc[i] = 0.5*(UGD->z[i-1]+UGD->z[i]);
-    }
-    z_fc[0] = z_fc[1]-dz;
-    z_fc[nz-1] = z_fc[nz-2]+dz;
+    
     // z cell-center
     z_cc = UGD->z;
-
+    // z face-center (with ghost cell under the ground)
+    for(int i=1;i<nz;i++) {
+        z_fc[i] = UGD->z_face[i-1];
+    }
+    z_fc[0] = z_fc[1]-dz;
+    
     // find max height of solid objects in the domaine (max_z)
     /*
       [FM] this works only with the terrain

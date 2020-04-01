@@ -29,7 +29,6 @@ public:
 
     // General QUIC Domain Data
     int nx, ny, nz;		/**< number of cells */
-    float dx, dy, dz;		/**< Grid resolution*/
 
     //grid information
     std::vector<float> x_fc;

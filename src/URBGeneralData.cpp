@@ -153,45 +153,44 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     if (UID->buildings)
         z0 = UID->buildings->wallRoughness;
 
+    // /////////////////////////
+    // Definition of the grid 
+    // /////////////////////////
+    
+    // vertical grid (can be uniform or stretched)
     dz_array.resize( nz-1, 0.0 );
     z.resize( nz-1 );
     z_face.resize( nz-1);
 
-    if (UID->simParams->verticalStretching == 0)    // Uniform vertical grid
-    {
-        for (auto k=1; k<z.size(); k++)
-        {
+    if (UID->simParams->verticalStretching == 0) {        // Uniform vertical grid
+        for (auto k=1; k<z.size(); k++) {
             dz_array[k] = dz;
         }
-    }
-    else if (UID->simParams->verticalStretching == 1)     // Stretched vertical grid
-    {
-        for (auto k=1; k<z.size(); k++)
-        {
-            dz_array[k] = UID->simParams->dz_value[k-1];      // Read in custom dz values and set them to dz_array
+    } else if (UID->simParams->verticalStretching == 1) { // Stretched vertical grid
+        for (auto k=1; k<z.size(); k++) {
+            dz_array[k] = UID->simParams->dz_value[k-1];  // Read in custom dz values and set them to dz_array
         }
     }
 
     dz_array[0] = dz_array[1];                  // Value for ghost cell below the surface
     dz = *std::min_element(dz_array.begin() , dz_array.end());     // Set dz to minimum value of
-
-    z[0] = -0.5*dz_array[0];
+    
     z_face[0] = 0.0;
-    for (auto k=1; k<z.size(); k++)
-    {
-        z[k] = z[k-1] + dz_array[k];     /**< Location of face centers in z-dir */
-        z_face[k] = z_face[k-1] + dz_array[k];
+    z[0] = -0.5*dz_array[0];
+    for (auto k=1; k<z.size(); k++) {
+        z_face[k] = z_face[k-1] + dz_array[k]; /**< Location of face centers in z-dir */ 
+        z[k] = 0.5*(z_face[k-1]+z_face[k]);    /**< Location of cell centers in z-dir */  
     }
-
+    
+    // horizontal grid (x-direction)
     x.resize( nx-1 );
-    for (size_t i=0; i<nx-1; i++)
-    {
+    for (size_t i=0; i<nx-1; i++) {
         x[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
     }
 
+    // horizontal grid (y-direction)
     y.resize( ny-1 );
-    for (auto j=0; j<ny-1; j++)
-    {
+    for (auto j=0; j<ny-1; j++) {
         y[j] = (j+0.5)*dy;          /**< Location of face centers in y-dir */
     }
 
