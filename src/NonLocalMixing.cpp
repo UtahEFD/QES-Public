@@ -29,9 +29,7 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     // x,y positons of the polybuilding verteces in the rotated coord syst rotated with the wind dir and building center
     //float xp,yp; //working variables
     
-
     float ustar=0,ustarH=0,ustarV=0; //fiction velocities
-    int id=1;
     
     //float z_build;                  // z value of each building point from its base height
     //int k_bottom, k_top;
@@ -40,129 +38,6 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     int icell_face,icell_cent;
     int icell_face_cl,icell_cent_cl;
     
-    // interpolation of velocity at the top of the building
-    icell_face=i_building_cent + j_building_cent*nx + (k_end+1)*nx*ny;
-    u_h=0.5*(UGD->u[icell_face]+UGD->u[icell_face+1]); 
-    v_h=0.5*(UGD->v[icell_face]+UGD->v[icell_face+nx]); 
-    w_h=0.5*(UGD->w[icell_face]+UGD->w[icell_face+nx*ny]);
-    
-    // verical velocity reference and verical fiction velocity
-    U_ref_V=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
-    ustarV=kvonk*U_ref_V;
-    
-    // scale factor = scale the dxy as a function of the angle of the flow
-    float scale_factor=1;
-    if( 1.0/cos(upwind_dir) <= sqrt(2) ) {
-        scale_factor=1.0/cos(upwind_dir);
-    } else {
-        scale_factor=1.0/sin(upwind_dir);
-    }
-    float dxy=scale_factor*UGD->dxy;
-     
-    // x,y positons of the polybuilding verteces in the rotated coord syst rotated with the wind dir and building center
-    std::vector<float> xp_i, yp_i;
-    xp_i.resize (polygonVertices.size(), 0.0); 
-    yp_i.resize (polygonVertices.size(), 0.0);
-    
-    for (size_t id=0; id<polygonVertices.size()-1; id++)
-    {
-        // Finding projection of polygon vertex on rotated coord syst rotated with the wind dir and building center
-        // x,y
-        xp_i[id] = cos(upwind_dir)*(polygonVertices[id].x_poly-building_cent_x) + sin(upwind_dir)*(polygonVertices[id].y_poly - building_cent_y);
-        yp_i[id] =-sin(upwind_dir)*(polygonVertices[id].x_poly-building_cent_x) + cos(upwind_dir)*(polygonVertices[id].y_poly - building_cent_y);
-    }
-    // find min and max in the yp direction
-    int minIndex = std::min_element(yp_i.begin(),yp_i.end()) - yp_i.begin();
-    int maxIndex = std::max_element(yp_i.begin(),yp_i.end()) - yp_i.begin();  
-    
-    // min (right) and max (left) x-postion of the outer point of the polybuilding 
-    // if xp < 0 -> add small amount to ensure point is inside
-    // if xp > 0 -> substract small amount ot ensure point is inside
-    float xp_l, xp_r;
-    xp_r=xp_i[minIndex]; 
-    if(xp_r < 0.0) {
-        xp_r += 0.5*dxy;
-    } else {
-        xp_r -= 0.5*dxy;
-    }
-    xp_l=xp_i[maxIndex];
-    if(xp_l < 0.0) {
-        xp_l += 0.5*dxy;
-    } else {
-        xp_l -= 0.5*dxy;
-    }
-    
-    // min (right) and max (left) y-postion of the outer point of the polybuilding 
-    float yp_l, yp_r;
-    yp_r=yp_i[minIndex]+0.5*dxy;
-    yp_l=yp_i[maxIndex]-0.5*dxy;
-
-    // x-coord of maximun downstream vertex
-    float xp_d;
-    maxIndex = std::max_element(xp_i.begin(),xp_i.end()) - xp_i.begin();  
-    xp_d=xp_i[maxIndex]-0.5*dxy;    
-
-    // set itrubflag for debug
-    if (false) {
-        float x_r, y_r;
-        x_r = cos(upwind_dir)*xp_r - sin(upwind_dir)*yp_r + building_cent_x;
-        y_r = sin(upwind_dir)*xp_r + cos(upwind_dir)*yp_r + building_cent_y;
-        
-        int i_r = floor(x_r/UGD->dx);
-        int j_r = floor(y_r/UGD->dy);
-        
-        for(int k=k_start;k<k_end;++k) {
-            icell_cent = i_r + j_r*(nx-1) + k*(ny-1)*(nx-1);
-            TGD->iturbflag[icell_cent]=12;
-        }
-        
-        float x_l, y_l;
-        x_l = cos(upwind_dir)*xp_l - sin(upwind_dir)*yp_l + building_cent_x;
-        y_l = sin(upwind_dir)*xp_l + cos(upwind_dir)*yp_l + building_cent_y;
-        
-        int i_l = floor(x_l/UGD->dx);
-        int j_l = floor(y_l/UGD->dy);
-        
-        for(int k=k_start;k<k_end;++k) {
-            icell_cent = i_l + j_l*(nx-1) + k*(ny-1)*(nx-1);
-            TGD->iturbflag[icell_cent]=12;
-        }
-    }
-
-    ///////
-    float xp_ref_r, yp_ref_r;
-    float x_ref_r, y_ref_r;
-    xp_ref_r=xp_r;
-    yp_ref_r=yp_r-3.0*dxy;
-    
-    x_ref_r = cos(upwind_dir)*xp_ref_r - sin(upwind_dir)*yp_ref_r + building_cent_x;
-    y_ref_r = sin(upwind_dir)*xp_ref_r + cos(upwind_dir)*yp_ref_r + building_cent_y;
-
-    int i_ref_r = floor(x_ref_r/UGD->dx);
-    int j_ref_r = floor(y_ref_r/UGD->dy);
-    
-    for(int k=k_start;k<k_end;++k) {
-        icell_cent = i_ref_r + j_ref_r*(nx-1) + k*(ny-1)*(nx-1);
-        TGD->iturbflag[icell_cent]=12;
-    }
-    
-    ///////
-    float xp_ref_l, yp_ref_l;
-    float x_ref_l, y_ref_l;
-    xp_ref_l=xp_l;
-    yp_ref_l=yp_l+3.0*dxy;
-    
-    x_ref_l = cos(upwind_dir)*xp_ref_l - sin(upwind_dir)*yp_ref_l + building_cent_x;
-    y_ref_l = sin(upwind_dir)*xp_ref_l + cos(upwind_dir)*yp_ref_l + building_cent_y;
-
-    int i_ref_l = floor(x_ref_l/UGD->dx);
-    int j_ref_l = floor(y_ref_l/UGD->dy);
-    
-    for(int k=k_start;k<k_end;++k) {
-        icell_cent = i_ref_l + j_ref_l*(nx-1) + k*(ny-1)*(nx-1);
-        TGD->iturbflag[icell_cent]=12;
-    }
-
     std::vector<float> Lr_face, Lr_node;
     std::vector<int> perpendicular_flag;
     Lr_face.resize (polygonVertices.size(), -1.0);       // Length of wake for each face
@@ -171,8 +46,13 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     upwind_rel_dir.resize (polygonVertices.size(), 0.0);      // Upwind reletive direction for each face
     float z_build;                  // z value of each building point from its base height
     float yc, xc;
-    float Lr_local, Lr_local_u, Lr_local_v, Lr_local_w;   // Local length of the wake for each velocity component
-    float x_wall, x_wall_u, x_wall_v, x_wall_w;
+    
+    float Lr_local, Lr_local_w;   // Local length of the wake for each velocity component
+    float x_wall, x_wall_w;
+
+    //float Lr_local, Lr_local_u, Lr_local_v, Lr_local_w;   // Local length of the wake for each velocity component
+    //float x_wall, x_wall_u, x_wall_v, x_wall_w;
+    
     float y_norm, canyon_factor;
     int x_id_min;
 
@@ -186,22 +66,24 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     float farwake_factor = 3;
     float epsilon = 10e-10;
     int u_wake_flag, v_wake_flag, w_wake_flag;
-    int i_u, j_u, i_v, j_v, i_w, j_w;          // i and j indices for x, y and z directions
-    int i_cl, j_cl;
-    float xp, yp;
-    float xu, yu, xv, yv, xw, yw;
-    float dn_u, dn_v, dn_w;             // Length of cavity zone
-    float farwake_vel;
-    std::vector<double> u_temp, v_temp;
-    u_temp.resize (UGD->nx*UGD->ny, 0.0);
-    v_temp.resize (UGD->nx*UGD->ny, 0.0);
-    std::vector<double> u0_modified, v0_modified;
-    std::vector<int> u0_mod_id, v0_mod_id;
-    float R_scale, R_cx, vd, hd, shell_height;
-    int k_bottom, k_top;
-
-    int index_building_face = i_building_cent + j_building_cent*UGD->nx + (k_end)*UGD->nx*UGD->ny;
     
+    int i_w, j_w, i_cl, j_cl; 
+    float xp, yp;
+    float xw, yw, dn_w; 
+
+    //int i_u, j_u, i_v, j_v, i_w, j_w;          // i and j indices for x, y and z directions
+    //float xu, yu, xv, yv, xw, yw;
+    //float dn_u, dn_v, dn_w;             // Length of cavity zone
+    //float farwake_vel;
+    //float R_scale, R_cx, vd, hd, shell_height;
+    
+    int k_bottom, k_top;
+    
+    if ( xi.size() == 0 ) {
+        // exit in building has no area (computed in polygonWake.cpp)
+        return;
+    }
+
     tol = 0.01*M_PI/180.0;
     // Calculating length of the downwind wake based on Fackrell (1984) formulation
     Lr = 1.8*height_eff*W_over_H/(pow(L_over_H,0.3)*(1+0.24*W_over_H));
@@ -285,7 +167,133 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
             break;
         }
     }
+    
+    
+    // interpolation of velocity at the top of the building
+    icell_face=i_building_cent + j_building_cent*nx + (k_end+1)*nx*ny;
+    u_h=0.5*(UGD->u[icell_face]+UGD->u[icell_face+1]); 
+    v_h=0.5*(UGD->v[icell_face]+UGD->v[icell_face+nx]); 
+    //w_h=0.5*(UGD->w[icell_face]+UGD->w[icell_face+nx*ny]);
+    
+    // verical velocity reference and verical fiction velocity
+    //U_ref_V=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
+    U_ref_V=u_h*cos(upwind_dir)+v_h*sin(upwind_dir);
+    ustarV=kvonk*U_ref_V;
+    
+    // scale factor = scale the dxy as a function of the angle of the flow
+    float scale_factor=1;
+    if( 1.0/cos(upwind_dir) <= sqrt(2) ) {
+        scale_factor=1.0/cos(upwind_dir);
+    } else {
+        scale_factor=1.0/sin(upwind_dir);
+    }
+    float dxy=scale_factor*UGD->dxy;
+     
+    // x,y positons of the polybuilding verteces in the rotated coord syst rotated with the wind dir and building center
+    std::vector<float> xp_i, yp_i;
+    xp_i.resize (polygonVertices.size(), 0.0); 
+    yp_i.resize (polygonVertices.size(), 0.0);
+    
+    for (size_t id=0; id<polygonVertices.size()-1; id++)
+    {
+        // Finding projection of polygon vertex on rotated coord syst rotated with the wind dir and building center
+        // x,y
+        xp_i[id] = cos(upwind_dir)*(polygonVertices[id].x_poly-building_cent_x) + sin(upwind_dir)*(polygonVertices[id].y_poly - building_cent_y);
+        yp_i[id] =-sin(upwind_dir)*(polygonVertices[id].x_poly-building_cent_x) + cos(upwind_dir)*(polygonVertices[id].y_poly - building_cent_y);
+    }
+    // find min and max in the yp direction
+    int minIndex = std::min_element(yp_i.begin(),yp_i.end()) - yp_i.begin();
+    int maxIndex = std::max_element(yp_i.begin(),yp_i.end()) - yp_i.begin();  
+    
+    // min (right) and max (left) x-postion of the outer point of the polybuilding 
+    // if xp < 0 -> add small amount to ensure point is inside
+    // if xp > 0 -> substract small amount ot ensure point is inside
+    float xp_l, xp_r;
+    xp_r=xp_i[minIndex]; 
+    if(xp_r < 0.0) {
+        xp_r += 0.5*dxy;
+    } else {
+        xp_r -= 0.5*dxy;
+    }
+    xp_l=xp_i[maxIndex];
+    if(xp_l < 0.0) {
+        xp_l += 0.5*dxy;
+    } else {
+        xp_l -= 0.5*dxy;
+    }
+    
+    // min (right) and max (left) y-postion of the outer point of the polybuilding 
+    float yp_l, yp_r;
+    yp_r=yp_i[minIndex]+0.5*dxy;
+    yp_l=yp_i[maxIndex]-0.5*dxy;
 
+    // x-coord of maximun downstream vertex
+    float xp_d;
+    maxIndex = std::max_element(xp_i.begin(),xp_i.end()) - xp_i.begin();  
+    xp_d=xp_i[maxIndex]-0.5*dxy;    
+
+    // set itrubflag for debug
+    if (false) {
+        float x_r, y_r;
+        x_r = cos(upwind_dir)*xp_r - sin(upwind_dir)*yp_r + building_cent_x;
+        y_r = sin(upwind_dir)*xp_r + cos(upwind_dir)*yp_r + building_cent_y;
+        
+        int i_r = floor(x_r/UGD->dx);
+        int j_r = floor(y_r/UGD->dy);
+        
+        for (auto k=k_top+1; k>=k_bottom; k--) {
+            icell_cent = i_r + j_r*(nx-1) + k*(ny-1)*(nx-1);
+            TGD->iturbflag[icell_cent]=12;
+        }
+        
+        float x_l, y_l;
+        x_l = cos(upwind_dir)*xp_l - sin(upwind_dir)*yp_l + building_cent_x;
+        y_l = sin(upwind_dir)*xp_l + cos(upwind_dir)*yp_l + building_cent_y;
+        
+        int i_l = floor(x_l/UGD->dx);
+        int j_l = floor(y_l/UGD->dy);
+        
+        for (auto k=k_top+1; k>=k_bottom; k--) {
+            icell_cent = i_l + j_l*(nx-1) + k*(ny-1)*(nx-1);
+            TGD->iturbflag[icell_cent]=12;
+        }
+    }
+
+    ///////
+    float xp_ref_r, yp_ref_r;
+    float x_ref_r, y_ref_r;
+    xp_ref_r=xp_r;
+    yp_ref_r=yp_r-3.0*dxy;
+    
+    x_ref_r = cos(upwind_dir)*xp_ref_r - sin(upwind_dir)*yp_ref_r + building_cent_x;
+    y_ref_r = sin(upwind_dir)*xp_ref_r + cos(upwind_dir)*yp_ref_r + building_cent_y;
+
+    int i_ref_r = floor(x_ref_r/UGD->dx);
+    int j_ref_r = floor(y_ref_r/UGD->dy);
+    
+    for (auto k=k_top+1; k>=k_bottom; k--) {
+        icell_cent = i_ref_r + j_ref_r*(nx-1) + k*(ny-1)*(nx-1);
+        TGD->iturbflag[icell_cent]=12;
+    }
+    
+    ///////
+    float xp_ref_l, yp_ref_l;
+    float x_ref_l, y_ref_l;
+    xp_ref_l=xp_l;
+    yp_ref_l=yp_l+3.0*dxy;
+    
+    x_ref_l = cos(upwind_dir)*xp_ref_l - sin(upwind_dir)*yp_ref_l + building_cent_x;
+    y_ref_l = sin(upwind_dir)*xp_ref_l + cos(upwind_dir)*yp_ref_l + building_cent_y;
+
+    int i_ref_l = floor(x_ref_l/UGD->dx);
+    int j_ref_l = floor(y_ref_l/UGD->dy);
+    
+    for (auto k=k_top+1; k>=k_bottom; k--) {
+        icell_cent = i_ref_l + j_ref_l*(nx-1) + k*(ny-1)*(nx-1);
+        TGD->iturbflag[icell_cent]=12;
+    }
+    
+    
     for (auto k=k_top+1; k>=k_bottom; k--)
     {
         z_build = UGD->z[k] - base_height;

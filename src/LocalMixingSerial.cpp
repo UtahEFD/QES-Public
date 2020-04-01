@@ -209,11 +209,11 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
         int i = id_cc -  j*(nx-1) - k*(nx-1)*(ny-1);
         int maxdist=max_height-k;
 
-        UGD->mixingLengths[id_cc]=z_cc.at(k)-z_fc.at(k);
+        UGD->mixingLengths[id_cc]=z_cc[k]-z_fc[k];
 
-        float x1 = x_cc.at(i);
-        float y1 = y_cc.at(j);
-        float z1 = z_fc.at(k);
+        float x1 = x_cc[i];
+        float y1 = y_cc[j];
+        float z1 = z_fc[k];
 
         if(UGD->icellflag[idxp]==2 && UGD->icellflag[idxm]==2 &&
            UGD->icellflag[idyp]==2 && UGD->icellflag[idym]==2) {
@@ -223,9 +223,9 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
             // building on all 4 corner -> propagate verically
             for (int kk=0; kk<=maxdist; kk++) {        
                 int id=i + j*(nx-1) + (kk+k)*(nx-1)*(ny-1);
-                float x2 = x_cc.at(i);
-                float y2 = y_cc.at(j);
-                float z2 = z_cc.at(kk+k);
+                float x2 = x_cc[i];
+                float y2 = y_cc[j];
+                float z2 = z_cc[kk+k];
                 float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
                 UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
             }
@@ -242,9 +242,9 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
                 for (int jj=j1; jj<=j2; jj++) {
                     for (int ii=i1; ii<=i2; ii++) {
                         int id=ii + jj*(nx-1) + (kk+k)*(nx-1)*(ny-1);
-                        float x2 = x_cc.at(ii);
-                        float y2 = y_cc.at(jj);
-                        float z2 = z_cc.at(kk+k);
+                        float x2 = x_cc[ii];
+                        float y2 = y_cc[jj];
+                        float z2 = z_cc[kk+k];
                         float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
                         UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
                     }
@@ -270,9 +270,9 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
 
         UGD->mixingLengths[id_cc]=x_cc.at(i)-x_fc.at(i);
 
-        float x1 = x_fc.at(i);
-        float y1 = y_cc.at(j);
-        float z1 = z_cc.at(k);
+        float x1 = x_fc[i];
+        float y1 = y_cc[j];
+        float z1 = z_cc[k];
 
         for (int ii=0; ii<=maxdist; ii++) {
 
@@ -286,9 +286,9 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
             for (int jj=j1; jj<=j2; jj++) {
                 for (int kk=k1; kk<=k2; kk++) {
                     int id=(i+ii) + jj*(nx-1) + (kk)*(nx-1)*(ny-1);
-                    float x2 = x_cc.at(ii+i);
-                    float y2 = y_cc.at(jj);
-                    float z2 = z_cc.at(kk);
+                    float x2 = x_cc[ii+i];
+                    float y2 = y_cc[jj];
+                    float z2 = z_cc[kk];
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
                     UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
                 }
@@ -313,9 +313,9 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
 
         UGD->mixingLengths[id_cc]=x_fc.at(i+1)-x_cc.at(i);
 
-        float x1 = x_fc.at(i+1);
-        float y1 = y_cc.at(j);
-        float z1 = z_cc.at(k);
+        float x1 = x_fc[i+1];
+        float y1 = y_cc[j];
+        float z1 = z_cc[k];
 
         for (int ii=0; ii>=-maxdist; ii--) {
       
@@ -328,9 +328,9 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
             for (int jj=j1; jj<=j2; jj++) {
                 for (int kk=k1; kk<=k2; kk++) {
                     int id=(i+1+ii) + jj*(nx-1) + (kk)*(nx-1)*(ny-1);
-                    float x2 = x_cc.at(i+ii+1);
-                    float y2 = y_cc.at(jj);
-                    float z2 = z_cc.at(kk);
+                    float x2 = x_cc[i+ii+1];
+                    float y2 = y_cc[jj];
+                    float z2 = z_cc[kk];
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
                     UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
                 }
@@ -353,26 +353,26 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
             maxdist=ny-1-j;
         }
 
-        UGD->mixingLengths[id_cc]=y_cc.at(j)-y_fc.at(j);
+        UGD->mixingLengths[id_cc]=y_cc[j]-y_fc[j];
 
-        float x1 = x_cc.at(i);
-        float y1 = y_fc.at(j);
-        float z1 = z_cc.at(k);
+        float x1 = x_cc[i];
+        float y1 = y_fc[j];
+        float z1 = z_cc[k];
 
         for (int jj=0; jj<=maxdist; jj++) {
 
             //int k1 = std::max(k,0);
             //int k2 = std::min(k+jj+1,nz-2);
-            int i1 = std::max(i-jj-1,0);
+            int i1 = std::max(i-jj,0);
             int i2 = std::min(i+jj+1,nx-2);
             int k1(k),k2(k);
 
             for (int ii=i1; ii<=i2; ii++) {
                 for (int kk=k1; kk<=k2; kk++) {
                     int id=ii + (j+jj)*(nx-1) + (kk)*(nx-1)*(ny-1);
-                    float x2 = x_cc.at(ii);
-                    float y2 = y_cc.at(j+jj);
-                    float z2 = z_cc.at(kk);
+                    float x2 = x_cc[ii];
+                    float y2 = y_cc[j+jj];
+                    float z2 = z_cc[kk];
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
                     UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
                 }
@@ -395,17 +395,17 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
             maxdist=j;
         }
 
-        UGD->mixingLengths[id_cc]=y_fc.at(j+1)-y_cc.at(j);
+        UGD->mixingLengths[id_cc]=y_fc[j+1]-y_cc[j];
 
-        float x1 = x_cc.at(i);
-        float y1 = y_fc.at(j+1);
-        float z1 = z_cc.at(k);
+        float x1 = x_cc[i];
+        float y1 = y_fc[j+1];
+        float z1 = z_cc[k];
 
         for (int jj=0; jj>=-maxdist; jj--) {
 
             //int k1 = std::max(k,0);
             //int k2 = std::min(k-jj+1,nz-2);
-            int i1 = std::max(i+jj-1,0);
+            int i1 = std::max(i+jj,0);
             int i2 = std::min(i-jj+1,nx-2);
 
             int k1(k),k2(k);
@@ -413,9 +413,9 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
             for (int ii=i1; ii<=i2; ii++) {
                 for (int kk=k1; kk<=k2; kk++) {
                     int id=ii + (j+1+jj)*(nx-1) + (kk)*(nx-1)*(ny-1);
-                    float x2 = x_cc.at(ii);
-                    float y2 = y_cc.at(j+1+jj);
-                    float z2 = z_cc.at(kk);
+                    float x2 = x_cc[ii];
+                    float y2 = y_cc[j+1+jj];
+                    float z2 = z_cc[kk];
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
                     UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
                 }
