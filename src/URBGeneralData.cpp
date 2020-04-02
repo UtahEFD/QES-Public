@@ -183,10 +183,10 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
 
     z[0] = -0.5*dz_array[0];
     z_face[0] = 0.0;
-    for (auto k=1; k<z.size(); k++)
+    for (auto k=1; k<z.size()-1; k++)
     {
-        z[k] = z[k-1] + dz_array[k];     /**< Location of face centers in z-dir */
-        z_face[k] = z_face[k-1] + dz_array[k];
+      z_face[k] = z_face[k-1] + dz_array[k];
+      z[k] = z_face[k] - 0.5*dz_array[k];     /**< Location of face centers in z-dir */
     }
 
     x.resize( nx-1 );
