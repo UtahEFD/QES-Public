@@ -137,13 +137,14 @@
     <direction> 270.0 </direction>
   </sensor> 
 </metParams>  								<!-- End of meteorological parameters -->
+<localMixingParam>
+  <method>4</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <LMfile>../scratch/Gangnam/mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
+</localMixingParam>
 <fileOptions>
   <outputFlag>1</outputFlag>
-  <outputFields>u</outputFields>
-  <outputFields>v</outputFields>
+  <outputFields>all</outputFields> 
+  <outputFields>v</outputFields> 
   <outputFields>w</outputFields>
-  <outputFields>icell</outputFields>
-  <massConservedFlag> 0 </massConservedFlag>
-  <sensorVelocityFlag> 0 </sensorVelocityFlag>
-  <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+  <outputFields>icell</outputFields> 
 </fileOptions>

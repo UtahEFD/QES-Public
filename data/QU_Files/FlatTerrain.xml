@@ -44,14 +44,14 @@
 		<direction> 270 </direction> 
 	</sensor>
 </metParams>
+<localMixingParam>
+  <method>1</method>
+</localMixingParam>
 <fileOptions>
 	<outputFlag>1</outputFlag>
     <outputFields>u</outputFields> 
     <outputFields>v</outputFields> 
     <outputFields>w</outputFields>
     <outputFields>icell</outputFields>  
-	<massConservedFlag> 0 </massConservedFlag>
-	<sensorVelocityFlag> 0 </sensorVelocityFlag>
-	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
 

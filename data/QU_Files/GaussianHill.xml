@@ -45,27 +45,14 @@
 		<direction> 270 </direction> 
 	</sensor>
 </metParams>
+<localMixingParam>
+  <method>1</method>
+</localMixingParam>
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 
   <outputFields>v</outputFields> 
   <outputFields>w</outputFields>
   <outputFields>icell</outputFields> 
-  <massConservedFlag> 0 </massConservedFlag>
-  <sensorVelocityFlag> 0 </sensorVelocityFlag>
-  <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
-<!--buildings>
-	<wallRoughness> 0.1 </wallRoughness>
-	<numBuildings> 1 </numBuildings>
-	<numPolygonNodes> 0 </numPolygonNodes>
-	<rectangularBuilding>
-		<height> 5.0 </height>
-		<baseHeight> 0 </baseHeight>
-		<xStart> 80.5 </xStart>
-		<yStart> 80.5 </yStart>
-		<length> 5.0 </length>
-		<width> 5.0 </width>
-		<buildingRotation> 0.0 </buildingRotation>
-	</rectangularBuilding>
-</buildings-->
+
