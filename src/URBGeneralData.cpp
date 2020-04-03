@@ -63,7 +63,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
         std::cout << "Size of stat data: " << wrf_ptr->statData.size() << std::endl;
         UID->metParams->sensors.resize( wrf_ptr->statData.size() );
 
-        for (int i=0; i<wrf_ptr->statData.size(); i++) {
+        for (size_t i=0; i<wrf_ptr->statData.size(); i++) {
             std::cout << "Station " << i << " ("
                       << wrf_ptr->statData[i].xCoord << ", "
                       << wrf_ptr->statData[i].yCoord << ")" << std::endl;
@@ -93,7 +93,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
                 UID->metParams->sensors[i]->site_U_ref.resize( profDataSz );
 
 
-                for (int p=0; p<wrf_ptr->statData[i].profiles[t].size(); p++) {
+                for (size_t p=0; p<wrf_ptr->statData[i].profiles[t].size(); p++) {
                     std::cout << "\t" << wrf_ptr->statData[i].profiles[t][p].zCoord
                               << ", " << wrf_ptr->statData[i].profiles[t][p].ws
                               << ", " << wrf_ptr->statData[i].profiles[t][p].wd << std::endl;
@@ -162,11 +162,11 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     z_face.resize( nz-1);
 
     if (UID->simParams->verticalStretching == 0) {        // Uniform vertical grid
-        for (auto k=1; k<z.size(); k++) {
+        for (size_t k=1; k<z.size(); k++) {
             dz_array[k] = dz;
         }
     } else if (UID->simParams->verticalStretching == 1) { // Stretched vertical grid
-        for (auto k=1; k<z.size(); k++) {
+        for (size_t k=1; k<z.size(); k++) {
             dz_array[k] = UID->simParams->dz_value[k-1];  // Read in custom dz values and set them to dz_array
         }
     }
@@ -176,14 +176,14 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     
     z_face[0] = 0.0;
     z[0] = -0.5*dz_array[0];
-    for (auto k=1; k<z.size(); k++) {
+    for (size_t k=1; k<z.size(); k++) {
         z_face[k] = z_face[k-1] + dz_array[k]; /**< Location of face centers in z-dir */ 
         z[k] = 0.5*(z_face[k-1]+z_face[k]);    /**< Location of cell centers in z-dir */  
     }
     
     // horizontal grid (x-direction)
     x.resize( nx-1 );
-    for (size_t i=0; i<nx-1; i++) {
+    for (auto i=0; i<nx-1; i++) {
         x[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
     }
 
@@ -307,7 +307,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
                     terrain[idx] = 0.0;
                 }
                 id = i+j*nx;
-                for (auto k=0; k<z.size()-1; k++)
+                for (size_t k=0; k<z.size()-1; k++)
                 {
                     terrain_id[id] = k+1;
                     if (terrain[idx] < z[k+1])
@@ -368,7 +368,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
 
    if (UID->simParams->SHPData)
    {
-      auto buildingsetup = std::chrono::high_resolution_clock::now(); // Start recording execution time
+      auto buildingsetup_start = std::chrono::high_resolution_clock::now(); // Start recording execution time
 
       std::vector<Building*> poly_buildings;
 
@@ -380,10 +380,10 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
       UID->simParams->SHPData->getMinExtent( minExtent );
 
       // float domainOffset[2] = { 0, 0 };
-      for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
+      for (auto pIdx = 0u; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
       {
          // convert the global polys to local domain coordinates
-         for (auto lIdx=0; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
+         for (auto lIdx=0u; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
          {
             UID->simParams->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
             UID->simParams->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
@@ -393,7 +393,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
       // Setting base height for buildings if there is a DEM file
       if (UID->simParams->DTE_heightField && UID->simParams->DTE_mesh)
       {
-          for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
+          for (auto pIdx = 0u; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
           {
               // Get base height of every corner of building from terrain height
               min_height = UID->simParams->DTE_mesh->getHeight(UID->simParams->shpPolygons[pIdx][0].x_poly,
@@ -402,7 +402,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
               {
                   min_height = 0.0;
               }
-              for (auto lIdx = 1; lIdx < UID->simParams->shpPolygons[pIdx].size(); lIdx++)
+              for (auto lIdx = 1u; lIdx < UID->simParams->shpPolygons[pIdx].size(); lIdx++)
               {
                   corner_height = UID->simParams->DTE_mesh->getHeight(UID->simParams->shpPolygons[pIdx][lIdx].x_poly,
                                                                       UID->simParams->shpPolygons[pIdx][lIdx].y_poly);
@@ -417,32 +417,38 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
       }
       else
       {
-          for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
+          for (auto pIdx = 0u; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
           {
               base_height.push_back(0.0);
           }
       }
 
-      for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
+      for (auto pIdx = 0u; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
       {
-          for (auto lIdx=0; lIdx < UID->simParams->shpPolygons[pIdx].size(); lIdx++)
+          for (auto lIdx=0u; lIdx < UID->simParams->shpPolygons[pIdx].size(); lIdx++)
           {
               UID->simParams->shpPolygons[pIdx][lIdx].x_poly += UID->simParams->halo_x;
               UID->simParams->shpPolygons[pIdx][lIdx].y_poly += UID->simParams->halo_y;
           }
       }
 
-        std::cout << "Creating buildings from shapefile...\n";
-        // Loop to create each of the polygon buildings read in from the shapefile
-        for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
-        {
-            allBuildingsV.push_back (new PolyBuilding (UID, this, pIdx));
-            building_id.push_back(allBuildingsV.size()-1);
-            allBuildingsV[pIdx]->setPolyBuilding(this);
-            allBuildingsV[pIdx]->setCellFlags(UID, this, pIdx);
-            effective_height.push_back (allBuildingsV[pIdx]->height_eff);
-        }
-        std::cout << "Buildings created from shapefile...\n";
+      std::cout << "Creating buildings from shapefile...\n";
+      // Loop to create each of the polygon buildings read in from the shapefile
+      for (auto pIdx = 0u; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
+      {
+          allBuildingsV.push_back (new PolyBuilding (UID, this, pIdx));
+          building_id.push_back(allBuildingsV.size()-1);
+          allBuildingsV[pIdx]->setPolyBuilding(this);
+          allBuildingsV[pIdx]->setCellFlags(UID, this, pIdx);
+          effective_height.push_back (allBuildingsV[pIdx]->height_eff);
+      }
+      std::cout << "Buildings created from shapefile...\n";
+      
+      auto buildingsetup_finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+      
+      std::chrono::duration<float> elapsed_cut = buildingsetup_finish - buildingsetup_start;
+      std::cout << "Elapsed time for building setup : " << elapsed_cut.count() << " s\n";
+      
    }
 
 
@@ -453,7 +459,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     // Add all the Canopy* to it (they are derived from Building)
     if ( UID->canopies )
     {
-      for (int i = 0; i < UID->canopies->canopies.size(); i++)
+      for (size_t i = 0; i < UID->canopies->canopies.size(); i++)
       {
          allBuildingsV.push_back( UID->canopies->canopies[i] );
          effective_height.push_back(allBuildingsV[i]->height_eff);
@@ -468,7 +474,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
    if ( UID->buildings )
    {
       float corner_height, min_height;
-      for (int i = 0; i < UID->buildings->buildings.size(); i++)
+      for (size_t i = 0; i < UID->buildings->buildings.size(); i++)
       {
         allBuildingsV.push_back( UID->buildings->buildings[i] );
         int j = allBuildingsV.size()-1;
@@ -483,7 +489,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
           {
             min_height = 0.0;
           }
-          for (auto lIdx = 1; lIdx < allBuildingsV[j]->polygonVertices.size(); lIdx++)
+          for (size_t lIdx = 1; lIdx < allBuildingsV[j]->polygonVertices.size(); lIdx++)
           {
             corner_height = UID->simParams->DTE_mesh->getHeight(allBuildingsV[j]->polygonVertices[lIdx].x_poly,
                                                                   allBuildingsV[j]->polygonVertices[lIdx].y_poly);
@@ -526,7 +532,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     // ///////////////////////////////////////
     // Generic Parameterization Related Stuff
     // ///////////////////////////////////////
-    for (int i = 0; i < allBuildingsV.size(); i++)
+    for (size_t i = 0; i < allBuildingsV.size(); i++)
     {
         // for now this does the canopy stuff for us
         allBuildingsV[building_id[i]]->canopyVegetation(this);
@@ -538,7 +544,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     if (UID->simParams->upwindCavityFlag > 0)
     {
         std::cout << "Applying upwind cavity parameterization...\n";
-        for (int i = 0; i < allBuildingsV.size(); i++)
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
         {
             allBuildingsV[building_id[i]]->upwindCavity(UID, this);
         }
@@ -551,7 +557,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     if (UID->simParams->wakeFlag > 0)
     {
         std::cout << "Applying wake behind building parameterization...\n";
-        for (int i = 0; i < allBuildingsV.size(); i++)
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
         {
             allBuildingsV[building_id[i]]->polygonWake(UID, this, building_id[i]);
         }
@@ -564,7 +570,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     if (UID->simParams->streetCanyonFlag > 0)
     {
         std::cout << "Applying street canyon parameterization...\n";
-        for (int i = 0; i < allBuildingsV.size(); i++)
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
         {
             allBuildingsV[building_id[i]]->streetCanyon(this);
         }
@@ -577,7 +583,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     if (UID->simParams->sidewallFlag > 0)
     {
         std::cout << "Applying sidewall parameterization...\n";
-        for (int i = 0; i < allBuildingsV.size(); i++)
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
         {
             allBuildingsV[building_id[i]]->sideWall(UID, this);
         }
@@ -591,7 +597,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     if (UID->simParams->rooftopFlag > 0)
     {
         std::cout << "Applying rooftop parameterization...\n";
-        for (int i = 0; i < allBuildingsV.size(); i++)
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
         {
             allBuildingsV[building_id[i]]->rooftop (UID, this);
         }
@@ -679,8 +685,8 @@ void URBGeneralData::mergeSort( std::vector<float> &effective_height, std::vecto
       allBuildingsV_R.resize(allBuildingsV.size() - allBuildingsV.size() / 2);
 
       //copy data from the main data set to the left and right children
-      int lC = 0, rC = 0;
-      for (auto i = 0; i < allBuildingsV.size(); i++)
+      size_t lC = 0, rC = 0;
+      for (size_t i = 0; i < allBuildingsV.size(); i++)
       {
          if (i < allBuildingsV.size() / 2)
          {
@@ -703,7 +709,7 @@ void URBGeneralData::mergeSort( std::vector<float> &effective_height, std::vecto
 
       //compare the sorted children to place the data into the main array
       lC = rC = 0;
-      for (unsigned int i = 0; i < allBuildingsV.size(); i++)
+      for (size_t i = 0; i < allBuildingsV.size(); i++)
       {
          if (rC == effective_height_R.size() || ( lC != effective_height_L.size() &&
                                                   effective_height_L[lC] < effective_height_R[rC]))
