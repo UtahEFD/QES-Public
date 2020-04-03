@@ -59,11 +59,19 @@ int main(int argc, char *argv[])
     // Parse the base XML QUIC file -- contains simulation parameters
     URBInputData* UID = parseXMLTree(arguments.quicFile);
     if ( !UID ) {
-        std::cerr << "QUIC Input file: " << arguments.quicFile <<
+        std::cerr << "[ERROR] QUIC Input file: " << arguments.quicFile <<
             " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
+    
+    // Checking if 
+    if (arguments.compTurb && !UID->localMixingParam) {
+        std::cerr << "[ERROR] Turbulence model is turned on without LocalMixingParam in QES Intput file " 
+                  << arguments.quicFile << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
+    
     if (arguments.terrainOut) {
         if (UID->simParams->DTE_heightField) {
             std::cout << "Creating terrain OBJ....\n";
@@ -71,7 +79,7 @@ int main(int argc, char *argv[])
             std::cout << "OBJ created....\n";
         }
         else {
-            std::cerr << "Error: No dem file specified as input\n";
+            std::cerr << "[ERROR] No dem file specified as input\n";
             return -1;
         }
     }
@@ -112,7 +120,7 @@ int main(int argc, char *argv[])
         std::cout << "Run GPU Solver ..." << std::endl;
         solver = new DynamicParallelism(UID, UGD);
     } else {
-        std::cerr << "Error: invalid solve type\n";
+        std::cerr << "[ERROR] invalid solve type\n";
         exit(EXIT_FAILURE);
     }
     
@@ -123,7 +131,7 @@ int main(int argc, char *argv[])
         else if (arguments.compareType == DYNAMIC_P)
             solverC = new DynamicParallelism(UID, UGD);
         else {
-            std::cerr << "Error: invalid comparison type\n";
+            std::cerr << "[ERROR] invalid comparison type\n";
             exit(EXIT_FAILURE);
         }
     }
