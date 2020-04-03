@@ -2,6 +2,9 @@
 
 //TURBGeneralData::TURBGeneralData(Args* arguments, URBGeneralData* UGD){
 TURBGeneralData::TURBGeneralData(URBGeneralData* UGD){
+    
+    auto StartTime = std::chrono::high_resolution_clock::now();
+    
     // make local copy of grid information
     // nx,ny,nz consitant with URB (face-center)
     // urb->grid correspond to face-center grid
@@ -116,11 +119,18 @@ TURBGeneralData::TURBGeneralData(URBGeneralData* UGD){
     tke.resize(np_cc,0);
     CoEps.resize(np_cc,0);
 
+    auto EndTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> Elapsed = EndTime - StartTime;
+    std::cout << "[TURB] \t\t Memory allocation complete...\n";
+    std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << endl;
+    
 }
 
 // compute turbulence fields
 void TURBGeneralData::run(URBGeneralData* UGD){
-
+    
+    auto StartTime = std::chrono::high_resolution_clock::now();
+    
     std::cout<<"[TURB] \t\t Computing Derivatives (Strain Rate)"<<std::endl;
     getDerivatives(UGD);
     std::cout<<"[TURB] \t\t Derivatives computed..."<<std::endl;
@@ -135,11 +145,17 @@ void TURBGeneralData::run(URBGeneralData* UGD){
     getStressTensor();
     std::cout<<"[TURB] \t\t Stress Tensor computed..."<<std::endl;
 
-    std::cout << "Applying non local mixing..."<<std::endl;;
+    std::cout << "[TURB] \t\t Applying non local mixing..."<<std::endl;;
     for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
     {
         UGD->allBuildingsV[UGD->building_id[i]]->NonLocalMixing(UGD, this, UGD->building_id[i]);
     }
+    
+    auto EndTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> Elapsed = EndTime - StartTime;
+    std::cout << "[TURB] \t\t Turbulence model complete...\n";
+    std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << endl;
+
     
 }
 
