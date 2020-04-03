@@ -4,7 +4,7 @@ URBArgs::URBArgs()
     : verbose(false),compTurb(false),
       quicFile(""), netCDFFileBasename(""),
       visuOutput(false), wkspOutput(false), turbOutput(false), terrainOut(false), 
-      solveType(1), compareType(0), calcMixingLength(false)
+      solveType(1), compareType(0)
 {
     reg("help", "help/usage information", ArgumentParsing::NONE, '?');
     reg("verbose", "turn on verbose output", ArgumentParsing::NONE, 'v');
@@ -23,8 +23,6 @@ URBArgs::URBArgs()
     // [FM] the output of turbulence field linked to the flag compTurb
     //reg("turbout", "Turns on the netcdf file to write turbulence file", ArgumentParsing::NONE, 'r');   
     reg("terrainout", "Turn on the output of the triangle mesh for the terrain", ArgumentParsing::NONE, 'h');
-
-    reg("calcmixlength", "Turns on the mixing length calculations and output", ArgumentParsing::NONE, 'm');    
 }
 
 void URBArgs::processArguments(int argc, char *argv[])
@@ -99,6 +97,4 @@ void URBArgs::processArguments(int argc, char *argv[])
         terrainOut=false;
     }
     
-    calcMixingLength = isSet("calcmixlength");
-    if (calcMixingLength) std::cout << "Mixing Length calculations: ON" << std::endl;
 }

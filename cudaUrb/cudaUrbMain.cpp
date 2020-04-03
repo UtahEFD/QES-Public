@@ -77,12 +77,7 @@ int main(int argc, char *argv[])
     }
 
     // Generate the general URB data from all inputs
-    // - turn on mixing length calculations for now if enabled
-    // eventually, we will remove this flag and 2nd argument
-    if (arguments.calcMixingLength) {
-        std::cout << "Enabling mixing length calculation." << std::endl;
-    }
-    URBGeneralData* UGD = new URBGeneralData(UID, arguments.calcMixingLength);
+    URBGeneralData* UGD = new URBGeneralData(UID);
     
     // create URB output classes
     std::vector<QESNetCDFOutput*> outputVec;

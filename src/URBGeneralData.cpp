@@ -1,7 +1,6 @@
 #include "URBGeneralData.h"
 
-URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
-    : m_calcMixingLength( calcMixLength )
+URBGeneralData::URBGeneralData(const URBInputData* UID)
 {
     if ( UID->simParams->upwindCavityFlag == 1) {
         lengthf_coeff = 2.0;
@@ -777,7 +776,6 @@ float URBGeneralData::canopyBisection(float ustar, float z0, float canopy_top, f
 
 
 URBGeneralData::URBGeneralData()
-    : m_calcMixingLength( false )
 {
 }
 

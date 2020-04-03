@@ -11,10 +11,6 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(URBGeneralData *ugd,std::string outpu
                      "e","f","g","h","m","n","building_volume_frac","terrain_volume_frac",
                      "mixlength"};
     
-    //if (ugd->includesMixingLength()) {
-    //    output_fields.push_back("mixlength");
-    //}
-    
     // copy of ugd pointer
     ugd_=ugd;
     

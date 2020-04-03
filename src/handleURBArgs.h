@@ -51,9 +51,6 @@ public:
     // filename for terrain output
     std::string filenameTerrain = "";
     
-    // Calculate Mixing Length - currently takes a while so it is
-    // disabled unless this is set.
-    bool calcMixingLength;
-    
 private:
+
 };
