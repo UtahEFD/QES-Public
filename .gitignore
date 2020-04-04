@@ -5,7 +5,6 @@ build/
 Build/
 src/docs/*
 docs/*
-scratch/
 
 # Prerequisites
 *.d
