@@ -132,10 +132,14 @@ private:
     //if (j * m_nXSize + k >= m_nXSize * m_nYSize
     else
     {
+        // important to remember range is [0, n-1], so need the -1
+        // in the flip
+        // Previous code had this -- does not seem correct
+        // height = scanline[ abs(k-m_nYSize) * m_nXSize + j ];
         height = scanline[ (m_nYSize-1 - k) * m_nXSize + j ];
     }
 
-    if (height < 0.0 || isnan(abs(height)))
+    if (height < 0.0 || std::isnan(abs(height)))
     {
       height = 0.0;
     }
