@@ -190,7 +190,7 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
         {
 
             // set the var to allow console output in multiple functions when the parIdx hits the updateFrequency
-            //if( parIdx == 26 )
+            //if( parIdx == 44 )
             if( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )
             {
                 updateFrequency_particleLoop_output = true;
@@ -199,12 +199,12 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
 
             // control the extra debug output however you want, to allow output in functions as well as this loop
             // make sure it matches the if statement as the spot where extraDebug is set back to false
-            //if( parIdx == 26 )
-            if( updateFrequency_timeLoop_output == true && updateFrequency_particleLoop_output == true )
-            {
+            //if( updateFrequency_timeLoop_output == true && updateFrequency_particleLoop_output == true )
+            //if( parIdx == 44 )
+            //{
                 extraDebug = true;
                 //extraDebug = false;
-            }
+            //}
 
 
             // get the current isRogue and isActive information
@@ -462,8 +462,9 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                     //  so it made more sense to write them out directly.
                     if( ( std::abs(uFluct) >= vel_threshold || isnan(uFluct) ) && nx > 1 )
                     {
-                        if( extraDebug == true )
-                        {
+                        /*
+                        //if( extraDebug == true )
+                        //{
                             std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
                             std::cout << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
 
@@ -493,15 +494,17 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                             std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
                             std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
                             std::cout << "\t finished info" << std::endl;
-                        }
+                        //}
+                        */
 
                         uFluct = 0.0;
                         isRogue = true;
                     }
                     if( ( std::abs(vFluct) >= vel_threshold || isnan(vFluct) ) && ny > 1 )
                     {
-                        if( extraDebug == true )
-                        {
+                        /*
+                        //if( extraDebug == true )
+                        //{
                             std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
                             std::cout << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
 
@@ -531,15 +534,17 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                             std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
                             std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
                             std::cout << "\t finished info" << std::endl;
-                        }
+                        //}
+                        */
 
                         vFluct = 0.0;
                         isRogue = true;
                     }
                     if( ( std::abs(wFluct) >= vel_threshold || isnan(wFluct) ) && nz > 1 )
                     {
-                        if( extraDebug == true )
-                        {
+                        /*
+                        //if( extraDebug == true )
+                        //{
                             std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
                             std::cout << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
 
@@ -569,7 +574,8 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                             std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
                             std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
                             std::cout << "\t finished info" << std::endl;
-                        }
+                        //}
+                        */
 
                         wFluct = 0.0;
                         isRogue = true;
@@ -600,15 +606,15 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                     //}
 
 
+                    /*
                     // only see this statement for a given particle or set of particles over a given time or sets of time,
                     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
                     // trying to see what is going on inside many functions, but without overwhelming the console output
                     if( extraDebug == true )
                     {
-                        std::cout << "      simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) 
-                            << "\", par[" << parIdx << "], particle timestep \"" << par_dt 
-                            << "\" for time = \"" << par_time << "\". starting dist calc." << std::endl;
+                        std::cout << "      par_time = \"" << par_time << "\", par[" << parIdx << "]. starting dist calc." << std::endl;
                     }
+                    */
 
 
                     // now iterate till the particle has finished moving
@@ -623,42 +629,42 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                         {
                             distX = 0.0;
                             distX_inc = 0.0;
-                        } else if( std::abs(distX_inc) > dx )
+                        } else if( std::abs(distX_inc) > dx*CourantNum )
                         {
                             if( distX_inc >= 0.0 )
                             {
-                                distX_inc = dx; // do I need to subtract 1e-9?
+                                distX_inc = dx*CourantNum; // do I need to subtract 1e-9?
                             } else
                             {
-                                distX_inc = -dx;
+                                distX_inc = -dx*CourantNum;
                             }
                         }
                         if( ny == 1 )
                         {
                             distY = 0.0;
                             distY_inc = 0.0;
-                        } else if( std::abs(distY_inc) > dy )
+                        } else if( std::abs(distY_inc) > dy*CourantNum )
                         {
                             if( distY_inc >= 0.0 )
                             {
-                                distY_inc = dy; // do I need to subtract 1e-9?
+                                distY_inc = dy*CourantNum; // do I need to subtract 1e-9?
                             } else
                             {
-                                distY_inc = -dy;
+                                distY_inc = -dy*CourantNum;
                             }
                         }
                         if( nz == 1 )
                         {
                             distZ = 0.0;
                             distZ_inc = 0.0;
-                        } else if( std::abs(distZ_inc) > dz )
+                        } else if( std::abs(distZ_inc) > dz*CourantNum )
                         {
                             if( distZ_inc >= 0.0 )
                             {
-                                distZ_inc = dz; // do I need to subtract 1e-9?
+                                distZ_inc = dz*CourantNum; // do I need to subtract 1e-9?
                             } else
                             {
-                                distZ_inc = -dz;
+                                distZ_inc = -dz*CourantNum;
                             }
                         }
 
@@ -675,23 +681,33 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                         zPos = zPos + distZ_inc;
                         
 
+                        /*
                         // only see this statement for a given particle or set of particles over a given time or sets of time,
                         // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
                         // trying to see what is going on inside many functions, but without overwhelming the console output
                         if( extraDebug == true )
                         {
-                            std::cout << "  before BC function: " << std::endl;
+                            std::cout << "   before first BC function: " << std::endl;
                             std::cout << "distX = \"" << distX << "\", distY = \"" << distY << "\", distZ = \"" << distZ << "\"" << std::endl;
                             std::cout << "distX_inc = \"" << distX_inc << "\", distY_inc = \"" << distY_inc << "\", distZ_inc = \"" << distZ_inc << "\"" << std::endl;
-                            std::cout << "xPos = \"" << xPos << "\", yPos = \"" << yPos << "\", zPos = \"" << zPos << "\"" << std::endl;
                             std::cout << "xPos_old = \"" << xPos_old << "\", yPos_old = \"" << yPos_old << "\", zPos_old = \"" << zPos_old << "\"" << std::endl;
+                            std::cout << "xPos = \"" << xPos << "\", yPos = \"" << yPos << "\", zPos = \"" << zPos << "\"" << std::endl;
                             std::cout << "uFluct = \"" << uFluct << "\", vFluct = \"" << vFluct << "\", wFluct = \"" << wFluct << "\"" << std::endl;
                             std::cout << "uFluct_old = \"" << uFluct_old << "\", vFluct_old = \"" << vFluct_old << "\", wFluct_old = \"" << wFluct_old << "\"" << std::endl;
                             std::cout << "isActive = \"" << isActive << "\"" << std::endl;
                         }
+                        */
                         
 
                         // now apply boundary conditions to adjust the new positions if needed
+                        
+                        // the first call is to the BC function at cellIdx_old (cause cellIdx not yet updated for new position)
+                        // this function call only adjusts the position if the particle ends up entering a domain edge with the new position
+                        // the idea is to never run a BC function at actual cellIdx unless the particle is within the domain,
+                        // so avoid running interp3D until the particle position is corrected to be in the domain if needed
+                        // and the domain edge BCs then should never be run with a BC function call at the actual cellIdx
+
+                        // how the BC functions are run:
                         // now I'm expecting a single function call for the current cellIdx, passing in the current and last cellIdx and whatever info
                         //  is common for each and every boundary condition function
                         // LA note: notice that this is the old fashioned style for calling a pointer function
@@ -699,6 +715,8 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                         //   technically the eulerian velocity changes each new cell the particle enters, but we can assume that is a truncation error
                         //   that goes down as the user uses higher resolution grids and smaller timesteps. We may also just do a first pass
                         //   that ignores the exact location of the boundaries in a cell, just assuming each cell is either a bouncing spot or air.
+
+                        // now run the BC function at the cellIdx_old location to correct the position if the particle is at a domain edge
                         (this->*BCpointerFunctions.at(cellIdx))( distX,distY,distZ,distX_inc,distY_inc,distZ_inc,
                                                                  xPos,yPos,zPos,xPos_old,yPos_old,zPos_old, 
                                                                  uFluct,vFluct,wFluct, 
@@ -707,10 +725,54 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                                                                  yDomainEdgePointerFunctions.at(cellIdx),
                                                                  zDomainEdgePointerFunctions.at(cellIdx) );
                         
+                        /*
+                        if( extraDebug == true )
+                        {
+                            std::cout << "   after first BC function. before dist val update: " << std::endl;
+                            std::cout << "distX = \"" << distX << "\", distY = \"" << distY << "\", distZ = \"" << distZ << "\"" << std::endl;
+                            std::cout << "distX_inc = \"" << distX_inc << "\", distY_inc = \"" << distY_inc << "\", distZ_inc = \"" << distZ_inc << "\"" << std::endl;
+                            std::cout << "xPos_old = \"" << xPos_old << "\", yPos_old = \"" << yPos_old << "\", zPos_old = \"" << zPos_old << "\"" << std::endl;
+                            std::cout << "xPos = \"" << xPos << "\", yPos = \"" << yPos << "\", zPos = \"" << zPos << "\"" << std::endl;
+                            std::cout << "uFluct = \"" << uFluct << "\", vFluct = \"" << vFluct << "\", wFluct = \"" << wFluct << "\"" << std::endl;
+                            std::cout << "uFluct_old = \"" << uFluct_old << "\", vFluct_old = \"" << vFluct_old << "\", wFluct_old = \"" << wFluct_old << "\"" << std::endl;
+                            std::cout << "isActive = \"" << isActive << "\"" << std::endl;
+                        }
+                        */
 
-                        // the BC function already modifies the eulerian grid cell info,
-                        //  the position, the velocity fluctuations, and isActive value
-                        // So the only thing left to do is update the distX values using the updated distX_inc values
+                        // set interp3D indices for the actual current cellIdx using the newly updated position
+                        // and run the BC function at the current cellIdx. If particles started in air and went outside the domain
+                        // this call would just be back at the original air cell. If particles started in air and went into
+                        // a building cell, the BC function call at cellIdx_old would have just done air stuff (nothing),
+                        // and now this function call runs the building reflection
+                        // so you can think of it as the BC function at cellIdx OR cellIdx_old actually does something, not both
+                        // LA future note: this may not hold true when adding in probability of passing stuff, need to restructure it again
+                        //  for cut cells probability of passing
+                        if( isActive == true )
+                        {
+                            eul->setInterp3Dindexing(xPos,yPos,zPos,  cellIdx, ii, jj, kk, iw, jw, kw, ip, jp, kp);
+                            (this->*BCpointerFunctions.at(cellIdx))( distX,distY,distZ,distX_inc,distY_inc,distZ_inc,
+                                                                     xPos,yPos,zPos,xPos_old,yPos_old,zPos_old, 
+                                                                     uFluct,vFluct,wFluct, 
+                                                                     uFluct_old,vFluct_old,wFluct_old,isActive,
+                                                                     xDomainEdgePointerFunctions.at(cellIdx),
+                                                                     yDomainEdgePointerFunctions.at(cellIdx),
+                                                                     zDomainEdgePointerFunctions.at(cellIdx) );
+
+                            /*
+                            if( extraDebug == true )
+                            {
+                                std::cout << "   after second BC function. before dist val update: " << std::endl;
+                                std::cout << "distX = \"" << distX << "\", distY = \"" << distY << "\", distZ = \"" << distZ << "\"" << std::endl;
+                                std::cout << "distX_inc = \"" << distX_inc << "\", distY_inc = \"" << distY_inc << "\", distZ_inc = \"" << distZ_inc << "\"" << std::endl;
+                                std::cout << "xPos_old = \"" << xPos_old << "\", yPos_old = \"" << yPos_old << "\", zPos_old = \"" << zPos_old << "\"" << std::endl;
+                                std::cout << "xPos = \"" << xPos << "\", yPos = \"" << yPos << "\", zPos = \"" << zPos << "\"" << std::endl;
+                                std::cout << "uFluct = \"" << uFluct << "\", vFluct = \"" << vFluct << "\", wFluct = \"" << wFluct << "\"" << std::endl;
+                                std::cout << "uFluct_old = \"" << uFluct_old << "\", vFluct_old = \"" << vFluct_old << "\", wFluct_old = \"" << wFluct_old << "\"" << std::endl;
+                                std::cout << "isActive = \"" << isActive << "\"" << std::endl;
+                            }
+                            */
+                        }
+                        
                         
                         // now update the distance left to travel using the distance actually travelled
                         // in preparation for the next iteration
@@ -727,33 +789,29 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                         }
 
                         
+                        /*
                         // only see this statement for a given particle or set of particles over a given time or sets of time,
                         // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
                         // trying to see what is going on inside many functions, but without overwhelming the console output
                         if( extraDebug == true )
                         {
-                            std::cout << "  after BC function: " << std::endl;
+                            std::cout << "   after dist val update: " << std::endl;
                             std::cout << "distX = \"" << distX << "\", distY = \"" << distY << "\", distZ = \"" << distZ << "\"" << std::endl;
-                            std::cout << "distX_inc = \"" << distX_inc << "\", distY_inc = \"" << distY_inc << "\", distZ_inc = \"" << distZ_inc << "\"" << std::endl;
-                            std::cout << "xPos = \"" << xPos << "\", yPos = \"" << yPos << "\", zPos = \"" << zPos << "\"" << std::endl;
-                            std::cout << "xPos_old = \"" << xPos_old << "\", yPos_old = \"" << yPos_old << "\", zPos_old = \"" << zPos_old << "\"" << std::endl;
-                            std::cout << "uFluct = \"" << uFluct << "\", vFluct = \"" << vFluct << "\", wFluct = \"" << wFluct << "\"" << std::endl;
-                            std::cout << "uFluct_old = \"" << uFluct_old << "\", vFluct_old = \"" << vFluct_old << "\", wFluct_old = \"" << wFluct_old << "\"" << std::endl;
-                            std::cout << "isActive = \"" << isActive << "\"" << std::endl;
                         }
+                        */
 
                         
                     }   // while( isRogue == false && isActive == true && distX != 0.0 && distY != 0 && distZ != 0 )
 
+                    /*
                     // only see this statement for a given particle or set of particles over a given time or sets of time,
                     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
                     // trying to see what is going on inside many functions, but without overwhelming the console output
                     if( extraDebug == true )
                     {
-                        std::cout << "      simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) 
-                                << "\", par[" << parIdx << "], particle timestep \"" << par_dt 
-                                << "\" for time = \"" << par_time << "\". finished dist calc." << std::endl;
+                        std::cout << "      par_time = \"" << par_time << "\", par[" << parIdx << "]. finished dist calc." << std::endl;
                     }
+                    */
 
                     // control the extra debug output however you want, to allow output in functions as well as this loop
                     // make sure it matches the if statement as the spot where extraDebug is first set to true
@@ -1075,10 +1133,14 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
     
     if( iter == 999 )
     {
-        if( extraDebug == true )
-        {
+        /*
+        //if( extraDebug == true )
+        //{
             std::cout << "WARNING (Plume::makeRealizable): unable to make stress tensor realizble.";
-        }
+            std::cout << "  simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) << "\"" << std::endl;
+            std::cout << "  parIdx = \"" << parIdx << "\"" << std::endl;
+        //}
+        */
     }
 
     // now set the output actual stress tensor using the separate temporary stress tensor
@@ -1107,13 +1169,15 @@ void Plume::invert3(double& A_11,double& A_12,double& A_13,double& A_21,double& 
     //  if so, how would we go about limiting that info? Would probably need to make the loop counter variables actual data members of the class
     if(std::abs(det) < 1e-10)
     {
-        if( extraDebug == true )
-        {
+        /*
+        //if( extraDebug == true )
+        //{
             std::cout << "WARNING (Plume::invert3): matrix nearly singular" << std::endl;
             std::cout << "abs(det) = \"" << std::abs(det) << "\",  A_11 = \"" << A_11 << "\", A_12 = \"" << A_12 << "\", A_13 = \"" 
                 << A_13 << "\", A_21 = \"" << A_21 << "\", A_22 = \"" << A_22 << "\", A_23 = \"" << A_23 << "\", A_31 = \"" 
                 << A_31 << "\" A_32 = \"" << A_32 << "\", A_33 = \"" << A_33 << "\"" << std::endl;
-        }
+        //}
+        */
 
         det = 10e10;
     }
@@ -1593,6 +1657,7 @@ void Plume::setBCfunctions( PlumeInputData* PID )
 // the domain start and end boundary condition functions
 void Plume::xDomainWallLineBC_passthrough( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1600,6 +1665,7 @@ void Plume::xDomainWallLineBC_passthrough( double& distX, double& distX_inc, dou
     {
         std::cout << "  xDomainWallLineBC_passthrough" << std::endl;
     }
+    */
     
     // no need to adjust the current particle component position or any of the other component variables
     //  we are just letting the particle go on its merry way
@@ -1607,6 +1673,7 @@ void Plume::xDomainWallLineBC_passthrough( double& distX, double& distX_inc, dou
 }
 void Plume::xDomainStartBC_exiting( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1614,6 +1681,7 @@ void Plume::xDomainStartBC_exiting( double& distX, double& distX_inc, double& xP
     {
         std::cout << "  xDomainStartBC_exiting" << std::endl;
     }
+    */
 
     // no need to adjust the current particle component position or any other component variables
     // just if the current particle component position is found to have gone out of the domain
@@ -1628,6 +1696,7 @@ void Plume::xDomainStartBC_exiting( double& distX, double& distX_inc, double& xP
 }
 void Plume::xDomainEndBC_exiting( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1635,6 +1704,7 @@ void Plume::xDomainEndBC_exiting( double& distX, double& distX_inc, double& xPos
     {
         std::cout << "  xDomainEndBC_exiting" << std::endl;
     }
+    */
 
     // no need to adjust the current particle component position or any other component variables
     // just if the current particle component position is found to have gone out of the domain
@@ -1649,6 +1719,7 @@ void Plume::xDomainEndBC_exiting( double& distX, double& distX_inc, double& xPos
 }
 void Plume::xDomainStartBC_periodic( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1656,6 +1727,7 @@ void Plume::xDomainStartBC_periodic( double& distX, double& distX_inc, double& x
     {
         std::cout << "  xDomainStartBC_periodic" << std::endl;
     }
+    */
 
     // if the current particle component position is outside the domain
     //  adjust the particle component position to send the particle to the opposite side of the domain 
@@ -1674,6 +1746,7 @@ void Plume::xDomainStartBC_periodic( double& distX, double& distX_inc, double& x
 }
 void Plume::xDomainEndBC_periodic( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1681,6 +1754,7 @@ void Plume::xDomainEndBC_periodic( double& distX, double& distX_inc, double& xPo
     {
         std::cout << "  xDomainEndBC_periodic" << std::endl;
     }
+    */
     
     // if the current particle component position is outside the domain
     //  adjust the particle component position to send the particle to the opposite side of the domain 
@@ -1699,6 +1773,7 @@ void Plume::xDomainEndBC_periodic( double& distX, double& distX_inc, double& xPo
 }
 void Plume::xDomainStartBC_reflection( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1706,6 +1781,7 @@ void Plume::xDomainStartBC_reflection( double& distX, double& distX_inc, double&
     {
         std::cout << "  xDomainStartBC_reflection" << std::endl;
     }
+    */
 
     // if the current particle component position is outside the domain
     //  adjust the particle component position by reflecting it on the domain edge
@@ -1727,6 +1803,7 @@ void Plume::xDomainStartBC_reflection( double& distX, double& distX_inc, double&
 }
 void Plume::xDomainEndBC_reflection( double& distX, double& distX_inc, double& xPos, const double& xPos_old, double& uFluct, double& uFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1734,6 +1811,7 @@ void Plume::xDomainEndBC_reflection( double& distX, double& distX_inc, double& x
     {
         std::cout << "  xDomainEndBC_reflection" << std::endl;
     }
+    */
 
     // if the current particle component position is outside the domain
     //  adjust the particle component position by reflecting it on the domain edge
@@ -1755,6 +1833,7 @@ void Plume::xDomainEndBC_reflection( double& distX, double& distX_inc, double& x
 }
 void Plume::yDomainWallLineBC_passthrough( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1762,6 +1841,7 @@ void Plume::yDomainWallLineBC_passthrough( double& distY, double& distY_inc, dou
     {
         std::cout << "  yDomainWallLineBC_passthrough" << std::endl;
     }
+    */
 
     // no need to adjust the current particle component position or any of the other component variables
     //  we are just letting the particle go on its merry way
@@ -1769,6 +1849,7 @@ void Plume::yDomainWallLineBC_passthrough( double& distY, double& distY_inc, dou
 }
 void Plume::yDomainStartBC_exiting( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1776,6 +1857,7 @@ void Plume::yDomainStartBC_exiting( double& distY, double& distY_inc, double& yP
     {
         std::cout << "  yDomainStartBC_exiting" << std::endl;
     }
+    */
 
     // no need to adjust the current particle component position or any other component variables
     // just if the current particle component position is found to have gone out of the domain
@@ -1790,6 +1872,7 @@ void Plume::yDomainStartBC_exiting( double& distY, double& distY_inc, double& yP
 }
 void Plume::yDomainEndBC_exiting( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1797,6 +1880,7 @@ void Plume::yDomainEndBC_exiting( double& distY, double& distY_inc, double& yPos
     {
         std::cout << "  yDomainEndBC_exiting" << std::endl;
     }
+    */
     
     // no need to adjust the current particle component position or any other component variables
     // just if the current particle component position is found to have gone out of the domain
@@ -1811,6 +1895,7 @@ void Plume::yDomainEndBC_exiting( double& distY, double& distY_inc, double& yPos
 }
 void Plume::yDomainStartBC_periodic( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1818,6 +1903,7 @@ void Plume::yDomainStartBC_periodic( double& distY, double& distY_inc, double& y
     {
         std::cout << "  yDomainStartBC_periodic" << std::endl;
     }
+    */
 
     // if the current particle component position is outside the domain
     //  adjust the particle component position to send the particle to the opposite side of the domain 
@@ -1836,6 +1922,7 @@ void Plume::yDomainStartBC_periodic( double& distY, double& distY_inc, double& y
 }
 void Plume::yDomainEndBC_periodic( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1843,6 +1930,7 @@ void Plume::yDomainEndBC_periodic( double& distY, double& distY_inc, double& yPo
     {
         std::cout << "  yDomainEndBC_periodic" << std::endl;
     }
+    */
 
     // if the current particle component position is outside the domain
     //  adjust the particle component position to send the particle to the opposite side of the domain 
@@ -1861,6 +1949,7 @@ void Plume::yDomainEndBC_periodic( double& distY, double& distY_inc, double& yPo
 }
 void Plume::yDomainStartBC_reflection( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1868,6 +1957,7 @@ void Plume::yDomainStartBC_reflection( double& distY, double& distY_inc, double&
     {
         std::cout << "  yDomainStartBC_reflection" << std::endl;
     }
+    */
 
     // if the current particle component position is outside the domain
     //  adjust the particle component position by reflecting it on the domain edge
@@ -1889,6 +1979,7 @@ void Plume::yDomainStartBC_reflection( double& distY, double& distY_inc, double&
 }
 void Plume::yDomainEndBC_reflection( double& distY, double& distY_inc, double& yPos, const double& yPos_old, double& vFluct, double& vFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1896,6 +1987,7 @@ void Plume::yDomainEndBC_reflection( double& distY, double& distY_inc, double& y
     {
         std::cout << "  yDomainEndBC_reflection" << std::endl;
     }
+    */
     
     // if the current particle component position is outside the domain
     //  adjust the particle component position by reflecting it on the domain edge
@@ -1917,6 +2009,7 @@ void Plume::yDomainEndBC_reflection( double& distY, double& distY_inc, double& y
 }
 void Plume::zDomainWallLineBC_passthrough( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1924,6 +2017,7 @@ void Plume::zDomainWallLineBC_passthrough( double& distZ, double& distZ_inc, dou
     {
         std::cout << "  zDomainWallLineBC_passthrough" << std::endl;
     }
+    */
 
     // no need to adjust the current particle component position or any of the other component variables
     //  we are just letting the particle go on its merry way
@@ -1931,6 +2025,7 @@ void Plume::zDomainWallLineBC_passthrough( double& distZ, double& distZ_inc, dou
 }
 void Plume::zDomainStartBC_exiting( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1938,6 +2033,7 @@ void Plume::zDomainStartBC_exiting( double& distZ, double& distZ_inc, double& zP
     {
         std::cout << "  zDomainStartBC_exiting" << std::endl;
     }
+    */
     
     // no need to adjust the current particle component position or any other component variables
     // just if the current particle component position is found to have gone out of the domain
@@ -1952,6 +2048,7 @@ void Plume::zDomainStartBC_exiting( double& distZ, double& distZ_inc, double& zP
 }
 void Plume::zDomainEndBC_exiting( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1959,6 +2056,7 @@ void Plume::zDomainEndBC_exiting( double& distZ, double& distZ_inc, double& zPos
     {
         std::cout << "  zDomainEndBC_exiting" << std::endl;
     }
+    */
     
     // no need to adjust the current particle component position or any other component variables
     // just if the current particle component position is found to have gone out of the domain
@@ -1973,6 +2071,7 @@ void Plume::zDomainEndBC_exiting( double& distZ, double& distZ_inc, double& zPos
 }
 void Plume::zDomainStartBC_periodic( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -1980,6 +2079,7 @@ void Plume::zDomainStartBC_periodic( double& distZ, double& distZ_inc, double& z
     {
         std::cout << "  zDomainStartBC_periodic" << std::endl;
     }
+    */
 
     // if the current particle component position is outside the domain
     //  adjust the particle component position to send the particle to the opposite side of the domain 
@@ -1998,6 +2098,7 @@ void Plume::zDomainStartBC_periodic( double& distZ, double& distZ_inc, double& z
 }
 void Plume::zDomainEndBC_periodic( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -2005,6 +2106,7 @@ void Plume::zDomainEndBC_periodic( double& distZ, double& distZ_inc, double& zPo
     {
         std::cout << "  zDomainEndBC_periodic" << std::endl;
     }
+    */
 
     // if the current particle component position is outside the domain
     //  adjust the particle component position to send the particle to the opposite side of the domain 
@@ -2023,6 +2125,7 @@ void Plume::zDomainEndBC_periodic( double& distZ, double& distZ_inc, double& zPo
 }
 void Plume::zDomainStartBC_reflection( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -2030,6 +2133,7 @@ void Plume::zDomainStartBC_reflection( double& distZ, double& distZ_inc, double&
     {
         std::cout << "  zDomainStartBC_reflection" << std::endl;
     }
+    */
     
     // if the current particle component position is outside the domain
     //  adjust the particle component position by reflecting it on the domain edge
@@ -2051,6 +2155,7 @@ void Plume::zDomainStartBC_reflection( double& distZ, double& distZ_inc, double&
 }
 void Plume::zDomainEndBC_reflection( double& distZ, double& distZ_inc, double& zPos, const double& zPos_old, double& wFluct, double& wFluct_old, bool& isActive )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -2058,6 +2163,7 @@ void Plume::zDomainEndBC_reflection( double& distZ, double& distZ_inc, double& z
     {
         std::cout << "  zDomainEndBC_reflection" << std::endl;
     }
+    */
     
     // if the current particle component position is outside the domain
     //  adjust the particle component position by reflecting it on the domain edge
@@ -2092,6 +2198,7 @@ void Plume::domainEdgeBC( double& distX, double& distY, double& distZ,
                           xDomainEdgeBCptrFunction xDomainEdgeBC, yDomainEdgeBCptrFunction yDomainEdgeBC, 
                           zDomainEdgeBCptrFunction zDomainEdgeBC )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -2099,6 +2206,7 @@ void Plume::domainEdgeBC( double& distX, double& distY, double& distZ,
     {
         std::cout << "  domainEdgeBC" << std::endl;
     }
+    */
 
     // go component by component and modify the particle position components as needed by the domain edge BC functions
     // no need to modify the velFluct values here, they would be modified by the domain edge BC functions
@@ -2122,6 +2230,7 @@ void Plume::innerCellBC_passthrough( double& distX, double& distY, double& distZ
                                      xDomainEdgeBCptrFunction xDomainEdgeBC, yDomainEdgeBCptrFunction yDomainEdgeBC, 
                                      zDomainEdgeBCptrFunction zDomainEdgeBC )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -2129,6 +2238,7 @@ void Plume::innerCellBC_passthrough( double& distX, double& distY, double& distZ
     {
         std::cout << "  innerCellBC_passthrough" << std::endl;
     }
+    */
 
     // no need to adjust the current particle component position or any of the other component variables
     //  we are just letting the particle go on its merry way
@@ -2144,6 +2254,7 @@ void Plume::innerCellBC_simpleStairStepReflection( double& distX, double& distY,
                                                    xDomainEdgeBCptrFunction xDomainEdgeBC, yDomainEdgeBCptrFunction yDomainEdgeBC, 
                                                    zDomainEdgeBCptrFunction zDomainEdgeBC )
 {
+    /*
     // only see this statement for a given particle or set of particles over a given time or sets of time,
     // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
     // trying to see what is going on inside many functions, but without overwhelming the console output
@@ -2151,6 +2262,7 @@ void Plume::innerCellBC_simpleStairStepReflection( double& distX, double& distY,
     {
         std::cout << "  innerCellBC_simpleStairStepReflection" << std::endl;
     }
+    */
 
 
     // calculate the eulerian grid cell info for the current and old particle positions
@@ -2177,19 +2289,7 @@ void Plume::innerCellBC_simpleStairStepReflection( double& distX, double& distY,
     int jp_old = 0;
     int kp_old = 0;
 
-    // only see this statement for a given particle or set of particles over a given time or sets of time,
-    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
-    // trying to see what is going on inside many functions, but without overwhelming the console output
-    if( extraDebug == true )
-    {
-        std::cout << "  innerCellBC_simpleStairStepReflection, before setInterp3Dindexing" << std::endl;
-        std::cout << "xPos = \"" << xPos << "\", yPos = \"" << yPos << "\", zPos = \"" << zPos << "\"" << std::endl;
-        std::cout << "xPos_old = \"" << xPos_old << "\", yPos_old = \"" << yPos_old << "\", zPos_old = \"" << zPos_old << "\"" << std::endl;
-        std::cout << "uFluct = \"" << uFluct << "\", vFluct = \"" << vFluct << "\", wFluct = \"" << wFluct << "\"" << std::endl;
-        std::cout << "uFluct_old = \"" << uFluct_old << "\", vFluct_old = \"" << vFluct_old << "\", wFluct_old = \"" << wFluct_old << "\"" << std::endl;
-        std::cout << "isActive = \"" << isActive << "\"" << std::endl;
-    }
-
+    
     
     // now calculate the eulerian grid cell info for the current and old particle positions
     // since particle could leave the domain, the expected cellIdx value should not be calculated
@@ -2198,6 +2298,35 @@ void Plume::innerCellBC_simpleStairStepReflection( double& distX, double& distY,
     eul->setInterp3Dindexing(xPos_old,yPos_old,zPos_old,  cellIdx_old, ii_old, jj_old, kk_old, iw_old, jw_old, kw_old, ip_old, jp_old, kp_old);
 
 
+    // only see this statement for a given particle or set of particles over a given time or sets of time,
+    // as chosen by the programmer with how extraDebug is set in the Plume::run() loops
+    // trying to see what is going on inside many functions, but without overwhelming the console output
+    int cellIdx_diff = cellIdx - cellIdx_old;
+    double xMinusFace = xPos - iw*(dx+1e-9);
+    double xPlusFace = xPos + (1-iw)*(dx+1e-9);
+    double yMinusFace = yPos - jw*(dy+1e-9);
+    double yPlusFace = yPos + (1-jw)*(dy+1e-9);
+    double zMinusFace = zPos - kw*(dz+1e-9);
+    double zPlusFace = zPos + (1-kw)*(dz+1e-9);
+    /*
+    if( extraDebug == true )
+    {
+        std::cout << "  --innerCellBC_simpleStairStepReflection, after setInterp3Dindexing" << std::endl;
+        std::cout << "xPos_old = \"" << xPos_old << "\", yPos_old = \"" << yPos_old << "\", zPos_old = \"" << zPos_old << "\"" << std::endl;
+        std::cout << "cellIdx_old = \"" << cellIdx_old << "\", ii_old = \"" << ii_old << "\", jj_old = \"" << jj_old << "\", kk_old = \"" << kk_old << "\"" << std::endl;
+        std::cout << "iw_old = \"" << iw_old << "\", jw_old = \"" << jw_old << "\", kw_old = \"" << kw_old << "\"" << std::endl;
+        std::cout << "ip_old = \"" << ip_old << "\", jp_old = \"" << jp_old << "\", kp_old = \"" << kp_old << "\"" << std::endl;
+        std::cout << "xPos = \"" << xPos << "\", yPos = \"" << yPos << "\", zPos = \"" << zPos << "\"" << std::endl;
+        std::cout << "cellIdx = \"" << cellIdx << "\", ii = \"" << ii << "\", jj = \"" << jj << "\", kk = \"" << kk << "\"" << std::endl;
+        std::cout << "iw = \"" << iw << "\", jw = \"" << jw << "\", kw = \"" << kw << "\"" << std::endl;
+        std::cout << "ip = \"" << ip << "\", jp = \"" << jp << "\", kp = \"" << kp << "\"" << std::endl;
+        std::cout << "cellIdx_diff = \"" << cellIdx_diff << "\"" << std::endl;
+        std::cout << "xMinusFace = \"" << xMinusFace << "\", xPlusFace = \"" << xPlusFace << "\"" << std::endl;
+        std::cout << "yMinusFace = \"" << yMinusFace << "\", yPlusFace = \"" << yPlusFace << "\"" << std::endl;
+        std::cout << "zMinusFace = \"" << zMinusFace << "\", zPlusFace = \"" << zPlusFace << "\"" << std::endl;
+    }
+    */
+    
 
     // now do the BC algorythm to know whether the expected positions are good enough
     // or if they and maybe the velocity values need modified by the boundary condition
@@ -2205,13 +2334,13 @@ void Plume::innerCellBC_simpleStairStepReflection( double& distX, double& distY,
     // use the difference between the old and the current cellIdx to know what to do with the
     // particle positions and velocities
     //  also needs to reflect the component dist and dist_inc variables
-    int cellIdx_diff = cellIdx - cellIdx_old;
+    //int cellIdx_diff = cellIdx - cellIdx_old;
     if( cellIdx_diff == 1 )
     {
         // particle came in from the -x dir
         // reflect only in the x direction, off the -x eulerian cell face
         // y and z component positions and velocities stay the same
-        double xReflectPos = xPos - iw;
+        double xReflectPos = xMinusFace;
         xPos = xReflectPos - (xPos - xReflectPos);
         uFluct = -uFluct;
         uFluct_old = -uFluct_old;
@@ -2227,7 +2356,7 @@ void Plume::innerCellBC_simpleStairStepReflection( double& distX, double& distY,
         // particle came in from the +x dir
         // reflect only in the x direction, off the +x eulerian cell face
         // y and z component positions and velocities stay the same
-        double xReflectPos = xPos + (1-iw);
+        double xReflectPos = xPlusFace;
         xPos = xReflectPos - (xPos - xReflectPos);
         uFluct = -uFluct;
         uFluct_old = -uFluct_old;
@@ -2243,7 +2372,7 @@ void Plume::innerCellBC_simpleStairStepReflection( double& distX, double& distY,
         // particle came in from the -y dir
         // reflect only in the y direction, off the -y eulerian cell face
         // x and z component positions and velocities stay the same
-        double yReflectPos = yPos - jw;
+        double yReflectPos = yMinusFace;
         yPos = yReflectPos - (yPos - yReflectPos);
         vFluct = -vFluct;
         vFluct_old = -vFluct_old;
@@ -2259,7 +2388,7 @@ void Plume::innerCellBC_simpleStairStepReflection( double& distX, double& distY,
         // particle came in from the +y dir
         // reflect only in the y direction, off the +y eulerian cell face
         // x and z component positions and velocities stay the same
-        double yReflectPos = yPos + (1-jw);
+        double yReflectPos = yPlusFace;
         yPos = yReflectPos - (yPos - yReflectPos);
         vFluct = -vFluct;
         vFluct_old = -vFluct_old;
@@ -2275,7 +2404,7 @@ void Plume::innerCellBC_simpleStairStepReflection( double& distX, double& distY,
         // particle came in from the -z dir
         // reflect only in the z direction, off the -z eulerian cell face
         // x and y component positions and velocities stay the same
-        double zReflectPos = zPos - kw;
+        double zReflectPos = zMinusFace;
         zPos = zReflectPos - (zPos - zReflectPos);
         wFluct = -wFluct;
         wFluct_old = -wFluct_old;
@@ -2291,7 +2420,7 @@ void Plume::innerCellBC_simpleStairStepReflection( double& distX, double& distY,
         // particle came in from the +z dir
         // reflect only in the z direction, off the +z eulerian cell face
         // x and y component positions and velocities stay the same
-        double zReflectPos = zPos + (1-kw);
+        double zReflectPos = zPlusFace;
         zPos = zReflectPos - (zPos - zReflectPos);
         wFluct = -wFluct;
         wFluct_old = -wFluct_old;
@@ -2304,18 +2433,30 @@ void Plume::innerCellBC_simpleStairStepReflection( double& distX, double& distY,
         }
     } else if( cellIdx_diff == 0 )
     {
-        if( extraDebug == true )
-        {
+        //if( extraDebug == true )
+        //{
             // particle stayed in the same cell
+            /*
             std::cout << "WARNING (Plume::innerCellBC_simpleStairStepReflection): particle stayed in the same cell" << std::endl;
-        }
+            std::cout << "  par_time = \"" << par_time << "\"" << std::endl;
+            std::cout << "  parIdx = \"" << parIdx << "\"" << std::endl;
+            std::cout << "  setting isActive to false for this particle" << std::endl;
+            */
+            isActive = false;
+        //}
     } else
     {
-        if( extraDebug == true )
-        {
+        //if( extraDebug == true )
+        //{
             // particle moved more than one cell at a time
+            /*
             std::cout << "WARNING (Plume::innerCellBC_simpleStairStepReflection): particle moved more than one cell at a time" << std::endl;
-        }
+            std::cout << "  par_time = \"" << par_time << "\"" << std::endl;
+            std::cout << "  parIdx = \"" << parIdx << "\"" << std::endl;
+            std::cout << "  setting isActive to false for this particle" << std::endl;
+            */
+            isActive = false;
+        //}
     }
 
 
