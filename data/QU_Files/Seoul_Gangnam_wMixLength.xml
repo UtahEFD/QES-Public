@@ -1,13 +1,13 @@
 <simulationParameters>
   <DEM>../scratch/Gangnam/w001001.adf</DEM>					<!-- Address to DEM location-->
-  <!--SHP>../scratch/Gangnam/building.shp</SHP-->				<!-- Address to shapefile location-->
-  <!--SHPBuildingLayer>building</SHPBuildingLayer-->
-  <!--heightFactor> 3.0 </heightFactor-->					<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
+  <SHP>../scratch/Gangnam/building.shp</SHP>				<!-- Address to shapefile location-->
+  <SHPBuildingLayer>building</SHPBuildingLayer>
+  <heightFactor> 3.0 </heightFactor>					<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
 
   <halo_x> 40.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
   <halo_y> 40.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain)-->
 
-  <domain>1152 720 90</domain>				<!-- Number of cells in x,y and z directions-->
+  <domain>1152 720 80</domain>				<!-- Number of cells in x,y and z directions-->
   <cellSize> 4.0 4.0 3.0 </cellSize> 		<!-- Mesh resolution (meters)-->
 
   <verticalStretching> 0 </verticalStretching>              <!-- vertical stretching (0-uniform grid, 1-costum grid)-->
@@ -138,7 +138,7 @@
   </sensor> 
 </metParams>  								<!-- End of meteorological parameters -->
 <localMixingParam>
-  <method>0</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <method>4</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <LMfile>../scratch/Gangnam/mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
 </localMixingParam>
 <fileOptions>
