@@ -202,8 +202,8 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
             //if( updateFrequency_timeLoop_output == true && updateFrequency_particleLoop_output == true )
             //if( parIdx == 44 )
             //{
-                extraDebug = true;
-                //extraDebug = false;
+            //extraDebug = true;
+            extraDebug = false;
             //}
 
 
@@ -218,7 +218,7 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
 
                 // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
                 //  and when debugging
-                if( debug == true )
+                /*if( debug == true )
                 {
                     if( updateFrequency_timeLoop_output == true && updateFrequency_particleLoop_output == true )
                     {
@@ -226,7 +226,8 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                         timers.resetStoredTimer("particle iteration");
                     }
                 }
-
+                */
+                
 
                 // getting the current position for where the particle is at for a given time
                 // if it is the first time a particle is ever released, then the value is already set at the initial value
@@ -855,17 +856,17 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
 
                     // print info about the current particle time iteration
                     // but only if debug is set to true and this is the right updateFrequency time
-                    if( debug == true )
-                    {
-                        if( updateFrequency_timeLoop_output == true && updateFrequency_particleLoop_output == true )
-                        {
-                            std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) 
-                                    << "\", par[" << parIdx << "]. Finished particle timestep \"" << par_dt 
-                                    << "\" for time = \"" << par_time << "\"" << std::endl;
-                        }
-                    }
+                    /*if( debug == true )
+                      {
+                      if( updateFrequency_timeLoop_output == true && updateFrequency_particleLoop_output == true )
+                      {
+                      std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) 
+                      << "\", par[" << parIdx << "]. Finished particle timestep \"" << par_dt 
+                      << "\" for time = \"" << par_time << "\"" << std::endl;
+                      }
+                      }*/
                     
-
+                    
                 }   // while( isActive == true && timeRemainder > 0.0 )
 
 
@@ -914,7 +915,7 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
 
                 // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
                 // LA future work: because this has timer related info, this probably needs to also be limited to when the user specifies they want debug mode
-                if( debug == true )
+                /*if( debug == true )
                 {
                     if( updateFrequency_timeLoop_output == true && updateFrequency_particleLoop_output == true )
                     {
@@ -922,7 +923,7 @@ void Plume::run(PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lag
                                   << "\", par[" << parIdx << "]. finished particle iteration" << std::endl;
                         timers.printStoredTime("particle iteration");
                     }
-                }
+                    }*/
             
             }   // if isActive == true and isRogue == false
 
