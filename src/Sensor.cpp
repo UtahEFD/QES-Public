@@ -271,7 +271,9 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *UGD)
 			int z_size = UID->metParams->sensors[i]->site_z_ref.size();
 			int ii = -1;
 			site_theta[i] = (270.0-UID->metParams->sensors[i]->site_wind_dir[0])*M_PI/180.0;
-			for (auto k=UGD->terrain_id[site_id[i]]; k<UGD->nz; k++)
+
+                        // Needs to be nz-1 for [0, n-1] indexing
+			for (auto k=UGD->terrain_id[site_id[i]]; k<UGD->nz-1; k++)
 			{
 				if (UGD->z[k] < UID->metParams->sensors[i]->site_z_ref[0] || z_size == 1)
 				{
