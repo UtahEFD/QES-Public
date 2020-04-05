@@ -110,7 +110,7 @@ private:
 
     ~SphereDirections() 
     {
-        // delete [] nextList;
+        delete [] nextList;
     }
     
 
