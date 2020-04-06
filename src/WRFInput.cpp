@@ -353,7 +353,7 @@ WRFInput::WRFInput(const std::string& filename, double domainUTMx, double domain
     // 
     // Fire Mesh Terrain Nodes
     //
-    int fm_nt = wrfInputFile.getVar("FXLONG").getDim(0).getSize();
+    // int fm_nt = wrfInputFile.getVar("FXLONG").getDim(0).getSize();
     fm_ny = wrfInputFile.getVar("FXLONG").getDim(1).getSize();
     fm_nx = wrfInputFile.getVar("FXLONG").getDim(2).getSize();
 
@@ -407,7 +407,7 @@ WRFInput::WRFInput(const std::string& filename, double domainUTMx, double domain
         }
     }
 
-    double rangeHt = fm_maxWRFAlt - fm_minWRFAlt;
+    // double rangeHt = fm_maxWRFAlt - fm_minWRFAlt;
     std::cout << "Terrain Min Ht: " << fm_minWRFAlt << ", Max Ht: " << fm_maxWRFAlt << std::endl;
 
     // From 
@@ -594,9 +594,9 @@ WRFInput::WRFInput(const std::string& filename, double domainUTMx, double domain
               << "; " << t_x0_fire << ", " << t_y1_fire << std::endl;
 
     // nx_atm / 2. * atm_dx + e
-    double x0_fire = t_x0_fire; // -fm_nx / 2.0 * dxf + lon2eastings[0]; 
+    // double x0_fire = t_x0_fire; // -fm_nx / 2.0 * dxf + lon2eastings[0]; 
     // ny_atm / 2. * atm_dy + n 
-    double y1_fire = t_y1_fire; // -fm_ny / 2.0 * dyf + lat2northings[0];
+    // double y1_fire = t_y1_fire; // -fm_ny / 2.0 * dyf + lat2northings[0];
     }
     
     //
@@ -1474,7 +1474,7 @@ void WRFInput::readWindData()
     std::cout << "PHB dim count: " << phbVar.getDimCount() << std::endl;
     std::vector<NcDim> dims = phbVar.getDims();
     long totalDim = 1;
-    for (auto i=0; i<dims.size(); i++) {
+    for (auto i=0u; i<dims.size(); i++) {
         std::cout << "Dim: " << dims[i].getName() << ", ";
         if (dims[i].isUnlimited())
             std::cout << "Unlimited (" << dims[i].getSize() << ")" << std::endl;
@@ -1550,7 +1550,7 @@ void WRFInput::readWindData()
     NcVar uStaggered = wrfInputFile.getVar("U");
 
     std::vector<NcDim> ustagg_dims = uStaggered.getDims();
-    for (int i=0; i<ustagg_dims.size(); i++) {
+    for (auto i=0u; i<ustagg_dims.size(); i++) {
         std::cout << "Dim: " << ustagg_dims[i].getName() << ", ";
         if (ustagg_dims[i].isUnlimited())
             std::cout << "Unlimited (" << ustagg_dims[i].getSize() << ")" << std::endl;
@@ -1563,7 +1563,7 @@ void WRFInput::readWindData()
     starts = { 0, 0, 0, 0 };
     counts = { 2, 40, 114, 115 };
     subsetDim = 1;
-    for (auto i=0; i<counts.size(); i++)  {
+    for (auto i=0u; i<counts.size(); i++)  {
         subsetDim *= (counts[i] - starts[i]);
     }
     
@@ -1581,7 +1581,7 @@ void WRFInput::readWindData()
     starts = { 0, 0, 0, 0 };
     counts = { 2, 40, 115, 114 };
     subsetDim = 1;
-    for (auto i=0; i<counts.size(); i++) 
+    for (auto i=0u; i<counts.size(); i++) 
         subsetDim *= (counts[i] - starts[i]);
     
     double* vStaggeredData = new double[ subsetDim ];
