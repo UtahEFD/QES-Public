@@ -1026,7 +1026,8 @@ void Plume::enforceWallBCs_periodic(double& pos,double& velFluct,double& velFluc
     int loopCountRight = 0;
 
     /*    
-    std::cout << "enforceWallBCs_periodic starting pos = \"" << pos << "\", domainStart = \"" << domainStart << "\", domainEnd = \"" << domainEnd << "\"" << std::endl;
+    std::cout << "enforceWallBCs_periodic starting pos = \"" << pos << "\", domainStart = \"" << 
+    domainStart << "\", domainEnd = \"" << domainEnd << "\"" << std::endl;
     */
 
     if(domainSize != 0)
@@ -1086,12 +1087,14 @@ void Plume::enforceWallBCs_reflection(double& pos,double& velFluct,double& velFl
             {
                 if( pos > domainEnd )
                 {
-                    std::cout << "warning (Plume::enforceWallBCs_reflection): upper boundary condition failed! Setting isActive to false. pos = \"" << pos << "\"" << std::endl;
+                    std::cout << "warning (Plume::enforceWallBCs_reflection): "<<
+                        "upper boundary condition failed! Setting isActive to false. pos = \"" << pos << "\"" << std::endl;
                     isActive = false;
                 }
                 if( pos < domainStart )
                 {
-                    std::cout << "warning (Plume::enforceWallBCs_reflection): lower boundary condition failed! Setting isActive to false. xPos = \"" << pos << "\"" << std::endl;
+                    std::cout << "warning (Plume::enforceWallBCs_reflection): "<<
+                        "lower boundary condition failed! Setting isActive to false. xPos = \"" << pos << "\"" << std::endl;
                     isActive = false;
                 }
                 break;
