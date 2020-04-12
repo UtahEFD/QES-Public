@@ -16,7 +16,7 @@
 #include "util/calcTime.h"
 
 
-#include "NetCDFOutputGeneric.h"
+#include "QESNetCDFOutput.h"
 #include "PlumeOutputLagrToEul.h"
 #include "PlumeOutputLagrangian.h"
 
@@ -56,7 +56,7 @@ public:
     // LA future work: Need to add a CFL condition where the user specifies a courant number that varies from 0 to 1
     //  that is used to do an additional time remainder time integration loop for each particle, forcing particles to only
     //  move one cell at a time.
-    void run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lagrOutput);
+    void run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QESNetCDFOutput*> outputVec);
 
 
 private:

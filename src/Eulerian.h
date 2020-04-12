@@ -75,7 +75,7 @@ class Eulerian{
 
 
         void setInterp3Dindexing(const double& par_xPos, const double& par_yPos, const double& par_zPos);
-        double interp3D(const std::vector<double>& EulerData,const std::string& dataName);
+        double interp3D(const std::vector<double>& EulerData);
 
         
     private:

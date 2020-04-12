@@ -3,7 +3,7 @@
 //  
 //  This class handles saving output files for input Eulerian data
 //  This is a specialized output class derived 
-//   and inheriting from NetCDFOutputGeneric.
+//   and inheriting from QESNetCDFOutput.
 //
 //  Created by Fabien Margairaz on 01/25/20
 //  Modified by Loren Atwood 02/08/20
@@ -15,7 +15,7 @@
 
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
 PlumeOutputEulerian::PlumeOutputEulerian(PlumeInputData* PID,Urb* urb_ptr,Turb* turb_ptr,Eulerian* eul_ptr,std::string output_file)
-  : NetCDFOutputGeneric(output_file)
+  : QESNetCDFOutput(output_file)
 {
     
     std::cout << "[PlumeOutputEulerian] set up NetCDF file " << output_file << std::endl;

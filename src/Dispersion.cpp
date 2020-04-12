@@ -112,7 +112,6 @@ void Dispersion::getInputSources(PlumeInputData* PID)
         // now point the pointer at the source
         sPtr = PID->sources->sources.at(sIdx);
         
-
         // now do anything that is needed to the source via the pointer
         sPtr->setSourceIdx(sIdx);
         sPtr->m_rType->calcReleaseInfo(PID->simParams->timeStep, PID->simParams->simDur);
@@ -121,7 +120,6 @@ void Dispersion::getInputSources(PlumeInputData* PID)
 
         // now determine the number of particles to release for the source and update the overall count
         totalParsToRelease = totalParsToRelease + sPtr->m_rType->m_numPar;
-
 
         // now add the pointer that points to the source to the list of sources in dispersion
         allSources.push_back( sPtr );
@@ -204,7 +202,7 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
         // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
         // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
         eul->setInterp3Dindexing(newParticles.at(parIdx).xPos_init,newParticles.at(parIdx).yPos_init,newParticles.at(parIdx).zPos_init);
-    
+        
         // set the positions to be used by the simulation to the initial positions
         newParticles.at(parIdx).xPos = newParticles.at(parIdx).xPos_init;
         newParticles.at(parIdx).yPos = newParticles.at(parIdx).yPos_init;
@@ -214,10 +212,16 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
         double rann = random::norRan();
 
         // get the sigma values from the Eulerian grid for the particle value
-        double current_sig_x = eul->interp3D(turb->sig_x,"sigma2");
-        double current_sig_y = eul->interp3D(turb->sig_y,"sigma2");
-        double current_sig_z = eul->interp3D(turb->sig_z,"sigma2");
-
+        double current_sig_x = eul->interp3D(turb->sig_x);
+        if( current_sig_x == 0.0 )
+            current_sig_x = 1e-8;
+        double current_sig_y = eul->interp3D(turb->sig_y);
+        if( current_sig_y == 0.0 )
+            current_sig_y = 1e-8;
+        double current_sig_z = eul->interp3D(turb->sig_z);
+        if( current_sig_z == 0.0 )
+            current_sig_z = 1e-8;
+        
         // now set the initial velocity fluctuations for the particle
         // The  sqrt of the variance is to match Bailey's code
         newParticles.at(parIdx).uFluct = std::sqrt(current_sig_x) * rann;
@@ -232,12 +236,12 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
         newParticles.at(parIdx).wFluct_old = newParticles.at(parIdx).wFluct;
 
         // get the tau values from the Eulerian grid for the particle value
-        double current_txx = eul->interp3D(turb->txx,"tau");
-        double current_txy = eul->interp3D(turb->txy,"tau");
-        double current_txz = eul->interp3D(turb->txz,"tau");
-        double current_tyy = eul->interp3D(turb->tyy,"tau");
-        double current_tyz = eul->interp3D(turb->tyz,"tau");
-        double current_tzz = eul->interp3D(turb->tzz,"tau");
+        double current_txx = eul->interp3D(turb->txx);
+        double current_txy = eul->interp3D(turb->txy);
+        double current_txz = eul->interp3D(turb->txz);
+        double current_tyy = eul->interp3D(turb->tyy);
+        double current_tyz = eul->interp3D(turb->tyz);
+        double current_tzz = eul->interp3D(turb->tzz);
 
         // set tau_old to the interpolated values for each position
         newParticles.at(parIdx).txx_old = current_txx;

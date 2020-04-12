@@ -75,7 +75,7 @@ Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, const bool& doLagrDa
 // LA note: in this whole section, the idea of having single value temporary storage instead of just referencing values
 //  directly from the dispersion class seems a bit strange, but it makes the code easier to read cause smaller variable names.
 //  Also, it is theoretically faster?
-void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLagrToEul* lagrToEulOutput,PlumeOutputLagrangian* lagrOutput)
+void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QESNetCDFOutput*> outputVec)
 {
     std::cout << "[Plume] \t Advecting particles " << std::endl;
 
@@ -113,10 +113,8 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
     {
         dis->pointList[parIdx].isActive = true;
     }
-    lagrToEulOutput->save(simTimes.at(0));
-    if( doLagrDataOutput == true )
-    {
-        lagrOutput->save(simTimes.at(0));
+    for(size_t id_out=0;id_out<outputVec.size();id_out++) {
+        outputVec.at(id_out)->save(simTimes.at(0));
     }
     dis->nParsReleased = 0;
     
@@ -295,7 +293,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                     // this is the Co times Eps for the particle
                     // LA note: because Bailey's code uses Eps by itself and this does not, I wanted an option to switch between the two if necessary
                     //  it's looking more and more like we will just use CoEps.
-                    double CoEps = eul->interp3D(turb->CoEps,"CoEps");
+                    double CoEps = eul->interp3D(turb->CoEps);
                     // make sure CoEps is always bigger than zero
                     if( CoEps <= 1e-6 ) {
                         CoEps = 1e-6;
@@ -304,9 +302,9 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                     
                     
                     // this is the current velMean value
-                    double uMean = eul->interp3D(urb->u,"velMean");
-                    double vMean = eul->interp3D(urb->v,"velMean");
-                    double wMean = eul->interp3D(urb->w,"velMean");
+                    double uMean = eul->interp3D(urb->u);
+                    double vMean = eul->interp3D(urb->v);
+                    double wMean = eul->interp3D(urb->w);
                     
                     // this is the current reynolds stress tensor
                     /* FM -> removed unnecessary copy
@@ -319,9 +317,9 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                     */
 
                     // now need flux_div_dir, not the different dtxxdx type components
-                    double flux_div_x = eul->interp3D(eul->flux_div_x,"flux_div");
-                    double flux_div_y = eul->interp3D(eul->flux_div_y,"flux_div");
-                    double flux_div_z = eul->interp3D(eul->flux_div_z,"flux_div");
+                    double flux_div_x = eul->interp3D(eul->flux_div_x);
+                    double flux_div_y = eul->interp3D(eul->flux_div_y);
+                    double flux_div_z = eul->interp3D(eul->flux_div_z);
 
 
                     // now need to call makeRealizable on tao
@@ -340,12 +338,12 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                     */
 
                     // this is the current reynolds stress tensor
-                    txx = eul->interp3D(turb->txx,"tau");
-                    txy = eul->interp3D(turb->txy,"tau");
-                    txz = eul->interp3D(turb->txz,"tau");
-                    tyy = eul->interp3D(turb->tyy,"tau");
-                    tyz = eul->interp3D(turb->tyz,"tau");
-                    tzz = eul->interp3D(turb->tzz,"tau");
+                    txx = eul->interp3D(turb->txx);
+                    txy = eul->interp3D(turb->txy);
+                    txz = eul->interp3D(turb->txz);
+                    tyy = eul->interp3D(turb->tyy);
+                    tyz = eul->interp3D(turb->tyz);
+                    tzz = eul->interp3D(turb->tzz);
                     // now need to call makeRealizable on tao
                     makeRealizable(txx,txy,txz,tyy,tyz,tzz);
                     
@@ -699,10 +697,8 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
         // netcdf output for a given simulation timestep
         // note that the first time is already output, so this is the time the loop iteration 
         //  is calculating, not the input time to the loop iteration
-        lagrToEulOutput->save(simTimes.at(sim_tIdx+1));
-        if( doLagrDataOutput == true )
-        {
-            lagrOutput->save(simTimes.at(sim_tIdx+1));
+        for(size_t id_out=0;id_out<outputVec.size();id_out++) {
+            outputVec.at(id_out)->save(simTimes.at(sim_tIdx+1));
         }
 
         

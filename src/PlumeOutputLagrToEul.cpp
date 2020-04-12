@@ -4,7 +4,7 @@
 //  This class handles saving output files for Eulerian binned Lagrangian particle data,
 //   where this class handles the binning of the Lagrangian particle data
 //  This is a specialized output class derived 
-//   and inheriting from NetCDFOutputGeneric.
+//   and inheriting from QESNetCDFOutput.
 //
 //  Created by Fabien Margairaz on 01/25/20
 //  Modified by Loren Atwood 02/08/20
@@ -17,7 +17,7 @@
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
 // in this case, output should always be done, so the bool for whether to do output is set to true
 PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,Urb* urb_ptr,Dispersion* dis_ptr,std::string output_file)
-  : NetCDFOutputGeneric(output_file)
+  : QESNetCDFOutput(output_file)
 {
 
     std::cout << "[PlumeOutputLagrToEul] set up NetCDF file " << output_file << std::endl;

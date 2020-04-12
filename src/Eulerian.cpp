@@ -363,15 +363,11 @@ void Eulerian::setInterp3Dindexing(const double& par_xPos, const double& par_yPo
 }
 
 // always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-// the extra dataName is so that if the input is eps, the value is not allowed to be zero, but is set to two orders of magnitude bigger than sigma2
-// since this would actually be CoEps, the value actually needs to be one order of magnitude bigger than sigma2?
-double Eulerian::interp3D(const std::vector<double>& EulerData,const std::string& dataName)
+double Eulerian::interp3D(const std::vector<double>& EulerData)
 {
 
     // initialize the output value
-    double outputVal = 0.0;
-    
-
+    // double outputVal = 0.0;
     // first set a cube of size two to zero.
     // This is important because if nx, ny, or nz are only size 1, referencing two spots in cube won't reference outside the array.
     // the next steps are to figure out the right indices to grab the values for cube from the data, 
@@ -400,8 +396,11 @@ double Eulerian::interp3D(const std::vector<double>& EulerData,const std::string
     // and the normalized width between the point locations and the closest cell left walls
     double u_low  = (1-iw)*(1-jw)*cube[0][0][0] + iw*(1-jw)*cube[1][0][0] + iw*jw*cube[1][1][0] + (1-iw)*jw*cube[0][1][0];
     double u_high = (1-iw)*(1-jw)*cube[0][0][1] + iw*(1-jw)*cube[1][0][1] + iw*jw*cube[1][1][1] + (1-iw)*jw*cube[0][1][1];
-    outputVal = (u_high-u_low)*kw + u_low;
-
+    return (u_high-u_low)*kw + u_low;
+    
+    /* FM -> OBSOLETE */
+    // the extra dataName is so that if the input is eps, the value is not allowed to be zero, but is set to two orders of magnitude bigger than sigma2
+    // since this would actually be CoEps, the value actually needs to be one order of magnitude bigger than sigma2?
     // make sure CoEps is always bigger than zero, and eps is two orders of magnitude bigger than sigma2
     // I guess since this is actually CoEps, the value needs to be one order of magnitutde bigger than sigma2
     /*if( dataName == "sigma2" ) {
@@ -419,8 +418,7 @@ double Eulerian::interp3D(const std::vector<double>& EulerData,const std::string
         {
             outputVal = 1e-6*C_0;
         }
-    }*/
-    
+    }
     return outputVal;
-
+    */
 }

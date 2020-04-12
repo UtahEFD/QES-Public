@@ -25,7 +25,7 @@
 #include "Dispersion.h"
 
 
-#include "NetCDFOutputGeneric.h"
+#include "QESNetCDFOutput.h"
 #include "PlumeOutputEulerian.h"
 #include "PlumeOutputLagrToEul.h"
 #include "PlumeOutputLagrangian.h"
@@ -112,32 +112,28 @@ int main(int argc, char** argv)
 
     // create output instance
     // LA note: start it out as NULL, then make it point to what we want later if the file is supposed to exist
-    PlumeOutputEulerian* eulOutput = NULL;
-    PlumeOutputLagrToEul* lagrToEulOutput = NULL;
-    PlumeOutputLagrangian* lagrOutput = NULL;
-    if( arguments.doEulDataOutput == true )
-    {
-        eulOutput = new PlumeOutputEulerian(PID,urb,turb,eul,arguments.outputEulerianFile);
-    }
+    std::vector<QESNetCDFOutput*> outputVec;
     // always supposed to output lagrToEulOutput data
-    lagrToEulOutput = new PlumeOutputLagrToEul(PID,urb,dis,arguments.outputLagrToEulFile);
-    if( arguments.doLagrDataOutput == true )
-    {
-        lagrOutput = new PlumeOutputLagrangian(PID,dis,arguments.outputLagrangianFile);
+    outputVec.push_back(new PlumeOutputLagrToEul(PID,urb,dis,arguments.outputLagrToEulFile));
+    if( arguments.doLagrDataOutput == true ) {
+        outputVec.push_back(new PlumeOutputLagrangian(PID,dis,arguments.outputLagrangianFile));
     }
-
-    // output Eulerian data. Use time zero
-    if( arguments.doEulDataOutput == true )
-    {
+    
+    // create output instance (separate for eulerian class)
+    QESNetCDFOutput* eulOutput = nullptr;
+    if( arguments.doEulDataOutput == true ) {
+        eulOutput = new PlumeOutputEulerian(PID,urb,turb,eul,arguments.outputEulerianFile);
+        // output Eulerian data. Use time zero
         eulOutput->save(0.0);
     }
-
     
     // Create instance of Plume model class
-    Plume* plume = new Plume(PID,urb,dis, arguments.doLagrDataOutput, arguments.doSimInfoFileOutput,arguments.outputFolder,arguments.caseBaseName, arguments.debug);
+    Plume* plume = new Plume(PID,urb,dis,
+                             arguments.doLagrDataOutput,arguments.doSimInfoFileOutput,arguments.outputFolder,
+                             arguments.caseBaseName, arguments.debug);
     
     // Run plume advection model
-    plume->run(urb,turb,eul,dis,lagrToEulOutput,lagrOutput);
+    plume->run(urb,turb,eul,dis,outputVec);
     
     // compute run time information and print the elapsed execution time
     std::cout<<"[CUDA-Plume] \t Finished."<<std::endl;

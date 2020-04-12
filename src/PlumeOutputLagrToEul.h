@@ -4,7 +4,7 @@
 //  This class handles saving output files for Eulerian binned Lagrangian particle data,
 //   where this class handles the binning of the Lagrangian particle data
 //  This is a specialized output class derived 
-//   and inheriting from NetCDFOutputGeneric.
+//   and inheriting from QESNetCDFOutput.
 //
 //  Created by Fabien Margairaz on 01/25/20
 //  Modified by Loren Atwood 02/08/20
@@ -22,15 +22,15 @@
 #include "Dispersion.h"
 
 
-#include "NetCDFOutputGeneric.h"
+#include "QESNetCDFOutput.h"
 
 
-class PlumeOutputLagrToEul : public NetCDFOutputGeneric
+class PlumeOutputLagrToEul : public QESNetCDFOutput
 {
     public:
 
         // default constructor
-        PlumeOutputLagrToEul():NetCDFOutputGeneric()
+        PlumeOutputLagrToEul():QESNetCDFOutput()
         {
         }
 
