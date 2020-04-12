@@ -16,7 +16,7 @@ CUDA_ADD_LIBRARY( cudaplumecore
     Dispersion.cpp
     Plume.cpp
     NetCDFOutput.cpp
-    NetCDFOutputGeneric.cpp	
+    QESNetCDFOutput.cpp
     PlumeOutputEulerian.cpp
     PlumeOutputLagrToEul.cpp
     PlumeOutputLagrangian.cpp
