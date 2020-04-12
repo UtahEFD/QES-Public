@@ -32,10 +32,9 @@ using namespace netCDF;
 using namespace netCDF::exceptions;
 
 class Plume {
-  
+    
 public:
-
-
+        
     // constructor
     // first makes a copy of the urb grid number of values and the domain size as determined by dispersion
     // then sets up the concentration sampling box information for output
