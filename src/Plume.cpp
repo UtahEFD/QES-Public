@@ -111,7 +111,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
     dis->nParsReleased = nParsToRelease.at(0);
     for( int parIdx = 0; parIdx < nParsToRelease.at(0); parIdx++ )
     {
-        dis->pointList.at(parIdx).isActive = true;
+        dis->pointList[parIdx].isActive = true;
     }
     lagrToEulOutput->save(simTimes.at(0));
     if( doLagrDataOutput == true )
@@ -143,7 +143,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
         // need to set the new particles isActive values to true
         for( int parIdx = nPastPars; parIdx < dis->nParsReleased; parIdx++ )
         {
-            dis->pointList.at(parIdx).isActive = true;
+            dis->pointList[parIdx].isActive = true;
         }
         
 
@@ -178,8 +178,8 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
         {
             
             // get the current isRogue and isActive information
-            bool isRogue = dis->pointList.at(parIdx).isRogue;
-            bool isActive = dis->pointList.at(parIdx).isActive;
+            bool isRogue = dis->pointList[parIdx].isRogue;
+            bool isActive = dis->pointList[parIdx].isActive;
 
 
             // first check to see if the particle should even be advected and skip it if it should not be advected
@@ -203,14 +203,14 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                 // if it is the first time a particle is ever released, then the value is already set at the initial value
                 // LA notes: technically this value is the old position to be overwritten with the new position.
                 //  I've been tempted for a while to store both. Might have to for correctly implementing reflective building BCs
-                double xPos = dis->pointList.at(parIdx).xPos;
-                double yPos = dis->pointList.at(parIdx).yPos;
-                double zPos = dis->pointList.at(parIdx).zPos;
+                double xPos = dis->pointList[parIdx].xPos;
+                double yPos = dis->pointList[parIdx].yPos;
+                double zPos = dis->pointList[parIdx].zPos;
 
                 // getting the initial position, for use in setting finished particles
-                double xPos_init = dis->pointList.at(parIdx).xPos_init;
-                double yPos_init = dis->pointList.at(parIdx).yPos_init;
-                double zPos_init = dis->pointList.at(parIdx).zPos_init;
+                double xPos_init = dis->pointList[parIdx].xPos_init;
+                double yPos_init = dis->pointList[parIdx].yPos_init;
+                double zPos_init = dis->pointList[parIdx].zPos_init;
 
                 // grab the velFluct values.
                 // LA notes: hmm, Bailey's code just starts out setting these values to zero,
@@ -218,23 +218,24 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                 //  velFluct_old and velFluct are probably identical and kind of redundant in this implementation
                 //  but it shouldn't hurt anything for now, even if it is redundant
                 //  besides, it will probably change a bit if we decide to change what is outputted on a regular, and on a debug basis
-                double uFluct = dis->pointList.at(parIdx).uFluct;
-                double vFluct = dis->pointList.at(parIdx).vFluct;
-                double wFluct = dis->pointList.at(parIdx).wFluct;
+                double uFluct = dis->pointList[parIdx].uFluct;
+                double vFluct = dis->pointList[parIdx].vFluct;
+                double wFluct = dis->pointList[parIdx].wFluct;
 
                 // get all other values for the particle
                 // in this case this, all the old velocity fluctuations and old stress tensor values for the particle
                 // LA note: also need to keep track of a delta_velFluct, 
                 //  but since delta_velFluct is never used, just set later on, it doesn't need grabbed as a value till later
-                double uFluct_old = dis->pointList.at(parIdx).uFluct_old;
-                double vFluct_old = dis->pointList.at(parIdx).vFluct_old;
-                double wFluct_old = dis->pointList.at(parIdx).wFluct_old;
-                double txx_old = dis->pointList.at(parIdx).txx_old;
-                double txy_old = dis->pointList.at(parIdx).txy_old;
-                double txz_old = dis->pointList.at(parIdx).txz_old;
-                double tyy_old = dis->pointList.at(parIdx).tyy_old;
-                double tyz_old = dis->pointList.at(parIdx).tyz_old;
-                double tzz_old = dis->pointList.at(parIdx).tzz_old;
+                double uFluct_old = dis->pointList[parIdx].uFluct_old;
+                double vFluct_old = dis->pointList[parIdx].vFluct_old;
+                double wFluct_old = dis->pointList[parIdx].wFluct_old;
+                
+                double txx_old = dis->pointList[parIdx].txx_old;
+                double txy_old = dis->pointList[parIdx].txy_old;
+                double txz_old = dis->pointList[parIdx].txz_old;
+                double tyy_old = dis->pointList[parIdx].tyy_old;
+                double tyz_old = dis->pointList[parIdx].tyz_old;
+                double tzz_old = dis->pointList[parIdx].tzz_old;
 
 
                 // need to avoid current tao values going out of scope now that I've added the particle timestep loop
@@ -634,28 +635,29 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                 // notice that the values from the particle timestep loop are used directly here, 
                 //  just need to put the existing vals into storage
                 // !!! this is extremely important for output and the next iteration to work correctly
-                dis->pointList.at(parIdx).uFluct = uFluct;
-                dis->pointList.at(parIdx).vFluct = vFluct;
-                dis->pointList.at(parIdx).wFluct = wFluct;
-                dis->pointList.at(parIdx).xPos = xPos;
-                dis->pointList.at(parIdx).yPos = yPos;
-                dis->pointList.at(parIdx).zPos = zPos;
+                dis->pointList[parIdx].xPos = xPos;
+                dis->pointList[parIdx].yPos = yPos;
+                dis->pointList[parIdx].zPos = zPos;
 
-                dis->pointList.at(parIdx).delta_uFluct = delta_uFluct;
-                dis->pointList.at(parIdx).delta_vFluct = delta_vFluct;
-                dis->pointList.at(parIdx).delta_wFluct = delta_wFluct;
+                dis->pointList[parIdx].uFluct = uFluct;
+                dis->pointList[parIdx].vFluct = vFluct;
+                dis->pointList[parIdx].wFluct = wFluct;
                 
                 // these are the current velFluct values by this point
-                dis->pointList.at(parIdx).uFluct_old = uFluct_old;  
-                dis->pointList.at(parIdx).vFluct_old = vFluct_old;
-                dis->pointList.at(parIdx).wFluct_old = wFluct_old;
-
-                dis->pointList.at(parIdx).txx_old = txx_old;
-                dis->pointList.at(parIdx).txy_old = txy_old;
-                dis->pointList.at(parIdx).txz_old = txz_old;
-                dis->pointList.at(parIdx).tyy_old = tyy_old;
-                dis->pointList.at(parIdx).tyz_old = tyz_old;
-                dis->pointList.at(parIdx).tzz_old = tzz_old;
+                dis->pointList[parIdx].uFluct_old = uFluct_old;  
+                dis->pointList[parIdx].vFluct_old = vFluct_old;
+                dis->pointList[parIdx].wFluct_old = wFluct_old;
+                
+                dis->pointList[parIdx].delta_uFluct = delta_uFluct;
+                dis->pointList[parIdx].delta_vFluct = delta_vFluct;
+                dis->pointList[parIdx].delta_wFluct = delta_wFluct;
+                
+                dis->pointList[parIdx].txx_old = txx_old;
+                dis->pointList[parIdx].txy_old = txy_old;
+                dis->pointList[parIdx].txz_old = txz_old;
+                dis->pointList[parIdx].tyy_old = tyy_old;
+                dis->pointList[parIdx].tyz_old = tyz_old;
+                dis->pointList[parIdx].tzz_old = tzz_old;
 
                 // now update the isRogueCount and isNotActiveCount
                 if(isRogue == true)
@@ -667,8 +669,8 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,PlumeOutputLag
                     isNotActiveCount = isNotActiveCount + 1;
                 }
                 
-                dis->pointList.at(parIdx).isRogue = isRogue;
-                dis->pointList.at(parIdx).isActive = isActive;
+                dis->pointList[parIdx].isRogue = isRogue;
+                dis->pointList[parIdx].isActive = isActive;
 
                 // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
                 // LA future work: because this has timer related info, this probably needs to also be limited to when the user specifies they want debug mode
