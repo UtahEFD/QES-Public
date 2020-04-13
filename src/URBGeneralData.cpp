@@ -7,7 +7,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     } else {
         lengthf_coeff = 1.5;
     }
-    
+
     // Determines how wakes behind buildings are calculated
     if ( UID->simParams->wakeFlag > 1) {
         cavity_factor = 1.1;
@@ -16,7 +16,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
         cavity_factor = 1.0;
         wake_factor = 0.0;
     }
-    
+
     // converting the domain rotation to radians from degrees -- input
     // assumes degrees
     theta = (UID->simParams->domainRotation * pi / 180.0);
@@ -153,9 +153,9 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
         z0 = UID->buildings->wallRoughness;
 
     // /////////////////////////
-    // Definition of the grid 
+    // Definition of the grid
     // /////////////////////////
-    
+
     // vertical grid (can be uniform or stretched)
     dz_array.resize( nz-1, 0.0 );
     z.resize( nz-1 );
@@ -173,14 +173,14 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
 
     dz_array[0] = dz_array[1];                  // Value for ghost cell below the surface
     dz = *std::min_element(dz_array.begin() , dz_array.end());     // Set dz to minimum value of
-    
+
     z_face[0] = 0.0;
     z[0] = -0.5*dz_array[0];
     for (size_t k=1; k<z.size(); k++) {
-        z_face[k] = z_face[k-1] + dz_array[k]; /**< Location of face centers in z-dir */ 
+        z_face[k] = z_face[k-1] + dz_array[k]; /**< Location of face centers in z-dir */
         z[k] = 0.5*(z_face[k-1]+z_face[k]);    /**< Location of cell centers in z-dir */  
     }
-    
+
     // horizontal grid (x-direction)
     x.resize( nx-1 );
     for (auto i=0; i<nx-1; i++) {
@@ -443,12 +443,12 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
           effective_height.push_back (allBuildingsV[pIdx]->height_eff);
       }
       std::cout << "Buildings created from shapefile...\n";
-      
+
       auto buildingsetup_finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
-      
+
       std::chrono::duration<float> elapsed_cut = buildingsetup_finish - buildingsetup_start;
       std::cout << "Elapsed time for building setup : " << elapsed_cut.count() << " s\n";
-      
+
    }
 
 
@@ -634,7 +634,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
             localMixing = new LocalMixingDefault();
             localMixing->defineMixingLength(UID,this);
         } else if(UID->localMixingParam->methodLocalMixing == 1) {
-            std::cout << "[MixLength] \t Computing Local Mixing Length using serial code...\n";   
+            std::cout << "[MixLength] \t Computing Local Mixing Length using serial code...\n";
             localMixing = new LocalMixingSerial();
             localMixing->defineMixingLength(UID,this);
         } else if (UID->localMixingParam->methodLocalMixing == 2) {
@@ -644,11 +644,11 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
         } else if (UID->localMixingParam->methodLocalMixing == 3) {
             // not implemented here (OptiX)
         } else if (UID->localMixingParam->methodLocalMixing == 4) {
-            std::cout << "[MixLength] \t Loading Local Mixing Length data form NetCDF...\n";   
+            std::cout << "[MixLength] \t Loading Local Mixing Length data form NetCDF...\n";
             localMixing = new LocalMixingNetCDF();
             localMixing->defineMixingLength(UID,this);
         } else {
-            //this should not happen (checked in LocalMixingParam) 
+            //this should not happen (checked in LocalMixingParam)
         }
         // once all methods are implemented...
         // should be moved here: localMixing->defineMixingLength(UID,this);

@@ -258,109 +258,110 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
               if (UGD->ibuilding_flag[icell_cent] >= 0)
               {
                 d_build = UGD->ibuilding_flag[icell_cent];
-              }
-              int i = ceil(((xc-0.5*UGD->dxy+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)
-                            +building_cent_x-0.001)/UGD->dx)-1;
-              int j = ceil(((xc-0.5*UGD->dxy+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)
-                            +building_cent_y-0.001)/UGD->dy)-1;
-              for (auto j_id = 0; j_id < UGD->allBuildingsV[d_build]->polygonVertices.size()-1; j_id++)
-              {
-                cross_dir = atan2(UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].y_poly-UGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly,
-                                  UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].x_poly-UGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly)+0.5*M_PI;
-
-                if (cross_dir > M_PI+0.001)
+                int i = ceil(((xc-0.5*UGD->dxy+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)
+                              +building_cent_x-0.001)/UGD->dx)-1;
+                int j = ceil(((xc-0.5*UGD->dxy+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)
+                              +building_cent_y-0.001)/UGD->dy)-1;
+                for (auto j_id = 0; j_id < UGD->allBuildingsV[d_build]->polygonVertices.size()-1; j_id++)
                 {
-                  cross_dir -= 2*M_PI;
-                }
-                x_ave = 0.5*(UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].x_poly+UGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly);
-                y_ave = 0.5*(UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].y_poly+UGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly);
+                  cross_dir = atan2(UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].y_poly-UGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly,
+                                    UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].x_poly-UGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly)+0.5*M_PI;
 
-                x_down = ((i+0.5)*UGD->dx-x_ave)*cos(cross_dir) + ((j+0.5)*UGD->dy-y_ave)*sin(cross_dir);
-                y_down = -((i+0.5)*UGD->dx-x_ave)*sin(cross_dir) + ((j+0.5)*UGD->dy-y_ave)*cos(cross_dir);
-
-                if (abs(x_down) < 0.75*UGD->dxy)
-                {
-                  segment_length = sqrt(pow(UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].x_poly-UGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly, 2.0)
-                                        +pow(UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].y_poly-UGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly, 2.0));
-                  if (abs(y_down) <= 0.5*segment_length)
+                  if (cross_dir > M_PI+0.001)
                   {
-                    downwind_rel_dir = canyon_dir-cross_dir;
-                    if (downwind_rel_dir > M_PI+0.001)
+                    cross_dir -= 2*M_PI;
+                  }
+                  x_ave = 0.5*(UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].x_poly+UGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly);
+                  y_ave = 0.5*(UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].y_poly+UGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly);
+
+                  x_down = ((i+0.5)*UGD->dx-x_ave)*cos(cross_dir) + ((j+0.5)*UGD->dy-y_ave)*sin(cross_dir);
+                  y_down = -((i+0.5)*UGD->dx-x_ave)*sin(cross_dir) + ((j+0.5)*UGD->dy-y_ave)*cos(cross_dir);
+
+                  if (abs(x_down) < 0.75*UGD->dxy)
+                  {
+                    segment_length = sqrt(pow(UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].x_poly-UGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly, 2.0)
+                                          +pow(UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].y_poly-UGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly, 2.0));
+                    if (abs(y_down) <= 0.5*segment_length)
                     {
-                      downwind_rel_dir -= 2*M_PI;
-                      if (abs(downwind_rel_dir) < 0.001)
+                      downwind_rel_dir = canyon_dir-cross_dir;
+                      if (downwind_rel_dir > M_PI+0.001)
                       {
-                        downwind_rel_dir = 0.0;
+                        downwind_rel_dir -= 2*M_PI;
+                        if (abs(downwind_rel_dir) < 0.001)
+                        {
+                          downwind_rel_dir = 0.0;
+                        }
                       }
-                    }
-                    if (downwind_rel_dir <= -M_PI)
-                    {
-                      downwind_rel_dir += 2*M_PI;
-                      if (abs(downwind_rel_dir) < 0.001)
+                      if (downwind_rel_dir <= -M_PI)
                       {
-                        downwind_rel_dir = 0.0;
+                        downwind_rel_dir += 2*M_PI;
+                        if (abs(downwind_rel_dir) < 0.001)
+                        {
+                          downwind_rel_dir = 0.0;
+                        }
                       }
-                    }
-                    if (abs(downwind_rel_dir) < 0.5*M_PI)
-                    {
-                      reverse_flag = 1;
-                      if (downwind_rel_dir >= 0.0)
+                      if (abs(downwind_rel_dir) < 0.5*M_PI)
                       {
-                        along_dir = cross_dir-0.5*M_PI;
+                        reverse_flag = 1;
+                        if (downwind_rel_dir >= 0.0)
+                        {
+                          along_dir = cross_dir-0.5*M_PI;
+                        }
+                        else
+                        {
+                          along_dir = cross_dir+0.5*M_PI;
+                        }
                       }
                       else
                       {
-                        along_dir = cross_dir+0.5*M_PI;
+                        reverse_flag = 0;
+                        if (downwind_rel_dir >= 0.0)
+                        {
+                          along_dir = cross_dir+0.5*M_PI;
+                        }
+                        else
+                        {
+                          along_dir = cross_dir-0.5*M_PI;
+                        }
                       }
-                    }
-                    else
-                    {
-                      reverse_flag = 0;
-                      if (downwind_rel_dir >= 0.0)
+                      if (along_dir > M_PI+0.001)
                       {
-                        along_dir = cross_dir+0.5*M_PI;
+                        along_dir -= 2*M_PI;
                       }
-                      else
+                      if (along_dir <= -M_PI)
                       {
-                        along_dir = cross_dir-0.5*M_PI;
+                        along_dir += 2*M_PI;
                       }
+                      break;
                     }
-                    if (along_dir > M_PI+0.001)
-                    {
-                      along_dir -= 2*M_PI;
-                    }
-                    if (along_dir <= -M_PI)
-                    {
-                      along_dir += 2*M_PI;
-                    }
-                    break;
                   }
                 }
-              }
-              if (cross_dir <= -M_PI)
-              {
-                cross_dir += 2*M_PI;
-              }
-              if (reverse_flag == 1)
-              {
-                if (cos(cross_dir-perpendicular_dir[id]) < -cos(angle_tol))
+                if (cross_dir <= -M_PI)
                 {
-                  canyon_flag = 0;
-                  s = 0;
-                  top_flag = 0;
+                  cross_dir += 2*M_PI;
                 }
-              }
-              else
-              {
-                if (cos(cross_dir-perpendicular_dir[id]) > cos(angle_tol))
+                if (reverse_flag == 1)
                 {
-                  canyon_flag = 0;
-                  s = 0;
-                  top_flag = 0;
+                  if (cos(cross_dir-perpendicular_dir[id]) < -cos(angle_tol))
+                  {
+                    canyon_flag = 0;
+                    s = 0;
+                    top_flag = 0;
+                  }
                 }
+                else
+                {
+                  if (cos(cross_dir-perpendicular_dir[id]) > cos(angle_tol))
+                  {
+                    canyon_flag = 0;
+                    s = 0;
+                    top_flag = 0;
+                  }
+                }
+                break;
               }
-              break;
             }
+
           }
 
 
@@ -400,14 +401,6 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
                 {
                   icell_face = i_u+j*UGD->nx+k*UGD->nx*UGD->ny;
                   UGD->u0[icell_face] = along_vel_mag*cos(along_dir)+cross_vel_mag*(2*x_pos/s)*2*(1-x_pos/s)*cos(cross_dir);
-                  if (i_u == 94 && j == 94 && k == 20)
-                  {
-                    std::cout << "polygonVertices[id].x_poly:   " << polygonVertices[id].x_poly << std::endl;
-                    std::cout << "polygonVertices[id+1].x_poly:   " << polygonVertices[id+1].x_poly << std::endl;
-                    std::cout << "y_u:   " << y_u << std::endl;
-                    std::cout << "id:   " << id << std::endl;
-                    std::cout << "UGD->u0[icell_face]:   " << UGD->u0[icell_face] << std::endl;
-                  }
                 }
 
                 j_v = std::round(((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)
