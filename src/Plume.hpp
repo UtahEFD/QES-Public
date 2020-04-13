@@ -15,11 +15,11 @@
 
 #include "util/calcTime.h"
 
-
 #include "QESNetCDFOutput.h"
 #include "PlumeOutputLagrToEul.h"
 #include "PlumeOutputLagrangian.h"
 
+#include "Args.hpp"
 #include "PlumeInputData.hpp"
 #include "Urb.hpp"
 #include "Turb.hpp"
@@ -40,9 +40,7 @@ public:
     // then sets up the concentration sampling box information for output
     // next copies important input time values and calculates needed time information 
     // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
-    Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, const bool& doLagrDataOutput_val,
-           const bool& outputSimInfoFile_val,const std::string& outputFolder_val,const std::string& caseBaseName_val, const bool& debug_val);
-
+    Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, Args* arguments); 
 
     // this is the plume solver. It performs a time integration of the particle positions and particle velocity fluctuations
     // with calculations done on a per particle basis. During each iteration, temporary single value particle information

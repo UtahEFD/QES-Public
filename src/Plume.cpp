@@ -6,18 +6,17 @@
 
 #include "Plume.hpp"
 
-Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, const bool& doLagrDataOutput_val,
-              const bool& outputSimInfoFile_val,const std::string& outputFolder_val,const std::string& caseBaseName_val, const bool& debug_val)
+Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, Args* arguments) 
 {
     
     std::cout<<"[Plume] \t Setting up simulation details "<<std::endl;
     
     // copy debug information
-    doLagrDataOutput = doLagrDataOutput_val;
-    outputSimInfoFile = outputSimInfoFile_val;
-    outputFolder = outputFolder_val;
-    caseBaseName = caseBaseName_val;
-    debug = debug_val;
+    doLagrDataOutput = arguments->doLagrDataOutput;
+    outputSimInfoFile = arguments->doSimInfoFileOutput;
+    outputFolder = arguments->outputFolder;
+    caseBaseName = arguments->caseBaseName;
+    debug = arguments->debug;
 
     // make local copies of the urb nVals for each dimension
     nx = urb->nx;
@@ -236,8 +235,8 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                 double tzz_old = dis->pointList[parIdx].tzz_old;
 
 
-                // need to avoid current tao values going out of scope now that I've added the particle timestep loop
-                // so initialize their values to the tao_old values. They will be overwritten with the Eulerian grid value
+                // need to avoid current tau values going out of scope now that I've added the particle timestep loop
+                // so initialize their values to the tau_old values. They will be overwritten with the Eulerian grid value
                 // at each iteration in the particle timestep loop
                 double txx = txx_old;
                 double txy = txy_old;
@@ -322,8 +321,8 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                     double flux_div_z = eul->interp3D(eul->flux_div_z);
 
 
-                    // now need to call makeRealizable on tao
-                    // directly modifies the values of tao
+                    // now need to call makeRealizable on tau
+                    // directly modifies the values of tau
                     // LA note: because the tau values before and after the function call are useful when particles go rogue,
                     //  I decided to store them separate using a copy for the function call
                     // note that these values are what is used to set the particle list values, they go out of scope if declared here
@@ -344,12 +343,12 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                     tyy = eul->interp3D(turb->tyy);
                     tyz = eul->interp3D(turb->tyz);
                     tzz = eul->interp3D(turb->tzz);
-                    // now need to call makeRealizable on tao
+                    // now need to call makeRealizable on tau
                     makeRealizable(txx,txy,txz,tyy,tyz,tzz);
                     
                     
-                    // now need to calculate the inverse values for tao
-                    // directly modifies the values of tao
+                    // now need to calculate the inverse values for tau
+                    // directly modifies the values of tau
                     // LA warn: I just noticed that Bailey's code always leaves the last three components alone, 
                     //  never filled with the symmetrical tensor values. This seems fine for makeRealizable, 
                     //  but I wonder if it messes with the invert3 stuff since those values are used even though they are empty in his code
@@ -379,7 +378,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                     
                     
                     /* now calculate a bunch of values for the current particle */
-                    // calculate the d_tao_dt values, which are the (tao_current - tao_old)/dt
+                    // calculate the d_tau_dt values, which are the (tau_current - tau_old)/dt
                     double dtxxdt = (txx - txx_old)/par_dt;
                     double dtxydt = (txy - txy_old)/par_dt;
                     double dtxzdt = (txz - txz_old)/par_dt;
@@ -823,7 +822,7 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
         ks = 0.5*std::abs(txx + tyy + tzz);  // also 0.5*abs(invar_xx)
     }
 
-    // to avoid increasing tao by more than ks increasing by 0.05%, use a separate stress tensor
+    // to avoid increasing tau by more than ks increasing by 0.05%, use a separate stress tensor
     // and always increase the separate stress tensor using the original stress tensor, only changing ks for each iteration
     // notice that through all this process, only the diagonals are really increased by a value of 0.05% of the subfilter tke ks
     // start by initializing the separate stress tensor
@@ -848,7 +847,7 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
         // increase subfilter tke by 5%
         ks = ks*1.050;      
 
-        // note that the right hand side is not tao_new, to force tao to only increase by increasing ks
+        // note that the right hand side is not tau_new, to force tau to only increase by increasing ks
         txx_new = txx + 2.0/3.0*ks;
         tyy_new = tyy + 2.0/3.0*ks;
         tzz_new = tzz + 2.0/3.0*ks;

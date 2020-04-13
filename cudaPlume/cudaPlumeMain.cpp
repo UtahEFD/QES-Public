@@ -128,9 +128,7 @@ int main(int argc, char** argv)
     }
     
     // Create instance of Plume model class
-    Plume* plume = new Plume(PID,urb,dis,
-                             arguments.doLagrDataOutput,arguments.doSimInfoFileOutput,arguments.outputFolder,
-                             arguments.caseBaseName, arguments.debug);
+    Plume* plume = new Plume(PID,urb,dis,&arguments);
     
     // Run plume advection model
     plume->run(urb,turb,eul,dis,outputVec);
