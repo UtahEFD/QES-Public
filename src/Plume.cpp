@@ -108,8 +108,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
     // do an output for the first time, then put the value back to zero so the particle loop will work correctly
     // this means I need to set the isActive value to true for the first set of particles right here
     dis->nParsReleased = nParsToRelease.at(0);
-    for( int parIdx = 0; parIdx < nParsToRelease.at(0); parIdx++ )
-    {
+    for( int parIdx = 0; parIdx < nParsToRelease.at(0); parIdx++ ) {
         dis->pointList[parIdx].isActive = true;
     }
     for(size_t id_out=0;id_out<outputVec.size();id_out++) {
@@ -127,8 +126,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
     // LA note on debug timers: because the loop is doing stuff for the next time, and particles start getting released at time zero,
     //  this means that the updateFrequency needs to match with tStep+1, not tStep. At the same time, the current time output to consol
     //  output and to function calls need to also be set to tStep+1.
-    for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)
-    {
+    for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++) {
      
         // need to release new particles
         // Add new particles to the number to move
@@ -138,8 +136,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
         dis->nParsReleased = nPastPars + nParsToRelease.at(sim_tIdx);
 
         // need to set the new particles isActive values to true
-        for( int parIdx = nPastPars; parIdx < dis->nParsReleased; parIdx++ )
-        {
+        for( int parIdx = nPastPars; parIdx < dis->nParsReleased; parIdx++ ) {
             dis->pointList[parIdx].isActive = true;
         }
         
@@ -159,10 +156,8 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
         // start recording the amount of time it takes to advect each set of particles for a given simulation timestep,
         //  but only output the result when updateFrequency allows
         // LA future work: would love to put this into a debug if statement wrapper
-        if( debug == true )
-        {
-            if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )
-            {
+        if( debug == true ) {
+            if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) {
                 timers.resetStoredTimer("advection loop");
             }
         }
@@ -171,8 +166,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
         int isRogueCount = dis->isRogueCount;
         int isNotActiveCount = dis->isNotActiveCount;
 
-        for( int parIdx = 0; parIdx < dis->nParsReleased; parIdx++ )
-        {
+        for( int parIdx = 0; parIdx < dis->nParsReleased; parIdx++ ) {
             
             // get the current isRogue and isActive information
             bool isRogue = dis->pointList[parIdx].isRogue;
@@ -180,16 +174,13 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
 
 
             // first check to see if the particle should even be advected and skip it if it should not be advected
-            if( isActive == true )
-            {
+            if( isActive == true ) {
                 
                 // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
                 //  and when debugging
-                if( debug == true )
-                {
+                if( debug == true ) {
                     if(  ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) 
-                         && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )  )
-                    {
+                         && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )  ) {
                         // overall particle timer
                         timers.resetStoredTimer("particle iteration");
                     }
@@ -262,15 +253,13 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                 //  is potentially smaller than the simulation timestep. So need to use the simTimes.at(nSimTimes-1)-simTimes.at(nSimTimes-2)
                 //  for the last simulation timestep. The problem is that simTimes.at(nSimTimes-1) is greater than simTimes.at(nSimTimes-2) + sim_dt.
                 double timeRemainder = sim_dt;
-                if( sim_tIdx == nSimTimes-2 )   // at the final timestep
-                {
+                if( sim_tIdx == nSimTimes-2 ) {  // at the final timestep
                     timeRemainder = simTimes.at(nSimTimes-1) - simTimes.at(nSimTimes-2);
                 }
                 double par_time = simTimes.at(sim_tIdx);    // the current time, updated in this loop with each new par_dt. 
                 // Will end at simTimes.at(sim_tIdx+1) at the end of this particle loop
                 
-                while( isActive == true && timeRemainder > 0.0 )
-                {
+                while( isActive == true && timeRemainder > 0.0 ) {
 
                     // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
                     // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
@@ -441,8 +430,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                     // LA note: I tried to keep the format really nice to reduce the amount of reformulating work done in matlab.
                     //  I wanted to turn it into a function, but there are sooo many variables that would need to be passed into that function call
                     //  so it made more sense to write them out directly.
-                    if( ( std::abs(uFluct) >= vel_threshold || isnan(uFluct) ) && nx > 1 )
-                    {
+                    if( ( std::abs(uFluct) >= vel_threshold || isnan(uFluct) ) && nx > 1 ) {
                         std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
                         std::cout << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
                         /*
@@ -476,8 +464,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                         uFluct = 0.0;
                         isRogue = true;
                     }
-                    if( ( std::abs(vFluct) >= vel_threshold || isnan(vFluct) ) && ny > 1 )
-                    {
+                    if( ( std::abs(vFluct) >= vel_threshold || isnan(vFluct) ) && ny > 1 ) {
                         std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
                         std::cout << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
                         /*
@@ -511,8 +498,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                         vFluct = 0.0;
                         isRogue = true;
                     }
-                    if( ( std::abs(wFluct) >= vel_threshold || isnan(wFluct) ) && nz > 1 )
-                    {
+                    if( ( std::abs(wFluct) >= vel_threshold || isnan(wFluct) ) && nz > 1 ) {
                         std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
                         std::cout << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
                         /*
@@ -613,18 +599,15 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
 
                     // print info about the current particle time iteration
                     // but only if debug is set to true and this is the right updateFrequency time
-                    if( debug == true )
-                    {
+                    if( debug == true ) {
                         if(  ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) 
-                             && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )  )
-                        {
+                             && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )  ) {
                             std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) 
                                       << "\", par[" << parIdx << "]. Finished particle timestep \"" << par_dt 
                                       << "\" for time = \"" << par_time << "\"" << std::endl;
                         }
                     }
                     
-
                 }   // while( isActive == true && timeRemainder > 0.0 )
 
                 // now update the old values and current values in the dispersion storage to be ready for the next iteration
@@ -657,12 +640,10 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                 dis->pointList[parIdx].tzz_old = tzz_old;
 
                 // now update the isRogueCount and isNotActiveCount
-                if(isRogue == true)
-                {
+                if(isRogue == true) {
                     isRogueCount = isRogueCount + 1;
                 }
-                if(isActive == false)
-                {
+                if(isActive == false) {
                     isNotActiveCount = isNotActiveCount + 1;
                 }
                 
@@ -671,11 +652,9 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
 
                 // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
                 // LA future work: because this has timer related info, this probably needs to also be limited to when the user specifies they want debug mode
-                if( debug == true )
-                {
+                if( debug == true ) {
                     if(  ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) 
-                         && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )  )
-                    {
+                         && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )  ) {
                         std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) 
                                   << "\", par[" << parIdx << "]. finished particle iteration" << std::endl;
                         timers.printStoredTime("particle iteration");
@@ -703,13 +682,11 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
         
         // output the time, isRogueCount, and isNotActiveCount information for all simulations,
         //  but only when the updateFrequency allows
-        if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )
-        {
+        if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) {
             std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) << "\". finished advection iteration. isRogueCount = \"" 
                       << dis->isRogueCount << "\", isNotActiveCount = \"" << dis->isNotActiveCount << "\"" << std::endl;
             // output advection loop runtime if in debug mode
-            if( debug == true )
-            {
+            if( debug == true ) {
                 timers.printStoredTime("advection loop");
             }
         }
@@ -732,8 +709,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
 
     // get the amount of time it takes to perform the simulation time integration loop
     // LA note: this is probably a debug output thing.
-    if( debug == true )
-    {
+    if( debug == true ) {
         std::cout << "finished time integration loop" << std::endl;
         // Print out elapsed execution time
         timers.printStoredTime("simulation time integration loop");
@@ -751,8 +727,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
 double Plume::calcCourantTimestep(const double& uFluct,const double& vFluct,const double& wFluct,const double& timeRemainder)
 {
     // if the Courant Number is set to 0.0, we want to exit using the timeRemainder (first time through that is the simTime)
-    if( CourantNum == 0.0 )
-    {
+    if( CourantNum == 0.0 ) {
         return timeRemainder;
     }
 
@@ -804,8 +779,7 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
     double invar_zz = 0.0;
     calcInvariants(txx,txy,txz,tyy,tyz,tzz,  invar_xx,invar_yy,invar_zz);
     
-    if( invar_xx > invarianceTol && invar_yy > invarianceTol && invar_zz > invarianceTol )
-    {
+    if( invar_xx > invarianceTol && invar_yy > invarianceTol && invar_zz > invarianceTol ) {
         return;     // tau is already realizable
     }
 
@@ -817,8 +791,7 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
     double ks = 1.01*(-b + std::sqrt(b*b - 16.0/3.0*c)) / (8.0/3.0);
 
     // if the initial guess is bad, use the straight up invar_xx value
-    if( ks < invarianceTol || isnan(ks) )
-    {
+    if( ks < invarianceTol || isnan(ks) ) {
         ks = 0.5*std::abs(txx + tyy + tzz);  // also 0.5*abs(invar_xx)
     }
 
@@ -882,8 +855,7 @@ void Plume::invert3(double& A_11,double& A_12,double& A_13,double& A_21,double& 
     // check for near zero value determinants
     // LA future work: I'm still debating whether this warning needs to be limited by the updateFrequency information
     //  if so, how would we go about limiting that info? Would probably need to make the loop counter variables actual data members of the class
-    if(std::abs(det) < 1e-10)
-    {
+    if(std::abs(det) < 1e-10) {
         std::cout << "WARNING (Plume::invert3): matrix nearly singular" << std::endl;
         std::cout << "abs(det) = \"" << std::abs(det) << "\",  A_11 = \"" << A_11 << "\", A_12 = \"" << A_12 << "\", A_13 = \"" 
                   << A_13 << "\", A_21 = \"" << A_21 << "\", A_22 = \"" << A_22 << "\", A_23 = \"" << A_23 << "\", A_31 = \"" 
@@ -1040,8 +1012,7 @@ void Plume::enforceWallBCs_periodic(double& pos,double& velFluct,double& velFluc
 void Plume::enforceWallBCs_reflection(double& pos,double& velFluct,double& velFluct_old,bool& isActive,
                                       const double& domainStart,const double& domainEnd)
 {
-    if( isActive == true )
-    {
+    if( isActive == true ) {
 
         /*
           std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velFluct = \"" << velFluct << "\", velFluct_old = \"" <<
