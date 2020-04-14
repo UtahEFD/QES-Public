@@ -40,7 +40,7 @@ Urb::Urb(Input* input, const bool& debug)
     z.resize(nz);
     t.resize(nt);
     terrain.resize(ny*nx);
-    icell.resize(nt*nz*ny*nx);
+    icellflag.resize(nt*nz*ny*nx);
     u.resize(nt*nz*ny*nx);
     v.resize(nt*nz*ny*nx);
     w.resize(nt*nz*ny*nx);
@@ -50,7 +50,7 @@ Urb::Urb(Input* input, const bool& debug)
     input->getVariableData("y",y);
     input->getVariableData("z",z);
     input->getVariableData("t",t);
-    input->getVariableData("icell",start,countcc,icell);
+    input->getVariableData("icell",start,countcc,icellflag);
     input->getVariableData("terrain",start,count2d,terrain);
 
     // set the dx values to 1, and correct them if the grid is has more than one value
@@ -132,7 +132,7 @@ Urb::Urb(NetCDFInput* input, const bool& debug)
                static_cast<unsigned long>(ny_fc),
                static_cast<unsigned long>(nx_fc)};  // the number of values in each grid dimension of the input data, I guess the default is a 4D structure
     countcc = {static_cast<unsigned long>(nt) ,
-               static_cast<unsigned long>(nz),
+               static_cast<unsigned long>(nz+1),
                static_cast<unsigned long>(ny),
                static_cast<unsigned long>(nx)};
     count2d = {static_cast<unsigned long>(ny),
@@ -144,7 +144,7 @@ Urb::Urb(NetCDFInput* input, const bool& debug)
     z.resize(nz);
     t.resize(nt);
     terrain.resize(ny*nx);
-    icell.resize(nt*nz*ny*nx);
+    icellflag.resize(nt*nz*ny*nx);
     u.resize(nt*nz*ny*nx);
     v.resize(nt*nz*ny*nx);
     w.resize(nt*nz*ny*nx);
@@ -172,7 +172,26 @@ Urb::Urb(NetCDFInput* input, const bool& debug)
     temp_z.clear();
     
     input->getVariableData("t",t);
-    input->getVariableData("icell",start,countcc,icell);
+    
+    
+    std::vector<float> temp_icellflag(ny*nx*(nz+1));
+    input->getVariableData("icell",start,countcc,temp_icellflag);
+    for(int k=0;k<nz;k++) {
+        for(int j=0;j<ny;j++) {
+            for(int i=0;i<nx;i++){
+                
+                // FM quick fix for missmatched grid
+                // id1 -> Plume grid
+                int id1 = i + j*nx + k*nx*ny;
+                // id2 -> URB grid
+                int id2 = i + j*nx + (k+1)*nx*ny;
+                
+                icellflag.at(id1)=temp_icellflag.at(id2);
+            }
+        }
+    }
+    temp_icellflag.clear();
+    
 
     // FM -> need to change this as URB is float only
     std::vector<float> temp_terrain(ny*nx);
@@ -220,23 +239,23 @@ Urb::Urb(NetCDFInput* input, const bool& debug)
     for (int n=0;n<nt;n++) {
         for(int k=0;k<nz;k++) {
             for(int j=0; j<ny;j++) {
-              for(int i=0;i<nx;i++){
-
-                // FM quick fix for missmatched grid
-                // id1 -> Plume grid
-                int id1 = i + j*nx + k*nx*ny + n*nx*ny*nz;
-                // id2 -> URB grid
-                int id2 = i + j*nx_fc + (k+1)*nx_fc*ny_fc + n*nx_fc*ny_fc*nz_fc;
-
-                // interpolation of the face-center velocity field
-                u.at(id1) = 0.5*(u1.at(id2)+u1.at(id2+1));
-                v.at(id1) = 0.5*(u2.at(id2)+u2.at(id2+nx_fc));
-                w.at(id1) = 0.5*(u3.at(id2)+u3.at(id2+nx_fc*ny_fc));
-              }
+                for(int i=0;i<nx;i++){
+                    
+                    // FM quick fix for missmatched grid
+                    // id1 -> Plume grid
+                    int id1 = i + j*nx + k*nx*ny + n*nx*ny*nz;
+                    // id2 -> URB grid
+                    int id2 = i + j*nx_fc + (k+1)*nx_fc*ny_fc + n*nx_fc*ny_fc*nz_fc;
+                    
+                    // interpolation of the face-center velocity field
+                    u.at(id1) = 0.5*(u1.at(id2)+u1.at(id2+1));
+                    v.at(id1) = 0.5*(u2.at(id2)+u2.at(id2+nx_fc));
+                    w.at(id1) = 0.5*(u3.at(id2)+u3.at(id2+nx_fc*ny_fc));
+                }
             }
         }
     }
-
+    
     // clean up temporary vectors
     u1.clear();
     u2.clear();
