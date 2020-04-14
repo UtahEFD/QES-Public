@@ -13,8 +13,15 @@
 #define FLOATS_ARE_EQUAL(x,y) ( ( (x) - (y)) < 0.000001 && ( (x) - (y)) >   -0.000001 )
 
 template <class T>
+class Vector3;
+
+template<typename T>
+std::ostream& operator<<(std::ostream&, const Vector3<T>&);
+
+template <class T>
 class Vector3 : public ParseInterface
 {
+    friend std::ostream& operator<< <T>(std::ostream&, const Vector3<T>&);
 protected:
 	std::vector<T> values;
 public:
@@ -76,7 +83,7 @@ public:
     Vector3<T>& operator=(const Vector3<T>& v)
 	{
 		for (int i = 0; i < 3; i++)
-			values[0] = v.values[i];
+			values[i] = v.values[i];
 		return *this;
 	}
 
@@ -88,18 +95,44 @@ public:
 	}
     
     // addition operator
-    friend Vector3<T> operator-(const Vector3<T>& v1, const Vector3<T>& v2){
-        return Vector3<T> (v1.values[0] - v2.values[0], v1.values[1] - v2.values[1], v1.values[2] - v2.values[2]);
+    Vector3<T> operator-(const Vector3<T>& v1){
+        return Vector3<T> (values[0] - v1.values[0], values[1] - v1.values[1], values[2] - v1.values[2]);
     }
 
     // substraction operator
-    friend Vector3<T> operator+(const Vector3<T>& v1, const Vector3<T>& v2){
-        return Vector3<T> (v1.values[0] + v2.values[0], v1.values[1] + v2.values[1], v1.values[2] + v2.values[2]);
+    Vector3<T> operator+(const Vector3<T>& v1){
+        return Vector3<T> (values[0] + v1.values[0], values[1] + v1.values[1], values[2] + v1.values[2]);
     }
     
     // scalar product 
-    friend Vector3<T> operator*(const Vector3<T>& v1, const Vector3<T>& v2){
-        return Vector3<T> (v1.values[0]*v2.values[0] + v1.values[1]*v2.values[1] + v1.values[2]*v2.values[2]);
+    T operator*(const Vector3<T>& v1){
+        return (values[0]*v1.values[0] + values[1]*v1.values[1] + values[2]*v1.values[2]);
+    }
+
+    // multiplication by scalar
+    Vector3<T> operator*(const T& a){
+        return Vector3<T> (a*values[0],a*values[1],a*values[2]);
     }
     
+    // addition operator
+    friend Vector3<T> operator*(const T& a, const Vector3<T>& v1){
+        return Vector3<T> (a*v1.values[0], a*v1.values[1], a*v1.values[2]);
+    }
+    
+    // division by scalar
+    Vector3<T> operator/(const T& a){
+        return Vector3<T> (values[0]/a,values[1]/a,values[2]/a);
+    }
+
+
 };
+
+template<typename T>
+std::ostream& operator<<(std::ostream& out, const Vector3<T>& v)
+{
+    out << "[";
+    for (int i(0);i<2;i++)
+        out << v.values[i] << ", ";
+    out << v.values[2] << "]";
+    return out;
+}
