@@ -6,6 +6,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 CUDA_ADD_LIBRARY( cudaplumecore
     
     Random.cpp
+    Vector3.h
     
     Args.cpp
     Input.cpp
