@@ -85,7 +85,8 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
     // TIME Stepping Loop
     // for every simulation time step
     // //////////////////////////////////////////
-
+    
+    
     if( debug == true )
     {
         // start recording the amount of time it takes to perform the simulation time integration loop

@@ -25,7 +25,7 @@
 #include "Turb.hpp"
 #include "Eulerian.h"
 #include "Dispersion.h"
-
+#include "Vector3.h"
 
 // LA do we need these here???
 using namespace netCDF;
