@@ -60,7 +60,7 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     float total_seg_length;               // Length of each edge
     int index_previous, index_next;       // Indices of previous and next nodes
     int stop_id = 0;
-    int kk;
+    int kk = k_start;
     float tol;
     float farwake_exp = 1.5;
     float farwake_factor = 3;
@@ -88,12 +88,10 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     // Calculating length of the downwind wake based on Fackrell (1984) formulation
     Lr = 1.8*height_eff*W_over_H/(pow(L_over_H,0.3)*(1+0.24*W_over_H));
 
-    for (auto id=0; id<polygonVertices.size()-1; id++)
-    {
+    for (size_t id=0; id<polygonVertices.size()-1; id++) {
         // Finding faces that are eligible for applying the far-wake parameterizations
         // angle between two points should be in -180 to 0 degree
-        if ( abs(upwind_rel_dir[id]) < 0.5*M_PI)
-        {
+        if ( abs(upwind_rel_dir[id]) < 0.5*M_PI) {
             // Calculate length of the far wake zone for each face
             Lr_face[id] = Lr*cos(upwind_rel_dir[id]);
         }
@@ -101,30 +99,21 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
 
     Lr_ave = total_seg_length = 0.0;
     // This loop interpolates the value of Lr for eligible faces to nodes of those faces
-    for (auto id=0; id<polygonVertices.size()-1; id++)
-    {
+    for (size_t id=0; id<polygonVertices.size()-1; id++) {
         // If the face is eligible for parameterization
-        if (Lr_face[id] > 0.0)
-        {
+        if (Lr_face[id] > 0.0) {
             index_previous = (id+polygonVertices.size()-2)%(polygonVertices.size()-1);     // Index of previous face
             index_next = (id+1)%(polygonVertices.size()-1);           // Index of next face
-            if (Lr_face[index_previous] < 0.0 && Lr_face[index_next] < 0.0)
-            {
+            if (Lr_face[index_previous] < 0.0 && Lr_face[index_next] < 0.0) {
                 Lr_node[id] = Lr_face[id];
                 Lr_node[id+1] = Lr_face[id];
-            }
-            else if (Lr_face[index_previous] < 0.0)
-            {
+            } else if (Lr_face[index_previous] < 0.0) {
                 Lr_node[id] = Lr_face[id];
                 Lr_node[id+1] = ((yi[index_next]-yi[index_next+1])*Lr_face[index_next]+(yi[id]-yi[index_next])*Lr_face[id])/(yi[id]-yi[index_next+1]);
-            }
-            else if (Lr_face[index_next] < 0.0)
-            {
+            } else if (Lr_face[index_next] < 0.0) {
                 Lr_node[id] = ((yi[id]-yi[index_next])*Lr_face[id]+(yi[index_previous]-yi[id])*Lr_face[index_previous])/(yi[index_previous]-yi[index_next]);
                 Lr_node[id+1] = Lr_face[id];
-            }
-            else
-            {
+            } else {
                 Lr_node[id] = ((yi[id]-yi[index_next])*Lr_face[id]+(yi[index_previous]-yi[id])*Lr_face[index_previous])/(yi[index_previous]-yi[index_next]);
                 Lr_node[id+1] = ((yi[index_next]-yi[index_next+1])*Lr_face[index_next]+(yi[id]-yi[index_next])*Lr_face[id])/(yi[id]-yi[index_next+1]);
             }
@@ -141,36 +130,29 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     }
 
     Lr = Lr_ave/total_seg_length;
-    for (auto k = 1; k <= k_start; k++)
-    {
+    for (auto k = 1; k <= k_start; k++) {
         k_bottom = k;
-        if (base_height <= UGD->z[k])
-        {
+        if (base_height <= UGD->z[k]) {
             break;
         }
     }
 
-    for (auto k = k_start; k < UGD->nz-1; k++)
-    {
+    for (auto k = k_start; k < UGD->nz-1; k++) {
         k_top = k;
-        if (height_eff < UGD->z[k+1])
-        {
+        if (height_eff < UGD->z[k+1]) {
             break;
         }
     }
 
-    for (auto k = k_start; k < k_end; k++)
-    {
+    for (auto k = k_start; k < k_end; k++) {
         kk = k;
-        if (0.75*H+base_height <= UGD->z[k])
-        {
+        if (0.75*H+base_height <= UGD->z[k]) {
             break;
         }
     }
-    
     
     // interpolation of velocity at the top of the building
-    icell_face=i_building_cent + j_building_cent*nx + (k_end+1)*nx*ny;
+    icell_face=i_building_cent + j_building_cent*nx + (k_top+1)*nx*ny;
     u_h=0.5*(UGD->u[icell_face]+UGD->u[icell_face+1]); 
     v_h=0.5*(UGD->v[icell_face]+UGD->v[icell_face+nx]); 
     //w_h=0.5*(UGD->w[icell_face]+UGD->w[icell_face+nx*ny]);
@@ -271,6 +253,12 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     int i_ref_r = floor(x_ref_r/UGD->dx);
     int j_ref_r = floor(y_ref_r/UGD->dy);
     
+    if ( i_ref_r >= UGD->nx-2 && i_ref_r <= 0 && j_ref_r >= UGD->ny-2 && j_ref_r <= 0) {
+        std::cout<< "right ref point outside domain" <<std::endl;
+        return;
+    } 
+        
+    
     for (auto k=k_top+1; k>=k_bottom; k--) {
         icell_cent = i_ref_r + j_ref_r*(nx-1) + k*(ny-1)*(nx-1);
         TGD->iturbflag[icell_cent]=12;
@@ -287,13 +275,20 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
 
     int i_ref_l = floor(x_ref_l/UGD->dx);
     int j_ref_l = floor(y_ref_l/UGD->dy);
-    
+
+    if ( i_ref_l >= UGD->nx-2 && i_ref_l <= 0 && j_ref_l >= UGD->ny-2 && j_ref_l <= 0) {
+        std::cout<< "left ref point outside domain" <<std::endl;
+        return;
+    } 
+
     for (auto k=k_top+1; k>=k_bottom; k--) {
         icell_cent = i_ref_l + j_ref_l*(nx-1) + k*(ny-1)*(nx-1);
         TGD->iturbflag[icell_cent]=12;
     }
     
     
+    //std::cout << "buidling id" << building_id << " k_start=" << k_start << " k_end=" << k_end << " kk=" << kk << std::endl;
+
     for (auto k=k_top+1; k>=k_bottom; k--)
     {
         z_build = UGD->z[k] - base_height;
@@ -400,198 +395,84 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
 
                             }
                         }
-
+                        
                         if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
                         {
-                            /*
-                            i_u = std::round(((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx);
-                            j_u = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy;
-                            if (i_u < UGD->nx-1 && i_u > 0 && j_u < UGD->ny-1 && j_u > 0)
-                            {
-                                xp = i_u*UGD->dx-building_cent_x;
-                                yp = (j_u+0.5)*UGD->dy-building_cent_y;
-                                xu = xp*cos(upwind_dir)+yp*sin(upwind_dir);
-                                yu = -xp*sin(upwind_dir)+yp*cos(upwind_dir);
-                                Lr_local_u = Lr_node[id]+(yu-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
-                                if (perpendicular_flag[id] > 0)
-                                {
-                                    x_wall_u = xi[id];
-
-                                }
-                                else
-                                {
-                                    x_wall_u = ((xi[id+1]-xi[id])/(yi[id+1]-yi[id]))*(yu-yi[id])+ xi[id];
-                                }
-
-                                xu -= x_wall_u;
-                                if (abs(yu) < abs(y_norm) && abs(y_norm) > epsilon && z_build < height_eff && height_eff > epsilon)
-                                {
-                                    dn_u = sqrt((1.0-pow((yu/y_norm), 2.0))*(1.0-pow((z_build/height_eff),2.0))*pow((canyon_factor*Lr_local_u),2.0));
-                                }
-                                else
-                                {
-                                    dn_u = 0.0;
-                                }
-                                if (xu > farwake_factor*dn_u)
-                                {
-                                    u_wake_flag = 0;
-                                }
-                                icell_cent = i_u + j_u*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
-                                icell_face = i_u + j_u*UGD->nx+k*UGD->nx*UGD->ny;
-                                if (dn_u > 0.0 && u_wake_flag == 1 && yu <= yi[id] && yu >= yi[id+1] && 
-                                    UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
-                                {
-                                    // Far wake zone
-                                    if (xu > dn_u)
-                                    {
-                                        farwake_vel = UGD->u0[icell_face]*(1.0-pow((dn_u/(xu+UGD->wake_factor*dn_u)),farwake_exp));
-                                        if (canyon_factor == 1.0)
-                                        {
-                                            //std::cout << "farwake_vel:   " << farwake_vel << std::endl;
-                                            //std::cout << "i_u:   " << i_u << "\t\t"<< "j_u:   " << j_u << "\t\t"<< "k:   " << k << std::endl;
-                                            u0_modified.push_back(farwake_vel);
-                                            u0_mod_id.push_back(icell_face);
-
-                                            //UGD->w0[i+j*UGD->nx+k*UGD->nx*UGD->ny] = 0.0;
-                                        }
-                                    }
-                                    // Cavity zone
-                                    else
-                                    {
-                                        //UGD->u0[icell_face] = -u0_h*MIN_S(pow((1.0-xu/(UGD->cavity_factor*dn_u)),2.0),1.0)*MIN_S(sqrt(1.0-abs(yu/y_norm)),1.0);
-                                        //UGD->w0[i+j*UGD->nx+k*UGD->nx*UGD->ny] = 0.0;
-                                    }
-                                }
-                            }*/
-
-                    
-                    /*i_v = ((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx;
-                            j_v = std::round(((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy);
-                            if (i_v<UGD->nx-1 && i_v>0 && j_v<UGD->ny-1 && j_v>0)
-                            {
-                                xp = (i_v+0.5)*UGD->dx-building_cent_x;
-                                yp = j_v*UGD->dy-building_cent_y;
-                                xv = xp*cos(upwind_dir)+yp*sin(upwind_dir);
-                                yv = -xp*sin(upwind_dir)+yp*cos(upwind_dir);
-                                Lr_local_v = Lr_node[id]+(yv-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
-                                if (perpendicular_flag[id] > 0)
-                                {
-                                    x_wall_v = xi[id];
-                                }
-                                else
-                                {
-                                    x_wall_v = ((xi[id+1]-xi[id])/(yi[id+1]-yi[id]))*(yv-yi[id]) + xi[id];
-                                }
-                                xv -= x_wall_v;
-
-                                if (abs(yv) < abs(y_norm) && abs(y_norm) > epsilon && z_build < height_eff && height_eff > epsilon)
-                                {
-                                    dn_v = sqrt((1.0-pow((yv/y_norm), 2.0))*(1.0-pow((z_build/height_eff),2.0))*pow((canyon_factor*Lr_local_v),2.0));
-                                }
-                                else
-                                {
-                                    dn_v = 0.0;
-                                }
-                                if (xv > farwake_factor*dn_v)
-                                {
-                                    v_wake_flag = 0;
-                                }
-                                icell_cent = i_v + j_v*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
-                                icell_face = i_v + j_v*UGD->nx+k*UGD->nx*UGD->ny;
-                                if (dn_v > 0.0 && v_wake_flag == 1 && yv <= yi[id] && yv >= yi[id+1] && 
-                                    UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
-                                {
-                                    // Far wake zone
-                                    if (xv > dn_v)
-                                    {
-                                        farwake_vel = UGD->v0[icell_face]*(1.0-pow((dn_v/(xv+UGD->wake_factor*dn_v)),farwake_exp));
-                                        if (canyon_factor == 1)
-                                        {
-                                            v0_modified.push_back(farwake_vel);
-                                            v0_mod_id.push_back(icell_face);
-                                            //UGD->w0[i+j*UGD->nx+k*UGD->nx*UGD->ny] = 0.0;
-                                        }
-                                    }
-                                    // Cavity zone
-                                    else
-                                    {
-                                        //UGD->v0[icell_face] = -v0_h*MIN_S(pow((1.0-xv/(UGD->cavity_factor*dn_v)),2.0),1.0)*MIN_S(sqrt(1.0-abs(yv/y_norm)),1.0);
-                                        //UGD->w0[icell_face] = 0.0;
-                                    }
-                                }
-                            }*/
-
+                         
                             i_w = ceil(((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx)-1;
                             j_w = ceil(((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy)-1;
-                            if (i_w<UGD->nx-2 && i_w>0 && j_w<UGD->ny-2 && j_w>0)
-                            {
+                            //check if position in domain
+                            if (i_w<UGD->nx-2 && i_w>0 && j_w<UGD->ny-2 && j_w>0) {
+                                
                                 xp = (i_w+0.5)*UGD->dx-building_cent_x;
                                 yp = (j_w+0.5)*UGD->dy-building_cent_y;
+                                
                                 xw = xp*cos(upwind_dir)+yp*sin(upwind_dir);
                                 yw = -xp*sin(upwind_dir)+yp*cos(upwind_dir);
-
-                                Lr_local_w = Lr_node[id]+(yw-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
-                                if (perpendicular_flag[id] > 0)
-                                {
-                                    x_wall_w = xi[id];
-                                }
-                                else
-                                {
-                                    x_wall_w = ((xi[id+1]-xi[id])/(yi[id+1]-yi[id]))*(yw-yi[id]) + xi[id];
-                                }
-                                xw -= x_wall_w;
-                                if (abs(yw) < abs(y_norm) && abs(y_norm) > epsilon && z_build < height_eff && height_eff > epsilon)
-                                {
-                                    dn_w = sqrt((1.0-pow(yw/y_norm, 2.0))*(1.0-pow(z_build/height_eff,2.0))*pow(canyon_factor*Lr_local_w,2.0));
-                                }
-                                else
-                                {
-                                    dn_w = 0.0;
-                                }
-
-                                if (xw > farwake_factor*dn_w)
-                                {
-                                    w_wake_flag = 0;
-                                }
-                                
-                                icell_cent = i_w + j_w*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                                icell_face = i_w + j_w*UGD->nx + k*UGD->nx*UGD->ny;
                                 
                                 // location of the center line
-                                i_cl = (cos(upwind_dir)*xw + building_cent_x)/UGD->dx;
-                                j_cl = (sin(upwind_dir)*xw + building_cent_y)/UGD->dy;
-                                icell_cent_cl = i_cl + j_cl*(nx-1) + k*(ny-1)*(nx-1);    
-                                icell_face_cl = i_cl + j_cl*nx + k*ny*nx;
-                                
-                                // velocity interpolated at the center line
-                                u_h=0.5*(UGD->u[icell_face_cl]+UGD->u[icell_face_cl+1]); 
-                                v_h=0.5*(UGD->v[icell_face_cl]+UGD->v[icell_face_cl+nx]); 
-                                //w_h=0.5*(UGD->w[icell_face_cl]+UGD->w[icell_face_cl+nx*ny]);
-                                U_a=u_h*cos(upwind_dir)+v_h*sin(upwind_dir);
-                                //U_a=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
+                                i_cl = ceil((cos(upwind_dir)*xw + building_cent_x)/UGD->dx)-1;
+                                j_cl = ceil((sin(upwind_dir)*xw + building_cent_y)/UGD->dy)-1;
+                                //check if position in domain
+                                if (i_cl<UGD->nx-2 && i_cl>0 && j_cl<UGD->ny-2 && j_cl>0) {
+                                    // index for centerline
+                                    icell_cent_cl = i_cl + j_cl*(nx-1) + k*(ny-1)*(nx-1);    
+                                    icell_face_cl = i_cl + j_cl*nx + k*ny*nx;
+                                    //index for current postion
+                                    icell_cent = i_w + j_w*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+                                    icell_face = i_w + j_w*UGD->nx + k*UGD->nx*UGD->ny;
+                                    
+                                    // velocity interpolated at the center line
+                                    u_h=0.5*(UGD->u[icell_face_cl]+UGD->u[icell_face_cl+1]); 
+                                    v_h=0.5*(UGD->v[icell_face_cl]+UGD->v[icell_face_cl+nx]); 
+                                    //w_h=0.5*(UGD->w[icell_face_cl]+UGD->w[icell_face_cl+nx*ny]);
+                                    U_a=u_h*cos(upwind_dir)+v_h*sin(upwind_dir);
+                                    //U_a=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
+                                    
+                                } else { //if centerline outside, assume U_centerline 90% of U_ref_l
+                                    std::cout << "[WARNING] centerline outside of domain -> use fixed value" <<  std::endl;
+                                    U_a=0.9*U_ref_l;
+                                }
+                                // horizontal velocity different
                                 dU_ref_H = max(abs(U_ref_l-U_a),abs(U_ref_r-U_a));
                                 ustarH = kvonk*dU_ref_H;
-                                                                                                    
+                                    
                                 // Velocity interoplated at current location 
                                 u_h=0.5*(UGD->u[icell_face]+UGD->u[icell_face+1]); 
                                 v_h=0.5*(UGD->v[icell_face]+UGD->v[icell_face+nx]); 
                                 //w_h=0.5*(UGD->w[icell_face]+UGD->w[icell_face+nx*ny]);
                                 U_a=u_h*cos(upwind_dir)+v_h*sin(upwind_dir);
                                 //U_a=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
-                                
-                                if (dn_w > 0.0 && w_wake_flag == 1 && yw <= yi[id] && yw >= yi[id+1] && 
-                                    UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
-                                {
                                     
+                                Lr_local_w = Lr_node[id]+(yw-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
+                                if (perpendicular_flag[id] > 0) {
+                                    x_wall_w = xi[id];
+                                } else {
+                                    x_wall_w = ((xi[id+1]-xi[id])/(yi[id+1]-yi[id]))*(yw-yi[id]) + xi[id];
+                                }
+
+                                xw -= x_wall_w;
+                                    
+                                if (abs(yw) < abs(y_norm) && abs(y_norm) > epsilon && z_build < height_eff && height_eff > epsilon) {
+                                    dn_w = sqrt((1.0-pow(yw/y_norm, 2.0))*(1.0-pow(z_build/height_eff,2.0))*pow(canyon_factor*Lr_local_w,2.0));
+                                } else {
+                                    dn_w = 0.0;
+                                }
+                                    
+                                if (xw > farwake_factor*dn_w) {
+                                    w_wake_flag = 0;
+                                }
+                                    
+                                if (dn_w > 0.0 && w_wake_flag == 1 && yw <= yi[id] && yw >= yi[id+1] && 
+                                    UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2) 
+                                {
                                     // Far wake zone
-                                    if (xw > dn_w)
-                                    {
-                                        if (canyon_factor == 1)
-                                        {
-                                            
+                                    if (xw > dn_w) {
+                                        if (canyon_factor == 1) {
+                                            // horizontal mixing
                                             ustar=ustarH;
                                             float ustar2 = ustar*ustar;
-                                            
+                                                
                                             TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
                                             TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
                                             TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
@@ -599,61 +480,61 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
                                             TGD->tau12[icell_cent] = abs(yw)/(0.5*width_eff)*ustar2;
                                             TGD->tau23[icell_cent] = 0.0; 
                                             TGD->tau13[icell_cent] = 0.0;
-                                            
+                                                
                                             TGD->Lm[icell_cent] = width_eff;
-                                            
+                                                
                                             TGD->iturbflag[icell_cent]=11; 
-                                            
+                                                
                                             TGD->tke[icell_cent]=0.5*(TGD->tau11[icell_cent]+TGD->tau22[icell_cent]+TGD->tau33[icell_cent]);
                                             TGD->CoEps[icell_cent]=5.7* pow(ustar,3.0)/(TGD->Lm[icell_cent]); 
 
                                         }    
-                                    }
-                                    // Downwind Cavity zone
-                                    else
-                                    {
+                                    } else { // Downwind Cavity zone
                                         if ( dU_ref_H/(0.5*width_eff) >= U_a/(0.75*H)) { 
+                                            // horizontal mixing
                                             ustar=ustarH;
                                             float ustar2 = ustar*ustar;
-                                            
+                                                
                                             TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
                                             TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
                                             TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
-                                            
+                                                
                                             TGD->tau12[icell_cent] = abs(yw)/(0.5*width_eff)*ustar2;
                                             TGD->tau23[icell_cent] = 0.0; 
                                             TGD->tau13[icell_cent] = 0.0;
-                                            
+                                                
                                             TGD->Lm[icell_cent] = width_eff;
-                                            
+                                                
                                             TGD->iturbflag[icell_cent]=11; 
-                                        } else {
+                                        } else { 
+                                            // vertical mixing
                                             ustar=ustarV;
                                             float ustar2 = ustar*ustar;
-                                            
+                                                
                                             TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
                                             TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
                                             TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
-                                            
+                                                
                                             TGD->tau12[icell_cent] = 0;
                                             TGD->tau23[icell_cent] = -ustar2*sin(upwind_dir);//projection with wind dir
                                             TGD->tau13[icell_cent] = -ustar2*cos(upwind_dir);//projection with wind dir
-                                            
+                                                
                                             TGD->Lm[icell_cent] = 0.75*H; 
-                                            
+                                                
                                             TGD->iturbflag[icell_cent]=12;
-                                            
+                                                
                                         }
-                                        
+                                            
                                         TGD->tke[icell_cent]=0.5*(TGD->tau11[icell_cent]+TGD->tau22[icell_cent]+TGD->tau33[icell_cent]);
                                         TGD->CoEps[icell_cent]=5.7* pow(ustar,3.0)/(TGD->Lm[icell_cent]); 
-
+                                            
                                     }
                                 }
-                                if (u_wake_flag == 0 && v_wake_flag == 0 && w_wake_flag == 0)
-                                {
+                                // end of wake 
+                                if (u_wake_flag == 0 && v_wake_flag == 0 && w_wake_flag == 0) {
                                     break;
                                 }
+                                    
                             }
                         }
                     }
@@ -661,403 +542,6 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
             }
         }
     }
-
-    return;
-
-    for (auto k = 1; k <= k_start; k++) {
-        k_bottom = k;
-        if (base_height <= UGD->z[k])
-            break;
-    }
-    
-    for (auto k = k_start; k < UGD->nz-1; k++) {
-        k_top = k;
-        if (height_eff < UGD->z[k+1])
-            break;
-    }
-    
-    for (auto k = k_start; k < k_end; k++) {
-        kk = k;
-        if (0.75*H+base_height <= UGD->z[k])
-            break;
-    }
-    
-    for (auto k=k_top; k>=k_bottom; k--) {
-        z_build = UGD->z[k] - base_height;
-        
-        //reference velocity left
-        icell_face = i_ref_l + j_ref_l*nx + k*ny*nx;
-        u_h=0.5*(UGD->u[icell_face]+UGD->u[icell_face+1]); 
-        v_h=0.5*(UGD->v[icell_face]+UGD->v[icell_face+nx]); 
-        w_h=0.5*(UGD->w[icell_face]+UGD->w[icell_face+nx*ny]);
-        U_ref_l=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
-        
-        //reference velocity right
-        icell_face = i_ref_r + j_ref_r*nx + k*ny*nx;
-        u_h=0.5*(UGD->u[icell_face]+UGD->u[icell_face+1]); 
-        v_h=0.5*(UGD->v[icell_face]+UGD->v[icell_face+nx]); 
-        w_h=0.5*(UGD->w[icell_face]+UGD->w[icell_face+nx*ny]);
-        U_ref_r=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
-        
-        for (auto x_ds=0; x_ds < 2.0*ceil(3.0*Lr/dxy); x_ds++) {    
-            xp=xp_d+dxy+x_ds*0.5*dxy;
-            yp=0.0;
-            
-            int i = (cos(upwind_dir)*xp - sin(upwind_dir)*yp + building_cent_x)/UGD->dx;
-            int j = (sin(upwind_dir)*xp + cos(upwind_dir)*yp + building_cent_y)/UGD->dy;
-            icell_cent = i + j*(nx-1) + k*(ny-1)*(nx-1);    
-            icell_face = i + j*nx + k*ny*nx;
-            
-            if ( i > UGD->nx-2 && i < 0 && j > UGD->ny-2 && j < 0) {
-                break;
-            }
-            if (TGD->iturbflag[icell_cent] != 0 && TGD->iturbflag[icell_cent] != 10) {
-                
-                u_h=0.5*(UGD->u[icell_face]+UGD->u[icell_face+1]); 
-                v_h=0.5*(UGD->v[icell_face]+UGD->v[icell_face+nx]); 
-                w_h=0.5*(UGD->w[icell_face]+UGD->w[icell_face+nx*ny]);
-                U_a=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
-                dU_ref_H = max(abs(U_ref_l-U_a),abs(U_ref_r-U_a));
-                ustarH = kvonk*dU_ref_H;
-                
-                if ( dU_ref_H/(0.5*width_eff) >= U_a/(0.75*H)) { 
-                    ustar=ustarH;
-                    float ustar2 = ustar*ustar;
-                    
-                    TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-                    TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-                    TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
-                    
-                    TGD->tau12[icell_cent] = 0.0*ustar2;
-                    TGD->tau23[icell_cent] = 0.0; 
-                    TGD->tau13[icell_cent] = 0.0;
-                    
-                    TGD->Lm[icell_cent] = width_eff;
-        
-                    TGD->iturbflag[icell_cent]=11; 
-                } else {
-                    ustar=ustarV;
-                    float ustar2 = ustar*ustar;
-                    
-                    TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-                    TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-                    TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
-                    
-                    TGD->tau12[icell_cent] = 0;
-                    TGD->tau23[icell_cent] = -ustar2*sin(upwind_dir);//projection with wind dir
-                    TGD->tau13[icell_cent] = -ustar2*cos(upwind_dir);//projection with wind dir
-                    
-                    TGD->Lm[icell_cent] = 0.75*H; 
-                    
-                    TGD->iturbflag[icell_cent]=12;
-                } 
-                
-                TGD->tke[icell_cent]=0.5*(TGD->tau11[icell_cent]+TGD->tau22[icell_cent]+TGD->tau33[icell_cent]);
-                TGD->CoEps[icell_cent]=5.7* pow(ustar,3.0)/(TGD->Lm[icell_cent]); 
-            
-                //left main wake
-                for(auto y_sl=0; y_sl < 2*ceil(abs(yp_l)/dxy); ++y_sl) {
-                    yp= y_sl*0.5*dxy;
-                    
-                    int i = (cos(upwind_dir)*xp - sin(upwind_dir)*yp + building_cent_x)/UGD->dx;
-                    int j = (sin(upwind_dir)*xp + cos(upwind_dir)*yp + building_cent_y)/UGD->dy;
-                    icell_cent = i + j*(nx-1) + k*(ny-1)*(nx-1);    
-                    icell_face = i + j*nx + k*ny*nx;
-                
-                    if ( i > UGD->nx-2 && i < 0 && j > UGD->ny-2 && j < 0) { 
-                        break;
-                    }
-                    if (TGD->iturbflag[icell_cent] != 0 && TGD->iturbflag[icell_cent] != 10) {
-                        u_h=0.5*(UGD->u[icell_face]+UGD->u[icell_face+1]); 
-                        v_h=0.5*(UGD->v[icell_face]+UGD->v[icell_face+nx]); 
-                        w_h=0.5*(UGD->w[icell_face]+UGD->w[icell_face+nx*ny]);
-                        U_a=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
-                        
-                        if ( dU_ref_H/(0.5*width_eff) >= U_a/(0.75*H)) { 
-                            ustar=ustarH;
-                            float ustar2 = ustar*ustar;
-                            
-                            TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-                            TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-                            TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
-                            
-                            TGD->tau12[icell_cent] = abs(yp)/(0.5*width_eff)*ustar2;
-                            TGD->tau23[icell_cent] = 0.0; 
-                            TGD->tau13[icell_cent] = 0.0;
-                        
-                            TGD->Lm[icell_cent] = width_eff;
-                            
-                            TGD->iturbflag[icell_cent]=11; 
-                        } else {
-                            ustar=ustarV;
-                            float ustar2 = ustar*ustar;
-                            
-                            TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-                            TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-                            TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
-                            
-                            TGD->tau12[icell_cent] = 0;
-                            TGD->tau23[icell_cent] = -ustar2*sin(upwind_dir);//projection with wind dir
-                            TGD->tau13[icell_cent] = -ustar2*cos(upwind_dir);//projection with wind dir
-                            
-                            TGD->Lm[icell_cent] = 0.75*H; 
-                            
-                            TGD->iturbflag[icell_cent]=12;
-                        } 
-                        
-                        TGD->tke[icell_cent]=0.5*(TGD->tau11[icell_cent]+TGD->tau22[icell_cent]+TGD->tau33[icell_cent]);
-                        TGD->CoEps[icell_cent]=5.7* pow(ustar,3.0)/(TGD->Lm[icell_cent]); 
-                        
-                    }
-                }
-                
-                //right main wake
-                for(auto y_sr=0; y_sr < 2*ceil(abs(yp_r)/dxy); ++y_sr) {
-                    yp= -y_sr*0.5*dxy;
-                    
-                    int i = (cos(upwind_dir)*xp - sin(upwind_dir)*yp + building_cent_x)/UGD->dx;
-                    int j = (sin(upwind_dir)*xp + cos(upwind_dir)*yp + building_cent_y)/UGD->dy;
-                    icell_cent = i + j*(nx-1) + k*(ny-1)*(nx-1);    
-                    icell_face = i + j*nx + k*ny*nx;
-
-                    if ( i > UGD->nx-2 && i < 0 && j > UGD->ny-2 && j < 0) {
-                        break;
-                    }
-                    if (TGD->iturbflag[icell_cent] != 0 && TGD->iturbflag[icell_cent] != 10) {
-                        u_h=0.5*(UGD->u[icell_face]+UGD->u[icell_face+1]); 
-                        v_h=0.5*(UGD->v[icell_face]+UGD->v[icell_face+nx]); 
-                        w_h=0.5*(UGD->w[icell_face]+UGD->w[icell_face+nx*ny]);
-                        U_a=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
-                        
-                        if ( dU_ref_H/(0.5*width_eff) >= U_a/(0.75*H)) { 
-                            ustar=ustarH;
-                            float ustar2 = ustar*ustar;
-                            
-                            TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-                            TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-                            TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
-                            
-                            TGD->tau12[icell_cent] = abs(yp)/(0.5*width_eff)*ustar2;
-                            TGD->tau23[icell_cent] = 0.0; 
-                            TGD->tau13[icell_cent] = 0.0;
-                    
-                            TGD->Lm[icell_cent] = width_eff;
-                            
-                            TGD->iturbflag[icell_cent]=11; 
-                        } else {
-                            ustar=ustarV;
-                            float ustar2 = ustar*ustar;
-                            
-                            TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-                            TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-                            TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
-                            
-                            TGD->tau12[icell_cent] = 0;
-                            TGD->tau23[icell_cent] = -ustar2*sin(upwind_dir);//projection with wind dir
-                            TGD->tau13[icell_cent] = -ustar2*cos(upwind_dir);//projection with wind dir
-                            
-                            TGD->Lm[icell_cent] = 0.75*H; 
-                            
-                            TGD->iturbflag[icell_cent]=12;
-                        } 
-                        
-                        TGD->tke[icell_cent]=0.5*(TGD->tau11[icell_cent]+TGD->tau22[icell_cent]+TGD->tau33[icell_cent]);
-                        TGD->CoEps[icell_cent]=5.7* pow(ustar,3.0)/(TGD->Lm[icell_cent]); 
-                        
-                    }
-                }
-            }
-        }
-        
-        // down stream reference point (xp=most downstream vertex + dxy,yp=0)
-        xp=xp_d+dxy;
-        yp=0.0;
-        
-        int i = (cos(upwind_dir)*xp - sin(upwind_dir)*yp + building_cent_x)/UGD->dx;
-        int j = (sin(upwind_dir)*xp + cos(upwind_dir)*yp + building_cent_y)/UGD->dy;
-        icell_face = i + j*nx + k*ny*nx;
-        
-        u_h=0.5*(UGD->u[icell_face]+UGD->u[icell_face+1]); 
-        v_h=0.5*(UGD->v[icell_face]+UGD->v[icell_face+nx]); 
-        w_h=0.5*(UGD->w[icell_face]+UGD->w[icell_face+nx*ny]);
-        U_a=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
-        dU_ref_H = max(abs(U_ref_l-U_a),abs(U_ref_r-U_a));
-        ustarH = kvonk*dU_ref_H;
-        
-        //left side wake
-        for (auto x_ds=0; x_ds <= 2*ceil(abs(xp_d-xp_l)/dxy); x_ds++) {    
-            xp=xp_l+x_ds*0.5*dxy;
-            yp = 0.0;
-            
-        
-            for(auto y_sl=0; y_sl < 2*ceil(abs(yp_l)/dxy); ++y_sl) {
-                yp= y_sl*0.5*dxy;
-                
-                int i = (cos(upwind_dir)*xp - sin(upwind_dir)*yp + building_cent_x)/UGD->dx;
-                int j = (sin(upwind_dir)*xp + cos(upwind_dir)*yp + building_cent_y)/UGD->dy;
-                int cell = i + j*(nx-1) + k*(ny-1)*(nx-1);    
-                
-                if ( i > UGD->nx-2 && i < 0 && j > UGD->ny-2 && j < 0) {
-                    break;
-                }
-                if (TGD->iturbflag[cell] != 0 && TGD->iturbflag[cell] != 10) {
-                    u_h=0.5*(UGD->u[icell_face]+UGD->u[icell_face+1]); 
-                    v_h=0.5*(UGD->v[icell_face]+UGD->v[icell_face+nx]); 
-                    w_h=0.5*(UGD->w[icell_face]+UGD->w[icell_face+nx*ny]);
-                    U_a=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
-                    
-                    if ( dU_ref_H/(0.5*width_eff) >= U_a/(0.75*H)) { 
-                        ustar=ustarH;
-                        float ustar2 = ustar*ustar;
-                        
-                        TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-                        TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-                        TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
-                        
-                        TGD->tau12[icell_cent] = abs(yp)/(0.5*width_eff)*ustar2;
-                        TGD->tau23[icell_cent] = 0.0; 
-                        TGD->tau13[icell_cent] = 0.0;
-                        
-                        TGD->Lm[icell_cent] = width_eff;
-                        
-                        TGD->iturbflag[icell_cent]=11; 
-                    } else {
-                        ustar=ustarV;
-                        float ustar2 = ustar*ustar;
-                        
-                        TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-                        TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-                        TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
-                        
-                        TGD->tau12[icell_cent] = 0;
-                        TGD->tau23[icell_cent] = -ustar2*sin(upwind_dir);//projection with wind dir
-                        TGD->tau13[icell_cent] = -ustar2*cos(upwind_dir);//projection with wind dir
-                        
-                        TGD->Lm[icell_cent] = 0.75*H; 
-                        
-                        TGD->iturbflag[icell_cent]=12;
-                    } 
-                    
-                    TGD->tke[icell_cent]=0.5*(TGD->tau11[icell_cent]+TGD->tau22[icell_cent]+TGD->tau33[icell_cent]);
-                    TGD->CoEps[icell_cent]=5.7* pow(ustar,3.0)/(TGD->Lm[icell_cent]);    
-                    
-                }
-            } 
-        }
-        
-        //right side wake
-        for (auto x_ds=0; x_ds <= 2*ceil(abs(xp_d-xp_r)/dxy); x_ds++) {    
-            xp=xp_r+x_ds*0.5*dxy;
-            yp=0.0;
-            
-        
-            for(auto y_sr=0; y_sr < 2*ceil(abs(yp_r)/dxy); ++y_sr) {
-                yp=-y_sr*0.5*dxy;
-                
-                int i = (cos(upwind_dir)*xp - sin(upwind_dir)*yp + building_cent_x)/UGD->dx;
-                int j = (sin(upwind_dir)*xp + cos(upwind_dir)*yp + building_cent_y)/UGD->dy;
-                icell_cent = i + j*(nx-1) + k*(ny-1)*(nx-1);    
-                
-                if ( i > UGD->nx-2 && i < 0 && j > UGD->ny-2 && j < 0) {
-                    break;
-                }
-                if (TGD->iturbflag[icell_cent] != 0 && TGD->iturbflag[icell_cent] != 10) {
-                    u_h=0.5*(UGD->u[icell_face]+UGD->u[icell_face+1]); 
-                    v_h=0.5*(UGD->v[icell_face]+UGD->v[icell_face+nx]); 
-                    w_h=0.5*(UGD->w[icell_face]+UGD->w[icell_face+nx*ny]);
-                    U_a=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
-                    
-                    if ( dU_ref_H/(0.5*width_eff) >= U_a/(0.75*H)) { 
-                        ustar=ustarH;
-                        float ustar2 = ustar*ustar;
-                        
-                        TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-                        TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-                        TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
-                        
-                        TGD->tau12[icell_cent] = abs(yp)/(0.5*width_eff)*ustar2;
-                        TGD->tau23[icell_cent] = 0.0; 
-                        TGD->tau13[icell_cent] = 0.0;
-                        
-                        TGD->Lm[icell_cent] = width_eff;
-                        
-                        TGD->iturbflag[icell_cent]=11; 
-                    } else {
-                        ustar=ustarV;
-                        float ustar2 = ustar*ustar;
-                        
-                        TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-                        TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-                        TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
-                        
-                        TGD->tau12[icell_cent] = 0;
-                        TGD->tau23[icell_cent] = -ustar2*sin(upwind_dir);//projection with wind dir
-                        TGD->tau13[icell_cent] = -ustar2*cos(upwind_dir);//projection with wind dir
-                        
-                        TGD->Lm[icell_cent] = 0.75*H; 
-                        
-                        TGD->iturbflag[icell_cent]=12;
-                    } 
-                    
-                    TGD->tke[icell_cent]=0.5*(TGD->tau11[icell_cent]+TGD->tau22[icell_cent]+TGD->tau33[icell_cent]);
-                    TGD->CoEps[icell_cent]=5.7* pow(ustar,3.0)/(TGD->Lm[icell_cent]); 
-                    
-                }
-            }   
-        }
-    }   
     
     return;
-
 }
-
-
-
-
-/*
-if(ustarH>ustarV){
-        ustar=ustarH;
-        Lm=wth.at(ibld);
-    }
-    else{
-        ustar=ustarV;
-        Lm=0.75*hgt.at(ibld);
-    }
-    
-    float ustar2 = ustar*ustar;
-    TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-    TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-    TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
-    if(ustarH>ustarV) {
-        ustar=ustarH;
-        float ustar2 = ustar*ustar;
-        
-        TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-        TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-        TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
-        
-        TGD->tau12[icell_cent] = ustar2; //to finish (y-ya)/yW/2+
-        TGD->tau23[icell_cent] = 0.0; 
-        TGD->tau13[icell_cent] = 0.0;
-        
-        TGD->Lm[icell_cent] = 0; //effective width
-        
-    } else {
-        ustar=ustarV;
-        float ustar2 = ustar*ustar;
-        
-        TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-        TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-        TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
-        
-        TGD->tau12[icell_cent] = 0;
-        TGD->tau23[icell_cent] = -ustar2;//to finish (projection with wind dir)
-        TGD->tau13[icell_cent] = -ustar2;//to finish (projection with wind dir)
-        
-        TGD->Lm[icell_cent] = 0; //height
-    }
-
-    TGD->tke[icell_cent]=0.5*(TGD->tau11[icell_cent]+TGD->tau22[icell_cent]+TGD->tau33[icell_cent]);
-    TGD->CoEps[icell_cent]=5.7* pow(ustar,3.0)/(TGD->Lm[icell_cent]); 
-    
-*/

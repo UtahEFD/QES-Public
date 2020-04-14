@@ -52,10 +52,10 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
   float ray_intersect;
   int num_crossing, vert_id, start_poly;
 
-  if (building_number == 3674)
-  {
-    return;
-  }
+  //if (building_number == 3674)
+  //{
+  //  return;
+  //}
 
 
   // Loop to calculate maximum and minimum of x and y values of the building
