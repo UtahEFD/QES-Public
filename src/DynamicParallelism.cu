@@ -315,6 +315,8 @@ DynamicParallelism::DynamicParallelism(const URBInputData* UID, URBGeneralData* 
               << deviceProp.clockRate * 1e-3f << " MHz ("
               << deviceProp.clockRate * 1e-6f << " GHz)" << std::endl;
     }
+	    
+cudaSetDevice(0);
     
     
 }
