@@ -146,8 +146,7 @@ void TURBGeneralData::run(URBGeneralData* UGD){
     std::cout<<"[TURB] \t\t Stress Tensor computed..."<<std::endl;
 
     std::cout << "[TURB] \t\t Applying non local mixing..."<<std::endl;;
-    for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
-    {
+    for (size_t i = 0; i < UGD->allBuildingsV.size(); i++) {
         UGD->allBuildingsV[UGD->building_id[i]]->NonLocalMixing(UGD, this, UGD->building_id[i]);
     }
     
