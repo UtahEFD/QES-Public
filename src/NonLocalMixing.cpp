@@ -24,7 +24,7 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     float U_ref_V; //reference veocity veritcal (top of building)
     float U_ref_r,U_ref_l,dU_ref_H; //reference velocities horizontal (left and right)
     float U_a; //axis velocity
-    float u_h,v_h,w_h; //interpolated velocites
+    float u_h,v_h; //interpolated velocites
 
     // x,y positons of the polybuilding verteces in the rotated coord syst rotated with the wind dir and building center
     //float xp,yp; //working variables
@@ -48,7 +48,7 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     float yc, xc;
     
     float Lr_local, Lr_local_w;   // Local length of the wake for each velocity component
-    float x_wall, x_wall_w;
+    float x_wall = 0.0, x_wall_w = 0.0;
 
     //float Lr_local, Lr_local_u, Lr_local_v, Lr_local_w;   // Local length of the wake for each velocity component
     //float x_wall, x_wall_u, x_wall_v, x_wall_w;
@@ -62,7 +62,6 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     int stop_id = 0;
     int kk = k_start;
     float tol;
-    float farwake_exp = 1.5;
     float farwake_factor = 3;
     float epsilon = 10e-10;
     int u_wake_flag, v_wake_flag, w_wake_flag;
@@ -77,12 +76,28 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     //float farwake_vel;
     //float R_scale, R_cx, vd, hd, shell_height;
     
-    int k_bottom, k_top;
+    int k_bottom = 1, k_top = 1;
     
     if ( xi.size() == 0 ) {
-        // exit in building has no area (computed in polygonWake.cpp)
+        // exit if building has no area (computed in polygonWake.cpp)
+        std::cout<< "[WARNING] building ill-defined -> use local mixing (building id="<< building_id << ")" <<std::endl;
         return;
     }
+    if (k_start < 1 || k_start > nz-2 || k_end < 1 || k_end > nz-2 ) { 
+        // exit if building start/end point is ill-defined (computed in polygonWake.cpp)
+        std::cout<< "[WARNING] building ill-defined -> use local mixing (building id="<< building_id << ")" <<std::endl;
+        return;
+    }
+    /* 
+    if ( height_eff >= UGD->z[nz-1] ) {
+        std::cout << "domain = "<< UGD->z[0] << " " << UGD->z[nz-2] << " " << UGD->z[nz-1] << std::endl;
+        std::cout << "buidling = "<< base_height << " " << height_eff << std::endl; 
+        // exit if building above top domain is ill-defined (computed in polygonWake.cpp)
+        std::cout<< "[WARNING] building ill-defined -> use local mixing (building id="<< building_id << ")" <<std::endl;
+        return;
+        }
+    */
+    
 
     tol = 0.01*M_PI/180.0;
     // Calculating length of the downwind wake based on Fackrell (1984) formulation
@@ -132,21 +147,20 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     Lr = Lr_ave/total_seg_length;
     for (auto k = 1; k <= k_start; k++) {
         k_bottom = k;
-        if (base_height <= UGD->z[k]) {
+        if (base_height <= UGD->z.at(k)) {
             break;
         }
     }
-
-    for (auto k = k_start; k < UGD->nz-1; k++) {
+    
+    for (auto k = k_start; k < UGD->nz-2; k++) {
         k_top = k;
-        if (height_eff < UGD->z[k+1]) {
+        if (height_eff < UGD->z.at(k+1)) {
             break;
         }
     }
-
     for (auto k = k_start; k < k_end; k++) {
         kk = k;
-        if (0.75*H+base_height <= UGD->z[k]) {
+        if (0.75*H+base_height <= UGD->z.at(k)) {
             break;
         }
     }
@@ -209,38 +223,39 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     yp_r=yp_i[minIndex]+0.5*dxy;
     yp_l=yp_i[maxIndex]-0.5*dxy;
 
-    // x-coord of maximun downstream vertex
-    float xp_d;
-    maxIndex = std::max_element(xp_i.begin(),xp_i.end()) - xp_i.begin();  
-    xp_d=xp_i[maxIndex]-0.5*dxy;    
-
-    // set itrubflag for debug
-    if (false) {
-        float x_r, y_r;
-        x_r = cos(upwind_dir)*xp_r - sin(upwind_dir)*yp_r + building_cent_x;
-        y_r = sin(upwind_dir)*xp_r + cos(upwind_dir)*yp_r + building_cent_y;
-        
-        int i_r = floor(x_r/UGD->dx);
-        int j_r = floor(y_r/UGD->dy);
-        
-        for (auto k=k_top+1; k>=k_bottom; k--) {
-            icell_cent = i_r + j_r*(nx-1) + k*(ny-1)*(nx-1);
-            TGD->iturbflag[icell_cent]=12;
-        }
-        
-        float x_l, y_l;
-        x_l = cos(upwind_dir)*xp_l - sin(upwind_dir)*yp_l + building_cent_x;
-        y_l = sin(upwind_dir)*xp_l + cos(upwind_dir)*yp_l + building_cent_y;
-        
-        int i_l = floor(x_l/UGD->dx);
-        int j_l = floor(y_l/UGD->dy);
-        
-        for (auto k=k_top+1; k>=k_bottom; k--) {
-            icell_cent = i_l + j_l*(nx-1) + k*(ny-1)*(nx-1);
-            TGD->iturbflag[icell_cent]=12;
-        }
-    }
-
+    /* FM (debug notes) this 
+     * This section is not used in the final version following Willams et 2004
+     // x-coord of maximun downstream vertex
+     float xp_d;
+     maxIndex = std::max_element(xp_i.begin(),xp_i.end()) - xp_i.begin();  
+     xp_d=xp_i[maxIndex]-0.5*dxy;    
+     
+     // set itrubflag for debug
+     float x_r, y_r;
+     x_r = cos(upwind_dir)*xp_r - sin(upwind_dir)*yp_r + building_cent_x;
+     y_r = sin(upwind_dir)*xp_r + cos(upwind_dir)*yp_r + building_cent_y;
+     
+     int i_r = floor(x_r/UGD->dx);
+     int j_r = floor(y_r/UGD->dy);
+     
+     for (auto k=k_top+1; k>=k_bottom; k--) {
+     icell_cent = i_r + j_r*(nx-1) + k*(ny-1)*(nx-1);
+     TGD->iturbflag[icell_cent]=12;
+     }
+     
+     float x_l, y_l;
+     x_l = cos(upwind_dir)*xp_l - sin(upwind_dir)*yp_l + building_cent_x;
+     y_l = sin(upwind_dir)*xp_l + cos(upwind_dir)*yp_l + building_cent_y;
+     
+     int i_l = floor(x_l/UGD->dx);
+     int j_l = floor(y_l/UGD->dy);
+     
+     for (auto k=k_top+1; k>=k_bottom; k--) {
+     icell_cent = i_l + j_l*(nx-1) + k*(ny-1)*(nx-1);
+     TGD->iturbflag[icell_cent]=12;
+     }
+    */
+    
     ///////
     float xp_ref_r, yp_ref_r;
     float x_ref_r, y_ref_r;
@@ -254,11 +269,9 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     int j_ref_r = floor(y_ref_r/UGD->dy);
     
     if ( i_ref_r >= UGD->nx-2 && i_ref_r <= 0 && j_ref_r >= UGD->ny-2 && j_ref_r <= 0) {
-        std::cout<< "right ref point outside domain" <<std::endl;
+        std::cout<< "[WARNING] right ref point outside domain -> use local mixing (building id="<< building_id << ")" <<std::endl;
         return;
-    } 
-        
-    
+    }
     for (auto k=k_top+1; k>=k_bottom; k--) {
         icell_cent = i_ref_r + j_ref_r*(nx-1) + k*(ny-1)*(nx-1);
         TGD->iturbflag[icell_cent]=12;
@@ -277,10 +290,9 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     int j_ref_l = floor(y_ref_l/UGD->dy);
 
     if ( i_ref_l >= UGD->nx-2 && i_ref_l <= 0 && j_ref_l >= UGD->ny-2 && j_ref_l <= 0) {
-        std::cout<< "left ref point outside domain" <<std::endl;
+        std::cout<< "[WARNING] left ref point outside domain -> use local mixing (building id="<< building_id << ")" <<std::endl;
         return;
-    } 
-
+    }
     for (auto k=k_top+1; k>=k_bottom; k--) {
         icell_cent = i_ref_l + j_ref_l*(nx-1) + k*(ny-1)*(nx-1);
         TGD->iturbflag[icell_cent]=12;
@@ -366,7 +378,7 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
                         xc = 0.5*x_id*UGD->dxy;
                         int i = ((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx;
                         int j = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy;
-                        if (i >= UGD->nx-2 && i <= 0 && j >= UGD->ny-2 && j <= 0)
+                        if (i >= UGD->nx-2 || i <= 0 || j >= UGD->ny-2 || j <= 0)
                         {
                             break;
                         }
@@ -429,8 +441,10 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
                                     U_a=u_h*cos(upwind_dir)+v_h*sin(upwind_dir);
                                     //U_a=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
                                     
+                                    TGD->iturbflag[icell_cent_cl]=12; 
+                                    
                                 } else { //if centerline outside, assume U_centerline 90% of U_ref_l
-                                    std::cout << "[WARNING] centerline outside of domain -> use fixed value" <<  std::endl;
+                                    std::cout << "[WARNING] centerline outside of domain -> use fixed value (building id="<< building_id << ")" << std::endl;
                                     U_a=0.9*U_ref_l;
                                 }
                                 // horizontal velocity different
