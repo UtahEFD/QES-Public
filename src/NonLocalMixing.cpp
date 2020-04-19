@@ -47,12 +47,9 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     float z_build;                  // z value of each building point from its base height
     float yc, xc;
     
-    float Lr_local, Lr_local_w;   // Local length of the wake for each velocity component
-    float x_wall = 0.0, x_wall_w = 0.0;
+    float Lr_local, Lr_local_u, Lr_local_v, Lr_local_w;   // Local length of the wake for each velocity component
+    float x_wall = 0.0, x_wall_u = 0.0, x_wall_v = 0.0, x_wall_w = 0.0;
 
-    //float Lr_local, Lr_local_u, Lr_local_v, Lr_local_w;   // Local length of the wake for each velocity component
-    //float x_wall, x_wall_u, x_wall_v, x_wall_w;
-    
     float y_norm, canyon_factor;
     int x_id_min;
 
@@ -66,15 +63,12 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     float epsilon = 10e-10;
     int u_wake_flag, v_wake_flag, w_wake_flag;
     
-    int i_w, j_w, i_cl, j_cl; 
+    int i_cl, j_cl; 
     float xp, yp;
-    float xw, yw, dn_w; 
 
-    //int i_u, j_u, i_v, j_v, i_w, j_w;          // i and j indices for x, y and z directions
-    //float xu, yu, xv, yv, xw, yw;
-    //float dn_u, dn_v, dn_w;             // Length of cavity zone
-    //float farwake_vel;
-    //float R_scale, R_cx, vd, hd, shell_height;
+    int i_u, j_u, i_v, j_v, i_w, j_w;          // i and j indices for x, y and z directions
+    float xu, yu, xv, yv, xw, yw;
+    float dn_u, dn_v, dn_w;             // Length of cavity zone
     
     int k_bottom = 1, k_top = 1;
     
@@ -274,7 +268,7 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     }
     for (auto k=k_top+1; k>=k_bottom; k--) {
         icell_cent = i_ref_r + j_ref_r*(nx-1) + k*(ny-1)*(nx-1);
-        TGD->iturbflag[icell_cent]=12;
+        //TGD->iturbflag[icell_cent]=12;
     }
     
     ///////
@@ -295,13 +289,13 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     }
     for (auto k=k_top+1; k>=k_bottom; k--) {
         icell_cent = i_ref_l + j_ref_l*(nx-1) + k*(ny-1)*(nx-1);
-        TGD->iturbflag[icell_cent]=12;
+        //TGD->iturbflag[icell_cent]=12;
     }
     
     
     //std::cout << "buidling id" << building_id << " k_start=" << k_start << " k_end=" << k_end << " kk=" << kk << std::endl;
 
-    for (auto k=k_top+1; k>=k_bottom; k--)
+    for (auto k=k_top; k>=k_bottom; k--)
     {
         z_build = UGD->z[k] - base_height;
         
@@ -372,9 +366,10 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
                     x_id_min = -1;
                     for (auto x_id=1; x_id <= 2*ceil(farwake_factor*Lr_local/UGD->dxy); x_id++)
                     {
-                        u_wake_flag = 0;
-                        v_wake_flag = 0;
+                        u_wake_flag = 1;
+                        v_wake_flag = 1;
                         w_wake_flag = 1;
+                        
                         xc = 0.5*x_id*UGD->dxy;
                         int i = ((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx;
                         int j = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy;
@@ -410,7 +405,74 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
                         
                         if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
                         {
-                         
+                            
+                            i_u = std::round(((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx);
+                            j_u = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy;
+                            if (i_u < UGD->nx-1 && i_u > 0 && j_u < UGD->ny-1 && j_u > 0)
+                            {
+                                xp = i_u*UGD->dx-building_cent_x;
+                                yp = (j_u+0.5)*UGD->dy-building_cent_y;
+                                xu = xp*cos(upwind_dir)+yp*sin(upwind_dir);
+                                yu = -xp*sin(upwind_dir)+yp*cos(upwind_dir);
+                                Lr_local_u = Lr_node[id]+(yu-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
+                                if (perpendicular_flag[id] > 0)
+                                {
+                                    x_wall_u = xi[id];
+                                    
+                                }
+                                else
+                                {
+                                    x_wall_u = ((xi[id+1]-xi[id])/(yi[id+1]-yi[id]))*(yu-yi[id])+ xi[id];
+                                }
+                                
+                                xu -= x_wall_u;
+                                if (abs(yu) < abs(y_norm) && abs(y_norm) > epsilon && z_build < height_eff && height_eff > epsilon)
+                                {
+                                    dn_u = sqrt((1.0-pow((yu/y_norm), 2.0))*(1.0-pow((z_build/height_eff),2.0))*pow((canyon_factor*Lr_local_u),2.0));
+                                }
+                                else
+                                {
+                                    dn_u = 0.0;
+                                }
+                                if (xu > farwake_factor*dn_u)
+                                {
+                                    u_wake_flag = 0;
+                                }
+                            }
+                            
+                            i_v = ((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx;
+                            j_v = std::round(((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy);
+                            if (i_v<UGD->nx-1 && i_v>0 && j_v<UGD->ny-1 && j_v>0)
+                            {
+                                xp = (i_v+0.5)*UGD->dx-building_cent_x;
+                                yp = j_v*UGD->dy-building_cent_y;
+                                xv = xp*cos(upwind_dir)+yp*sin(upwind_dir);
+                                yv = -xp*sin(upwind_dir)+yp*cos(upwind_dir);
+                                Lr_local_v = Lr_node[id]+(yv-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
+                                if (perpendicular_flag[id] > 0)
+                                    {
+                                        x_wall_v = xi[id];
+                                    }
+                                else
+                                {
+                                    x_wall_v = ((xi[id+1]-xi[id])/(yi[id+1]-yi[id]))*(yv-yi[id]) + xi[id];
+                                }
+                                xv -= x_wall_v;
+                                
+                                if (abs(yv) < abs(y_norm) && abs(y_norm) > epsilon && z_build < height_eff && height_eff > epsilon)
+                                {
+                                    dn_v = sqrt((1.0-pow((yv/y_norm), 2.0))*(1.0-pow((z_build/height_eff),2.0))*pow((canyon_factor*Lr_local_v),2.0));
+                                }
+                                else
+                                {
+                                    dn_v = 0.0;
+                                }
+                                if (xv > farwake_factor*dn_v)
+                                {
+                                    v_wake_flag = 0;
+                                }
+                            }
+                            
                             i_w = ceil(((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/UGD->dx)-1;
                             j_w = ceil(((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/UGD->dy)-1;
                             //check if position in domain
@@ -422,64 +484,64 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
                                 xw = xp*cos(upwind_dir)+yp*sin(upwind_dir);
                                 yw = -xp*sin(upwind_dir)+yp*cos(upwind_dir);
                                 
-                                // location of the center line
-                                i_cl = ceil((cos(upwind_dir)*xw + building_cent_x)/UGD->dx)-1;
-                                j_cl = ceil((sin(upwind_dir)*xw + building_cent_y)/UGD->dy)-1;
-                                //check if position in domain
-                                if (i_cl<UGD->nx-2 && i_cl>0 && j_cl<UGD->ny-2 && j_cl>0) {
-                                    // index for centerline
-                                    icell_cent_cl = i_cl + j_cl*(nx-1) + k*(ny-1)*(nx-1);    
-                                    icell_face_cl = i_cl + j_cl*nx + k*ny*nx;
-                                    //index for current postion
-                                    icell_cent = i_w + j_w*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                                    icell_face = i_w + j_w*UGD->nx + k*UGD->nx*UGD->ny;
-                                    
-                                    // velocity interpolated at the center line
-                                    u_h=0.5*(UGD->u[icell_face_cl]+UGD->u[icell_face_cl+1]); 
-                                    v_h=0.5*(UGD->v[icell_face_cl]+UGD->v[icell_face_cl+nx]); 
-                                    //w_h=0.5*(UGD->w[icell_face_cl]+UGD->w[icell_face_cl+nx*ny]);
-                                    U_a=u_h*cos(upwind_dir)+v_h*sin(upwind_dir);
-                                    //U_a=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
-                                    
-                                    TGD->iturbflag[icell_cent_cl]=12; 
-                                    
-                                } else { //if centerline outside, assume U_centerline 90% of U_ref_l
-                                    std::cout << "[WARNING] centerline outside of domain -> use fixed value (building id="<< building_id << ")" << std::endl;
-                                    U_a=0.9*U_ref_l;
-                                }
-                                // horizontal velocity different
-                                dU_ref_H = max(abs(U_ref_l-U_a),abs(U_ref_r-U_a));
-                                ustarH = kvonk*dU_ref_H;
-                                    
-                                // Velocity interoplated at current location 
-                                u_h=0.5*(UGD->u[icell_face]+UGD->u[icell_face+1]); 
-                                v_h=0.5*(UGD->v[icell_face]+UGD->v[icell_face+nx]); 
-                                //w_h=0.5*(UGD->w[icell_face]+UGD->w[icell_face+nx*ny]);
-                                U_a=u_h*cos(upwind_dir)+v_h*sin(upwind_dir);
-                                //U_a=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
-                                    
                                 Lr_local_w = Lr_node[id]+(yw-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
                                 if (perpendicular_flag[id] > 0) {
                                     x_wall_w = xi[id];
                                 } else {
                                     x_wall_w = ((xi[id+1]-xi[id])/(yi[id+1]-yi[id]))*(yw-yi[id]) + xi[id];
                                 }
-
+                                
                                 xw -= x_wall_w;
-                                    
+                                
                                 if (abs(yw) < abs(y_norm) && abs(y_norm) > epsilon && z_build < height_eff && height_eff > epsilon) {
                                     dn_w = sqrt((1.0-pow(yw/y_norm, 2.0))*(1.0-pow(z_build/height_eff,2.0))*pow(canyon_factor*Lr_local_w,2.0));
                                 } else {
                                     dn_w = 0.0;
                                 }
-                                    
+                                
                                 if (xw > farwake_factor*dn_w) {
                                     w_wake_flag = 0;
                                 }
-                                    
+
+                                icell_cent = i_w + j_w*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+                                icell_face = i_w + j_w*UGD->nx + k*UGD->nx*UGD->ny;
                                 if (dn_w > 0.0 && w_wake_flag == 1 && yw <= yi[id] && yw >= yi[id+1] && 
                                     UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2) 
                                 {
+                                    // location of the center line
+                                    i_cl = ceil((cos(upwind_dir)*xw + building_cent_x)/UGD->dx)-1;
+                                    j_cl = ceil((sin(upwind_dir)*xw + building_cent_y)/UGD->dy)-1;
+                                    
+                                    //check if position in domain
+                                    if (i_cl<UGD->nx-2 && i_cl>0 && j_cl<UGD->ny-2 && j_cl>0) {
+                                        // index for centerline
+                                        icell_cent_cl = i_cl + j_cl*(nx-1) + k*(ny-1)*(nx-1);    
+                                        icell_face_cl = i_cl + j_cl*nx + k*ny*nx;
+                                        
+                                        // velocity interpolated at the center line
+                                        u_h=0.5*(UGD->u[icell_face_cl]+UGD->u[icell_face_cl+1]); 
+                                        v_h=0.5*(UGD->v[icell_face_cl]+UGD->v[icell_face_cl+nx]); 
+                                        //w_h=0.5*(UGD->w[icell_face_cl]+UGD->w[icell_face_cl+nx*ny]);
+                                        U_a=u_h*cos(upwind_dir)+v_h*sin(upwind_dir);
+                                        //U_a=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
+                                        
+                                        //TGD->iturbflag[icell_cent_cl]=12; 
+                                        
+                                    } else { //if centerline outside, assume U_centerline 90% of U_ref_l
+                                        std::cout << "[WARNING] centerline outside of domain (building id="<< building_id << ")" << std::endl;
+                                        U_a=0.9*U_ref_l;
+                                    }
+                                    // horizontal velocity different
+                                    dU_ref_H = max(abs(U_ref_l-U_a),abs(U_ref_r-U_a));
+                                    ustarH = kvonk*dU_ref_H;
+                                    
+                                    // Velocity interoplated at current location 
+                                    u_h=0.5*(UGD->u[icell_face]+UGD->u[icell_face+1]); 
+                                    v_h=0.5*(UGD->v[icell_face]+UGD->v[icell_face+nx]); 
+                                    //w_h=0.5*(UGD->w[icell_face]+UGD->w[icell_face+nx*ny]);
+                                    U_a=u_h*cos(upwind_dir)+v_h*sin(upwind_dir);
+                                    //U_a=sqrt(u_h*u_h + v_h*v_h + w_h*w_h);
+                                    
                                     // Far wake zone
                                     if (xw > dn_w) {
                                         if (canyon_factor == 1) {
