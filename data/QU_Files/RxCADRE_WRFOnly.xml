@@ -1,7 +1,7 @@
 <simulationParameters>
 
   <!-- Specifies the WRF Output file that will be read in by QES-Winds -->
-  <WRF>/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21</WRF>
+  <WRF>/uufs/chpc.utah.edu/common/home/stoll-group3/willemsn/RXCwrfout_d07_2012-11-11_15-21</WRF>
 
   <!-- -->
   <WRFSensorSample>12</WRFSensorSample>
