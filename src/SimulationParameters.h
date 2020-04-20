@@ -36,7 +36,7 @@ public:
     float UTMx;
     float UTMy;
     int UTMZone;
-    int UTMZoneLetter;
+    std::string UTMZoneLetter;
     int meshTypeFlag;
     float halo_x = 0.0;
     float halo_y = 0.0;
@@ -80,6 +80,7 @@ public:
     
     std::string wrfFile;
     WRFInput *wrfInputData = nullptr;
+    int wrfSensorSample;
 
     enum DomainInputType {
         WRFOnly,
@@ -94,7 +95,7 @@ public:
         UTMx = 0.0;
         UTMy = 0.0;
         UTMZone = 0;
-        UTMZoneLetter = 0;
+        UTMZoneLetter = "";
     }
 
     ~SimulationParameters()
@@ -132,7 +133,7 @@ public:
         parsePrimitive<float>(false, UTMx, "UTMx");
         parsePrimitive<float>(false, UTMy, "UTMy");
         parsePrimitive<int>(false, UTMZone, "UTMZone");
-        parsePrimitive<int>(false, UTMZoneLetter, "UTMZoneLetter");
+        parsePrimitive<std::string>(false, UTMZoneLetter, "UTMZoneLetter");
         parsePrimitive<float>(false, halo_x, "halo_x");
         parsePrimitive<float>(false, halo_y, "halo_y");
         parsePrimitive<float>(false, heightFactor, "heightFactor");
@@ -144,7 +145,9 @@ public:
         parsePrimitive<std::string>(false, shpFile, "SHP");
 
         wrfFile = "";
+        wrfSensorSample = 1;
         parsePrimitive<std::string>(false, wrfFile, "WRF");
+        parsePrimitive<int>(false, wrfSensorSample, "WRFSensorSample");
 
         shpBuildingLayerName = "buildings";  // defaults
         parsePrimitive<std::string>(false, shpBuildingLayerName, "SHPBuildingLayer");
@@ -178,7 +181,7 @@ public:
             // Read in height field
             //
             std::cout << "Processing WRF data for terrain and met param sensors from " << wrfFile << std::endl;
-            wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, 0, 0 );
+            wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, 0, 0, wrfSensorSample );
             std::cout << "WRF Input Data processing completed." << std::endl;
 
             // In the current setup, grid may NOT be set... be careful
@@ -242,7 +245,7 @@ public:
             float dimX = (*(domain))[0] * (*(grid))[0];
             float dimY = (*(domain))[1] * (*(grid))[1];
             std::cout << "dimX = " << dimX << ", dimY = " << dimY << std::endl;
-            wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, dimX, dimY, onlySensorData );
+            wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, dimX, dimY, wrfSensorSample, onlySensorData );
             std::cout << "WRF Wind Velocity Profile Data processing completed." << std::endl;
         }
         

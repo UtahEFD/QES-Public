@@ -1,5 +1,10 @@
 <simulationParameters>
+
+  <!-- Specifies the WRF Output file that will be read in by QES-Winds -->
   <WRF>/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21</WRF>
+
+  <!-- -->
+  <WRFSensorSample>5</WRFSensorSample>
 
   <!-- We really want to be able to specify the bounds of the WRF domain
        we want to pull from this... using geo-referenced coordinates, like UTM
@@ -17,13 +22,14 @@ Use Case - WRF with no Fire Mesh (i.e. Korea)
 * With non-FireMesh WRF output, we really want to merge the DEM that we load with the WRF Wind Profile data.
 * Load in DEM file.
 * Walk through WRF Atmos Mesh at discretization specified by UTMX and UTMY with domain bounds
+
+Important Parameters
+UTM:  when UTM is provided we can use it as the world offset of the lower left corner of the domain.
+
+Shouldn't need when loading WRF output though.
+
   -->
   
-  <UTMX> 0 </UTMX>
-  <UTMY> 0 </UTMY>
-  <UTMZone> 1 </UTMZone>
-  <UTMZoneLetter> 17 </UTMZoneLetter>
-
   <domain>384 384 100</domain>
   <cellSize> 3.0 3.0 1.0 </cellSize>  <!-- Meters-->
 
