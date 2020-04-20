@@ -4,7 +4,7 @@
   <WRF>/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21</WRF>
 
   <!-- -->
-  <WRFSensorSample>5</WRFSensorSample>
+  <WRFSensorSample>12</WRFSensorSample>
 
   <!-- We really want to be able to specify the bounds of the WRF domain
        we want to pull from this... using geo-referenced coordinates, like UTM
