@@ -319,6 +319,8 @@ WRFInput::WRFInput(const std::string& filename,
         std::cout << "\tOnly parsing wind velocity profiles from WRF file." << std::endl;
     }
     
+    int UTMZone = zoneUTM; 
+
     // Acquire some global attributes from the WRF system
     std::multimap<std::string,NcGroupAtt> globalAttributes = wrfInputFile.getAtts();
     
@@ -417,8 +419,8 @@ WRFInput::WRFInput(const std::string& filename,
         // double rangeHt = fm_maxWRFAlt - fm_minWRFAlt;
         std::cout << "Terrain Min Ht: " << fm_minWRFAlt << ", Max Ht: " << fm_maxWRFAlt << std::endl;
 
-        // From 
-        int UTMZone = (int)floor((fxlong[0] + 180) / 6) + 1;
+        // override any zone information?  Need to fix these use cases
+        UTMZone = (int)floor((fxlong[0] + 180) / 6) + 1;
     
         std::cout << "UTM Zone: " << UTMZone << std::endl;
         std::cout << "(Lat,Long) at [0][0] = " << fxlat[0] << ", " << fxlong[0] << std::endl;   // 524972.33, 3376924.26
@@ -426,7 +428,13 @@ WRFInput::WRFInput(const std::string& filename,
         std::cout << "(Lat,Long) at [0][ny-1] = " << fxlat[(fm_ny-1)*fm_nx] << ", " << fxlong[(fm_ny-1)*fm_nx] << std::endl;
         std::cout << "(Lat,Long) at [nx-1][ny-1] = " << fxlat[fm_nx-1 + (fm_ny-1)*fm_nx] << ", " << fxlong[fm_nx-1 + (fm_ny-1)*fm_nx] << std::endl;
 
+        
+        UTMConv(fxlong[0], fxlat[0], domainUTMx, domainUTMy, UTMZone, 0);
 
+        std::cout << "\tConverted LL UTM: " << domainUTMx << ", " << domainUTMy << std::endl;
+
+        dimX = fm_nx * fm_dx;
+        dimY = fm_ny * fm_dy;
 
         // 
         // Need this anymore? ???
@@ -840,13 +848,11 @@ WRFInput::WRFInput(const std::string& filename,
     
     std::cout << std::setprecision(9) << "UTM(UR): " << domainUTMx_UR << ", " << domainUTMy_UR << std::endl;
 
-    int zone = zoneUTM;  // take the zone given by the 
-    
     double c_lat_ll, c_long_ll;
     double c_lat_ur, c_long_ur;
 
-    UTMConv(c_long_ll, c_lat_ll, domainUTMx, domainUTMy, zone, 1);
-    UTMConv(c_long_ur, c_lat_ur, domainUTMx_UR, domainUTMy_UR, zone, 1);
+    UTMConv(c_long_ll, c_lat_ll, domainUTMx, domainUTMy, UTMZone, 1);
+    UTMConv(c_long_ur, c_lat_ur, domainUTMx_UR, domainUTMy_UR, UTMZone, 1);
 
     std::cout << std::setprecision(9) << "LL: " << c_lat_ll << ", " << c_long_ll << std::endl;
     std::cout << std::setprecision(9) << "UR: " << c_lat_ur << ", " << c_long_ur << std::endl;
