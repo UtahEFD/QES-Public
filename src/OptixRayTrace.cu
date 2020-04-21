@@ -14,7 +14,7 @@
 #include "OptixRayTrace.h"
 
 extern "C" {
-__constant__ Params params;
+__constant__ Params params; //should match var name in initPipeline
 }
 
 /*
@@ -47,14 +47,79 @@ static __forceinline__ __device__ float rndNum(){
 */
 
 extern "C" __global__ void __raygen__from_cell(){
+
+//printf("########### Testing from inside raygen in .cu file #################\n");
+
+
+
   const uint3 idx = optixGetLaunchIndex();
-   const uint3 dim = optixGetLaunchDimensions();
-  const uint32_t linear_idx = (idx.z*dim.x*dim.y) + (idx.y*dim.x) + idx.x;
+  const uint3 dim = optixGetLaunchDimensions();
+  //const uint32_t linear_idx = (idx.z*dim.x*dim.y) + (idx.y*dim.x) + idx.x;
+
+
+   const uint32_t linear_idx = idx.x + idx.y*(dim.x-1) + idx.z*(dim.y-1)*(dim.x-1);
 
   uint32_t t;
 
+/* printf("testOptixRay origin = <%d,%d,%d>\n",
+params.testOptixRay.origin.x, params.testOptixRay.origin.y, params.testOptixRay.origin.z );
+*/
 
-  //single direction version start 
+//printf("testOptixRay.flag = %d\n", params.testOptixRay.flag);
+
+//   params.count++;  //temp val
+
+  //printf("I");
+ // printf("#### In raygen.cu: ray: \n");
+ 
+//  printf("params.rays[linear_idx].isRay = %i\n", params.rays[linear_idx].isRay);
+
+  //printf("params.rays[linear_idx].tmin.x %d\n", params.rays[linear_idx].tmin);
+  //printf("params.rays[linear_idx].origin.x %d\n", params.rays[linear_idx].origin.x);
+  //printf("/n");
+
+  //printf("linear_idx: ");
+  //printf("%i\n", linear_idx);
+
+//float3 test = make_float3(0,0,-1);
+//if(params.rays[linear_idx].dir.z < -1){
+  //printf("The rays is initialized correctly in .cu");
+//}
+
+//printf("in .cu, params flag = %i\n", params.flag);
+
+
+//printf("testRays @ index %i dir z val = %d\n", linear_idx, params.testRays[linear_idx].dir.z);
+/*printf("testRays @ index %i dir z val = <%d,%d,%d>\n", linear_idx,
+                 params.testRays[linear_idx].dir.x,
+                 params.testRays[linear_idx].dir.y,
+                 params.testRays[linear_idx].dir.z);
+
+*/
+/*
+printf("testRays @ index 0 dir z val = <%d,%d,%d>\n",
+                 params.testRays[0].dir.x,
+                 params.testRays[0].dir.y,
+                 params.testRays[0].dir.z);
+*/
+
+
+
+
+params.hits[linear_idx].t = 400;  //test val for hits
+//params.flag = 40;
+
+
+
+/*
+
+//single direction version start 
+  if(params.rays[linear_idx].isRay){   //non-air cells will have a flag = 0
+
+  printf("isRay\n");
+
+
+
   optixTrace(params.handle,
              params.rays[linear_idx].origin,
              params.rays[linear_idx].dir,
@@ -68,12 +133,26 @@ extern "C" __global__ void __raygen__from_cell(){
              RAY_TYPE_RADIENCE,
              t);
 
-      Hit hit;
-      hit.t = int_as_float(t);
 
-      params.hits[linear_idx] = hit;
+      //Hit hit;
+      //hit.t = int_as_float(t);
+      //hit.t = 45; //test val
 
-    //single direction version end 
+      //float temp = optixGetPayload_0();
+//printf("t");
+//printf("%d\n",t);
+//printf("Get t %d\n", t);
+       
+       //params.hits[0].t = 45; //test
+
+  //    params.hits[linear_idx] = hit;
+} //end of if 
+
+printf("I");
+
+*/
+
+//single direction version end 
    
 
    //multiple samples version start
@@ -120,14 +199,22 @@ extern "C" __global__ void __raygen__from_cell(){
 }
 
 extern "C" __global__ void __miss__miss(){
+printf("miss");
+
    optixSetPayload_0(float_as_int(FLT_MAX)); //need to set to a large number 
+
 }
 
 extern "C" __global__ void __closesthit__mixlength(){
 HitGroupData *rt_data = (HitGroupData *)optixGetSbtDataPointer();
 const uint32_t t = optixGetRayTmax();
 
+
+printf("hit");
+
 optixSetPayload_0(float_as_int(t));
+
+ 
 }
 
 
