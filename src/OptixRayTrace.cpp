@@ -290,7 +290,9 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
    std::cout<<"HitList at 0 = "<<hitList[0].t<<std::endl;
 
 
-   for(int i = 0; i < state.num_cells; i++){
+//   for(int i = 0; i < state.num_cells; i++){
+   for(int i = 0; i < icellflag.size(); i++){
+
       //mixingLengths.push_back(state.params.hits[i].t);
 
 
@@ -313,166 +315,169 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 }
 
 
-
-
-
-
 void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag){
-   //memory allocation
 
 
-   OptixRay* rays_d = 0;
-
-   int numAirCells = 0;
-
-   std::cout<<"In initParams(), icellflag size = "<<icellflag.size()<<std::endl;
-
-   //size_t rays_size_in_bytes = sizeof(OptixRay)*numCells;
-   size_t rays_size_in_bytes = sizeof(OptixRay)*icellflag.size();
-
-   std::cout<<"In initParams(), rays_size_in_bytes ="<<rays_size_in_bytes<<std::endl;
-
-   // CUDA_CHECK(cudaMalloc(&rays_d, rays_size_in_bytes));
-
-   rays_d = (OptixRay*) malloc(rays_size_in_bytes);
-
-   std::cout<<"In initParams(), init ray_size_in_bytes"<<std::endl;
-
-   //Hit* hits_d = 0;
-//   size_t hits_size_in_bytes = sizeof(Hit)*numCells;
-
-
+   //init hits (container for the t info from device to host)
    size_t hits_size_in_bytes = sizeof(Hit)*icellflag.size();
    state.d_hits.alloc(hits_size_in_bytes);
 
-
-//CUDA_CHECK(cudaMalloc(&hits_d, hits_size_in_bytes));
-   //hits_d = (Hit*) malloc(hits_size_in_bytes);
-   std::cout<<"In initParams(), init hits_size_in_bytes"<<std::endl;
-
-   std::cout<<"size of rays_d = "<<sizeof(rays_d)/sizeof(rays_d[0])<<std::endl;
-
-//init ray data
-   for(int k = 0; k < dimZ -1; k++){
-      for(int j = 0; j < dimY -1; j++){
-         for(int i = 0; i < dimX -1; i++){
-
-            int icell_idx = i + j*(dimX-1) + k*(dimY -1)*(dimX-1);
-
-
-            if(icellflag[icell_idx] == 1){ //only want air cells
-
-//std::cout<<"Enters if condition in initParams"<<std::endl;
-               rays_d[icell_idx].origin = {(i+0.5)*dx,(j+0.5)*dy,(k+0.5)*dz};
-//rays_d[icell_idx].origin = make_float3((i+0.5)*dx,(j+0.5)*dy,(k+0.5)*dz);
-               //std::cout<<"icell_idx "<<icell_idx<<std::endl;
-
-               rays_d[icell_idx].isRay = true;
-               //(rays_d+icell_idx)->origin = make_float3((i+0.5)*dx,(j+0.5)*dy,(k+0.5)*dz);
-
-
-               rays_d[icell_idx].tmin = 0.0f;
-
-               rays_d[icell_idx].dir = {0,0,-1}; //set to bottom direction for now
-               rays_d[icell_idx].tmax = std::numeric_limits<float>::max();
-
-               numAirCells++;
-            }else{
-               rays_d[icell_idx].isRay = false;
-               rays_d[icell_idx].dir = {0,0,-1};  //just to see if this is working
-
-            }
-         }
-      }
-   }
-
-
-
-   //testing
-
-   state.params.flag = 3;
-   state.params.testOptixRay.origin = {1,2,3};
-
-   state.params.testOptixRay.flag =50;
-
-   /*state.params.testOptixRay.origin.x = 1;
-     state.params.testOptixRay.origin.y = 2;
-     state.params.testOptixRay.origin.z = 3;
-   */
-   //state.params.testOptixRay.origin = make_float3(1.0,2.0,3.0);
-   state.testRays_d.free();
-
-
-   /*state.params.testRays = (OptixRay *) state.testRays_d.d_ptr;
-     state.testRays_d.alloc(rays_size_in_bytes);
-     state.testRays_d.upload(rays_d, icellflag.size());
-   */
-   state.params.sizeRays = rays_size_in_bytes;
-   state.params.sizeIcell = icellflag.size();
-/*
-  state.params.testRays = (OptixRay *) state.testRays_d.d_pointer();
-
-
-  //OptixRay smalltest[3];
-  std::vector<OptixRay> smalltest(3);
-  smalltest[0].dir = make_float3(1.0,2.0,3.0);
-  //smalltest[0].dir = {1.0,2.0,3.0};
-  std::cout<<"small test[0]"<<smalltest[0].dir.x<<", "
-  <<smalltest[0].dir.y<<", "
-  <<smalltest[0].dir.z<<std::endl;
-  //state.testRays_d.alloc(icellflag.size()*sizeof(OptixRay));
-  //state.testRays_d.alloc(3*sizeof(OptixRay));
-  //state.testRays_d.upload(rays_d, icellflag.size());
-
-  std::cout<<"size in bytes in initParams = "<<3*sizeof(OptixRay)<<std::endl;
-  std::cout<<"sizeof OptixRay in initParams = "<<sizeof(OptixRay)<<std::endl;
-
-
-  state.testRays_d.alloc_and_upload(smalltest);
-  //state.testRays_d.upload(smalltest, 3);
-
-  */
-
-   //end testing
-
-
-
-
-   std::cout<<"In initParams(), OptiX Ray print test"<<rays_d[102618]<<std::endl;
-   std::cout<<"In initParams(), finished init ray data"<<std::endl;
-//   std::cout<<"size of rays_d = "<<sizeof(rays_d)/sizeof(rays_d[0])<<std::endl;
-
-
-   std::cout<<"\n---Example ray data at index 102618----"<<std::endl;
-   std::cout<<"origin = <"<<rays_d[102618].origin.x<<", "<<rays_d[102618].origin.y<< ", "<<rays_d[102618].origin.z<<">"<<std::endl;
-   std::cout<<"dir = <"<<rays_d[102618].dir.x<<", "<<rays_d[102618].dir.y<< ", "<<rays_d[102618].dir.z<<">"<<std::endl;
-   std::cout<<"------------------------------------"<<std::endl;
-
-   std::cout<<"num air cells = "<<numAirCells<<std::endl;
-//init params
+   //acceleration structure handle
    state.params.handle = state.gas_handle;
-   state.params.rays = rays_d;  //not device side
-   //state.params.hits = hits_d;
-//state.params.count = 0; //temp
 
-   state.num_cells = numAirCells;
+   //start of tests
+   state.params.flag = 3; //test value
 
-
-   std::cout<<"In initParams(), updated state params"<<std::endl;
-
-   std::cout<<"size of params.rays = "<<sizeof(state.params.rays)<<std::endl;
-
-
-
-   std::cout<<"\n---Example ray data at index 102618 in state.params.rays----"<<std::endl;
-   std::cout<<"origin = <"<<state.params.rays[102618].origin.x<<", "<<state.params.rays[102618].origin.y<< ", "<<state.params.rays[102618].origin.z<<">"<<std::endl;
-   std::cout<<"dir = <"<<state.params.rays[102618].dir.x<<", "<<state.params.rays[102618].dir.y<< ", "<<state.params.rays[102618].dir.z<<">"<<std::endl;
-   std::cout<<"------------------------------------"<<std::endl;
-
+   //end of tests
 
 
    std::cout<<"\033[1;31m initParams() done \033[0m"<<std::endl;
 }
+
+
+
+/*
+  void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag){
+  //memory allocation
+
+
+  OptixRay* rays_d = 0;
+
+  int numAirCells = 0;
+
+  std::cout<<"In initParams(), icellflag size = "<<icellflag.size()<<std::endl;
+
+  //size_t rays_size_in_bytes = sizeof(OptixRay)*numCells;
+  size_t rays_size_in_bytes = sizeof(OptixRay)*icellflag.size();
+
+  std::cout<<"In initParams(), rays_size_in_bytes ="<<rays_size_in_bytes<<std::endl;
+
+  // CUDA_CHECK(cudaMalloc(&rays_d, rays_size_in_bytes));
+
+  rays_d = (OptixRay*) malloc(rays_size_in_bytes);
+
+  std::cout<<"In initParams(), init ray_size_in_bytes"<<std::endl;
+
+  //Hit* hits_d = 0;
+//   size_t hits_size_in_bytes = sizeof(Hit)*numCells;
+
+
+size_t hits_size_in_bytes = sizeof(Hit)*icellflag.size();
+state.d_hits.alloc(hits_size_in_bytes);
+
+
+//CUDA_CHECK(cudaMalloc(&hits_d, hits_size_in_bytes));
+//hits_d = (Hit*) malloc(hits_size_in_bytes);
+std::cout<<"In initParams(), init hits_size_in_bytes"<<std::endl;
+
+std::cout<<"size of rays_d = "<<sizeof(rays_d)/sizeof(rays_d[0])<<std::endl;
+
+//init ray data
+for(int k = 0; k < dimZ -1; k++){
+for(int j = 0; j < dimY -1; j++){
+for(int i = 0; i < dimX -1; i++){
+
+int icell_idx = i + j*(dimX-1) + k*(dimY -1)*(dimX-1);
+
+
+if(icellflag[icell_idx] == 1){ //only want air cells
+
+//std::cout<<"Enters if condition in initParams"<<std::endl;
+rays_d[icell_idx].origin = {(i+0.5)*dx,(j+0.5)*dy,(k+0.5)*dz};
+//rays_d[icell_idx].origin = make_float3((i+0.5)*dx,(j+0.5)*dy,(k+0.5)*dz);
+//std::cout<<"icell_idx "<<icell_idx<<std::endl;
+
+rays_d[icell_idx].isRay = true;
+//(rays_d+icell_idx)->origin = make_float3((i+0.5)*dx,(j+0.5)*dy,(k+0.5)*dz);
+
+
+rays_d[icell_idx].tmin = 0.0f;
+
+rays_d[icell_idx].dir = {0,0,-1}; //set to bottom direction for now
+rays_d[icell_idx].tmax = std::numeric_limits<float>::max();
+
+numAirCells++;
+}else{
+rays_d[icell_idx].isRay = false;
+rays_d[icell_idx].dir = {0,0,-1};  //just to see if this is working
+
+}
+}
+}
+}
+
+
+
+//testing
+
+state.params.flag = 3;
+//   state.params.testOptixRay.origin = {1,2,3};
+
+// state.params.testOptixRay.flag =50;
+
+//state.params.testOptixRay.origin.x = 1;
+//state.params.testOptixRay.origin.y = 2;
+// state.params.testOptixRay.origin.z = 3;
+
+//state.params.testOptixRay.origin = make_float3(1.0,2.0,3.0);
+//state.testRays_d.free();
+
+state.testRays_d.alloc(rays_size_in_bytes);
+state.testRays_d.upload(rays_d, icellflag.size());
+//CUDA_CHECK(cudaMemcpy(&state.testRays_d, rays_d, icellflag.size(), cudaMemcpyHostToDevice));
+state.params.rays = (OptixRay *) state.testRays_d.d_pointer();
+
+//state.params.testRays = (OptixRay *) state.testRays_d.d_ptr;
+//state.testRays_d.alloc(rays_size_in_bytes);
+//state.testRays_d.upload(rays_d, icellflag.size());
+
+state.params.sizeRays = rays_size_in_bytes;
+state.params.sizeIcell = icellflag.size();
+
+
+//end testing
+
+
+
+
+std::cout<<"In initParams(), OptiX Ray print test"<<rays_d[102618]<<std::endl;
+std::cout<<"In initParams(), finished init ray data"<<std::endl;
+//   std::cout<<"size of rays_d = "<<sizeof(rays_d)/sizeof(rays_d[0])<<std::endl;
+
+
+std::cout<<"\n---Example ray data at index 102618----"<<std::endl;
+std::cout<<"origin = <"<<rays_d[102618].origin.x<<", "<<rays_d[102618].origin.y<< ", "<<rays_d[102618].origin.z<<">"<<std::endl;
+std::cout<<"dir = <"<<rays_d[102618].dir.x<<", "<<rays_d[102618].dir.y<< ", "<<rays_d[102618].dir.z<<">"<<std::endl;
+std::cout<<"------------------------------------"<<std::endl;
+
+std::cout<<"num air cells = "<<numAirCells<<std::endl;
+//init params
+state.params.handle = state.gas_handle;
+state.params.rays = rays_d;  //not device side
+
+//state.params.hits = hits_d;
+//state.params.count = 0; //temp
+
+state.num_cells = numAirCells;
+
+
+std::cout<<"In initParams(), updated state params"<<std::endl;
+
+std::cout<<"size of params.rays = "<<sizeof(state.params.rays)<<std::endl;
+
+
+
+std::cout<<"\n---Example ray data at index 102618 in state.params.rays----"<<std::endl;
+std::cout<<"origin = <"<<state.params.rays[102618].origin.x<<", "<<state.params.rays[102618].origin.y<< ", "<<state.params.rays[102618].origin.z<<">"<<std::endl;
+std::cout<<"dir = <"<<state.params.rays[102618].dir.x<<", "<<state.params.rays[102618].dir.y<< ", "<<state.params.rays[102618].dir.z<<">"<<std::endl;
+std::cout<<"------------------------------------"<<std::endl;
+
+
+
+std::cout<<"\033[1;31m initParams() done \033[0m"<<std::endl;
+}
+
+*/
 
 extern "C" char embedded_ptx_code[];
 
@@ -678,9 +683,12 @@ void OptixRayTrace::launch(){
    //create the CUDA stream
    CUDA_CHECK(cudaStreamCreate(&state.stream));
 
-   state.params.testRays = (OptixRay *) state.testRays_d.d_ptr;
-   state.testRays_d.alloc(state.params.sizeRays);
-   state.testRays_d.upload(state.params.rays, state.params.sizeIcell);
+
+
+
+   //state.params.testRays = (OptixRay *) state.testRays_d.d_ptr;
+   //state.testRays_d.alloc(state.params.sizeRays);
+   //state.testRays_d.upload(state.params.rays, state.params.sizeIcell);
    //state.testRays_d.alloc_and_upload(state.params.rays, state.params.sizeIcell);
 
    state.params.hits = (Hit *) state.d_hits.d_ptr;

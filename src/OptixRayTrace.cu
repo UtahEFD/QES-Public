@@ -106,17 +106,17 @@ printf("testRays @ index 0 dir z val = <%d,%d,%d>\n",
 
 
 
-params.hits[linear_idx].t = 400;  //test val for hits
+//params.hits[linear_idx].t = 400;  //test val for hits
 //params.flag = 40;
 
 
 
-/*
+printf("params.rays.isRay at linear index = %i", params.rays[linear_idx].isRay); 
 
 //single direction version start 
   if(params.rays[linear_idx].isRay){   //non-air cells will have a flag = 0
 
-  printf("isRay\n");
+  printf("in .cu, in if condition, meaning this is an air cell\n");
 
 
 
@@ -150,7 +150,7 @@ params.hits[linear_idx].t = 400;  //test val for hits
 
 printf("I");
 
-*/
+
 
 //single direction version end 
    

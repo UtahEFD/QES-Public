@@ -87,7 +87,7 @@ struct CUDABuffer {
       if (d_ptr) free();
       alloc(size);
    }
-
+   
    //! allocate to given number of bytes
    void alloc(size_t size)
    {
