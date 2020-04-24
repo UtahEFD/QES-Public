@@ -16,7 +16,7 @@
 
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
 // in this case, output should always be done, so the bool for whether to do output is set to true
-PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,Urb* urb_ptr,Dispersion* dis_ptr,std::string output_file)
+PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* urb_ptr,Dispersion* dis_ptr,std::string output_file)
   : QESNetCDFOutput(output_file)
 {
 

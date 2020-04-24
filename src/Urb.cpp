@@ -124,7 +124,7 @@ Urb::Urb(NetCDFInput* input, const bool& debug)
 
     nx = nx_fc-1;
     ny = ny_fc-1;
-    nz = nz_fc-2;
+    nz = nz_fc-1;
     
     start = {0,0,0,0};      // used for getVariableData() when it is a grid of values
     countfc = {static_cast<unsigned long>(nt),
@@ -132,7 +132,7 @@ Urb::Urb(NetCDFInput* input, const bool& debug)
                static_cast<unsigned long>(ny_fc),
                static_cast<unsigned long>(nx_fc)};  // the number of values in each grid dimension of the input data, I guess the default is a 4D structure
     countcc = {static_cast<unsigned long>(nt) ,
-               static_cast<unsigned long>(nz+1),
+               static_cast<unsigned long>(nz),
                static_cast<unsigned long>(ny),
                static_cast<unsigned long>(nx)};
     count2d = {static_cast<unsigned long>(ny),
@@ -168,7 +168,7 @@ Urb::Urb(NetCDFInput* input, const bool& debug)
     std::vector<float> temp_z(nz+1);
     input->getVariableData("z_cc",temp_z);
     for(int k=0;k<nz;k++)
-      z.at(k)=temp_z.at(k+1);
+      z.at(k)=temp_z.at(k);
     temp_z.clear();
     
     input->getVariableData("t",t);
@@ -184,7 +184,7 @@ Urb::Urb(NetCDFInput* input, const bool& debug)
                 // id1 -> Plume grid
                 int id1 = i + j*nx + k*nx*ny;
                 // id2 -> URB grid
-                int id2 = i + j*nx + (k+1)*nx*ny;
+                int id2 = i + j*nx + k*nx*ny;
                 
                 icellflag.at(id1)=temp_icellflag.at(id2);
             }
@@ -245,7 +245,7 @@ Urb::Urb(NetCDFInput* input, const bool& debug)
                     // id1 -> Plume grid
                     int id1 = i + j*nx + k*nx*ny + n*nx*ny*nz;
                     // id2 -> URB grid
-                    int id2 = i + j*nx_fc + (k+1)*nx_fc*ny_fc + n*nx_fc*ny_fc*nz_fc;
+                    int id2 = i + j*nx_fc + k*nx_fc*ny_fc + n*nx_fc*ny_fc*nz_fc;
                     
                     // interpolation of the face-center velocity field
                     u.at(id1) = 0.5*(u1.at(id2)+u1.at(id2+1));
@@ -271,6 +271,7 @@ Urb::Urb(NetCDFInput* input, const bool& debug)
     urbYstart = y.at(0);
     urbYend = y.at(ny-1);
     urbZstart = z.at(0);
+    urbZstart = 0.5*(z.at(0)+z.at(1));
     urbZend = z.at(nz-1);
 
 

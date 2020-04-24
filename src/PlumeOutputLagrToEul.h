@@ -18,9 +18,8 @@
 
 
 #include "PlumeInputData.hpp"
-#include "Urb.hpp"
+#include "URBGeneralData.h"
 #include "Dispersion.h"
-
 
 #include "QESNetCDFOutput.h"
 
@@ -35,7 +34,7 @@ class PlumeOutputLagrToEul : public QESNetCDFOutput
         }
 
         // specialized constructor
-        PlumeOutputLagrToEul(PlumeInputData* PID,Urb* urb_ptr,Dispersion* dis_ptr,std::string output_file);
+        PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* urb_ptr,Dispersion* dis_ptr,std::string output_file);
 
         // deconstructor
         ~PlumeOutputLagrToEul()

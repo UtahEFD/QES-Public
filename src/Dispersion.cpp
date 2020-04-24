@@ -7,7 +7,7 @@
 #include "Dispersion.h"
 
 
-Dispersion::Dispersion( PlumeInputData* PID,Urb* urb,Turb* turb,Eulerian* eul, const bool& debug_val)
+Dispersion::Dispersion( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD,Eulerian* eul, const bool& debug_val)
     : pointList(0)  // ???
 {
     std::cout<<"[Dispersion] \t Setting up sources "<<std::endl;
@@ -17,7 +17,7 @@ Dispersion::Dispersion( PlumeInputData* PID,Urb* urb,Turb* turb,Eulerian* eul, c
     
 
     // calculate the domain start and end values, needed for source position range checking
-    determineDomainSize(urb,turb);
+    determineDomainSize(eul);
 
 
     // make copies of important input time variables
@@ -59,18 +59,17 @@ Dispersion::Dispersion( PlumeInputData* PID,Urb* urb,Turb* turb,Eulerian* eul, c
     isNotActiveCount = 0.0;
 
     // calculate the threshold velocity
-    vel_threshold = 10.0*std::sqrt(getMaxVariance(turb->sig_x,turb->sig_y,turb->sig_z));
-
+    vel_threshold = 10.0*std::sqrt(getMaxVariance(eul->sig_x,eul->sig_y,eul->sig_z));
 
     // to make sure the output knows the initial positions and particle sourceIDs for each time iteration
     // ahead of release time, the entire list of particles is generated now, and given initial values
     // this also includes creation of a vector of number of particles to release at a given time
-    generateParticleList(turb, eul);
+    generateParticleList(TGD,eul);
     
 }
 
 
-void Dispersion::determineDomainSize(Urb* urb, Turb* turb)
+void Dispersion::determineDomainSize(Eulerian* eul)
 {
 
     // multiple ways to do this for now. Could just use the turb grid,
@@ -82,12 +81,12 @@ void Dispersion::determineDomainSize(Urb* urb, Turb* turb)
     //  but ignored when determining output. This could allow particles to reenter the domain as well.
 
     // for now, I'm just going to use the urb grid, as having differing grid sizes requires extra info for the interp functions
-    domainXstart = urb->urbXstart;
-    domainXend = urb->urbXend;
-    domainYstart = urb->urbYstart;
-    domainYend = urb->urbYend;
-    domainZstart = urb->urbZstart;
-    domainZend = urb->urbZend;
+    domainXstart = eul->TurbXstart;
+    domainXend = eul->TurbXend;
+    domainYstart = eul->TurbYstart;
+    domainYend = eul->TurbYend;
+    domainZstart = eul->TurbZstart;
+    domainZend = eul->TurbZend;
 }
 
 
@@ -164,7 +163,7 @@ double Dispersion::getMaxVariance(const std::vector<double>& sigma_x_vals,const 
     
 }
 
-void Dispersion::generateParticleList(Turb* turb, Eulerian* eul)
+void Dispersion::generateParticleList(TURBGeneralData* TGD, Eulerian* eul)
 {
 
     // Add new particles now
@@ -179,7 +178,7 @@ void Dispersion::generateParticleList(Turb* turb, Eulerian* eul)
             int numNewParticles = allSources.at(sIdx)->emitParticles( (float)sim_dt, (float)( simTimes.at(sim_tIdx) ), nextSetOfParticles );
         }
         
-        setParticleVals( turb, eul, nextSetOfParticles );
+        setParticleVals( TGD, eul, nextSetOfParticles );
         
         // append all the new particles on to the big particle
         // advection list
@@ -193,7 +192,7 @@ void Dispersion::generateParticleList(Turb* turb, Eulerian* eul)
 }
 
 
-void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle>& newParticles)
+void Dispersion::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vector<particle>& newParticles)
 {
     // at this time, should be a list of each and every particle that exists at the given time
     // particles and sources can potentially be added to the list elsewhere
@@ -212,13 +211,13 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
         double rann = random::norRan();
 
         // get the sigma values from the Eulerian grid for the particle value
-        double current_sig_x = eul->interp3D(turb->sig_x);
+        double current_sig_x = eul->interp3D(eul->sig_x);
         if( current_sig_x == 0.0 )
             current_sig_x = 1e-8;
-        double current_sig_y = eul->interp3D(turb->sig_y);
+        double current_sig_y = eul->interp3D(eul->sig_y);
         if( current_sig_y == 0.0 )
             current_sig_y = 1e-8;
-        double current_sig_z = eul->interp3D(turb->sig_z);
+        double current_sig_z = eul->interp3D(eul->sig_z);
         if( current_sig_z == 0.0 )
             current_sig_z = 1e-8;
         
@@ -236,12 +235,12 @@ void Dispersion::setParticleVals(Turb* turb, Eulerian* eul, std::vector<particle
         newParticles.at(parIdx).wFluct_old = newParticles.at(parIdx).wFluct;
 
         // get the tau values from the Eulerian grid for the particle value
-        double current_txx = eul->interp3D(turb->txx);
-        double current_txy = eul->interp3D(turb->txy);
-        double current_txz = eul->interp3D(turb->txz);
-        double current_tyy = eul->interp3D(turb->tyy);
-        double current_tyz = eul->interp3D(turb->tyz);
-        double current_tzz = eul->interp3D(turb->tzz);
+        double current_txx = eul->interp3D(TGD->txx);
+        double current_txy = eul->interp3D(TGD->txy);
+        double current_txz = eul->interp3D(TGD->txz);
+        double current_tyy = eul->interp3D(TGD->tyy);
+        double current_tyz = eul->interp3D(TGD->tyz);
+        double current_tzz = eul->interp3D(TGD->tzz);
 
         // set tau_old to the interpolated values for each position
         newParticles.at(parIdx).txx_old = current_txx;

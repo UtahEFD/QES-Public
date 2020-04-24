@@ -20,13 +20,16 @@
 #include "NetCDFInput.h"
 #include "Urb.hpp"
 #include "Turb.hpp"
+
+#include "URBGeneralData.h"
+#include "TURBGeneralData.h"
+
 #include "Plume.hpp"
 #include "Eulerian.h"
 #include "Dispersion.h"
 
-
 #include "QESNetCDFOutput.h"
-#include "PlumeOutputEulerian.h"
+//#include "PlumeOutputEulerian.h"
 #include "PlumeOutputLagrToEul.h"
 #include "PlumeOutputLagrangian.h"
 
@@ -96,6 +99,12 @@ int main(int argc, char** argv)
 #endif
 
     
+    // test here:
+    URBGeneralData* UGD = new URBGeneralData(&arguments);
+    UGD->loadNetCDFData(0);
+    TURBGeneralData* TGD = new TURBGeneralData(&arguments,UGD);
+    TGD->loadNetCDFData(0);
+
     // Create instance of cudaUrb class
     Urb* urb = new Urb(inputUrb, arguments.debug);
     
@@ -103,35 +112,36 @@ int main(int argc, char** argv)
     Turb* turb = new Turb(inputTurb, arguments.debug);
     
     // Create instance of Eulerian class
-    Eulerian* eul = new Eulerian(PID,urb,turb, arguments.debug);
+    Eulerian* eul = new Eulerian(PID,UGD,TGD, arguments.debug);
     
     // Create instance of Dispersion class
-    Dispersion* dis = new Dispersion(PID,urb,turb,eul, arguments.debug);
+    Dispersion* dis = new Dispersion(PID,UGD,TGD,eul, arguments.debug);
     
-
 
     // create output instance
     // LA note: start it out as NULL, then make it point to what we want later if the file is supposed to exist
     std::vector<QESNetCDFOutput*> outputVec;
     // always supposed to output lagrToEulOutput data
-    outputVec.push_back(new PlumeOutputLagrToEul(PID,urb,dis,arguments.outputLagrToEulFile));
+    outputVec.push_back(new PlumeOutputLagrToEul(PID,UGD,dis,arguments.outputLagrToEulFile));
     if( arguments.doLagrDataOutput == true ) {
         outputVec.push_back(new PlumeOutputLagrangian(PID,dis,arguments.outputLagrangianFile));
     }
     
     // create output instance (separate for eulerian class)
-    QESNetCDFOutput* eulOutput = nullptr;
-    if( arguments.doEulDataOutput == true ) {
-        eulOutput = new PlumeOutputEulerian(PID,urb,turb,eul,arguments.outputEulerianFile);
-        // output Eulerian data. Use time zero
-        eulOutput->save(0.0);
-    }
-    
+    /*
+      QESNetCDFOutput* eulOutput = nullptr;
+      if( arguments.doEulDataOutput == true ) {
+      eulOutput = new PlumeOutputEulerian(PID,UGD,TGD,eul,arguments.outputEulerianFile);
+      // output Eulerian data. Use time zero
+      eulOutput->save(0.0);
+      }
+    */
+
     // Create instance of Plume model class
-    Plume* plume = new Plume(PID,urb,dis,&arguments);
+    Plume* plume = new Plume(PID,UGD,dis,&arguments);
     
     // Run plume advection model
-    plume->run(urb,turb,eul,dis,outputVec);
+    plume->run(UGD,TGD,eul,dis,outputVec);
     
     // compute run time information and print the elapsed execution time
     std::cout<<"[CUDA-Plume] \t Finished."<<std::endl;

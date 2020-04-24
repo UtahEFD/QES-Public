@@ -21,8 +21,11 @@
 
 #include "Args.hpp"
 #include "PlumeInputData.hpp"
-#include "Urb.hpp"
-#include "Turb.hpp"
+#include "URBGeneralData.h"
+#include "TURBGeneralData.h"
+//#include "Urb.hpp"
+//#include "Turb.hpp"
+
 #include "Eulerian.h"
 #include "Dispersion.h"
 #include "Vector3.h"
@@ -40,7 +43,7 @@ public:
     // then sets up the concentration sampling box information for output
     // next copies important input time values and calculates needed time information 
     // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
-    Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, Args* arguments); 
+    Plume( PlumeInputData*, URBGeneralData*, Dispersion*, Args*); 
 
     // this is the plume solver. It performs a time integration of the particle positions and particle velocity fluctuations
     // with calculations done on a per particle basis. During each iteration, temporary single value particle information
@@ -53,7 +56,7 @@ public:
     // LA future work: Need to add a CFL condition where the user specifies a courant number that varies from 0 to 1
     //  that is used to do an additional time remainder time integration loop for each particle, forcing particles to only
     //  move one cell at a time.
-    void run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QESNetCDFOutput*> outputVec);
+    void run(URBGeneralData*,TURBGeneralData*,Eulerian*,Dispersion*,std::vector<QESNetCDFOutput*> );
 
 
 private:

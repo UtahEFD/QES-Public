@@ -3,11 +3,9 @@
 #include <math.h>
 #include <vector>
 
+#include "Args.hpp"
 #include "NetCDFInput.h"
 #include "URBGeneralData.h"
-#include "TURBWall.h"
-#include "TURBWallBuilding.h"
-#include "TURBWallTerrain.h"
 
 /*
   Author: Fabien Margairaz
@@ -21,10 +19,19 @@ public:
     // Defoult
     TURBGeneralData()
     {}
-    TURBGeneralData(URBGeneralData*);
+    TURBGeneralData(Args* arguments, URBGeneralData*);
     
     // load data at given time instance
     void loadNetCDFData(int);
+
+    //nt - number of time instance in data
+    int nt;
+    // time vector
+    std::vector<float> t;
+    
+    /*
+      Information below match TURBGeneral data class of QES-winds
+    */
 
     // General QUIC Domain Data
     int nx, ny, nz;		/**< number of cells */
@@ -41,12 +48,12 @@ public:
     std::vector<float> Lm;
     
     // stress stensor
-    std::vector<float> tau11;
-    std::vector<float> tau12;
-    std::vector<float> tau13;
-    std::vector<float> tau22;
-    std::vector<float> tau23;
-    std::vector<float> tau33;
+    std::vector<float> txx;
+    std::vector<float> txy;
+    std::vector<float> txz;
+    std::vector<float> tyy;
+    std::vector<float> tyz;
+    std::vector<float> tzz;
     
     // derived turbulence quantities
     std::vector<float> tke;

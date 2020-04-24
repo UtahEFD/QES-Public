@@ -6,7 +6,7 @@
 
 #include "Plume.hpp"
 
-Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, Args* arguments) 
+Plume::Plume( PlumeInputData* PID,URBGeneralData* UGD,Dispersion* dis, Args* arguments) 
 {
     
     std::cout<<"[Plume] \t Setting up simulation details "<<std::endl;
@@ -19,12 +19,12 @@ Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, Args* arguments)
     debug = arguments->debug;
 
     // make local copies of the urb nVals for each dimension
-    nx = urb->nx;
-    ny = urb->ny;
-    nz = urb->nz;
-    dx = urb->dx;
-    dy = urb->dy;
-    dz = urb->dz;
+    nx = UGD->nx;
+    ny = UGD->ny;
+    nz = UGD->nz;
+    dx = UGD->dx;
+    dy = UGD->dy;
+    dz = UGD->dz;
 
     // get the domain start and end values, needed for wall boundary condition application
     domainXstart = dis->domainXstart;
@@ -34,7 +34,6 @@ Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, Args* arguments)
     domainZstart = dis->domainZstart;
     domainZend = dis->domainZend; 
     
-
     // make copies of important dispersion time variables
     sim_dt = dis->sim_dt;
     simDur = dis->simDur;
@@ -50,7 +49,6 @@ Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, Args* arguments)
     nParsToRelease.resize(nSimTimes-1);    // first need to get the vector size right for the copy. 
     nParsToRelease = dis->nParsToRelease;
 
-    
     // set additional values from the input
     invarianceTol = PID->simParams->invarianceTol;
     C_0 = PID->simParams->C_0;
@@ -74,7 +72,7 @@ Plume::Plume( PlumeInputData* PID,Urb* urb,Dispersion* dis, Args* arguments)
 // LA note: in this whole section, the idea of having single value temporary storage instead of just referencing values
 //  directly from the dispersion class seems a bit strange, but it makes the code easier to read cause smaller variable names.
 //  Also, it is theoretically faster?
-void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QESNetCDFOutput*> outputVec)
+void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Dispersion* dis, std::vector<QESNetCDFOutput*> outputVec)
 {
     std::cout << "[Plume] \t Advecting particles " << std::endl;
 
@@ -172,8 +170,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
             // get the current isRogue and isActive information
             bool isRogue = dis->pointList[parIdx].isRogue;
             bool isActive = dis->pointList[parIdx].isActive;
-
-
+            
             // first check to see if the particle should even be advected and skip it if it should not be advected
             if( isActive == true ) {
                 
@@ -282,7 +279,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                     // this is the Co times Eps for the particle
                     // LA note: because Bailey's code uses Eps by itself and this does not, I wanted an option to switch between the two if necessary
                     //  it's looking more and more like we will just use CoEps.
-                    double CoEps = eul->interp3D(turb->CoEps);
+                    double CoEps = eul->interp3D(TGD->CoEps);
                     // make sure CoEps is always bigger than zero
                     if( CoEps <= 1e-6 ) {
                         CoEps = 1e-6;
@@ -291,9 +288,9 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                     
                     
                     // this is the current velMean value
-                    double uMean = eul->interp3D(urb->u);
-                    double vMean = eul->interp3D(urb->v);
-                    double wMean = eul->interp3D(urb->w);
+                    double uMean = eul->interp3D(UGD->u);
+                    double vMean = eul->interp3D(UGD->v);
+                    double wMean = eul->interp3D(UGD->w);
                     
                     // this is the current reynolds stress tensor
                     /* FM -> removed unnecessary copy
@@ -327,12 +324,12 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                     */
 
                     // this is the current reynolds stress tensor
-                    txx = eul->interp3D(turb->txx);
-                    txy = eul->interp3D(turb->txy);
-                    txz = eul->interp3D(turb->txz);
-                    tyy = eul->interp3D(turb->tyy);
-                    tyz = eul->interp3D(turb->tyz);
-                    tzz = eul->interp3D(turb->tzz);
+                    txx = eul->interp3D(TGD->txx);
+                    txy = eul->interp3D(TGD->txy);
+                    txz = eul->interp3D(TGD->txz);
+                    tyy = eul->interp3D(TGD->tyy);
+                    tyz = eul->interp3D(TGD->tyz);
+                    tzz = eul->interp3D(TGD->tzz);
                     // now need to call makeRealizable on tau
                     makeRealizable(txx,txy,txz,tyy,tyz,tzz);
                     
@@ -394,7 +391,6 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                     double b_11 = -uFluct_old - 0.50*flux_div_x*par_dt - std::sqrt(CoEps*par_dt)*xRandn;
                     double b_21 = -vFluct_old - 0.50*flux_div_y*par_dt - std::sqrt(CoEps*par_dt)*yRandn;
                     double b_31 = -wFluct_old - 0.50*flux_div_z*par_dt - std::sqrt(CoEps*par_dt)*zRandn;
-
 
                     /* FM -> removed unnecessary copy
                     // now prepare for the Ax=b calculation by calculating the inverted A matrix
@@ -560,6 +556,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                     zPos = zPos + disZ;
                     
                     
+
                     // now apply boundary conditions
                     // LA note: notice that this is the old fashioned style for calling a pointer function
                     (this->*enforceWallBCs_x)(xPos,uFluct,uFluct_old,isActive, domainXstart,domainXend);
@@ -583,6 +580,7 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                     uFluct_old = uFluct;
                     vFluct_old = vFluct;
                     wFluct_old = wFluct;
+            
                     txx_old = txx;
                     txy_old = txy;
                     txz_old = txz;
@@ -652,7 +650,6 @@ void Plume::run(Urb* urb,Turb* turb,Eulerian* eul,Dispersion* dis,std::vector<QE
                 dis->pointList[parIdx].isActive = isActive;
 
                 // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
-                // LA future work: because this has timer related info, this probably needs to also be limited to when the user specifies they want debug mode
                 if( debug == true ) {
                     if(  ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) 
                          && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == dis->pointList.size()-1 )  ) {

@@ -135,12 +135,12 @@ Turb::Turb(NetCDFInput* input, const bool& debug)
     */
 
     // FM -> nz=nz-1 to adapt PLUME convention of grid size.
-    nz--;
+    //nz--;
 
     
     start = {0,0,0,0};      // used for getVariableData() when it is a grid of values
     count = {static_cast<unsigned long>(nt),
-             static_cast<unsigned long>(nz+1),
+             static_cast<unsigned long>(nz),
              static_cast<unsigned long>(ny),
              static_cast<unsigned long>(nx)};  // the number of values in each grid dimension of the input data, I guess the default is a 4D structure
     
@@ -178,10 +178,10 @@ Turb::Turb(NetCDFInput* input, const bool& debug)
       y.at(j)=temp_y.at(j);
     temp_y.clear();
 
-    std::vector<float> temp_z(nz+1);
+    std::vector<float> temp_z(nz);
     input->getVariableData("z",temp_z);
     for(int k=0;k<nz;k++)
-      z.at(k)=temp_z.at(k+1);
+        z.at(k)=temp_z.at(k);
     temp_z.clear();
 
 
@@ -208,14 +208,14 @@ Turb::Turb(NetCDFInput* input, const bool& debug)
 
     // get input stress tensor and other turbulence data
     // use temporary vectors to hold the values before putting them into the grid because they need interpolated
-    std::vector<double> temp_txx(nt*(nz+1)*ny*nx);
-    std::vector<double> temp_txy(nt*(nz+1)*ny*nx);
-    std::vector<double> temp_txz(nt*(nz+1)*ny*nx);
-    std::vector<double> temp_tyy(nt*(nz+1)*ny*nx);
-    std::vector<double> temp_tyz(nt*(nz+1)*ny*nx);
-    std::vector<double> temp_tzz(nt*(nz+1)*ny*nx);
-    std::vector<double> temp_CoEps(nt*(nz+1)*ny*nx);
-    std::vector<double> temp_tke(nt*(nz+1)*ny*nx);
+    std::vector<double> temp_txx(nt*nz*ny*nx);
+    std::vector<double> temp_txy(nt*nz*ny*nx);
+    std::vector<double> temp_txz(nt*nz*ny*nx);
+    std::vector<double> temp_tyy(nt*nz*ny*nx);
+    std::vector<double> temp_tyz(nt*nz*ny*nx);
+    std::vector<double> temp_tzz(nt*nz*ny*nx);
+    std::vector<double> temp_CoEps(nt*nz*ny*nx);
+    std::vector<double> temp_tke(nt*nz*ny*nx);
     
     input->getVariableData("tau11",start,count,temp_txx);
     input->getVariableData("tau12",start,count,temp_txy);
@@ -237,7 +237,7 @@ Turb::Turb(NetCDFInput* input, const bool& debug)
             // id1 -> Plume grid
             int id1 = i + j*nx + k*nx*ny + n*nx*ny*nz;
             // id2 -> TURB grid
-            int id2 = i + j*nx + (k+1)*nx*ny + n*nx*ny*(nz+1);
+            int id2 = i + j*nx + k*nx*ny + n*nx*ny*nz;
 
             txx.at(id1) = temp_txx.at(id2);
             txy.at(id1) = temp_txy.at(id2);
@@ -278,7 +278,7 @@ Turb::Turb(NetCDFInput* input, const bool& debug)
     turbXend = x.at(nx-1);
     turbYstart = y.at(0);
     turbYend = y.at(ny-1);
-    turbZstart = z.at(0);
+    turbZstart = 0.5*(z.at(0)+z.at(1));
     turbZend = z.at(nz-1);
 
 

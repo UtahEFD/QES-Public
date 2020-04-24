@@ -13,12 +13,15 @@ CUDA_ADD_LIBRARY( cudaplumecore
     NetCDFInput.cpp
     Urb.cpp
     Turb.cpp
+    URBGeneralData.cpp
+    TURBGeneralData.cpp
+    
     Eulerian.cpp
     Dispersion.cpp
     Plume.cpp
     NetCDFOutput.cpp
     QESNetCDFOutput.cpp
-    PlumeOutputEulerian.cpp
+
     PlumeOutputLagrToEul.cpp
     PlumeOutputLagrangian.cpp
 

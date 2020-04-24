@@ -9,12 +9,13 @@
 //  Modified by Loren Atwood 02/08/20
 //
 
+// -> not working at the moment. 
 
 #include "PlumeOutputEulerian.h"
 
 
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
-PlumeOutputEulerian::PlumeOutputEulerian(PlumeInputData* PID,Urb* urb_ptr,Turb* turb_ptr,Eulerian* eul_ptr,std::string output_file)
+PlumeOutputEulerian::PlumeOutputEulerian(PlumeInputData* PID,URBGeneralData* urb_ptr,TURBGeneralData* turb_ptr,Eulerian* eul_ptr,std::string output_file)
   : QESNetCDFOutput(output_file)
 {
     
@@ -37,9 +38,9 @@ PlumeOutputEulerian::PlumeOutputEulerian(PlumeInputData* PID,Urb* urb_ptr,Turb* 
     // get the grid number of points
     // LA future work: this whole structure will have to change when we finally adjust the inputs for the true grids
     //  would mean cell centered urb data and face centered turb data. For now, decided just to assume they have the same grid
-    int nx = urb->nx;
-    int ny = urb->ny;
-    int nz = urb->nz;
+    int nx = urb->nx-1;
+    int ny = urb->ny-1;
+    int nz = urb->nz-1;
     int nCells = nz*ny*nx;
 
     // initialization of the other particle data containers, setting initial vals to different noDataVals

@@ -9,6 +9,7 @@
 //  Modified by Loren Atwood 02/08/20
 //
 
+// -> not working at the moment. 
 
 #pragma once
 
@@ -17,10 +18,11 @@
 
 
 #include "PlumeInputData.hpp"
-#include "Urb.hpp"
-#include "Turb.hpp"
+#include "URBGeneralData.h"
+#include "TURBGeneralData.h"
+//#include "Urb.hpp"
+//#include "Turb.hpp"
 #include "Eulerian.h"
-
 
 #include "QESNetCDFOutput.h"
 
@@ -35,7 +37,7 @@ public:
     }
     
     // specialized constructor
-    PlumeOutputEulerian(PlumeInputData* PID,Urb* urb_ptr,Turb* turb_ptr,Eulerian* eul_ptr,std::string output_file);
+    PlumeOutputEulerian(PlumeInputData* PID,URBGeneralData* urb_ptr,TURBGeneralData* turb_ptr,Eulerian* eul_ptr,std::string output_file);
     
     // deconstructor
     ~PlumeOutputEulerian()
@@ -53,8 +55,8 @@ private:
     // no need for output frequency for this output, it is expected to only happen once, assumed to be at time zero
     
     // pointers to the classes that save needs to use to get the data for the output
-    Urb* urb;
-    Turb* turb;
+    URBGeneralData* urb;
+    TURBGeneralData* turb;
     Eulerian* eul;
     
     

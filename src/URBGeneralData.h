@@ -6,6 +6,10 @@
 #include "NetCDFInput.h"
 #include "Args.hpp"
 
+#define _USE_MATH_DEFINES
+#define MIN_S(x,y) ((x) < (y) ? (x) : (y))
+#define MAX_S(x,y) ((x) > (y) ? (x) : (y))
+
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
@@ -28,17 +32,21 @@ public:
     std::vector<float> t;
     
     /*
-      Information below match URBGeneral data class of URB
+      Information below match URBGeneral data class of QES-winds
     */
     
     // General QUIC Domain Data
     int nx, ny, nz;         /**< number of cells */
     float dx, dy, dz;	  /**< Grid resolution*/
     float dxy;		  /**< Minimum value between dx and dy */
+
+    long numcell_cent;       /**< Total number of cell-centered values in domain */
+    long numcell_face;       /**< Total number of face-centered values in domain */
     
     // grid information
     std::vector<float> dz_array;
-    std::vector<float> x_cc,y_cc,z_cc;
+    std::vector<float> x,y,z;
+    std::vector<float> z_face;
     
     // The following are mostly used for output
     std::vector<int> icellflag;  /**< Cell index flag (0 = Building, 1 = Fluid, 2 = Terrain, 
