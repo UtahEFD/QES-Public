@@ -189,7 +189,9 @@ struct Params{
    OptixRay testOptixRay; 
 //   int count; //temp val
 
-//int * icellflagArray; //change to this later
+   int* icellflagArray; //change to this later
+   float dx, dy, dz; 
+
 };
 
 struct RayGenData{
@@ -238,6 +240,9 @@ struct RayTracingState{
    CUDABuffer paramsBuffer;
    CUDABuffer testRays_d; //test array
 
+   CUdeviceptr icellflagArray_d; //device memory 
+
+   
    OptixShaderBindingTable sbt = {};
 
    int samples_per_cell;  //can change to bigger type value if needed 

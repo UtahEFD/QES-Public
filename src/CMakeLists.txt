@@ -39,16 +39,10 @@ CUDA_ADD_LIBRARY( cudaurbcore
   HitRecord.cpp HitRecord.h
   )
 
-#OPTIX_add_library(target_name 
- # OptixRayTrace.cu
-  #OptixRayTrace.cpp
-  #OptixRayTrace.h
- # )
-
-# include_directories(${OptiX_INCLUDE})
  
- cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
- add_library(optix_lib
+cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
+ 
+add_library(optix_lib
    ${embedded_ptx_code}
    OptixRayTrace.h
    OptixRayTrace.cpp

@@ -44,7 +44,6 @@ void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float d
                SphereDirections sd(1000);
 
                float maxLength = std::numeric_limits<float>::infinity();
-
                //ray's origin = cell's center
                Ray ray((i+0.5)*dx, (j+0.5)*dy, (k+0.5)*dz);
                //std::cout<<"Ray center init"<<std::endl;

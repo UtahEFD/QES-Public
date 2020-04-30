@@ -270,10 +270,11 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 
    std::cout<<"In calculateMixingLength, initParams() done"<<std::endl;
 
+   std::cout<<"In mix length BEFORE launch, params.flag (should be 3) = "<<state.params.flag<<std::endl;
 
    launch();
 
-   std::cout<<"In mix length after launch, params.flag = "<<state.params.flag<<std::endl;
+   std::cout<<"In mix length after launch, params.flag (should be 40) = "<<state.params.flag<<std::endl;
 
 
    std::cout<<"In calculateMixingLength, launch() done"<<std::endl;
@@ -282,9 +283,10 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
    //Hits should be init
    std::cout<<"\033[1;35m Hits output print if t != 0 \033[0m"<<std::endl;
 
-   std::vector<Hit> hitList(icellflag.size());
-
-   state.d_hits.download(hitList.data(), icellflag.size());
+   //std::vector<Hit> hitList(icellflag.size());
+   Hit *hitList = (Hit *) malloc(icellflag.size() * sizeof(Hit));
+   state.d_hits.download(hitList,icellflag.size());
+//   state.d_hits.download(hitList.data(), icellflag.size());
 
 
    std::cout<<"HitList at 0 = "<<hitList[0].t<<std::endl;
@@ -294,8 +296,6 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
    for(int i = 0; i < icellflag.size(); i++){
 
       //mixingLengths.push_back(state.params.hits[i].t);
-
-
       if(hitList[0].t != 0){
          std::cout<<"In mixlength, hit at index "<<i<<" = "<<hitList[i].t<<std::endl;
       }
@@ -318,12 +318,49 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag){
 
 
-   //init hits (container for the t info from device to host)
+
+   //allocate memory for hits (container for the t info from device to host)
    size_t hits_size_in_bytes = sizeof(Hit)*icellflag.size();
    state.d_hits.alloc(hits_size_in_bytes);
 
    //acceleration structure handle
    state.params.handle = state.gas_handle;
+
+   std::cout<<"Hits memory allocated and params.handle init"<<std::endl;
+
+   //allocate memory to device-side icellflag memory
+   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&state.icellflagArray_d), icellflag.size()*sizeof(int)));
+
+   std::cout<<"Finished allocating memory to icellflag_d"<<std::endl;
+
+   //temporary fix: copy std::vector data to int array
+   std::cout<<"icellflag size = "<<icellflag.size()<<std::endl;
+
+   int *tempArray = (int*) malloc(icellflag.size()*sizeof(int));
+
+   for(int i = 0; i < icellflag.size(); i++){
+      tempArray[i] = icellflag[i];
+   }
+   std::cout<<"Finished copying std::vector to array"<<std::endl;
+
+   //copy data from std::vector icellflag to device-side memory
+   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(state.icellflagArray_d),
+                         reinterpret_cast<void*>(tempArray),
+                         icellflag.size(),
+                         cudaMemcpyHostToDevice));
+
+   std::cout<<"finished copying icell host to device"<<std::endl;
+
+   //assign params icellflag pointer to point to icellflagArray_d
+   state.params.icellflagArray = (int *) state.icellflagArray_d;
+
+   std::cout<<"Params icellflag alloc and assignment finished"<<std::endl;
+
+   //init params dx, dy, dz
+   state.params.dx = dx;
+   state.params.dy = dy;
+   state.params.dz = dz;
+
 
    //start of tests
    state.params.flag = 3; //test value
@@ -682,8 +719,6 @@ void OptixRayTrace::createSBT(){
 void OptixRayTrace::launch(){
    //create the CUDA stream
    CUDA_CHECK(cudaStreamCreate(&state.stream));
-
-
 
 
    //state.params.testRays = (OptixRay *) state.testRays_d.d_ptr;
