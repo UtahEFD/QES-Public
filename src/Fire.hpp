@@ -54,6 +54,7 @@ class Fire {
         double time=0;
         float r_max = 0;
         float dt=0;
+	int FFII_flag=1;
         
         std::vector< FireCell > fire_cells;
         
@@ -74,6 +75,7 @@ class Fire {
         std::vector<float> Pot_u;
         std::vector<float> Pot_v;
         std::vector<float> Pot_w;
+	
 
   // Potential field
         int pot_z, pot_r, pot_G, pot_rStar, pot_zStar;
@@ -84,9 +86,17 @@ class Fire {
         std::vector<float> Gprime;
         std::vector<float> rStar;
         std::vector<float> zStar;
+
+        // Fire Arrival Times from netCDF
+	int SFT_time, SFT_x1, SFT_y1, SFT_x2, SFT_y2;
+	std::vector<float> FT_time;
+	std::vector<float> FT_x1;
+	std::vector<float> FT_y1;
+	std::vector<float> FT_x2;
+	std::vector<float> FT_y2;
       
         void run(Solver*, URBGeneralData*);
-        void move(Solver*, URBGeneralData*);   
+        void move(Solver*, URBGeneralData*); 
 	void potential(URBGeneralData*);   
         void save(Output*);
         float computeTimeStep();

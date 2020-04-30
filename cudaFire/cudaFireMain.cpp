@@ -163,9 +163,6 @@ int main(int argc, char *argv[])
     
     // save any fire data
     fire->save(output);
-    
-    // Load in plume potential data
-    //fire->loadPotential;
 	
     // Run urb simulation code
     std::cout<<"===================="<<std::endl;
@@ -204,12 +201,7 @@ int main(int argc, char *argv[])
 	  
 	    // run wind solver
             solver->solve(UID, UGD, !arguments.solveWind);
-            
-            // Superimpose u0 and v0 onto windfield
-            //UGD->u0 = UGD->u;
-            //UGD->v0 = UGD->v;
 	    
-            
             //increment fire loop
             loop += 1;
             
