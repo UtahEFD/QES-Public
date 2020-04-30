@@ -206,7 +206,7 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     
     if (output_fields[0]=="all") {
         output_fields.erase(output_fields.begin());
-        output_fields = {"time","burn","wp"};
+        output_fields = {"time","burn"};
     }
     
     // set cell-centered dimensions

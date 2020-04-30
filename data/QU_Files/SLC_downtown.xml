@@ -1,7 +1,8 @@
 <simulationParameters>
-  <!--DEM>../scratch/SLC/n41w112_30m/n41w112_30m.tif</DEM-->					<!-- Address to DEM location-->
+  <DEM>../scratch/SLC/n41w112_30m/n41w112_30m.tif</DEM>					<!-- Address to DEM location-->
   <SHP>../scratch/SLC/slc_cut.shp</SHP>				<!-- Address to shapefile location-->
   <SHPBuildingLayer>slc_cut</SHPBuildingLayer>
+  <heightFactor> 1.0 </heightFactor>					<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
 
   <halo_x> 40.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
   <halo_y> 40.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain)-->
@@ -54,13 +55,15 @@
     <direction> 270.0 </direction> 					<!-- Wind direction of sensor -->
   </sensor>  				                     	<!-- End of sensor section -->
 </metParams>  								<!-- End of meteorological parameters -->
+<localMixingParam>
+  <method>1</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <save>true</save>     <!-- Save 2 to file -->
+  <LMfile>../scratch/SLC/slc_cut_mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
+</localMixingParam>
 <fileOptions>
   <outputFlag>1</outputFlag>
-  <outputFields>u</outputFields>
-  <outputFields>v</outputFields>
+  <outputFields>all</outputFields> 
+  <outputFields>v</outputFields> 
   <outputFields>w</outputFields>
-  <outputFields>icell</outputFields>
-  <massConservedFlag> 0 </massConservedFlag>
-  <sensorVelocityFlag> 0 </sensorVelocityFlag>
-  <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+  <outputFields>icell</outputFields> 
 </fileOptions>

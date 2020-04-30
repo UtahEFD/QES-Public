@@ -6,6 +6,7 @@
 */
 #include "util/ParseInterface.h"
 #include "PolygonVertex.h"
+#include "CutVertex.h"
 
 using namespace std;
 
@@ -14,6 +15,7 @@ using namespace std;
 // C++ files
 class URBInputData;
 class URBGeneralData;
+class TURBGeneralData;
 
 class Building : public ParseInterface
 {
@@ -68,7 +70,7 @@ public:
 		}
 
     // Need to finalize the parameters here...
-    virtual void setCellFlags (const URBInputData* UID, URBGeneralData* UGD)
+    virtual void setCellFlags (const URBInputData* UID, URBGeneralData* UGD, int building_number)
     {
     }
 
@@ -105,4 +107,7 @@ public:
 		{
 		}*/
 
+    virtual void NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int buidling_id)
+    {
+    }
 };

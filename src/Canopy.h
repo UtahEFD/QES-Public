@@ -6,9 +6,17 @@
 
 #include "PolyBuilding.h"
 
-class Canopy : public PolyBuilding
+class Canopy : public Building
 {
 private:
+
+protected:
+
+	float x_min, x_max, y_min, y_max;      // Minimum and maximum values of x
+																				 // and y for a building
+	float x_cent, y_cent;                  /**< Coordinates of center of a cell */
+	float polygon_area;                    /**< Polygon area */
+	int icell_cent, icell_face;
 
 public:
 

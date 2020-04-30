@@ -15,7 +15,6 @@
 #include "Solver.h"
 #include "CPUSolver.h"
 #include "DynamicParallelism.h"
-#include "Output.hpp"
 
 namespace pt = boost::property_tree;
 
@@ -57,11 +56,8 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    // Files was successfully read, so create instance of output class
-    Output* output = nullptr;
-
     // Generate the general URB data from all inputs
-    URBGeneralData* UGD = new URBGeneralData(UID, output);
+    URBGeneralData* UGD = new URBGeneralData(UID);
 }
 
 

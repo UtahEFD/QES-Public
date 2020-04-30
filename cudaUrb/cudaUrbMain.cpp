@@ -7,15 +7,21 @@
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
+#include "QESNetCDFOutput.h"
+
 #include "handleURBArgs.h"
 
 #include "URBInputData.h"
 #include "URBGeneralData.h"
+#include "WINDSOutputVisualization.h"
+#include "WINDSOutputWorkspace.h"
+
+#include "TURBGeneralData.h"
+#include "TURBOutput.h"
 
 #include "Solver.h"
 #include "CPUSolver.h"
 #include "DynamicParallelism.h"
-#include "Output.hpp"
 
 namespace pt = boost::property_tree;
 
@@ -35,84 +41,130 @@ int main(int argc, char *argv[])
     // CUDA-Urb - Version output information
     std::string Revision = "0";
     std::cout << "cudaUrb " << "0.8.0" << std::endl;
-
+    
     // ///////////////////////////////////
     // Parse Command Line arguments
     // ///////////////////////////////////
-
+    
     // Command line arguments are processed in a uniform manner using
     // cross-platform code.  Check the URBArgs class for details on
     // how to extend the arguments.
     URBArgs arguments;
     arguments.processArguments(argc, argv);
-
+    
     // ///////////////////////////////////
     // Read and Process any Input for the system
     // ///////////////////////////////////
-
+    
     // Parse the base XML QUIC file -- contains simulation parameters
     URBInputData* UID = parseXMLTree(arguments.quicFile);
     if ( !UID ) {
-        std::cerr << "QUIC Input file: " << arguments.quicFile << " not able to be read successfully." << std::endl;
+        std::cerr << "[ERROR] QUIC Input file: " << arguments.quicFile <<
+            " not able to be read successfully." << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    
+    // Checking if 
+    if (arguments.compTurb && !UID->localMixingParam) {
+        std::cerr << "[ERROR] Turbulence model is turned on without LocalMixingParam in QES Intput file " 
+                  << arguments.quicFile << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    // Files was successfully read, so create instance of output class
-    Output* output = nullptr;
-    if (UID->fileOptions->outputFlag==1) {
-        output = new Output(arguments.netCDFFile);
+    
+    if (arguments.terrainOut) {
+        if (UID->simParams->DTE_heightField) {
+            std::cout << "Creating terrain OBJ....\n";
+            UID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
+            std::cout << "OBJ created....\n";
+        }
+        else {
+            std::cerr << "[ERROR] No dem file specified as input\n";
+            return -1;
+        }
     }
 
     // Generate the general URB data from all inputs
-    URBGeneralData* UGD = new URBGeneralData(UID, output);
-
+    URBGeneralData* UGD = new URBGeneralData(UID);
+    
+    // create URB output classes
+    std::vector<QESNetCDFOutput*> outputVec;
+    if (arguments.visuOutput) {
+        outputVec.push_back(new WINDSOutputVisualization(UGD,UID,arguments.netCDFFileVisu));
+    }
+    if (arguments.wkspOutput) {
+        outputVec.push_back(new WINDSOutputWorkspace(UGD,arguments.netCDFFileWksp));
+    }
+    
+    
+    // Generate the general TURB data from URB data
+    // based on if the turbulence output file is defined
+    TURBGeneralData* TGD = nullptr;
+    if (arguments.compTurb) {
+        TGD = new TURBGeneralData(UGD);
+    }
+    if (arguments.compTurb && arguments.turbOutput) {
+        outputVec.push_back(new TURBOutput(TGD,arguments.netCDFFileTurb));
+    }
+    
     // //////////////////////////////////////////
     //
     // Run the CUDA-URB Solver
     //
     // //////////////////////////////////////////
     Solver *solver, *solverC = nullptr;
-    if (arguments.solveType == CPU_Type)
+    if (arguments.solveType == CPU_Type) {
+        std::cout << "Run CPU Solver ..." << std::endl;
         solver = new CPUSolver(UID, UGD);
-    else if (arguments.solveType == DYNAMIC_P)
+    } else if (arguments.solveType == DYNAMIC_P) {
+        std::cout << "Run GPU Solver ..." << std::endl;
         solver = new DynamicParallelism(UID, UGD);
-    else
-    {
-        std::cerr << "Error: invalid solve type\n";
+    } else {
+        std::cerr << "[ERROR] invalid solve type\n";
         exit(EXIT_FAILURE);
     }
-
+    
     //check for comparison
-    if (arguments.compareType)
-    {
+    if (arguments.compareType) {
         if (arguments.compareType == CPU_Type)
             solverC = new CPUSolver(UID, UGD);
         else if (arguments.compareType == DYNAMIC_P)
             solverC = new DynamicParallelism(UID, UGD);
-        else
-        {
-            std::cerr << "Error: invalid comparison type\n";
+        else {
+            std::cerr << "[ERROR] invalid comparison type\n";
             exit(EXIT_FAILURE);
         }
     }
+    
     // Run urb simulation code
     solver->solve(UID, UGD, !arguments.solveWind );
-
+    
     std::cout << "Solver done!\n";
-
-    if (solverC != nullptr)
-    {
+    
+    if (solverC != nullptr) {
         std::cout << "Running comparson type...\n";
         solverC->solve(UID, UGD, !arguments.solveWind);
     }
-
+    
+    // /////////////////////////////
+    //
+    // Run turbulence
+    //
+    // /////////////////////////////
+    if(TGD != nullptr) {
+        TGD->run(UGD);
+    }
+    
     // /////////////////////////////
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    if (output) {
-        UGD->save();
+    for(auto id_out=0u;id_out<outputVec.size();id_out++) {
+        outputVec.at(id_out)->save(0.0); // need to replace 0.0 with timestep
     }
+
+
+    // /////////////////////////////
     exit(EXIT_SUCCESS);
 }
 

@@ -16,9 +16,9 @@
 #include "Solver.h"
 #include "CPUSolver.h"
 #include "DynamicParallelism.h"
-#include "Output.hpp"
 
 #include "Fire.hpp"
+#include "FIREOutput.h"
 //#include "DTEHeightField.h"
 
 
@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
     */
 
     // Files was successfully read, so create instance of output class
+
     Output* output = nullptr;
     if (UID->fileOptions->outputFlag==1) {
         output = new Output(arguments.netCDFFile);
@@ -105,7 +106,8 @@ int main(int argc, char *argv[])
 
     // Generate the general URB data from all inputs
     URBGeneralData* UGD = new URBGeneralData(UID, output);
-
+    
+    
     // //////////////////////////////////////////
     //
     // Run the CUDA-URB Solver
@@ -149,6 +151,7 @@ int main(int argc, char *argv[])
      * Create Fire Mapper
      **/
     Fire* fire = new Fire(UID, UGD, output);
+    FIREOutput* fireSave = new ;
     
     // set base w in fire model to initial w0
     //fire->w_base = w0;

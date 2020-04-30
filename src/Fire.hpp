@@ -13,8 +13,8 @@
 #include "URBGeneralData.h"
 #include "FuelProperties.hpp"
 #include "Vector3.h"
-#include "Output.hpp"
 #include "Solver.h"
+#include "FIREOutput.h"
 
 #include <fstream>
 #include <iostream>
@@ -75,6 +75,10 @@ class Fire {
         std::vector<float> Pot_u;
         std::vector<float> Pot_v;
         std::vector<float> Pot_w;
+        // output fields
+        std::vector<float> burn_flag;
+        std::vector<float> burn_out;
+	std::vector<float> Pot_w_out;
 	
 
   // Potential field
@@ -119,12 +123,10 @@ class Fire {
         
         FireProperties runFire(float, float, int);
         
-        // output fields
-        std::vector<double> burn_flag;
-        std::vector<double> burn_out;
-	std::vector<double> Pot_w_out;	
-        
+	
+
         /// Declaration of output manager
+	/*
         int output_counter=0;
         std::vector<NcDim> dim_scalar_1,dim_scalar_3,dim_scalar_4;
         std::vector<std::string> output_fields;
@@ -160,6 +162,7 @@ class Fire {
         std::vector<AttScalarDbl> output_scalar_dbl;
         std::vector<AttVectorDbl> output_vector_dbl;
         std::vector<AttVectorInt> output_vector_int;
+       */
 };
 
 #endif

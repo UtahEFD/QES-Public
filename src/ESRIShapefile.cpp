@@ -9,17 +9,17 @@ ESRIShapefile::ESRIShapefile()
 }
 
 ESRIShapefile::ESRIShapefile(const std::string &filename, const std::string &bldLayerName,
-                             std::vector< std::vector< polyVert > > &polygons, std::vector <float> &building_height)
+                             std::vector< std::vector< polyVert > > &polygons, std::vector <float> &building_height, float heightFactor)
     : m_filename(filename), m_layerName(bldLayerName), minBound(2), maxBound(2)
 {
     minBound = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
     maxBound = { -1.0*std::numeric_limits<float>::max(), -1.0*std::numeric_limits<float>::max() };
 
     GDALAllRegister();
-    loadVectorData( polygons, building_height);
+    loadVectorData( polygons, building_height, heightFactor);
 }
 
-void ESRIShapefile::loadVectorData( std::vector< std::vector< polyVert > > &polygons, std::vector <float> &building_height)
+void ESRIShapefile::loadVectorData( std::vector< std::vector< polyVert > > &polygons, std::vector <float> &building_height, float heightFactor)
 {
     int polyCount = 0;
 
@@ -73,15 +73,15 @@ void ESRIShapefile::loadVectorData( std::vector< std::vector< polyVert > > &poly
             {
             case OFTInteger:
                 //printf( "%d,", feature->GetFieldAsInteger( idxField ) );
-                building_height.push_back(feature->GetFieldAsInteger( idxField ));
+                building_height.push_back(feature->GetFieldAsInteger( idxField )*heightFactor);
 
                 break;
             case OFTInteger64:
                 //printf( CPL_FRMT_GIB ",", feature->GetFieldAsInteger64( idxField ));
-                building_height.push_back(feature->GetFieldAsInteger( idxField ));
+                building_height.push_back(feature->GetFieldAsInteger( idxField )*heightFactor);
                 break;
             case OFTReal:
-                building_height.push_back(feature->GetFieldAsDouble( idxField ));
+                building_height.push_back(feature->GetFieldAsDouble( idxField )*heightFactor);
                 //printf( "%.3f,", feature->GetFieldAsDouble( idxField ) );
                 break;
             case OFTString:

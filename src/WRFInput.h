@@ -29,61 +29,63 @@ using namespace std;
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
-class NCInputFile {
-public:
-    NCInputFile() {}
-    ~NCInputFile() {}
-    
-    /** Mimic matlab functionality for ncread */
-    void readVectorData(const std::string d)
-    {
-        
-    }
+#include "Sensor.h"
 
+class profData 
+{
+public:
+    float zCoord;
+    float ws, wd;
+};
+
+class stationData 
+{
+public:
+    stationData() {}
+    ~stationData() {}
+
+    float xCoord, yCoord;
+    float z0;
     
+    std::vector< std::vector< profData > > profiles;
+
 private:
 };
 
-
-#if 0
-class WRFVectorData
-{
-public:
-    WRFVectorData( double *data, std::vector< int > dimByColumn )
-    {
-        long totalDim = 1;
-        
-        dataByColumnVector.resize( dimByColumn.size() );
-        for (auto idx=0; idx<dataByColumnVector.size(); idx++) {
-            dataByColumnVector[idx].resize( dimByColumn[idx] );
-            totalDim *= dimByColumn[idx];
-        }
-
-        for (auto idx=0; idx<dataByColumnVector.size(); idx++) {
-            
-            long offset = 0;
-            long stride = 1;
-
-            // offset is
-            
-            // populate one column at a time
-            for (auto gidx=offset; gidx<totalDim; gidx+=stride) {
-                
-            }
-        }
-
-    std::vector< std::vector< double > > dataByColumnVector;
-};
-#endif
-    
 class WRFInput
 {
 public:
 
     const double c_PI = 3.14159265358979323846;
 
-    WRFInput(const std::string& filename);
+    WRFInput(const std::string& filename, double domainUTMx, double domainUTMy, float dimX, float dimY, bool sensorsOnly=false);
     ~WRFInput();
+
+    // If set to true, ONLY the sensor data will be pulled from WRF
+    // Atmos Mesh.
+    bool m_processOnlySensorData;
+
+    // Fire Mesh Related Data
+    bool hasFireMesh;
+    
+    int fm_nx, fm_ny;
+    double fm_dx, fm_dy;
+    std::vector<double> fmHeight;
+
+    // Not really used with WRF so do not read in
+    // std::vector<double> fmZ0;
+
+    // Atmospheric Mesh
+    int atm_nx, atm_ny, atm_nz;
+    double atm_dx, atm_dy;
+
+    // Station (i.e. Sensor) Data
+    std::vector< stationData > statData;
+
+    float atm_minWRFAlt, fm_minWRFAlt;
+    float atm_maxWRFAlt, fm_maxWRFAlt;
+
+    int maxSensors;
 
     /**
      * Reading WRF data - ReadDomainInfo.m
@@ -187,6 +189,7 @@ public:
      */
     void setWRFDataPoint();
     
+    float lookupLandUse( int luIdx );
 
 private:
 

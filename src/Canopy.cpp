@@ -121,7 +121,7 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
                     int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
                     if( UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
                     {
-                        UGD->icellflag[icell_cent] = 9;           // Canopy cell
+                        UGD->icellflag[icell_cent] = 11;           // Canopy cell
                     }
                 }
             }
@@ -136,7 +136,7 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
             for (auto k=k_start; k<k_end; k++)
             {
                 int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] == 9)       // if the cell is defined as canopy
+                if (UGD->icellflag[icell_cent] == 11)       // if the cell is defined as canopy
                 {
                     int id = i+j*(UGD->nx-1);
                     UGD->canopy_top[id] = base_height+H;
@@ -182,10 +182,10 @@ void Canopy::plantInitial(URBGeneralData* UGD)
                 /**< velocity at the height of the canopy */
                 // Local variable - not being used by anything... so
                 // commented out for now.
-                // 
+                //
                 // float u_H = (UGD->canopy_ustar[id]/UGD->vk)*log((UGD->canopy_top[id]-UGD->canopy_d[id])/UGD->canopy_z0[id]);
-                
-                for (auto k=1; k < UGD->nz; k++)
+
+                for (auto k=1; k < UGD->nz-1; k++)
                 {
                     if (UGD->z[k] < UGD->canopy_top[id])
                     {

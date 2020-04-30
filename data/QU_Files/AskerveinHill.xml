@@ -1,8 +1,12 @@
 <simulationParameters>
 
 	<DEM>../scratch/DEM/askervein.tif</DEM>					<!-- Address to DEM location-->	
-	<domain> 300 300 50 </domain>
-	<cellSize> 20.0 20.0 4.0 </cellSize> <!-- Meters-->
+
+  	<halo_x> 0.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
+  	<halo_y> 0.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain)-->
+
+	<domain> 600 600 70 </domain>
+	<cellSize> 10.0 10.0 5.0 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
 	<UTCConversion> 0 </UTCConversion>
@@ -46,26 +50,14 @@
 		<direction> 270 </direction> 
 	</sensor>
 </metParams>
+<localMixingParam>
+  <method>0</method>
+</localMixingParam>
 <fileOptions>
 	<outputFlag>1</outputFlag>
     <outputFields>u</outputFields> 
     <outputFields>v</outputFields> 
     <outputFields>w</outputFields>
     <outputFields>icell</outputFields> 
-	<massConservedFlag> 0 </massConservedFlag>
-	<sensorVelocityFlag> 0 </sensorVelocityFlag>
-	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
-<!--buildings>
-	<wallRoughness> 0.1 </wallRoughness>
-	<numBuildings> 1 </numBuildings>
-	<rectangularBuilding>
-		<height> 20.0 </height>
-		<baseHeight> 0 </baseHeight>
-		<xStart> 90.0 </xStart>
-		<yStart> 90.0 </yStart>
-		<length> 20.0 </length>
-		<width> 20.0 </width>
-		<buildingRotation> 20.0 </buildingRotation>
-	</rectangularBuilding>
-</buildings-->
+

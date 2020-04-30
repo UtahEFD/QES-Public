@@ -17,7 +17,7 @@
 */
 void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD, int building_id)
 {
-
+    
   std::vector<float> Lr_face, Lr_node;
   std::vector<int> perpendicular_flag;
   Lr_face.resize (polygonVertices.size(), -1.0);       // Length of wake for each face
@@ -222,7 +222,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD, in
     }
   }
 
-  for (auto k = k_start; k < UGD->nz-1; k++)
+  for (auto k = k_start; k < UGD->nz-2; k++)
   {
     k_top = k;
     if (height_eff < UGD->z[k+1])
@@ -500,12 +500,18 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD, in
                   {
                     if (canyon_factor == 1)
                     {
-                      UGD->icellflag[icell_cent] = 5;
+                      if ((UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
+                      {
+                        UGD->icellflag[icell_cent] = 5;
+                      }
                     }
                   }
                   else
                   {
-                    UGD->icellflag[icell_cent] = 4;
+                    if ((UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
+                    {
+                      UGD->icellflag[icell_cent] = 4;
+                    }
                   }
                 }
                 if (u_wake_flag == 0 && v_wake_flag == 0 && w_wake_flag == 0)

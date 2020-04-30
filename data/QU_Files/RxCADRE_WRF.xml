@@ -1,10 +1,16 @@
 <simulationParameters>
   <DEM>../data/GISFiles/RxCADRE_fromWRF.tif</DEM>
+
   <halo_x> 40.0 </halo_x>	
   <halo_y> 40.0 </halo_y>	
     
-     <domain> 100 100 300 </domain>
-  <cellSize> 16.4609 16.4609 1.0 </cellSize> -->
+  <!-- This is the domain sampled in large cells -->
+     <domain> 575 575 150 </domain>
+     <cellSize> 3.29218 3.29218 2.0 </cellSize> 
+
+  <!-- the original fire mesh size; runs slower 
+       <domain> 1150 1150 300 </domain>
+       <cellSize> 1.64609 1.64609 1.0 </cellSize> -->
        
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1 </totalTimeIncrements>
@@ -6843,13 +6849,16 @@
     <direction> 124.534 </direction>
    </sensor> 
 </metParams>
+<localMixingParam>
+  <method>0</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <save>false</save>     <!-- Save to file -->
+  <LMfile>../scratch/RxCADRE/RxCADRE_WRF_mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
+</localMixingParam>
 <fileOptions>
-	<outputFlag>1</outputFlag>
-    <outputFields>u</outputFields> 
-    <outputFields>v</outputFields> 
-    <outputFields>w</outputFields>
-    <outputFields>icell</outputFields>   
-	<massConservedFlag> 0 </massConservedFlag>
-	<sensorVelocityFlag> 0 </sensorVelocityFlag>
-	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+  <outputFlag>1</outputFlag>
+  <outputFields>all</outputFields> 
+  <outputFields>v</outputFields> 
+  <outputFields>w</outputFields>
+  <outputFields>icell</outputFields> 
 </fileOptions>
+

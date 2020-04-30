@@ -1,5 +1,19 @@
-# CUDA-URB
+# QES-Winds
 
+QES-Winds is a fast response 3D diagnostic urban wind model written in
+C++ and uses NVIDIA's CUDA framework to accelerate a mass-conserving
+wind-field solver. QES-Winds uses a variational analysis technique to
+ensure the conservation of mass rather than slower yet more
+physics-based solvers that include conservation of momentum. QES-Winds
+minimizes the difference between an initial wind field that is
+specified using empirical parameterizations and thefinal wind field.
+This method requires the solution of a Poisson equation for Lagrange
+multipliers. The Poisson equation is solved using the Successive
+Over-Relaxation (SOR) method (an iterative solver), which is a variant
+of the Gauss-Seidel method with more rapid convergence. QES-Winds
+utilizes the concept of dynamic parallelism in NVIDIAs parallel
+computing-based Graphics Processing Unit (or GPU) API, CUDA, to
+substantially accelerate wind simulations.
 
 ## Package Requirements
 
@@ -11,7 +25,10 @@ On a general Linux system, such as Ubuntu 18.04 which we commonly use, you will 
 * netcdf-bin
 * libboost-all-dev
 * cmake
-* cmake-curses-gui 
+* cmake-curses-gui
+
+If you have a system that uses apt, here's the command:
+```apt install libgdal-dev libnetcdf-c++4-dev  libnetcdf-cxx-legacy-dev libnetcdf-dev netcdf-bin libboost-all-dev cmake cmake-curses-gui```
 
 To use the GPU system (and even build the code) you will need a NVIDIA
 GPU with the CUDA library installed.  We have tested with CUDA 8.0, 10.0, and 10.1.
@@ -22,11 +39,11 @@ will need to remember the path to the cuda install directory.
 
 The most active development occurs in the *workingBranch*. We suggest you use that branch at this time.  You can checkout this branch with the following git command:
 
-``` git checkout workingBranch ```
+```
+git checkout workingBranch
+```
 
 If you are unsure about which branch you are on, the ``` git status ``` command can provide you with this information.
-
-
 
 
 ### Building on general Linux system
@@ -115,13 +132,13 @@ In case things don't go as planned with these instructions, here are some tips f
 After the build is configured the Doxygen documentation can be built. The output from this process is the updating of the _html_ and _latex_ folders in the top-level _docs_ folders.
 
 ```
-make doc
+make urbdoc
 ```
 
 
 ### Continuous Integration
 
-We are running continuous integration on Travis-CI.
+We were running continuous integration on Travis-CI but this is no longer functional...
 
 [Basic Concepts for Travis Continuous Integration](https://docs.travis-ci.com/user/for-beginners/)
 

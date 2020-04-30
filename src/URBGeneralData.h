@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <netcdf>
+#include <cmath>
 
 // #include "URBInputData.h"
 
@@ -12,24 +13,28 @@
 #include "URBInputData.h"
 #include "Building.h"
 #include "Canopy.h"
+#include "LocalMixing.h"
+#include "LocalMixingDefault.h"
+#include "LocalMixingNetCDF.h"
+#include "LocalMixingSerial.h"
 #include "Mesh.h"
 #include "DTEHeightField.h"
 #include "Cut_cell.h"
 #include "Wall.h"
-#include <cmath>
 
-#include "Output.hpp"
 
 class URBInputData;
 
 class URBGeneralData {
 public:
     URBGeneralData();
-    URBGeneralData(const URBInputData* UID, Output *cudaOutput);
+    URBGeneralData(const URBInputData* UID);
     ~URBGeneralData();
-
-    void mergeSort( std::vector<float> &effective_height, std::vector<Building*> allBuildingsV, std::vector<int> &building_id );
-
+    
+    void mergeSort( std::vector<float> &effective_height,
+                    std::vector<Building*> allBuildingsV,
+                    std::vector<int> &building_id );
+    
 
     /*!
     * This function is being called from the plantInitial function
@@ -37,7 +42,7 @@ public:
     * of the canopy.
     */
     float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
-
+    
     /**
     * @brief
     *
@@ -66,7 +71,7 @@ public:
     long numcell_cent;       /**< Total number of cell-centered values in domain */
     long numcell_face;       /**< Total number of face-centered values in domain */
 
-    std::vector<float> z0_domain;
+    std::vector<float> z0_domain_u, z0_domain_v;
 
     std::vector<int> ibuilding_flag;
     std::vector<int> building_id;
@@ -77,18 +82,19 @@ public:
     std::vector<float> dz_array;
     std::vector<float> x,y,z;
     std::vector<float> z_face;
-    std::vector<double> x_out,y_out,z_out;
+    //std::vector<float> x_out,y_out,z_out;
 
     /// Declaration of coefficients for SOR solver
     std::vector<float> e,f,g,h,m,n;
 
     // The following are mostly used for output
-    std::vector<int> icellflag;  /**< Cell index flag (0 = Building, 1 = Fluid, 2 = Terrain, 3 = Upwind_cavity
-                                                       4 = Cavity, 5 = Farwake, 6 = Street canyon, 7 = Cut-cells, 9 = Canopy vegetation
-                                                       10 = Sidewall) */
-    std::vector<int> icellflag_out;
-    std::vector<double> u_out,v_out,w_out;
-    std::vector<double> terrain;
+    std::vector<int> icellflag;  /**< Cell index flag (0 = Building, 1 = Fluid, 2 = Terrain, 3 = Upwind cavity
+                                                       4 = Cavity, 5 = Farwake, 6 = Street canyon, 7 = Building cut-cells,
+                                                       8 = Terrain cut-cells, 9 = Sidewall, 10 = Rooftop,
+                                                       11 = Canopy vegetation, 12 = Fire) */
+
+    std::vector<float> building_volume_frac, terrain_volume_frac;
+    std::vector<float> terrain;
     std::vector<int> terrain_id;      // Sensor function
                                       // (inputWindProfile)
 
@@ -97,19 +103,22 @@ public:
 
     // Initial wind conditions
     /// Declaration of initial wind components (u0,v0,w0)
-    std::vector<double> u0,v0,w0;
+    std::vector<float> u0,v0,w0;
 
     /// Declaration of final velocity field components (u,v,w)
-    std::vector<double> u,v,w;
+    std::vector<float> u,v,w;
 
+    // local Mixing class and data
+    LocalMixing* localMixing;
+    std::vector<double> mixingLengths;
 
     // Sensor* sensor;      may not need this now
 
-
     int id;
 
-    std::vector<float> site_canopy_H;
-    std::vector<float> site_atten_coeff;
+    // [FM Feb.28.2020] there 2 variables are not used anywhere 
+    //std::vector<float> site_canopy_H;
+    //std::vector<float> site_atten_coeff;
 
     float convergence;
     // Canopy functions
@@ -148,45 +157,6 @@ public:
     std::vector<std::vector<int>> num_points;
     std::vector<std::vector<float>> coeff;
 
-
-    /// Declaration of output manager
-    Output *output;
-
-    int output_counter=0;
-    double time=0;
-    std::vector<NcDim> dim_scalar_t;
-    std::vector<NcDim> dim_scalar_z;
-    std::vector<NcDim> dim_scalar_y;
-    std::vector<NcDim> dim_scalar_x;
-    std::vector<NcDim> dim_vector;
-    std::vector<NcDim> dim_vector_2d;
-    std::vector<std::string> output_fields;
-    struct AttScalarDbl {
-        double* data;
-        std::string name;
-        std::string long_name;
-        std::string units;
-        std::vector<NcDim> dimensions;
-    };
-    struct AttVectorDbl {
-        std::vector<double>* data;
-        std::string name;
-        std::string long_name;
-        std::string units;
-        std::vector<NcDim> dimensions;
-    };
-    struct AttVectorInt {
-        std::vector<int>* data;
-        std::string name;
-        std::string long_name;
-        std::string units;
-        std::vector<NcDim> dimensions;
-    };
-    std::map<std::string,AttScalarDbl> map_att_scalar_dbl;
-    std::map<std::string,AttVectorDbl> map_att_vector_dbl;
-    std::map<std::string,AttVectorInt> map_att_vector_int;
-    std::vector<AttScalarDbl> output_scalar_dbl;
-    std::vector<AttVectorDbl> output_vector_dbl;
-    std::vector<AttVectorInt> output_vector_int;
+private:
 
 };
