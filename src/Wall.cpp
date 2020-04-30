@@ -529,6 +529,24 @@ void Wall::setVelocityZero (URBGeneralData *UGD)
           UGD->w0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
           UGD->w0[icell_face+UGD->nx*UGD->ny] = 0.0;
         }
+        if (UGD->icellflag[icell_cent] == 7 || UGD->icellflag[icell_cent] == 8)
+        {
+          UGD->u0[icell_face] = pow(UGD->dx, 2.0)*UGD->f[icell_cent]*UGD->u0[icell_face];
+          UGD->v0[icell_face] = pow(UGD->dy, 2.0)*UGD->h[icell_cent]*UGD->v0[icell_face];
+          UGD->w0[icell_face] = (UGD->dz_array[k]*0.5*(UGD->dz_array[k]+UGD->dz_array[k-1]))*UGD->n[icell_cent]*UGD->w0[icell_face];
+          if (UGD->icellflag[icell_cent+1] != 7 && UGD->icellflag[icell_cent+1] != 8)
+          {
+            UGD->u0[icell_face+1] = pow(UGD->dx, 2.0)*UGD->e[icell_cent]*UGD->u0[icell_face+1];
+          }
+          if (UGD->icellflag[icell_cent+(UGD->nx-1)] != 7 && UGD->icellflag[icell_cent+(UGD->nx-1)] != 8)
+          {
+            UGD->v0[icell_face+UGD->nx] = pow(UGD->dy, 2.0)*UGD->g[icell_cent]*UGD->v0[icell_face+UGD->nx];
+          }
+          if (UGD->icellflag[icell_cent+(UGD->nx-1)*(UGD->ny-1)] != 7 && UGD->icellflag[icell_cent-(UGD->nx-1)*(UGD->ny-1)] != 8)
+          {
+            UGD->w0[icell_face+(UGD->nx*UGD->ny)] = (UGD->dz_array[k]*0.5*(UGD->dz_array[k]+UGD->dz_array[k+1]))*UGD->m[icell_cent]*UGD->w0[icell_face+(UGD->nx*UGD->ny)];
+          }
+        }
       }
     }
   }

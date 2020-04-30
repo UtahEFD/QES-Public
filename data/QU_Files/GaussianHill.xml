@@ -14,7 +14,7 @@
 	<sidewallFlag> 1 </sidewallFlag>
 	<maxIterations> 500 </maxIterations>
 	<residualReduction> 3 </residualReduction>
-	<meshTypeFlag> 1 </meshTypeFlag> <!-- 0 is stair; 1 is cut-cell  -->
+	<meshTypeFlag> 0 </meshTypeFlag> <!-- 0 is stair; 1 is cut-cell  -->
 	<useDiffusion> 0 </useDiffusion>
 	<domainRotation> 0 </domainRotation>
 	<UTMX> 0 </UTMX>

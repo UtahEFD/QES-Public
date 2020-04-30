@@ -16,7 +16,7 @@
 	<upwindCavityFlag> 0 </upwindCavityFlag> 						<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP, 3-HMVP) -->
 	<streetCanyonFlag> 0 </streetCanyonFlag> 						<!-- Street canyon flag (0-none, 1-Roeckle, 2-CPB, 3-exp. param. PKK, 4-Roeckle w/ Fackrel) -->
 	<streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
-	<wakeFlag> 2 </wakeFlag> 												<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle, 3-Area Scaled) -->
+	<wakeFlag> 0 </wakeFlag> 												<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle, 3-Area Scaled) -->
 	<sidewallFlag> 0 </sidewallFlag> 								<!-- Sidewall flag (0-off, 1-on) -->
 	<maxIterations> 500 </maxIterations> 						<!-- Maximum number of iterations -->
 	<residualReduction> 3 </residualReduction> 			<!-- Residual Reduction (Orders of Magnitude) -->
@@ -85,12 +85,12 @@
 	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
-		<height> 10.0 </height>
+		<height> 21.0 </height>
 		<baseHeight> 0 </baseHeight>
-		<xStart> 80.0 </xStart>
-		<yStart> 80.0 </yStart>
-		<length> 10.0 </length>
-		<width> 10.0 </width>
+		<xStart> 91.0 </xStart>
+		<yStart> 91.0 </yStart>
+		<length> 20.0 </length>
+		<width> 20.0 </width>
 		<buildingRotation> 0.0 </buildingRotation>
 	</rectangularBuilding>
 	<!--rectangularBuilding>
