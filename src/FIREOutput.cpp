@@ -4,7 +4,7 @@ FIREOutput::FIREOutput(URBGeneralData *ugd,Fire* fire,std::string output_file)
     : QESNetCDFOutput(output_file)
 {
 
-    output_fields={"time","x","y","z","u","v","w","icell","terrain",
+    output_fields={"t","x","y","z","u","v","w","icell","terrain",
                    "burn"};
 
     // copy of ugd pointer
@@ -31,21 +31,29 @@ FIREOutput::FIREOutput(URBGeneralData *ugd,Fire* fire,std::string output_file)
 
     // set cell-centered data dimensions
     // time dimension
-    NcDim NcDim_t=addDimension("time");
+    NcDim NcDim_t=addDimension("t");
   
     // space dimensions
     NcDim NcDim_x=addDimension("x",ugd_->nx-1);
     NcDim NcDim_y=addDimension("y",ugd_->ny-1);
     NcDim NcDim_z=addDimension("z",ugd_->nz-2);
 
-    // create attributes for time dimension
-    createAttScalar("time","time","s",{NcDim_t},&time);
-
+      // create attributes for time dimension
+    std::vector<NcDim> dim_vect_t;
+    dim_vect_t.push_back(NcDim_t);
+    createAttScalar("t","time","s",dim_vect_t,&time);
+    
     // create attributes space dimensions
-    createAttVector("x","x-distance","m",{NcDim_x},&(ugd_->x));
-    createAttVector("y","y-distance","m",{NcDim_y},&(ugd_->y));
-    createAttVector("z","z-distance","m",{NcDim_z},&z_out);
-
+    std::vector<NcDim> dim_vect_x;
+    dim_vect_x.push_back(NcDim_x);
+    createAttVector("x","x-distance","m",dim_vect_x,&(ugd_->x));
+    std::vector<NcDim> dim_vect_y;
+    dim_vect_y.push_back(NcDim_y);
+    createAttVector("y","y-distance","m",dim_vect_y,&(ugd_->y));
+    std::vector<NcDim> dim_vect_z;
+    dim_vect_z.push_back(NcDim_z);
+    createAttVector("z","z-distance","m",dim_vect_z,&z_out);
+    
     // create 2D vector (x,y)
     std::vector<NcDim> dim_vect_2d;
     dim_vect_2d.push_back(NcDim_y);
@@ -63,10 +71,10 @@ FIREOutput::FIREOutput(URBGeneralData *ugd,Fire* fire,std::string output_file)
 
     // create 4D vector (x,y,z,t)
     std::vector<NcDim> dim_vect_4d;
-    dim_vect_3d.push_back(NcDim_t);
-    dim_vect_3d.push_back(NcDim_z);
-    dim_vect_3d.push_back(NcDim_y);
-    dim_vect_3d.push_back(NcDim_x);
+    dim_vect_4d.push_back(NcDim_t);
+    dim_vect_4d.push_back(NcDim_z);
+    dim_vect_4d.push_back(NcDim_y);
+    dim_vect_4d.push_back(NcDim_x);
     // create attributes for velocity
     createAttVector("u","x-component velocity","m s-1",dim_vect_4d,&u_out);
     createAttVector("v","y-component velocity","m s-1",dim_vect_4d,&v_out);

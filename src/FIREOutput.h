@@ -29,12 +29,10 @@ private:
     // data container for output (on cell-center without ghost cell)
     std::vector<float> z_out;
     std::vector<int> icellflag_out;
-    std::vector<double> u_out,v_out,w_out;
+    std::vector<float> u_out,v_out,w_out;
     
     // copy of pointer for data access
     URBGeneralData* ugd_;
     Fire* fire_;
-
-    
     
 };
