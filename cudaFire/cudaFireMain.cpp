@@ -98,14 +98,16 @@ int main(int argc, char *argv[])
     */
 
     // Files was successfully read, so create instance of output class
-
-    Output* output = nullptr;
+    /*
+      Output* output = nullptr;
     if (UID->fileOptions->outputFlag==1) {
         output = new Output(arguments.netCDFFile);
     }
+    */
+
 
     // Generate the general URB data from all inputs
-    URBGeneralData* UGD = new URBGeneralData(UID, output);
+    URBGeneralData* UGD = new URBGeneralData(UID);
     
     
     // //////////////////////////////////////////
@@ -143,15 +145,17 @@ int main(int argc, char *argv[])
         DTEHF->closeScanner();
     */
     // save initial fields to reset after each time+fire loop
-    std::vector<double> u0 = UGD->u0;
-    std::vector<double> v0 = UGD->v0;
-    std::vector<double> w0 = UGD->w0;
+    std::vector<float> u0 = UGD->u0;
+    std::vector<float> v0 = UGD->v0;
+    std::vector<float> w0 = UGD->w0;
     
     /** 
      * Create Fire Mapper
      **/
-    Fire* fire = new Fire(UID, UGD, output);
-    FIREOutput* fireSave = new ;
+    Fire* fire = new Fire(UID, UGD);
+    
+    // create FIREOutput manager
+    FIREOutput* fireOutput = new FIREOutput(UGD,fire,arguments.netCDFFileFire);
     
     // set base w in fire model to initial w0
     //fire->w_base = w0;
@@ -160,12 +164,12 @@ int main(int argc, char *argv[])
     solver->solve(UID, UGD, !arguments.solveWind);
     
     // save initial fields in solver and fire
-    if (output != nullptr) {
-        UGD->save();
-    }
+    //if (output != nullptr) {
+    //    UGD->save();
+    //}
     
-    // save any fire data
-    fire->save(output);
+    // save any fire data (at time 0)
+    fireOutput->save(0.0);
 	
     // Run urb simulation code
     std::cout<<"===================="<<std::endl;
@@ -215,12 +219,12 @@ int main(int argc, char *argv[])
         fire->move(solver, UGD);
                 
         // save solver data
-        if (output != nullptr) {
-            UGD->save();
-        }
+        //if (output != nullptr) {
+        //    UGD->save();
+        //}
         
         // save any fire data
-        fire->save(output);
+        fireOutput->save(fire->time);
 
         // advance time 
         t = fire->time;

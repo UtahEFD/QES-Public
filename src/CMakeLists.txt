@@ -14,6 +14,7 @@ CUDA_ADD_LIBRARY( cudaurbcore
   DTEHeightField.cpp
   DynamicParallelism.cu
   ESRIShapefile.cpp ESRIShapefile.h
+  FIREOutput.cpp
   handleURBArgs.cpp
   LocalMixingParam.h
   LocalMixing.cpp   

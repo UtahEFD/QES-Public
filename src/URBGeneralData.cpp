@@ -114,6 +114,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     // /////////////////////////
     z0_domain_u.resize( nx*ny );
     z0_domain_v.resize( nx*ny );
+    z0_domain.resize((nx-1)*(ny-1));
+    
     if (UID->metParams->z0_domain_flag == 0)      // Uniform z0 for the whole domain
     {
         for (auto i=0; i<nx; i++)
@@ -147,7 +149,21 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
             }
         }
     }
-
+    
+    // calculate cell-center z0
+    for (auto i=0; i<nx-1; i++)
+    {
+        for (auto j=0; j<ny-1; j++)
+        {
+            int cellid = i+j*(nx-1);
+            int faceid = i+j*nx;
+            
+            z0_domain[cellid] = 0.25*(z0_domain_u[faceid]+z0_domain_u[faceid+1] + 
+                                      z0_domain_v[faceid]+z0_domain_u[faceid+nx]); 
+        }
+    }
+    
+    
     z0 = 0.1f;
     if (UID->buildings)
         z0 = UID->buildings->wallRoughness;

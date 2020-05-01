@@ -12,8 +12,8 @@ using namespace std;
 
 
 float PI = 3.14159265359;
-Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
-    
+//Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
+Fire :: Fire(URBInputData* UID, URBGeneralData* UGD) {
     // get domain information
     nx = UGD->nx;
     ny = UGD->ny;
@@ -201,6 +201,7 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
         }
     }
 
+    /*
     // set output fields
     output_fields = UID->fileOptions->outputFields;
     
@@ -267,7 +268,8 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
     for (int i=0; i<output_vector_int.size(); i++) {
         AttVectorInt att = output_vector_int[i];
         output->addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
-    }    
+    } 
+    */
 }
 
 /**
@@ -961,7 +963,7 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, floa
     return fp;
 }
 
-
+/*
 // Save output at cell-centered values
 void Fire :: save(Output* output) {
     
@@ -998,3 +1000,4 @@ void Fire :: save(Output* output) {
     // increment for next time insertion
     output_counter +=1;
 }
+*/

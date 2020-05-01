@@ -50,6 +50,9 @@ public:
     std::string netCDFFileTurb = "";
     // filename for terrain output
     std::string filenameTerrain = "";
+    // NetCDFFile for fire output
+    std::string netCDFFileFire = "";
+    
     
 private:
 

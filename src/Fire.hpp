@@ -14,7 +14,6 @@
 #include "FuelProperties.hpp"
 #include "Vector3.h"
 #include "Solver.h"
-#include "FIREOutput.h"
 
 #include <fstream>
 #include <iostream>
@@ -32,8 +31,9 @@ class Fire {
     
     
     public:
-        
-        Fire(URBInputData*, URBGeneralData*, Output*);
+    
+    //Fire(URBInputData*, URBGeneralData*, Output*); FM OBSOLETE
+    Fire(URBInputData*, URBGeneralData*);
         
         struct FireProperties {
 	  float  w, h, d, r, T, tau, K, H0, U_c, L_c;
@@ -75,6 +75,7 @@ class Fire {
         std::vector<float> Pot_u;
         std::vector<float> Pot_v;
         std::vector<float> Pot_w;
+
         // output fields
         std::vector<float> burn_flag;
         std::vector<float> burn_out;
@@ -102,7 +103,7 @@ class Fire {
         void run(Solver*, URBGeneralData*);
         void move(Solver*, URBGeneralData*); 
 	void potential(URBGeneralData*);   
-        void save(Output*);
+    //void save(Output*); FM OBSOLETE
         float computeTimeStep();
         
     private:
@@ -124,7 +125,7 @@ class Fire {
         FireProperties runFire(float, float, int);
         
 	
-
+    // FM OBSOLETE
         /// Declaration of output manager
 	/*
         int output_counter=0;

@@ -89,6 +89,10 @@ void URBArgs::processArguments(int argc, char *argv[])
         
         }
         
+        netCDFFileFire = netCDFFileBasename;
+        netCDFFileFire.append("_fireOut.nc");
+        
+        
     } else {
         std::cout << "No output basename set -> output turned off " << std::endl;
         visuOutput=false;
