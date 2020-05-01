@@ -785,6 +785,8 @@ void Fire :: move(Solver* solver, URBGeneralData* UGD){
 	    
         }
     }
+    // advance time
+    time += dt;
 }
 
 

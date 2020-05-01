@@ -449,6 +449,7 @@ void DynamicParallelism::solve(const URBInputData* UID, URBGeneralData* UGD, boo
     cudaFree (d_z);
     cudaFree (d_dz_array);
     cudaFree (d_icellflag);
+    cudaFree (d_lambda_old);
 
     auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
 

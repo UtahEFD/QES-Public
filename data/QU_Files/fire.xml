@@ -54,12 +54,10 @@
 </fires>
 <fileOptions>
 	<outputFlag>1</outputFlag>
-	<outputFields>u</outputFields> 
+	<outputFields>all</outputFields> 
 	<outputFields>v</outputFields> 
 	<outputFields>w</outputFields>
 	<outputFields>icell</outputFields>
-	<outputFields>burn</outputFields> 
-	<outputFields>time</outputFields> 
 	<massConservedFlag> 0 </massConservedFlag>
 	<sensorVelocityFlag> 0 </sensorVelocityFlag>
 	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>

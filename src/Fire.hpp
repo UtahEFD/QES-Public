@@ -54,7 +54,7 @@ class Fire {
         double time=0;
         float r_max = 0;
         float dt=0;
-	int FFII_flag=1;
+	int FFII_flag=0;
         
         std::vector< FireCell > fire_cells;
         
