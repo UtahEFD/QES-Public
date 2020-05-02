@@ -40,9 +40,8 @@ void SourceFullDomain::checkPosInfo( const double& domainXstart, const double& d
 }
 
 
-int SourceFullDomain::emitParticles( const float dt,
-                                     const float currTime,
-                                     std::vector<particle>& emittedParticles)
+int SourceFullDomain::emitParticles( const float dt, const float currTime,
+                                     std::vector<Particle>& emittedParticles)
 {
     // this function WILL fail if checkPosInfo() is not called, because for once checkPosInfo() acts to set the required data for using this function
     
@@ -55,7 +54,7 @@ int SourceFullDomain::emitParticles( const float dt,
 
         for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-            particle cPar;
+            Particle cPar;
 
             // generate uniform dist in domain
             cPar.xPos_init = uniformDistr(prng)*(xDomainEnd-xDomainStart) + xDomainStart;

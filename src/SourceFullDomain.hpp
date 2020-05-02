@@ -51,8 +51,7 @@ public:
                        const double& domainZstart, const double& domainZend);
 
     
-    int emitParticles(const float dt,
-                      const float currTime,
-                      std::vector<particle>& emittedParticles);
+    int emitParticles(const float dt, const float currTime,
+                      std::vector<Particle>& emittedParticles);
     
 };

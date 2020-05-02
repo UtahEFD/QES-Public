@@ -33,9 +33,9 @@ URBGeneralData :: URBGeneralData(Args* arguments) {
     // get grid information
     x.resize(nx-1);
     y.resize(ny-1);
-    z.resize( nz-1 );
-    z_face.resize( nz-1 );
-    dz_array.resize( nz-1, 0.0 );
+    z.resize(nz-1);
+    z_face.resize(nz-1);
+    dz_array.resize(nz-1, 0.0);
     
     input->getVariableData("x_cc",x);
     dx = x[1] - x[0]; /**< Grid resolution in x-direction */
@@ -58,6 +58,7 @@ URBGeneralData :: URBGeneralData(Args* arguments) {
         }
     }
     
+    z_face[0]=0.0;
     for (size_t k=1; k<z.size(); k++) {
         z_face[k] = z_face[k-1] + dz_array[k];  /**< Location of face centers in z-dir */
     }

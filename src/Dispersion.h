@@ -18,8 +18,7 @@
 
 
 #include "Random.h"
-
-#include "particle.hpp"
+#include "Particle.hpp"
 
 #include "SourcePoint.hpp"
 #include "SourceLine.hpp"
@@ -77,7 +76,7 @@ public:
     // This the storage for all particles
     // 
     // the sources can set these values, then the other values are set using urb and turb info using these values
-    std::vector<particle> pointList;
+    std::vector<Particle> pointList;
 
 
     // ALL Sources that will be used 
@@ -95,7 +94,7 @@ public:
     double vel_threshold;       // the velocity fluctuation threshold velocity used to determine if particles are rogue or no
 
 
-    void setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vector<particle>& newParticles);
+    void setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vector<Particle>& newParticles);
 
         
 private:

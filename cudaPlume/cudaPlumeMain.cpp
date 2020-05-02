@@ -83,18 +83,18 @@ int main(int argc, char** argv)
 #if USE_PREVIOUSCODE
 
     // Create instance of cudaUrb input class
-    Input* inputUrb = new Input(arguments.inputUrbFile);
+    //Input* inputUrb = new Input(arguments.inputUrbFile);
     
     // Create instance of cudaTurb input class
-    Input* inputTurb = new Input(arguments.inputTurbFile);
+    //Input* inputTurb = new Input(arguments.inputTurbFile);
 
 #else
 
     // Create instance of cudaUrb input class
-    NetCDFInput* inputUrb = new NetCDFInput(arguments.inputUrbFile);
+    //NetCDFInput* inputUrb = new NetCDFInput(arguments.inputUrbFile);
 
     // Create instance of cudaTurb input class
-    NetCDFInput* inputTurb = new NetCDFInput(arguments.inputTurbFile);
+    //NetCDFInput* inputTurb = new NetCDFInput(arguments.inputTurbFile);
 
 #endif
 
@@ -106,10 +106,10 @@ int main(int argc, char** argv)
     TGD->loadNetCDFData(0);
 
     // Create instance of cudaUrb class
-    Urb* urb = new Urb(inputUrb, arguments.debug);
+    //Urb* urb = new Urb(inputUrb, arguments.debug);
     
     // Create instance of cudaTurb class
-    Turb* turb = new Turb(inputTurb, arguments.debug);
+    //Turb* turb = new Turb(inputTurb, arguments.debug);
     
     // Create instance of Eulerian class
     Eulerian* eul = new Eulerian(PID,UGD,TGD, arguments.debug);

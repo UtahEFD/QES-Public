@@ -1,5 +1,5 @@
-//
 //  Plume.cpp
+//
 //  
 //  This class handles plume model
 //
@@ -75,7 +75,7 @@ Plume::Plume( PlumeInputData* PID,URBGeneralData* UGD,Dispersion* dis, Args* arg
 void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Dispersion* dis, std::vector<QESNetCDFOutput*> outputVec)
 {
     std::cout << "[Plume] \t Advecting particles " << std::endl;
-
+    
     // get the threshold velocity fluctuation to define rogue particles from dispersion class
     double vel_threshold = dis->vel_threshold;
     
@@ -84,24 +84,22 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
     // for every simulation time step
     // //////////////////////////////////////////
     
-    
-    if( debug == true )
-    {
+    if( debug == true ) {
         // start recording the amount of time it takes to perform the simulation time integration loop
         timers.startNewTimer("simulation time integration loop");
-
+        
         // start additional timers that need to be reset at different times during the following loops
         // LA future work: probably should wrap all of these in a debug if statement
         timers.startNewTimer("advection loop");
         timers.startNewTimer("particle iteration");
     }
-
-
+    
+    
     // because particle list is the desired size before the simulation, and the number of particles to move changes
     // each time, need to set the loop counter for the number of particles to move before the simulation time loop
     // !!! note that this is dispersion's value so that the output can get the number of released particles right!
     dis->nParsReleased = 0;
-
+    
     // want to output the particle information for the first timestep for where particles are without moving
     // so going to temporarily set nParsReleased to the number of particles released at the first time
     // do an output for the first time, then put the value back to zero so the particle loop will work correctly
@@ -115,7 +113,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
     }
     dis->nParsReleased = 0;
     
-
+    
     // LA note: that this loop goes from 0 to nTimes-2, not nTimes-1. This is because
     //  a given time iteration is calculating where particles for the current time end up for the next time
     //  so in essence each time iteration is calculating stuff for one timestep ahead of the loop.
@@ -126,20 +124,19 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
     //  this means that the updateFrequency needs to match with tStep+1, not tStep. At the same time, the current time output to consol
     //  output and to function calls need to also be set to tStep+1.
     for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++) {
-     
+        
         // need to release new particles
         // Add new particles to the number to move
         // !!! note that the updated number of particles is dispersion's value 
         //  so that the output can get the number of released particles right
         int nPastPars = dis->nParsReleased;
         dis->nParsReleased = nPastPars + nParsToRelease.at(sim_tIdx);
-
+        
         // need to set the new particles isActive values to true
         for( int parIdx = nPastPars; parIdx < dis->nParsReleased; parIdx++ ) {
             dis->pointList[parIdx].isActive = true;
         }
         
-
         // only output the information when the updateFrequency allows and when there are actually released particles
         if(  nParsToRelease.at(sim_tIdx) != 0 && ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )  )
         {
@@ -147,11 +144,11 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                       << nParsToRelease.at(sim_tIdx) << "\" particles from \"" << dis->allSources.size() 
                       << "\" sources. Total numParticles = \"" << dis->nParsReleased << "\"" << std::endl;
         }
-
-
+        
+        
         // Move each particle for every simulation time step
         // Advection Loop
-
+        
         // start recording the amount of time it takes to advect each set of particles for a given simulation timestep,
         //  but only output the result when updateFrequency allows
         // LA future work: would love to put this into a debug if statement wrapper
@@ -160,11 +157,11 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                 timers.resetStoredTimer("advection loop");
             }
         }
-
+        
         // get the isRogue and isNotActive count from the dispersion class for use in each particle iteration
         int isRogueCount = dis->isRogueCount;
         int isNotActiveCount = dis->isNotActiveCount;
-
+        
         for( int parIdx = 0; parIdx < dis->nParsReleased; parIdx++ ) {
             
             // get the current isRogue and isActive information
@@ -183,8 +180,8 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                         timers.resetStoredTimer("particle iteration");
                     }
                 }
-
-
+                
+                
                 // getting the current position for where the particle is at for a given time
                 // if it is the first time a particle is ever released, then the value is already set at the initial value
                 // LA notes: technically this value is the old position to be overwritten with the new position.
@@ -192,12 +189,12 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                 double xPos = dis->pointList[parIdx].xPos;
                 double yPos = dis->pointList[parIdx].yPos;
                 double zPos = dis->pointList[parIdx].zPos;
-
+                
                 // getting the initial position, for use in setting finished particles
                 double xPos_init = dis->pointList[parIdx].xPos_init;
                 double yPos_init = dis->pointList[parIdx].yPos_init;
                 double zPos_init = dis->pointList[parIdx].zPos_init;
-
+                
                 // grab the velFluct values.
                 // LA notes: hmm, Bailey's code just starts out setting these values to zero,
                 //  so the velFluct values are actually the old velFluct, that will be overwritten during the solver.
@@ -207,7 +204,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                 double uFluct = dis->pointList[parIdx].uFluct;
                 double vFluct = dis->pointList[parIdx].vFluct;
                 double wFluct = dis->pointList[parIdx].wFluct;
-
+                
                 // get all other values for the particle
                 // in this case this, all the old velocity fluctuations and old stress tensor values for the particle
                 // LA note: also need to keep track of a delta_velFluct, 
@@ -222,8 +219,8 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                 double tyy_old = dis->pointList[parIdx].tyy_old;
                 double tyz_old = dis->pointList[parIdx].tyz_old;
                 double tzz_old = dis->pointList[parIdx].tzz_old;
-
-
+                
+                
                 // need to avoid current tau values going out of scope now that I've added the particle timestep loop
                 // so initialize their values to the tau_old values. They will be overwritten with the Eulerian grid value
                 // at each iteration in the particle timestep loop
@@ -233,15 +230,15 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                 double tyy = tyy_old;
                 double tyz = tyz_old;
                 double tzz = tzz_old;
-
+                
                 // need to get the delta velFluct values right by doing the calculation inside the particle loop
                 // these values go out of scope unless initialized here. So initialize them to zero (velFluct - velFluct_old = 0 right now)
                 // they will be overwritten with the actual values in the particle timestep loop
                 double delta_uFluct = 0.0;
                 double delta_vFluct = 0.0;
                 double delta_wFluct = 0.0;
-
-
+                
+                
                 // time to do a particle timestep loop. start the time remainder as the simulation timestep.
                 // at each particle timestep loop iteration the time remainder gets closer and closer to zero.
                 // the particle timestep for a given particle timestep loop is either the time remainder or the value calculated
@@ -270,12 +267,17 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                       now get the Lagrangian values for the current iteration from the Eulerian grid
                       will need to use the interp3D function
                     */
-
-
+                                        
+                    // this is the current velMean value
+                    double uMean = eul->interp3D_u(xPos,yPos,zPos,UGD->u);
+                    double vMean = eul->interp3D_v(xPos,yPos,zPos,UGD->v);
+                    double wMean = eul->interp3D_w(xPos,yPos,zPos,UGD->w);
+                    
+                    
                     // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
                     // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
                     eul->setInterp3Dindexing(xPos,yPos,zPos);
-
+                    
                     // this is the Co times Eps for the particle
                     // LA note: because Bailey's code uses Eps by itself and this does not, I wanted an option to switch between the two if necessary
                     //  it's looking more and more like we will just use CoEps.
@@ -286,14 +288,8 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     }
                     //double CoEps = eul->interp3D(turb->CoEps,"Eps");
                     
-                    
-                    // this is the current velMean value
-                    double uMean = eul->interp3D(UGD->u);
-                    double vMean = eul->interp3D(UGD->v);
-                    double wMean = eul->interp3D(UGD->w);
-                    
                     // this is the current reynolds stress tensor
-                    /* FM -> removed unnecessary copy
+                    /* FM -> removed unnecessary codis->py
                     double txx_before = eul->interp3D(turb->txx,"tau");
                     double txy_before = eul->interp3D(turb->txy,"tau");
                     double txz_before = eul->interp3D(turb->txz,"tau");
@@ -306,7 +302,8 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     double flux_div_x = eul->interp3D(eul->flux_div_x);
                     double flux_div_y = eul->interp3D(eul->flux_div_y);
                     double flux_div_z = eul->interp3D(eul->flux_div_z);
-
+                    
+                    // add interpolation of derivative of stress. 
 
                     // now need to call makeRealizable on tau
                     // directly modifies the values of tau
@@ -322,7 +319,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     tyz = tyz_before;
                     tzz = tzz_before;
                     */
-
+                    
                     // this is the current reynolds stress tensor
                     txx = eul->interp3D(TGD->txx);
                     txy = eul->interp3D(TGD->txy);
@@ -378,7 +375,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     double A_11 = -1.0 + 0.50*(-CoEps*lxx + lxx*dtxxdt + lxy*dtxydt + lxz*dtxzdt)*par_dt;
                     double A_12 =        0.50*(-CoEps*lxy + lxy*dtxxdt + lyy*dtxydt + lyz*dtxzdt)*par_dt;
                     double A_13 =        0.50*(-CoEps*lxz + lxz*dtxxdt + lyz*dtxydt + lzz*dtxzdt)*par_dt;
-
+                    
                     double A_21 =        0.50*(-CoEps*lxy + lxx*dtxydt + lxy*dtyydt + lxz*dtyzdt)*par_dt;
                     double A_22 = -1.0 + 0.50*(-CoEps*lyy + lxy*dtxydt + lyy*dtyydt + lyz*dtyzdt)*par_dt;
                     double A_23 =        0.50*(-CoEps*lyz + lxz*dtxydt + lyz*dtyydt + lzz*dtyzdt)*par_dt;
@@ -386,12 +383,12 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     double A_31 =        0.50*(-CoEps*lxz + lxx*dtxzdt + lxy*dtyzdt + lxz*dtzzdt)*par_dt;
                     double A_32 =        0.50*(-CoEps*lyz + lxy*dtxzdt + lyy*dtyzdt + lyz*dtzzdt)*par_dt;
                     double A_33 = -1.0 + 0.50*(-CoEps*lzz + lxz*dtxzdt + lyz*dtyzdt + lzz*dtzzdt)*par_dt;
-
-
+                    
+                    
                     double b_11 = -uFluct_old - 0.50*flux_div_x*par_dt - std::sqrt(CoEps*par_dt)*xRandn;
                     double b_21 = -vFluct_old - 0.50*flux_div_y*par_dt - std::sqrt(CoEps*par_dt)*yRandn;
                     double b_31 = -wFluct_old - 0.50*flux_div_z*par_dt - std::sqrt(CoEps*par_dt)*zRandn;
-
+                    
                     /* FM -> removed unnecessary copy
                     // now prepare for the Ax=b calculation by calculating the inverted A matrix
                     // directly modifies the values of the A matrix
@@ -407,8 +404,8 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     double A_32_inv = A_32;
                     double A_33_inv = A_33;
                     invert3(A_11_inv,A_12_inv,A_13_inv,A_21_inv,A_22_inv,A_23_inv,A_31_inv,A_32_inv,A_33_inv);
-
-
+                    
+                    
                     // now do the Ax=b calculation using the inverted matrix
                     // directly modifies the velFluct values, which are passed in by reference as the output x vector
                     // LA note: since velFluct_old keeps track of the velFluct values before this function call,
@@ -421,7 +418,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     // now do the Ax=b calculation using the inverted matrix
                     matmult(A_11,A_12,A_13,A_21,A_22,A_23,A_31,A_32,A_33,b_11,b_21,b_31, uFluct,vFluct,wFluct);
                     
-
+                    
                     // now check to see if the value is rogue or not
                     // if it is rogue, output a ton of information that can be copied into matlab
                     // LA note: I tried to keep the format really nice to reduce the amount of reformulating work done in matlab.
@@ -529,13 +526,12 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                         wFluct = 0.0;
                         isRogue = true;
                     }
-
+                    
                     // Pete: Do you need this???
                     // ONLY if this should never happen....
                     //    assert( isRogue == false );
                     // LA reply: maybe implement this after the thesis work. Currently use it to know if something is going wrong
                     //  I think we are still a long ways from being able to throw this out.
-
                     
                     // now update the particle position for this iteration
                     // LA future work: at some point in time, need to do a CFL condition for only moving one eulerian grid cell at a time
@@ -555,14 +551,22 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     yPos = yPos + disY;
                     zPos = zPos + disZ;
                     
-                    
+                    size_t cellIdx = eul->getCellId(xPos,yPos,zPos);
+                    try {
+                        if(UGD->icellflag.at(cellIdx) == 2) {
+                            std::cout << "particle in terrain id =" <<  parIdx << std::endl;
+                            std::cout << "particle position: (" << xPos << "," << yPos << "," << zPos << ")" << std::endl;
+                        }
+                    }
+                    catch (const std::out_of_range& oor) {
+                        std::cerr << "Out of Range error: " << oor.what() << std::endl;
+                        std::cerr << "particle position: (" << xPos << "," << yPos << "," << zPos << ")" << std::endl;
+                    }
 
                     // now apply boundary conditions
-                    // LA note: notice that this is the old fashioned style for calling a pointer function
                     (this->*enforceWallBCs_x)(xPos,uFluct,uFluct_old,isActive, domainXstart,domainXend);
                     (this->*enforceWallBCs_y)(yPos,vFluct,vFluct_old,isActive, domainYstart,domainYend);
                     (this->*enforceWallBCs_z)(zPos,wFluct,wFluct_old,isActive, domainZstart,domainZend);
-                    
                     
                     // now set the particle values for if they are rogue or outside the domain
                     setFinishedParticleVals(xPos,yPos,zPos,isActive, isRogue, xPos_init,yPos_init,zPos_init);
@@ -580,22 +584,22 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     uFluct_old = uFluct;
                     vFluct_old = vFluct;
                     wFluct_old = wFluct;
-            
+                    
                     txx_old = txx;
                     txy_old = txy;
                     txz_old = txz;
                     tyy_old = tyy;
                     tyz_old = tyz;
                     tzz_old = tzz;
-
-
+                    
+                    
                     // now set the time remainder for the next loop
                     // if the par_dt calculated from the Courant Number is greater than the timeRemainder,
                     // the function for calculating par_dt will use the timeRemainder for the output par_dt
                     // so this should result in a timeRemainder of exactly zero, no need for a tol.
                     timeRemainder = timeRemainder - par_dt;
-
-
+                    
+                    
                     // print info about the current particle time iteration
                     // but only if debug is set to true and this is the right updateFrequency time
                     if( debug == true ) {
@@ -608,7 +612,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     }
                     
                 }   // while( isActive == true && timeRemainder > 0.0 )
-
+                
                 // now update the old values and current values in the dispersion storage to be ready for the next iteration
                 // also throw in the already calculated velFluct increment
                 // notice that the values from the particle timestep loop are used directly here, 
@@ -617,7 +621,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                 dis->pointList[parIdx].xPos = xPos;
                 dis->pointList[parIdx].yPos = yPos;
                 dis->pointList[parIdx].zPos = zPos;
-
+                
                 dis->pointList[parIdx].uFluct = uFluct;
                 dis->pointList[parIdx].vFluct = vFluct;
                 dis->pointList[parIdx].wFluct = wFluct;
@@ -637,7 +641,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                 dis->pointList[parIdx].tyy_old = tyy_old;
                 dis->pointList[parIdx].tyz_old = tyz_old;
                 dis->pointList[parIdx].tzz_old = tzz_old;
-
+                
                 // now update the isRogueCount and isNotActiveCount
                 if(isRogue == true) {
                     isRogueCount = isRogueCount + 1;
@@ -648,7 +652,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                 
                 dis->pointList[parIdx].isRogue = isRogue;
                 dis->pointList[parIdx].isActive = isActive;
-
+                
                 // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
                 if( debug == true ) {
                     if(  ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) 
@@ -658,25 +662,24 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                         timers.printStoredTime("particle iteration");
                     }
                 }
-            
+                
             }   // if isActive == true and isRogue == false
 
-
+            
         } // for(int parIdx = 0; parIdx < dis->nParsReleased; parIdx++ )
-
+        
         // set the isRogueCount and isNotActiveCount for the time iteration in the disperion data
         // !!! this needs set for the output to work properly
         dis->isRogueCount = isRogueCount;
         dis->isNotActiveCount = isNotActiveCount;
-
-
+        
+        
         // netcdf output for a given simulation timestep
         // note that the first time is already output, so this is the time the loop iteration 
         //  is calculating, not the input time to the loop iteration
         for(size_t id_out=0;id_out<outputVec.size();id_out++) {
             outputVec.at(id_out)->save(simTimes.at(sim_tIdx+1));
         }
-
         
         // output the time, isRogueCount, and isNotActiveCount information for all simulations,
         //  but only when the updateFrequency allows
@@ -688,8 +691,8 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                 timers.printStoredTime("advection loop");
             }
         }
-
-
+        
+        
         // 
         // Pete's notes:
         // For all particles that need to be removed from the particle
@@ -700,11 +703,11 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
         // Loren's Notes: for now I want to keep them for the thesis work information and debugging
         //  Also, would it not be easier to do at the start of the loop rather than at the end?
         //  Need to think more on this when we get to it.
-
-
+        
+        
     } // end of loop: for(sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)
-
-
+    
+    
     // get the amount of time it takes to perform the simulation time integration loop
     // LA note: this is probably a debug output thing.
     if( debug == true ) {
@@ -712,13 +715,13 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
         // Print out elapsed execution time
         timers.printStoredTime("simulation time integration loop");
     }
-
-
+    
+    
     // only outputs if the required booleans from input args are set
     // LA note: the current time put in here is one past when the simulation time loop ends
     //  this is because the loop always calculates info for one time ahead of the loop time.
     writeSimInfoFile(dis,simTimes.at(nSimTimes-1));
-
+    
 }
 
 
@@ -728,18 +731,18 @@ double Plume::calcCourantTimestep(const double& uFluct,const double& vFluct,cons
     if( CourantNum == 0.0 ) {
         return timeRemainder;
     }
-
+    
     // set the output dt_par val to the timeRemainder
     // then if any of the Courant number values end up smaller, use that value instead
     double dt_par = timeRemainder;
-
+    
     // LA-note: what to do if the velocity fluctuation is zero?
     //  I forced them to zero to check dt_x, dt_y, and dt_z would get values of "inf". 
     //  It ends up keeping dt_par as the timeRemainder
     double dt_x = CourantNum*dx/std::abs(uFluct);
     double dt_y = CourantNum*dy/std::abs(vFluct);
     double dt_z = CourantNum*dz/std::abs(wFluct);
-
+    
     // now find which dt is the smallest one of the Courant Number ones, or the timeRemainder
     // if any dt is smaller than the already chosen output value set that dt to the output dt value
     if( dt_x < dt_par ) {
@@ -751,7 +754,7 @@ double Plume::calcCourantTimestep(const double& uFluct,const double& vFluct,cons
     if( dt_z < dt_par ) {
         dt_par = dt_z;
     }
-
+    
     return dt_par;
 }
 
@@ -780,19 +783,19 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
     if( invar_xx > invarianceTol && invar_yy > invarianceTol && invar_zz > invarianceTol ) {
         return;     // tau is already realizable
     }
-
+    
     // since tau is not already realizable, need to make it realizeable
     // start by making a guess of ks, the subfilter scale tke
     // I keep wondering if we can use the input Turb->tke for this or if we should leave it as is
     double b = 4.0/3.0*(txx + tyy + tzz);   // also 4.0/3.0*invar_xx 
     double c = txx*tyy + txx*tzz + tyy*tzz - txy*txy - txz*txz - tyz*tyz;   // also invar_yy
     double ks = 1.01*(-b + std::sqrt(b*b - 16.0/3.0*c)) / (8.0/3.0);
-
+    
     // if the initial guess is bad, use the straight up invar_xx value
     if( ks < invarianceTol || isnan(ks) ) {
         ks = 0.5*std::abs(txx + tyy + tzz);  // also 0.5*abs(invar_xx)
     }
-
+    
     // to avoid increasing tau by more than ks increasing by 0.05%, use a separate stress tensor
     // and always increase the separate stress tensor using the original stress tensor, only changing ks for each iteration
     // notice that through all this process, only the diagonals are really increased by a value of 0.05% of the subfilter tke ks
@@ -803,7 +806,7 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
     double tyy_new = tyy + 2.0/3.0*ks;
     double tyz_new = tyz;
     double tzz_new = tzz + 2.0/3.0*ks;
-
+    
     calcInvariants(txx_new,txy_new,txz_new,tyy_new,tyz_new,tzz_new,  invar_xx,invar_yy,invar_zz);
     
     
@@ -817,7 +820,7 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
         
         // increase subfilter tke by 5%
         ks = ks*1.050;      
-
+        
         // note that the right hand side is not tau_new, to force tau to only increase by increasing ks
         txx_new = txx + 2.0/3.0*ks;
         tyy_new = tyy + 2.0/3.0*ks;
@@ -829,7 +832,7 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
     if( iter == 999 ) {
         std::cout << "WARNING (Plume::makeRealizable): unable to make stress tensor realizble.";
     }
-
+    
     // now set the output actual stress tensor using the separate temporary stress tensor
     txx = txx_new;
     txy = txy_new;
@@ -837,7 +840,7 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
     tyy = tyy_new;
     tyz = tyz_new;
     tzz = tzz_new;
-
+    
 }
 
 void Plume::invert3(double& A_11,double& A_12,double& A_13,double& A_21,double& A_22,
@@ -846,10 +849,10 @@ void Plume::invert3(double& A_11,double& A_12,double& A_13,double& A_21,double& 
     // note that with Bailey's code, the input A_21, A_31, and A_32 are zeros even though they are used here
     // at least when using this on tau to calculate the inverse stress tensor. This is not true when calculating the inverse A matrix
     // for the Ax=b calculation
-
+    
     // now calculate the determinant
     double det = A_11*(A_22*A_33 - A_23*A_32) - A_12*(A_21*A_33 - A_23*A_31) + A_13*(A_21*A_32 - A_22*A_31);
-
+    
     // check for near zero value determinants
     // LA future work: I'm still debating whether this warning needs to be limited by the updateFrequency information
     //  if so, how would we go about limiting that info? Would probably need to make the loop counter variables actual data members of the class
@@ -858,10 +861,10 @@ void Plume::invert3(double& A_11,double& A_12,double& A_13,double& A_21,double& 
         std::cout << "abs(det) = \"" << std::abs(det) << "\",  A_11 = \"" << A_11 << "\", A_12 = \"" << A_12 << "\", A_13 = \"" 
                   << A_13 << "\", A_21 = \"" << A_21 << "\", A_22 = \"" << A_22 << "\", A_23 = \"" << A_23 << "\", A_31 = \"" 
                   << A_31 << "\" A_32 = \"" << A_32 << "\", A_33 = \"" << A_33 << "\"" << std::endl;
-
+        
         det = 10e10;
     }
-
+    
     // calculate the inverse. Because the inverted matrix depends on other components of the matrix, 
     //  need to make a temporary value till all the inverted parts of the matrix are set
     double Ainv_11 =  (A_22*A_33 - A_23*A_32)/det;
@@ -873,7 +876,7 @@ void Plume::invert3(double& A_11,double& A_12,double& A_13,double& A_21,double& 
     double Ainv_31 =  (A_21*A_32 - A_31*A_22)/det;
     double Ainv_32 = -(A_11*A_32 - A_12*A_31)/det;
     double Ainv_33 =  (A_11*A_22 - A_12*A_21)/det;
-
+    
     // now set the input reference A matrix to the temporary inverted A matrix values
     A_11 = Ainv_11;
     A_12 = Ainv_12;
@@ -884,7 +887,7 @@ void Plume::invert3(double& A_11,double& A_12,double& A_13,double& A_21,double& 
     A_31 = Ainv_31;
     A_32 = Ainv_32;
     A_33 = Ainv_33;
-
+    
 }
 
 void Plume::matmult(const double& A_11,const double& A_12,const double& A_13,
@@ -894,12 +897,12 @@ void Plume::matmult(const double& A_11,const double& A_12,const double& A_13,
                     double& x_11, double& x_21, double& x_31)
 {
     // since the x doesn't depend on itself, can just set the output without doing any temporary variables
-
+    
     // now calculate the Ax=b x value from the input inverse A matrix and b matrix
     x_11 = b_11*A_11 + b_21*A_12 + b_31*A_13;
     x_21 = b_11*A_21 + b_21*A_22 + b_31*A_23;
     x_31 = b_11*A_31 + b_21*A_32 + b_31*A_33;
-
+    
 }
 
 
@@ -984,12 +987,12 @@ void Plume::enforceWallBCs_periodic(double& pos,double& velFluct,double& velFluc
 {
     
     double domainSize = domainEnd - domainStart;
-
+    
     /*    
           std::cout << "enforceWallBCs_periodic starting pos = \"" << pos << "\", domainStart = \"" << 
           domainStart << "\", domainEnd = \"" << domainEnd << "\"" << std::endl;
     */
-
+    
     if(domainSize != 0) {
         // before beginning of the domain => add domain length
         while( pos < domainStart ) {
@@ -1004,19 +1007,19 @@ void Plume::enforceWallBCs_periodic(double& pos,double& velFluct,double& velFluc
     /*
       std::cout << "enforceWallBCs_periodic ending pos = \"" << pos << "\", loopCountLeft = \"" << loopCountLeft << "\", loopCountRight = \"" << std::endl;
     */
-
+    
 }
 
 void Plume::enforceWallBCs_reflection(double& pos,double& velFluct,double& velFluct_old,bool& isActive,
                                       const double& domainStart,const double& domainEnd)
 {
     if( isActive == true ) {
-
+        
         /*
           std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velFluct = \"" << velFluct << "\", velFluct_old = \"" <<
           velFluct_old << "\", domainStart = \"" << domainStart << "\", domainEnd = \"" << domainEnd << "\"" << std::endl;
         */
-
+        
         int reflectCount = 0;
         while( (pos < domainStart || pos > domainEnd ) && reflectCount < 100) {
             // past end of domain or before beginning of the domain
@@ -1081,23 +1084,23 @@ void Plume::writeSimInfoFile(Dispersion* dis, const double& current_time)
     {
         return;
     }
-
+    
     std::cout << "writing simInfoFile" << std::endl;
-
-
+    
+    
     // set some variables for use in the function
     FILE *fzout;    // changing file to which information will be written
     
-
+    
     // now write out the simulation information to the debug folder
     
     // want a temporary variable to represent the caseBaseName, cause going to add on a timestep to the name
     std::string saveBasename = caseBaseName;
-
+    
     // add timestep to saveBasename variable
     saveBasename = saveBasename + "_" + std::to_string(sim_dt);
-
-
+    
+    
     std::string outputFile = outputFolder + "/sim_info.txt";
     fzout = fopen(outputFile.c_str(), "w");
     fprintf(fzout,"\n");    // a purposeful blank line
@@ -1114,9 +1117,9 @@ void Plume::writeSimInfoFile(Dispersion* dis, const double& current_time)
     fprintf(fzout,"velThreshold     = %lf\n",dis->vel_threshold);
     fprintf(fzout,"\n");    // a purposeful blank line
     fclose(fzout);
-
-
+    
+    
     // now that all is finished, clean up the file pointer
     fzout = NULL;
-
+    
 }

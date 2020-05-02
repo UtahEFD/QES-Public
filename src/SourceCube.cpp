@@ -65,9 +65,8 @@ void SourceCube::checkPosInfo( const double& domainXstart, const double& domainX
 }
 
 
-int SourceCube::emitParticles( const float dt,
-                               const float currTime,
-                               std::vector<particle>& emittedParticles)
+int SourceCube::emitParticles( const float dt, const float currTime,
+                               std::vector<Particle>& emittedParticles)
 {
     // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
     if( currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime )
@@ -78,7 +77,7 @@ int SourceCube::emitParticles( const float dt,
 
         for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-            particle cPar;
+            Particle cPar;
 
             // generate uniform dist in domain
             cPar.xPos_init = uniformDistr(prng)*(m_maxX-m_minX) + m_minX;

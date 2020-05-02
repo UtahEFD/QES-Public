@@ -27,7 +27,7 @@ CUDA_ADD_LIBRARY( cudaplumecore
 
     BoundaryConditions.hpp
     
-    particle.hpp
+    Particle.hpp
 
     Sources.hpp
     SourceKind.hpp

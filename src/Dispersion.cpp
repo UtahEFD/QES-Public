@@ -19,7 +19,6 @@ Dispersion::Dispersion( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData*
     // calculate the domain start and end values, needed for source position range checking
     determineDomainSize(eul);
 
-
     // make copies of important input time variables
     sim_dt = PID->simParams->timeStep;
     simDur = PID->simParams->simDur;
@@ -81,12 +80,12 @@ void Dispersion::determineDomainSize(Eulerian* eul)
     //  but ignored when determining output. This could allow particles to reenter the domain as well.
 
     // for now, I'm just going to use the urb grid, as having differing grid sizes requires extra info for the interp functions
-    domainXstart = eul->TurbXstart;
-    domainXend = eul->TurbXend;
-    domainYstart = eul->TurbYstart;
-    domainYend = eul->TurbYend;
-    domainZstart = eul->TurbZstart;
-    domainZend = eul->TurbZend;
+    domainXstart = eul->xStart;
+    domainXend = eul->xEnd;
+    domainYstart = eul->yStart;
+    domainYend = eul->yEnd;
+    domainZstart = eul->zStart;
+    domainZend = eul->zEnd;
 }
 
 
@@ -172,7 +171,7 @@ void Dispersion::generateParticleList(TURBGeneralData* TGD, Eulerian* eul)
     for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)
     {
 
-        std::vector<particle> nextSetOfParticles;
+        std::vector<Particle> nextSetOfParticles;
         for(auto sIdx = 0u; sIdx < allSources.size(); sIdx++)
         {
             int numNewParticles = allSources.at(sIdx)->emitParticles( (float)sim_dt, (float)( simTimes.at(sim_tIdx) ), nextSetOfParticles );
@@ -192,7 +191,7 @@ void Dispersion::generateParticleList(TURBGeneralData* TGD, Eulerian* eul)
 }
 
 
-void Dispersion::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vector<particle>& newParticles)
+void Dispersion::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vector<Particle>& newParticles)
 {
     // at this time, should be a list of each and every particle that exists at the given time
     // particles and sources can potentially be added to the list elsewhere
