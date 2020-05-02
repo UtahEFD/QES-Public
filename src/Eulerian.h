@@ -11,11 +11,9 @@
 
 #include "util/calcTime.h"
 #include "Random.h"
+#include "Vector3.h"
 
 #include "PlumeInputData.hpp"
-#include "Urb.hpp"
-#include "Turb.hpp"
- 
 #include "URBGeneralData.h"
 #include "TURBGeneralData.h"
 
@@ -36,16 +34,15 @@ public:
     int ny;     // a copy of the turb grid information. This is the number of points in the y dimension
     int nz;     // a copy of the turb grid information. This is the number of points in the z dimension
     int nt;     // a copy of the turb grid information. This is the number of times for which the x,y, and z values are repeated
+    
     double dx;      // a copy of the turb grid information. This is the difference between points in the x dimension, eventually could become an array
     double dy;      // a copy of the turb grid information. This is the difference between points in the y dimension, eventually could become an array
     double dz;      // a copy of the TGD grid information. This is the difference between points in the z dimension, eventually could become an array
-    double TurbXstart;      // a copy of the TGD grid information. The TGD starting x value. Is not necessarily the TGD domain starting x value because it could be cell centered.
-    double TurbYstart;      // a copy of the TGD grid information. The TGD starting y value. Is not necessarily the TGD domain starting y value because it could be cell centered.
-    double TurbZstart;      // a copy of the TGD grid information. The TGD starting z value. Is not necessarily the TGD domain starting z value because it could be cell centered.
-    double TurbXend;        // a copy of the TGD grid information. The TGD ending x value. Is not necessarily the TGD domain ending x value because it could be cell centered.
-    double TurbYend;        // a copy of the TGD grid information. The TGD ending y value. Is not necessarily the TGD domain ending y value because it could be cell centered.
-    double TurbZend;        // a copy of the TGD grid information. The TGD ending z value. Is not necessarily the TGD domain ending z value because it could be cell centered.
-
+    
+    // The eulerian grid information. 
+    double xStart,xEnd;
+    double yStart,yEnd;
+    double zStart,zEnd;
 
     // other input variable
     double C_0;     // a copy of the TGD grid information. This is used to separate out CoEps into its separate parts when doing debug output
@@ -70,7 +67,6 @@ public:
     std::vector<double> dtyzdy; // dtzydy
     std::vector<double> dtzzdz; // dtzzyz
 
-        
     // my description of the flux_div might need to be corrected
     std::vector<double> flux_div_x;     // this is like the derivative of the forces acting on the x face
     std::vector<double> flux_div_y;     // this is like the derivative of the forces acting on the y face
@@ -82,11 +78,16 @@ public:
     std::vector<double> sig_z;
 
 
-    void setInterp3Dindexing(const double& par_xPos, const double& par_yPos, const double& par_zPos);
-
-    double interp3D(const std::vector<float>& EulerData);
-    double interp3D(const std::vector<double>& EulerData);
+    void setInterp3Dindexing(const double&, const double&, const double&);
     
+    int getCellId(const double&, const double&, const double&);
+
+    double interp3D(const std::vector<float>&);
+    double interp3D(const std::vector<double>&);
+
+    double interp3D_u(const double&, const double&, const double&, const std::vector<float>&);
+    double interp3D_v(const double&, const double&, const double&, const std::vector<float>&);
+    double interp3D_w(const double&, const double&, const double&, const std::vector<float>&);
         
 private:
 
@@ -109,7 +110,7 @@ private:
     // these are for calculating the gradients more efficiently
     // LA future work: I keep wondering, since we never use the gradients again since they are just used to calculate flux_div, 
     //  which is what is used instead at some point in time should we get rid of storage of the gradient datasets?
-    //  I guess they are useful for debugging. Also, it would be tough to do the calculation as efficiently 
+    //  I guess they are useful fçor debugging. Also, it would be tough to do the calculation as efficiently 
     //  because each component would need passed each and every time.
     void setDX_1D(const TURBGeneralData* TGD, const int idx);
     void setDY_1D(const TURBGeneralData* TGD, const int idx);
@@ -123,10 +124,11 @@ private:
     void setDY_Backward(const TURBGeneralData* TGD, const int idx);   // second order backward differencing for calc gradient in the y direction of tau
     void setDZ_Backward(const TURBGeneralData* TGD, const int idx);   // second order backward differencing for calc gradient in the z direction of tau
 
-
-    void createTauGrads(TURBGeneralData*);
-    void createFluxDiv();       // this function takes the TauGrads and turns them into a bunch simpler values to use
-        
+    double interp3D_facevar(const std::vector<float>&);
+    
+    void setStressGrads(TURBGeneralData*);
+    void setFluxDiv();       // this function takes the TauGrads and turns them into a bunch simpler values to use
+    void setSigmas(TURBGeneralData*); 
 
     // timer class useful for debugging and timing different operations
     calcTime timers;
@@ -136,6 +138,15 @@ private:
     
 };
 
+
+inline int Eulerian::getCellId(const double& xPos, const double& yPos, const double& zPos)
+{
+    int i = floor((xPos - xStart + 0.5*dx)/(dx+1e-9));
+    int j = floor((yPos - yStart + 0.5*dy)/(dy+1e-9));
+    int k = floor((zPos - zStart + dz)/(dz+1e-9));
+    
+    return i + j*(nx-1) + k*(nx-1)*(ny-1); 
+}
 
 inline void Eulerian::setDX_1D(const TURBGeneralData* TGD, const int idx)
 {
@@ -177,8 +188,8 @@ inline void Eulerian::setDY_1D(const TURBGeneralData* TGD, const int idx)
 // second order forward differencing for calc gradient in the y direction of tau
 inline void Eulerian::setDY_Forward(const TURBGeneralData* TGD, const int idx)
 {
-    int idx_yp1 = idx + nx;
-    int idx_yp2 = idx + (2.0*nx);
+    int idx_yp1 = idx + (nx-1);
+    int idx_yp2 = idx + 2*(nx-1);
                     
     dtxydy.at(idx) = ( -3.0*TGD->txy.at(idx) + 4.0*TGD->txy.at(idx_yp1) - TGD->txy.at(idx_yp2) ) * 0.5 / dy;
     dtyydy.at(idx) = ( -3.0*TGD->tyy.at(idx) + 4.0*TGD->tyy.at(idx_yp1) - TGD->tyy.at(idx_yp2) ) * 0.5 / dy;
