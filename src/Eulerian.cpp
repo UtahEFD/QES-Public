@@ -41,17 +41,17 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     C_0 = PID->simParams->C_0;
     
     // set the tau gradient sizes
-    dtxxdx.resize(UGD->numcell_cent,0.0);
-    dtxydy.resize(UGD->numcell_cent,0.0);
-    dtxzdz.resize(UGD->numcell_cent,0.0);
+    dtxxdx.resize(UGD->numcell_face,0.0);
+    dtxydy.resize(UGD->numcell_face,0.0);
+    dtxzdz.resize(UGD->numcell_face,0.0);
     
-    dtxydx.resize(UGD->numcell_cent,0.0);
-    dtyydy.resize(UGD->numcell_cent,0.0);
-    dtyzdz.resize(UGD->numcell_cent,0.0);
+    dtxydx.resize(UGD->numcell_face,0.0);
+    dtyydy.resize(UGD->numcell_face,0.0);
+    dtyzdz.resize(UGD->numcell_face,0.0);
     
-    dtxzdx.resize(UGD->numcell_cent,0.0);
-    dtyzdy.resize(UGD->numcell_cent,0.0);
-    dtzzdz.resize(UGD->numcell_cent,0.0);
+    dtxzdx.resize(UGD->numcell_face,0.0);
+    dtyzdy.resize(UGD->numcell_face,0.0);
+    dtzzdz.resize(UGD->numcell_face,0.0);
     
     // set the flux_div to the right size
     flux_div_x.resize(UGD->numcell_cent,0.0);
@@ -64,12 +64,64 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     sig_z.resize(UGD->numcell_cent,0.0);
     
     // compute stress gradients
-    setStressGrads(TGD);
+    setStressGradient(TGD);
     // use the stress gradients to calculate the flux div
     setFluxDiv();
     // temporary copy of sigma's
     setSigmas(TGD);
     
+}
+
+void Eulerian::setStressGradient(TURBGeneralData* TGD)
+{
+    std::cout<<"[Eulerian] \t Computing stress gradients on face"<<std::endl;
+        
+    for(int k=kStart; k<kEnd+1; ++k) {
+        for(int j=jStart; j<jEnd+1; ++j) {
+            for(int i=iStart; i<iEnd+1; ++i) {
+                // Provides a linear index based on the 3D (i, j, k)
+                int cellid = k*(ny-1)*(nx-1) + j*(nx-1) + i;
+                int faceid = k*(ny*nx) + j*(nx) + i;
+                
+                dtxxdx[faceid] = (TGD->txx[cellid]-TGD->txx[cellid-1])/dx;
+                dtxydx[faceid] = (TGD->txy[cellid]-TGD->txy[cellid-1])/dx;
+                dtxzdx[faceid] = (TGD->txz[cellid]-TGD->txz[cellid-1])/dx;
+                
+            }
+        }
+    }
+    
+    for(int k=kStart; k<kEnd+1; ++k) {
+        for(int j=jStart; j<jEnd+1; ++j) {
+            for(int i=iStart; i<iEnd+1; ++i) {
+                // Provides a linear index based on the 3D (i, j, k)
+                int cellid = k*(ny-1)*(nx-1) + j*(nx-1) + i;
+                int faceid = k*(ny*nx) + j*(nx) + i;
+                
+                dtxydy[faceid] = (TGD->txy[cellid]-TGD->txy[cellid-(nx-1)])/dy;
+                dtyydy[faceid] = (TGD->tyy[cellid]-TGD->tyy[cellid-(nx-1)])/dy;
+                dtyzdy[faceid] = (TGD->tyz[cellid]-TGD->tyz[cellid-(nx-1)])/dy;
+                
+            }
+        }
+    }
+
+    for(int k=kStart; k<kEnd+1; ++k) {
+        for(int j=jStart; j<jEnd+1; ++j) {
+            for(int i=iStart; i<iEnd+1; ++i) {
+                // Provides a linear index based on the 3D (i, j, k)
+                int cellid = k*(ny-1)*(nx-1) + j*(nx-1) + i;
+                int faceid = k*(ny*nx) + j*(nx) + i;
+                
+                dtxzdz[faceid] = (TGD->txz[cellid]-TGD->txz[cellid-(ny-1)*(nx-1)])/dz;
+                dtyzdz[faceid] = (TGD->tyz[cellid]-TGD->tyz[cellid-(ny-1)*(nx-1)])/dz;
+                dtzzdz[faceid] = (TGD->tzz[cellid]-TGD->tzz[cellid-(ny-1)*(nx-1)])/dz;
+                
+            }
+        }
+    }
+    
+    return;
 }
 
 void Eulerian::setStressGrads(TURBGeneralData* TGD)
@@ -280,12 +332,9 @@ double Eulerian::interp3D(const std::vector<float>& EulerData)
     double cube[2][2][2] = {0.0};
 
     // now set the cube values
-    for(int kkk = 0; kkk <= kp; kkk++)
-    {
-        for(int jjj = 0; jjj <= jp; jjj++)
-        {
-            for(int iii = 0; iii <= ip; iii++)
-            {
+    for(int kkk = 0; kkk <= kp; kkk++) {
+        for(int jjj = 0; jjj <= jp; jjj++) {
+            for(int iii = 0; iii <= ip; iii++) {
                 // set the actual indices to use for the linearized Euler data
                 int idx = (kk+kkk)*(ny-1)*(nx-1) + (jj+jjj)*(nx-1) + (ii+iii);
                 cube[iii][jjj][kkk] = EulerData.at(idx);
@@ -316,12 +365,9 @@ double Eulerian::interp3D(const std::vector<double>& EulerData)
     double cube[2][2][2] = {0.0};
 
     // now set the cube values
-    for(int kkk = 0; kkk <= kp; kkk++)
-    {
-        for(int jjj = 0; jjj <= jp; jjj++)
-        {
-            for(int iii = 0; iii <= ip; iii++)
-            {
+    for(int kkk = 0; kkk <= kp; kkk++) {
+        for(int jjj = 0; jjj <= jp; jjj++) {
+            for(int iii = 0; iii <= ip; iii++) {
                 // set the actual indices to use for the linearized Euler data
                 int idx = (kk+kkk)*(ny-1)*(nx-1) + (jj+jjj)*(nx-1) + (ii+iii);
                 cube[iii][jjj][kkk] = EulerData[idx];
@@ -345,12 +391,9 @@ double Eulerian::interp3D_facevar(const std::vector<float>& EulerData)
     double cube[2][2][2] = {0.0};
 
     // now set the cube values
-    for(int kkk = 0; kkk <= kp; kkk++)
-    {
-        for(int jjj = 0; jjj <= jp; jjj++)
-        {
-            for(int iii = 0; iii <= ip; iii++)
-            {
+    for(int kkk = 0; kkk <= kp; kkk++) {
+        for(int jjj = 0; jjj <= jp; jjj++) {
+            for(int iii = 0; iii <= ip; iii++) {
                 // set the actual indices to use for the linearized Euler data
                 int idx = (kk+kkk)*(ny*nx) + (jj+jjj)*(nx) + (ii+iii);
                 cube[iii][jjj][kkk] = EulerData[idx];

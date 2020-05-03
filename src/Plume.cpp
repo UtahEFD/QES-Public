@@ -299,10 +299,14 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     */
 
                     // now need flux_div_dir, not the different dtxxdx type components
-                    double flux_div_x = eul->interp3D(eul->flux_div_x);
-                    double flux_div_y = eul->interp3D(eul->flux_div_y);
-                    double flux_div_z = eul->interp3D(eul->flux_div_z);
+                    //double flux_div_x = eul->interp3D(eul->flux_div_x);
+                    //double flux_div_y = eul->interp3D(eul->flux_div_y);
+                    //double flux_div_z = eul->interp3D(eul->flux_div_z);
                     
+                    double flux_div_x = 0.0;
+                    double flux_div_y = 0.0;
+                    double flux_div_z = 0.0;
+                        
                     // add interpolation of derivative of stress. 
 
                     // now need to call makeRealizable on tau

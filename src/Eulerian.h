@@ -126,6 +126,7 @@ private:
 
     double interp3D_facevar(const std::vector<float>&);
     
+    void setStressGradient(TURBGeneralData*);
     void setStressGrads(TURBGeneralData*);
     void setFluxDiv();       // this function takes the TauGrads and turns them into a bunch simpler values to use
     void setSigmas(TURBGeneralData*); 
