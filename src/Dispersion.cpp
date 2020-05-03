@@ -199,7 +199,7 @@ void Dispersion::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vecto
     {
         // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
         // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
-        eul->setInterp3Dindexing(newParticles.at(parIdx).xPos_init,newParticles.at(parIdx).yPos_init,newParticles.at(parIdx).zPos_init);
+        eul->setInterp3Dindex_cellVar(newParticles.at(parIdx).xPos_init,newParticles.at(parIdx).yPos_init,newParticles.at(parIdx).zPos_init);
         
         // set the positions to be used by the simulation to the initial positions
         newParticles.at(parIdx).xPos = newParticles.at(parIdx).xPos_init;
@@ -210,13 +210,13 @@ void Dispersion::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vecto
         double rann = random::norRan();
 
         // get the sigma values from the Eulerian grid for the particle value
-        double current_sig_x = eul->interp3D(eul->sig_x);
+        double current_sig_x = eul->interp3D_cellVar(eul->sig_x);
         if( current_sig_x == 0.0 )
             current_sig_x = 1e-8;
-        double current_sig_y = eul->interp3D(eul->sig_y);
+        double current_sig_y = eul->interp3D_cellVar(eul->sig_y);
         if( current_sig_y == 0.0 )
             current_sig_y = 1e-8;
-        double current_sig_z = eul->interp3D(eul->sig_z);
+        double current_sig_z = eul->interp3D_cellVar(eul->sig_z);
         if( current_sig_z == 0.0 )
             current_sig_z = 1e-8;
         
@@ -234,12 +234,12 @@ void Dispersion::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vecto
         newParticles.at(parIdx).wFluct_old = newParticles.at(parIdx).wFluct;
 
         // get the tau values from the Eulerian grid for the particle value
-        double current_txx = eul->interp3D(TGD->txx);
-        double current_txy = eul->interp3D(TGD->txy);
-        double current_txz = eul->interp3D(TGD->txz);
-        double current_tyy = eul->interp3D(TGD->tyy);
-        double current_tyz = eul->interp3D(TGD->tyz);
-        double current_tzz = eul->interp3D(TGD->tzz);
+        double current_txx = eul->interp3D_cellVar(TGD->txx);
+        double current_txy = eul->interp3D_cellVar(TGD->txy);
+        double current_txz = eul->interp3D_cellVar(TGD->txz);
+        double current_tyy = eul->interp3D_cellVar(TGD->tyy);
+        double current_tyz = eul->interp3D_cellVar(TGD->tyz);
+        double current_tzz = eul->interp3D_cellVar(TGD->tzz);
 
         // set tau_old to the interpolated values for each position
         newParticles.at(parIdx).txx_old = current_txx;

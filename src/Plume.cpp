@@ -268,20 +268,38 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                       will need to use the interp3D function
                     */
                                         
-                    // this is the current velMean value
-                    double uMean = eul->interp3D_u(xPos,yPos,zPos,UGD->u);
-                    double vMean = eul->interp3D_v(xPos,yPos,zPos,UGD->v);
-                    double wMean = eul->interp3D_w(xPos,yPos,zPos,UGD->w);
+                    // set interoplation indexing variables for uFace variables
+                    eul->setInterp3Dindex_uFace(xPos,yPos,zPos);
+                    // interpolation of variables on uFace 
+                    double uMean = eul->interp3D_faceVar(UGD->u);
+                    double flux_div_x = eul->interp3D_faceVar(eul->dtxxdx);
+                    double flux_div_y = eul->interp3D_faceVar(eul->dtxydx);
+                    double flux_div_z = eul->interp3D_faceVar(eul->dtxzdx);
                     
+                    // set interpolation indexing variables for vFace variables
+                    eul->setInterp3Dindex_vFace(xPos,yPos,zPos);
+                    // interpolation of variables on vFace 
+                    double vMean = eul->interp3D_faceVar(UGD->v);
+                    flux_div_x += eul->interp3D_faceVar(eul->dtxydy);
+                    flux_div_y += eul->interp3D_faceVar(eul->dtyydy);
+                    flux_div_z += eul->interp3D_faceVar(eul->dtyzdy);
+                    
+                    // set interpolation indexing variables for wFace variables
+                    eul->setInterp3Dindex_wFace(xPos,yPos,zPos);
+                    // interpolation of variables on wFace 
+                    double wMean = eul->interp3D_faceVar(UGD->w);
+                    flux_div_x += eul->interp3D_faceVar(eul->dtxzdz);
+                    flux_div_y += eul->interp3D_faceVar(eul->dtyzdz);
+                    flux_div_z += eul->interp3D_faceVar(eul->dtzzdz);
                     
                     // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
                     // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
-                    eul->setInterp3Dindexing(xPos,yPos,zPos);
+                    eul->setInterp3Dindex_cellVar(xPos,yPos,zPos);
                     
                     // this is the Co times Eps for the particle
                     // LA note: because Bailey's code uses Eps by itself and this does not, I wanted an option to switch between the two if necessary
                     //  it's looking more and more like we will just use CoEps.
-                    double CoEps = eul->interp3D(TGD->CoEps);
+                    double CoEps = eul->interp3D_cellVar(TGD->CoEps);
                     // make sure CoEps is always bigger than zero
                     if( CoEps <= 1e-6 ) {
                         CoEps = 1e-6;
@@ -303,9 +321,6 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     //double flux_div_y = eul->interp3D(eul->flux_div_y);
                     //double flux_div_z = eul->interp3D(eul->flux_div_z);
                     
-                    double flux_div_x = 0.0;
-                    double flux_div_y = 0.0;
-                    double flux_div_z = 0.0;
                         
                     // add interpolation of derivative of stress. 
 
@@ -325,12 +340,12 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     */
                     
                     // this is the current reynolds stress tensor
-                    txx = eul->interp3D(TGD->txx);
-                    txy = eul->interp3D(TGD->txy);
-                    txz = eul->interp3D(TGD->txz);
-                    tyy = eul->interp3D(TGD->tyy);
-                    tyz = eul->interp3D(TGD->tyz);
-                    tzz = eul->interp3D(TGD->tzz);
+                    txx = eul->interp3D_cellVar(TGD->txx);
+                    txy = eul->interp3D_cellVar(TGD->txy);
+                    txz = eul->interp3D_cellVar(TGD->txz);
+                    tyy = eul->interp3D_cellVar(TGD->tyy);
+                    tyz = eul->interp3D_cellVar(TGD->tyz);
+                    tzz = eul->interp3D_cellVar(TGD->tzz);
                     // now need to call makeRealizable on tau
                     makeRealizable(txx,txy,txz,tyy,tyz,tzz);
                     

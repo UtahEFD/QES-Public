@@ -53,11 +53,6 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     dtyzdy.resize(UGD->numcell_face,0.0);
     dtzzdz.resize(UGD->numcell_face,0.0);
     
-    // set the flux_div to the right size
-    flux_div_x.resize(UGD->numcell_cent,0.0);
-    flux_div_y.resize(UGD->numcell_cent,0.0);
-    flux_div_z.resize(UGD->numcell_cent,0.0);
-    
     // temp storage of sigma's
     sig_x.resize(UGD->numcell_cent,0.0);
     sig_y.resize(UGD->numcell_cent,0.0);
@@ -65,8 +60,6 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     
     // compute stress gradients
     setStressGradient(TGD);
-    // use the stress gradients to calculate the flux div
-    setFluxDiv();
     // temporary copy of sigma's
     setSigmas(TGD);
     
@@ -210,19 +203,6 @@ void Eulerian::setStressGrads(TURBGeneralData* TGD)
     }
 }
 
-void Eulerian::setFluxDiv() 
-{
-    std::cout << "[Eulerian] \t Computing flux_div values " << std::endl;
-    
-    // loop through each cell and calculate the flux_div from the gradients of tao
-    for(int idx = 0; idx < (nx-1)*(ny-1)*(nz-1); idx++) {
-        flux_div_x.at(idx) = dtxxdx.at(idx) + dtxydy.at(idx) + dtxzdz.at(idx);
-        flux_div_y.at(idx) = dtxydx.at(idx) + dtyydy.at(idx) + dtyzdz.at(idx);
-        flux_div_z.at(idx) = dtxzdx.at(idx) + dtyzdy.at(idx) + dtzzdz.at(idx);
-    }
-    return;
-}
-
 void Eulerian::setSigmas(TURBGeneralData* TGD)
 {
     for(int idx = 0; idx < (nx-1)*(ny-1)*(nz-1); idx++) {
@@ -233,10 +213,119 @@ void Eulerian::setSigmas(TURBGeneralData* TGD)
     return;
 }
     
+void Eulerian::setInterp3Dindex_uFace(const double& par_xPos, const double& par_yPos, const double& par_zPos)
+{
+
+    // set a particle position corrected by the start of the domain in each direction
+    double par_x = par_xPos - xStart + 0.5*dx;
+    double par_y = par_yPos - yStart;
+    double par_z = par_zPos - zStart + 0.5*dz;
+
+    ii = floor(par_x/(dx+1e-9));
+    jj = floor(par_y/(dy+1e-9));
+    kk = floor(par_z/(dz+1e-9));
+    
+    // fractional distance between nearest nodes
+    iw = (par_x/dx - floor(par_x/dx));
+    jw = (par_y/dy - floor(par_y/dy));
+    kw = (par_z/dz - floor(par_z/dz));
+    
+    return;
+}
+
+void Eulerian::setInterp3Dindex_vFace(const double& par_xPos, const double& par_yPos, const double& par_zPos)
+{
+
+    // set a particle position corrected by the start of the domain in each direction
+    double par_x = par_xPos - xStart;
+    double par_y = par_yPos - yStart + 0.5*dy;
+    double par_z = par_zPos - zStart + 0.5*dz;
+
+    ii = floor(par_x/(dx+1e-9));
+    jj = floor(par_y/(dy+1e-9));
+    kk = floor(par_z/(dz+1e-9));
+    
+    // fractional distance between nearest nodes
+    iw = (par_x/dx - floor(par_x/dx));
+    jw = (par_y/dy - floor(par_y/dy));
+    kw = (par_z/dz - floor(par_z/dz));
+    
+    return;
+}
+
+void Eulerian::setInterp3Dindex_wFace(const double& par_xPos, const double& par_yPos, const double& par_zPos)
+{
+
+    // set a particle position corrected by the start of the domain in each direction
+    double par_x = par_xPos - xStart;
+    double par_y = par_yPos - yStart;
+    double par_z = par_zPos - zStart + 0.5*dz;
+
+    ii = floor(par_x/(dx+1e-9));
+    jj = floor(par_y/(dy+1e-9));
+    kk = floor(par_z/(dz+1e-9));
+    
+    // fractional distance between nearest nodes
+    iw = (par_x/dx - floor(par_x/dx));
+    jw = (par_y/dy - floor(par_y/dy));
+    kw = (par_z/dz - floor(par_z/dz));
+
+    return;
+}
+
+// always call this after setting the interpolation indices with the setInterp3Dindex_u/v/wFace() function!
+double Eulerian::interp3D_faceVar(const std::vector<float>& EulerData)
+{
+
+    double cube[2][2][2] = {0.0};
+
+    // now set the cube values
+    for(int kkk = 0; kkk <= kp; kkk++) {
+        for(int jjj = 0; jjj <= jp; jjj++) {
+            for(int iii = 0; iii <= ip; iii++) {
+                // set the actual indices to use for the linearized Euler data
+                int idx = (kk+kkk)*(ny*nx) + (jj+jjj)*(nx) + (ii+iii);
+                cube[iii][jjj][kkk] = EulerData[idx];
+            }
+        }
+    }
+
+    // now do the interpolation, with the cube, the counters from the indices,
+     // and the normalized width between the point locations and the closest cell left walls
+    double u_low  = (1-iw)*(1-jw)*cube[0][0][0] + iw*(1-jw)*cube[1][0][0] + iw*jw*cube[1][1][0] + (1-iw)*jw*cube[0][1][0];
+    double u_high = (1-iw)*(1-jw)*cube[0][0][1] + iw*(1-jw)*cube[1][0][1] + iw*jw*cube[1][1][1] + (1-iw)*jw*cube[0][1][1];
+
+    return (u_high-u_low)*kw + u_low;
+}
+
+// always call this after setting the interpolation indices with the setInterp3Dindex_u/v/wFace() function!
+double Eulerian::interp3D_faceVar(const std::vector<double>& EulerData)
+{
+
+    double cube[2][2][2] = {0.0};
+
+    // now set the cube values
+    for(int kkk = 0; kkk <= kp; kkk++) {
+        for(int jjj = 0; jjj <= jp; jjj++) {
+            for(int iii = 0; iii <= ip; iii++) {
+                // set the actual indices to use for the linearized Euler data
+                int idx = (kk+kkk)*(ny*nx) + (jj+jjj)*(nx) + (ii+iii);
+                cube[iii][jjj][kkk] = EulerData[idx];
+            }
+        }
+    }
+
+    // now do the interpolation, with the cube, the counters from the indices,
+     // and the normalized width between the point locations and the closest cell left walls
+    double u_low  = (1-iw)*(1-jw)*cube[0][0][0] + iw*(1-jw)*cube[1][0][0] + iw*jw*cube[1][1][0] + (1-iw)*jw*cube[0][1][0];
+    double u_high = (1-iw)*(1-jw)*cube[0][0][1] + iw*(1-jw)*cube[1][0][1] + iw*jw*cube[1][1][1] + (1-iw)*jw*cube[0][1][1];
+
+    return (u_high-u_low)*kw + u_low;
+}
 
 // this gets around the problem of repeated or not repeated information, just needs called once before each interpolation,
 // then intepolation on all kinds of datatypes can be done
-void Eulerian::setInterp3Dindexing(const double& par_xPos, const double& par_yPos, const double& par_zPos)
+void Eulerian::setInterp3Dindex_cellVar(const double& par_xPos, const double& par_yPos, const double& par_zPos)
 {
 
     // the next steps are to figure out the right indices to grab the values for cube from the data, 
@@ -318,8 +407,9 @@ void Eulerian::setInterp3Dindexing(const double& par_xPos, const double& par_yPo
 
 }
 
+
 // always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-double Eulerian::interp3D(const std::vector<float>& EulerData)
+double Eulerian::interp3D_cellVar(const std::vector<float>& EulerData)
 {
 
     // first set a cube of size two to zero.
@@ -352,7 +442,7 @@ double Eulerian::interp3D(const std::vector<float>& EulerData)
 }
 
 // always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-double Eulerian::interp3D(const std::vector<double>& EulerData)
+double Eulerian::interp3D_cellVar(const std::vector<double>& EulerData)
 {
 
     // first set a cube of size two to zero.
@@ -381,97 +471,5 @@ double Eulerian::interp3D(const std::vector<double>& EulerData)
     double u_high = (1-iw)*(1-jw)*cube[0][0][1] + iw*(1-jw)*cube[1][0][1] + iw*jw*cube[1][1][1] + (1-iw)*jw*cube[0][1][1];
 
     return (u_high-u_low)*kw + u_low;
-
-}
-
-// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-double Eulerian::interp3D_facevar(const std::vector<float>& EulerData)
-{
-
-    double cube[2][2][2] = {0.0};
-
-    // now set the cube values
-    for(int kkk = 0; kkk <= kp; kkk++) {
-        for(int jjj = 0; jjj <= jp; jjj++) {
-            for(int iii = 0; iii <= ip; iii++) {
-                // set the actual indices to use for the linearized Euler data
-                int idx = (kk+kkk)*(ny*nx) + (jj+jjj)*(nx) + (ii+iii);
-                cube[iii][jjj][kkk] = EulerData[idx];
-            }
-        }
-    }
-
-    // now do the interpolation, with the cube, the counters from the indices,
-     // and the normalized width between the point locations and the closest cell left walls
-    double u_low  = (1-iw)*(1-jw)*cube[0][0][0] + iw*(1-jw)*cube[1][0][0] + iw*jw*cube[1][1][0] + (1-iw)*jw*cube[0][1][0];
-    double u_high = (1-iw)*(1-jw)*cube[0][0][1] + iw*(1-jw)*cube[1][0][1] + iw*jw*cube[1][1][1] + (1-iw)*jw*cube[0][1][1];
-
-    return (u_high-u_low)*kw + u_low;
-}
-
-double Eulerian::interp3D_u(const double& par_xPos, const double& par_yPos, const double& par_zPos, const std::vector<float>& EulerData)
-{
-
-    // set a particle position corrected by the start of the domain in each direction
-    // the algorythm assumes the list starts at x = 0.
-    double par_x = par_xPos - xStart + 0.5*dx;
-    double par_y = par_yPos - yStart;
-    double par_z = par_zPos - zStart + 0.5*dz;
-
-    ii = floor(par_x/(dx+1e-9));
-    jj = floor(par_y/(dy+1e-9));
-    kk = floor(par_z/(dz+1e-9));
-    
-    // fractional distance between nearest nodes
-    iw = (par_x/dx - floor(par_x/dx));
-    jw = (par_y/dy - floor(par_y/dy));
-    kw = (par_z/dz - floor(par_z/dz));
-    
-    return interp3D_facevar(EulerData);
-    
-}
-
-double Eulerian::interp3D_v(const double& par_xPos, const double& par_yPos, const double& par_zPos, const std::vector<float>& EulerData)
-{
-
-    // set a particle position corrected by the start of the domain in each direction
-    // the algorythm assumes the list starts at x = 0.
-    double par_x = par_xPos - xStart;
-    double par_y = par_yPos - yStart + 0.5*dy;
-    double par_z = par_zPos - zStart + 0.5*dz;
-
-    ii = floor(par_x/(dx+1e-9));
-    jj = floor(par_y/(dy+1e-9));
-    kk = floor(par_z/(dz+1e-9));
-    
-    // fractional distance between nearest nodes
-    iw = (par_x/dx - floor(par_x/dx));
-    jw = (par_y/dy - floor(par_y/dy));
-    kw = (par_z/dz - floor(par_z/dz));
-    
-    return interp3D_facevar(EulerData);
-
-}
-
-// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-double Eulerian::interp3D_w(const double& par_xPos, const double& par_yPos, const double& par_zPos, const std::vector<float>& EulerData)
-{
-
-    // set a particle position corrected by the start of the domain in each direction
-    // the algorythm assumes the list starts at x = 0.
-    double par_x = par_xPos - xStart;
-    double par_y = par_yPos - yStart;
-    double par_z = par_zPos - zStart + 0.5*dz;
-
-    ii = floor(par_x/(dx+1e-9));
-    jj = floor(par_y/(dy+1e-9));
-    kk = floor(par_z/(dz+1e-9));
-    
-    // fractional distance between nearest nodes
-    iw = (par_x/dx - floor(par_x/dx));
-    jw = (par_y/dy - floor(par_y/dy));
-    kw = (par_z/dz - floor(par_z/dz));
-    
-    return interp3D_facevar(EulerData);
 
 }

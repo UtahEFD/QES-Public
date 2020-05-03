@@ -67,27 +67,22 @@ public:
     std::vector<double> dtyzdy; // dtzydy
     std::vector<double> dtzzdz; // dtzzyz
 
-    // my description of the flux_div might need to be corrected
-    std::vector<double> flux_div_x;     // this is like the derivative of the forces acting on the x face
-    std::vector<double> flux_div_y;     // this is like the derivative of the forces acting on the y face
-    std::vector<double> flux_div_z;     // this is like the derivative of the forces acting on the z face
-
     // temporary storage of sigma_x,_y,_z
     std::vector<double> sig_x;
     std::vector<double> sig_y;
     std::vector<double> sig_z;
 
+    void setInterp3Dindex_uFace(const double&, const double&, const double&);
+    void setInterp3Dindex_vFace(const double&, const double&, const double&);
+    void setInterp3Dindex_wFace(const double&, const double&, const double&);
+    double interp3D_faceVar(const std::vector<float>&);
+    double interp3D_faceVar(const std::vector<double>&);
 
-    void setInterp3Dindexing(const double&, const double&, const double&);
+    void setInterp3Dindex_cellVar(const double&, const double&, const double&);
+    double interp3D_cellVar(const std::vector<float>&);
+    double interp3D_cellVar(const std::vector<double>&);
     
     int getCellId(const double&, const double&, const double&);
-
-    double interp3D(const std::vector<float>&);
-    double interp3D(const std::vector<double>&);
-
-    double interp3D_u(const double&, const double&, const double&, const std::vector<float>&);
-    double interp3D_v(const double&, const double&, const double&, const std::vector<float>&);
-    double interp3D_w(const double&, const double&, const double&, const std::vector<float>&);
         
 private:
 
@@ -123,12 +118,9 @@ private:
     void setDX_Backward(const TURBGeneralData* TGD, const int idx);   // second order backward differencing for calc gradient in the x direction of tau
     void setDY_Backward(const TURBGeneralData* TGD, const int idx);   // second order backward differencing for calc gradient in the y direction of tau
     void setDZ_Backward(const TURBGeneralData* TGD, const int idx);   // second order backward differencing for calc gradient in the z direction of tau
-
-    double interp3D_facevar(const std::vector<float>&);
     
     void setStressGradient(TURBGeneralData*);
     void setStressGrads(TURBGeneralData*);
-    void setFluxDiv();       // this function takes the TauGrads and turns them into a bunch simpler values to use
     void setSigmas(TURBGeneralData*); 
 
     // timer class useful for debugging and timing different operations
