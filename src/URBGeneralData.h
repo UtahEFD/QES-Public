@@ -5,6 +5,7 @@
 #include <netcdf>
 #include "NetCDFInput.h"
 #include "Args.hpp"
+#include "Wall.h"
 
 #define _USE_MATH_DEFINES
 #define MIN_S(x,y) ((x) < (y) ? (x) : (y))
@@ -61,7 +62,16 @@ public:
     
     /// Declaration of coefficients for SOR solver
     std::vector<float> e,f,g,h,m,n;
-    
+ 
+    // In getWallIndices and wallLogBC
+    std::vector<int> wall_right_indices;     /**< Indices of the cells with wall to right boundary condition */
+    std::vector<int> wall_left_indices;      /**< Indices of the cells with wall to left boundary condition */
+    std::vector<int> wall_above_indices;     /**< Indices of the cells with wall above boundary condition */
+    std::vector<int> wall_below_indices;     /**< Indices of the cells with wall bellow boundary condition */
+    std::vector<int> wall_back_indices;      /**< Indices of the cells with wall in back boundary condition */
+    std::vector<int> wall_front_indices;     /**< Indices of the cells with wall in front boundary condition */
+    Wall *wall;
+
 private:
     
     // input: store here for multiple time instance.

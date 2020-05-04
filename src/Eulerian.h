@@ -122,7 +122,9 @@ private:
     void setStressGradient(TURBGeneralData*);
     void setStressGrads(TURBGeneralData*);
     void setSigmas(TURBGeneralData*); 
-
+ 
+    void setBC(URBGeneralData*,TURBGeneralData*);
+    
     // timer class useful for debugging and timing different operations
     calcTime timers;
 

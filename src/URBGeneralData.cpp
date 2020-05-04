@@ -18,7 +18,10 @@ URBGeneralData :: URBGeneralData(Args* arguments) {
 
     // fullname passed to URBGeneralData
     input = new NetCDFInput(arguments->inputUrbFile);
-
+    
+    // create wall instance for BC
+    wall = new Wall();
+    
     // nx,ny - face centered value (consistant with URB)
     input->getDimensionSize("x",nx);
     input->getDimensionSize("y",ny);
@@ -145,6 +148,19 @@ void URBGeneralData::loadNetCDFData(int stepin)
     input->getVariableData("u",start,count_fc,u);
     input->getVariableData("v",start,count_fc,v);
     input->getVariableData("w",start,count_fc,w);
+
+    
+    // clear wall indices container (guarantee entry vector)
+    wall_right_indices.clear();
+    wall_left_indices.clear();
+    wall_above_indices.clear();
+    wall_below_indices.clear();
+    wall_front_indices.clear();
+    wall_back_indices.clear();
+
+    // define new wall indices container for new data
+    wall->defineWalls(this);
+    
 
     return;
 }

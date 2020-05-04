@@ -57,12 +57,109 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     sig_x.resize(UGD->numcell_cent,0.0);
     sig_y.resize(UGD->numcell_cent,0.0);
     sig_z.resize(UGD->numcell_cent,0.0);
+
+    // set BC 
+    setBC(UGD,TGD);
     
     // compute stress gradients
     setStressGradient(TGD);
     // temporary copy of sigma's
     setSigmas(TGD);
     
+}
+
+void Eulerian::setBC(URBGeneralData* UGD,TURBGeneralData* TGD)
+{
+    std::cout<<"[Eulerian] \t Correction QES-winds fields for BC"<<std::endl;
+    
+    // verical surface (wall right => j-1)
+    for(size_t id; id<UGD->wall_right_indices.size(); ++id) {
+        int idface=UGD->wall_right_indices[id];
+        // u(i,j-1,k)=-u(i,j,k)
+        UGD->u[idface -nx]=-UGD->u[idface];
+        // u(i+1,j-1,k)=-u(i+1,j,k)
+        UGD->u[idface+1 -nx]=-UGD->u[idface+1];
+
+        // w(i,j-1,k)=-w(i,j,k)
+        UGD->w[idface -nx]=-UGD->w[idface];
+        // w(i,j-1,k+1)=-w(i,j,k+1)
+        UGD->w[idface+nx*ny -nx]=-UGD->w[idface+nx*ny];
+    }
+    
+    // verical surface (wall left => j+1)
+    for(size_t id; id<UGD->wall_left_indices.size(); ++id) {
+        int idface=UGD->wall_left_indices[id];
+        // u(i,j+1,k)=-u(i,j,k)
+        UGD->u[idface +nx]=-UGD->u[idface];
+        // u(i+1,j+1,k)=-u(i+1,j,k)
+        UGD->u[idface+1 +nx]=-UGD->u[idface+1];
+
+        // w(i,j+1,k)=-w(i,j,k)
+        UGD->w[idface +nx]=-UGD->w[idface];
+        // w(i,j+1,k+1)=-w(i,j,k+1)
+        UGD->w[idface+nx*ny +nx]=-UGD->w[idface+nx*ny];
+    }
+
+    // horizontal surface (wall above => k+1)
+    for(size_t id; id<UGD->wall_above_indices.size(); ++id) {
+        int idface=UGD->wall_above_indices[id];
+        // u(i,j,k+1)=-u(i,j,k)
+        UGD->u[idface +nx*ny]=-UGD->u[idface];
+        // u(i+1,j,k+1)=-u(i+1,j,k)
+        UGD->u[idface+1 +nx*ny]=-UGD->u[idface+1];
+        
+        // v(i,j,k+1)=-v(i,j,k)
+        UGD->v[idface +nx*ny]=-UGD->v[idface];
+        // v(i,j+1,k+1)=-v(i,j+1,k)
+        UGD->v[idface+nx +nx*ny]=-UGD->v[idface+nx];
+    }
+    
+    // horizontal surface (wall below => k-1)
+    for(size_t id; id<UGD->wall_below_indices.size(); ++id) {
+        int idface=UGD->wall_below_indices[id];
+        // u(i,j,k-1)=-u(i,j,k)
+        UGD->u[idface -nx*ny]=-UGD->u[idface];
+        // u(i+1,j,k+1)=-u(i+1,j,k)
+        UGD->u[idface+1 -nx*ny]=-UGD->u[idface+1];
+        
+        // v(i,j,k-1)=-v(i,j,k)
+        UGD->v[idface -nx*ny]=-UGD->v[idface];
+        // v(i,j+1,k-1)=-v(i,j+1,k)
+        UGD->v[idface+nx -nx*ny]=-UGD->v[idface+nx];
+    }
+
+
+    // verical surface (wall back => i-1)
+    for(size_t id; id<UGD->wall_back_indices.size(); ++id) {
+        int idface=UGD->wall_back_indices[id];
+        // v(i-1,j,k)=-v(i,j,k)
+        UGD->v[idface -1]=-UGD->v[idface];
+        // v(i-1,j+1,k)=-v(i,j+1,k)
+        UGD->v[idface+nx -1]=-UGD->v[idface+nx];
+
+        // w(i-1,j,k)=-w(i,j,k)
+        UGD->w[idface -1]=-UGD->w[idface];
+        // w(i-1,j,k+1)=-w(i,j,k+1)
+        UGD->w[idface+nx*ny -1]=-UGD->w[idface+nx*ny];
+    }
+    
+    // verical surface (wall front => i+1)
+    for(size_t id; id<UGD->wall_front_indices.size(); ++id) {
+        int idface=UGD->wall_front_indices[id];
+        // v(i+1,j,k)=-v(i,j,k)
+        UGD->v[idface +1]=-UGD->v[idface];
+        // v(i+1,j+1,k)=-v(i,j+1,k)
+        UGD->v[idface+nx +1]=-UGD->v[idface+nx];
+
+        // w(i+1,j,k)=-w(i,j,k)
+        UGD->w[idface +1]=-UGD->w[idface];
+        // w(i+1,j,k+1)=-w(i,j,k+1)
+        UGD->w[idface+nx*ny +1]=-UGD->w[idface+nx*ny];
+    }
+
+    std::cout<<"[Eulerian] \t Correction QES-winds fields for BC"<<std::endl;
+    
+    return;
 }
 
 void Eulerian::setStressGradient(TURBGeneralData* TGD)
