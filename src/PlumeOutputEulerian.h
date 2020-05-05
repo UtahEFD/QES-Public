@@ -37,7 +37,7 @@ public:
     }
     
     // specialized constructor
-    PlumeOutputEulerian(PlumeInputData* PID,URBGeneralData* urb_ptr,TURBGeneralData* turb_ptr,Eulerian* eul_ptr,std::string output_file);
+    PlumeOutputEulerian(PlumeInputData*,URBGeneralData*,TURBGeneralData*,Eulerian*,std::string);
     
     // deconstructor
     ~PlumeOutputEulerian()
@@ -55,18 +55,9 @@ private:
     // no need for output frequency for this output, it is expected to only happen once, assumed to be at time zero
     
     // pointers to the classes that save needs to use to get the data for the output
-    URBGeneralData* urb;
-    TURBGeneralData* turb;
-    Eulerian* eul;
-    
-    
-    // main output metadata
-    // LA future work: this whole structure will have to change when we finally adjust the inputs for the true grids
-    //  would mean cell centered urb data and face centered turb data. For now, decided just to assume they have the same grid
-    int nx;
-    int ny;
-    int nz;
-    int nCells;
+    URBGeneralData* urb_;
+    TURBGeneralData* turb_;
+    Eulerian* eul_;
     
     // other output data
     std::vector<float> epps;    // data is normally stored as CoEps, so need to separate it out here

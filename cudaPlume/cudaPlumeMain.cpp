@@ -29,7 +29,7 @@
 #include "Dispersion.h"
 
 #include "QESNetCDFOutput.h"
-//#include "PlumeOutputEulerian.h"
+#include "PlumeOutputEulerian.h"
 #include "PlumeOutputLagrToEul.h"
 #include "PlumeOutputLagrangian.h"
 
@@ -119,7 +119,6 @@ int main(int argc, char** argv)
     
 
     // create output instance
-    // LA note: start it out as NULL, then make it point to what we want later if the file is supposed to exist
     std::vector<QESNetCDFOutput*> outputVec;
     // always supposed to output lagrToEulOutput data
     outputVec.push_back(new PlumeOutputLagrToEul(PID,UGD,dis,arguments.outputLagrToEulFile));
@@ -128,14 +127,12 @@ int main(int argc, char** argv)
     }
     
     // create output instance (separate for eulerian class)
-    /*
-      QESNetCDFOutput* eulOutput = nullptr;
-      if( arguments.doEulDataOutput == true ) {
-      eulOutput = new PlumeOutputEulerian(PID,UGD,TGD,eul,arguments.outputEulerianFile);
-      // output Eulerian data. Use time zero
-      eulOutput->save(0.0);
-      }
-    */
+    QESNetCDFOutput* eulOutput = nullptr;
+    if( arguments.doEulDataOutput == true ) {
+        eulOutput = new PlumeOutputEulerian(PID,UGD,TGD,eul,arguments.outputEulerianFile);
+        // output Eulerian data. Use time zero
+        eulOutput->save(0.0);
+    }
 
     // Create instance of Plume model class
     Plume* plume = new Plume(PID,UGD,dis,&arguments);
