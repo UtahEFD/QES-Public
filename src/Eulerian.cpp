@@ -157,8 +157,136 @@ void Eulerian::setBC(URBGeneralData* UGD,TURBGeneralData* TGD)
         UGD->w[idface+nx*ny +1]=-UGD->w[idface+nx*ny];
     }
 
-    std::cout<<"[Eulerian] \t Correction QES-winds fields for BC"<<std::endl;
+    std::cout<<"[Eulerian] \t Correction QES-turb fields for BC"<<std::endl;
+
+        // verical surface (wall right => j-1)
+    for(size_t id; id<UGD->wall_right_indices.size(); ++id) {
+        int idface=UGD->wall_right_indices[id];
+        // i,j,k -> inverted linearized index
+        int k = (int)(idface / ((nx*nx)));
+        int j = (int)((idface - k*(nx*ny))/(nx));
+        int i = idface - j*(nx) - k*(nx*ny);
+        // id of cell 
+        int idcell = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        int idcell_m = idcell - (nx-1);
+
+        TGD->CoEps[idcell_m] = TGD->CoEps[idcell];
+        
+        TGD->txx[idcell_m] = TGD->txx[idcell];
+        TGD->txy[idcell_m] = TGD->txy[idcell];
+        TGD->txz[idcell_m] = TGD->txz[idcell];
+        TGD->tyy[idcell_m] = TGD->tyy[idcell];
+        TGD->tyz[idcell_m] = TGD->tyz[idcell];
+        TGD->tzz[idcell_m] = TGD->tzz[idcell];
+    }
     
+    // verical surface (wall left => j+1)
+    for(size_t id; id<UGD->wall_left_indices.size(); ++id) {
+        int idface=UGD->wall_left_indices[id];
+        // i,j,k -> inverted linearized index
+        int k = (int)(idface / ((nx*nx)));
+        int j = (int)((idface - k*(nx*ny))/(nx));
+        int i = idface - j*(nx) - k*(nx*ny);
+        // id of cell 
+        int idcell = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        int idcell_m = idcell + (nx-1);
+
+        TGD->CoEps[idcell_m] = TGD->CoEps[idcell];
+        
+        TGD->txx[idcell_m] = TGD->txx[idcell];
+        TGD->txy[idcell_m] = TGD->txy[idcell];
+        TGD->txz[idcell_m] = TGD->txz[idcell];
+        TGD->tyy[idcell_m] = TGD->tyy[idcell];
+        TGD->tyz[idcell_m] = TGD->tyz[idcell];
+        TGD->tzz[idcell_m] = TGD->tzz[idcell];
+    }
+
+    // horizontal surface (wall above => k+1)
+    for(size_t id; id<UGD->wall_above_indices.size(); ++id) {
+        int idface=UGD->wall_above_indices[id];
+        // i,j,k -> inverted linearized index
+        int k = (int)(idface / ((nx*nx)));
+        int j = (int)((idface - k*(nx*ny))/(nx));
+        int i = idface - j*(nx) - k*(nx*ny);
+        // id of cell 
+        int idcell = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        int idcell_m = idcell + (nx-1)*(ny-1);
+
+        TGD->CoEps[idcell_m] = TGD->CoEps[idcell];
+        
+        TGD->txx[idcell_m] = TGD->txx[idcell];
+        TGD->txy[idcell_m] = TGD->txy[idcell];
+        TGD->txz[idcell_m] = TGD->txz[idcell];
+        TGD->tyy[idcell_m] = TGD->tyy[idcell];
+        TGD->tyz[idcell_m] = TGD->tyz[idcell];
+        TGD->tzz[idcell_m] = TGD->tzz[idcell];
+    }
+    
+    // horizontal surface (wall below => k-1)
+    for(size_t id; id<UGD->wall_below_indices.size(); ++id) {
+        int idface=UGD->wall_below_indices[id];
+        // i,j,k -> inverted linearized index
+        int k = (int)(idface / ((nx*nx)));
+        int j = (int)((idface - k*(nx*ny))/(nx));
+        int i = idface - j*(nx) - k*(nx*ny);
+        // id of cell 
+        int idcell = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        int idcell_m = idcell - (nx-1)*(ny-1);
+        
+        TGD->CoEps[idcell_m] = TGD->CoEps[idcell];
+        
+        TGD->txx[idcell_m] = TGD->txx[idcell];
+        TGD->txy[idcell_m] = TGD->txy[idcell];
+        TGD->txz[idcell_m] = TGD->txz[idcell];
+        TGD->tyy[idcell_m] = TGD->tyy[idcell];
+        TGD->tyz[idcell_m] = TGD->tyz[idcell];
+        TGD->tzz[idcell_m] = TGD->tzz[idcell];
+        
+    }
+
+
+    // verical surface (wall back => i-1)
+    for(size_t id; id<UGD->wall_back_indices.size(); ++id) {
+        int idface=UGD->wall_back_indices[id];
+        // i,j,k -> inverted linearized index
+        int k = (int)(idface / ((nx*nx)));
+        int j = (int)((idface - k*(nx*ny))/(nx));
+        int i = idface - j*(nx) - k*(nx*ny);
+        // id of cell 
+        int idcell = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        int idcell_m = idcell - 1;
+        
+        TGD->CoEps[idcell_m] = TGD->CoEps[idcell];
+        
+        TGD->txx[idcell_m] = TGD->txx[idcell];
+        TGD->txy[idcell_m] = TGD->txy[idcell];
+        TGD->txz[idcell_m] = TGD->txz[idcell];
+        TGD->tyy[idcell_m] = TGD->tyy[idcell];
+        TGD->tyz[idcell_m] = TGD->tyz[idcell];
+        TGD->tzz[idcell_m] = TGD->tzz[idcell];
+    }
+    
+    // verical surface (wall front => i+1)
+    for(size_t id; id<UGD->wall_front_indices.size(); ++id) {
+        int idface=UGD->wall_front_indices[id];
+        // i,j,k -> inverted linearized index
+        int k = (int)(idface / ((nx*nx)));
+        int j = (int)((idface - k*(nx*ny))/(nx));
+        int i = idface - j*(nx) - k*(nx*ny);
+        // id of cell 
+        int idcell = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        int idcell_m = idcell + 1;
+        
+        TGD->CoEps[idcell_m] = TGD->CoEps[idcell];
+        
+        TGD->txx[idcell_m] = TGD->txx[idcell];
+        TGD->txy[idcell_m] = TGD->txy[idcell];
+        TGD->txz[idcell_m] = TGD->txz[idcell];
+        TGD->tyy[idcell_m] = TGD->tyy[idcell];
+        TGD->tyz[idcell_m] = TGD->tyz[idcell];
+        TGD->tzz[idcell_m] = TGD->tzz[idcell];
+    }
+
     return;
 }
 
