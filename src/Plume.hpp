@@ -131,7 +131,6 @@ private:
                   const double& A_31,const double& A_32,const double& A_33,
                   const double& b_11,const double& b_21,const double& b_31,
                   double& x_11, double& x_21, double& x_31);
-
         
     // a function used at constructor time to set the pointer function to the desired BC type
     void setBCfunctions(std::string xBCtype,std::string yBCtype,std::string zBCtype);   
@@ -156,6 +155,10 @@ private:
     void enforceWallBCs_reflection( double& pos,double& velFluct,double& velFluct_old,bool& isActive,
                                     const double& domainStart,const double& domainEnd);
 
+    void reflection(URBGeneralData* UGD, 
+                    double& xPos, double& yPos, double& zPos, 
+                    double& disX, double& disY, double& disZ,
+                    double& uFluct, double& vFluct, double& wFluct);
 
     // this is called to set the values whenever it is found that a particle is inactive or rogue
     void setFinishedParticleVals( double& xPos,double& yPos,double& zPos,bool& isActive,
@@ -164,6 +167,12 @@ private:
 
     // this is for writing an output simulation info file separate from the regular command line output
     void writeSimInfoFile(Dispersion* dis,const double& current_time);
-  
+
+    Vector3<double> reflect(Vector3<double>&, const Vector3<double>&);
 };
+
+inline Vector3<double> Plume::reflect(Vector3<double>& v, const Vector3<double>& n){
+    return v-2.0*(v*n)*n;
+}
+
 #endif

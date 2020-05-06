@@ -61,11 +61,21 @@ public:
 	 * @param i -the index of the value to return
 	 * @return a reference to the value stored at i
 	 */
-	T& operator[](const int i)
+	T& operator[](const int i) const
 	{
-		return values[i%3];
+        // do a sanity check to make sure indices are OK!
+        assert(i >= 0 && i < 3); 
+        return values[i];
 	}
 
+    T& operator[](const int i)
+	{
+        // do a sanity check to make sure indices are OK!
+        assert(i >= 0 && i < 3); 
+        return values[i];
+	}
+    
+    
 	/*
 	 * returns if two Vector3 values of the same type are equal
 	 *
@@ -82,18 +92,44 @@ public:
     
     Vector3<T>& operator=(const Vector3<T>& v)
 	{
-		for (int i = 0; i < 3; i++)
-			values[i] = v.values[i];
+        values[0] = v.values[0];
+        values[1] = v.values[1];
+        values[2] = v.values[2];
 		return *this;
 	}
-
-
-	friend std::istream& operator>> (std::istream& is, Vector3<T>& v)
-	{
-	    is >> v.values[0] >> v.values[1] >> v.values[2];
-	    return is;
-	}
     
+    Vector3<T>& operator+=(const Vector3<T>& v)
+    {
+        values[0] += v.values[0];
+        values[1] += v.values[1];
+        values[2] += v.values[2];
+        return *this;
+    }
+
+    Vector3<T>& operator-=(const Vector3<T>& v)
+    {
+        values[0] -= v.values[0];
+        values[1] -= v.values[1];
+        values[2] -= v.values[2];
+        return *this;
+    }
+
+    Vector3<T>& operator/=(const T& a)
+    {
+        values[0] /= a;
+        values[1] /= a;
+        values[2] /= a;
+        return *this;
+    }
+
+    Vector3<T>& operator*=(const T& a)
+    {
+        values[0] /= a;
+        values[1] /= a;
+        values[2] /= a;
+        return *this;
+    }
+
     // addition operator
     Vector3<T> operator-(const Vector3<T>& v1){
         return Vector3<T> (values[0] - v1.values[0], values[1] - v1.values[1], values[2] - v1.values[2]);
@@ -104,17 +140,28 @@ public:
         return Vector3<T> (values[0] + v1.values[0], values[1] + v1.values[1], values[2] + v1.values[2]);
     }
     
-    // scalar product 
-    T operator*(const Vector3<T>& v1){
+    // scalar product (dot product)
+    T dot(const Vector3<T>& v1) const {
         return (values[0]*v1.values[0] + values[1]*v1.values[1] + values[2]*v1.values[2]);
     }
+
+    // scalar product (dot product)
+    T operator*(const Vector3<T>& v1) const {
+        return (values[0]*v1.values[0] + values[1]*v1.values[1] + values[2]*v1.values[2]);
+    }
+
 
     // multiplication by scalar
     Vector3<T> operator*(const T& a){
         return Vector3<T> (a*values[0],a*values[1],a*values[2]);
     }
-    
-    // addition operator
+
+    // return the length of the vector
+    T length(void) const {
+        return sqrt( values[0]*values[0] + values[0]*values[0] + values[0]*values[0]) ;
+    }
+
+    // multiplication by scaler
     friend Vector3<T> operator*(const T& a, const Vector3<T>& v1){
         return Vector3<T> (a*v1.values[0], a*v1.values[1], a*v1.values[2]);
     }
@@ -124,7 +171,12 @@ public:
         return Vector3<T> (values[0]/a,values[1]/a,values[2]/a);
     }
 
-
+    friend std::istream& operator>> (std::istream& is, Vector3<T>& v)
+	{
+	    is >> v.values[0] >> v.values[1] >> v.values[2];
+	    return is;
+	}
+    
 };
 
 template<typename T>
@@ -136,3 +188,4 @@ std::ostream& operator<<(std::ostream& out, const Vector3<T>& v)
     out << v.values[2] << "]";
     return out;
 }
+

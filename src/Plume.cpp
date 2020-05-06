@@ -190,6 +190,8 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                 double yPos = dis->pointList[parIdx].yPos;
                 double zPos = dis->pointList[parIdx].zPos;
                 
+                size_t cellIdx_old = eul->getCellId(xPos,yPos,zPos);
+
                 // getting the initial position, for use in setting finished particles
                 double xPos_init = dis->pointList[parIdx].xPos_init;
                 double yPos_init = dis->pointList[parIdx].yPos_init;
@@ -575,6 +577,8 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                         if(UGD->icellflag.at(cellIdx) == 2) {
                             std::cout << "particle in terrain id =" <<  parIdx << std::endl;
                             std::cout << "particle position: (" << xPos << "," << yPos << "," << zPos << ")" << std::endl;
+                            reflection(UGD,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
+
                         }
                     }
                     catch (const std::out_of_range& oor) {
@@ -611,6 +615,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     tyz_old = tyz;
                     tzz_old = tzz;
                     
+                    cellIdx_old=cellIdx;
                     
                     // now set the time remainder for the next loop
                     // if the par_dt calculated from the Courant Number is greater than the timeRemainder,
