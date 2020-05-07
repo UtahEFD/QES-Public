@@ -574,11 +574,8 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     
                     size_t cellIdx = eul->getCellId(xPos,yPos,zPos);
                     try {
-                        if(UGD->icellflag.at(cellIdx) == 2) {
-                            std::cout << "particle in terrain id =" <<  parIdx << std::endl;
-                            std::cout << "particle position: (" << xPos << "," << yPos << "," << zPos << ")" << std::endl;
-                            reflection(UGD,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
-
+                        if( (UGD->icellflag.at(cellIdx) == 0 || UGD->icellflag.at(cellIdx) == 2 ) ) {
+                            reflection(UGD,eul,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
                         }
                     }
                     catch (const std::out_of_range& oor) {

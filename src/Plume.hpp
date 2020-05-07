@@ -155,7 +155,7 @@ private:
     void enforceWallBCs_reflection( double& pos,double& velFluct,double& velFluct_old,bool& isActive,
                                     const double& domainStart,const double& domainEnd);
 
-    void reflection(URBGeneralData* UGD, 
+    void reflection(URBGeneralData* UGD, Eulerian* eul,
                     double& xPos, double& yPos, double& zPos, 
                     double& disX, double& disY, double& disZ,
                     double& uFluct, double& vFluct, double& wFluct);
@@ -169,10 +169,18 @@ private:
     void writeSimInfoFile(Dispersion* dis,const double& current_time);
 
     Vector3<double> reflect(Vector3<double>&, const Vector3<double>&);
+    double distance(Vector3<double>&,Vector3<double>&);
 };
 
 inline Vector3<double> Plume::reflect(Vector3<double>& v, const Vector3<double>& n){
     return v-2.0*(v*n)*n;
 }
 
+inline double Plume::distance(Vector3<double>& v1,Vector3<double>& v2){
+    return(sqrt((v1[0]-v2[0])*(v1[0]-v2[0]) + 
+                (v1[1]-v2[1])*(v1[1]-v2[1]) + 
+                (v1[2]-v2[2])*(v1[2]-v2[2])));
+}
+
 #endif
+
