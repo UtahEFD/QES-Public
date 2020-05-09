@@ -71,15 +71,16 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     float dn_u, dn_v, dn_w;             // Length of cavity zone
     
     int k_bottom = 1, k_top = 1;
+    int count_cl_outofbound = 0;
     
     if ( xi.size() == 0 ) {
         // exit if building has no area (computed in polygonWake.cpp)
-        std::cout<< "[WARNING] building ill-defined -> use local mixing (building id="<< building_id << ")" <<std::endl;
+        std::cout<< "[WARNING] building ill-defined (no area) -> use local mixing (building id="<< building_id << ")" <<std::endl;
         return;
     }
     if (k_start < 1 || k_start > nz-2 || k_end < 1 || k_end > nz-2 ) { 
         // exit if building start/end point is ill-defined (computed in polygonWake.cpp)
-        std::cout<< "[WARNING] building ill-defined -> use local mixing (building id="<< building_id << ")" <<std::endl;
+        std::cout<< "[WARNING] building ill-defined (k out of bound) -> use local mixing (building id="<< building_id << ")" <<std::endl;
         return;
     }
     /* 
@@ -172,11 +173,13 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
     
     // scale factor = scale the dxy as a function of the angle of the flow
     float scale_factor=1;
-    if( 1.0/cos(upwind_dir) <= sqrt(2) ) {
-        scale_factor=1.0/cos(upwind_dir);
-    } else {
-        scale_factor=1.0/sin(upwind_dir);
-    }
+    /*
+      if( 1.0/cos(upwind_dir) <= sqrt(2) ) {
+      scale_factor=1.0/cos(upwind_dir);
+      } else {
+      scale_factor=1.0/sin(upwind_dir);
+      }
+    */
     float dxy=scale_factor*UGD->dxy;
      
     // x,y positons of the polybuilding verteces in the rotated coord syst rotated with the wind dir and building center
@@ -528,7 +531,7 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
                                         //TGD->iturbflag[icell_cent_cl]=12; 
                                         
                                     } else { //if centerline outside, assume U_centerline 90% of U_ref_l
-                                        std::cout << "[WARNING] centerline outside of domain (building id="<< building_id << ")" << std::endl;
+                                        count_cl_outofbound++;
                                         U_a=0.9*U_ref_l;
                                     }
                                     // horizontal velocity different
@@ -617,6 +620,10 @@ void PolyBuilding::NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int
                 }
             }
         }
+    }
+    if(count_cl_outofbound>0) {
+        std::cout << "[WARNING] " << count_cl_outofbound << " points of the centerline outside of domain " <<
+            "(building id=" << building_id << ")" << std::endl;
     }
     
     return;
