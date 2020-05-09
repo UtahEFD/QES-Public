@@ -6,7 +6,8 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(URBGeneralData *ugd,std::string outpu
     std::cout<<"[Output] \t Setting fields of workspace file"<<std::endl;
     
     // set list of fields to save, no option available for this file
-    output_fields = {"t","x_cc","y_cc","z_cc","u","v","w","icell",
+    output_fields = {"t","x_cc","y_cc","z_cc","z_face","dz_array",
+                     "u","v","w","icell",
                      "terrain","z0_u","z0_v",
                      "e","f","g","h","m","n","building_volume_frac","terrain_volume_frac",
                      "mixlength"};
@@ -21,9 +22,14 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(URBGeneralData *ugd,std::string outpu
 
     // Location of face centers in z-dir
     z_cc.resize( nz-1 );
+    dz_array.resize( nz-1, 0.0 );
+    z_face.resize( nz-1 );
     for (auto k=0; k<nz-1; k++) {
-        z_cc[k] = (k-0.5)*ugd_->dz; 
+        z_cc[k] = ugd_->z[k];
+        dz_array[k] = ugd_->dz_array[k];
+        z_face[k] = ugd_->z_face[k];
     }
+
     // Location of face centers in x-dir
     x_cc.resize( nx-1 );
     for (auto i=0; i<nx-1; i++) {
@@ -75,6 +81,8 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(URBGeneralData *ugd,std::string outpu
     std::vector<NcDim> dim_vect_z_cc;
     dim_vect_z_cc.push_back(NcDim_z_cc); 
     createAttVector("z_cc","z-distance","m",dim_vect_z_cc,&z_cc);
+    createAttVector("z_face","z location of the faces","m",dim_vect_z_cc,&z_face);
+    createAttVector("dz_array","dz size of the cells","m",dim_vect_z_cc,&dz_array);    
 
     // create 2D vector (surface, indep of time)
     std::vector<NcDim> dim_vect_2d;
@@ -95,7 +103,7 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(URBGeneralData *ugd,std::string outpu
     dim_vect_cc.push_back(NcDim_x_cc);
 
     // create attributes 
-    createAttVector("icell","icell flag value","--",dim_vect_cc,&(ugd_->icellflag));
+    createAttVector("icellflag","icell flag value","--",dim_vect_cc,&(ugd_->icellflag));
 
     // attributes for coefficients for SOR solver
     createAttVector("e","e cut-cell coefficient","--",dim_vect_cc,&(ugd_->e));  
