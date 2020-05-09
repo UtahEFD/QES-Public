@@ -61,9 +61,9 @@ URBGeneralData :: URBGeneralData(Args* arguments) {
         }
     }
     
-    // check if dz_array is in the NetCDF file
+    // check if z_face is in the NetCDF file
     NcVar NcVar_zface;
-    input->getVariable("z_face", NcVar_dz);
+    input->getVariable("z_face", NcVar_zface);
     if(!NcVar_zface.isNull()) {
         input->getVariableData("z_face",z_face);
     } else {
@@ -135,7 +135,7 @@ void URBGeneralData::loadNetCDFData(int stepin)
   
     // cell-center variables
     // icellflag (see .h for velues)
-    input->getVariableData("icell",start,count_cc,icellflag);
+    input->getVariableData("icellflag",start,count_cc,icellflag);
     /// coefficients for SOR solver
     NcVar NcVar_SORcoeff;
     input->getVariable("e", NcVar_SORcoeff);
