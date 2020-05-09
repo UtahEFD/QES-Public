@@ -573,16 +573,10 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     zPos = zPos + disZ;
                     
                     size_t cellIdx = eul->getCellId(xPos,yPos,zPos);
-                    try {
-                        if( (UGD->icellflag.at(cellIdx) == 0 || UGD->icellflag.at(cellIdx) == 2 ) ) {
-                            reflection(UGD,eul,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
-                        }
+                    if( (UGD->icellflag.at(cellIdx) == 0 || UGD->icellflag.at(cellIdx) == 2 ) ) {
+                        reflection(UGD,eul,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
                     }
-                    catch (const std::out_of_range& oor) {
-                        std::cerr << "Out of Range error: " << oor.what() << std::endl;
-                        std::cerr << "particle position: (" << xPos << "," << yPos << "," << zPos << ")" << std::endl;
-                    }
-
+                    
                     // now apply boundary conditions
                     (this->*enforceWallBCs_x)(xPos,uFluct,uFluct_old,isActive, domainXstart,domainXend);
                     (this->*enforceWallBCs_y)(yPos,vFluct,vFluct_old,isActive, domainYstart,domainYend);
