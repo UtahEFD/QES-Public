@@ -7,7 +7,7 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(URBGeneralData *ugd,std::string outpu
     
     // set list of fields to save, no option available for this file
     output_fields = {"t","x_cc","y_cc","z_cc","z_face","dz_array",
-                     "u","v","w","icell",
+                     "u","v","w","icellflag",
                      "terrain","z0_u","z0_v",
                      "e","f","g","h","m","n","building_volume_frac","terrain_volume_frac",
                      "mixlength"};
