@@ -50,9 +50,9 @@ URBGeneralData :: URBGeneralData(Args* arguments) {
     input->getVariableData("z_cc",z);
     // check if dz_array is in the NetCDF file 
     NcVar NcVar_dz;
-    input->getVariable("dz", NcVar_dz);
+    input->getVariable("dz_array", NcVar_dz);
     if(!NcVar_dz.isNull()) { 
-        input->getVariableData("dz",dz_array);
+        input->getVariableData("dz_array",dz_array);
         dz = *std::min_element(dz_array.begin() , dz_array.end());
     } else {
         dz = z[1] - z[0];
@@ -61,11 +61,18 @@ URBGeneralData :: URBGeneralData(Args* arguments) {
         }
     }
     
-    z_face[0]=0.0;
-    for (size_t k=1; k<z.size(); k++) {
-        z_face[k] = z_face[k-1] + dz_array[k];  /**< Location of face centers in z-dir */
+    // check if dz_array is in the NetCDF file
+    NcVar NcVar_zface;
+    input->getVariable("z_face", NcVar_dz);
+    if(!NcVar_zface.isNull()) {
+        input->getVariableData("z_face",z_face);
+    } else {
+        z_face[0]=0.0;
+        for (size_t k=1; k<z.size(); k++) {
+            z_face[k] = z_face[k-1] + dz_array[k];  /**< Location of face centers in z-dir */
+        }
     }
-
+    
     //get time variables
     t.resize(nt);
     input->getVariableData("t",t);
