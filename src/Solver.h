@@ -40,8 +40,7 @@ protected:
     const float A; //= pow(UGD->dx/UGD-dy, 2.0);
     const float B; //= eta*pow(dx/dz, 2.0);
 
-    const float tol = 1.0e-9;     /**< Error tolerance -->>> very
-                                   * small tol for float! */
+    const double tol;     /**< Error tolerance */
     const float omega = 1.78f;   /**< Over-relaxation factor */
 
     // SOLVER-based parameters

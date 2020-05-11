@@ -52,10 +52,9 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
         /////////////////////////////////////////////////
         int iter = 0;
         float error = 1.0;
-    	  float reduced_error = 0.0;
 
         std::cout << "Solving...\n";
-        while (iter < itermax && error > tol && error > reduced_error) {
+        while (iter < itermax && error > tol) {
 
             // Save previous iteration values for error calculation
             //    uses stl vector's assignment copy function, assign
@@ -101,17 +100,12 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
                 }
             }
 
-            if (iter == 0) {
-                reduced_error = error * 1.0e-3;
-            }
-
             iter += 1;
         }
         std::cout << "Solved!\n";
 
         std::cout << "Number of iterations:" << iter << "\n";   // Print the number of iterations
         std::cout << "Error:" << error << "\n";
-        std::cout << "Reduced Error:" << reduced_error << "\n";
 
         /*ofstream outdata2;
         outdata2.open("coefficients1.dat");

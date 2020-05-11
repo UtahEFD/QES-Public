@@ -101,21 +101,25 @@ __global__ void calculateError(float *d_lambda, float *d_lambda_old, int nx, int
     int ii = blockDim.x*blockIdx.x+threadIdx.x;
     int numblocks = (d_size/BLOCKSIZE) +1;
 
-    if (ii < d_size){
-        d_value[ii] = fabs(d_lambda[ii] - d_lambda_old[ii])/((nx-1)*(ny-1)*(nz-1));
+    if (ii < d_size)
+    {
+      d_value[ii] = fabs(d_lambda[ii] - d_lambda_old[ii])/((nx-1)*(ny-1)*(nz-1));
     }
     __syncthreads();
-        float sum = 0.0;
-    if (threadIdx.x > 0){
-        return;
+    float sum = 0.0;
+    if (threadIdx.x > 0)
+    {
+      return;
     }
-    if (threadIdx.x == 0) {
-         for (int j=0; j<BLOCKSIZE; j++){
+    if (threadIdx.x == 0)
+    {
+      for (int j=0; j<BLOCKSIZE; j++)
+      {
         int index = blockIdx.x*blockDim.x+j;
         if (index<d_size){
-            sum += d_value[index];
+          sum += d_value[index];
         }
-         }
+      }
     }
 
     __syncthreads();
@@ -126,10 +130,12 @@ __global__ void calculateError(float *d_lambda, float *d_lambda_old, int nx, int
     }
 
     error = 0.0;
-    if (ii==0){
-        for (int k =0; k<numblocks; k++){
+    if (ii==0)
+    {
+      for (int k =0; k<numblocks; k++)
+      {
         error += d_bvalue[k];
-        }
+      }
     }
 
  }
@@ -224,11 +230,6 @@ __global__ void SOR_iteration (float *d_lambda, float *d_lambda_old, int nx, int
         // Error calculation
         calculateError<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda,d_lambda_old, nx, ny, nz, d_value,d_bvalue);
         cudaDeviceSynchronize();
-
-        /*if (iter == 200)
-        {
-          omega = 1.0;
-        }*/
 
         iter += 1;
 
