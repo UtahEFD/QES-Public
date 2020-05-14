@@ -17,6 +17,10 @@ SET(CUDAURB_VERSION_INFO -${cudaUrb_Toolkit_VERSION_MAJOR}.${MinVR_Toolkit_VERSI
 MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of cudaUrb.")
 MESSAGE(STATUS "If you want something different, use -DCMAKE_BUILD_TYPE=Debug, Release, RelWithDebInfo, MinSizeRel.")
 
+# Force VERBOSE Output -- used in all branches except master
+# Can be commented out in master branches.
+SET(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON" FORCE)
+  
 # 
 # Detect COMPILER
 #  This may be useful for helping us determine the level of C++
@@ -88,7 +92,6 @@ IF (${GDAL_FOUND})
 ENDIF(${GDAL_FOUND})
 
 SET(CUDA_SEPARABLE_COMPILATION ON)
-
 
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
 
