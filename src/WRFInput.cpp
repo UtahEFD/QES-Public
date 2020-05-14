@@ -324,13 +324,24 @@ WRFInput::WRFInput(const std::string& filename,
     // Acquire some global attributes from the WRF system
     std::multimap<std::string,NcGroupAtt> globalAttributes = wrfInputFile.getAtts();
     
+    std::string wrfTitle;
+    auto gblAttIter = globalAttributes.find("TITLE");
+    gblAttIter->second.getValues( wrfTitle );
+
+    std::size_t vLoc = 0, nextSpace = 0;
+    vLoc = wrfTitle.find( " V" );
+    std::string subStr1 = wrfTitle.substr(vLoc+2, wrfTitle.length()-1);
+    nextSpace = subStr1.find( " " );
+    std::string vString = subStr1.substr(0, nextSpace);
+    std::cout << "\tWRF Version: " << vString << std::endl;
+
     // Grab the Stored end of the dimension and subtract 1.
     // xDim+1 is a pointer reference to the 2nd array value.
     // Same happens for yDim below.
     int xDim[2] = {1, 0}, yDim[2] = {1, 0};
 
     // Atmospheric mesh size is stored in GRID_DIMENSION variables
-    auto gblAttIter = globalAttributes.find("WEST-EAST_GRID_DIMENSION");
+    gblAttIter = globalAttributes.find("WEST-EAST_GRID_DIMENSION");
     gblAttIter->second.getValues( xDim+1 );
     xDim[1] -= 1;
 
