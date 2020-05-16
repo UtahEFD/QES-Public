@@ -67,8 +67,8 @@ Solver::Solver(const URBInputData* UID, URBGeneralData * UGD)
       eta( pow((alpha1/alpha2), 2.0) ),
       A( pow( (UGD->dx/UGD->dy), 2.0 ) ),
       B( eta*pow( (UGD->dx/UGD->dz), 2.0) ),
-      itermax( UID->simParams->maxIterations ),
-      tol( UID->simParams->tolerance )
-{
+      itermax( UID->simParams->maxIterations )
 
+{
+  tol = UID->simParams->tolerance;
 }

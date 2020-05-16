@@ -106,6 +106,7 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
 
         std::cout << "Number of iterations:" << iter << "\n";   // Print the number of iterations
         std::cout << "Error:" << error << "\n";
+        std::cout << "tol:" << tol << "\n";
 
         /*ofstream outdata2;
         outdata2.open("coefficients1.dat");

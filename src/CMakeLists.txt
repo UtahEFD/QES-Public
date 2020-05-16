@@ -49,6 +49,10 @@ CUDA_ADD_LIBRARY( cudaurbcore
   Ray.cpp
   SphereDirections.cpp
   HitRecord.cpp
+  GlobalMemory.cu
+  GlobalMemory.h
+  SharedMemory.cu
+  SharedMemory.h
   )
 
 cuda_add_executable( unitTest

@@ -22,6 +22,8 @@
 #include "Solver.h"
 #include "CPUSolver.h"
 #include "DynamicParallelism.h"
+#include "GlobalMemory.h"
+#include "SharedMemory.h"
 
 namespace pt = boost::property_tree;
 
@@ -41,21 +43,21 @@ int main(int argc, char *argv[])
     // CUDA-Urb - Version output information
     std::string Revision = "0";
     std::cout << "cudaUrb " << "0.8.0" << std::endl;
-    
+
     // ///////////////////////////////////
     // Parse Command Line arguments
     // ///////////////////////////////////
-    
+
     // Command line arguments are processed in a uniform manner using
     // cross-platform code.  Check the URBArgs class for details on
     // how to extend the arguments.
     URBArgs arguments;
     arguments.processArguments(argc, argv);
-    
+
     // ///////////////////////////////////
     // Read and Process any Input for the system
     // ///////////////////////////////////
-    
+
     // Parse the base XML QUIC file -- contains simulation parameters
     URBInputData* UID = parseXMLTree(arguments.quicFile);
     if ( !UID ) {
@@ -63,15 +65,15 @@ int main(int argc, char *argv[])
             " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
-    
-    // Checking if 
+
+    // Checking if
     if (arguments.compTurb && !UID->localMixingParam) {
-        std::cerr << "[ERROR] Turbulence model is turned on without LocalMixingParam in QES Intput file " 
+        std::cerr << "[ERROR] Turbulence model is turned on without LocalMixingParam in QES Intput file "
                   << arguments.quicFile << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    
+
     if (arguments.terrainOut) {
         if (UID->simParams->DTE_heightField) {
             std::cout << "Creating terrain OBJ....\n";
@@ -86,7 +88,7 @@ int main(int argc, char *argv[])
 
     // Generate the general URB data from all inputs
     URBGeneralData* UGD = new URBGeneralData(UID);
-    
+
     // create URB output classes
     std::vector<QESNetCDFOutput*> outputVec;
     if (arguments.visuOutput) {
@@ -95,8 +97,8 @@ int main(int argc, char *argv[])
     if (arguments.wkspOutput) {
         outputVec.push_back(new WINDSOutputWorkspace(UGD,arguments.netCDFFileWksp));
     }
-    
-    
+
+
     // Generate the general TURB data from URB data
     // based on if the turbulence output file is defined
     TURBGeneralData* TGD = nullptr;
@@ -106,7 +108,7 @@ int main(int argc, char *argv[])
     if (arguments.compTurb && arguments.turbOutput) {
         outputVec.push_back(new TURBOutput(TGD,arguments.netCDFFileTurb));
     }
-    
+
     // //////////////////////////////////////////
     //
     // Run the CUDA-URB Solver
@@ -114,38 +116,48 @@ int main(int argc, char *argv[])
     // //////////////////////////////////////////
     Solver *solver, *solverC = nullptr;
     if (arguments.solveType == CPU_Type) {
-        std::cout << "Run CPU Solver ..." << std::endl;
+        std::cout << "Run Serial Solver (CPU) ..." << std::endl;
         solver = new CPUSolver(UID, UGD);
     } else if (arguments.solveType == DYNAMIC_P) {
-        std::cout << "Run GPU Solver ..." << std::endl;
+        std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
         solver = new DynamicParallelism(UID, UGD);
+    } else if (arguments.solveType == Global_M) {
+        std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
+        solver = new GlobalMemory(UID, UGD);
+    } else if (arguments.solveType == Shared_M) {
+        std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
+        solver = new SharedMemory(UID, UGD);
     } else {
         std::cerr << "[ERROR] invalid solve type\n";
         exit(EXIT_FAILURE);
     }
-    
+
     //check for comparison
     if (arguments.compareType) {
         if (arguments.compareType == CPU_Type)
             solverC = new CPUSolver(UID, UGD);
         else if (arguments.compareType == DYNAMIC_P)
             solverC = new DynamicParallelism(UID, UGD);
+        else if (arguments.compareType == Global_M)
+            solverC = new GlobalMemory(UID, UGD);
+        else if (arguments.compareType == Shared_M)
+            solverC = new SharedMemory(UID, UGD);
         else {
             std::cerr << "[ERROR] invalid comparison type\n";
             exit(EXIT_FAILURE);
         }
     }
-    
+
     // Run urb simulation code
     solver->solve(UID, UGD, !arguments.solveWind );
-    
+
     std::cout << "Solver done!\n";
-    
+
     if (solverC != nullptr) {
         std::cout << "Running comparson type...\n";
         solverC->solve(UID, UGD, !arguments.solveWind);
     }
-    
+
     // /////////////////////////////
     //
     // Run turbulence
@@ -154,7 +166,7 @@ int main(int argc, char *argv[])
     if(TGD != nullptr) {
         TGD->run(UGD);
     }
-    
+
     // /////////////////////////////
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
