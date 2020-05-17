@@ -25,36 +25,36 @@ class Vector3 : public ParseInterface
 protected:
 	std::vector<T> values;
 public:
-
+    
 	Vector3()
 	{
-            values.clear();
-            values.push_back( (0) );
-            values.push_back( (0) );
-            values.push_back( (0) );
+        values.clear();
+        values.push_back( (0) );
+        values.push_back( (0) );
+        values.push_back( (0) );
 	}
-
-/*	template <typename X> Vector3(const Vector3<X>& newV)
-	{
+    
+    /*	template <typename X> Vector3(const Vector3<X>& newV)
+        {
 		for (int i = 0; i < 3; i++)
-			values[i] = newV[i];
-	}
-*/
-
+        values[i] = newV[i];
+        }
+    */
+    
 	template <typename X> Vector3(const X a, const X b, const X c)
 	{
-            values.clear();
-            values.push_back(a);
-            values.push_back(b);
-            values.push_back(c);
+        values.clear();
+        values.push_back(a);
+        values.push_back(b);
+        values.push_back(c);
 	}
-
+    
 	virtual void parseValues()
 	{
 		values.clear();
 		parseTaglessValues<T>(values);
 	}
-
+    
 	/*
 	 * accesses the value at position i
 	 *
@@ -67,7 +67,7 @@ public:
         assert(i >= 0 && i < 3); 
         return values[i];
 	}
-
+    
     T& operator[](const int i)
 	{
         // do a sanity check to make sure indices are OK!
@@ -85,7 +85,9 @@ public:
 	bool operator==(const Vector3<T>& v)
 	{
 		if (std::is_same<T,float>::value || std::is_same<T,double>::value)
-			return FLOATS_ARE_EQUAL(values[0], v.values[0]) && FLOATS_ARE_EQUAL(values[1], v.values[1]) && FLOATS_ARE_EQUAL(values[2], v.values[2]);
+			return FLOATS_ARE_EQUAL(values[0], v.values[0]) && 
+                FLOATS_ARE_EQUAL(values[1], v.values[1]) && 
+                FLOATS_ARE_EQUAL(values[2], v.values[2]);
 		else
 			return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];
 	}
@@ -105,7 +107,7 @@ public:
         values[2] += v.values[2];
         return *this;
     }
-
+    
     Vector3<T>& operator-=(const Vector3<T>& v)
     {
         values[0] -= v.values[0];
@@ -113,7 +115,7 @@ public:
         values[2] -= v.values[2];
         return *this;
     }
-
+    
     Vector3<T>& operator/=(const T& a)
     {
         values[0] /= a;
@@ -121,7 +123,7 @@ public:
         values[2] /= a;
         return *this;
     }
-
+    
     Vector3<T>& operator*=(const T& a)
     {
         values[0] /= a;

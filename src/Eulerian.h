@@ -81,8 +81,11 @@ public:
     void setInterp3Dindex_cellVar(const double&, const double&, const double&);
     double interp3D_cellVar(const std::vector<float>&);
     double interp3D_cellVar(const std::vector<double>&);
+
     
     int getCellId(const double&, const double&, const double&);
+    int getCellId(Vector3<double>&);
+    Vector3<int> getCellIndex(const int&);
         
 private:
 
@@ -136,16 +139,35 @@ private:
 
 inline int Eulerian::getCellId(const double& xPos, const double& yPos, const double& zPos)
 {
-    //int i = floor((xPos - xStart + 0.5*dx)/(dx+1e-9));
-    //int j = floor((yPos - yStart + 0.5*dy)/(dy+1e-9));
-    //int k = floor((zPos - zStart + dz)/(dz+1e-9));
-    
     int i = floor((xPos - 0.0*dx)/(dx+1e-9));
     int j = floor((yPos - 0.0*dy)/(dy+1e-9));
     int k = floor((zPos + dz)/(dz+1e-9));
     
     return i + j*(nx-1) + k*(nx-1)*(ny-1); 
 }
+
+inline int Eulerian::getCellId(Vector3<double>& X)
+{
+    //int i = floor((xPos - xStart + 0.5*dx)/(dx+1e-9));
+    //int j = floor((yPos - yStart + 0.5*dy)/(dy+1e-9));
+    //int k = floor((zPos - zStart + dz)/(dz+1e-9));
+    
+    int i = floor((X[0] - 0.0*dx)/(dx+1e-9));
+    int j = floor((X[1] - 0.0*dy)/(dy+1e-9));
+    int k = floor((X[2] + dz)/(dz+1e-9));
+    
+    return i + j*(nx-1) + k*(nx-1)*(ny-1); 
+}
+
+inline Vector3<int> Eulerian::getCellIndex(const int& cellId) 
+{    
+    int k = (int)(cellId / ((nx-1)*(ny-1)));
+    int j = (int)((cellId - k*(nx-1)*(ny-1))/(nx-1));
+    int i = cellId -  j*(nx-1) - k*(nx-1)*(ny-1);
+    
+    return {i,j,k};
+}
+
 
 inline void Eulerian::setDX_1D(const TURBGeneralData* TGD, const int idx)
 {
