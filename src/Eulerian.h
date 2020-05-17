@@ -136,9 +136,13 @@ private:
 
 inline int Eulerian::getCellId(const double& xPos, const double& yPos, const double& zPos)
 {
-    int i = floor((xPos - xStart + 0.5*dx)/(dx+1e-9));
-    int j = floor((yPos - yStart + 0.5*dy)/(dy+1e-9));
-    int k = floor((zPos - zStart + dz)/(dz+1e-9));
+    //int i = floor((xPos - xStart + 0.5*dx)/(dx+1e-9));
+    //int j = floor((yPos - yStart + 0.5*dy)/(dy+1e-9));
+    //int k = floor((zPos - zStart + dz)/(dz+1e-9));
+    
+    int i = floor((xPos - 0.0*dx)/(dx+1e-9));
+    int j = floor((yPos - 0.0*dy)/(dy+1e-9));
+    int k = floor((zPos + dz)/(dz+1e-9));
     
     return i + j*(nx-1) + k*(nx-1)*(ny-1); 
 }

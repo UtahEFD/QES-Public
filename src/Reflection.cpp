@@ -7,6 +7,7 @@ bool Plume::reflection(URBGeneralData* UGD, Eulerian* eul,
 {
     
     const double eps_S = 0.0001;
+    const int maxCount = 10;
     double smallestS;
     
     int nx = UGD->nx;
@@ -56,7 +57,7 @@ bool Plume::reflection(URBGeneralData* UGD, Eulerian* eul,
     std::string bounce;
     double s1,s2,s3,s4,s5,s6;
     double s,d;
-    while( (cellFlagNew==0 || cellFlagNew==2 ) && count<1 ){ //pos.z<0.0 covers ground reflections
+    while( (cellFlagNew==0 || cellFlagNew==2 ) && count < maxCount ){ //pos.z<0.0 covers ground reflections
         
         // distance travelled by particle 
         U=Xnew-Xold;
@@ -65,19 +66,9 @@ bool Plume::reflection(URBGeneralData* UGD, Eulerian* eul,
         f1=(e1*U);f1=f1/std::abs(f1);
         f2=(e2*U);f2=f2/std::abs(f2);
         f3=(e3*U);f3=f3/std::abs(f3);
-                
-        //set the ratio of distance travel in each of the 6 directions
-        s1 = -1.0; //for x
-        s2 = -1.0; //for y
-        s3 = -1.0; //for z
-        
-        s4 = -1.0; //for +y
-        s5 = -1.0; //for -z
-        s6 = -1.0; //for +z
         
         //smallest ratio
         s=100.0;
-        l=100.0;
         validSurface=0;
         //distance travel after all
         d=0.0;
@@ -85,7 +76,6 @@ bool Plume::reflection(URBGeneralData* UGD, Eulerian* eul,
         k = (int)(cellIdOld / ((nx-1)*(ny-1)));
         j = (int)((cellIdOld - k*(nx-1)*(ny-1))/(nx-1));
         i = cellIdOld -  j*(nx-1) - k*(nx-1)*(ny-1);
-        
         
         N=-f1*e1;
         S={UGD->x[i]+f1*0.5*dx,double(UGD->y[j]),double(UGD->z[k])};
@@ -103,198 +93,78 @@ bool Plume::reflection(URBGeneralData* UGD, Eulerian* eul,
         }
         l3 = -(Xold*N - S*N)/(U*N);
         
-        if( (l1 < 1) && (l1 >= -eps_S) ){
+        if( (l1 < 1.0) && (l1 >= -eps_S) ){
             validSurface ++;
-            l=l1;
+            s=l1;
             N=-f1*e1;
         }
-        if( (l2 < 1) && (l2 >= -eps_S) ){
+        if( (l2 < 1.0) && (l2 >= -eps_S) ){
             validSurface ++;
-            l=l2;
+            s=l2;
             N=-f2*e2;
         }
-        if( (l3 < 1) && (l3 >= -eps_S) ){
+        if( (l3 < 1.0) && (l3 >= -eps_S) ){
             validSurface ++;
-            l=l3;
+            s=l3;
             N=-f3*e3;
         }
         
-        if(validSurface > 1) {
-            std::cout << "Multiple options" << std::endl;
-        } else {
-            std::cout << "single option" << std::endl;
-        }
-        
-        //std::cout << f1 << " " << f2 << " " << f3 << std::endl; 
-        //std::cout << l1 << " " << l2 << " " << l3 << std::endl; 
-        // select which surface the particle is reflecting of:
-        if((l1 < l) && (l1 >= -eps_S)){
-            l=l1;
-            bounce = 'X';
-        }
-        if((l2 < l) && (l2 >= -eps_S)){
-            l=l2;
-            bounce = 'Y';
-        }
-        if((l3 < l) && (l3 >= -eps_S)){
-            l=l3;
-            bounce = 'Z';
-        }
-        //std::cout << bounce << std::endl;
-        if( (l1 >= 1) && (l2 >= 1) && (l3 >= 1) ) {
-            std::cout << "calculation error" << std::endl; 
-        }
-            
-
-        // -x normal (ckeck cell at i-1)
-        if(UGD->icellflag.at(cellIdOld-1) == 0 || UGD->icellflag.at(cellIdOld-1) == 2) {
-            N={-1.0,0.0,0.0};    
-            S={UGD->x[i]-0.5*dx,0.0,0.0};
-            s1 = -(Xold*N - S*N)/(U*N);
-        }
-        // +x normal (check cell at i+1)
-        if(UGD->icellflag.at(cellIdOld+1) == 0 || UGD->icellflag.at(cellIdOld+1) == 2) {
-            N={1.0,0.0,0.0};    
-            S={UGD->x[i]+0.5*dx,0.0,0.0};
-            s2 = -(Xold*N - S*N)/(U*N);
-        }
-        
-        // -y normal (check cell at j-1)
-        if(UGD->icellflag.at(cellIdOld-(nx-1)) == 0 || UGD->icellflag.at(cellIdOld-(nx-1)) == 2) {
-            N={0.0,-1.0,0.0};
-            S={0.0,UGD->y[j]-0.5*dy,0.0}; 
-            s3 = -(Xold*N - S*N)/(U*N);
-        }
-        // +y normal (check cell at j+1)
-        if(UGD->icellflag.at(cellIdOld+(nx-1)) == 0 || UGD->icellflag.at(cellIdOld+(nx-1)) == 2) {
-            N={0.0,1.0,0.0};    
-            S={0.0,UGD->y[j]+0.5*dy,0.0};
-            s4 = -(Xold*N - S*N)/(U*N);
-        }
-        
-        // -z normal (check cell at k-1)
-        if(UGD->icellflag.at(cellIdOld-(nx-1)*(ny-1)) == 0 || UGD->icellflag.at(cellIdOld-(nx-1)*(ny-1)) == 2) {
-            N={0.0,0.0,-1.0};    
-            S={0.0,0.0,double(UGD->z_face[k-1])};
-            s5 = -(Xold*N - S*N)/(U*N);
-        }
-        // +z normal (check cell at k+1)
-        if(UGD->icellflag.at(cellIdOld+(nx-1)*(ny-1)) == 0 || UGD->icellflag.at(cellIdOld+(nx-1)*(ny-1)) == 2) {
-            N={0.0,0.0,1.0};    
-            S={0.0,0.0,double(UGD->z_face[k])};
-            s6 = -(Xold*N - S*N)/(U*N);
-        }
-        
-        // select which surface the particle is reflecting of:
-        if((s1 < s) && (s1 >= -eps_S)) {
-            s=s1;
-            N={-1.0,0.0,0.0}; 
-        }
-        if((s2 < s) && (s2 >= -eps_S)) {
-            s=s2;
-            N={1.0,0.0,0.0}; 
-        }
-        if((s3 < s) && (s3 >= -eps_S)) {
-            s=s3;
-            N={0.0,-1.0,0.0}; 
-        }
-        if((s4 < s) && (s4 >= -eps_S)) {
-            s=s4;
-            N={0.0,1.0,0.0}; 
-        }
-        if((s5 < s) && (s5 >= -eps_S)) {
-            s=s5;
-            N={0.0,0.0,-1.0}; 
-        }
-        if((s6 < s) && (s6 >= -eps_S)) {
-            s=s6;
-            N={0.0,0.0,1.0}; 
-        }
-        
-        
-        if (s==100) {
-            k = (int)(cellIdNew / ((nx-1)*(ny-1)));
-            j = (int)((cellIdNew - k*(nx-1)*(ny-1))/(nx-1));
-            i = cellIdNew -  j*(nx-1) - k*(nx-1)*(ny-1);
-            
-            //-x normal -> ckeck if i+1 is a building/terrain cell
-            if(UGD->icellflag.at(cellIdNew+1) != 0 && UGD->icellflag.at(cellIdNew+1) != 2) {
-                N={-1.0,0.0,0.0};    
-                S={UGD->x[i]+0.5*dx,0.0,0.0};
-                s1 = -(Xold*N - S*N)/(U*N);
-            }
-        
-            //+x normal (i-1)
-            if(UGD->icellflag.at(cellIdNew-1) != 0 && UGD->icellflag.at(cellIdNew-1) != 2) {
-                N={1.0,0.0,0.0};    
-                S={UGD->x[i]-0.5*dx,0.0,0.0};
-                s2 = -(Xold*N - S*N)/(U*N);
-            }
-        
-            //-y normal
-            if(UGD->icellflag.at(cellIdNew+(nx-1)) != 0 && UGD->icellflag.at(cellIdNew+(nx-1)) != 2) {
-                N={0.0,-1.0,0.0};
-                S={0.0,UGD->y[j]+0.5*dy,0.0}; 
-                s3 = -(Xold*N - S*N)/(U*N);
-            }
-        
-            //+y normal
-            if(UGD->icellflag.at(cellIdNew-(nx-1)) != 0 && UGD->icellflag.at(cellIdNew-(nx-1)) != 2) {
-                N={0.0,1.0,0.0};    
-                S={0.0,UGD->y[j]-0.5*dy,0.0};
-                s4 = -(Xold*N - S*N)/(U*N);
-            }
-        
-            //-z normal
-            if(UGD->icellflag.at(cellIdNew+(nx-1)*(ny-1)) !=0 && UGD->icellflag.at(cellIdNew+(nx-1)*(ny-1)) != 2) {
-                N={0.0,0.0,-1.0};    
-                S={0.0,0.0,double(UGD->z_face[k])};
-                s5 = -(Xold*N - S*N)/(U*N);
-            }
-            //+z normal
-            if(UGD->icellflag.at(cellIdNew-(nx-1)*(ny-1)) !=0 && UGD->icellflag.at(cellIdNew-(nx-1)*(ny-1)) != 2) {
-                N={0.0,0.0,1.0};
-                S={0.0,0.0,double(UGD->z_face[k-1])};
-                s6 = -(Xold*N - S*N)/(U*N);
-            }
-            
-        
-            // select which surface the particle is reflecting of:
-            if((s1 < s) && (s1 >= -eps_S)){
-                s=s1;
-                N={-1.0,0.0,0.0}; 
-            }
-            if((s2 < s) && (s2 >= -eps_S)){
-                s=s2;
-                N={1.0,0.0,0.0}; 
-            }
-            if((s3 < s) && (s3 >= -eps_S)){
-                s=s3;
-                N={0.0,-1.0,0.0}; 
-            }
-            if((s4 < s) && (s4 >= -eps_S)){
-                s=s4;
-                N={0.0,1.0,0.0}; 
-            }
-            if((s5 < s) && (s5 >= -eps_S)){
-                s=s5;
-                N={0.0,0.0,-1.0}; 
-            }
-            if((s6 < s) && (s6 >= -eps_S)){
-                s=s6;
-                N={0.0,0.0,1.0}; 
-            }
-            
-        
-        // if no valid surface -> set particle to isActive=false
-        if(l==100) {
-            std::cout << i << " " << j << " " << k << std::endl;
-            std::cout << s1 << " " << s2 << " " << s3 << " " << s4 << " " << s5 << " " << s6 << std::endl;
-            std::cout << count << " " << cellFlagNew << " " << Xnew << Xold << U << std::endl;
-            std::cout << "Reflection problem: no valid surface" << std::endl;
+        // check if more than one surface is valid
+        if(validSurface == 0) {
+            std::cout << "Reflection problem: no valid surface (test 1)" << std::endl;
             return false;
+        } else if(validSurface > 1) {
+            //std::cout << "Multiple options" << std::endl;
+                        
+            std::vector<double> vl;
+            std::vector<Vector3<double>> vN;
+            std::vector<int> vn;
+            
+            if (l1 < 1.0) {
+                vl.push_back(l1);
+                vN.push_back(-f1*e1);
+                vn.push_back(f1);
+            }
+            if (l2 < 1.0) {
+                vl.push_back(l2);
+                vN.push_back(-f2*e2);
+                vn.push_back(f2*(nx-1));
+            }
+            if (l3 < 1.0) {
+                vl.push_back(l3);
+                vN.push_back(-f3*e3);
+                vn.push_back(f3*(nx-1)*(ny-1));
+            }
+            
+            std::vector<size_t> idx(vl.size());
+            std::iota(idx.begin(), idx.end(), 0);
+            std::sort(idx.begin(), idx.end(), [&vl](size_t i1, size_t i2) {return vl[i1] < vl[i2];});
+            try {
+                if( (UGD->icellflag.at(cellIdOld+vn[idx[0]]) == 0) || 
+                    (UGD->icellflag.at(cellIdOld+vn[idx[0]]) == 2) ) {
+                    s=vl[idx[0]];
+                    N=vN[idx[0]];
+                } else if( (UGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]) == 0) || 
+                           (UGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]) == 2) ) {
+                    s=vl[idx[1]];
+                    N=vN[idx[1]];
+                } else if( (UGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]+vn[idx[2]]) == 0) || 
+                           (UGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]+vn[idx[2]]) == 2) ) {
+                    s=vl[idx[2]];
+                    N=vN[idx[2]];
+                } else {
+                    //std::cout << "Reflection problem: no valid surface (test 2)" << std::endl;
+                    return false;
+                } 
+            } catch (const std::out_of_range& oor) {            
+                //std::cout << "Reflection problem: no valid surface (catch)" << std::endl;
+                return false;
+
+            }
         }
-        
+        // no else -> only one valid surface
+            
+                
         // vector from current postition to the wall
         V1=s*U;
         // postion of relfection on the wall
@@ -325,22 +195,22 @@ bool Plume::reflection(URBGeneralData* UGD, Eulerian* eul,
             //std::cerr << "cellFlagNew: "<< cellFlagNew << std::endl;;
         } catch (const std::out_of_range& oor) {            
             std::cout << i << " " << j << " " << k << std::endl;
-            std::cout << s1 << " " << s2 << " " << s3 << " " << s4 << " " << s5 << " " << s6 << std::endl;
+            std::cout << l1 << " " << l2 << " " << l3 << " " << s << std::endl;
             std::cout << cellFlagNew << Xnew << Xold << U << std::endl;
             std::cout << "Reflection problem: particle out of range" << std::endl;
             return false;
         }
         
     }
-
+    
     if(UGD->icellflag.at(cellIdNew) == 0 || UGD->icellflag.at(cellIdNew) == 2) {
-        std::cout << "Reflection problem: need more reflection" << std::endl;
+        //std::cout << "Reflection problem: need more reflection" << std::endl;
         return false;
     }
 
     // if count run out -> set particle to isActive=false
-    if(count>=25){
-        std::cout << "Reflection problem: too many reflection" << std::endl;
+    if(count > maxCount){
+        //std::cout << "Reflection problem: too many reflection" << std::endl;
         return false;
     
     } else {

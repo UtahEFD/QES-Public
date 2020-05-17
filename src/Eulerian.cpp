@@ -14,6 +14,7 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     nz = UGD->nz;
     ny = UGD->ny;
     nx = UGD->nx;
+    
     dz = UGD->dz;
     dy = UGD->dy;
     dx = UGD->dx;
@@ -442,10 +443,14 @@ void Eulerian::setInterp3Dindex_uFace(const double& par_xPos, const double& par_
 {
 
     // set a particle position corrected by the start of the domain in each direction
-    double par_x = par_xPos - xStart + 0.5*dx;
-    double par_y = par_yPos - yStart;
-    double par_z = par_zPos - zStart + 0.5*dz;
+    //double par_x = par_xPos - xStart + 0.5*dx;
+    //double par_y = par_yPos - yStart;
+    //double par_z = par_zPos - zStart + 0.5*dz;
 
+    double par_x = par_xPos + 0.5*dx;
+    double par_y = par_yPos;
+    double par_z = par_zPos + 0.5*dz;
+    
     ii = floor(par_x/(dx+1e-9));
     jj = floor(par_y/(dy+1e-9));
     kk = floor(par_z/(dz+1e-9));
@@ -462,9 +467,13 @@ void Eulerian::setInterp3Dindex_vFace(const double& par_xPos, const double& par_
 {
 
     // set a particle position corrected by the start of the domain in each direction
-    double par_x = par_xPos - xStart;
-    double par_y = par_yPos - yStart + 0.5*dy;
-    double par_z = par_zPos - zStart + 0.5*dz;
+    //double par_x = par_xPos - xStart;
+    //double par_y = par_yPos - yStart + 0.5*dy;
+    //double par_z = par_zPos - zStart + 0.5*dz;
+
+    double par_x = par_xPos;
+    double par_y = par_yPos + 0.5*dy;
+    double par_z = par_zPos + 0.5*dz;
 
     ii = floor(par_x/(dx+1e-9));
     jj = floor(par_y/(dy+1e-9));
@@ -482,10 +491,14 @@ void Eulerian::setInterp3Dindex_wFace(const double& par_xPos, const double& par_
 {
 
     // set a particle position corrected by the start of the domain in each direction
-    double par_x = par_xPos - xStart;
-    double par_y = par_yPos - yStart;
-    double par_z = par_zPos - zStart + 0.5*dz;
+    //double par_x = par_xPos - xStart;
+    //double par_y = par_yPos - yStart;
+    //double par_z = par_zPos - zStart + 0.5*dz;
 
+    double par_x = par_xPos;
+    double par_y = par_yPos;
+    double par_z = par_zPos + 0.5*dz;
+    
     ii = floor(par_x/(dx+1e-9));
     jj = floor(par_y/(dy+1e-9));
     kk = floor(par_z/(dz+1e-9));
@@ -569,6 +582,10 @@ void Eulerian::setInterp3Dindex_cellVar(const double& par_xPos, const double& pa
     double par_x = par_xPos - xStart;
     double par_y = par_yPos - yStart;
     double par_z = par_zPos - zStart + 0.5*dx;
+    
+    //double par_x = par_xPos;
+    //double par_y = par_yPos;
+    //double par_z = par_zPos + 0.5*dz;
 
     // index of nearest node in negative direction
     // by adding a really small number to dx, it stops it from putting

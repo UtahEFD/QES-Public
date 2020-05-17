@@ -155,7 +155,7 @@ private:
     void enforceWallBCs_reflection( double& pos,double& velFluct,double& velFluct_old,bool& isActive,
                                     const double& domainStart,const double& domainEnd);
 
-    void reflection(URBGeneralData* UGD, Eulerian* eul,
+    bool reflection(URBGeneralData* UGD, Eulerian* eul,
                     double& xPos, double& yPos, double& zPos, 
                     double& disX, double& disY, double& disZ,
                     double& uFluct, double& vFluct, double& wFluct);

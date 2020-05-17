@@ -449,16 +449,19 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                         std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
                         std::cout << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
                         /*
+                        size_t cellIdx = eul->getCellId(xPos,yPos,zPos);
+                        std::cout << "icellflag = " << UGD->icellflag.at(cellIdx) << std::endl;
+                                                
                         std::cout << "\tinfo for matlab script copy:" << std::endl;
                         std::cout << "uFluct = " << uFluct << "\nvFluct = " << vFluct << "\nwFluct = " << wFluct << std::endl;
                         std::cout << "xPos = " << xPos << "\nyPos = " << yPos << "\nzPos = " << zPos << std::endl;
                         std::cout << "uFluct_old = " << uFluct_old << "\nvFluct_old = " << vFluct_old << "\nwFluct_old = " << wFluct_old << std::endl;
-                        std::cout << "txx_old = " << txx_old << "\ntxy_old = " << txy_old << "\ntxz_old = " << txz_old << std::endl;
-                        std::cout << "tyy_old = " << tyy_old << "\ntyz_old = " << tyz_old << "\ntzz_old = " << tzz_old << std::endl;
+                        //std::cout << "txx_old = " << txx_old << "\ntxy_old = " << txy_old << "\ntxz_old = " << txz_old << std::endl;
+                        //std::cout << "tyy_old = " << tyy_old << "\ntyz_old = " << tyz_old << "\ntzz_old = " << tzz_old << std::endl;
                         std::cout << "CoEps = " << CoEps << std::endl;
                         std::cout << "uMean = " << uMean << "\nvMean = " << vMean << "\nwMean = " << wMean << std::endl;
-                        std::cout << "txx_before = " << txx_before << "\ntxy_before = " << txy_before << "\ntxz_before = " << txz_before << std::endl;
-                        std::cout << "tyy_before = " << tyy_before << "\ntyz_before = " << tyz_before << "\ntzz_before = " << tzz_before << std::endl;
+                        //std::cout << "txx_before = " << txx_before << "\ntxy_before = " << txy_before << "\ntxz_before = " << txz_before << std::endl;
+                        //std::cout << "tyy_before = " << tyy_before << "\ntyz_before = " << tyz_before << "\ntzz_before = " << tzz_before << std::endl;
                         std::cout << "flux_div_x = " << flux_div_x << "\nflux_div_y = " << flux_div_y << "\nflux_div_z = " << flux_div_z << std::endl;
                         std::cout << "txx = " << txx << "\ntxy = " << txy << "\ntxz = " << txz << std::endl;
                         std::cout << "tyy = " << tyy << "\ntyz = " << tyz << "\ntzz = " << tzz << std::endl;
@@ -471,9 +474,9 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                         std::cout << "A_21 = " << A_21 << "\nA_22 = " << A_22 << "\nA_23 = " << A_23 << std::endl;
                         std::cout << "A_31 = " << A_31 << "\nA_32 = " << A_32 << "\nA_33 = " << A_33 << std::endl;
                         std::cout << "b_11 = " << b_11 << "\nb_21 = " << b_21 << "\nb_31 = " << b_31 << std::endl;
-                        std::cout << "A_11_inv = " << A_11_inv << "\nA_12_inv = " << A_12_inv << "\nA_13_inv = " << A_13_inv << std::endl;
-                        std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
-                        std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
+                        //std::cout << "A_11_inv = " << A_11_inv << "\nA_12_inv = " << A_12_inv << "\nA_13_inv = " << A_13_inv << std::endl;
+                        //std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
+                        //std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
                         std::cout << "\t finished info" << std::endl;
                         */
                         uFluct = 0.0;
@@ -483,16 +486,19 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                         std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
                         std::cout << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
                         /*
+                        size_t cellIdx = eul->getCellId(xPos,yPos,zPos);
+                        std::cout << "icellflag = " << UGD->icellflag.at(cellIdx) << std::endl;
+
                         std::cout << "\tinfo for matlab script copy:" << std::endl;
                         std::cout << "uFluct = " << uFluct << "\nvFluct = " << vFluct << "\nwFluct = " << wFluct << std::endl;
                         std::cout << "xPos = " << xPos << "\nyPos = " << yPos << "\nzPos = " << zPos << std::endl;
                         std::cout << "uFluct_old = " << uFluct_old << "\nvFluct_old = " << vFluct_old << "\nwFluct_old = " << wFluct_old << std::endl;
-                        std::cout << "txx_old = " << txx_old << "\ntxy_old = " << txy_old << "\ntxz_old = " << txz_old << std::endl;
-                        std::cout << "tyy_old = " << tyy_old << "\ntyz_old = " << tyz_old << "\ntzz_old = " << tzz_old << std::endl;
+                        //std::cout << "txx_old = " << txx_old << "\ntxy_old = " << txy_old << "\ntxz_old = " << txz_old << std::endl;
+                        //std::cout << "tyy_old = " << tyy_old << "\ntyz_old = " << tyz_old << "\ntzz_old = " << tzz_old << std::endl;
                         std::cout << "CoEps = " << CoEps << std::endl;
                         std::cout << "uMean = " << uMean << "\nvMean = " << vMean << "\nwMean = " << wMean << std::endl;
-                        std::cout << "txx_before = " << txx_before << "\ntxy_before = " << txy_before << "\ntxz_before = " << txz_before << std::endl;
-                        std::cout << "tyy_before = " << tyy_before << "\ntyz_before = " << tyz_before << "\ntzz_before = " << tzz_before << std::endl;
+                        //std::cout << "txx_before = " << txx_before << "\ntxy_before = " << txy_before << "\ntxz_before = " << txz_before << std::endl;
+                        //std::cout << "tyy_before = " << tyy_before << "\ntyz_before = " << tyz_before << "\ntzz_before = " << tzz_before << std::endl;
                         std::cout << "flux_div_x = " << flux_div_x << "\nflux_div_y = " << flux_div_y << "\nflux_div_z = " << flux_div_z << std::endl;
                         std::cout << "txx = " << txx << "\ntxy = " << txy << "\ntxz = " << txz << std::endl;
                         std::cout << "tyy = " << tyy << "\ntyz = " << tyz << "\ntzz = " << tzz << std::endl;
@@ -505,9 +511,9 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                         std::cout << "A_21 = " << A_21 << "\nA_22 = " << A_22 << "\nA_23 = " << A_23 << std::endl;
                         std::cout << "A_31 = " << A_31 << "\nA_32 = " << A_32 << "\nA_33 = " << A_33 << std::endl;
                         std::cout << "b_11 = " << b_11 << "\nb_21 = " << b_21 << "\nb_31 = " << b_31 << std::endl;
-                        std::cout << "A_11_inv = " << A_11_inv << "\nA_12_inv = " << A_12_inv << "\nA_13_inv = " << A_13_inv << std::endl;
-                        std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
-                        std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
+                        //std::cout << "A_11_inv = " << A_11_inv << "\nA_12_inv = " << A_12_inv << "\nA_13_inv = " << A_13_inv << std::endl;
+                        //std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
+                        //std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
                         std::cout << "\t finished info" << std::endl;
                         */
                         vFluct = 0.0;
@@ -517,16 +523,19 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                         std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
                         std::cout << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
                         /*
+                        size_t cellIdx = eul->getCellId(xPos,yPos,zPos);
+                        std::cout << "icellflag = " << UGD->icellflag.at(cellIdx) << std::endl;
+                                             
                         std::cout << "\tinfo for matlab script copy:" << std::endl;
                         std::cout << "uFluct = " << uFluct << "\nvFluct = " << vFluct << "\nwFluct = " << wFluct << std::endl;
                         std::cout << "xPos = " << xPos << "\nyPos = " << yPos << "\nzPos = " << zPos << std::endl;
                         std::cout << "uFluct_old = " << uFluct_old << "\nvFluct_old = " << vFluct_old << "\nwFluct_old = " << wFluct_old << std::endl;
-                        std::cout << "txx_old = " << txx_old << "\ntxy_old = " << txy_old << "\ntxz_old = " << txz_old << std::endl;
-                        std::cout << "tyy_old = " << tyy_old << "\ntyz_old = " << tyz_old << "\ntzz_old = " << tzz_old << std::endl;
+                        //std::cout << "txx_old = " << txx_old << "\ntxy_old = " << txy_old << "\ntxz_old = " << txz_old << std::endl;
+                        //std::cout << "tyy_old = " << tyy_old << "\ntyz_old = " << tyz_old << "\ntzz_old = " << tzz_old << std::endl;
                         std::cout << "CoEps = " << CoEps << std::endl;
                         std::cout << "uMean = " << uMean << "\nvMean = " << vMean << "\nwMean = " << wMean << std::endl;
-                        std::cout << "txx_before = " << txx_before << "\ntxy_before = " << txy_before << "\ntxz_before = " << txz_before << std::endl;
-                        std::cout << "tyy_before = " << tyy_before << "\ntyz_before = " << tyz_before << "\ntzz_before = " << tzz_before << std::endl;
+                        //std::cout << "txx_before = " << txx_before << "\ntxy_before = " << txy_before << "\ntxz_before = " << txz_before << std::endl;
+                        //std::cout << "tyy_before = " << tyy_before << "\ntyz_before = " << tyz_before << "\ntzz_before = " << tzz_before << std::endl;
                         std::cout << "flux_div_x = " << flux_div_x << "\nflux_div_y = " << flux_div_y << "\nflux_div_z = " << flux_div_z << std::endl;
                         std::cout << "txx = " << txx << "\ntxy = " << txy << "\ntxz = " << txz << std::endl;
                         std::cout << "tyy = " << tyy << "\ntyz = " << tyz << "\ntzz = " << tzz << std::endl;
@@ -539,9 +548,9 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                         std::cout << "A_21 = " << A_21 << "\nA_22 = " << A_22 << "\nA_23 = " << A_23 << std::endl;
                         std::cout << "A_31 = " << A_31 << "\nA_32 = " << A_32 << "\nA_33 = " << A_33 << std::endl;
                         std::cout << "b_11 = " << b_11 << "\nb_21 = " << b_21 << "\nb_31 = " << b_31 << std::endl;
-                        std::cout << "A_11_inv = " << A_11_inv << "\nA_12_inv = " << A_12_inv << "\nA_13_inv = " << A_13_inv << std::endl;
-                        std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
-                        std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
+                        //std::cout << "A_11_inv = " << A_11_inv << "\nA_12_inv = " << A_12_inv << "\nA_13_inv = " << A_13_inv << std::endl;
+                        //std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
+                        //std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
                         std::cout << "\t finished info" << std::endl;
                         */
                         wFluct = 0.0;
@@ -573,10 +582,10 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     zPos = zPos + disZ;
                     
                     size_t cellIdx = eul->getCellId(xPos,yPos,zPos);
-                    if( (UGD->icellflag.at(cellIdx) == 0 || UGD->icellflag.at(cellIdx) == 2 ) ) {
-                        reflection(UGD,eul,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
+                    if( (UGD->icellflag.at(cellIdx) == 0) || (UGD->icellflag.at(cellIdx) == 2) ) {
+                        isActive = reflection(UGD,eul,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
                     }
-                    
+                                        
                     // now apply boundary conditions
                     (this->*enforceWallBCs_x)(xPos,uFluct,uFluct_old,isActive, domainXstart,domainXend);
                     (this->*enforceWallBCs_y)(yPos,vFluct,vFluct_old,isActive, domainYstart,domainYend);
