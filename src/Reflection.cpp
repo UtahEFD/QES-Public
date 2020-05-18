@@ -57,7 +57,7 @@ bool Plume::reflection(URBGeneralData* UGD, Eulerian* eul,
 
     // postion of the particle end of trajectory 
     Xnew={xPos,yPos,zPos};
-
+    
     // cell ID of the origin and end of the particle trajectory  
     cellIdOld=eul->getCellId(Xold);
     cellIdNew=eul->getCellId(Xnew); 
@@ -68,8 +68,8 @@ bool Plume::reflection(URBGeneralData* UGD, Eulerian* eul,
     // check particle trajectory more than 1 cell in each direction
     if( (abs(cellIdxOld[0]-cellIdxNew[0]) > 1) ||
         (abs(cellIdxOld[1]-cellIdxNew[1]) > 1) ||
-        (abs(cellIdxOld[0]-cellIdxNew[0]) > 1) ) {
-        //std::cout << "particle trajectory more than 1 cell in each direction" << std::enld;
+        (abs(cellIdxOld[2]-cellIdxNew[2]) > 1) ) {
+        //std::cout << "particle trajectory more than 1 cell in each direction" << std::endl;
         return false;
     }
 
