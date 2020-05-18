@@ -77,23 +77,24 @@ public:
     // 
     // the sources can set these values, then the other values are set using urb and turb info using these values
     std::vector<Particle> pointList;
-
-
+    
+    
     // ALL Sources that will be used 
     std::vector< SourceKind* > allSources;
-
-
+    
+    
     // this is the total number of particles expected to be released during the simulation
     // !!! this has to be calculated carefully inside the getInputSources() function
     int totalParsToRelease;
-
-
+    
+    
     // some overall metadata for the set of particles
-    double isRogueCount;        // just a total number of rogue particles per time iteration
-    double isNotActiveCount;       // just a total number of inactive active particles per time iteration
+    int isRogueCount;        // just a total number of rogue particles per time iteration
+    int isNotActiveCount;       // just a total number of inactive active particles per time iteration
+    
     double vel_threshold;       // the velocity fluctuation threshold velocity used to determine if particles are rogue or no
-
-
+    
+    
     void setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vector<Particle>& newParticles);
 
         

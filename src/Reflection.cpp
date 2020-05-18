@@ -224,12 +224,12 @@ bool Plume::reflection(URBGeneralData* UGD, Eulerian* eul,
         d=V2.length();
         // reflection: normalizing V2 -> R is of norm 1
         V2=V2/V2.length();
-        R=reflect(V2,N);
+        R=V2.reflect(N);
         // update postion from surface reflection
         Xnew=P+d*R;
         
         // relfection of the Fluctuation 
-        vecFluct = reflect(vecFluct,N);
+        vecFluct=vecFluct.reflect(N);
         
         // prepare variables for next bounce: particle position
         Xold=P;

@@ -361,14 +361,14 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                     double lxx = txx;
                     double lxy = txy;
                     double lxz = txz;
-                    //double lyx = txy;
-                    double lyx = 0.0;
+                    double lyx = txy;
+                    //double lyx = 0.0;
                     double lyy = tyy;
                     double lyz = tyz;
-                    //double lzx = txz;
-                    //double lzy = tyz;
-                    double lzx = 0.0;
-                    double lzy = 0.0;
+                    double lzx = txz;
+                    double lzy = tyz;
+                    //double lzx = 0.0;
+                    //double lzy = 0.0;
                     double lzz = tzz;
                     invert3(lxx,lxy,lxz,lyx,lyy,lyz,lzx,lzy,lzz);
                     
@@ -732,8 +732,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
     } // end of loop: for(sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)
     
     
-    // get the amount of time it takes to perform the simulation time integration loop
-    // LA note: this is probably a debug output thing.
+    // DEBUG - get the amount of time it takes to perform the simulation time integration loop
     if( debug == true ) {
         std::cout << "finished time integration loop" << std::endl;
         // Print out elapsed execution time
@@ -832,7 +831,6 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
     double tzz_new = tzz + 2.0/3.0*ks;
     
     calcInvariants(txx_new,txy_new,txz_new,tyy_new,tyz_new,tzz_new,  invar_xx,invar_yy,invar_zz);
-    
     
     // now adjust the diagonals by 0.05% of the subfilter tke, which is ks, till tau is realizable
     // or if too many iterations go on, give a warning.
@@ -996,11 +994,7 @@ void Plume::setBCfunctions(std::string xBCtype,std::string yBCtype,std::string z
 void Plume::enforceWallBCs_exiting(double& pos,double& velFluct,double& velFluct_old,bool& isActive,
                                    const double& domainStart,const double& domainEnd)
 {
-    /*
-      this may change as we figure out the reflections vs depositions on buildings and terrain as well as 
-      the outer domain probably will become some kind of inherited function or a pointer function that can 
-      be chosen at initialization time for now, if it goes out of the domain, set isActive to false
-    */
+    // if it goes out of the domain, set isActive to false
     if( pos < domainStart || pos > domainEnd ) {
         isActive = false;
     }

@@ -90,8 +90,9 @@ public:
                 FLOATS_ARE_EQUAL(values[2], v.values[2]);
 		else
 			return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];
-	}
+    }
     
+    // assignment operator
     Vector3<T>& operator=(const Vector3<T>& v)
 	{
         values[0] = v.values[0];
@@ -100,6 +101,7 @@ public:
 		return *this;
 	}
     
+    // scalar addition (assignment)
     Vector3<T>& operator+=(const Vector3<T>& v)
     {
         values[0] += v.values[0];
@@ -108,6 +110,7 @@ public:
         return *this;
     }
     
+    // scalor substraction (assignment)  
     Vector3<T>& operator-=(const Vector3<T>& v)
     {
         values[0] -= v.values[0];
@@ -116,15 +119,17 @@ public:
         return *this;
     }
     
-    Vector3<T>& operator/=(const T& a)
+    // scalor multiplication (assignment)  
+    Vector3<T>& operator*=(const T& a)
     {
-        values[0] /= a;
-        values[1] /= a;
-        values[2] /= a;
+        values[0] *= a;
+        values[1] *= a;
+        values[2] *= a;
         return *this;
     }
     
-    Vector3<T>& operator*=(const T& a)
+    // scalor division (assignment)  
+    Vector3<T>& operator/=(const T& a)
     {
         values[0] /= a;
         values[1] /= a;
@@ -173,6 +178,19 @@ public:
         return Vector3<T> (values[0]/a,values[1]/a,values[2]/a);
     }
 
+    // relfection 
+    Vector3<T> reflect(const Vector3<T>& n){
+        return *this-2.0*(*this*n)*n;
+    }
+    
+    // distance with other vector where this is extemity (ie v1.distance(v2) = |v1 - v2|)
+    T distance(Vector3<double>& v2){
+        return(sqrt((values[0]-v2[0])*(values[0]-v2[0]) + 
+                    (values[1]-v2[1])*(values[1]-v2[1]) + 
+                    (values[2]-v2[2])*(values[2]-v2[2])));
+    }
+    
+    
     friend std::istream& operator>> (std::istream& is, Vector3<T>& v)
 	{
 	    is >> v.values[0] >> v.values[1] >> v.values[2];
@@ -190,4 +208,5 @@ std::ostream& operator<<(std::ostream& out, const Vector3<T>& v)
     out << v.values[2] << "]";
     return out;
 }
+
 
