@@ -1,7 +1,7 @@
 function writeNetCDFFile_turb(outputBaseName,x_cc,y_cc,z_cc,CoEps,tke,txx,txy,txz,tyy,tyz,tzz)
 
 % set the output filename
-outputFileName = sprintf('%s_turb.nc',outputBaseName);
+outputFileName = sprintf('%s_turbOut.nc',outputBaseName);
 %%%% if the file already exists, delete it
 if exist(outputFileName, 'file') == 2
     delete(outputFileName);
@@ -30,32 +30,30 @@ ncwrite(outputFileName,'z',z_cc);
 ncwriteatt(outputFileName,'z','units','m');
 ncwriteatt(outputFileName,'z','long_name','z-distance');
 
-nccreate(outputFileName,'tau_11','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
-ncwrite(outputFileName,'tau_11',txx);
-ncwriteatt(outputFileName,'tau_11','units','kg m-1 s-2');
-ncwriteatt(outputFileName,'tau_11','long_name','uu stress');
-nccreate(outputFileName,'tau_12','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
-ncwrite(outputFileName,'tau_12',txy);
-ncwriteatt(outputFileName,'tau_12','units','kg m-1 s-2');
-ncwriteatt(outputFileName,'tau_12','long_name','uv stress');
-nccreate(outputFileName,'tau_13','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
-ncwrite(outputFileName,'tau_13',txz);
-ncwriteatt(outputFileName,'tau_13','units','kg m-1 s-2');
-ncwriteatt(outputFileName,'tau_13','long_name','uw stress');
-nccreate(outputFileName,'tau_22','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
-ncwrite(outputFileName,'tau_22',tyy);
-ncwriteatt(outputFileName,'tau_22','units','kg m-1 s-2');
-ncwriteatt(outputFileName,'tau_22','long_name','vv stress');
-nccreate(outputFileName,'tau_23','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
-ncwrite(outputFileName,'tau_23',tyz);
-ncwriteatt(outputFileName,'tau_23','units','kg m-1 s-2');
-ncwriteatt(outputFileName,'tau_23','long_name','vw stress');
-nccreate(outputFileName,'tau_33','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
-ncwrite(outputFileName,'tau_33',tzz);
-ncwriteatt(outputFileName,'tau_33','units','kg m-1 s-2');
-ncwriteatt(outputFileName,'tau_33','long_name','ww stress');
-
-
+nccreate(outputFileName,'tau11','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
+ncwrite(outputFileName,'tau11',txx);
+ncwriteatt(outputFileName,'tau11','units','kg m-1 s-2');
+ncwriteatt(outputFileName,'tau11','long_name','uu stress');
+nccreate(outputFileName,'tau12','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
+ncwrite(outputFileName,'tau12',txy);
+ncwriteatt(outputFileName,'tau12','units','kg m-1 s-2');
+ncwriteatt(outputFileName,'tau12','long_name','uv stress');
+nccreate(outputFileName,'tau13','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
+ncwrite(outputFileName,'tau13',txz);
+ncwriteatt(outputFileName,'tau13','units','kg m-1 s-2');
+ncwriteatt(outputFileName,'tau13','long_name','uw stress');
+nccreate(outputFileName,'tau22','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
+ncwrite(outputFileName,'tau22',tyy);
+ncwriteatt(outputFileName,'tau22','units','kg m-1 s-2');
+ncwriteatt(outputFileName,'tau22','long_name','vv stress');
+nccreate(outputFileName,'tau23','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
+ncwrite(outputFileName,'tau23',tyz);
+ncwriteatt(outputFileName,'tau23','units','kg m-1 s-2');
+ncwriteatt(outputFileName,'tau23','long_name','vw stress');
+nccreate(outputFileName,'tau33','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
+ncwrite(outputFileName,'tau33',tzz);
+ncwriteatt(outputFileName,'tau33','units','kg m-1 s-2');
+ncwriteatt(outputFileName,'tau33','long_name','ww stress');
 
 nccreate(outputFileName,'CoEps','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
 ncwrite(outputFileName,'CoEps',CoEps);
