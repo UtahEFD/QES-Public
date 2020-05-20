@@ -143,40 +143,7 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
             CoEps = 1e-6;
         }
         //double CoEps = eul->interp3D(turb->CoEps,"Eps");
-                    
-        // this is the current reynolds stress tensor
-        /* FM -> removed unnecessary codis->py
-           double txx_before = eul->interp3D(turb->txx,"tau");
-           double txy_before = eul->interp3D(turb->txy,"tau");
-           double txz_before = eul->interp3D(turb->txz,"tau");
-           double tyy_before = eul->interp3D(turb->tyy,"tau");
-           double tyz_before = eul->interp3D(turb->tyz,"tau");
-           double tzz_before = eul->interp3D(turb->tzz,"tau");
-        */
-
-        // now need flux_div_dir, not the different dtxxdx type components
-        //double flux_div_x = eul->interp3D(eul->flux_div_x);
-        //double flux_div_y = eul->interp3D(eul->flux_div_y);
-        //double flux_div_z = eul->interp3D(eul->flux_div_z);
-                    
-                        
-        // add interpolation of derivative of stress. 
-
-        // now need to call makeRealizable on tau
-        // directly modifies the values of tau
-        // LA note: because the tau values before and after the function call are useful when particles go rogue,
-        //  I decided to store them separate using a copy for the function call
-        // note that these values are what is used to set the particle list values, they go out of scope if declared here
-        // so they are now declared outside the particle timestep iteration loop
-        /* FM -> removed unnecessary copy
-           txx = txx_before;
-           txy = txy_before;
-           txz = txz_before;
-           tyy = tyy_before;
-           tyz = tyz_before;
-           tzz = tzz_before;
-        */
-                    
+        
         // this is the current reynolds stress tensor
         txx = eul->interp3D_cellVar(TGD->txx);
         txy = eul->interp3D_cellVar(TGD->txy);
@@ -248,30 +215,7 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         double b_21 = -vFluct_old - 0.50*flux_div_y*par_dt - std::sqrt(CoEps*par_dt)*yRandn;
         double b_31 = -wFluct_old - 0.50*flux_div_z*par_dt - std::sqrt(CoEps*par_dt)*zRandn;
                     
-        /* FM -> removed unnecessary copy
-        // now prepare for the Ax=b calculation by calculating the inverted A matrix
-        // directly modifies the values of the A matrix
-        // LA note: because the A values before and after the function call are useful when particles go rogue,
-        //  I decided to store them separate using a copy for the function call
-        double A_11_inv = A_11;
-        double A_12_inv = A_12;
-        double A_13_inv = A_13;
-        double A_21_inv = A_21;
-        double A_22_inv = A_22;
-        double A_23_inv = A_23;
-        double A_31_inv = A_31;
-        double A_32_inv = A_32;
-        double A_33_inv = A_33;
-        invert3(A_11_inv,A_12_inv,A_13_inv,A_21_inv,A_22_inv,A_23_inv,A_31_inv,A_32_inv,A_33_inv);
-                    
-                    
-        // now do the Ax=b calculation using the inverted matrix
-        // directly modifies the velFluct values, which are passed in by reference as the output x vector
-        // LA note: since velFluct_old keeps track of the velFluct values before this function call,
-        //  I just used the velFluct values directly in the function call
-        matmult(A_11_inv,A_12_inv,A_13_inv,A_21_inv,A_22_inv,A_23_inv,A_31_inv,A_32_inv,A_33_inv,b_11,b_21,b_31, uFluct,vFluct,wFluct);
-        */
-                    
+        
         // A.invert()
         // vecFluct = A*b
         
@@ -289,111 +233,18 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         if( ( std::abs(uFluct) >= dis->vel_threshold || isnan(uFluct) ) && nx > 1 ) {
             std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
             std::cout << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
-            /*
-              size_t cellIdx = eul->getCellId(xPos,yPos,zPos);
-              std::cout << "icellflag = " << UGD->icellflag.at(cellIdx) << std::endl;
-                                                
-              std::cout << "\tinfo for matlab script copy:" << std::endl;
-              std::cout << "uFluct = " << uFluct << "\nvFluct = " << vFluct << "\nwFluct = " << wFluct << std::endl;
-              std::cout << "xPos = " << xPos << "\nyPos = " << yPos << "\nzPos = " << zPos << std::endl;
-              std::cout << "uFluct_old = " << uFluct_old << "\nvFluct_old = " << vFluct_old << "\nwFluct_old = " << wFluct_old << std::endl;
-              //std::cout << "txx_old = " << txx_old << "\ntxy_old = " << txy_old << "\ntxz_old = " << txz_old << std::endl;
-              //std::cout << "tyy_old = " << tyy_old << "\ntyz_old = " << tyz_old << "\ntzz_old = " << tzz_old << std::endl;
-              std::cout << "CoEps = " << CoEps << std::endl;
-              std::cout << "uMean = " << uMean << "\nvMean = " << vMean << "\nwMean = " << wMean << std::endl;
-              //std::cout << "txx_before = " << txx_before << "\ntxy_before = " << txy_before << "\ntxz_before = " << txz_before << std::endl;
-              //std::cout << "tyy_before = " << tyy_before << "\ntyz_before = " << tyz_before << "\ntzz_before = " << tzz_before << std::endl;
-              std::cout << "flux_div_x = " << flux_div_x << "\nflux_div_y = " << flux_div_y << "\nflux_div_z = " << flux_div_z << std::endl;
-              std::cout << "txx = " << txx << "\ntxy = " << txy << "\ntxz = " << txz << std::endl;
-              std::cout << "tyy = " << tyy << "\ntyz = " << tyz << "\ntzz = " << tzz << std::endl;
-              std::cout << "lxx = " << lxx << "\nlxy = " << lxy << "\nlxz = " << lxz << std::endl;
-              std::cout << "lyy = " << lyy << "\nlyz = " << lyz << "\nlzz = " << lzz << std::endl;
-              std::cout << "xRandn = " << xRandn << "\nyRandn = " << yRandn << "\nzRandn = " << zRandn << std::endl;
-              std::cout << "dtxxdt = " << dtxxdt << "\ndtxydt = " << dtxydt << "\ndtxzdt = " << dtxzdt << std::endl;
-              std::cout << "dtyydt = " << dtyydt << "\ndtyzdt = " << dtyzdt << "\ndtzzdt = " << dtzzdt << std::endl;
-              std::cout << "A_11 = " << A_11 << "\nA_12 = " << A_12 << "\nA_13 = " << A_13 << std::endl;
-              std::cout << "A_21 = " << A_21 << "\nA_22 = " << A_22 << "\nA_23 = " << A_23 << std::endl;
-              std::cout << "A_31 = " << A_31 << "\nA_32 = " << A_32 << "\nA_33 = " << A_33 << std::endl;
-              std::cout << "b_11 = " << b_11 << "\nb_21 = " << b_21 << "\nb_31 = " << b_31 << std::endl;
-              //std::cout << "A_11_inv = " << A_11_inv << "\nA_12_inv = " << A_12_inv << "\nA_13_inv = " << A_13_inv << std::endl;
-              //std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
-              //std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
-              std::cout << "\t finished info" << std::endl;
-            */
             uFluct = 0.0;
             isRogue = true;
         }
         if( ( std::abs(vFluct) >= dis->vel_threshold || isnan(vFluct) ) && ny > 1 ) {
             std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
             std::cout << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
-            /*
-              size_t cellIdx = eul->getCellId(xPos,yPos,zPos);
-              std::cout << "icellflag = " << UGD->icellflag.at(cellIdx) << std::endl;
-
-              std::cout << "\tinfo for matlab script copy:" << std::endl;
-              std::cout << "uFluct = " << uFluct << "\nvFluct = " << vFluct << "\nwFluct = " << wFluct << std::endl;
-              std::cout << "xPos = " << xPos << "\nyPos = " << yPos << "\nzPos = " << zPos << std::endl;
-              std::cout << "uFluct_old = " << uFluct_old << "\nvFluct_old = " << vFluct_old << "\nwFluct_old = " << wFluct_old << std::endl;
-              //std::cout << "txx_old = " << txx_old << "\ntxy_old = " << txy_old << "\ntxz_old = " << txz_old << std::endl;
-              //std::cout << "tyy_old = " << tyy_old << "\ntyz_old = " << tyz_old << "\ntzz_old = " << tzz_old << std::endl;
-              std::cout << "CoEps = " << CoEps << std::endl;
-              std::cout << "uMean = " << uMean << "\nvMean = " << vMean << "\nwMean = " << wMean << std::endl;
-              //std::cout << "txx_before = " << txx_before << "\ntxy_before = " << txy_before << "\ntxz_before = " << txz_before << std::endl;
-              //std::cout << "tyy_before = " << tyy_before << "\ntyz_before = " << tyz_before << "\ntzz_before = " << tzz_before << std::endl;
-              std::cout << "flux_div_x = " << flux_div_x << "\nflux_div_y = " << flux_div_y << "\nflux_div_z = " << flux_div_z << std::endl;
-              std::cout << "txx = " << txx << "\ntxy = " << txy << "\ntxz = " << txz << std::endl;
-              std::cout << "tyy = " << tyy << "\ntyz = " << tyz << "\ntzz = " << tzz << std::endl;
-              std::cout << "lxx = " << lxx << "\nlxy = " << lxy << "\nlxz = " << lxz << std::endl;
-              std::cout << "lyy = " << lyy << "\nlyz = " << lyz << "\nlzz = " << lzz << std::endl;
-              std::cout << "xRandn = " << xRandn << "\nyRandn = " << yRandn << "\nzRandn = " << zRandn << std::endl;
-              std::cout << "dtxxdt = " << dtxxdt << "\ndtxydt = " << dtxydt << "\ndtxzdt = " << dtxzdt << std::endl;
-              std::cout << "dtyydt = " << dtyydt << "\ndtyzdt = " << dtyzdt << "\ndtzzdt = " << dtzzdt << std::endl;
-              std::cout << "A_11 = " << A_11 << "\nA_12 = " << A_12 << "\nA_13 = " << A_13 << std::endl;
-              std::cout << "A_21 = " << A_21 << "\nA_22 = " << A_22 << "\nA_23 = " << A_23 << std::endl;
-              std::cout << "A_31 = " << A_31 << "\nA_32 = " << A_32 << "\nA_33 = " << A_33 << std::endl;
-              std::cout << "b_11 = " << b_11 << "\nb_21 = " << b_21 << "\nb_31 = " << b_31 << std::endl;
-              //std::cout << "A_11_inv = " << A_11_inv << "\nA_12_inv = " << A_12_inv << "\nA_13_inv = " << A_13_inv << std::endl;
-              //std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
-              //std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
-              std::cout << "\t finished info" << std::endl;
-            */
             vFluct = 0.0;
             isRogue = true;
         }
         if( ( std::abs(wFluct) >= dis->vel_threshold || isnan(wFluct) ) && nz > 1 ) {
             std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
             std::cout << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
-            /*
-              size_t cellIdx = eul->getCellId(xPos,yPos,zPos);
-              std::cout << "icellflag = " << UGD->icellflag.at(cellIdx) << std::endl;
-                                             
-              std::cout << "\tinfo for matlab script copy:" << std::endl;
-              std::cout << "uFluct = " << uFluct << "\nvFluct = " << vFluct << "\nwFluct = " << wFluct << std::endl;
-              std::cout << "xPos = " << xPos << "\nyPos = " << yPos << "\nzPos = " << zPos << std::endl;
-              std::cout << "uFluct_old = " << uFluct_old << "\nvFluct_old = " << vFluct_old << "\nwFluct_old = " << wFluct_old << std::endl;
-              //std::cout << "txx_old = " << txx_old << "\ntxy_old = " << txy_old << "\ntxz_old = " << txz_old << std::endl;
-              //std::cout << "tyy_old = " << tyy_old << "\ntyz_old = " << tyz_old << "\ntzz_old = " << tzz_old << std::endl;
-              std::cout << "CoEps = " << CoEps << std::endl;
-              std::cout << "uMean = " << uMean << "\nvMean = " << vMean << "\nwMean = " << wMean << std::endl;
-              //std::cout << "txx_before = " << txx_before << "\ntxy_before = " << txy_before << "\ntxz_before = " << txz_before << std::endl;
-              //std::cout << "tyy_before = " << tyy_before << "\ntyz_before = " << tyz_before << "\ntzz_before = " << tzz_before << std::endl;
-              std::cout << "flux_div_x = " << flux_div_x << "\nflux_div_y = " << flux_div_y << "\nflux_div_z = " << flux_div_z << std::endl;
-              std::cout << "txx = " << txx << "\ntxy = " << txy << "\ntxz = " << txz << std::endl;
-              std::cout << "tyy = " << tyy << "\ntyz = " << tyz << "\ntzz = " << tzz << std::endl;
-              std::cout << "lxx = " << lxx << "\nlxy = " << lxy << "\nlxz = " << lxz << std::endl;
-              std::cout << "lyy = " << lyy << "\nlyz = " << lyz << "\nlzz = " << lzz << std::endl;
-              std::cout << "xRandn = " << xRandn << "\nyRandn = " << yRandn << "\nzRandn = " << zRandn << std::endl;
-              std::cout << "dtxxdt = " << dtxxdt << "\ndtxydt = " << dtxydt << "\ndtxzdt = " << dtxzdt << std::endl;
-              std::cout << "dtyydt = " << dtyydt << "\ndtyzdt = " << dtyzdt << "\ndtzzdt = " << dtzzdt << std::endl;
-              std::cout << "A_11 = " << A_11 << "\nA_12 = " << A_12 << "\nA_13 = " << A_13 << std::endl;
-              std::cout << "A_21 = " << A_21 << "\nA_22 = " << A_22 << "\nA_23 = " << A_23 << std::endl;
-              std::cout << "A_31 = " << A_31 << "\nA_32 = " << A_32 << "\nA_33 = " << A_33 << std::endl;
-              std::cout << "b_11 = " << b_11 << "\nb_21 = " << b_21 << "\nb_31 = " << b_31 << std::endl;
-              //std::cout << "A_11_inv = " << A_11_inv << "\nA_12_inv = " << A_12_inv << "\nA_13_inv = " << A_13_inv << std::endl;
-              //std::cout << "A_21_inv = " << A_21_inv << "\nA_22_inv = " << A_22_inv << "\nA_23_inv = " << A_23_inv << std::endl;
-              //std::cout << "A_31_inv = " << A_31_inv << "\nA_32_inv = " << A_32_inv << "\nA_33_inv = " << A_33_inv << std::endl;
-              std::cout << "\t finished info" << std::endl;
-            */
             wFluct = 0.0;
             isRogue = true;
         }
@@ -421,7 +272,7 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         xPos = xPos + disX;
         yPos = yPos + disY;
         zPos = zPos + disZ;
-                    
+        
         size_t cellIdx = eul->getCellId(xPos,yPos,zPos);
         if( (UGD->icellflag.at(cellIdx) == 0) || (UGD->icellflag.at(cellIdx) == 2) ) {
             isActive = reflection(UGD,eul,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);

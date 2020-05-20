@@ -69,48 +69,17 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
-
-// leave this as 0 if you are using input urb and turb files from current urb and turb
-// set this to 1 if you are using input urb and turb files from past urb and turb
-// LA future work: the Bailey test cases are currently using past urb and turb file formats. Work needs done to 
-//  update their format to the current urb and turb formats, then we can just use one input constructor.
-//  I'm waiting to do this because I want to figure out why there are still rogue trajectories for the LES case before I complicate
-//  things by varying the file formats. Changing formats for the Bailey test cases would require a grid shift, 
-//  meaning careful placement and choice for an extra value in each dimension.
-#define USE_PREVIOUSCODE 0
-
-
-#if USE_PREVIOUSCODE
-
-    // Create instance of cudaUrb input class
-    //Input* inputUrb = new Input(arguments.inputUrbFile);
     
-    // Create instance of cudaTurb input class
-    //Input* inputTurb = new Input(arguments.inputTurbFile);
-
-#else
-
-    // Create instance of cudaUrb input class
-    //NetCDFInput* inputUrb = new NetCDFInput(arguments.inputUrbFile);
-
-    // Create instance of cudaTurb input class
-    //NetCDFInput* inputTurb = new NetCDFInput(arguments.inputTurbFile);
-
-#endif
-
-    
-    // test here:
+    // Create instance of QES-winds General data class
     URBGeneralData* UGD = new URBGeneralData(&arguments);
+    //load data at t=0;
     UGD->loadNetCDFData(0);
+    
+    // Create instance of QES-Turb General data class
     TURBGeneralData* TGD = new TURBGeneralData(&arguments,UGD);
+    //load data at t=0;
     TGD->loadNetCDFData(0);
 
-    // Create instance of cudaUrb class
-    //Urb* urb = new Urb(inputUrb, arguments.debug);
-    
-    // Create instance of cudaTurb class
-    //Turb* turb = new Turb(inputTurb, arguments.debug);
-    
     // Create instance of Eulerian class
     Eulerian* eul = new Eulerian(PID,UGD,TGD, arguments.debug);
     
