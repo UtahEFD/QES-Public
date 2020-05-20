@@ -14,6 +14,8 @@
 #include <cstring>
 
 #include "util/calcTime.h"
+#include "Vector3.h"
+#include "Matrix3.h"
 
 #include "QESNetCDFOutput.h"
 #include "PlumeOutputLagrToEul.h"
@@ -28,7 +30,7 @@
 
 #include "Eulerian.h"
 #include "Dispersion.h"
-#include "Vector3.h"
+
 
 // LA do we need these here???
 using namespace netCDF;
@@ -57,7 +59,6 @@ public:
     //  that is used to do an additional time remainder time integration loop for each particle, forcing particles to only
     //  move one cell at a time.
     void run(URBGeneralData*,TURBGeneralData*,Eulerian*,Dispersion*,std::vector<QESNetCDFOutput*> );
-
 
 private:
 
@@ -110,6 +111,7 @@ private:
     std::string caseBaseName;
     bool debug;
 
+    void advectParticle(int&, int&, URBGeneralData*, TURBGeneralData*, Eulerian*, Dispersion*);
 
     // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,
     // and the grid size. Forces particles to always move only at one timestep at at time.
