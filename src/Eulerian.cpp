@@ -26,7 +26,7 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     jStart=1;jEnd=ny-2;
     // in z-direction (ghost cell at bottom and halo cell at top)
     kStart=1;kEnd=nz-2;
-        
+    
     // get the TGD domain start and end values, other TGD grid information
     // in x-direction
     xStart = UGD->x[iStart];
@@ -653,7 +653,7 @@ double Eulerian::interp3D_cellVar(const std::vector<float>& EulerData)
             for(int iii = 0; iii <= ip; iii++) {
                 // set the actual indices to use for the linearized Euler data
                 int idx = (kk+kkk)*(ny-1)*(nx-1) + (jj+jjj)*(nx-1) + (ii+iii);
-                cube[iii][jjj][kkk] = EulerData.at(idx);
+                cube[iii][jjj][kkk] = EulerData[idx];
             }
         }
     }

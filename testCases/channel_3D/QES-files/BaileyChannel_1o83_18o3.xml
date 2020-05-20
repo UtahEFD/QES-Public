@@ -1,7 +1,7 @@
 <simulationParameters>
 	<simDur> 18.3 </simDur>
 	<timeStep> 1.83 </timeStep>
-    <CourantNumber> 0.0 </CourantNumber>
+    <CourantNumber> 0.5 </CourantNumber>
   	<invarianceTol> 1e-10 </invarianceTol>
 	<C_0> 1.0 </C_0>
 	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
