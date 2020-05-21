@@ -167,7 +167,11 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
             // first check to see if the particle should even be advected and skip it if it should not be advected
             if( dis->pointList[parIdx].isActive == true ) {
                 
-                
+                // call to the main particle adection function (in separate file: AdvectParticle.cpp)
+                /*
+                  this function is advencing the particle
+                  -> status is returned is dis->pointList[parIdx].isRogue and dis->pointList[parIdx].isActive 
+                 */
                 advectParticle(sim_tIdx, parIdx, UGD, TGD, eul, dis);
                 
                 // now update the isRogueCount and isNotActiveCount
@@ -177,8 +181,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                 if(dis->pointList[parIdx].isActive == false) {
                     isNotActiveCount = isNotActiveCount + 1;
                 }
-                
-                
+                                
                 // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
                 if( debug == true ) {
                     if(  ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) 
@@ -188,17 +191,13 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
                         timers.printStoredTime("particle iteration");
                     }
                 }
-                
             }   // if isActive == true and isRogue == false
-            
-            
         } // for(int parIdx = 0; parIdx < dis->nParsReleased; parIdx++ )
         
         // set the isRogueCount and isNotActiveCount for the time iteration in the disperion data
         // !!! this needs set for the output to work properly
         dis->isRogueCount = isRogueCount;
         dis->isNotActiveCount = isNotActiveCount;
-        
         
         // netcdf output for a given simulation timestep
         // note that the first time is already output, so this is the time the loop iteration 
@@ -233,7 +232,6 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
         
     } // end of loop: for(sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)
     
-    
     // DEBUG - get the amount of time it takes to perform the simulation time integration loop
     if( debug == true ) {
         std::cout << "finished time integration loop" << std::endl;
@@ -241,12 +239,12 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
         timers.printStoredTime("simulation time integration loop");
     }
     
-    
     // only outputs if the required booleans from input args are set
     // LA note: the current time put in here is one past when the simulation time loop ends
     //  this is because the loop always calculates info for one time ahead of the loop time.
     writeSimInfoFile(dis,simTimes.at(nSimTimes-1));
     
+    return;
 }
 
 
