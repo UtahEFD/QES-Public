@@ -19,8 +19,12 @@ for k=1:numel(testcases)
     f=testcases{k};
     subplot(1,3,k)
     histogram(particleInfo.(f).data.zPos(:,end),25,'Normalization','pdf','Orientation','horizontal')
+    hold all
+    plot([1 1],[0 1],'k--')
     ylabel('$z/\delta$')
     xlabel('p.d.f.')
+    xlim([0 1.5])
+    ylim([0 1])
 end
 
 figure()
@@ -29,5 +33,5 @@ for k=1:numel(testcases)
     subplot(1,3,k)
     plot(squeeze(mean(mean(Concentration.(f).data.conc(:,:,:,end),1),2)),Concentration.(f).data.z)
     ylabel('$z/\delta$')
-    xlabel('#part/vol')
+    xlabel('\#part/vol')
 end
