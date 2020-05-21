@@ -506,9 +506,9 @@ double Eulerian::interp3D_faceVar(const std::vector<float>& EulerData)
     double cube[2][2][2] = {0.0};
 
     // now set the cube values
-    for(int kkk = 0; kkk <= kp; kkk++) {
-        for(int jjj = 0; jjj <= jp; jjj++) {
-            for(int iii = 0; iii <= ip; iii++) {
+    for(int kkk = 0; kkk <= 1; kkk++) {
+        for(int jjj = 0; jjj <= 1; jjj++) {
+            for(int iii = 0; iii <= 1; iii++) {
                 // set the actual indices to use for the linearized Euler data
                 int idx = (kk+kkk)*(ny*nx) + (jj+jjj)*(nx) + (ii+iii);
                 cube[iii][jjj][kkk] = EulerData[idx];
@@ -531,9 +531,9 @@ double Eulerian::interp3D_faceVar(const std::vector<double>& EulerData)
     double cube[2][2][2] = {0.0};
 
     // now set the cube values
-    for(int kkk = 0; kkk <= kp; kkk++) {
-        for(int jjj = 0; jjj <= jp; jjj++) {
-            for(int iii = 0; iii <= ip; iii++) {
+    for(int kkk = 0; kkk <= 1; kkk++) {
+        for(int jjj = 0; jjj <= 1; jjj++) {
+            for(int iii = 0; iii <= 1; iii++) {
                 // set the actual indices to use for the linearized Euler data
                 int idx = (kk+kkk)*(ny*nx) + (jj+jjj)*(nx) + (ii+iii);
                 cube[iii][jjj][kkk] = EulerData[idx];
@@ -590,32 +590,12 @@ void Eulerian::setInterp3Dindex_cellVar(const double& par_xPos, const double& pa
     jw = (par_y/dy) - floor(par_y/dy);
     kw = (par_z/dz) - floor(par_z/dz);
 
-    // initialize the counters from the indices
-    ip = 1;
-    jp = 1;
-    kp = 1;
-
-    // now set the indices and the counters from the indices
-    if( nx == 1 ) {
-        ii = 0;
-        iw = 0.0;
-        ip = 0;
-    }
-    if( ny == 1 ) {
-        jj = 0;
-        jw = 0.0;
-        jp = 0;
-    }
-    if( nz == 1 ) {
-        kk = 0;
-        kw = 0.0;
-        kp = 0;
-    }
-
+    /* FM -> OBSOLETE (this is insure at the boundary condition level)
     // now check to make sure that the indices are within the Eulerian grid domain
     // Notice that this no longer includes throwing an error if particles touch the far walls
     // because adding a small number to dx in the index calculation forces the index to be completely left side biased
-    if( ii < 0 || ii+ip > nx-1 ) {
+
+      if( ii < 0 || ii+ip > nx-1 ) {
         std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle x position is out of range! x = \"" << par_xPos 
             << "\" ii+ip = \"" << ii << "\"+\"" << ip << "\",   nx-1 = \"" << nx-1 << "\"" << std::endl;
         exit(1);
@@ -630,7 +610,7 @@ void Eulerian::setInterp3Dindex_cellVar(const double& par_xPos, const double& pa
             << "\" kk+kp = \"" << kk << "\"+\"" << kp << "\",   nz-1 = \"" << nz-1 << "\"" << std::endl;
         exit(1);
     }
-
+    */
 }
 
 
@@ -648,9 +628,9 @@ double Eulerian::interp3D_cellVar(const std::vector<float>& EulerData)
     double cube[2][2][2] = {0.0};
 
     // now set the cube values
-    for(int kkk = 0; kkk <= kp; kkk++) {
-        for(int jjj = 0; jjj <= jp; jjj++) {
-            for(int iii = 0; iii <= ip; iii++) {
+    for(int kkk = 0; kkk <= 1; kkk++) {
+        for(int jjj = 0; jjj <= 1; jjj++) {
+            for(int iii = 0; iii <= 1; iii++) {
                 // set the actual indices to use for the linearized Euler data
                 int idx = (kk+kkk)*(ny-1)*(nx-1) + (jj+jjj)*(nx-1) + (ii+iii);
                 cube[iii][jjj][kkk] = EulerData[idx];
@@ -681,9 +661,9 @@ double Eulerian::interp3D_cellVar(const std::vector<double>& EulerData)
     double cube[2][2][2] = {0.0};
 
     // now set the cube values
-    for(int kkk = 0; kkk <= kp; kkk++) {
-        for(int jjj = 0; jjj <= jp; jjj++) {
-            for(int iii = 0; iii <= ip; iii++) {
+    for(int kkk = 0; kkk <= 1; kkk++) {
+        for(int jjj = 0; jjj <= 1; jjj++) {
+            for(int iii = 0; iii <= 1; iii++) {
                 // set the actual indices to use for the linearized Euler data
                 int idx = (kk+kkk)*(ny-1)*(nx-1) + (jj+jjj)*(nx-1) + (ii+iii);
                 cube[iii][jjj][kkk] = EulerData[idx];

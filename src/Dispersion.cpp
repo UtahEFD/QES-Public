@@ -206,9 +206,6 @@ void Dispersion::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vecto
         newParticles.at(parIdx).yPos = newParticles.at(parIdx).yPos_init;
         newParticles.at(parIdx).zPos = newParticles.at(parIdx).zPos_init;
 
-        // almost didn't see it, but it does use different random numbers for each direction
-        double rann = random::norRan();
-
         // get the sigma values from the Eulerian grid for the particle value
         double current_sig_x = eul->interp3D_cellVar(eul->sig_x);
         if( current_sig_x == 0.0 )
@@ -222,6 +219,7 @@ void Dispersion::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vecto
         
         // now set the initial velocity fluctuations for the particle
         // The  sqrt of the variance is to match Bailey's code
+        double rann = random::norRan();        // use different random numbers for each direction
         newParticles.at(parIdx).uFluct = std::sqrt(current_sig_x) * rann;
         rann=random::norRan();      // should be randn() matlab equivalent, which is a normally distributed random number
         newParticles.at(parIdx).vFluct = std::sqrt(current_sig_y) * rann;

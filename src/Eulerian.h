@@ -96,9 +96,6 @@ private:
     double iw;     // this is the normalized distance to the nearest cell index to the left in the x direction
     double jw;     // this is the normalized distance to the nearest cell index to the left in the y direction
     double kw;     // this is the normalized distance to the nearest cell index to the left in the z direction
-    int ip;  // this is the counter to the next cell in the x dir, is set to zero to cause calculations to work but not reference outside of arrays if nx = 1
-    int jp;  // this is the counter to the next cell in the y dir, is set to zero to cause calculations to work but not reference outside of arrays if ny = 1
-    int kp;  // this is the counter to the next cell in the z dir, is set to zero to cause calculations to work but not reference outside of arrays if nz = 1
 
     // index of domain bounds
     int iStart,iEnd;
