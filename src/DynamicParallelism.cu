@@ -430,6 +430,7 @@ void DynamicParallelism::solve(const URBInputData* UID, URBGeneralData* UGD, boo
         outdata2.close();*/
 
     cudaFree (d_lambda);
+    cudaFree (d_lambda_old);
     cudaFree (d_e);
     cudaFree (d_f);
     cudaFree (d_g);

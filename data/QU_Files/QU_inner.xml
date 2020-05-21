@@ -7,7 +7,7 @@
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 
-  	<domain>1000 580 250</domain>					<!-- Number of cells in x,y and z directions-->
+  	<domain>600 500 250</domain>					<!-- Number of cells in x,y and z directions-->
   	<cellSize> 2.0 2.0 2.0 </cellSize> 				<!-- Mesh resolution (meters)-->
 	<verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
@@ -18,8 +18,8 @@
 	<streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
 	<wakeFlag> 2 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled) -->
 	<sidewallFlag> 1 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
-	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
-	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria (default = 1e-9) -->
+	<maxIterations> 5000 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
+	<tolerance> 1.61E-05 </tolerance> 				<!-- Convergence criteria, error threshold (default = 1e-9) -->
 	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (origional QUIC) (default), 1-Cut-cell method -->
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
 	<UTMx> 0 </UTMx> 						<!-- x component (m) in UTM -->

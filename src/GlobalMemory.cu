@@ -38,14 +38,13 @@ __global__ void divergenceGlobal(float *d_u0, float *d_v0, float *d_w0, float *d
     int icell_face = i + j*nx + k*nx*ny;
 
     // Would be nice to figure out how to not have this branch check...
-    if( (i<nx-1) && (j<ny-1) && (k<nz-2) && (i>=0) && (j>=0) && (k>0) )
+    if( (i<nx-1) && (j<ny-1) && (k<nz-1) && (i>=0) && (j>=0) && (k>0) )
     {
 
         // Divergence equation
-        d_R[icell_cent] = (-2*pow(alpha1, 2.0))*((( d_e[icell_cent] * d_u0[icell_face+1]       - d_f[icell_cent] * d_u0[icell_face]) * dx ) +
-                                               (( d_g[icell_cent] * d_v0[icell_face + nx]    - d_h[icell_cent] * d_v0[icell_face]) * dy ) +
-                                               ( d_m[icell_cent] * d_dz_array[k]*0.5*(d_dz_array[k]+d_dz_array[k+1]) * d_w0[icell_face + nx*ny]
-                                                - d_n[icell_cent] * d_w0[icell_face] * d_dz_array[k]*0.5*(d_dz_array[k]+d_dz_array[k-1]) ));
+        d_R[icell_cent] = (-2*pow(alpha1, 2.0))*(((  d_u0[icell_face+1]     -  d_u0[icell_face]) / dx ) +
+                                               ((  d_v0[icell_face + nx]    -  d_v0[icell_face]) / dy ) +
+                                               ((  d_w0[icell_face + nx*ny]  -  d_w0[icell_face]) / d_dz_array[k]));
 
     }
 }
@@ -62,7 +61,8 @@ __global__ void SOR_RB_Global(float *d_lambda, int nx, int ny, int nz, float ome
     int j = (icell_cent - k*(nx-1)*(ny-1))/(nx-1);
     int i = icell_cent - k*(nx-1)*(ny-1) - j*(nx-1);
 
-    if ( (i > 0) && (i < nx-2) && (j > 0) && (j < ny-2) && (k < nz-2) && (k > 0) && ((i+j+k)%2) == offset ){
+    if ( (i > 0) && (i < nx-2) && (j > 0) && (j < ny-2) && (k < nz-2) && (k > 0) && ((i+j+k)%2) == offset )
+    {
 
         d_lambda[icell_cent] = (omega / ( d_e[icell_cent] + d_f[icell_cent] + d_g[icell_cent] +
                                           d_h[icell_cent] + d_m[icell_cent] + d_n[icell_cent])) *
@@ -96,7 +96,7 @@ __global__ void finalVelocityGlobal(float *d_u0, float *d_v0, float *d_w0, float
     }
 
 
-    if ((i > 0) && (i < nx-1) && (j > 0) && (j < ny-1) && (k < nz-1) && (k > 0)) {
+    if ((i > 0) && (i < nx-1) && (j > 0) && (j < ny-1) && (k < nz-2) && (k > 0)) {
 
         d_u[icell_face] = d_u0[icell_face]+(1/(2*pow(alpha1, 2.0)))*d_f[icell_cent]*dx*
 						 (d_lambda[icell_cent]-d_lambda[icell_cent-1]);
@@ -174,6 +174,7 @@ void GlobalMemory::solve(const URBInputData* UID, URBGeneralData* UGD, bool solv
                               UGD->nx, UGD->ny, UGD->nz, UGD->dx, UGD->dy, d_dz_array);
 
     cudaMemcpy(d_lambda , lambda.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(R.data() , d_R, UGD->numcell_cent * sizeof(float) , cudaMemcpyDeviceToHost);
 
 
     /////////////////////////////////////////////////
@@ -181,7 +182,7 @@ void GlobalMemory::solve(const URBInputData* UID, URBGeneralData* UGD, bool solv
     /////////////////////////////////////////////////
 
     int iter = 0;
-    double error = 1.0;
+    float error = 1.0;
 
     // Main solver loop
     while ( (iter < itermax) && (error > tol))
@@ -194,6 +195,10 @@ void GlobalMemory::solve(const URBInputData* UID, URBGeneralData* UGD, bool solv
           for (int i = 0; i < UGD->nx-1; i++)
           {
             int ii = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   // Lineralize the vectors (make it 1D)
+            /*if (i == 45 && j == 47 )
+            {
+              std::cout << std::fixed << "R:" << std::setprecision(10) << R[ii] << "\n";
+            }*/
             lambda_old[ii] = lambda[ii];
           }
         }
@@ -257,9 +262,6 @@ void GlobalMemory::solve(const URBInputData* UID, URBGeneralData* UGD, bool solv
     cudaMemcpy(UGD->u.data(),d_u,UGD->numcell_face*sizeof(float),cudaMemcpyDeviceToHost);
     cudaMemcpy(UGD->v.data(),d_v,UGD->numcell_face*sizeof(float),cudaMemcpyDeviceToHost);
     cudaMemcpy(UGD->w.data(),d_w,UGD->numcell_face*sizeof(float),cudaMemcpyDeviceToHost);
-
-
-
 
 
     cudaFree (d_lambda);

@@ -38,14 +38,13 @@ __global__ void divergenceShared(float *d_u0, float *d_v0, float *d_w0, float *d
     int icell_face = i + j*nx + k*nx*ny;
 
     // Would be nice to figure out how to not have this branch check...
-    if( (i<nx-1) && (j<ny-1) && (k<nz-2) && (i>=0) && (j>=0) && (k>0) )
+    if( (i<nx-1) && (j<ny-1) && (k<nz-1) && (i>=0) && (j>=0) && (k>0) )
     {
 
         // Divergence equation
-        d_R[icell_cent] = (-2*pow(alpha1, 2.0))*((( d_e[icell_cent] * d_u0[icell_face+1]       - d_f[icell_cent] * d_u0[icell_face]) * dx ) +
-                                               (( d_g[icell_cent] * d_v0[icell_face + nx]    - d_h[icell_cent] * d_v0[icell_face]) * dy ) +
-                                               ( d_m[icell_cent] * d_dz_array[k]*0.5*(d_dz_array[k]+d_dz_array[k+1]) * d_w0[icell_face + nx*ny]
-                                                - d_n[icell_cent] * d_w0[icell_face] * d_dz_array[k]*0.5*(d_dz_array[k]+d_dz_array[k-1]) ));
+        d_R[icell_cent] = (-2*pow(alpha1, 2.0))*(((  d_u0[icell_face+1]     -  d_u0[icell_face]) / dx ) +
+                                               ((  d_v0[icell_face + nx]    -  d_v0[icell_face]) / dy ) +
+                                               ((  d_w0[icell_face + nx*ny]  -  d_w0[icell_face]) / d_dz_array[k]));
 
     }
 }
@@ -58,19 +57,12 @@ __global__ void SOR_RB_Shared(float *d_lambda, int nx, int ny, int nz, float ome
 						float *d_f, float *d_g, float *d_h, float *d_m, float *d_n, float *d_R, int offset)
 {
 
+
   __shared__ float lambda_cn[BLOCKSIZE+2];
   __shared__ float lambda_ri[BLOCKSIZE];
   __shared__ float lambda_li[BLOCKSIZE];
   __shared__ float lambda_di[BLOCKSIZE];
   __shared__ float lambda_ui[BLOCKSIZE];
-
-
-  __shared__ float e[BLOCKSIZE];
-  __shared__ float f[BLOCKSIZE];
-  __shared__ float g[BLOCKSIZE];
-  __shared__ float h[BLOCKSIZE];
-  __shared__ float m[BLOCKSIZE];
-  __shared__ float n[BLOCKSIZE];
 
 
   int tidx = threadIdx.x;
@@ -84,27 +76,56 @@ __global__ void SOR_RB_Shared(float *d_lambda, int nx, int ny, int nz, float ome
   int di = icell_cent - (nx-1)*(ny-1);           // k-1 index (di)
   int ui = icell_cent + (nx-1)*(ny-1);          // k+1 index (ui)
 
-  if ( (i > 0) && (i < nx-2) && (j > 0) && (j < ny-2) && (k < nz-2) && (k > 0) )
+  lambda_ri[tidx] = 0.0;
+  lambda_li[tidx] = 0.0;
+  lambda_di[tidx] = 0.0;
+  lambda_ui[tidx] = 0.0;
+  lambda_cn[tidx+1] = 0.0;
+
+  if (tidx == 0)
   {
-    if (tidx == 0)
+    if (i > 0)
     {
       lambda_cn[0] = d_lambda[icell_cent-1];
+    }
+    else
+    {
+      lambda_cn[0] = 0.0;
+    }
+    if (blockDim.x*(blockIdx.x+1) < (nx-1)*(ny-1)*(nz-1))
+    {
       lambda_cn[blockDim.x+1] = d_lambda[blockDim.x*(blockIdx.x+1)];
     }
-    // Load data to the shared memory
-    lambda_cn[tidx+1] = d_lambda[icell_cent];
+    else
+    {
+      lambda_cn[blockDim.x+1] = 0.0;
+    }
 
+  }
+  // Load data to the shared memory
+  if (j > 0)
+  {
     lambda_ri[tidx] = d_lambda[ri];
-    lambda_li[tidx] = d_lambda[li];
-    lambda_di[tidx] = d_lambda[di];
-    lambda_ui[tidx] = d_lambda[ui];
+  }
 
-    e[tidx] = d_e[icell_cent];
-    f[tidx] = d_f[icell_cent];
-    g[tidx] = d_g[icell_cent];
-    h[tidx] = d_h[icell_cent];
-    m[tidx] = d_m[icell_cent];
-    n[tidx] = d_n[icell_cent];
+  if (j < ny-2)
+  {
+    lambda_li[tidx] = d_lambda[li];
+  }
+
+  if (k > 0)
+  {
+    lambda_di[tidx] = d_lambda[di];
+  }
+
+  if (k < nz-2)
+  {
+    lambda_ui[tidx] = d_lambda[ui];
+  }
+
+  if (icell_cent < (nx-1)*(ny-1)*(nz-1))
+  {
+    lambda_cn[tidx+1] = d_lambda[icell_cent];
   }
 
 
@@ -113,10 +134,11 @@ __global__ void SOR_RB_Shared(float *d_lambda, int nx, int ny, int nz, float ome
   if ( (i > 0) && (i < nx-2) && (j > 0) && (j < ny-2) && (k < nz-2) && (k > 0) && ((i+j+k)%2) == offset )
   {
 
-    lambda_cn[tidx+1] = (omega / ( e[tidx] + f[tidx] + g[tidx] + h[tidx] + m[tidx] + n[tidx])) *
-            ( e[tidx] * lambda_cn[tidx+2]     + f[tidx] * lambda_cn[tidx] +
-              g[tidx] * lambda_li[tidx]       + h[tidx] * lambda_ri[tidx] +
-              m[tidx] * lambda_ui[tidx]       + n[tidx] * lambda_di[tidx] - d_R[icell_cent])+
+
+    lambda_cn[tidx+1] = (omega / ( d_e[icell_cent] + d_f[icell_cent] + d_g[icell_cent] + d_h[icell_cent] + d_m[icell_cent] + d_n[icell_cent])) *
+            ( d_e[icell_cent] * lambda_cn[tidx+2]     + d_f[icell_cent] * lambda_cn[tidx] +
+              d_g[icell_cent] * lambda_li[tidx]       + d_h[icell_cent] * lambda_ri[tidx] +
+              d_m[icell_cent] * lambda_ui[tidx]       + d_n[icell_cent] * lambda_di[tidx] - d_R[icell_cent])+
             (1.0 - omega) * lambda_cn[tidx+1];    /// SOR formulation
 
     d_lambda[icell_cent] = lambda_cn[tidx+1];
@@ -145,7 +167,7 @@ __global__ void finalVelocityShared(float *d_u0, float *d_v0, float *d_w0, float
     }
 
 
-    if ((i > 0) && (i < nx-1) && (j > 0) && (j < ny-1) && (k < nz-1) && (k > 0)) {
+    if ((i > 0) && (i < nx-1) && (j > 0) && (j < ny-1) && (k < nz-2) && (k > 0)) {
 
         d_u[icell_face] = d_u0[icell_face]+(1/(2*pow(alpha1, 2.0)))*d_f[icell_cent]*dx*
 						 (d_lambda[icell_cent]-d_lambda[icell_cent-1]);
@@ -225,13 +247,14 @@ void SharedMemory::solve(const URBInputData* UID, URBGeneralData* UGD, bool solv
                               UGD->nx, UGD->ny, UGD->nz, UGD->dx, UGD->dy, d_dz_array);
 
     cudaMemcpy(d_lambda , lambda.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(R.data() , d_R, UGD->numcell_cent * sizeof(float) , cudaMemcpyDeviceToHost);
 
     /////////////////////////////////////////////////
     //                 SOR solver              //////
     /////////////////////////////////////////////////
 
     int iter = 0;
-    double error = 1.0;
+    float error = 1.0;
 
     // Main solver loop
     while ( (iter < itermax) && (error > tol))
@@ -307,9 +330,6 @@ void SharedMemory::solve(const URBInputData* UID, URBGeneralData* UGD, bool solv
     cudaMemcpy(UGD->u.data(),d_u,UGD->numcell_face*sizeof(float),cudaMemcpyDeviceToHost);
     cudaMemcpy(UGD->v.data(),d_v,UGD->numcell_face*sizeof(float),cudaMemcpyDeviceToHost);
     cudaMemcpy(UGD->w.data(),d_w,UGD->numcell_face*sizeof(float),cudaMemcpyDeviceToHost);
-
-
-
 
 
     cudaFree (d_lambda);
