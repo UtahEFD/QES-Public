@@ -9,8 +9,6 @@
 //  Modified by Loren Atwood 02/08/20
 //
 
-// -> not working at the moment. 
-
 #pragma once
 
 
@@ -20,8 +18,6 @@
 #include "PlumeInputData.hpp"
 #include "URBGeneralData.h"
 #include "TURBGeneralData.h"
-//#include "Urb.hpp"
-//#include "Turb.hpp"
 #include "Eulerian.h"
 
 #include "QESNetCDFOutput.h"

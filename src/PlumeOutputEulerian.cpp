@@ -9,8 +9,6 @@
 //  Modified by Loren Atwood 02/08/20
 //
 
-// -> not working at the moment. 
-
 #include "PlumeOutputEulerian.h"
 
 
@@ -49,10 +47,10 @@ PlumeOutputEulerian::PlumeOutputEulerian(PlumeInputData* PID,URBGeneralData* UGD
     // --------------------------------------------------------
 
     // setup desired output fields string
-    // LA future work: can be added in fileOptions at some point
     output_fields = {   "t","x","y","z",
                         "u","v","w",
-                        "sig_x","sig_y","sig_z","epps","tke",
+                        "sig_x","sig_y","sig_z",
+                        "epps","tke",
                         "txx","txy","txz","tyy","tyz","tzz",
                         "dtxxdx","dtxydy","dtxzdz",
                         "dtxydx","dtyydy","dtyzdz",
