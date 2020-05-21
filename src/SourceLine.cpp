@@ -46,16 +46,15 @@ void SourceLine::checkPosInfo( const double& domainXstart, const double& domainX
 }
 
 
-int SourceLine::emitParticles( const float dt,
-                               const float currTime,
-                               std::vector<particle>& emittedParticles)
+int SourceLine::emitParticles( const float dt, const float currTime,
+                               std::vector<Particle>& emittedParticles)
 {
     // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
     if( currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime )
     {
         for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-            particle cPar;
+            Particle cPar;
 
             // generate random point on line between m_pt0 and m_pt1
             double diffX = posX_1 - posX_0;

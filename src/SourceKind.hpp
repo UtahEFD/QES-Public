@@ -9,16 +9,13 @@
 
 #pragma once
 
+#include <random>
 
+#include "Particle.hpp"
 #include "ReleaseType.hpp"
 #include "ReleaseType_instantaneous.hpp"
 #include "ReleaseType_continuous.hpp"
 #include "ReleaseType_duration.hpp"
-
-
-#include <random>
-#include "particle.hpp"
-
 
 #include "util/ParseInterface.h"
 
@@ -160,6 +157,6 @@ public:
     // !!! Because the input vector is never empty if there is more than one source,
     //   the size of the vector should NOT be used for output for this function!
     //  In order to make this function work correctly, the number of particles to release per timestep needs to be the output
-    virtual int emitParticles(const float dt, const float currTime, std::vector<particle>& emittedParticles) = 0;
+    virtual int emitParticles(const float dt, const float currTime, std::vector<Particle>& emittedParticles) = 0;
     
 };

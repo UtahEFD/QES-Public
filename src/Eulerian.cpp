@@ -2,288 +2,562 @@
 #include "Eulerian.h"
 
 
-Eulerian::Eulerian( PlumeInputData* PID,Urb* urb,Turb* turb, const bool& debug_val)
+Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD, const bool& debug_val)
 {
     
-    std::cout<<"[Eulerian] \t Reading CUDA-URB & CUDA-TURB fields "<<std::endl;
+    std::cout<<"[Eulerian] \t Reading CUDA-URB & CUDA-TGD fields "<<std::endl;
     
     // copy debug information
     debug = debug_val;
     
-    // copy turb grid information
-    nt = turb->nt;
-    nz = turb->nz;
-    ny = turb->ny;
-    nx = turb->nx;
-    dz = turb->dz;
-    dy = turb->dy;
-    dx = turb->dx;
+    // copy UGD grid information
+    nz = UGD->nz;
+    ny = UGD->ny;
+    nx = UGD->nx;
+    
+    dz = UGD->dz;
+    dy = UGD->dy;
+    dx = UGD->dx;
 
-    // get the turb domain start and end values, other turb grid information
-    turbXstart = turb->turbXstart;
-    turbYstart = turb->turbYstart;
-    turbZstart = turb->turbZstart;
-    turbXend = turb->turbXend;
-    turbYend = turb->turbYend;
-    turbZend = turb->turbZend;
-
-    // LA future work: probably need to do something right here to determine what is the true domain size not just for turb, but for urb as well
-
+    // domain beginning for interpolation in each direction
+    // in x-direction (halo cell to account for TURB variables)
+    iStart=1;iEnd=nx-2;
+    // in y-direction (halo cell to account for TURB variables)
+    jStart=1;jEnd=ny-2;
+    // in z-direction (ghost cell at bottom and halo cell at top)
+    kStart=1;kEnd=nz-2;
+    
+    // get the TGD domain start and end values, other TGD grid information
+    // in x-direction
+    xStart = UGD->x[iStart];
+    xEnd = UGD->x[iEnd];
+    // in y-direction
+    yStart = UGD->y[jStart];
+    yEnd = UGD->y[jEnd];
+    // in z-direction
+    zStart = UGD->z_face[kStart-1]; // z_face does not have a ghost cell under the terrain.
+    zEnd = UGD->z[kEnd];
     
     // set additional values from the input
     C_0 = PID->simParams->C_0;
+    
+    // set the tau gradient sizes
+    dtxxdx.resize(UGD->numcell_face,0.0);
+    dtxydy.resize(UGD->numcell_face,0.0);
+    dtxzdz.resize(UGD->numcell_face,0.0);
+    
+    dtxydx.resize(UGD->numcell_face,0.0);
+    dtyydy.resize(UGD->numcell_face,0.0);
+    dtyzdz.resize(UGD->numcell_face,0.0);
+    
+    dtxzdx.resize(UGD->numcell_face,0.0);
+    dtyzdy.resize(UGD->numcell_face,0.0);
+    dtzzdz.resize(UGD->numcell_face,0.0);
+    
+    // temp storage of sigma's
+    sig_x.resize(UGD->numcell_cent,0.0);
+    sig_y.resize(UGD->numcell_cent,0.0);
+    sig_z.resize(UGD->numcell_cent,0.0);
 
-
+    // set BC 
+    setBC(UGD,TGD);
+    
     // compute stress gradients
-    createTauGrads(urb,turb);
-
-    // use the stress gradients to calculate the flux div
-    createFluxDiv();
-
+    setStressGradient(TGD);
+    // temporary copy of sigma's
+    setSigmas(TGD);
+    
 }
 
-// This is here only so we can test the two versions a bit for
-// timing... and then I will remove the older version.
-#define USE_PREVIOUSCODE 1
-
-#if USE_PREVIOUSCODE
-void Eulerian::createTauGrads(Urb* urb, Turb* turb)
+void Eulerian::setBC(URBGeneralData* UGD,TURBGeneralData* TGD)
 {
-    std::cout<<"[Eulerian] \t Computing stress gradients "<<std::endl;
+    std::cout<<"[Eulerian] \t Correction QES-winds fields for BC"<<std::endl;
     
-    // start recording execution time
-    if( debug == true )
-    {
-        timers.startNewTimer("calcGradient");
+    // verical surface (wall right => j-1)
+    for(size_t id; id<UGD->wall_right_indices.size(); ++id) {
+        int idface=UGD->wall_right_indices[id];
+        // u(i,j-1,k)=-u(i,j,k)
+        UGD->u[idface -nx]=-UGD->u[idface];
+        // u(i+1,j-1,k)=-u(i+1,j,k)
+        UGD->u[idface+1 -nx]=-UGD->u[idface+1];
+
+        // w(i,j-1,k)=-w(i,j,k)
+        UGD->w[idface -nx]=-UGD->w[idface];
+        // w(i,j-1,k+1)=-w(i,j,k+1)
+        UGD->w[idface+nx*ny -nx]=-UGD->w[idface+nx*ny];
+    }
+    
+    // verical surface (wall left => j+1)
+    for(size_t id; id<UGD->wall_left_indices.size(); ++id) {
+        int idface=UGD->wall_left_indices[id];
+        // u(i,j+1,k)=-u(i,j,k)
+        UGD->u[idface +nx]=-UGD->u[idface];
+        // u(i+1,j+1,k)=-u(i+1,j,k)
+        UGD->u[idface+1 +nx]=-UGD->u[idface+1];
+
+        // w(i,j+1,k)=-w(i,j,k)
+        UGD->w[idface +nx]=-UGD->w[idface];
+        // w(i,j+1,k+1)=-w(i,j,k+1)
+        UGD->w[idface+nx*ny +nx]=-UGD->w[idface+nx*ny];
     }
 
-    // set the tau gradient sizes
-    dtxxdx.resize(nx*ny*nz);
-    dtxydy.resize(nx*ny*nz);
-    dtxzdz.resize(nx*ny*nz);
-
-    dtxydx.resize(nx*ny*nz);
-    dtyydy.resize(nx*ny*nz);
-    dtyzdz.resize(nx*ny*nz);
-
-    dtxzdx.resize(nx*ny*nz);
-    dtyzdy.resize(nx*ny*nz);
-    dtzzdz.resize(nx*ny*nz);
+    // horizontal surface (wall above => k+1)
+    for(size_t id; id<UGD->wall_above_indices.size(); ++id) {
+        int idface=UGD->wall_above_indices[id];
+        // u(i,j,k+1)=-u(i,j,k)
+        UGD->u[idface +nx*ny]=-UGD->u[idface];
+        // u(i+1,j,k+1)=-u(i+1,j,k)
+        UGD->u[idface+1 +nx*ny]=-UGD->u[idface+1];
+        
+        // v(i,j,k+1)=-v(i,j,k)
+        UGD->v[idface +nx*ny]=-UGD->v[idface];
+        // v(i,j+1,k+1)=-v(i,j+1,k)
+        UGD->v[idface+nx +nx*ny]=-UGD->v[idface+nx];
+    }
     
-    // Loop over all cells in the domain up to 2 in from the edge
-    for(int k=0; k<nz; ++k) {
-        for(int j=0; j<ny; ++j) {
-            for(int i=0; i<nx; ++i) {
-                
+    // horizontal surface (wall below => k-1)
+    for(size_t id; id<UGD->wall_below_indices.size(); ++id) {
+        int idface=UGD->wall_below_indices[id];
+        // u(i,j,k-1)=-u(i,j,k)
+        UGD->u[idface -nx*ny]=-UGD->u[idface];
+        // u(i+1,j,k+1)=-u(i+1,j,k)
+        UGD->u[idface+1 -nx*ny]=-UGD->u[idface+1];
+        
+        // v(i,j,k-1)=-v(i,j,k)
+        UGD->v[idface -nx*ny]=-UGD->v[idface];
+        // v(i,j+1,k-1)=-v(i,j+1,k)
+        UGD->v[idface+nx -nx*ny]=-UGD->v[idface+nx];
+    }
+
+
+    // verical surface (wall back => i-1)
+    for(size_t id; id<UGD->wall_back_indices.size(); ++id) {
+        int idface=UGD->wall_back_indices[id];
+        // v(i-1,j,k)=-v(i,j,k)
+        UGD->v[idface -1]=-UGD->v[idface];
+        // v(i-1,j+1,k)=-v(i,j+1,k)
+        UGD->v[idface+nx -1]=-UGD->v[idface+nx];
+
+        // w(i-1,j,k)=-w(i,j,k)
+        UGD->w[idface -1]=-UGD->w[idface];
+        // w(i-1,j,k+1)=-w(i,j,k+1)
+        UGD->w[idface+nx*ny -1]=-UGD->w[idface+nx*ny];
+    }
+    
+    // verical surface (wall front => i+1)
+    for(size_t id; id<UGD->wall_front_indices.size(); ++id) {
+        int idface=UGD->wall_front_indices[id];
+        // v(i+1,j,k)=-v(i,j,k)
+        UGD->v[idface +1]=-UGD->v[idface];
+        // v(i+1,j+1,k)=-v(i,j+1,k)
+        UGD->v[idface+nx +1]=-UGD->v[idface+nx];
+
+        // w(i+1,j,k)=-w(i,j,k)
+        UGD->w[idface +1]=-UGD->w[idface];
+        // w(i+1,j,k+1)=-w(i,j,k+1)
+        UGD->w[idface+nx*ny +1]=-UGD->w[idface+nx*ny];
+    }
+
+    std::cout<<"[Eulerian] \t Correction QES-turb fields for BC"<<std::endl;
+
+    // verical surface (wall right => j-1)
+    for(size_t id; id<UGD->wall_right_indices.size(); ++id) {
+        int idface=UGD->wall_right_indices[id];
+        // i,j,k -> inverted linearized index
+        int k = (int)(idface / ((nx*nx)));
+        int j = (int)((idface - k*(nx*ny))/(nx));
+        int i = idface - j*(nx) - k*(nx*ny);
+        // id of cell 
+        int idcell = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        int idcell_m = idcell - (nx-1);
+
+        TGD->CoEps[idcell_m] = TGD->CoEps[idcell];
+        
+        TGD->txx[idcell_m] = TGD->txx[idcell];
+        TGD->txy[idcell_m] = TGD->txy[idcell];
+        TGD->txz[idcell_m] = TGD->txz[idcell];
+        TGD->tyy[idcell_m] = TGD->tyy[idcell];
+        TGD->tyz[idcell_m] = TGD->tyz[idcell];
+        TGD->tzz[idcell_m] = TGD->tzz[idcell];
+    }
+    
+    // verical surface (wall left => j+1)
+    for(size_t id; id<UGD->wall_left_indices.size(); ++id) {
+        int idface=UGD->wall_left_indices[id];
+        // i,j,k -> inverted linearized index
+        int k = (int)(idface / ((nx*nx)));
+        int j = (int)((idface - k*(nx*ny))/(nx));
+        int i = idface - j*(nx) - k*(nx*ny);
+        // id of cell 
+        int idcell = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        int idcell_m = idcell + (nx-1);
+
+        TGD->CoEps[idcell_m] = TGD->CoEps[idcell];
+        
+        TGD->txx[idcell_m] = TGD->txx[idcell];
+        TGD->txy[idcell_m] = TGD->txy[idcell];
+        TGD->txz[idcell_m] = TGD->txz[idcell];
+        TGD->tyy[idcell_m] = TGD->tyy[idcell];
+        TGD->tyz[idcell_m] = TGD->tyz[idcell];
+        TGD->tzz[idcell_m] = TGD->tzz[idcell];
+    }
+
+    // horizontal surface (wall above => k+1)
+    for(size_t id; id<UGD->wall_above_indices.size(); ++id) {
+        int idface=UGD->wall_above_indices[id];
+        // i,j,k -> inverted linearized index
+        int k = (int)(idface / ((nx*nx)));
+        int j = (int)((idface - k*(nx*ny))/(nx));
+        int i = idface - j*(nx) - k*(nx*ny);
+        // id of cell 
+        int idcell = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        int idcell_m = idcell + (nx-1)*(ny-1);
+
+        TGD->CoEps[idcell_m] = TGD->CoEps[idcell];
+        
+        TGD->txx[idcell_m] = TGD->txx[idcell];
+        TGD->txy[idcell_m] = TGD->txy[idcell];
+        TGD->txz[idcell_m] = TGD->txz[idcell];
+        TGD->tyy[idcell_m] = TGD->tyy[idcell];
+        TGD->tyz[idcell_m] = TGD->tyz[idcell];
+        TGD->tzz[idcell_m] = TGD->tzz[idcell];
+    }
+    
+    // horizontal surface (wall below => k-1)
+    for(size_t id; id<UGD->wall_below_indices.size(); ++id) {
+        int idface=UGD->wall_below_indices[id];
+        // i,j,k -> inverted linearized index
+        int k = (int)(idface / ((nx*nx)));
+        int j = (int)((idface - k*(nx*ny))/(nx));
+        int i = idface - j*(nx) - k*(nx*ny);
+        // id of cell 
+        int idcell = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        int idcell_m = idcell - (nx-1)*(ny-1);
+        
+        TGD->CoEps[idcell_m] = TGD->CoEps[idcell];
+        
+        TGD->txx[idcell_m] = TGD->txx[idcell];
+        TGD->txy[idcell_m] = TGD->txy[idcell];
+        TGD->txz[idcell_m] = TGD->txz[idcell];
+        TGD->tyy[idcell_m] = TGD->tyy[idcell];
+        TGD->tyz[idcell_m] = TGD->tyz[idcell];
+        TGD->tzz[idcell_m] = TGD->tzz[idcell];
+        
+    }
+
+
+    // verical surface (wall back => i-1)
+    for(size_t id; id<UGD->wall_back_indices.size(); ++id) {
+        int idface=UGD->wall_back_indices[id];
+        // i,j,k -> inverted linearized index
+        int k = (int)(idface / ((nx*nx)));
+        int j = (int)((idface - k*(nx*ny))/(nx));
+        int i = idface - j*(nx) - k*(nx*ny);
+        // id of cell 
+        int idcell = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        int idcell_m = idcell - 1;
+        
+        TGD->CoEps[idcell_m] = TGD->CoEps[idcell];
+        
+        TGD->txx[idcell_m] = TGD->txx[idcell];
+        TGD->txy[idcell_m] = TGD->txy[idcell];
+        TGD->txz[idcell_m] = TGD->txz[idcell];
+        TGD->tyy[idcell_m] = TGD->tyy[idcell];
+        TGD->tyz[idcell_m] = TGD->tyz[idcell];
+        TGD->tzz[idcell_m] = TGD->tzz[idcell];
+    }
+    
+    // verical surface (wall front => i+1)
+    for(size_t id; id<UGD->wall_front_indices.size(); ++id) {
+        int idface=UGD->wall_front_indices[id];
+        // i,j,k -> inverted linearized index
+        int k = (int)(idface / ((nx*nx)));
+        int j = (int)((idface - k*(nx*ny))/(nx));
+        int i = idface - j*(nx) - k*(nx*ny);
+        // id of cell 
+        int idcell = i + j*(nx-1) + k*(nx-1)*(ny-1);
+        int idcell_m = idcell + 1;
+        
+        TGD->CoEps[idcell_m] = TGD->CoEps[idcell];
+        
+        TGD->txx[idcell_m] = TGD->txx[idcell];
+        TGD->txy[idcell_m] = TGD->txy[idcell];
+        TGD->txz[idcell_m] = TGD->txz[idcell];
+        TGD->tyy[idcell_m] = TGD->tyy[idcell];
+        TGD->tyz[idcell_m] = TGD->tyz[idcell];
+        TGD->tzz[idcell_m] = TGD->tzz[idcell];
+    }
+
+    return;
+}
+
+void Eulerian::setStressGradient(TURBGeneralData* TGD)
+{
+    std::cout<<"[Eulerian] \t Computing stress gradients on face"<<std::endl;
+        
+    for(int k=kStart; k<kEnd+1; ++k) {
+        for(int j=jStart; j<jEnd+1; ++j) {
+            for(int i=iStart; i<iEnd+1; ++i) {
                 // Provides a linear index based on the 3D (i, j, k)
-                // indices so we can access 
-                int idx = k*ny*nx + j*nx + i;
-
-                // DX components
-                if (nx == 1) {
-                    setDX_1D(turb, idx);
-                }
-                else if (i < (nx-2)) {
-                    setDX_Forward(turb, idx);
-                }
-                else { 
-                    setDX_Backward(turb, idx);
-                }
-                    
-                // DY components
-                if (ny == 1) {
-                    setDY_1D(turb, idx);
-                }
-                else if (j < (ny-2)) {
-                    setDY_Forward(turb, idx);
-                }
-                else { 
-                    setDY_Backward(turb, idx);
-                }
-
-                // DZ components
-                if (nz == 1) {
-                    setDZ_1D(turb, idx);
-                }
-                else if (k < (nz-2)) {
-                    setDZ_Forward(turb, idx);
-                }
-                else {
-                    setDZ_Backward(turb, idx);
-                }
+                int cellid = k*(ny-1)*(nx-1) + j*(nx-1) + i;
+                int faceid = k*(ny*nx) + j*(nx) + i;
+                
+                dtxxdx[faceid] = (TGD->txx[cellid]-TGD->txx[cellid-1])/dx;
+                dtxydx[faceid] = (TGD->txy[cellid]-TGD->txy[cellid-1])/dx;
+                dtxzdx[faceid] = (TGD->txz[cellid]-TGD->txz[cellid-1])/dx;
+                
+            }
+        }
+    }
+    
+    for(int k=kStart; k<kEnd+1; ++k) {
+        for(int j=jStart; j<jEnd+1; ++j) {
+            for(int i=iStart; i<iEnd+1; ++i) {
+                // Provides a linear index based on the 3D (i, j, k)
+                int cellid = k*(ny-1)*(nx-1) + j*(nx-1) + i;
+                int faceid = k*(ny*nx) + j*(nx) + i;
+                
+                dtxydy[faceid] = (TGD->txy[cellid]-TGD->txy[cellid-(nx-1)])/dy;
+                dtyydy[faceid] = (TGD->tyy[cellid]-TGD->tyy[cellid-(nx-1)])/dy;
+                dtyzdy[faceid] = (TGD->tyz[cellid]-TGD->tyz[cellid-(nx-1)])/dy;
+                
             }
         }
     }
 
-    // print out elapsed execution time
-    if( debug == true )
-    {
-        timers.printStoredTime("calcGradient");
+    for(int k=kStart; k<kEnd+1; ++k) {
+        for(int j=jStart; j<jEnd+1; ++j) {
+            for(int i=iStart; i<iEnd+1; ++i) {
+                // Provides a linear index based on the 3D (i, j, k)
+                int cellid = k*(ny-1)*(nx-1) + j*(nx-1) + i;
+                int faceid = k*(ny*nx) + j*(nx) + i;
+                
+                dtxzdz[faceid] = (TGD->txz[cellid]-TGD->txz[cellid-(ny-1)*(nx-1)])/dz;
+                dtyzdz[faceid] = (TGD->tyz[cellid]-TGD->tyz[cellid-(ny-1)*(nx-1)])/dz;
+                dtzzdz[faceid] = (TGD->tzz[cellid]-TGD->tzz[cellid-(ny-1)*(nx-1)])/dz;
+                
+            }
+        }
     }
+    
+    return;
 }
 
-#else
-
-void Eulerian::createTauGrads(Urb* urb, Turb* turb)
+void Eulerian::setStressGrads(TURBGeneralData* TGD)
 {
     std::cout<<"[Eulerian] \t Computing stress gradients "<<std::endl;
     
     // start recording execution time
-    if( debug == true )
-    {
+    if( debug == true ) {
         timers.startNewTimer("calcGradient");
     }
-
-    // set the tau gradient sizes
-    dtxxdx.resize(nx*ny*nz);
-    dtxydy.resize(nx*ny*nz);
-    dtxzdz.resize(nx*ny*nz);
-
-    dtxydx.resize(nx*ny*nz);
-    dtyydy.resize(nx*ny*nz);
-    dtyzdz.resize(nx*ny*nz);
-
-    dtxzdx.resize(nx*ny*nz);
-    dtyzdy.resize(nx*ny*nz);
-    dtzzdz.resize(nx*ny*nz);
     
     // 2nd order Forward differencing up to 2 in from the edge in the direction of the gradient,
     // 2nd order Backward differencing for the last two in the direction of the gradient,
     // all this over all cells in the other two directions
-
-
+    
     // DX forward differencing
-    for(int k=0; k<nz; ++k) {
-        for(int j=0; j<ny; ++j) {
-            for(int i=0; i<nx-2; ++i) {
-                
+    for(int k=kStart; k<kEnd; ++k) {
+        for(int j=jStart; j<jEnd; ++j) {
+            for(int i=iStart; i<iEnd-2; ++i) {
                 // Provides a linear index based on the 3D (i, j, k)
-                // indices so we can access 
-                int idx = k*ny*nx + j*nx + i;
-
-                setDX_Forward( turb, idx );
-
+                int idx = k*(ny-1)*(nx-1) + j*(nx-1) + i;
+                setDX_Forward( TGD, idx );
             }
         }
     }
-
+    
     // DX backward differencing
-    for(int k=0; k<nz; ++k) {
-        for(int j=0; j<ny; ++j) {
-            for(int i=nx-2; i<nx; ++i) {
-                
+    for(int k=kStart; k<kEnd; ++k) {
+        for(int j=jStart; j<jEnd; ++j) {
+            for(int i=iEnd-2; i<iEnd; ++i) {
                 // Provides a linear index based on the 3D (i, j, k)
-                // indices so we can access 
-                int idx = k*ny*nx + j*nx + i;
-
-                setDX_Backward( turb, idx );
-
+                int idx = k*(ny-1)*(nx-1) + j*(nx-1) + i;
+                setDX_Backward( TGD, idx );
             }
         }
     }
-
-
+    
+    
     // DY forward differencing
-    for(int k=0; k<nz; ++k) {
-        for(int j=0; j<ny-2; ++j) {
-            for(int i=0; i<nx; ++i) {
-                
+    for(int k=kStart; k<kEnd; ++k) {
+        for(int j=jStart; j<jEnd-2; ++j) {
+            for(int i=iStart; i<iEnd; ++i) {
                 // Provides a linear index based on the 3D (i, j, k)
-                // indices so we can access 
-                int idx = k*ny*nx + j*nx + i;
-
-                setDY_Forward( turb, idx );
-
+                int idx = k*(ny-1)*(nx-1) + j*(nx-1) + i;
+                setDY_Forward( TGD, idx );
             }
         }
     }
-
+    
     // DY backward differencing
-    for(int k=0; k<nz; ++k) {
-        for(int j=ny-2; j<ny; ++j) {
-            for(int i=0; i<nx; ++i) {
-                
+    for(int k=kStart; k<kEnd; ++k) {
+        for(int j=jEnd-2; j<jEnd; ++j) {
+            for(int i=iStart; i<iEnd; ++i) {
                 // Provides a linear index based on the 3D (i, j, k)
-                // indices so we can access 
-                int idx = k*ny*nx + j*nx + i;
-
-                setDY_Backward( turb, idx );
-
+                int idx = k*(ny-1)*(nx-1) + j*(nx-1) + i;
+                setDY_Backward( TGD, idx );
             }
         }
     }
-
-
+    
     // DZ forward differencing
-    for(int k=0; k<nz-2; ++k) {
-        for(int j=0; j<ny; ++j) {
-            for(int i=0; i<nx; ++i) {
-                
+    for(int k=kStart; k<kEnd-2; ++k) {
+        for(int j=jStart; j<jEnd; ++j) {
+            for(int i=iStart; i<iEnd; ++i) {
                 // Provides a linear index based on the 3D (i, j, k)
-                // indices so we can access 
-                int idx = k*ny*nx + j*nx + i;
-
-                setDZ_Forward( turb, idx );
-
+                int idx = k*(ny-1)*(nx-1) + j*(nx-1) + i;
+                setDZ_Forward( TGD, idx );
             }
         }
     }
-
+    
     // DZ backward differencing
-    for(int k=nz-2; k<nz; ++k) {
-        for(int j=0; j<ny; ++j) {
-            for(int i=0; i<nx; ++i) {
-                
-                // Provides a linear index based on the 3D (i, j, k)
-                // indices so we can access 
-                int idx = k*ny*nx + j*nx + i;
-
-                setDZ_Backward( turb, idx );
-
+    for(int k=kEnd-2; k<kEnd; ++k) {
+        for(int j=jStart; j<jEnd; ++j) {
+            for(int i=iEnd; i<iEnd; ++i) {
+                // Provides a  linear index based on the 3D (i, j, k)
+                int idx = k*(ny-1)*(nx-1) + j*(nx-1) + i;
+                setDZ_Backward( TGD, idx );
             }
         }
     }
-
+    
     // print out elapsed execution time
-    if( debug == true )
-    {
+    if( debug == true ) {
         timers.printStoredTime("calcGradient");
     }
 }
 
-#endif
-
-void Eulerian::createFluxDiv()
+void Eulerian::setSigmas(TURBGeneralData* TGD)
+{
+    for(int idx = 0; idx < (nx-1)*(ny-1)*(nz-1); idx++) {
+        sig_x.at(idx) = std::sqrt(TGD->txx.at(idx));
+        sig_y.at(idx) = std::sqrt(TGD->tyy.at(idx));
+        sig_z.at(idx) = std::sqrt(TGD->tzz.at(idx));
+    }
+    return;
+}
+    
+void Eulerian::setInterp3Dindex_uFace(const double& par_xPos, const double& par_yPos, const double& par_zPos)
 {
 
-    std::cout << "[Eulerian] \t Computing flux_div values " << std::endl;
-
-    // set the flux_div to the right size
-    flux_div_x.resize(nx*ny*nz);
-    flux_div_y.resize(nx*ny*nz);
-    flux_div_z.resize(nx*ny*nz);
-
-    // loop through each cell and calculate the flux_div from the gradients of tao
-    for(int idx = 0; idx < nx*ny*nz; idx++) {
-        flux_div_x.at(idx) = dtxxdx.at(idx) + dtxydy.at(idx) + dtxzdz.at(idx);
-        flux_div_y.at(idx) = dtxydx.at(idx) + dtyydy.at(idx) + dtyzdz.at(idx);
-        flux_div_z.at(idx) = dtxzdx.at(idx) + dtyzdy.at(idx) + dtzzdz.at(idx);
-    }
+    // set a particle position corrected by the start of the domain in each direction
+    double par_x = par_xPos;
+    double par_y = par_yPos - 0.5*dy;
+    double par_z = par_zPos + 0.5*dz;
+    
+    ii = floor(par_x/(dx+1e-9));
+    jj = floor(par_y/(dy+1e-9));
+    kk = floor(par_z/(dz+1e-9));
+    
+    // fractional distance between nearest nodes
+    iw = (par_x/dx - floor(par_x/dx));
+    jw = (par_y/dy - floor(par_y/dy));
+    kw = (par_z/dz - floor(par_z/dz));
+    
+    return;
 }
 
+void Eulerian::setInterp3Dindex_vFace(const double& par_xPos, const double& par_yPos, const double& par_zPos)
+{
+
+    // set a particle position corrected by the start of the domain in each direction
+    double par_x = par_xPos - 0.5*dx;
+    double par_y = par_yPos;
+    double par_z = par_zPos + 0.5*dz;
+
+    ii = floor(par_x/(dx+1e-9));
+    jj = floor(par_y/(dy+1e-9));
+    kk = floor(par_z/(dz+1e-9));
+    
+    // fractional distance between nearest nodes
+    iw = (par_x/dx - floor(par_x/dx));
+    jw = (par_y/dy - floor(par_y/dy));
+    kw = (par_z/dz - floor(par_z/dz));
+    
+    return;
+}
+
+void Eulerian::setInterp3Dindex_wFace(const double& par_xPos, const double& par_yPos, const double& par_zPos)
+{
+
+    // set a particle position corrected by the start of the domain in each direction
+    double par_x = par_xPos - 0.5*dx;
+    double par_y = par_yPos - 0.5*dy;
+    double par_z = par_zPos + 1.0*dz;
+    
+    ii = floor(par_x/(dx+1e-9));
+    jj = floor(par_y/(dy+1e-9));
+    kk = floor(par_z/(dz+1e-9));
+    
+    // fractional distance between nearest nodes
+    iw = (par_x/dx - floor(par_x/dx));
+    jw = (par_y/dy - floor(par_y/dy));
+    kw = (par_z/dz - floor(par_z/dz));
+
+    return;
+}
+
+// always call this after setting the interpolation indices with the setInterp3Dindex_u/v/wFace() function!
+double Eulerian::interp3D_faceVar(const std::vector<float>& EulerData)
+{
+
+    double cube[2][2][2] = {0.0};
+
+    // now set the cube values
+    for(int kkk = 0; kkk <= kp; kkk++) {
+        for(int jjj = 0; jjj <= jp; jjj++) {
+            for(int iii = 0; iii <= ip; iii++) {
+                // set the actual indices to use for the linearized Euler data
+                int idx = (kk+kkk)*(ny*nx) + (jj+jjj)*(nx) + (ii+iii);
+                cube[iii][jjj][kkk] = EulerData[idx];
+            }
+        }
+    }
+
+    // now do the interpolation, with the cube, the counters from the indices,
+     // and the normalized width between the point locations and the closest cell left walls
+    double u_low  = (1-iw)*(1-jw)*cube[0][0][0] + iw*(1-jw)*cube[1][0][0] + iw*jw*cube[1][1][0] + (1-iw)*jw*cube[0][1][0];
+    double u_high = (1-iw)*(1-jw)*cube[0][0][1] + iw*(1-jw)*cube[1][0][1] + iw*jw*cube[1][1][1] + (1-iw)*jw*cube[0][1][1];
+
+    return (u_high-u_low)*kw + u_low;
+}
+
+// always call this after setting the interpolation indices with the setInterp3Dindex_u/v/wFace() function!
+double Eulerian::interp3D_faceVar(const std::vector<double>& EulerData)
+{
+
+    double cube[2][2][2] = {0.0};
+
+    // now set the cube values
+    for(int kkk = 0; kkk <= kp; kkk++) {
+        for(int jjj = 0; jjj <= jp; jjj++) {
+            for(int iii = 0; iii <= ip; iii++) {
+                // set the actual indices to use for the linearized Euler data
+                int idx = (kk+kkk)*(ny*nx) + (jj+jjj)*(nx) + (ii+iii);
+                cube[iii][jjj][kkk] = EulerData[idx];
+            }
+        }
+    }
+
+    // now do the interpolation, with the cube, the counters from the indices,
+     // and the normalized width between the point locations and the closest cell left walls
+    double u_low  = (1-iw)*(1-jw)*cube[0][0][0] + iw*(1-jw)*cube[1][0][0] + iw*jw*cube[1][1][0] + (1-iw)*jw*cube[0][1][0];
+    double u_high = (1-iw)*(1-jw)*cube[0][0][1] + iw*(1-jw)*cube[1][0][1] + iw*jw*cube[1][1][1] + (1-iw)*jw*cube[0][1][1];
+
+    return (u_high-u_low)*kw + u_low;
+}
 
 // this gets around the problem of repeated or not repeated information, just needs called once before each interpolation,
 // then intepolation on all kinds of datatypes can be done
-void Eulerian::setInterp3Dindexing( const double& par_xPos, const double& par_yPos, const double& par_zPos,
-                                    int& cellIdx, int& ii, int& jj, int& kk,
-                                    double& iw, double& jw, double& kw,
-                                    int& ip, int& jp, int& kp )
+void Eulerian::setInterp3Dindex_cellVar(const double& par_xPos, const double& par_yPos, const double& par_zPos)
 {
 
     // the next steps are to figure out the right indices to grab the values for cube from the data, 
     // where indices are forced to be special if nx, ny, or nz are zero.
     // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
-
+    
     // so this is called once before calling the interp3D function on many different datatypes
     // sets the current indices for grabbing the cube values and for interpolating with the cube,
     // but importantly sets ip,jp, and kp to zero if the number of cells in a dimension is 1
@@ -293,9 +567,9 @@ void Eulerian::setInterp3Dindexing( const double& par_xPos, const double& par_yP
 
     // set a particle position corrected by the start of the domain in each direction
     // the algorythm assumes the list starts at x = 0.
-    double par_x = par_xPos - turbXstart;
-    double par_y = par_yPos - turbYstart;
-    double par_z = par_zPos - turbZstart;
+    double par_x = par_xPos - 0.5*dx;
+    double par_y = par_yPos - 0.5*dy;
+    double par_z = par_zPos + 0.5*dz;
 
     // index of nearest node in negative direction
     // by adding a really small number to dx, it stops it from putting
@@ -312,9 +586,9 @@ void Eulerian::setInterp3Dindexing( const double& par_xPos, const double& par_yP
     kk = floor(par_z/(dz+1e-9));
 
     // fractional distance between nearest nodes
-    iw = (par_x/(dx+1e-9) - floor(par_x/(dx+1e-9)));
-    jw = (par_y/(dy+1e-9) - floor(par_y/(dy+1e-9)));
-    kw = (par_z/(dz+1e-9) - floor(par_z/(dz+1e-9)));
+    iw = (par_x/dx) - floor(par_x/dx);
+    jw = (par_y/dy) - floor(par_y/dy);
+    kw = (par_z/dz) - floor(par_z/dz);
 
     // initialize the counters from the indices
     ip = 1;
@@ -322,20 +596,17 @@ void Eulerian::setInterp3Dindexing( const double& par_xPos, const double& par_yP
     kp = 1;
 
     // now set the indices and the counters from the indices
-    if( nx == 1 )
-    {
+    if( nx == 1 ) {
         ii = 0;
         iw = 0.0;
         ip = 0;
     }
-    if( ny == 1 )
-    {
+    if( ny == 1 ) {
         jj = 0;
         jw = 0.0;
         jp = 0;
     }
-    if( nz == 1 )
-    {
+    if( nz == 1 ) {
         kk = 0;
         kw = 0.0;
         kp = 0;
@@ -344,42 +615,28 @@ void Eulerian::setInterp3Dindexing( const double& par_xPos, const double& par_yP
     // now check to make sure that the indices are within the Eulerian grid domain
     // Notice that this no longer includes throwing an error if particles touch the far walls
     // because adding a small number to dx in the index calculation forces the index to be completely left side biased
-    if( ii < 0 || ii+ip > nx-1 )
-    {
+    if( ii < 0 || ii+ip > nx-1 ) {
         std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle x position is out of range! x = \"" << par_xPos 
             << "\" ii+ip = \"" << ii << "\"+\"" << ip << "\",   nx-1 = \"" << nx-1 << "\"" << std::endl;
         exit(1);
     }
-    if( jj < 0 || jj+jp > ny-1 )
-    {
+    if( jj < 0 || jj+jp > ny-1 ) {
         std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle y position is out of range! y = \"" << par_yPos 
             << "\" jj+jp = \"" << jj << "\"+\"" << jp << "\",   ny-1 = \"" << ny-1 << "\"" << std::endl;
         exit(1);
     }
-    if( kk < 0 || kk+kp > nz-1 )
-    {
+    if( kk < 0 || kk+kp > nz-1 ) {
         std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle z position is out of range! z = \"" << par_zPos 
             << "\" kk+kp = \"" << kk << "\"+\"" << kp << "\",   nz-1 = \"" << nz-1 << "\"" << std::endl;
         exit(1);
     }
 
-    // set the cell index
-    cellIdx = kk*ny*nx + jj*nx + ii;
-
 }
 
-// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-// the extra dataName is so that if the input is eps, the value is not allowed to be zero, but is set to two orders of magnitude bigger than sigma2
-// since this would actually be CoEps, the value actually needs to be one order of magnitude bigger than sigma2?
-double Eulerian::interp3D( const std::vector<double>& EulerData,const std::string& dataName,
-                           const int& ii, const int& jj, const int& kk,
-                           const double& iw, const double& jw, const double& kw,
-                           const int& ip, const int& jp, const int& kp )
-{
 
-    // initialize the output value
-    double outputVal = 0.0;
-    
+// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
+double Eulerian::interp3D_cellVar(const std::vector<float>& EulerData)
+{
 
     // first set a cube of size two to zero.
     // This is important because if nx, ny, or nz are only size 1, referencing two spots in cube won't reference outside the array.
@@ -387,20 +644,16 @@ double Eulerian::interp3D( const std::vector<double>& EulerData,const std::strin
     // where indices are forced to be special if nx, ny, or nz are zero.
     // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
 
-    
     // now set the cube to zero, then fill it using the indices and the counters from the indices
     double cube[2][2][2] = {0.0};
 
     // now set the cube values
-    for(int kkk = 0; kkk <= kp; kkk++)
-    {
-        for(int jjj = 0; jjj <= jp; jjj++)
-        {
-            for(int iii = 0; iii <= ip; iii++)
-            {
+    for(int kkk = 0; kkk <= kp; kkk++) {
+        for(int jjj = 0; jjj <= jp; jjj++) {
+            for(int iii = 0; iii <= ip; iii++) {
                 // set the actual indices to use for the linearized Euler data
-                int idx = (kk+kkk)*ny*nx + (jj+jjj)*nx + (ii+iii);
-                cube[iii][jjj][kkk] = EulerData.at(idx);
+                int idx = (kk+kkk)*(ny-1)*(nx-1) + (jj+jjj)*(nx-1) + (ii+iii);
+                cube[iii][jjj][kkk] = EulerData[idx];
             }
         }
     }
@@ -409,32 +662,40 @@ double Eulerian::interp3D( const std::vector<double>& EulerData,const std::strin
     // and the normalized width between the point locations and the closest cell left walls
     double u_low  = (1-iw)*(1-jw)*cube[0][0][0] + iw*(1-jw)*cube[1][0][0] + iw*jw*cube[1][1][0] + (1-iw)*jw*cube[0][1][0];
     double u_high = (1-iw)*(1-jw)*cube[0][0][1] + iw*(1-jw)*cube[1][0][1] + iw*jw*cube[1][1][1] + (1-iw)*jw*cube[0][1][1];
-    outputVal = (u_high-u_low)*kw + u_low;
 
-    // make sure CoEps is always bigger than zero, and eps is two orders of magnitude bigger than sigma2
-    // I guess since this is actually CoEps, the value needs to be one order of magnitutde bigger than sigma2
-    if( dataName == "sigma2" )
-    {
-        if( outputVal == 0.0 )
-        {
-            outputVal = 1e-8;
-        }
-    }
-    if( dataName == "Eps" )
-    {
-        if( outputVal <= 1e-6 )
-        {
-            outputVal = 1e-6;
-        }
-    }
-    if( dataName == "CoEps" )
-    {
-        if( outputVal <= 1e-6*C_0 )
-        {
-            outputVal = 1e-6*C_0;
+    return (u_high-u_low)*kw + u_low;
+
+}
+
+// always call this after setting the interpolation indices with the setInterp3Dindexing() function!
+double Eulerian::interp3D_cellVar(const std::vector<double>& EulerData)
+{
+
+    // first set a cube of size two to zero.
+    // This is important because if nx, ny, or nz are only size 1, referencing two spots in cube won't reference outside the array.
+    // the next steps are to figure out the right indices to grab the values for cube from the data, 
+    // where indices are forced to be special if nx, ny, or nz are zero.
+    // This allows the interpolation to multiply by zero any 2nd values that are set to zero in cube.
+
+    // now set the cube to zero, then fill it using the indices and the counters from the indices
+    double cube[2][2][2] = {0.0};
+
+    // now set the cube values
+    for(int kkk = 0; kkk <= kp; kkk++) {
+        for(int jjj = 0; jjj <= jp; jjj++) {
+            for(int iii = 0; iii <= ip; iii++) {
+                // set the actual indices to use for the linearized Euler data
+                int idx = (kk+kkk)*(ny-1)*(nx-1) + (jj+jjj)*(nx-1) + (ii+iii);
+                cube[iii][jjj][kkk] = EulerData[idx];
+            }
         }
     }
 
-    return outputVal;
+    // now do the interpolation, with the cube, the counters from the indices,
+     // and the normalized width between the point locations and the closest cell left walls
+    double u_low  = (1-iw)*(1-jw)*cube[0][0][0] + iw*(1-jw)*cube[1][0][0] + iw*jw*cube[1][1][0] + (1-iw)*jw*cube[0][1][0];
+    double u_high = (1-iw)*(1-jw)*cube[0][0][1] + iw*(1-jw)*cube[1][0][1] + iw*jw*cube[1][1][1] + (1-iw)*jw*cube[0][1][1];
+
+    return (u_high-u_low)*kw + u_low;
 
 }

@@ -27,17 +27,16 @@ void SourcePoint::checkPosInfo( const double& domainXstart, const double& domain
 }
 
 
-int SourcePoint::emitParticles( const float dt,
-                                const float currTime,
-                                std::vector<particle>& emittedParticles)
+int SourcePoint::emitParticles( const float dt, const float currTime,
+                                std::vector<Particle>& emittedParticles)
 {
     // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
     if( currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime )
     {
-
+        
         for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-            particle cPar;
+            Particle cPar;
             cPar.xPos_init = posX;
             cPar.yPos_init = posY;
             cPar.zPos_init = posZ;

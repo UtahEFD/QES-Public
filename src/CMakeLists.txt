@@ -6,24 +6,31 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 CUDA_ADD_LIBRARY( cudaplumecore
     
     Random.cpp
+    Vector3.h
     
     Args.cpp
     Input.cpp
     NetCDFInput.cpp
     Urb.cpp
     Turb.cpp
+    URBGeneralData.cpp
+    TURBGeneralData.cpp
+    Wall.cpp
+    
     Eulerian.cpp
     Dispersion.cpp
     Plume.cpp
+    AdvectParticle.cpp
+    Reflection.cpp
+
     NetCDFOutput.cpp
-    NetCDFOutputGeneric.cpp	
-    PlumeOutputEulerian.cpp
+    QESNetCDFOutput.cpp
     PlumeOutputLagrToEul.cpp
     PlumeOutputLagrangian.cpp
+    PlumeOutputEulerian.cpp
 
     BoundaryConditions.hpp
-    
-    particle.hpp
+    Particle.hpp
 
     Sources.hpp
     SourceKind.hpp

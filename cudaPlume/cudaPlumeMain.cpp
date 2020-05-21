@@ -20,12 +20,15 @@
 #include "NetCDFInput.h"
 #include "Urb.hpp"
 #include "Turb.hpp"
+
+#include "URBGeneralData.h"
+#include "TURBGeneralData.h"
+
 #include "Plume.hpp"
 #include "Eulerian.h"
 #include "Dispersion.h"
 
-
-#include "NetCDFOutputGeneric.h"
+#include "QESNetCDFOutput.h"
 #include "PlumeOutputEulerian.h"
 #include "PlumeOutputLagrToEul.h"
 #include "PlumeOutputLagrangian.h"
@@ -66,78 +69,46 @@ int main(int argc, char** argv)
         exit(EXIT_FAILURE);
     }
 
-
-// leave this as 0 if you are using input urb and turb files from current urb and turb
-// set this to 1 if you are using input urb and turb files from past urb and turb
-// LA future work: the Bailey test cases are currently using past urb and turb file formats. Work needs done to 
-//  update their format to the current urb and turb formats, then we can just use one input constructor.
-//  I'm waiting to do this because I want to figure out why there are still rogue trajectories for the LES case before I complicate
-//  things by varying the file formats. Changing formats for the Bailey test cases would require a grid shift, 
-//  meaning careful placement and choice for an extra value in each dimension.
-#define USE_PREVIOUSCODE 0
-
-
-#if USE_PREVIOUSCODE
-
-    // Create instance of cudaUrb input class
-    Input* inputUrb = new Input(arguments.inputUrbFile);
     
-    // Create instance of cudaTurb input class
-    Input* inputTurb = new Input(arguments.inputTurbFile);
-
-#else
-
-    // Create instance of cudaUrb input class
-    NetCDFInput* inputUrb = new NetCDFInput(arguments.inputUrbFile);
-
-    // Create instance of cudaTurb input class
-    NetCDFInput* inputTurb = new NetCDFInput(arguments.inputTurbFile);
-
-#endif
-
+    // Create instance of QES-winds General data class
+    URBGeneralData* UGD = new URBGeneralData(&arguments);
+    //load data at t=0;
+    UGD->loadNetCDFData(0);
     
-    // Create instance of cudaUrb class
-    Urb* urb = new Urb(inputUrb, arguments.debug);
-    
-    // Create instance of cudaTurb class
-    Turb* turb = new Turb(inputTurb, arguments.debug);
-    
+    // Create instance of QES-Turb General data class
+    TURBGeneralData* TGD = new TURBGeneralData(&arguments,UGD);
+    //load data at t=0;
+    TGD->loadNetCDFData(0);
+
     // Create instance of Eulerian class
-    Eulerian* eul = new Eulerian(PID,urb,turb, arguments.debug);
+    Eulerian* eul = new Eulerian(PID,UGD,TGD, arguments.debug);
     
     // Create instance of Dispersion class
-    Dispersion* dis = new Dispersion(PID,urb,turb,eul, arguments.debug);
+    Dispersion* dis = new Dispersion(PID,UGD,TGD,eul, arguments.debug);
     
 
-
     // create output instance
-    // LA note: start it out as NULL, then make it point to what we want later if the file is supposed to exist
-    PlumeOutputEulerian* eulOutput = NULL;
-    PlumeOutputLagrToEul* lagrToEulOutput = NULL;
-    PlumeOutputLagrangian* lagrOutput = NULL;
-    if( arguments.doEulDataOutput == true )
-    {
-        eulOutput = new PlumeOutputEulerian(PID,urb,turb,eul,arguments.outputEulerianFile);
-    }
+    std::vector<QESNetCDFOutput*> outputVec;
     // always supposed to output lagrToEulOutput data
-    lagrToEulOutput = new PlumeOutputLagrToEul(PID,urb,dis,arguments.outputLagrToEulFile);
-    if( arguments.doLagrDataOutput == true )
-    {
-        lagrOutput = new PlumeOutputLagrangian(PID,dis,arguments.outputLagrangianFile);
+    outputVec.push_back(new PlumeOutputLagrToEul(PID,UGD,dis,arguments.outputLagrToEulFile));
+    if( arguments.doLagrDataOutput == true ) {
+        outputVec.push_back(new PlumeOutputLagrangian(PID,dis,arguments.outputLagrangianFile));
     }
-
-    // output Eulerian data. Use time zero
-    if( arguments.doEulDataOutput == true )
-    {
+    
+    // create output instance (separate for eulerian class)
+    QESNetCDFOutput* eulOutput = nullptr;
+    if( arguments.doEulDataOutput == true ) {
+        eulOutput = new PlumeOutputEulerian(PID,UGD,TGD,eul,arguments.outputEulerianFile);
+        // output Eulerian data. Use time zero
         eulOutput->save(0.0);
     }
 
-    
     // Create instance of Plume model class
-    Plume* plume = new Plume(PID,urb,turb,eul,dis, arguments.doLagrDataOutput, arguments.doSimInfoFileOutput,arguments.outputFolder,arguments.caseBaseName, arguments.debug);
+    Plume* plume = new Plume(PID,UGD,dis,&arguments);
     
     // Run plume advection model
-    plume->run(lagrToEulOutput,lagrOutput);
+    plume->run(UGD,TGD,eul,dis,outputVec);
+
     
     // compute run time information and print the elapsed execution time
     std::cout<<"[CUDA-Plume] \t Finished."<<std::endl;

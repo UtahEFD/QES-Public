@@ -32,13 +32,7 @@
   </SourcePoint>
 </sources>
 <boundaryConditions>
-    <xDomainStartBCtype>exiting</xDomainStartBCtype>
-    <xDomainEndBCtype>exiting</xDomainEndBCtype>
-    <yDomainStartBCtype>exiting</yDomainStartBCtype>
-    <yDomainEndBCtype>exiting</yDomainEndBCtype>
-    <zDomainStartBCtype>reflection</zDomainStartBCtype>
-    <zDomainEndBCtype>exiting</zDomainEndBCtype>
-    <buildingCutCell_reflectionType>simpleStairStep</buildingCutCell_reflectionType>
-    <terrainCutCell_reflectionType>simpleStairStep</terrainCutCell_reflectionType>
-    <doDepositions>false</doDepositions>
+  <xBCtype>exiting</xBCtype>
+  <yBCtype>exiting</yBCtype>
+  <zBCtype>reflection</zBCtype>
 </boundaryConditions>
