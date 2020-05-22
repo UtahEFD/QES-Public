@@ -32,4 +32,5 @@
   	<xBCtype>periodic</xBCtype>
   	<yBCtype>periodic</yBCtype>
   	<zBCtype>reflection</zBCtype>
+    <wallReflection>doNothing</wallReflection>
 </boundaryConditions>

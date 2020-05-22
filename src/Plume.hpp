@@ -25,8 +25,6 @@
 #include "PlumeInputData.hpp"
 #include "URBGeneralData.h"
 #include "TURBGeneralData.h"
-//#include "Urb.hpp"
-//#include "Turb.hpp"
 
 #include "Eulerian.h"
 #include "Dispersion.h"
@@ -113,6 +111,32 @@ private:
 
     void advectParticle(int&, int&, URBGeneralData*, TURBGeneralData*, Eulerian*, Dispersion*);
 
+    
+    // reflection functions
+    bool (Plume::*wallReflection)(URBGeneralData* UGD, Eulerian* eul,
+                                  double& xPos, double& yPos, double& zPos, 
+                                  double& disX, double& disY, double& disZ,
+                                  double& uFluct, double& vFluct, double& wFluct);
+    
+    // reflection on walls (stair step)
+    bool wallReflectionFullStairStep(URBGeneralData* UGD, Eulerian* eul,
+                                     double& xPos, double& yPos, double& zPos, 
+                                     double& disX, double& disY, double& disZ,
+                                     double& uFluct, double& vFluct, double& wFluct);
+    
+    // reflection -> set particle inactive when entering a wall
+    bool wallReflectionSetToInactive(URBGeneralData* UGD, Eulerian* eul,
+                                 double& xPos, double& yPos, double& zPos, 
+                                 double& disX, double& disY, double& disZ,
+                                     double& uFluct, double& vFluct, double& wFluct);
+    
+    // reflection -> this function will do nothing 
+    bool wallReflectionDoNothing(URBGeneralData* UGD, Eulerian* eul,
+                                 double& xPos, double& yPos, double& zPos, 
+                                 double& disX, double& disY, double& disZ,
+                                 double& uFluct, double& vFluct, double& wFluct);
+    
+    
     // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,
     // and the grid size. Forces particles to always move only at one timestep at at time.
     // Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
@@ -156,13 +180,7 @@ private:
                                   const double& domainStart,const double& domainEnd);
     void enforceWallBCs_reflection( double& pos,double& velFluct,double& velFluct_old,bool& isActive,
                                     const double& domainStart,const double& domainEnd);
-
-    // relfection on walls
-    bool reflection(URBGeneralData* UGD, Eulerian* eul,
-                    double& xPos, double& yPos, double& zPos, 
-                    double& disX, double& disY, double& disZ,
-                    double& uFluct, double& vFluct, double& wFluct);
-
+    
     // this is called to set the values whenever it is found that a particle is inactive or rogue
     void setFinishedParticleVals( double& xPos,double& yPos,double& zPos,bool& isActive,
                                   const bool& isRogue,

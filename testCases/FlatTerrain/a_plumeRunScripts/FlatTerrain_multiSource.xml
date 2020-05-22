@@ -65,4 +65,5 @@
   	<xBCtype>exiting</xBCtype>
   	<yBCtype>exiting</yBCtype>
   	<zBCtype>exiting</zBCtype>
+    <wallReflection>stairstepReflection</wallReflection>
 </boundaryConditions>

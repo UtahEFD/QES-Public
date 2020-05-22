@@ -1,19 +1,78 @@
 #include "Plume.hpp"
 
-bool Plume::reflection(URBGeneralData* UGD, Eulerian* eul,
-                       double& xPos, double& yPos, double& zPos, 
-                       double& disX, double& disY, double& disZ,
-                       double& uFluct, double& vFluct, double& wFluct)
+// reflection -> set particle inactive when entering a wall
+bool Plume::wallReflectionSetToInactive(URBGeneralData* UGD, Eulerian* eul,
+                                 double& xPos, double& yPos, double& zPos, 
+                                 double& disX, double& disY, double& disZ,
+                                 double& uFluct, double& vFluct, double& wFluct)
+{
+    int cellIdx = eul->getCellId(xPos,yPos,zPos);
+    if( (UGD->icellflag.at(cellIdx) == 0) || (UGD->icellflag.at(cellIdx) == 2) ) {
+        // particle end trajectory inside solide -> set inactive  
+        return false;
+    } else {
+        // particle end trajectory outside solide -> keep active
+        return true;
+    }
+}
+
+// reflection -> this function will do nothing 
+bool Plume::wallReflectionDoNothing(URBGeneralData* UGD, Eulerian* eul,
+                                    double& xPos, double& yPos, double& zPos, 
+                                    double& disX, double& disY, double& disZ,
+                                    double& uFluct, double& vFluct, double& wFluct)
+{
+    return true;
+}
+
+
+bool Plume::wallReflectionFullStairStep(URBGeneralData* UGD, Eulerian* eul,
+                                        double& xPos, double& yPos, double& zPos, 
+                                        double& disX, double& disY, double& disZ,
+                                        double& uFluct, double& vFluct, double& wFluct)
 {
     /*
-      This function will return false and leave xPos, yPos, zPos, uFluct, vFluct, wFluct unchanged
-      if: 
-       - UGD->icellflag.at(cellIdNew) == 0 || UGD->icellflag.at(cellIdNew) == 2
-       - count > maxCount
-       - cell ID out of bound
-       - particle trajectory more than 1 cell in each direction
-    */
+     * This function will return true if:
+     * - no need for reflection (leave xPos, yPos, zPos, uFluct, vFluct, wFluct unchanged)
+     * - reflection valid
+     * - reflection invalid
+     *   if: - count > maxCount
+     *       - particle trajectory more than 1 cell in each direction
+     *   => in this case, the particle will be place back ot the old position, new random move next step.
+     *
+     *
+     * This function will return false (leave xPos, yPos, zPos, uFluct, vFluct, wFluct unchanged) 
+     * - cell ID out of bound 
+     * - no valid surface for reflection 
+     */
+ 
+    // linearized cell ID for end of the trajectory of the particle
+    int cellIdNew = eul->getCellId(xPos,yPos,zPos);
+    if( (UGD->icellflag.at(cellIdNew) != 0) && (UGD->icellflag.at(cellIdNew) != 2) ) {
+        // particle end trajectory outside solide -> no need for reflection
+        return true;
+    } 
+    
+    // linearized cell ID for origine of the trajectory of the particle
+    int cellIdOld = eul->getCellId(xPos-disX,yPos-disY,zPos-disZ); 
 
+    // i,j,k of cell index
+    Vector3<int> cellIdxOld=eul->getCellIndex(cellIdOld);
+    Vector3<int> cellIdxNew=eul->getCellIndex(cellIdNew);
+    int i=cellIdxOld[0], j=cellIdxOld[1], k=cellIdxOld[2];
+    
+    // check particle trajectory more than 1 cell in each direction
+    if( (abs(cellIdxOld[0]-cellIdxNew[0]) > 1) || (abs(cellIdxOld[1]-cellIdxNew[1]) > 1) ||
+        (abs(cellIdxOld[2]-cellIdxNew[2]) > 1) ) 
+    {
+        // update output variable: particle position to old position
+        xPos-=disX;
+        yPos-=disY;
+        zPos-=disZ;
+        
+        return true;
+    }
+        
     // some constants
     const double eps_S = 0.0001;
     const int maxCount = 10;
@@ -26,11 +85,6 @@ bool Plume::reflection(URBGeneralData* UGD, Eulerian* eul,
     double dy = UGD->dy;
     double dz = UGD->dz;
 
-    // linearized cell ID for origine and end of the trajectory of the particle
-    int cellIdOld,cellIdNew;
-    // icellFlag of the cell at the end of the trajectory of the particle 
-    int cellFlagNew;
-    
     // cartesian basis vectors 
     Vector3<double> e1={1.0,0.0,0.0},e2={0.0,1.0,0.0},e3={0.0,0.0,1.0};
     
@@ -58,25 +112,8 @@ bool Plume::reflection(URBGeneralData* UGD, Eulerian* eul,
     // postion of the particle end of trajectory 
     Xnew={xPos,yPos,zPos};
     
-    // cell ID of the origin and end of the particle trajectory  
-    cellIdOld=eul->getCellId(Xold);
-    cellIdNew=eul->getCellId(Xnew); 
-    
-    Vector3<int> cellIdxOld=eul->getCellIndex(cellIdOld);
-    Vector3<int> cellIdxNew=eul->getCellIndex(cellIdNew);
-    
-    // check particle trajectory more than 1 cell in each direction
-    if( (abs(cellIdxOld[0]-cellIdxNew[0]) > 1) ||
-        (abs(cellIdxOld[1]-cellIdxNew[1]) > 1) ||
-        (abs(cellIdxOld[2]-cellIdxNew[2]) > 1) ) {
-        //std::cout << "particle trajectory more than 1 cell in each direction" << std::endl;
-        return false;
-    }
-
-    int i=cellIdxOld[0], j=cellIdxOld[1], k=cellIdxOld[2];
-
-    // cell type of the end point
-    cellFlagNew=UGD->icellflag.at(cellIdNew);
+    // icellFlag of the cell at the end of the trajectory of the particle 
+    int cellFlagNew=UGD->icellflag.at(cellIdNew);
 
     // vector of fluctuation
     vecFluct={uFluct,vFluct,wFluct};
@@ -208,7 +245,7 @@ bool Plume::reflection(URBGeneralData* UGD, Eulerian* eul,
                     // this should happend only if particle traj. more than 1 cell in each direction,
                     // -> should have been skipped at the beginning of the function
                     //std::cout << "Reflection problem: no valid surface" << std::endl;
-                    return false;
+                    return true;
                 } 
             }
         }
@@ -249,10 +286,8 @@ bool Plume::reflection(URBGeneralData* UGD, Eulerian* eul,
         
     } // end of: while( (cellFlagNew==0 || cellFlagNew==2) && (count < maxCount) ) 
     
-    // if count run out -> function return false
-    if(count >= maxCount){
-        return false;
-    } else {
+
+    if(count < maxCount){
         // update output variable: particle position
         xPos=Xnew[0];
         yPos=Xnew[1];
@@ -261,18 +296,14 @@ bool Plume::reflection(URBGeneralData* UGD, Eulerian* eul,
         uFluct=vecFluct[0];
         vFluct=vecFluct[1];
         wFluct=vecFluct[2];    
-        
-        return true;
+    } else {
+        // update output variable: particle position to old position
+        xPos-=disX;
+        yPos-=disY;
+        zPos-=disZ;
     }
-    
-    /*
-      This function will return false and leave xPos, yPos, zPos, uFluct, vFluct, wFluct unchanged
-      if: 
-       - UGD->icellflag.at(cellIdNew) == 0 || UGD->icellflag.at(cellIdNew) == 2
-       - count > maxCount
-       - cell ID out of bound
-       - particle trajectory more than 1 cell in each direction
-    */
+
+    return true;
     
 }
 

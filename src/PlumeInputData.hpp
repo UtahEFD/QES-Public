@@ -21,38 +21,38 @@
 
 class PlumeInputData : public ParseInterface {
     
-    public:
-    	SimulationParameters* simParams;
-    	CollectionParameters* colParams;
-    	Sources* sources;
-		BoundaryConditions* BCs;
+public:
+    SimulationParameters* simParams;
+    CollectionParameters* colParams;
+    Sources* sources;
+    BoundaryConditions* BCs;
     
     
-    	PlumeInputData() {
-    	    simParams = 0;
-            colParams = 0;
-            sources = 0;
-    	}
+    PlumeInputData() {
+        simParams = 0;
+        colParams = 0;
+        sources = 0;
+    }
     
-    	virtual void parseValues() {
-    	    parseElement<SimulationParameters>(true, simParams, "simulationParameters");
-    	    parseElement<CollectionParameters>(true, colParams, "collectionParameters");
-    	    parseElement<Sources>(false, sources, "sources");
-	    	parseElement<BoundaryConditions>(true, BCs, "boundaryConditions");
-
-    	}
-        /**
-    	 * This function takes in an URBInputData variable and uses it
-    	 * as the base to parse the ptree
-    	 * @param UID the object that will serve as the base level of the xml parser
-    	 */
-        void parseTree(pt::ptree t) { //  URBInputData*& UID) {
-            // root = new URBInputData();
-            setTree(t);
-            setParents("root");
-            parseValues();
-        }
+    virtual void parseValues() {
+        parseElement<SimulationParameters>(true, simParams, "simulationParameters");
+        parseElement<CollectionParameters>(true, colParams, "collectionParameters");
+        parseElement<Sources>(false, sources, "sources");
+        parseElement<BoundaryConditions>(true, BCs, "boundaryConditions");
         
+    }
+    /**
+     * This function takes in an URBInputData variable and uses it
+     * as the base to parse the ptree
+     * @param UID the object that will serve as the base level of the xml parser
+     */
+    void parseTree(pt::ptree t) { //  URBInputData*& UID) {
+        // root = new URBInputData();
+        setTree(t);
+        setParents("root");
+        parseValues();
+    }
+    
     
 };
 #endif

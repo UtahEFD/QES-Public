@@ -26,7 +26,7 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
     double yPos = dis->pointList[parIdx].yPos;
     double zPos = dis->pointList[parIdx].zPos;
     
-    size_t cellIdx_old = eul->getCellId(xPos,yPos,zPos);
+    //size_t cellIdx_old = eul->getCellId(xPos,yPos,zPos);
     
     // getting the initial position, for use in setting finished particles
     double xPos_init = dis->pointList[parIdx].xPos_init;
@@ -273,10 +273,7 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         yPos = yPos + disY;
         zPos = zPos + disZ;
         
-        size_t cellIdx = eul->getCellId(xPos,yPos,zPos);
-        if( (UGD->icellflag.at(cellIdx) == 0) || (UGD->icellflag.at(cellIdx) == 2) ) {
-            isActive = reflection(UGD,eul,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
-        }
+        isActive = (this->*wallReflection)(UGD,eul,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
                                         
         // now apply boundary conditions
         (this->*enforceWallBCs_x)(xPos,uFluct,uFluct_old,isActive, domainXstart,domainXend);
@@ -307,7 +304,7 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         tyz_old = tyz;
         tzz_old = tzz;
                     
-        cellIdx_old=cellIdx;
+        //cellIdx_old=cellIdx;
                     
         // now set the time remainder for the next loop
         // if the par_dt calculated from the Courant Number is greater than the timeRemainder,

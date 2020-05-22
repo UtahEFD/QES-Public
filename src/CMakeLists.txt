@@ -21,8 +21,8 @@ CUDA_ADD_LIBRARY( cudaplumecore
     Dispersion.cpp
     Plume.cpp
     AdvectParticle.cpp
-    Reflection.cpp
-
+    WallReflection.cpp
+    
     NetCDFOutput.cpp
     QESNetCDFOutput.cpp
     PlumeOutputLagrToEul.cpp

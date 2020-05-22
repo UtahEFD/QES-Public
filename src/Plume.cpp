@@ -67,6 +67,20 @@ Plume::Plume( PlumeInputData* PID,URBGeneralData* UGD,Dispersion* dis, Args* arg
     // and check to make sure the input BCtypes are legitimate
     setBCfunctions(xBCtype,yBCtype,zBCtype);
 
+    // now set the wall reflection function
+    if(PID->BCs->wallReflection == "doNothing") {
+        wallReflection = &Plume::wallReflectionDoNothing; 
+    } else if(PID->BCs->wallReflection == "setInactive") {
+        wallReflection = &Plume::wallReflectionSetToInactive; 
+    } else if(PID->BCs->wallReflection == "stairstepReflection") {
+        wallReflection = &Plume::wallReflectionFullStairStep; 
+    } else {
+        // this should not happend 
+        std::cerr  << "[ERROR] unknown wall reflection setting" << std::endl;
+        exit(EXIT_FAILURE);
+        
+    }
+    
 }
 
 // LA note: in this whole section, the idea of having single value temporary storage instead of just referencing values
