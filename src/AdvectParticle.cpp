@@ -85,6 +85,7 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
     // LA important note: can't use the simulation timestep for the timestep remainder, the last simulation timestep
     //  is potentially smaller than the simulation timestep. So need to use the simTimes.at(nSimTimes-1)-simTimes.at(nSimTimes-2)
     //  for the last simulation timestep. The problem is that simTimes.at(nSimTimes-1) is greater than simTimes.at(nSimTimes-2) + sim_dt.
+    // FMargairaz -> need clean-up
     double timeRemainder = sim_dt;
     if( sim_tIdx == nSimTimes-2 ) {  // at the final timestep
         timeRemainder = simTimes.at(nSimTimes-1) - simTimes.at(nSimTimes-2);
@@ -93,13 +94,6 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
     // Will end at simTimes.at(sim_tIdx+1) at the end of this particle loop
                 
     while( isActive == true && timeRemainder > 0.0 ) {
-
-        // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
-        // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
-        double par_dt = calcCourantTimestep(uFluct,vFluct,wFluct,timeRemainder);
-
-        // update the par_time, useful for debugging
-        par_time = par_time + par_dt;
 
         /*
           now get the Lagrangian values for the current iteration from the Eulerian grid
@@ -142,7 +136,6 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         if( CoEps <= 1e-6 ) {
             CoEps = 1e-6;
         }
-        //double CoEps = eul->interp3D(turb->CoEps,"Eps");
         
         // this is the current reynolds stress tensor
         txx = eul->interp3D_cellVar(TGD->txx);
@@ -153,8 +146,15 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         tzz = eul->interp3D_cellVar(TGD->tzz);
         // now need to call makeRealizable on tau
         makeRealizable(txx,txy,txz,tyy,tyz,tzz);
-                    
-                    
+        
+        
+        // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
+        // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
+        double par_dt = calcCourantTimestep(uMean+uFluct,vMean+vFluct,wMean+wFluct,timeRemainder);
+
+        // update the par_time, useful for debugging
+        par_time = par_time + par_dt;
+        
         // now need to calculate the inverse values for tau
         // directly modifies the values of tau
         // LA warn: I just noticed that Bailey's code always leaves the last three components alone, 
@@ -174,8 +174,7 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         //double lzy = 0.0;
         double lzz = tzz;
         invert3(lxx,lxy,lxz,lyx,lyy,lyz,lzx,lzy,lzz);
-                    
-                    
+        
         // these are the random numbers for each direction
         // LA note: should be randn() matlab equivalent, which is a normally distributed random number
         // LA future work: it is possible the rogue particles are caused by the random number generator stuff.
@@ -184,10 +183,10 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         double yRandn = random::norRan();
         double zRandn = random::norRan();
         
-        Vector3<double> vecRandn(random::norRan(), random::norRan(), random::norRan());
+        //Vector3<double> vecRandn(random::norRan(), random::norRan(), random::norRan());
         
-        /* now calculate a bunch of values for the current particle */
-        // calculate the d_tau_dt values, which are the (tau_current - tau_old)/dt
+        // now calculate a bunch of values for the current particle
+        // calculate the time derivative of the stress tensor: (tau_current - tau_old)/dt
         double dtxxdt = (txx - txx_old)/par_dt;
         double dtxydt = (txy - txy_old)/par_dt;
         double dtxzdt = (txz - txz_old)/par_dt;
@@ -196,7 +195,7 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         double dtzzdt = (tzz - tzz_old)/par_dt;
                     
                     
-        /* now calculate and set the A and b matrices for an Ax = b */
+        // now calculate and set the A and b matrices for an Ax = b 
         // A = -I + 0.5*(-CoEps*L + L*dTdt)*par_dt;
         double A_11 = -1.0 + 0.50*(-CoEps*lxx + lxx*dtxxdt + lxy*dtxydt + lxz*dtxzdt)*par_dt;
         double A_12 =        0.50*(-CoEps*lxy + lxy*dtxxdt + lyy*dtxydt + lyz*dtxzdt)*par_dt;
@@ -221,31 +220,30 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         
         // now prepare for the Ax=b calculation by calculating the inverted A matrix
         invert3(A_11,A_12,A_13,A_21,A_22,A_23,A_31,A_32,A_33);
-        // now do the Ax=b calculation using the inverted matrix
+        // now do the Ax=b calculation using the inverted matrix (vecFluct = A*b)
         matmult(A_11,A_12,A_13,A_21,A_22,A_23,A_31,A_32,A_33,b_11,b_21,b_31, uFluct,vFluct,wFluct);
                     
                     
         // now check to see if the value is rogue or not
-        // if it is rogue, output a ton of information that can be copied into matlab
-        // LA note: I tried to keep the format really nice to reduce the amount of reformulating work done in matlab.
-        //  I wanted to turn it into a function, but there are sooo many variables that would need to be passed into that function call
-        //  so it made more sense to write them out directly.
-        if( ( std::abs(uFluct) >= dis->vel_threshold || isnan(uFluct) ) && nx > 1 ) {
-            std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
-            std::cout << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
+        if( std::abs(uFluct) >= dis->vel_threshold || isnan(uFluct) ) {
+            // std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
+            // std::cout << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
             uFluct = 0.0;
+            isActive = false;
             isRogue = true;
         }
-        if( ( std::abs(vFluct) >= dis->vel_threshold || isnan(vFluct) ) && ny > 1 ) {
-            std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
-            std::cout << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
+        if( std::abs(vFluct) >= dis->vel_threshold || isnan(vFluct) ) {
+            // std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
+            // std::cout << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
             vFluct = 0.0;
+            isActive = false;
             isRogue = true;
         }
-        if( ( std::abs(wFluct) >= dis->vel_threshold || isnan(wFluct) ) && nz > 1 ) {
-            std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
-            std::cout << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
+        if( std::abs(wFluct) >= dis->vel_threshold || isnan(wFluct) ) {
+            // std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
+            // std::cout << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
             wFluct = 0.0;
+            isActive = false;
             isRogue = true;
         }
                     
@@ -256,15 +254,6 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         //  I think we are still a long ways from being able to throw this out.
                     
         // now update the particle position for this iteration
-        // LA future work: at some point in time, need to do a CFL condition for only moving one eulerian grid cell at a time
-        //  this would mean adding some kind of while loop, with an adaptive timestep, controlling the end of the while loop
-        //   with the simulation time increment. This means all particles can do multiple time iterations, each with their own adaptive timestep.
-        //  To make this work, particles would need to be required to catch up so they are all calculated by a given simulation timestep.
-        // LA warn: currently, we use the simulation timestep so we may violate the eulerian grid CFL condition. 
-        //  but is simpler to work with when getting started
-        // LA future work: instead of using an adaptive timestep that adapts the timestep when checking if distX is too big or small,
-        //  we should use a courant number to precalculate the required adaptive timestep. Means less if statements and the error associated
-        //  with CFL conditions would just come out as the accuracy of the particle statistics.
         double disX = (uMean + uFluct)*par_dt;
         double disY = (vMean + vFluct)*par_dt;
         double disZ = (wMean + wFluct)*par_dt;
@@ -273,6 +262,7 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         yPos = yPos + disY;
         zPos = zPos + disZ;
         
+        // check and do wall (building and terrain) reflection (based in the method)
         isActive = (this->*wallReflection)(UGD,eul,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
                                         
         // now apply boundary conditions
@@ -311,8 +301,7 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         // the function for calculating par_dt will use the timeRemainder for the output par_dt
         // so this should result in a timeRemainder of exactly zero, no need for a tol.
         timeRemainder = timeRemainder - par_dt;
-        
-                    
+                            
         // print info about the current particle time iteration
         // but only if debug is set to true and this is the right updateFrequency time
         if( debug == true ) {

@@ -137,6 +137,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
     // LA note on debug timers: because the loop is doing stuff for the next time, and particles start getting released at time zero,
     //  this means that the updateFrequency needs to match with tStep+1, not tStep. At the same time, the current time output to consol
     //  output and to function calls need to also be set to tStep+1.
+    // FMargairaz -> need clean-up
     for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++) {
         
         // need to release new particles
@@ -262,7 +263,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Disper
 }
 
 
-double Plume::calcCourantTimestep(const double& uFluct,const double& vFluct,const double& wFluct,const double& timeRemainder)
+double Plume::calcCourantTimestep(const double& u,const double& v,const double& w,const double& timeRemainder)
 {
     // if the Courant Number is set to 0.0, we want to exit using the timeRemainder (first time through that is the simTime)
     if( CourantNum == 0.0 ) {
@@ -276,9 +277,9 @@ double Plume::calcCourantTimestep(const double& uFluct,const double& vFluct,cons
     // LA-note: what to do if the velocity fluctuation is zero?
     //  I forced them to zero to check dt_x, dt_y, and dt_z would get values of "inf". 
     //  It ends up keeping dt_par as the timeRemainder
-    double dt_x = CourantNum*dx/std::abs(uFluct);
-    double dt_y = CourantNum*dy/std::abs(vFluct);
-    double dt_z = CourantNum*dz/std::abs(wFluct);
+    double dt_x = CourantNum*dx/std::abs(u);
+    double dt_y = CourantNum*dy/std::abs(v);
+    double dt_z = CourantNum*dz/std::abs(w);
     
     // now find which dt is the smallest one of the Courant Number ones, or the timeRemainder
     // if any dt is smaller than the already chosen output value set that dt to the output dt value
@@ -596,6 +597,8 @@ void Plume::setFinishedParticleVals(double& xPos,double& yPos,double& zPos,bool&
                                     const bool& isRogue,
                                     const double& xPos_init, const double& yPos_init, const double& zPos_init)
 {
+    // FMargairaz -> this function will be used to removed particle from the particle list in the futur
+
     // need to set all rogue particles to inactive
     if( isRogue == true ) {
         isActive = false;

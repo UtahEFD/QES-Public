@@ -65,6 +65,7 @@ bool Plume::wallReflectionFullStairStep(URBGeneralData* UGD, Eulerian* eul,
     if( (abs(cellIdxOld[0]-cellIdxNew[0]) > 1) || (abs(cellIdxOld[1]-cellIdxNew[1]) > 1) ||
         (abs(cellIdxOld[2]-cellIdxNew[2]) > 1) ) 
     {
+        std::cout << "too far" << std::endl;
         // update output variable: particle position to old position
         xPos-=disX;
         yPos-=disY;
