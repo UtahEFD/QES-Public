@@ -84,15 +84,17 @@ int main(int argc, char** argv)
     Eulerian* eul = new Eulerian(PID,UGD,TGD, arguments.debug);
     
     // Create instance of Dispersion class
-    Dispersion* dis = new Dispersion(PID,UGD,TGD,eul, arguments.debug);
+    //Dispersion* dis = new Dispersion(PID,UGD,TGD,eul, arguments.debug);
     
-
+    // Create instance of Plume model class
+    Plume* plume = new Plume(PID,UGD,TGD,eul,&arguments);
+    
     // create output instance
     std::vector<QESNetCDFOutput*> outputVec;
     // always supposed to output lagrToEulOutput data
-    outputVec.push_back(new PlumeOutputLagrToEul(PID,UGD,dis,arguments.outputLagrToEulFile));
+    outputVec.push_back(new PlumeOutputLagrToEul(PID,UGD,plume,arguments.outputLagrToEulFile));
     if( arguments.doLagrDataOutput == true ) {
-        outputVec.push_back(new PlumeOutputLagrangian(PID,dis,arguments.outputLagrangianFile));
+        outputVec.push_back(new PlumeOutputLagrangian(PID,plume,arguments.outputLagrangianFile));
     }
     
     // create output instance (separate for eulerian class)
@@ -102,12 +104,9 @@ int main(int argc, char** argv)
         // output Eulerian data. Use time zero
         eulOutput->save(0.0);
     }
-
-    // Create instance of Plume model class
-    Plume* plume = new Plume(PID,UGD,dis,&arguments);
     
     // Run plume advection model
-    plume->run(UGD,TGD,eul,dis,outputVec);
+    plume->run(UGD,TGD,eul,outputVec);
     
     // compute run time information and print the elapsed execution time
     std::cout<<"[CUDA-Plume] \t Finished."<<std::endl;

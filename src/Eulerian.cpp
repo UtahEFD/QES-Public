@@ -67,6 +67,9 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     // temporary copy of sigma's
     setSigmas(TGD);
     
+    // calculate the threshold velocity
+    vel_threshold = 10.0*std::sqrt(getMaxVariance(sig_x,sig_y,sig_z));
+    
 }
 
 void Eulerian::setBC(URBGeneralData* UGD,TURBGeneralData* TGD)
@@ -438,6 +441,36 @@ void Eulerian::setSigmas(TURBGeneralData* TGD)
     }
     return;
 }
+
+double Eulerian::getMaxVariance(const std::vector<double>& sigma_x_vals,const std::vector<double>& sigma_y_vals,const std::vector<double>& sigma_z_vals)
+{
+    // set thoe initial maximum value to a very small number. The idea is to go through each value of the data,
+    // setting the current value to the max value each time the current value is bigger than the old maximum value
+    double maximumVal = -10e-10;
+    
+    // go through each vector to find the maximum value
+    // each one could potentially be different sizes if the grid is not 3D
+    for(size_t idx = 0; idx < sigma_x_vals.size(); idx++) {
+        if(sigma_x_vals.at(idx) > maximumVal) {
+            maximumVal = sigma_x_vals.at(idx);
+        }
+    }
+
+    for(size_t idx = 0; idx < sigma_y_vals.size(); idx++) {
+        if(sigma_y_vals.at(idx) > maximumVal) {
+            maximumVal = sigma_y_vals.at(idx);
+        }
+    }
+
+    for(size_t idx = 0; idx < sigma_z_vals.size(); idx++) {
+        if(sigma_z_vals.at(idx) > maximumVal) {
+            maximumVal = sigma_z_vals.at(idx);
+        }
+    }
+
+    return maximumVal;
+}
+
     
 void Eulerian::setInterp3Dindex_uFace(const double& par_xPos, const double& par_yPos, const double& par_zPos)
 {

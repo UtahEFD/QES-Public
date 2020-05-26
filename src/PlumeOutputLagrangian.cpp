@@ -11,16 +11,16 @@
 
 
 #include "PlumeOutputLagrangian.h"
-
+#include "Plume.hpp"
 
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
-PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis_ptr,std::string output_file)
-  : QESNetCDFOutput(output_file)
+PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_ptr,std::string output_file)
+    : QESNetCDFOutput(output_file)
 {
-
+    
     std::cout << "[PlumeOutputLagrangian] set up NetCDF file "<< output_file << std::endl;
-
-
+    
+    
     // this is the current simulation start time
     // LA note: this would need adjusted if we ever change the 
     //  input simulation parameters to include a simStartTime
@@ -83,7 +83,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis
 
 
     // setup copy of disp pointer so output data can be grabbed directly
-    disp = dis_ptr;
+    plume = plume_ptr;
 
 
     // --------------------------------------------------------
@@ -91,7 +91,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis
     // --------------------------------------------------------
 
     // get total number of particle to be released 
-    numPar = disp->totalParsToRelease;
+    numPar = plume->totalParsToRelease;
     std::cout << "[PlumeOutputLagrangian] total number of particle to be saved in file " << numPar << std::endl;
 
 
@@ -103,31 +103,31 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Dispersion* dis
     {
         parID.push_back(par);
 
-        xPos_init.push_back(disp->pointList.at(par).xPos_init);
-        yPos_init.push_back(disp->pointList.at(par).yPos_init);
-        zPos_init.push_back(disp->pointList.at(par).zPos_init);
-        tStrt.push_back(disp->pointList.at(par).tStrt);
-        sourceIdx.push_back(disp->pointList.at(par).sourceIdx);
+        xPos_init.push_back(plume->pointList.at(par).xPos_init);
+        yPos_init.push_back(plume->pointList.at(par).yPos_init);
+        zPos_init.push_back(plume->pointList.at(par).zPos_init);
+        tStrt.push_back(plume->pointList.at(par).tStrt);
+        sourceIdx.push_back(plume->pointList.at(par).sourceIdx);
 
-        xPos.push_back(disp->pointList.at(par).xPos);
-        yPos.push_back(disp->pointList.at(par).yPos);
-        zPos.push_back(disp->pointList.at(par).zPos);
-        uFluct.push_back(disp->pointList.at(par).uFluct);
-        vFluct.push_back(disp->pointList.at(par).vFluct);
-        wFluct.push_back(disp->pointList.at(par).wFluct);
-        delta_uFluct.push_back(disp->pointList.at(par).delta_uFluct);
-        delta_vFluct.push_back(disp->pointList.at(par).delta_vFluct);
-        delta_wFluct.push_back(disp->pointList.at(par).delta_wFluct);
+        xPos.push_back(plume->pointList.at(par).xPos);
+        yPos.push_back(plume->pointList.at(par).yPos);
+        zPos.push_back(plume->pointList.at(par).zPos);
+        uFluct.push_back(plume->pointList.at(par).uFluct);
+        vFluct.push_back(plume->pointList.at(par).vFluct);
+        wFluct.push_back(plume->pointList.at(par).wFluct);
+        delta_uFluct.push_back(plume->pointList.at(par).delta_uFluct);
+        delta_vFluct.push_back(plume->pointList.at(par).delta_vFluct);
+        delta_wFluct.push_back(plume->pointList.at(par).delta_wFluct);
         
         // since no boolean output exists, going to have to convert the values to ints
-        if( disp->pointList.at(par).isRogue == true )
+        if( plume->pointList.at(par).isRogue == true )
         {
             isRogue.push_back(1);
         } else
         {
             isRogue.push_back(0);
         }
-        if( disp->pointList.at(par).isActive == true )
+        if( plume->pointList.at(par).isActive == true )
         {
             isActive.push_back(1);
         } else
@@ -205,33 +205,33 @@ void PlumeOutputLagrangian::save(float currentTime)
     if( currentTime >= nextOutputTime && currentTime <= outputEndTime )
     {
         // copy particle info into the required output storage containers
-        for( int par = 0; par < disp->nParsReleased; par++ )
+        for( int par = 0; par < plume->nParsReleased; par++ )
         {
-            xPos_init.at(par) = disp->pointList.at(par).xPos_init;
-            yPos_init.at(par) = disp->pointList.at(par).yPos_init;
-            zPos_init.at(par) = disp->pointList.at(par).zPos_init;
-            tStrt.at(par) = disp->pointList.at(par).tStrt;
-            sourceIdx.at(par) = disp->pointList.at(par).sourceIdx;
+            xPos_init.at(par) = plume->pointList.at(par).xPos_init;
+            yPos_init.at(par) = plume->pointList.at(par).yPos_init;
+            zPos_init.at(par) = plume->pointList.at(par).zPos_init;
+            tStrt.at(par) = plume->pointList.at(par).tStrt;
+            sourceIdx.at(par) = plume->pointList.at(par).sourceIdx;
 
-            xPos.at(par) = disp->pointList.at(par).xPos;
-            yPos.at(par) = disp->pointList.at(par).yPos;
-            zPos.at(par) = disp->pointList.at(par).zPos;
-            uFluct.at(par) = disp->pointList.at(par).uFluct;
-            vFluct.at(par) = disp->pointList.at(par).vFluct;
-            wFluct.at(par) = disp->pointList.at(par).wFluct;
-            delta_uFluct.at(par) = disp->pointList.at(par).delta_uFluct;
-            delta_vFluct.at(par) = disp->pointList.at(par).delta_vFluct;
-            delta_wFluct.at(par) = disp->pointList.at(par).delta_wFluct;
+            xPos.at(par) = plume->pointList.at(par).xPos;
+            yPos.at(par) = plume->pointList.at(par).yPos;
+            zPos.at(par) = plume->pointList.at(par).zPos;
+            uFluct.at(par) = plume->pointList.at(par).uFluct;
+            vFluct.at(par) = plume->pointList.at(par).vFluct;
+            wFluct.at(par) = plume->pointList.at(par).wFluct;
+            delta_uFluct.at(par) = plume->pointList.at(par).delta_uFluct;
+            delta_vFluct.at(par) = plume->pointList.at(par).delta_vFluct;
+            delta_wFluct.at(par) = plume->pointList.at(par).delta_wFluct;
 
             // since no boolean output exists, going to have to convert the values to ints
-            if( disp->pointList.at(par).isRogue == true )
+            if( plume->pointList.at(par).isRogue == true )
             {
                 isRogue.at(par) = 1;
             } else
             {
                 isRogue.at(par) = 0;
             }
-            if( disp->pointList.at(par).isActive == true )
+            if( plume->pointList.at(par).isActive == true )
             {
                 isActive.at(par) = 1;
             } else

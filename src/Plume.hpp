@@ -10,12 +10,14 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <list>
 #include <cmath>
 #include <cstring>
 
 #include "util/calcTime.h"
 #include "Vector3.h"
 #include "Matrix3.h"
+#include "Random.h"
 
 #include "QESNetCDFOutput.h"
 #include "PlumeOutputLagrToEul.h"
@@ -23,16 +25,18 @@
 
 #include "Args.hpp"
 #include "PlumeInputData.hpp"
+
 #include "URBGeneralData.h"
 #include "TURBGeneralData.h"
-
 #include "Eulerian.h"
-#include "Dispersion.h"
 
+#include "Particle.hpp"
 
-// LA do we need these here???
-using namespace netCDF;
-using namespace netCDF::exceptions;
+#include "SourcePoint.hpp"
+#include "SourceLine.hpp"
+#include "SourceCircle.hpp"
+#include "SourceCube.hpp"
+#include "SourceFullDomain.hpp"
 
 class Plume {
     
@@ -43,7 +47,7 @@ public:
     // then sets up the concentration sampling box information for output
     // next copies important input time values and calculates needed time information 
     // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
-    Plume( PlumeInputData*, URBGeneralData*, Dispersion*, Args*); 
+    Plume( PlumeInputData*, URBGeneralData*, TURBGeneralData*, Eulerian*, Args*); 
 
     // this is the plume solver. It performs a time integration of the particle positions and particle velocity fluctuations
     // with calculations done on a per particle basis. During each iteration, temporary single value particle information
@@ -56,7 +60,18 @@ public:
     // LA future work: Need to add a CFL condition where the user specifies a courant number that varies from 0 to 1
     //  that is used to do an additional time remainder time integration loop for each particle, forcing particles to only
     //  move one cell at a time.
-    void run(URBGeneralData*,TURBGeneralData*,Eulerian*,Dispersion*,std::vector<QESNetCDFOutput*> );
+    void run(URBGeneralData*,TURBGeneralData*,Eulerian*,std::vector<QESNetCDFOutput*> );
+    
+    // This the storage for all particles
+    // the sources can set these values, then the other values are set using urb and turb info using these values
+    std::vector<Particle> pointList;
+    // this is the number of particles released during the current timestep
+    // needed for output of particle information
+    // !!! plume run needs to update this variable in this spot each time during the loop!
+    int nParsReleased;
+    // this is the total number of particles expected to be released during the simulation
+    // !!! this has to be calculated carefully inside the getInputSources() function
+    int totalParsToRelease;
 
 private:
 
@@ -86,14 +101,21 @@ private:
     int nSimTimes; // this is the number of timesteps of the simulation, the calculated size of times
     std::vector<double> simTimes;  // this is the list of times for the simulation
 
+    // some overall metadata for the set of particles
+    int isRogueCount;        // just a total number of rogue particles per time iteration
+    int isNotActiveCount;       // just a total number of inactive active particles per time iteration
+
     // important time variables not copied from dispersion
     double CourantNum;  // the Courant number, used to know how to divide up the simulation timestep into smaller per particle timesteps. Copied from input
-
-    // copy of dispersion number of pars to release for each timestep,
-    // used for updating the particle loop counter in Plume
+    double vel_threshold;
+    
+    // ALL Sources that will be used 
+    std::vector< SourceKind* > allSources;
+    // this is the number of particles to release at each timestep, 
+    // used for updating the particle loop counter in Plume.
     std::vector<int> nParsToRelease;
 
-
+    
     double invarianceTol; // this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
     double C_0;           // used to separate out CoEps into its separate parts when doing debug output
     int updateFrequency_timeLoop;     // used to know how frequently to print out information during the time loop of the solver
@@ -109,7 +131,23 @@ private:
     std::string caseBaseName;
     bool debug;
 
-    void advectParticle(int&, int&, URBGeneralData*, TURBGeneralData*, Eulerian*, Dispersion*);
+
+    void setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vector<Particle>& newParticles);
+    // this function gets sources from input data and adds them to the allSources vector
+    // this function also calls the many check and calc functions for all the input sources
+    // !!! note that these check and calc functions have to be called here 
+    //  because each source requires extra data not found in the individual source data
+    // !!! totalParsToRelease needs calculated very carefully here using information from each of the sources
+    void getInputSources(PlumeInputData* PID);
+    // function for generating full particle list before starting the plume simulations
+    // also generates a vector for the number of particles to release at a given time
+    // !!! this function is required to make sure the output knows the initial positions and particle sourceIDs
+    //  for each time iteration ahead of release time
+    void generateParticleList(TURBGeneralData* TGD, Eulerian* eul);
+
+
+
+    void advectParticle(int&, int&, URBGeneralData*, TURBGeneralData*, Eulerian*);
 
     
     // reflection functions
@@ -126,8 +164,8 @@ private:
     
     // reflection -> set particle inactive when entering a wall
     bool wallReflectionSetToInactive(URBGeneralData* UGD, Eulerian* eul,
-                                 double& xPos, double& yPos, double& zPos, 
-                                 double& disX, double& disY, double& disZ,
+                                     double& xPos, double& yPos, double& zPos, 
+                                     double& disX, double& disY, double& disZ,
                                      double& uFluct, double& vFluct, double& wFluct);
     
     // reflection -> this function will do nothing 
@@ -187,7 +225,7 @@ private:
                                   const double& xPos_init, const double& yPos_init, const double& zPos_init);
     
     // this is for writing an output simulation info file separate from the regular command line output
-    void writeSimInfoFile(Dispersion* dis,const double& current_time);
+    void writeSimInfoFile(const double& current_time);
 
 };
 

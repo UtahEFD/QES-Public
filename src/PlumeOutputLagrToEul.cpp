@@ -12,11 +12,11 @@
 
 
 #include "PlumeOutputLagrToEul.h"
-
+#include "Plume.hpp"
 
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
 // in this case, output should always be done, so the bool for whether to do output is set to true
-PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* urb_ptr,Dispersion* dis_ptr,std::string output_file)
+PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* urb_ptr,Plume* plume_ptr,std::string output_file)
   : QESNetCDFOutput(output_file)
 {
 
@@ -28,13 +28,13 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* u
     //  input simulation parameters to include a simStartTime
     //  instead of just using simDur
     float simStartTime = 0.0;
-
+    
     // setup output frequency control information
     timeAvgStart = PID->colParams->timeAvgStart;       // time to start concentration averaging, not the time to start output. Adjusted if the time averaging duration does not divide evenly by the averaging frequency
     timeAvgEnd = PID->simParams->simDur;           // time to end concentration averaging and output. Notice that this is now always the simulation end time
     timeAvgFreq = PID->colParams->timeAvgFreq;          // time averaging frequency and output frequency
-
-
+    
+    
     // !!! Because collection parameters could not know anything about simulation duration at parse time,
     //  need to make this check now
     // Make sure the timeAvgStart is not greater than the simulation end time
@@ -105,20 +105,20 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* u
     nextOutputTime = timeAvgStart + timeAvgFreq;
     
     
-    // setup copy of disp pointer so output data can be grabbed directly
-    disp = dis_ptr;
+    // setup copy of plume pointer so output data can be grabbed directly
+    plume = plume_ptr;
 
-
+    
     // need nx, ny, nz of the domain to make sure the output handles domains that are not three dimensional
     // for now these are a copy of the input urb values
     nx = urb_ptr->nx;
     ny = urb_ptr->ny;
     nz = urb_ptr->nz;
-
+    
     // need the simulation timeStep for use in concentration averaging
     timeStep = PID->simParams->timeStep;
-
-
+    
+    
     // --------------------------------------------------------
     // setup the sampling box information 
     // --------------------------------------------------------
@@ -286,7 +286,7 @@ void PlumeOutputLagrToEul::save(float currentTime)
 
         // increment inherited output counter for next time insertion
         output_counter +=1;
-
+        
 
         // update the next output time value 
         // so averaging and output only happens at the averaging frequency
@@ -301,16 +301,16 @@ void PlumeOutputLagrToEul::boxCount()
 
     // for all particles see where they are relative to the
     // concentration collection boxes
-    for(int i = 0; i < disp->pointList.size(); i++)
+    for(int i = 0; i < plume->pointList.size(); i++)
     {
         // because particles all start out as active now, need to also check the release time
-        if( disp->pointList.at(i).isActive == true )
+        if( plume->pointList.at(i).isActive == true )
         {
 
             // get the current position of the particle
-            double xPos = disp->pointList.at(i).xPos;
-            double yPos = disp->pointList.at(i).yPos;
-            double zPos = disp->pointList.at(i).zPos;
+            double xPos = plume->pointList.at(i).xPos;
+            double yPos = plume->pointList.at(i).yPos;
+            double zPos = plume->pointList.at(i).zPos;
 
             
             // Calculate which collection box this particle is currently in.

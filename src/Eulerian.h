@@ -47,6 +47,7 @@ public:
     // other input variable
     double C_0;     // a copy of the TGD grid information. This is used to separate out CoEps into its separate parts when doing debug output
 
+    double vel_threshold;
 
     // these are the gradients of many components of tau in many different direction. Tau is still kept inside TGD
     // this is only the derivatives that matter for calculating the flux_div
@@ -71,7 +72,8 @@ public:
     std::vector<double> sig_x;
     std::vector<double> sig_y;
     std::vector<double> sig_z;
-
+    
+    
     void setInterp3Dindex_uFace(const double&, const double&, const double&);
     void setInterp3Dindex_vFace(const double&, const double&, const double&);
     void setInterp3Dindex_wFace(const double&, const double&, const double&);
@@ -122,7 +124,8 @@ private:
     void setStressGradient(TURBGeneralData*);
     void setStressGrads(TURBGeneralData*);
     void setSigmas(TURBGeneralData*); 
- 
+    double getMaxVariance(const std::vector<double>&, const std::vector<double>&, const std::vector<double>&);
+
     void setBC(URBGeneralData*,TURBGeneralData*);
     
     // timer class useful for debugging and timing different operations

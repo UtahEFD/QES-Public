@@ -17,11 +17,11 @@ Dispersion::Dispersion( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData*
     
 
     // calculate the domain start and end values, needed for source position range checking
-    determineDomainSize(eul);
-
+    //determineDomainSize(eul);
+    
     // make copies of important input time variables
-    sim_dt = PID->simParams->timeStep;
-    simDur = PID->simParams->simDur;
+    //sim_dt = PID->simParams->timeStep;
+    //simDur = PID->simParams->simDur;
 
 
     // set up time details
@@ -33,14 +33,14 @@ Dispersion::Dispersion( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData*
     //  appended to the times loop right after the times calculation loop.
     // LA possible future work: if the startTime stops being zero, I think the method here will still stand,
     //  but instead of using dt*i for the times calculation in the loop, you would need startTime + dt*i.
-    nSimTimes = std::ceil(simDur/sim_dt)+1;
-    simTimes.resize(nSimTimes);
-    for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)   // end one time early
-    {
-        simTimes.at(sim_tIdx) = sim_dt*sim_tIdx;
-        //std::cout << "simTimes[" << sim_tIdx << "] = \"" << simTimes.at(sim_tIdx) << "\"" << std::endl;
-    }
-    simTimes.at(nSimTimes-1) = simDur;
+    //nSimTimes = std::ceil(simDur/sim_dt)+1;
+    //simTimes.resize(nSimTimes);
+    //for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)   // end one time early
+    // {
+    //    simTimes.at(sim_tIdx) = sim_dt*sim_tIdx;
+    //std::cout << "simTimes[" << sim_tIdx << "] = \"" << simTimes.at(sim_tIdx) << "\"" << std::endl;
+    //}
+    //simTimes.at(nSimTimes-1) = simDur;
     //std::cout << "simTimes[" << nSimTimes-1 << "] = \"" << simTimes.at(nSimTimes-1) << "\"" << std::endl;
 
 
@@ -50,24 +50,24 @@ Dispersion::Dispersion( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData*
     // !!! note that these check and calc functions have to be called here 
     //  because each source requires extra data not found in the individual source data
     // !!! totalParsToRelease needs calculated very carefully here using information from each of the sources
-    getInputSources(PID);
+    //getInputSources(PID);
 
 
     // set the isRogueCount and isNotActiveCount to zero
-    isRogueCount = 0.0;
-    isNotActiveCount = 0.0;
+    //isRogueCount = 0.0;
+    //isNotActiveCount = 0.0;
 
     // calculate the threshold velocity
-    vel_threshold = 10.0*std::sqrt(getMaxVariance(eul->sig_x,eul->sig_y,eul->sig_z));
+    //vel_threshold = 10.0*std::sqrt(getMaxVariance(eul->sig_x,eul->sig_y,eul->sig_z));
 
     // to make sure the output knows the initial positions and particle sourceIDs for each time iteration
     // ahead of release time, the entire list of particles is generated now, and given initial values
     // this also includes creation of a vector of number of particles to release at a given time
-    generateParticleList(TGD,eul);
+    //generateParticleList(TGD,eul);
     
 }
 
-
+/*
 void Dispersion::determineDomainSize(Eulerian* eul)
 {
 
@@ -87,7 +87,7 @@ void Dispersion::determineDomainSize(Eulerian* eul)
     domainZstart = eul->zStart;
     domainZend = eul->zEnd;
 }
-
+*/
 
 void Dispersion::getInputSources(PlumeInputData* PID)
 {
@@ -124,8 +124,8 @@ void Dispersion::getInputSources(PlumeInputData* PID)
     }
 }
 
-
-double Dispersion::getMaxVariance(const std::vector<double>& sigma_x_vals,const std::vector<double>& sigma_y_vals,const std::vector<double>& sigma_z_vals)
+/*
+odouble Dispersion::getMaxVariance(const std::vector<double>& sigma_x_vals,const std::vector<double>& sigma_y_vals,const std::vector<double>& sigma_z_vals)
 {
     // set the initial maximum value to a very small number. The idea is to go through each value of the data,
     // setting the current value to the max value each time the current value is bigger than the old maximum value
@@ -161,6 +161,7 @@ double Dispersion::getMaxVariance(const std::vector<double>& sigma_x_vals,const 
     return maximumVal;
     
 }
+*/
 
 void Dispersion::generateParticleList(TURBGeneralData* TGD, Eulerian* eul)
 {

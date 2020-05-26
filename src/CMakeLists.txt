@@ -18,7 +18,6 @@ CUDA_ADD_LIBRARY( cudaplumecore
     Wall.cpp
     
     Eulerian.cpp
-    Dispersion.cpp
     Plume.cpp
     AdvectParticle.cpp
     WallReflection.cpp
