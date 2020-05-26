@@ -26,7 +26,6 @@
 
 #include "Plume.hpp"
 #include "Eulerian.h"
-#include "Dispersion.h"
 
 #include "QESNetCDFOutput.h"
 #include "PlumeOutputEulerian.h"
@@ -72,19 +71,15 @@ int main(int argc, char** argv)
     
     // Create instance of QES-winds General data class
     URBGeneralData* UGD = new URBGeneralData(&arguments);
-    //load data at t=0;
-    UGD->loadNetCDFData(0);
-    
     // Create instance of QES-Turb General data class
     TURBGeneralData* TGD = new TURBGeneralData(&arguments,UGD);
-    //load data at t=0;
-    TGD->loadNetCDFData(0);
-
     // Create instance of Eulerian class
     Eulerian* eul = new Eulerian(PID,UGD,TGD, arguments.debug);
     
-    // Create instance of Dispersion class
-    //Dispersion* dis = new Dispersion(PID,UGD,TGD,eul, arguments.debug);
+    //load data at t=0;
+    TGD->loadNetCDFData(0);
+    UGD->loadNetCDFData(0);
+    eul->setData(UGD,TGD);
     
     // Create instance of Plume model class
     Plume* plume = new Plume(PID,UGD,TGD,eul,&arguments);

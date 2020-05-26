@@ -59,17 +59,22 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     sig_y.resize(UGD->numcell_cent,0.0);
     sig_z.resize(UGD->numcell_cent,0.0);
 
+}
+
+void Eulerian::setData(URBGeneralData* UGD,TURBGeneralData* TGD)
+{
     // set BC 
     setBC(UGD,TGD);
     
     // compute stress gradients
     setStressGradient(TGD);
+    
     // temporary copy of sigma's
     setSigmas(TGD);
     
     // calculate the threshold velocity
     vel_threshold = 10.0*std::sqrt(getMaxVariance(sig_x,sig_y,sig_z));
-    
+
 }
 
 void Eulerian::setBC(URBGeneralData* UGD,TURBGeneralData* TGD)

@@ -73,7 +73,8 @@ public:
     std::vector<double> sig_y;
     std::vector<double> sig_z;
     
-    
+    void setData(URBGeneralData*,TURBGeneralData*);
+        
     void setInterp3Dindex_uFace(const double&, const double&, const double&);
     void setInterp3Dindex_vFace(const double&, const double&, const double&);
     void setInterp3Dindex_wFace(const double&, const double&, const double&);
@@ -83,7 +84,6 @@ public:
     void setInterp3Dindex_cellVar(const double&, const double&, const double&);
     double interp3D_cellVar(const std::vector<float>&);
     double interp3D_cellVar(const std::vector<double>&);
-
     
     int getCellId(const double&, const double&, const double&);
     int getCellId(Vector3<double>&);
