@@ -94,8 +94,7 @@ __global__ void applyNeumannBC(float *d_lambda, int nx, int ny)
 }
 
 __global__ void calculateError(float *d_lambda, float *d_lambda_old, int nx, int ny, int nz,
-                               float *d_value,
-                               float *d_bvalue)
+                               float *d_value, float *d_bvalue)
 {
     int d_size = (nx-1)*(ny-1)*(nz-1);
     int ii = blockDim.x*blockIdx.x+threadIdx.x;
@@ -103,38 +102,52 @@ __global__ void calculateError(float *d_lambda, float *d_lambda_old, int nx, int
 
     if (ii < d_size)
     {
-      d_value[ii] = fabs(d_lambda[ii] - d_lambda_old[ii])/((nx-1)*(ny-1)*(nz-1));
+      d_value[ii] = fabs(d_lambda[ii] - d_lambda_old[ii]);
     }
+
     __syncthreads();
-    float sum = 0.0;
+
     if (threadIdx.x > 0)
     {
       return;
     }
     if (threadIdx.x == 0)
     {
-      for (int j=0; j<BLOCKSIZE; j++)
+      d_bvalue[blockIdx.x] = 0.0;
+      for (int j = 0; j < BLOCKSIZE; j++)
       {
         int index = blockIdx.x*blockDim.x+j;
-        if (index<d_size){
-          sum += d_value[index];
+        if (index < d_size)
+        {
+
+          if (d_value[index] > d_bvalue[blockIdx.x])
+          {
+            d_bvalue[blockIdx.x] = d_value[index];
+          }
         }
       }
+
     }
 
-    __syncthreads();
-    d_bvalue[blockIdx.x] = sum;
 
-    if (ii>0){
+    __syncthreads();
+
+
+    if (ii > 0)
+    {
         return;
     }
 
     error = 0.0;
-    if (ii==0)
+
+    if (ii == 0)
     {
-      for (int k =0; k<numblocks; k++)
+      for (int k = 0; k < numblocks; k++)
       {
-        error += d_bvalue[k];
+        if (d_bvalue[k] > error)
+        {
+          error = d_bvalue[k];
+        }
       }
     }
 

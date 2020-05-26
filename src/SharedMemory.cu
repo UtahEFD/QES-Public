@@ -254,10 +254,11 @@ void SharedMemory::solve(const URBInputData* UID, URBGeneralData* UGD, bool solv
     /////////////////////////////////////////////////
 
     int iter = 0;
-    float error = 1.0;
+    float error;
+    float max_error = 1.0;
 
     // Main solver loop
-    while ( (iter < itermax) && (error > tol))
+    while ( (iter < itermax) && (max_error > tol))
     {
       // Save previous iteration values for error calculation
       for (int k = 0; k < UGD->nz-1; k++)
@@ -293,19 +294,21 @@ void SharedMemory::solve(const URBInputData* UID, URBGeneralData* UGD, bool solv
         }
       }
 
-      error = 0.0;                     // Reset error value before error calculation
-
-      // Error calculation
+      max_error = 0.0;                   /// Reset error value before error calculation
       for (int k = 0; k < UGD->nz-1; k++)
       {
-        for (int j = 0; j < UGD->ny-1; j++)
-        {
-          for (int i = 0; i < UGD->nx-1; i++)
+          for (int j = 0; j < UGD->ny-1; j++)
           {
-            int ii = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);       // Lineralize the vectors (make it 1D)
-            error += fabs(lambda[ii] - lambda_old[ii])/((UGD->nx-1)*(UGD->ny-1)*(UGD->nz-1));
+              for (int i = 0; i < UGD->nx-1; i++)
+              {
+                  int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   /// Lineralized index for cell centered values
+                  error = fabs(lambda[icell_cent] - lambda_old[icell_cent]);
+                  if (error > max_error)
+                  {
+                    max_error = error;
+                  }
+              }
           }
-        }
       }
 
       iter += 1;
@@ -318,7 +321,7 @@ void SharedMemory::solve(const URBInputData* UID, URBGeneralData* UGD, bool solv
     cudaMalloc((void **) &d_w,UGD->numcell_face*sizeof(float));
     cudaMemcpy(d_icellflag, UGD->icellflag.data(), UGD->numcell_cent*sizeof(int),cudaMemcpyHostToDevice);
 
-    std::cout << "Error:" << error << "\n";   // Print the number of iterations
+    std::cout << "Error:" << max_error << "\n";   // Print the number of iterations
     std::cout << "Number of iterations:" << iter << "\n";   // Print the number of iterations
 
     dim3 numberOfBlocks3(ceil((UGD->nx*UGD->ny*UGD->nz)/(float) (BLOCKSIZE)),1,1);

@@ -51,10 +51,11 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
         //                 SOR solver              //////
         /////////////////////////////////////////////////
         int iter = 0;
-        float error = 1.0;
+        float error;
+        float max_error = 1.0;
 
         std::cout << "Solving...\n";
-        while (iter < itermax && error > tol) {
+        while (iter < itermax && max_error > tol) {
 
             // Save previous iteration values for error calculation
             //    uses stl vector's assignment copy function, assign
@@ -90,12 +91,16 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
             }
 
             /// Error calculation
-            error = 0.0;                   /// Reset error value before error calculation
+            max_error = 0.0;                   /// Reset error value before error calculation
             for (int k = 0; k < UGD->nz-1; k++){
                 for (int j = 0; j < UGD->ny-1; j++){
                     for (int i = 0; i < UGD->nx-1; i++){
                         int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   /// Lineralized index for cell centered values
-                        error += fabs(lambda[icell_cent] - lambda_old[icell_cent])/((UGD->nx-1)*(UGD->ny-1)*(UGD->nz-1));
+                        error = fabs(lambda[icell_cent] - lambda_old[icell_cent]);
+                        if (error > max_error)
+                        {
+                          max_error = error;
+                        }
                     }
                 }
             }
@@ -105,7 +110,7 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
         std::cout << "Solved!\n";
 
         std::cout << "Number of iterations:" << iter << "\n";   // Print the number of iterations
-        std::cout << "Error:" << error << "\n";
+        std::cout << "Error:" << max_error << "\n";
         std::cout << "tol:" << tol << "\n";
 
         /*ofstream outdata2;
