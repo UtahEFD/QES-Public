@@ -183,8 +183,6 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         double yRandn = random::norRan();
         double zRandn = random::norRan();
         
-        //Vector3<double> vecRandn(random::norRan(), random::norRan(), random::norRan());
-        
         // now calculate a bunch of values for the current particle
         // calculate the time derivative of the stress tensor: (tau_current - tau_old)/dt
         double dtxxdt = (txx - txx_old)/par_dt;
@@ -196,7 +194,7 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
                     
                     
         // now calculate and set the A and b matrices for an Ax = b 
-        // A = -I + 0.5*(-CoEps*L + L*dTdt)*par_dt;
+        // A = -I + 0.5*(-CoEps*L + dTdt*L )*par_dt;
         double A_11 = -1.0 + 0.50*(-CoEps*lxx + lxx*dtxxdt + lxy*dtxydt + lxz*dtxzdt)*par_dt;
         double A_12 =        0.50*(-CoEps*lxy + lxy*dtxxdt + lyy*dtxydt + lyz*dtxzdt)*par_dt;
         double A_13 =        0.50*(-CoEps*lxz + lxz*dtxxdt + lyz*dtxydt + lzz*dtxzdt)*par_dt;
@@ -209,15 +207,11 @@ void Plume::advectParticle(int& sim_tIdx, int& parIdx, URBGeneralData* UGD, TURB
         double A_32 =        0.50*(-CoEps*lyz + lxy*dtxzdt + lyy*dtyzdt + lyz*dtzzdt)*par_dt;
         double A_33 = -1.0 + 0.50*(-CoEps*lzz + lxz*dtxzdt + lyz*dtyzdt + lzz*dtzzdt)*par_dt;
                     
-        // b = -vectFluct - 0.5*vecFluxDiv*par_dt - std::sqrt(CoEps*par_dt)*vecRandn;
+        // b = -vectFluct - 0.5*vecFluxDiv*par_dt - sqrt(CoEps*par_dt)*vecRandn;
         double b_11 = -uFluct_old - 0.50*flux_div_x*par_dt - std::sqrt(CoEps*par_dt)*xRandn;
         double b_21 = -vFluct_old - 0.50*flux_div_y*par_dt - std::sqrt(CoEps*par_dt)*yRandn;
         double b_31 = -wFluct_old - 0.50*flux_div_z*par_dt - std::sqrt(CoEps*par_dt)*zRandn;
                     
-        
-        // A.invert()
-        // vecFluct = A*b
-        
         // now prepare for the Ax=b calculation by calculating the inverted A matrix
         invert3(A_11,A_12,A_13,A_21,A_22,A_23,A_31,A_32,A_33);
         // now do the Ax=b calculation using the inverted matrix (vecFluct = A*b)
