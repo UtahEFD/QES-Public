@@ -73,7 +73,6 @@ public:
 private:
 
     // Eulerian grid information
-    // LA future work: this currently assumes urb and turb have the same grid and that will need to change quite soon.
     int nx;       // a copy of the urb grid nx value
     int ny;       // a copy of the urb grid ny value
     int nz;       // a copy of the urb grid nz value
@@ -93,14 +92,14 @@ private:
 
 
     // important time variables copied from dispersion (and some of them copied to dispersion from input)
-    double sim_dt;       // the simulation timestep
-    double simDur;   // the total amount of time to run the simulation for
-    int nSimTimes; // this is the number of timesteps of the simulation, the calculated size of times
+    double sim_dt;     // the simulation timestep
+    double simDur;     // the total amount of time to run the simulation for
+    int nSimTimes;     // this is the number of timesteps of the simulation, the calculated size of times
     std::vector<double> simTimes;  // this is the list of times for the simulation
 
     // some overall metadata for the set of particles
     int isRogueCount;        // just a total number of rogue particles per time iteration
-    int isNotActiveCount;       // just a total number of inactive active particles per time iteration
+    int isNotActiveCount;    // just a total number of inactive active particles per time iteration
 
     // important time variables not copied from dispersion
     double CourantNum;  // the Courant number, used to know how to divide up the simulation timestep into smaller per particle timesteps. Copied from input
@@ -108,9 +107,7 @@ private:
     
     // ALL Sources that will be used 
     std::vector< SourceKind* > allSources;
-    // this is the number of particles to release at each timestep, 
-    // used for updating the particle loop counter in Plume.
-    std::vector<int> nParsToRelease;
+    // this is the global counter of particles released (used to set particleID)
     int nParsReleased;
     
     double invarianceTol; // this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
@@ -127,8 +124,7 @@ private:
     std::string outputFolder;
     std::string caseBaseName;
     bool debug;
-
-
+    
     void setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vector<Particle>& newParticles);
     // this function gets sources from input data and adds them to the allSources vector
     // this function also calls the many check and calc functions for all the input sources
@@ -136,36 +132,32 @@ private:
     //  because each source requires extra data not found in the individual source data
     // !!! totalParsToRelease needs calculated very carefully here using information from each of the sources
     void getInputSources(PlumeInputData* PID);
-    // function for generating full particle list before starting the plume simulations
-    // also generates a vector for the number of particles to release at a given time
-    // !!! this function is required to make sure the output knows the initial positions and particle sourceIDs
-    //  for each time iteration ahead of release time
-    void generateParticleList(TURBGeneralData* TGD, Eulerian* eul);
+
+    // this function generates the list of particle to be released at a given time
     int generateParticleList(float,TURBGeneralData*, Eulerian*);
 
+    // this function scrubs the inactive particle for the particle list (pointList)
     void scrubParticleList();
 
+    // this function moves (advects) one particle
     void advectParticle(int&, int&, URBGeneralData*, TURBGeneralData*, Eulerian*);
 
-    
-    // reflection functions
+    /* reflection functions in WallReflection.cpp */
+    // main function pointer
     bool (Plume::*wallReflection)(URBGeneralData* UGD, Eulerian* eul,
                                   double& xPos, double& yPos, double& zPos, 
                                   double& disX, double& disY, double& disZ,
                                   double& uFluct, double& vFluct, double& wFluct);
-    
     // reflection on walls (stair step)
     bool wallReflectionFullStairStep(URBGeneralData* UGD, Eulerian* eul,
                                      double& xPos, double& yPos, double& zPos, 
                                      double& disX, double& disY, double& disZ,
                                      double& uFluct, double& vFluct, double& wFluct);
-    
     // reflection -> set particle inactive when entering a wall
     bool wallReflectionSetToInactive(URBGeneralData* UGD, Eulerian* eul,
                                      double& xPos, double& yPos, double& zPos, 
                                      double& disX, double& disY, double& disZ,
                                      double& uFluct, double& vFluct, double& wFluct);
-    
     // reflection -> this function will do nothing 
     bool wallReflectionDoNothing(URBGeneralData* UGD, Eulerian* eul,
                                  double& xPos, double& yPos, double& zPos, 
@@ -183,9 +175,7 @@ private:
     void calcInvariants( const double& txx,const double& txy,const double& txz,
                          const double& tyy,const double& tyz,const double& tzz,
                          double& invar_xx,double& invar_yy,double& invar_zz);
-
     void makeRealizable(double& txx,double& txy,double& txz,double& tyy,double& tyz,double& tzz);
-
     void invert3( double& A_11,double& A_12,double& A_13,double& A_21,double& A_22,
                   double& A_23,double& A_31,double& A_32,double& A_33);
     void matmult( const double& A_11,const double& A_12,const double& A_13,
@@ -193,7 +183,7 @@ private:
                   const double& A_31,const double& A_32,const double& A_33,
                   const double& b_11,const double& b_21,const double& b_31,
                   double& x_11, double& x_21, double& x_31);
-        
+    
     // a function used at constructor time to set the pointer function to the desired BC type
     void setBCfunctions(std::string xBCtype,std::string yBCtype,std::string zBCtype);   
 

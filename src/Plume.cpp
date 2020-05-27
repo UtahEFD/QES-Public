@@ -41,6 +41,7 @@ Plume::Plume( PlumeInputData* PID, URBGeneralData* UGD, TURBGeneralData* TGD, Eu
     
     nSimTimes = std::ceil(simDur/sim_dt)+1;
     simTimes.resize(nSimTimes);
+    // FMargairaz -> need clean up here, time steps are skewed
     for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)   // end one time early
     {
         simTimes.at(sim_tIdx) = sim_dt*sim_tIdx;
@@ -48,14 +49,9 @@ Plume::Plume( PlumeInputData* PID, URBGeneralData* UGD, TURBGeneralData* TGD, Eu
     }
     simTimes.at(nSimTimes-1) = simDur;
     
-
     // other important time variables not from dispersion
     CourantNum = PID->simParams->CourantNum;
-
-    // make copy of dispersion number of particles to release at each simulation timestep
-    // Note it is one less than times because the time loop ends one time early.
-    //nParsToRelease.resize(nSimTimes-1);    // first need to get the vector size right for the copy. 
-
+    
     // set additional values from the input
     invarianceTol = PID->simParams->invarianceTol;
     C_0 = PID->simParams->C_0;
@@ -65,6 +61,7 @@ Plume::Plume( PlumeInputData* PID, URBGeneralData* UGD, TURBGeneralData* TGD, Eu
     // set the isRogueCount and isNotActiveCount to zero
     isRogueCount = 0;
     isNotActiveCount = 0;
+    // set the particle counter to zero
     nParsReleased = 0;
     
      // get sources from input data and add them to the allSources vector
@@ -73,11 +70,6 @@ Plume::Plume( PlumeInputData* PID, URBGeneralData* UGD, TURBGeneralData* TGD, Eu
     //  because each source requires extra data not found in the individual source data
     // !!! totalParsToRelease needs calculated very carefully here using information from each of the sources
     getInputSources(PID);
-    
-    // to make sure the output knows the initial positions and particle sourceIDs for each time iteration
-    // ahead of release time, the entire list of particles is generated now, and given initial values
-    // this also includes creation of a vector of number of particles to release at a given time
-    //generateParticleList(TGD,eul);
     
     /* setup boundary condition functions */
 
@@ -131,22 +123,6 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
         timers.startNewTimer("particle iteration");
     }
     
-    
-    // want to output the particle information for the first timestep for where particles are without moving
-    // so going to temporarily set nParsReleased to the number of particles released at the first time
-    // do an output for the first time, then put the value back to zero so the particle loop will work correctly
-    // this means I need to set the isActive value to true for the first set of particles right here
-    /*
-      nParsReleased = nParsToRelease.at(0);
-      for( int parIdx = 0; parIdx < nParsToRelease.at(0); parIdx++ ) {
-      pointList[parIdx].isActive = true;
-      }
-      for(size_t id_out=0;id_out<outputVec.size();id_out++) {
-      outputVec.at(id_out)->save(simTimes.at(0));
-      }
-      nParsReleased = 0;
-    */
-    
     // LA note: that this loop goes from 0 to nTimes-2, not nTimes-1. This is because
     //  a given time iteration is calculating where particles for the current time end up for the next time
     //  so in essence each time iteration is calculating stuff for one timestep ahead of the loop.
@@ -159,32 +135,12 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
     // FMargairaz -> need clean-up
     for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++) {
         
-        // need to release new particles
-        // Add new particles to the number to move
-        // !!! note that the updated number of particles is dispersion's value 
-        //  so that the output can get the number of released particles right
-        //int nPastPars = nParsReleased;
+        // need to release new particles -> add new particles to the number to move
         int nParsToRelease = generateParticleList((float)simTimes.at(sim_tIdx), TGD, eul); 
-        //nParsReleased = nPastPars + nParsToRelease;
+        // number of active particle at the current time step. -> list is scrubbed at the end of the time step. 
         size_t nParsActive = pointList.size();
-        //nParsReleased = nPastPars + nParsToRelease.at(sim_tIdx);
-        
-        // need to set the new particles isActive values to true
-        //for( int parIdx = nPastPars; parIdx < nParsReleased; parIdx++ ) {
-        //    pointList[parIdx].isActive = true;
-        //}
-      
         
         // only output the information when the updateFrequency allows and when there are actually released particles
-        /*
-        if(  nParsToRelease.at(sim_tIdx) != 0 && ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )  )
-        {
-            std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) << "\". finished emitting \"" 
-                      << nParsToRelease.at(sim_tIdx) << "\" particles from \"" << allSources.size() 
-                      << "\" sources. Total numParticles = \"" << nParsReleased << "\"" << std::endl;
-        }
-        */
-
         if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )
         {
             std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) << "\". finished emitting \"" 
@@ -205,10 +161,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
             }
         }
         
-        // get the isRogue and isNotActive count from the dispersion class for use in each particle iteration
-        //int isRogueCount = dis->isRogueCount;
-        //int isNotActiveCount = dis->isNotActiveCount;
-        
+        // this the the main loop over all active particles         
         for( int parIdx = 0; parIdx < nParsActive; parIdx++ ) {
            
             // first check to see if the particle should even be advected and skip it if it should not be advected
@@ -222,13 +175,10 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
                 advectParticle(sim_tIdx, parIdx, UGD, TGD, eul);
                 
                 // now update the isRogueCount and isNotActiveCount
-                if(pointList[parIdx].isRogue == true) {
+                if(pointList[parIdx].isRogue == true) 
                     isRogueCount = isRogueCount + 1;
-                }
-                if(pointList[parIdx].isActive == false) {
+                if(pointList[parIdx].isActive == false)
                     isNotActiveCount = isNotActiveCount + 1;
-                }
-                                
                 
                 // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
                 if( debug == true ) {
@@ -240,7 +190,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
                     }
                 }
             }   // if isActive == true and isRogue == false
-        } // for(int parIdx = 0; parIdx < dis->nParsReleased; parIdx++ )
+        } // end of loop for (int parIdx = 0; parIdx < nParsActive; parIdx++) 
         
         // netcdf output for a given simulation timestep
         // note that the first time is already output, so this is the time the loop iteration 
@@ -260,22 +210,11 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
             }
         }
         
+        // For all particles that need to be removed from the particle
+        // advection, remove them now
         if(isNotActiveCount > 0) {
             scrubParticleList();
         }
-        
-        
-        //
-        // Pete's notes:
-        // For all particles that need to be removed from the particle
-        // advection, remove them now
-        //
-        // Purge the advection list of all the unneccessary particles....
-        // 
-        // Loren's Notes: for now I want to keep them for the thesis work information and debugging
-        //  Also, would it not be easier to do at the start of the loop rather than at the end?
-        //  Need to think more on this when we get to it.
-        
         
     } // end of loop: for(sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)
     
@@ -361,34 +300,6 @@ void Plume::getInputSources(PlumeInputData* PID)
     }
 }
 
-void Plume::generateParticleList(TURBGeneralData* TGD, Eulerian* eul)
-{
-
-    // Add new particles now
-    // - walk over all sources and add the emitted particles from
-    // each source to the overall particle list
-    for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)
-    {
-
-        std::vector<Particle> nextSetOfParticles;
-        for(auto sIdx = 0u; sIdx < allSources.size(); sIdx++)
-        {
-            int numNewParticles = allSources.at(sIdx)->emitParticles( (float)sim_dt, (float)( simTimes.at(sim_tIdx) ), nextSetOfParticles );
-        }
-        
-        setParticleVals( TGD, eul, nextSetOfParticles );
-        
-        // append all the new particles on to the big particle
-        // advection list
-        pointList.insert( pointList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end() );
-
-        // now calculate the number of particles to release for this timestep
-        nParsToRelease.push_back(nextSetOfParticles.size());
-        
-    }   // end for timeIdx loop
-
-}
-
 int Plume::generateParticleList(float currentTime,TURBGeneralData* TGD, Eulerian* eul)
 {
     
@@ -435,7 +346,7 @@ void Plume::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vector<Par
         // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
         eul->setInterp3Dindex_cellVar(newParticles.at(parIdx).xPos_init,newParticles.at(parIdx).yPos_init,newParticles.at(parIdx).zPos_init);
        
-        // set particle ID
+        // set particle ID (use global particle counter)
         newParticles.at(parIdx).particleID = nParsReleased;
         nParsReleased++;
         
@@ -490,9 +401,8 @@ void Plume::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vector<Par
         newParticles.at(parIdx).delta_vFluct = 0.0;
         newParticles.at(parIdx).delta_wFluct = 0.0;
 
-        // set isRogue to false and isActive to false for each particle
-        // LA note: I want isActive to be true, but this function is now called 
-        //  for all particles before they are released so it needs to start out as false
+        // set isRogue to false and isActive to true for each particle
+        // isActive = true as particle relased is active immediately
         newParticles.at(parIdx).isRogue = false;
         newParticles.at(parIdx).isActive = true;
         
