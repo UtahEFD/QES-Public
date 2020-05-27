@@ -65,10 +65,7 @@ public:
     // This the storage for all particles
     // the sources can set these values, then the other values are set using urb and turb info using these values
     std::vector<Particle> pointList;
-    // this is the number of particles released during the current timestep
-    // needed for output of particle information
-    // !!! plume run needs to update this variable in this spot each time during the loop!
-    int nParsReleased;
+    
     // this is the total number of particles expected to be released during the simulation
     // !!! this has to be calculated carefully inside the getInputSources() function
     int totalParsToRelease;
@@ -114,7 +111,7 @@ private:
     // this is the number of particles to release at each timestep, 
     // used for updating the particle loop counter in Plume.
     std::vector<int> nParsToRelease;
-
+    int nParsReleased;
     
     double invarianceTol; // this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
     double C_0;           // used to separate out CoEps into its separate parts when doing debug output

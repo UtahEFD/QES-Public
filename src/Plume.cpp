@@ -65,7 +65,8 @@ Plume::Plume( PlumeInputData* PID, URBGeneralData* UGD, TURBGeneralData* TGD, Eu
     // set the isRogueCount and isNotActiveCount to zero
     isRogueCount = 0;
     isNotActiveCount = 0;
-
+    nParsReleased = 0;
+    
      // get sources from input data and add them to the allSources vector
     // this also calls the many check and calc functions for all the input sources
     // !!! note that these check and calc functions have to be called here 
@@ -131,11 +132,6 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
     }
     
     
-    // because particle list is the desired size before the simulation, and the number of particles to move changes
-    // each time, need to set the loop counter for the number of particles to move before the simulation time loop
-    // !!! note that this is dispersion's value so that the output can get the number of released particles right!
-    nParsReleased = 0;
-    
     // want to output the particle information for the first timestep for where particles are without moving
     // so going to temporarily set nParsReleased to the number of particles released at the first time
     // do an output for the first time, then put the value back to zero so the particle loop will work correctly
@@ -167,10 +163,10 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
         // Add new particles to the number to move
         // !!! note that the updated number of particles is dispersion's value 
         //  so that the output can get the number of released particles right
-        int nPastPars = nParsReleased;
+        //int nPastPars = nParsReleased;
         int nParsToRelease = generateParticleList((float)simTimes.at(sim_tIdx), TGD, eul); 
         //nParsReleased = nPastPars + nParsToRelease;
-        nParsReleased = pointList.size();
+        size_t nParsActive = pointList.size();
         //nParsReleased = nPastPars + nParsToRelease.at(sim_tIdx);
         
         // need to set the new particles isActive values to true
@@ -193,7 +189,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
         {
             std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) << "\". finished emitting \"" 
                       << nParsToRelease << "\" particles from \"" << allSources.size() 
-                      << "\" sources. Total numParticles = \"" << nParsReleased << "\"" << std::endl;
+                      << "\" sources. Total numParticles = \"" << nParsActive << "\"" << std::endl;
         }
 
         
@@ -213,7 +209,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
         //int isRogueCount = dis->isRogueCount;
         //int isNotActiveCount = dis->isNotActiveCount;
         
-        for( int parIdx = 0; parIdx < nParsReleased; parIdx++ ) {
+        for( int parIdx = 0; parIdx < nParsActive; parIdx++ ) {
            
             // first check to see if the particle should even be advected and skip it if it should not be advected
             if( pointList[parIdx].isActive == true ) {
@@ -438,6 +434,10 @@ void Plume::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vector<Par
         // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
         // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
         eul->setInterp3Dindex_cellVar(newParticles.at(parIdx).xPos_init,newParticles.at(parIdx).yPos_init,newParticles.at(parIdx).zPos_init);
+       
+        // set particle ID
+        newParticles.at(parIdx).particleID = nParsReleased;
+        nParsReleased++;
         
         // set the positions to be used by the simulation to the initial positions
         newParticles.at(parIdx).xPos = newParticles.at(parIdx).xPos_init;
@@ -495,6 +495,7 @@ void Plume::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vector<Par
         //  for all particles before they are released so it needs to start out as false
         newParticles.at(parIdx).isRogue = false;
         newParticles.at(parIdx).isActive = true;
+        
         
     }
 

@@ -38,6 +38,7 @@ public:
     double zPos_init;          // the initial z component of position for the particle
 
     double tStrt;           // the time of release for the particle
+    int particleID;      // id of particl (for tracking purposes)
     int sourceIdx;       // the index of the source the particle came from
 
     // once initial positions are known, can set these values using urb and turb info

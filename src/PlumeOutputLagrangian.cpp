@@ -101,8 +101,9 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
     // so I will add them by pushback
     for( int par = 0; par < numPar; par++)
     {
-        parID.push_back(par);
-
+        parID.push_back(par);   
+        
+        /*
         xPos_init.push_back(plume->pointList.at(par).xPos_init);
         yPos_init.push_back(plume->pointList.at(par).yPos_init);
         zPos_init.push_back(plume->pointList.at(par).zPos_init);
@@ -134,8 +135,30 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
         {
             isActive.push_back(0);
         }
+        */
     }
 
+    xPos_init.resize(numPar, 0); 
+    yPos_init.resize(numPar, 0); 
+    zPos_init.resize(numPar, 0); 
+    
+    tStrt.resize(numPar, 0); 
+    sourceIdx.resize(numPar, 0); 
+    
+    xPos.resize(numPar, 0); 
+    yPos.resize(numPar, 0); 
+    zPos.resize(numPar, 0); 
+    
+    uFluct.resize(numPar, 0); 
+    vFluct.resize(numPar, 0); 
+    wFluct.resize(numPar, 0); 
+    
+    delta_uFluct.resize(numPar, 0); 
+    delta_vFluct.resize(numPar, 0); 
+    delta_wFluct.resize(numPar, 0); 
+    
+    isRogue.resize(numPar, 0);
+    isActive.resize(numPar, 0);
     
     // --------------------------------------------------------
     // setup the netcdf output information storage
@@ -202,42 +225,38 @@ void PlumeOutputLagrangian::save(float currentTime)
 {
 
     // only output if it is during the next output time but before the end time
-    if( currentTime >= nextOutputTime && currentTime <= outputEndTime )
-    {
+    if( currentTime >= nextOutputTime && currentTime <= outputEndTime ) {
         // copy particle info into the required output storage containers
-        for( int par = 0; par < plume->nParsReleased; par++ )
-        {
-            xPos_init.at(par) = plume->pointList.at(par).xPos_init;
-            yPos_init.at(par) = plume->pointList.at(par).yPos_init;
-            zPos_init.at(par) = plume->pointList.at(par).zPos_init;
-            tStrt.at(par) = plume->pointList.at(par).tStrt;
-            sourceIdx.at(par) = plume->pointList.at(par).sourceIdx;
-
-            xPos.at(par) = plume->pointList.at(par).xPos;
-            yPos.at(par) = plume->pointList.at(par).yPos;
-            zPos.at(par) = plume->pointList.at(par).zPos;
-            uFluct.at(par) = plume->pointList.at(par).uFluct;
-            vFluct.at(par) = plume->pointList.at(par).vFluct;
-            wFluct.at(par) = plume->pointList.at(par).wFluct;
-            delta_uFluct.at(par) = plume->pointList.at(par).delta_uFluct;
-            delta_vFluct.at(par) = plume->pointList.at(par).delta_vFluct;
-            delta_wFluct.at(par) = plume->pointList.at(par).delta_wFluct;
+        for( int idx = 0; idx < plume->pointList.size(); idx++ ) {
+            
+            int parID=plume->pointList[idx].particleID;
+            
+            xPos_init[parID] = plume->pointList[idx].xPos_init;
+            yPos_init[parID] = plume->pointList[idx].yPos_init;
+            zPos_init[parID] = plume->pointList[idx].zPos_init;
+            tStrt[parID] = plume->pointList[idx].tStrt;
+            sourceIdx[parID] = plume->pointList[idx].sourceIdx;
+            
+            xPos[parID] = plume->pointList[idx].xPos;
+            yPos[parID] = plume->pointList[idx].yPos;
+            zPos[parID] = plume->pointList[idx].zPos;
+            uFluct[parID] = plume->pointList[idx].uFluct;
+            vFluct[parID] = plume->pointList[idx].vFluct;
+            wFluct[parID] = plume->pointList[idx].wFluct;
+            delta_uFluct[parID] = plume->pointList[idx].delta_uFluct;
+            delta_vFluct[parID] = plume->pointList[idx].delta_vFluct;
+            delta_wFluct[parID] = plume->pointList[idx].delta_wFluct;
 
             // since no boolean output exists, going to have to convert the values to ints
-            if( plume->pointList.at(par).isRogue == true )
-            {
-                isRogue.at(par) = 1;
-            } else
-            {
-                isRogue.at(par) = 0;
-            }
-            if( plume->pointList.at(par).isActive == true )
-            {
-                isActive.at(par) = 1;
-            } else
-            {
-                isActive.at(par) = 0;
-            }
+            if( plume->pointList[idx].isRogue == true )
+                isRogue[parID] = 1;
+            else
+                isRogue[parID] = 0;
+            
+            if( plume->pointList[idx].isActive == true )
+                isActive[parID] = 1;
+            else
+                isActive[parID] = 0;
         }
 
         
@@ -251,9 +270,7 @@ void PlumeOutputLagrangian::save(float currentTime)
         // FM: only remove time dep variables from output array after first save
         // LA note: the output counter is an inherited variable
         if( output_counter == 0 )
-        {
             rmTimeIndepFields();
-        }
 
         // increment inherited output counter for next time insertion
         output_counter += 1;
