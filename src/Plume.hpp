@@ -144,8 +144,9 @@ private:
     // !!! this function is required to make sure the output knows the initial positions and particle sourceIDs
     //  for each time iteration ahead of release time
     void generateParticleList(TURBGeneralData* TGD, Eulerian* eul);
+    int generateParticleList(float,TURBGeneralData*, Eulerian*);
 
-
+    void scrubParticleList();
 
     void advectParticle(int&, int&, URBGeneralData*, TURBGeneralData*, Eulerian*);
 
