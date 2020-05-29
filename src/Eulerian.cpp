@@ -5,7 +5,7 @@
 Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD, const bool& debug_val)
 {
     
-    std::cout<<"[Eulerian] \t Reading CUDA-URB & CUDA-TGD fields "<<std::endl;
+    std::cout<<"[Eulerian] \t Setting Eulerian fields "<<std::endl;
     
     // copy debug information
     debug = debug_val;
@@ -74,7 +74,7 @@ void Eulerian::setData(URBGeneralData* UGD,TURBGeneralData* TGD)
     
     // calculate the threshold velocity
     vel_threshold = 10.0*std::sqrt(getMaxVariance(sig_x,sig_y,sig_z));
-
+   
 }
 
 void Eulerian::setBC(URBGeneralData* UGD,TURBGeneralData* TGD)

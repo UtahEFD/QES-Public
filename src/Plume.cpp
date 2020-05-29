@@ -137,7 +137,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
         
         // need to release new particles -> add new particles to the number to move
         int nParsToRelease = generateParticleList((float)simTimes.at(sim_tIdx), TGD, eul); 
-        // number of active particle at the current time step. -> list is scrubbed at the end of the time step. 
+        // number of active particle at the current time step. -> list is scrubbed at the end of each time step. 
         size_t nParsActive = pointList.size();
         
         // only output the information when the updateFrequency allows and when there are actually released particles
@@ -162,35 +162,29 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
         }
         
         // this the the main loop over all active particles         
-        for( int parIdx = 0; parIdx < nParsActive; parIdx++ ) {
-           
-            // first check to see if the particle should even be advected and skip it if it should not be advected
-            if( pointList[parIdx].isActive == true ) {
+        std::list<Particle>::iterator parItr;
+        for(parItr = pointList.begin(); parItr != pointList.end() ; parItr++ ) {
+            
+            // All the particle here are active => no need to check if parItr->isActive == true
                 
-                // call to the main particle adection function (in separate file: AdvectParticle.cpp)
-                /*
-                  this function is advencing the particle
-                  -> status is returned is dis->pointList[parIdx].isRogue and dis->pointList[parIdx].isActive 
-                 */
-                advectParticle(sim_tIdx, parIdx, UGD, TGD, eul);
-                
-                // now update the isRogueCount and isNotActiveCount
-                if(pointList[parIdx].isRogue == true) 
-                    isRogueCount = isRogueCount + 1;
-                if(pointList[parIdx].isActive == false)
-                    isNotActiveCount = isNotActiveCount + 1;
-                
-                // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
-                if( debug == true ) {
-                    if(  ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) 
-                         && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == pointList.size()-1 )  ) {
-                        std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) 
-                                  << "\", par[" << parIdx << "]. finished particle iteration" << std::endl;
-                        timers.printStoredTime("particle iteration");
-                    }
-                }
-            }   // if isActive == true and isRogue == false
-        } // end of loop for (int parIdx = 0; parIdx < nParsActive; parIdx++) 
+            // call to the main particle adection function (in separate file: AdvectParticle.cpp)
+            /*
+              this function is advencing the particle -> status is returned in:
+              - parItr->isRogue 
+              - parItr->isActive
+              this function does not do any manipulation on pointList
+            */
+            advectParticle(sim_tIdx, parItr, UGD, TGD, eul);
+            
+            // now update the isRogueCount and isNotActiveCount
+            if(parItr->isRogue == true) {
+                isRogueCount = isRogueCount + 1;
+            }
+            if(parItr->isActive == false) {
+                isNotActiveCount = isNotActiveCount + 1;
+            }   
+                        
+        } // end of loop for (parItr == pointList.begin(); parItr != pointList.end() ; parItr++ )
         
         // netcdf output for a given simulation timestep
         // note that the first time is already output, so this is the time the loop iteration 
@@ -306,7 +300,7 @@ int Plume::generateParticleList(float currentTime,TURBGeneralData* TGD, Eulerian
     // Add new particles now
     // - walk over all sources and add the emitted particles from
     
-    std::vector<Particle> nextSetOfParticles;
+    std::list<Particle> nextSetOfParticles;
     int numNewParticles = 0;
     for(auto sIdx = 0u; sIdx < allSources.size(); sIdx++) {
         numNewParticles += allSources.at(sIdx)->emitParticles( (float)sim_dt, currentTime, nextSetOfParticles);
@@ -336,24 +330,24 @@ void Plume::scrubParticleList()
     return;
 }
 
-void Plume::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vector<Particle>& newParticles)
+void Plume::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::list<Particle>& newParticles)
 {
     // at this time, should be a list of each and every particle that exists at the given time
     // particles and sources can potentially be added to the list elsewhere
-    for(int parIdx = 0; parIdx < newParticles.size(); parIdx++)
-    {
+    for(auto parItr = newParticles.begin(); parItr != newParticles.end() ; parItr++ ) {
+        
         // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
         // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
-        eul->setInterp3Dindex_cellVar(newParticles.at(parIdx).xPos_init,newParticles.at(parIdx).yPos_init,newParticles.at(parIdx).zPos_init);
+        eul->setInterp3Dindex_cellVar(parItr->xPos_init,parItr->yPos_init,parItr->zPos_init);
        
         // set particle ID (use global particle counter)
-        newParticles.at(parIdx).particleID = nParsReleased;
+        parItr->particleID = nParsReleased;
         nParsReleased++;
         
         // set the positions to be used by the simulation to the initial positions
-        newParticles.at(parIdx).xPos = newParticles.at(parIdx).xPos_init;
-        newParticles.at(parIdx).yPos = newParticles.at(parIdx).yPos_init;
-        newParticles.at(parIdx).zPos = newParticles.at(parIdx).zPos_init;
+        parItr->xPos = parItr->xPos_init;
+        parItr->yPos = parItr->yPos_init;
+        parItr->zPos = parItr->zPos_init;
 
         // get the sigma values from the Eulerian grid for the particle value
         double current_sig_x = eul->interp3D_cellVar(eul->sig_x);
@@ -369,16 +363,16 @@ void Plume::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vector<Par
         // now set the initial velocity fluctuations for the particle
         // The  sqrt of the variance is to match Bailey's code
         double rann = random::norRan();        // use different random numbers for each direction
-        newParticles.at(parIdx).uFluct = std::sqrt(current_sig_x) * rann;
+        parItr->uFluct = std::sqrt(current_sig_x) * rann;
         rann=random::norRan();      // should be randn() matlab equivalent, which is a normally distributed random number
-        newParticles.at(parIdx).vFluct = std::sqrt(current_sig_y) * rann;
+        parItr->vFluct = std::sqrt(current_sig_y) * rann;
         rann=random::norRan();
-        newParticles.at(parIdx).wFluct = std::sqrt(current_sig_z) * rann;
+        parItr->wFluct = std::sqrt(current_sig_z) * rann;
 
         // set the initial values for the old velFluct values
-        newParticles.at(parIdx).uFluct_old = newParticles.at(parIdx).uFluct;
-        newParticles.at(parIdx).vFluct_old = newParticles.at(parIdx).vFluct;
-        newParticles.at(parIdx).wFluct_old = newParticles.at(parIdx).wFluct;
+        parItr->uFluct_old = parItr->uFluct;
+        parItr->vFluct_old = parItr->vFluct;
+        parItr->wFluct_old = parItr->wFluct;
 
         // get the tau values from the Eulerian grid for the particle value
         double current_txx = eul->interp3D_cellVar(TGD->txx);
@@ -389,22 +383,22 @@ void Plume::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::vector<Par
         double current_tzz = eul->interp3D_cellVar(TGD->tzz);
 
         // set tau_old to the interpolated values for each position
-        newParticles.at(parIdx).txx_old = current_txx;
-        newParticles.at(parIdx).txy_old = current_txy;
-        newParticles.at(parIdx).txz_old = current_txz;
-        newParticles.at(parIdx).tyy_old = current_tyy;
-        newParticles.at(parIdx).tyz_old = current_tyz;
-        newParticles.at(parIdx).tzz_old = current_tzz;
+        parItr->txx_old = current_txx;
+        parItr->txy_old = current_txy;
+        parItr->txz_old = current_txz;
+        parItr->tyy_old = current_tyy;
+        parItr->tyz_old = current_tyz;
+        parItr->tzz_old = current_tzz;
 
         // set delta_velFluct values to zero for now
-        newParticles.at(parIdx).delta_uFluct = 0.0;
-        newParticles.at(parIdx).delta_vFluct = 0.0;
-        newParticles.at(parIdx).delta_wFluct = 0.0;
+        parItr->delta_uFluct = 0.0;
+        parItr->delta_vFluct = 0.0;
+        parItr->delta_wFluct = 0.0;
 
         // set isRogue to false and isActive to true for each particle
         // isActive = true as particle relased is active immediately
-        newParticles.at(parIdx).isRogue = false;
-        newParticles.at(parIdx).isActive = true;
+        parItr->isRogue = false;
+        parItr->isActive = true;
         
         
     }

@@ -56,6 +56,6 @@ public:
 
     
     int emitParticles(const float dt, const float currTime,
-                      std::vector<Particle>& emittedParticles);
+                      std::list<Particle>& emittedParticles);
     
 };

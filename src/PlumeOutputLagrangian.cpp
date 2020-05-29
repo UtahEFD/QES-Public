@@ -227,33 +227,33 @@ void PlumeOutputLagrangian::save(float currentTime)
     // only output if it is during the next output time but before the end time
     if( currentTime >= nextOutputTime && currentTime <= outputEndTime ) {
         // copy particle info into the required output storage containers
-        for( int idx = 0; idx < plume->pointList.size(); idx++ ) {
+        for( auto parItr = plume->pointList.begin(); parItr != plume->pointList.end() ; parItr++ ) {
             
-            int parID=plume->pointList[idx].particleID;
+            int parID=parItr->particleID;
             
-            xPos_init[parID] = plume->pointList[idx].xPos_init;
-            yPos_init[parID] = plume->pointList[idx].yPos_init;
-            zPos_init[parID] = plume->pointList[idx].zPos_init;
-            tStrt[parID] = plume->pointList[idx].tStrt;
-            sourceIdx[parID] = plume->pointList[idx].sourceIdx;
+            xPos_init[parID] = parItr->xPos_init;
+            yPos_init[parID] = parItr->yPos_init;
+            zPos_init[parID] = parItr->zPos_init;
+            tStrt[parID] = parItr->tStrt;
+            sourceIdx[parID] = parItr->sourceIdx;
             
-            xPos[parID] = plume->pointList[idx].xPos;
-            yPos[parID] = plume->pointList[idx].yPos;
-            zPos[parID] = plume->pointList[idx].zPos;
-            uFluct[parID] = plume->pointList[idx].uFluct;
-            vFluct[parID] = plume->pointList[idx].vFluct;
-            wFluct[parID] = plume->pointList[idx].wFluct;
-            delta_uFluct[parID] = plume->pointList[idx].delta_uFluct;
-            delta_vFluct[parID] = plume->pointList[idx].delta_vFluct;
-            delta_wFluct[parID] = plume->pointList[idx].delta_wFluct;
+            xPos[parID] = parItr->xPos;
+            yPos[parID] = parItr->yPos;
+            zPos[parID] = parItr->zPos;
+            uFluct[parID] = parItr->uFluct;
+            vFluct[parID] = parItr->vFluct;
+            wFluct[parID] = parItr->wFluct;
+            delta_uFluct[parID] = parItr->delta_uFluct;
+            delta_vFluct[parID] = parItr->delta_vFluct;
+            delta_wFluct[parID] = parItr->delta_wFluct;
 
             // since no boolean output exists, going to have to convert the values to ints
-            if( plume->pointList[idx].isRogue == true )
+            if( parItr->isRogue == true )
                 isRogue[parID] = 1;
             else
                 isRogue[parID] = 0;
             
-            if( plume->pointList[idx].isActive == true )
+            if( parItr->isActive == true )
                 isActive[parID] = 1;
             else
                 isActive[parID] = 0;
