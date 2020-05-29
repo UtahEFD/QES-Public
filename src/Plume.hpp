@@ -64,7 +64,7 @@ public:
     
     // This the storage for all particles
     // the sources can set these values, then the other values are set using urb and turb info using these values
-    std::list<Particle> pointList;
+    std::list<Particle> particleList;
     
     // this is the total number of particles expected to be released during the simulation
     // !!! this has to be calculated carefully inside the getInputSources() function
@@ -136,7 +136,7 @@ private:
     // this function generates the list of particle to be released at a given time
     int generateParticleList(float,TURBGeneralData*, Eulerian*);
 
-    // this function scrubs the inactive particle for the particle list (pointList)
+    // this function scrubs the inactive particle for the particle list (particleList)
     void scrubParticleList();
     
 
@@ -207,11 +207,6 @@ private:
                                   const double& domainStart,const double& domainEnd);
     void enforceWallBCs_reflection( double& pos,double& velFluct,double& velFluct_old,bool& isActive,
                                     const double& domainStart,const double& domainEnd);
-    
-    // this is called to set the values whenever it is found that a particle is inactive or rogue
-    void setFinishedParticleVals( double& xPos,double& yPos,double& zPos,bool& isActive,
-                                  const bool& isRogue,
-                                  const double& xPos_init, const double& yPos_init, const double& zPos_init);
     
     // this is for writing an output simulation info file separate from the regular command line output
     void writeSimInfoFile(const double& current_time);

@@ -7,7 +7,7 @@
 #include "Plume.hpp"
 
 Plume::Plume( PlumeInputData* PID, URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Args* arguments) 
-    : pointList(0)
+    : particleList(0)
 {
     
     std::cout<<"[Plume] \t Setting up simulation details "<<std::endl;
@@ -138,7 +138,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
         // need to release new particles -> add new particles to the number to move
         int nParsToRelease = generateParticleList((float)simTimes.at(sim_tIdx), TGD, eul); 
         // number of active particle at the current time step. -> list is scrubbed at the end of each time step. 
-        size_t nParsActive = pointList.size();
+        size_t nParsActive = particleList.size();
         
         // only output the information when the updateFrequency allows and when there are actually released particles
         if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )
@@ -163,7 +163,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
         
         // this the the main loop over all active particles         
         std::list<Particle>::iterator parItr;
-        for(parItr = pointList.begin(); parItr != pointList.end() ; parItr++ ) {
+        for(parItr = particleList.begin(); parItr != particleList.end() ; parItr++ ) {
             
             // All the particle here are active => no need to check if parItr->isActive == true
                 
@@ -172,7 +172,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
               this function is advencing the particle -> status is returned in:
               - parItr->isRogue 
               - parItr->isActive
-              this function does not do any manipulation on pointList
+              this function does not do any manipulation on particleList
             */
             advectParticle(sim_tIdx, parItr, UGD, TGD, eul);
             
@@ -184,7 +184,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
                 isNotActiveCount = isNotActiveCount + 1;
             }   
                         
-        } // end of loop for (parItr == pointList.begin(); parItr != pointList.end() ; parItr++ )
+        } // end of loop for (parItr == particleList.begin(); parItr != particleList.end() ; parItr++ )
         
         // netcdf output for a given simulation timestep
         // note that the first time is already output, so this is the time the loop iteration 
@@ -310,7 +310,7 @@ int Plume::generateParticleList(float currentTime,TURBGeneralData* TGD, Eulerian
     
     // append all the new particles on to the big particle
     // advection list
-    pointList.insert( pointList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end() );
+    particleList.insert( particleList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end() );
     
     // now calculate the number of particles to release for this timestep
 
@@ -320,9 +320,9 @@ int Plume::generateParticleList(float currentTime,TURBGeneralData* TGD, Eulerian
 
 void Plume::scrubParticleList()
 {
-    for(auto it = pointList.begin(); it != pointList.end();) {
+    for(auto it = particleList.begin(); it != particleList.end();) {
         if(it->isActive == false) {
-            it = pointList.erase(it);
+            it = particleList.erase(it);
         } else {
             ++it;
         }
@@ -699,26 +699,6 @@ void Plume::enforceWallBCs_reflection(double& pos,double& velFluct,double& velFl
         
         
     }   // if isActive == true
-}
-
-
-void Plume::setFinishedParticleVals(double& xPos,double& yPos,double& zPos,bool& isActive,
-                                    const bool& isRogue,
-                                    const double& xPos_init, const double& yPos_init, const double& zPos_init)
-{
-    // FMargairaz -> this function will be used to removed particle from the particle list in the futur
-
-    // need to set all rogue particles to inactive
-    if( isRogue == true ) {
-        isActive = false;
-    }
-    // now any inactive particles need set to the initial position
-    // note: should we use the inital positio at inactive location for the particle?
-    //if( isActive == false ) {
-    //    xPos = xPos_init;
-    //    yPos = yPos_init;
-    //    zPos = zPos_init;
-    //}
 }
 
 void Plume::writeSimInfoFile(const double& current_time)

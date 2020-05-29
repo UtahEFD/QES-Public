@@ -7,19 +7,6 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
     bool isRogue = parItr->isRogue;
     bool isActive = parItr->isActive;
     
-    // get the amount of time it takes to advect a single particle, but only output the result when updateFrequency allows
-    //  and when debugging
-    if( debug == true ) {
-        /*
-          if(  ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) 
-             && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == pointList.size()-1 )  ) {
-            // overall particle timer
-            timers.resetStoredTimer("particle iteration");
-        }
-        */
-    }
-    
-    
     // getting the current position for where the particle is at for a given time
     // if it is the first time a particle is ever released, then the value is already set at the initial value
     // LA notes: technically this value is the old position to be overwritten with the new position.
@@ -267,8 +254,19 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
         (this->*enforceWallBCs_z)(zPos,wFluct,wFluct_old,isActive, domainZstart,domainZend);
                     
         // now set the particle values for if they are rogue or outside the domain
-        setFinishedParticleVals(xPos,yPos,zPos,isActive, isRogue, xPos_init,yPos_init,zPos_init);
-                    
+        // need to set all rogue particles to inactive
+        if( isRogue == true ) {
+            isActive = false;
+        }
+        // now any inactive particles need set to the initial position
+        /* FMargairaz -> this has been deactivated
+          if( isActive == false ) {
+          xPos = xPos_init;
+          yPos = yPos_init;
+          zPos = zPos_init;
+          }
+        */
+        
         // now update the old values to be ready for the next particle time iteration
         // the current values are already set for the next iteration by the above calculations
         // note: it may look strange to set the old values to the current values, then to use these
@@ -297,20 +295,7 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
         // the function for calculating par_dt will use the timeRemainder for the output par_dt
         // so this should result in a timeRemainder of exactly zero, no need for a tol.
         timeRemainder = timeRemainder - par_dt;
-                            
-        // print info about the current particle time iteration
-        // but only if debug is set to true and this is the right updateFrequency time
-        if( debug == true ) {
-            /*
-              if(  ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) 
-                 && ( parIdx % updateFrequency_particleLoop == 0 || parIdx == pointList.size()-1 )  ) {
-                std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) 
-                          << "\", par[" << parIdx << "]. Finished particle timestep \"" << par_dt 
-                          << "\" for time = \"" << par_time << "\"" << std::endl;
-            }
-            */
-        }
-                    
+        
     }   // while( isActive == true && timeRemainder > 0.0 )
                 
     // now update the old values and current values in the dispersion storage to be ready for the next iteration

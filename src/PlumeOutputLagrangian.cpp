@@ -104,31 +104,31 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
         parID.push_back(par);   
         
         /*
-        xPos_init.push_back(plume->pointList.at(par).xPos_init);
-        yPos_init.push_back(plume->pointList.at(par).yPos_init);
-        zPos_init.push_back(plume->pointList.at(par).zPos_init);
-        tStrt.push_back(plume->pointList.at(par).tStrt);
-        sourceIdx.push_back(plume->pointList.at(par).sourceIdx);
+        xPos_init.push_back(plume->particleList.at(par).xPos_init);
+        yPos_init.push_back(plume->particleList.at(par).yPos_init);
+        zPos_init.push_back(plume->particleList.at(par).zPos_init);
+        tStrt.push_back(plume->particleList.at(par).tStrt);
+        sourceIdx.push_back(plume->particleList.at(par).sourceIdx);
 
-        xPos.push_back(plume->pointList.at(par).xPos);
-        yPos.push_back(plume->pointList.at(par).yPos);
-        zPos.push_back(plume->pointList.at(par).zPos);
-        uFluct.push_back(plume->pointList.at(par).uFluct);
-        vFluct.push_back(plume->pointList.at(par).vFluct);
-        wFluct.push_back(plume->pointList.at(par).wFluct);
-        delta_uFluct.push_back(plume->pointList.at(par).delta_uFluct);
-        delta_vFluct.push_back(plume->pointList.at(par).delta_vFluct);
-        delta_wFluct.push_back(plume->pointList.at(par).delta_wFluct);
+        xPos.push_back(plume->particleList.at(par).xPos);
+        yPos.push_back(plume->particleList.at(par).yPos);
+        zPos.push_back(plume->particleList.at(par).zPos);
+        uFluct.push_back(plume->particleList.at(par).uFluct);
+        vFluct.push_back(plume->particleList.at(par).vFluct);
+        wFluct.push_back(plume->particleList.at(par).wFluct);
+        delta_uFluct.push_back(plume->particleList.at(par).delta_uFluct);
+        delta_vFluct.push_back(plume->particleList.at(par).delta_vFluct);
+        delta_wFluct.push_back(plume->particleList.at(par).delta_wFluct);
         
         // since no boolean output exists, going to have to convert the values to ints
-        if( plume->pointList.at(par).isRogue == true )
+        if( plume->particleList.at(par).isRogue == true )
         {
             isRogue.push_back(1);
         } else
         {
             isRogue.push_back(0);
         }
-        if( plume->pointList.at(par).isActive == true )
+        if( plume->particleList.at(par).isActive == true )
         {
             isActive.push_back(1);
         } else
@@ -227,7 +227,7 @@ void PlumeOutputLagrangian::save(float currentTime)
     // only output if it is during the next output time but before the end time
     if( currentTime >= nextOutputTime && currentTime <= outputEndTime ) {
         // copy particle info into the required output storage containers
-        for( auto parItr = plume->pointList.begin(); parItr != plume->pointList.end() ; parItr++ ) {
+        for( auto parItr = plume->particleList.begin(); parItr != plume->particleList.end() ; parItr++ ) {
             
             int parID=parItr->particleID;
             

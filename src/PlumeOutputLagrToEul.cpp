@@ -254,7 +254,7 @@ void PlumeOutputLagrToEul::save(float currentTime)
         //  cc = dt/timeAvgFreq * mass_per_particle/vol => in kg/m3
 
         // this is what it used to be, which assumes the mass per particle is 1 per total number of particles to release
-        //double cc = (dt)/(timeAvgFreq*volume* dis->pointList.size() );
+        //double cc = (dt)/(timeAvgFreq*volume* dis->particleList.size() );
 
         // FM - here: number of particles in volume
         // cc = dt/timeAvgFreq * 1/vol => in #/m3 
@@ -301,7 +301,7 @@ void PlumeOutputLagrToEul::boxCount()
 
     // for all particles see where they are relative to the
     // concentration collection boxes
-    for(auto parItr = plume->pointList.begin(); parItr != plume->pointList.end() ; parItr++ ) {
+    for(auto parItr = plume->particleList.begin(); parItr != plume->particleList.end() ; parItr++ ) {
         
         // because particles all start out as active now, need to also check the release time
         if( parItr->isActive == true )
