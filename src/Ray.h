@@ -3,30 +3,39 @@
 /*
  *Basic definition of a ray 
  */
-#ifndef RAY_H
-#define RAY_H
 
-#include "Vector3.h"
-#include <vector>
+#include "Vec3D.h"
+
 class Ray{
   private:
-      float origin_x, origin_y, origin_z;
-      Vector3<float> dirVec;
+    float origin_x, origin_y, origin_z;
+    Vec3D dirVec;
 
   public:
-      Ray(float origin_x, float origin_y, float origin_z, Vector3<float> dirVec);
-
-      Ray(float origin_x, float origin_y, float origin_z);
-
+    Ray(float o_x, float o_y, float o_z, Vec3D &dVec) 
+        : origin_x(o_x), origin_y(o_y), origin_z(o_z), dirVec(dVec)
+    {
+    }
+    
+    Ray(float o_x, float o_y, float o_z)
+        : origin_x(o_x), origin_y(o_y), origin_z(o_z)
+    {
+        dirVec[0] = 0.0;;
+        dirVec[1] = 0.0;
+        dirVec[2] = 1.0;
+    }
+    
     ~Ray() {}
 
-      float getOriginX();
-      float getOriginY();
-      float getOriginZ();
-      Vector3<float> getDirection();
+    float getOriginX() const {return origin_x;}
+    float getOriginY() const {return origin_y;}
+    float getOriginZ() const {return origin_z;};
 
-      void setDir(const Vector3<float> &dir);
+    Vec3D getDirection() const {return dirVec;}
+
+    void setDir(const Vec3D &dir) {
+        dirVec[0] = dir[0];
+        dirVec[1] = dir[1];
+        dirVec[2] = dir[2];
+    }
 };
-
-
-#endif

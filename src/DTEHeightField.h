@@ -7,8 +7,11 @@
 #include <string>
 #include "Triangle.h"
 #include "Vector3.h"
+
 #include "gdal_priv.h"
 #include "cpl_conv.h" // for CPLMalloc()
+#include "ogrsf_frmts.h"
+
 #include "Cell.h"
 #include "Edge.h"
 #include <iostream>
@@ -25,6 +28,9 @@ public:
 
   DTEHeightField();
   DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN);
+
+    DTEHeightField(const std::vector<double> &heightField, int dimX, int dimY, double cellSizeXN, double cellSizeYN);
+
   ~DTEHeightField();
 
   std::vector<Triangle*> getTris() const {return m_triList;}
@@ -74,6 +80,15 @@ public:
    */
   void closeScanner();
 
+    void convertRasterToGeo( double rasterX, double rasterY, double &geoX, double &geoY )
+    {
+        // Affine transformation from the GDAL geotransform:
+        // https://gdal.org/user/raster_data_model.html
+        geoX = m_geoTransform[0] + rasterX * m_geoTransform[1] + rasterY * m_geoTransform[2];
+        geoY = m_geoTransform[3] + rasterX * m_geoTransform[4] + rasterY * m_geoTransform[5];
+    }
+    
+
   int m_nXSize, m_nYSize;
   float pixelSizeX, pixelSizeY;
 
@@ -117,11 +132,17 @@ private:
     //if (j * m_nXSize + k >= m_nXSize * m_nYSize
     else
     {
-      height = scanline[ k * m_nXSize + j ];
+        // important to remember range is [0, n-1], so need the -1
+        // in the flip
+        // Previous code had this -- does not seem correct
+        // height = scanline[ abs(k-m_nYSize) * m_nXSize + j ];
+        height = scanline[ (m_nYSize-1 - k) * m_nXSize + j ];
     }
 
-    //std::cout << "domainx:   " << m_nXSize << std::endl;
-  	//std::cout << "domainy:   " << m_nYSize << std::endl;
+    if (height < 0.0 || std::isnan(abs(height)))
+    {
+      height = 0.0;
+    }
 
     if (!compareEquality( height, m_rbNoData ))
     {

@@ -1,26 +1,18 @@
 #include "URBGeneralData.h"
 
-URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
-    : m_calcMixingLength( calcMixLength )
+URBGeneralData::URBGeneralData(const URBInputData* UID)
 {
-
-   if ( UID->simParams->upwindCavityFlag == 1)
-   {
-      lengthf_coeff = 2.0;
-   }
-   else
-   {
-      lengthf_coeff = 1.5;
+    if ( UID->simParams->upwindCavityFlag == 1) {
+        lengthf_coeff = 2.0;
+    } else {
+        lengthf_coeff = 1.5;
     }
 
     // Determines how wakes behind buildings are calculated
-    if ( UID->simParams->wakeFlag > 1)
-    {
+    if ( UID->simParams->wakeFlag > 1) {
         cavity_factor = 1.1;
         wake_factor = 0.1;
-    }
-    else
-    {
+    } else {
         cavity_factor = 1.0;
         wake_factor = 0.0;
     }
@@ -58,6 +50,63 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     numcell_cout_2d = (nx-1)*(ny-1);               /**< Total number of horizontal cell-centered values in domain */
     numcell_cent    = (nx-1)*(ny-1)*(nz-1);        /**< Total number of cell-centered values in domain */
     numcell_face    = nx*ny*nz;                    /**< Total number of face-centered values in domain */
+
+
+    // where should this really go?
+    //
+    // Need to now take all WRF station data and convert to
+    // sensors
+    if (UID->simParams->wrfInputData) {
+
+        WRFInput *wrf_ptr = UID->simParams->wrfInputData;
+
+        std::cout << "Size of stat data: " << wrf_ptr->statData.size() << std::endl;
+        UID->metParams->sensors.resize( wrf_ptr->statData.size() );
+
+        for (size_t i=0; i<wrf_ptr->statData.size(); i++) {
+            std::cout << "Station " << i << " ("
+                      << wrf_ptr->statData[i].xCoord << ", "
+                      << wrf_ptr->statData[i].yCoord << ")" << std::endl;
+
+            if (!UID->metParams->sensors[i])
+                UID->metParams->sensors[i] = new Sensor();
+
+            UID->metParams->sensors[i]->site_xcoord = wrf_ptr->statData[i].xCoord;
+            UID->metParams->sensors[i]->site_ycoord = wrf_ptr->statData[i].yCoord;
+
+            // WRF profile data -- sensor blayer flag is 4
+            UID->metParams->sensors[i]->site_blayer_flag = 4;
+
+            // Make sure to set size_z0 to be z0 from WRF cell
+            UID->metParams->sensors[i]->site_z0 = wrf_ptr->statData[i].z0;
+
+            //
+            // 1 time series for now - how do we deal with this for
+            // new time steps???  Need to figure out ASAP.
+            //
+            for (int t=0; t<1; t++) {
+                std::cout << "\tTime Series: " << t << std::endl;
+
+                int profDataSz = wrf_ptr->statData[i].profiles[t].size();
+                UID->metParams->sensors[i]->site_wind_dir.resize( profDataSz );
+                UID->metParams->sensors[i]->site_z_ref.resize( profDataSz );
+                UID->metParams->sensors[i]->site_U_ref.resize( profDataSz );
+
+
+                for (size_t p=0; p<wrf_ptr->statData[i].profiles[t].size(); p++) {
+                    std::cout << "\t" << wrf_ptr->statData[i].profiles[t][p].zCoord
+                              << ", " << wrf_ptr->statData[i].profiles[t][p].ws
+                              << ", " << wrf_ptr->statData[i].profiles[t][p].wd << std::endl;
+
+                    UID->metParams->sensors[i]->site_z_ref[p] = wrf_ptr->statData[i].profiles[t][p].zCoord;
+                    UID->metParams->sensors[i]->site_U_ref[p] = wrf_ptr->statData[i].profiles[t][p].ws;
+                    UID->metParams->sensors[i]->site_wind_dir[p] = wrf_ptr->statData[i].profiles[t][p].wd;
+
+                }
+            }
+        }
+
+    }
 
     // /////////////////////////
     // Calculation of z0 domain info MAY need to move to UrbInputData
@@ -103,45 +152,45 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     if (UID->buildings)
         z0 = UID->buildings->wallRoughness;
 
+    // /////////////////////////
+    // Definition of the grid
+    // /////////////////////////
+
+    // vertical grid (can be uniform or stretched)
     dz_array.resize( nz-1, 0.0 );
     z.resize( nz-1 );
-    z_face.resize( nz-1);
+    z_face.resize( nz-1 );
 
-    if (UID->simParams->verticalStretching == 0)    // Uniform vertical grid
-    {
-        for (auto k=1; k<z.size(); k++)
-        {
+    if (UID->simParams->verticalStretching == 0) {        // Uniform vertical grid
+        for (size_t k=1; k<z.size(); k++) {
             dz_array[k] = dz;
         }
-    }
-    else if (UID->simParams->verticalStretching == 1)     // Stretched vertical grid
-    {
-        for (auto k=1; k<z.size(); k++)
-        {
-            dz_array[k] = UID->simParams->dz_value[k-1];      // Read in custom dz values and set them to dz_array
+    } else if (UID->simParams->verticalStretching == 1) { // Stretched vertical grid
+        for (size_t k=1; k<z.size(); k++) {
+            dz_array[k] = UID->simParams->dz_value[k-1];  // Read in custom dz values and set them to dz_array
         }
     }
 
     dz_array[0] = dz_array[1];                  // Value for ghost cell below the surface
     dz = *std::min_element(dz_array.begin() , dz_array.end());     // Set dz to minimum value of
 
-    z[0] = -0.5*dz_array[0];
     z_face[0] = 0.0;
-    for (auto k=1; k<z.size(); k++)
-    {
-        z[k] = z[k-1] + dz_array[k];     /**< Location of face centers in z-dir */
-        z_face[k] = z_face[k-1] + dz_array[k];
+    z[0] = -0.5*dz_array[0];
+    for (size_t k=1; k<z.size(); k++) {
+        z_face[k] = z_face[k-1] + dz_array[k];  /**< Location of face centers in z-dir */
+        z[k] = 0.5*(z_face[k-1] + z_face[k]);   /**< Location of cell centers in z-dir */ 
     }
+    
 
+    // horizontal grid (x-direction)
     x.resize( nx-1 );
-    for (size_t i=0; i<nx-1; i++)
-    {
+    for (auto i=0; i<nx-1; i++) {
         x[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
     }
 
+    // horizontal grid (y-direction)
     y.resize( ny-1 );
-    for (auto j=0; j<ny-1; j++)
-    {
+    for (auto j=0; j<ny-1; j++) {
         y[j] = (j+0.5)*dy;          /**< Location of face centers in y-dir */
     }
 
@@ -168,8 +217,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     icellflag.resize( numcell_cent, 1 );
     ibuilding_flag.resize ( numcell_cent, -1 );
 
-    if (m_calcMixingLength)
-        mixingLengths.resize( numcell_cent, 0.0 );
+    mixingLengths.resize( numcell_cent, 0.0 );
 
     terrain.resize( numcell_cout_2d, 0.0 );
     terrain_id.resize( nx*ny, 1 );
@@ -185,6 +233,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     u.resize( numcell_face, 0.0 );
     v.resize( numcell_face, 0.0 );
     w.resize( numcell_face, 0.0 );
+
+    std::cout << "Memory allocation complete." << std::endl;
 
     /// defining ground solid cells (ghost cells below the surface)
     for (int j = 0; j < ny-1; j++)
@@ -239,11 +289,13 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     // Handle remaining Terrain processing components here
     ////////////////////////////////////////////////////////
 
+
     if (UID->simParams->DTE_heightField)
     {
         // ////////////////////////////////
         // Retrieve terrain height field //
         // ////////////////////////////////
+        auto start_stair = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < nx-1; i++)
         {
             for (int j = 0; j < ny-1; j++)
@@ -256,7 +308,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
                     terrain[idx] = 0.0;
                 }
                 id = i+j*nx;
-                for (auto k=0; k<z.size(); k++)
+                for (size_t k=0; k<z.size()-1; k++)
                 {
                     terrain_id[id] = k+1;
                     if (terrain[idx] < z[k+1])
@@ -277,15 +329,27 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
             }
         }
 
+        auto finish_stair = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+
+        std::chrono::duration<float> elapsed_stair = finish_stair - start_stair;
+        std::cout << "Elapsed time for terrain with stair-step: " << elapsed_stair.count() << " s\n";
+
         if (UID->simParams->meshTypeFlag == 1)
         {
             //////////////////////////////////
             //        Cut-cell method       //
             //////////////////////////////////
 
+            auto start_cut = std::chrono::high_resolution_clock::now();
+
             // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
             cut_cell.calculateCoefficient(cells, UID->simParams->DTE_heightField, nx, ny, nz, dx, dy, dz_array, n, m, f, e, h, g, pi, icellflag,
                                           terrain_volume_frac, z_face, UID->simParams->halo_x, UID->simParams->halo_y);
+
+            auto finish_cut = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+
+            std::chrono::duration<float> elapsed_cut = finish_cut - start_cut;
+            std::cout << "Elapsed time for terrain with cut-cell: " << elapsed_cut.count() << " s\n";
         }
     }
     ///////////////////////////////////////////////////////
@@ -305,7 +369,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
 
    if (UID->simParams->SHPData)
    {
-      auto buildingsetup = std::chrono::high_resolution_clock::now(); // Start recording execution time
+      auto buildingsetup_start = std::chrono::high_resolution_clock::now(); // Start recording execution time
 
       std::vector<Building*> poly_buildings;
 
@@ -317,10 +381,10 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
       UID->simParams->SHPData->getMinExtent( minExtent );
 
       // float domainOffset[2] = { 0, 0 };
-      for (auto pIdx = 0; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
+      for (auto pIdx = 0u; pIdx<UID->simParams->shpPolygons.size(); pIdx++)
       {
          // convert the global polys to local domain coordinates
-         for (auto lIdx=0; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
+         for (auto lIdx=0u; lIdx<UID->simParams->shpPolygons[pIdx].size(); lIdx++)
          {
             UID->simParams->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
             UID->simParams->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
@@ -330,7 +394,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
       // Setting base height for buildings if there is a DEM file
       if (UID->simParams->DTE_heightField && UID->simParams->DTE_mesh)
       {
-          for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
+          for (auto pIdx = 0u; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
           {
               // Get base height of every corner of building from terrain height
               min_height = UID->simParams->DTE_mesh->getHeight(UID->simParams->shpPolygons[pIdx][0].x_poly,
@@ -339,11 +403,11 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
               {
                   min_height = 0.0;
               }
-              for (auto lIdx = 1; lIdx < UID->simParams->shpPolygons[pIdx].size(); lIdx++)
+              for (auto lIdx = 1u; lIdx < UID->simParams->shpPolygons[pIdx].size(); lIdx++)
               {
                   corner_height = UID->simParams->DTE_mesh->getHeight(UID->simParams->shpPolygons[pIdx][lIdx].x_poly,
                                                                       UID->simParams->shpPolygons[pIdx][lIdx].y_poly);
-                  
+
                   if (corner_height < min_height && corner_height >= 0.0)
                   {
                       min_height = corner_height;
@@ -354,32 +418,38 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
       }
       else
       {
-          for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
+          for (auto pIdx = 0u; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
           {
               base_height.push_back(0.0);
           }
       }
-      
-      for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
+
+      for (auto pIdx = 0u; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
       {
-          for (auto lIdx=0; lIdx < UID->simParams->shpPolygons[pIdx].size(); lIdx++)
+          for (auto lIdx=0u; lIdx < UID->simParams->shpPolygons[pIdx].size(); lIdx++)
           {
               UID->simParams->shpPolygons[pIdx][lIdx].x_poly += UID->simParams->halo_x;
               UID->simParams->shpPolygons[pIdx][lIdx].y_poly += UID->simParams->halo_y;
           }
       }
-      
-        std::cout << "Creating buildings from shapefile...\n";
-        // Loop to create each of the polygon buildings read in from the shapefile
-        for (auto pIdx = 0; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
-        {
-            allBuildingsV.push_back (new PolyBuilding (UID, this, pIdx));
-            building_id.push_back(allBuildingsV.size()-1);
-            allBuildingsV[pIdx]->setPolyBuilding(this);
-            allBuildingsV[pIdx]->setCellFlags(UID, this, pIdx);
-            effective_height.push_back (allBuildingsV[pIdx]->height_eff);
-        }
-        std::cout << "Buildings created from shapefile...\n";
+
+      std::cout << "Creating buildings from shapefile...\n";
+      // Loop to create each of the polygon buildings read in from the shapefile
+      for (auto pIdx = 0u; pIdx < UID->simParams->shpPolygons.size(); pIdx++)
+      {
+          allBuildingsV.push_back (new PolyBuilding (UID, this, pIdx));
+          building_id.push_back(allBuildingsV.size()-1);
+          allBuildingsV[pIdx]->setPolyBuilding(this);
+          allBuildingsV[pIdx]->setCellFlags(UID, this, pIdx);
+          effective_height.push_back (allBuildingsV[pIdx]->height_eff);
+      }
+      std::cout << "Buildings created from shapefile...\n";
+
+      auto buildingsetup_finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+
+      std::chrono::duration<float> elapsed_cut = buildingsetup_finish - buildingsetup_start;
+      std::cout << "Elapsed time for building setup : " << elapsed_cut.count() << " s\n";
+
    }
 
 
@@ -390,13 +460,13 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     // Add all the Canopy* to it (they are derived from Building)
     if ( UID->canopies )
     {
-      for (int i = 0; i < UID->canopies->canopies.size(); i++)
+      for (size_t i = 0; i < UID->canopies->canopies.size(); i++)
       {
          allBuildingsV.push_back( UID->canopies->canopies[i] );
          effective_height.push_back(allBuildingsV[i]->height_eff);
          building_id.push_back(allBuildingsV.size()-1);
       }
-   }
+    }
 
 
    // Add all the Building* that were read in from XML to this list
@@ -404,14 +474,41 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
    // from Building in the end...
    if ( UID->buildings )
    {
-      for (int i = 0; i < UID->buildings->buildings.size(); i++)
+      float corner_height, min_height;
+      for (size_t i = 0; i < UID->buildings->buildings.size(); i++)
       {
-          allBuildingsV.push_back( UID->buildings->buildings[i] );
-          int j = allBuildingsV.size()-1;
-          building_id.push_back( j );
-          allBuildingsV[j]->setPolyBuilding(this);
-          allBuildingsV[j]->setCellFlags(UID, this, j);
-          effective_height.push_back(allBuildingsV[i]->height_eff);
+        allBuildingsV.push_back( UID->buildings->buildings[i] );
+        int j = allBuildingsV.size()-1;
+        building_id.push_back( j );
+        // Setting base height for buildings if there is a DEM file
+        if (UID->simParams->DTE_heightField && UID->simParams->DTE_mesh)
+        {
+          // Get base height of every corner of building from terrain height
+          min_height = UID->simParams->DTE_mesh->getHeight(allBuildingsV[j]->polygonVertices[0].x_poly,
+                                                           allBuildingsV[j]->polygonVertices[0].y_poly);
+          if (min_height < 0)
+          {
+            min_height = 0.0;
+          }
+          for (size_t lIdx = 1; lIdx < allBuildingsV[j]->polygonVertices.size(); lIdx++)
+          {
+            corner_height = UID->simParams->DTE_mesh->getHeight(allBuildingsV[j]->polygonVertices[lIdx].x_poly,
+                                                                  allBuildingsV[j]->polygonVertices[lIdx].y_poly);
+
+            if (corner_height < min_height && corner_height >= 0.0)
+            {
+              min_height = corner_height;
+            }
+          }
+          allBuildingsV[j]->base_height = min_height;
+        }
+        else
+        {
+          allBuildingsV[j]->base_height = 0.0;
+        }
+        allBuildingsV[j]->setPolyBuilding(this);
+        allBuildingsV[j]->setCellFlags(UID, this, j);
+        effective_height.push_back(allBuildingsV[i]->height_eff);
       }
     }
 
@@ -436,19 +533,19 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     // ///////////////////////////////////////
     // Generic Parameterization Related Stuff
     // ///////////////////////////////////////
-    for (int i = 0; i < allBuildingsV.size(); i++)
+    for (size_t i = 0; i < allBuildingsV.size(); i++)
     {
         // for now this does the canopy stuff for us
         allBuildingsV[building_id[i]]->canopyVegetation(this);
     }
-    
+
     ///////////////////////////////////////////
     //   Upwind Cavity Parameterization     ///
     ///////////////////////////////////////////
     if (UID->simParams->upwindCavityFlag > 0)
     {
         std::cout << "Applying upwind cavity parameterization...\n";
-        for (int i = 0; i < allBuildingsV.size(); i++)
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
         {
             allBuildingsV[building_id[i]]->upwindCavity(UID, this);
         }
@@ -461,7 +558,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     if (UID->simParams->wakeFlag > 0)
     {
         std::cout << "Applying wake behind building parameterization...\n";
-        for (int i = 0; i < allBuildingsV.size(); i++)
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
         {
             allBuildingsV[building_id[i]]->polygonWake(UID, this, building_id[i]);
         }
@@ -474,7 +571,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     if (UID->simParams->streetCanyonFlag > 0)
     {
         std::cout << "Applying street canyon parameterization...\n";
-        for (int i = 0; i < allBuildingsV.size(); i++)
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
         {
             allBuildingsV[building_id[i]]->streetCanyon(this);
         }
@@ -487,7 +584,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     if (UID->simParams->sidewallFlag > 0)
     {
         std::cout << "Applying sidewall parameterization...\n";
-        for (int i = 0; i < allBuildingsV.size(); i++)
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
         {
             allBuildingsV[building_id[i]]->sideWall(UID, this);
         }
@@ -501,7 +598,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
     if (UID->simParams->rooftopFlag > 0)
     {
         std::cout << "Applying rooftop parameterization...\n";
-        for (int i = 0; i < allBuildingsV.size(); i++)
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
         {
             allBuildingsV[building_id[i]]->rooftop (UID, this);
         }
@@ -530,17 +627,40 @@ URBGeneralData::URBGeneralData(const URBInputData* UID, bool calcMixLength)
 
     wall->setVelocityZero (this);
 
-    /*******Add raytrace code here********/
-    if (m_calcMixingLength){
-        std::cout << "Computing mixing length scales..." << std::endl;
+    // compute local mixing length here!
+    if(UID->localMixingParam) {
         auto mlStartTime = std::chrono::high_resolution_clock::now();
-        UID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
+        if (UID->localMixingParam->methodLocalMixing == 0) {
+            std::cout << "[MixLength] \t Default Local Mixing Length...\n";
+            localMixing = new LocalMixingDefault();
+            localMixing->defineMixingLength(UID,this);
+        } else if(UID->localMixingParam->methodLocalMixing == 1) {
+            std::cout << "[MixLength] \t Computing Local Mixing Length using serial code...\n";
+            localMixing = new LocalMixingSerial();
+            localMixing->defineMixingLength(UID,this);
+        } else if (UID->localMixingParam->methodLocalMixing == 2) {
+            /*******Add raytrace code here********/
+            std::cout << "Computing mixing length scales..." << std::endl;
+            UID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
+        } else if (UID->localMixingParam->methodLocalMixing == 3) {
+            // not implemented here (OptiX)
+        } else if (UID->localMixingParam->methodLocalMixing == 4) {
+            std::cout << "[MixLength] \t Loading Local Mixing Length data form NetCDF...\n";
+            localMixing = new LocalMixingNetCDF();
+            localMixing->defineMixingLength(UID,this);
+        } else {
+            //this should not happen (checked in LocalMixingParam)
+        }
+        // once all methods are implemented...
+        // should be moved here: localMixing->defineMixingLength(UID,this);
         auto mlEndTime = std::chrono::high_resolution_clock::now();
-
         std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
-        std::cout << "\telapsed time: " << mlElapsed.count() << " s\n";
+        std::cout << "[MixLength] \t Local Mixing Defined...\n";
+        std::cout << "\t\t elapsed time: " << mlElapsed.count() << " s\n";
     }
-    
+
+    return;
+
 }
 
 
@@ -566,8 +686,8 @@ void URBGeneralData::mergeSort( std::vector<float> &effective_height, std::vecto
       allBuildingsV_R.resize(allBuildingsV.size() - allBuildingsV.size() / 2);
 
       //copy data from the main data set to the left and right children
-      int lC = 0, rC = 0;
-      for (auto i = 0; i < allBuildingsV.size(); i++)
+      size_t lC = 0, rC = 0;
+      for (size_t i = 0; i < allBuildingsV.size(); i++)
       {
          if (i < allBuildingsV.size() / 2)
          {
@@ -590,7 +710,7 @@ void URBGeneralData::mergeSort( std::vector<float> &effective_height, std::vecto
 
       //compare the sorted children to place the data into the main array
       lC = rC = 0;
-      for (unsigned int i = 0; i < allBuildingsV.size(); i++)
+      for (size_t i = 0; i < allBuildingsV.size(); i++)
       {
          if (rC == effective_height_R.size() || ( lC != effective_height_L.size() &&
                                                   effective_height_L[lC] < effective_height_R[rC]))
@@ -663,7 +783,6 @@ float URBGeneralData::canopyBisection(float ustar, float z0, float canopy_top, f
 
 
 URBGeneralData::URBGeneralData()
-    : m_calcMixingLength( false )
 {
 }
 

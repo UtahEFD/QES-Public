@@ -9,7 +9,7 @@
 #include "util/ArgumentParsing.h"
 
 enum solverTypes : int
-{CPU_Type = 1, DYNAMIC_P = 2};
+{CPU_Type = 1, DYNAMIC_P = 2, Global_M = 3, Shared_M = 4};
 
 class URBArgs : public ArgumentParsing
 {
@@ -30,17 +30,27 @@ public:
 
 
     bool verbose;
-    std::string quicFile = "", demFile = "", iCellOut = "";
-    // netCDFFile_vz for standard cell-center vizalization file
-    std::string netCDFFileVz = "";
-    // netCDFFile_wk for working field use by TURB and Plume
-    std::string netCDFFileWk = "";
-    bool cellFace, terrainOut, solveWind;
+
+    // input files (from the command line)
+    std::string quicFile = "";
+
+    // Base name for all NetCDF output files
+    std::string netCDFFileBasename = "";
+
+    // flag to turn on/off different modules
+    bool solveWind,compTurb;
     int solveType, compareType;
 
-    // Calculate Mixing Length - currently takes a while so it is
-    // disabled unless this is set.
-    bool calcMixingLength;
-    
+    bool visuOutput,wkspOutput,turbOutput,terrainOut;
+    // netCDFFile for standard cell-center vizalization file
+    std::string netCDFFileVisu = "";
+    // netCDFFile for working field used by Plume
+    std::string netCDFFileWksp = "";
+    // netCDFFile for turbulence field used by Plume
+    std::string netCDFFileTurb = "";
+    // filename for terrain output
+    std::string filenameTerrain = "";
+
 private:
+
 };

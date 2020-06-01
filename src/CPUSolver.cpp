@@ -31,10 +31,9 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
                 icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
 
                 /// Calculate divergence of initial velocity field
-                R[icell_cent] = (-2*pow(alpha1, 2.0))*((( UGD->e[icell_cent] * UGD->u0[icell_face+1]       - UGD->f[icell_cent] * UGD->u0[icell_face]) * UGD->dx ) +
-                                                       (( UGD->g[icell_cent] * UGD->v0[icell_face + UGD->nx]    - UGD->h[icell_cent] * UGD->v0[icell_face]) * UGD->dy ) +
-                                                       ( UGD->m[icell_cent]  * UGD->w0[icell_face + UGD->nx*UGD->ny] * UGD->dz_array[k]*0.5*(UGD->dz_array[k]+UGD->dz_array[k+1])
-                                                        - UGD->n[icell_cent] * UGD->w0[icell_face] * UGD->dz_array[k]*0.5*(UGD->dz_array[k]+UGD->dz_array[k-1]) ));
+                R[icell_cent] = (-2*pow(alpha1, 2.0))*((( UGD->u0[icell_face+1]       - UGD->u0[icell_face]) / UGD->dx ) +
+                                                       (( UGD->v0[icell_face + UGD->nx]    - UGD->v0[icell_face]) / UGD->dy ) +
+                                                       (( UGD->w0[icell_face + UGD->nx*UGD->ny] - UGD->w0[icell_face]) / UGD->dz_array[k] ));
             }
         }
     }
@@ -52,11 +51,11 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
         //                 SOR solver              //////
         /////////////////////////////////////////////////
         int iter = 0;
-        float error = 1.0;
-    	  float reduced_error = 0.0;
+        float error;
+        float max_error = 1.0;
 
         std::cout << "Solving...\n";
-        while (iter < itermax && error > tol && error > reduced_error) {
+        while (iter < itermax && max_error > tol) {
 
             // Save previous iteration values for error calculation
             //    uses stl vector's assignment copy function, assign
@@ -92,18 +91,18 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
             }
 
             /// Error calculation
-            error = 0.0;                   /// Reset error value before error calculation
+            max_error = 0.0;                   /// Reset error value before error calculation
             for (int k = 0; k < UGD->nz-1; k++){
                 for (int j = 0; j < UGD->ny-1; j++){
                     for (int i = 0; i < UGD->nx-1; i++){
                         int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   /// Lineralized index for cell centered values
-                        error += fabs(lambda[icell_cent] - lambda_old[icell_cent])/((UGD->nx-1)*(UGD->ny-1)*(UGD->nz-1));
+                        error = fabs(lambda[icell_cent] - lambda_old[icell_cent]);
+                        if (error > max_error)
+                        {
+                          max_error = error;
+                        }
                     }
                 }
-            }
-
-            if (iter == 0) {
-                reduced_error = error * 1.0e-3;
             }
 
             iter += 1;
@@ -111,8 +110,8 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
         std::cout << "Solved!\n";
 
         std::cout << "Number of iterations:" << iter << "\n";   // Print the number of iterations
-        std::cout << "Error:" << error << "\n";
-        std::cout << "Reduced Error:" << reduced_error << "\n";
+        std::cout << "Error:" << max_error << "\n";
+        std::cout << "tol:" << tol << "\n";
 
         /*ofstream outdata2;
         outdata2.open("coefficients1.dat");
@@ -141,7 +140,7 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
         /////   Update the velocity field using Euler-Lagrange equations   /////
         ////////////////////////////////////////////////////////////////////////
 
-        for (int k = 0; k < UGD->nz; k++)
+        for (int k = 0; k < UGD->nz-1; k++)
         {
             for (int j = 0; j < UGD->ny; j++)
             {
@@ -159,7 +158,7 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
         // /////////////////////////////////////////////
     	  /// Update velocity field using Euler equations
         // /////////////////////////////////////////////
-        for (int k = 1; k < UGD->nz-1; k++)
+        for (int k = 1; k < UGD->nz-2; k++)
         {
             for (int j = 1; j < UGD->ny-1; j++)
             {

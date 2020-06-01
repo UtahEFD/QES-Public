@@ -68,17 +68,6 @@ void Wall::defineWalls(URBGeneralData *UGD)
           UGD->m[icell_cent] = 1.0;
           UGD->n[icell_cent] = 1.0;
         }
-        if (UGD->icellflag[icell_cent] == 8 && UGD->terrain_volume_frac[icell_cent] <= 0.1)
-        {
-          //std::cout << "icell_cent:  " << icell_cent << std::endl;
-          UGD->icellflag[icell_cent] = 2;
-          UGD->e[icell_cent] = 1.0;
-          UGD->f[icell_cent] = 1.0;
-          UGD->g[icell_cent] = 1.0;
-          UGD->h[icell_cent] = 1.0;
-          UGD->m[icell_cent] = 1.0;
-          UGD->n[icell_cent] = 1.0;
-        }
       }
     }
   }
@@ -102,18 +91,7 @@ void Wall::defineWalls(URBGeneralData *UGD)
           UGD->m[icell_cent] = 1.0;
           UGD->n[icell_cent] = 1.0;
         }
-        if (UGD->e[icell_cent] == 0.0 && UGD->f[icell_cent] == 0.0 && UGD->g[icell_cent] == 0.0
-            && UGD->h[icell_cent] == 0.0 && UGD->m[icell_cent] == 0.0 && UGD->n[icell_cent] == 0.0 &&
-            UGD->icellflag[icell_cent] == 8)
-        {
-          UGD->icellflag[icell_cent] = 2;
-          UGD->e[icell_cent] = 1.0;
-          UGD->f[icell_cent] = 1.0;
-          UGD->g[icell_cent] = 1.0;
-          UGD->h[icell_cent] = 1.0;
-          UGD->m[icell_cent] = 1.0;
-          UGD->n[icell_cent] = 1.0;
-        }
+
       }
     }
   }
@@ -133,13 +111,13 @@ void Wall::defineWalls(URBGeneralData *UGD)
           /// Wall below
           if (UGD->icellflag[icell_cent-(nx-1)*(ny-1)] == 0 || UGD->icellflag[icell_cent-(nx-1)*(ny-1)] == 2)
           {
-            UGD->wall_below_indices.push_back(icell_face);
+            //UGD->wall_below_indices.push_back(icell_face);
             UGD->n[icell_cent] = 0.0;
           }
           /// Wall above
           if (UGD->icellflag[icell_cent+(nx-1)*(ny-1)] == 0 || UGD->icellflag[icell_cent+(nx-1)*(ny-1)] == 2)
           {
-            UGD->wall_above_indices.push_back(icell_face);
+            //UGD->wall_above_indices.push_back(icell_face);
             UGD->m[icell_cent] = 0.0;
           }
           /// Wall in back
@@ -147,14 +125,14 @@ void Wall::defineWalls(URBGeneralData *UGD)
           {
             if (i>0)
             {
-              UGD->wall_back_indices.push_back(icell_face);
+              //UGD->wall_back_indices.push_back(icell_face);
               UGD->f[icell_cent] = 0.0;
             }
           }
           /// Wall in front
           if (UGD->icellflag[icell_cent+1] == 0 || UGD->icellflag[icell_cent+1] == 2)
           {
-            UGD->wall_front_indices.push_back(icell_face);
+            //UGD->wall_front_indices.push_back(icell_face);
             UGD->e[icell_cent] = 0.0;
           }
           /// Wall on right
@@ -162,14 +140,14 @@ void Wall::defineWalls(URBGeneralData *UGD)
           {
             if (j>0)
             {
-              UGD->wall_right_indices.push_back(icell_face);
+              //UGD->wall_right_indices.push_back(icell_face);
               UGD->h[icell_cent] = 0.0;
             }
           }
           /// Wall on left
           if (UGD->icellflag[icell_cent+(nx-1)] == 0 || UGD->icellflag[icell_cent+(nx-1)] == 2)
           {
-            UGD->wall_left_indices.push_back(icell_face);
+            //UGD->wall_left_indices.push_back(icell_face);
             UGD->g[icell_cent] = 0.0;
           }
         }
@@ -351,9 +329,6 @@ void Wall::defineWalls(URBGeneralData *UGD)
       }
     }
   }
-
-
-
 }
 
 
@@ -553,6 +528,24 @@ void Wall::setVelocityZero (URBGeneralData *UGD)
           UGD->v0[icell_face+UGD->nx] = 0.0;
           UGD->w0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
           UGD->w0[icell_face+UGD->nx*UGD->ny] = 0.0;
+        }
+        if (UGD->icellflag[icell_cent] == 7 || UGD->icellflag[icell_cent] == 8)
+        {
+          UGD->u0[icell_face] = pow(UGD->dx, 2.0)*UGD->f[icell_cent]*UGD->u0[icell_face];
+          UGD->v0[icell_face] = pow(UGD->dy, 2.0)*UGD->h[icell_cent]*UGD->v0[icell_face];
+          UGD->w0[icell_face] = (UGD->dz_array[k]*0.5*(UGD->dz_array[k]+UGD->dz_array[k-1]))*UGD->n[icell_cent]*UGD->w0[icell_face];
+          if (UGD->icellflag[icell_cent+1] != 7 && UGD->icellflag[icell_cent+1] != 8)
+          {
+            UGD->u0[icell_face+1] = pow(UGD->dx, 2.0)*UGD->e[icell_cent]*UGD->u0[icell_face+1];
+          }
+          if (UGD->icellflag[icell_cent+(UGD->nx-1)] != 7 && UGD->icellflag[icell_cent+(UGD->nx-1)] != 8)
+          {
+            UGD->v0[icell_face+UGD->nx] = pow(UGD->dy, 2.0)*UGD->g[icell_cent]*UGD->v0[icell_face+UGD->nx];
+          }
+          if (UGD->icellflag[icell_cent+(UGD->nx-1)*(UGD->ny-1)] != 7 && UGD->icellflag[icell_cent-(UGD->nx-1)*(UGD->ny-1)] != 8)
+          {
+            UGD->w0[icell_face+(UGD->nx*UGD->ny)] = (UGD->dz_array[k]*0.5*(UGD->dz_array[k]+UGD->dz_array[k+1]))*UGD->m[icell_cent]*UGD->w0[icell_face+(UGD->nx*UGD->ny)];
+          }
         }
       }
     }

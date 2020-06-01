@@ -139,8 +139,8 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
               {
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
                 icell_face = i + j*(UGD->nx) + k*(UGD->nx)*(UGD->ny);
-                // If the cell is solid (building or terrain)
-                if (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 2)
+                // If the cell is building
+                if (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 7)
                 {
                   u0_right = UGD->u0[icell_face];
                   v0_right = UGD->v0[icell_face];
@@ -236,7 +236,7 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
                     // Shell width calculated for local x location of cell center
                     shell_width_calc = 1-pow((0.5*R_cx_side-xp_c)/(0.5*R_cx_side), 2.0);
                     internal_BL_width = y_pref*sqrt(xp_c);
-                    if (abs(yp_c) <= shell_width || abs(yp_c) <= internal_BL_width)
+                    if ((abs(yp_c) <= shell_width || abs(yp_c) <= internal_BL_width) && (UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
                     {
                       UGD->icellflag[icell_cent] = 9;        // Cell marked as sidewall cell
                     }
@@ -257,7 +257,7 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
                 icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
                 icell_face = i + j*(UGD->nx) + k*(UGD->nx)*(UGD->ny);
                 // If the cell is solid (building or terrain)
-                if (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 2)
+                if (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 7)
                 {
                   u0_left = UGD->u0[icell_face];
                   v0_left = UGD->v0[icell_face];
@@ -353,7 +353,7 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
                     // Shell width calculated for local x location of cell center
                     shell_width_calc = 1-pow((0.5*R_cx_side-xp_c)/(0.5*R_cx_side), 2.0);
                     internal_BL_width = y_pref*sqrt(xp_c);
-                    if (abs(yp_c) <= shell_width || abs(yp_c) <= internal_BL_width)
+                    if ((abs(yp_c) <= shell_width || abs(yp_c) <= internal_BL_width) && (UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
                     {
                       UGD->icellflag[icell_cent] = 9;            // Cell marked as sidewall cell
                     }

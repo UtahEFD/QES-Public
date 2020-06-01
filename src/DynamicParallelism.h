@@ -31,10 +31,7 @@ private:
     void _cudaCheck(T e, const char* func, const char* call, const int line);
 
 public:
-    DynamicParallelism(const URBInputData* UID, URBGeneralData* UGD)
-		: Solver(UID, UGD)
-    {
-    }
+    DynamicParallelism(const URBInputData* UID, URBGeneralData* UGD);
 
 protected:
     float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;		/**< Solver coefficients on device (GPU) */

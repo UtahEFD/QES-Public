@@ -1,71 +1,56 @@
 <simulationParameters>
-  	<DEM>../data/GISFiles/GaussianHill_200x200.tiff</DEM>
-	<domain>200 200 200 </domain>
-	<cellSize> 1.0 1.0 1.0 </cellSize> <!-- Meters-->
-	<verticalStretching> 0 </verticalStretching>
-	<totalTimeIncrements> 1 </totalTimeIncrements>
-	<UTCConversion> 0 </UTCConversion>
-	<Epoch> 1510930800 </Epoch>
-	<rooftopFlag> 2 </rooftopFlag>
-	<upwindCavityFlag> 3 </upwindCavityFlag>
-	<streetCanyonFlag> 4 </streetCanyonFlag>
-	<streetIntersectionFlag> 1 </streetIntersectionFlag>
-	<wakeFlag> 1 </wakeFlag>
-	<sidewallFlag> 0 </sidewallFlag>
-	<maxIterations> 500 </maxIterations>
-	<residualReduction> 3 </residualReduction>
-	<meshTypeFlag> 0 </meshTypeFlag> <!-- 0 is stair; 1 is cut-cell  -->
-	<useDiffusion> 0 </useDiffusion>
-	<domainRotation> 0 </domainRotation>
-	<UTMX> 0 </UTMX>
-	<UTMY> 0 </UTMY>
-	<UTMZone> 1 </UTMZone>
+	<DEM>../data/GISFiles/GaussianHill_200x200.tiff</DEM>		<!-- Address to DEM location-->
+
+  	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
+  	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
+
+  	<domain>200 200 200</domain>					<!-- Number of cells in x,y and z directions-->
+  	<cellSize> 1.0 1.0 1.0 </cellSize> 				<!-- Mesh resolution (meters)-->
+	<verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
+
+	<totalTimeIncrements> 1 </totalTimeIncrements> 			<!-- Number of time steps-->
+	<rooftopFlag> 0 </rooftopFlag> 					<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
+	<upwindCavityFlag> 0 </upwindCavityFlag> 			<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP) -->
+	<streetCanyonFlag> 0 </streetCanyonFlag> 			<!-- Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)) -->
+	<streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
+	<wakeFlag> 0 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled) -->
+	<sidewallFlag> 0 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
+	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
+	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
+	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (origional QUIC) (default), 1-Cut-cell method -->
+	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
+	<UTMx> 0 </UTMx> 						<!-- x component (m) in UTM -->
+	<UTMy> 0 </UTMy> 						<!-- y component (m) in UTM -->
+	<UTMZone> 1 </UTMZone> 						<!-- UTM zone that domain located -->
 	<UTMZoneLetter> 17 </UTMZoneLetter>
-</simulationParameters>
+</simulationParameters>                     				<!-- End of simulation parameters -->
 <metParams>
-	<metInputFlag> 0 </metInputFlag>
-	<num_sites> 2 </num_sites>
-	<maxSizeDataPoints> 1 </maxSizeDataPoints>
-	<siteName> sensor1 </siteName>
-	<fileName> sensor1.inp </fileName>
-	<z0_domain_flag> 1 </z0_domain_flag>            <!-- Distribution of sueface roughness for domain (0-uniform, 1-custom -->
-	<sensor>
-		<site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->
-		<site_xcoord> 1.0</site_xcoord>
-		<site_ycoord> 1.0</site_ycoord>		
-		<site_UTM_x> 2.0 </site_UTM_x> 								<!-- x components of site coordinate in UTM -->
-		<site_UTM_y> 2.0 </site_UTM_y> 								<!-- y components of site coordinate in UTM -->
-		<site_UTM_zone> 0 </site_UTM_zone> 						<!-- UTM zone of the sensor site -->
-		<epoch> 1510930800 </epoch>
-		<boundaryLayerFlag> 1 </boundaryLayerFlag>
-		<siteZ0> 0.1 </siteZ0>
-		<reciprocal> 0 </reciprocal>
-		<height> 10 </height>
-		<speed> 5 </speed>
-		<direction> 270 </direction> 
-	</sensor>
-</metParams>
+	<z0_domain_flag> 0 </z0_domain_flag>           			<!-- Distribution of sueface roughness for domain (0-uniform (default), 1-custom -->
+  <sensor>
+    <site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
+    <site_xcoord> 1.0  </site_xcoord> 					<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+    <site_ycoord> 1.0 </site_ycoord> 					<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
+    <site_UTM_x> 2.0 </site_UTM_x> 					<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
+    <site_UTM_y> 2.0 </site_UTM_y> 					<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
+    <site_UTM_zone> 0 </site_UTM_zone> 					<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->
+
+    <boundaryLayerFlag> 1 </boundaryLayerFlag> 				<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+    <siteZ0> 0.1 </siteZ0> 						<!-- Site z0 -->
+    <reciprocal> 0.0 </reciprocal> 					<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+    <height> 10.0 </height> 						<!-- Height of the sensor -->
+    <speed> 5.0 </speed> 						<!-- Measured speed at the sensor height -->
+    <direction> 270.0 </direction> 					<!-- Wind direction of sensor -->
+  </sensor>                       					<!-- End of sensor section -->
+
+</metParams>								<!-- End of meteorological parameters -->
+<localMixingParam>
+  <method>1</method>
+</localMixingParam>
 <fileOptions>
-	<outputFlag>1</outputFlag>
-    <outputFields>u</outputFields> 
-    <outputFields>v</outputFields> 
-    <outputFields>w</outputFields>
-    <outputFields>icell</outputFields>
-    <outputFields>mixlength</outputFields>  
-	<massConservedFlag> 0 </massConservedFlag>
-	<sensorVelocityFlag> 0 </sensorVelocityFlag>
-	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+  <outputFlag>1</outputFlag>
+  <outputFields>all</outputFields> 
+  <outputFields>v</outputFields> 
+  <outputFields>w</outputFields>
+  <outputFields>icell</outputFields> 
 </fileOptions>
-<!--buildings>
-	<wallRoughness> 0.1 </wallRoughness>
-	<numBuildings> 1 </numBuildings>
-	<rectangularBuilding>
-		<height> 20.0 </height>
-		<baseHeight> 0 </baseHeight>
-		<xStart> 90.0 </xStart>
-		<yStart> 90.0 </yStart>
-		<length> 20.0 </length>
-		<width> 20.0 </width>
-		<buildingRotation> 20.0 </buildingRotation>
-	</rectangularBuilding>
-</buildings-->
+

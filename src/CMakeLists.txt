@@ -1,4 +1,5 @@
 include_directories(${CMAKE_SOURCE_DIR})
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/unitTests)
 
@@ -15,21 +16,32 @@ CUDA_ADD_LIBRARY( cudaurbcore
   DynamicParallelism.cu
   ESRIShapefile.cpp ESRIShapefile.h
   handleURBArgs.cpp
+  LocalMixingParam.h
+  LocalMixing.cpp   
+  LocalMixingDefault.cpp
+  LocalMixingNetCDF.cpp   
+  LocalMixingSerial.cpp
   Mesh.cpp
-  NetCDFOutput.cpp NetCDFOutput.h
+  NetCDFInput.cpp 
+  NetCDFOutput.cpp 
+  QESNetCDFOutput.cpp   
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Solver.cpp
   Triangle.cpp
+  TURBGeneralData.cpp
+  TURBOutput.cpp
+  TURBWall.cpp
+  TURBWallBuilding.cpp
+  TURBWallTerrain.cpp
   URBInputData.h
   URBGeneralData.cpp
-  URBOutputData.cpp
-  URBOutput_Generic.cpp 
-  URBOutput_VizFields.cpp
-  URBOutput_TURBInputFile.cpp
+  WINDSOutputVisualization.cpp
+  WINDSOutputWorkspace.cpp
   WRFInput.cpp WRFInput.h
   Wall.cpp Wall.h
   UpwindCavity.cpp
+  NonLocalMixing.cpp
   PolygonWake.cpp
   StreetCanyon.cpp
   Sidewall.cpp
@@ -38,6 +50,10 @@ CUDA_ADD_LIBRARY( cudaurbcore
   Ray.cpp
   SphereDirections.cpp
   HitRecord.cpp
+  GlobalMemory.cu
+  GlobalMemory.h
+  SharedMemory.cu
+  SharedMemory.h
   )
 
 cuda_add_executable( unitTest

@@ -1,16 +1,16 @@
-# CUDA-URB
+# QES-Winds
 
-CUDA-URB is a fast response 3D diagnostic urban wind model written in
+QES-Winds is a fast response 3D diagnostic urban wind model written in
 C++ and uses NVIDIA's CUDA framework to accelerate a mass-conserving
-wind-field solver. CUDA-URB uses a variational analysis technique to
+wind-field solver. QES-Winds uses a variational analysis technique to
 ensure the conservation of mass rather than slower yet more
-physics-based solvers that include conservation of momentum.  CUDA-URB
+physics-based solvers that include conservation of momentum. QES-Winds
 minimizes the difference between an initial wind field that is
 specified using empirical parameterizations and thefinal wind field.
 This method requires the solution of a Poisson equation for Lagrange
-multipliers.  The Poisson equation is solved using the Successive
+multipliers. The Poisson equation is solved using the Successive
 Over-Relaxation (SOR) method (an iterative solver), which is a variant
-of the Gauss-Seidel method with more rapid convergence.  CUDA-URB
+of the Gauss-Seidel method with more rapid convergence. QES-Winds
 utilizes the concept of dynamic parallelism in NVIDIAs parallel
 computing-based Graphics Processing Unit (or GPU) API, CUDA, to
 substantially accelerate wind simulations.

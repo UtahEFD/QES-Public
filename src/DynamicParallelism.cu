@@ -44,10 +44,9 @@ __global__ void divergence(float *d_u0, float *d_v0, float *d_w0, float *d_R, fl
     {
 
         // Divergence equation
-        d_R[icell_cent] = (-2*pow(alpha1, 2.0))*((( d_e[icell_cent] * d_u0[icell_face+1]       - d_f[icell_cent] * d_u0[icell_face]) * dx ) +
-                                               (( d_g[icell_cent] * d_v0[icell_face + nx]    - d_h[icell_cent] * d_v0[icell_face]) * dy ) +
-                                               ( d_m[icell_cent] * d_dz_array[k]*0.5*(d_dz_array[k]+d_dz_array[k+1]) * d_w0[icell_face + nx*ny]
-                                                - d_n[icell_cent] * d_w0[icell_face] * d_dz_array[k]*0.5*(d_dz_array[k]+d_dz_array[k-1]) ));
+        d_R[icell_cent] = (-2*pow(alpha1, 2.0))*(((  d_u0[icell_face+1]     -  d_u0[icell_face]) / dx ) +
+                                               ((  d_v0[icell_face + nx]    -  d_v0[icell_face]) / dy ) +
+                                               ((  d_w0[icell_face + nx*ny]  -  d_w0[icell_face]) / d_dz_array[k]));
     }
 }
 
@@ -95,42 +94,61 @@ __global__ void applyNeumannBC(float *d_lambda, int nx, int ny)
 }
 
 __global__ void calculateError(float *d_lambda, float *d_lambda_old, int nx, int ny, int nz,
-                               float *d_value,
-                               float *d_bvalue)
+                               float *d_value, float *d_bvalue)
 {
     int d_size = (nx-1)*(ny-1)*(nz-1);
     int ii = blockDim.x*blockIdx.x+threadIdx.x;
     int numblocks = (d_size/BLOCKSIZE) +1;
 
-    if (ii < d_size){
-        d_value[ii] = fabs(d_lambda[ii] - d_lambda_old[ii])/((nx-1)*(ny-1)*(nz-1));
+    if (ii < d_size)
+    {
+      d_value[ii] = fabs(d_lambda[ii] - d_lambda_old[ii]);
     }
+
     __syncthreads();
-        float sum = 0.0;
-    if (threadIdx.x > 0){
-        return;
+
+    if (threadIdx.x > 0)
+    {
+      return;
     }
-    if (threadIdx.x == 0) {
-         for (int j=0; j<BLOCKSIZE; j++){
+    if (threadIdx.x == 0)
+    {
+      d_bvalue[blockIdx.x] = 0.0;
+      for (int j = 0; j < BLOCKSIZE; j++)
+      {
         int index = blockIdx.x*blockDim.x+j;
-        if (index<d_size){
-            sum += d_value[index];
+        if (index < d_size)
+        {
+
+          if (d_value[index] > d_bvalue[blockIdx.x])
+          {
+            d_bvalue[blockIdx.x] = d_value[index];
+          }
         }
-         }
+      }
+
     }
 
-    __syncthreads();
-    d_bvalue[blockIdx.x] = sum;
 
-    if (ii>0){
+    __syncthreads();
+
+
+    if (ii > 0)
+    {
         return;
     }
 
     error = 0.0;
-    if (ii==0){
-        for (int k =0; k<numblocks; k++){
-        error += d_bvalue[k];
+
+    if (ii == 0)
+    {
+      for (int k = 0; k < numblocks; k++)
+      {
+        if (d_bvalue[k] > error)
+        {
+          error = d_bvalue[k];
         }
+      }
     }
 
  }
@@ -147,7 +165,7 @@ __global__ void finalVelocity(float *d_u0, float *d_v0, float *d_w0, float *d_la
     int i = icell_face - k*nx*ny - j*nx;
     int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
 
-    if((i>= 0) && (j>= 0) && (k >= 0) && (i<nx)&&(j<ny)&&(k<nz)){
+    if((i>= 0) && (j>= 0) && (k >= 0) && (i<nx)&&(j<ny)&&(k<nz-1)){
 
         d_u[icell_face] = d_u0[icell_face];
         d_v[icell_face] = d_v0[icell_face];
@@ -156,7 +174,7 @@ __global__ void finalVelocity(float *d_u0, float *d_v0, float *d_w0, float *d_la
     }
 
 
-    if ((i > 0) && (i < nx-1) && (j > 0) && (j < ny-1) && (k < nz-1) && (k > 0)) {
+    if ((i > 0) && (i < nx-1) && (j > 0) && (j < ny-1) && (k < nz-2) && (k > 0)) {
 
         d_u[icell_face] = d_u0[icell_face]+(1/(2*pow(alpha1, 2.0)))*d_f[icell_cent]*dx*
 						 (d_lambda[icell_cent]-d_lambda[icell_cent-1]);
@@ -207,13 +225,13 @@ __global__ void SOR_iteration (float *d_lambda, float *d_lambda_old, int nx, int
         cudaDeviceSynchronize();
         // SOR part
         int offset = 0;   // red nodes
-        offset = ( (iter % 2) + offset ) % 2;
+        //offset = ( (iter % 2) + offset ) % 2;
         // Invoke red-black SOR kernel for red nodes
         SOR_RB<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m,
 															d_n, d_R, offset);
         cudaDeviceSynchronize();
         offset = 1;    // black nodes
-        offset = ( (iter % 2) + offset ) % 2;
+        //offset = ( (iter % 2) + offset ) % 2;
         // Invoke red-black SOR kernel for black nodes
         SOR_RB<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m,
 															d_n, d_R,offset);
@@ -225,11 +243,6 @@ __global__ void SOR_iteration (float *d_lambda, float *d_lambda_old, int nx, int
         // Error calculation
         calculateError<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda,d_lambda_old, nx, ny, nz, d_value,d_bvalue);
         cudaDeviceSynchronize();
-
-        /*if (iter == 200)
-        {
-          omega = 1.0;
-        }*/
 
         iter += 1;
 
@@ -243,6 +256,79 @@ __global__ void SOR_iteration (float *d_lambda, float *d_lambda_old, int nx, int
 
 }
 
+
+
+DynamicParallelism::DynamicParallelism(const URBInputData* UID, URBGeneralData* UGD)
+    : Solver(UID, UGD)
+{
+    std::cout << "DynamicParallelism Solver Initialization" << std::endl;
+    int deviceCount = 0;
+    cudaError_t error_id = cudaGetDeviceCount(&deviceCount);
+
+    if (error_id != cudaSuccess) {
+        std::cerr << "ERROR!   cudaGetDeviceCount returned "
+            << static_cast<int>(error_id) << "\n\t-> "
+                  << cudaGetErrorString(error_id) << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    // This function call returns 0 if there are no CUDA capable devices.
+    if (deviceCount == 0) {
+        std::cerr << "There are no available device(s) that support CUDA\n";
+        exit(EXIT_FAILURE);
+    } else {
+        std::cout << "\tDetected " << deviceCount << " CUDA Capable device(s)" << std::endl;
+    }
+
+    int dev, driverVersion = 0, runtimeVersion = 0;
+
+    for (dev = 0; dev < deviceCount; ++dev) {
+
+        cudaSetDevice(dev);
+
+        cudaDeviceProp deviceProp;
+        cudaGetDeviceProperties(&deviceProp, dev);
+
+        std::cout << "\tDevice " << dev << ": " << deviceProp.name << std::endl;
+
+        // Console log
+        cudaDriverGetVersion(&driverVersion);
+        cudaRuntimeGetVersion(&runtimeVersion);
+        std::cout << "\t\tCUDA Driver Version / Runtime Version: "
+                  << driverVersion / 1000 << "." << (driverVersion % 100) / 10 << " / "
+                  << runtimeVersion / 1000 << "." <<  (runtimeVersion % 100) / 10 << std::endl;
+
+        std::cout << "\t\tCUDA Capability Major/Minor version number: "
+                  << deviceProp.major << "." << deviceProp.minor << std::endl;
+
+    char msg[256];
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+    sprintf_s(msg, sizeof(msg),
+              "  Total amount of global memory:                 %.0f MBytes "
+              "(%llu bytes)\n",
+              static_cast<float>(deviceProp.totalGlobalMem / 1048576.0f),
+              (unsigned long long)deviceProp.totalGlobalMem);
+#else
+    snprintf(msg, sizeof(msg),
+             "  Total amount of global memory:                 %.0f MBytes "
+             "(%llu bytes)\n",
+             static_cast<float>(deviceProp.totalGlobalMem / 1048576.0f),
+             (unsigned long long)deviceProp.totalGlobalMem);
+#endif
+    std::cout << msg;
+
+//    printf("  (%2d) Multiprocessors, (%3d) CUDA Cores/MP:     %d CUDA Cores\n",
+//           deviceProp.multiProcessorCount,
+//           _ConvertSMVer2Cores(deviceProp.major, deviceProp.minor),
+//           _ConvertSMVer2Cores(deviceProp.major, deviceProp.minor) *
+//           deviceProp.multiProcessorCount);
+
+    std::cout << "\t\tGPU Max Clock rate:  "
+              << deviceProp.clockRate * 1e-3f << " MHz ("
+              << deviceProp.clockRate * 1e-6f << " GHz)" << std::endl;
+    }
+cudaSetDevice(0);
+}
 
 
 void DynamicParallelism::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWind)
@@ -356,9 +442,8 @@ void DynamicParallelism::solve(const URBInputData* UID, URBGeneralData* UGD, boo
         }
         outdata2.close();*/
 
-
-
     cudaFree (d_lambda);
+    cudaFree (d_lambda_old);
     cudaFree (d_e);
     cudaFree (d_f);
     cudaFree (d_g);
@@ -384,6 +469,94 @@ void DynamicParallelism::solve(const URBInputData* UID, URBGeneralData* UGD, boo
 
     std::chrono::duration<float> elapsed = finish - start;
     std::cout << "Elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
+
+    /*for (int iter = 0; iter < 20; iter++ )
+    {
+      for (int k = 1; k < UGD->nz-2; k++)
+      {
+        for (int j = 1; j < UGD->ny-2; j++)
+        {
+            for (int i = 1; i < UGD->nx-2; i++)
+            {
+
+                int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   /// Lineralized index for cell centered values
+
+                lambda[icell_cent] = (omega / ( UGD->e[icell_cent] + UGD->f[icell_cent] + UGD->g[icell_cent] +
+                                                  UGD->h[icell_cent] + UGD->m[icell_cent] + UGD->n[icell_cent])) *
+                      ( UGD->e[icell_cent] * lambda[icell_cent+1]        + UGD->f[icell_cent] * lambda[icell_cent-1] +
+                        UGD->g[icell_cent] * lambda[icell_cent + (UGD->nx-1)] + UGD->h[icell_cent] * lambda[icell_cent-(UGD->nx-1)] +
+                        UGD->m[icell_cent] * lambda[icell_cent+(UGD->nx-1)*(UGD->ny-1)] +
+                        UGD->n[icell_cent] * lambda[icell_cent-(UGD->nx-1)*(UGD->ny-1)] - R[icell_cent] ) +
+                      (1.0 - omega) * lambda[icell_cent];    /// SOR formulation
+
+              }
+          }
+      }
+    }
+
+    for (int k = 0; k < UGD->nz-1; k++)
+    {
+        for (int j = 0; j < UGD->ny; j++)
+        {
+            for (int i = 0; i < UGD->nx; i++)
+            {
+                int icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;   /// Lineralized index for cell faced values
+                UGD->u[icell_face] = UGD->u0[icell_face];
+                UGD->v[icell_face] = UGD->v0[icell_face];
+                UGD->w[icell_face] = UGD->w0[icell_face];
+            }
+        }
+    }
+
+
+    // /////////////////////////////////////////////
+    /// Update velocity field using Euler equations
+    // /////////////////////////////////////////////
+    for (int k = 1; k < UGD->nz-2; k++)
+    {
+        for (int j = 1; j < UGD->ny-1; j++)
+        {
+            for (int i = 1; i < UGD->nx-1; i++)
+            {
+                int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   /// Lineralized index for cell centered values
+                int icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;               /// Lineralized index for cell faced values
+
+                UGD->u[icell_face] = UGD->u0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
+                    UGD->f[icell_cent]*UGD->dx*(lambda[icell_cent]-lambda[icell_cent-1]);
+
+                    // Calculate correct wind velocity
+                UGD->v[icell_face] = UGD->v0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
+                    UGD->h[icell_cent]*UGD->dy*(lambda[icell_cent]-lambda[icell_cent - (UGD->nx-1)]);
+
+                UGD->w[icell_face] = UGD->w0[icell_face]+(1/(2*pow(alpha2, 2.0))) *
+                    UGD->n[icell_cent]*UGD->dz_array[k]*(lambda[icell_cent]-lambda[icell_cent - (UGD->nx-1)*(UGD->ny-1)]);
+            }
+        }
+    }
+
+    for (int k = 1; k < UGD->nz-1; k++)
+    {
+        for (int j = 0; j < UGD->ny-1; j++)
+        {
+            for (int i = 0; i < UGD->nx-1; i++)
+            {
+                int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   /// Lineralized index for cell centered values
+                int icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;               /// Lineralized index for cell faced values
+
+                // If we are inside a building, set velocities to 0.0
+                if (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 2)
+                {
+                    /// Setting velocity field inside the building to zero
+                    UGD->u[icell_face] = 0;
+                    UGD->u[icell_face+1] = 0;
+                    UGD->v[icell_face] = 0;
+                    UGD->v[icell_face+UGD->nx] = 0;
+                    UGD->w[icell_face] = 0;
+                    UGD->w[icell_face+UGD->nx*UGD->ny] = 0;
+                }
+            }
+        }
+    }*/
 
 
 

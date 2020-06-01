@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <netcdf>
+#include <cmath>
 
 // #include "URBInputData.h"
 
@@ -12,24 +13,28 @@
 #include "URBInputData.h"
 #include "Building.h"
 #include "Canopy.h"
+#include "LocalMixing.h"
+#include "LocalMixingDefault.h"
+#include "LocalMixingNetCDF.h"
+#include "LocalMixingSerial.h"
 #include "Mesh.h"
 #include "DTEHeightField.h"
 #include "Cut_cell.h"
 #include "Wall.h"
-#include <cmath>
+
 
 class URBInputData;
 
 class URBGeneralData {
 public:
     URBGeneralData();
-    URBGeneralData(const URBInputData* UID, bool calcMixLength=false);
+    URBGeneralData(const URBInputData* UID);
     ~URBGeneralData();
-
+    
     void mergeSort( std::vector<float> &effective_height,
-		    std::vector<Building*> allBuildingsV,
-		    std::vector<int> &building_id );
-
+                    std::vector<Building*> allBuildingsV,
+                    std::vector<int> &building_id );
+    
 
     /*!
     * This function is being called from the plantInitial function
@@ -37,12 +42,7 @@ public:
     * of the canopy.
     */
     float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
-
-    bool includesMixingLength() 
-    {
-        return m_calcMixingLength;
-    }
-
+    
     /**
     * @brief
     *
@@ -108,17 +108,17 @@ public:
     /// Declaration of final velocity field components (u,v,w)
     std::vector<float> u,v,w;
 
-
+    // local Mixing class and data
+    LocalMixing* localMixing;
     std::vector<double> mixingLengths;
-    std::vector<double> mixlength_out;
 
     // Sensor* sensor;      may not need this now
 
-
     int id;
 
-    std::vector<float> site_canopy_H;
-    std::vector<float> site_atten_coeff;
+    // [FM Feb.28.2020] there 2 variables are not used anywhere 
+    //std::vector<float> site_canopy_H;
+    //std::vector<float> site_atten_coeff;
 
     float convergence;
     // Canopy functions
@@ -159,5 +159,4 @@ public:
 
 private:
 
-    bool m_calcMixingLength;
 };

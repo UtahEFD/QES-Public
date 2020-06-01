@@ -7,17 +7,23 @@
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
+#include "QESNetCDFOutput.h"
+
 #include "handleURBArgs.h"
 
 #include "URBInputData.h"
 #include "URBGeneralData.h"
-//#include "URBOutputData.h"
-#include "URBOutput_VizFields.h"
-#include "URBOutput_TURBInputFile.h"
+#include "WINDSOutputVisualization.h"
+#include "WINDSOutputWorkspace.h"
+
+#include "TURBGeneralData.h"
+#include "TURBOutput.h"
 
 #include "Solver.h"
 #include "CPUSolver.h"
 #include "DynamicParallelism.h"
+#include "GlobalMemory.h"
+#include "SharedMemory.h"
 
 namespace pt = boost::property_tree;
 
@@ -55,27 +61,52 @@ int main(int argc, char *argv[])
     // Parse the base XML QUIC file -- contains simulation parameters
     URBInputData* UID = parseXMLTree(arguments.quicFile);
     if ( !UID ) {
-        std::cerr << "QUIC Input file: " << arguments.quicFile <<
-	  " not able to be read successfully." << std::endl;
+        std::cerr << "[ERROR] QUIC Input file: " << arguments.quicFile <<
+            " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    // Generate the general URB data from all inputs
-    // - turn on mixing length calculations for now if enabled
-    // eventually, we will remove this flag and 2nd argument
-    if (arguments.calcMixingLength) {
-        std::cout << "Enabling mixing length calculation." << std::endl;
+    // Checking if
+    if (arguments.compTurb && !UID->localMixingParam) {
+        std::cerr << "[ERROR] Turbulence model is turned on without LocalMixingParam in QES Intput file "
+                  << arguments.quicFile << std::endl;
+        exit(EXIT_FAILURE);
     }
-    URBGeneralData* UGD = new URBGeneralData(UID, arguments.calcMixingLength);
+
+
+    if (arguments.terrainOut) {
+        if (UID->simParams->DTE_heightField) {
+            std::cout << "Creating terrain OBJ....\n";
+            UID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
+            std::cout << "OBJ created....\n";
+        }
+        else {
+            std::cerr << "[ERROR] No dem file specified as input\n";
+            return -1;
+        }
+    }
+
+    // Generate the general URB data from all inputs
+    URBGeneralData* UGD = new URBGeneralData(UID);
 
     // create URB output classes
-    URBOutput_VizFields* outputVz = nullptr;
-    if (arguments.netCDFFileVz != "") {
-      outputVz = new URBOutput_VizFields(UGD,UID,arguments.netCDFFileVz);
+    std::vector<QESNetCDFOutput*> outputVec;
+    if (arguments.visuOutput) {
+        outputVec.push_back(new WINDSOutputVisualization(UGD,UID,arguments.netCDFFileVisu));
     }
-    URBOutput_TURBInputFile* outputWk = nullptr;
-    if (arguments.netCDFFileWk != "") {
-      outputWk = new URBOutput_TURBInputFile(UGD,arguments.netCDFFileWk);
+    if (arguments.wkspOutput) {
+        outputVec.push_back(new WINDSOutputWorkspace(UGD,arguments.netCDFFileWksp));
+    }
+
+
+    // Generate the general TURB data from URB data
+    // based on if the turbulence output file is defined
+    TURBGeneralData* TGD = nullptr;
+    if (arguments.compTurb) {
+        TGD = new TURBGeneralData(UGD);
+    }
+    if (arguments.compTurb && arguments.turbOutput) {
+        outputVec.push_back(new TURBOutput(TGD,arguments.netCDFFileTurb));
     }
 
     // //////////////////////////////////////////
@@ -84,51 +115,68 @@ int main(int argc, char *argv[])
     //
     // //////////////////////////////////////////
     Solver *solver, *solverC = nullptr;
-    if (arguments.solveType == CPU_Type)
+    if (arguments.solveType == CPU_Type) {
+        std::cout << "Run Serial Solver (CPU) ..." << std::endl;
         solver = new CPUSolver(UID, UGD);
-    else if (arguments.solveType == DYNAMIC_P)
+    } else if (arguments.solveType == DYNAMIC_P) {
+        std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
         solver = new DynamicParallelism(UID, UGD);
-    else
-    {
-        std::cerr << "Error: invalid solve type\n";
+    } else if (arguments.solveType == Global_M) {
+        std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
+        solver = new GlobalMemory(UID, UGD);
+    } else if (arguments.solveType == Shared_M) {
+        std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
+        solver = new SharedMemory(UID, UGD);
+    } else {
+        std::cerr << "[ERROR] invalid solve type\n";
         exit(EXIT_FAILURE);
     }
 
     //check for comparison
-    if (arguments.compareType)
-    {
+    if (arguments.compareType) {
         if (arguments.compareType == CPU_Type)
             solverC = new CPUSolver(UID, UGD);
         else if (arguments.compareType == DYNAMIC_P)
             solverC = new DynamicParallelism(UID, UGD);
-        else
-        {
-            std::cerr << "Error: invalid comparison type\n";
+        else if (arguments.compareType == Global_M)
+            solverC = new GlobalMemory(UID, UGD);
+        else if (arguments.compareType == Shared_M)
+            solverC = new SharedMemory(UID, UGD);
+        else {
+            std::cerr << "[ERROR] invalid comparison type\n";
             exit(EXIT_FAILURE);
         }
     }
+
     // Run urb simulation code
     solver->solve(UID, UGD, !arguments.solveWind );
 
     std::cout << "Solver done!\n";
 
-    if (solverC != nullptr)
-    {
+    if (solverC != nullptr) {
         std::cout << "Running comparson type...\n";
         solverC->solve(UID, UGD, !arguments.solveWind);
+    }
+
+    // /////////////////////////////
+    //
+    // Run turbulence
+    //
+    // /////////////////////////////
+    if(TGD != nullptr) {
+        TGD->run(UGD);
     }
 
     // /////////////////////////////
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    if (outputVz) {
-      outputVz->save(UGD);
-    }
-    if (outputWk) {
-      outputWk->save(UGD);
+    for(auto id_out=0u;id_out<outputVec.size();id_out++) {
+        outputVec.at(id_out)->save(0.0); // need to replace 0.0 with timestep
     }
 
+
+    // /////////////////////////////
     exit(EXIT_SUCCESS);
 }
 

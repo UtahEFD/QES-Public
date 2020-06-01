@@ -15,6 +15,7 @@ using namespace std;
 // C++ files
 class URBInputData;
 class URBGeneralData;
+class TURBGeneralData;
 
 class Building : public ParseInterface
 {
@@ -106,4 +107,7 @@ public:
 		{
 		}*/
 
+    virtual void NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int buidling_id)
+    {
+    }
 };
