@@ -536,15 +536,21 @@ void Fire :: potential(URBGeneralData* UGD){
 		  firei = icent/counter;
 		  firej = jcent/counter;
 		  U_c = pow(g*g*H/rhoAir/T_a/C_pa, 1.0/5.0);
-		  L_c = pow(H/rhoAir/C_pa/T_a/pow(g, 1.0/2.0), 2.0/5.0);	  
+		  L_c = pow(H/rhoAir/C_pa/T_a/pow(g, 1.0/2.0), 2.0/5.0);
+		  if (isnan(U_c)){
+		    U_c = 0;
+     		    L_c = 1;
+		  } 	  
 		  z_mix = lambda_mix*dx*filt;
-		  kmax = nz-2 > z_mix ? z_mix : nz-2;
+		  kmax = nz-3 > z_mix ? z_mix : nz-3;
 
 		  // Loop through vertical levels
 		  for (int kpot = z_mix_old; kpot<kmax; kpot++) {
 		  // Calculate virtual origin
 	          float z_v = dx*filt*0.124/alpha_e;			///< virtual origin for merged plumes
 		  float z_k = (kpot+z_v)*dz/L_c;                            ///< non-dim vertical distance between fire cell and target cell k
+		  float zeta = 0;
+		  float x1 = 0;
 		  // Loop through horizontal domain
 		    for (int ipot = 0; ipot<nx-1; ipot++) {
 		      for (int jpot = 0; jpot<ny-1; jpot++){
@@ -588,8 +594,8 @@ void Fire :: potential(URBGeneralData* UGD){
 			}
 			// if outside potential field lookup use asymptotic functions for potential field
 			else {
-			  float zeta = sqrt(h_k*h_k + z_k*z_k);
-			  float x1 = (1+cos(atan(h_k/z_k)))/2.0;
+			  zeta = sqrt(h_k*h_k + z_k*z_k);
+			  x1 = (1+cos(atan(h_k/z_k)))/2.0;
 			  // lookup indices for G(x) and G'(x) - spans 0.5 to 1.0
 			  int gMinIdx = floor(pot_G*(x1-.5)/.5);
 			  int gMaxIdx = ceil(pot_G*(x1-.5)/.5);
