@@ -51,6 +51,29 @@ __global__ void divergence(float *d_u0, float *d_v0, float *d_w0, float *d_R, fl
 }
 
 
+/// Jacobi iteration.
+///
+///
+/*__global__ void Jacobi (float *d_lambda, float *d_lambda_old, int nx, int ny, int nz, float omega, float  A, float  B, float  dx, float *d_e,
+						float *d_f, float *d_g, float *d_h, float *d_m, float *d_n, float *d_R)
+{
+    int icell_cent = blockDim.x*blockIdx.x+threadIdx.x;
+    int k = icell_cent/((nx-1)*(ny-1));
+    int j = (icell_cent - k*(nx-1)*(ny-1))/(nx-1);
+    int i = icell_cent - k*(nx-1)*(ny-1) - j*(nx-1);
+
+    if ( (i > 0) && (i < nx-2) && (j > 0) && (j < ny-2) && (k < nz-2) && (k > 0) ){
+
+        d_lambda[icell_cent] = (1.0 / ( d_e[icell_cent] + d_f[icell_cent] + d_g[icell_cent] +
+                                          d_h[icell_cent] + d_m[icell_cent] + d_n[icell_cent])) *
+            ( d_e[icell_cent] * d_lambda_old[icell_cent+1]               + d_f[icell_cent] * d_lambda_old[icell_cent-1] +
+              d_g[icell_cent] * d_lambda_old[icell_cent + (nx-1)]        + d_h[icell_cent] * d_lambda_old[icell_cent - (nx-1)] +
+              d_m[icell_cent] * d_lambda_old[icell_cent + (nx-1)*(ny-1)] +
+              d_n[icell_cent] * d_lambda_old[icell_cent - (nx-1)*(ny-1)] - d_R[icell_cent] );    /// Jacobi formulation
+    }
+}*/
+
+
 /// SOR RedBlack Kernel.
 ///
 ///
@@ -223,19 +246,21 @@ __global__ void SOR_iteration (float *d_lambda, float *d_lambda_old, int nx, int
         // Save previous iteration values for error calculation
         assign_lambda_to_lambda_old<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz);
         cudaDeviceSynchronize();
+
         // SOR part
         int offset = 0;   // red nodes
         //offset = ( (iter % 2) + offset ) % 2;
         // Invoke red-black SOR kernel for red nodes
         SOR_RB<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m,
-															d_n, d_R, offset);
+                              d_n, d_R, offset);
         cudaDeviceSynchronize();
         offset = 1;    // black nodes
         //offset = ( (iter % 2) + offset ) % 2;
         // Invoke red-black SOR kernel for black nodes
         SOR_RB<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m,
-															d_n, d_R,offset);
+                              d_n, d_R,offset);
         cudaDeviceSynchronize();
+
         dim3 numberOfBlocks2(ceil(((nx-1)*(ny-1))/(float) (BLOCKSIZE)),1,1);
         // Invoke kernel to apply Neumann boundary condition (lambda (@k=0) = lambda (@k=1))
         applyNeumannBC<<<numberOfBlocks2,numberOfThreadsPerBlock>>>(d_lambda, nx, ny);
@@ -249,6 +274,18 @@ __global__ void SOR_iteration (float *d_lambda, float *d_lambda_old, int nx, int
     }
     printf("number of iteration = %d\n", iter);
     printf("error = %2.9f\n", error);
+
+    /*int i = 0;
+    while (i < 300)
+    {
+      // Save previous iteration values for error calculation
+      assign_lambda_to_lambda_old<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz);
+      cudaDeviceSynchronize();
+      Jacobi<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz, omega, A, B, dx, d_e, d_f, d_g, d_h, d_m,
+                            d_n, d_R);
+      cudaDeviceSynchronize();
+      i += 1;
+    }*/
     dim3 numberOfBlocks3(ceil((nx*ny*nz)/(float) (BLOCKSIZE)),1,1);
     // Invoke final velocity (Euler) kernel
     finalVelocity<<<numberOfBlocks3,numberOfThreadsPerBlock>>>(d_u0,d_v0,d_w0,d_lambda,d_u,d_v,d_w,d_icellflag,d_f,d_h,d_n,
