@@ -19,8 +19,11 @@ protected:
 																				 // and y for a building
 	float x_cent, y_cent;                  /**< Coordinates of center of a cell */
 	float polygon_area;                    /**< Polygon area */
-	int icell_cent, icell_face;
+	//int icell_cent, icell_face;
     
+    int nx_canopy, ny_canopy, nz_canopy;
+    int numcell_cent_2d, numcell_cent_3d;
+
 public:
     
     Canopy()
@@ -48,6 +51,20 @@ protected:
      * For there and below, the canopyVegetation function has to be defined
      */
     virtual void canopyVegetation(URBGeneralData *ugd) = 0;
+    
+    /*!
+     * 
+     */
+    std::vector<float> canopy_atten;		/**< Canopy attenuation coefficient */
+    std::vector<float> canopy_bot;		  /**< Canopy bottom */
+    std::vector<float> canopy_top;		  /**< Canopy height */
+    
+    std::vector<int> canopy_bot_index;		  /**< Canopy bottom index */
+    std::vector<int> canopy_top_index;		  /**< Canopy top index */
+
+    std::vector<float> canopy_z0;		  /**< Canopy surface roughness */
+    std::vector<float> canopy_ustar;		  /**< Velocity gradient at the top of canopy */
+    std::vector<float> canopy_d;		  /**< Canopy displacement length */
     
 private:
     

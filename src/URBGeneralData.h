@@ -130,7 +130,7 @@ public:
     std::vector<float> canopy_ustar;		  /**< Velocity gradient at the top of canopy */
     std::vector<float> canopy_d;		  /**< Canopy displacement length */
 
-    Canopy* canopy;
+    //Canopy* canopy;
 
     float max_velmag;         // In polygonWake
 

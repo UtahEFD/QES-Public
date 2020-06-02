@@ -83,5 +83,9 @@ private:
      * displacement height when the bisection function is not finding it.
      */
     float canopySlopeMatch(float z0, float canopy_top, float canopy_atten);
-
+    
+    /*!
+     * 
+     */
+    float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m)
 };

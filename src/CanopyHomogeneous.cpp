@@ -38,6 +38,18 @@ void CanopyHomogeneous::canopyInitial(URBGeneralData *UGD)
             }
         }
     } 
+    
+    for (auto j=0; j<ny_canopy; j++) {
+        for (auto i=0; i<nx_canopy; i++) {
+            int icell_2d = i + j*nx_canopy;
+            for (auto k=canopy_bot_index[icell_2d]; k<canopy_top_index[icell_2d]; k++) {
+                int icell_3d = i + j*nx_canopy + k*nx_canopy*ny_canopy;
+                // initiate all attenuation coefficients to the canopy coefficient
+                canopy_atten[icell_3d] = attenuationCoeff;     
+            }
+        }
+    }
+    
 }
 
 // Function to apply the urban canopy parameterization
@@ -194,6 +206,54 @@ void CanopyHomogeneous::canopyRegression(URBGeneralData* UGD)
             } // end of if (UGD->canopy_top[id] > 0)
         }
     } 
+}
+
+float CanopyHomogeneous::canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m)
+{
+    int iter;
+    float  uhc, d, d1, d2;
+    float tol, fnew, fi;
+
+    tol = z0/100;
+    fnew = tol*10;
+
+    d1 = z0;
+    d2 = canopy_top;
+    d = (d1+d2)/2;
+
+    uhc = (ustar/vk)*(log((canopy_top-d1)/z0)+psi_m);
+    fi = ((canopy_atten*uhc*vk)/ustar)-canopy_top/(canopy_top-d1);
+
+    if (canopy_atten > 0)
+    {
+        iter = 0;
+        while (iter < 200 && abs(fnew) > tol && d < canopy_top && d > z0)
+        {
+            iter += 1;
+            d = (d1+d2)/2;
+            uhc = (ustar/vk)*(log((canopy_top-d)/z0)+psi_m);
+            fnew = ((canopy_atten*uhc*vk)/ustar) - canopy_top/(canopy_top-d);
+            if(fnew*fi>0)
+            {
+                d1 = d;
+            }
+            else if(fnew*fi<0)
+            {
+                d2 = d;
+            }
+        }
+        if (d > canopy_top)
+        {
+            d = 10000;
+        }
+
+    }
+    else
+    {
+        d = 0.99*canopy_top;
+    }
+
+    return d;
 }
 
 float CanopyHomogeneous::canopySlopeMatch(float z0, float canopy_top, float canopy_atten)
