@@ -87,5 +87,5 @@ private:
     /*!
      * 
      */
-    float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m)
+    float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
 };

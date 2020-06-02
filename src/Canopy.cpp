@@ -49,8 +49,9 @@ void Canopy::canopyDefineBoundary(URBGeneralData* UGD,int cellFlagToUse)
     j_start = y_min/UGD->dy;       // Index of canopy end location in y-direction
     j_end = y_max/UGD->dy+1;       // Index of canopy start location in y-direction
     
-    nx_canopy = i_end-i_start-1;
-    ny_canopy = j_end-j_start-1;
+    // size of the canopy 'sub-grid' 
+    nx_canopy = (i_end-i_start-1)+2;
+    ny_canopy = (j_end-j_start-1)+2;
     
     // number of cell cell-center elements (2D) 
     numcell_cent_2d = nx_canopy*ny_canopy;
@@ -100,7 +101,7 @@ void Canopy::canopyDefineBoundary(URBGeneralData* UGD,int cellFlagToUse)
             // if num_crossing is even = cell is inside of the polygon
             if ( (num_crossing%2) != 0 ) {
                 int icell_cent_2d = i + j*(UGD->nx-1);
-                int icell_canopy_2d = (i-i_start) + (j-j_start)*nx_canopy;
+                int icell_canopy_2d = (i+1-i_start) + (j+1-j_start)*nx_canopy;
                 
                 // Define start index of the canopy in z-direction
                 for (auto k=1; k<UGD->z.size(); k++) {
@@ -145,10 +146,10 @@ void Canopy::canopyDefineBoundary(URBGeneralData* UGD,int cellFlagToUse)
         }
     }
 
-    nz_canopy = k_end-k_start;
+    nz_canopy = k_end+1;
      
     std::cout << nx_canopy << " " << ny_canopy << " " << nz_canopy << std::endl;
-    
+
     // number of cell-center elements (3D)
     numcell_cent_3d = nx_canopy*ny_canopy*nz_canopy;
     // Resize the canopy-related vectors
