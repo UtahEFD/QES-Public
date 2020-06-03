@@ -58,21 +58,21 @@ void CanopyHomogeneous::canopyParam(URBGeneralData* UGD)
         for (auto i=0; i<nx_canopy; i++) {
             int icell_2d = i+j*nx_canopy;
 
-            if (canopy_top.at(icell_2d) > 0) {
+            if (canopy_top[icell_2d] > 0) {
                 // Call the bisection method to find the root
                 
-                int icell_3d = i+j*nx_canopy+canopy_top_index.at(icell_2d)*nx_canopy*ny_canopy;
+                int icell_3d = i+j*nx_canopy+canopy_top_index[icell_2d]*nx_canopy*ny_canopy;
 
-                canopy_d.at(icell_2d) = canopyBisection(canopy_ustar.at(icell_2d),canopy_z0.at(icell_2d),
-                                                        canopy_top.at(icell_2d),canopy_atten.at(icell_3d),UGD->vk,0.0);
+                canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d],canopy_z0[icell_2d],
+                                                     canopy_top[icell_2d],canopy_atten[icell_3d],UGD->vk,0.0);
                 //std::cout << "UGD->vk:" << UGD->vk << "\n";
                 //std::cout << "UGD->canopy_atten[icell_cent]:" << UGD->canopy_atten[icell_cent] << "\n";
-                if (canopy_d.at(icell_2d) == 10000) {
+                if (canopy_d[icell_2d] == 10000) {
                     std::cout << "bisection failed to converge" << "\n";
-                    canopy_d.at(icell_2d) = canopySlopeMatch(canopy_z0.at(icell_2d),canopy_top.at(icell_2d),
-                                                             canopy_atten.at(icell_3d));
+                    canopy_d[icell_2d] = canopySlopeMatch(canopy_z0[icell_2d],canopy_top[icell_2d],
+                                                          canopy_atten[icell_3d]);
                 }
-
+                
                 /**< velocity at the height of the canopy */
                 // Local variable - not being used by anything... so
                 // commented out for now.
@@ -84,29 +84,29 @@ void CanopyHomogeneous::canopyParam(URBGeneralData* UGD)
                     
                     int icell_face = (i-1+i_start) + (j-1+j_start)*UGD->nx + k*UGD->nx*UGD->ny;
                     
-                    if (UGD->z[k] < canopy_top.at(icell_2d)) {
-                        if (canopy_atten.at(icell_3d) > 0) {
+                    if (UGD->z[k] < canopy_top[icell_2d]) {
+                        if (canopy_atten[icell_3d] > 0) {
                             icell_3d = i+j*nx_canopy+k*nx_canopy*ny_canopy;
-                            avg_atten = canopy_atten.at(icell_3d);
+                            avg_atten = canopy_atten[icell_3d];
                             
                             
-                            if (canopy_atten.at(icell_3d+nx_canopy*ny_canopy)!=canopy_atten.at(icell_3d) ||
-                                canopy_atten.at(icell_3d-nx_canopy*ny_canopy)!=canopy_atten.at(icell_3d)) {
+                            if (canopy_atten[icell_3d+nx_canopy*ny_canopy]!=canopy_atten[icell_3d] ||
+                                canopy_atten[icell_3d-nx_canopy*ny_canopy]!=canopy_atten[icell_3d]) {
                                 num_atten = 1;
-                                if (canopy_atten.at(icell_3d+nx_canopy*ny_canopy) > 0) {
-                                    avg_atten += canopy_atten.at(icell_3d+nx_canopy*ny_canopy);
+                                if (canopy_atten[icell_3d+nx_canopy*ny_canopy] > 0) {
+                                    avg_atten += canopy_atten[icell_3d+nx_canopy*ny_canopy];
                                     num_atten += 1;
                                 }
-                                if (canopy_atten.at(icell_3d-nx_canopy*ny_canopy) > 0) {
-                                    avg_atten += canopy_atten.at(icell_3d-nx_canopy*ny_canopy);
+                                if (canopy_atten[icell_3d-nx_canopy*ny_canopy] > 0) {
+                                    avg_atten += canopy_atten[icell_3d-nx_canopy*ny_canopy];
                                     num_atten += 1;
                                 }
                                 avg_atten /= num_atten;
                             }
                             
-                            veg_vel_frac = log((canopy_top.at(icell_2d) - canopy_d.at(icell_2d))/
-                                               canopy_z0.at(icell_2d))*exp(avg_atten*((UGD->z[k]/canopy_top.at(icell_2d))-1))/
-                                log(UGD->z[k]/canopy_z0.at(icell_2d));
+                            veg_vel_frac = log((canopy_top[icell_2d] - canopy_d[icell_2d])/
+                                               canopy_z0[icell_2d])*exp(avg_atten*((UGD->z[k]/canopy_top[icell_2d])-1))/
+                                log(UGD->z[k]/canopy_z0[icell_2d]);
                             
                             if (veg_vel_frac > 1 || veg_vel_frac < 0) {
                                 veg_vel_frac = 1;
@@ -126,23 +126,23 @@ void CanopyHomogeneous::canopyParam(URBGeneralData* UGD)
                             }
                         }
                     } else {
-                        veg_vel_frac = log((UGD->z[k]-canopy_d.at(icell_2d))/canopy_z0.at(icell_2d))/
-                            log(UGD->z[k]/canopy_z0.at(icell_2d));
+                        veg_vel_frac = log((UGD->z[k]-canopy_d[icell_2d])/canopy_z0[icell_2d])/
+                            log(UGD->z[k]/canopy_z0[icell_2d]);
                         if (veg_vel_frac > 1 || veg_vel_frac < 0)
                         {
                             veg_vel_frac = 1;
                         }
-
+                        
                         UGD->u0[icell_face] *= veg_vel_frac;
                         UGD->v0[icell_face] *= veg_vel_frac;
                         if (j-1+j_start < UGD->ny-2) {
-                            icell_3d = i+j*nx_canopy+canopy_top_index.at(icell_2d)*nx_canopy*ny_canopy;
+                            icell_3d = i+j*nx_canopy+canopy_top_index[icell_2d]*nx_canopy*ny_canopy;
                             if(canopy_atten[icell_3d+nx_canopy] == 0) {
                                 UGD->v0[icell_face+UGD->nx] *= veg_vel_frac;
                             }
                         }
                         if (i-1+i_start < UGD->nx-2) {
-                            icell_3d = i+j*nx_canopy+canopy_top_index.at(icell_2d)*nx_canopy*ny_canopy;
+                            icell_3d = i+j*nx_canopy+canopy_top_index[icell_2d]*nx_canopy*ny_canopy;
                             if (canopy_atten[icell_3d+1] == 0) {
                                 UGD->u0[icell_face+1] *= veg_vel_frac;
                             }

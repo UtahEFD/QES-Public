@@ -140,11 +140,11 @@ void Canopy::canopyDefineBoundary(URBGeneralData* UGD,int cellFlagToUse)
     k_end=0;
     for (auto j=0; j<ny_canopy; j++) {
         for (auto i=0; i<nx_canopy; i++) {
-            int icell_2d = i + j*nx_canopy;
-            if( canopy_bot_index[icell_2d] < k_start )
-                k_start = canopy_bot_index[icell_2d];
-            if( canopy_top_index[icell_2d] > k_end )
-                k_end = canopy_top_index[icell_2d];
+            int icell_canopy_2d = i + j*nx_canopy;
+            if( canopy_bot_index[icell_canopy_2d] < k_start )
+                k_start = canopy_bot_index[icell_canopy_2d];
+            if( canopy_top_index[icell_canopy_2d] > k_end )
+                k_end = canopy_top_index[icell_canopy_2d];
         }
     }
     
