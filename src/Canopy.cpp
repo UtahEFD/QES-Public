@@ -61,10 +61,13 @@ void Canopy::canopyDefineBoundary(URBGeneralData* UGD,int cellFlagToUse)
     // Resize the canopy-related vectors
     canopy_bot.resize( numcell_cent_2d , 0.0 );    
     canopy_top.resize( numcell_cent_2d , 0.0 );
-    
+
     canopy_bot_index.resize( numcell_cent_2d , 0 );
     canopy_top_index.resize( numcell_cent_2d , -1 );
     
+    canopy_base.resize( numcell_cent_2d , 0.0 );
+    canopy_height.resize( numcell_cent_2d , 0.0 );
+
     canopy_z0.resize( numcell_cent_2d, 0.0 );
     canopy_ustar.resize( numcell_cent_2d, 0.0 );
     canopy_d.resize( numcell_cent_2d, 0.0 );
@@ -122,7 +125,10 @@ void Canopy::canopyDefineBoundary(URBGeneralData* UGD,int cellFlagToUse)
                         break;
                     }
                 }
-                                
+                
+                canopy_base[icell_canopy_2d] = UGD->terrain[icell_cent_2d];
+                canopy_height[icell_canopy_2d] = canopy_top[icell_canopy_2d]-canopy_bot[icell_canopy_2d];
+                
                 // define icellflag @ (x,y) for all z(k) in [k_start...k_end]
                 for (auto k=canopy_bot_index[icell_canopy_2d]; k<=canopy_top_index[icell_canopy_2d]; k++) {
                     int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);

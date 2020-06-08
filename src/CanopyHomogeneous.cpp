@@ -64,12 +64,12 @@ void CanopyHomogeneous::canopyParam(URBGeneralData* UGD)
                 int icell_3d = i+j*nx_canopy+canopy_top_index[icell_2d]*nx_canopy*ny_canopy;
 
                 canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d],canopy_z0[icell_2d],
-                                                     canopy_top[icell_2d],canopy_atten[icell_3d],UGD->vk,0.0);
+                                                     canopy_height[icell_2d],canopy_atten[icell_3d],UGD->vk,0.0);
                 //std::cout << "UGD->vk:" << UGD->vk << "\n";
                 //std::cout << "UGD->canopy_atten[icell_cent]:" << UGD->canopy_atten[icell_cent] << "\n";
                 if (canopy_d[icell_2d] == 10000) {
                     std::cout << "bisection failed to converge" << "\n";
-                    canopy_d[icell_2d] = canopySlopeMatch(canopy_z0[icell_2d],canopy_top[icell_2d],
+                    canopy_d[icell_2d] = canopySlopeMatch(canopy_z0[icell_2d],canopy_height[icell_2d],
                                                           canopy_atten[icell_3d]);
                 }
                 
@@ -83,6 +83,8 @@ void CanopyHomogeneous::canopyParam(URBGeneralData* UGD)
                 for (auto k=1; k < UGD->nz-1; k++) {
                     
                     int icell_face = (i-1+i_start) + (j-1+j_start)*UGD->nx + k*UGD->nx*UGD->ny;
+
+                    float z_rel = UGD->z[k] - canopy_base[icell_2d];
                     
                     if (UGD->z[k] < canopy_top[icell_2d]) {
                         if (canopy_atten[icell_3d] > 0) {
@@ -104,9 +106,14 @@ void CanopyHomogeneous::canopyParam(URBGeneralData* UGD)
                                 avg_atten /= num_atten;
                             }
                             
+                            /*
                             veg_vel_frac = log((canopy_top[icell_2d] - canopy_d[icell_2d])/
                                                canopy_z0[icell_2d])*exp(avg_atten*((UGD->z[k]/canopy_top[icell_2d])-1))/
                                 log(UGD->z[k]/canopy_z0[icell_2d]);
+                            */
+                            veg_vel_frac = log((canopy_height[icell_2d] - canopy_d[icell_2d])/
+                                               canopy_z0[icell_2d])*exp(avg_atten*((z_rel/canopy_height[icell_2d])-1))/
+                                log(z_rel/canopy_z0[icell_2d]);
                             
                             if (veg_vel_frac > 1 || veg_vel_frac < 0) {
                                 veg_vel_frac = 1;
@@ -126,8 +133,8 @@ void CanopyHomogeneous::canopyParam(URBGeneralData* UGD)
                             }
                         }
                     } else {
-                        veg_vel_frac = log((UGD->z[k]-canopy_d[icell_2d])/canopy_z0[icell_2d])/
-                            log(UGD->z[k]/canopy_z0[icell_2d]);
+                        veg_vel_frac = log((z_rel-canopy_d[icell_2d])/canopy_z0[icell_2d])/
+                            log(z_rel/canopy_z0[icell_2d]);
                         if (veg_vel_frac > 1 || veg_vel_frac < 0)
                         {
                             veg_vel_frac = 1;
