@@ -47,6 +47,13 @@ protected:
      */
     void canopyDefineBoundary(URBGeneralData *ugd,int cellFlagToUse);
     
+    
+    
+    /*!
+     * For there and below, the canopyInitial function has to be defined
+     */
+    virtual void canopyInitial(URBGeneralData *ugd) = 0;
+    
     /*!
      * For there and below, the canopyVegetation function has to be defined
      */

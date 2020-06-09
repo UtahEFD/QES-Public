@@ -83,6 +83,9 @@ public:
     {
     }
 
+    virtual void canopyInitial (URBGeneralData *UGD)
+    {
+    }
     virtual void canopyVegetation (URBGeneralData *UGD)
     {
     }

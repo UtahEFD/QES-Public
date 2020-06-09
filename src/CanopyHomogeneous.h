@@ -37,11 +37,12 @@ public:
         polygonVertices[2].y_poly = polygonVertices[1].y_poly+L*sin(canopy_rotation);
         polygonVertices[3].x_poly = x_start+L*cos(canopy_rotation);
         polygonVertices[3].y_poly = y_start+L*sin(canopy_rotation);
-    
-    
+
     }
     
-    
+
+    void canopyInitial(URBGeneralData *ugd);
+
     void canopyVegetation(URBGeneralData *ugd);
   
     /*!
@@ -51,18 +52,11 @@ public:
     //void readCanopy(int nx, int ny, int nz, int landuse_flag, int num_canopies, int &lu_canopy_flag,
     //	std::vector<std::vector<std::vector<float>>> &canopy_atten,std::vector<std::vector<float>> &canopy_top);
   
-  
 private:
   
     float attenuationCoeff;
     const int cellFlagCionco=11;
-
-    /*!
-     * This function takes in icellflag defined in the defineCanopy function and initialize the 
-     * attenuation coefficient 
-     */
-    void canopyInitial(URBGeneralData *ugd);
-
+    
     /*!
      * This function takes in icellflag defined in the defineCanopy function along with variables initialized in
      * the readCanopy function and initial velocity field components (u0 and v0). This function applies the urban 

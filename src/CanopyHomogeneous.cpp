@@ -3,30 +3,16 @@
 #include "URBInputData.h"
 #include "URBGeneralData.h"
 
-
-void CanopyHomogeneous::canopyVegetation(URBGeneralData* UGD)
+// set et attenuation coefficient 
+void CanopyHomogeneous::canopyInitial(URBGeneralData *UGD)
 {
-  
     // When THIS canopy calls this function, we need to do the
     // following:
     //readCanopy(nx, ny, nz, landuse_flag, num_canopies, lu_canopy_flag,
     //canopy_atten, canopy_top);
-  
+    
     // this function need to be called to defined the boundary of the canopy and the icellflags
     canopyDefineBoundary(UGD,cellFlagCionco);
-    
-    // this function is setting the attenuation coeff.
-    canopyInitial(UGD);
-    
-    // Apply canopy parameterization
-    canopyParam(UGD);		
-    
-    return;
-}
-
-// set et attenuation coefficient 
-void CanopyHomogeneous::canopyInitial(URBGeneralData *UGD)
-{
     
     for (auto j=0; j<ny_canopy; j++) {
         for (auto i=0; i<nx_canopy; i++) {
@@ -41,6 +27,17 @@ void CanopyHomogeneous::canopyInitial(URBGeneralData *UGD)
     
     return;
 }
+
+
+void CanopyHomogeneous::canopyVegetation(URBGeneralData* UGD)
+{
+  
+    // Apply canopy parameterization
+    canopyParam(UGD);		
+    
+    return;
+}
+
 
 // Function to apply the urban canopy parameterization
 // Based on the version contain Lucas Ulmer's modifications
