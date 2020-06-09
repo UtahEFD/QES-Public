@@ -111,8 +111,8 @@ void Canopy::canopyDefineBoundary(URBGeneralData* UGD,int cellFlagToUse)
                 // Define start index of the canopy in z-direction
                 for (auto k=1; k<UGD->z.size(); k++) {
                     if (UGD->terrain[icell_cent_2d]+base_height <= UGD->z[k]) {
-                        canopy_bot_index[icell_canopy_2d]=k;
-                        canopy_bot[icell_canopy_2d]=UGD->terrain[icell_cent_2d]+base_height;
+                        canopy_bot_index[icell_canopy_2d] = k;
+                        canopy_bot[icell_canopy_2d] = UGD->terrain[icell_cent_2d]+base_height;
                         break;
                     }
                 }
@@ -120,13 +120,21 @@ void Canopy::canopyDefineBoundary(URBGeneralData* UGD,int cellFlagToUse)
                 // Define end index of the canopy in z-direction   
                 for (auto k=0; k<UGD->z.size(); k++) {
                     if(UGD->terrain[icell_cent_2d]+base_height+H < UGD->z[k+1]) {
-                        canopy_top_index[icell_canopy_2d]=k;
-                        canopy_top[icell_canopy_2d]=UGD->terrain[icell_cent_2d]+base_height+H;
+                        canopy_top_index[icell_canopy_2d] = k;
+                        canopy_top[icell_canopy_2d] = UGD->terrain[icell_cent_2d]+base_height+H;
                         break;
                     }
                 }
                 
-                canopy_base[icell_canopy_2d] = UGD->terrain[icell_cent_2d];
+                // Define hieght of the canopy base in z-direction   
+                for (auto k=1; k<UGD->z.size(); k++) {
+                    int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+                    if( UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2) {
+                        canopy_base[icell_canopy_2d] = UGD->z_face[k-1];
+                        break;
+                    }
+                }
+                
                 canopy_height[icell_canopy_2d] = canopy_top[icell_canopy_2d]-canopy_bot[icell_canopy_2d];
                 
                 // define icellflag @ (x,y) for all z(k) in [k_start...k_end]

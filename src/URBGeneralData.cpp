@@ -530,6 +530,57 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
 
     wall->solverCoefficients (this);
 
+    //applyParametrizations(UID);
+
+    /*
+     * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
+     * wall above/below and wall in front/back and applies the log law boundary condition fix
+     * to the cells near Walls
+     *
+     */
+     //wall->wallLogBC (this);
+
+    wall->setVelocityZero (this);
+
+    // compute local mixing length here!
+    if(UID->localMixingParam) {
+        auto mlStartTime = std::chrono::high_resolution_clock::now();
+        if (UID->localMixingParam->methodLocalMixing == 0) {
+            std::cout << "[MixLength] \t Default Local Mixing Length...\n";
+            localMixing = new LocalMixingDefault();
+            localMixing->defineMixingLength(UID,this);
+        } else if(UID->localMixingParam->methodLocalMixing == 1) {
+            std::cout << "[MixLength] \t Computing Local Mixing Length using serial code...\n";
+            localMixing = new LocalMixingSerial();
+            localMixing->defineMixingLength(UID,this);
+        } else if (UID->localMixingParam->methodLocalMixing == 2) {
+            /*******Add raytrace code here********/
+            std::cout << "Computing mixing length scales..." << std::endl;
+            UID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
+        } else if (UID->localMixingParam->methodLocalMixing == 3) {
+            // not implemented here (OptiX)
+        } else if (UID->localMixingParam->methodLocalMixing == 4) {
+            std::cout << "[MixLength] \t Loading Local Mixing Length data form NetCDF...\n";
+            localMixing = new LocalMixingNetCDF();
+            localMixing->defineMixingLength(UID,this);
+        } else {
+            //this should not happen (checked in LocalMixingParam)
+        }
+        // once all methods are implemented...
+        // should be moved here: localMixing->defineMixingLength(UID,this);
+        auto mlEndTime = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
+        std::cout << "[MixLength] \t Local Mixing Defined...\n";
+        std::cout << "\t\t elapsed time: " << mlElapsed.count() << " s\n";
+    }
+
+    return;
+
+}
+
+void URBGeneralData::applyParametrizations(const URBInputData* UID)
+{
+    
     // ///////////////////////////////////////
     // Generic Parameterization Related Stuff
     // ///////////////////////////////////////
@@ -609,60 +660,18 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     //         Street Intersection          ///
     ///////////////////////////////////////////
     /*if (UID->simParams->streetCanyonFlag > 0 && UID->simParams->streetIntersectionFlag > 0 && allBuildingsV.size() > 0)
-    {
+      {
       std::cout << "Applying Blended Region Parameterization...\n";
       allBuildingsV[0]->streetIntersection (UID, this);
       allBuildingsV[0]->poisson (UID, this);
       std::cout << "Blended Region Parameterization done...\n";
-    }*/
-
-
-    /*
-     * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
-     * wall above/below and wall in front/back and applies the log law boundary condition fix
-     * to the cells near Walls
-     *
-     */
-     //wall->wallLogBC (this);
-
-    wall->setVelocityZero (this);
-
-    // compute local mixing length here!
-    if(UID->localMixingParam) {
-        auto mlStartTime = std::chrono::high_resolution_clock::now();
-        if (UID->localMixingParam->methodLocalMixing == 0) {
-            std::cout << "[MixLength] \t Default Local Mixing Length...\n";
-            localMixing = new LocalMixingDefault();
-            localMixing->defineMixingLength(UID,this);
-        } else if(UID->localMixingParam->methodLocalMixing == 1) {
-            std::cout << "[MixLength] \t Computing Local Mixing Length using serial code...\n";
-            localMixing = new LocalMixingSerial();
-            localMixing->defineMixingLength(UID,this);
-        } else if (UID->localMixingParam->methodLocalMixing == 2) {
-            /*******Add raytrace code here********/
-            std::cout << "Computing mixing length scales..." << std::endl;
-            UID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
-        } else if (UID->localMixingParam->methodLocalMixing == 3) {
-            // not implemented here (OptiX)
-        } else if (UID->localMixingParam->methodLocalMixing == 4) {
-            std::cout << "[MixLength] \t Loading Local Mixing Length data form NetCDF...\n";
-            localMixing = new LocalMixingNetCDF();
-            localMixing->defineMixingLength(UID,this);
-        } else {
-            //this should not happen (checked in LocalMixingParam)
-        }
-        // once all methods are implemented...
-        // should be moved here: localMixing->defineMixingLength(UID,this);
-        auto mlEndTime = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
-        std::cout << "[MixLength] \t Local Mixing Defined...\n";
-        std::cout << "\t\t elapsed time: " << mlElapsed.count() << " s\n";
-    }
-
+      }
+    */
+    
+    
+    
     return;
-
 }
-
 
 void URBGeneralData::mergeSort( std::vector<float> &effective_height, std::vector<Building*> allBuildingsV, std::vector<int> &building_id)
 {

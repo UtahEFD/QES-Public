@@ -35,6 +35,8 @@ public:
                     std::vector<Building*> allBuildingsV,
                     std::vector<int> &building_id );
     
+    void applyParametrizations(const URBInputData* UID);
+
 
     /*!
     * This function is being called from the plantInitial function

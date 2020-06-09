@@ -53,16 +53,15 @@ void CanopyHomogeneous::canopyParam(URBGeneralData* UGD)
   
     // Call regression to define ustar and surface roughness of the canopy
     canopyRegression(UGD);
-    
+
     for (auto j=0; j<ny_canopy; j++) {
         for (auto i=0; i<nx_canopy; i++) {
             int icell_2d = i+j*nx_canopy;
 
             if (canopy_top[icell_2d] > 0) {
-                // Call the bisection method to find the root
-                
                 int icell_3d = i+j*nx_canopy+canopy_top_index[icell_2d]*nx_canopy*ny_canopy;
 
+                // Call the bisection method to find the root
                 canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d],canopy_z0[icell_2d],
                                                      canopy_height[icell_2d],canopy_atten[icell_3d],UGD->vk,0.0);
                 //std::cout << "UGD->vk:" << UGD->vk << "\n";
@@ -81,25 +80,25 @@ void CanopyHomogeneous::canopyParam(URBGeneralData* UGD)
                 //  log((UGD->canopy_top[id]-UGD->canopy_d[id])/UGD->canopy_z0[id]);
                 
                 for (auto k=1; k < UGD->nz-1; k++) {
-                    
                     int icell_face = (i-1+i_start) + (j-1+j_start)*UGD->nx + k*UGD->nx*UGD->ny;
-
                     float z_rel = UGD->z[k] - canopy_base[icell_2d];
                     
-                    if (UGD->z[k] < canopy_top[icell_2d]) {
+                    if(UGD->z[k] < canopy_base[icell_2d]) {
+                        // below the terrain or building
+                    } else if (UGD->z[k] < canopy_top[icell_2d]) {
                         if (canopy_atten[icell_3d] > 0) {
                             icell_3d = i+j*nx_canopy+k*nx_canopy*ny_canopy;
                             avg_atten = canopy_atten[icell_3d];
                             
                             
-                            if (canopy_atten[icell_3d+nx_canopy*ny_canopy]!=canopy_atten[icell_3d] ||
-                                canopy_atten[icell_3d-nx_canopy*ny_canopy]!=canopy_atten[icell_3d]) {
+                            if( canopy_atten[icell_3d+nx_canopy*ny_canopy]!=canopy_atten[icell_3d] ||
+                                canopy_atten[icell_3d-nx_canopy*ny_canopy]!=canopy_atten[icell_3d] ) {
                                 num_atten = 1;
-                                if (canopy_atten[icell_3d+nx_canopy*ny_canopy] > 0) {
+                                if( canopy_atten[icell_3d+nx_canopy*ny_canopy] > 0 ) {
                                     avg_atten += canopy_atten[icell_3d+nx_canopy*ny_canopy];
                                     num_atten += 1;
                                 }
-                                if (canopy_atten[icell_3d-nx_canopy*ny_canopy] > 0) {
+                                if( canopy_atten[icell_3d-nx_canopy*ny_canopy] > 0 ) {
                                     avg_atten += canopy_atten[icell_3d-nx_canopy*ny_canopy];
                                     num_atten += 1;
                                 }
@@ -111,30 +110,37 @@ void CanopyHomogeneous::canopyParam(URBGeneralData* UGD)
                                                canopy_z0[icell_2d])*exp(avg_atten*((UGD->z[k]/canopy_top[icell_2d])-1))/
                                 log(UGD->z[k]/canopy_z0[icell_2d]);
                             */
+                            
+                            // correction on the velocity within the canopy
                             veg_vel_frac = log((canopy_height[icell_2d] - canopy_d[icell_2d])/
                                                canopy_z0[icell_2d])*exp(avg_atten*((z_rel/canopy_height[icell_2d])-1))/
                                 log(z_rel/canopy_z0[icell_2d]);
-                            
+                            // check if correction is bound and well defined
                             if (veg_vel_frac > 1 || veg_vel_frac < 0) {
-                                veg_vel_frac = 1;
+                                veg_vel_frac = 1; 
                             }
                             
                             UGD->u0[icell_face] *= veg_vel_frac;
                             UGD->v0[icell_face] *= veg_vel_frac;
+                                     
+                            // at the edge of the canopy need to adjust velocity at the next face 
+                            // use canopy_top to detect the edge (worke with level changes)
                             if (j-1+j_start < UGD->ny-2) {
-                                if (canopy_atten[icell_3d+nx_canopy] == 0) {
+                                if (canopy_top[icell_2d+nx_canopy] == 0.0) {
                                     UGD->v0[icell_face+UGD->nx] *= veg_vel_frac;
                                 }
                             }
                             if (i-1+i_start < UGD->nx-2) {
-                                if(canopy_atten[icell_3d+1] == 0) {
+                                if(canopy_top[icell_2d+1] == 0.0) {
                                     UGD->u0[icell_face+1] *= veg_vel_frac;
                                 }
                             }
                         }
                     } else {
+                        // correction on the velocity above the canopy
                         veg_vel_frac = log((z_rel-canopy_d[icell_2d])/canopy_z0[icell_2d])/
                             log(z_rel/canopy_z0[icell_2d]);
+                        // check if correction is bound and well defined
                         if (veg_vel_frac > 1 || veg_vel_frac < 0)
                         {
                             veg_vel_frac = 1;
@@ -142,20 +148,23 @@ void CanopyHomogeneous::canopyParam(URBGeneralData* UGD)
                         
                         UGD->u0[icell_face] *= veg_vel_frac;
                         UGD->v0[icell_face] *= veg_vel_frac;
+
+                        // at the edge of the canopy need to adjust velocity at the next face 
+                        // use canopy_top to detect the edge (worke with level changes)
                         if (j-1+j_start < UGD->ny-2) {
-                            icell_3d = i+j*nx_canopy+canopy_top_index[icell_2d]*nx_canopy*ny_canopy;
-                            if(canopy_atten[icell_3d+nx_canopy] == 0) {
+                            icell_3d = i+j*nx_canopy+canopy_bot_index[icell_2d]*nx_canopy*ny_canopy;
+                            if(canopy_top[icell_2d+nx_canopy] == 0.0) {
                                 UGD->v0[icell_face+UGD->nx] *= veg_vel_frac;
                             }
                         }
                         if (i-1+i_start < UGD->nx-2) {
-                            icell_3d = i+j*nx_canopy+canopy_top_index[icell_2d]*nx_canopy*ny_canopy;
-                            if (canopy_atten[icell_3d+1] == 0) {
+                            icell_3d = i+j*nx_canopy+canopy_bot_index[icell_2d]*nx_canopy*ny_canopy;
+                            if (canopy_top[icell_2d+1] == 0.0) {
                                 UGD->u0[icell_face+1] *= veg_vel_frac;
                             }
                         }
                     }
-                }
+                } // end of for(auto k=1; k < UGD->nz-1; k++)
             }
         }
     }
@@ -206,6 +215,7 @@ void CanopyHomogeneous::canopyRegression(URBGeneralData* UGD)
                 xm = sum_x/counter;
                 ym = sum_y/counter;
                 canopy_z0[id] = exp(ym-((UGD->vk/canopy_ustar[id]))*xm);
+                
             } // end of if (canopy_top_index[id] > 0)
         }
     } 
@@ -229,8 +239,7 @@ float CanopyHomogeneous::canopyBisection(float ustar, float z0, float canopy_top
     uhc = (ustar/vk)*(log((canopy_top-d1)/z0)+psi_m);
     fi = ((canopy_atten*uhc*vk)/ustar)-canopy_top/(canopy_top-d1);
 
-    if (canopy_atten > 0)
-    {
+    if (canopy_atten > 0) {
         iter = 0;
         while (iter < 200 && abs(fnew) > tol && d < canopy_top && d > z0)
         {
@@ -238,23 +247,17 @@ float CanopyHomogeneous::canopyBisection(float ustar, float z0, float canopy_top
             d = (d1+d2)/2;
             uhc = (ustar/vk)*(log((canopy_top-d)/z0)+psi_m);
             fnew = ((canopy_atten*uhc*vk)/ustar) - canopy_top/(canopy_top-d);
-            if(fnew*fi>0)
-            {
+            if(fnew*fi>0) {
                 d1 = d;
-            }
-            else if(fnew*fi<0)
-            {
+            } else if(fnew*fi<0) {
                 d2 = d;
             }
         }
-        if (d > canopy_top)
-        {
+        if (d > canopy_top) {
             d = 10000;
         }
-
-    }
-    else
-    {
+        
+    } else {
         d = 0.99*canopy_top;
     }
 

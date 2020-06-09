@@ -147,4 +147,5 @@ add_subdirectory(src)
 add_subdirectory(scratch)
 
 add_subdirectory(cudaUrb)
+add_subdirectory(cudaCanopy)
 
