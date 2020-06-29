@@ -9,7 +9,7 @@ OptixRayTrace::OptixRayTrace(std::vector<Triangle*> tris){
 
    createContext();
 
-   buildAS(tris);
+//   buildAS(tris);
 
 }
 
@@ -31,7 +31,7 @@ void OptixRayTrace::createContext(){
 
    std::cout<<"Enters createContext()"<<std::endl;
 
-   CUDA_CHECK(cudaFree(0));
+//   CUDA_CHECK(cudaFree(0));
 
    OptixDeviceContext context;
    CUcontext cuCtx = 0; //0 = current context
@@ -91,7 +91,136 @@ size_t OptixRayTrace::roundUp(size_t x, size_t y){
    return ((x + y -1) / y) * y;
 }
 
-void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
+
+/*
+  void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
+
+  std::cout<<"Enters buildAS"<<std::endl;
+
+
+  OptixAccelBuildOptions accel_options = {};
+  accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
+  accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
+
+//need to translate tris --> to a vector array of measurable size type
+std::vector<Vertex> trisArray(tris.size()*3);  //each triangle 3 Vertex-es
+convertVecMeshType(tris, trisArray);
+
+std::cout<<"tris.size() = "<<tris.size()<<std::endl;
+
+
+
+
+
+const size_t tris_size = sizeof(Vertex)*trisArray.size();
+CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&state.d_tris), tris_size));
+
+CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(state.d_tris),
+trisArray.data(),
+tris_size,
+cudaMemcpyHostToDevice)
+);
+
+
+
+std::cout<<"In buildAS, finishes memory allocation for list of triangles"<<std::endl;
+
+
+const uint32_t triangle_input_flags[1] ={OPTIX_GEOMETRY_FLAG_NONE};
+//could add flag to disable anyhit (above)
+
+OptixBuildInput triangle_input  = {};
+triangle_input.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
+triangle_input.triangleArray.vertexBuffers = &state.d_tris;
+triangle_input.triangleArray.numVertices = static_cast<uint32_t>(trisArray.size());
+triangle_input.triangleArray.vertexFormat = OPTIX_VERTEX_FORMAT_FLOAT3;
+//triangle_input.triangleArray.vertexStrideInBytes = sizeof(Vertex);
+triangle_input.triangleArray.vertexStrideInBytes = sizeof(float3);
+triangle_input.triangleArray.flags = triangle_input_flags;
+triangle_input.triangleArray.numSbtRecords = 1;
+
+
+std::cout<<"In buildAS, finishes init options for triangle_input"<<std::endl;
+
+
+
+
+OptixAccelBufferSizes gas_buffer_sizes;
+OPTIX_CHECK(optixAccelComputeMemoryUsage(state.context,
+&accel_options,
+&triangle_input,
+1,
+&gas_buffer_sizes)
+);
+
+CUdeviceptr d_temp_buffer_gas;
+CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_temp_buffer_gas),
+gas_buffer_sizes.tempSizeInBytes)
+);
+
+CUdeviceptr d_buffer_temp_output_gas_and_compacted_size;
+size_t compactedSizeOffset = roundUp(gas_buffer_sizes.outputSizeInBytes, 8ull);
+CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_buffer_temp_output_gas_and_compacted_size),
+compactedSizeOffset+8)
+);
+
+OptixAccelEmitDesc emit_property= {};
+emit_property.type = OPTIX_PROPERTY_TYPE_COMPACTED_SIZE;
+emit_property.result =
+(CUdeviceptr)((char*)d_buffer_temp_output_gas_and_compacted_size
++ compactedSizeOffset);
+
+OPTIX_CHECK(optixAccelBuild(state.context,
+0,
+&accel_options,
+&triangle_input,
+1,
+d_temp_buffer_gas,
+gas_buffer_sizes.tempSizeInBytes,
+d_buffer_temp_output_gas_and_compacted_size,
+gas_buffer_sizes.outputSizeInBytes,
+&state.gas_handle,
+&emit_property,
+1)
+);
+
+CUDA_SYNC_CHECK(); //need?
+
+CUDA_CHECK(cudaFree((void*)d_temp_buffer_gas));
+CUDA_CHECK(cudaFree((void*)state.d_tris));
+
+size_t compacted_gas_size;
+CUDA_CHECK(cudaMemcpy(&compacted_gas_size,
+(void*)emit_property.result, sizeof(size_t), cudaMemcpyDeviceToHost)
+);
+
+if(compacted_gas_size < gas_buffer_sizes.outputSizeInBytes){
+CUDA_CHECK(cudaMalloc(reinterpret_cast<void**> (&state.d_gas_output_buffer),
+compacted_gas_size)
+);
+
+OPTIX_CHECK(optixAccelCompact(state.context,
+0,
+state.gas_handle,
+state.d_gas_output_buffer,
+compacted_gas_size,
+&state.gas_handle)
+);
+CUDA_SYNC_CHECK(); //need?
+
+CUDA_CHECK(cudaFree((void*)d_buffer_temp_output_gas_and_compacted_size));
+}else{
+state.d_gas_output_buffer = d_buffer_temp_output_gas_and_compacted_size;
+}
+
+std::cout<<"\033[1;31m buildAS() done \033[0m"<<std::endl;
+}
+*/
+
+
+
+ //defult bottom tri version
+void OptixRayTrace::buildAS(){
 
    std::cout<<"Enters buildAS"<<std::endl;
 
@@ -100,17 +229,22 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
    accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
    accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
 
-//need to translate tris --> to a vector array of measurable size type
-   std::vector<Vertex> trisArray(tris.size()*3);  //each triangle 3 Vertex-es
-   convertVecMeshType(tris, trisArray);
+   const std::array<float3, 6> trisArray = {
+      {
+         {0,0,0},
+         {state.nx*state.dx, 0, 0},
+         {state.nx*state.dx, state.ny*state.dy, 0},
 
-   std::cout<<"tris.size() = "<<tris.size()<<std::endl;
+         {0,0,0},
+         {state.nx*state.dx, state.ny*state.dy, 0},
+         {0, state.ny*state.dy, 0}
+      }
+   };
 
 
 
 
-
-   const size_t tris_size = sizeof(Vertex)*trisArray.size();
+   const size_t tris_size = sizeof(float3)*trisArray.size();
    CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&state.d_tris), tris_size));
 
    CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(state.d_tris),
@@ -244,6 +378,15 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
    state.ny = dimY;
    state.nz = dimZ;
 
+   state.dx = dx;
+   state.dy = dy;
+   state.dz = dz;
+
+
+   buildAS();
+
+
+
    createModule();
 
    std::cout<<"In calculateMixingLength, createModule() done"<<std::endl;
@@ -285,7 +428,7 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 
    //std::vector<Hit> hitList(icellflag.size());
    Hit *hitList = (Hit *) malloc(icellflag.size() * sizeof(Hit));
-   state.d_hits.download(hitList,icellflag.size());
+   //state.d_hits.download(hitList,icellflag.size());
 //   state.d_hits.download(hitList.data(), icellflag.size());
 
 
@@ -361,6 +504,7 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
    state.params.dy = dy;
    state.params.dz = dz;
 
+   std::cout<<"In init params, params.dx, dy, and dz are: "<<state.params.dx<<", "<<state.params.dy<<", "<<state.params.dz<<std::endl;
 
    //start of tests
    state.params.flag = 3; //test value
@@ -530,8 +674,8 @@ void OptixRayTrace::createModule(){
    state.pipeline_compile_options.usesMotionBlur = false;
    state.pipeline_compile_options.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
    state.pipeline_compile_options.numPayloadValues = 1;
-   state.pipeline_compile_options.numAttributeValues = 2;
-   state.pipeline_compile_options.exceptionFlags = OPTIX_EXCEPTION_FLAG_NONE;
+   //state.pipeline_compile_options.numAttributeValues = 2;
+   //state.pipeline_compile_options.exceptionFlags = OPTIX_EXCEPTION_FLAG_NONE;
 
    state.pipeline_compile_options.pipelineLaunchParamsVariableName = "params";
 
@@ -562,7 +706,7 @@ void OptixRayTrace::createProgramGroups(){
 
    //OptiX error reporting var
    char log[2048];
-   size_t sizeof_log = sizeof(log);
+//   size_t sizeof_log = sizeof(log);
 
    //program group descriptions
    OptixProgramGroupOptions program_group_options = {};
@@ -571,6 +715,9 @@ void OptixRayTrace::createProgramGroups(){
    raygen_prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_RAYGEN;
    raygen_prog_group_desc.raygen.module = state.ptx_module;
    raygen_prog_group_desc.raygen.entryFunctionName = "__raygen__from_cell";
+
+
+   size_t sizeof_log = sizeof(log);
 
    OPTIX_CHECK(optixProgramGroupCreate(state.context,
                                        &raygen_prog_group_desc,
@@ -586,6 +733,8 @@ void OptixRayTrace::createProgramGroups(){
    miss_prog_group_desc.miss.module = state.ptx_module;
    miss_prog_group_desc.miss.entryFunctionName = "__miss__miss";
 
+   sizeof_log = sizeof(log);
+
    OPTIX_CHECK(optixProgramGroupCreate(state.context,
                                        &miss_prog_group_desc,
                                        1,
@@ -599,6 +748,9 @@ void OptixRayTrace::createProgramGroups(){
    hit_prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
    hit_prog_group_desc.hitgroup.moduleCH = state.ptx_module;
    hit_prog_group_desc.hitgroup.entryFunctionNameCH = "__closesthit__mixlength";
+
+   sizeof_log = sizeof(log);
+
    OPTIX_CHECK(optixProgramGroupCreate(state.context,
                                        &hit_prog_group_desc,
                                        1,
@@ -614,7 +766,7 @@ void OptixRayTrace::createProgramGroups(){
 void OptixRayTrace::createPipeline(){
    //OptiX error reporting var
    char log[2048];
-   size_t sizeof_log = sizeof(log);
+   //size_t sizeof_log = sizeof(log);
 
    OptixProgramGroup program_groups[3] = {
       state.raygen_prog_group,
@@ -626,6 +778,8 @@ void OptixRayTrace::createPipeline(){
    pipeline_link_options.maxTraceDepth = 1;
    pipeline_link_options.debugLevel = OPTIX_COMPILE_DEBUG_LEVEL_FULL;
    pipeline_link_options.overrideUsesMotionBlur = false;
+
+   size_t sizeof_log = sizeof(log);
 
    OPTIX_CHECK(optixPipelineCreate(state.context,
                                    &state.pipeline_compile_options,
@@ -742,7 +896,7 @@ void OptixRayTrace::launch(){
                );
 
 
-   CUDA_SYNC_CHECK();
+   CUDA_SYNC_CHECK();  //this line is necessary!!
 
    std::cout<<"\033[1;31m launch() done \033[0m"<<std::endl;
 }

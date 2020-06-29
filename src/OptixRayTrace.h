@@ -249,7 +249,8 @@ struct RayTracingState{
    int num_cells;         //number of air cells 
 
 
-   float nx, ny, nz;  //dim var passed in as params to mixLength
+   int nx, ny, nz;  //dim var passed in as params to mixLength
+   float dx, dy, dz; 
 };
 
 
@@ -258,6 +259,9 @@ class OptixRayTrace{
 
    OptixRayTrace(std::vector<Triangle*> tris);
    void buildAS(std::vector<Triangle*> tris);
+
+   void buildAS(); //test version 
+   
    void calculateMixingLength(int numSamples, int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag, std::vector<double> &mixingLengths);
    
   private:
