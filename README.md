@@ -64,9 +64,42 @@ make
 
 ## Instructions for CHPC Cluster
 
-Our code does run on the CHPC cluster.  We mostly have tested with notchpeak nodes.
+Our code does run on the CHPC cluster. You need to make sure the
+correct set of modules are loaded.  Currently, we have tested two
+configurations: one that uses CUDA 8.0 and GCC 5.4 and another that
+uses CUDA 10.1 and GCC 8.1.0.
 
-After logging into your CHPC account, you will need to load specific modules. The following module commands will take care of these requirements:
+After logging into your CHPC account, you will need to load specific
+modules. The following module commands will take care of these
+requirements:
+
+### CUDA 10.1 Based Builds
+
+```
+module load cuda/10.1
+module load gcc/8.1.0
+module load cmake/3.11.2 
+module load gdal/2.4.0
+module load boost/1.69.0
+ml netcdf-cxx
+```
+
+After completing the above module loads, the following modules are reported from `module list`:
+
+```
+Currently Loaded Modules:
+  1) chpc/1.0     (S)   3) gdal/2.4.0        5) netcdf-c/4.4.1     7) cuda/10.1 (g)   9) boost/1.69.0
+  2) cmake/3.11.2       4) hdf5/1.8.17 (H)   6) netcdf-cxx/4.3.0   8) gcc/8.1.0
+```
+
+To construct the Makefiles, you can run cmake in this way from your build directory.  For example, 
+```
+mkdir build
+cd build
+cmake -DCUDA_TOOLKIT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/10.1.168 -DCUDA_SDK_ROOT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/10.1.168 -DCMAKE_PREFIX_PATH=/uufs/chpc.utah.edu/sys/installdir/gdal/2.1.3-c7 -DNETCDF_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-c/4.4.1-c7/include -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include ..
+```
+
+### CUDA 8.0
 
 ```
 module load cuda/8.0
@@ -82,9 +115,6 @@ module list
 
 Currently Loaded Modules:
   1) chpc/1.0   2) cuda/8.0 (g)   3) gcc/5.4.0   4) cmake/3.11.2   5) gdal/2.3.1   6) hdf5/1.8.17   7) netcdf-c/4.4.1   8) netcdf-cxx/4.3.0
-
-  Where:
-   g:  built for GPU
 ```
 
 ```
