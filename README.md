@@ -121,16 +121,19 @@ Currently Loaded Modules:
 cmake -DCUDA_TOOLKIT_DIR=/usr/local/cuda-8.0 -DCUDA_SDK_ROOT_DIR=/usr/local/cuda-8.0 -DCMAKE_PREFIX_PATH=/uufs/chpc.utah.edu/sys/installdir/gdal/2.1.3-c7 -DNETCDF_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-c/4.4.1-c7/include -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include ..
 ```
 
-Then, compile the code
+## Compiling the Code and Running on CHPC
+
+After you've created the Makefiles with the cmake commands above, the code can be compiled on CHPC:
 
 ```
 make
 ```
 
-Note you *may* need to type make a second time due to a build bug.
+Note you *may* need to type make a second time due to a build bug, especially on the CUDA 8.0 build.
 
-Then, to run the cudaUrb executable on notchpeak, create the following script as file GaussianHill_gpu.slurm
+To run QES Winds, you can take the following slurm template and run on CHPC.  We'd suggest placing it in a ```run``` folder at the same level as your build folder.
 
+### slurm Template (for CUDA 10.1 build)
 ```
 #!/bin/bash
 #SBATCH --account=efd-np
@@ -142,20 +145,22 @@ Then, to run the cudaUrb executable on notchpeak, create the following script as
 #SBATCH --time=01:00:00
 #SBATCH -e init_error.log
 #SBATCH -o init_out.log
-module load gcc/5.4.0
+module load gcc/8.1.0
 ulimit -c unlimited -s
-./cudaUrb/cudaUrb -q ../data/QU_Files/GaussianHill.xml -s 2 -o gaussianHill.nc
+./cudaUrb/cudaUrb -q ../data/QU_Files/GaussianHill.xml -s 2 -w -o gaussianHill
 ```
 
-You can then run the script on the nodes:
+Note that if you build with a different GCC, you will need to change the module load to use gcc/5.4.0. With the slurm file in the run folder, You can then run the script on the nodes.  For example, assuming you were in the build folder:
+
 ```
+cd ..
+cd run
 sbatch rGaussianHill_gpu.slurm
 ```
 
 ## Tips and Tricks
 
 In case things don't go as planned with these instructions, here are some tips for correcting some build or run issues:
-
 
 ## Building the Documentation via Doxygen
 
