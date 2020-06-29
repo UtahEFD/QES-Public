@@ -67,7 +67,8 @@ make
 Our code does run on the CHPC cluster. You need to make sure the
 correct set of modules are loaded.  Currently, we have tested two
 configurations: one that uses CUDA 8.0 and GCC 5.4 and another that
-uses CUDA 10.1 and GCC 8.1.0.
+uses CUDA 10.1 and GCC 8.1.0.  Builds based on CUDA 10.1 are preferred
+if you don't know which to use.
 
 After logging into your CHPC account, you will need to load specific
 modules. The following module commands will take care of these
@@ -128,10 +129,9 @@ After you've created the Makefiles with the cmake commands above, the code can b
 ```
 make
 ```
-
 Note you *may* need to type make a second time due to a build bug, especially on the CUDA 8.0 build.
 
-To run QES Winds, you can take the following slurm template and run on CHPC.  We'd suggest placing it in a ```run``` folder at the same level as your build folder.
+To run QES Winds, you can take the following slurm template and run on CHPC.  We'd suggest placing it in a ```run``` folder at the same level as your build folder.  Make sure you change the various sbatch parameters as needed for your access to CHPC.
 
 ### slurm Template (for CUDA 10.1 build)
 ```
@@ -150,13 +150,17 @@ ulimit -c unlimited -s
 ./cudaUrb/cudaUrb -q ../data/QU_Files/GaussianHill.xml -s 2 -w -o gaussianHill
 ```
 
-Note that if you build with a different GCC, you will need to change the module load to use gcc/5.4.0. With the slurm file in the run folder, You can then run the script on the nodes.  For example, assuming you were in the build folder:
+Note that if you build with a different GCC (i.e. 5.4.0), you will need to change the module load to use that version of GCC. Once the slurm file has been placed in the run folder, you can then send out the job.  For example, assuming you are in the build folder and just built the code and we saved the slurm template above as a file rGaussianHill_gpu.slurm:
 
 ```
-cd ..
-cd run
+make clean
+make
+cd ../run
 sbatch rGaussianHill_gpu.slurm
 ```
+
+This will create the various NetCDF output files in the run folder, along with any output in the init_error.log and init_out.log files.
+
 
 ## Tips and Tricks
 
