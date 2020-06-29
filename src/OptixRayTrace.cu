@@ -72,7 +72,7 @@ extern "C" __global__ void __raygen__from_cell(){
 
       float temp_t;
       temp_t = int_as_float(t);
-      //printf("In .cu, t = %f, %i\n", temp_t, t);
+      printf("In .cu, t = %f, %i\n", temp_t, t);
 
       //Hit hit;
       //hit.t = int_as_float(t);

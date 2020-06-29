@@ -821,6 +821,7 @@ void OptixRayTrace::createSBT(){
    const size_t miss_record_size = sizeof(MissRecord);
 
    MissRecord sbt_miss;
+   sbt_miss.data.missNum = 4.0; //test value
 
    OPTIX_CHECK(optixSbtRecordPackHeader(state.miss_prog_group, &sbt_miss));
 
@@ -836,19 +837,33 @@ void OptixRayTrace::createSBT(){
    std::cout<<"In createSBT(), miss record created"<<std::endl;
 
 //hit
+
    CUdeviceptr d_hit_record = 0;
    const size_t hit_record_size = sizeof(HitGroupRecord);
 
+   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_hit_record), hit_record_size));
 
-   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_hit_record), hit_record_size*RAY_TYPE_COUNT));
-
-   HitGroupRecord hit_records[RAY_TYPE_COUNT];
-
+   HitGroupRecord sbt_hit;
+   OPTIX_CHECK(optixSbtRecordPackHeader(state.hit_prog_group, &sbt_hit));
    CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(d_hit_record),
-                         hit_records,
-                         hit_record_size*RAY_TYPE_COUNT,
-                         cudaMemcpyHostToDevice)
-              );
+                         &sbt_hit,
+                         hit_record_size,
+                         cudaMemcpyHostToDevice
+                         ));
+
+
+/*CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_hit_record), hit_record_size*RAY_TYPE_COUNT));
+
+  HitGroupRecord hit_records[RAY_TYPE_COUNT];
+
+  CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(d_hit_record),
+  hit_records,
+  hit_record_size*RAY_TYPE_COUNT,
+  cudaMemcpyHostToDevice)
+  );
+
+
+*/
 
    std::cout<<"In createSBT(), hit record created"<<std::endl;
 
@@ -856,12 +871,15 @@ void OptixRayTrace::createSBT(){
    state.sbt.raygenRecord = d_raygen_record;
 
    state.sbt.missRecordBase = d_miss_record;
-   state.sbt.missRecordStrideInBytes = static_cast<uint32_t>(miss_record_size);
+//state.sbt.missRecordStrideInBytes = static_cast<uint32_t>(miss_record_size);
+   state.sbt.missRecordStrideInBytes = sizeof(MissRecord);
    state.sbt.missRecordCount = 1;
 
    state.sbt.hitgroupRecordBase = d_hit_record;
-   state.sbt.hitgroupRecordStrideInBytes = static_cast<uint32_t>(hit_record_size);
-   state.sbt.hitgroupRecordCount = RAY_TYPE_COUNT;
+//state.sbt.hitgroupRecordStrideInBytes =  static_cast<uint32_t>(hit_record_size);
+   state.sbt.hitgroupRecordStrideInBytes = sizeof(HitGroupRecord);
+//   state.sbt.hitgroupRecordCount = RAY_TYPE_COUNT;
+   state.sbt.hitgroupRecordCount = 1;
 
    std::cout<<"In createSBT(), state records updated"<<std::endl;
 

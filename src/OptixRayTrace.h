@@ -195,23 +195,16 @@ struct Params{
 };
 
 struct RayGenData{
-   //Vertex origin;
-   //Vertex dir;
-   float3 origin;
-   float3 dir;
-   float tmin = 0.0;
-   float tmax;
-//float dx, dy, dz; //change to Vertex type?
-
-   
+   //no raygen data needed
 };
 
 struct MissData{
-   float largeNum; //should set value to large number 
+   float missNum; //large value
 };
-
+   
 struct HitGroupData{
-   float t; //mixlength 
+   //float t; //mixlength
+   //no hit data needed
 };
 
 
