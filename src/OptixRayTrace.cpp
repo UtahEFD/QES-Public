@@ -495,7 +495,7 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
    //copy data from std::vector icellflag to device-side memory
    CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(state.icellflagArray_d),
                          reinterpret_cast<void*>(tempArray),
-                         icellflag.size(),
+                         icellflag.size()*sizeof(int),
                          cudaMemcpyHostToDevice));
 
    std::cout<<"finished copying icell host to device"<<std::endl;
@@ -827,7 +827,7 @@ void OptixRayTrace::createSBT(){
    const size_t miss_record_size = sizeof(MissRecord);
 
    MissRecord sbt_miss;
-   sbt_miss.data.missNum = 4.0; //test value
+   sbt_miss.data.missNum = std::numeric_limits<float>::max(); //test value
 
    OPTIX_CHECK(optixSbtRecordPackHeader(state.miss_prog_group, &sbt_miss));
 
@@ -907,6 +907,9 @@ void OptixRayTrace::launch(){
    state.params.hits = (Hit *) state.d_hits.d_ptr;
 
    state.paramsBuffer.upload(&state.params, 1);
+
+   std::cout<<"nx, ny, nz: "<<state.nx<<", "<<state.ny<<", "<<state.nz<<std::endl;
+
 
    OPTIX_CHECK(optixLaunch(state.pipeline,
                            state.stream,

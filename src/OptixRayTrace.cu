@@ -89,10 +89,15 @@ extern "C" __global__ void __raygen__from_cell(){
 extern "C" __global__ void __miss__miss(){
 //   printf("In .cu, miss\n");
 
-//   optixSetPayload_0(float_as_int(FLT_MAX)); //need to set to a large number 
 
 
-    optixSetPayload_0(float_as_int(5)); //test value 
+   optixSetPayload_0(float_as_int(FLT_MAX)); //need to set to a large number 
+
+
+//MissData* m_data = reinterpret_cast<MissData *>(optixGetSbtDataPointer());
+//optixSetPayload_0(m_data->missNum); //need to set to a large number 
+
+    //optixSetPayload_0(float_as_int(5)); //test value 
 
 }
 
