@@ -376,6 +376,9 @@ void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::vector
 void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag, std::vector<double> &mixingLengths){
    state.samples_per_cell = numSamples;
 
+   state.params.numSamples = numSamples;
+
+
    state.nx = dimX;
    state.ny = dimY;
    state.nz = dimZ;
@@ -441,12 +444,12 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
    for(int i = 0; i < icellflag.size(); i++){
 
       // std::cout << "ml: " << state.params.hits[i].t << std::endl;
-      std::cout << "ml2: " << hitList[i].t << std::endl;
+      //std::cout << "ml2: " << hitList[i].t << std::endl;
 
       mixingLengths[i] = hitList[i].t;
 
       if(hitList[0].t != 0){
-         std::cout<<"In mixlength, hit at index "<<i<<" = "<<hitList[i].t<<std::endl;
+         // std::cout<<"In mixlength, hit at index "<<i<<" = "<<hitList[i].t<<std::endl;
       }
    }
    /*for(int i = 0; i < state.num_cells; i++){

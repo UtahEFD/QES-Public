@@ -12,11 +12,37 @@
 #include <vector>
 #include <time.h>
 
+
+#include <curand.h>
+#include <curand_kernel.h>
+
 #include "OptixRayTrace.h"
 
 extern "C" {
 __constant__ Params params; //should match var name in initPipeline
 }
+
+
+__forceinline__ __device__ float random(unsigned int seed){
+       curandState_t state;
+       curand_init(seed, 0, 0, &state);
+       //return curand_uniform(&state);
+       return curand_normal(&state);
+}
+
+__forceinline__ __device__ float3 randDir(){
+   float x, y, z;
+
+   unsigned int seed = clock();
+   x = random(seed);
+   seed = clock()*100 + seed;
+   y = random(seed);
+   seed = clock()*50;
+   z = random(seed);
+
+   return make_float3(x,y,z);
+}
+
 
 extern "C" __global__ void __raygen__from_cell(){
 //printf("In .cu, enters raygen\n");
@@ -27,10 +53,18 @@ extern "C" __global__ void __raygen__from_cell(){
   const uint32_t linear_idx = idx.x + idx.y*(dim.x-1) + idx.z*(dim.y-1)*(dim.x-1);
 
 
+//printf("num samples in .cu = %i", params.numSamples);
+
 
   uint32_t t;
-  //float t;
 
+
+/*
+for(int i = 0; i < params.numSamples; i++){
+        float3 dir = randDir();
+        printf("Random dir in .cu = <%f,%f,%f>\n",dir.x, dir.y, dir.z );
+}
+*/
 
 
  // params.flag = 40; //test to see if device-> host is updated
@@ -39,15 +73,21 @@ extern "C" __global__ void __raygen__from_cell(){
 
   if(params.icellflagArray[linear_idx] == 1){
 
+   float temp = FLT_MAX; //starting point
+   
+   
+ float3 origin = make_float3((idx.x+0.5)*params.dx, (idx.y+0.5)*params.dy, (idx.z+0.5)*params.dz);
+float3 dir;
+
+   for(int i = 0; i < params.numSamples; i++){
+
 //printf("In .cu, it enters if conditional. In other words, it is an air cell.\n");
 
      //printf("params.dx = %f, params.dy = %f, params.dz = %f\n", params.dx, params.dy, params.dz);
 
-    float3 origin = make_float3((idx.x+0.5)*params.dx, (idx.y+0.5)*params.dy, (idx.z+0.5)*params.dz);
-
-     //float3 origin = make_float3(100,100,100); //default
+   
      
-     float3 dir = make_float3(0.0,0.0,-1.0);
+     dir = randDir();
 
      
 
@@ -69,13 +109,22 @@ extern "C" __global__ void __raygen__from_cell(){
                );
 
 
-      float temp_t;
-      temp_t = int_as_float(t);
+if(int_as_float(t) < temp){
+//printf("t = %f vs. temp = %f\n", int_as_float(t), temp );
+temp = int_as_float(t);
+}
+
+
+} //end of for loop
+
+ //     float temp_t;
+   //   temp_t = int_as_float(t);
       // printf("In .cu, t = %f, %i\n", temp_t, t);
 
       Hit hit;
-      hit.t = int_as_float(t);
-      //hit.t = t;
+      //hit.t = int_as_float(t);
+hit.t = temp;
+//hit.t = t;
       
       //printf("In .cu, t = %d\n", hit.t);
       // printf("In .cu, t = %i, hit.t = %f\n", t, hit.t);

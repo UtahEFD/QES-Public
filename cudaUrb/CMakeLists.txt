@@ -8,6 +8,7 @@ CUDA_ADD_EXECUTABLE( cudaUrb
   cudaUrbMain.cpp
   )
 
+target_link_libraries(cudaUrb curand)
 target_link_libraries(cudaUrb cudaurbcore)
 target_link_libraries(cudaUrb cudaurbutil)
 target_link_libraries(cudaUrb optix_lib)

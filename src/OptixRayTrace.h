@@ -192,6 +192,8 @@ struct Params{
    int* icellflagArray; //change to this later
    float dx, dy, dz; 
 
+
+   int numSamples;
 };
 
 struct RayGenData{
