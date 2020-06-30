@@ -87,7 +87,7 @@ extern "C" __global__ void __raygen__from_cell(){
 } //end of raygen function
 
 extern "C" __global__ void __miss__miss(){
-   printf("In .cu, miss\n");
+//   printf("In .cu, miss\n");
 
 //   optixSetPayload_0(float_as_int(FLT_MAX)); //need to set to a large number 
 

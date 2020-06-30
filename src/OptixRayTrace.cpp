@@ -9,7 +9,7 @@ OptixRayTrace::OptixRayTrace(std::vector<Triangle*> tris){
 
    createContext();
 
-//   buildAS(tris);
+   buildAS(tris);
 
 }
 
@@ -92,27 +92,161 @@ size_t OptixRayTrace::roundUp(size_t x, size_t y){
 }
 
 
-/*
-  void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
 
-  std::cout<<"Enters buildAS"<<std::endl;
+void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
+
+   std::cout<<"Enters buildAS"<<std::endl;
 
 
-  OptixAccelBuildOptions accel_options = {};
-  accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
-  accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
+   OptixAccelBuildOptions accel_options = {};
+   accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
+   accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
 
 //need to translate tris --> to a vector array of measurable size type
-std::vector<Vertex> trisArray(tris.size()*3);  //each triangle 3 Vertex-es
-convertVecMeshType(tris, trisArray);
+   std::vector<Vertex> trisArray(tris.size()*3);  //each triangle 3 Vertex-es
+   convertVecMeshType(tris, trisArray);
 
-std::cout<<"tris.size() = "<<tris.size()<<std::endl;
-
-
+   std::cout<<"tris.size() = "<<tris.size()<<std::endl;
 
 
 
-const size_t tris_size = sizeof(Vertex)*trisArray.size();
+
+
+   const size_t tris_size = sizeof(Vertex)*trisArray.size();
+   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&state.d_tris), tris_size));
+
+   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(state.d_tris),
+                         trisArray.data(),
+                         tris_size,
+                         cudaMemcpyHostToDevice)
+              );
+
+
+
+   std::cout<<"In buildAS, finishes memory allocation for list of triangles"<<std::endl;
+
+
+   const uint32_t triangle_input_flags[1] ={OPTIX_GEOMETRY_FLAG_NONE};
+//could add flag to disable anyhit (above)
+
+   OptixBuildInput triangle_input  = {};
+   triangle_input.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
+   triangle_input.triangleArray.vertexBuffers = &state.d_tris;
+   triangle_input.triangleArray.numVertices = static_cast<uint32_t>(trisArray.size());
+   triangle_input.triangleArray.vertexFormat = OPTIX_VERTEX_FORMAT_FLOAT3;
+//triangle_input.triangleArray.vertexStrideInBytes = sizeof(Vertex);
+   triangle_input.triangleArray.vertexStrideInBytes = sizeof(float3);
+   triangle_input.triangleArray.flags = triangle_input_flags;
+   triangle_input.triangleArray.numSbtRecords = 1;
+
+
+   std::cout<<"In buildAS, finishes init options for triangle_input"<<std::endl;
+
+
+
+
+   OptixAccelBufferSizes gas_buffer_sizes;
+   OPTIX_CHECK(optixAccelComputeMemoryUsage(state.context,
+                                            &accel_options,
+                                            &triangle_input,
+                                            1,
+                                            &gas_buffer_sizes)
+               );
+
+   CUdeviceptr d_temp_buffer_gas;
+   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_temp_buffer_gas),
+                         gas_buffer_sizes.tempSizeInBytes)
+              );
+
+   CUdeviceptr d_buffer_temp_output_gas_and_compacted_size;
+   size_t compactedSizeOffset = roundUp(gas_buffer_sizes.outputSizeInBytes, 8ull);
+   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_buffer_temp_output_gas_and_compacted_size),
+                         compactedSizeOffset+8)
+              );
+
+   OptixAccelEmitDesc emit_property= {};
+   emit_property.type = OPTIX_PROPERTY_TYPE_COMPACTED_SIZE;
+   emit_property.result =
+      (CUdeviceptr)((char*)d_buffer_temp_output_gas_and_compacted_size
+                    + compactedSizeOffset);
+
+   OPTIX_CHECK(optixAccelBuild(state.context,
+                               0,
+                               &accel_options,
+                               &triangle_input,
+                               1,
+                               d_temp_buffer_gas,
+                               gas_buffer_sizes.tempSizeInBytes,
+                               d_buffer_temp_output_gas_and_compacted_size,
+                               gas_buffer_sizes.outputSizeInBytes,
+                               &state.gas_handle,
+                               &emit_property,
+                               1)
+               );
+
+   CUDA_SYNC_CHECK(); //need?
+
+   CUDA_CHECK(cudaFree((void*)d_temp_buffer_gas));
+   CUDA_CHECK(cudaFree((void*)state.d_tris));
+
+   size_t compacted_gas_size;
+   CUDA_CHECK(cudaMemcpy(&compacted_gas_size,
+                         (void*)emit_property.result, sizeof(size_t), cudaMemcpyDeviceToHost)
+              );
+
+   if(compacted_gas_size < gas_buffer_sizes.outputSizeInBytes){
+      CUDA_CHECK(cudaMalloc(reinterpret_cast<void**> (&state.d_gas_output_buffer),
+                            compacted_gas_size)
+                 );
+
+      OPTIX_CHECK(optixAccelCompact(state.context,
+                                    0,
+                                    state.gas_handle,
+                                    state.d_gas_output_buffer,
+                                    compacted_gas_size,
+                                    &state.gas_handle)
+                  );
+      CUDA_SYNC_CHECK(); //need?
+
+      CUDA_CHECK(cudaFree((void*)d_buffer_temp_output_gas_and_compacted_size));
+   }else{
+      state.d_gas_output_buffer = d_buffer_temp_output_gas_and_compacted_size;
+   }
+
+   std::cout<<"\033[1;31m buildAS() done \033[0m"<<std::endl;
+}
+
+
+/*
+
+
+
+//defult bottom tri version
+void OptixRayTrace::buildAS(){
+
+std::cout<<"Enters buildAS"<<std::endl;
+
+
+OptixAccelBuildOptions accel_options = {};
+accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
+accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
+
+const std::array<float3, 6> trisArray = {
+{
+{0,0,0},
+{state.nx*state.dx, 0, 0},
+{state.nx*state.dx, state.ny*state.dy, 0},
+
+{0,0,0},
+{state.nx*state.dx, state.ny*state.dy, 0},
+{0, state.ny*state.dy, 0}
+}
+};
+
+
+
+
+const size_t tris_size = sizeof(float3)*trisArray.size();
 CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&state.d_tris), tris_size));
 
 CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(state.d_tris),
@@ -216,138 +350,6 @@ state.d_gas_output_buffer = d_buffer_temp_output_gas_and_compacted_size;
 std::cout<<"\033[1;31m buildAS() done \033[0m"<<std::endl;
 }
 */
-
-
-
- //defult bottom tri version
-void OptixRayTrace::buildAS(){
-
-   std::cout<<"Enters buildAS"<<std::endl;
-
-
-   OptixAccelBuildOptions accel_options = {};
-   accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
-   accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
-
-   const std::array<float3, 6> trisArray = {
-      {
-         {0,0,0},
-         {state.nx*state.dx, 0, 0},
-         {state.nx*state.dx, state.ny*state.dy, 0},
-
-         {0,0,0},
-         {state.nx*state.dx, state.ny*state.dy, 0},
-         {0, state.ny*state.dy, 0}
-      }
-   };
-
-
-
-
-   const size_t tris_size = sizeof(float3)*trisArray.size();
-   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&state.d_tris), tris_size));
-
-   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(state.d_tris),
-                         trisArray.data(),
-                         tris_size,
-                         cudaMemcpyHostToDevice)
-              );
-
-
-
-   std::cout<<"In buildAS, finishes memory allocation for list of triangles"<<std::endl;
-
-
-   const uint32_t triangle_input_flags[1] ={OPTIX_GEOMETRY_FLAG_NONE};
-//could add flag to disable anyhit (above)
-
-   OptixBuildInput triangle_input  = {};
-   triangle_input.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
-   triangle_input.triangleArray.vertexBuffers = &state.d_tris;
-   triangle_input.triangleArray.numVertices = static_cast<uint32_t>(trisArray.size());
-   triangle_input.triangleArray.vertexFormat = OPTIX_VERTEX_FORMAT_FLOAT3;
-   //triangle_input.triangleArray.vertexStrideInBytes = sizeof(Vertex);
-   triangle_input.triangleArray.vertexStrideInBytes = sizeof(float3);
-   triangle_input.triangleArray.flags = triangle_input_flags;
-   triangle_input.triangleArray.numSbtRecords = 1;
-
-
-   std::cout<<"In buildAS, finishes init options for triangle_input"<<std::endl;
-
-
-
-
-   OptixAccelBufferSizes gas_buffer_sizes;
-   OPTIX_CHECK(optixAccelComputeMemoryUsage(state.context,
-                                            &accel_options,
-                                            &triangle_input,
-                                            1,
-                                            &gas_buffer_sizes)
-               );
-
-   CUdeviceptr d_temp_buffer_gas;
-   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_temp_buffer_gas),
-                         gas_buffer_sizes.tempSizeInBytes)
-              );
-
-   CUdeviceptr d_buffer_temp_output_gas_and_compacted_size;
-   size_t compactedSizeOffset = roundUp(gas_buffer_sizes.outputSizeInBytes, 8ull);
-   CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&d_buffer_temp_output_gas_and_compacted_size),
-                         compactedSizeOffset+8)
-              );
-
-   OptixAccelEmitDesc emit_property= {};
-   emit_property.type = OPTIX_PROPERTY_TYPE_COMPACTED_SIZE;
-   emit_property.result =
-      (CUdeviceptr)((char*)d_buffer_temp_output_gas_and_compacted_size
-                    + compactedSizeOffset);
-
-   OPTIX_CHECK(optixAccelBuild(state.context,
-                               0,
-                               &accel_options,
-                               &triangle_input,
-                               1,
-                               d_temp_buffer_gas,
-                               gas_buffer_sizes.tempSizeInBytes,
-                               d_buffer_temp_output_gas_and_compacted_size,
-                               gas_buffer_sizes.outputSizeInBytes,
-                               &state.gas_handle,
-                               &emit_property,
-                               1)
-               );
-
-   CUDA_SYNC_CHECK(); //need?
-
-   CUDA_CHECK(cudaFree((void*)d_temp_buffer_gas));
-   CUDA_CHECK(cudaFree((void*)state.d_tris));
-
-   size_t compacted_gas_size;
-   CUDA_CHECK(cudaMemcpy(&compacted_gas_size,
-                         (void*)emit_property.result, sizeof(size_t), cudaMemcpyDeviceToHost)
-              );
-
-   if(compacted_gas_size < gas_buffer_sizes.outputSizeInBytes){
-      CUDA_CHECK(cudaMalloc(reinterpret_cast<void**> (&state.d_gas_output_buffer),
-                            compacted_gas_size)
-                 );
-
-      OPTIX_CHECK(optixAccelCompact(state.context,
-                                    0,
-                                    state.gas_handle,
-                                    state.d_gas_output_buffer,
-                                    compacted_gas_size,
-                                    &state.gas_handle)
-                  );
-      CUDA_SYNC_CHECK(); //need?
-
-      CUDA_CHECK(cudaFree((void*)d_buffer_temp_output_gas_and_compacted_size));
-   }else{
-      state.d_gas_output_buffer = d_buffer_temp_output_gas_and_compacted_size;
-   }
-
-   std::cout<<"\033[1;31m buildAS() done \033[0m"<<std::endl;
-}
-
 void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::vector<Vertex> &trisArray){
 //void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::array<Vertex, num_tri*3> &trisArray){
 
@@ -383,7 +385,7 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
    state.dz = dz;
 
 
-   buildAS();
+   // buildAS();
 
 
 
@@ -438,11 +440,11 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 //   for(int i = 0; i < state.num_cells; i++){
    for(int i = 0; i < icellflag.size(); i++){
 
-       // std::cout << "ml: " << state.params.hits[i].t << std::endl;
-       // std::cout << "ml2: " << hitList[i].t << std::endl;
-       
-       mixingLengths[i] = hitList[i].t;
-       
+      // std::cout << "ml: " << state.params.hits[i].t << std::endl;
+      std::cout << "ml2: " << hitList[i].t << std::endl;
+
+      mixingLengths[i] = hitList[i].t;
+
       if(hitList[0].t != 0){
          std::cout<<"In mixlength, hit at index "<<i<<" = "<<hitList[i].t<<std::endl;
       }
