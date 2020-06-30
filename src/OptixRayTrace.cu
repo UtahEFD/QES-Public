@@ -45,7 +45,6 @@ extern "C" __global__ void __raygen__from_cell(){
 
     float3 origin = make_float3((idx.x+0.5)*params.dx, (idx.y+0.5)*params.dy, (idx.z+0.5)*params.dz);
 
-
      //float3 origin = make_float3(100,100,100); //default
      
      float3 dir = make_float3(0.0,0.0,-1.0);
@@ -72,20 +71,18 @@ extern "C" __global__ void __raygen__from_cell(){
 
       float temp_t;
       temp_t = int_as_float(t);
-      printf("In .cu, t = %f, %i\n", temp_t, t);
+      // printf("In .cu, t = %f, %i\n", temp_t, t);
 
-      //Hit hit;
-      //hit.t = int_as_float(t);
+      Hit hit;
+      hit.t = int_as_float(t);
       //hit.t = t;
       
       //printf("In .cu, t = %d\n", hit.t);
-      //printf("In .cu, t = %i, hit.t = %f\n", t, hit.t);
-      //params.hits[linear_idx] = hit;
+      // printf("In .cu, t = %i, hit.t = %f\n", t, hit.t);
+      params.hits[linear_idx] = hit;
 
       
   } //end of if for icell
-
-
 
 } //end of raygen function
 
@@ -100,17 +97,14 @@ extern "C" __global__ void __miss__miss(){
 }
 
 extern "C" __global__ void __closesthit__mixlength(){
-  printf("In .cu, closet hit called \n");
-
 
   //HitGroupData *rt_data = (HitGroupData *)optixGetSbtDataPointer();
   const uint32_t t = optixGetRayTmax();
 
-
-
+  // printf("In .cu, closet hit called %d\n", t);
   //optixSetPayload_0(float_as_int(t));
 
-  optixSetPayload_0(float_as_int(10));  //test value
+  optixSetPayload_0(float_as_int(t));  //test value
 
 }
 

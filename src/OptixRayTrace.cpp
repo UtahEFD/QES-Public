@@ -419,6 +419,8 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 
    std::cout<<"In mix length after launch, params.flag (should be 40) = "<<state.params.flag<<std::endl;
 
+   std::vector<Hit> hitList(icellflag.size());
+   state.d_hits.download( hitList.data(), icellflag.size() );
 
    std::cout<<"In calculateMixingLength, launch() done"<<std::endl;
    //std::cout<<"Params count = "<<state.params.count<<std::endl;
@@ -426,8 +428,6 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
    //Hits should be init
    std::cout<<"\033[1;35m Hits output print if t != 0 \033[0m"<<std::endl;
 
-   //std::vector<Hit> hitList(icellflag.size());
-   Hit *hitList = (Hit *) malloc(icellflag.size() * sizeof(Hit));
    //state.d_hits.download(hitList,icellflag.size());
 //   state.d_hits.download(hitList.data(), icellflag.size());
 
@@ -438,7 +438,11 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 //   for(int i = 0; i < state.num_cells; i++){
    for(int i = 0; i < icellflag.size(); i++){
 
-      //mixingLengths.push_back(state.params.hits[i].t);
+       // std::cout << "ml: " << state.params.hits[i].t << std::endl;
+       // std::cout << "ml2: " << hitList[i].t << std::endl;
+       
+       mixingLengths[i] = hitList[i].t;
+       
       if(hitList[0].t != 0){
          std::cout<<"In mixlength, hit at index "<<i<<" = "<<hitList[i].t<<std::endl;
       }
