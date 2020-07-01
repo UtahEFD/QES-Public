@@ -114,8 +114,8 @@ struct CUDABuffer {
    template<typename T>
    void upload(const T *t, size_t count)
    {
-      std::cout<<"sizeInBytes in upload = "<<sizeInBytes<<std::endl;
-      std::cout<<"size of T ( "<<typeid(T).name()<<" ) in upload = "<<sizeof(T)<<std::endl;
+      //std::cout<<"sizeInBytes in upload = "<<sizeInBytes<<std::endl;
+      //std::cout<<"size of T ( "<<typeid(T).name()<<" ) in upload = "<<sizeof(T)<<std::endl;
       assert(d_ptr != nullptr);
       assert(sizeInBytes == count*sizeof(T));
       CUDA_CHECK(cudaMemcpy(d_ptr, (void *)t,

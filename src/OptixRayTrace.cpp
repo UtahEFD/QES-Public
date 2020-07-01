@@ -3,7 +3,6 @@
 
 
 OptixRayTrace::OptixRayTrace(std::vector<Triangle*> tris){
-//OPTIX_CHECK(optixInit());
 
    initOptix();
 
@@ -28,9 +27,6 @@ static void context_log_cb(unsigned int level, const char* tag,
 //only
 void OptixRayTrace::createContext(){
 
-
-//   CUDA_CHECK(cudaFree(0));
-
    OptixDeviceContext context;
    CUcontext cuCtx = 0; //0 = current context
    OptixDeviceContextOptions  options = {};
@@ -40,8 +36,6 @@ void OptixRayTrace::createContext(){
    OPTIX_CHECK(optixDeviceContextCreate(cuCtx, &options, &context));
 
    state.context = context;
-
-
 }
 
 
@@ -68,9 +62,9 @@ size_t OptixRayTrace::roundUp(size_t x, size_t y){
 
 
 
+/*Non-test version of AS*/
+
 void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
-
-
 
    OptixAccelBuildOptions accel_options = {};
    accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
@@ -187,6 +181,11 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
 
 }
 
+
+
+
+
+/*test version of AS*/
 
 /*
 
@@ -324,10 +323,6 @@ std::cout<<"\033[1;31m buildAS() done \033[0m"<<std::endl;
 
 
 void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::vector<Vertex> &trisArray){
-//void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::array<Vertex, num_tri*3> &trisArray){
-
-
-
    int tempIdx = 0;
    for(int i = 0; i < tris.size(); i++){ //get access to the Triangle at index
 
@@ -359,7 +354,7 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
    state.dz = dz;
 
 
-   // buildAS();
+   // buildAS(); /*for test AS version*/
 
 
 
@@ -391,36 +386,18 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
    state.d_hits.download( hitList.data(), icellflag.size() );
 
 
-   //Hits should be init
-
-   //state.d_hits.download(hitList,icellflag.size());
-//   state.d_hits.download(hitList.data(), icellflag.size());
 
 
 
 
-//   for(int i = 0; i < state.num_cells; i++){
+
    for(int i = 0; i < icellflag.size(); i++){
-
-      // std::cout << "ml: " << state.params.hits[i].t << std::endl;
       //std::cout << "ml2: " << hitList[i].t << std::endl;
-
       mixingLengths[i] = hitList[i].t;
-
-      if(hitList[0].t != 0){
-         // std::cout<<"In mixlength, hit at index "<<i<<" = "<<hitList[i].t<<std::endl;
-      }
    }
-   /*for(int i = 0; i < state.num_cells; i++){
-     mixingLengths.push_back(state.params.hits[i].t);
 
 
-     if(state.params.hits[i].t != 0){
-     std::cout<<"Hit at index "<<i<<" = "<<state.params.hits[i].t<<std::endl;
-     }
-     }*/
-
-   //cleanState();
+   cleanState();
 
 
 }
