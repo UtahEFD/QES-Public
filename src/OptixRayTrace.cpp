@@ -16,7 +16,6 @@ OptixRayTrace::OptixRayTrace(std::vector<Triangle*> tris){
 static void context_log_cb(unsigned int level, const char* tag,
                            const char* message, void* /*cbdata*/){
 
-   std::cout<<"Enters context log call back"<<std::endl;
 
    std::cerr<<"[level, tag, message] = ["
             <<level<<", "<<tag<<", "<<message<<"]"<<"\n";
@@ -29,7 +28,6 @@ static void context_log_cb(unsigned int level, const char* tag,
 //only
 void OptixRayTrace::createContext(){
 
-   std::cout<<"Enters createContext()"<<std::endl;
 
 //   CUDA_CHECK(cudaFree(0));
 
@@ -43,32 +41,12 @@ void OptixRayTrace::createContext(){
 
    state.context = context;
 
-   std::cout<<"\033[1;31m createContext() done \033[0m"<<std::endl;
 
-/*
-  const int deviceID = 0;
-  CUDA_CHECK(cudaSetDevice(deviceID));
-
-  //create the CUDA stream
-  CUDA_CHECK(cudaStreamCreate(&state.stream));
-
-  cudaGetDeviceProperties(&deviceProps, deviceID);
-  std::cout<<"Running on device "<<deviceProps.name<<std::endl;
-
-  CUresult cuRes = cuCtxGetCurrent(&cudaContext);
-  if(cuRes != CUDA_SUCCESS){
-  throw std::runtime_error("error quering current context");
-  }
-
-  OPTIX_CHECK(optixDeviceContextCreate(cudaContext, 0, &state.context));
-  OPTIX_CHECK(optixDeviceContextSetLogCallback(state.context, context_log_cb, nullptr, 4));
-*/
 }
 
 
 
 void OptixRayTrace::initOptix(){
-   std::cout<<"Initializing Optix"<<std::endl;
 
 //check for Optix 7 compatible devices
    CUDA_CHECK(cudaFree(0));
@@ -81,10 +59,7 @@ void OptixRayTrace::initOptix(){
 //init optix
    OPTIX_CHECK(optixInit());
 
-   std::cout<<"\033[1;33m"
-            <<"optix successfully initialized"
-            <<"\033[0m"
-            <<std::endl;
+
 }
 
 size_t OptixRayTrace::roundUp(size_t x, size_t y){
@@ -95,7 +70,6 @@ size_t OptixRayTrace::roundUp(size_t x, size_t y){
 
 void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
 
-   std::cout<<"Enters buildAS"<<std::endl;
 
 
    OptixAccelBuildOptions accel_options = {};
@@ -106,7 +80,6 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
    std::vector<Vertex> trisArray(tris.size()*3);  //each triangle 3 Vertex-es
    convertVecMeshType(tris, trisArray);
 
-   std::cout<<"tris.size() = "<<tris.size()<<std::endl;
 
 
 
@@ -123,7 +96,6 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
 
 
 
-   std::cout<<"In buildAS, finishes memory allocation for list of triangles"<<std::endl;
 
 
    const uint32_t triangle_input_flags[1] ={OPTIX_GEOMETRY_FLAG_NONE};
@@ -140,7 +112,6 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
    triangle_input.triangleArray.numSbtRecords = 1;
 
 
-   std::cout<<"In buildAS, finishes init options for triangle_input"<<std::endl;
 
 
 
@@ -213,7 +184,7 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
       state.d_gas_output_buffer = d_buffer_temp_output_gas_and_compacted_size;
    }
 
-   std::cout<<"\033[1;31m buildAS() done \033[0m"<<std::endl;
+
 }
 
 
@@ -350,10 +321,11 @@ state.d_gas_output_buffer = d_buffer_temp_output_gas_and_compacted_size;
 std::cout<<"\033[1;31m buildAS() done \033[0m"<<std::endl;
 }
 */
+
+
 void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::vector<Vertex> &trisArray){
 //void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::array<Vertex, num_tri*3> &trisArray){
 
-   std::cout<<"\tconverting Triangle mesh to Optix Triangles"<<std::endl;
 
 
    int tempIdx = 0;
@@ -369,7 +341,6 @@ void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::vector
 
    }
 
-   std::cout<<"\033[1;31m converting mesh done \033[0m"<<std::endl;
 }
 
 
@@ -394,21 +365,17 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 
    createModule();
 
-   std::cout<<"In calculateMixingLength, createModule() done"<<std::endl;
 
    createProgramGroups();
 
-   std::cout<<"In calculateMixingLength, createProgramGroups() done"<<std::endl;
 
    createPipeline();
 
-   std::cout<<"In calculateMixingLength, createPipeline() done"<<std::endl;
 
 
    createSBT();
 
 
-   std::cout<<"In calculateMixingLength, createSBT() done"<<std::endl;
 
 
    state.paramsBuffer.alloc(sizeof(state.params));
@@ -416,28 +383,20 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 
    initParams(dimX, dimY, dimZ, dx, dy, dz, icellflag);
 
-   std::cout<<"In calculateMixingLength, initParams() done"<<std::endl;
-
-   std::cout<<"In mix length BEFORE launch, params.flag (should be 3) = "<<state.params.flag<<std::endl;
 
    launch();
 
-   std::cout<<"In mix length after launch, params.flag (should be 40) = "<<state.params.flag<<std::endl;
 
    std::vector<Hit> hitList(icellflag.size());
    state.d_hits.download( hitList.data(), icellflag.size() );
 
-   std::cout<<"In calculateMixingLength, launch() done"<<std::endl;
-   //std::cout<<"Params count = "<<state.params.count<<std::endl;
 
    //Hits should be init
-   std::cout<<"\033[1;35m Hits output print if t != 0 \033[0m"<<std::endl;
 
    //state.d_hits.download(hitList,icellflag.size());
 //   state.d_hits.download(hitList.data(), icellflag.size());
 
 
-   std::cout<<"HitList at 0 = "<<hitList[0].t<<std::endl;
 
 
 //   for(int i = 0; i < state.num_cells; i++){
@@ -463,7 +422,7 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 
    //cleanState();
 
-   std::cout<<"\033[1;31m End of calcMixLength() \033[0m"<<std::endl;
+
 }
 
 
@@ -478,22 +437,18 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
    //acceleration structure handle
    state.params.handle = state.gas_handle;
 
-   std::cout<<"Hits memory allocated and params.handle init"<<std::endl;
 
    //allocate memory to device-side icellflag memory
    CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&state.icellflagArray_d), icellflag.size()*sizeof(int)));
 
-   std::cout<<"Finished allocating memory to icellflag_d"<<std::endl;
 
    //temporary fix: copy std::vector data to int array
-   std::cout<<"icellflag size = "<<icellflag.size()<<std::endl;
 
    int *tempArray = (int*) malloc(icellflag.size()*sizeof(int));
 
    for(int i = 0; i < icellflag.size(); i++){
       tempArray[i] = icellflag[i];
    }
-   std::cout<<"Finished copying std::vector to array"<<std::endl;
 
    //copy data from std::vector icellflag to device-side memory
    CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(state.icellflagArray_d),
@@ -501,19 +456,16 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
                          icellflag.size()*sizeof(int),
                          cudaMemcpyHostToDevice));
 
-   std::cout<<"finished copying icell host to device"<<std::endl;
 
    //assign params icellflag pointer to point to icellflagArray_d
    state.params.icellflagArray = (int *) state.icellflagArray_d;
 
-   std::cout<<"Params icellflag alloc and assignment finished"<<std::endl;
 
    //init params dx, dy, dz
    state.params.dx = dx;
    state.params.dy = dy;
    state.params.dz = dz;
 
-   std::cout<<"In init params, params.dx, dy, and dz are: "<<state.params.dx<<", "<<state.params.dy<<", "<<state.params.dz<<std::endl;
 
    //start of tests
    state.params.flag = 3; //test value
@@ -521,7 +473,7 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
    //end of tests
 
 
-   std::cout<<"\033[1;31m initParams() done \033[0m"<<std::endl;
+
 }
 
 
@@ -708,7 +660,7 @@ void OptixRayTrace::createModule(){
                   &state.ptx_module)
                );
 
-   std::cout<<"\033[1;31m createModule() done \033[0m"<<std::endl;
+
 }
 
 void OptixRayTrace::createProgramGroups(){
@@ -769,7 +721,7 @@ void OptixRayTrace::createProgramGroups(){
                                        &state.hit_prog_group)
                );
 
-   std::cout<<"\033[1;31m createProgramGroups() done \033[0m"<<std::endl;
+
 }
 
 void OptixRayTrace::createPipeline(){
@@ -800,7 +752,7 @@ void OptixRayTrace::createPipeline(){
                                    &state.pipeline)
                );
 
-   std::cout<<"\033[1;31m createPipeline() done \033[0m"<<std::endl;
+
 }
 
 void OptixRayTrace::createSBT(){
@@ -822,7 +774,6 @@ void OptixRayTrace::createSBT(){
               );
 
 
-   std::cout<<"In createSBT(), raygen record created"<<std::endl;
 
    //miss
    CUdeviceptr d_miss_record = 0;
@@ -843,7 +794,6 @@ void OptixRayTrace::createSBT(){
               );
 
 
-   std::cout<<"In createSBT(), miss record created"<<std::endl;
 
 //hit
 
@@ -874,7 +824,6 @@ void OptixRayTrace::createSBT(){
 
 */
 
-   std::cout<<"In createSBT(), hit record created"<<std::endl;
 
 //update state
    state.sbt.raygenRecord = d_raygen_record;
@@ -890,9 +839,6 @@ void OptixRayTrace::createSBT(){
 //   state.sbt.hitgroupRecordCount = RAY_TYPE_COUNT;
    state.sbt.hitgroupRecordCount = 1;
 
-   std::cout<<"In createSBT(), state records updated"<<std::endl;
-
-   std::cout<<"\033[1;31m createSBT() done \033[0m"<<std::endl;
 
 }
 
@@ -911,7 +857,6 @@ void OptixRayTrace::launch(){
 
    state.paramsBuffer.upload(&state.params, 1);
 
-   std::cout<<"nx, ny, nz: "<<state.nx<<", "<<state.ny<<", "<<state.nz<<std::endl;
 
 
    OPTIX_CHECK(optixLaunch(state.pipeline,
@@ -928,7 +873,7 @@ void OptixRayTrace::launch(){
 
    CUDA_SYNC_CHECK();  //this line is necessary!!
 
-   std::cout<<"\033[1;31m launch() done \033[0m"<<std::endl;
+
 }
 
 

@@ -25,9 +25,13 @@ __constant__ Params params; //should match var name in initPipeline
 
 __forceinline__ __device__ float random(unsigned int seed){
        curandState_t state;
-       curand_init(seed, 0, 0, &state);
+  //     curand_init(seed, 0, 0, &state);
+       curand_init(129, 0, 0, &state);
        //return curand_uniform(&state);
-       return curand_normal(&state);
+
+       
+
+       return (curand_uniform(&state)*2.0f) - 1.0;
 }
 
 __forceinline__ __device__ float3 randDir(){
@@ -45,7 +49,6 @@ __forceinline__ __device__ float3 randDir(){
 
 
 extern "C" __global__ void __raygen__from_cell(){
-//printf("In .cu, enters raygen\n");
 
   const uint3 idx = optixGetLaunchIndex();
   const uint3 dim = optixGetLaunchDimensions();
@@ -53,12 +56,11 @@ extern "C" __global__ void __raygen__from_cell(){
   const uint32_t linear_idx = idx.x + idx.y*(dim.x-1) + idx.z*(dim.y-1)*(dim.x-1);
 
 
-//printf("num samples in .cu = %i", params.numSamples);
 
 
   uint32_t t;
 
-
+   
 /*
 for(int i = 0; i < params.numSamples; i++){
         float3 dir = randDir();
@@ -67,31 +69,34 @@ for(int i = 0; i < params.numSamples; i++){
 */
 
 
- // params.flag = 40; //test to see if device-> host is updated
-
-  //printf("icellflag at idx %i: %i\n", linear_idx, params.icellflagArray[linear_idx]);
-
   if(params.icellflagArray[linear_idx] == 1){
 
    float temp = FLT_MAX; //starting point
-   
+
+
+float3 cardinal[5]{
+       make_float3(0,0,-1),
+       make_float3(1,0, 0),
+       make_float3(-1,0,0),
+       make_float3(0,1,0),
+       make_float3(0,-1,0)
+};
+
    
  float3 origin = make_float3((idx.x+0.5)*params.dx, (idx.y+0.5)*params.dy, (idx.z+0.5)*params.dz);
 float3 dir;
 
    for(int i = 0; i < params.numSamples; i++){
 
-//printf("In .cu, it enters if conditional. In other words, it is an air cell.\n");
-
-     //printf("params.dx = %f, params.dy = %f, params.dz = %f\n", params.dx, params.dy, params.dz);
 
    
+     if(i < 5){
+        dir = cardinal[i];
+     }else{
+        dir = randDir();
+     }
      
-     dir = randDir();
 
-     
-
-//printf("Origin: (%f, %f, %f)      Dir: (%f, %f, %f)\n", origin.x,  origin.y, origin.z, dir.x, dir.y, dir.z);
 
      optixTrace(params.handle,
                 origin,
@@ -110,7 +115,7 @@ float3 dir;
 
 
 if(int_as_float(t) < temp){
-//printf("t = %f vs. temp = %f\n", int_as_float(t), temp );
+
 temp = int_as_float(t);
 }
 
@@ -126,8 +131,6 @@ temp = int_as_float(t);
 hit.t = temp;
 //hit.t = t;
       
-      //printf("In .cu, t = %d\n", hit.t);
-      // printf("In .cu, t = %i, hit.t = %f\n", t, hit.t);
       params.hits[linear_idx] = hit;
 
       
@@ -136,7 +139,6 @@ hit.t = temp;
 } //end of raygen function
 
 extern "C" __global__ void __miss__miss(){
-//   printf("In .cu, miss\n");
 
 
 
@@ -155,7 +157,6 @@ extern "C" __global__ void __closesthit__mixlength(){
   //HitGroupData *rt_data = (HitGroupData *)optixGetSbtDataPointer();
   const uint32_t t = optixGetRayTmax();
 
-  // printf("In .cu, closet hit called %d\n", t);
   //optixSetPayload_0(float_as_int(t));
 
   optixSetPayload_0(float_as_int(t));  //test value
