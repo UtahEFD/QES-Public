@@ -1,8 +1,9 @@
-/*
- *This class uses OptiX 7.0
+/**
+ *OptiX version of mixinglength
+ *OptiX Version: 7.0
+ *
  */
 
-//#include <cuda_gl_interlop.h>
 
 #pragma once
 
@@ -173,7 +174,7 @@ struct OptixRay{
       return os;
    };
 };
- 
+
 struct Hit{
    float t; 
 };
