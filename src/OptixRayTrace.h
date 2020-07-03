@@ -76,65 +76,6 @@
 
 
 
-/*! simple wrapper for creating, and managing a device-side CUDA
-  buffer */
-struct CUDABuffer {
-   inline CUdeviceptr d_pointer() const
-   { return (CUdeviceptr)d_ptr; }
-
-   //! re-size buffer to given number of bytes
-   void resize(size_t size)
-   {
-      if (d_ptr) free();
-      alloc(size);
-   }
-   
-   //! allocate to given number of bytes
-   void alloc(size_t size)
-   {
-      assert(d_ptr == nullptr);
-      this->sizeInBytes = size;
-      CUDA_CHECK(cudaMalloc( (void**)&d_ptr, sizeInBytes));
-   }
-
-   //! free allocated memory
-   void free()
-   {
-      CUDA_CHECK(cudaFree(d_ptr));
-      d_ptr = nullptr;
-      sizeInBytes = 0;
-   }
-
-   template<typename T>
-   void alloc_and_upload(const std::vector<T> &vt)
-   {
-      alloc(vt.size()*sizeof(T));
-      upload((const T*)vt.data(),vt.size());
-   }
-
-   template<typename T>
-   void upload(const T *t, size_t count)
-   {
-      //std::cout<<"sizeInBytes in upload = "<<sizeInBytes<<std::endl;
-      //std::cout<<"size of T ( "<<typeid(T).name()<<" ) in upload = "<<sizeof(T)<<std::endl;
-      assert(d_ptr != nullptr);
-      assert(sizeInBytes == count*sizeof(T));
-      CUDA_CHECK(cudaMemcpy(d_ptr, (void *)t,
-                            count*sizeof(T), cudaMemcpyHostToDevice));
-   }
-
-   template<typename T>
-   void download(T *t, size_t count)
-   {
-      assert(d_ptr != nullptr);
-      assert(sizeInBytes == count*sizeof(T));
-      CUDA_CHECK(cudaMemcpy((void *)t, d_ptr,
-                            count*sizeof(T), cudaMemcpyDeviceToHost));
-   }
-
-   size_t sizeInBytes { 0 };
-   void  *d_ptr { nullptr };
-};
 
 
 template <typename T>
@@ -155,25 +96,6 @@ struct Vertex{
    };
 };
 
-//struct OptixRay;
-struct OptixRay{
-   int flag; //test val
-   //Vertex origin;
-   float3 origin;
-   float tmin;
-   //Vertex dir;
-   float3 dir;
-   float tmax;
-   bool isRay; //flag value; non-air cells = 0; air cells = 1;
-
-   friend std::ostream& operator<<(std::ostream& os, const OptixRay& ray){
-      os<<"Origin = <"
-        <<ray.origin.x<<", "<<ray.origin.y<<", "<<ray.origin.z<<">"
-        <<"\tDir = <"
-        <<ray.dir.x<<", "<<ray.dir.y<<", "<<ray.dir.z<<">";
-      return os;
-   };
-};
 
 struct Hit{
    float t; 
@@ -181,32 +103,21 @@ struct Hit{
 
 struct Params{
    OptixTraversableHandle handle;
-   OptixRay* rays;
    Hit* hits;
-   int flag; //test value
-   OptixRay* testRays;
-   int sizeRays;
-   int sizeIcell;
-   OptixRay testOptixRay; 
-//   int count; //temp val
-
    int* icellflagArray; //change to this later
-   float dx, dy, dz; 
-
-
+   float dx, dy, dz;
    int numSamples;
 };
 
 struct RayGenData{
-   //no raygen data needed
+   //no data needed
 };
 
 struct MissData{
-   float missNum; //large value
+   //no data needed
 };
    
 struct HitGroupData{
-   //float t; //mixlength
    //no hit data needed
 };
 
@@ -231,20 +142,14 @@ struct RayTracingState{
    OptixProgramGroup hit_prog_group = 0;
 
    Params params = {};
-//   CUdeviceptr d_rays;   //holds params.rays
-   CUDABuffer d_hits;    //holds params.hits
-   CUDABuffer paramsBuffer;
-   CUDABuffer testRays_d; //test array
-
+   
    CUdeviceptr icellflagArray_d; //device memory 
 
-   
+   CUdeviceptr outputBuffer = 0; //buffer to read and write btw device and host 
+   CUdeviceptr paramsBuffer = 0; //buffer to read parms info btw device and host
+
    OptixShaderBindingTable sbt = {};
-
-   int samples_per_cell;  //can change to bigger type value if needed 
-   int num_cells;         //number of air cells 
-
-
+   
    int nx, ny, nz;  //dim var passed in as params to mixLength
    float dx, dy, dz; 
 };
@@ -254,9 +159,7 @@ class OptixRayTrace{
   public:
 
    OptixRayTrace(std::vector<Triangle*> tris);
-   void buildAS(std::vector<Triangle*> tris);
-
-   void buildAS(); //test version 
+   ~OptixRayTrace();
    
    void calculateMixingLength(int numSamples, int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag, std::vector<double> &mixingLengths);
    
@@ -277,7 +180,9 @@ class OptixRayTrace{
    typedef Record<MissData> MissRecord;
    typedef Record<HitGroupData> HitGroupRecord;
  
-   void initOptix(); //checks for errors 
+   void initOptix(); 
+   void buildAS(); 
+   void buildAS(std::vector<Triangle*> tris);
    void createContext();
    void createModule();
    void createProgramGroups();
@@ -286,24 +191,16 @@ class OptixRayTrace{
    void launch();
    void cleanState();
 
-    /*
+   /**
     *Helper function to convert vector<Triangle*> to array<float, 3>
     */
    void convertVecMeshType(std::vector<Triangle*> &tris, std::vector<Vertex> &trisArray);
    
-
-   
-   /*
-    *Initializes Ray* rays based on the given cell data 
-    */
    void initParams(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag);
 
+   /**Helper function for rounding up
+    */
    size_t roundUp(size_t x, size_t y);
    
-
-   //ptx string definition (this is a hardcoded version, since there
-   //is only one .cu file
-   //std::string ptx = (std::string) PTX_DIR + "/target_name_generated_OptixRayTrace.cu.ptx";
-   //std::string ptx = (std::string) PTX_DIR + "/cuda_compile_ptx_generated_OptixRayTrace.cu.ptx";
    std::string ptx; 
 };

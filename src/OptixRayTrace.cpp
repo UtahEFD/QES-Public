@@ -21,6 +21,12 @@ OptixRayTrace::OptixRayTrace(std::vector<Triangle*> tris){
    }
 }
 
+
+OptixRayTrace::~OptixRayTrace(){
+   OPTIX_CHECK(optixDeviceContextDestroy(state.context));
+}
+
+
 static void context_log_cb(unsigned int level, const char* tag,
                            const char* message, void* /*cbdata*/){
 
@@ -376,7 +382,6 @@ void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::vector
  */
 
 void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag, std::vector<double> &mixingLengths){
-   state.samples_per_cell = numSamples;
 
    state.params.numSamples = numSamples;
 
@@ -397,21 +402,15 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 
    createModule();
 
-
    createProgramGroups();
 
-
    createPipeline();
-
-
 
    createSBT();
 
 
 
-
-   state.paramsBuffer.alloc(sizeof(state.params));
-
+   CUDA_CHECK( cudaMalloc(reinterpret_cast<void**> (&state.paramsBuffer), sizeof(state.params)) );
 
    initParams(dimX, dimY, dimZ, dx, dy, dz, icellflag);
 
@@ -420,17 +419,22 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 
 
    std::vector<Hit> hitList(icellflag.size());
-   state.d_hits.download( hitList.data(), icellflag.size() );
+   CUDA_CHECK(cudaMemcpy(hitList.data(),
+                         reinterpret_cast<void *>(state.outputBuffer),
+                         sizeof(Hit)*icellflag.size(),
+                         cudaMemcpyDeviceToHost
+                         )
+              );
 
+
+   //init mixingLengths array
    for(int i = 0; i < icellflag.size(); i++){
-      //std::cout << "ml2: " << hitList[i].t << std::endl;
       mixingLengths[i] = hitList[i].t;
    }
 
 
+   //free memory
    cleanState();
-
-
 }
 
 
@@ -447,22 +451,21 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
  *@param icellflag Cell type
  */
 void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag){
-
-
-
    //allocate memory for hits (container for the t info from device to host)
-   size_t hits_size_in_bytes = sizeof(Hit)*icellflag.size();
-   state.d_hits.alloc(hits_size_in_bytes);
+   size_t output_buffer_size_in_bytes = sizeof(Hit)*icellflag.size();
+   //state.d_hits.alloc(hits_size_in_bytes);
+   CUDA_CHECK( cudaMalloc(reinterpret_cast<void**> (&state.outputBuffer), output_buffer_size_in_bytes));
 
-   //acceleration structure handle
+
+//acceleration structure handle
    state.params.handle = state.gas_handle;
 
 
-   //allocate memory to device-side icellflag memory
+//allocate memory to device-side icellflag memory
    CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&state.icellflagArray_d), icellflag.size()*sizeof(int)));
 
 
-   //copy std::vector data to int array
+//copy std::vector data to int array
 
    int *tempArray = (int*) malloc(icellflag.size()*sizeof(int));
 
@@ -470,18 +473,18 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
       tempArray[i] = icellflag[i];
    }
 
-   //copy data from std::vector icellflag to device-side memory
+//copy data from std::vector icellflag to device-side memory
    CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(state.icellflagArray_d),
                          reinterpret_cast<void*>(tempArray),
                          icellflag.size()*sizeof(int),
                          cudaMemcpyHostToDevice));
 
 
-   //assign params icellflag pointer to point to icellflagArray_d
+//assign params icellflag pointer to point to icellflagArray_d
    state.params.icellflagArray = (int *) state.icellflagArray_d;
 
 
-   //init params dx, dy, dz
+//init params dx, dy, dz
    state.params.dx = dx;
    state.params.dy = dy;
    state.params.dz = dz;
@@ -720,16 +723,24 @@ void OptixRayTrace::launch(){
    //create the CUDA stream
    CUDA_CHECK(cudaStreamCreate(&state.stream));
 
-   state.params.hits = (Hit *) state.d_hits.d_ptr;
+   //state.params.hits = (Hit *) state.d_hits.d_ptr;
+   state.params.hits = reinterpret_cast<Hit *> (state.outputBuffer);
 
-   state.paramsBuffer.upload(&state.params, 1);
-
+   //state.paramsBuffer.upload(&state.params, 1);
+   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void *> (state.paramsBuffer),
+                         reinterpret_cast<void *> (&state.params),
+                         1*sizeof(Params),
+                         cudaMemcpyHostToDevice
+                         )
+              );
 
 
    OPTIX_CHECK(optixLaunch(state.pipeline,
                            state.stream,
-                           state.paramsBuffer.d_pointer(),
-                           state.paramsBuffer.sizeInBytes,
+                           //state.paramsBuffer.d_pointer(),
+                           //state.paramsBuffer.sizeInBytes,
+                           state.paramsBuffer,
+                           sizeof(Params),
                            &state.sbt,
                            state.nx,
                            state.ny,
@@ -762,9 +773,12 @@ void OptixRayTrace::cleanState(){
    //OPTIX_CHECK(optixDeviceContextDestroy(state.context));
 
    //free cuda stuff
-   CUDA_CHECK(cudaFree(reinterpret_cast<void*>(state.params.rays)));
+
    CUDA_CHECK(cudaFree(reinterpret_cast<void*>(state.params.hits)));
    CUDA_CHECK(cudaFree(reinterpret_cast<void*>(state.sbt.raygenRecord)));
    CUDA_CHECK(cudaFree(reinterpret_cast<void*>(state.sbt.missRecordBase)));
    CUDA_CHECK(cudaFree(reinterpret_cast<void*>(state.sbt.hitgroupRecordBase)));
+
+   //CUDA_CHECK(cudaFree(reinterpret_cast<void *>(state.outputBuffer)));
+   //CUDA_CHECK(cudaFree(reinterpret_cast<void *>(state.paramsBuffer)));
 }
