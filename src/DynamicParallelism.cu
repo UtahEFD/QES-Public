@@ -449,13 +449,12 @@ void DynamicParallelism::solve(const URBInputData* UID, URBGeneralData* UGD, boo
     SOR_iteration<<<1,1>>>(d_lambda,d_lambda_old, UGD->nx, UGD->ny, UGD->nz, omega, A, B, UGD->dx, UGD->dy, UGD->dz, d_dz_array, d_e, d_f, d_g, d_h, d_m, d_n, d_R,itermax,tol,d_value,d_bvalue,d_u0,d_v0,d_w0,alpha1,alpha2,d_u,d_v,d_w,d_icellflag);
     cudaCheck(cudaGetLastError());
 
-    cudaMemcpy (lambda.data() , d_lambda , UGD->numcell_cent * sizeof(float) , cudaMemcpyDeviceToHost);
+    //cudaMemcpy (lambda.data() , d_lambda , UGD->numcell_cent * sizeof(float) , cudaMemcpyDeviceToHost);
     cudaMemcpy(UGD->u.data(),d_u,UGD->numcell_face*sizeof(float),cudaMemcpyDeviceToHost);
     cudaMemcpy(UGD->v.data(),d_v,UGD->numcell_face*sizeof(float),cudaMemcpyDeviceToHost);
     cudaMemcpy(UGD->w.data(),d_w,UGD->numcell_face*sizeof(float),cudaMemcpyDeviceToHost);
-    cudaMemcpy(R.data(),d_R,UGD->numcell_cent*sizeof(float),cudaMemcpyDeviceToHost);
-    cudaMemcpy(lambda.data(),d_lambda,UGD->numcell_cent*sizeof(float),cudaMemcpyDeviceToHost);
-    cudaMemcpy(lambda_old.data(),d_lambda_old,UGD->numcell_cent*sizeof(float),cudaMemcpyDeviceToHost);
+    //cudaMemcpy(R.data(),d_R,UGD->numcell_cent*sizeof(float),cudaMemcpyDeviceToHost);
+    //cudaMemcpy(lambda_old.data(),d_lambda_old,UGD->numcell_cent*sizeof(float),cudaMemcpyDeviceToHost);
 
     // Write data to file
         /*ofstream outdata2;
