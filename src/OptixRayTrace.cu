@@ -23,73 +23,6 @@ __constant__ Params params; //should match var name in initPipeline
 }
 
 
-/*
-__forceinline__ __device__ float random(unsigned int seed){
-       curandState_t state;
-  //     curand_init(seed, 0, 0, &state);
-       curand_init(129, 0, 0, &state);
-       //return curand_uniform(&state);
-
-       
-
-       return (curand_uniform(&state)*2.0f) - 1.0;
-}
-*/
-
-/*
-__forceinline__ __device__ float3 randDir(){
-   float x, y, z;
-
-   unsigned int seed = clock();
-   x = random(seed);
-   seed = clock()*100 + seed;
-   y = random(seed);
-   seed = clock()*50;
-   z = random(seed);
- float magnitude = std::sqrt((x*x) + (y*y) + (z*z));
-  
-  return make_float3( x/magnitude, y/magnitude, z/magnitude);
- 
-
- //  return make_float3(x,y,z);
-}
-*/
-
-
-/*
-__forceinline__ __device__ float randBound(float lower, float upper){
-      curandState_t state;
-      curand_init(129, 0, 0, &state);
-      return (curand_uniform(&state)*(upper-lower))+lower;          
-}
-*/
-
-/*
-
-__forceinline__ __device__ float3 randDir(){
-  float theta = std::asin(randBound(-1.0f, 1.0f));
-  float phi = randBound(0.0f, 2.0f*3.14f);     //change to PI value
-
-  float x = std::cos(theta)*std::cos(phi);
-  float y = std::sin(phi);
-  float z = std::cos(theta)*sin(phi);
-
-  float magnitude = std::sqrt((x*x) + (y*y) + (z*z));
-  
-  return make_float3( x/magnitude, y/magnitude, z/magnitude);
-  
-}
-*/
-
-
-__global__ void randBound(float *num, float upper, float lower){
-  int i = threadIdx.x + blockIdx.x * blockDim.x;
-  curandState state;
-  curand_init(clock64(), i, 0, &state);
-  *num = (curand_uniform(&state)*(upper - lower))+lower;
-}
-
-
 extern "C" __global__ void __raygen__from_cell(){
 
   const uint3 idx = optixGetLaunchIndex();
@@ -128,21 +61,23 @@ extern "C" __global__ void __raygen__from_cell(){
          if(i < 5){
             dir = cardinal[i];
          }else{
-            //dir = randDir();
+
+            //Spherical
+
+            float theta = (curand_uniform(&state)*M_PI);
+            float phi = (curand_uniform(&state)*2*M_PI);
             
-            float theta = std::asin((curand_uniform(&state)*2.0) - 1.0);
-            float phi = (curand_uniform(&state)*2*M_PI);     
+            float x = std::cos(phi)*std::sin(theta);
+            float y = std::sin(theta)*std::sin(phi);
+            float z = std::cos(theta);
 
-            float x = std::cos(theta)*std::cos(phi);
-            float y = std::sin(phi);
-            float z = std::cos(theta)*sin(phi);
 
-            float magnitude = std::sqrt((x*x) + (y*y) + (z*z));
-  
+            float magnitude = std::sqrt((x*x) + (y*y) + (z*z));  
             dir = make_float3( x/magnitude, y/magnitude, z/magnitude);
-
             
+             
 
+            //normalized
             /*
 
             float x = (curand_uniform(&state) * 2.0) - 1.0;
@@ -154,9 +89,6 @@ extern "C" __global__ void __raygen__from_cell(){
             */          
          }
      
-
-         //printf("In .cu, dir = <%f, %f, %f>\n", dir.x, dir.y, dir.z);
-
          optixTrace(params.handle,
                     origin,
                     dir,
