@@ -112,7 +112,6 @@ struct Hit{
 };
 
 
-
 /**
  *Struct containing variables passed to and from device and host
  *Any variable shared between device and host can be added here
