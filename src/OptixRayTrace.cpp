@@ -4,11 +4,6 @@
 #define TEST 0 //Set to true for ground-only AS
 
 
-/*Initializes OptiX and creates the context
- *If not testing, the acceleration structure will be based off of the
- *provided list of Triangles
- */
-
 OptixRayTrace::OptixRayTrace(std::vector<Triangle*> tris){
 
    initOptix();
@@ -38,9 +33,6 @@ static void context_log_cb(unsigned int level, const char* tag,
 
 
 
-/**
- *Creates and configures a optix device context for primary GPU device
- */
 
 void OptixRayTrace::createContext(){
 
@@ -56,39 +48,27 @@ void OptixRayTrace::createContext(){
 }
 
 
-/**
- *Initializes OptiX and confirms OptiX compatible devices are present
- *
- *@throws RuntimeException On no OptiX 7.0 compatible devices
- */
+
 void OptixRayTrace::initOptix(){
 
-//check for Optix 7 compatible devices
    CUDA_CHECK(cudaFree(0));
 
+   //check for Optix 7 compatible devices
    int numDevices;
    cudaGetDeviceCount(&numDevices);
    if(numDevices == 0){
       throw std::runtime_error("No OptiX 7.0 compatible devices!");
    }
 
+   //initialize OptiX
    OPTIX_CHECK(optixInit());
-
-
 }
+
 
 size_t OptixRayTrace::roundUp(size_t x, size_t y){
    return ((x + y -1) / y) * y;
 }
 
-
-
-/**
- *Non-test version of AS
- *builds acceleration structure with provided list of Triangles
- *
- *@param tris List of Triangle objects representing given terrain and buildings
- */
 
 void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
 
@@ -96,14 +76,9 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
    accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
    accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
 
-//need to translate tris --> to a vector array of measurable size type
+   //need to translate tris --> to a vector array of measurable size type
    std::vector<Vertex> trisArray(tris.size()*3);  //each triangle 3 Vertex-es
    convertVecMeshType(tris, trisArray);
-
-
-
-
-
 
    const size_t tris_size = sizeof(Vertex)*trisArray.size();
    CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&state.d_tris), tris_size));
@@ -114,27 +89,17 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
                          cudaMemcpyHostToDevice)
               );
 
-
-
-
-
+   //set OptiX AS input types
    const uint32_t triangle_input_flags[1] ={OPTIX_GEOMETRY_FLAG_NONE};
-//could add flag to disable anyhit (above)
 
    OptixBuildInput triangle_input  = {};
    triangle_input.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
    triangle_input.triangleArray.vertexBuffers = &state.d_tris;
    triangle_input.triangleArray.numVertices = static_cast<uint32_t>(trisArray.size());
    triangle_input.triangleArray.vertexFormat = OPTIX_VERTEX_FORMAT_FLOAT3;
-//triangle_input.triangleArray.vertexStrideInBytes = sizeof(Vertex);
    triangle_input.triangleArray.vertexStrideInBytes = sizeof(float3);
    triangle_input.triangleArray.flags = triangle_input_flags;
    triangle_input.triangleArray.numSbtRecords = 1;
-
-
-
-
-
 
    OptixAccelBufferSizes gas_buffer_sizes;
    OPTIX_CHECK(optixAccelComputeMemoryUsage(state.context,
@@ -175,11 +140,14 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
                                1)
                );
 
-   CUDA_SYNC_CHECK(); //need?
+   CUDA_SYNC_CHECK();
 
    CUDA_CHECK(cudaFree((void*)d_temp_buffer_gas));
    CUDA_CHECK(cudaFree((void*)state.d_tris));
 
+
+
+   //Compact the accelerated structure for efficiency
    size_t compacted_gas_size;
    CUDA_CHECK(cudaMemcpy(&compacted_gas_size,
                          (void*)emit_property.result, sizeof(size_t), cudaMemcpyDeviceToHost)
@@ -197,37 +165,28 @@ void OptixRayTrace::buildAS(std::vector<Triangle*> tris){
                                     compacted_gas_size,
                                     &state.gas_handle)
                   );
-      CUDA_SYNC_CHECK(); //need?
+
+      CUDA_SYNC_CHECK();
 
       CUDA_CHECK(cudaFree((void*)d_buffer_temp_output_gas_and_compacted_size));
    }else{
       state.d_gas_output_buffer = d_buffer_temp_output_gas_and_compacted_size;
    }
 
-
 }
 
 
 
 
-
-/**
- *Test version of AS
- *builds acceleration structure with 2 Triangles representing the
- *ground of the domain
- *
- */
-
 void OptixRayTrace::buildAS(){
 
    std::cout<<"\033[1;31m You are using testing acceleration structure in OptiX \033[0m"<<std::endl;
-
-
 
    OptixAccelBuildOptions accel_options = {};
    accel_options.buildFlags = OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
    accel_options.operation = OPTIX_BUILD_OPERATION_BUILD;
 
+   //form 2 triangles representing the ground of the given space
    const std::array<float3, 6> trisArray = {
       {
          {0,0,0},
@@ -253,9 +212,8 @@ void OptixRayTrace::buildAS(){
 
 
 
-
+   //intialize OptiX AS values
    const uint32_t triangle_input_flags[1] ={OPTIX_GEOMETRY_FLAG_NONE};
-//could add flag to disable anyhit (above)
 
    OptixBuildInput triangle_input  = {};
    triangle_input.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
@@ -307,11 +265,13 @@ void OptixRayTrace::buildAS(){
                                1)
                );
 
-   CUDA_SYNC_CHECK(); //need?
+   CUDA_SYNC_CHECK();
 
    CUDA_CHECK(cudaFree((void*)d_temp_buffer_gas));
    CUDA_CHECK(cudaFree((void*)state.d_tris));
 
+
+   //Compact AS for efficiency
    size_t compacted_gas_size;
    CUDA_CHECK(cudaMemcpy(&compacted_gas_size,
                          (void*)emit_property.result, sizeof(size_t), cudaMemcpyDeviceToHost)
@@ -329,7 +289,7 @@ void OptixRayTrace::buildAS(){
                                     compacted_gas_size,
                                     &state.gas_handle)
                   );
-      CUDA_SYNC_CHECK(); //need?
+      CUDA_SYNC_CHECK();
 
       CUDA_CHECK(cudaFree((void*)d_buffer_temp_output_gas_and_compacted_size));
    }else{
@@ -340,16 +300,7 @@ void OptixRayTrace::buildAS(){
 }
 
 
-/**
- *Converts the list of Traingle objects to a list of Vertex objects
- *This is for the purpose of OptiX and to not conflict with other
- *parts of the code
- *
- *@params tris The list of Triangle objects representing the buildings
- *        and terrain
- *@params trisArray The list of Vertex struct objects representing the
- *        converted list of Triangles
- */
+
 void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::vector<Vertex> &trisArray){
    int tempIdx = 0;
    for(int i = 0; i < tris.size(); i++){ //get access to the Triangle at index
@@ -367,24 +318,11 @@ void OptixRayTrace::convertVecMeshType(std::vector<Triangle*> &tris, std::vector
 }
 
 
-/**Calculates the mixing length
- *
- *@param numSamples The probablistic sampling of per-cell launch
- *       directions
- *@param dimX Domain info in the x plane
- *@param dimY Domain info in the y plane
- *@param dimZ Domain info in the z plane
- *@param dx Grid info in the x plane
- *@param dy Grid info in the y plane
- *@param dz Grid info in the z plane
- *@param icellflag Cell type
- *@param mixingLengths Array of mixinglengths for all cells that will be updated
- */
 
 void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag, std::vector<double> &mixingLengths){
 
+   //Initialize variables used in called functions below
    state.params.numSamples = numSamples;
-
 
    state.nx = dimX;
    state.ny = dimY;
@@ -395,11 +333,13 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
    state.dz = dz;
 
 
+   //Check to see if building with test acceleration structure
    if(TEST){
-      buildAS(); /*for test AS version*/
+      buildAS();
    }
 
 
+   //Create related OptiX structures
    createModule();
 
    createProgramGroups();
@@ -415,9 +355,11 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
    initParams(dimX, dimY, dimZ, dx, dy, dz, icellflag);
 
 
+   //Launch OptiX
    launch();
 
 
+   //Initialize mixingLengths array with t values returned from OptiX
    std::vector<Hit> hitList(icellflag.size());
    CUDA_CHECK(cudaMemcpy(hitList.data(),
                          reinterpret_cast<void *>(state.outputBuffer),
@@ -427,7 +369,6 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
               );
 
 
-   //init mixingLengths array
    for(int i = 0; i < icellflag.size(); i++){
       mixingLengths[i] = hitList[i].t;
    }
@@ -439,33 +380,20 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 
 
 
-/**
- *Initialize members of the Params stuct for state.params
- *
- *@param dimX Domain info in the x plane
- *@param dimY Domain info in the y plane
- *@param dimZ Domain info in the z plane
- *@param dx Grid info in the x plane
- *@param dy Grid info in the y plane
- *@param dz Grid info in the z plane
- *@param icellflag Cell type
- */
+
 void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag){
+
    //allocate memory for hits (container for the t info from device to host)
    size_t output_buffer_size_in_bytes = sizeof(Hit)*icellflag.size();
-   //state.d_hits.alloc(hits_size_in_bytes);
    CUDA_CHECK( cudaMalloc(reinterpret_cast<void**> (&state.outputBuffer), output_buffer_size_in_bytes));
 
 
-//acceleration structure handle
+   //Assign the acceleration structure to be passed to device
    state.params.handle = state.gas_handle;
 
 
-//allocate memory to device-side icellflag memory
+   //Initialize icellflag array to be passed to device
    CUDA_CHECK(cudaMalloc(reinterpret_cast<void**>(&state.icellflagArray_d), icellflag.size()*sizeof(int)));
-
-
-//copy std::vector data to int array
 
    int *tempArray = (int*) malloc(icellflag.size()*sizeof(int));
 
@@ -473,18 +401,15 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
       tempArray[i] = icellflag[i];
    }
 
-//copy data from std::vector icellflag to device-side memory
    CUDA_CHECK(cudaMemcpy(reinterpret_cast<void*>(state.icellflagArray_d),
                          reinterpret_cast<void*>(tempArray),
                          icellflag.size()*sizeof(int),
                          cudaMemcpyHostToDevice));
 
-
-//assign params icellflag pointer to point to icellflagArray_d
    state.params.icellflagArray = (int *) state.icellflagArray_d;
 
 
-//init params dx, dy, dz
+   //init params dx, dy, dz (used to calculate cell centers in device)
    state.params.dx = dx;
    state.params.dy = dy;
    state.params.dz = dz;
@@ -493,10 +418,6 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
 }
 
 
-/**
- *Creates OptiX module from generated ptx file
- *
- */
 
 extern "C" char embedded_ptx_code[]; //The generated ptx file
 
@@ -521,6 +442,8 @@ void OptixRayTrace::createModule(){
    char log[2048]; size_t sizeof_log = sizeof(log);
 
 
+   //Grab the ptx string from the generated ptx file
+   //This should be located at compile time in the "ptx" folder
    ptx = embedded_ptx_code;
 
 
@@ -539,10 +462,7 @@ void OptixRayTrace::createModule(){
 }
 
 
-/**
- *Creates OptiX program groups
- *Three groups: raygen, miss, and closest hit
- */
+
 void OptixRayTrace::createProgramGroups(){
 
    //OptiX error reporting var
@@ -604,8 +524,7 @@ void OptixRayTrace::createProgramGroups(){
 }
 
 
-/**Creates OptiX pipeline
- */
+
 void OptixRayTrace::createPipeline(){
    //OptiX error reporting var
    char log[2048];
@@ -637,9 +556,7 @@ void OptixRayTrace::createPipeline(){
 }
 
 
-/**Creates OptiX SBT record
- *
- */
+
 
 void OptixRayTrace::createSBT(){
    //raygen
@@ -680,7 +597,7 @@ void OptixRayTrace::createSBT(){
 
 
 
-//hit
+   //hit
 
    CUdeviceptr d_hit_record = 0;
    const size_t hit_record_size = sizeof(HitGroupRecord);
@@ -696,37 +613,27 @@ void OptixRayTrace::createSBT(){
                          ));
 
 
-
-
-//update state
+   //update state
    state.sbt.raygenRecord = d_raygen_record;
-
    state.sbt.missRecordBase = d_miss_record;
-
    state.sbt.missRecordStrideInBytes = sizeof(MissRecord);
    state.sbt.missRecordCount = 1;
-
    state.sbt.hitgroupRecordBase = d_hit_record;
-
    state.sbt.hitgroupRecordStrideInBytes = sizeof(HitGroupRecord);
-
    state.sbt.hitgroupRecordCount = 1;
-
-
 }
 
 
-/*Launches OptiX
- */
 
 void OptixRayTrace::launch(){
    //create the CUDA stream
    CUDA_CHECK(cudaStreamCreate(&state.stream));
 
-   //state.params.hits = (Hit *) state.d_hits.d_ptr;
+
+   //Assign output buffer to write from device to host
    state.params.hits = reinterpret_cast<Hit *> (state.outputBuffer);
 
-   //state.paramsBuffer.upload(&state.params, 1);
+   //Allocate memory to pass initialized params variable to device
    CUDA_CHECK(cudaMemcpy(reinterpret_cast<void *> (state.paramsBuffer),
                          reinterpret_cast<void *> (&state.params),
                          1*sizeof(Params),
@@ -735,10 +642,9 @@ void OptixRayTrace::launch(){
               );
 
 
+   //launch OptiX
    OPTIX_CHECK(optixLaunch(state.pipeline,
                            state.stream,
-                           //state.paramsBuffer.d_pointer(),
-                           //state.paramsBuffer.sizeInBytes,
                            state.paramsBuffer,
                            sizeof(Params),
                            &state.sbt,
@@ -749,14 +655,11 @@ void OptixRayTrace::launch(){
                );
 
 
-   CUDA_SYNC_CHECK();  //this line is necessary!!
-
-
+   CUDA_SYNC_CHECK();
 }
 
 
-/**Frees up memory from state variables
- */
+
 void OptixRayTrace::cleanState(){
    //destroy pipeline
    OPTIX_CHECK(optixPipelineDestroy(state.pipeline));

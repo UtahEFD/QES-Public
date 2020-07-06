@@ -11,7 +11,7 @@
 #include <float.h>
 #include <vector>
 #include <time.h>
-
+#include <cmath>
 
 #include <curand.h>
 #include <curand_kernel.h>
@@ -34,6 +34,7 @@ __forceinline__ __device__ float random(unsigned int seed){
        return (curand_uniform(&state)*2.0f) - 1.0;
 }
 
+
 __forceinline__ __device__ float3 randDir(){
    float x, y, z;
 
@@ -43,9 +44,36 @@ __forceinline__ __device__ float3 randDir(){
    y = random(seed);
    seed = clock()*50;
    z = random(seed);
+ float magnitude = std::sqrt((x*x) + (y*y) + (z*z));
+  
+  return make_float3( x/magnitude, y/magnitude, z/magnitude);
+ 
 
-   return make_float3(x,y,z);
+ //  return make_float3(x,y,z);
 }
+
+
+__forceinline__ __device__ float randBound(float lower, float upper){
+      curandState_t state;
+      curand_init(129, 0, 0, &state);
+      return (curand_uniform(&state)*(upper-lower))+lower;          
+}
+/*
+
+__forceinline__ __device__ float3 randDir(){
+  float theta = std::asin(randBound(-1.0f, 1.0f));
+  float phi = randBound(0.0f, 2.0f*3.14f);     //change to PI value
+
+  float x = std::cos(theta)*std::cos(phi);
+  float y = std::sin(phi);
+  float z = std::cos(theta)*sin(phi);
+
+  float magnitude = std::sqrt((x*x) + (y*y) + (z*z));
+  
+  return make_float3( x/magnitude, y/magnitude, z/magnitude);
+  
+}
+*/
 
 
 extern "C" __global__ void __raygen__from_cell(){
