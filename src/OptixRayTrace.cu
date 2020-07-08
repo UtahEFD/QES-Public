@@ -76,17 +76,6 @@ extern "C" __global__ void __raygen__from_cell(){
             dir = make_float3( x/magnitude, y/magnitude, z/magnitude);
             
              
-
-            //normalized
-            
-            /*
-            float x = (curand_uniform(&state) * 2.0) - 1.0;
-            float y = (curand_uniform(&state) * 2.0) - 1.0;
-            float z = (curand_uniform(&state) * 2.0) - 1.0;
-            
-            float magnitude = std::sqrt((x*x) + (y*y) + (z*z));
-            dir = make_float3( x/magnitude, y/magnitude, z/magnitude);
-            */        
          }
      
          optixTrace(params.handle,
