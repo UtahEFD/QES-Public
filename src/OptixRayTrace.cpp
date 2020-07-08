@@ -1,8 +1,8 @@
 #include "OptixRayTrace.h"
 
 
-#define TEST 0 //Set to true for ground-only AS
-
+#define TEST 0      //Set to true for ground-only AS
+#define GEN_FILE 1  //Generate mixing length output file for testing
 
 OptixRayTrace::OptixRayTrace(std::vector<Triangle*> tris){
 
@@ -368,9 +368,41 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
                          )
               );
 
-
    for(int i = 0; i < icellflag.size(); i++){
       mixingLengths[i] = hitList[i].t;
+   }
+
+   if(GEN_FILE){
+
+      std::ofstream mixingLenOutputFile;
+      if(mixingLenOutputFile.is_open()){
+         mixingLenOutputFile.close();
+      }else{
+         mixingLenOutputFile.open("mixingLenOutput.csv");
+      }
+
+
+      for(int k = 0; k< dimZ - 1; k++) {
+         for(int j = 0; j < dimY - 1; j++){
+            for(int i = 0; i < dimX -1; i++){
+
+               int icell_idx = i + j*(dimX-1) + k*(dimY-1) * (dimX-1);
+               float3 center = make_float3((i+0.5)*dx, (j+0.5)*dy, (k+0.5)*dz);
+
+               mixingLenOutputFile<<center.x<<","<<center.y<<","<<center.z<<","<<mixingLengths[icell_idx]<<std::endl;
+
+            }
+         }
+      }
+
+      /* for(int i = 0; i < icellflag.size(); i++){
+         if(icellflag[i] == 1){
+         mixingLenOutputFile<<i<<","<<mixingLengths[i]<<std::endl;
+         }
+         }
+      */
+
+      mixingLenOutputFile.close();
    }
 
 

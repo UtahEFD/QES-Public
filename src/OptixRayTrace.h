@@ -23,6 +23,9 @@
 #include <limits>
 #include <assert.h>
 #include <typeinfo>
+#include <iostream>
+#include <fstream>
+
 
 #include "Triangle.h"
 

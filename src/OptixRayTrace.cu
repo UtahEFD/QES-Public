@@ -63,7 +63,7 @@ extern "C" __global__ void __raygen__from_cell(){
          }else{
 
             //Spherical
-
+            
             float theta = (curand_uniform(&state)*M_PI);
             float phi = (curand_uniform(&state)*2*M_PI);
             
@@ -78,15 +78,15 @@ extern "C" __global__ void __raygen__from_cell(){
              
 
             //normalized
+            
             /*
-
             float x = (curand_uniform(&state) * 2.0) - 1.0;
             float y = (curand_uniform(&state) * 2.0) - 1.0;
             float z = (curand_uniform(&state) * 2.0) - 1.0;
             
             float magnitude = std::sqrt((x*x) + (y*y) + (z*z));
             dir = make_float3( x/magnitude, y/magnitude, z/magnitude);
-            */          
+            */        
          }
      
          optixTrace(params.handle,
