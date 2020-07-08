@@ -2,7 +2,7 @@
 
 URBArgs::URBArgs()
     : verbose(false), quicFile(""), netCDFFileVz(""), netCDFFileWk(""), cellFace(false), solveType(1), compareType(0),
-      calcMixingLength( false )
+      calcMixingLength( false ), mlSamples(2000)
 {
     reg("help", "help/usage information", ArgumentParsing::NONE, '?');
     reg("verbose", "turn on verbose output", ArgumentParsing::NONE, 'v');
@@ -17,7 +17,8 @@ URBArgs::URBArgs()
     reg("terrainout", "Specifies that the triangle mesh for the terrain should be output", ArgumentParsing::NONE, 't');
     reg("windsolveroff", "Turns off the wind solver and wind output", ArgumentParsing::NONE, 'x');
 
-    reg("calcmixlength", "Turns on the mixing length calculations and output", ArgumentParsing::NONE, 'm');    
+    reg("calcmixlength", "Turns on the mixing length calculations and output", ArgumentParsing::NONE, 'm');
+    reg("mlsamples", "Sets the ML sampling rate", ArgumentParsing::INT, 'y');    
 }
 
 void URBArgs::processArguments(int argc, char *argv[])
@@ -68,4 +69,7 @@ void URBArgs::processArguments(int argc, char *argv[])
 
     calcMixingLength = isSet("calcmixlength");
     if (calcMixingLength) std::cout << "Mixing Length calculations: ON" << std::endl;
+
+    isSet("mlsamples", mlSamples);
+    std::cout << "Mixing Length Sampling Rate set to " << mlSamples << std::endl;
 }

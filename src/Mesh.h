@@ -25,6 +25,7 @@ class Mesh
 public:
 	BVH* tris;
 
+    int mlSampleRate;
 
         //temp var for Optix
         //OptixRayTrace *optixRayTracer;
@@ -36,6 +37,7 @@ public:
 	 * @param tris -list of triangles.
 	 */
 	Mesh(vector<Triangle*> tris)
+            : mlSampleRate( 100 )
 	{
 		this->tris = BVH::createBVH(tris);
 

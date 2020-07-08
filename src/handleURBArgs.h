@@ -41,6 +41,8 @@ public:
     // Calculate Mixing Length - currently takes a while so it is
     // disabled unless this is set.
     bool calcMixingLength;
+
+    int mlSamples;
     
 private:
 };

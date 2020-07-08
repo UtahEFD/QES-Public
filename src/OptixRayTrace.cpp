@@ -378,7 +378,9 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
       if(mixingLenOutputFile.is_open()){
          mixingLenOutputFile.close();
       }else{
-         mixingLenOutputFile.open("mixingLenOutput.csv");
+          std::stringstream ss;
+          ss << "mixingLength_s" << numSamples << ".csv";
+          mixingLenOutputFile.open( ss.str() );
       }
 
 
@@ -389,7 +391,11 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
                int icell_idx = i + j*(dimX-1) + k*(dimY-1) * (dimX-1);
                float3 center = make_float3((i+0.5)*dx, (j+0.5)*dy, (k+0.5)*dz);
 
-               mixingLenOutputFile<<center.x<<","<<center.y<<","<<center.z<<","<<mixingLengths[icell_idx]<<std::endl;
+               mixingLenOutputFile << icell_idx << ", "
+                                   << center.x <<","
+                                   << center.y <<","
+                                   << center.z <<","
+                                   << mixingLengths[icell_idx] <<std::endl;
 
             }
          }
