@@ -106,7 +106,6 @@ extern "C" __global__ void __raygen__from_cell(){
 
 
          if(int_as_float(t) < lowestLen){
-
             lowestLen = int_as_float(t);
          }
 
@@ -115,7 +114,7 @@ extern "C" __global__ void __raygen__from_cell(){
  
      Hit hit;
      hit.t = lowestLen;
-      
+
      params.hits[linear_idx] = hit;
 
       
@@ -132,12 +131,10 @@ extern "C" __global__ void __miss__miss(){
 }
 
 extern "C" __global__ void __closesthit__mixlength(){
-
   
-  const uint32_t t = optixGetRayTmax(); //get t value from OptiX function 
-
-  optixSetPayload_0(float_as_int(t));   //assign payload
-
+    const float t = optixGetRayTmax(); //get t value from OptiX function 
+ 
+    optixSetPayload_0(float_as_int(t));   //assign payload
 }
 
 
