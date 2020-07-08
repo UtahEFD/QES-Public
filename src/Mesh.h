@@ -44,6 +44,8 @@ public:
                 //temp var for Optix
                 // this->optixRayTracer = new OptixRayTrace(tris);
                        optixTris = tris;
+                //temp var for getting the list of triangles
+                       trisList = tris;     
         }
 
 	/*
@@ -72,4 +74,12 @@ public:
         void calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const vector<int> &icellflag, vector<double> &mixingLengths);
         
         void tempOPTIXMethod(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const vector<int> &icellflag, vector<double> &mixingLengths);
+
+        std::vector<Triangle *> getTris() const {
+           return trisList;
+        }
+  private:
+        //temporary variable for getting the list of Triangles though the mesh
+        std::vector<Triangle *> trisList;
+
 };
