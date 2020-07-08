@@ -45,6 +45,10 @@
 </metParams>								<!-- End of meteorological parameters -->
 <localMixingParam>
   <method>3</method>
+  <method>1</method> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->    
+  <save>true</save> <!-- Save 2 to file -->    
+  <LMfile>../scratch/OKCSmallDomain/OKCSmallDomainJU2003_mixlength.nc</LMfile> <!-- Address to mixing lethng location--> 
+
 </localMixingParam>
 <fileOptions>
   <outputFlag>1</outputFlag>
