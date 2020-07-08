@@ -44,7 +44,7 @@
 
 </metParams>								<!-- End of meteorological parameters -->
 <localMixingParam>
-  <method>1</method>
+  <method>3</method>
 </localMixingParam>
 <fileOptions>
   <outputFlag>1</outputFlag>
