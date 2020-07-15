@@ -1,5 +1,5 @@
 <simulationParameters>
-	<DEM>../data/GISFiles/GaussianHill_200x200.tiff</DEM>		<!-- Address to DEM location-->
+	<DEM>../data/GISFiles/GaussianHill_200x200_tmp.tiff</DEM>		<!-- Address to DEM location-->
 
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
@@ -44,11 +44,9 @@
 
 </metParams>								<!-- End of meteorological parameters -->
 <localMixingParam>
-  <method>3</method>
-  <method>1</method> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->    
+  <method>3</method> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->    
   <save>true</save> <!-- Save 2 to file -->    
-  <LMfile>../scratch/OKCSmallDomain/OKCSmallDomainJU2003_mixlength.nc</LMfile> <!-- Address to mixing lethng location--> 
-
+  <LMfile>GaussianHill_mixlength.nc</LMfile> <!-- Address to mixing lethng location--> 
 </localMixingParam>
 <fileOptions>
   <outputFlag>1</outputFlag>
