@@ -27,6 +27,8 @@ public:
     int methodLocalMixing;
     bool save2file;
     std::string filename,varname;
+
+    int mlSamplesPerAirCell;
   
     LocalMixingParam()
     {}
@@ -43,6 +45,21 @@ public:
         parsePrimitive<std::string>(false, filename, "LMfile");
         varname = "mixlength"; // default name
         parsePrimitive<std::string>(false, varname, "varname");
+
+        // defaults for local mixing sample rates -- used with ray
+        // tracing methods
+        if (methodLocalMixing == 3) { // OptiX
+            mlSamplesPerAirCell = 2000;
+        }
+        else {
+            mlSamplesPerAirCell = 500;  // other ray-traced methods
+        }
+        parsePrimitive<int>(false, mlSamplesPerAirCell, "samples");
+        if (methodLocalMixing == 3) {
+            
+            std::cout << "Setting samples per air cell for ray-traced mixing length to " << mlSamplesPerAirCell << std::endl;
+        }
+        
         
         if(methodLocalMixing < 0 || methodLocalMixing > 4) {
             std::cout << "[WARNING] unknown local mixing method -> set method to 0 (height above terrain)" << std::endl;

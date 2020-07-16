@@ -51,9 +51,6 @@ public:
     // filename for terrain output
     std::string filenameTerrain = "";
 
-    // Mixing length samples
-    int mlSamples;
-
 private:
 
 };

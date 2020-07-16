@@ -4,7 +4,7 @@ URBArgs::URBArgs()
     : verbose(false),compTurb(false),
       quicFile(""), netCDFFileBasename(""),
       visuOutput(false), wkspOutput(false), turbOutput(false), terrainOut(false),
-      solveType(1), compareType(0), mlSamples(2000)
+      solveType(1), compareType(0)
 {
     reg("help", "help/usage information", ArgumentParsing::NONE, '?');
     reg("verbose", "turn on verbose output", ArgumentParsing::NONE, 'v');
@@ -23,7 +23,6 @@ URBArgs::URBArgs()
     // [FM] the output of turbulence field linked to the flag compTurb
     //reg("turbout", "Turns on the netcdf file to write turbulence file", ArgumentParsing::NONE, 'r');
     reg("terrainout", "Turn on the output of the triangle mesh for the terrain", ArgumentParsing::NONE, 'h');
-    reg("mlsamples", "Sets the ML sampling rate", ArgumentParsing::INT, 'y');    
 }
 
 void URBArgs::processArguments(int argc, char *argv[])
@@ -99,7 +98,4 @@ void URBArgs::processArguments(int argc, char *argv[])
         turbOutput=false;
         terrainOut=false;
     }
-
-    isSet("mlsamples", mlSamples);
-    std::cout << "Mixing Length Sampling Rate set to " << mlSamples << std::endl;
 }

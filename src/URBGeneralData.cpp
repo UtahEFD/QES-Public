@@ -643,11 +643,10 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
          std::cout << "Computing mixing length scales..." << std::endl;
          UID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
       } else if (UID->localMixingParam->methodLocalMixing == 3) {
-         // not implemented here (OptiX)
 
          //TODO: Find a better way to get the list of Triangles
          OptixRayTrace optixRayTracer(UID->simParams->DTE_mesh->getTris());
-         optixRayTracer.calculateMixingLength( UID->simParams->DTE_mesh->mlSampleRate, nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
+         optixRayTracer.calculateMixingLength( UID->localMixingParam->mlSamplesPerAirCell, nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
 
       } else if (UID->localMixingParam->methodLocalMixing == 4) {
          std::cout << "[MixLength] \t Loading Local Mixing Length data form NetCDF...\n";
