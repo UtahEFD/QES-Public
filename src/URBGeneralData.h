@@ -21,7 +21,7 @@
 #include "DTEHeightField.h"
 #include "Cut_cell.h"
 #include "Wall.h"
-
+#include "OptixRayTrace.h"
 
 class URBInputData;
 
