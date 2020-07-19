@@ -57,9 +57,7 @@ CUDA_ADD_LIBRARY( cudaurbcore
   )
 
  
-IF (${OptiX-NOTFOUND})
-  MESSAGE(STATUS "No OptiX")
-ELSE()
+IF (${HAS_OPTIX_SUPPORT})
   cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
  
   add_library(qesOptix
@@ -74,7 +72,7 @@ cuda_add_executable( unitTest
   )
 
 
-IF (NOT ${OptiX-NOTFOUND})
+IF (${HAS_OPTIX_SUPPORT})
   target_link_libraries(unitTest qesOptix)
 ENDIF()
 

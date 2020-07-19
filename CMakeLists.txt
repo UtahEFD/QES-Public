@@ -111,24 +111,28 @@ ENDIF(CUDA_FOUND)
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;--use_fast_math;--keep-device-functions")
 
 
-# if CUDA 10.2 or higher is found, then OptiX support can be enabled
+#
+# if CUDA 10.2 or higher is found, then OptiX support can be enabled, so search for it.
+#
 MESSAGE(STATUS "Using CUDA Version: ${CUDA_VERSION}")
 if (${CUDA_VERSION} VERSION_GREATER_EQUAL 10.2)
-  MESSAGE(STATUS "Found CUDA 10.2 or higher! Next, searching for OptiX support.")
+  MESSAGE(STATUS "Found CUDA 10.2 or higher! Now searching for OptiX support...")
   
   #
   # NVIDIA OptiX
   #   current version used in project: 7.0
   #
-  FIND_PACKAGE(OptiX REQUIRED VERSION 7.0)
+  FIND_PACKAGE(OptiX)
 
   if (${OptiX-NOTFOUND})
-    MESSAGE(STATUS "OptiX is required for accelerating some computations with this project.  If you wish to run the project with OptiX GPU acceleration, please look into installing NVIDIA OptiX 7.0 or higher.")    
+    MESSAGE(STATUS "  OptiX is used for accelerating some computations with this project. If you wish to run the project with OptiX GPU acceleration, please look into installing NVIDIA CUDA 10.2 or higher and NVIDIA OptiX 7.0 or higher.")    
+    OPTION(HAS_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" OFF)
   else()
 
     MESSAGE(STATUS "Found NVIDIA OptiX 7.0")
 
     # Set the preprocessor definitions to conditonally compile the optix code
+    OPTION(HAS_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" ON)
     ADD_DEFINITIONS(-DHAS_OPTIX)
 
     include_directories(
@@ -170,7 +174,10 @@ if (${CUDA_VERSION} VERSION_GREATER_EQUAL 10.2)
   endif()  
 
 else()
-  MESSAGE(STATUS "Did NOT find CUDA 10.2 or higher!")
+  MESSAGE(STATUS "Did NOT find CUDA 10.2 or higher!  Disabling NVIDIA OptiX acceleration.")
+  MESSAGE(STATUS "  OptiX is used for accelerating some computations with this project. If you wish to run the project with OptiX GPU acceleration, please look into installing NVIDIA CUDA 10.2 or higher and NVIDIA OptiX 7.0 or higher.")    
+  # Disable OptiX Support
+  option(HAS_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" OFF)
 endif()
 
 #

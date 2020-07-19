@@ -12,9 +12,7 @@ target_link_libraries(cudaUrb curand)
 target_link_libraries(cudaUrb cudaurbcore)
 target_link_libraries(cudaUrb cudaurbutil)
 
-if (${OptiX-NOTFOUND})
-  MESSAGE(STATUS "Not linking with OptiX")
-ELSE()
+IF (${HAS_OPTIX_SUPPORT})
   target_link_libraries(cudaUrb qesOptix)
 ENDIF()
 
