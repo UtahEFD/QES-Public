@@ -11,7 +11,13 @@ CUDA_ADD_EXECUTABLE( cudaUrb
 target_link_libraries(cudaUrb curand)
 target_link_libraries(cudaUrb cudaurbcore)
 target_link_libraries(cudaUrb cudaurbutil)
-target_link_libraries(cudaUrb optix_lib)
+
+if (${OptiX-NOTFOUND})
+  MESSAGE(STATUS "Not linking with OptiX")
+ELSE()
+  target_link_libraries(cudaUrb qesOptix)
+ENDIF()
+
 target_link_libraries(cudaUrb ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(cudaUrb ${GDAL_LIBRARY})
 target_link_libraries(cudaUrb ${NETCDF_LIBRARIES_CXX})
