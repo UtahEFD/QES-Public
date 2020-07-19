@@ -1,9 +1,5 @@
 #include "Mesh.h"
 
-// #include "OptixRayTrace.h"
-// #include <optix_function_table_definition.h>
-
-
 float Mesh::getHeight(float x, float y)
 {
    return tris->heightToTri(x,y);
@@ -70,6 +66,8 @@ void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float d
 }
 
 
+// This needs to be removed from here in next round of edits.  Just
+// marking now.
 void Mesh::tempOPTIXMethod(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const vector<int> &icellflag, vector<double> &mixingLengths){
    std::cout<<"--------------Enters the tempOPTIXMethod--------------------"<<std::endl;
    //   OptixRayTrace optixRayTracer(optixTris);
