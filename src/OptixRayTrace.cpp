@@ -1,5 +1,5 @@
 #include "OptixRayTrace.h"
-
+#include <optix_function_table_definition.h>
 
 #define TEST 0      //Set to true for ground-only AS
 #define GEN_FILE 1  //Generate mixing length output file for testing

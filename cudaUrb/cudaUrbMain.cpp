@@ -44,6 +44,10 @@ int main(int argc, char *argv[])
     std::string Revision = "0";
     std::cout << "cudaUrb " << "0.8.0" << std::endl;
 
+#ifdef HAS_OPTIX
+    std::cout << "OptiX is available!" << std::endl;
+#endif
+
     // ///////////////////////////////////
     // Parse Command Line arguments
     // ///////////////////////////////////

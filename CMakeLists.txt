@@ -107,53 +107,78 @@ ELSE (CUDA_FOUND)
 ENDIF(CUDA_FOUND)
 
 
-#
-#NVIDIA OptiX
-#   current version used in project: 7.0
-#
-
 #use fast math option is required for OptiX
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;--use_fast_math;--keep-device-functions")
 
-FIND_PACKAGE(OptiX REQUIRED VERSION 7.0)
 
-include_directories(
-  ${OptiX_INCLUDE}
-  )
+#
+# if CUDA 10.2 or higher is found, then OptiX support can be enabled, so search for it.
+#
+MESSAGE(STATUS "Using CUDA Version: ${CUDA_VERSION}")
+if (${CUDA_VERSION} VERSION_GREATER_EQUAL 10.2)
+  MESSAGE(STATUS "Found CUDA 10.2 or higher! Now searching for OptiX support...")
+  
+  #
+  # NVIDIA OptiX
+  #   current version used in project: 7.0
+  #
+  FIND_PACKAGE(OptiX)
 
+  if (${OptiX-NOTFOUND})
+    MESSAGE(STATUS "  OptiX is used for accelerating some computations with this project. If you wish to run the project with OptiX GPU acceleration, please look into installing NVIDIA CUDA 10.2 or higher and NVIDIA OptiX 7.0 or higher.")    
+    OPTION(HAS_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" OFF)
+  else()
 
-file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/ptx") #ptx files located here
-add_definitions(-DPTX_DIR="${CMAKE_BINARY_DIR}/ptx") #PTX_DIR
-set(PTX_DIR "${CMAKE_BINARY_DIR}/ptx")
-set(CUDA_GENERATED_OUTPUT_DIR ${PTX_DIR})
+    MESSAGE(STATUS "Found NVIDIA OptiX 7.0")
 
-find_program(BIN2C bin2c DOC "Path to the cuda-sdk bin2c executable.")
+    # Set the preprocessor definitions to conditonally compile the optix code
+    OPTION(HAS_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" ON)
+    ADD_DEFINITIONS(-DHAS_OPTIX)
 
-# this macro defines cmake rules that execute the following four steps:
-# 1) compile the given cuda file ${cuda_file} to an intermediary PTX file
-# 2) use the 'bin2c' tool (that comes with CUDA) to
-#    create a second intermediary (.c-)file which defines a const string variable
-#    (named '${c_var_name}') whose (constant) value is the PTX output
-#    from the previous step.
-# 3) compile the given .c file to an intermediary object file (why thus has
-#    that PTX string 'embedded' as a global constant.
-# 4) assign the name of the intermediary .o file to the cmake variable
-#    'output_var', which can then be added to cmake targets.
-macro(cuda_compile_and_embed output_var cuda_file)
-  set(c_var_name ${output_var})
-  cuda_compile_ptx(ptx_files ${cuda_file})
-  list(GET ptx_files 0 ptx_file)
-  set(embedded_file ${ptx_file}_embedded.c)
-#  message("adding rule to compile and embed ${cuda_file} to \"const char ${var_name}[];\"")
-  add_custom_command(
-    OUTPUT ${embedded_file}
-    COMMAND ${BIN2C} -c --padd 0 --type char --name ${c_var_name} ${ptx_file} > ${embedded_file}
-    DEPENDS ${ptx_file}
-    COMMENT "compiling (and embedding ptx from) ${cuda_file}"
-    )
-  set(${output_var} ${embedded_file})
-endmacro()
+    include_directories(
+      ${OptiX_INCLUDE}
+      )
 
+    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/ptx") #ptx files located here
+    add_definitions(-DPTX_DIR="${CMAKE_BINARY_DIR}/ptx") #PTX_DIR
+    set(PTX_DIR "${CMAKE_BINARY_DIR}/ptx")
+    set(CUDA_GENERATED_OUTPUT_DIR ${PTX_DIR})
+
+    find_program(BIN2C bin2c DOC "Path to the cuda-sdk bin2c executable.")
+
+    # this macro defines cmake rules that execute the following four steps:
+    # 1) compile the given cuda file ${cuda_file} to an intermediary PTX file
+    # 2) use the 'bin2c' tool (that comes with CUDA) to
+    #    create a second intermediary (.c-)file which defines a const string variable
+    #    (named '${c_var_name}') whose (constant) value is the PTX output
+    #    from the previous step.
+    # 3) compile the given .c file to an intermediary object file (why thus has
+    #    that PTX string 'embedded' as a global constant.
+    # 4) assign the name of the intermediary .o file to the cmake variable
+    #    'output_var', which can then be added to cmake targets.
+    macro(cuda_compile_and_embed output_var cuda_file)
+      set(c_var_name ${output_var})
+      cuda_compile_ptx(ptx_files ${cuda_file})
+      list(GET ptx_files 0 ptx_file)
+      set(embedded_file ${ptx_file}_embedded.c)
+      #  message("adding rule to compile and embed ${cuda_file} to \"const char ${var_name}[];\"")
+      add_custom_command(
+	OUTPUT ${embedded_file}
+	COMMAND ${BIN2C} -c --padd 0 --type char --name ${c_var_name} ${ptx_file} > ${embedded_file}
+	DEPENDS ${ptx_file}
+	COMMENT "compiling (and embedding ptx from) ${cuda_file}"
+	)
+      set(${output_var} ${embedded_file})
+    endmacro()
+
+  endif()  
+
+else()
+  MESSAGE(STATUS "Did NOT find CUDA 10.2 or higher!  Disabling NVIDIA OptiX acceleration.")
+  MESSAGE(STATUS "  OptiX is used for accelerating some computations with this project. If you wish to run the project with OptiX GPU acceleration, please look into installing NVIDIA CUDA 10.2 or higher and NVIDIA OptiX 7.0 or higher.")    
+  # Disable OptiX Support
+  option(HAS_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" OFF)
+endif()
 
 #
 # Find doxygen so we can add a target for building
