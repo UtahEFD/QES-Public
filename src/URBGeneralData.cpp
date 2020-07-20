@@ -519,6 +519,56 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
    mergeSort( effective_height, allBuildingsV, building_id );
 
    // ///////////////////////////////////////
+#if 0
+   // If we're calculating mixing length, make sure to add the //
+   // buildings to the bvh used to calculate length scale
+   if (UID->buildings && m_calcMixingLength) {
+
+       std::vector< Triangle* > buildingTris;
+       for (auto bIdx = 0u; bIdx < UID->buildings->buildings.size(); bIdx++)
+       {
+           // for each polyvert edge, create triangles of the sides                                                                                                      
+           while for (auto pIdx=0u; pIdx<UID->buildings->buildings[bIdx]->polygonVertices.size(); pIdx++)
+           {
+
+           }
+
+           // then create triangulated roof                                                                                                                              
+       }
+
+   }
+
+   std::vector< Triangle* > groundTris(2);
+   if (UID->simParams->DTE_heightField == nullptr && m_calcMixingLength) {
+
+       // need to make sure we add the ground plane triangles.  There                                                                                                    
+       // is no DEM in this case.                                                                                                                                        
+       groundTris[0] = new Triangle( Vector3<float>(0.0, 0.0, 0.0), Vector3<float>(nx*dx, 0.0f, 0.0f), Vector3<float>(nx*dx, ny*dy, 0.0f) );
+       groundTris[1] = new Triangle( Vector3<float>(0.0, 0.0, 0.0), Vector3<float>(nx*dx, ny*dy, 0.0f), Vector3<float>(0.0f, ny*dy, 0.0f) );
+
+   }
+
+   if (m_calcMixingLength) {
+
+       // Assemble list of all triangles and create the mesh BVH                                                                                                         
+       std::vector<Triangle*> allTriangles;
+
+       if (UID->simParams->DTE_heightField) {
+           allTriangles.resize( UID->simParams->DTE_heightField->getTris().size() );
+           std::copy(UID->simParams->DTE_heightField->getTris().begin(), UID->simParams->DTE_heightField->getTris().end(), allTriangles.begin());
+       }
+       else {
+           allTriangles.insert(allTriangles.end(), groundTris.begin(), groundTris.end());
+       }
+
+       std::cout << "Forming Length Scale triangle mesh...\n";
+
+
+       m_mixingLengthMesh = new Mesh(allTriangles);
+       std::cout << "Mesh complete\n";
+
+   }
+#endif
    // ///////////////////////////////////////
 
    wall = new Wall();
