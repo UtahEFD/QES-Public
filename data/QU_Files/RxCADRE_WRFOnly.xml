@@ -66,8 +66,8 @@ Use Case - WRF with no Fire Mesh (i.e. Korea)
 
 </metParams>							<!-- End of meteorological parameters -->
 <localMixingParam>
-  <method>0</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
-  <save>false</save>     <!-- Save to file -->
+  <method>3</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <save>true</save>     <!-- Save to file -->
   <LMfile>../scratch/RxCADRE/RxCADRE_WRFOnly_mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
 </localMixingParam>
 <fileOptions>
