@@ -530,10 +530,39 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
            // for each polyvert edge, create triangles of the sides                                                                                                      
            while for (auto pIdx=0u; pIdx<UID->buildings->buildings[bIdx]->polygonVertices.size(); pIdx++)
            {
+               // each (x_poly, y_poly) represents 1 vertices of the
+               // polygon that is 2D.
+
+
+               // Form a line between (x_poly_i, y_poly_i) and (x_poly_i+1, y_poly_i+1)
+	       //
+	       // That line can be extruded to form a plane that could
+	       // be decomposed into two triangles.
+               //
+               // Building has base_height -- should be the "ground"
+               // of the building.
+               //
+               // Building also has height_eff, which is the height of
+               // the building
+               //
+               // So triangle1 of face_i should be
+               // (x_poly_i, y_poly_i, base_height)
+               // (x_poly_i+1, y_poly_i+1, base_height)
+               // (x_poly_i+1, y_poly_i+1, base_height + height_eff)
+               //
+               // Then triangle2 of face_i should be
+               // (x_poly_i, y_poly_i, base_height)
+               // (x_poly_i+1, y_poly_i+1, base_height + height_eff)
+               // (x_poly_i, y_poly_i, base_height + height_eff)
+               // 
 
            }
 
-           // then create triangulated roof                                                                                                                              
+           // then create triangulated roof
+           // requires walking through the base_height + height_eff
+           // polygon plane and creating triangles...
+
+           // triangle fan starting at vertice 0 of the polygon
        }
 
    }
@@ -541,11 +570,10 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
    std::vector< Triangle* > groundTris(2);
    if (UID->simParams->DTE_heightField == nullptr && m_calcMixingLength) {
 
-       // need to make sure we add the ground plane triangles.  There                                                                                                    
-       // is no DEM in this case.                                                                                                                                        
+       // need to make sure we add the ground plane triangles.  There
+       // // is no DEM in this case.
        groundTris[0] = new Triangle( Vector3<float>(0.0, 0.0, 0.0), Vector3<float>(nx*dx, 0.0f, 0.0f), Vector3<float>(nx*dx, ny*dy, 0.0f) );
        groundTris[1] = new Triangle( Vector3<float>(0.0, 0.0, 0.0), Vector3<float>(nx*dx, ny*dy, 0.0f), Vector3<float>(0.0f, ny*dy, 0.0f) );
-
    }
 
    if (m_calcMixingLength) {
@@ -696,6 +724,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
 
 #ifdef HAS_OPTIX
          //TODO: Find a better way to get the list of Triangles
+          // Will need to use ALL triangles vector rather than the DTE
+          // mesh of triangles...
          OptixRayTrace optixRayTracer(UID->simParams->DTE_mesh->getTris());
          optixRayTracer.calculateMixingLength( UID->localMixingParam->mlSamplesPerAirCell, nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
 #else
