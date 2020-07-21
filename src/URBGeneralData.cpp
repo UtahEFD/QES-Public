@@ -522,147 +522,150 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
    mergeSort( effective_height, allBuildingsV, building_id );
 
    // ///////////////////////////////////////
-//#if 0
-   // If we're calculating mixing length, make sure to add the //
+   // 
+   // Mixing Length Ray Tracing Geometry Processing
+   // 
+   // If we're calculating mixing length, make sure to add the
    // buildings to the bvh used to calculate length scale
    std::vector< Triangle* > buildingTris;
 
-   if (UID->buildings /*&& m_calcMixingLength*/) {
+   if (allBuildingsV.size() > 0) {
+       
        std::cout << "Preparing building geometry data for mixing length calculations." << std::endl;
        
-      for (auto bIdx = 0u; bIdx < UID->buildings->buildings.size(); bIdx++)
-      {
-         // for each polyvert edge, create triangles of the sides
-         for (auto pIdx=0u; pIdx < UID->buildings->buildings[bIdx]->polygonVertices.size(); pIdx++)
-         {
-            // each (x_poly, y_poly) represents 1 vertices of the
-            // polygon that is 2D.
+       // for (auto bIdx = 0u; bIdx <
+       // UID->buildings->buildings.size(); bIdx++)
+       for (auto bIdx = 0u; bIdx < allBuildingsV.size(); bIdx++)
+       {
+
+           std::cout << "Building " << bIdx << std::endl;
+
+           // for each polyvert edge, create triangles of the sides
+           for (auto pIdx=0u; pIdx < allBuildingsV[bIdx]->polygonVertices.size(); pIdx++)
+           {
+               // each (x_poly, y_poly) represents 1 vertices of the
+               // polygon that is 2D.
 
 
-            // Form a line between (x_poly_i, y_poly_i) and (x_poly_i+1, y_poly_i+1)
-            //
-            // That line can be extruded to form a plane that could
-            // be decomposed into two triangles.
-            //
-            // Building has base_height -- should be the "ground"
-            // of the building.
-            //
-            // Building also has height_eff, which is the height of
-            // the building
-            //
-            // So triangle1 of face_i should be
-            // (x_poly_i, y_poly_i, base_height)
-            // (x_poly_i+1, y_poly_i+1, base_height)
-            // (x_poly_i+1, y_poly_i+1, base_height + height_eff)
-            //
-            // Then triangle2 of face_i should be
-            // (x_poly_i, y_poly_i, base_height)
-            // (x_poly_i+1, y_poly_i+1, base_height + height_eff)
-            // (x_poly_i, y_poly_i, base_height + height_eff)
-            //
+               // Form a line between (x_poly_i, y_poly_i) and (x_poly_i+1, y_poly_i+1)
+               //
+               // That line can be extruded to form a plane that could
+               // be decomposed into two triangles.
+               //
+               // Building has base_height -- should be the "ground"
+               // of the building.
+               //
+               // Building also has height_eff, which is the height of
+               // the building
+               //
+               // So triangle1 of face_i should be
+               // (x_poly_i, y_poly_i, base_height)
+               // (x_poly_i+1, y_poly_i+1, base_height)
+               // (x_poly_i+1, y_poly_i+1, base_height + height_eff)
+               //
+               // Then triangle2 of face_i should be
+               // (x_poly_i, y_poly_i, base_height)
+               // (x_poly_i+1, y_poly_i+1, base_height + height_eff)
+               // (x_poly_i, y_poly_i, base_height + height_eff)
+               //
+
+               if(pIdx == allBuildingsV[bIdx]->polygonVertices.size()-1){ //wrap around case for last vertices
+
+                   std::cout << "\t pIdx = " << pIdx << std::endl;
+
+                   //Triangle 1
+                   Triangle *tri1 = new Triangle(Vector3<float>(allBuildingsV[bIdx]->polygonVertices[pIdx].x_poly,
+                                                                allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
+                                                                allBuildingsV[bIdx]->base_height),
+                                                 Vector3<float>(allBuildingsV[bIdx]->polygonVertices[0].x_poly,
+                                                                allBuildingsV[bIdx]->polygonVertices[0].y_poly,
+                                                                allBuildingsV[bIdx]->base_height),
+                                                 Vector3<float>(allBuildingsV[bIdx]->polygonVertices[0].x_poly,
+                                                                allBuildingsV[bIdx]->polygonVertices[0].y_poly,
+                                                                allBuildingsV[bIdx]->base_height+allBuildingsV[bIdx]->H)
+                       );
+
+                   //Triangle 2
+                   Triangle *tri2 = new Triangle(Vector3<float>(allBuildingsV[bIdx]->polygonVertices[pIdx].x_poly,
+                                                                allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
+                                                                allBuildingsV[bIdx]->base_height+allBuildingsV[bIdx]->H),
+                                                 Vector3<float>(allBuildingsV[bIdx]->polygonVertices[0].x_poly,
+                                                                allBuildingsV[bIdx]->polygonVertices[0].y_poly,
+                                                                allBuildingsV[bIdx]->base_height+allBuildingsV[bIdx]->H),
+                                                 Vector3<float>(allBuildingsV[bIdx]->polygonVertices[0].x_poly,
+                                                                allBuildingsV[bIdx]->polygonVertices[0].y_poly,
+                                                                allBuildingsV[bIdx]->base_height)
+                       );
+
+                   buildingTris.push_back(tri1);
+                   buildingTris.push_back(tri2);
 
 
-            if(pIdx == UID->buildings->buildings[bIdx]->polygonVertices.size()-1){ //wrap around case for last vertices
+               }else{
+                   //Triangle 1
+                   Triangle *tri1 = new Triangle(Vector3<float>(allBuildingsV[bIdx]->polygonVertices[pIdx].x_poly,
+                                                                allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
+                                                                allBuildingsV[bIdx]->base_height),
+                                                 Vector3<float>(allBuildingsV[bIdx]->polygonVertices[pIdx+1].x_poly,
+                                                                allBuildingsV[bIdx]->polygonVertices[pIdx+1].y_poly,
+                                                                allBuildingsV[bIdx]->base_height),
+                                                 Vector3<float>(allBuildingsV[bIdx]->polygonVertices[pIdx+1].x_poly,
+                                                                allBuildingsV[bIdx]->polygonVertices[pIdx+1].y_poly,
+                                                                allBuildingsV[bIdx]->base_height+allBuildingsV[bIdx]->H)
+                       );
 
+                   //Triangle 2
+                   Triangle *tri2 = new Triangle(Vector3<float>(allBuildingsV[bIdx]->polygonVertices[pIdx].x_poly,
+                                                                allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
+                                                                allBuildingsV[bIdx]->base_height+allBuildingsV[bIdx]->H),
+                                                 Vector3<float>(allBuildingsV[bIdx]->polygonVertices[pIdx+1].x_poly,
+                                                                allBuildingsV[bIdx]->polygonVertices[pIdx+1].y_poly,
+                                                                allBuildingsV[bIdx]->base_height+allBuildingsV[bIdx]->H),
+                                                 Vector3<float>(allBuildingsV[bIdx]->polygonVertices[pIdx+1].x_poly,
+                                                                allBuildingsV[bIdx]->polygonVertices[pIdx+1].y_poly,
+                                                                allBuildingsV[bIdx]->base_height)
+                       );
 
-               //Triangle 1
-               Triangle *tri1 = new Triangle(Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx].x_poly,
-                                                            UID->buildings->buildings[bIdx]->polygonVertices[pIdx].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height),
-                                             Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[0].x_poly,
-                                                            UID->buildings->buildings[bIdx]->polygonVertices[0].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height),
-                                             Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[0].x_poly,
-                                                            UID->buildings->buildings[bIdx]->polygonVertices[0].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H)
-                                             );
+                   buildingTris.push_back(tri1);
+                   buildingTris.push_back(tri2);
 
-               //Triangle 2
-               Triangle *tri2 = new Triangle(Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx].x_poly,
-                                                            UID->buildings->buildings[bIdx]->polygonVertices[pIdx].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H),
-                                             Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[0].x_poly,
-                                                            UID->buildings->buildings[bIdx]->polygonVertices[0].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H),
-                                             Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[0].x_poly,
-                                                            UID->buildings->buildings[bIdx]->polygonVertices[0].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height)
-                                             );
+               }
 
-               buildingTris.push_back(tri1);
-               buildingTris.push_back(tri2);
-
-
-            }else{
-               //Triangle 1
-               Triangle *tri1 = new Triangle(Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx].x_poly,
-                                                            UID->buildings->buildings[bIdx]->polygonVertices[pIdx].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height),
-                                             Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].x_poly,
-                                                            UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height),
-                                             Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].x_poly,
-                                                            UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H)
-                                             );
-
-               //Triangle 2
-               Triangle *tri2 = new Triangle(Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx].x_poly,
-                                                            UID->buildings->buildings[bIdx]->polygonVertices[pIdx].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H),
-                                             Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].x_poly,
-                                                            UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H),
-                                             Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].x_poly,
-                                                            UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height)
-                                             );
-
-               buildingTris.push_back(tri1);
-               buildingTris.push_back(tri2);
-
-            }
-
-         } //end of while
-
-
-
-
-
-         // then create triangulated roof
-         // requires walking through the base_height + height_eff
-         // polygon plane and creating triangles...
-
-         // triangle fan starting at vertice 0 of the polygon
-
-         //Base Point (take the first polyvert edge and "fan" around
-         Vector3<float> baseRoofPt(UID->buildings->buildings[bIdx]->polygonVertices[0].x_poly,
-                                   UID->buildings->buildings[bIdx]->polygonVertices[0].y_poly,
-                                   UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H
-                                   );
+           } //end of while
 
 
 
-         for (auto pIdx=1u; pIdx < UID->buildings->buildings[bIdx]->polygonVertices.size()-1; pIdx++){
-
-             Triangle* triRoof = new Triangle(baseRoofPt,
-                                              Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx].x_poly,
-                                                             UID->buildings->buildings[bIdx]->polygonVertices[pIdx].y_poly,
-                                                             UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H),
-                                              Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].x_poly,
-                                                             UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].y_poly,
-                                                             UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H));
-
-            buildingTris.push_back(triRoof);
-
-         } //end of roof for loop
 
 
+           // then create triangulated roof
+           // requires walking through the base_height + height_eff
+           // polygon plane and creating triangles...
 
-      }
+           // triangle fan starting at vertice 0 of the polygon
 
+           //Base Point (take the first polyvert edge and "fan" around
+           Vector3<float> baseRoofPt(allBuildingsV[bIdx]->polygonVertices[0].x_poly,
+                                     allBuildingsV[bIdx]->polygonVertices[0].y_poly,
+                                     allBuildingsV[bIdx]->base_height+allBuildingsV[bIdx]->H
+               );
+
+
+
+           for (auto pIdx=1u; pIdx < allBuildingsV[bIdx]->polygonVertices.size()-1; pIdx++){
+
+               Triangle* triRoof = new Triangle(baseRoofPt,
+                                                Vector3<float>(allBuildingsV[bIdx]->polygonVertices[pIdx].x_poly,
+                                                               allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
+                                                               allBuildingsV[bIdx]->base_height+allBuildingsV[bIdx]->H),
+                                                Vector3<float>(allBuildingsV[bIdx]->polygonVertices[pIdx+1].x_poly,
+                                                               allBuildingsV[bIdx]->polygonVertices[pIdx+1].y_poly,
+                                                               allBuildingsV[bIdx]->base_height+allBuildingsV[bIdx]->H));
+
+               buildingTris.push_back(triRoof);
+
+           } //end of roof for loop
+       }
    }
-//#endif
 
 
    std::vector< Triangle* > groundTris(2);
