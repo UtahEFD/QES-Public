@@ -33,7 +33,7 @@ extern "C" __global__ void __raygen__from_cell(){
 
   uint32_t t;
 
-  if(params.icellflagArray[linear_idx] == 1){
+  if(params.icellflagArray[linear_idx] != 0){
 
      float lowestLen = FLT_MAX; //current lowest length
 
