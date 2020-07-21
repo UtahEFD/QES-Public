@@ -474,6 +474,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
    // from Building in the end...
    if ( UID->buildings )
    {
+       std::cout << "Consolidating building data..." << std::endl;
+       
       float corner_height, min_height;
       for (size_t i = 0; i < UID->buildings->buildings.size(); i++)
       {
@@ -516,6 +518,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
    // do this... (remember some are canopies) so we may need a
    // virtual function in the Building class to get the appropriate
    // data for the sort.
+   std::cout << "Sorting buildings by height..." << std::endl;
    mergeSort( effective_height, allBuildingsV, building_id );
 
    // ///////////////////////////////////////
@@ -525,6 +528,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
    std::vector< Triangle* > buildingTris;
 
    if (UID->buildings /*&& m_calcMixingLength*/) {
+       std::cout << "Preparing building geometry data for mixing length calculations." << std::endl;
+       
       for (auto bIdx = 0u; bIdx < UID->buildings->buildings.size(); bIdx++)
       {
          // for each polyvert edge, create triangles of the sides
@@ -569,16 +574,16 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
                                                             UID->buildings->buildings[bIdx]->base_height),
                                              Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[0].x_poly,
                                                             UID->buildings->buildings[bIdx]->polygonVertices[0].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->height_eff)
+                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H)
                                              );
 
                //Triangle 2
                Triangle *tri2 = new Triangle(Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx].x_poly,
                                                             UID->buildings->buildings[bIdx]->polygonVertices[pIdx].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->height_eff),
+                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H),
                                              Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[0].x_poly,
                                                             UID->buildings->buildings[bIdx]->polygonVertices[0].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->height_eff),
+                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H),
                                              Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[0].x_poly,
                                                             UID->buildings->buildings[bIdx]->polygonVertices[0].y_poly,
                                                             UID->buildings->buildings[bIdx]->base_height)
@@ -598,16 +603,16 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
                                                             UID->buildings->buildings[bIdx]->base_height),
                                              Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].x_poly,
                                                             UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->height_eff)
+                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H)
                                              );
 
                //Triangle 2
                Triangle *tri2 = new Triangle(Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx].x_poly,
                                                             UID->buildings->buildings[bIdx]->polygonVertices[pIdx].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->height_eff),
+                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H),
                                              Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].x_poly,
                                                             UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].y_poly,
-                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->height_eff),
+                                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H),
                                              Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].x_poly,
                                                             UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].y_poly,
                                                             UID->buildings->buildings[bIdx]->base_height)
@@ -633,7 +638,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
          //Base Point (take the first polyvert edge and "fan" around
          Vector3<float> baseRoofPt(UID->buildings->buildings[bIdx]->polygonVertices[0].x_poly,
                                    UID->buildings->buildings[bIdx]->polygonVertices[0].y_poly,
-                                   UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->height_eff
+                                   UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H
                                    );
 
 
@@ -643,10 +648,10 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
             Triangle triRoof(baseRoofPt,
                              Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx].x_poly,
                                             UID->buildings->buildings[bIdx]->polygonVertices[pIdx].y_poly,
-                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->height_eff),
+                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H),
                              Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].x_poly,
                                             UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].y_poly,
-                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->height_eff)
+                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H)
                              );
 
             buildingTris.push_back(&triRoof);
