@@ -559,6 +559,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
 
             if(pIdx == UID->buildings->buildings[bIdx]->polygonVertices.size()-1){ //wrap around case for last vertices
 
+
                //Triangle 1
                Triangle *tri1 = new Triangle(Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx].x_poly,
                                                             UID->buildings->buildings[bIdx]->polygonVertices[pIdx].y_poly,
@@ -617,301 +618,256 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
 
             }
 
-
-
-
          } //end of while
 
 
 
-         /*
 
-         //test cube
-         Triangle tri1(Vector3<float>(100,50,0),
-         Vector3<float>(100,100,0),
-         Vector3<float>(100,50,50));
-
-         Triangle *tri2 = new Triangle(Vector3<float>(100,100,0),
-         Vector3<float>(100,100, 50),
-         Vector3<float>(100,50,50));
-
-         Triangle *tri3 = new Triangle(Vector3<float>(100,100,0),
-         Vector3<float>(100,100,50),
-         Vector3<float>(50,100,50));
-
-         Triangle *tri4 = new Triangle(Vector3<float>(50,100,0),
-         Vector3<float>(50,100,50),
-         Vector3<float>(100,100,50));
-
-         Triangle *tri5 = new Triangle(Vector3<float>(50,100,0),
-         Vector3<float>(50,100,50),
-         Vector3<float>(50,50,50));
-
-         Triangle *tri6 = new Triangle(Vector3<float>(50,50,0),
-         Vector3<float>(50,50,50),
-         Vector3<float>(50,100,50));
-
-         Triangle *tri7 = new Triangle(Vector3<float>(50,50,0),
-         Vector3<float>(50,50,50),
-         Vector3<float>(100,50,50));
-
-         Triangle *tri8 = new Triangle(Vector3<float>(50,50,0),
-         Vector3<float>(100,50,0),
-         Vector3<float>(100,50,50));
-
-         Triangle *tri9 = new Triangle(Vector3<float>(100,50,0),
-         Vector3<float>(50,50,0),
-         Vector3<float>(50,100,0));
-
-         Triangle *tri10 = new Triangle(Vector3<float>(100,50,0),
-         Vector3<float>(100,100,0),
-         Vector3<float>(50,100,0));
-
-         Triangle *tri11 = new Triangle(Vector3<float>(100,50,50),
-         Vector3<float>(100,100,50),
-         Vector3<float>(50,100,50));
-
-
-         Triangle *tri12 = new Triangle(Vector3<float>(100,50,50),
-         Vector3<float>(50,50,50),
-         Vector3<float>(50,100,50));
-
-
-         buildingTris.push_back(&tri1);
-         buildingTris.push_back(tri2);
-         buildingTris.push_back(tri3);
-         buildingTris.push_back(tri4);
-         buildingTris.push_back(tri5);
-         buildingTris.push_back(tri6);
-         buildingTris.push_back(tri7);
-         buildingTris.push_back(tri8);
-         buildingTris.push_back(tri9);
-         buildingTris.push_back(tri10);
-         buildingTris.push_back(tri11);
-         buildingTris.push_back(tri12);
-
-         std::cout<<"Bulding size after tri just added = "<<buildingTris.size()<<std::endl;
-
-         */
 
          // then create triangulated roof
          // requires walking through the base_height + height_eff
          // polygon plane and creating triangles...
 
          // triangle fan starting at vertice 0 of the polygon
+
+         //Base Point (take the first polyvert edge and "fan" around
+         Vector3<float> baseRoofPt(UID->buildings->buildings[bIdx]->polygonVertices[0].x_poly,
+                                   UID->buildings->buildings[bIdx]->polygonVertices[0].y_poly,
+                                   UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->height_eff
+                                   );
+
+
+
+         for (auto pIdx=1u; pIdx < UID->buildings->buildings[bIdx]->polygonVertices.size()-1; pIdx++){
+
+            Triangle triRoof(baseRoofPt,
+                             Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx].x_poly,
+                                            UID->buildings->buildings[bIdx]->polygonVertices[pIdx].y_poly,
+                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->height_eff),
+                             Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].x_poly,
+                                            UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].y_poly,
+                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->height_eff)
+                             );
+
+            buildingTris.push_back(&triRoof);
+
+         } //end of roof for loop
+
+
+
       }
 
    }
 //#endif
 
 
-      std::vector< Triangle* > groundTris(2);
-      if (UID->simParams->DTE_heightField == nullptr /*&& m_calcMixingLength*/) {
+   std::vector< Triangle* > groundTris(2);
+   if (UID->simParams->DTE_heightField == nullptr /*&& m_calcMixingLength*/) {
 
-         // need to make sure we add the ground plane triangles.  There
-         // // is no DEM in this case.
-         groundTris[0] = new Triangle( Vector3<float>(0.0, 0.0, 0.0), Vector3<float>(nx*dx, 0.0f, 0.0f), Vector3<float>(nx*dx, ny*dy, 0.0f) );
-         groundTris[1] = new Triangle( Vector3<float>(0.0, 0.0, 0.0), Vector3<float>(nx*dx, ny*dy, 0.0f), Vector3<float>(0.0f, ny*dy, 0.0f) );
-      }
+      // need to make sure we add the ground plane triangles.  There
+      // // is no DEM in this case.
+      groundTris[0] = new Triangle( Vector3<float>(0.0, 0.0, 0.0), Vector3<float>(nx*dx, 0.0f, 0.0f), Vector3<float>(nx*dx, ny*dy, 0.0f) );
+      groundTris[1] = new Triangle( Vector3<float>(0.0, 0.0, 0.0), Vector3<float>(nx*dx, ny*dy, 0.0f), Vector3<float>(0.0f, ny*dy, 0.0f) );
+   }
 
 //   if (m_calcMixingLength) {
 
-      // Assemble list of all triangles and create the mesh BVH
-      std::vector<Triangle*> allTriangles;
+   // Assemble list of all triangles and create the mesh BVH
+   std::vector<Triangle*> allTriangles;
 
 
-      if (UID->simParams->DTE_heightField) {
+   if (UID->simParams->DTE_heightField) {
 
-         allTriangles.resize( UID->simParams->DTE_heightField->getTris().size() );
+      allTriangles.resize( UID->simParams->DTE_heightField->getTris().size() );
 
 
-         //std::copy(UID->simParams->DTE_heightField->getTris().begin(), UID->simParams->DTE_heightField->getTris().end(), allTriangles.begin());
+      //std::copy(UID->simParams->DTE_heightField->getTris().begin(), UID->simParams->DTE_heightField->getTris().end(), allTriangles.begin());
 
-         for(int i = 0; i < UID->simParams->DTE_heightField->getTris().size(); i++){
-            allTriangles[i] = UID->simParams->DTE_heightField->getTris()[i];
-         }
-
-      }
-      else {
-         allTriangles.insert(allTriangles.end(), groundTris.begin(), groundTris.end());
+      for(int i = 0; i < UID->simParams->DTE_heightField->getTris().size(); i++){
+         allTriangles[i] = UID->simParams->DTE_heightField->getTris()[i];
       }
 
-      std::cout << "Forming Length Scale triangle mesh...\n";
+   }
+   else {
+      allTriangles.insert(allTriangles.end(), groundTris.begin(), groundTris.end());
+   }
 
-      //combine with buildings
-      if (UID->buildings){
-         std::cout<<"Buildingtris size = "<<buildingTris.size()<<std::endl;
-         for(int i = 0; i < buildingTris.size(); i++){
-            allTriangles.push_back(buildingTris[i]);
-         }
+   std::cout << "Forming Length Scale triangle mesh...\n";
+
+   //combine with buildings
+   if (UID->buildings){
+      std::cout<<"Buildingtris size = "<<buildingTris.size()<<std::endl;
+      for(int i = 0; i < buildingTris.size(); i++){
+         allTriangles.push_back(buildingTris[i]);
       }
+   }
 
 
-      Mesh *m_mixingLengthMesh = new Mesh(allTriangles);
-      std::cout << "Mesh complete\n";
+   Mesh *m_mixingLengthMesh = new Mesh(allTriangles);
+   std::cout << "Mesh complete\n";
 
-      // }
+   // }
 //#endif
-      // ///////////////////////////////////////
+   // ///////////////////////////////////////
 
-      wall = new Wall();
+   wall = new Wall();
 
-      std::cout << "Defining Solid Walls...\n";
-      // Boundary condition for building edges
-      wall->defineWalls(this);
-      std::cout << "Walls Defined...\n";
+   std::cout << "Defining Solid Walls...\n";
+   // Boundary condition for building edges
+   wall->defineWalls(this);
+   std::cout << "Walls Defined...\n";
 
-      wall->solverCoefficients (this);
+   wall->solverCoefficients (this);
 
-      // ///////////////////////////////////////
-      // Generic Parameterization Related Stuff
-      // ///////////////////////////////////////
+   // ///////////////////////////////////////
+   // Generic Parameterization Related Stuff
+   // ///////////////////////////////////////
+   for (size_t i = 0; i < allBuildingsV.size(); i++)
+   {
+      // for now this does the canopy stuff for us
+      allBuildingsV[building_id[i]]->canopyVegetation(this);
+   }
+
+   ///////////////////////////////////////////
+   //   Upwind Cavity Parameterization     ///
+   ///////////////////////////////////////////
+   if (UID->simParams->upwindCavityFlag > 0)
+   {
+      std::cout << "Applying upwind cavity parameterization...\n";
       for (size_t i = 0; i < allBuildingsV.size(); i++)
       {
-         // for now this does the canopy stuff for us
-         allBuildingsV[building_id[i]]->canopyVegetation(this);
+         allBuildingsV[building_id[i]]->upwindCavity(UID, this);
       }
+      std::cout << "Upwind cavity parameterization done...\n";
+   }
 
-      ///////////////////////////////////////////
-      //   Upwind Cavity Parameterization     ///
-      ///////////////////////////////////////////
-      if (UID->simParams->upwindCavityFlag > 0)
+   //////////////////////////////////////////////////
+   //   Far-Wake and Cavity Parameterizations     ///
+   //////////////////////////////////////////////////
+   if (UID->simParams->wakeFlag > 0)
+   {
+      std::cout << "Applying wake behind building parameterization...\n";
+      for (size_t i = 0; i < allBuildingsV.size(); i++)
       {
-         std::cout << "Applying upwind cavity parameterization...\n";
-         for (size_t i = 0; i < allBuildingsV.size(); i++)
-         {
-            allBuildingsV[building_id[i]]->upwindCavity(UID, this);
-         }
-         std::cout << "Upwind cavity parameterization done...\n";
+         allBuildingsV[building_id[i]]->polygonWake(UID, this, building_id[i]);
       }
+      std::cout << "Wake behind building parameterization done...\n";
+   }
 
-      //////////////////////////////////////////////////
-      //   Far-Wake and Cavity Parameterizations     ///
-      //////////////////////////////////////////////////
-      if (UID->simParams->wakeFlag > 0)
+   ///////////////////////////////////////////
+   //   Street Canyon Parameterization     ///
+   ///////////////////////////////////////////
+   if (UID->simParams->streetCanyonFlag > 0)
+   {
+      std::cout << "Applying street canyon parameterization...\n";
+      for (size_t i = 0; i < allBuildingsV.size(); i++)
       {
-         std::cout << "Applying wake behind building parameterization...\n";
-         for (size_t i = 0; i < allBuildingsV.size(); i++)
-         {
-            allBuildingsV[building_id[i]]->polygonWake(UID, this, building_id[i]);
-         }
-         std::cout << "Wake behind building parameterization done...\n";
+         allBuildingsV[building_id[i]]->streetCanyon(this);
       }
+      std::cout << "Street canyon parameterization done...\n";
+   }
 
-      ///////////////////////////////////////////
-      //   Street Canyon Parameterization     ///
-      ///////////////////////////////////////////
-      if (UID->simParams->streetCanyonFlag > 0)
+   ///////////////////////////////////////////
+   //      Sidewall Parameterization       ///
+   ///////////////////////////////////////////
+   if (UID->simParams->sidewallFlag > 0)
+   {
+      std::cout << "Applying sidewall parameterization...\n";
+      for (size_t i = 0; i < allBuildingsV.size(); i++)
       {
-         std::cout << "Applying street canyon parameterization...\n";
-         for (size_t i = 0; i < allBuildingsV.size(); i++)
-         {
-            allBuildingsV[building_id[i]]->streetCanyon(this);
-         }
-         std::cout << "Street canyon parameterization done...\n";
+         allBuildingsV[building_id[i]]->sideWall(UID, this);
       }
+      std::cout << "Sidewall parameterization done...\n";
+   }
 
-      ///////////////////////////////////////////
-      //      Sidewall Parameterization       ///
-      ///////////////////////////////////////////
-      if (UID->simParams->sidewallFlag > 0)
+
+   ///////////////////////////////////////////
+   //      Rooftop Parameterization        ///
+   ///////////////////////////////////////////
+   if (UID->simParams->rooftopFlag > 0)
+   {
+      std::cout << "Applying rooftop parameterization...\n";
+      for (size_t i = 0; i < allBuildingsV.size(); i++)
       {
-         std::cout << "Applying sidewall parameterization...\n";
-         for (size_t i = 0; i < allBuildingsV.size(); i++)
-         {
-            allBuildingsV[building_id[i]]->sideWall(UID, this);
-         }
-         std::cout << "Sidewall parameterization done...\n";
+         allBuildingsV[building_id[i]]->rooftop (UID, this);
       }
+      std::cout << "Rooftop parameterization done...\n";
+   }
+
+   ///////////////////////////////////////////
+   //         Street Intersection          ///
+   ///////////////////////////////////////////
+   /*if (UID->simParams->streetCanyonFlag > 0 && UID->simParams->streetIntersectionFlag > 0 && allBuildingsV.size() > 0)
+     {
+     std::cout << "Applying Blended Region Parameterization...\n";
+     allBuildingsV[0]->streetIntersection (UID, this);
+     allBuildingsV[0]->poisson (UID, this);
+     std::cout << "Blended Region Parameterization done...\n";
+     }*/
 
 
-      ///////////////////////////////////////////
-      //      Rooftop Parameterization        ///
-      ///////////////////////////////////////////
-      if (UID->simParams->rooftopFlag > 0)
-      {
-         std::cout << "Applying rooftop parameterization...\n";
-         for (size_t i = 0; i < allBuildingsV.size(); i++)
-         {
-            allBuildingsV[building_id[i]]->rooftop (UID, this);
-         }
-         std::cout << "Rooftop parameterization done...\n";
-      }
+   /*
+    * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
+    * wall above/below and wall in front/back and applies the log law boundary condition fix
+    * to the cells near Walls
+    *
+    */
+   //wall->wallLogBC (this);
 
-      ///////////////////////////////////////////
-      //         Street Intersection          ///
-      ///////////////////////////////////////////
-      /*if (UID->simParams->streetCanyonFlag > 0 && UID->simParams->streetIntersectionFlag > 0 && allBuildingsV.size() > 0)
-        {
-        std::cout << "Applying Blended Region Parameterization...\n";
-        allBuildingsV[0]->streetIntersection (UID, this);
-        allBuildingsV[0]->poisson (UID, this);
-        std::cout << "Blended Region Parameterization done...\n";
-        }*/
+   wall->setVelocityZero (this);
 
-
-      /*
-       * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
-       * wall above/below and wall in front/back and applies the log law boundary condition fix
-       * to the cells near Walls
-       *
-       */
-      //wall->wallLogBC (this);
-
-      wall->setVelocityZero (this);
-
-      // compute local mixing length here!
-      if(UID->localMixingParam) {
-         auto mlStartTime = std::chrono::high_resolution_clock::now();
-         if (UID->localMixingParam->methodLocalMixing == 0) {
-            std::cout << "[MixLength] \t Default Local Mixing Length...\n";
-            localMixing = new LocalMixingDefault();
-            localMixing->defineMixingLength(UID,this);
-         } else if(UID->localMixingParam->methodLocalMixing == 1) {
-            std::cout << "[MixLength] \t Computing Local Mixing Length using serial code...\n";
-            localMixing = new LocalMixingSerial();
-            localMixing->defineMixingLength(UID,this);
-         } else if (UID->localMixingParam->methodLocalMixing == 2) {
-            /*******Add raytrace code here********/
-            std::cout << "Computing mixing length scales..." << std::endl;
-            UID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
-         } else if (UID->localMixingParam->methodLocalMixing == 3) {
+   // compute local mixing length here!
+   if(UID->localMixingParam) {
+      auto mlStartTime = std::chrono::high_resolution_clock::now();
+      if (UID->localMixingParam->methodLocalMixing == 0) {
+         std::cout << "[MixLength] \t Default Local Mixing Length...\n";
+         localMixing = new LocalMixingDefault();
+         localMixing->defineMixingLength(UID,this);
+      } else if(UID->localMixingParam->methodLocalMixing == 1) {
+         std::cout << "[MixLength] \t Computing Local Mixing Length using serial code...\n";
+         localMixing = new LocalMixingSerial();
+         localMixing->defineMixingLength(UID,this);
+      } else if (UID->localMixingParam->methodLocalMixing == 2) {
+         /*******Add raytrace code here********/
+         std::cout << "Computing mixing length scales..." << std::endl;
+         UID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
+      } else if (UID->localMixingParam->methodLocalMixing == 3) {
 
 #ifdef HAS_OPTIX
-            //TODO: Find a better way to get the list of Triangles
-            // Will need to use ALL triangles vector rather than the DTE
-            // mesh of triangles...
-            //OptixRayTrace optixRayTracer(UID->simParams->DTE_mesh->getTris());
+         //TODO: Find a better way to get the list of Triangles
+         // Will need to use ALL triangles vector rather than the DTE
+         // mesh of triangles...
+         //OptixRayTrace optixRayTracer(UID->simParams->DTE_mesh->getTris());
 
-            std::cout<<"--------------------Before OptiX calls-------------------------"<<std::endl;
-            OptixRayTrace optixRayTracer(m_mixingLengthMesh->getTris());
-            optixRayTracer.calculateMixingLength( UID->localMixingParam->mlSamplesPerAirCell, nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
+         std::cout<<"--------------------Before OptiX calls-------------------------"<<std::endl;
+         OptixRayTrace optixRayTracer(m_mixingLengthMesh->getTris());
+         optixRayTracer.calculateMixingLength( UID->localMixingParam->mlSamplesPerAirCell, nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
 
-            std::cout<<"--------------------End of OptiX calls-------------------------"<<std::endl;
+         std::cout<<"--------------------End of OptiX calls-------------------------"<<std::endl;
 #else
-            std::cout << std::endl;
-            std::cout << std::endl;
-            std::cout << "NO OPTIX SUPPORT!!!!!!!!!!!!!!!!!!!!" << std::endl;
-            std::cout << std::endl;
-            std::cout << std::endl;
+         std::cout << std::endl;
+         std::cout << std::endl;
+         std::cout << "NO OPTIX SUPPORT!!!!!!!!!!!!!!!!!!!!" << std::endl;
+         std::cout << std::endl;
+         std::cout << std::endl;
 #endif
 
-         } else if (UID->localMixingParam->methodLocalMixing == 4) {
-            std::cout << "[MixLength] \t Loading Local Mixing Length data form NetCDF...\n";
-            localMixing = new LocalMixingNetCDF();
-            localMixing->defineMixingLength(UID,this);
-         } else {
-            //this should not happen (checked in LocalMixingParam)
-         }
-         // once all methods are implemented...
-         // should be moved here: localMixing->defineMixingLength(UID,this);
-         auto mlEndTime = std::chrono::high_resolution_clock::now();
-         std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
-         std::cout << "[MixLength] \t Local Mixing Defined...\n";
-         std::cout << "\t\t elapsed time: " << mlElapsed.count() << " s\n";
+      } else if (UID->localMixingParam->methodLocalMixing == 4) {
+         std::cout << "[MixLength] \t Loading Local Mixing Length data form NetCDF...\n";
+         localMixing = new LocalMixingNetCDF();
+         localMixing->defineMixingLength(UID,this);
+      } else {
+         //this should not happen (checked in LocalMixingParam)
       }
+      // once all methods are implemented...
+      // should be moved here: localMixing->defineMixingLength(UID,this);
+      auto mlEndTime = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
+      std::cout << "[MixLength] \t Local Mixing Defined...\n";
+      std::cout << "\t\t elapsed time: " << mlElapsed.count() << " s\n";
+   }
 
-      return;
+   return;
 
 }
 
