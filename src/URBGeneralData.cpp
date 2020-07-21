@@ -537,7 +537,6 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
       // UID->buildings->buildings.size(); bIdx++)
       for (auto bIdx = 0u; bIdx < allBuildingsV.size(); bIdx++)
       {
-
          std::cout << "Building " << bIdx << std::endl;
 
          // for each polyvert edge, create triangles of the sides
@@ -571,8 +570,6 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
 
             if(pIdx == allBuildingsV[bIdx]->polygonVertices.size()-1){ //wrap around case for last vertices
 
-               std::cout << "\t pIdx = " << pIdx << std::endl;
-
                //Triangle 1
                Triangle *tri1 = new Triangle(Vector3<float>(allBuildingsV[bIdx]->polygonVertices[pIdx].x_poly,
                                                             allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
@@ -599,9 +596,9 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
 
                buildingTris.push_back(tri1);
                buildingTris.push_back(tri2);
-
 
             }else{
+
                //Triangle 1
                Triangle *tri1 = new Triangle(Vector3<float>(allBuildingsV[bIdx]->polygonVertices[pIdx].x_poly,
                                                             allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
@@ -628,28 +625,20 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
 
                buildingTris.push_back(tri1);
                buildingTris.push_back(tri2);
-
             }
 
-         } //end of while
+         } //end of for all building polygon vertices
 
+         // then create triangulated roof
+         // requires walking through the base_height + height_eff
+         // polygon plane and creating triangles...
 
+         // triangle fan starting at vertice 0 of the polygon
 
-
-
-           // then create triangulated roof
-           // requires walking through the base_height + height_eff
-           // polygon plane and creating triangles...
-
-           // triangle fan starting at vertice 0 of the polygon
-
-           //Base Point (take the first polyvert edge and "fan" around
+         //Base Point (take the first polyvert edge and "fan" around
          Vector3<float> baseRoofPt(allBuildingsV[bIdx]->polygonVertices[0].x_poly,
                                    allBuildingsV[bIdx]->polygonVertices[0].y_poly,
-                                   allBuildingsV[bIdx]->base_height+allBuildingsV[bIdx]->H
-                                   );
-
-
+                                   allBuildingsV[bIdx]->base_height + allBuildingsV[bIdx]->H);
 
          for (auto pIdx=1u; pIdx < allBuildingsV[bIdx]->polygonVertices.size()-1; pIdx++){
 
@@ -677,16 +666,12 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
       groundTris[1] = new Triangle( Vector3<float>(0.0, 0.0, 0.0), Vector3<float>(nx*dx, ny*dy, 0.0f), Vector3<float>(0.0f, ny*dy, 0.0f) );
    }
 
-//   if (m_calcMixingLength) {
-
    // Assemble list of all triangles and create the mesh BVH
+   std::cout << "Forming Length Scale triangle mesh...\n";
    std::vector<Triangle*> allTriangles;
-
-
    if (UID->simParams->DTE_heightField) {
 
       allTriangles.resize( UID->simParams->DTE_heightField->getTris().size() );
-
 
       //std::copy(UID->simParams->DTE_heightField->getTris().begin(), UID->simParams->DTE_heightField->getTris().end(), allTriangles.begin());
 
@@ -699,15 +684,14 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
       allTriangles.insert(allTriangles.end(), groundTris.begin(), groundTris.end());
    }
 
-   std::cout << "Forming Length Scale triangle mesh...\n";
 
    //combine with buildings
-   if (allBuildingsV.size() > 0){
-      std::cout<<"Buildingtris size = "<<buildingTris.size()<<std::endl;
-      for(int i = 0; i < buildingTris.size(); i++){
-         allTriangles.push_back(buildingTris[i]);
-      }
+   //if (allBuildingsV.size() > 0){
+   std::cout<<"Buildingtris size = "<<buildingTris.size()<<std::endl;
+   for(int i = 0; i < buildingTris.size(); i++){
+       allTriangles.push_back(buildingTris[i]);
    }
+      //}
 
 
    Mesh *m_mixingLengthMesh = new Mesh(allTriangles);
