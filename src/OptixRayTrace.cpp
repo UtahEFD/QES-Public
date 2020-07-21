@@ -5,7 +5,6 @@
 #define GEN_FILE 1  //Generate mixing length output file for testing
 
 OptixRayTrace::OptixRayTrace(std::vector<Triangle*> tris){
-
    initOptix();
 
    createContext();
@@ -378,9 +377,9 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
       if(mixingLenOutputFile.is_open()){
          mixingLenOutputFile.close();
       }else{
-          std::stringstream ss;
-          ss << "mixingLength_s" << numSamples << ".csv";
-          mixingLenOutputFile.open( ss.str() );
+         std::stringstream ss;
+         ss << "mixingLength_s" << numSamples << ".csv";
+         mixingLenOutputFile.open( ss.str() );
       }
 
 
@@ -410,7 +409,6 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
 
       mixingLenOutputFile.close();
    }
-
 
    //free memory
    cleanState();

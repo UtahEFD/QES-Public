@@ -62,6 +62,12 @@
 		<canopyRotation> 0.0 </canopyRotation>
 	</canopy>
 </canopies-->
+<localMixingParam>
+  <method>3</method> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <samples>2000</samples> <!~- Samples per air cell for ray-traced mixing length calculations -->
+  <save>true</save> <!-- Save 2 to file -->    
+  <LMfile>QU_inner_mixlength.nc</LMfile> <!-- Address to mixing lethng location--> 
+</localMixingParam>
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 
