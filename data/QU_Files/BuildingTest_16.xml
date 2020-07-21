@@ -254,7 +254,7 @@
 
 <localMixingParam>
   <method>3</method>
-  <samples>2000</samples>
+  <samples>8000</samples>
 </localMixingParam>
 <fileOptions>
   <outputFlag>1</outputFlag>
