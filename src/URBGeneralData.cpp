@@ -645,16 +645,15 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
 
          for (auto pIdx=1u; pIdx < UID->buildings->buildings[bIdx]->polygonVertices.size()-1; pIdx++){
 
-            Triangle triRoof(baseRoofPt,
-                             Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx].x_poly,
-                                            UID->buildings->buildings[bIdx]->polygonVertices[pIdx].y_poly,
-                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H),
-                             Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].x_poly,
-                                            UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].y_poly,
-                                            UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H)
-                             );
+             Triangle* triRoof = new Triangle(baseRoofPt,
+                                              Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx].x_poly,
+                                                             UID->buildings->buildings[bIdx]->polygonVertices[pIdx].y_poly,
+                                                             UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H),
+                                              Vector3<float>(UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].x_poly,
+                                                             UID->buildings->buildings[bIdx]->polygonVertices[pIdx+1].y_poly,
+                                                             UID->buildings->buildings[bIdx]->base_height+UID->buildings->buildings[bIdx]->H));
 
-            buildingTris.push_back(&triRoof);
+            buildingTris.push_back(triRoof);
 
          } //end of roof for loop
 
