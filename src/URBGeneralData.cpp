@@ -443,7 +443,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
          allBuildingsV[pIdx]->setCellFlags(UID, this, pIdx);
          effective_height.push_back (allBuildingsV[pIdx]->height_eff);
       }
-      std::cout << "Buildings created from shapefile...\n";
+      std::cout << "\tdone.\n";
 
       auto buildingsetup_finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
 
@@ -537,8 +537,6 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
       // UID->buildings->buildings.size(); bIdx++)
       for (auto bIdx = 0u; bIdx < allBuildingsV.size(); bIdx++)
       {
-         std::cout << "Building " << bIdx << std::endl;
-
          // for each polyvert edge, create triangles of the sides
          for (auto pIdx=0u; pIdx < allBuildingsV[bIdx]->polygonVertices.size(); pIdx++)
          {
@@ -638,17 +636,18 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
          //Base Point (take the first polyvert edge and "fan" around
          Vector3<float> baseRoofPt(allBuildingsV[bIdx]->polygonVertices[0].x_poly,
                                    allBuildingsV[bIdx]->polygonVertices[0].y_poly,
-                                   allBuildingsV[bIdx]->base_height + allBuildingsV[bIdx]->H);
+                                   allBuildingsV[bIdx]->height_eff);
 
          for (auto pIdx=1u; pIdx < allBuildingsV[bIdx]->polygonVertices.size()-1; pIdx++){
 
             Triangle* triRoof = new Triangle(baseRoofPt,
                                              Vector3<float>(allBuildingsV[bIdx]->polygonVertices[pIdx].x_poly,
                                                             allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
-                                                            allBuildingsV[bIdx]->base_height+allBuildingsV[bIdx]->H),
+                                                            allBuildingsV[bIdx]->height_eff),
+                                                                      
                                              Vector3<float>(allBuildingsV[bIdx]->polygonVertices[pIdx+1].x_poly,
                                                             allBuildingsV[bIdx]->polygonVertices[pIdx+1].y_poly,
-                                                            allBuildingsV[bIdx]->base_height+allBuildingsV[bIdx]->H));
+                                                            allBuildingsV[bIdx]->height_eff));
 
             buildingTris.push_back(triRoof);
 
@@ -684,21 +683,13 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
       allTriangles.insert(allTriangles.end(), groundTris.begin(), groundTris.end());
    }
 
-
-   //combine with buildings
-   //if (allBuildingsV.size() > 0){
-   std::cout<<"Buildingtris size = "<<buildingTris.size()<<std::endl;
+   // Add building triangles to terrain and/or ground triangle
    for(int i = 0; i < buildingTris.size(); i++){
        allTriangles.push_back(buildingTris[i]);
    }
-      //}
-
 
    Mesh *m_mixingLengthMesh = new Mesh(allTriangles);
-   std::cout << "Mesh complete\n";
-
-   // }
-//#endif
+   std::cout << "Triangle Meshing complete\n";
    // ///////////////////////////////////////
 
    wall = new Wall();
