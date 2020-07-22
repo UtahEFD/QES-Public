@@ -111,6 +111,9 @@ ENDIF(CUDA_FOUND)
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;--use_fast_math;--keep-device-functions")
 
 
+# Guess that OPTIX is NOT installed, so shut off by default
+OPTION(HAS_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" OFF)
+
 #
 # if CUDA 10.2 or higher is found, then OptiX support can be enabled, so search for it.
 #
