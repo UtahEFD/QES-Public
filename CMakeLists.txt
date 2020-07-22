@@ -111,6 +111,9 @@ ENDIF(CUDA_FOUND)
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;--use_fast_math;--keep-device-functions")
 
 
+# Guess that OPTIX is NOT installed, so shut off by default
+OPTION(HAS_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" OFF)
+
 #
 # if CUDA 10.2 or higher is found, then OptiX support can be enabled, so search for it.
 #
@@ -127,6 +130,7 @@ if (${CUDA_VERSION} VERSION_GREATER_EQUAL 10.2)
   if (${OptiX-NOTFOUND})
     MESSAGE(STATUS "  OptiX is used for accelerating some computations with this project. If you wish to run the project with OptiX GPU acceleration, please look into installing NVIDIA CUDA 10.2 or higher and NVIDIA OptiX 7.0 or higher.")    
     OPTION(HAS_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" OFF)
+    REMOVE_DEFINITIONS(-DHAS_OPTIX)
   else()
 
     MESSAGE(STATUS "Found NVIDIA OptiX 7.0")
@@ -178,6 +182,7 @@ else()
   MESSAGE(STATUS "  OptiX is used for accelerating some computations with this project. If you wish to run the project with OptiX GPU acceleration, please look into installing NVIDIA CUDA 10.2 or higher and NVIDIA OptiX 7.0 or higher.")    
   # Disable OptiX Support
   option(HAS_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" OFF)
+  REMOVE_DEFINITIONS(-DHAS_OPTIX)
 endif()
 
 #
