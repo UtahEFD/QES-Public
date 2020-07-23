@@ -28,7 +28,8 @@ extern "C" __global__ void __raygen__from_cell(){
   const uint3 idx = optixGetLaunchIndex();
   const uint3 dim = optixGetLaunchDimensions();
   
-  const uint32_t linear_idx = idx.x + idx.y*(dim.x-1) + idx.z*(dim.y-1)*(dim.x-1);
+//  const uint32_t linear_idx = idx.x + idx.y*(dim.x-1) + idx.z*(dim.y-1)*(dim.x-1);
+const uint32_t linear_idx = idx.x + idx.y*(dim.x) + idx.z*(dim.y)*(dim.x);
 
   uint32_t t;
 
