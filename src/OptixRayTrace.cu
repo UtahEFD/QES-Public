@@ -30,11 +30,11 @@ extern "C" __global__ void __raygen__from_cell(){
   
   const uint32_t linear_idx = idx.x + idx.y*(dim.x-1) + idx.z*(dim.y-1)*(dim.x-1);
 
-
   uint32_t t;
 
   //if not building or terrain cell
-  if(params.icellflagArray[linear_idx] != 0 && params.icellflagArray[linear_idx] != 2){
+ if(params.icellflagArray[linear_idx] != 0 && params.icellflagArray[linear_idx] != 2){
+
 
      float lowestLen = FLT_MAX; //current lowest length
 
@@ -63,7 +63,7 @@ extern "C" __global__ void __raygen__from_cell(){
             dir = cardinal[i];
          }else{
 
-            //Spherical
+            //Trignometric-Polar Method
             
             float theta = (curand_uniform(&state)*M_PI);
             float phi = (curand_uniform(&state)*2*M_PI);
@@ -75,7 +75,6 @@ extern "C" __global__ void __raygen__from_cell(){
 
             float magnitude = std::sqrt((x*x) + (y*y) + (z*z));  
             dir = make_float3( x/magnitude, y/magnitude, z/magnitude);
-            
              
          }
      
@@ -102,10 +101,8 @@ extern "C" __global__ void __raygen__from_cell(){
      } //end of for loop
 
  
-     Hit hit;
-     hit.t = lowestLen;
-
-     params.hits[linear_idx] = hit;
+  
+   params.hits[linear_idx].t = lowestLen;
 
       
   } //end of if for icell

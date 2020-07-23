@@ -444,7 +444,6 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
 
    state.params.icellflagArray = (int *) state.icellflagArray_d;
 
-
    //init params dx, dy, dz (used to calculate cell centers in device)
    state.params.dx = dx;
    state.params.dy = dy;
@@ -677,18 +676,18 @@ void OptixRayTrace::launch(){
                          )
               );
 
-
    //launch OptiX
    OPTIX_CHECK(optixLaunch(state.pipeline,
                            state.stream,
                            state.paramsBuffer,
                            sizeof(Params),
                            &state.sbt,
-                           state.nx,
-                           state.ny,
-                           state.nz
+                           state.nx-1,
+                           state.ny-1,
+                           state.nz-1
                            )
                );
+
 
 
    CUDA_SYNC_CHECK();
