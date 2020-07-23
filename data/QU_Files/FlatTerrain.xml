@@ -43,7 +43,8 @@
 
 </metParams>								<!-- End of meteorological parameters -->
 <localMixingParam>
-  <method>1</method>
+  <method>3</method>
+  <samples>2000</samples>
 </localMixingParam>
 <fileOptions>
 	<outputFlag>1</outputFlag>
