@@ -75,7 +75,7 @@ __global__ void SOR_RB_Shared(float *d_lambda, int nx, int ny, int nz, float ome
 }
 
 
-__global__ void assign_lambda_to_lambda_old_shared(float *d_lambda, float *d_lambda_old, int nx, int ny, int nz)
+__global__ void saveLambdaShared(float *d_lambda, float *d_lambda_old, int nx, int ny, int nz)
 {
     int ii = blockDim.x*blockIdx.x+threadIdx.x;
 
@@ -304,7 +304,7 @@ void SharedMemory::solve(const URBInputData* UID, URBGeneralData* UGD, bool solv
         }
       }*/
 
-      assign_lambda_to_lambda_old_shared<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, UGD->nx, UGD->ny, UGD->nz);
+      saveLambdaShared<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, UGD->nx, UGD->ny, UGD->nz);
       cudaCheck(cudaGetLastError());
       //cudaMemcpy(d_lambda , lambda.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
       int offset = 0;                     // Red nodes pass

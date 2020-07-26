@@ -107,14 +107,7 @@ public:
 
     virtual void parseValues()
     {
-        parseElement< Vector3<int> >(false, domain, "domain");   // when
-                                                                 // parseElement
-                                                                 // isn't
-                                                                 // called,
-                                                                 // how
-                                                                 // does
-                                                                 // this
-                                                                 // get allocated?
+        parseElement< Vector3<int> >(false, domain, "domain");
         parseElement< Vector3<float> >(false, grid, "cellSize");
         parsePrimitive<int>(false, verticalStretching, "verticalStretching");
         parseMultiPrimitives<float>(false, dz_value, "dz_value");

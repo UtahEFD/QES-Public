@@ -16,14 +16,14 @@ CUDA_ADD_LIBRARY( cudaurbcore
   ESRIShapefile.cpp ESRIShapefile.h
   handleURBArgs.cpp
   LocalMixingParam.h
-  LocalMixing.cpp   
+  LocalMixing.cpp
   LocalMixingDefault.cpp
-  LocalMixingNetCDF.cpp   
+  LocalMixingNetCDF.cpp
   LocalMixingSerial.cpp
   Mesh.cpp
-  NetCDFInput.cpp 
-  NetCDFOutput.cpp 
-  QESNetCDFOutput.cpp   
+  NetCDFInput.cpp
+  NetCDFOutput.cpp
+  QESNetCDFOutput.cpp
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Solver.cpp
@@ -53,6 +53,7 @@ CUDA_ADD_LIBRARY( cudaurbcore
   GlobalMemory.h
   SharedMemory.cu
   SharedMemory.h
+  TimeSeries.h
   )
 
 cuda_add_executable( unitTest

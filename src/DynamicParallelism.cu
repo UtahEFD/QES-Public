@@ -97,7 +97,7 @@ __global__ void SOR_RB(float *d_lambda, float *d_lambda_old, int nx, int ny, int
     }
 }
 
-__global__ void assign_lambda_to_lambda_old(float *d_lambda, float *d_lambda_old, int nx, int ny, int nz)
+__global__ void saveLambda(float *d_lambda, float *d_lambda_old, int nx, int ny, int nz)
 {
     int ii = blockDim.x*blockIdx.x+threadIdx.x;
 
@@ -244,7 +244,7 @@ __global__ void SOR_iteration (float *d_lambda, float *d_lambda_old, int nx, int
     while ( (iter < itermax) && (error > tol)) {
 
         // Save previous iteration values for error calculation
-        assign_lambda_to_lambda_old<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz);
+        saveLambda<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz);
         cudaDeviceSynchronize();
 
         // SOR part
@@ -385,7 +385,7 @@ void DynamicParallelism::solve(const URBInputData* UID, URBGeneralData* UGD, boo
     std::vector<float> bvalue(numblocks,0.0);
     float *d_u0, *d_v0, *d_w0;
     float *d_value,*d_bvalue;
-    float *d_x,*d_y,*d_z;
+    //float *d_x,*d_y,*d_z;
     float *d_u, *d_v, *d_w;
     int *d_icellflag;
     float *d_dz_array;
@@ -407,9 +407,9 @@ void DynamicParallelism::solve(const URBInputData* UID, URBGeneralData* UGD, boo
     cudaMalloc((void **) &d_w0,UGD->numcell_face*sizeof(float));
     cudaMalloc((void **) &d_value,UGD->numcell_cent*sizeof(float));
     cudaMalloc((void **) &d_bvalue,numblocks*sizeof(float));
-    cudaMalloc((void **) &d_x,UGD->nx*sizeof(float));
+    /*cudaMalloc((void **) &d_x,UGD->nx*sizeof(float));
     cudaMalloc((void **) &d_y,UGD->ny*sizeof(float));
-    cudaMalloc((void **) &d_z,UGD->nz*sizeof(float));
+    cudaMalloc((void **) &d_z,UGD->nz*sizeof(float));*/
     cudaMalloc((void **) &d_dz_array,(UGD->nz-1)*sizeof(float));
     cudaMalloc((void **) &d_u,UGD->numcell_face*sizeof(float));
     cudaMalloc((void **) &d_v,UGD->numcell_face*sizeof(float));
@@ -431,9 +431,9 @@ void DynamicParallelism::solve(const URBInputData* UID, URBGeneralData* UGD, boo
     cudaMemcpy(d_n , UGD->n.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
 
     // should be
-    cudaMemcpy(d_x , UGD->x.data() , (UGD->nx - 1)* sizeof(float) , cudaMemcpyHostToDevice);
+    /*cudaMemcpy(d_x , UGD->x.data() , (UGD->nx - 1)* sizeof(float) , cudaMemcpyHostToDevice);
     cudaMemcpy(d_y , UGD->y.data() , (UGD->ny - 1) * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_z , UGD->z.data() , (UGD->nz - 1) * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_z , UGD->z.data() , (UGD->nz - 1) * sizeof(float) , cudaMemcpyHostToDevice);*/
 
     cudaMemcpy(d_dz_array , UGD->dz_array.data() , (UGD->nz-1) * sizeof(float) , cudaMemcpyHostToDevice);
     cudaMemcpy(d_lambda , lambda.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
@@ -495,9 +495,9 @@ void DynamicParallelism::solve(const URBInputData* UID, URBGeneralData* UGD, boo
     cudaFree (d_u);
     cudaFree (d_v);
     cudaFree (d_w);
-    cudaFree (d_x);
+    /*cudaFree (d_x);
     cudaFree (d_y);
-    cudaFree (d_z);
+    cudaFree (d_z);*/
     cudaFree (d_dz_array);
     cudaFree (d_icellflag);
 

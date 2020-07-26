@@ -48,7 +48,7 @@ using namespace std;
 
 
 
-void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *UGD)
+void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *UGD, int index)
 {
 
 	float psi, psi_first, x_temp, u_star;
@@ -91,30 +91,30 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *UGD)
 	  site_i[i] = UID->metParams->sensors[i]->site_xcoord/UGD->dx;
 		site_j[i] = UID->metParams->sensors[i]->site_ycoord/UGD->dy;
 		site_id[i] = site_i[i] + site_j[i]*(UGD->nx-1);
-		for (auto j=0; j<UID->metParams->sensors[i]->site_z_ref.size(); j++)
+		for (auto j=0; j<UID->metParams->sensors[0]->TS[index]->site_z_ref.size(); j++)
 		{
-			UID->metParams->sensors[i]->site_z_ref[j] -= UGD->terrain[site_id[i]];
+			UID->metParams->sensors[0]->TS[index]->site_z_ref[j] -= UGD->terrain[site_id[i]];
 		}
 		int id = 1;
 		int counter = 0;
-		if (UID->metParams->sensors[i]->site_z_ref[0] > 0)
+		if (UID->metParams->sensors[0]->TS[index]->site_z_ref[0] > 0)
 		{
-			blending_height += UID->metParams->sensors[i]->site_z_ref[0]/num_sites;
+			blending_height += UID->metParams->sensors[0]->TS[index]->site_z_ref[0]/num_sites;
 		}
 		else
 		{
-			if (UID->metParams->sensors[i]->site_blayer_flag == 4 )
+			if (UID->metParams->sensors[0]->TS[index]->site_blayer_flag == 4 )
 			{
-				while (id<UID->metParams->sensors[i]->site_z_ref.size() && UID->metParams->sensors[i]->site_z_ref[id]>0 && counter<1)
+				while (id<UID->metParams->sensors[0]->TS[index]->site_z_ref.size() && UID->metParams->sensors[0]->TS[index]->site_z_ref[id]>0 && counter<1)
 				{
-					blending_height += UID->metParams->sensors[i]->site_z_ref[id]/num_sites;
+					blending_height += UID->metParams->sensors[0]->TS[index]->site_z_ref[id]/num_sites;
 					counter += 1;
 					id += 1;
 				}
 			}
 		}
 
-		average__one_overL += UID->metParams->sensors[i]->site_one_overL/num_sites;
+		average__one_overL += UID->metParams->sensors[0]->TS[index]->site_one_overL/num_sites;
 		if (UID->simParams->UTMx != 0 && UID->simParams->UTMy != 0)
 		{
 			if (UID->metParams->sensors[i]->site_coord_flag == 1)
@@ -135,19 +135,19 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *UGD)
 			getConvergence(UID->metParams->sensors[i]->site_lon, UID->metParams->sensors[i]->site_lat, UID->metParams->sensors[i]->site_UTM_zone, convergence);
 		}
 
-		site_theta[i] = (270.0-UID->metParams->sensors[i]->site_wind_dir[0])*M_PI/180.0;
+		site_theta[i] = (270.0-UID->metParams->sensors[0]->TS[index]->site_wind_dir[0])*M_PI/180.0;
 
 		// If site has a uniform velocity profile
-		if (UID->metParams->sensors[i]->site_blayer_flag == 0)
+		if (UID->metParams->sensors[0]->TS[index]->site_blayer_flag == 0)
 		{
 			for (auto k = UGD->terrain_id[site_id[i]]; k < UGD->nz; k++)
 			{
-				u_prof[i][k] = cos(site_theta[i])*UID->metParams->sensors[i]->site_U_ref[0];
-				v_prof[i][k] = sin(site_theta[i])*UID->metParams->sensors[i]->site_U_ref[0];
+				u_prof[i][k] = cos(site_theta[i])*UID->metParams->sensors[0]->TS[index]->site_U_ref[0];
+				v_prof[i][k] = sin(site_theta[i])*UID->metParams->sensors[0]->TS[index]->site_U_ref[0];
 			}
 		}
 		// Logarithmic velocity profile
-		if (UID->metParams->sensors[i]->site_blayer_flag == 1)
+		if (UID->metParams->sensors[0]->TS[index]->site_blayer_flag == 1)
 		{
                     // This loop should be bounded by size of the z
                     // vector, and not UGD->nz since z.size can be equal to
@@ -157,175 +157,175 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *UGD)
 			{
 				if (k == UGD->terrain_id[site_id[i]])
 				{
-					if (UID->metParams->sensors[i]->site_z_ref[0]*UID->metParams->sensors[i]->site_one_overL >= 0)
+					if (UID->metParams->sensors[0]->TS[index]->site_z_ref[0]*UID->metParams->sensors[0]->TS[index]->site_one_overL >= 0)
 					{
-						psi = 4.7*UID->metParams->sensors[i]->site_z_ref[0]*UID->metParams->sensors[i]->site_one_overL;
+						psi = 4.7*UID->metParams->sensors[0]->TS[index]->site_z_ref[0]*UID->metParams->sensors[0]->TS[index]->site_one_overL;
 					}
 					else
 					{
-						x_temp = pow((1.0-15.0*UID->metParams->sensors[i]->site_z_ref[0]*UID->metParams->sensors[i]->site_one_overL),0.25);
+						x_temp = pow((1.0-15.0*UID->metParams->sensors[0]->TS[index]->site_z_ref[0]*UID->metParams->sensors[0]->TS[index]->site_one_overL),0.25);
 						psi = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
 					}
 
-					u_star = UID->metParams->sensors[i]->site_U_ref[0]*vk/(log((UID->metParams->sensors[i]->site_z_ref[0]+UID->metParams->sensors[i]->site_z0)/UID->metParams->sensors[i]->site_z0)+psi);
+					u_star = UID->metParams->sensors[0]->TS[index]->site_U_ref[0]*vk/(log((UID->metParams->sensors[0]->TS[index]->site_z_ref[0]+UID->metParams->sensors[0]->TS[index]->site_z0)/UID->metParams->sensors[0]->TS[index]->site_z0)+psi);
 				}
-				if (UGD->z[k]*UID->metParams->sensors[i]->site_one_overL >= 0)
+				if (UGD->z[k]*UID->metParams->sensors[0]->TS[index]->site_one_overL >= 0)
 				{
-					psi = 4.7*UGD->z[k]*UID->metParams->sensors[i]->site_one_overL;
+					psi = 4.7*UGD->z[k]*UID->metParams->sensors[0]->TS[index]->site_one_overL;
 				}
 				else
 				{
-					x_temp = pow((1.0-15.0*UGD->z[k]*UID->metParams->sensors[i]->site_one_overL),0.25);
+					x_temp = pow((1.0-15.0*UGD->z[k]*UID->metParams->sensors[0]->TS[index]->site_one_overL),0.25);
 					psi = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
 				}
 
-				u_prof[i][k] = (cos(site_theta[i])*u_star/vk)*(log((UGD->z[k]+UID->metParams->sensors[i]->site_z0)/UID->metParams->sensors[i]->site_z0)+psi);
-				v_prof[i][k] = (sin(site_theta[i])*u_star/vk)*(log((UGD->z[k]+UID->metParams->sensors[i]->site_z0)/UID->metParams->sensors[i]->site_z0)+psi);
+				u_prof[i][k] = (cos(site_theta[i])*u_star/vk)*(log((UGD->z[k]+UID->metParams->sensors[0]->TS[index]->site_z0)/UID->metParams->sensors[0]->TS[index]->site_z0)+psi);
+				v_prof[i][k] = (sin(site_theta[i])*u_star/vk)*(log((UGD->z[k]+UID->metParams->sensors[0]->TS[index]->site_z0)/UID->metParams->sensors[0]->TS[index]->site_z0)+psi);
 			}
 		}
 
 		// Exponential velocity profile
-		if (UID->metParams->sensors[i]->site_blayer_flag == 2)
+		if (UID->metParams->sensors[0]->TS[index]->site_blayer_flag == 2)
 		{
 			for (auto k = UGD->terrain_id[site_id[i]]; k < UGD->nz; k++)
 			{
-				u_prof[i][k] = cos(site_theta[i])*UID->metParams->sensors[i]->site_U_ref[0]*pow((UGD->z[k]/UID->metParams->sensors[i]->site_z_ref[0]),UID->metParams->sensors[i]->site_z0);
-				v_prof[i][k] = sin(site_theta[i])*UID->metParams->sensors[i]->site_U_ref[0]*pow((UGD->z[k]/UID->metParams->sensors[i]->site_z_ref[0]),UID->metParams->sensors[i]->site_z0);
+				u_prof[i][k] = cos(site_theta[i])*UID->metParams->sensors[0]->TS[index]->site_U_ref[0]*pow((UGD->z[k]/UID->metParams->sensors[0]->TS[index]->site_z_ref[0]),UID->metParams->sensors[0]->TS[index]->site_z0);
+				v_prof[i][k] = sin(site_theta[i])*UID->metParams->sensors[0]->TS[index]->site_U_ref[0]*pow((UGD->z[k]/UID->metParams->sensors[0]->TS[index]->site_z_ref[0]),UID->metParams->sensors[0]->TS[index]->site_z0);
 			}
 		}
 
 		// Canopy velocity profile
-		if (UID->metParams->sensors[i]->site_blayer_flag == 3)
+		if (UID->metParams->sensors[0]->TS[index]->site_blayer_flag == 3)
 		{
 			for (auto k = UGD->terrain_id[site_id[i]]; k< UGD->nz; k++)
 			{
 				if (k == UGD->terrain_id[site_id[i]])
 				{
-					if (UID->metParams->sensors[i]->site_z_ref[0]*UID->metParams->sensors[i]->site_one_overL > 0)
+					if (UID->metParams->sensors[0]->TS[index]->site_z_ref[0]*UID->metParams->sensors[0]->TS[index]->site_one_overL > 0)
 					{
-						psi = 4.7*UID->metParams->sensors[i]->site_z_ref[0]*UID->metParams->sensors[i]->site_one_overL;
+						psi = 4.7*UID->metParams->sensors[0]->TS[index]->site_z_ref[0]*UID->metParams->sensors[0]->TS[index]->site_one_overL;
 					}
 					else
 					{
-						x_temp = pow((1.0-15.0*UID->metParams->sensors[i]->site_z_ref[0]*UID->metParams->sensors[i]->site_one_overL),0.25);
+						x_temp = pow((1.0-15.0*UID->metParams->sensors[0]->TS[index]->site_z_ref[0]*UID->metParams->sensors[0]->TS[index]->site_one_overL),0.25);
 						psi = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
 					}
-					u_star = UID->metParams->sensors[i]->site_U_ref[0]*vk/(log(UID->metParams->sensors[i]->site_z_ref[0]/UID->metParams->sensors[i]->site_z0)+psi);
-					canopy_d = UGD->canopyBisection(u_star, UID->metParams->sensors[i]->site_z0, UID->metParams->sensors[i]->site_canopy_H, UID->metParams->sensors[i]->site_atten_coeff, vk, psi);
-					if (UID->metParams->sensors[i]->site_canopy_H*UID->metParams->sensors[i]->site_one_overL > 0)
+					u_star = UID->metParams->sensors[0]->TS[index]->site_U_ref[0]*vk/(log(UID->metParams->sensors[0]->TS[index]->site_z_ref[0]/UID->metParams->sensors[0]->TS[index]->site_z0)+psi);
+					canopy_d = UGD->canopyBisection(u_star, UID->metParams->sensors[0]->TS[index]->site_z0, UID->metParams->sensors[0]->TS[index]->site_canopy_H, UID->metParams->sensors[0]->TS[index]->site_atten_coeff, vk, psi);
+					if (UID->metParams->sensors[0]->TS[index]->site_canopy_H*UID->metParams->sensors[0]->TS[index]->site_one_overL > 0)
 					{
-						psi = 4.7*(UID->metParams->sensors[i]->site_canopy_H-canopy_d)*UID->metParams->sensors[i]->site_one_overL;
+						psi = 4.7*(UID->metParams->sensors[0]->TS[index]->site_canopy_H-canopy_d)*UID->metParams->sensors[0]->TS[index]->site_one_overL;
 					}
 					else
 					{
-						x_temp = pow((1.0-15.0*(UID->metParams->sensors[i]->site_canopy_H-canopy_d)*UID->metParams->sensors[i]->site_one_overL),0.25);
+						x_temp = pow((1.0-15.0*(UID->metParams->sensors[0]->TS[index]->site_canopy_H-canopy_d)*UID->metParams->sensors[0]->TS[index]->site_one_overL),0.25);
 						psi = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
 					}
-					u_H = (u_star/vk)*(log((UID->metParams->sensors[i]->site_canopy_H-canopy_d)/UID->metParams->sensors[i]->site_z0)+psi);
-					if (UID->metParams->sensors[i]->site_z_ref[0] < UID->metParams->sensors[i]->site_canopy_H)
+					u_H = (u_star/vk)*(log((UID->metParams->sensors[0]->TS[index]->site_canopy_H-canopy_d)/UID->metParams->sensors[0]->TS[index]->site_z0)+psi);
+					if (UID->metParams->sensors[0]->TS[index]->site_z_ref[0] < UID->metParams->sensors[0]->TS[index]->site_canopy_H)
 					{
-						UID->metParams->sensors[i]->site_U_ref[0] /= u_H*exp(UID->metParams->sensors[i]->site_atten_coeff*(UID->metParams->sensors[i]->site_z_ref[0]/UID->metParams->sensors[i]->site_canopy_H)-1.0);
+						UID->metParams->sensors[0]->TS[index]->site_U_ref[0] /= u_H*exp(UID->metParams->sensors[0]->TS[index]->site_atten_coeff*(UID->metParams->sensors[0]->TS[index]->site_z_ref[0]/UID->metParams->sensors[0]->TS[index]->site_canopy_H)-1.0);
 					}
 					else
 					{
-						if (UID->metParams->sensors[i]->site_z_ref[0]*UID->metParams->sensors[i]->site_one_overL > 0)
+						if (UID->metParams->sensors[0]->TS[index]->site_z_ref[0]*UID->metParams->sensors[0]->TS[index]->site_one_overL > 0)
 						{
-							psi = 4.7*(UID->metParams->sensors[i]->site_z_ref[0]-canopy_d)*UID->metParams->sensors[i]->site_one_overL;
+							psi = 4.7*(UID->metParams->sensors[0]->TS[index]->site_z_ref[0]-canopy_d)*UID->metParams->sensors[0]->TS[index]->site_one_overL;
 						}
 						else
 						{
-							x_temp = pow(1.0-15.0*(UID->metParams->sensors[i]->site_z_ref[0]-canopy_d)*UID->metParams->sensors[i]->site_one_overL,0.25);
+							x_temp = pow(1.0-15.0*(UID->metParams->sensors[0]->TS[index]->site_z_ref[0]-canopy_d)*UID->metParams->sensors[0]->TS[index]->site_one_overL,0.25);
 							psi = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
 						}
-						UID->metParams->sensors[i]->site_U_ref[0] /= ((u_star/vk)*(log((UID->metParams->sensors[i]->site_z_ref[0]-canopy_d)/UID->metParams->sensors[i]->site_z0)+psi));
+						UID->metParams->sensors[0]->TS[index]->site_U_ref[0] /= ((u_star/vk)*(log((UID->metParams->sensors[0]->TS[index]->site_z_ref[0]-canopy_d)/UID->metParams->sensors[0]->TS[index]->site_z0)+psi));
 					}
-					u_star *= UID->metParams->sensors[i]->site_U_ref[0];
-					u_H *= UID->metParams->sensors[i]->site_U_ref[0];
+					u_star *= UID->metParams->sensors[0]->TS[index]->site_U_ref[0];
+					u_H *= UID->metParams->sensors[0]->TS[index]->site_U_ref[0];
 				}
 
-				if (UGD->z[k] < UID->metParams->sensors[i]->site_canopy_H)
+				if (UGD->z[k] < UID->metParams->sensors[0]->TS[index]->site_canopy_H)
 				{
-					u_prof[i][k] = cos(site_theta[i]) * u_H*exp(UID->metParams->sensors[i]->site_atten_coeff*((UGD->z[k]/UID->metParams->sensors[i]->site_canopy_H) -1.0));
-					v_prof[i][k] = sin(site_theta[i]) * u_H*exp(UID->metParams->sensors[i]->site_atten_coeff*((UGD->z[k]/UID->metParams->sensors[i]->site_canopy_H) -1.0));
+					u_prof[i][k] = cos(site_theta[i]) * u_H*exp(UID->metParams->sensors[0]->TS[index]->site_atten_coeff*((UGD->z[k]/UID->metParams->sensors[0]->TS[index]->site_canopy_H) -1.0));
+					v_prof[i][k] = sin(site_theta[i]) * u_H*exp(UID->metParams->sensors[0]->TS[index]->site_atten_coeff*((UGD->z[k]/UID->metParams->sensors[0]->TS[index]->site_canopy_H) -1.0));
 				}
-				if (UGD->z[k] > UID->metParams->sensors[i]->site_canopy_H)
+				if (UGD->z[k] > UID->metParams->sensors[0]->TS[index]->site_canopy_H)
 				{
-					if (UGD->z[k]*UID->metParams->sensors[i]->site_one_overL > 0)
+					if (UGD->z[k]*UID->metParams->sensors[0]->TS[index]->site_one_overL > 0)
 					{
-						psi = 4.7*(UGD->z[k]-canopy_d)*UID->metParams->sensors[i]->site_one_overL;
+						psi = 4.7*(UGD->z[k]-canopy_d)*UID->metParams->sensors[0]->TS[index]->site_one_overL;
 					}
 					else
 					{
-						x_temp = pow(1.0-15.0*(UGD->z[k]-canopy_d)*UID->metParams->sensors[i]->site_one_overL,0.25);
+						x_temp = pow(1.0-15.0*(UGD->z[k]-canopy_d)*UID->metParams->sensors[0]->TS[index]->site_one_overL,0.25);
 						psi = -2.0*log(0.5*(1.0+x_temp))-log(0.5*(1.0+pow(x_temp,2.0)))+2.0*atan(x_temp)-0.5*M_PI;
 					}
-					u_prof[i][k] = (cos(site_theta[i])*u_star/vk)*(log((UGD->z[k]-canopy_d)/UID->metParams->sensors[i]->site_z0)+psi);
-					v_prof[i][k] = (sin(site_theta[i])*u_star/vk)*(log((UGD->z[k]-canopy_d)/UID->metParams->sensors[i]->site_z0)+psi);
+					u_prof[i][k] = (cos(site_theta[i])*u_star/vk)*(log((UGD->z[k]-canopy_d)/UID->metParams->sensors[0]->TS[index]->site_z0)+psi);
+					v_prof[i][k] = (sin(site_theta[i])*u_star/vk)*(log((UGD->z[k]-canopy_d)/UID->metParams->sensors[0]->TS[index]->site_z0)+psi);
 				}
 			}
 		}
 
 		// Data entry profile (WRF output)
-		if (UID->metParams->sensors[i]->site_blayer_flag == 4)
+		if (UID->metParams->sensors[0]->TS[index]->site_blayer_flag == 4)
 		{
-			int z_size = UID->metParams->sensors[i]->site_z_ref.size();
+			int z_size = UID->metParams->sensors[0]->TS[index]->site_z_ref.size();
 			int ii = -1;
-			site_theta[i] = (270.0-UID->metParams->sensors[i]->site_wind_dir[0])*M_PI/180.0;
+			site_theta[i] = (270.0-UID->metParams->sensors[0]->TS[index]->site_wind_dir[0])*M_PI/180.0;
 
                         // Needs to be nz-1 for [0, n-1] indexing
 			for (auto k=UGD->terrain_id[site_id[i]]; k<UGD->nz-1; k++)
 			{
-				if (UGD->z[k] < UID->metParams->sensors[i]->site_z_ref[0] || z_size == 1)
+				if (UGD->z[k] < UID->metParams->sensors[0]->TS[index]->site_z_ref[0] || z_size == 1)
 				{
-					u_prof[i][k] = (UID->metParams->sensors[i]->site_U_ref[0]*cos(site_theta[i])/log((UID->metParams->sensors[i]->site_z_ref[0]+UID->metParams->sensors[i]->site_z0)/UID->metParams->sensors[i]->site_z0))
-													*log((UGD->z[k]+UID->metParams->sensors[i]->site_z0)/UID->metParams->sensors[i]->site_z0);
-					v_prof[i][k] = (UID->metParams->sensors[i]->site_U_ref[0]*sin(site_theta[i])/log((UID->metParams->sensors[i]->site_z_ref[0]+UID->metParams->sensors[i]->site_z0)/UID->metParams->sensors[i]->site_z0))
-													*log((UGD->z[k]+UID->metParams->sensors[i]->site_z0)/UID->metParams->sensors[i]->site_z0);
+					u_prof[i][k] = (UID->metParams->sensors[0]->TS[index]->site_U_ref[0]*cos(site_theta[i])/log((UID->metParams->sensors[0]->TS[index]->site_z_ref[0]+UID->metParams->sensors[0]->TS[index]->site_z0)/UID->metParams->sensors[0]->TS[index]->site_z0))
+													*log((UGD->z[k]+UID->metParams->sensors[0]->TS[index]->site_z0)/UID->metParams->sensors[0]->TS[index]->site_z0);
+					v_prof[i][k] = (UID->metParams->sensors[0]->TS[index]->site_U_ref[0]*sin(site_theta[i])/log((UID->metParams->sensors[0]->TS[index]->site_z_ref[0]+UID->metParams->sensors[0]->TS[index]->site_z0)/UID->metParams->sensors[0]->TS[index]->site_z0))
+													*log((UGD->z[k]+UID->metParams->sensors[0]->TS[index]->site_z0)/UID->metParams->sensors[0]->TS[index]->site_z0);
 				}
 				else
 				{
 
-					if ( (ii < z_size-2) && (UGD->z[k] >= UID->metParams->sensors[i]->site_z_ref[ii+1]))
+					if ( (ii < z_size-2) && (UGD->z[k] >= UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+1]))
 					{
 						ii += 1;
-						if (abs(UID->metParams->sensors[i]->site_wind_dir[ii+1]-UID->metParams->sensors[i]->site_wind_dir[ii]) > 180.0)
+						if (abs(UID->metParams->sensors[0]->TS[index]->site_wind_dir[ii+1]-UID->metParams->sensors[0]->TS[index]->site_wind_dir[ii]) > 180.0)
 						{
-							if (UID->metParams->sensors[i]->site_wind_dir[ii+1] > UID->metParams->sensors[i]->site_wind_dir[ii])
+							if (UID->metParams->sensors[0]->TS[index]->site_wind_dir[ii+1] > UID->metParams->sensors[0]->TS[index]->site_wind_dir[ii])
 							{
-								wind_dir = (UID->metParams->sensors[i]->site_wind_dir[ii+1]-360.0-UID->metParams->sensors[i]->site_wind_dir[ii+1])
-														/(UID->metParams->sensors[i]->site_z_ref[ii+1]-UID->metParams->sensors[i]->site_z_ref[ii]);
+								wind_dir = (UID->metParams->sensors[0]->TS[index]->site_wind_dir[ii+1]-360.0-UID->metParams->sensors[0]->TS[index]->site_wind_dir[ii+1])
+														/(UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+1]-UID->metParams->sensors[0]->TS[index]->site_z_ref[ii]);
 							}
 							else
 							{
-								wind_dir = (UID->metParams->sensors[i]->site_wind_dir[ii+1]+360.0-UID->metParams->sensors[i]->site_wind_dir[ii+1])
-														/(UID->metParams->sensors[i]->site_z_ref[ii+1]-UID->metParams->sensors[i]->site_z_ref[ii]);
+								wind_dir = (UID->metParams->sensors[0]->TS[index]->site_wind_dir[ii+1]+360.0-UID->metParams->sensors[0]->TS[index]->site_wind_dir[ii+1])
+														/(UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+1]-UID->metParams->sensors[0]->TS[index]->site_z_ref[ii]);
 							}
 						}
 						else
 						{
-							wind_dir = (UID->metParams->sensors[i]->site_wind_dir[ii+1]-UID->metParams->sensors[i]->site_wind_dir[ii])
-													/(UID->metParams->sensors[i]->site_z_ref[ii+1]-UID->metParams->sensors[i]->site_z_ref[ii]);
+							wind_dir = (UID->metParams->sensors[0]->TS[index]->site_wind_dir[ii+1]-UID->metParams->sensors[0]->TS[index]->site_wind_dir[ii])
+													/(UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+1]-UID->metParams->sensors[0]->TS[index]->site_z_ref[ii]);
 						}
 						z0_high = 20.0;
-						u_star = vk*UID->metParams->sensors[i]->site_U_ref[ii]/log((UID->metParams->sensors[i]->site_z_ref[ii]+z0_high)/z0_high);
-						u_new_high = (u_star/vk)*log((UID->metParams->sensors[i]->site_z_ref[ii]+z0_high)/z0_high);
+						u_star = vk*UID->metParams->sensors[0]->TS[index]->site_U_ref[ii]/log((UID->metParams->sensors[0]->TS[index]->site_z_ref[ii]+z0_high)/z0_high);
+						u_new_high = (u_star/vk)*log((UID->metParams->sensors[0]->TS[index]->site_z_ref[ii]+z0_high)/z0_high);
 						z0_low = 1e-9;
-						u_star = vk*UID->metParams->sensors[i]->site_U_ref[ii]/log((UID->metParams->sensors[i]->site_z_ref[ii]+z0_low)/z0_low);
-						u_new_low = (u_star/vk)*log((UID->metParams->sensors[i]->site_z_ref[ii+1]+z0_low)/z0_low);
+						u_star = vk*UID->metParams->sensors[0]->TS[index]->site_U_ref[ii]/log((UID->metParams->sensors[0]->TS[index]->site_z_ref[ii]+z0_low)/z0_low);
+						u_new_low = (u_star/vk)*log((UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+1]+z0_low)/z0_low);
 
-						if (UID->metParams->sensors[i]->site_U_ref[ii+1] > u_new_low && UID->metParams->sensors[i]->site_U_ref[ii+1] < u_new_high)
+						if (UID->metParams->sensors[0]->TS[index]->site_U_ref[ii+1] > u_new_low && UID->metParams->sensors[0]->TS[index]->site_U_ref[ii+1] < u_new_high)
 						{
 							log_flag = 1;
 							iter = 0;
-							u_star = vk*UID->metParams->sensors[i]->site_U_ref[ii]/log((UID->metParams->sensors[i]->site_z_ref[ii]+UID->metParams->sensors[i]->site_z0)/UID->metParams->sensors[i]->site_z0);
-							u_new = (u_star/vk)*log((UID->metParams->sensors[i]->site_z_ref[ii+1]+UID->metParams->sensors[i]->site_z0)/UID->metParams->sensors[i]->site_z0);
-							while (iter < 200 && abs(u_new-UID->metParams->sensors[i]->site_U_ref[ii]) > 0.0001*UID->metParams->sensors[i]->site_U_ref[ii])
+							u_star = vk*UID->metParams->sensors[0]->TS[index]->site_U_ref[ii]/log((UID->metParams->sensors[0]->TS[index]->site_z_ref[ii]+UID->metParams->sensors[0]->TS[index]->site_z0)/UID->metParams->sensors[0]->TS[index]->site_z0);
+							u_new = (u_star/vk)*log((UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+1]+UID->metParams->sensors[0]->TS[index]->site_z0)/UID->metParams->sensors[0]->TS[index]->site_z0);
+							while (iter < 200 && abs(u_new-UID->metParams->sensors[0]->TS[index]->site_U_ref[ii]) > 0.0001*UID->metParams->sensors[0]->TS[index]->site_U_ref[ii])
 							{
 								iter += 1;
 								z0_new = 0.5*(z0_low+z0_high);
-								u_star = vk*UID->metParams->sensors[i]->site_U_ref[ii]/log((UID->metParams->sensors[i]->site_z_ref[ii]+z0_new)/z0_new);
-								u_new = (u_star/vk)*log((UID->metParams->sensors[i]->site_z_ref[ii+1]+z0_new)/z0_new);
-								if (u_new > UID->metParams->sensors[i]->site_z_ref[ii+1])
+								u_star = vk*UID->metParams->sensors[0]->TS[index]->site_U_ref[ii]/log((UID->metParams->sensors[0]->TS[index]->site_z_ref[ii]+z0_new)/z0_new);
+								u_new = (u_star/vk)*log((UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+1]+z0_new)/z0_new);
+								if (u_new > UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+1])
 								{
 									z0_high = z0_new;
 								}
@@ -340,24 +340,24 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *UGD)
 							log_flag = 0;
 							if (ii < z_size-2)
 							{
-								a1 = ((UID->metParams->sensors[i]->site_z_ref[ii+1]-UID->metParams->sensors[i]->site_z_ref[ii])
-									 	*(UID->metParams->sensors[i]->site_U_ref[ii+2]-UID->metParams->sensors[i]->site_U_ref[ii])
-									 	+(UID->metParams->sensors[i]->site_z_ref[ii]-UID->metParams->sensors[i]->site_z_ref[ii+2])
-									 	*(UID->metParams->sensors[i]->site_U_ref[ii+1]-UID->metParams->sensors[i]->site_U_ref[ii]))
-									 	/((UID->metParams->sensors[i]->site_z_ref[ii+1]-UID->metParams->sensors[i]->site_z_ref[ii])
-									 	*(pow(UID->metParams->sensors[i]->site_z_ref[ii+2],2.0)-pow(UID->metParams->sensors[i]->site_z_ref[ii],2.0))
-									 	+(pow(UID->metParams->sensors[i]->site_z_ref[ii+1],2.0)-pow(UID->metParams->sensors[i]->site_z_ref[ii],2.0))
-									 	*(UID->metParams->sensors[i]->site_z_ref[ii]-UID->metParams->sensors[i]->site_z_ref[ii+2]));
+								a1 = ((UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+1]-UID->metParams->sensors[0]->TS[index]->site_z_ref[ii])
+									 	*(UID->metParams->sensors[0]->TS[index]->site_U_ref[ii+2]-UID->metParams->sensors[0]->TS[index]->site_U_ref[ii])
+									 	+(UID->metParams->sensors[0]->TS[index]->site_z_ref[ii]-UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+2])
+									 	*(UID->metParams->sensors[0]->TS[index]->site_U_ref[ii+1]-UID->metParams->sensors[0]->TS[index]->site_U_ref[ii]))
+									 	/((UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+1]-UID->metParams->sensors[0]->TS[index]->site_z_ref[ii])
+									 	*(pow(UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+2],2.0)-pow(UID->metParams->sensors[0]->TS[index]->site_z_ref[ii],2.0))
+									 	+(pow(UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+1],2.0)-pow(UID->metParams->sensors[0]->TS[index]->site_z_ref[ii],2.0))
+									 	*(UID->metParams->sensors[0]->TS[index]->site_z_ref[ii]-UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+2]));
 							}
 							else
 							{
 								a1 = 0.0;
 							}
-							a2 = ((UID->metParams->sensors[i]->site_U_ref[ii+1]-UID->metParams->sensors[i]->site_U_ref[ii])
-								 	-a1*(pow(UID->metParams->sensors[i]->site_z_ref[ii+1],2.0)-pow(UID->metParams->sensors[i]->site_z_ref[ii],2.0)))
-								 	/(UID->metParams->sensors[i]->site_z_ref[ii+1]-UID->metParams->sensors[i]->site_z_ref[ii]);
-							a3 = UID->metParams->sensors[i]->site_U_ref[ii]-a1*pow(UID->metParams->sensors[i]->site_z_ref[ii],2.0)
-								 	-a2*UID->metParams->sensors[i]->site_z_ref[ii];
+							a2 = ((UID->metParams->sensors[0]->TS[index]->site_U_ref[ii+1]-UID->metParams->sensors[0]->TS[index]->site_U_ref[ii])
+								 	-a1*(pow(UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+1],2.0)-pow(UID->metParams->sensors[0]->TS[index]->site_z_ref[ii],2.0)))
+								 	/(UID->metParams->sensors[0]->TS[index]->site_z_ref[ii+1]-UID->metParams->sensors[0]->TS[index]->site_z_ref[ii]);
+							a3 = UID->metParams->sensors[0]->TS[index]->site_U_ref[ii]-a1*pow(UID->metParams->sensors[0]->TS[index]->site_z_ref[ii],2.0)
+								 	-a2*UID->metParams->sensors[0]->TS[index]->site_z_ref[ii];
 						}
 					}
 					if (log_flag == 1)
@@ -368,8 +368,8 @@ void Sensor::inputWindProfile(const URBInputData *UID, URBGeneralData *UGD)
 					{
 						site_mag = a1*pow(UGD->z[k], 2.0)+a2*UGD->z[k]+a3;
 					}
-					site_theta[i] = (270.0-(UID->metParams->sensors[i]->site_wind_dir[ii]+
-											wind_dir*(UGD->z[k]-UID->metParams->sensors[i]->site_z_ref[ii])))*M_PI/180.0;
+					site_theta[i] = (270.0-(UID->metParams->sensors[0]->TS[index]->site_wind_dir[ii]+
+											wind_dir*(UGD->z[k]-UID->metParams->sensors[0]->TS[index]->site_z_ref[ii])))*M_PI/180.0;
 					u_prof[i][k] = site_mag*cos(site_theta[i]);
 					v_prof[i][k] = site_mag*sin(site_theta[i]);
 				}

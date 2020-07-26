@@ -25,6 +25,8 @@
 #include "GlobalMemory.h"
 #include "SharedMemory.h"
 
+#include "Sensor.h"
+
 namespace pt = boost::property_tree;
 
 /**
@@ -37,6 +39,7 @@ namespace pt = boost::property_tree;
  * @return A pointer to a root that is filled with data parsed from the tree
  */
 URBInputData* parseXMLTree(const std::string fileName);
+Sensor* parseSensors (const std::string fileName);
 
 int main(int argc, char *argv[])
 {
@@ -65,6 +68,17 @@ int main(int argc, char *argv[])
             " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
+
+    // If the sensor file specified in the xml
+    if (UID->metParams->sensorName.size() > 0)
+    {
+        for (auto i = 0; i < UID->metParams->sensorName.size(); i++)
+  		  {
+            UID->metParams->sensors.push_back(new Sensor());            // Create new sensor object
+            UID->metParams->sensors[i] = parseSensors(UID->metParams->sensorName[i]);       // Parse new sensor objects from xml
+        }
+    }
+
 
     // Checking if
     if (arguments.compTurb && !UID->localMixingParam) {
@@ -171,8 +185,129 @@ int main(int argc, char *argv[])
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    for(auto id_out=0u;id_out<outputVec.size();id_out++) {
+    for(auto id_out=0u;id_out<outputVec.size();id_out++)
+    {
         outputVec.at(id_out)->save(0.0); // need to replace 0.0 with timestep
+    }
+
+    if (UID->simParams->totalTimeIncrements > 1)
+    {
+      for (int index = 1; index < UID->simParams->totalTimeIncrements; index++)
+      {
+        // Reset icellflag values
+        for (int k = 0; k < UGD->nz-2; k++)
+        {
+            for (int j = 0; j < UGD->ny-1; j++)
+            {
+                for (int i = 0; i < UGD->nx-1; i++)
+                {
+                    int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
+                    if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2 && UGD->icellflag[icell_cent] != 8 && UGD->icellflag[icell_cent] != 7)
+                    {
+                      UGD->icellflag[icell_cent] = 1;
+                    }
+                }
+            }
+        }
+
+        // Create initial velocity field from the new sensors
+        UID->metParams->sensors[0]->inputWindProfile(UID, UGD, index);
+
+        // ///////////////////////////////////////
+        // Canopy Vegetation Parameterization
+        // ///////////////////////////////////////
+        for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
+        {
+            // for now this does the canopy stuff for us
+            UGD->allBuildingsV[UGD->building_id[i]]->canopyVegetation(UGD);
+        }
+
+        ///////////////////////////////////////////
+        //   Upwind Cavity Parameterization     ///
+        ///////////////////////////////////////////
+        if (UID->simParams->upwindCavityFlag > 0)
+        {
+            std::cout << "Applying upwind cavity parameterization...\n";
+            for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
+            {
+                UGD->allBuildingsV[UGD->building_id[i]]->upwindCavity(UID, UGD);
+            }
+            std::cout << "Upwind cavity parameterization done...\n";
+        }
+
+        //////////////////////////////////////////////////
+        //   Far-Wake and Cavity Parameterizations     ///
+        //////////////////////////////////////////////////
+        if (UID->simParams->wakeFlag > 0)
+        {
+            std::cout << "Applying wake behind building parameterization...\n";
+            for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
+            {
+                UGD->allBuildingsV[UGD->building_id[i]]->polygonWake(UID, UGD, UGD->building_id[i]);
+            }
+            std::cout << "Wake behind building parameterization done...\n";
+        }
+
+        ///////////////////////////////////////////
+        //   Street Canyon Parameterization     ///
+        ///////////////////////////////////////////
+        if (UID->simParams->streetCanyonFlag > 0)
+        {
+            std::cout << "Applying street canyon parameterization...\n";
+            for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
+            {
+                UGD->allBuildingsV[UGD->building_id[i]]->streetCanyon(UGD);
+            }
+            std::cout << "Street canyon parameterization done...\n";
+        }
+
+        ///////////////////////////////////////////
+        //      Sidewall Parameterization       ///
+        ///////////////////////////////////////////
+        if (UID->simParams->sidewallFlag > 0)
+        {
+            std::cout << "Applying sidewall parameterization...\n";
+            for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
+            {
+                UGD->allBuildingsV[UGD->building_id[i]]->sideWall(UID, UGD);
+            }
+            std::cout << "Sidewall parameterization done...\n";
+        }
+
+
+        ///////////////////////////////////////////
+        //      Rooftop Parameterization        ///
+        ///////////////////////////////////////////
+        if (UID->simParams->rooftopFlag > 0)
+        {
+            std::cout << "Applying rooftop parameterization...\n";
+            for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
+            {
+                UGD->allBuildingsV[UGD->building_id[i]]->rooftop (UID, UGD);
+            }
+            std::cout << "Rooftop parameterization done...\n";
+        }
+
+        UGD->wall->setVelocityZero (UGD);
+
+        // Run urb simulation code
+        solver->solve(UID, UGD, !arguments.solveWind );
+
+        std::cout << "Solver done!\n";
+
+        std::cout << "index:  " << (float) index <<std::endl;
+
+        // /////////////////////////////
+        // Output the various files requested from the simulation run
+        // (netcdf wind velocity, icell values, etc...
+        // /////////////////////////////
+        for(auto id_out=0u;id_out<outputVec.size();id_out++)
+        {
+            outputVec.at(id_out)->save((float) index);
+        }
+
+      }
+
     }
 
 
@@ -197,4 +332,26 @@ URBInputData* parseXMLTree(const std::string fileName)
 	URBInputData* xmlRoot = new URBInputData();
         xmlRoot->parseTree( tree );
 	return xmlRoot;
+}
+
+
+Sensor* parseSensors (const std::string fileName)
+{
+
+  pt::ptree tree1;
+
+  try
+  {
+    pt::read_xml(fileName, tree1);
+  }
+  catch (boost::property_tree::xml_parser::xml_parser_error& e)
+  {
+    std::cerr << "Error reading tree in" << fileName << "\n";
+    return (Sensor*)0;
+  }
+
+  Sensor* xmlRoot = new Sensor();
+  xmlRoot->parseTree( tree1 );
+  return xmlRoot;
+
 }

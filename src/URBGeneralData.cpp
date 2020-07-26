@@ -75,10 +75,10 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
             UID->metParams->sensors[i]->site_ycoord = wrf_ptr->statData[i].yCoord;
 
             // WRF profile data -- sensor blayer flag is 4
-            UID->metParams->sensors[i]->site_blayer_flag = 4;
+            UID->metParams->sensors[i]->TS[0]->site_blayer_flag = 4;
 
             // Make sure to set size_z0 to be z0 from WRF cell
-            UID->metParams->sensors[i]->site_z0 = wrf_ptr->statData[i].z0;
+            UID->metParams->sensors[i]->TS[0]->site_z0 = wrf_ptr->statData[i].z0;
 
             //
             // 1 time series for now - how do we deal with this for
@@ -88,9 +88,9 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
                 std::cout << "\tTime Series: " << t << std::endl;
 
                 int profDataSz = wrf_ptr->statData[i].profiles[t].size();
-                UID->metParams->sensors[i]->site_wind_dir.resize( profDataSz );
-                UID->metParams->sensors[i]->site_z_ref.resize( profDataSz );
-                UID->metParams->sensors[i]->site_U_ref.resize( profDataSz );
+                UID->metParams->sensors[i]->TS[0]->site_wind_dir.resize( profDataSz );
+                UID->metParams->sensors[i]->TS[0]->site_z_ref.resize( profDataSz );
+                UID->metParams->sensors[i]->TS[0]->site_U_ref.resize( profDataSz );
 
 
                 for (size_t p=0; p<wrf_ptr->statData[i].profiles[t].size(); p++) {
@@ -98,9 +98,9 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
                               << ", " << wrf_ptr->statData[i].profiles[t][p].ws
                               << ", " << wrf_ptr->statData[i].profiles[t][p].wd << std::endl;
 
-                    UID->metParams->sensors[i]->site_z_ref[p] = wrf_ptr->statData[i].profiles[t][p].zCoord;
-                    UID->metParams->sensors[i]->site_U_ref[p] = wrf_ptr->statData[i].profiles[t][p].ws;
-                    UID->metParams->sensors[i]->site_wind_dir[p] = wrf_ptr->statData[i].profiles[t][p].wd;
+                    UID->metParams->sensors[i]->TS[0]->site_z_ref[p] = wrf_ptr->statData[i].profiles[t][p].zCoord;
+                    UID->metParams->sensors[i]->TS[0]->site_U_ref[p] = wrf_ptr->statData[i].profiles[t][p].ws;
+                    UID->metParams->sensors[i]->TS[0]->site_wind_dir[p] = wrf_ptr->statData[i].profiles[t][p].wd;
 
                 }
             }
@@ -121,8 +121,8 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
             for (auto j=0; j<ny; j++)
             {
                 id = i+j*nx;
-                z0_domain_u[id] = UID->metParams->sensors[0]->site_z0;
-                z0_domain_v[id] = UID->metParams->sensors[0]->site_z0;
+                z0_domain_u[id] = UID->metParams->sensors[0]->TS[0]->site_z0;
+                z0_domain_v[id] = UID->metParams->sensors[0]->TS[0]->site_z0;
             }
         }
     }
@@ -178,9 +178,9 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     z[0] = -0.5*dz_array[0];
     for (size_t k=1; k<z.size(); k++) {
         z_face[k] = z_face[k-1] + dz_array[k];  /**< Location of face centers in z-dir */
-        z[k] = 0.5*(z_face[k-1] + z_face[k]);   /**< Location of cell centers in z-dir */ 
+        z[k] = 0.5*(z_face[k-1] + z_face[k]);   /**< Location of cell centers in z-dir */
     }
-    
+
 
     // horizontal grid (x-direction)
     x.resize( nx-1 );
@@ -267,7 +267,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     // so it would have access to all the sensors naturally.
     // Make this change later.
     //    UID->metParams->inputWindProfile(UID, this);
-    UID->metParams->sensors[0]->inputWindProfile(UID, this);
+    UID->metParams->sensors[0]->inputWindProfile(UID, this, 0);
 
     std::cout << "Sensors have been loaded (total sensors = " << UID->metParams->sensors.size() << ")." << std::endl;
 

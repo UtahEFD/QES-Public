@@ -23,7 +23,7 @@ public:
     LocalMixingParam* localMixingParam;
     Buildings* buildings;
     Canopies* canopies;
-    
+
 
     URBInputData()
     {
