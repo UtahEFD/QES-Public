@@ -6,6 +6,7 @@
  */
 
 #include <cmath>
+#include <cfloat>
 #include <random>
 #include "Vec3D.h"
 
@@ -114,6 +115,11 @@ private:
     }
     
 
+   /*Constructor for the Mitchell's Best Candidate Algorithm test 
+    */
+   SphereDirections(int numDirVec);
+   
+
    /*
     *@return numDirVec -the number of directional vectors generated
     */
@@ -143,7 +149,7 @@ private:
     }
     
 
-   /*
+   /*Mitchel's Best Algorithm 
     *Gets the next unique direction 
     *@return the next non-repeated directional vector
     */

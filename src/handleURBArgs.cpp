@@ -98,5 +98,4 @@ void URBArgs::processArguments(int argc, char *argv[])
         turbOutput=false;
         terrainOut=false;
     }
-
 }

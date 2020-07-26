@@ -1,6 +1,5 @@
 <simulationParameters>
 
-	<!--DEM>../scratch/SLC/n41w112_30m/n41w112_30m.tif</DEM-->	<!-- Address to DEM location-->
   	<SHP>../scratch/OKCSmallDomain/OKCSmallDomainJU2003.shp</SHP>	<!-- Address to shapefile location-->
   	<SHPBuildingLayer>OKCSmallDomainJU2003</SHPBuildingLayer>
   	<heightFactor> 1.0 </heightFactor>				<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
@@ -8,8 +7,9 @@
   	<halo_x> 30.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 30.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 
-  	<domain> 118 121 78</domain>					<!-- Number of cells in x,y and z directions-->
-  	<cellSize> 10.0 10.0 3.0 </cellSize> 				<!-- Mesh resolution (meters)-->
+-       <domain> 118 121 78</domain>                                    <!-- Number of cells in x,y and z directions-->
+-       <cellSize> 10.0 10.0 3.0 </cellSize>                            <!-- Mesh resolution (meters)-->
+
 	<verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
 	<totalTimeIncrements> 1 </totalTimeIncrements> 			<!-- Number of time steps-->
@@ -52,9 +52,10 @@
 
 </metParams>								<!-- End of meteorological parameters -->
 <localMixingParam>
-  <method>1</method> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <method>3</method> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <samples>2000</samples>
   <save>true</save>  <!-- Save 2 to file -->
-  <LMfile>../scratch/OKCSmallDomain/OKCSmallDomainJU2003_mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
+  <LMfile>/scratch/OKCSmallDomainJU2003_mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
 </localMixingParam>
 <fileOptions>
   <outputFlag>1</outputFlag>

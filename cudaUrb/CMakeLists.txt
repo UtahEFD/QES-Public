@@ -8,8 +8,14 @@ CUDA_ADD_EXECUTABLE( cudaUrb
   cudaUrbMain.cpp
   )
 
+target_link_libraries(cudaUrb curand)
 target_link_libraries(cudaUrb cudaurbcore)
 target_link_libraries(cudaUrb cudaurbutil)
+
+IF (${HAS_OPTIX_SUPPORT})
+  target_link_libraries(cudaUrb qesOptix)
+ENDIF()
+
 target_link_libraries(cudaUrb ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(cudaUrb ${GDAL_LIBRARY})
 target_link_libraries(cudaUrb ${NETCDF_LIBRARIES_CXX})
