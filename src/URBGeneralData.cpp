@@ -46,10 +46,16 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     dz = gridInfo[2];		/**< Grid resolution in z-direction */
     dxy = MIN_S(dx, dy);
 
+
+    std::cout << "resize: " << numcell_cent << ", nx=" << nx << ", ny=" << ny << ", nz=" << nz << std::endl;
+
+
     numcell_cout    = (nx-1)*(ny-1)*(nz-2);        /**< Total number of cell-centered values in domain */
     numcell_cout_2d = (nx-1)*(ny-1);               /**< Total number of horizontal cell-centered values in domain */
     numcell_cent    = (nx-1)*(ny-1)*(nz-1);        /**< Total number of cell-centered values in domain */
     numcell_face    = nx*ny*nz;                    /**< Total number of face-centered values in domain */
+
+    std::cout << "resize: " << numcell_cent << ", nx=" << nx << ", ny=" << ny << ", nz=" << nz << std::endl;
 
 
     // where should this really go?
@@ -88,6 +94,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
                 std::cout << "\tTime Series: " << t << std::endl;
 
                 int profDataSz = wrf_ptr->statData[i].profiles[t].size();
+		std::cout << "prof data sz = " << profDataSz << std::endl;
                 UID->metParams->sensors[i]->site_wind_dir.resize( profDataSz );
                 UID->metParams->sensors[i]->site_z_ref.resize( profDataSz );
                 UID->metParams->sensors[i]->site_U_ref.resize( profDataSz );
