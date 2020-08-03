@@ -44,10 +44,9 @@ __global__ void divergence(float *d_u0, float *d_v0, float *d_w0, float *d_R, fl
     {
 
         // Divergence equation
-        d_R[icell_cent] = (-2*pow(alpha1, 2.0))*((( d_e[icell_cent] * d_u0[icell_face+1]       - d_f[icell_cent] * d_u0[icell_face]) * dx ) +
-                                               (( d_g[icell_cent] * d_v0[icell_face + nx]    - d_h[icell_cent] * d_v0[icell_face]) * dy ) +
-                                               ( d_m[icell_cent] * d_dz_array[k]*0.5*(d_dz_array[k]+d_dz_array[k+1]) * d_w0[icell_face + nx*ny]
-                                                - d_n[icell_cent] * d_w0[icell_face] * d_dz_array[k]*0.5*(d_dz_array[k]+d_dz_array[k-1]) ));
+        d_R[icell_cent] = (-2*pow(alpha1, 2.0))*(((  d_u0[icell_face+1]     -  d_u0[icell_face]) / dx ) +
+                                               ((  d_v0[icell_face + nx]    -  d_v0[icell_face]) / dy ) +
+                                               ((  d_w0[icell_face + nx*ny]  -  d_w0[icell_face]) / d_dz_array[k]));
     }
 }
 
@@ -102,21 +101,25 @@ __global__ void calculateError(float *d_lambda, float *d_lambda_old, int nx, int
     int ii = blockDim.x*blockIdx.x+threadIdx.x;
     int numblocks = (d_size/BLOCKSIZE) +1;
 
-    if (ii < d_size){
-        d_value[ii] = fabs(d_lambda[ii] - d_lambda_old[ii])/((nx-1)*(ny-1)*(nz-1));
+    if (ii < d_size)
+    {
+      d_value[ii] = fabs(d_lambda[ii] - d_lambda_old[ii])/((nx-1)*(ny-1)*(nz-1));
     }
     __syncthreads();
-        float sum = 0.0;
-    if (threadIdx.x > 0){
-        return;
+    float sum = 0.0;
+    if (threadIdx.x > 0)
+    {
+      return;
     }
-    if (threadIdx.x == 0) {
-         for (int j=0; j<BLOCKSIZE; j++){
+    if (threadIdx.x == 0)
+    {
+      for (int j=0; j<BLOCKSIZE; j++)
+      {
         int index = blockIdx.x*blockDim.x+j;
         if (index<d_size){
-            sum += d_value[index];
+          sum += d_value[index];
         }
-         }
+      }
     }
 
     __syncthreads();
@@ -127,10 +130,12 @@ __global__ void calculateError(float *d_lambda, float *d_lambda_old, int nx, int
     }
 
     error = 0.0;
-    if (ii==0){
-        for (int k =0; k<numblocks; k++){
+    if (ii==0)
+    {
+      for (int k =0; k<numblocks; k++)
+      {
         error += d_bvalue[k];
-        }
+      }
     }
 
  }
@@ -158,11 +163,11 @@ __global__ void finalVelocity(float *d_u0, float *d_v0, float *d_w0, float *d_la
 
     if ((i > 0) && (i < nx-1) && (j > 0) && (j < ny-1) && (k < nz-2) && (k > 0)) {
 
-        d_u[icell_face] = d_f[icell_cent]*dx*dx*d_u0[icell_face]+(1/(2*pow(alpha1, 2.0)))*d_f[icell_cent]*dx*
+        d_u[icell_face] = d_u0[icell_face]+(1/(2*pow(alpha1, 2.0)))*d_f[icell_cent]*dx*
 						 (d_lambda[icell_cent]-d_lambda[icell_cent-1]);
-        d_v[icell_face] = d_h[icell_cent]*dy*dy*d_v0[icell_face]+(1/(2*pow(alpha1, 2.0)))*d_h[icell_cent]*dy*
+        d_v[icell_face] = d_v0[icell_face]+(1/(2*pow(alpha1, 2.0)))*d_h[icell_cent]*dy*
 						 (d_lambda[icell_cent]-d_lambda[icell_cent - (nx-1)]);
-        d_w[icell_face] = d_n[icell_cent]*d_dz_array[k]*d_dz_array[k]*d_w0[icell_face]+(1/(2*pow(alpha2, 2.0)))*d_n[icell_cent]*d_dz_array[k]*
+        d_w[icell_face] = d_w0[icell_face]+(1/(2*pow(alpha2, 2.0)))*d_n[icell_cent]*d_dz_array[k]*
 						 (d_lambda[icell_cent]-d_lambda[icell_cent - (nx-1)*(ny-1)]);
 
     }
@@ -226,11 +231,6 @@ __global__ void SOR_iteration (float *d_lambda, float *d_lambda_old, int nx, int
         calculateError<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda,d_lambda_old, nx, ny, nz, d_value,d_bvalue);
         cudaDeviceSynchronize();
 
-        /*if (iter == 200)
-        {
-          omega = 1.0;
-        }*/
-
         iter += 1;
 
     }
@@ -249,13 +249,12 @@ DynamicParallelism::DynamicParallelism(const URBInputData* UID, URBGeneralData* 
     : Solver(UID, UGD)
 {
     std::cout << "DynamicParallelism Solver Initialization" << std::endl;
-  
     int deviceCount = 0;
     cudaError_t error_id = cudaGetDeviceCount(&deviceCount);
 
     if (error_id != cudaSuccess) {
         std::cerr << "ERROR!   cudaGetDeviceCount returned "
-            << static_cast<int>(error_id) << "\n\t-> " 
+            << static_cast<int>(error_id) << "\n\t-> "
                   << cudaGetErrorString(error_id) << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -282,8 +281,8 @@ DynamicParallelism::DynamicParallelism(const URBInputData* UID, URBGeneralData* 
         // Console log
         cudaDriverGetVersion(&driverVersion);
         cudaRuntimeGetVersion(&runtimeVersion);
-        std::cout << "\t\tCUDA Driver Version / Runtime Version: " 
-                  << driverVersion / 1000 << "." << (driverVersion % 100) / 10 << " / " 
+        std::cout << "\t\tCUDA Driver Version / Runtime Version: "
+                  << driverVersion / 1000 << "." << (driverVersion % 100) / 10 << " / "
                   << runtimeVersion / 1000 << "." <<  (runtimeVersion % 100) / 10 << std::endl;
 
         std::cout << "\t\tCUDA Capability Major/Minor version number: "
@@ -315,8 +314,7 @@ DynamicParallelism::DynamicParallelism(const URBInputData* UID, URBGeneralData* 
               << deviceProp.clockRate * 1e-3f << " MHz ("
               << deviceProp.clockRate * 1e-6f << " GHz)" << std::endl;
     }
-    
-    
+cudaSetDevice(0);
 }
 
 

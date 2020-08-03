@@ -24,8 +24,8 @@ public:
  
 private:
 
-    std::vector<float> x_cc,y_cc,z_cc;
-
+    std::vector<float> x_cc,y_cc,z_cc,z_face,dz_array;
+    
     URBGeneralData* ugd_;
 
     // [FM] Feb.28.2020 OBSOLETE

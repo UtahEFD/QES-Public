@@ -31,10 +31,9 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
                 icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
 
                 /// Calculate divergence of initial velocity field
-                R[icell_cent] = (-2*pow(alpha1, 2.0))*((( UGD->e[icell_cent] * UGD->u0[icell_face+1]       - UGD->f[icell_cent] * UGD->u0[icell_face]) * UGD->dx ) +
-                                                       (( UGD->g[icell_cent] * UGD->v0[icell_face + UGD->nx]    - UGD->h[icell_cent] * UGD->v0[icell_face]) * UGD->dy ) +
-                                                       ( UGD->m[icell_cent]  * UGD->w0[icell_face + UGD->nx*UGD->ny] * UGD->dz_array[k]*0.5*(UGD->dz_array[k]+UGD->dz_array[k+1])
-                                                        - UGD->n[icell_cent] * UGD->w0[icell_face] * UGD->dz_array[k]*0.5*(UGD->dz_array[k]+UGD->dz_array[k-1]) ));
+                R[icell_cent] = (-2*pow(alpha1, 2.0))*((( UGD->u0[icell_face+1]       - UGD->u0[icell_face]) / UGD->dx ) +
+                                                       (( UGD->v0[icell_face + UGD->nx]    - UGD->v0[icell_face]) / UGD->dy ) +
+                                                       (( UGD->w0[icell_face + UGD->nx*UGD->ny] - UGD->w0[icell_face]) / UGD->dz_array[k] ));
             }
         }
     }
@@ -53,10 +52,9 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
         /////////////////////////////////////////////////
         int iter = 0;
         float error = 1.0;
-    	  float reduced_error = 0.0;
 
         std::cout << "Solving...\n";
-        while (iter < itermax && error > tol && error > reduced_error) {
+        while (iter < itermax && error > tol) {
 
             // Save previous iteration values for error calculation
             //    uses stl vector's assignment copy function, assign
@@ -102,17 +100,12 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
                 }
             }
 
-            if (iter == 0) {
-                reduced_error = error * 1.0e-3;
-            }
-
             iter += 1;
         }
         std::cout << "Solved!\n";
 
         std::cout << "Number of iterations:" << iter << "\n";   // Print the number of iterations
         std::cout << "Error:" << error << "\n";
-        std::cout << "Reduced Error:" << reduced_error << "\n";
 
         /*ofstream outdata2;
         outdata2.open("coefficients1.dat");
@@ -168,14 +161,14 @@ void CPUSolver::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWi
                     icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   /// Lineralized index for cell centered values
                     icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;               /// Lineralized index for cell faced values
 
-                    UGD->u[icell_face] = UGD->f[icell_cent]*UGD->dx*UGD->dx*UGD->u0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
+                    UGD->u[icell_face] = UGD->u0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
                         UGD->f[icell_cent]*UGD->dx*(lambda[icell_cent]-lambda[icell_cent-1]);
 
                         // Calculate correct wind velocity
-                    UGD->v[icell_face] = UGD->h[icell_cent]*UGD->dy*UGD->dy*UGD->v0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
+                    UGD->v[icell_face] = UGD->v0[icell_face] + (1/(2*pow(alpha1, 2.0))) *
                         UGD->h[icell_cent]*UGD->dy*(lambda[icell_cent]-lambda[icell_cent - (UGD->nx-1)]);
 
-                    UGD->w[icell_face] = UGD->n[icell_cent]*UGD->dz_array[k]*UGD->dz_array[k]*UGD->w0[icell_face]+(1/(2*pow(alpha2, 2.0))) *
+                    UGD->w[icell_face] = UGD->w0[icell_face]+(1/(2*pow(alpha2, 2.0))) *
                         UGD->n[icell_cent]*UGD->dz_array[k]*(lambda[icell_cent]-lambda[icell_cent - (UGD->nx-1)*(UGD->ny-1)]);
                 }
             }

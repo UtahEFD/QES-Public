@@ -17,12 +17,36 @@ SET(CUDAURB_VERSION_INFO -${cudaUrb_Toolkit_VERSION_MAJOR}.${MinVR_Toolkit_VERSI
 MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of cudaUrb.")
 MESSAGE(STATUS "If you want something different, use -DCMAKE_BUILD_TYPE=Debug, Release, RelWithDebInfo, MinSizeRel.")
 
+# Force VERBOSE Output -- used in all branches except master
+# Can be commented out in master branches.
+SET(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON" FORCE)
+  
+# 
+# Detect COMPILER
+#  This may be useful for helping us determine the level of C++
+#  support available.  For instance on GCC 4.4.7, -std=c++11 is not
+#  available, but -std=c++0x is available.  Newer compilers
+#  can handle the -std=c++11, -std=c++14, etc...
 #
-# This code used C++ 11 and 14 features so enable these on CXX Flags
-#
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+include(CheckCXXCompilerFlag)
+MESSAGE(STATUS "Compiling with ${CMAKE_CXX_COMPILER_ID}, Version: ${CMAKE_CXX_COMPILER_VERSION}")
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+if(COMPILER_SUPPORTS_CXX11)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
+
+  #
+  # This code used C++ 11 and 14 features so enable these on CXX Flags
+  #
+  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
+  
+elseif(COMPILER_SUPPORTS_CXX0X)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Wall")
+else()
+    message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER} has no C++11 support.")
+endif()
 
 
 # ----------------------------------------------------------
@@ -69,8 +93,7 @@ ENDIF(${GDAL_FOUND})
 
 SET(CUDA_SEPARABLE_COMPILATION ON)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;" )
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
 
 FIND_PACKAGE(CUDA REQUIRED)
 

@@ -222,7 +222,7 @@ void PolyBuilding::polygonWake (const URBInputData* UID, URBGeneralData* UGD, in
     }
   }
 
-  for (auto k = k_start; k < UGD->nz-1; k++)
+  for (auto k = k_start; k < UGD->nz-2; k++)
   {
     k_top = k;
     if (height_eff < UGD->z[k+1])

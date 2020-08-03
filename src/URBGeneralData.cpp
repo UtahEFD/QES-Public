@@ -166,7 +166,7 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     // vertical grid (can be uniform or stretched)
     dz_array.resize( nz-1, 0.0 );
     z.resize( nz-1 );
-    z_face.resize( nz-1);
+    z_face.resize( nz-1 );
 
     if (UID->simParams->verticalStretching == 0) {        // Uniform vertical grid
         for (size_t k=1; k<z.size(); k++) {
@@ -184,9 +184,10 @@ URBGeneralData::URBGeneralData(const URBInputData* UID)
     z_face[0] = 0.0;
     z[0] = -0.5*dz_array[0];
     for (size_t k=1; k<z.size(); k++) {
-        z_face[k] = z_face[k-1] + dz_array[k]; /**< Location of face centers in z-dir */
-        z[k] = 0.5*(z_face[k-1]+z_face[k]);    /**< Location of cell centers in z-dir */  
+        z_face[k] = z_face[k-1] + dz_array[k];  /**< Location of face centers in z-dir */
+        z[k] = 0.5*(z_face[k-1] + z_face[k]);   /**< Location of cell centers in z-dir */ 
     }
+    
 
     // horizontal grid (x-direction)
     x.resize( nx-1 );

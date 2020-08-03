@@ -17,7 +17,7 @@ private:
 
 public:
 
-    int site_blayer_flag;
+    int site_blayer_flag = 1;
     float site_one_overL, site_xcoord, site_ycoord;
     std::vector<float> site_wind_dir, site_z_ref, site_U_ref;
 
@@ -25,7 +25,8 @@ public:
 
     float site_canopy_H, site_atten_coeff;
 
-    int site_coord_flag, site_UTM_zone;
+    int site_coord_flag = 1;
+    int site_UTM_zone;
   	float site_UTM_x, site_UTM_y;
   	float site_lon, site_lat;
 
@@ -34,14 +35,14 @@ public:
 
         parsePrimitive<float>(true, site_xcoord, "site_xcoord");
         parsePrimitive<float>(true, site_ycoord, "site_ycoord");
-        parsePrimitive<int>(true, site_blayer_flag, "boundaryLayerFlag");
+        parsePrimitive<int>(false, site_blayer_flag, "boundaryLayerFlag");
         parsePrimitive<float>(true, site_z0, "siteZ0");
         parsePrimitive<float>(true, site_one_overL, "reciprocal");
         parseMultiPrimitives<float>(true, site_z_ref, "height");
         parseMultiPrimitives<float>(true, site_U_ref, "speed");
         parseMultiPrimitives<float>(true, site_wind_dir, "direction");
 
-        parsePrimitive<int>(true, site_coord_flag, "site_coord_flag");
+        parsePrimitive<int>(false, site_coord_flag, "site_coord_flag");
     		parsePrimitive<float>(false, site_UTM_x, "site_UTM_x");
     		parsePrimitive<float>(false, site_UTM_y, "site_UTM_y");
     		parsePrimitive<int>(false, site_UTM_zone, "site_UTM_zone");

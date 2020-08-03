@@ -21,18 +21,18 @@ private:
 public:
     Vector3<int>* domain;
     Vector3<float>* grid;
-    int verticalStretching;
+    int verticalStretching = 0;
     std::vector<float> dz_value;
     int totalTimeIncrements;
-    int rooftopFlag;
-    int upwindCavityFlag;
-    int streetCanyonFlag;
-    int streetIntersectionFlag;
-    int wakeFlag;
-    int sidewallFlag;
-    int maxIterations;
-    int residualReduction;
-    float domainRotation;
+    int rooftopFlag = 1;
+    int upwindCavityFlag = 2;
+    int streetCanyonFlag = 1;
+    int streetIntersectionFlag = 0;
+    int wakeFlag = 2;
+    int sidewallFlag = 1;
+    int maxIterations = 500;
+    double tolerance = 1e-9;
+    float domainRotation = 0;
     float UTMx;
     float UTMy;
     int UTMZone;
@@ -58,7 +58,7 @@ public:
     // //////////////////////////////////////////
     // WRF File Parameters
     // //////////////////////////////////////////
-    // 
+    //
     // Two use-cases are now supported:
     //
     // (1) Only a WRF file is supplied.
@@ -77,7 +77,7 @@ public:
     // pulled from the wind profile in the WRF atmospheric mesh. Thus,
     // no terrain will be queried from the WRF file.
     //
-    
+
     std::string wrfFile;
     WRFInput *wrfInputData = nullptr;
     int wrfSensorSample;
@@ -117,19 +117,19 @@ public:
                                                                  // this
                                                                  // get allocated?
         parseElement< Vector3<float> >(false, grid, "cellSize");
-        parsePrimitive<int>(true, verticalStretching, "verticalStretching");
+        parsePrimitive<int>(false, verticalStretching, "verticalStretching");
         parseMultiPrimitives<float>(false, dz_value, "dz_value");
         parsePrimitive<int>(false, totalTimeIncrements, "totalTimeIncrements");
-        parsePrimitive<int>(true, rooftopFlag, "rooftopFlag");
-        parsePrimitive<int>(true, upwindCavityFlag, "upwindCavityFlag");
-        parsePrimitive<int>(true, streetCanyonFlag, "streetCanyonFlag");
-        parsePrimitive<int>(true, streetIntersectionFlag, "streetIntersectionFlag");
-        parsePrimitive<int>(true, wakeFlag, "wakeFlag");
-        parsePrimitive<int>(true, sidewallFlag, "sidewallFlag");
-        parsePrimitive<int>(true, maxIterations, "maxIterations");
-        parsePrimitive<int>(true, residualReduction, "residualReduction");
-        parsePrimitive<int>(true, meshTypeFlag, "meshTypeFlag");
-        parsePrimitive<float>(true, domainRotation, "domainRotation");
+        parsePrimitive<int>(false, rooftopFlag, "rooftopFlag");
+        parsePrimitive<int>(false, upwindCavityFlag, "upwindCavityFlag");
+        parsePrimitive<int>(false, streetCanyonFlag, "streetCanyonFlag");
+        parsePrimitive<int>(false, streetIntersectionFlag, "streetIntersectionFlag");
+        parsePrimitive<int>(false, wakeFlag, "wakeFlag");
+        parsePrimitive<int>(false, sidewallFlag, "sidewallFlag");
+        parsePrimitive<int>(false, maxIterations, "maxIterations");
+        parsePrimitive<double>(false, tolerance, "tolerance");
+        parsePrimitive<int>(false, meshTypeFlag, "meshTypeFlag");
+        parsePrimitive<float>(false, domainRotation, "domainRotation");
         parsePrimitive<float>(false, UTMx, "UTMx");
         parsePrimitive<float>(false, UTMy, "UTMy");
         parsePrimitive<int>(false, UTMZone, "UTMZone");
@@ -177,7 +177,7 @@ public:
         //
         if (m_domIType == WRFOnly) {
             //
-            // WRF File is specified 
+            // WRF File is specified
             // Read in height field
             //
             // This step parses the WRF data, attempting to extract
@@ -227,7 +227,7 @@ public:
             // To proceed and cull sensors appropriately, we will need
             // the lower-left bounds from the DEM if UTMx and UTMy and
             // UTMZone are not all 0
-            // 
+            //
             // ??? Parse primitive should return true or false if a
             // value was parsed, rather than this
             // ??? can refactor that later.
@@ -239,7 +239,7 @@ public:
                 useUTM_for_DEMLocation = true;
                 std::cout << "UTM (" << UTMx << ", " << UTMy << "), Zone: " << UTMZone << " will be used as lower-left location for DEM." << std::endl;
             }
-            
+
             // Note from Pete:
             // Normally, will want to see if UTMx and UTMy are valid
             // in the DEM and if so, pass that UTMx and UTMy into the
@@ -255,7 +255,7 @@ public:
             wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, dimX, dimY, wrfSensorSample, onlySensorData );
             std::cout << "WRF Wind Velocity Profile Data processing completed." << std::endl;
         }
-        
+
         else if (m_domIType == DEMOnly) {
             std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
             DTE_heightField = new DTEHeightField(demFile,
