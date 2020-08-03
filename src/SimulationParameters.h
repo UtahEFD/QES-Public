@@ -180,6 +180,13 @@ public:
             // WRF File is specified 
             // Read in height field
             //
+            // This step parses the WRF data, attempting to extract
+            // the Fire mesh if it exists (the atm mesh, otherwise)
+            // into a height field.
+            //
+            // We extract the dimensions of the fire (or atm) mesh for
+            // nx and ny domain cells. 
+            //
             std::cout << "Processing WRF data for terrain and met param sensors from " << wrfFile << std::endl;
             wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, 0, 0, wrfSensorSample );
             std::cout << "WRF Input Data processing completed." << std::endl;
@@ -196,7 +203,7 @@ public:
                                                  (*(grid))[0],
                                                  (*(grid))[1]);
 
-            // domain = new Vector3<int>( wrfInputData->fm_nx, wrfInputData->fm_nx, 100 );
+            domain = new Vector3<int>( wrfInputData->fm_nx, wrfInputData->fm_nx, wrfInputData->fm_nz );
             DTE_heightField->setDomain(domain, grid);
             DTE_mesh = new Mesh(DTE_heightField->getTris());
             std::cout << "Mesh complete\n";
