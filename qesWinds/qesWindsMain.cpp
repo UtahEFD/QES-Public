@@ -9,10 +9,10 @@
 
 #include "QESNetCDFOutput.h"
 
-#include "handleURBArgs.h"
+#include "handleWINDSArgs.h"
 
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 #include "WINDSOutputVisualization.h"
 #include "WINDSOutputWorkspace.h"
 
@@ -38,14 +38,14 @@ namespace pt = boost::property_tree;
  * @param fileName the path/name of the file to be opened, must be an xml
  * @return A pointer to a root that is filled with data parsed from the tree
  */
-URBInputData* parseXMLTree(const std::string fileName);
+WINDSInputData* parseXMLTree(const std::string fileName);
 Sensor* parseSensors (const std::string fileName);
 
 int main(int argc, char *argv[])
 {
-    // CUDA-Urb - Version output information
+    // QES-Winds - Version output information
     std::string Revision = "0";
-    std::cout << "cudaUrb " << "0.8.0" << std::endl;
+    std::cout << "QES-Winds " << "1.0.0" << std::endl;
 
 #ifdef HAS_OPTIX
     std::cout << "OptiX is available!" << std::endl;
@@ -56,9 +56,9 @@ int main(int argc, char *argv[])
     // ///////////////////////////////////
 
     // Command line arguments are processed in a uniform manner using
-    // cross-platform code.  Check the URBArgs class for details on
+    // cross-platform code.  Check the WINDSArgs class for details on
     // how to extend the arguments.
-    URBArgs arguments;
+    WINDSArgs arguments;
     arguments.processArguments(argc, argv);
 
     // ///////////////////////////////////
@@ -66,26 +66,26 @@ int main(int argc, char *argv[])
     // ///////////////////////////////////
 
     // Parse the base XML QUIC file -- contains simulation parameters
-    URBInputData* UID = parseXMLTree(arguments.quicFile);
-    if ( !UID ) {
+    WINDSInputData* WID = parseXMLTree(arguments.quicFile);
+    if ( !WID ) {
         std::cerr << "[ERROR] QUIC Input file: " << arguments.quicFile <<
             " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
 
     // If the sensor file specified in the xml
-    if (UID->metParams->sensorName.size() > 0)
+    if (WID->metParams->sensorName.size() > 0)
     {
-        for (auto i = 0; i < UID->metParams->sensorName.size(); i++)
+        for (auto i = 0; i < WID->metParams->sensorName.size(); i++)
   		  {
-            UID->metParams->sensors.push_back(new Sensor());            // Create new sensor object
-            UID->metParams->sensors[i] = parseSensors(UID->metParams->sensorName[i]);       // Parse new sensor objects from xml
+            WID->metParams->sensors.push_back(new Sensor());            // Create new sensor object
+            WID->metParams->sensors[i] = parseSensors(WID->metParams->sensorName[i]);       // Parse new sensor objects from xml
         }
     }
 
 
     // Checking if
-    if (arguments.compTurb && !UID->localMixingParam) {
+    if (arguments.compTurb && !WID->localMixingParam) {
         std::cerr << "[ERROR] Turbulence model is turned on without LocalMixingParam in QES Intput file "
                   << arguments.quicFile << std::endl;
         exit(EXIT_FAILURE);
@@ -93,9 +93,9 @@ int main(int argc, char *argv[])
 
 
     if (arguments.terrainOut) {
-        if (UID->simParams->DTE_heightField) {
+        if (WID->simParams->DTE_heightField) {
             std::cout << "Creating terrain OBJ....\n";
-            UID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
+            WID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
             std::cout << "OBJ created....\n";
         }
         else {
@@ -104,24 +104,24 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Generate the general URB data from all inputs
-    URBGeneralData* UGD = new URBGeneralData(UID);
+    // Generate the general WINDS data from all inputs
+    WINDSGeneralData* WGD = new WINDSGeneralData(WID);
 
-    // create URB output classes
+    // create WINDS output classes
     std::vector<QESNetCDFOutput*> outputVec;
     if (arguments.visuOutput) {
-        outputVec.push_back(new WINDSOutputVisualization(UGD,UID,arguments.netCDFFileVisu));
+        outputVec.push_back(new WINDSOutputVisualization(WGD,WID,arguments.netCDFFileVisu));
     }
     if (arguments.wkspOutput) {
-        outputVec.push_back(new WINDSOutputWorkspace(UGD,arguments.netCDFFileWksp));
+        outputVec.push_back(new WINDSOutputWorkspace(WGD,arguments.netCDFFileWksp));
     }
 
 
-    // Generate the general TURB data from URB data
+    // Generate the general TURB data from WINDS data
     // based on if the turbulence output file is defined
     TURBGeneralData* TGD = nullptr;
     if (arguments.compTurb) {
-        TGD = new TURBGeneralData(UGD);
+        TGD = new TURBGeneralData(WGD);
     }
     if (arguments.compTurb && arguments.turbOutput) {
         outputVec.push_back(new TURBOutput(TGD,arguments.netCDFFileTurb));
@@ -129,22 +129,22 @@ int main(int argc, char *argv[])
 
     // //////////////////////////////////////////
     //
-    // Run the CUDA-URB Solver
+    // Run the QES-Winds Solver
     //
     // //////////////////////////////////////////
     Solver *solver, *solverC = nullptr;
     if (arguments.solveType == CPU_Type) {
         std::cout << "Run Serial Solver (CPU) ..." << std::endl;
-        solver = new CPUSolver(UID, UGD);
+        solver = new CPUSolver(WID, WGD);
     } else if (arguments.solveType == DYNAMIC_P) {
         std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
-        solver = new DynamicParallelism(UID, UGD);
+        solver = new DynamicParallelism(WID, WGD);
     } else if (arguments.solveType == Global_M) {
         std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
-        solver = new GlobalMemory(UID, UGD);
+        solver = new GlobalMemory(WID, WGD);
     } else if (arguments.solveType == Shared_M) {
         std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
-        solver = new SharedMemory(UID, UGD);
+        solver = new SharedMemory(WID, WGD);
     } else {
         std::cerr << "[ERROR] invalid solve type\n";
         exit(EXIT_FAILURE);
@@ -153,27 +153,27 @@ int main(int argc, char *argv[])
     //check for comparison
     if (arguments.compareType) {
         if (arguments.compareType == CPU_Type)
-            solverC = new CPUSolver(UID, UGD);
+            solverC = new CPUSolver(WID, WGD);
         else if (arguments.compareType == DYNAMIC_P)
-            solverC = new DynamicParallelism(UID, UGD);
+            solverC = new DynamicParallelism(WID, WGD);
         else if (arguments.compareType == Global_M)
-            solverC = new GlobalMemory(UID, UGD);
+            solverC = new GlobalMemory(WID, WGD);
         else if (arguments.compareType == Shared_M)
-            solverC = new SharedMemory(UID, UGD);
+            solverC = new SharedMemory(WID, WGD);
         else {
             std::cerr << "[ERROR] invalid comparison type\n";
             exit(EXIT_FAILURE);
         }
     }
 
-    // Run urb simulation code
-    solver->solve(UID, UGD, !arguments.solveWind );
+    // Run WINDS simulation code
+    solver->solve(WID, WGD, !arguments.solveWind );
 
     std::cout << "Solver done!\n";
 
     if (solverC != nullptr) {
         std::cout << "Running comparson type...\n";
-        solverC->solve(UID, UGD, !arguments.solveWind);
+        solverC->solve(WID, WGD, !arguments.solveWind);
     }
 
     // /////////////////////////////
@@ -182,7 +182,7 @@ int main(int argc, char *argv[])
     //
     // /////////////////////////////
     if(TGD != nullptr) {
-        TGD->run(UGD);
+        TGD->run(WGD);
     }
 
     // /////////////////////////////
@@ -194,47 +194,47 @@ int main(int argc, char *argv[])
         outputVec.at(id_out)->save(0.0); // need to replace 0.0 with timestep
     }
 
-    if (UID->simParams->totalTimeIncrements > 1)
+    if (WID->simParams->totalTimeIncrements > 1)
     {
-      for (int index = 1; index < UID->simParams->totalTimeIncrements; index++)
+      for (int index = 1; index < WID->simParams->totalTimeIncrements; index++)
       {
         // Reset icellflag values
-        for (int k = 0; k < UGD->nz-2; k++)
+        for (int k = 0; k < WGD->nz-2; k++)
         {
-            for (int j = 0; j < UGD->ny-1; j++)
+            for (int j = 0; j < WGD->ny-1; j++)
             {
-                for (int i = 0; i < UGD->nx-1; i++)
+                for (int i = 0; i < WGD->nx-1; i++)
                 {
-                    int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                    if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2 && UGD->icellflag[icell_cent] != 8 && UGD->icellflag[icell_cent] != 7)
+                    int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                    if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && WGD->icellflag[icell_cent] != 8 && WGD->icellflag[icell_cent] != 7)
                     {
-                      UGD->icellflag[icell_cent] = 1;
+                      WGD->icellflag[icell_cent] = 1;
                     }
                 }
             }
         }
 
         // Create initial velocity field from the new sensors
-        UID->metParams->sensors[0]->inputWindProfile(UID, UGD, index);
+        WID->metParams->sensors[0]->inputWindProfile(WID, WGD, index);
 
         // ///////////////////////////////////////
         // Canopy Vegetation Parameterization
         // ///////////////////////////////////////
-        for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
+        for (size_t i = 0; i < WGD->allBuildingsV.size(); i++)
         {
             // for now this does the canopy stuff for us
-            UGD->allBuildingsV[UGD->building_id[i]]->canopyVegetation(UGD);
+            WGD->allBuildingsV[WGD->building_id[i]]->canopyVegetation(WGD);
         }
 
         ///////////////////////////////////////////
         //   Upwind Cavity Parameterization     ///
         ///////////////////////////////////////////
-        if (UID->simParams->upwindCavityFlag > 0)
+        if (WID->simParams->upwindCavityFlag > 0)
         {
             std::cout << "Applying upwind cavity parameterization...\n";
-            for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
+            for (size_t i = 0; i < WGD->allBuildingsV.size(); i++)
             {
-                UGD->allBuildingsV[UGD->building_id[i]]->upwindCavity(UID, UGD);
+                WGD->allBuildingsV[WGD->building_id[i]]->upwindCavity(WID, WGD);
             }
             std::cout << "Upwind cavity parameterization done...\n";
         }
@@ -242,12 +242,12 @@ int main(int argc, char *argv[])
         //////////////////////////////////////////////////
         //   Far-Wake and Cavity Parameterizations     ///
         //////////////////////////////////////////////////
-        if (UID->simParams->wakeFlag > 0)
+        if (WID->simParams->wakeFlag > 0)
         {
             std::cout << "Applying wake behind building parameterization...\n";
-            for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
+            for (size_t i = 0; i < WGD->allBuildingsV.size(); i++)
             {
-                UGD->allBuildingsV[UGD->building_id[i]]->polygonWake(UID, UGD, UGD->building_id[i]);
+                WGD->allBuildingsV[WGD->building_id[i]]->polygonWake(WID, WGD, WGD->building_id[i]);
             }
             std::cout << "Wake behind building parameterization done...\n";
         }
@@ -255,12 +255,12 @@ int main(int argc, char *argv[])
         ///////////////////////////////////////////
         //   Street Canyon Parameterization     ///
         ///////////////////////////////////////////
-        if (UID->simParams->streetCanyonFlag > 0)
+        if (WID->simParams->streetCanyonFlag > 0)
         {
             std::cout << "Applying street canyon parameterization...\n";
-            for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
+            for (size_t i = 0; i < WGD->allBuildingsV.size(); i++)
             {
-                UGD->allBuildingsV[UGD->building_id[i]]->streetCanyon(UGD);
+                WGD->allBuildingsV[WGD->building_id[i]]->streetCanyon(WGD);
             }
             std::cout << "Street canyon parameterization done...\n";
         }
@@ -268,12 +268,12 @@ int main(int argc, char *argv[])
         ///////////////////////////////////////////
         //      Sidewall Parameterization       ///
         ///////////////////////////////////////////
-        if (UID->simParams->sidewallFlag > 0)
+        if (WID->simParams->sidewallFlag > 0)
         {
             std::cout << "Applying sidewall parameterization...\n";
-            for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
+            for (size_t i = 0; i < WGD->allBuildingsV.size(); i++)
             {
-                UGD->allBuildingsV[UGD->building_id[i]]->sideWall(UID, UGD);
+                WGD->allBuildingsV[WGD->building_id[i]]->sideWall(WID, WGD);
             }
             std::cout << "Sidewall parameterization done...\n";
         }
@@ -282,24 +282,22 @@ int main(int argc, char *argv[])
         ///////////////////////////////////////////
         //      Rooftop Parameterization        ///
         ///////////////////////////////////////////
-        if (UID->simParams->rooftopFlag > 0)
+        if (WID->simParams->rooftopFlag > 0)
         {
             std::cout << "Applying rooftop parameterization...\n";
-            for (size_t i = 0; i < UGD->allBuildingsV.size(); i++)
+            for (size_t i = 0; i < WGD->allBuildingsV.size(); i++)
             {
-                UGD->allBuildingsV[UGD->building_id[i]]->rooftop (UID, UGD);
+                WGD->allBuildingsV[WGD->building_id[i]]->rooftop (WID, WGD);
             }
             std::cout << "Rooftop parameterization done...\n";
         }
 
-        UGD->wall->setVelocityZero (UGD);
+        WGD->wall->setVelocityZero (WGD);
 
-        // Run urb simulation code
-        solver->solve(UID, UGD, !arguments.solveWind );
+        // Run WINDS simulation code
+        solver->solve(WID, WGD, !arguments.solveWind );
 
         std::cout << "Solver done!\n";
-
-        std::cout << "index:  " << (float) index <<std::endl;
 
         // /////////////////////////////
         // Output the various files requested from the simulation run
@@ -319,7 +317,7 @@ int main(int argc, char *argv[])
     exit(EXIT_SUCCESS);
 }
 
-URBInputData* parseXMLTree(const std::string fileName)
+WINDSInputData* parseXMLTree(const std::string fileName)
 {
 	pt::ptree tree;
 
@@ -330,10 +328,10 @@ URBInputData* parseXMLTree(const std::string fileName)
 	catch (boost::property_tree::xml_parser::xml_parser_error& e)
 	{
 		std::cerr << "Error reading tree in" << fileName << "\n";
-		return (URBInputData*)0;
+		return (WINDSInputData*)0;
 	}
 
-	URBInputData* xmlRoot = new URBInputData();
+	WINDSInputData* xmlRoot = new WINDSInputData();
         xmlRoot->parseTree( tree );
 	return xmlRoot;
 }

@@ -1,7 +1,7 @@
 #include "Canopy.h"
 
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 
 /*void Canopy::readCanopy(int nx, int ny, int nz, int landuse_flag, int num_canopies,int &lu_canopy_flag,
   std::vector<std::vector<std::vector<float>>> &canopy_atten,std::vector<std::vector<float>> &canopy_top)
@@ -26,17 +26,17 @@
 
   }*/
 
-void Canopy::defineCanopy(URBGeneralData* UGD)
+void Canopy::defineCanopy(WINDSGeneralData* WGD)
 {
 
     float ray_intersect;
     unsigned int num_crossing, vert_id, start_poly;
 
     // Define start index of the canopy in z-direction
-    for (auto k=1; k<UGD->z.size(); k++)
+    for (auto k=1; k<WGD->z.size(); k++)
     {
         k_start = k;
-        if (base_height <= UGD->z[k])
+        if (base_height <= WGD->z[k])
         {
             break;
         }
@@ -44,10 +44,10 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
 
     // Define end index of the canopy in z-direction   Note that 0u
     // means 0 unsigned
-    for (auto k=0; k<UGD->z.size(); k++)
+    for (auto k=0; k<WGD->z.size(); k++)
     {
         k_end = k+1;
-        if (base_height+H < UGD->z[k+1])
+        if (base_height+H < WGD->z[k+1])
         {
             break;
         }
@@ -76,20 +76,20 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
         }
     }
 
-    i_start = (x_min/UGD->dx);       // Index of canopy start location in x-direction
-    i_end = (x_max/UGD->dx)+1;       // Index of canopy end location in x-direction
-    j_start = (y_min/UGD->dy);       // Index of canopy end location in y-direction
-    j_end = (y_max/UGD->dy)+1;       // Index of canopy start location in y-direction
+    i_start = (x_min/WGD->dx);       // Index of canopy start location in x-direction
+    i_end = (x_max/WGD->dx)+1;       // Index of canopy end location in x-direction
+    j_start = (y_min/WGD->dy);       // Index of canopy end location in y-direction
+    j_end = (y_max/WGD->dy)+1;       // Index of canopy start location in y-direction
 
     // Find out which cells are going to be inside the polygone
     // Based on Wm. Randolph Franklin, "PNPOLY - Point Inclusion in Polygon Test"
     // Check the center of each cell, if it's inside, set that cell to building
     for (auto j=j_start; j<j_end; j++)
     {
-        y_cent = (j+0.5)*UGD->dy;         // Center of cell y coordinate
+        y_cent = (j+0.5)*WGD->dy;         // Center of cell y coordinate
         for (auto i=i_start; i<i_end; i++)
         {
-            x_cent = (i+0.5)*UGD->dx;
+            x_cent = (i+0.5)*WGD->dx;
             vert_id = 0;               // Node index
             start_poly = vert_id;
             num_crossing = 0;
@@ -118,10 +118,10 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
             {
                 for (auto k=k_start; k<k_end; k++)
                 {
-                    int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                    if( UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
+                    int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                    if( WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2)
                     {
-                        UGD->icellflag[icell_cent] = 11;           // Canopy cell
+                        WGD->icellflag[icell_cent] = 11;           // Canopy cell
                     }
                 }
             }
@@ -135,12 +135,12 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
         {
             for (auto k=k_start; k<k_end; k++)
             {
-                int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] == 11)       // if the cell is defined as canopy
+                int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                if (WGD->icellflag[icell_cent] == 11)       // if the cell is defined as canopy
                 {
-                    int id = i+j*(UGD->nx-1);
-                    UGD->canopy_top[id] = base_height+H;
-                    UGD->canopy_atten[icell_cent] = atten;     // initiate all attenuation coefficients to the canopy coefficient
+                    int id = i+j*(WGD->nx-1);
+                    WGD->canopy_top[id] = base_height+H;
+                    WGD->canopy_atten[icell_cent] = atten;     // initiate all attenuation coefficients to the canopy coefficient
                 }
             }
         }
@@ -150,7 +150,7 @@ void Canopy::defineCanopy(URBGeneralData* UGD)
 
 // Function to apply the urban canopy parameterization
 // Based on the version contain Lucas Ulmer's modifications
-void Canopy::plantInitial(URBGeneralData* UGD)
+void Canopy::plantInitial(WINDSGeneralData* WGD)
 {
 
     float avg_atten;						/**< average attenuation of the canopy */
@@ -158,106 +158,99 @@ void Canopy::plantInitial(URBGeneralData* UGD)
     int num_atten;
 
     // Call regression to define ustar and surface roughness of the canopy
-    regression(UGD);
+    regression(WGD);
 
     for (auto j=j_start; j<j_end-1; j++)
     {
         for (auto i=i_start; i<i_end-1; i++)
         {
-            int id = i+j*(UGD->nx-1);
-            if (UGD->canopy_top[id] > 0)
+            int id = i+j*(WGD->nx-1);
+            if (WGD->canopy_top[id] > 0)
             {
                 // Call the bisection method to find the root
-                int icell_cent = i+j*(UGD->nx-1)+UGD->canopy_top_index[id]*(UGD->nx-1)*(UGD->ny-1);
-                UGD->canopy_d[id] = UGD->canopyBisection(UGD->canopy_ustar[id],UGD->canopy_z0[id], UGD->canopy_top[id],
-                                                         UGD->canopy_atten[icell_cent],UGD->vk,0.0);
-                //std::cout << "UGD->vk:" << UGD->vk << "\n";
-                //std::cout << "UGD->canopy_atten[icell_cent]:" << UGD->canopy_atten[icell_cent] << "\n";
-                if (UGD->canopy_d[id] == 10000)
+                int icell_cent = i+j*(WGD->nx-1)+WGD->canopy_top_index[id]*(WGD->nx-1)*(WGD->ny-1);
+                WGD->canopy_d[id] = WGD->canopyBisection(WGD->canopy_ustar[id],WGD->canopy_z0[id], WGD->canopy_top[id],
+                                                         WGD->canopy_atten[icell_cent],WGD->vk,0.0);
+
+                if (WGD->canopy_d[id] == 10000)
                 {
                     std::cout << "bisection failed to converge" << "\n";
-                    UGD->canopy_d[id] = canopy_slope_match(UGD->canopy_z0[id], UGD->canopy_top[id], UGD->canopy_atten[icell_cent]);
+                    WGD->canopy_d[id] = canopy_slope_match(WGD->canopy_z0[id], WGD->canopy_top[id], WGD->canopy_atten[icell_cent]);
                 }
 
-                /**< velocity at the height of the canopy */
-                // Local variable - not being used by anything... so
-                // commented out for now.
-                //
-                // float u_H = (UGD->canopy_ustar[id]/UGD->vk)*log((UGD->canopy_top[id]-UGD->canopy_d[id])/UGD->canopy_z0[id]);
-
-                for (auto k=1; k < UGD->nz-1; k++)
+                for (auto k=1; k < WGD->nz-1; k++)
                 {
-                    if (UGD->z[k] < UGD->canopy_top[id])
+                    if (WGD->z[k] < WGD->canopy_top[id])
                     {
-                        if (UGD->canopy_atten[icell_cent] > 0)
+                        if (WGD->canopy_atten[icell_cent] > 0)
                         {
-                            icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
-                            avg_atten = UGD->canopy_atten[icell_cent];
+                            icell_cent = i+j*(WGD->nx-1)+k*(WGD->nx-1)*(WGD->ny-1);
+                            avg_atten = WGD->canopy_atten[icell_cent];
 
-                            if (UGD->canopy_atten[icell_cent+(UGD->nx-1)*(UGD->ny-1)]!=UGD->canopy_atten[icell_cent] ||
-                                UGD->canopy_atten[icell_cent-(UGD->nx-1)*(UGD->ny-1)]!=UGD->canopy_atten[icell_cent])
+                            if (WGD->canopy_atten[icell_cent+(WGD->nx-1)*(WGD->ny-1)]!=WGD->canopy_atten[icell_cent] ||
+                                WGD->canopy_atten[icell_cent-(WGD->nx-1)*(WGD->ny-1)]!=WGD->canopy_atten[icell_cent])
                             {
                                 num_atten = 1;
-                                if (UGD->canopy_atten[icell_cent+(UGD->nx-1)*(UGD->ny-1)] > 0)
+                                if (WGD->canopy_atten[icell_cent+(WGD->nx-1)*(WGD->ny-1)] > 0)
                                 {
-                                    avg_atten += UGD->canopy_atten[icell_cent+(UGD->nx-1)*(UGD->ny-1)];
+                                    avg_atten += WGD->canopy_atten[icell_cent+(WGD->nx-1)*(WGD->ny-1)];
                                     num_atten += 1;
                                 }
-                                if (UGD->canopy_atten[icell_cent-(UGD->nx-1)*(UGD->ny-1)] > 0)
+                                if (WGD->canopy_atten[icell_cent-(WGD->nx-1)*(WGD->ny-1)] > 0)
                                 {
-                                    avg_atten += UGD->canopy_atten[icell_cent-(UGD->nx-1)*(UGD->ny-1)];
+                                    avg_atten += WGD->canopy_atten[icell_cent-(WGD->nx-1)*(WGD->ny-1)];
                                     num_atten += 1;
                                 }
                                 avg_atten /= num_atten;
                             }
-                            veg_vel_frac = log((UGD->canopy_top[id] - UGD->canopy_d[id])/UGD->canopy_z0[id])*exp(avg_atten*
-                                                                                                               ((UGD->z[k]/UGD->canopy_top[id])-1))/log(UGD->z[k]/UGD->canopy_z0[id]);
+                            veg_vel_frac = log((WGD->canopy_top[id] - WGD->canopy_d[id])/WGD->canopy_z0[id])*exp(avg_atten*
+                                                                                                               ((WGD->z[k]/WGD->canopy_top[id])-1))/log(WGD->z[k]/WGD->canopy_z0[id]);
                             if (veg_vel_frac > 1 || veg_vel_frac < 0)
                             {
                                 veg_vel_frac = 1;
                             }
-                            int icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                            UGD->u0[icell_face] *= veg_vel_frac;
-                            UGD->v0[icell_face] *= veg_vel_frac;
-                            if (j < UGD->ny-2)
+                            int icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                            WGD->u0[icell_face] *= veg_vel_frac;
+                            WGD->v0[icell_face] *= veg_vel_frac;
+                            if (j < WGD->ny-2)
                             {
-                                if (UGD->canopy_atten[icell_cent+(UGD->nx-1)] == 0)
+                                if (WGD->canopy_atten[icell_cent+(WGD->nx-1)] == 0)
                                 {
-                                    UGD->v0[icell_face+UGD->nx] *= veg_vel_frac;
+                                    WGD->v0[icell_face+WGD->nx] *= veg_vel_frac;
                                 }
                             }
-                            if (i < UGD->nx-2)
+                            if (i < WGD->nx-2)
                             {
-                                if(UGD->canopy_atten[icell_cent+1] == 0)
+                                if(WGD->canopy_atten[icell_cent+1] == 0)
                                 {
-                                    UGD->u0[icell_face+1] *= veg_vel_frac;
+                                    WGD->u0[icell_face+1] *= veg_vel_frac;
                                 }
                             }
                         }
                     }
                     else
                     {
-                        veg_vel_frac = log((UGD->z[k]-UGD->canopy_d[id])/UGD->canopy_z0[id])/log(UGD->z[k]/UGD->canopy_z0[id]);
+                        veg_vel_frac = log((WGD->z[k]-WGD->canopy_d[id])/WGD->canopy_z0[id])/log(WGD->z[k]/WGD->canopy_z0[id]);
                         if (veg_vel_frac > 1 || veg_vel_frac < 0)
                         {
                             veg_vel_frac = 1;
                         }
-                        int icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                        UGD->u0[icell_face] *= veg_vel_frac;
-                        UGD->v0[icell_face] *= veg_vel_frac;
-                        if (j < UGD->ny-2)
+                        int icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                        WGD->u0[icell_face] *= veg_vel_frac;
+                        WGD->v0[icell_face] *= veg_vel_frac;
+                        if (j < WGD->ny-2)
                         {
-                            icell_cent = i+j*(UGD->nx-1)+UGD->canopy_top_index[id]*(UGD->nx-1)*(UGD->ny-1);
-                            if(UGD->canopy_atten[icell_cent +(UGD->nx-1)] == 0)
+                            icell_cent = i+j*(WGD->nx-1)+WGD->canopy_top_index[id]*(WGD->nx-1)*(WGD->ny-1);
+                            if(WGD->canopy_atten[icell_cent +(WGD->nx-1)] == 0)
                             {
-                                UGD->v0[icell_face+UGD->nx] *= veg_vel_frac;
+                                WGD->v0[icell_face+WGD->nx] *= veg_vel_frac;
                             }
                         }
-                        if (i < UGD->nx-2)
+                        if (i < WGD->nx-2)
                         {
-                            if (UGD->canopy_atten[icell_cent+1] == 0)
+                            if (WGD->canopy_atten[icell_cent+1] == 0)
                             {
-                                UGD->u0[icell_face+1] *= veg_vel_frac;
+                                WGD->u0[icell_face+1] *= veg_vel_frac;
                             }
                         }
                     }
@@ -269,7 +262,7 @@ void Canopy::plantInitial(URBGeneralData* UGD)
 }
 
 
-void Canopy::regression(URBGeneralData* UGD)
+void Canopy::regression(WINDSGeneralData* WGD)
 {
 
     int k_top, counter;
@@ -280,49 +273,49 @@ void Canopy::regression(URBGeneralData* UGD)
     {
         for (auto i=i_start; i<i_end-1; i++)
         {
-            int id = i+j*(UGD->nx-1);
-            if (UGD->canopy_top[id] > 0)
+            int id = i+j*(WGD->nx-1);
+            if (WGD->canopy_top[id] > 0)
             {
-                for (auto k=1; k<UGD->nz-2; k++)
+                for (auto k=1; k<WGD->nz-2; k++)
                 {
-                    UGD->canopy_top_index[id] = k;
-                    if (UGD->canopy_top[id] < UGD->z[k+1])
+                    WGD->canopy_top_index[id] = k;
+                    if (WGD->canopy_top[id] < WGD->z[k+1])
                         break;
                 }
-                for (auto k=UGD->canopy_top_index[id]; k<UGD->nz-2; k++)
+                for (auto k=WGD->canopy_top_index[id]; k<WGD->nz-2; k++)
                 {
                     k_top = k;
-                    if (2*UGD->canopy_top[id] < UGD->z[k+1])
+                    if (2*WGD->canopy_top[id] < WGD->z[k+1])
                         break;
                 }
-                if (k_top == UGD->canopy_top_index[id])
+                if (k_top == WGD->canopy_top_index[id])
                 {
-                    k_top = UGD->canopy_top_index[id]+1;
+                    k_top = WGD->canopy_top_index[id]+1;
                 }
-                if (k_top > UGD->nz-1)
+                if (k_top > WGD->nz-1)
                 {
-                    k_top = UGD->nz-1;
+                    k_top = WGD->nz-1;
                 }
                 sum_x = 0;
                 sum_y = 0;
                 sum_xy = 0;
                 sum_x_sq = 0;
                 counter = 0;
-                for (auto k=UGD->canopy_top_index[id]; k<=k_top; k++)
+                for (auto k=WGD->canopy_top_index[id]; k<=k_top; k++)
                 {
                     counter +=1;
-                    int icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                    local_mag = sqrt(pow(UGD->u0[icell_face],2.0)+pow(UGD->v0[icell_face],2.0));
-                    y = log(UGD->z[k]);
+                    int icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                    local_mag = sqrt(pow(WGD->u0[icell_face],2.0)+pow(WGD->v0[icell_face],2.0));
+                    y = log(WGD->z[k]);
                     sum_x += local_mag;
                     sum_y += y;
                     sum_xy += local_mag*y;
                     sum_x_sq += pow(local_mag,2.0);
                 }
-                UGD->canopy_ustar[id] = UGD->vk*(((counter*sum_x_sq)-pow(sum_x,2.0))/((counter*sum_xy)-(sum_x*sum_y)));
+                WGD->canopy_ustar[id] = WGD->vk*(((counter*sum_x_sq)-pow(sum_x,2.0))/((counter*sum_xy)-(sum_x*sum_y)));
                 xm = sum_x/counter;
                 ym = sum_y/counter;
-                UGD->canopy_z0[id] = exp(ym-((UGD->vk/UGD->canopy_ustar[id]))*xm);
+                WGD->canopy_z0[id] = exp(ym-((WGD->vk/WGD->canopy_ustar[id]))*xm);
             }
         }
     }
@@ -385,7 +378,7 @@ float Canopy::canopy_slope_match(float z0, float canopy_top, float canopy_atten)
 }
 
 
-void Canopy::canopyVegetation(URBGeneralData* UGD)
+void Canopy::canopyVegetation(WINDSGeneralData* WGD)
 {
 
     // When THIS canopy calls this function, we need to do the
@@ -394,7 +387,7 @@ void Canopy::canopyVegetation(URBGeneralData* UGD)
     //canopy_atten, canopy_top);
 
     // here because the array that holds this all Building*
-    defineCanopy(UGD);
+    defineCanopy(WGD);
 
-    plantInitial(UGD);		// Apply canopy parameterization
+    plantInitial(WGD);		// Apply canopy parameterization
 }

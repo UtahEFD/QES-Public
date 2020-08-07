@@ -16,7 +16,7 @@
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 
-#include "URBInputData.h"
+#include "WINDSInputData.h"
 #include "Solver.h"
 
 
@@ -31,12 +31,12 @@ private:
     void _cudaCheck(T e, const char* func, const char* call, const int line);
 
 public:
-    DynamicParallelism(const URBInputData* UID, URBGeneralData* UGD);
+    DynamicParallelism(const WINDSInputData* WID, WINDSGeneralData* WGD);
 
 protected:
     float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;		/**< Solver coefficients on device (GPU) */
     float *d_R;              /**< Divergence of initial velocity field on device (GPU) */
     float *d_lambda, *d_lambda_old;		/**< Lagrange multipliers on device (GPU) */
 
-    virtual void solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWind);
+    virtual void solve(const WINDSInputData* WID, WINDSGeneralData* WGD, bool solveWind);
 };

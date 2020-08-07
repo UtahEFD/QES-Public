@@ -9,7 +9,7 @@
 #include <limits>
 
 // may need to forward reference this???
-class URBGeneralData;
+class WINDSGeneralData;
 
 using namespace std;
 
@@ -40,7 +40,7 @@ public:
      * and wall in front/back
      *
      */
-    void defineWalls(URBGeneralData *UGD);
+    void defineWalls(WINDSGeneralData *WGD);
 
 
     /**
@@ -51,7 +51,7 @@ public:
     * to the cells near Walls (based on Kevin Briggs master's thesis (2015))
     *
     */
-    void wallLogBC (URBGeneralData *UGD);
+    void wallLogBC (WINDSGeneralData *WGD);
 
 
     /**
@@ -61,7 +61,7 @@ public:
     * and terrain to zero.
     *
     */
-    void setVelocityZero (URBGeneralData *UGD);
+    void setVelocityZero (WINDSGeneralData *WGD);
 
 
     /**
@@ -71,6 +71,6 @@ public:
     * and modify them for solver
     *
     */
-    void solverCoefficients (URBGeneralData *UGD);
+    void solverCoefficients (WINDSGeneralData *WGD);
 
 };

@@ -1,8 +1,8 @@
 #include "PolyBuilding.h"
 
 // These take care of the circular reference
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 
 /**
 *
@@ -13,7 +13,7 @@
 * More information:
 *
 */
-void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
+void PolyBuilding::rooftop (const WINDSInputData* WID, WINDSGeneralData* WGD)
 {
   float tol = 30*M_PI/180.0;            // Rooftop criteria for vortex parameterization
   float wing_tol = 70*M_PI/180.0;       // Rooftop criteria for delta wing parameterization
@@ -44,9 +44,9 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
   perpendicular_flag.resize (polygonVertices.size(), 0);
 
 
-  int index_building_face = i_building_cent + j_building_cent*UGD->nx + (k_end)*UGD->nx*UGD->ny;
-  u0_h = UGD->u0[index_building_face];         // u velocity at the height of building at the centroid
-  v0_h = UGD->v0[index_building_face];         // v velocity at the height of building at the centroid
+  int index_building_face = i_building_cent + j_building_cent*WGD->nx + (k_end)*WGD->nx*WGD->ny;
+  u0_h = WGD->u0[index_building_face];         // u velocity at the height of building at the centroid
+  v0_h = WGD->v0[index_building_face];         // v velocity at the height of building at the centroid
 
   // Wind direction of initial velocity at the height of building at the centroid
   upwind_dir = atan2(v0_h,u0_h);
@@ -74,16 +74,16 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
   }
 
   // Finding index of 1.5 height of the building
-  for (auto k = k_end; k < UGD->nz-1; k++)
+  for (auto k = k_end; k < WGD->nz-1; k++)
   {
     k_ref = k;
-    if (1.5*(H+base_height) < UGD->z_face[k])
+    if (1.5*(H+base_height) < WGD->z_face[k])
     {
       break;
     }
   }
 
-  if (k_ref < UGD->nz-1)
+  if (k_ref < WGD->nz-1)
   {
     // Smaller of H and the effective cross-wind width (Weff)
     small_dimension = MIN_S(width_eff, H);
@@ -97,13 +97,13 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
     for (auto k = k_end; k <= k_ref; k++)
     {
       k_end_v = k;
-      if (H+base_height+vd < UGD->z[k])
+      if (H+base_height+vd < WGD->z[k])
       {
         break;
       }
     }
     // Log parameterization
-    if (UID->simParams->rooftopFlag == 1)
+    if (WID->simParams->rooftopFlag == 1)
     {
       for (auto j = j_start; j < j_end-1; j++)
       {
@@ -113,8 +113,8 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
           u_flag = 0;
           v_flag = 0;
           w_flag = 0;
-          icell_cent = i + j*(UGD->nx-1) + (k_end-1)*(UGD->nx-1)*(UGD->ny-1);
-          if (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 7)      // Cell below is building
+          icell_cent = i + j*(WGD->nx-1) + (k_end-1)*(WGD->nx-1)*(WGD->ny-1);
+          if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 7)      // Cell below is building
           {
             u_flag = 1;
             v_flag = 1;
@@ -122,36 +122,36 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
           }
           else                 // No building in cell below
           {
-            icell_cent = (i-1) + j*(UGD->nx-1) + (k_end-1)*(UGD->nx-1)*(UGD->ny-1);
-            if (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 7)      // Cell behind is building
+            icell_cent = (i-1) + j*(WGD->nx-1) + (k_end-1)*(WGD->nx-1)*(WGD->ny-1);
+            if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 7)      // Cell behind is building
             {
               u_flag = 1;
             }
-            icell_cent = i + (j-1)*(UGD->nx-1) + (k_end-1)*(UGD->nx-1)*(UGD->ny-1);
-            if (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 7)      // Cell on right is building
+            icell_cent = i + (j-1)*(WGD->nx-1) + (k_end-1)*(WGD->nx-1)*(WGD->ny-1);
+            if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 7)      // Cell on right is building
             {
               v_flag = 1;
             }
           }
-          icell_cent = i + j*(UGD->nx-1) + k_end*(UGD->nx-1)*(UGD->ny-1);
+          icell_cent = i + j*(WGD->nx-1) + k_end*(WGD->nx-1)*(WGD->ny-1);
           // If cell at building height is street canyon or wake behind building
-          if (UGD->icellflag[icell_cent] == 4 || UGD->icellflag[icell_cent] == 6)
+          if (WGD->icellflag[icell_cent] == 4 || WGD->icellflag[icell_cent] == 6)
           {
             u_flag = 0;
             v_flag = 0;
             w_flag = 0;
           }
           // No solid cell and at least one velocity component is applicable for the parameterization
-          if ((u_flag+v_flag+w_flag) > 0 && UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
+          if ((u_flag+v_flag+w_flag) > 0 && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2)
           {
             // x location of u component in local coordinates
-            x_u = (i*UGD->dx-building_cent_x)*cos(upwind_dir) + ((j+0.5)*UGD->dy-building_cent_y)*sin(upwind_dir);
+            x_u = (i*WGD->dx-building_cent_x)*cos(upwind_dir) + ((j+0.5)*WGD->dy-building_cent_y)*sin(upwind_dir);
             // y location of u component in local coordinates
-            y_u = -(i*UGD->dx-building_cent_x)*sin(upwind_dir) + ((j+0.5)*UGD->dy-building_cent_y)*cos(upwind_dir);
+            y_u = -(i*WGD->dx-building_cent_x)*sin(upwind_dir) + ((j+0.5)*WGD->dy-building_cent_y)*cos(upwind_dir);
             // x location of v component in local coordinates
-            x_v = ((i+0.5)*UGD->dx-building_cent_x)*cos(upwind_dir) + (j*UGD->dy-building_cent_y)*sin(upwind_dir);
+            x_v = ((i+0.5)*WGD->dx-building_cent_x)*cos(upwind_dir) + (j*WGD->dy-building_cent_y)*sin(upwind_dir);
             // y location of v component in local coordinates
-            y_v = -((i+0.5)*UGD->dx-building_cent_x)*sin(upwind_dir) + (j*UGD->dy-building_cent_y)*cos(upwind_dir);
+            y_v = -((i+0.5)*WGD->dx-building_cent_x)*sin(upwind_dir) + (j*WGD->dy-building_cent_y)*cos(upwind_dir);
             // Distance from front face of the building in x direction for u component
             h_x = abs(x_u-x_front);
             // Distance from front face of the building in y direction for u component
@@ -169,13 +169,13 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
             k_shell_u = 0;
             k_shell_v = 0;
             // Looping through to find indices of the cell located at the top of the rooftop ellipse
-            for (auto k = k_end-1; k < UGD->nz-2; k++)
+            for (auto k = k_end-1; k < WGD->nz-2; k++)
             {
-              if ((z_ref_u+H+base_height) < UGD->z[k+1] && k_shell_u < 1)
+              if ((z_ref_u+H+base_height) < WGD->z[k+1] && k_shell_u < 1)
               {
                 k_shell_u = k;
               }
-              if ((z_ref_v+H+base_height) < UGD->z[k+1] && k_shell_v < 1)
+              if ((z_ref_v+H+base_height) < WGD->z[k+1] && k_shell_v < 1)
               {
                 k_shell_v = k;
               }
@@ -191,7 +191,7 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
             }
             else
             {
-              denom_u = 1.0/log((UGD->z[k_shell_u]-(H+base_height))/UGD->z0);
+              denom_u = 1.0/log((WGD->z[k_shell_u]-(H+base_height))/WGD->z0);
             }
             if (k_shell_v <= k_end-1)
             {
@@ -200,16 +200,16 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
             }
             else
             {
-              denom_v = 1.0/log((UGD->z[k_shell_v]-(H+base_height))/UGD->z0);
+              denom_v = 1.0/log((WGD->z[k_shell_v]-(H+base_height))/WGD->z0);
             }
-            icell_face = i + j*UGD->nx + k_shell_u*UGD->nx*UGD->ny;
-            velocity_mag_u = UGD->u0[icell_face];
-            icell_face = i + j*UGD->nx + k_shell_v*UGD->nx*UGD->ny;
-            velocity_mag_v = UGD->v0[icell_face];
+            icell_face = i + j*WGD->nx + k_shell_u*WGD->nx*WGD->ny;
+            velocity_mag_u = WGD->u0[icell_face];
+            icell_face = i + j*WGD->nx + k_shell_v*WGD->nx*WGD->ny;
+            velocity_mag_v = WGD->v0[icell_face];
             for (auto k = k_end; k <= k_ref; k++)
             {
-              icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-              if (UGD->icellflag[icell_cent] == 0)
+              icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+              if (WGD->icellflag[icell_cent] == 0)
               {
                 break;
               }
@@ -217,18 +217,18 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
               {
                 k_shell_u = 0;
                 k_shell_v = 0;
-                z_roof = UGD->z[k]-(H+base_height);
+                z_roof = WGD->z[k]-(H+base_height);
                 if (u_flag > 0)
                 {
                   if (z_roof <= z_ref_u)
                   {
-                    icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                    UGD->u0[icell_face] = velocity_mag_u*log(z_roof/UGD->z0)*denom_u;
+                    icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                    WGD->u0[icell_face] = velocity_mag_u*log(z_roof/WGD->z0)*denom_u;
                     k_shell_u = 1;
-                    if (w_flag == 1 && (UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
+                    if (w_flag == 1 && (WGD->icellflag[icell_cent] != 7) && (WGD->icellflag[icell_cent] != 8))
                     {
-                      icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                      UGD->icellflag[icell_cent] = 10;
+                      icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                      WGD->icellflag[icell_cent] = 10;
                     }
                   }
                 }
@@ -236,13 +236,13 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                 {
                   if (z_roof <= z_ref_v)
                   {
-                    icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                    UGD->v0[icell_face] = velocity_mag_v*log(z_roof/UGD->z0)*denom_v;
+                    icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                    WGD->v0[icell_face] = velocity_mag_v*log(z_roof/WGD->z0)*denom_v;
                     k_shell_v = 1;
-                    if (w_flag == 1 && (UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
+                    if (w_flag == 1 && (WGD->icellflag[icell_cent] != 7) && (WGD->icellflag[icell_cent] != 8))
                     {
-                      icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                      UGD->icellflag[icell_cent] = 10;
+                      icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                      WGD->icellflag[icell_cent] = 10;
                     }
                   }
                 }
@@ -258,7 +258,7 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
     }
 
     // Vortex parameterization
-    if (UID->simParams->rooftopFlag == 2)
+    if (WID->simParams->rooftopFlag == 2)
     {
       for (auto id = 0; id < polygonVertices.size()-1; id++)
       {
@@ -280,8 +280,8 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
               u_flag = 0;
               v_flag = 0;
               w_flag = 0;
-              icell_cent = i + j*(UGD->nx-1) + (k_end-1)*(UGD->nx-1)*(UGD->ny-1);
-              if (UGD->icellflag[icell_cent] == 0)        // Cell below is building
+              icell_cent = i + j*(WGD->nx-1) + (k_end-1)*(WGD->nx-1)*(WGD->ny-1);
+              if (WGD->icellflag[icell_cent] == 0)        // Cell below is building
               {
                 u_flag = 1;
                 v_flag = 1;
@@ -289,36 +289,36 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
               }
               else              // Cell below is not building
               {
-                icell_cent = (i-1) + j*(UGD->nx-1) + (k_end-1)*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] == 0)          // Cell behind is building
+                icell_cent = (i-1) + j*(WGD->nx-1) + (k_end-1)*(WGD->nx-1)*(WGD->ny-1);
+                if (WGD->icellflag[icell_cent] == 0)          // Cell behind is building
                 {
                   u_flag = 1;
                 }
-                icell_cent = i + (j-1)*(UGD->nx-1) + (k_end-1)*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] == 0)          // Cell on right is building
+                icell_cent = i + (j-1)*(WGD->nx-1) + (k_end-1)*(WGD->nx-1)*(WGD->ny-1);
+                if (WGD->icellflag[icell_cent] == 0)          // Cell on right is building
                 {
                   v_flag = 1;
                 }
               }
-              icell_cent = i + j*(UGD->nx-1) + k_end*(UGD->nx-1)*(UGD->ny-1);
+              icell_cent = i + j*(WGD->nx-1) + k_end*(WGD->nx-1)*(WGD->ny-1);
               // If cell at building height is street canyon or wake behind building
-              if (UGD->icellflag[icell_cent] == 4 || UGD->icellflag[icell_cent] == 6)
+              if (WGD->icellflag[icell_cent] == 4 || WGD->icellflag[icell_cent] == 6)
               {
                 u_flag = 0;
                 v_flag = 0;
                 w_flag = 0;
               }
               // No solid cell and at least one velocity component is applicable for the parameterization
-              if ((u_flag+v_flag+w_flag) > 0 && UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
+              if ((u_flag+v_flag+w_flag) > 0 && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2)
               {
                 // x location of u component in local coordinates
-                x_u = (i*UGD->dx-building_cent_x)*cos(upwind_dir) + ((j+0.5)*UGD->dy-building_cent_y)*sin(upwind_dir);
+                x_u = (i*WGD->dx-building_cent_x)*cos(upwind_dir) + ((j+0.5)*WGD->dy-building_cent_y)*sin(upwind_dir);
                 // y location of u component in local coordinates
-                y_u = -(i*UGD->dx-building_cent_x)*sin(upwind_dir) + ((j+0.5)*UGD->dy-building_cent_y)*cos(upwind_dir);
+                y_u = -(i*WGD->dx-building_cent_x)*sin(upwind_dir) + ((j+0.5)*WGD->dy-building_cent_y)*cos(upwind_dir);
                 // x location of v component in local coordinates
-                x_v = ((i+0.5)*UGD->dx-building_cent_x)*cos(upwind_dir) + (j*UGD->dy-building_cent_y)*sin(upwind_dir);
+                x_v = ((i+0.5)*WGD->dx-building_cent_x)*cos(upwind_dir) + (j*WGD->dy-building_cent_y)*sin(upwind_dir);
                 // y location of v component in local coordinates
-                y_v = -((i+0.5)*UGD->dx-building_cent_x)*sin(upwind_dir) + (j*UGD->dy-building_cent_y)*cos(upwind_dir);
+                y_v = -((i+0.5)*WGD->dx-building_cent_x)*sin(upwind_dir) + (j*WGD->dy-building_cent_y)*cos(upwind_dir);
                 // Distance from front face of the building in x direction for u component
                 h_x = abs(x_u-x_front);
                 // Distance from front face of the building in y direction for u component
@@ -336,13 +336,13 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                 k_shell_u = 0;
                 k_shell_v = 0;
                 // Looping through to find indices of the cell located at the top of the rooftop ellipse
-                for (auto k = k_end-1; k < UGD->nz; k++)
+                for (auto k = k_end-1; k < WGD->nz; k++)
                 {
-                  if ((z_ref_u+H+base_height) < UGD->z[k+1] && k_shell_u < 1)
+                  if ((z_ref_u+H+base_height) < WGD->z[k+1] && k_shell_u < 1)
                   {
                     k_shell_u = k;
                   }
-                  if ((z_ref_v+H+base_height) < UGD->z[k+1] && k_shell_v < 1)
+                  if ((z_ref_v+H+base_height) < WGD->z[k+1] && k_shell_v < 1)
                   {
                     k_shell_v = k;
                   }
@@ -376,7 +376,7 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                 }
                 else
                 {
-                  denom_u = 1.0/log((UGD->z[k_shell_u]-(H+base_height))/UGD->z0);
+                  denom_u = 1.0/log((WGD->z[k_shell_u]-(H+base_height))/WGD->z0);
                 }
                 if (k_shell_v <= k_end-1)
                 {
@@ -385,19 +385,19 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                 }
                 else
                 {
-                  denom_v = 1.0/log((UGD->z[k_shell_v]-(H+base_height))/UGD->z0);
+                  denom_v = 1.0/log((WGD->z[k_shell_v]-(H+base_height))/WGD->z0);
                 }
-                icell_face = i + j*UGD->nx + k_shell_u*UGD->nx*UGD->ny;
-                velocity_mag_u = UGD->u0[icell_face];
-                icell_face = i + j*UGD->nx + k_shell_v*UGD->nx*UGD->ny;
-                velocity_mag_v = UGD->v0[icell_face];
+                icell_face = i + j*WGD->nx + k_shell_u*WGD->nx*WGD->ny;
+                velocity_mag_u = WGD->u0[icell_face];
+                icell_face = i + j*WGD->nx + k_shell_v*WGD->nx*WGD->ny;
+                velocity_mag_v = WGD->v0[icell_face];
                 for (auto k = k_end; k <= k_end_v; k++)
                 {
                   k_shell_u = 0;
                   k_shell_v = 0;
-                  z_roof = UGD->z[k]-(H+base_height);
-                  icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                  if (UGD->icellflag[icell_cent] == 0)
+                  z_roof = WGD->z[k]-(H+base_height);
+                  icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                  if (WGD->icellflag[icell_cent] == 0)
                   {
                     break;
                   }
@@ -407,25 +407,25 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                     {
                       if (z_roof <= z_ref_u)
                       {
-                        icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                        u0_roof = UGD->u0[icell_face];
-                        UGD->u0[icell_face] = velocity_mag_u*log(z_roof/UGD->z0)*denom_u;
+                        icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                        u0_roof = WGD->u0[icell_face];
+                        WGD->u0[icell_face] = velocity_mag_u*log(z_roof/WGD->z0)*denom_u;
                         k_shell_u = 1;
-                        if (w_flag == 1 && (UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
+                        if (w_flag == 1 && (WGD->icellflag[icell_cent] != 7) && (WGD->icellflag[icell_cent] != 8))
                         {
-                          icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                          UGD->icellflag[icell_cent] = 10;
+                          icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                          WGD->icellflag[icell_cent] = 10;
                         }
                       }
                       if (hd_u < R_cx && z_roof <= shell_height_u)
                       {
-                        icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                        UGD->u0[icell_face] = -u0_roof*abs((shell_height_u-z_roof)/vd);
+                        icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                        WGD->u0[icell_face] = -u0_roof*abs((shell_height_u-z_roof)/vd);
                         k_shell_u = 1;
-                        if (w_flag == 1 && (UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
+                        if (w_flag == 1 && (WGD->icellflag[icell_cent] != 7) && (WGD->icellflag[icell_cent] != 8))
                         {
-                          icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                          UGD->icellflag[icell_cent] = 10;
+                          icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                          WGD->icellflag[icell_cent] = 10;
                         }
                       }
                     }
@@ -433,25 +433,25 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                     {
                       if (z_roof <= z_ref_v)
                       {
-                        icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                        v0_roof = UGD->v0[icell_face];
-                        UGD->v0[icell_face] = velocity_mag_v*log(z_roof/UGD->z0)*denom_v;
+                        icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                        v0_roof = WGD->v0[icell_face];
+                        WGD->v0[icell_face] = velocity_mag_v*log(z_roof/WGD->z0)*denom_v;
                         k_shell_v = 1;
-                        if (w_flag == 1 && (UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
+                        if (w_flag == 1 && (WGD->icellflag[icell_cent] != 7) && (WGD->icellflag[icell_cent] != 8))
                         {
-                          icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                          UGD->icellflag[icell_cent] = 10;
+                          icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                          WGD->icellflag[icell_cent] = 10;
                         }
                       }
                       if (hd_v < R_cx && z_roof <= shell_height_v)
                       {
-                        icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                        UGD->v0[icell_face] = -v0_roof*abs((shell_height_v-z_roof)/vd);
+                        icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                        WGD->v0[icell_face] = -v0_roof*abs((shell_height_v-z_roof)/vd);
                         k_shell_v = 1;
-                        if (w_flag == 1 && (UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
+                        if (w_flag == 1 && (WGD->icellflag[icell_cent] != 7) && (WGD->icellflag[icell_cent] != 8))
                         {
-                          icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                          UGD->icellflag[icell_cent] = 10;
+                          icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                          WGD->icellflag[icell_cent] = 10;
                         }
                       }
                     }
@@ -485,8 +485,8 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
               v_flag = 0;
               w_flag = 0;
               //std::cout << "k_end-1:  "<< k_end-1 << std::endl;
-              icell_cent = i + j*(UGD->nx-1) + (k_end-1)*(UGD->nx-1)*(UGD->ny-1);
-              if (UGD->icellflag[icell_cent] == 0)
+              icell_cent = i + j*(WGD->nx-1) + (k_end-1)*(WGD->nx-1)*(WGD->ny-1);
+              if (WGD->icellflag[icell_cent] == 0)
               {
                 u_flag = 1;
                 v_flag = 1;
@@ -494,43 +494,43 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
               }
               else
               {
-                icell_cent = (i-1) + j*(UGD->nx-1) + (k_end-1)*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] == 0)
+                icell_cent = (i-1) + j*(WGD->nx-1) + (k_end-1)*(WGD->nx-1)*(WGD->ny-1);
+                if (WGD->icellflag[icell_cent] == 0)
                 {
                   u_flag = 1;
                 }
-                icell_cent = i + (j-1)*(UGD->nx-1) + (k_end-1)*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] == 0)
+                icell_cent = i + (j-1)*(WGD->nx-1) + (k_end-1)*(WGD->nx-1)*(WGD->ny-1);
+                if (WGD->icellflag[icell_cent] == 0)
                 {
                   v_flag = 1;
                 }
               }
-              icell_cent = i + j*(UGD->nx-1) + k_end*(UGD->nx-1)*(UGD->ny-1);
-              if (UGD->icellflag[icell_cent] == 4 || UGD->icellflag[icell_cent] == 6)
+              icell_cent = i + j*(WGD->nx-1) + k_end*(WGD->nx-1)*(WGD->ny-1);
+              if (WGD->icellflag[icell_cent] == 4 || WGD->icellflag[icell_cent] == 6)
               {
                 u_flag = 0;
                 v_flag = 0;
                 w_flag = 0;
               }
               //std::cout << "i:  " << i << std::endl;
-              x_u = (i*UGD->dx-building_cent_x)*cos(upwind_dir) + ((j+0.5)*UGD->dy-building_cent_y)*sin(upwind_dir);
+              x_u = (i*WGD->dx-building_cent_x)*cos(upwind_dir) + ((j+0.5)*WGD->dy-building_cent_y)*sin(upwind_dir);
               //std::cout << "j:  " << j << std::endl;
-              //std::cout << "UGD->icellflag[icell_cent]:  " << UGD->icellflag[icell_cent] << std::endl;
-              if ((u_flag+v_flag+w_flag) > 0 && UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
+              //std::cout << "WGD->icellflag[icell_cent]:  " << WGD->icellflag[icell_cent] << std::endl;
+              if ((u_flag+v_flag+w_flag) > 0 && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2)
               {
-                x_u = (i*UGD->dx-building_cent_x)*cos(upwind_dir) + ((j+0.5)*UGD->dy-building_cent_y)*sin(upwind_dir);
-                y_u = -(i*UGD->dx-building_cent_x)*sin(upwind_dir) + ((j+0.5)*UGD->dy-building_cent_y)*cos(upwind_dir);
-                x_v = ((i+0.5)*UGD->dx-building_cent_x)*cos(upwind_dir) + (j*UGD->dy-building_cent_y)*sin(upwind_dir);
-                y_v = -((i+0.5)*UGD->dx-building_cent_x)*sin(upwind_dir) + (j*UGD->dy-building_cent_y)*cos(upwind_dir);
-                x_w = ((i+0.5)*UGD->dx-building_cent_x)*cos(upwind_dir) + ((j+0.5)*UGD->dy-building_cent_y)*sin(upwind_dir);
-                y_w = -((i+0.5)*UGD->dx-building_cent_x)*sin(upwind_dir) + ((j+0.5)*UGD->dy-building_cent_y)*cos(upwind_dir);
+                x_u = (i*WGD->dx-building_cent_x)*cos(upwind_dir) + ((j+0.5)*WGD->dy-building_cent_y)*sin(upwind_dir);
+                y_u = -(i*WGD->dx-building_cent_x)*sin(upwind_dir) + ((j+0.5)*WGD->dy-building_cent_y)*cos(upwind_dir);
+                x_v = ((i+0.5)*WGD->dx-building_cent_x)*cos(upwind_dir) + (j*WGD->dy-building_cent_y)*sin(upwind_dir);
+                y_v = -((i+0.5)*WGD->dx-building_cent_x)*sin(upwind_dir) + (j*WGD->dy-building_cent_y)*cos(upwind_dir);
+                x_w = ((i+0.5)*WGD->dx-building_cent_x)*cos(upwind_dir) + ((j+0.5)*WGD->dy-building_cent_y)*sin(upwind_dir);
+                y_w = -((i+0.5)*WGD->dx-building_cent_x)*sin(upwind_dir) + ((j+0.5)*WGD->dy-building_cent_y)*cos(upwind_dir);
                 h_xu = abs(x_u-x_front);
                 h_yu = abs(y_u-y_front);
                 hd_u = MIN_S(h_xu, h_yu);
                 //std::cout << "i:  " << i << std::endl;
                 //std::cout << "j:  " << j << std::endl;
-                //std::cout << "building_cent_x:  " << i*UGD->dx*cos(upwind_dir) << std::endl;
-                //std::cout << "building_cent_y:  " << ((j+0.5)*UGD->dy-building_cent_y)*cos(upwind_dir) << std::endl;
+                //std::cout << "building_cent_x:  " << i*WGD->dx*cos(upwind_dir) << std::endl;
+                //std::cout << "building_cent_y:  " << ((j+0.5)*WGD->dy-building_cent_y)*cos(upwind_dir) << std::endl;
                 h_xv = abs(x_v-x_front);
                 h_yv = abs(y_v-y_front);
                 hd_v = MIN_S(h_xv, h_yv);
@@ -552,30 +552,30 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                   k_shell_v = 0;
                   k_shell_w = 0;
                   //std::cout << "i:  " << i << "\t\t"<< "j:  " << j << "\t\t" <<"k:  " << k << "\t\t"<< std::endl;
-                  icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                  if (UGD->icellflag[icell_cent] == 0)
+                  icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                  if (WGD->icellflag[icell_cent] == 0)
                   {
                     break;
                   }
                   else
                   {
-                    z_roof = UGD->z[k]-(H+base_height);
-                    icell_face = i_building_cent + j_building_cent*UGD->nx + k*UGD->nx*UGD->ny;
-                    velocity_mag = sqrt(pow(UGD->u0[icell_face], 2.0)+pow(UGD->v0[icell_face], 2.0));
+                    z_roof = WGD->z[k]-(H+base_height);
+                    icell_face = i_building_cent + j_building_cent*WGD->nx + k*WGD->nx*WGD->ny;
+                    velocity_mag = sqrt(pow(WGD->u0[icell_face], 2.0)+pow(WGD->v0[icell_face], 2.0));
                     if (u_flag == 1)
                     {
                       if (h_xu <= MIN_S(R_cx, 2*h_yu*abs(tan(roof_angle))))
                       {
                         if (z_roof <= MIN_S(R_cx, h_yu*abs(tan(roof_angle))))
                         {
-                          icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                          UGD->u0[icell_face] = velocity_mag*cos(upwind_rel_dir[id]);
+                          icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                          WGD->u0[icell_face] = velocity_mag*cos(upwind_rel_dir[id]);
                           k_shell_u = 1;
                         }
                         if (z_roof <= MIN_S(R_cx, 2*h_yu*abs(tan(roof_angle))))
                         {
-                          icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                          UGD->u0[icell_face] = velocity_mag*cos(upwind_rel_dir[id]+M_PI);
+                          icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                          WGD->u0[icell_face] = velocity_mag*cos(upwind_rel_dir[id]+M_PI);
                           k_shell_u = 1;
                         }
                       }
@@ -584,14 +584,14 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                       {
                         if (z_roof <= MIN_S(R_cx, h_xu*abs(tan(roof_angle))))
                         {
-                          icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                          UGD->u0[icell_face] = velocity_mag*cos(upwind_rel_dir[id]+0.5*M_PI);
+                          icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                          WGD->u0[icell_face] = velocity_mag*cos(upwind_rel_dir[id]+0.5*M_PI);
                           k_shell_u = 1;
                         }
                         if (z_roof <= MIN_S(R_cx, 2*h_xu*abs(tan(roof_angle))))
                         {
-                          icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                          UGD->u0[icell_face] = velocity_mag*cos(upwind_rel_dir[id]+1.5*M_PI);
+                          icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                          WGD->u0[icell_face] = velocity_mag*cos(upwind_rel_dir[id]+1.5*M_PI);
                           k_shell_u = 1;
                         }
                       }
@@ -603,14 +603,14 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                       {
                         if (z_roof <= MIN_S(R_cx, h_yv*abs(tan(roof_angle))))
                         {
-                          icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                          UGD->v0[icell_face] = velocity_mag*sin(upwind_rel_dir[id]);
+                          icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                          WGD->v0[icell_face] = velocity_mag*sin(upwind_rel_dir[id]);
                           k_shell_v = 1;
                         }
                         if (z_roof <= MIN_S(R_cx, 2*h_yv*abs(tan(roof_angle))))
                         {
-                          icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                          UGD->v0[icell_face] = velocity_mag*sin(upwind_rel_dir[id]+M_PI);
+                          icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                          WGD->v0[icell_face] = velocity_mag*sin(upwind_rel_dir[id]+M_PI);
                           k_shell_v = 1;
                         }
                       }
@@ -619,14 +619,14 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                       {
                         if (z_roof <= MIN_S(R_cx, h_xv*abs(tan(roof_angle))))
                         {
-                          icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                          UGD->v0[icell_face] = velocity_mag*sin(upwind_rel_dir[id]+0.5*M_PI);
+                          icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                          WGD->v0[icell_face] = velocity_mag*sin(upwind_rel_dir[id]+0.5*M_PI);
                           k_shell_v = 1;
                         }
                         if (z_roof <= MIN_S(R_cx, 2*h_xv*abs(tan(roof_angle))))
                         {
-                          icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                          UGD->v0[icell_face] = velocity_mag*sin(upwind_rel_dir[id]+1.5*M_PI);
+                          icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                          WGD->v0[icell_face] = velocity_mag*sin(upwind_rel_dir[id]+1.5*M_PI);
                           k_shell_v = 1;
                         }
                       }
@@ -636,20 +636,20 @@ void PolyBuilding::rooftop (const URBInputData* UID, URBGeneralData* UGD)
                     {
                       if (h_xw <= MIN_S(R_cx, 2*hd_wx) && z_roof <= MIN_S(R_cx, 2*hd_wx))
                       {
-                        icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                        UGD->w0[icell_face] = 0.1*velocity_mag*((hd_wx-h_xw)/hd_wx)*(1.0-abs((z_roof-hd_wx)/hd_wx));
+                        icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                        WGD->w0[icell_face] = 0.1*velocity_mag*((hd_wx-h_xw)/hd_wx)*(1.0-abs((z_roof-hd_wx)/hd_wx));
                         k_shell_w = 1;
-                        icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                        UGD->icellflag[icell_cent] = 12;
+                        icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                        WGD->icellflag[icell_cent] = 12;
                       }
 
                       if (h_yw <= MIN_S(R_cx, 2*hd_wy) && z_roof <= MIN_S(R_cx, 2*hd_wy))
                       {
-                        icell_face = i + j*UGD->nx + k*UGD->nx*UGD->ny;
-                        UGD->w0[icell_face] = 0.1*velocity_mag*((hd_wy-h_yw)/hd_wy)*(1.0-abs((z_roof-hd_wy)/hd_wy));
+                        icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+                        WGD->w0[icell_face] = 0.1*velocity_mag*((hd_wy-h_yw)/hd_wy)*(1.0-abs((z_roof-hd_wy)/hd_wy));
                         k_shell_w = 1;
-                        icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                        UGD->icellflag[icell_cent] = 12;
+                        icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                        WGD->icellflag[icell_cent] = 12;
                       }
                     }
                   }

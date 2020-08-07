@@ -1,35 +1,34 @@
 #include "LocalMixingDefault.h"
 
 // These take care of the circular reference
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 
-void LocalMixingDefault::defineMixingLength(const URBInputData* UID,URBGeneralData* UGD) 
+void LocalMixingDefault::defineMixingLength(const WINDSInputData* WID,WINDSGeneralData* WGD) 
 {
-    int nx = UGD->nx;
-    int ny = UGD->ny;
-    int nz = UGD->nz;
-    
+    int nx = WGD->nx;
+    int ny = WGD->ny;
+    int nz = WGD->nz;
+
     // z cell-center
     std::vector<float> z_cc;
     z_cc.resize(nz-1, 0);
-    z_cc = UGD->z;
-    
+    z_cc = WGD->z;
+
     //seeding Local Mixing Length with the verical distance to the terrain (up to 2*max_z)
     for (int i=0; i<nx-1; i++) {
         for (int j=0; j<ny-1; j++) {
             for (int k=1; k<nz-2; k++) {
                 int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-                if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2) {
-                    UGD->mixingLengths[icell_cent] = z_cc[k]-UGD->terrain[i + j*(nx-1)];
-                } 
-                if(UGD->mixingLengths[icell_cent] < 0.0) {
-                    UGD->mixingLengths[icell_cent] = 0.0;
+                if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
+                    WGD->mixingLengths[icell_cent] = z_cc[k]-WGD->terrain[i + j*(nx-1)];
+                }
+                if(WGD->mixingLengths[icell_cent] < 0.0) {
+                    WGD->mixingLengths[icell_cent] = 0.0;
                 }
             }
         }
     }
-    
+
     return;
 }
-

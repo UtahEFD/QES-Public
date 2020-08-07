@@ -16,7 +16,7 @@
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 
-#include "URBInputData.h"
+#include "WINDSInputData.h"
 #include "Solver.h"
 
 
@@ -31,8 +31,8 @@ private:
     void _cudaCheck(T e, const char* func, const char* call, const int line);
 
 public:
-    GlobalMemory(const URBInputData* UID, URBGeneralData* UGD)
-		: Solver(UID, UGD)
+    GlobalMemory(const WINDSInputData* WID, WINDSGeneralData* WGD)
+		: Solver(WID, WGD)
     {
     }
 
@@ -41,5 +41,5 @@ protected:
     float *d_R;              /**< Divergence of initial velocity field on device (GPU) */
     float *d_lambda, *d_lambda_old;		/**< Lagrange multipliers on device (GPU) */
 
-    virtual void solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWind);
+    virtual void solve(const WINDSInputData* WID, WINDSGeneralData* WGD, bool solveWind);
 };

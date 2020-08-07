@@ -40,8 +40,6 @@ public:
 		parsePrimitive<float>(true, canopy_rotation, "canopyRotation");
 
 
-		//x_start += UID->simParams->halo_x;
-	  //y_start += UID->simParams->halo_y;
 	  canopy_rotation *= M_PI/180.0;
 	  polygonVertices.resize (5);
 	  polygonVertices[0].x_poly = polygonVertices[4].x_poly = x_start;
@@ -56,7 +54,7 @@ public:
 
 	}
 
-  void canopyVegetation(URBGeneralData *ugd);
+  void canopyVegetation(WINDSGeneralData *WGD);
 
 
 	/*!
@@ -72,14 +70,14 @@ public:
 	 *parameterization and returns modified initial velocity field components.
 	 */
 
-	void plantInitial(URBGeneralData *ugd);
+	void plantInitial(WINDSGeneralData *WGD);
 
 	/*!
 	 *This function is being call from the plantInitial function and uses linear regression method to define ustar and
 	 *surface roughness of the canopy.
 	 */
 
-	void regression(URBGeneralData *ugd);
+	void regression(WINDSGeneralData *WGD);
 
 
 	/*!
@@ -95,6 +93,6 @@ public:
 	 *defines initial values for the canopy height and attenuation.
 	 */
 
-	 void defineCanopy(URBGeneralData *ugd);
+	 void defineCanopy(WINDSGeneralData *WGD);
 
 };

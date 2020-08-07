@@ -13,18 +13,18 @@
 #include <vector>
 #include <chrono>
 
-#include "URBInputData.h"
+#include "WINDSInputData.h"
 #include "Solver.h"
 
 
 class CPUSolver : public Solver
 {
 public:
-    CPUSolver(const URBInputData* UID, URBGeneralData* UGD)
-        : Solver(UID, UGD)
+    CPUSolver(const WINDSInputData* WID, WINDSGeneralData* WGD)
+        : Solver(WID, WGD)
     {
     }
 protected:
 
-    virtual void solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWind);
+    virtual void solve(const WINDSInputData* WID, WINDSGeneralData* WGD, bool solveWind);
 };

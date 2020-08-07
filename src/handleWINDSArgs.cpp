@@ -1,6 +1,6 @@
-#include "handleURBArgs.h"
+#include "handleWINDSArgs.h"
 
-URBArgs::URBArgs()
+WINDSArgs::WINDSArgs()
     : verbose(false),compTurb(false),
       quicFile(""), netCDFFileBasename(""),
       visuOutput(false), wkspOutput(false), turbOutput(false), terrainOut(false),
@@ -25,7 +25,7 @@ URBArgs::URBArgs()
     reg("terrainout", "Turn on the output of the triangle mesh for the terrain", ArgumentParsing::NONE, 'h');
 }
 
-void URBArgs::processArguments(int argc, char *argv[])
+void WINDSArgs::processArguments(int argc, char *argv[])
 {
     processCommandLineArgs(argc, argv);
 

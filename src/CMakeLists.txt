@@ -5,7 +5,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/unitTests)
 
 add_subdirectory( unitTests )
 
-CUDA_ADD_LIBRARY( cudaurbcore
+CUDA_ADD_LIBRARY( qeswindscore
   BVH.cpp
   Canopy.cpp
   Cell.cpp
@@ -14,7 +14,7 @@ CUDA_ADD_LIBRARY( cudaurbcore
   DTEHeightField.cpp
   DynamicParallelism.cu
   ESRIShapefile.cpp ESRIShapefile.h
-  handleURBArgs.cpp
+  handleWINDSArgs.cpp
   LocalMixingParam.h
   LocalMixing.cpp
   LocalMixingDefault.cpp
@@ -33,8 +33,8 @@ CUDA_ADD_LIBRARY( cudaurbcore
   TURBWall.cpp
   TURBWallBuilding.cpp
   TURBWallTerrain.cpp
-  URBInputData.h
-  URBGeneralData.cpp
+  WINDSInputData.h
+  WINDSGeneralData.cpp
   WINDSOutputVisualization.cpp
   WINDSOutputWorkspace.cpp
   WRFInput.cpp WRFInput.h
@@ -77,8 +77,8 @@ IF (${HAS_OPTIX_SUPPORT})
   target_link_libraries(unitTest qesOptix)
 ENDIF()
 
-target_link_libraries(unitTest cudaurbcore)
-target_link_libraries(unitTest cudaurbutil)
+target_link_libraries(unitTest qeswindscore)
+target_link_libraries(unitTest qeswindsutil)
 target_link_libraries(unitTest unitTestLib)
 target_link_libraries(unitTest ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(unitTest ${GDAL_LIBRARY})

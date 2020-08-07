@@ -1,8 +1,8 @@
 #include "PolyBuilding.h"
 
 // These take care of the circular reference
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 
 
 /**
@@ -16,7 +16,7 @@
 *
 */
 
-void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
+void PolyBuilding::sideWall (const WINDSInputData* WID, WINDSGeneralData* WGD)
 {
   float tol = 10*M_PI/180.0;          // Sidewall is applied if outward normal of the face is in +/-10 degree perpendicular
                                       // to the local wind
@@ -45,9 +45,9 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
   float internal_BL_width;
   int x_id_max, y_id_max;
 
-  int index_building_face = i_building_cent + j_building_cent*UGD->nx + (k_end)*UGD->nx*UGD->ny;
-  u0_h = UGD->u0[index_building_face];         // u velocity at the height of building at the centroid
-  v0_h = UGD->v0[index_building_face];         // v velocity at the height of building at the centroid
+  int index_building_face = i_building_cent + j_building_cent*WGD->nx + (k_end)*WGD->nx*WGD->ny;
+  u0_h = WGD->u0[index_building_face];         // u velocity at the height of building at the centroid
+  v0_h = WGD->v0[index_building_face];         // v velocity at the height of building at the centroid
 
   // Wind direction of initial velocity at the height of building at the centroid
   upwind_dir = atan2(v0_h,u0_h);
@@ -131,22 +131,22 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
           if (right_flag == 1)          // If the right face is eligible for the parameterization
           {
             // i and j indices for start of the right section of building
-            i_start_right = ceil(x_start_right/UGD->dx)-1;
-            j_start_right = ceil(y_start_right/UGD->dy)-1;
-            for (auto j = MAX_S(0,j_start_right-1); j <= MIN_S(UGD->ny-2, j_start_right+1); j++)
+            i_start_right = ceil(x_start_right/WGD->dx)-1;
+            j_start_right = ceil(y_start_right/WGD->dy)-1;
+            for (auto j = MAX_S(0,j_start_right-1); j <= MIN_S(WGD->ny-2, j_start_right+1); j++)
             {
-              for (auto i = MAX_S(0,i_start_right-1); i <= MIN_S(UGD->nx-2, i_start_right+1); i++)
+              for (auto i = MAX_S(0,i_start_right-1); i <= MIN_S(WGD->nx-2, i_start_right+1); i++)
               {
-                icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                icell_face = i + j*(UGD->nx) + k*(UGD->nx)*(UGD->ny);
+                icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                icell_face = i + j*(WGD->nx) + k*(WGD->nx)*(WGD->ny);
                 // If the cell is building
-                if (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 7)
+                if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 7)
                 {
-                  u0_right = UGD->u0[icell_face];
-                  v0_right = UGD->v0[icell_face];
+                  u0_right = WGD->u0[icell_face];
+                  v0_right = WGD->v0[icell_face];
                 }
                 // If the cell is air, upwind or canopy vegetation
-                else if (UGD->icellflag[icell_cent] == 1 || UGD->icellflag[icell_cent] == 3 || UGD->icellflag[icell_cent] == 11)
+                else if (WGD->icellflag[icell_cent] == 1 || WGD->icellflag[icell_cent] == 3 || WGD->icellflag[icell_cent] == 11)
                 {
                 }
                 // If the cell is anything else (not eligible for the sidewall)
@@ -159,27 +159,27 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
             if (right_flag == 1)             // If the right face is eligible for the parameterization
             {
               // Finding id of the last cell eligible for sidewall from the upwind face of the buildin in x direction
-              x_id_max = ceil(MAX_S(face_length,R_cx_side)/(0.5*UGD->dxy));
+              x_id_max = ceil(MAX_S(face_length,R_cx_side)/(0.5*WGD->dxy));
               for (auto x_id = 1; x_id <= x_id_max; x_id++)
               {
-                x_p = 0.5*x_id*UGD->dxy;          // x location of the point beng examined for parameterization in local coordinates
+                x_p = 0.5*x_id*WGD->dxy;          // x location of the point beng examined for parameterization in local coordinates
                 // Width of the shell shape area on the sidewall of the building
                 shell_width = y_pref*sqrt(x_p);
-                y_id_max = (ceil(shell_width/(0.5*UGD->dxy))+2);
+                y_id_max = (ceil(shell_width/(0.5*WGD->dxy))+2);
                 for (auto y_id = 1; y_id <= y_id_max; y_id++)
                 {
-                  y_p = -0.5*y_id*UGD->dxy;         // y location of the point beng examined for parameterization in local coordinates
+                  y_p = -0.5*y_id*WGD->dxy;         // y location of the point beng examined for parameterization in local coordinates
                   x = x_start_right + x_p*cos(face_dir) - y_p*sin(face_dir);    // x location in QUIC domain
                   y = y_start_right + x_p*sin(face_dir) + y_p*cos(face_dir);    // y location in QUIC domain
                   // i and j indices of the point
-                  int i = ceil(x/UGD->dx) - 1;
-                  int j = ceil(y/UGD->dy) - 1;
-                  icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                  icell_face = i + j*(UGD->nx) + k*(UGD->nx)*(UGD->ny);
-                  if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)     // No solid cell
+                  int i = ceil(x/WGD->dx) - 1;
+                  int j = ceil(y/WGD->dy) - 1;
+                  icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                  icell_face = i + j*(WGD->nx) + k*(WGD->nx)*(WGD->ny);
+                  if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2)     // No solid cell
                   {
-                    x_u = i*UGD->dx;          // x location of u component
-                    y_u = (j+0.5)*UGD->dy;    // y location of u component
+                    x_u = i*WGD->dx;          // x location of u component
+                    y_u = (j+0.5)*WGD->dy;    // y location of u component
                     // x location of u component in local coordinates
                     xp_u = (x_u-x_start_right)*cos(face_dir) + (y_u-y_start_right)*sin(face_dir);
                     // y location of u component in local coordinates
@@ -197,15 +197,15 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
                     internal_BL_width = y_pref*sqrt(xp_u);
                     if (abs(yp_u) <= shell_width)
                     {
-                      UGD->u0[icell_face] = -u0_right*abs((shell_width-abs(yp_u))/vd);
+                      WGD->u0[icell_face] = -u0_right*abs((shell_width-abs(yp_u))/vd);
                     }
                     else if (abs(yp_u) <= internal_BL_width)
                     {
-                      UGD->u0[icell_face] = u0_right*log((abs(yp_u)+UGD->z0)/UGD->z0)/log((internal_BL_width+UGD->z0)/UGD->z0);
+                      WGD->u0[icell_face] = u0_right*log((abs(yp_u)+WGD->z0)/WGD->z0)/log((internal_BL_width+WGD->z0)/WGD->z0);
                     }
 
-                    x_v = (i+0.5)*UGD->dx;          // x location of v component
-                    y_v = j*UGD->dy;                // y location of v component
+                    x_v = (i+0.5)*WGD->dx;          // x location of v component
+                    y_v = j*WGD->dy;                // y location of v component
                     // x location of v component in local coordinates
                     xp_v = (x_v-x_start_right)*cos(face_dir) + (y_v-y_start_right)*sin(face_dir);
                     // y location of v component in local coordinates
@@ -223,11 +223,11 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
                     internal_BL_width = y_pref*sqrt(xp_v);
                     if (abs(yp_v) <= shell_width)
                     {
-                      UGD->v0[icell_face] = -v0_right*abs((shell_width-abs(yp_v))/vd);
+                      WGD->v0[icell_face] = -v0_right*abs((shell_width-abs(yp_v))/vd);
                     }
                     else if (abs(yp_v) <= internal_BL_width)
                     {
-                      UGD->v0[icell_face] = v0_right*log((abs(yp_v)+UGD->z0)/UGD->z0)/log((internal_BL_width+UGD->z0)/UGD->z0);
+                      WGD->v0[icell_face] = v0_right*log((abs(yp_v)+WGD->z0)/WGD->z0)/log((internal_BL_width+WGD->z0)/WGD->z0);
                     }
                     // x location of cell center in local coordinates
                     xp_c = (x_v-x_start_right)*cos(face_dir) + (y_u-y_start_right)*sin(face_dir);
@@ -236,9 +236,9 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
                     // Shell width calculated for local x location of cell center
                     shell_width_calc = 1-pow((0.5*R_cx_side-xp_c)/(0.5*R_cx_side), 2.0);
                     internal_BL_width = y_pref*sqrt(xp_c);
-                    if ((abs(yp_c) <= shell_width || abs(yp_c) <= internal_BL_width) && (UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
+                    if ((abs(yp_c) <= shell_width || abs(yp_c) <= internal_BL_width) && (WGD->icellflag[icell_cent] != 7) && (WGD->icellflag[icell_cent] != 8))
                     {
-                      UGD->icellflag[icell_cent] = 9;        // Cell marked as sidewall cell
+                      WGD->icellflag[icell_cent] = 9;        // Cell marked as sidewall cell
                     }
                   }
                 }
@@ -248,22 +248,22 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
           if (left_flag == 1)           // If the left face is eligible for the parameterization
           {
             // i and j indices for start of the left section of building
-            i_start_left = ceil(x_start_left/UGD->dx)-1;
-            j_start_left = ceil(y_start_left/UGD->dy)-1;
-            for (auto j = MAX_S(0,j_start_left-1); j <= MIN_S(UGD->ny-2, j_start_left+1); j++)
+            i_start_left = ceil(x_start_left/WGD->dx)-1;
+            j_start_left = ceil(y_start_left/WGD->dy)-1;
+            for (auto j = MAX_S(0,j_start_left-1); j <= MIN_S(WGD->ny-2, j_start_left+1); j++)
             {
-              for (auto i = MAX_S(0,i_start_left-1); i <= MIN_S(UGD->nx-2, i_start_left+1); i++)
+              for (auto i = MAX_S(0,i_start_left-1); i <= MIN_S(WGD->nx-2, i_start_left+1); i++)
               {
-                icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                icell_face = i + j*(UGD->nx) + k*(UGD->nx)*(UGD->ny);
+                icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                icell_face = i + j*(WGD->nx) + k*(WGD->nx)*(WGD->ny);
                 // If the cell is solid (building or terrain)
-                if (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 7)
+                if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 7)
                 {
-                  u0_left = UGD->u0[icell_face];
-                  v0_left = UGD->v0[icell_face];
+                  u0_left = WGD->u0[icell_face];
+                  v0_left = WGD->v0[icell_face];
                 }
                 // If the cell is air, upwind or canopy vegetation
-                else if (UGD->icellflag[icell_cent] == 1 || UGD->icellflag[icell_cent] == 3 || UGD->icellflag[icell_cent] == 11)
+                else if (WGD->icellflag[icell_cent] == 1 || WGD->icellflag[icell_cent] == 3 || WGD->icellflag[icell_cent] == 11)
                 {
                 }
                 // If the cell anything else (not eligible for the parameterization)
@@ -276,27 +276,27 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
             if (left_flag == 1)           // If the left face is eligible for the parameterization
             {
               // Finding id of the last cell eligible for sidewall from the upwind face of the buildin in x direction
-              x_id_max = ceil(MAX_S(face_length,R_cx_side)/(0.5*UGD->dxy));
+              x_id_max = ceil(MAX_S(face_length,R_cx_side)/(0.5*WGD->dxy));
               for (auto x_id = 1; x_id <= x_id_max; x_id++)
               {
-                x_p = 0.5*x_id*UGD->dxy;            // x location of the point beng examined for parameterization in local coordinates
+                x_p = 0.5*x_id*WGD->dxy;            // x location of the point beng examined for parameterization in local coordinates
                 // Width of the shell shape area on the sidewall of the building
                 shell_width = y_pref*sqrt(x_p);
-                y_id_max = (ceil(shell_width/(0.5*UGD->dxy))+2);
+                y_id_max = (ceil(shell_width/(0.5*WGD->dxy))+2);
                 for (auto y_id = 1; y_id <= y_id_max; y_id++)
                 {
-                  y_p = 0.5*y_id*UGD->dxy;          // y location of the point beng examined for parameterization in local coordinates
+                  y_p = 0.5*y_id*WGD->dxy;          // y location of the point beng examined for parameterization in local coordinates
                   x = x_start_left + x_p*cos(face_dir) - y_p*sin(face_dir);     // x location in QUIC domain
                   y = y_start_left + x_p*sin(face_dir) + y_p*cos(face_dir);     // y location in QUIC domain
                   // i and j indices of the point
-                  int i = ceil(x/UGD->dx) - 1;
-                  int j = ceil(y/UGD->dy) - 1;
-                  icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                  icell_face = i + j*(UGD->nx) + k*(UGD->nx)*(UGD->ny);
-                  if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)         // No solid cell
+                  int i = ceil(x/WGD->dx) - 1;
+                  int j = ceil(y/WGD->dy) - 1;
+                  icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                  icell_face = i + j*(WGD->nx) + k*(WGD->nx)*(WGD->ny);
+                  if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2)         // No solid cell
                   {
-                    x_u = i*UGD->dx;            // x location of u component
-                    y_u = (j+0.5)*UGD->dy;      // y location of u component
+                    x_u = i*WGD->dx;            // x location of u component
+                    y_u = (j+0.5)*WGD->dy;      // y location of u component
                     // x location of u component in local coordinates
                     xp_u = (x_u-x_start_left)*cos(face_dir) + (y_u-y_start_left)*sin(face_dir);
                     // y location of u component in local coordinates
@@ -314,15 +314,15 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
                     internal_BL_width = y_pref*sqrt(xp_u);
                     if (abs(yp_u) <= shell_width)
                     {
-                      UGD->u0[icell_face] = -u0_left*abs((shell_width-abs(yp_u))/vd);
+                      WGD->u0[icell_face] = -u0_left*abs((shell_width-abs(yp_u))/vd);
                     }
                     else if (abs(yp_u) <= internal_BL_width)
                     {
-                      UGD->u0[icell_face] = u0_left*log((abs(yp_u)+UGD->z0)/UGD->z0)/log((internal_BL_width+UGD->z0)/UGD->z0);
+                      WGD->u0[icell_face] = u0_left*log((abs(yp_u)+WGD->z0)/WGD->z0)/log((internal_BL_width+WGD->z0)/WGD->z0);
                     }
 
-                    x_v = (i+0.5)*UGD->dx;          // x location of v component
-                    y_v = j*UGD->dy;                // y location of v component
+                    x_v = (i+0.5)*WGD->dx;          // x location of v component
+                    y_v = j*WGD->dy;                // y location of v component
                     // x location of v component in local coordinates
                     xp_v = (x_v-x_start_left)*cos(face_dir) + (y_v-y_start_left)*sin(face_dir);
                     // y location of v component in local coordinates
@@ -340,11 +340,11 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
                     internal_BL_width = y_pref*sqrt(xp_v);
                     if (abs(yp_v) <= shell_width)
                     {
-                      UGD->v0[icell_face] = -v0_left*abs((shell_width-abs(yp_v))/vd);
+                      WGD->v0[icell_face] = -v0_left*abs((shell_width-abs(yp_v))/vd);
                     }
                     else if (abs(yp_v) <= internal_BL_width)
                     {
-                      UGD->v0[icell_face] = v0_left*log((abs(yp_v)+UGD->z0)/UGD->z0)/log((internal_BL_width+UGD->z0)/UGD->z0);
+                      WGD->v0[icell_face] = v0_left*log((abs(yp_v)+WGD->z0)/WGD->z0)/log((internal_BL_width+WGD->z0)/WGD->z0);
                     }
                     // x location of cell center in local coordinates
                     xp_c = (x_v-x_start_left)*cos(face_dir) + (y_u-y_start_left)*sin(face_dir);
@@ -353,9 +353,9 @@ void PolyBuilding::sideWall (const URBInputData* UID, URBGeneralData* UGD)
                     // Shell width calculated for local x location of cell center
                     shell_width_calc = 1-pow((0.5*R_cx_side-xp_c)/(0.5*R_cx_side), 2.0);
                     internal_BL_width = y_pref*sqrt(xp_c);
-                    if ((abs(yp_c) <= shell_width || abs(yp_c) <= internal_BL_width) && (UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
+                    if ((abs(yp_c) <= shell_width || abs(yp_c) <= internal_BL_width) && (WGD->icellflag[icell_cent] != 7) && (WGD->icellflag[icell_cent] != 8))
                     {
-                      UGD->icellflag[icell_cent] = 9;            // Cell marked as sidewall cell
+                      WGD->icellflag[icell_cent] = 9;            // Cell marked as sidewall cell
                     }
                   }
                 }
