@@ -12,18 +12,10 @@
 #include "WINDSInputData.h"
 #include "Building.h"
 #include "Canopy.h"
-#include "LocalMixing.h"
-#include "LocalMixingDefault.h"
-#include "LocalMixingNetCDF.h"
-#include "LocalMixingSerial.h"
 #include "Mesh.h"
 #include "DTEHeightField.h"
-#include "Cut_cell.h"
 #include "Wall.h"
 
-#ifdef HAS_OPTIX
-#include "OptixRayTrace.h"
-#endif
 
 class WINDSInputData;
 
@@ -95,7 +87,7 @@ public:
                                                        8 = Terrain cut-cells, 9 = Sidewall, 10 = Rooftop,
                                                        11 = Canopy vegetation, 12 = Fire) */
 
-    std::vector<float> building_volume_frac, terrain_volume_frac;
+    //std::vector<float> building_volume_frac, terrain_volume_frac;
     std::vector<float> terrain;
     std::vector<int> terrain_id;      // Sensor function
                                       // (inputWindProfile)
@@ -110,9 +102,9 @@ public:
     /// Declaration of final velocity field components (u,v,w)
     std::vector<float> u,v,w;
 
-    // local Mixing class and data
+    /*// local Mixing class and data
     LocalMixing* localMixing;
-    std::vector<double> mixingLengths;
+    std::vector<double> mixingLengths;*/
 
     // Sensor* sensor;      may not need this now
 
@@ -148,16 +140,9 @@ public:
 
     Cell* cells;
     // bool DTEHFExists = false;
-    Cut_cell cut_cell;
+    //Cut_cell cut_cell;
     Wall *wall;
 
-
-    // Building cut-cell (rectangular building)
-    std::vector<std::vector<std::vector<float>>> x_cut;
-    std::vector<std::vector<std::vector<float>>> y_cut;
-    std::vector<std::vector<std::vector<float>>> z_cut;
-    std::vector<std::vector<int>> num_points;
-    std::vector<std::vector<float>> coeff;
 
 private:
 

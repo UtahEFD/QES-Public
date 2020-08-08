@@ -11,7 +11,7 @@
   	<cellSize> 2.0 2.0 2.0 </cellSize> 				<!-- Mesh resolution (meters)-->
 	<verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
-	<totalTimeIncrements> 2 </totalTimeIncrements> 			<!-- Number of time steps-->
+	<totalTimeIncrements> 1 </totalTimeIncrements> 			<!-- Number of time steps-->
 	<rooftopFlag> 1 </rooftopFlag> 					<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
 	<upwindCavityFlag> 2 </upwindCavityFlag> 			<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP) -->
 	<streetCanyonFlag> 1 </streetCanyonFlag> 			<!-- Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)) -->
@@ -20,7 +20,6 @@
 	<sidewallFlag> 1 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
 	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
 	<tolerance> 1E-09 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
-	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (origional QUIC) (default), 1-Cut-cell method -->
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
 	<UTMx> 0 </UTMx> 						<!-- x component (m) in UTM -->
 	<UTMy> 0 </UTMy> 						<!-- y component (m) in UTM -->
@@ -73,12 +72,6 @@
 		<canopyRotation> 0.0 </canopyRotation>
 	</canopy>
 </canopies-->
-<localMixingParam>
-  <method>3</method> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
-  <samples>10000</samples> <!~- Samples per air cell for ray-traced mixing length calculations -->
-  <save>true</save> <!-- Save 2 to file -->    
-  <LMfile>QU_inner_mixlength.nc</LMfile> <!-- Address to mixing lethng location--> 
-</localMixingParam>
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 

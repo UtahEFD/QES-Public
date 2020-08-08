@@ -1,14 +1,12 @@
 #pragma once
 
-/* 
+/*
  * This clas represents a triangle being made up of 3 points each
  * with an x,y,z location
  */
 
 #include "util/ParseInterface.h"
 #include "Vector3.h"
-#include "Ray.h"
-#include "HitRecord.h"
 #include <cmath>
 
 
@@ -33,7 +31,7 @@ public:
 	}
 
 	/*
-	 * uses a vertical ray cast from point x y at height 0 with barycentric interpolation to 
+	 * uses a vertical ray cast from point x y at height 0 with barycentric interpolation to
 	 * determine if the ray hits inside this triangle.
 	 *
 	 * @param x -x location
@@ -56,13 +54,5 @@ public:
 	void getBoundaries(float& xmin, float& xmax, float& ymin, float& ymax, float& zmin, float& zmax);
 
 
-        /*
-         *determines if a ray hit the triangle and updates the hitrecord
-         *
-         *@param ray -the ray to be checked for intersection
-         *@param rec -the HitRecord to be updated 
-         */
-        bool rayTriangleIntersect(Ray ray, HitRecord& rec, float t0, float t1);
-        
 	virtual void parseValues();
 };

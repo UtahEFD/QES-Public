@@ -56,7 +56,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
    //
    // Need to now take all WRF station data and convert to
    // sensors
-   if (WID->simParams->wrfInputData) {
+   if (WID->simParams->wrfInputData)
+   {
 
       WRFInput *wrf_ptr = WID->simParams->wrfInputData;
 
@@ -211,13 +212,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
    m.resize( numcell_cent, 1.0 );
    n.resize( numcell_cent, 1.0 );
 
-   building_volume_frac.resize( numcell_cent, 1.0 );
-   terrain_volume_frac.resize( numcell_cent, 1.0 );
+   /*building_volume_frac.resize( numcell_cent, 1.0 );
+   terrain_volume_frac.resize( numcell_cent, 1.0 ); */
 
    icellflag.resize( numcell_cent, 1 );
    ibuilding_flag.resize ( numcell_cent, -1 );
 
-   mixingLengths.resize( numcell_cent, 0.0 );
+   //mixingLengths.resize( numcell_cent, 0.0 );
 
    terrain.resize( numcell_cout_2d, 0.0 );
    terrain_id.resize( nx*ny, 1 );
@@ -334,7 +335,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
       std::chrono::duration<float> elapsed_stair = finish_stair - start_stair;
       std::cout << "Elapsed time for terrain with stair-step: " << elapsed_stair.count() << " s\n";
 
-      if (WID->simParams->meshTypeFlag == 1)
+      /*if (WID->simParams->meshTypeFlag == 1)
       {
          //////////////////////////////////
          //        Cut-cell method       //
@@ -350,10 +351,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
 
          std::chrono::duration<float> elapsed_cut = finish_cut - start_cut;
          std::cout << "Elapsed time for terrain with cut-cell: " << elapsed_cut.count() << " s\n";
-      }
+      }*/
    }
    ///////////////////////////////////////////////////////
-   //////   END END END of  Apply Terrain code       /////
+   //////   END of  Apply Terrain code       /////
    ///////////////////////////////////////////////////////
 
 
@@ -394,7 +395,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
       // Setting base height for buildings if there is a DEM file
       if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh)
       {
-         for (auto pIdx = 0u; pIdx < WID->simParams->shpPolygons.size(); pIdx++)
+         for (auto pIdx = 0; pIdx < WID->simParams->shpPolygons.size(); pIdx++)
          {
             // Get base height of every corner of building from terrain height
             min_height = WID->simParams->DTE_mesh->getHeight(WID->simParams->shpPolygons[pIdx][0].x_poly,
@@ -403,7 +404,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
             {
                min_height = 0.0;
             }
-            for (auto lIdx = 1u; lIdx < WID->simParams->shpPolygons[pIdx].size(); lIdx++)
+            for (auto lIdx = 1; lIdx < WID->simParams->shpPolygons[pIdx].size(); lIdx++)
             {
                corner_height = WID->simParams->DTE_mesh->getHeight(WID->simParams->shpPolygons[pIdx][lIdx].x_poly,
                                                                    WID->simParams->shpPolygons[pIdx][lIdx].y_poly);
@@ -418,15 +419,15 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
       }
       else
       {
-         for (auto pIdx = 0u; pIdx < WID->simParams->shpPolygons.size(); pIdx++)
+         for (auto pIdx = 0; pIdx < WID->simParams->shpPolygons.size(); pIdx++)
          {
             base_height.push_back(0.0);
          }
       }
 
-      for (auto pIdx = 0u; pIdx < WID->simParams->shpPolygons.size(); pIdx++)
+      for (auto pIdx = 0; pIdx < WID->simParams->shpPolygons.size(); pIdx++)
       {
-         for (auto lIdx=0u; lIdx < WID->simParams->shpPolygons[pIdx].size(); lIdx++)
+         for (auto lIdx=0; lIdx < WID->simParams->shpPolygons[pIdx].size(); lIdx++)
          {
             WID->simParams->shpPolygons[pIdx][lIdx].x_poly += WID->simParams->halo_x;
             WID->simParams->shpPolygons[pIdx][lIdx].y_poly += WID->simParams->halo_y;
@@ -435,7 +436,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
 
       std::cout << "Creating buildings from shapefile...\n";
       // Loop to create each of the polygon buildings read in from the shapefile
-      for (auto pIdx = 0u; pIdx < WID->simParams->shpPolygons.size(); pIdx++)
+      for (auto pIdx = 0; pIdx < WID->simParams->shpPolygons.size(); pIdx++)
       {
          allBuildingsV.push_back (new PolyBuilding (WID, this, pIdx));
          building_id.push_back(allBuildingsV.size()-1);
@@ -797,57 +798,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
    //wall->wallLogBC (this);
 
    wall->setVelocityZero (this);
-
-   // compute local mixing length here!
-   if(WID->localMixingParam) {
-      auto mlStartTime = std::chrono::high_resolution_clock::now();
-      if (WID->localMixingParam->methodLocalMixing == 0) {
-         std::cout << "[MixLength] \t Default Local Mixing Length...\n";
-         localMixing = new LocalMixingDefault();
-         localMixing->defineMixingLength(WID,this);
-      } else if(WID->localMixingParam->methodLocalMixing == 1) {
-         std::cout << "[MixLength] \t Computing Local Mixing Length using serial code...\n";
-         localMixing = new LocalMixingSerial();
-         localMixing->defineMixingLength(WID,this);
-      } else if (WID->localMixingParam->methodLocalMixing == 2) {
-         /*******Add raytrace code here********/
-         std::cout << "Computing mixing length scales..." << std::endl;
-         WID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
-      } else if (WID->localMixingParam->methodLocalMixing == 3) {
-
-#ifdef HAS_OPTIX
-         //TODO: Find a better way to get the list of Triangles
-         // Will need to use ALL triangles vector rather than the DTE
-         // mesh of triangles...
-         //OptixRayTrace optixRayTracer(WID->simParams->DTE_mesh->getTris());
-
-         std::cout<<"--------------------Before OptiX calls-------------------------"<<std::endl;
-         OptixRayTrace optixRayTracer(m_mixingLengthMesh->getTris());
-         optixRayTracer.calculateMixingLength( WID->localMixingParam->mlSamplesPerAirCell, nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
-
-         std::cout<<"--------------------End of OptiX calls-------------------------"<<std::endl;
-#else
-         std::cout << std::endl;
-         std::cout << std::endl;
-         std::cout << "NO OPTIX SUPPORT!!!!!!!!!!!!!!!!!!!!" << std::endl;
-         std::cout << std::endl;
-         std::cout << std::endl;
-#endif
-
-      } else if (WID->localMixingParam->methodLocalMixing == 4) {
-         std::cout << "[MixLength] \t Loading Local Mixing Length data form NetCDF...\n";
-         localMixing = new LocalMixingNetCDF();
-         localMixing->defineMixingLength(WID,this);
-      } else {
-         //this should not happen (checked in LocalMixingParam)
-      }
-      // once all methods are implemented...
-      // should be moved here: localMixing->defineMixingLength(WID,this);
-      auto mlEndTime = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
-      std::cout << "[MixLength] \t Local Mixing Defined...\n";
-      std::cout << "\t\t elapsed time: " << mlElapsed.count() << " s\n";
-   }
 
    return;
 

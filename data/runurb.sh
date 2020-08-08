@@ -10,4 +10,4 @@
 #SBATCH -o init_out.log
 module load gcc/5.4.0
 ulimit -c unlimited -s
-./cudaUrb/cudaUrb -q ../data/QU_Files/Seoul_Gangnam.xml -o Gangnam_DEM_SHP.nc -s 2
+./qesWinds/qesWinds -q ../data/InputFiles/SimpleTest.xml -o SimpleTest -s 2 -w

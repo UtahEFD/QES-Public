@@ -10,7 +10,7 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD,std::string out
                      "u","v","w","icellflag",
                      "terrain","z0_u","z0_v",
                      "e","f","g","h","m","n","building_volume_frac","terrain_volume_frac",
-                     "mixlength"};
+                   /*"mixlength"*/};
 
     // copy of WGD pointer
     WGD_=WGD;
@@ -93,7 +93,6 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD,std::string out
     createAttVector("z0_u","terrain areo roughness, u","m",dim_vect_2d,&(WGD_->z0_domain_u));
     createAttVector("z0_v","terrain areo roughness, v","m",dim_vect_2d,&(WGD_->z0_domain_v));
 
-    createAttVector("mixlength","distance to nearest object","m",{NcDim_z_cc,NcDim_y_cc,NcDim_x_cc},&(WGD_->mixingLengths));
 
     // 3D vector dimension (time dep)
     std::vector<NcDim> dim_vect_cc;
@@ -114,8 +113,8 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD,std::string out
     createAttVector("n","n cut-cell coefficient","--",dim_vect_cc,&(WGD_->n));
 
     // attribute for the volume fraction (cut-cell)
-    createAttVector("building_volume_frac","building volume fraction","--",dim_vect_cc,&(WGD_->building_volume_frac));
-    createAttVector("terrain_volume_frac","terrain volume fraction","--",dim_vect_cc,&(WGD_->terrain_volume_frac));
+    //createAttVector("building_volume_frac","building volume fraction","--",dim_vect_cc,&(WGD_->building_volume_frac));
+    //createAttVector("terrain_volume_frac","terrain volume fraction","--",dim_vect_cc,&(WGD_->terrain_volume_frac));
 
     // create output fields
     addOutputFields();

@@ -16,8 +16,8 @@
 #include "WINDSOutputVisualization.h"
 #include "WINDSOutputWorkspace.h"
 
-#include "TURBGeneralData.h"
-#include "TURBOutput.h"
+//#include "TURBGeneralData.h"
+//#include "TURBOutput.h"
 
 #include "Solver.h"
 #include "CPUSolver.h"
@@ -84,12 +84,12 @@ int main(int argc, char *argv[])
     }
 
 
-    // Checking if
+    /*// Checking if
     if (arguments.compTurb && !WID->localMixingParam) {
         std::cerr << "[ERROR] Turbulence model is turned on without LocalMixingParam in QES Intput file "
                   << arguments.quicFile << std::endl;
         exit(EXIT_FAILURE);
-    }
+    }*/
 
 
     if (arguments.terrainOut) {
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
     }
 
 
-    // Generate the general TURB data from WINDS data
+    /*// Generate the general TURB data from WINDS data
     // based on if the turbulence output file is defined
     TURBGeneralData* TGD = nullptr;
     if (arguments.compTurb) {
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
     }
     if (arguments.compTurb && arguments.turbOutput) {
         outputVec.push_back(new TURBOutput(TGD,arguments.netCDFFileTurb));
-    }
+    }*/
 
     // //////////////////////////////////////////
     //
@@ -181,9 +181,9 @@ int main(int argc, char *argv[])
     // Run turbulence
     //
     // /////////////////////////////
-    if(TGD != nullptr) {
+    /*if(TGD != nullptr) {
         TGD->run(WGD);
-    }
+    }*/
 
     // /////////////////////////////
     // Output the various files requested from the simulation run
@@ -193,6 +193,12 @@ int main(int argc, char *argv[])
     {
         outputVec.at(id_out)->save(0.0); // need to replace 0.0 with timestep
     }
+
+    ///////////////////////////////////////
+    ////
+    //// Run Winds multiple time steps
+    ////
+    ///////////////////////////////////////
 
     if (WID->simParams->totalTimeIncrements > 1)
     {

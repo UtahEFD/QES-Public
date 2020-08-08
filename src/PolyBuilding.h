@@ -146,44 +146,4 @@ public:
     */
     void rooftop (const WINDSInputData* WID, WINDSGeneralData* WGD);
 
-
-    /**
-    *
-    * This function applies the rooftop parameterization to the qualified space on top of buildings defined as polygons.
-    * This function reads in building features like nodes, building height and base height and uses
-    * features of the building defined in the class constructor and setPolyBuilding and setCellsFlag functions. It defines
-    * cells qualified on top of buildings and applies the approperiate parameterization to them.
-    * More information:
-    *
-    */
-    //void streetIntersection (const WINDSInputData* WID, WINDSGeneralData* WGD);
-
-
-    /**
-    *
-    * This function applies the rooftop parameterization to the qualified space on top of buildings defined as polygons.
-    * This function reads in building features like nodes, building height and base height and uses
-    * features of the building defined in the class constructor and setPolyBuilding and setCellsFlag functions. It defines
-    * cells qualified on top of buildings and applies the approperiate parameterization to them.
-    * More information:
-    *
-    */
-    //void poisson (const WINDSInputData* WID, WINDSGeneralData* WGD);
-
-    void reorderPoints(std::vector <cutVert> &face_points, int index);
-
-    void mergeSort(std::vector<float> &angle, std::vector <cutVert> &face_points);
-
-
-    float calculateArea( WINDSGeneralData* WGD, std::vector <cutVert> &face_points, int cutcell_index, int index);
-
-
-    /**
-    *
-    * This function applies the non local mixing length model.
-    * More information: William et al. 2004
-    *
-    */
-    void NonLocalMixing (WINDSGeneralData* WGD, TURBGeneralData* TGD,int bWIDling_id);
-
 };

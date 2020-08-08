@@ -14,7 +14,7 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
   int ny = WGD->ny;
   int nz = WGD->nz;
 
-  for (auto i=0; i<nx-1; i++)
+  /*for (auto i=0; i<nx-1; i++)
   {
     for (auto j=0; j<ny-1; j++)
     {
@@ -47,10 +47,10 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
         }
       }
     }
-  }
+  }*/
 
 
-  for (auto i=0; i<nx-1; i++)
+  /*for (auto i=0; i<nx-1; i++)
   {
     for (auto j=0; j<ny-1; j++)
     {
@@ -70,9 +70,9 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
         }
       }
     }
-  }
+  }*/
 
-  for (auto i=0; i<nx-1; i++)
+  /*for (auto i=0; i<nx-1; i++)
   {
     for (auto j=0; j<ny-1; j++)
     {
@@ -94,7 +94,7 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
 
       }
     }
-  }
+  }*/
 
   for (auto i=0; i<nx-1; i++)
   {
@@ -152,7 +152,7 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
           }
         }
 
-        if (WGD->icellflag[icell_cent] == 1 || WGD->icellflag[icell_cent] == 7 )
+        /*if (WGD->icellflag[icell_cent] == 1 || WGD->icellflag[icell_cent] == 7 )
         {
           if (WGD->icellflag[icell_cent-(nx-1)*(ny-1)] == 7 || (WGD->icellflag[icell_cent-(nx-1)*(ny-1)] == 8 && WGD->n[icell_cent] == 1))
           {
@@ -228,13 +228,13 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
           {
             WGD->g[icell_cent] = WGD->h[icell_cent+(nx-1)];
           }
-        }
+        }*/
 
       }
     }
   }
 
-  for (auto i=0; i<nx-1; i++)
+  /*for (auto i=0; i<nx-1; i++)
   {
     for (auto j=0; j<ny-1; j++)
     {
@@ -269,9 +269,9 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
 
       }
     }
-  }
+  }*/
 
-  for (auto i=0; i<nx-1; i++)
+  /*for (auto i=0; i<nx-1; i++)
   {
     for (auto j=0; j<ny-1; j++)
     {
@@ -328,7 +328,7 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
         }
       }
     }
-  }
+  }*/
 }
 
 

@@ -172,4 +172,3 @@ float BVH::heightToTri(float x, float y)
       return toL > toR ? toL : toR;
    }
 }
-
