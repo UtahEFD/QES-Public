@@ -131,7 +131,7 @@ make
 ```
 Note you *may* need to type make a second time due to a build bug, especially on the CUDA 8.0 build.
 
-To run QES Winds, you can take the following slurm template and run on CHPC.  We'd suggest placing it in a ```run``` folder at the same level as your build folder.  Make sure you change the various sbatch parameters as needed for your access to CHPC.
+To run QES-Winds, you can take the following slurm template and run on CHPC.  We'd suggest placing it in a ```run``` folder at the same level as your build folder.  Make sure you change the various sbatch parameters as needed for your access to CHPC.
 
 ### slurm Template (for CUDA 10.1 build)
 ```
@@ -147,7 +147,7 @@ To run QES Winds, you can take the following slurm template and run on CHPC.  We
 #SBATCH -o init_out.log
 module load gcc/8.1.0
 ulimit -c unlimited -s
-./cudaUrb/cudaUrb -q ../data/QU_Files/GaussianHill.xml -s 2 -w -o gaussianHill
+./qesWinds/qesWinds -q ../data/InputFiles/GaussianHill.xml -s 2 -w -o gaussianHill
 ```
 
 Note that if you build with a different GCC (i.e. 5.4.0), you will need to change the module load to use that version of GCC. Once the slurm file has been placed in the run folder, you can then send out the job.  For example, assuming you are in the build folder and just built the code and we saved the slurm template above as a file rGaussianHill_gpu.slurm:
@@ -171,7 +171,7 @@ In case things don't go as planned with these instructions, here are some tips f
 After the build is configured the Doxygen documentation can be built. The output from this process is the updating of the _html_ and _latex_ folders in the top-level _docs_ folders.
 
 ```
-make urbdoc
+make windsdoc
 ```
 
 
