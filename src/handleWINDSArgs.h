@@ -11,13 +11,13 @@
 enum solverTypes : int
 {CPU_Type = 1, DYNAMIC_P = 2, Global_M = 3, Shared_M = 4};
 
-class URBArgs : public ArgumentParsing
+class WINDSArgs : public ArgumentParsing
 {
 public:
 
-    URBArgs();
+    WINDSArgs();
 
-    ~URBArgs() {}
+    ~WINDSArgs() {}
 
     /*
      * Takes in the commandline arguments and places

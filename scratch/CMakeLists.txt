@@ -15,8 +15,8 @@ foreach(basetest ${BASETESTS})
       target_link_libraries(${basetest} qesOptix)
     ENDIF()
 
-    target_link_libraries(${basetest} cudaurbcore)
-    target_link_libraries(${basetest} cudaurbutil)
+    target_link_libraries(${basetest} qeswindscore)
+    target_link_libraries(${basetest} qeswindsutil)
     target_link_libraries(${basetest} ${Boost_LIBRARIES})
 
     target_link_libraries(${basetest} ${GDAL_LIBRARY})

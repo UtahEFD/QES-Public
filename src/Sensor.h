@@ -9,8 +9,8 @@
 #include "util/ParseInterface.h"
 #include "TimeSeries.h"
 
-class URBInputData;
-class URBGeneralData;
+class WINDSInputData;
+class WINDSGeneralData;
 
 class Sensor : public ParseInterface
 {
@@ -60,7 +60,7 @@ public:
      * roughness and measured wind velocity and direction), generates wind velocity profile for each sensor and finally
      * utilizes Barns scheme to interplote velocity to generate the initial velocity field for the domain.
      */
-    void inputWindProfile(const URBInputData *UID, URBGeneralData *UGD, int index);
+    void inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, int index);
 
 
     /**

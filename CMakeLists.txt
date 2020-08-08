@@ -10,11 +10,11 @@ CMAKE_MINIMUM_REQUIRED (VERSION 3.9)
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 MESSAGE(STATUS "CMake Module Path: ${CMAKE_MODULE_PATH}")
 
-PROJECT(cudaUrb)
+PROJECT(qesWinds)
 
-SET(CUDAURB_VERSION_INFO -${cudaUrb_Toolkit_VERSION_MAJOR}.${MinVR_Toolkit_VERSION_MINOR})
+SET(QESWINDS_VERSION_INFO -${qesWinds_Toolkit_VERSION_MAJOR}.${MinVR_Toolkit_VERSION_MINOR})
 
-MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of cudaUrb.")
+MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of qesWinds.")
 MESSAGE(STATUS "If you want something different, use -DCMAKE_BUILD_TYPE=Debug, Release, RelWithDebInfo, MinSizeRel.")
 
 # Force VERBOSE Output -- used in all branches except master
@@ -200,7 +200,7 @@ if (DOXYGEN_FOUND)
       @ONLY)
 
     # note the option ALL which allows to build the docs together with the application
-    add_custom_target( urbdoc
+    add_custom_target( windsdoc
         COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/docs
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating API documentation with Doxygen"
@@ -225,5 +225,5 @@ add_subdirectory(src)
 
 add_subdirectory(scratch)
 
-add_subdirectory(cudaUrb)
+add_subdirectory(qesWinds)
 

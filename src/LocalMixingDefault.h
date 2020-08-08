@@ -16,25 +16,25 @@
   Date: Feb. 2020
 */
 
-class URBInputData;
-class URBGeneralData;
+class WINDSInputData;
+class WINDSGeneralData;
 
 class LocalMixingDefault : public LocalMixing
 {
-private:   
-    
+private:
+
 protected:
 
 public:
-    
+
     LocalMixingDefault()
     {}
     ~LocalMixingDefault()
     {}
-    
+
     /*
      * [FM] This method define the mixing length as the height above the ground
      */
-    void defineMixingLength(const URBInputData*,URBGeneralData*);   
-    
+    void defineMixingLength(const WINDSInputData*,WINDSGeneralData*);   
+
 };

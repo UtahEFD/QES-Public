@@ -14,7 +14,7 @@
 #include "Canopies.h"
 #include "LocalMixingParam.h"
 
-class URBInputData : public ParseInterface
+class WINDSInputData : public ParseInterface
 {
 public:
     SimulationParameters* simParams;
@@ -25,7 +25,7 @@ public:
     Canopies* canopies;
 
 
-    URBInputData()
+    WINDSInputData()
     {
 	      fileOptions = 0;
 	      metParams = 0;
@@ -40,7 +40,7 @@ public:
 	     parseElement<FileOptions>(false, fileOptions, "fileOptions");
 	     parseElement<MetParams>(false, metParams, "metParams");
 	     parseElement<LocalMixingParam>(false,localMixingParam,"localMixingParam");
-         parseElement<Buildings>(false, buildings, "buildings");
+       parseElement<Buildings>(false, buildings, "buildings");
 	     parseElement<Canopies>(false, canopies, "canopies");
     }
 

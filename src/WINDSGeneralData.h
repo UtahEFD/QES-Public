@@ -4,13 +4,12 @@
 #include <netcdf>
 #include <cmath>
 
-// #include "URBInputData.h"
 
 #define _USE_MATH_DEFINES
 #define MIN_S(x,y) ((x) < (y) ? (x) : (y))
 #define MAX_S(x,y) ((x) > (y) ? (x) : (y))
 
-#include "URBInputData.h"
+#include "WINDSInputData.h"
 #include "Building.h"
 #include "Canopy.h"
 #include "LocalMixing.h"
@@ -26,18 +25,18 @@
 #include "OptixRayTrace.h"
 #endif
 
-class URBInputData;
+class WINDSInputData;
 
-class URBGeneralData {
+class WINDSGeneralData {
 public:
-    URBGeneralData();
-    URBGeneralData(const URBInputData* UID);
-    ~URBGeneralData();
-    
+    WINDSGeneralData();
+    WINDSGeneralData(const WINDSInputData* WID);
+    ~WINDSGeneralData();
+
     void mergeSort( std::vector<float> &effective_height,
                     std::vector<Building*> allBuildingsV,
                     std::vector<int> &building_id );
-    
+
 
     /*!
     * This function is being called from the plantInitial function
@@ -45,7 +44,7 @@ public:
     * of the canopy.
     */
     float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
-    
+
     /**
     * @brief
     *
@@ -55,7 +54,7 @@ public:
 
     ////////////////////////////////////////////////////////////////////////////
     //////// Variables and constants needed only in other functions-- Behnam
-    //////// This can be moved to a new class (URBGeneralData)
+    //////// This can be moved to a new class (WINDSGeneralData)
     ////////////////////////////////////////////////////////////////////////////
     const float pi = 4.0f * atan(1.0);
     const float vk = 0.4;			/// Von Karman's
@@ -119,7 +118,7 @@ public:
 
     int id;
 
-    // [FM Feb.28.2020] there 2 variables are not used anywhere 
+    // [FM Feb.28.2020] there 2 variables are not used anywhere
     //std::vector<float> site_canopy_H;
     //std::vector<float> site_atten_coeff;
 

@@ -10,7 +10,7 @@
 #include <chrono>
 #include <limits>
 
-#include "URBGeneralData.h"
+#include "WINDSGeneralData.h"
 #include "TURBGeneralData.h"
 #include "TURBWall.h"
 
@@ -20,12 +20,12 @@ class TURBWallTerrain : public TURBWall
 {
 protected:
 public:
-  
+
     TURBWallTerrain()
     {}
     ~TURBWallTerrain()
     {}
-  
+
     /**
      * @brief
      *
@@ -36,16 +36,16 @@ public:
      * and wall in front/back
      *
      */
-    void defineWalls(URBGeneralData*,TURBGeneralData*);
-    void setWallsBC(URBGeneralData*,TURBGeneralData*);
-  
+    void defineWalls(WINDSGeneralData*,TURBGeneralData*);
+    void setWallsBC(WINDSGeneralData*,TURBGeneralData*);
+
 private:
     const int icellflag_terrain = 2;
     const int icellflag_cutcell = 8;
 
     const int iturbflag_stairstep = 2;
     const int iturbflag_cutcell = 3;
-  
+
     bool use_cutcell = false;
-  
+
 };

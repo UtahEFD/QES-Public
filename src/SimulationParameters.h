@@ -260,7 +260,7 @@ public:
 
         //
         // Process ESRIShapeFile here, but leave extraction of poly
-        // building for later in URBGeneralData
+        // building for later in WINDSGeneralData
         //
         SHPData = nullptr;
         if (shpFile != "") {

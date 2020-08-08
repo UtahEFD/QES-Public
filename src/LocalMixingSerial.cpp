@@ -1,18 +1,18 @@
 #include "LocalMixingSerial.h"
 
 // These take care of the circular reference
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 
-void LocalMixingSerial::defineMixingLength(const URBInputData* UID,URBGeneralData* UGD) 
+void LocalMixingSerial::defineMixingLength(const WINDSInputData* WID,WINDSGeneralData* WGD)
 {
-    int nx = UGD->nx;
-    int ny = UGD->ny;
-    int nz = UGD->nz;
-    
-    float dz = UGD->dz;
-    float dy = UGD->dy;
-    float dx = UGD->dx;
+    int nx = WGD->nx;
+    int ny = WGD->ny;
+    int nz = WGD->nz;
+
+    float dz = WGD->dz;
+    float dy = WGD->dy;
+    float dx = WGD->dx;
 
     // x-grid (face-center & cell-center)
     x_fc.resize(nx, 0);
@@ -25,38 +25,38 @@ void LocalMixingSerial::defineMixingLength(const URBInputData* UID,URBGeneralDat
     // z-grid (face-center & cell-center)
     z_fc.resize(nz, 0);
     z_cc.resize(nz-1, 0);
-    
+
     // x cell-center
-    x_cc = UGD->x;
+    x_cc = WGD->x;
     // x face-center (this assume constant dx for the moment, same as QES-winds)
     for(int i=1;i<nx-1;i++) {
-        x_fc[i]= 0.5*(UGD->x[i-1]+UGD->x[i]);
+        x_fc[i]= 0.5*(WGD->x[i-1]+WGD->x[i]);
     }
     x_fc[0] = x_fc[1]-dx;
     x_fc[nx-1] = x_fc[nx-2]+dx;
-    
+
     // y cell-center
-    y_cc = UGD->y;
-    // y face-center (this assume constant dy for the moment, same as QES-winds)   
+    y_cc = WGD->y;
+    // y face-center (this assume constant dy for the moment, same as QES-winds)
     for(int i=1;i<ny-1;i++) {
-        y_fc[i] = 0.5*(UGD->y[i-1]+UGD->y[i]);
+        y_fc[i] = 0.5*(WGD->y[i-1]+WGD->y[i]);
     }
     y_fc[0] = y_fc[1]-dy;
     y_fc[ny-1] = y_fc[ny-2]+dy;
-    
+
     // z cell-center
-    z_cc = UGD->z;
+    z_cc = WGD->z;
     // z face-center (with ghost cell under the ground)
     for(int i=1;i<nz;i++) {
-        z_fc[i] = UGD->z_face[i-1];
+        z_fc[i] = WGD->z_face[i-1];
     }
     z_fc[0] = z_fc[1]-dz;
-    
+
     // find max height of solid objects in the domaine (max_z)
     /*
       [FM] this works only with the terrain
-      //float max_z=*std::max_element(UGD->terrain.begin(),UGD->terrain.end());  
-      the following code works based on the icellflag -> works for both the 
+      //float max_z=*std::max_element(WGD->terrain.begin(),WGD->terrain.end());
+      the following code works based on the icellflag -> works for both the
       terrain and the buildings
     */
     float max_z=0;
@@ -64,45 +64,45 @@ void LocalMixingSerial::defineMixingLength(const URBInputData* UID,URBGeneralDat
         for (int j=1; j<ny-2; j++) {
             for (int k=0; k<nz-2; k++) {
                 int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-                if ( (UGD->icellflag[icell_cent] ==0 || UGD->icellflag[icell_cent] ==2) &&
+                if ( (WGD->icellflag[icell_cent] ==0 || WGD->icellflag[icell_cent] ==2) &&
                      max_z < z_cc[k]) {
                     max_z=z_cc[k];
                 }
             }
         }
     }
-    
+
     // maximum height of local mixing length = 2*max z of objects
     int max_height=nz-2;
-    
+
     for(int k=0;k<nz-1;++k) {
         if(z_cc[k]>3.0*max_z) {
             max_height=k;
             break;
         }
     }
-    
+
     //seeding Local Mixing Length with the verical distance to the terrain (up to 2*max_z)
     for (int i=1; i<nx-2; i++) {
         for (int j=1; j<ny-2; j++) {
             for (int k=0; k<nz-2; k++) {
                 int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-                if ( (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2) ) {
+                if ( (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) ) {
                     if(k<max_height) {
-                        UGD->mixingLengths[icell_cent] = z_cc[k]-UGD->terrain[i + j*(nx-1)];
+                        WGD->mixingLengths[icell_cent] = z_cc[k]-WGD->terrain[i + j*(nx-1)];
                     } else {
-                        UGD->mixingLengths[icell_cent] = z_cc[k];
+                        WGD->mixingLengths[icell_cent] = z_cc[k];
                     }
-                    if(UGD->mixingLengths[icell_cent] < 0.0) {
-                        UGD->mixingLengths[icell_cent] = 0.0;
+                    if(WGD->mixingLengths[icell_cent] < 0.0) {
+                        WGD->mixingLengths[icell_cent] = 0.0;
                     }
                 }
             }
         }
     }
-    
-    getMinDistWall(UGD,max_height);
-  
+
+    getMinDistWall(WGD,max_height);
+
     //linear interpolation between 2.0*max_z and 2.4*max_z
     std::cout << "[MixLength] \t linear interp of mixing length" << std::endl;
     int k1 = std::min(max_height-1,nz-2);
@@ -112,68 +112,68 @@ void LocalMixingSerial::defineMixingLength(const URBInputData* UID,URBGeneralDat
             int id1 = i + j*(nx-1) + k1*(nx-1)*(ny-1);
             int id2 = i + j*(nx-1) + k2*(nx-1)*(ny-1);
             // slope m = (L(z2)-L(z1))/(z2-z1)
-            float slope=(UGD->mixingLengths[id2]-UGD->mixingLengths[id1])/(z_cc[k2]-z_cc[k1]);
+            float slope=(WGD->mixingLengths[id2]-WGD->mixingLengths[id1])/(z_cc[k2]-z_cc[k1]);
             // linear interp: L(z) = L(z1) + m*(z-z1)
             for(int k=k1;k<k2;++k){
                 int id_cc=i + j*(nx-1) + k*(nx-1)*(ny-1);
-                UGD->mixingLengths[id_cc]=UGD->mixingLengths[id1]+(z_cc[k]-z_cc[k1])*slope;
+                WGD->mixingLengths[id_cc]=WGD->mixingLengths[id1]+(z_cc[k]-z_cc[k1])*slope;
             }
         }
     }
-    
-    if(UID->localMixingParam->save2file){
-        saveMixingLength(UID,UGD);
+
+    if(WID->localMixingParam->save2file){
+        saveMixingLength(WID,WGD);
     }
-    
+
     return;
 }
 
-void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
+void LocalMixingSerial::getMinDistWall(WINDSGeneralData *WGD,int max_height) {
 
-    int nx = UGD->nx;
-    int ny = UGD->ny;
-    int nz = UGD->nz;
+    int nx = WGD->nx;
+    int ny = WGD->ny;
+    int nz = WGD->nz;
 
     // defining the walls
     for (int i=1; i<nx-2; i++) {
         for (int j=1; j<ny-2; j++) {
             for (int k=1; k<nz-2; k++) {
                 int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-        
-                if (UGD->icellflag[icell_cent] !=0 && UGD->icellflag[icell_cent] !=2) {
+
+                if (WGD->icellflag[icell_cent] !=0 && WGD->icellflag[icell_cent] !=2) {
                     /// Wall below
-                    if (UGD->icellflag[icell_cent-(nx-1)*(ny-1)]==0 || 
-                        UGD->icellflag[icell_cent-(nx-1)*(ny-1)]==2) 
+                    if (WGD->icellflag[icell_cent-(nx-1)*(ny-1)]==0 ||
+                        WGD->icellflag[icell_cent-(nx-1)*(ny-1)]==2)
                     {
                         wall_below_indices.push_back(icell_cent);
                     }
                     /// Wall above
-                    if (UGD->icellflag[icell_cent+(nx-1)*(ny-1)]==0 || 
-                        UGD->icellflag[icell_cent+(nx-1)*(ny-1)]==2) 
+                    if (WGD->icellflag[icell_cent+(nx-1)*(ny-1)]==0 ||
+                        WGD->icellflag[icell_cent+(nx-1)*(ny-1)]==2)
                     {
                         wall_above_indices.push_back(icell_cent);
                     }
                     /// Wall in back
-                    if (UGD->icellflag[icell_cent-1]==0 || 
-                        UGD->icellflag[icell_cent-1]==2) 
+                    if (WGD->icellflag[icell_cent-1]==0 ||
+                        WGD->icellflag[icell_cent-1]==2)
                     {
                         wall_back_indices.push_back(icell_cent);
                     }
                     /// Wall in front
-                    if (UGD->icellflag[icell_cent+1]==0 || 
-                        UGD->icellflag[icell_cent+1]==2) 
+                    if (WGD->icellflag[icell_cent+1]==0 ||
+                        WGD->icellflag[icell_cent+1]==2)
                     {
                         wall_front_indices.push_back(icell_cent);
                     }
                     /// Wall on right
-                    if (UGD->icellflag[icell_cent-(nx-1)]==0 || 
-                        UGD->icellflag[icell_cent-(nx-1)]==2) 
+                    if (WGD->icellflag[icell_cent-(nx-1)]==0 ||
+                        WGD->icellflag[icell_cent-(nx-1)]==2)
                     {
                         wall_right_indices.push_back(icell_cent);
                     }
                     /// Wall on left
-                    if (UGD->icellflag[icell_cent+(nx-1)]==0 || 
-                        UGD->icellflag[icell_cent+(nx-1)]==2) 
+                    if (WGD->icellflag[icell_cent+(nx-1)]==0 ||
+                        WGD->icellflag[icell_cent+(nx-1)]==2)
                     {
                         wall_left_indices.push_back(icell_cent);
                     }
@@ -181,7 +181,7 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
             }
         }
     }
-  
+
     std::cout <<"[MixLength] \t cells with wall below: "<< wall_below_indices.size() << std::endl;
     std::cout <<"[MixLength] \t cells with wall above: "<< wall_above_indices.size() << std::endl;
     std::cout <<"[MixLength] \t cells with wall in the front: "<< wall_front_indices.size() << std::endl;
@@ -191,7 +191,7 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
 
     // apply mixing length to the cells with wall below
     for (size_t id=0; id < wall_below_indices.size(); id++){
-    
+
         int id_cc=wall_below_indices[id];
         int idxp=id_cc-(nx-1)*(ny-1)+1;
         int idxm=id_cc-(nx-1)*(ny-1)-1;
@@ -203,31 +203,31 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
         int i = id_cc -  j*(nx-1) - k*(nx-1)*(ny-1);
         int maxdist=max_height-k;
 
-        UGD->mixingLengths[id_cc]=z_cc[k]-z_fc[k];
+        WGD->mixingLengths[id_cc]=z_cc[k]-z_fc[k];
 
         float x1 = x_cc[i];
         float y1 = y_cc[j];
         float z1 = z_fc[k];
 
-        if(UGD->icellflag[idxp]==2 && UGD->icellflag[idxm]==2 &&
-           UGD->icellflag[idyp]==2 && UGD->icellflag[idym]==2) {
+        if(WGD->icellflag[idxp]==2 && WGD->icellflag[idxm]==2 &&
+           WGD->icellflag[idyp]==2 && WGD->icellflag[idym]==2) {
             // terrain on all 4 corner -> nothing to do
-        }else if(UGD->icellflag[idxp]==0 && UGD->icellflag[idxm]==0 &&
-                 UGD->icellflag[idyp]==0 && UGD->icellflag[idym]==0) {
+        }else if(WGD->icellflag[idxp]==0 && WGD->icellflag[idxm]==0 &&
+                 WGD->icellflag[idyp]==0 && WGD->icellflag[idym]==0) {
             // building on all 4 corner -> propagate verically
-            for (int kk=0; kk<=maxdist; kk++) {        
+            for (int kk=0; kk<=maxdist; kk++) {
                 int id=i + j*(nx-1) + (kk+k)*(nx-1)*(ny-1);
                 float x2 = x_cc[i];
                 float y2 = y_cc[j];
                 float z2 = z_cc[kk+k];
                 float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
+                WGD->mixingLengths[id]=std::min(dist,static_cast<float>(WGD->mixingLengths[id]));
             }
         }else{
             // propagate in all direction
             for (int kk=0; kk<=maxdist; kk++) {
-        
-                //propagate to the whole domaine 
+
+                //propagate to the whole domaine
                 int i1 = std::max(i-maxdist-kk,1);
                 int i2 = std::min(i+maxdist+kk,nx-2);
                 int j1 = std::max(j-maxdist-kk,1);
@@ -240,7 +240,7 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
                         float y2 = y_cc[jj];
                         float z2 = z_cc[kk+k];
                         float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                        UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
+                        WGD->mixingLengths[id]=std::min(dist,static_cast<float>(WGD->mixingLengths[id]));
                     }
                 }
             }
@@ -262,7 +262,7 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
             maxdist=nx-1-i;
         }
 
-        UGD->mixingLengths[id_cc]=x_cc.at(i)-x_fc.at(i);
+        WGD->mixingLengths[id_cc]=x_cc.at(i)-x_fc.at(i);
 
         float x1 = x_fc[i];
         float y1 = y_cc[j];
@@ -284,7 +284,7 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
                     float y2 = y_cc[jj];
                     float z2 = z_cc[kk];
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                    UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
+                    WGD->mixingLengths[id]=std::min(dist,static_cast<float>(WGD->mixingLengths[id]));
                 }
             }
         }
@@ -305,20 +305,20 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
             maxdist=i;
         }
 
-        UGD->mixingLengths[id_cc]=x_fc.at(i+1)-x_cc.at(i);
+        WGD->mixingLengths[id_cc]=x_fc.at(i+1)-x_cc.at(i);
 
         float x1 = x_fc[i+1];
         float y1 = y_cc[j];
         float z1 = z_cc[k];
 
         for (int ii=0; ii>=-maxdist; ii--) {
-      
+
             //int k1 = std::max(k,0);
             //int k2 = std::min(k-ii+1,nz-2);
             int j1 = std::max(j+ii,0);
             int j2 = std::min(j-ii+1,ny-2);
             int k1(k),k2(k);
-      
+
             for (int jj=j1; jj<=j2; jj++) {
                 for (int kk=k1; kk<=k2; kk++) {
                     int id=(i+1+ii) + jj*(nx-1) + (kk)*(nx-1)*(ny-1);
@@ -326,13 +326,13 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
                     float y2 = y_cc[jj];
                     float z2 = z_cc[kk];
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                    UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
+                    WGD->mixingLengths[id]=std::min(dist,static_cast<float>(WGD->mixingLengths[id]));
                 }
             }
         }
     }
     std::cout <<"[MixLength] \t cells with wall in the front: DONE " << std::endl;
-  
+
     /// apply mixing length to the cells with wall to right
     for (size_t id=0; id < wall_right_indices.size(); id++){
 
@@ -347,7 +347,7 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
             maxdist=ny-1-j;
         }
 
-        UGD->mixingLengths[id_cc]=y_cc[j]-y_fc[j];
+        WGD->mixingLengths[id_cc]=y_cc[j]-y_fc[j];
 
         float x1 = x_cc[i];
         float y1 = y_fc[j];
@@ -368,7 +368,7 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
                     float y2 = y_cc[j+jj];
                     float z2 = z_cc[kk];
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                    UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
+                    WGD->mixingLengths[id]=std::min(dist,static_cast<float>(WGD->mixingLengths[id]));
                 }
             }
         }
@@ -389,7 +389,7 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
             maxdist=j;
         }
 
-        UGD->mixingLengths[id_cc]=y_fc[j+1]-y_cc[j];
+        WGD->mixingLengths[id_cc]=y_fc[j+1]-y_cc[j];
 
         float x1 = x_cc[i];
         float y1 = y_fc[j+1];
@@ -411,11 +411,10 @@ void LocalMixingSerial::getMinDistWall(URBGeneralData *UGD,int max_height) {
                     float y2 = y_cc[j+1+jj];
                     float z2 = z_cc[kk];
                     float dist = sqrt(pow((x2-x1),2)+pow((y2-y1),2)+pow((z2-z1),2));
-                    UGD->mixingLengths[id]=std::min(dist,static_cast<float>(UGD->mixingLengths[id]));
+                    WGD->mixingLengths[id]=std::min(dist,static_cast<float>(WGD->mixingLengths[id]));
                 }
             }
         }
     }
     std::cout <<"[MixLength] \t cells with wall to the left: DONE " << std::endl;
 }
-
