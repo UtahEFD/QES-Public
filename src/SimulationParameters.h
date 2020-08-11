@@ -197,16 +197,25 @@ public:
             // utilize the wrf information to construct a
             // DTE_heightfield
             std::cout << "Constructing DTE from WRF Input" << std::endl;
+
+
             DTE_heightField = new DTEHeightField(wrfInputData->fmHeight,
                                                  wrfInputData->fm_nx,
                                                  wrfInputData->fm_ny,
-                                                 (*(grid))[0],
-                                                 (*(grid))[1]);
+                                                 wrfInputData->fm_dx,
+                                                 wrfInputData->fm_dy
+                );
+
+            (*(grid))[0] = wrfInputData->fm_dx;
+            (*(grid))[1] = wrfInputData->fm_dy;
+
+            std::cout << "Dim: " << wrfInputData->fm_nx << " X " << wrfInputData->fm_ny << std::endl;
+            std::cout << "at " << (*(grid))[0] << " X " << (*(grid))[1] << " X " << (*(grid))[2] << std::endl;
 
             domain = new Vector3<int>( wrfInputData->fm_nx, wrfInputData->fm_nx, wrfInputData->fm_nz );
             DTE_heightField->setDomain(domain, grid);
             DTE_mesh = new Mesh(DTE_heightField->getTris());
-            std::cout << "Mesh complete\n";
+            std::cout << "Meshing of DEM complete\n";
         }
         else if (m_domIType == WRFDEM) {
 

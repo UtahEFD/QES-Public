@@ -71,7 +71,7 @@ public:
     // Fire Mesh Related Data
     bool hasFireMesh;
     
-    int fm_nx, fm_ny;
+  int fm_nx, fm_ny, fm_nz;
     double fm_dx, fm_dy;
     std::vector<double> fmHeight;
 

@@ -410,8 +410,9 @@ WRFInput::WRFInput(const std::string& filename,
         fm_dy = cellSize[1] / sr_y;    
         // Then dxf=DX/sr_x, dyf=DY/sr_y
 
-        std::cout << "WRF Fire Mesh Domain is " << fm_nx << " X " << fm_ny << std::endl;
-        std::cout << "WRF Fire Mesh Resolution (dx, dy) is (" << fm_dx << ", " << fm_dy << ")" << std::endl;
+        std::cout << "WRF Fire Mesh Indice Dimensions: " << fm_nx << " X " << fm_ny << std::endl;
+        std::cout << "WRF Fire Mesh Resolution (dx, dy): (" << fm_dx << ", " << fm_dy << ")" << std::endl;
+        std::cout << "\ttotal domain size: " << fm_nx * fm_dx << "m by " << fm_ny * fm_dy << "m" << std::endl;
     
         double fm_minWRFAlt = std::numeric_limits<double>::max(),
             fm_maxWRFAlt = std::numeric_limits<double>::min();
@@ -429,6 +430,10 @@ WRFInput::WRFInput(const std::string& filename,
 
         // double rangeHt = fm_maxWRFAlt - fm_minWRFAlt;
         std::cout << "Terrain Min Ht: " << fm_minWRFAlt << ", Max Ht: " << fm_maxWRFAlt << std::endl;
+
+        // if specified, use the max height... otherwise, pick  ---
+        // use user specified...
+	fm_nz = (int)ceil( fm_maxWRFAlt * 2.0 );
 
         // override any zone information?  Need to fix these use cases
         UTMZone = (int)floor((fxlong[0] + 180) / 6) + 1;
@@ -835,11 +840,6 @@ WRFInput::WRFInput(const std::string& filename,
 
     // ////////////////////////
     
-    // These hard-coded values do not seem like they should exist for
-    // ALL cases -- they were in Matthieu's original code.  We need to
-    // change to something per domain or calculated per domain. -Pete
-    float minWRFAlt = 20;
-    float maxWRFAlt = 250;
 
     // sampling strategy
     int stepSize = sensorSample;
@@ -847,6 +847,15 @@ WRFInput::WRFInput(const std::string& filename,
     // Only need to keep track of sensors that are WITHIN our actual
     // domain space related to the nx X ny of the QES domain.  The
     // atm_nx and atm_ny may be quite a bit larger.
+
+    // These hard-coded values do not seem like they should exist for
+    // ALL cases -- they were in Matthieu's original code.  We need to
+    // change to something per domain or calculated per domain. -Pete
+    float minWRFAlt = 20;
+    float maxWRFAlt = 250;
+
+    maxWRFAlt = 3000.0;
+    std::cout << "Max WRF Alt: " << maxWRFAlt << std::endl;
 
     //
     // Walk over the atm mesh, extract wind profiles for stations
@@ -925,15 +934,18 @@ WRFInput::WRFInput(const std::string& filename,
 
                         int l_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + yIdx*atm_nx + xIdx;
 
-                        if (coordZ[l_idx] >= minWRFAlt && coordZ[l_idx] <= maxWRFAlt) {
+			if (coordZ[l_idx] <= fm_nz) {
+			  // if (coordZ[l_idx] >= minWRFAlt && coordZ[l_idx] <= maxWRFAlt) {
                         
+			  std::cout << "prof height at " << k << ": " << coordZ[ l_idx ] << std::endl;
+
                             profData profEl;
                             profEl.zCoord = coordZ[ l_idx ];
                             profEl.ws = wsData[ l_idx ];
                             profEl.wd = wdData[ l_idx ];
 
                             sd.profiles[t].push_back( profEl );
-                        }
+			}
                     }
                 }
             
