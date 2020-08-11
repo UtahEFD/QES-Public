@@ -39,7 +39,16 @@ CUDA_ADD_LIBRARY( qeswindscore
   SharedMemory.h
   TimeSeries.h
   )
-
+ 
+IF (HAS_OPTIX_SUPPORT MATCHES ON)
+  cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
+ 
+  add_library(qesOptix
+    ${embedded_ptx_code}
+    OptixRayTrace.h
+    OptixRayTrace.cpp
+    )  
+ENDIF()
 
 
 
