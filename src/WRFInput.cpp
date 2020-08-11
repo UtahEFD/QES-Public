@@ -795,8 +795,10 @@ WRFInput::WRFInput(const std::string& filename,
     }
 
     std::cout << "Wind direction computed." << std::endl;
+ 
+    // use the Fz0 rather than LU_INDEX
 
-    // read LU -- depends on if reading the restart or the output file
+   // read LU -- depends on if reading the restart or the output file
     // roughness length...
     // LU = ncread(WRFFile,'LU_INDEX');
     // SimData.LU = LU(SimData.XSTART:SimData.XEND, SimData.YSTART:SimData.YEND,1)'; 
@@ -937,6 +939,8 @@ WRFInput::WRFInput(const std::string& filename,
 			if (coordZ[l_idx] <= fm_nz) {
 			  // if (coordZ[l_idx] >= minWRFAlt && coordZ[l_idx] <= maxWRFAlt) {
                         
+    // Use ZSF + FZ0 -- should be built into coordZ it seems
+
 			  std::cout << "prof height at " << k << ": " << coordZ[ l_idx ] << std::endl;
 
                             profData profEl;
