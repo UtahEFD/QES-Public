@@ -185,7 +185,7 @@ private:
   double m_imageGeoTransform[6];
 
   //float pixelSizeX, pixelSizeY;
-  float cellSizeX, cellSizeY;
+    double cellSizeX, cellSizeY;
 
   std::vector<Triangle*> m_triList;
   float min[3], max[3];

@@ -23,6 +23,7 @@ DTEHeightField::DTEHeightField(const std::string &filename, double cellSizeXN, d
 }
 
 DTEHeightField::DTEHeightField(const std::vector<double> &heightField, int dimX, int dimY, double cellSizeXN, double cellSizeYN)
+    : cellSizeX( cellSizeXN ), cellSizeY( cellSizeYN )
 {
     Triangle *tPtr=0;
     m_triList.clear();
@@ -36,7 +37,12 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField, int dimX,
     // eventually need the fm_dx and fm_dy so we can multiply into
     // correct dimensions
 
-    int step = cellSizeXN;
+    int step = 1;  // step size is interpretted incorrectly here for
+                   // fire meshes...
+
+    // previously, with regular DEMs we can use the cellSize to
+    // determine how we step over the terrain to create the actual
+    // mesh... based on dx, dy...
 
     for (float j = 0; j < dimY-1; j+=step) {
         for (float i = 0; i < dimX-1; i+=step) {
