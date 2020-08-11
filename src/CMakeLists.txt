@@ -58,7 +58,7 @@ CUDA_ADD_LIBRARY( qeswindscore
   )
 
  
-IF (${HAS_OPTIX_SUPPORT})
+IF (HAS_OPTIX_SUPPORT MATCHES ON)
   cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
  
   add_library(qesOptix
@@ -73,7 +73,7 @@ cuda_add_executable( unitTest
   )
 
 
-IF (${HAS_OPTIX_SUPPORT})
+IF (HAS_OPTIX_SUPPORT MATCHES ON)
   target_link_libraries(unitTest qesOptix)
 ENDIF()
 

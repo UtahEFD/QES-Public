@@ -11,7 +11,7 @@ set(BASETESTS
 foreach(basetest ${BASETESTS})
     add_executable(${basetest} ${basetest}.cpp)
 
-    IF (${HAS_OPTIX_SUPPORT})
+    IF (HAS_OPTIX_SUPPORT MATCHES ON)
       target_link_libraries(${basetest} qesOptix)
     ENDIF()
 
