@@ -204,7 +204,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
    canopy_d.resize( (nx-1)*(ny-1), 0.0 );
 
 
-   // Resize the coefficients for use with the solver e.resize( numcell_cent, 1.0 );
+   // Resize the coefficients for use with the solver
    e.resize( numcell_cent, 1.0 );
    f.resize( numcell_cent, 1.0 );
    g.resize( numcell_cent, 1.0 );
@@ -283,7 +283,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
    }
    max_velmag *= 1.2;
 
-
    ////////////////////////////////////////////////////////
    //////              Apply Terrain code             /////
    ///////////////////////////////////////////////////////
@@ -316,7 +315,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
                {
                   break;
                }
-               if (WID->simParams->meshTypeFlag == 0)
+               if (WID->simParams->meshTypeFlag == 0 && WID->simParams->readCoefficientsFlag == 0)
                {
                   // ////////////////////////////////
                   // Stair-step (original QUIC)    //
@@ -335,7 +334,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
       std::chrono::duration<float> elapsed_stair = finish_stair - start_stair;
       std::cout << "Elapsed time for terrain with stair-step: " << elapsed_stair.count() << " s\n";
 
-      /*if (WID->simParams->meshTypeFlag == 1)
+      /*if (WID->simParams->meshTypeFlag == 1 && WID->simParams->readCoefficientsFlag == 0)
       {
          //////////////////////////////////
          //        Cut-cell method       //
@@ -702,6 +701,53 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
 
    wall->solverCoefficients (this);
 
+   /////////////////////////////////////////////////////////
+   /////       Read coefficients from a file            ////
+   /////////////////////////////////////////////////////////
+
+   if (WID->simParams->readCoefficientsFlag == 1)
+   {
+     NCDFInput = new NetCDFInput(WID->simParams->coeffFile);
+
+     start = {0,0,0,0};
+     NCDFInput->getDimensionSize("x",ncnx);
+     NCDFInput->getDimensionSize("y",ncny);
+     NCDFInput->getDimensionSize("z",ncnz);
+     NCDFInput->getDimensionSize("t",ncnt);
+
+     count = {static_cast<unsigned long>(1),
+             static_cast<unsigned long>(ncnz-1),
+             static_cast<unsigned long>(ncny-1),
+             static_cast<unsigned long>(ncnx-1)};
+
+
+     NCDFInput->getVariableData("icellflag",start,count,icellflag);
+
+     for (int k = 0; k < nz-2; k++)
+     {
+         for (int j = 0; j < ny-1; j++)
+         {
+             for (int i = 0; i < nx-1; i++)
+             {
+                 int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+                 if (icellflag[icell_cent] != 0 && icellflag[icell_cent] != 2 && icellflag[icell_cent] != 8 && icellflag[icell_cent] != 7)
+                 {
+                   icellflag[icell_cent] = 1;
+                 }
+             }
+         }
+     }
+
+     // Read in solver coefficients
+     NCDFInput->getVariableData("e",start,count,e);
+     NCDFInput->getVariableData("f",start,count,f);
+     NCDFInput->getVariableData("g",start,count,g);
+     NCDFInput->getVariableData("h",start,count,h);
+     NCDFInput->getVariableData("m",start,count,m);
+     NCDFInput->getVariableData("n",start,count,n);
+
+   }
+
    // ///////////////////////////////////////
    // Generic Parameterization Related Stuff
    // ///////////////////////////////////////
@@ -919,7 +965,6 @@ float WINDSGeneralData::canopyBisection(float ustar, float z0, float canopy_top,
 
    return d;
 }
-
 
 
 WINDSGeneralData::WINDSGeneralData()

@@ -18,13 +18,19 @@
 	<streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
 	<wakeFlag> 2 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled) -->
 	<sidewallFlag> 1 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
+
 	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
 	<tolerance> 1E-09 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
+	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (origional QUIC) (default), 1-Cut-cell method -->
+
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
 	<UTMx> 0 </UTMx> 						<!-- x component (m) in UTM -->
 	<UTMy> 0 </UTMy> 						<!-- y component (m) in UTM -->
 	<UTMZone> 1 </UTMZone> 						<!-- UTM zone that domain located -->
 	<UTMZoneLetter> 17 </UTMZoneLetter>
+
+	<readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->
+	<!--COEFF>test_windsWk.nc</COEFF-->					<!-- Address to coefficients file location --> 
 </simulationParameters>                     				<!-- End of simulation parameters -->
 <metParams>
 	<z0_domain_flag> 0 </z0_domain_flag>           			<!-- Distribution of sueface roughness for domain (0-uniform (default), 1-custom -->

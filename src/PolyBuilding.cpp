@@ -150,7 +150,10 @@ void PolyBuilding::setCellFlags(const WINDSInputData* WID, WINDSGeneralData* WGD
         for (auto k=k_start; k<k_end; k++)
         {
           int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
-          WGD->icellflag[icell_cent] = 0;
+          if (WID->simParams->readCoefficientsFlag == 0)
+          {
+            WGD->icellflag[icell_cent] = 0;
+          }
           WGD->ibuilding_flag[icell_cent] = building_number;
         }
 
@@ -158,5 +161,4 @@ void PolyBuilding::setCellFlags(const WINDSInputData* WID, WINDSGeneralData* WGD
 
     }
   }
-
 }
