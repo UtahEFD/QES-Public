@@ -113,6 +113,8 @@
 	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (origional QUIC) (default), 1-Cut-cell method -->
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
 	<UTMZoneLetter> 17 </UTMZoneLetter>
+	<readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->
+	<!--COEFF>test_windsWk.nc</COEFF-->					<!-- Address to coefficients file location --> 
 </simulationParameters>                     				<!-- End of simulation parameters -->
 <metParams>
 	<z0_domain_flag> 0 </z0_domain_flag>           			<!-- Distribution of sueface roughness for domain (0-uniform (default), 1-custom -->

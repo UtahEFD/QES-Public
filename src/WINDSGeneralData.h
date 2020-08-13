@@ -20,10 +20,14 @@
 #include "DTEHeightField.h"
 #include "Cut_cell.h"
 #include "Wall.h"
+#include "NetCDFInput.h"
 
 #ifdef HAS_OPTIX
 #include "OptixRayTrace.h"
 #endif
+
+using namespace netCDF;
+using namespace netCDF::exceptions;
 
 class WINDSInputData;
 
@@ -72,6 +76,8 @@ public:
     long numcell_cout_2d;
     long numcell_cent;       /**< Total number of cell-centered values in domain */
     long numcell_face;       /**< Total number of face-centered values in domain */
+    std::vector<size_t> start;
+    std::vector<size_t> count;
 
     std::vector<float> z0_domain_u, z0_domain_v;
 
@@ -150,6 +156,9 @@ public:
     // bool DTEHFExists = false;
     Cut_cell cut_cell;
     Wall *wall;
+
+    NetCDFInput* NCDFInput;
+    int ncnx, ncny, ncnz, ncnt;
 
 
     // Building cut-cell (rectangular building)

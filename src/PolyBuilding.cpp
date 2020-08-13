@@ -155,7 +155,10 @@ void PolyBuilding::setCellFlags(const WINDSInputData* WID, WINDSGeneralData* WGD
         for (auto k=k_start; k<k_end; k++)
         {
           int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
-          WGD->icellflag[icell_cent] = 0;
+          if (WID->simParams->readCoefficientsFlag == 0)
+          {
+            WGD->icellflag[icell_cent] = 0;
+          }
           WGD->ibuilding_flag[icell_cent] = building_number;
         }
 
@@ -164,7 +167,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData* WID, WINDSGeneralData* WGD
     }
   }
 
-  if (mesh_type_flag == 1)          // Cut-cell method for buildings
+  if (mesh_type_flag == 1 && WID->simParams->readCoefficientsFlag == 0)          // Cut-cell method for buildings
   {
     std::vector <int> i_face_start, i_face_end;
     std::vector <int> j_face_start, j_face_end;

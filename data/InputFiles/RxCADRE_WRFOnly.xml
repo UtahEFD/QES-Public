@@ -23,6 +23,8 @@ Use Case - WRF with no Fire Mesh (i.e. Korea)
   <UTMy> 0 </UTMy> 						<!-- y component (m) in UTM -->
   <UTMZone> 1 </UTMZone> 					<!-- UTM zone that domain located -->
   <UTMZoneLetter> 17 </UTMZoneLetter>
+  <readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->
+  <!--COEFF>test_windsWk.nc</COEFF-->					<!-- Address to coefficients file location --> 
 
   <domain>384 384 100</domain>					<!-- Number of cells in x,y and z directions-->
   <cellSize> 3.0 3.0 1.0 </cellSize> 				<!-- Mesh resolution (meters)-->

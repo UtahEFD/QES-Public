@@ -42,6 +42,9 @@ public:
     float halo_y = 0.0;
     float heightFactor = 1.0;
 
+    int readCoefficientsFlag = 0;
+    std::string coeffFile;
+
     // DTE - digital elevation model details
     std::string demFile;    // DEM file name
     DTEHeightField* DTE_heightField = nullptr;
@@ -129,6 +132,10 @@ public:
         parsePrimitive<float>(false, halo_x, "halo_x");
         parsePrimitive<float>(false, halo_y, "halo_y");
         parsePrimitive<float>(false, heightFactor, "heightFactor");
+        parsePrimitive<int>(false, readCoefficientsFlag, "readCoefficientsFlag");
+
+        coeffFile = "";
+        parsePrimitive<std::string>(false, coeffFile, "COEFF");
 
         demFile = "";
         parsePrimitive<std::string>(false, demFile, "DEM");
