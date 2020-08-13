@@ -201,4 +201,6 @@ void PolyBuilding::setCellFlags(const WINDSInputData* WID, WINDSGeneralData* WGD
 
     }
   }
+
+  
 }

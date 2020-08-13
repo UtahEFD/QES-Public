@@ -333,24 +333,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
       std::chrono::duration<float> elapsed_stair = finish_stair - start_stair;
       std::cout << "Elapsed time for terrain with stair-step: " << elapsed_stair.count() << " s\n";
-
-      /*if (WID->simParams->meshTypeFlag == 1 && WID->simParams->readCoefficientsFlag == 0)
-      {
-         //////////////////////////////////
-         //        Cut-cell method       //
-         //////////////////////////////////
-
-         auto start_cut = std::chrono::high_resolution_clock::now();
-
-         // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
-         cut_cell.calculateCoefficient(cells, WID->simParams->DTE_heightField, nx, ny, nz, dx, dy, dz_array, n, m, f, e, h, g, pi, icellflag,
-                                       terrain_volume_frac, z_face, WID->simParams->halo_x, WID->simParams->halo_y);
-
-         auto finish_cut = std::chrono::high_resolution_clock::now();  // Finish recording execution time
-
-         std::chrono::duration<float> elapsed_cut = finish_cut - start_cut;
-         std::cout << "Elapsed time for terrain with cut-cell: " << elapsed_cut.count() << " s\n";
-      }*/
    }
    ///////////////////////////////////////////////////////
    //////   END of  Apply Terrain code       /////

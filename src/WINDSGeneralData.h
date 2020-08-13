@@ -21,6 +21,9 @@
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
+using namespace netCDF;
+using namespace netCDF::exceptions;
+
 class WINDSInputData;
 
 class WINDSGeneralData {
