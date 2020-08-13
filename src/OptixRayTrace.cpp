@@ -465,7 +465,7 @@ void OptixRayTrace::createModule(){
    module_compile_options.debugLevel = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO;
 
    //pipeline compile options
-   state.pipeline_compile_options.usesMotionBlur = false;
+   // state.pipeline_compile_options.usesMotionBlur = false;
    state.pipeline_compile_options.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
    state.pipeline_compile_options.numPayloadValues = 1;
 
@@ -573,7 +573,7 @@ void OptixRayTrace::createPipeline(){
    OptixPipelineLinkOptions pipeline_link_options = {};
    pipeline_link_options.maxTraceDepth = 1;
    pipeline_link_options.debugLevel = OPTIX_COMPILE_DEBUG_LEVEL_FULL;
-   pipeline_link_options.overrideUsesMotionBlur = false;
+   // pipeline_link_options.overrideUsesMotionBlur = false;
 
    size_t sizeof_log = sizeof(log);
 
