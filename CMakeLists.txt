@@ -84,7 +84,7 @@ IF(NetCDF_FOUND)
   INCLUDE_DIRECTORIES(${NETCDF_INCLUDES_CXX})
 ENDIF(NetCDF_FOUND)
 
-# SET(CMAKE_PREFIX_PATH /uufs/chpc.utah.edu/sys/installdir/gdal/2.1.3-c7)
+# SET(CMAKE_PREFIX_PATH /uufs/chpc.utah.edu/sys/installdir/gdal/2.4.0)
 FIND_PACKAGE(GDAL REQUIRED)
 IF (${GDAL_FOUND})
   INCLUDE_DIRECTORIES(${GDAL_INCLUDE_DIR})
@@ -108,7 +108,7 @@ ENDIF(CUDA_FOUND)
 
 
 #use fast math option is required for OptiX
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;--use_fast_math;--keep-device-functions")
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-dlink;-rdc=true;--use_fast_math;--keep-device-functions")
 
 
 #
