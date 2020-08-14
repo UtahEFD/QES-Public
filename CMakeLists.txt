@@ -32,13 +32,14 @@ include(CheckCXXCompilerFlag)
 MESSAGE(STATUS "Compiling with ${CMAKE_CXX_COMPILER_ID}, Version: ${CMAKE_CXX_COMPILER_VERSION}")
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+
 if(COMPILER_SUPPORTS_CXX11)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
 
   #
   # This code used C++ 11 and 14 features so enable these on CXX Flags
   #
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 14)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
   
@@ -187,6 +188,8 @@ else()
   SET(HAS_OPTIX_SUPPORT OFF BOOL "Determines if OptiX functionality is compiled into the code base")
   REMOVE_DEFINITIONS(-DHAS_OPTIX)
 endif()
+
+MESSAGE(STATUS "CUDA/OptiX Configuration Complete.")
 
 #
 # Find doxygen so we can add a target for building
