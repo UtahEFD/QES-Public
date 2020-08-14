@@ -74,6 +74,33 @@ After logging into your CHPC account, you will need to load specific
 modules. The following module commands will take care of these
 requirements:
 
+### CUDA 10.2 Based Builds with NVIDIA OptiX Support
+
+```
+module load cuda/10.2
+module load gcc/8.1.0
+module load cmake/3.15.3
+module load gdal/3.0.1
+module load boost/1.69.0
+module load netcdf-cxx
+```
+
+After completing the above module loads, the following modules are reported from `module list`:
+
+```
+Currently Loaded Modules:
+  1) chpc/1.0     (S)   3) gdal/3.0.1        5) netcdf-c/4.4.1     7) cuda/10.2 (g)   9) boost/1.69.0
+  2) cmake/3.11.2       4) hdf5/1.8.17 (H)   6) netcdf-cxx/4.3.0   8) gcc/8.1.0
+```
+
+To construct the Makefiles, you can run cmake in this way from your build directory.  For example, 
+```
+mkdir build
+cd build
+cmake -DCUDA_TOOLKIT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/10.2.89 -DCUDA_SDK_ROOT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/10.2.89 -DCMAKE_PREFIX_PATH=/uufs/chpc.utah.edu/sys/installdir/gdal/3.0.1 -DNETCDF_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-c/4.4.1-c7/include -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include -DOptiX_INSTALL_DIR=/uufs/chpc.utah.edu/sys/installdir/optix/7.1.0/ -DCMAKE_C_COMPILER=gcc ..
+```
+
+
 ### CUDA 10.2 Based Builds
 
 ```
