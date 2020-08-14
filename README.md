@@ -17,7 +17,7 @@ substantially accelerate wind simulations.
 
 ## Package Requirements
 
-On a general Linux system, such as Ubuntu 18.04 which we commonly use, you will need the following packages installed:
+On a general Linux system, such as Ubuntu 18.04 or 20.04 which we commonly use, you will need the following packages installed:
 * libgdal-dev
 * libnetcdf-c++4-dev
 * libnetcdf-cxx-legacy-dev
@@ -31,9 +31,11 @@ If you have a system that uses apt, here's the command:
 ```apt install libgdal-dev libnetcdf-c++4-dev  libnetcdf-cxx-legacy-dev libnetcdf-dev netcdf-bin libboost-all-dev cmake cmake-curses-gui```
 
 To use the GPU system (and even build the code) you will need a NVIDIA
-GPU with the CUDA library installed.  We have tested with CUDA 8.0, 10.0, and 10.1.
+GPU with the CUDA library installed.  We have tested with CUDA 8.0, 10.0, 10.1, and 10.2. 
 If your version of CUDA is installed in a non-uniform location, you
 will need to remember the path to the cuda install directory.
+
+Additionally, the code can use NVIDIA's OptiX to accelerate various computations. Our OptiX code has been built to use version 7.0 or higher.
 
 ## Building the Code
 
@@ -64,17 +66,17 @@ make
 
 ## Instructions for CHPC Cluster
 
-Our code does run on the CHPC cluster. You need to make sure the
-correct set of modules are loaded.  Currently, we have tested two
-configurations: one that uses CUDA 8.0 and GCC 5.4 and another that
-uses CUDA 10.1 and GCC 8.1.0.  Builds based on CUDA 10.1 are preferred
-if you don't know which to use.
+The code does run on the CHPC cluster. You need to make sure the
+correct set of modules are loaded.  Currently, we have tested a few 
+configurations that use CUDA 8.0 and GCC 5.4 and another that
+uses CUDA 10.1 or 10.2 and GCC 8.1.0. If you build with OptiX support, you will need to use the CUDA 10.2 configuration. Any builds (with or without OptiX) with CUDA 10.2 are preferred if you don't know which to use.
 
 After logging into your CHPC account, you will need to load specific
-modules. The following module commands will take care of these
-requirements:
+modules. In the following sections, we outline the modules that need to be loaded along with the various cmake command-line calls that specify the exact locations of module installs on the CHPC system.  
 
 ### CUDA 10.2 Based Builds with NVIDIA OptiX Support
+
+To build with CUDA 10.2 and OptiX 7.1.0 on CHPC, please use the following
 
 ```
 module load cuda/10.2
@@ -93,15 +95,19 @@ Currently Loaded Modules:
   2) cmake/3.11.2       4) hdf5/1.8.17 (H)   6) netcdf-cxx/4.3.0   8) gcc/8.1.0
 ```
 
-To construct the Makefiles, you can run cmake in this way from your build directory.  For example, 
+After the modules are loaded, you can create the Makefiles with cmake.  We keep our builds separate from the source and contain our builds within their own folders.  For example, 
 ```
 mkdir build
 cd build
 cmake -DCUDA_TOOLKIT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/10.2.89 -DCUDA_SDK_ROOT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/10.2.89 -DCMAKE_PREFIX_PATH=/uufs/chpc.utah.edu/sys/installdir/gdal/3.0.1 -DNETCDF_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-c/4.4.1-c7/include -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include -DOptiX_INSTALL_DIR=/uufs/chpc.utah.edu/sys/installdir/optix/7.1.0/ -DCMAKE_C_COMPILER=gcc ..
 ```
 
+Upon completion of the above commands, you can go about editing and building mostly as normal, and issue the ```make``` command in your build folder to compile the source.   The instructions for other configurations are very similar with the primary exception being the modules that can be loaded.
+
 
 ### CUDA 10.2 Based Builds
+
+To build with CUDA 10.1 without any OptiX GPU acceleration, please use the following modules:
 
 ```
 module load cuda/10.2
@@ -109,7 +115,7 @@ module load gcc/8.1.0
 module load cmake/3.11.2 
 module load gdal/3.0.1
 module load boost/1.69.0
-ml netcdf-cxx
+module load netcdf-cxx
 ```
 
 After completing the above module loads, the following modules are reported from `module list`:
@@ -120,15 +126,17 @@ Currently Loaded Modules:
   2) cmake/3.11.2       4) hdf5/1.8.17 (H)   6) netcdf-cxx/4.3.0   8) gcc/8.1.0
 ```
 
-To construct the Makefiles, you can run cmake in this way from your build directory.  For example, 
+After the modules are loaded, you can create the Makefiles with cmake.  We keep our builds separate from the source and contain our builds within their own folders.  For example, 
+
 ```
 mkdir build
 cd build
 cmake -DCUDA_TOOLKIT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/10.2.89 -DCUDA_SDK_ROOT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/10.2.89 -DCMAKE_PREFIX_PATH=/uufs/chpc.utah.edu/sys/installdir/gdal/3.0.1 -DNETCDF_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-c/4.4.1-c7/include -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include ..
 ```
 
-
 ### CUDA 10.1 Based Builds
+
+Using CUDA 10.1:
 
 ```
 module load cuda/10.1
@@ -155,6 +163,8 @@ cmake -DCUDA_TOOLKIT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/10.1.168 -DCUDA
 ```
 
 ### CUDA 8.0
+
+And, CUDA 8.0:
 
 ```
 module load cuda/8.0
