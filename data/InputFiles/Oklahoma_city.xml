@@ -1,6 +1,6 @@
 <simulationParameters>
 
-  	<SHP>../scratch/OKCSmallDomain/OKCSmallDomainJU2003.shp</SHP>	<!-- Address to shapefile location-->
+  	<SHP>../GISFiles/OKCSmallDomain/OKCSmallDomainJU2003.shp</SHP>	<!-- Address to shapefile location-->
   	<SHPBuildingLayer>OKCSmallDomainJU2003</SHPBuildingLayer>
   	<heightFactor> 1.0 </heightFactor>				<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
 
