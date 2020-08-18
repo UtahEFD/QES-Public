@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<simulationParameters>
+  <domain>50 50 40</domain>
+  <grid stretching="uniform">1.0 1.0 1.0</grid>
+  <utc>0</utc>
+  <!-- Begining of time step in Unix Epoch time (integer seconds since 1970/1/1 00:00:00)  1510930800 -->
+  <rooftop>vortex</rooftop> <!-- 2 !rooftop flag (0-none, 1-log profile, 2-vortex) -->
+  <upwind>3</upwind> <!-- !upwind cavity flag (0-none, 1-Rockle, 2-MVP, 3-HMVP) -->
+  <streetCanyon>4</streetCanyon> <!--  !street canyon flag (0-none, 1-Roeckle, 2-CPB, 3-exp. param. PKK, 4-Roeckle w/ Fackrel) -->
+  <streetIntersection>1</streetIntersection> <!--  !street intersection flag (0-off, 1-on) -->
+  <wake>3</wake> <!--  !wake flag (0-none, 1-Rockle, 2-Modified Rockle, 3-Area Scaled) -->
+  <sidewall>0</sidewall> <!--  !sidewall flag (0-off, 1-on) -->
+  <iterationMax>500</iterationMax> <!-- !Maximum number of iterations -->
+  <residual>3</residual> <!-- !Residual Reduction (Orders of Magnitude) -->
+  <diffusion>0</diffusion> <!--  !Use Diffusion Algorithm (1 = on) -->
+  <diffusionIterations>20</diffusionIterations> <!-- !Number of Diffusion iterations -->
+<!--  0 !Domain rotation relative to true north (cw = +)
+  0.0 !UTMX of domain origin (m)
+  0.0 !UTMY of domain origin (m)
+  1 !UTM zone
+  17 !UTM zone leter (1=A,2=B,etc.)
+  0 !QUIC-CFD Flag
+  0 !Explosive building damage flag (1 = on)
+  0 !Building Array Flag (1 = on) -->
+</simulationParameters>
