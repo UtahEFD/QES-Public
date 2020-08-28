@@ -37,15 +37,6 @@ will need to remember the path to the cuda install directory.
 
 ## Building the Code
 
-The most active development occurs in the *workingBranch*. We suggest you use that branch at this time.  You can checkout this branch with the following git command:
-
-```
-git checkout workingBranch
-```
-
-If you are unsure about which branch you are on, the ``` git status ``` command can provide you with this information.
-
-
 ### Building on general Linux system
 
 We separate the build 
@@ -61,6 +52,17 @@ You can then build the source:
 make
 ```
 
+### Running on general Linux system
+
+After the code is built, you can run the code as:
+```
+./qesWinds/qesWinds -q ../data/InputFiles/GaussianHill.xml -s 2 -w -z -o gaussianHill
+-q: specifying address to the input xml file
+-s: solver type (1: CPU or Serial, 2: Dynamic Parallel, 3: Global Memory and 4: Shared memory)
+-w: output face-centered (calculated) velocity field and other information
+-z: output cell_centered (averaged) velocity field
+-o: define name and location of the output file
+```
 
 ## Instructions for CHPC Cluster
 
@@ -174,11 +176,5 @@ After the build is configured the Doxygen documentation can be built. The output
 make windsdoc
 ```
 
-
-### Continuous Integration
-
-We were running continuous integration on Travis-CI but this is no longer functional...
-
-[Basic Concepts for Travis Continuous Integration](https://docs.travis-ci.com/user/for-beginners/)
 
 
