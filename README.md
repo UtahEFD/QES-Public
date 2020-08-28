@@ -60,7 +60,7 @@ After the code is built, you can run the code as:
 -q: specifying address to the input xml file
 -s: solver type (1: CPU or Serial, 2: Dynamic Parallel, 3: Global Memory and 4: Shared memory)
 -w: output face-centered (calculated) velocity field and other information
--z: output cell_centered (averaged) velocity field
+-z: output cell-centered (averaged) velocity field for visualization purposes
 -o: define name and location of the output file
 ```
 
