@@ -370,12 +370,16 @@ WRFInput::WRFInput(const std::string& filename,
 
     if (m_processOnlySensorData == false) {
 
+        std::cout << "Reading fire mesh data..." << std::endl;
+
         // 
         // Fire Mesh Terrain Nodes
         //
         // int fm_nt = wrfInputFile.getVar("FXLONG").getDim(0).getSize();
         fm_ny = wrfInputFile.getVar("FXLONG").getDim(1).getSize();
         fm_nx = wrfInputFile.getVar("FXLONG").getDim(2).getSize();
+
+        std::cout << "Fire mesh dimensions are " << fm_ny << " by " << fm_ny << std::endl;
 
         std::vector<size_t> startIdx = {0,0,0,0};
         std::vector<size_t> counts = {1,
@@ -387,14 +391,22 @@ WRFInput::WRFInput(const std::string& filename,
         wrfInputFile.getVar("FXLONG").getVar(startIdx, counts, fxlong.data());
         wrfInputFile.getVar("FXLAT").getVar(startIdx, counts, fxlat.data());
     
+        std::cout << "Reading data for FWH and FZ0..." << std::endl;
+
+        std::vector<double> fwh( fm_nx * fm_ny );
+        std::vector<double> fz0( fm_nx * fm_ny );
+        wrfInputFile.getVar("FWH").getVar(startIdx, counts, fwh.data());
+        wrfInputFile.getVar("FZ0").getVar(startIdx, counts, fz0.data());    
+
+        std::cout << "Reading data for ZSF..." << std::endl;        
+
         fmHeight.resize( fm_nx * fm_ny );
         wrfInputFile.getVar("ZSF").getVar(startIdx, counts, fmHeight.data());
 
         // This is not used in most WRF runs, as outlined by Adam K.
         // fmZ0.resize( fm_nx * fm_ny );
-        // wrfInputFile.getVar("FZ0").getVar(startIdx, counts, fmZ0.data());
-        // for (int i=0; i<fm_nx*fm_ny; i++) {
-        // std::cout << "fmZ0 = " << fmZ0[i] <<std::endl;
+        //for (int i=0; i<fm_nx*fm_ny; i++) {
+        //std::cout << "fmZ0 = " << fmZ0[i] <<std::endl;
         // }
     
         // From Jan and students
@@ -425,6 +437,9 @@ WRFInput::WRFInput(const std::string& filename,
 
                 if (fmHeight[l_idx] > fm_maxWRFAlt) fm_maxWRFAlt = fmHeight[l_idx];
                 if (fmHeight[l_idx] < fm_minWRFAlt) fm_minWRFAlt = fmHeight[l_idx];
+
+                // std::cout << "FWH( " << i << ", " << j << ") = " << fwh[l_idx] << std::endl;
+                // std::cout << "\tfz0 = " << fz0[l_idx] <<std::endl;
             }
         }
 
@@ -460,6 +475,8 @@ WRFInput::WRFInput(const std::string& filename,
             
                 int l_idx = i + j*fm_nx;
                 abyRaster[ l_idx ] = fmHeight[l_idx];
+                std::cout << "height = " << fmHeight[ l_idx ] << std::endl;
+                
             }
         }
         std::cout << "Done." << std::endl;
@@ -1127,10 +1144,9 @@ void WRFInput::readDomainInfo()
 
     std::vector<double> fxlong( fm_nx * fm_ny );
     std::vector<double> fxlat( fm_nx * fm_ny );
-        
     wrfInputFile.getVar("FXLONG").getVar(startIdx, counts, fxlong.data());
     wrfInputFile.getVar("FXLAT").getVar(startIdx, counts, fxlat.data());
-    
+
     // then pull the height at the nodes
     std::vector<double> fmHeight( fm_nx * fm_ny );
 

@@ -64,6 +64,9 @@ public:
              bool sensorsOnly=false);
     ~WRFInput();
 
+    // Ouput a wind field from QES to the WRF file:
+    // outputWindField
+
     // If set to true, ONLY the sensor data will be pulled from WRF
     // Atmos Mesh.
     bool m_processOnlySensorData;
