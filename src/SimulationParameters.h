@@ -198,7 +198,6 @@ public:
             // DTE_heightfield
             std::cout << "Constructing DTE from WRF Input" << std::endl;
 
-
             DTE_heightField = new DTEHeightField(wrfInputData->fmHeight,
                                                  wrfInputData->fm_nx,
                                                  wrfInputData->fm_ny,
