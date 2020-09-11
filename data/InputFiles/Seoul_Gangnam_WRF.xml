@@ -1,8 +1,17 @@
 <simulationParameters>
-  <DEM>../scratch/Gangnam/w001001.adf</DEM>				<!-- Address to DEM location-->
-  <!--SHP>../scratch/Gangnam/building.shp</SHP-->			<!-- Address to shapefile location-->
+  <DEM>/scratch/Gangnam/w001001.adf</DEM>					<!-- Address to DEM location-->
+  <WRF>/scratch/Gangnam/Seoul_wrfout_d03_2018-08-01_00_00_00</WRF>
+  <!--SHP>../scratch/Gangnam/building.shp</SHP-->				<!-- Address to shapefile location-->
   <!--SHPBuildingLayer>building</SHPBuildingLayer-->
-  <!--heightFactor> 3.0 </heightFactor-->				<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
+  <!--heightFactor> 3.0 </heightFactor-->					<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
+
+  <!-- This is approximate lower-left coordinate of the Gangnam DEM -->
+  <!-- Need to make sure the WRF Sensors are placed appropriately -->
+  <UTMx> 325478 </UTMx> 		<!-- x component (m) in UTM -->
+  <UTMy> 4152139 </UTMy> 		<!-- y component (m) in UTM -->
+  <UTMZone> 52 </UTMZone> 	<!-- UTM zone that domain located -->
+
+  <!-- <UTMZoneLetter> 17 </UTMZoneLetter> -->
 
   <halo_x> 40.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   <halo_y> 40.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
@@ -100,42 +109,43 @@
 	<wakeFlag> 2 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled) -->
 	<sidewallFlag> 1 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
 	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
-	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria (default = 1e-9) -->
+	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
 	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (origional QUIC) (default), 1-Cut-cell method -->
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
-	<UTMx> 0 </UTMx> 						<!-- x component (m) in UTM -->
-	<UTMy> 0 </UTMy> 						<!-- y component (m) in UTM -->
-	<UTMZone> 1 </UTMZone> 						<!-- UTM zone that domain located -->
 	<UTMZoneLetter> 17 </UTMZoneLetter>
+	<readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->
+	<!--COEFF>test_windsWk.nc</COEFF-->					<!-- Address to coefficients file location --> 
 </simulationParameters>                     				<!-- End of simulation parameters -->
 <metParams>
 	<z0_domain_flag> 0 </z0_domain_flag>           			<!-- Distribution of sueface roughness for domain (0-uniform (default), 1-custom -->
-  <sensor>
-    <site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
-    <site_xcoord> 1.0  </site_xcoord> 					<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
-    <site_ycoord> 1.0 </site_ycoord> 					<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
-    <site_UTM_x> 2.0 </site_UTM_x> 					<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
-    <site_UTM_y> 2.0 </site_UTM_y> 					<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
-    <site_UTM_zone> 0 </site_UTM_zone> 					<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->
+	<!--sensorName>../data/QU_Files/sensor.xml</sensorName-->	<!-- Name of the sensor file with information for the sensor included -->
 
-    <boundaryLayerFlag> 1 </boundaryLayerFlag> 				<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-    <siteZ0> 0.1 </siteZ0> 						<!-- Site z0 -->
-    <reciprocal> 0.0 </reciprocal> 					<!-- Reciprocal Monin-Obukhov Length (1/m) -->
-    <height> 10.0 </height> 						<!-- Height of the sensor -->
-    <speed> 5.0 </speed> 						<!-- Measured speed at the sensor height -->
-    <direction> 270.0 </direction> 					<!-- Wind direction of sensor -->
-  </sensor>                       					<!-- End of sensor section -->
+	<sensor>
+    	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
+            <site_xcoord> 1.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+            <site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
+            <site_UTM_x> 2.0 </site_UTM_x> 				<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
+            <site_UTM_y> 2.0 </site_UTM_y> 				<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
+            <site_UTM_zone> 0 </site_UTM_zone> 				<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->
+
+    	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<height> 10.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 5.0 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 270.0 </direction> 				<!-- Wind direction of sensor -->
+    	    </timeSeries>
+	</sensor>                       				<!-- End of sensor section -->
 
 </metParams>								<!-- End of meteorological parameters -->
-
-<localMixingParam>
-  <method>0</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
-  <LMfile>../scratch/Gangnam/mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
-</localMixingParam>
 <fileOptions>
   <outputFlag>1</outputFlag>
-  <outputFields>all</outputFields> 
-  <outputFields>v</outputFields> 
+  <outputFields>u</outputFields>
+  <outputFields>v</outputFields>
   <outputFields>w</outputFields>
-  <outputFields>icell</outputFields> 
+  <outputFields>icell</outputFields>
+  <massConservedFlag> 0 </massConservedFlag>
+  <sensorVelocityFlag> 0 </sensorVelocityFlag>
+  <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>

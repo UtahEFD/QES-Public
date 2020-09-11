@@ -10,14 +10,14 @@
 
 /*
   This class handles saving output files.
-  
+
   Attribute are create based and the type of the data
   -> attribute are store in map_att_*
-  -> all possible attribute available for the derived class should be 
-  created by its constructor. 
-  -> attribute are pushed back to output_* based on what is selected 
-  by output_fields 
-  -> the methods allows to by type generic (as long as the data is 
+  -> all possible attribute available for the derived class should be
+  created by its constructor.
+  -> attribute are pushed back to output_* based on what is selected
+  by output_fields
+  -> the methods allows to by type generic (as long as the data is
   either int,float or double
 */
 
@@ -78,12 +78,12 @@ public:
     QESNetCDFOutput(std::string);
     virtual ~QESNetCDFOutput()
     {}
-  
-    //save function be call outside 
+
+    //save function be call outside
     virtual void save(float) = 0;
 
 protected:
-  
+
     // create attribute scalar based on type of data
     void createAttScalar(std::string,std::string,std::string,
                          std::vector<NcDim>,int*);
@@ -91,7 +91,7 @@ protected:
                          std::vector<NcDim>,float*);
     void createAttScalar(std::string,std::string,std::string,
                          std::vector<NcDim>,double*);
-  
+
     // create attribute vector based on type of data
     void createAttVector(std::string,std::string,std::string,
                          std::vector<NcDim>,std::vector<int>*);
@@ -105,25 +105,25 @@ protected:
     // removed field
     void rmOutputField(std::string);
     void rmTimeIndepFields();
-    // save fields 
+    // save fields
     void saveOutputFields();
 
-    virtual bool validateFileOtions() 
+    virtual bool validateFileOtions()
     {
         return true;
     };
-  
+
     int output_counter=0;
     double time=0;
 
     /* vector containing fields to add to the NetCDF file
        Note: this vector is used ONLY for creating fields
-       (i.e. by the constuctor &add function) NOT to save 
+       (i.e. by the constuctor &add function) NOT to save
        them (i.e. by the function save)
     */
     std::vector<std::string> output_fields;
 
-    /* output fields in the NetCDF file for scalar/vector 
+    /* output fields in the NetCDF file for scalar/vector
        for each type.
        Note: this is used ONLY to create and link fields.
     */
@@ -135,7 +135,7 @@ protected:
     std::map<std::string,AttVectorDbl> map_att_vector_dbl;
 
     /* vectors of output fields in the NetCDF file for
-       scalar/vector for each type. 
+       scalar/vector for each type.
        Note: this is used to save the fields, ONLY the
        fields in these 6 vectors will be saved
     */
@@ -147,4 +147,3 @@ protected:
     std::vector<AttVectorDbl> output_vector_dbl;
 
 };
-

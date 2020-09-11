@@ -1,5 +1,5 @@
-/** \file "WRFInput.cpp" input data header file. 
-    \author Pete Willemsen, Matthieu 
+/** \file "WRFInput.cpp" input data header file.
+    \author Pete Willemsen, Matthieu
 
     Copyright (C) 2019 Pete Willemsen
 
@@ -42,10 +42,10 @@ void UTMConv(double &rlon, double &rlat, double &rx, double &ry, int &UTM_PROJEC
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation; either version 2 of the License, or
-  (at your option) aUGD->ny later version.
+  (at your option) any later version.
 
   This program is distributed in the hope that it will be useful,
-  but WITHOUT AUGD->ny WARRANTY; without even the implied warranty of
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
@@ -76,7 +76,7 @@ a list of UTM zones of the world is available at www.dmap.co.uk/utmworld.htm
       This is a Fortran version of the BASIC program "Transverse Mercator
       Conversion", Copyright 1986, Norman J. Berls (Stefan Musarra, 2/94)
       Based on algorithm taken from "Map Projections Used by the USGS"
-      by John P. SUGD->nyder, Geological Survey Bulletin 1532, USDI.
+      by John P. Snyder, Geological Survey Bulletin 1532, USDI.
 
       Input/Output arguments:
 
@@ -348,24 +348,24 @@ WRFInput::WRFInput(const std::string& filename,
     gblAttIter = globalAttributes.find("SOUTH-NORTH_GRID_DIMENSION");
     gblAttIter->second.getValues( yDim+1 );
     yDim[1] -= 1;
-    
+
     // Compute nx and ny from the Atmospheric Mesh of WRF
     atm_nx = xDim[1] - xDim[0] + 1;
     atm_ny = yDim[1] - yDim[0] + 1;
 
     std::cout << "WRF Atmos Domain is " << atm_nx << " X " << atm_ny << " cells." << std::endl;
-    
+
     // Pull DX and DY
     double cellSize[2] = {1, 1};
     gblAttIter = globalAttributes.find("DX");
     gblAttIter->second.getValues( cellSize );
-    
+
     gblAttIter = globalAttributes.find("DY");
     gblAttIter->second.getValues( cellSize+1 );
 
     atm_dx = cellSize[0];
     atm_dy = cellSize[1];
-    
+
     std::cout << "WRF Atmos Resolution (dx,dy) is ("<< atm_dx << ", " << atm_dy << ")" << std::endl;
 
     if (m_processOnlySensorData == false) {
@@ -458,7 +458,6 @@ WRFInput::WRFInput(const std::string& filename,
         std::cout << "(Lat,Long) at [nx-1][0] = " << fxlat[fm_nx-1] << ", " << fxlong[fm_nx-1] << std::endl;
         std::cout << "(Lat,Long) at [0][ny-1] = " << fxlat[(fm_ny-1)*fm_nx] << ", " << fxlong[(fm_ny-1)*fm_nx] << std::endl;
         std::cout << "(Lat,Long) at [nx-1][ny-1] = " << fxlat[fm_nx-1 + (fm_ny-1)*fm_nx] << ", " << fxlong[fm_nx-1 + (fm_ny-1)*fm_nx] << std::endl;
-
         
         UTMConv(fxlong[0], fxlat[0], domainUTMx, domainUTMy, UTMZone, 0);
 
@@ -551,7 +550,6 @@ WRFInput::WRFInput(const std::string& filename,
         std::string projString = "+proj=latlong +datum=WGS84";
         latLongProj.importFromProj4( projString.c_str() );
     
-
         // # geotransform
         // e,n = pyproj.transform(ll_proj,wrf_proj,clon,clat)
         // dx_atm = d.DX
@@ -562,7 +560,7 @@ WRFInput::WRFInput(const std::string& filename,
         // y1_atm = ny_atm / 2. * dy_atm + n
         // geotransform_atm = (x0_atm,dx_atm,0,y1_atm,0,-dy_atm)
 
-//    OGRCoordinateTransformation *wrfCoordXform = OGRCreateCoordinateTransformation(&ll_proj, &wrfSpatialRef);    
+//    OGRCoordinateTransformation *wrfCoordXform = OGRCreateCoordinateTransformation(&ll_proj, &wrfSpatialRef);
 //    std::cout << "clon, clat = " << clon << ", " << clat << std::endl;
 //    wrfCoordXform->Transform(1, &clon, &clat);
 //    std::cout << "Transformed: clon, clat = " << clon << ", " << clat << std::endl;
@@ -646,7 +644,7 @@ WRFInput::WRFInput(const std::string& filename,
         // ny_atm / 2. * atm_dy + n 
         // double y1_fire = t_y1_fire; // -fm_ny / 2.0 * dyf + lat2northings[0];
     }
-    
+
     //
     // remainder of code is for pulling out wind profiles
     //
@@ -656,7 +654,7 @@ WRFInput::WRFInput(const std::string& filename,
     atm_nz = 1;
     gblAttIter = globalAttributes.find("BOTTOM-TOP_GRID_DIMENSION");
     gblAttIter->second.getValues( &atm_nz );
-    
+
     std::cout << "Atmos NZ = " << atm_nz << std::endl;
     std::cout << "Atmos NY = " << atm_ny << std::endl;
     std::cout << "Atmos NX = " << atm_nx << std::endl;
@@ -674,14 +672,14 @@ WRFInput::WRFInput(const std::string& filename,
     // Note
     // This code does not implement the new domain borders option that
     // Matthieu put in the Matlab code
-    // 
+    //
 
     // Wind data vertical positions, stored in PHB and PH
-    // 
-    // For example, 360 time series, 41 vertical, 114 x 114 
+    //
+    // For example, 360 time series, 41 vertical, 114 x 114
     // SUBDATASET_12_DESC=[360x41x114x114] PH (32-bit floating-point)
     // SUBDATASET_13_NAME=NETCDF:"/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21":PHB
-    // 
+    //
     // SUBDATASET_13_DESC=[360x41x114x114] PHB (32-bit floating-point)
     // SUBDATASET_14_NAME=NETCDF:"/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21":T
     //
@@ -704,7 +702,7 @@ WRFInput::WRFInput(const std::string& filename,
     //
     std::vector<double> heightData( 2 * atm_nz * atm_ny * atm_nx );
     for (int t=0; t<2; t++) {
-        for (int k=0; k<atm_nz; k++) { 
+        for (int k=0; k<atm_nz; k++) {
             for (int j=0; j<atm_ny; j++) {
                 for (int i=0; i<atm_nx; i++) {
                     int l_idx = t*(atm_nz*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + j*atm_nx + i;
@@ -727,41 +725,41 @@ WRFInput::WRFInput(const std::string& filename,
     atmCounts[3] = atm_nx + 1;
     std::vector<double> UStaggered( 2 * (atm_nz-1) * atm_ny * (atm_nx+1) );
     wrfInputFile.getVar("U").getVar(atmStartIdx, atmCounts, UStaggered.data());
-    
+
     atmCounts[2] = atm_ny + 1;
     atmCounts[3] = atm_nx;
     std::vector<double> VStaggered( 2 * (atm_nz-1) * (atm_ny+1) * atm_nx );
     wrfInputFile.getVar("V").getVar(atmStartIdx, atmCounts, VStaggered.data());
     atmCounts[2] = atm_ny;  // reset to atm_ny
-    
+
     // But then, U and V are on standard nx and ny atmos mesh, cell
     // centered space
     std::vector<double> U( 2 * (atm_nz-1) * atm_ny * atm_nx );
     std::vector<double> V( 2 * (atm_nz-1) * atm_ny * atm_nx );
     for (int t=0; t<2; t++) {
-        for (int k=0; k<(atm_nz-1); k++) { 
+        for (int k=0; k<(atm_nz-1); k++) {
             for (int j=0; j<atm_ny; j++) {
                 for (int i=0; i<atm_nx; i++) {
-                    
+
                     int l_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + j*atm_nx + i;
 
                     int l_xp1_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + j*atm_nx + i+1;
                     int l_yp1_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + (j+1)*atm_nx + i;
-                    
+
                     U[l_idx] = 0.5 * (UStaggered[l_idx] + UStaggered[l_xp1_idx]);
                     V[l_idx] = 0.5 * (VStaggered[l_idx] + VStaggered[l_yp1_idx]);
                 }
             }
         }
     }
-    
+
 
     std::cout << "Staggered wind input complete." << std::endl;
 
     // Calculate CoordZ
     std::vector<double> coordZ( 2 * (atm_nz-1) * atm_ny * atm_nx );
     for (int t=0; t<2; t++) {
-        for (int k=0; k<(atm_nz-1); k++) { 
+        for (int k=0; k<(atm_nz-1); k++) {
             for (int j=0; j<atm_ny; j++) {
                 for (int i=0; i<atm_nx; i++) {
                     int l_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + j*atm_nx + i;
@@ -771,7 +769,7 @@ WRFInput::WRFInput(const std::string& filename,
             }
         }
     }
-    
+
 
 
     //
@@ -779,7 +777,7 @@ WRFInput::WRFInput(const std::string& filename,
     //
     std::vector<double> wsData( 2 * (atm_nz-1) * atm_ny * atm_nx );
     for (int t=0; t<2; t++) {
-        for (int k=0; k<(atm_nz-1); k++) { 
+        for (int k=0; k<(atm_nz-1); k++) {
             for (int j=0; j<atm_ny; j++) {
                 for (int i=0; i<atm_nx; i++) {
                     int l_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + j*atm_nx + i;
@@ -797,7 +795,7 @@ WRFInput::WRFInput(const std::string& filename,
     //
     std::vector<double> wdData( 2 * (atm_nz-1) * atm_ny * atm_nx );
     for (int t=0; t<2; t++) {
-        for (int k=0; k<(atm_nz-1); k++) { 
+        for (int k=0; k<(atm_nz-1); k++) {
             for (int j=0; j<atm_ny; j++) {
                 for (int i=0; i<atm_nx; i++) {
                     int l_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + j*atm_nx + i;
@@ -818,7 +816,7 @@ WRFInput::WRFInput(const std::string& filename,
    // read LU -- depends on if reading the restart or the output file
     // roughness length...
     // LU = ncread(WRFFile,'LU_INDEX');
-    // SimData.LU = LU(SimData.XSTART:SimData.XEND, SimData.YSTART:SimData.YEND,1)'; 
+    // SimData.LU = LU(SimData.XSTART:SimData.XEND, SimData.YSTART:SimData.YEND,1)';
     std::vector<size_t> atmStartIdx_2D = {0,0,0};
     std::vector<size_t> atmCounts_2D = {1,
                                         static_cast<unsigned long>(atm_ny),
@@ -826,7 +824,7 @@ WRFInput::WRFInput(const std::string& filename,
 
     std::vector<float> luData( atm_ny * atm_nx );
     wrfInputFile.getVar("LU_INDEX").getVar(atmStartIdx_2D, atmCounts_2D, luData.data());
-    
+
     // Computes a roughness length array covering each point of the grid
     // % In case 1 INPUT file must be WRF RESTART file
     // % In case 2 INPUT file must be WRF OUTPUT
@@ -841,7 +839,7 @@ WRFInput::WRFInput(const std::string& filename,
         for (int j=0; j<atm_ny; j++) {
             for (int i=0; i<atm_nx; i++) {
                 int l_idx = j*atm_nx + i;
-                
+
                 z0Data[ l_idx ] = lookupLandUse( luData[l_idx] );
             }
         }
@@ -849,17 +847,15 @@ WRFInput::WRFInput(const std::string& filename,
     }
     else if (m_Z0Flag == 3) {
         // supposed to be some other data source
-        std::fill(z0Data.begin(), z0Data.end(), 0.1); 
+        std::fill(z0Data.begin(), z0Data.end(), 0.1);
     }
     else {
         std::cerr << "Unknown Z0Flag..." << std::endl;
         assert(m_Z0Flag > 0 && m_Z0Flag < 4);
     }
-    
+
 
     // ////////////////////////
-    
-
     // sampling strategy
     int stepSize = sensorSample;
 
@@ -881,10 +877,10 @@ WRFInput::WRFInput(const std::string& filename,
     //
 
     std::cout << std::setprecision(9) << "UTM(LL): " << domainUTMx << ", " << domainUTMy << std::endl;
-    
+
     double domainUTMx_UR = domainUTMx + dimX;
     double domainUTMy_UR = domainUTMy + dimY;
-    
+
     std::cout << std::setprecision(9) << "UTM(UR): " << domainUTMx_UR << ", " << domainUTMy_UR << std::endl;
 
     double c_lat_ll, c_long_ll;
@@ -895,22 +891,22 @@ WRFInput::WRFInput(const std::string& filename,
 
     std::cout << std::setprecision(9) << "LL: " << c_lat_ll << ", " << c_long_ll << std::endl;
     std::cout << std::setprecision(9) << "UR: " << c_lat_ur << ", " << c_long_ur << std::endl;
-            
+
     for (int yIdx=0; yIdx<atm_ny; yIdx+=stepSize) {
         for (int xIdx=0; xIdx<atm_nx; xIdx+=stepSize) {
 
             // StatData.CoordX(Stat) = x;
             // StatData.CoordY(Stat) = y;
             stationData sd;
-            
+
             // std::cout << "xIdx = " << xIdx << ", yIdx = " << yIdx << std::endl;
 
             int atm_idx = (yIdx * atm_nx) + xIdx;
             // std::cout << std::setprecision(9)
-            // << "Lat: " << atm_xlat[ atm_idx ] 
+            // << "Lat: " << atm_xlat[ atm_idx ]
             // << ", Long: " << atm_xlong[ atm_idx ]
             // << std::endl;
-            
+
             if (((atm_xlong[ atm_idx ] < c_long_ur) &&
                  (atm_xlong[ atm_idx ] > c_long_ll)) &&
 
@@ -930,7 +926,7 @@ WRFInput::WRFInput(const std::string& filename,
                 int newZone = (int)floor((atm_xlong[atm_idx] + 180) / 6) + 1;
                 // std::cout << "\t zone = " << newZone << std::endl;
                 double latStat = atm_xlat[ atm_idx ];
-                double longStat = atm_xlong[ atm_idx ];                
+                double longStat = atm_xlong[ atm_idx ];
                 UTMConv( longStat, latStat, utmStatX, utmStatY, newZone, 0);
                 std::cout << "Stat Lat/Long: " << latStat << ", " << longStat << " and UTM " << utmStatX << ", " << utmStatY << ", Zone: " << newZone << std::endl;
 
@@ -939,19 +935,20 @@ WRFInput::WRFInput(const std::string& filename,
 
                 std::cout << "\tAdding SD: " << sd.xCoord << ", " << sd.yCoord << std::endl;
 
-                // Pull Z0 
+                // Pull Z0
                 sd.z0 = z0Data[ yIdx * atm_nx + xIdx ];
 
                 sd.profiles.resize(2);  // 2 time series
 
                 for (int t=0; t<2; t++) {
-                
+
                     // At this X, Y, look through all heights and
                     // accumulate the heights that exist between our min
                     // and max
                     for (int k=0; k<(atm_nz-1); k++) {
 
                         int l_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + yIdx*atm_nx + xIdx;
+
 
 			if (coordZ[l_idx] <= fm_nz) {
 			  // if (coordZ[l_idx] >= minWRFAlt && coordZ[l_idx] <= maxWRFAlt) {
@@ -969,12 +966,12 @@ WRFInput::WRFInput(const std::string& filename,
 			}
                     }
                 }
-            
+
                 statData.push_back( sd );
             }
-            
+
         }
-        
+
     }
 
 }
@@ -1002,8 +999,8 @@ void WRFInput::readDomainInfo()
     // information similar to that in the HGT variable present in
     // atmospheric simulations;
 
-    // FXLONG, FXLAT, ZSF ‐ coordinates of fire mesh nodes 
-    // FUEL_TIME, BBB, BETAFL, PHIWC, R_0, FGIP, ISCHAP – fuel coefficients 
+    // FXLONG, FXLAT, ZSF ‐ coordinates of fire mesh nodes
+    // FUEL_TIME, BBB, BETAFL, PHIWC, R_0, FGIP, ISCHAP – fuel coefficients
 
     // Need to convert the terrain elevation directly into a Mesh that
     // can be used by code.
@@ -1013,7 +1010,7 @@ void WRFInput::readDomainInfo()
     // FWH
 
     // FZ0
-    
+
 
     // Possibility to crop domain borders by
     // adding a varargin (expected format: [Xstart,Xend;YStart,Yend]).
@@ -1021,7 +1018,7 @@ void WRFInput::readDomainInfo()
     // = (ny,nx).
 
     //SimData.Clock = ncread(WRFFile,'Times'); % Time in vector format
-                                                
+
     // Read the WRF NetCDF file as read-only (default option in the
     // following call).
     //    try
@@ -1036,10 +1033,10 @@ void WRFInput::readDomainInfo()
     if (simDataClock.isNull()) return;
 
     // external = infile->getDim(name);
-    // 
+    //
     // input->getDimensionSize("x",grid.nx);
     // input->getDimensionSize("y",grid.ny);
-    // 
+    //
     // input->getVariableData("u",start,count,wind.u);
 
     std::cout << "Number of attributes: " << wrfInputFile.getAttCount() << std::endl;
@@ -1049,7 +1046,7 @@ void WRFInput::readDomainInfo()
     // for (auto i=globalAttributes.cbegin(); i!=globalAttributes.cend(); i++) {
     // std::cout << "Attribute Name: " << i->first << std::endl;
     // }
-        
+
     auto gblAttIter = globalAttributes.find("WEST-EAST_GRID_DIMENSION");
     xDim[0] = 1;
 
@@ -1063,50 +1060,50 @@ void WRFInput::readDomainInfo()
     yDim[0] = 1;
     gblAttIter->second.getValues( yDim+1 );
     yDim[1] -= 1;
-    
+
     // Compute nx and ny
     nx = xDim[1] - xDim[0] + 1;
     ny = yDim[1] - yDim[0] + 1;
 
     std::cout << "Domain is " << nx << " X " << ny << " cells." << std::endl;
-    
+
     // Pull out DX and DY
     double cellSize[2];
     gblAttIter = globalAttributes.find("DX");
     gblAttIter->second.getValues( cellSize );
-    
+
     gblAttIter = globalAttributes.find("DY");
     gblAttIter->second.getValues( cellSize+1 );
-    
+
     m_dx = cellSize[0];
     m_dy = cellSize[1];
     std::cout << "Resolution (dx,dy) is ("<< m_dx << ", " << m_dy << ")" << std::endl;
 
-           
+
 // % If new domain borders are defined
-// if nargin == 3 
-        
+// if nargin == 3
+
 //    NewDomainCorners = varargin{1};
-    
-//    XSTART_New = NewDomainCorners(1,1); XEND_New = NewDomainCorners(1,2); 
+
+//    XSTART_New = NewDomainCorners(1,1); XEND_New = NewDomainCorners(1,2);
 //    YSTART_New = NewDomainCorners(2,1); YEND_New = NewDomainCorners(2,2);
-    
+
 //    SimData.nx = XEND_New - XSTART_New +1;
-//    SimData.ny = YEND_New - YSTART_New +1; 
-    
+//    SimData.ny = YEND_New - YSTART_New +1;
+
 //    SimData.OLD_XSTART = SimData.XSTART; SimData.OLD_XEND = SimData.XEND;
 //    SimData.OLD_YSTART = SimData.YSTART; SimData.OLD_YEND = SimData.YEND;
-        
+
 //    SimData.XSTART = XSTART_New; SimData.XEND = XEND_New;
 //    SimData.YSTART = YSTART_New; SimData.YEND = YEND_New;
-      
+
 // end
 
 
 // Relief = ncread(WRFFile,'HGT');
-// SimData.Relief = Relief(SimData.XSTART:SimData.XEND,SimData.YSTART:SimData.YEND,1)'; 
+// SimData.Relief = Relief(SimData.XSTART:SimData.XEND,SimData.YSTART:SimData.YEND,1)';
 
-    // 
+    //
     // Fire Mesh Terrain Nodes
     //
 
@@ -1144,6 +1141,7 @@ void WRFInput::readDomainInfo()
 
     std::vector<double> fxlong( fm_nx * fm_ny );
     std::vector<double> fxlat( fm_nx * fm_ny );
+
     wrfInputFile.getVar("FXLONG").getVar(startIdx, counts, fxlong.data());
     wrfInputFile.getVar("FXLAT").getVar(startIdx, counts, fxlat.data());
 
@@ -1167,17 +1165,17 @@ void WRFInput::readDomainInfo()
     std::cout << "sr_x, sr_y = (" << sr_x << ", " << sr_y << ")" << std::endl;
 
     float dxf = m_dx / sr_x;
-    float dyf = m_dy / sr_y;    
+    float dyf = m_dy / sr_y;
     // Then dxf=DX/sr_x, dyf=DY/sr_y
 
     std::cout << "Fire Mesh (dxf, dyf) = (" << dxf << ", " << dyf << ")" << std::endl;
-    
+
     double minHt = std::numeric_limits<double>::max(),
         maxHt = std::numeric_limits<double>::min();
-    
+
     for (int i=0; i<fm_nx; i++) {
         for (int j=0; j<fm_ny; j++) {
-            
+
             int l_idx = i + j*fm_nx;
 
             if (fmHeight[l_idx] > maxHt) maxHt = fmHeight[l_idx];
@@ -1189,20 +1187,20 @@ void WRFInput::readDomainInfo()
     std::cout << "Min Ht: " << minHt << ", Max Ht: " << maxHt << std::endl;
 
     int UTMZone = (int)floor((fxlong[0] + 180) / 6) + 1;
-    
+
     std::cout << "UTM Zone: " << UTMZone << std::endl;
     std::cout << "(Lat,Long) at [0][0] = " << fxlat[0] << ", " << fxlong[0] << std::endl;   // 524972.33, 3376924.26
     std::cout << "(Lat,Long) at [nx-1][0] = " << fxlat[fm_nx-1] << ", " << fxlong[nx-1] << std::endl;
     std::cout << "(Lat,Long) at [0][ny-1] = " << fxlat[(fm_ny-1)*fm_nx] << ", " << fxlong[(fm_ny-1)*fm_nx] << std::endl;
     std::cout << "(Lat,Long) at [nx-1][ny-1] = " << fxlat[fm_nx-1 + (fm_ny-1)*fm_nx] << ", " << fxlong[fm_nx-1 + (fm_ny-1)*fm_nx] << std::endl;
 
-    // [0] is lower left, [1] is pixel width, [2] is , [3] is 
+    // [0] is lower left, [1] is pixel width, [2] is , [3] is
     double adfGeoTransform[6] = {  524972.33, dxf, 0, 3376924.26, 0, -dyf };
 
     // is it possible to create a GDAL DS from this info?
     // write out GDAL file of fire mesh here as first pass.
 
-   GDALAllRegister(); 
+   GDALAllRegister();
 
     const char *pszFormat = "GTiff";
     GDALDriver *poDriver;
@@ -1212,7 +1210,7 @@ void WRFInput::readDomainInfo()
         std::cerr << "No GTiff driver." << std::endl;
         exit( 1 );
     }
-    
+
     papszMetadata = poDriver->GetMetadata();
 //    if( CSLFetchBoolean( papszMetadata, GDAL_DCAP_CREATE, FALSE ) )
 //        printf( "Driver %s supports Create() method.\n", pszFormat );
@@ -1222,7 +1220,7 @@ void WRFInput::readDomainInfo()
     GDALDataset *poDstDS;
     char **papszOptions = NULL;
 
-    // 
+    //
     poDstDS = poDriver->Create( "WRFOut.tiff", fm_nx, fm_ny, 1, GDT_Byte, papszOptions );
 
 
@@ -1235,7 +1233,7 @@ void WRFInput::readDomainInfo()
     std::cout << "setting hts" << std::endl;
     for (int i=0; i<fm_nx; i++) {
         for (int j=0; j<fm_ny; j++) {
-            
+
             int l_idx = i + j*fm_nx;
             // std::cout << "Setting ht: " << ((fmHeight[l_idx]-minHt)/rangeHt) * 255 << std::endl;
             abyRaster[ l_idx ] = ((fmHeight[l_idx];
@@ -1243,7 +1241,7 @@ void WRFInput::readDomainInfo()
     }
     std::cout << "Done." << std::endl;
 
-    
+
     poDstDS->SetGeoTransform( adfGeoTransform );
 
 
@@ -1255,12 +1253,12 @@ void WRFInput::readDomainInfo()
       // oSRS.SetLCC(double dfStdP1, double dfStdP2, double dfCenterLat, double dfCenterLong, double dfFalseEasting, double dfFalseNorthing)
 
     oSRS.SetLCC(30.0, 34.0, 30.533249, -86.730408, 0.0, 0.0);
-    
+
     oSRS.SetUTM( UTMZone, TRUE );
     oSRS.SetWellKnownGeogCS( "WGS84" );
     oSRS.exportToWkt( &pszSRS_WKT );
     poDstDS->SetProjection( pszSRS_WKT );
-    
+
     CPLFree( pszSRS_WKT );
 
     std::cout << "raster band" << std::endl;
@@ -1268,7 +1266,7 @@ void WRFInput::readDomainInfo()
     poBand = poDstDS->GetRasterBand(1);
     poBand->RasterIO( GF_Write, 0, 0, fm_nx, fm_ny,
                       abyRaster.data(), fm_nx, fm_ny, GDT_Byte, 0, 0 );
-    
+
     /* Once we're done, close properly the dataset */
     GDALClose( (GDALDatasetH) poDstDS );
 
@@ -1306,13 +1304,13 @@ void WRFInput::readDomainInfo()
     // slices but only for the first 2 time series (TIMEVECT)
     double* reliefData = new double[ totalDim ];
     reliefVar.getVar( reliefData );
-    
+
     // whole thing is in... now
     long subsetDim = nx * ny;
     relief = new double[ subsetDim ];
     for (auto l=0; l<subsetDim; l++)
         relief[l] = reliefData[l];
-        
+
     std::cout << "first 10 for relief" << std::endl;
     for (auto l=0; l<10; l++)
         std::cout << relief[l] << std::endl;
@@ -1323,8 +1321,8 @@ void WRFInput::readDomainInfo()
 
     delete [] reliefData;
 
-    // % Wind data    
-    // SimData = WindFunc(SimData); 
+    // % Wind data
+    // SimData = WindFunc(SimData);
     readWindData();
 
     //
@@ -1357,13 +1355,13 @@ void WRFInput::readDomainInfo()
     // slices but only for the first 2 time series (TIMEVECT)
     double* LUIndexData = new double[ totalDim ];
     LUIndexVar.getVar( LUIndexData );
-    
+
     // whole thing is in... now
     subsetDim = nx * ny;
     double* LUIndexSave = new double[ subsetDim ];
     for (auto l=0; l<subsetDim; l++)
         LUIndexSave[l] = LUIndexData[l];
-        
+
     std::cout << "first 10 for LUIndex" << std::endl;
     for (auto l=0; l<10; l++)
         std::cout << LUIndexSave[l] << std::endl;
@@ -1384,7 +1382,7 @@ void WRFInput::readDomainInfo()
     if (nx * ny > m_maxTerrainSize) {
         smoothDomain();
     }
-#endif    
+#endif
 }
 
 
@@ -1397,22 +1395,22 @@ void WRFInput::roughnessLength()
 % In case 3 INPUT variable is a constant value
 
 switch Z0Flag
-    
+
     case 1   %%% WRF RESTART file
-        
+
         Z0 = ncread(SimData.Z0DataSource ,'Z0');
         Z0 = Z0(SimData.XSTART:SimData.XEND, SimData.YSTART:SimData.YEND);
-        
+
     case 2   %%% WRF OUTPUT file
-        
+
         Z0 = zeros(size(SimData.LU,1),size(SimData.LU,2));
-        
+
         for i = 1:size(SimData.LU,1)
-            for j = 1:size(SimData.LU,2) 
-                
-                switch SimData.LU(i,j) 
-                    
-%%%%%%%%%%%%%%%%%%%%%%%%%     USGS LAND COVER     %%%%%%%%%%%%%%%%%%%%%%%%% 
+            for j = 1:size(SimData.LU,2)
+
+                switch SimData.LU(i,j)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%     USGS LAND COVER     %%%%%%%%%%%%%%%%%%%%%%%%%
 
 %                     case 1   %%% Urban and built-up land
 %                         Z0(i,j) = 0.8;
@@ -1510,9 +1508,9 @@ switch Z0Flag
                 end
             end
         end
-        
+
     case 3   %%% User-defined constant
-        
+
         Z0 = repmat(SimData.Z0DataSource, SimData.XEND-SimData.XSTART+1, SimData.YEND-SimData.YSTART+1);
 end
     #endif
@@ -1550,13 +1548,13 @@ void WRFInput::readWindData()
     // ////////////////////
     // Test reading in of this data into an array we can easily deal
     // with
-#if 0 
+#if 0
     // WRF multi-dim format
     int timeDim = dims[0].getSize();
     int zDim = dims[1].getSize();
     int yDim = dims[2].getSize();
     int xDim = dims[3].getSize();
-    
+
     std::cout << "PHB Dims: t=" << timeDim << "< z=" << zDim << ", y=" << yDim << ", x=" << xDim << std::endl;
     double* allPHBData = new double[ timeDim * zDim * yDim * xDim ];
     phbVar.getVar( allPHBData );
@@ -1581,26 +1579,26 @@ void WRFInput::readWindData()
     std::vector< size_t > starts = { 0, 0, 0, 0 };
     std::vector< size_t > counts = { 2, 41, 114, 114 };   // depends on order of dims
     phbVar.getVar( starts, counts, phbData );
-                     
+
     dumpWRFDataArray("PHB Subset", phbData, 2, 41, 114, 114);
 
-    // 
+    //
     // Extraction of the Wind data vertical position
-    // 
+    //
     NcVar phVar = wrfInputFile.getVar("PH");
 
     double* phData = new double[ subsetDim ];
     phVar.getVar( starts, counts, phData );
-    
 
-    // 
+
+    //
     /// Height
-    // 
+    //
     double* heightData = new double[ subsetDim ];
     for (auto l=0; l<subsetDim; l++) {
         heightData[l] = (phbData[l] + phData[l]) / 9.81;
     }
-    
+
     // Extraction of the Ustagg
     // Ustagg = ncread(SimData.WRFFile,'U');
     // Ustagg = Ustagg(SimData.XSTART:SimData.XEND +1, SimData.YSTART:SimData.YEND, :, SimData.TIMEVECT);
@@ -1614,7 +1612,7 @@ void WRFInput::readWindData()
         else
             std::cout << ustagg_dims[i].getSize() << std::endl;
     }
-    
+
     // time, Z, Y, X is order
     starts.clear(); counts.clear();
     starts = { 0, 0, 0, 0 };
@@ -1623,45 +1621,45 @@ void WRFInput::readWindData()
     for (auto i=0u; i<counts.size(); i++)  {
         subsetDim *= (counts[i] - starts[i]);
     }
-    
+
     double* uStaggeredData = new double[ subsetDim ];
     uStaggered.getVar( starts, counts, uStaggeredData );
     dumpWRFDataArray("Ustagg", uStaggeredData, 2, 40, 114, 115);
 
-    // 
+    //
     // Vstagg = ncread(SimData.WRFFile,'V');
     // Vstagg = Vstagg(SimData.XSTART:SimData.XEND, SimData.YSTART:SimData.YEND +1, :, SimData.TIMEVECT);
     //
     NcVar vStaggered = wrfInputFile.getVar("V");
-    
+
     starts.clear();  counts.clear();
     starts = { 0, 0, 0, 0 };
     counts = { 2, 40, 115, 114 };
     subsetDim = 1;
-    for (auto i=0u; i<counts.size(); i++) 
+    for (auto i=0u; i<counts.size(); i++)
         subsetDim *= (counts[i] - starts[i]);
-    
+
     double* vStaggeredData = new double[ subsetDim ];
     vStaggered.getVar( starts, counts, vStaggeredData );
 
-    
-    // 
+
+    //
     // %% Centering values %%
     // SimData.NbAlt = size(Height,3) - 1;
     //
     int nbAlt = 40;  // zDim - 1 but hack for now -- need to be computed
-    
+
     // ///////////////////////////////////
     // U = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
     // for x = 1:SimData.nx
     //   U(x,:,:,:) = .5*(Ustagg(x,:,:,:) + Ustagg(x+1,:,:,:));
     // end
-    // ///////////////////////////////////    
+    // ///////////////////////////////////
 
     // Just make sure we've got the write dims here
     nx = 114;
     ny = 114;
-    
+
     std::vector<double> U( nx * ny * nbAlt * 2, 0.0 );
     for (auto t=0; t<2; t++) {
         for (auto z=0; z<nbAlt; z++) {
@@ -1677,7 +1675,7 @@ void WRFInput::readWindData()
         }
     }
     dumpWRFDataArray("U", U.data(), 2, 40, 114, 114);
-    
+
     // V = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
     // for y = 1:SimData.ny
     //    V(:,y,:,:) = .5*(Vstagg(:,y,:,:) + Vstagg(:,y+1,:,:));
@@ -1687,7 +1685,7 @@ void WRFInput::readWindData()
         for (auto z=0; z<nbAlt; z++) {
             for (auto y=0; y<ny; y++) {
                 for (auto x=0; x<nx; x++) {
-                    
+
                     auto idx = t * (nbAlt * ny * nx) + z * (ny * nx) + y * (nx) + x;
                     auto idxP1y = t * (nbAlt * ny * nx) + z * (ny * nx) + (y+1) * (nx) + x;
 
@@ -1697,7 +1695,7 @@ void WRFInput::readWindData()
         }
     }
     dumpWRFDataArray("V", V.data(), 2, 40, 114, 114);
-    
+
     // SimData.CoordZ = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
     // for k = 1:SimData.NbAlt
     //    SimData.CoordZ(:,:,k,:) = .5*(Height(:,:,k,:) + Height(:,:,k+1,:));
@@ -1730,10 +1728,10 @@ void WRFInput::readWindData()
             }
         }
 
-        
+
     }
     dumpWRFDataArray("WS", WS.data(), 2, nbAlt, ny, nx);
-    
+
 
     // SimData.WD = zeros(SimData.nx,SimData.ny,SimData.NbAlt,numel(SimData.TIMEVECT));
     std::vector<double> WD( nx * ny * nbAlt * 2, 0.0 );
@@ -1768,7 +1766,7 @@ SimData.CoordZ = permute(SimData.CoordZ,[2 1 3 4]);
     // Updating dimensions
     int nx2 = floor(sqrt(m_maxTerrainSize * nx/(float)ny));
     int ny2 = floor(sqrt(m_maxTerrainSize * ny/(float)nx));
-    
+
     // SimData.nx = nx2;
     // SimData.ny = ny2;
     m_dx = m_dx * nx/(float)nx2;
@@ -1787,14 +1785,14 @@ SimData.CoordZ = permute(SimData.CoordZ,[2 1 3 4]);
 
     float scaleX = nx / (float)nx2;
     float scaleY = ny / (float)ny2;
-    
+
     for (auto y=0; y<ny2; y++) {
         for (auto x=0; x<nx2; x++) {
-                    
+
             // Map this into the larger vector
             int largerX = (int)floor( x * scaleX );
             int largerY = (int)floor( y * scaleY );
-            
+
             auto idxLarger = largerY * (nx) + largerX;
             auto idx = y * (nx2) + x;
 
@@ -1810,25 +1808,25 @@ void WRFInput::setWRFDataPoint()
 #if 0
 % If MaxNbStat is smaller than the number of WRF data point available, then
 % we operate a selection. Vertical height is selected between defined boundaries.
-% For each stations, their horizontal and vertical coordinates, wind speed 
-% and direction, along with the number of vertical altitude pts, are recorded 
+% For each stations, their horizontal and vertical coordinates, wind speed
+% and direction, along with the number of vertical altitude pts, are recorded
 
 if SimData.nx*SimData.ny > SimData.MaxNbStat
-    
+
     nx2 = sqrt(SimData.MaxNbStat*SimData.nx/SimData.ny);
     ny2 = sqrt(SimData.MaxNbStat*SimData.ny/SimData.nx);
-    
+
     WRF_RowY = (1:SimData.ny/ny2:SimData.ny);
     WRF_ColX = (1:SimData.nx/nx2:SimData.nx);
-    
+
     WRF_RowY = unique(round(WRF_RowY));
     WRF_ColX = unique(round(WRF_ColX));
-    
+
 else
-    
+
     WRF_RowY = (1:SimData.ny);
     WRF_ColX = (1:SimData.nx);
-    
+
 end
 
 SimData.NbStat = numel(WRF_RowY)*numel(WRF_ColX);
@@ -1844,25 +1842,25 @@ StatData.WD = struct([]);
 Stat = 1;
 for y = WRF_RowY
     for x = WRF_ColX
-        
+
         StatData.CoordX(Stat) = x;
         StatData.CoordY(Stat) = y;
-        
+
         levelk_max = 0;
-        for t = 1:numel(SimData.TIMEVECT)                     
-            CoordZ_xyt = SimData.CoordZ(y,x,:,t);        
+        for t = 1:numel(SimData.TIMEVECT)
+            CoordZ_xyt = SimData.CoordZ(y,x,:,t);
             [levelk] = find(CoordZ_xyt >= SimData.MinWRFAlt & CoordZ_xyt <= SimData.MaxWRFAlt);
             if numel(levelk) > numel(levelk_max)
                 levelk_max = levelk; % If wind data heights change during time, higher height vector is selected
             end
         end
-        
+
         StatData.CoordZ{Stat} = reshape(SimData.CoordZ(y,x,levelk_max,:),numel(levelk_max),size(SimData.CoordZ,4));
         StatData.nz(Stat) = size(StatData.CoordZ{Stat},1);
-        
+
         StatData.WS{Stat} = reshape(SimData.WS(y,x,levelk_max,:),numel(levelk_max),size(SimData.WS,4));
-        StatData.WD{Stat} = reshape(SimData.WD(y,x,levelk_max,:),numel(levelk_max),size(SimData.WD,4));   
-        
+        StatData.WD{Stat} = reshape(SimData.WD(y,x,levelk_max,:),numel(levelk_max),size(SimData.WD,4));
+
         Stat = Stat + 1;
     end
 end
@@ -1894,7 +1892,7 @@ void WRFInput::dumpWRFDataArray(const std::string &name, double *data, int dimT,
 
                     auto idx = t * (dimZ * dimY * dimX) + z * (dimY * dimX) + y * (dimX) + x;
                     std::cout << data[idx] << ' ';
-                    
+
                 }
                 std::cout << std::endl;
             }
@@ -1909,14 +1907,14 @@ void WRFInput::smoothDomain()
     // land-use using imresize (bicubic interpolation by default).
     // Land-use is interpolated with the "nearest point" method as we
     // must not change the categories values.
-    
+
 #if 0
     std::cout << "Smoothing domain" << std::endl;
 
     // Updating dimensions
     int nx2 = floor(sqrt(m_maxTerrainSize * nx/(float)ny));
     int ny2 = floor(sqrt(m_maxTerrainSize * ny/(float)nx));
-    
+
     // SimData.nx = nx2;
     // SimData.ny = ny2;
     m_dx = m_dx * nx/(float)nx2;
@@ -1933,7 +1931,7 @@ void WRFInput::smoothDomain()
 
             for (auto y=0; y<ny2; y++) {
                 for (auto x=0; x<nx2; x++) {
-                    
+
                     // Map this into the larger vector
 
                 }
@@ -1941,8 +1939,8 @@ void WRFInput::smoothDomain()
 
         }
     }
-    
-            
+
+
 #endif
 
 
@@ -1968,7 +1966,7 @@ void WRFInput::minimizeDomainHeight()
     // cm will not be considered.
 
     // SimData.OldTopoMin = min(min(SimData.Relief));
-    // SimData.Relief = SimData.Relief - SimData.OldTopoMin;  % Lowering minimum altitude to 0 
+    // SimData.Relief = SimData.Relief - SimData.OldTopoMin;  % Lowering minimum altitude to 0
 
     // IndLowRelief = find(SimData.Relief <= 15); % Relief below 0.5m is not considered
     // SimData.Relief(IndLowRelief) = 0;
@@ -1983,7 +1981,7 @@ void WRFInput::minimizeDomainHeight()
 float WRFInput::lookupLandUse(int luIdx)
 {
     switch (luIdx) {
-        
+
     case 1:  // %%% Evergreen needleleaf forest
         return 0.5;
     case 2:  // %%% Evergreeen broadleaf forest
