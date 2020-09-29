@@ -29,11 +29,11 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     
     // get the TGD domain start and end values, other TGD grid information
     // in x-direction (face)
-    xStart = UGD->x[iStart];
-    xEnd = UGD->x[iEnd];
+    xStart = UGD->x[iStart]-0.5*dx;
+    xEnd = UGD->x[iEnd]+0.5*dx;
     // in y-direction (face)
-    yStart = UGD->y[jStart];
-    yEnd = UGD->y[jEnd];
+    yStart = UGD->y[jStart]-0.5*dx;
+    yEnd = UGD->y[jEnd]+0.5*dy;
     // in z-direction (face)
     zStart = UGD->z_face[kStart-1]; // z_face does not have a ghost cell under the terrain.
     zEnd = UGD->z[kEnd-1]; // z_face does not have a ghost cell under the terrain.
