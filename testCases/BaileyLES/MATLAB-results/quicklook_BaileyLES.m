@@ -1,7 +1,9 @@
+% dimensions of the 3D domain
+lx=2*pi*1000;ly=2*pi*1000;lz=1000;
+
 mainpath='../QES-data';
 
-testcases = {'BaileyChannel_1o83_18o3', 'BaileyChannel_0o183_18o3', 'BaileyChannel_0o00183_18o3'};
-
+testcases = {'BaileyLES_22o2_222o0','BaileyLES_2o22_222o0','BaileyLES_0o222_222o0'};
 for k=1:numel(testcases)
     f=testcases{k};
     filename=sprintf('%s/%s_%s.nc',mainpath,f,'particleInfo');
@@ -14,27 +16,29 @@ for k=1:numel(testcases)
     [Concentration.(f).data,Concentration.(f).varname] = readNetCDF(filename);
 end
 
+
+%% ========================================================================
+set(0,'defaulttextinterpreter','latex')
+
 figure()
 for k=1:numel(testcases)
     f=testcases{k};
     subplot(1,3,k)
-    histogram(particleInfo.(f).data.zPos(:,end),25,'Normalization','pdf','Orientation','horizontal')
+    histogram(reshape(particleInfo.(f).data.zPos,[1,numel(particleInfo.(f).data.zPos)])/lz,25,...
+        'Normalization','pdf','Orientation','horizontal')
     hold all
     plot([1 1],[0 1],'k--')
     ylabel('$z/\delta$')
     xlabel('p.d.f.')
     xlim([0 1.5])
     ylim([0 1])
-    
-    [ppBin,edgesBin]=histcounts(particleInfo.(f).data.zPos(:,end),25,'Normalization','pdf');
-    S=-sum(ppBin.*log(ppBin))
 end
 
 figure()
 for k=1:numel(testcases)
     f=testcases{k};
     subplot(1,3,k)
-    plot(squeeze(mean(mean(Concentration.(f).data.conc(:,:,:,end),1),2)),Concentration.(f).data.z)
+    plot(squeeze(mean(mean(Concentration.(f).data.conc(:,:,:,end),1),2)),Concentration.(f).data.z/lz)
     ylabel('$z/\delta$')
     xlabel('\#part/vol')
 end

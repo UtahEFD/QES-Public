@@ -1,6 +1,5 @@
-% Channel 3D test case for QES-plume
+% Sinusoidal 3D test case for QES-plume
 % Base on Bailey 2017 (BLM)
-% The channel-flow data: DNS of Kim et al. (1987)and Mansour et al. (1988)
 % 
 % Note: the original test case is 1D. This test case has been adapted to 3D
 %       the data is repeated in x and y.
@@ -12,7 +11,7 @@
 % setup:
 
 % dimensions of the 3D domain
-lx=1;ly=1;lz=1;
+lx=1;ly=1;lz=2*pi;
 
 % grid resolution in x and y set to have 50 cells
 nx=51;ny=51;
@@ -33,34 +32,16 @@ y_cc=0.5*dy:dy:ly-0.5*dy;
 z_cc=-0.5*dz:dz:lz+0.5*dz;
 
 % loading original data set
-uMean_file = 'channel_u.txt';
 C0 = 4.0;
-epps_file = 'channel_epps.txt';
-sigma2_file = 'channel_sigma2.txt';
-
-uMean = load(uMean_file);
-zchannel = linspace(0,lz,length(uMean));
-epps = load(epps_file);
-sigma2 = load(sigma2_file);
-
+zth=linspace(0,lz,101);
+uMean=zeros(size(zth));
+sigma2=1.1+sin(zth);
+epps=sigma2.^(3/2);
 %% ========================================================================
 % QES-WINDS data:
 
-% face-center data:
-u_out = zeros(nx,ny,nz);
-
-% this will return data at k=2...50
-u_new=interp1(zchannel,uMean,z_cc);
-u_new(1)=-u_new(2); % ghost cell
-u_new(end)=u_new(end-1); % ghost cell
-
-for k=1:nz-1
-    %u_out(:,:,k)=u_new(k);
-    u_out(:,1:ny-1,k)=u_new(k);
-end
-
 % data for NetCDF file
-u = u_out; 
+u = zeros(nx,ny,nz);
 v = zeros(nx,ny,nz);
 w = zeros(nx,ny,nz);
 
@@ -80,18 +61,17 @@ icellflag = icellflag_out;
 icellflag_out(:,:,1) = 1; % fluid
 
 % now save the netcdf wind output
-writeNetCDFFile_winds('channel3D',nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
+writeNetCDFFile_winds('sinusoidal3D',nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
 
 
 %% ========================================================================
 % QES-TURB data:
-sig2_new=interp1(zchannel,sigma2,z_cc);
-sig2_new(1)=sig2_new(2); % ghost cell
-sig2_new(end)=sig2_new(end-1); % ghost cell
-epps_new=interp1(zchannel,epps,z_cc);
-epps_new(2)=epps(2); % 1st point (to get correct wall dissipation)
-epps_new(1)=epps(2); % ghost cell 
-epps_new(end)=epps_new(end-1); % ghost cell
+sig2_new=1.1 + sin(z_cc);
+%sig2_new(1)=sig2_new(2); % ghost cell
+%sig2_new(end)=sig2_new(end-1); % ghost cell
+epps_new=sig2_new.^(3/2);
+%epps_new(1)=epps_new(2); % ghost cell 
+%epps_new(end)=epps_new(end-1); % ghost cell
 
 % cell-center data:
 sig2_out = zeros(nx-1,ny-1,nz-1);
@@ -115,7 +95,7 @@ tke = tke_out;
 CoEps = CoEps_out;
 
 % now save the netcdf turb output
-writeNetCDFFile_turb('channel3D',x_cc,y_cc,z_cc,CoEps,tke,tau11,tau12,tau13,tau22,tau23,tau33);
+writeNetCDFFile_turb('sinusoidal3D',x_cc,y_cc,z_cc,CoEps,tke,tau11,tau12,tau13,tau22,tau23,tau33);
 
 
 
@@ -125,42 +105,42 @@ set(0,'defaulttextinterpreter','latex')
 
 % U velocity 
 figure()
-plot(uMean,zchannel,'x')
+plot(uMean,zth/lz,'-')
 hold all
-plot(u_new,z_cc,'o')
+plot(zeros(size(z_cc)),z_cc/lz,'o')
 ylabel('$z/\delta$')
 xlabel('$u/u_*$')
 grid on
-ylim([0-dz lz+dz])
+ylim([0-dz lz+dz]/lz)
 legend('data','QES')
 
 % fluctation variance: sigma2
 figure()
-plot(sigma2,zchannel,'x')
+plot(sigma2,zth/lz,'-')
 hold all
-plot(sig2_new,z_cc,'o')
+plot(sig2_new,z_cc/lz,'o')
 ylabel('$z/\delta$')
 xlabel('$\sigma^2/u_*^2$')
 grid on
-ylim([0-dz lz+dz])
+ylim([0-dz lz+dz]/lz)
 legend('data','QES')
 
 % dissipation rate (epps)
 figure()
-plot(epps,zchannel,'x')
+plot(epps,zth/lz,'-')
 hold all
-plot(epps_new,z_cc,'o')
+plot(epps_new,z_cc/lz,'o')
 ylabel('$z/\delta$')
 xlabel('$\varepsilon\delta/u_*^3$')
 grid on
-ylim([0-dz lz+dz])
+ylim([0-dz lz+dz]/lz)
 legend('data','QES')
 
 % tke
 figure()
-plot((z_cc.*epps_new).^(2/3),z_cc,'o','color',[0.8500 0.3250 0.0980])
-ylabel('$z/\delta$')
+plot((z_cc.*epps_new).^(2/3),z_cc/lz,'o','color',[0.8500 0.3250 0.0980])
+ylabel('$z/\delta$') 
 xlabel('$tke/u_*^2$')
 grid on
-ylim([0-dz lz+dz])
+ylim([0-dz lz+dz]/lz)
 legend('QES')
