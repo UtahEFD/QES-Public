@@ -36,7 +36,7 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     yEnd = UGD->y[jEnd]+0.5*dy;
     // in z-direction (face)
     zStart = UGD->z_face[kStart-1]; // z_face does not have a ghost cell under the terrain.
-    zEnd = UGD->z[kEnd-1]; // z_face does not have a ghost cell under the terrain.
+    zEnd = UGD->z_face[kEnd-1]; // z_face does not have a ghost cell under the terrain.
     
     // set additional values from the input
     C_0 = PID->simParams->C_0;
