@@ -375,20 +375,23 @@ void Plume::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::list<Parti
         parItr->wFluct_old = parItr->wFluct;
 
         // get the tau values from the Eulerian grid for the particle value
-        double current_txx = eul->interp3D_cellVar(TGD->txx);
-        double current_txy = eul->interp3D_cellVar(TGD->txy);
-        double current_txz = eul->interp3D_cellVar(TGD->txz);
-        double current_tyy = eul->interp3D_cellVar(TGD->tyy);
-        double current_tyz = eul->interp3D_cellVar(TGD->tyz);
-        double current_tzz = eul->interp3D_cellVar(TGD->tzz);
+        double txx = eul->interp3D_cellVar(TGD->txx);
+        double txy = eul->interp3D_cellVar(TGD->txy);
+        double txz = eul->interp3D_cellVar(TGD->txz);
+        double tyy = eul->interp3D_cellVar(TGD->tyy);
+        double tyz = eul->interp3D_cellVar(TGD->tyz);
+        double tzz = eul->interp3D_cellVar(TGD->tzz);
+
+        // now need to call makeRealizable on tau
+        makeRealizable(txx,txy,txz,tyy,tyz,tzz);
 
         // set tau_old to the interpolated values for each position
-        parItr->txx_old = current_txx;
-        parItr->txy_old = current_txy;
-        parItr->txz_old = current_txz;
-        parItr->tyy_old = current_tyy;
-        parItr->tyz_old = current_tyz;
-        parItr->tzz_old = current_tzz;
+        parItr->txx_old = txx;
+        parItr->txy_old = txy;
+        parItr->txz_old = txz;
+        parItr->tyy_old = tyy;
+        parItr->tyz_old = tyz;
+        parItr->tzz_old = tzz;
 
         // set delta_velFluct values to zero for now
         parItr->delta_uFluct = 0.0;
