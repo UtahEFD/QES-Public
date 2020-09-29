@@ -21,22 +21,22 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
 
     // domain beginning for interpolation in each direction
     // in x-direction (halo cell to account for TURB variables)
-    iStart=1;iEnd=nx-2;
+    iStart=1;iEnd=nx-3;
     // in y-direction (halo cell to account for TURB variables)
-    jStart=1;jEnd=ny-2;
+    jStart=1;jEnd=ny-3;
     // in z-direction (ghost cell at bottom and halo cell at top)
     kStart=1;kEnd=nz-2;
     
     // get the TGD domain start and end values, other TGD grid information
-    // in x-direction
+    // in x-direction (face)
     xStart = UGD->x[iStart];
     xEnd = UGD->x[iEnd];
-    // in y-direction
+    // in y-direction (face)
     yStart = UGD->y[jStart];
     yEnd = UGD->y[jEnd];
-    // in z-direction
+    // in z-direction (face)
     zStart = UGD->z_face[kStart-1]; // z_face does not have a ghost cell under the terrain.
-    zEnd = UGD->z[kEnd];
+    zEnd = UGD->z[kEnd-1]; // z_face does not have a ghost cell under the terrain.
     
     // set additional values from the input
     C_0 = PID->simParams->C_0;
@@ -440,9 +440,9 @@ void Eulerian::setStressGrads(TURBGeneralData* TGD)
 void Eulerian::setSigmas(TURBGeneralData* TGD)
 {
     for(int idx = 0; idx < (nx-1)*(ny-1)*(nz-1); idx++) {
-        sig_x.at(idx) = std::sqrt(TGD->txx.at(idx));
-        sig_y.at(idx) = std::sqrt(TGD->tyy.at(idx));
-        sig_z.at(idx) = std::sqrt(TGD->tzz.at(idx));
+        sig_x.at(idx) = std::abs(TGD->txx.at(idx));
+        sig_y.at(idx) = std::abs(TGD->tyy.at(idx));
+        sig_z.at(idx) = std::abs(TGD->tzz.at(idx));
     }
     return;
 }
@@ -481,8 +481,8 @@ void Eulerian::setInterp3Dindex_uFace(const double& par_xPos, const double& par_
 {
 
     // set a particle position corrected by the start of the domain in each direction
-    double par_x = par_xPos;
-    double par_y = par_yPos - 0.5*dy;
+    double par_x = par_xPos + 1.0*dx;
+    double par_y = par_yPos + 0.5*dy;
     double par_z = par_zPos + 0.5*dz;
     
     ii = floor(par_x/(dx+1e-9));
@@ -502,7 +502,7 @@ void Eulerian::setInterp3Dindex_vFace(const double& par_xPos, const double& par_
 
     // set a particle position corrected by the start of the domain in each direction
     double par_x = par_xPos - 0.5*dx;
-    double par_y = par_yPos;
+    double par_y = par_yPos + 1.0*dy;
     double par_z = par_zPos + 0.5*dz;
 
     ii = floor(par_x/(dx+1e-9));
@@ -521,8 +521,8 @@ void Eulerian::setInterp3Dindex_wFace(const double& par_xPos, const double& par_
 {
 
     // set a particle position corrected by the start of the domain in each direction
-    double par_x = par_xPos - 0.5*dx;
-    double par_y = par_yPos - 0.5*dy;
+    double par_x = par_xPos + 0.5*dx;
+    double par_y = par_yPos + 0.5*dy;
     double par_z = par_zPos + 1.0*dz;
     
     ii = floor(par_x/(dx+1e-9));
@@ -605,8 +605,8 @@ void Eulerian::setInterp3Dindex_cellVar(const double& par_xPos, const double& pa
 
     // set a particle position corrected by the start of the domain in each direction
     // the algorythm assumes the list starts at x = 0.
-    double par_x = par_xPos - 0.5*dx;
-    double par_y = par_yPos - 0.5*dy;
+    double par_x = par_xPos + 0.5*dx;
+    double par_y = par_yPos + 0.5*dy;
     double par_z = par_zPos + 0.5*dz;
 
     // index of nearest node in negative direction

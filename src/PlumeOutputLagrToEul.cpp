@@ -349,9 +349,9 @@ void PlumeOutputLagrToEul::boxCount()
 
             // now, does the particle land in one of the boxes? 
             // if so, add one particle to that box count
-            if( idx >= 0 && idx < nBoxesX-1 && 
-                idy >= 0 && idy < nBoxesY-1 && 
-                idz >= 0 && idz < nBoxesZ-1 )
+            if( idx >= 0 && idx <= nBoxesX-1 && 
+                idy >= 0 && idy <= nBoxesY-1 && 
+                idz >= 0 && idz <= nBoxesZ-1 )
             {
                 int id = idz*nBoxesY*nBoxesX + idy*nBoxesX + idx;
                 cBox.at(id) = cBox.at(id) + 1.0;

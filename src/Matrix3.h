@@ -421,7 +421,7 @@ public:
         Vector3<T> invar = this.calcInvariants();
         
         if( invar[0] > invarianceTol && invar[1] > invarianceTol && invar[2] > invarianceTol ) {
-            return;     // is already realizable
+            return *this;     // is already realizable -> what should be return here??? -Pete
         }
         
         // since tau is not already realizable, need to make it realizeable
