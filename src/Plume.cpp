@@ -151,7 +151,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
         
         // Move each particle for every simulation time step
         // Advection Loop
-        
+
         // start recording the amount of time it takes to advect each set of particles for a given simulation timestep,
         //  but only output the result when updateFrequency allows
         // LA future work: would love to put this into a debug if statement wrapper
@@ -174,6 +174,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
               - parItr->isActive
               this function does not do any manipulation on particleList
             */
+            
             advectParticle(sim_tIdx, parItr, UGD, TGD, eul);
             
             // now update the isRogueCount and isNotActiveCount
@@ -327,6 +328,8 @@ void Plume::scrubParticleList()
             ++it;
         }
     }
+    isNotActiveCount = 0;
+
     return;
 }
 

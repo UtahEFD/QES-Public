@@ -38,6 +38,14 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     zStart = UGD->z_face[kStart-1]; // z_face does not have a ghost cell under the terrain.
     zEnd = UGD->z_face[kEnd-1]; // z_face does not have a ghost cell under the terrain.
     
+
+    if( debug == true ) {
+        std::cout << "[Eulerian] \t DEBUG - Domain boundary" << std::endl;
+        std::cout << "\t\t xStart=" << xStart << " xEnd=" << xEnd << std::endl;
+        std::cout << "\t\t yStart=" << yStart << " yEnd=" << yEnd << std::endl;
+        std::cout << "\t\t zStart=" << zStart << " zEnd=" << zEnd << std::endl;
+    }
+
     // set additional values from the input
     C_0 = PID->simParams->C_0;
     
@@ -481,10 +489,13 @@ void Eulerian::setInterp3Dindex_uFace(const double& par_xPos, const double& par_
 {
 
     // set a particle position corrected by the start of the domain in each direction
-    double par_x = par_xPos + 1.0*dx;
-    double par_y = par_yPos + 0.5*dy;
-    double par_z = par_zPos + 0.5*dz;
-    
+    //double par_x = par_xPos - xStart + 1.0*dx;
+    //double par_y = par_yPos - yStart + 0.5*dy;
+    //double par_z = par_zPos - zStart + 0.5*dz;
+    double par_x = par_xPos - 0.0*dx;
+    double par_y = par_yPos - 0.5*dy;
+    double par_z = par_zPos + 0.5*dz;    
+
     ii = floor(par_x/(dx+1e-9));
     jj = floor(par_y/(dy+1e-9));
     kk = floor(par_z/(dz+1e-9));
@@ -501,8 +512,11 @@ void Eulerian::setInterp3Dindex_vFace(const double& par_xPos, const double& par_
 {
 
     // set a particle position corrected by the start of the domain in each direction
+    //double par_x = par_xPos - xStart + 0.5*dx;
+    //double par_y = par_yPos - yStart + 1.0*dy;
+    //double par_z = par_zPos - zStart + 0.5*dz;
     double par_x = par_xPos - 0.5*dx;
-    double par_y = par_yPos + 1.0*dy;
+    double par_y = par_yPos - 0.0*dy;
     double par_z = par_zPos + 0.5*dz;
 
     ii = floor(par_x/(dx+1e-9));
@@ -521,10 +535,13 @@ void Eulerian::setInterp3Dindex_wFace(const double& par_xPos, const double& par_
 {
 
     // set a particle position corrected by the start of the domain in each direction
-    double par_x = par_xPos + 0.5*dx;
-    double par_y = par_yPos + 0.5*dy;
-    double par_z = par_zPos + 1.0*dz;
-    
+    //double par_x = par_xPos - xStart + 0.5*dx;
+    //double par_y = par_yPos - yStart + 0.5*dy;
+    //double par_z = par_zPos - zStart + 1.0*dz;
+    double par_x = par_xPos - 0.5*dx;
+    double par_y = par_yPos - 0.5*dy;
+    double par_z = par_zPos - 1.0*dz;
+
     ii = floor(par_x/(dx+1e-9));
     jj = floor(par_y/(dy+1e-9));
     kk = floor(par_z/(dz+1e-9));
@@ -605,9 +622,14 @@ void Eulerian::setInterp3Dindex_cellVar(const double& par_xPos, const double& pa
 
     // set a particle position corrected by the start of the domain in each direction
     // the algorythm assumes the list starts at x = 0.
-    double par_x = par_xPos + 0.5*dx;
-    double par_y = par_yPos + 0.5*dy;
+    
+    double par_x = par_xPos - 0.5*dx;
+    double par_y = par_yPos - 0.5*dy;
     double par_z = par_zPos + 0.5*dz;
+    
+    //double par_x = par_xPos - xStart + 0.5*dx;
+    //double par_y = par_yPos - yStart + 0.5*dy;
+    //double par_z = par_zPos - zStart + 0.5*dz;
 
     // index of nearest node in negative direction
     // by adding a really small number to dx, it stops it from putting
@@ -632,10 +654,10 @@ void Eulerian::setInterp3Dindex_cellVar(const double& par_xPos, const double& pa
     // now check to make sure that the indices are within the Eulerian grid domain
     // Notice that this no longer includes throwing an error if particles touch the far walls
     // because adding a small number to dx in the index calculation forces the index to be completely left side biased
-
-      if( ii < 0 || ii+ip > nx-1 ) {
-        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle x position is out of range! x = \"" << par_xPos 
-            << "\" ii+ip = \"" << ii << "\"+\"" << ip << "\",   nx-1 = \"" << nx-1 << "\"" << std::endl;
+    
+    if( ii < 0 || ii+ip > nx-1 ) {
+    std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle x position is out of range! x = \"" << par_xPos 
+         << "\" ii+ip = \"" << ii << "\"+\"" << ip << "\",   nx-1 = \"" << nx-1 << "\"" << std::endl;
         exit(1);
     }
     if( jj < 0 || jj+jp > ny-1 ) {

@@ -47,7 +47,7 @@ bool Plume::wallReflectionFullStairStep(URBGeneralData* UGD, Eulerian* eul,
      */
  
     // linearized cell ID for end of the trajectory of the particle
-    int cellIdNew = eul->getCellId(xPos,yPos,zPos);
+    int cellIdNew = eul->getCellId(xPos,yPos,zPos);    
     if( (UGD->icellflag.at(cellIdNew) != 0) && (UGD->icellflag.at(cellIdNew) != 2) ) {
         // particle end trajectory outside solide -> no need for reflection
         return true;
