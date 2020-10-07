@@ -47,7 +47,7 @@ make
 
 The code does run on the CHPC cluster. You need to make sure the correct set of modules are loaded.  
 Currently, we have tested a few configurations that use CUDA 8.0 and GCC 5.4 and another that uses CUDA 10.2 and GCC 8.1.0. 
-For QES-Plume, OptiX support is not required.
+For QES-Plume, OptiX support is not required for QES-Plume.
 
 ### CUDA 10.2 Based Builds
 
@@ -96,23 +96,20 @@ module list
 Currently Loaded Modules:
   1) chpc/1.0   2) cuda/8.0 (g)   3) gcc/5.4.0   4) cmake/3.11.2   5) gdal/2.3.1   6) hdf5/1.8.17   7) netcdf-c/4.4.1   8) netcdf-cxx/4.3.0
 ```
-
-Not all these modules are used as of yet, but they will be once Winds, Turb, and Plume get close to completion. The cmake command needs to be something like the following:
+After the modules are loaded, you can create the Makefiles with cmake. We keep our builds separate from the source and contain our builds within their own folders. For example,
 ```
+mkdir build
+cd build
 cmake -DCUDA_TOOLKIT_DIR=/usr/local/cuda-8.0 -DCUDA_SDK_ROOT_DIR=/usr/local/cuda-8.0 -DCMAKE_PREFIX_PATH=/uufs/chpc.utah.edu/sys/installdir/gdal/2.1.3-c7 -DNETCDF_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-c/4.4.1-c7/include -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include ..
-```
-or
-```
-cmake ../CUDA-Plume -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_ROOTDIR -DCUDA_SDK_ROOT_DIR=$CUDA_ROOTDIR -DCUDA_SDK_ROOT_DIR=$CUDA_ROOTDIR -DBOOST_ROOT=$BOOST_DIR
 ```
 
 ### Compiling the Code 
 
-Then run make the same as normal and it should work
+After you've created the Makefiles with the cmake commands above, the code can be compiled on CHPC:
 ```
 make
 ```
-Note that the first of the cmake commands seems to be more stable right now.
+Note you may need to type make a second time due to a build bug, especially on the CUDA 8.0 build.
 
 
 ### Running the test cases on chpc
