@@ -1,5 +1,4 @@
-GPU QUIC
---------
+# QES-Plume
 
 This code contains the GPU versions of Urb and Plume that were started
 by Andrew Larson (urb), Alex (Gai) Geng (plume), Balwinder Singh
@@ -44,19 +43,61 @@ Once cmake has been configured, the GPU plume code can be compiled.
 make
 ```
 
+## Instructions for CHPC Cluster
 
-The process is a bit tricker for compiling the code on chpc. On notchpeak and kingspeak, do the following before running
-cmake from inside the clean build directory:
+The code does run on the CHPC cluster. You need to make sure the correct set of modules are loaded.  
+Currently, we have tested a few configurations that use CUDA 8.0 and GCC 5.4 and another that uses CUDA 10.2 and GCC 8.1.0. 
+For QES-Plume, OptiX support is not required.
+
+### CUDA 10.2 Based Builds
+
+To build with CUDA 10.1 without any OptiX GPU acceleration, please use the following modules:
+
+```
+module load cuda/10.2
+module load gcc/8.1.0
+module load cmake/3.11.2 
+module load gdal/3.0.1
+module load boost/1.69.0
+module load netcdf-cxx
+```
+
+After completing the above module loads, the following modules are reported from `module list`:
+
+```
+Currently Loaded Modules:
+  1) chpc/1.0     (S)   3) gdal/3.0.1        5) netcdf-c/4.4.1     7) cuda/10.2 (g)   9) boost/1.69.0
+  2) cmake/3.11.2       4) hdf5/1.8.17 (H)   6) netcdf-cxx/4.3.0   8) gcc/8.1.0
+```
+
+After the modules are loaded, you can create the Makefiles with cmake.  We keep our builds separate from the source and contain our builds within their own folders.  For example, 
+
+```
+mkdir build
+cd build
+cmake -DCUDA_TOOLKIT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/10.2.89 -DCUDA_SDK_ROOT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/10.2.89 -DCMAKE_PREFIX_PATH=/uufs/chpc.utah.edu/sys/installdir/gdal/3.0.1 -DNETCDF_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-c/4.4.1-c7/include -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include ..
+```
+
+### CUDA 8.0
+
+To build with CUDA 8.0, please use the following modules:
 ```
 module load cuda/8.0
 module load gcc/5.4.0
 module load cmake/3.11.2 
 module load gdal/2.3.1
 module load boost/1.66.0
-ml netcdf-cxx
+module load netcdf-cxx
+```
 
 ```
-Not all these modules are used as of yet, but they will be once Urb, Turb, and Plume get close to completion. The cmake command needs to be something like the following:
+module list
+
+Currently Loaded Modules:
+  1) chpc/1.0   2) cuda/8.0 (g)   3) gcc/5.4.0   4) cmake/3.11.2   5) gdal/2.3.1   6) hdf5/1.8.17   7) netcdf-c/4.4.1   8) netcdf-cxx/4.3.0
+```
+
+Not all these modules are used as of yet, but they will be once Winds, Turb, and Plume get close to completion. The cmake command needs to be something like the following:
 ```
 cmake -DCUDA_TOOLKIT_DIR=/usr/local/cuda-8.0 -DCUDA_SDK_ROOT_DIR=/usr/local/cuda-8.0 -DCMAKE_PREFIX_PATH=/uufs/chpc.utah.edu/sys/installdir/gdal/2.1.3-c7 -DNETCDF_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-c/4.4.1-c7/include -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include ..
 ```
@@ -64,11 +105,13 @@ or
 ```
 cmake ../CUDA-Plume -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_ROOTDIR -DCUDA_SDK_ROOT_DIR=$CUDA_ROOTDIR -DCUDA_SDK_ROOT_DIR=$CUDA_ROOTDIR -DBOOST_ROOT=$BOOST_DIR
 ```
+
+### Compiling the Code 
+
 Then run make the same as normal and it should work
 ```
 make
 ```
-
 Note that the first of the cmake commands seems to be more stable right now.
 
 
