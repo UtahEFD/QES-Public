@@ -25,8 +25,7 @@ public:
     ~Particle()
     {
     }
-        
-
+    
     // the point info variables
     // LA: I'm used to making stuff like this private and creating a bunch of accessor functions
     //  so that they all get edited together. But so long as we use them correctly, this isn't a problem
@@ -72,9 +71,21 @@ public:
     double delta_wFluct;    // this is the difference between the current and last iteration of the wFluct variable
 
     bool isRogue;          // this is false until it becomes true. Should not go true. It is whether a particle has gone rogue or not
-    bool isActive;         // this is true until it becomes false.  If a particle leaves the domain or runs out of mass, this becomes false. Later we will add a method to start more particles when this has become false
-        
+    bool isActive;         // this is true until it becomes false.  If a particle leaves the domain or runs out of mass, this becomes false.
 
+    // particle physical property 
+    double diameter,minDiameter;  // particle diameter and minimum particle diameter [microns]
+    double mass;                  // mass of particles [g]
+        
+    // deposition vatiables
+    double fdeposition; // particle deposited fraction [0,1]
+    double vs;         // settling velocity [m/s]
+    double Sc;         // Schmidt number 
+    double taud;       // characteristic relaxation time [s]
+    
+    // decay varables
+    double fdecay; // particle decayed fraction [0,1]
+    
 private:
 
         

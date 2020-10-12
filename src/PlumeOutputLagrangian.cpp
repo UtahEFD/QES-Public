@@ -17,24 +17,64 @@
 PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_ptr,std::string output_file)
     : QESNetCDFOutput(output_file)
 {
-    
-    std::cout << "[PlumeOutputLagrangian] set up NetCDF file "<< output_file << std::endl;
-    
+    // setup desired output fields string
+    // -> possible output fields
+    /*output_fields = { "t","parID","tStrt","sourceIdx",
+      "xPos_init","yPos_init","zPos_init",
+      "xPos","yPos","zPos",
+      "uFluct","vFluct","wFluct",
+      "delta_uFluct","delta_vFluct","delta_wFluct",
+      "isRogue","isActive"};*/
     
     // this is the current simulation start time
     // LA note: this would need adjusted if we ever change the 
     //  input simulation parameters to include a simStartTime
     //  instead of just using simDur
     float simStartTime = 0.0;
+        
+    std::cout << "[PlumeOutputLagrangian] set up NetCDF file "<< output_file << std::endl;
+
+    if(PID->partOutParams==0) {
+        std::cerr << "[PlumeOutputLagrangian] ERROR missing particleOutputParameters from input parameter file" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    std::vector<std::string> fileOP = PID->partOutParams->outputFields;
+    bool valid_output;
     
+    if(fileOP.empty() || fileOP[0]=="all") {
+        output_fields = allOutputFields;
+    } else {
+        output_fields={ "t","parID","tStrt","sourceIdx","isActive"};
+        output_fields.insert(output_fields.end(),fileOP.begin(),fileOP.end());
+    }
+    
+    valid_output=validateFileOtions();
+
+    if(!valid_output){
+        std::cerr << "[PlumeOutputLagrangian] ERROR invalid output fields for visulization fields output" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+    
+        
     // setup output frequency control information
     // FM future work: need to create dedicated input variables
     //  LA: we want output from the simulation start time to the end so the only dedicated input variable still needed
     //   would be an output frequency. For now, use the updateFrequency_timeLoop variable for the outputFrequency.
     // LA note: because the time counter in this class uses time and not a timeIdx, also need to use the timestep
-    outputStartTime = simStartTime;     // time to start output, adjusted if the output duration does not divide evenly by the output frequency
-    outputEndTime =  PID->simParams->simDur;      // time to end output
-    outputFrequency = PID->simParams->updateFrequency_timeLoop*PID->simParams->timeStep;        // output frequency
+    
+    // time to start output, adjusted if the output duration does not divide evenly by the output frequency
+    if(PID->partOutParams->outputStartTime<0)
+        outputStartTime = simStartTime;
+    else
+        outputStartTime = PID->partOutParams->outputStartTime;
+    // time to end output
+    if(PID->partOutParams->outputEndTime<0)
+        outputEndTime = PID->simParams->simDur;      
+    else
+        outputEndTime = PID->partOutParams->outputEndTime;
+    // output frequency
+    outputFrequency = PID->partOutParams->outputFrequency;
     
     
     // Determine whether outputStartTime needs adjusted to make the output duration divide evenly by the output frequency
@@ -47,8 +87,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
     //  here's hoping numerical error doesn't play a role
     float quotient = std::floor(outputDur/outputFrequency);
     float decDivResult = outputDur/outputFrequency;
-    if( quotient != decDivResult )
-    {
+    if( quotient != decDivResult ) {
         // clever algorythm that always gets the exact number of outputs when output duration divides evenly by output frequency
         // and rounds the number of outputs down to what it would be if the start time were the next smallest evenly dividing number
         int nOutputs = std::floor(outputDur/outputFrequency) + 1;
@@ -58,21 +97,25 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
         float current_outputStartTime = outputEndTime - outputFrequency*(nOutputs-1);
         // the outputStartTime if adjusting nOutputs. Note nOutputs has one extra outputs
         float adjusted_outputStartTime = outputEndTime - outputFrequency*(nOutputs);
-        if( adjusted_outputStartTime >= simStartTime )
-        {
+        if( adjusted_outputStartTime >= simStartTime ) {
             // need to adjust the outputStartTime to be the adjusted_outputStartTime
             // warn the user that the outputStartTime is being adjusted before adjusting outputStartTime
-            std::cout << "[PlumeOutputLagrangian]: adjusting outputStartTime because output duration did not divide evenly by outputFrequency" << std::endl;
-            std::cout << "  original outputStartTime = \"" << outputStartTime << "\", outputEndTime = \"" << outputEndTime 
-                    << "\", outputFrequency = \"" << outputFrequency << "\", new outputStartTime = \"" << adjusted_outputStartTime << "\"" << std::endl;
+            std::cout << "[PlumeOutputLagrangian]: "
+                      << "adjusting outputStartTime because output duration did not divide evenly by outputFrequency" << std::endl;
+            std::cout << "  original outputStartTime = \"" << outputStartTime
+                      << "\", outputEndTime = \"" << outputEndTime 
+                      << "\", outputFrequency = \"" << outputFrequency
+                      << "\", new outputStartTime = \"" << adjusted_outputStartTime << "\"" << std::endl;
             outputStartTime = adjusted_outputStartTime;
-        } else
-        {
+        } else {
             // need to adjust the outputStartTime to be the current_outputStartTime
             // warn the user that the outputStartTime is being adjusted before adjusting outputStartTime
-            std::cout << "[PlumeOutputLagrangian]: adjusting outputStartTime because output duration did not divide evenly by outputFrequency" << std::endl;
-            std::cout << "  original outputStartTime = \"" << outputStartTime << "\", outputEndTime = \"" << outputEndTime 
-                    << "\", outputFrequency = \"" << outputFrequency << "\", new outputStartTime = \"" << current_outputStartTime << "\"" << std::endl;
+            std::cout << "[PlumeOutputLagrangian]: "
+                      << "adjusting outputStartTime because output duration did not divide evenly by outputFrequency" << std::endl;
+            std::cout << "  original outputStartTime = \"" << outputStartTime
+                      << "\", outputEndTime = \"" << outputEndTime 
+                      << "\", outputFrequency = \"" << outputFrequency
+                      << "\", new outputStartTime = \"" << current_outputStartTime << "\"" << std::endl;
             outputStartTime = current_outputStartTime;
         }
     } // else does divide evenly, no need to adjust anything so no else
@@ -99,46 +142,11 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
     // normally this is done by doing a resize, then setting values later,
     // but the full output needs initial values that match the particle values from the get go
     // so I will add them by pushback
-    for( int par = 0; par < numPar; par++)
-    {
+    for( int par = 0; par < numPar; par++) {
         parID.push_back(par);   
-        
-        /*
-        xPos_init.push_back(plume->particleList.at(par).xPos_init);
-        yPos_init.push_back(plume->particleList.at(par).yPos_init);
-        zPos_init.push_back(plume->particleList.at(par).zPos_init);
-        tStrt.push_back(plume->particleList.at(par).tStrt);
-        sourceIdx.push_back(plume->particleList.at(par).sourceIdx);
-
-        xPos.push_back(plume->particleList.at(par).xPos);
-        yPos.push_back(plume->particleList.at(par).yPos);
-        zPos.push_back(plume->particleList.at(par).zPos);
-        uFluct.push_back(plume->particleList.at(par).uFluct);
-        vFluct.push_back(plume->particleList.at(par).vFluct);
-        wFluct.push_back(plume->particleList.at(par).wFluct);
-        delta_uFluct.push_back(plume->particleList.at(par).delta_uFluct);
-        delta_vFluct.push_back(plume->particleList.at(par).delta_vFluct);
-        delta_wFluct.push_back(plume->particleList.at(par).delta_wFluct);
-        
-        // since no boolean output exists, going to have to convert the values to ints
-        if( plume->particleList.at(par).isRogue == true )
-        {
-            isRogue.push_back(1);
-        } else
-        {
-            isRogue.push_back(0);
-        }
-        if( plume->particleList.at(par).isActive == true )
-        {
-            isActive.push_back(1);
-        } else
-        {
-            isActive.push_back(0);
-        }
-        */
     }
 
-    xPos_init.resize(numPar, 0); 
+    xPos_init.resize(numPar, 0);
     yPos_init.resize(numPar, 0); 
     zPos_init.resize(numPar, 0); 
     
@@ -163,14 +171,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
     // --------------------------------------------------------
     // setup the netcdf output information storage
     // --------------------------------------------------------
-
-    // setup desired output fields string
-    // FM future work: can be added in fileOptions at some point
-    output_fields = {   "t","parID","xPos_init","yPos_init","zPos_init","tStrt","sourceIdx", 
-                        "xPos","yPos","zPos","uFluct","vFluct","wFluct","delta_uFluct","delta_vFluct","delta_wFluct",
-                        "isRogue","isActive"};
-
-
+    
     // set data dimensions, which in this case are cell-centered dimensions
     // time dimension
     NcDim NcDim_t = addDimension("t");
@@ -195,23 +196,26 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
     dim_vect_2d.push_back(NcDim_t);
     dim_vect_2d.push_back(NcDim_par);
 
-
     // create attributes for adding all particle information
-    createAttVector("xPos_init","initial-x-position","m",dim_vect_2d,&xPos_init);
-    createAttVector("yPos_init","initial-y-position","m",dim_vect_2d,&yPos_init);
-    createAttVector("zPos_init","initial-z-position","m",dim_vect_2d,&zPos_init);
     createAttVector("tStrt","particle-release-time","s",dim_vect_2d,&tStrt);
     createAttVector("sourceIdx","particle-sourceID","--",dim_vect_2d,&sourceIdx);
     
+    createAttVector("xPos_init","initial-x-position","m",dim_vect_2d,&xPos_init);
+    createAttVector("yPos_init","initial-y-position","m",dim_vect_2d,&yPos_init);
+    createAttVector("zPos_init","initial-z-position","m",dim_vect_2d,&zPos_init);
+
     createAttVector("xPos","x-position","m",dim_vect_2d,&xPos);
     createAttVector("yPos","y-position","m",dim_vect_2d,&yPos);
     createAttVector("zPos","z-position","m",dim_vect_2d,&zPos);
+
     createAttVector("uFluct","u-velocity-fluctuation","m s-1",dim_vect_2d,&uFluct);
     createAttVector("vFluct","v-velocity-fluctuation","m s-1",dim_vect_2d,&vFluct);
     createAttVector("wFluct","w-velocity-fluctuation","m s-1",dim_vect_2d,&wFluct);
+
     createAttVector("delta_uFluct","uFluct-difference","m s-1",dim_vect_2d,&delta_uFluct);
     createAttVector("delta_vFluct","vFluct-difference","m s-1",dim_vect_2d,&delta_vFluct);
     createAttVector("delta_wFluct","wFluct-difference","m s-1",dim_vect_2d,&delta_wFluct);
+
     createAttVector("isRogue","is-particle-rogue","bool",dim_vect_2d,&isRogue);
     createAttVector("isActive","is-particle-active","bool",dim_vect_2d,&isActive);
 
@@ -221,9 +225,35 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
 
 }
 
+bool PlumeOutputLagrangian::validateFileOtions()
+{
+    // removing duplicate
+    sort(output_fields.begin(),output_fields.end() );
+    output_fields.erase(unique(output_fields.begin(),output_fields.end()),output_fields.end());    
+
+    for(auto i=0;i<output_fields.size();++i) {
+        std::cout << output_fields[i] << std::endl; 
+    }
+        
+    // check if all outputFields are possible
+    bool doContains(true);
+    std::size_t iter = 0, maxiter = output_fields.size();
+    
+    while(doContains && iter<maxiter) {
+        doContains = find(allOutputFields.begin(),allOutputFields.end(),
+                          output_fields.at(iter)) != allOutputFields.end();
+        iter++;
+    }
+    
+    return doContains;
+}
+
+
 void PlumeOutputLagrangian::save(float currentTime)
 {
 
+    return;
+    
     // only output if it is during the next output time but before the end time
     if( currentTime >= nextOutputTime && currentTime <= outputEndTime ) {
         // copy particle info into the required output storage containers
@@ -279,6 +309,30 @@ void PlumeOutputLagrangian::save(float currentTime)
         // update the next output time so output only happens at output frequency
         nextOutputTime = nextOutputTime + outputFrequency;
 
+        // reset buffers
+        for( auto i = 0u; i<isActive.size(); i++ ) {
+            xPos_init[i] = 0;
+            yPos_init[i] = 0;
+            zPos_init[i] = 0; 
+            
+            tStrt[i] = 0; 
+            sourceIdx[i] = 0; 
+            
+            xPos[i] = 0;
+            yPos[i] = 0; 
+            zPos[i] = 0; 
+            
+            uFluct[i] = 0; 
+            vFluct[i] = 0; 
+            wFluct[i] = 0; 
+            
+            delta_uFluct[i] = 0; 
+            delta_vFluct[i] = 0; 
+            delta_wFluct[i] = 0; 
+            
+            isRogue[i] = 0;
+            isActive[i] = 0;
+        }
     }
 
 };

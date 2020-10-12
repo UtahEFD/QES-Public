@@ -7,6 +7,10 @@
 	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
 	<updateFrequency_timeLoop> 100 </updateFrequency_timeLoop>
 </simulationParameters>
+<particleOutputParameters>
+  <outputFrequency> 4.0  </outputFrequency>
+  <outputFields>all</outputFields>
+</particleOutputParameters>
 <collectionParameters>
 	<timeAvgStart> 0.0 </timeAvgStart>
 	<timeAvgFreq> 4.0 </timeAvgFreq>

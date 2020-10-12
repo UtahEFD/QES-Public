@@ -12,6 +12,7 @@
 
 #include "SimulationParameters.hpp"
 #include "CollectionParameters.hpp"
+#include "ParticleOutputParameters.hpp"
 #include "Sources.hpp"
 #include "BoundaryConditions.hpp"
 
@@ -24,6 +25,7 @@ class PlumeInputData : public ParseInterface {
 public:
     SimulationParameters* simParams;
     CollectionParameters* colParams;
+    ParticleOutputParameters* partOutParams;
     Sources* sources;
     BoundaryConditions* BCs;
     
@@ -31,12 +33,15 @@ public:
     PlumeInputData() {
         simParams = 0;
         colParams = 0;
+        partOutParams = 0; 
         sources = 0;
     }
     
     virtual void parseValues() {
         parseElement<SimulationParameters>(true, simParams, "simulationParameters");
         parseElement<CollectionParameters>(true, colParams, "collectionParameters");
+        parseElement<ParticleOutputParameters>(false, partOutParams, "particleOutputParameters");
+
         parseElement<Sources>(false, sources, "sources");
         parseElement<BoundaryConditions>(true, BCs, "boundaryConditions");
         

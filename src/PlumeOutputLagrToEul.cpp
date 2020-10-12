@@ -85,17 +85,23 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* u
         {
             // need to adjust the timeAvgStart to be the adjustedTimeAvgStart
             // warn the user that the timeAvgStart is being adjusted before adjusting timeAvgStart
-            std::cout << "[PlumeOutputLagrangian]: adjusting timeAvgStart because time averaging duration did not divide evenly by timeAvgFreq" << std::endl;
-            std::cout << "  original timeAvgStart = \"" << timeAvgStart << "\", timeAvgEnd = \"" << timeAvgEnd 
-                    << "\", timeAvgFreq = \"" << timeAvgFreq << "\", new timeAvgStart = \"" << adjusted_timeAvgStart << "\"" << std::endl;
+            std::cout << "[PlumeOutputLagrangian]: "
+                      << "adjusting timeAvgStart because time averaging duration did not divide evenly by timeAvgFreq" << std::endl;
+            std::cout << "  original timeAvgStart = \"" << timeAvgStart
+                      << "\", timeAvgEnd = \"" << timeAvgEnd 
+                      << "\", timeAvgFreq = \"" << timeAvgFreq
+                      << "\", new timeAvgStart = \"" << adjusted_timeAvgStart << "\"" << std::endl;
             timeAvgStart = adjusted_timeAvgStart;
         } else
         {
             // need to adjust the timeAvgStart to be the currentTimeAvgStart
             // warn the user that the timeAvgStart is being adjusted before adjusting timeAvgStart
-            std::cout << "[PlumeOutputLagrangian]: adjusting timeAvgStart because time averaging duration did not divide evenly by timeAvgFreq" << std::endl;
-            std::cout << "  original timeAvgStart = \"" << timeAvgStart << "\", timeAvgEnd = \"" << timeAvgEnd 
-                    << "\", timeAvgFreq = \"" << timeAvgFreq << "\", new timeAvgStart = \"" << current_timeAvgStart << "\"" << std::endl;
+            std::cout << "[PlumeOutputLagrangian]: "
+                      << "adjusting timeAvgStart because time averaging duration did not divide evenly by timeAvgFreq" << std::endl;
+            std::cout << "  original timeAvgStart = \"" << timeAvgStart
+                      << "\", timeAvgEnd = \"" << timeAvgEnd 
+                      << "\", timeAvgFreq = \"" << timeAvgFreq
+                      << "\", new timeAvgStart = \"" << current_timeAvgStart << "\"" << std::endl;
             timeAvgStart = current_timeAvgStart;
         }
     } // else does divide evenly, no need to adjust anything so no else

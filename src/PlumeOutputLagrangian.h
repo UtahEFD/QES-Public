@@ -44,6 +44,9 @@ public:
     // This is the one function that needs called from outside after constructor time
     void save(float);
 
+protected:
+  bool validateFileOtions();
+
 private:
     
     // Output frequency control information
@@ -57,7 +60,14 @@ private:
     
     // pointer to the class that save needs to use to get the data for the concentration calculation
     Plume* plume;
-    
+
+     // all possible output fields need to be add to this list
+    std::vector<std::string> allOutputFields = { "t","parID","tStrt","sourceIdx",
+                                                 "xPos_init","yPos_init","zPos_init",
+                                                 "xPos","yPos","zPos",
+                                                 "uFluct","vFluct","wFluct",
+                                                 "delta_uFluct","delta_vFluct","delta_wFluct",
+                                                 "isRogue","isActive"};
     
     // main particle metadata, almost a copy of what is in the "particle" class
     int numPar;     // total number of particle to be released 

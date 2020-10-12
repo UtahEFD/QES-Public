@@ -1,3 +1,5 @@
 # NetCDF files
 *.nc
 
+# txt files
+*.txt

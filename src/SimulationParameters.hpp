@@ -45,25 +45,29 @@ class SimulationParameters : public ParseInterface {
             // make sure simDur, timeStep, invarianceTol, and C_0 are not negative values
             if( simDur <= 0 )
             {
-                std::cerr << "(SimulationParameters::checkParsedValues): input simDur must be greater than zero!";
+                std::cerr << "(SimulationParameters::checkParsedValues): "
+                          << "input simDur must be greater than zero!";
                 std::cerr << " simDur = \"" << simDur << "\"" << std::endl;
                 exit(EXIT_FAILURE);
             }
             if( timeStep <= 0 )
             {
-                std::cerr << "(SimulationParameters::checkParsedValues): input timeStep must be greater than zero!";
+                std::cerr << "(SimulationParameters::checkParsedValues): "
+                          << "input timeStep must be greater than zero!";
                 std::cerr << " timeStep = \"" << timeStep << "\"" << std::endl;
                 exit(EXIT_FAILURE);
             }
             if( CourantNum < 0.0 || CourantNum > 1.0 )
             {
-                std::cerr << "(SimulationParameters::checkParsedValues): input CourantNumber must be greater than or equal to zero but less than or equal to one!";
+                std::cerr << "(SimulationParameters::checkParsedValues): "
+                          << "input CourantNumber must be greater than or equal to zero but less than or equal to one!";
                 std::cerr << " CourantNumber = \"" << CourantNum << "\"" << std::endl;
                 exit(EXIT_FAILURE);
             }
             if( invarianceTol <= 0 )
             {
-                std::cerr << "(SimulationParameters::checkParsedValues): input invarianceTol must be greater than zero!";
+                std::cerr << "(SimulationParameters::checkParsedValues): "
+                          << "input invarianceTol must be greater than zero!";
                 std::cerr << " invarianceTol = \"" << invarianceTol << "\"" << std::endl;
                 exit(EXIT_FAILURE);
             }
@@ -77,13 +81,15 @@ class SimulationParameters : public ParseInterface {
             // make sure the updateFrequency variables are value 1 or greater
             if( updateFrequency_particleLoop < 1 )
             {
-                std::cerr << "(SimulationParameters::checkParsedValues): input updateFrequency_particleLoop must be 1 or greater!";
+                std::cerr << "(SimulationParameters::checkParsedValues): "
+                          << "input updateFrequency_particleLoop must be 1 or greater!";
                 std::cerr << " updateFrequency_particleLoop = \"" << updateFrequency_particleLoop << "\"" << std::endl;
                 exit(EXIT_FAILURE);
             }
             if( updateFrequency_timeLoop < 1 )
             {
-                std::cerr << "(SimulationParameters::checkParsedValues): input updateFrequency_timeLoop must be 1 or greater!";
+                std::cerr << "(SimulationParameters::checkParsedValues): "
+                          << "input updateFrequency_timeLoop must be 1 or greater!";
                 std::cerr << " updateFrequency_timeLoop = \"" << updateFrequency_timeLoop << "\"" << std::endl;
                 exit(EXIT_FAILURE);
             }
@@ -92,7 +98,8 @@ class SimulationParameters : public ParseInterface {
             // make sure the input timestep is not greater than the simDur
             if( timeStep > simDur )
             {
-                std::cerr << "(SimulationParameters::checkParsedValues): input timeStep must be smaller than or equal to input simDur!";
+                std::cerr << "(SimulationParameters::checkParsedValues): "
+                          << "input timeStep must be smaller than or equal to input simDur!";
                 std::cerr << " timeStep = \"" << timeStep << "\", simDur = \"" << simDur << "\"" << std::endl;
                 exit(EXIT_FAILURE);
             }
@@ -103,7 +110,8 @@ class SimulationParameters : public ParseInterface {
             int nTimes = std::ceil(simDur/timeStep);
             if( updateFrequency_timeLoop > nTimes )
             {
-                std::cerr << "(SimulationParameters::checkParsedValues): input updateFrequency_timeLoop must be smaller than or equal to calculated nTimes!";
+                std::cerr << "(SimulationParameters::checkParsedValues): "
+                          << "input updateFrequency_timeLoop must be smaller than or equal to calculated nTimes!";
                 std::cerr << " updateFrequency_timeLoop = \"" << updateFrequency_timeLoop << "\", nTimes = \"" << nTimes << "\"" << std::endl;
             }
 
