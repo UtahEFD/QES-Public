@@ -230,10 +230,6 @@ bool PlumeOutputLagrangian::validateFileOtions()
     // removing duplicate
     sort(output_fields.begin(),output_fields.end() );
     output_fields.erase(unique(output_fields.begin(),output_fields.end()),output_fields.end());    
-
-    for(auto i=0;i<output_fields.size();++i) {
-        std::cout << output_fields[i] << std::endl; 
-    }
         
     // check if all outputFields are possible
     bool doContains(true);
@@ -250,10 +246,7 @@ bool PlumeOutputLagrangian::validateFileOtions()
 
 
 void PlumeOutputLagrangian::save(float currentTime)
-{
-
-    return;
-    
+{    
     // only output if it is during the next output time but before the end time
     if( currentTime >= nextOutputTime && currentTime <= outputEndTime ) {
         // copy particle info into the required output storage containers
