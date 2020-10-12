@@ -100,7 +100,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
         if( adjusted_outputStartTime >= simStartTime ) {
             // need to adjust the outputStartTime to be the adjusted_outputStartTime
             // warn the user that the outputStartTime is being adjusted before adjusting outputStartTime
-            std::cout << "[PlumeOutputLagrangian]: "
+            std::cout << "[PlumeOutputLagrangian] "
                       << "adjusting outputStartTime because output duration did not divide evenly by outputFrequency" << std::endl;
             std::cout << "  original outputStartTime = \"" << outputStartTime
                       << "\", outputEndTime = \"" << outputEndTime 
@@ -110,7 +110,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
         } else {
             // need to adjust the outputStartTime to be the current_outputStartTime
             // warn the user that the outputStartTime is being adjusted before adjusting outputStartTime
-            std::cout << "[PlumeOutputLagrangian]: "
+            std::cout << "[PlumeOutputLagrangian] "
                       << "adjusting outputStartTime because output duration did not divide evenly by outputFrequency" << std::endl;
             std::cout << "  original outputStartTime = \"" << outputStartTime
                       << "\", outputEndTime = \"" << outputEndTime 
