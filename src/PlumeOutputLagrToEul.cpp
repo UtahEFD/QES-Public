@@ -22,7 +22,6 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* u
 
     std::cout << "[PlumeOutputLagrToEul] set up NetCDF file " << output_file << std::endl;
 
-
     // this is the current simulation start time
     // LA note: this would need adjusted if we ever change the 
     //  input simulation parameters to include a simStartTime
@@ -30,17 +29,21 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* u
     float simStartTime = 0.0;
     
     // setup output frequency control information
-    timeAvgStart = PID->colParams->timeAvgStart;       // time to start concentration averaging, not the time to start output. Adjusted if the time averaging duration does not divide evenly by the averaging frequency
-    timeAvgEnd = PID->simParams->simDur;           // time to end concentration averaging and output. Notice that this is now always the simulation end time
-    timeAvgFreq = PID->colParams->timeAvgFreq;          // time averaging frequency and output frequency
-    
+    // time to start concentration averaging, not the time to start output.
+    //Adjusted if the time averaging duration does not divide evenly by the averaging frequency
+    timeAvgStart = PID->colParams->timeAvgStart;
+    // time to end concentration averaging and output. Notice that this is now always the simulation end time
+    timeAvgEnd = PID->simParams->simDur;
+    // time averaging frequency and output frequency
+    timeAvgFreq = PID->colParams->timeAvgFreq;          
     
     // !!! Because collection parameters could not know anything about simulation duration at parse time,
     //  need to make this check now
     // Make sure the timeAvgStart is not greater than the simulation end time
-    if( timeAvgStart > PID->simParams->simDur )
-    {
-        std::cerr << "(CollectionParameters checked during PlumeOutputLagrToEul): input timeAvgStart must be smaller than or equal to the input simulation duration!";
+    if( timeAvgStart > PID->simParams->simDur ) {
+        std::cerr << "[PlumeOutputLagrToEul] ERROR "
+                  << "(CollectionParameters checked during PlumeOutputLagrToEul) "
+                  << "input timeAvgStart must be smaller than or equal to the input simulation duration!" << std::endl;
         std::cerr << " timeAvgStart = \"" << timeAvgStart << "\", simDur = \"" << PID->simParams->simDur << "\"" << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -50,9 +53,10 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* u
     // Make sure timeAvgFreq is not bigger than the simulation duration
     // LA note: timeAvgFreq can be as big as the collection duration, or even smaller than the collection duration
     //  IF timeAvgFreq is at least the same size or smaller than the simulation duration
-    if( timeAvgFreq > PID->simParams->simDur )
-    {
-        std::cerr << "(CollectionParameters checked during PlumeOutputLagrToEul): input timeAvgFreq must be smaller than or equal to the input simulation duration!";
+    if( timeAvgFreq > PID->simParams->simDur ) {
+        std::cerr << "[PlumeOutputLagrToEul] ERROR "
+                  << "(CollectionParameters checked during PlumeOutputLagrToEul): "
+                  << "input timeAvgFreq must be smaller than or equal to the input simulation duration!" << std::endl;
         std::cerr << " timeAvgFreq = \"" << timeAvgFreq << "\", simDur = \"" << PID->simParams->simDur << "\"" << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -68,8 +72,7 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* u
     //  here's hoping numerical error doesn't play a role
     float quotient = std::floor(avgDur/timeAvgFreq);
     float decDivResult = avgDur/timeAvgFreq;
-    if( quotient != decDivResult )
-    {
+    if( quotient != decDivResult ) {
         // clever algorythm that always gets the exact number of time averages (and outputs) 
         // when the time averaging duration divides evenly by the time averaging frequency
         // and rounds the number of time averages down to what it would be if the start time 
@@ -81,22 +84,20 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* u
         float current_timeAvgStart = timeAvgEnd - timeAvgFreq*(nAvgs);
         // the timeAvgStart if adjusting nAvgs. Note nAvgs has one extra averaging period
         float adjusted_timeAvgStart = timeAvgEnd - timeAvgFreq*(nAvgs+1);
-        if( adjusted_timeAvgStart >= simStartTime )
-        {
+        if( adjusted_timeAvgStart >= simStartTime ) {
             // need to adjust the timeAvgStart to be the adjustedTimeAvgStart
             // warn the user that the timeAvgStart is being adjusted before adjusting timeAvgStart
-            std::cout << "[PlumeOutputLagrangian]: "
+            std::cout << "[PlumeOutputLagrToEul] "
                       << "adjusting timeAvgStart because time averaging duration did not divide evenly by timeAvgFreq" << std::endl;
             std::cout << "  original timeAvgStart = \"" << timeAvgStart
                       << "\", timeAvgEnd = \"" << timeAvgEnd 
                       << "\", timeAvgFreq = \"" << timeAvgFreq
                       << "\", new timeAvgStart = \"" << adjusted_timeAvgStart << "\"" << std::endl;
             timeAvgStart = adjusted_timeAvgStart;
-        } else
-        {
+        } else {
             // need to adjust the timeAvgStart to be the currentTimeAvgStart
             // warn the user that the timeAvgStart is being adjusted before adjusting timeAvgStart
-            std::cout << "[PlumeOutputLagrangian]: "
+            std::cout << "[PlumeOutputLagrToEul] "
                       << "adjusting timeAvgStart because time averaging duration did not divide evenly by timeAvgFreq" << std::endl;
             std::cout << "  original timeAvgStart = \"" << timeAvgStart
                       << "\", timeAvgEnd = \"" << timeAvgEnd 
@@ -152,18 +153,15 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* u
     yBoxCen.resize(nBoxesY);
     zBoxCen.resize(nBoxesZ);
     int zR = 0, yR = 0, xR = 0;
-    for(int k = 0; k < nBoxesZ; ++k)
-    {
+    for(int k = 0; k < nBoxesZ; ++k) {
         zBoxCen.at(k) = lBndz + (zR*boxSizeZ) + (boxSizeZ/2.0);
         zR++;
     }
-    for(int j = 0; j < nBoxesY; ++j)
-    {
+    for(int j = 0; j < nBoxesY; ++j) {
         yBoxCen.at(j) = lBndy + (yR*boxSizeY) + (boxSizeY/2.0);
         yR++;
     }
-    for(int i = 0; i <nBoxesX; ++i)
-    {
+    for(int i = 0; i <nBoxesX; ++i) {
         xBoxCen.at(i) = lBndx + (xR*boxSizeX) + (boxSizeX/2.0);
         xR++;
     }
@@ -180,7 +178,6 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* u
     // setup desired output fields string
     // LA future work: can be added in fileOptions at some point
     output_fields = {"t","x","y","z","conc"};
-
 
     // set data dimensions, which in this case are cell-centered dimensions
     // time dimension
@@ -242,16 +239,14 @@ void PlumeOutputLagrToEul::save(float currentTime)
     //  This means instead of currentTime >= timeAvgStart, we need currentTime > timeAvgStart.
     //  Still need to double check with professors if this is the right way, or whether we should actually 
     //   just bin twice for the timeAvgStart time, once on each time average period that falls on that time.
-    if( currentTime > timeAvgStart && currentTime <= timeAvgEnd )
-    {
+    if( currentTime > timeAvgStart && currentTime <= timeAvgEnd ) {
         boxCount();
     }
 
     // only calculate the concentration and do output if it is during the next output time
     //  also reinitialize the counter (cBox) in prep of the next concentration time averaging period
     // LA note: No need to adjust this one to be > instead of >=, just the binning.
-    if( currentTime >= nextOutputTime && currentTime <= timeAvgEnd )
-    {
+    if( currentTime >= nextOutputTime && currentTime <= timeAvgEnd ) {
         // FM, updated by LA, future work, need to adjust: the current output 
         //  is particle per volume, not mass per volume
         //  should be fixed by multiplying by the specific particle density of each particle
@@ -266,8 +261,7 @@ void PlumeOutputLagrToEul::save(float currentTime)
         // cc = dt/timeAvgFreq * 1/vol => in #/m3 
         double cc = (timeStep)/(timeAvgFreq*volume);
 
-        for( auto id = 0; id <  conc.size();id++ )
-        {
+        for( auto id = 0; id <  conc.size();id++ ) {
             conc.at(id) = cBox.at(id)*cc;
             // notice that the number of particles per box is reset for the next averaging period
             cBox.at(id) = 0.0;
@@ -285,15 +279,13 @@ void PlumeOutputLagrToEul::save(float currentTime)
         // from output array after first save
         // FM: only remove time dep variables from output array after first save
         // LA note: the output counter is an inherited variable
-        if( output_counter == 0 )
-        {
+        if( output_counter == 0 ) {
             rmTimeIndepFields();
         }
 
         // increment inherited output counter for next time insertion
         output_counter +=1;
         
-
         // update the next output time value 
         // so averaging and output only happens at the averaging frequency
         nextOutputTime = nextOutputTime + timeAvgFreq;
@@ -310,8 +302,7 @@ void PlumeOutputLagrToEul::boxCount()
     for(auto parItr = plume->particleList.begin(); parItr != plume->particleList.end() ; parItr++ ) {
         
         // because particles all start out as active now, need to also check the release time
-        if( parItr->isActive == true )
-        {
+        if( parItr->isActive == true ) {
             
             // get the current position of the particle
             double xPos = parItr->xPos;
