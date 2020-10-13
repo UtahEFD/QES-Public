@@ -10,11 +10,11 @@
 
 using namespace std;
 
-// forward declaration of URBInputData and URBGeneralData, which
+// forward declaration of WINDSInputData and WINDSGeneralData, which
 // will be used by the derived classes and thus included there in the
 // C++ files
-class URBInputData;
-class URBGeneralData;
+class WINDSInputData;
+class WINDSGeneralData;
 class TURBGeneralData;
 
 class Building : public ParseInterface
@@ -57,60 +57,52 @@ public:
     Building()
     {
     }
-
+    
     virtual ~Building()
     {
     }
-
-
+    
+    
     virtual void parseValues() = 0;
-
-		virtual void setPolyBuilding (URBGeneralData* UGD)
-		{
-		}
-
+    
+    virtual void setPolyBuilding (WINDSGeneralData* WGD)
+    {
+    }
+    
     // Need to finalize the parameters here...
-    virtual void setCellFlags (const URBInputData* UID, URBGeneralData* UGD, int building_number)
+    virtual void setCellFlags (const WINDSInputData* WID, WINDSGeneralData* WGD, int building_number)
+    {
+    }
+    
+    virtual void upwindCavity (const WINDSInputData* WID, WINDSGeneralData* WGD)
     {
     }
 
-		virtual void upwindCavity (const URBInputData* UID, URBGeneralData* UGD)
+
+    virtual void polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD, int building_id)
     {
     }
 
-
-    virtual void polygonWake (const URBInputData* UID, URBGeneralData* UGD, int building_id)
+    virtual void canopyInitial (WINDSGeneralData *WGD)
     {
     }
-
-    virtual void canopyInitial (URBGeneralData *UGD)
+    virtual void canopyVegetation (WINDSGeneralData *WGD)
     {
     }
-    virtual void canopyVegetation (URBGeneralData *UGD)
+    
+    virtual void streetCanyon (WINDSGeneralData *WGD)
     {
     }
-
-		virtual void streetCanyon (URBGeneralData *UGD)
-		{
-		}
-
-		virtual void sideWall (const URBInputData* UID, URBGeneralData* UGD)
-		{
-		}
-
-		virtual void rooftop (const URBInputData* UID, URBGeneralData* UGD)
-		{
-		}
-
-		/*virtual void streetIntersection (const URBInputData* UID, URBGeneralData* UGD)
-		{
-		}
-
-		virtual void poisson (const URBInputData* UID, URBGeneralData* UGD)
-		{
-		}*/
-
-    virtual void NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int buidling_id)
+    
+    virtual void sideWall (const WINDSInputData* WID, WINDSGeneralData* WGD)
+    {
+    }
+    
+    virtual void rooftop (const WINDSInputData* WID, WINDSGeneralData* WGD)
+    {
+    }
+    
+    virtual void NonLocalMixing (WINDSGeneralData* WGD, TURBGeneralData* TGD,int buidling_id)
     {
     }
 };

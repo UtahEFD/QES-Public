@@ -5,7 +5,7 @@
 #include "Building.h"
 
 enum CanopyType {
-    Cionco,
+    Homogeneous,
     Vineyard
 };
 
@@ -45,19 +45,19 @@ protected:
      * This function takes in variables initialized by the readCanopy function and sets the boundaries of 
      * the canopy and defines initial values for the canopy height.
      */
-    void canopyDefineBoundary(URBGeneralData *ugd,int cellFlagToUse);
+    void canopyDefineBoundary(WINDSGeneralData *wgd,int cellFlagToUse);
     
     
     
     /*!
      * For there and below, the canopyInitial function has to be defined
      */
-    virtual void canopyInitial(URBGeneralData *ugd) = 0;
+    virtual void canopyInitial(WINDSGeneralData *wgd) = 0;
     
     /*!
      * For there and below, the canopyVegetation function has to be defined
      */
-    virtual void canopyVegetation(URBGeneralData *ugd) = 0;
+    virtual void canopyVegetation(WINDSGeneralData *wgd) = 0;
     
     /*!
      * 
@@ -78,4 +78,5 @@ protected:
     
 private:
     
+
 };

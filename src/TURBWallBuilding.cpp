@@ -1,30 +1,30 @@
 #include "TURBWallBuilding.h"
 
-void TURBWallBuilding::defineWalls(URBGeneralData *UGD,TURBGeneralData *TGD) {
+void TURBWallBuilding::defineWalls(WINDSGeneralData *WGD,TURBGeneralData *TGD) {
     // fill array with cellid  of cutcell cells
-    get_cutcell_wall_id(UGD,icellflag_cutcell);
+    get_cutcell_wall_id(WGD,icellflag_cutcell);
     // fill itrublfag with cutcell flag
     set_cutcell_wall_flag(TGD,iturbflag_cutcell);
-  
-    // [FM] temporary fix -> use stairstep within the cut-cell 
-    get_stairstep_wall_id(UGD,icellflag_building);
+
+    // [FM] temporary fix -> use stairstep within the cut-cell
+    get_stairstep_wall_id(WGD,icellflag_building);
     set_stairstep_wall_flag(TGD,iturbflag_stairstep);
 
     /*
-      [FM] temporary fix -> when cut-cell treatement is implmented 
+      [FM] temporary fix -> when cut-cell treatement is implmented
       if(cutcell_wall_id.size()==0) {
-      get_stairstep_wall_id(UGD,icellflag_building);
+      get_stairstep_wall_id(WGD,icellflag_building);
       set_stairstep_wall_flag(TGD,iturbflag_stairstep);
       }else{
       use_cutcell = true;
       }
     */
-  
+
     return;
 }
 
 
-void TURBWallBuilding::setWallsBC(URBGeneralData *UGD,TURBGeneralData *TGD){
+void TURBWallBuilding::setWallsBC(WINDSGeneralData *WGD,TURBGeneralData *TGD){
 
     /*
       This function apply the loglow at the wall for building
@@ -34,9 +34,9 @@ void TURBWallBuilding::setWallsBC(URBGeneralData *UGD,TURBGeneralData *TGD){
     */
 
     if(!use_cutcell) {
-    
+
         for (size_t id=0; id < stairstep_wall_id.size(); ++id){
-            set_loglaw_stairstep_at_id_cc(UGD,TGD,stairstep_wall_id[id],icellflag_building,UGD->z0);
+            set_loglaw_stairstep_at_id_cc(WGD,TGD,stairstep_wall_id[id],icellflag_building,WGD->z0);
         }
     } else {
         //[FM] temporary fix because the cut-cell are messing with the wall
@@ -51,6 +51,5 @@ void TURBWallBuilding::setWallsBC(URBGeneralData *UGD,TURBGeneralData *TGD){
             TGD->S33[id_cc]=0.0;
             TGD->Lm[id_cc]=0.0;
         }
-    } 
+    }
 }
-

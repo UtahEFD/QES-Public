@@ -1,6 +1,6 @@
 /*
  *
- * CUDA-URB
+ * QES-Winds
  * Copyright (c) 2019 Behnam Bozorgmehr
  * Copyright (c) 2019 Jeremy Gibbs
  * Copyright (c) 2019 Eric Pardyjak
@@ -8,7 +8,7 @@
  * Copyright (c) 2019 Rob Stoll
  * Copyright (c) 2019 Pete Willemsen
  *
- * This file is part of CUDA-URB package
+ * This file is part of QES-Winds package
  *
  * MIT License
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -57,18 +57,18 @@ void Solver::printProgress (float percentage)
 
 
 /**< \fn Solver
-* This function is assigning values read by URBImputData to variables
-* used in the solvers - this is only meant work with CUDA-URB!
+* This function is assigning values read by WINDSImputData to variables
+* used in the solvers - this is only meant work with QES-Winds!
  */
 
-Solver::Solver(const URBInputData* UID, URBGeneralData * UGD)
+Solver::Solver(const WINDSInputData* WID, WINDSGeneralData * WGD)
     : alpha1 (1),
       alpha2 (1),
       eta( pow((alpha1/alpha2), 2.0) ),
-      A( pow( (UGD->dx/UGD->dy), 2.0 ) ),
-      B( eta*pow( (UGD->dx/UGD->dz), 2.0) ),
-      itermax( UID->simParams->maxIterations )
+      A( pow( (WGD->dx/WGD->dy), 2.0 ) ),
+      B( eta*pow( (WGD->dx/WGD->dz), 2.0) ),
+      itermax( WID->simParams->maxIterations )
 
 {
-  tol = UID->simParams->tolerance;
+  tol = WID->simParams->tolerance;
 }

@@ -1,8 +1,8 @@
 #include "PolyBuilding.h"
 
 // These take care of the circular reference
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 
 
 
@@ -12,10 +12,10 @@
 * This function reads in building features like nodes, building height and base height and uses
 * features of the building defined in the class constructor and setCellsFlag function. It defines
 * cells qualified in the space between buildings and applies the approperiate parameterization to them.
-* More information: "Improvements to a fast-response urban wind model, M. Nelson et al. (2008)"
+* More information: "Improvements to a fast-response WINDSan wind model, M. Nelson et al. (2008)"
 *
 */
-void PolyBuilding::streetCanyon (URBGeneralData *UGD)
+void PolyBuilding::streetCanyon (WINDSGeneralData *WGD)
 {
   float tol = 0.01*M_PI/180.0;
   float angle_tol = 3*M_PI/4;
@@ -49,9 +49,9 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
   perpendicular_flag.resize (polygonVertices.size(), 0);
   perpendicular_dir.resize (polygonVertices.size(), 0.0);
 
-  int index_building_face = i_building_cent + j_building_cent*UGD->nx + (k_end)*UGD->nx*UGD->ny;
-  u0_h = UGD->u0[index_building_face];         // u velocity at the height of building at the centroid
-  v0_h = UGD->v0[index_building_face];         // v velocity at the height of building at the centroid
+  int index_building_face = i_building_cent + j_building_cent*WGD->nx + (k_end)*WGD->nx*WGD->ny;
+  u0_h = WGD->u0[index_building_face];         // u velocity at the height of building at the centroid
+  v0_h = WGD->v0[index_building_face];         // v velocity at the height of building at the centroid
 
   // Wind direction of initial velocity at the height of building at the centroid
   upwind_dir = atan2(v0_h,u0_h);
@@ -92,9 +92,9 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
         perpendicular_dir[id] -= 2*M_PI;      // Force the angle to be between -pi and pi
       }
       // Loop through y locations along each face in rotated coordinates
-      for (auto y_id=0; y_id <= 2*ceil(abs(yi[id]-yi[id+1])/UGD->dxy); y_id++)
+      for (auto y_id=0; y_id <= 2*ceil(abs(yi[id]-yi[id+1])/WGD->dxy); y_id++)
       {
-        yc = MIN_S(yi[id],yi[id+1])+0.5*y_id*UGD->dxy;      // y locations along each face in rotated coordinates
+        yc = MIN_S(yi[id],yi[id+1])+0.5*y_id*WGD->dxy;      // y locations along each face in rotated coordinates
         top_flag = 0;                               // If we are inside the canyon
         if(perpendicular_flag[id] == 0)
         {
@@ -108,66 +108,66 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
           reverse_flag = 0;
           x_id_min = -1;
           // Loop through x locations along perpendicular direction of each face
-          for (auto x_id = 1; x_id <= 2*ceil(Lr/UGD->dxy); x_id++)
+          for (auto x_id = 1; x_id <= 2*ceil(Lr/WGD->dxy); x_id++)
           {
-            xc = 0.5*x_id*UGD->dxy;              // x locations along perpendicular direction of each face
+            xc = 0.5*x_id*WGD->dxy;              // x locations along perpendicular direction of each face
             // Finding i and j indices of the cell (xc, yc) located in
             int i = ceil(((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)
-                            +building_cent_x)/UGD->dx)-1;
+                            +building_cent_x)/WGD->dx)-1;
             int j = ceil(((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)
-                            +building_cent_y)/UGD->dy)-1;
-            icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
+                            +building_cent_y)/WGD->dy)-1;
+            icell_cent = i+j*(WGD->nx-1)+k*(WGD->nx-1)*(WGD->ny-1);
             // Making sure i and j are inside the domain
-            if (i>=UGD->nx-2 && i<=0 && j>=UGD->ny-2 && j<=0)
+            if (i>=WGD->nx-2 && i<=0 && j>=WGD->ny-2 && j<=0)
             {
               break;
             }
-            icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
+            icell_cent = i+j*(WGD->nx-1)+k*(WGD->nx-1)*(WGD->ny-1);
             // Finding id of the first cell in perpendicular direction of the face that is outside of the building
-            if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2 && x_id_min < 0)
+            if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && x_id_min < 0)
             {
               x_id_min = x_id;
             }
             // Finding id of the last cell in perpendicular direction of the face that is outside of the building
-            if ( (UGD->icellflag[icell_cent] == 0 || UGD->icellflag[icell_cent] == 2) && x_id_min >= 0)
+            if ( (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 2) && x_id_min >= 0)
             {
               canyon_flag = 1;
               x_id_max = x_id-1;
-              s = 0.5*(x_id_max-x_id_min)*UGD->dxy;           // Distance between two buildings
+              s = 0.5*(x_id_max-x_id_min)*WGD->dxy;           // Distance between two buildings
               if (top_flag == 0)            // If inside the street canyon
               {
                 k_ref = k+1;
-                int ic = ceil(((0.5*x_id_max*UGD->dxy+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)
-                                +building_cent_x-0.001)/UGD->dx)-1;
-                int jc = ceil(((0.5*x_id_max*UGD->dxy+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)
-                                +building_cent_y-0.001)/UGD->dy)-1;
-                icell_cent = ic+jc*(UGD->nx-1)+k_ref*(UGD->nx-1)*(UGD->ny-1);
-                int icell_face = ic+jc*UGD->nx+k_ref*UGD->nx*UGD->ny;
-                if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
+                int ic = ceil(((0.5*x_id_max*WGD->dxy+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)
+                                +building_cent_x-0.001)/WGD->dx)-1;
+                int jc = ceil(((0.5*x_id_max*WGD->dxy+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)
+                                +building_cent_y-0.001)/WGD->dy)-1;
+                icell_cent = ic+jc*(WGD->nx-1)+k_ref*(WGD->nx-1)*(WGD->ny-1);
+                int icell_face = ic+jc*WGD->nx+k_ref*WGD->nx*WGD->ny;
+                if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2)
                 {
                   number_u = 0;
                   number_v = 0;
                   u_component = 0.0;
                   v_component = 0.0;
-                  if (UGD->icellflag[icell_cent-1] != 0 && UGD->icellflag[icell_cent-1] != 2)
+                  if (WGD->icellflag[icell_cent-1] != 0 && WGD->icellflag[icell_cent-1] != 2)
                   {
                     number_u += 1;
-                    u_component += UGD->u0[icell_face];
+                    u_component += WGD->u0[icell_face];
                   }
-                  if (UGD->icellflag[icell_cent+1] != 0 && UGD->icellflag[icell_cent+1] != 2)
+                  if (WGD->icellflag[icell_cent+1] != 0 && WGD->icellflag[icell_cent+1] != 2)
                   {
                     number_u += 1;
-                    u_component += UGD->u0[icell_face+1];
+                    u_component += WGD->u0[icell_face+1];
                   }
-                  if (UGD->icellflag[icell_cent-(UGD->nx-1)] != 0 && UGD->icellflag[icell_cent-(UGD->nx-1)] != 2)
+                  if (WGD->icellflag[icell_cent-(WGD->nx-1)] != 0 && WGD->icellflag[icell_cent-(WGD->nx-1)] != 2)
                   {
                     number_v += 1;
-                    v_component += UGD->v0[icell_face];
+                    v_component += WGD->v0[icell_face];
                   }
-                  if (UGD->icellflag[icell_cent+(UGD->nx-1)] != 0 && UGD->icellflag[icell_cent+(UGD->nx-1)] != 2)
+                  if (WGD->icellflag[icell_cent+(WGD->nx-1)] != 0 && WGD->icellflag[icell_cent+(WGD->nx-1)] != 2)
                   {
                     number_v += 1;
-                    v_component += UGD->v0[icell_face+UGD->nx];
+                    v_component += WGD->v0[icell_face+WGD->nx];
                   }
 
                   if ( u_component != 0.0 && number_u > 0)
@@ -225,11 +225,11 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
                   }
 
                   top_flag = 1;
-                  icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
+                  icell_cent = i+j*(WGD->nx-1)+k*(WGD->nx-1)*(WGD->ny-1);
 
                   if (abs(s) > 0.0)
                   {
-                    if ( (UGD->ibuilding_flag[icell_cent] >= 0) && (UGD->allBuildingsV[UGD->ibuilding_flag[icell_cent]]->height_eff < height_eff) && (UGD->z_face[k]/s < 0.65) )
+                    if ( (WGD->ibuilding_flag[icell_cent] >= 0) && (WGD->allBuildingsV[WGD->ibuilding_flag[icell_cent]]->height_eff < height_eff) && (WGD->z_face[k]/s < 0.65) )
                     {
                       canyon_flag = 0;
                       top_flag = 0;
@@ -245,7 +245,7 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
                   s = 0.0;
                   break;
                 }
-                if (velocity_mag > UGD->max_velmag)
+                if (velocity_mag > WGD->max_velmag)
                 {
                   canyon_flag = 0;
                   top_flag = 0;
@@ -254,33 +254,33 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
                 }
               }
 
-              icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
-              if (UGD->ibuilding_flag[icell_cent] >= 0)
+              icell_cent = i+j*(WGD->nx-1)+k*(WGD->nx-1)*(WGD->ny-1);
+              if (WGD->ibuilding_flag[icell_cent] >= 0)
               {
-                d_build = UGD->ibuilding_flag[icell_cent];
-                int i = ceil(((xc-0.5*UGD->dxy+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)
-                              +building_cent_x-0.001)/UGD->dx)-1;
-                int j = ceil(((xc-0.5*UGD->dxy+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)
-                              +building_cent_y-0.001)/UGD->dy)-1;
-                for (auto j_id = 0; j_id < UGD->allBuildingsV[d_build]->polygonVertices.size()-1; j_id++)
+                d_build = WGD->ibuilding_flag[icell_cent];
+                int i = ceil(((xc-0.5*WGD->dxy+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)
+                              +building_cent_x-0.001)/WGD->dx)-1;
+                int j = ceil(((xc-0.5*WGD->dxy+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)
+                              +building_cent_y-0.001)/WGD->dy)-1;
+                for (auto j_id = 0; j_id < WGD->allBuildingsV[d_build]->polygonVertices.size()-1; j_id++)
                 {
-                  cross_dir = atan2(UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].y_poly-UGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly,
-                                    UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].x_poly-UGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly)+0.5*M_PI;
+                  cross_dir = atan2(WGD->allBuildingsV[d_build]->polygonVertices[j_id+1].y_poly-WGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly,
+                                    WGD->allBuildingsV[d_build]->polygonVertices[j_id+1].x_poly-WGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly)+0.5*M_PI;
 
                   if (cross_dir > M_PI+0.001)
                   {
                     cross_dir -= 2*M_PI;
                   }
-                  x_ave = 0.5*(UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].x_poly+UGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly);
-                  y_ave = 0.5*(UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].y_poly+UGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly);
+                  x_ave = 0.5*(WGD->allBuildingsV[d_build]->polygonVertices[j_id+1].x_poly+WGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly);
+                  y_ave = 0.5*(WGD->allBuildingsV[d_build]->polygonVertices[j_id+1].y_poly+WGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly);
 
-                  x_down = ((i+0.5)*UGD->dx-x_ave)*cos(cross_dir) + ((j+0.5)*UGD->dy-y_ave)*sin(cross_dir);
-                  y_down = -((i+0.5)*UGD->dx-x_ave)*sin(cross_dir) + ((j+0.5)*UGD->dy-y_ave)*cos(cross_dir);
+                  x_down = ((i+0.5)*WGD->dx-x_ave)*cos(cross_dir) + ((j+0.5)*WGD->dy-y_ave)*sin(cross_dir);
+                  y_down = -((i+0.5)*WGD->dx-x_ave)*sin(cross_dir) + ((j+0.5)*WGD->dy-y_ave)*cos(cross_dir);
 
-                  if (abs(x_down) < 0.75*UGD->dxy)
+                  if (abs(x_down) < 0.75*WGD->dxy)
                   {
-                    segment_length = sqrt(pow(UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].x_poly-UGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly, 2.0)
-                                          +pow(UGD->allBuildingsV[d_build]->polygonVertices[j_id+1].y_poly-UGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly, 2.0));
+                    segment_length = sqrt(pow(WGD->allBuildingsV[d_build]->polygonVertices[j_id+1].x_poly-WGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly, 2.0)
+                                          +pow(WGD->allBuildingsV[d_build]->polygonVertices[j_id+1].y_poly-WGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly, 2.0));
                     if (abs(y_down) <= 0.5*segment_length)
                     {
                       downwind_rel_dir = canyon_dir-cross_dir;
@@ -366,25 +366,25 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
 
 
           //std::cout << "along_dir:   " << along_dir << std::endl;
-          if (canyon_flag == 1 && s > 0.9*UGD->dxy)
+          if (canyon_flag == 1 && s > 0.9*WGD->dxy)
           {
-            along_vel_mag = abs(velocity_mag*cos(canyon_dir-along_dir))*log(UGD->z[k]/UGD->z0)/log(UGD->z[k_ref]/UGD->z0);
+            along_vel_mag = abs(velocity_mag*cos(canyon_dir-along_dir))*log(WGD->z[k]/WGD->z0)/log(WGD->z[k_ref]/WGD->z0);
             cross_vel_mag = abs(velocity_mag*cos(canyon_dir-cross_dir));
             for (auto x_id = x_id_min; x_id <= x_id_max; x_id++)
             {
-              xc = 0.5*x_id*UGD->dxy;
+              xc = 0.5*x_id*WGD->dxy;
               int i = ceil(((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)
-                              +building_cent_x-0.001)/UGD->dx)-1;
+                              +building_cent_x-0.001)/WGD->dx)-1;
               int j = ceil(((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)
-                              +building_cent_y-0.001)/UGD->dy)-1;
-              icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
-              if (UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2)
+                              +building_cent_y-0.001)/WGD->dy)-1;
+              icell_cent = i+j*(WGD->nx-1)+k*(WGD->nx-1)*(WGD->ny-1);
+              if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2)
               {
                 i_u = std::round(((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)
-                                    +building_cent_x)/UGD->dx);
+                                    +building_cent_x)/WGD->dx);
 
-                x_p = i_u*UGD->dx-building_cent_x;
-                y_p = (j+0.5)*UGD->dy-building_cent_y;
+                x_p = i_u*WGD->dx-building_cent_x;
+                y_p = (j+0.5)*WGD->dy-building_cent_y;
                 x_u = x_p*cos(upwind_dir)+y_p*sin(upwind_dir);
                 y_u = -x_p*sin(upwind_dir)+y_p*cos(upwind_dir);
 
@@ -397,16 +397,16 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
                   x_wall_u = xi[id];
                 }
                 x_pos = x_u-x_wall_u;
-                if (x_pos <= s && x_pos > -0.5*UGD->dxy)
+                if (x_pos <= s && x_pos > -0.5*WGD->dxy)
                 {
-                  icell_face = i_u+j*UGD->nx+k*UGD->nx*UGD->ny;
-                  UGD->u0[icell_face] = along_vel_mag*cos(along_dir)+cross_vel_mag*(2*x_pos/s)*2*(1-x_pos/s)*cos(cross_dir);
+                  icell_face = i_u+j*WGD->nx+k*WGD->nx*WGD->ny;
+                  WGD->u0[icell_face] = along_vel_mag*cos(along_dir)+cross_vel_mag*(2*x_pos/s)*2*(1-x_pos/s)*cos(cross_dir);
                 }
 
                 j_v = std::round(((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)
-                                    +building_cent_y)/UGD->dy);
-                x_p = (i+0.5)*UGD->dx-building_cent_x;
-                y_p = j_v*UGD->dy-building_cent_y;
+                                    +building_cent_y)/WGD->dy);
+                x_p = (i+0.5)*WGD->dx-building_cent_x;
+                y_p = j_v*WGD->dy-building_cent_y;
                 x_v = x_p*cos(upwind_dir)+y_p*sin(upwind_dir);
                 y_v = -x_p*sin(upwind_dir)+y_p*cos(upwind_dir);
                 if(perpendicular_flag[id] == 0)
@@ -418,14 +418,14 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
                   x_wall_v = xi[id];
                 }
                 x_pos = x_v-x_wall_v;
-                if (x_pos <= s && x_pos > -0.5*UGD->dxy)
+                if (x_pos <= s && x_pos > -0.5*WGD->dxy)
                 {
-                  icell_face = i+j_v*UGD->nx+k*UGD->nx*UGD->ny;
-                  UGD->v0[icell_face] = along_vel_mag*sin(along_dir)+cross_vel_mag*(2*x_pos/s)*2*(1-x_pos/s)*sin(cross_dir);
+                  icell_face = i+j_v*WGD->nx+k*WGD->nx*WGD->ny;
+                  WGD->v0[icell_face] = along_vel_mag*sin(along_dir)+cross_vel_mag*(2*x_pos/s)*2*(1-x_pos/s)*sin(cross_dir);
                 }
 
-                x_p = (i+0.5)*UGD->dx-building_cent_x;
-                y_p = (j+0.5)*UGD->dy-building_cent_y;
+                x_p = (i+0.5)*WGD->dx-building_cent_x;
+                y_p = (j+0.5)*WGD->dy-building_cent_y;
                 x_w = x_p*cos(upwind_dir)+y_p*sin(upwind_dir);
                 y_w = -x_p*sin(upwind_dir)+y_p*cos(upwind_dir);
                 if(perpendicular_flag[id] == 0)
@@ -438,24 +438,24 @@ void PolyBuilding::streetCanyon (URBGeneralData *UGD)
                 }
                 x_pos = x_w-x_wall_w;
 
-                if (x_pos <= s && x_pos > -0.5*UGD->dxy)
+                if (x_pos <= s && x_pos > -0.5*WGD->dxy)
                 {
-                  icell_cent = i+j*(UGD->nx-1)+k*(UGD->nx-1)*(UGD->ny-1);
-                  if (UGD->icellflag[icell_cent-(UGD->nx-1)*(UGD->ny-1)] != 0 && UGD->icellflag[icell_cent-(UGD->nx-1)*(UGD->ny-1)] != 2)
+                  icell_cent = i+j*(WGD->nx-1)+k*(WGD->nx-1)*(WGD->ny-1);
+                  if (WGD->icellflag[icell_cent-(WGD->nx-1)*(WGD->ny-1)] != 0 && WGD->icellflag[icell_cent-(WGD->nx-1)*(WGD->ny-1)] != 2)
                   {
-                    icell_face = i+j*UGD->nx+k*UGD->nx*UGD->ny;
+                    icell_face = i+j*WGD->nx+k*WGD->nx*WGD->ny;
                     if (reverse_flag == 0)
                     {
-                      UGD->w0[icell_face] = -abs(0.5*cross_vel_mag*(1-2*x_pos/s))*(1-2*(s-x_pos)/s);
+                      WGD->w0[icell_face] = -abs(0.5*cross_vel_mag*(1-2*x_pos/s))*(1-2*(s-x_pos)/s);
                     }
                     else
                     {
-                      UGD->w0[icell_face] = abs(0.5*cross_vel_mag*(1-2*x_pos/s))*(1-2*(s-x_pos)/s);
+                      WGD->w0[icell_face] = abs(0.5*cross_vel_mag*(1-2*x_pos/s))*(1-2*(s-x_pos)/s);
                     }
                   }
-                  if ((UGD->icellflag[icell_cent] != 7) && (UGD->icellflag[icell_cent] != 8))
+                  if ((WGD->icellflag[icell_cent] != 7) && (WGD->icellflag[icell_cent] != 8))
                   {
-                    UGD->icellflag[icell_cent] = 6;
+                    WGD->icellflag[icell_cent] = 6;
                   }
                 }
               }

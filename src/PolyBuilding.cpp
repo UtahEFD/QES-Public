@@ -1,23 +1,23 @@
 #include "PolyBuilding.h"
 
 // These take care of the circular reference
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 
 
-PolyBuilding::PolyBuilding(const URBInputData* UID, URBGeneralData* UGD, int id)
+PolyBuilding::PolyBuilding(const WINDSInputData* WID, WINDSGeneralData* WGD, int id)
               : Building()
 {
-  polygonVertices = UID->simParams->shpPolygons[id];
-  H = UID->simParams->shpBuildingHeight[id];
-  base_height = UGD->base_height[id];
+  polygonVertices = WID->simParams->shpPolygons[id];
+  H = WID->simParams->shpBuildingHeight[id];
+  base_height = WGD->base_height[id];
 
 }
 
 /**
  *
  */
-void PolyBuilding::setPolyBuilding(URBGeneralData* UGD)
+void PolyBuilding::setPolyBuilding(WINDSGeneralData* WGD)
 {
 
   building_cent_x = 0.0;               // x-coordinate of the centroid of the building
@@ -33,8 +33,8 @@ void PolyBuilding::setPolyBuilding(URBGeneralData* UGD)
   building_cent_x /= polygonVertices.size()-1;
   building_cent_y /= polygonVertices.size()-1;
 
-  i_building_cent = std::round(building_cent_x/UGD->dx)-1;   // Index of building centroid in x-direction
-  j_building_cent = std::round(building_cent_y/UGD->dy)-1;   // Index of building centroid in y-direction
+  i_building_cent = std::round(building_cent_x/WGD->dx)-1;   // Index of building centroid in x-direction
+  j_building_cent = std::round(building_cent_y/WGD->dy)-1;   // Index of building centroid in y-direction
 
 }
 
@@ -45,10 +45,10 @@ void PolyBuilding::setPolyBuilding(URBGeneralData* UGD)
 * for building cells. It applies the Stair-step method to define building bounds.
 *
 */
-void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, int building_number)
+void PolyBuilding::setCellFlags(const WINDSInputData* WID, WINDSGeneralData* WGD, int building_number)
 {
 
-  int mesh_type_flag = UID->simParams->meshTypeFlag;
+  int mesh_type_flag = WID->simParams->meshTypeFlag;
   float ray_intersect;
   int num_crossing, vert_id, start_poly;
 
@@ -82,36 +82,36 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
   }
 
 
-  i_start = (x_min/UGD->dx);       // Index of building start location in x-direction
-  i_end = (x_max/UGD->dx)+1;       // Index of building end location in x-direction
-  j_start = (y_min/UGD->dy);       // Index of building start location in y-direction
-  j_end = (y_max/UGD->dy)+1;       // Index of building end location in y-direction
+  i_start = (x_min/WGD->dx);       // Index of building start location in x-direction
+  i_end = (x_max/WGD->dx)+1;       // Index of building end location in x-direction
+  j_start = (y_min/WGD->dy);       // Index of building start location in y-direction
+  j_end = (y_max/WGD->dy)+1;       // Index of building end location in y-direction
 
   // Define start index of the building in z-direction
-  for (auto k = 1; k < UGD->z.size(); k++)
+  for (auto k = 1; k < WGD->z.size(); k++)
   {
     k_start = k;
-    if (base_height <= UGD->z_face[k])
+    if (base_height <= WGD->z_face[k])
     {
       break;
     }
   }
 
   // Define end index of the building in z-direction
-  for (auto k = 0; k < UGD->z.size(); k++)
+  for (auto k = 0; k < WGD->z.size(); k++)
   {
     k_end = k+1;
-    if (height_eff < UGD->z[k+1])
+    if (height_eff < WGD->z[k+1])
     {
       break;
     }
   }
 
   // Define cut end index of the building in z-direction
-  for (auto k = 0; k < UGD->z.size(); k++)
+  for (auto k = 0; k < WGD->z.size(); k++)
   {
     k_cut_end = k+1;
-    if (height_eff <= UGD->z_face[k+1])
+    if (height_eff <= WGD->z_face[k+1])
     {
       break;
     }
@@ -122,10 +122,10 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
   // Check the center of each cell, if it's inside, set that cell to building
   for (auto j=j_start; j<=j_end; j++)
   {
-    y_cent = (j+0.5)*UGD->dy;         // Center of cell y coordinate
+    y_cent = (j+0.5)*WGD->dy;         // Center of cell y coordinate
     for (auto i=i_start; i<=i_end; i++)
     {
-      x_cent = (i+0.5)*UGD->dx;       // Center of cell x coordinate
+      x_cent = (i+0.5)*WGD->dx;       // Center of cell x coordinate
       vert_id = 0;               // Node index
       start_poly = vert_id;
       num_crossing = 0;
@@ -154,9 +154,12 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
       {
         for (auto k=k_start; k<k_end; k++)
         {
-          int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-          UGD->icellflag[icell_cent] = 0;
-          UGD->ibuilding_flag[icell_cent] = building_number;
+          int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+          if (WID->simParams->readCoefficientsFlag == 0)
+          {
+            WGD->icellflag[icell_cent] = 0;
+          }
+          WGD->ibuilding_flag[icell_cent] = building_number;
         }
 
       }
@@ -164,7 +167,7 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
     }
   }
 
-  if (mesh_type_flag == 1)          // Cut-cell method for buildings
+  if (mesh_type_flag == 1 && WID->simParams->readCoefficientsFlag == 0)          // Cut-cell method for buildings
   {
     std::vector <int> i_face_start, i_face_end;
     std::vector <int> j_face_start, j_face_end;
@@ -222,8 +225,8 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
         x_max_face[id] = polygonVertices[id].x_poly;
       }
 
-      i_face_start[id] = (x_min_face[id]/UGD->dx)-1;
-      i_face_end[id] = std::floor(x_max_face[id]/UGD->dx);
+      i_face_start[id] = (x_min_face[id]/WGD->dx)-1;
+      i_face_end[id] = std::floor(x_max_face[id]/WGD->dx);
 
       if (polygonVertices[id].y_poly < polygonVertices[id+1].y_poly)
       {
@@ -236,8 +239,8 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
         y_max_face[id] = polygonVertices[id].y_poly;
       }
 
-      j_face_start[id] = (y_min_face[id]/UGD->dy)-1;
-      j_face_end[id] = std::floor(y_max_face[id]/UGD->dy);
+      j_face_start[id] = (y_min_face[id]/WGD->dy)-1;
+      j_face_end[id] = std::floor(y_max_face[id]/WGD->dy);
 
       if (polygonVertices[id+1].x_poly != polygonVertices[id].x_poly)
       {
@@ -275,14 +278,14 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
           y1j = y2j = 0.0;
           face_intersect.clear();
           condition = 0;
-          x1i = i*UGD->dx;
-          x2i = (i+1)*UGD->dx;
-          y1j = j*UGD->dy;
-          y2j = (j+1)*UGD->dy;
-          i_face_first[id] = polygonVertices[id].x_poly/UGD->dx;
-          j_face_first[id] = polygonVertices[id].y_poly/UGD->dy;
-          i_face_second[id] = polygonVertices[id+1].x_poly/UGD->dx;
-          j_face_second[id] = polygonVertices[id+1].y_poly/UGD->dy;
+          x1i = i*WGD->dx;
+          x2i = (i+1)*WGD->dx;
+          y1j = j*WGD->dy;
+          y2j = (j+1)*WGD->dy;
+          i_face_first[id] = polygonVertices[id].x_poly/WGD->dx;
+          j_face_first[id] = polygonVertices[id].y_poly/WGD->dy;
+          i_face_second[id] = polygonVertices[id+1].x_poly/WGD->dx;
+          j_face_second[id] = polygonVertices[id+1].y_poly/WGD->dy;
 
           if ((i == i_face_first[id] && j == j_face_first[id]) && (i != i_face_second[id] || j != j_face_second[id]))
           {
@@ -506,22 +509,22 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
 
             for (auto k = k_start; k <= k_cut_end; k++)
             {
-              icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-              if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+              icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+              if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0)
               {
-                UGD->terrain_volume_frac[icell_cent] = 1.0;
-                UGD->e[icell_cent] = 1.0;
-                UGD->f[icell_cent] = 1.0;
-                UGD->g[icell_cent] = 1.0;
-                UGD->h[icell_cent] = 1.0;
-                UGD->m[icell_cent] = 1.0;
-                UGD->n[icell_cent] = 1.0;
+                WGD->terrain_volume_frac[icell_cent] = 1.0;
+                WGD->e[icell_cent] = 1.0;
+                WGD->f[icell_cent] = 1.0;
+                WGD->g[icell_cent] = 1.0;
+                WGD->h[icell_cent] = 1.0;
+                WGD->m[icell_cent] = 1.0;
+                WGD->n[icell_cent] = 1.0;
               }
-              if (UGD->icellflag[icell_cent] != 2 )
+              if (WGD->icellflag[icell_cent] != 2 )
               {
-                if (UGD->icellflag[icell_cent] != 7 )
+                if (WGD->icellflag[icell_cent] != 7 )
                 {
-                  UGD->icellflag[icell_cent] = 7;
+                  WGD->icellflag[icell_cent] = 7;
                   cut_points.push_back( cutCell(icell_cent) );
                   cut_cell_id.push_back( icell_cent );
                   counter = cut_cell_id.size()-1;
@@ -539,113 +542,113 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                 }
               }
 
-              if (UGD->icellflag[icell_cent] == 7 )
+              if (WGD->icellflag[icell_cent] == 7 )
               {
                 height_flag = 1;
-                cut_points[counter].z_solid = UGD->dz_array[k];
+                cut_points[counter].z_solid = WGD->dz_array[k];
                 if ( k == k_cut_end )
                 {
-                  if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                  if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                   {
                     height_flag = 0;
-                    cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                    cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                   }
                 }
                 for (auto ii = 0; ii < face_intersect.size(); ii++)
                 {
-                  cut_points[counter].intersect.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
-                  cut_points[counter].face_below.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
+                  cut_points[counter].intersect.push_back(cutVert(face_intersect[ii].x_cut-i*WGD->dx, face_intersect[ii].y_cut-j*WGD->dy, 0.0));
+                  cut_points[counter].face_below.push_back(cutVert(face_intersect[ii].x_cut-i*WGD->dx, face_intersect[ii].y_cut-j*WGD->dy, 0.0));
                   if (height_flag == 1 )
                   {
-                    cut_points[counter].face_above.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_above.push_back(cutVert(face_intersect[ii].x_cut-i*WGD->dx, face_intersect[ii].y_cut-j*WGD->dy, cut_points[counter].z_solid));
                   }
                   if (face_intersect[ii].x_cut == x1i)
                   {
-                    cut_points[counter].face_behind.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
-                    cut_points[counter].face_behind.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_behind.push_back(cutVert(face_intersect[ii].x_cut-i*WGD->dx, face_intersect[ii].y_cut-j*WGD->dy, 0.0));
+                    cut_points[counter].face_behind.push_back(cutVert(face_intersect[ii].x_cut-i*WGD->dx, face_intersect[ii].y_cut-j*WGD->dy, cut_points[counter].z_solid));
                   }
                   if (face_intersect[ii].x_cut == x2i)
                   {
-                    cut_points[counter].face_front.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
-                    cut_points[counter].face_front.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_front.push_back(cutVert(face_intersect[ii].x_cut-i*WGD->dx, face_intersect[ii].y_cut-j*WGD->dy, 0.0));
+                    cut_points[counter].face_front.push_back(cutVert(face_intersect[ii].x_cut-i*WGD->dx, face_intersect[ii].y_cut-j*WGD->dy, cut_points[counter].z_solid));
                   }
                   if (face_intersect[ii].y_cut == y1j)
                   {
-                    cut_points[counter].face_right.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
-                    cut_points[counter].face_right.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_right.push_back(cutVert(face_intersect[ii].x_cut-i*WGD->dx, face_intersect[ii].y_cut-j*WGD->dy, 0.0));
+                    cut_points[counter].face_right.push_back(cutVert(face_intersect[ii].x_cut-i*WGD->dx, face_intersect[ii].y_cut-j*WGD->dy, cut_points[counter].z_solid));
                   }
                   if (face_intersect[ii].y_cut == y2j)
                   {
-                    cut_points[counter].face_left.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, 0.0));
-                    cut_points[counter].face_left.push_back(cutVert(face_intersect[ii].x_cut-i*UGD->dx, face_intersect[ii].y_cut-j*UGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_left.push_back(cutVert(face_intersect[ii].x_cut-i*WGD->dx, face_intersect[ii].y_cut-j*WGD->dy, 0.0));
+                    cut_points[counter].face_left.push_back(cutVert(face_intersect[ii].x_cut-i*WGD->dx, face_intersect[ii].y_cut-j*WGD->dy, cut_points[counter].z_solid));
                   }
                 }
 
                 if (x1i_intersect == x1i && x2i_intersect == x1i && y1i_intersect != y2i_intersect &&
                     y1i_intersect >= y1j && y1i_intersect <= y2j && y2i_intersect >= y1j && y2i_intersect <= y2j)
                 {
-                  cut_points[counter].face_below.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, 0.0));
-                  cut_points[counter].face_below.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_below.push_back(cutVert(x1i_intersect-i*WGD->dx, y1i_intersect-j*WGD->dy, 0.0));
+                  cut_points[counter].face_below.push_back(cutVert(x2i_intersect-i*WGD->dx, y2i_intersect-j*WGD->dy, 0.0));
                   if (height_flag == 1 )
                   {
-                    cut_points[counter].face_above.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                    cut_points[counter].face_above.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_above.push_back(cutVert(x1i_intersect-i*WGD->dx, y1i_intersect-j*WGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_above.push_back(cutVert(x2i_intersect-i*WGD->dx, y2i_intersect-j*WGD->dy, cut_points[counter].z_solid));
                   }
-                  cut_points[counter].face_behind.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, 0.0));
-                  cut_points[counter].face_behind.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, 0.0));
-                  cut_points[counter].face_behind.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                  cut_points[counter].face_behind.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  cut_points[counter].face_behind.push_back(cutVert(x1i_intersect-i*WGD->dx, y1i_intersect-j*WGD->dy, 0.0));
+                  cut_points[counter].face_behind.push_back(cutVert(x2i_intersect-i*WGD->dx, y2i_intersect-j*WGD->dy, 0.0));
+                  cut_points[counter].face_behind.push_back(cutVert(x1i_intersect-i*WGD->dx, y1i_intersect-j*WGD->dy, cut_points[counter].z_solid));
+                  cut_points[counter].face_behind.push_back(cutVert(x2i_intersect-i*WGD->dx, y2i_intersect-j*WGD->dy, cut_points[counter].z_solid));
                   condition = 1;
                 }
 
                 if (x1i_intersect == x2i && x2i_intersect == x2i && y1i_intersect != y2i_intersect &&
                     y1i_intersect >= y1j && y1i_intersect <= y2j && y2i_intersect >= y1j && y2i_intersect <= y2j)
                 {
-                  cut_points[counter].face_below.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, 0.0));
-                  cut_points[counter].face_below.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_below.push_back(cutVert(x1i_intersect-i*WGD->dx, y1i_intersect-j*WGD->dy, 0.0));
+                  cut_points[counter].face_below.push_back(cutVert(x2i_intersect-i*WGD->dx, y2i_intersect-j*WGD->dy, 0.0));
                   if (height_flag == 1 )
                   {
-                    cut_points[counter].face_above.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                    cut_points[counter].face_above.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_above.push_back(cutVert(x1i_intersect-i*WGD->dx, y1i_intersect-j*WGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_above.push_back(cutVert(x2i_intersect-i*WGD->dx, y2i_intersect-j*WGD->dy, cut_points[counter].z_solid));
                   }
-                  cut_points[counter].face_front.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, 0.0));
-                  cut_points[counter].face_front.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, 0.0));
-                  cut_points[counter].face_front.push_back(cutVert(x1i_intersect-i*UGD->dx, y1i_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                  cut_points[counter].face_front.push_back(cutVert(x2i_intersect-i*UGD->dx, y2i_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  cut_points[counter].face_front.push_back(cutVert(x1i_intersect-i*WGD->dx, y1i_intersect-j*WGD->dy, 0.0));
+                  cut_points[counter].face_front.push_back(cutVert(x2i_intersect-i*WGD->dx, y2i_intersect-j*WGD->dy, 0.0));
+                  cut_points[counter].face_front.push_back(cutVert(x1i_intersect-i*WGD->dx, y1i_intersect-j*WGD->dy, cut_points[counter].z_solid));
+                  cut_points[counter].face_front.push_back(cutVert(x2i_intersect-i*WGD->dx, y2i_intersect-j*WGD->dy, cut_points[counter].z_solid));
                   condition = 1;
                 }
 
                 if (y1j_intersect == y1j && y2j_intersect == y1j && x1j_intersect != x2j_intersect &&
                     x1j_intersect >= x1i && x1j_intersect <= x2i && x2j_intersect >= x1i && x2j_intersect <= x2i)
                 {
-                  cut_points[counter].face_below.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, 0.0));
-                  cut_points[counter].face_below.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_below.push_back(cutVert(x1j_intersect-i*WGD->dx, y1j_intersect-j*WGD->dy, 0.0));
+                  cut_points[counter].face_below.push_back(cutVert(x2j_intersect-i*WGD->dx, y2j_intersect-j*WGD->dy, 0.0));
                   if (height_flag == 1 )
                   {
-                    cut_points[counter].face_above.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                    cut_points[counter].face_above.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_above.push_back(cutVert(x1j_intersect-i*WGD->dx, y1j_intersect-j*WGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_above.push_back(cutVert(x2j_intersect-i*WGD->dx, y2j_intersect-j*WGD->dy, cut_points[counter].z_solid));
                   }
-                  cut_points[counter].face_right.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, 0.0));
-                  cut_points[counter].face_right.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, 0.0));
-                  cut_points[counter].face_right.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                  cut_points[counter].face_right.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  cut_points[counter].face_right.push_back(cutVert(x1j_intersect-i*WGD->dx, y1j_intersect-j*WGD->dy, 0.0));
+                  cut_points[counter].face_right.push_back(cutVert(x2j_intersect-i*WGD->dx, y2j_intersect-j*WGD->dy, 0.0));
+                  cut_points[counter].face_right.push_back(cutVert(x1j_intersect-i*WGD->dx, y1j_intersect-j*WGD->dy, cut_points[counter].z_solid));
+                  cut_points[counter].face_right.push_back(cutVert(x2j_intersect-i*WGD->dx, y2j_intersect-j*WGD->dy, cut_points[counter].z_solid));
                   condition = 1;
                 }
 
                 if (y1j_intersect == y2j && y2j_intersect == y2j && x1j_intersect != x2j_intersect &&
                     x1j_intersect >= x1i && x1j_intersect <= x2i && x2j_intersect >= x1i && x2j_intersect <= x2i)
                 {
-                  cut_points[counter].face_below.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, 0.0));
-                  cut_points[counter].face_below.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, 0.0));
+                  cut_points[counter].face_below.push_back(cutVert(x1j_intersect-i*WGD->dx, y1j_intersect-j*WGD->dy, 0.0));
+                  cut_points[counter].face_below.push_back(cutVert(x2j_intersect-i*WGD->dx, y2j_intersect-j*WGD->dy, 0.0));
                   if (height_flag == 1 )
                   {
-                    cut_points[counter].face_above.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                    cut_points[counter].face_above.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_above.push_back(cutVert(x1j_intersect-i*WGD->dx, y1j_intersect-j*WGD->dy, cut_points[counter].z_solid));
+                    cut_points[counter].face_above.push_back(cutVert(x2j_intersect-i*WGD->dx, y2j_intersect-j*WGD->dy, cut_points[counter].z_solid));
                   }
-                  cut_points[counter].face_left.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, 0.0));
-                  cut_points[counter].face_left.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, 0.0));
-                  cut_points[counter].face_left.push_back(cutVert(x1j_intersect-i*UGD->dx, y1j_intersect-j*UGD->dy, cut_points[counter].z_solid));
-                  cut_points[counter].face_left.push_back(cutVert(x2j_intersect-i*UGD->dx, y2j_intersect-j*UGD->dy, cut_points[counter].z_solid));
+                  cut_points[counter].face_left.push_back(cutVert(x1j_intersect-i*WGD->dx, y1j_intersect-j*WGD->dy, 0.0));
+                  cut_points[counter].face_left.push_back(cutVert(x2j_intersect-i*WGD->dx, y2j_intersect-j*WGD->dy, 0.0));
+                  cut_points[counter].face_left.push_back(cutVert(x1j_intersect-i*WGD->dx, y1j_intersect-j*WGD->dy, cut_points[counter].z_solid));
+                  cut_points[counter].face_left.push_back(cutVert(x2j_intersect-i*WGD->dx, y2j_intersect-j*WGD->dy, cut_points[counter].z_solid));
                   condition = 1;
                 }
               }
@@ -671,12 +674,12 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                   if (y2j_intersect == y1j)
                   {
                     x1j = x2j_intersect;
-                    y2i = (j-1)*UGD->dy;
+                    y2i = (j-1)*WGD->dy;
                   }
                   if (y2j_intersect == y2j)
                   {
                     x2j = x2j_intersect;
-                    y2i = (j+2)*UGD->dy;
+                    y2i = (j+2)*WGD->dy;
                   }
                 }
                 if (x1j_intersect != 0.0)
@@ -704,12 +707,12 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                   if (y2j_intersect == y1j)
                   {
                     x1j = x2j_intersect;
-                    y1i = (j-1)*UGD->dy;
+                    y1i = (j-1)*WGD->dy;
                   }
                   if (y2j_intersect == y2j)
                   {
                     x2j = x2j_intersect;
-                    y1i = (j+2)*UGD->dy;
+                    y1i = (j+2)*WGD->dy;
                   }
                 }
                 if (x1j_intersect != 0.0)
@@ -736,12 +739,12 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                   if (y1j_intersect == y1j)
                   {
                     x1j = x1j_intersect;
-                    y2i = (j-1)*UGD->dy;
+                    y2i = (j-1)*WGD->dy;
                   }
                   if (y1j_intersect == y2j)
                   {
                     x2j = x1j_intersect;
-                    y2i = (j+2)*UGD->dy;
+                    y2i = (j+2)*WGD->dy;
                   }
                 }
               }
@@ -754,12 +757,12 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                   if (y1j_intersect == y1j)
                   {
                     x1j = x1j_intersect;
-                    y1i = (j-1)*UGD->dy;
+                    y1i = (j-1)*WGD->dy;
                   }
                   if (y1j_intersect == y2j)
                   {
                     x2j = x1j_intersect;
-                    y1i = (j+2)*UGD->dy;
+                    y1i = (j+2)*WGD->dy;
                   }
                 }
               }
@@ -771,15 +774,15 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
               {
                 x1j = x1j_intersect;
                 x2j = x2j_intersect;
-                y1i = (j-1)*UGD->dy;
-                y2i = (j+2)*UGD->dy;
+                y1i = (j-1)*WGD->dy;
+                y2i = (j+2)*WGD->dy;
               }
               if (y1j_intersect == y2j)
               {
                 x1j = x2j_intersect;
                 x2j = x1j_intersect;
-                y2i = (j-1)*UGD->dy;
-                y1i = (j+2)*UGD->dy;
+                y2i = (j-1)*WGD->dy;
+                y1i = (j+2)*WGD->dy;
               }
             }
 
@@ -813,29 +816,29 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
 
           }
 
-          if (y1i > j*UGD->dy && y1i < (j+1)*UGD->dy && x1i != x2i)
+          if (y1i > j*WGD->dy && y1i < (j+1)*WGD->dy && x1i != x2i)
           {
-            if (y2i >= j*UGD->dy && y2i <= (j+1)*UGD->dy)
+            if (y2i >= j*WGD->dy && y2i <= (j+1)*WGD->dy)
             {
               for (auto k = k_start; k <= k_cut_end; k++)
               {
 
-                icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0)
                 {
-                  UGD->terrain_volume_frac[icell_cent] = 1.0;
-                  UGD->e[icell_cent] = 1.0;
-                  UGD->f[icell_cent] = 1.0;
-                  UGD->g[icell_cent] = 1.0;
-                  UGD->h[icell_cent] = 1.0;
-                  UGD->m[icell_cent] = 1.0;
-                  UGD->n[icell_cent] = 1.0;
+                  WGD->terrain_volume_frac[icell_cent] = 1.0;
+                  WGD->e[icell_cent] = 1.0;
+                  WGD->f[icell_cent] = 1.0;
+                  WGD->g[icell_cent] = 1.0;
+                  WGD->h[icell_cent] = 1.0;
+                  WGD->m[icell_cent] = 1.0;
+                  WGD->n[icell_cent] = 1.0;
                 }
-                if (UGD->icellflag[icell_cent] != 2 )
+                if (WGD->icellflag[icell_cent] != 2 )
                 {
-                  if (UGD->icellflag[icell_cent] != 7)
+                  if (WGD->icellflag[icell_cent] != 7)
                   {
-                    UGD->icellflag[icell_cent] = 7;
+                    WGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
@@ -853,54 +856,54 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                   }
                 }
 
-                if (UGD->icellflag[icell_cent] == 7)
+                if (WGD->icellflag[icell_cent] == 7)
                 {
-                  cut_points[counter].intersect.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                  /*if ( ((UGD->icellflag[icell_cent-(UGD->nx-1)] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)] == building_number) ||
-                     ((UGD->icellflag[icell_cent-(UGD->nx-1)-1] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)-1] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)-1] == building_number) ||
-                     ((UGD->icellflag[icell_cent-(UGD->nx-1)+1] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)+1] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)+1] == building_number))
+                  cut_points[counter].intersect.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                  /*if ( ((WGD->icellflag[icell_cent-(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)] == building_number) ||
+                     ((WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)-1] == building_number) ||
+                     ((WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)+1] == building_number))
                   {
                     cut_points[counter].corner_id[0] += 1;
                     cut_points[counter].corner_id[4] = 1;
                     cut_points[counter].corner_id[3] += 1;
                     cut_points[counter].corner_id[7] = 1;*/
 
-                    cut_points[counter].z_solid = UGD->dz_array[k];
+                    cut_points[counter].z_solid = WGD->dz_array[k];
                     if ( k == k_cut_end )
                     {
-                      if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                       {
                         cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                       }
                     }
 
-                    cut_points[counter].face_below.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
                     if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
                     {
-                      cut_points[counter].face_above.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
                     }
-                    cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                    cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), cut_points[counter].z_solid));
-                    cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
-                    cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), cut_points[counter].z_solid));
+                    cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                    cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
+                    cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
+                    cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
                     /*if ( (cut_points[counter].corner_id[0]/cut_points[counter].pass_number) == 1 )
                     {
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
                     }
                     if ( (cut_points[counter].corner_id[3]/cut_points[counter].pass_number) == 1 )
                     {
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
+                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
                     }
                   }*/
 
-                  /*if (((UGD->icellflag[icell_cent+(UGD->nx-1)] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)] == building_number) ||
-                      ((UGD->icellflag[icell_cent+(UGD->nx-1)-1] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)-1] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)-1] == building_number) ||
-                      ((UGD->icellflag[icell_cent+(UGD->nx-1)+1] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)+1] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)+1] == building_number))
+                  /*if (((WGD->icellflag[icell_cent+(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)] == building_number) ||
+                      ((WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)-1] == building_number) ||
+                      ((WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)+1] == building_number))
                   {
 
                     cut_points[counter].corner_id[1] += 1;
@@ -908,59 +911,59 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                     cut_points[counter].corner_id[2] += 1;
                     cut_points[counter].corner_id[6] = 1;
 
-                    cut_points[counter].z_solid = UGD->dz_array[k];
+                    cut_points[counter].z_solid = WGD->dz_array[k];
                     if ( k == k_cut_end )
                     {
-                      if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                       {
                         cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                       }
                     }
 
-                    cut_points[counter].face_below.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
                     if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
                     {
-                      cut_points[counter].face_above.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
                     }
                     if ( (cut_points[counter].corner_id[1]/cut_points[counter].pass_number) == 1 )
                     {
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
 
                     }
                     if ( (cut_points[counter].corner_id[2]/cut_points[counter].pass_number) == 1 )
                     {
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
+                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
                     }
                   }*/
                 }
               }
             }
 
-            else if (y2i < j*UGD->dy)
+            else if (y2i < j*WGD->dy)
             {
               for (auto k = k_start; k <= k_cut_end; k++)
               {
-                icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0)
                 {
-                  UGD->terrain_volume_frac[icell_cent] = 1.0;
-                  UGD->e[icell_cent] = 1.0;
-                  UGD->f[icell_cent] = 1.0;
-                  UGD->g[icell_cent] = 1.0;
-                  UGD->h[icell_cent] = 1.0;
-                  UGD->m[icell_cent] = 1.0;
-                  UGD->n[icell_cent] = 1.0;
+                  WGD->terrain_volume_frac[icell_cent] = 1.0;
+                  WGD->e[icell_cent] = 1.0;
+                  WGD->f[icell_cent] = 1.0;
+                  WGD->g[icell_cent] = 1.0;
+                  WGD->h[icell_cent] = 1.0;
+                  WGD->m[icell_cent] = 1.0;
+                  WGD->n[icell_cent] = 1.0;
                 }
-                if (UGD->icellflag[icell_cent] != 2)
+                if (WGD->icellflag[icell_cent] != 2)
                 {
-                  if (UGD->icellflag[icell_cent] != 7)
+                  if (WGD->icellflag[icell_cent] != 7)
                   {
-                    UGD->icellflag[icell_cent] = 7;
+                    WGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
@@ -985,52 +988,52 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                     }*/
                   }
                 }
-                if (UGD->icellflag[icell_cent] == 7)
+                if (WGD->icellflag[icell_cent] == 7)
                 {
 
-                  cut_points[counter].intersect.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                  /*if (((UGD->icellflag[icell_cent-(UGD->nx-1)] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)] == building_number) ||
-                      ((UGD->icellflag[icell_cent-1] == 0 || UGD->icellflag[icell_cent-1] == 7) && UGD->ibuilding_flag[icell_cent-1] == building_number) ||
-                      ((UGD->icellflag[icell_cent-(UGD->nx-1)-1] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)-1] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)-1] == building_number))
+                  cut_points[counter].intersect.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                  /*if (((WGD->icellflag[icell_cent-(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)] == building_number) ||
+                      ((WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 7) && WGD->ibuilding_flag[icell_cent-1] == building_number) ||
+                      ((WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)-1] == building_number))
                   {
 
                     cut_points[counter].corner_id[0] += 1;
                     cut_points[counter].corner_id[4] = 1;*/
 
 
-                  cut_points[counter].z_solid = UGD->dz_array[k];
+                  cut_points[counter].z_solid = WGD->dz_array[k];
                   if ( k == k_cut_end )
                   {
-                    if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                    if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                     {
                       cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                      cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                      cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                     }
                   }
-                  cut_points[counter].face_below.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                  cut_points[counter].face_below.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), 0.0));
+                  cut_points[counter].face_below.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                  cut_points[counter].face_below.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
                   if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
                   {
-                    cut_points[counter].face_above.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), cut_points[counter].z_solid));
-                    cut_points[counter].face_above.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), cut_points[counter].z_solid));
+                    cut_points[counter].face_above.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
+                    cut_points[counter].face_above.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
                   }
-                  cut_points[counter].face_right.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), cut_points[counter].z_solid));
-                  cut_points[counter].face_right.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), 0.0));
+                  cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
+                  cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
 
-                  cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                  cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), cut_points[counter].z_solid));
+                  cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                  cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
 
                     /*if ( (cut_points[counter].corner_id[0]/cut_points[counter].pass_number) == 1 )
                     {
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
                     }
                   }*/
 
 
-                  /*if (((UGD->icellflag[icell_cent+(UGD->nx-1)] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)] == building_number ) ||
-                      ((UGD->icellflag[icell_cent+1] == 0 || UGD->icellflag[icell_cent+1] == 7) && UGD->ibuilding_flag[icell_cent+1] == building_number) ||
-                      ((UGD->icellflag[icell_cent+(UGD->nx-1)+1] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)+1] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)+1] == building_number))
+                  /*if (((WGD->icellflag[icell_cent+(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)] == building_number ) ||
+                      ((WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 7) && WGD->ibuilding_flag[icell_cent+1] == building_number) ||
+                      ((WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)+1] == building_number))
                   {
                     cut_points[counter].corner_id[1] += 1;
                     cut_points[counter].corner_id[5] = 1;
@@ -1039,29 +1042,29 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                     cut_points[counter].corner_id[2] += 1;
                     cut_points[counter].corner_id[6] = 1;
 
-                    cut_points[counter].z_solid = UGD->dz_array[k];
+                    cut_points[counter].z_solid = WGD->dz_array[k];
                     if ( k == k_cut_end )
                     {
-                      if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                       {
                         cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                       }
                     }
-                    cut_points[counter].face_below.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
                     if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
                     {
-                      cut_points[counter].face_above.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
                     }
-                    cut_points[counter].face_right.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), 0.0));
-                    cut_points[counter].face_right.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), cut_points[counter].z_solid));
+                    cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
+                    cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
 
                     if ( (cut_points[counter].corner_id[1]/cut_points[counter].pass_number) == 1 )
                     {
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
                     }
 
                   }*/
@@ -1069,26 +1072,26 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
               }
             }
 
-            else if (y2i > (j+1)*UGD->dy)
+            else if (y2i > (j+1)*WGD->dy)
             {
               for (auto k = k_start; k <= k_cut_end; k++)
               {
-                icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0)
                 {
-                  UGD->terrain_volume_frac[icell_cent] = 1.0;
-                  UGD->e[icell_cent] = 1.0;
-                  UGD->f[icell_cent] = 1.0;
-                  UGD->g[icell_cent] = 1.0;
-                  UGD->h[icell_cent] = 1.0;
-                  UGD->m[icell_cent] = 1.0;
-                  UGD->n[icell_cent] = 1.0;
+                  WGD->terrain_volume_frac[icell_cent] = 1.0;
+                  WGD->e[icell_cent] = 1.0;
+                  WGD->f[icell_cent] = 1.0;
+                  WGD->g[icell_cent] = 1.0;
+                  WGD->h[icell_cent] = 1.0;
+                  WGD->m[icell_cent] = 1.0;
+                  WGD->n[icell_cent] = 1.0;
                 }
-                if (UGD->icellflag[icell_cent] != 2)
+                if (WGD->icellflag[icell_cent] != 2)
                 {
-                  if (UGD->icellflag[icell_cent] != 7)
+                  if (WGD->icellflag[icell_cent] != 7)
                   {
-                    UGD->icellflag[icell_cent] = 7;
+                    WGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
@@ -1114,47 +1117,47 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                   }
                 }
 
-                if (UGD->icellflag[icell_cent] == 7)
+                if (WGD->icellflag[icell_cent] == 7)
                 {
-                  cut_points[counter].intersect.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                  /*if (((UGD->icellflag[icell_cent+(UGD->nx-1)] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)] == building_number)  ||
-                      ((UGD->icellflag[icell_cent-1] == 0 || UGD->icellflag[icell_cent-1] == 7) && UGD->ibuilding_flag[icell_cent-1] == building_number) ||
-                      ((UGD->icellflag[icell_cent+(UGD->nx-1)-1] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)-1] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)-1] == building_number))
+                  cut_points[counter].intersect.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                  /*if (((WGD->icellflag[icell_cent+(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)] == building_number)  ||
+                      ((WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 7) && WGD->ibuilding_flag[icell_cent-1] == building_number) ||
+                      ((WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)-1] == building_number))
                   {
                     cut_points[counter].corner_id[1] += 1;
                     cut_points[counter].corner_id[5] = 1;*/
 
-                    cut_points[counter].z_solid = UGD->dz_array[k];
+                    cut_points[counter].z_solid = WGD->dz_array[k];
                     if ( k == k_cut_end )
                     {
-                      if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                       {
                         cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                       }
                     }
-                    cut_points[counter].face_below.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
                     if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
                     {
-                      cut_points[counter].face_above.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
                     }
-                    cut_points[counter].face_left.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), 0.0));
-                    cut_points[counter].face_left.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), cut_points[counter].z_solid));
+                    cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
+                    cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
 
-                    cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                    cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), cut_points[counter].z_solid));
+                    cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                    cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
                     /*if ( (cut_points[counter].corner_id[1]/cut_points[counter].pass_number) == 1 )
                     {
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
                     }
                   }*/
 
-                  /*if (((UGD->icellflag[icell_cent-(UGD->nx-1)] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)] == building_number) ||
-                      ((UGD->icellflag[icell_cent+1] == 0 || UGD->icellflag[icell_cent+1] == 7) && UGD->ibuilding_flag[icell_cent+1] == building_number) ||
-                      ((UGD->icellflag[icell_cent-(UGD->nx-1)+1] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)+1] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)+1] == building_number))
+                  /*if (((WGD->icellflag[icell_cent-(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)] == building_number) ||
+                      ((WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 7) && WGD->ibuilding_flag[icell_cent+1] == building_number) ||
+                      ((WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)+1] == building_number))
                   {
                     cut_points[counter].corner_id[0] += 1;
                     cut_points[counter].corner_id[4] = 1;
@@ -1163,31 +1166,31 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                     cut_points[counter].corner_id[2] += 1;
                     cut_points[counter].corner_id[6] = 1;
 
-                    cut_points[counter].z_solid = UGD->dz_array[k];
+                    cut_points[counter].z_solid = WGD->dz_array[k];
                     if ( k == k_cut_end )
                     {
-                      if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                       {
                         cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                       }
                     }
-                    cut_points[counter].face_below.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
                     if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
                     {
-                      cut_points[counter].face_above.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
                     }
                     if ( (cut_points[counter].corner_id[0]/cut_points[counter].pass_number) == 1 )
                     {
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
                     }
                     if ( (cut_points[counter].corner_id[2]/cut_points[counter].pass_number) == 1)
                     {
-                      cut_points[counter].face_left.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), 0.0));
-                      cut_points[counter].face_left.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
+                      cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
                     }
                   }*/
                 }
@@ -1195,28 +1198,28 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
             }
           }
 
-          if (y2i > j*UGD->dy && y2i < (j+1)*UGD->dy && x1i != x2i)
+          if (y2i > j*WGD->dy && y2i < (j+1)*WGD->dy && x1i != x2i)
           {
-            if (y1i <= j*UGD->dy)
+            if (y1i <= j*WGD->dy)
             {
               for (auto k = k_start; k <= k_cut_end; k++)
               {
-                icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0)
                 {
-                  UGD->terrain_volume_frac[icell_cent] = 1.0;
-                  UGD->e[icell_cent] = 1.0;
-                  UGD->f[icell_cent] = 1.0;
-                  UGD->g[icell_cent] = 1.0;
-                  UGD->h[icell_cent] = 1.0;
-                  UGD->m[icell_cent] = 1.0;
-                  UGD->n[icell_cent] = 1.0;
+                  WGD->terrain_volume_frac[icell_cent] = 1.0;
+                  WGD->e[icell_cent] = 1.0;
+                  WGD->f[icell_cent] = 1.0;
+                  WGD->g[icell_cent] = 1.0;
+                  WGD->h[icell_cent] = 1.0;
+                  WGD->m[icell_cent] = 1.0;
+                  WGD->n[icell_cent] = 1.0;
                 }
-                if (UGD->icellflag[icell_cent] != 2)
+                if (WGD->icellflag[icell_cent] != 2)
                 {
-                  if (UGD->icellflag[icell_cent] != 7)
+                  if (WGD->icellflag[icell_cent] != 7)
                   {
-                    UGD->icellflag[icell_cent] = 7;
+                    WGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
@@ -1242,114 +1245,114 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                   }
                 }
 
-                if (UGD->icellflag[icell_cent] == 7)
+                if (WGD->icellflag[icell_cent] == 7)
                 {
-                  cut_points[counter].intersect.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
-                  /*if (((UGD->icellflag[icell_cent-(UGD->nx-1)] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)] == building_number) ||
-                      ((UGD->icellflag[icell_cent+1] == 0 || UGD->icellflag[icell_cent+1] == 7) && UGD->ibuilding_flag[icell_cent+1] == building_number) ||
-                      ((UGD->icellflag[icell_cent-(UGD->nx-1)+1] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)+1] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)+1] == building_number))
+                  cut_points[counter].intersect.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
+                  /*if (((WGD->icellflag[icell_cent-(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)] == building_number) ||
+                      ((WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 7) && WGD->ibuilding_flag[icell_cent+1] == building_number) ||
+                      ((WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)+1] == building_number))
                   {
 
                     cut_points[counter].corner_id[3] += 1;
                     cut_points[counter].corner_id[7] = 1;
-                    if (y1i == j*UGD->dy)
+                    if (y1i == j*WGD->dy)
                     {
                       cut_points[counter].corner_id[0] += 1;
                       cut_points[counter].corner_id[4] = 1;
                     }*/
 
-                    cut_points[counter].z_solid = UGD->dz_array[k];
+                    cut_points[counter].z_solid = WGD->dz_array[k];
                     if ( k == k_cut_end )
                     {
-                      if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                       {
                         cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                       }
                     }
-                    cut_points[counter].face_below.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
                     if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
                     {
-                      cut_points[counter].face_above.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
                     }
 
-                    cut_points[counter].face_right.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), 0.0));
-                    cut_points[counter].face_right.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), cut_points[counter].z_solid));
+                    cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
+                    cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
 
-                    cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
-                    cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), cut_points[counter].z_solid));
+                    cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
+                    cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
                     /*if ( (cut_points[counter].corner_id[3]/cut_points[counter].pass_number) == 1 )
                     {
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
+                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
                     }
                   }*/
 
-                  /*if (((UGD->icellflag[icell_cent+(UGD->nx-1)] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)] == building_number) ||
-                      ((UGD->icellflag[icell_cent-1] == 0 || UGD->icellflag[icell_cent-1] == 7) && UGD->ibuilding_flag[icell_cent-1] == building_number) ||
-                      ((UGD->icellflag[icell_cent+(UGD->nx-1)-1] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)-1] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)-1] == building_number))
+                  /*if (((WGD->icellflag[icell_cent+(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)] == building_number) ||
+                      ((WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 7) && WGD->ibuilding_flag[icell_cent-1] == building_number) ||
+                      ((WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)-1] == building_number))
                   {
 
                     cut_points[counter].corner_id[1] += 1;
                     cut_points[counter].corner_id[5] = 1;
                     cut_points[counter].corner_id[2] += 1;
                     cut_points[counter].corner_id[6] = 1;
-                    if (y1i == j*UGD->dy)
+                    if (y1i == j*WGD->dy)
                     {
                       cut_points[counter].corner_id[0] += 1;
                       cut_points[counter].corner_id[4] = 1;
                     }
 
-                    cut_points[counter].z_solid = UGD->dz_array[k];
+                    cut_points[counter].z_solid = WGD->dz_array[k];
                     if ( k == k_cut_end )
                     {
-                      if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                       {
                         cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                       }
                     }
-                    cut_points[counter].face_below.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
                     if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
                     {
-                      cut_points[counter].face_above.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
                     }
-                    cut_points[counter].face_right.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), 0.0));
-                    cut_points[counter].face_right.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), cut_points[counter].z_solid));
+                    cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
+                    cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
                     if ( (cut_points[counter].corner_id[2]/cut_points[counter].pass_number) == 1 )
                     {
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
+                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
                     }
                   }*/
                 }
               }
             }
 
-            if (y1i >= (j+1)*UGD->dy)
+            if (y1i >= (j+1)*WGD->dy)
             {
               for (auto k = k_start; k <= k_cut_end; k++)
               {
-                icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0)
                 {
-                  UGD->terrain_volume_frac[icell_cent] = 1.0;
-                  UGD->e[icell_cent] = 1.0;
-                  UGD->f[icell_cent] = 1.0;
-                  UGD->g[icell_cent] = 1.0;
-                  UGD->h[icell_cent] = 1.0;
-                  UGD->m[icell_cent] = 1.0;
-                  UGD->n[icell_cent] = 1.0;
+                  WGD->terrain_volume_frac[icell_cent] = 1.0;
+                  WGD->e[icell_cent] = 1.0;
+                  WGD->f[icell_cent] = 1.0;
+                  WGD->g[icell_cent] = 1.0;
+                  WGD->h[icell_cent] = 1.0;
+                  WGD->m[icell_cent] = 1.0;
+                  WGD->n[icell_cent] = 1.0;
                 }
-                if (UGD->icellflag[icell_cent] != 2)
+                if (WGD->icellflag[icell_cent] != 2)
                 {
-                  if (UGD->icellflag[icell_cent] != 7)
+                  if (WGD->icellflag[icell_cent] != 7)
                   {
-                    UGD->icellflag[icell_cent] = 7;
+                    WGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
@@ -1375,83 +1378,83 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                   }
                 }
 
-                if (UGD->icellflag[icell_cent] == 7)
+                if (WGD->icellflag[icell_cent] == 7)
                 {
-                  cut_points[counter].intersect.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
-                  /*if (((UGD->icellflag[icell_cent+(UGD->nx-1)] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)] == building_number) ||
-                      ((UGD->icellflag[icell_cent+1] == 0 || UGD->icellflag[icell_cent+1] == 7) && UGD->ibuilding_flag[icell_cent+1] == building_number) ||
-                      ((UGD->icellflag[icell_cent+(UGD->nx-1)+1] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)+1] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)+1] == building_number))
+                  cut_points[counter].intersect.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
+                  /*if (((WGD->icellflag[icell_cent+(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)] == building_number) ||
+                      ((WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 7) && WGD->ibuilding_flag[icell_cent+1] == building_number) ||
+                      ((WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)+1] == building_number))
                   {
                     cut_points[counter].corner_id[2] = cut_points[counter].corner_id[6] = 1;
-                    if (y1i == (j+1)*UGD->dy)
+                    if (y1i == (j+1)*WGD->dy)
                     {
                       cut_points[counter].corner_id[1] = cut_points[counter].corner_id[5] = 1;
                     }*/
 
-                    cut_points[counter].z_solid = UGD->dz_array[k];
+                    cut_points[counter].z_solid = WGD->dz_array[k];
                     if ( k == k_cut_end )
                     {
-                      if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                       {
                         cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                       }
                     }
-                    cut_points[counter].face_below.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
                     if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
                     {
-                      cut_points[counter].face_above.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
                     }
-                    cut_points[counter].face_left.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), 0.0));
-                    cut_points[counter].face_left.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), cut_points[counter].z_solid));
+                    cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
+                    cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
 
-                    cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
-                    cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), cut_points[counter].z_solid));
+                    cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
+                    cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
                     /*if ( cut_points[counter].corner_id[2] == 1 )
                     {
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
+                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
                     }
                   }*/
 
-                  /*if (((UGD->icellflag[icell_cent-(UGD->nx-1)] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)] == building_number) ||
-                      ((UGD->icellflag[icell_cent-1] == 0 || UGD->icellflag[icell_cent-1] == 7) && UGD->ibuilding_flag[icell_cent-1] == building_number) ||
-                      ((UGD->icellflag[icell_cent-(UGD->nx-1)-1] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)-1] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)-1] == building_number))
+                  /*if (((WGD->icellflag[icell_cent-(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)] == building_number) ||
+                      ((WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 7) && WGD->ibuilding_flag[icell_cent-1] == building_number) ||
+                      ((WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)-1] == building_number))
                   {
-                    if (y1i == (j+1)*UGD->dy)
+                    if (y1i == (j+1)*WGD->dy)
                     {
                       cut_points[counter].corner_id[1] = cut_points[counter].corner_id[5] = 1;
                     }
                     cut_points[counter].corner_id[0] = cut_points[counter].corner_id[4] = 1;
                     cut_points[counter].corner_id[3] = cut_points[counter].corner_id[7] = 1;
 
-                    cut_points[counter].z_solid = UGD->dz_array[k];
+                    cut_points[counter].z_solid = WGD->dz_array[k];
                     if ( k == k_cut_end )
                     {
-                      if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                       {
                         cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                       }
                     }
-                    cut_points[counter].face_below.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
                     if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
                     {
-                      cut_points[counter].face_above.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
                     }
                     if ( cut_points[counter].corner_id[1] == 1 )
                     {
-                      cut_points[counter].face_left.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), 0.0));
-                      cut_points[counter].face_left.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
+                      cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
                     }
                     if ( cut_points[counter].corner_id[3] == 1 )
                     {
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), 0.0));
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*UGD->dx), (y2i-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
+                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
                     }
                   }*/
                 }
@@ -1460,28 +1463,28 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
 
           }
 
-          if (y1i == j*UGD->dy && y2i == (j+1)*UGD->dy && x1i != x2i)
+          if (y1i == j*WGD->dy && y2i == (j+1)*WGD->dy && x1i != x2i)
           {
-            if (x1j == i*UGD->dx && x2j == (i+1)*UGD->dx)
+            if (x1j == i*WGD->dx && x2j == (i+1)*WGD->dx)
             {
               for (auto k = k_start; k <= k_cut_end; k++)
               {
-                icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0)
                 {
-                  UGD->terrain_volume_frac[icell_cent] = 1.0;
-                  UGD->e[icell_cent] = 1.0;
-                  UGD->f[icell_cent] = 1.0;
-                  UGD->g[icell_cent] = 1.0;
-                  UGD->h[icell_cent] = 1.0;
-                  UGD->m[icell_cent] = 1.0;
-                  UGD->n[icell_cent] = 1.0;
+                  WGD->terrain_volume_frac[icell_cent] = 1.0;
+                  WGD->e[icell_cent] = 1.0;
+                  WGD->f[icell_cent] = 1.0;
+                  WGD->g[icell_cent] = 1.0;
+                  WGD->h[icell_cent] = 1.0;
+                  WGD->m[icell_cent] = 1.0;
+                  WGD->n[icell_cent] = 1.0;
                 }
-                if (UGD->icellflag[icell_cent] != 2)
+                if (WGD->icellflag[icell_cent] != 2)
                 {
-                  if (UGD->icellflag[icell_cent] != 7)
+                  if (WGD->icellflag[icell_cent] != 7)
                   {
-                    UGD->icellflag[icell_cent] = 7;
+                    WGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
@@ -1507,12 +1510,12 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                   }
                 }
 
-                if (UGD->icellflag[icell_cent] == 7)
+                if (WGD->icellflag[icell_cent] == 7)
                 {
-                  cut_points[counter].intersect.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                  /*if (((UGD->icellflag[icell_cent-(UGD->nx-1)] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)] == building_number) ||
-                      ((UGD->icellflag[icell_cent+1] == 0 || UGD->icellflag[icell_cent+1] == 7) && UGD->ibuilding_flag[icell_cent+1] == building_number) ||
-                      ((UGD->icellflag[icell_cent-(UGD->nx-1)+1] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)+1] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)+1] == building_number))
+                  cut_points[counter].intersect.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                  /*if (((WGD->icellflag[icell_cent-(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)] == building_number) ||
+                      ((WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 7) && WGD->ibuilding_flag[icell_cent+1] == building_number) ||
+                      ((WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)+1] == building_number))
                   {
                     cut_points[counter].corner_id[0] += 1;
                     cut_points[counter].corner_id[4] = 1;
@@ -1520,20 +1523,20 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                     cut_points[counter].corner_id[6] = 1;
                     cut_points[counter].corner_id[3] += 1;
                     cut_points[counter].corner_id[7] = 1;
-                    cut_points[counter].z_solid = UGD->dz_array[k];*/
+                    cut_points[counter].z_solid = WGD->dz_array[k];*/
                     if ( k == k_cut_end )
                     {
-                      if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                       {
                         cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                       }
                     }
                   //}
 
-                  /*if (((UGD->icellflag[icell_cent+(UGD->nx-1)] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)] == building_number) ||
-                      ((UGD->icellflag[icell_cent-1] == 0 || UGD->icellflag[icell_cent-1] == 7) && UGD->ibuilding_flag[icell_cent-1] == building_number) ||
-                      ((UGD->icellflag[icell_cent+(UGD->nx-1)-1] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)-1] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)-1] == building_number))
+                  /*if (((WGD->icellflag[icell_cent+(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)] == building_number) ||
+                      ((WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 7) && WGD->ibuilding_flag[icell_cent-1] == building_number) ||
+                      ((WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)-1] == building_number))
                   {
                     cut_points[counter].corner_id[0] += 1;
                     cut_points[counter].corner_id[4] = 1;
@@ -1541,13 +1544,13 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                     cut_points[counter].corner_id[5] = 1;
                     cut_points[counter].corner_id[2] += 1;
                     cut_points[counter].corner_id[6] = 1;
-                    cut_points[counter].z_solid = UGD->dz_array[k];
+                    cut_points[counter].z_solid = WGD->dz_array[k];
                     if ( k == k_cut_end )
                     {
-                      if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                       {
                         cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                       }
                     }
                   }*/
@@ -1556,28 +1559,28 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
             }
           }
 
-          if (y1i == (j+1)*UGD->dy && y2i == j*UGD->dy && x1i != x2i)
+          if (y1i == (j+1)*WGD->dy && y2i == j*WGD->dy && x1i != x2i)
           {
-            if (x1j == (i+1)*UGD->dx && x2j == i*UGD->dx)
+            if (x1j == (i+1)*WGD->dx && x2j == i*WGD->dx)
             {
               for (auto k = k_start; k <= k_cut_end; k++)
               {
-                icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0)
                 {
-                  UGD->terrain_volume_frac[icell_cent] = 1.0;
-                  UGD->e[icell_cent] = 1.0;
-                  UGD->f[icell_cent] = 1.0;
-                  UGD->g[icell_cent] = 1.0;
-                  UGD->h[icell_cent] = 1.0;
-                  UGD->m[icell_cent] = 1.0;
-                  UGD->n[icell_cent] = 1.0;
+                  WGD->terrain_volume_frac[icell_cent] = 1.0;
+                  WGD->e[icell_cent] = 1.0;
+                  WGD->f[icell_cent] = 1.0;
+                  WGD->g[icell_cent] = 1.0;
+                  WGD->h[icell_cent] = 1.0;
+                  WGD->m[icell_cent] = 1.0;
+                  WGD->n[icell_cent] = 1.0;
                 }
-                if (UGD->icellflag[icell_cent] != 2)
+                if (WGD->icellflag[icell_cent] != 2)
                 {
-                  if (UGD->icellflag[icell_cent] != 7)
+                  if (WGD->icellflag[icell_cent] != 7)
                   {
-                    UGD->icellflag[icell_cent] = 7;
+                    WGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
@@ -1603,12 +1606,12 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                   }
                 }
 
-                if (UGD->icellflag[icell_cent] == 7)
+                if (WGD->icellflag[icell_cent] == 7)
                 {
-                  cut_points[counter].intersect.push_back(cutVert((x1i-i*UGD->dx), (y1i-j*UGD->dy), 0.0));
-                  /*if (((UGD->icellflag[icell_cent-(UGD->nx-1)] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)] == building_number) ||
-                      ((UGD->icellflag[icell_cent-1] == 0 || UGD->icellflag[icell_cent-1] == 7) && UGD->ibuilding_flag[icell_cent-1] == building_number) ||
-                      ((UGD->icellflag[icell_cent-(UGD->nx-1)-1] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)-1] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)-1] == building_number))
+                  cut_points[counter].intersect.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
+                  /*if (((WGD->icellflag[icell_cent-(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)] == building_number) ||
+                      ((WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 7) && WGD->ibuilding_flag[icell_cent-1] == building_number) ||
+                      ((WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)-1] == building_number))
                   {
                     cut_points[counter].corner_id[0] += 1;
                     cut_points[counter].corner_id[4] = 1;
@@ -1616,20 +1619,20 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                     cut_points[counter].corner_id[5] = 1;
                     cut_points[counter].corner_id[3] += 1;
                     cut_points[counter].corner_id[7] = 1;
-                    cut_points[counter].z_solid = UGD->dz_array[k];*/
+                    cut_points[counter].z_solid = WGD->dz_array[k];*/
                     if ( k == k_cut_end )
                     {
-                      if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                       {
                         cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                       }
                     }
                   //}
 
-                  /*if (((UGD->icellflag[icell_cent+(UGD->nx-1)] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)] == building_number) ||
-                      ((UGD->icellflag[icell_cent+1] == 0 || UGD->icellflag[icell_cent+1] == 7) && UGD->ibuilding_flag[icell_cent+1] == building_number) ||
-                      ((UGD->icellflag[icell_cent+(UGD->nx-1)+1] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)+1] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)+1] == building_number))
+                  /*if (((WGD->icellflag[icell_cent+(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)] == building_number) ||
+                      ((WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 7) && WGD->ibuilding_flag[icell_cent+1] == building_number) ||
+                      ((WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)+1] == building_number))
                   {
                     cut_points[counter].corner_id[1] += 1;
                     cut_points[counter].corner_id[5] = 1;
@@ -1637,13 +1640,13 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                     cut_points[counter].corner_id[6] = 1;
                     cut_points[counter].corner_id[3] += 1;
                     cut_points[counter].corner_id[7] = 1;
-                    cut_points[counter].z_solid = UGD->dz_array[k];
+                    cut_points[counter].z_solid = WGD->dz_array[k];
                     if ( k == k_cut_end )
                     {
-                      if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                       {
                         cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                       }
                     }
                   }*/
@@ -1652,28 +1655,28 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
             }
           }
 
-          if ((y1i > (j+1)*UGD->dy || y1i < j*UGD->dy) && (y2i > (j+1)*UGD->dy || y2i < j*UGD->dy))
+          if ((y1i > (j+1)*WGD->dy || y1i < j*WGD->dy) && (y2i > (j+1)*WGD->dy || y2i < j*WGD->dy))
           {
-            if ( x1j > i*UGD->dx && x1j < (i+1)*UGD->dx && x2j > i*UGD->dx && x2j < (i+1)*UGD->dx)
+            if ( x1j > i*WGD->dx && x1j < (i+1)*WGD->dx && x2j > i*WGD->dx && x2j < (i+1)*WGD->dx)
             {
               for (auto k = k_start; k <= k_cut_end; k++)
               {
-                icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                if (UGD->icellflag[icell_cent] == 8 || UGD->icellflag[icell_cent] == 0)
+                icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0)
                 {
-                  UGD->terrain_volume_frac[icell_cent] = 1.0;
-                  UGD->e[icell_cent] = 1.0;
-                  UGD->f[icell_cent] = 1.0;
-                  UGD->g[icell_cent] = 1.0;
-                  UGD->h[icell_cent] = 1.0;
-                  UGD->m[icell_cent] = 1.0;
-                  UGD->n[icell_cent] = 1.0;
+                  WGD->terrain_volume_frac[icell_cent] = 1.0;
+                  WGD->e[icell_cent] = 1.0;
+                  WGD->f[icell_cent] = 1.0;
+                  WGD->g[icell_cent] = 1.0;
+                  WGD->h[icell_cent] = 1.0;
+                  WGD->m[icell_cent] = 1.0;
+                  WGD->n[icell_cent] = 1.0;
                 }
-                if (UGD->icellflag[icell_cent] != 2)
+                if (WGD->icellflag[icell_cent] != 2)
                 {
-                  if (UGD->icellflag[icell_cent] != 7)
+                  if (WGD->icellflag[icell_cent] != 7)
                   {
-                    UGD->icellflag[icell_cent] = 7;
+                    WGD->icellflag[icell_cent] = 7;
                     cut_points.push_back( cutCell(icell_cent) );
                     cut_cell_id.push_back( icell_cent );
                     counter = cut_cell_id.size()-1;
@@ -1699,12 +1702,12 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                   }
                 }
 
-                if (UGD->icellflag[icell_cent] == 7)
+                if (WGD->icellflag[icell_cent] == 7)
                 {
-                  cut_points[counter].intersect.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), 0.0));
-                  /*if (((UGD->icellflag[icell_cent-1] == 0 || UGD->icellflag[icell_cent-1] == 7) && UGD->ibuilding_flag[icell_cent-1] == building_number) ||
-                      ((UGD->icellflag[icell_cent-(UGD->nx-1)-1] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)-1] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)-1] == building_number) ||
-                      ((UGD->icellflag[icell_cent+(UGD->nx-1)-1] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)-1] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)-1] == building_number))
+                  cut_points[counter].intersect.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
+                  /*if (((WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 7) && WGD->ibuilding_flag[icell_cent-1] == building_number) ||
+                      ((WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)-1] == building_number) ||
+                      ((WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)-1] == building_number))
                   {
 
                     cut_points[counter].corner_id[0] += 1;
@@ -1712,44 +1715,44 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                     cut_points[counter].corner_id[1] += 1;
                     cut_points[counter].corner_id[5] = 1;*/
 
-                    cut_points[counter].z_solid = UGD->dz_array[k];
+                    cut_points[counter].z_solid = WGD->dz_array[k];
                     if ( k == k_cut_end )
                     {
-                      if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                       {
                         cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-UGD->z_face[k_cut_end-1];
+                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
                       }
                     }
-                    cut_points[counter].face_below.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
                     if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
                     {
-                      cut_points[counter].face_above.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
                     }
 
-                    cut_points[counter].face_right.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), 0.0));
-                    cut_points[counter].face_right.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), cut_points[counter].z_solid));
+                    cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
+                    cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
 
-                    cut_points[counter].face_left.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), 0.0));
-                    cut_points[counter].face_left.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), cut_points[counter].z_solid));
+                    cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
+                    cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
                     /*
                     if ( (cut_points[counter].corner_id[0]/cut_points[counter].pass_number) == 1 )
                     {
-                      cut_points[counter].face_right.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), 0.0));
-                      cut_points[counter].face_right.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
+                      cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
                     }
                     if ( (cut_points[counter].corner_id[1]/cut_points[counter].pass_number) == 1 )
                     {
-                      cut_points[counter].face_left.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), 0.0));
-                      cut_points[counter].face_left.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
+                      cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
                     }
                   }*/
 
-                  /*if (((UGD->icellflag[icell_cent+1] == 0 || UGD->icellflag[icell_cent+1] == 7) && UGD->ibuilding_flag[icell_cent+1] == building_number) ||
-                      ((UGD->icellflag[icell_cent-(UGD->nx-1)+1] == 0 || UGD->icellflag[icell_cent-(UGD->nx-1)+1] == 7) && UGD->ibuilding_flag[icell_cent-(UGD->nx-1)+1] == building_number) ||
-                      ((UGD->icellflag[icell_cent+(UGD->nx-1)+1] == 0 || UGD->icellflag[icell_cent+(UGD->nx-1)+1] == 7) && UGD->ibuilding_flag[icell_cent+(UGD->nx-1)+1] == building_number))
+                  /*if (((WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 7) && WGD->ibuilding_flag[icell_cent+1] == building_number) ||
+                      ((WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)+1] == building_number) ||
+                      ((WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)+1] == building_number))
                   {
 
                     cut_points[counter].corner_id[3] += 1;
@@ -1757,30 +1760,30 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
                     cut_points[counter].corner_id[2] += 1;
                     cut_points[counter].corner_id[6] = 1;
 
-                    cut_points[counter].z_solid = UGD->dz_array[k];
+                    cut_points[counter].z_solid = WGD->dz_array[k];
                     if ( k == k_cut_end )
                     {
-                      if ( height_eff-UGD->z_face[k_cut_end-1] < UGD->dz_array[k])
+                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
                       {
                         cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
                       }
                     }
-                    cut_points[counter].face_below.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
+                    cut_points[counter].face_below.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
                     if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
                     {
-                      cut_points[counter].face_above.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_above.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
                     }
                     if ( (cut_points[counter].corner_id[3]/cut_points[counter].pass_number) == 1 )
                     {
-                      cut_points[counter].face_right.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), 0.0));
-                      cut_points[counter].face_right.push_back(cutVert((x1j-i*UGD->dx), (y1j-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
+                      cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
                     }
                     if ( (cut_points[counter].corner_id[2]/cut_points[counter].pass_number) == 1 )
                     {
-                      cut_points[counter].face_left.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), 0.0));
-                      cut_points[counter].face_left.push_back(cutVert((x2j-i*UGD->dx), (y2j-j*UGD->dy), cut_points[counter].z_solid));
+                      cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
+                      cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
                     }
 
 
@@ -1800,15 +1803,15 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
     {
       for (auto id = 0; id < cut_points.size(); id++)
       {
-        int k = cut_cell_id[id]/((UGD->nx-1)*(UGD->ny-1));
-        int j = (cut_cell_id[id] - k*(UGD->nx-1)*(UGD->ny-1))/(UGD->nx-1);
-        int i = cut_cell_id[id] - k*(UGD->nx-1)*(UGD->ny-1) - j*(UGD->nx-1);
+        int k = cut_cell_id[id]/((WGD->nx-1)*(WGD->ny-1));
+        int j = (cut_cell_id[id] - k*(WGD->nx-1)*(WGD->ny-1))/(WGD->nx-1);
+        int i = cut_cell_id[id] - k*(WGD->nx-1)*(WGD->ny-1) - j*(WGD->nx-1);
         for (auto jj = 0; jj < 2; jj++)
         {
-          y_face = (j+jj)*UGD->dy;         // Center of cell y coordinate
+          y_face = (j+jj)*WGD->dy;         // Center of cell y coordinate
           for (auto ii = 0; ii < 2; ii++)
           {
-            x_face = (i+ii)*UGD->dx;       // Center of cell x coordinate
+            x_face = (i+ii)*WGD->dx;       // Center of cell x coordinate
             vert_id = 0;               // Node index
             start_poly = vert_id;
             num_crossing = 0;
@@ -1850,40 +1853,40 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
 
               if (ii == 0 && jj == 1)               // Left top corner of the cell
               {
-                cut_points[id].face_below.push_back(cutVert(0.0, UGD->dy, 0.0));
-                cut_points[id].face_behind.push_back(cutVert(0.0, UGD->dy, 0.0));
-                cut_points[id].face_behind.push_back(cutVert(0.0, UGD->dy, cut_points[id].z_solid));
-                cut_points[id].face_left.push_back(cutVert(0.0, UGD->dy, 0.0));
-                cut_points[id].face_left.push_back(cutVert(0.0, UGD->dy, cut_points[id].z_solid));
+                cut_points[id].face_below.push_back(cutVert(0.0, WGD->dy, 0.0));
+                cut_points[id].face_behind.push_back(cutVert(0.0, WGD->dy, 0.0));
+                cut_points[id].face_behind.push_back(cutVert(0.0, WGD->dy, cut_points[id].z_solid));
+                cut_points[id].face_left.push_back(cutVert(0.0, WGD->dy, 0.0));
+                cut_points[id].face_left.push_back(cutVert(0.0, WGD->dy, cut_points[id].z_solid));
                 if (cut_points[id].corner_id[5] == 1)
                 {
-                  cut_points[id].face_above.push_back(cutVert(0.0, UGD->dy, cut_points[id].z_solid));
+                  cut_points[id].face_above.push_back(cutVert(0.0, WGD->dy, cut_points[id].z_solid));
                 }
               }
 
               if (ii == 1 && jj == 1)               // Right top corner of the cell
               {
-                cut_points[id].face_below.push_back(cutVert(UGD->dx, UGD->dy, 0.0));
-                cut_points[id].face_front.push_back(cutVert(UGD->dx, UGD->dy, 0.0));
-                cut_points[id].face_front.push_back(cutVert(UGD->dx, UGD->dy, cut_points[id].z_solid));
-                cut_points[id].face_left.push_back(cutVert(UGD->dx, UGD->dy, 0.0));
-                cut_points[id].face_left.push_back(cutVert(UGD->dx, UGD->dy, cut_points[id].z_solid));
+                cut_points[id].face_below.push_back(cutVert(WGD->dx, WGD->dy, 0.0));
+                cut_points[id].face_front.push_back(cutVert(WGD->dx, WGD->dy, 0.0));
+                cut_points[id].face_front.push_back(cutVert(WGD->dx, WGD->dy, cut_points[id].z_solid));
+                cut_points[id].face_left.push_back(cutVert(WGD->dx, WGD->dy, 0.0));
+                cut_points[id].face_left.push_back(cutVert(WGD->dx, WGD->dy, cut_points[id].z_solid));
                 if (cut_points[id].corner_id[6] == 1)
                 {
-                  cut_points[id].face_above.push_back(cutVert(UGD->dx, UGD->dy, cut_points[id].z_solid));
+                  cut_points[id].face_above.push_back(cutVert(WGD->dx, WGD->dy, cut_points[id].z_solid));
                 }
               }
 
               if (ii == 1 && jj == 0)               // Right bottom corner of the cell
               {
-                cut_points[id].face_below.push_back(cutVert(UGD->dx, 0.0, 0.0));
-                cut_points[id].face_front.push_back(cutVert(UGD->dx, 0.0, 0.0));
-                cut_points[id].face_front.push_back(cutVert(UGD->dx, 0.0, cut_points[id].z_solid));
-                cut_points[id].face_right.push_back(cutVert(UGD->dx, 0.0, 0.0));
-                cut_points[id].face_right.push_back(cutVert(UGD->dx, 0.0, cut_points[id].z_solid));
+                cut_points[id].face_below.push_back(cutVert(WGD->dx, 0.0, 0.0));
+                cut_points[id].face_front.push_back(cutVert(WGD->dx, 0.0, 0.0));
+                cut_points[id].face_front.push_back(cutVert(WGD->dx, 0.0, cut_points[id].z_solid));
+                cut_points[id].face_right.push_back(cutVert(WGD->dx, 0.0, 0.0));
+                cut_points[id].face_right.push_back(cutVert(WGD->dx, 0.0, cut_points[id].z_solid));
                 if (cut_points[id].corner_id[7] == 1)
                 {
-                  cut_points[id].face_above.push_back(cutVert(UGD->dx, 0.0, cut_points[id].z_solid));
+                  cut_points[id].face_above.push_back(cutVert(WGD->dx, 0.0, cut_points[id].z_solid));
                 }
               }
 
@@ -1894,19 +1897,19 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
     }
 
     int k = k_cut_end;
-    if ( height_eff-UGD->z_face[k-1] < UGD->dz_array[k])
+    if ( height_eff-WGD->z_face[k-1] < WGD->dz_array[k])
     {
       for (auto j=j_start; j<=j_end; j++)
       {
         for (auto i=i_start; i<=i_end; i++)
         {
-          icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-          if (UGD->icellflag[icell_cent - (UGD->nx-1)*(UGD->ny-1)] == 0 && UGD->icellflag[icell_cent - (UGD->nx-1)*(UGD->ny-1)] != 7 &&
-              UGD->ibuilding_flag[icell_cent - (UGD->nx-1)*(UGD->ny-1)] == building_number)
+          icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+          if (WGD->icellflag[icell_cent - (WGD->nx-1)*(WGD->ny-1)] == 0 && WGD->icellflag[icell_cent - (WGD->nx-1)*(WGD->ny-1)] != 7 &&
+              WGD->ibuilding_flag[icell_cent - (WGD->nx-1)*(WGD->ny-1)] == building_number)
           {
-            if (UGD->icellflag[icell_cent] != 7)
+            if (WGD->icellflag[icell_cent] != 7)
             {
-              UGD->icellflag[icell_cent] = 7;
+              WGD->icellflag[icell_cent] = 7;
               cut_points.push_back( cutCell(icell_cent) );
               cut_cell_id.push_back( icell_cent );
               counter = cut_cell_id.size()-1;
@@ -1924,34 +1927,34 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
             }
 
             cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-            cut_points[counter].z_solid = height_eff-UGD->z_face[k-1];
-            if (UGD->icellflag[icell_cent] == 7)
+            cut_points[counter].z_solid = height_eff-WGD->z_face[k-1];
+            if (WGD->icellflag[icell_cent] == 7)
             {
-              cut_points[counter].intersect.push_back(cutVert(UGD->dx, UGD->dy, cut_points[counter].z_solid));
+              cut_points[counter].intersect.push_back(cutVert(WGD->dx, WGD->dy, cut_points[counter].z_solid));
               cut_points[counter].face_below.push_back(cutVert(0.0, 0.0, 0.0));
-              cut_points[counter].face_below.push_back(cutVert(0.0, UGD->dy, 0.0));
-              cut_points[counter].face_below.push_back(cutVert(UGD->dx, 0.0, 0.0));
-              cut_points[counter].face_below.push_back(cutVert(UGD->dx, UGD->dy, 0.0));
+              cut_points[counter].face_below.push_back(cutVert(0.0, WGD->dy, 0.0));
+              cut_points[counter].face_below.push_back(cutVert(WGD->dx, 0.0, 0.0));
+              cut_points[counter].face_below.push_back(cutVert(WGD->dx, WGD->dy, 0.0));
 
               cut_points[counter].face_behind.push_back(cutVert(0.0, 0.0, 0.0));
-              cut_points[counter].face_behind.push_back(cutVert(0.0, UGD->dy, 0.0));
+              cut_points[counter].face_behind.push_back(cutVert(0.0, WGD->dy, 0.0));
               cut_points[counter].face_behind.push_back(cutVert(0.0, 0.0, cut_points[counter].z_solid));
-              cut_points[counter].face_behind.push_back(cutVert(0.0, UGD->dy, cut_points[counter].z_solid));
+              cut_points[counter].face_behind.push_back(cutVert(0.0, WGD->dy, cut_points[counter].z_solid));
 
-              cut_points[counter].face_front.push_back(cutVert(UGD->dx, 0.0, 0.0));
-              cut_points[counter].face_front.push_back(cutVert(UGD->dx, UGD->dy, 0.0));
-              cut_points[counter].face_front.push_back(cutVert(UGD->dx, 0.0, cut_points[counter].z_solid));
-              cut_points[counter].face_front.push_back(cutVert(UGD->dx, UGD->dy, cut_points[counter].z_solid));
+              cut_points[counter].face_front.push_back(cutVert(WGD->dx, 0.0, 0.0));
+              cut_points[counter].face_front.push_back(cutVert(WGD->dx, WGD->dy, 0.0));
+              cut_points[counter].face_front.push_back(cutVert(WGD->dx, 0.0, cut_points[counter].z_solid));
+              cut_points[counter].face_front.push_back(cutVert(WGD->dx, WGD->dy, cut_points[counter].z_solid));
 
               cut_points[counter].face_right.push_back(cutVert(0.0, 0.0, 0.0));
-              cut_points[counter].face_right.push_back(cutVert(UGD->dx, 0.0, 0.0));
+              cut_points[counter].face_right.push_back(cutVert(WGD->dx, 0.0, 0.0));
               cut_points[counter].face_right.push_back(cutVert(0.0, 0.0, cut_points[counter].z_solid));
-              cut_points[counter].face_right.push_back(cutVert(UGD->dx, 0.0, cut_points[counter].z_solid));
+              cut_points[counter].face_right.push_back(cutVert(WGD->dx, 0.0, cut_points[counter].z_solid));
 
-              cut_points[counter].face_left.push_back(cutVert(0.0, UGD->dy, 0.0));
-              cut_points[counter].face_left.push_back(cutVert(UGD->dx, UGD->dy, 0.0));
-              cut_points[counter].face_left.push_back(cutVert(0.0, UGD->dy, cut_points[counter].z_solid));
-              cut_points[counter].face_left.push_back(cutVert(UGD->dx, UGD->dy, cut_points[counter].z_solid));
+              cut_points[counter].face_left.push_back(cutVert(0.0, WGD->dy, 0.0));
+              cut_points[counter].face_left.push_back(cutVert(WGD->dx, WGD->dy, 0.0));
+              cut_points[counter].face_left.push_back(cutVert(0.0, WGD->dy, cut_points[counter].z_solid));
+              cut_points[counter].face_left.push_back(cutVert(WGD->dx, WGD->dy, cut_points[counter].z_solid));
             }
           }
         }
@@ -1962,40 +1965,40 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
     {
       for (auto id = 0; id < cut_points.size(); id++)
       {
-        int k = cut_cell_id[id]/((UGD->nx-1)*(UGD->ny-1));
-        int j = (cut_cell_id[id] - k*(UGD->nx-1)*(UGD->ny-1))/(UGD->nx-1);
-        int i = cut_cell_id[id] - k*(UGD->nx-1)*(UGD->ny-1) - j*(UGD->nx-1);
+        int k = cut_cell_id[id]/((WGD->nx-1)*(WGD->ny-1));
+        int j = (cut_cell_id[id] - k*(WGD->nx-1)*(WGD->ny-1))/(WGD->nx-1);
+        int i = cut_cell_id[id] - k*(WGD->nx-1)*(WGD->ny-1) - j*(WGD->nx-1);
 
         if (cut_points[id].face_behind.size() != 0)
         {
           reorderPoints(cut_points[id].face_behind, 0);
-          cut_points[id].s_behind = calculateArea(UGD, cut_points[id].face_behind, cut_cell_id[id], 0);
+          cut_points[id].s_behind = calculateArea(WGD, cut_points[id].face_behind, cut_cell_id[id], 0);
         }
         if (cut_points[id].face_front.size() != 0)
         {
           reorderPoints(cut_points[id].face_front, 1);
-          cut_points[id].s_front = calculateArea(UGD, cut_points[id].face_front, cut_cell_id[id], 1);
+          cut_points[id].s_front = calculateArea(WGD, cut_points[id].face_front, cut_cell_id[id], 1);
         }
         if (cut_points[id].face_right.size() != 0)
         {
           reorderPoints(cut_points[id].face_right, 2);
-          cut_points[id].s_right = calculateArea(UGD, cut_points[id].face_right, cut_cell_id[id], 2);
+          cut_points[id].s_right = calculateArea(WGD, cut_points[id].face_right, cut_cell_id[id], 2);
         }
         if (cut_points[id].face_left.size() != 0)
         {
           reorderPoints(cut_points[id].face_left, 3);
-          cut_points[id].s_left = calculateArea(UGD, cut_points[id].face_left, cut_cell_id[id], 3);
+          cut_points[id].s_left = calculateArea(WGD, cut_points[id].face_left, cut_cell_id[id], 3);
         }
         if (cut_points[id].face_below.size() != 0)
         {
           reorderPoints(cut_points[id].face_below, 4);
-          cut_points[id].s_below = calculateArea(UGD, cut_points[id].face_below, cut_cell_id[id], 4);
+          cut_points[id].s_below = calculateArea(WGD, cut_points[id].face_below, cut_cell_id[id], 4);
         }
 
         if (cut_points[id].face_above.size() != 0)
         {
           reorderPoints(cut_points[id].face_above, 5);
-          cut_points[id].s_above = calculateArea(UGD, cut_points[id].face_above, cut_cell_id[id], 5);
+          cut_points[id].s_above = calculateArea(WGD, cut_points[id].face_above, cut_cell_id[id], 5);
         }
 
         S_cut = sqrt( pow(cut_points[id].s_behind - cut_points[id].s_front, 2.0) + pow(cut_points[id].s_right - cut_points[id].s_left, 2.0)
@@ -2012,42 +2015,42 @@ void PolyBuilding::setCellFlags(const URBInputData* UID, URBGeneralData* UGD, in
 
         if (cut_points[id].face_behind.size() != 0)
         {
-          solid_V_frac += (cut_points[id].face_behind[0].x_cut*(-1)*cut_points[id].s_behind)/(3*UGD->dx*UGD->dy*UGD->dz_array[k]);
+          solid_V_frac += (cut_points[id].face_behind[0].x_cut*(-1)*cut_points[id].s_behind)/(3*WGD->dx*WGD->dy*WGD->dz_array[k]);
         }
 
         if (cut_points[id].face_front.size() != 0)
         {
-          solid_V_frac += (cut_points[id].face_front[0].x_cut*(1)*cut_points[id].s_front)/(3*UGD->dx*UGD->dy*UGD->dz_array[k]);
+          solid_V_frac += (cut_points[id].face_front[0].x_cut*(1)*cut_points[id].s_front)/(3*WGD->dx*WGD->dy*WGD->dz_array[k]);
         }
 
         if (cut_points[id].face_right.size() != 0)
         {
-          solid_V_frac += (cut_points[id].face_right[0].y_cut*(-1)*cut_points[id].s_right)/(3*UGD->dx*UGD->dy*UGD->dz_array[k]);
+          solid_V_frac += (cut_points[id].face_right[0].y_cut*(-1)*cut_points[id].s_right)/(3*WGD->dx*WGD->dy*WGD->dz_array[k]);
         }
 
         if (cut_points[id].face_left.size() != 0)
         {
-          solid_V_frac += (cut_points[id].face_left[0].y_cut*(1)*cut_points[id].s_left)/(3*UGD->dx*UGD->dy*UGD->dz_array[k]);
+          solid_V_frac += (cut_points[id].face_left[0].y_cut*(1)*cut_points[id].s_left)/(3*WGD->dx*WGD->dy*WGD->dz_array[k]);
         }
 
         if (cut_points[id].face_below.size() != 0)
         {
-          solid_V_frac += (cut_points[id].face_below[0].z_cut*(-1)*cut_points[id].s_below)/(3*UGD->dx*UGD->dy*UGD->dz_array[k]);
+          solid_V_frac += (cut_points[id].face_below[0].z_cut*(-1)*cut_points[id].s_below)/(3*WGD->dx*WGD->dy*WGD->dz_array[k]);
         }
 
         if (cut_points[id].face_above.size() != 0)
         {
-          solid_V_frac += (cut_points[id].face_above[0].z_cut*(1)*cut_points[id].s_above)/(3*UGD->dx*UGD->dy*UGD->dz_array[k]);
+          solid_V_frac += (cut_points[id].face_above[0].z_cut*(1)*cut_points[id].s_above)/(3*WGD->dx*WGD->dy*WGD->dz_array[k]);
         }
 
         solid_V_frac += ((cut_points[id].intersect[0].x_cut*(cut_points[id].ni)*S_cut) + (cut_points[id].intersect[0].y_cut*(cut_points[id].nj)*S_cut)+
-                          (cut_points[id].intersect[0].z_cut*(cut_points[id].nk)*S_cut) )/(3*UGD->dx*UGD->dy*UGD->dz_array[k]);
+                          (cut_points[id].intersect[0].z_cut*(cut_points[id].nk)*S_cut) )/(3*WGD->dx*WGD->dy*WGD->dz_array[k]);
 
-        UGD->building_volume_frac[cut_cell_id[id]] -= solid_V_frac;
+        WGD->building_volume_frac[cut_cell_id[id]] -= solid_V_frac;
 
-        if (UGD->building_volume_frac[cut_cell_id[id]] < 0.0)
+        if (WGD->building_volume_frac[cut_cell_id[id]] < 0.0)
         {
-          UGD->building_volume_frac[cut_cell_id[id]] = 0.0;
+          WGD->building_volume_frac[cut_cell_id[id]] = 0.0;
         }
 
       }
@@ -2162,28 +2165,28 @@ void PolyBuilding::mergeSort(std::vector<float> &angle, std::vector <cutVert> &f
 	return;
 }
 
-float PolyBuilding::calculateArea(URBGeneralData* UGD, std::vector <cutVert> &face_points, int cutcell_index, int index)
+float PolyBuilding::calculateArea(WINDSGeneralData* WGD, std::vector <cutVert> &face_points, int cutcell_index, int index)
 {
   float S = 0.0;
 	float coeff = 0.0;
   int i,j,k;
 	if (face_points.size() !=0)
 	{
-    k = cutcell_index/((UGD->nx-1)*(UGD->ny-1));
-    j = (cutcell_index - k*(UGD->nx-1)*(UGD->ny-1))/(UGD->nx-1);
-    i = cutcell_index - k*(UGD->nx-1)*(UGD->ny-1) - j*(UGD->nx-1);
+    k = cutcell_index/((WGD->nx-1)*(WGD->ny-1));
+    j = (cutcell_index - k*(WGD->nx-1)*(WGD->ny-1))/(WGD->nx-1);
+    i = cutcell_index - k*(WGD->nx-1)*(WGD->ny-1) - j*(WGD->nx-1);
 	  // calculate area fraction coefficient for each face of the cut-cell
 		for (int i=0; i<face_points.size()-1; i++)
 		{
-			coeff += (0.5*(face_points[i+1].y_cut+face_points[i].y_cut)*(face_points[i+1].z_cut-face_points[i].z_cut))/(UGD->dy*UGD->dz_array[k]) +
-					 (0.5*(face_points[i+1].x_cut+face_points[i].x_cut)*(face_points[i+1].z_cut-face_points[i].z_cut))/(UGD->dx*UGD->dz_array[k]) +
-					 (0.5*(face_points[i+1].x_cut+face_points[i].x_cut)*(face_points[i+1].y_cut-face_points[i].y_cut))/(UGD->dx*UGD->dy);
+			coeff += (0.5*(face_points[i+1].y_cut+face_points[i].y_cut)*(face_points[i+1].z_cut-face_points[i].z_cut))/(WGD->dy*WGD->dz_array[k]) +
+					 (0.5*(face_points[i+1].x_cut+face_points[i].x_cut)*(face_points[i+1].z_cut-face_points[i].z_cut))/(WGD->dx*WGD->dz_array[k]) +
+					 (0.5*(face_points[i+1].x_cut+face_points[i].x_cut)*(face_points[i+1].y_cut-face_points[i].y_cut))/(WGD->dx*WGD->dy);
 		}
 
 		coeff += (0.5*(face_points[0].y_cut+face_points[face_points.size()-1].y_cut)*(face_points[0].z_cut-
-				 face_points[face_points.size()-1].z_cut))/(UGD->dy*UGD->dz_array[k]) + (0.5*(face_points[0].x_cut+face_points[face_points.size()-1].x_cut)*
-				 (face_points[0].z_cut-face_points[face_points.size()-1].z_cut))/(UGD->dx*UGD->dz_array[k]) + (0.5*(face_points[0].x_cut+
-				 face_points[face_points.size()-1].x_cut)*(face_points[0].y_cut-face_points[face_points.size()-1].y_cut))/(UGD->dx*UGD->dy);
+				 face_points[face_points.size()-1].z_cut))/(WGD->dy*WGD->dz_array[k]) + (0.5*(face_points[0].x_cut+face_points[face_points.size()-1].x_cut)*
+				 (face_points[0].z_cut-face_points[face_points.size()-1].z_cut))/(WGD->dx*WGD->dz_array[k]) + (0.5*(face_points[0].x_cut+
+				 face_points[face_points.size()-1].x_cut)*(face_points[0].y_cut-face_points[face_points.size()-1].y_cut))/(WGD->dx*WGD->dy);
 
 	}
   coeff = 1.0 - coeff;
@@ -2192,17 +2195,17 @@ float PolyBuilding::calculateArea(URBGeneralData* UGD, std::vector <cutVert> &fa
   {
 		if (index == 0 )
 		{
-      S = (1.0 - coeff)*(UGD->dy*UGD->dz_array[k]);
-      if (UGD->f[cutcell_index] == 1.0)
+      S = (1.0 - coeff)*(WGD->dy*WGD->dz_array[k]);
+      if (WGD->f[cutcell_index] == 1.0)
       {
-        UGD->f[cutcell_index] = coeff;
+        WGD->f[cutcell_index] = coeff;
       }
       else
       {
-        UGD->f[cutcell_index] -= (1.0 - coeff);
-        if (UGD->f[cutcell_index] < 0.0)
+        WGD->f[cutcell_index] -= (1.0 - coeff);
+        if (WGD->f[cutcell_index] < 0.0)
         {
-          UGD->f[cutcell_index] = 0.0;
+          WGD->f[cutcell_index] = 0.0;
         }
       }
 		}
@@ -2210,17 +2213,17 @@ float PolyBuilding::calculateArea(URBGeneralData* UGD, std::vector <cutVert> &fa
 
 		if (index == 1)
 		{
-      S = (1.0 - coeff)*(UGD->dy*UGD->dz_array[k]);
-      if (UGD->e[cutcell_index] == 1.0)
+      S = (1.0 - coeff)*(WGD->dy*WGD->dz_array[k]);
+      if (WGD->e[cutcell_index] == 1.0)
       {
-        UGD->e[cutcell_index] = coeff;
+        WGD->e[cutcell_index] = coeff;
       }
       else
       {
-        UGD->e[cutcell_index] -= (1.0 - coeff);
-        if (UGD->e[cutcell_index] < 0.0)
+        WGD->e[cutcell_index] -= (1.0 - coeff);
+        if (WGD->e[cutcell_index] < 0.0)
         {
-          UGD->e[cutcell_index] = 0.0;
+          WGD->e[cutcell_index] = 0.0;
         }
 
       }
@@ -2229,69 +2232,69 @@ float PolyBuilding::calculateArea(URBGeneralData* UGD, std::vector <cutVert> &fa
 
     if (index == 2)
 		{
-      S = (1.0 - coeff)*(UGD->dx*UGD->dz_array[k]);
-      if (UGD->h[cutcell_index] == 1.0)
+      S = (1.0 - coeff)*(WGD->dx*WGD->dz_array[k]);
+      if (WGD->h[cutcell_index] == 1.0)
       {
-        UGD->h[cutcell_index] = coeff;
+        WGD->h[cutcell_index] = coeff;
       }
       else
       {
-        UGD->h[cutcell_index] -= (1.0 - coeff);
-        if (UGD->h[cutcell_index] < 0.0)
+        WGD->h[cutcell_index] -= (1.0 - coeff);
+        if (WGD->h[cutcell_index] < 0.0)
         {
-          UGD->h[cutcell_index] = 0.0;
+          WGD->h[cutcell_index] = 0.0;
         }
 
       }
     }
     if (index == 3)
 		{
-      S = (1.0 - coeff)*(UGD->dx*UGD->dz_array[k]);
-      if (UGD->g[cutcell_index] == 1.0)
+      S = (1.0 - coeff)*(WGD->dx*WGD->dz_array[k]);
+      if (WGD->g[cutcell_index] == 1.0)
       {
-        UGD->g[cutcell_index] = coeff;
+        WGD->g[cutcell_index] = coeff;
       }
       else
       {
-        UGD->g[cutcell_index] -= (1.0 - coeff);
-        if (UGD->g[cutcell_index] < 0.0)
+        WGD->g[cutcell_index] -= (1.0 - coeff);
+        if (WGD->g[cutcell_index] < 0.0)
         {
 
-          UGD->g[cutcell_index] = 0.0;
+          WGD->g[cutcell_index] = 0.0;
         }
 
       }
     }
     if (index == 4)
 		{
-      S = (1.0 - coeff)*(UGD->dx*UGD->dy);
-      if (UGD->n[cutcell_index] == 1.0)
+      S = (1.0 - coeff)*(WGD->dx*WGD->dy);
+      if (WGD->n[cutcell_index] == 1.0)
       {
-        UGD->n[cutcell_index] = coeff;
+        WGD->n[cutcell_index] = coeff;
       }
       else
       {
-        UGD->n[cutcell_index] -= (1.0 - coeff);
-        if (UGD->n[cutcell_index] < 0.0)
+        WGD->n[cutcell_index] -= (1.0 - coeff);
+        if (WGD->n[cutcell_index] < 0.0)
         {
-          UGD->n[cutcell_index] = 0.0;
+          WGD->n[cutcell_index] = 0.0;
         }
 
       }
     }
     if (index == 5)
 		{
-      S = (1.0 - coeff)*(UGD->dx*UGD->dy);
-      if (UGD->m[cutcell_index] == 1.0)
+      S = (1.0 - coeff)*(WGD->dx*WGD->dy);
+      if (WGD->m[cutcell_index] == 1.0)
       {
-        UGD->m[cutcell_index] = coeff;
+        WGD->m[cutcell_index] = coeff;
       }
       else
       {
-        UGD->m[cutcell_index] -= (1.0 - coeff);
-        if (UGD->m[cutcell_index] < 0.0)
+        WGD->m[cutcell_index] -= (1.0 - coeff);
+        if (WGD->m[cutcell_index] < 0.0)
         {
-          UGD->m[cutcell_index] = 0.0;
+          WGD->m[cutcell_index] = 0.0;
         }
 
       }

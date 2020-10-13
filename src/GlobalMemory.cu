@@ -75,6 +75,90 @@ __global__ void SOR_RB_Global(float *d_lambda, int nx, int ny, int nz, float ome
 }
 
 
+__global__ void saveLambdaGlobal(float *d_lambda, float *d_lambda_old, int nx, int ny, int nz)
+{
+    int ii = blockDim.x*blockIdx.x+threadIdx.x;
+
+    if(ii < (nz-1)*(ny-1)*(nx-1)) {
+        d_lambda_old[ii] = d_lambda[ii];
+    }
+}
+
+__global__ void applyNeumannBCGlobal(float *d_lambda, int nx, int ny)
+{
+    // Neumann boundary condition (lambda (@k=0) = lambda (@k=1))
+    int ii = blockDim.x*blockIdx.x+threadIdx.x;
+
+    if(ii < nx*ny) {
+      d_lambda[ii] = d_lambda[ii + 1*(nx-1)*(ny-1)];
+    }
+}
+
+__global__ void calculateErrorGlobal(float *d_lambda, float *d_lambda_old, int nx, int ny, int nz,
+                               float *d_value, float *d_bvalue, float *error)
+{
+
+    int d_size = (nx-1)*(ny-1)*(nz-1);
+    int ii = blockDim.x*blockIdx.x+threadIdx.x;
+    int numblocks = (d_size/BLOCKSIZE) +1;
+
+    if (ii < d_size)
+    {
+      d_value[ii] = fabs(d_lambda[ii] - d_lambda_old[ii]);
+    }
+
+    __syncthreads();
+
+    if (threadIdx.x > 0)
+    {
+      return;
+    }
+    if (threadIdx.x == 0)
+    {
+      d_bvalue[blockIdx.x] = 0.0;
+      for (int j = 0; j < BLOCKSIZE; j++)
+      {
+        int index = blockIdx.x*blockDim.x+j;
+        if (index < d_size)
+        {
+
+          if (d_value[index] > d_bvalue[blockIdx.x])
+          {
+            d_bvalue[blockIdx.x] = d_value[index];
+          }
+        }
+      }
+
+    }
+
+
+    __syncthreads();
+
+
+    if (ii > 0)
+    {
+        return;
+    }
+
+    error [0] = 0.0;
+
+    if (ii == 0)
+    {
+      for (int k = 0; k < numblocks; k++)
+      {
+        if (d_bvalue[k] > error[0])
+        {
+          error[0] = d_bvalue[k];
+        }
+      }
+    }
+
+    //printf("Error_gpu:  %f\n", error );
+
+}
+
+
+
 // Euler Final Velocity kernel
 __global__ void finalVelocityGlobal(float *d_u0, float *d_v0, float *d_w0, float *d_lambda, float *d_u, float *d_v,
 							 float *d_w, int *d_icellflag, float *d_f, float *d_h, float *d_n, int alpha1, int alpha2,
@@ -121,60 +205,74 @@ __global__ void finalVelocityGlobal(float *d_u0, float *d_v0, float *d_w0, float
 }
 
 
-void GlobalMemory::solve(const URBInputData* UID, URBGeneralData* UGD, bool solveWind)
+void GlobalMemory::solve(const WINDSInputData* WID, WINDSGeneralData* WGD, bool solveWind)
 {
     auto startTotal = std::chrono::high_resolution_clock::now(); // Start
                                                                  // recording
                                                                  // execution
                                                                  // time
-    //int numblocks = (UGD->numcell_cent/BLOCKSIZE)+1;
+    int numblocks = (WGD->numcell_cent/BLOCKSIZE)+1;
+    R.resize( WGD->numcell_cent, 0.0 );
 
-    R.resize( UGD->numcell_cent, 0.0 );
+    lambda.resize( WGD->numcell_cent, 0.0 );
+    lambda_old.resize( WGD->numcell_cent, 0.0 );
 
-    lambda.resize( UGD->numcell_cent, 0.0 );
-    lambda_old.resize( UGD->numcell_cent, 0.0 );
+    std::vector<float> value(WGD->numcell_cent,0.0);
+    std::vector<float> bvalue(numblocks,0.0);
 
     float *d_u0, *d_v0, *d_w0;
     float *d_u, *d_v, *d_w;
+    float *d_value,*d_bvalue;
     int *d_icellflag;
     float *d_dz_array;
+    float *d_error;
 
     auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time
 
-    cudaMalloc((void **) &d_e, UGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_f, UGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_g, UGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_h, UGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_m, UGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_n, UGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_lambda, UGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **) &d_u0,UGD->numcell_face*sizeof(float));
-    cudaMalloc((void **) &d_v0,UGD->numcell_face*sizeof(float));
-    cudaMalloc((void **) &d_w0,UGD->numcell_face*sizeof(float));
-    cudaMalloc((void **) &d_dz_array,(UGD->nz-1)*sizeof(float));
-    cudaMalloc((void **) &d_R, UGD->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_e, WGD->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_f, WGD->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_g, WGD->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_h, WGD->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_m, WGD->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_n, WGD->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_lambda, WGD->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_lambda_old, WGD->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_u0,WGD->numcell_face*sizeof(float));
+    cudaMalloc((void **) &d_v0,WGD->numcell_face*sizeof(float));
+    cudaMalloc((void **) &d_w0,WGD->numcell_face*sizeof(float));
+    cudaMalloc((void **) &d_dz_array,(WGD->nz-1)*sizeof(float));
+    cudaMalloc((void **) &d_R, WGD->numcell_cent * sizeof(float));
+    cudaMalloc((void **) &d_value,WGD->numcell_cent*sizeof(float));
+    cudaMalloc((void **) &d_bvalue,numblocks*sizeof(float));
+    cudaMalloc((void **) &d_icellflag, WGD->numcell_cent * sizeof(int));
+    cudaMalloc((void **) &d_u,WGD->numcell_face*sizeof(float));
+    cudaMalloc((void **) &d_v,WGD->numcell_face*sizeof(float));
+    cudaMalloc((void **) &d_w,WGD->numcell_face*sizeof(float));
 
-    cudaMemcpy(d_u0, UGD->u0.data(),UGD->numcell_face*sizeof(float),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_v0, UGD->v0.data(),UGD->numcell_face*sizeof(float),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_w0, UGD->w0.data(),UGD->numcell_face*sizeof(float),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_R,R.data(),UGD->numcell_cent*sizeof(float),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_e , UGD->e.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_f , UGD->f.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_g , UGD->g.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_h , UGD->h.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_m , UGD->m.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_n , UGD->n.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(d_dz_array , UGD->dz_array.data() , (UGD->nz-1) * sizeof(float) , cudaMemcpyHostToDevice);
+
+    cudaMemcpy(d_u0, WGD->u0.data(),WGD->numcell_face*sizeof(float),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_v0, WGD->v0.data(),WGD->numcell_face*sizeof(float),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_w0, WGD->w0.data(),WGD->numcell_face*sizeof(float),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_R,R.data(),WGD->numcell_cent*sizeof(float),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_e , WGD->e.data() , WGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_f , WGD->f.data() , WGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_g , WGD->g.data() , WGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_h , WGD->h.data() , WGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_m , WGD->m.data() , WGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_n , WGD->n.data() , WGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_dz_array , WGD->dz_array.data() , (WGD->nz-1) * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_lambda_old , lambda_old.data() , WGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_value , value.data() , WGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_bvalue , bvalue.data() , numblocks * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_lambda , lambda.data() , WGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+    cudaMemcpy(d_icellflag, WGD->icellflag.data(), WGD->numcell_cent*sizeof(int),cudaMemcpyHostToDevice);
 
     dim3 numberOfThreadsPerBlock(BLOCKSIZE,1,1);
-    dim3 numberOfBlocks(ceil(((UGD->nx-1)*(UGD->ny-1)*(UGD->nz-1))/(float) (BLOCKSIZE)),1,1);
+    dim3 numberOfBlocks(ceil(((WGD->nx-1)*(WGD->ny-1)*(WGD->nz-1))/(float) (BLOCKSIZE)),1,1);
 
     // Invoke divergence kernel
     divergenceGlobal<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_u0,d_v0,d_w0,d_R,d_e,d_f,d_g,d_h,d_m,d_n,alpha1,
-                              UGD->nx, UGD->ny, UGD->nz, UGD->dx, UGD->dy, d_dz_array);
-
-    cudaMemcpy(d_lambda , lambda.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
-    cudaMemcpy(R.data() , d_R, UGD->numcell_cent * sizeof(float) , cudaMemcpyDeviceToHost);
+                              WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, d_dz_array);
 
 
     /////////////////////////////////////////////////
@@ -182,59 +280,66 @@ void GlobalMemory::solve(const URBInputData* UID, URBGeneralData* UGD, bool solv
     /////////////////////////////////////////////////
 
     int iter = 0;
-    float error;
-    float max_error = 1.0;
+    //float error;
+    std::vector<float> max_error(1,1.0);
+
+    cudaMalloc((void **) &d_error,1*sizeof(float));
+    cudaMemcpy(d_error , max_error.data() , 1 * sizeof(float) , cudaMemcpyHostToDevice);
+
+
 
     // Main solver loop
-    while ( (iter < itermax) && (max_error > tol))
+    while ( (iter < itermax) && (max_error[0] > tol) )
     {
       // Save previous iteration values for error calculation
-      for (int k = 0; k < UGD->nz-1; k++)
+      /*for (int k = 0; k < WGD->nz-1; k++)
       {
-        for (int j = 0; j < UGD->ny-1; j++)
+        for (int j = 0; j < WGD->ny-1; j++)
         {
-          for (int i = 0; i < UGD->nx-1; i++)
+          for (int i = 0; i < WGD->nx-1; i++)
           {
-            int ii = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   // Lineralize the vectors (make it 1D)
-            /*if (i == 45 && j == 47 )
-            {
-              std::cout << std::fixed << "R:" << std::setprecision(10) << R[ii] << "\n";
-            }*/
+            int ii = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);   // Lineralize the vectors (make it 1D)
             lambda_old[ii] = lambda[ii];
           }
         }
-      }
+      }*/
 
-      cudaMemcpy(d_lambda , lambda.data() , UGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
+      saveLambdaGlobal<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, WGD->nx, WGD->ny, WGD->nz);
+      cudaCheck(cudaGetLastError());
+      //cudaMemcpy(d_lambda , lambda.data() , WGD->numcell_cent * sizeof(float) , cudaMemcpyHostToDevice);
       int offset = 0;                     // Red nodes pass
-      SOR_RB_Global<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, UGD->nx, UGD->ny, UGD->nz, omega, A, B, d_e, d_f, d_g, d_h, d_m,
+      SOR_RB_Global<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, WGD->nx, WGD->ny, WGD->nz, omega, A, B, d_e, d_f, d_g, d_h, d_m,
                                                     d_n, d_R, offset);
       cudaCheck(cudaGetLastError());
 
       offset = 1;                         // Black nodes pass
-      SOR_RB_Global<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, UGD->nx, UGD->ny, UGD->nz, omega, A, B, d_e, d_f, d_g, d_h, d_m,
+      SOR_RB_Global<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda, WGD->nx, WGD->ny, WGD->nz, omega, A, B, d_e, d_f, d_g, d_h, d_m,
                                                     d_n, d_R, offset);
       cudaCheck(cudaGetLastError());
-      cudaMemcpy (lambda.data() , d_lambda , UGD->numcell_cent * sizeof(float) , cudaMemcpyDeviceToHost);
-      // Neumann boundary condition (lambda (@k=0) = lambda (@k=1))
-      for (int j = 0; j < UGD->ny; j++)
+      //cudaMemcpy (lambda.data() , d_lambda , WGD->numcell_cent * sizeof(float) , cudaMemcpyDeviceToHost);
+      /*// Neumann boundary condition (lambda (@k=0) = lambda (@k=1))
+      for (int j = 0; j < WGD->ny; j++)
       {
-        for (int i = 0; i < UGD->nx; i++)
+        for (int i = 0; i < WGD->nx; i++)
         {
-          int ii = i + j*(UGD->nx-1);          // Lineralize the vectors (make it 1D)
-          lambda[ii] = lambda[ii + (UGD->nx-1)*(UGD->ny-1)];
+          int ii = i + j*(WGD->nx-1);          // Lineralize the vectors (make it 1D)
+          lambda[ii] = lambda[ii + (WGD->nx-1)*(WGD->ny-1)];
         }
-      }
+      }*/
 
-      max_error = 0.0;                   /// Reset error value before error calculation
+      dim3 numberOfBlocks2(ceil(((WGD->nx-1)*(WGD->ny-1))/(float) (BLOCKSIZE)),1,1);
+      // Invoke kernel to apply Neumann boundary condition (lambda (@k=0) = lambda (@k=1))
+      applyNeumannBCGlobal<<<numberOfBlocks2,numberOfThreadsPerBlock>>>(d_lambda, WGD->nx, WGD->ny);
+
+      /*max_error = 0.0;                   /// Reset error value before error calculation
       float error1=0.0;
-      for (int k = 0; k < UGD->nz-1; k++)
+      for (int k = 0; k < WGD->nz-1; k++)
       {
-          for (int j = 0; j < UGD->ny-1; j++)
+          for (int j = 0; j < WGD->ny-1; j++)
           {
-              for (int i = 0; i < UGD->nx-1; i++)
+              for (int i = 0; i < WGD->nx-1; i++)
               {
-                  int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);   /// Lineralized index for cell centered values
+                  int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);   /// Lineralized index for cell centered values
                   error = fabs(lambda[icell_cent] - lambda_old[icell_cent]);
                   if (error > max_error)
                   {
@@ -242,33 +347,28 @@ void GlobalMemory::solve(const URBInputData* UID, URBGeneralData* UGD, bool solv
                   }
               }
           }
-      }
-
+      }*/
+      calculateErrorGlobal<<<numberOfBlocks,numberOfThreadsPerBlock>>>(d_lambda,d_lambda_old, WGD->nx, WGD->ny, WGD->nz, d_value,d_bvalue, d_error);
+      cudaMemcpy(max_error.data(),d_error,1*sizeof(float),cudaMemcpyDeviceToHost);
       iter += 1;
     }
 
-
-    cudaMalloc((void **) &d_icellflag, UGD->numcell_cent * sizeof(int));
-    cudaMalloc((void **) &d_u,UGD->numcell_face*sizeof(float));
-    cudaMalloc((void **) &d_v,UGD->numcell_face*sizeof(float));
-    cudaMalloc((void **) &d_w,UGD->numcell_face*sizeof(float));
-    cudaMemcpy(d_icellflag, UGD->icellflag.data(), UGD->numcell_cent*sizeof(int),cudaMemcpyHostToDevice);
-
-    std::cout << "Error:" << max_error << "\n";   // Print the number of iterations
+    std::cout << "Error:" << max_error[0] << "\n";
     std::cout << "Number of iterations:" << iter << "\n";   // Print the number of iterations
 
-    dim3 numberOfBlocks3(ceil((UGD->nx*UGD->ny*UGD->nz)/(float) (BLOCKSIZE)),1,1);
+    dim3 numberOfBlocks3(ceil((WGD->nx*WGD->ny*WGD->nz)/(float) (BLOCKSIZE)),1,1);
     // Invoke final velocity (Euler) kernel
     finalVelocityGlobal<<<numberOfBlocks3,numberOfThreadsPerBlock>>>(d_u0,d_v0,d_w0,d_lambda,d_u,d_v,d_w,d_icellflag,d_f,d_h,d_n,
-																alpha1,alpha2,UGD->dx,UGD->dy,UGD->dz, d_dz_array,UGD->nx,UGD->ny,UGD->nz);
+																alpha1,alpha2,WGD->dx,WGD->dy,WGD->dz, d_dz_array,WGD->nx,WGD->ny,WGD->nz);
     cudaCheck(cudaGetLastError());
 
-    cudaMemcpy(UGD->u.data(),d_u,UGD->numcell_face*sizeof(float),cudaMemcpyDeviceToHost);
-    cudaMemcpy(UGD->v.data(),d_v,UGD->numcell_face*sizeof(float),cudaMemcpyDeviceToHost);
-    cudaMemcpy(UGD->w.data(),d_w,UGD->numcell_face*sizeof(float),cudaMemcpyDeviceToHost);
+    cudaMemcpy(WGD->u.data(),d_u,WGD->numcell_face*sizeof(float),cudaMemcpyDeviceToHost);
+    cudaMemcpy(WGD->v.data(),d_v,WGD->numcell_face*sizeof(float),cudaMemcpyDeviceToHost);
+    cudaMemcpy(WGD->w.data(),d_w,WGD->numcell_face*sizeof(float),cudaMemcpyDeviceToHost);
 
 
     cudaFree (d_lambda);
+    cudaFree (d_lambda_old);
     cudaFree (d_e);
     cudaFree (d_f);
     cudaFree (d_g);
@@ -276,6 +376,8 @@ void GlobalMemory::solve(const URBInputData* UID, URBGeneralData* UGD, bool solv
     cudaFree (d_m);
     cudaFree (d_n);
     cudaFree (d_R);
+    cudaFree (d_value);
+    cudaFree (d_bvalue);
     cudaFree (d_u0);
     cudaFree (d_v0);
     cudaFree (d_w0);

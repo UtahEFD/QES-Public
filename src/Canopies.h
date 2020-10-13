@@ -6,8 +6,9 @@
 #include "Canopy.h"
 #include "CanopyHomogeneous.h"
 
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
+
 
 class Canopies : public ParseInterface
 {

@@ -41,9 +41,9 @@ public:
     }
     
 
-    void canopyInitial(URBGeneralData *ugd);
+    void canopyInitial(WINDSGeneralData *wgd);
 
-    void canopyVegetation(URBGeneralData *ugd);
+    void canopyVegetation(WINDSGeneralData *wgd);
   
     /*!
      * This function takes in variables read in from input files and initializes required variables for definig
@@ -62,13 +62,13 @@ private:
      * the readCanopy function and initial velocity field components (u0 and v0). This function applies the urban 
      * canopy parameterization and returns modified initial velocity field components.
      */
-    void canopyParam(URBGeneralData *ugd);
+    void canopyParam(WINDSGeneralData *wgd);
   
     /*!
      * This function is being call from the plantInitial function and uses linear regression method to define 
      * ustar and surface roughness of the canopy.
      */
-    void canopyRegression(URBGeneralData *ugd);
+    void canopyRegression(WINDSGeneralData *wgd);
   
   
     /*!

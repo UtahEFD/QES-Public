@@ -9,10 +9,10 @@
 
 #include "QESNetCDFOutput.h"
 
-#include "handleURBArgs.h"
+#include "handleWINDSArgs.h"
 
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 #include "WINDSOutputVisualization.h"
 #include "WINDSOutputWorkspace.h"
 
@@ -25,6 +25,8 @@
 #include "GlobalMemory.h"
 #include "SharedMemory.h"
 
+#include "Sensor.h"
+
 namespace pt = boost::property_tree;
 
 /**
@@ -36,7 +38,7 @@ namespace pt = boost::property_tree;
  * @param fileName the path/name of the file to be opened, must be an xml
  * @return A pointer to a root that is filled with data parsed from the tree
  */
-URBInputData* parseXMLTree(const std::string fileName);
+WINDSInputData* parseXMLTree(const std::string fileName);
 
 int main(int argc, char *argv[])
 {
@@ -49,9 +51,9 @@ int main(int argc, char *argv[])
     // ///////////////////////////////////
 
     // Command line arguments are processed in a uniform manner using
-    // cross-platform code.  Check the URBArgs class for details on
+    // cross-platform code.  Check the WINDSArgs class for details on
     // how to extend the arguments.
-    URBArgs arguments;
+    WINDSArgs arguments;
     arguments.processArguments(argc, argv);
 
     // ///////////////////////////////////
@@ -59,15 +61,15 @@ int main(int argc, char *argv[])
     // ///////////////////////////////////
 
     // Parse the base XML QUIC file -- contains simulation parameters
-    URBInputData* UID = parseXMLTree(arguments.quicFile);
-    if ( !UID ) {
+    WINDSInputData* WID = parseXMLTree(arguments.quicFile);
+    if ( !WID ) {
         std::cerr << "[ERROR] QUIC Input file: " << arguments.quicFile <<
             " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
 
     // Checking if
-    if (arguments.compTurb && !UID->localMixingParam) {
+    if (arguments.compTurb && !WID->localMixingParam) {
         std::cerr << "[ERROR] Turbulence model is turned on without LocalMixingParam in QES Intput file "
                   << arguments.quicFile << std::endl;
         exit(EXIT_FAILURE);
@@ -75,9 +77,9 @@ int main(int argc, char *argv[])
 
 
     if (arguments.terrainOut) {
-        if (UID->simParams->DTE_heightField) {
+        if (WID->simParams->DTE_heightField) {
             std::cout << "Creating terrain OBJ....\n";
-            UID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
+            WID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
             std::cout << "OBJ created....\n";
         }
         else {
@@ -86,24 +88,24 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Generate the general URB data from all inputs
-    URBGeneralData* UGD = new URBGeneralData(UID);
+    // Generate the general WINDS data from all inputs
+    WINDSGeneralData* WGD = new WINDSGeneralData(WID);
 
-    // create URB output classes
+    // create WINDS output classes
     std::vector<QESNetCDFOutput*> outputVec;
     if (arguments.visuOutput) {
-        outputVec.push_back(new WINDSOutputVisualization(UGD,UID,arguments.netCDFFileVisu));
+        outputVec.push_back(new WINDSOutputVisualization(WGD,WID,arguments.netCDFFileVisu));
     }
     if (arguments.wkspOutput) {
-        outputVec.push_back(new WINDSOutputWorkspace(UGD,arguments.netCDFFileWksp));
+        outputVec.push_back(new WINDSOutputWorkspace(WGD,arguments.netCDFFileWksp));
     }
 
 
-    // Generate the general TURB data from URB data
+    // Generate the general TURB data from WINDS data
     // based on if the turbulence output file is defined
     TURBGeneralData* TGD = nullptr;
     if (arguments.compTurb) {
-        TGD = new TURBGeneralData(UGD);
+        TGD = new TURBGeneralData(WGD);
     }
     if (arguments.compTurb && arguments.turbOutput) {
         outputVec.push_back(new TURBOutput(TGD,arguments.netCDFFileTurb));
@@ -111,22 +113,22 @@ int main(int argc, char *argv[])
 
     // //////////////////////////////////////////
     //
-    // Run the CUDA-URB Solver
+    // Run the CUDA-WINDS Solver
     //
     // //////////////////////////////////////////
     Solver *solver, *solverC = nullptr;
     if (arguments.solveType == CPU_Type) {
         std::cout << "Run Serial Solver (CPU) ..." << std::endl;
-        solver = new CPUSolver(UID, UGD);
+        solver = new CPUSolver(WID, WGD);
     } else if (arguments.solveType == DYNAMIC_P) {
         std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
-        solver = new DynamicParallelism(UID, UGD);
+        solver = new DynamicParallelism(WID, WGD);
     } else if (arguments.solveType == Global_M) {
         std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
-        solver = new GlobalMemory(UID, UGD);
+        solver = new GlobalMemory(WID, WGD);
     } else if (arguments.solveType == Shared_M) {
         std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
-        solver = new SharedMemory(UID, UGD);
+        solver = new SharedMemory(WID, WGD);
     } else {
         std::cerr << "[ERROR] invalid solve type\n";
         exit(EXIT_FAILURE);
@@ -135,27 +137,37 @@ int main(int argc, char *argv[])
     //check for comparison
     if (arguments.compareType) {
         if (arguments.compareType == CPU_Type)
-            solverC = new CPUSolver(UID, UGD);
+            solverC = new CPUSolver(WID, WGD);
         else if (arguments.compareType == DYNAMIC_P)
-            solverC = new DynamicParallelism(UID, UGD);
+            solverC = new DynamicParallelism(WID, WGD);
         else if (arguments.compareType == Global_M)
-            solverC = new GlobalMemory(UID, UGD);
+            solverC = new GlobalMemory(WID, WGD);
         else if (arguments.compareType == Shared_M)
-            solverC = new SharedMemory(UID, UGD);
+            solverC = new SharedMemory(WID, WGD);
         else {
             std::cerr << "[ERROR] invalid comparison type\n";
             exit(EXIT_FAILURE);
         }
     }
 
-    // Run urb simulation code
-    solver->solve(UID, UGD, !arguments.solveWind );
-
+    // Run WINDS simulation code
+    solver->solve(WID, WGD, !arguments.solveWind );
     std::cout << "Solver done!\n";
 
+    // set u0,v0 to current solution    
+    WGD->u0 = WGD->u;    
+    WGD->v0 = WGD->v;
+    
+    WGD->applyParametrizations(WID);
+    
+    // Run WINDS simulation code
+    solver->solve(WID, WGD, !arguments.solveWind );
+    std::cout << "Solver done!\n";
+    
+    
     if (solverC != nullptr) {
         std::cout << "Running comparson type...\n";
-        solverC->solve(UID, UGD, !arguments.solveWind);
+        solverC->solve(WID, WGD, !arguments.solveWind);
     }
 
     // /////////////////////////////
@@ -164,7 +176,7 @@ int main(int argc, char *argv[])
     //
     // /////////////////////////////
     if(TGD != nullptr) {
-        TGD->run(UGD);
+        TGD->run(WGD);
     }
 
     // /////////////////////////////
@@ -180,7 +192,7 @@ int main(int argc, char *argv[])
     exit(EXIT_SUCCESS);
 }
 
-URBInputData* parseXMLTree(const std::string fileName)
+WINDSInputData* parseXMLTree(const std::string fileName)
 {
 	pt::ptree tree;
 
@@ -191,10 +203,10 @@ URBInputData* parseXMLTree(const std::string fileName)
 	catch (boost::property_tree::xml_parser::xml_parser_error& e)
 	{
 		std::cerr << "Error reading tree in" << fileName << "\n";
-		return (URBInputData*)0;
+		return (WINDSInputData*)0;
 	}
 
-	URBInputData* xmlRoot = new URBInputData();
+	WINDSInputData* xmlRoot = new WINDSInputData();
         xmlRoot->parseTree( tree );
 	return xmlRoot;
 }

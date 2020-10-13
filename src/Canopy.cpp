@@ -1,27 +1,27 @@
 #include "Canopy.h"
 
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 
-void Canopy::canopyDefineBoundary(URBGeneralData* UGD,int cellFlagToUse)
+void Canopy::canopyDefineBoundary(WINDSGeneralData* WGD,int cellFlagToUse)
 {
 
     float ray_intersect;
     unsigned int num_crossing, vert_id, start_poly;
 
     // Define start index of the canopy in z-direction
-    for (auto k=1; k<UGD->z.size(); k++) {
+    for (auto k=1; k<WGD->z.size(); k++) {
         k_start = k;
-        if (base_height <= UGD->z[k]) {
+        if (base_height <= WGD->z[k]) {
             break;
         }
     }
   
     // Define end index of the canopy in z-direction   
     // Note that 0u means 0 unsigned
-    for (auto k=0; k<UGD->z.size(); k++) {
+    for (auto k=0; k<WGD->z.size(); k++) {
         k_end = k+1;
-        if (base_height+H < UGD->z[k+1]) {
+        if (base_height+H < WGD->z[k+1]) {
             break;
         }
     }
@@ -45,11 +45,11 @@ void Canopy::canopyDefineBoundary(URBGeneralData* UGD,int cellFlagToUse)
     }
   
     // i_start and i_end are faces and not cells
-    i_start = x_min/UGD->dx;       // Index of canopy start location in x-direction
-    i_end = x_max/UGD->dx+1;       // Index of canopy end location in x-direction
+    i_start = x_min/WGD->dx;       // Index of canopy start location in x-direction
+    i_end = x_max/WGD->dx+1;       // Index of canopy end location in x-direction
     // j_start and j_end are faces and not cells
-    j_start = y_min/UGD->dy;       // Index of canopy end location in y-direction
-    j_end = y_max/UGD->dy+1;       // Index of canopy start location in y-direction
+    j_start = y_min/WGD->dy;       // Index of canopy end location in y-direction
+    j_end = y_max/WGD->dy+1;       // Index of canopy start location in y-direction
     
     // size of the canopy array -> with ghost cell before and after (hence +2) 
     nx_canopy = (i_end-i_start-1)+2;
@@ -77,9 +77,9 @@ void Canopy::canopyDefineBoundary(URBGeneralData* UGD,int cellFlagToUse)
     // Check the center of each cell, if it's inside, set that cell to building
     for (auto j=j_start; j<j_end; j++) {
         // Center of cell y coordinate
-        y_cent = (j+0.5)*UGD->dy;         
+        y_cent = (j+0.5)*WGD->dy;         
         for (auto i=i_start; i<i_end; i++) {
-            x_cent = (i+0.5)*UGD->dx;
+            x_cent = (i+0.5)*WGD->dx;
             // Node index
             vert_id = 0;               
             start_poly = vert_id;
@@ -105,32 +105,32 @@ void Canopy::canopyDefineBoundary(URBGeneralData* UGD,int cellFlagToUse)
             // if num_crossing is odd = cell is oustside of the polygon
             // if num_crossing is even = cell is inside of the polygon
             if ( (num_crossing%2) != 0 ) {
-                int icell_cent_2d = i + j*(UGD->nx-1);
+                int icell_cent_2d = i + j*(WGD->nx-1);
                 int icell_canopy_2d = (i+1-i_start) + (j+1-j_start)*nx_canopy;
                 
                 // Define start index of the canopy in z-direction
-                for (auto k=1; k<UGD->z.size(); k++) {
-                    if (UGD->terrain[icell_cent_2d]+base_height <= UGD->z[k]) {
+                for (auto k=1; k<WGD->z.size(); k++) {
+                    if (WGD->terrain[icell_cent_2d]+base_height <= WGD->z[k]) {
                         canopy_bot_index[icell_canopy_2d] = k;
-                        canopy_bot[icell_canopy_2d] = UGD->terrain[icell_cent_2d]+base_height;
+                        canopy_bot[icell_canopy_2d] = WGD->terrain[icell_cent_2d]+base_height;
                         break;
                     }
                 }
                 
                 // Define end index of the canopy in z-direction   
-                for (auto k=0; k<UGD->z.size(); k++) {
-                    if(UGD->terrain[icell_cent_2d]+base_height+H < UGD->z[k+1]) {
+                for (auto k=0; k<WGD->z.size(); k++) {
+                    if(WGD->terrain[icell_cent_2d]+base_height+H < WGD->z[k+1]) {
                         canopy_top_index[icell_canopy_2d] = k;
-                        canopy_top[icell_canopy_2d] = UGD->terrain[icell_cent_2d]+base_height+H;
+                        canopy_top[icell_canopy_2d] = WGD->terrain[icell_cent_2d]+base_height+H;
                         break;
                     }
                 }
                 
                 // Define hieght of the canopy base in z-direction   
-                for (auto k=1; k<UGD->z.size(); k++) {
-                    int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                    if( UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2) {
-                        canopy_base[icell_canopy_2d] = UGD->z_face[k-1];
+                for (auto k=1; k<WGD->z.size(); k++) {
+                    int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                    if( WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
+                        canopy_base[icell_canopy_2d] = WGD->z_face[k-1];
                         break;
                     }
                 }
@@ -139,10 +139,10 @@ void Canopy::canopyDefineBoundary(URBGeneralData* UGD,int cellFlagToUse)
                 
                 // define icellflag @ (x,y) for all z(k) in [k_start...k_end]
                 for (auto k=canopy_bot_index[icell_canopy_2d]; k<=canopy_top_index[icell_canopy_2d]; k++) {
-                    int icell_cent = i + j*(UGD->nx-1) + k*(UGD->nx-1)*(UGD->ny-1);
-                    if( UGD->icellflag[icell_cent] != 0 && UGD->icellflag[icell_cent] != 2) {
+                    int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                    if( WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
                         // Canopy cell
-                        UGD->icellflag[icell_cent] = cellFlagToUse;             
+                        WGD->icellflag[icell_cent] = cellFlagToUse;             
                     }
                 }
             } // end define icellflag!
@@ -150,7 +150,7 @@ void Canopy::canopyDefineBoundary(URBGeneralData* UGD,int cellFlagToUse)
     }
     
     // find k_start and k_end
-    k_start=UGD->nz;
+    k_start=WGD->nz;
     k_end=0;
     for (auto j=0; j<ny_canopy; j++) {
         for (auto i=0; i<nx_canopy; i++) {

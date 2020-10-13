@@ -3,7 +3,7 @@
 #include <math.h>
 #include <vector>
 
-#include "URBGeneralData.h"
+#include "WINDSGeneralData.h"
 #include "TURBWall.h"
 #include "TURBWallBuilding.h"
 #include "TURBWallTerrain.h"
@@ -18,13 +18,13 @@ class TURBGeneralData {
 public:
     TURBGeneralData()
     {}
-    TURBGeneralData(URBGeneralData*);
+    TURBGeneralData(WINDSGeneralData*);
     virtual ~TURBGeneralData()
     {}
 
-    virtual void run(URBGeneralData*);
+    virtual void run(WINDSGeneralData*);
 
-    void getDerivatives(URBGeneralData*);
+    void getDerivatives(WINDSGeneralData*);
     void getStressTensor();
 
     // General QUIC Domain Data
@@ -42,11 +42,11 @@ public:
     std::vector<int> icellfluid;
     std::vector<int> iturbflag;
     /*
-      0 - solid object, 1 - fluid 
+      0 - solid object, 1 - fluid
       2 - stairstep terrain-wall, 3 - cut-cell terrain
-      4 - stairstep building-wall, 5 - cut-cell building 
+      4 - stairstep building-wall, 5 - cut-cell building
     */
-  
+
     //strain rate tensor
     std::vector<float> S11;
     std::vector<float> S12;
@@ -68,8 +68,8 @@ public:
 
     // derived turbulence quantities
     std::vector<float> tke;
-    std::vector<float> CoEps; 
-  
+    std::vector<float> CoEps;
+
 protected:
 
 private:
@@ -85,5 +85,5 @@ private:
     const float sigUConst=sigUOrg*sigUOrg*cPope*cPope;//2.3438;
     const float sigVConst=sigVOrg*sigVOrg*cPope*cPope;//1.5;
     const float sigWConst=sigWOrg*sigWOrg*cPope*cPope;//0.6338;
-  
+
 };
