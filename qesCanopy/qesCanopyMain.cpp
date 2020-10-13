@@ -42,10 +42,13 @@ WINDSInputData* parseXMLTree(const std::string fileName);
 
 int main(int argc, char *argv[])
 {
-    // CUDA-Urb - Version output information
+    // QES-Winds - Version output information
     std::string Revision = "0";
-    std::cout << "cudaUrb " << "0.8.0" << std::endl;
-
+    std::cout << "QES-Winds " << "1.0.0" << std::endl;
+#ifdef HAS_OPTIX
+    std::cout << "OptiX is available!" << std::endl;
+#endif
+    
     // ///////////////////////////////////
     // Parse Command Line arguments
     // ///////////////////////////////////
@@ -75,7 +78,6 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-
     if (arguments.terrainOut) {
         if (WID->simParams->DTE_heightField) {
             std::cout << "Creating terrain OBJ....\n";
@@ -90,7 +92,7 @@ int main(int argc, char *argv[])
 
     // Generate the general WINDS data from all inputs
     WINDSGeneralData* WGD = new WINDSGeneralData(WID);
-
+    
     // create WINDS output classes
     std::vector<QESNetCDFOutput*> outputVec;
     if (arguments.visuOutput) {
@@ -99,7 +101,6 @@ int main(int argc, char *argv[])
     if (arguments.wkspOutput) {
         outputVec.push_back(new WINDSOutputWorkspace(WGD,arguments.netCDFFileWksp));
     }
-
 
     // Generate the general TURB data from WINDS data
     // based on if the turbulence output file is defined

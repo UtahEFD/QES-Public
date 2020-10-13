@@ -46,7 +46,6 @@ int main(int argc, char *argv[])
     // QES-Winds - Version output information
     std::string Revision = "0";
     std::cout << "QES-Winds " << "1.0.0" << std::endl;
-
 #ifdef HAS_OPTIX
     std::cout << "OptiX is available!" << std::endl;
 #endif
