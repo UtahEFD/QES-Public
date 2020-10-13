@@ -19,8 +19,23 @@ public:
     // initializer
     Particle()
     {
+        d=0.0;
+        d_m=(1.0E-6)*d;
+        m=0.0;
+        m_kg=(1.0E-3)*m;
+        rho=0.0;
     }
 
+    // initializer
+    Particle(const double& d_part,const double& m_part,const double& rho_part)
+    {
+        d=d_part;
+        d_m=(1.0E-6)*d;
+        m=m_part;
+        m_kg=(1.0E-3)*m;
+        rho=rho_part;
+    }
+    
     // destructor
     ~Particle()
     {
@@ -74,9 +89,12 @@ public:
     bool isActive;         // this is true until it becomes false.  If a particle leaves the domain or runs out of mass, this becomes false.
 
     // particle physical property 
-    double diameter,minDiameter;  // particle diameter and minimum particle diameter [microns]
-    double mass;                  // mass of particles [g]
-        
+    double d;    // particle diameter diameter [microns]
+    double d_m;  // particle diameter diameter [microns]
+    double m;    // particle mass [g]
+    double m_kg;    // particle mass [kg]
+    double rho;  // density of particle
+    
     // deposition vatiables
     double fdeposition; // particle deposited fraction [0,1]
     double vs;         // settling velocity [m/s]
@@ -85,10 +103,22 @@ public:
     
     // decay varables
     double fdecay; // particle decayed fraction [0,1]
+
+    double getSettlingVelocity(const double&,const double&);
     
 private:
-
-        
+    
 
 };
 
+inline double Particle::getSettlingVelocity(const double& rhoAir,const double& nuAir)
+{
+    //dimensionless grain diameter
+    double dstar = d_m*pow(9.81/pow(nuAir,2.0)*(rho/rhoAir-1.),1.0/3.0); 
+    // drag coefficent
+    double Cd = (432.0/pow(dstar,3.0))*pow(1.0+0.022*pow(dstar,3.0),0.54) + 0.47*(1.0-exp(-0.15*pow(dstar,0.45)));
+    // dimensionless settling velociy
+    double wstar = pow((4.0*dstar)/(3.0*Cd),0.5);
+    // settling velocity
+    return wstar*pow(9.81*nuAir*(rho/rhoAir-1.0),1.0/3.0);        
+}

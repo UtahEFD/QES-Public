@@ -228,7 +228,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
 bool PlumeOutputLagrangian::validateFileOtions()
 {
     // removing duplicate
-    sort(output_fields.begin(),output_fields.end() );
+    sort(output_fields.begin(),output_fields.end());
     output_fields.erase(unique(output_fields.begin(),output_fields.end()),output_fields.end());    
         
     // check if all outputFields are possible
@@ -304,12 +304,12 @@ void PlumeOutputLagrangian::save(float currentTime)
 
         // reset buffers
         for( auto i = 0u; i<isActive.size(); i++ ) {
+            tStrt[i] = 0; 
+            sourceIdx[i] = 0; 
+            
             xPos_init[i] = 0;
             yPos_init[i] = 0;
             zPos_init[i] = 0; 
-            
-            tStrt[i] = 0; 
-            sourceIdx[i] = 0; 
             
             xPos[i] = 0;
             yPos[i] = 0; 
