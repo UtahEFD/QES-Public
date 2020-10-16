@@ -4,11 +4,11 @@
 #include "util/ParseInterface.h"
 #include "Canopy.h"
 
-class CanopyHomogeneous : public Canopy
+class CanopyIsolatedTree : public Canopy
 {
 public:
     
-    CanopyHomogeneous()
+    CanopyIsolatedTree()
     {
     }
     
@@ -17,26 +17,31 @@ public:
     {
         parsePrimitive<float>(true, attenuationCoeff, "attenuationCoefficient");
         parsePrimitive<float>(true, H, "height");
+        parsePrimitive<float>(true, zMaxLAI, "zMaxLAI");
         parsePrimitive<float>(true, base_height, "baseHeight");
-        parsePrimitive<float>(true, x_start, "xStart");
-        parsePrimitive<float>(true, y_start, "yStart");
-        parsePrimitive<float>(true, L, "length");
+        parsePrimitive<float>(true, x_cent, "xCenter");
+        parsePrimitive<float>(true, y_cent, "yCenter");
+        //parsePrimitive<float>(true, L, "length");
         parsePrimitive<float>(true, W, "width");
-        parsePrimitive<float>(true, canopy_rotation, "canopyRotation");
+        //parsePrimitive<float>(true, canopy_rotation, "canopyRotation");
     
-    
+        x_start=x_cent-0.5*W;
+        y_start=y_cent-0.5*W;
+        
+        L=W;
+        canopy_rotation=0;
+
+        zMaxLAI=zMaxLAI*H;
+
         //x_start += UID->simParams->halo_x;
         //y_start += UID->simParams->halo_y;
         canopy_rotation *= M_PI/180.0;
-        polygonVertices.resize (5);
-        polygonVertices[0].x_poly = polygonVertices[4].x_poly = x_start;
-        polygonVertices[0].y_poly = polygonVertices[4].y_poly = y_start;
-        polygonVertices[1].x_poly = x_start-W*sin(canopy_rotation);
-        polygonVertices[1].y_poly = y_start+W*cos(canopy_rotation);
-        polygonVertices[2].x_poly = polygonVertices[1].x_poly+L*cos(canopy_rotation);
-        polygonVertices[2].y_poly = polygonVertices[1].y_poly+L*sin(canopy_rotation);
-        polygonVertices[3].x_poly = x_start+L*cos(canopy_rotation);
-        polygonVertices[3].y_poly = y_start+L*sin(canopy_rotation);
+        float f=36.0; // circle cut in 36 slices
+        polygonVertices.resize(f+1);
+        for(int t=0;t<=f;++t) {
+            polygonVertices[t].x_poly=0.5*W*cos(t*2.0*M_PI/f)+x_cent;
+            polygonVertices[t].y_poly=0.5*W*sin(t*2.0*M_PI/f)+y_cent;
+        }
 
     }
     
@@ -51,12 +56,14 @@ public:
      */
     //void readCanopy(int nx, int ny, int nz, int landuse_flag, int num_canopies, int &lu_canopy_flag,
     //	std::vector<std::vector<std::vector<float>>> &canopy_atten,std::vector<std::vector<float>> &canopy_top);
-  
+
 private:
   
     float attenuationCoeff;
-    const int cellFlagCionco=11;
-    
+    float zMaxLAI;
+    int ustar_method=2;
+    const int cellFlagTree=11;
+    const int cellFlagWake=12;
     /*!
      * This function takes in icellflag defined in the defineCanopy function along with variables initialized in
      * the readCanopy function and initial velocity field components (u0 and v0). This function applies the urban 
@@ -64,4 +71,28 @@ private:
      */
     void canopyParam(WINDSGeneralData *wgd);
   
+
+    void canopyWake(WINDSGeneralData *wgd);
+    float Bfunc(const float&);
+    float ucfunc(const float&,const float&);
+    
 };
+
+inline float CanopyIsolatedTree::Bfunc(const float& xh)
+{
+    if(xh < 7.77) {
+        return (0.05*(xh))+2.12;
+    } else {
+        return pow(1.70*(xh),0.19);
+    }
+}
+
+inline float CanopyIsolatedTree::ucfunc(const float& xh,const float& us)
+{
+    if(xh < 7.77) {
+        //uc=ustar_hanieh*(-0.0935*(xpc/eff_height)*(xpc/eff_height)+10)
+        return us*((-0.63*(xh))+9.33);
+    } else {
+        return us*pow(90.68*(xh),-1.48);
+    }
+}

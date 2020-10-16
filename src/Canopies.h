@@ -5,6 +5,7 @@
 
 #include "Canopy.h"
 #include "CanopyHomogeneous.h"
+#include "CanopyIsolatedTree.h"
 
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
@@ -27,6 +28,7 @@ public:
         parsePrimitive<int>(true, num_canopies, "num_canopies");
         // read the input data for canopies
         parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyHomogeneous>("CanopyHomogeneous"));
+        parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyIsolatedTree>("CanopyIsolatedTree"));
         // add other type of canopy here
     }
 };

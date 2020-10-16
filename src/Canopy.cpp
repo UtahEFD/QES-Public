@@ -175,3 +175,142 @@ void Canopy::canopyDefineBoundary(WINDSGeneralData* WGD,int cellFlagToUse)
     
     return;
 }
+
+void Canopy::canopyRegression(WINDSGeneralData* WGD)
+{
+  
+    int k_top, counter;
+    float sum_x, sum_y, sum_xy, sum_x_sq, local_mag;
+    float y, xm, ym;
+    
+    for (auto j=0; j<ny_canopy; j++) {
+        for (auto i=0; i<nx_canopy; i++) {
+            int id = i+j*nx_canopy;
+            if (canopy_top_index[id] > 0) {
+                for (auto k=canopy_top_index[id]; k<WGD->nz-2; k++) {
+                    k_top = k;
+                    if (2*canopy_top[id] < WGD->z[k+1])
+                        break;
+                }
+                if (k_top == canopy_top_index[id]) {
+                    k_top = canopy_top_index[id]+1;
+                }
+                if (k_top > WGD->nz-1) {
+                    k_top = WGD->nz-1;
+                }
+                sum_x = 0;
+                sum_y = 0;
+                sum_xy = 0;
+                sum_x_sq = 0;
+                counter = 0;
+                for (auto k=canopy_top_index[id]; k<=k_top; k++) {
+                    counter +=1;
+                    int icell_face = (i-1+i_start) + (j-1+j_start)*WGD->nx + k*WGD->nx*WGD->ny;
+                    local_mag = sqrt(pow(WGD->u0[icell_face],2.0)+pow(WGD->v0[icell_face],2.0));
+                    y = log(WGD->z[k]);
+                    sum_x += local_mag;
+                    sum_y += y;
+                    sum_xy += local_mag*y;
+                    sum_x_sq += pow(local_mag,2.0);
+                }
+                
+                canopy_ustar[id] = WGD->vk*(((counter*sum_x_sq)-pow(sum_x,2.0))/((counter*sum_xy)-(sum_x*sum_y)));
+                xm = sum_x/counter;
+                ym = sum_y/counter;
+                canopy_z0[id] = exp(ym-((WGD->vk/canopy_ustar[id]))*xm);
+                
+            } // end of if (canopy_top_index[id] > 0)
+        }
+    } 
+    
+    return;
+}
+
+float Canopy::canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m)
+{
+    int iter;
+    float  uhc, d, d1, d2;
+    float tol, fnew, fi;
+
+    tol = z0/100;
+    fnew = tol*10;
+
+    d1 = z0;
+    d2 = canopy_top;
+    d = (d1+d2)/2;
+
+    uhc = (ustar/vk)*(log((canopy_top-d1)/z0)+psi_m);
+    fi = ((canopy_atten*uhc*vk)/ustar)-canopy_top/(canopy_top-d1);
+
+    if (canopy_atten > 0) {
+        iter = 0;
+        while (iter < 200 && abs(fnew) > tol && d < canopy_top && d > z0)
+        {
+            iter += 1;
+            d = (d1+d2)/2;
+            uhc = (ustar/vk)*(log((canopy_top-d)/z0)+psi_m);
+            fnew = ((canopy_atten*uhc*vk)/ustar) - canopy_top/(canopy_top-d);
+            if(fnew*fi>0) {
+                d1 = d;
+            } else if(fnew*fi<0) {
+                d2 = d;
+            }
+        }
+        if (d > canopy_top) {
+            d = 10000;
+        }
+        
+    } else {
+        d = 0.99*canopy_top;
+    }
+
+    return d;
+}
+
+float Canopy::canopySlopeMatch(float z0, float canopy_top, float canopy_atten)
+{
+  
+    int iter;
+    float tol, d, d1, d2, f;
+  
+    tol = z0/100;
+    // f is the root of the equation (to find d)
+    // log[(H-d)/z0] = H/[a(H-d)] 
+    f = tol*10;
+  
+    // initial bound for bisection method (d1,d2)
+    // d1 min displacement possible
+    // d2 max displacement possible - canopy top
+    if (z0 < canopy_top) {
+        d1 = z0;
+    } else if (z0 > canopy_top) {
+        d1 = 0.1;
+    }
+    d2 = canopy_top;
+    d = (d1+d2)/2;
+  
+    if (canopy_atten > 0) {
+        iter = 0;
+        // bisection method to find the displacement height
+        while (iter < 200 && abs(f) > tol && d < canopy_top && d > z0) {
+            iter += 1;
+            d = (d1+d2)/2;
+            f = log ((canopy_top-d)/z0) - (canopy_top/(canopy_atten*(canopy_top-d)));
+            if(f > 0) {
+                d1 = d;
+            } else if(f<0) {
+                d2 = d;
+            }
+        }
+        // if displacement found higher that canopy top => shifted down
+        if (d > canopy_top) {
+            d = 0.7*canopy_top;
+        }
+    } else {
+        // return this if attenuation coeff is 0.
+        d = 10000;
+    }
+  
+    // return displacement height
+    return d;
+}

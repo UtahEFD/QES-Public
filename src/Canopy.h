@@ -6,6 +6,7 @@
 
 enum CanopyType {
     Homogeneous,
+    IsolatedTree,
     Vineyard
 };
 
@@ -37,7 +38,7 @@ public:
      * For all Canopy classes derived, this need to be defined
      */
     virtual void parseValues() = 0;
-
+    
     CanopyType _cType;
     
 protected: 
@@ -47,8 +48,7 @@ protected:
      */
     void canopyDefineBoundary(WINDSGeneralData *wgd,int cellFlagToUse);
     
-    
-    
+      
     /*!
      * For there and below, the canopyInitial function has to be defined
      */
@@ -76,6 +76,24 @@ protected:
     std::vector<float> canopy_ustar;	  /**< Velocity gradient at the top of canopy */
     std::vector<float> canopy_d;		  /**< Canopy displacement length */
     
+    /*!
+     * This function is being call from the plantInitial function and uses linear regression method to define 
+     * ustar and surface roughness of the canopy.
+     */
+    void canopyRegression(WINDSGeneralData *wgd);
+    
+    /*!
+     * This is a new function wrote by Lucas Ulmer and is being called from the plantInitial function. The purpose 
+     * of this function is to use bisection method to find root of the specified equation. It calculates the 
+     * displacement height when the bisection function is not finding it.
+     */
+    float canopySlopeMatch(float z0, float canopy_top, float canopy_atten);
+    
+    /*!
+     * 
+     */
+    float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
+
 private:
     
 
