@@ -41,9 +41,9 @@ public:
     }
     
 
-    void canopyInitial(WINDSGeneralData *wgd);
+    void canopyInitial(WINDSGeneralData *wgd, int building_id);
 
-    void canopyVegetation(WINDSGeneralData *wgd);
+    void canopyVegetation(WINDSGeneralData *wgd, int building_id);
   
     /*!
      * This function takes in variables read in from input files and initializes required variables for definig
@@ -56,12 +56,5 @@ private:
   
     float attenuationCoeff;
     const int cellFlagCionco=11;
-    
-    /*!
-     * This function takes in icellflag defined in the defineCanopy function along with variables initialized in
-     * the readCanopy function and initial velocity field components (u0 and v0). This function applies the urban 
-     * canopy parameterization and returns modified initial velocity field components.
-     */
-    void canopyParam(WINDSGeneralData *wgd);
   
 };

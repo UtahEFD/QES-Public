@@ -46,18 +46,18 @@ protected:
      * This function takes in variables initialized by the readCanopy function and sets the boundaries of 
      * the canopy and defines initial values for the canopy height.
      */
-    void canopyDefineBoundary(WINDSGeneralData *wgd,int cellFlagToUse);
+    void canopyDefineBoundary(WINDSGeneralData *wgd, int building_id, int cellFlagToUse);
     
       
     /*!
      * For there and below, the canopyInitial function has to be defined
      */
-    virtual void canopyInitial(WINDSGeneralData *wgd) = 0;
+    virtual void canopyInitial(WINDSGeneralData *wgd,int building_id) = 0;
     
     /*!
      * For there and below, the canopyVegetation function has to be defined
      */
-    virtual void canopyVegetation(WINDSGeneralData *wgd) = 0;
+    virtual void canopyVegetation(WINDSGeneralData *wgd,int building_id) = 0;
     
     /*!
      * 
@@ -75,6 +75,14 @@ protected:
     std::vector<float> canopy_z0;		  /**< Canopy surface roughness */
     std::vector<float> canopy_ustar;	  /**< Velocity gradient at the top of canopy */
     std::vector<float> canopy_d;		  /**< Canopy displacement length */
+    
+    
+    /*!
+     * This function takes in icellflag defined in the defineCanopy function along with variables initialized in
+     * the readCanopy function and initial velocity field components (u0 and v0). This function applies the urban 
+     * canopy parameterization and returns modified initial velocity field components.
+     */
+    void canopyCioncoParam(WINDSGeneralData * wgd);
     
     /*!
      * This function is being call from the plantInitial function and uses linear regression method to define 

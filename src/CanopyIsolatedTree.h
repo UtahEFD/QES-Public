@@ -46,9 +46,9 @@ public:
     }
     
 
-    void canopyInitial(WINDSGeneralData *wgd);
+    void canopyInitial(WINDSGeneralData *wgd,int building_id);
 
-    void canopyVegetation(WINDSGeneralData *wgd);
+    void canopyVegetation(WINDSGeneralData *wgd,int building_id);
   
     /*!
      * This function takes in variables read in from input files and initializes required variables for definig
@@ -61,18 +61,11 @@ private:
   
     float attenuationCoeff;
     float zMaxLAI;
-    int ustar_method=2;
+    int ustar_method=0;
     const int cellFlagTree=11;
-    const int cellFlagWake=12;
-    /*!
-     * This function takes in icellflag defined in the defineCanopy function along with variables initialized in
-     * the readCanopy function and initial velocity field components (u0 and v0). This function applies the urban 
-     * canopy parameterization and returns modified initial velocity field components.
-     */
-    void canopyParam(WINDSGeneralData *wgd);
-  
+    const int cellFlagWake=12; 
 
-    void canopyWake(WINDSGeneralData *wgd);
+    void canopyWake(WINDSGeneralData *wgd, int building_id);
     float Bfunc(const float&);
     float ucfunc(const float&,const float&);
     
@@ -83,7 +76,7 @@ inline float CanopyIsolatedTree::Bfunc(const float& xh)
     if(xh < 7.77) {
         return (0.05*(xh))+2.12;
     } else {
-        return pow(1.70*(xh),0.19);
+        return 1.70*pow(xh,0.19);
     }
 }
 
@@ -93,6 +86,6 @@ inline float CanopyIsolatedTree::ucfunc(const float& xh,const float& us)
         //uc=ustar_hanieh*(-0.0935*(xpc/eff_height)*(xpc/eff_height)+10)
         return us*((-0.63*(xh))+9.33);
     } else {
-        return us*pow(90.68*(xh),-1.48);
+        return us*90.68*pow(xh,-1.48);
     }
 }
