@@ -753,7 +753,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
    for (size_t i = 0; i < allBuildingsV.size(); i++)
    {
       // for now this does the canopy stuff for us
-      allBuildingsV[building_id[i]]->canopyVegetation(this);
+       allBuildingsV[building_id[i]]->canopyInitial(this,building_id[i]);
    }
 
    ///////////////////////////////////////////
@@ -911,7 +911,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData* WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++)
     {
         // for now this does the canopy stuff for us
-        allBuildingsV[building_id[i]]->canopyVegetation(this);
+        allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
     }   
     
     return;
