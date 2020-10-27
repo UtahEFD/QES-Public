@@ -208,7 +208,7 @@ public:
             (*(grid))[0] = wrfInputData->fm_dx;
             (*(grid))[1] = wrfInputData->fm_dy;
 
-            std::cout << "Dim: " << wrfInputData->fm_nx << " X " << wrfInputData->fm_ny << std::endl;
+            std::cout << "Dim: " << wrfInputData->fm_nx << " X " << wrfInputData->fm_ny << " X " << wrfInputData->fm_nz << std::endl;
             std::cout << "at " << (*(grid))[0] << " X " << (*(grid))[1] << " X " << (*(grid))[2] << std::endl;
 
             domain = new Vector3<int>( wrfInputData->fm_nx, wrfInputData->fm_nx, wrfInputData->fm_nz );
