@@ -34,12 +34,12 @@ public:
         parsePrimitive<int>(false, site_coord_flag, "site_coord_flag");
         parsePrimitive<float>(true, site_xcoord, "site_xcoord");
         parsePrimitive<float>(true, site_ycoord, "site_ycoord");
-    		parsePrimitive<float>(false, site_UTM_x, "site_UTM_x");
-    		parsePrimitive<float>(false, site_UTM_y, "site_UTM_y");
-    		parsePrimitive<int>(false, site_UTM_zone, "site_UTM_zone");
-    		parsePrimitive<float>(false, site_lon, "site_lon");
-    		parsePrimitive<float>(false, site_lat, "site_lat");
-
+        parsePrimitive<float>(false, site_UTM_x, "site_UTM_x");
+        parsePrimitive<float>(false, site_UTM_y, "site_UTM_y");
+        parsePrimitive<int>(false, site_UTM_zone, "site_UTM_zone");
+        parsePrimitive<float>(false, site_lon, "site_lon");
+        parsePrimitive<float>(false, site_lat, "site_lat");
+        
         parseMultiElements<TimeSeries>(false, TS, "timeSeries");
 
     }
