@@ -32,6 +32,7 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField, int dimX,
 
     std::cout << "DEM Loading from height field\n";
     std::cout << "dimX = " << dimX << ", dimY = " << dimY << std::endl;
+    std::cout << "cellSizeX = " << cellSizeXN << ", cellsSizeY = " << cellSizeYN << std::endl;
     std::cout << "size of heightField = " << heightField.size() << std::endl;
 
     // eventually need the fm_dx and fm_dy so we can multiply into
@@ -44,37 +45,66 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField, int dimX,
     // determine how we step over the terrain to create the actual
     // mesh... based on dx, dy...
 
+    // This triangle mesh is in the dimensions of the height field
+    // array... may not be in the domain space... hence when queried
+    // later in the
+
     for (float j = 0; j < dimY-1; j+=step) {
         for (float i = 0; i < dimX-1; i+=step) {
 
             int idx = j * dimX + i;
             if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            // std::cout << "(" << i << ", " << j << ") = " << heightField[idx] << std::endl;
+            std::cout << "(" << i << ", " << j << ") = " << heightField[idx] << std::endl;
 
-            Vector3<float> tv0( i, j, (float)heightField[ idx ] ); // queryHeight( pafScanline, Xpixel,  Yline));
+            //
+            // Need to convert these to localized QES dimensions
+            //
+            float xPos = i * cellSizeXN;
+            float yPos = j * cellSizeYN;
+
+            // Vector3<float> tv0( i, j, (float)heightField[ idx ] ); // queryHeight( pafScanline, Xpixel,  Yline));
+            Vector3<float> tv0( xPos, yPos, (float)heightField[ idx ] ); // queryHeight( pafScanline, Xpixel,  Yline));
 
             idx = j * dimX + (i + step);
             if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            Vector3<float> tv1( i+step, j, (float)heightField[ idx ] ); // queryHeight( pafScanline,  (int)(iXpixel + stepX ), Yline ) );
+            // Vector3<float> tv1( i+step, j, (float)heightField[ idx ] ); // queryHeight( pafScanline,  (int)(iXpixel + stepX ), Yline ) );
+            xPos = (i+step) * cellSizeXN;
+            Vector3<float> tv1( xPos, yPos, (float)heightField[ idx ] ); // queryHeight( pafScanline,  (int)(iXpixel + stepX ), Yline ) );
 
             idx = (j+step) * dimX + i;
             if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            Vector3<float> tv2( i, j+step, (float)heightField[ idx] ); // queryHeight( pafScanline, Xpixel, (int)(iYline + stepY) ));
+            // Vector3<float> tv2( i, j+step, (float)heightField[ idx] ); // queryHeight( pafScanline, Xpixel, (int)(iYline + stepY) ));
+            xPos = i * cellSizeXN;
+            yPos = (j+step) * cellSizeYN;
+            Vector3<float> tv2( xPos, yPos, (float)heightField[ idx] ); // queryHeight( pafScanline, Xpixel, (int)(iYline + stepY) ));
+
+            std::cout << "Triangle: (" << tv0[0] << ", " << tv0[1] << ", " << tv0[2] <<  "), (" << tv1[0] << ", " << tv1[1] << ", " << tv1[2] <<  "), (" << tv2[0] << ", " << tv2[1] << ", " << tv2[2] <<  ")" << std::endl;
 
             tPtr = new Triangle( tv0, tv1, tv2 );
             m_triList.push_back(tPtr);
 
             idx = (j+step) * dimX + i;
             if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            Vector3<float> tv3( i, j+step, (float)heightField[ idx ] );// queryHeight( pafScanline,  Xpixel, (int)(iYline + stepY) ) );
+            // Vector3<float> tv3( i, j+step, (float)heightField[ idx ] );// queryHeight( pafScanline,  Xpixel, (int)(iYline + stepY) ) );
+            xPos = i * cellSizeXN;
+            yPos = (j+step) * cellSizeYN;
+            Vector3<float> tv3( xPos, yPos, (float)heightField[ idx ] );// queryHeight( pafScanline,  Xpixel, (int)(iYline + stepY) ) );            
 
             idx = j * dimX + (i+step);
             if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            Vector3<float> tv4( i+step, j, (float)heightField[ idx ] ); //  queryHeight( pafScanline,  (int)(iXpixel + stepX) , Yline ) );
+            // Vector3<float> tv4( i+step, j, (float)heightField[ idx ] ); //  queryHeight( pafScanline,  (int)(iXpixel + stepX) , Yline ) );
+            xPos = (i+step) * cellSizeXN;
+            yPos = j * cellSizeYN;
+            Vector3<float> tv4( xPos, yPos, (float)heightField[ idx ] ); //  queryHeight( pafScanline,  (int)(iXpixel + stepX) , Yline ) );
 
             idx = (j+step) * dimX + (i+step);
             if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            Vector3<float> tv5( i+step, j+step, (float)heightField[ idx ] ); // queryHeight( pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY) ) );
+            // Vector3<float> tv5( i+step, j+step, (float)heightField[ idx ] ); // queryHeight( pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY) ) );
+            xPos = (i+step) * cellSizeXN;
+            yPos = (j+step) * cellSizeYN;
+            Vector3<float> tv5( xPos, yPos, (float)heightField[ idx ] ); // queryHeight( pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY) ) );
+
+            std::cout << "Triangle: (" << tv3[0] << ", " << tv3[1] << ", " << tv3[2] <<  "), (" << tv4[0] << ", " << tv4[1] << ", " << tv4[2] <<  "), (" << tv5[0] << ", " << tv5[1] << ", " << tv5[2] <<  ")" << std::endl;
 
             tPtr = new Triangle( tv3, tv4, tv5 );
             m_triList.push_back(tPtr);
