@@ -109,7 +109,7 @@ icellflag = icellflag_out;
 icellflag_out(:,:,1) = 1; % fluid
 
 % now save the netcdf wind output
-writeNetCDFFile_winds('BaileyLES',nx,ny,nz,x_cc,y_cc,z_cc,u_out,v_out,w_out,icellflag);
+writeNetCDFFile_winds('../QES-data/BaileyLES',nx,ny,nz,x_cc,y_cc,z_cc,u_out,v_out,w_out,icellflag);
 
 
 %% ========================================================================
@@ -200,9 +200,7 @@ end
 CoEps=C0*epps_out;
 
 % now save the netcdf turb output
-writeNetCDFFile_turb('BaileyLES',x_cc,y_cc,z_cc,CoEps,tke,tau11,tau12,tau13,tau22,tau23,tau33);
-
-
+writeNetCDFFile_turb('../QES-data/BaileyLES',x_cc,y_cc,z_cc,CoEps,tke,tau11,tau12,tau13,tau22,tau23,tau33);
 
 %% ========================================================================
 function out = makePeriodic(in,nx,ny,nz,lbc)

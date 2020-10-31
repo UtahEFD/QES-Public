@@ -80,7 +80,7 @@ icellflag = icellflag_out;
 icellflag_out(:,:,1) = 1; % fluid
 
 % now save the netcdf wind output
-writeNetCDFFile_winds('channel3D',nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
+writeNetCDFFile_winds('../QES-data/Channel3D',nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
 
 
 %% ========================================================================
@@ -115,7 +115,7 @@ tke = tke_out;
 CoEps = CoEps_out;
 
 % now save the netcdf turb output
-writeNetCDFFile_turb('channel3D',x_cc,y_cc,z_cc,CoEps,tke,tau11,tau12,tau13,tau22,tau23,tau33);
+writeNetCDFFile_turb('../QES-data/Channel3D',x_cc,y_cc,z_cc,CoEps,tke,tau11,tau12,tau13,tau22,tau23,tau33);
 
 
 

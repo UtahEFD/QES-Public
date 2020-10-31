@@ -11,10 +11,10 @@
 % setup:
 
 % dimensions of the 3D domain
-lx=1;ly=1;lz=2*pi;
+lx=1;ly=1;lz=1;
 
 % grid resolution in x and y set to have 50 cells
-nx=51;ny=51;
+nx=11;ny=11;
 % grid resolution in z is set to have:
 % 50 faces in the plume domain -> 2 extra face on top (above) and bottom (below)
 % -> 49 cell within the plume domain -> 2 extra cell on top (above) and bottom (below)
@@ -35,7 +35,7 @@ z_cc=-0.5*dz:dz:lz+0.5*dz;
 C0 = 4.0;
 zth=linspace(0,lz,101);
 uMean=zeros(size(zth));
-sigma2=1.1+sin(zth);
+sigma2=1.1+sin(2*pi*zth);
 epps=sigma2.^(3/2);
 %% ========================================================================
 % QES-WINDS data:
@@ -61,12 +61,12 @@ icellflag = icellflag_out;
 icellflag_out(:,:,1) = 1; % fluid
 
 % now save the netcdf wind output
-writeNetCDFFile_winds('sinusoidal3D',nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
+writeNetCDFFile_winds('../QES-data/Sinusoidal3D',nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
 
 
 %% ========================================================================
 % QES-TURB data:
-sig2_new=1.1 + sin(z_cc);
+sig2_new=1.1 + sin(2*pi*z_cc);
 %sig2_new(1)=sig2_new(2); % ghost cell
 %sig2_new(end)=sig2_new(end-1); % ghost cell
 epps_new=sig2_new.^(3/2);
@@ -95,5 +95,5 @@ tke = tke_out;
 CoEps = CoEps_out;
 
 % now save the netcdf turb output
-writeNetCDFFile_turb('sinusoidal3D',x_cc,y_cc,z_cc,CoEps,tke,tau11,tau12,tau13,tau22,tau23,tau33);
+writeNetCDFFile_turb('../QES-data/Sinusoidal3D',x_cc,y_cc,z_cc,CoEps,tke,tau11,tau12,tau13,tau22,tau23,tau33);
 
