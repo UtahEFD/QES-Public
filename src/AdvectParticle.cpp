@@ -17,7 +17,7 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
     double xPos = parItr->xPos;
     double yPos = parItr->yPos;
     double zPos = parItr->zPos;
-    
+
     //size_t cellIdx_old = eul->getCellId(xPos,yPos,zPos);
     
     // getting the initial position, for use in setting finished particles
@@ -116,7 +116,7 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
         flux_div_y += eul->interp3D_faceVar(eul->dtyzdz);
         flux_div_z += eul->interp3D_faceVar(eul->dtzzdz);
 
-        wMean-=parItr->getSettlingVelocity(rhoAir,nuAir);
+        //wMean-=parItr->getSettlingVelocity(rhoAir,nuAir);
         
         // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
         // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes

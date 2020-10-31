@@ -31,6 +31,7 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     // in x-direction (face)
     xStart = UGD->x[iStart]-0.5*dx;
     xEnd = UGD->x[iEnd]+0.5*dx;
+
     // in y-direction (face)
     yStart = UGD->y[jStart]-0.5*dy;
     yEnd = UGD->y[jEnd]+0.5*dy;
@@ -540,7 +541,7 @@ void Eulerian::setInterp3Dindex_wFace(const double& par_xPos, const double& par_
     //double par_z = par_zPos - zStart + 1.0*dz;
     double par_x = par_xPos - 0.5*dx;
     double par_y = par_yPos - 0.5*dy;
-    double par_z = par_zPos - 1.0*dz;
+    double par_z = par_zPos + 1.0*dz;
 
     ii = floor(par_x/(dx+1e-9));
     jj = floor(par_y/(dy+1e-9));
