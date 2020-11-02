@@ -7,7 +7,7 @@
 #SBATCH --ntasks=1
 #SBATCH --mem=5G
 #SBATCH --time=05:00:00
-#SBATCH -o slurm_BaileyLES-%N.log
+#SBATCH -o slurm_BaileyLES-%j-%N.log
 
 ### UNCOMMENT FOR NODE SELECTION 
 ##SBATCH --nodelist=notch055

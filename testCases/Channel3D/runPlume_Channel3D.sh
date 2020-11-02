@@ -7,7 +7,7 @@
 #SBATCH --ntasks=1
 #SBATCH --mem=5G
 #SBATCH --time=05:00:00
-#SBATCH -o slurm_Channel3D-%N.log
+#SBATCH -o slurm_Channel3D-%j-%N.log
 
 ### UNCOMMENT FOR NODE SELECTION 
 ##SBATCH --nodelist=notch055
