@@ -165,12 +165,10 @@ nSubplotRows = 1;
 nSubplotCols = 3;
 
 % now finally do the plots
-% tiledlayout Requires R2019b or later
-fig = figure;
-[haxes,axpos]=tight_subplot(nSubplotRows,nSubplotCols,[.02 .02],[.3 .02],[.1 .02]);
-%t = tiledlayout(1,3,'TileSpacing','Compact','Padding','Compact');
-%t = tiledlayout(1,3,'TileSpacing','None','Padding','None');
-%t = tiledlayout(1,3,'TileSpacing','None','Padding','Compact');
+fsize=10;
+hfig = figure;
+set(hfig,'Units','centimeters','defaulttextinterpreter','latex','DefaultAxesFontSize',fsize)
+[haxes,axpos]=tightSubplot(nSubplotRows,nSubplotCols,[.02 .02],[.3 .02],[.1 .02]);
 
 axes(haxes(1))
 plot(expected_subfilter_tke,zOverL_cc,colormarkers(1),...
@@ -182,11 +180,11 @@ for idx = 1:nDatasets
         'Color',colormap(idx+1,:),'MarkerEdgeColor',colormap(idx+1,:),'MarkerFaceColor',colormap(idx+1,:),...
         'LineWidth',linewidth(idx+1),'MarkerSize',markersize(idx+1));
 end
-xlabel("subfilter tke");
+xlabel("$\langle k^2\rangle$");
 if ~isstring(subfilter_tke_Lim)
     xlim(subfilter_tke_Lim);
 end
-ylabel("z/L");
+ylabel("$z/L$");
 if ~isstring(zLim)
     ylim(zLim);
 end
@@ -203,11 +201,11 @@ for idx = 1:nDatasets
         'Color',colormap(idx+1,:),'MarkerEdgeColor',colormap(idx+1,:),'MarkerFaceColor',colormap(idx+1,:),...
         'LineWidth',linewidth(idx+1),'MarkerSize',markersize(idx+1));
 end
-xlabel('covariance(u''w'')')
+xlabel('$\langle u^\prime w^\prime \rangle$')
 if ~isstring(uFluct_wFluct_covariances_Lim)
     xlim(uFluct_wFluct_covariances_Lim);
 end
-ylabel("z/L");
+ylabel("$z/L$");
 if ~isstring(zLim)
     ylim(zLim);
 end
@@ -224,11 +222,11 @@ for idx = 1:nDatasets
         'Color',colormap(idx+1,:),'MarkerEdgeColor',colormap(idx+1,:),'MarkerFaceColor',colormap(idx+1,:),...
         'LineWidth',linewidth(idx+1),'MarkerSize',markersize(idx+1));
 end
-xlabel('variance(\Deltaw'')/\Deltat');
+xlabel('$\langle \Delta w^\prime \rangle/\Delta t$');
 if ~isstring(delta_wFluct_variances_Lim)
     xlim(delta_wFluct_variances_Lim);
 end
-ylabel("z/L");
+ylabel("$z/L$");
 if ~isstring(zLim)
     ylim(zLim);
 end
@@ -241,23 +239,22 @@ set(haxes(2:end),'yLabel',[],'yTickLabel',[])
 legendString = strings(nDatasets+1,1);
 legendString(1) = 'exact solution';
 for idx = 1:nDatasets
-    legendString(idx+1) = sprintf('%s \\Delta t = %g T = %g',...
+    legendString(idx+1) = sprintf('%s $\\Delta t = %g$  $T = %g$',...
         caseBaseName,timestep_array(idx),currentTime_array(idx));
 end
 ledgerend = legend(haxes(1),legendString,'Position',[axpos{1}(1) 0.02 .6 .2]);
-%ledgerend.Layout.Tile = 'South';
-set(ledgerend,'FontSize',9);
-
+set(ledgerend,'FontSize',fsize,'interpreter','latex');
 
 % add the title to the plot (can add labels if needed, don't need it)
 %title(t,titleString);
 
 
 % now save the figure as both a png and a fig file
-currentPlotName = sprintf("%s/%s_statisticPlots_LES.png",plotOutputDir,caseBaseName);
-%saveas(fig,currentPlotName);
-%saveas(fig,strrep(currentPlotName,'.png','.fig'));
-%close(fig);
+currentPlotName = sprintf("%s/%s_statisticPlots_LES",plotOutputDir,caseBaseName);
+saveas(hfig,currentPlotName);
+save2pdf(hfig,currentPlotName,hfig.Position(3:4),fsize)
+
+
 
 
 end

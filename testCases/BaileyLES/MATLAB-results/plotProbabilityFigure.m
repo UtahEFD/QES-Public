@@ -31,13 +31,11 @@ nSubplotCols = nDatasets;
 titleString = sprintf('Resulting Probability Profiles');
 
 
-% now do the plot
-% tiledlayout Requires R2019b or later
-fig = figure;
-%t = tiledlayout(nSubplotRows,nSubplotCols,'TileSpacing','Compact','Padding','Compact');
-%t = tiledlayout(nSubplotRows,nSubplotCols,'TileSpacing','None','Padding','None');
-%t = tiledlayout(nSubplotRows,nSubplotCols,'TileSpacing','None','Padding','Compact');
-[haxes,axpos]=tight_subplot(nSubplotRows,nSubplotCols,[.02 .02],[.3 .02],[.1 .02]);
+% now finally do the plots
+fsize=10;
+hfig = figure;
+set(hfig,'Units','centimeters','defaulttextinterpreter','latex','DefaultAxesFontSize',fsize)
+[haxes,axpos]=tightSubplot(nSubplotRows,nSubplotCols,[.02 .02],[.3 .02],[.1 .02]);
 
 for idx = 1:nDatasets
     %for idx = nDatasets:-1:1   % reverse the order in the plot
@@ -114,14 +112,14 @@ for idx = 1:nDatasets
     histogram('BinCounts',current_probabilities,'BinEdges',gridEdges_zOverL,'Orientation','horizontal');
     hold on;
     plot([expectedProbability expectedProbability],[0 1],'k--');
-    xlabel(sprintf(['Probability for \n%s\n \\Delta t = %g T = %g.\n',...
-        '%d/%d rogue\n rogue ratio %g\n entropy S=%.3g'],...
+    xlabel(sprintf(['Probability for \n%s\n $\\Delta t = %g$ $T = %g$.\n',...
+        '$%d/%d$ rogue\n rogue ratio $%g$\n entropy $S=%.3g$'],...
         caseBaseName,current_timestep,current_currentTime,...
         nRoguePar,nPar,current_rogueRatio,current_entropy));
     if ~isstring(probabilityLim)
         xlim(probabilityLim);
     end
-    ylabel("z\\L");
+    ylabel("$z/L$");
     ylim([0 1]);
     hold off;
     grid on
@@ -142,11 +140,11 @@ set(haxes(2:4),'yLabel',[],'yTickLabel',[])
 %set(fighandles(1),'Units', 'Normalized', 'OuterPosition', [0.2, 0.1, 0.57, 0.85]);
 
 
-% now save the figure as both a png and a fig file
-currentPlotName = sprintf("%s/%s_probabilityPlots.png",plotOutputDir,caseBaseName);
-%saveas(fig,currentPlotName);
-%saveas(fig,strrep(currentPlotName,'.png','.fig'));
-%close(fig);
+% now save the figure as both a pdf and a fig file
+currentPlotName = sprintf("%s/%s_probabilityPlots",plotOutputDir,caseBaseName);
+saveas(hfig,currentPlotName);
+save2pdf(hfig,currentPlotName,hfig.Position(3:4),fsize)
+
 
 
 end
