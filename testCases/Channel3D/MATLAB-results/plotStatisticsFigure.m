@@ -1,4 +1,6 @@
-function plotStatisticsFigure( caseBaseName,plotOutputDir,show_ghostCells,  wFluct_averages_Lim,wFluct_variances_Lim,delta_wFluct_averages_Lim,delta_wFluct_variances_Lim, nBins,  currentTime_array,timestep_array,  zGridInfo, turb_data,  caseNames, plumeParInfo_data,  C0 )
+function plotStatisticsFigure( caseBaseName,plotOutputDir,show_ghostCells, ...
+    wFluct_averages_Lim,wFluct_variances_Lim,delta_wFluct_averages_Lim,delta_wFluct_variances_Lim,...
+    nBins,currentTime_array,timestep_array,zGridInfo,turb_data,caseNames,plumeParInfo_data,C0)
 
 %%% before anything else, pull out the data needed from the packed dataset structures
 
@@ -168,13 +170,10 @@ nSubplotRows = 1;
 nSubplotCols = 4;
 
 % now finally do the plots
-% tiledlayout Requires R2019b or later
-fig = figure;
-[haxes,axpos]=tight_subplot(nSubplotRows,nSubplotCols,[.02 .02],[.3 .02],[.1 .02]);
-
-%t = tiledlayout(2,2,'TileSpacing','Compact','Padding','Compact');
-%t = tiledlayout(2,2,'TileSpacing','None','Padding','None');
-%t = tiledlayout(1,4,'TileSpacing','Compact','Padding','Compact');
+fsize=10;
+hfig = figure;
+set(hfig,'Units','centimeters','defaulttextinterpreter','latex','DefaultAxesFontSize',fsize)
+[haxes,axpos]=tightSubplot(nSubplotRows,nSubplotCols,[.02 .02],[.3 .02],[.1 .02]);
 
 axes(haxes(1));
 plot(expected_wFluct_averages,zOverL_cc,colormarkers(1),...
@@ -186,11 +185,11 @@ for idx = 1:nDatasets
         'Color',colormap(idx+1,:),'MarkerEdgeColor',colormap(idx+1,:),'MarkerFaceColor',colormap(idx+1,:),...
         'LineWidth',linewidth(idx+1),'MarkerSize',markersize(idx+1));
 end
-xlabel('mean(w'')');
+xlabel('$\langle w^\prime \rangle$');
 if ~isstring(wFluct_averages_Lim)
     xlim(wFluct_averages_Lim);
 end
-ylabel("z\\L");
+ylabel("$z/L$");
 ylim(z_plotLim);
 grid on
 hold off;
@@ -205,13 +204,12 @@ for idx = 1:nDatasets
         'Color',colormap(idx+1,:),'MarkerEdgeColor',colormap(idx+1,:),'MarkerFaceColor',colormap(idx+1,:),...
         'LineWidth',linewidth(idx+1),'MarkerSize',markersize(idx+1));
 end
-xlabel('variance(w'')');
+xlabel('$\langle (w^\prime)^2 \rangle$');
 if ~isstring(wFluct_variances_Lim)
     xlim(wFluct_variances_Lim);
 end
-%ylabel("z/L");
+ylabel("$z/L$");
 ylim(z_plotLim);
-haxes(2).YTickLabel={};
 grid on
 hold off;
 
@@ -225,13 +223,12 @@ for idx = 1:nDatasets
         'Color',colormap(idx+1,:),'MarkerEdgeColor',colormap(idx+1,:),'MarkerFaceColor',colormap(idx+1,:),...
         'LineWidth',linewidth(idx+1),'MarkerSize',markersize(idx+1));
 end
-xlabel('mean(\Delta w'')/\Delta t')
+xlabel('$\langle \Delta w^\prime \rangle/\Delta t$');
 if ~isstring(delta_wFluct_averages_Lim)
     xlim(delta_wFluct_averages_Lim);
 end
-%ylabel("z/L");
+ylabel("$z/L$");
 ylim(z_plotLim);
-haxes(3).YTickLabel={};
 grid on
 hold off;
 
@@ -245,27 +242,26 @@ for idx = 1:nDatasets
         'Color',colormap(idx+1,:),'MarkerEdgeColor',colormap(idx+1,:),'MarkerFaceColor',colormap(idx+1,:),...
         'LineWidth',linewidth(idx+1),'MarkerSize',markersize(idx+1));
 end
-xlabel('variance(\Delta w'')/\Delta t');
+xlabel('$\langle (\Delta w^\prime)^2 \rangle/\Delta t$');
 if ~isstring(delta_wFluct_variances_Lim)
     xlim(delta_wFluct_variances_Lim);
 end
-%ylabel("z\\L");
+ylabel("$z/L$");
 ylim(z_plotLim);
-haxes(4).YTickLabel={};
 grid on
 hold off;
 
+set(haxes(2:4),'yLabel',[],'yTickLabel',[])
 
 % now prep the legend
 legendString = strings(nDatasets+1,1);
 legendString(1) = 'exact solution';
 for idx = 1:nDatasets
-    legendString(idx+1) = sprintf('%s \\Delta t = %g T= %g',...
+    legendString(idx+1) = sprintf('%s $\\Delta t = %g$ $T= %g$',...
         caseBaseName,timestep_array(idx),currentTime_array(idx));
 end
 ledgerend = legend(haxes(1),legendString,'Position',[axpos{1}(1) 0.02 .6 .2]);
-%ledgerend.Layout.Tile = 'South';
-set(ledgerend,'FontSize',9);
+set(ledgerend,'FontSize',fsize,'interpreter','latex');
 
 
 % add the title to the plot (can add labels if needed, don't need it)
@@ -273,15 +269,14 @@ set(ledgerend,'FontSize',9);
 %title(titleString);
 
 
-% now save the figure as both a png and a fig file
+% now save the figure as both a pdf and a fig file
 currentPlotName = sprintf("%s/%s_statisticPlots",plotOutputDir,caseBaseName);
 if show_ghostCells == true
     currentPlotName = sprintf("%s_showGhost",currentPlotName);
 end
-currentPlotName = sprintf("%s.png",currentPlotName);
-%saveas(fig,currentPlotName);
-%saveas(fig,strrep(currentPlotName,'.png','.fig'));
-%close(fig);
+saveas(hfig,currentPlotName);
+save2pdf(hfig,currentPlotName,hfig.Position(3:4),fsize)
+
 
 
 end
