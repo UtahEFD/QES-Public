@@ -2,12 +2,12 @@
 #SBATCH --account=efd-np
 #SBATCH --partition=efd-shared-np
 #SBATCH --qos=efd-np
-#SBATCH --job-name=QES-plume_BaileyLES
+#SBATCH --job-name=QES-plume-BaileyLES
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --mem=5G
 #SBATCH --time=05:00:00
-#SBATCH -o slurm_BaileyLES-%j-%N.log
+#SBATCH -o slurm_BaileyLES-%N.log
 
 ### UNCOMMENT FOR NODE SELECTION 
 ##SBATCH --nodelist=notch055
