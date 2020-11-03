@@ -65,6 +65,7 @@ private:
     std::vector<std::string> allOutputFields = { "t","parID","tStrt","sourceIdx",
                                                  "xPos_init","yPos_init","zPos_init",
                                                  "xPos","yPos","zPos",
+                                                 "uMean","vMean","wMean",
                                                  "uFluct","vFluct","wFluct",
                                                  "delta_uFluct","delta_vFluct","delta_wFluct",
                                                  "isRogue","isActive"};
@@ -84,6 +85,9 @@ private:
     std::vector<float> xPos;        // list of x positions for the particles
     std::vector<float> yPos;        // list of y positions for the particles
     std::vector<float> zPos;        // list of z positions for the particles
+    std::vector<float> uMean;      // list of u mean velocity for the particles
+    std::vector<float> vMean;      // list of v mean velocity for the particles
+    std::vector<float> wMean;      // list of w mean velocity for the particles
     std::vector<float> uFluct;      // list of u velocity fluctuations for the particles
     std::vector<float> vFluct;      // list of v velocity fluctuations for the particles
     std::vector<float> wFluct;      // list of w velocity fluctuations for the particles

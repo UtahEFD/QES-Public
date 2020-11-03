@@ -18,6 +18,14 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
     double yPos = parItr->yPos;
     double zPos = parItr->zPos;
 
+    double uMean = 0.0;
+    double vMean = 0.0;
+    double wMean = 0.0;
+
+    double flux_div_x = 0.0;
+    double flux_div_y = 0.0;
+    double flux_div_z = 0.0;
+
     //size_t cellIdx_old = eul->getCellId(xPos,yPos,zPos);
     
     // getting the initial position, for use in setting finished particles
@@ -95,15 +103,15 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
         // set interoplation indexing variables for uFace variables
         eul->setInterp3Dindex_uFace(xPos,yPos,zPos);
         // interpolation of variables on uFace 
-        double uMean = eul->interp3D_faceVar(WGD->u);
-        double flux_div_x = eul->interp3D_faceVar(eul->dtxxdx);
-        double flux_div_y = eul->interp3D_faceVar(eul->dtxydx);
-        double flux_div_z = eul->interp3D_faceVar(eul->dtxzdx);
+        uMean = eul->interp3D_faceVar(WGD->u);
+        flux_div_x = eul->interp3D_faceVar(eul->dtxxdx);
+        flux_div_y = eul->interp3D_faceVar(eul->dtxydx);
+        flux_div_z = eul->interp3D_faceVar(eul->dtxzdx);
                     
         // set interpolation indexing variables for vFace variables
         eul->setInterp3Dindex_vFace(xPos,yPos,zPos);
         // interpolation of variables on vFace 
-        double vMean = eul->interp3D_faceVar(WGD->v);
+        vMean = eul->interp3D_faceVar(WGD->v);
         flux_div_x += eul->interp3D_faceVar(eul->dtxydy);
         flux_div_y += eul->interp3D_faceVar(eul->dtyydy);
         flux_div_z += eul->interp3D_faceVar(eul->dtyzdy);
@@ -111,7 +119,7 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
         // set interpolation indexing variables for wFace variables
         eul->setInterp3Dindex_wFace(xPos,yPos,zPos);
         // interpolation of variables on wFace 
-        double wMean = eul->interp3D_faceVar(WGD->w);
+        wMean = eul->interp3D_faceVar(WGD->w);
         flux_div_x += eul->interp3D_faceVar(eul->dtxzdz);
         flux_div_y += eul->interp3D_faceVar(eul->dtyzdz);
         flux_div_z += eul->interp3D_faceVar(eul->dtzzdz);
@@ -311,7 +319,11 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
     parItr->xPos = xPos;
     parItr->yPos = yPos;
     parItr->zPos = zPos;
-                
+
+    parItr->uMean = uMean;
+    parItr->vMean = vMean;
+    parItr->wMean = wMean;
+         
     parItr->uFluct = uFluct;
     parItr->vFluct = vFluct;
     parItr->wFluct = wFluct;

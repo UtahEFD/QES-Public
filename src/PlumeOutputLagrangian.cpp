@@ -157,6 +157,10 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
     yPos.resize(numPar, 0); 
     zPos.resize(numPar, 0); 
     
+    uMean.resize(numPar, 0); 
+    vMean.resize(numPar, 0); 
+    wMean.resize(numPar, 0);
+
     uFluct.resize(numPar, 0); 
     vFluct.resize(numPar, 0); 
     wFluct.resize(numPar, 0); 
@@ -207,6 +211,10 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
     createAttVector("xPos","x-position","m",dim_vect_2d,&xPos);
     createAttVector("yPos","y-position","m",dim_vect_2d,&yPos);
     createAttVector("zPos","z-position","m",dim_vect_2d,&zPos);
+
+    createAttVector("uMean","u-mean-velocity","m s-1",dim_vect_2d,&uMean);
+    createAttVector("vMean","v-mean-velocity","m s-1",dim_vect_2d,&vMean);
+    createAttVector("wMean","w-mean-velocity","m s-1",dim_vect_2d,&wMean);
 
     createAttVector("uFluct","u-velocity-fluctuation","m s-1",dim_vect_2d,&uFluct);
     createAttVector("vFluct","v-velocity-fluctuation","m s-1",dim_vect_2d,&vFluct);

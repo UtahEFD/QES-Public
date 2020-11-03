@@ -62,6 +62,11 @@ public:
     double yPos;          // y component of position for the particle. 
     double zPos;          // z component of position for the particle. 
 
+    // The velocit for a particle for a given iteration. 
+    double uMean;         // u component 
+    double vMean;         // v component
+    double wMean;         // w component
+
     // The velocity fluctuation for a particle for a given iteration. 
     // Starts out as the initial value until a particle is "released" into the domain
     double uFluct;      // u component 
