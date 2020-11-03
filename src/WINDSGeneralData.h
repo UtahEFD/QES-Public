@@ -14,15 +14,15 @@
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
-class URBGeneralData
+class WINDSGeneralData
 {
 public:
     
     // Default
-    URBGeneralData() {}
+    WINDSGeneralData() {}
     
     // initializer
-    URBGeneralData(Args*);
+    WINDSGeneralData(Args*);
     
     // load data at given time instance
     void loadNetCDFData(int);
@@ -33,10 +33,10 @@ public:
     std::vector<float> t;
     
     /*
-      Information below match URBGeneral data class of QES-winds
+      Information below match WINDSGeneraldata class of QES-Winds
     */
     
-    // General QUIC Domain Data
+    // General QES Domain Data
     int nx, ny, nz;         /**< number of cells */
     float dx, dy, dz;	  /**< Grid resolution*/
     float dxy;		  /**< Minimum value between dx and dy */

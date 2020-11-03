@@ -14,7 +14,7 @@
 #include "Vector3.h"
 
 #include "PlumeInputData.hpp"
-#include "URBGeneralData.h"
+#include "WINDSGeneralData.h"
 #include "TURBGeneralData.h"
 
 
@@ -26,7 +26,7 @@ public:
     // constructor
     // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the Eulerian grid values,
     // then calculates the tau gradients which are then used to calculate the flux_div grid values.
-    Eulerian(PlumeInputData*, URBGeneralData*, TURBGeneralData*, const bool&);
+    Eulerian(PlumeInputData*, WINDSGeneralData*, TURBGeneralData*, const bool&);
         
 
     // the Eulerian data held in this class is on the turb grid, so these are copies of the turb grid values
@@ -73,7 +73,7 @@ public:
     std::vector<double> sig_y;
     std::vector<double> sig_z;
     
-    void setData(URBGeneralData*,TURBGeneralData*);
+    void setData(WINDSGeneralData*,TURBGeneralData*);
         
     void setInterp3Dindex_uFace(const double&, const double&, const double&);
     void setInterp3Dindex_vFace(const double&, const double&, const double&);
@@ -126,7 +126,7 @@ private:
     void setSigmas(TURBGeneralData*); 
     double getMaxVariance(const std::vector<double>&, const std::vector<double>&, const std::vector<double>&);
 
-    void setBC(URBGeneralData*,TURBGeneralData*);
+    void setBC(WINDSGeneralData*,TURBGeneralData*);
     
     // timer class useful for debugging and timing different operations
     calcTime timers;

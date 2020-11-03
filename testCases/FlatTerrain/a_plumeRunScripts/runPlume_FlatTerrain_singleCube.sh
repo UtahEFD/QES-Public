@@ -15,5 +15,5 @@ module load gcc/5.4.0
 ulimit -c unlimited -s
 
 
-./cudaPlume/cudaPlume -q ../testCases/FlatTerrain/a_plumeRunScripts/FlatTerrain_singleCube.xml -u ../testCases/FlatTerrain/b_plumeInputs/FlatTerrain_urb.nc -t ../testCases/FlatTerrain/b_plumeInputs/FlatTerrain_turb.nc -o ../testCases/FlatTerrain/c_plumeOutputs/singleCube/ -b FlatTerrain_singleCube -e -l -s -d
+./qesPlume/qesPlume -q ../testCases/FlatTerrain/a_plumeRunScripts/FlatTerrain_singleCube.xml -u ../testCases/FlatTerrain/b_plumeInputs/FlatTerrain_urb.nc -t ../testCases/FlatTerrain/b_plumeInputs/FlatTerrain_turb.nc -o ../testCases/FlatTerrain/c_plumeOutputs/singleCube/ -b FlatTerrain_singleCube -e -l -s -d
 

@@ -16,7 +16,7 @@
 
 
 #include "PlumeInputData.hpp"
-#include "URBGeneralData.h"
+#include "WINDSGeneralData.h"
 #include "TURBGeneralData.h"
 #include "Eulerian.h"
 
@@ -33,7 +33,7 @@ public:
     }
     
     // specialized constructor
-    PlumeOutputEulerian(PlumeInputData*,URBGeneralData*,TURBGeneralData*,Eulerian*,std::string);
+    PlumeOutputEulerian(PlumeInputData*,WINDSGeneralData*,TURBGeneralData*,Eulerian*,std::string);
     
     // deconstructor
     ~PlumeOutputEulerian()
@@ -51,8 +51,8 @@ private:
     // no need for output frequency for this output, it is expected to only happen once, assumed to be at time zero
     
     // pointers to the classes that save needs to use to get the data for the output
-    URBGeneralData* urb_;
-    TURBGeneralData* turb_;
+    WINDSGeneralData* WGD_;
+    TURBGeneralData* TGD_;
     Eulerian* eul_;
     
     // other output data

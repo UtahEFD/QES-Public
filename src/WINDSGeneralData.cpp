@@ -1,31 +1,31 @@
 //
-//  URBData.cpp
+//  WINDSGeneralData.cpp
 //
-//  This class represents CUDA-URB fields
+//  This class represents QES-Winds fields
 //
 //  Created by Jeremy Gibbs on 03/18/19.
 //  Modified by Fabien Margairaz
 
 #include <iostream>
-#include "URBGeneralData.h"
+#include "WINDSGeneralData.h"
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
-URBGeneralData :: URBGeneralData(Args* arguments) {
+WINDSGeneralData :: WINDSGeneralData(Args* arguments) {
     
     std::cout<<"[WINDS Data] \t Loading QES-winds fields "<<std::endl;
 
-    // fullname passed to URBGeneralData
-    input = new NetCDFInput(arguments->inputUrbFile);
+    // fullname passed to WINDSGeneralData
+    input = new NetCDFInput(arguments->inputWINDSFile);
     
     // create wall instance for BC
     wall = new Wall();
     
-    // nx,ny - face centered value (consistant with URB)
+    // nx,ny - face centered value (consistant with QES-Winds)
     input->getDimensionSize("x",nx);
     input->getDimensionSize("y",ny);
-    // nz - face centered value + bottom ghost (consistant with URB)
+    // nz - face centered value + bottom ghost (consistant with QES-Winds)
     input->getDimensionSize("z",nz);
     // nt - number of time instance in data
     input->getDimensionSize("t",nt);
@@ -89,7 +89,7 @@ URBGeneralData :: URBGeneralData(Args* arguments) {
     terrain.resize((ny-1)*(nx-1),0.0);
     NcVar NcVar_terrain;
     input->getVariable("terrain", NcVar_terrain);
-    if(!NcVar_terrain.isNull()) { // => terrain data in URB file
+    if(!NcVar_terrain.isNull()) { // => terrain data in QES-Winds file
         input->getVariableData("terrain",start,count_2d,terrain);
     } else { // => no external terrain data provided
         std::cout << "[WINDS Data] \t no terrain data found -> assumed flat" << std::endl;
@@ -113,7 +113,7 @@ URBGeneralData :: URBGeneralData(Args* arguments) {
     return;
 }
 
-void URBGeneralData::loadNetCDFData(int stepin)
+void WINDSGeneralData::loadNetCDFData(int stepin)
 {
   
     std::cout << "[WINDS Data] \t loading data at step " << stepin <<std::endl;
@@ -148,7 +148,7 @@ void URBGeneralData::loadNetCDFData(int stepin)
         input->getVariableData("m",start,count_cc,m);
         input->getVariableData("n",start,count_cc,n); 
     } else { 
-        std::cout << "[URBData] \t no SORcoeff data found -> assumed e,f,g,h,m,n=1" << std::endl;
+        std::cout << "[WINDS Data] \t no SORcoeff data found -> assumed e,f,g,h,m,n=1" << std::endl;
     }
   
     // face-center variables

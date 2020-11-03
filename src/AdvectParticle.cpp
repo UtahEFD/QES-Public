@@ -1,6 +1,6 @@
 #include "Plume.hpp"
 
-void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul)
+void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul)
 {
 
     double rhoAir=1.225;   // in kg m^-3
@@ -95,7 +95,7 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
         // set interoplation indexing variables for uFace variables
         eul->setInterp3Dindex_uFace(xPos,yPos,zPos);
         // interpolation of variables on uFace 
-        double uMean = eul->interp3D_faceVar(UGD->u);
+        double uMean = eul->interp3D_faceVar(WGD->u);
         double flux_div_x = eul->interp3D_faceVar(eul->dtxxdx);
         double flux_div_y = eul->interp3D_faceVar(eul->dtxydx);
         double flux_div_z = eul->interp3D_faceVar(eul->dtxzdx);
@@ -103,7 +103,7 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
         // set interpolation indexing variables for vFace variables
         eul->setInterp3Dindex_vFace(xPos,yPos,zPos);
         // interpolation of variables on vFace 
-        double vMean = eul->interp3D_faceVar(UGD->v);
+        double vMean = eul->interp3D_faceVar(WGD->v);
         flux_div_x += eul->interp3D_faceVar(eul->dtxydy);
         flux_div_y += eul->interp3D_faceVar(eul->dtyydy);
         flux_div_z += eul->interp3D_faceVar(eul->dtyzdy);
@@ -111,7 +111,7 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
         // set interpolation indexing variables for wFace variables
         eul->setInterp3Dindex_wFace(xPos,yPos,zPos);
         // interpolation of variables on wFace 
-        double wMean = eul->interp3D_faceVar(UGD->w);
+        double wMean = eul->interp3D_faceVar(WGD->w);
         flux_div_x += eul->interp3D_faceVar(eul->dtxzdz);
         flux_div_y += eul->interp3D_faceVar(eul->dtyzdz);
         flux_div_z += eul->interp3D_faceVar(eul->dtzzdz);
@@ -251,7 +251,7 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
         zPos = zPos + disZ;
         
         // check and do wall (building and terrain) reflection (based in the method)
-        isActive = (this->*wallReflection)(UGD,eul,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
+        isActive = (this->*wallReflection)(WGD,eul,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
                                         
         // now apply boundary conditions
         (this->*enforceWallBCs_x)(xPos,uFluct,uFluct_old,isActive, domainXstart,domainXend);

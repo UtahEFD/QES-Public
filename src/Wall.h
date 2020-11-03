@@ -1,7 +1,7 @@
 #pragma once
 
 // may need to forward reference this???
-class URBGeneralData;
+class WINDSGeneralData;
 
 class Wall
 {
@@ -30,6 +30,6 @@ public:
      * and wall in front/back
      *
      */
-    void defineWalls(URBGeneralData *UGD);
+    void defineWalls(WINDSGeneralData *WGD);
 
 };

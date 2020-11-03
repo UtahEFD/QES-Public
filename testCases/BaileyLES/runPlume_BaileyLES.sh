@@ -33,13 +33,13 @@ ulimit -c unlimited -s
 module list
 echo '****** START OF JOB ******'
 
-./cudaPlume/cudaPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_22.2_222.xml -u ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/ -b BaileyLES_22.2_222 -e -l
+./qesPlume/qesPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_22.2_222.xml -u ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/ -b BaileyLES_22.2_222 -e -l
 
-./cudaPlume/cudaPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_2.22_222.xml -u ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/ -b BaileyLES_2.22_222 -e -l;
+./qesPlume/qesPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_2.22_222.xml -u ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/ -b BaileyLES_2.22_222 -e -l;
 
-./cudaPlume/cudaPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_0.222_222.xml -u ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/ -b BaileyLES_0.222_222 -e -l;
+./qesPlume/qesPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_0.222_222.xml -u ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/ -b BaileyLES_0.222_222 -e -l;
 
-./cudaPlume/cudaPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_0.0222_222.xml -u ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/ -b BaileyLES_0.0222_222 -e -l;
+./qesPlume/qesPlume -q ../testCases/BaileyLES/QES-files/BaileyLES_0.0222_222.xml -u ../testCases/BaileyLES/QES-data/BaileyLES_windsWk.nc -t ../testCases/BaileyLES/QES-data/BaileyLES_turbOut.nc -o ../testCases/BaileyLES/QES-data/ -b BaileyLES_0.0222_222 -e -l;
 
 echo '****** END OF JOB ****** '
 

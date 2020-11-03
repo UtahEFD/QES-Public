@@ -26,7 +26,7 @@
 #include "Args.hpp"
 #include "PlumeInputData.hpp"
 
-#include "URBGeneralData.h"
+#include "WINDSGeneralData.h"
 #include "TURBGeneralData.h"
 #include "Eulerian.h"
 
@@ -47,7 +47,7 @@ public:
     // then sets up the concentration sampling box information for output
     // next copies important input time values and calculates needed time information 
     // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
-    Plume( PlumeInputData*, URBGeneralData*, TURBGeneralData*, Eulerian*, Args*); 
+    Plume( PlumeInputData*, WINDSGeneralData*, TURBGeneralData*, Eulerian*, Args*); 
 
     // this is the plume solver. It performs a time integration of the particle positions and particle velocity fluctuations
     // with calculations done on a per particle basis. During each iteration, temporary single value particle information
@@ -60,7 +60,7 @@ public:
     // LA future work: Need to add a CFL condition where the user specifies a courant number that varies from 0 to 1
     //  that is used to do an additional time remainder time integration loop for each particle, forcing particles to only
     //  move one cell at a time.
-    void run(URBGeneralData*,TURBGeneralData*,Eulerian*,std::vector<QESNetCDFOutput*> );
+    void run(WINDSGeneralData*,TURBGeneralData*,Eulerian*,std::vector<QESNetCDFOutput*> );
     
     // This the storage for all particles
     // the sources can set these values, then the other values are set using urb and turb info using these values
@@ -141,26 +141,26 @@ private:
     
 
     // this function moves (advects) one particle
-    void advectParticle(int&, std::list<Particle>::iterator, URBGeneralData*, TURBGeneralData*, Eulerian*);
+    void advectParticle(int&, std::list<Particle>::iterator, WINDSGeneralData*, TURBGeneralData*, Eulerian*);
 
     /* reflection functions in WallReflection.cpp */
     // main function pointer
-    bool (Plume::*wallReflection)(URBGeneralData* UGD, Eulerian* eul,
+    bool (Plume::*wallReflection)(WINDSGeneralData* WGD, Eulerian* eul,
                                   double& xPos, double& yPos, double& zPos, 
                                   double& disX, double& disY, double& disZ,
                                   double& uFluct, double& vFluct, double& wFluct);
     // reflection on walls (stair step)
-    bool wallReflectionFullStairStep(URBGeneralData* UGD, Eulerian* eul,
+    bool wallReflectionFullStairStep(WINDSGeneralData* WGD, Eulerian* eul,
                                      double& xPos, double& yPos, double& zPos, 
                                      double& disX, double& disY, double& disZ,
                                      double& uFluct, double& vFluct, double& wFluct);
     // reflection -> set particle inactive when entering a wall
-    bool wallReflectionSetToInactive(URBGeneralData* UGD, Eulerian* eul,
+    bool wallReflectionSetToInactive(WINDSGeneralData* WGD, Eulerian* eul,
                                      double& xPos, double& yPos, double& zPos, 
                                      double& disX, double& disY, double& disZ,
                                      double& uFluct, double& vFluct, double& wFluct);
     // reflection -> this function will do nothing 
-    bool wallReflectionDoNothing(URBGeneralData* UGD, Eulerian* eul,
+    bool wallReflectionDoNothing(WINDSGeneralData* WGD, Eulerian* eul,
                                  double& xPos, double& yPos, double& zPos, 
                                  double& disX, double& disY, double& disZ,
                                  double& uFluct, double& vFluct, double& wFluct);

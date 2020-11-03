@@ -5,7 +5,7 @@
 
 #include "Args.hpp"
 #include "NetCDFInput.h"
-#include "URBGeneralData.h"
+#include "WINDSGeneralData.h"
 
 /*
   Author: Fabien Margairaz
@@ -19,7 +19,7 @@ public:
     // Defoult
     TURBGeneralData()
     {}
-    TURBGeneralData(Args* arguments, URBGeneralData*);
+    TURBGeneralData(Args* arguments, WINDSGeneralData*);
     
     // load data at given time instance
     void loadNetCDFData(int);
@@ -30,10 +30,10 @@ public:
     std::vector<float> t;
     
     /*
-      Information below match TURBGeneral data class of QES-winds
+      Information below match TURBGeneral data class of QES-Winds
     */
 
-    // General QUIC Domain Data
+    // General QES Domain Data
     int nx, ny, nz;		/**< number of cells */
     
     //grid information

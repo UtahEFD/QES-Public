@@ -2,7 +2,7 @@
 #include "Eulerian.h"
 
 
-Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD, const bool& debug_val)
+Eulerian::Eulerian( PlumeInputData* PID,WINDSGeneralData* WGD,TURBGeneralData* TGD, const bool& debug_val)
 {
     
     std::cout<<"[Eulerian] \t Setting Eulerian fields "<<std::endl;
@@ -10,14 +10,14 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     // copy debug information
     debug = debug_val;
     
-    // copy UGD grid information
-    nz = UGD->nz;
-    ny = UGD->ny;
-    nx = UGD->nx;
+    // copy WGD grid information
+    nz = WGD->nz;
+    ny = WGD->ny;
+    nx = WGD->nx;
     
-    dz = UGD->dz;
-    dy = UGD->dy;
-    dx = UGD->dx;
+    dz = WGD->dz;
+    dy = WGD->dy;
+    dx = WGD->dx;
 
     // domain beginning for interpolation in each direction
     // in x-direction (halo cell to account for TURB variables)
@@ -29,15 +29,15 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     
     // get the TGD domain start and end values, other TGD grid information
     // in x-direction (face)
-    xStart = UGD->x[iStart]-0.5*dx;
-    xEnd = UGD->x[iEnd]+0.5*dx;
+    xStart = WGD->x[iStart]-0.5*dx;
+    xEnd = WGD->x[iEnd]+0.5*dx;
 
     // in y-direction (face)
-    yStart = UGD->y[jStart]-0.5*dy;
-    yEnd = UGD->y[jEnd]+0.5*dy;
+    yStart = WGD->y[jStart]-0.5*dy;
+    yEnd = WGD->y[jEnd]+0.5*dy;
     // in z-direction (face)
-    zStart = UGD->z_face[kStart-1]; // z_face does not have a ghost cell under the terrain.
-    zEnd = UGD->z_face[kEnd-1]; // z_face does not have a ghost cell under the terrain.
+    zStart = WGD->z_face[kStart-1]; // z_face does not have a ghost cell under the terrain.
+    zEnd = WGD->z_face[kEnd-1]; // z_face does not have a ghost cell under the terrain.
     
 
     if( debug == true ) {
@@ -51,29 +51,29 @@ Eulerian::Eulerian( PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD
     C_0 = PID->simParams->C_0;
     
     // set the tau gradient sizes
-    dtxxdx.resize(UGD->numcell_face,0.0);
-    dtxydy.resize(UGD->numcell_face,0.0);
-    dtxzdz.resize(UGD->numcell_face,0.0);
+    dtxxdx.resize(WGD->numcell_face,0.0);
+    dtxydy.resize(WGD->numcell_face,0.0);
+    dtxzdz.resize(WGD->numcell_face,0.0);
     
-    dtxydx.resize(UGD->numcell_face,0.0);
-    dtyydy.resize(UGD->numcell_face,0.0);
-    dtyzdz.resize(UGD->numcell_face,0.0);
+    dtxydx.resize(WGD->numcell_face,0.0);
+    dtyydy.resize(WGD->numcell_face,0.0);
+    dtyzdz.resize(WGD->numcell_face,0.0);
     
-    dtxzdx.resize(UGD->numcell_face,0.0);
-    dtyzdy.resize(UGD->numcell_face,0.0);
-    dtzzdz.resize(UGD->numcell_face,0.0);
+    dtxzdx.resize(WGD->numcell_face,0.0);
+    dtyzdy.resize(WGD->numcell_face,0.0);
+    dtzzdz.resize(WGD->numcell_face,0.0);
     
     // temp storage of sigma's
-    sig_x.resize(UGD->numcell_cent,0.0);
-    sig_y.resize(UGD->numcell_cent,0.0);
-    sig_z.resize(UGD->numcell_cent,0.0);
+    sig_x.resize(WGD->numcell_cent,0.0);
+    sig_y.resize(WGD->numcell_cent,0.0);
+    sig_z.resize(WGD->numcell_cent,0.0);
 
 }
 
-void Eulerian::setData(URBGeneralData* UGD,TURBGeneralData* TGD)
+void Eulerian::setData(WINDSGeneralData* WGD,TURBGeneralData* TGD)
 {
     // set BC 
-    setBC(UGD,TGD);
+    setBC(WGD,TGD);
     
     // compute stress gradients
     setStressGradient(TGD);
@@ -86,100 +86,100 @@ void Eulerian::setData(URBGeneralData* UGD,TURBGeneralData* TGD)
    
 }
 
-void Eulerian::setBC(URBGeneralData* UGD,TURBGeneralData* TGD)
+void Eulerian::setBC(WINDSGeneralData* WGD,TURBGeneralData* TGD)
 {
     std::cout<<"[Eulerian] \t Correction QES-winds fields for BC"<<std::endl;
     
     // verical surface (wall right => j-1)
-    for(size_t id; id<UGD->wall_right_indices.size(); ++id) {
-        int idface=UGD->wall_right_indices[id];
+    for(size_t id; id<WGD->wall_right_indices.size(); ++id) {
+        int idface=WGD->wall_right_indices[id];
         // u(i,j-1,k)=-u(i,j,k)
-        UGD->u[idface -nx]=-UGD->u[idface];
+        WGD->u[idface -nx]=-WGD->u[idface];
         // u(i+1,j-1,k)=-u(i+1,j,k)
-        UGD->u[idface+1 -nx]=-UGD->u[idface+1];
+        WGD->u[idface+1 -nx]=-WGD->u[idface+1];
 
         // w(i,j-1,k)=-w(i,j,k)
-        UGD->w[idface -nx]=-UGD->w[idface];
+        WGD->w[idface -nx]=-WGD->w[idface];
         // w(i,j-1,k+1)=-w(i,j,k+1)
-        UGD->w[idface+nx*ny -nx]=-UGD->w[idface+nx*ny];
+        WGD->w[idface+nx*ny -nx]=-WGD->w[idface+nx*ny];
     }
     
     // verical surface (wall left => j+1)
-    for(size_t id; id<UGD->wall_left_indices.size(); ++id) {
-        int idface=UGD->wall_left_indices[id];
+    for(size_t id; id<WGD->wall_left_indices.size(); ++id) {
+        int idface=WGD->wall_left_indices[id];
         // u(i,j+1,k)=-u(i,j,k)
-        UGD->u[idface +nx]=-UGD->u[idface];
+        WGD->u[idface +nx]=-WGD->u[idface];
         // u(i+1,j+1,k)=-u(i+1,j,k)
-        UGD->u[idface+1 +nx]=-UGD->u[idface+1];
+        WGD->u[idface+1 +nx]=-WGD->u[idface+1];
 
         // w(i,j+1,k)=-w(i,j,k)
-        UGD->w[idface +nx]=-UGD->w[idface];
+        WGD->w[idface +nx]=-WGD->w[idface];
         // w(i,j+1,k+1)=-w(i,j,k+1)
-        UGD->w[idface+nx*ny +nx]=-UGD->w[idface+nx*ny];
+        WGD->w[idface+nx*ny +nx]=-WGD->w[idface+nx*ny];
     }
 
     // horizontal surface (wall above => k+1)
-    for(size_t id; id<UGD->wall_above_indices.size(); ++id) {
-        int idface=UGD->wall_above_indices[id];
+    for(size_t id; id<WGD->wall_above_indices.size(); ++id) {
+        int idface=WGD->wall_above_indices[id];
         // u(i,j,k+1)=-u(i,j,k)
-        UGD->u[idface +nx*ny]=-UGD->u[idface];
+        WGD->u[idface +nx*ny]=-WGD->u[idface];
         // u(i+1,j,k+1)=-u(i+1,j,k)
-        UGD->u[idface+1 +nx*ny]=-UGD->u[idface+1];
+        WGD->u[idface+1 +nx*ny]=-WGD->u[idface+1];
         
         // v(i,j,k+1)=-v(i,j,k)
-        UGD->v[idface +nx*ny]=-UGD->v[idface];
+        WGD->v[idface +nx*ny]=-WGD->v[idface];
         // v(i,j+1,k+1)=-v(i,j+1,k)
-        UGD->v[idface+nx +nx*ny]=-UGD->v[idface+nx];
+        WGD->v[idface+nx +nx*ny]=-WGD->v[idface+nx];
     }
     
     // horizontal surface (wall below => k-1)
-    for(size_t id; id<UGD->wall_below_indices.size(); ++id) {
-        int idface=UGD->wall_below_indices[id];
+    for(size_t id; id<WGD->wall_below_indices.size(); ++id) {
+        int idface=WGD->wall_below_indices[id];
         // u(i,j,k-1)=-u(i,j,k)
-        UGD->u[idface -nx*ny]=-UGD->u[idface];
+        WGD->u[idface -nx*ny]=-WGD->u[idface];
         // u(i+1,j,k+1)=-u(i+1,j,k)
-        UGD->u[idface+1 -nx*ny]=-UGD->u[idface+1];
+        WGD->u[idface+1 -nx*ny]=-WGD->u[idface+1];
         
         // v(i,j,k-1)=-v(i,j,k)
-        UGD->v[idface -nx*ny]=-UGD->v[idface];
+        WGD->v[idface -nx*ny]=-WGD->v[idface];
         // v(i,j+1,k-1)=-v(i,j+1,k)
-        UGD->v[idface+nx -nx*ny]=-UGD->v[idface+nx];
+        WGD->v[idface+nx -nx*ny]=-WGD->v[idface+nx];
     }
 
 
     // verical surface (wall back => i-1)
-    for(size_t id; id<UGD->wall_back_indices.size(); ++id) {
-        int idface=UGD->wall_back_indices[id];
+    for(size_t id; id<WGD->wall_back_indices.size(); ++id) {
+        int idface=WGD->wall_back_indices[id];
         // v(i-1,j,k)=-v(i,j,k)
-        UGD->v[idface -1]=-UGD->v[idface];
+        WGD->v[idface -1]=-WGD->v[idface];
         // v(i-1,j+1,k)=-v(i,j+1,k)
-        UGD->v[idface+nx -1]=-UGD->v[idface+nx];
+        WGD->v[idface+nx -1]=-WGD->v[idface+nx];
 
         // w(i-1,j,k)=-w(i,j,k)
-        UGD->w[idface -1]=-UGD->w[idface];
+        WGD->w[idface -1]=-WGD->w[idface];
         // w(i-1,j,k+1)=-w(i,j,k+1)
-        UGD->w[idface+nx*ny -1]=-UGD->w[idface+nx*ny];
+        WGD->w[idface+nx*ny -1]=-WGD->w[idface+nx*ny];
     }
     
     // verical surface (wall front => i+1)
-    for(size_t id; id<UGD->wall_front_indices.size(); ++id) {
-        int idface=UGD->wall_front_indices[id];
+    for(size_t id; id<WGD->wall_front_indices.size(); ++id) {
+        int idface=WGD->wall_front_indices[id];
         // v(i+1,j,k)=-v(i,j,k)
-        UGD->v[idface +1]=-UGD->v[idface];
+        WGD->v[idface +1]=-WGD->v[idface];
         // v(i+1,j+1,k)=-v(i,j+1,k)
-        UGD->v[idface+nx +1]=-UGD->v[idface+nx];
+        WGD->v[idface+nx +1]=-WGD->v[idface+nx];
 
         // w(i+1,j,k)=-w(i,j,k)
-        UGD->w[idface +1]=-UGD->w[idface];
+        WGD->w[idface +1]=-WGD->w[idface];
         // w(i+1,j,k+1)=-w(i,j,k+1)
-        UGD->w[idface+nx*ny +1]=-UGD->w[idface+nx*ny];
+        WGD->w[idface+nx*ny +1]=-WGD->w[idface+nx*ny];
     }
 
     std::cout<<"[Eulerian] \t Correction QES-turb fields for BC"<<std::endl;
 
     // verical surface (wall right => j-1)
-    for(size_t id; id<UGD->wall_right_indices.size(); ++id) {
-        int idface=UGD->wall_right_indices[id];
+    for(size_t id; id<WGD->wall_right_indices.size(); ++id) {
+        int idface=WGD->wall_right_indices[id];
         // i,j,k -> inverted linearized index
         int k = (int)(idface / ((nx*nx)));
         int j = (int)((idface - k*(nx*ny))/(nx));
@@ -199,8 +199,8 @@ void Eulerian::setBC(URBGeneralData* UGD,TURBGeneralData* TGD)
     }
     
     // verical surface (wall left => j+1)
-    for(size_t id; id<UGD->wall_left_indices.size(); ++id) {
-        int idface=UGD->wall_left_indices[id];
+    for(size_t id; id<WGD->wall_left_indices.size(); ++id) {
+        int idface=WGD->wall_left_indices[id];
         // i,j,k -> inverted linearized index
         int k = (int)(idface / ((nx*nx)));
         int j = (int)((idface - k*(nx*ny))/(nx));
@@ -220,8 +220,8 @@ void Eulerian::setBC(URBGeneralData* UGD,TURBGeneralData* TGD)
     }
 
     // horizontal surface (wall above => k+1)
-    for(size_t id; id<UGD->wall_above_indices.size(); ++id) {
-        int idface=UGD->wall_above_indices[id];
+    for(size_t id; id<WGD->wall_above_indices.size(); ++id) {
+        int idface=WGD->wall_above_indices[id];
         // i,j,k -> inverted linearized index
         int k = (int)(idface / ((nx*nx)));
         int j = (int)((idface - k*(nx*ny))/(nx));
@@ -241,8 +241,8 @@ void Eulerian::setBC(URBGeneralData* UGD,TURBGeneralData* TGD)
     }
     
     // horizontal surface (wall below => k-1)
-    for(size_t id; id<UGD->wall_below_indices.size(); ++id) {
-        int idface=UGD->wall_below_indices[id];
+    for(size_t id; id<WGD->wall_below_indices.size(); ++id) {
+        int idface=WGD->wall_below_indices[id];
         // i,j,k -> inverted linearized index
         int k = (int)(idface / ((nx*nx)));
         int j = (int)((idface - k*(nx*ny))/(nx));
@@ -264,8 +264,8 @@ void Eulerian::setBC(URBGeneralData* UGD,TURBGeneralData* TGD)
 
 
     // verical surface (wall back => i-1)
-    for(size_t id; id<UGD->wall_back_indices.size(); ++id) {
-        int idface=UGD->wall_back_indices[id];
+    for(size_t id; id<WGD->wall_back_indices.size(); ++id) {
+        int idface=WGD->wall_back_indices[id];
         // i,j,k -> inverted linearized index
         int k = (int)(idface / ((nx*nx)));
         int j = (int)((idface - k*(nx*ny))/(nx));
@@ -285,8 +285,8 @@ void Eulerian::setBC(URBGeneralData* UGD,TURBGeneralData* TGD)
     }
     
     // verical surface (wall front => i+1)
-    for(size_t id; id<UGD->wall_front_indices.size(); ++id) {
-        int idface=UGD->wall_front_indices[id];
+    for(size_t id; id<WGD->wall_front_indices.size(); ++id) {
+        int idface=WGD->wall_front_indices[id];
         // i,j,k -> inverted linearized index
         int k = (int)(idface / ((nx*nx)));
         int j = (int)((idface - k*(nx*ny))/(nx));

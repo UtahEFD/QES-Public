@@ -11,9 +11,7 @@ CUDA_ADD_LIBRARY( cudaplumecore
     Args.cpp
     Input.cpp
     NetCDFInput.cpp
-    Urb.cpp
-    Turb.cpp
-    URBGeneralData.cpp
+    WINDSGeneralData.cpp
     TURBGeneralData.cpp
     Wall.cpp
     

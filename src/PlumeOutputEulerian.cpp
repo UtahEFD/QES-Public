@@ -13,7 +13,7 @@
 
 
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
-PlumeOutputEulerian::PlumeOutputEulerian(PlumeInputData* PID,URBGeneralData* UGD,TURBGeneralData* TGD,Eulerian* eul,std::string output_file)
+PlumeOutputEulerian::PlumeOutputEulerian(PlumeInputData* PID,WINDSGeneralData* WGD,TURBGeneralData* TGD,Eulerian* eul,std::string output_file)
   : QESNetCDFOutput(output_file)
 {
     
@@ -22,8 +22,8 @@ PlumeOutputEulerian::PlumeOutputEulerian(PlumeInputData* PID,URBGeneralData* UGD
     // no need for output frequency for this output, it is expected to only happen once, assumed to be at time zero    
 
     // setup copy of pointers to the classes that save needs so output data can be grabbed directly
-    urb_ = UGD;
-    turb_ = TGD;
+    WGD_ = WGD;
+    TGD_ = TGD;
     eul_ = eul;
 
     // --------------------------------------------------------
@@ -33,9 +33,9 @@ PlumeOutputEulerian::PlumeOutputEulerian(PlumeInputData* PID,URBGeneralData* UGD
     // get the grid number of points
     // LA future work: this whole structure will have to change when we finally adjust the inputs for the true grids
     //  would mean cell centered urb data and face centered turb data. For now, decided just to assume they have the same grid
-    int nx = urb_->nx;
-    int ny = urb_->ny;
-    int nz = urb_->nz;
+    int nx = WGD_->nx;
+    int ny = WGD_->ny;
+    int nz = WGD_->nz;
     int nFaces = nx*ny*nx;
     int nCells = (nz-1)*(ny-1)*(nx-1);
 
@@ -77,13 +77,13 @@ PlumeOutputEulerian::PlumeOutputEulerian(PlumeInputData* PID,URBGeneralData* UGD
     // create attributes space dimensions
     std::vector<NcDim> dim_vect_x;
     dim_vect_x.push_back(NcDim_x_cell);
-    createAttVector("x","x-distance","m",dim_vect_x,&(urb_->x));
+    createAttVector("x","x-distance","m",dim_vect_x,&(WGD_->x));
     std::vector<NcDim> dim_vect_y;
     dim_vect_y.push_back(NcDim_y_cell);
-    createAttVector("y","y-distance","m",dim_vect_y,&(urb_->y));
+    createAttVector("y","y-distance","m",dim_vect_y,&(WGD_->y));
     std::vector<NcDim> dim_vect_z;
     dim_vect_z.push_back(NcDim_z_cell);
-    createAttVector("z","z-distance","m",dim_vect_z,&(urb_->z));
+    createAttVector("z","z-distance","m",dim_vect_z,&(WGD_->z));
 
 
     // create 3D vector and put in the dimensions (nt,nz,ny,nx).
@@ -105,18 +105,18 @@ PlumeOutputEulerian::PlumeOutputEulerian(PlumeInputData* PID,URBGeneralData* UGD
     
     // create attributes for all output information 
     // -> QES-winds variables
-    createAttVector("u","x-component mean velocity","m s-1",dim_vect_3d_face,&urb_->u);
-    createAttVector("v","y-component mean velocity","m s-1",dim_vect_3d_face,&urb_->v);
-    createAttVector("w","z-component mean velocity","m s-1",dim_vect_3d_face,&urb_->w);
+    createAttVector("u","x-component mean velocity","m s-1",dim_vect_3d_face,&WGD_->u);
+    createAttVector("v","y-component mean velocity","m s-1",dim_vect_3d_face,&WGD_->v);
+    createAttVector("w","z-component mean velocity","m s-1",dim_vect_3d_face,&WGD_->w);
     // -> QES-turb variables
     createAttVector("epps","dissipation rate","m2 s-3",dim_vect_3d_cell,&epps);
-    createAttVector("tke","turbulent kinetic energy","m2 s-2",dim_vect_3d_cell,&turb_->tke);
-    createAttVector("txx","uu-component of stress tensor","m2 s-2",dim_vect_3d_cell,&turb_->txx);
-    createAttVector("txy","uv-component of stress tensor","m2 s-2",dim_vect_3d_cell,&turb_->txy);
-    createAttVector("txz","uw-component of stress tensor","m2 s-2",dim_vect_3d_cell,&turb_->txz);
-    createAttVector("tyy","vv-component of stress tensor","m2 s-2",dim_vect_3d_cell,&turb_->tyy);
-    createAttVector("tyz","vw-component of stress tensor","m2 s-2",dim_vect_3d_cell,&turb_->tyz);
-    createAttVector("tzz","ww-component of stress tensor","m2 s-2",dim_vect_3d_cell,&turb_->tzz);
+    createAttVector("tke","turbulent kinetic energy","m2 s-2",dim_vect_3d_cell,&TGD_->tke);
+    createAttVector("txx","uu-component of stress tensor","m2 s-2",dim_vect_3d_cell,&TGD_->txx);
+    createAttVector("txy","uv-component of stress tensor","m2 s-2",dim_vect_3d_cell,&TGD_->txy);
+    createAttVector("txz","uw-component of stress tensor","m2 s-2",dim_vect_3d_cell,&TGD_->txz);
+    createAttVector("tyy","vv-component of stress tensor","m2 s-2",dim_vect_3d_cell,&TGD_->tyy);
+    createAttVector("tyz","vw-component of stress tensor","m2 s-2",dim_vect_3d_cell,&TGD_->tyz);
+    createAttVector("tzz","ww-component of stress tensor","m2 s-2",dim_vect_3d_cell,&TGD_->tzz);
     // -> Eulerian variables
     createAttVector("sig_x","x-component variance","m2 s-2",dim_vect_3d_cell,&eul_->sig_x);
     createAttVector("sig_y","y-component variance","m2 s-2",dim_vect_3d_cell,&eul_->sig_y);
@@ -141,8 +141,8 @@ void PlumeOutputEulerian::save(float currentTime)
 {
     // all the values should already be set by the constructor and by the Eulerian class
     // so just output what is found in the containers
-    for(size_t id = 0; id < turb_->CoEps.size(); id++ ) {
-        epps.at(id) = turb_->CoEps.at(id)/eul_->C_0;
+    for(size_t id = 0; id < TGD_->CoEps.size(); id++ ) {
+        epps.at(id) = TGD_->CoEps.at(id)/eul_->C_0;
     }
 
     // set output time for correct netcdf output

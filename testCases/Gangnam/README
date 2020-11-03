@@ -1,6 +1,6 @@
 
 ## example for plume call Gangnam (with QES-winds and Seoul_Gangnam_wMixLength.xml)
  
-./cudaPlume -q Gangnam/Seoul_Gangnam_plume_point.xml -u Gangnam/Seoul_Gangnam_windsWk.nc -t Gangnam/Seoul_Gangnam_turbOut.nc -o Gangnam/ -b Seoul_Gangnam_plume_point
+./qesPlume -q Gangnam/Seoul_Gangnam_plume_point.xml -u Gangnam/Seoul_Gangnam_windsWk.nc -t Gangnam/Seoul_Gangnam_turbOut.nc -o Gangnam/ -b Seoul_Gangnam_plume_point
 
-./cudaPlume -q Gangnam/Seoul_Gangnam_plume_line.xml -u Gangnam/Seoul_Gangnam_windsWk.nc -t Gangnam/Seoul_Gangnam_turbOut.nc -o Gangnam/ -b Seoul_Gangnam_plume_line
+./qesPlume -q Gangnam/Seoul_Gangnam_plume_line.xml -u Gangnam/Seoul_Gangnam_windsWk.nc -t Gangnam/Seoul_Gangnam_turbOut.nc -o Gangnam/ -b Seoul_Gangnam_plume_line

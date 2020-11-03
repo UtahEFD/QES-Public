@@ -16,7 +16,7 @@
 
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
 // in this case, output should always be done, so the bool for whether to do output is set to true
-PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* urb_ptr,Plume* plume_ptr,std::string output_file)
+PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData* WGD,Plume* plume_ptr,std::string output_file)
   : QESNetCDFOutput(output_file)
 {
 
@@ -118,9 +118,9 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* u
     
     // need nx, ny, nz of the domain to make sure the output handles domains that are not three dimensional
     // for now these are a copy of the input urb values
-    nx = urb_ptr->nx;
-    ny = urb_ptr->ny;
-    nz = urb_ptr->nz;
+    nx = WGD->nx;
+    ny = WGD->ny;
+    nz = WGD->nz;
     
     // need the simulation timeStep for use in concentration averaging
     timeStep = PID->simParams->timeStep;

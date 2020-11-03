@@ -6,7 +6,7 @@
 
 #include "Plume.hpp"
 
-Plume::Plume( PlumeInputData* PID, URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, Args* arguments) 
+Plume::Plume( PlumeInputData* PID, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul, Args* arguments) 
     : particleList(0)
 {
     
@@ -19,13 +19,13 @@ Plume::Plume( PlumeInputData* PID, URBGeneralData* UGD, TURBGeneralData* TGD, Eu
     caseBaseName = arguments->caseBaseName;
     debug = arguments->debug;
 
-    // make local copies of the urb nVals for each dimension
-    nx = UGD->nx;
-    ny = UGD->ny;
-    nz = UGD->nz;
-    dx = UGD->dx;
-    dy = UGD->dy;
-    dz = UGD->dz;
+    // make local copies of the QES-Winds nVals for each dimension
+    nx = WGD->nx;
+    ny = WGD->ny;
+    nz = WGD->nz;
+    dx = WGD->dx;
+    dy = WGD->dy;
+    dz = WGD->dz;
 
     // get the domain start and end values, needed for wall boundary condition application
     domainXstart = eul->xStart;
@@ -101,7 +101,7 @@ Plume::Plume( PlumeInputData* PID, URBGeneralData* UGD, TURBGeneralData* TGD, Eu
 // LA note: in this whole section, the idea of having single value temporary storage instead of just referencing values
 //  directly from the dispersion class seems a bit strange, but it makes the code easier to read cause smaller variable names.
 //  Also, it is theoretically faster?
-void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::vector<QESNetCDFOutput*> outputVec)
+void Plume::run(WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul, std::vector<QESNetCDFOutput*> outputVec)
 {
     std::cout << "[Plume] \t Advecting particles " << std::endl;
     
@@ -175,7 +175,7 @@ void Plume::run(URBGeneralData* UGD, TURBGeneralData* TGD, Eulerian* eul, std::v
               this function does not do any manipulation on particleList
             */
             
-            advectParticle(sim_tIdx, parItr, UGD, TGD, eul);
+            advectParticle(sim_tIdx, parItr, WGD, TGD, eul);
             
             // now update the isRogueCount and isNotActiveCount
             if(parItr->isRogue == true) {

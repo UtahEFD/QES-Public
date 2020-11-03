@@ -18,10 +18,8 @@
 #include "PlumeInputData.hpp"
 #include "Input.hpp"
 #include "NetCDFInput.h"
-#include "Urb.hpp"
-#include "Turb.hpp"
 
-#include "URBGeneralData.h"
+#include "WINDSGeneralData.h"
 #include "TURBGeneralData.h"
 
 #include "Plume.hpp"
@@ -46,14 +44,14 @@ int main(int argc, char** argv)
 {
     // set up timer information for the simulation runtime
     calcTime timers;
-    timers.startNewTimer("CUDA-Plume total runtime"); // start recording execution time
+    timers.startNewTimer("QES-Plume total runtime"); // start recording execution time
 
     
     // print a nice little welcome message
     std::cout << std::endl;
     std::cout<<"##############################################################"<<std::endl;
     std::cout<<"#                                                            #"<<std::endl;
-    std::cout<<"#                   Welcome to CUDA-PLUME                    #"<<std::endl;
+    std::cout<<"#                   Welcome to QES-PLUME                     #"<<std::endl;
     std::cout<<"#                                                            #"<<std::endl;
     std::cout<<"##############################################################"<<std::endl;
     
@@ -62,32 +60,32 @@ int main(int argc, char** argv)
     arguments.processArguments(argc, argv);
     
     // parse xml settings
-    PlumeInputData* PID = parseXMLTree(arguments.inputQuicFile);
+    PlumeInputData* PID = parseXMLTree(arguments.inputQESFile);
     if ( !PID ) {
-        std::cerr << "QUIC-Plume input file: " << arguments.inputQuicFile << " not able to be read successfully." << std::endl;
+        std::cerr << "QES-Plume input file: " << arguments.inputQESFile << " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
 
     
     // Create instance of QES-winds General data class
-    URBGeneralData* UGD = new URBGeneralData(&arguments);
+    WINDSGeneralData* WGD = new WINDSGeneralData(&arguments);
     // Create instance of QES-Turb General data class
-    TURBGeneralData* TGD = new TURBGeneralData(&arguments,UGD);
+    TURBGeneralData* TGD = new TURBGeneralData(&arguments,WGD);
     // Create instance of Eulerian class
-    Eulerian* eul = new Eulerian(PID,UGD,TGD, arguments.debug);
+    Eulerian* eul = new Eulerian(PID,WGD,TGD, arguments.debug);
     
     //load data at t=0;
     TGD->loadNetCDFData(0);
-    UGD->loadNetCDFData(0);
-    eul->setData(UGD,TGD);
+    WGD->loadNetCDFData(0);
+    eul->setData(WGD,TGD);
     
     // Create instance of Plume model class
-    Plume* plume = new Plume(PID,UGD,TGD,eul,&arguments);
+    Plume* plume = new Plume(PID,WGD,TGD,eul,&arguments);
     
     // create output instance
     std::vector<QESNetCDFOutput*> outputVec;
     // always supposed to output lagrToEulOutput data
-    outputVec.push_back(new PlumeOutputLagrToEul(PID,UGD,plume,arguments.outputLagrToEulFile));
+    outputVec.push_back(new PlumeOutputLagrToEul(PID,WGD,plume,arguments.outputLagrToEulFile));
     if( arguments.doLagrDataOutput == true ) {
         outputVec.push_back(new PlumeOutputLagrangian(PID,plume,arguments.outputLagrangianFile));
     }
@@ -95,17 +93,17 @@ int main(int argc, char** argv)
     // create output instance (separate for eulerian class)
     QESNetCDFOutput* eulOutput = nullptr;
     if( arguments.doEulDataOutput == true ) {
-        eulOutput = new PlumeOutputEulerian(PID,UGD,TGD,eul,arguments.outputEulerianFile);
+        eulOutput = new PlumeOutputEulerian(PID,WGD,TGD,eul,arguments.outputEulerianFile);
         // output Eulerian data. Use time zero
         eulOutput->save(0.0);
     }
     
     // Run plume advection model
-    plume->run(UGD,TGD,eul,outputVec);
+    plume->run(WGD,TGD,eul,outputVec);
     
     // compute run time information and print the elapsed execution time
-    std::cout<<"[CUDA-Plume] \t Finished."<<std::endl;
-    timers.printStoredTime("CUDA-Plume total runtime");
+    std::cout<<"[QES-Plume] \t Finished."<<std::endl;
+    timers.printStoredTime("QES-Plume total runtime");
     std::cout<<"##############################################################"<<std::endl;
     
     exit(EXIT_SUCCESS);

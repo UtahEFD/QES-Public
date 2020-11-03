@@ -10,7 +10,7 @@ CMAKE_MINIMUM_REQUIRED (VERSION 3.9)
 LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 MESSAGE(STATUS "CMake Module Path: ${CMAKE_MODULE_PATH}")
 
-PROJECT(cudaPlume)
+PROJECT(qesPlume)
 
 SET(CUDAURB_VERSION_INFO -${cudaUrb_Toolkit_VERSION_MAJOR}.${MinVR_Toolkit_VERSION_MINOR})
 
@@ -112,4 +112,4 @@ endif (DOXYGEN_FOUND)
 #add_subdirectory(quicutil)
 add_subdirectory(util)
 add_subdirectory(src)
-add_subdirectory(cudaPlume)
+add_subdirectory(qesPlume)

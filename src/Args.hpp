@@ -39,9 +39,9 @@ class Args : public ArgumentParsing
         */
         void processArguments(int argc, char *argv[]);
 
-        std::string inputQuicFile = "";
-        std::string inputUrbFile = "";
-        std::string inputTurbFile = "";
+        std::string inputQESFile = "";
+        std::string inputWINDSFile = "";
+        std::string inputTURBFile = "";
         std::string outputFolder = "";
         std::string caseBaseName = "";
         // going to assume concentration is always output. So these next options are like choices for additional debug output

@@ -12,12 +12,12 @@
 
 #include "Args.hpp"
 
-Args::Args(): inputUrbFile("cudaurb.nc"), inputTurbFile("cudaturb.nc")
+Args::Args(): inputWINDSFile("windsout.nc"), inputTURBFile("turbout.nc")
 {
     reg("help",                "help/usage information",                         ArgumentParsing::NONE,   '?');
-    reg("inputQuicFile",       "specifies input xml settings file",              ArgumentParsing::STRING, 'q');
-    reg("inputUrbFile",        "specifies input cuda-urb file",                  ArgumentParsing::STRING, 'u');
-    reg("inputTurbFile",       "specifies input cuda-turb file",                 ArgumentParsing::STRING, 't');
+    reg("inputQESFile",        "specifies input xml settings file",              ArgumentParsing::STRING, 'q');
+    reg("inputWINDSFile",      "specifies input qes-winds file",                 ArgumentParsing::STRING, 'u');
+    reg("inputTURBFile",       "specifies input qes-turb file",                  ArgumentParsing::STRING, 't');
     reg("outputFolder",        "select output folder for output files",          ArgumentParsing::STRING, 'o');
     reg("caseBaseName",        "specify case base name for file naming",         ArgumentParsing::STRING, 'b');
     // going to assume concentration is always output. So these next options are like choices for additional debug output
@@ -38,19 +38,19 @@ void Args::processArguments(int argc, char *argv[])
         exit(EXIT_SUCCESS);
     }
     
-    if( !isSet( "inputQuicFile", inputQuicFile ) )
+    if( !isSet( "inputQESFile", inputQESFile ) )
     {
-        std::cerr << "inputQuicFile not specified! Exiting program!" << std::endl;
+        std::cerr << "inputQESFile not specified! Exiting program!" << std::endl;
         exit(EXIT_FAILURE);
     }
-    if( !isSet( "inputUrbFile",  inputUrbFile ) )
+    if( !isSet( "inputWINDSFile",  inputWINDSFile ) )
     {
-        std::cerr << "inputUrbFile not specified! Exiting program!" << std::endl;
+        std::cerr << "inputWINDSFile not specified! Exiting program!" << std::endl;
         exit(EXIT_FAILURE);
     }
-    if( !isSet( "inputTurbFile", inputTurbFile ) )
+    if( !isSet( "inputTURBFile", inputTURBFile ) )
     {
-        std::cerr << "inputTurbFile not specified! Exiting program!" << std::endl;
+        std::cerr << "inputTURBFile not specified! Exiting program!" << std::endl;
         exit(EXIT_FAILURE);
     }  
     if( !isSet( "outputFolder",  outputFolder ) )

@@ -18,7 +18,7 @@
 
 
 #include "PlumeInputData.hpp"
-#include "URBGeneralData.h"
+#include "WINDSGeneralData.h"
 
 #include "QESNetCDFOutput.h"
 
@@ -34,7 +34,7 @@ public:
     }
     
     // specialized constructor
-    PlumeOutputLagrToEul(PlumeInputData* PID,URBGeneralData* urb_ptr, Plume* plume_ptr, std::string output_file);
+    PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData* WGD, Plume* plume_ptr, std::string output_file);
     
     // deconstructor
     ~PlumeOutputLagrToEul()
@@ -63,7 +63,7 @@ private:
     
     
     // need nx, ny, nz of the domain to make sure the output handles domains that are not three dimensional
-    // for now these are a copy of the input urb values
+    // for now these are a copy of the input QES-Winds values
     int nx;
     int ny;
     int nz;

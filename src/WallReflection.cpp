@@ -1,13 +1,13 @@
 #include "Plume.hpp"
 
 // reflection -> set particle inactive when entering a wall
-bool Plume::wallReflectionSetToInactive(URBGeneralData* UGD, Eulerian* eul,
+bool Plume::wallReflectionSetToInactive(WINDSGeneralData* WGD, Eulerian* eul,
                                  double& xPos, double& yPos, double& zPos, 
                                  double& disX, double& disY, double& disZ,
                                  double& uFluct, double& vFluct, double& wFluct)
 {
     int cellIdx = eul->getCellId(xPos,yPos,zPos);
-    if( (UGD->icellflag.at(cellIdx) == 0) || (UGD->icellflag.at(cellIdx) == 2) ) {
+    if( (WGD->icellflag.at(cellIdx) == 0) || (WGD->icellflag.at(cellIdx) == 2) ) {
         // particle end trajectory inside solide -> set inactive  
         return false;
     } else {
@@ -17,7 +17,7 @@ bool Plume::wallReflectionSetToInactive(URBGeneralData* UGD, Eulerian* eul,
 }
 
 // reflection -> this function will do nothing 
-bool Plume::wallReflectionDoNothing(URBGeneralData* UGD, Eulerian* eul,
+bool Plume::wallReflectionDoNothing(WINDSGeneralData* WGD, Eulerian* eul,
                                     double& xPos, double& yPos, double& zPos, 
                                     double& disX, double& disY, double& disZ,
                                     double& uFluct, double& vFluct, double& wFluct)
@@ -26,7 +26,7 @@ bool Plume::wallReflectionDoNothing(URBGeneralData* UGD, Eulerian* eul,
 }
 
 
-bool Plume::wallReflectionFullStairStep(URBGeneralData* UGD, Eulerian* eul,
+bool Plume::wallReflectionFullStairStep(WINDSGeneralData* WGD, Eulerian* eul,
                                         double& xPos, double& yPos, double& zPos, 
                                         double& disX, double& disY, double& disZ,
                                         double& uFluct, double& vFluct, double& wFluct)
@@ -48,7 +48,7 @@ bool Plume::wallReflectionFullStairStep(URBGeneralData* UGD, Eulerian* eul,
  
     // linearized cell ID for end of the trajectory of the particle
     int cellIdNew = eul->getCellId(xPos,yPos,zPos);    
-    if( (UGD->icellflag.at(cellIdNew) != 0) && (UGD->icellflag.at(cellIdNew) != 2) ) {
+    if( (WGD->icellflag.at(cellIdNew) != 0) && (WGD->icellflag.at(cellIdNew) != 2) ) {
         // particle end trajectory outside solide -> no need for reflection
         return true;
     } 
@@ -78,12 +78,12 @@ bool Plume::wallReflectionFullStairStep(URBGeneralData* UGD, Eulerian* eul,
     const int maxCount = 10;
     
     // QES-winds grid information
-    int nx = UGD->nx;
-    int ny = UGD->ny;
-    int nz = UGD->nz;
-    double dx = UGD->dx;
-    double dy = UGD->dy;
-    double dz = UGD->dz;
+    int nx = WGD->nx;
+    int ny = WGD->ny;
+    int nz = WGD->nz;
+    double dx = WGD->dx;
+    double dy = WGD->dy;
+    double dz = WGD->dz;
 
     // cartesian basis vectors 
     Vector3<double> e1={1.0,0.0,0.0},e2={0.0,1.0,0.0},e3={0.0,0.0,1.0};
@@ -113,7 +113,7 @@ bool Plume::wallReflectionFullStairStep(URBGeneralData* UGD, Eulerian* eul,
     Xnew={xPos,yPos,zPos};
     
     // icellFlag of the cell at the end of the trajectory of the particle 
-    int cellFlagNew=UGD->icellflag.at(cellIdNew);
+    int cellFlagNew=WGD->icellflag.at(cellIdNew);
 
     // vector of fluctuation
     vecFluct={uFluct,vFluct,wFluct};
@@ -154,20 +154,20 @@ bool Plume::wallReflectionFullStairStep(URBGeneralData* UGD, Eulerian* eul,
                 
         // x-drection
         N=-f1*e1;
-        S={UGD->x[i]+f1*0.5*dx,double(UGD->y[j]),double(UGD->z[k])};
+        S={WGD->x[i]+f1*0.5*dx,double(WGD->y[j]),double(WGD->z[k])};
         l1 = - (Xold*N - S*N)/(U*N);
 
         // y-drection
         N=-f2*e2;
-        S={double(UGD->x[i]),UGD->y[j]+f2*0.5*dy,double(UGD->z[k])};
+        S={double(WGD->x[i]),WGD->y[j]+f2*0.5*dy,double(WGD->z[k])};
         l2 = -(Xold*N - S*N)/(U*N);
         
         // z-drection (dz can be variable with hieght)
         N=-f3*e3;
         if(f3 >= 0.0) {
-            S={double(UGD->x[i]),double(UGD->y[j]),double(UGD->z_face[k])};
+            S={double(WGD->x[i]),double(WGD->y[j]),double(WGD->z_face[k])};
         } else {
-            S={double(UGD->x[i]),double(UGD->y[j]),double(UGD->z_face[k-1])};
+            S={double(WGD->x[i]),double(WGD->y[j]),double(WGD->z_face[k-1])};
         }
         l3 = -(Xold*N - S*N)/(U*N);
         
@@ -228,17 +228,17 @@ bool Plume::wallReflectionFullStairStep(URBGeneralData* UGD, Eulerian* eul,
             std::sort(idx.begin(), idx.end(), [&vl](size_t i1, size_t i2) {return vl[i1] < vl[i2];});
             
             // check if surface is valid (ie, next cell is solid)
-            if( (UGD->icellflag.at(cellIdOld+vn[idx[0]]) == 0) || 
-                (UGD->icellflag.at(cellIdOld+vn[idx[0]]) == 2) ) {
+            if( (WGD->icellflag.at(cellIdOld+vn[idx[0]]) == 0) || 
+                (WGD->icellflag.at(cellIdOld+vn[idx[0]]) == 2) ) {
                 s=vl[idx[0]];
                 N=vN[idx[0]];
-            } else if( (UGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]) == 0) || 
-                       (UGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]) == 2) ) {
+            } else if( (WGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]) == 0) || 
+                       (WGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]) == 2) ) {
                 s=vl[idx[1]];
                 N=vN[idx[1]];
             } else if (idx.size() == 3) { // check if 3rd option is valid (avoid seg fault)
-                if( (UGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]+vn[idx[2]]) == 0) || 
-                    (UGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]+vn[idx[2]]) == 2) ) {
+                if( (WGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]+vn[idx[2]]) == 0) || 
+                    (WGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]+vn[idx[2]]) == 2) ) {
                     s=vl[idx[2]];
                     N=vN[idx[2]];
                 } else {
@@ -277,7 +277,7 @@ bool Plume::wallReflectionFullStairStep(URBGeneralData* UGD, Eulerian* eul,
         cellIdNew=eul->getCellId(Xnew);
         
         try {
-            cellFlagNew=UGD->icellflag.at(cellIdNew);
+            cellFlagNew=WGD->icellflag.at(cellIdNew);
         } catch (const std::out_of_range& oor) {            
             // cell ID out of bound
             std::cout << "Reflection problem: particle out of range" << std::endl;
