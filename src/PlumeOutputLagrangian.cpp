@@ -271,6 +271,9 @@ void PlumeOutputLagrangian::save(float currentTime)
             xPos[parID] = parItr->xPos;
             yPos[parID] = parItr->yPos;
             zPos[parID] = parItr->zPos;
+            uMean[parID] = parItr->uMean;
+            vMean[parID] = parItr->vMean;
+            wMean[parID] = parItr->wMean;
             uFluct[parID] = parItr->uFluct;
             vFluct[parID] = parItr->vFluct;
             wFluct[parID] = parItr->wFluct;
@@ -323,6 +326,10 @@ void PlumeOutputLagrangian::save(float currentTime)
             yPos[i] = 0; 
             zPos[i] = 0; 
             
+            uMean[i] = 0; 
+            vMean[i] = 0; 
+            wMean[i] = 0;
+
             uFluct[i] = 0; 
             vFluct[i] = 0; 
             wFluct[i] = 0; 
