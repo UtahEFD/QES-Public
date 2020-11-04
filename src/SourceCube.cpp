@@ -66,7 +66,7 @@ void SourceCube::checkPosInfo( const double& domainXstart, const double& domainX
 
 
 int SourceCube::emitParticles( const float dt, const float currTime,
-                               std::list<Particle>& emittedParticles)
+                               std::list<Particle*>& emittedParticles)
 {
     // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
     if( currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime )
@@ -77,21 +77,21 @@ int SourceCube::emitParticles( const float dt, const float currTime,
 
         for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-            Particle cPar;
+            Particle* cPar = new Particle();
 
             // generate uniform dist in domain
-            cPar.xPos_init = uniformDistr(prng)*(m_maxX-m_minX) + m_minX;
-            cPar.yPos_init = uniformDistr(prng)*(m_maxY-m_minY) + m_minY;
-            cPar.zPos_init = uniformDistr(prng)*(m_maxZ-m_minZ) + m_minZ;
+            cPar->xPos_init = uniformDistr(prng)*(m_maxX-m_minX) + m_minX;
+            cPar->yPos_init = uniformDistr(prng)*(m_maxY-m_minY) + m_minY;
+            cPar->zPos_init = uniformDistr(prng)*(m_maxZ-m_minZ) + m_minZ;
 
-            cPar.tStrt = currTime;
+            cPar->tStrt = currTime;
 
-            cPar.sourceIdx = sourceIdx;
+            cPar->sourceIdx = sourceIdx;
             
             emittedParticles.push_front( cPar );
         }
     }
 
-    return m_rType->m_parPerTimestep;
+    return emittedParticles.size();//m_rType->m_parPerTimestep;
     
 }

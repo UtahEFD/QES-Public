@@ -47,14 +47,14 @@ void SourceLine::checkPosInfo( const double& domainXstart, const double& domainX
 
 
 int SourceLine::emitParticles( const float dt, const float currTime,
-                               std::list<Particle>& emittedParticles)
+                               std::list<Particle*>& emittedParticles)
 {
     // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
     if( currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime )
     {
         for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-            Particle cPar;
+            Particle* cPar = new Particle();
 
             // generate random point on line between m_pt0 and m_pt1
             double diffX = posX_1 - posX_0;
@@ -62,19 +62,19 @@ int SourceLine::emitParticles( const float dt, const float currTime,
             double diffZ = posZ_1 - posZ_0;
 
             float t = drand48();
-            cPar.xPos_init = posX_0 + t * diffX;
-            cPar.yPos_init = posY_0 + t * diffY;
-            cPar.zPos_init = posZ_0 + t * diffZ;
+            cPar->xPos_init = posX_0 + t * diffX;
+            cPar->yPos_init = posY_0 + t * diffY;
+            cPar->zPos_init = posZ_0 + t * diffZ;
 
-            cPar.tStrt = currTime;
+            cPar->tStrt = currTime;
 
-            cPar.sourceIdx = sourceIdx;
+            cPar->sourceIdx = sourceIdx;
             
             emittedParticles.push_front( cPar );
         }
 
     }
 
-    return m_rType->m_parPerTimestep;
+    return emittedParticles.size();//m_rType->m_parPerTimestep;
     
 }

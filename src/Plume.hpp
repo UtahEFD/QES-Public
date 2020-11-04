@@ -64,7 +64,7 @@ public:
     
     // This the storage for all particles
     // the sources can set these values, then the other values are set using urb and turb info using these values
-    std::list<Particle> particleList;
+    std::list<Particle*> particleList;
     
     // this is the total number of particles expected to be released during the simulation
     // !!! this has to be calculated carefully inside the getInputSources() function
@@ -125,7 +125,7 @@ private:
     std::string caseBaseName;
     bool debug;
     
-    void setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::list<Particle>& newParticles);
+    void setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::list<Particle*> newParticles);
     // this function gets sources from input data and adds them to the allSources vector
     // this function also calls the many check and calc functions for all the input sources
     // !!! note that these check and calc functions have to be called here 
@@ -141,7 +141,7 @@ private:
     
 
     // this function moves (advects) one particle
-    void advectParticle(int&, std::list<Particle>::iterator, WINDSGeneralData*, TURBGeneralData*, Eulerian*);
+    void advectParticle(int&, std::list<Particle*>::iterator, WINDSGeneralData*, TURBGeneralData*, Eulerian*);
 
     /* reflection functions in WallReflection.cpp */
     // main function pointer

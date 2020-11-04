@@ -34,7 +34,7 @@ void SourceCircle::checkPosInfo( const double& domainXstart, const double& domai
 
 
 int SourceCircle::emitParticles( const float dt, const float currTime,
-                                 std::list<Particle>& emittedParticles)
+                                 std::list<Particle*>& emittedParticles)
 {
     // warning!!! this is still a point source! Need to work out the geometry details still
     // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
@@ -43,20 +43,21 @@ int SourceCircle::emitParticles( const float dt, const float currTime,
 
         for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-            Particle cPar;
-            cPar.xPos_init = posX;
-            cPar.yPos_init = posY;
-            cPar.zPos_init = posZ;
+            Particle* cPar = new Particle();
+            
+            cPar->xPos_init = posX;
+            cPar->yPos_init = posY;
+            cPar->zPos_init = posZ;
 
-            cPar.tStrt = currTime;
+            cPar->tStrt = currTime;
 
-            cPar.sourceIdx = sourceIdx;
+            cPar->sourceIdx = sourceIdx;
             
             emittedParticles.push_front( cPar );
         }
 
     }
 
-    return m_rType->m_parPerTimestep;
+    return emittedParticles.size();//m_rType->m_parPerTimestep;
     
 }

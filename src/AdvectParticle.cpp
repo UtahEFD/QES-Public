@@ -1,22 +1,22 @@
 #include "Plume.hpp"
 
-void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul)
+void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul)
 {
 
     double rhoAir=1.225;   // in kg m^-3
     double nuAir=1.506E-5; // in m^2 s^-1
         
     // get the current isRogue and isActive information
-    bool isRogue = parItr->isRogue;
-    bool isActive = parItr->isActive;
+    bool isRogue = (*parItr)->isRogue;
+    bool isActive = (*parItr)->isActive;
     
     // getting the current position for where the particle is at for a given time
     // if it is the first time a particle is ever released, then the value is already set at the initial value
     // LA notes: technically this value is the old position to be overwritten with the new position.
     //  I've been tempted for a while to store both. Might have to for correctly implementing reflective building BCs
-    double xPos = parItr->xPos;
-    double yPos = parItr->yPos;
-    double zPos = parItr->zPos;
+    double xPos = (*parItr)->xPos;
+    double yPos = (*parItr)->yPos;
+    double zPos = (*parItr)->zPos;
 
     double uMean = 0.0;
     double vMean = 0.0;
@@ -29,9 +29,9 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
     //size_t cellIdx_old = eul->getCellId(xPos,yPos,zPos);
     
     // getting the initial position, for use in setting finished particles
-    double xPos_init = parItr->xPos_init;
-    double yPos_init = parItr->yPos_init;
-    double zPos_init = parItr->zPos_init;
+    double xPos_init = (*parItr)->xPos_init;
+    double yPos_init = (*parItr)->yPos_init;
+    double zPos_init = (*parItr)->zPos_init;
     
     // grab the velFluct values.
     // LA notes: hmm, Bailey's code just starts out setting these values to zero,
@@ -39,24 +39,24 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
     //  velFluct_old and velFluct are probably identical and kind of redundant in this implementation
     //  but it shouldn't hurt anything for now, even if it is redundant
     //  besides, it will probably change a bit if we decide to change what is outputted on a regular, and on a debug basis
-    double uFluct = parItr->uFluct;
-    double vFluct = parItr->vFluct;
-    double wFluct = parItr->wFluct;
+    double uFluct = (*parItr)->uFluct;
+    double vFluct = (*parItr)->vFluct;
+    double wFluct = (*parItr)->wFluct;
     
     // get all other values for the particle
     // in this case this, all the old velocity fluctuations and old stress tensor values for the particle
     // LA note: also need to keep track of a delta_velFluct, 
     //  but since delta_velFluct is never used, just set later on, it doesn't need grabbed as a value till later
-    double uFluct_old = parItr->uFluct_old;
-    double vFluct_old = parItr->vFluct_old;
-    double wFluct_old = parItr->wFluct_old;
+    double uFluct_old = (*parItr)->uFluct_old;
+    double vFluct_old = (*parItr)->vFluct_old;
+    double wFluct_old = (*parItr)->wFluct_old;
     
-    double txx_old = parItr->txx_old;
-    double txy_old = parItr->txy_old;
-    double txz_old = parItr->txz_old;
-    double tyy_old = parItr->tyy_old;
-    double tyz_old = parItr->tyz_old;
-    double tzz_old = parItr->tzz_old;
+    double txx_old = (*parItr)->txx_old;
+    double txy_old = (*parItr)->txy_old;
+    double txz_old = (*parItr)->txz_old;
+    double tyy_old = (*parItr)->tyy_old;
+    double tyz_old = (*parItr)->tyz_old;
+    double tzz_old = (*parItr)->tzz_old;
     
 
     // need to avoid current tau values going out of scope now that I've added the particle timestep loop
@@ -124,7 +124,7 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
         flux_div_y += eul->interp3D_faceVar(eul->dtyzdz);
         flux_div_z += eul->interp3D_faceVar(eul->dtzzdz);
 
-        //wMean-=parItr->getSettlingVelocity(rhoAir,nuAir);
+        //wMean-=(*parItr)->getSettlingVelocity(rhoAir,nuAir);
         
         // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
         // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
@@ -316,36 +316,36 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle>::iterator parItr, 
     // notice that the values from the particle timestep loop are used directly here, 
     //  just need to put the existing vals into storage
     // !!! this is extremely important for output and the next iteration to work correctly
-    parItr->xPos = xPos;
-    parItr->yPos = yPos;
-    parItr->zPos = zPos;
+    (*parItr)->xPos = xPos;
+    (*parItr)->yPos = yPos;
+    (*parItr)->zPos = zPos;
 
-    parItr->uMean = uMean;
-    parItr->vMean = vMean;
-    parItr->wMean = wMean;
+    (*parItr)->uMean = uMean;
+    (*parItr)->vMean = vMean;
+    (*parItr)->wMean = wMean;
          
-    parItr->uFluct = uFluct;
-    parItr->vFluct = vFluct;
-    parItr->wFluct = wFluct;
+    (*parItr)->uFluct = uFluct;
+    (*parItr)->vFluct = vFluct;
+    (*parItr)->wFluct = wFluct;
                 
     // these are the current velFluct values by this point
-    parItr->uFluct_old = uFluct_old;  
-    parItr->vFluct_old = vFluct_old;
-    parItr->wFluct_old = wFluct_old;
+    (*parItr)->uFluct_old = uFluct_old;  
+    (*parItr)->vFluct_old = vFluct_old;
+    (*parItr)->wFluct_old = wFluct_old;
                 
-    parItr->delta_uFluct = delta_uFluct;
-    parItr->delta_vFluct = delta_vFluct;
-    parItr->delta_wFluct = delta_wFluct;
+    (*parItr)->delta_uFluct = delta_uFluct;
+    (*parItr)->delta_vFluct = delta_vFluct;
+    (*parItr)->delta_wFluct = delta_wFluct;
                 
-    parItr->txx_old = txx_old;
-    parItr->txy_old = txy_old;
-    parItr->txz_old = txz_old;
-    parItr->tyy_old = tyy_old;
-    parItr->tyz_old = tyz_old;
-    parItr->tzz_old = tzz_old;
+    (*parItr)->txx_old = txx_old;
+    (*parItr)->txy_old = txy_old;
+    (*parItr)->txz_old = txz_old;
+    (*parItr)->tyy_old = tyy_old;
+    (*parItr)->tyz_old = tyz_old;
+    (*parItr)->tzz_old = tzz_old;
                 
-    parItr->isRogue = isRogue;
-    parItr->isActive = isActive;
+    (*parItr)->isRogue = isRogue;
+    (*parItr)->isActive = isActive;
     
     return;
 }

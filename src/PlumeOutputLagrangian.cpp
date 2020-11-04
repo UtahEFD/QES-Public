@@ -260,34 +260,34 @@ void PlumeOutputLagrangian::save(float currentTime)
         // copy particle info into the required output storage containers
         for( auto parItr = plume->particleList.begin(); parItr != plume->particleList.end() ; parItr++ ) {
             
-            int parID=parItr->particleID;
+            int parID=(*parItr)->particleID;
             
-            xPos_init[parID] = parItr->xPos_init;
-            yPos_init[parID] = parItr->yPos_init;
-            zPos_init[parID] = parItr->zPos_init;
-            tStrt[parID] = parItr->tStrt;
-            sourceIdx[parID] = parItr->sourceIdx;
+            xPos_init[parID] = (*parItr)->xPos_init;
+            yPos_init[parID] = (*parItr)->yPos_init;
+            zPos_init[parID] = (*parItr)->zPos_init;
+            tStrt[parID] = (*parItr)->tStrt;
+            sourceIdx[parID] = (*parItr)->sourceIdx;
             
-            xPos[parID] = parItr->xPos;
-            yPos[parID] = parItr->yPos;
-            zPos[parID] = parItr->zPos;
-            uMean[parID] = parItr->uMean;
-            vMean[parID] = parItr->vMean;
-            wMean[parID] = parItr->wMean;
-            uFluct[parID] = parItr->uFluct;
-            vFluct[parID] = parItr->vFluct;
-            wFluct[parID] = parItr->wFluct;
-            delta_uFluct[parID] = parItr->delta_uFluct;
-            delta_vFluct[parID] = parItr->delta_vFluct;
-            delta_wFluct[parID] = parItr->delta_wFluct;
+            xPos[parID] = (*parItr)->xPos;
+            yPos[parID] = (*parItr)->yPos;
+            zPos[parID] = (*parItr)->zPos;
+            uMean[parID] = (*parItr)->uMean;
+            vMean[parID] = (*parItr)->vMean;
+            wMean[parID] = (*parItr)->wMean;
+            uFluct[parID] = (*parItr)->uFluct;
+            vFluct[parID] = (*parItr)->vFluct;
+            wFluct[parID] = (*parItr)->wFluct;
+            delta_uFluct[parID] = (*parItr)->delta_uFluct;
+            delta_vFluct[parID] = (*parItr)->delta_vFluct;
+            delta_wFluct[parID] = (*parItr)->delta_wFluct;
 
             // since no boolean output exists, going to have to convert the values to ints
-            if( parItr->isRogue == true )
+            if( (*parItr)->isRogue == true )
                 isRogue[parID] = 1;
             else
                 isRogue[parID] = 0;
             
-            if( parItr->isActive == true )
+            if( (*parItr)->isActive == true )
                 isActive[parID] = 1;
             else
                 isActive[parID] = 0;

@@ -302,12 +302,12 @@ void PlumeOutputLagrToEul::boxCount()
     for(auto parItr = plume->particleList.begin(); parItr != plume->particleList.end() ; parItr++ ) {
         
         // because particles all start out as active now, need to also check the release time
-        if( parItr->isActive == true ) {
+        if( (*parItr)->isActive == true ) {
             
             // get the current position of the particle
-            double xPos = parItr->xPos;
-            double yPos = parItr->yPos;
-            double zPos = parItr->zPos;
+            double xPos = (*parItr)->xPos;
+            double yPos = (*parItr)->yPos;
+            double zPos = (*parItr)->zPos;
 
             
             // Calculate which collection box this particle is currently in.

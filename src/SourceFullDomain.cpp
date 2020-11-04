@@ -41,7 +41,7 @@ void SourceFullDomain::checkPosInfo( const double& domainXstart, const double& d
 
 
 int SourceFullDomain::emitParticles( const float dt, const float currTime,
-                                     std::list<Particle>& emittedParticles)
+                                     std::list<Particle*>& emittedParticles)
 {
     // this function WILL fail if checkPosInfo() is not called, because for once checkPosInfo() acts to set the required data for using this function
     
@@ -54,22 +54,22 @@ int SourceFullDomain::emitParticles( const float dt, const float currTime,
 
         for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-            Particle cPar;
+            Particle* cPar = new Particle();
 
             // generate uniform dist in domain
-            cPar.xPos_init = uniformDistr(prng)*(xDomainEnd-xDomainStart) + xDomainStart;
-            cPar.yPos_init = uniformDistr(prng)*(yDomainEnd-yDomainStart) + yDomainStart;
-            cPar.zPos_init = uniformDistr(prng)*(zDomainEnd-zDomainStart) + zDomainStart;
+            cPar->xPos_init = uniformDistr(prng)*(xDomainEnd-xDomainStart) + xDomainStart;
+            cPar->yPos_init = uniformDistr(prng)*(yDomainEnd-yDomainStart) + yDomainStart;
+            cPar->zPos_init = uniformDistr(prng)*(zDomainEnd-zDomainStart) + zDomainStart;
 
-            cPar.tStrt = currTime;
+            cPar->tStrt = currTime;
 
-            cPar.sourceIdx = sourceIdx;
+            cPar->sourceIdx = sourceIdx;
             
             emittedParticles.push_front( cPar );
         }
 
     }
 
-    return m_rType->m_parPerTimestep;
+    return emittedParticles.size();//m_rType->m_parPerTimestep;
     
 }
