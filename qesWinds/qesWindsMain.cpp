@@ -185,6 +185,9 @@ int main(int argc, char *argv[])
         TGD->run(WGD);
     }
 
+
+    WID->simParams->outputWRFData();
+
     // /////////////////////////////
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...

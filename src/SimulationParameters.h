@@ -295,4 +295,12 @@ public:
                                          shpPolygons, shpBuildingHeight, heightFactor );
         }
     }
+
+
+    void outputWRFData()
+    {
+        std::cout << "Outputting wind data." << std::endl;
+        wrfInputData->extractWind();
+    }
+    
 };
