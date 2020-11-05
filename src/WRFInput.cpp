@@ -310,7 +310,7 @@ WRFInput::WRFInput(const std::string& filename,
                    int sensorSample,
                    bool sensorsOnly)
     : m_processOnlySensorData( sensorsOnly ),
-      wrfInputFile( filename, NcFile::read ),
+      wrfInputFile( filename, NcFile::write ),
       m_minWRFAlt( 22 ), m_maxWRFAlt( 330 ), m_maxTerrainSize( 10001 ), m_maxNbStat( 156 ),
       m_TerrainFlag(1), m_BdFlag(0), m_VegFlag(0), m_Z0Flag(2)
 {
@@ -474,7 +474,7 @@ WRFInput::WRFInput(const std::string& filename,
             
                 int l_idx = i + j*fm_nx;
                 abyRaster[ l_idx ] = fmHeight[l_idx];
-                std::cout << "height = " << fmHeight[ l_idx ] << std::endl;
+                // std::cout << "height = " << fmHeight[ l_idx ] << std::endl;
                 
             }
         }
@@ -2028,4 +2028,27 @@ float WRFInput::lookupLandUse(int luIdx)
     default:
         return 0.1;
     }
+}
+
+
+
+void WRFInput::extractWind()
+{
+    // right now, just dump out a fixed UF and VF to test idea
+        
+    std::vector<size_t> startIdx = {0,0,0,0};
+    std::vector<size_t> counts = {1,
+                                  static_cast<unsigned long>(fm_ny),
+                                  static_cast<unsigned long>(fm_nx)};
+
+    std::vector<double> ufOut( fm_nx * fm_ny, 2.1 );
+    std::vector<double> vfOut( fm_nx * fm_ny, 1.0 );
+
+    NcVar field_UF = wrfInputFile.getVar("UF");
+    NcVar field_VF = wrfInputFile.getVar("VF");
+
+    field_UF.putVar( startIdx, counts, ufOut.data() ); //, startIdx, counts );
+    field_VF.putVar( startIdx, counts, vfOut.data() ); //, startIdx, counts );
+        
+    wrfInputFile.sync();
 }

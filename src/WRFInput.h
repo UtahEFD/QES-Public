@@ -94,6 +94,11 @@ public:
     int maxSensors;
 
     /**
+     */
+    void extractWind();
+    
+
+    /**
      * Reading WRF data - ReadDomainInfo.m
      *
      * Read domain dimensions, terrain elevation, wind data, land-use
