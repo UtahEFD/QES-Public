@@ -19,21 +19,42 @@ public:
     // initializer
     Particle()
     {
+        // diameter of particle (micron and m)
         d=0.0;
         d_m=(1.0E-6)*d;
+        
+        // mass of particle (g and kg)
         m=0.0;
         m_kg=(1.0E-3)*m;
+
+        // density of particle 
         rho=0.0;
+        
+        // (1 - fraction) particle deposited
+        wdepos = 1.0;
+        // (1 - fraction) particle decay
+        wdecay = 1.0;
+            
     }
 
     // initializer
     Particle(const double& d_part,const double& m_part,const double& rho_part)
     {
+        // diameter of particle (micron and m) 
         d=d_part;
         d_m=(1.0E-6)*d;
+
+        // mass of particle (g and kg) 
         m=m_part;
         m_kg=(1.0E-3)*m;
+
+        // density of particle
         rho=rho_part;
+
+        // (1 - fraction) particle deposited
+        wdepos = 1.0;
+        // (1 - fraction) particle deposited
+        wdecay = 1.0;
     }
     
     // destructor
@@ -101,13 +122,13 @@ public:
     double rho;  // density of particle
     
     // deposition vatiables
-    double fdeposition; // particle deposited fraction [0,1]
+    double wdepos;     // (1 - fraction) particle deposited [0,1]
     double vs;         // settling velocity [m/s]
     double Sc;         // Schmidt number 
     double taud;       // characteristic relaxation time [s]
     
     // decay varables
-    double fdecay; // particle decayed fraction [0,1]
+    double wdecay;     // (1 - fraction) particle decayed [0,1]
 
     double getSettlingVelocity(const double&,const double&);
     
