@@ -5,7 +5,10 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr,
 
     double rhoAir=1.225;   // in kg m^-3
     double nuAir=1.506E-5; // in m^2 s^-1
-        
+      
+    // set settling velocity
+    (*parItr)->setSettlingVelocity(rhoAir,nuAir);
+    
     // get the current isRogue and isActive information
     bool isRogue = (*parItr)->isRogue;
     bool isActive = (*parItr)->isActive;
@@ -124,7 +127,8 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr,
         flux_div_y += eul->interp3D_faceVar(eul->dtyzdz);
         flux_div_z += eul->interp3D_faceVar(eul->dtzzdz);
 
-        //wMean-=(*parItr)->getSettlingVelocity(rhoAir,nuAir);
+        // adjusting mean vertical velocity for settling velocity 
+        wMean -= (*parItr)->vs;
         
         // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
         // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes

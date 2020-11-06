@@ -115,36 +115,46 @@ public:
     bool isActive;         // this is true until it becomes false.  If a particle leaves the domain or runs out of mass, this becomes false.
 
     // particle physical property 
-    double d;    // particle diameter diameter [microns]
-    double d_m;  // particle diameter diameter [microns]
-    double m;    // particle mass [g]
-    double m_kg;    // particle mass [kg]
-    double rho;  // density of particle
+    double d;      // particle diameter diameter [microns]
+    double d_m;    // particle diameter diameter [m]
+    double m;      // particle mass [g]
+    double m_kg;   // particle mass [kg]
+    double rho;    // density of particle
     
     // deposition vatiables
     double wdepos;     // (1 - fraction) particle deposited [0,1]
-    double vs;         // settling velocity [m/s]
     double Sc;         // Schmidt number 
     double taud;       // characteristic relaxation time [s]
+    double vd;         // deposition velocity [m/s]
+
+    // settling vatiables
+    double dstar;      // dimensionless grain diameter
+    double Cd;         // drag coefficent
+    double wstar;      // dimensionless settling velocity 
+    double vs;         // settling velocity [m/s]
     
     // decay varables
     double wdecay;     // (1 - fraction) particle decayed [0,1]
 
-    double getSettlingVelocity(const double&,const double&);
+    void setSettlingVelocity(const double&,const double&);
     
 private:
     
 
 };
 
-inline double Particle::getSettlingVelocity(const double& rhoAir,const double& nuAir)
+inline void Particle::setSettlingVelocity(const double& rhoAir,const double& nuAir)
 {
-    //dimensionless grain diameter
-    double dstar = d_m*pow(9.81/pow(nuAir,2.0)*(rho/rhoAir-1.),1.0/3.0); 
-    // drag coefficent
-    double Cd = (432.0/pow(dstar,3.0))*pow(1.0+0.022*pow(dstar,3.0),0.54) + 0.47*(1.0-exp(-0.15*pow(dstar,0.45)));
-    // dimensionless settling velociy
-    double wstar = pow((4.0*dstar)/(3.0*Cd),0.5);
-    // settling velocity
-    return wstar*pow(9.81*nuAir*(rho/rhoAir-1.0),1.0/3.0);        
+    if(d>0) {
+        //dimensionless grain diameter
+        dstar = d_m*pow(9.81/pow(nuAir,2.0)*(rho/rhoAir-1.),1.0/3.0); 
+        // drag coefficent
+        Cd = (432.0/pow(dstar,3.0))*pow(1.0+0.022*pow(dstar,3.0),0.54) + 0.47*(1.0-exp(-0.15*pow(dstar,0.45)));
+        // dimensionless settling velociy
+        wstar = pow((4.0*dstar)/(3.0*Cd),0.5);
+        // settling velocity
+        vs = wstar*pow(9.81*nuAir*(rho/rhoAir-1.0),1.0/3.0);
+    }else{
+        vs = 0.0;
+    }
 }
