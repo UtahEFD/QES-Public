@@ -2,9 +2,9 @@
 
 // reflection -> set particle inactive when entering a wall
 bool Plume::wallReflectionSetToInactive(WINDSGeneralData* WGD, Eulerian* eul,
-                                 double& xPos, double& yPos, double& zPos, 
-                                 double& disX, double& disY, double& disZ,
-                                 double& uFluct, double& vFluct, double& wFluct)
+                                        double& xPos, double& yPos, double& zPos, 
+                                        double& disX, double& disY, double& disZ,
+                                        double& uFluct, double& vFluct, double& wFluct)
 {
     int cellIdx = eul->getCellId(xPos,yPos,zPos);
     if( (WGD->icellflag.at(cellIdx) == 0) || (WGD->icellflag.at(cellIdx) == 2) ) {
