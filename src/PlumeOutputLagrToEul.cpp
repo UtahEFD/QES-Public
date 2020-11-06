@@ -167,7 +167,7 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData*
     }
 
     // initialization of the container
-    cBox.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
+    pBox.resize(nBoxesX*nBoxesY*nBoxesZ,0);
     conc.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
 
 
@@ -177,7 +177,7 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData*
 
     // setup desired output fields string
     // LA future work: can be added in fileOptions at some point
-    output_fields = {"t","x","y","z","conc"};
+    output_fields = {"t","x","y","z","pBox","conc"};
 
     // set data dimensions, which in this case are cell-centered dimensions
     // time dimension
@@ -215,8 +215,8 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData*
     
     
     // create attributes for all output information
-    createAttVector("conc","concentration","#ofPar m-3",dim_vect_3d,&conc);
-
+    createAttVector("pBox","number of particle per box","#ofPar",dim_vect_3d,&pBox);
+    createAttVector("conc","concentration","kg m-3",dim_vect_3d,&conc);    
 
     // create output fields
     addOutputFields();
@@ -257,16 +257,13 @@ void PlumeOutputLagrToEul::save(float currentTime)
         // this is what it used to be, which assumes the mass per particle is 1 per total number of particles to release
         //double cc = (dt)/(timeAvgFreq*volume* dis->particleList.size() );
 
-        // FM - here: number of particles in volume
-        // cc = dt/timeAvgFreq * 1/vol => in #/m3 
-        double cc = (timeStep)/(timeAvgFreq*volume);
+        // adjusting concentration for averaging time and volume of the box
+        // cc = dt/Tavg * 1/vol => in /m3 
+        //double cc = (timeStep)/(timeAvgFreq*volume);
 
-        for( auto id = 0; id <  conc.size();id++ ) {
-            conc.at(id) = cBox.at(id)*cc;
-            // notice that the number of particles per box is reset for the next averaging period
-            cBox.at(id) = 0.0;
-        }
-
+        //for( auto id = 0u; id <  conc.size();id++ ) {
+        //    conc[id] = conc[id]*cc;
+        //}
 
         // set output time for correct netcdf output
         time = currentTime;
@@ -274,6 +271,11 @@ void PlumeOutputLagrToEul::save(float currentTime)
         // save the fields to NetCDF files
         saveOutputFields();
 
+        // reset container for the next averaging period
+        for( auto id = 0u; id < pBox.size();id++ ) {
+            pBox[id] = 0;
+            conc[id] = 0.0;
+        }
 
         // remove x, y, z
         // from output array after first save
@@ -304,12 +306,6 @@ void PlumeOutputLagrToEul::boxCount()
         // because particles all start out as active now, need to also check the release time
         if( (*parItr)->isActive == true ) {
             
-            // get the current position of the particle
-            double xPos = (*parItr)->xPos;
-            double yPos = (*parItr)->yPos;
-            double zPos = (*parItr)->zPos;
-
-            
             // Calculate which collection box this particle is currently in.
             // The method is the same as the setInterp3Dindexing() function in the Eulerian class:
             //  Correct the particle position by the bounding box starting edge
@@ -324,26 +320,12 @@ void PlumeOutputLagrToEul::boxCount()
             //  so particles go outside the box if their indices are at nx-2, not nx-1.
 
             // x-direction
-            int idx = floor((xPos-lBndx)/(boxSizeX+1e-9));      
+            int idx = floor(((*parItr)->xPos-lBndx)/(boxSizeX+1e-9));      
             // y-direction
-            int idy = floor((yPos-lBndy)/(boxSizeY+1e-9));
+            int idy = floor(((*parItr)->yPos-lBndy)/(boxSizeY+1e-9));
             // z-direction
-            int idz = floor((zPos-lBndz)/(boxSizeZ+1e-9));
+            int idz = floor(((*parItr)->zPos-lBndz)/(boxSizeZ+1e-9));
             
-            // still have to correct the indices if the simulation is not three dimensional
-            if( nx == 1 )
-            {
-                idx = 0;
-            }
-            if( ny == 1 )
-            {
-                idy = 0;
-            }
-            if( nz == 1 )
-            {
-                idz = 0;
-            }
-
             // now, does the particle land in one of the boxes? 
             // if so, add one particle to that box count
             if( idx >= 0 && idx <= nBoxesX-1 && 
@@ -351,7 +333,8 @@ void PlumeOutputLagrToEul::boxCount()
                 idz >= 0 && idz <= nBoxesZ-1 )
             {
                 int id = idz*nBoxesY*nBoxesX + idy*nBoxesX + idx;
-                cBox.at(id) = cBox.at(id) + 1.0;
+                pBox[id] ++;
+                conc[id] = conc[id] + (*parItr)->m*(*parItr)->wdepos*(*parItr)->wdecay*timeStep/(timeAvgFreq*volume);
             }
 
         }   // is active == true

@@ -73,14 +73,16 @@ private:
 
     
     // Sampling box variables for calculating concentration data
-    int nBoxesX,nBoxesY,nBoxesZ;    // Copies of the input nBoxesX, Y, and Z. // Number of boxes to use for the sampling box
-    float lBndx,lBndy,lBndz,uBndx,uBndy,uBndz;  // Copies of the input parameters: boxBoundsX1, boxBoundsX2, boxBoundsY1, upper & lower bounds in each direction of the sampling boxes
+    // Number of boxes to use for the sampling box
+    int nBoxesX,nBoxesY,nBoxesZ;    // Copies of the input: nBoxesX, Y, and Z. 
+    // upper & lower bounds in each direction of the sampling boxes
+    float lBndx,lBndy,lBndz,uBndx,uBndy,uBndz;  // Copies of the input: boxBoundsX1, boxBoundsX2, boxBoundsY1, 
     float boxSizeX,boxSizeY,boxSizeZ;   // these are the box sizes in each direction, calculated from nBoxes, lBnd, and uBnd variables
     float volume;   // volume of the sampling boxes (=nBoxesX*nBoxesY*nBoxesZ)
     
     // output concentration storage variables
     std::vector<float> xBoxCen,yBoxCen,zBoxCen;     // list of x,y, and z points for the concentration sampling box information
-    std::vector<float> cBox;    // sampling box particle counter (for average)
+    std::vector<int> pBox;    // sampling box particle counter (for average)
     std::vector<float> conc;    // concentration values (for output)
     
     
