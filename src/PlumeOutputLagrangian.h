@@ -63,38 +63,49 @@ private:
 
      // all possible output fields need to be add to this list
     std::vector<std::string> allOutputFields = { "t","parID","tStrt","sourceIdx",
+                                                 "d","m","wdepos","wdecay",
                                                  "xPos_init","yPos_init","zPos_init",
                                                  "xPos","yPos","zPos",
                                                  "uMean","vMean","wMean",
                                                  "uFluct","vFluct","wFluct",
                                                  "delta_uFluct","delta_vFluct","delta_wFluct",
                                                  "isRogue","isActive"};
+    std::vector<std::string> minimalOutputFields = { "t","parID","tStrt","sourceIdx",
+                                                     "xPos","yPos","zPos",
+                                                     "isActive"};
     
+
     // main particle metadata, almost a copy of what is in the "particle" class
-    int numPar;     // total number of particle to be released 
-    std::vector<int> parID;     // list of particle IDs (for NetCDF dimension)
+    int numPar;                     // total number of particle to be released 
+    std::vector<int> parID;         // list of particle IDs (for NetCDF dimension)
+    std::vector<float> tStrt;       // list of release times for the particles
+    std::vector<int> sourceIdx;     // list of sourceIdx for the particles
+
+    std::vector<float>d;            // list of particle diameter 
+    std::vector<float>m;            // list of particle mass
+    std::vector<float>wdepos;       // list of particle non-deposited fraction
+    std::vector<float>wdecay;       // list of particle non-decay fraction 
+
     std::vector<float> xPos_init;   // list of initial x positions for the particles
     std::vector<float> yPos_init;   // list of initial y positions for the particles
     std::vector<float> zPos_init;   // list of initial z positions for the particles
-    std::vector<float> tStrt;       // list of release times for the particles
-    std::vector<int> sourceIdx;     // list of sourceIdx for the particles
     
     // other particle data, definitely a copy of what is in the "particle" class,
     // but only the particle information that matters for particle statistic calculations
     // and particle info plotting
-    std::vector<float> xPos;        // list of x positions for the particles
-    std::vector<float> yPos;        // list of y positions for the particles
-    std::vector<float> zPos;        // list of z positions for the particles
-    std::vector<float> uMean;      // list of u mean velocity for the particles
-    std::vector<float> vMean;      // list of v mean velocity for the particles
-    std::vector<float> wMean;      // list of w mean velocity for the particles
-    std::vector<float> uFluct;      // list of u velocity fluctuations for the particles
-    std::vector<float> vFluct;      // list of v velocity fluctuations for the particles
-    std::vector<float> wFluct;      // list of w velocity fluctuations for the particles
-    std::vector<float> delta_uFluct;    // list of the uFluct differences for the particles
-    std::vector<float> delta_vFluct;    // list of the vFluct differences for the particles
-    std::vector<float> delta_wFluct;    // list of the wFluct differences for the particles
-    std::vector<int> isRogue;          // list of isRogue info for the particles
-    std::vector<int> isActive;         // // list of isActive info for the particles
+    std::vector<float> xPos;         // list of x positions for the particles
+    std::vector<float> yPos;         // list of y positions for the particles
+    std::vector<float> zPos;         // list of z positions for the particles
+    std::vector<float> uMean;        // list of u mean velocity for the particles
+    std::vector<float> vMean;        // list of v mean velocity for the particles
+    std::vector<float> wMean;        // list of w mean velocity for the particles
+    std::vector<float> uFluct;       // list of u velocity fluctuations for the particles
+    std::vector<float> vFluct;       // list of v velocity fluctuations for the particles
+    std::vector<float> wFluct;       // list of w velocity fluctuations for the particles
+    std::vector<float> delta_uFluct; // list of the uFluct differences for the particles
+    std::vector<float> delta_vFluct; // list of the vFluct differences for the particles
+    std::vector<float> delta_wFluct; // list of the wFluct differences for the particles
+    std::vector<int> isRogue;        // list of isRogue info for the particles
+    std::vector<int> isActive;       // list of isActive info for the particles
     
 };

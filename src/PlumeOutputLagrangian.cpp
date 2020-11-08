@@ -44,6 +44,8 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
     
     if(fileOP.empty() || fileOP[0]=="all") {
         output_fields = allOutputFields;
+    } if(fileOP[0]=="minimal") {
+        output_fields = minimalOutputFields;
     } else {
         output_fields={ "t","parID","tStrt","sourceIdx","isActive"};
         output_fields.insert(output_fields.end(),fileOP.begin(),fileOP.end());
@@ -145,14 +147,19 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
     for( int par = 0; par < numPar; par++) {
         parID.push_back(par);   
     }
+    
+    tStrt.resize(numPar, 0); 
+    sourceIdx.resize(numPar, 0); 
+
+    d.resize(numPar, 0.0);
+    m.resize(numPar, 0.0);
+    wdepos.resize(numPar, 0.0);
+    wdecay.resize(numPar, 0.0);
 
     xPos_init.resize(numPar, 0);
     yPos_init.resize(numPar, 0); 
     zPos_init.resize(numPar, 0); 
-    
-    tStrt.resize(numPar, 0); 
-    sourceIdx.resize(numPar, 0); 
-    
+
     xPos.resize(numPar, 0); 
     yPos.resize(numPar, 0); 
     zPos.resize(numPar, 0); 
@@ -204,6 +211,14 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
     createAttVector("tStrt","particle-release-time","s",dim_vect_2d,&tStrt);
     createAttVector("sourceIdx","particle-sourceID","--",dim_vect_2d,&sourceIdx);
     
+    createAttVector("sourceIdx","particle-sourceID","--",dim_vect_2d,&sourceIdx);
+    createAttVector("sourceIdx","particle-sourceID","--",dim_vect_2d,&sourceIdx);
+
+    createAttVector("d","diameter ofarticle","mu-m",dim_vect_2d,&d);
+    createAttVector("m","mass of particle","g",dim_vect_2d,&m);
+    createAttVector("wdepos","non-deposited fraction","--",dim_vect_2d,&wdepos);
+    createAttVector("wdecay","non-decay fraction","--",dim_vect_2d,&wdecay);
+
     createAttVector("xPos_init","initial-x-position","m",dim_vect_2d,&xPos_init);
     createAttVector("yPos_init","initial-y-position","m",dim_vect_2d,&yPos_init);
     createAttVector("zPos_init","initial-z-position","m",dim_vect_2d,&zPos_init);
@@ -262,21 +277,30 @@ void PlumeOutputLagrangian::save(float currentTime)
             
             int parID=(*parItr)->particleID;
             
+            tStrt[parID] = (*parItr)->tStrt;
+            sourceIdx[parID] = (*parItr)->sourceIdx;
+            d[parID] = (*parItr)->d;
+            m[parID] = (*parItr)->m;
+            wdepos[parID] = (*parItr)->wdepos;
+            wdecay[parID] = (*parItr)->wdecay;
+            
             xPos_init[parID] = (*parItr)->xPos_init;
             yPos_init[parID] = (*parItr)->yPos_init;
             zPos_init[parID] = (*parItr)->zPos_init;
-            tStrt[parID] = (*parItr)->tStrt;
-            sourceIdx[parID] = (*parItr)->sourceIdx;
             
             xPos[parID] = (*parItr)->xPos;
             yPos[parID] = (*parItr)->yPos;
             zPos[parID] = (*parItr)->zPos;
+
             uMean[parID] = (*parItr)->uMean;
             vMean[parID] = (*parItr)->vMean;
             wMean[parID] = (*parItr)->wMean;
+
             uFluct[parID] = (*parItr)->uFluct;
             vFluct[parID] = (*parItr)->vFluct;
+
             wFluct[parID] = (*parItr)->wFluct;
+
             delta_uFluct[parID] = (*parItr)->delta_uFluct;
             delta_vFluct[parID] = (*parItr)->delta_vFluct;
             delta_wFluct[parID] = (*parItr)->delta_wFluct;
