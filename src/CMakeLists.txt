@@ -23,7 +23,7 @@ CUDA_ADD_LIBRARY( cudaplumecore
     NetCDFOutput.cpp
     QESNetCDFOutput.cpp
     PlumeOutputLagrToEul.cpp
-    PlumeOutputLagrangian.cpp
+    PlumeOutputParticleData.cpp
     PlumeOutputEulerian.cpp
 
     BoundaryConditions.hpp

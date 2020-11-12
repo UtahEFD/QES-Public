@@ -127,7 +127,7 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData*
     
     
     // --------------------------------------------------------
-    // setup the sampling box information 
+    // setup information: sampling box/concentration
     // --------------------------------------------------------
     
     // Sampling box variables for calculating concentration data
@@ -170,6 +170,15 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData*
     pBox.resize(nBoxesX*nBoxesY*nBoxesZ,0);
     conc.resize(nBoxesX*nBoxesY*nBoxesZ,0.0);
 
+    // --------------------------------------------------------
+    // setup information:  
+    // --------------------------------------------------------
+    
+    int nbrFace = WGD->wall_below_indices.size() + WGD->wall_above_indices.size() +
+        WGD->wall_back_indices.size() + WGD->wall_front_indices.size() +
+        WGD->wall_left_indices.size() + WGD->wall_right_indices.size();
+    
+
 
     // --------------------------------------------------------
     // setup the netcdf output information storage
@@ -195,14 +204,13 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData*
     // create attributes space dimensions
     std::vector<NcDim> dim_vect_x;
     dim_vect_x.push_back(NcDim_x);
-    createAttVector("x","x-distance","m",dim_vect_x,&xBoxCen);
+    createAttVector("x","x-center collection box","m",dim_vect_x,&xBoxCen);
     std::vector<NcDim> dim_vect_y;
     dim_vect_y.push_back(NcDim_y);
-    createAttVector("y","y-distance","m",dim_vect_y,&yBoxCen);
+    createAttVector("y","y-center collection box","m",dim_vect_y,&yBoxCen);
     std::vector<NcDim> dim_vect_z;
     dim_vect_z.push_back(NcDim_z);
-    createAttVector("z","z-distance","m",dim_vect_z,&zBoxCen);
-
+    createAttVector("z","z-center collection box","m",dim_vect_z,&zBoxCen);
 
     // create 3D vector and put in the dimensions (nt,nz,ny,nx).
     // !!! make sure the order is specificall nt,nz,ny,nx in this spot,
@@ -216,8 +224,27 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData*
     
     // create attributes for all output information
     createAttVector("pBox","number of particle per box","#ofPar",dim_vect_3d,&pBox);
-    createAttVector("conc","concentration","kg m-3",dim_vect_3d,&conc);    
+    createAttVector("conc","concentration","g m-3",dim_vect_3d,&conc);    
 
+     // face dimensions
+    NcDim NcDim_nFace = addDimension("nFace",nbrFace);
+    //NcDim NcDim_x = addDimension("x",nBoxesX);
+    //NcDim NcDim_y = addDimension("y",nBoxesY);
+    //NcDim NcDim_z = addDimension("z",nBoxesZ);
+
+    // create attributes space dimensions
+    std::vector<NcDim> dim_vect_face;
+    dim_vect_face.push_back(NcDim_nFace);
+    //createAttVector("xface","x-face","m",dim_vect_face,&xBoxCen);
+    //createAttVector("yface","y-face","m",dim_vect_face,&xBoxCen);
+    //createAttVector("zface","z-face","m",dim_vect_face,&xBoxCen);
+
+    // !!! make sure the order is specificall nt,nz,ny,nx in this spot,
+    //  the order doesn't seem to matter for other spots
+    dim_vect_face.clear();
+    dim_vect_face.push_back(NcDim_t);
+    dim_vect_face.push_back(NcDim_nFace);
+    
     // create output fields
     addOutputFields();
 

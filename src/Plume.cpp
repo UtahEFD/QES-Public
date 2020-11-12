@@ -13,7 +13,7 @@ Plume::Plume( PlumeInputData* PID, WINDSGeneralData* WGD, TURBGeneralData* TGD, 
     std::cout<<"[Plume] \t Setting up simulation details "<<std::endl;
     
     // copy debug information
-    doLagrDataOutput = arguments->doLagrDataOutput;
+    doParticleDataOutput = arguments->doParticleDataOutput;
     outputSimInfoFile = arguments->doSimInfoFileOutput;
     outputFolder = arguments->outputFolder;
     caseBaseName = arguments->caseBaseName;

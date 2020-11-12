@@ -22,7 +22,7 @@ Args::Args(): inputWINDSFile("windsout.nc"), inputTURBFile("turbout.nc")
     reg("caseBaseName",        "specify case base name for file naming",         ArgumentParsing::STRING, 'b');
     // going to assume concentration is always output. So these next options are like choices for additional debug output
     reg("doEulDataOutput",     "should debug Eulerian data be output",           ArgumentParsing::NONE,   'e');
-    reg("doLagrDataOutput",    "should debug Lagrangian data be output",         ArgumentParsing::NONE,   'l');
+    reg("doParticleDataOutput","should debug Lagrangian data be output",         ArgumentParsing::NONE,   'l');
     reg("doSimInfoFileOutput", "should debug simInfoFile be output",             ArgumentParsing::NONE,   's');
     // LA future work: this one should probably be replaced by cmake arguments at compiler time
     reg("debug",               "should command line output include debug info",  ArgumentParsing::NONE,   'd');
@@ -64,7 +64,7 @@ void Args::processArguments(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     doEulDataOutput     = isSet( "doEulDataOutput" );
-    doLagrDataOutput    = isSet( "doLagrDataOutput" );
+    doParticleDataOutput= isSet( "doParticleDataOutput" );
     doSimInfoFileOutput = isSet( "doSimInfoFileOutput" );
     debug               = isSet( "debug" );
     
@@ -90,6 +90,6 @@ void Args::processArguments(int argc, char *argv[])
     // now that the outputFolder and caseBaseName are confirmed to be good, setup specific output file variables for netcdf output
     outputEulerianFile = outputFolder + caseBaseName + "_eulerianData.nc";
     outputLagrToEulFile = outputFolder + caseBaseName + "_conc.nc";
-    outputLagrangianFile = outputFolder + caseBaseName + "_particleInfo.nc";
+    outputParticleDataFile = outputFolder + caseBaseName + "_particleInfo.nc";
 
 }

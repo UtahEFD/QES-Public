@@ -28,7 +28,7 @@
 #include "QESNetCDFOutput.h"
 #include "PlumeOutputEulerian.h"
 #include "PlumeOutputLagrToEul.h"
-#include "PlumeOutputLagrangian.h"
+#include "PlumeOutputParticleData.h"
 
 
 // LA do these need to be here???
@@ -86,8 +86,8 @@ int main(int argc, char** argv)
     std::vector<QESNetCDFOutput*> outputVec;
     // always supposed to output lagrToEulOutput data
     outputVec.push_back(new PlumeOutputLagrToEul(PID,WGD,plume,arguments.outputLagrToEulFile));
-    if( arguments.doLagrDataOutput == true ) {
-        outputVec.push_back(new PlumeOutputLagrangian(PID,plume,arguments.outputLagrangianFile));
+    if( arguments.doParticleDataOutput == true ) {
+        outputVec.push_back(new PlumeOutputParticleData(PID,plume,arguments.outputParticleDataFile));
     }
     
     // create output instance (separate for eulerian class)

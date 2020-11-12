@@ -21,7 +21,7 @@
 
 #include "QESNetCDFOutput.h"
 #include "PlumeOutputLagrToEul.h"
-#include "PlumeOutputLagrangian.h"
+#include "PlumeOutputParticleData.h"
 
 #include "Args.hpp"
 #include "PlumeInputData.hpp"
@@ -119,7 +119,7 @@ private:
     calcTime timers;
 
     // copies of debug related information from the input arguments
-    bool doLagrDataOutput;
+    bool doParticleDataOutput;
     bool outputSimInfoFile;
     std::string outputFolder;
     std::string caseBaseName;

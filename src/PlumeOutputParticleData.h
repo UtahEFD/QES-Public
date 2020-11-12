@@ -1,5 +1,5 @@
 //
-//  NetCDFOutputLagrangian.h
+//  NetCDFOutputParticleData.h
 //  
 //  This class handles saving output files for Lagrangian particle data
 //  This is a specialized output class derived 
@@ -22,20 +22,20 @@
 
 class Plume;
 
-class PlumeOutputLagrangian : public QESNetCDFOutput
+class PlumeOutputParticleData : public QESNetCDFOutput
 {
 public:
     
     // default constructor
-    PlumeOutputLagrangian() : QESNetCDFOutput()
+    PlumeOutputParticleData() : QESNetCDFOutput()
     {
     }
     
     // specialized constructor
-    PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_ptr,std::string output_file);
+    PlumeOutputParticleData(PlumeInputData* PID,Plume* plume_ptr,std::string output_file);
     
     // deconstructor
-    ~PlumeOutputLagrangian()	       
+    ~PlumeOutputParticleData()	       
     {
     }
     

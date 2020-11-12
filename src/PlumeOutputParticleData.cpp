@@ -1,5 +1,5 @@
 //
-//  NetCDFOutputLagrangian.cpp
+//  NetCDFOutputParticleData.cpp
 //  
 //  This class handles saving output files for Lagrangian particle data
 //  This is a specialized output class derived 
@@ -10,11 +10,11 @@
 //
 
 
-#include "PlumeOutputLagrangian.h"
+#include "PlumeOutputParticleData.h"
 #include "Plume.hpp"
 
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
-PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_ptr,std::string output_file)
+PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData* PID,Plume* plume_ptr,std::string output_file)
     : QESNetCDFOutput(output_file)
 {
     // setup desired output fields string
@@ -32,10 +32,10 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
     //  instead of just using simDur
     float simStartTime = 0.0;
         
-    std::cout << "[PlumeOutputLagrangian] set up NetCDF file "<< output_file << std::endl;
+    std::cout << "[PlumeOutputParticleData] set up NetCDF file "<< output_file << std::endl;
 
     if(PID->partOutParams==0) {
-        std::cerr << "[PlumeOutputLagrangian] ERROR missing particleOutputParameters from input parameter file" << std::endl;
+        std::cerr << "[PlumeOutputParticleData] ERROR missing particleOutputParameters from input parameter file" << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -44,7 +44,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
     
     if(fileOP.empty() || fileOP[0]=="all") {
         output_fields = allOutputFields;
-    } if(fileOP[0]=="minimal") {
+    } else if(fileOP[0]=="minimal") {
         output_fields = minimalOutputFields;
     } else {
         output_fields={ "t","parID","tStrt","sourceIdx","isActive"};
@@ -54,7 +54,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
     valid_output=validateFileOtions();
 
     if(!valid_output){
-        std::cerr << "[PlumeOutputLagrangian] ERROR invalid output fields for visulization fields output" << std::endl;
+        std::cerr << "[PlumeOutputParticleData] ERROR invalid output fields for visulization fields output" << std::endl;
         exit(EXIT_FAILURE);
     }
     
@@ -102,7 +102,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
         if( adjusted_outputStartTime >= simStartTime ) {
             // need to adjust the outputStartTime to be the adjusted_outputStartTime
             // warn the user that the outputStartTime is being adjusted before adjusting outputStartTime
-            std::cout << "[PlumeOutputLagrangian] "
+            std::cout << "[PlumeOutputParticleData] "
                       << "adjusting outputStartTime because output duration did not divide evenly by outputFrequency" << std::endl;
             std::cout << "  original outputStartTime = \"" << outputStartTime
                       << "\", outputEndTime = \"" << outputEndTime 
@@ -112,7 +112,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
         } else {
             // need to adjust the outputStartTime to be the current_outputStartTime
             // warn the user that the outputStartTime is being adjusted before adjusting outputStartTime
-            std::cout << "[PlumeOutputLagrangian] "
+            std::cout << "[PlumeOutputParticleData] "
                       << "adjusting outputStartTime because output duration did not divide evenly by outputFrequency" << std::endl;
             std::cout << "  original outputStartTime = \"" << outputStartTime
                       << "\", outputEndTime = \"" << outputEndTime 
@@ -137,7 +137,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
 
     // get total number of particle to be released 
     numPar = plume->totalParsToRelease;
-    std::cout << "[PlumeOutputLagrangian] total number of particle to be saved in file " << numPar << std::endl;
+    std::cout << "[PlumeOutputParticleData] total number of particle to be saved in file " << numPar << std::endl;
 
 
     // initialize all the output containers
@@ -248,7 +248,7 @@ PlumeOutputLagrangian::PlumeOutputLagrangian(PlumeInputData* PID,Plume* plume_pt
 
 }
 
-bool PlumeOutputLagrangian::validateFileOtions()
+bool PlumeOutputParticleData::validateFileOtions()
 {
     // removing duplicate
     sort(output_fields.begin(),output_fields.end());
@@ -268,7 +268,7 @@ bool PlumeOutputLagrangian::validateFileOtions()
 }
 
 
-void PlumeOutputLagrangian::save(float currentTime)
+void PlumeOutputParticleData::save(float currentTime)
 {    
     // only output if it is during the next output time but before the end time
     if( currentTime >= nextOutputTime && currentTime <= outputEndTime ) {

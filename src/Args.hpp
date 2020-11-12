@@ -46,7 +46,7 @@ class Args : public ArgumentParsing
         std::string caseBaseName = "";
         // going to assume concentration is always output. So these next options are like choices for additional debug output
         bool doEulDataOutput;
-        bool doLagrDataOutput;
+        bool doParticleDataOutput;
         bool doSimInfoFileOutput;
         // LA future work: this one should probably be replaced by cmake arguments at compiler time
         bool debug;
@@ -55,7 +55,7 @@ class Args : public ArgumentParsing
         // output file variables created from the outputFolder and caseBaseName
         std::string outputEulerianFile;
         std::string outputLagrToEulFile;
-        std::string outputLagrangianFile;
+        std::string outputParticleDataFile;
 
     private:
 };
