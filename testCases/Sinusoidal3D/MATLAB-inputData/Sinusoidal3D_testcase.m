@@ -14,11 +14,11 @@
 lx=1;ly=1;lz=1;
 
 % grid resolution in x and y set to have 50 cells
-nx=11;ny=11;
+nx=20+1;ny=20+1;
 % grid resolution in z is set to have:
 % 50 faces in the plume domain -> 2 extra face on top (above) and bottom (below)
 % -> 49 cell within the plume domain -> 2 extra cell on top (above) and bottom (below)
-nz=52;
+nz=50+2;
 
 % 50 faces 49 cell within the plume domain
 dx=lx/(nx-1);dy=ly/(ny-1);

@@ -138,10 +138,10 @@ titleString = sprintf('Resulting Statistic Profiles');
 % set some useful plot variables, for controlling the plot a bit
 colormarkers = [
     ".",
-    "--",
-    "x-",
-    "+-",
-    "--"
+    "-",
+    "-",
+    "-",
+    "-"
     ];
 colormap = [
     [1, 0, 0];
@@ -152,7 +152,7 @@ colormap = [
     ];
 linewidth = [
     1,
-    1.35,
+    1,
     1,
     1,
     1
