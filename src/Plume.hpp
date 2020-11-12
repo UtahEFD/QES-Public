@@ -20,7 +20,7 @@
 #include "Random.h"
 
 #include "QESNetCDFOutput.h"
-#include "PlumeOutputLagrToEul.h"
+#include "PlumeOutput.h"
 #include "PlumeOutputParticleData.h"
 
 #include "Args.hpp"

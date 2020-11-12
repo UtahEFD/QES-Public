@@ -1,5 +1,5 @@
 //
-//  NetCDFOutputLagrToEul.h
+//  NetCDFOutput.h
 //  
 //  This class handles saving output files for Eulerian binned Lagrangian particle data,
 //   where this class handles the binning of the Lagrangian particle data
@@ -11,16 +11,16 @@
 //
 
 
-#include "PlumeOutputLagrToEul.h"
+#include "PlumeOutput.h"
 #include "Plume.hpp"
 
 // note that this sets the output file and the bool for whether to do output, in the netcdf inherited classes
 // in this case, output should always be done, so the bool for whether to do output is set to true
-PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData* WGD,Plume* plume_ptr,std::string output_file)
+PlumeOutput::PlumeOutput(PlumeInputData* PID,WINDSGeneralData* WGD,Plume* plume_ptr,std::string output_file)
   : QESNetCDFOutput(output_file)
 {
 
-    std::cout << "[PlumeOutputLagrToEul] set up NetCDF file " << output_file << std::endl;
+    std::cout << "[PlumeOutput] set up NetCDF file " << output_file << std::endl;
 
     // this is the current simulation start time
     // LA note: this would need adjusted if we ever change the 
@@ -41,8 +41,8 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData*
     //  need to make this check now
     // Make sure the timeAvgStart is not greater than the simulation end time
     if( timeAvgStart > PID->simParams->simDur ) {
-        std::cerr << "[PlumeOutputLagrToEul] ERROR "
-                  << "(CollectionParameters checked during PlumeOutputLagrToEul) "
+        std::cerr << "[PlumeOutput] ERROR "
+                  << "(CollectionParameters checked during PlumeOutput) "
                   << "input timeAvgStart must be smaller than or equal to the input simulation duration!" << std::endl;
         std::cerr << " timeAvgStart = \"" << timeAvgStart << "\", simDur = \"" << PID->simParams->simDur << "\"" << std::endl;
         exit(EXIT_FAILURE);
@@ -54,8 +54,8 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData*
     // LA note: timeAvgFreq can be as big as the collection duration, or even smaller than the collection duration
     //  IF timeAvgFreq is at least the same size or smaller than the simulation duration
     if( timeAvgFreq > PID->simParams->simDur ) {
-        std::cerr << "[PlumeOutputLagrToEul] ERROR "
-                  << "(CollectionParameters checked during PlumeOutputLagrToEul): "
+        std::cerr << "[PlumeOutput] ERROR "
+                  << "(CollectionParameters checked during PlumeOutput): "
                   << "input timeAvgFreq must be smaller than or equal to the input simulation duration!" << std::endl;
         std::cerr << " timeAvgFreq = \"" << timeAvgFreq << "\", simDur = \"" << PID->simParams->simDur << "\"" << std::endl;
         exit(EXIT_FAILURE);
@@ -87,7 +87,7 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData*
         if( adjusted_timeAvgStart >= simStartTime ) {
             // need to adjust the timeAvgStart to be the adjustedTimeAvgStart
             // warn the user that the timeAvgStart is being adjusted before adjusting timeAvgStart
-            std::cout << "[PlumeOutputLagrToEul] "
+            std::cout << "[PlumeOutput] "
                       << "adjusting timeAvgStart because time averaging duration did not divide evenly by timeAvgFreq" << std::endl;
             std::cout << "  original timeAvgStart = \"" << timeAvgStart
                       << "\", timeAvgEnd = \"" << timeAvgEnd 
@@ -97,7 +97,7 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData*
         } else {
             // need to adjust the timeAvgStart to be the currentTimeAvgStart
             // warn the user that the timeAvgStart is being adjusted before adjusting timeAvgStart
-            std::cout << "[PlumeOutputLagrToEul] "
+            std::cout << "[PlumeOutput] "
                       << "adjusting timeAvgStart because time averaging duration did not divide evenly by timeAvgFreq" << std::endl;
             std::cout << "  original timeAvgStart = \"" << timeAvgStart
                       << "\", timeAvgEnd = \"" << timeAvgEnd 
@@ -251,7 +251,7 @@ PlumeOutputLagrToEul::PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData*
 }
 
 // Save output at cell-centered values
-void PlumeOutputLagrToEul::save(float currentTime)
+void PlumeOutput::save(float currentTime)
 {
 
     // once past the time to start averaging, calculate the number of particles 
@@ -323,7 +323,7 @@ void PlumeOutputLagrToEul::save(float currentTime)
 
 };
 
-void PlumeOutputLagrToEul::boxCount()
+void PlumeOutput::boxCount()
 {
 
     // for all particles see where they are relative to the

@@ -27,7 +27,7 @@
 
 #include "QESNetCDFOutput.h"
 #include "PlumeOutputEulerian.h"
-#include "PlumeOutputLagrToEul.h"
+#include "PlumeOutput.h"
 #include "PlumeOutputParticleData.h"
 
 
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
     // create output instance
     std::vector<QESNetCDFOutput*> outputVec;
     // always supposed to output lagrToEulOutput data
-    outputVec.push_back(new PlumeOutputLagrToEul(PID,WGD,plume,arguments.outputLagrToEulFile));
+    outputVec.push_back(new PlumeOutput(PID,WGD,plume,arguments.outputFile));
     if( arguments.doParticleDataOutput == true ) {
         outputVec.push_back(new PlumeOutputParticleData(PID,plume,arguments.outputParticleDataFile));
     }

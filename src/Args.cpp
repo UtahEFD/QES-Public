@@ -89,7 +89,7 @@ void Args::processArguments(int argc, char *argv[])
 
     // now that the outputFolder and caseBaseName are confirmed to be good, setup specific output file variables for netcdf output
     outputEulerianFile = outputFolder + caseBaseName + "_eulerianData.nc";
-    outputLagrToEulFile = outputFolder + caseBaseName + "_conc.nc";
+    outputFile = outputFolder + caseBaseName + "_conc.nc";
     outputParticleDataFile = outputFolder + caseBaseName + "_particleInfo.nc";
 
 }

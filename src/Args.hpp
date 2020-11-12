@@ -54,7 +54,7 @@ class Args : public ArgumentParsing
 
         // output file variables created from the outputFolder and caseBaseName
         std::string outputEulerianFile;
-        std::string outputLagrToEulFile;
+        std::string outputFile;
         std::string outputParticleDataFile;
 
     private:

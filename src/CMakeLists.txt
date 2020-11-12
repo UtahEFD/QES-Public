@@ -22,7 +22,7 @@ CUDA_ADD_LIBRARY( cudaplumecore
     
     NetCDFOutput.cpp
     QESNetCDFOutput.cpp
-    PlumeOutputLagrToEul.cpp
+    PlumeOutput.cpp
     PlumeOutputParticleData.cpp
     PlumeOutputEulerian.cpp
 

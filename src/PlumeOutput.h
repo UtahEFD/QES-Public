@@ -1,5 +1,5 @@
 //
-//  NetCDFOutputLagrToEul.h
+//  NetCDFOutput.h
 //  
 //  This class handles saving output files for Eulerian binned Lagrangian particle data,
 //   where this class handles the binning of the Lagrangian particle data
@@ -24,20 +24,20 @@
 
 class Plume;
 
-class PlumeOutputLagrToEul : public QESNetCDFOutput
+class PlumeOutput : public QESNetCDFOutput
 {
 public:
     
     // default constructor
-    PlumeOutputLagrToEul():QESNetCDFOutput()
+    PlumeOutput():QESNetCDFOutput()
     {
     }
     
     // specialized constructor
-    PlumeOutputLagrToEul(PlumeInputData* PID,WINDSGeneralData* WGD, Plume* plume_ptr, std::string output_file);
+    PlumeOutput(PlumeInputData* PID,WINDSGeneralData* WGD, Plume* plume_ptr, std::string output_file);
     
     // deconstructor
-    ~PlumeOutputLagrToEul()
+    ~PlumeOutput()
     {
     }
     
