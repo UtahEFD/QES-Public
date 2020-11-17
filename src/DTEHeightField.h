@@ -10,9 +10,8 @@
 
 // hack for GCC/G++ 4.4.7 to fix an issue with __cplusplus being incorrectly defined
 #if (__GNUC__ && __cplusplus && \
-  (__GNUC__ == 4 && (__GNUC_MINOR__ > 4 ||	\
-		     (__GNUC_MINOR__ == 7 &&	\
-		      __GNUC_PATCHLEVEL__ > 0))))
+     (__GNUC__ == 4 && (__GNUC_MINOR__ == 4 &&		\
+			__GNUC_PATCHLEVEL__ > 6)))
 #define __cplusplus 201103L
 #endif
 
