@@ -1,4 +1,5 @@
 include_directories(${CMAKE_SOURCE_DIR})
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/unitTests)
 
@@ -13,23 +14,42 @@ CUDA_ADD_LIBRARY( cudaurbcore
   DTEHeightField.cpp
   DynamicParallelism.cu
   ESRIShapefile.cpp ESRIShapefile.h
+  FIREOutput.cpp
   handleURBArgs.cpp
+  LocalMixingParam.h
+  LocalMixing.cpp   
+  LocalMixingDefault.cpp
+  LocalMixingNetCDF.cpp   
+  LocalMixingSerial.cpp
   Mesh.cpp
-  Output.cpp
+  NetCDFInput.cpp 
+  NetCDFOutput.cpp 
+  QESNetCDFOutput.cpp   
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Solver.cpp
   Triangle.cpp
+  TURBGeneralData.cpp
+  TURBOutput.cpp
+  TURBWall.cpp
+  TURBWallBuilding.cpp
+  TURBWallTerrain.cpp
   URBInputData.h
-  URBGeneralData.cpp URBGeneralData.h
+  URBGeneralData.cpp
+  WINDSOutputVisualization.cpp
+  WINDSOutputWorkspace.cpp
   WRFInput.cpp WRFInput.h
   Wall.cpp Wall.h
   UpwindCavity.cpp
+  NonLocalMixing.cpp
   PolygonWake.cpp
   StreetCanyon.cpp
   Sidewall.cpp
   Rooftop.cpp
   StreetIntersection.cpp
+  Ray.cpp
+  SphereDirections.cpp
+  HitRecord.cpp
   )
 
 CUDA_ADD_LIBRARY( cudafirecore

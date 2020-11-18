@@ -1,8 +1,8 @@
 <simulationParameters>
-	<domain> 50 50 40 </domain>
-	<cellSize> 1.0 1.0 0.25 </cellSize> <!-- Meters-->
+  <domain> 500 500 80 </domain> <!-- nx,ny,nz-->
+	<cellSize> 1.0 1.0 0.25 </cellSize> <!-- dx, dy,dz [Meters]-->	
 	<verticalStretching> 0 </verticalStretching>
-	<totalTimeIncrements> 120 </totalTimeIncrements>
+	<totalTimeIncrements> 200 </totalTimeIncrements>
 	<UTCConversion> 0 </UTCConversion>
 	<Epoch> 1510930800 </Epoch>
 	<rooftopFlag> 2 </rooftopFlag>
@@ -37,29 +37,27 @@
 		<siteZ0> 0.01 </siteZ0>
 		<reciprocal> 0.0 </reciprocal>
 		<height> 1.0 </height>
-		<speed> 5.1 </speed>
-		<direction> 45.00 </direction>
+		<speed> 0.01 </speed>
+		<direction> 90.00 </direction>
 	</sensor>
 </metParams>
 <fires>
 	<numFires>1</numFires>
-	<fuelType>3</fuelType>
+	<fuelType>1</fuelType>
     <height> 0.25 </height>
-    <baseHeight> 0 </baseHeight>
-    <xStart> 25.0 </xStart>
-    <yStart> 25.0 </yStart>
-    <length> 1.0 </length>
-    <width>  1.0 </width>
+    <baseHeight> 0 </baseHeight> <!--meters-->
+    <xStart> 21.0 </xStart> <!--meters-->
+    <yStart> 21.0 </yStart> <!--meters-->
+    <length> 8.0 </length> <!--meters-->
+    <width>  8.0 </width> <!--meters-->
     <courant> 0.25 </courant>
 </fires>
 <fileOptions>
 	<outputFlag>1</outputFlag>
-	<outputFields>u</outputFields> 
+	<outputFields>all</outputFields> 
 	<outputFields>v</outputFields> 
 	<outputFields>w</outputFields>
 	<outputFields>icell</outputFields>
-	<outputFields>burn</outputFields> 
-	<outputFields>time</outputFields> 
 	<massConservedFlag> 0 </massConservedFlag>
 	<sensorVelocityFlag> 0 </sensorVelocityFlag>
 	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>

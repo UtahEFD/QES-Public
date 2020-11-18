@@ -6,12 +6,12 @@
 	<totalTimeIncrements> 1 </totalTimeIncrements>
 	<UTCConversion> 0 </UTCConversion>
 	<Epoch> 1510930800 </Epoch>
-	<rooftopFlag> 2 </rooftopFlag>
-	<upwindCavityFlag> 3 </upwindCavityFlag>
+	<rooftopFlag> 1 </rooftopFlag>
+	<upwindCavityFlag> 2 </upwindCavityFlag>
 	<streetCanyonFlag> 4 </streetCanyonFlag>
-	<streetIntersectionFlag> 1 </streetIntersectionFlag>
-	<wakeFlag> 1 </wakeFlag>
-	<sidewallFlag> 0 </sidewallFlag>
+	<streetIntersectionFlag> 0 </streetIntersectionFlag>
+	<wakeFlag> 2 </wakeFlag>
+	<sidewallFlag> 1 </sidewallFlag>
 	<maxIterations> 500 </maxIterations>
 	<residualReduction> 3 </residualReduction>
 	<meshTypeFlag> 0 </meshTypeFlag> <!-- 0 is stair; 1 is cut-cell  -->
@@ -28,7 +28,7 @@
 	<maxSizeDataPoints> 1 </maxSizeDataPoints>
 	<siteName> sensor1 </siteName>
 	<fileName> sensor1.inp </fileName>
-	<z0_domain_flag> 1 </z0_domain_flag>            <!-- Distribution of sueface roughness for domain (0-uniform, 1-custom -->
+	<z0_domain_flag> 0 </z0_domain_flag>            <!-- Distribution of sueface roughness for domain (0-uniform, 1-custom -->
 	<sensor>
 		<site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->
 		<site_xcoord> 1.0</site_xcoord>
@@ -45,26 +45,14 @@
 		<direction> 270 </direction> 
 	</sensor>
 </metParams>
+<localMixingParam>
+  <method>1</method>
+</localMixingParam>
 <fileOptions>
-	<outputFlag>1</outputFlag>
-    <outputFields>u</outputFields> 
-    <outputFields>v</outputFields> 
-    <outputFields>w</outputFields>
-    <outputFields>icell</outputFields>  
-	<massConservedFlag> 0 </massConservedFlag>
-	<sensorVelocityFlag> 0 </sensorVelocityFlag>
-	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+  <outputFlag>1</outputFlag>
+  <outputFields>all</outputFields> 
+  <outputFields>v</outputFields> 
+  <outputFields>w</outputFields>
+  <outputFields>icell</outputFields> 
 </fileOptions>
-<!--buildings>
-	<wallRoughness> 0.1 </wallRoughness>
-	<numBuildings> 1 </numBuildings>
-	<rectangularBuilding>
-		<height> 20.0 </height>
-		<baseHeight> 0 </baseHeight>
-		<xStart> 90.0 </xStart>
-		<yStart> 90.0 </yStart>
-		<length> 20.0 </length>
-		<width> 20.0 </width>
-		<buildingRotation> 20.0 </buildingRotation>
-	</rectangularBuilding>
-</buildings-->
+

@@ -21,9 +21,10 @@ public:
 
 	Vector3()
 	{
-		values.push_back( (0) );
-		values.push_back( (0) );
-		values.push_back( (0) );
+            values.clear();
+            values.push_back( (0) );
+            values.push_back( (0) );
+            values.push_back( (0) );
 	}
 
 /*	template <typename X> Vector3(const Vector3<X>& newV)
@@ -35,9 +36,10 @@ public:
 
 	template <typename X> Vector3(const X a, const X b, const X c)
 	{
-		values.push_back(a);
-		values.push_back(b);
-		values.push_back(c);
+            values.clear();
+            values.push_back(a);
+            values.push_back(b);
+            values.push_back(c);
 	}
 
 	virtual void parseValues()
@@ -71,7 +73,7 @@ public:
 			return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];
 	}
 
-	/*Vector3<T>& operator=(const Vector3<T>& v)
+        /*Vector3<T>& operator=(const Vector3<T>& v)
 	{
 		for (int i = 0; i < 3; i++)
 			values[0] = v.values[i];
@@ -84,4 +86,8 @@ public:
 	    is >> v.values[0] >> v.values[1] >> v.values[2];
 	    return is;
 	}
+
+        friend Vector3<T> operator-(const Vector3<T>& v1, const Vector3<T>& v2){
+           return Vector3<T> (v1.values[0] - v2.values[0], v1.values[1] - v2.values[1], v1.values[2] - v2.values[2]);
+        }
 };

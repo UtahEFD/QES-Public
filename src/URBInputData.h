@@ -12,7 +12,11 @@
 #include "MetParams.h"
 #include "Buildings.h"
 #include "Canopies.h"
+
 #include "Fires.hpp"
+
+#include "LocalMixingParam.h"
+
 
 class URBInputData : public ParseInterface
 {
@@ -20,14 +24,18 @@ public:
     SimulationParameters* simParams;
     FileOptions* fileOptions;
     MetParams* metParams;
+    LocalMixingParam* localMixingParam;
     Buildings* buildings;
     Canopies* canopies;
+
     Fires* fires;
+
 
     URBInputData()
     {
 	      fileOptions = 0;
 	      metParams = 0;
+          localMixingParam=0;
 	      buildings = 0;
 	      canopies = 0;
               fires = 0;
@@ -38,7 +46,8 @@ public:
 	     parseElement<SimulationParameters>(true, simParams, "simulationParameters");
 	     parseElement<FileOptions>(false, fileOptions, "fileOptions");
 	     parseElement<MetParams>(false, metParams, "metParams");
-	     parseElement<Buildings>(false, buildings, "buildings");
+	     parseElement<LocalMixingParam>(false,localMixingParam,"localMixingParam");
+         parseElement<Buildings>(false, buildings, "buildings");
 	     parseElement<Canopies>(false, canopies, "canopies");
              parseElement<Fires>(false, fires, "fires");
     }

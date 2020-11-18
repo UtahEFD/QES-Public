@@ -1,22 +1,23 @@
 <simulationParameters>
 
-	<!--SHP>../scratch/seoul_small_cut.shp</SHP-->				<!-- Address to shapefile location-->
-	<!--SHPBuildingLayer>seoul_small_cut</SHPBuildingLayer-->
+	<!--SHP>../scratch/building.shp</SHP-->				<!-- Address to shapefile location-->
+	<!--SHPBuildingLayer>building</SHPBuildingLayer-->
+	<!--heightFactor> 1.0 </heightFactor-->					<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
 
-	<halo_x> 0.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
+  	<halo_x> 0.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain)-->
   	<halo_y> 0.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain)-->
 
-	<domain> 200 200 200 </domain>
-	<cellSize> 1.0 1.0 1.0 </cellSize> <!-- Meters-->
+  	<domain>100 100 100</domain>				<!-- Number of cells in x,y and z directions-->
+  	<cellSize> 2.0 2.0 2.0 </cellSize> 		<!-- Mesh resolution (meters)-->
 	<verticalStretching> 0 </verticalStretching>              <!-- vertical stretching (0-uniform grid, 1-costum grid)-->
 
 	<totalTimeIncrements> 0 </totalTimeIncrements> 				<!-- Number of time steps-->
 	<rooftopFlag> 0 </rooftopFlag> 											<!-- Rooftop flag (0-none, 1-log profile, 2-vortex) -->
-	<upwindCavityFlag> 2 </upwindCavityFlag> 						<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP, 3-HMVP) -->
-	<streetCanyonFlag> 4 </streetCanyonFlag> 						<!-- Street canyon flag (0-none, 1-Roeckle, 2-CPB, 3-exp. param. PKK, 4-Roeckle w/ Fackrel) -->
+	<upwindCavityFlag> 0 </upwindCavityFlag> 						<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP, 3-HMVP) -->
+	<streetCanyonFlag> 0 </streetCanyonFlag> 						<!-- Street canyon flag (0-none, 1-Roeckle, 2-CPB, 3-exp. param. PKK, 4-Roeckle w/ Fackrel) -->
 	<streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
-	<wakeFlag> 2 </wakeFlag> 												<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle, 3-Area Scaled) -->
-	<sidewallFlag> 1 </sidewallFlag> 								<!-- Sidewall flag (0-off, 1-on) -->
+	<wakeFlag> 0 </wakeFlag> 												<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle, 3-Area Scaled) -->
+	<sidewallFlag> 0 </sidewallFlag> 								<!-- Sidewall flag (0-off, 1-on) -->
 	<maxIterations> 500 </maxIterations> 						<!-- Maximum number of iterations -->
 	<residualReduction> 3 </residualReduction> 			<!-- Residual Reduction (Orders of Magnitude) -->
 	<meshTypeFlag> 0 </meshTypeFlag> 								<!-- Type of meshing scheme (0-Stair step (origional QUIC), 1-Cut-cell method -->
@@ -47,7 +48,7 @@
     <reciprocal> 0.0 </reciprocal> 						<!-- Reciprocal Monin-Obukhov Length (1/m) -->
     <height> 10.0 </height> 										<!-- Height of the sensor -->
     <speed> 5.0 </speed> 											<!-- Measured speed at the sensor height -->
-    <direction> 360.0 </direction> 						<!-- Wind direction of sensor -->
+    <direction> 270.0 </direction> 						<!-- Wind direction of sensor -->
   </sensor>                       	<!-- Wnd of sensor section -->
 
 </metParams>								<!-- End of meteorological parameters -->
@@ -64,6 +65,7 @@
 		<yStart> 90.0 </yStart>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
+		<canopyRotation> 0.0 </canopyRotation>
 	</canopy>
 </canopies-->
 <fileOptions>
@@ -78,50 +80,29 @@
 </fileOptions>
 <buildings>
 	<wallRoughness> 0.1 </wallRoughness>
-	<numBuildings> 4 </numBuildings>
+	<numBuildings> 2 </numBuildings>
 	<numPolygonNodes> 0 </numPolygonNodes>
 	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
-		<height> 40.0 </height>
+		<height> 21.0 </height>
 		<baseHeight> 0 </baseHeight>
-		<xStart> 70.0 </xStart>
-		<yStart> 70.0 </yStart>
+		<xStart> 91.0 </xStart>
+		<yStart> 91.0 </yStart>
 		<length> 20.0 </length>
 		<width> 20.0 </width>
 		<buildingRotation> 0.0 </buildingRotation>
 	</rectangularBuilding>
-	<rectangularBuilding>
+	<!--rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
-		<height> 40.0 </height>
+		<height> 33.0 </height>
 		<baseHeight> 0 </baseHeight>
-		<xStart> 70.0 </xStart>
-		<yStart> 95.0 </yStart>
-		<length> 20.0 </length>
-		<width> 20.0 </width>
+		<xStart> 88.0 </xStart>
+		<yStart> 112.0 </yStart>
+		<length> 28.0 </length>
+		<width> 27.0 </width>
 		<buildingRotation> 0.0 </buildingRotation>
-	</rectangularBuilding>
-	<rectangularBuilding>
-		<groupID> 1 </groupID>
-		<buildingType> 1 </buildingType>
-		<height> 20.0 </height>
-		<baseHeight> 0 </baseHeight>
-		<xStart> 95.0 </xStart>
-		<yStart> 70.0 </yStart>
-		<length> 20.0 </length>
-		<width> 20.0 </width>
-		<buildingRotation> 0.0 </buildingRotation>
-	</rectangularBuilding>
-	<rectangularBuilding>
-		<groupID> 1 </groupID>
-		<buildingType> 1 </buildingType>
-		<height> 20.0 </height>
-		<baseHeight> 0 </baseHeight>
-		<xStart> 95.0 </xStart>
-		<yStart> 95.0 </yStart>
-		<length> 20.0 </length>
-		<width> 20.0 </width>
-		<buildingRotation> 0.0 </buildingRotation>
-	</rectangularBuilding>
+	</rectangularBuilding-->
 </buildings>
+

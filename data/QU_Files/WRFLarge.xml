@@ -1,0 +1,64 @@
+<simulationParameters>
+  <domain> 120 120 300 </domain> <!-- nx,ny,nz-->
+	<cellSize> 5.0 5.0 2.0 </cellSize> <!-- dx, dy,dz [Meters]-->
+	<verticalStretching> 0 </verticalStretching>
+	<totalTimeIncrements> 5 </totalTimeIncrements>
+	<UTCConversion> 0 </UTCConversion>
+	<Epoch> 1510930800 </Epoch>
+	<rooftopFlag> 2 </rooftopFlag>
+	<upwindCavityFlag> 3 </upwindCavityFlag>
+	<streetCanyonFlag> 4 </streetCanyonFlag>
+	<streetIntersectionFlag> 1 </streetIntersectionFlag>
+	<wakeFlag> 3 </wakeFlag>
+	<sidewallFlag> 0 </sidewallFlag>
+	<maxIterations> 500 </maxIterations>
+	<residualReduction> 3 </residualReduction>
+	<meshTypeFlag> 1 </meshTypeFlag>
+	<useDiffusion> 0 </useDiffusion>
+	<domainRotation> 0 </domainRotation>
+	<UTMX> 0 </UTMX>
+	<UTMY> 0 </UTMY>
+	<UTMZone> 1 </UTMZone>
+	<UTMZoneLetter> 17 </UTMZoneLetter>
+</simulationParameters>
+<metParams>
+	<metInputFlag> 0 </metInputFlag>
+	<num_sites> 1 </num_sites>
+	<maxSizeDataPoints> 2 </maxSizeDataPoints>
+	<siteName> sensor1 </siteName>
+	<fileName> sensor1.inp </fileName>
+	<site_coord_flag> 1</site_coord_flag>
+	<z0_domain_flag> 0 </z0_domain_flag>
+	<sensor>
+		<site_coord_flag>1</site_coord_flag>
+		<site_xcoord> 0.0 </site_xcoord>
+		<site_ycoord> 0.0 </site_ycoord>
+		<boundaryLayerFlag> 1 </boundaryLayerFlag>
+		<siteZ0> 0.01 </siteZ0>
+		<reciprocal> 0.0 </reciprocal>
+		<height> 1.0 </height>
+		<speed> 0.1 </speed>
+		<direction> 90.00 </direction>
+	</sensor>
+</metParams>
+<fires>
+	<numFires>1</numFires>
+	<fuelType>5</fuelType>
+    <height> 0.25 </height>
+    <baseHeight> 0 </baseHeight> <!--meters-->
+    <xStart> 300.0 </xStart> <!--meters-->
+    <yStart> 300.0 </yStart> <!--meters-->
+    <length> 50.0 </length> <!--meters-->
+    <width>  50.0 </width> <!--meters-->
+    <courant> 0.25 </courant>
+</fires>
+<fileOptions>
+	<outputFlag>1</outputFlag>
+	<outputFields>all</outputFields> 
+	<outputFields>v</outputFields> 
+	<outputFields>w</outputFields>
+	<outputFields>icell</outputFields>
+	<massConservedFlag> 0 </massConservedFlag>
+	<sensorVelocityFlag> 0 </sensorVelocityFlag>
+	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+</fileOptions>

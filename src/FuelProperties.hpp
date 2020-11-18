@@ -4,31 +4,31 @@
 class FuelProperties {
     
     public:
-        double windrf;
-        double fgi;
-        double fueldepthm;
+        float windrf;
+        float fgi;
+        float fueldepthm;
         int savr;
-        double fuelmce;
+        float fuelmce;
         int fueldens;
-        double st;
-        double se;
+        float st;
+        float se;
         int weight;
-        double fci_d;
+        float fci_d;
         int fct;
         int ichap;
-        double fci;
-        double fcbr;
+        float fci;
+        float fcbr;
         int hfgl;
         int cmbcnst;
-        double fuelheat;
-        double fuelmc_g;
+        float fuelheat;
+        float fuelmc_g;
         int fuelmc_c;
-        double slope;
+        float slope;
         
-        FuelProperties(double windrf, double fgi, double fueldepthm, int savr, double fuelmce, 
-                       int fueldens, double st, double se, int weight, double fci_d, 
-                       int fct, int ichap, double fci, double fcbr, int hfgl,
-                       int cmbcnst, double fuelheat, double fuelmc_g, int fuelmc_c, double slope) : 
+        FuelProperties(float windrf, float fgi, float fueldepthm, int savr, float fuelmce, 
+                       int fueldens, float st, float se, int weight, float fci_d, 
+                       int fct, int ichap, float fci, float fcbr, int hfgl,
+                       int cmbcnst, float fuelheat, float fuelmc_g, int fuelmc_c, float slope) : 
                        windrf(windrf), fgi(fgi), fueldepthm(fueldepthm), savr(savr), fuelmce(fuelmce), 
                        fueldens(fueldens), st(st), se(se), weight(weight), fci_d(fci_d), 
                        fct(fct), ichap(ichap), fci(fci), fcbr(fcbr), hfgl(hfgl), cmbcnst(cmbcnst), 

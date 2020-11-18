@@ -69,10 +69,6 @@ Solver::Solver(const URBInputData* UID, URBGeneralData * UGD)
       B( eta*pow( (UGD->dx/UGD->dz), 2.0) ),
       itermax( UID->simParams->maxIterations )
 {
-    R.resize( UGD->numcell_cent, 0.0 );
-
-    lambda.resize( UGD->numcell_cent, 0.0 );
-    lambda_old.resize( UGD->numcell_cent, 0.0 );
 
 }
 /*

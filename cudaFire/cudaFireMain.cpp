@@ -1,8 +1,10 @@
+
 #include <iostream>
 
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <chrono>
 
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
@@ -15,10 +17,12 @@
 #include "Solver.h"
 #include "CPUSolver.h"
 #include "DynamicParallelism.h"
-#include "Output.hpp"
 
 #include "Fire.hpp"
+#include "FIREOutput.h"
 //#include "DTEHeightField.h"
+
+
 
 namespace pt = boost::property_tree;
 
@@ -95,14 +99,18 @@ int main(int argc, char *argv[])
     */
 
     // Files was successfully read, so create instance of output class
-    Output* output = nullptr;
+    /*
+      Output* output = nullptr;
     if (UID->fileOptions->outputFlag==1) {
         output = new Output(arguments.netCDFFile);
     }
+    */
+
 
     // Generate the general URB data from all inputs
-    URBGeneralData* UGD = new URBGeneralData(UID, output);
-
+    URBGeneralData* UGD = new URBGeneralData(UID);
+    
+    
     // //////////////////////////////////////////
     //
     // Run the CUDA-URB Solver
@@ -138,29 +146,32 @@ int main(int argc, char *argv[])
         DTEHF->closeScanner();
     */
     // save initial fields to reset after each time+fire loop
-    std::vector<double> u0 = UGD->u0;
-    std::vector<double> v0 = UGD->v0;
-    std::vector<double> w0 = UGD->w0;
+    std::vector<float> u0 = UGD->u0;
+    std::vector<float> v0 = UGD->v0;
+    std::vector<float> w0 = UGD->w0;
     
     /** 
      * Create Fire Mapper
      **/
-    Fire* fire = new Fire(UID, UGD, output);
+    Fire* fire = new Fire(UID, UGD);
+    
+    // create FIREOutput manager
+    FIREOutput* fireOutput = new FIREOutput(UGD,fire,arguments.netCDFFileFire);
     
     // set base w in fire model to initial w0
-    fire->w_base = w0;
+    //fire->w_base = w0;
     
     // Run initial solver to generate full field
     solver->solve(UID, UGD, !arguments.solveWind);
     
     // save initial fields in solver and fire
-    if (output != nullptr) {
-        UGD->save();
-    }
+    //if (output != nullptr) {
+    //    UGD->save();
+    //}
     
-    // save any fire data
-    fire->save(output);
-    
+    // save any fire data (at time 0)
+    fireOutput->save(0.0);
+	
     // Run urb simulation code
     std::cout<<"===================="<<std::endl;
     double t = 0;
@@ -168,33 +179,41 @@ int main(int argc, char *argv[])
     while (t<UID->simParams->totalTimeIncrements) {
         
         std::cout<<"Processing time t = "<<t<<std::endl;
-        
         // re-set initial fields after first time step
         if (t>0) {
-	  //UGD->u0 = u0;
-	  //UGD->v0 = v0;
+
+	    
+	    UGD->u0 = u0;
+	    UGD->v0 = v0;
+	    UGD->w0 = w0;
+	    
+	    /*
 	    UID->metParams->z0_domain_flag=1;
 	    UID->metParams->sensors[0]->inputWindProfile(UID, UGD);
-            UGD->w0 = w0;
-	    
             solver->solve(UID, UGD, !arguments.solveWind);
-	    
+	    */
         }
         
         // loop 2 times for fire
         int loop = 0;
         while (loop<1) {
             
-            // run Balbi model to get new w0
+            // run Balbi model to get new spread rate and fire properties
             fire->run(solver, UGD);
             
-            // run wind solver
+	    // calculate plume potential
+	    auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time
+
+	    fire->potential(UGD);
+
+	    auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+
+    	    std::chrono::duration<float> elapsed = finish - start;
+    	    std::cout << "Plume solve: elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
+	  
+	    // run wind solver
             solver->solve(UID, UGD, !arguments.solveWind);
-            
-            // set u0,v0 to current solution
-            UGD->u0 = UGD->u;
-            UGD->v0 = UGD->v;
-            
+	    
             //increment fire loop
             loop += 1;
             
@@ -205,18 +224,19 @@ int main(int argc, char *argv[])
         fire->move(solver, UGD);
                 
         // save solver data
-        if (output != nullptr) {
-            UGD->save();
-        }
+        //if (output != nullptr) {
+        //    UGD->save();
+        //}
         
         // save any fire data
-        fire->save(output);
-        
+        fireOutput->save(fire->time);
+
         // advance time 
         t = fire->time;
         
-        std::cout<<"===================="<<std::endl;
+
     }
+
     
     exit(EXIT_SUCCESS);
 }

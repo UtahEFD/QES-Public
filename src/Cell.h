@@ -33,7 +33,7 @@ public:
 
 	/*
 	 *returns if terrain exists in the cell
-	 *@return -true if rettain exists, false if it doesn't
+	 *@return -true if terrain exists, false if it doesn't
 	 */
 	bool getIsTerrain() {return isTerrain;}
 
@@ -96,4 +96,3 @@ public:
 	Vector3<float> getLocationPoints() {return location;}
 
 };
-
