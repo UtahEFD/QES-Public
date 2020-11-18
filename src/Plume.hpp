@@ -125,16 +125,16 @@ private:
     std::string caseBaseName;
     bool debug;
     
-    void setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::list<Particle*> newParticles);
+    void setParticleVals(WINDSGeneralData*,TURBGeneralData*,Eulerian*,std::list<Particle*>);
     // this function gets sources from input data and adds them to the allSources vector
     // this function also calls the many check and calc functions for all the input sources
     // !!! note that these check and calc functions have to be called here 
     //  because each source requires extra data not found in the individual source data
     // !!! totalParsToRelease needs calculated very carefully here using information from each of the sources
-    void getInputSources(PlumeInputData* PID);
+    void getInputSources(PlumeInputData*);
 
     // this function generates the list of particle to be released at a given time
-    int generateParticleList(float,TURBGeneralData*, Eulerian*);
+    int generateParticleList(float,WINDSGeneralData*,TURBGeneralData*,Eulerian*);
 
     // this function scrubs the inactive particle for the particle list (particleList)
     void scrubParticleList();
@@ -190,22 +190,22 @@ private:
 
     // A pointer to the wallBC function for the x direction. 
     // Which function it points at is determined by setBCfunctions and the input xBCtype
-    void (Plume::*enforceWallBCs_x)( double& pos,double& velFluct,double& velFluct_old,bool& isActive,
+    bool (Plume::*enforceWallBCs_x)( double& pos,double& velFluct,double& velFluct_old,
                                      const double& domainStart,const double& domainEnd);  
     // A pointer to the wallBC function for the y direction. 
     // Which function it points at is determined by setBCfunctions and the input yBCtype
-    void (Plume::*enforceWallBCs_y)( double& pos,double& velFluct,double& velFluct_old,bool& isActive,
+    bool (Plume::*enforceWallBCs_y)( double& pos,double& velFluct,double& velFluct_old,
                                      const double& domainStart,const double& domainEnd);  
     // A pointer to the wallBC function for the z direction. 
     // Which function it points at is determined by setBCfunctions and the input zBCtype
-    void (Plume::*enforceWallBCs_z)( double& pos,double& velFluct,double& velFluct_old,bool& isActive,
+    bool (Plume::*enforceWallBCs_z)( double& pos,double& velFluct,double& velFluct_old,
                                      const double& domainStart,const double& domainEnd);  
     // Boundary condition functions:
-    void enforceWallBCs_exiting( double& pos,double& velFluct,double& velFluct_old,bool& isActive,
+    bool enforceWallBCs_exiting( double& pos,double& velFluct,double& velFluct_old,
                                  const double& domainStart,const double& domainEnd);
-    void enforceWallBCs_periodic( double& pos,double& velFluct,double& velFluct_old,bool& isActive,
+    bool enforceWallBCs_periodic( double& pos,double& velFluct,double& velFluct_old,
                                   const double& domainStart,const double& domainEnd);
-    void enforceWallBCs_reflection( double& pos,double& velFluct,double& velFluct_old,bool& isActive,
+    bool enforceWallBCs_reflection( double& pos,double& velFluct,double& velFluct_old,
                                     const double& domainStart,const double& domainEnd);
     
     // this is for writing an output simulation info file separate from the regular command line output

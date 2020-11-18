@@ -262,14 +262,16 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr,
         yPos = yPos + disY;
         zPos = zPos + disZ;
         
-        // check and do wall (building and terrain) reflection (based in the method)
-        isActive = (this->*wallReflection)(WGD,eul,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
+        if( isActive == true ) {    
+            // check and do wall (building and terrain) reflection (based in the method)
+            isActive = (this->*wallReflection)(WGD,eul,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
                                         
-        // now apply boundary conditions
-        (this->*enforceWallBCs_x)(xPos,uFluct,uFluct_old,isActive, domainXstart,domainXend);
-        (this->*enforceWallBCs_y)(yPos,vFluct,vFluct_old,isActive, domainYstart,domainYend);
-        (this->*enforceWallBCs_z)(zPos,wFluct,wFluct_old,isActive, domainZstart,domainZend);
-                    
+            // now apply boundary conditions
+            isActive = (this->*enforceWallBCs_x)(xPos,uFluct,uFluct_old,domainXstart,domainXend);
+            isActive = (this->*enforceWallBCs_y)(yPos,vFluct,vFluct_old,domainYstart,domainYend);
+            isActive = (this->*enforceWallBCs_z)(zPos,wFluct,wFluct_old,domainZstart,domainZend);
+        }
+         
         // now set the particle values for if they are rogue or outside the domain
         // need to set all rogue particles to inactive
         if( isRogue == true ) {
@@ -277,11 +279,11 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr,
         }
         // now any inactive particles need set to the initial position
         /* FMargairaz -> this has been deactivated
-          if( isActive == false ) {
-          xPos = xPos_init;
-          yPos = yPos_init;
-          zPos = zPos_init;
-          }
+           if( isActive == false ) {
+           xPos = xPos_init;
+           yPos = yPos_init;
+           zPos = zPos_init;
+           }
         */
         
         // now update the old values to be ready for the next particle time iteration

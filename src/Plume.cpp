@@ -136,7 +136,7 @@ void Plume::run(WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul, std:
     for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++) {
         
         // need to release new particles -> add new particles to the number to move
-        int nParsToRelease = generateParticleList((float)simTimes.at(sim_tIdx), TGD, eul); 
+        int nParsToRelease = generateParticleList((float)simTimes.at(sim_tIdx), WGD, TGD, eul); 
         // number of active particle at the current time step. -> list is scrubbed at the end of each time step. 
         size_t nParsActive = particleList.size();
         
@@ -296,7 +296,7 @@ void Plume::getInputSources(PlumeInputData* PID)
 
 }
 
-int Plume::generateParticleList(float currentTime,TURBGeneralData* TGD, Eulerian* eul)
+int Plume::generateParticleList(float currentTime, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul)
 {
     
     // Add new particles now
@@ -308,7 +308,7 @@ int Plume::generateParticleList(float currentTime,TURBGeneralData* TGD, Eulerian
         numNewParticles += allSources.at(sIdx)->emitParticles( (float)sim_dt, currentTime, nextSetOfParticles);
     }
 
-    setParticleVals( TGD, eul, nextSetOfParticles );
+    setParticleVals(WGD,TGD,eul,nextSetOfParticles);
     
     // append all the new particles on to the big particle
     // advection list
@@ -334,7 +334,7 @@ void Plume::scrubParticleList()
     return;
 }
 
-void Plume::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::list<Particle*> newParticles)
+void Plume::setParticleVals(WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul, std::list<Particle*> newParticles)
 {
     // at this time, should be a list of each and every particle that exists at the given time
     // particles and sources can potentially be added to the list elsewhere
@@ -406,12 +406,22 @@ void Plume::setParticleVals(TURBGeneralData* TGD, Eulerian* eul, std::list<Parti
         // isActive = true as particle relased is active immediately
         (*parItr)->isRogue = false;
         (*parItr)->isActive = true;
+
+        int cellIdNew = eul->getCellId((*parItr)->xPos,(*parItr)->yPos,(*parItr)->zPos);    
+        if( (WGD->icellflag[cellIdNew] == 0) && (WGD->icellflag[cellIdNew] == 2) ) {
+            std::cerr << "WARNING invalid initial position" << std::endl;
+            (*parItr)->isActive = false;
+        }
+        
+        double det = txx*(tyy*tzz - tyz*tyz) - txy*(txy*tzz - tyz*txz) + txz*(txy*tyz - tyy*txz);
+        if(std::abs(det) < 1e-10 ) {
+            std::cerr << "WARNING invalid position stress" << std::endl;
+            (*parItr)->isActive = false;
+        }
         
         
     }
-
 }
-
 
 void Plume::calcInvariants(const double& txx,const double& txy,const double& txz,
                            const double& tyy,const double& tyz,const double& tzz,
@@ -622,16 +632,18 @@ void Plume::setBCfunctions(std::string xBCtype,std::string yBCtype,std::string z
 
 
 
-void Plume::enforceWallBCs_exiting(double& pos,double& velFluct,double& velFluct_old,bool& isActive,
+bool Plume::enforceWallBCs_exiting(double& pos,double& velFluct,double& velFluct_old,
                                    const double& domainStart,const double& domainEnd)
 {
     // if it goes out of the domain, set isActive to false
     if( pos < domainStart || pos > domainEnd ) {
-        isActive = false;
+       return false;
+    }else{
+        return true;
     }
 }
 
-void Plume::enforceWallBCs_periodic(double& pos,double& velFluct,double& velFluct_old,bool& isActive,
+bool Plume::enforceWallBCs_periodic(double& pos,double& velFluct,double& velFluct_old,
                                     const double& domainStart,const double& domainEnd)
 {
     
@@ -656,56 +668,52 @@ void Plume::enforceWallBCs_periodic(double& pos,double& velFluct,double& velFluc
     /*
       std::cout << "enforceWallBCs_periodic ending pos = \"" << pos << "\", loopCountLeft = \"" << loopCountLeft << "\", loopCountRight = \"" << std::endl;
     */
-    
+    return true;
 }
 
-void Plume::enforceWallBCs_reflection(double& pos,double& velFluct,double& velFluct_old,bool& isActive,
+bool Plume::enforceWallBCs_reflection(double& pos,double& velFluct,double& velFluct_old,
                                       const double& domainStart,const double& domainEnd)
 {
-    if( isActive == true ) {
-        
-        /*
-          std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velFluct = \"" << velFluct << "\", velFluct_old = \"" <<
-          velFluct_old << "\", domainStart = \"" << domainStart << "\", domainEnd = \"" << domainEnd << "\"" << std::endl;
-        */
-        
-        int reflectCount = 0;
-        while( (pos < domainStart || pos > domainEnd ) && reflectCount < 100) {
-            // past end of domain or before beginning of the domain
-            if( pos > domainEnd ) {
-                pos = domainEnd - (pos - domainEnd);
-                velFluct = -velFluct;
-                velFluct_old = -velFluct_old;
-            } else if( pos < domainStart ) {
-                pos = domainStart - (pos - domainStart);
-                velFluct = -velFluct;
-                velFluct_old = -velFluct_old;
-            }
-            reflectCount = reflectCount + 1;
-        }   // while outside of domain     
-        
+    /*
+      std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velFluct = \"" << velFluct << "\", velFluct_old = \"" <<
+      velFluct_old << "\", domainStart = \"" << domainStart << "\", domainEnd = \"" << domainEnd << "\"" << std::endl;
+    */
+    
+    int reflectCount = 0;
+    while( (pos < domainStart || pos > domainEnd ) && reflectCount < 100) {
+        // past end of domain or before beginning of the domain
+        if( pos > domainEnd ) {
+            pos = domainEnd - (pos - domainEnd);
+            velFluct = -velFluct;
+            velFluct_old = -velFluct_old;
+        } else if( pos < domainStart ) {
+            pos = domainStart - (pos - domainStart);
+            velFluct = -velFluct;
+            velFluct_old = -velFluct_old;
+        }
+        reflectCount = reflectCount + 1;
+    }   // while outside of domain     
+    
         // if the velocity is so large that the particle would reflect more than 100 times,
         // the boundary condition could fail.
-        if (reflectCount == 100) {
-            if( pos > domainEnd ) {
-                std::cout << "warning (Plume::enforceWallBCs_reflection): "<<
-                    "upper boundary condition failed! Setting isActive to false. pos = \"" << pos << "\"" << std::endl;
-                isActive = false;
-            } else if( pos < domainStart ) {
-                std::cout << "warning (Plume::enforceWallBCs_reflection): "<<
-                    "lower boundary condition failed! Setting isActive to false. xPos = \"" << pos << "\"" << std::endl;
-                isActive = false;
-            }
-            
-        }    
-        /*
-          std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velFluct = \"" << velFluct << "\", velFluct_old = \"" <<
-          velFluct_old << "\", loopCountLeft = \"" << loopCountLeft << "\", loopCountRight = \"" << loopCountRight << "\", reflectCount = \"" <<
-          reflectCount << "\"" << std::endl;
-        */
+    if (reflectCount == 100) {
+        if( pos > domainEnd ) {
+            std::cout << "warning (Plume::enforceWallBCs_reflection): "<<
+                "upper boundary condition failed! Setting isActive to false. pos = \"" << pos << "\"" << std::endl;
+           return false;
+        } else if( pos < domainStart ) {
+            std::cout << "warning (Plume::enforceWallBCs_reflection): "<<
+                "lower boundary condition failed! Setting isActive to false. xPos = \"" << pos << "\"" << std::endl;
+            return false;
+        }
         
-        
-    }   // if isActive == true
+    }    
+    /*
+      std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velFluct = \"" << velFluct << "\", velFluct_old = \"" <<
+      velFluct_old << "\", loopCountLeft = \"" << loopCountLeft << "\", loopCountRight = \"" << loopCountRight << "\", reflectCount = \"" <<
+      reflectCount << "\"" << std::endl;
+    */
+    return true;
 }
 
 void Plume::writeSimInfoFile(const double& current_time)
