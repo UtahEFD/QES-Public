@@ -1,8 +1,8 @@
 <simulationParameters>
-  <domain> 500 500 80 </domain> <!-- nx,ny,nz-->
-	<cellSize> 1.0 1.0 0.25 </cellSize> <!-- dx, dy,dz [Meters]-->	
+  <domain> 120 120 300 </domain> <!-- nx,ny,nz-->
+	<cellSize> 5.0 5.0 2.0 </cellSize> <!-- dx, dy,dz [Meters]-->
 	<verticalStretching> 0 </verticalStretching>
-	<totalTimeIncrements> 200 </totalTimeIncrements>
+	<totalTimeIncrements> 5 </totalTimeIncrements>
 	<UTCConversion> 0 </UTCConversion>
 	<Epoch> 1510930800 </Epoch>
 	<rooftopFlag> 2 </rooftopFlag>
@@ -37,19 +37,19 @@
 		<siteZ0> 0.01 </siteZ0>
 		<reciprocal> 0.0 </reciprocal>
 		<height> 1.0 </height>
-		<speed> 0.01 </speed>
+		<speed> 0.1 </speed>
 		<direction> 90.00 </direction>
 	</sensor>
 </metParams>
 <fires>
 	<numFires>1</numFires>
-	<fuelType>1</fuelType>
+	<fuelType>5</fuelType>
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight> <!--meters-->
-    <xStart> 21.0 </xStart> <!--meters-->
-    <yStart> 21.0 </yStart> <!--meters-->
-    <length> 8.0 </length> <!--meters-->
-    <width>  8.0 </width> <!--meters-->
+    <xStart> 300.0 </xStart> <!--meters-->
+    <yStart> 300.0 </yStart> <!--meters-->
+    <length> 15.0 </length> <!--meters-->
+    <width>  205.0 </width> <!--meters-->
     <courant> 0.25 </courant>
 </fires>
 <fileOptions>

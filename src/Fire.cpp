@@ -201,75 +201,6 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD) {
         }
     }
 
-    /*
-    // set output fields
-    output_fields = UID->fileOptions->outputFields;
-    
-    if (output_fields[0]=="all") {
-        output_fields.erase(output_fields.begin());
-        output_fields = {"time","burn"};
-    }
-    
-    // set cell-centered dimensions
-    const std::string tname = "t";
-    NcDim t_dim = output->getDimension(tname);
-    NcDim z_dim = output->getDimension("z");
-    NcDim y_dim = output->getDimension("y");
-    NcDim x_dim = output->getDimension("x");
-
-    
-    dim_scalar_1.push_back(t_dim);
-    
-    dim_scalar_3.push_back(t_dim);
-    dim_scalar_3.push_back(y_dim);
-    dim_scalar_3.push_back(x_dim);
-
-    dim_scalar_4.push_back(t_dim);
-    dim_scalar_4.push_back(z_dim);
-    dim_scalar_4.push_back(y_dim);
-    dim_scalar_4.push_back(x_dim);
-
-
-    // create attributes
-    AttScalarDbl att_t = {&time,      "time", "time[s]",         "--", dim_scalar_1};
-    AttVectorDbl att_b = {&burn_out, "burn", "burn flag value", "--", dim_scalar_3};
-
-
-
-
-    // map the name to attributes
-    map_att_scalar_dbl.emplace("time", att_t);
-    map_att_vector_dbl.emplace("burn", att_b);
-
-    
-    // create list of fields to save
-    for (int i=0; i<output_fields.size(); i++) {
-        std::string key = output_fields[i];
-        if (map_att_scalar_dbl.count(key)) {
-            output_scalar_dbl.push_back(map_att_scalar_dbl[key]);
-        } else if (map_att_vector_dbl.count(key)) {
-            output_vector_dbl.push_back(map_att_vector_dbl[key]);
-        } else if(map_att_vector_int.count(key)) {
-            output_vector_int.push_back(map_att_vector_int[key]);
-        }
-    }
-    
-    // add scalar double fields
-    for (int i=0; i<output_scalar_dbl.size(); i++) {
-        AttScalarDbl att = output_scalar_dbl[i];
-        output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
-    }
-    // add vector double fields
-    for (int i=0; i<output_vector_dbl.size(); i++) {
-        AttVectorDbl att = output_vector_dbl[i];
-        output->addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
-    }
-    // add vector int fields
-    for (int i=0; i<output_vector_int.size(); i++) {
-        AttVectorInt att = output_vector_int[i];
-        output->addField(att.name, att.units, att.long_name, att.dimensions, ncInt);
-    } 
-    */
 }
 
 /**
@@ -483,6 +414,7 @@ void Fire :: potential(URBGeneralData* UGD){
 	    }
 	}
     }
+    
     if(H0 != 0){
 
       float g = 9.81;
@@ -506,16 +438,18 @@ void Fire :: potential(URBGeneralData* UGD){
       int YIDX;
       int ZIDX = 0;
       int filt = 0;
+      int n_fire = 0;					//< number of plumes to merge in filter
 	
       while (filt < nx-1){
         filt = pow(2.0,ZIDX);
 	ZIDX += 1;
 	z_mix_old = floor(z_mix);
         XIDX = 0;
-        while (XIDX < nx-1){
+        while (XIDX < nx-1-filt){
 	  YIDX = 0;
-	  while (YIDX < ny-1){
+	  while (YIDX < ny-1-filt){
 	    H = 0;
+	    n_fire = 0;
 	    icent = 0;
   	    jcent = 0;
 	    counter = 0;
@@ -529,43 +463,49 @@ void Fire :: potential(URBGeneralData* UGD){
 		  icent += ii;
 		  jcent += jj;
 		  H += fp.H0;
+    		  // Hard code heat flux for WRF simulation burn
+		  //H += 1.80357e6*dx*dy/25/25;
+		  n_fire += 1;
 		}
 	      }
 	    }
+		
 		if (H != 0){
+		  std::cout<<"H = "<<H0<<std::endl;
 		  firei = icent/counter;
 		  firej = jcent/counter;
 		  U_c = pow(g*g*H/rhoAir/T_a/C_pa, 1.0/5.0);
 		  L_c = pow(H/rhoAir/C_pa/T_a/pow(g, 1.0/2.0), 2.0/5.0);
-		  if (isnan(U_c)){
-		    U_c = 0;
-     		    L_c = 1;
-		  } 	  
+		  //std::cout<<"U_c = "<<U_c<<", L_c = "<<L_c<<std::endl;
+	  
 		  z_mix = lambda_mix*dx*filt;
 		  kmax = nz-3 > z_mix ? z_mix : nz-3;
-
+		  //std::cout<<"z_mix = "<<z_mix<<", kmax = "<<kmax<<std::endl;
 		  // Loop through vertical levels
 		  for (int kpot = z_mix_old; kpot<kmax; kpot++) {
 		  // Calculate virtual origin
-	          float z_v = dx*filt*0.124/alpha_e;			///< virtual origin for merged plumes
+	          float z_v = dx*filt*0.124/alpha_e + z_mix_old;			///< virtual origin for merged plumes
 		  float z_k = (kpot+z_v)*dz/L_c;                            ///< non-dim vertical distance between fire cell and target cell k
 		  float zeta = 0;
 		  float x1 = 0;
+                  std::cout<<"mix height = "<<z_mix<<", virtual origin = "<<z_v<<std::endl;
 		  // Loop through horizontal domain
 		    for (int ipot = 0; ipot<nx-1; ipot++) {
 		      for (int jpot = 0; jpot<ny-1; jpot++){
 		        float deltaX = (ipot-firei)*dx/L_c;                      ///< non-dim distance between fire cell and target cell k in x direction
 		        float deltaY = (jpot-firej)*dy/L_c;                      ///< non-dim distance between fire cell and target cell k in y direction
 		        float h_k = sqrt(deltaX*deltaX + deltaY*deltaY);         ///< non-dim radial distance from fire cell and target cell k in horizontal
-
+		        u_p = 0;
+			v_p = 0;
+			w_p = 0;
 			// if radius = 0
 			if (h_k < 0.00001 && z_k < 60){
 			  float zMinIdx = floor(z_k/dzStar);
-			  float zMaxIdx = ceil(z_k/dzStar);
-			  
+			  float zMaxIdx = ceil(z_k/dzStar);		  
 			  //ur = 0.5*(u_r[zMinIdx*pot_r]+u_r[zMaxIdx*pot_r]);
 			  ur = 0.0;		
-			  uz = 0.5*(u_z[zMinIdx*pot_r]+u_z[zMaxIdx*pot_r]);
+			  //uz = 0.5*(u_z[zMinIdx*pot_r]+u_z[zMaxIdx*pot_r]);
+			  uz = u_z[zMinIdx*pot_r];
 			  u_p = U_c*ur;                         
 			  v_p = U_c*ur;                         
 			  w_p = U_c*uz;
@@ -579,36 +519,73 @@ void Fire :: potential(URBGeneralData* UGD){
 		
 			  float zMinIdx = floor(z_k/dzStar);
 			  float zMaxIdx = ceil(z_k/dzStar);
-		
-			  //ur = 0.25*(u_r[rMinIdx+zMinIdx*pot_r]+u_r[rMinIdx+zMaxIdx*pot_r]+u_r[rMaxIdx+zMinIdx*pot_r]+u_r[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_r, linear interpolate between values
 
-			  ur = 0.5*(u_r[rMinIdx + zMinIdx*pot_r]+u_r[rMaxIdx + zMinIdx*pot_r]);
+			  //ur = 0.25*(u_r[rMinIdx+zMinIdx*pot_r]+u_r[rMinIdx+zMaxIdx*pot_r]+u_r[rMaxIdx+zMinIdx*pot_r]+u_r[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_r, linear interpolate between values
+			  //ur = 0.5*(u_r[rMinIdx + zMinIdx*pot_r]+u_r[rMaxIdx + zMinIdx*pot_r]);
+			  ur = u_r[rMinIdx + zMinIdx*pot_r];
 
 			  //uz = 0.25*(u_z[rMinIdx+zMinIdx*pot_r]+u_z[rMinIdx+zMaxIdx*pot_r]+u_z[rMaxIdx+zMinIdx*pot_r]+u_z[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_z, linear interpolate between values
-
-			  uz = 0.5*(u_z[rMinIdx + zMinIdx*pot_r]+u_z[rMinIdx + zMaxIdx*pot_r]);
+			  //uz = 0.5*(u_z[rMinIdx + zMinIdx*pot_r]+u_z[rMinIdx + zMaxIdx*pot_r]);
+			  uz = u_z[rMinIdx + zMinIdx*pot_r];
 		
 			  u_p = U_c*ur*deltaX/h_k;          
 			  v_p = U_c*ur*deltaY/h_k;          
 			  w_p = U_c*uz;                         
 			}
 			// if outside potential field lookup use asymptotic functions for potential field
+			
 			else {
 			  zeta = sqrt(h_k*h_k + z_k*z_k);
 			  x1 = (1+cos(atan(h_k/z_k)))/2.0;
+			  if(x1<0.5){
+				std::cout<<"x1<0"<<std::endl;
+			  } else if(isnan(x1)){
+				std::cout<<"x1 is nan"<<std::endl;
+			  }
 			  // lookup indices for G(x) and G'(x) - spans 0.5 to 1.0
 			  int gMinIdx = floor(pot_G*(x1-.5)/.5);
+			  if(gMinIdx<0){
+				std::cout<<"gMin error"<<std::endl;
+			  } else if(gMinIdx>pot_G){
+				std::cout<<"gMin error"<<std::endl;
+			  } else if(isnan(gMinIdx)){
+				std::cout<<"gMin NaN"<<std::endl;
+			  }
 			  int gMaxIdx = ceil(pot_G*(x1-.5)/.5);
-			  // values for G and G'
+		          if(gMaxIdx>pot_G){
+				std::cout<<"gMax error"<<std::endl;
+			  } else if (gMaxIdx < 0){
+				std::cout<<"gMax error"<<std::endl;
+			  } else if(isnan(gMaxIdx)){
+				std::cout<<"gMax NaN"<<std::endl;
+			  }
+		 	  // values for G and G'
+			  
 			  float g_x = 0.5*(G[gMinIdx]+G[gMaxIdx]);
 			  float gprime_x = 0.5*(Gprime[gMinIdx]+Gprime[gMaxIdx]);
+			  
+			  //float g_x = G[gMinIdx];
+	 		  //float gprime_x = Gprime[gMinIdx];
 
 			  ur = h_k/(2*PI*pow(h_k*h_k+z_k*z_k,(3/2.0))) + pow(zeta,(-1/3.0))*((5/6.0)*(1-2*x1)/sqrt(x1*(1-x1))*g_x - sqrt(x1*(1-x1))*gprime_x);
 			  uz = z_k/(2*PI*pow(h_k*h_k+z_k*z_k,(3/2.0))) + pow(zeta,(-1/3.0))*((5/3.0)*g_x + (1-2*x1)/2.0*gprime_x);
+			  if(h_k != 0){
 			  u_p = U_c*ur*deltaX/h_k;            
-			  v_p = U_c*ur*deltaY/h_k;            
+			  v_p = U_c*ur*deltaY/h_k;
+			  }
 			  w_p = U_c*uz;
-			}	
+			if (isnan(u_p)){
+			  std::cout<<"u_p Nan, h_k = "<<h_k<<" z_k = "<<z_k<<std::endl;
+			}
+			if (isnan(v_p)){
+			  std::cout<<"v_p NaN, h_k = "<<h_k<<" z_k = "<<z_k<<std::endl;
+			}
+			if (isnan(w_p)){
+			        std::cout<<"w_p NaN, h_k = "<<h_k<<std::endl;
+			}
+
+			}
+			
 
 			// modify potential fields
 	      
@@ -624,15 +601,16 @@ void Fire :: potential(URBGeneralData* UGD){
 	    
  
 	    YIDX += filt;
-	   
-	  }//while YIDX
 	    
+	  }//while YIDX
+	   
 	  XIDX += filt;
         }//while XIDX
 	
       }//kfilt
     }//H0!=0
-
+    
+    
     // Modify u,v,w in solver - superimpose Potential field onto velocity field (interpolate from potential cell centered values)
     for (int iadd=1; iadd<nx-1; iadd++){
       for (int jadd=1; jadd<ny-1; jadd++){
@@ -645,7 +623,8 @@ void Fire :: potential(URBGeneralData* UGD){
 	  
 	}
       }
-    }  
+    } 
+    
 }
 
 /** 
@@ -704,79 +683,6 @@ void Fire :: move(Solver* solver, URBGeneralData* UGD){
             // if level set < threshold, set burn flag to 1
             if (front_map[idx] <= 0.1 && burn_flag[idx] < 1){
                 fire_cells[idx].state.burn_flag = 1;
-		int Hobo = 0;
-		if (Hobo == 1){
-		    int T_IDX = i*dx+j*(nx-1)*dy;
-		    if (T_IDX == 228097){
-			std::cout<<"Hobo 9 arrival time = "<<time<<" [s]"<<std::endl;
-	            }
-		    else if (T_IDX == 212097){
-			std::cout<<"Hobo 11 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 196097){
-			std::cout<<"Hobo 12 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 180097){
-			std::cout<<"Hobo 13 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 228153){
-			std::cout<<"Hobo 18 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 212153){
-			std::cout<<"Hobo 17 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 196153){
-			std::cout<<"Hobo 16 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 180153){
-			std::cout<<"Hobo 15 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 164153){
-			std::cout<<"Hobo 14 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 244601){
-			std::cout<<"Hobo 715 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 228201){
-			std::cout<<"Hobo 716 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 212201){
-			std::cout<<"Hobo 717 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 196201){
-			std::cout<<"Hobo 718 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 180201){
-			std::cout<<"Hobo 719 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 164201){
-			std::cout<<"Hobo 720 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 148201){
-			std::cout<<"Hobo 721 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 228250){
-			std::cout<<"Hobo 722 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 212250){
-			std::cout<<"Hobo 723 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 196250){
-			std::cout<<"Hobo 724 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 180250){
-			std::cout<<"Hobo 725 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 164250){
-			std::cout<<"Hobo 726 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 196300){
-			std::cout<<"Hobo 727 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		    else if (T_IDX == 180300){
-			std::cout<<"Hobo 7 arrival time = "<<time<<" [s]"<<std::endl;
-		    }
-		} 
             }
 
 

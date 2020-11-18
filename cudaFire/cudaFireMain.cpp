@@ -4,6 +4,7 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <chrono>
 
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
@@ -201,10 +202,14 @@ int main(int argc, char *argv[])
             fire->run(solver, UGD);
             
 	    // calculate plume potential
-	
-	    std::cout<<"plume start"<<std::endl;
+	    auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time
+
 	    fire->potential(UGD);
-	    std::cout<<"plume end"<<std::endl;
+
+	    auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+
+    	    std::chrono::duration<float> elapsed = finish - start;
+    	    std::cout << "Plume solve: elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
 	  
 	    // run wind solver
             solver->solve(UID, UGD, !arguments.solveWind);
