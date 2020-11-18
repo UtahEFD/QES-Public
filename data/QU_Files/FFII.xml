@@ -1,5 +1,9 @@
 <simulationParameters>
+<<<<<<< HEAD
   <domain> 80 150 120 </domain> <!-- nx,ny,nz-->
+=======
+  <domain> 80 150 40 </domain> <!-- nx,ny,nz-->
+>>>>>>> 581f8b5884927b5479c0d1dd65d43d82e71dd491
 	<cellSize> 5.0 5.0 .25 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1200 </totalTimeIncrements>
@@ -37,13 +41,22 @@
 		<siteZ0> 0.01 </siteZ0>
 		<reciprocal> 0.0 </reciprocal>
 		<height> 1.0 </height>
+<<<<<<< HEAD
 		<speed> 10 </speed>
+=======
+		<speed> 8.5 </speed>
+>>>>>>> 581f8b5884927b5479c0d1dd65d43d82e71dd491
 		<direction> 305.00 </direction>
 	</sensor>
 </metParams>
 <fires>
+<<<<<<< HEAD
     <numFires>1</numFires>
     <fuelType>3</fuelType>
+=======
+	<numFires>1</numFires>
+	<fuelType>1</fuelType>
+>>>>>>> 581f8b5884927b5479c0d1dd65d43d82e71dd491
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight> <!--meters-->
     <xStart> 65.0 </xStart> <!--meters-->
