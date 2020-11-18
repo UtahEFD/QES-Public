@@ -8,13 +8,6 @@
 #include "Triangle.h"
 #include "Vector3.h"
 
-// hack for GCC/G++ 4.4.7 to fix an issue with __cplusplus being incorrectly defined
-// #if (__GNUC__ && __cplusplus &&			\
-//     (__GNUC__ == 4 && (__GNUC_MINOR__ == 4 &&	\
-//			__GNUC_PATCHLEVEL__ > 6)))
-// #define __cplusplus 201103L
-// #endif
-
 #include "gdal_priv.h"
 #include "cpl_conv.h" // for CPLMalloc()
 #include "ogrsf_frmts.h"
