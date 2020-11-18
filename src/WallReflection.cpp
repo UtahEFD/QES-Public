@@ -48,7 +48,15 @@ bool Plume::wallReflectionFullStairStep(WINDSGeneralData* WGD, Eulerian* eul,
  
     // linearized cell ID for end of the trajectory of the particle
     int cellIdNew = eul->getCellId(xPos,yPos,zPos);    
-    if( (WGD->icellflag.at(cellIdNew) != 0) && (WGD->icellflag.at(cellIdNew) != 2) ) {
+    try {
+        int cellFlag=WGD->icellflag.at(cellIdNew);
+    } catch (const std::out_of_range& oor) {            
+        // cell ID out of bound
+        std::cerr << "Reflection problem: particle out of range" << std::endl;
+        return false;
+    }
+    
+    if( (WGD->icellflag[cellIdNew] != 0) && (WGD->icellflag[cellIdNew] != 2) ) {
         // particle end trajectory outside solide -> no need for reflection
         return true;
     } 
