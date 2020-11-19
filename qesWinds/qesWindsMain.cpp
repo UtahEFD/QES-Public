@@ -186,7 +186,8 @@ int main(int argc, char *argv[])
     }
 
 
-    WID->simParams->outputWRFData();
+    if (WID->simParams->wrfInputData)
+      WID->simParams->outputWRFData();
 
     // /////////////////////////////
     // Output the various files requested from the simulation run
