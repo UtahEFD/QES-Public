@@ -76,6 +76,8 @@ modules. In the following sections, we outline the modules that need to be loade
 
 ### CUDA 10.2 Based Builds with NVIDIA OptiX Support
 
+*This is the preferred build setup on CHPC*
+
 To build with CUDA 10.2 and OptiX 7.1.0 on CHPC, please use the following
 
 ```
