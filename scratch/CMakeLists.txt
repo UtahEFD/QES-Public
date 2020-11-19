@@ -4,7 +4,6 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 set(BASETESTS
   argparser
   shpTest
-  UIDugdTest
   wrfInputTest
   wrf2dem
   )
@@ -12,8 +11,12 @@ set(BASETESTS
 foreach(basetest ${BASETESTS})
     add_executable(${basetest} ${basetest}.cpp)
 
-    target_link_libraries(${basetest} cudaurbcore)
-    target_link_libraries(${basetest} cudaurbutil)
+    IF (HAS_OPTIX_SUPPORT MATCHES ON)
+      target_link_libraries(${basetest} qesOptix)
+    ENDIF()
+
+    target_link_libraries(${basetest} qeswindscore)
+    target_link_libraries(${basetest} qeswindsutil)
     target_link_libraries(${basetest} ${Boost_LIBRARIES})
 
     target_link_libraries(${basetest} ${GDAL_LIBRARY})

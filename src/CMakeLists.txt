@@ -5,7 +5,7 @@ include_directories(${PROJECT_SOURCE_DIR}/unitTests)
 
 add_subdirectory( unitTests )
 
-CUDA_ADD_LIBRARY( cudaurbcore
+CUDA_ADD_LIBRARY( qeswindscore
   BVH.cpp
   Canopy.cpp
   Cell.cpp
@@ -15,16 +15,17 @@ CUDA_ADD_LIBRARY( cudaurbcore
   DynamicParallelism.cu
   ESRIShapefile.cpp ESRIShapefile.h
   FIREOutput.cpp
-  handleURBArgs.cpp
+  //handleURBArgs.cpp
+  handleWINDSArgs.cpp
   LocalMixingParam.h
-  LocalMixing.cpp   
+  LocalMixing.cpp
   LocalMixingDefault.cpp
-  LocalMixingNetCDF.cpp   
+  LocalMixingNetCDF.cpp
   LocalMixingSerial.cpp
   Mesh.cpp
-  NetCDFInput.cpp 
-  NetCDFOutput.cpp 
-  QESNetCDFOutput.cpp   
+  NetCDFInput.cpp
+  NetCDFOutput.cpp
+  QESNetCDFOutput.cpp
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Solver.cpp
@@ -34,8 +35,8 @@ CUDA_ADD_LIBRARY( cudaurbcore
   TURBWall.cpp
   TURBWallBuilding.cpp
   TURBWallTerrain.cpp
-  URBInputData.h
-  URBGeneralData.cpp
+  WINDSInputData.h
+  WINDSGeneralData.cpp
   WINDSOutputVisualization.cpp
   WINDSOutputWorkspace.cpp
   WRFInput.cpp WRFInput.h
@@ -47,21 +48,43 @@ CUDA_ADD_LIBRARY( cudaurbcore
   Sidewall.cpp
   Rooftop.cpp
   StreetIntersection.cpp
-  Ray.cpp
-  SphereDirections.cpp
-  HitRecord.cpp
+
+  Ray.cpp Ray.h
+  SphereDirections.cpp SphereDirections.h
+  HitRecord.cpp HitRecord.h
+  GlobalMemory.cu
+  GlobalMemory.h
+  SharedMemory.cu
+  SharedMemory.h
+  TimeSeries.h
   )
 
 CUDA_ADD_LIBRARY( cudafirecore
   Fire.cpp
   )
 
+ 
+IF (HAS_OPTIX_SUPPORT MATCHES ON)
+  cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
+ 
+  add_library(qesOptix
+    ${embedded_ptx_code}
+    OptixRayTrace.h
+    OptixRayTrace.cpp
+    )  
+ENDIF()
+  
 cuda_add_executable( unitTest
   unitTests/testsMain.cpp
   )
 
-target_link_libraries(unitTest cudaurbcore )
-target_link_libraries(unitTest cudaurbutil)
+
+IF (HAS_OPTIX_SUPPORT MATCHES ON)
+  target_link_libraries(unitTest qesOptix)
+ENDIF()
+
+target_link_libraries(unitTest qeswindscore)
+target_link_libraries(unitTest qeswindsutil)
 target_link_libraries(unitTest unitTestLib)
 target_link_libraries(unitTest ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(unitTest ${GDAL_LIBRARY})
@@ -71,3 +94,6 @@ target_link_libraries(unitTest cudadevrt)
 target_link_libraries(unitTest ${CUDA_LIBRARIES})
 
 add_test(unitTest unitTest)
+
+
+

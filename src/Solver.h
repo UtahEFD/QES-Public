@@ -17,8 +17,8 @@
 
 
 
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 
 #include "Vector3.h"
 
@@ -36,12 +36,11 @@ protected:
 
     const int alpha1;        /**< Gaussian precision moduli */
     const int alpha2;        /**< Gaussian precision moduli */
-    const float eta; //= pow((alpha1/alpha2), 2.0);
-    const float A; //= pow(UGD->dx/UGD-dy, 2.0);
-    const float B; //= eta*pow(dx/dz, 2.0);
+    const float eta;      
+    const float A;
+    const float B;
 
-    const float tol = 1.0e-9;     /**< Error tolerance -->>> very
-                                   * small tol for float! */
+    float tol;     /**< Error tolerance */
     const float omega = 1.78f;   /**< Over-relaxation factor */
 
     // SOLVER-based parameters
@@ -60,8 +59,8 @@ protected:
 
 
 public:
-    Solver(const URBInputData* UID, URBGeneralData* UGD);
+    Solver(const WINDSInputData* WID, WINDSGeneralData* WGD);
 
-    virtual void solve(const URBInputData *UID, URBGeneralData* UGD, bool solveWind) = 0;
+    virtual void solve(const WINDSInputData *WID, WINDSGeneralData* WGD, bool solveWind) = 0;
 
 };

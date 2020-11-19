@@ -18,8 +18,8 @@
 
 */
 
-class URBInputData;
-class URBGeneralData;
+class WINDSInputData;
+class WINDSGeneralData;
 
 class LocalMixing
 {
@@ -27,15 +27,14 @@ private:
     NetCDFOutput* mixLengthOut;
 
 protected:
-    void saveMixingLength(const URBInputData*,URBGeneralData*);
+    void saveMixingLength(const WINDSInputData*,WINDSGeneralData*);
 
 public:
-    
+
     LocalMixing()
     {}
     ~LocalMixing()
     {}
-    
-    virtual void defineMixingLength(const URBInputData*,URBGeneralData*) = 0;   
-};
 
+    virtual void defineMixingLength(const WINDSInputData*,WINDSGeneralData*) = 0;   
+};

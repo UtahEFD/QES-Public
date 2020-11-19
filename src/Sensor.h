@@ -7,9 +7,10 @@
 
 #include <algorithm>
 #include "util/ParseInterface.h"
+#include "TimeSeries.h"
 
-class URBInputData;
-class URBGeneralData;
+class WINDSInputData;
+class WINDSGeneralData;
 
 class Sensor : public ParseInterface
 {
@@ -17,41 +18,39 @@ private:
 
 public:
 
-    int site_blayer_flag;
-    float site_one_overL, site_xcoord, site_ycoord;
-    std::vector<float> site_wind_dir, site_z_ref, site_U_ref;
 
-    float site_z0;
+    float site_xcoord, site_ycoord;
 
-    float site_canopy_H, site_atten_coeff;
-
-    int site_coord_flag, site_UTM_zone;
+    int site_coord_flag = 1;
+    int site_UTM_zone;
   	float site_UTM_x, site_UTM_y;
   	float site_lon, site_lat;
 
+    std::vector<TimeSeries*> TS;
+
+
     virtual void parseValues()
     {
-
+        parsePrimitive<int>(false, site_coord_flag, "site_coord_flag");
         parsePrimitive<float>(true, site_xcoord, "site_xcoord");
         parsePrimitive<float>(true, site_ycoord, "site_ycoord");
-        parsePrimitive<int>(true, site_blayer_flag, "boundaryLayerFlag");
-        parsePrimitive<float>(true, site_z0, "siteZ0");
-        parsePrimitive<float>(true, site_one_overL, "reciprocal");
-        parseMultiPrimitives<float>(true, site_z_ref, "height");
-        parseMultiPrimitives<float>(true, site_U_ref, "speed");
-        parseMultiPrimitives<float>(true, site_wind_dir, "direction");
-
-        parsePrimitive<int>(true, site_coord_flag, "site_coord_flag");
     		parsePrimitive<float>(false, site_UTM_x, "site_UTM_x");
     		parsePrimitive<float>(false, site_UTM_y, "site_UTM_y");
     		parsePrimitive<int>(false, site_UTM_zone, "site_UTM_zone");
     		parsePrimitive<float>(false, site_lon, "site_lon");
     		parsePrimitive<float>(false, site_lat, "site_lat");
 
-        parsePrimitive<float>(false, site_canopy_H, "canopyHeight");
-        parsePrimitive<float>(false, site_atten_coeff, "attenuationCoefficient");
+        parseMultiElements<TimeSeries>(false, TS, "timeSeries");
 
     }
+
+    void parseTree(pt::ptree t)
+  	{
+  			setTree(t);
+  			setParents("root");
+  			parseValues();
+  	}
+
 
     /**
      * @brief Computes the wind velocity profile using Barn's scheme
@@ -61,7 +60,7 @@ public:
      * roughness and measured wind velocity and direction), generates wind velocity profile for each sensor and finally
      * utilizes Barns scheme to interplote velocity to generate the initial velocity field for the domain.
      */
-    void inputWindProfile(const URBInputData *UID, URBGeneralData *ugd);
+    void inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, int index);
 
 
     /**

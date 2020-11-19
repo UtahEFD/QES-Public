@@ -17,25 +17,25 @@
   Date: Feb. 2020
 */
 
-class URBInputData;
-class URBGeneralData;
+class WINDSInputData;
+class WINDSGeneralData;
 
 class LocalMixingNetCDF : public LocalMixing
 {
-private:   
-    
+private:
+
 protected:
 
 public:
-    
+
     LocalMixingNetCDF()
     {}
     ~LocalMixingNetCDF()
     {}
-    
+
     /*
      * [FM] This method define the mixing length as the height above the ground
      */
-    void defineMixingLength(const URBInputData*,URBGeneralData*);   
-    
+    void defineMixingLength(const WINDSInputData*,WINDSGeneralData*);   
+
 };

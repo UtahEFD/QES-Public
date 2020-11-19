@@ -66,7 +66,7 @@ public:
     * nodes of the polygon along with height and base height of the building.
     *
     */
-    PolyBuilding(const URBInputData* UID, URBGeneralData* UGD, int id);
+    PolyBuilding(const WINDSInputData* WID, WINDSGeneralData* WGD, int id);
 
 
     // Need to complete!!!
@@ -76,7 +76,7 @@ public:
     /**
      *
      */
-    void setPolyBuilding(URBGeneralData* UGD);
+    void setPolyBuilding(WINDSGeneralData* WGD);
 
 
     /**
@@ -85,7 +85,7 @@ public:
     * for building cells. It applies the Stair-step method to define building bounds.
     *
     */
-    void setCellFlags(const URBInputData* UID, URBGeneralData* UGD, int building_number);
+    void setCellFlags(const WINDSInputData* WID, WINDSGeneralData* WGD, int building_number);
 
     /**
     *
@@ -93,10 +93,10 @@ public:
     * This function reads in building features like nodes, building height and base height and uses
     * features of the building defined in the class constructor and setCellsFlag function. It defines
     * cells in the upwind area and applies the approperiate parameterization to them.
-    * More information: "Improvements to a fast-response urban wind model, M. Nelson et al. (2008)"
+    * More information: "Improvements to a fast-response WINDSan wind model, M. Nelson et al. (2008)"
     *
     */
-    void upwindCavity (const URBInputData* UID, URBGeneralData* UGD);
+    void upwindCavity (const WINDSInputData* WID, WINDSGeneralData* WGD);
 
     /**
     *
@@ -107,7 +107,7 @@ public:
     * parameterization to them.
     *
     */
-    void polygonWake (const URBInputData* UID, URBGeneralData* UGD, int building_id);
+    void polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD, int building_id);
 
 
     /**
@@ -116,10 +116,10 @@ public:
     * This function reads in building features like nodes, building height and base height and uses
     * features of the building defined in the class constructor and setCellsFlag function. It defines
     * cells qualified in the space between buildings and applies the approperiate parameterization to them.
-    * More information: "Improvements to a fast-response urban wind model, M. Nelson et al. (2008)"
+    * More information: "Improvements to a fast-response WINDSan wind model, M. Nelson et al. (2008)"
     *
     */
-    void streetCanyon (URBGeneralData *UGD);
+    void streetCanyon (WINDSGeneralData *WGD);
 
 
     /**
@@ -132,7 +132,7 @@ public:
     * Methods Against High-Spatial-Resolution Wind-Tunnel Data in Step-Down Street Canyons, A. N. Hayati et al. (2017)"
     *
     */
-    void sideWall (const URBInputData* UID, URBGeneralData* UGD);
+    void sideWall (const WINDSInputData* WID, WINDSGeneralData* WGD);
 
 
     /**
@@ -144,7 +144,7 @@ public:
     * More information:
     *
     */
-    void rooftop (const URBInputData* UID, URBGeneralData* UGD);
+    void rooftop (const WINDSInputData* WID, WINDSGeneralData* WGD);
 
 
     /**
@@ -156,7 +156,7 @@ public:
     * More information:
     *
     */
-    //void streetIntersection (const URBInputData* UID, URBGeneralData* UGD);
+    //void streetIntersection (const WINDSInputData* WID, WINDSGeneralData* WGD);
 
 
     /**
@@ -168,14 +168,14 @@ public:
     * More information:
     *
     */
-    //void poisson (const URBInputData* UID, URBGeneralData* UGD);
+    //void poisson (const WINDSInputData* WID, WINDSGeneralData* WGD);
 
     void reorderPoints(std::vector <cutVert> &face_points, int index);
 
     void mergeSort(std::vector<float> &angle, std::vector <cutVert> &face_points);
 
 
-    float calculateArea( URBGeneralData* UGD, std::vector <cutVert> &face_points, int cutcell_index, int index);
+    float calculateArea( WINDSGeneralData* WGD, std::vector <cutVert> &face_points, int cutcell_index, int index);
 
 
     /**
@@ -184,6 +184,6 @@ public:
     * More information: William et al. 2004
     *
     */
-    void NonLocalMixing (URBGeneralData* UGD, TURBGeneralData* TGD,int buidling_id);
+    void NonLocalMixing (WINDSGeneralData* WGD, TURBGeneralData* TGD,int bWIDling_id);
 
 };
