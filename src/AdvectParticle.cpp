@@ -179,8 +179,13 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr,
         //double lzx = 0.0;
         //double lzy = 0.0;
         double lzz = tzz;
-        invert3(lxx,lxy,lxz,lyx,lyy,lyz,lzx,lzy,lzz);
-        
+        isActive = invert3(lxx,lxy,lxz,lyx,lyy,lyz,lzx,lzy,lzz);
+        if(isActive == false) {
+            //int cellIdNew = eul->getCellId(xPos,yPos,zPos);    
+            //std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
+            //std::cerr << "PartID = " << (*parItr)->particleID << " in cell type: " << WGD->icellflag.at(cellIdNew) << std::endl;
+            break;
+        }
         // these are the random numbers for each direction
         // LA note: should be randn() matlab equivalent, which is a normally distributed random number
         // LA future work: it is possible the rogue particles are caused by the random number generator stuff.
@@ -219,7 +224,11 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr,
         double b_31 = -wFluct_old - 0.50*flux_div_z*par_dt - std::sqrt(CoEps*par_dt)*zRandn;
                     
         // now prepare for the Ax=b calculation by calculating the inverted A matrix
-        invert3(A_11,A_12,A_13,A_21,A_22,A_23,A_31,A_32,A_33);
+        isActive = invert3(A_11,A_12,A_13,A_21,A_22,A_23,A_31,A_32,A_33);
+        if(isActive == false) {
+            //std::cerr << "ERROR in matrix inversion in Langevin equation" << std::endl;
+            break;
+        }
         // now do the Ax=b calculation using the inverted matrix (vecFluct = A*b)
         matmult(A_11,A_12,A_13,A_21,A_22,A_23,A_31,A_32,A_33,b_11,b_21,b_31, uFluct,vFluct,wFluct);
                     

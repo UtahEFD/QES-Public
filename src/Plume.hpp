@@ -177,7 +177,7 @@ private:
                          const double& tyy,const double& tyz,const double& tzz,
                          double& invar_xx,double& invar_yy,double& invar_zz);
     void makeRealizable(double& txx,double& txy,double& txz,double& tyy,double& tyz,double& tzz);
-    void invert3( double& A_11,double& A_12,double& A_13,double& A_21,double& A_22,
+    bool invert3( double& A_11,double& A_12,double& A_13,double& A_21,double& A_22,
                   double& A_23,double& A_31,double& A_32,double& A_33);
     void matmult( const double& A_11,const double& A_12,const double& A_13,
                   const double& A_21,const double& A_22,const double& A_23,

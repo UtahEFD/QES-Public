@@ -107,12 +107,12 @@ void Plume::run(WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul, std:
     
     // get the threshold velocity fluctuation to define rogue particles
     vel_threshold = eul->vel_threshold;
-    
+   
     // //////////////////////////////////////////
     // TIME Stepping Loop
     // for every simulation time step
-    // //////////////////////////////////////////
-    
+    // //////////////////////////////////////////    
+
     if( debug == true ) {
         // start recording the amount of time it takes to perform the simulation time integration loop
         timers.startNewTimer("simulation time integration loop");
@@ -138,14 +138,16 @@ void Plume::run(WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul, std:
         // need to release new particles -> add new particles to the number to move
         int nParsToRelease = generateParticleList((float)simTimes.at(sim_tIdx), WGD, TGD, eul); 
         // number of active particle at the current time step. -> list is scrubbed at the end of each time step. 
-        size_t nParsActive = particleList.size();
+        //size_t nParsActive = particleList.size();
         
+        bool needToScrub = false;
+
         // only output the information when the updateFrequency allows and when there are actually released particles
         if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )
         {
-            std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) << "\". finished emitting \"" 
-                      << nParsToRelease << "\" particles from \"" << allSources.size() 
-                      << "\" sources. Total numParticles = \"" << nParsActive << "\"" << std::endl;
+            std::cout << "simTimes[" << sim_tIdx+1 << "] = " << simTimes.at(sim_tIdx+1) << ". finished emitting " 
+                      << nParsToRelease << " particles from " << allSources.size() 
+                      << " sources. Total Particles Released = " << nParsReleased << "." << std::endl;
         }
 
         
@@ -183,6 +185,7 @@ void Plume::run(WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul, std:
             }
             if((*parItr)->isActive == false) {
                 isNotActiveCount = isNotActiveCount + 1;
+                needToScrub=true;
             }   
                         
         } // end of loop for (parItr == particleList.begin(); parItr != particleList.end() ; parItr++ )
@@ -194,21 +197,22 @@ void Plume::run(WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul, std:
             outputVec.at(id_out)->save(simTimes.at(sim_tIdx+1));
         }
         
+        // For all particles that need to be removed from the particle
+        // advection, remove them now
+        if(needToScrub) {
+            scrubParticleList();
+        }
+        
         // output the time, isRogueCount, and isNotActiveCount information for all simulations,
         //  but only when the updateFrequency allows
         if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) {
-            std::cout << "simTimes[" << sim_tIdx+1 << "] = \"" << simTimes.at(sim_tIdx+1) << "\". finished advection iteration. isRogueCount = \"" 
-                      << isRogueCount << "\", isNotActiveCount = \"" << isNotActiveCount << "\"" << std::endl;
+            std::cout << "simTimes[" << sim_tIdx+1 << "] = " << simTimes.at(sim_tIdx+1) << ". finished advection iteration. " 
+                      << "isActiveParticleCount = " << particleList.size() << ", isRogueCount = " << isRogueCount 
+                      << ", isNotActiveCount = " << isNotActiveCount << "."  << std::endl;
             // output advection loop runtime if in debug mode
             if( debug == true ) {
                 timers.printStoredTime("advection loop");
             }
-        }
-        
-        // For all particles that need to be removed from the particle
-        // advection, remove them now
-        if(isNotActiveCount > 0) {
-            scrubParticleList();
         }
         
     } // end of loop: for(sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)
@@ -329,7 +333,6 @@ void Plume::scrubParticleList()
             ++parItr;
         }
     }
-    isNotActiveCount = 0;
 
     return;
 }
@@ -506,7 +509,7 @@ void Plume::makeRealizable(double& txx,double& txy,double& txz,double& tyy,doubl
     
 }
 
-void Plume::invert3(double& A_11,double& A_12,double& A_13,double& A_21,double& A_22,
+bool Plume::invert3(double& A_11,double& A_12,double& A_13,double& A_21,double& A_22,
                     double& A_23,double& A_31,double& A_32,double& A_33)
 {
     // note that with Bailey's code, the input A_21, A_31, and A_32 are zeros even though they are used here
@@ -520,37 +523,39 @@ void Plume::invert3(double& A_11,double& A_12,double& A_13,double& A_21,double& 
     // LA future work: I'm still debating whether this warning needs to be limited by the updateFrequency information
     //  if so, how would we go about limiting that info? Would probably need to make the loop counter variables actual data members of the class
     if(std::abs(det) < 1e-10) {
-        std::cout << "WARNING (Plume::invert3): matrix nearly singular" << std::endl;
-        std::cout << "abs(det) = \"" << std::abs(det) << "\",  A_11 = \"" << A_11 << "\", A_12 = \"" << A_12 << "\", A_13 = \"" 
-                  << A_13 << "\", A_21 = \"" << A_21 << "\", A_22 = \"" << A_22 << "\", A_23 = \"" << A_23 << "\", A_31 = \"" 
-                  << A_31 << "\" A_32 = \"" << A_32 << "\", A_33 = \"" << A_33 << "\"" << std::endl;
+        //std::cout << "WARNING (Plume::invert3): matrix nearly singular" << std::endl;
+        //std::cout << "abs(det) = \"" << std::abs(det) << "\",  A_11 = \"" << A_11 << "\", A_12 = \"" << A_12 << "\", A_13 = \"" 
+        //          << A_13 << "\", A_21 = \"" << A_21 << "\", A_22 = \"" << A_22 << "\", A_23 = \"" << A_23 << "\", A_31 = \"" 
+        //          << A_31 << "\" A_32 = \"" << A_32 << "\", A_33 = \"" << A_33 << "\"" << std::endl;
         
         det = 10e10;
+        A_11 = 0.0;A_12 = 0.0;A_13 = 0.0;
+        A_21 = 0.0;A_22 = 0.0;A_23 = 0.0;
+        A_31 = 0.0;A_32 = 0.0;A_33 = 0.0;
+        
+        return false;
+
+    } else {
+        
+        // calculate the inverse. Because the inverted matrix depends on other components of the matrix, 
+        //  need to make a temporary value till all the inverted parts of the matrix are set
+        double Ainv_11 =  (A_22*A_33 - A_23*A_32)/det;
+        double Ainv_12 = -(A_12*A_33 - A_13*A_32)/det;
+        double Ainv_13 =  (A_12*A_23 - A_22*A_13)/det;
+        double Ainv_21 = -(A_21*A_33 - A_23*A_31)/det;
+        double Ainv_22 =  (A_11*A_33 - A_13*A_31)/det;
+        double Ainv_23 = -(A_11*A_23 - A_13*A_21)/det;
+        double Ainv_31 =  (A_21*A_32 - A_31*A_22)/det;
+        double Ainv_32 = -(A_11*A_32 - A_12*A_31)/det;
+        double Ainv_33 =  (A_11*A_22 - A_12*A_21)/det;
+        
+        // now set the input reference A matrix to the temporary inverted A matrix values
+        A_11 = Ainv_11;A_12 = Ainv_12;A_13 = Ainv_13;
+        A_21 = Ainv_21;A_22 = Ainv_22;A_23 = Ainv_23;
+        A_31 = Ainv_31;A_32 = Ainv_32;A_33 = Ainv_33;
+        
+        return true;
     }
-    
-    // calculate the inverse. Because the inverted matrix depends on other components of the matrix, 
-    //  need to make a temporary value till all the inverted parts of the matrix are set
-    double Ainv_11 =  (A_22*A_33 - A_23*A_32)/det;
-    double Ainv_12 = -(A_12*A_33 - A_13*A_32)/det;
-    double Ainv_13 =  (A_12*A_23 - A_22*A_13)/det;
-    double Ainv_21 = -(A_21*A_33 - A_23*A_31)/det;
-    double Ainv_22 =  (A_11*A_33 - A_13*A_31)/det;
-    double Ainv_23 = -(A_11*A_23 - A_13*A_21)/det;
-    double Ainv_31 =  (A_21*A_32 - A_31*A_22)/det;
-    double Ainv_32 = -(A_11*A_32 - A_12*A_31)/det;
-    double Ainv_33 =  (A_11*A_22 - A_12*A_21)/det;
-    
-    // now set the input reference A matrix to the temporary inverted A matrix values
-    A_11 = Ainv_11;
-    A_12 = Ainv_12;
-    A_13 = Ainv_13;
-    A_21 = Ainv_21;
-    A_22 = Ainv_22;
-    A_23 = Ainv_23;
-    A_31 = Ainv_31;
-    A_32 = Ainv_32;
-    A_33 = Ainv_33;
-    
 }
 
 void Plume::matmult(const double& A_11,const double& A_12,const double& A_13,
