@@ -50,6 +50,7 @@ using namespace std;
 
 void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, int index)
 {
+    auto start_InputWindProfile = std::chrono::high_resolution_clock::now();  // Finish recording execution time
 
 	float psi, psi_first, x_temp, u_star;
 	float rc_sum, rc_val, xc, yc, rc, dn, lamda, s_gamma;
@@ -83,6 +84,8 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 
 	std::vector<std::vector<std::vector<float>>> wm(num_sites, std::vector<std::vector<float>>(WGD->nx, std::vector<float>(WGD->ny,0.0)));
 	std::vector<std::vector<std::vector<float>>> wms(num_sites, std::vector<std::vector<float>>(WGD->nx, std::vector<float>(WGD->ny,0.0)));
+
+
 
 	// Loop through all sites and create velocity profiles (WGD->u0,WGD->v0)
 	for (auto i = 0 ; i < num_sites; i++)
@@ -642,7 +645,12 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 		}
 
 	}
+        
 
+        auto end_InputWindProfile = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+
+        std::chrono::duration<float> elapsed_InputWindProfile = end_InputWindProfile - start_InputWindProfile;
+        std::cout << "Elapsed time for input wind profile: " << elapsed_InputWindProfile.count() << " s\n";
 }
 
 
