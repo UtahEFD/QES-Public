@@ -225,10 +225,7 @@ include(CTest)
 
 add_subdirectory(util)
 add_subdirectory(src)
-
 add_subdirectory(scratch)
-
-add_subdirectory(cudaUrb)
-add_subdirectory(cudaFire)
+add_subdirectory(qesFire)
 add_subdirectory(qesWinds)
 

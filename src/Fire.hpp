@@ -9,8 +9,8 @@
 #ifndef FIRE_H
 #define FIRE_H
 
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 #include "FuelProperties.hpp"
 #include "Vector3.h"
 #include "Solver.h"
@@ -32,8 +32,8 @@ class Fire {
     
     public:
     
-    //Fire(URBInputData*, URBGeneralData*, Output*); FM OBSOLETE
-    Fire(URBInputData*, URBGeneralData*);
+    //Fire(WINDSInputData*, WINDSGeneralData*, Output*); FM OBSOLETE
+    Fire(WINDSInputData*, WINDSGeneralData*);
         
         struct FireProperties {
 	  float  w, h, d, r, T, tau, K, H0, U_c, L_c;
@@ -100,9 +100,9 @@ class Fire {
 	std::vector<float> FT_x2;
 	std::vector<float> FT_y2;
       
-        void run(Solver*, URBGeneralData*);
-        void move(Solver*, URBGeneralData*); 
-	void potential(URBGeneralData*);   
+        void run(Solver*, WINDSGeneralData*);
+        void move(Solver*, WINDSGeneralData*); 
+	void potential(WINDSGeneralData*);   
     //void save(Output*); FM OBSOLETE
         float computeTimeStep();
         

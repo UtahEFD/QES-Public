@@ -1,26 +1,26 @@
 #include "FIREOutput.h"
 
-FIREOutput::FIREOutput(URBGeneralData *ugd,Fire* fire,std::string output_file)
+FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
     : QESNetCDFOutput(output_file)
 {
 
     output_fields={"t","x","y","z","u","v","w","icell","terrain",
                    "burn"};
 
-    // copy of ugd pointer
-    ugd_=ugd;
+    // copy of wgd pointer
+    wgd_=wgd;
     fire_=fire;
     
-    int nx = ugd_->nx;
-    int ny = ugd_->ny;
-    int nz = ugd_->nz;
+    int nx = wgd_->nx;
+    int ny = wgd_->ny;
+    int nz = wgd_->nz;
     
     long numcell_cout = (nx-1)*(ny-1)*(nz-2);
     
     // Location of face centers in z-dir (without ghost cell)
     z_out.resize( nz-2 );
     for (auto k=1; k<nz-1; k++) {
-        z_out[k-1] = ugd_->z[k]; 
+        z_out[k-1] = wgd_->z[k]; 
     }
   
     // Output data container
@@ -34,9 +34,9 @@ FIREOutput::FIREOutput(URBGeneralData *ugd,Fire* fire,std::string output_file)
     NcDim NcDim_t=addDimension("t");
   
     // space dimensions
-    NcDim NcDim_x=addDimension("x",ugd_->nx-1);
-    NcDim NcDim_y=addDimension("y",ugd_->ny-1);
-    NcDim NcDim_z=addDimension("z",ugd_->nz-2);
+    NcDim NcDim_x=addDimension("x",wgd_->nx-1);
+    NcDim NcDim_y=addDimension("y",wgd_->ny-1);
+    NcDim NcDim_z=addDimension("z",wgd_->nz-2);
 
       // create attributes for time dimension
     std::vector<NcDim> dim_vect_t;
@@ -46,10 +46,10 @@ FIREOutput::FIREOutput(URBGeneralData *ugd,Fire* fire,std::string output_file)
     // create attributes space dimensions
     std::vector<NcDim> dim_vect_x;
     dim_vect_x.push_back(NcDim_x);
-    createAttVector("x","x-distance","m",dim_vect_x,&(ugd_->x));
+    createAttVector("x","x-distance","m",dim_vect_x,&(wgd_->x));
     std::vector<NcDim> dim_vect_y;
     dim_vect_y.push_back(NcDim_y);
-    createAttVector("y","y-distance","m",dim_vect_y,&(ugd_->y));
+    createAttVector("y","y-distance","m",dim_vect_y,&(wgd_->y));
     std::vector<NcDim> dim_vect_z;
     dim_vect_z.push_back(NcDim_z);
     createAttVector("z","z-distance","m",dim_vect_z,&z_out);
@@ -59,7 +59,7 @@ FIREOutput::FIREOutput(URBGeneralData *ugd,Fire* fire,std::string output_file)
     dim_vect_2d.push_back(NcDim_y);
     dim_vect_2d.push_back(NcDim_x);
     // create attributes
-    createAttVector("terrain","terrain height","m",dim_vect_2d,&(ugd_->terrain));
+    createAttVector("terrain","terrain height","m",dim_vect_2d,&(wgd_->terrain));
 
     // create 3D vector (x,y,t)
     std::vector<NcDim> dim_vect_3d;
@@ -91,9 +91,9 @@ FIREOutput::FIREOutput(URBGeneralData *ugd,Fire* fire,std::string output_file)
 void FIREOutput::save(float timeOut)
 {
     // get grid size (not output var size)
-    int nx = ugd_->nx;
-    int ny = ugd_->ny;
-    int nz = ugd_->nz;
+    int nx = wgd_->nx;
+    int ny = wgd_->ny;
+    int nz = wgd_->nz;
     
     // set time
     time = (double)timeOut;
@@ -104,10 +104,10 @@ void FIREOutput::save(float timeOut)
             for (auto i = 0; i < nx-1; i++) {
                 int icell_face = i + j*nx + k*nx*ny;
                 int icell_cent = i + j*(nx-1) + (k-1)*(nx-1)*(ny-1);
-                u_out[icell_cent] = 0.5*(ugd_->u[icell_face+1]+ugd_->u[icell_face]);
-                v_out[icell_cent] = 0.5*(ugd_->v[icell_face+nx]+ugd_->v[icell_face]);
-                w_out[icell_cent] = 0.5*(ugd_->w[icell_face+nx*ny]+ugd_->w[icell_face]);
-                icellflag_out[icell_cent] = ugd_->icellflag[icell_cent+((nx-1)*(ny-1))];
+                u_out[icell_cent] = 0.5*(wgd_->u[icell_face+1]+wgd_->u[icell_face]);
+                v_out[icell_cent] = 0.5*(wgd_->v[icell_face+nx]+wgd_->v[icell_face]);
+                w_out[icell_cent] = 0.5*(wgd_->w[icell_face+nx*ny]+wgd_->w[icell_face]);
+                icellflag_out[icell_cent] = wgd_->icellflag[icell_cent+((nx-1)*(ny-1))];
             }
         }
     }

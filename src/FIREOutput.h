@@ -4,8 +4,8 @@
 #include <vector>
 #include <algorithm>
 
-#include "URBGeneralData.h"
-#include "URBInputData.h"
+#include "WINDSGeneralData.h"
+#include "WINDSInputData.h"
 #include "QESNetCDFOutput.h"
 #include "Fire.hpp"
 
@@ -18,7 +18,7 @@ public:
     FIREOutput()
         : QESNetCDFOutput()
     {}
-    FIREOutput(URBGeneralData*,Fire*,std::string);
+    FIREOutput(WINDSGeneralData*,Fire*,std::string);
     ~FIREOutput()	       
     {}
     
@@ -32,7 +32,7 @@ private:
     std::vector<float> u_out,v_out,w_out;
     
     // copy of pointer for data access
-    URBGeneralData* ugd_;
+    WINDSGeneralData* wgd_;
     Fire* fire_;
     
 };

@@ -12,16 +12,16 @@ using namespace std;
 
 
 float PI = 3.14159265359;
-//Fire :: Fire(URBInputData* UID, URBGeneralData* UGD, Output* output) {
-Fire :: Fire(URBInputData* UID, URBGeneralData* UGD) {
+//Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD, Output* output) {
+Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
     // get domain information
-    nx = UGD->nx;
-    ny = UGD->ny;
-    nz = UGD->nz;
+    nx = WGD->nx;
+    ny = WGD->ny;
+    nz = WGD->nz;
     
-    dx = UGD->dx;
-    dy = UGD->dy;
-    dz = UGD->dz;
+    dx = WGD->dx;
+    dy = WGD->dy;
+    dz = WGD->dz;
 
     // set-up the mapper array - cell centered
     fire_cells.resize((nx-1)*(ny-1));
@@ -111,14 +111,14 @@ Fire :: Fire(URBInputData* UID, URBGeneralData* UGD) {
 	std::cout<<"(x1["<<IDX<<"], y1["<<IDX<<"]) = ("<<FT_x1[IDX]<<", "<<FT_y1[IDX]<<"), (x2["<<IDX<<"], y2["<<IDX<<"]) = ("<<FT_x2[IDX]<<", "<<FT_y2[IDX]<<")"<<std::endl;
     	*/
     }
-    x_start    = UID->fires->xStart;
-    y_start    = UID->fires->yStart;
-    H          = UID->fires->height;
-    L          = UID->fires->length;
-    W          = UID->fires->width;
-    baseHeight = UID->fires->baseHeight;
-    fuel_type  = UID->fires->fuelType;
-    courant    = UID->fires->courant;
+    x_start    = WID->fires->xStart;
+    y_start    = WID->fires->yStart;
+    H          = WID->fires->height;
+    L          = WID->fires->length;
+    W          = WID->fires->width;
+    baseHeight = WID->fires->baseHeight;
+    fuel_type  = WID->fires->fuelType;
+    courant    = WID->fires->courant;
     
     // Set fuel properties for domain
     for (int j = 0; j < ny-1; j++){
@@ -226,7 +226,7 @@ float Fire :: computeTimeStep() {
 /**
  * Compute fire spread for burning cells
  */
-void Fire :: run(Solver* solver, URBGeneralData* UGD) {
+void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
 
 
     /**
@@ -262,7 +262,7 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
             // calculate mid-flame height
             int kh   = 0;
             float H = fire_cells[idx].properties.h;
-            float T = UGD->terrain[idx];
+            float T = WGD->terrain[idx];
             float D = fuel->fueldepthm;
             float FD = H + T + D;
         
@@ -272,10 +272,10 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
                 kh = std::round(FD/dz);
             }
 
-            // call u and v from URB General Data
+            // call u and v from WINDS General Data
 	    int cell_face = i + j*nx + kh*nx*ny;
-            float u = 0.5*(UGD->u[cell_face] + UGD->u[cell_face+1]);
-            float v = 0.5*(UGD->v[cell_face] + UGD->v[cell_face+nx]);
+            float u = 0.5*(WGD->u[cell_face] + WGD->u[cell_face+1]);
+            float v = 0.5*(WGD->v[cell_face] + WGD->v[cell_face+nx]);
             // call norm for cells
             float x_norm = xNorm[idx];
             float y_norm = yNorm[idx];
@@ -327,7 +327,7 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
         //modify flame height by time on fire (assume linear functionality)
         float H = fire_cells[id].properties.h*(1-(fire_cells[id].state.burn_time/fire_cells[id].properties.tau));
 	float maxH = fire_cells[id].properties.h;       
-	float T = UGD->terrain[id];
+	float T = WGD->terrain[id];
         float D = fuel->fueldepthm;
         
         float FD = H/2.0 + T + D;
@@ -351,8 +351,8 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
                         
         // get horizontal wind at flame height
 	int cell_face = ii + jj*nx + kh*ny*nx;
-        float u = 0.5*(UGD->u[cell_face] + UGD->u[cell_face+1]);
-        float v = 0.5*(UGD->v[cell_face] + UGD->v[cell_face+nx]);
+        float u = 0.5*(WGD->u[cell_face] + WGD->u[cell_face+1]);
+        float v = 0.5*(WGD->v[cell_face] + WGD->v[cell_face+nx]);
         
         // run Balbi model
         float x_norm = xNorm[id];
@@ -365,9 +365,9 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
 	for (int k=1; k<= maxkh; k++){
 	  int icell_cent = ii + jj*(nx-1) + (k-1)*(nx-1)*(ny-1);
           if (k <= 2*kh){
-	    UGD->icellflag[icell_cent] = 12;
+	    WGD->icellflag[icell_cent] = 12;
 	  } else {
-	    UGD->icellflag[icell_cent] = 1;
+	    WGD->icellflag[icell_cent] = 1;
 	  }
 	}
     }
@@ -377,7 +377,7 @@ void Fire :: run(Solver* solver, URBGeneralData* UGD) {
  * Calcluate potential field
  */
 
-void Fire :: potential(URBGeneralData* UGD){
+void Fire :: potential(WINDSGeneralData* WGD){
     // dr and dz, assume linear spacing between
     float drStar = rStar[1]-rStar[0];
     float dzStar = zStar[1]-zStar[0];
@@ -617,9 +617,9 @@ void Fire :: potential(URBGeneralData* UGD){
 	for (int kadd=1; kadd<nz-2; kadd++){
 	  int cell_face = iadd + jadd*nx + (kadd-1)*nx*ny;
 	  int cell_cent = iadd + jadd*(nx-1) + (kadd-1)*(nx-1)*(ny-1);
-	  UGD->u0[cell_face] = UGD->u0[cell_face] + 0.5*(Pot_u[cell_cent]+Pot_u[cell_cent+1]);
-	  UGD->v0[cell_face] = UGD->v0[cell_face] + 0.5*(Pot_v[cell_cent]+Pot_v[cell_cent+(nx-1)]);
-	  UGD->w0[cell_face] = UGD->w0[cell_face] + 0.5*(Pot_w[cell_cent]+Pot_w[cell_cent+(nx-1)*(ny-1)]);
+	  WGD->u0[cell_face] = WGD->u0[cell_face] + 0.5*(Pot_u[cell_cent]+Pot_u[cell_cent+1]);
+	  WGD->v0[cell_face] = WGD->v0[cell_face] + 0.5*(Pot_v[cell_cent]+Pot_v[cell_cent+(nx-1)]);
+	  WGD->w0[cell_face] = WGD->w0[cell_face] + 0.5*(Pot_w[cell_cent]+Pot_w[cell_cent+(nx-1)*(ny-1)]);
 	  
 	}
       }
@@ -630,7 +630,7 @@ void Fire :: potential(URBGeneralData* UGD){
 /** 
  * Compute fire spread. Advance level set.
  */
-void Fire :: move(Solver* solver, URBGeneralData* UGD){
+void Fire :: move(Solver* solver, WINDSGeneralData* WGD){
     int FT_idx1 = 0;
     int FT_idx2 = 0;
     if (FFII_flag == 1){
@@ -689,7 +689,7 @@ void Fire :: move(Solver* solver, URBGeneralData* UGD){
             // set burn flag to 2 (burned) if residence time exceeded and update z0 to bare soil
             if (fire_cells[idx].state.burn_time >= fp.tau) {
                 fire_cells[idx].state.burn_flag = 2;
-		UGD->z0_domain[idx] = 0.01;
+		WGD->z0_domain[idx] = 0.01;
             }
             // update burn flag field
             burn_flag[idx] = fire_cells[idx].state.burn_flag;

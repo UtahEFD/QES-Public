@@ -9,10 +9,10 @@
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
-#include "handleURBArgs.h"
+#include "handleWINDSArgs.h"
 
-#include "URBInputData.h"
-#include "URBGeneralData.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 
 #include "Solver.h"
 #include "CPUSolver.h"
@@ -35,22 +35,22 @@ namespace pt = boost::property_tree;
  * @param fileName the path/name of the file to be opened, must be an xml
  * @return A pointer to a root that is filled with data parsed from the tree
  */
-URBInputData* parseXMLTree(const std::string fileName);
+WINDSInputData* parseXMLTree(const std::string fileName);
 
 int main(int argc, char *argv[])
 {
     std::string Revision = "0";
-    // CUDA-Urb - Version output information
-    std::cout << "cudaUrb " << "0.8.0" << std::endl;
+    // CUDA-WINDS - Version output information
+    std::cout << "cudaWINDS " << "0.8.0" << std::endl;
 
     // ///////////////////////////////////
     // Parse Command Line arguments
     // ///////////////////////////////////
 
     // Command line arguments are processed in a uniform manner using
-    // cross-platform code.  Check the URBArgs class for details on
+    // cross-platform code.  Check the WINDSArgs class for details on
     // how to extend the arguments.
-    URBArgs arguments;
+    WINDSArgs arguments;
     arguments.processArguments(argc, argv);
 
     // ///////////////////////////////////
@@ -58,8 +58,8 @@ int main(int argc, char *argv[])
     // ///////////////////////////////////
 
     // Parse the base XML QUIC file -- contains simulation parameters
-    URBInputData* UID = parseXMLTree(arguments.quicFile);
-    if ( !UID ) {
+    WINDSInputData* WID = parseXMLTree(arguments.quicFile);
+    if ( !WID ) {
         std::cerr << "QUIC Input file: " << arguments.quicFile << " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -70,18 +70,18 @@ int main(int argc, char *argv[])
     std::string demFile = "";
     if (arguments.demFile != "")
         demFile = arguments.demFile;
-    else if (UID->simParams && UID->simParams->demFile != "")
-        demFile = UID->simParams->demFile;
+    else if (WID->simParams && WID->simParams->demFile != "")
+        demFile = WID->simParams->demFile;
 
 
     DTEHeightField* DTEHF = 0;
     if (demFile != "") {
-        DTEHF = new DTEHeightField(demFile, (*(UID->simParams->grid))[0], (*(UID->simParams->grid))[1] );
+        DTEHF = new DTEHeightField(demFile, (*(WID->simParams->grid))[0], (*(WID->simParams->grid))[1] );
     }
 
     if (DTEHF) {
         std::cout << "Forming triangle mesh...\n";
-        DTEHF->setDomain(UID->simParams->domain, UID->simParams->grid);
+        DTEHF->setDomain(WID->simParams->domain, WID->simParams->grid);
         std::cout << "Mesh complete\n";
     }
 
@@ -101,26 +101,26 @@ int main(int argc, char *argv[])
     // Files was successfully read, so create instance of output class
     /*
       Output* output = nullptr;
-    if (UID->fileOptions->outputFlag==1) {
+    if (WID->fileOptions->outputFlag==1) {
         output = new Output(arguments.netCDFFile);
     }
     */
 
 
-    // Generate the general URB data from all inputs
-    URBGeneralData* UGD = new URBGeneralData(UID);
+    // Generate the general WINDS data from all inputs
+    WINDSGeneralData* WGD = new WINDSGeneralData(WID);
     
     
     // //////////////////////////////////////////
     //
-    // Run the CUDA-URB Solver
+    // Run the CUDA-WINDS Solver
     //
     // //////////////////////////////////////////
     Solver *solver, *solverC = nullptr;
     if (arguments.solveType == CPU_Type)
-        solver = new CPUSolver(UID, UGD);
+        solver = new CPUSolver(WID, WGD);
     else if (arguments.solveType == DYNAMIC_P)
-        solver = new DynamicParallelism(UID, UGD);
+        solver = new DynamicParallelism(WID, WGD);
     else
     {
         std::cerr << "Error: invalid solve type\n";
@@ -131,9 +131,9 @@ int main(int argc, char *argv[])
     if (arguments.compareType)
     {
         if (arguments.compareType == CPU_Type)
-            solverC = new CPUSolver(UID, UGD);
+            solverC = new CPUSolver(WID, WGD);
         else if (arguments.compareType == DYNAMIC_P)
-            solverC = new DynamicParallelism(UID, UGD);
+            solverC = new DynamicParallelism(WID, WGD);
         else
         {
             std::cerr << "Error: invalid comparison type\n";
@@ -146,51 +146,51 @@ int main(int argc, char *argv[])
         DTEHF->closeScanner();
     */
     // save initial fields to reset after each time+fire loop
-    std::vector<float> u0 = UGD->u0;
-    std::vector<float> v0 = UGD->v0;
-    std::vector<float> w0 = UGD->w0;
+    std::vector<float> u0 = WGD->u0;
+    std::vector<float> v0 = WGD->v0;
+    std::vector<float> w0 = WGD->w0;
     
     /** 
      * Create Fire Mapper
      **/
-    Fire* fire = new Fire(UID, UGD);
+    Fire* fire = new Fire(WID, WGD);
     
     // create FIREOutput manager
-    FIREOutput* fireOutput = new FIREOutput(UGD,fire,arguments.netCDFFileFire);
+    FIREOutput* fireOutput = new FIREOutput(WGD,fire,arguments.netCDFFileFire);
     
     // set base w in fire model to initial w0
     //fire->w_base = w0;
     
     // Run initial solver to generate full field
-    solver->solve(UID, UGD, !arguments.solveWind);
+    solver->solve(WID, WGD, !arguments.solveWind);
     
     // save initial fields in solver and fire
     //if (output != nullptr) {
-    //    UGD->save();
+    //    WGD->save();
     //}
     
     // save any fire data (at time 0)
     fireOutput->save(0.0);
 	
-    // Run urb simulation code
+    // Run WINDS simulation code
     std::cout<<"===================="<<std::endl;
     double t = 0;
     
-    while (t<UID->simParams->totalTimeIncrements) {
+    while (t<WID->simParams->totalTimeIncrements) {
         
         std::cout<<"Processing time t = "<<t<<std::endl;
         // re-set initial fields after first time step
         if (t>0) {
 
 	    
-	    UGD->u0 = u0;
-	    UGD->v0 = v0;
-	    UGD->w0 = w0;
+	    WGD->u0 = u0;
+	    WGD->v0 = v0;
+	    WGD->w0 = w0;
 	    
 	    /*
-	    UID->metParams->z0_domain_flag=1;
-	    UID->metParams->sensors[0]->inputWindProfile(UID, UGD);
-            solver->solve(UID, UGD, !arguments.solveWind);
+	    WID->metParams->z0_domain_flag=1;
+	    WID->metParams->sensors[0]->inputWindProfile(WID, WGD);
+            solver->solve(WID, WGD, !arguments.solveWind);
 	    */
         }
         
@@ -199,12 +199,12 @@ int main(int argc, char *argv[])
         while (loop<1) {
             
             // run Balbi model to get new spread rate and fire properties
-            fire->run(solver, UGD);
+            fire->run(solver, WGD);
             
 	    // calculate plume potential
 	    auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time
 
-	    fire->potential(UGD);
+	    fire->potential(WGD);
 
 	    auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
 
@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
     	    std::cout << "Plume solve: elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
 	  
 	    // run wind solver
-            solver->solve(UID, UGD, !arguments.solveWind);
+            solver->solve(WID, WGD, !arguments.solveWind);
 	    
             //increment fire loop
             loop += 1;
@@ -221,11 +221,11 @@ int main(int argc, char *argv[])
         }
                 
         // move the fire
-        fire->move(solver, UGD);
+        fire->move(solver, WGD);
                 
         // save solver data
         //if (output != nullptr) {
-        //    UGD->save();
+        //    WGD->save();
         //}
         
         // save any fire data
@@ -241,7 +241,7 @@ int main(int argc, char *argv[])
     exit(EXIT_SUCCESS);
 }
 
-URBInputData* parseXMLTree(const std::string fileName)
+WINDSInputData* parseXMLTree(const std::string fileName)
 {
 	pt::ptree tree;
 
@@ -252,10 +252,10 @@ URBInputData* parseXMLTree(const std::string fileName)
 	catch (boost::property_tree::xml_parser::xml_parser_error& e)
 	{
 		std::cerr << "Error reading tree in" << fileName << "\n";
-		return (URBInputData*)0;
+		return (WINDSInputData*)0;
 	}
 
-	URBInputData* xmlRoot = new URBInputData();
+	WINDSInputData* xmlRoot = new WINDSInputData();
         xmlRoot->parseTree( tree );
 	return xmlRoot;
 }
