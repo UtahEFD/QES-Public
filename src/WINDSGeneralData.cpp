@@ -528,8 +528,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
    // buildings to the bvh used to calculate length scale
    std::vector< Triangle* > buildingTris;
    Mesh *m_mixingLengthMesh;
-
-
+   
+   /*
    if (WID->localMixingParam->methodLocalMixing == 3) {
        if (allBuildingsV.size() > 0) {
        
@@ -695,6 +695,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
    } else {
        m_mixingLengthMesh = nullptr;
    }
+   */
    // ///////////////////////////////////////
 
 
@@ -851,6 +852,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
 
    wall->setVelocityZero (this);
 
+   /*
    // compute local mixing length here!
    if(WID->localMixingParam) {
       auto mlStartTime = std::chrono::high_resolution_clock::now();
@@ -863,7 +865,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
          localMixing = new LocalMixingSerial();
          localMixing->defineMixingLength(WID,this);
       } else if (WID->localMixingParam->methodLocalMixing == 2) {
-         /*******Add raytrace code here********/
          std::cout << "Computing mixing length scales..." << std::endl;
          WID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, icellflag, mixingLengths);
       } else if (WID->localMixingParam->methodLocalMixing == 3) {
@@ -901,7 +902,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
       std::cout << "[MixLength] \t Local Mixing Defined...\n";
       std::cout << "\t\t elapsed time: " << mlElapsed.count() << " s\n";
    }
-
+   */
    return;
 
 }
