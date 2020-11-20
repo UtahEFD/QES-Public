@@ -92,6 +92,35 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
     //std::cout << "\t\t Walls Defined...\n";
 
     // mixing length
+    
+    if(WID->localMixingParam) {
+        auto mlStartTime = std::chrono::high_resolution_clock::now();
+        if (WID->localMixingParam->methodLocalMixing == 0) {
+            std::cout << "[MixLength] \t Default Local Mixing Length...\n";
+            localMixing = new LocalMixingDefault();
+        } else if(WID->localMixingParam->methodLocalMixing == 1) {
+            std::cout << "[MixLength] \t Computing Local Mixing Length using serial code...\n";
+            localMixing = new LocalMixingSerial();
+        } else if (WID->localMixingParam->methodLocalMixing == 2) {
+            /*******Add raytrace code here********/
+            std::cout << "Computing mixing length scales..." << std::endl;
+            //WID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, WGD->icellflag, WGD->mixingLengths);
+        } else if (WID->localMixingParam->methodLocalMixing == 3) {
+            localMixing = new LocalMixingOptix();            
+        } else if (WID->localMixingParam->methodLocalMixing == 4) {
+            std::cout << "[MixLength] \t Loading Local Mixing Length data form NetCDF...\n";
+            localMixing = new LocalMixingNetCDF();
+        } else {
+            //this should not happen (checked in LocalMixingParam)
+        }
+        
+        localMixing->defineMixingLength(WID,WGD);
+        auto mlEndTime = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
+        std::cout << "[MixLength] \t Local Mixing Defined...\n";
+        std::cout << "\t\t elapsed time: " << mlElapsed.count() << " s\n";
+    }
+    
     Lm.resize(np_cc,0.0);
     // make a copy as mixing length will be modifiy by non local
     // (need to be reset at each time instances)

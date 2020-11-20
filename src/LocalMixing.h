@@ -38,3 +38,4 @@ public:
 
     virtual void defineMixingLength(const WINDSInputData*,WINDSGeneralData*) = 0;   
 };
+

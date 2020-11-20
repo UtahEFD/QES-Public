@@ -20,6 +20,7 @@ CUDA_ADD_LIBRARY( qeswindscore
   LocalMixingDefault.cpp
   LocalMixingNetCDF.cpp
   LocalMixingSerial.cpp
+  LocalMixingOptix.cpp
   Mesh.cpp
   NetCDFInput.cpp
   NetCDFOutput.cpp

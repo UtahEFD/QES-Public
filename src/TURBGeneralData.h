@@ -9,6 +9,12 @@
 #include "TURBWallBuilding.h"
 #include "TURBWallTerrain.h"
 
+#include "LocalMixing.h"
+#include "LocalMixingDefault.h"
+#include "LocalMixingNetCDF.h"
+#include "LocalMixingSerial.h"
+#include "LocalMixingOptix.h"
+
 /*
   Author: Fabien Margairaz
   Date: Feb. 2020
@@ -73,6 +79,10 @@ public:
     // derived turbulence quantities
     std::vector<float> tke;
     std::vector<float> CoEps;
+
+    // local Mixing class and data
+    LocalMixing* localMixing;
+    std::vector<double> mixingLengths;
 
 protected:
 
