@@ -680,6 +680,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
 
    // Assemble list of all triangles and create the mesh BVH
    std::cout << "Forming Length Scale triangle mesh..." << std::endl;
+
+   auto start_triGen = std::chrono::high_resolution_clock::now();
+
    std::vector<Triangle*> allTriangles;
    if (WID->simParams->DTE_heightField) {
 
@@ -709,8 +712,19 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
 
    std::cout << "Assembling all triangle geometry into mesh structures for ray tracing..." << std::endl;
    
+   auto end_triGen = std::chrono::high_resolution_clock::now();
+   std::chrono::duration<double> triGenElapsed = end_triGen - start_triGen; 
+   std::cout << "\telapsed time for triangle generation: " << triGenElapsed.count() << " s\n";
+
+   start_triGen = std::chrono::high_resolution_clock::now();
+
    Mesh *m_mixingLengthMesh = new Mesh(allTriangles);
    std::cout << "Triangle Meshing complete\n";
+
+   end_triGen = std::chrono::high_resolution_clock::now();
+   triGenElapsed = end_triGen - start_triGen; 
+   std::cout << "\telapsed time for mesh data structure generation: " << triGenElapsed.count() << " s\n";
+
    // ///////////////////////////////////////
 
    wall = new Wall();
