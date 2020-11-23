@@ -12,7 +12,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
     
     flagNonLocalMixing = WID->turbParams->flagNonLocalMixing;
     if(flagNonLocalMixing){
-        std::cout << "\t Non-Local mixing for buidlings: ON \n";
+        std::cout << "\t\t Non-Local mixing for buidlings: ON \n";
     }
 
     // make local copy of grid information
@@ -90,7 +90,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
 
 
     // definition of the solid wall for loglaw
-    std::cout << "\t Defining Solid Walls...\n";
+    std::cout << "\t\t Defining Solid Walls...\n";
     wallVec.push_back(new TURBWallBuilding());
     wallVec.push_back(new TURBWallTerrain());
     /// Boundary condition at wall
@@ -101,22 +101,22 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
 
     // mixing length
 
-    std::cout << "\t Defining Local Mixing Length...\n";
+    std::cout << "\t\t Defining Local Mixing Length...\n";
     auto mlStartTime = std::chrono::high_resolution_clock::now();
     if (WID->turbParams->methodLocalMixing == 0) {
-        std::cout << "\t Default Local Mixing Length...\n";
+        std::cout << "\t\t Default Local Mixing Length...\n";
         localMixing = new LocalMixingDefault();
     } else if(WID->turbParams->methodLocalMixing == 1) {
-        std::cout << "\t Computing Local Mixing Length using serial code...\n";
+        std::cout << "\t\t Computing Local Mixing Length using serial code...\n";
         localMixing = new LocalMixingSerial();
     } else if (WID->turbParams->methodLocalMixing == 2) {
         /*******Add raytrace code here********/
-        std::cout << "Computing mixing length scales..." << std::endl;
+        std::cout << "\t\t Computing mixing length scales..." << std::endl;
         //WID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, WGD->icellflag, WGD->mixingLengths);
     } else if (WID->turbParams->methodLocalMixing == 3) {
         localMixing = new LocalMixingOptix();            
     } else if (WID->turbParams->methodLocalMixing == 4) {
-        std::cout << "\t Loading Local Mixing Length data form NetCDF...\n";
+        std::cout << "\t\t Loading Local Mixing Length data form NetCDF...\n";
         localMixing = new LocalMixingNetCDF();
     } else {
         //this should not happen (checked in TURBParams)
@@ -134,8 +134,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
 
     auto mlEndTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
-    std::cout << "[MixLength] \t Local Mixing Defined...\n";
-    std::cout << "\t elapsed time: " << mlElapsed.count() << " s\n";
+    std::cout << "\t\t Local Mixing Defined: elapsed time: " << mlElapsed.count() << " s\n";
 
     // Caluclating Turbulence quantities (u*,z0,d0) based on morphology of domain.
     bldgH_mean=0.0;
@@ -143,7 +142,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
     terrainH_max=0.0;
     zRef=0.0;uRef=0.0;uStar=0.0;
 
-    std::cout << "\t Calculating Morphometric parametrization of trubulence..."<<std::endl;
+    std::cout << "\t\t Calculating Morphometric parametrization of trubulence..."<<std::endl;
     
     if (WID->simParams->DTE_heightField) {
         terrainH_max=*max_element(WGD->terrain.begin(), WGD->terrain.end());
@@ -182,13 +181,10 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
         zRef =100.0*z0d;
     }
 
-    std::cout<<"\t Computing friction velocity..." << std::endl;
+    std::cout<<"\t\t Computing friction velocity..." << std::endl;
     getFrictionVelocity(WGD);
         
-    
-
-    std::cout << "\t Allocating memory...\n";
-
+    std::cout << "\t\t Allocating memory...\n";
     // comp. of the strain rate tensor
     S11.resize(np_cc,0);
     S12.resize(np_cc,0);
@@ -214,7 +210,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
     std::chrono::duration<double> Elapsed = EndTime - StartTime;
 
     std::cout << "[QES-TURB]\t Initialization of turbulence model completed.\n";
-    std::cout << "\t elapsed time: " << Elapsed.count() << " s" << endl;
+    std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << endl;
 
 }
 
@@ -225,39 +221,39 @@ void TURBGeneralData::run(WINDSGeneralData* WGD){
 
     std::cout<<"[QES-TURB] \t Running turbulence model..."<<std::endl;
 
-    std::cout<<"\t Computing friction velocity..." << std::endl;
+    std::cout<<"\t\t Computing friction velocity..." << std::endl;
     getFrictionVelocity(WGD);
 
-    std::cout<<"\t Computing Derivatives (Strain Rate)..."<<std::endl;
+    std::cout<<"\t\t Computing Derivatives (Strain Rate)..."<<std::endl;
     getDerivatives(WGD);
     //std::cout<<"\t\t Derivatives computed."<<std::endl;
 
-    std::cout<<"\t Imposing Wall BC (log law)..."<<std::endl;
+    std::cout<<"\t\t Imposing Wall BC (log law)..."<<std::endl;
     for(auto i=0u;i<wallVec.size();i++) {
         wallVec.at(i)->setWallsBC(WGD,this);
     }
-    std::cout<<"\t Wall BC done."<<std::endl;
+    //std::cout<<"\t\t Wall BC done."<<std::endl;
 
-    std::cout<<"\t Computing Stess Tensor..."<<std::endl;
+    std::cout<<"\t\t Computing Stess Tensor..."<<std::endl;
     getStressTensor();
     //std::cout<<"\t\t Stress Tensor computed."<<std::endl;
 
     if(flagNonLocalMixing) {
-        std::cout<<"\t Applying non-local mixing..."<<std::endl;;
+        std::cout<<"\t\t Applying non-local mixing..."<<std::endl;;
         for (size_t i = 0; i < WGD->allBuildingsV.size(); i++) {
             WGD->allBuildingsV[WGD->building_id[i]]->NonLocalMixing(WGD, this, WGD->building_id[i]);
         }
         //std::cout<<"\t\t Non-local mixing completed."<<std::endl;
     }
     
-    std::cout<<"\t Checking Upper Bound of Turbulence Fields..."<<std::endl;
+    std::cout<<"\t\t Checking Upper Bound of Turbulence Fields..."<<std::endl;
     boundTurbFields();
 
     auto EndTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> Elapsed = EndTime - StartTime;
     
     std::cout << "[QES-TURB] \t Turbulence model completed.\n";
-    std::cout << "\t elapsed time: " << Elapsed.count() << " s" << endl;
+    std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << endl;
 
 
 }
@@ -274,8 +270,9 @@ void TURBGeneralData::getFrictionVelocity(WINDSGeneralData* WGD)
                 k=itr - z_fc.begin();
                 //std::cout << "\t\t\t ref height = "<< zRef << " kRef = "<< kRef << std::endl;
             }else{
-                std::cout << "\t\t\t DOMAIN TOO SMALL " << std::endl;   
-                k=1;
+                std::cerr << "[ERROR] Turbulence model : reference height is outside the domain" << std::endl;
+                std::cerr << "\t Reference height zRef = "<< zRef << " m." << std::endl;
+                exit(EXIT_FAILURE);
             }
             
             int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
@@ -291,7 +288,7 @@ void TURBGeneralData::getFrictionVelocity(WINDSGeneralData* WGD)
     uRef=uSum/nVal;
     
     uStar = 0.4*uRef/log((zRef-d0d)/z0d);
-    std::cout << "\t\t Mean reference velocity uRef = " << uRef << " m/s" << std::endl;
+    std::cout << "\t\t Mean reference velocity at zRef = "<< zRef << " m ==> uRef = " << uRef << " m/s" << std::endl;
     std::cout << "\t\t Mean friction velocity uStar = " << uStar << " m/s" << std::endl;
 
 }
