@@ -62,6 +62,11 @@ public:
     //  move one cell at a time.
     void run(WINDSGeneralData*,TURBGeneralData*,Eulerian*,std::vector<QESNetCDFOutput*> );
     
+    int getNumReleasedParticles() const { return nParsReleased; } // accessor
+    int getNumRogueParticles() const { return isRogueCount; } // accessor
+    int getNumNotActiveParticles() const { return isNotActiveCount; } // accessor
+    int getNumCurrentParticles() const { return particleList.size(); } // accessor
+    
     // This the storage for all particles
     // the sources can set these values, then the other values are set using urb and turb info using these values
     std::list<Particle*> particleList;
@@ -124,6 +129,8 @@ private:
     std::string outputFolder;
     std::string caseBaseName;
     bool debug;
+
+    bool verbose;
     
     void setParticleVals(WINDSGeneralData*,TURBGeneralData*,Eulerian*,std::list<Particle*>);
     // this function gets sources from input data and adds them to the allSources vector

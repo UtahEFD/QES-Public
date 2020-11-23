@@ -26,6 +26,8 @@ Args::Args(): inputWINDSFile("windsout.nc"), inputTURBFile("turbout.nc")
     reg("doSimInfoFileOutput", "should debug simInfoFile be output",             ArgumentParsing::NONE,   's');
     // LA future work: this one should probably be replaced by cmake arguments at compiler time
     reg("debug",               "should command line output include debug info",  ArgumentParsing::NONE,   'd');
+    reg("verbose",             "should command line output include verbose info",ArgumentParsing::NONE,   'v');
+    
 }
 
 void Args::processArguments(int argc, char *argv[])
@@ -67,7 +69,8 @@ void Args::processArguments(int argc, char *argv[])
     doParticleDataOutput= isSet( "doParticleDataOutput" );
     doSimInfoFileOutput = isSet( "doSimInfoFileOutput" );
     debug               = isSet( "debug" );
-    
+    verbose             = isSet( "verbose" );
+
 
     // check whether input outputFolder is an existing folder and if not, exit with error
     if( !doesDirExist(outputFolder) )

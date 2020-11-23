@@ -22,42 +22,42 @@
 
 class Args : public ArgumentParsing 
 {
-    public:
-
-        Args();
-
-        ~Args()
-        {
-        }
-
-        /*
-        * Takes in the commandline arguments and places
-        * them into variables.
-        *
-        * @param argc -number of commandline options/arguments
-        * @param argv -array of strings for arguments
-        */
-        void processArguments(int argc, char *argv[]);
-
-        std::string inputQESFile = "";
-        std::string inputWINDSFile = "";
-        std::string inputTURBFile = "";
-        std::string outputFolder = "";
-        std::string caseBaseName = "";
-        // going to assume concentration is always output. So these next options are like choices for additional debug output
-        bool doEulDataOutput;
-        bool doParticleDataOutput;
-        bool doSimInfoFileOutput;
-        // LA future work: this one should probably be replaced by cmake arguments at compiler time
-        bool debug;
-
-
-        // output file variables created from the outputFolder and caseBaseName
-        std::string outputEulerianFile;
-        std::string outputFile;
-        std::string outputParticleDataFile;
-
-    private:
+public:
+    
+    Args();
+    
+    ~Args()
+    {
+    }
+    
+    /*
+     * Takes in the commandline arguments and places
+     * them into variables.
+     *
+     * @param argc -number of commandline options/arguments
+     * @param argv -array of strings for arguments
+     */
+    void processArguments(int argc, char *argv[]);
+    
+    std::string inputQESFile = "";
+    std::string inputWINDSFile = "";
+    std::string inputTURBFile = "";
+    std::string outputFolder = "";
+    std::string caseBaseName = "";
+    // going to assume concentration is always output. So these next options are like choices for additional debug output
+    bool doEulDataOutput;
+    bool doParticleDataOutput;
+    bool doSimInfoFileOutput;
+    // LA future work: this one should probably be replaced by cmake arguments at compiler time
+    bool debug = false;
+    bool verbose = false;
+    
+    // output file variables created from the outputFolder and caseBaseName
+    std::string outputEulerianFile;
+    std::string outputFile;
+    std::string outputParticleDataFile;
+    
+private:
 };
 
 #endif

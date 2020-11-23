@@ -19,6 +19,8 @@ Plume::Plume( PlumeInputData* PID, WINDSGeneralData* WGD, TURBGeneralData* TGD, 
     caseBaseName = arguments->caseBaseName;
     debug = arguments->debug;
 
+    verbose = arguments->verbose;
+
     // make local copies of the QES-Winds nVals for each dimension
     nx = WGD->nx;
     ny = WGD->ny;
@@ -143,13 +145,13 @@ void Plume::run(WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul, std:
         bool needToScrub = false;
 
         // only output the information when the updateFrequency allows and when there are actually released particles
-        if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 )
-        {
+        if( ( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) && 
+            verbose )
+        { 
             std::cout << "simTimes[" << sim_tIdx+1 << "] = " << simTimes.at(sim_tIdx+1) << ". finished emitting " 
                       << nParsToRelease << " particles from " << allSources.size() 
                       << " sources. Total Particles Released = " << nParsReleased << "." << std::endl;
         }
-
         
         // Move each particle for every simulation time step
         // Advection Loop
@@ -205,10 +207,16 @@ void Plume::run(WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul, std:
         
         // output the time, isRogueCount, and isNotActiveCount information for all simulations,
         //  but only when the updateFrequency allows
-        if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == 0 || sim_tIdx == nSimTimes-2 ) {
-            std::cout << "simTimes[" << sim_tIdx+1 << "] = " << simTimes.at(sim_tIdx+1) << ". finished advection iteration. " 
-                      << "isActiveParticleCount = " << particleList.size() << ", isRogueCount = " << isRogueCount 
-                      << ", isNotActiveCount = " << isNotActiveCount << "."  << std::endl;
+        if( (sim_tIdx+1) % updateFrequency_timeLoop == 0 || sim_tIdx == nSimTimes-2 ) {
+            if(verbose) {
+                std::cout << "simTimes[" << sim_tIdx+1 << "] = " << simTimes.at(sim_tIdx+1) << ". finished advection iteration. " 
+                          << "isActiveParticleCount = " << particleList.size() << ", isRogueCount = " << isRogueCount 
+                          << ", isNotActiveCount = " << isNotActiveCount << "."  << std::endl;
+            } else { 
+                std::cout << "Time = " << simTimes.at(sim_tIdx+1) << " s (iteration = " << sim_tIdx+1 << "). " 
+                          << "Particles: Released = " << nParsReleased << " "
+                          << "Active = " << particleList.size() << "." << std::endl;
+            }
             // output advection loop runtime if in debug mode
             if( debug == true ) {
                 timers.printStoredTime("advection loop");
