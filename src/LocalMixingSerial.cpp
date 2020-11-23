@@ -121,7 +121,7 @@ void LocalMixingSerial::defineMixingLength(const WINDSInputData* WID,WINDSGenera
         }
     }
 
-    if(WID->localMixingParam->save2file){
+    if(WID->turbParams->save2file){
         saveMixingLength(WID,WGD);
     }
 
