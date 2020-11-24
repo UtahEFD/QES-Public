@@ -136,13 +136,10 @@
 <turbParams>
   <method>3</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <LMfile>../scratch/Gangnam/mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
-  <nonLocalMixing>true</nonLocalMixing>
-  <turbUpperBound>20.0</turbUpperBound>
+  <nonLocalMixing>true</nonLocalMixing> <!-- turn on/off non-local mixing model for buidling -->
+  <turbUpperBound>20.0</turbUpperBound> <!-- upper bound for turb fields -->
 </turbParams>
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 
-  <outputFields>v</outputFields> 
-  <outputFields>w</outputFields>
-  <outputFields>icell</outputFields> 
 </fileOptions>
