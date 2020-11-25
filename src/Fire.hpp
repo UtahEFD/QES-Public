@@ -32,7 +32,6 @@ class Fire {
     
     public:
     
-    //Fire(WINDSInputData*, WINDSGeneralData*, Output*); FM OBSOLETE
     Fire(WINDSInputData*, WINDSGeneralData*);
         
         struct FireProperties {
@@ -103,7 +102,6 @@ class Fire {
         void run(Solver*, WINDSGeneralData*);
         void move(Solver*, WINDSGeneralData*); 
 	void potential(WINDSGeneralData*);   
-    //void save(Output*); FM OBSOLETE
         float computeTimeStep();
         
     private:
@@ -123,47 +121,7 @@ class Fire {
         FireProperties balbi(FuelProperties*, float, float, float, float, float, float);
         
         FireProperties runFire(float, float, int);
-        
-	
-    // FM OBSOLETE
-        /// Declaration of output manager
-	/*
-        int output_counter=0;
-        std::vector<NcDim> dim_scalar_1,dim_scalar_3,dim_scalar_4;
-        std::vector<std::string> output_fields;
-        
-        struct AttScalarDbl {
-            double* data;
-            std::string name;
-            std::string long_name;
-            std::string units;
-            std::vector<NcDim> dimensions;
-        };
-        
-        struct AttVectorDbl {
-            std::vector<double>* data;
-            std::string name;
-            std::string long_name;
-            std::string units;
-            std::vector<NcDim> dimensions;
-        };
-        
-        struct AttVectorInt {
-            std::vector<int>* data;
-            std::string name;
-            std::string long_name;
-            std::string units;
-            std::vector<NcDim> dimensions;
-        };
-        
-        std::map<std::string,AttScalarDbl> map_att_scalar_dbl;
-        std::map<std::string,AttVectorDbl> map_att_vector_dbl;
-        std::map<std::string,AttVectorInt> map_att_vector_int;
-        
-        std::vector<AttScalarDbl> output_scalar_dbl;
-        std::vector<AttVectorDbl> output_vector_dbl;
-        std::vector<AttVectorInt> output_vector_int;
-       */
+
 };
 
 #endif

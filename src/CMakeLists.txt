@@ -15,7 +15,6 @@ CUDA_ADD_LIBRARY( qeswindscore
   DynamicParallelism.cu
   ESRIShapefile.cpp ESRIShapefile.h
   FIREOutput.cpp
-  //handleURBArgs.cpp
   handleWINDSArgs.cpp
   LocalMixingParam.h
   LocalMixing.cpp
@@ -59,7 +58,7 @@ CUDA_ADD_LIBRARY( qeswindscore
   TimeSeries.h
   )
 
-CUDA_ADD_LIBRARY( cudafirecore
+CUDA_ADD_LIBRARY( qesfirecore
   Fire.cpp
   )
 

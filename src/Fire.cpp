@@ -104,12 +104,6 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
     	FireTime.getVar("y2").getVar({0},{SFT_time},FT_x2.data());
     	FireTime.getVar("x2").getVar({0},{SFT_time},FT_y2.data());
     
-	// Check read
-    	/*
-	int IDX = 10;
-	std::cout<<"Fire arrival time ["<<IDX<<"] = "<<FT_time[IDX]<<std::endl;
-	std::cout<<"(x1["<<IDX<<"], y1["<<IDX<<"]) = ("<<FT_x1[IDX]<<", "<<FT_y1[IDX]<<"), (x2["<<IDX<<"], y2["<<IDX<<"]) = ("<<FT_x2[IDX]<<", "<<FT_y2[IDX]<<")"<<std::endl;
-    	*/
     }
     x_start    = WID->fires->xStart;
     y_start    = WID->fires->yStart;
@@ -471,16 +465,13 @@ void Fire :: potential(WINDSGeneralData* WGD){
 	    }
 		
 		if (H != 0){
-		  std::cout<<"H = "<<H0<<std::endl;
 		  firei = icent/counter;
 		  firej = jcent/counter;
 		  U_c = pow(g*g*H/rhoAir/T_a/C_pa, 1.0/5.0);
 		  L_c = pow(H/rhoAir/C_pa/T_a/pow(g, 1.0/2.0), 2.0/5.0);
-		  //std::cout<<"U_c = "<<U_c<<", L_c = "<<L_c<<std::endl;
 	  
 		  z_mix = lambda_mix*dx*filt;
 		  kmax = nz-3 > z_mix ? z_mix : nz-3;
-		  //std::cout<<"z_mix = "<<z_mix<<", kmax = "<<kmax<<std::endl;
 		  // Loop through vertical levels
 		  for (int kpot = z_mix_old; kpot<kmax; kpot++) {
 		  // Calculate virtual origin
@@ -488,7 +479,6 @@ void Fire :: potential(WINDSGeneralData* WGD){
 		  float z_k = (kpot+z_v)*dz/L_c;                            ///< non-dim vertical distance between fire cell and target cell k
 		  float zeta = 0;
 		  float x1 = 0;
-                  std::cout<<"mix height = "<<z_mix<<", virtual origin = "<<z_v<<std::endl;
 		  // Loop through horizontal domain
 		    for (int ipot = 0; ipot<nx-1; ipot++) {
 		      for (int jpot = 0; jpot<ny-1; jpot++){
@@ -667,6 +657,7 @@ void Fire :: move(Solver* solver, WINDSGeneralData* WGD){
     for (int j=1; j < ny-2; j++){
         for (int i=1; i < nx-2; i++){
 	  int idx = i + j*(nx-1);
+	  int icell_cent = idx;
             // if burn flag = 1, update burn time
             if (burn_flag[idx] == 1){
                 fire_cells[idx].state.burn_time += dt;
@@ -689,7 +680,9 @@ void Fire :: move(Solver* solver, WINDSGeneralData* WGD){
             // set burn flag to 2 (burned) if residence time exceeded and update z0 to bare soil
             if (fire_cells[idx].state.burn_time >= fp.tau) {
                 fire_cells[idx].state.burn_flag = 2;
-		WGD->z0_domain[idx] = 0.01;
+		WGD->icellflag[icell_cent] = 1;
+		// Need to fix where z0 is reset MM
+		//WGD->z0_domain[idx] = 0.01;
             }
             // update burn flag field
             burn_flag[idx] = fire_cells[idx].state.burn_flag;
@@ -702,7 +695,9 @@ void Fire :: move(Solver* solver, WINDSGeneralData* WGD){
 }
 
 
-// Rothermel (1972) flame propgation model used for initial guess to Balbi
+/**
+ * Rothermel (1972) flame propgation model used for initial guess to Balbi
+ */
 float Fire :: rothermel(FuelProperties* fuel, float max_wind, float tanphi, float fmc_g) {
     
     // fuel properties
