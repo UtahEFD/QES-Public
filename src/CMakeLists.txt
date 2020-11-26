@@ -3,7 +3,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 #INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/quicutil)  
 #LINK_DIRECTORIES (${CMAKE_BINARY_DIR}/quicutil/)
 
-CUDA_ADD_LIBRARY( cudaplumecore
+CUDA_ADD_LIBRARY( qesplumecore
     
     Random.cpp
     Vector3.h
@@ -45,20 +45,20 @@ CUDA_ADD_LIBRARY( cudaplumecore
 
 )
 
-#target_link_libraries (cudaplumecore quicloader) 
-#target_link_libraries (cudaplumecore util)
-#target_link_libraries (cudaplumecore ${Boost_PROGRAM_OPTIONS_LIBRARIES} )  
+#target_link_libraries (qesplumecore quicloader) 
+#target_link_libraries (qesplumecore util)
+#target_link_libraries (qesplumecore ${Boost_PROGRAM_OPTIONS_LIBRARIES} )  
 #
 #if (APPLE)
 #  find_package(OpenGL)
 #  INCLUDE_DIRECTORIES(${OPENGL_INCLUDE_DIR})
 #  find_package(GLUT)
 #  INCLUDE_DIRECTORIES(${GLUT_INCLUDE_DIR})
-#  target_link_libraries (cudaplumecore ${OPENGL_LIBRARIES})
-#  target_link_libraries (cudaplumecore ${GLUT_LIBRARIES})
+#  target_link_libraries (qesplumecore ${OPENGL_LIBRARIES})
+#  target_link_libraries (qesplumecore ${GLUT_LIBRARIES})
 #else (APPLE)
-#  target_link_libraries (cudaplumecore GL)
-#  target_link_libraries (cudaplumecore glut)
-#  target_link_libraries (cudaplumecore GLU)
+#  target_link_libraries (qesplumecore GL)
+#  target_link_libraries (qesplumecore glut)
+#  target_link_libraries (qesplumecore GLU)
 #endif (APPLE)
-#target_link_libraries (cudaplumecore GLEW) 
+#target_link_libraries (qesplumecore GLEW) 
