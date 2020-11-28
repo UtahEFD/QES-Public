@@ -103,9 +103,7 @@ Plume::Plume( PlumeInputData* PID, WINDSGeneralData* WGD, TURBGeneralData* TGD, 
     
 }
 
-// LA note: in this whole section, the idea of having single value temporary storage instead of just referencing values
-//  directly from the dispersion class seems a bit strange, but it makes the code easier to read cause smaller variable names.
-//  Also, it is theoretically faster?
+
 void Plume::run(float endTime, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul, std::vector<QESNetCDFOutput*> outputVec)
 {
     // get the threshold velocity fluctuation to define rogue particles
@@ -140,22 +138,16 @@ void Plume::run(float endTime, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eule
     //  this means that the updateFrequency needs to match with tStep+1, not tStep. At the same time, the current time output to consol
     //  output and to function calls need to also be set to tStep+1.
     // FMargairaz -> need clean-up
-    //for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++) {
     while(simTime<endTime) {
         // need to release new particles -> add new particles to the number to move
-        //int nParsToRelease = generateParticleList((float)simTimes.at(simTimeIdx), WGD, TGD, eul); 
         int nParsToRelease = generateParticleList((float)simTime, WGD, TGD, eul); 
         
-        // number of active particle at the current time step. -> list is scrubbed at the end of each time step. 
-        //size_t nParsActive = particleList.size();
-        
+        // number of active particle at the current time step.
+        // list is scrubbed at the end of each time step (if flag turned true) 
         bool needToScrub = false;
         
-        // only output the information when the updateFrequency allows and when there are actually released particles
-        //if( ( (simTimeIdx+1) % updateFrequency_timeLoop == 0 || simTimeIdx == 0 || simTimeIdx == nSimTimes-2 ) && 
-        //    verbose )
-        
-        if( (simTimeIdx) % updateFrequency_timeLoop == 0 && nParsToRelease > 0 && verbose ) { 
+        // only output the information if: the updateFrequency allows and verbose == true
+        if( (simTimeIdx) % updateFrequency_timeLoop == 0 && verbose ) { 
             std::cout << "Time = " << simTime << " s (iteration = " << simTimeIdx << "). Finished emitting particles " 
                       << "from " << allSources.size() << " sources. "
                       << "Particles: New released = " << nParsToRelease << " "
@@ -174,27 +166,17 @@ void Plume::run(float endTime, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eule
            }
            }*/
 
-        
+        // the current time, updated in this loop with each new par_dt. 
+        // Will end at simTimes.at(simTimeIdx+1) at the end of this particle loop
         double timeRemainder = endTime-simTime;
         if(timeRemainder > sim_dt) {
             timeRemainder = sim_dt;
         }
         
         // this the the main loop over all active particles         
-        std::list<Particle*>::iterator parItr;
+        std::list<Particle*>::iterator parItr;       
         for(parItr = particleList.begin(); parItr != particleList.end() ; parItr++ ) {
-            
             // All the particle here are active => no need to check if parItr->isActive == true
-
-            /*
-            double timeRemainder = sim_dt;
-            if( simTimeIdx == nSimTimes-2 ) {  // at the final timestep
-                timeRemainder = simTimes.at(nSimTimes-1) - simTimes.at(nSimTimes-2);
-            }*/
-
-            //double par_time = simTimes.at(simTimeIdx);    // the current time, updated in this loop with each new par_dt. 
-            // Will end at simTimes.at(simTimeIdx+1) at the end of this particle loop
-            
 
             // call to the main particle adection function (in separate file: AdvectParticle.cpp)
             /*
@@ -217,6 +199,7 @@ void Plume::run(float endTime, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eule
                         
         } // end of loop for (parItr == particleList.begin(); parItr != particleList.end() ; parItr++ )
 
+        // incrementation of time and timestep
         simTimeIdx++;
         simTime += timeRemainder;
 
@@ -234,8 +217,7 @@ void Plume::run(float endTime, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eule
         }
         
         // output the time, isRogueCount, and isNotActiveCount information for all simulations,
-        //  but only when the updateFrequency allows
-        //if( (simTimeIdx+1) % updateFrequency_timeLoop == 0 || simTimeIdx == nSimTimes-2 ) {
+        // but only when the updateFrequency allows
         if( (simTimeIdx) % updateFrequency_timeLoop == 0 || simTime == endTime ) {
             if(verbose) {
                 std::cout << "Time = " << simTime << " s (iteration = " << simTimeIdx << "). Finished advection iteration.  " 
@@ -253,7 +235,7 @@ void Plume::run(float endTime, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eule
             }
         }
 
-    } // end of loop: for(simTimeIdx = 0; simTimeIdx < nSimTimes-1; simTimeIdx++)
+    } // end of time loop
     
     std::cout << "[Plume] \t End of particles advection at Time = " << simTime << " s (iteration = " << simTimeIdx << "). \n";
     std::cout << "\t\t Particles: Released = " << nParsReleased << " "

@@ -88,15 +88,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle*>::iterator 
     // LA important note: can't use the simulation timestep for the timestep remainder, the last simulation timestep
     //  is potentially smaller than the simulation timestep. So need to use the simTimes.at(nSimTimes-1)-simTimes.at(nSimTimes-2)
     //  for the last simulation timestep. The problem is that simTimes.at(nSimTimes-1) is greater than simTimes.at(nSimTimes-2) + sim_dt.
-    // FMargairaz -> need clean-up
-    /*
-      double timeRemainder = sim_dt;
-    if( sim_tIdx == nSimTimes-2 ) {  // at the final timestep
-        timeRemainder = simTimes.at(nSimTimes-1) - simTimes.at(nSimTimes-2);
-    }
-    double par_time = simTimes.at(sim_tIdx);    // the current time, updated in this loop with each new par_dt. 
-    // Will end at simTimes.at(sim_tIdx+1) at the end of this particle loop
-    */
+    // FMargairaz -> need clean-up the comment
 
     while( isActive == true && timeRemainder > 0.0 ) {
 
