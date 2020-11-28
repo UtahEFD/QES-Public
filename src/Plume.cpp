@@ -40,19 +40,9 @@ Plume::Plume( PlumeInputData* PID, WINDSGeneralData* WGD, TURBGeneralData* TGD, 
     // make copies of important dispersion time variables
     sim_dt = PID->simParams->timeStep;
     
+    // time variables
     simTime = 0.0;
     simTimeIdx = 0;
-    
-    /* simDur = PID->simParams->simDur;
-    nSimTimes = std::ceil(simDur/sim_dt)+1;
-    simTimes.resize(nSimTimes);
-    // FMargairaz -> need clean up here, time steps are skewed
-    for(int sim_tIdx = 0; sim_tIdx < nSimTimes-1; sim_tIdx++)   // end one time early
-    {
-        simTimes.at(sim_tIdx) = sim_dt*sim_tIdx;
-        //std::cout << "simTimes[" << sim_tIdx << "] = \"" << simTimes.at(sim_tIdx) << "\"" << std::endl;
-    }
-    simTimes.at(nSimTimes-1) = simDur;*/
     
     // other important time variables not from dispersion
     CourantNum = PID->simParams->CourantNum;
@@ -220,7 +210,7 @@ void Plume::run(float endTime, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eule
         // but only when the updateFrequency allows
         if( (simTimeIdx) % updateFrequency_timeLoop == 0 || simTime == endTime ) {
             if(verbose) {
-                std::cout << "Time = " << simTime << " s (iteration = " << simTimeIdx << "). Finished advection iteration.  " 
+                std::cout << "Time = " << simTime << " s (iteration = " << simTimeIdx << "). Finished advection iteration. " 
                           << "Particles: Released = " << nParsReleased << " "
                           << "Active = " << particleList.size() << " "
                           << "Rogue = " << isRogueCount << "." << std::endl;

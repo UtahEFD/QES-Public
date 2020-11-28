@@ -96,13 +96,10 @@ private:
     double domainZend;      // the domain ending z value, a copy of the value found by dispersion
 
 
-    // important time variables copied from dispersion
+    // time variables
     double sim_dt;     // the simulation timestep
     double simTime;
     int simTimeIdx;
-    //double simDur;     // the total amount of time to run the simulation for
-    //int nSimTimes;     // this is the number of timesteps of the simulation, the calculated size of times
-    //std::vector<double> simTimes;  // this is the list of times for the simulation
 
     // some overall metadata for the set of particles
     int isRogueCount;        // just a total number of rogue particles per time iteration
