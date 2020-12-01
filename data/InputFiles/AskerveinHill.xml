@@ -52,9 +52,9 @@
 	</sensor>                       				<!-- End of sensor section -->
 
 </metParams>								<!-- End of meteorological parameters -->
-<localMixingParam>
+<turbParams>
   <method>0</method>
-</localMixingParam>
+</turbParams>
 <fileOptions>
 	<outputFlag>1</outputFlag>
     <outputFields>u</outputFields> 

@@ -48,10 +48,10 @@
 	</sensor>                       				<!-- End of sensor section -->
 
 </metParams>								<!-- End of meteorological parameters -->
-<localMixingParam>
+<turbParams>
   <method>3</method>
   <samples>2000</samples>
-</localMixingParam>
+</turbParams>
 <fileOptions>
 	<outputFlag>1</outputFlag>
     <outputFields>u</outputFields> 
