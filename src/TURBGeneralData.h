@@ -3,10 +3,17 @@
 #include <math.h>
 #include <vector>
 
+#include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 #include "TURBWall.h"
 #include "TURBWallBuilding.h"
 #include "TURBWallTerrain.h"
+
+#include "LocalMixing.h"
+#include "LocalMixingDefault.h"
+#include "LocalMixingNetCDF.h"
+#include "LocalMixingSerial.h"
+#include "LocalMixingOptix.h"
 
 /*
   Author: Fabien Margairaz
@@ -18,14 +25,11 @@ class TURBGeneralData {
 public:
     TURBGeneralData()
     {}
-    TURBGeneralData(WINDSGeneralData*);
+    TURBGeneralData(const WINDSInputData*,WINDSGeneralData*);
     virtual ~TURBGeneralData()
     {}
 
     virtual void run(WINDSGeneralData*);
-
-    void getDerivatives(WINDSGeneralData*);
-    void getStressTensor();
 
     // General QUIC Domain Data
     int nx, ny, nz;		/**< number of cells */
@@ -37,6 +41,12 @@ public:
     std::vector<float> y_cc;
     std::vector<float> z_fc;
     std::vector<float> z_cc;
+
+    // Mean trubulence quantities
+    float z0d,d0d;
+    float zRef,uRef,uStar;
+    float bldgH_mean,bldgH_max;
+    float terrainH_max;
 
     // index for fluid cell
     std::vector<int> icellfluid;
@@ -70,6 +80,10 @@ public:
     std::vector<float> tke;
     std::vector<float> CoEps;
 
+    // local Mixing class and data
+    LocalMixing* localMixing;
+    std::vector<double> mixingLengths;
+
 protected:
 
 private:
@@ -85,5 +99,10 @@ private:
     const float sigUConst=sigUOrg*sigUOrg*cPope*cPope;//2.3438;
     const float sigVConst=sigVOrg*sigVOrg*cPope*cPope;//1.5;
     const float sigWConst=sigWOrg*sigWOrg*cPope*cPope;//0.6338;
+
+    void getFrictionVelocity(WINDSGeneralData*);
+    void getDerivatives(WINDSGeneralData*);
+    void getStressTensor();
+    void capStressTensor();
 
 };

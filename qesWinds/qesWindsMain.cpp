@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
     // based on if the turbulence output file is defined
     TURBGeneralData* TGD = nullptr;
     if (arguments.compTurb) {
-        TGD = new TURBGeneralData(WGD);
+        TGD = new TURBGeneralData(WID,WGD);
     }
     if (arguments.compTurb && arguments.turbOutput) {
         outputVec.push_back(new TURBOutput(TGD,arguments.netCDFFileTurb));
