@@ -94,7 +94,10 @@ ENDIF(${GDAL_FOUND})
 
 SET(CUDA_SEPARABLE_COMPILATION ON)
 
-# set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_52;-rdc=true;" )
+
+#use fast math option is required for OptiX
+# set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-dlink;-rdc=true;--use_fast_math;--keep-device-functions")
 
 FIND_PACKAGE(CUDA REQUIRED)
 
@@ -106,11 +109,6 @@ IF(CUDA_FOUND)
 ELSE (CUDA_FOUND)
   MESSAGE(FATAL_ERROR "CUDA is required for compiling this project.  Please install CUDA or re-run cmake with -i to specify the CUDA directories.")
 ENDIF(CUDA_FOUND)
-
-
-#use fast math option is required for OptiX
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-dlink;-rdc=true;--use_fast_math;--keep-device-functions")
-
 
 #
 # Allow the compilation to override including OptiX if desired

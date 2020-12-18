@@ -162,6 +162,23 @@ cd build
 cmake -DCUDA_TOOLKIT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/10.1.168 -DCUDA_SDK_ROOT_DIR=/uufs/chpc.utah.edu/sys/installdir/cuda/10.1.168 -DCMAKE_PREFIX_PATH=/uufs/chpc.utah.edu/sys/installdir/gdal/2.4.0 -DNETCDF_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-c/4.4.1-c7/include -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include ..
 ```
 
+### CUDA 9.1
+
+For CUDA 9.1, 
+
+```
+module load cuda/9.1
+module load gcc/5.4.0
+module load cmake/3.11.2
+module load gdal/2.4.0
+module load boost/1.68.0
+```
+
+```
+cmake -DCUDA_TOOLKIT_DIR=/usr/local/cuda-9.1 -DCUDA_SDK_ROOT_DIR=/usr/local/cuda-9.1 -DCMAKE_PREFIX_PATH=/uufs/chpc.utah.edu/sys/installdir/gdal/2.4.0 -DNETCDF_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-c/4.4.1-c7/include -DNETCDF_CXX_DIR=/uufs/chpc.utah.edu/sys/installdir/netcdf-cxx/4.3.0-5.4.0g/include ..
+```
+
+
 ### CUDA 8.0
 
 And, CUDA 8.0:

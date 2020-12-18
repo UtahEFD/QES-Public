@@ -7,7 +7,7 @@
 void LocalMixing::saveMixingLength(const WINDSInputData* WID,WINDSGeneralData* WGD)
 {
     // open NetCDF file (constructor)
-    mixLengthOut=new NetCDFOutput(WID->localMixingParam->filename);
+    mixLengthOut=new NetCDFOutput(WID->turbParams->filename);
 
     // create NcDimension for x,y,z (with ghost cell)
     NcDim NcDim_x=mixLengthOut->addDimension("x",WGD->nx-1);
@@ -23,11 +23,11 @@ void LocalMixing::saveMixingLength(const WINDSInputData* WID,WINDSGeneralData* W
                      static_cast<unsigned long>(WGD->nx-1)};
 
     // create NetCDF filed in file
-    mixLengthOut->addField(WID->localMixingParam->varname,"m","distance to nearest object",
+    mixLengthOut->addField(WID->turbParams->varname,"m","distance to nearest object",
                            {NcDim_z,NcDim_y,NcDim_x},ncFloat);
 
     // dump mixingLengths to file
-    mixLengthOut->saveField2D(WID->localMixingParam->varname,vector_index,vector_size,WGD->mixingLengths);
+    mixLengthOut->saveField2D(WID->turbParams->varname,vector_index,vector_size,WGD->mixingLengths);
 
     return;
 }
