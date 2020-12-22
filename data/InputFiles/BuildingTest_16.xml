@@ -254,10 +254,10 @@
 
 </buildings>
 
-<localMixingParam>
+<turbParams>
   <method>3</method>
   <samples>8000</samples>
-</localMixingParam>
+</turbParams>
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>u</outputFields> 

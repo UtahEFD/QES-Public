@@ -8,7 +8,7 @@ void LocalMixingNetCDF::defineMixingLength(const WINDSInputData* WID,WINDSGenera
 {
     // open NetCDF file (constructor)
     NetCDFInput* mixLengthInput;
-    mixLengthInput = new NetCDFInput(WID->localMixingParam->filename);
+    mixLengthInput = new NetCDFInput(WID->turbParams->filename);
 
     int nx_f,ny_f,nz_f;
 
@@ -18,13 +18,13 @@ void LocalMixingNetCDF::defineMixingLength(const WINDSInputData* WID,WINDSGenera
     mixLengthInput->getDimensionSize("z",nz_f);
 
     if(nx_f != WGD->nx-1 || ny_f != WGD->ny-1 || nz_f != WGD->nz-1) {
-        std::cout << "[ERROR] \t domain size error in " << WID->localMixingParam->filename <<std::endl;
+        std::cout << "[ERROR] \t domain size error in " << WID->turbParams->filename <<std::endl;
         exit(EXIT_FAILURE);
     }
 
     //access variable (to check if exist)
     NcVar NcVar_mixlength;
-    mixLengthInput->getVariable(WID->localMixingParam->varname, NcVar_mixlength);
+    mixLengthInput->getVariable(WID->turbParams->varname, NcVar_mixlength);
 
     if(!NcVar_mixlength.isNull()) { // => mixlength in NetCDF file
         // netCDF variables
@@ -36,10 +36,10 @@ void LocalMixingNetCDF::defineMixingLength(const WINDSInputData* WID,WINDSGenera
                  static_cast<unsigned long>(nx_f)};
 
         //read in mixilength
-        mixLengthInput->getVariableData(WID->localMixingParam->varname,start,count,WGD->mixingLengths);
+        mixLengthInput->getVariableData(WID->turbParams->varname,start,count,WGD->mixingLengths);
     } else {
-        std::cout << "[ERROR] \t no field " << WID->localMixingParam->varname << " in "
-                  << WID->localMixingParam->filename <<std::endl;
+        std::cout << "[ERROR] \t no field " << WID->turbParams->varname << " in "
+                  << WID->turbParams->filename <<std::endl;
         exit(EXIT_FAILURE);
     }
 

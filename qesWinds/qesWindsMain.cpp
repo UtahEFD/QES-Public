@@ -85,8 +85,8 @@ int main(int argc, char *argv[])
 
 
     // Checking if
-    if (arguments.compTurb && !WID->localMixingParam) {
-        std::cerr << "[ERROR] Turbulence model is turned on without LocalMixingParam in QES Intput file "
+    if (arguments.compTurb && !WID->turbParams) {
+        std::cerr << "[ERROR] Turbulence model is turned on without turbParams in QES Intput file "
                   << arguments.quicFile << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
     // based on if the turbulence output file is defined
     TURBGeneralData* TGD = nullptr;
     if (arguments.compTurb) {
-        TGD = new TURBGeneralData(WGD);
+        TGD = new TURBGeneralData(WID,WGD);
     }
     if (arguments.compTurb && arguments.turbOutput) {
         outputVec.push_back(new TURBOutput(TGD,arguments.netCDFFileTurb));

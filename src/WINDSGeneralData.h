@@ -102,6 +102,7 @@ public:
                                                        11 = Canopy vegetation, 12 = Fire) */
 
     std::vector<float> building_volume_frac, terrain_volume_frac;
+    std::vector<float> ni, nj, nk;     // Normal components of the solid elements (building or terrain)
     std::vector<float> terrain;
     std::vector<int> terrain_id;      // Sensor function
                                       // (inputWindProfile)
