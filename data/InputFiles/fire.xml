@@ -2,7 +2,7 @@
         
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
-    <domain> 100 100 100 </domain> <!-- nx,ny,nz-->
+    <domain> 500 500 100 </domain> <!-- nx,ny,nz-->
 	<cellSize> 1.0 1.0 0.25 </cellSize> <!-- dx, dy,dz [Meters]-->	
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 200 </totalTimeIncrements>
@@ -52,14 +52,20 @@
     	    </timeSeries>
 	</sensor>                      					<!-- End of sensor section -->
 </metParams>
+<!--localMixingParam-->
+  <!--method>3</method--> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <!--samples>2000</samples--> <!-- Samples per air cell for ray-traced mixing length calculations -->
+  <!--save>true</save--> <!-- Save 2 to file -->    
+  <!--LMfile>Fire_mixlength.nc</LMfile--> <!-- Address to mixing lethng location--> 
+<!--/localMixingParam-->
 <fires>
 	<numFires>1</numFires>
-	<fuelType>1</fuelType>
+	<fuelType>3</fuelType>
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight> <!--meters-->
-    <xStart> 21.0 </xStart> <!--meters-->
-    <yStart> 21.0 </yStart> <!--meters-->
-    <length> 1.0 </length> <!--meters-->
+    <xStart> 250.0 </xStart> <!--meters-->
+    <yStart> 250.0 </yStart> <!--meters-->
+    <length> 10.0 </length> <!--meters-->
     <width>  1.0 </width> <!--meters-->
     <courant> 0.25 </courant>
 </fires>

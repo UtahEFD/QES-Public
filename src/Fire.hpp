@@ -70,7 +70,8 @@ class Fire {
         std::vector<float> yNorm;
 
         std::vector<float> Force;
-  
+  	std::vector<float> z_mix;
+	std::vector<float> z_mix_old;
         std::vector<float> Pot_u;
         std::vector<float> Pot_v;
         std::vector<float> Pot_w;

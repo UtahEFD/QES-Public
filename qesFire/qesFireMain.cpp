@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 {
     // QES-Winds - Version output information
     std::string Revision = "0";
-    std::cout << "QES-Winds " << "1.0.0" << std::endl;
+    std::cout << "QES-Fire " << "1.0.0" << std::endl;
 
 #ifdef HAS_OPTIX
     std::cout << "OptiX is available!" << std::endl;
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     // Parse the base XML QUIC file -- contains simulation parameters
     WINDSInputData* WID = parseXMLTree(arguments.quicFile);
     if ( !WID ) {
-        std::cerr << "[ERROR] QUIC Input file: " << arguments.quicFile <<
+        std::cerr << "[ERROR] QES Input file: " << arguments.quicFile <<
             " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -245,7 +245,7 @@ int main(int argc, char *argv[])
         
         // loop 2 times for fire
         int loop = 0;
-        while (loop<2) {
+        while (loop<1) {
             
             // run Balbi model to get new spread rate and fire properties
             fire->run(solver, WGD);
