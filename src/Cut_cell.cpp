@@ -1,13 +1,11 @@
 
 #include "Cut_cell.h"
 
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 
 
-
-void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, int nx, int ny, int nz, float dx, float dy,
-								std::vector<float> &dz_array, std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e,
-								std::vector<float> &h, std::vector<float> &g, float pi, std::vector<int> &icellflag, std::vector<float> &terrain_volume_frac,
-								std::vector<float> &z_face, float halo_x, float halo_y)
+void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, const WINDSInputData *WID, WINDSGeneralData *WGD)								
 {
 
 	std::vector<int> cutcell_index;							 // Index of cut-cells
@@ -16,24 +14,24 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 	Vector3 <float> location; 						// Coordinates of the left corner of cell face
 
 
-	cells = new Cell[(nx-1)*(ny-1)*(nz-1)];
+	cells = new Cell[(WGD->nx-1)*(WGD->ny-1)*(WGD->nz-1)];
 	// Get cut-cell indices from terrain function
-	cutcell_index = DTEHF->setCells(cells, nx, ny, nz, dx, dy, dz_array, z_face, halo_x, halo_y);
+	cutcell_index = DTEHF->setCells(cells, WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, WGD->dz_array, WGD->z_face, WID->simParams->halo_x, WID->simParams->halo_y);
 
 	std::cout<<"number of cut cells:" << cutcell_index.size() << "\n";
 
 	// Set icellflag value for terrain cells
 #pragma acc parallel loop independent
-	for (int i=0; i<nx-1; i++)
+	for (int i=0; i<WGD->nx-1; i++)
 	{
-		for (int j=0; j<ny-1; j++)
+		for (int j=0; j<WGD->ny-1; j++)
 		{
-			for (int k=1; k<nz-1; k++)
+			for (int k=1; k<WGD->nz-1; k++)
 			{
-				int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+				int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
 				if (cells[icell_cent].getIsTerrain())
 				{
-					icellflag[icell_cent] = 2;
+					WGD->icellflag[icell_cent] = 2;
 				}
 			}
 		}
@@ -42,7 +40,7 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 #pragma acc parallel loop independent
 	for (auto i = 0; i < cutcell_index.size(); i++)
 	{
-		icellflag[cutcell_index[i]] = 8;
+		WGD->icellflag[cutcell_index[i]] = 8;
 	}
 
 	float S_front, S_behind, S_right, S_left, S_below, S_above;
@@ -60,9 +58,9 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 		location = cells[cutcell_index[j]].getLocationPoints();
 		terrainEdges = cells[cutcell_index[j]].getTerrainEdges();
 		std::vector< Vector3<float> > terrainPoints = cells[cutcell_index[j]].getTerrainPoints();
-		int k = cutcell_index[j]/((nx-1)*(ny-1));
-		int jjj = (cutcell_index[j] - k*(nx-1)*(ny-1))/(nx-1);
-		int iii = cutcell_index[j] - k*(nx-1)*(ny-1) - jjj*(nx-1);
+		int k = cutcell_index[j]/((WGD->nx-1)*(WGD->ny-1));
+		int jjj = (cutcell_index[j] - k*(WGD->nx-1)*(WGD->ny-1))/(WGD->nx-1);
+		int iii = cutcell_index[j] - k*(WGD->nx-1)*(WGD->ny-1) - jjj*(WGD->nx-1);
 		//for every face
 		for (int i = 0; i < 6; i++)
 		{
@@ -85,19 +83,19 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 					reorderPoints(cut_points, i, pi);
 					if ( i == 0 )
 					{
-						S_right = calculateArea(cut_points, cutcell_index[j], dx, dy, dz_array[k], n, m, f, e, h, g, i);
+						S_right = calculateArea(cut_points, cutcell_index[j], WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
 					}
 					if ( i == 1 )
 					{
-						S_left = calculateArea(cut_points, cutcell_index[j], dx, dy, dz_array[k], n, m, f, e, h, g, i);
+						S_left = calculateArea(cut_points, cutcell_index[j], WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
 					}
 					if ( i == 2 )
 					{
-						S_front = calculateArea(cut_points, cutcell_index[j], dx, dy, dz_array[k], n, m, f, e, h, g, i);
+						S_front = calculateArea(cut_points, cutcell_index[j], WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
 					}
 					if ( i == 3 )
 					{
-						S_behind = calculateArea(cut_points, cutcell_index[j], dx, dy, dz_array[k], n, m, f, e, h, g, i);
+						S_behind = calculateArea(cut_points, cutcell_index[j], WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
 					}
 				}
 			}
@@ -106,13 +104,13 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 			if (i == 4)
 			{
 				S_below = calculateAreaTopBot(terrainPoints, terrainEdges,cutcell_index[j],
-											dx, dy, dz_array[k], location, n, true);
+											WGD->dx, WGD->dy, WGD->dz_array[k], location, WGD->n, true);
 			}
 
 			if (i == 5)
 			{
 				S_above = calculateAreaTopBot(terrainPoints, terrainEdges,cutcell_index[j],
-											dx, dy, dz_array[k], location, m, false);
+											WGD->dx, WGD->dy, WGD->dz_array[k], location, WGD->m, false);
 			}
 
 			S_cut = sqrt( pow(S_behind - S_front, 2.0) + pow(S_right - S_left, 2.0) + pow(S_below - S_above, 2.0) );
@@ -126,45 +124,49 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, in
 
       if (i == 0 )
       {
-				solid_V_frac += (0.0*(-1)*S_right)/(3*dx*dy*dz_array[k]);
+				solid_V_frac += (0.0*(-1)*S_right)/(3*WGD->dx*WGD->dy*WGD->dz_array[k]);
       }
 
       if (i == 1 )
       {
-				solid_V_frac += (dy*(1)*S_left)/(3*dx*dy*dz_array[k]);
+				solid_V_frac += (WGD->dy*(1)*S_left)/(3*WGD->dx*WGD->dy*WGD->dz_array[k]);
       }
 
       if (i == 2 )
       {
-				solid_V_frac += (dx*(1)*S_front)/(3*dx*dy*dz_array[k]);
+				solid_V_frac += (WGD->dx*(1)*S_front)/(3*WGD->dx*WGD->dy*WGD->dz_array[k]);
       }
 
       if (i == 3 )
       {
-				solid_V_frac += (0.0*(-1)*S_behind)/(3*dx*dy*dz_array[k]);
+				solid_V_frac += (0.0*(-1)*S_behind)/(3*WGD->dx*WGD->dy*WGD->dz_array[k]);
       }
 
       if (i == 4 )
       {
-				solid_V_frac += (0.0*(-1)*S_below)/(3*dx*dy*dz_array[k]);
+				solid_V_frac += (0.0*(-1)*S_below)/(3*WGD->dx*WGD->dy*WGD->dz_array[k]);
       }
 
       if (i == 5 )
       {
-				solid_V_frac += (dz_array[k]*(1)*S_above)/(3*dx*dy*dz_array[k]);
+				solid_V_frac += (WGD->dz_array[k]*(1)*S_above)/(3*WGD->dx*WGD->dy*WGD->dz_array[k]);
       }
 		}
 
 		if (terrainPoints.size() != 0)
     {
-			solid_V_frac += (((terrainPoints[0][0]-location[0])*ni*S_cut) + ((terrainPoints[0][1]-location[1])*nj*S_cut) + ((terrainPoints[0][2]-location[2])*nk*S_cut) )/(3*dx*dy*dz_array[k]);
+			solid_V_frac += (((terrainPoints[0][0]-location[0])*ni*S_cut) + ((terrainPoints[0][1]-location[1])*nj*S_cut) + ((terrainPoints[0][2]-location[2])*nk*S_cut) )/(3*WGD->dx*WGD->dy*WGD->dz_array[k]);
 		}
 
-    terrain_volume_frac[cutcell_index[j]] -= solid_V_frac;
+    WGD->terrain_volume_frac[cutcell_index[j]] -= solid_V_frac;
 
-    if (terrain_volume_frac[cutcell_index[j]] < 0.0)
+		WGD->ni[cutcell_index[j]] = ni;
+		WGD->nj[cutcell_index[j]] = nj;
+		WGD->nk[cutcell_index[j]] = nk;
+
+    if (WGD->terrain_volume_frac[cutcell_index[j]] < 0.0)
     {
-      terrain_volume_frac[cutcell_index[j]] = 0.0;
+      WGD->terrain_volume_frac[cutcell_index[j]] = 0.0;
     }
 
 	}
