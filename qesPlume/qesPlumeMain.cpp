@@ -99,17 +99,17 @@ int main(int argc, char** argv)
     }
     
     // Run plume advection model
-    plume->run(WGD,TGD,eul,outputVec);
+    plume->run(PID->simParams->simDur,WGD,TGD,eul,outputVec);
 
     // compute run time information and print the elapsed execution time
-    std::cout<<"[QES-Plume] \t Finished."<<std::endl;
-    std::cout << "\t\t End run particle summary " << std::endl; 
-    std::cout << "\t\t ----------------------------------------- " << std::endl;
-    std::cout << "\t\t Total number of particles released: " << plume->getNumReleasedParticles() << std::endl;      
-    std::cout << "\t\t Current number of particles in simulation: " << plume->getNumCurrentParticles() << std::endl; 
-    std::cout << "\t\t Number of rogue particles: " << plume->getNumRogueParticles() << std::endl; 
-    std::cout << "\t\t Number of deleted particles: " << plume->getNumNotActiveParticles() << std::endl;    
-    std::cout << "\t\t ----------------------------------------- " << std::endl;
+    std::cout<<"[QES-Plume] \t Finished. \n"<<std::endl;     
+    std::cout << "End run particle summary \n"; 
+    std::cout << "----------------------------------------------------------------- \n";
+    std::cout << "Total number of particles released: " << plume->getNumReleasedParticles() << "\n";      
+    std::cout << "Current number of particles in simulation: " << plume->getNumCurrentParticles() << "\n"; 
+    std::cout << "Number of rogue particles: " << plume->getNumRogueParticles() << "\n";    
+    std::cout << "Number of deleted particles: " << plume->getNumNotActiveParticles() << "\n";    
+    std::cout << "----------------------------------------------------------------- \n" << std::endl;
     timers.printStoredTime("QES-Plume total runtime");
     std::cout<<"##############################################################"<<std::endl;
     

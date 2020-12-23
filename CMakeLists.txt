@@ -12,9 +12,9 @@ MESSAGE(STATUS "CMake Module Path: ${CMAKE_MODULE_PATH}")
 
 PROJECT(qesPlume)
 
-SET(CUDAURB_VERSION_INFO -${cudaUrb_Toolkit_VERSION_MAJOR}.${MinVR_Toolkit_VERSION_MINOR})
+SET(QESPLUME_VERSION_INFO -${qesPlume_Toolkit_VERSION_MAJOR}.${MinVR_Toolkit_VERSION_MINOR})
 
-MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of cudaUrb.")
+MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of QES-Plume.")
 MESSAGE(STATUS "If you want something different, use -DCMAKE_BUILD_TYPE=Debug, Release, RelWithDebInfo, MinSizeRel.")
 
 #

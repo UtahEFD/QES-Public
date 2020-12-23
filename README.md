@@ -5,13 +5,12 @@ by Andrew Larson (urb), Alex (Gai) Geng (plume), Balwinder Singh
 (plume), Pete Willemsen (urb, plume) and Eric Pardyjak (urb,
 plume). These versions of the code are done in CUDA.
 
-The code has been updated by Loren Atwood to match methods given by
-Brian Bailey to completely eliminate rogue trajectories.
+The code has been updated by Loren Atwood and Fabien Margairaz to match methods given by Brian Bailey to completely eliminate rogue trajectories.
 
 ## GPU-Plume (3D GLE Model)
 
 This plume model uses Balwinder Singh's 3D GLE model from his
-dissertation. This code currently relies on CUDA 8.0. The code
+dissertation. This code currently relies on CUDA 10.2. The code
 requires a recent Linux distribution (Ubuntu 16.04) and a recent
 NVIDIA graphics card and somewhat recent NVIDIA Linux drivers.
 
@@ -22,8 +21,8 @@ Follows Brian Bailey's Lagrangian Implicit method for eliminating rogue trajecto
 
 To compile plume so the test cases run easily, make sure you are in the top directory, then create a new build directory
 ```
-mkdir build_plume
-cd build_plume
+mkdir build
+cd build
 ```
 Note that if you installed CUDA or Boost in non-standard places, you
 will need to run cmake interactively to manually type in the locations
@@ -36,7 +35,7 @@ Alternatively, if you know where you installed CUDA and libsivelab,
 you can run cmake with command line options that will set up the
 project correctly. For instance:
 ```
-cmake .. -DCUDA_TOOLKIT_ROOT_DIR=/home/cuda_8.0 -DCUDA_SDK_ROOT_DIR=/home/cuda_8.0
+cmake .. -DCUDA_TOOLKIT_ROOT_DIR=/home/cuda_10.2 -DCUDA_SDK_ROOT_DIR=/home/cuda_10.2
 ```
 Once cmake has been configured, the GPU plume code can be compiled.
 ```
@@ -51,8 +50,7 @@ For QES-Plume, OptiX support is not required for QES-Plume.
 
 ### CUDA 10.2 Based Builds
 
-To build with CUDA 10.1 without any OptiX GPU acceleration, please use the following modules:
-
+To build with CUDA 10.2 without any OptiX GPU acceleration, please use the following modules:
 ```
 module load cuda/10.2
 module load gcc/8.1.0
@@ -63,7 +61,6 @@ module load netcdf-cxx
 ```
 
 After completing the above module loads, the following modules are reported from `module list`:
-
 ```
 Currently Loaded Modules:
   1) chpc/1.0     (S)   3) gdal/3.0.1        5) netcdf-c/4.4.1     7) cuda/10.2 (g)   9) boost/1.69.0
@@ -110,6 +107,39 @@ After you've created the Makefiles with the cmake commands above, the code can b
 make
 ```
 Note you may need to type make a second time due to a build bug, especially on the CUDA 8.0 build.
+
+### Running the code
+
+The code is run through the command line (example to display command lines options, from the build directory):
+``` 
+./qesPlume/qesPlume -?
+
+##############################################################
+#                                                            #
+#                   Welcome to QES-PLUME                     #
+#                                                            #
+##############################################################
+Allowed options:
+  -? [ --help ]                  help/usage information
+  -q [ --inputQESFile ] arg      specifies input xml settings file
+  -u [ --inputWINDSFile ] arg    specifies input qes-winds file
+  -t [ --inputTURBFile ] arg     specifies input qes-turb file
+  -o [ --outputFolder ] arg      select output folder for output files
+  -b [ --caseBaseName ] arg      specify case base name for file naming
+  -e [ --doEulDataOutput ]       should debug Eulerian data be output
+  -l [ --doParticleDataOutput ]  should debug Lagrangian data be output
+  -s [ --doSimInfoFileOutput ]   should debug simInfoFile be output
+  -d [ --debug ]                 should command line output include debug info
+  -v [ --verbose ]               should command line output include verbose 
+                                 info
+```
+Options -l enable particle info output files (require particleOutputParameters in XML).
+Options -v is for more runtime verbose. Options -e -s -d are for debug use. 
+
+Example of command line:
+```
+./qesPlume/qesPlume -q <pathto>/inputQESFile.xml -u <pathto>/WINDSFILE_windsWk.nc -t <pathto>/TURBFILE_turbOut.nc -o <pathto>/outputFolder -b PLUMEFILENAME 
+```
 
 
 ### Running the test cases on chpc
@@ -178,20 +208,6 @@ Getting the right type of gpu is also tricky. Basically different accounts have 
 
 
 The example runscript files may or may not work for you, but they are the starting spot to figure out combinations that should work for you. If they have kp in the name, they are for kingspeak. If np, they are for notchpeak. If they have cpu, they are for cpu only computations. If they have gpu in the name, they are for a mix of cpu and gpu computations. Note even if the code has been pre-built, you will need to repeat the module loads as if compiling the script the first time you run the code from a new login session.
-
-
-\
-\
-It can be tricky to transfer files back and forth with chpc. To access kingspeak or notchpeak, do one of these two lines of code, putting in your uID:
-```
-ssh uID@kingspeak.chpc.utah.edu
-or
-ssh uID@notchpeak.chpc.utah.edu
-```
-After you figure out where you want to send files on the chpc server, and you are in the directory of the folder you want to send (in this case one folder above CUDA-Plume), do the following:
-```
-scp -r ./CUDA-Plume/ uID@kingspeak.chpc.utah.edu:CUDA-Plume/
-```
 
 
 

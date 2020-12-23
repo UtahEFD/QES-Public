@@ -1,6 +1,7 @@
 #include "Plume.hpp"
 
-void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul)
+//void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul)
+void Plume::advectParticle(double timeRemainder, std::list<Particle*>::iterator parItr, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul)
 {
 
     double rhoAir=1.225;   // in kg m^-3
@@ -78,8 +79,7 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr,
     double delta_uFluct = 0.0;
     double delta_vFluct = 0.0;
     double delta_wFluct = 0.0;
-                
-                
+    
     // time to do a particle timestep loop. start the time remainder as the simulation timestep.
     // at each particle timestep loop iteration the time remainder gets closer and closer to zero.
     // the particle timestep for a given particle timestep loop is either the time remainder or the value calculated
@@ -88,14 +88,8 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr,
     // LA important note: can't use the simulation timestep for the timestep remainder, the last simulation timestep
     //  is potentially smaller than the simulation timestep. So need to use the simTimes.at(nSimTimes-1)-simTimes.at(nSimTimes-2)
     //  for the last simulation timestep. The problem is that simTimes.at(nSimTimes-1) is greater than simTimes.at(nSimTimes-2) + sim_dt.
-    // FMargairaz -> need clean-up
-    double timeRemainder = sim_dt;
-    if( sim_tIdx == nSimTimes-2 ) {  // at the final timestep
-        timeRemainder = simTimes.at(nSimTimes-1) - simTimes.at(nSimTimes-2);
-    }
-    double par_time = simTimes.at(sim_tIdx);    // the current time, updated in this loop with each new par_dt. 
-    // Will end at simTimes.at(sim_tIdx+1) at the end of this particle loop
-                
+    // FMargairaz -> need clean-up the comment
+
     while( isActive == true && timeRemainder > 0.0 ) {
 
         /*
@@ -159,7 +153,7 @@ void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr,
         double par_dt = calcCourantTimestep(uMean+uFluct,vMean+vFluct,wMean+wFluct,timeRemainder);
 
         // update the par_time, useful for debugging
-        par_time = par_time + par_dt;
+        //par_time = par_time + par_dt;
         
         // now need to calculate the inverse values for tau
         // directly modifies the values of tau
