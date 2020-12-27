@@ -1,6 +1,6 @@
 #include "WINDSGeneralData.h"
 
-WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
+WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 {
    if ( WID->simParams->upwindCavityFlag == 1) {
       lengthf_coeff = 2.0;
@@ -268,7 +268,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
    // so it would have access to all the sensors naturally.
    // Make this change later.
    //    WID->metParams->inputWindProfile(WID, this);
-   WID->metParams->sensors[0]->inputWindProfile(WID, this, 0);
+   WID->metParams->sensors[0]->inputWindProfile(WID, this, 0, solverType);
 
    std::cout << "Sensors have been loaded (total sensors = " << WID->metParams->sensors.size() << ")." << std::endl;
 
