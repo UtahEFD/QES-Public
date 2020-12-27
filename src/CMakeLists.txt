@@ -26,6 +26,7 @@ CUDA_ADD_LIBRARY( qeswindscore
   QESNetCDFOutput.cpp
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
+  Sensor.cu
   Solver.cpp
   Triangle.cpp
   TURBParams.h
