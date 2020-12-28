@@ -422,6 +422,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 
 	}
 
+
   float z0_domain;
 	if (WID->metParams->z0_domain_flag == 1)
 	{
@@ -652,6 +653,8 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
 				u34 = (1-(dxx/WGD->dx))*WGD->u0[index_work]+(dxx/WGD->dx)*WGD->u0[index_work+1];
 				u0_int[ii] = (dyy/WGD->dy)*u12+(1-(dyy/WGD->dy))*u34;
 
+
+
 				v12 = (1-(dxx/WGD->dx))*WGD->v0[index_work+WGD->nx]+(dxx/WGD->dx)*WGD->v0[index_work+1+WGD->nx];
 				v34 = (1-(dxx/WGD->dx))*WGD->v0[index_work]+(dxx/WGD->dx)*WGD->v0[index_work+1];
 				v0_int[ii] = (dyy/WGD->dy)*v12+(1-(dyy/WGD->dy))*v34;
@@ -677,6 +680,7 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
 					sum_wv += wm[ii][i][j]*(v_prof[ii][k]-v0_int[ii]);
 					sum_wm += wm[ii][i][j];
 				}
+
 				if (sum_wm != 0)
 				{
 					icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;

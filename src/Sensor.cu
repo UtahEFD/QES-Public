@@ -99,14 +99,14 @@ __global__ void CalculateInitialWind (float *d_wm, float *d_sum_wm, float *d_sum
 __global__ void CalculateInit (float *d_site_xcoord, float *d_site_ycoord, float *d_x, float *d_y, float *d_dxx, float *d_dyy,
                                 int *d_iwork, int *d_jwork, float *d_u12, float *d_u34, float *d_v12, float *d_v34, float *d_u0_int,
                                 float *d_v0_int, float *d_u0, float *d_v0, float *d_u_prof, float *d_v_prof, int num_sites,
-                                int dx, int dy, int nx, int ny, int nz)
+                                float dx, float dy, int nx, int ny, int nz)
 {
   int ii = blockDim.x*blockIdx.x+threadIdx.x;
-
   if (ii < num_sites)
   {
     if(d_site_xcoord[ii] > 0 && d_site_xcoord[ii] < (nx-1)*dx && d_site_ycoord[ii] > 0 && d_site_ycoord[ii] < (ny-1)*dy)
     {
+
       for (int j = 0; j < ny; j++)
       {
         if (d_y[j] < d_site_ycoord[ii])
@@ -137,9 +137,12 @@ __global__ void CalculateInit (float *d_site_xcoord, float *d_site_ycoord, float
 				d_v34[id] = (1-(d_dxx[ii]/dx))*d_v0[d_iwork[ii]+d_jwork[ii]*nx+k*nx*ny]+(d_dxx[ii]/dx)*d_v0[d_iwork[ii]+d_jwork[ii]*nx+k*nx*ny+1];
 				d_v0_int[ii] = (d_dyy[ii]/dy)*d_v12[id]+(1-(d_dyy[ii]/dy))*d_v34[id];
 
+
         d_u_prof [id] = d_u_prof [id] - d_u0_int[ii];
         d_v_prof [id] = d_v_prof [id] - d_v0_int[ii];
+
       }
+
     }
     else
     {
@@ -181,6 +184,8 @@ __global__ void CorrectInitialWind (float *d_wm, float *d_sum_wm, float *d_sum_w
         d_sum_wm[i+j*nx] = d_sum_wm[i+j*nx] + d_wm[id+i*num_sites+j*num_sites*nx];
 
       }
+
+
       if (d_sum_wm[i+j*nx] != 0.0)
       {
         int icell_face = i + j*nx + k*nx*ny;
@@ -200,7 +205,7 @@ __global__ void BarnesScheme (float *d_u_prof, float *d_v_prof, float *d_wm, flo
                               float *d_x, float *d_y, float *d_site_xcoord, float *d_site_ycoord, float *d_sum_wm, float *d_sum_wu,
                               float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, int *d_iwork, int *d_jwork, float *d_dxx,
                               float *d_dyy, float *d_u12, float *d_u34, float *d_v12, float *d_v34, int num_sites, int nx, int ny,
-                              int nz, int dx, int dy)
+                              int nz, float dx, float dy)
 {
   float rc_sum, rc_val, xc, yc, rc;
 	float dn, lamda, s_gamma;
@@ -219,6 +224,7 @@ __global__ void BarnesScheme (float *d_u_prof, float *d_v_prof, float *d_wm, flo
 		}
 		rc_sum = rc_sum+rc_val;
 	}
+
   dn = rc_sum/num_sites;
 	lamda = 5.052*pow((2*dn/M_PI),2.0);
 	s_gamma = 0.2;
