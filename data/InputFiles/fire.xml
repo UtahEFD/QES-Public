@@ -2,10 +2,10 @@
         
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
-    <domain> 500 500 100 </domain> <!-- nx,ny,nz-->
+    <domain> 100 100 100 </domain> <!-- nx,ny,nz-->
 	<cellSize> 1.0 1.0 0.25 </cellSize> <!-- dx, dy,dz [Meters]-->	
 	<verticalStretching> 0 </verticalStretching>
-	<totalTimeIncrements> 200 </totalTimeIncrements>
+	<totalTimeIncrements> 60 </totalTimeIncrements>
 	<!--UTCConversion> 0 </UTCConversion-->
 	<!--Epoch> 1510930800 </Epoch-->
 	<rooftopFlag> 1 </rooftopFlag>
@@ -16,7 +16,7 @@
 	<sidewallFlag> 1 </sidewallFlag>
 	<maxIterations> 500 </maxIterations>
 	<tolerance> 1E-9 </tolerance>
-	<meshTypeFlag> 0 </meshTypeFlag>
+	<meshTypeFlag> 1 </meshTypeFlag>
 	<!--useDiffusion> 0 </useDiffusion-->
 	<domainRotation> 0 </domainRotation>
 	<UTMX> 0 </UTMX>
@@ -48,7 +48,7 @@
        		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
        		<height> 10.0 </height> 				<!-- Height of the sensor -->
        		<speed> 5.0 </speed> 					<!-- Measured speed at the sensor height -->
-       		<direction> 270.0 </direction> 				<!-- Wind direction of sensor -->
+       		<direction> 0.0 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
 	</sensor>                      					<!-- End of sensor section -->
 </metParams>
@@ -63,8 +63,8 @@
 	<fuelType>3</fuelType>
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight> <!--meters-->
-    <xStart> 250.0 </xStart> <!--meters-->
-    <yStart> 250.0 </yStart> <!--meters-->
+    <xStart> 50.0 </xStart> <!--meters-->
+    <yStart> 50.0 </yStart> <!--meters-->
     <length> 10.0 </length> <!--meters-->
     <width>  1.0 </width> <!--meters-->
     <courant> 0.25 </courant>
