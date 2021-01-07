@@ -24,7 +24,6 @@ public:
     TURBParams* turbParams;
     Buildings* buildings;
     Canopies* canopies;
-
     Fires* fires;
 
 

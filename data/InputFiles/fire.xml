@@ -68,6 +68,7 @@
     <length> 10.0 </length> <!--meters-->
     <width>  1.0 </width> <!--meters-->
     <courant> 0.25 </courant>
+    <fieldFlag> 0 </fieldFlag> <!-- flag for if multiple timesteps for fire 
 </fires>
 <fileOptions>
 	<outputFlag>1</outputFlag>

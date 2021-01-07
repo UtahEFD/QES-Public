@@ -5,25 +5,23 @@
 *
 *  Created by Matthew Moody, Jeremy Gibbs on 12/27/18.
 */
-
 #include "Fire.hpp"
 
 using namespace std;
-
-
 float PI = 3.14159265359;
-//Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD, Output* output) {
 Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
     // get domain information
     nx = WGD->nx;
     ny = WGD->ny;
-    nz = WGD->nz;
-    
+    nz = WGD->nz;    
     dx = WGD->dx;
     dy = WGD->dy;
     dz = WGD->dz;
+    FFII_flag = WID->fires->fieldFlag;
 
-    // set-up the mapper array - cell centered
+    /**
+     * Set-up the mapper array - cell centered
+     **/
     fire_cells.resize((nx-1)*(ny-1));
     burn_flag.resize((nx-1)*(ny-1));
     burn_out.resize((nx-1)*(ny-1));
@@ -44,7 +42,6 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
     Pot_u.resize((nx-1)*(ny-1)*(nz-2));
     Pot_v.resize((nx-1)*(ny-1)*(nz-2));
     Pot_w.resize((nx-1)*(ny-1)*(nz-2));
-    //Pot_w_out.resize((nx-1)*(ny-1)*(nz-3));
     
     // Open netCDF for Potential Field as read only
     NcFile Potential("../data/FireFiles/HeatPot.nc", NcFile::read);
@@ -67,11 +64,9 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
     std::vector<size_t> countsField = {static_cast<unsigned long>(pot_z),
                                        static_cast<unsigned long>(pot_r)};
 
-
     // Get variables from netCDF file
     Potential.getVar("u_r").getVar(startIdxField, countsField, u_r.data());
     Potential.getVar("u_z").getVar(startIdxField, countsField, u_z.data());
-
     Potential.getVar("G").getVar({0}, {pot_G}, G.data());
     Potential.getVar("Gprime").getVar({0}, {pot_G}, Gprime.data());
     Potential.getVar("rStar").getVar({0}, {pot_rStar}, rStar.data());
@@ -154,8 +149,8 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
     for (int j = j_start; j < j_end; j++){
         for (int i = i_start; i < i_end; i++){
 	  int idx = i + j*(nx-1);
-	    	fire_cells[idx].state.burn_flag = 1;
-            fire_cells[idx].state.front_flag = 1;
+	  fire_cells[idx].state.burn_flag = 1;
+          fire_cells[idx].state.front_flag = 1;
         }
     }
     
@@ -165,7 +160,7 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
     for (int j = 0; j < ny-1; j++){
         for (int i = 0; i < nx-1; i++){
 	  int idx = i + j*(nx-1);       
-            burn_flag[idx] = fire_cells[idx].state.burn_flag;
+          burn_flag[idx] = fire_cells[idx].state.burn_flag;
         }
     }
     
@@ -184,14 +179,13 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
                 for (int jj = 0; jj < ny-1; jj++){
                     for (int ii = 0; ii < nx-1; ii++){
 		      int idx2 = ii + jj*(nx-1);
-                        if (fire_cells[idx2].state.front_flag == 1){
-                            sdf_min = sqrt ((ii-i)*(ii-i) + (jj-j)*(jj-j));
-                        }
-                        else{
-                            sdf_min = 1000;
-                        }
-                        
-                        sdf = sdf_min < sdf ? sdf_min : sdf;
+                      if (fire_cells[idx2].state.front_flag == 1){
+                          sdf_min = sqrt ((ii-i)*(ii-i) + (jj-j)*(jj-j));
+                      }
+                      else{
+                          sdf_min = 1000;
+                      }
+                      sdf = sdf_min < sdf ? sdf_min : sdf;
                     }
                 }
                 front_map[idx] = sdf;                
@@ -212,29 +206,7 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
 	    float delzx = WGD->terrain[idxp]-WGD->terrain[idxm];
 	    float delzy = WGD->terrain[idyp]-WGD->terrain[idym];
 	    slope_x[id] = (delzx/(2*dx))/sqrt(delzx*delzx + 2*dx*2*dx);
-	    slope_y[id] = (delzy/(2*dy))/sqrt(delzy*delzy + 2*dy*2*dy);
-	    //std::cout<<"["<<i<<"]["<<j<<"] slope x = "<<slope_x[id]<<", slope y = "<<slope_y[id]<<std::endl;
-	    /*
-	    int TID = std::round(WGD->terrain[idx]/dz);
-	    
-	    std::cout<<"TID = ["<<TID<<"], i = ["<<i<<"], j = ["<<j<<"]"<<std::endl;
-	    
-	    int id = i+j*(nx-1)+(TID)*(nx-1)*(ny-1);
-	    float ni = WGD->ni[id];
-	    float nj = WGD->nj[id];
-	    float nk = WGD->nk[id];
-	    if (nk<0.0001){
-		theta_x[idx] = 0;
-		theta_y[idx] = 0;
-	    } else {
-		theta_x[idx] = PI/2 - acos(ni/nk);
-	        theta_y[idx] = PI/2 - acos(nj/nk);
-	    }
-	    std::cout<<"ni,nj,nk = ["<<ni<<"]["<<nj<<"]["<<nk<<"]"<<std::endl;
-	    std::cout<<"theta_x = "<<theta_x[idx]<<std::endl;
-	    std::cout<<"theta_y = "<<theta_y[idx]<<std::endl;
-	    */
-	    
+	    slope_y[id] = (delzy/(2*dy))/sqrt(delzy*delzy + 2*dy*2*dy);	    
 	}
     }
 }
@@ -251,8 +223,8 @@ float Fire :: computeTimeStep() {
     for (int j = 0; j < ny-1; j++){
         for (int i = 0; i < nx-1; i++){
 	  int idx = i + j*(nx-1);
-            r = fire_cells[idx].properties.r;       
-            r_max   = r > r_max ? r : r_max;
+          r = fire_cells[idx].properties.r;       
+          r_max   = r > r_max ? r : r_max;
         }
     }
     std::cout<<"max ROS = "<<r_max<<std::endl;
@@ -277,16 +249,16 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
 	  int idx = i + j*(nx-1);       
 	  int idxjp = i + (j+1)*(nx-1);
 	  int idxjm = i + (j-1)*(nx-1);
-            dmy = (front_map[idx] - front_map[idxjm])/dx;
-            dpy = (front_map[idxjp] - front_map[idx])/dx;
-            dmx = (front_map[idx] - front_map[idx-1])/dy;
-            dpx = (front_map[idx+1] - front_map[idx])/dy;
-            del_plus[idx] = sqrt(fmax(dmx,0)*fmax(dmx,0) + fmin(dpx,0)*fmin(dpx,0) + fmax(dmy,0)*fmax(dmy,0) + fmin(dpy,0)*fmin(dpy,0));
-            del_min[idx] = sqrt(fmax(dpx,0)*fmax(dpx,0) + fmin(dmx,0)*fmin(dmx,0) + fmax(dpy,0)*fmax(dpy,0) + fmin(dmy,0)*fmin(dmy,0));
-            n_star_x = dpx/sqrt(dpx*dpx + dpy*dpy) + dmx/sqrt(dmx*dmx + dpy*dpy) + dpx/sqrt(dpx*dpx + dmy*dmy) + dmx/sqrt(dmx*dmx + dmy*dmy);
-            n_star_y = dpy/sqrt(dpx*dpx + dpy*dpy) + dpy/sqrt(dmx*dmx + dpy*dpy) + dmy/sqrt(dpx*dpx + dmy*dmy) + dmy/sqrt(dmx*dmx + dmy*dmy);
-            xNorm[idx] = n_star_x/sqrt(n_star_x*n_star_x + n_star_y*n_star_y);
-            yNorm[idx] = n_star_y/sqrt(n_star_x*n_star_x + n_star_y*n_star_y);
+          dmy = (front_map[idx] - front_map[idxjm])/dx;
+          dpy = (front_map[idxjp] - front_map[idx])/dx;
+          dmx = (front_map[idx] - front_map[idx-1])/dy;
+          dpx = (front_map[idx+1] - front_map[idx])/dy;
+          del_plus[idx] = sqrt(fmax(dmx,0)*fmax(dmx,0) + fmin(dpx,0)*fmin(dpx,0) + fmax(dmy,0)*fmax(dmy,0) + fmin(dpy,0)*fmin(dpy,0));
+          del_min[idx] = sqrt(fmax(dpx,0)*fmax(dpx,0) + fmin(dmx,0)*fmin(dmx,0) + fmax(dpy,0)*fmax(dpy,0) + fmin(dmy,0)*fmin(dmy,0));
+          n_star_x = dpx/sqrt(dpx*dpx + dpy*dpy) + dmx/sqrt(dmx*dmx + dpy*dpy) + dpx/sqrt(dpx*dpx + dmy*dmy) + dmx/sqrt(dmx*dmx + dmy*dmy);
+          n_star_y = dpy/sqrt(dpx*dpx + dpy*dpy) + dpy/sqrt(dmx*dmx + dpy*dpy) + dmy/sqrt(dpx*dpx + dmy*dmy) + dmy/sqrt(dmx*dmx + dmy*dmy);
+          xNorm[idx] = n_star_x/sqrt(n_star_x*n_star_x + n_star_y*n_star_y);
+          yNorm[idx] = n_star_y/sqrt(n_star_x*n_star_x + n_star_y*n_star_y);
         }
     }
     /**
@@ -347,8 +319,7 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
         
         if (it!=fire_cells.end()) {
             cells_burning.push_back(std::distance(fire_cells.begin(), it));
-        }
-        
+        }    
         it = std::find_if (++it, fire_cells.end(),find_burn(1)); 
     }
     
@@ -367,7 +338,6 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
         //modify flame height by time on fire (assume linear functionality)
         float H = fire_cells[id].properties.h*(1-(fire_cells[id].state.burn_time/fire_cells[id].properties.tau));
 	float maxH = fire_cells[id].properties.h;       
-
                 
         // convert flat index to i, j at cell center
         int ii  = id % (nx-1);
