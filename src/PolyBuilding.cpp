@@ -2048,6 +2048,10 @@ void PolyBuilding::setCellFlags(const WINDSInputData* WID, WINDSGeneralData* WGD
 
         WGD->building_volume_frac[cut_cell_id[id]] -= solid_V_frac;
 
+        WGD->ni[cut_cell_id[id]] = cut_points[id].ni;
+        WGD->nj[cut_cell_id[id]] = cut_points[id].nj;
+        WGD->nk[cut_cell_id[id]] = cut_points[id].nk;
+
         if (WGD->building_volume_frac[cut_cell_id[id]] < 0.0)
         {
           WGD->building_volume_frac[cut_cell_id[id]] = 0.0;

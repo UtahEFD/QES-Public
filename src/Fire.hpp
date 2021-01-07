@@ -68,9 +68,11 @@ class Fire {
         std::vector<float> xNorm;
 
         std::vector<float> yNorm;
-
+	std::vector<float> slope_x;
+	std::vector<float> slope_y;
         std::vector<float> Force;
-  
+  	std::vector<float> z_mix;
+	std::vector<float> z_mix_old;
         std::vector<float> Pot_u;
         std::vector<float> Pot_v;
         std::vector<float> Pot_w;
@@ -118,7 +120,7 @@ class Fire {
 
         float rothermel(FuelProperties*, float, float, float);
                      
-        FireProperties balbi(FuelProperties*, float, float, float, float, float, float);
+        FireProperties balbi(FuelProperties*, float, float, float, float, float, float, float);
         
         FireProperties runFire(float, float, int);
 

@@ -32,7 +32,11 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
     del_min.resize((nx-1)*(ny-1));
     xNorm.resize((nx-1)*(ny-1));
     yNorm.resize((nx-1)*(ny-1));
+    slope_x.resize((nx-1)*(ny-1));
+    slope_y.resize((nx-1)*(ny-1));
     Force.resize((nx-1)*(ny-1));
+    z_mix.resize((nx-1)*(ny-1));
+    z_mix_old.resize((nx-1)*(ny-1));
     /**
      * Read Potential Field
      **/
@@ -43,7 +47,7 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
     //Pot_w_out.resize((nx-1)*(ny-1)*(nz-3));
     
     // Open netCDF for Potential Field as read only
-    NcFile Potential("../data/HeatPot.nc", NcFile::read);
+    NcFile Potential("../data/FireFiles/HeatPot.nc", NcFile::read);
 
     // Get size of netCDF data
     pot_z = Potential.getVar("u_r").getDim(0).getSize();
@@ -78,7 +82,7 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
     if(FFII_flag == 1){
 	// Open netCDF for fire times
 	//std::cout<<"nc file open"<<std::endl;
-    	NcFile FireTime("../data/FFII.nc", NcFile::read);
+    	NcFile FireTime("../data/FireFiles/FFII.nc", NcFile::read);
     	//std::cout<<"nc file read"<<std::endl;
     	// Get size of netCDF data
     	SFT_time = FireTime.getVar("time").getDim(0).getSize();
@@ -194,7 +198,45 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
             }
         }
     }
-
+    /**
+    * Calculate slope at each terrain cell
+    */
+	
+    for (int j=1; j < ny-2; j++){
+        for (int i=1; i < nx-2; i++){
+	    int id = i + j*(nx-1);
+	    int idxp = (i+1) + j*(nx-1);
+	    int idxm = (i-1) + j*(nx-1);
+	    int idyp = i + (j+1)*(nx-1);
+	    int idym = i + (j-1)*(nx-1);
+	    float delzx = WGD->terrain[idxp]-WGD->terrain[idxm];
+	    float delzy = WGD->terrain[idyp]-WGD->terrain[idym];
+	    slope_x[id] = (delzx/(2*dx))/sqrt(delzx*delzx + 2*dx*2*dx);
+	    slope_y[id] = (delzy/(2*dy))/sqrt(delzy*delzy + 2*dy*2*dy);
+	    //std::cout<<"["<<i<<"]["<<j<<"] slope x = "<<slope_x[id]<<", slope y = "<<slope_y[id]<<std::endl;
+	    /*
+	    int TID = std::round(WGD->terrain[idx]/dz);
+	    
+	    std::cout<<"TID = ["<<TID<<"], i = ["<<i<<"], j = ["<<j<<"]"<<std::endl;
+	    
+	    int id = i+j*(nx-1)+(TID)*(nx-1)*(ny-1);
+	    float ni = WGD->ni[id];
+	    float nj = WGD->nj[id];
+	    float nk = WGD->nk[id];
+	    if (nk<0.0001){
+		theta_x[idx] = 0;
+		theta_y[idx] = 0;
+	    } else {
+		theta_x[idx] = PI/2 - acos(ni/nk);
+	        theta_y[idx] = PI/2 - acos(nj/nk);
+	    }
+	    std::cout<<"ni,nj,nk = ["<<ni<<"]["<<nj<<"]["<<nk<<"]"<<std::endl;
+	    std::cout<<"theta_x = "<<theta_x[idx]<<std::endl;
+	    std::cout<<"theta_y = "<<theta_y[idx]<<std::endl;
+	    */
+	    
+	}
+    }
 }
 
 /**
@@ -214,6 +256,9 @@ float Fire :: computeTimeStep() {
         }
     }
     std::cout<<"max ROS = "<<r_max<<std::endl;
+    if (r_max < 0.00001){
+	r_max = 0.1;
+    }
     return courant * dx / r_max;
 }
 
@@ -244,12 +289,17 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
             yNorm[idx] = n_star_y/sqrt(n_star_x*n_star_x + n_star_y*n_star_y);
         }
     }
+    /**
+     * Reset forcing function for level set
+     */
+    std::fill (Force.begin(),Force.end(),0);
 
     /**
      * Calculate Forcing Function (Balbi model at mid-flame height or first grid cell if no fire)
      */
-    for (int j=0; j < ny-1; j++){
-        for (int i=0; i < nx-1; i++){
+    
+    for (int j=1; j < ny-2; j++){
+        for (int i=1; i < nx-2; i++){
 	    int idx = i + j*(nx-1);
             // get fuel properties at this location
             struct FuelProperties* fuel = fire_cells[idx].fuel;
@@ -261,7 +311,7 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
             float FD = H + T + D;
         
             if (H==0) {
-                kh = 1;
+                kh = std::round(T/dz);
             } else {
                 kh = std::round(FD/dz);
             }
@@ -270,17 +320,13 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
 	    int cell_face = i + j*nx + kh*nx*ny;
             float u = 0.5*(WGD->u[cell_face] + WGD->u[cell_face+1]);
             float v = 0.5*(WGD->v[cell_face] + WGD->v[cell_face+nx]);
-            // call norm for cells
-            float x_norm = xNorm[idx];
-            float y_norm = yNorm[idx];
             // run Balbi model
-            struct FireProperties fp = balbi(fuel,u,v,x_norm,y_norm,0.0,0.0650);
+            struct FireProperties fp = balbi(fuel,u,v,xNorm[idx],yNorm[idx],slope_x[idx],slope_y[idx],0.0650);
             fire_cells[idx].properties = fp;
             Force[idx] = fp.r;
         }
     }
-    // compute time step
-    dt = computeTimeStep();
+    
     
     // indices for burning cells
     std::vector<int> cells_burning;
@@ -321,27 +367,31 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
         //modify flame height by time on fire (assume linear functionality)
         float H = fire_cells[id].properties.h*(1-(fire_cells[id].state.burn_time/fire_cells[id].properties.tau));
 	float maxH = fire_cells[id].properties.h;       
-	float T = WGD->terrain[id];
+
+                
+        // convert flat index to i, j at cell center
+        int ii  = id % (nx-1);
+        int jj  = (id / (nx-1)) % (ny-1);
+	int idx = ii+jj*nx;	
+	float T = WGD->terrain[idx];
         float D = fuel->fueldepthm;
-        
+        int TID = std::round(T/dz);
         float FD = H/2.0 + T + D;
 	float MFD = maxH + T + D;
        
 
         if (H==0) {
-            kh = 1;
+            kh = std::round(T/dz);
         } else {
             kh = std::round(FD/dz);
         }
 	if (maxH==0) {
-	  maxkh = 1;
+	  maxkh = std::round(T/dz);
 	} else {
 	  maxkh = std::round(MFD/dz);
 	}
-                
-        // convert flat index to i, j at cell center
-        int ii  = id % (nx-1);
-        int jj  = (id / (nx-1)) % (ny-1);
+	//std::cout<<"id = ["<<id<<"], i = ["<<ii<<"], j = ["<<jj<<"]"<<std::endl;
+	//std::cout<<"terrain id = ["<<TID<<"]"<<std::endl;
                         
         // get horizontal wind at flame height
 	int cell_face = ii + jj*nx + kh*ny*nx;
@@ -349,22 +399,23 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
         float v = 0.5*(WGD->v[cell_face] + WGD->v[cell_face+nx]);
         
         // run Balbi model
-        float x_norm = xNorm[id];
-        float y_norm = yNorm[id];
         float burnTime = fire_cells[id].state.burn_time;
-        struct FireProperties fp = balbi(fuel,u,v,x_norm,y_norm,0.0,0.0650);
+        struct FireProperties fp = balbi(fuel,u,v,xNorm[id],yNorm[id],slope_x[id],slope_y[id],0.0650);
         fire_cells[id].properties = fp;
-        
+        Force[id] = fp.r;
+	
 	// update icell value for flame
-	for (int k=1; k<= maxkh; k++){
-	  int icell_cent = ii + jj*(nx-1) + (k-1)*(nx-1)*(ny-1);
-          if (k <= 2*kh){
+	for (int k=TID; k<= maxkh; k++){
+	  int icell_cent = ii + jj*(nx-1) + (k)*(nx-1)*(ny-1);
+          //if (k <= 2*kh){
 	    WGD->icellflag[icell_cent] = 12;
-	  } else {
-	    WGD->icellflag[icell_cent] = 1;
-	  }
+	  //} else {
+	    //WGD->icellflag[icell_cent] = 1;
+	  //}
 	}
     }
+    // compute time step
+    dt = computeTimeStep();
 }
 
 /**
@@ -380,7 +431,14 @@ void Fire :: potential(WINDSGeneralData* WGD){
     std::fill (Pot_u.begin(),Pot_u.end(),0);
     std::fill (Pot_v.begin(),Pot_v.end(),0);
     std::fill (Pot_w.begin(),Pot_w.end(),0);
-	
+
+    // set z_mix to terrain height
+    for (int i = 0; i<nx-1; i++){
+      for (int j = 0; j<ny-1; j++){
+	int id = i+j*(nx-1);
+	z_mix[id] = WGD->terrain_id[id];
+      }
+    }
     /**
      * Calculate Potential field based on heat release
      * Baum and McCaffrey plume model
@@ -394,8 +452,10 @@ void Fire :: potential(WINDSGeneralData* WGD){
     int icent = 0;
     int jcent = 0;
     int counter = 0;
-    int firei;
-    int firej;
+    int firei;				///< index center of merged fire sources (i)
+    int firej;				///< index center of merged fire sources (j)
+    int firek;				///< index average height of terrain of merged fires (k)
+    
     for (int ii = 0; ii < nx-1; ii++){
 	for (int jj = 0; jj < ny-1; jj++){
   	    int id = ii + jj*(nx-1);
@@ -404,6 +464,8 @@ void Fire :: potential(WINDSGeneralData* WGD){
 		icent += ii;
 		jcent += jj;
 		H0 += fire_cells[id].properties.H0;
+		// Hard code heat release		
+		//H0 += 1.80357e6*dx*dy/25/25;
 		fa += dx*dy;
 	    }
 	}
@@ -425,25 +487,29 @@ void Fire :: potential(WINDSGeneralData* WGD){
 
       float alpha_e = 0.09;                               ///< entrainment constant (Kaye & Linden 2004)
       float lambda_mix = 1/alpha_e*sqrt(25.0/132.0);      ///< nondimensional plume mixing height
-      int z_mix=1;                                        
-      float z_mix_old;
+
       float kmax=0;                                    ///< plume mixing height
       int XIDX;
       int YIDX;
       int ZIDX = 0;
       int filt = 0;
-      int n_fire = 0;					//< number of plumes to merge in filter
+      float k_fire = 0;					//< terrain index for plume merge
+      float k_fire_old = 0;
+      float mixIDX = 0;
+      float mixIDX_old;
 	
       while (filt < nx-1){
         filt = pow(2.0,ZIDX);
+	//std::cout<<"Filter = "<<filt<<std::endl;
 	ZIDX += 1;
-	z_mix_old = floor(z_mix);
+	z_mix_old = z_mix;
         XIDX = 0;
         while (XIDX < nx-1-filt){
 	  YIDX = 0;
 	  while (YIDX < ny-1-filt){
 	    H = 0;
-	    n_fire = 0;
+	    k_fire = 0;
+	    k_fire_old = 0;
 	    icent = 0;
   	    jcent = 0;
 	    counter = 0;
@@ -459,7 +525,8 @@ void Fire :: potential(WINDSGeneralData* WGD){
 		  H += fp.H0;
     		  // Hard code heat flux for WRF simulation burn
 		  //H += 1.80357e6*dx*dy/25/25;
-		  n_fire += 1;
+		  k_fire += WGD->terrain[id];
+		  k_fire_old += z_mix_old[id];
 		}
 	      }
 	    }
@@ -469,13 +536,25 @@ void Fire :: potential(WINDSGeneralData* WGD){
 		  firej = jcent/counter;
 		  U_c = pow(g*g*H/rhoAir/T_a/C_pa, 1.0/5.0);
 		  L_c = pow(H/rhoAir/C_pa/T_a/pow(g, 1.0/2.0), 2.0/5.0);
-	  
-		  z_mix = lambda_mix*dx*filt;
-		  kmax = nz-3 > z_mix ? z_mix : nz-3;
+	  	  firek = k_fire/counter;
+		  mixIDX_old = floor(k_fire_old/counter);
+		  mixIDX = (lambda_mix*dx*filt);
+	    	  for (int ii = XIDX; ii < XIDX+filt; ii++){
+	      	    for (int jj = YIDX; jj < YIDX+filt; jj++){
+		
+			int id = ii + jj*(nx-1);
+			z_mix[id] = mixIDX;
+
+		    }
+		  }
+		  //std::cout<<"Fire center = ["<<firei<<"]["<<firej<<"]"<<std::endl;
+		  //std::cout<<"Merge terrain index = "<<firek<<std::endl;
+		  //std::cout<<"Mix height index = "<<mixIDX<<std::endl;
+		  kmax = nz-3 > mixIDX ? mixIDX : nz-3;
 		  // Loop through vertical levels
-		  for (int kpot = z_mix_old; kpot<kmax; kpot++) {
+		  for (int kpot = mixIDX_old; kpot<kmax; kpot++) {
 		  // Calculate virtual origin
-	          float z_v = dx*filt*0.124/alpha_e + z_mix_old;			///< virtual origin for merged plumes
+	          float z_v = dx*filt*0.124/alpha_e+firek;				  ///< virtual origin for merged plumes
 		  float z_k = (kpot+z_v)*dz/L_c;                            ///< non-dim vertical distance between fire cell and target cell k
 		  float zeta = 0;
 		  float x1 = 0;
@@ -607,10 +686,11 @@ void Fire :: potential(WINDSGeneralData* WGD){
 	for (int kadd=1; kadd<nz-2; kadd++){
 	  int cell_face = iadd + jadd*nx + (kadd-1)*nx*ny;
 	  int cell_cent = iadd + jadd*(nx-1) + (kadd-1)*(nx-1)*(ny-1);
-	  WGD->u0[cell_face] = WGD->u0[cell_face] + 0.5*(Pot_u[cell_cent]+Pot_u[cell_cent+1]);
-	  WGD->v0[cell_face] = WGD->v0[cell_face] + 0.5*(Pot_v[cell_cent]+Pot_v[cell_cent+(nx-1)]);
-	  WGD->w0[cell_face] = WGD->w0[cell_face] + 0.5*(Pot_w[cell_cent]+Pot_w[cell_cent+(nx-1)*(ny-1)]);
-	  
+	  if (WGD->icellflag[cell_cent] == 12 or WGD->icellflag[cell_cent] == 1){
+	    WGD->u0[cell_face] = WGD->u0[cell_face] + 0.5*(Pot_u[cell_cent]+Pot_u[cell_cent+1]);
+	    WGD->v0[cell_face] = WGD->v0[cell_face] + 0.5*(Pot_v[cell_cent]+Pot_v[cell_cent+(nx-1)]);
+	    WGD->w0[cell_face] = WGD->w0[cell_face] + 0.5*(Pot_w[cell_cent]+Pot_w[cell_cent+(nx-1)*(ny-1)]);
+	  }
 	}
       }
     } 
@@ -657,14 +737,48 @@ void Fire :: move(Solver* solver, WINDSGeneralData* WGD){
     for (int j=1; j < ny-2; j++){
         for (int i=1; i < nx-2; i++){
 	  int idx = i + j*(nx-1);
-	  int icell_cent = idx;
+          // get fire properties at this location
+          struct FireProperties fp = fire_cells[idx].properties; 
+	  struct FuelProperties* fuel = fire_cells[idx].fuel;
+          float H = fire_cells[idx].properties.h*(1-(fire_cells[idx].state.burn_time/fire_cells[idx].properties.tau));
+	  float maxH = fire_cells[idx].properties.h;       
+          float T = WGD->terrain[idx];
+          float D = fuel->fueldepthm;
+          int TID = std::round(T/dz);
+          float FD = H/2.0 + T + D;
+	  float MFD = maxH + T + D;
+       	  int kh = 0;
+	  int maxkh = 0;
+
+          if (H==0) {
+            kh = std::round(T/dz);
+          } else {
+            kh = std::round(FD/dz);
+          }
+	  if (maxH==0) {
+	    maxkh = std::round(T/dz);
+	  } else {
+	    maxkh = std::round(MFD/dz);
+	  }	  
+
             // if burn flag = 1, update burn time
             if (burn_flag[idx] == 1){
                 fire_cells[idx].state.burn_time += dt;
-            }	  
-            // get fire properties at this location
-            struct FireProperties fp = fire_cells[idx].properties; 
-	  
+            }	            
+            // set burn flag to 2 (burned) if residence time exceeded, set Forcing function to 0, and update z0 to bare soil
+            if (fire_cells[idx].state.burn_time >= fp.tau) {
+                fire_cells[idx].state.burn_flag = 2;
+		Force[idx] = 0;
+		WGD->icellflag[i+j*(nx-1)+TID*(nx-1)*(ny-1)] = 2;
+		for (int k = TID+1; k <= maxkh; k++){
+		  int icell_cent = i + j*(nx-1) + (k)*(nx-1)*(ny-1);
+		  WGD->icellflag[icell_cent] = 1;
+		}
+		
+		// Need to fix where z0 is reset MM
+		//WGD->z0_domain[idx] = 0.01;
+            }  
+
             // advance level set
             front_map[idx] = front_map[idx] - dt*(fmax(Force[idx],0)*del_plus[idx] + fmin(Force[idx],0)*del_min[idx]);
             // if level set <= 1, set burn_flag to 0.5 - L.S. for preheating
@@ -677,13 +791,7 @@ void Fire :: move(Solver* solver, WINDSGeneralData* WGD){
             }
 
 
-            // set burn flag to 2 (burned) if residence time exceeded and update z0 to bare soil
-            if (fire_cells[idx].state.burn_time >= fp.tau) {
-                fire_cells[idx].state.burn_flag = 2;
-		WGD->icellflag[icell_cent] = 1;
-		// Need to fix where z0 is reset MM
-		//WGD->z0_domain[idx] = 0.01;
-            }
+
             // update burn flag field
             burn_flag[idx] = fire_cells[idx].state.burn_flag;
 	    burn_out[idx] = burn_flag[idx];	    
@@ -740,13 +848,13 @@ float Fire :: rothermel(FuelProperties* fuel, float max_wind, float tanphi, floa
 
 // Balbi (2019) fire propagation model
 struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, float v_mid, 
-                                          float x_norm, float y_norm, float tanphi, float fmc_g) {
+                                          float x_norm, float y_norm, float x_slope, float y_slope, float fmc_g) {
         
     // fuel properties
     float fgi        = fuel->fgi;              ///< initial total mass of surface fuel [kg/m**2]
     float fueldepthm = fuel->fueldepthm;       ///< fuel depth [m]
-    int savr          = fuel->savr;             ///< fuel particle surface-area-to-volume ratio, [1/ft]
-    int cmbcnst       = fuel->cmbcnst;          ///< joules per kg of dry fuel [J/kg]
+    float savr          = fuel->savr;             ///< fuel particle surface-area-to-volume ratio, [1/ft]
+    float cmbcnst       = fuel->cmbcnst;          ///< joules per kg of dry fuel [J/kg]
     
     // universal constants
     float g        = 9.81;                     ///< gravity 
@@ -775,17 +883,40 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, floa
     float nu    = fmin(2*lai,2*pi*beta/betaT); ///< absorption coefficient [eq.5]
     float lv    = fueldepthm;                  ///< fuel length [m] ?? need better parameterization here
     float K1    = 100;                         ///< drag force coefficient: 100 for field, 1400 for lab 
-    float r_00  = 2.5e-5;                      ///< model parameter ??
+    float r_00  = 2.5e-5;                      ///< model parameter 
     
     // Environmental Constants
     float rhoAir = 1.125;                      ///< air Density [Kg/m^3]
     float T_a    = 289.15;                     ///< air Temp [K]
-    float alpha = atan(tanphi);               ///< slope angle [rad]
+    float alpha  = sqrt(x_slope*x_slope + y_slope*y_slope);		               ///< slope angle [rad]
     float psi    = 0;                          ///< angle between wind and flame front [rad]
     float phi    = 0;                          ///< angle between flame front vector and slope vector [rad]
 
-    float cos_psi = (u_mid*x_norm + v_mid*y_norm)/(sqrt(u_mid*u_mid + v_mid*v_mid)*sqrt(x_norm*x_norm + y_norm*y_norm));
-   
+    int s_c = 0;
+    int n_c = 0;
+    int v_c = 0;
+    if (abs(x_slope) < 0.001 and abs(y_slope) < 0.001){
+	s_c = 1;
+    }
+    if (abs(x_norm) < 0.001 and abs(y_norm) < 0.001){
+	n_c = 1;
+    }
+    if (abs(u_mid) < 0.001 and abs(v_mid) < 0.001){
+	v_c = 1;
+    }
+    if (s_c == 1 or n_c == 1){
+	phi = 0;
+    } else {
+        phi = acos((x_slope*x_norm + y_slope*y_norm)/(sqrt(x_slope*x_slope + y_slope*y_slope)*sqrt(x_norm*x_norm + y_norm*y_norm)));
+    }
+    if (v_c == 1 or n_c == 1){
+	psi = 0;
+    } else {
+	psi = acos((u_mid*x_norm + v_mid*y_norm)/(sqrt(u_mid*u_mid + v_mid*v_mid)*sqrt(x_norm*x_norm + y_norm*y_norm)));
+    }
+    //std::cout<<"s_c = "<<s_c<<", n_c = "<<n_c<<", v_c = "<<v_c<<std::endl;
+    //std::cout<<"x slope = "<<x_slope<<", x norm = "<<x_norm<<", y slope = "<<y_slope<<", y norm = "<<y_norm<<", phi = "<<phi<<", psi = "<<psi<<std::endl;
+
     float KDrag = K1*betaT*fmin(fueldepthm/lv,1);  ///< Drag force coefficient [eq.7]
 
     float q = C_p*(T_i - T_a) + m*Deltah_v;        ///< Activation energy [eq.14]
@@ -793,7 +924,7 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, floa
     float A = fmin(SAV/(2*pi),beta/betaT)*Chi_0*cmbcnst/(4*q);     ///< Radiant coefficient [eq.13]
     
     // Initial guess = Rothermel ROS 
-    float R = rothermel(fuel,max(u_mid,v_mid),tanphi,fmc_g);       ///< Total Rate of Spread (ROS) [m/s]
+    float R = rothermel(fuel,max(u_mid,v_mid),alpha,fmc_g);       ///< Total Rate of Spread (ROS) [m/s]
     
     // Initial tilt angle guess = slope angle
     float gamma  = alpha;    ///< Flame tilt angle
@@ -822,7 +953,7 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, floa
         u0 = 2*nu*((s+1)/tau_0)*(rhoFuel/rhoAir)*(TFlame/T_a);   //[eq.19]
         
         
-        gamma = atan(tan(alpha)*cos(phi)+V_mid*cos_psi/u0);    
+        gamma = atan(tan(alpha)*cos(phi)+V_mid*cos(psi)/u0);    
         
         H = u0*u0/(g*(TFlame/T_a - 1)*cos(alpha)*cos(alpha));   //[eq.17]
         
@@ -872,41 +1003,3 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, floa
     return fp;
 }
 
-/*
-// Save output at cell-centered values
-void Fire :: save(Output* output) {
-    
-    // output size and location
-    std::vector<size_t> scalar_index;
-    std::vector<size_t> scalar_size;
-    std::vector<size_t> vector_index;
-    std::vector<size_t> vector_size;
-    
-    scalar_index = {static_cast<unsigned long>(output_counter)};
-    scalar_size  = {1};
-    vector_index = {static_cast<size_t>(output_counter), 0, 0};
-    vector_size  = {1, static_cast<unsigned long>(ny-1), static_cast<unsigned long>(nx-1)};
-    
-    // set time 
-    time += dt;
-	
-    // loop through 1D fields to save
-    for (int i=0; i<output_scalar_dbl.size(); i++) {
-        output->saveField1D(output_scalar_dbl[i].name, scalar_index, output_scalar_dbl[i].data);
-    }
-    // loop through 2D double fields to save
-    for (int i=0; i<output_vector_dbl.size(); i++) {
-        
-        output->saveField2D(output_vector_dbl[i].name, vector_index,
-                                vector_size, *output_vector_dbl[i].data);
-    }
-    // loop through 2D int fields to save
-    for (int i=0; i<output_vector_int.size(); i++) { 
-        output->saveField2D(output_vector_int[i].name, vector_index,
-                            vector_size, *output_vector_int[i].data);
-    }
-    
-    // increment for next time insertion
-    output_counter +=1;
-}
-*/
