@@ -34,7 +34,7 @@ class WINDSInputData;
 class WINDSGeneralData {
 public:
     WINDSGeneralData();
-    WINDSGeneralData(const WINDSInputData* WID);
+    WINDSGeneralData(const WINDSInputData* WID, int solverType);
     ~WINDSGeneralData();
 
     void mergeSort( std::vector<float> &effective_height,
