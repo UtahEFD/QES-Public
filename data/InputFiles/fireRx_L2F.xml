@@ -1,0 +1,84 @@
+<simulationParameters>
+	<DEM>../data/GISFiles/L2F_GroundHeight.tif</DEM>			<!-- Address to DEM location-->
+
+  	<halo_x> 40.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
+  	<halo_y> 40.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
+	<!-- This is the domain sampled in large cells -->
+  	<domain> 900 900 150 </domain>					<!-- Number of cells in x,y and z directions-->
+  	<cellSize> 1.0 1.0 2.0 </cellSize> 			<!-- Mesh resolution (meters)-->
+
+	<verticalStretching> 0 </verticalStretching>
+	<totalTimeIncrements> 10 </totalTimeIncrements>
+	<!--UTCConversion> 0 </UTCConversion-->
+	<!--Epoch> 1510930800 </Epoch-->
+	<rooftopFlag> 1 </rooftopFlag>
+	<upwindCavityFlag> 2 </upwindCavityFlag>
+	<streetCanyonFlag> 1 </streetCanyonFlag>
+	<streetIntersectionFlag> 0 </streetIntersectionFlag>
+	<wakeFlag> 2 </wakeFlag>
+	<sidewallFlag> 1 </sidewallFlag>
+	<maxIterations> 500 </maxIterations>
+	<tolerance> 1E-9 </tolerance>
+	<meshTypeFlag> 1 </meshTypeFlag>
+	<!--useDiffusion> 0 </useDiffusion-->
+	<domainRotation> 0 </domainRotation>
+	<UTMX> 0 </UTMX>
+	<UTMY> 0 </UTMY>
+	<UTMZone> 1 </UTMZone>
+	<UTMZoneLetter> 17 </UTMZoneLetter>
+	<readCoefficientsFlag> 0 </readCoefficientsFlag>
+</simulationParameters>
+<metParams>
+	<z0_domain_flag> 0 </z0_domain_flag>
+	<!--metInputFlag> 0 </metInputFlag-->
+	<!--num_sites> 1 </num_sites-->
+	<!--maxSizeDataPoints> 2 </maxSizeDataPoints-->
+	<!--siteName> sensor1 </siteName-->
+	<!--fileName> sensor1.inp </fileName-->
+	<!--site_coord_flag> 1</site_coord_flag-->
+	
+		<sensor>
+    	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
+            <site_xcoord> 200.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+            <site_ycoord> 200.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
+            <site_UTM_x> 2.0 </site_UTM_x> 				<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
+            <site_UTM_y> 2.0 </site_UTM_y> 				<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
+            <site_UTM_zone> 0 </site_UTM_zone> 				<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->
+
+    	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<height> 30.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 6.0 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 0.0 </direction> 				<!-- Wind direction of sensor -->
+    	    </timeSeries>
+	</sensor>                      					<!-- End of sensor section -->
+</metParams>
+<!--localMixingParam-->
+  <!--method>3</method--> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <!--samples>2000</samples--> <!-- Samples per air cell for ray-traced mixing length calculations -->
+  <!--save>true</save--> <!-- Save 2 to file -->    
+  <!--LMfile>Fire_mixlength.nc</LMfile--> <!-- Address to mixing lethng location--> 
+<!--/localMixingParam-->
+<fires>
+	<numFires>1</numFires>
+	<fuelType>3</fuelType>
+    <height> 0.25 </height>
+    <baseHeight> 0 </baseHeight> <!--meters-->
+    <xStart> 700.0 </xStart> <!--meters-->
+    <yStart> 700.0 </yStart> <!--meters-->
+    <length> 10.0 </length> <!--meters-->
+    <width>  1.0 </width> <!--meters-->
+    <courant> 0.25 </courant>
+</fires>
+<fileOptions>
+	<outputFlag>1</outputFlag>
+	<outputFields>all</outputFields> 
+	<outputFields>v</outputFields> 
+	<outputFields>w</outputFields>
+	<outputFields>icell</outputFields>
+	<!--massConservedFlag> 0 </massConservedFlag-->
+	<!--sensorVelocityFlag> 0 </sensorVelocityFlag-->
+	<!--staggerdVelocityFlag> 0 </staggerdVelocityFlag-->
+</fileOptions>

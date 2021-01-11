@@ -117,7 +117,7 @@ class Fire {
         float x_start, y_start;
         float L, W, H, baseHeight, courant;
         int i_start, i_end, j_start, j_end, k_end,k_start;
-
+	int fieldFlag;
         float rothermel(FuelProperties*, float, float, float);
                      
         FireProperties balbi(FuelProperties*, float, float, float, float, float, float, float);

@@ -18,6 +18,7 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
     dy = WGD->dy;
     dz = WGD->dz;
     FFII_flag = WID->fires->fieldFlag;
+    std::cout<<"FFII flag ["<<FFII_flag<<"]"<<std::endl;
 
     /**
      * Set-up the mapper array - cell centered
