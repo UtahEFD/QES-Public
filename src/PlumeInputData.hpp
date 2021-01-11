@@ -16,9 +16,11 @@
 #include "Sources.hpp"
 #include "BoundaryConditions.hpp"
 
-
 #include "util/ParseInterface.h"
 
+#include <boost/foreach.hpp>
+#include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 class PlumeInputData : public ParseInterface {
     
@@ -37,6 +39,27 @@ public:
         sources = 0;
     }
     
+    PlumeInputData(const std::string fileName) {
+        simParams = 0;
+        colParams = 0;
+        partOutParams = 0; 
+        sources = 0;
+
+        pt::ptree tree;
+        
+        try {
+            pt::read_xml(fileName, tree);
+        } 
+        catch (boost::property_tree::xml_parser::xml_parser_error& e) {
+            std::cerr << "Error reading tree in" << fileName << "\n";
+            std::cerr << "QES-Plume input file was not able to be read successfully." << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
+        parseTree(tree);
+
+    }
+
     virtual void parseValues() {
         parseElement<SimulationParameters>(true, simParams, "simulationParameters");
         parseElement<CollectionParameters>(true, colParams, "collectionParameters");

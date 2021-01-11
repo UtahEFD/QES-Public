@@ -229,22 +229,22 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle*>::iterator 
                     
         // now check to see if the value is rogue or not
         if( std::abs(uFluct) >= vel_threshold || isnan(uFluct) ) {
-            // std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
-            // std::cout << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
+            //std::cout << "Particle # " << (*parItr)->particleID << " is rogue, ";
+            //std::cout << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
             uFluct = 0.0;
             isActive = false;
             isRogue = true;
         }
         if( std::abs(vFluct) >= vel_threshold || isnan(vFluct) ) {
-            // std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
-            // std::cout << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
+            //std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
+            //std::cerr << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
             vFluct = 0.0;
             isActive = false;
             isRogue = true;
         }
         if( std::abs(wFluct) >= vel_threshold || isnan(wFluct) ) {
-            // std::cout << "Particle # " << parIdx << " is rogue." << std::endl;
-            // std::cout << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
+            //std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
+            //std::cerr << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
             wFluct = 0.0;
             isActive = false;
             isRogue = true;
@@ -264,16 +264,15 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle*>::iterator 
         xPos = xPos + disX;
         yPos = yPos + disY;
         zPos = zPos + disZ;
+        // check and do wall (building and terrain) reflection (based in the method)
+        if( isActive == true ) isActive = (this->*wallReflection)(WGD,eul,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
+            
+                               
+        // now apply boundary conditions
+        if( isActive == true ) isActive = (this->*enforceWallBCs_x)(xPos,uFluct,uFluct_old,domainXstart,domainXend);
+        if( isActive == true ) isActive = (this->*enforceWallBCs_y)(yPos,vFluct,vFluct_old,domainYstart,domainYend);
+        if( isActive == true ) isActive = (this->*enforceWallBCs_z)(zPos,wFluct,wFluct_old,domainZstart,domainZend);
         
-        if( isActive == true ) {    
-            // check and do wall (building and terrain) reflection (based in the method)
-            isActive = (this->*wallReflection)(WGD,eul,xPos,yPos,zPos,disX,disY,disZ,uFluct,vFluct,wFluct);
-                                        
-            // now apply boundary conditions
-            isActive = (this->*enforceWallBCs_x)(xPos,uFluct,uFluct_old,domainXstart,domainXend);
-            isActive = (this->*enforceWallBCs_y)(yPos,vFluct,vFluct_old,domainYstart,domainYend);
-            isActive = (this->*enforceWallBCs_z)(zPos,wFluct,wFluct_old,domainZstart,domainZend);
-        }
          
         // now set the particle values for if they are rogue or outside the domain
         // need to set all rogue particles to inactive

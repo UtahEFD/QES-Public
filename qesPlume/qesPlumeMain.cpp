@@ -60,12 +60,13 @@ int main(int argc, char** argv)
     arguments.processArguments(argc, argv);
     
     // parse xml settings
-    PlumeInputData* PID = parseXMLTree(arguments.inputQESFile);
-    if ( !PID ) {
-        std::cerr << "QES-Plume input file: " << arguments.inputQESFile << " not able to be read successfully." << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
+    PlumeInputData* PID = new PlumeInputData(arguments.inputQESFile);
+      
+    //PlumeInputData* PID = parseXMLTree(arguments.inputQESFile);
+    //if ( !PID ) {
+    //    std::cerr << "QES-Plume input file: " << arguments.inputQESFile << " not able to be read successfully." << std::endl;
+    //    exit(EXIT_FAILURE);
+    //}
     
     // Create instance of QES-winds General data class
     WINDSGeneralData* WGD = new WINDSGeneralData(&arguments);
@@ -104,12 +105,7 @@ int main(int argc, char** argv)
     // compute run time information and print the elapsed execution time
     std::cout<<"[QES-Plume] \t Finished. \n"<<std::endl;     
     std::cout << "End run particle summary \n"; 
-    std::cout << "----------------------------------------------------------------- \n";
-    std::cout << "Total number of particles released: " << plume->getNumReleasedParticles() << "\n";      
-    std::cout << "Current number of particles in simulation: " << plume->getNumCurrentParticles() << "\n"; 
-    std::cout << "Number of rogue particles: " << plume->getNumRogueParticles() << "\n";    
-    std::cout << "Number of deleted particles: " << plume->getNumNotActiveParticles() << "\n";    
-    std::cout << "----------------------------------------------------------------- \n" << std::endl;
+    plume->showCurrentStatus();
     timers.printStoredTime("QES-Plume total runtime");
     std::cout<<"##############################################################"<<std::endl;
     
