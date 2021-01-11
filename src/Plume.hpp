@@ -62,18 +62,18 @@ public:
     //  move one cell at a time.
     void run(float,WINDSGeneralData*,TURBGeneralData*,Eulerian*,std::vector<QESNetCDFOutput*> );
     
+    int getTotalParsToRelease() const { return totalParsToRelease; } // accessor
+    
     int getNumReleasedParticles() const { return nParsReleased; } // accessor
     int getNumRogueParticles() const { return isRogueCount; } // accessor
     int getNumNotActiveParticles() const { return isNotActiveCount; } // accessor
     int getNumCurrentParticles() const { return particleList.size(); } // accessor
-    
+
+    void showCurrentStatus();
+
     // This the storage for all particles
     // the sources can set these values, then the other values are set using urb and turb info using these values
     std::list<Particle*> particleList;
-    
-    // this is the total number of particles expected to be released during the simulation
-    // !!! this has to be calculated carefully inside the getInputSources() function
-    int totalParsToRelease;
 
 private:
 
@@ -114,6 +114,11 @@ private:
     // this is the global counter of particles released (used to set particleID)
     int nParsReleased;
     
+    // this is the total number of particles expected to be released during the simulation
+    // !!! this has to be calculated carefully inside the getInputSources() function
+    int totalParsToRelease;
+    
+
     double invarianceTol; // this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
     double C_0;           // used to separate out CoEps into its separate parts when doing debug output
     int updateFrequency_timeLoop;     // used to know how frequently to print out information during the time loop of the solver
@@ -219,6 +224,17 @@ private:
     void writeSimInfoFile(const double& current_time);
 
 };
+
+inline void Plume::showCurrentStatus()
+{
+    std::cout << "----------------------------------------------------------------- \n";
+    std::cout << "Current simulation time: " << simTime << "\n";
+    std::cout << "Total number of particles released: " << nParsReleased << "\n";      
+    std::cout << "Current number of particles in simulation: " << particleList.size() << "\n"; 
+    std::cout << "Number of rogue particles: " << isRogueCount << "\n";    
+    std::cout << "Number of deleted particles: " << isNotActiveCount << "\n";    
+    std::cout << "----------------------------------------------------------------- \n" << std::endl;
+}
 
 #endif
 

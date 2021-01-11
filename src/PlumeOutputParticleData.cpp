@@ -136,10 +136,9 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData* PID,Plume* plum
     // --------------------------------------------------------
 
     // get total number of particle to be released 
-    numPar = plume->totalParsToRelease;
+    numPar = plume->getTotalParsToRelease();
     std::cout << "[PlumeOutputParticleData] total number of particle to be saved in file " << numPar << std::endl;
-
-
+    
     // initialize all the output containers
     // normally this is done by doing a resize, then setting values later,
     // but the full output needs initial values that match the particle values from the get go

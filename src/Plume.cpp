@@ -694,8 +694,8 @@ bool Plume::enforceWallBCs_reflection(double& pos,double& velFluct,double& velFl
                                       const double& domainStart,const double& domainEnd)
 {
     /*
-      std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velFluct = \"" << velFluct << "\", velFluct_old = \"" <<
-      velFluct_old << "\", domainStart = \"" << domainStart << "\", domainEnd = \"" << domainEnd << "\"" << std::endl;
+    std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\", velFluct = \"" << velFluct << "\", velFluct_old = \"" <<
+        velFluct_old << "\", domainStart = \"" << domainStart << "\", domainEnd = \"" << domainEnd << "\"" << std::endl;
     */
     
     int reflectCount = 0;
