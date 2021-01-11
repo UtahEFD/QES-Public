@@ -48,19 +48,15 @@ using namespace std;
 
 
 
-void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, int index)
+void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, int index, int solverType)
 {
 
-	float psi, psi_first, x_temp, u_star;
-	float rc_sum, rc_val, xc, yc, rc, dn, lamda, s_gamma;
-	float sum_wm, sum_wu, sum_wv;
-	int iwork = 0, jwork = 0;
-	float dxx, dyy, u12, u34, v12, v34;
 	const float vk = 0.4;			/// Von Karman's constant
 	float canopy_d, u_H;
 	float site_UTM_x, site_UTM_y;
 	float site_lon, site_lat;
 	float wind_dir, z0_new, z0_high, z0_low;
+	float psi, psi_first, x_temp, u_star;
 	float u_new, u_new_low, u_new_high;
 	int log_flag, iter, id;
 	float a1, a2, a3;
@@ -77,12 +73,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 	std::vector<int> site_i(num_sites,0);
 	std::vector<int> site_j(num_sites,0);
 	std::vector<int> site_id(num_sites,0);
-	std::vector<float> u0_int(num_sites,0.0);
-	std::vector<float> v0_int(num_sites,0.0);
 	std::vector<float> site_theta(num_sites,0.0);
-
-	std::vector<std::vector<std::vector<float>>> wm(num_sites, std::vector<std::vector<float>>(WGD->nx, std::vector<float>(WGD->ny,0.0)));
-	std::vector<std::vector<std::vector<float>>> wms(num_sites, std::vector<std::vector<float>>(WGD->nx, std::vector<float>(WGD->ny,0.0)));
 
 	// Loop through all sites and create velocity profiles (WGD->u0,WGD->v0)
 	for (auto i = 0 ; i < num_sites; i++)
@@ -412,128 +403,25 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 	// Apply 2D Barnes scheme to interpolate site velocity profiles to the whole domain
 	else
 	{
-		rc_sum = 0.0;
-		for (auto i = 0; i < num_sites; i++)
+		if (solverType == 1)
 		{
-			rc_val = 1000000.0;
-			for (auto ii = 0; ii < num_sites; ii++)
-			{
-				xc = WID->metParams->sensors[ii]->site_xcoord - WID->metParams->sensors[i]->site_xcoord;
-				yc = WID->metParams->sensors[ii]->site_ycoord - WID->metParams->sensors[i]->site_ycoord;
-				rc = sqrt(pow(xc,2.0)+pow(yc,2.0));
-				if (rc < rc_val && ii != i){
-					rc_val = rc;
-				}
-			}
-			rc_sum = rc_sum+rc_val;
+			auto startBarnesCPU = std::chrono::high_resolution_clock::now();
+			BarnesInterpolationCPU (WID, WGD, u_prof, v_prof);
+			auto finishBarnesCPU = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<float> elapsedBarnesCPU = finishBarnesCPU - startBarnesCPU;
+	    std::cout << "Elapsed time for Barnes interpolation on CPU: " << elapsedBarnesCPU.count() << " s\n";
 		}
-		dn = rc_sum/num_sites;
-		lamda = 5.052*pow((2*dn/M_PI),2.0);
-		s_gamma = 0.2;
-		for (auto j=0; j<WGD->ny; j++)
+		else
 		{
-			for (auto i=0; i<WGD->nx; i++)
-			{
-				sum_wm = 0.0;
-				for (auto ii=0; ii<num_sites; ii++)
-				{
-					wm[ii][i][j] = exp((-1/lamda)*pow(WID->metParams->sensors[ii]->site_xcoord-x[i],2.0)-(1/lamda)*pow(WID->metParams->sensors[ii]->site_ycoord-y[j],2.0));
-					wms[ii][i][j] = exp((-1/(s_gamma*lamda))*pow(WID->metParams->sensors[ii]->site_xcoord-x[i],2.0)-(1/(s_gamma*lamda))*
-										pow(WID->metParams->sensors[ii]->site_ycoord-y[j],2.0));
-					sum_wm += wm[ii][i][j];
-				}
-				if (sum_wm == 0)
-				{
-					for (auto ii = 0; ii<num_sites; ii++)
-					{
-						wm[ii][i][j] = 1e-20;
-					}
-				}
-			}
+			auto startBarnesGPU = std::chrono::high_resolution_clock::now();
+			BarnesInterpolationGPU (WID, WGD, u_prof, v_prof);
+			auto finishBarnesGPU = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<float> elapsedBarnesGPU = finishBarnesGPU - startBarnesGPU;
+	    std::cout << "Elapsed time for Barnes interpolation on GPU: " << elapsedBarnesGPU.count() << " s\n";
 		}
 
-		for (auto k=1; k<WGD->nz; k++)
-		{
-			for (auto j=0; j<WGD->ny; j++)
-			{
-				for (auto i=0; i<WGD->nx; i++)
-				{
-					sum_wu = 0.0;
-					sum_wv = 0.0;
-					sum_wm = 0.0;
-					for (auto ii=0; ii<num_sites; ii++)
-					{
-						sum_wu += wm[ii][i][j]*u_prof[ii][k];
-						sum_wv += wm[ii][i][j]*v_prof[ii][k];
-						sum_wm += wm[ii][i][j];
-					}
-					icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
-					WGD->u0[icell_face] = sum_wu/sum_wm;
-					WGD->v0[icell_face] = sum_wv/sum_wm;
-					WGD->w0[icell_face] = 0.0;
-				}
-			}
-
-			for (auto ii=0; ii<num_sites; ii++)
-			{
-				if(WID->metParams->sensors[ii]->site_xcoord>0 && WID->metParams->sensors[ii]->site_xcoord<(WGD->nx-1)*WGD->dx && WID->metParams->sensors[ii]->site_ycoord>0 && WID->metParams->sensors[ii]->site_ycoord<(WGD->ny-1)*WGD->dy)
-				{
-					for (auto j=0; j<WGD->ny; j++)
-					{
-						if (y[j]<WID->metParams->sensors[ii]->site_ycoord)
-						{
-							jwork = j;
-						}
-					}
-					for (auto i=0; i<WGD->nx; i++)
-					{
-						if (x[i]<WID->metParams->sensors[ii]->site_xcoord)
-						{
-							iwork = i;
-						}
-					}
-					dxx = WID->metParams->sensors[ii]->site_xcoord-x[iwork];
-					dyy = WID->metParams->sensors[ii]->site_ycoord-y[jwork];
-					int index_work = iwork+jwork*WGD->nx+k*WGD->nx*WGD->ny;
-					u12 = (1-(dxx/WGD->dx))*WGD->u0[index_work+WGD->nx]+(dxx/WGD->dx)*WGD->u0[index_work+1+WGD->nx];
-					u34 = (1-(dxx/WGD->dx))*WGD->u0[index_work]+(dxx/WGD->dx)*WGD->u0[index_work+1];
-					u0_int[ii] = (dyy/WGD->dy)*u12+(1-(dyy/WGD->dy))*u34;
-
-					v12 = (1-(dxx/WGD->dx))*WGD->v0[index_work+WGD->nx]+(dxx/WGD->dx)*WGD->v0[index_work+1+WGD->nx];
-					v34 = (1-(dxx/WGD->dx))*WGD->v0[index_work]+(dxx/WGD->dx)*WGD->v0[index_work+1];
-					v0_int[ii] = (dyy/WGD->dy)*v12+(1-(dyy/WGD->dy))*v34;
-				}
-				else
-				{
-					u0_int[ii] = u_prof[ii][k];
-					v0_int[ii] = v_prof[ii][k];
-				}
-			}
-
-			for (auto j=0; j<WGD->ny; j++)
-			{
-				for (auto i=0; i<WGD->nx; i++)
-				{
-					sum_wu = 0.0;
-					sum_wv = 0.0;
-					sum_wm = 0.0;
-					for (auto ii=0; ii<num_sites; ii++)
-					{
-						sum_wu += wm[ii][i][j]*(u_prof[ii][k]-u0_int[ii]);
-						sum_wv += wm[ii][i][j]*(v_prof[ii][k]-v0_int[ii]);
-						sum_wm += wm[ii][i][j];
-					}
-					if (sum_wm != 0)
-					{
-						icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
-						WGD->u0[icell_face] = WGD->u0[icell_face]+sum_wu/sum_wm;
-						WGD->v0[icell_face] = WGD->v0[icell_face]+sum_wv/sum_wm;
-					}
-				}
-				//std::cout << "WGD->u0:   "  << WGD->u0[WGD->nx-1+j*WGD->nx+k*WGD->nx*WGD->ny] << std::endl;
-			}
-		}
 	}
+
 
   float z0_domain;
 	if (WID->metParams->z0_domain_flag == 1)
@@ -641,6 +529,166 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 			}
 		}
 
+	}
+
+}
+
+void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof)
+{
+	std::vector<float> x,y;
+	x.resize( WGD->nx );
+	for (size_t i=0; i<WGD->nx; i++)
+	{
+		x[i] = (i-0.5)*WGD->dx;          /**< Location of face centers in x-dir */
+	}
+
+	y.resize( WGD->ny );
+	for (auto j=0; j<WGD->ny; j++)
+	{
+		y[j] = (j-0.5)*WGD->dy;          /**< Location of face centers in y-dir */
+	}
+
+	float rc_sum, rc_val, xc, yc, rc;
+	float dn, lamda, s_gamma;
+	float sum_wm, sum_wu, sum_wv;
+	float dxx, dyy, u12, u34, v12, v34;
+	int icell_face, icell_cent;
+	int num_sites = WID->metParams->sensors.size();
+	std::vector<float> u0_int(num_sites,0.0);
+	std::vector<float> v0_int(num_sites,0.0);
+	std::vector<std::vector<std::vector<float>>> wm(num_sites, std::vector<std::vector<float>>(WGD->nx, std::vector<float>(WGD->ny,0.0)));
+	std::vector<std::vector<std::vector<float>>> wms(num_sites, std::vector<std::vector<float>>(WGD->nx, std::vector<float>(WGD->ny,0.0)));
+	int iwork = 0, jwork = 0;
+
+	rc_sum = 0.0;
+	for (auto i = 0; i < num_sites; i++)
+	{
+		rc_val = 1000000.0;
+		for (auto ii = 0; ii < num_sites; ii++)
+		{
+			xc = WID->metParams->sensors[ii]->site_xcoord - WID->metParams->sensors[i]->site_xcoord;
+			yc = WID->metParams->sensors[ii]->site_ycoord - WID->metParams->sensors[i]->site_ycoord;
+			rc = sqrt(pow(xc,2.0)+pow(yc,2.0));
+			if (rc < rc_val && ii != i){
+				rc_val = rc;
+			}
+		}
+		rc_sum = rc_sum+rc_val;
+	}
+
+	dn = rc_sum/num_sites;
+	lamda = 5.052*pow((2*dn/M_PI),2.0);
+	s_gamma = 0.2;
+	for (auto j=0; j<WGD->ny; j++)
+	{
+		for (auto i=0; i<WGD->nx; i++)
+		{
+			sum_wm = 0.0;
+			for (auto ii=0; ii<num_sites; ii++)
+			{
+				wm[ii][i][j] = exp((-1/lamda)*pow(WID->metParams->sensors[ii]->site_xcoord-x[i],2.0)-(1/lamda)*pow(WID->metParams->sensors[ii]->site_ycoord-y[j],2.0));
+				wms[ii][i][j] = exp((-1/(s_gamma*lamda))*pow(WID->metParams->sensors[ii]->site_xcoord-x[i],2.0)-(1/(s_gamma*lamda))*
+									pow(WID->metParams->sensors[ii]->site_ycoord-y[j],2.0));
+				sum_wm += wm[ii][i][j];
+			}
+			if (sum_wm == 0)
+			{
+				for (auto ii = 0; ii<num_sites; ii++)
+				{
+					wm[ii][i][j] = 1e-20;
+				}
+			}
+		}
+	}
+
+	for (auto k=1; k<WGD->nz; k++)
+	{
+		for (auto j=0; j<WGD->ny; j++)
+		{
+			for (auto i=0; i<WGD->nx; i++)
+			{
+				sum_wu = 0.0;
+				sum_wv = 0.0;
+				sum_wm = 0.0;
+				for (auto ii=0; ii<num_sites; ii++)
+				{
+					sum_wu += wm[ii][i][j]*u_prof[ii][k];
+					sum_wv += wm[ii][i][j]*v_prof[ii][k];
+					sum_wm += wm[ii][i][j];
+				}
+
+				icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+				WGD->u0[icell_face] = sum_wu/sum_wm;
+				WGD->v0[icell_face] = sum_wv/sum_wm;
+				WGD->w0[icell_face] = 0.0;
+			}
+		}
+
+
+
+		for (auto ii=0; ii<num_sites; ii++)
+		{
+			if(WID->metParams->sensors[ii]->site_xcoord>0 && WID->metParams->sensors[ii]->site_xcoord < (WGD->nx-1)*WGD->dx && WID->metParams->sensors[ii]->site_ycoord > 0 && WID->metParams->sensors[ii]->site_ycoord<(WGD->ny-1)*WGD->dy)
+			{
+				for (auto j=0; j<WGD->ny; j++)
+				{
+					if (y[j]<WID->metParams->sensors[ii]->site_ycoord)
+					{
+						jwork = j;
+					}
+				}
+
+				for (auto i=0; i<WGD->nx; i++)
+				{
+					if (x[i]<WID->metParams->sensors[ii]->site_xcoord)
+					{
+						iwork = i;
+					}
+				}
+
+				dxx = WID->metParams->sensors[ii]->site_xcoord-x[iwork];
+				dyy = WID->metParams->sensors[ii]->site_ycoord-y[jwork];
+				int index_work = iwork+jwork*WGD->nx+k*WGD->nx*WGD->ny;
+				u12 = (1-(dxx/WGD->dx))*WGD->u0[index_work+WGD->nx]+(dxx/WGD->dx)*WGD->u0[index_work+1+WGD->nx];
+				u34 = (1-(dxx/WGD->dx))*WGD->u0[index_work]+(dxx/WGD->dx)*WGD->u0[index_work+1];
+				u0_int[ii] = (dyy/WGD->dy)*u12+(1-(dyy/WGD->dy))*u34;
+
+
+
+				v12 = (1-(dxx/WGD->dx))*WGD->v0[index_work+WGD->nx]+(dxx/WGD->dx)*WGD->v0[index_work+1+WGD->nx];
+				v34 = (1-(dxx/WGD->dx))*WGD->v0[index_work]+(dxx/WGD->dx)*WGD->v0[index_work+1];
+				v0_int[ii] = (dyy/WGD->dy)*v12+(1-(dyy/WGD->dy))*v34;
+
+			}
+			else
+			{
+				u0_int[ii] = u_prof[ii][k];
+				v0_int[ii] = v_prof[ii][k];
+			}
+		}
+
+		for (auto j=0; j<WGD->ny; j++)
+		{
+			for (auto i=0; i<WGD->nx; i++)
+			{
+				sum_wu = 0.0;
+				sum_wv = 0.0;
+				sum_wm = 0.0;
+				for (auto ii=0; ii<num_sites; ii++)
+				{
+					sum_wu += wm[ii][i][j]*(u_prof[ii][k]-u0_int[ii]);
+					sum_wv += wm[ii][i][j]*(v_prof[ii][k]-v0_int[ii]);
+					sum_wm += wm[ii][i][j];
+				}
+
+				if (sum_wm != 0)
+				{
+					icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+					WGD->u0[icell_face] = WGD->u0[icell_face]+sum_wu/sum_wm;
+					WGD->v0[icell_face] = WGD->v0[icell_face]+sum_wv/sum_wm;
+				}
+			}
+		}
 	}
 
 }

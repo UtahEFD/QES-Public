@@ -12,7 +12,10 @@
 #include "MetParams.h"
 #include "Buildings.h"
 #include "Canopies.h"
+
 #include "Fires.hpp"
+
+#include "LocalMixingParam.h"
 #include "TURBParams.h"
 
 class WINDSInputData : public ParseInterface
