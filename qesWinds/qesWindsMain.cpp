@@ -16,6 +16,8 @@
 #include "WINDSOutputVisualization.h"
 #include "WINDSOutputWorkspace.h"
 
+#include "WINDSOutputWRF.h"
+
 #include "TURBGeneralData.h"
 #include "TURBOutput.h"
 
@@ -116,6 +118,10 @@ int main(int argc, char *argv[])
         outputVec.push_back(new WINDSOutputWorkspace(WGD,arguments.netCDFFileWksp));
     }
 
+    if (arguments.fireMode) {
+        outputVec.push_back( new WINDSOutputWRF(WGD, WID->simParams->wrfInputData) );
+    }
+
 
     // Generate the general TURB data from WINDS data
     // based on if the turbulence output file is defined
@@ -186,8 +192,11 @@ int main(int argc, char *argv[])
     }
 
 
-    if (WID->simParams->wrfInputData)
-      WID->simParams->outputWRFData();
+    if (WID->simParams->wrfInputData) {
+        
+        // WID->simParams->outputWRFData();
+    }
+    
 
     // /////////////////////////////
     // Output the various files requested from the simulation run

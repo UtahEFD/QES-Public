@@ -311,15 +311,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
             // Gets height of the terrain for each cell
             int idx = i + j*(nx-1);
             terrain[idx] = WID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
-            std::cout << "WGD (before) - terrain height: " << terrain[idx] << std::endl;
             
             if (terrain[idx] < 0.0)
             {
                terrain[idx] = 0.0;
             }
 
-            std::cout << "WGD - terrain height: " << terrain[idx] << std::endl;
-            
             id = i+j*nx;
             for (size_t k=0; k<z.size()-1; k++)
             {

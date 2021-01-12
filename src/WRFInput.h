@@ -1,3 +1,5 @@
+#pragma once
+
 /** \file "WRFInput.h" Context header file. 
     \author Pete Willemsen, Matthieu 
 
@@ -30,6 +32,9 @@ using namespace netCDF;
 using namespace netCDF::exceptions;
 
 #include "Sensor.h"
+
+// Forward Decl
+class WINDSGeneralData;
 
 class profData 
 {
@@ -95,7 +100,7 @@ public:
 
     /**
      */
-    void extractWind();
+    void extractWind( WINDSGeneralData *wgd );
     
 
     /**

@@ -51,6 +51,9 @@ public:
     // filename for terrain output
     std::string filenameTerrain = "";
 
+    // boolean to treat WRF input in fire mode
+    bool fireMode;
+
 private:
 
 };
