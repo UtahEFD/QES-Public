@@ -23,7 +23,7 @@
 #include "gdal_priv.h"
 #include "cpl_conv.h" // for CPLMalloc()
 
-
+#include "WINDSGeneralData.h"
 
 void UTMConv(double &rlon, double &rlat, double &rx, double &ry, int &UTM_PROJECTION_ZONE, int iway)
 {
@@ -2032,7 +2032,7 @@ float WRFInput::lookupLandUse(int luIdx)
 
 
 
-void WRFInput::extractWind()
+void WRFInput::extractWind( WINDSGeneralData *wgd )
 {
     // right now, just dump out a fixed UF and VF to test idea
         
@@ -2043,6 +2043,25 @@ void WRFInput::extractWind()
 
     std::vector<double> ufOut( fm_nx * fm_ny, 2.1 );
     std::vector<double> vfOut( fm_nx * fm_ny, 1.0 );
+
+    // For all X, Y, extract terrain height and fwh
+    for (auto i=0; i<wgd->nx; i++)
+      {
+          for (auto j=0; j<wgd->ny; j++)
+          {
+              // Gets height of the terrain for each cell
+              int idx = i + j*(nx-1);
+              float tHeight = wgd->terrain[idx];
+
+              // find the k value at this height in the domain
+              // need to take into account the variable dz
+              std::cout << "tHeight = " << tHeight << ", Z = " << wgd->nz * wgd->dz << std::endl;
+
+              auto k = (int)floor( (tHeight/wgd->dz) / wgd->nz );
+              
+              std::cout << "k = " << k << std::endl;
+          }
+      }
 
     NcVar field_UF = wrfInputFile.getVar("UF");
     NcVar field_VF = wrfInputFile.getVar("VF");
