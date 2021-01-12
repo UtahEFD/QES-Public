@@ -87,8 +87,8 @@ int main(int argc, char *argv[])
 
 
     // Checking if
-    if (arguments.compTurb && !WID->localMixingParam) {
-        std::cerr << "[ERROR] Turbulence model is turned on without LocalMixingParam in QES Intput file "
+    if (arguments.compTurb && !WID->turbParams) {
+        std::cerr << "[ERROR] Turbulence model is turned on without turbParams in QES Intput file "
                   << arguments.quicFile << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
     }
 
     // Generate the general WINDS data from all inputs
-    WINDSGeneralData* WGD = new WINDSGeneralData(WID);
+    WINDSGeneralData* WGD = new WINDSGeneralData(WID, arguments.solveType);
 
     // create WINDS output classes
     std::vector<QESNetCDFOutput*> outputVec;
@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
         }
 
         // Create initial velocity field from the new sensors
-        WID->metParams->sensors[0]->inputWindProfile(WID, WGD, index);
+        WID->metParams->sensors[0]->inputWindProfile(WID, WGD, index, arguments.solveType);
 
         // ///////////////////////////////////////
         // Canopy Vegetation Parameterization

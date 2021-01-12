@@ -15,7 +15,6 @@ CUDA_ADD_LIBRARY( qeswindscore
   DynamicParallelism.cu
   ESRIShapefile.cpp ESRIShapefile.h
   handleWINDSArgs.cpp
-  LocalMixingParam.h
   LocalMixing.cpp
   LocalMixingDefault.cpp
   LocalMixingNetCDF.cpp
@@ -27,8 +26,10 @@ CUDA_ADD_LIBRARY( qeswindscore
   QESNetCDFOutput.cpp
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
+  Sensor.cu
   Solver.cpp
   Triangle.cpp
+  TURBParams.h
   TURBGeneralData.cpp
   TURBOutput.cpp
   TURBWall.cpp

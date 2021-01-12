@@ -16,6 +16,9 @@ class Sensor : public ParseInterface
 {
 private:
 
+  template<typename T>
+  void _cudaCheck(T e, const char* func, const char* call, const int line);
+
 public:
 
 
@@ -31,17 +34,16 @@ public:
 
     virtual void parseValues()
     {
-        parsePrimitive<int>(false, site_coord_flag, "site_coord_flag");
-        parsePrimitive<float>(true, site_xcoord, "site_xcoord");
-        parsePrimitive<float>(true, site_ycoord, "site_ycoord");
-        parsePrimitive<float>(false, site_UTM_x, "site_UTM_x");
-        parsePrimitive<float>(false, site_UTM_y, "site_UTM_y");
-        parsePrimitive<int>(false, site_UTM_zone, "site_UTM_zone");
-        parsePrimitive<float>(false, site_lon, "site_lon");
-        parsePrimitive<float>(false, site_lat, "site_lat");
-        
-        parseMultiElements<TimeSeries>(false, TS, "timeSeries");
-
+      parsePrimitive<int>(false, site_coord_flag, "site_coord_flag");
+      parsePrimitive<float>(false, site_xcoord, "site_xcoord");
+      parsePrimitive<float>(false, site_ycoord, "site_ycoord");
+      parsePrimitive<float>(false, site_UTM_x, "site_UTM_x");
+      parsePrimitive<float>(false, site_UTM_y, "site_UTM_y");
+      parsePrimitive<int>(false, site_UTM_zone, "site_UTM_zone");
+      parsePrimitive<float>(false, site_lon, "site_lon");
+      parsePrimitive<float>(false, site_lat, "site_lat");
+      
+      parseMultiElements<TimeSeries>(false, TS, "timeSeries");
     }
 
     void parseTree(pt::ptree t)
@@ -60,7 +62,7 @@ public:
      * roughness and measured wind velocity and direction), generates wind velocity profile for each sensor and finally
      * utilizes Barns scheme to interplote velocity to generate the initial velocity field for the domain.
      */
-    void inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, int index);
+    void inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, int index, int solverType);
 
 
     /**
@@ -74,5 +76,9 @@ public:
     *
     */
     void getConvergence(float lon, float lat, int site_UTM_zone, float convergence);
+
+    void BarnesInterpolationCPU (const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof);
+
+    void BarnesInterpolationGPU (const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof);
 
 };

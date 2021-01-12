@@ -31,6 +31,8 @@ public:
 
     virtual void run(WINDSGeneralData*);
 
+    bool flagNonLocalMixing;
+
     // General QUIC Domain Data
     int nx, ny, nz;		/**< number of cells */
 
@@ -47,6 +49,9 @@ public:
     float zRef,uRef,uStar;
     float bldgH_mean,bldgH_max;
     float terrainH_max;
+
+    // Turbulence Fields Upper Bound (tij < turbUpperBound*uStar^2)
+    float turbUpperBound;
 
     // index for fluid cell
     std::vector<int> icellfluid;
@@ -103,6 +108,7 @@ private:
     void getFrictionVelocity(WINDSGeneralData*);
     void getDerivatives(WINDSGeneralData*);
     void getStressTensor();
-    void capStressTensor();
+    
+    void boundTurbFields();
 
 };

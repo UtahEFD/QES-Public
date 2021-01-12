@@ -75,11 +75,11 @@ Shouldn't need when loading WRF output though.
 	</sensor>                       				<!-- End of sensor section -->
 
 </metParams>							<!-- End of meteorological parameters -->
-<localMixingParam>
+<turbParams>
   <method>3</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <save>true</save>     <!-- Save to file -->
   <LMfile>../scratch/RxCADRE/RxCADRE_WRFOnly_mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
-</localMixingParam>
+</turbParams>
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 

@@ -52,13 +52,14 @@
     	    </timeSeries>
 	</sensor>                      					<!-- End of sensor section -->
 
-</metParams>								<!-- End of meteorological parameters -->
-<localMixingParam>
+</metParams>       <!-- End of meteorological parameters -->
+<turbParams>
   <method>3</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <samples>5000</samples>
-  <save>true</save>     <!-- Save 2 to file -->
-  <LMfile>/scratch/SLC/slc_cut_mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
-</localMixingParam>
+  <LMfile>../scratch/SLC/slc_cut_mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
+  <nonLocalMixing>true</nonLocalMixing>
+  <turbUpperBound>100.0</turbUpperBound>
+</turbParams>							
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 

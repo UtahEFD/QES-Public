@@ -16,23 +16,27 @@
   Date: Feb. 2020
 */
 
-class LocalMixingParam : public ParseInterface
+class TURBParams : public ParseInterface
 { 
 private:
   
 protected:
     
 public:
-
+    
     int methodLocalMixing;
     bool save2file;
     std::string filename,varname;
 
     int mlSamplesPerAirCell;
-  
-    LocalMixingParam()
+
+    bool flagNonLocalMixing;
+    
+    float turbUpperBound;
+
+    TURBParams()
     {}
-    ~LocalMixingParam()
+    ~TURBParams()
     {}
   
     virtual void parseValues()
@@ -73,6 +77,12 @@ public:
         if(methodLocalMixing == 0 || methodLocalMixing == 4) {
             save2file = "false";  
         }
+
+        flagNonLocalMixing=false;
+        parsePrimitive<bool>(false, flagNonLocalMixing, "nonLocalMixing");
+
+        turbUpperBound=100;
+        parsePrimitive<float>(false, turbUpperBound, "turbUpperBound");
         
     }
   

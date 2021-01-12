@@ -195,7 +195,7 @@ void LocalMixingOptix::defineMixingLength(const WINDSInputData* WID,WINDSGeneral
     
     std::cout<<"--------------------Before OptiX calls-------------------------"<<std::endl;
     OptixRayTrace optixRayTracer(m_mixingLengthMesh->getTris());
-    optixRayTracer.calculateMixingLength( WID->localMixingParam->mlSamplesPerAirCell, nx, ny, nz, dx, dy, dz, WGD->icellflag, WGD->mixingLengths);
+    optixRayTracer.calculateMixingLength( WID->turbParams->mlSamplesPerAirCell, nx, ny, nz, dx, dy, dz, WGD->icellflag, WGD->mixingLengths);
     
     std::cout<<"--------------------End of OptiX calls-------------------------"<<std::endl;
 #else
@@ -206,7 +206,7 @@ void LocalMixingOptix::defineMixingLength(const WINDSInputData* WID,WINDSGeneral
     std::cout << std::endl;
 #endif
     
-    if(WID->localMixingParam->save2file){
+    if(WID->turbParams->save2file){
         saveMixingLength(WID,WGD);
     }
     

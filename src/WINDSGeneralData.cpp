@@ -1,6 +1,6 @@
 #include "WINDSGeneralData.h"
 
-WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
+WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 {
    if ( WID->simParams->upwindCavityFlag == 1) {
       lengthf_coeff = 2.0;
@@ -220,6 +220,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
 
    building_volume_frac.resize( numcell_cent, 1.0 );
    terrain_volume_frac.resize( numcell_cent, 1.0 );
+   ni.resize( numcell_cent, 0.0 );
+   nj.resize( numcell_cent, 0.0 );
+   nk.resize( numcell_cent, 0.0 );
 
    icellflag.resize( numcell_cent, 1 );
    ibuilding_flag.resize ( numcell_cent, -1 );
@@ -254,9 +257,38 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
    }
 
    int halo_index_x = (WID->simParams->halo_x/dx);
-   WID->simParams->halo_x = halo_index_x*dx;
+   //WID->simParams->halo_x = halo_index_x*dx;
    int halo_index_y = (WID->simParams->halo_y/dy);
-   WID->simParams->halo_y = halo_index_y*dy;
+   //WID->simParams->halo_y = halo_index_y*dy;
+
+   if (WID->simParams->DTE_heightField)
+   {
+      // ////////////////////////////////
+      // Retrieve terrain height field //
+      // ////////////////////////////////
+      for (int i = 0; i < nx-1; i++)
+      {
+         for (int j = 0; j < ny-1; j++)
+         {
+            // Gets height of the terrain for each cell
+            int idx = i + j*(nx-1);
+            terrain[idx] = WID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
+            if (terrain[idx] < 0.0)
+            {
+               terrain[idx] = 0.0;
+            }
+            id = i+j*nx;
+            for (size_t k=0; k<z.size()-1; k++)
+            {
+               terrain_id[id] = k;
+               if (terrain[idx] < z_face[k])
+               {
+                  break;
+               }
+            }
+         }
+       }
+     }
 
    //////////////////////////////////////////////////////////////////////////////////
    /////    Create sensor velocity profiles and generate initial velocity field /////
@@ -274,7 +306,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
    // so it would have access to all the sensors naturally.
    // Make this change later.
    //    WID->metParams->inputWindProfile(WID, this);
-   WID->metParams->sensors[0]->inputWindProfile(WID, this, 0);
+   WID->metParams->sensors[0]->inputWindProfile(WID, this, 0, solverType);
 
    std::cout << "Sensors have been loaded (total sensors = " << WID->metParams->sensors.size() << ")." << std::endl;
 
@@ -298,51 +330,41 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
 
    if (WID->simParams->DTE_heightField)
    {
-       std::cout << "In stair step... nx=" << nx << ", ny=" << ny << std::endl;
-       
-      // ////////////////////////////////
-      // Retrieve terrain height field //
-      // ////////////////////////////////
-      auto start_stair = std::chrono::high_resolution_clock::now();
-      for (int i = 0; i < nx-1; i++)
+      if (WID->simParams->meshTypeFlag == 0 && WID->simParams->readCoefficientsFlag == 0)
       {
-         for (int j = 0; j < ny-1; j++)
-         {
-            // Gets height of the terrain for each cell
-            int idx = i + j*(nx-1);
-            terrain[idx] = WID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
-            
-            if (terrain[idx] < 0.0)
-            {
-               terrain[idx] = 0.0;
-            }
+        auto start_stair = std::chrono::high_resolution_clock::now();
+        for (int i = 0; i < nx-1; i++)
+        {
+           for (int j = 0; j < ny-1; j++)
+           {
+              // Gets height of the terrain for each cell
+              int idx = i + j*(nx-1);
+              id = i+j*nx;
+              for (size_t k=0; k<z.size()-1; k++)
+              {
+                 if (terrain[idx] < z[k+1])
+                 {
+                    break;
+                 }
 
-            id = i+j*nx;
-            for (size_t k=0; k<z.size()-1; k++)
-            {
-               terrain_id[id] = k+1;
-               if (terrain[idx] < z[k+1])
-               {
-                  break;
-               }
-               if (WID->simParams->meshTypeFlag == 0 && WID->simParams->readCoefficientsFlag == 0)
-               {
-                  // ////////////////////////////////
-                  // Stair-step (original QUIC)    //
-                  // ////////////////////////////////
-                  int ii = i+WID->simParams->halo_x/dx;
-                  int jj = j+WID->simParams->halo_y/dy;
-                  int icell_cent = ii+jj*(nx-1)+(k+1)*(nx-1)*(ny-1);
-                  icellflag[icell_cent] = 2;
-               }
+                 // ////////////////////////////////
+                 // Stair-step (original QUIC)    //
+                 // ////////////////////////////////
+                 int ii = i+WID->simParams->halo_x/dx;
+                 int jj = j+WID->simParams->halo_y/dy;
+                 int icell_cent = ii+jj*(nx-1)+(k+1)*(nx-1)*(ny-1);
+                 icellflag[icell_cent] = 2;
+
+
+                }
             }
-         }
+        }
+
+        auto finish_stair = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+
+        std::chrono::duration<float> elapsed_stair = finish_stair - start_stair;
+        std::cout << "Elapsed time for terrain with stair-step: " << elapsed_stair.count() << " s\n";
       }
-
-      auto finish_stair = std::chrono::high_resolution_clock::now();  // Finish recording execution time
-
-      std::chrono::duration<float> elapsed_stair = finish_stair - start_stair;
-      std::cout << "Elapsed time for terrain with stair-step: " << elapsed_stair.count() << " s\n";
 
       if (WID->simParams->meshTypeFlag == 1 && WID->simParams->readCoefficientsFlag == 0)
       {
@@ -353,8 +375,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
          auto start_cut = std::chrono::high_resolution_clock::now();
 
          // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
-         cut_cell.calculateCoefficient(cells, WID->simParams->DTE_heightField, nx, ny, nz, dx, dy, dz_array, n, m, f, e, h, g, pi, icellflag,
-                                       terrain_volume_frac, z_face, WID->simParams->halo_x, WID->simParams->halo_y);
+         cut_cell.calculateCoefficient(cells, WID->simParams->DTE_heightField, WID, this);
 
          auto finish_cut = std::chrono::high_resolution_clock::now();  // Finish recording execution time
 
@@ -685,7 +706,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID)
 
    wall->setVelocityZero (this);
 
-   
+
    return;
 
 }

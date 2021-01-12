@@ -6,6 +6,14 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
     auto StartTime = std::chrono::high_resolution_clock::now();
 
     std::cout << "[QES-TURB]\t Initialization of turbulence model...\n";
+    
+    // local copies of trubulence parameters
+    turbUpperBound = WID->turbParams->turbUpperBound;
+    
+    flagNonLocalMixing = WID->turbParams->flagNonLocalMixing;
+    if(flagNonLocalMixing){
+        std::cout << "\t\t Non-Local mixing for buidlings: ON \n";
+    }
 
     // make local copy of grid information
     // nx,ny,nz consitant with WINDS (face-center)
@@ -92,44 +100,42 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
     //std::cout << "\t\t Walls Defined...\n";
 
     // mixing length
-    
-    if(WID->localMixingParam) {
-        auto mlStartTime = std::chrono::high_resolution_clock::now();
-        if (WID->localMixingParam->methodLocalMixing == 0) {
-            std::cout << "[MixLength] \t Default Local Mixing Length...\n";
-            localMixing = new LocalMixingDefault();
-        } else if(WID->localMixingParam->methodLocalMixing == 1) {
-            std::cout << "[MixLength] \t Computing Local Mixing Length using serial code...\n";
-            localMixing = new LocalMixingSerial();
-        } else if (WID->localMixingParam->methodLocalMixing == 2) {
-            /*******Add raytrace code here********/
-            std::cout << "Computing mixing length scales..." << std::endl;
-            //WID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, WGD->icellflag, WGD->mixingLengths);
-        } else if (WID->localMixingParam->methodLocalMixing == 3) {
-            localMixing = new LocalMixingOptix();            
-        } else if (WID->localMixingParam->methodLocalMixing == 4) {
-            std::cout << "[MixLength] \t Loading Local Mixing Length data form NetCDF...\n";
-            localMixing = new LocalMixingNetCDF();
-        } else {
-            //this should not happen (checked in LocalMixingParam)
-        }
-        
-        localMixing->defineMixingLength(WID,WGD);
-        auto mlEndTime = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
-        std::cout << "[MixLength] \t Local Mixing Defined...\n";
-        std::cout << "\t\t elapsed time: " << mlElapsed.count() << " s\n";
+
+    std::cout << "\t\t Defining Local Mixing Length...\n";
+    auto mlStartTime = std::chrono::high_resolution_clock::now();
+    if (WID->turbParams->methodLocalMixing == 0) {
+        std::cout << "\t\t Default Local Mixing Length...\n";
+        localMixing = new LocalMixingDefault();
+    } else if(WID->turbParams->methodLocalMixing == 1) {
+        std::cout << "\t\t Computing Local Mixing Length using serial code...\n";
+        localMixing = new LocalMixingSerial();
+    } else if (WID->turbParams->methodLocalMixing == 2) {
+        /*******Add raytrace code here********/
+        std::cout << "\t\t Computing mixing length scales..." << std::endl;
+        //WID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, WGD->icellflag, WGD->mixingLengths);
+    } else if (WID->turbParams->methodLocalMixing == 3) {
+        localMixing = new LocalMixingOptix();            
+    } else if (WID->turbParams->methodLocalMixing == 4) {
+        std::cout << "\t\t Loading Local Mixing Length data form NetCDF...\n";
+        localMixing = new LocalMixingNetCDF();
+    } else {
+        //this should not happen (checked in TURBParams)
     }
+    
+    localMixing->defineMixingLength(WID,WGD);
     
     Lm.resize(np_cc,0.0);
     // make a copy as mixing length will be modifiy by non local
     // (need to be reset at each time instances)
-    std::cout << "\t\t Defining Local Mixing Length...\n";
     for(auto id=0u;id<icellfluid.size();id++) {
         int idcc=icellfluid[id];
         Lm[idcc]=vonKar*WGD->mixingLengths[idcc];
     }
-    
+
+    auto mlEndTime = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> mlElapsed = mlEndTime - mlStartTime;
+    std::cout << "\t\t Local Mixing Defined: elapsed time: " << mlElapsed.count() << " s\n";
+
     // Caluclating Turbulence quantities (u*,z0,d0) based on morphology of domain.
     bldgH_mean=0.0;
     bldgH_max=0.0;
@@ -178,9 +184,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
     std::cout<<"\t\t Computing friction velocity..." << std::endl;
     getFrictionVelocity(WGD);
         
-
     std::cout << "\t\t Allocating memory...\n";
-
     // comp. of the strain rate tensor
     S11.resize(np_cc,0);
     S12.resize(np_cc,0);
@@ -228,20 +232,22 @@ void TURBGeneralData::run(WINDSGeneralData* WGD){
     for(auto i=0u;i<wallVec.size();i++) {
         wallVec.at(i)->setWallsBC(WGD,this);
     }
-    std::cout<<"\t\t Wall BC done."<<std::endl;
+    //std::cout<<"\t\t Wall BC done."<<std::endl;
 
     std::cout<<"\t\t Computing Stess Tensor..."<<std::endl;
     getStressTensor();
     //std::cout<<"\t\t Stress Tensor computed."<<std::endl;
 
-    std::cout<<"\t\t Applying non-local mixing..."<<std::endl;;
-    for (size_t i = 0; i < WGD->allBuildingsV.size(); i++) {
-        WGD->allBuildingsV[WGD->building_id[i]]->NonLocalMixing(WGD, this, WGD->building_id[i]);
+    if(flagNonLocalMixing) {
+        std::cout<<"\t\t Applying non-local mixing..."<<std::endl;;
+        for (size_t i = 0; i < WGD->allBuildingsV.size(); i++) {
+            WGD->allBuildingsV[WGD->building_id[i]]->NonLocalMixing(WGD, this, WGD->building_id[i]);
+        }
+        //std::cout<<"\t\t Non-local mixing completed."<<std::endl;
     }
-    //std::cout<<"\t\t Non-local mixing completed."<<std::endl;
-
-    std::cout<<"\t\t Capping Stess Tensor..."<<std::endl;
-    capStressTensor();
+    
+    std::cout<<"\t\t Checking Upper Bound of Turbulence Fields..."<<std::endl;
+    boundTurbFields();
 
     auto EndTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> Elapsed = EndTime - StartTime;
@@ -264,8 +270,9 @@ void TURBGeneralData::getFrictionVelocity(WINDSGeneralData* WGD)
                 k=itr - z_fc.begin();
                 //std::cout << "\t\t\t ref height = "<< zRef << " kRef = "<< kRef << std::endl;
             }else{
-                std::cout << "\t\t\t DOMAIN TOO SMALL " << std::endl;   
-                k=1;
+                std::cerr << "[ERROR] Turbulence model : reference height is outside the domain" << std::endl;
+                std::cerr << "\t Reference height zRef = "<< zRef << " m." << std::endl;
+                exit(EXIT_FAILURE);
             }
             
             int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
@@ -281,7 +288,7 @@ void TURBGeneralData::getFrictionVelocity(WINDSGeneralData* WGD)
     uRef=uSum/nVal;
     
     uStar = 0.4*uRef/log((zRef-d0d)/z0d);
-    std::cout << "\t\t Mean reference velocity uRef = " << uRef << " m/s" << std::endl;
+    std::cout << "\t\t Mean reference velocity at zRef = "<< zRef << " m ==> uRef = " << uRef << " m/s" << std::endl;
     std::cout << "\t\t Mean friction velocity uStar = " << uStar << " m/s" << std::endl;
 
 }
@@ -437,42 +444,42 @@ void TURBGeneralData::getStressTensor()
 }
 
 
-void TURBGeneralData::capStressTensor()
+void TURBGeneralData::boundTurbFields()
 {
     int id_cc;
-    float stressCap = 100*uStar*uStar;
+    float stressBound = turbUpperBound*uStar*uStar;
     for(auto id=0u;id<icellfluid.size();id++) {
         id_cc=icellfluid[id];
 
-        if (tau11[id_cc] < -stressCap)
-            tau11[id_cc] = -stressCap;
-        if (tau11[id_cc] > stressCap) 
-            tau11[id_cc] = stressCap;
+        if (tau11[id_cc] < -stressBound)
+            tau11[id_cc] = -stressBound;
+        if (tau11[id_cc] > stressBound) 
+            tau11[id_cc] = stressBound;
         
-        if (tau12[id_cc] < -stressCap)
-            tau12[id_cc] = -stressCap;
-        if (tau12[id_cc] > stressCap) 
-            tau12[id_cc] = stressCap;
+        if (tau12[id_cc] < -stressBound)
+            tau12[id_cc] = -stressBound;
+        if (tau12[id_cc] > stressBound) 
+            tau12[id_cc] = stressBound;
         
-        if (tau13[id_cc] < -stressCap) 
-            tau13[id_cc] = -stressCap;
-        if (tau13[id_cc] > stressCap) 
-            tau13[id_cc] = stressCap;
+        if (tau13[id_cc] < -stressBound) 
+            tau13[id_cc] = -stressBound;
+        if (tau13[id_cc] > stressBound) 
+            tau13[id_cc] = stressBound;
 
-        if (tau22[id_cc] < -stressCap)
-            tau22[id_cc] = -stressCap;
-        if (tau22[id_cc] > stressCap) 
-            tau22[id_cc] = stressCap;
+        if (tau22[id_cc] < -stressBound)
+            tau22[id_cc] = -stressBound;
+        if (tau22[id_cc] > stressBound) 
+            tau22[id_cc] = stressBound;
 
-        if (tau23[id_cc] < -stressCap)
-            tau23[id_cc] = -stressCap;
-        if (tau23[id_cc] > stressCap) 
-            tau23[id_cc] = stressCap;
+        if (tau23[id_cc] < -stressBound)
+            tau23[id_cc] = -stressBound;
+        if (tau23[id_cc] > stressBound) 
+            tau23[id_cc] = stressBound;
         
-        if (tau33[id_cc] < -stressCap) 
-            tau33[id_cc] = -stressCap;
-        if (tau33[id_cc] > stressCap)
-            tau33[id_cc] = stressCap;
+        if (tau33[id_cc] < -stressBound) 
+            tau33[id_cc] = -stressBound;
+        if (tau33[id_cc] > stressBound)
+            tau33[id_cc] = stressBound;
     }
 }
 

@@ -208,7 +208,7 @@ void DTEHeightField::load()
   GDALRasterBand  *poBand;
   int             nBlockXSize, nBlockYSize;
   int             bGotMin, bGotMax;
-  double          adfMinMax[2];
+  //double          adfMinMax[2];
 
   poBand = m_poDataset->GetRasterBand( 1 );
   poBand->GetBlockSize( &nBlockXSize, &nBlockYSize );
@@ -253,7 +253,7 @@ void DTEHeightField::load()
   //
   // then, use demMinX for transform[0] and
   //           demMinY for transform[1]
-  // 
+  //
   // if (we have utm, override the transofmr[0] and [3] parts...
 
   std::cout << "Mapping between raster coordinates and geo-referenced coordinates" << std::endl;
@@ -263,7 +263,7 @@ void DTEHeightField::load()
 
   convertRasterToGeo( m_nXSize-1, 0, xGeo, yGeo );
   printf("Raster Coordinate (%d, 0):\t(%12.7f, %12.7f)\n", m_nXSize-1, xGeo, yGeo);
-  
+
   convertRasterToGeo( m_nXSize-1, m_nYSize-1, xGeo, yGeo );
   printf("Raster Coordinate (%d, %d):\t(%12.7f, %12.7f)\n", m_nXSize-1, m_nYSize-1, xGeo, yGeo);
 

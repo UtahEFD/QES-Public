@@ -52,14 +52,6 @@
        		<speed> 5.0 </speed> 					<!-- Measured speed at the sensor height -->
        		<direction> 270.0 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
-    	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
-       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
-       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
-       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
-       		<height> 10.0 </height> 				<!-- Height of the sensor -->
-       		<speed> 5.0 </speed> 					<!-- Measured speed at the sensor height -->
-       		<direction> 180.0 </direction> 				<!-- Wind direction of sensor -->
-    	    </timeSeries>
 	</sensor>
 </metParams>								<!-- End of meteorological parameters -->
 <!--canopies>
@@ -78,12 +70,12 @@
 		<canopyRotation> 0.0 </canopyRotation>
 	</canopy>
 </canopies-->
-<localMixingParam>
+<turbParams>
   <method>3</method> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <samples>10000</samples> <!~- Samples per air cell for ray-traced mixing length calculations -->
   <save>true</save> <!-- Save 2 to file -->    
   <LMfile>QU_inner_mixlength.nc</LMfile> <!-- Address to mixing lethng location--> 
-</localMixingParam>
+</turbParams>
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>all</outputFields> 

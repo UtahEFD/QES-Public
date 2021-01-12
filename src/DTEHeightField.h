@@ -87,10 +87,11 @@ public:
         geoX = m_geoTransform[0] + rasterX * m_geoTransform[1] + rasterY * m_geoTransform[2];
         geoY = m_geoTransform[3] + rasterX * m_geoTransform[4] + rasterY * m_geoTransform[5];
     }
-    
+
 
   int m_nXSize, m_nYSize;
   float pixelSizeX, pixelSizeY;
+  double adfMinMax[2];
 
 private:
 
@@ -136,7 +137,7 @@ private:
         // in the flip
         // Previous code had this -- does not seem correct
         // height = scanline[ abs(k-m_nYSize) * m_nXSize + j ];
-        height = scanline[ (m_nYSize-1 - k) * m_nXSize + j ];
+        height = scanline[ (m_nYSize-1 - k) * m_nXSize + j ]-adfMinMax[0];
     }
 
     if (height < 0.0 || std::isnan(abs(height)))

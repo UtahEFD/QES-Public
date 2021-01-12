@@ -12,7 +12,7 @@
 #include "MetParams.h"
 #include "Buildings.h"
 #include "Canopies.h"
-#include "LocalMixingParam.h"
+#include "TURBParams.h"
 
 class WINDSInputData : public ParseInterface
 {
@@ -20,7 +20,7 @@ public:
     SimulationParameters* simParams;
     FileOptions* fileOptions;
     MetParams* metParams;
-    LocalMixingParam* localMixingParam;
+    TURBParams* turbParams;
     Buildings* buildings;
     Canopies* canopies;
 
@@ -29,7 +29,7 @@ public:
     {
 	      fileOptions = 0;
 	      metParams = 0;
-          localMixingParam=0;
+          turbParams=0;
 	      buildings = 0;
 	      canopies = 0;
     }
@@ -39,7 +39,7 @@ public:
 	     parseElement<SimulationParameters>(true, simParams, "simulationParameters");
 	     parseElement<FileOptions>(false, fileOptions, "fileOptions");
 	     parseElement<MetParams>(false, metParams, "metParams");
-	     parseElement<LocalMixingParam>(false,localMixingParam,"localMixingParam");
+	     parseElement<TURBParams>(false, turbParams,"turbParams");
        parseElement<Buildings>(false, buildings, "buildings");
 	     parseElement<Canopies>(false, canopies, "canopies");
     }
