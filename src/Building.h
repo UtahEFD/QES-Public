@@ -39,7 +39,7 @@
 */
 #include "util/ParseInterface.h"
 #include "PolygonVertex.h"
-#include "CutVertex.h"
+//#include "CutVertex.h"
 
 using namespace std;
 
