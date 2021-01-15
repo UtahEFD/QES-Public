@@ -22,12 +22,18 @@
 #include "Wall.h"
 #include "NetCDFInput.h"
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+
 #ifdef HAS_OPTIX
 #include "OptixRayTrace.h"
 #endif
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
+
+using namespace boost::gregorian;
+using namespace boost::posix_time;
 
 class WINDSInputData;
 
@@ -41,6 +47,10 @@ public:
                     std::vector<Building*> allBuildingsV,
                     std::vector<int> &building_id );
 
+    void applyParametrizations(const WINDSInputData*);
+    //void applyParametrizations(const WINDSInputData*);
+
+    void resetICellFlag();
 
     /*!
     * This function is being called from the plantInitial function
@@ -122,6 +132,7 @@ public:
     std::vector<double> mixingLengths;
 
     // Sensor* sensor;      may not need this now
+    std::vector <ptime> timestamp;
 
     int id;
 

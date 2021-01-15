@@ -103,11 +103,28 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
                WID->metParams->sensors[i]->TS[0]->site_wind_dir[p] = wrf_ptr->statData[i].profiles[t][p].wd;
 
             }
+         
          }
-      }
-
+      } 
+   } else {
+       // If the sensor file specified in the xml
+       if (WID->metParams->sensorName.size() > 0)
+       {
+           for (auto i = 0; i < WID->metParams->sensorName.size(); i++)
+           {
+               WID->metParams->sensors.push_back(new Sensor(WID->metParams->sensorName[i]));            // Create new sensor object
+               //WID->metParams->sensors[i] = parseSensors(WID->metParams->sensorName[i]);       // Parse new sensor objects from xml
+           }
+       }
+       
+       for (size_t i=0; i < WID->metParams->sensors.size(); i++) {
+           for (size_t t=0; t < WID->metParams->sensors[i]->TS.size(); t++) {
+               //ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp);
+               timestamp.push_back(from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp));
+           }
+       }
    }
-
+   
    // /////////////////////////
    // Calculation of z0 domain info MAY need to move to WINDSInputData
    // or somewhere else once we know the domain size
@@ -116,7 +133,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    z0_domain_v.resize( nx*ny );
    if (WID->metParams->z0_domain_flag == 0)      // Uniform z0 for the whole domain
    {
-      for (auto i=0; i<nx; i++)
+       for (auto i=0; i<nx; i++)
       {
          for (auto j=0; j<ny; j++)
          {
@@ -602,6 +619,11 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
    }
 
+   return;
+}
+
+void WINDSGeneralData::applyParametrizations(const WINDSInputData* WID) 
+{
    // ///////////////////////////////////////
    // Generic Parameterization Related Stuff
    // ///////////////////////////////////////
@@ -704,6 +726,22 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
 }
 
+void WINDSGeneralData::resetICellFlag()
+{
+    for (int k = 0; k < nz-2; k++) {
+        for (int j = 0; j < ny-1; j++) {
+            for (int i = 0; i < nx-1; i++) {
+                int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+                if (icellflag[icell_cent] != 0 && icellflag[icell_cent] != 2 && 
+                    icellflag[icell_cent] != 8 && icellflag[icell_cent] != 7)
+                {
+                    icellflag[icell_cent] = 1;
+                }
+            }
+        }
+    }
+    return;
+}
 
 void WINDSGeneralData::mergeSort( std::vector<float> &effective_height, std::vector<Building*> allBuildingsV, std::vector<int> &building_id)
 {
