@@ -61,7 +61,6 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
   // Wind direction of initial velocity at the height of building at the centroid
   upwind_dir = atan2(v0_h,u0_h);
 
-  x1 = x2 = y1 = y2 = 0.0;
   xi.resize (polygonVertices.size(),0.0);      // Difference of x values of the centroid and each node
   yi.resize (polygonVertices.size(),0.0);     // Difference of y values of the centroid and each node
   polygon_area = 0.0;
@@ -71,33 +70,6 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
     xi[id] = (polygonVertices[id].x_poly-building_cent_x)*cos(upwind_dir)+(polygonVertices[id].y_poly-building_cent_y)*sin(upwind_dir);
     yi[id] = -(polygonVertices[id].x_poly-building_cent_x)*sin(upwind_dir)+(polygonVertices[id].y_poly-building_cent_y)*cos(upwind_dir);
   }
-
-  // Loop to calculate polygon area, projections of x and y values of each point wrt upwind wind
-  for (auto id=0; id<polygonVertices.size()-1; id++)
-  {
-    polygon_area += 0.5*(polygonVertices[id].x_poly*polygonVertices[id+1].y_poly-polygonVertices[id].y_poly*polygonVertices[id+1].x_poly);
-    // Find maximum and minimum x and y values in rotated coordinates
-    if (xi[id] < x1)
-    {
-      x1 = xi[id];        // Minimum x
-    }
-    if (xi[id] > x2)
-    {
-      x2 = xi[id];        // Maximum x
-    }
-    if (yi[id] < y1)
-    {
-      y1 = yi[id];         // Minimum y
-    }
-    if (yi[id] > y2)
-    {
-      y2 = yi[id];         // Maximum y
-    }
-  }
-
-  polygon_area = abs(polygon_area);
-  width_eff = polygon_area/(x2-x1);           // Effective width of the building
-  length_eff = polygon_area/(y2-y1);          // Effective length of the building
 
   int counter = 0;
   // Loop through points to find the height added to the effective height because of rooftop parameterization
