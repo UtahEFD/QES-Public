@@ -20,7 +20,7 @@ public:
     {}
 
     //save function be call outside
-    void save(float);
+    void save(ptime);
 
 private:
 
