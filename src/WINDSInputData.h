@@ -34,6 +34,23 @@ public:
 	      canopies = 0;
     }
 
+    WINDSInputData(const std::string fileName) 
+    {
+        pt::ptree tree;
+        
+        try {
+            pt::read_xml(fileName, tree);
+        } 
+        catch (boost::property_tree::xml_parser::xml_parser_error& e) {
+            std::cerr << "Error reading tree in" << fileName << "\n";
+            exit(EXIT_FAILURE);
+        }
+        
+        parseTree(tree);
+        
+    }
+    
+
     virtual void parseValues()
     {
 	     parseElement<SimulationParameters>(true, simParams, "simulationParameters");
