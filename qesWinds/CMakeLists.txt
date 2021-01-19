@@ -12,7 +12,7 @@ target_link_libraries(qesWinds curand)
 target_link_libraries(qesWinds qeswindscore)
 target_link_libraries(qesWinds qeswindsutil)
 
-IF (${HAS_OPTIX_SUPPORT})
+IF (HAS_OPTIX_SUPPORT MATCHES ON)
   target_link_libraries(qesWinds qesOptix)
 ENDIF()
 

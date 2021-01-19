@@ -111,8 +111,10 @@ ENDIF(CUDA_FOUND)
 set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-arch=sm_61;-rdc=true;--use_fast_math;--keep-device-functions")
 
 
-# Guess that OPTIX is NOT installed, so shut off by default
-OPTION(HAS_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" OFF)
+#
+# Allow the compilation to override including OptiX if desired
+#
+OPTION(USE_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" ON)
 
 #
 # if CUDA 10.2 or higher is found, then OptiX support can be enabled, so search for it.
@@ -127,21 +129,22 @@ if (${CUDA_VERSION} VERSION_GREATER_EQUAL 10.2)
   #
   FIND_PACKAGE(OptiX 7.0)
 
-  if (${OptiX-NOTFOUND})
+  if(NOT OptiX_INCLUDE)
+
     MESSAGE(STATUS "  OptiX is used for accelerating some computations with this project. If you wish to run the project with OptiX GPU acceleration, please look into installing NVIDIA CUDA 10.2 or higher and NVIDIA OptiX 7.0 or higher.")    
-    OPTION(HAS_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" OFF)
+    SET(HAS_OPTIX_SUPPORT OFF BOOL "Determines if OptiX functionality is compiled into the code base")
     REMOVE_DEFINITIONS(-DHAS_OPTIX)
+
   else()
 
     MESSAGE(STATUS "Found NVIDIA OptiX 7.0")
 
     # Set the preprocessor definitions to conditonally compile the optix code
-    OPTION(HAS_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" ON)
+    SET(HAS_OPTIX_SUPPORT ON BOOL "Determines if OptiX functionality is compiled into the code base")
     ADD_DEFINITIONS(-DHAS_OPTIX)
 
-    include_directories(
-      ${OptiX_INCLUDE}
-      )
+    MESSAGE(STATUS "Using OptiX Include location: ${OptiX_INCLUDE}")
+    include_directories(${OptiX_INCLUDE})
 
     file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/ptx") #ptx files located here
     add_definitions(-DPTX_DIR="${CMAKE_BINARY_DIR}/ptx") #PTX_DIR
@@ -181,7 +184,7 @@ else()
   MESSAGE(STATUS "Did NOT find CUDA 10.2 or higher!  Disabling NVIDIA OptiX acceleration.")
   MESSAGE(STATUS "  OptiX is used for accelerating some computations with this project. If you wish to run the project with OptiX GPU acceleration, please look into installing NVIDIA CUDA 10.2 or higher and NVIDIA OptiX 7.0 or higher.")    
   # Disable OptiX Support
-  option(HAS_OPTIX_SUPPORT "Determines if OptiX functionality is compiled into the code base" OFF)
+  SET(HAS_OPTIX_SUPPORT OFF BOOL "Determines if OptiX functionality is compiled into the code base")
   REMOVE_DEFINITIONS(-DHAS_OPTIX)
 endif()
 
@@ -218,7 +221,6 @@ endif (DOXYGEN_FOUND)
 # cmake system constructed the build environment OK.
 enable_testing() # once
 include(CTest)
-
 
 add_subdirectory(util)
 add_subdirectory(src)

@@ -1,3 +1,36 @@
+/*
+ * QES-Winds
+ *
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+
+
 #include "PolyBuilding.h"
 
 // These take care of the circular reference
@@ -35,6 +68,46 @@ void PolyBuilding::setPolyBuilding(WINDSGeneralData* WGD)
 
   i_building_cent = std::round(building_cent_x/WGD->dx)-1;   // Index of building centroid in x-direction
   j_building_cent = std::round(building_cent_y/WGD->dy)-1;   // Index of building centroid in y-direction
+
+  x1 = x2 = y1 = y2 = 0.0;
+
+  xi.resize (polygonVertices.size(),0.0);      // Difference of x values of the centroid and each node
+  yi.resize (polygonVertices.size(),0.0);     // Difference of y values of the centroid and each node
+
+  polygon_area = 0.0;
+
+  for (auto id=0; id<polygonVertices.size(); id++)
+  {
+    xi[id] = (polygonVertices[id].x_poly-building_cent_x)*cos(upwind_dir)+(polygonVertices[id].y_poly-building_cent_y)*sin(upwind_dir);
+    yi[id] = -(polygonVertices[id].x_poly-building_cent_x)*sin(upwind_dir)+(polygonVertices[id].y_poly-building_cent_y)*cos(upwind_dir);
+  }
+
+  // Loop to calculate polygon area, projections of x and y values of each point wrt upwind wind
+  for (auto id=0; id<polygonVertices.size()-1; id++)
+  {
+    polygon_area += 0.5*(polygonVertices[id].x_poly*polygonVertices[id+1].y_poly-polygonVertices[id].y_poly*polygonVertices[id+1].x_poly);
+    // Find maximum and minimum x and y values in rotated coordinates
+    if (xi[id] < x1)
+    {
+      x1 = xi[id];        // Minimum x
+    }
+    if (xi[id] > x2)
+    {
+      x2 = xi[id];        // Maximum x
+    }
+    if (yi[id] < y1)
+    {
+      y1 = yi[id];         // Minimum y
+    }
+    if (yi[id] > y2)
+    {
+      y2 = yi[id];         // Maximum y
+    }
+  }
+
+  polygon_area = abs(polygon_area);
+  width_eff = polygon_area/(x2-x1);           // Effective width of the building
+  length_eff = polygon_area/(y2-y1);          // Effective length of the building
 
 }
 

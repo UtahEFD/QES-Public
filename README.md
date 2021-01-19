@@ -37,6 +37,18 @@ will need to remember the path to the cuda install directory.
 
 ## Building the Code
 
+<<<<<<< HEAD
+=======
+The most active development occurs in the *workingBranch*. We suggest you use that branch at this time.  You can checkout this branch with the following git command:
+
+```
+git checkout workingBranch
+```
+
+If you are unsure about which branch you are on, the ``` git status ``` command can provide you with this information.
+
+
+>>>>>>> qes/Release
 ### Building on general Linux system
 
 We separate the build 
@@ -52,6 +64,7 @@ You can then build the source:
 make
 ```
 
+<<<<<<< HEAD
 ### Running on general Linux system
 
 After the code is built, you can run the code as:
@@ -63,6 +76,8 @@ After the code is built, you can run the code as:
 -z: output cell-centered (averaged) velocity field for visualization purposes
 -o: define name and location of the output file
 ```
+=======
+>>>>>>> qes/Release
 
 ## Instructions for CHPC Cluster
 
@@ -177,4 +192,13 @@ make windsdoc
 ```
 
 
+<<<<<<< HEAD
+=======
+### Continuous Integration
+
+We were running continuous integration on Travis-CI but this is no longer functional...
+
+[Basic Concepts for Travis Continuous Integration](https://docs.travis-ci.com/user/for-beginners/)
+
+>>>>>>> qes/Release
 

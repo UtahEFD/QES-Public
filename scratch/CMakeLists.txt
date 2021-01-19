@@ -4,14 +4,12 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 set(BASETESTS
   argparser
   shpTest
-  wrfInputTest
-  wrf2dem
   )
 
 foreach(basetest ${BASETESTS})
     add_executable(${basetest} ${basetest}.cpp)
 
-    IF (${HAS_OPTIX_SUPPORT})
+    IF (HAS_OPTIX_SUPPORT MATCHES ON)
       target_link_libraries(${basetest} qesOptix)
     ENDIF()
 

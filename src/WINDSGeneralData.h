@@ -1,3 +1,36 @@
+/*
+ * QES-Winds
+ *
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ *
+ */
+
+
 #pragma once
 
 #include <vector>
@@ -21,12 +54,15 @@
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
+using namespace netCDF;
+using namespace netCDF::exceptions;
+
 class WINDSInputData;
 
 class WINDSGeneralData {
 public:
     WINDSGeneralData();
-    WINDSGeneralData(const WINDSInputData* WID);
+    WINDSGeneralData(const WINDSInputData* WID, int solverType);
     ~WINDSGeneralData();
 
     void mergeSort( std::vector<float> &effective_height,
@@ -53,16 +89,16 @@ public:
     //////// This can be moved to a new class (WINDSGeneralData)
     ////////////////////////////////////////////////////////////////////////////
     const float pi = 4.0f * atan(1.0);
-    const float vk = 0.4;			/// Von Karman's
+    const float vk = 0.4;           /// Von Karman's
                                                 /// constant
     float cavity_factor, wake_factor;
     float lengthf_coeff;
     float theta;
 
     // General QUIC Domain Data
-    int nx, ny, nz;		/**< number of cells */
-    float dx, dy, dz;		/**< Grid resolution*/
-    float dxy;		/**< Minimum value between dx and dy */
+    int nx, ny, nz;     /**< number of cells */
+    float dx, dy, dz;       /**< Grid resolution*/
+    float dxy;      /**< Minimum value between dx and dy */
 
     long numcell_cout;
     long numcell_cout_2d;
@@ -123,12 +159,12 @@ public:
     float convergence;
     // Canopy functions
 
-    std::vector<float> canopy_atten;		/**< Canopy attenuation coefficient */
-    std::vector<float> canopy_top;		  /**< Canopy height */
-    std::vector<int> canopy_top_index;		  /**< Canopy top index */
-    std::vector<float> canopy_z0;		  /**< Canopy surface roughness */
-    std::vector<float> canopy_ustar;		  /**< Velocity gradient at the top of canopy */
-    std::vector<float> canopy_d;		  /**< Canopy displacement length */
+    std::vector<float> canopy_atten;        /**< Canopy attenuation coefficient */
+    std::vector<float> canopy_top;        /**< Canopy height */
+    std::vector<int> canopy_top_index;        /**< Canopy top index */
+    std::vector<float> canopy_z0;         /**< Canopy surface roughness */
+    std::vector<float> canopy_ustar;          /**< Velocity gradient at the top of canopy */
+    std::vector<float> canopy_d;          /**< Canopy displacement length */
 
     Canopy* canopy;
 

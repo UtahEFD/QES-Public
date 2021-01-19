@@ -18,13 +18,13 @@ CUDA_ADD_LIBRARY( qeswindscore
   QESNetCDFOutput.cpp
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
+  Sensor.cu
   Solver.cpp
   Triangle.cpp
   WINDSInputData.h
   WINDSGeneralData.cpp
   WINDSOutputVisualization.cpp
   WINDSOutputWorkspace.cpp
-  WRFInput.cpp WRFInput.h
   Wall.cpp Wall.h
   UpwindCavity.cpp
   PolygonWake.cpp
@@ -38,7 +38,16 @@ CUDA_ADD_LIBRARY( qeswindscore
   SharedMemory.h
   TimeSeries.h
   )
-
+ 
+IF (HAS_OPTIX_SUPPORT MATCHES ON)
+  cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
+ 
+  add_library(qesOptix
+    ${embedded_ptx_code}
+    OptixRayTrace.h
+    OptixRayTrace.cpp
+    )  
+ENDIF()
 
 
 

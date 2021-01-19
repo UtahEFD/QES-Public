@@ -52,6 +52,7 @@
        		<speed> 5.0 </speed> 					<!-- Measured speed at the sensor height -->
        		<direction> 270.0 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
+<<<<<<< HEAD
     	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
        		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
        		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
@@ -60,6 +61,8 @@
        		<speed> 5.0 </speed> 					<!-- Measured speed at the sensor height -->
        		<direction> 180.0 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
+=======
+>>>>>>> qes/Release
 	</sensor>
 </metParams>								<!-- End of meteorological parameters -->
 <!--canopies>
