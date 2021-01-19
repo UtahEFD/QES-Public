@@ -4,8 +4,6 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 set(BASETESTS
   argparser
   shpTest
-  wrfInputTest
-  wrf2dem
   )
 
 foreach(basetest ${BASETESTS})

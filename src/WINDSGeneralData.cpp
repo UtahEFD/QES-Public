@@ -89,7 +89,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    //
    // Need to now take all WRF station data and convert to
    // sensors
-   if (WID->simParams->wrfInputData)
+   /*if (WID->simParams->wrfInputData)
    {
 
       WRFInput *wrf_ptr = WID->simParams->wrfInputData;
@@ -140,7 +140,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
          }
       }
 
-   }
+   }*/
 
    // /////////////////////////
    // Calculation of z0 domain info MAY need to move to WINDSInputData
@@ -333,17 +333,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    WID->metParams->sensors[0]->inputWindProfile(WID, this, 0, solverType);
 
    std::cout << "Sensors have been loaded (total sensors = " << WID->metParams->sensors.size() << ")." << std::endl;
-
-   max_velmag = 0.0;
-   for (auto i=0; i<nx; i++)
-   {
-      for (auto j=0; j<ny; j++)
-      {
-         int icell_face = i+j*nx+(nz-2)*nx*ny;
-         max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face],2.0)+pow(v0[icell_face],2.0)));
-      }
-   }
-   max_velmag *= 1.2;
 
    ////////////////////////////////////////////////////////
    //////              Apply Terrain code             /////
@@ -690,26 +679,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       }
       std::cout << "Rooftop parameterization done...\n";
    }
-
-   ///////////////////////////////////////////
-   //         Street Intersection          ///
-   ///////////////////////////////////////////
-   /*if (WID->simParams->streetCanyonFlag > 0 && WID->simParams->streetIntersectionFlag > 0 && allBuildingsV.size() > 0)
-     {
-     std::cout << "Applying Blended Region Parameterization...\n";
-     allBuildingsV[0]->streetIntersection (WID, this);
-     allBuildingsV[0]->poisson (WID, this);
-     std::cout << "Blended Region Parameterization done...\n";
-     }*/
-
-
-   /*
-    * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
-    * wall above/below and wall in front/back and applies the log law boundary condition fix
-    * to the cells near Walls
-    *
-    */
-   //wall->wallLogBC (this);
 
    wall->setVelocityZero (this);
 

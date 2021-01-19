@@ -25,7 +25,6 @@ CUDA_ADD_LIBRARY( qeswindscore
   WINDSGeneralData.cpp
   WINDSOutputVisualization.cpp
   WINDSOutputWorkspace.cpp
-  WRFInput.cpp WRFInput.h
   Wall.cpp Wall.h
   UpwindCavity.cpp
   PolygonWake.cpp
