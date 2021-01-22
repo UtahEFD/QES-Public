@@ -14,7 +14,8 @@
 #include "FuelProperties.hpp"
 #include "Vector3.h"
 #include "Solver.h"
-
+#include "FuelRead.h"
+#include "DTEHeightField.h"
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -77,10 +78,12 @@ class Fire {
         std::vector<float> Pot_v;
         std::vector<float> Pot_w;
 
+
         // output fields
         std::vector<float> burn_flag;
         std::vector<float> burn_out;
 	std::vector<float> Pot_w_out;
+	std::vector<float> fuel_map;
 	
 
   // Potential field
@@ -100,6 +103,8 @@ class Fire {
 	std::vector<float> FT_y1;
 	std::vector<float> FT_x2;
 	std::vector<float> FT_y2;
+	std::vector<float> FT_x3;
+	std::vector<float> FT_y3;
       
         void run(Solver*, WINDSGeneralData*);
         void move(Solver*, WINDSGeneralData*); 

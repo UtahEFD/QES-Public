@@ -14,7 +14,6 @@ CUDA_ADD_LIBRARY( qeswindscore
   DTEHeightField.cpp
   DynamicParallelism.cu
   ESRIShapefile.cpp ESRIShapefile.h
-  FIREOutput.cpp
   handleWINDSArgs.cpp
   LocalMixing.cpp
   LocalMixingDefault.cpp
@@ -62,6 +61,8 @@ CUDA_ADD_LIBRARY( qeswindscore
 
 CUDA_ADD_LIBRARY( qesfirecore
   Fire.cpp
+  FIREOutput.cpp
+  FuelRead.cpp
   )
 
  

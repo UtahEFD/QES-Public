@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
     }
 
     // Generate the general WINDS data from all inputs
-    WINDSGeneralData* WGD = new WINDSGeneralData(WID);
+    WINDSGeneralData* WGD = new WINDSGeneralData(WID, arguments.solveType);
 
     // create WINDS output classes
     std::vector<QESNetCDFOutput*> outputVec;
@@ -197,7 +197,12 @@ int main(int argc, char *argv[])
     /** 
      * Create Fire Mapper
      **/
+    auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time
     Fire* fire = new Fire(WID, WGD);
+    auto finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+	    
+    std::chrono::duration<float> elapsed = finish - start;
+    std::cout << "Fire Map created: elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
 
     // create FIREOutput manager
     FIREOutput* fireOutput = new FIREOutput(WGD,fire,arguments.netCDFFileFire);

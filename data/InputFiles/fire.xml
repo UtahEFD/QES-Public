@@ -2,7 +2,7 @@
         
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
-    <domain> 100 100 100 </domain> <!-- nx,ny,nz-->
+    <domain> 10 10 10 </domain> <!-- nx,ny,nz-->
 	<cellSize> 1.0 1.0 0.25 </cellSize> <!-- dx, dy,dz [Meters]-->	
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 60 </totalTimeIncrements>
@@ -61,11 +61,12 @@
 <fires>
 	<numFires>1</numFires>
 	<fuelType>3</fuelType>
+	<fuelMap>../data/FireFiles/fuelEx.tiff</fuelMap>
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight> <!--meters-->
-    <xStart> 50.0 </xStart> <!--meters-->
-    <yStart> 50.0 </yStart> <!--meters-->
-    <length> 10.0 </length> <!--meters-->
+    <xStart> 5.0 </xStart> <!--meters-->
+    <yStart> 5.0 </yStart> <!--meters-->
+    <length> 1.0 </length> <!--meters-->
     <width>  1.0 </width> <!--meters-->
     <courant> 0.25 </courant>
     <fieldFlag> 0 </fieldFlag> <!-- flag for if multiple timesteps for fire 

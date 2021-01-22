@@ -50,6 +50,7 @@ public:
     DTEHeightField* DTE_heightField = nullptr;
     Mesh* DTE_mesh;
 
+
     // SHP File parameters
     std::string shpFile;   // SHP file name
     std::string shpBuildingLayerName;

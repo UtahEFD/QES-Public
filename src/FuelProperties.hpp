@@ -127,3 +127,38 @@ class LoggingSlashHeavy : public FuelProperties {
                                              900, 1.1210, 180, 0, 2.2420, 0.0062, 170000, 17433000, 7496.2,
                                              0.0650, 1, 0.0) {}
 };
+// Urban/Developed
+class Urban : public FuelProperties {
+    public:
+        Urban() : FuelProperties(0, 0, 0, 0, 0, 0, 0, 0,
+                                             0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                             0, 0, 0) {}
+};
+// Snow/Ice
+class Snow : public FuelProperties {
+    public:
+        Snow() : FuelProperties(0, 0, 0, 0, 0, 0, 0, 0,
+                                             0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                             0, 0, 0) {}
+};
+// Agricultural
+class Agricultural : public FuelProperties {
+    public:
+        Agricultural() : FuelProperties(0, 0, 0, 0, 0, 0, 0, 0,
+                                             0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                             0, 0, 0) {}
+};
+// Open Water
+class Water : public FuelProperties {
+    public:
+        Water() : FuelProperties(0, 0, 0, 0, 0, 0, 0, 0,
+                                             0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                             0, 0, 0) {}
+};
+// Bare Ground
+class Bare : public FuelProperties {
+    public:
+        Bare() : FuelProperties(0, 0, 0, 0, 0, 0, 0, 0,
+                                             0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                             0, 0, 0) {}
+};

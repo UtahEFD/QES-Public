@@ -1,1 +1,11 @@
-/uufs/notchpeak.peaks/sys/var/slurm/slurmd.spool/notch055//job1776222/slurm_script: line 13: .../build/qesFire/qesFire: No such file or directory
+
+Inactive Modules:
+  1) boost/1.66.0
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) netcdf-cxx/4.3.0
+
+The following have been reloaded with a version change:
+  1) gcc/5.4.0 => gcc/8.1.0
+
+/uufs/notchpeak.peaks/sys/var/slurm/slurmd.spool/notch055//job1910205/slurm_script: line 13: .: ../build/qesFire/qesFire: cannot execute binary file

@@ -15,7 +15,6 @@
 
 #include "Fires.hpp"
 
-#include "LocalMixingParam.h"
 #include "TURBParams.h"
 
 class WINDSInputData : public ParseInterface

@@ -5,7 +5,7 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
 {
 
     output_fields={"t","x","y","z","u","v","w","icell","terrain",
-                   "burn"};
+                   "burn","fuel"};
 
     // copy of wgd pointer
     wgd_=wgd;
@@ -60,7 +60,7 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
     dim_vect_2d.push_back(NcDim_x);
     // create attributes
     createAttVector("terrain","terrain height","m",dim_vect_2d,&(wgd_->terrain));
-
+    createAttVector("fuel","fuel type","--",dim_vect_2d,&(fire_->fuel_map));
     // create 3D vector (x,y,t)
     std::vector<NcDim> dim_vect_3d;
     dim_vect_3d.push_back(NcDim_t);
@@ -68,7 +68,7 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
     dim_vect_3d.push_back(NcDim_x);
     // create attributes
     createAttVector("burn","burn flag value","--",dim_vect_3d,&(fire_->burn_out));
-
+    
     // create 4D vector (x,y,z,t)
     std::vector<NcDim> dim_vect_4d;
     dim_vect_4d.push_back(NcDim_t);
