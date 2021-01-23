@@ -1,14 +1,9 @@
-% Uniform Flow test case for QES-plume
-% Base on Singh PhD Dissertation )
-% Initial test case published in 
-%  Singh et al. 2004 
-%  Willemsen et al. 2007
-%
-% F. Margaiaraz
-% Univesity of Utah. 2021
-
+ 
 %% ========================================================================
 % setup:
+
+%file name to save netCDF (must contain path)
+filename='../QES-data/UniformFlow';
 
 % dimensions of the 3D domain
 lx=100;ly=100;lz=140;
@@ -71,7 +66,7 @@ icellflag_out(:,:,1) = 2; % terrain
 %icellflag_out(:,:,1) = 1; % fluid
 
 % now save the netcdf wind output
-writeNetCDFFile_winds('../QES-data/UniformFlow',nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
+writeNetCDFFile_winds(filename,nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
 
 
 %% ========================================================================
@@ -93,13 +88,13 @@ tau11 = (2.0*uStar)^2*ones(nx-1,ny-1,nz-1);
 tau22 = (1.6*uStar)^2*ones(nx-1,ny-1,nz-1);
 tau33 = (1.3*uStar)^2*ones(nx-1,ny-1,nz-1);
 
-tau13 = (uStar)^2*ones(nx-1,ny-1,nz-1);
+tau13 = -(uStar)^2*ones(nx-1,ny-1,nz-1);
 
 tau12 = zeros(nx-1,ny-1,nz-1);
 tau23 = zeros(nx-1,ny-1,nz-1);
 
 % now save the netcdf turb output
-writeNetCDFFile_turb('../QES-data/UniformFlow',x_cc,y_cc,z_cc,CoEps,tke,tau11,tau12,tau13,tau22,tau23,tau33);
+writeNetCDFFile_turb(filename,x_cc,y_cc,z_cc,CoEps,tke,tau11,tau12,tau13,tau22,tau23,tau33);
 
 
 
