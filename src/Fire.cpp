@@ -424,7 +424,6 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
         int TID = std::round(T/dz);
         float FD = H/2.0 + T + D;
 		float MFD = maxH + T + D;
-
         if (H==0) {
             kh = std::round(T/dz);
         } else {
@@ -438,16 +437,13 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
                
         // get horizontal wind at flame height
 		int cell_face = ii + jj*nx + kh*ny*nx;
-
         float u = 0.5*(WGD->u[cell_face] + WGD->u[cell_face+1]);
         float v = 0.5*(WGD->v[cell_face] + WGD->v[cell_face+nx]);
-
         // run Balbi model
         float burnTime = fire_cells[id].state.burn_time;
         struct FireProperties fp = balbi(fuel,u,v,xNorm[id],yNorm[id],slope_x[id],slope_y[id],0.0650);
         fire_cells[id].properties = fp;
         Force[id] = fp.r;
-
 		// update icell value for flame
 		for (int k=TID; k<= maxkh; k++){
 			int icell_cent = ii + jj*(nx-1) + (k)*(nx-1)*(ny-1);
@@ -460,6 +456,7 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
 	}
     // compute time step
     dt = computeTimeStep();
+	std::vector<int>().swap(cells_burning);
 }
 
 /**
@@ -756,33 +753,35 @@ void Fire :: move(Solver* solver, WINDSGeneralData* WGD){
 		int FT_idx2 = 0;
 		int FT_idx3 = 0;
 		float FT = ceil(time)+FT_time[0];
-		int it;
+		int it=-1;
 		for (int IDX=0; IDX < FT_time.size(); IDX++){
 	    	if (FT == FT_time[IDX]){
 	        	it = IDX;
 	     		break;
 	    	}
     	}
-		int nx1 = round(FT_x1[it]/dx);
-		int ny1 = round((FT_y1[it])/dy);
-		FT_idx1 = nx1 + ny1*(nx-1);
-		int nx2 = round(FT_x2[it]/dx);
-		int ny2 = round((FT_y2[it])/dy);
-		FT_idx2 = nx2 + ny2*(nx-1);
-		int nx3 = round(FT_x3[it]/dx);
-		int ny3 = round((FT_y3[it])/dy);
-		FT_idx3 = nx3 + ny3*(nx-1);
-		if (burn_flag[FT_idx1]<2){
-			front_map[FT_idx1] = 0;
-			fire_cells[FT_idx1].state.burn_flag = 1;
-		}
-		if (burn_flag[FT_idx2]<2){
-			front_map[FT_idx2] = 0;
-			fire_cells[FT_idx2].state.burn_flag = 1;
-		}
-		if (burn_flag[FT_idx3]<2){
-			front_map[FT_idx3] = 0;
-			fire_cells[FT_idx3].state.burn_flag = 1;
+		if (it >= 0){
+			int nx1 = round(FT_x1[it]/dx);
+			int ny1 = round((FT_y1[it])/dy);
+			FT_idx1 = nx1 + ny1*(nx-1);
+			int nx2 = round(FT_x2[it]/dx);
+			int ny2 = round((FT_y2[it])/dy);
+			FT_idx2 = nx2 + ny2*(nx-1);
+			int nx3 = round(FT_x3[it]/dx);
+			int ny3 = round((FT_y3[it])/dy);
+			FT_idx3 = nx3 + ny3*(nx-1);
+			if (burn_flag[FT_idx1]<2){
+				front_map[FT_idx1] = 0;
+				fire_cells[FT_idx1].state.burn_flag = 1;
+			}
+			if (burn_flag[FT_idx2]<2){
+				front_map[FT_idx2] = 0;
+				fire_cells[FT_idx2].state.burn_flag = 1;
+			}
+			if (burn_flag[FT_idx3]<2){
+				front_map[FT_idx3] = 0;
+				fire_cells[FT_idx3].state.burn_flag = 1;
+			}
 		}
     }
     for (int j=1; j < ny-2; j++){
@@ -960,23 +959,23 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, floa
       int n_c = 0;
       int v_c = 0;
       if (abs(x_slope) < 0.001 and abs(y_slope) < 0.001){
-	s_c = 1;
+		s_c = 1;
       }
       if (abs(x_norm) < 0.001 and abs(y_norm) < 0.001){
-	n_c = 1;
+		n_c = 1;
       }
       if (abs(u_mid) < 0.001 and abs(v_mid) < 0.001){
-	v_c = 1;
+		v_c = 1;
       }
       if (s_c == 1 or n_c == 1){
- 	phi = 0;
+	 	phi = 0;
       } else {
-        phi = acos((x_slope*x_norm + y_slope*y_norm)/(sqrt(x_slope*x_slope + y_slope*y_slope)*sqrt(x_norm*x_norm + y_norm*y_norm)));
+		phi = acos((x_slope*x_norm + y_slope*y_norm)/(sqrt(x_slope*x_slope + y_slope*y_slope)*sqrt(x_norm*x_norm + y_norm*y_norm)));
       }
       if (v_c == 1 or n_c == 1){
-	psi = 0;
+		psi = 0;
       } else {
-	psi = acos((u_mid*x_norm + v_mid*y_norm)/(sqrt(u_mid*u_mid + v_mid*v_mid)*sqrt(x_norm*x_norm + y_norm*y_norm)));
+		psi = acos((u_mid*x_norm + v_mid*y_norm)/(sqrt(u_mid*u_mid + v_mid*v_mid)*sqrt(x_norm*x_norm + y_norm*y_norm)));
       }
       //std::cout<<"s_c = "<<s_c<<", n_c = "<<n_c<<", v_c = "<<v_c<<std::endl;
       //std::cout<<"x slope = "<<x_slope<<", x norm = "<<x_norm<<", y slope = "<<y_slope<<", y norm = "<<y_norm<<", phi = "<<phi<<", psi = "<<psi<<std::endl;

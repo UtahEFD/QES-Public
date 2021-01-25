@@ -1,5 +1,5 @@
 <simulationParameters>
-	<DEM>../data/GISFiles/L2F_elevation.tif</DEM>			<!-- Address to DEM location-->
+	<DEM>../data/GISFiles/L2F_elevation_UTM.tif</DEM>			<!-- Address to DEM location-->
 
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
@@ -38,7 +38,7 @@
 	<!--site_coord_flag> 1</site_coord_flag-->
 	
 		<sensor>
-    	    <site_coord_flag> 2 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
+    	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
             <site_xcoord> 200.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
             <site_ycoord> 200.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
             <site_UTM_x> 524994.0 </site_UTM_x> 				<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
@@ -64,11 +64,11 @@
 <fires>
 	<numFires>1</numFires>
 	<fuelType>2</fuelType>
-	 <fuelMap>../data/FireFiles/L2F_fuel.tif</fuelMap>
+	 <fuelMap>../data/FireFiles/L2F_fuel_UTM.tif</fuelMap>
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight> <!--meters-->
-    <xStart> 1275.0 </xStart> <!--meters-->
-    <yStart> 1305.0 </yStart> <!--meters-->
+    <xStart> 1530.0 </xStart> <!--meters-->
+    <yStart> 1145.0 </yStart> <!--meters-->
     <length> 16.0 </length> <!--meters-->
     <width>  16.0 </width> <!--meters-->
     <courant> 0.2 </courant>
