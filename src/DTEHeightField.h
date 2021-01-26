@@ -60,7 +60,7 @@ public:
   friend class test_DTEHeightField;
 
   DTEHeightField();
-  DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN);
+  DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN, float UTMx, float UTMy, int nx, int ny);
 
     DTEHeightField(const std::vector<double> &heightField, int dimX, int dimY, double cellSizeXN, double cellSizeYN);
 
@@ -169,7 +169,7 @@ private:
         // in the flip
         // Previous code had this -- does not seem correct
         // height = scanline[ abs(k-m_nYSize) * m_nXSize + j ];
-        height = scanline[ (m_nYSize-1 - k) * m_nXSize + j ];
+        height = scanline[ (m_nYSize-1 - k) * (m_nXSize) + j ];
     }
 
     if (height < 0.0 || std::isnan(abs(height)))
@@ -219,6 +219,13 @@ private:
 
   //float pixelSizeX, pixelSizeY;
   float cellSizeX, cellSizeY;
+  float domain_UTMx, domain_UTMy;
+  float origin_x, origin_y;
+  int shift_x = 0;
+  int shift_y = 0;
+  int domain_nx, domain_ny;
+  int end_x = 0;
+  int end_y = 0;
 
   std::vector<Triangle*> m_triList;
   float min[3], max[3];

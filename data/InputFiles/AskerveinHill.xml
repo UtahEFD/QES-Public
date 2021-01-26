@@ -21,9 +21,9 @@
 	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
 	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria (default = 1e-9) -->
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
-	<UTMx> 0 </UTMx> 						<!-- x component (m) in UTM -->
-	<UTMy> 0 </UTMy> 						<!-- y component (m) in UTM -->
-	<UTMZone> 1 </UTMZone> 						<!-- UTM zone that domain located -->
+	<UTMx> 595469.6122881 </UTMx> 						<!-- x component (m) in UTM -->
+	<UTMy> 6336281.9538635 </UTMy> 						<!-- y component (m) in UTM -->
+	<UTMZone> 29 </UTMZone> 						<!-- UTM zone that domain located -->
 	<UTMZoneLetter> 17 </UTMZoneLetter>
 	<readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->
 	<!--COEFF>test_windsWk.nc</COEFF-->					<!-- Address to coefficients file location --> 
