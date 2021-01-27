@@ -83,9 +83,6 @@ public:
     double fm_dx, fm_dy;
     std::vector<double> fmHeight;
 
-    // Not really used with WRF so do not read in
-    // std::vector<double> fmZ0;
-
     // Atmospheric Mesh
     int atm_nx, atm_ny, atm_nz;
     double atm_dx, atm_dy;

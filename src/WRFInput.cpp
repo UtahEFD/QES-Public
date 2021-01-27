@@ -324,6 +324,7 @@ WRFInput::WRFInput(const std::string& filename,
     // Acquire some global attributes from the WRF system
     std::multimap<std::string,NcGroupAtt> globalAttributes = wrfInputFile.getAtts();
     
+    // Extract the WRF version information
     std::string wrfTitle;
     auto gblAttIter = globalAttributes.find("TITLE");
     gblAttIter->second.getValues( wrfTitle );
@@ -333,6 +334,8 @@ WRFInput::WRFInput(const std::string& filename,
     std::string subStr1 = wrfTitle.substr(vLoc+2, wrfTitle.length()-1);
     nextSpace = subStr1.find( " " );
     std::string vString = subStr1.substr(0, nextSpace);
+
+    // Report the version information
     std::cout << "\tWRF Version: " << vString << std::endl;
 
     // Grab the Stored end of the dimension and subtract 1.
@@ -355,7 +358,7 @@ WRFInput::WRFInput(const std::string& filename,
 
     std::cout << "WRF Atmos Domain is " << atm_nx << " X " << atm_ny << " cells." << std::endl;
 
-    // Pull DX and DY
+    // Extract DX and DY of the Atm Mesh
     double cellSize[2] = {1, 1};
     gblAttIter = globalAttributes.find("DX");
     gblAttIter->second.getValues( cellSize );
@@ -370,7 +373,13 @@ WRFInput::WRFInput(const std::string& filename,
 
     if (m_processOnlySensorData == false) {
 
-        std::cout << "Reading fire mesh data..." << std::endl;
+        std::cout << "Attempting to read fire mesh from WRF output file data..." << std::endl;
+
+        //
+        // IMPORTANT -- need to include code to check for fire mesh
+        // data!!!
+        // This is not yet done. -PW
+        //
 
         // 
         // Fire Mesh Terrain Nodes
@@ -403,12 +412,6 @@ WRFInput::WRFInput(const std::string& filename,
         fmHeight.resize( fm_nx * fm_ny );
         wrfInputFile.getVar("ZSF").getVar(startIdx, counts, fmHeight.data());
 
-        // This is not used in most WRF runs, as outlined by Adam K.
-        // fmZ0.resize( fm_nx * fm_ny );
-        //for (int i=0; i<fm_nx*fm_ny; i++) {
-        //std::cout << "fmZ0 = " << fmZ0[i] <<std::endl;
-        // }
-    
         // From Jan and students
         int sizeHGT_x = wrfInputFile.getVar("HGT").getDim(2).getSize();
         int sizeHGT_y = wrfInputFile.getVar("HGT").getDim(1).getSize();
@@ -437,9 +440,6 @@ WRFInput::WRFInput(const std::string& filename,
 
                 if (fmHeight[l_idx] > fm_maxWRFAlt) fm_maxWRFAlt = fmHeight[l_idx];
                 if (fmHeight[l_idx] < fm_minWRFAlt) fm_minWRFAlt = fmHeight[l_idx];
-
-                // std::cout << "FWH( " << i << ", " << j << ") = " << fwh[l_idx] << std::endl;
-                // std::cout << "\tfz0 = " << fz0[l_idx] <<std::endl;
             }
         }
 
@@ -940,7 +940,10 @@ WRFInput::WRFInput(const std::string& filename,
 
                 sd.profiles.resize(2);  // 2 time series
 
-                for (int t=0; t<2; t++) {
+                // Use the last time step
+                for (int t=0; t<1; t++) {
+
+                    std::cout << "Time: " << t << std::endl;
 
                     // At this X, Y, look through all heights and
                     // accumulate the heights that exist between our min
@@ -2041,25 +2044,30 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
                                   static_cast<unsigned long>(fm_ny),
                                   static_cast<unsigned long>(fm_nx)};
 
-    std::vector<double> ufOut( fm_nx * fm_ny, 2.1 );
-    std::vector<double> vfOut( fm_nx * fm_ny, 1.0 );
+    std::vector<double> ufOut( fm_nx * fm_ny, 3.0 );
+    std::vector<double> vfOut( fm_nx * fm_ny, 3.0 );
 
     // For all X, Y, extract terrain height and fwh
-    for (auto i=0; i<wgd->nx; i++)
+    for (auto i=0; i<fm_nx; i++)
       {
-          for (auto j=0; j<wgd->ny; j++)
+          for (auto j=0; j<fm_ny; j++)
           {
               // Gets height of the terrain for each cell
-              int idx = i + j*(nx-1);
+              int idx = i + j*(fm_nx);
               float tHeight = wgd->terrain[idx];
 
               // find the k value at this height in the domain
               // need to take into account the variable dz
-              std::cout << "tHeight = " << tHeight << ", Z = " << wgd->nz * wgd->dz << std::endl;
-
-              auto k = (int)floor( (tHeight/wgd->dz) / wgd->nz );
+              std::cout << "tHeight = " << tHeight << ", dz=" << wgd->dz << ", Z = " << wgd->nz * wgd->dz << std::endl;
               
-              std::cout << "k = " << k << std::endl;
+              // 
+              // adding 1 to "simulate" the FWH values
+              // 
+              auto k = (int)floor( ((tHeight + 1.2)/(wgd->dz) ));
+              std::cout << "[" << wgd->nx << ", " << fm_nx << ": " << wgd->ny << ", " << fm_ny << ", (i,j,k) = (" << i << ", " << j << ", " << k << ")" << std::endl;
+
+              ufOut[ idx ] = wgd->u[ k * ((fm_nx) * (fm_ny)) + j * (fm_nx) + i ];
+              vfOut[ idx ] = wgd->v[ k * ((fm_nx) * (fm_ny)) + j * (fm_nx) + i ];              
           }
       }
 
