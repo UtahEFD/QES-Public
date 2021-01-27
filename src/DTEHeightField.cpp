@@ -11,8 +11,9 @@ DTEHeightField::DTEHeightField()
 
 }
 
-DTEHeightField::DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN)
-  : m_filename(filename), m_rbMin(0.0), cellSizeX(cellSizeXN), cellSizeY(cellSizeYN)
+DTEHeightField::DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN, float UTMx, float UTMy, int nx, int ny)
+  : m_filename(filename), m_rbMin(0.0), cellSizeX(cellSizeXN), cellSizeY(cellSizeYN), domain_UTMx(UTMx), domain_UTMy(UTMy),
+   domain_nx(nx), domain_ny(ny)
 {
   GDALAllRegister();
 
@@ -207,6 +208,9 @@ void DTEHeightField::load()
   m_nXSize = poBand->GetXSize();
   m_nYSize = poBand->GetYSize();
 
+  origin_x = m_geoTransform[0];
+  origin_y = m_geoTransform[3] - pixelSizeY*m_nYSize;
+
   printf( "DEM size is %dx%dx%d\n",
 	  m_nXSize, m_nYSize );
 
@@ -225,21 +229,42 @@ void DTEHeightField::load()
   convertRasterToGeo( 0, 0, xGeo, yGeo );
   printf("Raster Coordinate (0, 0):\t(%12.7f, %12.7f)\n", xGeo, yGeo);
 
-  convertRasterToGeo( m_nXSize-1, 0, xGeo, yGeo );
-  printf("Raster Coordinate (%d, 0):\t(%12.7f, %12.7f)\n", m_nXSize-1, xGeo, yGeo);
+  convertRasterToGeo( m_nXSize, 0, xGeo, yGeo );
+  printf("Raster Coordinate (%d, 0):\t(%12.7f, %12.7f)\n", m_nXSize, xGeo, yGeo);
 
-  convertRasterToGeo( m_nXSize-1, m_nYSize-1, xGeo, yGeo );
-  printf("Raster Coordinate (%d, %d):\t(%12.7f, %12.7f)\n", m_nXSize-1, m_nYSize-1, xGeo, yGeo);
+  convertRasterToGeo( m_nXSize, m_nYSize, xGeo, yGeo );
+  printf("Raster Coordinate (%d, %d):\t(%12.7f, %12.7f)\n", m_nXSize, m_nYSize, xGeo, yGeo);
 
-  convertRasterToGeo( 0, m_nYSize-1, xGeo, yGeo );
-  printf("Raster Coordinate (0, %d):\t(%12.7f, %12.7f)\n", m_nYSize-1, xGeo, yGeo);
+  convertRasterToGeo( 0, m_nYSize, xGeo, yGeo );
+  printf("Raster Coordinate (0, %d):\t(%12.7f, %12.7f)\n", m_nYSize, xGeo, yGeo);
 
-  pafScanline = (float *) CPLMalloc(sizeof(float)*m_nXSize*m_nYSize);
+  if ( (domain_UTMx > origin_x) || (domain_UTMy > origin_y) )
+  {
+  	shift_x = (domain_UTMx-origin_x)/pixelSizeX;
+  	shift_y = (domain_UTMy-origin_y)/pixelSizeY;
+  }
+
+  float domain_end_x = domain_UTMx + domain_nx*cellSizeX;
+  float domain_end_y = domain_UTMy + domain_ny*cellSizeY;
+  float dem_end_x = origin_x + m_nXSize*pixelSizeX;
+  float dem_end_y = origin_y + m_nYSize*pixelSizeY;
+
+  if ( (domain_end_x < dem_end_x) || (domain_end_y < dem_end_y) )
+  {
+  	end_x = (dem_end_x-domain_end_x)/pixelSizeX;
+  	end_y = (dem_end_y-domain_end_y)/pixelSizeY;
+  }
+
+  pafScanline = (float *) CPLMalloc(sizeof(float)*(m_nXSize)*(m_nYSize));
+
+  m_nXSize = m_nXSize - shift_x - end_x;
+  m_nYSize = m_nYSize - shift_y - end_y;
+
 
   // rb->RasterIO(GF_Read, 0, 0, xsize, ysize, buffer, xsize, ysize, GDT_Float32, 0, 0);
   //
   // CPLErr - CE_Failure if the access fails, otherwise CE_None.
-  CPLErr rasterErr = poBand->RasterIO( GF_Read, 0, 0,
+  CPLErr rasterErr = poBand->RasterIO( GF_Read, shift_x, end_y,
                                        m_nXSize, m_nYSize,
                                        pafScanline,
                                        m_nXSize, m_nYSize, GDT_Float32,

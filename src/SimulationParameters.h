@@ -206,8 +206,8 @@ public:
             // First read DEM as usual
             std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
             DTE_heightField = new DTEHeightField(demFile,
-                                                 (*(grid))[0],
-                                                 (*(grid))[1] );
+                                                 (*(grid))[0],(*(grid))[1],
+                                                  UTMx, UTMy, (*(domain))[0],(*(domain))[1]);
             assert(DTE_heightField);
 
             std::cout << "Forming triangle mesh...\n";
@@ -250,8 +250,8 @@ public:
         else if (m_domIType == DEMOnly) {
             std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
             DTE_heightField = new DTEHeightField(demFile,
-                                                 (*(grid))[0],
-                                                 (*(grid))[1] );
+                                                 (*(grid))[0],(*(grid))[1],
+                                                  UTMx, UTMy, (*(domain))[0],(*(domain))[1]);
             assert(DTE_heightField);
 
             std::cout << "Forming triangle mesh...\n";

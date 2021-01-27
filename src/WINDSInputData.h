@@ -46,7 +46,7 @@ public:
 	     parseElement<FileOptions>(false, fileOptions, "fileOptions");
 	     parseElement<MetParams>(false, metParams, "metParams");
 	     parseElement<TURBParams>(false, turbParams,"turbParams");
-       parseElement<Buildings>(false, buildings, "buildings");
+         parseElement<Buildings>(false, buildings, "buildings");
 	     parseElement<Canopies>(false, canopies, "canopies");
              parseElement<Fires>(false, fires, "fires");
     }
