@@ -249,7 +249,7 @@ void DTEHeightField::load()
   float dem_end_x = origin_x + m_nXSize*pixelSizeX;
   float dem_end_y = origin_y + m_nYSize*pixelSizeY;
 
-  if ( (domain_end_x < dem_end_x) || (domain_end_y < dem_end_y) )
+  if ( ((domain_end_x < dem_end_x) || (domain_end_y < dem_end_y)) && ( (domain_UTMx >= origin_x) || (domain_UTMy >= origin_y) ) )
   {
   	end_x = (dem_end_x-domain_end_x)/pixelSizeX;
   	end_y = (dem_end_y-domain_end_y)/pixelSizeY;
