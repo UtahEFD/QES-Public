@@ -1,9 +1,9 @@
 <simulationParameters>
- 	<DEM>../data/GISFiles/InclinePlane.tiff</DEM>		<!-- Address to DEM location-->       
+ 	<!--DEM>../data/GISFiles/InclinePlane.tiff</DEM-->		<!-- Address to DEM location-->       
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
-    <domain> 200 200 200 </domain> <!-- nx,ny,nz-->
-	<cellSize> 1.0 1.0 0.25 </cellSize> <!-- dx, dy,dz [Meters]-->	
+    <domain> 50 50 20 </domain> <!-- nx,ny,nz-->
+	<cellSize> .1 .1 0.25 </cellSize> <!-- dx, dy,dz [Meters]-->	
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 120 </totalTimeIncrements>
 	<!--UTCConversion> 0 </UTCConversion-->
@@ -36,8 +36,8 @@
 	
 		<sensor>
     	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
-            <site_xcoord> .0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
-            <site_ycoord> 200.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
+            <site_xcoord> 0.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+            <site_ycoord> 0.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
             <site_UTM_x> 200.0 </site_UTM_x> 				<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
             <site_UTM_y> 2.0 </site_UTM_y> 				<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
             <site_UTM_zone> 0 </site_UTM_zone> 				<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->
@@ -46,9 +46,9 @@
        		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
        		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
        		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
-       		<height> 30.0 </height> 				<!-- Height of the sensor -->
-       		<speed> 6.0 </speed> 					<!-- Measured speed at the sensor height -->
-       		<direction> 0.0 </direction> 				<!-- Wind direction of sensor -->
+       		<height> 1.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 1 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 180.0 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
 	</sensor>                      					<!-- End of sensor section -->
 </metParams>
@@ -63,10 +63,10 @@
 	<fuelType>3</fuelType>
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight> <!--meters-->
-    <xStart> 100.0 </xStart> <!--meters-->
-    <yStart> 100.0 </yStart> <!--meters-->
-    <length> 10.0 </length> <!--meters-->
-    <width>  1.0 </width> <!--meters-->
+    <xStart> 2.0 </xStart> <!--meters-->    
+    <yStart> 1.0 </yStart> <!--meters-->
+    <length> 1.0 </length> <!--meters-->
+    <width>  .2 </width> <!--meters-->
     <courant> 0.25 </courant>
     <fieldFlag> 0 </fieldFlag> <!-- flag for if multiple timesteps for fire -->
 </fires>

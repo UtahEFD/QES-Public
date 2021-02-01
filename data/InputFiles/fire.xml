@@ -2,7 +2,7 @@
         
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
-    <domain> 10 10 10 </domain> <!-- nx,ny,nz-->
+    <domain> 100 100 100 </domain> <!-- nx,ny,nz-->
 	<cellSize> 1.0 1.0 0.25 </cellSize> <!-- dx, dy,dz [Meters]-->	
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 60 </totalTimeIncrements>
@@ -52,6 +52,22 @@
     	    </timeSeries>
 	</sensor>                      					<!-- End of sensor section -->
 </metParams>
+<canopies>
+	<num_canopies> 1 </num_canopies>
+	<landuseFlag> 0 </landuseFlag>
+	<landuseVegetationFlag> 0 </landuseVegetationFlag>
+	<landuseUrbanFlag> 0 </landuseUrbanFlag>
+	<canopy>
+		<attenuationCoefficient> 1.97 </attenuationCoefficient>
+		<height> 10.0 </height>
+		<baseHeight> 0 </baseHeight>
+		<xStart> 0.0 </xStart>
+		<yStart> 0.0 </yStart>
+		<length> 80.0 </length>
+		<width> 80.0 </width>
+		<canopyRotation> 0.0 </canopyRotation>
+	</canopy>
+</canopies>
 <!--localMixingParam-->
   <!--method>3</method--> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <!--samples>2000</samples--> <!-- Samples per air cell for ray-traced mixing length calculations -->
@@ -64,8 +80,8 @@
 	<fuelMap>../data/FireFiles/fuelEx.tiff</fuelMap>
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight> <!--meters-->
-    <xStart> 5.0 </xStart> <!--meters-->
-    <yStart> 5.0 </yStart> <!--meters-->
+    <xStart> 50.0 </xStart> <!--meters-->
+    <yStart> 50.0 </yStart> <!--meters-->
     <length> 1.0 </length> <!--meters-->
     <width>  1.0 </width> <!--meters-->
     <courant> 0.25 </courant>

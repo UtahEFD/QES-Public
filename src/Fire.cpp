@@ -180,9 +180,10 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
 				else if (fuelID==98) fire_cells[idx].fuel = new Water();
 				else if (fuelID==99) fire_cells[idx].fuel = new Bare();
 				else fire_cells[idx].fuel = new Bare();
+				
 			}
 		}
-									
+	std::cout<<"fuel set"<<std::endl;								
 	} else {
 		for (int j = 0; j < ny-1; j++){
 			for (int i = 0; i < nx-1; i++){
@@ -191,13 +192,13 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
 				if (fuel_type==1)  fire_cells[idx].fuel = new ShortGrass();
 				if (fuel_type==2)  fire_cells[idx].fuel = new TimberGrass();
 				if (fuel_type==3)  fire_cells[idx].fuel = new TallGrass();
-     			if (fuel_type==4)  fire_cells[idx].fuel = new Chaparral();
-     			if (fuel_type==5)  fire_cells[idx].fuel = new Brush();
+     				if (fuel_type==4)  fire_cells[idx].fuel = new Chaparral();
+     				if (fuel_type==5)  fire_cells[idx].fuel = new Brush();
 	   			if (fuel_type==6)  fire_cells[idx].fuel = new DormantBrush();
-     			if (fuel_type==7)  fire_cells[idx].fuel = new SouthernRough();
-     			if (fuel_type==8)  fire_cells[idx].fuel = new TimberClosedLitter();
-     			if (fuel_type==9)  fire_cells[idx].fuel = new HarwoodLitter();
-     			if (fuel_type==10) fire_cells[idx].fuel = new TimberLitter();
+     				if (fuel_type==7)  fire_cells[idx].fuel = new SouthernRough();
+     				if (fuel_type==8)  fire_cells[idx].fuel = new TimberClosedLitter();
+     				if (fuel_type==9)  fire_cells[idx].fuel = new HarwoodLitter();
+     				if (fuel_type==10) fire_cells[idx].fuel = new TimberLitter();
 				if (fuel_type==11) fire_cells[idx].fuel = new LoggingSlashLight();
 				if (fuel_type==12) fire_cells[idx].fuel = new LoggingSlashMedium();
 				if (fuel_type==13) fire_cells[idx].fuel = new LoggingSlashHeavy();
@@ -206,10 +207,12 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
 				if (fuel_type==93) fire_cells[idx].fuel = new Agricultural();
 				if (fuel_type==98) fire_cells[idx].fuel = new Water();
 				if (fuel_type==99) fire_cells[idx].fuel = new Bare();
+				
 			}
-		}		
+		}
+		std::cout<<"fuel set constant = "<<fuel_type<<std::endl;		
 	}
-	std::cout<<"fuel set"<<std::endl;
+	
 	// get grid info of fire
 	i_start = std::round(x_start/dx);       
 	i_end   = std::round((x_start+L)/dx);     
@@ -318,144 +321,133 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
     /**
      * Calculate level set gradient and norm (Chapter 6, Sethian 2008)
      */
-    float dmx, dpx, dmy, dpy, n_star_x, n_star_y;
-    for (int j = 1; j < ny-2; j++){
-        for (int i = 1; i < nx-2; i++){
-	  		int idx = i + j*(nx-1);       
-	  		int idxjp = i + (j+1)*(nx-1);
-	  		int idxjm = i + (j-1)*(nx-1);
-         	dmy = (front_map[idx] - front_map[idxjm])/dx;
-          	dpy = (front_map[idxjp] - front_map[idx])/dx;
-          	dmx = (front_map[idx] - front_map[idx-1])/dy;
-          	dpx = (front_map[idx+1] - front_map[idx])/dy;
-          	del_plus[idx] = sqrt(fmax(dmx,0)*fmax(dmx,0) + fmin(dpx,0)*fmin(dpx,0) + fmax(dmy,0)*fmax(dmy,0) + fmin(dpy,0)*fmin(dpy,0));
-          	del_min[idx] = sqrt(fmax(dpx,0)*fmax(dpx,0) + fmin(dmx,0)*fmin(dmx,0) + fmax(dpy,0)*fmax(dpy,0) + fmin(dmy,0)*fmin(dmy,0));
-          	n_star_x = dpx/sqrt(dpx*dpx + dpy*dpy) + dmx/sqrt(dmx*dmx + dpy*dpy) + dpx/sqrt(dpx*dpx + dmy*dmy) + dmx/sqrt(dmx*dmx + dmy*dmy);
-          	n_star_y = dpy/sqrt(dpx*dpx + dpy*dpy) + dpy/sqrt(dmx*dmx + dpy*dpy) + dmy/sqrt(dpx*dpx + dmy*dmy) + dmy/sqrt(dmx*dmx + dmy*dmy);
-          	xNorm[idx] = n_star_x/sqrt(n_star_x*n_star_x + n_star_y*n_star_y);
-          	yNorm[idx] = n_star_y/sqrt(n_star_x*n_star_x + n_star_y*n_star_y);
-        }
-    }
+	float dmx, dpx, dmy, dpy, n_star_x, n_star_y;
+	for (int j = 1; j < ny-2; j++){
+  	for (int i = 1; i < nx-2; i++){
+			int idx = i + j*(nx-1);       
+			int idxjp = i + (j+1)*(nx-1);
+			int idxjm = i + (j-1)*(nx-1);
+			dmy = (front_map[idx] - front_map[idxjm])/dx;
+			dpy = (front_map[idxjp] - front_map[idx])/dx;
+			dmx = (front_map[idx] - front_map[idx-1])/dy;
+			dpx = (front_map[idx+1] - front_map[idx])/dy;
+			del_plus[idx] = sqrt(fmax(dmx,0)*fmax(dmx,0) + fmin(dpx,0)*fmin(dpx,0) + fmax(dmy,0)*fmax(dmy,0) + fmin(dpy,0)*fmin(dpy,0));
+			del_min[idx] = sqrt(fmax(dpx,0)*fmax(dpx,0) + fmin(dmx,0)*fmin(dmx,0) + fmax(dpy,0)*fmax(dpy,0) + fmin(dmy,0)*fmin(dmy,0));
+			n_star_x = dpx/sqrt(dpx*dpx + dpy*dpy) + dmx/sqrt(dmx*dmx + dpy*dpy) + dpx/sqrt(dpx*dpx + dmy*dmy) + dmx/sqrt(dmx*dmx + dmy*dmy);
+			n_star_y = dpy/sqrt(dpx*dpx + dpy*dpy) + dpy/sqrt(dmx*dmx + dpy*dpy) + dmy/sqrt(dpx*dpx + dmy*dmy) + dmy/sqrt(dmx*dmx + dmy*dmy);
+			xNorm[idx] = n_star_x/sqrt(n_star_x*n_star_x + n_star_y*n_star_y);
+			yNorm[idx] = n_star_y/sqrt(n_star_x*n_star_x + n_star_y*n_star_y);
+		}
+	}
 	std::cout<<"level set calculated"<<std::endl;
-    /**
-     * Reset forcing function for level set
-     */
-    std::fill (Force.begin(),Force.end(),0);
+	/**
+	* Reset forcing function for level set
+	*/
+	std::fill (Force.begin(),Force.end(),0);
 
-    /**
-     * Calculate Forcing Function (Balbi model at mid-flame height or first grid cell if no fire)
-     */
+	/**
+	* Calculate Forcing Function (Balbi model at mid-flame height or first grid cell if no fire)
+	*/
     
-    for (int j=1; j < ny-2; j++){
-        for (int i=1; i < nx-2; i++){
-	    int idx = i + j*(nx-1);
-            // get fuel properties at this location
-            struct FuelProperties* fuel = fire_cells[idx].fuel;
-            // calculate mid-flame height
-            int kh   = 0;
-            float H = fire_cells[idx].properties.h;
-            float T = WGD->terrain[idx];
-            float D = fuel->fueldepthm;
-            float FD = H + T + D;
+	for (int j=1; j < ny-2; j++){
+		for (int i=1; i < nx-2; i++){
+			int idx = i + j*(nx-1);
+			// get fuel properties at this location
+			struct FuelProperties* fuel = fire_cells[idx].fuel;
+			// calculate mid-flame height
+			int kh   = 0;
+			float H = fire_cells[idx].properties.h;
+			float T = WGD->terrain[idx];
+			float D = fuel->fueldepthm;
+			float FD = H + T + D;
         
-            if (H==0) {
-                kh = std::round(T/dz);
-            } else {
-                kh = std::round(FD/dz);
-            }
-
-            // call u and v from WINDS General Data
-	    	int cell_face = i + j*nx + kh*nx*ny;
-            float u = 0.5*(WGD->u[cell_face] + WGD->u[cell_face+1]);
-            float v = 0.5*(WGD->v[cell_face] + WGD->v[cell_face+nx]);
-            // run Balbi model
-            struct FireProperties fp = balbi(fuel,u,v,xNorm[idx],yNorm[idx],slope_x[idx],slope_y[idx],0.0650);
-            fire_cells[idx].properties = fp;
-            Force[idx] = fp.r;
-        }
-    }
-    std::cout<<"Level set forcing calculated"<<std::endl;
-    
-    // indices for burning cells
-    std::vector<int> cells_burning;
-    
-    // search predicate for burn state
-    struct find_burn : std::unary_function<FireCell, bool> {
-        float burn;
-        find_burn(int burn):burn(burn) { }
-        bool operator()(FireCell const& f) const {
-            return f.state.burn_flag == burn;
-        }
-    };
+			if (H==0) {
+				kh = std::round(T/dz);
+			} else {
+				kh = std::round(FD/dz);
+			}
+			// call u and v from WINDS General Data
+			int cell_face = i + j*nx + kh*nx*ny;
+			float u = 0.5*(WGD->u[cell_face] + WGD->u[cell_face+1]);
+			float v = 0.5*(WGD->v[cell_face] + WGD->v[cell_face+nx]);
+			// run Balbi model
+			struct FireProperties fp = balbi(fuel,u,v,xNorm[idx],yNorm[idx],slope_x[idx],slope_y[idx],0.0650);
+			fire_cells[idx].properties = fp;
+			Force[idx] = fp.r;
+		}
+	}
+	std::cout<<"Level set forcing calculated"<<std::endl;
+	// indices for burning cells
+	std::vector<int> cells_burning;
+	// search predicate for burn state
+	struct find_burn : std::unary_function<FireCell, bool> {
+		float burn;
+		find_burn(int burn):burn(burn) { }
+		bool operator()(FireCell const& f) const {
+			return f.state.burn_flag == burn;
+		}
+	};
 
 
-    // get indices of burning cells
-    std::vector<FireCell>::iterator it = std::find_if(fire_cells.begin(),fire_cells.end(),find_burn(1));
-    while ( it != fire_cells.end()) {
-        
-        if (it!=fire_cells.end()) {
-            cells_burning.push_back(std::distance(fire_cells.begin(), it));
-        }    
-        it = std::find_if (++it, fire_cells.end(),find_burn(1)); 
-    }
+	// get indices of burning cells
+	std::vector<FireCell>::iterator it = std::find_if(fire_cells.begin(),fire_cells.end(),find_burn(1));
+	while ( it != fire_cells.end()) {
+		if (it!=fire_cells.end()) {
+			cells_burning.push_back(std::distance(fire_cells.begin(), it));
+		}    
+		it = std::find_if (++it, fire_cells.end(),find_burn(1)); 
+	}
 
-    // loop through burning cells
-    for (int i=0; i<cells_burning.size();i++) {
-        
-        // get index burning cell
-        int id = cells_burning[i];
-        
-        // get fuel properties at this location
-        struct FuelProperties* fuel = fire_cells[id].fuel;
-
-        // get vertical index of mid-flame height
-        int kh   = 0;                      ///< mid-flame height
+	// loop through burning cells
+	for (int i=0; i<cells_burning.size();i++) {
+		// get index burning cell
+		int id = cells_burning[i];
+		// get fuel properties at this location
+		struct FuelProperties* fuel = fire_cells[id].fuel;
+		// get vertical index of mid-flame height
+		int kh   = 0;                      ///< mid-flame height
 		int maxkh = 0;                     ///< max flame height
-        //modify flame height by time on fire (assume linear functionality)
-        float H = fire_cells[id].properties.h*(1-(fire_cells[id].state.burn_time/fire_cells[id].properties.tau));
+		//modify flame height by time on fire (assume linear functionality)
+		float H = fire_cells[id].properties.h*(1-(fire_cells[id].state.burn_time/fire_cells[id].properties.tau));
 		float maxH = fire_cells[id].properties.h;       
        
-        // convert flat index to i, j at cell center
-        int ii  = id % (nx-1);
-        int jj  = (id / (nx-1)) % (ny-1);
+		// convert flat index to i, j at cell center
+		int ii  = id % (nx-1);
+		int jj  = (id / (nx-1)) % (ny-1);
 		int idx = ii+jj*nx;	
 		float T = WGD->terrain[idx];
-        float D = fuel->fueldepthm;
-        int TID = std::round(T/dz);
-        float FD = H/2.0 + T + D;
+		float D = fuel->fueldepthm;
+		int TID = std::round(T/dz);
+		float FD = H/2.0 + T + D;
 		float MFD = maxH + T + D;
-        if (H==0) {
-            kh = std::round(T/dz);
-        } else {
-            kh = std::round(FD/dz);
-        }
-		if (maxH==0) {
-		  maxkh = std::round(T/dz);
+		if (H==0) {
+			kh = std::round(T/dz);
 		} else {
-		  maxkh = std::round(MFD/dz);
+			kh = std::round(FD/dz);
+		}
+		if (maxH==0) {
+			maxkh = std::round(T/dz);
+		} else {
+			maxkh = std::round(MFD/dz);
 		}
                
-        // get horizontal wind at flame height
+		// get horizontal wind at flame height
 		int cell_face = ii + jj*nx + kh*ny*nx;
-        float u = 0.5*(WGD->u[cell_face] + WGD->u[cell_face+1]);
-        float v = 0.5*(WGD->v[cell_face] + WGD->v[cell_face+nx]);
-        // run Balbi model
-        float burnTime = fire_cells[id].state.burn_time;
-        struct FireProperties fp = balbi(fuel,u,v,xNorm[id],yNorm[id],slope_x[id],slope_y[id],0.0650);
-        fire_cells[id].properties = fp;
-        Force[id] = fp.r;
+		float u = 0.5*(WGD->u[cell_face] + WGD->u[cell_face+1]);
+		float v = 0.5*(WGD->v[cell_face] + WGD->v[cell_face+nx]);
+		// run Balbi model
+		float burnTime = fire_cells[id].state.burn_time;
+		struct FireProperties fp = balbi(fuel,u,v,xNorm[id],yNorm[id],slope_x[id],slope_y[id],0.0650);
+		fire_cells[id].properties = fp;
+		Force[id] = fp.r;
 		// update icell value for flame
 		for (int k=TID; k<= maxkh; k++){
 			int icell_cent = ii + jj*(nx-1) + (k)*(nx-1)*(ny-1);
-    		//if (k <= 2*kh){
-			WGD->icellflag[icell_cent] = 12;
-			//} else {
-			//WGD->icellflag[icell_cent] = 1;
-			//}
+			WGD->icellflag[icell_cent] = 1;
 		}
 	}
-    // compute time step
-    dt = computeTimeStep();
+	// compute time step
+	dt = computeTimeStep();
 	std::vector<int>().swap(cells_burning);
 }
 
@@ -464,9 +456,9 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
  */
 
 void Fire :: potential(WINDSGeneralData* WGD){
-    // dr and dz, assume linear spacing between
-    float drStar = rStar[1]-rStar[0];
-    float dzStar = zStar[1]-zStar[0];
+	// dr and dz, assume linear spacing between
+	float drStar = rStar[1]-rStar[0];
+	float dzStar = zStar[1]-zStar[0];
 
     // reset potential fields
     std::fill (Pot_u.begin(),Pot_u.end(),0);
@@ -497,10 +489,10 @@ void Fire :: potential(WINDSGeneralData* WGD){
     int firej;				///< index center of merged fire sources (j)
     int firek;				///< index average height of terrain of merged fires (k)
     
-    for (int ii = 0; ii < nx-1; ii++){
+	for (int ii = 0; ii < nx-1; ii++){
 		for (int jj = 0; jj < ny-1; jj++){
-  	    	int id = ii + jj*(nx-1);
-	    	if (burn_flag[id] == 1){
+			int id = ii + jj*(nx-1);
+			if (burn_flag[id] == 1){
 				counter += 1;
 				icent += ii;
 				jcent += jj;
@@ -508,145 +500,140 @@ void Fire :: potential(WINDSGeneralData* WGD){
 				// Hard code heat release		
 				//H0 += 1.80357e6*dx*dy/25/25;
 				fa += dx*dy;
-	    	}
+			}
 		}
-    }
+	}
     
-    if(H0 != 0){
+	if(H0 != 0){
+		float g = 9.81;
+		float rhoAir = 1.125;
+		float C_pa = 1150;
+		//float C_p = 2000;
+		float T_a = 293.15;
+		float U_c = pow(g*g*H0/rhoAir/T_a/C_pa, 1.0/5.0);
+		float L_c = pow(H0/rhoAir/C_pa/T_a/pow(g, 1.0/2.0), 2.0/5.0);
+		float ur, uz; 
+		float u_p; 	 					///< u velocity from potential field in target cell
+		float v_p; 						///< v velocity from potential field in target cell
+		float w_p;						///< w velocity from potential field in target cell
+		float alpha_e = 0.09;                               ///< entrainment constant (Kaye & Linden 2004)
+		float lambda_mix = 1/alpha_e*sqrt(25.0/132.0);      ///< nondimensional plume mixing height
+		float kmax=0;                                    ///< plume mixing height
+		int XIDX;
+		int YIDX;
+		int ZIDX = 0;
+		int filt = 0;
+		float k_fire = 0;					///< terrain index for plume merge
+		float k_fire_old = 0;
+		float mixIDX = 0;
+		float mixIDX_old;
 
-      float g = 9.81;
-      float rhoAir = 1.125;
-      float C_pa = 1150;
-      //float C_p = 2000;
-      float T_a = 293.15;
-      float U_c = pow(g*g*H0/rhoAir/T_a/C_pa, 1.0/5.0);
-      float L_c = pow(H0/rhoAir/C_pa/T_a/pow(g, 1.0/2.0), 2.0/5.0);
-      float ur, uz; 
-      float u_p; 	 					///< u velocity from potential field in target cell
-      float v_p; 						///< v velocity from potential field in target cell
-      float w_p;						///< w velocity from potential field in target cell
-
-      float alpha_e = 0.09;                               ///< entrainment constant (Kaye & Linden 2004)
-      float lambda_mix = 1/alpha_e*sqrt(25.0/132.0);      ///< nondimensional plume mixing height
-
-      float kmax=0;                                    ///< plume mixing height
-      int XIDX;
-      int YIDX;
-      int ZIDX = 0;
-      int filt = 0;
-      float k_fire = 0;					//< terrain index for plume merge
-      float k_fire_old = 0;
-      float mixIDX = 0;
-      float mixIDX_old;
-	
-      while (filt < nx-1){
-        filt = pow(2.0,ZIDX);
-		//std::cout<<"Filter = "<<filt<<std::endl;
-		ZIDX += 1;
-		z_mix_old = z_mix;
-        XIDX = 0;
-        while (XIDX < nx-1-filt){
-	  		YIDX = 0;
-	  		while (YIDX < ny-1-filt){
-	    		H = 0;
-	    		k_fire = 0;
-	    		k_fire_old = 0;
-	    		icent = 0;
-  	    		jcent = 0;
-	    		counter = 0;
-	    		for (int ii = XIDX; ii < XIDX+filt; ii++){
-	      			for (int jj = YIDX; jj < YIDX+filt; jj++){
-		
-						int id = ii + jj*(nx-1);
-						if (burn_flag[id] == 1){
-		  					struct FireProperties fp = fire_cells[id].properties;
-		  					counter += 1;
-		  					icent += ii;
-		  					jcent += jj;
-		  					H += fp.H0;
-    		  				// Hard code heat flux for WRF simulation burn
-		  					//H += 1.80357e6*dx*dy/25/25;
-		  					k_fire += WGD->terrain[id];
-		  					k_fire_old += z_mix_old[id];
-						}
-	      			}
-	    		}
-		
-				if (H != 0){
-		  			firei = icent/counter;
-		  			firej = jcent/counter;
-		  			U_c = pow(g*g*H/rhoAir/T_a/C_pa, 1.0/5.0);
-		  			L_c = pow(H/rhoAir/C_pa/T_a/pow(g, 1.0/2.0), 2.0/5.0);
-	  	  			firek = k_fire/counter;
-		  			mixIDX_old = floor(k_fire_old/counter);
-		  			mixIDX = (lambda_mix*dx*filt);
-	    	  		for (int ii = XIDX; ii < XIDX+filt; ii++){
-	      	    		for (int jj = YIDX; jj < YIDX+filt; jj++){
+		while (filt < nx-1){
+			filt = pow(2.0,ZIDX);
+			//std::cout<<"Filter = "<<filt<<std::endl;
+			ZIDX += 1;
+			z_mix_old = z_mix;
+			XIDX = 0;
+			while (XIDX < nx-1-filt){
+				YIDX = 0;
+				while (YIDX < ny-1-filt){
+					H = 0;
+					k_fire = 0;
+					k_fire_old = 0;
+					icent = 0;
+					jcent = 0;
+					counter = 0;
+					for (int ii = XIDX; ii < XIDX+filt; ii++){
+						for (int jj = YIDX; jj < YIDX+filt; jj++){
 							int id = ii + jj*(nx-1);
-							z_mix[id] = mixIDX;
-					    }
-		  			}
-		  			//std::cout<<"Fire center = ["<<firei<<"]["<<firej<<"]"<<std::endl;
-		  			//std::cout<<"Merge terrain index = "<<firek<<std::endl;
-		  			//std::cout<<"Mix height index = "<<mixIDX<<std::endl;
-		  			kmax = nz-3 > mixIDX ? mixIDX : nz-3;
-		  			// Loop through vertical levels
-		  			for (int kpot = mixIDX_old; kpot<kmax; kpot++) {
-		  				// Calculate virtual origin
-	          			float z_v = dx*filt*0.124/alpha_e+firek;				  ///< virtual origin for merged plumes
-		  				float z_k = (kpot+z_v)*dz/L_c;                            ///< non-dim vertical distance between fire cell and target cell k
-		  				float zeta = 0;
-		  				float x1 = 0;
-		  				// Loop through horizontal domain
-		    			for (int ipot = 0; ipot<nx-1; ipot++) {
-		      				for (int jpot = 0; jpot<ny-1; jpot++){
-		        				float deltaX = (ipot-firei)*dx/L_c;                      ///< non-dim distance between fire cell and target cell k in x direction
-		        				float deltaY = (jpot-firej)*dy/L_c;                      ///< non-dim distance between fire cell and target cell k in y direction
-		        				float h_k = sqrt(deltaX*deltaX + deltaY*deltaY);         ///< non-dim radial distance from fire cell and target cell k in horizontal
-		        				u_p = 0;
-								v_p = 0;
-								w_p = 0;
-								// if radius = 0
-								if (h_k < 0.00001 && z_k < 60){
-			  						float zMinIdx = floor(z_k/dzStar);
-			  						float zMaxIdx = ceil(z_k/dzStar);		  
-			  						//ur = 0.5*(u_r[zMinIdx*pot_r]+u_r[zMaxIdx*pot_r]);
-			  						ur = 0.0;		
-			  						//uz = 0.5*(u_z[zMinIdx*pot_r]+u_z[zMaxIdx*pot_r]);
-			  						uz = u_z[zMinIdx*pot_r];
-			  						u_p = U_c*ur;                         
-			  						v_p = U_c*ur;                         
-			  						w_p = U_c*uz;
-								}
-								// if in potential field lookup, r*(h_k) < 30 and z*(z_k) < 60
-								else if (z_k < 60 && h_k < 30){ 
+							if (burn_flag[id] == 1){
+								struct FireProperties fp = fire_cells[id].properties;
+								counter += 1;
+			  					icent += ii;
+			  					jcent += jj;
+			  					H += fp.H0;
+	    		  				// Hard code heat flux for WRF simulation burn
+								//H += 1.80357e6*dx*dy/25/25;
+								k_fire += WGD->terrain[id];
+								k_fire_old += z_mix_old[id];
+							}
+						}
+					}
 		
-			  						// indices for lookup
-			  						float rMinIdx = floor(h_k/drStar);
-			  						float rMaxIdx = ceil(h_k/drStar);
-		
-								  	float zMinIdx = floor(z_k/dzStar);
-			  						float zMaxIdx = ceil(z_k/dzStar);
+					if (H != 0){
+						firei = icent/counter;
+						firej = jcent/counter;
+						U_c = pow(g*g*H/rhoAir/T_a/C_pa, 1.0/5.0);
+						L_c = pow(H/rhoAir/C_pa/T_a/pow(g, 1.0/2.0), 2.0/5.0);
+						firek = k_fire/counter;
+						mixIDX_old = floor(k_fire_old/counter);
+						mixIDX = (lambda_mix*dx*filt);
+						for (int ii = XIDX; ii < XIDX+filt; ii++){
+							for (int jj = YIDX; jj < YIDX+filt; jj++){
+								int id = ii + jj*(nx-1);
+								z_mix[id] = mixIDX;
+							}
+						}
+						//std::cout<<"Fire center = ["<<firei<<"]["<<firej<<"]"<<std::endl;
+						//std::cout<<"Merge terrain index = "<<firek<<std::endl;
+						//std::cout<<"Mix height index = "<<mixIDX<<std::endl;
+						kmax = nz-3 > mixIDX ? mixIDX : nz-3;
+						// Loop through vertical levels
+						for (int kpot = mixIDX_old; kpot<kmax; kpot++) {
+							// Calculate virtual origin
+							float z_v = dx*filt*0.124/alpha_e+firek;				  ///< virtual origin for merged plumes
+							float z_k = (kpot+z_v)*dz/L_c;                            ///< non-dim vertical distance between fire cell and target cell k
+							if (z_k < 0){
+								z_k = 0;
+							}
+							float zeta = 0;
+							float x1 = 0;
+							// Loop through horizontal domain
+							for (int ipot = 0; ipot<nx-1; ipot++) {
+								for (int jpot = 0; jpot<ny-1; jpot++){
+									float deltaX = (ipot-firei)*dx/L_c;                      ///< non-dim distance between fire cell and target cell k in x direction
+									float deltaY = (jpot-firej)*dy/L_c;                      ///< non-dim distance between fire cell and target cell k in y direction
+									float h_k = sqrt(deltaX*deltaX + deltaY*deltaY);         ///< non-dim radial distance from fire cell and target cell k in horizontal
+									u_p = 0;
+									v_p = 0;
+									w_p = 0;
+									// if radius = 0
+									if (h_k < 0.00001 && z_k < 60){
+	
+										float zMinIdx = floor(z_k/dzStar);
+										float zMaxIdx = ceil(z_k/dzStar);		  
+										//ur = 0.5*(u_r[zMinIdx*pot_r]+u_r[zMaxIdx*pot_r]);
+										ur = 0.0;		
+										//uz = 0.5*(u_z[zMinIdx*pot_r]+u_z[zMaxIdx*pot_r]);
+										uz = u_z[zMinIdx*pot_r];
+										u_p = U_c*ur;                         
+										v_p = U_c*ur;                         
+										w_p = U_c*uz;
+									}
+									// if in potential field lookup, r*(h_k) < 30 and z*(z_k) < 60
+									else if (z_k < 60 && h_k < 30){ 
+										// indices for lookup
+										float rMinIdx = floor(h_k/drStar);
+										float rMaxIdx = ceil(h_k/drStar);
+										float zMinIdx = floor(z_k/dzStar);
+										float zMaxIdx = ceil(z_k/dzStar);
+										//ur = 0.25*(u_r[rMinIdx+zMinIdx*pot_r]+u_r[rMinIdx+zMaxIdx*pot_r]+u_r[rMaxIdx+zMinIdx*pot_r]+u_r[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_r, linear interpolate between values
+										//ur = 0.5*(u_r[rMinIdx + zMinIdx*pot_r]+u_r[rMaxIdx + zMinIdx*pot_r]);
+										ur = u_r[rMinIdx + zMinIdx*pot_r];
 
-			  						//ur = 0.25*(u_r[rMinIdx+zMinIdx*pot_r]+u_r[rMinIdx+zMaxIdx*pot_r]+u_r[rMaxIdx+zMinIdx*pot_r]+u_r[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_r, linear interpolate between values
-			  						//ur = 0.5*(u_r[rMinIdx + zMinIdx*pot_r]+u_r[rMaxIdx + zMinIdx*pot_r]);
-			  						ur = u_r[rMinIdx + zMinIdx*pot_r];
-
-			  						//uz = 0.25*(u_z[rMinIdx+zMinIdx*pot_r]+u_z[rMinIdx+zMaxIdx*pot_r]+u_z[rMaxIdx+zMinIdx*pot_r]+u_z[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_z, linear interpolate between values
-			  						//uz = 0.5*(u_z[rMinIdx + zMinIdx*pot_r]+u_z[rMinIdx + zMaxIdx*pot_r]);
-			  						uz = u_z[rMinIdx + zMinIdx*pot_r];
+										//uz = 0.25*(u_z[rMinIdx+zMinIdx*pot_r]+u_z[rMinIdx+zMaxIdx*pot_r]+u_z[rMaxIdx+zMinIdx*pot_r]+u_z[rMaxIdx+zMaxIdx*pot_r]); //lookup from u_z, linear interpolate between values
+										//uz = 0.5*(u_z[rMinIdx + zMinIdx*pot_r]+u_z[rMinIdx + zMaxIdx*pot_r]);
+										uz = u_z[rMinIdx + zMinIdx*pot_r];
 		
-			  						u_p = U_c*ur*deltaX/h_k;          
-			  						v_p = U_c*ur*deltaY/h_k;          
-			  						w_p = U_c*uz;                         
-								}
-								// if outside potential field lookup use asymptotic functions for potential field
-			
-								else {
+										u_p = U_c*ur*deltaX/h_k;          
+										v_p = U_c*ur*deltaY/h_k;          
+										w_p = U_c*uz;                         
+									} else {
 			  						zeta = sqrt(h_k*h_k + z_k*z_k);
 			  						x1 = (1+cos(atan(h_k/z_k)))/2.0;
 			  						if(x1<0.5){
-										std::cout<<"x1<0"<<std::endl;
+										std::cout<<"x1<0.5"<<std::endl;
+										x1 = 0.5;
 			  						} else if(isnan(x1)){
 										std::cout<<"x1 is nan"<<std::endl;
 			  						}

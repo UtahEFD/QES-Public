@@ -4,11 +4,11 @@
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 	<!-- This is the domain sampled in large cells -->
-  	<domain> 120 120 150 </domain>					<!-- Number of cells in x,y and z directions-->
-  	<cellSize> 15.37 15.37 0.5 </cellSize> 			<!-- Mesh resolution (meters)-->
+  	<domain> 120 120 75 </domain>					<!-- Number of cells in x,y and z directions-->
+  	<cellSize> 15.37 15.37 1.0 </cellSize> 			<!-- Mesh resolution (meters)-->
 
 	<verticalStretching> 0 </verticalStretching>
-	<totalTimeIncrements> 4000 </totalTimeIncrements>
+	<totalTimeIncrements> 100 </totalTimeIncrements>
 	<!--UTCConversion> 0 </UTCConversion-->
 	<!--Epoch> 1510930800 </Epoch-->
 	<rooftopFlag> 1 </rooftopFlag>
@@ -50,8 +50,8 @@
        		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
        		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
        		<height> 20.0 </height> 				<!-- Height of the sensor -->
-       		<speed> 3.1 </speed> 					<!-- Measured speed at the sensor height -->
-       		<direction> 220.0 </direction> 				<!-- Wind direction of sensor -->
+       		<speed> 10.0 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 130.0 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
 	</sensor>                      					<!-- End of sensor section -->
 </metParams>
