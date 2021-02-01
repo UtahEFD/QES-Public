@@ -11,9 +11,9 @@ DTEHeightField::DTEHeightField()
 
 }
 
-DTEHeightField::DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN, float UTMx, float UTMy, int nx, int ny)
+DTEHeightField::DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN, float UTMx, float UTMy, int OriginFlag, float DEMDistanceX, float DEMDistanceY, int nx, int ny)
   : m_filename(filename), m_rbMin(0.0), cellSizeX(cellSizeXN), cellSizeY(cellSizeYN), domain_UTMx(UTMx), domain_UTMy(UTMy),
-   domain_nx(nx), domain_ny(ny)
+   originFlag(OriginFlag), DEMDistancex(DEMDistanceX), DEMDistancey(DEMDistanceY), domain_nx(nx), domain_ny(ny)
 {
   GDALAllRegister();
 
@@ -158,7 +158,7 @@ void DTEHeightField::load()
 
   if( m_poDataset->GetGeoTransform( m_geoTransform ) == CE_None )
     {
-      printf( "\tOrigin = (%.6f,%.6f)\n",
+      printf( "\tDEM Origin = (%.6f,%.6f)\n",
 	      m_geoTransform[0], m_geoTransform[3] );
 
       printf( "\tPixel Size = (%.6f,%.6f)\n",
@@ -210,6 +210,8 @@ void DTEHeightField::load()
 
   origin_x = m_geoTransform[0];
   origin_y = m_geoTransform[3] - pixelSizeY*m_nYSize;
+  printf( "\tDomain Origin = (%.6f,%.6f)\n",
+	      origin_x, origin_y );
 
   printf( "DEM size is %dx%dx%d\n",
 	  m_nXSize, m_nYSize );
@@ -238,28 +240,51 @@ void DTEHeightField::load()
   convertRasterToGeo( 0, m_nYSize, xGeo, yGeo );
   printf("Raster Coordinate (0, %d):\t(%12.7f, %12.7f)\n", m_nYSize, xGeo, yGeo);
 
-  if ( (domain_UTMx > origin_x) || (domain_UTMy > origin_y) )
+  if (originFlag == 0)
   {
-  	shift_x = (domain_UTMx-origin_x)/pixelSizeX;
-  	shift_y = (domain_UTMy-origin_y)/pixelSizeY;
+  	float domain_end_x = origin_x + DEMDistancex + domain_nx*cellSizeX;
+  	float domain_end_y = origin_y + DEMDistancey + domain_ny*cellSizeY;
+  	float dem_end_x = origin_x + m_nXSize*pixelSizeX;
+  	float dem_end_y = origin_y + m_nYSize*pixelSizeY;
+  	if ( ((DEMDistancex > 0.0) || (DEMDistancey > 0.0) ) && (DEMDistancex < m_nXSize*pixelSizeX) && (DEMDistancex < m_nYSize*pixelSizeY) )
+  	{
+  		shift_x = DEMDistancex/pixelSizeX;
+  		shift_y = DEMDistancey/pixelSizeY;
+  	}
+
+  	if ( ((domain_end_x < dem_end_x) || (domain_end_y < dem_end_y)) )
+  	{
+  		end_x = (dem_end_x-domain_end_x)/pixelSizeX;
+  		end_y = (dem_end_y-domain_end_y)/pixelSizeY;
+  	}
+
+  	m_nXSize = m_nXSize - shift_x - end_x;
+  	m_nYSize = m_nYSize - shift_y - end_y;
   }
 
-  float domain_end_x = domain_UTMx + domain_nx*cellSizeX;
-  float domain_end_y = domain_UTMy + domain_ny*cellSizeY;
-  float dem_end_x = origin_x + m_nXSize*pixelSizeX;
-  float dem_end_y = origin_y + m_nYSize*pixelSizeY;
-
-  if ( (domain_end_x < dem_end_x) || (domain_end_y < dem_end_y) )
+  else if (originFlag == 1)
   {
-  	end_x = (dem_end_x-domain_end_x)/pixelSizeX;
-  	end_y = (dem_end_y-domain_end_y)/pixelSizeY;
+  	float domain_end_x = domain_UTMx + domain_nx*cellSizeX;
+  	float domain_end_y = domain_UTMy + domain_ny*cellSizeY;
+  	float dem_end_x = origin_x + m_nXSize*pixelSizeX;
+  	float dem_end_y = origin_y + m_nYSize*pixelSizeY;
+  	if (((domain_UTMx > origin_x) || (domain_UTMy > origin_y)) && (domain_UTMx < dem_end_x) && (domain_UTMy < dem_end_y) )
+  	{
+  		shift_x = (domain_UTMx-origin_x)/pixelSizeX;
+  		shift_y = (domain_UTMy-origin_y)/pixelSizeY;
+  	}
+
+  	if ( ((domain_end_x < dem_end_x) || (domain_end_y < dem_end_y)) && (domain_UTMx >= origin_x) && (domain_UTMy >= origin_y) )
+  	{
+  		end_x = (dem_end_x-domain_end_x)/pixelSizeX;
+  		end_y = (dem_end_y-domain_end_y)/pixelSizeY;
+  	}
+
+  	m_nXSize = m_nXSize - shift_x - end_x;
+  	m_nYSize = m_nYSize - shift_y - end_y;
   }
 
   pafScanline = (float *) CPLMalloc(sizeof(float)*(m_nXSize)*(m_nYSize));
-
-  m_nXSize = m_nXSize - shift_x - end_x;
-  m_nYSize = m_nYSize - shift_y - end_y;
-
 
   // rb->RasterIO(GF_Read, 0, 0, xsize, ysize, buffer, xsize, ysize, GDT_Float32, 0, 0);
   //
