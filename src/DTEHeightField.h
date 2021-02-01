@@ -60,7 +60,7 @@ public:
   friend class test_DTEHeightField;
 
   DTEHeightField();
-  DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN, float UTMx, float UTMy, int nx, int ny);
+  DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN, float UTMx, float UTMy, int OriginFlag, float DEMDistanceX, float DEMDistanceY, int nx, int ny);
 
     DTEHeightField(const std::vector<double> &heightField, int dimX, int dimY, double cellSizeXN, double cellSizeYN);
 
@@ -124,6 +124,9 @@ public:
 
   int m_nXSize, m_nYSize;
   float pixelSizeX, pixelSizeY;
+  int originFlag;
+  float DEMDistancex, DEMDistancey;
+  double adfMinMax[2];
 
 private:
 
@@ -169,7 +172,7 @@ private:
         // in the flip
         // Previous code had this -- does not seem correct
         // height = scanline[ abs(k-m_nYSize) * m_nXSize + j ];
-        height = scanline[ (m_nYSize-1 - k) * (m_nXSize) + j ];
+        height = scanline[ (m_nYSize-1 - k) * (m_nXSize) + j ] -adfMinMax[0]; 
     }
 
     if (height < 0.0 || std::isnan(abs(height)))
