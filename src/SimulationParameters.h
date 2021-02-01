@@ -65,10 +65,13 @@ public:
     int maxIterations = 500;
     double tolerance = 1e-9;
     float domainRotation = 0;
+    int originFlag = 0;
     float UTMx;
     float UTMy;
     int UTMZone;
     int UTMZoneLetter;
+    float DEMDistancex = 0.0;
+    float DEMDistancey = 0.0;
     int meshTypeFlag = 0;
     float halo_x = 0.0;
     float halo_y = 0.0;
@@ -131,10 +134,14 @@ public:
         parsePrimitive<double>(false, tolerance, "tolerance");
         parsePrimitive<int>(false, meshTypeFlag, "meshTypeFlag");
         parsePrimitive<float>(false, domainRotation, "domainRotation");
+        parsePrimitive<int>(false, originFlag, "originFlag");
         parsePrimitive<float>(false, UTMx, "UTMx");
         parsePrimitive<float>(false, UTMy, "UTMy");
         parsePrimitive<int>(false, UTMZone, "UTMZone");
         parsePrimitive<int>(false, UTMZoneLetter, "UTMZoneLetter");
+        parsePrimitive<float>(false, DEMDistancex, "DEMDistancex");
+        parsePrimitive<float>(false, DEMDistancey, "DEMDistancey");
+
         parsePrimitive<float>(false, halo_x, "halo_x");
         parsePrimitive<float>(false, halo_y, "halo_y");
         parsePrimitive<float>(false, heightFactor, "heightFactor");
@@ -168,8 +175,9 @@ public:
         if (m_domIType == DEMOnly) {
             std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
             DTE_heightField = new DTEHeightField(demFile,
-                                                 (*(grid))[0],
-                                                 (*(grid))[1] );
+                                                 (*(grid))[0],(*(grid))[1], UTMx, UTMy, 
+                                                  originFlag, DEMDistancex, DEMDistancey,
+                                                  (*(domain))[0],(*(domain))[1]);
             assert(DTE_heightField);
 
             std::cout << "Forming triangle mesh...\n";

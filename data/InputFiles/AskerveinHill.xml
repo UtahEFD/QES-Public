@@ -7,7 +7,7 @@
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 
-  	<domain> 600 600 70 </domain>					<!-- Number of cells in x,y and z directions-->
+  	<domain> 400 400 70 </domain>					<!-- Number of cells in x,y and z directions-->
   	<cellSize> 10.0 10.0 5.0 </cellSize> 				<!-- Mesh resolution (meters)-->
 	<verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
@@ -21,9 +21,12 @@
 	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
 	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria (default = 1e-9) -->
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
-	<UTMx> 0 </UTMx> 						<!-- x component (m) in UTM -->
-	<UTMy> 0 </UTMy> 						<!-- y component (m) in UTM -->
-	<UTMZone> 1 </UTMZone> 						<!-- UTM zone that domain located -->
+	<originFlag> 0 </originFlag>					<!-- Origin flag (0- DEM coordinates (default), 1- UTM coordinates) -->
+	<DEMDistancex> 1000.0 </DEMDistancex> 				<!-- x component (m) of origin in DEM coordinates (if originFlag = 0) -->
+	<DEMDistancey> 1000.0 </DEMDistancey> 				<!-- y component (m) of origin in DEM coordinates (if originFlag = 0) -->
+	<UTMx> 595469.6122881 </UTMx> 					<!-- x component (m) of origin in UTM DEM coordinates (if originFlag = 1)-->
+	<UTMy> 6336281.9538635 </UTMy> 					<!-- y component (m) of origin in UTM DEM coordinates (if originFlag = 1)-->
+	<UTMZone> 29 </UTMZone> 					<!-- UTM zone that domain located -->
 	<UTMZoneLetter> 17 </UTMZoneLetter>
 	<readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->
 	<!--COEFF>test_windsWk.nc</COEFF-->					<!-- Address to coefficients file location --> 
