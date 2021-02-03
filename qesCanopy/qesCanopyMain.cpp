@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
     }
 
     // Generate the general WINDS data from all inputs
-    WINDSGeneralData* WGD = new WINDSGeneralData(WID);
+    WINDSGeneralData* WGD = new WINDSGeneralData(WID, arguments.solveType);
     
     // create WINDS output classes
     std::vector<QESNetCDFOutput*> outputVec;

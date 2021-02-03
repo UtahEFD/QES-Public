@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
     }
 
     // Generate the general WINDS data from all inputs
-    WINDSGeneralData* WGD = new WINDSGeneralData(WID);
+    WINDSGeneralData* WGD = new WINDSGeneralData(WID, arguments.solveType);
 
     // create WINDS output classes
     std::vector<QESNetCDFOutput*> outputVec;
@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
         }
 
         // Create initial velocity field from the new sensors
-        WID->metParams->sensors[0]->inputWindProfile(WID, WGD, index);
+        WID->metParams->sensors[0]->inputWindProfile(WID, WGD, index, arguments.solveType);
 
         // ///////////////////////////////////////
         // Canopy Vegetation Parameterization
