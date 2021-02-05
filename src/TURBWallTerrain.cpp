@@ -57,12 +57,12 @@ void TURBWallTerrain::setWallsBC(WINDSGeneralData *WGD,TURBGeneralData *TGD){
         // at the terrain
         for(size_t i=0; i < cutcell_wall_id.size(); i++) {
             int id_cc=cutcell_wall_id[i];
-            TGD->S11[id_cc]=0.0;
-            TGD->S12[id_cc]=0.0;
-            TGD->S13[id_cc]=0.0;
-            TGD->S22[id_cc]=0.0;
-            TGD->S23[id_cc]=0.0;
-            TGD->S33[id_cc]=0.0;
+            TGD->Sxx[id_cc]=0.0;
+            TGD->Sxy[id_cc]=0.0;
+            TGD->Sxz[id_cc]=0.0;
+            TGD->Syy[id_cc]=0.0;
+            TGD->Syz[id_cc]=0.0;
+            TGD->Szz[id_cc]=0.0;
             TGD->Lm[id_cc]=0.0;
         }
     }

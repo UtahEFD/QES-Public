@@ -552,19 +552,19 @@ void PolyBuilding::NonLocalMixing (WINDSGeneralData* WGD, TURBGeneralData* TGD,i
                                             ustar=ustarH;
                                             float ustar2 = ustar*ustar;
 
-                                            TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-                                            TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-                                            TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
+                                            TGD->txx[icell_cent] = sigUConst*sigUConst*ustar2;
+                                            TGD->tyy[icell_cent] = sigVConst*sigVConst*ustar2;
+                                            TGD->tzz[icell_cent] = sigWConst*sigWConst*ustar2;
 
-                                            TGD->tau12[icell_cent] = abs(yw)/(0.5*width_eff)*ustar2;
-                                            TGD->tau23[icell_cent] = 0.0;
-                                            TGD->tau13[icell_cent] = 0.0;
+                                            TGD->txy[icell_cent] = abs(yw)/(0.5*width_eff)*ustar2;
+                                            TGD->tyz[icell_cent] = 0.0;
+                                            TGD->txz[icell_cent] = 0.0;
 
                                             TGD->Lm[icell_cent] = width_eff;
 
                                             TGD->iturbflag[icell_cent]=11;
 
-                                            TGD->tke[icell_cent]=0.5*(TGD->tau11[icell_cent]+TGD->tau22[icell_cent]+TGD->tau33[icell_cent]);
+                                            TGD->tke[icell_cent]=0.5*(TGD->txx[icell_cent]+TGD->tyy[icell_cent]+TGD->tzz[icell_cent]);
                                             TGD->CoEps[icell_cent]=5.7* pow(ustar,3.0)/(TGD->Lm[icell_cent]);
 
                                         }
@@ -574,13 +574,13 @@ void PolyBuilding::NonLocalMixing (WINDSGeneralData* WGD, TURBGeneralData* TGD,i
                                             ustar=ustarH;
                                             float ustar2 = ustar*ustar;
 
-                                            TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-                                            TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-                                            TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
+                                            TGD->txx[icell_cent] = sigUConst*sigUConst*ustar2;
+                                            TGD->tyy[icell_cent] = sigVConst*sigVConst*ustar2;
+                                            TGD->tzz[icell_cent] = sigWConst*sigWConst*ustar2;
 
-                                            TGD->tau12[icell_cent] = abs(yw)/(0.5*width_eff)*ustar2;
-                                            TGD->tau23[icell_cent] = 0.0;
-                                            TGD->tau13[icell_cent] = 0.0;
+                                            TGD->txy[icell_cent] = abs(yw)/(0.5*width_eff)*ustar2;
+                                            TGD->tyz[icell_cent] = 0.0;
+                                            TGD->txz[icell_cent] = 0.0;
 
                                             TGD->Lm[icell_cent] = width_eff;
 
@@ -590,13 +590,13 @@ void PolyBuilding::NonLocalMixing (WINDSGeneralData* WGD, TURBGeneralData* TGD,i
                                             ustar=ustarV;
                                             float ustar2 = ustar*ustar;
 
-                                            TGD->tau11[icell_cent] = sigUConst*sigUConst*ustar2;
-                                            TGD->tau22[icell_cent] = sigVConst*sigVConst*ustar2;
-                                            TGD->tau33[icell_cent] = sigWConst*sigWConst*ustar2;
+                                            TGD->txx[icell_cent] = sigUConst*sigUConst*ustar2;
+                                            TGD->tyy[icell_cent] = sigVConst*sigVConst*ustar2;
+                                            TGD->tzz[icell_cent] = sigWConst*sigWConst*ustar2;
 
-                                            TGD->tau12[icell_cent] = 0;
-                                            TGD->tau23[icell_cent] = -ustar2*sin(upwind_dir);//projection with wind dir
-                                            TGD->tau13[icell_cent] = -ustar2*cos(upwind_dir);//projection with wind dir
+                                            TGD->txy[icell_cent] = 0;
+                                            TGD->tyz[icell_cent] = -ustar2*sin(upwind_dir);//projection with wind dir
+                                            TGD->txz[icell_cent] = -ustar2*cos(upwind_dir);//projection with wind dir
 
                                             TGD->Lm[icell_cent] = 0.75*H;
 
@@ -604,7 +604,7 @@ void PolyBuilding::NonLocalMixing (WINDSGeneralData* WGD, TURBGeneralData* TGD,i
 
                                         }
 
-                                        TGD->tke[icell_cent]=0.5*(TGD->tau11[icell_cent]+TGD->tau22[icell_cent]+TGD->tau33[icell_cent]);
+                                        TGD->tke[icell_cent]=0.5*(TGD->txx[icell_cent]+TGD->tyy[icell_cent]+TGD->tzz[icell_cent]);
                                         TGD->CoEps[icell_cent]=5.7* pow(ustar,3.0)/(TGD->Lm[icell_cent]);
 
                                     }
