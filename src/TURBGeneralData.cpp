@@ -186,20 +186,20 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
         
     std::cout << "\t\t Allocating memory...\n";
     // comp. of the strain rate tensor
-    S11.resize(np_cc,0);
-    S12.resize(np_cc,0);
-    S13.resize(np_cc,0);
-    S22.resize(np_cc,0);
-    S23.resize(np_cc,0);
-    S33.resize(np_cc,0);
+    Sxx.resize(np_cc,0);
+    Sxy.resize(np_cc,0);
+    Sxz.resize(np_cc,0);
+    Syy.resize(np_cc,0);
+    Syz.resize(np_cc,0);
+    Szz.resize(np_cc,0);
 
     // comp of the stress tensor
-    tau11.resize(np_cc,0);
-    tau12.resize(np_cc,0);
-    tau13.resize(np_cc,0);
-    tau22.resize(np_cc,0);
-    tau23.resize(np_cc,0);
-    tau33.resize(np_cc,0);
+    txx.resize(np_cc,0);
+    txy.resize(np_cc,0);
+    txz.resize(np_cc,0);
+    tyy.resize(np_cc,0);
+    tyz.resize(np_cc,0);
+    tzz.resize(np_cc,0);
 
     // derived turbulence quantities
     tke.resize(np_cc,0);
@@ -315,12 +315,12 @@ void TURBGeneralData::getDerivatives(WINDSGeneralData* WGD)
         int idyp = id_fc+nx;    //i,j+1,k
         int idzp = id_fc+ny*nx; //i,j,k+1
 
-        //S11 = dudx
-        S11[id_cc] = (WGD->u[idxp]-WGD->u[id_fc])/(x_fc[i+1]-x_fc[i]);
-        //S22 = dvdy
-        S22[id_cc] = (WGD->v[idyp]-WGD->v[id_fc])/(y_fc[j+1]-y_fc[j]);
-        //S33 = dwdz
-        S33[id_cc] = (WGD->w[idzp]-WGD->w[id_fc])/(z_fc[k+1]-z_fc[k]);
+        //Sxx = dudx
+        Sxx[id_cc] = (WGD->u[idxp]-WGD->u[id_fc])/(x_fc[i+1]-x_fc[i]);
+        //Syy = dvdy
+        Syy[id_cc] = (WGD->v[idyp]-WGD->v[id_fc])/(y_fc[j+1]-y_fc[j]);
+        //Szz = dwdz
+        Szz[id_cc] = (WGD->w[idzp]-WGD->w[id_fc])/(z_fc[k+1]-z_fc[k]);
 
         /*
           Off-diagonal componants of the strain-rate tensor require extra interpolation
@@ -333,7 +333,7 @@ void TURBGeneralData::getDerivatives(WINDSGeneralData* WGD)
         float up,um,vp,vm,wp,wm;
 
         //--------------------------------------
-        //S12 = 0.5*(dudy+dvdx) at z_cc
+        //Sxy = 0.5*(dudy+dvdx) at z_cc
         // u_hat+
         idp = id_fc+1+nx; //i+1,j+1
         idm = id_fc+nx;   //i,j+1
@@ -354,11 +354,11 @@ void TURBGeneralData::getDerivatives(WINDSGeneralData* WGD)
         idm = id_fc-1;   //i-1,j
         vm=((y_cc[j]-y_fc[j])*WGD->v[idp]+(y_fc[j+1]-y_cc[j])*WGD->v[idm])/(y_fc[j+1]-y_fc[j]);
 
-        //S12 = 0.5*(dudy+dvdx) at z_cc
-        S12[id_cc] = 0.5*((up-um)/(y_cc[j+1]-y_cc[j-1])+(vp-vm)/(x_cc[i+1]-x_cc[i-1]));
+        //Sxy = 0.5*(dudy+dvdx) at z_cc
+        Sxy[id_cc] = 0.5*((up-um)/(y_cc[j+1]-y_cc[j-1])+(vp-vm)/(x_cc[i+1]-x_cc[i-1]));
 
         //--------------------------------------
-        //S13 = 0.5*(dudz+dwdx) at y_cc
+        //Sxz = 0.5*(dudz+dwdx) at y_cc
         // u_hat+
         idp = id_fc+1+nx*ny; //i+1,k+1
         idm = id_fc+nx*ny;   //i,k+1
@@ -379,11 +379,11 @@ void TURBGeneralData::getDerivatives(WINDSGeneralData* WGD)
         idm = id_fc-1;   //i-1,k
         wm=((z_cc[k]-z_fc[k])*WGD->w[idp]+(z_fc[k+1]-z_cc[k])*WGD->w[idm])/(z_fc[k+1]-z_fc[k]);
 
-        //S13 = 0.5*(dudz+dwdx) at y_cc
-        S13[id_cc] = 0.5*((up-um)/(z_cc[k+1]-z_cc[k-1])+(wp-wm)/(x_cc[i+1]-x_cc[i-1]));
+        //Sxz = 0.5*(dudz+dwdx) at y_cc
+        Sxz[id_cc] = 0.5*((up-um)/(z_cc[k+1]-z_cc[k-1])+(wp-wm)/(x_cc[i+1]-x_cc[i-1]));
 
         //--------------------------------------
-        //S23 = 0.5*(dvdz+dwdy) at x_cc
+        //Syz = 0.5*(dvdz+dwdy) at x_cc
         // v_hat+
         idp = id_fc+nx+nx*ny; //j+1,k+1
         idm = id_fc+nx*ny;   //j,k+1
@@ -404,8 +404,8 @@ void TURBGeneralData::getDerivatives(WINDSGeneralData* WGD)
         idm = id_fc-nx;   //j-1,k
         wp=((z_cc[k]-z_fc[k])*WGD->w[idp]+(z_fc[k+1]-z_cc[k])*WGD->w[idm])/(z_fc[k+1]-z_fc[k]);
 
-        //S23 = 0.5*(dvdz+dwdy) at x_cc
-        S23[id_cc] = 0.5*((vp-vm)/(z_cc[k+1]-z_cc[k-1])+(wp-wm)/(y_cc[j+1]-y_cc[j-1]));
+        //Syz = 0.5*(dvdz+dwdy) at x_cc
+        Syz[id_cc] = 0.5*((vp-vm)/(z_cc[k+1]-z_cc[k-1])+(wp-wm)/(y_cc[j+1]-y_cc[j-1]));
 
     }
 }
@@ -421,24 +421,24 @@ void TURBGeneralData::getStressTensor()
         float LM = Lm[id_cc];
 
         //
-        float SijSij = S11[id_cc]*S11[id_cc] + S22[id_cc]*S22[id_cc] + S33[id_cc]*S33[id_cc]
-            + 2.0*(S12[id_cc]*S12[id_cc] + S13[id_cc]*S13[id_cc] + S23[id_cc]*S23[id_cc]);
+        float SijSij = Sxx[id_cc]*Sxx[id_cc] + Syy[id_cc]*Syy[id_cc] + Szz[id_cc]*Szz[id_cc]
+            + 2.0*(Sxy[id_cc]*Sxy[id_cc] + Sxz[id_cc]*Sxz[id_cc] + Syz[id_cc]*Syz[id_cc]);
 
         NU_T = LM*LM*sqrt(2.0*SijSij);
         TKE  = pow((NU_T/(cPope*LM)),2.0);
         tke[id_cc] = TKE;
         CoEps[id_cc] = 5.7*pow(sqrt(TKE)*cPope,3.0)/(LM);
 
-        tau11[id_cc] = (2.0/3.0) * TKE - 2.0*(NU_T*S11[id_cc]);
-        tau22[id_cc] = (2.0/3.0) * TKE - 2.0*(NU_T*S22[id_cc]);
-        tau33[id_cc] = (2.0/3.0) * TKE - 2.0*(NU_T*S33[id_cc]);
-        tau12[id_cc] = - 2.0*(NU_T*S12[id_cc]);
-        tau13[id_cc] = - 2.0*(NU_T*S13[id_cc]);
-        tau23[id_cc] = - 2.0*(NU_T*S23[id_cc]);
+        txx[id_cc] = (2.0/3.0) * TKE - 2.0*(NU_T*Sxx[id_cc]);
+        tyy[id_cc] = (2.0/3.0) * TKE - 2.0*(NU_T*Syy[id_cc]);
+        tzz[id_cc] = (2.0/3.0) * TKE - 2.0*(NU_T*Szz[id_cc]);
+        txy[id_cc] = - 2.0*(NU_T*Sxy[id_cc]);
+        txz[id_cc] = - 2.0*(NU_T*Sxz[id_cc]);
+        tyz[id_cc] = - 2.0*(NU_T*Syz[id_cc]);
 
-        tau11[id_cc] = fabs(sigUConst*tau11[id_cc]);
-        tau22[id_cc] = fabs(sigVConst*tau22[id_cc]);
-        tau33[id_cc] = fabs(sigWConst*tau33[id_cc]);
+        txx[id_cc] = fabs(sigUConst*txx[id_cc]);
+        tyy[id_cc] = fabs(sigVConst*tyy[id_cc]);
+        tzz[id_cc] = fabs(sigWConst*tzz[id_cc]);
 
     }
 }
@@ -451,35 +451,35 @@ void TURBGeneralData::boundTurbFields()
     for(auto id=0u;id<icellfluid.size();id++) {
         id_cc=icellfluid[id];
 
-        if (tau11[id_cc] < -stressBound)
-            tau11[id_cc] = -stressBound;
-        if (tau11[id_cc] > stressBound) 
-            tau11[id_cc] = stressBound;
+        if (txx[id_cc] < -stressBound)
+            txx[id_cc] = -stressBound;
+        if (txx[id_cc] > stressBound) 
+            txx[id_cc] = stressBound;
         
-        if (tau12[id_cc] < -stressBound)
-            tau12[id_cc] = -stressBound;
-        if (tau12[id_cc] > stressBound) 
-            tau12[id_cc] = stressBound;
+        if (txy[id_cc] < -stressBound)
+            txy[id_cc] = -stressBound;
+        if (txy[id_cc] > stressBound) 
+            txy[id_cc] = stressBound;
         
-        if (tau13[id_cc] < -stressBound) 
-            tau13[id_cc] = -stressBound;
-        if (tau13[id_cc] > stressBound) 
-            tau13[id_cc] = stressBound;
+        if (txz[id_cc] < -stressBound) 
+            txz[id_cc] = -stressBound;
+        if (txz[id_cc] > stressBound) 
+            txz[id_cc] = stressBound;
 
-        if (tau22[id_cc] < -stressBound)
-            tau22[id_cc] = -stressBound;
-        if (tau22[id_cc] > stressBound) 
-            tau22[id_cc] = stressBound;
+        if (tyy[id_cc] < -stressBound)
+            tyy[id_cc] = -stressBound;
+        if (tyy[id_cc] > stressBound) 
+            tyy[id_cc] = stressBound;
 
-        if (tau23[id_cc] < -stressBound)
-            tau23[id_cc] = -stressBound;
-        if (tau23[id_cc] > stressBound) 
-            tau23[id_cc] = stressBound;
+        if (tyz[id_cc] < -stressBound)
+            tyz[id_cc] = -stressBound;
+        if (tyz[id_cc] > stressBound) 
+            tyz[id_cc] = stressBound;
         
-        if (tau33[id_cc] < -stressBound) 
-            tau33[id_cc] = -stressBound;
-        if (tau33[id_cc] > stressBound)
-            tau33[id_cc] = stressBound;
+        if (tzz[id_cc] < -stressBound) 
+            tzz[id_cc] = -stressBound;
+        if (tzz[id_cc] > stressBound)
+            tzz[id_cc] = stressBound;
     }
 }
 
