@@ -115,12 +115,12 @@ void TURBGeneralData::loadNetCDFData(int stepin)
                 static_cast<unsigned long>(nx-1)};
 
     // stress tensor
-    input->getVariableData("tau11",start,count_cc,txx);
-    input->getVariableData("tau12",start,count_cc,txy);
-    input->getVariableData("tau13",start,count_cc,txz);
-    input->getVariableData("tau22",start,count_cc,tyy);
-    input->getVariableData("tau23",start,count_cc,tyz);
-    input->getVariableData("tau33",start,count_cc,tzz); 
+    input->getVariableData("txx",start,count_cc,txx);
+    input->getVariableData("txy",start,count_cc,txy);
+    input->getVariableData("txz",start,count_cc,txz);
+    input->getVariableData("tyy",start,count_cc,tyy);
+    input->getVariableData("tyz",start,count_cc,tyz);
+    input->getVariableData("tzz",start,count_cc,tzz); 
   
     // face-center variables
     input->getVariableData("tke",start,count_cc,tke);
