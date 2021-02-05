@@ -115,71 +115,71 @@ writeNetCDFFile_winds('../QES-data/BaileyLES',nx,ny,nz,x_cc,y_cc,z_cc,u_out,v_ou
 %% ========================================================================
 % QES-TURB data:
 
-% tau11
+% txx
 periodicVar=makePeriodic(txx,nx,ny,nz,2);
 [xxq,yyq,zzq]=meshgrid(x_cc,y_cc,z_cc);
 permVar=permute(periodicVar,[2,1,3]);
-tau11=interp3(xx,yy,zz,permVar,xxq,yyq,zzq);
-tau11=permute(tau11,[2,1,3]);
+txx=interp3(xx,yy,zz,permVar,xxq,yyq,zzq);
+txx=permute(txx,[2,1,3]);
 % lower BC
-tau11(:,:,1)=tau11(:,:,2);
+txx(:,:,1)=txx(:,:,2);
 % upper BC
-tau11(:,:,33)=tau11(:,:,32);
+txx(:,:,33)=txx(:,:,32);
 
-% tau11
+% txx
 periodicVar=makePeriodic(tyy,nx,ny,nz,2);
 [xxq,yyq,zzq]=meshgrid(x_cc,y_cc,z_cc);
 permVar=permute(periodicVar,[2,1,3]);
-tau22=interp3(xx,yy,zz,permVar,xxq,yyq,zzq);
-tau22=permute(tau22,[2,1,3]);
+tyy=interp3(xx,yy,zz,permVar,xxq,yyq,zzq);
+tyy=permute(tyy,[2,1,3]);
 % lower BC
-tau22(:,:,1)=tau22(:,:,2);
+tyy(:,:,1)=tyy(:,:,2);
 % upper BC
-tau22(:,:,33)=tau22(:,:,32);
+tyy(:,:,33)=tyy(:,:,32);
 
-% tau11
+% txx
 periodicVar=makePeriodic(tzz,nx,ny,nz,2);
 [xxq,yyq,zzq]=meshgrid(x_cc,y_cc,z_cc);
 permVar=permute(periodicVar,[2,1,3]);
-tau33=interp3(xx,yy,zz,permVar,xxq,yyq,zzq);
-tau33=permute(tau33,[2,1,3]);
+tzz=interp3(xx,yy,zz,permVar,xxq,yyq,zzq);
+tzz=permute(tzz,[2,1,3]);
 % lower BC
-tau33(:,:,1)=tau33(:,:,2);
+tzz(:,:,1)=tzz(:,:,2);
 % upper BC
-tau33(:,:,33)=tau33(:,:,32);
+tzz(:,:,33)=tzz(:,:,32);
 
-% tau11
+% txx
 periodicVar=makePeriodic(txy,nx,ny,nz,2);
 [xxq,yyq,zzq]=meshgrid(x_cc,y_cc,z_cc);
 permVar=permute(periodicVar,[2,1,3]);
-tau12=interp3(xx,yy,zz,permVar,xxq,yyq,zzq);
-tau12=permute(tau12,[2,1,3]);
+txy=interp3(xx,yy,zz,permVar,xxq,yyq,zzq);
+txy=permute(txy,[2,1,3]);
 % lower BC
-tau12(:,:,1)=tau12(:,:,2);
+txy(:,:,1)=txy(:,:,2);
 % upper BC
-tau12(:,:,33)=tau12(:,:,32);
+txy(:,:,33)=txy(:,:,32);
 
-% tau11
+% txx
 periodicVar=makePeriodic(txz,nx,ny,nz,2);
 [xxq,yyq,zzq]=meshgrid(x_cc,y_cc,z_cc);
 permVar=permute(periodicVar,[2,1,3]);
-tau13=interp3(xx,yy,zz,permVar,xxq,yyq,zzq);
-tau13=permute(tau13,[2,1,3]);
+txz=interp3(xx,yy,zz,permVar,xxq,yyq,zzq);
+txz=permute(txz,[2,1,3]);
 % lower BC
-tau13(:,:,1)=tau13(:,:,2);
+txz(:,:,1)=txz(:,:,2);
 % upper BC
-tau13(:,:,33)=tau13(:,:,32);
+txz(:,:,33)=txz(:,:,32);
 
-% tau11
+% txx
 periodicVar=makePeriodic(tyz,nx,ny,nz,2);
 [xxq,yyq,zzq]=meshgrid(x_cc,y_cc,z_cc);
 permVar=permute(periodicVar,[2,1,3]);
-tau23=interp3(xx,yy,zz,permVar,xxq,yyq,zzq);
-tau23=permute(tau23,[2,1,3]);
+tyz=interp3(xx,yy,zz,permVar,xxq,yyq,zzq);
+tyz=permute(tyz,[2,1,3]);
 % lower BC
-tau23(:,:,1)=tau23(:,:,2);
+tyz(:,:,1)=tyz(:,:,2);
 % upper BC
-tau23(:,:,33)=tau23(:,:,32);
+tyz(:,:,33)=tyz(:,:,32);
 
 % epps
 periodicVar=makePeriodic(epps,nx,ny,nz,2);
@@ -200,7 +200,7 @@ end
 CoEps=C0*epps_out;
 
 % now save the netcdf turb output
-writeNetCDFFile_turb('../QES-data/BaileyLES',x_cc,y_cc,z_cc,CoEps,tke,tau11,tau12,tau13,tau22,tau23,tau33);
+writeNetCDFFile_turb('../QES-data/BaileyLES',x_cc,y_cc,z_cc,CoEps,tke,txx,txy,txz,tyy,tyz,tzz);
 
 %% ========================================================================
 function out = makePeriodic(in,nx,ny,nz,lbc)

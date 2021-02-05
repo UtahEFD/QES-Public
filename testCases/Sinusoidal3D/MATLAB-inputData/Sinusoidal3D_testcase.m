@@ -85,15 +85,15 @@ for k=1:nz-1
 end
 
 % data for NetCDF file
-tau11 = sig2_out;
-tau12 = zeros(nx-1,ny-1,nz-1);
-tau13 = zeros(nx-1,ny-1,nz-1);
-tau22 = sig2_out;
-tau23 = zeros(nx-1,ny-1,nz-1);
-tau33 = sig2_out;
+txx = sig2_out;
+txy = zeros(nx-1,ny-1,nz-1);
+txz = zeros(nx-1,ny-1,nz-1);
+tyy = sig2_out;
+tyz = zeros(nx-1,ny-1,nz-1);
+tzz = sig2_out;
 tke = tke_out;
 CoEps = CoEps_out;
 
 % now save the netcdf turb output
-writeNetCDFFile_turb('../QES-data/Sinusoidal3D',x_cc,y_cc,z_cc,CoEps,tke,tau11,tau12,tau13,tau22,tau23,tau33);
+writeNetCDFFile_turb('../QES-data/Sinusoidal3D',x_cc,y_cc,z_cc,CoEps,tke,txx,txy,txz,tyy,tyz,tzz);
 

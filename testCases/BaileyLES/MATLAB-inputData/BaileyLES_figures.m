@@ -39,33 +39,33 @@ legend('data','QES')
 % some figure to vizualize the data generated vs original data:
 set(0,'defaulttextinterpreter','latex')
 
-% tau11 stress 
+% txx stress 
 figure()
 plot(squeeze(mean(mean(txx,1),2)),z/lz,'x')
 hold all
-plot(squeeze(mean(mean(tau11,1),2)),z_cc/lz,'o')
+plot(squeeze(mean(mean(txx,1),2)),z_cc/lz,'o')
 ylabel('$z/\delta$')
 xlabel('$\tau_{xx}/u_*^2$')
 grid on
 ylim([0-dz lz+dz]/lz)
 legend('data','QES')
 
-% tau22 stress 
+% tyy stress 
 figure()
 plot(squeeze(mean(mean(tyy,1),2)),z/lz,'x')
 hold all
-plot(squeeze(mean(mean(tau22,1),2)),z_cc/lz,'o')
+plot(squeeze(mean(mean(tyy,1),2)),z_cc/lz,'o')
 ylabel('$z/\delta$')
 xlabel('$\tau_{yy}/u_*^2$')
 grid on
 ylim([0-dz lz+dz]/lz)
 legend('data','QES')
 
-% tau33 stress 
+% tzz stress 
 figure()
 plot(squeeze(mean(mean(tzz,1),2)),z/lz,'x')
 hold all
-plot(squeeze(mean(mean(tau33,1),2)),z_cc/lz,'o')
+plot(squeeze(mean(mean(tzz,1),2)),z_cc/lz,'o')
 ylabel('$z/\delta$')
 xlabel('$\tau_{zz}/u_*^2$')
 grid on
@@ -73,33 +73,33 @@ ylim([0-dz lz+dz]/lz)
 legend('data','QES')
 
 
-% tau12 stress 
+% txy stress 
 figure()
 plot(squeeze(mean(mean(txy,1),2)),z/lz,'x')
 hold all
-plot(squeeze(mean(mean(tau12,1),2)),z_cc/lz,'o')
+plot(squeeze(mean(mean(txy,1),2)),z_cc/lz,'o')
 ylabel('$z/\delta$')
 xlabel('$\tau_{xy}/u_*^2$')
 grid on
 ylim([0-dz lz+dz]/lz)
 legend('data','QES')
 
-% tau13 stress 
+% txz stress 
 figure()
 plot(squeeze(mean(mean(txz,1),2)),z/lz,'x')
 hold all
-plot(squeeze(mean(mean(tau13,1),2)),z_cc/lz,'o')
+plot(squeeze(mean(mean(txz,1),2)),z_cc/lz,'o')
 ylabel('$z/\delta$')
 xlabel('$\tau_{xz}/u_*^2$')
 grid on
 ylim([0-dz lz+dz]/lz)
 legend('data','QES')
 
-% tau23 stress 
+% tyz stress 
 figure()
 plot(squeeze(mean(mean(tyz,1),2)),z/lz,'x')
 hold all
-plot(squeeze(mean(mean(tau23,1),2)),z_cc/lz,'o')
+plot(squeeze(mean(mean(tyz,1),2)),z_cc/lz,'o')
 ylabel('$z/\delta$')
 xlabel('$\tau_{yz}/u_*^2$')
 grid on
