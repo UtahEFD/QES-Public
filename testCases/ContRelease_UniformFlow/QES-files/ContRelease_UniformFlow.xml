@@ -20,7 +20,7 @@
 	<boxBoundsY2> 99.0 </boxBoundsY2>
 	<boxBoundsZ1> 1.0 </boxBoundsZ1>
 	<boxBoundsZ2> 139.0 </boxBoundsZ2>
-	<nBoxesX> 40 </nBoxesX>
+	<nBoxesX> 100 </nBoxesX>
 	<nBoxesY> 49 </nBoxesY>
 	<nBoxesZ> 69 </nBoxesZ>
 </collectionParameters>

@@ -26,7 +26,7 @@ z_cc=-0.5*dz:dz:lz+0.5*dz;
 
 % set Uniform Flow param:
 uMean = 2.0; % m/s
-uStar = 0.18; % m/s
+uStar = 0.174; % m/s
 C0 = 4.0;
 
 %% ========================================================================
@@ -41,8 +41,8 @@ u_new=uMean*ones(nz-1,1);
 %u_new(1)=u_new(2); % ghost cell
 %u_new(end)=u_new(end-1); % ghost cell
 
-for k=1:nz-1
-    u_out(:,1:ny-1,k)=u_new(k);
+for kk=1:nz-1
+    u_out(:,1:ny-1,kk)=u_new(kk);
 end
 
 % data for NetCDF file
@@ -72,29 +72,35 @@ writeNetCDFFile_winds(filename,nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
 %% ========================================================================
 % QES-TURB data:
 
+k = (uStar/0.55)^2;
+
+sigU=2.50*uStar;
+sigV=1.78*uStar;
+sigW=1.27*uStar;
+
 % cell-center data:
 CoEps = zeros(nx-1,ny-1,nz-1);
 tke = zeros(nx-1,ny-1,nz-1);
 
-for k=2:nz-1
-    CoEps(:,:,k)=C0*uStar^3/0.4/z_cc(k);
-    tke(:,:,k)=( z_cc(k)*C0*uStar^3/0.4/z_cc(k) )^(2/3);
+for kk=2:nz-1
+    CoEps(:,:,kk)=5.7*(sqrt(k)*0.55)^3/(0.4*z_cc(kk));
+    tke(:,:,kk)=k;
 end
 CoEps(:,:,1)=-CoEps(:,:,2);
 tke(:,:,1)=-tke(:,:,2);
 
 % data for NetCDF file
-tau11 = (2.0*uStar)^2*ones(nx-1,ny-1,nz-1);
-tau22 = (1.6*uStar)^2*ones(nx-1,ny-1,nz-1);
-tau33 = (1.3*uStar)^2*ones(nx-1,ny-1,nz-1);
+txx = sigU^2 * ones(nx-1,ny-1,nz-1);
+tyy = sigV^2 * ones(nx-1,ny-1,nz-1);
+tzz = sigW^2 * ones(nx-1,ny-1,nz-1);
 
-tau13 = -(uStar)^2*ones(nx-1,ny-1,nz-1);
+txz = -(uStar)^2*ones(nx-1,ny-1,nz-1);
 
-tau12 = zeros(nx-1,ny-1,nz-1);
-tau23 = zeros(nx-1,ny-1,nz-1);
+txy = zeros(nx-1,ny-1,nz-1);
+tyz = zeros(nx-1,ny-1,nz-1);
 
 % now save the netcdf turb output
-writeNetCDFFile_turb(filename,x_cc,y_cc,z_cc,CoEps,tke,tau11,tau12,tau13,tau22,tau23,tau33);
+writeNetCDFFile_turb(filename,x_cc,y_cc,z_cc,CoEps,tke,txx,txy,txz,tyy,tyz,tzz);
 
 
 

@@ -9,7 +9,8 @@
 
 H=70; % m
 U=2; % m/s 
-uStar=0.18; %m/s
+uStar=0.174; %m/s
+zi=10000; % m
 
 % source info
 Q=100; % #par/s (source strength)
@@ -24,7 +25,7 @@ fsize=12;
 
 xS=20;yS=50;zS=70;
 
-xProf=[0.393,0.464]; % streamwise location 
+xProf=[0.393,0.464,0.964]; % streamwise location 
 
 % set the case base name for use in all the other file paths
 caseNameWinds = "UniformFlow";
@@ -66,26 +67,42 @@ for k=1:numel(xProf)
     cStarPlume=squeeze(double(data.plume.pBox(idx,:,:)))*CC*(U*H*H/Q);
     
     sigV=1.78*uStar;
-    sigW=uStar*(1/(3*0.4*0.4))^(1/3);
+    sigW=(1/(3*0.4*0.4))^(1/3)*uStar;
     
-    Ti=2.5*uStar/1000;
-    T0=1.001; 
+    Ti=(2.5*uStar/zi)^(-1);
+    To=1.001; 
     
     x=data.plume.x(idx)-xS;
     t=x/U;
     
-    Fy=1;%(1+(t/Ti)^0.5)^(-1);
-    Fz=1;%(1+0.945*(t/T0)^0.8)^(-1);
+    Fy=(1+(t/Ti)^0.5)^(-1);
+    %Fz=(1+0.945*(t/To)^0.8)^(-1);
+    Fz=Fy;
     
     sigY=sigV*t*Fy;
     sigZ=sigW*t*Fz;
   
+    %sigY=0.32*x^0.78;
+    %sigZ=0.22*x^0.78;
+    
     y=-H:0.1:H;
     z=-H:0.1:H;
     [yy,zz]=ndgrid(y,z);
     
-    C=Q/(2*pi*U*sigY*sigZ)*exp(-yy.^2/sigY^2).*exp(-zz.^2/sigZ^2);
+    C=Q/(2*pi*U*sigY*sigZ)*exp(-0.5*yy.^2/sigY^2).*exp(-0.5*zz.^2/sigZ^2);
     cStarModel=C*(U*H*H/Q);
+    
+    d2plotLat.xoH(k)=x/H;
+    d2plotLat.QPlume.yoH=yoH;
+    d2plotLat.QPlume.cStar(:,k)=cStarPlume(:,idz);
+    d2plotLat.GModel.yoH=y/H+yS/H;
+    d2plotLat.GModel.cStar(:,k)=cStarModel(:,floor(numel(z)/2)+1);
+    
+    d2plotVert.xoH(k)=x/H;
+    d2plotVert.QPlume.zoH=zoH;
+    d2plotVert.QPlume.cStar(:,k)=cStarPlume(idy,:);
+    d2plotVert.GModel.zoH=z/H+zS/H;
+    d2plotVert.GModel.cStar(:,k)=cStarModel(floor(numel(y)/2)+1,:);
     
     hfig = figure;
     set(hfig,'Units','centimeters')
@@ -105,8 +122,6 @@ for k=1:numel(xProf)
         caseNameWinds,caseNamePlume,strrep(sprintf('x%.3f',x/H),'.','o'));
     save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
     
-    zH=-1:0.001:1;
-    C=1/(2*pi*sigY*sigZ)*exp(-zH.^2/sigZ^2);
     
     hfig = figure;
     set(hfig,'Units','centimeters')
@@ -126,4 +141,5 @@ for k=1:numel(xProf)
         caseNameWinds,caseNamePlume,strrep(sprintf('x%.3f',x/H),'.','o'));
     save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
 end
+%==========================================================================
 
