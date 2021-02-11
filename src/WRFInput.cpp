@@ -319,6 +319,7 @@ WRFInput::WRFInput(const std::string& filename,
         std::cout << "\tOnly parsing wind velocity profiles from WRF file." << std::endl;
     }
     
+    // How is UTM used now?  --Pete
     int UTMZone = zoneUTM; 
 
     // Acquire some global attributes from the WRF system
@@ -356,7 +357,7 @@ WRFInput::WRFInput(const std::string& filename,
     atm_nx = xDim[1] - xDim[0] + 1;
     atm_ny = yDim[1] - yDim[0] + 1;
 
-    std::cout << "WRF Atmos Domain is " << atm_nx << " X " << atm_ny << " cells." << std::endl;
+    std::cout << "WRF Atmospheric Mesh Domain is " << atm_nx << " X " << atm_ny << " cells." << std::endl;
 
     // Extract DX and DY of the Atm Mesh
     double cellSize[2] = {1, 1};
@@ -369,17 +370,31 @@ WRFInput::WRFInput(const std::string& filename,
     atm_dx = cellSize[0];
     atm_dy = cellSize[1];
 
-    std::cout << "WRF Atmos Resolution (dx,dy) is ("<< atm_dx << ", " << atm_dy << ")" << std::endl;
+    std::cout << "WRF Atmospheric Mesh Resolution (dx,dy) is ("<< atm_dx << ", " << atm_dy << ")" << std::endl;
 
+    // Check to see if both sensor data and terrain mesh data are
+    // needing to be extracted
     if (m_processOnlySensorData == false) {
+
+        // Extract BOTH "fire" mesh data and the Wind Profiles from
+        // the Atmosperic Mesh
 
         std::cout << "Attempting to read fire mesh from WRF output file data..." << std::endl;
 
         //
         // IMPORTANT -- need to include code to check for fire mesh
         // data!!!
-        // This is not yet done. -PW
-        //
+        // 
+        // Check to verify the fields for the fire mesh exist --
+        // otherwise exit
+
+        // Need something like this...
+        // if ( !(wrfInputFile.getVar("FXLONG") && wrfInputFile.getVar("FXLAT")) ) {
+        // std::cerr << "ERROR!  WRF input for reading terrain requires that Fire Mesh data exists in WRF Output file." << std::endl;
+        // std::cerr << "Exiting." << std::endl;
+        // exit(EXIT_FAILURE);
+        // }
+        
 
         // 
         // Fire Mesh Terrain Nodes
@@ -387,8 +402,6 @@ WRFInput::WRFInput(const std::string& filename,
         // int fm_nt = wrfInputFile.getVar("FXLONG").getDim(0).getSize();
         fm_ny = wrfInputFile.getVar("FXLONG").getDim(1).getSize();
         fm_nx = wrfInputFile.getVar("FXLONG").getDim(2).getSize();
-
-        std::cout << "Fire mesh dimensions are " << fm_ny << " by " << fm_ny << std::endl;
 
         std::vector<size_t> startIdx = {0,0,0,0};
         std::vector<size_t> counts = {1,
@@ -400,19 +413,17 @@ WRFInput::WRFInput(const std::string& filename,
         wrfInputFile.getVar("FXLONG").getVar(startIdx, counts, fxlong.data());
         wrfInputFile.getVar("FXLAT").getVar(startIdx, counts, fxlat.data());
     
-        std::cout << "Reading data for FWH and FZ0..." << std::endl;
+        std::cout << "\treading data for FWH, FZ0, and ZSF..." << std::endl;
 
         std::vector<double> fwh( fm_nx * fm_ny );
         std::vector<double> fz0( fm_nx * fm_ny );
         wrfInputFile.getVar("FWH").getVar(startIdx, counts, fwh.data());
         wrfInputFile.getVar("FZ0").getVar(startIdx, counts, fz0.data());    
 
-        std::cout << "Reading data for ZSF..." << std::endl;        
-
         fmHeight.resize( fm_nx * fm_ny );
         wrfInputFile.getVar("ZSF").getVar(startIdx, counts, fmHeight.data());
 
-        // From Jan and students
+        // The following is provided from Jan and students
         int sizeHGT_x = wrfInputFile.getVar("HGT").getDim(2).getSize();
         int sizeHGT_y = wrfInputFile.getVar("HGT").getDim(1).getSize();
         int sizeZSF_x = wrfInputFile.getVar("ZSF").getDim(2).getSize();
@@ -421,18 +432,22 @@ WRFInput::WRFInput(const std::string& filename,
         float sr_x = sizeZSF_x/(sizeHGT_x+1);
         float sr_y = sizeZSF_y/(sizeHGT_y+1);
 
-        fm_dx = cellSize[0] / sr_x;
-        fm_dy = cellSize[1] / sr_y;    
+        fm_dx = atm_dx / sr_x;
+        fm_dy = atm_dy / sr_y;    
         // Then dxf=DX/sr_x, dyf=DY/sr_y
 
-        std::cout << "WRF Fire Mesh Indice Dimensions: " << fm_nx << " X " << fm_ny << std::endl;
+        // for now, set dz = 1
+        fm_dz = 1.0f;
+
+        std::cout << "WRF Fire Mesh dimensions (nx, ny): " << fm_nx << " by " << fm_ny << std::endl;
         std::cout << "WRF Fire Mesh Resolution (dx, dy): (" << fm_dx << ", " << fm_dy << ")" << std::endl;
+
         std::cout << "\ttotal domain size: " << fm_nx * fm_dx << "m by " << fm_ny * fm_dy << "m" << std::endl;
     
         double fm_minWRFAlt = std::numeric_limits<double>::max(),
             fm_maxWRFAlt = std::numeric_limits<double>::min();
     
-        // Scan the fire mesh to determine heights
+        // Scan the fire mesh to determine height ranges
         for (int i=0; i<fm_nx; i++) {
             for (int j=0; j<fm_ny; j++) {
             
@@ -443,25 +458,46 @@ WRFInput::WRFInput(const std::string& filename,
             }
         }
 
-        // double rangeHt = fm_maxWRFAlt - fm_minWRFAlt;
         std::cout << "Terrain Min Ht: " << fm_minWRFAlt << ", Max Ht: " << fm_maxWRFAlt << std::endl;
 
-        // if specified, use the max height... otherwise, pick  ---
-        // use user specified...
-	fm_nz = (int)ceil( fm_maxWRFAlt * 2.0 );
+        // if specified, use the max height... otherwise, pick one
+        // that's about twice the max height to give room for the flow
+	fm_nz = (int)ceil( fm_maxWRFAlt * 2.0 );  // this ONLY works
+                                                  // if dz=1.0
 
+        std::cout << "Domain nz: " << fm_nz << std::endl;
+
+        // 
         // override any zone information?  Need to fix these use cases
+        //
         UTMZone = (int)floor((fxlong[0] + 180) / 6) + 1;
-    
         std::cout << "UTM Zone: " << UTMZone << std::endl;
-        std::cout << "(Lat,Long) at [0][0] = " << fxlat[0] << ", " << fxlong[0] << std::endl;   // 524972.33, 3376924.26
-        std::cout << "(Lat,Long) at [nx-1][0] = " << fxlat[fm_nx-1] << ", " << fxlong[fm_nx-1] << std::endl;
-        std::cout << "(Lat,Long) at [0][ny-1] = " << fxlat[(fm_ny-1)*fm_nx] << ", " << fxlong[(fm_ny-1)*fm_nx] << std::endl;
-        std::cout << "(Lat,Long) at [nx-1][ny-1] = " << fxlat[fm_nx-1 + (fm_ny-1)*fm_nx] << ", " << fxlong[fm_nx-1 + (fm_ny-1)*fm_nx] << std::endl;
         
-        UTMConv(fxlong[0], fxlat[0], domainUTMx, domainUTMy, UTMZone, 0);
+        std::cout << "(Lat,Long) at Lower Left (LL) = " << fxlat[0] << ", " << fxlong[0] << std::endl; 
+        std::cout << "(Lat,Long) at Lower Right (LR) = " << fxlat[fm_nx-1] << ", " << fxlong[fm_nx-1] << std::endl;
+        std::cout << "(Lat,Long) at Upper Left (UL) = " << fxlat[(fm_ny-1)*fm_nx] << ", " << fxlong[(fm_ny-1)*fm_nx] << std::endl;
+        std::cout << "(Lat,Long) at Upper Right (UR) = " << fxlat[fm_nx-1 + (fm_ny-1)*fm_nx] << ", " << fxlong[fm_nx-1 + (fm_ny-1)*fm_nx] << std::endl;
+        
 
-        std::cout << "\tConverted LL UTM: " << domainUTMx << ", " << domainUTMy << std::endl;
+        // variables to hold the UTM coordinates of the corners
+        //   domainUTMx, domainUTMy contain the lower left origin UTM
+        //   and are already defined
+        double lrUTMx, lrUTMy,
+            ulUTMx, ulUTMy,
+            urUTMx, urUTMy;
+
+        UTMConv(fxlong[0], fxlat[0], domainUTMx, domainUTMy, UTMZone, 0);
+        std::cout << std::setprecision(9) << "\tConverted LL UTM: " << domainUTMx << ", " << domainUTMy << std::endl;
+        
+        UTMConv(fxlong[fm_nx-1], fxlat[fm_nx-1], lrUTMx, lrUTMy, UTMZone, 0);
+        std::cout << std::setprecision(9) << "\tConverted LR UTM: " << lrUTMx << ", " << lrUTMy << std::endl;
+
+        UTMConv(fxlong[(fm_ny-1)*fm_nx], fxlat[(fm_ny-1)*fm_nx], ulUTMx, ulUTMy, UTMZone, 0);
+        std::cout << std::setprecision(9) << "\tConverted UL UTM: " << ulUTMx << ", " << ulUTMy << std::endl;
+
+        UTMConv(fxlong[fm_nx-1 + (fm_ny-1)*fm_nx], fxlat[fm_nx-1 + (fm_ny-1)*fm_nx], urUTMx, urUTMy, UTMZone, 0);
+        std::cout << std::setprecision(9) << "\tConverted UR UTM: " << urUTMx << ", " << urUTMy << std::endl;
+
 
         dimX = fm_nx * fm_dx;
         dimY = fm_ny * fm_dy;
@@ -612,6 +648,9 @@ WRFInput::WRFInput(const std::string& filename,
         std::cout << "UTM: " << lon2eastings[0] << ", " << lat2northings[0] << std::endl;    
 #endif
 
+        //
+        // this may not be needed anymore...
+        // BEGIN 
         double clat, clon;
         gblAttIter = globalAttributes.find("CEN_LAT");
         gblAttIter->second.getValues( &clat );
@@ -638,15 +677,21 @@ WRFInput::WRFInput(const std::string& filename,
                   << "; " << nx_fire << ", " << ny_fire
                   << "; " << dx_fire << ", " << dy_fire
                   << "; " << t_x0_fire << ", " << t_y1_fire << std::endl;
+        // END
+        // May not need that section above between BEGIN - END
 
         // nx_atm / 2. * atm_dx + e
         // double x0_fire = t_x0_fire; // -fm_nx / 2.0 * dxf + lon2eastings[0]; 
         // ny_atm / 2. * atm_dy + n 
         // double y1_fire = t_y1_fire; // -fm_ny / 2.0 * dyf + lat2northings[0];
-    }
 
+
+        // End of Conditional for processing WRF Fire Mesh Terrain data
+    }
+    
     //
-    // remainder of code is for pulling out wind profiles
+    // Process Atmospheric Mesh Wind Profiles
+    //    remainder of code is for pulling out wind profiles
     //
 
     // Need atm mesh sizes, stored in nx_atm and ny_atm
@@ -654,10 +699,8 @@ WRFInput::WRFInput(const std::string& filename,
     atm_nz = 1;
     gblAttIter = globalAttributes.find("BOTTOM-TOP_GRID_DIMENSION");
     gblAttIter->second.getValues( &atm_nz );
-
-    std::cout << "Atmos NZ = " << atm_nz << std::endl;
-    std::cout << "Atmos NY = " << atm_ny << std::endl;
-    std::cout << "Atmos NX = " << atm_nx << std::endl;
+ 
+    std::cout << "WRF Atmospheric Mesh Domain (nx, ny, nz): " << atm_nx << " X " << atm_ny << " X " << atm_ny << " cells." << std::endl;
 
     std::vector<size_t> atm_startIdx = {0,0,0};
     std::vector<size_t> atm_counts = {1,
@@ -695,7 +738,7 @@ WRFInput::WRFInput(const std::string& filename,
     std::vector<double> phData( 2 * atm_nz * atm_ny * atm_nx );
     wrfInputFile.getVar("PH").getVar(atmStartIdx, atmCounts, phData.data());
 
-    std::cout << "PHB and PH read in..." << std::endl;
+    std::cout << "Reading PHB and PH from Atmospheric Mesh..." << std::endl;
 
     //
     // Calculate the height  (PHB + PH) / 9.81
@@ -711,7 +754,7 @@ WRFInput::WRFInput(const std::string& filename,
             }
         }
     }
-    std::cout << "Pressure-based Height computed." << std::endl;
+    std::cout << "\tpressure-based height computed." << std::endl;
 
     // calculate number of altitudes to store, which is one less than
     // nz
@@ -722,6 +765,9 @@ WRFInput::WRFInput(const std::string& filename,
     //
     // When these are read in, we will read one additional cell in X
     // and Y, for U and V, respectively.
+
+    std::cout << "Reading U and V staggered wind input from WRF..." << std::endl;
+    
     atmCounts[3] = atm_nx + 1;
     std::vector<double> UStaggered( 2 * (atm_nz-1) * atm_ny * (atm_nx+1) );
     wrfInputFile.getVar("U").getVar(atmStartIdx, atmCounts, UStaggered.data());
@@ -753,8 +799,7 @@ WRFInput::WRFInput(const std::string& filename,
         }
     }
 
-
-    std::cout << "Staggered wind input complete." << std::endl;
+    std::cout << "\twind input complete" << std::endl;
 
     // Calculate CoordZ
     std::vector<double> coordZ( 2 * (atm_nz-1) * atm_ny * atm_nx );
@@ -769,7 +814,6 @@ WRFInput::WRFInput(const std::string& filename,
             }
         }
     }
-
 
 
     //
@@ -813,10 +857,12 @@ WRFInput::WRFInput(const std::string& filename,
  
     // use the Fz0 rather than LU_INDEX
 
-   // read LU -- depends on if reading the restart or the output file
+    // read LU -- depends on if reading the restart or the output file
     // roughness length...
     // LU = ncread(WRFFile,'LU_INDEX');
     // SimData.LU = LU(SimData.XSTART:SimData.XEND, SimData.YSTART:SimData.YEND,1)';
+    std::cout << "Reading LU_INDEX and computing roughness lengths..." << std::endl;
+
     std::vector<size_t> atmStartIdx_2D = {0,0,0};
     std::vector<size_t> atmCounts_2D = {1,
                                         static_cast<unsigned long>(atm_ny),
@@ -855,6 +901,15 @@ WRFInput::WRFInput(const std::string& filename,
     }
 
 
+    // /////////////////////////////////////////////////////////
+    //
+    // This section of the code reads in the wind speeds and direction
+    // at different ATM mesh sensors to create the input wind profiles
+    //
+    // /////////////////////////////////////////////////////////
+
+    std::cout << "Reading and processing WRF Stations for input wind profiles..." << std::endl;
+
     // ////////////////////////
     // sampling strategy
     int stepSize = sensorSample;
@@ -864,12 +919,16 @@ WRFInput::WRFInput(const std::string& filename,
     // atm_nx and atm_ny may be quite a bit larger.
 
     // These hard-coded values do not seem like they should exist for
-    // ALL cases -- they were in Matthieu's original code.  We need to
+    // ALL cases -- they were in Mattiheu's original code.  We need to
     // change to something per domain or calculated per domain. -Pete
     float minWRFAlt = 20;
     float maxWRFAlt = 250;
 
-    maxWRFAlt = 3000.0;
+    // max altitude to pull for wind profiles should be based on fm_nz
+    // and dz since that's the highest value
+
+    maxWRFAlt = fm_nz;  // again, only works with dz=1
+    
     std::cout << "Max WRF Alt: " << maxWRFAlt << std::endl;
 
     //
@@ -895,11 +954,7 @@ WRFInput::WRFInput(const std::string& filename,
     for (int yIdx=0; yIdx<atm_ny; yIdx+=stepSize) {
         for (int xIdx=0; xIdx<atm_nx; xIdx+=stepSize) {
 
-            // StatData.CoordX(Stat) = x;
-            // StatData.CoordY(Stat) = y;
             stationData sd;
-
-            // std::cout << "xIdx = " << xIdx << ", yIdx = " << yIdx << std::endl;
 
             int atm_idx = (yIdx * atm_nx) + xIdx;
             // std::cout << std::setprecision(9)
@@ -938,7 +993,7 @@ WRFInput::WRFInput(const std::string& filename,
                 // Pull Z0
                 sd.z0 = z0Data[ yIdx * atm_nx + xIdx ];
 
-                sd.profiles.resize(2);  // 2 time series
+                sd.profiles.resize(1);  // 2 time series
 
                 // Use the last time step
                 for (int t=0; t<1; t++) {
@@ -2078,4 +2133,27 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
     field_VF.putVar( startIdx, counts, vfOut.data() ); //, startIdx, counts );
         
     wrfInputFile.sync();
+}
+
+
+void WRFInput::applyHalotoStationData(const float haloX, const float haloY)
+{
+    for (auto s : statData) {
+        s.xCoord += haloX;
+        s.yCoord += haloY;
+    }
+}
+
+
+void WRFInput::dumpStationData() const
+{
+    std::ofstream statOut("statData.m");
+    
+    statOut << "statData = [" << std::endl;
+    for (auto s : statData) {
+        statOut << s.xCoord << " " << s.yCoord << " " << s.z0 << ";" << std::endl;
+    }
+    statOut << "];" << std::endl;
+
+    statOut.close();
 }

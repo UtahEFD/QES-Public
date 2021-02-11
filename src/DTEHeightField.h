@@ -20,6 +20,10 @@
 #include <cmath>
 #include <chrono>
 
+/** \brief Loads loading digital elevation data.
+*
+* Loads digital elevation data. 
+*/
 class DTEHeightField
 {
 public:
@@ -27,13 +31,28 @@ public:
   friend class test_DTEHeightField;
 
   DTEHeightField();
-  DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN);
+  DTEHeightField(const std::string &filename,
+                 std::tuple<int, int, int> dim,
+                 std::tuple<float, float, float> cellSize, float UTMx, float UTMy);
 
-    DTEHeightField(const std::vector<double> &heightField, int dimX, int dimY, double cellSizeXN, double cellSizeYN);
+    /** \brief Function to compute sum.
+     *
+     * This function computes the sum of all numbers the computer
+     * has every stored in this class.
+     * If the summation is successful, the enum SUM_PASSED will be returned, else the failed
+     * test and value will be returned.
+     *
+     * @param n - the number of times to compute summation
+     * @return a string representing the results of the failed summation.
+     */
+    DTEHeightField(const std::vector<double> &heightField,
+                   std::tuple<int, int, int> dim,
+                   std::tuple<float, float, float> cellSize,
+                   float halo_x, float halo_y);
 
   ~DTEHeightField();
 
-  std::vector<Triangle*> getTris() const {return m_triList;}
+  const std::vector<Triangle*> &getTris() const {return m_triList;}
 
   /*
    * This function takes in a domain to change and a grid size for
@@ -137,7 +156,7 @@ private:
         // in the flip
         // Previous code had this -- does not seem correct
         // height = scanline[ abs(k-m_nYSize) * m_nXSize + j ];
-        height = scanline[ (m_nYSize-1 - k) * m_nXSize + j ]-adfMinMax[0];
+        height = scanline[ (m_nYSize-1 - k) * (m_nXSize) + j ]-adfMinMax[0];
     }
 
     if (height < 0.0 || std::isnan(abs(height)))
@@ -185,8 +204,17 @@ private:
   int m_imageXSize, m_imageYSize;
   double m_imageGeoTransform[6];
 
-  //float pixelSizeX, pixelSizeY;
-    double cellSizeX, cellSizeY;
+    //float pixelSizeX, pixelSizeY;
+    std::tuple<float, float, float> m_cellSize;
+    std::tuple<int, int, int> m_dim;
+    
+  float domain_UTMx, domain_UTMy;
+  float origin_x, origin_y;
+  int shift_x = 0;
+  int shift_y = 0;
+    // int domain_nx, domain_ny;
+  int end_x = 0;
+  int end_y = 0;
 
   std::vector<Triangle*> m_triList;
   float min[3], max[3];

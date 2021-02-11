@@ -189,21 +189,24 @@ public:
             //
             std::cout << "Processing WRF data for terrain and met param sensors from " << wrfFile << std::endl;
             wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, 0, 0, wrfSensorSample );
-            std::cout << "WRF Input Data processing completed." << std::endl;
+            std::cout << "WRF input data processing completed." << std::endl;
+
+            // Apply halo to wind profile locations
+            wrfInputData->applyHalotoStationData( halo_x, halo_y );
+
+            wrfInputData->dumpStationData();
 
             // In the current setup, grid may NOT be set... be careful
             // may need to initialize it here if nullptr is true for grid
 
             // utilize the wrf information to construct a
             // DTE_heightfield
-            std::cout << "Constructing DTE from WRF Input" << std::endl;
+            std::cout << "Constructing the DTE from WRF input heighfield..." << std::endl;
 
             DTE_heightField = new DTEHeightField(wrfInputData->fmHeight,
-                                                 wrfInputData->fm_nx,
-                                                 wrfInputData->fm_ny,
-                                                 wrfInputData->fm_dx,
-                                                 wrfInputData->fm_dy
-                );
+                                                 std::tuple<int,int,int>(wrfInputData->fm_nx, wrfInputData->fm_ny, wrfInputData->fm_nz),
+                                                 std::tuple<float,float,float>(wrfInputData->fm_dx,wrfInputData->fm_dy,wrfInputData->fm_dz),
+                                                 halo_x, halo_y);
 
             (*(grid))[0] = wrfInputData->fm_dx;
             (*(grid))[1] = wrfInputData->fm_dy;
@@ -213,6 +216,13 @@ public:
 
             domain = new Vector3<int>( wrfInputData->fm_nx, wrfInputData->fm_nx, wrfInputData->fm_nz );
             DTE_heightField->setDomain(domain, grid);
+
+            // need this to make sure domain sizes include halo
+            (*(domain))[0] += 2 * (int)ceil(halo_x / wrfInputData->fm_dx);
+            (*(domain))[1] += 2 * (int)ceil(halo_y / wrfInputData->fm_dy);
+
+            std::cout << "domain size with halo borders: " <<  (*(domain))[0] << " x " << (*(domain))[1] << std::endl;
+            
             DTE_mesh = new Mesh(DTE_heightField->getTris());
             std::cout << "Meshing of DEM complete\n";
         }
@@ -223,8 +233,9 @@ public:
             // First read DEM as usual
             std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
             DTE_heightField = new DTEHeightField(demFile,
-                                                 (*(grid))[0],
-                                                 (*(grid))[1] );
+                                                 std::tuple<int,int,int>( (*(grid))[0], (*(grid))[1], (*(grid))[2] ),
+                                                 std::tuple<float,float,float>( (*(domain))[0], (*(domain))[1], (*(domain))[2] ),
+                                                 UTMx, UTMy);
             assert(DTE_heightField);
 
             std::cout << "Forming triangle mesh...\n";
@@ -267,8 +278,9 @@ public:
         else if (m_domIType == DEMOnly) {
             std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
             DTE_heightField = new DTEHeightField(demFile,
-                                                 (*(grid))[0],
-                                                 (*(grid))[1] );
+                                                 std::tuple<int,int,int>( (*(grid))[0], (*(grid))[1], (*(grid))[2] ),
+                                                 std::tuple<float,float,float>( (*(domain))[0], (*(domain))[1], (*(domain))[2] ),
+                                                 UTMx, UTMy);
             assert(DTE_heightField);
 
             std::cout << "Forming triangle mesh...\n";

@@ -79,8 +79,8 @@ public:
     // Fire Mesh Related Data
     bool hasFireMesh;
     
-  int fm_nx, fm_ny, fm_nz;
-    double fm_dx, fm_dy;
+    int fm_nx, fm_ny, fm_nz;
+    float fm_dx, fm_dy, fm_dz;
     std::vector<double> fmHeight;
 
     // Atmospheric Mesh
@@ -94,6 +94,15 @@ public:
     float atm_maxWRFAlt, fm_maxWRFAlt;
 
     int maxSensors;
+
+    /**
+     */
+    void applyHalotoStationData(const float haloX, const float haloY);
+
+    /**
+     */
+    void dumpStationData() const;
+
 
     /**
      */
