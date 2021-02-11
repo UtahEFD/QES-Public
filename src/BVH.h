@@ -80,7 +80,7 @@ public:
 	 *
 	 * @param tris -list of triangles that will be placed in the structure
 	 */
-	static BVH* createBVH(const std::vector<Triangle*> tris);
+	static BVH* createBVH(const std::vector<Triangle*> &tris);
 
         /*         
          *Takes a 3D ray and determines if it intersects this BVH

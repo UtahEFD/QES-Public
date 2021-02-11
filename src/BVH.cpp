@@ -137,7 +137,7 @@ BVH::BVH(std::vector<BVH *> m, int height)
 }
 
 
-BVH* BVH::createBVH(const std::vector<Triangle*> tris)
+BVH* BVH::createBVH(const std::vector<Triangle*> &tris)
 {
    std::vector<BVH *> boxes;
 

@@ -45,7 +45,7 @@ public:
                 // this->optixRayTracer = new OptixRayTrace(tris);
                        optixTris = tris;
                 //temp var for getting the list of triangles
-                       trisList = tris;     
+                       trisList = tris;
         }
 
 	/*
