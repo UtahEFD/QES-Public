@@ -1008,6 +1008,8 @@ WRFInput::WRFInput(const std::string& filename,
                         int l_idx = t*((atm_nz-1)*atm_ny*atm_nx) + k*(atm_ny*atm_nx) + yIdx*atm_nx + xIdx;
 
 
+                        // only works for dz = 1 so will need to
+                        // incorporate that...
 			if (coordZ[l_idx] <= fm_nz) {
 			  // if (coordZ[l_idx] >= minWRFAlt && coordZ[l_idx] <= maxWRFAlt) {
                         
