@@ -39,11 +39,11 @@
       cudaError_t error = call;                                 \
       if(error != cudaSuccess){                                 \
          std::stringstream strStream;                           \
-         strStream <<"CUDA call ( "<<#call                      \
+         strStream << "CUDA call ( " <<#call                      \
                    << " ) failed with error: '"                 \
-                   <<cudaGetErrorString(error)                  \
-                   <<"' (" <<__FILE__<< ":"                     \
-                   <<__LINE__<<")\n";                           \
+                   << cudaGetErrorString(error)                  \
+                   << "' (" << __FILE__ << ":"                     \
+                   << __LINE__ <<")\n";                           \
          throw std::runtime_error(strStream.str().c_str());     \
       }                                                         \
    }while (0);
@@ -57,8 +57,8 @@
          std::stringstream strStream;                           \
          strStream << "CUDA error on synchronize with error "   \
                    << cudaGetErrorString(error)                 \
-                   <<" ("__FILE__<<":"                          \
-                   <<__LINE__<<")\n";                           \
+                   << " (" __FILE__ <<":"                          \
+                   << __LINE__ <<")\n";                           \
          throw std::runtime_error(strStream.str().c_str());     \
       }                                                         \
    }while(0)
@@ -69,8 +69,8 @@
       if(res != OPTIX_SUCCESS){                                 \
          std::stringstream strStream;                           \
          strStream << optixGetErrorName(res) <<":"              \
-                   <<"Optix call ( "<<#call                     \
-                   <<" ) failed: " __FILE__":"                  \
+                   << "Optix call ( "<<#call                     \
+                   << " ) failed: " __FILE__":"                  \
                    <<__LINE__<<"\n";                            \
          throw std::runtime_error(strStream.str().c_str());     \
       }                                                         \
