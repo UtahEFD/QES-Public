@@ -91,10 +91,11 @@ writeNetCDFFile_winds(filename,nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
 %end
 %dudz(1) = -dudz(2);
 
-dudz=p*a*z_cc.^(p-1);
+dudz = p*a*z_cc.^(p-1);
 
 ustar = 0.4*z_cc.*dudz;
 %ustar = 0.4*p*a*z_cc.^p;
+%ustar = b/0.4*ones(size(z_cc)); 
 ustar(1) = -ustar(2);
 ustar(end) = ustar(end-1);
 
@@ -102,13 +103,9 @@ uw = -b*z_cc.^n.*dudz;
 uw(1) = -uw(2);
 uw(end) = uw(end-1);
 
-%sigU = 2.30*ustar;
-%sigV = 1.80*ustar;
-%sigW = 1.00*ustar;
-
-sigU = 2.50*ustar;
-sigV = 1.78*ustar;
-sigW = 1.27*ustar;
+CsigU=2.50;
+CsigV=1.78;
+CsigW=1.27;
 
 k = (ustar/0.55).^2;
 k(1) = -k(2);
@@ -117,7 +114,7 @@ k(end) = k(end-1);
 nu = 0.4.*z_cc.*ustar;
 nu(1) = -nu(2);
 
-eps = 5.7*(sqrt(k)*0.55).^3./(0.4*z_cc);
+eps = 5.7*(ustar.^3)./(0.4*z_cc);
 eps(1) = -eps(2);
 eps(end) = eps(end-1);
 
@@ -130,9 +127,12 @@ tyz = zeros(nx-1,ny-1,nz-1);
 tzz = zeros(nx-1,ny-1,nz-1);
 
 for kk=2:nz-1
-    txx(:,:,kk) = sigU(kk)^2;%2.0/3.0*k(kk) * (2.0*0.55)^2;
-    tyy(:,:,kk) = sigV(kk)^2;%2.0/3.0*k(kk) * (2.0*0.55)^2;
-    tzz(:,:,kk) = sigW(kk)^2;%2.0/3.0*k(kk) * (1.3*0.55)^2;
+    txx(:,:,kk) = (ustar(kk)*CsigU)^2;
+    tyy(:,:,kk) = (ustar(kk)*CsigV)^2;
+    tzz(:,:,kk) = (ustar(kk)*CsigW)^2;
+    %txx(:,:,kk) = 2.0/3.0*k(kk) * (CsigU*0.55)^2;
+    %tyy(:,:,kk) = 2.0/3.0*k(kk) * (CsigV*0.55)^2;
+    %tzz(:,:,kk) = 2.0/3.0*k(kk) * (CsigW*0.55)^2;
 end
 txx(:,:,1) = -txx(:,:,2);
 tyy(:,:,1) = -tyy(:,:,2);

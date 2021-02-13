@@ -16,12 +16,12 @@
 	<timeAvgFreq> 1200.0 </timeAvgFreq>
 	<boxBoundsX1> 0.0 </boxBoundsX1>
 	<boxBoundsX2> 100.0 </boxBoundsX2>
-	<boxBoundsY1> 1.0 </boxBoundsY1>
-	<boxBoundsY2> 99.0 </boxBoundsY2>
+	<boxBoundsY1> 0.0 </boxBoundsY1>
+	<boxBoundsY2> 100.0 </boxBoundsY2>
 	<boxBoundsZ1> 0.0 </boxBoundsZ1>
 	<boxBoundsZ2> 20.0 </boxBoundsZ2>
 	<nBoxesX> 50 </nBoxesX>
-	<nBoxesY> 49 </nBoxesY>
+	<nBoxesY> 51 </nBoxesY>
 	<nBoxesZ> 20 </nBoxesZ>
 </collectionParameters>
 <sources>

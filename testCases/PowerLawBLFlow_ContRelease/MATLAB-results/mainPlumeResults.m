@@ -142,4 +142,6 @@ for k=1:numel(xProf)
     save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
     %================================================
 end
+close all
 
+plotPlumeResults
