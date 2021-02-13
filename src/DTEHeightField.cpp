@@ -240,6 +240,9 @@ void DTEHeightField::load()
   convertRasterToGeo( 0, m_nYSize, xGeo, yGeo );
   printf("Raster Coordinate (0, %d):\t(%12.7f, %12.7f)\n", m_nYSize, xGeo, yGeo);
 
+  std::cout << "m_nXSize:  " << m_nXSize << std::endl;
+  std::cout << "m_nYSize:  " << m_nYSize << std::endl;
+
   if (originFlag == 0)
   {
   	float domain_end_x = origin_x + DEMDistancex + domain_nx*cellSizeX;
@@ -283,6 +286,9 @@ void DTEHeightField::load()
   	m_nXSize = m_nXSize - shift_x - end_x;
   	m_nYSize = m_nYSize - shift_y - end_y;
   }
+
+  std::cout << "m_nXSize:  " << m_nXSize << std::endl;
+  std::cout << "m_nYSize:  " << m_nYSize << std::endl;
 
   pafScanline = (float *) CPLMalloc(sizeof(float)*(m_nXSize)*(m_nYSize));
 
