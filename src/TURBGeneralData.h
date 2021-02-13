@@ -63,23 +63,23 @@ public:
     */
 
     //strain rate tensor
-    std::vector<float> S11;
-    std::vector<float> S12;
-    std::vector<float> S13;
-    std::vector<float> S22;
-    std::vector<float> S23;
-    std::vector<float> S33;
+    std::vector<float> Sxx;
+    std::vector<float> Sxy;
+    std::vector<float> Sxz;
+    std::vector<float> Syy;
+    std::vector<float> Syz;
+    std::vector<float> Szz;
 
     //mixing length
     std::vector<float> Lm;
 
     // stress stensor
-    std::vector<float> tau11;
-    std::vector<float> tau12;
-    std::vector<float> tau13;
-    std::vector<float> tau22;
-    std::vector<float> tau23;
-    std::vector<float> tau33;
+    std::vector<float> txx;
+    std::vector<float> txy;
+    std::vector<float> txz;
+    std::vector<float> tyy;
+    std::vector<float> tyz;
+    std::vector<float> tzz;
 
     // derived turbulence quantities
     std::vector<float> tke;

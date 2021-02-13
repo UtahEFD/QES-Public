@@ -103,8 +103,11 @@
 	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
 	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (origional QUIC) (default), 1-Cut-cell method -->
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
-	<UTMx> 0 </UTMx> 						<!-- x component (m) in UTM -->
-	<UTMy> 0 </UTMy> 						<!-- y component (m) in UTM -->
+	<originFlag> 0 </originFlag>					<!-- Origin flag (0- DEM coordinates (default), 1- UTM coordinates) -->
+	<DEMDistancex> 500.0 </DEMDistancex> 				<!-- x component (m) of origin in DEM coordinates (if originFlag = 0) -->
+	<DEMDistancey> 500.0 </DEMDistancey> 				<!-- y component (m) of origin in DEM coordinates (if originFlag = 0) -->
+	<UTMx> 0.0 </UTMx> 						<!-- x component (m) of origin in UTM DEM coordinates (if originFlag = 1)-->
+	<UTMy> 0.0 </UTMy> 						<!-- y component (m) of origin in UTM DEM coordinates (if originFlag = 1)-->
 	<UTMZone> 1 </UTMZone> 						<!-- UTM zone that domain located -->
 	<UTMZoneLetter> 17 </UTMZoneLetter>
 	<readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->

@@ -33,11 +33,14 @@ public:
     int maxIterations = 500;
     double tolerance = 1e-9;
     float domainRotation = 0;
+    int originFlag = 0;
     float UTMx;
     float UTMy;
     int UTMZone;
     std::string UTMZoneLetter;
-    int meshTypeFlag;
+    float DEMDistancex = 0.0;
+    float DEMDistancey = 0.0;
+    int meshTypeFlag = 0;
     float halo_x = 0.0;
     float halo_y = 0.0;
     float heightFactor = 1.0;
@@ -126,10 +129,13 @@ public:
         parsePrimitive<double>(false, tolerance, "tolerance");
         parsePrimitive<int>(false, meshTypeFlag, "meshTypeFlag");
         parsePrimitive<float>(false, domainRotation, "domainRotation");
+        parsePrimitive<int>(false, originFlag, "originFlag");
         parsePrimitive<float>(false, UTMx, "UTMx");
         parsePrimitive<float>(false, UTMy, "UTMy");
         parsePrimitive<int>(false, UTMZone, "UTMZone");
         parsePrimitive<std::string>(false, UTMZoneLetter, "UTMZoneLetter");
+        parsePrimitive<float>(false, DEMDistancex, "DEMDistancex");
+        parsePrimitive<float>(false, DEMDistancey, "DEMDistancey");
         parsePrimitive<float>(false, halo_x, "halo_x");
         parsePrimitive<float>(false, halo_y, "halo_y");
         parsePrimitive<float>(false, heightFactor, "heightFactor");
@@ -235,7 +241,8 @@ public:
             DTE_heightField = new DTEHeightField(demFile,
                                                  std::tuple<int,int,int>( (*(grid))[0], (*(grid))[1], (*(grid))[2] ),
                                                  std::tuple<float,float,float>( (*(domain))[0], (*(domain))[1], (*(domain))[2] ),
-                                                 UTMx, UTMy);
+                                                 UTMx, UTMy,
+                                                 originFlag, DEMDistancex, DEMDistancey);
             assert(DTE_heightField);
 
             std::cout << "Forming triangle mesh...\n";
@@ -280,7 +287,8 @@ public:
             DTE_heightField = new DTEHeightField(demFile,
                                                  std::tuple<int,int,int>( (*(grid))[0], (*(grid))[1], (*(grid))[2] ),
                                                  std::tuple<float,float,float>( (*(domain))[0], (*(domain))[1], (*(domain))[2] ),
-                                                 UTMx, UTMy);
+                                                 UTMx, UTMy,
+                                                 originFlag, DEMDistancex, DEMDistancey);
             assert(DTE_heightField);
 
             std::cout << "Forming triangle mesh...\n";

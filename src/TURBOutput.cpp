@@ -6,8 +6,8 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd,std::string output_file)
   std::cout<<"[Output] \t Setting output fields for Turbulence data"<<std::endl;
 
   output_fields = {"t","x","y","z","iturbflag",
-		   "S11","S22","S33","S12","S13","S23","L",
-		   "tau11","tau12","tau13","tau23","tau22","tau33","tke","CoEps"};
+		   "Sxx","Syy","Szz","Sxy","Sxz","Syz","L",
+		   "txx","txy","txz","tyz","tyy","tzz","tke","CoEps"};
 
   tgd_=tgd;
 
@@ -51,23 +51,23 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd,std::string output_file)
   createAttVector("iturbflag","icell turb flag","--",dim_vect_cc,&(tgd_->iturbflag));
 
   // create attributes for strain-rate stress tensor
-  createAttVector("S11","uu-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->S11));
-  createAttVector("S22","vv-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->S22));
-  createAttVector("S33","ww-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->S33));
-  createAttVector("S12","uv-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->S12));
-  createAttVector("S13","uw-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->S13));
-  createAttVector("S23","vw-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->S23));
+  createAttVector("Sxx","uu-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->Sxx));
+  createAttVector("Syy","vv-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->Syy));
+  createAttVector("Szz","ww-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->Szz));
+  createAttVector("Sxy","uv-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->Sxy));
+  createAttVector("Sxz","uw-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->Sxz));
+  createAttVector("Syz","vw-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->Syz));
 
   // create attribute for mixing length
   createAttVector("L","mixing length","m",dim_vect_cc,&(tgd_->Lm));
 
   // create derived attributes
-  createAttVector("tau11","uu-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->tau11));
-  createAttVector("tau22","vv-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->tau22));
-  createAttVector("tau33","ww-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->tau33));
-  createAttVector("tau12","uv-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->tau12));
-  createAttVector("tau13","uw-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->tau13));
-  createAttVector("tau23","vw-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->tau23));
+  createAttVector("txx","uu-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->txx));
+  createAttVector("tyy","vv-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->tyy));
+  createAttVector("tzz","ww-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->tzz));
+  createAttVector("txy","uv-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->txy));
+  createAttVector("txz","uw-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->txz));
+  createAttVector("tyz","vw-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->tyz));
   createAttVector("tke","turbulent kinetic energy","m2s-2",dim_vect_cc,&(tgd_->tke));
   createAttVector("CoEps","dissipation rate","m2s-3",dim_vect_cc,&(tgd_->CoEps));
 

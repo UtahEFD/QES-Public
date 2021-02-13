@@ -30,17 +30,31 @@ public:
 
   friend class test_DTEHeightField;
 
-  DTEHeightField();
-  DTEHeightField(const std::string &filename,
-                 std::tuple<int, int, int> dim,
-                 std::tuple<float, float, float> cellSize, float UTMx, float UTMy);
+    DTEHeightField();  // this is not likely to produce anything
+                       // useful -- Pete
 
-    /** \brief Function to compute sum.
+    /** \brief Constructs a GIS Digital Elevation Model for use with QES.
      *
-     * This function computes the sum of all numbers the computer
-     * has every stored in this class.
-     * If the summation is successful, the enum SUM_PASSED will be returned, else the failed
-     * test and value will be returned.
+     * This function loads a digital elevation model using a GIS file.
+     *
+     * @param filename - the filename containing the GIS data to load
+     * @param dim - a 3-tuple of ints representing the dimension of
+     * the domain, as in {nx, ny, nz}
+     * @param cellSize - a 3-tuple of floats representing the size of
+     * each domain cell in the 3 dimensions, as in {dx, dy, dz}
+     * @param UTMx - the UTM origin in x
+     * @param UTMy - the UTM origin in y
+     * @return a string representing the results of the failed summation.
+     */
+    DTEHeightField(const std::string &filename,
+                   std::tuple<int, int, int> dim,
+                   std::tuple<float, float, float> cellSize,
+                   float UTMx, float UTMy,
+                   int OriginFlag, float DEMDistanceX, float DEMDistanceY);
+
+    /** \brief Loads a GIS Digital Elevation Model
+     *
+     * This function loads a digital elevation model. 
      *
      * @param n - the number of times to compute summation
      * @return a string representing the results of the failed summation.
@@ -110,6 +124,8 @@ public:
 
   int m_nXSize, m_nYSize;
   float pixelSizeX, pixelSizeY;
+  int originFlag;
+  float DEMDistancex, DEMDistancey;
   double adfMinMax[2];
 
 private:
