@@ -5,7 +5,7 @@
   <WRF>/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21</WRF>		<!-- Address to WRF location-->
 
   <!-- <WRFSensorSample>12</WRFSensorSample> --> <!-- seems to not work -->
-  <WRFSensorSample>24</WRFSensorSample> <!-- seems to work -->
+  <WRFSensorSample>12</WRFSensorSample> <!-- seems to work -->
 
   <halo_x> 50.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   <halo_y> 50.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->

@@ -50,16 +50,24 @@ __global__ void Calculatewm (float *d_wm, float *d_wms, float *d_sum_wm, float *
       {
         d_sum_wm[i+j*nx] = d_sum_wm[i+j*nx] + d_wm[ii+id];
       }
-    }
+
+    }	
   }
 
   if( (i<nx) && (j<ny) && (site_id<num_sites) && (i>=0) && (j>=0) && (site_id>=0) )
   {
-    if (d_sum_wm[i+j*nx] == 0)
+	if (site_id == 0)
     {
-      d_wm[ii] = 1e-20;
-    }
+	  if (d_sum_wm[i+j*nx] == 0)
+      {
+      	for (int id = 0; id < num_sites; id++)
+      	{
+			d_wm[ii+id] = 1e-20;
+		}
+	  }
+	}
   }
+ 
 }
 
 
@@ -207,9 +215,9 @@ __global__ void BarnesScheme (float *d_u_prof, float *d_v_prof, float *d_wm, flo
                               float *d_dyy, float *d_u12, float *d_u34, float *d_v12, float *d_v34, int num_sites, int nx, int ny,
                               int nz, float dx, float dy)
 {
-  float rc_sum, rc_val, xc, yc, rc;
+  	float rc_sum, rc_val, xc, yc, rc;
 	float dn, lamda, s_gamma;
-  rc_sum = 0.0;
+  	rc_sum = 0.0;
 	for (int i = 0; i < num_sites; i++)
 	{
 		rc_val = 1000000.0;
@@ -225,7 +233,7 @@ __global__ void BarnesScheme (float *d_u_prof, float *d_v_prof, float *d_wm, flo
 		rc_sum = rc_sum+rc_val;
 	}
 
-  dn = rc_sum/num_sites;
+  	dn = rc_sum/num_sites;
 	lamda = 5.052*pow((2*dn/M_PI),2.0);
 	s_gamma = 0.2;
 
