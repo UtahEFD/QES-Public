@@ -33,7 +33,9 @@ ulimit -c unlimited -s
 module list
 echo '****** START OF JOB ******'
 
-./qesPlume/qesPlume -q ../testCases/UniformFlow_ContRelease/QES-files/UniformFlow_ContRelease.xml -u ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_windsWk.nc -t ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_turbOut.nc -o ../testCases/UniformFlow_ContRelease/QES-data/ -b ContRelease -l
+./qesPlume/qesPlume -q ../testCases/UniformFlow_ContRelease/QES-files/UniformFlow_xDir_ContRelease.xml -u ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_xDir_windsWk.nc -t ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_xDir_turbOut.nc -o ../testCases/UniformFlow_ContRelease/QES-data/ -b ContRelease_xDir
+
+./qesPlume/qesPlume -q ../testCases/UniformFlow_ContRelease/QES-files/UniformFlow_yDir_ContRelease.xml -u ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_yDir_windsWk.nc -t ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_yDir_turbOut.nc -o ../testCases/UniformFlow_ContRelease/QES-data/ -b ContRelease_yDir
 
 echo '****** END OF JOB ****** '
 

@@ -13,13 +13,13 @@ uStar=0.174; %m/s
 zi=10000; % m
 
 % source info
-Q=100; % #par/s (source strength)
-tRelease=1000; % total time of release
+Q=200; % #par/s (source strength)
+tRelease=1400; % total time of release
 Ntot=Q*tRelease; % total number of particles
 
 % concentration info
 dt=1; % s
-tAvg=800; % s 
+tAvg=1200; % s 
 
 fsize=12;
 
@@ -28,8 +28,8 @@ xS=20;yS=50;zS=70;
 xProf=[0.393,0.464,0.964]; % streamwise location 
 
 % set the case base name for use in all the other file paths
-caseNameWinds = "UniformFlow";
-caseNamePlume = "ContRelease";
+caseNameWinds = "UniformFlow_xDir";
+caseNamePlume = "ContRelease_xDir";
 
 data=struct();
 varnames=struct();
@@ -45,8 +45,8 @@ fileName = sprintf("../QES-data/%s_turbOut.nc",caseNameWinds);
 fileName = sprintf("../QES-data/%s_conc.nc",caseNamePlume);
 [data.plume,varnames.plume] = readNetCDF(fileName);
 % read particleInfo files
-fileName = sprintf("../QES-data/%s_particleInfo.nc",caseNamePlume);
-[data.parInfo,varnames.parInfo] = readNetCDF(fileName);
+%fileName = sprintf("../QES-data/%s_particleInfo.nc",caseNamePlume);
+%[data.parInfo,varnames.parInfo] = readNetCDF(fileName);
 
 xoH=(data.plume.x-xS)/H;
 yoH=(data.plume.y)/H;
@@ -143,3 +143,8 @@ for k=1:numel(xProf)
 end
 %==========================================================================
 
+close all
+
+save('data2plot_xDir','d2plotLat','d2plotVert','caseNameWinds','caseNamePlume')
+
+UniformFlow_xDir_plotPlumeResults

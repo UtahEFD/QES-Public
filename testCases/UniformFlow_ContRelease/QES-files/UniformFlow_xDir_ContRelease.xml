@@ -1,5 +1,5 @@
 <simulationParameters>
-	<simDur> 1000.0 </simDur>
+	<simDur> 1400.0 </simDur>
 	<timeStep> 1.0 </timeStep>
     <CourantNumber> 0.0 </CourantNumber>
   	<invarianceTol> 1e-10 </invarianceTol>
@@ -13,14 +13,14 @@
 </particleOutputParameters>
 <collectionParameters>
 	<timeAvgStart> 200.0 </timeAvgStart>
-	<timeAvgFreq> 800.0 </timeAvgFreq>
+	<timeAvgFreq> 1200.0 </timeAvgFreq>
 	<boxBoundsX1> 0.0 </boxBoundsX1>
 	<boxBoundsX2> 100.0 </boxBoundsX2>
 	<boxBoundsY1> 1.0 </boxBoundsY1>
 	<boxBoundsY2> 99.0 </boxBoundsY2>
 	<boxBoundsZ1> 1.0 </boxBoundsZ1>
 	<boxBoundsZ2> 139.0 </boxBoundsZ2>
-	<nBoxesX> 100 </nBoxesX>
+	<nBoxesX> 20 </nBoxesX>
 	<nBoxesY> 49 </nBoxesY>
 	<nBoxesZ> 69 </nBoxesZ>
 </collectionParameters>
@@ -28,7 +28,7 @@
   	<numSources> 1 </numSources>
     <SourcePoint>
       <ReleaseType_continuous>
-        <parPerTimestep>100</parPerTimestep>
+        <parPerTimestep> 200 </parPerTimestep>
       </ReleaseType_continuous>
       <posX> 20.0 </posX>
       <posY> 50.0 </posY>

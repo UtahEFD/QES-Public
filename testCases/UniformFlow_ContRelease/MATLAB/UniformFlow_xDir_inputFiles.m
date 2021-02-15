@@ -3,24 +3,24 @@
 % setup:
 
 %file name to save netCDF (must contain path)
-filename='../QES-data/UniformFlow';
+filename='../QES-data/UniformFlow_xDir';
 
 % dimensions of the 3D domain
 lx=100;ly=100;lz=140;
 
 % grid resolution in x and y set to have 50 cells
-nx=101;ny=101;
+nx=103;ny=103;
 % grid resolution in z is set to have:
 % 141 faces in the plume domain -> 2 extra face on top (above) and bottom (below)
 % -> 140 cell within the plume domain -> 2 extra cell on top (above) and bottom (below)
 nz=143;
 
-dx=lx/(nx-1);dy=ly/(ny-1);
+dx=lx/(nx-3);dy=ly/(ny-3);
 dz=lz/(nz-3); 
 
 % grid definition for cell center variables
-x_cc=0.5*dx:dx:lx-0.5*dx;
-y_cc=0.5*dy:dy:ly-0.5*dy;
+x_cc=-0.5*dx:dx:lx+0.5*dx;
+y_cc=-0.5*dy:dy:ly+0.5*dy;
 % grid definition for cell center variables -> 2 extra cell on top (above) and bottom (below)
 z_cc=-0.5*dz:dz:lz+0.5*dz;
 
