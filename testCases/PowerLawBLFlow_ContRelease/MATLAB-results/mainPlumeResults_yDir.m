@@ -31,14 +31,14 @@ tAvg=1200; % s
 
 fsize=12;
 
-xS=20;yS=50;zS=4;
+xS=50;yS=20;zS=4;
 
-xProf=[6.0,11.0,19.0]; % streamwise location 
+yProf=[6.0,10.0,19.0]; % streamwise location 
 %xProf=[5.42,10.97,19.31]; % streamwise location 
 
 % set the case base name for use in all the other file paths
-caseNameWinds = "PowerLawBLFlow";
-caseNamePlume = "ContRelease";
+caseNameWinds = "PowerLawBLFlow_yDir";
+caseNamePlume = "ContRelease_yDir";
 
 data=struct();
 varnames=struct();
@@ -54,11 +54,11 @@ fileName = sprintf("../QES-data/%s_turbOut.nc",caseNameWinds);
 fileName = sprintf("../QES-data/%s_conc.nc",caseNamePlume);
 [data.plume,varnames.plume] = readNetCDF(fileName);
 % read particleInfo files
-fileName = sprintf("../QES-data/%s_particleInfo.nc",caseNamePlume);
-[data.parInfo,varnames.parInfo] = readNetCDF(fileName);
+%fileName = sprintf("../QES-data/%s_particleInfo.nc",caseNamePlume);
+%[data.parInfo,varnames.parInfo] = readNetCDF(fileName);
 
-xoH=(data.plume.x-xS)/H;
-yoH=(data.plume.y)/H;
+xoH=(data.plume.x)/H;
+yoH=(data.plume.y-yS)/H;
 zoH=(data.plume.z)/H;
 
 boxDx=mean(diff(data.plume.x));
@@ -67,43 +67,43 @@ boxDz=mean(diff(data.plume.z));
 boxVol=double(boxDx*boxDy*boxDz);
 CC=dt/tAvg/boxVol;
 
-y=-50:0.1:50;
+x=-50:0.1:50;
 z=0:0.1:5*H;
-[yy,zz]=ndgrid(y,z);
+[xx,zz]=ndgrid(x,z);
 
-for k=1:numel(xProf)
+for k=1:numel(yProf)
     %================================================
-    idx1=find(round(100*xoH)>=round(100*xProf(k)),1);
-    x=data.plume.x(idx1)-xS;
+    idy1=find(round(100*yoH)>=round(100*yProf(k)),1);
+    y=data.plume.y(idy1)-yS;
     %================================================
-    cStarPlume=squeeze(double(data.plume.pBox(idx1,:,:))*CC*(U*H*H/Q));    
+    cStarPlume=squeeze(double(data.plume.pBox(:,idy1,:))*CC*(U*H*H/Q));    
     %================================================
     % from Seinfeld and Pandis 1998
-    sigY=0.32*x^0.78;
-    C=Q/(sqrt(2*pi)*sigY)*exp(-0.5*yy.^2/sigY^2).*...
-        exp(-a*(zz.^alpha+H^alpha)/(b*alpha^2*x)).*(zz*H).^(0.5*(1-n))/(b*alpha*x).*...
-        besseli(-nu,(2*a*(zz*H).^(0.5*alpha))/(b*alpha^2*x));
+    sigX=0.32*y^0.78;
+    C=Q/(sqrt(2*pi)*sigX)*exp(-0.5*xx.^2/sigX^2).*...
+        exp(-a*(zz.^alpha+H^alpha)/(b*alpha^2*y)).*(zz*H).^(0.5*(1-n))/(b*alpha*y).*...
+        besseli(-nu,(2*a*(zz*H).^(0.5*alpha))/(b*alpha^2*y));
     cStarModel=C*(U*H*H/Q);
     %================================================
-    idy1=find(data.plume.y>=yS,1);
+    idx1=find(data.plume.x>=xS,1);
     idz1=find(data.plume.z>=zS,1);
     %================================================
-    idy2=find(y-y(1)>=data.plume.y(idy1),1);
+    idx2=find(x-x(1)>=data.plume.x(idx1),1);
     idz2=find(z>=data.plume.z(idz1),1); 
     %================================================
     
     %================================================
-    d2plotLat.xoH(k)=x/H;
-    d2plotLat.QPlume.yoH=yoH;
+    d2plotLat.yoH(k)=y/H;
+    d2plotLat.QPlume.xoH=xoH;
     d2plotLat.QPlume.cStar(:,k)=cStarPlume(:,idz1);
-    d2plotLat.GModel.yoH=y/H+yS/H;
+    d2plotLat.GModel.xoH=x/H+xS/H;
     d2plotLat.GModel.cStar(:,k)=cStarModel(:,idz2);
     %================================================
-    d2plotVert.xoH(k)=x/H;
+    d2plotVert.yoH(k)=y/H;
     d2plotVert.QPlume.zoH=zoH;
-    d2plotVert.QPlume.cStar(:,k)=cStarPlume(idy1,:);
+    d2plotVert.QPlume.cStar(:,k)=cStarPlume(idx1,:);
     d2plotVert.GModel.zoH=z/H;
-    d2plotVert.GModel.cStar(:,k)=cStarModel(idy2,:);
+    d2plotVert.GModel.cStar(:,k)=cStarModel(idx2,:);
     %================================================
     
     %================================================
@@ -112,16 +112,16 @@ for k=1:numel(xProf)
     set(hfig,'defaulttextinterpreter','latex','DefaultAxesFontSize',fsize)
     [haxes,axpos]=tightSubplot(1,1,[.02 .02],[.15 .05],[.15 .05]);
     
-    plot(yoH,cStarPlume(:,idz1),'s:','LineWidth',2)
+    plot(xoH,cStarPlume(:,idz1),'s:','LineWidth',2)
     hold all
-    plot((y+yS)/H,cStarModel(:,idz2),'-','LineWidth',2)
+    plot((x+xS)/H,cStarModel(:,idz2),'-','LineWidth',2)
     
-    xlabel('$y/H$')
+    xlabel('$x/H$')
     ylabel('$C^*$')
     grid on
     
     currentPlotName=sprintf('plotOutput/%s_%s_LatConc_%s',...
-        caseNameWinds,caseNamePlume,strrep(sprintf('x%.2f',x/H),'.','o'));
+        caseNameWinds,caseNamePlume,strrep(sprintf('y%.2f',y/H),'.','o'));
     save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
     %================================================
     hfig = figure;
@@ -129,19 +129,21 @@ for k=1:numel(xProf)
     set(hfig,'defaulttextinterpreter','latex','DefaultAxesFontSize',fsize)
     [haxes,axpos]=tightSubplot(1,1,[.02 .02],[.15 .05],[.15 .05]);
 
-    plot(cStarPlume(idy1,:),zoH,'s:','LineWidth',2)
+    plot(cStarPlume(idx1,:),zoH,'s:','LineWidth',2)
     hold all
-    plot(cStarModel(idy2,:),z/H,'-','LineWidth',2)
+    plot(cStarModel(idx2,:),z/H,'-','LineWidth',2)
     
     xlabel('$C^*$')
     ylabel('$z/H$')
     grid on 
     
     currentPlotName=sprintf('plotOutput/%s_%s_VertConc_%s',...
-           caseNameWinds,caseNamePlume,strrep(sprintf('x%.2f',x/H),'.','o'));
+           caseNameWinds,caseNamePlume,strrep(sprintf('y%.2f',y/H),'.','o'));
     save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
     %================================================
 end
 close all
 
-plotPlumeResults
+save('data2plot_yDir','d2plotLat','d2plotVert','caseNameWinds','caseNamePlume')
+
+plotPlumeResults_yDir

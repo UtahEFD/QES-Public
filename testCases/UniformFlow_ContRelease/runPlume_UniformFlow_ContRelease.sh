@@ -2,12 +2,12 @@
 #SBATCH --account=efd-np
 #SBATCH --partition=efd-shared-np
 #SBATCH --qos=efd-np
-#SBATCH --job-name=QES-plume-ContRelease_UniformFlow
+#SBATCH --job-name=QES-plume-UniformFlow_ContRelease
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --mem=5G
 #SBATCH --time=05:00:00
-#SBATCH -o slurm_%x-%j-%N.log
+#SBATCH -o slurm_%x.log
 
 ### UNCOMMENT FOR NODE SELECTION 
 ##SBATCH --nodelist=notch055
@@ -33,7 +33,7 @@ ulimit -c unlimited -s
 module list
 echo '****** START OF JOB ******'
 
-./qesPlume/qesPlume -q ../testCases/ContRelease_UniformFlow/QES-files/ContRelease_UniformFlow.xml -u ../testCases/ContRelease_UniformFlow/QES-data/UniformFlow_windsWk.nc -t ../testCases/ContRelease_UniformFlow/QES-data/UniformFlow_turbOut.nc -o ../testCases/ContRelease_UniformFlow/QES-data/ -b ContRelease -l
+./qesPlume/qesPlume -q ../testCases/UniformFlow_ContRelease/QES-files/UniformFlow_ContRelease.xml -u ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_windsWk.nc -t ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_turbOut.nc -o ../testCases/UniformFlow_ContRelease/QES-data/ -b ContRelease -l
 
 echo '****** END OF JOB ****** '
 

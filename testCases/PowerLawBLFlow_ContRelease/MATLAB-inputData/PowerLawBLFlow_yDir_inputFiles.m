@@ -11,7 +11,7 @@
 % setup:
 
 %file name to save netCDF (must contain path)
-filename='../QES-data/PowerLawBLFlow_xDir';
+filename='../QES-data/PowerLawBLFlow_yDir';
 
 % dimensions of the 3D domain
 lx=100;ly=100;lz=20;
@@ -59,8 +59,8 @@ for kk=1:nz-1
 end
 
 % data for NetCDF file
-u = u_out; 
-v = zeros(nx,ny,nz);
+u = zeros(nx,ny,nz); 
+v = u_out;
 w = zeros(nx,ny,nz);
 
 % cell-center data:
@@ -114,7 +114,6 @@ k(end) = k(end-1);
 nu = 0.4.*z_cc.*ustar;
 nu(1) = -nu(2);
 
-%eps = 4.0*(0.55^3*k.^1.5)./(0.4*z_cc);
 eps = 5.7*(ustar.^3)./(0.4*z_cc);
 eps(1) = -eps(2);
 eps(end) = eps(end-1);
@@ -128,8 +127,8 @@ tyz = zeros(nx-1,ny-1,nz-1);
 tzz = zeros(nx-1,ny-1,nz-1);
 
 for kk=2:nz-1
-    txx(:,:,kk) = (ustar(kk)*CsigU)^2;
-    tyy(:,:,kk) = (ustar(kk)*CsigV)^2;
+    txx(:,:,kk) = (ustar(kk)*CsigV)^2;
+    tyy(:,:,kk) = (ustar(kk)*CsigU)^2;
     tzz(:,:,kk) = (ustar(kk)*CsigW)^2;
     %txx(:,:,kk) = 2.0/3.0*k(kk) * (CsigU*0.55)^2;
     %tyy(:,:,kk) = 2.0/3.0*k(kk) * (CsigV*0.55)^2;
@@ -140,9 +139,9 @@ tyy(:,:,1) = -tyy(:,:,2);
 tzz(:,:,1) = -tzz(:,:,2);
 
 for kk=2:nz-1
-    txz(:,:,kk) = -ustar(kk)^2;%nu(kk)*dudz(kk);
+    tyz(:,:,kk) = -ustar(kk)^2;%nu(kk)*dudz(kk);
 end
-txz(:,:,1) = -txz(:,:,2);
+tyz(:,:,1) = -tyz(:,:,2);
 
 CoEps = zeros(nx-1,ny-1,nz-1);
 tke = zeros(nx-1,ny-1,nz-1);
@@ -156,4 +155,5 @@ end
 
 % now save the netcdf turb output
 writeNetCDFFile_turb(filename,x_cc,y_cc,z_cc,CoEps,tke,txx,txy,txz,tyy,tyz,tzz);
+
 

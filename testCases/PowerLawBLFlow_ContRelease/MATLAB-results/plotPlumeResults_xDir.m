@@ -8,7 +8,9 @@
 % Univesity of Utah. 2021
 %==========================================================================
 figW=27;figH=20;fsize=14;
-nProf=numel(xProf);
+%========================
+load('data2plot_xDir.mat')
+nProf=numel(d2plotLat.xoH);
 cStr=char(96+(1:2*nProf));
 %========================
 hfig=figure;
@@ -19,7 +21,7 @@ set(hfig,'defaulttextinterpreter','latex','DefaultAxesFontSize',fsize)
 
 for k=1:nProf
     axes(haxes(k))
-    plot(d2plotLat.QPlume.yoH,d2plotLat.QPlume.cStar(:,k),'s:','LineWidth',2)
+    plot(d2plotLat.QPlume.yoH,d2plotLat.QPlume.cStar(:,k),'s','LineWidth',2)
     hold all
     plot(d2plotLat.GModel.yoH,d2plotLat.GModel.cStar(:,k),'-','LineWidth',2)
     
@@ -38,7 +40,7 @@ axes(haxes(1));ylabel('$C^*$')
 
 for k=1:nProf
     axes(haxes(k+nProf))
-    plot(d2plotVert.QPlume.cStar(:,k),d2plotVert.QPlume.zoH,'s:','LineWidth',2)
+    plot(d2plotVert.QPlume.cStar(:,k),d2plotVert.QPlume.zoH,'s','LineWidth',2)
     hold all
     plot(d2plotVert.GModel.cStar(:,k),d2plotVert.GModel.zoH,'-','LineWidth',2)
    
@@ -54,7 +56,13 @@ end
 %set(haxes(nProf+2:2*nProf),'YtickLabel',[])
 axes(haxes(1+nProf));ylabel('$z/H$')
 
-
+for k=1:nProf
+    m1=haxes(k).YLim(2);
+    m2=haxes(k+nProf).XLim(2);
+    m3=max(m1,m2);
+    haxes(k).YLim(2)=m3;
+    haxes(k+nProf).XLim(2)=m3;
+end
 
 currentPlotName=sprintf('plotOutput/%s_%s_ModelComp',caseNameWinds,caseNamePlume);
 save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
