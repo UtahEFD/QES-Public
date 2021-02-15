@@ -146,4 +146,5 @@ close all
 
 save('data2plot_yDir','d2plotLat','d2plotVert','caseNameWinds','caseNamePlume')
 
-plotPlumeResults_yDir
+PowerLawBLFlow_yDir_plotPlumeResults
+
