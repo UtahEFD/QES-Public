@@ -6,3 +6,4 @@ plotOutput/*.png
 *.pdf
 *.fig
 *.png
+*.mat
