@@ -72,6 +72,8 @@ public:
     // Ouput a wind field from QES to the WRF file:
     // outputWindField
 
+    std::string m_WRFFilename;
+    
     // If set to true, ONLY the sensor data will be pulled from WRF
     // Atmos Mesh.
     bool m_processOnlySensorData;
@@ -213,6 +215,13 @@ public:
     
     float lookupLandUse( int luIdx );
 
+    void setHaloAdditions( int xA, int yA ) 
+    {
+        m_haloX_Addition = xA;
+        m_haloY_Addition = yA;
+    }
+    
+
 private:
 
     NcFile wrfInputFile;
@@ -238,6 +247,8 @@ private:
     // WRFOUTPUT FILE name; if Z0Flag = 3, put a CONSTANT VALUE.
 
     double* relief;
+
+    int m_haloX_Addition, m_haloY_Addition;
 
     void dumpWRFDataArray(const std::string &name, double *allData, int dimT, int dimZ, int dimY, int dimX);
 

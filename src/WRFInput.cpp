@@ -309,7 +309,8 @@ WRFInput::WRFInput(const std::string& filename,
                    float dimX, float dimY,
                    int sensorSample,
                    bool sensorsOnly)
-    : m_processOnlySensorData( sensorsOnly ),
+    : m_WRFFilename( filename ),
+      m_processOnlySensorData( sensorsOnly ),
       wrfInputFile( filename, NcFile::write ),
       m_minWRFAlt( 22 ), m_maxWRFAlt( 330 ), m_maxTerrainSize( 10001 ), m_maxNbStat( 156 ),
       m_TerrainFlag(1), m_BdFlag(0), m_VegFlag(0), m_Z0Flag(2)
@@ -2109,27 +2110,41 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
       {
           for (auto j=0; j<fm_ny; j++)
           {
+              // add the halo offsets to the i and j to shift them
+              // into QES's space
+              int iQES = i+m_haloX_Addition;
+              int jQES = j+m_haloY_Addition;
+
+              // Use qes index
               // Gets height of the terrain for each cell
-              int idx = i + j*(fm_nx);
-              float tHeight = wgd->terrain[idx];
+              int qes2DIdx = jQES * wgd->nx + iQES;
+              float tHeight = wgd->terrain[ qes2DIdx ];
 
               // find the k value at this height in the domain
               // need to take into account the variable dz
-              std::cout << "tHeight = " << tHeight << ", dz=" << wgd->dz << ", Z = " << wgd->nz * wgd->dz << std::endl;
+              // std::cout << "FM_nx X FM_ny=(" << fm_nx << ", " << fm_ny << "); tHeight = " << tHeight << ", dz=" << wgd->dz << ", Z = " << wgd->nz * wgd->dz << std::endl;
+              std::cout << "tHeight + 1.2 = " << tHeight + 1.2 << ", dz=" << wgd->dz << ", max Z = " << wgd->nz * wgd->dz << std::endl;
               
               // 
-              // adding 1 to "simulate" the FWH values
+              // adding ~1 to "simulate" the FWH values
               // 
-              auto k = (int)floor( ((tHeight + 1.2)/(wgd->dz) ));
-              std::cout << "[" << wgd->nx << ", " << fm_nx << ": " << wgd->ny << ", " << fm_ny << ", (i,j,k) = (" << i << ", " << j << ", " << k << ")" << std::endl;
-
-              ufOut[ idx ] = wgd->u[ k * ((fm_nx) * (fm_ny)) + j * (fm_nx) + i ];
-              vfOut[ idx ] = wgd->v[ k * ((fm_nx) * (fm_ny)) + j * (fm_nx) + i ];              
+              auto k = (int)floor( ((tHeight + 1.2)/float(wgd->dz) ));
+              
+              // fire mesh idx
+              int idx = i + j*fm_nx;
+              int qes3DIdx = k*wgd->nx*wgd->ny + jQES*wgd->nx + iQES;
+              
+              std::cout << "idx=" << idx << ", qes3DIdx=" << qes3DIdx << ", u=" << wgd->u[qes3DIdx] << ", v=" << wgd->v[qes3DIdx] << std::endl;
+              
+              ufOut[ idx ] = wgd->u[ qes3DIdx ];
+              vfOut[ idx ] = wgd->v[ qes3DIdx ];
           }
       }
 
     NcVar field_UF = wrfInputFile.getVar("UF");
     NcVar field_VF = wrfInputFile.getVar("VF");
+
+    std::cout << "Wind field data written to WRF Output file: " << m_WRFFilename << std::endl;
 
     field_UF.putVar( startIdx, counts, ufOut.data() ); //, startIdx, counts );
     field_VF.putVar( startIdx, counts, vfOut.data() ); //, startIdx, counts );

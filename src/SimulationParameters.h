@@ -224,8 +224,14 @@ public:
             DTE_heightField->setDomain(domain, grid);
 
             // need this to make sure domain sizes include halo
-            (*(domain))[0] += 2 * (int)ceil(halo_x / wrfInputData->fm_dx);
-            (*(domain))[1] += 2 * (int)ceil(halo_y / wrfInputData->fm_dy);
+            int halo_x_WRFAddition = (int)ceil(halo_x / wrfInputData->fm_dx);
+            int halo_y_WRFAddition = (int)ceil(halo_y / wrfInputData->fm_dy);
+
+            (*(domain))[0] += 2 * halo_x_WRFAddition;
+            (*(domain))[1] += 2 * halo_y_WRFAddition;
+
+            // let WRF class know about the halo additions...
+            wrfInputData->setHaloAdditions( halo_x_WRFAddition, halo_y_WRFAddition );
 
             std::cout << "domain size with halo borders: " <<  (*(domain))[0] << " x " << (*(domain))[1] << std::endl;
             
