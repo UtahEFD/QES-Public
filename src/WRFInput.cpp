@@ -2095,8 +2095,6 @@ float WRFInput::lookupLandUse(int luIdx)
 
 void WRFInput::extractWind( WINDSGeneralData *wgd )
 {
-    // right now, just dump out a fixed UF and VF to test idea
-        
     std::vector<size_t> startIdx = {0,0,0,0};
     std::vector<size_t> counts = {1,
                                   static_cast<unsigned long>(fm_ny),
@@ -2105,22 +2103,23 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
     std::vector<double> ufOut( fm_nx * fm_ny, 3.0 );
     std::vector<double> vfOut( fm_nx * fm_ny, 3.0 );
 
-    // For all X, Y, extract terrain height and fwh
+    // For all X, Y in the fire mesh space, extract terrain height and
+    // fwh to then pull the wind components from QES
     for (auto i=0; i<fm_nx; i++)
       {
           for (auto j=0; j<fm_ny; j++)
           {
               // add the halo offsets to the i and j to shift them
               // into QES's space
-              int iQES = i+m_haloX_Addition;
-              int jQES = j+m_haloY_Addition;
+              auto iQES = i+m_haloX_Addition;
+              auto jQES = j+m_haloY_Addition;
 
               // Use qes index
               // Gets height of the terrain for each cell
-              int qes2DIdx = jQES * wgd->nx + iQES;
+              auto qes2DIdx = jQES * (wgd->nx-1) + iQES;
               float tHeight = wgd->terrain[ qes2DIdx ];
 
-              // find the k value at this height in the domain
+              // find the k index value at this height in the domain
               // need to take into account the variable dz
               // std::cout << "FM_nx X FM_ny=(" << fm_nx << ", " << fm_ny << "); tHeight = " << tHeight << ", dz=" << wgd->dz << ", Z = " << wgd->nz * wgd->dz << std::endl;
               std::cout << "tHeight + 1.2 = " << tHeight + 1.2 << ", dz=" << wgd->dz << ", max Z = " << wgd->nz * wgd->dz << std::endl;
@@ -2128,16 +2127,19 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
               // 
               // adding ~1 to "simulate" the FWH values
               // 
-              auto k = (int)floor( ((tHeight + 1.2)/float(wgd->dz) ));
+              auto FWH = 1.2;
+              auto kQES = (int)floor( ((tHeight + FWH)/float(wgd->dz) ));
               
               // fire mesh idx
-              int idx = i + j*fm_nx;
-              int qes3DIdx = k*wgd->nx*wgd->ny + jQES*wgd->nx + iQES;
+              auto fireMeshIdx = j*fm_nx + i;
+
+              // 3D QES Idx
+              auto qes3DIdx = kQES*(wgd->nx)*(wgd->ny) + jQES*(wgd->nx) + iQES;
               
-              std::cout << "idx=" << idx << ", qes3DIdx=" << qes3DIdx << ", u=" << wgd->u[qes3DIdx] << ", v=" << wgd->v[qes3DIdx] << std::endl;
+              std::cout << "fireMeshIdx=" << fireMeshIdx << ", qes3DIdx=" << qes3DIdx << ", u=" << wgd->u[qes3DIdx] << ", v=" << wgd->v[qes3DIdx] << std::endl;
               
-              ufOut[ idx ] = wgd->u[ qes3DIdx ];
-              vfOut[ idx ] = wgd->v[ qes3DIdx ];
+              ufOut[ fireMeshIdx ] = wgd->u[ qes3DIdx ];
+              vfOut[ fireMeshIdx ] = wgd->v[ qes3DIdx ];
           }
       }
 
