@@ -2122,7 +2122,7 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
               // find the k index value at this height in the domain
               // need to take into account the variable dz
               // std::cout << "FM_nx X FM_ny=(" << fm_nx << ", " << fm_ny << "); tHeight = " << tHeight << ", dz=" << wgd->dz << ", Z = " << wgd->nz * wgd->dz << std::endl;
-              std::cout << "tHeight + 1.2 = " << tHeight + 1.2 << ", dz=" << wgd->dz << ", max Z = " << wgd->nz * wgd->dz << std::endl;
+              // std::cout << "tHeight + 1.2 = " << tHeight + 1.2 << ", dz=" << wgd->dz << ", max Z = " << wgd->nz * wgd->dz << std::endl;
               
               // 
               // adding ~1 to "simulate" the FWH values
@@ -2136,7 +2136,7 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
               // 3D QES Idx
               auto qes3DIdx = kQES*(wgd->nx)*(wgd->ny) + jQES*(wgd->nx) + iQES;
               
-              std::cout << "fireMeshIdx=" << fireMeshIdx << ", qes3DIdx=" << qes3DIdx << ", u=" << wgd->u[qes3DIdx] << ", v=" << wgd->v[qes3DIdx] << std::endl;
+              // std::cout << "fireMeshIdx=" << fireMeshIdx << ", qes3DIdx=" << qes3DIdx << ", u=" << wgd->u[qes3DIdx] << ", v=" << wgd->v[qes3DIdx] << std::endl;
               
               ufOut[ fireMeshIdx ] = wgd->u[ qes3DIdx ];
               vfOut[ fireMeshIdx ] = wgd->v[ qes3DIdx ];
