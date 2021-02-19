@@ -41,6 +41,7 @@ class WINDSGeneralData {
 public:
     WINDSGeneralData();
     WINDSGeneralData(const WINDSInputData* WID, int solverType);
+    WINDSGeneralData(const std::string inputFile);
     ~WINDSGeneralData();
 
     void mergeSort( std::vector<float> &effective_height,
@@ -66,6 +67,9 @@ public:
     */
     void save();
 
+
+    void loadNetCDFData(int);
+
     ////////////////////////////////////////////////////////////////////////////
     //////// Variables and constants needed only in other functions-- Behnam
     //////// This can be moved to a new class (WINDSGeneralData)
@@ -86,8 +90,8 @@ public:
     long numcell_cout_2d;
     long numcell_cent;       /**< Total number of cell-centered values in domain */
     long numcell_face;       /**< Total number of face-centered values in domain */
-    std::vector<size_t> start;
-    std::vector<size_t> count;
+    //std::vector<size_t> start;
+    //std::vector<size_t> count;
 
     std::vector<float> z0_domain_u, z0_domain_v;
 
@@ -101,6 +105,11 @@ public:
     std::vector<float> x,y,z;
     std::vector<float> z_face;
     //std::vector<float> x_out,y_out,z_out;
+
+    // time variables
+    int nt;
+    std::vector<float> t;
+    std::vector<ptime> timestamp;
 
     /// Declaration of coefficients for SOR solver
     std::vector<float> e,f,g,h,m,n;
@@ -132,7 +141,7 @@ public:
     std::vector<double> mixingLengths;
 
     // Sensor* sensor;      may not need this now
-    std::vector <ptime> timestamp;
+    
 
     int id;
 
@@ -169,8 +178,8 @@ public:
     Cut_cell cut_cell;
     Wall *wall;
 
-    NetCDFInput* NCDFInput;
-    int ncnx, ncny, ncnz, ncnt;
+    //NetCDFInput* NCDFInput;
+    //int ncnx, ncny, ncnz, ncnt;
 
 
     // Building cut-cell (rectangular building)
@@ -181,5 +190,8 @@ public:
     std::vector<std::vector<float>> coeff;
 
 private:
+
+    // input: store here for multiple time instance.
+    NetCDFInput* input;
 
 };
