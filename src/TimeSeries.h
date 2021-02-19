@@ -35,7 +35,7 @@ public:
 
     if(timeStamp=="") {
         std::cout << "[WARNING] no timestamp provided" << std::endl;
-       timeStamp="2020:01:01T00:00";
+       timeStamp="2020-01-01T00:00";
     }
         
   }
