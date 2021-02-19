@@ -36,6 +36,13 @@ public:
 
     WINDSInputData(const std::string fileName) 
     {
+
+        fileOptions = 0;
+        metParams = 0;
+        turbParams=0;
+        buildings = 0;
+        canopies = 0;
+
         pt::ptree tree;
         
         try {
