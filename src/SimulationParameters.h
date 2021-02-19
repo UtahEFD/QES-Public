@@ -197,7 +197,9 @@ public:
             wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, 0, 0, wrfSensorSample );
             std::cout << "WRF input data processing completed." << std::endl;
 
-            // Apply halo to wind profile locations
+            // Apply halo to wind profile locations -- halo units are
+            // meters so can add to other coordinates/positions, such
+            // as station coordinates.
             wrfInputData->applyHalotoStationData( halo_x, halo_y );
 
             wrfInputData->dumpStationData();
@@ -224,13 +226,15 @@ public:
             DTE_heightField->setDomain(domain, grid);
 
             // need this to make sure domain sizes include halo
-            int halo_x_WRFAddition = (int)ceil(halo_x / wrfInputData->fm_dx);
-            int halo_y_WRFAddition = (int)ceil(halo_y / wrfInputData->fm_dy);
+            int halo_x_WRFAddition = (int)floor(halo_x / wrfInputData->fm_dx);
+            int halo_y_WRFAddition = (int)floor(halo_y / wrfInputData->fm_dy);
 
+            std::cout << "Halo Addition to dimensions: " << halo_x_WRFAddition << " cells, " << halo_y_WRFAddition << " cells" << std::endl;
+            
             (*(domain))[0] += 2 * halo_x_WRFAddition;
             (*(domain))[1] += 2 * halo_y_WRFAddition;
 
-            // let WRF class know about the halo additions...
+            // let WRF class know about the dimensions that the halo adds...
             wrfInputData->setHaloAdditions( halo_x_WRFAddition, halo_y_WRFAddition );
 
             std::cout << "domain size with halo borders: " <<  (*(domain))[0] << " x " << (*(domain))[1] << std::endl;
