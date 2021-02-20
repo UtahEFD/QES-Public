@@ -2095,13 +2095,21 @@ float WRFInput::lookupLandUse(int luIdx)
 
 void WRFInput::extractWind( WINDSGeneralData *wgd )
 {
+    // WRF fire mesh and wgd domain should be identical with the
+    // exception of the halo region, which only exists in QES
+
+    // We use QES dimensions here since those are used to access the
+    // wind field and at the moment, the fire mesh and the QES domain
+    // should match up (as stated above).
+    
     std::vector<size_t> startIdx = {0,0,0,0};
     std::vector<size_t> counts = {1,
                                   static_cast<unsigned long>(fm_ny),
                                   static_cast<unsigned long>(fm_nx)};
 
-    std::vector<double> ufOut( fm_nx * fm_ny, 3.0 );
-    std::vector<double> vfOut( fm_nx * fm_ny, 3.0 );
+    // Initialize the two fields to 0.0
+    std::vector<double> ufOut( fm_nx * fm_ny, 0.0 );
+    std::vector<double> vfOut( fm_nx * fm_ny, 0.0 );
 
     // For all X, Y in the fire mesh space, extract terrain height and
     // fwh to then pull the wind components from QES
@@ -2122,7 +2130,7 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
               // find the k index value at this height in the domain
               // need to take into account the variable dz
               // std::cout << "FM_nx X FM_ny=(" << fm_nx << ", " << fm_ny << "); tHeight = " << tHeight << ", dz=" << wgd->dz << ", Z = " << wgd->nz * wgd->dz << std::endl;
-              // std::cout << "tHeight + 1.2 = " << tHeight + 1.2 << ", dz=" << wgd->dz << ", max Z = " << wgd->nz * wgd->dz << std::endl;
+              std::cout << "tHeight + 1.2 = " << tHeight + 1.2 << ", dz=" << wgd->dz << ", max Z = " << wgd->nz * wgd->dz << std::endl;
               
               // 
               // adding ~1 to "simulate" the FWH values
@@ -2136,7 +2144,7 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
               // 3D QES Idx
               auto qes3DIdx = kQES*(wgd->nx)*(wgd->ny) + jQES*(wgd->nx) + iQES;
               
-              // std::cout << "fireMeshIdx=" << fireMeshIdx << ", qes3DIdx=" << qes3DIdx << ", u=" << wgd->u[qes3DIdx] << ", v=" << wgd->v[qes3DIdx] << std::endl;
+              std::cout << "\tfireMeshIdx=" << fireMeshIdx << ", qes3DIdx=" << qes3DIdx << ", u=" << wgd->u[qes3DIdx] << ", v=" << wgd->v[qes3DIdx] << std::endl;
               
               ufOut[ fireMeshIdx ] = wgd->u[ qes3DIdx ];
               vfOut[ fireMeshIdx ] = wgd->v[ qes3DIdx ];
