@@ -438,7 +438,7 @@ void PolyBuilding::streetCanyon (WINDSGeneralData *WGD)
                 }
                 x_pos = x_w-x_wall_w;
 
-                if (x_pos <= s && x_pos > -0.5*WGD->dxy)
+                if (x_pos <= s+0.001 && x_pos > -0.5*WGD->dxy)
                 {
                   icell_cent = i+j*(WGD->nx-1)+k*(WGD->nx-1)*(WGD->ny-1);
                   if (WGD->icellflag[icell_cent-(WGD->nx-1)*(WGD->ny-1)] != 0 && WGD->icellflag[icell_cent-(WGD->nx-1)*(WGD->ny-1)] != 2)
