@@ -631,6 +631,8 @@ WINDSGeneralData :: WINDSGeneralData(const std::string inputFile) {
     // nt - number of time instance in data
     input->getDimensionSize("t",nt);
 
+    numcell_cout    = (nx-1)*(ny-1)*(nz-2);        /**< Total number of cell-centered values in domain */
+    numcell_cout_2d = (nx-1)*(ny-1);               /**< Total number of horizontal cell-centered values in domain */
     numcell_cent    = (nx-1)*(ny-1)*(nz-1);        /**< Total number of cell-centered values in domain */
     numcell_face    = nx*ny*nz;                    /**< Total number of face-centered values in domain */
   
@@ -678,6 +680,19 @@ WINDSGeneralData :: WINDSGeneralData(const std::string inputFile) {
     t.resize(nt);
     input->getVariableData("t",t);
     
+    // check if times is in the NetCDF file 
+    NcVar NcVar_times;
+    input->getVariable("times", NcVar_times);
+    if(!NcVar_times.isNull()) { 
+        // nothing here yet
+    } else {
+        for (size_t t=0; t < nt; t++) {
+            //ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp);
+            timestamp.push_back(from_iso_extended_string("2020-01-01T00:00"));
+        }
+    }
+
+
     // netCDF variables
     std::vector<size_t> start;
     std::vector<size_t> count_2d;
@@ -705,6 +720,23 @@ WINDSGeneralData :: WINDSGeneralData(const std::string inputFile) {
     h.resize(numcell_cent,1.0);
     m.resize(numcell_cent,1.0);
     n.resize(numcell_cent,1.0);
+
+    building_volume_frac.resize( numcell_cent, 1.0 );
+    terrain_volume_frac.resize( numcell_cent, 1.0 );
+    ni.resize( numcell_cent, 0.0 );
+    nj.resize( numcell_cent, 0.0 );
+    nk.resize( numcell_cent, 0.0 );
+    
+    icellflag.resize( numcell_cent, 1 );
+    ibuilding_flag.resize ( numcell_cent, -1 );
+    
+    mixingLengths.resize( numcell_cent, 0.0 );
+    
+    terrain.resize( numcell_cout_2d, 0.0 );
+    terrain_id.resize( nx*ny, 1 );
+    z0_domain_u.resize( nx*ny, 0.1 );
+    z0_domain_v.resize( nx*ny, 0.1 );
+
 
     // Set the Wind Velocity data elements to be of the correct size
     // Initialize u0,v0,w0,u,v and w to 0.0
@@ -758,10 +790,9 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
     }
   
     // face-center variables
-    input->getVariableData("u",start,count_fc,u);
-    input->getVariableData("v",start,count_fc,v);
-    input->getVariableData("w",start,count_fc,w);
-
+    input->getVariableData("u",start,count_fc,u0);
+    input->getVariableData("v",start,count_fc,v0);
+    input->getVariableData("w",start,count_fc,w0);
     
     // clear wall indices container (guarantee entry vector)
     wall_right_indices.clear();
