@@ -217,8 +217,8 @@ public:
 
     void setHaloAdditions( int xA, int yA ) 
     {
-        m_haloX_Addition = xA;
-        m_haloY_Addition = yA;
+        m_haloX_DimAddition = xA;
+        m_haloY_DimAddition = yA;
     }
     
 
@@ -248,7 +248,7 @@ private:
 
     double* relief;
 
-    int m_haloX_Addition, m_haloY_Addition;
+    int m_haloX_DimAddition, m_haloY_DimAddition;
 
     void dumpWRFDataArray(const std::string &name, double *allData, int dimT, int dimZ, int dimY, int dimX);
 

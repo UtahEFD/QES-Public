@@ -2107,49 +2107,45 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
                                   static_cast<unsigned long>(fm_ny),
                                   static_cast<unsigned long>(fm_nx)};
 
+    assert( fm_nx != (wgd->nx - 1 - 2*m_haloX_DimAddition) );
+    assert( fm_ny != (wgd->ny - 1 - 2*m_haloY_DimAddition) );    
+
     // Initialize the two fields to 0.0
     std::vector<double> ufOut( fm_nx * fm_ny, 0.0 );
     std::vector<double> vfOut( fm_nx * fm_ny, 0.0 );
 
     // For all X, Y in the fire mesh space, extract terrain height and
     // fwh to then pull the wind components from QES
-    for (auto i=0; i<fm_nx; i++)
-      {
-          for (auto j=0; j<fm_ny; j++)
-          {
-              // add the halo offsets to the i and j to shift them
-              // into QES's space
-              auto iQES = i+m_haloX_Addition;
-              auto jQES = j+m_haloY_Addition;
+    for (auto i=0; i<fm_nx-1; i++) {
+        for (auto j=0; j<fm_ny-1; j++) {
+            
+            // add the halo offsets to the i and j to shift them into
+            // QES's space - fire mesh and wrf data do not have halo
+            // extensions
+            auto iQES = i+m_haloX_DimAddition;
+            auto jQES = j+m_haloY_DimAddition;
 
-              // Use qes index
-              // Gets height of the terrain for each cell
-              auto qes2DIdx = jQES * (wgd->nx-1) + iQES;
-              float tHeight = wgd->terrain[ qes2DIdx ];
+            // Use qes index
+            // Gets height of the terrain for each cell
+            auto qes2DIdx = jQES * (wgd->nx-1) + iQES;
+            auto tHeight = wgd->terrain[ qes2DIdx ];
 
-              // find the k index value at this height in the domain
-              // need to take into account the variable dz
-              // std::cout << "FM_nx X FM_ny=(" << fm_nx << ", " << fm_ny << "); tHeight = " << tHeight << ", dz=" << wgd->dz << ", Z = " << wgd->nz * wgd->dz << std::endl;
-              std::cout << "tHeight + 1.2 = " << tHeight + 1.2 << ", dz=" << wgd->dz << ", max Z = " << wgd->nz * wgd->dz << std::endl;
+            // find the k index value at this height in the domain,
+            // need to take into account the variable dz
+            auto FWH = 3.5;
+            auto kQES = (int)floor( ((tHeight + FWH)/float(wgd->dz) ));
               
-              // 
-              // adding ~1 to "simulate" the FWH values
-              // 
-              auto FWH = 1.2;
-              auto kQES = (int)floor( ((tHeight + FWH)/float(wgd->dz) ));
-              
-              // fire mesh idx
-              auto fireMeshIdx = j*fm_nx + i;
+            // fire mesh idx
+            auto fireMeshIdx = j*fm_nx + i;
 
-              // 3D QES Idx
-              auto qes3DIdx = kQES*(wgd->nx)*(wgd->ny) + jQES*(wgd->nx) + iQES;
-              
-              std::cout << "\tfireMeshIdx=" << fireMeshIdx << ", qes3DIdx=" << qes3DIdx << ", u=" << wgd->u[qes3DIdx] << ", v=" << wgd->v[qes3DIdx] << std::endl;
-              
-              ufOut[ fireMeshIdx ] = wgd->u[ qes3DIdx ];
-              vfOut[ fireMeshIdx ] = wgd->v[ qes3DIdx ];
-          }
-      }
+            // 3D QES Idx
+            auto qes3DIdx = kQES*(wgd->nx)*(wgd->ny) + jQES*(wgd->nx) + iQES;
+            
+            // provide cell centered data to WRF
+            ufOut[ fireMeshIdx ] = 0.5 * (wgd->u[ qes3DIdx + 1 ] + wgd->u[ qes3DIdx ]);
+            vfOut[ fireMeshIdx ] = 0.5 * (wgd->v[ qes3DIdx + wgd->nx ] + wgd->v[ qes3DIdx ]);
+        }
+    }
 
     NcVar field_UF = wrfInputFile.getVar("UF");
     NcVar field_VF = wrfInputFile.getVar("VF");
