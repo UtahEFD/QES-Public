@@ -19,7 +19,7 @@ public:
     ~TURBOutput()	       
     {}
     
-    void save(float);
+    void save(ptime);
     
 private:
     
