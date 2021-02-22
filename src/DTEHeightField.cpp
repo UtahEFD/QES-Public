@@ -240,6 +240,7 @@ void DTEHeightField::load()
   convertRasterToGeo( 0, m_nYSize, xGeo, yGeo );
   printf("Raster Coordinate (0, %d):\t(%12.7f, %12.7f)\n", m_nYSize, xGeo, yGeo);
 
+
   if (originFlag == 0)
   {
   	float domain_end_x = origin_x + DEMDistancex + domain_nx*cellSizeX;

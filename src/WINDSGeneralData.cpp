@@ -276,18 +276,20 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       // ////////////////////////////////
       // Retrieve terrain height field //
       // ////////////////////////////////
-      for (int i = 0; i < nx-1; i++)
+      for (int i = 0; i < nx-2*halo_index_x-1; i++)
       {
-         for (int j = 0; j < ny-1; j++)
+         for (int j = 0; j < ny-2*halo_index_y-1; j++)
          {
             // Gets height of the terrain for each cell
-            int idx = i + j*(nx-1);
+            int ii = i+halo_index_x;
+            int jj = j+halo_index_y;
+            int idx = ii + jj*(nx-1);
             terrain[idx] = WID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
             if (terrain[idx] < 0.0)
             {
                terrain[idx] = 0.0;
             }
-            id = i+j*nx;
+            id = ii+jj*nx;
             for (size_t k=0; k<z.size()-1; k++)
             {
                terrain_id[id] = k;
@@ -297,8 +299,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
                }
             }
          }
-       }
-     }
+      }
+   }
 
    //////////////////////////////////////////////////////////////////////////////////
    /////    Create sensor velocity profiles and generate initial velocity field /////
@@ -344,13 +346,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       if (WID->simParams->meshTypeFlag == 0 && WID->simParams->readCoefficientsFlag == 0)
       {
         auto start_stair = std::chrono::high_resolution_clock::now();
-        for (int i = 0; i < nx-1; i++)
+        for (int i = 0; i < nx-2*halo_index_x-1; i++)
         {
-           for (int j = 0; j < ny-1; j++)
+           for (int j = 0; j < ny-2*halo_index_y-1; j++)
            {
               // Gets height of the terrain for each cell
-              int idx = i + j*(nx-1);
-              id = i+j*nx;
+              int ii = i+halo_index_x;
+              int jj = j+halo_index_y;
+              int idx = ii + jj*(nx-1);
               for (size_t k=0; k<z.size()-1; k++)
               {
                  if (terrain[idx] < z[k+1])
@@ -361,13 +364,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
                  // ////////////////////////////////
                  // Stair-step (original QUIC)    //
                  // ////////////////////////////////
-                 int ii = i+WID->simParams->halo_x/dx;
-                 int jj = j+WID->simParams->halo_y/dy;
                  int icell_cent = ii+jj*(nx-1)+(k+1)*(nx-1)*(ny-1);
                  icellflag[icell_cent] = 2;
 
-
-                }
+               }
             }
         }
 

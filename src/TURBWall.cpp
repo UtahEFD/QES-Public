@@ -312,13 +312,13 @@ void TURBWall::set_loglaw_stairstep_at_id_cc(WINDSGeneralData *WGD,TURBGeneralDa
 
     //Strain-rate tensor
     //diagonal terms
-    TGD->S11[id_cc] = dudx;
-    TGD->S22[id_cc] = dvdy;
-    TGD->S33[id_cc] = dwdz;
+    TGD->Sxx[id_cc] = dudx;
+    TGD->Syy[id_cc] = dvdy;
+    TGD->Szz[id_cc] = dwdz;
     //off-diagonal terms
-    TGD->S12[id_cc] = 0.5*(dudy+dvdx);
-    TGD->S23[id_cc] = 0.5*(dvdz+dwdy);
-    TGD->S13[id_cc] = 0.5*(dudz+dwdx);
+    TGD->Sxy[id_cc] = 0.5*(dudy+dvdx);
+    TGD->Syz[id_cc] = 0.5*(dvdz+dwdy);
+    TGD->Sxz[id_cc] = 0.5*(dudz+dwdx);
 
     return;
 

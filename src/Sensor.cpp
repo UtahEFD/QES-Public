@@ -409,7 +409,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 			BarnesInterpolationCPU (WID, WGD, u_prof, v_prof);
 			auto finishBarnesCPU = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<float> elapsedBarnesCPU = finishBarnesCPU - startBarnesCPU;
-	    std::cout << "Elapsed time for Barnes interpolation on CPU: " << elapsedBarnesCPU.count() << " s\n";
+	    	std::cout << "Elapsed time for Barnes interpolation on CPU: " << elapsedBarnesCPU.count() << " s\n";
 		}
 		else
 		{
@@ -417,13 +417,13 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 			BarnesInterpolationGPU (WID, WGD, u_prof, v_prof);
 			auto finishBarnesGPU = std::chrono::high_resolution_clock::now();
 			std::chrono::duration<float> elapsedBarnesGPU = finishBarnesGPU - startBarnesGPU;
-	    std::cout << "Elapsed time for Barnes interpolation on GPU: " << elapsedBarnesGPU.count() << " s\n";
+	    	std::cout << "Elapsed time for Barnes interpolation on GPU: " << elapsedBarnesGPU.count() << " s\n";
 		}
 
 	}
 
 
-  float z0_domain;
+  	float z0_domain;
 	if (WID->metParams->z0_domain_flag == 1)
 	{
 		float sum_z0=0.0;
