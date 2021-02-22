@@ -141,8 +141,7 @@ void WINDSOutputWorkspace::save(ptime timeOut)
     
     std::string s=to_iso_extended_string(timeOut);
     std::copy(s.begin(), s.end(), timestamp.begin());
-    
-    
+   
     // save fields
     saveOutputFields();
 
