@@ -16,6 +16,9 @@ Args::Args(): inputWINDSFile("windsout.nc"), inputTURBFile("turbout.nc")
 {
     reg("help",                "help/usage information",                         ArgumentParsing::NONE,   '?');
     reg("inputQESFile",        "specifies input xml settings file",              ArgumentParsing::STRING, 'q');
+    // single name for all input/output files
+    reg("projectQESFiles",     "specifies input/output files name",              ArgumentParsing::STRING, 'm');
+    // individual names for input/output files
     reg("inputWINDSFile",      "specifies input qes-winds file",                 ArgumentParsing::STRING, 'u');
     reg("inputTURBFile",       "specifies input qes-turb file",                  ArgumentParsing::STRING, 't');
     reg("outputFolder",        "select output folder for output files",          ArgumentParsing::STRING, 'o');
@@ -40,59 +43,64 @@ void Args::processArguments(int argc, char *argv[])
         exit(EXIT_SUCCESS);
     }
     
+    
     if( !isSet( "inputQESFile", inputQESFile ) )
     {
         std::cerr << "inputQESFile not specified! Exiting program!" << std::endl;
         exit(EXIT_FAILURE);
     }
-    if( !isSet( "inputWINDSFile",  inputWINDSFile ) )
-    {
-        std::cerr << "inputWINDSFile not specified! Exiting program!" << std::endl;
-        exit(EXIT_FAILURE);
+    
+    if( isSet("projectQESFiles",projectQESFiles) )  {
+        inputWINDSFile = projectQESFiles + "_windsWk.nc"; 
+        inputTURBFile = projectQESFiles + "_turbOut.nc"; 
+        outputFile = projectQESFiles + "_conc.nc";
+        outputEulerianFile = projectQESFiles + "_eulerianData.nc";
+        outputParticleDataFile = projectQESFiles + "_particleInfo.nc";
+    } else {
+        if( !isSet( "inputWINDSFile",  inputWINDSFile ) ) {
+            std::cerr << "inputWINDSFile not specified! Exiting program!" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        if( !isSet( "inputTURBFile", inputTURBFile ) ) {
+            std::cerr << "inputTURBFile not specified! Exiting program!" << std::endl;
+            exit(EXIT_FAILURE);
+        }  
+        if( !isSet( "outputFolder",  outputFolder ) ) {
+            std::cerr << "outputFolder not specified! Exiting program!" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        if( !isSet( "caseBaseName",  caseBaseName ) ) {
+            std::cerr << "caseBaseName not specified! Exiting program!" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        // check whether input outputFolder is an existing folder and if not, exit with error
+        if( !doesDirExist(outputFolder) )
+        {
+            std::cerr << "input outputFolder \"" << outputFolder << "\" does not exist! Exiting program!" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        
+        // check whether input outputFolder has a "/" char on the end, and if not, add one
+        std::string lastChar = outputFolder.substr(outputFolder.length()-1,1);
+        if( lastChar != "/" )
+        {
+            outputFolder = outputFolder + "/";
+        }
+        
+        // LA future work: might be important to also check caseBaseName for bad characters that would make a filename have trouble
+        //  I was checking to see if it is an empty string, but I think the isSet() function probably handles that check
+        
+        
+        // now that the outputFolder and caseBaseName are confirmed to be good, setup specific output file variables for netcdf output
+        outputEulerianFile = outputFolder + caseBaseName + "_eulerianData.nc";
+        outputFile = outputFolder + caseBaseName + "_conc.nc";
+        outputParticleDataFile = outputFolder + caseBaseName + "_particleInfo.nc";
     }
-    if( !isSet( "inputTURBFile", inputTURBFile ) )
-    {
-        std::cerr << "inputTURBFile not specified! Exiting program!" << std::endl;
-        exit(EXIT_FAILURE);
-    }  
-    if( !isSet( "outputFolder",  outputFolder ) )
-    {
-        std::cerr << "outputFolder not specified! Exiting program!" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    if( !isSet( "caseBaseName",  caseBaseName ) )
-    {
-        std::cerr << "caseBaseName not specified! Exiting program!" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+
     doEulDataOutput     = isSet( "doEulDataOutput" );
     doParticleDataOutput= isSet( "doParticleDataOutput" );
     doSimInfoFileOutput = isSet( "doSimInfoFileOutput" );
     debug               = isSet( "debug" );
     verbose             = isSet( "verbose" );
-
-
-    // check whether input outputFolder is an existing folder and if not, exit with error
-    if( !doesDirExist(outputFolder) )
-    {
-        std::cerr << "input outputFolder \"" << outputFolder << "\" does not exist! Exiting program!" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    // check whether input outputFolder has a "/" char on the end, and if not, add one
-    std::string lastChar = outputFolder.substr(outputFolder.length()-1,1);
-    if( lastChar != "/" )
-    {
-        outputFolder = outputFolder + "/";
-    }
-
-    // LA future work: might be important to also check caseBaseName for bad characters that would make a filename have trouble
-    //  I was checking to see if it is an empty string, but I think the isSet() function probably handles that check
-
-
-    // now that the outputFolder and caseBaseName are confirmed to be good, setup specific output file variables for netcdf output
-    outputEulerianFile = outputFolder + caseBaseName + "_eulerianData.nc";
-    outputFile = outputFolder + caseBaseName + "_conc.nc";
-    outputParticleDataFile = outputFolder + caseBaseName + "_particleInfo.nc";
 
 }

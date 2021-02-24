@@ -40,6 +40,7 @@ public:
     void processArguments(int argc, char *argv[]);
     
     std::string inputQESFile = "";
+    std::string projectQESFiles = "";
     std::string inputWINDSFile = "";
     std::string inputTURBFile = "";
     std::string outputFolder = "";
