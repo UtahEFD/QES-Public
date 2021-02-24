@@ -2114,6 +2114,14 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
     std::vector<double> ufOut( fm_nx * fm_ny, 0.0 );
     std::vector<double> vfOut( fm_nx * fm_ny, 0.0 );
 
+    auto FWH = 3.5;
+
+    if (FWH <= wgd->dz)
+    {
+      std::cout << "Warning: resolution in z-direction is not fine enough to define above ground cells for calculating wind" << std::endl;
+      std::cout << "Try running the model with finer resolution in z-direction" <<std::endl;
+    }
+
     // For all X, Y in the fire mesh space, extract terrain height and
     // fwh to then pull the wind components from QES
     for (auto i=0; i<fm_nx-1; i++) {
@@ -2132,8 +2140,8 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
 
             // find the k index value at this height in the domain,
             // need to take into account the variable dz
-            auto FWH = 3.5;
-            auto kQES = (int)floor( ((tHeight + FWH)/float(wgd->dz) ));
+            
+            //auto kQES = (int)floor( ((tHeight + FWH)/float(wgd->dz) ));
               
             // fire mesh idx
             auto fireMeshIdx = j*fm_nx + i;
