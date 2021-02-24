@@ -98,12 +98,12 @@ private:
     // some constants for turbulent model
     const float vonKar=0.41;
     const float cPope=0.55;
-    const float sigUOrg= 1.8;
-    const float sigVOrg=2.0;
-    const float sigWOrg=1.3;
-    const float sigUConst=sigUOrg*sigUOrg*cPope*cPope;//2.3438;
-    const float sigVConst=sigVOrg*sigVOrg*cPope*cPope;//1.5;
-    const float sigWConst=sigWOrg*sigWOrg*cPope*cPope;//0.6338;
+    float sigUOrg=2.5;
+    float sigVOrg=2.0;
+    float sigWOrg=1.3;
+    float sigUConst=sigUOrg*sigUOrg*cPope*cPope;
+    float sigVConst=sigVOrg*sigVOrg*cPope*cPope;
+    float sigWConst=sigWOrg*sigWOrg*cPope*cPope;
 
     void getFrictionVelocity(WINDSGeneralData*);
     void getDerivatives(WINDSGeneralData*);

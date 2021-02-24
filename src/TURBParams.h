@@ -10,6 +10,7 @@
 #include <limits>
 
 #include "util/ParseInterface.h" 
+#include "Vector3.h"
 
 /*
   Author: Fabien Margairaz
@@ -30,8 +31,9 @@ public:
 
     int mlSamplesPerAirCell;
 
-    bool flagNonLocalMixing;
-    
+    Vector3<float>* sigConst; 
+
+    bool flagNonLocalMixing;  
     float turbUpperBound;
 
     TURBParams()
@@ -78,12 +80,16 @@ public:
             save2file = "false";  
         }
 
+        parseElement< Vector3<float> >(false, sigConst, "sigmaConst");
+
         flagNonLocalMixing=false;
         parsePrimitive<bool>(false, flagNonLocalMixing, "nonLocalMixing");
 
         turbUpperBound=100;
         parsePrimitive<float>(false, turbUpperBound, "turbUpperBound");
         
+        
+
     }
   
 };
