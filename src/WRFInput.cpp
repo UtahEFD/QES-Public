@@ -2140,7 +2140,15 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
 
             // find the k index value at this height in the domain,
             // need to take into account the variable dz
-            
+            int kQES;
+            for (size_t k=0; k<wgd->z.size()-1; k++)
+            {
+               kQES = k;
+               if ( float(tHeight + FWH) < wgd->z[k])
+               {
+                  break;
+               }
+            }
             //auto kQES = (int)floor( ((tHeight + FWH)/float(wgd->dz) ));
               
             // fire mesh idx
