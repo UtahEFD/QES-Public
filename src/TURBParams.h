@@ -79,7 +79,8 @@ public:
         if(methodLocalMixing == 0 || methodLocalMixing == 4) {
             save2file = "false";  
         }
-
+        
+        sigConst=nullptr;
         parseElement< Vector3<float> >(false, sigConst, "sigmaConst");
 
         flagNonLocalMixing=false;

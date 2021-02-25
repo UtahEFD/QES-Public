@@ -49,7 +49,7 @@ public:
             pt::read_xml(fileName, tree);
         } 
         catch (boost::property_tree::xml_parser::xml_parser_error& e) {
-            std::cerr << "Error reading tree in" << fileName << "\n";
+            std::cerr << "Error reading tree in " << fileName << "\n";
             exit(EXIT_FAILURE);
         }
         
