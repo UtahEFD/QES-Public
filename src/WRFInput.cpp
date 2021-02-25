@@ -2114,7 +2114,7 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
     std::vector<double> ufOut( fm_nx * fm_ny, 0.0 );
     std::vector<double> vfOut( fm_nx * fm_ny, 0.0 );
 
-    auto FWH = 3.5;
+    auto FWH = 1.2;
 
     if (FWH <= wgd->dz)
     {
