@@ -928,7 +928,14 @@ WRFInput::WRFInput(const std::string& filename,
     // max altitude to pull for wind profiles should be based on fm_nz
     // and dz since that's the highest value
 
-    maxWRFAlt = fm_nz;  // again, only works with dz=1
+    if (sensorsOnly) {
+        // Use nz * dz
+        maxWRFAlt = 90 * 3.0;  // again, only works with dz=1        
+    }
+    else {
+        maxWRFAlt = fm_nz;  // again, only works with dz=1
+    }
+    
     
     std::cout << "Max WRF Alt: " << maxWRFAlt << std::endl;
 
@@ -1011,7 +1018,8 @@ WRFInput::WRFInput(const std::string& filename,
 
                         // only works for dz = 1 so will need to
                         // incorporate that...
-			if (coordZ[l_idx] <= fm_nz) {
+			// if (coordZ[l_idx] <= fm_nz) {
+			if (coordZ[l_idx] < maxWRFAlt) {
 			  // if (coordZ[l_idx] >= minWRFAlt && coordZ[l_idx] <= maxWRFAlt) {
                         
     // Use ZSF + FZ0 -- should be built into coordZ it seems
