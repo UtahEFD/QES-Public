@@ -20,7 +20,26 @@ private:
   void _cudaCheck(T e, const char* func, const char* call, const int line);
 
 public:
+    
+    Sensor() {
+    
+    }
+    
+    Sensor(const std::string fileName) 
+    {
+        pt::ptree tree;
+        
+        try {
+            pt::read_xml(fileName, tree);
+        } 
+        catch (boost::property_tree::xml_parser::xml_parser_error& e) {
+            std::cerr << "Error reading tree in" << fileName << "\n";
+            exit(EXIT_FAILURE);
+        }
 
+        parseTree(tree);
+
+    }
 
     float site_xcoord, site_ycoord;
 

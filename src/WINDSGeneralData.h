@@ -22,6 +22,9 @@
 #include "Wall.h"
 #include "NetCDFInput.h"
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+
 #ifdef HAS_OPTIX
 #include "OptixRayTrace.h"
 #endif
@@ -29,19 +32,26 @@
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
+using namespace boost::gregorian;
+using namespace boost::posix_time;
+
 class WINDSInputData;
 
 class WINDSGeneralData {
 public:
     WINDSGeneralData();
     WINDSGeneralData(const WINDSInputData* WID, int solverType);
+    WINDSGeneralData(const std::string inputFile);
     ~WINDSGeneralData();
 
     void mergeSort( std::vector<float> &effective_height,
                     std::vector<Building*> allBuildingsV,
                     std::vector<int> &building_id );
-    
-    void applyParametrizations(const WINDSInputData* UID);
+
+    void applyParametrizations(const WINDSInputData*);
+    //void applyParametrizations(const WINDSInputData*);
+
+    void resetICellFlag();
 
     /*!
     * This function is being called from the plantInitial function
@@ -56,6 +66,9 @@ public:
     * This function saves user-defined data to file
     */
     void save();
+
+
+    void loadNetCDFData(int);
 
     ////////////////////////////////////////////////////////////////////////////
     //////// Variables and constants needed only in other functions-- Behnam
@@ -77,8 +90,8 @@ public:
     long numcell_cout_2d;
     long numcell_cent;       /**< Total number of cell-centered values in domain */
     long numcell_face;       /**< Total number of face-centered values in domain */
-    std::vector<size_t> start;
-    std::vector<size_t> count;
+    //std::vector<size_t> start;
+    //std::vector<size_t> count;
 
     std::vector<float> z0_domain_u, z0_domain_v;
 
@@ -92,6 +105,11 @@ public:
     std::vector<float> x,y,z;
     std::vector<float> z_face;
     //std::vector<float> x_out,y_out,z_out;
+
+    // time variables
+    int nt;
+    std::vector<float> t;
+    std::vector<ptime> timestamp;
 
     /// Declaration of coefficients for SOR solver
     std::vector<float> e,f,g,h,m,n;
@@ -123,6 +141,7 @@ public:
     std::vector<double> mixingLengths;
 
     // Sensor* sensor;      may not need this now
+    
 
     int id;
 
@@ -159,8 +178,8 @@ public:
     Cut_cell cut_cell;
     Wall *wall;
 
-    NetCDFInput* NCDFInput;
-    int ncnx, ncny, ncnz, ncnt;
+    //NetCDFInput* NCDFInput;
+    //int ncnx, ncny, ncnz, ncnt;
 
 
     // Building cut-cell (rectangular building)
@@ -171,5 +190,8 @@ public:
     std::vector<std::vector<float>> coeff;
 
 private:
+
+    // input: store here for multiple time instance.
+    NetCDFInput* input;
 
 };

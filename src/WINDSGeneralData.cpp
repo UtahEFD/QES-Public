@@ -103,11 +103,28 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
                WID->metParams->sensors[i]->TS[0]->site_wind_dir[p] = wrf_ptr->statData[i].profiles[t][p].wd;
 
             }
+         
          }
-      }
-
+      } 
+   } else {
+       // If the sensor file specified in the xml
+       if (WID->metParams->sensorName.size() > 0)
+       {
+           for (auto i = 0; i < WID->metParams->sensorName.size(); i++)
+           {
+               WID->metParams->sensors.push_back(new Sensor(WID->metParams->sensorName[i]));            // Create new sensor object
+               //WID->metParams->sensors[i] = parseSensors(WID->metParams->sensorName[i]);       // Parse new sensor objects from xml
+           }
+       }
+       
+       for (size_t i=0; i < WID->metParams->sensors.size(); i++) {
+           for (size_t t=0; t < WID->metParams->sensors[i]->TS.size(); t++) {
+               //ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp);
+               timestamp.push_back(from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp));
+           }
+       }
    }
-
+   
    // /////////////////////////
    // Calculation of z0 domain info MAY need to move to WINDSInputData
    // or somewhere else once we know the domain size
@@ -116,7 +133,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    z0_domain_v.resize( nx*ny );
    if (WID->metParams->z0_domain_flag == 0)      // Uniform z0 for the whole domain
    {
-      for (auto i=0; i<nx; i++)
+       for (auto i=0; i<nx; i++)
       {
          for (auto j=0; j<ny; j++)
          {
@@ -259,18 +276,20 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       // ////////////////////////////////
       // Retrieve terrain height field //
       // ////////////////////////////////
-      for (int i = 0; i < nx-1; i++)
+      for (int i = 0; i < nx-2*halo_index_x-1; i++)
       {
-         for (int j = 0; j < ny-1; j++)
+         for (int j = 0; j < ny-2*halo_index_y-1; j++)
          {
             // Gets height of the terrain for each cell
-            int idx = i + j*(nx-1);
+            int ii = i+halo_index_x;
+            int jj = j+halo_index_y;
+            int idx = ii + jj*(nx-1);
             terrain[idx] = WID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
             if (terrain[idx] < 0.0)
             {
                terrain[idx] = 0.0;
             }
-            id = i+j*nx;
+            id = ii+jj*nx;
             for (size_t k=0; k<z.size()-1; k++)
             {
                terrain_id[id] = k;
@@ -280,8 +299,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
                }
             }
          }
-       }
-     }
+      }
+   }
 
    //////////////////////////////////////////////////////////////////////////////////
    /////    Create sensor velocity profiles and generate initial velocity field /////
@@ -327,13 +346,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       if (WID->simParams->meshTypeFlag == 0 && WID->simParams->readCoefficientsFlag == 0)
       {
         auto start_stair = std::chrono::high_resolution_clock::now();
-        for (int i = 0; i < nx-1; i++)
+        for (int i = 0; i < nx-2*halo_index_x-1; i++)
         {
-           for (int j = 0; j < ny-1; j++)
+           for (int j = 0; j < ny-2*halo_index_y-1; j++)
            {
               // Gets height of the terrain for each cell
-              int idx = i + j*(nx-1);
-              id = i+j*nx;
+              int ii = i+halo_index_x;
+              int jj = j+halo_index_y;
+              int idx = ii + jj*(nx-1);
               for (size_t k=0; k<z.size()-1; k++)
               {
                  if (terrain[idx] < z[k+1])
@@ -344,13 +364,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
                  // ////////////////////////////////
                  // Stair-step (original QUIC)    //
                  // ////////////////////////////////
-                 int ii = i+WID->simParams->halo_x/dx;
-                 int jj = j+WID->simParams->halo_y/dy;
                  int icell_cent = ii+jj*(nx-1)+(k+1)*(nx-1)*(ny-1);
                  icellflag[icell_cent] = 2;
 
-
-                }
+               }
             }
         }
 
@@ -559,49 +576,242 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    /////       Read coefficients from a file            ////
    /////////////////////////////////////////////////////////
 
-   if (WID->simParams->readCoefficientsFlag == 1)
-   {
-     NCDFInput = new NetCDFInput(WID->simParams->coeffFile);
+   if (WID->simParams->readCoefficientsFlag == 1) {
 
-     start = {0,0,0,0};
-     NCDFInput->getDimensionSize("x",ncnx);
-     NCDFInput->getDimensionSize("y",ncny);
-     NCDFInput->getDimensionSize("z",ncnz);
-     NCDFInput->getDimensionSize("t",ncnt);
+       NetCDFInput* NCDFInput = new NetCDFInput(WID->simParams->coeffFile);
 
-     count = {static_cast<unsigned long>(1),
-             static_cast<unsigned long>(ncnz-1),
-             static_cast<unsigned long>(ncny-1),
-             static_cast<unsigned long>(ncnx-1)};
+       int ncnx, ncny, ncnz, ncnt;
+       std::vector<size_t> start;
+       std::vector<size_t> count;
 
-
-     NCDFInput->getVariableData("icellflag",start,count,icellflag);
-
-     for (int k = 0; k < nz-2; k++)
-     {
-         for (int j = 0; j < ny-1; j++)
-         {
-             for (int i = 0; i < nx-1; i++)
-             {
-                 int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-                 if (icellflag[icell_cent] != 0 && icellflag[icell_cent] != 2 && icellflag[icell_cent] != 8 && icellflag[icell_cent] != 7)
-                 {
-                   icellflag[icell_cent] = 1;
-                 }
-             }
-         }
-     }
-
-     // Read in solver coefficients
-     NCDFInput->getVariableData("e",start,count,e);
-     NCDFInput->getVariableData("f",start,count,f);
-     NCDFInput->getVariableData("g",start,count,g);
-     NCDFInput->getVariableData("h",start,count,h);
-     NCDFInput->getVariableData("m",start,count,m);
-     NCDFInput->getVariableData("n",start,count,n);
-
+       start = {0,0,0,0};
+       NCDFInput->getDimensionSize("x",ncnx);
+       NCDFInput->getDimensionSize("y",ncny);
+       NCDFInput->getDimensionSize("z",ncnz);
+       NCDFInput->getDimensionSize("t",ncnt);
+       
+       count = {static_cast<unsigned long>(1),
+                static_cast<unsigned long>(ncnz-1),
+                static_cast<unsigned long>(ncny-1),
+                static_cast<unsigned long>(ncnx-1)};
+       
+       
+       NCDFInput->getVariableData("icellflag",start,count,icellflag);
+       
+       resetICellFlag();
+       
+       // Read in solver coefficients
+       NCDFInput->getVariableData("e",start,count,e);
+       NCDFInput->getVariableData("f",start,count,f);
+       NCDFInput->getVariableData("g",start,count,g);
+       NCDFInput->getVariableData("h",start,count,h);
+       NCDFInput->getVariableData("m",start,count,m);
+       NCDFInput->getVariableData("n",start,count,n);
+       
    }
+   
+   return;
+}
 
+WINDSGeneralData :: WINDSGeneralData(const std::string inputFile) {
+    
+    std::cout<<"[WINDS Data] \t Loading QES-winds fields "<<std::endl;
+
+    // fullname passed to WINDSGeneralData
+    input = new NetCDFInput(inputFile);
+    
+    // create wall instance for BC
+    wall = new Wall();
+    
+    // nx,ny - face centered value (consistant with QES-Winds)
+    input->getDimensionSize("x",nx);
+    input->getDimensionSize("y",ny);
+    // nz - face centered value + bottom ghost (consistant with QES-Winds)
+    input->getDimensionSize("z",nz);
+    // nt - number of time instance in data
+    input->getDimensionSize("t",nt);
+
+    numcell_cout    = (nx-1)*(ny-1)*(nz-2);        /**< Total number of cell-centered values in domain */
+    numcell_cout_2d = (nx-1)*(ny-1);               /**< Total number of horizontal cell-centered values in domain */
+    numcell_cent    = (nx-1)*(ny-1)*(nz-1);        /**< Total number of cell-centered values in domain */
+    numcell_face    = nx*ny*nz;                    /**< Total number of face-centered values in domain */
+  
+    // get grid information
+    x.resize(nx-1);
+    y.resize(ny-1);
+    z.resize(nz-1);
+    z_face.resize(nz-1);
+    dz_array.resize(nz-1, 0.0);
+    
+    input->getVariableData("x_cc",x);
+    dx = x[1] - x[0]; /**< Grid resolution in x-direction */
+        
+    input->getVariableData("y_cc",y);
+    dy = y[1] - y[0]; /**< Grid resolution in x-direction */
+    dxy = MIN_S(dx, dy);
+    
+    input->getVariableData("z_cc",z);
+    // check if dz_array is in the NetCDF file 
+    NcVar NcVar_dz;
+    input->getVariable("dz_array", NcVar_dz);
+    if(!NcVar_dz.isNull()) { 
+        input->getVariableData("dz_array",dz_array);
+        dz = *std::min_element(dz_array.begin() , dz_array.end());
+    } else {
+        dz = z[1] - z[0];
+        for (size_t k=0; k<z.size(); k++) {
+            dz_array[k] = dz;
+        }
+    }
+    
+    // check if z_face is in the NetCDF file
+    NcVar NcVar_zface;
+    input->getVariable("z_face", NcVar_zface);
+    if(!NcVar_zface.isNull()) {
+        input->getVariableData("z_face",z_face);
+    } else {
+        z_face[0]=0.0;
+        for (size_t k=1; k<z.size(); k++) {
+            z_face[k] = z_face[k-1] + dz_array[k];  /**< Location of face centers in z-dir */
+        }
+    }
+    
+    //get time variables
+    t.resize(nt);
+    input->getVariableData("t",t);
+    
+    // check if times is in the NetCDF file 
+    NcVar NcVar_times;
+    input->getVariable("times", NcVar_times);
+    if(!NcVar_times.isNull()) { 
+        // nothing here yet
+    } else {
+        for (size_t t=0; t < nt; t++) {
+            //ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp);
+            timestamp.push_back(from_iso_extended_string("2020-01-01T00:00"));
+        }
+    }
+
+
+    // netCDF variables
+    std::vector<size_t> start;
+    std::vector<size_t> count_2d;
+
+    start = {0,0};
+    count_2d = {static_cast<unsigned long>(ny-1),
+                static_cast<unsigned long>(nx-1)};
+  
+    // terrain (cell-center)
+    terrain.resize((ny-1)*(nx-1),0.0);
+    NcVar NcVar_terrain;
+    input->getVariable("terrain", NcVar_terrain);
+    if(!NcVar_terrain.isNull()) { // => terrain data in QES-Winds file
+        input->getVariableData("terrain",start,count_2d,terrain);
+    } else { // => no external terrain data provided
+        std::cout << "[WINDS Data] \t no terrain data found -> assumed flat" << std::endl;
+    }
+
+    // icellflag (see .h for velues)
+    icellflag.resize(numcell_cent,-1);
+    /// coefficients for SOR solver
+    e.resize(numcell_cent,1.0);
+    f.resize(numcell_cent,1.0);
+    g.resize(numcell_cent,1.0);
+    h.resize(numcell_cent,1.0);
+    m.resize(numcell_cent,1.0);
+    n.resize(numcell_cent,1.0);
+
+    building_volume_frac.resize( numcell_cent, 1.0 );
+    terrain_volume_frac.resize( numcell_cent, 1.0 );
+    ni.resize( numcell_cent, 0.0 );
+    nj.resize( numcell_cent, 0.0 );
+    nk.resize( numcell_cent, 0.0 );
+    
+    icellflag.resize( numcell_cent, 1 );
+    ibuilding_flag.resize ( numcell_cent, -1 );
+    
+    mixingLengths.resize( numcell_cent, 0.0 );
+    
+    terrain.resize( numcell_cout_2d, 0.0 );
+    terrain_id.resize( nx*ny, 1 );
+    z0_domain_u.resize( nx*ny, 0.1 );
+    z0_domain_v.resize( nx*ny, 0.1 );
+
+
+    // Set the Wind Velocity data elements to be of the correct size
+    // Initialize u0,v0,w0,u,v and w to 0.0
+    u0.resize( numcell_face, 0.0 );
+    v0.resize( numcell_face, 0.0 );
+    w0.resize( numcell_face, 0.0 );
+    
+    u.resize(numcell_face,0.0);
+    v.resize(numcell_face,0.0);
+    w.resize(numcell_face,0.0);
+  
+    return;
+}
+
+void WINDSGeneralData::loadNetCDFData(int stepin)
+{
+  
+    std::cout << "[WINDS Data] \t loading data at step " << stepin <<std::endl;
+  
+    // netCDF variables
+    std::vector<size_t> start;
+    std::vector<size_t> count_cc;
+    std::vector<size_t> count_fc;
+
+    start = {static_cast<unsigned long>(stepin),0,0,0};
+    count_cc = {1,
+                static_cast<unsigned long>(nz-1),
+                static_cast<unsigned long>(ny-1),
+                static_cast<unsigned long>(nx-1)};
+    count_fc = {1,
+                static_cast<unsigned long>(nz),
+                static_cast<unsigned long>(ny),
+                static_cast<unsigned long>(nx)};
+  
+    // cell-center variables
+    // icellflag (see .h for velues)
+    input->getVariableData("icellflag",start,count_cc,icellflag);
+    /// coefficients for SOR solver
+    NcVar NcVar_SORcoeff;
+    input->getVariable("e", NcVar_SORcoeff);
+    
+    if(!NcVar_SORcoeff.isNull()) { 
+        input->getVariableData("e",start,count_cc,e);
+        input->getVariableData("f",start,count_cc,f);
+        input->getVariableData("g",start,count_cc,g);
+        input->getVariableData("h",start,count_cc,h);
+        input->getVariableData("m",start,count_cc,m);
+        input->getVariableData("n",start,count_cc,n); 
+    } else { 
+        std::cout << "[WINDS Data] \t no SORcoeff data found -> assumed e,f,g,h,m,n=1" << std::endl;
+    }
+  
+    // face-center variables
+    input->getVariableData("u",start,count_fc,u0);
+    input->getVariableData("v",start,count_fc,v0);
+    input->getVariableData("w",start,count_fc,w0);
+    
+    // clear wall indices container (guarantee entry vector)
+    wall_right_indices.clear();
+    wall_left_indices.clear();
+    wall_above_indices.clear();
+    wall_below_indices.clear();
+    wall_front_indices.clear();
+    wall_back_indices.clear();
+
+    // define new wall indices container for new data
+    wall->defineWalls(this);
+    
+
+    return;
+}
+
+
+void WINDSGeneralData::applyParametrizations(const WINDSInputData* WID) 
+{
    // ///////////////////////////////////////
    // Generic Parameterization Related Stuff
    // ///////////////////////////////////////
@@ -704,6 +914,22 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
 }
 
+void WINDSGeneralData::resetICellFlag()
+{
+    for (int k = 0; k < nz-2; k++) {
+        for (int j = 0; j < ny-1; j++) {
+            for (int i = 0; i < nx-1; i++) {
+                int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
+                if (icellflag[icell_cent] != 0 && icellflag[icell_cent] != 2 && 
+                    icellflag[icell_cent] != 8 && icellflag[icell_cent] != 7)
+                {
+                    icellflag[icell_cent] = 1;
+                }
+            }
+        }
+    }
+    return;
+}
 
 void WINDSGeneralData::applyParametrizations(const WINDSInputData* WID)
 {

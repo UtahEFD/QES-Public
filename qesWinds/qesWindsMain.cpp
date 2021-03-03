@@ -3,6 +3,7 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
@@ -28,6 +29,9 @@
 #include "Sensor.h"
 
 namespace pt = boost::property_tree;
+
+using namespace boost::gregorian;
+using namespace boost::posix_time;
 
 /**
  * This function takes in a filename and attempts to open and parse it.
@@ -65,13 +69,16 @@ int main(int argc, char *argv[])
     // ///////////////////////////////////
 
     // Parse the base XML QUIC file -- contains simulation parameters
-    WINDSInputData* WID = parseXMLTree(arguments.quicFile);
+    //WINDSInputData* WID = parseXMLTree(arguments.quicFile);
+    WINDSInputData* WID = new WINDSInputData(arguments.quicFile);
     if ( !WID ) {
         std::cerr << "[ERROR] QUIC Input file: " << arguments.quicFile <<
             " not able to be read successfully." << std::endl;
         exit(EXIT_FAILURE);
     }
 
+
+    /*
     // If the sensor file specified in the xml
     if (WID->metParams->sensorName.size() > 0)
     {
@@ -81,7 +88,7 @@ int main(int argc, char *argv[])
             WID->metParams->sensors[i] = parseSensors(WID->metParams->sensorName[i]);       // Parse new sensor objects from xml
         }
     }
-
+    */
 
     // Checking if
     if (arguments.compTurb && !WID->turbParams) {
@@ -165,6 +172,10 @@ int main(int argc, char *argv[])
         }
     }
 
+    /*
+    for(size_t index=0; index < WGD->timestamp.size(); index++)
+        std::cout << to_iso_extended_string(WGD->timestamp[index]) << std::endl;
+
     // Run WINDS simulation code
     solver->solve(WID, WGD, !arguments.solveWind );
 
@@ -192,126 +203,37 @@ int main(int argc, char *argv[])
     {
         outputVec.at(id_out)->save(0.0); // need to replace 0.0 with timestep
     }
+    */
 
-    if (WID->simParams->totalTimeIncrements > 1)
-    {
-      for (int index = 1; index < WID->simParams->totalTimeIncrements; index++)
-      {
+    for (int index = 0; index < WID->simParams->totalTimeIncrements; index++) {
+        std::cout << "Running time step: " <<  to_iso_extended_string(WGD->timestamp[index]) << std::endl;
         // Reset icellflag values
-        for (int k = 0; k < WGD->nz-2; k++)
-        {
-            for (int j = 0; j < WGD->ny-1; j++)
-            {
-                for (int i = 0; i < WGD->nx-1; i++)
-                {
-                    int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
-                    if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && WGD->icellflag[icell_cent] != 8 && WGD->icellflag[icell_cent] != 7)
-                    {
-                      WGD->icellflag[icell_cent] = 1;
-                    }
-                }
-            }
-        }
-
+        WGD->resetICellFlag();
+        
         // Create initial velocity field from the new sensors
         WID->metParams->sensors[0]->inputWindProfile(WID, WGD, index, arguments.solveType);
-
-        // ///////////////////////////////////////
-        // Canopy Vegetation Parameterization
-        // ///////////////////////////////////////
-        for (size_t i = 0; i < WGD->allBuildingsV.size(); i++)
-        {
-            // for now this does the canopy stuff for us
-            WGD->allBuildingsV[WGD->building_id[i]]->canopyVegetation(WGD);
-        }
-
-        ///////////////////////////////////////////
-        //   Upwind Cavity Parameterization     ///
-        ///////////////////////////////////////////
-        if (WID->simParams->upwindCavityFlag > 0)
-        {
-            std::cout << "Applying upwind cavity parameterization...\n";
-            for (size_t i = 0; i < WGD->allBuildingsV.size(); i++)
-            {
-                WGD->allBuildingsV[WGD->building_id[i]]->upwindCavity(WID, WGD);
-            }
-            std::cout << "Upwind cavity parameterization done...\n";
-        }
-
-        //////////////////////////////////////////////////
-        //   Far-Wake and Cavity Parameterizations     ///
-        //////////////////////////////////////////////////
-        if (WID->simParams->wakeFlag > 0)
-        {
-            std::cout << "Applying wake behind building parameterization...\n";
-            for (size_t i = 0; i < WGD->allBuildingsV.size(); i++)
-            {
-                WGD->allBuildingsV[WGD->building_id[i]]->polygonWake(WID, WGD, WGD->building_id[i]);
-            }
-            std::cout << "Wake behind building parameterization done...\n";
-        }
-
-        ///////////////////////////////////////////
-        //   Street Canyon Parameterization     ///
-        ///////////////////////////////////////////
-        if (WID->simParams->streetCanyonFlag > 0)
-        {
-            std::cout << "Applying street canyon parameterization...\n";
-            for (size_t i = 0; i < WGD->allBuildingsV.size(); i++)
-            {
-                WGD->allBuildingsV[WGD->building_id[i]]->streetCanyon(WGD);
-            }
-            std::cout << "Street canyon parameterization done...\n";
-        }
-
-        ///////////////////////////////////////////
-        //      Sidewall Parameterization       ///
-        ///////////////////////////////////////////
-        if (WID->simParams->sidewallFlag > 0)
-        {
-            std::cout << "Applying sidewall parameterization...\n";
-            for (size_t i = 0; i < WGD->allBuildingsV.size(); i++)
-            {
-                WGD->allBuildingsV[WGD->building_id[i]]->sideWall(WID, WGD);
-            }
-            std::cout << "Sidewall parameterization done...\n";
-        }
-
-
-        ///////////////////////////////////////////
-        //      Rooftop Parameterization        ///
-        ///////////////////////////////////////////
-        if (WID->simParams->rooftopFlag > 0)
-        {
-            std::cout << "Applying rooftop parameterization...\n";
-            for (size_t i = 0; i < WGD->allBuildingsV.size(); i++)
-            {
-                WGD->allBuildingsV[WGD->building_id[i]]->rooftop (WID, WGD);
-            }
-            std::cout << "Rooftop parameterization done...\n";
-        }
-
-        WGD->wall->setVelocityZero (WGD);
-
+        
+        // Apply parametrizations
+        WGD->applyParametrizations(WID);
+        
         // Run WINDS simulation code
         solver->solve(WID, WGD, !arguments.solveWind );
-
+        
         std::cout << "Solver done!\n";
-
+        
+        if(TGD != nullptr)
+            TGD->run(WGD);
+        
         // /////////////////////////////
         // Output the various files requested from the simulation run
         // (netcdf wind velocity, icell values, etc...
         // /////////////////////////////
         for(auto id_out=0u;id_out<outputVec.size();id_out++)
         {
-            outputVec.at(id_out)->save((float) index);
+            outputVec.at(id_out)->save(WGD->timestamp[index]);
         }
-
-      }
-
-    }
-
-
+    }    
+       
     // /////////////////////////////
     exit(EXIT_SUCCESS);
 }

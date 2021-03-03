@@ -6,6 +6,8 @@
 #include <map>
 #include <netcdf>
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
 #include "NetCDFOutput.h"
 
 /*
@@ -23,6 +25,9 @@
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
+
+using namespace boost::gregorian;
+using namespace boost::posix_time;
 
 //Attribute for scalar/vector for each type
 struct AttScalarInt {
@@ -54,7 +59,6 @@ struct AttVectorFlt {
     std::string units;
     std::vector<NcDim> dimensions;
 };
-
 struct AttScalarDbl {
     double* data;
     std::string name;
@@ -70,6 +74,15 @@ struct AttVectorDbl {
     std::vector<NcDim> dimensions;
 };
 
+struct AttVectorChar {
+    std::vector<char>* data;
+    std::string name;
+    std::string long_name;
+    std::string units;
+    std::vector<NcDim> dimensions;
+};
+
+
 class QESNetCDFOutput : public NetCDFOutput
 {
 public:
@@ -80,7 +93,10 @@ public:
     {}
 
     //save function be call outside
-    virtual void save(float) = 0;
+virtual void save(float)
+{}
+    virtual void save(ptime)
+    {}
 
 protected:
 
@@ -99,6 +115,9 @@ protected:
                          std::vector<NcDim>,std::vector<float>*);
     void createAttVector(std::string,std::string,std::string,
                          std::vector<NcDim>,std::vector<double>*);
+    void createAttVector(std::string,std::string,std::string,
+                         std::vector<NcDim>,std::vector<char>*);
+    
 
     // add fields based on output_fields
     void addOutputFields();
@@ -112,6 +131,9 @@ protected:
     {
         return true;
     };
+
+    std::vector<char> timestamp;
+    const int dateStrLen = 19;
 
     int output_counter=0;
     double time=0;
@@ -133,6 +155,7 @@ protected:
     std::map<std::string,AttVectorInt> map_att_vector_int;
     std::map<std::string,AttVectorFlt> map_att_vector_flt;
     std::map<std::string,AttVectorDbl> map_att_vector_dbl;
+    std::map<std::string,AttVectorChar> map_att_vector_char;
 
     /* vectors of output fields in the NetCDF file for
        scalar/vector for each type.
@@ -145,5 +168,6 @@ protected:
     std::vector<AttVectorInt> output_vector_int;
     std::vector<AttVectorFlt> output_vector_flt;
     std::vector<AttVectorDbl> output_vector_dbl;
-
+    std::vector<AttVectorChar> output_vector_char;
+    
 };

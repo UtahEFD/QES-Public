@@ -6,7 +6,7 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD,std::string out
     std::cout<<"[Output] \t Setting fields of workspace file"<<std::endl;
 
     // set list of fields to save, no option available for this file
-    output_fields = {"t","x_cc","y_cc","z_cc","z_face","dz_array",
+    output_fields = {"t","times","x_cc","y_cc","z_cc","z_face","dz_array",
                      "u","v","w","icellflag",
                      "terrain","z0_u","z0_v",
                      "e","f","g","h","m","n","building_volume_frac","terrain_volume_frac",
@@ -41,13 +41,23 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD,std::string out
         y_cc[j] = (j+0.5)*WGD_->dy;
     }
 
-    // set time data dimensions
+    timestamp.resize( dateStrLen, '0' );
+
+    // time dimension
     NcDim NcDim_t=addDimension("t");
+    NcDim NcDim_tstr=addDimension("dateStrLen",dateStrLen);
+    
     // create attributes for time dimension
     std::vector<NcDim> dim_vect_t;
     dim_vect_t.push_back(NcDim_t);
     createAttScalar("t","time","s",dim_vect_t,&time);
-
+    
+    // create attributes for time dimension
+    std::vector<NcDim> dim_vect_tstr;
+    dim_vect_tstr.push_back(NcDim_t);
+    dim_vect_tstr.push_back(NcDim_tstr);
+    createAttVector("times","date time","-",dim_vect_tstr,&timestamp);
+    
     // set face-centered data dimensions
     // space dimensions
     NcDim NcDim_x_fc=addDimension("x",WGD_->nx);
@@ -123,12 +133,15 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD,std::string out
 
 
 // Save output at cell-centered values
-void WINDSOutputWorkspace::save(float timeOut)
+void WINDSOutputWorkspace::save(ptime timeOut)
 {
 
     // set time
-    time = (double)timeOut;
-
+    time = (double)output_counter;
+    
+    std::string s=to_iso_extended_string(timeOut);
+    std::copy(s.begin(), s.end(), timestamp.begin());
+   
     // save fields
     saveOutputFields();
 

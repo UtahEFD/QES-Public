@@ -9,11 +9,26 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
     
     // local copies of trubulence parameters
     turbUpperBound = WID->turbParams->turbUpperBound;
+
+    if(WID->turbParams->sigConst) {
+        Vector3<float> sigConst;
+        sigConst=*(WID->turbParams->sigConst);
+        
+        sigUOrg=sigConst[0];
+        sigVOrg=sigConst[1];
+        sigWOrg=sigConst[2];
+        
+        sigUConst=sigUOrg*sigUOrg*cPope*cPope;
+        sigVConst=sigVOrg*sigVOrg*cPope*cPope;
+        sigWConst=sigWOrg*sigWOrg*cPope*cPope;
+    }
+        
     
     flagNonLocalMixing = WID->turbParams->flagNonLocalMixing;
     if(flagNonLocalMixing){
         std::cout << "\t\t Non-Local mixing for buidlings: ON \n";
     }
+
 
     // make local copy of grid information
     // nx,ny,nz consitant with WINDS (face-center)

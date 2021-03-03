@@ -21,7 +21,8 @@ public:
   ~WINDSOutputVisualization()
   {}
 
-  void save(float);
+    //void save(float);
+    void save(ptime);
 
 protected:
   bool validateFileOtions();
@@ -34,6 +35,6 @@ private:
   WINDSGeneralData* WGD_;
 
   // all possible output fields need to be add to this list
-  std::vector<std::string> allOutputFields = {"t","x","y","z","u","v","w","icell","terrain"};
+    std::vector<std::string> allOutputFields = {"t","times","x","y","z","u","v","w","icell","terrain"};
 
 };

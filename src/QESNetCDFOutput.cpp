@@ -82,6 +82,18 @@ void QESNetCDFOutput::createAttVector(std::string name,
     map_att_vector_dbl.emplace(name,att);
 }
 
+// -> char (for time)
+void QESNetCDFOutput::createAttVector(std::string name,
+                                      std::string long_name,
+                                      std::string units,
+                                      std::vector<NcDim> dims,
+                                      std::vector<char>* data)
+{
+    // FM -> here I do not know what is the best way to add the ref to data.
+    AttVectorChar att = {data,name,long_name,units,dims};
+    map_att_vector_char.emplace(name,att);
+}
+
 //----------------------------------------
 void QESNetCDFOutput::addOutputFields()
 {
@@ -117,6 +129,9 @@ void QESNetCDFOutput::addOutputFields()
         } else if (map_att_vector_dbl.count(key)) {
             // vector dbl
             output_vector_dbl.push_back(map_att_vector_dbl[key]);
+        } else if (map_att_vector_char.count(key)) {
+            // vector char
+            output_vector_char.push_back(map_att_vector_char[key]);
         }
     }
 
@@ -145,6 +160,10 @@ void QESNetCDFOutput::addOutputFields()
     // -> double
     for ( AttVectorDbl att : output_vector_dbl ) {
         addField(att.name, att.units, att.long_name, att.dimensions, ncDouble);
+    }
+    // -> double
+    for ( AttVectorChar att : output_vector_char ) {
+        addField(att.name, att.units, att.long_name, att.dimensions, ncChar);
     }
   
 };
@@ -208,7 +227,15 @@ void QESNetCDFOutput::rmOutputField(std::string name)
             output_vector_dbl.erase(output_vector_dbl.begin()+i);
             return;
         } 
-    } 
+    }  
+    // -> double
+    for (unsigned int i=0; i<output_vector_char.size(); i++) {
+        if(output_vector_char[i].name==name) {
+            output_vector_char.erase(output_vector_char.begin()+i);
+            return;
+        } 
+    }
+    
 };
 
 void QESNetCDFOutput::rmTimeIndepFields()
@@ -380,6 +407,25 @@ void QESNetCDFOutput::saveOutputFields()
    
         saveField2D(output_vector_dbl[i].name, vector_index,
                     vector_size, *output_vector_dbl[i].data);
+    }
+     // -> Char for time
+    for (unsigned int i=0; i<output_vector_char.size(); i++) {
+        std::vector<size_t> vector_index;
+        std::vector<size_t> vector_size;
+    
+        // if var is time dep -> special treatement for time
+        if(output_vector_char[i].dimensions[0].getName()=="t"){
+            vector_index.push_back(static_cast<size_t>(output_counter));
+            vector_size.push_back(1);
+            for(unsigned int d=1;d<output_vector_char[i].dimensions.size();d++){
+                int dim=output_vector_char[i].dimensions[d].getSize();
+                vector_index.push_back(0);
+                vector_size.push_back(static_cast<unsigned long>(dim));
+            }
+        }
+        
+        saveField2D(output_vector_char[i].name, vector_index,
+                    vector_size, *output_vector_char[i].data);
     
     }
 
