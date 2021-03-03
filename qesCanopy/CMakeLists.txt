@@ -17,6 +17,7 @@ IF (HAS_OPTIX_SUPPORT MATCHES ON)
 ENDIF()
 
 target_link_libraries(qesCanopy ${Boost_PROGRAM_OPTIONS_LIBRARIES})
+target_link_libraries(qesCanopy ${Boost_DATE_TIME_LIBRARIES})
 target_link_libraries(qesCanopy ${GDAL_LIBRARY})
 target_link_libraries(qesCanopy ${NETCDF_LIBRARIES_CXX})
 target_link_libraries(qesCanopy ${NETCDF_LIBRARIES_C})

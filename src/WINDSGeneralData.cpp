@@ -556,6 +556,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       }
    }
 
+   
    // We want to sort ALL buildings here...  use the allBuildingsV to
    // do this... (remember some are canopies) so we may need a
    // virtual function in the Building class to get the appropriate
@@ -608,6 +609,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
        NCDFInput->getVariableData("m",start,count,m);
        NCDFInput->getVariableData("n",start,count,n);
        
+   }
+   
+   for (size_t i = 0; i < allBuildingsV.size(); i++)
+   {
+       // for now this does the canopy stuff for us
+       allBuildingsV[building_id[i]]->canopyInitial(this,building_id[i]);
    }
    
    return;
@@ -805,113 +812,115 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
     // define new wall indices container for new data
     wall->defineWalls(this);
     
-
+    
     return;
 }
 
 
 void WINDSGeneralData::applyParametrizations(const WINDSInputData* WID) 
 {
-   // ///////////////////////////////////////
-   // Generic Parameterization Related Stuff
-   // ///////////////////////////////////////
-   for (size_t i = 0; i < allBuildingsV.size(); i++)
-   {
-      // for now this does the canopy stuff for us
-       allBuildingsV[building_id[i]]->canopyInitial(this,building_id[i]);
-   }
-
-   ///////////////////////////////////////////
-   //   Upwind Cavity Parameterization     ///
-   ///////////////////////////////////////////
-   if (WID->simParams->upwindCavityFlag > 0)
-   {
-      std::cout << "Applying upwind cavity parameterization...\n";
-      for (size_t i = 0; i < allBuildingsV.size(); i++)
+    
+    std::cout << "[Winds] \t applying Parameterization" << std::endl;
+    // ///////////////////////////////////////
+    // Generic Parameterization Related Stuff
+    // ///////////////////////////////////////
+    for (size_t i = 0; i < allBuildingsV.size(); i++)
+    {
+        // for now this does the canopy stuff for us
+        allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
+    }
+    
+    ///////////////////////////////////////////
+    //   Upwind Cavity Parameterization     ///
+    ///////////////////////////////////////////
+    if (WID->simParams->upwindCavityFlag > 0)
+    {
+        std::cout << "Applying upwind cavity parameterization...\n";
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
+        {
+            allBuildingsV[building_id[i]]->upwindCavity(WID, this);
+        }
+        std::cout << "Upwind cavity parameterization done...\n";
+    }
+    
+    //////////////////////////////////////////////////
+    //   Far-Wake and Cavity Parameterizations     ///
+    //////////////////////////////////////////////////
+    if (WID->simParams->wakeFlag > 0)
+    {
+        std::cout << "Applying wake behind building parameterization...\n";
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
+        {
+            allBuildingsV[building_id[i]]->polygonWake(WID, this, building_id[i]);
+        }
+        std::cout << "Wake behind building parameterization done...\n";
+    }
+    
+    ///////////////////////////////////////////
+    //   Street Canyon Parameterization     ///
+    ///////////////////////////////////////////
+    if (WID->simParams->streetCanyonFlag > 0)
+    {
+        std::cout << "Applying street canyon parameterization...\n";
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
+        {
+            allBuildingsV[building_id[i]]->streetCanyon(this);
+        }
+        std::cout << "Street canyon parameterization done...\n";
+    }
+    
+    ///////////////////////////////////////////
+    //      Sidewall Parameterization       ///
+    ///////////////////////////////////////////
+    if (WID->simParams->sidewallFlag > 0)
+    {
+        std::cout << "Applying sidewall parameterization...\n";
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
+        {
+            allBuildingsV[building_id[i]]->sideWall(WID, this);
+        }
+        std::cout << "Sidewall parameterization done...\n";
+    }
+    
+    
+    ///////////////////////////////////////////
+    //      Rooftop Parameterization        ///
+    ///////////////////////////////////////////
+    if (WID->simParams->rooftopFlag > 0)
+    {
+        std::cout << "Applying rooftop parameterization...\n";
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
+        {
+            allBuildingsV[building_id[i]]->rooftop (WID, this);
+        }
+        std::cout << "Rooftop parameterization done...\n";
+    }
+    
+    ///////////////////////////////////////////
+    //         Street Intersection          ///
+    ///////////////////////////////////////////
+    /*if (WID->simParams->streetCanyonFlag > 0 && WID->simParams->streetIntersectionFlag > 0 && allBuildingsV.size() > 0)
       {
-         allBuildingsV[building_id[i]]->upwindCavity(WID, this);
-      }
-      std::cout << "Upwind cavity parameterization done...\n";
-   }
-
-   //////////////////////////////////////////////////
-   //   Far-Wake and Cavity Parameterizations     ///
-   //////////////////////////////////////////////////
-   if (WID->simParams->wakeFlag > 0)
-   {
-      std::cout << "Applying wake behind building parameterization...\n";
-      for (size_t i = 0; i < allBuildingsV.size(); i++)
-      {
-         allBuildingsV[building_id[i]]->polygonWake(WID, this, building_id[i]);
-      }
-      std::cout << "Wake behind building parameterization done...\n";
-   }
-
-   ///////////////////////////////////////////
-   //   Street Canyon Parameterization     ///
-   ///////////////////////////////////////////
-   if (WID->simParams->streetCanyonFlag > 0)
-   {
-      std::cout << "Applying street canyon parameterization...\n";
-      for (size_t i = 0; i < allBuildingsV.size(); i++)
-      {
-         allBuildingsV[building_id[i]]->streetCanyon(this);
-      }
-      std::cout << "Street canyon parameterization done...\n";
-   }
-
-   ///////////////////////////////////////////
-   //      Sidewall Parameterization       ///
-   ///////////////////////////////////////////
-   if (WID->simParams->sidewallFlag > 0)
-   {
-      std::cout << "Applying sidewall parameterization...\n";
-      for (size_t i = 0; i < allBuildingsV.size(); i++)
-      {
-         allBuildingsV[building_id[i]]->sideWall(WID, this);
-      }
-      std::cout << "Sidewall parameterization done...\n";
-   }
-
-
-   ///////////////////////////////////////////
-   //      Rooftop Parameterization        ///
-   ///////////////////////////////////////////
-   if (WID->simParams->rooftopFlag > 0)
-   {
-      std::cout << "Applying rooftop parameterization...\n";
-      for (size_t i = 0; i < allBuildingsV.size(); i++)
-      {
-         allBuildingsV[building_id[i]]->rooftop (WID, this);
-      }
-      std::cout << "Rooftop parameterization done...\n";
-   }
-
-   ///////////////////////////////////////////
-   //         Street Intersection          ///
-   ///////////////////////////////////////////
-   /*if (WID->simParams->streetCanyonFlag > 0 && WID->simParams->streetIntersectionFlag > 0 && allBuildingsV.size() > 0)
-     {
-     std::cout << "Applying Blended Region Parameterization...\n";
-     allBuildingsV[0]->streetIntersection (WID, this);
-     allBuildingsV[0]->poisson (WID, this);
-     std::cout << "Blended Region Parameterization done...\n";
-     }*/
-
-
-   /*
-    * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
-    * wall above/below and wall in front/back and applies the log law boundary condition fix
-    * to the cells near Walls
-    *
-    */
-   //wall->wallLogBC (this);
-
-   wall->setVelocityZero (this);
-
-
-   return;
-
+      std::cout << "Applying Blended Region Parameterization...\n";
+      allBuildingsV[0]->streetIntersection (WID, this);
+      allBuildingsV[0]->poisson (WID, this);
+      std::cout << "Blended Region Parameterization done...\n";
+      }*/
+    
+    
+    /*
+     * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
+     * wall above/below and wall in front/back and applies the log law boundary condition fix
+     * to the cells near Walls
+     *
+     */
+    //wall->wallLogBC (this);
+    
+    wall->setVelocityZero (this);
+    
+    
+    return;
+    
 }
 
 void WINDSGeneralData::resetICellFlag()
@@ -928,23 +937,6 @@ void WINDSGeneralData::resetICellFlag()
             }
         }
     }
-    return;
-}
-
-void WINDSGeneralData::applyParametrizations(const WINDSInputData* WID)
-{
-
-    std::cout << "[Winds] \t applying Parameterization" << std::endl;
-
-    // ///////////////////////////////////////
-    // Generic Parameterization Related Stuff
-    // ///////////////////////////////////////
-    for (size_t i = 0; i < allBuildingsV.size(); i++)
-    {
-        // for now this does the canopy stuff for us
-        allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
-    }   
-    
     return;
 }
 

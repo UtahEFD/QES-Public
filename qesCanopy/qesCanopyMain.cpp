@@ -1,8 +1,6 @@
 #include <iostream>
 
-#include <boost/foreach.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
@@ -27,18 +25,8 @@
 
 #include "Sensor.h"
 
-namespace pt = boost::property_tree;
-
-/**
- * This function takes in a filename and attempts to open and parse it.
- * If the file can't be opened or parsed properly it throws an exception,
- * if the file is missing necessary data, an error will be thrown detailing
- * what data and where in the xml the data is missing. If the tree can't be
- * parsed, the Root* value returned is 0, which will register as false if tested.
- * @param fileName the path/name of the file to be opened, must be an xml
- * @return A pointer to a root that is filled with data parsed from the tree
- */
-WINDSInputData* parseXMLTree(const std::string fileName);
+using namespace boost::gregorian;
+using namespace boost::posix_time;
 
 int main(int argc, char *argv[])
 {
@@ -48,7 +36,7 @@ int main(int argc, char *argv[])
 #ifdef HAS_OPTIX
     std::cout << "OptiX is available!" << std::endl;
 #endif
-    
+
     // ///////////////////////////////////
     // Parse Command Line arguments
     // ///////////////////////////////////
@@ -64,7 +52,7 @@ int main(int argc, char *argv[])
     // ///////////////////////////////////
 
     // Parse the base XML QUIC file -- contains simulation parameters
-    WINDSInputData* WID = parseXMLTree(arguments.quicFile);
+    WINDSInputData* WID = new WINDSInputData(arguments.quicFile);
     if ( !WID ) {
         std::cerr << "[ERROR] QUIC Input file: " << arguments.quicFile <<
             " not able to be read successfully." << std::endl;
@@ -151,63 +139,44 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Run WINDS simulation code
-    solver->solve(WID, WGD, !arguments.solveWind );
-    std::cout << "Solver done!\n";
+    for (int index = 0; index < WID->simParams->totalTimeIncrements; index++) {
+        std::cout << "Running time step: " <<  to_iso_extended_string(WGD->timestamp[index]) << std::endl;
+        // Reset icellflag values
+        //WGD->resetICellFlag();
+        
+        // Create initial velocity field from the new sensors
+        WID->metParams->sensors[0]->inputWindProfile(WID, WGD, index, arguments.solveType);
+        
+        // Run WINDS simulation code
+        solver->solve(WID, WGD, !arguments.solveWind );
+        std::cout << "Solver done!\n";
 
-    // set u0,v0 to current solution    
-    WGD->u0 = WGD->u;    
-    WGD->v0 = WGD->v;
-    
-    WGD->applyParametrizations(WID);
-    
-    // Run WINDS simulation code
-    solver->solve(WID, WGD, !arguments.solveWind );
-    std::cout << "Solver done!\n";
-    
-    
-    if (solverC != nullptr) {
-        std::cout << "Running comparson type...\n";
-        solverC->solve(WID, WGD, !arguments.solveWind);
+        // set u0,v0 to current solution    
+        WGD->u0 = WGD->u;    
+        WGD->v0 = WGD->v;
+        
+        // Apply parametrizations
+        WGD->applyParametrizations(WID);
+        
+        // Run WINDS simulation code
+        solver->solve(WID, WGD, !arguments.solveWind );
+        std::cout << "Solver done!\n";
+        
+        
+        // Run turbulence
+        if(TGD != nullptr) {
+            TGD->run(WGD);
+        }
+        
+        // /////////////////////////////
+        // Output the various files requested from the simulation run
+        // (netcdf wind velocity, icell values, etc...
+        // /////////////////////////////
+        for(auto id_out=0u;id_out<outputVec.size();id_out++) {
+            outputVec.at(id_out)->save(WGD->timestamp[index]); // need to replace 0.0 with timestep
+        }
     }
-
-    // /////////////////////////////
-    //
-    // Run turbulence
-    //
-    // /////////////////////////////
-    if(TGD != nullptr) {
-        TGD->run(WGD);
-    }
-
-    // /////////////////////////////
-    // Output the various files requested from the simulation run
-    // (netcdf wind velocity, icell values, etc...
-    // /////////////////////////////
-    for(auto id_out=0u;id_out<outputVec.size();id_out++) {
-        outputVec.at(id_out)->save(0.0); // need to replace 0.0 with timestep
-    }
-
 
     // /////////////////////////////
     exit(EXIT_SUCCESS);
-}
-
-WINDSInputData* parseXMLTree(const std::string fileName)
-{
-	pt::ptree tree;
-
-	try
-	{
-		pt::read_xml(fileName, tree);
-	}
-	catch (boost::property_tree::xml_parser::xml_parser_error& e)
-	{
-		std::cerr << "Error reading tree in" << fileName << "\n";
-		return (WINDSInputData*)0;
-	}
-
-	WINDSInputData* xmlRoot = new WINDSInputData();
-        xmlRoot->parseTree( tree );
-	return xmlRoot;
 }
