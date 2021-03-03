@@ -61,7 +61,7 @@ private:
   
     float attenuationCoeff;
     float zMaxLAI;
-    int ustar_method=0;
+    int ustar_method=2;
     const int cellFlagTree=11;
     const int cellFlagWake=12; 
 
