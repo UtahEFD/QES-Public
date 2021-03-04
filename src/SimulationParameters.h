@@ -248,9 +248,12 @@ public:
 
             // First read DEM as usual
             std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
+
+            std::cout << "Domain: " << (*(domain))[0] << ", " << (*(domain))[1] << ", " << (*(domain))[2] << std::endl;
+            std::cout << "Grid: " << (*(grid))[0] << ", " << (*(grid))[1] << ", " << (*(grid))[2] << std::endl;            
             DTE_heightField = new DTEHeightField(demFile,
-                                                 std::tuple<float,float,float>( (*(domain))[0], (*(domain))[1], (*(domain))[2] ),
-                                                 std::tuple<int,int,int>( (*(grid))[0], (*(grid))[1], (*(grid))[2] ),
+                                                 std::tuple<int,int,int>( (*(domain))[0], (*(domain))[1], (*(domain))[2] ),
+                                                 std::tuple<float,float,float>( (*(grid))[0], (*(grid))[1], (*(grid))[2] ),
                                                  UTMx, UTMy,
                                                  originFlag, DEMDistancex, DEMDistancey);
             assert(DTE_heightField);
