@@ -40,11 +40,15 @@ public:
 
     }
     
-
-    void canopyInitial(WINDSGeneralData *wgd, int building_id);
+    void setCellFlags (const WINDSInputData* WID, WINDSGeneralData* WGD, int building_id);
 
     void canopyVegetation(WINDSGeneralData *wgd, int building_id);
-  
+    void canopyWake(WINDSGeneralData *wgd, int building_id);
+    
+    int getCellFlagCanopy();
+    int getCellFlagWake();
+    
+    
     /*!
      * This function takes in variables read in from input files and initializes required variables for definig
      * canopy elementa.
@@ -55,6 +59,15 @@ public:
 private:
   
     float attenuationCoeff;
-    const int cellFlagCionco=11;
   
 };
+
+inline int CanopyHomogeneous::getCellFlagCanopy()
+{
+    return 20;
+}
+
+inline int CanopyHomogeneous::getCellFlagWake()
+{
+    return 21;
+}

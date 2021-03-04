@@ -45,11 +45,13 @@ public:
 
     }
     
-
-    void canopyInitial(WINDSGeneralData *wgd,int building_id);
-
+    void setCellFlags (const WINDSInputData* WID, WINDSGeneralData* WGD, int building_number);
     void canopyVegetation(WINDSGeneralData *wgd,int building_id);
-  
+    void canopyWake(WINDSGeneralData *wgd,int building_id);
+
+    int getCellFlagCanopy();
+    int getCellFlagWake();
+
     /*!
      * This function takes in variables read in from input files and initializes required variables for definig
      * canopy elementa.
@@ -62,14 +64,22 @@ private:
     float attenuationCoeff;
     float zMaxLAI;
     int ustar_method=2;
-    const int cellFlagTree=11;
-    const int cellFlagWake=12; 
 
-    void canopyWake(WINDSGeneralData *wgd, int building_id);
     float Bfunc(const float&);
     float ucfunc(const float&,const float&);
     
 };
+
+inline int CanopyIsolatedTree::getCellFlagCanopy()
+{
+    return 22;
+}
+
+inline int CanopyIsolatedTree::getCellFlagWake()
+{
+    return 23;
+}
+
 
 inline float CanopyIsolatedTree::Bfunc(const float& xh)
 {

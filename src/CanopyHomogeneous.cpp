@@ -4,7 +4,7 @@
 #include "WINDSGeneralData.h"
 
 // set et attenuation coefficient 
-void CanopyHomogeneous::canopyInitial(WINDSGeneralData *WGD,int building_id)
+void CanopyHomogeneous::setCellFlags (const WINDSInputData* WID, WINDSGeneralData* WGD, int building_id)
 {
     // When THIS canopy calls this function, we need to do the
     // following:
@@ -12,7 +12,10 @@ void CanopyHomogeneous::canopyInitial(WINDSGeneralData *WGD,int building_id)
     //canopy_atten, canopy_top);
     
     // this function need to be called to defined the boundary of the canopy and the icellflags
-    canopyDefineBoundary(WGD,building_id,cellFlagCionco);
+    setCanopyGrid(WGD,building_id);
+    
+    // Resize the canopy-related vectors
+    canopy_atten.resize( numcell_cent_3d, 0.0 );
     
     for (auto j=0; j<ny_canopy; j++) {
         for (auto i=0; i<nx_canopy; i++) {
@@ -30,12 +33,15 @@ void CanopyHomogeneous::canopyInitial(WINDSGeneralData *WGD,int building_id)
 
 
 void CanopyHomogeneous::canopyVegetation(WINDSGeneralData* WGD, int building_id)
-{
-  
+{ 
     // Apply canopy parameterization
     canopyCioncoParam(WGD);		
     
     return;
 }
 
+void CanopyHomogeneous::canopyWake(WINDSGeneralData* WGD, int building_id)
+{
+    return;
+}
 

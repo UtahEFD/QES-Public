@@ -3,11 +3,8 @@
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 
-void Canopy::canopyDefineBoundary(WINDSGeneralData* WGD,int building_number,int cellFlagToUse)
+void Canopy::setPolyBuilding(WINDSGeneralData* WGD)
 {
-
-    float ray_intersect;
-    unsigned int num_crossing, vert_id, start_poly;
 
     // Calculate the centroid coordinates of the building (average of all nodes coordinates)
     building_cent_x = 0.0;               // x-coordinate of the centroid of the building
@@ -23,6 +20,14 @@ void Canopy::canopyDefineBoundary(WINDSGeneralData* WGD,int building_number,int 
     
     i_building_cent = std::round(building_cent_x/WGD->dx)-1;   // Index of building centroid in x-direction
     j_building_cent = std::round(building_cent_y/WGD->dy)-1;   // Index of building centroid in y-direction
+    
+    return;
+}
+
+void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
+{
+    float ray_intersect;
+    unsigned int num_crossing, vert_id, start_poly;
 
     // Loop to calculate maximum and minimum of x and y values of the building
     x_min = x_max = polygonVertices[0].x_poly;
@@ -138,16 +143,15 @@ void Canopy::canopyDefineBoundary(WINDSGeneralData* WGD,int building_number,int 
                 // define icellflag @ (x,y) for all z(k) in [k_start...k_end]
                 for (auto k=canopy_bot_index[icell_canopy_2d]; k<=canopy_top_index[icell_canopy_2d]; k++) {
                     int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
+                    int icell_canopy_3d = i + j*nx_canopy + k*nx_canopy*ny_canopy;
                     if( WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
                         // Canopy cell
-                        WGD->icellflag[icell_cent] = cellFlagToUse;             
+                        WGD->icellflag[icell_cent] = getCellFlagCanopy();
+                        WGD->ibuilding_flag[icell_cent] = building_number;
+                        canopy_cellMap[icell_cent] = icell_canopy_3d;
                     }
                 }
                 
-                for (auto k=canopy_bot_index[icell_canopy_2d]; k<canopy_top_index[icell_canopy_2d]; k++) {
-                    int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
-                    WGD->ibuilding_flag[icell_cent] = building_number;
-                }
             } // end define icellflag!
         }
     }
@@ -188,8 +192,6 @@ void Canopy::canopyDefineBoundary(WINDSGeneralData* WGD,int building_number,int 
 
     // number of cell-center elements (3D)
     numcell_cent_3d = nx_canopy*ny_canopy*nz_canopy;
-    // Resize the canopy-related vectors
-    canopy_atten.resize( numcell_cent_3d, 0.0 );
     
     return;
 }

@@ -505,8 +505,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       for (size_t i = 0; i < WID->canopies->canopies.size(); i++)
       {
          allBuildingsV.push_back( WID->canopies->canopies[i] );
-         effective_height.push_back(allBuildingsV[i]->height_eff);
-         building_id.push_back(allBuildingsV.size()-1);
+         
+         int j = allBuildingsV.size()-1;
+         building_id.push_back( j );
+         
+         allBuildingsV[j]->setPolyBuilding(this);
+         allBuildingsV[j]->setCellFlags(WID, this, j);
+
+         effective_height.push_back(allBuildingsV[j]->height_eff);
       }
    }
 
@@ -552,7 +558,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
          }
          allBuildingsV[j]->setPolyBuilding(this);
          allBuildingsV[j]->setCellFlags(WID, this, j);
-         effective_height.push_back(allBuildingsV[i]->height_eff);
+         effective_height.push_back(allBuildingsV[j]->height_eff);
       }
    }
 
@@ -609,12 +615,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
        NCDFInput->getVariableData("m",start,count,m);
        NCDFInput->getVariableData("n",start,count,n);
        
-   }
-   
-   for (size_t i = 0; i < allBuildingsV.size(); i++)
-   {
-       // for now this does the canopy stuff for us
-       allBuildingsV[building_id[i]]->canopyInitial(this,building_id[i]);
    }
    
    return;
@@ -828,6 +828,15 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData* WID)
     {
         // for now this does the canopy stuff for us
         allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
+    }
+
+    // ///////////////////////////////////////
+    // Generic Parameterization Related Stuff
+    // ///////////////////////////////////////
+    for (size_t i = 0; i < allBuildingsV.size(); i++)
+    {
+        // for now this does the canopy stuff for us
+        allBuildingsV[building_id[i]]->canopyWake(this, building_id[i]);
     }
     
     ///////////////////////////////////////////

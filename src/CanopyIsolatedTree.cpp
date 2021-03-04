@@ -4,7 +4,7 @@
 #include "WINDSGeneralData.h"
 
 // set et attenuation coefficient 
-void CanopyIsolatedTree::canopyInitial(WINDSGeneralData *WGD,int building_id)
+void CanopyIsolatedTree::setCellFlags (const WINDSInputData* WID, WINDSGeneralData* WGD, int building_id)
 {
     // When THIS canopy calls this function, we need to do the
     // following:
@@ -12,12 +12,15 @@ void CanopyIsolatedTree::canopyInitial(WINDSGeneralData *WGD,int building_id)
     //canopy_atten, canopy_top);
     
     // this function need to be called to defined the boundary of the canopy and the icellflags
-    canopyDefineBoundary(WGD,building_id,cellFlagTree);
+    setCanopyGrid(WGD,building_id);
     
     if(ceil(1.5*k_end) > WGD->nz-1) {
         std::cerr << "ERROR domain too short for tree method" << std::endl;
         exit(EXIT_FAILURE);
     }
+
+    // Resize the canopy-related vectors
+    canopy_atten.resize( numcell_cent_3d, 0.0 );
 
     for (auto j=0; j<ny_canopy; j++) {
         for (auto i=0; i<nx_canopy; i++) {
@@ -40,15 +43,8 @@ void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData* WGD, int building_id
     // apply canopy parameterization
     canopyCioncoParam(WGD);		
     
-    // apply wake parameterization
-    canopyWake(WGD,building_id);
-
     return;
 }
-
-
-
-
 
 void CanopyIsolatedTree::canopyWake(WINDSGeneralData* WGD, int building_id)
 {
@@ -194,7 +190,7 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData* WGD, int building_id)
                     x_idx_min = x_idx;
                 
                 if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 2 || 
-                    WGD->icellflag[icell_cent] == cellFlagTree)
+                    WGD->icellflag[icell_cent] == getCellFlagCanopy())
                 {
                     // check for canopy/building/terrain that will disrupt the wake
                     if (x_idx_min >= 0) {
@@ -208,7 +204,7 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData* WGD, int building_id)
                 }
                 
                 if(WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && 
-                   WGD->icellflag[icell_cent] != cellFlagTree) {
+                   WGD->icellflag[icell_cent] != getCellFlagCanopy()) {
                     // START OF WAKE VELOCITY PARAMETRIZATION
 
                     // wake u-values
@@ -385,7 +381,7 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData* WGD, int building_id)
                                 u_c=ucfunc(x_w/H,ustar_wake);                    
                                 u_defect=u_c*(exp(-(r_center*r_center)/(lambda_sq*delta*delta)));
                                 // apply parametrization
-                                WGD->icellflag[icell_cent]=cellFlagWake;
+                                WGD->icellflag[icell_cent]=getCellFlagWake();
                             } //if (r_center<delta/1)
                         }
                     }

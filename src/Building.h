@@ -83,16 +83,14 @@ public:
     {
     }
 
-    virtual void canopyInitial (WINDSGeneralData *WGD,int building_id)
-    {
-    }
-    virtual void canopyVegetation (WINDSGeneralData *WGD)
-    {
-    }
     virtual void canopyVegetation (WINDSGeneralData *WGD,int building_id)
     {
     }
+    virtual void canopyWake(WINDSGeneralData *wgd,int building_id)
+    {
+    }
     
+
     virtual void streetCanyon (WINDSGeneralData *WGD)
     {
     }
