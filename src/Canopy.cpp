@@ -122,9 +122,9 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
                 
                 // Define end index of the canopy in z-direction   
                 for (size_t k=0; k<WGD->z.size(); k++) {
-                    if(WGD->terrain[icell_cent_2d]+base_height+H < WGD->z[k+1]) {
+                    if(WGD->terrain[icell_cent_2d]+H < WGD->z[k+1]) {
                         canopy_top_index[icell_canopy_2d] = k+1;
-                        canopy_top[icell_canopy_2d] = WGD->terrain[icell_cent_2d]+base_height+H;
+                        canopy_top[icell_canopy_2d] = WGD->terrain[icell_cent_2d]+H;
                         break;
                     }
                 }
@@ -141,7 +141,7 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
                 canopy_height[icell_canopy_2d] = canopy_top[icell_canopy_2d]-canopy_bot[icell_canopy_2d];
                 
                 // define icellflag @ (x,y) for all z(k) in [k_start...k_end]
-                for (auto k=canopy_bot_index[icell_canopy_2d]; k<=canopy_top_index[icell_canopy_2d]; k++) {
+                for (auto k=canopy_bot_index[icell_canopy_2d]; k<canopy_top_index[icell_canopy_2d]; k++) {
                     int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
                     int icell_canopy_3d = i + j*nx_canopy + k*nx_canopy*ny_canopy;
                     if( WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
@@ -192,7 +192,7 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
 
     // number of cell-center elements (3D)
     numcell_cent_3d = nx_canopy*ny_canopy*nz_canopy;
-    
+
     return;
 }
 

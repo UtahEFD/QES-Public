@@ -25,7 +25,7 @@ void CanopyIsolatedTree::setCellFlags (const WINDSInputData* WID, WINDSGeneralDa
     for (auto j=0; j<ny_canopy; j++) {
         for (auto i=0; i<nx_canopy; i++) {
             int icell_2d = i + j*nx_canopy;
-            for (auto k=canopy_bot_index[icell_2d]; k<=canopy_top_index[icell_2d]; k++) {
+            for (auto k=canopy_bot_index[icell_2d]; k<canopy_top_index[icell_2d]; k++) {
                 int icell_3d = i + j*nx_canopy + k*nx_canopy*ny_canopy;
                 // initiate all attenuation coefficients to the canopy coefficient
                 canopy_atten[icell_3d] = attenuationCoeff;     

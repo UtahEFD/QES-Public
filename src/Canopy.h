@@ -65,7 +65,7 @@ protected:
      * 
      */
     std::vector<float> canopy_atten;	  /**< Canopy attenuation coefficient */
-
+    
     std::vector<float> canopy_bot;		  /**< Canopy bottom */
     std::vector<int> canopy_bot_index;	  /**< Canopy bottom index */
     std::vector<float> canopy_top;		  /**< Canopy top */
