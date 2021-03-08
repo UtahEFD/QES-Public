@@ -49,7 +49,7 @@ public:
     virtual int getCellFlagCanopy() = 0;
     virtual int getCellFlagWake() = 0;
 
-    std::map<int,int> canopy_cellMap;    /**< map beteen WINDS grid and canopy grid */
+    std::map<int,int> canopy_cellMap2D,canopy_cellMap3D;    /**< map beteen WINDS grid and canopy grid */
     
     CanopyType _cType;
     

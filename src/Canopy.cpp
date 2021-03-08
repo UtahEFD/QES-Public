@@ -75,6 +75,9 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
     canopy_ustar.resize( numcell_cent_2d, 0.0 );
     canopy_d.resize( numcell_cent_2d, 0.0 );
 
+    canopy_cellMap3D.clear();
+    canopy_cellMap2D.clear();
+
     // Find out which cells are going to be inside the polygone
     // Based on Wm. Randolph Franklin, "PNPOLY - Point Inclusion in Polygon Test"
     // Check the center of each cell, if it's inside, set that cell to building
@@ -111,6 +114,8 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
                 int icell_cent_2d = i + j*(WGD->nx-1);
                 int icell_canopy_2d = (i+1-i_start) + (j+1-j_start)*nx_canopy;
                 
+                canopy_cellMap2D[icell_cent_2d] = icell_canopy_2d;
+
                 // Define start index of the canopy in z-direction
                 for (size_t k=1; k<WGD->z.size(); k++) {
                     if (WGD->terrain[icell_cent_2d]+base_height <= WGD->z[k]) {
@@ -148,7 +153,7 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
                         // Canopy cell
                         WGD->icellflag[icell_cent] = getCellFlagCanopy();
                         WGD->ibuilding_flag[icell_cent] = building_number;
-                        canopy_cellMap[icell_cent] = icell_canopy_3d;
+                        canopy_cellMap3D[icell_cent] = icell_canopy_3d;
                     }
                 }
                 
