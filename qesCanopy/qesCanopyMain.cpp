@@ -151,17 +151,19 @@ int main(int argc, char *argv[])
         solver->solve(WID, WGD, !arguments.solveWind );
         std::cout << "Solver done!\n";
 
-        // set u0,v0 to current solution    
-        WGD->u0 = WGD->u;    
-        WGD->v0 = WGD->v;
-        
-        // Apply parametrizations
-        WGD->applyParametrizations(WID);
-        
-        // Run WINDS simulation code
-        solver->solve(WID, WGD, !arguments.solveWind );
-        std::cout << "Solver done!\n";
-        
+        for (int k = 0; k < 2; ++k) { 
+            // set u0,v0 to current solution    
+            WGD->u0 = WGD->u;    
+            WGD->v0 = WGD->v;
+            WGD->w0 = WGD->w;
+            
+            // Apply parametrizations
+            WGD->applyParametrizations(WID);
+            
+            // Run WINDS simulation code
+            solver->solve(WID, WGD, !arguments.solveWind );
+            std::cout << "Solver done!\n";
+        }
         
         // Run turbulence
         if(TGD != nullptr) {
