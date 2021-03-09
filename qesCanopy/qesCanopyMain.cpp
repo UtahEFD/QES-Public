@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
         solver->solve(WID, WGD, !arguments.solveWind );
         std::cout << "Solver done!\n";
 
-        for (int k = 0; k < 2; ++k) { 
+        for (int k = 0; k < 1; ++k) { 
             // set u0,v0 to current solution    
             WGD->u0 = WGD->u;    
             WGD->v0 = WGD->v;
