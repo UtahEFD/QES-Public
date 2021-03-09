@@ -31,7 +31,7 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
 
     // Loop to calculate maximum and minimum of x and y values of the building
     x_min = x_max = polygonVertices[0].x_poly;
-    y_min = x_max = polygonVertices[0].y_poly;
+    y_min = y_max = polygonVertices[0].y_poly;
     for (size_t id=1; id<polygonVertices.size(); id++) {
         if (polygonVertices[id].x_poly > x_max) {
             x_max = polygonVertices[id].x_poly;
@@ -57,7 +57,7 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
     // size of the canopy array -> with ghost cell before and after (hence +2) 
     nx_canopy = (i_end-i_start-1)+2;
     ny_canopy = (j_end-j_start-1)+2;
-    
+
     // number of cell cell-center elements (2D) 
     numcell_cent_2d = nx_canopy*ny_canopy;
     
@@ -121,6 +121,7 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
                     if (WGD->terrain[icell_cent_2d]+base_height <= WGD->z[k]) {
                         canopy_bot_index[icell_canopy_2d] = k;
                         canopy_bot[icell_canopy_2d] = WGD->terrain[icell_cent_2d]+base_height;
+                        canopy_base[icell_canopy_2d] = WGD->z_face[k-1];
                         break;
                     }
                 }
@@ -138,7 +139,7 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
                 for (size_t k=1; k<WGD->z.size(); k++) {
                     int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
                     if( WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
-                        canopy_base[icell_canopy_2d] = WGD->z_face[k-1];
+                        //canopy_base[icell_canopy_2d] = WGD->z_face[k-1];
                         break;
                     }
                 }
@@ -217,9 +218,9 @@ void Canopy::canopyCioncoParam(WINDSGeneralData* WGD)
     for (auto j=0; j<ny_canopy; j++) {
         for (auto i=0; i<nx_canopy; i++) {
             int icell_2d = i+j*nx_canopy;
-
+            
             if (canopy_top[icell_2d] > 0) {
-                int icell_3d = i+j*nx_canopy+canopy_top_index[icell_2d]*nx_canopy*ny_canopy;
+                int icell_3d = i+j*nx_canopy+(canopy_top_index[icell_2d]-1)*nx_canopy*ny_canopy;
 
                 // Call the bisection method to find the root
                 canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d],canopy_z0[icell_2d],
@@ -242,7 +243,7 @@ void Canopy::canopyCioncoParam(WINDSGeneralData* WGD)
                 for (auto k=1; k < WGD->nz-1; k++) {
                     int icell_face = (i-1+i_start) + (j-1+j_start)*WGD->nx + k*WGD->nx*WGD->ny;
                     float z_rel = WGD->z[k] - canopy_base[icell_2d];
-                    
+
                     if(WGD->z[k] < canopy_base[icell_2d]) {
                         // below the terrain or building
                     } else if (WGD->z[k] < canopy_top[icell_2d]) {
