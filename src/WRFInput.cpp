@@ -937,14 +937,24 @@ WRFInput::WRFInput(const std::string& filename,
     }
     
     
+//    std::vector<size_t> atm_startIdx = {0,0,0};
+//    std::vector<size_t> atm_counts = {1,
+    //                                    static_cast<unsigned long>(atm_ny),
+//                                      static_cast<unsigned long>(atm_nx)};
+
+    std::vector<double> atm_hgt( atm_nx * atm_ny );
+    wrfInputFile.getVar("HGT").getVar(atm_startIdx, atm_counts, atm_hgt.data());
+
     std::cout << "Max WRF Alt: " << maxWRFAlt << std::endl;
 
     //
     // Walk over the atm mesh, extract wind profiles for stations
     //
 
-    std::cout << std::setprecision(9) << "UTM(LL): " << domainUTMx << ", " << domainUTMy << std::endl;
+    std::cout << std::setprecision(9) << "UTM(LL): " << domainUTMx << ", " << domainUTMy << ", Zone=" << UTMZone << "(" << zoneUTM << ")" << "\n";
 
+    std::cout << "DIM: " << dimX << ", " << dimY << "\n";
+    
     double domainUTMx_UR = domainUTMx + dimX;
     double domainUTMy_UR = domainUTMy + dimY;
 
@@ -987,10 +997,12 @@ WRFInput::WRFInput(const std::string& filename,
                 double utmStatX;
                 double utmStatY;
                 int newZone = (int)floor((atm_xlong[atm_idx] + 180) / 6) + 1;
-                // std::cout << "\t zone = " << newZone << std::endl;
+
+                std::cout << "\t zone = " << newZone << std::endl;
                 double latStat = atm_xlat[ atm_idx ];
                 double longStat = atm_xlong[ atm_idx ];
                 UTMConv( longStat, latStat, utmStatX, utmStatY, newZone, 0);
+                
                 std::cout << "Stat Lat/Long: " << latStat << ", " << longStat << " and UTM " << utmStatX << ", " << utmStatY << ", Zone: " << newZone << std::endl;
 
                 sd.xCoord = utmStatX - domainUTMx;  // need halo still    xIdx * atm_dx;  // use actual position
@@ -1024,10 +1036,11 @@ WRFInput::WRFInput(const std::string& filename,
                         
     // Use ZSF + FZ0 -- should be built into coordZ it seems
 
-			  std::cout << "prof height at " << k << ": " << coordZ[ l_idx ] << std::endl;
+			  std::cout << "profile height at " << k << ": " << coordZ[ l_idx ] << std::endl;
+                          std::cout << "\t relative height: " << coordZ[ l_idx ] - atm_hgt[ yIdx * atm_nx + xIdx ] << std::endl;                          
 
                             profData profEl;
-                            profEl.zCoord = coordZ[ l_idx ];
+                            profEl.zCoord = coordZ[ l_idx ] - atm_hgt[ yIdx * atm_nx + xIdx ];
                             profEl.ws = wsData[ l_idx ];
                             profEl.wd = wdData[ l_idx ];
 
