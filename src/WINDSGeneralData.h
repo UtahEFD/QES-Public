@@ -119,6 +119,7 @@ public:
                                                        4 = Cavity, 5 = Farwake, 6 = Street canyon, 7 = Building cut-cells,
                                                        8 = Terrain cut-cells, 9 = Sidewall, 10 = Rooftop,
                                                        11 = Canopy vegetation, 12 = Fire) */
+    std::vector<int> icellflag_initial;
 
     std::vector<float> building_volume_frac, terrain_volume_frac;
     std::vector<float> ni, nj, nk;     // Normal components of the solid elements (building or terrain)

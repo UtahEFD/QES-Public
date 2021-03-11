@@ -114,8 +114,6 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
                 int icell_cent_2d = i + j*(WGD->nx-1);
                 int icell_canopy_2d = (i+1-i_start) + (j+1-j_start)*nx_canopy;
                 
-                canopy_cellMap2D[icell_cent_2d] = icell_canopy_2d;
-
                 // Define start index of the canopy in z-direction
                 for (size_t k=1; k<WGD->z.size(); k++) {
                     if (WGD->terrain[icell_cent_2d]+base_height <= WGD->z[k]) {
@@ -136,10 +134,14 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
                 }
                 
                 // Define hieght of the canopy base in z-direction   
-                for (size_t k=1; k<WGD->z.size(); k++) {
+                for (size_t k=canopy_bot_index[icell_canopy_2d]; k<WGD->z.size(); k++) {
                     int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
-                    if( WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
-                        //canopy_base[icell_canopy_2d] = WGD->z_face[k-1];
+                    if (WGD->icellflag[icell_cent] != 1) {
+                        canopy_bot_index[icell_canopy_2d] = 0;
+                        canopy_bot[icell_canopy_2d] = 0;
+                        canopy_base[icell_canopy_2d] = 0.0;
+                        canopy_top_index[icell_canopy_2d] = -1;
+                        canopy_top[icell_canopy_2d] = 0.0;
                         break;
                     }
                 }
@@ -150,12 +152,15 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
                 for (auto k=canopy_bot_index[icell_canopy_2d]; k<canopy_top_index[icell_canopy_2d]; k++) {
                     int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
                     int icell_canopy_3d = i + j*nx_canopy + k*nx_canopy*ny_canopy;
-                    if( WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
-                        // Canopy cell
-                        WGD->icellflag[icell_cent] = getCellFlagCanopy();
-                        WGD->ibuilding_flag[icell_cent] = building_number;
-                        canopy_cellMap3D[icell_cent] = icell_canopy_3d;
-                    }
+                    //if( WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
+                    
+                    // Canopy cell
+                    WGD->icellflag[icell_cent] = getCellFlagCanopy();
+                    WGD->ibuilding_flag[icell_cent] = building_number;
+                    
+                    canopy_cellMap2D[icell_cent_2d] = icell_canopy_2d;
+                    canopy_cellMap3D[icell_cent] = icell_canopy_3d;
+                    
                 }
                 
             } // end define icellflag!

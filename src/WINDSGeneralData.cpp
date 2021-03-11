@@ -235,6 +235,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    nk.resize( numcell_cent, 0.0 );
 
    icellflag.resize( numcell_cent, 1 );
+   icellflag_initial.resize( numcell_cent, 1 );
+
    ibuilding_flag.resize ( numcell_cent, -1 );
 
    mixingLengths.resize( numcell_cent, 0.0 );
@@ -504,15 +506,15 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    {
       for (size_t i = 0; i < WID->canopies->canopies.size(); i++)
       {
-         allBuildingsV.push_back( WID->canopies->canopies[i] );
-         
-         int j = allBuildingsV.size()-1;
-         building_id.push_back( j );
-         
-         allBuildingsV[j]->setPolyBuilding(this);
-         allBuildingsV[j]->setCellFlags(WID, this, j);
-
-         effective_height.push_back(allBuildingsV[j]->height_eff);
+          allBuildingsV.push_back( WID->canopies->canopies[i] );
+          
+          int j = allBuildingsV.size()-1;
+          building_id.push_back( j );
+          
+          allBuildingsV[j]->setPolyBuilding(this);
+          allBuildingsV[j]->setCellFlags(WID, this, j);
+          
+          effective_height.push_back(allBuildingsV[j]->height_eff);
       }
    }
 
@@ -579,6 +581,11 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
    wall->solverCoefficients (this);
 
+
+   for (auto id=0u;id<icellflag.size();id++) {
+       icellflag_initial[id]=icellflag[id];
+   }
+   
    /////////////////////////////////////////////////////////
    /////       Read coefficients from a file            ////
    /////////////////////////////////////////////////////////
@@ -829,15 +836,6 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData* WID)
         // for now this does the canopy stuff for us
         allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
     }
-
-    // ///////////////////////////////////////
-    // Generic Parameterization Related Stuff
-    // ///////////////////////////////////////
-    for (size_t i = 0; i < allBuildingsV.size(); i++)
-    {
-        // for now this does the canopy stuff for us
-        allBuildingsV[building_id[i]]->canopyWake(this, building_id[i]);
-    }
     
     ///////////////////////////////////////////
     //   Upwind Cavity Parameterization     ///
@@ -904,7 +902,16 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData* WID)
         }
         std::cout << "Rooftop parameterization done...\n";
     }
-    
+
+    // ///////////////////////////////////////
+    // Generic Parameterization Related Stuff
+    // ///////////////////////////////////////
+    for (size_t i = 0; i < allBuildingsV.size(); i++)
+    {
+        // for now this does the canopy stuff for us
+        allBuildingsV[building_id[i]]->canopyWake(this, building_id[i]);
+    }
+
     ///////////////////////////////////////////
     //         Street Intersection          ///
     ///////////////////////////////////////////
@@ -934,17 +941,8 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData* WID)
 
 void WINDSGeneralData::resetICellFlag()
 {
-    for (int k = 0; k < nz-2; k++) {
-        for (int j = 0; j < ny-1; j++) {
-            for (int i = 0; i < nx-1; i++) {
-                int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-                if (icellflag[icell_cent] != 0 && icellflag[icell_cent] != 2 && 
-                    icellflag[icell_cent] != 8 && icellflag[icell_cent] != 7)
-                {
-                    icellflag[icell_cent] = 1;
-                }
-            }
-        }
+    for (auto id=0u;id<icellflag.size();id++) {
+        icellflag[id]=icellflag_initial[id];
     }
     return;
 }

@@ -52,8 +52,8 @@ public:
 
 
     virtual void parseValues()
-    {
-      parsePrimitive<int>(false, site_coord_flag, "site_coord_flag");
+    { 
+      parsePrimitive<int>(true, site_coord_flag, "site_coord_flag");
       parsePrimitive<float>(false, site_xcoord, "site_xcoord");
       parsePrimitive<float>(false, site_ycoord, "site_ycoord");
     	parsePrimitive<float>(false, site_UTM_x, "site_UTM_x");
@@ -62,7 +62,7 @@ public:
     	parsePrimitive<float>(false, site_lon, "site_lon");
     	parsePrimitive<float>(false, site_lat, "site_lat");
 
-      parseMultiElements<TimeSeries>(false, TS, "timeSeries");
+      parseMultiElements<TimeSeries>(true, TS, "timeSeries");
 
     }
 

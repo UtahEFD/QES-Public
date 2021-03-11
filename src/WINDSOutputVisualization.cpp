@@ -53,7 +53,10 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD,WINDSIn
   u_out.resize( numcell_cout, 0.0 );
   v_out.resize( numcell_cout, 0.0 );
   w_out.resize( numcell_cout, 0.0 );
-  icellflag_out.resize( numcell_cout, 0.0 );
+  mag_out.resize( numcell_cout, 0.0 );
+
+  icellflag_out.resize( numcell_cout, 0 );
+  icellflag2_out.resize( numcell_cout, 0 );
 
   // set cell-centered data dimensions
   // time dimension
@@ -103,8 +106,11 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD,WINDSIn
   createAttVector("u","x-component velocity","m s-1",dim_vect_3d,&u_out);
   createAttVector("v","y-component velocity","m s-1",dim_vect_3d,&v_out);
   createAttVector("w","z-component velocity","m s-1",dim_vect_3d,&w_out);
+  createAttVector("mag","velocity magnitude","m s-1",dim_vect_3d,&mag_out);
+    
   createAttVector("icell","icell flag value","--",dim_vect_3d,&icellflag_out);
-
+  createAttVector("icellInitial","icell flag value","--",dim_vect_3d,&icellflag2_out);
+  
   // create output fields
   addOutputFields();
 
@@ -150,7 +156,13 @@ void WINDSOutputVisualization::save(ptime timeOut)
         u_out[icell_cent] = 0.5*(WGD_->u[icell_face+1]+WGD_->u[icell_face]);
         v_out[icell_cent] = 0.5*(WGD_->v[icell_face+nx]+WGD_->v[icell_face]);
         w_out[icell_cent] = 0.5*(WGD_->w[icell_face+nx*ny]+WGD_->w[icell_face]);
+        mag_out[icell_cent] = sqrt( u_out[icell_cent]*u_out[icell_cent] +
+                                    v_out[icell_cent]*v_out[icell_cent] + 
+                                    w_out[icell_cent]*w_out[icell_cent] );
+        
         icellflag_out[icell_cent] = WGD_->icellflag[icell_cent+((nx-1)*(ny-1))];
+        icellflag2_out[icell_cent] = WGD_->icellflag_initial[icell_cent+((nx-1)*(ny-1))];
+                
       }
     }
   }

@@ -9,7 +9,9 @@
 
 #include "Building.h"
 #include "RectangularBuilding.h"
+#include "PolygonQUICBuilding.h"
 #include "PolyBuilding.h"
+
 
 class Buildings : public ParseInterface
 {
@@ -30,7 +32,8 @@ public:
 	{
 		parsePrimitive<int>(true, numBuildings, "numBuildings");
 		parsePrimitive<int>(true, numPolygonNodes, "numPolygonNodes");
-		parseMultiPolymorphs(true, buildings, Polymorph<Building, RectangularBuilding>("rectangularBuilding"));
+		parseMultiPolymorphs(false, buildings, Polymorph<Building, RectangularBuilding>("rectangularBuilding"));
+        parseMultiPolymorphs(false, buildings, Polymorph<Building, PolygonQUICBuilding>("QUICBuilding"));
 		parsePrimitive<float>(true, wallRoughness, "wallRoughness");
 
 
