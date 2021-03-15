@@ -120,7 +120,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
        for (size_t i=0; i < WID->metParams->sensors.size(); i++) {
            for (size_t t=0; t < WID->metParams->sensors[i]->TS.size(); t++) {
                //ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp);
-               timestamp.push_back(from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp));
+               timestamp.push_back(WID->metParams->sensors[i]->TS[t]->timePosix);
            }
        }
    }
@@ -691,6 +691,7 @@ WINDSGeneralData :: WINDSGeneralData(const std::string inputFile) {
     }
     
     //get time variables
+    std::vector<float> t;
     t.resize(nt);
     input->getVariableData("t",t);
     
@@ -702,7 +703,7 @@ WINDSGeneralData :: WINDSGeneralData(const std::string inputFile) {
     } else {
         for (size_t t=0; t < nt; t++) {
             //ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp);
-            timestamp.push_back(from_iso_extended_string("2020-01-01T00:00"));
+            timestamp.push_back(bt::from_iso_extended_string("2020-01-01T00:00"));
         }
     }
 

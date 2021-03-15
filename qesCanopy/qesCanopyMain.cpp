@@ -25,8 +25,7 @@
 
 #include "Sensor.h"
 
-using namespace boost::gregorian;
-using namespace boost::posix_time;
+namespace bt=boost::posix_time;
 
 int main(int argc, char *argv[])
 {
@@ -140,7 +139,7 @@ int main(int argc, char *argv[])
     }
 
     for (int index = 0; index < WID->simParams->totalTimeIncrements; index++) {
-        std::cout << "Running time step: " <<  to_iso_extended_string(WGD->timestamp[index]) << std::endl;
+        std::cout << "Running time step: " <<  bt::to_iso_extended_string(WGD->timestamp[index]) << std::endl;
         // Reset icellflag values
         //WGD->resetICellFlag();
         

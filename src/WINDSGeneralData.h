@@ -32,8 +32,7 @@
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
-using namespace boost::gregorian;
-using namespace boost::posix_time;
+namespace bt = boost::posix_time;
 
 class WINDSInputData;
 
@@ -108,8 +107,9 @@ public:
 
     // time variables
     int nt;
-    std::vector<float> t;
-    std::vector<ptime> timestamp;
+    std::vector<float> dt_array;
+    std::vector<time_t> epochtime;
+    std::vector<bt::ptime> timestamp;
 
     /// Declaration of coefficients for SOR solver
     std::vector<float> e,f,g,h,m,n;
