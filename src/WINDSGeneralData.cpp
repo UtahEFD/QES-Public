@@ -507,10 +507,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       for (size_t i = 0; i < WID->canopies->canopies.size(); i++)
       {
           allBuildingsV.push_back( WID->canopies->canopies[i] );
-          
           int j = allBuildingsV.size()-1;
           building_id.push_back( j );
           
+          for (auto pIdx=0u; pIdx < allBuildingsV[j]->polygonVertices.size(); pIdx++) {
+              allBuildingsV[j]->polygonVertices[pIdx].x_poly += WID->simParams->halo_x;
+              allBuildingsV[j]->polygonVertices[pIdx].y_poly += WID->simParams->halo_y;
+          }
+
           allBuildingsV[j]->setPolyBuilding(this);
           allBuildingsV[j]->setCellFlags(WID, this, j);
           
@@ -529,9 +533,16 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       float corner_height, min_height;
       for (size_t i = 0; i < WID->buildings->buildings.size(); i++)
       {
+          
          allBuildingsV.push_back( WID->buildings->buildings[i] );
          int j = allBuildingsV.size()-1;
          building_id.push_back( j );
+         
+         for (auto pIdx=0u; pIdx < allBuildingsV[j]->polygonVertices.size(); pIdx++) {
+             allBuildingsV[j]->polygonVertices[pIdx].x_poly += WID->simParams->halo_x;
+             allBuildingsV[j]->polygonVertices[pIdx].y_poly += WID->simParams->halo_y;
+         }
+         
          // Setting base height for buildings if there is a DEM file
          if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh)
          {
@@ -556,7 +567,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
          }
          else
          {
-            allBuildingsV[j]->base_height = 0.0;
+             //allBuildingsV[j]->base_height = 0.0;
          }
          allBuildingsV[j]->setPolyBuilding(this);
          allBuildingsV[j]->setCellFlags(WID, this, j);
