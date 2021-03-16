@@ -4,11 +4,11 @@
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 	<!-- This is the domain sampled in large cells -->
-  	<domain> 120 120 75 </domain>					<!-- Number of cells in x,y and z directions-->
+  	<domain> 120 120 50 </domain>					<!-- Number of cells in x,y and z directions-->
   	<cellSize> 15.37 15.37 1.0 </cellSize> 			<!-- Mesh resolution (meters)-->
 
 	<verticalStretching> 0 </verticalStretching>
-	<totalTimeIncrements> 100 </totalTimeIncrements>
+	<totalTimeIncrements> 4500 </totalTimeIncrements>
 	<!--UTCConversion> 0 </UTCConversion-->
 	<!--Epoch> 1510930800 </Epoch-->
 	<rooftopFlag> 1 </rooftopFlag>
@@ -22,8 +22,8 @@
 	<meshTypeFlag> 0 </meshTypeFlag>
 	<!--useDiffusion> 0 </useDiffusion-->
 	<domainRotation> 0 </domainRotation>
-	<UTMX> 0 </UTMX>
-	<UTMY> 0 </UTMY>
+	<UTMx> 0 </UTMx>
+	<UTMy> 0 </UTMy>
 	<UTMZone> 16 </UTMZone>
 	<UTMZoneLetter> 16 </UTMZoneLetter>
 	<readCoefficientsFlag> 0 </readCoefficientsFlag>
@@ -39,8 +39,8 @@
 	
 		<sensor>
     	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
-            <site_xcoord> 200.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
-            <site_ycoord> 200.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
+            <site_xcoord> 1015.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+            <site_ycoord> 1200.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
             <site_UTM_x> 524994.0 </site_UTM_x> 				<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
             <site_UTM_y> 3377070.0 </site_UTM_y> 				<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
             <site_UTM_zone> 16 </site_UTM_zone> 				<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->
@@ -49,9 +49,8 @@
        		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
        		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
        		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
-       		<height> 20.0 </height> 				<!-- Height of the sensor -->
-       		<speed> 10.0 </speed> 					<!-- Measured speed at the sensor height -->
-       		<direction> 130.0 </direction> 				<!-- Wind direction of sensor -->
+       		<height> 9.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 3.6 </speed> 					<!-- Measured speed at the sensor height -->       		<direction> 130.0 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
 	</sensor>                      					<!-- End of sensor section -->
 </metParams>
@@ -62,17 +61,18 @@
   <!--LMfile>Fire_mixlength.nc</LMfile--> <!-- Address to mixing lethng location--> 
 <!--/localMixingParam-->
 <fires>
-	<numFires>1</numFires>
-	<fuelType>2</fuelType>
-	 <fuelMap>../data/FireFiles/L2F_fuel_UTM.tif</fuelMap>
-    <height> 0.25 </height>
-    <baseHeight> 0 </baseHeight> <!--meters-->
-    <xStart> 1530.0 </xStart> <!--meters-->
-    <yStart> 1145.0 </yStart> <!--meters-->
-    <length> 16.0 </length> <!--meters-->
-    <width>  16.0 </width> <!--meters-->
-    <courant> 0.2 </courant>
-    <fieldFlag> 2 </fieldFlag>
+	<numFires> 1 </numFires>
+	<fuelType> 2 </fuelType>
+	<fmc> 0.020 </fmc>			<!-- Fuel moisture -->
+	<fuelMap>../data/FireFiles/L2F_fuel_UTM.tif</fuelMap>
+   <height> 0.25 </height>
+   <baseHeight> 0 </baseHeight> <!--meters-->
+   <xStart> 1530.0 </xStart> <!--meters-->
+   <yStart> 1145.0 </yStart> <!--meters-->
+   <length> 16.0 </length> <!--meters-->
+   <width>  16.0 </width> <!--meters-->
+   <courant> 0.2 </courant>
+   <fieldFlag> 2 </fieldFlag>
 </fires>
 <fileOptions>
 	<outputFlag>1</outputFlag>

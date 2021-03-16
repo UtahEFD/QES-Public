@@ -19,6 +19,7 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
 	dz = WGD->dz;
 	FFII_flag = WID->fires->fieldFlag;
 	std::cout<<"Field flag ["<<FFII_flag<<"]"<<std::endl;
+	fmc = WID->fires->fmc;
 
 	/**
 	* Set-up the mapper array - cell centered
@@ -127,12 +128,7 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
 		std::cout<<"L2F burn times read"<<std::endl;
     
 	}
-	x_start    = WID->fires->xStart;
-	y_start    = WID->fires->yStart;
-	H          = WID->fires->height;
-	L          = WID->fires->length;
-	W          = WID->fires->width;
-	baseHeight = WID->fires->baseHeight;
+
 	fuel_type  = WID->fires->fuelType;
 	courant    = WID->fires->courant;
     
@@ -210,9 +206,17 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
 				
 			}
 		}
-		std::cout<<"fuel set constant = "<<fuel_type<<std::endl;		
+	std::cout<<"fuel set constant = "<<fuel_type<<std::endl;		
 	}
 	
+	for (int fidx = 0; fidx < WID->fires->IG.size(); fidx++){
+	std::cout<<"ignition ["<<fidx<<"]"<<std::endl;
+	x_start    = WID->fires->IG[fidx]->xStart;
+	y_start    = WID->fires->IG[fidx]->yStart;
+	H          = WID->fires->IG[fidx]->height;
+	L          = WID->fires->IG[fidx]->length;
+	W          = WID->fires->IG[fidx]->width;
+	baseHeight = WID->fires->IG[fidx]->baseHeight;
 	// get grid info of fire
 	i_start = std::round(x_start/dx);       
 	i_end   = std::round((x_start+L)/dx);     
@@ -231,7 +235,7 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
 			fire_cells[idx].state.front_flag = 1;
 		}
 	}
-    
+    	}
 	/** 
 	*  Set up burn flag field
 	*/
@@ -323,7 +327,7 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
      */
 	float dmx, dpx, dmy, dpy, n_star_x, n_star_y;
 	for (int j = 1; j < ny-2; j++){
-  	for (int i = 1; i < nx-2; i++){
+  		for (int i = 1; i < nx-2; i++){
 			int idx = i + j*(nx-1);       
 			int idxjp = i + (j+1)*(nx-1);
 			int idxjm = i + (j-1)*(nx-1);
@@ -371,7 +375,7 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
 			float u = 0.5*(WGD->u[cell_face] + WGD->u[cell_face+1]);
 			float v = 0.5*(WGD->v[cell_face] + WGD->v[cell_face+nx]);
 			// run Balbi model
-			struct FireProperties fp = balbi(fuel,u,v,xNorm[idx],yNorm[idx],slope_x[idx],slope_y[idx],0.0650);
+			struct FireProperties fp = balbi(fuel,u,v,xNorm[idx],yNorm[idx],slope_x[idx],slope_y[idx],fmc);
 			fire_cells[idx].properties = fp;
 			Force[idx] = fp.r;
 		}
@@ -437,7 +441,7 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
 		float v = 0.5*(WGD->v[cell_face] + WGD->v[cell_face+nx]);
 		// run Balbi model
 		float burnTime = fire_cells[id].state.burn_time;
-		struct FireProperties fp = balbi(fuel,u,v,xNorm[id],yNorm[id],slope_x[id],slope_y[id],0.0650);
+		struct FireProperties fp = balbi(fuel,u,v,xNorm[id],yNorm[id],slope_x[id],slope_y[id],fmc);
 		fire_cells[id].properties = fp;
 		Force[id] = fp.r;
 		// update icell value for flame
@@ -549,10 +553,10 @@ void Fire :: potential(WINDSGeneralData* WGD){
 							if (burn_flag[id] == 1){
 								struct FireProperties fp = fire_cells[id].properties;
 								counter += 1;
-			  					icent += ii;
-			  					jcent += jj;
-			  					H += fp.H0;
-	    		  				// Hard code heat flux for WRF simulation burn
+			  				icent += ii;
+			  				jcent += jj;
+			  				H += fp.H0;
+	    		  		// Hard code heat flux for WRF simulation burn
 								//H += 1.80357e6*dx*dy/25/25;
 								k_fire += WGD->terrain[id];
 								k_fire_old += z_mix_old[id];
@@ -629,39 +633,39 @@ void Fire :: potential(WINDSGeneralData* WGD){
 										v_p = U_c*ur*deltaY/h_k;          
 										w_p = U_c*uz;                         
 									} else {
-			  						zeta = sqrt(h_k*h_k + z_k*z_k);
-			  						x1 = (1+cos(atan(h_k/z_k)))/2.0;
-			  						if(x1<0.5){
-										std::cout<<"x1<0.5"<<std::endl;
-										x1 = 0.5;
-			  						} else if(isnan(x1)){
-										std::cout<<"x1 is nan"<<std::endl;
-			  						}
-			  						// lookup indices for G(x) and G'(x) - spans 0.5 to 1.0
-			  						int gMinIdx = floor(pot_G*(x1-.5)/.5);
-			  						if(gMinIdx<0){
-										std::cout<<"gMin error"<<std::endl;
-			  						} else if(gMinIdx>pot_G){
-										std::cout<<"gMin error"<<std::endl;
-			  						} else if(isnan(gMinIdx)){
-										std::cout<<"gMin NaN"<<std::endl;
-			  						}
-			  						int gMaxIdx = ceil(pot_G*(x1-.5)/.5);
-		          					if(gMaxIdx>pot_G){
-										std::cout<<"gMax error"<<std::endl;
-			  						} else if (gMaxIdx < 0){
-										std::cout<<"gMax error"<<std::endl;
-			  						} else if(isnan(gMaxIdx)){
-										std::cout<<"gMax NaN"<<std::endl;
-			  						}
-		 	  						// values for G and G'
-			  
-			  						float g_x = 0.5*(G[gMinIdx]+G[gMaxIdx]);
-			  						float gprime_x = 0.5*(Gprime[gMinIdx]+Gprime[gMaxIdx]);
-
-			  						ur = h_k/(2*PI*pow(h_k*h_k+z_k*z_k,(3/2.0))) + pow(zeta,(-1/3.0))*((5/6.0)*(1-2*x1)/sqrt(x1*(1-x1))*g_x - sqrt(x1*(1-x1))*gprime_x);
-			  						uz = z_k/(2*PI*pow(h_k*h_k+z_k*z_k,(3/2.0))) + pow(zeta,(-1/3.0))*((5/3.0)*g_x + (1-2*x1)/2.0*gprime_x);
-			  						if(h_k != 0){
+			  							zeta = sqrt(h_k*h_k + z_k*z_k);
+			  							x1 = (1+cos(atan(h_k/z_k)))/2.0;
+			  							if(x1<0.5){
+											std::cout<<"x1<0.5"<<std::endl;
+											x1 = 0.5;
+			  							} else if(isnan(x1)){
+											std::cout<<"x1 is nan"<<std::endl;
+			  							}
+			  							// lookup indices for G(x) and G'(x) - spans 0.5 to 1.0
+				  						int gMinIdx = floor(pot_G*(x1-.5)/.5);
+				  						if(gMinIdx<0){
+											std::cout<<"gMin error"<<std::endl;
+				  						} else if(gMinIdx>pot_G){
+											std::cout<<"gMin error"<<std::endl;
+				  						} else if(isnan(gMinIdx)){
+											std::cout<<"gMin NaN"<<std::endl;
+				  						}
+				  						int gMaxIdx = ceil(pot_G*(x1-.5)/.5);
+			          					if(gMaxIdx>pot_G){
+											std::cout<<"gMax error"<<std::endl;
+				  						} else if (gMaxIdx < 0){
+											std::cout<<"gMax error"<<std::endl;
+				  						} else if(isnan(gMaxIdx)){
+											std::cout<<"gMax NaN"<<std::endl;
+				  						}
+			 	  						// values for G and G'
+				  
+				  						float g_x = 0.5*(G[gMinIdx]+G[gMaxIdx]);
+				  						float gprime_x = 0.5*(Gprime[gMinIdx]+Gprime[gMaxIdx]);
+	
+				  						ur = h_k/(2*PI*pow(h_k*h_k+z_k*z_k,(3/2.0))) + pow(zeta,(-1/3.0))*((5/6.0)*(1-2*x1)/sqrt(x1*(1-x1))*g_x - sqrt(x1*(1-x1))*gprime_x);
+				  						uz = z_k/(2*PI*pow(h_k*h_k+z_k*z_k,(3/2.0))) + pow(zeta,(-1/3.0))*((5/3.0)*g_x + (1-2*x1)/2.0*gprime_x);
+				  						if(h_k != 0){
 			  							u_p = U_c*ur*deltaX/h_k;            
 			  							v_p = U_c*ur*deltaY/h_k;
 			  						}
@@ -723,7 +727,7 @@ void Fire :: move(Solver* solver, WINDSGeneralData* WGD){
 		int nx1 = round(FT_x1[it]/dx);
 		int ny1 = round((750-FT_y1[it])/dy);
 		FT_idx1 = nx1 + ny1*(nx-1);
-    	int nx2 = round(FT_x2[it]/dx);
+		int nx2 = round(FT_x2[it]/dx);
 		int ny2 = round((750-FT_y2[it])/dy);
 		FT_idx2 = nx2 + ny2*(nx-1);
  		if (burn_flag[FT_idx1]<2){
@@ -887,7 +891,7 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, floa
 
     // struct to hold computed fire properties
     struct FireProperties fp;
-        
+   
     // fuel properties
     float fgi        = fuel->fgi;              ///< initial total mass of surface fuel [kg/m**2]
     float fueldepthm = fuel->fueldepthm;       ///< fuel depth [m]

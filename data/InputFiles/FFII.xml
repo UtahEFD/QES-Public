@@ -1,14 +1,10 @@
 <simulationParameters>
-<<<<<<< HEAD
-  <domain> 80 150 120 </domain> <!-- nx,ny,nz-->
-=======
+	<halo_x> 0.0 </halo_x>
+	<halo_y> 0.0 </halo_y>
   <domain> 80 150 40 </domain> <!-- nx,ny,nz-->
->>>>>>> 581f8b5884927b5479c0d1dd65d43d82e71dd491
 	<cellSize> 5.0 5.0 .25 </cellSize> <!-- Meters-->
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1200 </totalTimeIncrements>
-	<UTCConversion> 0 </UTCConversion>
-	<Epoch> 1510930800 </Epoch>
 	<rooftopFlag> 2 </rooftopFlag>
 	<upwindCavityFlag> 3 </upwindCavityFlag>
 	<streetCanyonFlag> 4 </streetCanyonFlag>
@@ -16,9 +12,9 @@
 	<wakeFlag> 3 </wakeFlag>
 	<sidewallFlag> 0 </sidewallFlag>
 	<maxIterations> 500 </maxIterations>
-	<residualReduction> 3 </residualReduction>
+	<tolerance> 3 </tolerance>
 	<meshTypeFlag> 1 </meshTypeFlag>
-	<useDiffusion> 0 </useDiffusion>
+
 	<domainRotation> 0 </domainRotation>
 	<UTMX> 0 </UTMX>
 	<UTMY> 0 </UTMY>
@@ -26,52 +22,47 @@
 	<UTMZoneLetter> 17 </UTMZoneLetter>
 </simulationParameters>
 <metParams>
-	<metInputFlag> 0 </metInputFlag>
-	<num_sites> 1 </num_sites>
-	<maxSizeDataPoints> 2 </maxSizeDataPoints>
-	<siteName> sensor1 </siteName>
-	<fileName> sensor1.inp </fileName>
-	<site_coord_flag> 1 </site_coord_flag>
 	<z0_domain_flag> 0 </z0_domain_flag>
-	<sensor>
-		<site_coord_flag> 1 </site_coord_flag>
-		<site_xcoord> 0.0 </site_xcoord>
-		<site_ycoord> 750.0 </site_ycoord>
-		<boundaryLayerFlag> 0 </boundaryLayerFlag>
-		<siteZ0> 0.01 </siteZ0>
-		<reciprocal> 0.0 </reciprocal>
-		<height> 1.0 </height>
-<<<<<<< HEAD
-		<speed> 10 </speed>
-=======
-		<speed> 8.5 </speed>
->>>>>>> 581f8b5884927b5479c0d1dd65d43d82e71dd491
-		<direction> 305.00 </direction>
-	</sensor>
+		<sensor>
+    	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
+            <site_xcoord> 1.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+            <site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
+            <site_UTM_x> 2.0 </site_UTM_x> 				<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
+            <site_UTM_y> 2.0 </site_UTM_y> 				<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
+            <site_UTM_zone> 0 </site_UTM_zone> 				<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->
+
+    	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<height>10.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 8.5 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 305.0 </direction> 				<!-- Wind direction of sensor -->
+    	    </timeSeries>
+	</sensor>                      					<!-- End of sensor section -->
 </metParams>
 <fires>
-<<<<<<< HEAD
-    <numFires>1</numFires>
+
     <fuelType>3</fuelType>
-=======
-	<numFires>1</numFires>
-	<fuelType>1</fuelType>
->>>>>>> 581f8b5884927b5479c0d1dd65d43d82e71dd491
+
+
+
+	<fmc> 0.065 </fmc>
+	<ignition>
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight> <!--meters-->
     <xStart> 65.0 </xStart> <!--meters-->
     <yStart> 655.0 </yStart> <!--meters-->
     <length> 5.0 </length> <!--meters-->
     <width>  5.0 </width> <!--meters-->
+    </ignition>
     <courant> 0.9 </courant>
     <fieldFlag> 1 </fieldFlag> <!-- flag for if multiple timesteps for fire -->
 </fires>
 <fileOptions>
 	<outputFlag>1</outputFlag>
-	<outputFields>u</outputFields> 
+	<outputFields>all</outputFields> 
 	<outputFields>v</outputFields> 
 	<outputFields>w</outputFields>
-	<massConservedFlag> 0 </massConservedFlag>
-	<sensorVelocityFlag> 0 </sensorVelocityFlag>
-	<staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+	<outputFields>icell</outputFields>
 </fileOptions>

@@ -1,8 +1,8 @@
 <simulationParameters>
- 	<!--DEM>../data/GISFiles/InclinePlane.tiff</DEM-->		<!-- Address to DEM location-->       
+  
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
-    <domain> 50 50 20 </domain> <!-- nx,ny,nz-->
+    <domain> 50 50 200 </domain> <!-- nx,ny,nz-->
 	<cellSize> .1 .1 0.25 </cellSize> <!-- dx, dy,dz [Meters]-->	
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 120 </totalTimeIncrements>
@@ -19,8 +19,8 @@
 	<meshTypeFlag> 1 </meshTypeFlag>
 	<!--useDiffusion> 0 </useDiffusion-->
 	<domainRotation> 0 </domainRotation>
-	<UTMX> 0 </UTMX>
-	<UTMY> 0 </UTMY>
+	<UTMx> 0 </UTMx>
+	<UTMy> 0 </UTMy>
 	<UTMZone> 1 </UTMZone>
 	<UTMZoneLetter> 17 </UTMZoneLetter>
 	<readCoefficientsFlag> 0 </readCoefficientsFlag>
@@ -46,12 +46,42 @@
        		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
        		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
        		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
-       		<height> 1.0 </height> 				<!-- Height of the sensor -->
+       		<height> 5.0 </height> 				<!-- Height of the sensor -->
        		<speed> 1 </speed> 					<!-- Measured speed at the sensor height -->
-       		<direction> 180.0 </direction> 				<!-- Wind direction of sensor -->
+       		<direction> 18.0 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
 	</sensor>                      					<!-- End of sensor section -->
 </metParams>
+<buildings>
+
+  <wallRoughness> 0.1 </wallRoughness>
+  <numBuildings> 2 </numBuildings>
+  <numPolygonNodes> 0 </numPolygonNodes>
+  
+  <rectangularBuilding>
+    <groupID> 1 </groupID>
+    <buildingType> 1 </buildingType>
+    <height> 3.0 </height>
+    <baseHeight> 0 </baseHeight>
+    <xStart> 1.0 </xStart>
+    <yStart> 1.0 </yStart>
+    <length> 1.0 </length>
+    <width> 3.0 </width>
+    <buildingRotation> 0.0 </buildingRotation>
+  </rectangularBuilding>
+
+  <rectangularBuilding>
+    <groupID> 2 </groupID>
+    <buildingType> 1 </buildingType>
+    <height> 3.0 </height>
+    <baseHeight> 0 </baseHeight>
+    <xStart> 3.0 </xStart>
+    <yStart> 1.0 </yStart>
+    <length> 1.0 </length>
+    <width> 3.0 </width>
+    <buildingRotation> 0.0 </buildingRotation>
+  </rectangularBuilding>
+</buildings>
 <!--localMixingParam-->
   <!--method>3</method--> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <!--samples>2000</samples--> <!-- Samples per air cell for ray-traced mixing length calculations -->
@@ -59,15 +89,16 @@
   <!--LMfile>Fire_mixlength.nc</LMfile--> <!-- Address to mixing lethng location--> 
 <!--/localMixingParam-->
 <fires>
-	<numFires>1</numFires>
-	<fuelType>3</fuelType>
+	<numFires> 1 </numFires>
+	<fuelType> 3 </fuelType>
+	<fmc> 0.050 </fmc>
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight> <!--meters-->
-    <xStart> 2.0 </xStart> <!--meters-->    
+    <xStart> 2.1 </xStart> <!--meters-->    
     <yStart> 1.0 </yStart> <!--meters-->
-    <length> 1.0 </length> <!--meters-->
-    <width>  .2 </width> <!--meters-->
-    <courant> 0.25 </courant>
+    <length> 0.9 </length> <!--meters-->
+    <width>  0.2 </width> <!--meters-->
+    <courant> 0.5 </courant>
     <fieldFlag> 0 </fieldFlag> <!-- flag for if multiple timesteps for fire -->
 </fires>
 <fileOptions>

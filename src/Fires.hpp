@@ -10,7 +10,7 @@
 #include "util/ParseInterface.h"
 #include "Vector3.h"
 #include "DTEHeightField.h"
-
+#include "ignition.h"
 
 class Fires : public ParseInterface {
     
@@ -19,26 +19,30 @@ class Fires : public ParseInterface {
     public:
     
     	int numFires,fuelType,fieldFlag;
-    	float height,baseHeight,xStart,yStart,length,width,courant;
-    	
+    	float fmc, courant;
+
+	std::vector<ignition*> IG;
 	std::string fuelFile;
 
     	virtual void parseValues() {
-    		parsePrimitive<int>(true,   numFires,   "numFires");
+    		parsePrimitive<int>(false,   numFires,   "numFires");
     		parsePrimitive<int>(true,   fuelType,   "fuelType");
-    		parsePrimitive<float>(true, height,     "height");
-    		parsePrimitive<float>(true, baseHeight, "baseHeight");
-    		parsePrimitive<float>(true, xStart,     "xStart");
-    		parsePrimitive<float>(true, yStart,     "yStart");
-    		parsePrimitive<float>(true, length,     "length");
-    		parsePrimitive<float>(true, width,      "width");
+		parsePrimitive<float>(true, fmc,	"fmc");
+
     		parsePrimitive<float>(true, courant,    "courant");
-			parsePrimitive<int>(true,   fieldFlag,  "fieldFlag");
+		parseMultiElements<ignition>(false, IG, "ignition");
+		parsePrimitive<int>(true,   fieldFlag,  "fieldFlag");
         	fuelFile = "";
         	parsePrimitive<std::string>(false, fuelFile, "fuelMap");
 
             
         
     }
+    void parseTree(pt::ptree t)
+  	{
+  			setTree(t);
+  			setParents("root");
+  			parseValues();
+  	}
 };
 #endif

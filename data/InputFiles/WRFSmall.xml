@@ -1,8 +1,8 @@
 <simulationParameters>
 	<halo_x> 0.0 </halo_x>
 	<halo_y> 0.0 </halo_y>
-  <domain> 240 240 300 </domain> <!-- nx,ny,nz-->
-	<cellSize> 2.5 2.5 2.0 </cellSize> <!-- dx, dy,dz [Meters]-->
+  <domain> 119 119 119 </domain> <!-- nx,ny,nz-->
+	<cellSize> 5.0 5.0 5.0 </cellSize> <!-- dx, dy,dz [Meters]-->
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 2  </totalTimeIncrements>
 	<rooftopFlag> 2 </rooftopFlag>
@@ -44,13 +44,15 @@
 <fires>
 	<numFires>1</numFires>
 	<fuelType>1</fuelType>
+	<fmc> 0.065 </fmc>
     <height> 0.25 </height>
     <baseHeight> 0 </baseHeight> <!--meters-->
-    <xStart> 287.5 </xStart> <!--meters-->
-    <yStart> 287.5 </yStart> <!--meters-->
+    <xStart> 275 </xStart> <!--meters-->
+    <yStart> 275 </yStart> <!--meters-->
     <length> 25.0 </length> <!--meters-->
     <width>  25.0 </width> <!--meters-->
     <courant> 0.25 </courant>
+    <fieldFlag> 0 </fieldFlag>
 </fires>
 <fileOptions>
 	<outputFlag>1</outputFlag>

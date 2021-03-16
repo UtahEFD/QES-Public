@@ -63,6 +63,7 @@ CUDA_ADD_LIBRARY( qesfirecore
   Fire.cpp
   FIREOutput.cpp
   FuelRead.cpp
+  ignition.h
   )
 
  
