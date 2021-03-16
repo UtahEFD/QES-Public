@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
     for (int index = 0; index < WID->simParams->totalTimeIncrements; index++) {
         std::cout << "Running time step: " <<  bt::to_iso_extended_string(WGD->timestamp[index]) << std::endl;
         // Reset icellflag values
-        //WGD->resetICellFlag();
+        WGD->resetICellFlag();
         
         // Create initial velocity field from the new sensors
         WID->metParams->sensors[0]->inputWindProfile(WID, WGD, index, arguments.solveType);
