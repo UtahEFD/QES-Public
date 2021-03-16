@@ -107,22 +107,36 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
          }
       } 
    } else {
+       /* FM NOTES:
+        WARNING this is unfinished. 
+        + does support multiple sensor files (untested)
+        - does not supprot missmatched time stamps between sensor, assumed that all sensors have all the times
+        + does support halo for QES coord (site coord == 1)
+        - does not support halo for UTM coord (site coord == 2)
+        - does not support halo for lon/lat coord (site coord == 3)
+        */
+       
        // If the sensor file specified in the xml
-       if (WID->metParams->sensorName.size() > 0)
-       {
-           for (auto i = 0; i < WID->metParams->sensorName.size(); i++)
-           {
+       if (WID->metParams->sensorName.size() > 0) {
+           for (auto i = 0; i < WID->metParams->sensorName.size(); i++) {
                WID->metParams->sensors.push_back(new Sensor(WID->metParams->sensorName[i]));            // Create new sensor object
                //WID->metParams->sensors[i] = parseSensors(WID->metParams->sensorName[i]);       // Parse new sensor objects from xml
            }
        }
        
-       for (size_t i=0; i < WID->metParams->sensors.size(); i++) {
-           for (size_t t=0; t < WID->metParams->sensors[i]->TS.size(); t++) {
-               //ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp);
-               timestamp.push_back(WID->metParams->sensors[i]->TS[t]->timePosix);
-           }
+       // adding time stamps (assuming that the 1st sensor always has all the times defined)
+       for (size_t t=0; t < WID->metParams->sensors[0]->TS.size(); t++) {
+           //ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp);
+           timestamp.push_back(WID->metParams->sensors[0]->TS[t]->timePosix);
        }
+       
+       // Adding halo to sensor location (if in QEScoord site_coord_flag==1)
+       for (size_t i=0; i < WID->metParams->sensors.size(); i++) {
+           if (WID->metParams->sensors[i]->site_coord_flag==1) {
+               WID->metParams->sensors[i]->site_xcoord += WID->simParams->halo_x;
+               WID->metParams->sensors[i]->site_ycoord += WID->simParams->halo_y;
+           }
+       } 
    }
    
    // /////////////////////////
