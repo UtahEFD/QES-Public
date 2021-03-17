@@ -276,7 +276,7 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
             xc = x_id*WGD->dxy;
             int i = ((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/WGD->dx;
             int j = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/WGD->dy;
-            if ( i >= WGD->nx-2 && i <= 0 && j >= WGD->ny-2 && j <= 0)
+            if ( i >= WGD->nx-2 || i <= 0 || j >= WGD->ny-2 || j <= 0)
             {
               break;
             }
@@ -300,7 +300,7 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
             xc = 0.5*x_id*WGD->dxy;
             int i = ((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/WGD->dx;
             int j = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/WGD->dy;
-            if (i >= WGD->nx-2 && i <= 0 && j >= WGD->ny-2 && j <= 0)
+            if (i >= WGD->nx-2 || i <= 0 || j >= WGD->ny-2 || j <= 0)
             {
               break;
             }
