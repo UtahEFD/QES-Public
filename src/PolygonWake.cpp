@@ -98,6 +98,7 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
   polygon_area = abs(polygon_area);
   width_eff = polygon_area/(x2-x1);           // Effective width of the building
   length_eff = polygon_area/(y2-y1);          // Effective length of the building
+  float wake_height = height_eff;
 
   int counter = 0;
   // Loop through points to find the height added to the effective height because of rooftop parameterization
@@ -130,7 +131,7 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
           shell_height = vd*sqrt(1.0-pow((0.5*R_cx-hd)/(0.5*R_cx), 2.0));     // Additional height because of the rooftop
           if (shell_height > 0.0)
           {
-            height_eff += shell_height;
+            wake_height += shell_height;
           }
         }
         // Addition only happens once
@@ -139,8 +140,8 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
     }
   }
 
-  L_over_H = length_eff/height_eff;           // Length over height
-  W_over_H = width_eff/height_eff;            // Width over height
+  L_over_H = length_eff/wake_height;           // Length over height
+  W_over_H = width_eff/wake_height;            // Width over height
 
   // Checking bounds of length over height and width over height
   if (L_over_H > 3.0)
@@ -158,7 +159,7 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
 
   tol = 0.01*M_PI/180.0;
   // Calculating length of the downwind wake based on Fackrell (1984) formulation
-  Lr = 1.8*height_eff*W_over_H/(pow(L_over_H,0.3)*(1+0.24*W_over_H));
+  Lr = 1.8*wake_height*W_over_H/(pow(L_over_H,0.3)*(1+0.24*W_over_H));
 
   for (auto id=0; id<polygonVertices.size()-1; id++)
   {
@@ -225,7 +226,7 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
   for (auto k = k_start; k < WGD->nz-2; k++)
   {
     k_top = k;
-    if (height_eff < WGD->z[k+1])
+    if (wake_height < WGD->z[k+1])
     {
       break;
     }
@@ -276,7 +277,7 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
             xc = x_id*WGD->dxy;
             int i = ((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/WGD->dx;
             int j = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/WGD->dy;
-            if ( i >= WGD->nx-2 && i <= 0 && j >= WGD->ny-2 && j <= 0)
+            if ( i >= WGD->nx-2 || i <= 0 || j >= WGD->ny-2 || j <= 0)
             {
               break;
             }
@@ -300,7 +301,7 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
             xc = 0.5*x_id*WGD->dxy;
             int i = ((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/WGD->dx;
             int j = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/WGD->dy;
-            if (i >= WGD->nx-2 && i <= 0 && j >= WGD->ny-2 && j <= 0)
+            if (i >= WGD->nx-2 || i <= 0 || j >= WGD->ny-2 || j <= 0)
             {
               break;
             }
@@ -351,9 +352,9 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
                 }
 
                 xu -= x_wall_u;
-                if (abs(yu) < abs(y_norm) && abs(y_norm) > epsilon && z_build < height_eff && height_eff > epsilon)
+                if (abs(yu) < abs(y_norm) && abs(y_norm) > epsilon && z_build < wake_height && wake_height > epsilon)
                 {
-                  dn_u = sqrt((1.0-pow((yu/y_norm), 2.0))*(1.0-pow((z_build/height_eff),2.0))*pow((canyon_factor*Lr_local_u),2.0));
+                  dn_u = sqrt((1.0-pow((yu/y_norm), 2.0))*(1.0-pow((z_build/wake_height),2.0))*pow((canyon_factor*Lr_local_u),2.0));
                 }
                 else
                 {
@@ -415,9 +416,9 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
                 }
                 xv -= x_wall_v;
 
-                if (abs(yv) < abs(y_norm) && abs(y_norm) > epsilon && z_build < height_eff && height_eff > epsilon)
+                if (abs(yv) < abs(y_norm) && abs(y_norm) > epsilon && z_build < wake_height && wake_height > epsilon)
                 {
-                  dn_v = sqrt((1.0-pow((yv/y_norm), 2.0))*(1.0-pow((z_build/height_eff),2.0))*pow((canyon_factor*Lr_local_v),2.0));
+                  dn_v = sqrt((1.0-pow((yv/y_norm), 2.0))*(1.0-pow((z_build/wake_height),2.0))*pow((canyon_factor*Lr_local_v),2.0));
                 }
                 else
                 {
@@ -478,9 +479,9 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
                   x_wall_w = ((xi[id+1]-xi[id])/(yi[id+1]-yi[id]))*(yw-yi[id]) + xi[id];
                 }
                 xw -= x_wall_w;
-                if (abs(yw) < abs(y_norm) && abs(y_norm) > epsilon && z_build < height_eff && height_eff > epsilon)
+                if (abs(yw) < abs(y_norm) && abs(y_norm) > epsilon && z_build < wake_height && wake_height > epsilon)
                 {
-                  dn_w = sqrt((1.0-pow(yw/y_norm, 2.0))*(1.0-pow(z_build/height_eff,2.0))*pow(canyon_factor*Lr_local_w,2.0));
+                  dn_w = sqrt((1.0-pow(yw/y_norm, 2.0))*(1.0-pow(z_build/wake_height,2.0))*pow(canyon_factor*Lr_local_w,2.0));
                 }
                 else
                 {
