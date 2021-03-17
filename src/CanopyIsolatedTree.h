@@ -24,7 +24,7 @@ public:
         //parsePrimitive<float>(true, L, "length");
         parsePrimitive<float>(true, W, "width");
         //parsePrimitive<float>(true, canopy_rotation, "canopyRotation");
-    
+
         x_start=x_cent-0.5*W;
         y_start=y_cent-0.5*W;
         

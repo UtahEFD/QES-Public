@@ -167,39 +167,53 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
         }
     }
     
-    // Define start/end index of the canopy in z-direction
-    k_start=WGD->nz;
-    k_end=0;
-    for (auto j=0; j<ny_canopy; j++) {
-        for (auto i=0; i<nx_canopy; i++) {
-            int icell_canopy_2d = i + j*nx_canopy;
-            if( canopy_bot_index[icell_canopy_2d] < k_start )
-                k_start = canopy_bot_index[icell_canopy_2d];
-            if( canopy_top_index[icell_canopy_2d] > k_end )
-                k_end = canopy_top_index[icell_canopy_2d];
-        }
+    float linH_tot = 0;
+    for (auto k=0u;k<canopy_height.size();k++) {
+        linH_tot += canopy_height[k];
     }
-
-    // define base heigh and effective height
-    base_height=100000;
-    height_eff=0;
-    for (auto j=0; j<ny_canopy; j++) {
-        for (auto i=0; i<nx_canopy; i++) {
-            int icell_canopy_2d = i + j*nx_canopy;
-            if( canopy_top_index[icell_canopy_2d] >= 0 ) {
-                if( canopy_base[icell_canopy_2d] < base_height )
-                    base_height = canopy_base[icell_canopy_2d];
-                if( canopy_top[icell_canopy_2d] > height_eff )
-                    height_eff = canopy_top[icell_canopy_2d];
+    if (linH_tot>0) {
+        // Define start/end index of the canopy in z-direction
+        k_start=WGD->nz;
+        k_end=0;
+        for (auto j=0; j<ny_canopy; j++) {
+            for (auto i=0; i<nx_canopy; i++) {
+                int icell_canopy_2d = i + j*nx_canopy;
+                if( canopy_bot_index[icell_canopy_2d] < k_start )
+                    k_start = canopy_bot_index[icell_canopy_2d];
+                if( canopy_top_index[icell_canopy_2d] > k_end )
+                    k_end = canopy_top_index[icell_canopy_2d];
             }
         }
-    }
+        
+        // define base heigh and effective height
+        base_height=100000;
+        height_eff=0;
+        for (auto j=0; j<ny_canopy; j++) {
+            for (auto i=0; i<nx_canopy; i++) {
+                int icell_canopy_2d = i + j*nx_canopy;
+                if( canopy_top_index[icell_canopy_2d] >= 0 ) {
+                    if( canopy_base[icell_canopy_2d] < base_height )
+                    base_height = canopy_base[icell_canopy_2d];
+                    if( canopy_top[icell_canopy_2d] > height_eff )
+                    height_eff = canopy_top[icell_canopy_2d];
+                }
+            }
+        }
 
-    // number of point in z -> + 2 (1 ghost below, 1 ghost above)
-    // the canopy subarray start at the ground (with bottom ghost cell below the ground) 
-    nz_canopy = k_end+2;
-    // k_end to match definition used by all building (top face and not top cell)
-    k_end++;
+        // number of point in z -> + 2 (1 ghost below, 1 ghost above)
+        // the canopy subarray start at the ground (with bottom ghost cell below the ground) 
+        nz_canopy = k_end+2;
+        // k_end to match definition used by all building (top face and not top cell)
+        k_end++;
+        
+    } else {
+        k_start=0;
+        k_end=0;
+        base_height=0;
+        height_eff=0;
+
+        nz_canopy=0;
+    }
 
     // number of cell-center elements (3D)
     numcell_cent_3d = nx_canopy*ny_canopy*nz_canopy;
@@ -381,6 +395,8 @@ void Canopy::canopyRegression(WINDSGeneralData* WGD)
                 ym = sum_y/counter;
                 canopy_z0[id] = exp(ym-((WGD->vk/canopy_ustar[id]))*xm);
                 
+                std::cout << i << " " << j << " " << sum_y << " " << sum_x_sq << " "  << canopy_ustar[id] << " "  << canopy_z0[id] << std::endl;
+
             } // end of if (canopy_top_index[id] > 0)
         }
     } 
