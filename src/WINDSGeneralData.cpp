@@ -60,10 +60,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
       WRFInput *wrf_ptr = WID->simParams->wrfInputData;
 
-      std::cout << "Size of stat data: " << wrf_ptr->statData.size() << std::endl;
+      std::cout << "Size of WRF station/sensor profile data: " << wrf_ptr->statData.size() << std::endl;
       WID->metParams->sensors.resize( wrf_ptr->statData.size() );
 
-      for (size_t i=0; i<wrf_ptr->statData.size(); i++) {
+      for (auto i=0; i<wrf_ptr->statData.size(); i++) {
          std::cout << "Station " << i << " ("
                    << wrf_ptr->statData[i].xCoord << ", "
                    << wrf_ptr->statData[i].yCoord << ")" << std::endl;
@@ -555,10 +555,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
    wall = new Wall();
 
-   std::cout << "Defining Solid Walls...\n";
+   std::cout << "Defining Solid Walls..." << std::endl; 
    // Boundary condition for building edges
    wall->defineWalls(this);
-   std::cout << "Walls Defined...\n";
+   std::cout << "Walls Defined." << std::endl;
 
    wall->solverCoefficients (this);
 
