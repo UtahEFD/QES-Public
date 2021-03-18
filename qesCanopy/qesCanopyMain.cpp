@@ -152,10 +152,12 @@ int main(int argc, char *argv[])
 
         for (int k = 0; k < 1; ++k) { 
             // set u0,v0 to current solution    
-            WGD->u0 = WGD->u;    
-            WGD->v0 = WGD->v;
-            WGD->w0 = WGD->w;
-            
+            /*
+              WGD->u0 = WGD->u;    
+              WGD->v0 = WGD->v;
+              WGD->w0 = WGD->w;
+            */
+
             // Apply parametrizations
             WGD->applyParametrizations(WID);
             
