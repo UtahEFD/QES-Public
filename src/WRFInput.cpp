@@ -936,12 +936,6 @@ WRFInput::WRFInput(const std::string& filename,
         maxWRFAlt = fm_nz;  // again, only works with dz=1
     }
     
-    
-//    std::vector<size_t> atm_startIdx = {0,0,0};
-//    std::vector<size_t> atm_counts = {1,
-    //                                    static_cast<unsigned long>(atm_ny),
-//                                      static_cast<unsigned long>(atm_nx)};
-
     std::vector<double> atm_hgt( atm_nx * atm_ny );
     wrfInputFile.getVar("HGT").getVar(atm_startIdx, atm_counts, atm_hgt.data());
 
@@ -1035,9 +1029,8 @@ WRFInput::WRFInput(const std::string& filename,
 			  // if (coordZ[l_idx] >= minWRFAlt && coordZ[l_idx] <= maxWRFAlt) {
                         
     // Use ZSF + FZ0 -- should be built into coordZ it seems
-
-			  std::cout << "profile height at " << k << ": " << coordZ[ l_idx ] << std::endl;
-                          std::cout << "\t relative height: " << coordZ[ l_idx ] - atm_hgt[ yIdx * atm_nx + xIdx ] << std::endl;                          
+                            
+                            std::cout << "profile height at " << k << ": " << coordZ[ l_idx ] - atm_hgt[ yIdx * atm_nx + xIdx ] << "\n";
 
                             profData profEl;
                             profEl.zCoord = coordZ[ l_idx ] - atm_hgt[ yIdx * atm_nx + xIdx ];
