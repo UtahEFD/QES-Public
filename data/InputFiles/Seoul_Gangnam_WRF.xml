@@ -1,15 +1,18 @@
 <simulationParameters>
   <DEM>/scratch/Gangnam/w001001.adf</DEM>					<!-- Address to DEM location-->
   <WRF>/scratch/Gangnam/Seoul_wrfout_d03_2018-08-01_00_00_00</WRF>
-  <!--SHP>../scratch/Gangnam/building.shp</SHP-->				<!-- Address to shapefile location-->
-  <!--SHPBuildingLayer>building</SHPBuildingLayer-->
-  <!--heightFactor> 3.0 </heightFactor-->					<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
+  <SHP>/scratch/Gangnam/building.shp</SHP>				<!-- Address to shapefile location-->
+  <SHPBuildingLayer>building</SHPBuildingLayer>
+  <heightFactor> 3.0 </heightFactor>					<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
 
   <!-- This is approximate lower-left coordinate of the Gangnam DEM -->
   <!-- Need to make sure the WRF Sensors are placed appropriately -->
   <UTMx> 325478 </UTMx> 		<!-- x component (m) in UTM -->
   <UTMy> 4152139 </UTMy> 		<!-- y component (m) in UTM -->
   <UTMZone> 52 </UTMZone> 	<!-- UTM zone that domain located -->
+
+  <!-- ?? -->
+  <UTMZoneLetter> 17 </UTMZoneLetter>
 
   <!-- <UTMZoneLetter> 17 </UTMZoneLetter> -->
 
@@ -112,7 +115,7 @@
 	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
 	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (origional QUIC) (default), 1-Cut-cell method -->
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
-	<UTMZoneLetter> 17 </UTMZoneLetter>
+
 	<readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->
 	<!--COEFF>test_windsWk.nc</COEFF-->					<!-- Address to coefficients file location --> 
 </simulationParameters>                     				<!-- End of simulation parameters -->
