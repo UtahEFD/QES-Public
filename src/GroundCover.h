@@ -27,6 +27,13 @@ public:
     }
     
     
+    virtual void parseValues() = 0;
+
+};
+
+class GroundCoverRectangular : public GroundCover
+{
+public:
     virtual void parseValues()
     {
         parsePrimitive<float>(true, attenuationCoeff, "attenuationCoefficient");

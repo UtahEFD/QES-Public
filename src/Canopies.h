@@ -22,20 +22,18 @@ public:
     
     int num_canopies;
     std::vector<Building*> canopies;
-    GroundCover* groundCover;
+    std::vector<GroundCover*> groundCovers;
     
     virtual void parseValues()
     {
-        groundCover = 0;
-
         parsePrimitive<int>(true, num_canopies, "num_canopies");
         // read the input data for canopies
         parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyHomogeneous>("Homogeneous"));
         parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyIsolatedTree>("IsolatedTree"));
         parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyWindbreak>("Windbreak"));
         // add other type of canopy here
-
-        parseElement<GroundCover>(false, groundCover, "groundCover");
-
+        
+        parseMultiPolymorphs(false, groundCovers, Polymorph<GroundCover, GroundCoverRectangular>("GroundCoverRectangular"));
+        
     }
 };
