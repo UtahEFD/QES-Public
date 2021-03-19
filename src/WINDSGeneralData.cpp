@@ -226,12 +226,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    }
 
    // Resize the canopy-related vectors
-   canopy_atten.resize( numcell_cent, 0.0 );
-   canopy_top.resize( (nx-1)*(ny-1), 0.0 );
-   canopy_top_index.resize( (nx-1)*(ny-1), 0 );
-   canopy_z0.resize( (nx-1)*(ny-1), 0.0 );
-   canopy_ustar.resize( (nx-1)*(ny-1), 0.0 );
-   canopy_d.resize( (nx-1)*(ny-1), 0.0 );
+   //canopy_atten.resize( numcell_cent, 0.0 );
+   //canopy_top.resize( (nx-1)*(ny-1), 0.0 );
+   //canopy_top_index.resize( (nx-1)*(ny-1), 0 );
+   //canopy_z0.resize( (nx-1)*(ny-1), 0.0 );
+   //canopy_ustar.resize( (nx-1)*(ny-1), 0.0 );
+   //canopy_d.resize( (nx-1)*(ny-1), 0.0 );
 
 
    // Resize the coefficients for use with the solver
@@ -589,6 +589,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       }
    }
 
+   if ( WID->canopies->groundCover )
+   {
+       for (auto pIdx=0u; pIdx < WID->canopies->groundCover->polygonVertices.size(); pIdx++) {
+           WID->canopies->groundCover->polygonVertices[pIdx].x_poly += WID->simParams->halo_x;
+           WID->canopies->groundCover->polygonVertices[pIdx].y_poly += WID->simParams->halo_y;
+       }
+       groundCoverCanopy = new GroundCoverCanopy(WID,this);
+   }
    
    // We want to sort ALL buildings here...  use the allBuildingsV to
    // do this... (remember some are canopies) so we may need a
