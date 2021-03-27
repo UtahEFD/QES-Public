@@ -1,34 +1,45 @@
-/*
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
  *
- * QES-Winds
- * Copyright (c) 2019 Behnam Bozorgmehr
- * Copyright (c) 2019 Jeremy Gibbs
- * Copyright (c) 2019 Eric Pardyjak
- * Copyright (c) 2019 Zachary Patterson
- * Copyright (c) 2019 Rob Stoll
- * Copyright (c) 2019 Pete Willemsen
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
  *
- * This file is part of QES-Winds package
+ * This file is part of QES-Winds
  *
- * MIT License
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * GPL-3.0 License
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/**
+ * @file Solver.cpp
+ * @brief Declares and defines variables required for both solvers.
+ *
+ * An abstract class that is the basis for the windfield convergence algorithm and
+ * contains information needed to run the simulation as well as functions widely
+ * used by different solver methods. There are several special member variables that
+ * should be accesible to all solvers. They are declared in this class.
+ *
+ * @sa CPUSolver
+ * @sa DynamicParallelism
+ * @sa GlobalMemory
+ * @sa SharedMemory
  */
 
 #include "Solver.h"
@@ -44,31 +55,37 @@ using std::cout;
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
 
-/**< This function is showing progress of the solving process by printing the percentage */
 
+/**
+ * Shows progress of the solving process by printing the percentage.
+ */
 void Solver::printProgress (float percentage)
 {
-    int val = (int) (percentage * 100);
-    int lpad = (int) (percentage * PBWIDTH);
-    int rpad = PBWIDTH - lpad;
-    printf ("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
-    fflush (stdout);
+   int val = (int) (percentage * 100);
+   int lpad = (int) (percentage * PBWIDTH);
+   int rpad = PBWIDTH - lpad;
+   printf ("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+   fflush (stdout);
 }
 
 
-/**< \fn Solver
-* This function is assigning values read by WINDSImputData to variables
-* used in the solvers - this is only meant work with QES-Winds!
+/**
+ * Assigns values read by WINDSInputData to variables
+ * used in the solvers.
+ *
+ * @note this is only meant to work with QES-Winds!
+ *
+ * @param WID :document this:
+ * @param WGD :document this:
  */
-
 Solver::Solver(const WINDSInputData* WID, WINDSGeneralData * WGD)
-    : alpha1 (1),
-      alpha2 (1),
-      eta( pow((alpha1/alpha2), 2.0) ),
-      A( pow( (WGD->dx/WGD->dy), 2.0 ) ),
-      B( eta*pow( (WGD->dx/WGD->dz), 2.0) ),
-      itermax( WID->simParams->maxIterations )
+   : alpha1 (1),
+     alpha2 (1),
+     eta( pow((alpha1/alpha2), 2.0) ),
+     A( pow( (WGD->dx/WGD->dy), 2.0 ) ),
+     B( eta*pow( (WGD->dx/WGD->dz), 2.0) ),
+     itermax( WID->simParams->maxIterations )
 
 {
-  tol = WID->simParams->tolerance;
+   tol = WID->simParams->tolerance;
 }
