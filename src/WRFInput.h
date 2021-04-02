@@ -97,6 +97,8 @@ public:
 
     int maxSensors;
 
+    std::vector<double> u0_fmw, v0_fmw, ht_fmw;
+
     /**
      */
     void applyHalotoStationData(const float haloX, const float haloY);

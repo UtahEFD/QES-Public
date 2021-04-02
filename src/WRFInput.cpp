@@ -911,6 +911,42 @@ WRFInput::WRFInput(const std::string& filename,
 
     std::cout << "Reading and processing WRF Stations for input wind profiles..." << std::endl;
 
+    std::cout << "Dim Count: " << wrfInputFile.getVar("U0_FMW").getDimCount() << std::endl;
+    for (auto dIdx=0u; dIdx<wrfInputFile.getVar("U0_FMW").getDimCount(); dIdx++) {
+        NcDim dim = wrfInputFile.getVar("U0_FMW").getDim( dIdx );
+        std::cout << "Dim " << dIdx << ", Size=" << dim.getSize() << std::endl;
+    }
+
+    // Extract time dim size
+    NcDim dim = wrfInputFile.getVar("U0_FMW").getDim( 0 );
+    int timeSize = dim.getSize();
+    
+    // Extract height dim size
+    dim = wrfInputFile.getVar("U0_FMW").getDim( 1 );
+    int hgtSize = dim.getSize();
+
+    std::vector<size_t> interpWinds_StartIdx = {timeSize-1,0,0,0};
+    std::vector<size_t> interpWinds_counts = {1,
+                                              hgtSize,
+                                              static_cast<unsigned long>(fm_ny),
+                                              static_cast<unsigned long>(fm_nx)};
+
+    u0_fmw.resize( 1 * hgtSize * fm_ny * fm_nx );
+    wrfInputFile.getVar("U0_FMW").getVar(interpWinds_StartIdx, interpWinds_counts, u0_fmw.data());
+
+    v0_fmw.resize( 1 * hgtSize * fm_ny * fm_nx );
+    wrfInputFile.getVar("V0_FMW").getVar(interpWinds_StartIdx, interpWinds_counts, v0_fmw.data());
+
+    // Read the heights
+    std::vector<size_t> interpWindsHT_StartIdx = {timeSize-1,0,0,0};
+    std::vector<size_t> interpWindsHT_counts = {1,
+                                              hgtSize};
+
+    ht_fmw.resize( 1 * hgtSize );
+    wrfInputFile.getVar("HT_FMW").getVar(interpWindsHT_StartIdx, interpWindsHT_counts, ht_fmw.data());
+    
+
+
     // ////////////////////////
     // sampling strategy
     int stepSize = sensorSample;
