@@ -423,6 +423,16 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       WID->simParams->SHPData->getLocalDomain( shpDomainSize );
       WID->simParams->SHPData->getMinExtent( minExtent );
 
+      printf( "\tShapefile Origin = (%.6f,%.6f)\n",
+	      minExtent[0], minExtent[1] );
+      // If the shapefile is not covering the whole domain or the UTM coordinates 
+      // of the QES domain is different than shapefile origin
+      if (WID->simParams->UTMx != 0.0 && WID->simParams->UTMy != 0.0)
+      {
+      	minExtent[0] -= (minExtent[0] - WID->simParams->UTMx);
+      	minExtent[1] -= (minExtent[1] - WID->simParams->UTMy);
+      }
+
       // float domainOffset[2] = { 0, 0 };
       for (auto pIdx = 0u; pIdx<WID->simParams->shpPolygons.size(); pIdx++)
       {
@@ -732,7 +742,7 @@ void WINDSGeneralData::mergeSort( std::vector<float> &effective_height, std::vec
       return;
    }
 
-   std::cout << "Sorting " << allBuildingsV.size() << " buildings." << std::endl;
+   //std::cout << "Sorting " << allBuildingsV.size() << " buildings." << std::endl;
    
 
    if ( allBuildingsV.size() > 1)

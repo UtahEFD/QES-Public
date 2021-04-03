@@ -7,7 +7,7 @@
   	<halo_x> 30.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 30.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 
--       <domain> 118 121 78</domain>                                    <!-- Number of cells in x,y and z directions-->
+-       <domain> 122 125 78</domain>                                    <!-- Number of cells in x,y and z directions-->
 -       <cellSize> 10.0 10.0 3.0 </cellSize>                            <!-- Mesh resolution (meters)-->
 
 	<verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
@@ -23,8 +23,8 @@
 	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
 	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (origional QUIC) (default), 1-Cut-cell method -->
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
-	<UTMx> 0 </UTMx> 						<!-- x component (m) in UTM -->
-	<UTMy> 0 </UTMy> 						<!-- y component (m) in UTM -->
+	<UTMx> 634160 </UTMx> 						<!-- x component (m) in UTM -->
+	<UTMy> 3925350 </UTMy> 						<!-- y component (m) in UTM -->
 	<UTMZone> 1 </UTMZone> 						<!-- UTM zone that domain located -->
 	<UTMZoneLetter> 17 </UTMZoneLetter>
 	<readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->
