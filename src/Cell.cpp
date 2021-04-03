@@ -4,7 +4,7 @@ Cell::Cell()
 {
 	isAir = isCutCell = isTerrain = false;
 	terrainPoints.clear();
-	terrainEdges.clear();
+	//terrainEdges.clear();
 	location = Vector3<float>(0.0f,0.0f,0.0f);
 	dimensions = Vector3<float>(1.0f,1.0f,1.0f);
 }
@@ -18,20 +18,20 @@ Cell::Cell(const int type_CT, const Vector3<float> locationN, const Vector3<floa
 	else if (type_CT == terrain_CT)
 		isTerrain = true;
 	terrainPoints.clear();
-	terrainEdges.clear();
+	//terrainEdges.clear();
 	location = locationN;
 	dimensions = dimensionsN;
 }
 
-Cell::Cell(  std::vector< Vector3<float> >& points,  std::vector< Edge< int > >& edges,  int intermed[4][4][2],
+Cell::Cell(  std::vector< Vector3<float> >& points/*,  std::vector< Edge< int > >& edges*/,  int intermed[4][4][2],
 		 Vector3<float> locationN,  Vector3<float> dimensionsN)
 {
 	isTerrain = isAir = isCutCell = true;
 	terrainPoints.clear();
 	for(int i = 0; i < points.size(); i++)
 		terrainPoints.push_back(points[i]);
-	for (int i = 0; i < edges.size(); i++)
-		terrainEdges.push_back(edges[i]);
+	/*for (int i = 0; i < edges.size(); i++)
+		terrainEdges.push_back(edges[i]);*/
 	location = locationN;
 	dimensions = dimensionsN;
 

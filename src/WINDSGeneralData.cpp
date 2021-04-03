@@ -254,6 +254,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    int halo_index_y = (WID->simParams->halo_y/dy);
    //WID->simParams->halo_y = halo_index_y*dy;
 
+   int ii, jj, idx;
    if (WID->simParams->DTE_heightField)
    {
       // ////////////////////////////////
@@ -264,9 +265,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
          for (int j = 0; j < ny-halo_index_y-1; j++)
          {
             // Gets height of the terrain for each cell
-            int ii = i+WID->simParams->halo_x/dx;
-            int jj = j+WID->simParams->halo_y/dy;
-            int idx = ii + jj*(nx-1);
+            ii = i+WID->simParams->halo_x/dx;
+            jj = j+WID->simParams->halo_y/dy;
+            idx = ii + jj*(nx-1);
             terrain[idx] = WID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
             if (terrain[idx] < 0.0)
             {
@@ -282,6 +283,17 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
                }
             }
          }
+         ii = i+WID->simParams->halo_x/dx;
+         jj = ny-halo_index_y-1;
+         id = ii+jj*nx;
+         terrain_id[id] = terrain_id[id-nx];
+      }
+      for (int j = 0; j < ny-halo_index_y; j++)
+      {
+      	ii = nx-halo_index_x-1;
+        jj = j+WID->simParams->halo_y/dy;
+        id = ii+jj*nx;
+        terrain_id[id] = terrain_id[id-1];
       }
    }
 
