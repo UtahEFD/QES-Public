@@ -2,7 +2,7 @@
 
 float Mesh::getHeight(float x, float y)
 {
-   return tris->heightToTri(x,y);
+   return triangleBVH->heightToTri(x,y);
 }
 
 void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag, std::vector<double> &mixingLength){
@@ -37,7 +37,7 @@ void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float d
                   // ray.setDir(sd.getNextDirCardinal());
                   ray.setDir(sd.getNextDir());
 
-                  bool isHit = tris->rayHit(ray, hit);
+                  bool isHit = triangleBVH->rayHit(ray, hit);
 
                   if(isHit){
                       // std::cout<<"Hit found."<<std::endl;

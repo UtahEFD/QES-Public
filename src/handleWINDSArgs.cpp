@@ -23,6 +23,8 @@ WINDSArgs::WINDSArgs()
     // [FM] the output of turbulence field linked to the flag compTurb
     //reg("turbout", "Turns on the netcdf file to write turbulence file", ArgumentParsing::NONE, 'r');
     reg("terrainout", "Turn on the output of the triangle mesh for the terrain", ArgumentParsing::NONE, 'h');
+
+    reg("firemode", "Enable writing of wind data back to WRF Input file.", ArgumentParsing::NONE, 'f');
 }
 
 void WINDSArgs::processArguments(int argc, char *argv[])
@@ -54,6 +56,9 @@ void WINDSArgs::processArguments(int argc, char *argv[])
 
     compTurb = isSet("turbcomp");
     if (compTurb) std::cout << "Turbulence model: ON" << std::endl;
+
+    fireMode = isSet( "firemode" );
+    if (fireMode) std::cout << "Wind data will be written back to WRF input file." << std::endl;
 
     isSet( "quicproj", quicFile );
     if (quicFile != "") std::cout << "quicproj set to " << quicFile << std::endl;

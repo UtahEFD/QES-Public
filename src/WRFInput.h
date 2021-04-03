@@ -1,3 +1,5 @@
+#pragma once
+
 /** \file "WRFInput.h" Context header file. 
     \author Pete Willemsen, Matthieu 
 
@@ -31,6 +33,9 @@ using namespace netCDF::exceptions;
 
 #include "Sensor.h"
 
+// Forward Decl
+class WINDSGeneralData;
+
 class profData 
 {
 public:
@@ -58,9 +63,17 @@ public:
 
     const double c_PI = 3.14159265358979323846;
 
-    WRFInput(const std::string& filename, double domainUTMx, double domainUTMy, float dimX, float dimY, bool sensorsOnly=false);
+    WRFInput(const std::string& filename, double domainUTMx, double domainUTMy,
+             int zoneUTM, std::string &zoneLetterUTM, float dimX, float dimY,
+             int sensorSample,
+             bool sensorsOnly=false);
     ~WRFInput();
 
+    // Ouput a wind field from QES to the WRF file:
+    // outputWindField
+
+    std::string m_WRFFilename;
+    
     // If set to true, ONLY the sensor data will be pulled from WRF
     // Atmos Mesh.
     bool m_processOnlySensorData;
@@ -68,12 +81,9 @@ public:
     // Fire Mesh Related Data
     bool hasFireMesh;
     
-    int fm_nx, fm_ny;
-    double fm_dx, fm_dy;
+    int fm_nx, fm_ny, fm_nz;
+    float fm_dx, fm_dy, fm_dz;
     std::vector<double> fmHeight;
-
-    // Not really used with WRF so do not read in
-    // std::vector<double> fmZ0;
 
     // Atmospheric Mesh
     int atm_nx, atm_ny, atm_nz;
@@ -86,6 +96,20 @@ public:
     float atm_maxWRFAlt, fm_maxWRFAlt;
 
     int maxSensors;
+
+    /**
+     */
+    void applyHalotoStationData(const float haloX, const float haloY);
+
+    /**
+     */
+    void dumpStationData() const;
+
+
+    /**
+     */
+    void extractWind( WINDSGeneralData *wgd );
+    
 
     /**
      * Reading WRF data - ReadDomainInfo.m
@@ -191,6 +215,13 @@ public:
     
     float lookupLandUse( int luIdx );
 
+    void setHaloAdditions( int xA, int yA ) 
+    {
+        m_haloX_DimAddition = xA;
+        m_haloY_DimAddition = yA;
+    }
+    
+
 private:
 
     NcFile wrfInputFile;
@@ -216,6 +247,8 @@ private:
     // WRFOUTPUT FILE name; if Z0Flag = 3, put a CONSTANT VALUE.
 
     double* relief;
+
+    int m_haloX_DimAddition, m_haloY_DimAddition;
 
     void dumpWRFDataArray(const std::string &name, double *allData, int dimT, int dimZ, int dimY, int dimX);
 

@@ -23,7 +23,7 @@ using std::vector;
 class Mesh
 {
 public:
-	BVH* tris;
+    BVH* triangleBVH;
 
     int mlSampleRate;
 
@@ -39,13 +39,13 @@ public:
 	Mesh(vector<Triangle*> tris)
             : mlSampleRate( 100 )
 	{
-		this->tris = BVH::createBVH(tris);
+		this->triangleBVH = BVH::createBVH(tris);
 
                 //temp var for Optix
                 // this->optixRayTracer = new OptixRayTrace(tris);
                        optixTris = tris;
                 //temp var for getting the list of triangles
-                       trisList = tris;     
+                       trisList = tris;
         }
 
 	/*

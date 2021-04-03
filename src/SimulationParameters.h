@@ -37,7 +37,7 @@ public:
     float UTMx;
     float UTMy;
     int UTMZone;
-    int UTMZoneLetter;
+    std::string UTMZoneLetter;
     float DEMDistancex = 0.0;
     float DEMDistancey = 0.0;
     int meshTypeFlag = 0;
@@ -86,6 +86,7 @@ public:
 
     std::string wrfFile;
     WRFInput *wrfInputData = nullptr;
+    int wrfSensorSample;
 
     enum DomainInputType {
         WRFOnly,
@@ -100,7 +101,7 @@ public:
         UTMx = 0.0;
         UTMy = 0.0;
         UTMZone = 0;
-        UTMZoneLetter = 0;
+        UTMZoneLetter = "";
     }
 
     ~SimulationParameters()
@@ -132,10 +133,9 @@ public:
         parsePrimitive<float>(false, UTMx, "UTMx");
         parsePrimitive<float>(false, UTMy, "UTMy");
         parsePrimitive<int>(false, UTMZone, "UTMZone");
-        parsePrimitive<int>(false, UTMZoneLetter, "UTMZoneLetter");
+        parsePrimitive<std::string>(false, UTMZoneLetter, "UTMZoneLetter");
         parsePrimitive<float>(false, DEMDistancex, "DEMDistancex");
         parsePrimitive<float>(false, DEMDistancey, "DEMDistancey");
-
         parsePrimitive<float>(false, halo_x, "halo_x");
         parsePrimitive<float>(false, halo_y, "halo_y");
         parsePrimitive<float>(false, heightFactor, "heightFactor");
@@ -151,7 +151,9 @@ public:
         parsePrimitive<std::string>(false, shpFile, "SHP");
 
         wrfFile = "";
+        wrfSensorSample = 1;
         parsePrimitive<std::string>(false, wrfFile, "WRF");
+        parsePrimitive<int>(false, wrfSensorSample, "WRFSensorSample");
 
         shpBuildingLayerName = "buildings";  // defaults
         parsePrimitive<std::string>(false, shpBuildingLayerName, "SHPBuildingLayer");
@@ -184,26 +186,61 @@ public:
             // WRF File is specified
             // Read in height field
             //
+            // This step parses the WRF data, attempting to extract
+            // the Fire mesh if it exists (the atm mesh, otherwise)
+            // into a height field.
+            //
+            // We extract the dimensions of the fire (or atm) mesh for
+            // nx and ny domain cells. 
+            //
             std::cout << "Processing WRF data for terrain and met param sensors from " << wrfFile << std::endl;
-            wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, 0, 0 );
-            std::cout << "WRF Input Data processing completed." << std::endl;
+            wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, 0, 0, wrfSensorSample );
+            std::cout << "WRF input data processing completed." << std::endl;
+
+            // Apply halo to wind profile locations -- halo units are
+            // meters so can add to other coordinates/positions, such
+            // as station coordinates.
+            wrfInputData->applyHalotoStationData( halo_x, halo_y );
+
+            wrfInputData->dumpStationData();
 
             // In the current setup, grid may NOT be set... be careful
             // may need to initialize it here if nullptr is true for grid
 
             // utilize the wrf information to construct a
             // DTE_heightfield
-            std::cout << "Constructing DTE from WRF Input" << std::endl;
-            DTE_heightField = new DTEHeightField(wrfInputData->fmHeight,
-                                                 wrfInputData->fm_nx,
-                                                 wrfInputData->fm_ny,
-                                                 (*(grid))[0],
-                                                 (*(grid))[1]);
+            std::cout << "Constructing the DTE from WRF input heighfield..." << std::endl;
 
-            // domain = new Vector3<int>( wrfInputData->fm_nx, wrfInputData->fm_nx, 100 );
+            DTE_heightField = new DTEHeightField(wrfInputData->fmHeight,
+                                                 std::tuple<int,int,int>(wrfInputData->fm_nx, wrfInputData->fm_ny, wrfInputData->fm_nz),
+                                                 std::tuple<float,float,float>(wrfInputData->fm_dx,wrfInputData->fm_dy,wrfInputData->fm_dz),
+                                                 halo_x, halo_y);
+
+            (*(grid))[0] = wrfInputData->fm_dx;
+            (*(grid))[1] = wrfInputData->fm_dy;
+
+            std::cout << "Dim: " << wrfInputData->fm_nx << " X " << wrfInputData->fm_ny << " X " << wrfInputData->fm_nz << std::endl;
+            std::cout << "at " << (*(grid))[0] << " X " << (*(grid))[1] << " X " << (*(grid))[2] << std::endl;
+
+            domain = new Vector3<int>( wrfInputData->fm_nx, wrfInputData->fm_nx, wrfInputData->fm_nz );
             DTE_heightField->setDomain(domain, grid);
+
+            // need this to make sure domain sizes include halo
+            int halo_x_WRFAddition = (int)floor(halo_x / wrfInputData->fm_dx);
+            int halo_y_WRFAddition = (int)floor(halo_y / wrfInputData->fm_dy);
+
+            std::cout << "Halo Addition to dimensions: " << halo_x_WRFAddition << " cells, " << halo_y_WRFAddition << " cells" << std::endl;
+            
+            (*(domain))[0] += 2 * halo_x_WRFAddition;
+            (*(domain))[1] += 2 * halo_y_WRFAddition;
+
+            // let WRF class know about the dimensions that the halo adds...
+            wrfInputData->setHaloAdditions( halo_x_WRFAddition, halo_y_WRFAddition );
+
+            std::cout << "domain size with halo borders: " <<  (*(domain))[0] << " x " << (*(domain))[1] << std::endl;
+            
             DTE_mesh = new Mesh(DTE_heightField->getTris());
-            std::cout << "Mesh complete\n";
+            std::cout << "Meshing of DEM complete\n";
         }
         else if (m_domIType == WRFDEM) {
 
@@ -211,10 +248,14 @@ public:
 
             // First read DEM as usual
             std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
+
+            std::cout << "Domain: " << (*(domain))[0] << ", " << (*(domain))[1] << ", " << (*(domain))[2] << std::endl;
+            std::cout << "Grid: " << (*(grid))[0] << ", " << (*(grid))[1] << ", " << (*(grid))[2] << std::endl;            
             DTE_heightField = new DTEHeightField(demFile,
-                                                 (*(grid))[0],(*(grid))[1], UTMx, UTMy, 
-                                                  originFlag, DEMDistancex, DEMDistancey,
-                                                  (*(domain))[0],(*(domain))[1]);
+                                                 std::tuple<int,int,int>( (*(domain))[0], (*(domain))[1], (*(domain))[2] ),
+                                                 std::tuple<float,float,float>( (*(grid))[0], (*(grid))[1], (*(grid))[2] ),
+                                                 UTMx, UTMy,
+                                                 originFlag, DEMDistancex, DEMDistancey);
             assert(DTE_heightField);
 
             std::cout << "Forming triangle mesh...\n";
@@ -250,16 +291,17 @@ public:
             float dimX = (*(domain))[0] * (*(grid))[0];
             float dimY = (*(domain))[1] * (*(grid))[1];
             std::cout << "dimX = " << dimX << ", dimY = " << dimY << std::endl;
-            wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, dimX, dimY, onlySensorData );
+            wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, dimX, dimY, wrfSensorSample, onlySensorData );
             std::cout << "WRF Wind Velocity Profile Data processing completed." << std::endl;
         }
 
         else if (m_domIType == DEMOnly) {
             std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
             DTE_heightField = new DTEHeightField(demFile,
-                                                 (*(grid))[0],(*(grid))[1], UTMx, UTMy, 
-                                                  originFlag, DEMDistancex, DEMDistancey,
-                                                  (*(domain))[0],(*(domain))[1]);
+                                                 std::tuple<int,int,int>( (*(grid))[0], (*(grid))[1], (*(grid))[2] ),
+                                                 std::tuple<float,float,float>( (*(domain))[0], (*(domain))[1], (*(domain))[2] ),
+                                                 UTMx, UTMy,
+                                                 originFlag, DEMDistancex, DEMDistancey);
             assert(DTE_heightField);
 
             std::cout << "Forming triangle mesh...\n";
@@ -286,4 +328,5 @@ public:
                                          shpPolygons, shpBuildingHeight, heightFactor );
         }
     }
+
 };

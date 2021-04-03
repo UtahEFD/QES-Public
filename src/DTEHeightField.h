@@ -20,20 +20,53 @@
 #include <cmath>
 #include <chrono>
 
+/** \brief Loads loading digital elevation data.
+*
+* Loads digital elevation data. 
+*/
 class DTEHeightField
 {
 public:
 
   friend class test_DTEHeightField;
 
-  DTEHeightField();
-  DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN, float UTMx, float UTMy, int OriginFlag, float DEMDistanceX, float DEMDistanceY, int nx, int ny);
+    DTEHeightField();  // this is not likely to produce anything
+                       // useful -- Pete
 
-    DTEHeightField(const std::vector<double> &heightField, int dimX, int dimY, double cellSizeXN, double cellSizeYN);
+    /** \brief Constructs a GIS Digital Elevation Model for use with QES.
+     *
+     * This function loads a digital elevation model using a GIS file.
+     *
+     * @param filename - the filename containing the GIS data to load
+     * @param dim - a 3-tuple of ints representing the dimension of
+     * the domain, as in {nx, ny, nz}
+     * @param cellSize - a 3-tuple of floats representing the size of
+     * each domain cell in the 3 dimensions, as in {dx, dy, dz}
+     * @param UTMx - the UTM origin in x
+     * @param UTMy - the UTM origin in y
+     * @return a string representing the results of the failed summation.
+     */
+    DTEHeightField(const std::string &filename,
+                   std::tuple<int, int, int> dim,
+                   std::tuple<float, float, float> cellSize,
+                   float UTMx, float UTMy,
+                   int OriginFlag, float DEMDistanceX, float DEMDistanceY);
+
+    /** \brief Loads a GIS Digital Elevation Model
+     *
+     * This function loads a digital elevation model. 
+     *
+     * @param n - the number of times to compute summation
+     * @return a string representing the results of the failed summation.
+     */
+    DTEHeightField(const std::vector<double> &heightField,
+                   std::tuple<int, int, int> dim,
+                   std::tuple<float, float, float> cellSize,
+                   float halo_x, float halo_y);
 
   ~DTEHeightField();
 
-  std::vector<Triangle*> getTris() const {return m_triList;}
+  const std::vector<Triangle*> &getTris() const {return m_triList;}
 
   /*
    * This function takes in a domain to change and a grid size for
@@ -187,13 +220,15 @@ private:
   int m_imageXSize, m_imageYSize;
   double m_imageGeoTransform[6];
 
-  //float pixelSizeX, pixelSizeY;
-  float cellSizeX, cellSizeY;
+    //float pixelSizeX, pixelSizeY;
+    std::tuple<float, float, float> m_cellSize;
+    std::tuple<int, int, int> m_dim;
+    
   float domain_UTMx, domain_UTMy;
   float origin_x, origin_y;
   int shift_x = 0;
   int shift_y = 0;
-  int domain_nx, domain_ny;
+    // int domain_nx, domain_ny;
   int end_x = 0;
   int end_y = 0;
 

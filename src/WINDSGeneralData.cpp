@@ -60,10 +60,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
       WRFInput *wrf_ptr = WID->simParams->wrfInputData;
 
-      std::cout << "Size of stat data: " << wrf_ptr->statData.size() << std::endl;
+      std::cout << "Size of WRF station/sensor profile data: " << wrf_ptr->statData.size() << std::endl;
       WID->metParams->sensors.resize( wrf_ptr->statData.size() );
 
-      for (size_t i=0; i<wrf_ptr->statData.size(); i++) {
+      for (auto i=0; i<wrf_ptr->statData.size(); i++) {
          std::cout << "Station " << i << " ("
                    << wrf_ptr->statData[i].xCoord << ", "
                    << wrf_ptr->statData[i].yCoord << ")" << std::endl;
@@ -73,6 +73,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
          WID->metParams->sensors[i]->site_xcoord = wrf_ptr->statData[i].xCoord;
          WID->metParams->sensors[i]->site_ycoord = wrf_ptr->statData[i].yCoord;
+
+         // Need to allocate time series... not fully pulling all WRF
+         // time series yet... just first
+         WID->metParams->sensors[i]->TS.resize(1);
+         // Also need to allocate the space...
+         if (!WID->metParams->sensors[i]->TS[0])
+             WID->metParams->sensors[i]->TS[0] = new TimeSeries;
 
          // WRF profile data -- sensor blayer flag is 4
          WID->metParams->sensors[i]->TS[0]->site_blayer_flag = 4;
@@ -260,13 +267,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       // ////////////////////////////////
       // Retrieve terrain height field //
       // ////////////////////////////////
-      for (int i = 0; i < nx-halo_index_x-1; i++)
+      for (int i = 0; i < nx-2*halo_index_x-1; i++)
       {
-         for (int j = 0; j < ny-halo_index_y-1; j++)
+         for (int j = 0; j < ny-2*halo_index_y-1; j++)
          {
             // Gets height of the terrain for each cell
-            ii = i+WID->simParams->halo_x/dx;
-            jj = j+WID->simParams->halo_y/dy;
+            ii = i+halo_index_x;
+            jj = j+halo_index_y;
             idx = ii + jj*(nx-1);
             terrain[idx] = WID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
             if (terrain[idx] < 0.0)
@@ -277,7 +284,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
             for (size_t k=0; k<z.size()-1; k++)
             {
                terrain_id[id] = k;
-               if (terrain[idx] < z_face[k])
+               if (terrain[idx] < z[k])
                {
                   break;
                }
@@ -337,17 +344,16 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
    if (WID->simParams->DTE_heightField)
    {
-
       if (WID->simParams->meshTypeFlag == 0 && WID->simParams->readCoefficientsFlag == 0)
       {
         auto start_stair = std::chrono::high_resolution_clock::now();
-        for (int i = 0; i < nx-halo_index_x-1; i++)
+        for (int i = 0; i < nx-2*halo_index_x-1; i++)
         {
-           for (int j = 0; j < ny-halo_index_y-1; j++)
+           for (int j = 0; j < ny-2*halo_index_y-1; j++)
            {
               // Gets height of the terrain for each cell
-              int ii = i+WID->simParams->halo_x/dx;
-              int jj = j+WID->simParams->halo_y/dy;
+              int ii = i+halo_index_x;
+              int jj = j+halo_index_y;
               int idx = ii + jj*(nx-1);
               for (size_t k=0; k<z.size()-1; k++)
               {
@@ -557,13 +563,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    // data for the sort.
    std::cout << "Sorting buildings by height..." << std::endl;
    mergeSort( effective_height, allBuildingsV, building_id );
+   std::cout << "...sorting complete." << std::endl;
 
    wall = new Wall();
 
-   std::cout << "Defining Solid Walls...\n";
+   std::cout << "Defining Solid Walls..." << std::endl; 
    // Boundary condition for building edges
    wall->defineWalls(this);
-   std::cout << "Walls Defined...\n";
+   std::cout << "Walls Defined." << std::endl;
 
    wall->solverCoefficients (this);
 
@@ -724,6 +731,9 @@ void WINDSGeneralData::mergeSort( std::vector<float> &effective_height, std::vec
    {
       return;
    }
+
+   std::cout << "Sorting " << allBuildingsV.size() << " buildings." << std::endl;
+   
 
    if ( allBuildingsV.size() > 1)
    {

@@ -11,65 +11,127 @@ DTEHeightField::DTEHeightField()
 
 }
 
-DTEHeightField::DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN, float UTMx, float UTMy, int OriginFlag, float DEMDistanceX, float DEMDistanceY, int nx, int ny)
-  : m_filename(filename), m_rbMin(0.0), cellSizeX(cellSizeXN), cellSizeY(cellSizeYN), domain_UTMx(UTMx), domain_UTMy(UTMy),
-   originFlag(OriginFlag), DEMDistancex(DEMDistanceX), DEMDistancey(DEMDistanceY), domain_nx(nx), domain_ny(ny)
+DTEHeightField::DTEHeightField(const std::string &filename, 
+                               std::tuple<int, int, int> dim,
+                               std::tuple<float, float, float> cellSize, float UTMx, float UTMy,
+                               int OriginFlag, float DEMDistanceX, float DEMDistanceY)
+  : m_filename(filename), m_rbMin(0.0),
+    m_cellSize( cellSize ), m_dim( dim ),
+    domain_UTMx(UTMx), domain_UTMy(UTMy),
+    originFlag(OriginFlag), DEMDistancex(DEMDistanceX), DEMDistancey(DEMDistanceY)
 {
-  GDALAllRegister();
+    GDALAllRegister();
 
-  // only for texture???
- // loadImage();
-
-  load();
+    load();
 }
 
-DTEHeightField::DTEHeightField(const std::vector<double> &heightField, int dimX, int dimY, double cellSizeXN, double cellSizeYN)
+// Constructor for converting heightfield data to the internal
+// representation for digital elevation
+//
+// Inputs need to provide the nx, ny, nz
+DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
+                               std::tuple<int, int, int> dim,
+                               std::tuple<float, float, float> cellSize,
+                               float halo_x, float halo_y)
+    : m_cellSize( cellSize ), m_dim( dim )
 {
     Triangle *tPtr=0;
     m_triList.clear();
 
-    Vector3<float> tc0, tc1, tc2;
+    // local variables to hold triangle vertices
+    // Vector3<float> tc0, tc1, tc2;
 
-    std::cout << "DEM Loading from height field\n";
-    std::cout << "dimX = " << dimX << ", dimY = " << dimY << std::endl;
+    // local variables to hold common variables
+    auto [ nx, ny, nz ] = m_dim;
+    auto [ dx, dy, dz ] = m_cellSize;
+    
+    std::cout << "Loading digital elevation data from height field\n";
+
+    std::cout << "dimX = " << nx << ", dimY = " << ny << ", dimZ = " << nz << std::endl;
+    std::cout << "cellSizes = (" << dx << ", " << dy << ", " << dz << ")" << std::endl;
+    
     std::cout << "size of heightField = " << heightField.size() << std::endl;
 
     // eventually need the fm_dx and fm_dy so we can multiply into
     // correct dimensions
 
-    int step = cellSizeXN;
+    int step = 1;  // step size is interpretted incorrectly here for
+                   // fire meshes...
 
-    for (float j = 0; j < dimY-1; j+=step) {
-        for (float i = 0; i < dimX-1; i+=step) {
+    // previously, with regular DEMs we can use the cellSize to
+    // determine how we step over the terrain to create the actual
+    // mesh... based on dx, dy...
 
-            int idx = j * dimX + i;
+    // This triangle mesh is in the dimensions of the height field
+    // array... may not be in the domain space... hence when queried
+    // later in the
+
+    std::cout << "Adding halo to surrounding regions..." << halo_x << ", " << halo_y << std::endl;
+
+    for (float j = 0; j < ny-1; j+=step) {
+        for (float i = 0; i < nx-1; i+=step) {
+
+            int idx = j * nx + i;
             if (idx > heightField.size() - 1) idx = heightField.size()-1;
             // std::cout << "(" << i << ", " << j << ") = " << heightField[idx] << std::endl;
 
-            Vector3<float> tv0( i, j, (float)heightField[ idx ] ); // queryHeight( pafScanline, Xpixel,  Yline));
+            // when pulling data from the height field and converting
+            // to actual locations, we need to add the halo_x and
+            // halo_y to all positions to shift the domain -- these
+            // are in meters...
 
-            idx = j * dimX + (i + step);
-            if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            Vector3<float> tv1( i+step, j, (float)heightField[ idx ] ); // queryHeight( pafScanline,  (int)(iXpixel + stepX ), Yline ) );
+            //
+            // Need to convert these to localized QES dimensions
+            //
+            float xPos = halo_x + (i * dx);
+            float yPos = halo_y + (j * dy);
 
-            idx = (j+step) * dimX + i;
-            if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            Vector3<float> tv2( i, j+step, (float)heightField[ idx] ); // queryHeight( pafScanline, Xpixel, (int)(iYline + stepY) ));
+            // Vector3<float> tv0( i, j, (float)heightField[ idx ] ); // queryHeight( pafScanline, Xpixel,  Yline));
+            Vector3<float> tv0( xPos, yPos, (float)heightField[ idx ] ); // queryHeight( pafScanline, Xpixel,  Yline));
+
+            idx = j * nx + (i + step);
+            if (idx > heightField.size() - 1) { std::cout << "***************" << std::endl; idx = heightField.size()-1; }
+            
+            // Vector3<float> tv1( i+step, j, (float)heightField[ idx ] ); // queryHeight( pafScanline,  (int)(iXpixel + stepX ), Yline ) );
+            xPos = halo_x + ((i+step) * dx);
+            Vector3<float> tv1( xPos, yPos, (float)heightField[ idx ] ); // queryHeight( pafScanline,  (int)(iXpixel + stepX ), Yline ) );
+
+            idx = (j+step) * nx + i;
+            if (idx > heightField.size() - 1) { std::cout << "---------------" << std::endl; idx = heightField.size()-1; }
+            
+            // Vector3<float> tv2( i, j+step, (float)heightField[ idx] ); // queryHeight( pafScanline, Xpixel, (int)(iYline + stepY) ));
+            xPos = halo_x + (i * dx);
+            yPos = halo_y + ((j+step) * dy);
+            Vector3<float> tv2( xPos, yPos, (float)heightField[ idx] ); // queryHeight( pafScanline, Xpixel, (int)(iYline + stepY) ));
+
+            // std::cout << "Triangle: (" << tv0[0] << ", " << tv0[1] << ", " << tv0[2] <<  "), (" << tv1[0] << ", " << tv1[1] << ", " << tv1[2] <<  "), (" << tv2[0] << ", " << tv2[1] << ", " << tv2[2] <<  ")" << std::endl;
 
             tPtr = new Triangle( tv0, tv1, tv2 );
             m_triList.push_back(tPtr);
 
-            idx = (j+step) * dimX + i;
+            idx = (j+step) * nx + i;
             if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            Vector3<float> tv3( i, j+step, (float)heightField[ idx ] );// queryHeight( pafScanline,  Xpixel, (int)(iYline + stepY) ) );
+            
+            // Vector3<float> tv3( i, j+step, (float)heightField[ idx ] );// queryHeight( pafScanline,  Xpixel, (int)(iYline + stepY) ) );
+            xPos = halo_x + (i * dx);
+            yPos = halo_y + ((j+step) * dy);
+            Vector3<float> tv3( xPos, yPos, (float)heightField[ idx ] );// queryHeight( pafScanline,  Xpixel, (int)(iYline + stepY) ) );            
 
-            idx = j * dimX + (i+step);
+            idx = j * nx + (i+step);
             if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            Vector3<float> tv4( i+step, j, (float)heightField[ idx ] ); //  queryHeight( pafScanline,  (int)(iXpixel + stepX) , Yline ) );
+            // Vector3<float> tv4( i+step, j, (float)heightField[ idx ] ); //  queryHeight( pafScanline,  (int)(iXpixel + stepX) , Yline ) );
+            xPos = halo_x + ((i+step) * dx);
+            yPos = halo_y + (j * dy);
+            Vector3<float> tv4( xPos, yPos, (float)heightField[ idx ] ); //  queryHeight( pafScanline,  (int)(iXpixel + stepX) , Yline ) );
 
-            idx = (j+step) * dimX + (i+step);
+            idx = (j+step) * nx + (i+step);
             if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            Vector3<float> tv5( i+step, j+step, (float)heightField[ idx ] ); // queryHeight( pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY) ) );
+            // Vector3<float> tv5( i+step, j+step, (float)heightField[ idx ] ); // queryHeight( pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY) ) );
+            xPos = halo_x + ((i+step) * dx);
+            yPos = halo_y + ((j+step) * dy);
+            Vector3<float> tv5( xPos, yPos, (float)heightField[ idx ] ); // queryHeight( pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY) ) );
+
+            // std::cout << "Triangle: (" << tv3[0] << ", " << tv3[1] << ", " << tv3[2] <<  "), (" << tv4[0] << ", " << tv4[1] << ", " << tv4[2] <<  "), (" << tv5[0] << ", " << tv5[1] << ", " << tv5[2] <<  ")" << std::endl;
 
             tPtr = new Triangle( tv3, tv4, tv5 );
             m_triList.push_back(tPtr);
@@ -130,7 +192,14 @@ void DTEHeightField::loadImage()
 
 void DTEHeightField::load()
 {
-  std::cout << "load: loading DTE..." << std::endl;
+    std::cout << "DTEHeightField loading DTE..." << std::endl;
+
+  // 
+  // local variables to hold common variables related to the QES
+  // domain
+  // 
+  auto [ nx, ny, nz ] = m_dim;
+  auto [ dx, dy, dz ] = m_cellSize;
 
   // From -- http://www.gdal.org/gdal_tutorial.html
   m_poDataset = (GDALDataset *) GDALOpen( m_filename.c_str(), GA_ReadOnly );
@@ -240,13 +309,11 @@ void DTEHeightField::load()
   convertRasterToGeo( 0, m_nYSize, xGeo, yGeo );
   printf("Raster Coordinate (0, %d):\t(%12.7f, %12.7f)\n", m_nYSize, xGeo, yGeo);
 
-  std::cout << "m_nXSize:  " << m_nXSize << std::endl;
-  std::cout << "m_nYSize:  " << m_nYSize << std::endl;
 
   if (originFlag == 0)
   {
-  	float domain_end_x = origin_x + DEMDistancex + domain_nx*cellSizeX;
-  	float domain_end_y = origin_y + DEMDistancey + domain_ny*cellSizeY;
+  	float domain_end_x = origin_x + DEMDistancex + nx*dx;
+  	float domain_end_y = origin_y + DEMDistancey + ny*dy;
   	float dem_end_x = origin_x + m_nXSize*pixelSizeX;
   	float dem_end_y = origin_y + m_nYSize*pixelSizeY;
   	if ( ((DEMDistancex > 0.0) || (DEMDistancey > 0.0) ) && (DEMDistancex < m_nXSize*pixelSizeX) && (DEMDistancex < m_nYSize*pixelSizeY) )
@@ -264,11 +331,10 @@ void DTEHeightField::load()
   	m_nXSize = m_nXSize - shift_x - end_x;
   	m_nYSize = m_nYSize - shift_y - end_y;
   }
-
   else if (originFlag == 1)
   {
-  	float domain_end_x = domain_UTMx + domain_nx*cellSizeX;
-  	float domain_end_y = domain_UTMy + domain_ny*cellSizeY;
+  	float domain_end_x = domain_UTMx + nx*dx;
+  	float domain_end_y = domain_UTMy + ny*dy;
   	float dem_end_x = origin_x + m_nXSize*pixelSizeX;
   	float dem_end_y = origin_y + m_nYSize*pixelSizeY;
   	if (((domain_UTMx > origin_x) || (domain_UTMy > origin_y)) && (domain_UTMx < dem_end_x) && (domain_UTMy < dem_end_y) )
@@ -286,9 +352,6 @@ void DTEHeightField::load()
   	m_nXSize = m_nXSize - shift_x - end_x;
   	m_nYSize = m_nYSize - shift_y - end_y;
   }
-
-  std::cout << "m_nXSize:  " << m_nXSize << std::endl;
-  std::cout << "m_nYSize:  " << m_nYSize << std::endl;
 
   pafScanline = (float *) CPLMalloc(sizeof(float)*(m_nXSize)*(m_nYSize));
 
@@ -315,8 +378,8 @@ void DTEHeightField::load()
 
   std::cout << "DEM Loading\n";
 
-  float stepX = cellSizeX / pixelSizeX; // tie back to dx, dy here.... with scaling of pixelsize
-  float stepY = cellSizeY / pixelSizeY;
+  float stepX = dx / pixelSizeX; // tie back to dx, dy here.... with scaling of pixelsize
+  float stepY = dy / pixelSizeY;
 
   assert(stepX > 0 && stepY > 0);
 
@@ -456,7 +519,7 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
       (*domain)[0] = (*domain) [2] = (*domain)[1];
     else
         (*domain)[0] = (*domain) [1] = (*domain)[2]; */
-    printf("domain: %d %d %d\n", (*domain)[0], (*domain)[1], (*domain)[2]);
+    printf("Newly calculated domain size: %d %d %d\n", (*domain)[0], (*domain)[1], (*domain)[2]);
 }
 
 void DTEHeightField::outputOBJ(std::string s)

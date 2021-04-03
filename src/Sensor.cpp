@@ -50,6 +50,7 @@ using namespace std;
 
 void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, int index, int solverType)
 {
+    auto start_InputWindProfile = std::chrono::high_resolution_clock::now();  // Finish recording execution time
 
 	const float vk = 0.4;			/// Von Karman's constant
 	float canopy_d, u_H;
@@ -547,7 +548,12 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 		}
 
 	}
+        
 
+        auto end_InputWindProfile = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+
+        std::chrono::duration<float> elapsed_InputWindProfile = end_InputWindProfile - start_InputWindProfile;
+        std::cout << "Elapsed time for input wind profile: " << elapsed_InputWindProfile.count() << " s\n";
 }
 
 void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof)

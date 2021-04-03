@@ -397,7 +397,7 @@ void PolyBuilding::streetCanyon (WINDSGeneralData *WGD)
                   x_wall_u = xi[id];
                 }
                 x_pos = x_u-x_wall_u;
-                if (x_pos <= s && x_pos > -0.5*WGD->dxy)
+                if (x_pos <= s+0.001 && x_pos > -0.5*WGD->dxy)
                 {
                   icell_face = i_u+j*WGD->nx+k*WGD->nx*WGD->ny;
                   WGD->u0[icell_face] = along_vel_mag*cos(along_dir)+cross_vel_mag*(2*x_pos/s)*2*(1-x_pos/s)*cos(cross_dir);
@@ -418,7 +418,7 @@ void PolyBuilding::streetCanyon (WINDSGeneralData *WGD)
                   x_wall_v = xi[id];
                 }
                 x_pos = x_v-x_wall_v;
-                if (x_pos <= s && x_pos > -0.5*WGD->dxy)
+                if (x_pos <= s+0.001 && x_pos > -0.5*WGD->dxy)
                 {
                   icell_face = i+j_v*WGD->nx+k*WGD->nx*WGD->ny;
                   WGD->v0[icell_face] = along_vel_mag*sin(along_dir)+cross_vel_mag*(2*x_pos/s)*2*(1-x_pos/s)*sin(cross_dir);
@@ -438,7 +438,7 @@ void PolyBuilding::streetCanyon (WINDSGeneralData *WGD)
                 }
                 x_pos = x_w-x_wall_w;
 
-                if (x_pos <= s && x_pos > -0.5*WGD->dxy)
+                if (x_pos <= s+0.001 && x_pos > -0.5*WGD->dxy)
                 {
                   icell_cent = i+j*(WGD->nx-1)+k*(WGD->nx-1)*(WGD->ny-1);
                   if (WGD->icellflag[icell_cent-(WGD->nx-1)*(WGD->ny-1)] != 0 && WGD->icellflag[icell_cent-(WGD->nx-1)*(WGD->ny-1)] != 2)
