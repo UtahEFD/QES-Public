@@ -56,7 +56,7 @@ void Cut_cell::calculateCoefficient(Cell* cells, const DTEHeightField* DTEHF, co
 		ni = nj = nk = 0.0;
 		solid_V_frac = 0.0;
 		location = cells[cutcell_index[j]].getLocationPoints();
-		terrainEdges = cells[cutcell_index[j]].getTerrainEdges();
+		//terrainEdges = cells[cutcell_index[j]].getTerrainEdges();
 		std::vector< Vector3<float> > terrainPoints = cells[cutcell_index[j]].getTerrainPoints();
 		int k = cutcell_index[j]/((WGD->nx-1)*(WGD->ny-1));
 		int jjj = (cutcell_index[j] - k*(WGD->nx-1)*(WGD->ny-1))/(WGD->nx-1);
@@ -401,11 +401,11 @@ float Cut_cell::calculateAreaTopBot(std::vector< Vector3<float> > &terrainPoints
 				{
 					//triangle is on face if a,b a,c b,c edges all exist (note edges are reversable)
 					// a|b|c is the index in pointsOnFace, which is the index in terrainPoint that we are representing.
-					Edge<int> abEdge( pointsOnFace[a],pointsOnFace[b]), acEdge(pointsOnFace[a],pointsOnFace[c]),
+					/*Edge<int> abEdge( pointsOnFace[a],pointsOnFace[b]), acEdge(pointsOnFace[a],pointsOnFace[c]),
 							 bcEdge( pointsOnFace[b],pointsOnFace[c]);
 					if ( (std::find(terrainEdges.begin(), terrainEdges.end(), abEdge ) != terrainEdges.end())  &&
 						 (std::find(terrainEdges.begin(), terrainEdges.end(), acEdge) != terrainEdges.end())  &&
-						 (std::find(terrainEdges.begin(), terrainEdges.end(), bcEdge ) != terrainEdges.end())  )
+						 (std::find(terrainEdges.begin(), terrainEdges.end(), bcEdge ) != terrainEdges.end())  )*/
 						 listOfTriangles.push_back( Vector3< Vector3<float> >( terrainPoints[pointsOnFace[a]],
 																 terrainPoints[pointsOnFace[b]],
 																 terrainPoints[pointsOnFace[c]]));

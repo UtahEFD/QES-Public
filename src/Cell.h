@@ -19,7 +19,7 @@ class Cell
 private:
 	bool isAir, isTerrain, isCutCell;
 	std::vector< Vector3<float> > terrainPoints;
-	std::vector< Edge< int > > terrainEdges;
+	//std::vector< Edge< int > > terrainEdges;
 	std::vector< Vector3<float> > fluidFacePoints[6];
 	Vector3<float> location;
 	Vector3<float> dimensions;
@@ -53,7 +53,7 @@ public:
 	 *returns a list of edges that connect the terrain points in the cell
 	 *@return -the list of edges
 	 */
-	std::vector< Edge< int > > getTerrainEdges() {return terrainEdges;}
+	//std::vector< Edge< int > > getTerrainEdges() {return terrainEdges;}
 
 	/*
 	 *Defaults all entity existances values to false, and has no terrain points
@@ -78,7 +78,7 @@ public:
 	 *@param location -the position of the corner closest to the origin
 	 *@param dimensions -the size of the cell in the xyz directions
 	 */
-	Cell(  std::vector< Vector3<float> >& points,  std::vector< Edge< int > >& edges,  int intermed[4][4][2],
+	Cell(  std::vector< Vector3<float> >& points/*,  std::vector< Edge< int > >& edges*/,  int intermed[4][4][2],
 		 Vector3<float> locationN,  Vector3<float> dimensionsN);
 
 

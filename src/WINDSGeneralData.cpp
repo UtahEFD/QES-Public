@@ -261,6 +261,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    int halo_index_y = (WID->simParams->halo_y/dy);
    //WID->simParams->halo_y = halo_index_y*dy;
 
+   int ii, jj, idx;
    if (WID->simParams->DTE_heightField)
    {
       // ////////////////////////////////
@@ -271,9 +272,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
          for (int j = 0; j < ny-2*halo_index_y-1; j++)
          {
             // Gets height of the terrain for each cell
-            int ii = i+halo_index_x;
-            int jj = j+halo_index_y;
-            int idx = ii + jj*(nx-1);
+            ii = i+halo_index_x;
+            jj = j+halo_index_y;
+            idx = ii + jj*(nx-1);
             terrain[idx] = WID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
             if (terrain[idx] < 0.0)
             {
@@ -289,6 +290,17 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
                }
             }
          }
+         ii = i+WID->simParams->halo_x/dx;
+         jj = ny-halo_index_y-1;
+         id = ii+jj*nx;
+         terrain_id[id] = terrain_id[id-nx];
+      }
+      for (int j = 0; j < ny-halo_index_y; j++)
+      {
+      	ii = nx-halo_index_x-1;
+        jj = j+WID->simParams->halo_y/dy;
+        id = ii+jj*nx;
+        terrain_id[id] = terrain_id[id-1];
       }
    }
 
@@ -410,6 +422,16 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       std::vector<float> shpDomainSize(2), minExtent(2);
       WID->simParams->SHPData->getLocalDomain( shpDomainSize );
       WID->simParams->SHPData->getMinExtent( minExtent );
+
+      printf( "\tShapefile Origin = (%.6f,%.6f)\n",
+	      minExtent[0], minExtent[1] );
+      // If the shapefile is not covering the whole domain or the UTM coordinates 
+      // of the QES domain is different than shapefile origin
+      if (WID->simParams->UTMx != 0.0 && WID->simParams->UTMy != 0.0)
+      {
+      	minExtent[0] -= (minExtent[0] - WID->simParams->UTMx);
+      	minExtent[1] -= (minExtent[1] - WID->simParams->UTMy);
+      }
 
       // float domainOffset[2] = { 0, 0 };
       for (auto pIdx = 0u; pIdx<WID->simParams->shpPolygons.size(); pIdx++)
@@ -720,7 +742,7 @@ void WINDSGeneralData::mergeSort( std::vector<float> &effective_height, std::vec
       return;
    }
 
-   std::cout << "Sorting " << allBuildingsV.size() << " buildings." << std::endl;
+   //std::cout << "Sorting " << allBuildingsV.size() << " buildings." << std::endl;
    
 
    if ( allBuildingsV.size() > 1)
