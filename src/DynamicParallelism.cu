@@ -1,3 +1,5 @@
+/** @file DynamicParallelism.cu */
+
 #include "DynamicParallelism.h"
 
 using namespace std::chrono;

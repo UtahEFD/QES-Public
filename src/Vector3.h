@@ -1,19 +1,49 @@
-#pragma once
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
 
-/*
- * This is a template class that holds 3 values. These values
- * can be accessed as if this was an array.
- */
+/** @file Vector3.h */
+
+#pragma once
 
 #include <type_traits>
 #include <iostream>
 #include "util/ParseInterface.h"
 
-
 #define FLOATS_ARE_EQUAL(x,y) ( ( (x) - (y)) < 0.000001 && ( (x) - (y)) >   -0.000001 )
 
-template <class T>
-class Vector3 : public ParseInterface
+/**
+ * @class Vector3
+ * @brief Template class that holds 3 values.
+ *
+ * Values can be accessed as if this was an array.
+ */
+template <class T> class Vector3 : public ParseInterface
 {
 protected:
 	std::vector<T> values;
@@ -48,10 +78,10 @@ public:
 		parseTaglessValues<T>(values);
 	}
 
-	/*
-	 * accesses the value at position i
+    /**
+	 * Accesses the value at position i.
 	 *
-	 * @param i -the index of the value to return
+	 * @param i the index of the value to return
 	 * @return a reference to the value stored at i
 	 */
 	T& operator[](const int i)
@@ -59,10 +89,10 @@ public:
 		return values[i%3];
 	}
 
-	/*
-	 * returns if two Vector3 values of the same type are equal
+    /**
+	 * Returns if two Vector3 values of the same type are equal.
 	 *
-	 * @param v -the vector3 to compare with this
+	 * @param v the vector3 to compare with this
 	 * @return if values at index 0,1,2 are all equal with their counterparts
 	 */
 	bool operator==(const Vector3<T>& v)
@@ -87,7 +117,7 @@ public:
 	    return is;
 	}
 
-        friend Vector3<T> operator-(const Vector3<T>& v1, const Vector3<T>& v2){
-           return Vector3<T> (v1.values[0] - v2.values[0], v1.values[1] - v2.values[1], v1.values[2] - v2.values[2]);
-        }
+    friend Vector3<T> operator-(const Vector3<T>& v1, const Vector3<T>& v2){
+        return Vector3<T> (v1.values[0] - v2.values[0], v1.values[1] - v2.values[1], v1.values[2] - v2.values[2]);
+    }
 };
