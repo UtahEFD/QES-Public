@@ -97,6 +97,7 @@ public:
 
     int maxSensors;
 
+    // these are the interpolated wind fields from WRF
     std::vector<double> u0_fmw, v0_fmw, ht_fmw;
 
     /**
