@@ -60,6 +60,27 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
       WRFInput *wrf_ptr = WID->simParams->wrfInputData;
 
+      // Use WID->simParams->m_domIType == WRFOnly -- to indicate wrf
+      // interp data usage
+      if (WID->simParams->m_domIType == SimulationParameters::DomainInputType::WRFOnly) {
+
+          // WRFOnly is the PREEVENTS Fire usage cases...
+
+          std::cout << "U0_FMW intepolated wind size: " << wrf_ptr->u0_fmw.size() << std::endl;
+          std::cout << "V0_FMW intepolated wind size: " << wrf_ptr->v0_fmw.size() << std::endl;
+          
+          std::cout << "HT_FMW intepolated wind size: " << wrf_ptr->ht_fmw.size() << std::endl;
+
+          // u0 and v0 are wrf_ptr->fm_nx * wrf_ptr->fm_ny *
+          // wrf_ptr->ht_fmw.size()
+          //
+          // The heights themselves are in the wrf_ptr->ht_fmw array
+
+      }
+      
+      
+
+      if (wrf_ptr->statData.size() > 0) {
       std::cout << "Size of WRF station/sensor profile data: " << wrf_ptr->statData.size() << std::endl;
       WID->metParams->sensors.resize( wrf_ptr->statData.size() );
 
@@ -112,6 +133,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
             }
          }
       }
+      }
+      
 
    }
 
