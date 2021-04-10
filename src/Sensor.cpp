@@ -260,6 +260,14 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 		// Data entry profile (WRF output)
 		if (WID->metParams->sensors[i]->TS[index]->site_blayer_flag == 4)
 		{
+			/*if (i == 9005)
+			{
+				for (auto p = 0; p < WID->metParams->sensors[i]->TS[0]->site_z_ref.size(); p++)
+              	{
+					std::cout << "WID->metParams->sensors[i]->TS[0]->site_U_ref[p]:   " << WID->metParams->sensors[i]->TS[0]->site_U_ref[p] << std::endl;
+					std::cout << "WID->metParams->sensors[i]->TS[0]->site_wind_dir[p]:   " << WID->metParams->sensors[i]->TS[0]->site_wind_dir[p] << std::endl;
+				}
+			}*/
 			int z_size = WID->metParams->sensors[i]->TS[index]->site_z_ref.size();
 			int ii = -1;
 			site_theta[i] = (270.0-WID->metParams->sensors[i]->TS[index]->site_wind_dir[0])*M_PI/180.0;
@@ -414,12 +422,12 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 					//WGD->w0[icell_face] = 0.0;         /// Perpendicular wind direction
 				}
 			}
-   	}
-  }
+   		}
+    }
 
 	// If number of sites are more than one
 	// Apply 2D Barnes scheme to interpolate site velocity profiles to the whole domain
-	else
+	else if (WID->simParams->m_domIType != SimulationParameters::DomainInputType::WRFOnly)
 	{
 		if (solverType == 1)
 		{
@@ -439,6 +447,23 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 		}
 
 	}
+
+	/*else if (WID->simParams->m_domIType == SimulationParameters::DomainInputType::WRFOnly)
+	{
+		for (auto i = WGD->halo_index_x; i < WGD->wrf_nx + WGD->halo_index_x; i++)
+		{
+			for (auto j = WGD->halo_index_y; i < WGD->wrf_ny + WGD->halo_index_y; i++)
+			{
+				int id = (i-WGD->halo_index_x) + (j-WGD->halo_index_y)*(WGD->wrf_nx);
+				for (auto k = 0; k < WGD->nz; k++)
+				{
+					icell_cent = i + j*WGD->nx + k*WGD->nx*WGD->ny;
+					WGD->u0[icell_cent] = (u_prof[id][k] + u_prof[id+1][k])/2;
+					WGD->v0[icell_cent] = (v_prof[id][k] + v_prof[id+WGD->wrf_nx][k])/2;
+				}
+			}
+		}  
+	}*/
 
 
   	float z0_domain;

@@ -72,6 +72,10 @@ public:
     float dx, dy, dz;		/**< Grid resolution*/
     float dxy;		/**< Minimum value between dx and dy */
 
+    int wrf_nx, wrf_ny;
+
+    int halo_index_x, halo_index_y;
+
     long numcell_cout;
     long numcell_cout_2d;
     long numcell_cent;       /**< Total number of cell-centered values in domain */

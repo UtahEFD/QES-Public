@@ -2,13 +2,13 @@
 
   <!-- Specifies the WRF Output file that will be read in by QES-Winds -->
   <!-- <WRF>/uufs/chpc.utah.edu/common/home/stoll-group3/willemsn/RXCwrfout_d07_2012-11-11_15-21</WRF> -->
-  <WRF>/scratch/Downloads/wrfOutTest/wrfout_d01_0001-01-01_00:00:00</WRF>
+  <WRF>../scratch/wrfout_d01_0001-01-01_00:00:00</WRF>
 
   <!-- <WRFSensorSample>12</WRFSensorSample> --> <!-- seems to not work -->
   <WRFSensorSample>1</WRFSensorSample> <!-- seems to work -->
 
-  <halo_x> 50.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
-  <halo_y> 50.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
+  <halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
+  <halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 
 
 

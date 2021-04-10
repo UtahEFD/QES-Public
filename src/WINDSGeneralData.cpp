@@ -51,18 +51,22 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    numcell_cent    = (nx-1)*(ny-1)*(nz-1);        /**< Total number of cell-centered values in domain */
    numcell_face    = nx*ny*nz;                    /**< Total number of face-centered values in domain */
 
+   halo_index_x = (WID->simParams->halo_x/dx);
+   halo_index_y = (WID->simParams->halo_y/dy);
 
    // where should this really go?
    //
    // Need to now take all WRF station data and convert to
    // sensors
-   if (WID->simParams->wrfInputData) {
+   if (WID->simParams->wrfInputData) 
+   {
 
       WRFInput *wrf_ptr = WID->simParams->wrfInputData;
 
       // Use WID->simParams->m_domIType == WRFOnly -- to indicate wrf
       // interp data usage
-      if (WID->simParams->m_domIType == SimulationParameters::DomainInputType::WRFOnly) {
+      if (WID->simParams->m_domIType == SimulationParameters::DomainInputType::WRFOnly) 
+      {
 
           // WRFOnly is the PREEVENTS Fire usage cases...
 
@@ -70,6 +74,70 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
           std::cout << "V0_FMW intepolated wind size: " << wrf_ptr->v0_fmw.size() << std::endl;
           
           std::cout << "HT_FMW intepolated wind size: " << wrf_ptr->ht_fmw.size() << std::endl;
+
+          std::cout << "nx-WRF:   "  << wrf_ptr->fm_nx << std::endl;
+          std::cout << "ny-WRF:   "  << wrf_ptr->fm_ny << std::endl;
+
+          std::cout << "nx:   "  << nx << std::endl;
+          std::cout << "ny:   "  << ny << std::endl;
+
+          wrf_nx = wrf_ptr->fm_nx;
+          wrf_ny = wrf_ptr->fm_ny;
+
+          WID->metParams->sensors.resize( wrf_ptr->fm_nx * wrf_ptr->fm_ny );
+
+          for (auto i=0; i < wrf_ptr->fm_nx * wrf_ptr->fm_ny; i++)
+          {
+            // create a new sensor element
+            if (!WID->metParams->sensors[i])
+            {
+              WID->metParams->sensors[i] = new Sensor();
+            }    
+            // create one time series for each sensor, for now
+            WID->metParams->sensors[i]->TS.resize(1);
+            if (!WID->metParams->sensors[i]->TS[0])
+            {
+              WID->metParams->sensors[i]->TS[0] = new TimeSeries;
+            }
+
+            // WRF profile data -- sensor blayer flag is 4
+            WID->metParams->sensors[i]->TS[0]->site_blayer_flag = 4;
+          }
+
+          std::cout << "Sensor size:   " << WID->metParams->sensors.size() << std::endl;
+
+          for (auto i = 0; i < wrf_ptr->fm_nx; i++)
+          {
+            for (auto j = 0; j < wrf_ptr->fm_ny; j++)
+            {
+              int index = i+j*wrf_ptr->fm_nx;
+              WID->metParams->sensors[index]->site_coord_flag = 1;
+              WID->metParams->sensors[index]->site_xcoord = (i+halo_index_x+0.5)*dx;
+              WID->metParams->sensors[index]->site_ycoord = (j+halo_index_y+0.5)*dy;
+
+              WID->metParams->sensors[index]->TS[0]->site_wind_dir.resize( wrf_ptr->ht_fmw.size() );
+              WID->metParams->sensors[index]->TS[0]->site_z_ref.resize( wrf_ptr->ht_fmw.size() );
+              WID->metParams->sensors[index]->TS[0]->site_U_ref.resize( wrf_ptr->ht_fmw.size() );
+
+              WID->metParams->sensors[index]->TS[0]->site_z0 = 0.1;
+              WID->metParams->sensors[index]->TS[0]->site_one_overL = 0.0;
+
+              for (auto p = 0; p < wrf_ptr->ht_fmw.size(); p++)
+              {
+                int id = index + p*wrf_ptr->fm_nx*wrf_ptr->fm_ny;
+                WID->metParams->sensors[index]->TS[0]->site_z_ref[p] = wrf_ptr->ht_fmw[p];
+                WID->metParams->sensors[index]->TS[0]->site_U_ref[p] = sqrt (pow(wrf_ptr->u0_fmw[id],2.0) + pow(wrf_ptr->v0_fmw[id],2.0) );
+                WID->metParams->sensors[index]->TS[0]->site_wind_dir[p] = 180 + (180/pi)*atan2(wrf_ptr->v0_fmw[id], wrf_ptr->u0_fmw[id]);
+                if (index == 9005)
+                {
+                  std::cout << "WID->metParams->sensors[index]->TS[0]->site_U_ref[p]:   " << WID->metParams->sensors[index]->TS[0]->site_U_ref[p] << std::endl;
+                  std::cout << "WID->metParams->sensors[index]->TS[0]->site_wind_dir[p]:   " << WID->metParams->sensors[index]->TS[0]->site_wind_dir[p] << std::endl;
+                }
+
+              }
+
+            }
+          }
 
           // u0 and v0 are wrf_ptr->fm_nx * wrf_ptr->fm_ny *
           // wrf_ptr->ht_fmw.size()
@@ -80,7 +148,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       
       
 
-      if (wrf_ptr->statData.size() > 0) {
+      else if (wrf_ptr->statData.size() > 0) {
       std::cout << "Size of WRF station/sensor profile data: " << wrf_ptr->statData.size() << std::endl;
       WID->metParams->sensors.resize( wrf_ptr->statData.size() );
 
@@ -133,10 +201,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
             }
          }
       }
-      }
-      
-
-   }
+    }
+  }
 
    // /////////////////////////
    // Calculation of z0 domain info MAY need to move to WINDSInputData
@@ -278,11 +344,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
          icellflag[icell_cent] = 2;
       }
    }
-
-   int halo_index_x = (WID->simParams->halo_x/dx);
-   //WID->simParams->halo_x = halo_index_x*dx;
-   int halo_index_y = (WID->simParams->halo_y/dy);
-   //WID->simParams->halo_y = halo_index_y*dy;
 
    int ii, jj, idx;
    if (WID->simParams->DTE_heightField)

@@ -920,6 +920,7 @@ WRFInput::WRFInput(const std::string& filename,
     // Extract time dim size
     NcDim dim = wrfInputFile.getVar("U0_FMW").getDim( 0 );
     int timeSize = dim.getSize();
+    std::cout << "timeSize:  " << timeSize << std::endl;
     
     // Extract height dim size
     dim = wrfInputFile.getVar("U0_FMW").getDim( 1 );
