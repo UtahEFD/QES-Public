@@ -3,6 +3,14 @@
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 
+CanopyIsolatedTree::CanopyIsolatedTree(const WINDSInputData* WID, WINDSGeneralData* WGD, int id)
+{
+    polygonVertices = WID->canopies->shpPolygons[id];
+    H = WID->canopies->shpTreeHeight[id];
+    base_height = WGD->base_height[id];
+    zMaxLAI=0.5*H;
+}
+
 // set et attenuation coefficient 
 void CanopyIsolatedTree::setCellFlags (const WINDSInputData* WID, WINDSGeneralData* WGD, int building_id)
 {
@@ -28,7 +36,7 @@ void CanopyIsolatedTree::setCellFlags (const WINDSInputData* WID, WINDSGeneralDa
             for (auto k=canopy_bot_index[icell_2d]; k<canopy_top_index[icell_2d]; k++) {
                 int icell_3d = i + j*nx_canopy + k*nx_canopy*ny_canopy;
                 // initiate all attenuation coefficients to the canopy coefficient
-                canopy_atten[icell_3d] = attenuationCoeff;     
+                canopy_atten[icell_3d] = 2.0;//attenuationCoeff;     
             }
         }
     }
@@ -47,14 +55,14 @@ void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData* WGD, int building_id
 
     // Call regression to define ustar and surface roughness of the canopy
     canopyRegression(WGD);
-
+    
     for (auto j=0; j<ny_canopy; j++) {
         for (auto i=0; i<nx_canopy; i++) {
             int icell_2d = i+j*nx_canopy;
             
             if (canopy_top[icell_2d] > 0) {
                 int icell_3d = i+j*nx_canopy+(canopy_top_index[icell_2d]-1)*nx_canopy*ny_canopy;
-
+                
                 // Call the bisection method to find the root
                 canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d],canopy_z0[icell_2d],
                                                      canopy_height[icell_2d],canopy_atten[icell_3d],WGD->vk,0.0);
@@ -202,6 +210,8 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData* WGD, int building_id)
 
     float Lt=0.5*W;
     Lr=H;
+
+    if (k_end==0) {return;}
 
     icell_face = i_building_cent + j_building_cent*WGD->nx + k_end*WGD->nx*WGD->ny;
     u0_h = WGD->u0[icell_face];         // u velocity at the height of building at the centroid

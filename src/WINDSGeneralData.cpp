@@ -227,8 +227,11 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
    // Resize the canopy-related vectors
    canopy_atten.resize( numcell_cent, 0.0 );
+   canopy_height.resize( (nx-1)*(ny-1), 0.0 );
    canopy_top.resize( (nx-1)*(ny-1), 0.0 );
    canopy_top_index.resize( (nx-1)*(ny-1), 0 );
+   canopy_bot.resize( (nx-1)*(ny-1), 0.0 );
+   canopy_bot_index.resize( (nx-1)*(ny-1), 0 );
    canopy_z0.resize( (nx-1)*(ny-1), 0.0 );
    canopy_ustar.resize( (nx-1)*(ny-1), 0.0 );
    canopy_d.resize( (nx-1)*(ny-1), 0.0 );
@@ -425,6 +428,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    // After Terrain is processed, handle remaining processing of SHP
    // file data
 
+   std::vector<float> UTMOrigin={WID->simParams->UTMx,WID->simParams->UTMy};
+
+   
+   //
    if (WID->simParams->SHPData)
    {
       auto buildingsetup_start = std::chrono::high_resolution_clock::now(); // Start recording execution time
@@ -439,16 +446,27 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       WID->simParams->SHPData->getMinExtent( minExtent );
 
       // float domainOffset[2] = { 0, 0 };
+      /*
+        for (auto pIdx = 0u; pIdx<WID->simParams->shpPolygons.size(); pIdx++)
+        {
+        // convert the global polys to local domain coordinates
+        for (auto lIdx=0u; lIdx<WID->simParams->shpPolygons[pIdx].size(); lIdx++)
+        {
+        WID->simParams->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
+        WID->simParams->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
+        }
+        }
+      */
       for (auto pIdx = 0u; pIdx<WID->simParams->shpPolygons.size(); pIdx++)
       {
-         // convert the global polys to local domain coordinates
-         for (auto lIdx=0u; lIdx<WID->simParams->shpPolygons[pIdx].size(); lIdx++)
-         {
-            WID->simParams->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
-            WID->simParams->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
-         }
+          // convert the global polys to local domain coordinates
+          for (auto lIdx=0u; lIdx<WID->simParams->shpPolygons[pIdx].size(); lIdx++)
+          {
+              WID->simParams->shpPolygons[pIdx][lIdx].x_poly -= UTMOrigin[0] ;
+              WID->simParams->shpPolygons[pIdx][lIdx].y_poly -= UTMOrigin[1] ;
+          }
       }
-
+      
       // Setting base height for buildings if there is a DEM file
       if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh)
       {
@@ -534,8 +552,73 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
           
           effective_height.push_back(allBuildingsV[j]->height_eff);
       }
-   }
 
+      if (WID->canopies->SHPData) {
+          auto treesetup_start = std::chrono::high_resolution_clock::now(); // Start recording execution time
+          
+          std::vector<Building*> poly_buildings;
+          float corner_height, min_height;
+          std::vector<float> shpDomainSize(2), minExtent(2);
+          WID->canopies->SHPData->getLocalDomain( shpDomainSize );
+          WID->canopies->SHPData->getMinExtent( minExtent );
+          
+          // float domainOffset[2] = { 0, 0 };
+          /*
+            for (auto pIdx = 0u; pIdx<WID->canopies->shpPolygons.size(); pIdx++) {
+              // convert the global polys to local domain coordinates
+              for (auto lIdx=0u; lIdx<WID->canopies->shpPolygons[pIdx].size(); lIdx++) {
+                  WID->canopies->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
+                  WID->canopies->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
+              }
+          }
+          */
+
+          for (auto pIdx = 0u; pIdx<WID->canopies->shpPolygons.size(); pIdx++) {
+              // convert the global polys to local domain coordinates
+              for (auto lIdx=0u; lIdx<WID->canopies->shpPolygons[pIdx].size(); lIdx++) {
+                  WID->canopies->shpPolygons[pIdx][lIdx].x_poly -= UTMOrigin[0] ;
+                  WID->canopies->shpPolygons[pIdx][lIdx].y_poly -= UTMOrigin[1] ;
+              }
+          }
+            
+          // Setting base height for tree if there is a DEM file (TODO)
+          if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh) {
+              std::cout << "Isolated tree from shapefile and DEM not implemented...\n";
+          } else {
+              for (auto pIdx = 0u; pIdx < WID->simParams->shpPolygons.size(); pIdx++) {
+                  base_height.push_back(0.0);
+              }
+          }
+          
+          
+          
+          for (auto pIdx = 0u; pIdx < WID->canopies->shpPolygons.size(); pIdx++) {
+              for (auto lIdx=0u; lIdx < WID->canopies->shpPolygons[pIdx].size(); lIdx++) {
+                  WID->canopies->shpPolygons[pIdx][lIdx].x_poly += WID->simParams->halo_x;
+                  WID->canopies->shpPolygons[pIdx][lIdx].y_poly += WID->simParams->halo_y;
+              }
+          }
+          
+
+          std::cout << "Creating trees from shapefile...\n";
+          // Loop to create each of the polygon buildings read in from the shapefile
+          for (auto pIdx = 0u; pIdx < WID->canopies->shpPolygons.size(); pIdx++) {
+              int bldg_id = allBuildingsV.size();
+              allBuildingsV.push_back (new CanopyIsolatedTree (WID, this, bldg_id));
+              building_id.push_back(bldg_id);
+              allBuildingsV[pIdx]->setPolyBuilding(this);
+              allBuildingsV[pIdx]->setCellFlags(WID, this, bldg_id);
+              effective_height.push_back (allBuildingsV[bldg_id]->height_eff);
+          }
+          std::cout << "\tdone.\n";
+          
+          auto treesetup_finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+          
+          std::chrono::duration<float> elapsed_cut = treesetup_finish - treesetup_start;
+          std::cout << "Elapsed time for tree setup : " << elapsed_cut.count() << " s\n";
+          
+      }
+   }
 
    // Add all the Building* that were read in from XML to this list
    // too -- could be RectBuilding, PolyBuilding, whatever is derived

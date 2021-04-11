@@ -11,7 +11,7 @@ public:
     CanopyIsolatedTree()
     {
     }
-    
+    CanopyIsolatedTree(const WINDSInputData* WID, WINDSGeneralData* WGD, int id);
     
     virtual void parseValues()
     {

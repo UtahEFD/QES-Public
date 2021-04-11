@@ -147,8 +147,8 @@ int main(int argc, char *argv[])
         WID->metParams->sensors[0]->inputWindProfile(WID, WGD, index, arguments.solveType);
         
         // Run WINDS simulation code
-        solver->solve(WID, WGD, !arguments.solveWind );
-        std::cout << "Solver done!\n";
+        //solver->solve(WID, WGD, !arguments.solveWind );
+        //std::cout << "Solver done!\n";
 
         for (int k = 0; k < 1; ++k) { 
             // set u0,v0 to current solution    

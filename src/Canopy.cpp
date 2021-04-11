@@ -57,6 +57,7 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
     // size of the canopy array -> with ghost cell before and after (hence +2) 
     nx_canopy = (i_end-i_start-1)+2;
     ny_canopy = (j_end-j_start-1)+2;
+        
 
     // number of cell cell-center elements (2D) 
     numcell_cent_2d = nx_canopy*ny_canopy;
@@ -134,7 +135,8 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
                 }
                 
                 // Define hieght of the canopy base in z-direction   
-                for (size_t k=canopy_bot_index[icell_canopy_2d]; k<WGD->z.size(); k++) {
+                /*
+                  for (size_t k=canopy_bot_index[icell_canopy_2d]; k<WGD->z.size(); k++) {
                     int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
                     if (WGD->icellflag[icell_cent] != 1) {
                         canopy_bot_index[icell_canopy_2d] = 0;
@@ -145,6 +147,7 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
                         break;
                     }
                 }
+                */
                 
                 canopy_height[icell_canopy_2d] = canopy_top[icell_canopy_2d]-canopy_bot[icell_canopy_2d];
                 
@@ -166,11 +169,14 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
             } // end define icellflag!
         }
     }
+
     
+
     float linH_tot = 0;
     for (auto k=0u;k<canopy_height.size();k++) {
         linH_tot += canopy_height[k];
     }
+
     if (linH_tot>0) {
         // Define start/end index of the canopy in z-direction
         k_start=WGD->nz;
@@ -212,6 +218,8 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
         base_height=0;
         height_eff=0;
 
+        nx_canopy=0;
+        ny_canopy=0;
         nz_canopy=0;
     }
 
@@ -395,7 +403,7 @@ void Canopy::canopyRegression(WINDSGeneralData* WGD)
                 ym = sum_y/counter;
                 canopy_z0[id] = exp(ym-((WGD->vk/canopy_ustar[id]))*xm);
                 
-                std::cout << i << " " << j << " " << sum_y << " " << sum_x_sq << " "  << canopy_ustar[id] << " "  << canopy_z0[id] << std::endl;
+                //std::cout << i << " " << j << " " << sum_y << " " << sum_x_sq << " "  << canopy_ustar[id] << " "  << canopy_z0[id] << std::endl;
 
             } // end of if (canopy_top_index[id] > 0)
         }

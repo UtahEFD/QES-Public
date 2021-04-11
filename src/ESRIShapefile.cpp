@@ -64,9 +64,39 @@ void ESRIShapefile::loadVectorData( std::vector< std::vector< polyVert > > &poly
 
     while((feature = buildingLayer->GetNextFeature()) != nullptr) {
 
-        // for( auto&& oField: *feature ) {
-        for(int idxField = 0; idxField < poFDefn->GetFieldCount(); idxField++ ) {
-
+        if( poFDefn->GetFieldCount() > 1) {
+            // for( auto&& oField: *feature ) {
+            for(int idxField = 0; idxField < poFDefn->GetFieldCount(); idxField++ ) {
+                
+                OGRFieldDefn *oField = poFDefn->GetFieldDefn( idxField );
+                //std::cout << "Field Name: " << oField->GetNameRef() << ", Value: ";
+                if ( strcmp(oField->GetNameRef(),"h") == 0) {
+                    switch( oField->GetType() )
+                    {
+                    case OFTInteger:
+                        //printf( "%d,", feature->GetFieldAsInteger( idxField ) );
+                        building_height.push_back(feature->GetFieldAsInteger( idxField )*heightFactor);
+                        break;
+                    case OFTInteger64:
+                        //printf( CPL_FRMT_GIB ",", feature->GetFieldAsInteger64( idxField ));
+                        building_height.push_back(feature->GetFieldAsInteger( idxField )*heightFactor);
+                        break;
+                    case OFTReal:
+                        //printf( "%.3f,", feature->GetFieldAsDouble( idxField ) );
+                        building_height.push_back(feature->GetFieldAsDouble( idxField )*heightFactor);
+                        break;
+                    case OFTString:
+                        //printf( "%s,", feature->GetFieldAsString( idxField ) );
+                        break;
+                    default:
+                        // printf( "%s,", feature->GetFieldAsString( idxField ) );
+                        break;
+                    }
+                }
+                //std::cout << std::endl;
+            } 
+        } else {
+            int idxField = 0;
             OGRFieldDefn *oField = poFDefn->GetFieldDefn( idxField );
             //std::cout << "Field Name: " << oField->GetNameRef() << ", Value: ";
             switch( oField->GetType() )
@@ -74,15 +104,14 @@ void ESRIShapefile::loadVectorData( std::vector< std::vector< polyVert > > &poly
             case OFTInteger:
                 //printf( "%d,", feature->GetFieldAsInteger( idxField ) );
                 building_height.push_back(feature->GetFieldAsInteger( idxField )*heightFactor);
-
                 break;
             case OFTInteger64:
                 //printf( CPL_FRMT_GIB ",", feature->GetFieldAsInteger64( idxField ));
                 building_height.push_back(feature->GetFieldAsInteger( idxField )*heightFactor);
                 break;
             case OFTReal:
-                building_height.push_back(feature->GetFieldAsDouble( idxField )*heightFactor);
                 //printf( "%.3f,", feature->GetFieldAsDouble( idxField ) );
+                building_height.push_back(feature->GetFieldAsDouble( idxField )*heightFactor);
                 break;
             case OFTString:
                 //printf( "%s,", feature->GetFieldAsString( idxField ) );
@@ -92,63 +121,62 @@ void ESRIShapefile::loadVectorData( std::vector< std::vector< polyVert > > &poly
                 break;
             }
             //std::cout << std::endl;
-
-            OGRGeometry *poGeometry;
-            poGeometry = feature->GetGeometryRef();
-            if( poGeometry != NULL
-                && wkbFlatten(poGeometry->getGeometryType()) == wkbPoint )
-            {
-#if GDAL_VERSION_NUM >= GDAL_COMPUTE_VERSION(2,3,0)
-                OGRPoint *poPoint = poGeometry->toPoint();
-#else
-                OGRPoint *poPoint = (OGRPoint *) poGeometry;
-#endif
-                printf( "%.3f,%3.f\n", poPoint->getX(), poPoint->getY() );
-            }
-
-            // POLYGON
-            else if( poGeometry != NULL
-                     && wkbFlatten(poGeometry->getGeometryType()) == wkbPolygon )
-            {
-                OGRPolygon *poPolygon = (OGRPolygon *) poGeometry;
-
-                OGRLinearRing* pLinearRing = nullptr;;
-                pLinearRing = ((OGRPolygon*)poGeometry)->getExteriorRing();
-                int vertexCount = pLinearRing->getNumPoints();
-                //std::cout << "Building Poly #" << polyCount << " (" << vertexCount << " vertices):" << std::endl;
-
-                std::vector< polyVert > vertexList( vertexCount );
-
-                for (int vidx=0; vidx<vertexCount; vidx++) {
-                    double x = pLinearRing->getX( vidx );
-                    double y = pLinearRing->getY( vidx );
-
-                    if (x < minBound[0]) minBound[0] = x;
-                    if (y < minBound[1]) minBound[1] = y;
-
-                    if (x > maxBound[0]) maxBound[0] = x;
-                    if (y > maxBound[1]) maxBound[1] = y;
-
-
-                    // std::cout << "\t(" << x << ", " << y << ")" <<
-                    // std::endl;
-                    vertexList[vidx] = polyVert(x, y);
-                }
-
-
-                    polyCount++;
-                    polygons.push_back( vertexList );
-
-
-            }
-            else
-            {
-                printf( "no point geometry\n" );
-            }
         }
-
+        
+        OGRGeometry *poGeometry;
+        poGeometry = feature->GetGeometryRef();
+        if( poGeometry != NULL
+            && wkbFlatten(poGeometry->getGeometryType()) == wkbPoint )
+        {
+#if GDAL_VERSION_NUM >= GDAL_COMPUTE_VERSION(2,3,0)
+            OGRPoint *poPoint = poGeometry->toPoint();
+#else
+            OGRPoint *poPoint = (OGRPoint *) poGeometry;
+#endif
+            printf( "%.3f,%3.f\n", poPoint->getX(), poPoint->getY() );
+        }
+        
+        // POLYGON
+        else if( poGeometry != NULL
+                 && wkbFlatten(poGeometry->getGeometryType()) == wkbPolygon )
+        {
+            OGRPolygon *poPolygon = (OGRPolygon *) poGeometry;
+            
+            OGRLinearRing* pLinearRing = nullptr;;
+            pLinearRing = ((OGRPolygon*)poGeometry)->getExteriorRing();
+            int vertexCount = pLinearRing->getNumPoints();
+            //std::cout << "Building Poly #" << polyCount << " (" << vertexCount << " vertices):" << std::endl;
+            
+            std::vector< polyVert > vertexList( vertexCount );
+            
+            for (int vidx=0; vidx<vertexCount; vidx++) {
+                double x = pLinearRing->getX( vidx );
+                double y = pLinearRing->getY( vidx );
+                
+                if (x < minBound[0]) minBound[0] = x;
+                if (y < minBound[1]) minBound[1] = y;
+                
+                if (x > maxBound[0]) maxBound[0] = x;
+                if (y > maxBound[1]) maxBound[1] = y;
+                
+                
+                // std::cout << "\t(" << x << ", " << y << ")" <<
+                // std::endl;
+                vertexList[vidx] = polyVert(x, y);
+            }
+            
+            
+            polyCount++;
+            polygons.push_back( vertexList );
+            
+            
+        }
+        else
+        {
+            printf( "no point geometry\n" );
+        }
     }
-
+    
     std::cout << "Bounds of SHP: Min=(" << minBound[0] << ", " << minBound[1] << "), Max=(" << maxBound[0] << ", " << maxBound[1] << ")" << std::endl;
     std::cout << "Domain Size: " << (int)ceil(maxBound[0] - minBound[0]) << " X " << (int)ceil(maxBound[1] - minBound[1]) << std::endl;
 }
