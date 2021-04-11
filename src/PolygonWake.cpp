@@ -1,3 +1,37 @@
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/**
+ * @file PolygonWake.cpp
+ * @brief :document this:
+ */
+
 #include "PolyBuilding.h"
 
 // These take care of the circular reference
@@ -7,14 +41,17 @@
 
 
 /**
-*
-* This function applies wake behind the building parameterization to buildings defined as polygons.
-* The parameterization has two parts: near wake and far wake. This function reads in building features
-* like nodes, building height and base height and uses features of the building defined in the class
-* constructor ans setCellsFlag function. It defines cells in each wake area and applies the approperiate
-* parameterization to them.
-*
-*/
+ *
+ * This function applies wake behind the building parameterization to buildings defined as polygons.
+ * The parameterization has two parts: near wake and far wake. This function reads in building features
+ * like nodes, building height and base height and uses features of the building defined in the class
+ * constructor ans setCellsFlag function. It defines cells in each wake area and applies the approperiate
+ * parameterization to them.
+ *
+ * @param WID :document this:
+ * @param WGD :document this:
+ * @param building_id :document this:
+ */
 void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD, int building_id)
 {
 
@@ -211,9 +248,9 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
       stop_id = id;
       break;
     }
-  }  
-  
-  Lr = Lr_ave/total_seg_length; 
+  }
+
+  Lr = Lr_ave/total_seg_length;
   for (auto k = 1; k <= k_start; k++)
   {
     k_bottom = k;
@@ -256,7 +293,7 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
         for (auto y_id=0; y_id <= 2*ceil(abs(yi[id]-yi[id+1])/WGD->dxy); y_id++)
         {
           yc = yi[id]-0.5*y_id*WGD->dxy;
-          Lr_local = Lr_node[id]+(yc-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);         
+          Lr_local = Lr_node[id]+(yc-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
           // Checking to see whether the face is perpendicular to the wind direction
           if(perpendicular_flag[id] == 0)
           {
@@ -290,7 +327,7 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
             {
               canyon_factor = xc/Lr;
               break;
-            } 
+            }
           }
           x_id_min = -1;
           for (auto x_id=1; x_id <= 2*ceil(farwake_factor*Lr_local/WGD->dxy); x_id++)
@@ -333,14 +370,14 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
             if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2)
             {
               i_u = std::round(((xc+x_wall)*cos(upwind_dir)-yc*sin(upwind_dir)+building_cent_x)/WGD->dx);
-              j_u = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/WGD->dy;                              
+              j_u = ((xc+x_wall)*sin(upwind_dir)+yc*cos(upwind_dir)+building_cent_y)/WGD->dy;
               if (i_u < WGD->nx-1 && i_u > 0 && j_u < WGD->ny-1 && j_u > 0)
               {
                 xp = i_u*WGD->dx-building_cent_x;
                 yp = (j_u+0.5)*WGD->dy-building_cent_y;
                 xu = xp*cos(upwind_dir)+yp*sin(upwind_dir);
-                yu = -xp*sin(upwind_dir)+yp*cos(upwind_dir);                
-                Lr_local_u = Lr_node[id]+(yu-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);                
+                yu = -xp*sin(upwind_dir)+yp*cos(upwind_dir);
+                Lr_local_u = Lr_node[id]+(yu-yi[id])*(Lr_node[id+1]-Lr_node[id])/(yi[id+1]-yi[id]);
                 if (perpendicular_flag[id] > 0)
                 {
                   x_wall_u = xi[id];
@@ -377,7 +414,7 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
                       //std::cout << "farwake_vel:   " << farwake_vel << std::endl;
                       //std::cout << "i_u:   " << i_u << "\t\t"<< "j_u:   " << j_u << "\t\t"<< "k:   " << k << std::endl;
                       u0_modified.push_back(farwake_vel);
-                      u0_mod_id.push_back(icell_face); 
+                      u0_mod_id.push_back(icell_face);
 
                       WGD->w0[i+j*WGD->nx+k*WGD->nx*WGD->ny] = 0.0;
                     }
@@ -502,7 +539,7 @@ void PolyBuilding::polygonWake (const WINDSInputData* WID, WINDSGeneralData* WGD
                     {
                       if ((WGD->icellflag[icell_cent] != 7) && (WGD->icellflag[icell_cent] != 8))
                       {
-                        WGD->icellflag[icell_cent] = 5;         
+                        WGD->icellflag[icell_cent] = 5;
                       }
                     }
                   }

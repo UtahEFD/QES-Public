@@ -1,3 +1,37 @@
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/**
+ * @file WINDSGeneralData.cpp
+ * @brief :document this:
+ */
+
 #include "WINDSGeneralData.h"
 
 WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
@@ -35,21 +69,21 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    nz = domainInfo[2];
 
    // Modify the domain size to fit the Staggered Grid used in the solver
-   nx += 1;        /// +1 for Staggered grid
-   ny += 1;        /// +1 for Staggered grid
-   nz += 2;        /// +2 for staggered grid and ghost cell
+   nx += 1;        // +1 for Staggered grid
+   ny += 1;        // +1 for Staggered grid
+   nz += 2;        // +2 for staggered grid and ghost cell
 
    Vector3<float> gridInfo;
    gridInfo = *(WID->simParams->grid);
-   dx = gridInfo[0];           /**< Grid resolution in x-direction */
-   dy = gridInfo[1];           /**< Grid resolution in y-direction */
-   dz = gridInfo[2];           /**< Grid resolution in z-direction */
+   dx = gridInfo[0];           // Grid resolution in x-direction
+   dy = gridInfo[1];           // Grid resolution in y-direction
+   dz = gridInfo[2];           // Grid resolution in z-direction
    dxy = MIN_S(dx, dy);
 
-   numcell_cout    = (nx-1)*(ny-1)*(nz-2);        /**< Total number of cell-centered values in domain */
-   numcell_cout_2d = (nx-1)*(ny-1);               /**< Total number of horizontal cell-centered values in domain */
-   numcell_cent    = (nx-1)*(ny-1)*(nz-1);        /**< Total number of cell-centered values in domain */
-   numcell_face    = nx*ny*nz;                    /**< Total number of face-centered values in domain */
+   numcell_cout    = (nx-1)*(ny-1)*(nz-2);        // Total number of cell-centered values in domain
+   numcell_cout_2d = (nx-1)*(ny-1);               // Total number of horizontal cell-centered values in domain
+   numcell_cent    = (nx-1)*(ny-1)*(nz-1);        // Total number of cell-centered values in domain
+   numcell_face    = nx*ny*nz;                    // Total number of face-centered values in domain
 
 
    // where should this really go?
@@ -184,21 +218,21 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    z_face[0] = 0.0;
    z[0] = -0.5*dz_array[0];
    for (size_t k=1; k<z.size(); k++) {
-      z_face[k] = z_face[k-1] + dz_array[k];  /**< Location of face centers in z-dir */
-      z[k] = 0.5*(z_face[k-1] + z_face[k]);   /**< Location of cell centers in z-dir */
+      z_face[k] = z_face[k-1] + dz_array[k];  // Location of face centers in z-dir
+      z[k] = 0.5*(z_face[k-1] + z_face[k]);   // Location of cell centers in z-dir
    }
 
 
    // horizontal grid (x-direction)
    x.resize( nx-1 );
    for (auto i=0; i<nx-1; i++) {
-      x[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
+      x[i] = (i+0.5)*dx;          // Location of face centers in x-dir
    }
 
    // horizontal grid (y-direction)
    y.resize( ny-1 );
    for (auto j=0; j<ny-1; j++) {
-      y[j] = (j+0.5)*dy;          /**< Location of face centers in y-dir */
+      y[j] = (j+0.5)*dy;          // Location of face centers in y-dir
    }
 
    // Resize the canopy-related vectors
@@ -246,7 +280,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
    std::cout << "Memory allocation complete." << std::endl;
 
-   /// defining ground solid cells (ghost cells below the surface)
+   // defining ground solid cells (ghost cells below the surface)
    for (int j = 0; j < ny-1; j++)
    {
       for (int i = 0; i < nx-1; i++)
@@ -555,7 +589,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
    wall = new Wall();
 
-   std::cout << "Defining Solid Walls..." << std::endl; 
+   std::cout << "Defining Solid Walls..." << std::endl;
    // Boundary condition for building edges
    wall->defineWalls(this);
    std::cout << "Walls Defined." << std::endl;
@@ -721,7 +755,7 @@ void WINDSGeneralData::mergeSort( std::vector<float> &effective_height, std::vec
    }
 
    std::cout << "Sorting " << allBuildingsV.size() << " buildings." << std::endl;
-   
+
 
    if ( allBuildingsV.size() > 1)
    {

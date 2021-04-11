@@ -78,18 +78,14 @@ public:
 
 protected:
     ///@{
-    /**
-     * Solver coefficient on device (GPU)
-     */
+    /** Solver coefficient on device (GPU) */
     float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;
     ///@}
 
     float *d_R; /**< Divergence of initial velocity field on device (GPU) */
 
     ///@{
-    /**
-     * Lagrange multipliers on device (GPU)
-     */
+    /** Lagrange multipliers on device (GPU) */
     float *d_lambda, *d_lambda_old;
     ///@}
 

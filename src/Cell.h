@@ -53,11 +53,9 @@ class Cell
 {
 private:
     ///@{
-    /**
-     * boolean property
-     */
+    /** boolean property */
 	bool isAir, isTerrain, isCutCell;
-     ///@}
+    ///@}
     std::vector< Vector3<float> > terrainPoints; /**< List of terrain points */
     std::vector< Edge< int > > terrainEdges;   /**< List of edges that connect the terrain points */
     std::vector< Vector3<float> > fluidFacePoints[6]; /**< :document this: */

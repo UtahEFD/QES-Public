@@ -1,18 +1,36 @@
-/** \file "WRFInput.cpp" input data header file.
-    \author Pete Willemsen, Matthieu
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
 
-    Copyright (C) 2019 Pete Willemsen
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-*/
+/**
+ * @file WRFInput.cpp
+ * @brief :document this:
+ */
 
 #include <fstream>
 #include <cmath>
@@ -319,13 +337,13 @@ WRFInput::WRFInput(const std::string& filename,
     if (sensorsOnly) {
         std::cout << "\tOnly parsing wind velocity profiles from WRF file." << std::endl;
     }
-    
+
     // How is UTM used now?  --Pete
-    int UTMZone = zoneUTM; 
+    int UTMZone = zoneUTM;
 
     // Acquire some global attributes from the WRF system
     std::multimap<std::string,NcGroupAtt> globalAttributes = wrfInputFile.getAtts();
-    
+
     // Extract the WRF version information
     std::string wrfTitle;
     auto gblAttIter = globalAttributes.find("TITLE");
@@ -385,7 +403,7 @@ WRFInput::WRFInput(const std::string& filename,
         //
         // IMPORTANT -- need to include code to check for fire mesh
         // data!!!
-        // 
+        //
         // Check to verify the fields for the fire mesh exist --
         // otherwise exit
 
@@ -395,9 +413,9 @@ WRFInput::WRFInput(const std::string& filename,
         // std::cerr << "Exiting." << std::endl;
         // exit(EXIT_FAILURE);
         // }
-        
 
-        // 
+
+        //
         // Fire Mesh Terrain Nodes
         //
         // int fm_nt = wrfInputFile.getVar("FXLONG").getDim(0).getSize();
@@ -413,13 +431,13 @@ WRFInput::WRFInput(const std::string& filename,
         std::vector<double> fxlat( fm_nx * fm_ny );
         wrfInputFile.getVar("FXLONG").getVar(startIdx, counts, fxlong.data());
         wrfInputFile.getVar("FXLAT").getVar(startIdx, counts, fxlat.data());
-    
+
         std::cout << "\treading data for FWH, FZ0, and ZSF..." << std::endl;
 
         std::vector<double> fwh( fm_nx * fm_ny );
         std::vector<double> fz0( fm_nx * fm_ny );
         wrfInputFile.getVar("FWH").getVar(startIdx, counts, fwh.data());
-        wrfInputFile.getVar("FZ0").getVar(startIdx, counts, fz0.data());    
+        wrfInputFile.getVar("FZ0").getVar(startIdx, counts, fz0.data());
 
         fmHeight.resize( fm_nx * fm_ny );
         wrfInputFile.getVar("ZSF").getVar(startIdx, counts, fmHeight.data());
@@ -434,7 +452,7 @@ WRFInput::WRFInput(const std::string& filename,
         float sr_y = sizeZSF_y/(sizeHGT_y+1);
 
         fm_dx = atm_dx / sr_x;
-        fm_dy = atm_dy / sr_y;    
+        fm_dy = atm_dy / sr_y;
         // Then dxf=DX/sr_x, dyf=DY/sr_y
 
         // for now, set dz = 1
@@ -444,14 +462,14 @@ WRFInput::WRFInput(const std::string& filename,
         std::cout << "WRF Fire Mesh Resolution (dx, dy): (" << fm_dx << ", " << fm_dy << ")" << std::endl;
 
         std::cout << "\ttotal domain size: " << fm_nx * fm_dx << "m by " << fm_ny * fm_dy << "m" << std::endl;
-    
+
         double fm_minWRFAlt = std::numeric_limits<double>::max(),
             fm_maxWRFAlt = std::numeric_limits<double>::min();
-    
+
         // Scan the fire mesh to determine height ranges
         for (int i=0; i<fm_nx; i++) {
             for (int j=0; j<fm_ny; j++) {
-            
+
                 int l_idx = i + j*fm_nx;
 
                 if (fmHeight[l_idx] > fm_maxWRFAlt) fm_maxWRFAlt = fmHeight[l_idx];
@@ -463,22 +481,22 @@ WRFInput::WRFInput(const std::string& filename,
 
         // if specified, use the max height... otherwise, pick one
         // that's about twice the max height to give room for the flow
-	fm_nz = (int)ceil( fm_maxWRFAlt * 2.0 );  // this ONLY works
+    fm_nz = (int)ceil( fm_maxWRFAlt * 2.0 );  // this ONLY works
                                                   // if dz=1.0
 
         std::cout << "Domain nz: " << fm_nz << std::endl;
 
-        // 
+        //
         // override any zone information?  Need to fix these use cases
         //
         UTMZone = (int)floor((fxlong[0] + 180) / 6) + 1;
         std::cout << "UTM Zone: " << UTMZone << std::endl;
-        
-        std::cout << "(Lat,Long) at Lower Left (LL) = " << fxlat[0] << ", " << fxlong[0] << std::endl; 
+
+        std::cout << "(Lat,Long) at Lower Left (LL) = " << fxlat[0] << ", " << fxlong[0] << std::endl;
         std::cout << "(Lat,Long) at Lower Right (LR) = " << fxlat[fm_nx-1] << ", " << fxlong[fm_nx-1] << std::endl;
         std::cout << "(Lat,Long) at Upper Left (UL) = " << fxlat[(fm_ny-1)*fm_nx] << ", " << fxlong[(fm_ny-1)*fm_nx] << std::endl;
         std::cout << "(Lat,Long) at Upper Right (UR) = " << fxlat[fm_nx-1 + (fm_ny-1)*fm_nx] << ", " << fxlong[fm_nx-1 + (fm_ny-1)*fm_nx] << std::endl;
-        
+
 
         // variables to hold the UTM coordinates of the corners
         //   domainUTMx, domainUTMy contain the lower left origin UTM
@@ -489,7 +507,7 @@ WRFInput::WRFInput(const std::string& filename,
 
         UTMConv(fxlong[0], fxlat[0], domainUTMx, domainUTMy, UTMZone, 0);
         std::cout << std::setprecision(9) << "\tConverted LL UTM: " << domainUTMx << ", " << domainUTMy << std::endl;
-        
+
         UTMConv(fxlong[fm_nx-1], fxlat[fm_nx-1], lrUTMx, lrUTMy, UTMZone, 0);
         std::cout << std::setprecision(9) << "\tConverted LR UTM: " << lrUTMx << ", " << lrUTMy << std::endl;
 
@@ -503,22 +521,22 @@ WRFInput::WRFInput(const std::string& filename,
         dimX = fm_nx * fm_dx;
         dimY = fm_ny * fm_dy;
 
-        // 
+        //
         // Need this anymore? ???
         std::vector<float> abyRaster( fm_nx * fm_ny );
         for (int i=0; i<fm_nx; i++) {
             for (int j=0; j<fm_ny; j++) {
-            
+
                 int l_idx = i + j*fm_nx;
                 abyRaster[ l_idx ] = fmHeight[l_idx];
                 // std::cout << "height = " << fmHeight[ l_idx ] << std::endl;
-                
+
             }
         }
         std::cout << "Done." << std::endl;
-    
+
 #if 0
-        // 
+        //
         // Setting up WRF-based SpatialReference
         //
         //    lat1 = d.TRUELAT1
@@ -537,19 +555,19 @@ WRFInput::WRFInput(const std::string& filename,
         double lat1, lat2, lat0, lon0, clat, clon;
         gblAttIter = globalAttributes.find("TRUELAT1");
         gblAttIter->second.getValues( &lat1 );
-    
+
         gblAttIter = globalAttributes.find("TRUELAT2");
         gblAttIter->second.getValues( &lat2 );
 
         gblAttIter = globalAttributes.find("MOAD_CEN_LAT");
         gblAttIter->second.getValues( &lat0 );
-    
+
         gblAttIter = globalAttributes.find("STAND_LON");
         gblAttIter->second.getValues( &lon0 );
-    
+
         gblAttIter = globalAttributes.find("CEN_LAT");
         gblAttIter->second.getValues( &clat );
-    
+
         gblAttIter = globalAttributes.find("CEN_LON");
         gblAttIter->second.getValues( &clon );
 
@@ -582,11 +600,11 @@ WRFInput::WRFInput(const std::string& filename,
         wgs84.SetWellKnownGeogCS( "WGS84" );
         wgs84.SetUTM( UTMZone, TRUE );
         // wgs84.importFromProj4( "+proj=latlong +datum=WGS84" );
-     
+
         OGRSpatialReference latLongProj;
         std::string projString = "+proj=latlong +datum=WGS84";
         latLongProj.importFromProj4( projString.c_str() );
-    
+
         // # geotransform
         // e,n = pyproj.transform(ll_proj,wrf_proj,clon,clat)
         // dx_atm = d.DX
@@ -611,13 +629,13 @@ WRFInput::WRFInput(const std::string& filename,
 
         // oSRS.SetLCC(30.0, 34.0, 30.533249, -86.730408, 0.0, 0.0);
         // oSRS.SetWellKnownGeogCS( "WGS84" );
-    
-    
+
+
         // wgs84 coordinate system
 //    OGRSpatialReference wgs84sr;
 //    wgs84sr.SetWellKnownGeogCS( "WGS84" );
 //    wgs84sr.SetUTM( UTMZone, TRUE );
-    
+
         // set the transform wgs84_to_utm and do the transform
         //transform_WGS84_To_UTM =
         //osr.CoordinateTransformation(wgs84_cs,utm_cs)
@@ -630,7 +648,7 @@ WRFInput::WRFInput(const std::string& filename,
 
         // OGRCoordinateTransformation *ogrCoordXform4 = OGRCreateCoordinateTransformation(&latLongProj, &wrfSpatialRef);
         OGRCoordinateTransformation *ogrCoordXform4 = OGRCreateCoordinateTransformation(&wrfSpatialRef, &latLongProj);
-        
+
         // From: https://gdal.org/tutorials/osr_api_tut.html
         // Starting with GDAL 3.0, the axis order mandated by the
         // authority defining a CRS is by default honoured by the
@@ -646,16 +664,16 @@ WRFInput::WRFInput(const std::string& filename,
 
 //    ogrCoordXform3->Transform(1, lon2eastings, lat2northings);
         ogrCoordXform4->Transform(1, lon2eastings, lat2northings);
-        std::cout << "UTM: " << lon2eastings[0] << ", " << lat2northings[0] << std::endl;    
+        std::cout << "UTM: " << lon2eastings[0] << ", " << lat2northings[0] << std::endl;
 #endif
 
         //
         // this may not be needed anymore...
-        // BEGIN 
+        // BEGIN
         double clat, clon;
         gblAttIter = globalAttributes.find("CEN_LAT");
         gblAttIter->second.getValues( &clat );
-    
+
         gblAttIter = globalAttributes.find("CEN_LON");
         gblAttIter->second.getValues( &clon );
 
@@ -664,13 +682,13 @@ WRFInput::WRFInput(const std::string& filename,
 
         int srx = int(fm_nx/(atm_nx+1));
         int sry = int(fm_ny/(atm_ny+1));
-    
+
         int nx_fire = fm_nx - srx;
         int ny_fire = fm_ny - sry;
-    
+
         float dx_fire = atm_dx/(float)srx;
         float dy_fire = atm_dy/(float)sry;
-    
+
         double t_x0_fire = -nx_fire / 2. * dx_fire + lon2eastings[0];
         double t_y1_fire = (ny_fire / 2. + sry) * dy_fire + lat2northings[0];
 
@@ -682,14 +700,14 @@ WRFInput::WRFInput(const std::string& filename,
         // May not need that section above between BEGIN - END
 
         // nx_atm / 2. * atm_dx + e
-        // double x0_fire = t_x0_fire; // -fm_nx / 2.0 * dxf + lon2eastings[0]; 
-        // ny_atm / 2. * atm_dy + n 
+        // double x0_fire = t_x0_fire; // -fm_nx / 2.0 * dxf + lon2eastings[0];
+        // ny_atm / 2. * atm_dy + n
         // double y1_fire = t_y1_fire; // -fm_ny / 2.0 * dyf + lat2northings[0];
 
 
         // End of Conditional for processing WRF Fire Mesh Terrain data
     }
-    
+
     //
     // Process Atmospheric Mesh Wind Profiles
     //    remainder of code is for pulling out wind profiles
@@ -700,7 +718,7 @@ WRFInput::WRFInput(const std::string& filename,
     atm_nz = 1;
     gblAttIter = globalAttributes.find("BOTTOM-TOP_GRID_DIMENSION");
     gblAttIter->second.getValues( &atm_nz );
- 
+
     std::cout << "WRF Atmospheric Mesh Domain (nx, ny, nz): " << atm_nx << " X " << atm_ny << " X " << atm_ny << " cells." << std::endl;
 
     std::vector<size_t> atm_startIdx = {0,0,0};
@@ -768,7 +786,7 @@ WRFInput::WRFInput(const std::string& filename,
     // and Y, for U and V, respectively.
 
     std::cout << "Reading U and V staggered wind input from WRF..." << std::endl;
-    
+
     atmCounts[3] = atm_nx + 1;
     std::vector<double> UStaggered( 2 * (atm_nz-1) * atm_ny * (atm_nx+1) );
     wrfInputFile.getVar("U").getVar(atmStartIdx, atmCounts, UStaggered.data());
@@ -855,7 +873,7 @@ WRFInput::WRFInput(const std::string& filename,
     }
 
     std::cout << "Wind direction computed." << std::endl;
- 
+
     // use the Fz0 rather than LU_INDEX
 
     // read LU -- depends on if reading the restart or the output file
@@ -930,12 +948,12 @@ WRFInput::WRFInput(const std::string& filename,
 
     if (sensorsOnly) {
         // Use nz * dz
-        maxWRFAlt = 90 * 3.0;  // again, only works with dz=1        
+        maxWRFAlt = 90 * 3.0;  // again, only works with dz=1
     }
     else {
         maxWRFAlt = fm_nz;  // again, only works with dz=1
     }
-    
+
     std::vector<double> atm_hgt( atm_nx * atm_ny );
     wrfInputFile.getVar("HGT").getVar(atm_startIdx, atm_counts, atm_hgt.data());
 
@@ -948,7 +966,7 @@ WRFInput::WRFInput(const std::string& filename,
     std::cout << std::setprecision(9) << "UTM(LL): " << domainUTMx << ", " << domainUTMy << ", Zone=" << UTMZone << "(" << zoneUTM << ")" << "\n";
 
     std::cout << "DIM: " << dimX << ", " << dimY << "\n";
-    
+
     double domainUTMx_UR = domainUTMx + dimX;
     double domainUTMy_UR = domainUTMy + dimY;
 
@@ -978,7 +996,7 @@ WRFInput::WRFInput(const std::string& filename,
                  (atm_xlong[ atm_idx ] > c_long_ll)) &&
 
                 ((atm_xlat[ atm_idx ] < c_lat_ur) &&
-                 (atm_xlat[ atm_idx ] > c_lat_ll))) 
+                 (atm_xlat[ atm_idx ] > c_lat_ll)))
             {
 
                 // If geoStationData is within [UTMX,UTMY] X [UTMX+(numMetersFromDEM_x), UTMY+(numMetersFromDEM_y)]
@@ -996,7 +1014,7 @@ WRFInput::WRFInput(const std::string& filename,
                 double latStat = atm_xlat[ atm_idx ];
                 double longStat = atm_xlong[ atm_idx ];
                 UTMConv( longStat, latStat, utmStatX, utmStatY, newZone, 0);
-                
+
                 std::cout << "Stat Lat/Long: " << latStat << ", " << longStat << " and UTM " << utmStatX << ", " << utmStatY << ", Zone: " << newZone << std::endl;
 
                 sd.xCoord = utmStatX - domainUTMx;  // need halo still    xIdx * atm_dx;  // use actual position
@@ -1024,12 +1042,12 @@ WRFInput::WRFInput(const std::string& filename,
 
                         // only works for dz = 1 so will need to
                         // incorporate that...
-			// if (coordZ[l_idx] <= fm_nz) {
-			if (coordZ[l_idx] < maxWRFAlt) {
-			  // if (coordZ[l_idx] >= minWRFAlt && coordZ[l_idx] <= maxWRFAlt) {
-                        
+            // if (coordZ[l_idx] <= fm_nz) {
+            if (coordZ[l_idx] < maxWRFAlt) {
+              // if (coordZ[l_idx] >= minWRFAlt && coordZ[l_idx] <= maxWRFAlt) {
+
     // Use ZSF + FZ0 -- should be built into coordZ it seems
-                            
+
                             std::cout << "profile height at " << k << ": " << coordZ[ l_idx ] - atm_hgt[ yIdx * atm_nx + xIdx ] << "\n";
 
                             profData profEl;
@@ -1038,7 +1056,7 @@ WRFInput::WRFInput(const std::string& filename,
                             profEl.wd = wdData[ l_idx ];
 
                             sd.profiles[t].push_back( profEl );
-			}
+            }
                     }
                 }
 
@@ -2115,14 +2133,14 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
     // We use QES dimensions here since those are used to access the
     // wind field and at the moment, the fire mesh and the QES domain
     // should match up (as stated above).
-    
+
     std::vector<size_t> startIdx = {0,0,0,0};
     std::vector<size_t> counts = {1,
                                   static_cast<unsigned long>(fm_ny),
                                   static_cast<unsigned long>(fm_nx)};
 
     assert( fm_nx != (wgd->nx - 1 - 2*m_haloX_DimAddition) );
-    assert( fm_ny != (wgd->ny - 1 - 2*m_haloY_DimAddition) );    
+    assert( fm_ny != (wgd->ny - 1 - 2*m_haloY_DimAddition) );
 
     // Initialize the two fields to 0.0
     std::vector<double> ufOut( fm_nx * fm_ny, 0.0 );
@@ -2140,7 +2158,7 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
     // fwh to then pull the wind components from QES
     for (auto i=0; i<fm_nx-1; i++) {
         for (auto j=0; j<fm_ny-1; j++) {
-            
+
             // add the halo offsets to the i and j to shift them into
             // QES's space - fire mesh and wrf data do not have halo
             // extensions
@@ -2164,13 +2182,13 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
                }
             }
             //auto kQES = (int)floor( ((tHeight + FWH)/float(wgd->dz) ));
-              
+
             // fire mesh idx
             auto fireMeshIdx = j*fm_nx + i;
 
             // 3D QES Idx
             auto qes3DIdx = kQES*(wgd->nx)*(wgd->ny) + jQES*(wgd->nx) + iQES;
-            
+
             // provide cell centered data to WRF
             ufOut[ fireMeshIdx ] = 0.5 * (wgd->u[ qes3DIdx + 1 ] + wgd->u[ qes3DIdx ]);
             vfOut[ fireMeshIdx ] = 0.5 * (wgd->v[ qes3DIdx + wgd->nx ] + wgd->v[ qes3DIdx ]);
@@ -2184,7 +2202,7 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
 
     field_UF.putVar( startIdx, counts, ufOut.data() ); //, startIdx, counts );
     field_VF.putVar( startIdx, counts, vfOut.data() ); //, startIdx, counts );
-        
+
     wrfInputFile.sync();
 }
 
@@ -2201,7 +2219,7 @@ void WRFInput::applyHalotoStationData(const float haloX, const float haloY)
 void WRFInput::dumpStationData() const
 {
     std::ofstream statOut("statData.m");
-    
+
     statOut << "statData = [" << std::endl;
     for (auto s : statData) {
         statOut << s.xCoord << " " << s.yCoord << " " << s.z0 << ";" << std::endl;
