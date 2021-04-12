@@ -11,7 +11,7 @@ enum CanopyType {
     Vineyard
 };
 
-class Canopy : public Building
+class CanopyElement : public Building
 {
 private:
     
@@ -28,10 +28,10 @@ protected:
 
 public:
     
-    Canopy()
+    CanopyElement()
     { 
     }
-    virtual ~Canopy()
+    virtual ~CanopyElement()
     {
     }
     

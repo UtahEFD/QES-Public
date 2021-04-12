@@ -3,7 +3,7 @@
 #include "util/ParseInterface.h"
 #include "Building.h"
 
-#include "Canopy.h"
+#include "CanopyElement.h"
 #include "CanopyHomogeneous.h"
 #include "CanopyIsolatedTree.h"
 #include "CanopyWindbreak.h"

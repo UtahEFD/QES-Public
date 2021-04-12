@@ -11,7 +11,7 @@
 
 #include "WINDSInputData.h"
 #include "Building.h"
-#include "Canopy.h"
+#include "CanopyElement.h"
 #include "GroundCoverCanopy.h"
 #include "LocalMixing.h"
 #include "LocalMixingDefault.h"

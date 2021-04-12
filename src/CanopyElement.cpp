@@ -1,9 +1,9 @@
-#include "Canopy.h"
+#include "CanopyElement.h"
 
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 
-void Canopy::setPolyBuilding(WINDSGeneralData* WGD)
+void CanopyElement::setPolyBuilding(WINDSGeneralData* WGD)
 {
 
     // Calculate the centroid coordinates of the building (average of all nodes coordinates)
@@ -24,7 +24,7 @@ void Canopy::setPolyBuilding(WINDSGeneralData* WGD)
     return;
 }
 
-void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
+void CanopyElement::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
 {
     float ray_intersect;
     unsigned int num_crossing, vert_id, start_poly;
@@ -232,7 +232,7 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
 
 // Function to apply the urban canopy parameterization
 // Based on the version contain Lucas Ulmer's modifications
-void Canopy::canopyCioncoParam(WINDSGeneralData* WGD)
+void CanopyElement::canopyCioncoParam(WINDSGeneralData* WGD)
 {
   
     float avg_atten;     /**< average attenuation of the canopy */
@@ -360,7 +360,7 @@ void Canopy::canopyCioncoParam(WINDSGeneralData* WGD)
     return;
 }
 
-void Canopy::canopyRegression(WINDSGeneralData* WGD)
+void CanopyElement::canopyRegression(WINDSGeneralData* WGD)
 {
   
     int k_top(0), counter;
@@ -412,7 +412,7 @@ void Canopy::canopyRegression(WINDSGeneralData* WGD)
     return;
 }
 
-float Canopy::canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m)
+float CanopyElement::canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m)
 {
     int iter;
     float  uhc, d, d1, d2;
@@ -453,7 +453,7 @@ float Canopy::canopyBisection(float ustar, float z0, float canopy_top, float can
     return d;
 }
 
-float Canopy::canopySlopeMatch(float z0, float canopy_top, float canopy_atten)
+float CanopyElement::canopySlopeMatch(float z0, float canopy_top, float canopy_atten)
 {
   
     int iter;

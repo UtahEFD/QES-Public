@@ -2,9 +2,9 @@
 
 #include <cmath>
 #include "util/ParseInterface.h"
-#include "Canopy.h"
+#include "CanopyElement.h"
 
-class CanopyWindbreak : public Canopy
+class CanopyWindbreak : public CanopyElement
 {
 public:
     

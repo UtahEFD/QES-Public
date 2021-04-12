@@ -7,7 +7,7 @@ add_subdirectory( unitTests )
 
 CUDA_ADD_LIBRARY( qeswindscore
   BVH.cpp
-  Canopy.cpp
+  CanopyElement.cpp
   CanopyHomogeneous.cpp
   CanopyIsolatedTree.cpp
   CanopyWindbreak.cpp
