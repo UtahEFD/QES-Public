@@ -12,6 +12,7 @@
 #include "WINDSInputData.h"
 #include "Building.h"
 #include "Canopy.h"
+#include "GroundCoverCanopy.h"
 #include "LocalMixing.h"
 #include "LocalMixingDefault.h"
 #include "LocalMixingNetCDF.h"
@@ -151,18 +152,16 @@ public:
     //std::vector<float> site_atten_coeff;
 
     float convergence;
+
     // Canopy functions
-
-    std::vector<float> canopy_atten;		/**< Canopy attenuation coefficient */
-    std::vector<float> canopy_height;		  /**< Canopy height */
-    std::vector<float> canopy_top;		  /**< Canopy height */
-    std::vector<int> canopy_top_index;		  /**< Canopy top index */
-    std::vector<float> canopy_bot;		  /**< Canopy height */
-    std::vector<int> canopy_bot_index;		  /**< Canopy top index */
-    std::vector<float> canopy_z0;		  /**< Canopy surface roughness */
-    std::vector<float> canopy_ustar;		  /**< Velocity gradient at the top of canopy */
-    std::vector<float> canopy_d;		  /**< Canopy displacement length */
-
+    GroundCoverCanopy* groundCoverCanopy;
+    //std::vector<float> canopy_atten;		/**< Canopy attenuation coefficient */
+    //std::vector<float> canopy_top;		  /**< Canopy height */
+    //std::vector<int> canopy_top_index;		  /**< Canopy top index */
+    //std::vector<float> canopy_z0;		  /**< Canopy surface roughness */
+    //std::vector<float> canopy_ustar;		  /**< Velocity gradient at the top of canopy */
+    //std::vector<float> canopy_d;		  /**< Canopy displacement length */
+    
     //Canopy* canopy;
 
     float max_velmag;         // In polygonWake

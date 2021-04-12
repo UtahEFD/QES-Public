@@ -226,15 +226,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    }
 
    // Resize the canopy-related vectors
-   canopy_atten.resize( numcell_cent, 0.0 );
-   canopy_height.resize( (nx-1)*(ny-1), 0.0 );
-   canopy_top.resize( (nx-1)*(ny-1), 0.0 );
-   canopy_top_index.resize( (nx-1)*(ny-1), 0 );
-   canopy_bot.resize( (nx-1)*(ny-1), 0.0 );
-   canopy_bot_index.resize( (nx-1)*(ny-1), 0 );
-   canopy_z0.resize( (nx-1)*(ny-1), 0.0 );
-   canopy_ustar.resize( (nx-1)*(ny-1), 0.0 );
-   canopy_d.resize( (nx-1)*(ny-1), 0.0 );
+   //canopy_atten.resize( numcell_cent, 0.0 );
+   //canopy_top.resize( (nx-1)*(ny-1), 0.0 );
+   //canopy_top_index.resize( (nx-1)*(ny-1), 0 );
+   //canopy_z0.resize( (nx-1)*(ny-1), 0.0 );
+   //canopy_ustar.resize( (nx-1)*(ny-1), 0.0 );
+   //canopy_d.resize( (nx-1)*(ny-1), 0.0 );
 
 
    // Resize the coefficients for use with the solver
@@ -672,6 +669,17 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       }
    }
 
+   groundCoverCanopy = 0;
+   if ( WID->canopies->groundCovers.size() > 0 )
+   {
+       for (auto k=0u; k<WID->canopies->groundCovers.size(); k++) {
+           for (auto pIdx=0u; pIdx < WID->canopies->groundCovers[k]->polygonVertices.size(); pIdx++) {
+               WID->canopies->groundCovers[k]->polygonVertices[pIdx].x_poly += WID->simParams->halo_x;
+               WID->canopies->groundCovers[k]->polygonVertices[pIdx].y_poly += WID->simParams->halo_y;
+           }
+       }
+       groundCoverCanopy = new GroundCoverCanopy(WID,this);
+   }
    
    // We want to sort ALL buildings here...  use the allBuildingsV to
    // do this... (remember some are canopies) so we may need a
@@ -935,7 +943,11 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
 
 void WINDSGeneralData::applyParametrizations(const WINDSInputData* WID) 
 {
-    
+    if (groundCoverCanopy)
+    {
+        groundCoverCanopy->canopyVegetation(this);
+    }
+
     std::cout << "[Winds] \t applying Parameterization" << std::endl;
     // ///////////////////////////////////////
     // Generic Parameterization Related Stuff
