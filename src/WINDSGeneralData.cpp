@@ -70,17 +70,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
           // WRFOnly is the PREEVENTS Fire usage cases...
 
-          std::cout << "U0_FMW intepolated wind size: " << wrf_ptr->u0_fmw.size() << std::endl;
-          std::cout << "V0_FMW intepolated wind size: " << wrf_ptr->v0_fmw.size() << std::endl;
-          
-          std::cout << "HT_FMW intepolated wind size: " << wrf_ptr->ht_fmw.size() << std::endl;
-
-          std::cout << "nx-WRF:   "  << wrf_ptr->fm_nx << std::endl;
-          std::cout << "ny-WRF:   "  << wrf_ptr->fm_ny << std::endl;
-
-          std::cout << "nx:   "  << nx << std::endl;
-          std::cout << "ny:   "  << ny << std::endl;
-
           wrf_nx = wrf_ptr->fm_nx;
           wrf_ny = wrf_ptr->fm_ny;
 
@@ -104,8 +93,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
             WID->metParams->sensors[i]->TS[0]->site_blayer_flag = 4;
           }
 
-          std::cout << "Sensor size:   " << WID->metParams->sensors.size() << std::endl;
-
           for (auto i = 0; i < wrf_ptr->fm_nx; i++)
           {
             for (auto j = 0; j < wrf_ptr->fm_ny; j++)
@@ -128,12 +115,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
                 WID->metParams->sensors[index]->TS[0]->site_z_ref[p] = wrf_ptr->ht_fmw[p];
                 WID->metParams->sensors[index]->TS[0]->site_U_ref[p] = sqrt (pow(wrf_ptr->u0_fmw[id],2.0) + pow(wrf_ptr->v0_fmw[id],2.0) );
                 WID->metParams->sensors[index]->TS[0]->site_wind_dir[p] = 180 + (180/pi)*atan2(wrf_ptr->v0_fmw[id], wrf_ptr->u0_fmw[id]);
-                if (index == 9005)
-                {
-                  std::cout << "WID->metParams->sensors[index]->TS[0]->site_U_ref[p]:   " << WID->metParams->sensors[index]->TS[0]->site_U_ref[p] << std::endl;
-                  std::cout << "WID->metParams->sensors[index]->TS[0]->site_wind_dir[p]:   " << WID->metParams->sensors[index]->TS[0]->site_wind_dir[p] << std::endl;
-                }
-
               }
 
             }
