@@ -34,8 +34,10 @@
 #include <iostream>
 #include "util/ArgumentParsing.h"
 
-enum solverTypes : int
-{CPU_Type = 1, DYNAMIC_P = 2, Global_M = 3, Shared_M = 4};
+enum solverTypes : int { CPU_Type = 1,
+  DYNAMIC_P = 2,
+  Global_M = 3,
+  Shared_M = 4 };
 
 /**
  * @class WINDSArgs
@@ -48,43 +50,41 @@ enum solverTypes : int
 class WINDSArgs : public ArgumentParsing
 {
 public:
+  WINDSArgs();
 
-    WINDSArgs();
+  ~WINDSArgs() {}
 
-    ~WINDSArgs() {}
-
-    /**
-     * Takes in the commandline arguments and places
-     * them into variables.
-     *
-     * @param argc Number of commandline options/arguments
-     * @param argv Array of strings for arguments
-     */
-    void processArguments(int argc, char *argv[]);
-
-
-    bool verbose;
+  /**
+   * Takes in the commandline arguments and places
+   * them into variables.
+   *
+   * @param argc Number of commandline options/arguments
+   * @param argv Array of strings for arguments
+   */
+  void processArguments(int argc, char *argv[]);
 
 
-    std::string quicFile = ""; /**< Input files (from cmd line) */
+  bool verbose;
 
 
-    std::string netCDFFileBasename = ""; /**< Base name for all NetCDF output files */
+  std::string quicFile = ""; /**< Input files (from cmd line) */
 
-    ///@{
-    /** Flag to turn on/off different modules */
-    bool solveWind,compTurb;
-    int solveType, compareType;
-    bool visuOutput,wkspOutput,turbOutput,terrainOut;
-    ///@}
 
-    std::string netCDFFileVisu = ""; /**< netCDFFile for standard cell-center visualization file */
-    std::string netCDFFileWksp = ""; /**< netCDFFile for working field used by Plume */
-    std::string netCDFFileTurb = ""; /**< netCDFFile for turbulence field used by Plume */
-    std::string filenameTerrain = ""; /**< Filename for terrain output */
+  std::string netCDFFileBasename = ""; /**< Base name for all NetCDF output files */
 
-    bool fireMode; /**< Boolean to treat WRF input in fire mode */
+  ///@{
+  /** Flag to turn on/off different modules */
+  bool solveWind, compTurb;
+  int solveType, compareType;
+  bool visuOutput, wkspOutput, turbOutput, terrainOut;
+  ///@}
+
+  std::string netCDFFileVisu = ""; /**< netCDFFile for standard cell-center visualization file */
+  std::string netCDFFileWksp = ""; /**< netCDFFile for working field used by Plume */
+  std::string netCDFFileTurb = ""; /**< netCDFFile for turbulence field used by Plume */
+  std::string filenameTerrain = ""; /**< Filename for terrain output */
+
+  bool fireMode; /**< Boolean to treat WRF input in fire mode */
 
 private:
-
 };
