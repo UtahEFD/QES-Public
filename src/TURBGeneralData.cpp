@@ -1,3 +1,37 @@
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/**
+ * @file TURBGeneralData.cpp
+ * @brief :document this:
+ */
+
 #include "TURBGeneralData.h"
 
 //TURBGeneralData::TURBGeneralData(Args* arguments, URBGeneralData* WGD){
@@ -6,10 +40,10 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
     auto StartTime = std::chrono::high_resolution_clock::now();
 
     std::cout << "[QES-TURB]\t Initialization of turbulence model...\n";
-    
+
     // local copies of trubulence parameters
     turbUpperBound = WID->turbParams->turbUpperBound;
-    
+
     flagNonLocalMixing = WID->turbParams->flagNonLocalMixing;
     if(flagNonLocalMixing){
         std::cout << "\t\t Non-Local mixing for buidlings: ON \n";
@@ -114,16 +148,16 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
         std::cout << "\t\t Computing mixing length scales..." << std::endl;
         //WID->simParams->DTE_mesh->calculateMixingLength(nx, ny, nz, dx, dy, dz, WGD->icellflag, WGD->mixingLengths);
     } else if (WID->turbParams->methodLocalMixing == 3) {
-        localMixing = new LocalMixingOptix();            
+        localMixing = new LocalMixingOptix();
     } else if (WID->turbParams->methodLocalMixing == 4) {
         std::cout << "\t\t Loading Local Mixing Length data form NetCDF...\n";
         localMixing = new LocalMixingNetCDF();
     } else {
         //this should not happen (checked in TURBParams)
     }
-    
+
     localMixing->defineMixingLength(WID,WGD);
-    
+
     Lm.resize(np_cc,0.0);
     // make a copy as mixing length will be modifiy by non local
     // (need to be reset at each time instances)
@@ -143,7 +177,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
     zRef=0.0;uRef=0.0;uStar=0.0;
 
     std::cout << "\t\t Calculating Morphometric parametrization of trubulence..."<<std::endl;
-    
+
     if (WID->simParams->DTE_heightField) {
         terrainH_max=*max_element(WGD->terrain.begin(), WGD->terrain.end());
     } else {
@@ -163,18 +197,18 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
             }
         }
         bldgH_mean = bldgH_mean/float(WGD->allBuildingsV.size());
-        
+
         //std::cout << "\t\t\t mean bldg height = "<< bldgH_mean << " max bldg height = "<< bldgH_max << std::endl;
-    
+
         // Morphometric parametrization based on Grimmond and Oke (1999) and Kaster-Klein and Rotach (2003)
         // roughness length z0 as 0.1 mean building height
         z0d = 0.1*bldgH_mean;
         // displacement height d0 as 0.7 mean building height
         d0d = 0.7*bldgH_mean;
 
-        // reference height as 3.0 mean building 
+        // reference height as 3.0 mean building
         zRef=3.0*bldgH_mean;
-        
+
     } else {
         z0d = WID->metParams->sensors[0]->TS[0]->site_z0;
         d0d = 0.0;
@@ -183,7 +217,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData* WID,WINDSGeneralData* WGD
 
     std::cout<<"\t\t Computing friction velocity..." << std::endl;
     getFrictionVelocity(WGD);
-        
+
     std::cout << "\t\t Allocating memory...\n";
     // comp. of the strain rate tensor
     Sxx.resize(np_cc,0);
@@ -245,20 +279,20 @@ void TURBGeneralData::run(WINDSGeneralData* WGD){
         }
         //std::cout<<"\t\t Non-local mixing completed."<<std::endl;
     }
-    
+
     std::cout<<"\t\t Checking Upper Bound of Turbulence Fields..."<<std::endl;
     boundTurbFields();
 
     auto EndTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> Elapsed = EndTime - StartTime;
-    
+
     std::cout << "[QES-TURB] \t Turbulence model completed.\n";
     std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << endl;
 
 
 }
 
-void TURBGeneralData::getFrictionVelocity(WINDSGeneralData* WGD) 
+void TURBGeneralData::getFrictionVelocity(WINDSGeneralData* WGD)
 {
     float nVal=0.0,uSum=0.0;
     for (int j = 0; j < ny-1; j++) {
@@ -274,11 +308,11 @@ void TURBGeneralData::getFrictionVelocity(WINDSGeneralData* WGD)
                 std::cerr << "\t Reference height zRef = "<< zRef << " m." << std::endl;
                 exit(EXIT_FAILURE);
             }
-            
+
             int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
             int icell_face = i + j*(nx) + k*(nx)*(ny);
             if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
-                uSum += sqrt(pow(0.5*(WGD->u[icell_face]+WGD->u[icell_face+1]),2) + 
+                uSum += sqrt(pow(0.5*(WGD->u[icell_face]+WGD->u[icell_face+1]),2) +
                              pow(0.5*(WGD->v[icell_face]+WGD->v[icell_face+nx]),2) +
                              pow(0.5*(WGD->w[icell_face]+WGD->w[icell_face+nx*ny]),2));
                 nVal++;
@@ -286,7 +320,7 @@ void TURBGeneralData::getFrictionVelocity(WINDSGeneralData* WGD)
         }
     }
     uRef=uSum/nVal;
-    
+
     uStar = 0.4*uRef/log((zRef-d0d)/z0d);
     std::cout << "\t\t Mean reference velocity at zRef = "<< zRef << " m ==> uRef = " << uRef << " m/s" << std::endl;
     std::cout << "\t\t Mean friction velocity uStar = " << uStar << " m/s" << std::endl;
@@ -453,33 +487,32 @@ void TURBGeneralData::boundTurbFields()
 
         if (txx[id_cc] < -stressBound)
             txx[id_cc] = -stressBound;
-        if (txx[id_cc] > stressBound) 
+        if (txx[id_cc] > stressBound)
             txx[id_cc] = stressBound;
-        
+
         if (txy[id_cc] < -stressBound)
             txy[id_cc] = -stressBound;
-        if (txy[id_cc] > stressBound) 
+        if (txy[id_cc] > stressBound)
             txy[id_cc] = stressBound;
-        
-        if (txz[id_cc] < -stressBound) 
+
+        if (txz[id_cc] < -stressBound)
             txz[id_cc] = -stressBound;
-        if (txz[id_cc] > stressBound) 
+        if (txz[id_cc] > stressBound)
             txz[id_cc] = stressBound;
 
         if (tyy[id_cc] < -stressBound)
             tyy[id_cc] = -stressBound;
-        if (tyy[id_cc] > stressBound) 
+        if (tyy[id_cc] > stressBound)
             tyy[id_cc] = stressBound;
 
         if (tyz[id_cc] < -stressBound)
             tyz[id_cc] = -stressBound;
-        if (tyz[id_cc] > stressBound) 
+        if (tyz[id_cc] > stressBound)
             tyz[id_cc] = stressBound;
-        
-        if (tzz[id_cc] < -stressBound) 
+
+        if (tzz[id_cc] < -stressBound)
             tzz[id_cc] = -stressBound;
         if (tzz[id_cc] > stressBound)
             tzz[id_cc] = stressBound;
     }
 }
-

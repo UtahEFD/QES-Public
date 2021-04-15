@@ -1,41 +1,73 @@
-#pragma once
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
 
-/*
- *Class used to generate direction vectors for a sphere to use in ray
- *tracing 
- */
+/** @file SphereDirections.h */
+
+#pragma once
 
 #include <cmath>
 #include <cfloat>
 #include <random>
 #include "Vec3D.h"
 
+/**
+ * @class SphereDirections
+ * @brief Used to generate direction vectors for a sphere to use in ray tracing.
+ */
 class SphereDirections
 {
 private:
-    int vecCount;
-    int numDirs;
-    
-    //range of sphere for random version
+    int vecCount; /**< :document this: */
+    int numDirs;  /**< :document this: */
+
+    ///@{
+    /** Range of sphere for random version. */
     float lowerThetaBound;
     float upperThetaBound;
     float lowerPhiBound;
     float upperPhiBound;
+    ///@}
 
     // std::vector< Vec3D > nextList; // [6];  //holds vectors of the 6
 
-    Vec3D *nextList; 
+    Vec3D *nextList; /**< :document this: */
 
   public:
 
-   /*
-    *Default constuctor for the 6 cardinal directions 
+   /**
+    * Default constuctor for the 6 cardinal directions.
     */
     SphereDirections()
         : vecCount(0)
     {
         nextList = new Vec3D[ 6 ];
-        
+
         //default cardinal directions for now
         nextList[0] = Vec3D(1,0,0);   //front
         nextList[1] = Vec3D(-1,0,0);  //back
@@ -47,8 +79,14 @@ private:
         numDirs = 6;
     }
 
-   /*
-    *Constuctor for the random version
+   /**
+    * Constuctor for the random version.
+    *
+    * @param numDV :document this:
+    * @param lowerTheta :document this:
+    * @param upperTheta :document this:
+    * @param lowerPhi :document this:
+    * @param upperPhi :document this:
     */
    SphereDirections(int numDV, float lowerTheta, float upperTheta, float lowerPhi, float upperPhi)
        : vecCount(0), lowerThetaBound( lowerTheta ), upperThetaBound( upperTheta ), lowerPhiBound(lowerPhi), upperPhiBound(upperPhi)
@@ -57,7 +95,7 @@ private:
 //        std::random_device rd;  // the rd device reads from a file,
 //        apparently and thus, calls strlen, might need some other way
 //        to seed.
-        
+
 //        std::mt19937 e2(rd());
         std::mt19937 e2(303);
         std::uniform_real_distribution<float> theta(lowerThetaBound, upperThetaBound);
@@ -75,7 +113,7 @@ private:
             float dx = std::cos(theta2)*std::cos(phi(e2));
             float dy = std::sin(phi(e2));
             float dz = std::cos(theta2)*std::sin(phi(e2));
-            
+
             float magnitude = std::sqrt(dx*dx + dy*dy + dz*dz);
 
             // only send rays mostly down but a little up... can use
@@ -83,13 +121,13 @@ private:
             Vec3D dirVec( dx/magnitude,dy/magnitude,dz/magnitude );
 
             float dotProd = dirVec[0]*0.0f + dirVec[1]*0.0f + dirVec[2]*1.0f;
-                
+
             //if (dotProd < 0.20) {
                 nextList[i] = Vec3D(dx/magnitude,dy/magnitude,dz/magnitude);
                 i++;
                 // }
         }
-        
+
         // Then make sure the cardinal directions that may matter are
         // added -- up is unlikely at this point
         nextList[numDV] = Vec3D(1,0,0);   //front
@@ -105,55 +143,55 @@ private:
 //        }
 //        std::cout << "];" << std::endl;
 
-        
-    }
-    
 
-    ~SphereDirections() 
+    }
+
+
+    ~SphereDirections()
     {
         delete [] nextList;
     }
-    
 
-   /*Constructor for the Mitchell's Best Candidate Algorithm test 
+
+   /**
+    * Constructor for the Mitchell's Best Candidate Algorithm test.
     */
    SphereDirections(int numDirVec);
-   
 
-   /*
-    *@return numDirVec -the number of directional vectors generated
+
+   /**
+    * @return numDirVec the number of directional vectors generated
     */
-    int getNumDirVec() { return numDirs; } 
+    int getNumDirVec() { return numDirs; }
 
    /*
-    *@return the next cardinal directional vector or NULL if the vecCount > numDirVec
+    * @return the next cardinal directional vector or NULL if the vecCount > numDirVec
     */
 //   Vector3<float> getNextDirCardinal();
 
-   /*
-    *Gets a randomly generated directional vector based on theta and
-    *phi bounds
+   /**
+    * Gets a randomly generated directional vector based on theta and
+    * phi bounds.
     *
-    *@return the next randomly generated directional vector 
+    * @return the next randomly generated directional vector
     */
 //   Vector3<float> getNextDir();
-    Vec3D getNextDir() 
+    Vec3D getNextDir()
     {
         Vec3D retVal = nextList[ vecCount ];
-        
+
         vecCount++;
         if (vecCount > numDirs)
             vecCount = numDirs-1;
-        
+
         return retVal;
     }
-    
 
-   /*Mitchel's Best Algorithm 
-    *Gets the next unique direction 
+
+   /*Mitchel's Best Algorithm
+    *Gets the next unique direction
     *@return the next non-repeated directional vector
     */
 //   Vector3<float> getNextDir2();
-   
-};
 
+};

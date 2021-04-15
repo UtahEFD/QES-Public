@@ -1,3 +1,39 @@
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+
+/**
+ * @file Wall.cpp
+ * @brief :brief here:
+ *
+ * :long desc here if necessary:
+ */
 #include "Wall.h"
 
 #include "WINDSGeneralData.h"
@@ -108,19 +144,19 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
         if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2)
         {
 
-          /// Wall below
+          // Wall below
           if (WGD->icellflag[icell_cent-(nx-1)*(ny-1)] == 0 || WGD->icellflag[icell_cent-(nx-1)*(ny-1)] == 2)
           {
             //WGD->wall_below_indices.push_back(icell_face);
             WGD->n[icell_cent] = 0.0;
           }
-          /// Wall above
+          // Wall above
           if (WGD->icellflag[icell_cent+(nx-1)*(ny-1)] == 0 || WGD->icellflag[icell_cent+(nx-1)*(ny-1)] == 2)
           {
             //WGD->wall_above_indices.push_back(icell_face);
             WGD->m[icell_cent] = 0.0;
           }
-          /// Wall in back
+          // Wall in back
           if (WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 2)
           {
             if (i>0)
@@ -129,13 +165,13 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
               WGD->f[icell_cent] = 0.0;
             }
           }
-          /// Wall in front
+          // Wall in front
           if (WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 2)
           {
             //WGD->wall_front_indices.push_back(icell_face);
             WGD->e[icell_cent] = 0.0;
           }
-          /// Wall on right
+          // Wall on right
           if (WGD->icellflag[icell_cent-(nx-1)] == 0 || WGD->icellflag[icell_cent-(nx-1)] == 2)
           {
             if (j>0)
@@ -144,7 +180,7 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
               WGD->h[icell_cent] = 0.0;
             }
           }
-          /// Wall on left
+          // Wall on left
           if (WGD->icellflag[icell_cent+(nx-1)] == 0 || WGD->icellflag[icell_cent+(nx-1)] == 2)
           {
             //WGD->wall_left_indices.push_back(icell_face);
@@ -283,19 +319,19 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
         if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2)
         {
 
-          /// Wall below
+          // Wall below
           if (WGD->icellflag[icell_cent-(nx-1)*(ny-1)] == 0 || WGD->icellflag[icell_cent-(nx-1)*(ny-1)] == 2)
           {
             WGD->wall_below_indices.push_back(icell_face);
             WGD->n[icell_cent] = 0.0;
           }
-          /// Wall above
+          // Wall above
           if (WGD->icellflag[icell_cent+(nx-1)*(ny-1)] == 0 || WGD->icellflag[icell_cent+(nx-1)*(ny-1)] == 2)
           {
             WGD->wall_above_indices.push_back(icell_face);
             WGD->m[icell_cent] = 0.0;
           }
-          /// Wall in back
+          // Wall in back
           if (WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 2)
           {
             if (i>0)
@@ -304,13 +340,13 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
               WGD->f[icell_cent] = 0.0;
             }
           }
-          /// Wall in front
+          // Wall in front
           if (WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 2)
           {
             WGD->wall_front_indices.push_back(icell_face);
             WGD->e[icell_cent] = 0.0;
           }
-          /// Wall on right
+          // Wall on right
           if (WGD->icellflag[icell_cent-(nx-1)] == 0 || WGD->icellflag[icell_cent-(nx-1)] == 2)
           {
             if (j>0)
@@ -319,7 +355,7 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
               WGD->h[icell_cent] = 0.0;
             }
           }
-          /// Wall on left
+          // Wall on left
           if (WGD->icellflag[icell_cent+(nx-1)] == 0 || WGD->icellflag[icell_cent+(nx-1)] == 2)
           {
             WGD->wall_left_indices.push_back(icell_face);
@@ -349,13 +385,13 @@ void Wall::wallLogBC (WINDSGeneralData *WGD)
 
 
 
-  float ustar_wall;              /**< velocity gradient at the wall */
-  float new_ustar;              /**< new ustar value calculated */
-  float vel_mag1;               /**< velocity magnitude at the nearest cell to wall in perpendicular direction */
-  float vel_mag2;                /**< velocity magnitude at the second cell near wall in perpendicular direction */
-  float dist1;                  /**< distance of the center of the nearest cell in perpendicular direction from wall */
-  float dist2;                  /**< distance of the center of second near cell in perpendicular direction from wall */
-  float wind_dir;               /**< wind direction in parallel planes to wall */
+  float ustar_wall;    // velocity gradient at the wall
+  float new_ustar;     // new ustar value calculated
+  float vel_mag1;      // velocity magnitude at the nearest cell to wall in perpendicular direction
+  float vel_mag2;      // velocity magnitude at the second cell near wall in perpendicular direction
+  float dist1;         // distance of the center of the nearest cell in perpendicular direction from wall
+  float dist2;         // distance of the center of second near cell in perpendicular direction from wall
+  float wind_dir;      // wind direction in parallel planes to wall
 
   // Total size of wall indices
   int wall_size = WGD->wall_right_indices.size()+WGD->wall_left_indices.size()+
@@ -376,17 +412,17 @@ void Wall::wallLogBC (WINDSGeneralData *WGD)
   dist1 = 0.5*dz;
   dist2 = 1.5*dz;
 
-  /// apply log law fix to the cells with wall below
+  // apply log law fix to the cells with wall below
   for (size_t i=0; i < WGD->wall_below_indices.size(); i++)
   {
-    ustar_wall = 0.1;       /// reset default value for velocity gradient
+    ustar_wall = 0.1;       // reset default value for velocity gradient
     for (auto iter=0; iter<20; iter++)
     {
       wind_dir = atan2(v0[WGD->wall_below_indices[i]+nx*ny],u0[WGD->wall_below_indices[i]+nx*ny]);
       vel_mag2 = sqrt(pow(u0[WGD->wall_below_indices[i]+nx*ny],2.0)+pow(v0[WGD->wall_below_indices[i]+nx*ny],2.0));
       vel_mag1 = vel_mag2 - (ustar_wall/WGD->vk)*log(dist2/dist1);
-      w0[WGD->wall_below_indices[i]] = 0;        /// normal component of velocity set to zero
-      /// parallel components of velocity to wall
+      w0[WGD->wall_below_indices[i]] = 0;        // normal component of velocity set to zero
+      // parallel components of velocity to wall
       u0[WGD->wall_below_indices[i]] = vel_mag1*cos(wind_dir);
       v0[WGD->wall_below_indices[i]] = vel_mag1*sin(wind_dir);
       new_ustar = WGD->vk*vel_mag1/log(dist1/z0);
@@ -396,17 +432,17 @@ void Wall::wallLogBC (WINDSGeneralData *WGD)
     ustar[i] = ustar_wall;
   }
 
-  /// apply log law fix to the cells with wall above
+  // apply log law fix to the cells with wall above
   for (size_t i=0; i < WGD->wall_above_indices.size(); i++)
   {
-    ustar_wall = 0.1;       /// reset default value for velocity gradient
+    ustar_wall = 0.1;       // reset default value for velocity gradient
     for (auto iter=0; iter<20; iter++)
     {
       wind_dir = atan2(v0[WGD->wall_above_indices[i]-nx*ny],u0[WGD->wall_above_indices[i]-nx*ny]);
       vel_mag2 = sqrt(pow(u0[WGD->wall_above_indices[i]-nx*ny],2.0)+pow(v0[WGD->wall_above_indices[i]-nx*ny],2.0));
       vel_mag1 = vel_mag2 - (ustar_wall/WGD->vk)*log(dist2/dist1);
-      w0[WGD->wall_above_indices[i]] = 0;          /// normal component of velocity set to zero
-      /// parallel components of velocity to wall
+      w0[WGD->wall_above_indices[i]] = 0;          // normal component of velocity set to zero
+      // parallel components of velocity to wall
       u0[WGD->wall_above_indices[i]] = vel_mag1*cos(wind_dir);
       v0[WGD->wall_above_indices[i]] = vel_mag1*sin(wind_dir);
       new_ustar = WGD->vk*vel_mag1/log(dist1/z0);
@@ -420,7 +456,7 @@ void Wall::wallLogBC (WINDSGeneralData *WGD)
   dist1 = 0.5*dx;
   dist2 = 1.5*dx;
 
-  /// apply log law fix to the cells with wall in back
+  // apply log law fix to the cells with wall in back
   for (size_t i=0; i < WGD->wall_back_indices.size(); i++)
   {
     ustar_wall = 0.1;
@@ -429,8 +465,8 @@ void Wall::wallLogBC (WINDSGeneralData *WGD)
       wind_dir = atan2(w0[WGD->wall_back_indices[i]+1],v0[WGD->wall_back_indices[i]+1]);
       vel_mag2 = sqrt(pow(v0[WGD->wall_back_indices[i]+1],2.0)+pow(w0[WGD->wall_back_indices[i]+1],2.0));
       vel_mag1 = vel_mag2 - (ustar_wall/WGD->vk)*log(dist2/dist1);
-      u0[WGD->wall_back_indices[i]] = 0;        /// normal component of velocity set to zero
-      /// parallel components of velocity to wall
+      u0[WGD->wall_back_indices[i]] = 0;        // normal component of velocity set to zero
+      // parallel components of velocity to wall
       v0[WGD->wall_back_indices[i]] = vel_mag1*cos(wind_dir);
       w0[WGD->wall_back_indices[i]] = vel_mag1*sin(wind_dir);
       new_ustar = WGD->vk*vel_mag1/log(dist1/z0);
@@ -442,17 +478,17 @@ void Wall::wallLogBC (WINDSGeneralData *WGD)
   }
 
 
-  /// apply log law fix to the cells with wall in front
+  // apply log law fix to the cells with wall in front
   for (size_t i=0; i < WGD->wall_front_indices.size(); i++)
   {
-    ustar_wall = 0.1;       /// reset default value for velocity gradient
+    ustar_wall = 0.1;       // reset default value for velocity gradient
     for (auto iter=0; iter<20; iter++)
     {
       wind_dir = atan2(w0[WGD->wall_front_indices[i]-1],v0[WGD->wall_front_indices[i]-1]);
       vel_mag2 = sqrt(pow(v0[WGD->wall_front_indices[i]-1],2.0)+pow(w0[WGD->wall_front_indices[i]-1],2.0));
       vel_mag1 = vel_mag2 - (ustar_wall/WGD->vk)*log(dist2/dist1);
-      u0[WGD->wall_front_indices[i]] = 0;        /// normal component of velocity set to zero
-      /// parallel components of velocity to wall
+      u0[WGD->wall_front_indices[i]] = 0;        // normal component of velocity set to zero
+      // parallel components of velocity to wall
       v0[WGD->wall_front_indices[i]] = vel_mag1*cos(wind_dir);
       w0[WGD->wall_front_indices[i]] = vel_mag1*sin(wind_dir);
       new_ustar = WGD->vk*vel_mag1/log(dist1/z0);
@@ -467,17 +503,17 @@ void Wall::wallLogBC (WINDSGeneralData *WGD)
   dist1 = 0.5*dy;
   dist2 = 1.5*dy;
 
-  /// apply log law fix to the cells with wall to right
+  // apply log law fix to the cells with wall to right
   for (size_t i=0; i < WGD->wall_right_indices.size(); i++)
   {
-    ustar_wall = 0.1;          /// reset default value for velocity gradient
+    ustar_wall = 0.1;          // reset default value for velocity gradient
     for (auto iter=0; iter<20; iter++)
     {
       wind_dir = atan2(w0[WGD->wall_right_indices[i]+nx],u0[WGD->wall_right_indices[i]+nx]);
       vel_mag2 = sqrt(pow(u0[WGD->wall_right_indices[i]+nx],2.0)+pow(w0[WGD->wall_right_indices[i]+nx],2.0));
       vel_mag1 = vel_mag2 - (ustar_wall/WGD->vk)*log(dist2/dist1);
-      v0[WGD->wall_right_indices[i]] = 0;        /// normal component of velocity set to zero
-      /// parallel components of velocity to wall
+      v0[WGD->wall_right_indices[i]] = 0;        // normal component of velocity set to zero
+      // parallel components of velocity to wall
       u0[WGD->wall_right_indices[i]] = vel_mag1*cos(wind_dir);
       w0[WGD->wall_right_indices[i]] = vel_mag1*sin(wind_dir);
       new_ustar = WGD->vk*vel_mag1/log(dist1/z0);
@@ -488,17 +524,17 @@ void Wall::wallLogBC (WINDSGeneralData *WGD)
     ustar[j] = ustar_wall;
   }
 
-  /// apply log law fix to the cells with wall to left
+  // apply log law fix to the cells with wall to left
   for (size_t i=0; i < WGD->wall_left_indices.size(); i++)
   {
-    ustar_wall = 0.1;       /// reset default value for velocity gradient
+    ustar_wall = 0.1;       // reset default value for velocity gradient
     for (auto iter=0; iter<20; iter++)
     {
       wind_dir = atan2(w0[WGD->wall_left_indices[i]-nx],u0[WGD->wall_left_indices[i]-nx]);
       vel_mag2 = sqrt(pow(u0[WGD->wall_left_indices[i]-nx],2.0)+pow(w0[WGD->wall_left_indices[i]-nx],2.0));
       vel_mag1 = vel_mag2 - (ustar_wall/WGD->vk)*log(dist2/dist1);
-      v0[WGD->wall_left_indices[i]] = 0;          /// normal component of velocity set to zero
-      /// parallel components of velocity to wall
+      v0[WGD->wall_left_indices[i]] = 0;          // normal component of velocity set to zero
+      // parallel components of velocity to wall
       u0[WGD->wall_left_indices[i]] = vel_mag1*cos(wind_dir);
       w0[WGD->wall_left_indices[i]] = vel_mag1*sin(wind_dir);
       new_ustar = WGD->vk*vel_mag1/log(dist1/z0);
@@ -522,11 +558,11 @@ void Wall::setVelocityZero (WINDSGeneralData *WGD)
         int icell_face = i + j*WGD->nx + k*WGD->nx*WGD->ny;
         if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 2)
         {
-          WGD->u0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
+          WGD->u0[icell_face] = 0.0;                    // Set velocity inside the building to zero
           WGD->u0[icell_face+1] = 0.0;
-          WGD->v0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
+          WGD->v0[icell_face] = 0.0;                    // Set velocity inside the building to zero
           WGD->v0[icell_face+WGD->nx] = 0.0;
-          WGD->w0[icell_face] = 0.0;                    /// Set velocity inside the building to zero
+          WGD->w0[icell_face] = 0.0;                    // Set velocity inside the building to zero
           WGD->w0[icell_face+WGD->nx*WGD->ny] = 0.0;
         }
         if (WGD->icellflag[icell_cent] == 7 || WGD->icellflag[icell_cent] == 8)

@@ -1,9 +1,35 @@
-#pragma once
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
 
-/*
- * This is a collection of variables containing information relevant to
- * sensors read from an xml.
- */
+/** @file Sensor.h */
+
+#pragma once
 
 #include <algorithm>
 #include "util/ParseInterface.h"
@@ -12,26 +38,54 @@
 class WINDSInputData;
 class WINDSGeneralData;
 
+/**
+ * @class Sensor
+ * @brief Collection of variables containing information relevant to
+ * sensors read from an xml.
+ *
+ * @sa ParseInterface
+ * @sa TimeSeries
+ */
 class Sensor : public ParseInterface
 {
 private:
 
+  /**
+   * :document this:
+   *
+   * @param e :document this:
+   * @param func :document this:
+   * @param call :document this:
+   * @param line :document this:
+   */
   template<typename T>
   void _cudaCheck(T e, const char* func, const char* call, const int line);
 
 public:
 
-
+    ///@{
+    /** :document this: */
     float site_xcoord, site_ycoord;
+    ///@}
 
-    int site_coord_flag = 1;
-    int site_UTM_zone;
+    int site_coord_flag = 1;  /**< :document this: */
+    int site_UTM_zone;        /**< :document this: */
+
+    ///@{
+    /** :document this: */
   	float site_UTM_x, site_UTM_y;
+    ///@}
+
+    ///@{
+    /** :document this: */
   	float site_lon, site_lat;
+    ///@}
 
-    std::vector<TimeSeries*> TS;
+    std::vector<TimeSeries*> TS; /**< :document this: */
 
-
+    /**
+     * :document this:
+     */
     virtual void parseValues()
     {
       parsePrimitive<int>(false, site_coord_flag, "site_coord_flag");
@@ -42,10 +96,13 @@ public:
       parsePrimitive<int>(false, site_UTM_zone, "site_UTM_zone");
       parsePrimitive<float>(false, site_lon, "site_lon");
       parsePrimitive<float>(false, site_lat, "site_lat");
-      
+
       parseMultiElements<TimeSeries>(false, TS, "timeSeries");
     }
 
+    /**
+     * :document this:
+     */
     void parseTree(pt::ptree t)
   	{
   			setTree(t);
@@ -55,30 +112,62 @@ public:
 
 
     /**
-     * @brief Computes the wind velocity profile using Barn's scheme
-     * at the site's sensor
+     * Computes the wind velocity profile using Barn's scheme at the site's sensor.
      *
-     * This function takes in information for each site's sensor (boundary layer flag, reciprocal coefficient, surface
+     *
+     * Takes in information for each site's sensor (boundary layer flag, reciprocal coefficient, surface
      * roughness and measured wind velocity and direction), generates wind velocity profile for each sensor and finally
      * utilizes Barns scheme to interplote velocity to generate the initial velocity field for the domain.
+     *
+     * @param WID :document this:
+     * @param WGD :document this:
+     * @param index :document this:
+     * @param solverType :document this:
      */
     void inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, int index, int solverType);
 
 
     /**
-    * @brief Converts UTM to lat/lon and vice versa of the sensor coordiantes
-    *
-    */
+     * Converts UTM to lat/lon and vice versa of the sensor coordiantes.
+     *
+     * @param rlon :document this:
+     * @param rlat :document this:
+     * @param rx :document this:
+     * @param ry :document this:
+     * @param UTM_PROJECTION_ZONE :document this:
+     * @param iway :document this:
+     */
     void UTMConverter (float rlon, float rlat, float rx, float ry, int UTM_PROJECTION_ZONE, int iway);
 
     /**
-    * @brief Calculates the convergence value based on lat/lon input
-    *
-    */
+     * Calculates the convergence value based on lat/lon input.
+     *
+     * @param lon :document this:
+     * @param lat :document this:
+     * @param site_UTM_zone :document this:
+     * @param convergense :document this:
+     */
     void getConvergence(float lon, float lat, int site_UTM_zone, float convergence);
 
+    /**
+     * :document this:
+     *
+     * @param WID :document this:
+     * @param WGD :document this:
+     * @param u_prof :document this:
+     * @param v_prof :document this:
+     */
     void BarnesInterpolationCPU (const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof);
 
+    /**
+     * :document this:
+     *
+     * @param WID :document this:
+     * @param WGD :document this:
+     * @param u_prof :document this:
+     * @param v_prof :document this:
+     * @param site_id :document this:
+     */
     void BarnesInterpolationGPU (const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, std::vector<int> site_id);
 
 };

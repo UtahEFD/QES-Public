@@ -1,3 +1,42 @@
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/**
+ * @file SharedMemory.cu
+ * @brief Child class of the Solver that runs the convergence
+ * algorithm using DynamicParallelism on a single GPU.
+ *
+ * @sa Solver
+ * @sa DynamicParallelism
+ * @sa WINDSInputData
+ */
+
 #include "SharedMemory.h"
 
 using namespace std::chrono;
@@ -24,9 +63,9 @@ void SharedMemory::_cudaCheck(T e, const char* func, const char* call, const int
     }
 }
 
-/// Divergence CUDA Kernel.
-/// The divergence kernel ...
-///
+// Divergence CUDA Kernel.
+// The divergence kernel ...
+//
 __global__ void divergenceShared(float *d_u0, float *d_v0, float *d_w0, float *d_R, float *d_e, float *d_f, float *d_g,
 						float *d_h, float *d_m, float *d_n, int alpha1, int  nx, int  ny, int nz,float dx,float dy,float *d_dz_array)
 {
@@ -50,9 +89,9 @@ __global__ void divergenceShared(float *d_u0, float *d_v0, float *d_w0, float *d
 }
 
 
-/// SOR RedBlack Kernel.
-///
-///
+// SOR RedBlack Kernel.
+//
+//
 __global__ void SOR_RB_Shared(float *d_lambda, int nx, int ny, int nz, float omega, float  A, float  B, float *d_e,
 						float *d_f, float *d_g, float *d_h, float *d_m, float *d_n, float *d_R, int offset)
 {
@@ -70,7 +109,7 @@ __global__ void SOR_RB_Shared(float *d_lambda, int nx, int ny, int nz, float ome
               d_g[icell_cent] * d_lambda[icell_cent + (nx-1)]        + d_h[icell_cent] * d_lambda[icell_cent - (nx-1)] +
               d_m[icell_cent] * d_lambda[icell_cent + (nx-1)*(ny-1)] +
               d_n[icell_cent] * d_lambda[icell_cent - (nx-1)*(ny-1)] - d_R[icell_cent] ) +
-            (1.0 - omega) * d_lambda[icell_cent];    /// SOR formulation
+            (1.0 - omega) * d_lambda[icell_cent];    // SOR formulation
     }
 }
 
@@ -169,7 +208,7 @@ __global__ void finalVelocityShared(float *d_u0, float *d_v0, float *d_w0, float
     int k = icell_face/(nx*ny);
     int j = (icell_face - k*nx*ny)/nx;
     int i = icell_face - k*nx*ny - j*nx;
-    int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   /// Lineralized index for cell centered values
+    int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);   // Lineralized index for cell centered values
 
     if((i>= 0) && (j>= 0) && (k >= 0) && (i<nx)&&(j<ny)&&(k<nz)){
 
@@ -331,7 +370,7 @@ void SharedMemory::solve(const WINDSInputData* WID, WINDSGeneralData* WGD, bool 
       // Invoke kernel to apply Neumann boundary condition (lambda (@k=0) = lambda (@k=1))
       applyNeumannBCShared<<<numberOfBlocks2,numberOfThreadsPerBlock>>>(d_lambda, WGD->nx, WGD->ny);
 
-      /*max_error = 0.0;                   /// Reset error value before error calculation
+      /*max_error = 0.0;                   // Reset error value before error calculation
       float error1=0.0;
       for (int k = 0; k < WGD->nz-1; k++)
       {
@@ -339,7 +378,7 @@ void SharedMemory::solve(const WINDSInputData* WID, WINDSGeneralData* WGD, bool 
           {
               for (int i = 0; i < WGD->nx-1; i++)
               {
-                  int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);   /// Lineralized index for cell centered values
+                  int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);   // Lineralized index for cell centered values
                   error = fabs(lambda[icell_cent] - lambda_old[icell_cent]);
                   if (error > max_error)
                   {
