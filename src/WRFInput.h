@@ -71,7 +71,7 @@ public:
 
     // Ouput a wind field from QES to the WRF file:
     // outputWindField
-
+    
     std::string m_WRFFilename;
     
     // If set to true, ONLY the sensor data will be pulled from WRF
@@ -273,5 +273,3 @@ private:
     //		PH:stagger = "Z" ;
     //		PH:coordinates = "XLONG XLAT" ;
 };
-
-    
