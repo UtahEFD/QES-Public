@@ -10,8 +10,6 @@
 
 #include "ESRIShapefile.h"
 
-#include "GroundCover.h"
-
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 
@@ -34,8 +32,6 @@ public:
     std::vector< std::vector <polyVert> > shpPolygons;
     std::vector <float> shpTreeHeight;  // Height of buildings
     
-    std::vector<GroundCover*> groundCovers;
-    
     virtual void parseValues()
     {
         parsePrimitive<int>(true, num_canopies, "num_canopies");
@@ -44,7 +40,6 @@ public:
         parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyIsolatedTree>("IsolatedTree"));
         parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyWindbreak>("Windbreak"));
         
-        parseMultiPolymorphs(false, groundCovers, Polymorph<GroundCover, GroundCoverRectangular>("GroundCoverRectangular"));
         // add other type of canopy here
         
         shpFile = "";

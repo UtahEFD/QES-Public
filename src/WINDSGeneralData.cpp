@@ -593,8 +593,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    // that were read in via the XML file...
 
    // Add all the Canopy* to it (they are derived from Building)
-   if ( WID->canopies )
-   {
+   canopy = 0;
+   if ( WID->canopies ) {
+       canopy = new Canopy(WID,this);
+
       for (size_t i = 0; i < WID->canopies->canopies.size(); i++)
       {
           allBuildingsV.push_back( WID->canopies->canopies[i] );
@@ -730,19 +732,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
          effective_height.push_back(allBuildingsV[j]->height_eff);
       }
    }
-
-   canopy = 0;
-   /*if ( WID->canopies->groundCovers.size() > 0 )
-   {
-       for (auto k=0u; k<WID->canopies->groundCovers.size(); k++) {
-           for (auto pIdx=0u; pIdx < WID->canopies->groundCovers[k]->polygonVertices.size(); pIdx++) {
-               WID->canopies->groundCovers[k]->polygonVertices[pIdx].x_poly += WID->simParams->halo_x;
-               WID->canopies->groundCovers[k]->polygonVertices[pIdx].y_poly += WID->simParams->halo_y;
-           }
-       }
-       groundCoverCanopy = new GroundCoverCanopy(WID,this);
-       }*/
-
    
    // We want to sort ALL buildings here...  use the allBuildingsV to
    // do this... (remember some are canopies) so we may need a

@@ -68,6 +68,7 @@ Canopy::Canopy(const WINDSInputData* WID, WINDSGeneralData* WGD)
     
     canopy_atten.resize( numcell_cent_3d, 0.0 );
     
+    /*
     for (auto cId=0u; cId<WID->canopies->groundCovers.size(); cId++) {
         float ray_intersect;
         int num_crossing, vert_id, start_poly;
@@ -172,7 +173,8 @@ Canopy::Canopy(const WINDSInputData* WID, WINDSGeneralData* WGD)
             }
         }
     }
-    
+    */
+
     return;
 }
 
