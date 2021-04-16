@@ -37,8 +37,8 @@
 
 
 #define _USE_MATH_DEFINES
-#define MIN_S(x,y) ((x) < (y) ? (x) : (y))
-#define MAX_S(x,y) ((x) > (y) ? (x) : (y))
+#define MIN_S(x, y) ((x) < (y) ? (x) : (y))
+#define MAX_S(x, y) ((x) > (y) ? (x) : (y))
 
 #include "WINDSInputData.h"
 #include "Building.h"
@@ -73,202 +73,201 @@ class WINDSInputData;
  * @class WindsGeneralData
  * @brief :document this:
  */
-class WINDSGeneralData {
+class WINDSGeneralData
+{
 public:
-    WINDSGeneralData();
-    WINDSGeneralData(const WINDSInputData* WID, int solverType);
-    WINDSGeneralData(const std::string inputFile);
-    ~WINDSGeneralData();
+  WINDSGeneralData();
+  WINDSGeneralData(const WINDSInputData *WID, int solverType);
+  WINDSGeneralData(const std::string inputFile);
+  ~WINDSGeneralData();
 
-    void mergeSort( std::vector<float> &effective_height,
-                    std::vector<Building*> allBuildingsV,
-                    std::vector<int> &building_id );
+  void mergeSort(std::vector<float> &effective_height,
+    std::vector<Building *> allBuildingsV,
+    std::vector<int> &building_id);
 
-    void applyParametrizations(const WINDSInputData*);
-    //void applyParametrizations(const WINDSInputData*);
+  void applyParametrizations(const WINDSInputData *);
+  // void applyParametrizations(const WINDSInputData*);
 
-    void resetICellFlag();
+  void resetICellFlag();
 
-    /**
-     * Uses bisection method to find the displacement height of the canopy.
-     *
-     * @note Called within plantInitial method.
-     *
-     * @param ustar :document this:
-     * @param z0 :document this:
-     * @param canopy_top :document this:
-     * @param canopy_atten :document this:
-     * @param vk :document this:
-     * @param psi_m :document this:
-     */
-    float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
+  /**
+   * Uses bisection method to find the displacement height of the canopy.
+   *
+   * @note Called within plantInitial method.
+   *
+   * @param ustar :document this:
+   * @param z0 :document this:
+   * @param canopy_top :document this:
+   * @param canopy_atten :document this:
+   * @param vk :document this:
+   * @param psi_m :document this:
+   */
+  float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
 
-    /**
-     * Saves user-defined data to file.
-     */
-    void save();
-
-
-    void loadNetCDFData(int);
-
-    ////////////////////////////////////////////////////////////////////////////
-    //////// Variables and constants needed only in other functions-- Behnam
-    //////// This can be moved to a new class (WINDSGeneralData)
-    ////////////////////////////////////////////////////////////////////////////
-    const float pi = 4.0f * atan(1.0); /**< pi constant */
-    const float vk = 0.4;			   /**< Von Karman's constant */
-
-    float cavity_factor; /**< :document this: */
-    float wake_factor;   /**< :document this: */
-    float lengthf_coeff; /**< :document this: */
-    float theta;         /**< :document this: */
-
-    // General QUIC Domain Data
-    ///@{
-    /** Number of cells */
-    int nx, ny, nz;
-    ///@}
-    ///@{
-    /** Grid resolution */
-    float dx, dy, dz;
-    ///@}
-    float dxy;		/**< Minimum value between dx and dy */
-
-    long numcell_cout;       /**< :document this: */
-    long numcell_cout_2d;    /**< :document this: */
-    long numcell_cent;       /**< Total number of cell-centered values in domain */
-    long numcell_face;       /**< Total number of face-centered values in domain */
-
-    //std::vector<size_t> start; /**< :document this: */
-    //std::vector<size_t> count; /**< :document this: */
+  /**
+   * Saves user-defined data to file.
+   */
+  void save();
 
 
-    ///@{
-    /** :document this: */
-    std::vector<float> z0_domain_u, z0_domain_v;
-    ///@}
+  void loadNetCDFData(int);
 
-    std::vector<int> ibuilding_flag;      /**< :document this: */
-    std::vector<int> building_id;         /**< :document this: */
-    std::vector<Building*> allBuildingsV; /**< :document this: */
+  ////////////////////////////////////////////////////////////////////////////
+  //////// Variables and constants needed only in other functions-- Behnam
+  //////// This can be moved to a new class (WINDSGeneralData)
+  ////////////////////////////////////////////////////////////////////////////
+  const float pi = 4.0f * atan(1.0); /**< pi constant */
+  const float vk = 0.4; /**< Von Karman's constant */
 
-    float z0;           /**< In wallLogBC */
+  float cavity_factor; /**< :document this: */
+  float wake_factor; /**< :document this: */
+  float lengthf_coeff; /**< :document this: */
+  float theta; /**< :document this: */
 
-    std::vector<float> dz_array; /**< :document this: */
-    ///@{
-    /** :document this: */
-    std::vector<float> x,y,z;
-    ///@}
-    std::vector<float> z_face; /**< :document this: */
-    //std::vector<float> x_out,y_out,z_out;
+  // General QUIC Domain Data
+  ///@{
+  /** Number of cells */
+  int nx, ny, nz;
+  ///@}
+  ///@{
+  /** Grid resolution */
+  float dx, dy, dz;
+  ///@}
+  float dxy; /**< Minimum value between dx and dy */
 
-    
-    // time variables
-    int nt; /**< :document this: */ 
-    std::vector<float> dt_array; /**< :document this: */
-    std::vector<time_t> epochtime; /**< :document this: */
-    std::vector<bt::ptime> timestamp; /**< :document this: */
-    
-    ///@{
-    /** Coefficient for SOR solver */
-    std::vector<float> e,f,g,h,m,n;
-    ///@}
+  long numcell_cout; /**< :document this: */
+  long numcell_cout_2d; /**< :document this: */
+  long numcell_cent; /**< Total number of cell-centered values in domain */
+  long numcell_face; /**< Total number of face-centered values in domain */
 
-    // The following are mostly used for output
-    std::vector<int> icellflag;
-    /**< Cell index flag (0 = Building, 1 = Fluid, 2 = Terrain, 3 = Upwind cavity
-                          4 = Cavity, 5 = Farwake, 6 = Street canyon, 7 = Building cut-cells,
-                          8 = Terrain cut-cells, 9 = Sidewall, 10 = Rooftop,
-                          11 = Canopy vegetation, 12 = Fire) */
-    std::vector<int> icellflag_initial;
-    
-    ///@{
-    /** :document this: */
-    std::vector<float> building_volume_frac, terrain_volume_frac;
-    ///@}
-
-    ///@{
-    /** Normal component of the solid elements (Building or Terrain) */
-    std::vector<float> ni, nj, nk;
-    ///@}
-    std::vector<float> terrain; /**< :document this: */
-    std::vector<int> terrain_id; /**< Sensor function (inputWindProfile) */
-
-    std::vector <float> base_height;      /**< Base height of buildings */
-    std::vector <float> effective_height; /**< Effective height of buildings */
-
-    // Initial wind conditions
-    ///@{
-    /** Declaration of initial wind components (u0,v0,w0) */
-    std::vector<float> u0,v0,w0;
-    ///@}
-
-    ///@{
-    /** Declaration of final velocity field components (u,v,w) */
-    std::vector<float> u,v,w;
-    ///@}
-
-    // local Mixing class and data
-    LocalMixing* localMixing;          /**< :document this: */
-    std::vector<double> mixingLengths; /**< :document this: */
-
-    // Sensor* sensor;      may not need this now
-    
-
-    int id; /**< :document this: */
-
-    // [FM Feb.28.2020] there 2 variables are not used anywhere
-    //std::vector<float> site_canopy_H;
-    //std::vector<float> site_atten_coeff;
-
-    float convergence; /**< :document this: */
-
-    // Canopy functions
-    //std::vector<float> canopy_atten;   /**< Canopy attenuation coefficient */
-    //std::vector<float> canopy_top;	   /**< Canopy height */
-    //std::vector<int> canopy_top_index; /**< Canopy top index */
-    //std::vector<float> canopy_z0;	   /**< Canopy surface roughness */
-    //std::vector<float> canopy_ustar;   /**< Velocity gradient at the top of canopy */
-    //std::vector<float> canopy_d;	   /**< Canopy displacement length */
-
-    Canopy* canopy; /**< :document this: */
+  // std::vector<size_t> start; /**< :document this: */
+  // std::vector<size_t> count; /**< :document this: */
 
 
-    float max_velmag; /**< In polygonWake */
+  ///@{
+  /** :document this: */
+  std::vector<float> z0_domain_u, z0_domain_v;
+  ///@}
 
-    // In getWallIndices and wallLogBC
-    std::vector<int> wall_right_indices;     /**< Indices of the cells with wall to right boundary condition */
-    std::vector<int> wall_left_indices;      /**< Indices of the cells with wall to left boundary condition */
-    std::vector<int> wall_above_indices;     /**< Indices of the cells with wall above boundary condition */
-    std::vector<int> wall_below_indices;     /**< Indices of the cells with wall bellow boundary condition */
-    std::vector<int> wall_back_indices;      /**< Indices of the cells with wall in back boundary condition */
-    std::vector<int> wall_front_indices;     /**< Indices of the cells with wall in front boundary condition */
+  std::vector<int> ibuilding_flag; /**< :document this: */
+  std::vector<int> building_id; /**< :document this: */
+  std::vector<Building *> allBuildingsV; /**< :document this: */
 
-    Mesh* mesh;      /**< In Terrain functions */
+  float z0; /**< In wallLogBC */
 
-    Cell* cells;     /**< :document this: */
-    // bool DTEHFExists = false;
-    Cut_cell cut_cell; /**< :document this: */
-    Wall *wall;      /**< :document this: */
+  std::vector<float> dz_array; /**< :document this: */
+  ///@{
+  /** :document this: */
+  std::vector<float> x, y, z;
+  ///@}
+  std::vector<float> z_face; /**< :document this: */
+  // std::vector<float> x_out,y_out,z_out;
 
-    //NetCDFInput* NCDFInput;     /**< :document this: */
-    ///@{
-    /** :document this: */
-    //int ncnx, ncny, ncnz, ncnt;
-    ///@}
 
-    ///@{
-    /** Building cut-cell (rectangular building) */
-    std::vector<std::vector<std::vector<float>>> x_cut;
-    std::vector<std::vector<std::vector<float>>> y_cut;
-    std::vector<std::vector<std::vector<float>>> z_cut;
-    std::vector<std::vector<int>> num_points;
-    std::vector<std::vector<float>> coeff;
-    ///@}
+  // time variables
+  int nt; /**< :document this: */
+  std::vector<float> dt_array; /**< :document this: */
+  std::vector<time_t> epochtime; /**< :document this: */
+  std::vector<bt::ptime> timestamp; /**< :document this: */
+
+  ///@{
+  /** Coefficient for SOR solver */
+  std::vector<float> e, f, g, h, m, n;
+  ///@}
+
+  // The following are mostly used for output
+  std::vector<int> icellflag;
+  /**< Cell index flag (0 = Building, 1 = Fluid, 2 = Terrain, 3 = Upwind cavity
+                        4 = Cavity, 5 = Farwake, 6 = Street canyon, 7 = Building cut-cells,
+                        8 = Terrain cut-cells, 9 = Sidewall, 10 = Rooftop,
+                        11 = Canopy vegetation, 12 = Fire) */
+  std::vector<int> icellflag_initial;
+
+  ///@{
+  /** :document this: */
+  std::vector<float> building_volume_frac, terrain_volume_frac;
+  ///@}
+
+  ///@{
+  /** Normal component of the solid elements (Building or Terrain) */
+  std::vector<float> ni, nj, nk;
+  ///@}
+  std::vector<float> terrain; /**< :document this: */
+  std::vector<int> terrain_id; /**< Sensor function (inputWindProfile) */
+
+  std::vector<float> base_height; /**< Base height of buildings */
+  std::vector<float> effective_height; /**< Effective height of buildings */
+
+  // Initial wind conditions
+  ///@{
+  /** Declaration of initial wind components (u0,v0,w0) */
+  std::vector<float> u0, v0, w0;
+  ///@}
+
+  ///@{
+  /** Declaration of final velocity field components (u,v,w) */
+  std::vector<float> u, v, w;
+  ///@}
+
+  // local Mixing class and data
+  LocalMixing *localMixing; /**< :document this: */
+  std::vector<double> mixingLengths; /**< :document this: */
+
+  // Sensor* sensor;      may not need this now
+
+
+  int id; /**< :document this: */
+
+  // [FM Feb.28.2020] there 2 variables are not used anywhere
+  // std::vector<float> site_canopy_H;
+  // std::vector<float> site_atten_coeff;
+
+  float convergence; /**< :document this: */
+
+  // Canopy functions
+  // std::vector<float> canopy_atten;   /**< Canopy attenuation coefficient */
+  // std::vector<float> canopy_top;	   /**< Canopy height */
+  // std::vector<int> canopy_top_index; /**< Canopy top index */
+  // std::vector<float> canopy_z0;	   /**< Canopy surface roughness */
+  // std::vector<float> canopy_ustar;   /**< Velocity gradient at the top of canopy */
+  // std::vector<float> canopy_d;	   /**< Canopy displacement length */
+
+  Canopy *canopy; /**< :document this: */
+
+
+  float max_velmag; /**< In polygonWake */
+
+  // In getWallIndices and wallLogBC
+  std::vector<int> wall_right_indices; /**< Indices of the cells with wall to right boundary condition */
+  std::vector<int> wall_left_indices; /**< Indices of the cells with wall to left boundary condition */
+  std::vector<int> wall_above_indices; /**< Indices of the cells with wall above boundary condition */
+  std::vector<int> wall_below_indices; /**< Indices of the cells with wall bellow boundary condition */
+  std::vector<int> wall_back_indices; /**< Indices of the cells with wall in back boundary condition */
+  std::vector<int> wall_front_indices; /**< Indices of the cells with wall in front boundary condition */
+
+  Mesh *mesh; /**< In Terrain functions */
+
+  Cell *cells; /**< :document this: */
+  // bool DTEHFExists = false;
+  Cut_cell cut_cell; /**< :document this: */
+  Wall *wall; /**< :document this: */
+
+  // NetCDFInput* NCDFInput;     /**< :document this: */
+  ///@{
+  /** :document this: */
+  // int ncnx, ncny, ncnz, ncnt;
+  ///@}
+
+  ///@{
+  /** Building cut-cell (rectangular building) */
+  std::vector<std::vector<std::vector<float>>> x_cut;
+  std::vector<std::vector<std::vector<float>>> y_cut;
+  std::vector<std::vector<std::vector<float>>> z_cut;
+  std::vector<std::vector<int>> num_points;
+  std::vector<std::vector<float>> coeff;
+  ///@}
 
 private:
-
-    // input: store here for multiple time instance.
-    NetCDFInput* input; /**< :document this: */
-
+  // input: store here for multiple time instance.
+  NetCDFInput *input; /**< :document this: */
 };
