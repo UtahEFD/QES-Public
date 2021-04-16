@@ -7,7 +7,7 @@ CanopyIsolatedTree::CanopyIsolatedTree(const WINDSInputData* WID, WINDSGeneralDa
 {
     polygonVertices = WID->canopies->shpPolygons[id];
     H = WID->canopies->shpTreeHeight[id];
-    base_height = WGD->base_height[id];
+    base_height = 0.0;//WGD->base_height[id];
     zMaxLAI=0.5*H;
 }
 
