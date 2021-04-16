@@ -62,6 +62,27 @@ private:
   void _cudaCheck(T e, const char* func, const char* call, const int line);
 
 public:
+    
+    Sensor() {
+    
+    }
+    
+    Sensor(const std::string fileName) 
+    {
+        pt::ptree tree;
+        
+        try {
+            pt::read_xml(fileName, tree);
+        } 
+        catch (boost::property_tree::xml_parser::xml_parser_error& e) {
+            std::cerr << "Error reading tree in" << fileName << "\n";
+            exit(EXIT_FAILURE);
+        }
+
+        parseTree(tree);
+
+    }
+
 
     ///@{
     /** :document this: */
@@ -87,8 +108,8 @@ public:
      * :document this:
      */
     virtual void parseValues()
-    {
-      parsePrimitive<int>(false, site_coord_flag, "site_coord_flag");
+    { 
+      parsePrimitive<int>(true, site_coord_flag, "site_coord_flag");
       parsePrimitive<float>(false, site_xcoord, "site_xcoord");
       parsePrimitive<float>(false, site_ycoord, "site_ycoord");
       parsePrimitive<float>(false, site_UTM_x, "site_UTM_x");
@@ -96,8 +117,8 @@ public:
       parsePrimitive<int>(false, site_UTM_zone, "site_UTM_zone");
       parsePrimitive<float>(false, site_lon, "site_lon");
       parsePrimitive<float>(false, site_lat, "site_lat");
-
       parseMultiElements<TimeSeries>(false, TS, "timeSeries");
+
     }
 
     /**

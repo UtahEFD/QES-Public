@@ -43,6 +43,8 @@
 #include "WINDSInputData.h"
 #include "Building.h"
 #include "Canopy.h"
+#include "CanopyElement.h"
+
 #include "LocalMixing.h"
 #include "LocalMixingDefault.h"
 #include "LocalMixingNetCDF.h"
@@ -53,12 +55,17 @@
 #include "Wall.h"
 #include "NetCDFInput.h"
 
+#include <boost/date_time/posix_time/posix_time.hpp>
+
+
 #ifdef HAS_OPTIX
 #include "OptixRayTrace.h"
 #endif
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
+
+namespace bt = boost::posix_time;
 
 class WINDSInputData;
 
@@ -70,12 +77,17 @@ class WINDSGeneralData {
 public:
     WINDSGeneralData();
     WINDSGeneralData(const WINDSInputData* WID, int solverType);
+    WINDSGeneralData(const std::string inputFile);
     ~WINDSGeneralData();
 
     void mergeSort( std::vector<float> &effective_height,
                     std::vector<Building*> allBuildingsV,
                     std::vector<int> &building_id );
 
+    void applyParametrizations(const WINDSInputData*);
+    //void applyParametrizations(const WINDSInputData*);
+
+    void resetICellFlag();
 
     /**
      * Uses bisection method to find the displacement height of the canopy.
@@ -95,6 +107,9 @@ public:
      * Saves user-defined data to file.
      */
     void save();
+
+
+    void loadNetCDFData(int);
 
     ////////////////////////////////////////////////////////////////////////////
     //////// Variables and constants needed only in other functions-- Behnam
@@ -123,8 +138,10 @@ public:
     long numcell_cout_2d;    /**< :document this: */
     long numcell_cent;       /**< Total number of cell-centered values in domain */
     long numcell_face;       /**< Total number of face-centered values in domain */
-    std::vector<size_t> start; /**< :document this: */
-    std::vector<size_t> count; /**< :document this: */
+
+    //std::vector<size_t> start; /**< :document this: */
+    //std::vector<size_t> count; /**< :document this: */
+
 
     ///@{
     /** :document this: */
@@ -145,6 +162,13 @@ public:
     std::vector<float> z_face; /**< :document this: */
     //std::vector<float> x_out,y_out,z_out;
 
+    
+    // time variables
+    int nt; /**< :document this: */ 
+    std::vector<float> dt_array; /**< :document this: */
+    std::vector<time_t> epochtime; /**< :document this: */
+    std::vector<bt::ptime> timestamp; /**< :document this: */
+    
     ///@{
     /** Coefficient for SOR solver */
     std::vector<float> e,f,g,h,m,n;
@@ -156,7 +180,8 @@ public:
                           4 = Cavity, 5 = Farwake, 6 = Street canyon, 7 = Building cut-cells,
                           8 = Terrain cut-cells, 9 = Sidewall, 10 = Rooftop,
                           11 = Canopy vegetation, 12 = Fire) */
-
+    std::vector<int> icellflag_initial;
+    
     ///@{
     /** :document this: */
     std::vector<float> building_volume_frac, terrain_volume_frac;
@@ -188,6 +213,7 @@ public:
     std::vector<double> mixingLengths; /**< :document this: */
 
     // Sensor* sensor;      may not need this now
+    
 
     int id; /**< :document this: */
 
@@ -196,16 +222,17 @@ public:
     //std::vector<float> site_atten_coeff;
 
     float convergence; /**< :document this: */
-    // Canopy functions
 
-    std::vector<float> canopy_atten;   /**< Canopy attenuation coefficient */
-    std::vector<float> canopy_top;	   /**< Canopy height */
-    std::vector<int> canopy_top_index; /**< Canopy top index */
-    std::vector<float> canopy_z0;	   /**< Canopy surface roughness */
-    std::vector<float> canopy_ustar;   /**< Velocity gradient at the top of canopy */
-    std::vector<float> canopy_d;	   /**< Canopy displacement length */
+    // Canopy functions
+    //std::vector<float> canopy_atten;   /**< Canopy attenuation coefficient */
+    //std::vector<float> canopy_top;	   /**< Canopy height */
+    //std::vector<int> canopy_top_index; /**< Canopy top index */
+    //std::vector<float> canopy_z0;	   /**< Canopy surface roughness */
+    //std::vector<float> canopy_ustar;   /**< Velocity gradient at the top of canopy */
+    //std::vector<float> canopy_d;	   /**< Canopy displacement length */
 
     Canopy* canopy; /**< :document this: */
+
 
     float max_velmag; /**< In polygonWake */
 
@@ -224,10 +251,10 @@ public:
     Cut_cell cut_cell; /**< :document this: */
     Wall *wall;      /**< :document this: */
 
-    NetCDFInput* NCDFInput;     /**< :document this: */
+    //NetCDFInput* NCDFInput;     /**< :document this: */
     ///@{
     /** :document this: */
-    int ncnx, ncny, ncnz, ncnt;
+    //int ncnx, ncny, ncnz, ncnt;
     ///@}
 
     ///@{
@@ -240,5 +267,8 @@ public:
     ///@}
 
 private:
+
+    // input: store here for multiple time instance.
+    NetCDFInput* input; /**< :document this: */
 
 };

@@ -137,23 +137,27 @@ public:
    {
    }
 
-   virtual void canopyVegetation (WINDSGeneralData *WGD)
-   {
-   }
+    virtual void canopyVegetation (WINDSGeneralData *WGD,int building_id)
+    {
+    }
+    virtual void canopyWake(WINDSGeneralData *wgd,int building_id)
+    {
+    }
+    
 
-   virtual void streetCanyon (WINDSGeneralData *WGD)
-   {
-   }
-
-   virtual void sideWall (const WINDSInputData* WID, WINDSGeneralData* WGD)
-   {
-   }
-
-   virtual void rooftop (const WINDSInputData* WID, WINDSGeneralData* WGD)
-   {
-   }
-
-   virtual void NonLocalMixing (WINDSGeneralData* WGD, TURBGeneralData* TGD,int buidling_id)
-   {
-   }
+    virtual void streetCanyon (WINDSGeneralData *WGD)
+    {
+    }
+    
+    virtual void sideWall (const WINDSInputData* WID, WINDSGeneralData* WGD)
+    {
+    }
+    
+    virtual void rooftop (const WINDSInputData* WID, WINDSGeneralData* WGD)
+    {
+    }
+    
+    virtual void NonLocalMixing (WINDSGeneralData* WGD, TURBGeneralData* TGD,int buidling_id)
+    {
+    }
 };

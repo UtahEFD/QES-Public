@@ -47,39 +47,44 @@
 class WINDSOutputVisualization : public QESNetCDFOutput
 {
 public:
-  WINDSOutputVisualization()
-    : QESNetCDFOutput()
-  {}
-  WINDSOutputVisualization(WINDSGeneralData*,WINDSInputData*,std::string);
-  ~WINDSOutputVisualization()
-  {}
 
-  /**
-   * :document this:
-   */
-  void save(float);
-
+    WINDSOutputVisualization()
+        : QESNetCDFOutput()
+    {}
+    WINDSOutputVisualization(WINDSGeneralData*,WINDSInputData*,std::string);
+    ~WINDSOutputVisualization()
+    {}
+    
+    /**
+     * :document this:
+     */
+    void save(ptime);
+    
 protected:
-  /**
-   * :document this:
-   */
-  bool validateFileOtions();
-
+    /**
+     * :document this:
+     */
+    bool validateFileOtions();
+    
 private:
+    ///@{
+    /** :document this: */
+    std::vector<float> x_out,y_out,z_out;
+    ///@}
 
-  ///@{
-  /** :document this: */
-  std::vector<float> x_out,y_out,z_out;
-  ///@}
-  std::vector<int> icellflag_out; /**< :document this: */
-  ///@{
-  /** :document this: */
-  std::vector<double> u_out,v_out,w_out;
-  ///@}
+    ///@{
+    /**< :document this: */
+    std::vector<int> icellflag_out,icellflag2_out; 
+    ///@}
 
-  WINDSGeneralData* WGD_; /**< :document this: */
-
-  // all possible output fields need to be add to this list
-  std::vector<std::string> allOutputFields = {"t","x","y","z","u","v","w","icell","terrain"};
-
+    ///@{
+    /** :document this: */
+    std::vector<double> u_out,v_out,w_out,mag_out;
+    ///@}
+    
+    WINDSGeneralData* WGD_; /**< :document this: */
+    
+    // all possible output fields need to be add to this list
+    std::vector<std::string> allOutputFields = {"t","times","x","y","z","u","v","w","mag","icell","icellInitial","terrain"};
+    
 };

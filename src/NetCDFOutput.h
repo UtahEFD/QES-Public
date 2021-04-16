@@ -78,6 +78,8 @@ public:
   void saveField2D(std::string, const std::vector<size_t>,
            std::vector<size_t>, std::vector<float>&);
   void saveField2D(std::string, const std::vector<size_t>,
-           std::vector<size_t>, std::vector<double>&);
-
+		   std::vector<size_t>, std::vector<double>&);
+    void saveField2D(std::string, const std::vector<size_t>,
+                     std::vector<size_t>, std::vector<char>&);
+  
 };

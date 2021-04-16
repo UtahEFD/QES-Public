@@ -35,6 +35,7 @@
 
 #include "Building.h"
 #include "RectangularBuilding.h"
+#include "PolygonQUICBuilding.h"
 #include "PolyBuilding.h"
 
 /**
@@ -48,16 +49,20 @@ private:
 
 public:
 
-   int numBuildings;                 /**< number of Building objects */
-   int numPolygonNodes;              /**< number of polygon nodes */
-   std::vector<Building*> buildings; /**< vector containing Building objects */
-   float wallRoughness;              /**< wall roughness metric */
+    int numBuildings;                 /**< number of Building objects */
+    int numPolygonNodes;              /**< number of polygon nodes */
+    std::vector<Building*> buildings; /**< vector containing Building objects */
+    float wallRoughness;              /**< wall roughness metric */
+    
+	virtual void parseValues()
+	{
+		parsePrimitive<int>(true, numBuildings, "numBuildings");
+		parsePrimitive<int>(true, numPolygonNodes, "numPolygonNodes");
+		parseMultiPolymorphs(false, buildings, Polymorph<Building, RectangularBuilding>("rectangularBuilding"));
+        parseMultiPolymorphs(false, buildings, Polymorph<Building, PolygonQUICBuilding>("QUICBuilding"));
+		parsePrimitive<float>(true, wallRoughness, "wallRoughness");
 
-   virtual void parseValues()
-   {
-      parsePrimitive<int>(true, numBuildings, "numBuildings");
-      parsePrimitive<int>(true, numPolygonNodes, "numPolygonNodes");
-      parseMultiPolymorphs(true, buildings, Polymorph<Building, RectangularBuilding>("rectangularBuilding"));
-      parsePrimitive<float>(true, wallRoughness, "wallRoughness");
-   }
+
+
+	}
 };

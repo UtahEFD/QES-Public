@@ -1,8 +1,5 @@
 #include <iostream>
 
-#include <boost/foreach.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "util/ParseException.h"
@@ -17,8 +14,6 @@
 #include "WINDSOutputVisualization.h"
 #include "WINDSOutputWorkspace.h"
 
-#include "WINDSOutputWRF.h"
-
 #include "TURBGeneralData.h"
 #include "TURBOutput.h"
 
@@ -30,22 +25,7 @@
 
 #include "Sensor.h"
 
-namespace pt = boost::property_tree;
-
-using namespace boost::gregorian;
-using namespace boost::posix_time;
-
-/**
- * This function takes in a filename and attempts to open and parse it.
- * If the file can't be opened or parsed properly it throws an exception,
- * if the file is missing necessary data, an error will be thrown detailing
- * what data and where in the xml the data is missing. If the tree can't be
- * parsed, the Root* value returned is 0, which will register as false if tested.
- * @param fileName the path/name of the file to be opened, must be an xml
- * @return A pointer to a root that is filled with data parsed from the tree
- */
-WINDSInputData* parseXMLTree(const std::string fileName);
-Sensor* parseSensors (const std::string fileName);
+namespace bt=boost::posix_time;
 
 int main(int argc, char *argv[])
 {
@@ -71,7 +51,6 @@ int main(int argc, char *argv[])
     // ///////////////////////////////////
 
     // Parse the base XML QUIC file -- contains simulation parameters
-    //WINDSInputData* WID = parseXMLTree(arguments.quicFile);
     WINDSInputData* WID = new WINDSInputData(arguments.quicFile);
     if ( !WID ) {
         std::cerr << "[ERROR] QUIC Input file: " << arguments.quicFile <<
@@ -79,26 +58,12 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-
-    /*
-    // If the sensor file specified in the xml
-    if (WID->metParams->sensorName.size() > 0)
-    {
-        for (auto i = 0; i < WID->metParams->sensorName.size(); i++)
-  		  {
-            WID->metParams->sensors.push_back(new Sensor());            // Create new sensor object
-            WID->metParams->sensors[i] = parseSensors(WID->metParams->sensorName[i]);       // Parse new sensor objects from xml
-        }
-    }
-    */
-
     // Checking if
     if (arguments.compTurb && !WID->turbParams) {
-        std::cerr << "[ERROR] Turbulence model is turned on without turbParams in QES Intput file "
+        std::cerr << "[ERROR] Turbulence model is turned on without LocalMixingParam in QES Intput file "
                   << arguments.quicFile << std::endl;
         exit(EXIT_FAILURE);
     }
-
 
     if (arguments.terrainOut) {
         if (WID->simParams->DTE_heightField) {
@@ -114,7 +79,7 @@ int main(int argc, char *argv[])
 
     // Generate the general WINDS data from all inputs
     WINDSGeneralData* WGD = new WINDSGeneralData(WID, arguments.solveType);
-
+    
     // create WINDS output classes
     std::vector<QESNetCDFOutput*> outputVec;
     if (arguments.visuOutput) {
@@ -123,11 +88,6 @@ int main(int argc, char *argv[])
     if (arguments.wkspOutput) {
         outputVec.push_back(new WINDSOutputWorkspace(WGD,arguments.netCDFFileWksp));
     }
-
-    if (arguments.fireMode) {
-        outputVec.push_back( new WINDSOutputWRF(WGD, WID->simParams->wrfInputData) );
-    }
-
 
     // Generate the general TURB data from WINDS data
     // based on if the turbulence output file is defined
@@ -141,7 +101,7 @@ int main(int argc, char *argv[])
 
     // //////////////////////////////////////////
     //
-    // Run the QES-Winds Solver
+    // Run the CUDA-WINDS Solver
     //
     // //////////////////////////////////////////
     Solver *solver, *solverC = nullptr;
@@ -178,116 +138,48 @@ int main(int argc, char *argv[])
         }
     }
 
-    /*
-    for(size_t index=0; index < WGD->timestamp.size(); index++)
-        std::cout << to_iso_extended_string(WGD->timestamp[index]) << std::endl;
-
-    // Run WINDS simulation code
-    solver->solve(WID, WGD, !arguments.solveWind );
-
-    std::cout << "Solver done!\n";
-
-    if (solverC != nullptr) {
-        std::cout << "Running comparson type...\n";
-        solverC->solve(WID, WGD, !arguments.solveWind);
-    }
-
-    // /////////////////////////////
-    //
-    // Run turbulence
-    //
-    // /////////////////////////////
-    if(TGD != nullptr) {
-        TGD->run(WGD);
-    }
-
-
-    if (WID->simParams->wrfInputData) {
-        
-        // WID->simParams->outputWRFData();
-    }
-    
-
-    // /////////////////////////////
-    // Output the various files requested from the simulation run
-    // (netcdf wind velocity, icell values, etc...
-    // /////////////////////////////
-    for(auto id_out=0u;id_out<outputVec.size();id_out++)
-    {
-        outputVec.at(id_out)->save(0.0); // need to replace 0.0 with timestep
-    }
-    */
-
     for (int index = 0; index < WID->simParams->totalTimeIncrements; index++) {
-        std::cout << "Running time step: " <<  to_iso_extended_string(WGD->timestamp[index]) << std::endl;
+        std::cout << "Running time step: " <<  bt::to_iso_extended_string(WGD->timestamp[index]) << std::endl;
         // Reset icellflag values
         WGD->resetICellFlag();
         
         // Create initial velocity field from the new sensors
         WID->metParams->sensors[0]->inputWindProfile(WID, WGD, index, arguments.solveType);
         
-        // Apply parametrizations
-        WGD->applyParametrizations(WID);
-        
         // Run WINDS simulation code
-        solver->solve(WID, WGD, !arguments.solveWind );
+        //solver->solve(WID, WGD, !arguments.solveWind );
+        //std::cout << "Solver done!\n";
+
+        for (int k = 0; k < 1; ++k) { 
+            // set u0,v0 to current solution    
+            /*
+              WGD->u0 = WGD->u;    
+              WGD->v0 = WGD->v;
+              WGD->w0 = WGD->w;
+            */
+
+            // Apply parametrizations
+            WGD->applyParametrizations(WID);
+            
+            // Run WINDS simulation code
+            solver->solve(WID, WGD, !arguments.solveWind );
+            std::cout << "Solver done!\n";
+        }
         
-        std::cout << "Solver done!\n";
-        
-        if(TGD != nullptr)
+        // Run turbulence
+        if(TGD != nullptr) {
             TGD->run(WGD);
+        }
         
         // /////////////////////////////
         // Output the various files requested from the simulation run
         // (netcdf wind velocity, icell values, etc...
         // /////////////////////////////
-        for(auto id_out=0u;id_out<outputVec.size();id_out++)
-        {
-            outputVec.at(id_out)->save(WGD->timestamp[index]);
+        for(auto id_out=0u;id_out<outputVec.size();id_out++) {
+            outputVec.at(id_out)->save(WGD->timestamp[index]); // need to replace 0.0 with timestep
         }
-    }    
-       
+    }
+
     // /////////////////////////////
     exit(EXIT_SUCCESS);
-}
-
-WINDSInputData* parseXMLTree(const std::string fileName)
-{
-	pt::ptree tree;
-
-	try
-	{
-		pt::read_xml(fileName, tree);
-	}
-	catch (boost::property_tree::xml_parser::xml_parser_error& e)
-	{
-		std::cerr << "Error reading tree in" << fileName << "\n";
-		return (WINDSInputData*)0;
-	}
-
-	WINDSInputData* xmlRoot = new WINDSInputData();
-        xmlRoot->parseTree( tree );
-	return xmlRoot;
-}
-
-
-Sensor* parseSensors (const std::string fileName)
-{
-
-  pt::ptree tree1;
-
-  try
-  {
-    pt::read_xml(fileName, tree1);
-  }
-  catch (boost::property_tree::xml_parser::xml_parser_error& e)
-  {
-    std::cerr << "Error reading tree in" << fileName << "\n";
-    return (Sensor*)0;
-  }
-
-  Sensor* xmlRoot = new Sensor();
-  xmlRoot->parseTree( tree1 );
-  return xmlRoot;
-
 }

@@ -53,8 +53,7 @@ public:
     TURBOutput(TURBGeneralData*,std::string);
     ~TURBOutput()
     {}
-
-    void save(float);
+    void save(ptime);
 
 private:
 

@@ -41,6 +41,7 @@
 #include <limits>
 
 #include "util/ParseInterface.h"
+#include "Vector3.h"
 
 /**
  * @class TURBParams
@@ -60,9 +61,10 @@ public:
     bool save2file;
     std::string filename,varname;
 
-    int mlSamplesPerAirCell;
+int mlSamplesPerAirCell;
 
-    bool flagNonLocalMixing;
+Vector3<float>* sigConst; 
+bool flagNonLocalMixing;
 
     float turbUpperBound;
 
@@ -109,6 +111,9 @@ public:
         if(methodLocalMixing == 0 || methodLocalMixing == 4) {
             save2file = "false";
         }
+        
+        sigConst=nullptr;
+        parseElement< Vector3<float> >(false, sigConst, "sigmaConst");
 
         flagNonLocalMixing=false;
         parsePrimitive<bool>(false, flagNonLocalMixing, "nonLocalMixing");

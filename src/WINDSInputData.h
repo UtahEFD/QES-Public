@@ -63,16 +63,38 @@ public:
     Buildings* buildings;            /**< :document this: */
     Canopies* canopies;              /**< :document this: */
 
-
     WINDSInputData()
     {
-	      fileOptions = 0;
-	      metParams = 0;
-          turbParams=0;
-	      buildings = 0;
-	      canopies = 0;
+        fileOptions = 0;
+        metParams = 0;
+        turbParams=0;
+        buildings = 0;
+        canopies = 0;
     }
 
+    WINDSInputData(const std::string fileName) 
+    {
+
+        fileOptions = 0;
+        metParams = 0;
+        turbParams=0;
+        buildings = 0;
+        canopies = 0;
+
+        pt::ptree tree;
+        
+        try {
+            pt::read_xml(fileName, tree);
+        } 
+        catch (boost::property_tree::xml_parser::xml_parser_error& e) {
+            std::cerr << "Error reading tree in " << fileName << "\n";
+            exit(EXIT_FAILURE);
+        }
+        
+        parseTree(tree);
+        
+    }
+    
     /**
      * :document this:
      */
@@ -85,7 +107,7 @@ public:
          parseElement<Buildings>(false, buildings, "buildings");
 	     parseElement<Canopies>(false, canopies, "canopies");
     }
-
+    
     /**
      * Parses the main XML for our QUIC projects.
      *

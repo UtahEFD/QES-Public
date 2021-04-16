@@ -27,70 +27,102 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Canopy.h */
+/** @file CanopyElement.h */
 
 #pragma once
 
 #include <cmath>
-#include <vector>
 #include <map>
+#include "util/ParseInterface.h"
+#include "Building.h"
 
-// forward declaration of WINDSInputData and WINDSGeneralData, which
-// will be used by the derived classes and thus included there in the
-// C++ files
-class WINDSInputData;
-class WINDSGeneralData;
-class TURBGeneralData;
+enum CanopyType {
+    Homogeneous,
+    IsolatedTree,
+    Vineyard
+};
 
 /**
- * @class Canopy
+ * @class CanopyElement
  * @brief :document this:
  *
  * :long desc here:
  *
+ * @sa Building
  */
-class Canopy
+class CanopyElement : public Building
 {
 private:
+    
+protected:
+    
+    ///@{
+    /** Minimum position value for a Building */
+    float x_min, y_min;
+    ///@}
+
+    ///@{
+    /** Maximum position value for a Building */
+    float x_max, y_max;
+    ///@}
+	
+    ///@{
+    /** Coordinate of center of a cell */
+	float x_cent, y_cent;
+    ///@}
+
+	float polygon_area;          /**< Polygon area */
+
+    ///@{
+    /** :document these: */
+	int icell_cent, icell_face;
+    ///@}
+
+    ///@{
+    /** :document these: */
+    int nx_canopy, ny_canopy, nz_canopy;
+    ///@}
+
+    ///@{
+    /** :document these: */
+    int numcell_cent_2d, numcell_cent_3d;
+    ///@}
 
 public:
     
-    Canopy()
-    {}
-
-    Canopy(const WINDSInputData* WID, WINDSGeneralData* WGD);
-
-    virtual ~Canopy()
-    {}
+    CanopyElement()
+    { 
+    }
+    virtual ~CanopyElement()
+    {
+    }
     
-    /*
+    /*! 
      * For all Canopy classes derived, this need to be defined
-    virtual void parseValues()
-    {
-        parsePrimitive<int>(true, num_canopies, "num_canopies");
-        // read the input data for canopies
-        //parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyHomogeneous>("Homogeneous"));
-        //parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyIsolatedTree>("IsolatedTree"));
-        //parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyWindbreak>("Windbreak"));
-        // add other type of canopy here
-    }
-    */
-   
-    virtual void canopyVegetation(WINDSGeneralData *wgd);
-    virtual void canopyWake(WINDSGeneralData *wgd) 
-    {
-        return;
-    }
+     */
+    virtual void parseValues() = 0;
+    
+    void setPolyBuilding (WINDSGeneralData* WGD);
 
-    virtual int getCellFlagCanopy();
-    virtual int getCellFlagWake();
+    virtual void setCellFlags (const WINDSInputData* WID, WINDSGeneralData* WGD, int building_number) = 0;    
+    virtual void canopyVegetation(WINDSGeneralData *wgd,int building_id) = 0;
+    virtual void canopyWake(WINDSGeneralData *wgd,int building_id) = 0;
 
+    virtual int getCellFlagCanopy() = 0;
+    virtual int getCellFlagWake() = 0;
+
+    std::map<int,int> canopy_cellMap2D,canopy_cellMap3D;    /**< map beteen WINDS grid and canopy grid */
+    
+    CanopyType _cType;
     
 protected: 
+          
+    /*!
+     * For there and below, the canopyInitial function has to be defined
+     */
+    virtual void setCanopyGrid(WINDSGeneralData *wgd,int building_id);
     
-    int nx_canopy, ny_canopy, nz_canopy;
-    int numcell_cent_2d, numcell_cent_3d;
-
+    
     /*!
      * 
      */
@@ -115,25 +147,17 @@ protected:
      */
     void canopyCioncoParam(WINDSGeneralData * wgd);
     
-    /**
-     * Uses linear regression method to define ustar and surface roughness of the canopy.
-     *
-     * @note Called from canopyCioncoParam
-     *
-     * @param WGD :document this:
-	 */
+    /*!
+     * This function is being call from the plantInitial function and uses linear regression method to define 
+     * ustar and surface roughness of the canopy.
+     */
     void canopyRegression(WINDSGeneralData *wgd);
     
-
-    /**
-     * Uses bisection to find root of the specified equation.
-     *
-     * It calculates the displacement height when the bisection function is not finding it.
-     *
-     * @note Called from canopyCioncoParam.
-     *
-     * @param :document this:
-	 */
+    /*!
+     * This is a new function wrote by Lucas Ulmer and is being called from the plantInitial function. The purpose 
+     * of this function is to use bisection method to find root of the specified equation. It calculates the 
+     * displacement height when the bisection function is not finding it.
+     */
     float canopySlopeMatch(float z0, float canopy_top, float canopy_atten);
     
     /*!
@@ -146,12 +170,12 @@ private:
 
 };
 
-inline int Canopy::getCellFlagCanopy()
+inline int CanopyElement::getCellFlagCanopy()
 {
     return 18;
 }
 
-inline int Canopy::getCellFlagWake()
+inline int CanopyElement::getCellFlagWake()
 {
     return 19;
 }

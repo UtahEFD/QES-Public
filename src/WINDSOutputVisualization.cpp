@@ -81,16 +81,22 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD,WINDSIn
   for (auto j=0; j<ny-1; j++) {
     y_out[j] = (j+0.5)*WGD_->dy; // Location of face centers in y-dir
   }
+  
+  timestamp.resize( dateStrLen, '0' );
 
   // Output related data
   u_out.resize( numcell_cout, 0.0 );
   v_out.resize( numcell_cout, 0.0 );
   w_out.resize( numcell_cout, 0.0 );
-  icellflag_out.resize( numcell_cout, 0.0 );
+  mag_out.resize( numcell_cout, 0.0 );
+
+  icellflag_out.resize( numcell_cout, 0 );
+  icellflag2_out.resize( numcell_cout, 0 );
 
   // set cell-centered data dimensions
   // time dimension
   NcDim NcDim_t=addDimension("t");
+  NcDim NcDim_tstr=addDimension("dateStrLen",dateStrLen);
   // space dimensions
   NcDim NcDim_x=addDimension("x",WGD_->nx-1);
   NcDim NcDim_y=addDimension("y",WGD_->ny-1);
@@ -100,6 +106,12 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD,WINDSIn
   std::vector<NcDim> dim_vect_t;
   dim_vect_t.push_back(NcDim_t);
   createAttScalar("t","time","s",dim_vect_t,&time);
+
+  // create attributes for time dimension
+  std::vector<NcDim> dim_vect_tstr;
+  dim_vect_tstr.push_back(NcDim_t);
+  dim_vect_tstr.push_back(NcDim_tstr);
+  createAttVector("times","date time","-",dim_vect_tstr,&timestamp);
 
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_x;
@@ -129,8 +141,11 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD,WINDSIn
   createAttVector("u","x-component velocity","m s-1",dim_vect_3d,&u_out);
   createAttVector("v","y-component velocity","m s-1",dim_vect_3d,&v_out);
   createAttVector("w","z-component velocity","m s-1",dim_vect_3d,&w_out);
+  createAttVector("mag","velocity magnitude","m s-1",dim_vect_3d,&mag_out);
+    
   createAttVector("icell","icell flag value","--",dim_vect_3d,&icellflag_out);
-
+  createAttVector("icellInitial","icell flag value","--",dim_vect_3d,&icellflag2_out);
+  
   // create output fields
   addOutputFields();
 
@@ -154,7 +169,7 @@ bool WINDSOutputVisualization::validateFileOtions()
 
 
 // Save output at cell-centered values
-void WINDSOutputVisualization::save(float timeOut)
+void WINDSOutputVisualization::save(ptime timeOut)
 {
   // get grid size (not output var size)
   int nx = WGD_->nx;
@@ -162,7 +177,10 @@ void WINDSOutputVisualization::save(float timeOut)
   int nz = WGD_->nz;
 
   // set time
-  time = (double)timeOut;
+  time = (double)output_counter;
+
+  std::string s=to_iso_extended_string(timeOut);
+  std::copy(s.begin(), s.end(), timestamp.begin());
 
   // get cell-centered values
   for (auto k = 1; k < nz-1; k++) {
@@ -173,7 +191,13 @@ void WINDSOutputVisualization::save(float timeOut)
         u_out[icell_cent] = 0.5*(WGD_->u[icell_face+1]+WGD_->u[icell_face]);
         v_out[icell_cent] = 0.5*(WGD_->v[icell_face+nx]+WGD_->v[icell_face]);
         w_out[icell_cent] = 0.5*(WGD_->w[icell_face+nx*ny]+WGD_->w[icell_face]);
+        mag_out[icell_cent] = sqrt( u_out[icell_cent]*u_out[icell_cent] +
+                                    v_out[icell_cent]*v_out[icell_cent] + 
+                                    w_out[icell_cent]*w_out[icell_cent] );
+        
         icellflag_out[icell_cent] = WGD_->icellflag[icell_cent+((nx-1)*(ny-1))];
+        icellflag2_out[icell_cent] = WGD_->icellflag_initial[icell_cent+((nx-1)*(ny-1))];
+                
       }
     }
   }

@@ -39,9 +39,9 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd,std::string output_file)
 {
   std::cout<<"[Output] \t Setting output fields for Turbulence data"<<std::endl;
 
-  output_fields = {"t","x","y","z","iturbflag",
-           "Sxx","Syy","Szz","Sxy","Sxz","Syz","L",
-           "txx","txy","txz","tyz","tyy","tzz","tke","CoEps"};
+  output_fields = {"t","time","x","y","z","iturbflag",
+                   "Sxx","Syy","Szz","Sxy","Sxz","Syz","L",
+                   "txx","txy","txz","tyz","tyy","tzz","tke","CoEps"};
 
   tgd_=tgd;
 
@@ -51,13 +51,20 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd,std::string output_file)
 
   // unused: long numcell_cout = (nx-1)*(ny-1)*(nz-1);
 
+  timestamp.resize( dateStrLen, '0' );
   // set time data dimensions
   NcDim NcDim_t=addDimension("t");
+  NcDim NcDim_tstr=addDimension("dateStrLen",dateStrLen);
   // create attributes for time dimension
   std::vector<NcDim> dim_vect_t;
   dim_vect_t.push_back(NcDim_t);
   createAttScalar("t","time","s",dim_vect_t,&time);
-
+  // create attributes for time dimension
+  std::vector<NcDim> dim_vect_tstr;
+  dim_vect_tstr.push_back(NcDim_t);
+  dim_vect_tstr.push_back(NcDim_tstr);
+  createAttVector("times","date time","-",dim_vect_tstr,&timestamp);
+    
   // set cell-centered data dimensions
   // space dimensions
   NcDim NcDim_x_cc=addDimension("x",nx-1);
@@ -111,20 +118,24 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd,std::string output_file)
 }
 
 // Save output at cell-centered values
-void TURBOutput::save(float outTime)
+void TURBOutput::save(ptime timeOut)
 {
-  // set time
-  time = outTime;
 
-  // save the fields to NetCDF files
-  saveOutputFields();
+    // set time
+    time = (double)output_counter;
+    
+    std::string s=to_iso_extended_string(timeOut);
+    std::copy(s.begin(), s.end(), timestamp.begin());
+   
+    // save fields
+    saveOutputFields();
 
-  // remove time indep fields
-  // from output array after first save
-  if (output_counter==0) {
-    rmTimeIndepFields();
-  }
+    // remmove time indep from output array after first save
+    if (output_counter==0) {
+        rmTimeIndepFields();
+    }
 
-  // increment for next time insertion
-  output_counter +=1;
+    // increment for next time insertion
+    output_counter +=1;
+
 };

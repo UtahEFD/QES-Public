@@ -144,11 +144,42 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
                WID->metParams->sensors[i]->TS[0]->site_wind_dir[p] = wrf_ptr->statData[i].profiles[t][p].wd;
 
             }
+         
          }
-      }
-
+      } 
+   } else {
+       /* FM NOTES:
+        WARNING this is unfinished. 
+        + does support multiple sensor files (untested)
+        - does not supprot missmatched time stamps between sensor, assumed that all sensors have all the times
+        + does support halo for QES coord (site coord == 1)
+        - does not support halo for UTM coord (site coord == 2)
+        - does not support halo for lon/lat coord (site coord == 3)
+        */
+       
+       // If the sensor file specified in the xml
+       if (WID->metParams->sensorName.size() > 0) {
+           for (auto i = 0; i < WID->metParams->sensorName.size(); i++) {
+               WID->metParams->sensors.push_back(new Sensor(WID->metParams->sensorName[i]));            // Create new sensor object
+               //WID->metParams->sensors[i] = parseSensors(WID->metParams->sensorName[i]);       // Parse new sensor objects from xml
+           }
+       }
+       
+       // adding time stamps (assuming that the 1st sensor always has all the times defined)
+       for (size_t t=0; t < WID->metParams->sensors[0]->TS.size(); t++) {
+           //ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp);
+           timestamp.push_back(WID->metParams->sensors[0]->TS[t]->timePosix);
+       }
+       
+       // Adding halo to sensor location (if in QEScoord site_coord_flag==1)
+       for (size_t i=0; i < WID->metParams->sensors.size(); i++) {
+           if (WID->metParams->sensors[i]->site_coord_flag==1) {
+               WID->metParams->sensors[i]->site_xcoord += WID->simParams->halo_x;
+               WID->metParams->sensors[i]->site_ycoord += WID->simParams->halo_y;
+           }
+       } 
    }
-
+   
    // /////////////////////////
    // Calculation of z0 domain info MAY need to move to WINDSInputData
    // or somewhere else once we know the domain size
@@ -157,7 +188,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    z0_domain_v.resize( nx*ny );
    if (WID->metParams->z0_domain_flag == 0)      // Uniform z0 for the whole domain
    {
-      for (auto i=0; i<nx; i++)
+       for (auto i=0; i<nx; i++)
       {
          for (auto j=0; j<ny; j++)
          {
@@ -236,12 +267,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    }
 
    // Resize the canopy-related vectors
-   canopy_atten.resize( numcell_cent, 0.0 );
-   canopy_top.resize( (nx-1)*(ny-1), 0.0 );
-   canopy_top_index.resize( (nx-1)*(ny-1), 0 );
-   canopy_z0.resize( (nx-1)*(ny-1), 0.0 );
-   canopy_ustar.resize( (nx-1)*(ny-1), 0.0 );
-   canopy_d.resize( (nx-1)*(ny-1), 0.0 );
+   //canopy_atten.resize( numcell_cent, 0.0 );
+   //canopy_top.resize( (nx-1)*(ny-1), 0.0 );
+   //canopy_top_index.resize( (nx-1)*(ny-1), 0 );
+   //canopy_z0.resize( (nx-1)*(ny-1), 0.0 );
+   //canopy_ustar.resize( (nx-1)*(ny-1), 0.0 );
+   //canopy_d.resize( (nx-1)*(ny-1), 0.0 );
 
 
    // Resize the coefficients for use with the solver
@@ -259,6 +290,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    nk.resize( numcell_cent, 0.0 );
 
    icellflag.resize( numcell_cent, 1 );
+   icellflag_initial.resize( numcell_cent, 1 );
+
    ibuilding_flag.resize ( numcell_cent, -1 );
 
    mixingLengths.resize( numcell_cent, 0.0 );
@@ -444,6 +477,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    // After Terrain is processed, handle remaining processing of SHP
    // file data
 
+   std::vector<float> UTMOrigin={WID->simParams->UTMx,WID->simParams->UTMy};
+
+   
+   //
    if (WID->simParams->SHPData)
    {
       auto buildingsetup_start = std::chrono::high_resolution_clock::now(); // Start recording execution time
@@ -468,16 +505,27 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       }
 
       // float domainOffset[2] = { 0, 0 };
+      /*
+        for (auto pIdx = 0u; pIdx<WID->simParams->shpPolygons.size(); pIdx++)
+        {
+        // convert the global polys to local domain coordinates
+        for (auto lIdx=0u; lIdx<WID->simParams->shpPolygons[pIdx].size(); lIdx++)
+        {
+        WID->simParams->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
+        WID->simParams->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
+        }
+        }
+      */
       for (auto pIdx = 0u; pIdx<WID->simParams->shpPolygons.size(); pIdx++)
       {
-         // convert the global polys to local domain coordinates
-         for (auto lIdx=0u; lIdx<WID->simParams->shpPolygons[pIdx].size(); lIdx++)
-         {
-            WID->simParams->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
-            WID->simParams->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
-         }
+          // convert the global polys to local domain coordinates
+          for (auto lIdx=0u; lIdx<WID->simParams->shpPolygons[pIdx].size(); lIdx++)
+          {
+              WID->simParams->shpPolygons[pIdx][lIdx].x_poly -= UTMOrigin[0] ;
+              WID->simParams->shpPolygons[pIdx][lIdx].y_poly -= UTMOrigin[1] ;
+          }
       }
-
+      
       // Setting base height for buildings if there is a DEM file
       if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh)
       {
@@ -545,16 +593,93 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    // that were read in via the XML file...
 
    // Add all the Canopy* to it (they are derived from Building)
-   if ( WID->canopies )
-   {
+   canopy = 0;
+   if ( WID->canopies ) {
+       canopy = new Canopy(WID,this);
+
       for (size_t i = 0; i < WID->canopies->canopies.size(); i++)
       {
-         allBuildingsV.push_back( WID->canopies->canopies[i] );
-         effective_height.push_back(allBuildingsV[i]->height_eff);
-         building_id.push_back(allBuildingsV.size()-1);
+          allBuildingsV.push_back( WID->canopies->canopies[i] );
+          int j = allBuildingsV.size()-1;
+          building_id.push_back( j );
+          
+          for (auto pIdx=0u; pIdx < allBuildingsV[j]->polygonVertices.size(); pIdx++) {
+              allBuildingsV[j]->polygonVertices[pIdx].x_poly += WID->simParams->halo_x;
+              allBuildingsV[j]->polygonVertices[pIdx].y_poly += WID->simParams->halo_y;
+          }
+
+          allBuildingsV[j]->setPolyBuilding(this);
+          allBuildingsV[j]->setCellFlags(WID, this, j);
+          
+          effective_height.push_back(allBuildingsV[j]->height_eff);
+      }
+
+      if (WID->canopies->SHPData) {
+          auto treesetup_start = std::chrono::high_resolution_clock::now(); // Start recording execution time
+          
+          std::vector<Building*> poly_buildings;
+          float corner_height, min_height;
+          std::vector<float> shpDomainSize(2), minExtent(2);
+          WID->canopies->SHPData->getLocalDomain( shpDomainSize );
+          WID->canopies->SHPData->getMinExtent( minExtent );
+          
+          // float domainOffset[2] = { 0, 0 };
+          /*
+            for (auto pIdx = 0u; pIdx<WID->canopies->shpPolygons.size(); pIdx++) {
+              // convert the global polys to local domain coordinates
+              for (auto lIdx=0u; lIdx<WID->canopies->shpPolygons[pIdx].size(); lIdx++) {
+                  WID->canopies->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
+                  WID->canopies->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
+              }
+          }
+          */
+
+          for (auto pIdx = 0u; pIdx<WID->canopies->shpPolygons.size(); pIdx++) {
+              // convert the global polys to local domain coordinates
+              for (auto lIdx=0u; lIdx<WID->canopies->shpPolygons[pIdx].size(); lIdx++) {
+                  WID->canopies->shpPolygons[pIdx][lIdx].x_poly -= UTMOrigin[0] ;
+                  WID->canopies->shpPolygons[pIdx][lIdx].y_poly -= UTMOrigin[1] ;
+              }
+          }
+            
+          // Setting base height for tree if there is a DEM file (TODO)
+          if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh) {
+              std::cout << "Isolated tree from shapefile and DEM not implemented...\n";
+          } else {
+              for (auto pIdx = 0u; pIdx < WID->simParams->shpPolygons.size(); pIdx++) {
+                  base_height.push_back(0.0);
+              }
+          }
+          
+          
+          
+          for (auto pIdx = 0u; pIdx < WID->canopies->shpPolygons.size(); pIdx++) {
+              for (auto lIdx=0u; lIdx < WID->canopies->shpPolygons[pIdx].size(); lIdx++) {
+                  WID->canopies->shpPolygons[pIdx][lIdx].x_poly += WID->simParams->halo_x;
+                  WID->canopies->shpPolygons[pIdx][lIdx].y_poly += WID->simParams->halo_y;
+              }
+          }
+          
+
+          std::cout << "Creating trees from shapefile...\n";
+          // Loop to create each of the polygon buildings read in from the shapefile
+          for (auto pIdx = 0u; pIdx < WID->canopies->shpPolygons.size(); pIdx++) {
+              int bldg_id = allBuildingsV.size();
+              allBuildingsV.push_back (new CanopyIsolatedTree (WID, this, pIdx));
+              building_id.push_back(bldg_id);
+              allBuildingsV[pIdx]->setPolyBuilding(this);
+              allBuildingsV[pIdx]->setCellFlags(WID, this, bldg_id);
+              effective_height.push_back (allBuildingsV[bldg_id]->height_eff);
+          }
+          std::cout << "\tdone.\n";
+          
+          auto treesetup_finish = std::chrono::high_resolution_clock::now();  // Finish recording execution time
+          
+          std::chrono::duration<float> elapsed_cut = treesetup_finish - treesetup_start;
+          std::cout << "Elapsed time for tree setup : " << elapsed_cut.count() << " s\n";
+          
       }
    }
-
 
    // Add all the Building* that were read in from XML to this list
    // too -- could be RectBuilding, PolyBuilding, whatever is derived
@@ -566,9 +691,16 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       float corner_height, min_height;
       for (size_t i = 0; i < WID->buildings->buildings.size(); i++)
       {
+          
          allBuildingsV.push_back( WID->buildings->buildings[i] );
          int j = allBuildingsV.size()-1;
          building_id.push_back( j );
+         
+         for (auto pIdx=0u; pIdx < allBuildingsV[j]->polygonVertices.size(); pIdx++) {
+             allBuildingsV[j]->polygonVertices[pIdx].x_poly += WID->simParams->halo_x;
+             allBuildingsV[j]->polygonVertices[pIdx].y_poly += WID->simParams->halo_y;
+         }
+         
          // Setting base height for buildings if there is a DEM file
          if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh)
          {
@@ -593,14 +725,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
          }
          else
          {
-            allBuildingsV[j]->base_height = 0.0;
+             //allBuildingsV[j]->base_height = 0.0;
          }
          allBuildingsV[j]->setPolyBuilding(this);
          allBuildingsV[j]->setCellFlags(WID, this, j);
-         effective_height.push_back(allBuildingsV[i]->height_eff);
+         effective_height.push_back(allBuildingsV[j]->height_eff);
       }
    }
-
+   
    // We want to sort ALL buildings here...  use the allBuildingsV to
    // do this... (remember some are canopies) so we may need a
    // virtual function in the Building class to get the appropriate
@@ -618,153 +750,374 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
    wall->solverCoefficients (this);
 
+
+   for (auto id=0u;id<icellflag.size();id++) {
+       icellflag_initial[id]=icellflag[id];
+   }
+   
    /////////////////////////////////////////////////////////
    /////       Read coefficients from a file            ////
    /////////////////////////////////////////////////////////
 
-   if (WID->simParams->readCoefficientsFlag == 1)
-   {
-     NCDFInput = new NetCDFInput(WID->simParams->coeffFile);
+   if (WID->simParams->readCoefficientsFlag == 1) {
 
-     start = {0,0,0,0};
-     NCDFInput->getDimensionSize("x",ncnx);
-     NCDFInput->getDimensionSize("y",ncny);
-     NCDFInput->getDimensionSize("z",ncnz);
-     NCDFInput->getDimensionSize("t",ncnt);
+       NetCDFInput* NCDFInput = new NetCDFInput(WID->simParams->coeffFile);
 
-     count = {static_cast<unsigned long>(1),
-             static_cast<unsigned long>(ncnz-1),
-             static_cast<unsigned long>(ncny-1),
-             static_cast<unsigned long>(ncnx-1)};
+       int ncnx, ncny, ncnz, ncnt;
+       std::vector<size_t> start;
+       std::vector<size_t> count;
 
-
-     NCDFInput->getVariableData("icellflag",start,count,icellflag);
-
-     for (int k = 0; k < nz-2; k++)
-     {
-         for (int j = 0; j < ny-1; j++)
-         {
-             for (int i = 0; i < nx-1; i++)
-             {
-                 int icell_cent = i + j*(nx-1) + k*(nx-1)*(ny-1);
-                 if (icellflag[icell_cent] != 0 && icellflag[icell_cent] != 2 && icellflag[icell_cent] != 8 && icellflag[icell_cent] != 7)
-                 {
-                   icellflag[icell_cent] = 1;
-                 }
-             }
-         }
-     }
-
-     // Read in solver coefficients
-     NCDFInput->getVariableData("e",start,count,e);
-     NCDFInput->getVariableData("f",start,count,f);
-     NCDFInput->getVariableData("g",start,count,g);
-     NCDFInput->getVariableData("h",start,count,h);
-     NCDFInput->getVariableData("m",start,count,m);
-     NCDFInput->getVariableData("n",start,count,n);
-
+       start = {0,0,0,0};
+       NCDFInput->getDimensionSize("x",ncnx);
+       NCDFInput->getDimensionSize("y",ncny);
+       NCDFInput->getDimensionSize("z",ncnz);
+       NCDFInput->getDimensionSize("t",ncnt);
+       
+       count = {static_cast<unsigned long>(1),
+                static_cast<unsigned long>(ncnz-1),
+                static_cast<unsigned long>(ncny-1),
+                static_cast<unsigned long>(ncnx-1)};
+       
+       
+       NCDFInput->getVariableData("icellflag",start,count,icellflag);
+       
+       resetICellFlag();
+       
+       // Read in solver coefficients
+       NCDFInput->getVariableData("e",start,count,e);
+       NCDFInput->getVariableData("f",start,count,f);
+       NCDFInput->getVariableData("g",start,count,g);
+       NCDFInput->getVariableData("h",start,count,h);
+       NCDFInput->getVariableData("m",start,count,m);
+       NCDFInput->getVariableData("n",start,count,n);
+       
    }
-
-   // ///////////////////////////////////////
-   // Generic Parameterization Related Stuff
-   // ///////////////////////////////////////
-   for (size_t i = 0; i < allBuildingsV.size(); i++)
-   {
-      // for now this does the canopy stuff for us
-      allBuildingsV[building_id[i]]->canopyVegetation(this);
-   }
-
-   ///////////////////////////////////////////
-   //   Upwind Cavity Parameterization     ///
-   ///////////////////////////////////////////
-   if (WID->simParams->upwindCavityFlag > 0)
-   {
-      std::cout << "Applying upwind cavity parameterization...\n";
-      for (size_t i = 0; i < allBuildingsV.size(); i++)
-      {
-         allBuildingsV[building_id[i]]->upwindCavity(WID, this);
-      }
-      std::cout << "Upwind cavity parameterization done...\n";
-   }
-
-   //////////////////////////////////////////////////
-   //   Far-Wake and Cavity Parameterizations     ///
-   //////////////////////////////////////////////////
-   if (WID->simParams->wakeFlag > 0)
-   {
-      std::cout << "Applying wake behind building parameterization...\n";
-      for (size_t i = 0; i < allBuildingsV.size(); i++)
-      {
-         allBuildingsV[building_id[i]]->polygonWake(WID, this, building_id[i]);
-      }
-      std::cout << "Wake behind building parameterization done...\n";
-   }
-
-   ///////////////////////////////////////////
-   //   Street Canyon Parameterization     ///
-   ///////////////////////////////////////////
-   if (WID->simParams->streetCanyonFlag > 0)
-   {
-      std::cout << "Applying street canyon parameterization...\n";
-      for (size_t i = 0; i < allBuildingsV.size(); i++)
-      {
-         allBuildingsV[building_id[i]]->streetCanyon(this);
-      }
-      std::cout << "Street canyon parameterization done...\n";
-   }
-
-   ///////////////////////////////////////////
-   //      Sidewall Parameterization       ///
-   ///////////////////////////////////////////
-   if (WID->simParams->sidewallFlag > 0)
-   {
-      std::cout << "Applying sidewall parameterization...\n";
-      for (size_t i = 0; i < allBuildingsV.size(); i++)
-      {
-         allBuildingsV[building_id[i]]->sideWall(WID, this);
-      }
-      std::cout << "Sidewall parameterization done...\n";
-   }
-
-
-   ///////////////////////////////////////////
-   //      Rooftop Parameterization        ///
-   ///////////////////////////////////////////
-   if (WID->simParams->rooftopFlag > 0)
-   {
-      std::cout << "Applying rooftop parameterization...\n";
-      for (size_t i = 0; i < allBuildingsV.size(); i++)
-      {
-         allBuildingsV[building_id[i]]->rooftop (WID, this);
-      }
-      std::cout << "Rooftop parameterization done...\n";
-   }
-
-   ///////////////////////////////////////////
-   //         Street Intersection          ///
-   ///////////////////////////////////////////
-   /*if (WID->simParams->streetCanyonFlag > 0 && WID->simParams->streetIntersectionFlag > 0 && allBuildingsV.size() > 0)
-     {
-     std::cout << "Applying Blended Region Parameterization...\n";
-     allBuildingsV[0]->streetIntersection (WID, this);
-     allBuildingsV[0]->poisson (WID, this);
-     std::cout << "Blended Region Parameterization done...\n";
-     }*/
-
-
-   /*
-    * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
-    * wall above/below and wall in front/back and applies the log law boundary condition fix
-    * to the cells near Walls
-    *
-    */
-   //wall->wallLogBC (this);
-
-   wall->setVelocityZero (this);
-
-
+   
    return;
+}
 
+WINDSGeneralData :: WINDSGeneralData(const std::string inputFile) {
+    
+    std::cout<<"[WINDS Data] \t Loading QES-winds fields "<<std::endl;
+
+    // fullname passed to WINDSGeneralData
+    input = new NetCDFInput(inputFile);
+    
+    // create wall instance for BC
+    wall = new Wall();
+    
+    // nx,ny - face centered value (consistant with QES-Winds)
+    input->getDimensionSize("x",nx);
+    input->getDimensionSize("y",ny);
+    // nz - face centered value + bottom ghost (consistant with QES-Winds)
+    input->getDimensionSize("z",nz);
+    // nt - number of time instance in data
+    input->getDimensionSize("t",nt);
+
+    numcell_cout    = (nx-1)*(ny-1)*(nz-2);        /**< Total number of cell-centered values in domain */
+    numcell_cout_2d = (nx-1)*(ny-1);               /**< Total number of horizontal cell-centered values in domain */
+    numcell_cent    = (nx-1)*(ny-1)*(nz-1);        /**< Total number of cell-centered values in domain */
+    numcell_face    = nx*ny*nz;                    /**< Total number of face-centered values in domain */
+  
+    // get grid information
+    x.resize(nx-1);
+    y.resize(ny-1);
+    z.resize(nz-1);
+    z_face.resize(nz-1);
+    dz_array.resize(nz-1, 0.0);
+    
+    input->getVariableData("x_cc",x);
+    dx = x[1] - x[0]; /**< Grid resolution in x-direction */
+        
+    input->getVariableData("y_cc",y);
+    dy = y[1] - y[0]; /**< Grid resolution in x-direction */
+    dxy = MIN_S(dx, dy);
+    
+    input->getVariableData("z_cc",z);
+    // check if dz_array is in the NetCDF file 
+    NcVar NcVar_dz;
+    input->getVariable("dz_array", NcVar_dz);
+    if(!NcVar_dz.isNull()) { 
+        input->getVariableData("dz_array",dz_array);
+        dz = *std::min_element(dz_array.begin() , dz_array.end());
+    } else {
+        dz = z[1] - z[0];
+        for (size_t k=0; k<z.size(); k++) {
+            dz_array[k] = dz;
+        }
+    }
+    
+    // check if z_face is in the NetCDF file
+    NcVar NcVar_zface;
+    input->getVariable("z_face", NcVar_zface);
+    if(!NcVar_zface.isNull()) {
+        input->getVariableData("z_face",z_face);
+    } else {
+        z_face[0]=0.0;
+        for (size_t k=1; k<z.size(); k++) {
+            z_face[k] = z_face[k-1] + dz_array[k];  /**< Location of face centers in z-dir */
+        }
+    }
+    
+    //get time variables
+    std::vector<float> t;
+    t.resize(nt);
+    input->getVariableData("t",t);
+    
+    // check if times is in the NetCDF file 
+    NcVar NcVar_times;
+    input->getVariable("times", NcVar_times);
+    if(!NcVar_times.isNull()) { 
+        // nothing here yet
+    } else {
+        for (size_t t=0; t < nt; t++) {
+            //ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp);
+            timestamp.push_back(bt::from_iso_extended_string("2020-01-01T00:00"));
+        }
+    }
+
+
+    // netCDF variables
+    std::vector<size_t> start;
+    std::vector<size_t> count_2d;
+
+    start = {0,0};
+    count_2d = {static_cast<unsigned long>(ny-1),
+                static_cast<unsigned long>(nx-1)};
+  
+    // terrain (cell-center)
+    terrain.resize((ny-1)*(nx-1),0.0);
+    NcVar NcVar_terrain;
+    input->getVariable("terrain", NcVar_terrain);
+    if(!NcVar_terrain.isNull()) { // => terrain data in QES-Winds file
+        input->getVariableData("terrain",start,count_2d,terrain);
+    } else { // => no external terrain data provided
+        std::cout << "[WINDS Data] \t no terrain data found -> assumed flat" << std::endl;
+    }
+
+    // icellflag (see .h for velues)
+    icellflag.resize(numcell_cent,-1);
+    /// coefficients for SOR solver
+    e.resize(numcell_cent,1.0);
+    f.resize(numcell_cent,1.0);
+    g.resize(numcell_cent,1.0);
+    h.resize(numcell_cent,1.0);
+    m.resize(numcell_cent,1.0);
+    n.resize(numcell_cent,1.0);
+
+    building_volume_frac.resize( numcell_cent, 1.0 );
+    terrain_volume_frac.resize( numcell_cent, 1.0 );
+    ni.resize( numcell_cent, 0.0 );
+    nj.resize( numcell_cent, 0.0 );
+    nk.resize( numcell_cent, 0.0 );
+    
+    icellflag.resize( numcell_cent, 1 );
+    ibuilding_flag.resize ( numcell_cent, -1 );
+    
+    mixingLengths.resize( numcell_cent, 0.0 );
+    
+    terrain.resize( numcell_cout_2d, 0.0 );
+    terrain_id.resize( nx*ny, 1 );
+    z0_domain_u.resize( nx*ny, 0.1 );
+    z0_domain_v.resize( nx*ny, 0.1 );
+
+
+    // Set the Wind Velocity data elements to be of the correct size
+    // Initialize u0,v0,w0,u,v and w to 0.0
+    u0.resize( numcell_face, 0.0 );
+    v0.resize( numcell_face, 0.0 );
+    w0.resize( numcell_face, 0.0 );
+    
+    u.resize(numcell_face,0.0);
+    v.resize(numcell_face,0.0);
+    w.resize(numcell_face,0.0);
+  
+    return;
+}
+
+void WINDSGeneralData::loadNetCDFData(int stepin)
+{
+  
+    std::cout << "[WINDS Data] \t loading data at step " << stepin <<std::endl;
+  
+    // netCDF variables
+    std::vector<size_t> start;
+    std::vector<size_t> count_cc;
+    std::vector<size_t> count_fc;
+
+    start = {static_cast<unsigned long>(stepin),0,0,0};
+    count_cc = {1,
+                static_cast<unsigned long>(nz-1),
+                static_cast<unsigned long>(ny-1),
+                static_cast<unsigned long>(nx-1)};
+    count_fc = {1,
+                static_cast<unsigned long>(nz),
+                static_cast<unsigned long>(ny),
+                static_cast<unsigned long>(nx)};
+  
+    // cell-center variables
+    // icellflag (see .h for velues)
+    input->getVariableData("icellflag",start,count_cc,icellflag);
+    /// coefficients for SOR solver
+    NcVar NcVar_SORcoeff;
+    input->getVariable("e", NcVar_SORcoeff);
+    
+    if(!NcVar_SORcoeff.isNull()) { 
+        input->getVariableData("e",start,count_cc,e);
+        input->getVariableData("f",start,count_cc,f);
+        input->getVariableData("g",start,count_cc,g);
+        input->getVariableData("h",start,count_cc,h);
+        input->getVariableData("m",start,count_cc,m);
+        input->getVariableData("n",start,count_cc,n); 
+    } else { 
+        std::cout << "[WINDS Data] \t no SORcoeff data found -> assumed e,f,g,h,m,n=1" << std::endl;
+    }
+  
+    // face-center variables
+    input->getVariableData("u",start,count_fc,u0);
+    input->getVariableData("v",start,count_fc,v0);
+    input->getVariableData("w",start,count_fc,w0);
+    
+    // clear wall indices container (guarantee entry vector)
+    wall_right_indices.clear();
+    wall_left_indices.clear();
+    wall_above_indices.clear();
+    wall_below_indices.clear();
+    wall_front_indices.clear();
+    wall_back_indices.clear();
+
+    // define new wall indices container for new data
+    wall->defineWalls(this);
+    
+    
+    return;
+}
+
+
+void WINDSGeneralData::applyParametrizations(const WINDSInputData* WID) 
+{
+    if (canopy) {
+           canopy->canopyVegetation(this);
+    }
+
+    std::cout << "[Winds] \t applying Parameterization" << std::endl;
+    // ///////////////////////////////////////
+    // Generic Parameterization Related Stuff
+    // ///////////////////////////////////////
+    for (size_t i = 0; i < allBuildingsV.size(); i++)
+    {
+        // for now this does the canopy stuff for us
+        allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
+    }
+    
+    ///////////////////////////////////////////
+    //   Upwind Cavity Parameterization     ///
+    ///////////////////////////////////////////
+    if (WID->simParams->upwindCavityFlag > 0)
+    {
+        std::cout << "Applying upwind cavity parameterization...\n";
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
+        {
+            allBuildingsV[building_id[i]]->upwindCavity(WID, this);
+        }
+        std::cout << "Upwind cavity parameterization done...\n";
+    }
+    
+    //////////////////////////////////////////////////
+    //   Far-Wake and Cavity Parameterizations     ///
+    //////////////////////////////////////////////////
+    if (WID->simParams->wakeFlag > 0)
+    {
+        std::cout << "Applying wake behind building parameterization...\n";
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
+        {
+            allBuildingsV[building_id[i]]->polygonWake(WID, this, building_id[i]);
+        }
+        std::cout << "Wake behind building parameterization done...\n";
+    }
+    
+    ///////////////////////////////////////////
+    //   Street Canyon Parameterization     ///
+    ///////////////////////////////////////////
+    if (WID->simParams->streetCanyonFlag > 0)
+    {
+        std::cout << "Applying street canyon parameterization...\n";
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
+        {
+            allBuildingsV[building_id[i]]->streetCanyon(this);
+        }
+        std::cout << "Street canyon parameterization done...\n";
+    }
+    
+    ///////////////////////////////////////////
+    //      Sidewall Parameterization       ///
+    ///////////////////////////////////////////
+    if (WID->simParams->sidewallFlag > 0)
+    {
+        std::cout << "Applying sidewall parameterization...\n";
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
+        {
+            allBuildingsV[building_id[i]]->sideWall(WID, this);
+        }
+        std::cout << "Sidewall parameterization done...\n";
+    }
+    
+    
+    ///////////////////////////////////////////
+    //      Rooftop Parameterization        ///
+    ///////////////////////////////////////////
+    if (WID->simParams->rooftopFlag > 0)
+    {
+        std::cout << "Applying rooftop parameterization...\n";
+        for (size_t i = 0; i < allBuildingsV.size(); i++)
+        {
+            allBuildingsV[building_id[i]]->rooftop (WID, this);
+        }
+        std::cout << "Rooftop parameterization done...\n";
+    }
+
+    // ///////////////////////////////////////
+    // Generic Parameterization Related Stuff
+    // ///////////////////////////////////////
+    for (size_t i = 0; i < allBuildingsV.size(); i++)
+    {
+        // for now this does the canopy stuff for us
+        allBuildingsV[building_id[i]]->canopyWake(this, building_id[i]);
+    }
+
+    ///////////////////////////////////////////
+    //         Street Intersection          ///
+    ///////////////////////////////////////////
+    /*if (WID->simParams->streetCanyonFlag > 0 && WID->simParams->streetIntersectionFlag > 0 && allBuildingsV.size() > 0)
+      {
+      std::cout << "Applying Blended Region Parameterization...\n";
+      allBuildingsV[0]->streetIntersection (WID, this);
+      allBuildingsV[0]->poisson (WID, this);
+      std::cout << "Blended Region Parameterization done...\n";
+      }*/
+    
+    
+    /*
+     * Calling wallLogBC to read in vectores of indices of the cells that have wall to right/left,
+     * wall above/below and wall in front/back and applies the log law boundary condition fix
+     * to the cells near Walls
+     *
+     */
+    //wall->wallLogBC (this);
+    
+    wall->setVelocityZero (this);
+    
+    
+    return;
+    
+}
+
+void WINDSGeneralData::resetICellFlag()
+{
+    for (auto id=0u;id<icellflag.size();id++) {
+        icellflag[id]=icellflag_initial[id];
+    }
+    return;
 }
 
 

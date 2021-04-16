@@ -229,4 +229,6 @@ add_subdirectory(src)
 add_subdirectory(scratch)
 
 add_subdirectory(qesWinds)
+add_subdirectory(qesCanopy)
+
 
