@@ -70,7 +70,7 @@ void ESRIShapefile::loadVectorData( std::vector< std::vector< polyVert > > &poly
                 
                 OGRFieldDefn *oField = poFDefn->GetFieldDefn( idxField );
                 //std::cout << "Field Name: " << oField->GetNameRef() << ", Value: ";
-                if ( strcmp(oField->GetNameRef(),"h") == 0) {
+                if ( strcmp(oField->GetNameRef(),"H") == 0) {
                     switch( oField->GetType() )
                     {
                     case OFTInteger:

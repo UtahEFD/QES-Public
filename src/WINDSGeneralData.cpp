@@ -601,7 +601,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
           // Loop to create each of the polygon buildings read in from the shapefile
           for (auto pIdx = 0u; pIdx < WID->canopies->shpPolygons.size(); pIdx++) {
               int bldg_id = allBuildingsV.size();
-              allBuildingsV.push_back (new CanopyIsolatedTree (WID, this, bldg_id));
+              allBuildingsV.push_back (new CanopyIsolatedTree (WID, this, pIdx));
               building_id.push_back(bldg_id);
               allBuildingsV[pIdx]->setPolyBuilding(this);
               allBuildingsV[pIdx]->setCellFlags(WID, this, bldg_id);
