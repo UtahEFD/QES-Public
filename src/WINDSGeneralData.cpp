@@ -1,3 +1,37 @@
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/**
+ * @file WINDSGeneralData.cpp
+ * @brief :document this:
+ */
+
 #include "WINDSGeneralData.h"
 
 WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
@@ -35,21 +69,21 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    nz = domainInfo[2];
 
    // Modify the domain size to fit the Staggered Grid used in the solver
-   nx += 1;        /// +1 for Staggered grid
-   ny += 1;        /// +1 for Staggered grid
-   nz += 2;        /// +2 for staggered grid and ghost cell
+   nx += 1;        // +1 for Staggered grid
+   ny += 1;        // +1 for Staggered grid
+   nz += 2;        // +2 for staggered grid and ghost cell
 
    Vector3<float> gridInfo;
    gridInfo = *(WID->simParams->grid);
-   dx = gridInfo[0];           /**< Grid resolution in x-direction */
-   dy = gridInfo[1];           /**< Grid resolution in y-direction */
-   dz = gridInfo[2];           /**< Grid resolution in z-direction */
+   dx = gridInfo[0];           // Grid resolution in x-direction
+   dy = gridInfo[1];           // Grid resolution in y-direction
+   dz = gridInfo[2];           // Grid resolution in z-direction
    dxy = MIN_S(dx, dy);
 
-   numcell_cout    = (nx-1)*(ny-1)*(nz-2);        /**< Total number of cell-centered values in domain */
-   numcell_cout_2d = (nx-1)*(ny-1);               /**< Total number of horizontal cell-centered values in domain */
-   numcell_cent    = (nx-1)*(ny-1)*(nz-1);        /**< Total number of cell-centered values in domain */
-   numcell_face    = nx*ny*nz;                    /**< Total number of face-centered values in domain */
+   numcell_cout    = (nx-1)*(ny-1)*(nz-2);        // Total number of cell-centered values in domain
+   numcell_cout_2d = (nx-1)*(ny-1);               // Total number of horizontal cell-centered values in domain
+   numcell_cent    = (nx-1)*(ny-1)*(nz-1);        // Total number of cell-centered values in domain
+   numcell_face    = nx*ny*nz;                    // Total number of face-centered values in domain
 
 
    // where should this really go?
@@ -60,10 +94,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
       WRFInput *wrf_ptr = WID->simParams->wrfInputData;
 
-      std::cout << "Size of stat data: " << wrf_ptr->statData.size() << std::endl;
+      std::cout << "Size of WRF station/sensor profile data: " << wrf_ptr->statData.size() << std::endl;
       WID->metParams->sensors.resize( wrf_ptr->statData.size() );
 
-      for (size_t i=0; i<wrf_ptr->statData.size(); i++) {
+      for (auto i=0; i<wrf_ptr->statData.size(); i++) {
          std::cout << "Station " << i << " ("
                    << wrf_ptr->statData[i].xCoord << ", "
                    << wrf_ptr->statData[i].yCoord << ")" << std::endl;
@@ -73,6 +107,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
          WID->metParams->sensors[i]->site_xcoord = wrf_ptr->statData[i].xCoord;
          WID->metParams->sensors[i]->site_ycoord = wrf_ptr->statData[i].yCoord;
+
+         // Need to allocate time series... not fully pulling all WRF
+         // time series yet... just first
+         WID->metParams->sensors[i]->TS.resize(1);
+         // Also need to allocate the space...
+         if (!WID->metParams->sensors[i]->TS[0])
+             WID->metParams->sensors[i]->TS[0] = new TimeSeries;
 
          // WRF profile data -- sensor blayer flag is 4
          WID->metParams->sensors[i]->TS[0]->site_blayer_flag = 4;
@@ -208,21 +249,21 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    z_face[0] = 0.0;
    z[0] = -0.5*dz_array[0];
    for (size_t k=1; k<z.size(); k++) {
-      z_face[k] = z_face[k-1] + dz_array[k];  /**< Location of face centers in z-dir */
-      z[k] = 0.5*(z_face[k-1] + z_face[k]);   /**< Location of cell centers in z-dir */
+      z_face[k] = z_face[k-1] + dz_array[k];  // Location of face centers in z-dir
+      z[k] = 0.5*(z_face[k-1] + z_face[k]);   // Location of cell centers in z-dir
    }
 
 
    // horizontal grid (x-direction)
    x.resize( nx-1 );
    for (auto i=0; i<nx-1; i++) {
-      x[i] = (i+0.5)*dx;          /**< Location of face centers in x-dir */
+      x[i] = (i+0.5)*dx;          // Location of face centers in x-dir
    }
 
    // horizontal grid (y-direction)
    y.resize( ny-1 );
    for (auto j=0; j<ny-1; j++) {
-      y[j] = (j+0.5)*dy;          /**< Location of face centers in y-dir */
+      y[j] = (j+0.5)*dy;          // Location of face centers in y-dir
    }
 
    // Resize the canopy-related vectors
@@ -272,7 +313,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
    std::cout << "Memory allocation complete." << std::endl;
 
-   /// defining ground solid cells (ghost cells below the surface)
+   // defining ground solid cells (ghost cells below the surface)
    for (int j = 0; j < ny-1; j++)
    {
       for (int i = 0; i < nx-1; i++)
@@ -287,6 +328,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    int halo_index_y = (WID->simParams->halo_y/dy);
    //WID->simParams->halo_y = halo_index_y*dy;
 
+   int ii, jj, idx;
    if (WID->simParams->DTE_heightField)
    {
       // ////////////////////////////////
@@ -297,9 +339,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
          for (int j = 0; j < ny-2*halo_index_y-1; j++)
          {
             // Gets height of the terrain for each cell
-            int ii = i+halo_index_x;
-            int jj = j+halo_index_y;
-            int idx = ii + jj*(nx-1);
+            ii = i+halo_index_x;
+            jj = j+halo_index_y;
+            idx = ii + jj*(nx-1);
             terrain[idx] = WID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
             if (terrain[idx] < 0.0)
             {
@@ -309,12 +351,23 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
             for (size_t k=0; k<z.size()-1; k++)
             {
                terrain_id[id] = k;
-               if (terrain[idx] < z_face[k])
+               if (terrain[idx] < z[k])
                {
                   break;
                }
             }
          }
+         ii = i+WID->simParams->halo_x/dx;
+         jj = ny-halo_index_y-1;
+         id = ii+jj*nx;
+         terrain_id[id] = terrain_id[id-nx];
+      }
+      for (int j = 0; j < ny-halo_index_y; j++)
+      {
+      	ii = nx-halo_index_x-1;
+        jj = j+WID->simParams->halo_y/dy;
+        id = ii+jj*nx;
+        terrain_id[id] = terrain_id[id-1];
       }
    }
 
@@ -358,7 +411,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
 
    if (WID->simParams->DTE_heightField)
    {
-
       if (WID->simParams->meshTypeFlag == 0 && WID->simParams->readCoefficientsFlag == 0)
       {
         auto start_stair = std::chrono::high_resolution_clock::now();
@@ -441,6 +493,16 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       std::vector<float> shpDomainSize(2), minExtent(2);
       WID->simParams->SHPData->getLocalDomain( shpDomainSize );
       WID->simParams->SHPData->getMinExtent( minExtent );
+
+      printf( "\tShapefile Origin = (%.6f,%.6f)\n",
+	      minExtent[0], minExtent[1] );
+      // If the shapefile is not covering the whole domain or the UTM coordinates 
+      // of the QES domain is different than shapefile origin
+      if (WID->simParams->UTMx != 0.0 && WID->simParams->UTMy != 0.0)
+      {
+      	minExtent[0] -= (minExtent[0] - WID->simParams->UTMx);
+      	minExtent[1] -= (minExtent[1] - WID->simParams->UTMy);
+      }
 
       // float domainOffset[2] = { 0, 0 };
       /*
@@ -688,13 +750,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
    // data for the sort.
    std::cout << "Sorting buildings by height..." << std::endl;
    mergeSort( effective_height, allBuildingsV, building_id );
+   std::cout << "...sorting complete." << std::endl;
 
    wall = new Wall();
 
-   std::cout << "Defining Solid Walls...\n";
+   std::cout << "Defining Solid Walls..." << std::endl;
    // Boundary condition for building edges
    wall->defineWalls(this);
-   std::cout << "Walls Defined...\n";
+   std::cout << "Walls Defined." << std::endl;
 
    wall->solverCoefficients (this);
 

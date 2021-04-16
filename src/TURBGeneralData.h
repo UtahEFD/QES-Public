@@ -1,3 +1,34 @@
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/** @file TURBGeneralData.h */
+
 #pragma once
 
 #include <math.h>
@@ -15,11 +46,11 @@
 #include "LocalMixingSerial.h"
 #include "LocalMixingOptix.h"
 
-/*
-  Author: Fabien Margairaz
-  Date: Feb. 2020
-*/
 
+/**
+ * @class TURBGeneralData
+ * @brief :document this:
+ */
 class TURBGeneralData {
 
 public:
@@ -31,18 +62,23 @@ public:
 
     virtual void run(WINDSGeneralData*);
 
-    bool flagNonLocalMixing;
+    bool flagNonLocalMixing; /**< :document this: */
 
     // General QUIC Domain Data
-    int nx, ny, nz;		/**< number of cells */
+    ///@{
+    /** number of cells */
+    int nx, ny, nz;
+    ///@}
 
-    //grid information
+    ///@{
+    /** grid information */
     std::vector<float> x_fc;
     std::vector<float> x_cc;
     std::vector<float> y_fc;
     std::vector<float> y_cc;
     std::vector<float> z_fc;
     std::vector<float> z_cc;
+    ///@}
 
     // Mean trubulence quantities
     float z0d,d0d;
@@ -51,35 +87,38 @@ public:
     float terrainH_max;
 
     // Turbulence Fields Upper Bound (tij < turbUpperBound*uStar^2)
-    float turbUpperBound;
+    float turbUpperBound; /**< Turbulence fields upper bound */
 
     // index for fluid cell
-    std::vector<int> icellfluid;
-    std::vector<int> iturbflag;
+    std::vector<int> icellfluid; /**< :document this: */
+    std::vector<int> iturbflag;  /**< :document this: */
     /*
       0 - solid object, 1 - fluid
       2 - stairstep terrain-wall, 3 - cut-cell terrain
       4 - stairstep building-wall, 5 - cut-cell building
     */
 
-    //strain rate tensor
+    ///@{
+    /** strain rate tensor */
     std::vector<float> Sxx;
     std::vector<float> Sxy;
     std::vector<float> Sxz;
     std::vector<float> Syy;
     std::vector<float> Syz;
     std::vector<float> Szz;
+    ///@}
 
-    //mixing length
-    std::vector<float> Lm;
+    std::vector<float> Lm; /**< mixing length */
 
-    // stress stensor
+    ///@{
+    /** stress tensor */
     std::vector<float> txx;
     std::vector<float> txy;
     std::vector<float> txz;
     std::vector<float> tyy;
     std::vector<float> tyz;
     std::vector<float> tzz;
+    ///@}
 
     // derived turbulence quantities
     std::vector<float> tke;
@@ -108,7 +147,7 @@ private:
     void getFrictionVelocity(WINDSGeneralData*);
     void getDerivatives(WINDSGeneralData*);
     void getStressTensor();
-    
+
     void boundTurbFields();
 
 };

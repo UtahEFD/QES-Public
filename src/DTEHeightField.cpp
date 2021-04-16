@@ -1,3 +1,42 @@
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/**
+ * @file DTEHeightField.cpp
+ * @brief Loads digital elevation data.
+ *
+ * @sa Cell
+ * @sa Edge
+ * @sa Triangle
+ * @sa Vector3
+ */
+
 #include "DTEHeightField.h"
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
@@ -11,65 +50,127 @@ DTEHeightField::DTEHeightField()
 
 }
 
-DTEHeightField::DTEHeightField(const std::string &filename, double cellSizeXN, double cellSizeYN, float UTMx, float UTMy, int OriginFlag, float DEMDistanceX, float DEMDistanceY, int nx, int ny)
-  : m_filename(filename), m_rbMin(0.0), cellSizeX(cellSizeXN), cellSizeY(cellSizeYN), domain_UTMx(UTMx), domain_UTMy(UTMy),
-   originFlag(OriginFlag), DEMDistancex(DEMDistanceX), DEMDistancey(DEMDistanceY), domain_nx(nx), domain_ny(ny)
+DTEHeightField::DTEHeightField(const std::string &filename,
+                               std::tuple<int, int, int> dim,
+                               std::tuple<float, float, float> cellSize, float UTMx, float UTMy,
+                               int OriginFlag, float DEMDistanceX, float DEMDistanceY)
+  : m_filename(filename), m_rbMin(0.0),
+    m_cellSize( cellSize ), m_dim( dim ),
+    domain_UTMx(UTMx), domain_UTMy(UTMy),
+    originFlag(OriginFlag), DEMDistancex(DEMDistanceX), DEMDistancey(DEMDistanceY)
 {
-  GDALAllRegister();
+    GDALAllRegister();
 
-  // only for texture???
- // loadImage();
-
-  load();
+    load();
 }
 
-DTEHeightField::DTEHeightField(const std::vector<double> &heightField, int dimX, int dimY, double cellSizeXN, double cellSizeYN)
+// Constructor for converting heightfield data to the internal
+// representation for digital elevation
+//
+// Inputs need to provide the nx, ny, nz
+DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
+                               std::tuple<int, int, int> dim,
+                               std::tuple<float, float, float> cellSize,
+                               float halo_x, float halo_y)
+    : m_cellSize( cellSize ), m_dim( dim )
 {
     Triangle *tPtr=0;
     m_triList.clear();
 
-    Vector3<float> tc0, tc1, tc2;
+    // local variables to hold triangle vertices
+    // Vector3<float> tc0, tc1, tc2;
 
-    std::cout << "DEM Loading from height field\n";
-    std::cout << "dimX = " << dimX << ", dimY = " << dimY << std::endl;
+    // local variables to hold common variables
+    auto [ nx, ny, nz ] = m_dim;
+    auto [ dx, dy, dz ] = m_cellSize;
+
+    std::cout << "Loading digital elevation data from height field\n";
+
+    std::cout << "dimX = " << nx << ", dimY = " << ny << ", dimZ = " << nz << std::endl;
+    std::cout << "cellSizes = (" << dx << ", " << dy << ", " << dz << ")" << std::endl;
+
     std::cout << "size of heightField = " << heightField.size() << std::endl;
 
     // eventually need the fm_dx and fm_dy so we can multiply into
     // correct dimensions
 
-    int step = cellSizeXN;
+    int step = 1;  // step size is interpretted incorrectly here for
+                   // fire meshes...
 
-    for (float j = 0; j < dimY-1; j+=step) {
-        for (float i = 0; i < dimX-1; i+=step) {
+    // previously, with regular DEMs we can use the cellSize to
+    // determine how we step over the terrain to create the actual
+    // mesh... based on dx, dy...
 
-            int idx = j * dimX + i;
+    // This triangle mesh is in the dimensions of the height field
+    // array... may not be in the domain space... hence when queried
+    // later in the
+
+    std::cout << "Adding halo to surrounding regions..." << halo_x << ", " << halo_y << std::endl;
+
+    for (float j = 0; j < ny-1; j+=step) {
+        for (float i = 0; i < nx-1; i+=step) {
+
+            int idx = j * nx + i;
             if (idx > heightField.size() - 1) idx = heightField.size()-1;
             // std::cout << "(" << i << ", " << j << ") = " << heightField[idx] << std::endl;
 
-            Vector3<float> tv0( i, j, (float)heightField[ idx ] ); // queryHeight( pafScanline, Xpixel,  Yline));
+            // when pulling data from the height field and converting
+            // to actual locations, we need to add the halo_x and
+            // halo_y to all positions to shift the domain -- these
+            // are in meters...
 
-            idx = j * dimX + (i + step);
-            if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            Vector3<float> tv1( i+step, j, (float)heightField[ idx ] ); // queryHeight( pafScanline,  (int)(iXpixel + stepX ), Yline ) );
+            //
+            // Need to convert these to localized QES dimensions
+            //
+            float xPos = halo_x + (i * dx);
+            float yPos = halo_y + (j * dy);
 
-            idx = (j+step) * dimX + i;
-            if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            Vector3<float> tv2( i, j+step, (float)heightField[ idx] ); // queryHeight( pafScanline, Xpixel, (int)(iYline + stepY) ));
+            // Vector3<float> tv0( i, j, (float)heightField[ idx ] ); // queryHeight( pafScanline, Xpixel,  Yline));
+            Vector3<float> tv0( xPos, yPos, (float)heightField[ idx ] ); // queryHeight( pafScanline, Xpixel,  Yline));
+
+            idx = j * nx + (i + step);
+            if (idx > heightField.size() - 1) { std::cout << "***************" << std::endl; idx = heightField.size()-1; }
+
+            // Vector3<float> tv1( i+step, j, (float)heightField[ idx ] ); // queryHeight( pafScanline,  (int)(iXpixel + stepX ), Yline ) );
+            xPos = halo_x + ((i+step) * dx);
+            Vector3<float> tv1( xPos, yPos, (float)heightField[ idx ] ); // queryHeight( pafScanline,  (int)(iXpixel + stepX ), Yline ) );
+
+            idx = (j+step) * nx + i;
+            if (idx > heightField.size() - 1) { std::cout << "---------------" << std::endl; idx = heightField.size()-1; }
+
+            // Vector3<float> tv2( i, j+step, (float)heightField[ idx] ); // queryHeight( pafScanline, Xpixel, (int)(iYline + stepY) ));
+            xPos = halo_x + (i * dx);
+            yPos = halo_y + ((j+step) * dy);
+            Vector3<float> tv2( xPos, yPos, (float)heightField[ idx] ); // queryHeight( pafScanline, Xpixel, (int)(iYline + stepY) ));
+
+            // std::cout << "Triangle: (" << tv0[0] << ", " << tv0[1] << ", " << tv0[2] <<  "), (" << tv1[0] << ", " << tv1[1] << ", " << tv1[2] <<  "), (" << tv2[0] << ", " << tv2[1] << ", " << tv2[2] <<  ")" << std::endl;
 
             tPtr = new Triangle( tv0, tv1, tv2 );
             m_triList.push_back(tPtr);
 
-            idx = (j+step) * dimX + i;
+            idx = (j+step) * nx + i;
             if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            Vector3<float> tv3( i, j+step, (float)heightField[ idx ] );// queryHeight( pafScanline,  Xpixel, (int)(iYline + stepY) ) );
 
-            idx = j * dimX + (i+step);
-            if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            Vector3<float> tv4( i+step, j, (float)heightField[ idx ] ); //  queryHeight( pafScanline,  (int)(iXpixel + stepX) , Yline ) );
+            // Vector3<float> tv3( i, j+step, (float)heightField[ idx ] );// queryHeight( pafScanline,  Xpixel, (int)(iYline + stepY) ) );
+            xPos = halo_x + (i * dx);
+            yPos = halo_y + ((j+step) * dy);
+            Vector3<float> tv3( xPos, yPos, (float)heightField[ idx ] );// queryHeight( pafScanline,  Xpixel, (int)(iYline + stepY) ) );
 
-            idx = (j+step) * dimX + (i+step);
+            idx = j * nx + (i+step);
             if (idx > heightField.size() - 1) idx = heightField.size()-1;
-            Vector3<float> tv5( i+step, j+step, (float)heightField[ idx ] ); // queryHeight( pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY) ) );
+            // Vector3<float> tv4( i+step, j, (float)heightField[ idx ] ); //  queryHeight( pafScanline,  (int)(iXpixel + stepX) , Yline ) );
+            xPos = halo_x + ((i+step) * dx);
+            yPos = halo_y + (j * dy);
+            Vector3<float> tv4( xPos, yPos, (float)heightField[ idx ] ); //  queryHeight( pafScanline,  (int)(iXpixel + stepX) , Yline ) );
+
+            idx = (j+step) * nx + (i+step);
+            if (idx > heightField.size() - 1) idx = heightField.size()-1;
+            // Vector3<float> tv5( i+step, j+step, (float)heightField[ idx ] ); // queryHeight( pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY) ) );
+            xPos = halo_x + ((i+step) * dx);
+            yPos = halo_y + ((j+step) * dy);
+            Vector3<float> tv5( xPos, yPos, (float)heightField[ idx ] ); // queryHeight( pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY) ) );
+
+            // std::cout << "Triangle: (" << tv3[0] << ", " << tv3[1] << ", " << tv3[2] <<  "), (" << tv4[0] << ", " << tv4[1] << ", " << tv4[2] <<  "), (" << tv5[0] << ", " << tv5[1] << ", " << tv5[2] <<  ")" << std::endl;
 
             tPtr = new Triangle( tv3, tv4, tv5 );
             m_triList.push_back(tPtr);
@@ -102,12 +203,12 @@ void DTEHeightField::loadImage()
     }
 
   printf( "Driver: %s/%s\n",
-	  m_imageDataset->GetDriver()->GetDescription(),
-	  m_imageDataset->GetDriver()->GetMetadataItem( GDAL_DMD_LONGNAME ) );
+      m_imageDataset->GetDriver()->GetDescription(),
+      m_imageDataset->GetDriver()->GetMetadataItem( GDAL_DMD_LONGNAME ) );
 
   printf( "Size is %dx%dx%d\n",
-	  m_imageDataset->GetRasterXSize(), m_imageDataset->GetRasterYSize(),
-	  m_imageDataset->GetRasterCount() );
+      m_imageDataset->GetRasterXSize(), m_imageDataset->GetRasterYSize(),
+      m_imageDataset->GetRasterCount() );
 
   if( m_imageDataset->GetProjectionRef()  != NULL )
     printf( "Projection is `%s'\n", m_imageDataset->GetProjectionRef() );
@@ -115,10 +216,10 @@ void DTEHeightField::loadImage()
   if( m_imageDataset->GetGeoTransform( m_imageGeoTransform ) == CE_None )
     {
       printf( "Origin = (%.6f,%.6f)\n",
-	      m_imageGeoTransform[0], m_imageGeoTransform[3] );
+          m_imageGeoTransform[0], m_imageGeoTransform[3] );
 
       printf( "Pixel Size = (%.6f,%.6f)\n",
-	      m_imageGeoTransform[1], m_imageGeoTransform[5] );
+          m_imageGeoTransform[1], m_imageGeoTransform[5] );
     }
 
   m_imageXSize = m_imageDataset->GetRasterXSize();
@@ -130,7 +231,14 @@ void DTEHeightField::loadImage()
 
 void DTEHeightField::load()
 {
-  std::cout << "load: loading DTE..." << std::endl;
+    std::cout << "DTEHeightField loading DTE..." << std::endl;
+
+  //
+  // local variables to hold common variables related to the QES
+  // domain
+  //
+  auto [ nx, ny, nz ] = m_dim;
+  auto [ dx, dy, dz ] = m_cellSize;
 
   // From -- http://www.gdal.org/gdal_tutorial.html
   m_poDataset = (GDALDataset *) GDALOpen( m_filename.c_str(), GA_ReadOnly );
@@ -141,12 +249,12 @@ void DTEHeightField::load()
     }
 
   printf( "GDAL Driver: %s/%s\n",
-	  m_poDataset->GetDriver()->GetDescription(),
-	  m_poDataset->GetDriver()->GetMetadataItem( GDAL_DMD_LONGNAME ) );
+      m_poDataset->GetDriver()->GetDescription(),
+      m_poDataset->GetDriver()->GetMetadataItem( GDAL_DMD_LONGNAME ) );
 
   printf( "\tRaster Size is %dx%dx%d\n",
-	  m_poDataset->GetRasterXSize(), m_poDataset->GetRasterYSize(),
-	  m_poDataset->GetRasterCount() );
+      m_poDataset->GetRasterXSize(), m_poDataset->GetRasterYSize(),
+      m_poDataset->GetRasterCount() );
 
   // Attempt to get the spatial reference from this dataset -
   // which will help us convert into lat/long
@@ -159,15 +267,15 @@ void DTEHeightField::load()
   if( m_poDataset->GetGeoTransform( m_geoTransform ) == CE_None )
     {
       printf( "\tDEM Origin = (%.6f,%.6f)\n",
-	      m_geoTransform[0], m_geoTransform[3] );
+          m_geoTransform[0], m_geoTransform[3] );
 
       printf( "\tPixel Size = (%.6f,%.6f)\n",
-	      m_geoTransform[1], m_geoTransform[5] );
+          m_geoTransform[1], m_geoTransform[5] );
       pixelSizeX = abs(m_geoTransform[1]);
       pixelSizeY = abs(m_geoTransform[5]);
 
       printf( "These should be zero for north up: (%.6f, %.6f)\n",
-	      m_geoTransform[2], m_geoTransform[4] );
+          m_geoTransform[2], m_geoTransform[4] );
     }
 
   GDALRasterBand  *poBand;
@@ -178,9 +286,9 @@ void DTEHeightField::load()
   poBand = m_poDataset->GetRasterBand( 1 );
   poBand->GetBlockSize( &nBlockXSize, &nBlockYSize );
   printf( "\tRaster Block=%dx%d Type=%s, ColorInterp=%s\n",
-	  nBlockXSize, nBlockYSize,
-	  GDALGetDataTypeName(poBand->GetRasterDataType()),
-	  GDALGetColorInterpretationName(poBand->GetColorInterpretation()) );
+      nBlockXSize, nBlockYSize,
+      GDALGetDataTypeName(poBand->GetRasterDataType()),
+      GDALGetColorInterpretationName(poBand->GetColorInterpretation()) );
 
   adfMinMax[0] = poBand->GetMinimum( &bGotMin );
   adfMinMax[1] = poBand->GetMaximum( &bGotMax );
@@ -194,7 +302,7 @@ void DTEHeightField::load()
 
   if( poBand->GetColorTable() != NULL )
     printf( "\tBand has a color table with %d entries.\n",
-	    poBand->GetColorTable()->GetColorEntryCount() );
+        poBand->GetColorTable()->GetColorEntryCount() );
 
   m_rbScale = poBand->GetScale();
   printf( "Band has scale: %.4f\n", m_rbScale );
@@ -211,10 +319,10 @@ void DTEHeightField::load()
   origin_x = m_geoTransform[0];
   origin_y = m_geoTransform[3] - pixelSizeY*m_nYSize;
   printf( "\tDomain Origin = (%.6f,%.6f)\n",
-	      origin_x, origin_y );
+          origin_x, origin_y );
 
   printf( "DEM size is %dx%dx%d\n",
-	  m_nXSize, m_nYSize );
+      m_nXSize, m_nYSize );
 
   // UTMx will be correct, but need to subtract halo
   //      demMinX == UTMx - halo_x
@@ -243,46 +351,45 @@ void DTEHeightField::load()
 
   if (originFlag == 0)
   {
-  	float domain_end_x = origin_x + DEMDistancex + domain_nx*cellSizeX;
-  	float domain_end_y = origin_y + DEMDistancey + domain_ny*cellSizeY;
-  	float dem_end_x = origin_x + m_nXSize*pixelSizeX;
-  	float dem_end_y = origin_y + m_nYSize*pixelSizeY;
-  	if ( ((DEMDistancex > 0.0) || (DEMDistancey > 0.0) ) && (DEMDistancex < m_nXSize*pixelSizeX) && (DEMDistancex < m_nYSize*pixelSizeY) )
-  	{
-  		shift_x = DEMDistancex/pixelSizeX;
-  		shift_y = DEMDistancey/pixelSizeY;
-  	}
+    float domain_end_x = origin_x + DEMDistancex + nx*dx;
+    float domain_end_y = origin_y + DEMDistancey + ny*dy;
+    float dem_end_x = origin_x + m_nXSize*pixelSizeX;
+    float dem_end_y = origin_y + m_nYSize*pixelSizeY;
+    if ( ((DEMDistancex > 0.0) || (DEMDistancey > 0.0) ) && (DEMDistancex < m_nXSize*pixelSizeX) && (DEMDistancex < m_nYSize*pixelSizeY) )
+    {
+        shift_x = DEMDistancex/pixelSizeX;
+        shift_y = DEMDistancey/pixelSizeY;
+    }
 
-  	if ( ((domain_end_x < dem_end_x) || (domain_end_y < dem_end_y)) )
-  	{
-  		end_x = (dem_end_x-domain_end_x)/pixelSizeX;
-  		end_y = (dem_end_y-domain_end_y)/pixelSizeY;
-  	}
+    if ( ((domain_end_x < dem_end_x) || (domain_end_y < dem_end_y)) )
+    {
+        end_x = (dem_end_x-domain_end_x)/pixelSizeX;
+        end_y = (dem_end_y-domain_end_y)/pixelSizeY;
+    }
 
-  	m_nXSize = m_nXSize - shift_x - end_x;
-  	m_nYSize = m_nYSize - shift_y - end_y;
+    m_nXSize = m_nXSize - shift_x - end_x;
+    m_nYSize = m_nYSize - shift_y - end_y;
   }
-
   else if (originFlag == 1)
   {
-  	float domain_end_x = domain_UTMx + domain_nx*cellSizeX;
-  	float domain_end_y = domain_UTMy + domain_ny*cellSizeY;
-  	float dem_end_x = origin_x + m_nXSize*pixelSizeX;
-  	float dem_end_y = origin_y + m_nYSize*pixelSizeY;
-  	if (((domain_UTMx > origin_x) || (domain_UTMy > origin_y)) && (domain_UTMx < dem_end_x) && (domain_UTMy < dem_end_y) )
-  	{
-  		shift_x = (domain_UTMx-origin_x)/pixelSizeX;
-  		shift_y = (domain_UTMy-origin_y)/pixelSizeY;
-  	}
+    float domain_end_x = domain_UTMx + nx*dx;
+    float domain_end_y = domain_UTMy + ny*dy;
+    float dem_end_x = origin_x + m_nXSize*pixelSizeX;
+    float dem_end_y = origin_y + m_nYSize*pixelSizeY;
+    if (((domain_UTMx > origin_x) || (domain_UTMy > origin_y)) && (domain_UTMx < dem_end_x) && (domain_UTMy < dem_end_y) )
+    {
+        shift_x = (domain_UTMx-origin_x)/pixelSizeX;
+        shift_y = (domain_UTMy-origin_y)/pixelSizeY;
+    }
 
-  	if ( ((domain_end_x < dem_end_x) || (domain_end_y < dem_end_y)) && (domain_UTMx >= origin_x) && (domain_UTMy >= origin_y) )
-  	{
-  		end_x = (dem_end_x-domain_end_x)/pixelSizeX;
-  		end_y = (dem_end_y-domain_end_y)/pixelSizeY;
-  	}
+    if ( ((domain_end_x < dem_end_x) || (domain_end_y < dem_end_y)) && (domain_UTMx >= origin_x) && (domain_UTMy >= origin_y) )
+    {
+        end_x = (dem_end_x-domain_end_x)/pixelSizeX;
+        end_y = (dem_end_y-domain_end_y)/pixelSizeY;
+    }
 
-  	m_nXSize = m_nXSize - shift_x - end_x;
-  	m_nYSize = m_nYSize - shift_y - end_y;
+    m_nXSize = m_nXSize - shift_x - end_x;
+    m_nYSize = m_nYSize - shift_y - end_y;
   }
 
   pafScanline = (float *) CPLMalloc(sizeof(float)*(m_nXSize)*(m_nYSize));
@@ -310,8 +417,8 @@ void DTEHeightField::load()
 
   std::cout << "DEM Loading\n";
 
-  float stepX = cellSizeX / pixelSizeX; // tie back to dx, dy here.... with scaling of pixelsize
-  float stepY = cellSizeY / pixelSizeY;
+  float stepX = dx / pixelSizeX; // tie back to dx, dy here.... with scaling of pixelsize
+  float stepY = dy / pixelSizeY;
 
   assert(stepX > 0 && stepY > 0);
 
@@ -451,7 +558,7 @@ void DTEHeightField::setDomain(Vector3<int>* domain, Vector3<float>* grid)
       (*domain)[0] = (*domain) [2] = (*domain)[1];
     else
         (*domain)[0] = (*domain) [1] = (*domain)[2]; */
-    printf("domain: %d %d %d\n", (*domain)[0], (*domain)[1], (*domain)[2]);
+    printf("Newly calculated domain size: %d %d %d\n", (*domain)[0], (*domain)[1], (*domain)[2]);
 }
 
 void DTEHeightField::outputOBJ(std::string s)
@@ -539,9 +646,9 @@ std::vector<int> DTEHeightField::setCells(Cell* cells, int nx, int ny, int nz, f
   std::vector<int> cutCells;
 
   int ii = halo_x/dx;
-	int jj = halo_y/dy;
-	int i_domain_end = ii+(m_nXSize*pixelSizeX)/dx;
-	int j_domain_end = jj+(m_nYSize*pixelSizeY)/dy;
+    int jj = halo_y/dy;
+    int i_domain_end = ii+(m_nXSize*pixelSizeX)/dx;
+    int j_domain_end = jj+(m_nYSize*pixelSizeY)/dy;
 
   for (int i = 0; i < nx - 2; i++)
     for (int j = 0; j < ny - 2; j++)
@@ -663,30 +770,23 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
 {
    float coordsMin, coordsMax;
    coordsMin = coordsMax = corners[0][2];
-	for (int l = 1; l <= 3; l++)
-	{
-		if (coordsMin > corners[l][2])
-		{
-			coordsMin = corners[l][2];
-		}
-		else if (coordsMax < corners[l][2])
-		{
-			coordsMax = corners[l][2];
-		}
-	}
+    for (int l = 1; l <= 3; l++)
+    {
+        if (coordsMin > corners[l][2])
+        {
+            coordsMin = corners[l][2];
+        }
+        else if (coordsMax < corners[l][2])
+        {
+            coordsMax = corners[l][2];
+        }
+    }
 
 // #pragma acc parallel loop
   for (int k = 1; k < nz - 1; k++)
   {
     float cellBot = z_face[k-1];
     float cellTop = cellBot + dz_array[k];
-
-    /*if ( i < 5  || j < 5)
-    {
-      std::cout << "i: " << i << "\t\t" << "cellBot:  " << cellBot << std::endl;
-      std::cout << "j: " << j << "\t\t" << "cellTop:  " << cellTop << std::endl;
-      std::cout << "k: " << k << "\t\t" << "coordsMin:  " << coordsMin << std::endl;
-    }*/
 
     if ( cellTop <= coordsMin)
       cells[CELL(i,j,k)] = Cell(terrain_CT, Vector3<float>(corners[0][0], corners[0][1], cellBot),
@@ -697,12 +797,9 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
     else
     {
       cutCells.push_back(CELL(i,j,k));
-	 /* std::cout << "i:" << i <<"\n";
-	  std::cout << "j:" << j <<"\n";
-	  std::cout << "k:" << k <<"\n";
-	  std::cout << "Number of cutcells:" << cutCells.size()<<"\n";*/
+
       std::vector< Vector3<float> > pointsInCell;
-      std::vector< Edge< int > > edgesInCell;
+      //std::vector< Edge< int > > edgesInCell;
 
       //Check to see the positions of the corners, the corners are always in
       //the cell, no matter what. If they exist out of bounds of the cell in the
@@ -728,11 +825,11 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
           cornerPos[l] = 1;
           pointsInCell.push_back( Vector3<float>(corners[l][0], corners[l][1], cellTop) );
         }
-         for (int first = 0; first < 3; first++)
+         /*for (int first = 0; first < 3; first++)
               for (int second = first + 1; second < 4; second++)
                 if ( (first != 1 || second != 3) && (first != 0 || second != 2) )
                   if (cornerPos[first] == cornerPos[second])
-                    edgesInCell.push_back(Edge<int>(first, second));
+                    edgesInCell.push_back(Edge<int>(first, second));*/
 
       //check intermediates 0-1 0-2 0-3 1-2 2-3
         int intermed[4][4][2]; //first two array cells are for identifying the corners, last one is top and bottom of cell
@@ -756,15 +853,15 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
                 {
                   intermed[first][second][0] = pointsInCell.size();
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
-                  edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
-                  edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
+                  //edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
+                  //edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
                 }
                 else if (cornerPos[second] > 0)
                 {
                   intermed[first][second][1] = pointsInCell.size();
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
-                  edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
-                  edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
+                  //edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
+                  //edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
                 }
               }
               else if (cornerPos[first] > 0)
@@ -774,8 +871,8 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
                 {
                   intermed[first][second][1] = pointsInCell.size();
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
-                  edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
-                  edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
+                  //edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
+                  //edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
                 }
                 else if (cornerPos[second] < 0)
                 {
@@ -783,8 +880,8 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
                   intermed[first][second][0] = pointsInCell.size() + 1;
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
-                  edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 2));
-                  edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
+                  //edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 2));
+                  //edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
                 }
               }
               else
@@ -793,8 +890,8 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
                 {
                   intermed[first][second][0] = pointsInCell.size();
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
-                  edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
-                  edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
+                  //edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
+                  //edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
                 }
                 else if (cornerPos[second] > 0)
                 {
@@ -802,22 +899,22 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
                   intermed[first][second][0] = pointsInCell.size() + 1;
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellTop) ) );
                   pointsInCell.push_back( Vector3<float>( getIntermediate(corners[first], corners[second], cellBot) ) );
-                  edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 2));
-                  edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
+                  //edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 2));
+                  //edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
                 }
               }
             }
 
             //if there is a top and bottom on any intermediate set, create an edge
-            for (int first = 0; first < 3; first++)
+            /*for (int first = 0; first < 3; first++)
               for (int second = first + 1; second < 4; second++)
                 if (first != 1 || second != 3)
                   if (intermed[first][second][0] != -1 && intermed[first][second][1] != -1)
-                    edgesInCell.push_back(Edge<int>(intermed[first][second][0], intermed[first][second][1]));
+                    edgesInCell.push_back(Edge<int>(intermed[first][second][0], intermed[first][second][1]));*/
 
             //intermediates who share a corner on the same plane as them form an edge
             //unless the diagonal is also there
-            for (int tier = 0; tier < 2; tier ++)
+            /*for (int tier = 0; tier < 2; tier ++)
             {
               if (cornerPos[1] == -1 + (2 * tier) && intermed[0][1][tier] != -1 && intermed[1][2][tier] != -1) //-1 for bottom, 1 for top
               {
@@ -827,7 +924,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
               {
                 edgesInCell.push_back(Edge<int>(intermed[0][3][tier], intermed[2][3][tier]));
               }
-            }
+            }*/
 
 
             //if the diagonal is completely in the cell create a mid a
@@ -837,9 +934,9 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
               pointsInCell.push_back(Vector3<float>( (corners[0][0] + corners[2][0]) / 2.0f, (corners[0][1] + corners[2][1]) / 2.0f,
                                                      (corners[0][2] + corners[2][2]) / 2.0f));
               int newP = pointsInCell.size() - 1;
-              edgesInCell.push_back(Edge<int>(0, newP));
-              edgesInCell.push_back(Edge<int>(2, newP));
-              if ( cornerPos[1] == 0)
+              //edgesInCell.push_back(Edge<int>(0, newP));
+              //edgesInCell.push_back(Edge<int>(2, newP));
+              /*if ( cornerPos[1] == 0)
                 edgesInCell.push_back(Edge<int>(1,newP));
               else
                 for (int tier = 0; tier < 2; tier++)
@@ -858,13 +955,13 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
                     edgesInCell.push_back(Edge<int>(intermed[0][3][tier], newP));
                   if (intermed[2][3][tier] != -1)
                     edgesInCell.push_back(Edge<int>(intermed[2][3][tier], newP));
-                }
+                }*/
             }
             //if there is one diagonal intermed, run the same idea as above
             //note: code will be quite different. But this should connect
             //to all intermediates, and all corners if they are missing an
             //intermediate pair.---- != is essentially XOR
-            else if ( (intermed[0][2][0] != -1)  != (intermed[0][2][1] != -1) )
+            /*else if ( (intermed[0][2][0] != -1)  != (intermed[0][2][1] != -1) )
             {
               int midP = (intermed[0][2][0] != -1 ? intermed[0][2][0] : intermed[0][2][1]);
               //only need to check 1 and 3 corners
@@ -887,10 +984,10 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
                     if (intermed[first][second][1] != -1)
                       edgesInCell.push_back(Edge<int>(intermed[first][second][1], midP));
                   }
-            }
+            }*/
             //if there is both diagonal intermeds, connect top with all tops,
             //bot with all bots, then top to all bot intermediates
-            else if (intermed[0][2][0] != -1  && intermed[0][2][1] != -1)
+            /*else if (intermed[0][2][0] != -1  && intermed[0][2][1] != -1)
             {
               int midB = intermed[0][2][0], midT = intermed[0][2][1];
               //for bot, check 0-3, 2-3, 0-1, 1-2  & Corner 1,3
@@ -953,7 +1050,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
                   edgesInCell.push_back(Edge<int>(3, intermed[1][2][topBot]));
                 }
               }
-            }
+            }*/
 
 
             /* point index structure notes: 0 is always top left, 1 is always top right,
@@ -969,7 +1066,7 @@ void DTEHeightField::setCellPoints(Cell* cells, int i, int j, int nx, int ny, in
              * also should not matter.
              */
 
-        cells[CELL(i,j,k)] = Cell(pointsInCell, edgesInCell, intermed,
+        cells[CELL(i,j,k)] = Cell(pointsInCell/*, edgesInCell*/, intermed,
                                             Vector3<float>(corners[0][0], corners[0][1], cellBot),
                                             Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
       }

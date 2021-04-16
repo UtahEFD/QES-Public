@@ -41,7 +41,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    WRFInput wrfFile("/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21", 0, 0, 0, 0);
+    std::string zLetter = "";
+    WRFInput wrfFile("/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21", 0, 0, 0, zLetter, 0.0f, 0.0f, 1);
     wrfFile.readDomainInfo();
 
 }

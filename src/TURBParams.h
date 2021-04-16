@@ -1,3 +1,34 @@
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/** @file TURBParams.h */
+
 #pragma once
 
 #include <iostream>
@@ -9,38 +40,39 @@
 #include <chrono>
 #include <limits>
 
-#include "util/ParseInterface.h" 
+#include "util/ParseInterface.h"
 #include "Vector3.h"
 
-/*
-  Author: Fabien Margairaz
-  Date: Feb. 2020
-*/
-
+/**
+ * @class TURBParams
+ * @brief :document this:
+ *
+ * @sa ParseInterface
+ */
 class TURBParams : public ParseInterface
-{ 
+{
 private:
-  
+
 protected:
-    
+
 public:
-    
+
     int methodLocalMixing;
     bool save2file;
     std::string filename,varname;
 
-    int mlSamplesPerAirCell;
+int mlSamplesPerAirCell;
 
-    Vector3<float>* sigConst; 
+Vector3<float>* sigConst; 
+bool flagNonLocalMixing;
 
-    bool flagNonLocalMixing;  
     float turbUpperBound;
 
     TURBParams()
     {}
     ~TURBParams()
     {}
-  
+
     virtual void parseValues()
     {
         methodLocalMixing=0;
@@ -62,11 +94,11 @@ public:
         }
         parsePrimitive<int>(false, mlSamplesPerAirCell, "samples");
         if (methodLocalMixing == 3) {
-            
+
             std::cout << "Setting samples per air cell for ray-traced mixing length to " << mlSamplesPerAirCell << std::endl;
         }
-        
-        
+
+
         if(methodLocalMixing < 0 || methodLocalMixing > 4) {
             std::cout << "[WARNING] unknown local mixing method -> set method to 0 (height above terrain)" << std::endl;
             methodLocalMixing = 0;
@@ -77,7 +109,7 @@ public:
             methodLocalMixing = 0;
         }
         if(methodLocalMixing == 0 || methodLocalMixing == 4) {
-            save2file = "false";  
+            save2file = "false";
         }
         
         sigConst=nullptr;
@@ -88,10 +120,7 @@ public:
 
         turbUpperBound=100;
         parsePrimitive<float>(false, turbUpperBound, "turbUpperBound");
-        
-        
 
     }
-  
-};
 
+};
