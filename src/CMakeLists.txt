@@ -7,6 +7,7 @@ add_subdirectory( unitTests )
 
 CUDA_ADD_LIBRARY( qeswindscore
   BVH.cpp
+  Canopy.cpp
   CanopyElement.cpp
   CanopyHomogeneous.cpp
   CanopyIsolatedTree.cpp
@@ -17,7 +18,6 @@ CUDA_ADD_LIBRARY( qeswindscore
   DTEHeightField.cpp
   DynamicParallelism.cu
   ESRIShapefile.cpp ESRIShapefile.h
-  GroundCoverCanopy.cpp
   handleWINDSArgs.cpp
   LocalMixing.cpp
   LocalMixingDefault.cpp

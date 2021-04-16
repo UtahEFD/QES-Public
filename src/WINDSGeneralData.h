@@ -11,8 +11,9 @@
 
 #include "WINDSInputData.h"
 #include "Building.h"
+#include "Canopy.h"
 #include "CanopyElement.h"
-#include "GroundCoverCanopy.h"
+
 #include "LocalMixing.h"
 #include "LocalMixingDefault.h"
 #include "LocalMixingNetCDF.h"
@@ -154,7 +155,7 @@ public:
     float convergence;
 
     // Canopy functions
-    GroundCoverCanopy* groundCoverCanopy;
+    //GroundCoverCanopy* groundCoverCanopy;
     //std::vector<float> canopy_atten;		/**< Canopy attenuation coefficient */
     //std::vector<float> canopy_top;		  /**< Canopy height */
     //std::vector<int> canopy_top_index;		  /**< Canopy top index */
@@ -162,7 +163,7 @@ public:
     //std::vector<float> canopy_ustar;		  /**< Velocity gradient at the top of canopy */
     //std::vector<float> canopy_d;		  /**< Canopy displacement length */
     
-    //Canopy* canopy;
+    Canopy* canopy;
 
     float max_velmag;         // In polygonWake
 

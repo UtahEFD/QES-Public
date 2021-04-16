@@ -11,18 +11,18 @@ class WINDSInputData;
 class WINDSGeneralData;
 class TURBGeneralData;
 
-class GroundCoverCanopy
+class Canopy
 {
 private:
 
 public:
     
-    GroundCoverCanopy()
+    Canopy()
     {}
 
-    GroundCoverCanopy(const WINDSInputData* WID, WINDSGeneralData* WGD);
+    Canopy(const WINDSInputData* WID, WINDSGeneralData* WGD);
 
-    virtual ~GroundCoverCanopy()
+    virtual ~Canopy()
     {}
     
     /*
@@ -100,12 +100,12 @@ private:
 
 };
 
-inline int GroundCoverCanopy::getCellFlagCanopy()
+inline int Canopy::getCellFlagCanopy()
 {
     return 18;
 }
 
-inline int GroundCoverCanopy::getCellFlagWake()
+inline int Canopy::getCellFlagWake()
 {
     return 19;
 }

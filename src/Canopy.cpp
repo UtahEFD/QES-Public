@@ -1,10 +1,10 @@
-#include "GroundCoverCanopy.h"
+#include "Canopy.h"
 
 #include "PolygonVertex.h"
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 
-GroundCoverCanopy::GroundCoverCanopy(const WINDSInputData* WID, WINDSGeneralData* WGD)
+Canopy::Canopy(const WINDSInputData* WID, WINDSGeneralData* WGD)
 {    
     nx_canopy = WGD->nx-1;
     ny_canopy = WGD->ny-1;
@@ -139,7 +139,7 @@ GroundCoverCanopy::GroundCoverCanopy(const WINDSInputData* WID, WINDSGeneralData
     return;
 }
 
-void GroundCoverCanopy::canopyVegetation(WINDSGeneralData* WGD)
+void Canopy::canopyVegetation(WINDSGeneralData* WGD)
 { 
     // Apply canopy parameterization
     canopyCioncoParam(WGD);		
@@ -349,7 +349,7 @@ void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
 
 // Function to apply the urban canopy parameterization
 // Based on the version contain Lucas Ulmer's modifications
-void GroundCoverCanopy::canopyCioncoParam(WINDSGeneralData* WGD)
+void Canopy::canopyCioncoParam(WINDSGeneralData* WGD)
 {
   
     float avg_atten;     /**< average attenuation of the canopy */
@@ -477,7 +477,7 @@ void GroundCoverCanopy::canopyCioncoParam(WINDSGeneralData* WGD)
     return;
 }
 
-void GroundCoverCanopy::canopyRegression(WINDSGeneralData* WGD)
+void Canopy::canopyRegression(WINDSGeneralData* WGD)
 {
   
     int k_top(0), counter;
@@ -529,7 +529,7 @@ void GroundCoverCanopy::canopyRegression(WINDSGeneralData* WGD)
     return;
 }
 
-float GroundCoverCanopy::canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m)
+float Canopy::canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m)
 {
     int iter;
     float  uhc, d, d1, d2;
@@ -570,7 +570,7 @@ float GroundCoverCanopy::canopyBisection(float ustar, float z0, float canopy_top
     return d;
 }
 
-float GroundCoverCanopy::canopySlopeMatch(float z0, float canopy_top, float canopy_atten)
+float Canopy::canopySlopeMatch(float z0, float canopy_top, float canopy_atten)
 {
   
     int iter;

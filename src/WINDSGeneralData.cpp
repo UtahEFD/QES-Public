@@ -669,8 +669,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
       }
    }
 
-   groundCoverCanopy = 0;
-   if ( WID->canopies->groundCovers.size() > 0 )
+   canopy = 0;
+   /*if ( WID->canopies->groundCovers.size() > 0 )
    {
        for (auto k=0u; k<WID->canopies->groundCovers.size(); k++) {
            for (auto pIdx=0u; pIdx < WID->canopies->groundCovers[k]->polygonVertices.size(); pIdx++) {
@@ -679,7 +679,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData* WID, int solverType)
            }
        }
        groundCoverCanopy = new GroundCoverCanopy(WID,this);
-   }
+       }*/
+
    
    // We want to sort ALL buildings here...  use the allBuildingsV to
    // do this... (remember some are canopies) so we may need a
@@ -943,9 +944,8 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
 
 void WINDSGeneralData::applyParametrizations(const WINDSInputData* WID) 
 {
-    if (groundCoverCanopy)
-    {
-        groundCoverCanopy->canopyVegetation(this);
+    if (canopy) {
+           canopy->canopyVegetation(this);
     }
 
     std::cout << "[Winds] \t applying Parameterization" << std::endl;
