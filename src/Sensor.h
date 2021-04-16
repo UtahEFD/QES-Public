@@ -49,7 +49,6 @@ class WINDSGeneralData;
 class Sensor : public ParseInterface
 {
 private:
-
   /**
    * :document this:
    *
@@ -59,136 +58,131 @@ private:
    * @param line :document this:
    */
   template<typename T>
-  void _cudaCheck(T e, const char* func, const char* call, const int line);
+  void _cudaCheck(T e, const char *func, const char *call, const int line);
 
 public:
-    
-    Sensor() {
-    
-    }
-    
-    Sensor(const std::string fileName) 
-    {
-        pt::ptree tree;
-        
-        try {
-            pt::read_xml(fileName, tree);
-        } 
-        catch (boost::property_tree::xml_parser::xml_parser_error& e) {
-            std::cerr << "Error reading tree in" << fileName << "\n";
-            exit(EXIT_FAILURE);
-        }
+  Sensor()
+  {
+  }
 
-        parseTree(tree);
+  Sensor(const std::string fileName)
+  {
+    pt::ptree tree;
 
+    try {
+      pt::read_xml(fileName, tree);
+    } catch (boost::property_tree::xml_parser::xml_parser_error &e) {
+      std::cerr << "Error reading tree in" << fileName << "\n";
+      exit(EXIT_FAILURE);
     }
 
-
-    ///@{
-    /** :document this: */
-    float site_xcoord, site_ycoord;
-    ///@}
-
-    int site_coord_flag = 1;  /**< :document this: */
-    int site_UTM_zone;        /**< :document this: */
-
-    ///@{
-    /** :document this: */
-  	float site_UTM_x, site_UTM_y;
-    ///@}
-
-    ///@{
-    /** :document this: */
-  	float site_lon, site_lat;
-    ///@}
-
-    std::vector<TimeSeries*> TS; /**< :document this: */
-
-    /**
-     * :document this:
-     */
-    virtual void parseValues()
-    { 
-      parsePrimitive<int>(true, site_coord_flag, "site_coord_flag");
-      parsePrimitive<float>(false, site_xcoord, "site_xcoord");
-      parsePrimitive<float>(false, site_ycoord, "site_ycoord");
-      parsePrimitive<float>(false, site_UTM_x, "site_UTM_x");
-      parsePrimitive<float>(false, site_UTM_y, "site_UTM_y");
-      parsePrimitive<int>(false, site_UTM_zone, "site_UTM_zone");
-      parsePrimitive<float>(false, site_lon, "site_lon");
-      parsePrimitive<float>(false, site_lat, "site_lat");
-      parseMultiElements<TimeSeries>(false, TS, "timeSeries");
-
-    }
-
-    /**
-     * :document this:
-     */
-    void parseTree(pt::ptree t)
-  	{
-  			setTree(t);
-  			setParents("root");
-  			parseValues();
-  	}
+    parseTree(tree);
+  }
 
 
-    /**
-     * Computes the wind velocity profile using Barn's scheme at the site's sensor.
-     *
-     *
-     * Takes in information for each site's sensor (boundary layer flag, reciprocal coefficient, surface
-     * roughness and measured wind velocity and direction), generates wind velocity profile for each sensor and finally
-     * utilizes Barns scheme to interplote velocity to generate the initial velocity field for the domain.
-     *
-     * @param WID :document this:
-     * @param WGD :document this:
-     * @param index :document this:
-     * @param solverType :document this:
-     */
-    void inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, int index, int solverType);
+  ///@{
+  /** :document this: */
+  float site_xcoord, site_ycoord;
+  ///@}
+
+  int site_coord_flag = 1; /**< :document this: */
+  int site_UTM_zone; /**< :document this: */
+
+  ///@{
+  /** :document this: */
+  float site_UTM_x, site_UTM_y;
+  ///@}
+
+  ///@{
+  /** :document this: */
+  float site_lon, site_lat;
+  ///@}
+
+  std::vector<TimeSeries *> TS; /**< :document this: */
+
+  /**
+   * :document this:
+   */
+  virtual void parseValues()
+  {
+    parsePrimitive<int>(true, site_coord_flag, "site_coord_flag");
+    parsePrimitive<float>(false, site_xcoord, "site_xcoord");
+    parsePrimitive<float>(false, site_ycoord, "site_ycoord");
+    parsePrimitive<float>(false, site_UTM_x, "site_UTM_x");
+    parsePrimitive<float>(false, site_UTM_y, "site_UTM_y");
+    parsePrimitive<int>(false, site_UTM_zone, "site_UTM_zone");
+    parsePrimitive<float>(false, site_lon, "site_lon");
+    parsePrimitive<float>(false, site_lat, "site_lat");
+    parseMultiElements<TimeSeries>(false, TS, "timeSeries");
+  }
+
+  /**
+   * :document this:
+   */
+  void parseTree(pt::ptree t)
+  {
+    setTree(t);
+    setParents("root");
+    parseValues();
+  }
 
 
-    /**
-     * Converts UTM to lat/lon and vice versa of the sensor coordiantes.
-     *
-     * @param rlon :document this:
-     * @param rlat :document this:
-     * @param rx :document this:
-     * @param ry :document this:
-     * @param UTM_PROJECTION_ZONE :document this:
-     * @param iway :document this:
-     */
-    void UTMConverter (float rlon, float rlat, float rx, float ry, int UTM_PROJECTION_ZONE, int iway);
+  /**
+   * Computes the wind velocity profile using Barn's scheme at the site's sensor.
+   *
+   *
+   * Takes in information for each site's sensor (boundary layer flag, reciprocal coefficient, surface
+   * roughness and measured wind velocity and direction), generates wind velocity profile for each sensor and finally
+   * utilizes Barns scheme to interplote velocity to generate the initial velocity field for the domain.
+   *
+   * @param WID :document this:
+   * @param WGD :document this:
+   * @param index :document this:
+   * @param solverType :document this:
+   */
+  void inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, int index, int solverType);
 
-    /**
-     * Calculates the convergence value based on lat/lon input.
-     *
-     * @param lon :document this:
-     * @param lat :document this:
-     * @param site_UTM_zone :document this:
-     * @param convergense :document this:
-     */
-    void getConvergence(float lon, float lat, int site_UTM_zone, float convergence);
 
-    /**
-     * :document this:
-     *
-     * @param WID :document this:
-     * @param WGD :document this:
-     * @param u_prof :document this:
-     * @param v_prof :document this:
-     */
-    void BarnesInterpolationCPU (const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof);
+  /**
+   * Converts UTM to lat/lon and vice versa of the sensor coordiantes.
+   *
+   * @param rlon :document this:
+   * @param rlat :document this:
+   * @param rx :document this:
+   * @param ry :document this:
+   * @param UTM_PROJECTION_ZONE :document this:
+   * @param iway :document this:
+   */
+  void UTMConverter(float rlon, float rlat, float rx, float ry, int UTM_PROJECTION_ZONE, int iway);
 
-    /**
-     * :document this:
-     *
-     * @param WID :document this:
-     * @param WGD :document this:
-     * @param u_prof :document this:
-     * @param v_prof :document this:
-     * @param site_id :document this:
-     */
-    void BarnesInterpolationGPU (const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, std::vector<int> site_id);
+  /**
+   * Calculates the convergence value based on lat/lon input.
+   *
+   * @param lon :document this:
+   * @param lat :document this:
+   * @param site_UTM_zone :document this:
+   * @param convergense :document this:
+   */
+  void getConvergence(float lon, float lat, int site_UTM_zone, float convergence);
 
+  /**
+   * :document this:
+   *
+   * @param WID :document this:
+   * @param WGD :document this:
+   * @param u_prof :document this:
+   * @param v_prof :document this:
+   */
+  void BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof);
+
+  /**
+   * :document this:
+   *
+   * @param WID :document this:
+   * @param WGD :document this:
+   * @param u_prof :document this:
+   * @param v_prof :document this:
+   * @param site_id :document this:
+   */
+  void BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, std::vector<int> site_id);
 };
