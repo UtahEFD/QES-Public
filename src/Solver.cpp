@@ -50,7 +50,7 @@ using std::vector;
 using std::cout;
 
 // duplication of this macro
-#define CELL(i,j,k,w) ((i) + (j) * (nx+(w)) + (k) * (nx+(w)) * (ny+(w)))
+#define CELL(i, j, k, w) ((i) + (j) * (nx + (w)) + (k) * (nx + (w)) * (ny + (w)))
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
@@ -59,13 +59,13 @@ using std::cout;
 /**
  * Shows progress of the solving process by printing the percentage.
  */
-void Solver::printProgress (float percentage)
+void Solver::printProgress(float percentage)
 {
-   int val = (int) (percentage * 100);
-   int lpad = (int) (percentage * PBWIDTH);
-   int rpad = PBWIDTH - lpad;
-   printf ("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
-   fflush (stdout);
+  int val = (int)(percentage * 100);
+  int lpad = (int)(percentage * PBWIDTH);
+  int rpad = PBWIDTH - lpad;
+  printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+  fflush(stdout);
 }
 
 
@@ -78,14 +78,14 @@ void Solver::printProgress (float percentage)
  * @param WID :document this:
  * @param WGD :document this:
  */
-Solver::Solver(const WINDSInputData* WID, WINDSGeneralData * WGD)
-   : alpha1 (1),
-     alpha2 (1),
-     eta( pow((alpha1/alpha2), 2.0) ),
-     A( pow( (WGD->dx/WGD->dy), 2.0 ) ),
-     B( eta*pow( (WGD->dx/WGD->dz), 2.0) ),
-     itermax( WID->simParams->maxIterations )
+Solver::Solver(const WINDSInputData *WID, WINDSGeneralData *WGD)
+  : alpha1(1),
+    alpha2(1),
+    eta(pow((alpha1 / alpha2), 2.0)),
+    A(pow((WGD->dx / WGD->dy), 2.0)),
+    B(eta * pow((WGD->dx / WGD->dz), 2.0)),
+    itermax(WID->simParams->maxIterations)
 
 {
-   tol = WID->simParams->tolerance;
+  tol = WID->simParams->tolerance;
 }

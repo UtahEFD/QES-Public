@@ -59,19 +59,15 @@ class WINDSGeneralData;
 class LocalMixingNetCDF : public LocalMixing
 {
 private:
-
 protected:
-
 public:
+  LocalMixingNetCDF()
+  {}
+  ~LocalMixingNetCDF()
+  {}
 
-    LocalMixingNetCDF()
-    {}
-    ~LocalMixingNetCDF()
-    {}
-
-    /**
-     * Defines the mixing length as the height above the ground.
-     */
-    void defineMixingLength(const WINDSInputData*,WINDSGeneralData*);
-
+  /**
+   * Defines the mixing length as the height above the ground.
+   */
+  void defineMixingLength(const WINDSInputData *, WINDSGeneralData *);
 };

@@ -58,37 +58,34 @@ class WINDSGeneralData;
 class LocalMixingSerial : public LocalMixing
 {
 private:
-    std::vector<int> wall_right_indices, wall_left_indices;
-    std::vector<int> wall_back_indices,  wall_front_indices;
-    std::vector<int> wall_below_indices, wall_above_indices;
+  std::vector<int> wall_right_indices, wall_left_indices;
+  std::vector<int> wall_back_indices, wall_front_indices;
+  std::vector<int> wall_below_indices, wall_above_indices;
 
-    //grid information
-    std::vector<float> x_fc,x_cc;
-    std::vector<float> y_fc,y_cc;
-    std::vector<float> z_fc,z_cc;
+  // grid information
+  std::vector<float> x_fc, x_cc;
+  std::vector<float> y_fc, y_cc;
+  std::vector<float> z_fc, z_cc;
 
-    /**
-     * This function propagate the distance in fuild cell form
-     * the wall for the each solid element.
-     *
-     * @note This method is relatively inefficient and should be used only wiht small domains.
-     * @warning This is a serial ONLY method.
-     */
-    void getMinDistWall(WINDSGeneralData*,int);
+  /**
+   * This function propagate the distance in fuild cell form
+   * the wall for the each solid element.
+   *
+   * @note This method is relatively inefficient and should be used only wiht small domains.
+   * @warning This is a serial ONLY method.
+   */
+  void getMinDistWall(WINDSGeneralData *, int);
 
 protected:
-
 public:
+  LocalMixingSerial()
+  {}
+  ~LocalMixingSerial()
+  {}
 
-    LocalMixingSerial()
-    {}
-    ~LocalMixingSerial()
-    {}
-
-    /**
-     * Defines the mixing length with the serial
-     * method (CANNOT be parallelized).
-     */
-    void defineMixingLength(const WINDSInputData*,WINDSGeneralData*);
-
+  /**
+   * Defines the mixing length with the serial
+   * method (CANNOT be parallelized).
+   */
+  void defineMixingLength(const WINDSInputData *, WINDSGeneralData *);
 };

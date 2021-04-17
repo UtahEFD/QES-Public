@@ -37,9 +37,9 @@
 #include "Building.h"
 
 enum CanopyType {
-    Homogeneous,
-    IsolatedTree,
-    Vineyard
+  Homogeneous,
+  IsolatedTree,
+  Vineyard
 };
 
 /**
@@ -53,129 +53,123 @@ enum CanopyType {
 class CanopyElement : public Building
 {
 private:
-    
 protected:
-    
-    ///@{
-    /** Minimum position value for a Building */
-    float x_min, y_min;
-    ///@}
+  ///@{
+  /** Minimum position value for a Building */
+  float x_min, y_min;
+  ///@}
 
-    ///@{
-    /** Maximum position value for a Building */
-    float x_max, y_max;
-    ///@}
-	
-    ///@{
-    /** Coordinate of center of a cell */
-	float x_cent, y_cent;
-    ///@}
+  ///@{
+  /** Maximum position value for a Building */
+  float x_max, y_max;
+  ///@}
 
-	float polygon_area;          /**< Polygon area */
+  ///@{
+  /** Coordinate of center of a cell */
+  float x_cent, y_cent;
+  ///@}
 
-    ///@{
-    /** :document these: */
-	int icell_cent, icell_face;
-    ///@}
+  float polygon_area; /**< Polygon area */
 
-    ///@{
-    /** :document these: */
-    int nx_canopy, ny_canopy, nz_canopy;
-    ///@}
+  ///@{
+  /** :document these: */
+  int icell_cent, icell_face;
+  ///@}
 
-    ///@{
-    /** :document these: */
-    int numcell_cent_2d, numcell_cent_3d;
-    ///@}
+  ///@{
+  /** :document these: */
+  int nx_canopy, ny_canopy, nz_canopy;
+  ///@}
+
+  ///@{
+  /** :document these: */
+  int numcell_cent_2d, numcell_cent_3d;
+  ///@}
 
 public:
-    
-    CanopyElement()
-    { 
-    }
-    virtual ~CanopyElement()
-    {
-    }
-    
-    /*! 
-     * For all Canopy classes derived, this need to be defined
-     */
-    virtual void parseValues() = 0;
-    
-    void setPolyBuilding (WINDSGeneralData* WGD);
+  CanopyElement()
+  {
+  }
+  virtual ~CanopyElement()
+  {
+  }
 
-    virtual void setCellFlags (const WINDSInputData* WID, WINDSGeneralData* WGD, int building_number) = 0;    
-    virtual void canopyVegetation(WINDSGeneralData *wgd,int building_id) = 0;
-    virtual void canopyWake(WINDSGeneralData *wgd,int building_id) = 0;
+  /*!
+   * For all Canopy classes derived, this need to be defined
+   */
+  virtual void parseValues() = 0;
 
-    virtual int getCellFlagCanopy() = 0;
-    virtual int getCellFlagWake() = 0;
+  void setPolyBuilding(WINDSGeneralData *WGD);
 
-    std::map<int,int> canopy_cellMap2D,canopy_cellMap3D;    /**< map beteen WINDS grid and canopy grid */
-    
-    CanopyType _cType;
-    
-protected: 
-          
-    /*!
-     * For there and below, the canopyInitial function has to be defined
-     */
-    virtual void setCanopyGrid(WINDSGeneralData *wgd,int building_id);
-    
-    
-    /*!
-     * 
-     */
-    std::vector<float> canopy_atten;	  /**< Canopy attenuation coefficient */
-    
-    std::vector<float> canopy_bot;		  /**< Canopy bottom */
-    std::vector<int> canopy_bot_index;	  /**< Canopy bottom index */
-    std::vector<float> canopy_top;		  /**< Canopy top */
-    std::vector<int> canopy_top_index;	  /**< Canopy top index */
+  virtual void setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, int building_number) = 0;
+  virtual void canopyVegetation(WINDSGeneralData *wgd, int building_id) = 0;
+  virtual void canopyWake(WINDSGeneralData *wgd, int building_id) = 0;
 
-    std::vector<float> canopy_base;	      /**< Canopy base */
-    std::vector<float> canopy_height;	  /**< Canopy height */
+  virtual int getCellFlagCanopy() = 0;
+  virtual int getCellFlagWake() = 0;
 
-    std::vector<float> canopy_z0;		  /**< Canopy surface roughness */
-    std::vector<float> canopy_ustar;	  /**< Velocity gradient at the top of canopy */
-    std::vector<float> canopy_d;		  /**< Canopy displacement length */
-    
-    /*!
-     * This function takes in icellflag defined in the defineCanopy function along with variables initialized in
-     * the readCanopy function and initial velocity field components (u0 and v0). This function applies the urban 
-     * canopy parameterization and returns modified initial velocity field components.
-     */
-    void canopyCioncoParam(WINDSGeneralData * wgd);
-    
-    /*!
-     * This function is being call from the plantInitial function and uses linear regression method to define 
-     * ustar and surface roughness of the canopy.
-     */
-    void canopyRegression(WINDSGeneralData *wgd);
-    
-    /*!
-     * This is a new function wrote by Lucas Ulmer and is being called from the plantInitial function. The purpose 
-     * of this function is to use bisection method to find root of the specified equation. It calculates the 
-     * displacement height when the bisection function is not finding it.
-     */
-    float canopySlopeMatch(float z0, float canopy_top, float canopy_atten);
-    
-    /*!
-     * 
-     */
-    float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
+  std::map<int, int> canopy_cellMap2D, canopy_cellMap3D; /**< map beteen WINDS grid and canopy grid */
+
+  CanopyType _cType;
+
+protected:
+  /*!
+   * For there and below, the canopyInitial function has to be defined
+   */
+  virtual void setCanopyGrid(WINDSGeneralData *wgd, int building_id);
+
+
+  /*!
+   *
+   */
+  std::vector<float> canopy_atten; /**< Canopy attenuation coefficient */
+
+  std::vector<float> canopy_bot; /**< Canopy bottom */
+  std::vector<int> canopy_bot_index; /**< Canopy bottom index */
+  std::vector<float> canopy_top; /**< Canopy top */
+  std::vector<int> canopy_top_index; /**< Canopy top index */
+
+  std::vector<float> canopy_base; /**< Canopy base */
+  std::vector<float> canopy_height; /**< Canopy height */
+
+  std::vector<float> canopy_z0; /**< Canopy surface roughness */
+  std::vector<float> canopy_ustar; /**< Velocity gradient at the top of canopy */
+  std::vector<float> canopy_d; /**< Canopy displacement length */
+
+  /*!
+   * This function takes in icellflag defined in the defineCanopy function along with variables initialized in
+   * the readCanopy function and initial velocity field components (u0 and v0). This function applies the urban
+   * canopy parameterization and returns modified initial velocity field components.
+   */
+  void canopyCioncoParam(WINDSGeneralData *wgd);
+
+  /*!
+   * This function is being call from the plantInitial function and uses linear regression method to define
+   * ustar and surface roughness of the canopy.
+   */
+  void canopyRegression(WINDSGeneralData *wgd);
+
+  /*!
+   * This is a new function wrote by Lucas Ulmer and is being called from the plantInitial function. The purpose
+   * of this function is to use bisection method to find root of the specified equation. It calculates the
+   * displacement height when the bisection function is not finding it.
+   */
+  float canopySlopeMatch(float z0, float canopy_top, float canopy_atten);
+
+  /*!
+   *
+   */
+  float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
 
 private:
-    
-
 };
 
 inline int CanopyElement::getCellFlagCanopy()
 {
-    return 18;
+  return 18;
 }
 
 inline int CanopyElement::getCellFlagWake()
 {
-    return 19;
+  return 19;
 }

@@ -58,41 +58,40 @@
 class SharedMemory : public Solver
 {
 private:
-
-    /**
-     * :document this:
-     *
-     * @param e :document this:
-     * @param func :document this:
-     * @param call :document this:
-     * @param line :document this:
-     */
-    template<typename T>
-    void _cudaCheck(T e, const char* func, const char* call, const int line);
+  /**
+   * :document this:
+   *
+   * @param e :document this:
+   * @param func :document this:
+   * @param call :document this:
+   * @param line :document this:
+   */
+  template<typename T>
+  void _cudaCheck(T e, const char *func, const char *call, const int line);
 
 public:
-    SharedMemory(const WINDSInputData* WID, WINDSGeneralData* WGD)
-		: Solver(WID, WGD)
-    {
-    }
+  SharedMemory(const WINDSInputData *WID, WINDSGeneralData *WGD)
+    : Solver(WID, WGD)
+  {
+  }
 
 protected:
-    ///@{
-    /** Solver coefficient on device (GPU) */
-    float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;
-    ///@}
-    float *d_R;              /**< Divergence of initial velocity field on device (GPU) */
-    ///@{
-    /** Lagrange multiplier on device (GPU) */
-    float *d_lambda, *d_lambda_old;
-    ///@}
+  ///@{
+  /** Solver coefficient on device (GPU) */
+  float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;
+  ///@}
+  float *d_R; /**< Divergence of initial velocity field on device (GPU) */
+  ///@{
+  /** Lagrange multiplier on device (GPU) */
+  float *d_lambda, *d_lambda_old;
+  ///@}
 
-    /**
-     * :document this:
-     *
-     * @param WID :document this:
-     * @param WGD :document this:
-     * @param solveWind :document this:
-     */
-    virtual void solve(const WINDSInputData* WID, WINDSGeneralData* WGD, bool solveWind);
+  /**
+   * :document this:
+   *
+   * @param WID :document this:
+   * @param WGD :document this:
+   * @param solveWind :document this:
+   */
+  virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind);
 };

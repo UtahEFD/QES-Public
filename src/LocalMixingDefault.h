@@ -58,19 +58,15 @@ class WINDSGeneralData;
 class LocalMixingDefault : public LocalMixing
 {
 private:
-
 protected:
-
 public:
+  LocalMixingDefault()
+  {}
+  ~LocalMixingDefault()
+  {}
 
-    LocalMixingDefault()
-    {}
-    ~LocalMixingDefault()
-    {}
-
-    /*
-     * [FM] This method define the mixing length as the height above the ground
-     */
-    void defineMixingLength(const WINDSInputData*,WINDSGeneralData*);
-
+  /*
+   * [FM] This method define the mixing length as the height above the ground
+   */
+  void defineMixingLength(const WINDSInputData *, WINDSGeneralData *);
 };

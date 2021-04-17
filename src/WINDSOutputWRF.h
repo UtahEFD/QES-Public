@@ -12,19 +12,18 @@
 class WINDSOutputWRF : public QESNetCDFOutput
 {
 public:
-    WINDSOutputWRF()
-        : QESNetCDFOutput()
-    {}
+  WINDSOutputWRF()
+    : QESNetCDFOutput()
+  {}
 
-    WINDSOutputWRF(WINDSGeneralData*, WRFInput *wrfInputData);
+  WINDSOutputWRF(WINDSGeneralData *, WRFInput *wrfInputData);
 
-    ~WINDSOutputWRF() {}
+  ~WINDSOutputWRF() {}
 
-    //save function be call outside
-    void save(ptime);
+  // save function be call outside
+  void save(ptime);
 
 private:
-
-    WINDSGeneralData* WGD_;
-    WRFInput *wrf_;
+  WINDSGeneralData *WGD_;
+  WRFInput *wrf_;
 };

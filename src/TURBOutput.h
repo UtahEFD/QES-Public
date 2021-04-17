@@ -46,17 +46,15 @@
 class TURBOutput : public QESNetCDFOutput
 {
 public:
-    TURBOutput()
-        : QESNetCDFOutput()
-    {}
+  TURBOutput()
+    : QESNetCDFOutput()
+  {}
 
-    TURBOutput(TURBGeneralData*,std::string);
-    ~TURBOutput()
-    {}
-    void save(ptime);
+  TURBOutput(TURBGeneralData *, std::string);
+  ~TURBOutput()
+  {}
+  void save(ptime);
 
 private:
-
-    TURBGeneralData* tgd_;
-
+  TURBGeneralData *tgd_;
 };

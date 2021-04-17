@@ -60,74 +60,74 @@ using std::vector;
 class Mesh
 {
 public:
-    BVH* triangleBVH; /**< BVH of Triangle objects */
+  BVH *triangleBVH; /**< BVH of Triangle objects */
 
-    int mlSampleRate; /**< :document this: */
+  int mlSampleRate; /**< :document this: */
 
-        //temp var for Optix
-        //OptixRayTrace *optixRayTracer;
-        vector<Triangle*> optixTris;
+  // temp var for Optix
+  // OptixRayTrace *optixRayTracer;
+  vector<Triangle *> optixTris;
 
-    /**
-     * Creates a BVH out of a list of Triangles.
-     *
-     * @param tris List of triangles.
-     */
-    Mesh(vector<Triangle*> tris)
-            : mlSampleRate( 100 )
-    {
-        this->triangleBVH = BVH::createBVH(tris);
+  /**
+   * Creates a BVH out of a list of Triangles.
+   *
+   * @param tris List of triangles.
+   */
+  Mesh(vector<Triangle *> tris)
+    : mlSampleRate(100)
+  {
+    this->triangleBVH = BVH::createBVH(tris);
 
-                //temp var for Optix
-                // this->optixRayTracer = new OptixRayTrace(tris);
-                       optixTris = tris;
-                //temp var for getting the list of triangles
-                       trisList = tris;
-        }
+    // temp var for Optix
+    //  this->optixRayTracer = new OptixRayTrace(tris);
+    optixTris = tris;
+    // temp var for getting the list of triangles
+    trisList = tris;
+  }
 
-    /**
-     * Gets the height from a location on the xy-plane
-     * to a triangle in the BVH.
-     *
-     * @param x x-position
-     * @param y y-position
-     * @return distance to the triangle directly above the point.
-     */
-    float getHeight(float x, float y);
+  /**
+   * Gets the height from a location on the xy-plane
+   * to a triangle in the BVH.
+   *
+   * @param x x-position
+   * @param y y-position
+   * @return distance to the triangle directly above the point.
+   */
+  float getHeight(float x, float y);
 
 
-        /**
-         * Calculates the mixing length for all fluid objects.
-         *
-         *@param dimX Domain info in the x plane
-         *@param dimY Domain info in the y plane
-         *@param dimZ Domain info in the z plane
-         *@param dx Grid info in the x plane
-         *@param dy Grid info in the y plane
-         *@param dz Grid info in the z plane
-         *@param icellflag Cell type
-         *@param mixingLengths Array of mixinglengths for all cells that will be updated
-         */
-        void calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const vector<int> &icellflag, vector<double> &mixingLengths);
+  /**
+   * Calculates the mixing length for all fluid objects.
+   *
+   *@param dimX Domain info in the x plane
+   *@param dimY Domain info in the y plane
+   *@param dimZ Domain info in the z plane
+   *@param dx Grid info in the x plane
+   *@param dy Grid info in the y plane
+   *@param dz Grid info in the z plane
+   *@param icellflag Cell type
+   *@param mixingLengths Array of mixinglengths for all cells that will be updated
+   */
+  void calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const vector<int> &icellflag, vector<double> &mixingLengths);
 
-        /**
-         * :document this:
-         *@param dimX Domain info in the x plane
-         *@param dimY Domain info in the y plane
-         *@param dimZ Domain info in the z plane
-         *@param dx Grid info in the x plane
-         *@param dy Grid info in the y plane
-         *@param dz Grid info in the z plane
-         *@param icellflag Cell type
-         *@param mixingLengths Array of mixinglengths for all cells that will be updated
-         */
-        void tempOPTIXMethod(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const vector<int> &icellflag, vector<double> &mixingLengths);
+  /**
+   * :document this:
+   *@param dimX Domain info in the x plane
+   *@param dimY Domain info in the y plane
+   *@param dimZ Domain info in the z plane
+   *@param dx Grid info in the x plane
+   *@param dy Grid info in the y plane
+   *@param dz Grid info in the z plane
+   *@param icellflag Cell type
+   *@param mixingLengths Array of mixinglengths for all cells that will be updated
+   */
+  void tempOPTIXMethod(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const vector<int> &icellflag, vector<double> &mixingLengths);
 
-        std::vector<Triangle *> getTris() const {
-           return trisList;
-        }
-  private:
+  std::vector<Triangle *> getTris() const
+  {
+    return trisList;
+  }
 
-        std::vector<Triangle *> trisList; /**< Temporary variable for getting th elist of Triangle objects through the mesh */
-
+private:
+  std::vector<Triangle *> trisList; /**< Temporary variable for getting th elist of Triangle objects through the mesh */
 };

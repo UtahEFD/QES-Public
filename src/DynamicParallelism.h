@@ -61,40 +61,39 @@
 class DynamicParallelism : public Solver
 {
 private:
-
-    /**
-     * :brief desc here:
-     *
-     * @param e :document this:
-     * @param func :document this:
-     * @param call :document this:
-     * @param line :document this:
-     */
-    template<typename T>
-    void _cudaCheck(T e, const char* func, const char* call, const int line);
+  /**
+   * :brief desc here:
+   *
+   * @param e :document this:
+   * @param func :document this:
+   * @param call :document this:
+   * @param line :document this:
+   */
+  template<typename T>
+  void _cudaCheck(T e, const char *func, const char *call, const int line);
 
 public:
-    DynamicParallelism(const WINDSInputData* WID, WINDSGeneralData* WGD);
+  DynamicParallelism(const WINDSInputData *WID, WINDSGeneralData *WGD);
 
 protected:
-    ///@{
-    /** Solver coefficient on device (GPU) */
-    float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;
-    ///@}
+  ///@{
+  /** Solver coefficient on device (GPU) */
+  float *d_e, *d_f, *d_g, *d_h, *d_m, *d_n;
+  ///@}
 
-    float *d_R; /**< Divergence of initial velocity field on device (GPU) */
+  float *d_R; /**< Divergence of initial velocity field on device (GPU) */
 
-    ///@{
-    /** Lagrange multipliers on device (GPU) */
-    float *d_lambda, *d_lambda_old;
-    ///@}
+  ///@{
+  /** Lagrange multipliers on device (GPU) */
+  float *d_lambda, *d_lambda_old;
+  ///@}
 
-    /**
-     * :brief desc here:
-     *
-     * @param WID :document this:
-     * @param WGD :document this:
-     * @param solveWind :document this:
-     */
-    virtual void solve(const WINDSInputData* WID, WINDSGeneralData* WGD, bool solveWind);
+  /**
+   * :brief desc here:
+   *
+   * @param WID :document this:
+   * @param WGD :document this:
+   * @param solveWind :document this:
+   */
+  virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind);
 };

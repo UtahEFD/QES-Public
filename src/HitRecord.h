@@ -46,21 +46,22 @@
  * @sa Vector3
  * @sa BVH
  */
-class HitRecord{
-  public:
-   bool isHit;             /**< :document this: */
-   void* hitNode;          /**< Reference to BVH node that was hit */
-   float hitDist;          /**< Distance from ray origin to hit point */
-   float t;                /**< :document this: */
-   Vector3<float> endpt;   /**< The intersection point */
+class HitRecord
+{
+public:
+  bool isHit; /**< :document this: */
+  void *hitNode; /**< Reference to BVH node that was hit */
+  float hitDist; /**< Distance from ray origin to hit point */
+  float t; /**< :document this: */
+  Vector3<float> endpt; /**< The intersection point */
 
-   HitRecord();
-   HitRecord(void* hitNode, bool isHit);
-   HitRecord(void* hitNode, bool isHit, float hitDist);
+  HitRecord();
+  HitRecord(void *hitNode, bool isHit);
+  HitRecord(void *hitNode, bool isHit, float hitDist);
 
-   void* getHitNode();
-   float getHitDist();
-   bool getIsHit();
+  void *getHitNode();
+  float getHitDist();
+  bool getIsHit();
 };
 
 #endif

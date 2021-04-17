@@ -50,21 +50,21 @@
 class CPUSolver : public Solver
 {
 public:
-   CPUSolver(const WINDSInputData* WID, WINDSGeneralData* WGD)
-      : Solver(WID, WGD)
-   {
-   }
-protected:
+  CPUSolver(const WINDSInputData *WID, WINDSGeneralData *WGD)
+    : Solver(WID, WGD)
+  {
+  }
 
-   /** :document this:
-    * Start by writing a one sentence description here
-    *
-    * Document the implementation details in the .cpp file, not here.
-    * (remove the placeholder comments and :document this: tag when done)
-    *
-    * @param WID :document this:
-    * @param WGD :document this:
-    * @param solveWind :document this:
-    */
-   virtual void solve(const WINDSInputData* WID, WINDSGeneralData* WGD, bool solveWind);
+protected:
+  /** :document this:
+   * Start by writing a one sentence description here
+   *
+   * Document the implementation details in the .cpp file, not here.
+   * (remove the placeholder comments and :document this: tag when done)
+   *
+   * @param WID :document this:
+   * @param WGD :document this:
+   * @param solveWind :document this:
+   */
+  virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind);
 };

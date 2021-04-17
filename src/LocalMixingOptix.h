@@ -65,19 +65,15 @@ class WINDSGeneralData;
 class LocalMixingOptix : public LocalMixing
 {
 private:
-
 protected:
-
 public:
+  LocalMixingOptix()
+  {}
+  ~LocalMixingOptix()
+  {}
 
-    LocalMixingOptix()
-    {}
-    ~LocalMixingOptix()
-    {}
-
-    /**
-     * Defines the mixing length as the height above the ground.
-     */
-    void defineMixingLength(const WINDSInputData*,WINDSGeneralData*);
-
+  /**
+   * Defines the mixing length as the height above the ground.
+   */
+  void defineMixingLength(const WINDSInputData *, WINDSGeneralData *);
 };

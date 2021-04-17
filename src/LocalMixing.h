@@ -59,17 +59,16 @@ class WINDSGeneralData;
 class LocalMixing
 {
 private:
-    NetCDFOutput* mixLengthOut; /**< :document this: */
+  NetCDFOutput *mixLengthOut; /**< :document this: */
 
 protected:
-    void saveMixingLength(const WINDSInputData*,WINDSGeneralData*);
+  void saveMixingLength(const WINDSInputData *, WINDSGeneralData *);
 
 public:
+  LocalMixing()
+  {}
+  ~LocalMixing()
+  {}
 
-    LocalMixing()
-    {}
-    ~LocalMixing()
-    {}
-
-    virtual void defineMixingLength(const WINDSInputData*,WINDSGeneralData*) = 0;
+  virtual void defineMixingLength(const WINDSInputData *, WINDSGeneralData *) = 0;
 };

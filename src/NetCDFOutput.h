@@ -43,43 +43,39 @@ using namespace netCDF::exceptions;
  * @class NetCDFOutput
  * @brief Handles the saving of output files.
  */
-class NetCDFOutput {
+class NetCDFOutput
+{
 
 protected:
-  NcFile* outfile; /**< File to write. */
-  std::map<std::string,NcVar> fields; /**< :document this: */
+  NcFile *outfile; /**< File to write. */
+  std::map<std::string, NcVar> fields; /**< :document this: */
 
 public:
   NetCDFOutput()
-    {}
+  {}
   // initializer
   NetCDFOutput(std::string);
   virtual ~NetCDFOutput()
-    {}
+  {}
 
   // setter
-  NcDim addDimension(std::string, int size=0);
+  NcDim addDimension(std::string, int size = 0);
   NcDim getDimension(std::string);
   void addField(std::string, std::string, std::string, std::vector<NcDim>, NcType);
 
   // save functions for 1D array (save 1D time)
-  void saveField1D(std::string, const std::vector<size_t>, int*);
-  void saveField1D(std::string, const std::vector<size_t>, float*);
-  void saveField1D(std::string, const std::vector<size_t>, double*);
+  void saveField1D(std::string, const std::vector<size_t>, int *);
+  void saveField1D(std::string, const std::vector<size_t>, float *);
+  void saveField1D(std::string, const std::vector<size_t>, double *);
 
   // save functions for 2D array (save 1D array, eg: x,y,z )
-  void saveField2D(std::string, std::vector<int>&);
-  void saveField2D(std::string, std::vector<float>&);
-  void saveField2D(std::string, std::vector<double>&);
+  void saveField2D(std::string, std::vector<int> &);
+  void saveField2D(std::string, std::vector<float> &);
+  void saveField2D(std::string, std::vector<double> &);
 
   // save functions for *D
-  void saveField2D(std::string, const std::vector<size_t>,
-           std::vector<size_t>, std::vector<int>&);
-  void saveField2D(std::string, const std::vector<size_t>,
-           std::vector<size_t>, std::vector<float>&);
-  void saveField2D(std::string, const std::vector<size_t>,
-		   std::vector<size_t>, std::vector<double>&);
-    void saveField2D(std::string, const std::vector<size_t>,
-                     std::vector<size_t>, std::vector<char>&);
-  
+  void saveField2D(std::string, const std::vector<size_t>, std::vector<size_t>, std::vector<int> &);
+  void saveField2D(std::string, const std::vector<size_t>, std::vector<size_t>, std::vector<float> &);
+  void saveField2D(std::string, const std::vector<size_t>, std::vector<size_t>, std::vector<double> &);
+  void saveField2D(std::string, const std::vector<size_t>, std::vector<size_t>, std::vector<char> &);
 };

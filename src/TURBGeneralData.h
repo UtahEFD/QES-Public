@@ -51,103 +51,102 @@
  * @class TURBGeneralData
  * @brief :document this:
  */
-class TURBGeneralData {
+class TURBGeneralData
+{
 
 public:
-    TURBGeneralData()
-    {}
-    TURBGeneralData(const WINDSInputData*,WINDSGeneralData*);
-    virtual ~TURBGeneralData()
-    {}
+  TURBGeneralData()
+  {}
+  TURBGeneralData(const WINDSInputData *, WINDSGeneralData *);
+  virtual ~TURBGeneralData()
+  {}
 
-    virtual void run(WINDSGeneralData*);
+  virtual void run(WINDSGeneralData *);
 
-    bool flagNonLocalMixing; /**< :document this: */
+  bool flagNonLocalMixing; /**< :document this: */
 
-    // General QUIC Domain Data
-    ///@{
-    /** number of cells */
-    int nx, ny, nz;
-    ///@}
+  // General QUIC Domain Data
+  ///@{
+  /** number of cells */
+  int nx, ny, nz;
+  ///@}
 
-    ///@{
-    /** grid information */
-    std::vector<float> x_fc;
-    std::vector<float> x_cc;
-    std::vector<float> y_fc;
-    std::vector<float> y_cc;
-    std::vector<float> z_fc;
-    std::vector<float> z_cc;
-    ///@}
+  ///@{
+  /** grid information */
+  std::vector<float> x_fc;
+  std::vector<float> x_cc;
+  std::vector<float> y_fc;
+  std::vector<float> y_cc;
+  std::vector<float> z_fc;
+  std::vector<float> z_cc;
+  ///@}
 
-    // Mean trubulence quantities
-    float z0d,d0d;
-    float zRef,uRef,uStar;
-    float bldgH_mean,bldgH_max;
-    float terrainH_max;
+  // Mean trubulence quantities
+  float z0d, d0d;
+  float zRef, uRef, uStar;
+  float bldgH_mean, bldgH_max;
+  float terrainH_max;
 
-    // Turbulence Fields Upper Bound (tij < turbUpperBound*uStar^2)
-    float turbUpperBound; /**< Turbulence fields upper bound */
+  // Turbulence Fields Upper Bound (tij < turbUpperBound*uStar^2)
+  float turbUpperBound; /**< Turbulence fields upper bound */
 
-    // index for fluid cell
-    std::vector<int> icellfluid; /**< :document this: */
-    std::vector<int> iturbflag;  /**< :document this: */
-    /*
-      0 - solid object, 1 - fluid
-      2 - stairstep terrain-wall, 3 - cut-cell terrain
-      4 - stairstep building-wall, 5 - cut-cell building
-    */
+  // index for fluid cell
+  std::vector<int> icellfluid; /**< :document this: */
+  std::vector<int> iturbflag; /**< :document this: */
+  /*
+    0 - solid object, 1 - fluid
+    2 - stairstep terrain-wall, 3 - cut-cell terrain
+    4 - stairstep building-wall, 5 - cut-cell building
+  */
 
-    ///@{
-    /** strain rate tensor */
-    std::vector<float> Sxx;
-    std::vector<float> Sxy;
-    std::vector<float> Sxz;
-    std::vector<float> Syy;
-    std::vector<float> Syz;
-    std::vector<float> Szz;
-    ///@}
+  ///@{
+  /** strain rate tensor */
+  std::vector<float> Sxx;
+  std::vector<float> Sxy;
+  std::vector<float> Sxz;
+  std::vector<float> Syy;
+  std::vector<float> Syz;
+  std::vector<float> Szz;
+  ///@}
 
-    std::vector<float> Lm; /**< mixing length */
+  std::vector<float> Lm; /**< mixing length */
 
-    ///@{
-    /** stress tensor */
-    std::vector<float> txx;
-    std::vector<float> txy;
-    std::vector<float> txz;
-    std::vector<float> tyy;
-    std::vector<float> tyz;
-    std::vector<float> tzz;
-    ///@}
+  ///@{
+  /** stress tensor */
+  std::vector<float> txx;
+  std::vector<float> txy;
+  std::vector<float> txz;
+  std::vector<float> tyy;
+  std::vector<float> tyz;
+  std::vector<float> tzz;
+  ///@}
 
-    // derived turbulence quantities
-    std::vector<float> tke;
-    std::vector<float> CoEps;
+  // derived turbulence quantities
+  std::vector<float> tke;
+  std::vector<float> CoEps;
 
-    // local Mixing class and data
-    LocalMixing* localMixing;
-    std::vector<double> mixingLengths;
+  // local Mixing class and data
+  LocalMixing *localMixing;
+  std::vector<double> mixingLengths;
 
 protected:
-
 private:
-    // store the wall classes
-    std::vector<TURBWall *>wallVec;
+  // store the wall classes
+  std::vector<TURBWall *> wallVec;
 
-    // some constants for turbulent model
-    const float vonKar=0.41;
-    const float cPope=0.55;
-    float sigUOrg=2.5;
-    float sigVOrg=2.0;
-    float sigWOrg=1.3;
-    float sigUConst=sigUOrg*sigUOrg*cPope*cPope;
-    float sigVConst=sigVOrg*sigVOrg*cPope*cPope;
-    float sigWConst=sigWOrg*sigWOrg*cPope*cPope;
+  // some constants for turbulent model
+  const float vonKar = 0.41;
+  const float cPope = 0.55;
+  float sigUOrg = 2.5;
+  float sigVOrg = 2.0;
+  float sigWOrg = 1.3;
+  float sigUConst = sigUOrg * sigUOrg * cPope * cPope;
+  float sigVConst = sigVOrg * sigVOrg * cPope * cPope;
+  float sigWConst = sigWOrg * sigWOrg * cPope * cPope;
 
-    void getFrictionVelocity(WINDSGeneralData*);
-    void getDerivatives(WINDSGeneralData*);
-    void getStressTensor();
+  void getFrictionVelocity(WINDSGeneralData *);
+  void getDerivatives(WINDSGeneralData *);
+  void getStressTensor();
 
-    void boundTurbFields();
-
+  void boundTurbFields();
 };

@@ -63,34 +63,32 @@ using namespace std;
 class Solver
 {
 protected:
+  const int alpha1; /**< Gaussian precision moduli */
+  const int alpha2; /**< Gaussian precision moduli */
+  const float eta; /**< :document this: */
+  const float A; /**< :document this: */
+  const float B; /**< :document this: */
 
-   const int alpha1;     /**< Gaussian precision moduli */
-   const int alpha2;     /**< Gaussian precision moduli */
-   const float eta;      /**< :document this: */
-   const float A;        /**< :document this: */
-   const float B;        /**< :document this: */
+  float tol; /**< Error tolerance */
+  const float omega = 1.78f; /**< Over-relaxation factor */
 
-   float tol;                 /**< Error tolerance */
-   const float omega = 1.78f; /**< Over-relaxation factor */
+  // SOLVER-based parameters
+  std::vector<float> R; /**< Divergence of initial velocity field */
+  std::vector<float> lambda, lambda_old; /**< :document these as group or indiv: */
 
-   // SOLVER-based parameters
-   std::vector<float> R; /**< Divergence of initial velocity field */
-   std::vector<float> lambda, lambda_old; /**< :document these as group or indiv: */
+  int itermax; /**< Maximum number of iterations */
 
-   int itermax;          /**< Maximum number of iterations */
-
-   /**
-    * Prints out the current amount that a process
-    * has finished with a progress bar.
-    *
-    * @param percentage the amount the task has finished
-    */
-   void printProgress (float percentage);
+  /**
+   * Prints out the current amount that a process
+   * has finished with a progress bar.
+   *
+   * @param percentage the amount the task has finished
+   */
+  void printProgress(float percentage);
 
 
 public:
-   Solver(const WINDSInputData* WID, WINDSGeneralData* WGD);
+  Solver(const WINDSInputData *WID, WINDSGeneralData *WGD);
 
-   virtual void solve(const WINDSInputData *WID, WINDSGeneralData* WGD, bool solveWind) = 0;
-
+  virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind) = 0;
 };

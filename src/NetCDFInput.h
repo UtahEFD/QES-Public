@@ -46,32 +46,31 @@ using namespace netCDF::exceptions;
  * @author Jeremy Gibbs
  * @author Fabien Margairaz
  */
-class NetCDFInput {
+class NetCDFInput
+{
 
- protected:
-  NcFile* infile; /**< File to read */
+protected:
+  NcFile *infile; /**< File to read */
 
- public:
-
+public:
   NetCDFInput()
-    {}
+  {}
   NetCDFInput(std::string);
   virtual ~NetCDFInput()
-    {}
+  {}
 
   // getters
-  void getDimension(std::string, NcDim&);
-  void getDimensionSize(std::string name, int&);
-  void getVariable(std::string, NcVar&);
+  void getDimension(std::string, NcDim &);
+  void getDimensionSize(std::string name, int &);
+  void getVariable(std::string, NcVar &);
 
   // get variable for 1D
-  void getVariableData(std::string name,std::vector<int>&);
-  void getVariableData(std::string name,std::vector<float>&);
-  void getVariableData(std::string name,std::vector<double>&);
+  void getVariableData(std::string name, std::vector<int> &);
+  void getVariableData(std::string name, std::vector<float> &);
+  void getVariableData(std::string name, std::vector<double> &);
 
   // get variable for *D
-  void getVariableData(std::string name,std::vector<size_t>,std::vector<size_t>,std::vector<int>&);
-  void getVariableData(std::string name,std::vector<size_t>,std::vector<size_t>,std::vector<float>&);
-  void getVariableData(std::string name,std::vector<size_t>,std::vector<size_t>,std::vector<double>&);
-
+  void getVariableData(std::string name, std::vector<size_t>, std::vector<size_t>, std::vector<int> &);
+  void getVariableData(std::string name, std::vector<size_t>, std::vector<size_t>, std::vector<float> &);
+  void getVariableData(std::string name, std::vector<size_t>, std::vector<size_t>, std::vector<double> &);
 };

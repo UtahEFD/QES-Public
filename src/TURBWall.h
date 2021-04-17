@@ -53,37 +53,34 @@ class TURBGeneralData;
 class TURBWall
 {
 public:
+  TURBWall()
+  {}
+  ~TURBWall()
+  {}
 
-    TURBWall()
-    {}
-    ~TURBWall()
-    {}
-
-    /**
-     * Takes in the icellflags set by setCellsFlag
-     * function for stair-step method and sets related coefficients to
-     * zero to define solid walls. It also creates vectors of indices
-     * of the cells that have wall to right/left, wall above/bellow
-     * and wall in front/back
-     */
-    virtual void defineWalls(WINDSGeneralData*,TURBGeneralData*) = 0;
-    virtual void setWallsBC(WINDSGeneralData*,TURBGeneralData*) = 0;
+  /**
+   * Takes in the icellflags set by setCellsFlag
+   * function for stair-step method and sets related coefficients to
+   * zero to define solid walls. It also creates vectors of indices
+   * of the cells that have wall to right/left, wall above/bellow
+   * and wall in front/back
+   */
+  virtual void defineWalls(WINDSGeneralData *, TURBGeneralData *) = 0;
+  virtual void setWallsBC(WINDSGeneralData *, TURBGeneralData *) = 0;
 
 protected:
+  void get_stairstep_wall_id(WINDSGeneralData *, int);
+  void set_stairstep_wall_flag(TURBGeneralData *, int);
 
-    void get_stairstep_wall_id(WINDSGeneralData*,int);
-    void set_stairstep_wall_flag(TURBGeneralData*,int);
+  void get_cutcell_wall_id(WINDSGeneralData *, int);
+  void set_cutcell_wall_flag(TURBGeneralData *, int);
 
-    void get_cutcell_wall_id(WINDSGeneralData*,int);
-    void set_cutcell_wall_flag(TURBGeneralData*,int);
+  void set_loglaw_stairstep_at_id_cc(WINDSGeneralData *, TURBGeneralData *, int, int, float);
 
-    void set_loglaw_stairstep_at_id_cc(WINDSGeneralData*,TURBGeneralData*,int,int,float);
-
-    // cells above wall (for stair-step methods for Wall BC)
-    std::vector<int> stairstep_wall_id;
-    // cut-cell cells
-    std::vector<int> cutcell_wall_id;
+  // cells above wall (for stair-step methods for Wall BC)
+  std::vector<int> stairstep_wall_id;
+  // cut-cell cells
+  std::vector<int> cutcell_wall_id;
 
 private:
-
 };

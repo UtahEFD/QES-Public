@@ -117,4 +117,3 @@ Vector3<float> SphereDirections::getNextDir2(){
 }
 
 #endif
-

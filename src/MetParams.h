@@ -59,28 +59,21 @@ namespace pt = boost::property_tree;
 class MetParams : public ParseInterface
 {
 private:
-
-
-
 public:
+  int z0_domain_flag = 0; /**< :document this: */
+  std::vector<Sensor *> sensors; /**< :document this: */
 
-    int z0_domain_flag = 0;       /**< :document this: */
-    std::vector<Sensor*> sensors; /**< :document this: */
-
-    std::vector<std::string> sensorName; /**< :document this: */
-
+  std::vector<std::string> sensorName; /**< :document this: */
 
 
-    /**
-     * :document this:
-     */
-    virtual void parseValues()
-    {
-        parsePrimitive<int>(false, z0_domain_flag, "z0_domain_flag");
-        parseMultiElements<Sensor>(false, sensors, "sensor");
+  /**
+   * :document this:
+   */
+  virtual void parseValues()
+  {
+    parsePrimitive<int>(false, z0_domain_flag, "z0_domain_flag");
+    parseMultiElements<Sensor>(false, sensors, "sensor");
 
-        parseMultiPrimitives<std::string>(false, sensorName, "sensorName");
-
-    }
-
+    parseMultiPrimitives<std::string>(false, sensorName, "sensorName");
+  }
 };

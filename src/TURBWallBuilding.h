@@ -56,29 +56,27 @@ class TURBWallBuilding : public TURBWall
 {
 protected:
 public:
+  TURBWallBuilding()
+  {}
+  ~TURBWallBuilding()
+  {}
 
-    TURBWallBuilding()
-    {}
-    ~TURBWallBuilding()
-    {}
-
-    /**
-     * Takes in the icellflags set by setCellsFlag
-     * function for stair-step method and sets related coefficients to
-     * zero to define solid walls. It also creates vectors of indices
-     * of the cells that have wall to right/left, wall above/bellow
-     * and wall in front/back
-     */
-    void defineWalls(WINDSGeneralData*,TURBGeneralData*);
-    void setWallsBC(WINDSGeneralData*,TURBGeneralData*);
+  /**
+   * Takes in the icellflags set by setCellsFlag
+   * function for stair-step method and sets related coefficients to
+   * zero to define solid walls. It also creates vectors of indices
+   * of the cells that have wall to right/left, wall above/bellow
+   * and wall in front/back
+   */
+  void defineWalls(WINDSGeneralData *, TURBGeneralData *);
+  void setWallsBC(WINDSGeneralData *, TURBGeneralData *);
 
 private:
-    const int icellflag_building = 0;
-    const int icellflag_cutcell = 7;
+  const int icellflag_building = 0;
+  const int icellflag_cutcell = 7;
 
-    const int iturbflag_stairstep = 4;
-    const int iturbflag_cutcell = 5;
+  const int iturbflag_stairstep = 4;
+  const int iturbflag_cutcell = 5;
 
-    bool use_cutcell = false;
-
+  bool use_cutcell = false;
 };

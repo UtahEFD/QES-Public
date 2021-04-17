@@ -1,567 +1,580 @@
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/** @file CanopyIsolatedTree.cpp */
+
 #include "CanopyIsolatedTree.h"
 
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 
-CanopyIsolatedTree::CanopyIsolatedTree(const WINDSInputData* WID, WINDSGeneralData* WGD, int id)
+CanopyIsolatedTree::CanopyIsolatedTree(const WINDSInputData *WID, WINDSGeneralData *WGD, int id)
 {
-    polygonVertices = WID->canopies->shpPolygons[id];
-    H = WID->canopies->shpTreeHeight[id];
-    base_height = 0.0;//WGD->base_height[id];
-    zMaxLAI=0.5*H;
+  polygonVertices = WID->canopies->shpPolygons[id];
+  H = WID->canopies->shpTreeHeight[id];
+  base_height = 0.0;// WGD->base_height[id];
+  zMaxLAI = 0.5 * H;
 }
 
-// set et attenuation coefficient 
-void CanopyIsolatedTree::setCellFlags (const WINDSInputData* WID, WINDSGeneralData* WGD, int building_id)
+// set et attenuation coefficient
+void CanopyIsolatedTree::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, int building_id)
 {
-    // When THIS canopy calls this function, we need to do the
-    // following:
-    //readCanopy(nx, ny, nz, landuse_flag, num_canopies, lu_canopy_flag,
-    //canopy_atten, canopy_top);
-    
-    // this function need to be called to defined the boundary of the canopy and the icellflags
-    setCanopyGrid(WGD,building_id);
-    
-    if(ceil(1.5*k_end) > WGD->nz-1) {
-        std::cerr << "ERROR domain too short for tree method" << std::endl;
-        exit(EXIT_FAILURE);
+  // When THIS canopy calls this function, we need to do the
+  // following:
+  // readCanopy(nx, ny, nz, landuse_flag, num_canopies, lu_canopy_flag,
+  // canopy_atten, canopy_top);
+
+  // this function need to be called to defined the boundary of the canopy and the icellflags
+  setCanopyGrid(WGD, building_id);
+
+  if (ceil(1.5 * k_end) > WGD->nz - 1) {
+    std::cerr << "ERROR domain too short for tree method" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  // Resize the canopy-related vectors
+  canopy_atten.resize(numcell_cent_3d, 0.0);
+
+  for (auto j = 0; j < ny_canopy; j++) {
+    for (auto i = 0; i < nx_canopy; i++) {
+      int icell_2d = i + j * nx_canopy;
+      for (auto k = canopy_bot_index[icell_2d]; k < canopy_top_index[icell_2d]; k++) {
+        int icell_3d = i + j * nx_canopy + k * nx_canopy * ny_canopy;
+        // initiate all attenuation coefficients to the canopy coefficient
+        canopy_atten[icell_3d] = 2.0;// attenuationCoeff;
+      }
     }
+  }
 
-    // Resize the canopy-related vectors
-    canopy_atten.resize( numcell_cent_3d, 0.0 );
+  return;
+}
 
-    for (auto j=0; j<ny_canopy; j++) {
-        for (auto i=0; i<nx_canopy; i++) {
-            int icell_2d = i + j*nx_canopy;
-            for (auto k=canopy_bot_index[icell_2d]; k<canopy_top_index[icell_2d]; k++) {
-                int icell_3d = i + j*nx_canopy + k*nx_canopy*ny_canopy;
-                // initiate all attenuation coefficients to the canopy coefficient
-                canopy_atten[icell_3d] = 2.0;//attenuationCoeff;     
-            }
+
+void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData *WGD, int building_id)
+{
+
+  // apply canopy parameterization
+  float avg_atten; /**< average attenuation of the canopy */
+  float veg_vel_frac; /**< vegetation velocity fraction */
+  int num_atten;
+
+  // Call regression to define ustar and surface roughness of the canopy
+  canopyRegression(WGD);
+
+  for (auto j = 0; j < ny_canopy; j++) {
+    for (auto i = 0; i < nx_canopy; i++) {
+      int icell_2d = i + j * nx_canopy;
+
+      if (canopy_top[icell_2d] > 0) {
+        int icell_3d = i + j * nx_canopy + (canopy_top_index[icell_2d] - 1) * nx_canopy * ny_canopy;
+
+        // Call the bisection method to find the root
+        canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d], canopy_z0[icell_2d], canopy_height[icell_2d], canopy_atten[icell_3d], WGD->vk, 0.0);
+        // std::cout << "WGD->vk:" << WGD->vk << "\n";
+        // std::cout << "WGD->canopy_atten[icell_cent]:" << WGD->canopy_atten[icell_cent] << "\n";
+        if (canopy_d[icell_2d] == 10000) {
+          std::cout << "bisection failed to converge"
+                    << "\n";
+          std::cout << "TREE1 " << building_id << " " << H << " " << base_height << std::endl;
+
+          canopy_d[icell_2d] = canopySlopeMatch(canopy_z0[icell_2d], canopy_height[icell_2d], canopy_atten[icell_3d]);
         }
-    }
 
-    return;
-}
+        // std::cout << building_id << " "  << canopy_ustar[icell_2d] << " "  << canopy_d[icell_2d] << " "  << canopy_z0[icell_2d] << std::endl;
 
+        /**< velocity at the height of the canopy */
+        // Local variable - not being used by anything... so
+        // commented out for now.
+        //
+        // float u_H = (WGD->canopy_ustar[id]/WGD->vk)*
+        //  log((WGD->canopy_top[id]-WGD->canopy_d[id])/WGD->canopy_z0[id]);
 
-void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData* WGD, int building_id)
-{
-  
-    // apply canopy parameterization
-	float avg_atten;     /**< average attenuation of the canopy */
-    float veg_vel_frac;  /**< vegetation velocity fraction */
-    int num_atten;
+        for (auto k = 1; k < WGD->nz - 1; k++) {
+          int icell_face = (i - 1 + i_start) + (j - 1 + j_start) * WGD->nx + k * WGD->nx * WGD->ny;
+          float z_rel = WGD->z[k] - canopy_base[icell_2d];
 
-    // Call regression to define ustar and surface roughness of the canopy
-    canopyRegression(WGD);
-    
-    for (auto j=0; j<ny_canopy; j++) {
-        for (auto i=0; i<nx_canopy; i++) {
-            int icell_2d = i+j*nx_canopy;
-            
-            if (canopy_top[icell_2d] > 0) {
-                int icell_3d = i+j*nx_canopy+(canopy_top_index[icell_2d]-1)*nx_canopy*ny_canopy;
-                
-                // Call the bisection method to find the root
-                canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d],canopy_z0[icell_2d],
-                                                     canopy_height[icell_2d],canopy_atten[icell_3d],WGD->vk,0.0);
-                //std::cout << "WGD->vk:" << WGD->vk << "\n";
-                //std::cout << "WGD->canopy_atten[icell_cent]:" << WGD->canopy_atten[icell_cent] << "\n";
-                if (canopy_d[icell_2d] == 10000) {
-                    std::cout << "bisection failed to converge" << "\n";
-                    std::cout << "TREE1 " << building_id << " " << H << " " << base_height << std::endl;
+          if (WGD->z[k] < canopy_base[icell_2d]) {
+            // below the terrain or building
+          } else if (WGD->z[k] < canopy_top[icell_2d]) {
+            if (canopy_atten[icell_3d] > 0) {
+              icell_3d = i + j * nx_canopy + k * nx_canopy * ny_canopy;
+              avg_atten = canopy_atten[icell_3d];
 
-                    canopy_d[icell_2d] = canopySlopeMatch(canopy_z0[icell_2d],canopy_height[icell_2d],
-                                                          canopy_atten[icell_3d]);
+              /*
+              if( canopy_atten[icell_3d+nx_canopy*ny_canopy]!=canopy_atten[icell_3d] ||
+                  canopy_atten[icell_3d-nx_canopy*ny_canopy]!=canopy_atten[icell_3d] ) {
+                  num_atten = 1;
+                  if( canopy_atten[icell_3d+nx_canopy*ny_canopy] > 0 ) {
+                      avg_atten += canopy_atten[icell_3d+nx_canopy*ny_canopy];
+                      num_atten += 1;
+                  }
+                  if( canopy_atten[icell_3d-nx_canopy*ny_canopy] > 0 ) {
+                      avg_atten += canopy_atten[icell_3d-nx_canopy*ny_canopy];
+                      num_atten += 1;
+                  }
+                  avg_atten /= num_atten;
+              }
+              */
+
+              /*
+              veg_vel_frac = log((canopy_top[icell_2d] - canopy_d[icell_2d])/
+                                 canopy_z0[icell_2d])*exp(avg_atten*((WGD->z[k]/canopy_top[icell_2d])-1))/
+                  log(WGD->z[k]/canopy_z0[icell_2d]);
+              */
+
+              // correction on the velocity within the canopy
+              veg_vel_frac = log((canopy_height[icell_2d] - canopy_d[icell_2d]) / canopy_z0[icell_2d]) * exp(avg_atten * ((z_rel / canopy_height[icell_2d]) - 1)) / log(z_rel / canopy_z0[icell_2d]);
+              // check if correction is bound and well defined
+              if (veg_vel_frac > 1 || veg_vel_frac < 0) {
+                veg_vel_frac = 1;
+              }
+
+              WGD->u0[icell_face] *= veg_vel_frac;
+              WGD->v0[icell_face] *= veg_vel_frac;
+
+              // at the edge of the canopy need to adjust velocity at the next face
+              // use canopy_top to detect the edge (worke with level changes)
+              if (j - 1 + j_start < WGD->ny - 2) {
+                if (canopy_top[icell_2d + nx_canopy] == 0.0) {
+                  WGD->v0[icell_face + WGD->nx] *= veg_vel_frac;
                 }
-                
-                //std::cout << building_id << " "  << canopy_ustar[icell_2d] << " "  << canopy_d[icell_2d] << " "  << canopy_z0[icell_2d] << std::endl;
-                
-                /**< velocity at the height of the canopy */
-                // Local variable - not being used by anything... so
-                // commented out for now.
-                //
-                //float u_H = (WGD->canopy_ustar[id]/WGD->vk)*
-                //  log((WGD->canopy_top[id]-WGD->canopy_d[id])/WGD->canopy_z0[id]);
-                
-                for (auto k=1; k < WGD->nz-1; k++) {
-                    int icell_face = (i-1+i_start) + (j-1+j_start)*WGD->nx + k*WGD->nx*WGD->ny;
-                    float z_rel = WGD->z[k] - canopy_base[icell_2d];
-
-                    if(WGD->z[k] < canopy_base[icell_2d]) {
-                        // below the terrain or building
-                    } else if (WGD->z[k] < canopy_top[icell_2d]) {
-                        if (canopy_atten[icell_3d] > 0) {
-                            icell_3d = i+j*nx_canopy+k*nx_canopy*ny_canopy;
-                            avg_atten = canopy_atten[icell_3d];
-                            
-                            /*
-                            if( canopy_atten[icell_3d+nx_canopy*ny_canopy]!=canopy_atten[icell_3d] ||
-                                canopy_atten[icell_3d-nx_canopy*ny_canopy]!=canopy_atten[icell_3d] ) {
-                                num_atten = 1;
-                                if( canopy_atten[icell_3d+nx_canopy*ny_canopy] > 0 ) {
-                                    avg_atten += canopy_atten[icell_3d+nx_canopy*ny_canopy];
-                                    num_atten += 1;
-                                }
-                                if( canopy_atten[icell_3d-nx_canopy*ny_canopy] > 0 ) {
-                                    avg_atten += canopy_atten[icell_3d-nx_canopy*ny_canopy];
-                                    num_atten += 1;
-                                }
-                                avg_atten /= num_atten;
-                            }
-                            */
-
-                            /*
-                            veg_vel_frac = log((canopy_top[icell_2d] - canopy_d[icell_2d])/
-                                               canopy_z0[icell_2d])*exp(avg_atten*((WGD->z[k]/canopy_top[icell_2d])-1))/
-                                log(WGD->z[k]/canopy_z0[icell_2d]);
-                            */
-                            
-                            // correction on the velocity within the canopy
-                            veg_vel_frac = log((canopy_height[icell_2d] - canopy_d[icell_2d])/
-                                               canopy_z0[icell_2d])*exp(avg_atten*((z_rel/canopy_height[icell_2d])-1))/
-                                log(z_rel/canopy_z0[icell_2d]);
-                            // check if correction is bound and well defined
-                            if (veg_vel_frac > 1 || veg_vel_frac < 0) {
-                                veg_vel_frac = 1; 
-                            }
-                            
-                            WGD->u0[icell_face] *= veg_vel_frac;
-                            WGD->v0[icell_face] *= veg_vel_frac;
-                                     
-                            // at the edge of the canopy need to adjust velocity at the next face 
-                            // use canopy_top to detect the edge (worke with level changes)
-                            if (j-1+j_start < WGD->ny-2) {
-                                if (canopy_top[icell_2d+nx_canopy] == 0.0) {
-                                    WGD->v0[icell_face+WGD->nx] *= veg_vel_frac;
-                                }
-                            }
-                            if (i-1+i_start < WGD->nx-2) {
-                                if(canopy_top[icell_2d+1] == 0.0) {
-                                    WGD->u0[icell_face+1] *= veg_vel_frac;
-                                }
-                            }
-                        }
-                    } else if (WGD->z[k] < 2.0*canopy_top[icell_2d]) {
-                        // correction on the velocity above the canopy
-                        float lam = pow((z_rel-canopy_height[icell_2d])/(1.0*canopy_height[icell_2d]),1.0);
-                        veg_vel_frac = log((z_rel-canopy_d[icell_2d])/canopy_z0[icell_2d])/
-                            log(z_rel/canopy_z0[icell_2d]);
-                        veg_vel_frac=(1-lam)*veg_vel_frac+lam;
-                        
-                        // check if correction is bound and well defined
-                        if (veg_vel_frac > 1 || veg_vel_frac < 0)
-                        {
-                            veg_vel_frac = 1;
-                        }
-                        
-                        WGD->u0[icell_face] *= veg_vel_frac;
-                        WGD->v0[icell_face] *= veg_vel_frac;
-
-                        // at the edge of the canopy need to adjust velocity at the next face 
-                        // use canopy_top to detect the edge (worke with level changes)
-                        if (j-1+j_start < WGD->ny-2) {
-                            icell_3d = i+j*nx_canopy+canopy_bot_index[icell_2d]*nx_canopy*ny_canopy;
-                            if(canopy_top[icell_2d+nx_canopy] == 0.0) {
-                                WGD->v0[icell_face+WGD->nx] *= veg_vel_frac;
-                            }
-                        }
-                        if (i-1+i_start < WGD->nx-2) {
-                            icell_3d = i+j*nx_canopy+canopy_bot_index[icell_2d]*nx_canopy*ny_canopy;
-                            if (canopy_top[icell_2d+1] == 0.0) {
-                                WGD->u0[icell_face+1] *= veg_vel_frac;
-                            }
-                        }
-                    } else {
-                        // do nothing far above the tree 
-                    }
-                } // end of for(auto k=1; k < WGD->nz-1; k++)
-                
+              }
+              if (i - 1 + i_start < WGD->nx - 2) {
+                if (canopy_top[icell_2d + 1] == 0.0) {
+                  WGD->u0[icell_face + 1] *= veg_vel_frac;
+                }
+              }
             }
-        }
-    }
+          } else if (WGD->z[k] < 2.0 * canopy_top[icell_2d]) {
+            // correction on the velocity above the canopy
+            float lam = pow((z_rel - canopy_height[icell_2d]) / (1.0 * canopy_height[icell_2d]), 1.0);
+            veg_vel_frac = log((z_rel - canopy_d[icell_2d]) / canopy_z0[icell_2d]) / log(z_rel / canopy_z0[icell_2d]);
+            veg_vel_frac = (1 - lam) * veg_vel_frac + lam;
 
-    return;
+            // check if correction is bound and well defined
+            if (veg_vel_frac > 1 || veg_vel_frac < 0) {
+              veg_vel_frac = 1;
+            }
+
+            WGD->u0[icell_face] *= veg_vel_frac;
+            WGD->v0[icell_face] *= veg_vel_frac;
+
+            // at the edge of the canopy need to adjust velocity at the next face
+            // use canopy_top to detect the edge (worke with level changes)
+            if (j - 1 + j_start < WGD->ny - 2) {
+              icell_3d = i + j * nx_canopy + canopy_bot_index[icell_2d] * nx_canopy * ny_canopy;
+              if (canopy_top[icell_2d + nx_canopy] == 0.0) {
+                WGD->v0[icell_face + WGD->nx] *= veg_vel_frac;
+              }
+            }
+            if (i - 1 + i_start < WGD->nx - 2) {
+              icell_3d = i + j * nx_canopy + canopy_bot_index[icell_2d] * nx_canopy * ny_canopy;
+              if (canopy_top[icell_2d + 1] == 0.0) {
+                WGD->u0[icell_face + 1] *= veg_vel_frac;
+              }
+            }
+          } else {
+            // do nothing far above the tree
+          }
+        }// end of for(auto k=1; k < WGD->nz-1; k++)
+      }
+    }
+  }
+
+  return;
 }
 
-void CanopyIsolatedTree::canopyWake(WINDSGeneralData* WGD, int building_id)
+void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int building_id)
 {
 
-    int u_vegwake_flag(0),v_vegwake_flag(0),w_vegwake_flag(0);
-    const int wake_stream_coef=11;
-    const int wake_span_coef=4;
-    const float lambda_sq=0.08;
-    const float epsilon=10e-10;
-    
-    float z0;
-    float z_b;
-    float x_c,y_c,z_c,yw1,yw3,y_norm;
-    float x_p,y_p,x_u,y_u,x_v,y_v,x_w,y_w;
-    float x_wall,x_wall_u,x_wall_v,x_wall_w,dn_u,dn_v,dn_w;
-    float u_defect,u_c,r_center,theta,delta,B_h;
-    float ustar_wake(0),ustar_us(0),mag_us(0);
+  int u_vegwake_flag(0), v_vegwake_flag(0), w_vegwake_flag(0);
+  const int wake_stream_coef = 11;
+  const int wake_span_coef = 4;
+  const float lambda_sq = 0.08;
+  const float epsilon = 10e-10;
 
-    int kk(0),k_bottom(1),k_top(WGD->nz-2);
-    int icell_cent,icell_face,icell_2d;
+  float z0;
+  float z_b;
+  float x_c, y_c, z_c, yw1, yw3, y_norm;
+  float x_p, y_p, x_u, y_u, x_v, y_v, x_w, y_w;
+  float x_wall, x_wall_u, x_wall_v, x_wall_w, dn_u, dn_v, dn_w;
+  float u_defect, u_c, r_center, theta, delta, B_h;
+  float ustar_wake(0), ustar_us(0), mag_us(0);
 
-    std::vector<float> u0_modified, v0_modified;
-    std::vector<int> u0_mod_id, v0_mod_id;
+  int kk(0), k_bottom(1), k_top(WGD->nz - 2);
+  int icell_cent, icell_face, icell_2d;
 
-    float Lt=0.5*W;
-    Lr=H;
+  std::vector<float> u0_modified, v0_modified;
+  std::vector<int> u0_mod_id, v0_mod_id;
 
-    if (k_end==0) {return;}
+  float Lt = 0.5 * W;
+  Lr = H;
 
-    icell_face = i_building_cent + j_building_cent*WGD->nx + k_end*WGD->nx*WGD->ny;
-    u0_h = WGD->u0[icell_face];         // u velocity at the height of building at the centroid
-    v0_h = WGD->v0[icell_face];         // v velocity at the height of building at the centroid
+  if (k_end == 0) { return; }
 
-    upwind_dir=atan2(v0_h,u0_h);
-    mag_us=sqrt(u0_h*u0_h + v0_h*v0_h);
-        
-    yw1 = 0.5*wake_span_coef*H;
-    yw3 =-0.5*wake_span_coef*H;
+  icell_face = i_building_cent + j_building_cent * WGD->nx + k_end * WGD->nx * WGD->ny;
+  u0_h = WGD->u0[icell_face];// u velocity at the height of building at the centroid
+  v0_h = WGD->v0[icell_face];// v velocity at the height of building at the centroid
 
-    y_norm=yw1;
+  upwind_dir = atan2(v0_h, u0_h);
+  mag_us = sqrt(u0_h * u0_h + v0_h * v0_h);
 
-    for (auto k = 1; k <= k_start; k++) {
-        k_bottom = k;
-        if (base_height <= WGD->z[k])
-            break;
+  yw1 = 0.5 * wake_span_coef * H;
+  yw3 = -0.5 * wake_span_coef * H;
+
+  y_norm = yw1;
+
+  for (auto k = 1; k <= k_start; k++) {
+    k_bottom = k;
+    if (base_height <= WGD->z[k])
+      break;
+  }
+
+  for (auto k = k_start; k < WGD->nz - 2; k++) {
+    k_top = k;
+    if (1.5 * (H + base_height) < WGD->z[k + 1])
+      break;
+  }
+  k_top++;
+
+  for (auto k = k_start; k < k_end; k++) {
+    kk = k;
+    if (0.75 * H + base_height <= WGD->z[k]) {
+      break;
     }
-    
-    for (auto k = k_start; k < WGD->nz-2; k++) {
-        k_top = k;
-        if (1.5*(H+base_height) < WGD->z[k+1])
-            break;
-    }
-    k_top++;
+  }
 
-    for (auto k = k_start; k < k_end; k++) {
-        kk = k;
-        if (0.75*H+base_height <= WGD->z[k]) {
-            break;
+  // std::cout << "TREE " << building_id << " " << k_end << " " << k_top << " " << kk << std::endl;
+
+  // mathod 1 -> location of upsteam data point (5% of 1/2 building length)
+  // method 2 -> displaced log profile
+  if (ustar_method == 1) {
+    int i = ceil(((-1.05 * Lt) * cos(upwind_dir) - 0.0 * sin(upwind_dir) + building_cent_x) / WGD->dx);
+    int j = ceil(((-1.05 * Lt) * sin(upwind_dir) + 0.0 * cos(upwind_dir) + building_cent_y) / WGD->dy);
+    int k = k_end - 1;
+
+    // linearized indexes
+    icell_2d = i + j * (WGD->nx);
+    icell_face = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
+
+    z0 = WGD->z0_domain_u[icell_2d];
+
+    // upstream velocity
+    float utmp = WGD->u0[icell_face];
+    float vtmp = WGD->v0[icell_face];
+    mag_us = sqrt(utmp * utmp + vtmp * vtmp);
+    // height above ground
+    z_c = WGD->z[k] - base_height;
+    // friction velocity
+    ustar_us = mag_us * WGD->vk / (log((z_c + z0) / z0));
+    ustar_wake = ustar_us / mag_us;
+  } else if (ustar_method == 2) {
+    int i = i_building_cent;
+    int j = j_building_cent;
+    int k = ceil(1.5 * k_end);
+
+    // linearized indexes
+    icell_2d = (i + 1 - i_start) + (j + 1 - j_start) * nx_canopy;
+    icell_face = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
+
+    // velocity above the canopy
+    float utmp = WGD->u0[icell_face];
+    float vtmp = WGD->v0[icell_face];
+    mag_us = sqrt(utmp * utmp + vtmp * vtmp);
+    z_c = WGD->z[k] - base_height;
+
+    ustar_us = mag_us * WGD->vk / (log((z_c + canopy_d[icell_2d]) / canopy_z0[icell_2d]));
+    ustar_wake = ustar_us / mag_us;
+
+    // std::cout << "TREE2 " << building_id << " " << H+base_height << " " << k_top << std::endl;
+    // std::cout << z_c << " " << mag_us << " " << ustar_wake << std::endl;
+    // std::cout << canopy_d[icell_2d] << " " << canopy_z0[icell_2d] << std::endl;
+  } else {
+    ustar_wake = 0.323 / 6.15;
+  }
+
+  for (auto k = k_top; k >= k_bottom; k--) {
+
+    // absolute z-coord within building above ground
+    z_b = WGD->z[k] - base_height;
+    // z-coord relative to center of tree (zMaxLAI)
+    z_c = z_b - zMaxLAI;
+
+    for (auto y_idx = 1; y_idx < 2 * ceil((yw1 - yw3) / WGD->dxy); ++y_idx) {
+
+      // y-coord relative to center of tree (zMaxLAI)
+      y_c = 0.5 * float(y_idx) * WGD->dxy + yw3;
+
+      if (std::abs(y_c) > std::abs(y_norm)) {
+        continue;
+      } else if (std::abs(y_c) > Lt && std::abs(y_c) <= yw1) {
+        // y_cp=y_c-Lt(ibuild)
+        // xwall=sqrt((Lt(ibuild)**2.)-(y_cp**2.))
+        x_wall = 0;
+      } else {
+        x_wall = 0;
+        // x_wall=sqrt(pow(Lt,2)-pow(y_c,2));
+      }
+
+      int x_idx_min = -1;
+      for (auto x_idx = 0; x_idx <= 2.0 * ceil(wake_stream_coef * Lr / WGD->dxy); ++x_idx) {
+        u_vegwake_flag = 1;
+        v_vegwake_flag = 1;
+        w_vegwake_flag = 1;
+
+        // x-coord relative to center of tree (zMaxLAI)
+        x_c = 0.5 * float(x_idx) * WGD->dxy;
+
+        int i = ((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx;
+        int j = ((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy;
+        // check if in the domain
+        if (i >= WGD->nx - 2 || i <= 0 || j >= WGD->ny - 2 || j <= 0)
+          break;
+
+        // linearized indexes
+        icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+
+        // check if not in canopy/building set start (was x_idx_min < 0) to x_idx_min > 0
+        if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && x_idx_min < 0)
+          x_idx_min = x_idx;
+
+        if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 2 || WGD->icellflag[icell_cent] == getCellFlagCanopy()) {
+          // check for canopy/building/terrain that will disrupt the wake
+          if (x_idx_min >= 0) {
+            if (WGD->ibuilding_flag[icell_cent] == building_id) {
+              x_idx_min = -1;
+            } else if (WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 0 || WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
+              break;
+            } else if (WGD->icellflag[i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1)] == 0 || WGD->icellflag[i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
+              break;
+            }
+          }
         }
-    }
-    
-    //std::cout << "TREE " << building_id << " " << k_end << " " << k_top << " " << kk << std::endl;
 
-    // mathod 1 -> location of upsteam data point (5% of 1/2 building length)
-    // method 2 -> displaced log profile
-    if(ustar_method==1) {
-        int i = ceil(((-1.05*Lt)*cos(upwind_dir)-0.0*sin(upwind_dir)+building_cent_x)/WGD->dx);
-        int j = ceil(((-1.05*Lt)*sin(upwind_dir)+0.0*cos(upwind_dir)+building_cent_y)/WGD->dy);
-        int k = k_end-1;
+        if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && WGD->icellflag[icell_cent] != getCellFlagCanopy()) {
+          // START OF WAKE VELOCITY PARAMETRIZATION
 
-        // linearized indexes
-        icell_2d = i + j*(WGD->nx);
-        icell_face = i + j*(WGD->nx) + k*(WGD->nx)*(WGD->ny);
-        
-        z0=WGD->z0_domain_u[icell_2d];
-            
-        // upstream velocity
-        float utmp = WGD->u0[icell_face];
-        float vtmp = WGD->v0[icell_face];
-        mag_us = sqrt(utmp*utmp+vtmp*vtmp);
-        // height above ground 
-        z_c = WGD->z[k]-base_height;
-        // friction velocity 
-        ustar_us = mag_us*WGD->vk/(log((z_c+z0)/z0));
-        ustar_wake = ustar_us/mag_us; 
-    } else if(ustar_method==2) {
-        int i = i_building_cent;
-        int j = j_building_cent;
-        int k = ceil(1.5*k_end);
-            
-        // linearized indexes
-        icell_2d = (i+1-i_start) + (j+1-j_start)*nx_canopy;
-        icell_face = i + j*(WGD->nx) + k*(WGD->nx)*(WGD->ny);
-        
-        // velocity above the canopy
-        float utmp = WGD->u0[icell_face];
-        float vtmp = WGD->v0[icell_face];
-        mag_us = sqrt(utmp*utmp+vtmp*vtmp);
-        z_c = WGD->z[k]-base_height;
-        
-        ustar_us = mag_us*WGD->vk/(log((z_c+canopy_d[icell_2d])/canopy_z0[icell_2d]));
-        ustar_wake = ustar_us/mag_us; 
+          // wake u-values
+          // ij coord of u-face
+          int i_u = std::round(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx);
+          int j_u = ((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy;
+          if (i_u < WGD->nx - 1 && i_u > 0 && j_u < WGD->ny - 1 && j_u > 0) {
+            // not rotated relative coordinate of u-face
+            x_p = i_u * WGD->dx - building_cent_x;
+            y_p = (j_u + 0.5) * WGD->dy - building_cent_y;
+            // rotated relative coordinate of u-face
+            x_u = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
+            y_u = -x_p * sin(upwind_dir) + y_p * cos(upwind_dir);
 
-        //std::cout << "TREE2 " << building_id << " " << H+base_height << " " << k_top << std::endl;
-        //std::cout << z_c << " " << mag_us << " " << ustar_wake << std::endl;
-        //std::cout << canopy_d[icell_2d] << " " << canopy_z0[icell_2d] << std::endl;
-    } else {
-        ustar_wake=0.323/6.15;
-    }
-
-    for(auto k=k_top; k>=k_bottom; k--) {
-        
-        // absolute z-coord within building above ground
-        z_b=WGD->z[k]-base_height;
-        // z-coord relative to center of tree (zMaxLAI) 
-        z_c=z_b-zMaxLAI;
-        
-        for(auto y_idx=1;y_idx<2*ceil((yw1-yw3)/WGD->dxy);++y_idx) {
-            
-            // y-coord relative to center of tree (zMaxLAI) 
-            y_c=0.5*float(y_idx)*WGD->dxy+yw3;
-            
-            if(std::abs(y_c) > std::abs(y_norm)) {
-                continue;
-            }else if(std::abs(y_c)>Lt && std::abs(y_c)<=yw1) {
-                // y_cp=y_c-Lt(ibuild)
-                // xwall=sqrt((Lt(ibuild)**2.)-(y_cp**2.))
-                x_wall=0;
+            if (std::abs(y_u) > std::abs(y_norm)) {
+              break;
             } else {
-                x_wall=0;
-                //x_wall=sqrt(pow(Lt,2)-pow(y_c,2));
+              x_wall_u = 0;
             }
-            
-            int x_idx_min = -1;
-            for(auto x_idx=0;x_idx<=2.0*ceil(wake_stream_coef*Lr/WGD->dxy);++x_idx) {
-                u_vegwake_flag=1;
-                v_vegwake_flag=1;
-                w_vegwake_flag=1;
-                
-                // x-coord relative to center of tree (zMaxLAI) 
-                x_c=0.5*float(x_idx)*WGD->dxy;
 
-                int i = ((x_c+x_wall)*cos(upwind_dir)-y_c*sin(upwind_dir)+building_cent_x)/WGD->dx;
-                int j = ((x_c+x_wall)*sin(upwind_dir)+y_c*cos(upwind_dir)+building_cent_y)/WGD->dy;
-                //check if in the domain
-                if (i >= WGD->nx-2 || i <= 0 || j >= WGD->ny-2 || j <= 0)
-                    break;
-                
-                // linearized indexes
-                icell_cent = i+j*(WGD->nx-1)+k*(WGD->nx-1)*(WGD->ny-1);
-                
-                //check if not in canopy/building set start (was x_idx_min < 0) to x_idx_min > 0
-                if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && x_idx_min < 0)
-                    x_idx_min = x_idx;
-                
-                if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 2 || 
-                    WGD->icellflag[icell_cent] == getCellFlagCanopy())
-                {
-                    // check for canopy/building/terrain that will disrupt the wake
-                    if (x_idx_min >= 0) {
-                        if (WGD->ibuilding_flag[icell_cent] == building_id) {
-                            x_idx_min = -1;
-                        } else if (WGD->icellflag[i+j*(WGD->nx-1)+kk*(WGD->nx-1)*(WGD->ny-1)] == 0 || 
-                                   WGD->icellflag[i+j*(WGD->nx-1)+kk*(WGD->nx-1)*(WGD->ny-1)] == 2) {
-                            break;
-                        } else if (WGD->icellflag[i+j*(WGD->nx-1)+k*(WGD->nx-1)*(WGD->ny-1)] == 0 || 
-                                   WGD->icellflag[i+j*(WGD->nx-1)+k*(WGD->nx-1)*(WGD->ny-1)] == 2) {
-                            break;
-                        }  
-                    }
+            // adjusted downstream value
+            x_u -= x_wall_u;
+
+            if (std::abs(y_u) < std::abs(y_norm) && std::abs(y_norm) > epsilon && H > epsilon) {
+              dn_u = H;
+            } else {
+              dn_u = 0.0;
+            }
+
+            if (x_u > wake_stream_coef * dn_u)
+              u_vegwake_flag = 0;
+
+            // linearized indexes
+            icell_cent = i_u + j_u * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+            icell_face = i_u + j_u * WGD->nx + k * WGD->nx * WGD->ny;
+
+            if (dn_u > 0.0 && u_vegwake_flag == 1 && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
+
+              // polar coordinate in the wake
+              r_center = sqrt(pow(z_c, 2) + pow(y_u, 2));
+              theta = atan2(z_c, y_u);
+
+              // FM - ellipse equation:
+              B_h = Bfunc(x_u / H);
+              delta = (B_h - 1.15) / sqrt(1 - (1 - pow((B_h - 1.15) / (B_h + 1.15), 2)) * pow(cos(theta), 2)) * H;
+
+              // check if within the wake
+              if (r_center < 0.5 * delta) {
+                // get velocity deficit
+                u_c = ucfunc(x_u / H, ustar_wake);
+                u_defect = u_c * (exp(-(r_center * r_center) / (lambda_sq * delta * delta)));
+                // std::cout << r_center << " " << delta << " " << ustar_wake << " " << u_c << std::endl;
+                //  apply parametrization
+                if (std::abs(WGD->u0[icell_face]) >= std::abs(0.2 * cos(upwind_dir) * mag_us)) {
+                  u0_mod_id.push_back(icell_face);
+                  u0_modified.push_back(WGD->u0[icell_face] * (1. - std::abs(u_defect)));
                 }
-                
-                if(WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && 
-                   WGD->icellflag[icell_cent] != getCellFlagCanopy()) {
-                    // START OF WAKE VELOCITY PARAMETRIZATION
+              }// if (r_center<delta/1)
+            }
+          }
 
-                    // wake u-values
-                    // ij coord of u-face
-                    int i_u = std::round(((x_c+x_wall)*cos(upwind_dir)-y_c*sin(upwind_dir)+building_cent_x)/WGD->dx);
-                    int j_u = ((x_c+x_wall)*sin(upwind_dir)+y_c*cos(upwind_dir)+building_cent_y)/WGD->dy;
-                    if(i_u < WGD->nx-1 && i_u > 0 && j_u < WGD->ny-1 && j_u > 0) {
-                        // not rotated relative coordinate of u-face
-                        x_p = i_u*WGD->dx-building_cent_x;
-                        y_p = (j_u+0.5)*WGD->dy-building_cent_y;
-                        // rotated relative coordinate of u-face              
-                        x_u = x_p*cos(upwind_dir)+y_p*sin(upwind_dir);
-                        y_u = -x_p*sin(upwind_dir)+y_p*cos(upwind_dir);
-                        
-                        if(std::abs(y_u) > std::abs(y_norm)) {
-                            break;
-                        } else {
-                            x_wall_u=0;
-                        }
-                        
-                        //adjusted downstream value
-                        x_u -= x_wall_u;
-                       
-                        if(std::abs(y_u) < std::abs(y_norm) && std::abs(y_norm) > epsilon && 
-                           H > epsilon) {
-                            dn_u=H;
-                        } else {
-                            dn_u = 0.0;
-                        }
-                        
-                        if(x_u > wake_stream_coef*dn_u)
-                            u_vegwake_flag = 0;
-                        
-                        // linearized indexes
-                        icell_cent = i_u + j_u*(WGD->nx-1)+k*(WGD->nx-1)*(WGD->ny-1);
-                        icell_face = i_u + j_u*WGD->nx+k*WGD->nx*WGD->ny;
-                        
-                        if(dn_u > 0.0 && u_vegwake_flag == 1 && 
-                           WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
-                            
-                            // polar coordinate in the wake
-                            r_center=sqrt(pow(z_c,2)+pow(y_u,2));
-                            theta=atan2(z_c,y_u);
-                            
-                            // FM - ellipse equation:
-                            B_h=Bfunc(x_u/H);
-                            delta=(B_h-1.15)/sqrt(1-(1-pow((B_h-1.15)/(B_h+1.15),2))*pow(cos(theta),2))*H;
+          // wake v-values
+          // ij coord of v-face
+          int i_v = ((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx;
+          int j_v = std::round(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy);
+          if (i_v < WGD->nx - 1 && i_v > 0 && j_v < WGD->ny - 1 && j_v > 0) {
+            // not rotated relative coordinate of v-face
+            x_p = (i_v + 0.5) * WGD->dx - building_cent_x;
+            y_p = j_v * WGD->dy - building_cent_y;
+            // rotated relative coordinate of u-face
+            x_v = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
+            y_v = -x_p * sin(upwind_dir) + y_p * cos(upwind_dir);
 
-                            // check if within the wake
-                            if(r_center<0.5*delta) {
-                                // get velocity deficit
-                                u_c=ucfunc(x_u/H,ustar_wake);                    
-                                u_defect=u_c*(exp(-(r_center*r_center)/(lambda_sq*delta*delta)));
-                                //std::cout << r_center << " " << delta << " " << ustar_wake << " " << u_c << std::endl;
-                                // apply parametrization
-                                if(std::abs(WGD->u0[icell_face]) >= std::abs(0.2*cos(upwind_dir)*mag_us)) {
-                                    u0_mod_id.push_back(icell_face);
-                                    u0_modified.push_back(WGD->u0[icell_face]*(1. - std::abs(u_defect)));
-                                }
-                            } //if (r_center<delta/1)
-                        }
-                    }
-                    
-                    // wake v-values
-                    // ij coord of v-face
-                    int i_v = ((x_c+x_wall)*cos(upwind_dir)-y_c*sin(upwind_dir)+building_cent_x)/WGD->dx;
-                    int j_v = std::round(((x_c+x_wall)*sin(upwind_dir)+y_c*cos(upwind_dir)+building_cent_y)/WGD->dy);
-                    if (i_v<WGD->nx-1 && i_v>0 && j_v<WGD->ny-1 && j_v>0) {
-                        // not rotated relative coordinate of v-face
-                        x_p = (i_v+0.5)*WGD->dx-building_cent_x;
-                        y_p = j_v*WGD->dy-building_cent_y;
-                        // rotated relative coordinate of u-face
-                        x_v = x_p*cos(upwind_dir)+y_p*sin(upwind_dir);
-                        y_v = -x_p*sin(upwind_dir)+y_p*cos(upwind_dir);
-                        
-                        if(std::abs(y_v) > std::abs(y_norm)) {
-                            break;
-                        } else {
-                            x_wall_v=0;
-                        }
-                        
-                        //adjusted downstream value
-                        x_v -= x_wall_v;
-                        
-                        if(std::abs(y_v) < std::abs(y_norm) && std::abs(y_norm) > epsilon && 
-                           H > epsilon) {
-                            dn_v=H;
-                        } else {
-                            dn_v = 0.0;
-                        }
-                        
-                        if(x_v > wake_stream_coef*dn_v) 
-                            v_vegwake_flag = 0;
-                        
-                        // linearized indexes
-                        icell_cent = i_u + j_u*(WGD->nx-1)+k*(WGD->nx-1)*(WGD->ny-1);
-                        icell_face = i_v + j_v*WGD->nx+k*WGD->nx*WGD->ny;
-                        
-                        if(dn_v > 0.0 && v_vegwake_flag == 1 && 
-                           WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
-                            
-                            // polar coordinate in the wake
-                            r_center=sqrt(pow(z_c,2)+pow(y_v,2));
-                            theta=atan2(z_c,y_v);
-                            
-                            // FM - ellipse equation:
-                            B_h=Bfunc(x_v/H);
-                            delta=(B_h-1.15)/sqrt(1-(1-pow((B_h-1.15)/(B_h+1.15),2))*pow(cos(theta),2))*H;
+            if (std::abs(y_v) > std::abs(y_norm)) {
+              break;
+            } else {
+              x_wall_v = 0;
+            }
 
-                            // check if within the wake
-                            if(r_center<0.5*delta) {
-                                // get velocity deficit
-                                u_c=ucfunc(x_v/H,ustar_wake);                    
-                                u_defect=u_c*(exp(-(r_center*r_center)/(lambda_sq*delta*delta)));
-                                // apply parametrization
-                                
-                                if(std::abs(WGD->v0[icell_face]) >= std::abs(0.2*sin(upwind_dir)*mag_us)) {
-                                    v0_mod_id.push_back(icell_face);
-                                    v0_modified.push_back(WGD->v0[icell_face]*(1. - std::abs(u_defect)));
-                                }
-                            } //if (r_center<delta/1)
-                        }
-                    }
-                
-                    // wake celltype w-values
-                    // ij coord of cell-center
-                    int i_w = ceil(((x_c+x_wall)*cos(upwind_dir)-y_c*sin(upwind_dir)+building_cent_x)/WGD->dx);
-                    int j_w = ceil(((x_c+x_wall)*sin(upwind_dir)+y_c*cos(upwind_dir)+building_cent_y)/WGD->dy);
+            // adjusted downstream value
+            x_v -= x_wall_v;
 
-                    if (i_w<WGD->nx-1 && i_w>0 && j_w<WGD->ny-1 && j_w>0) {
-                        // not rotated relative coordinate of cell-center
-                        x_p = (i_w+0.5)*WGD->dx-building_cent_x;
-                        y_p = (j_w+0.5)*WGD->dy-building_cent_y;
-                        // rotated relative coordinate of cell-center
-                        x_w = x_p*cos(upwind_dir)+y_p*sin(upwind_dir);
-                        y_w = -x_p*sin(upwind_dir)+y_p*cos(upwind_dir);
-                        
-                        if(std::abs(y_w) > std::abs(y_norm)) {
-                            break;
-                        } else {
-                            x_wall_w=0;
-                        }
-                        
-                        //adjusted downstream value
-                        x_w -= x_wall_w;
-                        
-                        if(std::abs(y_w) < std::abs(y_norm) && std::abs(y_norm) > epsilon && 
-                           H > epsilon) {
-                            dn_w=H;
-                        } else {
-                            dn_w = 0.0;
-                        }
-                        
-                        if(x_w > wake_stream_coef*dn_w) 
-                            w_vegwake_flag = 0;
-                        
-                        // linearized indexes
-                        icell_cent = i_w + j_w*(WGD->nx-1)+k*(WGD->nx-1)*(WGD->ny-1);
-                        //icell_face = i_v + j_v*WGD->nx+k*WGD->nx*WGD->ny;
-                        
-                        if(dn_w > 0.0 && w_vegwake_flag == 1 && 
-                           WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
-                            
-                            // polar coordinate in the wake
-                            r_center=sqrt(pow(z_c,2)+pow(y_w,2));
-                            theta=atan2(z_c,y_w);
-                            
-                            // FM - ellipse equation:
-                            B_h=Bfunc(x_w/H);
-                            delta=(B_h-1.15)/sqrt(1-(1-pow((B_h-1.15)/(B_h+1.15),2))*pow(cos(theta),2))*H;
-                            
-                            // check if within the wake
-                            if(r_center<0.5*delta) {
-                                // get velocity deficit
-                                u_c=ucfunc(x_w/H,ustar_wake);                    
-                                u_defect=u_c*(exp(-(r_center*r_center)/(lambda_sq*delta*delta)));
-                                // apply parametrization
-                                if (u_defect >= 0.01)
-                                WGD->icellflag[icell_cent]=getCellFlagWake();
-                            } //if (r_center<delta/1)
-                        }
-                    }
-                    // if u,v, and w are done -> exit x-loop 
-                    if (u_vegwake_flag == 0 && v_vegwake_flag == 0 && w_vegwake_flag == 0)
-                        break;
-                    // END OF WAKE VELOCITY PARAMETRIZATION
-                } 
-            } // end of x-loop (stream-wise)
-        } // end of y-loop (span-wise)
-    } // end of z-loop
+            if (std::abs(y_v) < std::abs(y_norm) && std::abs(y_norm) > epsilon && H > epsilon) {
+              dn_v = H;
+            } else {
+              dn_v = 0.0;
+            }
 
-    for (auto x_id=0u; x_id < u0_mod_id.size(); x_id++) {
-        WGD->u0[u0_mod_id[x_id]] = u0_modified[x_id];
-    }
-    
-    for (auto y_id=0u; y_id < v0_mod_id.size(); y_id++) {
-        WGD->v0[v0_mod_id[y_id]] = v0_modified[y_id];
-    }
-    
-    u0_mod_id.clear();
-    v0_mod_id.clear();
-    u0_modified.clear();
-    v0_modified.clear();
-    
-    return;
+            if (x_v > wake_stream_coef * dn_v)
+              v_vegwake_flag = 0;
+
+            // linearized indexes
+            icell_cent = i_u + j_u * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+            icell_face = i_v + j_v * WGD->nx + k * WGD->nx * WGD->ny;
+
+            if (dn_v > 0.0 && v_vegwake_flag == 1 && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
+
+              // polar coordinate in the wake
+              r_center = sqrt(pow(z_c, 2) + pow(y_v, 2));
+              theta = atan2(z_c, y_v);
+
+              // FM - ellipse equation:
+              B_h = Bfunc(x_v / H);
+              delta = (B_h - 1.15) / sqrt(1 - (1 - pow((B_h - 1.15) / (B_h + 1.15), 2)) * pow(cos(theta), 2)) * H;
+
+              // check if within the wake
+              if (r_center < 0.5 * delta) {
+                // get velocity deficit
+                u_c = ucfunc(x_v / H, ustar_wake);
+                u_defect = u_c * (exp(-(r_center * r_center) / (lambda_sq * delta * delta)));
+                // apply parametrization
+
+                if (std::abs(WGD->v0[icell_face]) >= std::abs(0.2 * sin(upwind_dir) * mag_us)) {
+                  v0_mod_id.push_back(icell_face);
+                  v0_modified.push_back(WGD->v0[icell_face] * (1. - std::abs(u_defect)));
+                }
+              }// if (r_center<delta/1)
+            }
+          }
+
+          // wake celltype w-values
+          // ij coord of cell-center
+          int i_w = ceil(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx);
+          int j_w = ceil(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy);
+
+          if (i_w < WGD->nx - 1 && i_w > 0 && j_w < WGD->ny - 1 && j_w > 0) {
+            // not rotated relative coordinate of cell-center
+            x_p = (i_w + 0.5) * WGD->dx - building_cent_x;
+            y_p = (j_w + 0.5) * WGD->dy - building_cent_y;
+            // rotated relative coordinate of cell-center
+            x_w = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
+            y_w = -x_p * sin(upwind_dir) + y_p * cos(upwind_dir);
+
+            if (std::abs(y_w) > std::abs(y_norm)) {
+              break;
+            } else {
+              x_wall_w = 0;
+            }
+
+            // adjusted downstream value
+            x_w -= x_wall_w;
+
+            if (std::abs(y_w) < std::abs(y_norm) && std::abs(y_norm) > epsilon && H > epsilon) {
+              dn_w = H;
+            } else {
+              dn_w = 0.0;
+            }
+
+            if (x_w > wake_stream_coef * dn_w)
+              w_vegwake_flag = 0;
+
+            // linearized indexes
+            icell_cent = i_w + j_w * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+            // icell_face = i_v + j_v*WGD->nx+k*WGD->nx*WGD->ny;
+
+            if (dn_w > 0.0 && w_vegwake_flag == 1 && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
+
+              // polar coordinate in the wake
+              r_center = sqrt(pow(z_c, 2) + pow(y_w, 2));
+              theta = atan2(z_c, y_w);
+
+              // FM - ellipse equation:
+              B_h = Bfunc(x_w / H);
+              delta = (B_h - 1.15) / sqrt(1 - (1 - pow((B_h - 1.15) / (B_h + 1.15), 2)) * pow(cos(theta), 2)) * H;
+
+              // check if within the wake
+              if (r_center < 0.5 * delta) {
+                // get velocity deficit
+                u_c = ucfunc(x_w / H, ustar_wake);
+                u_defect = u_c * (exp(-(r_center * r_center) / (lambda_sq * delta * delta)));
+                // apply parametrization
+                if (u_defect >= 0.01)
+                  WGD->icellflag[icell_cent] = getCellFlagWake();
+              }// if (r_center<delta/1)
+            }
+          }
+          // if u,v, and w are done -> exit x-loop
+          if (u_vegwake_flag == 0 && v_vegwake_flag == 0 && w_vegwake_flag == 0)
+            break;
+          // END OF WAKE VELOCITY PARAMETRIZATION
+        }
+      }// end of x-loop (stream-wise)
+    }// end of y-loop (span-wise)
+  }// end of z-loop
+
+  for (auto x_id = 0u; x_id < u0_mod_id.size(); x_id++) {
+    WGD->u0[u0_mod_id[x_id]] = u0_modified[x_id];
+  }
+
+  for (auto y_id = 0u; y_id < v0_mod_id.size(); y_id++) {
+    WGD->v0[v0_mod_id[y_id]] = v0_modified[y_id];
+  }
+
+  u0_mod_id.clear();
+  v0_mod_id.clear();
+  u0_modified.clear();
+  v0_modified.clear();
+
+  return;
 }
-

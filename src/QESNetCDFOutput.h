@@ -47,56 +47,63 @@ using namespace netCDF::exceptions;
 using namespace boost::gregorian;
 using namespace boost::posix_time;
 
-//Attribute for scalar/vector for each type
-struct AttScalarInt {
-    int* data;
-    std::string name;
-    std::string long_name;
-    std::string units;
-    std::vector<NcDim> dimensions;
+// Attribute for scalar/vector for each type
+struct AttScalarInt
+{
+  int *data;
+  std::string name;
+  std::string long_name;
+  std::string units;
+  std::vector<NcDim> dimensions;
 };
-struct AttVectorInt {
-    std::vector<int>* data;
-    std::string name;
-    std::string long_name;
-    std::string units;
-    std::vector<NcDim> dimensions;
+struct AttVectorInt
+{
+  std::vector<int> *data;
+  std::string name;
+  std::string long_name;
+  std::string units;
+  std::vector<NcDim> dimensions;
 };
 
-struct AttScalarFlt {
-    float* data;
-    std::string name;
-    std::string long_name;
-    std::string units;
-    std::vector<NcDim> dimensions;
+struct AttScalarFlt
+{
+  float *data;
+  std::string name;
+  std::string long_name;
+  std::string units;
+  std::vector<NcDim> dimensions;
 };
-struct AttVectorFlt {
-    std::vector<float>* data;
-    std::string name;
-    std::string long_name;
-    std::string units;
-    std::vector<NcDim> dimensions;
+struct AttVectorFlt
+{
+  std::vector<float> *data;
+  std::string name;
+  std::string long_name;
+  std::string units;
+  std::vector<NcDim> dimensions;
 };
-struct AttScalarDbl {
-    double* data;
-    std::string name;
-    std::string long_name;
-    std::string units;
-    std::vector<NcDim> dimensions;
+struct AttScalarDbl
+{
+  double *data;
+  std::string name;
+  std::string long_name;
+  std::string units;
+  std::vector<NcDim> dimensions;
 };
-struct AttVectorDbl {
-    std::vector<double>* data;
-    std::string name;
-    std::string long_name;
-    std::string units;
-    std::vector<NcDim> dimensions;
+struct AttVectorDbl
+{
+  std::vector<double> *data;
+  std::string name;
+  std::string long_name;
+  std::string units;
+  std::vector<NcDim> dimensions;
 };
-struct AttVectorChar {
-    std::vector<char>* data;
-    std::string name;
-    std::string long_name;
-    std::string units;
-    std::vector<NcDim> dimensions;
+struct AttVectorChar
+{
+  std::vector<char> *data;
+  std::string name;
+  std::string long_name;
+  std::string units;
+  std::vector<NcDim> dimensions;
 };
 
 /**
@@ -113,92 +120,84 @@ struct AttVectorChar {
 class QESNetCDFOutput : public NetCDFOutput
 {
 public:
-    QESNetCDFOutput()
-    {}
-    QESNetCDFOutput(std::string);
-    virtual ~QESNetCDFOutput()
-    {}
+  QESNetCDFOutput()
+  {}
+  QESNetCDFOutput(std::string);
+  virtual ~QESNetCDFOutput()
+  {}
 
-    /**
-     * :document this:
-     *
-     * @note Can be called outside.
-     */
-    virtual void save(ptime) = 0;
+  /**
+   * :document this:
+   *
+   * @note Can be called outside.
+   */
+  virtual void save(ptime) = 0;
 
 protected:
+  // create attribute scalar based on type of data
+  void createAttScalar(std::string, std::string, std::string, std::vector<NcDim>, int *);
+  void createAttScalar(std::string, std::string, std::string, std::vector<NcDim>, float *);
+  void createAttScalar(std::string, std::string, std::string, std::vector<NcDim>, double *);
 
-    // create attribute scalar based on type of data
-    void createAttScalar(std::string,std::string,std::string,
-                         std::vector<NcDim>,int*);
-    void createAttScalar(std::string,std::string,std::string,
-                         std::vector<NcDim>,float*);
-    void createAttScalar(std::string,std::string,std::string,
-                         std::vector<NcDim>,double*);
+  // create attribute vector based on type of data
+  void createAttVector(std::string, std::string, std::string, std::vector<NcDim>, std::vector<int> *);
+  void createAttVector(std::string, std::string, std::string, std::vector<NcDim>, std::vector<float> *);
+  void createAttVector(std::string, std::string, std::string, std::vector<NcDim>, std::vector<double> *);
+  void createAttVector(std::string, std::string, std::string, std::vector<NcDim>, std::vector<char> *);
 
-    // create attribute vector based on type of data
-    void createAttVector(std::string,std::string,std::string,
-                         std::vector<NcDim>,std::vector<int>*);
-    void createAttVector(std::string,std::string,std::string,
-                         std::vector<NcDim>,std::vector<float>*);
-    void createAttVector(std::string,std::string,std::string,
-                         std::vector<NcDim>,std::vector<double>*);
-    void createAttVector(std::string,std::string,std::string,
-                         std::vector<NcDim>,std::vector<char>*);
-    
 
-    // add fields based on output_fields
-    void addOutputFields();
-    // removed field
-    void rmOutputField(std::string);
-    void rmTimeIndepFields();
-    // save fields
-    void saveOutputFields();
+  // add fields based on output_fields
+  void addOutputFields();
+  // removed field
+  void rmOutputField(std::string);
+  void rmTimeIndepFields();
+  // save fields
+  void saveOutputFields();
 
-    virtual bool validateFileOtions()
-    {
-        return true;
-    };
+  virtual bool validateFileOtions()
+  {
+    return true;
+  };
 
-    std::vector<char> timestamp; /**< :document this: */
-    const int dateStrLen = 19;/**< :document this: */
+  std::vector<char> timestamp; /**< :document this: */
+  const int dateStrLen = 19; /**< :document this: */
 
-    int output_counter=0; /**< :document this: */
-    double time=0; /**< :document this: */
+  int output_counter = 0; /**< :document this: */
+  double time = 0; /**< :document this: */
 
-    std::vector<std::string> output_fields;
-    /**< Vector containing fields to add to the NetCDF file
-         @note This vector is used ONLY for creating fields
-         (i.e. by the CTOR &add function) NOT to save them
-         (i.e. by the function save) */
+  std::vector<std::string> output_fields;
+  /**< Vector containing fields to add to the NetCDF file
+       @note This vector is used ONLY for creating fields
+       (i.e. by the CTOR &add function) NOT to save them
+       (i.e. by the function save) */
 
-    ///@{
-    /**
-     * Output field in the NetCDF file for scalar/vector for each type.
-     *
-     * @note This is used ONLY to create and link fields.
-     */
-    std::map<std::string,AttScalarInt> map_att_scalar_int;
-    std::map<std::string,AttScalarFlt> map_att_scalar_flt;
-    std::map<std::string,AttScalarDbl> map_att_scalar_dbl;
-    std::map<std::string,AttVectorInt> map_att_vector_int;
-    std::map<std::string,AttVectorFlt> map_att_vector_flt;
-    std::map<std::string,AttVectorDbl> map_att_vector_dbl;
-    std::map<std::string,AttVectorChar> map_att_vector_char;
-    ///@}
+  ///@{
+  /**
+   * Output field in the NetCDF file for scalar/vector for each type.
+   *
+   * @note This is used ONLY to create and link fields.
+   */
+  std::map<std::string, AttScalarInt> map_att_scalar_int;
+  std::map<std::string, AttScalarFlt> map_att_scalar_flt;
+  std::map<std::string, AttScalarDbl> map_att_scalar_dbl;
+  std::map<std::string, AttVectorInt> map_att_vector_int;
+  std::map<std::string, AttVectorFlt> map_att_vector_flt;
+  std::map<std::string, AttVectorDbl> map_att_vector_dbl;
+  std::map<std::string, AttVectorChar> map_att_vector_char;
+  ///@}
 
-    ///@{
-    /**
-     * Vectors of output fields in the NetCDF file for scalar/vector for each type.
-     *
-     * @note This is used to save the fields, ONLY the fields in these 6 vectors will be saved.
-     */
-    std::vector<AttScalarInt> output_scalar_int;
-    std::vector<AttScalarFlt> output_scalar_flt;
-    std::vector<AttScalarDbl> output_scalar_dbl;
-    std::vector<AttVectorInt> output_vector_int;
-    std::vector<AttVectorFlt> output_vector_flt;
-    std::vector<AttVectorDbl> output_vector_dbl;
-    std::vector<AttVectorChar> output_vector_char;
-    ///@}
+  ///@{
+  /**
+   * Vectors of output fields in the NetCDF file for scalar/vector for each type.
+   *
+   * @note This is used to save the fields, ONLY the fields in these 6 vectors will be saved.
+   */
+  std::vector<AttScalarInt> output_scalar_int;
+  std::vector<AttScalarFlt> output_scalar_flt;
+  std::vector<AttScalarDbl> output_scalar_dbl;
+  std::vector<AttVectorInt> output_vector_int;
+  std::vector<AttVectorFlt> output_vector_flt;
+  std::vector<AttVectorDbl> output_vector_dbl;
+  std::vector<AttVectorChar> output_vector_char;
+  ///@}
 };

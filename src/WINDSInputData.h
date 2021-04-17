@@ -56,70 +56,68 @@
 class WINDSInputData : public ParseInterface
 {
 public:
-    SimulationParameters* simParams; /**< :document this: */
-    FileOptions* fileOptions;        /**< :document this: */
-    MetParams* metParams;            /**< :document this: */
-    TURBParams* turbParams;          /**< :document this: */
-    Buildings* buildings;            /**< :document this: */
-    Canopies* canopies;              /**< :document this: */
+  SimulationParameters *simParams; /**< :document this: */
+  FileOptions *fileOptions; /**< :document this: */
+  MetParams *metParams; /**< :document this: */
+  TURBParams *turbParams; /**< :document this: */
+  Buildings *buildings; /**< :document this: */
+  Canopies *canopies; /**< :document this: */
 
-    WINDSInputData()
-    {
-        fileOptions = 0;
-        metParams = 0;
-        turbParams=0;
-        buildings = 0;
-        canopies = 0;
+  WINDSInputData()
+  {
+    fileOptions = 0;
+    metParams = 0;
+    turbParams = 0;
+    buildings = 0;
+    canopies = 0;
+  }
+
+  WINDSInputData(const std::string fileName)
+  {
+
+    fileOptions = 0;
+    metParams = 0;
+    turbParams = 0;
+    buildings = 0;
+    canopies = 0;
+
+    pt::ptree tree;
+
+    try {
+      pt::read_xml(fileName, tree);
+    } catch (boost::property_tree::xml_parser::xml_parser_error &e) {
+      std::cerr << "Error reading tree in " << fileName << "\n";
+      exit(EXIT_FAILURE);
     }
 
-    WINDSInputData(const std::string fileName) 
-    {
+    parseTree(tree);
+  }
 
-        fileOptions = 0;
-        metParams = 0;
-        turbParams=0;
-        buildings = 0;
-        canopies = 0;
+  /**
+   * :document this:
+   */
+  virtual void parseValues()
+  {
+    parseElement<SimulationParameters>(true, simParams, "simulationParameters");
+    parseElement<FileOptions>(false, fileOptions, "fileOptions");
+    parseElement<MetParams>(false, metParams, "metParams");
+    parseElement<TURBParams>(false, turbParams, "turbParams");
+    parseElement<Buildings>(false, buildings, "buildings");
+    parseElement<Canopies>(false, canopies, "canopies");
+  }
 
-        pt::ptree tree;
-        
-        try {
-            pt::read_xml(fileName, tree);
-        } 
-        catch (boost::property_tree::xml_parser::xml_parser_error& e) {
-            std::cerr << "Error reading tree in " << fileName << "\n";
-            exit(EXIT_FAILURE);
-        }
-        
-        parseTree(tree);
-        
-    }
-    
-    /**
-     * :document this:
-     */
-    virtual void parseValues()
-    {
-	     parseElement<SimulationParameters>(true, simParams, "simulationParameters");
-	     parseElement<FileOptions>(false, fileOptions, "fileOptions");
-	     parseElement<MetParams>(false, metParams, "metParams");
-	     parseElement<TURBParams>(false, turbParams,"turbParams");
-         parseElement<Buildings>(false, buildings, "buildings");
-	     parseElement<Canopies>(false, canopies, "canopies");
-    }
-    
-    /**
-     * Parses the main XML for our QUIC projects.
-     *
-     * Initializes the XML structure and parses the main
-     * XML file used to represent projects in the QUIC system.
-     *
-     * @param t :document this:
-     */
-    void parseTree(pt::ptree t)
-    {
-        setTree(t);
-        setParents("root");
-        parseValues();
-    }
+  /**
+   * Parses the main XML for our QUIC projects.
+   *
+   * Initializes the XML structure and parses the main
+   * XML file used to represent projects in the QUIC system.
+   *
+   * @param t :document this:
+   */
+  void parseTree(pt::ptree t)
+  {
+    setTree(t);
+    setParents("root");
+    parseValues();
+  }
 };

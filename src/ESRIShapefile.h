@@ -35,7 +35,7 @@
 #include <vector>
 // #include "gdal.h"
 #include "gdal_priv.h"
-#include "cpl_conv.h" // for CPLMalloc()
+#include "cpl_conv.h"// for CPLMalloc()
 #include "ogrsf_frmts.h"
 #include <limits>
 
@@ -52,60 +52,58 @@
 class ESRIShapefile
 {
 public:
-    ESRIShapefile();
-    ESRIShapefile(const std::string &filename, const std::string &layerName,
-                  std::vector< std::vector< polyVert > >& polygons, std::vector <float> &building_height, float heightFactor);
-    ~ESRIShapefile();
+  ESRIShapefile();
+  ESRIShapefile(const std::string &filename, const std::string &layerName, std::vector<std::vector<polyVert>> &polygons, std::vector<float> &building_height, float heightFactor);
+  ~ESRIShapefile();
 
-    /**
-     * :document this:
-     *
-     * @param dim :document this:
-     */
-    void getLocalDomain( std::vector<float> &dim )
-    {
-        assert(dim.size() == 2);
-        dim[0] = (int)ceil(maxBound[0] - minBound[0]);
-        dim[1] = (int)ceil(maxBound[1] - minBound[1]);
-    }
+  /**
+   * :document this:
+   *
+   * @param dim :document this:
+   */
+  void getLocalDomain(std::vector<float> &dim)
+  {
+    assert(dim.size() == 2);
+    dim[0] = (int)ceil(maxBound[0] - minBound[0]);
+    dim[1] = (int)ceil(maxBound[1] - minBound[1]);
+  }
 
-    /**
-     * :document this:
-     *
-     * @param ext :document this:
-     */
-    void getMinExtent( std::vector<float> &ext )
-    {
-        assert(ext.size() == 2);
-        ext[0] = minBound[0];
-        ext[1] = minBound[1];
-    }
+  /**
+   * :document this:
+   *
+   * @param ext :document this:
+   */
+  void getMinExtent(std::vector<float> &ext)
+  {
+    assert(ext.size() == 2);
+    ext[0] = minBound[0];
+    ext[1] = minBound[1];
+  }
 
-    void getMaxExtent( std::vector<float> &ext )
-    {
-        assert(ext.size() == 2);
-        ext[0] = maxBound[0];
-        ext[1] = maxBound[1];
-    }
+  void getMaxExtent(std::vector<float> &ext)
+  {
+    assert(ext.size() == 2);
+    ext[0] = maxBound[0];
+    ext[1] = maxBound[1];
+  }
 
 private:
+  /**
+   * :document this:
+   *
+   * @param polygons :document this:
+   * @param building_height :document this:
+   * @param heightFactor :document this:
+   */
+  void loadVectorData(std::vector<std::vector<polyVert>> &polygons, std::vector<float> &building_height, float heightFactor);
 
-    /**
-     * :document this:
-     *
-     * @param polygons :document this:
-     * @param building_height :document this:
-     * @param heightFactor :document this:
-     */
-    void loadVectorData( std::vector< std::vector< polyVert > > &polygons, std::vector <float> &building_height, float heightFactor );
+  std::string m_filename; /**< :document this */
+  std::string m_layerName; /**< :document this */
 
-    std::string m_filename; /**< :document this */
-    std::string m_layerName;/**< :document this */
+  GDALDataset *m_poDS; /**< :document this */
 
-    GDALDataset *m_poDS;    /**< :document this */
-
-    ///@{
-    /** :document this */
-    std::vector<float> minBound, maxBound;
-    ///@}
+  ///@{
+  /** :document this */
+  std::vector<float> minBound, maxBound;
+  ///@}
 };

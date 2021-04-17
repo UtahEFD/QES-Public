@@ -44,52 +44,50 @@
 class WINDSOutputWorkspace : public QESNetCDFOutput
 {
 public:
-    WINDSOutputWorkspace()
-        : QESNetCDFOutput()
-    {}
+  WINDSOutputWorkspace()
+    : QESNetCDFOutput()
+  {}
 
-    WINDSOutputWorkspace(WINDSGeneralData*,std::string);
-    ~WINDSOutputWorkspace()
-    {}
+  WINDSOutputWorkspace(WINDSGeneralData *, std::string);
+  ~WINDSOutputWorkspace()
+  {}
 
-    /** save function be call outside */
-    void save(ptime);
+  /** save function be call outside */
+  void save(ptime);
 
 private:
+  std::vector<float> x_cc, y_cc, z_cc, z_face, dz_array;
 
-    std::vector<float> x_cc,y_cc,z_cc,z_face,dz_array;
+  WINDSGeneralData *WGD_;
 
-    WINDSGeneralData* WGD_;
+  ///@{
+  /**
+   * Building data functions.
+   * @warning [FM] Feb.28.2020 OBSOLETE
+   */
+  void setBuildingFields(NcDim *, NcDim *);
+  void getBuildingFields();
+  ///@
 
-    ///@{
-    /**
-     * Building data functions.
-     * @warning [FM] Feb.28.2020 OBSOLETE
-     */
-    void setBuildingFields(NcDim*,NcDim*);
-    void getBuildingFields();
-    ///@
+  /**
+   * Building data variables
+   * @warning [FM] Feb.28.2020 OBSOLETE
+   */
+  bool buildingFieldsSet = false;
 
-    /**
-     * Building data variables
-     * @warning [FM] Feb.28.2020 OBSOLETE
-     */
-    bool buildingFieldsSet = false;
+  // [FM] Feb.28.2020 OBSOLETE
+  // These variables are used to convert data structure in array so it can be stored in
+  // NetCDF file. (Canopy can be building, need to specify)
+  // size of these vector = number of buidlings
+  std::vector<float> building_rotation, canopy_rotation;
 
-    // [FM] Feb.28.2020 OBSOLETE
-    // These variables are used to convert data structure in array so it can be stored in
-    // NetCDF file. (Canopy can be building, need to specify)
-    // size of these vector = number of buidlings
-    std::vector<float> building_rotation,canopy_rotation;
+  std::vector<float> L, W, H;
+  std::vector<float> length_eff, width_eff, height_eff, base_height;
+  std::vector<float> building_cent_x, building_cent_y;
 
-    std::vector<float> L,W,H;
-    std::vector<float> length_eff,width_eff,height_eff,base_height;
-    std::vector<float> building_cent_x, building_cent_y;
+  std::vector<int> i_start, i_end, j_start, j_end, k_end, k_start;
+  std::vector<int> i_cut_start, i_cut_end, j_cut_start, j_cut_end, k_cut_end;
+  std::vector<int> i_building_cent, j_building_cent;
 
-    std::vector<int> i_start, i_end, j_start, j_end, k_end,k_start;
-    std::vector<int> i_cut_start, i_cut_end, j_cut_start, j_cut_end, k_cut_end;
-    std::vector<int> i_building_cent, j_building_cent;
-
-    std::vector<float> upwind_dir,Lr;
-
+  std::vector<float> upwind_dir, Lr;
 };
