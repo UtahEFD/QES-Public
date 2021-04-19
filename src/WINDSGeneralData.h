@@ -123,8 +123,10 @@ public:
   float wake_factor; /**< :document this: */
   float lengthf_coeff; /**< :document this: */
   float theta; /**< :document this: */
+  int icell_face;
+  int icell_cent;
 
-  // General QUIC Domain Data
+  // General QES Domain Data
   ///@{
   /** Number of cells */
   int nx, ny, nz;
@@ -193,7 +195,8 @@ public:
   std::vector<float> ni, nj, nk;
   ///@}
   std::vector<float> terrain; /**< :document this: */
-  std::vector<int> terrain_id; /**< Sensor function (inputWindProfile) */
+  std::vector<int> terrain_id; 
+  std::vector<int> terrain_face_id; /**< Sensor function (inputWindProfile) */
 
   std::vector<float> base_height; /**< Base height of buildings */
   std::vector<float> effective_height; /**< Effective height of buildings */
