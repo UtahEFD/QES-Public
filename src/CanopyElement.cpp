@@ -235,7 +235,7 @@ void CanopyElement::canopyCioncoParam(WINDSGeneralData *WGD)
   int num_atten;
 
   // Call regression to define ustar and surface roughness of the canopy
-  canopyRegression(WGD);
+  //canopyRegression(WGD);
 
   for (auto j = 0; j < ny_canopy; j++) {
     for (auto i = 0; i < nx_canopy; i++) {
@@ -343,58 +343,6 @@ void CanopyElement::canopyCioncoParam(WINDSGeneralData *WGD)
           }
         }// end of for(auto k=1; k < WGD->nz-1; k++)
       }
-    }
-  }
-
-  return;
-}
-
-void CanopyElement::canopyRegression(WINDSGeneralData *WGD)
-{
-
-  int k_top(0), counter;
-  float sum_x, sum_y, sum_xy, sum_x_sq, local_mag;
-  float y, xm, ym;
-
-  for (auto j = 0; j < ny_canopy; j++) {
-    for (auto i = 0; i < nx_canopy; i++) {
-      int id = i + j * nx_canopy;
-      if (canopy_top_index[id] > 0) {
-        for (auto k = canopy_top_index[id]; k < WGD->nz - 2; k++) {
-          k_top = k;
-          if (2 * canopy_top[id] < WGD->z[k + 1])
-            break;
-        }
-        if (k_top == canopy_top_index[id]) {
-          k_top = canopy_top_index[id] + 1;
-        }
-        if (k_top > WGD->nz - 1) {
-          k_top = WGD->nz - 1;
-        }
-        sum_x = 0;
-        sum_y = 0;
-        sum_xy = 0;
-        sum_x_sq = 0;
-        counter = 0;
-        for (auto k = canopy_top_index[id]; k <= k_top; k++) {
-          counter += 1;
-          int icell_face = (i - 1 + i_start) + (j - 1 + j_start) * WGD->nx + k * WGD->nx * WGD->ny;
-          local_mag = sqrt(pow(WGD->u0[icell_face], 2.0) + pow(WGD->v0[icell_face], 2.0));
-          y = log(WGD->z[k]);
-          sum_x += local_mag;
-          sum_y += y;
-          sum_xy += local_mag * y;
-          sum_x_sq += pow(local_mag, 2.0);
-        }
-
-        canopy_ustar[id] = WGD->vk * (((counter * sum_x_sq) - pow(sum_x, 2.0)) / ((counter * sum_xy) - (sum_x * sum_y)));
-        xm = sum_x / counter;
-        ym = sum_y / counter;
-        canopy_z0[id] = exp(ym - ((WGD->vk / canopy_ustar[id])) * xm);
-
-        // std::cout << i << " " << j << " " << sum_y << " " << sum_x_sq << " "  << canopy_ustar[id] << " "  << canopy_z0[id] << std::endl;
-
-      }// end of if (canopy_top_index[id] > 0)
     }
   }
 

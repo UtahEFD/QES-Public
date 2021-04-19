@@ -90,7 +90,7 @@ public:
 
 private:
   float attenuationCoeff;
-  float zMaxLAI;
+  float LAI,zMaxLAI;
   int ustar_method = 2;
 
   float Bfunc(const float &);

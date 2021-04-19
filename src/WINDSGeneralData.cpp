@@ -281,6 +281,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
   icellflag.resize(numcell_cent, 1);
   icellflag_initial.resize(numcell_cent, 1);
+  icellflag_footprint.resize(numcell_cout_2d,1);
 
   ibuilding_flag.resize(numcell_cent, -1);
 
@@ -447,9 +448,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
   // After Terrain is processed, handle remaining processing of SHP
   // file data
-
-  std::vector<float> UTMOrigin = { WID->simParams->UTMx, WID->simParams->UTMy };
-
+  if (WID->simParams->UTMx != 0.0 && WID->simParams->UTMy != 0.0) {
+    UTMOrigin = { WID->simParams->UTMx, WID->simParams->UTMy };
+  }
 
   //
   if (WID->simParams->SHPData) {
@@ -552,6 +553,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   canopy = 0;
   if (WID->canopies) {
     canopy = new Canopy(WID, this);
+    canopy->setCanopyElements(WID,this);
+    /*
 
     for (size_t i = 0; i < WID->canopies->canopies.size(); i++) {
       allBuildingsV.push_back(WID->canopies->canopies[i]);
@@ -588,7 +591,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
           }
       }
       */
-
+    /*
       for (auto pIdx = 0u; pIdx < WID->canopies->shpPolygons.size(); pIdx++) {
         // convert the global polys to local domain coordinates
         for (auto lIdx = 0u; lIdx < WID->canopies->shpPolygons[pIdx].size(); lIdx++) {
@@ -632,6 +635,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       std::chrono::duration<float> elapsed_cut = treesetup_finish - treesetup_start;
       std::cout << "Elapsed time for tree setup : " << elapsed_cut.count() << " s\n";
     }
+  */
   }
 
   // Add all the Building* that were read in from XML to this list
@@ -941,17 +945,16 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
 
 void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
 {
-  if (canopy) {
-    canopy->canopyVegetation(this);
-  }
-
   std::cout << "[Winds] \t applying Parameterization" << std::endl;
+
+  auto start_param = std::chrono::high_resolution_clock::now();// Start recording execution time
+ 
   // ///////////////////////////////////////
   // Generic Parameterization Related Stuff
   // ///////////////////////////////////////
-  for (size_t i = 0; i < allBuildingsV.size(); i++) {
-    // for now this does the canopy stuff for us
-    allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
+  if (canopy) {
+    std::cout << "Applying vegetation parameterization...\n";
+    canopy->applyCanopyVegetation(this);
   }
 
   ///////////////////////////////////////////
@@ -962,7 +965,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->upwindCavity(WID, this);
     }
-    std::cout << "Upwind cavity parameterization done...\n";
+    //std::cout << "Upwind cavity parameterization done...\n";
   }
 
   //////////////////////////////////////////////////
@@ -973,7 +976,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->polygonWake(WID, this, building_id[i]);
     }
-    std::cout << "Wake behind building parameterization done...\n";
+    //std::cout << "Wake behind building parameterization done...\n";
   }
 
   ///////////////////////////////////////////
@@ -984,7 +987,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->streetCanyon(this);
     }
-    std::cout << "Street canyon parameterization done...\n";
+    //std::cout << "Street canyon parameterization done...\n";
   }
 
   ///////////////////////////////////////////
@@ -995,7 +998,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->sideWall(WID, this);
     }
-    std::cout << "Sidewall parameterization done...\n";
+    //std::cout << "Sidewall parameterization done...\n";
   }
 
 
@@ -1007,15 +1010,15 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->rooftop(WID, this);
     }
-    std::cout << "Rooftop parameterization done...\n";
+    //std::cout << "Rooftop parameterization done...\n";
   }
 
   // ///////////////////////////////////////
   // Generic Parameterization Related Stuff
   // ///////////////////////////////////////
-  for (size_t i = 0; i < allBuildingsV.size(); i++) {
-    // for now this does the canopy stuff for us
-    allBuildingsV[building_id[i]]->canopyWake(this, building_id[i]);
+  if (canopy) {
+    std::cout << "Applying canopy wake parameterization...\n";
+    canopy->applyCanopyWake(this);
   }
 
   ///////////////////////////////////////////
@@ -1041,6 +1044,11 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
   wall->setVelocityZero(this);
 
 
+  auto finish_param = std::chrono::high_resolution_clock::now();// Finish recording execution time
+  
+  std::chrono::duration<float> elapsed_param = finish_param - start_param;
+  std::cout << "Elapsed time for parameterization: " << elapsed_param.count() << " s\n";
+  
   return;
 }
 

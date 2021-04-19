@@ -163,6 +163,8 @@ public:
   std::vector<float> z_face; /**< :document this: */
   // std::vector<float> x_out,y_out,z_out;
 
+  
+  std::vector<float> UTMOrigin = { 0.0, 0.0 }; /**< :document this: */
 
   // time variables
   int nt; /**< :document this: */
@@ -182,6 +184,7 @@ public:
                         8 = Terrain cut-cells, 9 = Sidewall, 10 = Rooftop,
                         11 = Canopy vegetation, 12 = Fire) */
   std::vector<int> icellflag_initial;
+  std::vector<int> icellflag_footprint;
 
   ///@{
   /** :document this: */
