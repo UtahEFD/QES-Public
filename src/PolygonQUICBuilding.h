@@ -66,7 +66,7 @@ public:
 
     int nNodes = xVertex.size();
     polygonVertices.resize(nNodes + 1);
-    for (auto k = 0u; k < nNodes; k++) {
+    for (int k = 0; k < nNodes; k++) {
       polygonVertices[k].x_poly = xVertex[k];
       polygonVertices[k].y_poly = yVertex[k];
     }
