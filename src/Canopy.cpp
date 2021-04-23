@@ -137,20 +137,20 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
     }
 
 
-    std::cout << "Creating trees from shapefile..." << std::flush;
+    std::cout << "Creating trees from shapefile... " << std::flush;
     // Loop to create each of the polygon buildings read in from the shapefile
     for (auto pIdx = 0u; pIdx < WID->canopies->shpPolygons.size(); pIdx++) {
       int cId = allCanopiesV.size();
       //allCanopiesV.push_back(new CanopyIsolatedTree(WID, WGD, pIdx));
       allCanopiesV.push_back(new CanopyIsolatedTree(WID->canopies->shpPolygons[pIdx],
-                                                    WID->canopies->shpTreeHeight[pIdx],
-                                                    WID->canopies->shpTreeHeight[pIdx],
+                                                    WID->canopies->shpFeatures["H"][pIdx],
+                                                    WID->canopies->shpFeatures["D"][pIdx],
                                                     0.0,
-                                                    4.0,
+                                                    WID->canopies->shpFeatures["LAI"][pIdx],
                                                     cId));
       canopy_id.push_back(cId);
-      allCanopiesV[pIdx]->setPolyBuilding(WGD);
-      allCanopiesV[pIdx]->setCellFlags(WID, WGD, cId);
+      allCanopiesV[cId]->setPolyBuilding(WGD);
+      allCanopiesV[cId]->setCellFlags(WID, WGD, cId);
       effective_height.push_back(allCanopiesV[cId]->height_eff);
     }
     std::cout << "\t [done]" << std::endl;

@@ -34,22 +34,12 @@
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 
-CanopyIsolatedTree::CanopyIsolatedTree(const WINDSInputData *WID, WINDSGeneralData *WGD, int id)
-{
-  polygonVertices = WID->canopies->shpPolygons[id];
-  H = WID->canopies->shpTreeHeight[id];
-  LAI = 4.0;
-  base_height = 0.0;// WGD->base_height[id];
-  height_eff = H;
-  W = H;
-  zMaxLAI = 0.5 * H;
-}
-
 CanopyIsolatedTree::CanopyIsolatedTree(const std::vector<polyVert> &iSP, float iH, float iW, float iBH, float iLAI, int iID)
 {
   polygonVertices = iSP;
   H = iH;
   W = iW;
+  L = W;
   base_height = iBH;
   LAI = iLAI;
   ID = iID;

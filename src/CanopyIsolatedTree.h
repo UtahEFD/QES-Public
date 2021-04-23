@@ -41,7 +41,6 @@ public:
   CanopyIsolatedTree()
   {
   }
-  CanopyIsolatedTree(const WINDSInputData *WID, WINDSGeneralData *WGD, int id);
   CanopyIsolatedTree(const std::vector<polyVert> &iSP, float iH, float iW, float iBH, float iLAI, int iID);
 
   virtual void parseValues()
