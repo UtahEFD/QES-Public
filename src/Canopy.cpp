@@ -67,6 +67,12 @@ Canopy::Canopy(const WINDSInputData *WID, WINDSGeneralData *WGD)
   canopy_d.resize(numcell_cent_2d, 0.0);
 
   canopy_atten_coeff.resize(numcell_cent_3d, 0.0);
+  icanopy_flag.resize(numcell_cent_3d, 0);
+
+  wake_u_defect.resize(WGD->numcell_face, 0.0);
+  wake_v_defect.resize(WGD->numcell_face, 0.0);
+
+    
 }
 
 void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
@@ -88,7 +94,7 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
   }
 
   if (WID->canopies->SHPData) {
-    auto treesetup_start = std::chrono::high_resolution_clock::now();// Start recording execution time
+    auto canopysetup_start = std::chrono::high_resolution_clock::now();// Start recording execution time
 
     std::vector<Building *> poly_buildings;
     float corner_height, min_height;
@@ -133,24 +139,28 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
     }
 
 
-    std::cout << "Creating trees from shapefile...\n";
+    std::cout << "Creating trees from shapefile..." << std::flush;
     // Loop to create each of the polygon buildings read in from the shapefile
     for (auto pIdx = 0u; pIdx < WID->canopies->shpPolygons.size(); pIdx++) {
-      int bldg_id = allCanopiesV.size();
+      int cId = allCanopiesV.size();
       allCanopiesV.push_back(new CanopyIsolatedTree(WID, WGD, pIdx));
-      //building_id.push_back(bldg_id);
+      canopy_id.push_back(cId);
       allCanopiesV[pIdx]->setPolyBuilding(WGD);
-      allCanopiesV[pIdx]->setCellFlags(WID, WGD, bldg_id);
-      //effective_height.push_back(allCanopiesV[bldg_id]->height_eff);
+      allCanopiesV[pIdx]->setCellFlags(WID, WGD, cId);
+      effective_height.push_back(allCanopiesV[cId]->height_eff);
     }
-    std::cout << "\tdone.\n";
-
-    auto treesetup_finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
-
-    std::chrono::duration<float> elapsed_cut = treesetup_finish - treesetup_start;
-    std::cout << "Elapsed time for tree setup : " << elapsed_cut.count() << " s\n";
+    std::cout << "\t [done]" << std::endl;
+    
+    auto canopysetup_finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+    
+    std::chrono::duration<float> elapsed_cut = canopysetup_finish - canopysetup_start;
+    std::cout << "Elapsed time for canopy setup : " << elapsed_cut.count() << " s\n";
   }
-  
+
+  std::cout << "Sorting canopies by height..." << std::flush;
+  mergeSort(effective_height, allCanopiesV, canopy_id);
+  std::cout << "\t [done]" << std::endl;
+
   return;
 }
 
@@ -159,10 +169,10 @@ void Canopy::applyCanopyVegetation(WINDSGeneralData *WGD)
    // Call regression to define ustar and surface roughness of the canopy
   canopyRegression(WGD);
 
-  for (size_t i = 0; i < allCanopiesV.size(); i++) {
+  for (size_t i = 0; i < allCanopiesV.size(); ++i) {
     // for now this does the canopy stuff for us
     //allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
-    allCanopiesV[i]->canopyVegetation(WGD, (int)i);
+    allCanopiesV[canopy_id[i]]->canopyVegetation(WGD, canopy_id[i]);
   }
 
   return;
@@ -171,10 +181,20 @@ void Canopy::applyCanopyVegetation(WINDSGeneralData *WGD)
 void Canopy::applyCanopyWake(WINDSGeneralData *WGD)
 {
   
-  for (size_t i = 0; i < allCanopiesV.size(); i++) {
+  for (size_t i = 0; i < allCanopiesV.size(); ++i) {
     // for now this does the canopy stuff for us
     //allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
-    allCanopiesV[i]->canopyWake(WGD, (int)i);
+    allCanopiesV[canopy_id[i]]->canopyWake(WGD, canopy_id[i]);
+  }
+
+  for (size_t id = 0u; id < wake_u_defect.size(); ++id) {
+    WGD->u0[id] *= (1. - wake_u_defect[id]);
+    wake_u_defect[id] = 0.0;
+  }
+
+  for (size_t id = 0u; id < wake_v_defect.size(); ++id) {
+    WGD->v0[id] *= (1. - wake_v_defect[id]);
+    wake_v_defect[id] = 0.0;
   }
 
   return;
@@ -198,7 +218,7 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
 
       if (canopy_top[icell_2d] > 0) {
         int icell_3d = i + j * nx_canopy + (canopy_top_index[icell_2d] - 1) * nx_canopy * ny_canopy;
-
+	
         // Call the bisection method to find the root
         canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d], canopy_z0[icell_2d], canopy_height[icell_2d], 
 					     canopy_atten_coeff[icell_3d], WGD->vk, 0.0);
@@ -446,4 +466,57 @@ float Canopy::canopySlopeMatch(float z0, float canopy_top, float canopy_atten)
 
   // return displacement height
   return d;
+}
+
+void Canopy::mergeSort(std::vector<float> &effective_height, std::vector<Building *> allCanopiesV, std::vector<int> &tree_id)
+{
+  // if the size of the array is 1, it is already sorted
+  if (allCanopiesV.size() == 1) {
+    return;
+  }
+
+  if (allCanopiesV.size() > 1) {
+    // make left and right sides of the data
+    std::vector<float> effective_height_L, effective_height_R;
+    std::vector<int> tree_id_L, tree_id_R;
+    std::vector<Building *> allCanopiesV_L, allCanopiesV_R;
+    effective_height_L.resize(allCanopiesV.size() / 2);
+    effective_height_R.resize(allCanopiesV.size() - allCanopiesV.size() / 2);
+    tree_id_L.resize(allCanopiesV.size() / 2);
+    tree_id_R.resize(allCanopiesV.size() - allCanopiesV.size() / 2);
+    allCanopiesV_L.resize(allCanopiesV.size() / 2);
+    allCanopiesV_R.resize(allCanopiesV.size() - allCanopiesV.size() / 2);
+
+    // copy data from the main data set to the left and right children
+    size_t lC = 0, rC = 0;
+    for (size_t i = 0; i < allCanopiesV.size(); i++) {
+      if (i < allCanopiesV.size() / 2) {
+        effective_height_L[lC] = effective_height[i];
+        allCanopiesV_L[lC] = allCanopiesV[i];
+        tree_id_L[lC++] = tree_id[i];
+
+      } else {
+        effective_height_R[rC] = effective_height[i];
+        allCanopiesV_R[rC] = allCanopiesV[i];
+        tree_id_R[rC++] = tree_id[i];
+      }
+    }
+    // recursively sort the children
+    mergeSort(effective_height_L, allCanopiesV_L, tree_id_L);
+    mergeSort(effective_height_R, allCanopiesV_R, tree_id_R);
+
+    // compare the sorted children to place the data into the main array
+    lC = rC = 0;
+    for (size_t i = 0; i < allCanopiesV.size(); i++) {
+      if (rC == effective_height_R.size() || (lC != effective_height_L.size() && effective_height_L[lC] > effective_height_R[rC])) {
+        effective_height[i] = effective_height_L[lC];
+        tree_id[i] = tree_id_L[lC++];
+      } else {
+        effective_height[i] = effective_height_R[rC];
+        tree_id[i] = tree_id_R[rC++];
+      }
+    }
+  }
+
+  return;
 }

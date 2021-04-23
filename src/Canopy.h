@@ -105,11 +105,15 @@ public:
   std::vector<Building *> allCanopiesV; /**< :document this: */
   std::vector<float> base_height; /**< Base height of trees */
   std::vector<float> effective_height; /**< Effective height of trees */
+  std::vector<int> icanopy_flag; /**< :document this: */
+  std::vector<int> canopy_id; /**< :document this: */
+
+  std::vector<float> wake_u_defect; /**< :document this: */
+  std::vector<float> wake_v_defect; /**< :document this: */
 
 protected:
   int nx_canopy, ny_canopy, nz_canopy;
   int numcell_cent_2d, numcell_cent_3d;
-
 
   /*!
    * This function takes in icellflag defined in the defineCanopy function along with variables initialized in
@@ -145,6 +149,9 @@ protected:
   float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
 
 private:
+  
+  void mergeSort(std::vector<float> &effective_height, std::vector<Building *> allBuildingsV, std::vector<int> &tree_id);
+
 };
 
 inline int Canopy::getCellFlagCanopy()
