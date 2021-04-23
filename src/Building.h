@@ -61,6 +61,7 @@ class Building : public ParseInterface
 {
 protected:
 public:
+  int ID; /**< :document this: */
   float building_rotation; /**< :document this: */
   float canopy_rotation; /**< :document this: */
   float x_start; /**< :document this: */

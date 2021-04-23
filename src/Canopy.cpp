@@ -71,8 +71,6 @@ Canopy::Canopy(const WINDSInputData *WID, WINDSGeneralData *WGD)
 
   wake_u_defect.resize(WGD->numcell_face, 0.0);
   wake_v_defect.resize(WGD->numcell_face, 0.0);
-
-    
 }
 
 void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
@@ -116,8 +114,8 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
     for (auto pIdx = 0u; pIdx < WID->canopies->shpPolygons.size(); pIdx++) {
       // convert the global polys to local domain coordinates
       for (auto lIdx = 0u; lIdx < WID->canopies->shpPolygons[pIdx].size(); lIdx++) {
-	WID->canopies->shpPolygons[pIdx][lIdx].x_poly -= WGD->UTMOrigin[0];
-	WID->canopies->shpPolygons[pIdx][lIdx].y_poly -= WGD->UTMOrigin[1];
+        WID->canopies->shpPolygons[pIdx][lIdx].x_poly -= WGD->UTMOrigin[0];
+        WID->canopies->shpPolygons[pIdx][lIdx].y_poly -= WGD->UTMOrigin[1];
       }
     }
 
@@ -126,15 +124,15 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
       std::cout << "Isolated tree from shapefile and DEM not implemented...\n";
     } else {
       for (auto pIdx = 0u; pIdx < WID->simParams->shpPolygons.size(); pIdx++) {
-	//base_height.push_back(0.0);
+        //base_height.push_back(0.0);
       }
     }
 
 
     for (auto pIdx = 0u; pIdx < WID->canopies->shpPolygons.size(); pIdx++) {
       for (auto lIdx = 0u; lIdx < WID->canopies->shpPolygons[pIdx].size(); lIdx++) {
-	WID->canopies->shpPolygons[pIdx][lIdx].x_poly += WID->simParams->halo_x;
-	WID->canopies->shpPolygons[pIdx][lIdx].y_poly += WID->simParams->halo_y;
+        WID->canopies->shpPolygons[pIdx][lIdx].x_poly += WID->simParams->halo_x;
+        WID->canopies->shpPolygons[pIdx][lIdx].y_poly += WID->simParams->halo_y;
       }
     }
 
@@ -143,16 +141,22 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
     // Loop to create each of the polygon buildings read in from the shapefile
     for (auto pIdx = 0u; pIdx < WID->canopies->shpPolygons.size(); pIdx++) {
       int cId = allCanopiesV.size();
-      allCanopiesV.push_back(new CanopyIsolatedTree(WID, WGD, pIdx));
+      //allCanopiesV.push_back(new CanopyIsolatedTree(WID, WGD, pIdx));
+      allCanopiesV.push_back(new CanopyIsolatedTree(WID->canopies->shpPolygons[pIdx],
+                                                    WID->canopies->shpTreeHeight[pIdx],
+                                                    WID->canopies->shpTreeHeight[pIdx],
+                                                    0.0,
+                                                    4.0,
+                                                    cId));
       canopy_id.push_back(cId);
       allCanopiesV[pIdx]->setPolyBuilding(WGD);
       allCanopiesV[pIdx]->setCellFlags(WID, WGD, cId);
       effective_height.push_back(allCanopiesV[cId]->height_eff);
     }
     std::cout << "\t [done]" << std::endl;
-    
+
     auto canopysetup_finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
-    
+
     std::chrono::duration<float> elapsed_cut = canopysetup_finish - canopysetup_start;
     std::cout << "Elapsed time for canopy setup : " << elapsed_cut.count() << " s\n";
   }
@@ -166,7 +170,7 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
 
 void Canopy::applyCanopyVegetation(WINDSGeneralData *WGD)
 {
-   // Call regression to define ustar and surface roughness of the canopy
+  // Call regression to define ustar and surface roughness of the canopy
   canopyRegression(WGD);
 
   for (size_t i = 0; i < allCanopiesV.size(); ++i) {
@@ -180,7 +184,7 @@ void Canopy::applyCanopyVegetation(WINDSGeneralData *WGD)
 
 void Canopy::applyCanopyWake(WINDSGeneralData *WGD)
 {
-  
+
   for (size_t i = 0; i < allCanopiesV.size(); ++i) {
     // for now this does the canopy stuff for us
     //allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
@@ -218,10 +222,9 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
 
       if (canopy_top[icell_2d] > 0) {
         int icell_3d = i + j * nx_canopy + (canopy_top_index[icell_2d] - 1) * nx_canopy * ny_canopy;
-	
+
         // Call the bisection method to find the root
-        canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d], canopy_z0[icell_2d], canopy_height[icell_2d], 
-					     canopy_atten_coeff[icell_3d], WGD->vk, 0.0);
+        canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d], canopy_z0[icell_2d], canopy_height[icell_2d], canopy_atten_coeff[icell_3d], WGD->vk, 0.0);
         // std::cout << "WGD->vk:" << WGD->vk << "\n";
         // std::cout << "WGD->canopy_atten[icell_cent]:" << WGD->canopy_atten[icell_cent] << "\n";
         if (canopy_d[icell_2d] == 10000) {
@@ -249,8 +252,7 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
               avg_atten = canopy_atten_coeff[icell_3d];
 
 
-              if (canopy_atten_coeff[icell_3d + nx_canopy * ny_canopy] != canopy_atten_coeff[icell_3d] || 
-		  canopy_atten_coeff[icell_3d - nx_canopy * ny_canopy] != canopy_atten_coeff[icell_3d]) {
+              if (canopy_atten_coeff[icell_3d + nx_canopy * ny_canopy] != canopy_atten_coeff[icell_3d] || canopy_atten_coeff[icell_3d - nx_canopy * ny_canopy] != canopy_atten_coeff[icell_3d]) {
                 num_atten = 1;
                 if (canopy_atten_coeff[icell_3d + nx_canopy * ny_canopy] > 0) {
                   avg_atten += canopy_atten_coeff[icell_3d + nx_canopy * ny_canopy];
@@ -270,8 +272,7 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
               */
 
               // correction on the velocity within the canopy
-              veg_vel_frac = log((canopy_height[icell_2d] - canopy_d[icell_2d]) / canopy_z0[icell_2d]) * 
-		exp(avg_atten * ((z_rel / canopy_height[icell_2d]) - 1)) / log(z_rel / canopy_z0[icell_2d]);
+              veg_vel_frac = log((canopy_height[icell_2d] - canopy_d[icell_2d]) / canopy_z0[icell_2d]) * exp(avg_atten * ((z_rel / canopy_height[icell_2d]) - 1)) / log(z_rel / canopy_z0[icell_2d]);
               // check if correction is bound and well defined
               if (veg_vel_frac > 1 || veg_vel_frac < 0) {
                 veg_vel_frac = 1;

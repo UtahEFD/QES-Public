@@ -42,6 +42,7 @@ public:
   {
   }
   CanopyIsolatedTree(const WINDSInputData *WID, WINDSGeneralData *WGD, int id);
+  CanopyIsolatedTree(const std::vector<polyVert> &iSP, float iH, float iW, float iBH, float iLAI, int iID);
 
   virtual void parseValues()
   {
@@ -90,7 +91,7 @@ public:
 
 private:
   float attenuationCoeff;
-  float LAI,zMaxLAI;
+  float LAI, zMaxLAI;
   int ustar_method = 2;
 
   float Bfunc(const float &);

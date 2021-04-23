@@ -45,6 +45,19 @@ CanopyIsolatedTree::CanopyIsolatedTree(const WINDSInputData *WID, WINDSGeneralDa
   zMaxLAI = 0.5 * H;
 }
 
+CanopyIsolatedTree::CanopyIsolatedTree(const std::vector<polyVert> &iSP, float iH, float iW, float iBH, float iLAI, int iID)
+{
+  polygonVertices = iSP;
+  H = iH;
+  W = iW;
+  base_height = iBH;
+  LAI = iLAI;
+  ID = iID;
+
+  height_eff = base_height + H;
+  zMaxLAI = 0.5 * H;
+}
+
 // set et attenuation coefficient
 void CanopyIsolatedTree::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, int tree_id)
 {
@@ -306,7 +319,7 @@ void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData *WGD, int tree_id)
 
   icell_face = i_building_cent + j_building_cent * WGD->nx + (k_end + 1) * WGD->nx * WGD->ny;
   u0_h = WGD->u0[icell_face];// u velocity at the height of building at the centroid
-  v0_h = WGD->v0[icell_face];// v velocity at the height of building at the centroid    
+  v0_h = WGD->v0[icell_face];// v velocity at the height of building at the centroid
 
   return;
 }
