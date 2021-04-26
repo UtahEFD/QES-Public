@@ -298,7 +298,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   mixingLengths.resize(numcell_cent, 0.0);
 
   terrain.resize(numcell_cout_2d, 0.0);
-  terrain_id.resize(nx * ny, 1);
+  terrain_face_id.resize(nx * ny, 1);
+  terrain_id.resize((nx - 1) * (ny - 1), 1);
 
   /////////////////////////////////////////
 
@@ -344,22 +345,147 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         }
         id = ii + jj * nx;
         for (size_t k = 0; k < z.size() - 1; k++) {
-          terrain_id[id] = k;
+          terrain_face_id[id] = k;
+          if (terrain[idx] < z_face[k]) {
+            break;
+          }
+        }
+      }
+    }
+
+    for (int i = halo_index_x; i < nx - halo_index_x - 1; i++) {
+      for (int j = 0; j < halo_index_y; j++) {
+        id = i + halo_index_y * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_face_id[id];
+      }
+
+      for (int j = ny - halo_index_y - 1; j < ny; j++) {
+        id = i + (ny - halo_index_y - 1) * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_face_id[id];
+      }
+    }
+
+    for (int j = halo_index_y; j < ny - halo_index_y - 1; j++) {
+      for (int i = 0; i < halo_index_x; i++) {
+        id = halo_index_x + j * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_face_id[id];
+      }
+
+      for (int i = nx - halo_index_x - 1; i < nx; i++) {
+        id = (nx - halo_index_x - 1) + j * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_face_id[id];
+      }
+    }
+
+    for (int i = 0; i < halo_index_x; i++) {
+      for (int j = 0; j < halo_index_y; j++) {
+        id = halo_index_x + halo_index_y * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_face_id[id];
+      }
+
+      for (int j = ny - halo_index_y - 1; j < ny; j++) {
+        id = halo_index_x + (ny - halo_index_y - 1) * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_face_id[id];
+      }
+    }
+
+    for (int i = nx - halo_index_x - 1; i < nx - 1; i++) {
+      for (int j = 0; j < halo_index_y; j++) {
+        id = (nx - halo_index_x - 1) + halo_index_y * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_face_id[id];
+      }
+
+      for (int j = ny - halo_index_y - 1; j < ny - 1; j++) {
+        id = (nx - halo_index_x - 1) + (ny - halo_index_y - 2) * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_id[id];
+      }
+    }
+
+    for (int i = 0; i < nx - 2 * halo_index_x - 1; i++) {
+      for (int j = 0; j < ny - 2 * halo_index_y - 1; j++) {
+        // Gets height of the terrain for each cell
+        ii = i + halo_index_x;
+        jj = j + halo_index_y;
+        idx = ii + jj * (nx - 1);
+        for (size_t k = 0; k < z.size() - 1; k++) {
+          terrain_id[idx] = k;
           if (terrain[idx] < z[k]) {
             break;
           }
         }
       }
-      ii = i + WID->simParams->halo_x / dx;
-      jj = ny - halo_index_y - 1;
-      id = ii + jj * nx;
-      terrain_id[id] = terrain_id[id - nx];
     }
-    for (int j = 0; j < ny - halo_index_y; j++) {
-      ii = nx - halo_index_x - 1;
-      jj = j + WID->simParams->halo_y / dy;
-      id = ii + jj * nx;
-      terrain_id[id] = terrain_id[id - 1];
+
+    for (int i = halo_index_x; i < nx - halo_index_x - 1; i++) {
+      for (int j = 0; j < halo_index_y; j++) {
+        id = i + halo_index_y * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
+
+      for (int j = ny - halo_index_y - 1; j < ny - 1; j++) {
+        id = i + (ny - halo_index_y - 2) * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
+    }
+
+    for (int j = halo_index_y; j < ny - halo_index_y - 1; j++) {
+      for (int i = 0; i < halo_index_x; i++) {
+        id = halo_index_x + j * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
+
+      for (int i = nx - halo_index_x - 1; i < nx - 1; i++) {
+        id = (nx - halo_index_x - 2) + j * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
+    }
+
+    for (int i = 0; i < halo_index_x; i++) {
+      for (int j = 0; j < halo_index_y; j++) {
+        id = halo_index_x + halo_index_y * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
+
+      for (int j = ny - halo_index_y - 1; j < ny - 1; j++) {
+        id = halo_index_x + (ny - halo_index_y - 2) * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
+    }
+
+    for (int i = nx - halo_index_x - 1; i < nx - 1; i++) {
+      for (int j = 0; j < halo_index_y; j++) {
+        id = (nx - halo_index_x - 2) + halo_index_y * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
+
+      for (int j = ny - halo_index_y - 1; j < ny - 1; j++) {
+        id = (nx - halo_index_x - 2) + (ny - halo_index_y - 2) * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
     }
   }
 
@@ -402,12 +528,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   if (WID->simParams->DTE_heightField) {
     if (WID->simParams->meshTypeFlag == 0 && WID->simParams->readCoefficientsFlag == 0) {
       auto start_stair = std::chrono::high_resolution_clock::now();
-      for (int i = 0; i < nx - 2 * halo_index_x - 1; i++) {
-        for (int j = 0; j < ny - 2 * halo_index_y - 1; j++) {
+      for (int i = 0; i < nx - 1; i++) {
+        for (int j = 0; j < ny - 1; j++) {
           // Gets height of the terrain for each cell
-          int ii = i + halo_index_x;
-          int jj = j + halo_index_y;
-          int idx = ii + jj * (nx - 1);
+          int idx = i + j * (nx - 1);
           for (size_t k = 0; k < z.size() - 1; k++) {
             if (terrain[idx] < z[k + 1]) {
               break;
@@ -416,7 +540,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
             // ////////////////////////////////
             // Stair-step (original QUIC)    //
             // ////////////////////////////////
-            int icell_cent = ii + jj * (nx - 1) + (k + 1) * (nx - 1) * (ny - 1);
+            icell_cent = i + j * (nx - 1) + (k + 1) * (nx - 1) * (ny - 1);
             icellflag[icell_cent] = 2;
           }
         }

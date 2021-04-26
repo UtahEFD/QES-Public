@@ -60,7 +60,7 @@ __global__ void Calculatewm(float *d_wm, float *d_wms, float *d_sum_wm, float *d
 }
 
 
-__global__ void CalculateInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu, float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, float *d_u_prof, float *d_v_prof, int *d_site_id, int *d_terrain_id, int *d_k_mod, int num_sites, int nx, int ny, int nz)
+__global__ void CalculateInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu, float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, float *d_u_prof, float *d_v_prof, int *d_site_id, int *d_terrain_face_id, int *d_k_mod, int num_sites, int nx, int ny, int nz)
 {
 
   int ii = blockDim.x * blockIdx.x + threadIdx.x;
@@ -70,8 +70,8 @@ __global__ void CalculateInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_
 
   if ((i < nx) && (j < ny) && (i >= 0) && (j >= 0)) {
     for (int k = 1; k < nz; k++) {
-      if (k + d_terrain_id[ii] - 1 < nz) {
-        d_k_mod[ii] = k + d_terrain_id[ii] - 1;
+      if (k + d_terrain_face_id[ii] - 1 < nz) {
+        d_k_mod[ii] = k + d_terrain_face_id[ii] - 1;
       } else {
         continue;
       }
@@ -81,13 +81,13 @@ __global__ void CalculateInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_
       d_sum_wm[i + j * nx] = 0;
 
       for (int id = 0; id < num_sites; id++) {
-        if (k + d_terrain_id[d_site_id[id]] - 1 > nz - 2) {
+        if (k + d_terrain_face_id[d_site_id[id]] - 1 > nz - 2) {
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_u_prof[nz - 2 + id * nz];
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_v_prof[nz - 2 + id * nz];
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         } else {
-          d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_u_prof[k + d_terrain_id[d_site_id[id]] - 1 + id * nz];
-          d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_v_prof[k + d_terrain_id[d_site_id[id]] - 1 + id * nz];
+          d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_u_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz];
+          d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_v_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz];
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         }
       }
@@ -101,7 +101,7 @@ __global__ void CalculateInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_
 }
 
 
-__global__ void CalculateInit(float *d_site_xcoord, float *d_site_ycoord, float *d_x, float *d_y, float *d_dxx, float *d_dyy, int *d_iwork, int *d_jwork, float *d_u12, float *d_u34, float *d_v12, float *d_v34, float *d_u0_int, float *d_v0_int, float *d_u0, float *d_v0, float *d_u_prof, float *d_v_prof, int *d_site_id, int *d_terrain_id, int num_sites, float dx, float dy, int nx, int ny, int nz)
+__global__ void CalculateInit(float *d_site_xcoord, float *d_site_ycoord, float *d_x, float *d_y, float *d_dxx, float *d_dyy, int *d_iwork, int *d_jwork, float *d_u12, float *d_u34, float *d_v12, float *d_v34, float *d_u0_int, float *d_v0_int, float *d_u0, float *d_v0, float *d_u_prof, float *d_v_prof, int *d_site_id, int *d_terrain_face_id, int num_sites, float dx, float dy, int nx, int ny, int nz)
 {
   int ii = blockDim.x * blockIdx.x + threadIdx.x;
 
@@ -123,7 +123,7 @@ __global__ void CalculateInit(float *d_site_xcoord, float *d_site_ycoord, float 
       d_dyy[ii] = d_site_ycoord[ii] - d_y[d_jwork[ii]];
       int index = d_iwork[ii] + d_jwork[ii] * nx;
 
-      for (int k = d_terrain_id[index]; k < nz; k++) {
+      for (int k = d_terrain_face_id[index]; k < nz; k++) {
         int idx = k + ii * nz;
         int index_work = d_iwork[ii] + d_jwork[ii] * nx + k * nx * ny;
         d_u12[idx] = (1 - (d_dxx[ii] / dx)) * d_u0[index_work + nx] + (d_dxx[ii] / dx) * d_u0[index_work + 1 + nx];
@@ -139,21 +139,21 @@ __global__ void CalculateInit(float *d_site_xcoord, float *d_site_ycoord, float 
     } else {
       int id;
       for (int k = 1; k < nz; k++) {
-        if (k + d_terrain_id[d_site_id[ii]] - 1 > nz - 2) {
+        if (k + d_terrain_face_id[d_site_id[ii]] - 1 > nz - 2) {
           id = nz - 2 + ii * nz;
           d_u0_int[id] = d_u_prof[nz - 2 + ii * nz];
           d_v0_int[id] = d_v_prof[nz - 2 + ii * nz];
         } else {
-          id = k + d_terrain_id[d_site_id[ii]] - 1 + ii * nz;
-          d_u0_int[id] = d_u_prof[k + d_terrain_id[d_site_id[ii]] - 1 + ii * nz];
-          d_v0_int[id] = d_v_prof[k + d_terrain_id[d_site_id[ii]] - 1 + ii * nz];
+          id = k + d_terrain_face_id[d_site_id[ii]] - 1 + ii * nz;
+          d_u0_int[id] = d_u_prof[k + d_terrain_face_id[d_site_id[ii]] - 1 + ii * nz];
+          d_v0_int[id] = d_v_prof[k + d_terrain_face_id[d_site_id[ii]] - 1 + ii * nz];
         }
       }
     }
   }
 }
 
-__global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu, float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, float *d_u_prof, float *d_v_prof, float *d_u0_int, float *d_v0_int, int *d_site_id, int *d_terrain_id, int *d_k_mod, int num_sites, int nx, int ny, int nz)
+__global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu, float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, float *d_u_prof, float *d_v_prof, float *d_u0_int, float *d_v0_int, int *d_site_id, int *d_terrain_face_id, int *d_k_mod, int num_sites, int nx, int ny, int nz)
 {
 
   int ii = blockDim.x * blockIdx.x + threadIdx.x;
@@ -162,8 +162,8 @@ __global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu
 
   if ((i < nx) && (j < ny) && (i >= 0) && (j >= 0)) {
     for (int k = 1; k < nz; k++) {
-      if (k + d_terrain_id[ii] - 1 < nz) {
-        d_k_mod[ii] = k + d_terrain_id[ii] - 1;
+      if (k + d_terrain_face_id[ii] - 1 < nz) {
+        d_k_mod[ii] = k + d_terrain_face_id[ii] - 1;
       } else {
         continue;
       }
@@ -173,13 +173,13 @@ __global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu
       d_sum_wm[i + j * nx] = 0;
 
       for (int id = 0; id < num_sites; id++) {
-        if (k + d_terrain_id[d_site_id[id]] - 1 > nz - 2) {
+        if (k + d_terrain_face_id[d_site_id[id]] - 1 > nz - 2) {
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[nz - 2 + id * nz] - d_u0_int[nz - 2 + id * nz]);
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_v_prof[nz - 2 + id * nz] - d_v0_int[nz - 2 + id * nz]);
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         } else {
-          d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[k + d_terrain_id[d_site_id[id]] - 1 + id * nz] - d_u0_int[k + d_terrain_id[d_site_id[id]] - 1 + id * nz]);
-          d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_v_prof[k + d_terrain_id[d_site_id[id]] - 1 + id * nz] - d_v0_int[k + d_terrain_id[d_site_id[id]] - 1 + id * nz]);
+          d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz] - d_u0_int[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz]);
+          d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_v_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz] - d_v0_int[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz]);
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
         }
       }
@@ -195,7 +195,7 @@ __global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu
 }
 
 
-__global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, float *d_wms, float *d_u0_int, float *d_v0_int, float *d_x, float *d_y, float *d_site_xcoord, float *d_site_ycoord, float *d_sum_wm, float *d_sum_wu, float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, int *d_iwork, int *d_jwork, int *d_site_id, int *d_terrain_id, int *d_k_mod, float *d_dxx, float *d_dyy, float *d_u12, float *d_u34, float *d_v12, float *d_v34, int num_sites, int nx, int ny, int nz, float dx, float dy)
+__global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, float *d_wms, float *d_u0_int, float *d_v0_int, float *d_x, float *d_y, float *d_site_xcoord, float *d_site_ycoord, float *d_sum_wm, float *d_sum_wu, float *d_sum_wv, float *d_u0, float *d_v0, float *d_w0, int *d_iwork, int *d_jwork, int *d_site_id, int *d_terrain_face_id, int *d_k_mod, float *d_dxx, float *d_dyy, float *d_u12, float *d_u34, float *d_v12, float *d_v34, int num_sites, int nx, int ny, int nz, float dx, float dy)
 {
   float rc_sum, rc_val, xc, yc, rc;
   float dn, lamda, s_gamma;
@@ -225,16 +225,16 @@ __global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, floa
   dim3 numberOfThreadsPerBlock1(BLOCKSIZE, 1, 1);
   dim3 numberOfBlocks1(ceil((nx * ny) / (float)(BLOCKSIZE)), 1, 1);
 
-  CalculateInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock1>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_site_id, d_terrain_id, d_k_mod, num_sites, nx, ny, nz);
+  CalculateInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock1>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz);
   cudaDeviceSynchronize();
 
   dim3 numberOfThreadsPerBlock2(BLOCKSIZE, 1, 1);
   dim3 numberOfBlocks2(ceil((num_sites) / (float)(BLOCKSIZE)), 1, 1);
 
-  CalculateInit<<<numberOfBlocks2, numberOfThreadsPerBlock2>>>(d_site_xcoord, d_site_ycoord, d_x, d_y, d_dxx, d_dyy, d_iwork, d_jwork, d_u12, d_u34, d_v12, d_v34, d_u0_int, d_v0_int, d_u0, d_v0, d_u_prof, d_v_prof, d_site_id, d_terrain_id, num_sites, dx, dy, nx, ny, nz);
+  CalculateInit<<<numberOfBlocks2, numberOfThreadsPerBlock2>>>(d_site_xcoord, d_site_ycoord, d_x, d_y, d_dxx, d_dyy, d_iwork, d_jwork, d_u12, d_u34, d_v12, d_v34, d_u0_int, d_v0_int, d_u0, d_v0, d_u_prof, d_v_prof, d_site_id, d_terrain_face_id, num_sites, dx, dy, nx, ny, nz);
   cudaDeviceSynchronize();
 
-  CorrectInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock1>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_u0_int, d_v0_int, d_site_id, d_terrain_id, d_k_mod, num_sites, nx, ny, nz);
+  CorrectInitialWind<<<numberOfBlocks1, numberOfThreadsPerBlock1>>>(d_wm, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_u_prof, d_v_prof, d_u0_int, d_v0_int, d_site_id, d_terrain_face_id, d_k_mod, num_sites, nx, ny, nz);
   cudaDeviceSynchronize();
 }
 
@@ -300,7 +300,7 @@ void Sensor::BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData 
   float *d_u0, *d_v0, *d_w0;
   float *d_dxx, *d_dyy, *d_u12, *d_u34, *d_v12, *d_v34;
   int *d_iwork, *d_jwork, *d_site_id;
-  int *d_terrain_id, *d_k_mod;
+  int *d_terrain_face_id, *d_k_mod;
 
   cudaMalloc((void **)&d_u_prof, num_sites * WGD->nz * sizeof(float));
   cudaMalloc((void **)&d_v_prof, num_sites * WGD->nz * sizeof(float));
@@ -327,7 +327,7 @@ void Sensor::BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData 
   cudaMalloc((void **)&d_u34, num_sites * WGD->nz * sizeof(float));
   cudaMalloc((void **)&d_v12, num_sites * WGD->nz * sizeof(float));
   cudaMalloc((void **)&d_v34, num_sites * WGD->nz * sizeof(float));
-  cudaMalloc((void **)&d_terrain_id, WGD->nx * WGD->ny * sizeof(int));
+  cudaMalloc((void **)&d_terrain_face_id, WGD->nx * WGD->ny * sizeof(int));
   cudaMalloc((void **)&d_k_mod, WGD->nx * WGD->ny * sizeof(int));
 
   cudaMemcpy(d_u_prof, u_prof_1d.data(), num_sites * WGD->nz * sizeof(int), cudaMemcpyHostToDevice);
@@ -355,10 +355,10 @@ void Sensor::BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData 
   cudaMemcpy(d_u34, u34.data(), num_sites * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_v12, v12.data(), num_sites * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_v34, v34.data(), num_sites * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_terrain_id, WGD->terrain_id.data(), WGD->nx * WGD->ny * sizeof(int), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_terrain_face_id, WGD->terrain_face_id.data(), WGD->nx * WGD->ny * sizeof(int), cudaMemcpyHostToDevice);
   cudaMemcpy(d_k_mod, k_mod.data(), WGD->nx * WGD->ny * sizeof(int), cudaMemcpyHostToDevice);
 
-  BarnesScheme<<<1, 1>>>(d_u_prof, d_v_prof, d_wm, d_wms, d_u0_int, d_v0_int, d_x, d_y, d_site_xcoord, d_site_ycoord, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_iwork, d_jwork, d_site_id, d_terrain_id, d_k_mod, d_dxx, d_dyy, d_u12, d_u34, d_v12, d_v34, num_sites, WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy);
+  BarnesScheme<<<1, 1>>>(d_u_prof, d_v_prof, d_wm, d_wms, d_u0_int, d_v0_int, d_x, d_y, d_site_xcoord, d_site_ycoord, d_sum_wm, d_sum_wu, d_sum_wv, d_u0, d_v0, d_w0, d_iwork, d_jwork, d_site_id, d_terrain_face_id, d_k_mod, d_dxx, d_dyy, d_u12, d_u34, d_v12, d_v34, num_sites, WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy);
   cudaCheck(cudaGetLastError());
 
   cudaMemcpy(WGD->u0.data(), d_u0, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
@@ -390,6 +390,6 @@ void Sensor::BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData 
   cudaFree(d_u34);
   cudaFree(d_v12);
   cudaFree(d_v34);
-  cudaFree(d_terrain_id);
+  cudaFree(d_terrain_face_id);
   cudaFree(d_k_mod);
 }
