@@ -143,7 +143,7 @@ void CanopyIsolatedTree::setCellFlags(const WINDSInputData *WID, WINDSGeneralDat
             }
           }
 
-          //WGD->icellflag_footprint[icell_2d] = getCellFlagCanopy();
+          WGD->icellflag_footprint[icell_2d] = getCellFlagCanopy();
 
           canopy_cell2D.push_back(icell_2d);
           WGD->canopy->canopy_height[icell_2d] = WGD->canopy->canopy_top[icell_2d] - WGD->canopy->canopy_bot[icell_2d];

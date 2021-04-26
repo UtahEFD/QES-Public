@@ -91,14 +91,16 @@ void CanopyElement::setCanopyGrid(WINDSGeneralData *WGD, int building_number)
       start_poly = vert_id;
       num_crossing = 0;
       while (vert_id < polygonVertices.size() - 1) {
-        if ((polygonVertices[vert_id].y_poly <= y_cent && polygonVertices[vert_id + 1].y_poly > y_cent) || (polygonVertices[vert_id].y_poly > y_cent && polygonVertices[vert_id + 1].y_poly <= y_cent)) {
+        if ((polygonVertices[vert_id].y_poly <= y_cent && polygonVertices[vert_id + 1].y_poly > y_cent)
+            || (polygonVertices[vert_id].y_poly > y_cent && polygonVertices[vert_id + 1].y_poly <= y_cent)) {
           ray_intersect = (y_cent - polygonVertices[vert_id].y_poly) / (polygonVertices[vert_id + 1].y_poly - polygonVertices[vert_id].y_poly);
           if (x_cent < (polygonVertices[vert_id].x_poly + ray_intersect * (polygonVertices[vert_id + 1].x_poly - polygonVertices[vert_id].x_poly))) {
             num_crossing += 1;
           }
         }
         vert_id += 1;
-        if (polygonVertices[vert_id].x_poly == polygonVertices[start_poly].x_poly && polygonVertices[vert_id].y_poly == polygonVertices[start_poly].y_poly) {
+        if (polygonVertices[vert_id].x_poly == polygonVertices[start_poly].x_poly
+            && polygonVertices[vert_id].y_poly == polygonVertices[start_poly].y_poly) {
           vert_id += 1;
           start_poly = vert_id;
         }
@@ -121,7 +123,8 @@ void CanopyElement::setCanopyGrid(WINDSGeneralData *WGD, int building_number)
           }
 
           // Define start index of the canopy in z-direction
-          if (WGD->terrain[icell_cent_2d] + base_height > WGD->z_face[k] && WGD->terrain[icell_cent_2d] + base_height <= WGD->z_face[k + 1]) {
+          if (WGD->terrain[icell_cent_2d] + base_height > WGD->z_face[k]
+              && WGD->terrain[icell_cent_2d] + base_height <= WGD->z_face[k + 1]) {
             canopy_bot_index[icell_canopy_2d] = k;
             canopy_bot[icell_canopy_2d] = WGD->terrain[icell_cent_2d] + base_height;
             canopy_base[icell_canopy_2d] = WGD->z_face[k - 1];
@@ -129,7 +132,8 @@ void CanopyElement::setCanopyGrid(WINDSGeneralData *WGD, int building_number)
           }
 
           // Define end index of the canopy in z-direction
-          if (WGD->terrain[icell_cent_2d] + H >= WGD->z_face[k] && WGD->terrain[icell_cent_2d] + H < WGD->z_face[k + 1]) {
+          if (WGD->terrain[icell_cent_2d] + H >= WGD->z_face[k]
+              && WGD->terrain[icell_cent_2d] + H < WGD->z_face[k + 1]) {
             canopy_top_index[icell_canopy_2d] = k + 1;
             canopy_top[icell_canopy_2d] = WGD->terrain[icell_cent_2d] + H;
             // break;
@@ -245,13 +249,20 @@ void CanopyElement::canopyCioncoParam(WINDSGeneralData *WGD)
         int icell_3d = i + j * nx_canopy + (canopy_top_index[icell_2d] - 1) * nx_canopy * ny_canopy;
 
         // Call the bisection method to find the root
-        canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d], canopy_z0[icell_2d], canopy_height[icell_2d], canopy_atten[icell_3d], WGD->vk, 0.0);
+        canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d],
+                                             canopy_z0[icell_2d],
+                                             canopy_height[icell_2d],
+                                             canopy_atten[icell_3d],
+                                             WGD->vk,
+                                             0.0);
         // std::cout << "WGD->vk:" << WGD->vk << "\n";
         // std::cout << "WGD->canopy_atten[icell_cent]:" << WGD->canopy_atten[icell_cent] << "\n";
         if (canopy_d[icell_2d] == 10000) {
           std::cout << "bisection failed to converge"
                     << "\n";
-          canopy_d[icell_2d] = canopySlopeMatch(canopy_z0[icell_2d], canopy_height[icell_2d], canopy_atten[icell_3d]);
+          canopy_d[icell_2d] = canopySlopeMatch(canopy_z0[icell_2d],
+                                                canopy_height[icell_2d],
+                                                canopy_atten[icell_3d]);
         }
 
         /**< velocity at the height of the canopy */
@@ -273,7 +284,8 @@ void CanopyElement::canopyCioncoParam(WINDSGeneralData *WGD)
               avg_atten = canopy_atten[icell_3d];
 
 
-              if (canopy_atten[icell_3d + nx_canopy * ny_canopy] != canopy_atten[icell_3d] || canopy_atten[icell_3d - nx_canopy * ny_canopy] != canopy_atten[icell_3d]) {
+              if (canopy_atten[icell_3d + nx_canopy * ny_canopy] != canopy_atten[icell_3d]
+                  || canopy_atten[icell_3d - nx_canopy * ny_canopy] != canopy_atten[icell_3d]) {
                 num_atten = 1;
                 if (canopy_atten[icell_3d + nx_canopy * ny_canopy] > 0) {
                   avg_atten += canopy_atten[icell_3d + nx_canopy * ny_canopy];
@@ -293,7 +305,8 @@ void CanopyElement::canopyCioncoParam(WINDSGeneralData *WGD)
               */
 
               // correction on the velocity within the canopy
-              veg_vel_frac = log((canopy_height[icell_2d] - canopy_d[icell_2d]) / canopy_z0[icell_2d]) * exp(avg_atten * ((z_rel / canopy_height[icell_2d]) - 1)) / log(z_rel / canopy_z0[icell_2d]);
+              veg_vel_frac = log((canopy_height[icell_2d] - canopy_d[icell_2d]) / canopy_z0[icell_2d])
+                             * exp(avg_atten * ((z_rel / canopy_height[icell_2d]) - 1)) / log(z_rel / canopy_z0[icell_2d]);
               // check if correction is bound and well defined
               if (veg_vel_frac > 1 || veg_vel_frac < 0) {
                 veg_vel_frac = 1;
