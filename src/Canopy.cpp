@@ -76,19 +76,18 @@ Canopy::Canopy(const WINDSInputData *WID, WINDSGeneralData *WGD)
 void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
   for (size_t i = 0; i < WID->canopies->canopies.size(); i++) {
+    int cId = allCanopiesV.size();
     allCanopiesV.push_back(WID->canopies->canopies[i]);
-    int j = allCanopiesV.size() - 1;
-    //building_id.push_back(j);
 
-    for (auto pIdx = 0u; pIdx < allCanopiesV[j]->polygonVertices.size(); pIdx++) {
-      allCanopiesV[j]->polygonVertices[pIdx].x_poly += WID->simParams->halo_x;
-      allCanopiesV[j]->polygonVertices[pIdx].y_poly += WID->simParams->halo_y;
+    for (auto pIdx = 0u; pIdx < allCanopiesV[cId]->polygonVertices.size(); pIdx++) {
+      allCanopiesV[cId]->polygonVertices[pIdx].x_poly += WID->simParams->halo_x;
+      allCanopiesV[cId]->polygonVertices[pIdx].y_poly += WID->simParams->halo_y;
     }
 
-    allCanopiesV[j]->setPolyBuilding(WGD);
-    allCanopiesV[j]->setCellFlags(WID, WGD, j);
-
-    //effective_height.push_back(allCanopiesV[j]->height_eff);
+    canopy_id.push_back(cId);
+    allCanopiesV[cId]->setPolyBuilding(WGD);
+    allCanopiesV[cId]->setCellFlags(WID, WGD, cId);
+    effective_height.push_back(allCanopiesV[cId]->height_eff);
   }
 
   if (WID->canopies->SHPData) {
