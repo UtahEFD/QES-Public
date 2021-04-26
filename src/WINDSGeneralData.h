@@ -195,7 +195,7 @@ public:
   std::vector<float> ni, nj, nk;
   ///@}
   std::vector<float> terrain; /**< :document this: */
-  std::vector<int> terrain_id; 
+  std::vector<int> terrain_id;
   std::vector<int> terrain_face_id; /**< Sensor function (inputWindProfile) */
 
   std::vector<float> base_height; /**< Base height of buildings */
