@@ -148,8 +148,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   } else {
     /* FM NOTES:
      WARNING this is unfinished.
-     + does support multiple sensor files (untested)
-     - does not supprot missmatched time stamps between sensor, assumed that all sensors have all the times
      + does support halo for QES coord (site coord == 1)
      - does not support halo for UTM coord (site coord == 2)
      - does not support halo for lon/lat coord (site coord == 3)
@@ -159,14 +157,40 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     if (WID->metParams->sensorName.size() > 0) {
       for (auto i = 0; i < WID->metParams->sensorName.size(); i++) {
         WID->metParams->sensors.push_back(new Sensor(WID->metParams->sensorName[i]));// Create new sensor object
-        // WID->metParams->sensors[i] = parseSensors(WID->metParams->sensorName[i]);       // Parse new sensor objects from xml
       }
     }
 
-    // adding time stamps (assuming that the 1st sensor always has all the times defined)
-    for (size_t t = 0; t < WID->metParams->sensors[0]->TS.size(); t++) {
-      // ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp);
-      timestamp.push_back(WID->metParams->sensors[0]->TS[t]->timePosix);
+    // If there are more than one timestep
+    if (WID->simParams->totalTimeIncrements > 0) {
+      // Loop to include all the timestep for the first sensor
+      for (auto i = 0; i < WID->metParams->sensors[0]->TS.size(); i++) {
+        sensortime.push_back(WID->metParams->sensors[0]->TS[i]->timeEpoch);
+        sensortime_id.push_back(i);
+      }
+
+      // Loop to include all the unique timesteps of the rest of the sensors
+      for (auto i = 0; i < WID->metParams->sensors.size(); i++) {
+        for (auto j = 0; j < WID->metParams->sensors[i]->TS.size(); j++) {
+          int count = 0;
+          for (auto k = 0; k < sensortime.size(); k++) {
+            if (WID->metParams->sensors[i]->TS[j]->timeEpoch != sensortime[k]) {
+              count += 1;
+            }
+          }
+          // If the timestep is not allready included in the list
+          if (count == sensortime.size()) {
+            sensortime.push_back(WID->metParams->sensors[i]->TS[j]->timeEpoch);
+            sensortime_id.push_back(sensortime.size() - 1);
+          }
+        }
+      }
+    }
+    // Sort the timesteps from low to high (earliest to latest)
+    mergeSortTime(sensortime, sensortime_id);
+
+    // adding time stamps
+    for (size_t t = 0; t < sensortime_id.size(); t++) {
+      timestamp.push_back(bt::from_time_t(sensortime[t]));
     }
 
     // Adding halo to sensor location (if in QEScoord site_coord_flag==1)
@@ -286,9 +310,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
   mixingLengths.resize(numcell_cent, 0.0);
 
-  terrain.resize( numcell_cout_2d, 0.0 );
-  terrain_face_id.resize( nx*ny, 1 );
-  terrain_id.resize( (nx-1)*(ny-1), 1 );
+  terrain.resize(numcell_cout_2d, 0.0);
+  terrain_face_id.resize(nx * ny, 1);
+  terrain_id.resize((nx - 1) * (ny - 1), 1);
 
   /////////////////////////////////////////
 
@@ -318,200 +342,165 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // WID->simParams->halo_y = halo_index_y*dy;
 
   int ii, jj, idx;
-   if (WID->simParams->DTE_heightField)
-   {
-      // ////////////////////////////////
-      // Retrieve terrain height field //
-      // ////////////////////////////////
-      for (int i = 0; i < nx-2*halo_index_x-1; i++)
-      {
-        for (int j = 0; j < ny-2*halo_index_y-1; j++)
-        {
-            // Gets height of the terrain for each cell
-            ii = i+halo_index_x;
-            jj = j+halo_index_y;
-            idx = ii + jj*(nx-1);
-            terrain[idx] = WID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
-            if (terrain[idx] < 0.0)
-            {
-               terrain[idx] = 0.0;
-            }
-            id = ii+jj*nx;
-            for (size_t k=0; k<z.size()-1; k++)
-            {
-               terrain_face_id[id] = k;
-               if (terrain[idx] < z_face[k])
-               {
-                  break;
-               }
-            }
+  if (WID->simParams->DTE_heightField) {
+    // ////////////////////////////////
+    // Retrieve terrain height field //
+    // ////////////////////////////////
+    for (int i = 0; i < nx - 2 * halo_index_x - 1; i++) {
+      for (int j = 0; j < ny - 2 * halo_index_y - 1; j++) {
+        // Gets height of the terrain for each cell
+        ii = i + halo_index_x;
+        jj = j + halo_index_y;
+        idx = ii + jj * (nx - 1);
+        terrain[idx] = WID->simParams->DTE_mesh->getHeight(i * dx + dx * 0.5f, j * dy + dy * 0.5f);
+        if (terrain[idx] < 0.0) {
+          terrain[idx] = 0.0;
+        }
+        id = ii + jj * nx;
+        for (size_t k = 0; k < z.size() - 1; k++) {
+          terrain_face_id[id] = k;
+          if (terrain[idx] < z_face[k]) {
+            break;
+          }
         }
       }
-
-    for (int i = halo_index_x; i < nx-halo_index_x-1; i++)
-    {
-      	for (int j = 0; j < halo_index_y; j++)
-      	{
-        	id = i+halo_index_y*nx;
-        	icell_face = i+j*nx;
-        	terrain_face_id[icell_face] = terrain_face_id[id];
-      	}
-
-      	for (int j = ny-halo_index_y-1; j < ny; j++)
-      	{
-        	id = i+(ny-halo_index_y-1)*nx;
-        	icell_face = i+j*nx;
-        	terrain_face_id[icell_face] = terrain_face_id[id];
-      	}
     }
 
-    for (int j = halo_index_y; j < ny-halo_index_y-1; j++)
-    {
-      	for (int i = 0; i < halo_index_x; i++)
-      	{
-        	id = halo_index_x+j*nx;
-        	icell_face = i+j*nx;
-        	terrain_face_id[icell_face] = terrain_face_id[id];
-      	}
+    for (int i = halo_index_x; i < nx - halo_index_x - 1; i++) {
+      for (int j = 0; j < halo_index_y; j++) {
+        id = i + halo_index_y * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_face_id[id];
+      }
 
-      	for (int i = nx-halo_index_x-1; i < nx; i++)
-      	{
-        	id = (nx-halo_index_x-1)+j*nx;
-        	icell_face = i+j*nx;
-        	terrain_face_id[icell_face] = terrain_face_id[id];
-      	}
+      for (int j = ny - halo_index_y - 1; j < ny; j++) {
+        id = i + (ny - halo_index_y - 1) * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_face_id[id];
+      }
     }
 
-    for (int i = 0; i < halo_index_x; i++)
-    {
-      	for (int j = 0; j < halo_index_y; j++)
-      	{
-        	id = halo_index_x+halo_index_y*nx;
-        	icell_face = i+j*nx;
-        	terrain_face_id[icell_face] = terrain_face_id[id];
-      	}
+    for (int j = halo_index_y; j < ny - halo_index_y - 1; j++) {
+      for (int i = 0; i < halo_index_x; i++) {
+        id = halo_index_x + j * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_face_id[id];
+      }
 
-      	for (int j = ny-halo_index_y-1; j < ny; j++)
-      	{
-        	id = halo_index_x+(ny-halo_index_y-1)*nx;
-        	icell_face = i+j*nx;
-        	terrain_face_id[icell_face] = terrain_face_id[id];
-      	}
+      for (int i = nx - halo_index_x - 1; i < nx; i++) {
+        id = (nx - halo_index_x - 1) + j * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_face_id[id];
+      }
     }
 
-    for (int i = nx-halo_index_x-1; i < nx-1; i++)
-    {
-      	for (int j = 0; j < halo_index_y; j++)
-      	{
-        	id = (nx-halo_index_x-1)+halo_index_y*nx;
-        	icell_face = i+j*nx;
-        	terrain_face_id[icell_face] = terrain_face_id[id];
-      	}
+    for (int i = 0; i < halo_index_x; i++) {
+      for (int j = 0; j < halo_index_y; j++) {
+        id = halo_index_x + halo_index_y * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_face_id[id];
+      }
 
-      	for (int j = ny-halo_index_y-1; j < ny-1; j++)
-      	{
-        	id = (nx-halo_index_x-1)+(ny-halo_index_y-2)*nx;
-        	icell_face = i+j*nx;
-        	terrain_face_id[icell_face] = terrain_id[id];
-      	}
+      for (int j = ny - halo_index_y - 1; j < ny; j++) {
+        id = halo_index_x + (ny - halo_index_y - 1) * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_face_id[id];
+      }
     }
 
-    for (int i = 0; i < nx-2*halo_index_x-1; i++)
-    {
-         for (int j = 0; j < ny-2*halo_index_y-1; j++)
-         {
-            // Gets height of the terrain for each cell
-            ii = i+halo_index_x;
-            jj = j+halo_index_y;
-            idx = ii + jj*(nx-1);
-            for (size_t k=0; k<z.size()-1; k++)
-            {
-               terrain_id[idx] = k;
-               if (terrain[idx] < z[k])
-               {
-                  break;
-               }
-            }
-         }
+    for (int i = nx - halo_index_x - 1; i < nx - 1; i++) {
+      for (int j = 0; j < halo_index_y; j++) {
+        id = (nx - halo_index_x - 1) + halo_index_y * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_face_id[id];
+      }
+
+      for (int j = ny - halo_index_y - 1; j < ny - 1; j++) {
+        id = (nx - halo_index_x - 1) + (ny - halo_index_y - 2) * nx;
+        icell_face = i + j * nx;
+        terrain_face_id[icell_face] = terrain_id[id];
+      }
     }
 
-    for (int i = halo_index_x; i < nx-halo_index_x-1; i++)
-    {
-      	for (int j = 0; j < halo_index_y; j++)
-      	{
-        	id = i+halo_index_y*(nx-1);
-        	icell_cent = i+j*(nx-1);
-        	terrain_id[icell_cent] = terrain_id[id];
-        	terrain[icell_cent] = terrain[id]; 
-      	}
-
-      	for (int j = ny-halo_index_y-1; j < ny-1; j++)
-      	{
-        	id = i+(ny-halo_index_y-2)*(nx-1);
-        	icell_cent = i+j*(nx-1);
-        	terrain_id[icell_cent] = terrain_id[id];
-        	terrain[icell_cent] = terrain[id];
-      	}
+    for (int i = 0; i < nx - 2 * halo_index_x - 1; i++) {
+      for (int j = 0; j < ny - 2 * halo_index_y - 1; j++) {
+        // Gets height of the terrain for each cell
+        ii = i + halo_index_x;
+        jj = j + halo_index_y;
+        idx = ii + jj * (nx - 1);
+        for (size_t k = 0; k < z.size() - 1; k++) {
+          terrain_id[idx] = k;
+          if (terrain[idx] < z[k]) {
+            break;
+          }
+        }
+      }
     }
 
-    for (int j = halo_index_y; j < ny-halo_index_y-1; j++)
-    {
-      	for (int i = 0; i < halo_index_x; i++)
-      	{
-        	id = halo_index_x+j*(nx-1);
-        	icell_cent = i+j*(nx-1);
-        	terrain_id[icell_cent] = terrain_id[id];
-        	terrain[icell_cent] = terrain[id];
-      	}
+    for (int i = halo_index_x; i < nx - halo_index_x - 1; i++) {
+      for (int j = 0; j < halo_index_y; j++) {
+        id = i + halo_index_y * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
 
-      	for (int i = nx-halo_index_x-1; i < nx-1; i++)
-      	{
-        	id = (nx-halo_index_x-2)+j*(nx-1);
-        	icell_cent = i+j*(nx-1);
-        	terrain_id[icell_cent] = terrain_id[id];
-        	terrain[icell_cent] = terrain[id];
-      	}
+      for (int j = ny - halo_index_y - 1; j < ny - 1; j++) {
+        id = i + (ny - halo_index_y - 2) * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
     }
 
-    for (int i = 0; i < halo_index_x; i++)
-    {
-      	for (int j = 0; j < halo_index_y; j++)
-      	{
-        	id = halo_index_x+halo_index_y*(nx-1);
-        	icell_cent = i+j*(nx-1);
-        	terrain_id[icell_cent] = terrain_id[id];
-        	terrain[icell_cent] = terrain[id];
-      	}
+    for (int j = halo_index_y; j < ny - halo_index_y - 1; j++) {
+      for (int i = 0; i < halo_index_x; i++) {
+        id = halo_index_x + j * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
 
-      	for (int j = ny-halo_index_y-1; j < ny-1; j++)
-      	{
-        	id = halo_index_x+(ny-halo_index_y-2)*(nx-1);
-        	icell_cent = i+j*(nx-1);
-        	terrain_id[icell_cent] = terrain_id[id];
-        	terrain[icell_cent] = terrain[id];
-      	}
+      for (int i = nx - halo_index_x - 1; i < nx - 1; i++) {
+        id = (nx - halo_index_x - 2) + j * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
     }
 
-    for (int i = nx-halo_index_x-1; i < nx-1; i++)
-    {
-      	for (int j = 0; j < halo_index_y; j++)
-      	{
-        	id = (nx-halo_index_x-2)+halo_index_y*(nx-1);
-        	icell_cent = i+j*(nx-1);
-        	terrain_id[icell_cent] = terrain_id[id];
-        	terrain[icell_cent] = terrain[id];
-      	}
+    for (int i = 0; i < halo_index_x; i++) {
+      for (int j = 0; j < halo_index_y; j++) {
+        id = halo_index_x + halo_index_y * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
 
-      	for (int j = ny-halo_index_y-1; j < ny-1; j++)
-      	{
-        	id = (nx-halo_index_x-2)+(ny-halo_index_y-2)*(nx-1);
-        	icell_cent = i+j*(nx-1);
-        	terrain_id[icell_cent] = terrain_id[id];
-        	terrain[icell_cent] = terrain[id];
-      	}
+      for (int j = ny - halo_index_y - 1; j < ny - 1; j++) {
+        id = halo_index_x + (ny - halo_index_y - 2) * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
     }
 
-   }
+    for (int i = nx - halo_index_x - 1; i < nx - 1; i++) {
+      for (int j = 0; j < halo_index_y; j++) {
+        id = (nx - halo_index_x - 2) + halo_index_y * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
+
+      for (int j = ny - halo_index_y - 1; j < ny - 1; j++) {
+        id = (nx - halo_index_x - 2) + (ny - halo_index_y - 2) * (nx - 1);
+        icell_cent = i + j * (nx - 1);
+        terrain_id[icell_cent] = terrain_id[id];
+        terrain[icell_cent] = terrain[id];
+      }
+    }
+  }
 
   //////////////////////////////////////////////////////////////////////////////////
   /////    Create sensor velocity profiles and generate initial velocity field /////
@@ -842,7 +831,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // virtual function in the Building class to get the appropriate
   // data for the sort.
   std::cout << "Sorting buildings by height..." << std::endl;
-  mergeSort(effective_height, allBuildingsV, building_id);
+  mergeSort(effective_height, building_id);
   std::cout << "...sorting complete." << std::endl;
 
   wall = new Wall();
@@ -1212,52 +1201,96 @@ void WINDSGeneralData::resetICellFlag()
 }
 
 
-void WINDSGeneralData::mergeSort(std::vector<float> &effective_height, std::vector<Building *> allBuildingsV, std::vector<int> &building_id)
+void WINDSGeneralData::mergeSort(std::vector<float> &effective_height, std::vector<int> &building_id)
 {
   // if the size of the array is 1, it is already sorted
-  if (allBuildingsV.size() == 1) {
+  if (building_id.size() == 1) {
     return;
   }
 
-  if (allBuildingsV.size() > 1) {
+  if (building_id.size() > 1) {
     // make left and right sides of the data
     std::vector<float> effective_height_L, effective_height_R;
     std::vector<int> building_id_L, building_id_R;
-    std::vector<Building *> allBuildingsV_L, allBuildingsV_R;
-    effective_height_L.resize(allBuildingsV.size() / 2);
-    effective_height_R.resize(allBuildingsV.size() - allBuildingsV.size() / 2);
-    building_id_L.resize(allBuildingsV.size() / 2);
-    building_id_R.resize(allBuildingsV.size() - allBuildingsV.size() / 2);
-    allBuildingsV_L.resize(allBuildingsV.size() / 2);
-    allBuildingsV_R.resize(allBuildingsV.size() - allBuildingsV.size() / 2);
+    effective_height_L.resize(building_id.size() / 2);
+    effective_height_R.resize(building_id.size() - building_id.size() / 2);
+    building_id_L.resize(building_id.size() / 2);
+    building_id_R.resize(building_id.size() - building_id.size() / 2);
 
     // copy data from the main data set to the left and right children
     size_t lC = 0, rC = 0;
-    for (size_t i = 0; i < allBuildingsV.size(); i++) {
-      if (i < allBuildingsV.size() / 2) {
+    for (size_t i = 0; i < building_id.size(); i++) {
+      if (i < building_id.size() / 2) {
         effective_height_L[lC] = effective_height[i];
-        allBuildingsV_L[lC] = allBuildingsV[i];
         building_id_L[lC++] = building_id[i];
 
       } else {
         effective_height_R[rC] = effective_height[i];
-        allBuildingsV_R[rC] = allBuildingsV[i];
         building_id_R[rC++] = building_id[i];
       }
     }
     // recursively sort the children
-    mergeSort(effective_height_L, allBuildingsV_L, building_id_L);
-    mergeSort(effective_height_R, allBuildingsV_R, building_id_R);
+    mergeSort(effective_height_L, building_id_L);
+    mergeSort(effective_height_R, building_id_R);
 
     // compare the sorted children to place the data into the main array
     lC = rC = 0;
-    for (size_t i = 0; i < allBuildingsV.size(); i++) {
+    for (size_t i = 0; i < building_id.size(); i++) {
       if (rC == effective_height_R.size() || (lC != effective_height_L.size() && effective_height_L[lC] < effective_height_R[rC])) {
         effective_height[i] = effective_height_L[lC];
         building_id[i] = building_id_L[lC++];
       } else {
         effective_height[i] = effective_height_R[rC];
         building_id[i] = building_id_R[rC++];
+      }
+    }
+  }
+
+  return;
+}
+
+void WINDSGeneralData::mergeSortTime(std::vector<time_t> &sensortime, std::vector<int> &sensortime_id)
+{
+  // if the size of the array is 1, it is already sorted
+  if (sensortime_id.size() == 1) {
+    return;
+  }
+
+  if (sensortime_id.size() > 1) {
+    // make left and right sides of the data
+    std::vector<time_t> sensortime_L, sensortime_R;
+    std::vector<int> sensortime_id_L, sensortime_id_R;
+    sensortime_L.resize(sensortime_id.size() / 2);
+    sensortime_R.resize(sensortime_id.size() - sensortime_id.size() / 2);
+    sensortime_id_L.resize(sensortime_id.size() / 2);
+    sensortime_id_R.resize(sensortime_id.size() - sensortime_id.size() / 2);
+
+    // copy data from the main data set to the left and right children
+    size_t lC = 0, rC = 0;
+    for (size_t i = 0; i < sensortime_id.size(); i++) {
+      if (i < sensortime_id.size() / 2) {
+        sensortime_L[lC] = sensortime[i];
+        sensortime_id_L[lC++] = sensortime_id[i];
+
+      } else {
+        sensortime_R[rC] = sensortime[i];
+        sensortime_id_R[rC++] = sensortime_id[i];
+      }
+    }
+
+    // recursively sort the children
+    mergeSortTime(sensortime_L, sensortime_id_L);
+    mergeSortTime(sensortime_R, sensortime_id_R);
+
+    // compare the sorted children to place the data into the main array
+    lC = rC = 0;
+    for (size_t i = 0; i < sensortime_id.size(); i++) {
+      if (rC == sensortime_R.size() || (lC != sensortime_L.size() && sensortime_L[lC] < sensortime_R[rC])) {
+        sensortime[i] = sensortime_L[lC];
+        sensortime_id[i] = sensortime_id_L[lC++];
+      } else {
+        sensortime[i] = sensortime_R[rC];
+        sensortime_id[i] = sensortime_id_R[rC++];
       }
     }
   }
