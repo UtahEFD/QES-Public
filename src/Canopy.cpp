@@ -241,7 +241,7 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
 
         for (auto k = 1; k < WGD->nz - 1; k++) {
           int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-          float z_rel = WGD->z[k] - canopy_base[icell_2d];
+          float z_rel = WGD->z[k] - WGD->terrain[icell_2d];
 
           if (WGD->z[k] < canopy_base[icell_2d]) {
             // below the terrain or building
@@ -251,7 +251,8 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
               avg_atten = canopy_atten_coeff[icell_3d];
 
 
-              if (canopy_atten_coeff[icell_3d + nx_canopy * ny_canopy] != canopy_atten_coeff[icell_3d] || canopy_atten_coeff[icell_3d - nx_canopy * ny_canopy] != canopy_atten_coeff[icell_3d]) {
+              if (canopy_atten_coeff[icell_3d + nx_canopy * ny_canopy] != canopy_atten_coeff[icell_3d]
+                  || canopy_atten_coeff[icell_3d - nx_canopy * ny_canopy] != canopy_atten_coeff[icell_3d]) {
                 num_atten = 1;
                 if (canopy_atten_coeff[icell_3d + nx_canopy * ny_canopy] > 0) {
                   avg_atten += canopy_atten_coeff[icell_3d + nx_canopy * ny_canopy];
@@ -271,7 +272,8 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
               */
 
               // correction on the velocity within the canopy
-              veg_vel_frac = log((canopy_height[icell_2d] - canopy_d[icell_2d]) / canopy_z0[icell_2d]) * exp(avg_atten * ((z_rel / canopy_height[icell_2d]) - 1)) / log(z_rel / canopy_z0[icell_2d]);
+              veg_vel_frac = log((canopy_height[icell_2d] - canopy_d[icell_2d]) / canopy_z0[icell_2d])
+                             * exp(avg_atten * ((z_rel / canopy_height[icell_2d]) - 1)) / log(z_rel / canopy_z0[icell_2d]);
               // check if correction is bound and well defined
               if (veg_vel_frac > 1 || veg_vel_frac < 0) {
                 veg_vel_frac = 1;
@@ -340,7 +342,7 @@ void Canopy::canopyRegression(WINDSGeneralData *WGD)
       if (canopy_top_index[id] > 0) {
         for (auto k = canopy_top_index[id]; k < WGD->nz - 2; k++) {
           k_top = k;
-          if (2 * canopy_top[id] < WGD->z[k + 1])
+          if (canopy_top[id] + canopy_height[id] < WGD->z[k + 1])
             break;
         }
         if (k_top == canopy_top_index[id]) {
@@ -358,7 +360,7 @@ void Canopy::canopyRegression(WINDSGeneralData *WGD)
           counter += 1;
           int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
           local_mag = sqrt(pow(WGD->u0[icell_face], 2.0) + pow(WGD->v0[icell_face], 2.0));
-          y = log(WGD->z[k]);
+          y = log(WGD->z[k] - WGD->terrain[i + j * (WGD->nx - 1)]);
           sum_x += local_mag;
           sum_y += y;
           sum_xy += local_mag * y;
@@ -370,7 +372,7 @@ void Canopy::canopyRegression(WINDSGeneralData *WGD)
         ym = sum_y / counter;
         canopy_z0[id] = exp(ym - ((WGD->vk / canopy_ustar[id])) * xm);
 
-        // std::cout << i << " " << j << " " << sum_y << " " << sum_x_sq << " "  << canopy_ustar[id] << " "  << canopy_z0[id] << std::endl;
+        //std::cout << xm << " " << ym << " " << sum_y << " " << sum_x_sq << " " << canopy_ustar[id] << " " << canopy_z0[id] << std::endl;
 
       }// end of if (canopy_top_index[id] > 0)
     }
