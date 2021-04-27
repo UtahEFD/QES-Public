@@ -56,6 +56,7 @@
 #include "NetCDFInput.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+namespace bt = boost::posix_time;
 
 
 #ifdef HAS_OPTIX
@@ -82,8 +83,10 @@ public:
   ~WINDSGeneralData();
 
   void mergeSort(std::vector<float> &effective_height,
-    std::vector<Building *> allBuildingsV,
     std::vector<int> &building_id);
+
+  void mergeSortTime(std::vector<time_t> &sensortime,
+    std::vector<int> &sensortime_id);
 
   void applyParametrizations(const WINDSInputData *);
   // void applyParametrizations(const WINDSInputData*);
@@ -165,12 +168,16 @@ public:
   std::vector<float> z_face; /**< :document this: */
   // std::vector<float> x_out,y_out,z_out;
 
+  std::vector<time_t> sensortime; /**< :document this: */
+  std::vector<int> sensortime_id;
+
 
   // time variables
   int nt; /**< :document this: */
   std::vector<float> dt_array; /**< :document this: */
   std::vector<time_t> epochtime; /**< :document this: */
   std::vector<bt::ptime> timestamp; /**< :document this: */
+
 
   ///@{
   /** Coefficient for SOR solver */
@@ -195,7 +202,7 @@ public:
   std::vector<float> ni, nj, nk;
   ///@}
   std::vector<float> terrain; /**< :document this: */
-  std::vector<int> terrain_id; 
+  std::vector<int> terrain_id;
   std::vector<int> terrain_face_id; /**< Sensor function (inputWindProfile) */
 
   std::vector<float> base_height; /**< Base height of buildings */
