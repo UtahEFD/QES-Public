@@ -20,6 +20,31 @@ void CanopyElement::setPolyBuilding(WINDSGeneralData *WGD)
   i_building_cent = std::round(building_cent_x / WGD->dx) - 1;// Index of building centroid in x-direction
   j_building_cent = std::round(building_cent_y / WGD->dy) - 1;// Index of building centroid in y-direction
 
+  // Loop to calculate maximum and minimum of x and y values of the building
+  x_min = x_max = polygonVertices[0].x_poly;
+  y_min = y_max = polygonVertices[0].y_poly;
+  for (size_t id = 1; id < polygonVertices.size(); id++) {
+    if (polygonVertices[id].x_poly > x_max) {
+      x_max = polygonVertices[id].x_poly;
+    }
+    if (polygonVertices[id].x_poly < x_min) {
+      x_min = polygonVertices[id].x_poly;
+    }
+    if (polygonVertices[id].y_poly > y_max) {
+      y_max = polygonVertices[id].y_poly;
+    }
+    if (polygonVertices[id].y_poly < y_min) {
+      y_min = polygonVertices[id].y_poly;
+    }
+  }
+
+  // i_start and i_end are faces and not cells
+  i_start = x_min / WGD->dx;// Index of canopy start location in x-direction
+  i_end = x_max / WGD->dx + 1;// Index of canopy end location in x-direction
+  // j_start and j_end are faces and not cells
+  j_start = y_min / WGD->dy;// Index of canopy end location in y-direction
+  j_end = y_max / WGD->dy + 1;// Index of canopy start location in y-direction
+
   return;
 }
 

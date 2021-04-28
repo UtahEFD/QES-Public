@@ -60,33 +60,6 @@ void CanopyIsolatedTree::setCellFlags(const WINDSInputData *WID, WINDSGeneralDat
   float ray_intersect;
   unsigned int num_crossing, vert_id, start_poly;
 
-  // std::cout << "TREE " << building_id << " " << k_end << " " << k_top << " " << kk << std::endl;
-
-  // Loop to calculate maximum and minimum of x and y values of the building
-  x_min = x_max = polygonVertices[0].x_poly;
-  y_min = y_max = polygonVertices[0].y_poly;
-  for (size_t id = 1; id < polygonVertices.size(); id++) {
-    if (polygonVertices[id].x_poly > x_max) {
-      x_max = polygonVertices[id].x_poly;
-    }
-    if (polygonVertices[id].x_poly < x_min) {
-      x_min = polygonVertices[id].x_poly;
-    }
-    if (polygonVertices[id].y_poly > y_max) {
-      y_max = polygonVertices[id].y_poly;
-    }
-    if (polygonVertices[id].y_poly < y_min) {
-      y_min = polygonVertices[id].y_poly;
-    }
-  }
-
-  // i_start and i_end are faces and not cells
-  i_start = x_min / WGD->dx;// Index of canopy start location in x-direction
-  i_end = x_max / WGD->dx + 1;// Index of canopy end location in x-direction
-  // j_start and j_end are faces and not cells
-  j_start = y_min / WGD->dy;// Index of canopy end location in y-direction
-  j_end = y_max / WGD->dy + 1;// Index of canopy start location in y-direction
-
 
   // Find out which cells are going to be inside the polygone
   // Based on Wm. Randolph Franklin, "PNPOLY - Point Inclusion in Polygon Test"
