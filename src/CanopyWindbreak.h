@@ -103,7 +103,7 @@ private:
 
   float fetch = 7;
 
-  std::map<int, float> u0, v0;
+  //std::map<int, float> u0, v0;
 };
 
 inline int CanopyWindbreak::getCellFlagCanopy()

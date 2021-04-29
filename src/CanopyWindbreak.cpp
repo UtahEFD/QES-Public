@@ -184,10 +184,10 @@ void CanopyWindbreak::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
       if ((WGD->z_face[k - 1] - z_b >= understory_height) && (WGD->z_face[k - 1] - z_b <= H)) {
         // storing unperturbed data
-        u0[icell_face] = WGD->u0[icell_face];
-        u0[icell_face + 1] = WGD->u0[icell_face + 1];
-        v0[icell_face] = WGD->v0[icell_face];
-        v0[icell_face + WGD->nx] = WGD->v0[icell_face + WGD->nx];
+        //u0[icell_face] = WGD->u0[icell_face];
+        //u0[icell_face + 1] = WGD->u0[icell_face + 1];
+        //v0[icell_face] = WGD->v0[icell_face];
+        //v0[icell_face + WGD->nx] = WGD->v0[icell_face + WGD->nx];
 
         // get velocity mag at the center of the cell
         float utmp = 0.5 * (WGD->u0[icell_face] + WGD->u0[icell_face + 1]);
@@ -205,13 +205,13 @@ void CanopyWindbreak::canopyVegetation(WINDSGeneralData *WGD, int building_id)
         // all face of the cell i=icell_face & i+1 = icell_face+1
         u0_mod_id.push_back(icell_face);
         u0_modified.push_back(a_obf * us_mag * cos(us_dir));
-        u0_mod_id.push_back(icell_face + 1);
-        u0_modified.push_back(a_obf * us_mag * cos(us_dir));
+        //u0_mod_id.push_back(icell_face + 1);
+        //u_modified.push_back(a_obf * us_mag * cos(us_dir));
         // all face of the cell j=icell_face & j+1 = icell_face+nx
         v0_mod_id.push_back(icell_face);
         v0_modified.push_back(a_obf * us_mag * sin(us_dir));
-        v0_mod_id.push_back(icell_face + WGD->nx);
-        v0_modified.push_back(a_obf * us_mag * sin(us_dir));
+        //v0_mod_id.push_back(icell_face + WGD->nx);
+        //v0_modified.push_back(a_obf * us_mag * sin(us_dir));
       }
     }
   }
@@ -258,7 +258,7 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
   float xbar, eta, recovery_factor;
   float aeropor;
 
-  float z_b;
+  //float z_b;
   float x_c, y_c, z_c, x1(0), x2(0), y1(0), y2(0), y_norm;
   float x_p, y_p, x_u, y_u, x_v, y_v, x_w, y_w;
   float x_wall, x_wall_u, x_wall_v, x_wall_w, dn_u, dn_v, dn_w;
@@ -273,8 +273,9 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
   // float ustar_wake(0),ustar_us(0),mag_us(0);
 
 
-  int k_bottom(1), k_top(WGD->nz - 2);
-  int icell_cent, icell_face, icell_canopy_2d;
+  //int k_bottom(1), k_top(WGD->nz - 2);
+  int icell_cent, icell_face;
+  //int icell_canopy_2d;
 
   std::vector<float> u0_modified, v0_modified;
   std::vector<int> u0_mod_id, v0_mod_id;
@@ -360,18 +361,30 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
         if (i >= WGD->nx - 2 && i <= 0 && j >= WGD->ny - 2 && j <= 0)
           break;
 
-        icell_canopy_2d = i + j * (WGD->nx - 1);
+        //icell_canopy_2d = i + j * (WGD->nx - 1);
         //icell_canopy_2d = canopy_cellMap2D[i + j * (WGD->nx - 1)];
 
         // base of the canopy at the current (x-wall,y) location
-        z_b = WGD->canopy->canopy_base[icell_canopy_2d];
-        k_bottom = WGD->canopy->canopy_bot_index[icell_canopy_2d];
+        //z_b = WGD->canopy->canopy_base[icell_canopy_2d];
+        //k_bottom = WGD->canopy->canopy_bot_index[icell_canopy_2d];
         // k_top = canopy_top_index[icell_canopy_2d];
 
+
         // for (auto k=3*k_top; k>=k_bottom; k--) {
-        for (auto z_id = 3 * H / WGD->dz; z_id >= 0; z_id--) {
-          // z-coord relative to the base of the building.
-          // z_c = WGD->z[k] - z_b;
+        /* need to change for terrain following -> change order of loop 
+	vector<float> z_rel(WGD->z);
+	for (auto itr = z_rel.begin(); itr != z_rel.end(); ++itr) {
+          *itr -= WGD->z_face[WGD->terrain_id[i + j * (WGD->nx - 1)]];
+        }
+
+        if (WGD->z[WGD->terrain_id[i + j * (WGD->nx - 1)]] > 1) {
+	for (auto z : z_rel) {
+	  std::cout << "z_rel = " << z << std::endl;
+	    }
+        }
+	*/
+
+        for (auto z_id = 3 * H / WGD->dz; z_id > 0; z_id--) {
 
           int x_id_min = -1;
           for (auto x_id = 1; x_id <= 2 * ceil(wake_stream_coef * Lr / WGD->dxy); x_id++) {
@@ -388,19 +401,19 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
             //int i = ((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx;
             //int j = ((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy;
 
-            int k = z_id + WGD->terrain_id[i + j * (WGD->nx - 1)];
-            k_top = H / WGD->dz + WGD->terrain_id[i + j * (WGD->nx - 1)];
+            int k = z_id + WGD->terrain_id[i + j * (WGD->nx - 1)] - 1;
+            int k_top = H / WGD->dz + WGD->terrain_id[i + j * (WGD->nx - 1)];
 
             // std::cout << WGD->terrain_id[i+j*(WGD->nx)] << std::endl;
 
             // z-coord relative to the base of the building.
-            z_c = WGD->z[k] - WGD->z[WGD->terrain_id[i + j * (WGD->nx - 1)]];
+            z_c = WGD->z[k] - WGD->z_face[WGD->terrain_id[i + j * (WGD->nx - 1)] - 1];
 
             if (i >= WGD->nx - 2 && i <= 0 && j >= WGD->ny - 2 && j <= 0)
               break;
 
             // adjustement of center of the shear zone
-            icell_face = i + j * WGD->nx + (k_top)*WGD->nx * WGD->ny;
+            icell_face = i + j * WGD->nx + k_top * WGD->nx * WGD->ny;
 
             u0_wh = WGD->u0[icell_face];
             v0_wh = WGD->v0[icell_face];
@@ -413,7 +426,7 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
               zwmo = H;
 
             // upstream spread rate
-            spreadupstream = 2 * stdw / u0_wh;
+            spreadupstream = 2 * stdw / umag0_wh;
             // sum of two spreading models
             spreadrate = sqrt(spreadclassicmix * spreadclassicmix + spreadupstream * spreadupstream);
             d_shearzone = 0.5 * (spreadrate * x_c);
