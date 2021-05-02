@@ -84,12 +84,14 @@ public:
 
   virtual int getCellFlagCanopy();
   virtual int getCellFlagWake();
-  
+
+  int wakeFlag;
+
   /*!
    *
    */
   std::vector<float> canopy_atten_coeff; /**< Canopy attenuation coefficient */
-  
+
   std::vector<float> canopy_bot; /**< Canopy bottom */
   std::vector<int> canopy_bot_index; /**< Canopy bottom index */
   std::vector<float> canopy_top; /**< Canopy top */
@@ -101,7 +103,7 @@ public:
   std::vector<float> canopy_z0; /**< Canopy surface roughness */
   std::vector<float> canopy_ustar; /**< Velocity gradient at the top of canopy */
   std::vector<float> canopy_d; /**< Canopy displacement length */
-  
+
   std::vector<Building *> allCanopiesV; /**< :document this: */
   std::vector<float> base_height; /**< Base height of trees */
   std::vector<float> effective_height; /**< Effective height of trees */
@@ -149,9 +151,7 @@ protected:
   float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
 
 private:
-  
   void mergeSort(std::vector<float> &effective_height, std::vector<Building *> allBuildingsV, std::vector<int> &tree_id);
-
 };
 
 inline int Canopy::getCellFlagCanopy()

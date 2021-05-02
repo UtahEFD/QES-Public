@@ -18,17 +18,23 @@ class Canopies : public ParseInterface
 {
 private:
 public:
-  std::vector<Building *> canopies;
+  std::vector<Building *> canopies; /**< :document this: */
+
+  int wakeFlag = 1; /**< :document this: */
+
 
   // SHP File parameters
-  std::string shpFile;// SHP file name
-  std::string shpTreeLayerName;
-  ESRIShapefile *SHPData = nullptr;
-  std::vector<std::vector<polyVert>> shpPolygons;
-  std::map<std::string, std::vector<float>> shpFeatures;
+  std::string shpFile; /**< :document this: */
+  std::string shpTreeLayerName; /**< :document this: */
+  ESRIShapefile *SHPData = nullptr; /**< :document this: */
+
+  std::vector<std::vector<polyVert>> shpPolygons; /**< :document this: */
+  std::map<std::string, std::vector<float>> shpFeatures; /**< :document this: */
 
   virtual void parseValues()
   {
+    parsePrimitive<int>(false, wakeFlag, "wakeFlag");
+
     // read the input data for canopies
     parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyHomogeneous>("Homogeneous"));
     parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyIsolatedTree>("IsolatedTree"));

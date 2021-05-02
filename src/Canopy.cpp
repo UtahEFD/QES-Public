@@ -43,6 +43,8 @@
 
 Canopy::Canopy(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
+  wakeFlag = WID->canopies->wakeFlag;
+
   nx_canopy = WGD->nx - 1;
   ny_canopy = WGD->ny - 1;
   nz_canopy = WGD->nz - 1;
@@ -184,20 +186,22 @@ void Canopy::applyCanopyVegetation(WINDSGeneralData *WGD)
 void Canopy::applyCanopyWake(WINDSGeneralData *WGD)
 {
 
-  for (size_t i = 0; i < allCanopiesV.size(); ++i) {
-    // for now this does the canopy stuff for us
-    //allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
-    allCanopiesV[canopy_id[i]]->canopyWake(WGD, canopy_id[i]);
-  }
+  if (wakeFlag == 1) {
+    for (size_t i = 0; i < allCanopiesV.size(); ++i) {
+      // for now this does the canopy stuff for us
+      //allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
+      allCanopiesV[canopy_id[i]]->canopyWake(WGD, canopy_id[i]);
+    }
 
-  for (size_t id = 0u; id < wake_u_defect.size(); ++id) {
-    WGD->u0[id] *= (1. - wake_u_defect[id]);
-    wake_u_defect[id] = 0.0;
-  }
+    for (size_t id = 0u; id < wake_u_defect.size(); ++id) {
+      WGD->u0[id] *= (1. - wake_u_defect[id]);
+      wake_u_defect[id] = 0.0;
+    }
 
-  for (size_t id = 0u; id < wake_v_defect.size(); ++id) {
-    WGD->v0[id] *= (1. - wake_v_defect[id]);
-    wake_v_defect[id] = 0.0;
+    for (size_t id = 0u; id < wake_v_defect.size(); ++id) {
+      WGD->v0[id] *= (1. - wake_v_defect[id]);
+      wake_v_defect[id] = 0.0;
+    }
   }
 
   return;
