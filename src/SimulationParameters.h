@@ -89,6 +89,7 @@ public:
   std::string shpBuildingLayerName; /**< :document this: */
   ESRIShapefile *SHPData = nullptr; /**< :document this: */
   std::vector<std::vector<polyVert>> shpPolygons; /**< :document this: */
+  std::map<std::string, std::vector<float>> shpFeatures; /**< :document this: */
   std::vector<float> shpBuildingHeight; /**< Height of buildings */
 
   // //////////////////////////////////////////
@@ -242,10 +243,10 @@ public:
       std::cout << "Constructing the DTE from WRF input heighfield..." << std::endl;
 
       DTE_heightField = new DTEHeightField(wrfInputData->fmHeight,
-        std::tuple<int, int, int>(wrfInputData->fm_nx, wrfInputData->fm_ny, wrfInputData->fm_nz),
-        std::tuple<float, float, float>(wrfInputData->fm_dx, wrfInputData->fm_dy, wrfInputData->fm_dz),
-        halo_x,
-        halo_y);
+                                           std::tuple<int, int, int>(wrfInputData->fm_nx, wrfInputData->fm_ny, wrfInputData->fm_nz),
+                                           std::tuple<float, float, float>(wrfInputData->fm_dx, wrfInputData->fm_dy, wrfInputData->fm_dz),
+                                           halo_x,
+                                           halo_y);
 
       (*(grid))[0] = wrfInputData->fm_dx;
       (*(grid))[1] = wrfInputData->fm_dy;
@@ -282,13 +283,13 @@ public:
       std::cout << "Domain: " << (*(domain))[0] << ", " << (*(domain))[1] << ", " << (*(domain))[2] << std::endl;
       std::cout << "Grid: " << (*(grid))[0] << ", " << (*(grid))[1] << ", " << (*(grid))[2] << std::endl;
       DTE_heightField = new DTEHeightField(demFile,
-        std::tuple<int, int, int>((*(domain))[0], (*(domain))[1], (*(domain))[2]),
-        std::tuple<float, float, float>((*(grid))[0], (*(grid))[1], (*(grid))[2]),
-        UTMx,
-        UTMy,
-        originFlag,
-        DEMDistancex,
-        DEMDistancey);
+                                           std::tuple<int, int, int>((*(domain))[0], (*(domain))[1], (*(domain))[2]),
+                                           std::tuple<float, float, float>((*(grid))[0], (*(grid))[1], (*(grid))[2]),
+                                           UTMx,
+                                           UTMy,
+                                           originFlag,
+                                           DEMDistancex,
+                                           DEMDistancey);
       assert(DTE_heightField);
 
       std::cout << "Forming triangle mesh...\n";
@@ -329,13 +330,13 @@ public:
     else if (m_domIType == DEMOnly) {
       std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
       DTE_heightField = new DTEHeightField(demFile,
-        std::tuple<int, int, int>((*(domain))[0], (*(domain))[1], (*(domain))[2]),
-        std::tuple<float, float, float>((*(grid))[0], (*(grid))[1], (*(grid))[2]),
-        UTMx,
-        UTMy,
-        originFlag,
-        DEMDistancex,
-        DEMDistancey);
+                                           std::tuple<int, int, int>((*(domain))[0], (*(domain))[1], (*(domain))[2]),
+                                           std::tuple<float, float, float>((*(grid))[0], (*(grid))[1], (*(grid))[2]),
+                                           UTMx,
+                                           UTMy,
+                                           originFlag,
+                                           DEMDistancex,
+                                           DEMDistancey);
       assert(DTE_heightField);
 
       std::cout << "Forming triangle mesh...\n";
@@ -355,9 +356,9 @@ public:
     //
     SHPData = nullptr;
     if (shpFile != "") {
-
       // Read polygon node coordinates and building height from shapefile
-      SHPData = new ESRIShapefile(shpFile, shpBuildingLayerName, shpPolygons, shpBuildingHeight, heightFactor);
+      //SHPData = new ESRIShapefile(shpFile, shpBuildingLayerName, shpPolygons, shpBuildingHeight, heightFactor);
+      SHPData = new ESRIShapefile(shpFile, shpBuildingLayerName, shpPolygons, shpFeatures);
     }
   }
 };

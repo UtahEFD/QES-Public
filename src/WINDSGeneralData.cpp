@@ -664,11 +664,16 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     std::cout << "Creating buildings from shapefile...\n";
     // Loop to create each of the polygon buildings read in from the shapefile
     for (auto pIdx = 0u; pIdx < WID->simParams->shpPolygons.size(); pIdx++) {
-      allBuildingsV.push_back(new PolyBuilding(WID, this, pIdx));
-      building_id.push_back(allBuildingsV.size() - 1);
+      int bId = allBuildingsV.size();
+      //allBuildingsV.push_back(new PolyBuilding(WID, this, pIdx));
+      allBuildingsV.push_back(new PolyBuilding(WID->simParams->shpPolygons[pIdx],
+                                               WID->simParams->shpFeatures["H"][pIdx] * WID->simParams->heightFactor,
+                                               0.0,
+                                               bId));
+      building_id.push_back(bId);
       allBuildingsV[pIdx]->setPolyBuilding(this);
-      allBuildingsV[pIdx]->setCellFlags(WID, this, pIdx);
-      effective_height.push_back(allBuildingsV[pIdx]->height_eff);
+      allBuildingsV[pIdx]->setCellFlags(WID, this, bId);
+      effective_height.push_back(allBuildingsV[bId]->height_eff);
     }
     std::cout << "\tdone.\n";
 
