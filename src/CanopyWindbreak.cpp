@@ -278,7 +278,7 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
   // velocity at top of windbreak
   float u0_wh, v0_wh, w0_wh, umag0_wh;
   // shear zone orig. and spread
-  float zwmo, d_shearzone;
+  float zwmo, d_shearzone, ds;
 
   // float u_defect,u_c,r_center,theta,delta,B_h;
   // float ustar_wake(0),ustar_us(0),mag_us(0);
@@ -395,7 +395,7 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
         }
 	*/
 
-        for (auto z_id = 4.0 * H / WGD->dz; z_id > 0; z_id--) {
+        for (auto z_id = 3.0 * H / WGD->dz; z_id > 0; z_id--) {
 
           int x_id_min = -1;
           for (auto x_id = 1; x_id <= 2 * ceil(wake_stream_coef * Lr / WGD->dxy); x_id++) {
@@ -511,7 +511,6 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
                   if (x_u < 8.5 * Lr) {
                     // zone2
                     aeropor = (0.5 * (1.0 - a_obf)) * tanh(1.5 * (z_c - zwmo) / d_shearzone) + 0.5 * (1.0 + a_obf);
-
                     WGD->canopy->wake_u_defect[icell_face] = 1 - aeropor;
                   } else {
                     // zone 3
@@ -522,6 +521,9 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
                     WGD->canopy->wake_u_defect[icell_face] = recovery_factor;
                     //WGD->canopy->wake_u_defect[icell_face] = recovery_factor * u0_wh / WGD->u0[icell_face];
                   }
+                  ds = 0.5 * spreadclassicmix * x_u;
+                  WGD->canopy->wake_u_defect[icell_face] *= (-0.5 * tanh(1.5 * (y_u - (y2 - ds)) / ds) + 0.5);
+                  WGD->canopy->wake_u_defect[icell_face] *= (-0.5 * tanh(1.5 * ((y1 + ds) - y_u) / ds) + 0.5);
                 }
               }
 
@@ -579,6 +581,9 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
                     WGD->canopy->wake_v_defect[icell_face] = recovery_factor;
                     //WGD->canopy->wake_v_defect[icell_face] = recovery_factor * v0_wh / WGD->v0[icell_face];
                   }
+                  ds = 0.5 * spreadclassicmix * x_v;
+                  WGD->canopy->wake_v_defect[icell_face] *= (-0.5 * tanh(1.5 * (y_u - (y2 - ds)) / ds) + 0.5);
+                  WGD->canopy->wake_v_defect[icell_face] *= (-0.5 * tanh(1.5 * ((y1 + ds) - y_u) / ds) + 0.5);
                 }
               }
 
