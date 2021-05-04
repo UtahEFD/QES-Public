@@ -92,6 +92,16 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
     }
   }
 
+  std::vector<int> available_sensor_id;
+  for (auto i = 0; i < time_id.size(); i++) {
+    if (time_id[i] != -1) {
+      available_sensor_id.push_back(i);
+    }
+  }
+
+  std::cout << "available_sensor_id:  " << available_sensor_id.size() << std::endl;
+
+
   std::vector<std::vector<float>> u_prof(num_sites, std::vector<float>(WGD->nz, 0.0));
   std::vector<std::vector<float>> v_prof(num_sites, std::vector<float>(WGD->nz, 0.0));
   int icell_face, icell_cent;
@@ -102,6 +112,8 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
   std::vector<float> site_theta(num_sites, 0.0);
   int count = 0;
 
+  //std::cout << "index:  " << index << std::endl;
+
   // Loop through all sites and create velocity profiles (WGD->u0,WGD->v0)
   for (auto i = 0; i < WID->metParams->sensors.size(); i++) {
     // If sensor does not have the timestep information, skip it
@@ -109,6 +121,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
       count += 1;
       continue;
     }
+    //std::cout << "i:  " << i << std::endl;
 
     float convergence = 0.0;
 
@@ -177,23 +190,23 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 
           u_star = WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * vk / (log((WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0] + WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) + psi);
         }
-        if ((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_one_overL >= 0) {
-          psi = 4.7 * (WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_one_overL;
+        if ((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_one_overL >= 0) {
+          psi = 4.7 * (WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_one_overL;
         } else {
-          x_temp = pow((1.0 - 15.0 * (WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_one_overL), 0.25);
+          x_temp = pow((1.0 - 15.0 * (WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_one_overL), 0.25);
           psi = -2.0 * log(0.5 * (1.0 + x_temp)) - log(0.5 * (1.0 + pow(x_temp, 2.0))) + 2.0 * atan(x_temp) - 0.5 * M_PI;
         }
 
-        u_prof[idx][k] = (cos(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) + WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) + psi);
-        v_prof[idx][k] = (sin(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) + WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) + psi);
+        u_prof[idx][k] = (cos(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) + WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) + psi);
+        v_prof[idx][k] = (sin(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) + WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) + psi);
       }
     }
 
     // Exponential velocity profile
     if (WID->metParams->sensors[i]->TS[time_id[i]]->site_blayer_flag == 2) {
       for (auto k = WGD->terrain_face_id[site_id[idx]]; k < WGD->nz; k++) {
-        u_prof[idx][k] = cos(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_z0);
-        v_prof[idx][k] = sin(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_z0);
+        u_prof[idx][k] = cos(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_z0);
+        v_prof[idx][k] = sin(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_z0);
       }
     }
 
@@ -231,19 +244,19 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
           u_H *= WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0];
         }
 
-        if ((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) < WID->metParams->sensors[i]->TS[time_id[i]]->site_canopy_H) {
-          u_prof[idx][k] = cos(site_theta[idx]) * u_H * exp(WID->metParams->sensors[i]->TS[time_id[i]]->site_atten_coeff * (((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_canopy_H) - 1.0));
-          v_prof[idx][k] = sin(site_theta[idx]) * u_H * exp(WID->metParams->sensors[i]->TS[time_id[i]]->site_atten_coeff * (((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_canopy_H) - 1.0));
+        if ((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) < WID->metParams->sensors[i]->TS[time_id[i]]->site_canopy_H) {
+          u_prof[idx][k] = cos(site_theta[idx]) * u_H * exp(WID->metParams->sensors[i]->TS[time_id[i]]->site_atten_coeff * (((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_canopy_H) - 1.0));
+          v_prof[idx][k] = sin(site_theta[idx]) * u_H * exp(WID->metParams->sensors[i]->TS[time_id[i]]->site_atten_coeff * (((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_canopy_H) - 1.0));
         }
-        if ((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) > WID->metParams->sensors[i]->TS[time_id[i]]->site_canopy_H) {
-          if ((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_one_overL > 0) {
-            psi = 4.7 * ((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) - canopy_d) * WID->metParams->sensors[i]->TS[time_id[i]]->site_one_overL;
+        if ((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) > WID->metParams->sensors[i]->TS[time_id[i]]->site_canopy_H) {
+          if ((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_one_overL > 0) {
+            psi = 4.7 * ((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) - canopy_d) * WID->metParams->sensors[i]->TS[time_id[i]]->site_one_overL;
           } else {
-            x_temp = pow(1.0 - 15.0 * ((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) - canopy_d) * WID->metParams->sensors[i]->TS[time_id[i]]->site_one_overL, 0.25);
+            x_temp = pow(1.0 - 15.0 * ((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) - canopy_d) * WID->metParams->sensors[i]->TS[time_id[i]]->site_one_overL, 0.25);
             psi = -2.0 * log(0.5 * (1.0 + x_temp)) - log(0.5 * (1.0 + pow(x_temp, 2.0))) + 2.0 * atan(x_temp) - 0.5 * M_PI;
           }
-          u_prof[idx][k] = (cos(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) - canopy_d) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) + psi);
-          v_prof[idx][k] = (sin(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) - canopy_d) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) + psi);
+          u_prof[idx][k] = (cos(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) - canopy_d) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) + psi);
+          v_prof[idx][k] = (sin(site_theta[idx]) * u_star / vk) * (log(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) - canopy_d) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) + psi);
         }
       }
     }
@@ -256,14 +269,14 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 
       // Needs to be nz-1 for [0, n-1] indexing
       for (auto k = WGD->terrain_face_id[site_id[idx]]; k < WGD->nz - 1; k++) {
-        if ((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) < WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0] || z_size == 1) {
+        if ((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) < WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0] || z_size == 1) {
           u_prof[idx][k] = (WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * cos(site_theta[idx]) / log((WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0] + WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z0))
-                           * log(((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) + WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z0);
+                           * log(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) + WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z0);
           v_prof[idx][k] = (WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * sin(site_theta[idx]) / log((WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0] + WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z0))
-                           * log(((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) + WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z0);
+                           * log(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) + WID->metParams->sensors[i]->TS[time_id[i]]->site_z0) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z0);
         } else {
 
-          if ((ii < z_size - 2) && ((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) >= WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii + 1])) {
+          if ((ii < z_size - 2) && ((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) >= WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii + 1])) {
             ii += 1;
             if (abs(WID->metParams->sensors[i]->TS[time_id[i]]->site_wind_dir[ii + 1] - WID->metParams->sensors[i]->TS[time_id[i]]->site_wind_dir[ii]) > 180.0) {
               if (WID->metParams->sensors[i]->TS[time_id[i]]->site_wind_dir[ii + 1] > WID->metParams->sensors[i]->TS[time_id[i]]->site_wind_dir[ii]) {
@@ -322,11 +335,11 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
             }
           }
           if (log_flag == 1) {
-            site_mag = (u_star / vk) * log(((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) + z0_new) / z0_new);
+            site_mag = (u_star / vk) * log(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) + z0_new) / z0_new);
           } else {
-            site_mag = a1 * pow((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]), 2.0) + a2 * (WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) + a3;
+            site_mag = a1 * pow((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]), 2.0) + a2 * (WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) + a3;
           }
-          site_theta[idx] = (270.0 - (WID->metParams->sensors[i]->TS[time_id[i]]->site_wind_dir[ii] + wind_dir * ((WGD->z[k] - WGD->z[WGD->terrain_face_id[site_id[idx]] - 1]) - WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii]))) * M_PI / 180.0;
+          site_theta[idx] = (270.0 - (WID->metParams->sensors[i]->TS[time_id[i]]->site_wind_dir[ii] + wind_dir * ((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) - WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii]))) * M_PI / 180.0;
           u_prof[idx][k] = site_mag * cos(site_theta[idx]);
           v_prof[idx][k] = site_mag * sin(site_theta[idx]);
         }
@@ -376,13 +389,13 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
   else {
     if (solverType == 1) {
       auto startBarnesCPU = std::chrono::high_resolution_clock::now();
-      BarnesInterpolationCPU(WID, WGD, u_prof, v_prof, num_sites);
+      BarnesInterpolationCPU(WID, WGD, u_prof, v_prof, num_sites, available_sensor_id);
       auto finishBarnesCPU = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> elapsedBarnesCPU = finishBarnesCPU - startBarnesCPU;
       std::cout << "Elapsed time for Barnes interpolation on CPU: " << elapsedBarnesCPU.count() << " s\n";
     } else {
       auto startBarnesGPU = std::chrono::high_resolution_clock::now();
-      BarnesInterpolationGPU(WID, WGD, u_prof, v_prof, site_id, num_sites);
+      BarnesInterpolationGPU(WID, WGD, u_prof, v_prof, site_id, num_sites, available_sensor_id);
       auto finishBarnesGPU = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> elapsedBarnesGPU = finishBarnesGPU - startBarnesGPU;
       std::cout << "Elapsed time for Barnes interpolation on GPU: " << elapsedBarnesGPU.count() << " s\n";
@@ -409,7 +422,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
     for (auto i = 0; i < WGD->nx; i++) {
       for (auto j = 0; j < WGD->ny; j++) {
         id = i + j * WGD->nx;
-        sum_z0 += log(((WGD->z0_domain_u[id] + WGD->z0_domain_v[id]) / 2) + WGD->z[WGD->terrain_face_id[id]]);
+        sum_z0 += log(((WGD->z0_domain_u[id] + WGD->z0_domain_v[id]) / 2) + WGD->z_face[WGD->terrain_face_id[id]]);
       }
     }
     z0_effective = exp(sum_z0 / (WGD->nx * WGD->ny));
@@ -444,30 +457,30 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
         }
 
         for (auto k = WGD->terrain_face_id[id]; k < height_id; k++) {
-          if ((WGD->z[k] - WGD->z[WGD->terrain_face_id[id] - 1]) * average__one_overL >= 0) {
-            psi = 4.7 * (WGD->z[k] - WGD->z[WGD->terrain_face_id[id] - 1]) * average__one_overL;
+          if ((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[id] - 1]) * average__one_overL >= 0) {
+            psi = 4.7 * (WGD->z[k] - WGD->z_face[WGD->terrain_face_id[id] - 1]) * average__one_overL;
           } else {
-            x_temp = pow((1.0 - 15.0 * (WGD->z[k] - WGD->z[WGD->terrain_face_id[id] - 1]) * average__one_overL), 0.25);
+            x_temp = pow((1.0 - 15.0 * (WGD->z[k] - WGD->z_face[WGD->terrain_face_id[id] - 1]) * average__one_overL), 0.25);
             psi = -2.0 * log(0.5 * (1.0 + x_temp)) - log(0.5 * (1.0 + pow(x_temp, 2.0))) + 2.0 * atan(x_temp) - 0.5 * M_PI;
           }
           icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
           z0_domain = (WGD->z0_domain_u[id] + WGD->z0_domain_v[id]) / 2;
           u_star = blending_velocity[id] * vk / (log((blending_height + z0_domain) / z0_domain) + psi_first);
-          WGD->u0[icell_face] = (cos(blending_theta[id]) * u_star / vk) * (log(((WGD->z[k] - WGD->z[WGD->terrain_face_id[id] - 1]) + WGD->z0_domain_u[id]) / WGD->z0_domain_u[id]) + psi);
-          WGD->v0[icell_face] = (sin(blending_theta[id]) * u_star / vk) * (log(((WGD->z[k] - WGD->z[WGD->terrain_face_id[id] - 1]) + WGD->z0_domain_v[id]) / WGD->z0_domain_v[id]) + psi);
+          WGD->u0[icell_face] = (cos(blending_theta[id]) * u_star / vk) * (log(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[id] - 1]) + WGD->z0_domain_u[id]) / WGD->z0_domain_u[id]) + psi);
+          WGD->v0[icell_face] = (sin(blending_theta[id]) * u_star / vk) * (log(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[id] - 1]) + WGD->z0_domain_v[id]) / WGD->z0_domain_v[id]) + psi);
         }
 
         for (auto k = height_id + 1; k < WGD->nz - 1; k++) {
-          if ((WGD->z[k] - WGD->z[WGD->terrain_face_id[id] - 1]) * average__one_overL >= 0) {
-            psi = 4.7 * (WGD->z[k] - WGD->z[WGD->terrain_face_id[id] - 1]) * average__one_overL;
+          if ((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[id] - 1]) * average__one_overL >= 0) {
+            psi = 4.7 * (WGD->z[k] - WGD->z_face[WGD->terrain_face_id[id] - 1]) * average__one_overL;
           } else {
-            x_temp = pow((1.0 - 15.0 * (WGD->z[k] - WGD->z[WGD->terrain_face_id[id] - 1]) * average__one_overL), 0.25);
+            x_temp = pow((1.0 - 15.0 * (WGD->z[k] - WGD->z_face[WGD->terrain_face_id[id] - 1]) * average__one_overL), 0.25);
             psi = -2.0 * log(0.5 * (1.0 + x_temp)) - log(0.5 * (1.0 + pow(x_temp, 2.0))) + 2.0 * atan(x_temp) - 0.5 * M_PI;
           }
           icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
           u_star = blending_velocity[id] * vk / (log((blending_height + z0_effective) / z0_effective) + psi_first);
-          WGD->u0[icell_face] = (cos(blending_theta[id]) * u_star / vk) * (log(((WGD->z[k] - WGD->z[WGD->terrain_face_id[id] - 1]) + z0_effective) / z0_effective) + psi);
-          WGD->v0[icell_face] = (sin(blending_theta[id]) * u_star / vk) * (log(((WGD->z[k] - WGD->z[WGD->terrain_face_id[id] - 1]) + z0_effective) / z0_effective) + psi);
+          WGD->u0[icell_face] = (cos(blending_theta[id]) * u_star / vk) * (log(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[id] - 1]) + z0_effective) / z0_effective) + psi);
+          WGD->v0[icell_face] = (sin(blending_theta[id]) * u_star / vk) * (log(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[id] - 1]) + z0_effective) / z0_effective) + psi);
         }
       }
     }
@@ -480,7 +493,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
   std::cout << "Elapsed time for input wind profile: " << elapsed_InputWindProfile.count() << " s\n";
 }
 
-void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, int num_sites)
+void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, int num_sites, std::vector<int> available_sensor_id)
 {
   std::vector<float> x, y;
   x.resize(WGD->nx);
@@ -511,9 +524,13 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
   rc_sum = 0.0;
   for (auto i = 0; i < num_sites; i++) {
     rc_val = 1000000.0;
+    if (available_sensor_id[i] == 6) {
+      std::cout << "WID->metParams->sensors[ii]->site_xcoord:  " << WID->metParams->sensors[available_sensor_id[i]]->site_xcoord << std::endl;
+      std::cout << "WID->metParams->sensors[ii]->site_ycoord:  " << WID->metParams->sensors[available_sensor_id[i]]->site_ycoord << std::endl;
+    }
     for (auto ii = 0; ii < num_sites; ii++) {
-      xc = WID->metParams->sensors[ii]->site_xcoord - WID->metParams->sensors[i]->site_xcoord;
-      yc = WID->metParams->sensors[ii]->site_ycoord - WID->metParams->sensors[i]->site_ycoord;
+      xc = WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord - WID->metParams->sensors[available_sensor_id[i]]->site_xcoord;
+      yc = WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord - WID->metParams->sensors[available_sensor_id[i]]->site_ycoord;
       rc = sqrt(pow(xc, 2.0) + pow(yc, 2.0));
       if (rc < rc_val && ii != i) {
         rc_val = rc;
@@ -529,8 +546,8 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
     for (auto i = 0; i < WGD->nx; i++) {
       sum_wm = 0.0;
       for (auto ii = 0; ii < num_sites; ii++) {
-        wm[ii][i][j] = exp((-1 / lamda) * pow(WID->metParams->sensors[ii]->site_xcoord - x[i], 2.0) - (1 / lamda) * pow(WID->metParams->sensors[ii]->site_ycoord - y[j], 2.0));
-        wms[ii][i][j] = exp((-1 / (s_gamma * lamda)) * pow(WID->metParams->sensors[ii]->site_xcoord - x[i], 2.0) - (1 / (s_gamma * lamda)) * pow(WID->metParams->sensors[ii]->site_ycoord - y[j], 2.0));
+        wm[ii][i][j] = exp((-1 / lamda) * pow(WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord - x[i], 2.0) - (1 / lamda) * pow(WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord - y[j], 2.0));
+        wms[ii][i][j] = exp((-1 / (s_gamma * lamda)) * pow(WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord - x[i], 2.0) - (1 / (s_gamma * lamda)) * pow(WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord - y[j], 2.0));
         sum_wm += wm[ii][i][j];
       }
       if (sum_wm == 0) {
@@ -557,8 +574,8 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
         }
 
         for (auto ii = 0; ii < num_sites; ii++) {
-          site_i[ii] = WID->metParams->sensors[ii]->site_xcoord / WGD->dx;
-          site_j[ii] = WID->metParams->sensors[ii]->site_ycoord / WGD->dy;
+          site_i[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord / WGD->dx;
+          site_j[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord / WGD->dy;
           site_id[ii] = site_i[ii] + site_j[ii] * WGD->nx;
           if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
             sum_wu += wm[ii][i][j] * u_prof[ii][WGD->nz - 2];
@@ -579,23 +596,23 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
   }
 
   for (auto ii = 0; ii < num_sites; ii++) {
-    if (WID->metParams->sensors[ii]->site_xcoord > 0 && WID->metParams->sensors[ii]->site_xcoord < (WGD->nx - 1) * WGD->dx && WID->metParams->sensors[ii]->site_ycoord > 0 && WID->metParams->sensors[ii]->site_ycoord < (WGD->ny - 1) * WGD->dy) {
+    if (WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord > 0 && WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord < (WGD->nx - 1) * WGD->dx && WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord > 0 && WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord < (WGD->ny - 1) * WGD->dy) {
       for (auto j = 0; j < WGD->ny; j++) {
-        if (y[j] < WID->metParams->sensors[ii]->site_ycoord) {
+        if (y[j] < WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord) {
           jwork = j;
         }
       }
 
       for (auto i = 0; i < WGD->nx; i++) {
-        if (x[i] < WID->metParams->sensors[ii]->site_xcoord) {
+        if (x[i] < WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord) {
           iwork = i;
         }
       }
 
       int id = iwork + jwork * WGD->nx;
       for (auto k_mod = WGD->terrain_face_id[id]; k_mod < WGD->nz; k_mod++) {
-        dxx = WID->metParams->sensors[ii]->site_xcoord - x[iwork];
-        dyy = WID->metParams->sensors[ii]->site_ycoord - y[jwork];
+        dxx = WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord - x[iwork];
+        dyy = WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord - y[jwork];
         int index_work = iwork + jwork * WGD->nx + k_mod * WGD->nx * WGD->ny;
         u12 = (1 - (dxx / WGD->dx)) * WGD->u0[index_work + WGD->nx] + (dxx / WGD->dx) * WGD->u0[index_work + 1 + WGD->nx];
         u34 = (1 - (dxx / WGD->dx)) * WGD->u0[index_work] + (dxx / WGD->dx) * WGD->u0[index_work + 1];
@@ -606,8 +623,8 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
         v0_int[k_mod + ii * WGD->nz] = (dyy / WGD->dy) * v12 + (1 - (dyy / WGD->dy)) * v34;
       }
     } else {
-      site_i[ii] = WID->metParams->sensors[ii]->site_xcoord / WGD->dx;
-      site_j[ii] = WID->metParams->sensors[ii]->site_ycoord / WGD->dy;
+      site_i[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord / WGD->dx;
+      site_j[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord / WGD->dy;
       site_id[ii] = site_i[ii] + site_j[ii] * WGD->nx;
       for (auto k = 1; k < WGD->nz; k++) {
         if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
@@ -634,8 +651,8 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
           continue;
         }
         for (auto ii = 0; ii < num_sites; ii++) {
-          site_i[ii] = WID->metParams->sensors[ii]->site_xcoord / WGD->dx;
-          site_j[ii] = WID->metParams->sensors[ii]->site_ycoord / WGD->dy;
+          site_i[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord / WGD->dx;
+          site_j[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord / WGD->dy;
           site_id[ii] = site_i[ii] + site_j[ii] * WGD->nx;
           if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
             sum_wu += wm[ii][i][j] * (u_prof[ii][WGD->nz - 2] - u0_int[WGD->nz - 2 + ii * WGD->nz]);

@@ -269,7 +269,7 @@ __global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, floa
 }
 
 
-void Sensor::BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, std::vector<int> site_id, int num_sites)
+void Sensor::BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, std::vector<int> site_id, int num_sites, std::vector<int> available_sensor_id)
 {
 
   std::vector<float> u_prof_1d, v_prof_1d, wm, wms, u0_int, v0_int;
@@ -307,8 +307,8 @@ void Sensor::BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData 
   }
 
   for (auto i = 0; i < num_sites; i++) {
-    site_xcoord[i] = WID->metParams->sensors[i]->site_xcoord;
-    site_ycoord[i] = WID->metParams->sensors[i]->site_ycoord;
+    site_xcoord[i] = WID->metParams->sensors[available_sensor_id[i]]->site_xcoord;
+    site_ycoord[i] = WID->metParams->sensors[available_sensor_id[i]]->site_ycoord;
   }
 
 
