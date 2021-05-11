@@ -45,7 +45,7 @@
   <fileName> sensor1.inp </fileName>
   <z0_domain_flag> 0 </z0_domain_flag> <!-- Distribution of sueface roughness for domain (0-uniform, 1-custom -->
   <sensor>
-    <site_coord_flag> 1 </site_coord_flag> <!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->
+    <site_coord_flag> 1 </site_coord_flag> <!-- Sensor site coordinate system (1=QES, 2=UTM, 3=Lat/Lon) -->
     <site_xcoord> 1.0</site_xcoord>
     <site_ycoord> 1.0</site_ycoord>		
     <site_UTM_x> 2.0 </site_UTM_x> 	<!-- x components of site coordinate in UTM -->
