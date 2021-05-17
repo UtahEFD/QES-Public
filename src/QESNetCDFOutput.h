@@ -133,6 +133,9 @@ public:
    */
   virtual void save(ptime) = 0;
 
+  virtual void save(float)
+  {}
+
 protected:
   // create attribute scalar based on type of data
   void createAttScalar(std::string, std::string, std::string, std::vector<NcDim>, int *);

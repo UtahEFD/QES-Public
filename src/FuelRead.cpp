@@ -918,7 +918,7 @@ void FuelRead::setCellPoints(Cell* cells, int i, int j, int nx, int ny, int nz, 
              * also should not matter.
              */
 
-        cells[CELL(i,j,k)] = Cell(pointsInCell, edgesInCell, intermed,
+        cells[CELL(i,j,k)] = Cell(pointsInCell, /*edgesInCell,*/ intermed,
                                             Vector3<float>(corners[0][0], corners[0][1], cellBot),
                                             Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
       }

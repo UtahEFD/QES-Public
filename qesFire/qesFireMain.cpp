@@ -111,6 +111,7 @@ int main(int argc, char *argv[])
     // Generate the general WINDS data from all inputs
     WINDSGeneralData* WGD = new WINDSGeneralData(WID, arguments.solveType);
 
+
     // create WINDS output classes
     std::vector<QESNetCDFOutput*> outputVec;
     if (arguments.visuOutput) {
@@ -130,6 +131,9 @@ int main(int argc, char *argv[])
     if (arguments.compTurb && arguments.turbOutput) {
         outputVec.push_back(new TURBOutput(TGD,arguments.netCDFFileTurb));
     }
+
+
+
 
     // //////////////////////////////////////////
     //
@@ -184,6 +188,7 @@ int main(int argc, char *argv[])
     // Run turbulence
     //
     // /////////////////////////////
+
     if(TGD != nullptr) {
         TGD->run(WGD);
     }

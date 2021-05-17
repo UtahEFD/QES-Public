@@ -94,10 +94,12 @@ void FIREOutput::save(float timeOut)
     int nx = wgd_->nx;
     int ny = wgd_->ny;
     int nz = wgd_->nz;
-    
+
     // set time
     time = (double)timeOut;
+
     
+
     // get cell-centered values
     for (auto k = 1; k < nz-1; k++) {
         for (auto j = 0; j < ny-1; j++) {
