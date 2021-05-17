@@ -1,165 +1,98 @@
-/****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
- *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
- *
- * This file is part of QES-Winds
- *
- * GPL-3.0 License
- *
- * QES-Winds is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * QES-Winds is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
- ****************************************************************************/
-
-/** @file Canopy.h */
-
 #pragma once
 
 #include <cmath>
-#include <vector>
-#include <map>
 
-#include "CanopyElement.h"
+#include "util/ParseInterface.h"
 
+#include "PolyBuilding.h"
 
-// forward declaration of WINDSInputData and WINDSGeneralData, which
-// will be used by the derived classes and thus included there in the
-// C++ files
-class WINDSInputData;
-class WINDSGeneralData;
-class TURBGeneralData;
-
-/**
- * @class Canopy
- * @brief :document this:
- *
- * :long desc here:
- *
- */
-class Canopy
+class Canopy : public Building
 {
 private:
-public:
-  Canopy()
-  {}
-
-  Canopy(const WINDSInputData *WID, WINDSGeneralData *WGD);
-
-  virtual ~Canopy()
-  {}
-
-  void setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD);
-
-  void applyCanopyVegetation(WINDSGeneralData *WGD);
-  void applyCanopyWake(WINDSGeneralData *WGD);
-
-  /*
-   * For all Canopy classes derived, this need to be defined
-  virtual void parseValues()
-  {
-      parsePrimitive<int>(true, num_canopies, "num_canopies");
-      // read the input data for canopies
-      //parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyHomogeneous>("Homogeneous"));
-      //parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyIsolatedTree>("IsolatedTree"));
-      //parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyWindbreak>("Windbreak"));
-      // add other type of canopy here
-  }
-  */
-
-  virtual int getCellFlagCanopy();
-  virtual int getCellFlagWake();
-
-  int wakeFlag;
-
-  /*!
-   *
-   */
-  std::vector<float> canopy_atten_coeff; /**< Canopy attenuation coefficient */
-
-  std::vector<float> canopy_bot; /**< Canopy bottom */
-  std::vector<int> canopy_bot_index; /**< Canopy bottom index */
-  std::vector<float> canopy_top; /**< Canopy top */
-  std::vector<int> canopy_top_index; /**< Canopy top index */
-
-  std::vector<float> canopy_base; /**< Canopy base */
-  std::vector<float> canopy_height; /**< Canopy height */
-
-  std::vector<float> canopy_z0; /**< Canopy surface roughness */
-  std::vector<float> canopy_ustar; /**< Velocity gradient at the top of canopy */
-  std::vector<float> canopy_d; /**< Canopy displacement length */
-
-  std::vector<Building *> allCanopiesV; /**< :document this: */
-  std::vector<float> base_height; /**< Base height of trees */
-  std::vector<float> effective_height; /**< Effective height of trees */
-  std::vector<int> icanopy_flag; /**< :document this: */
-  std::vector<int> canopy_id; /**< :document this: */
-
-  std::vector<float> wake_u_defect; /**< :document this: */
-  std::vector<float> wake_v_defect; /**< :document this: */
 
 protected:
-  int nx_canopy, ny_canopy, nz_canopy;
-  int numcell_cent_2d, numcell_cent_3d;
 
-  /*!
-   * This function takes in icellflag defined in the defineCanopy function along with variables initialized in
-   * the readCanopy function and initial velocity field components (u0 and v0). This function applies the urban
-   * canopy parameterization and returns modified initial velocity field components.
-   */
-  void canopyCioncoParam(WINDSGeneralData *wgd);
+	float x_min, x_max, y_min, y_max;      // Minimum and maximum values of x
+																				 // and y for a building
+	float x_cent, y_cent;                  /**< Coordinates of center of a cell */
+	float polygon_area;                    /**< Polygon area */
+	int icell_cent, icell_face;
 
-  /**
-   * Uses linear regression method to define ustar and surface roughness of the canopy.
-   *
-   * @note Called from canopyCioncoParam
-   *
-   * @param WGD :document this:
-   */
-  void canopyRegression(WINDSGeneralData *wgd);
+public:
+
+	float atten;
+
+	Canopy()
+	{
+
+	}
 
 
-  /**
-   * Uses bisection to find root of the specified equation.
-   *
-   * It calculates the displacement height when the bisection function is not finding it.
-   *
-   * @note Called from canopyCioncoParam.
-   *
-   * @param :document this:
-   */
-  float canopySlopeMatch(float z0, float canopy_top, float canopy_atten);
+	virtual void parseValues()
+	{
+		parsePrimitive<float>(true, atten, "attenuationCoefficient");
+		parsePrimitive<float>(true, H, "height");
+		parsePrimitive<float>(true, base_height, "baseHeight");
+		parsePrimitive<float>(true, x_start, "xStart");
+		parsePrimitive<float>(true, y_start, "yStart");
+		parsePrimitive<float>(true, L, "length");
+		parsePrimitive<float>(true, W, "width");
+		parsePrimitive<float>(true, canopy_rotation, "canopyRotation");
 
-  /*!
-   *
-   */
-  float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
 
-private:
-  void mergeSort(std::vector<float> &effective_height, std::vector<Building *> allBuildingsV, std::vector<int> &tree_id);
+	  canopy_rotation *= M_PI/180.0;
+	  polygonVertices.resize (5);
+	  polygonVertices[0].x_poly = polygonVertices[4].x_poly = x_start;
+	  polygonVertices[0].y_poly = polygonVertices[4].y_poly = y_start;
+	  polygonVertices[1].x_poly = x_start-W*sin(canopy_rotation);
+	  polygonVertices[1].y_poly = y_start+W*cos(canopy_rotation);
+	  polygonVertices[2].x_poly = polygonVertices[1].x_poly+L*cos(canopy_rotation);
+	  polygonVertices[2].y_poly = polygonVertices[1].y_poly+L*sin(canopy_rotation);
+	  polygonVertices[3].x_poly = x_start+L*cos(canopy_rotation);
+	  polygonVertices[3].y_poly = y_start+L*sin(canopy_rotation);
+
+
+	}
+
+  void canopyVegetation(WINDSGeneralData *WGD);
+
+
+	/*!
+	 *This function takes in variables read in from input files and initializes required variables for definig
+	 *canopy elementa.
+	 */
+	//void readCanopy(int nx, int ny, int nz, int landuse_flag, int num_canopies, int &lu_canopy_flag,
+				//	std::vector<std::vector<std::vector<float>>> &canopy_atten,std::vector<std::vector<float>> &canopy_top);
+
+	/*!
+	 *This function takes in icellflag defined in the defineCanopy function along with variables initialized in
+	 *the readCanopy function and initial velocity field components (u0 and v0). This function applies the urban canopy
+	 *parameterization and returns modified initial velocity field components.
+	 */
+
+	void plantInitial(WINDSGeneralData *WGD);
+
+	/*!
+	 *This function is being call from the plantInitial function and uses linear regression method to define ustar and
+	 *surface roughness of the canopy.
+	 */
+
+	void regression(WINDSGeneralData *WGD);
+
+
+	/*!
+	 *This is a new function wrote by Lucas Ulmer and is being called from the plantInitial function. The purpose of this
+	 *function is to use bisection method to find root of the specified equation. It calculates the displacement height
+	 *when the bisection function is not finding it.
+	 */
+
+	float canopy_slope_match(float z0, float canopy_top, float canopy_atten);
+
+	/*!
+	 *This function takes in variables initialized by the readCanopy function and sets the boundaries of the canopy and
+	 *defines initial values for the canopy height and attenuation.
+	 */
+
+	 void defineCanopy(WINDSGeneralData *WGD);
+
 };
-
-inline int Canopy::getCellFlagCanopy()
-{
-  return 18;
-}
-
-inline int Canopy::getCellFlagWake()
-{
-  return 19;
-}

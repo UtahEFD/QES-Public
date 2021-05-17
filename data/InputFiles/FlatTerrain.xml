@@ -16,7 +16,7 @@
 	<sidewallFlag> 0 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
 	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
 	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
-	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
+	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (origional QUIC) (default), 1-Cut-cell method -->
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
 	<UTMx> 0 </UTMx> 						<!-- x component (m) in UTM -->
 	<UTMy> 0 </UTMy> 						<!-- y component (m) in UTM -->
@@ -30,9 +30,9 @@
 	<!--sensorName>../data/QU_Files/sensor.xml</sensorName-->	<!-- Name of the sensor file with information for the sensor included -->
 
 	<sensor>
-    	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QES (default), 2=UTM, 3=Lat/Lon) -->
-            <site_xcoord> 1.0  </site_xcoord> 				<!-- x component of site location in QES domain (m) (if site_coord_flag = 1) -->
-            <site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QES domain (m) (if site_coord_flag = 1)-->
+    	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
+            <site_xcoord> 1.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+            <site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
             <site_UTM_x> 2.0 </site_UTM_x> 				<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
             <site_UTM_y> 2.0 </site_UTM_y> 				<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
             <site_UTM_zone> 0 </site_UTM_zone> 				<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->

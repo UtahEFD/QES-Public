@@ -1,6 +1,6 @@
 #pragma once
 
-// currently not in use
+//currently not in use
 
 #include "ParseInterface.h"
 #include "Triangle.h"
@@ -9,12 +9,17 @@
 class Terrain : public ParseInterface
 {
 private:
+
+
+
 public:
-  std::vector<Triangle *> tris;
 
+	std::vector<Triangle*> tris;
+	
 
-  virtual void parseValues()
-  {
-    parseMultiElements<Triangle>(true, tris, "tri");
-  }
+	virtual void parseValues()
+	{
+		parseMultiElements<Triangle>(true, tris, "tri");
+	}
+
 };

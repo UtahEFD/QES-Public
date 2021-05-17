@@ -39,7 +39,7 @@ if(COMPILER_SUPPORTS_CXX11)
   #
   # This code used C++ 11 and 14 features so enable these on CXX Flags
   #
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 14)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
   
@@ -228,6 +228,4 @@ add_subdirectory(src)
 add_subdirectory(scratch)
 add_subdirectory(qesFire)
 add_subdirectory(qesWinds)
-add_subdirectory(qesCanopy)
-
 

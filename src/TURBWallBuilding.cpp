@@ -1,91 +1,55 @@
-/****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
- *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
- *
- * This file is part of QES-Winds
- *
- * GPL-3.0 License
- *
- * QES-Winds is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * QES-Winds is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
- ****************************************************************************/
-
-/**
- * @file TURBWallBuilding.cpp
- * @brief :document this:
- */
-
 #include "TURBWallBuilding.h"
 
-void TURBWallBuilding::defineWalls(WINDSGeneralData *WGD, TURBGeneralData *TGD)
-{
-  // fill array with cellid  of cutcell cells
-  get_cutcell_wall_id(WGD, icellflag_cutcell);
-  // fill itrublfag with cutcell flag
-  set_cutcell_wall_flag(TGD, iturbflag_cutcell);
+void TURBWallBuilding::defineWalls(WINDSGeneralData *WGD,TURBGeneralData *TGD) {
+    // fill array with cellid  of cutcell cells
+    get_cutcell_wall_id(WGD,icellflag_cutcell);
+    // fill itrublfag with cutcell flag
+    set_cutcell_wall_flag(TGD,iturbflag_cutcell);
 
-  // [FM] temporary fix -> use stairstep within the cut-cell
-  get_stairstep_wall_id(WGD, icellflag_building);
-  set_stairstep_wall_flag(TGD, iturbflag_stairstep);
-
-  /*
-    [FM] temporary fix -> when cut-cell treatement is implmented
-    if(cutcell_wall_id.size()==0) {
+    // [FM] temporary fix -> use stairstep within the cut-cell
     get_stairstep_wall_id(WGD,icellflag_building);
     set_stairstep_wall_flag(TGD,iturbflag_stairstep);
-    }else{
-    use_cutcell = true;
-    }
-  */
 
-  return;
+    /*
+      [FM] temporary fix -> when cut-cell treatement is implmented
+      if(cutcell_wall_id.size()==0) {
+      get_stairstep_wall_id(WGD,icellflag_building);
+      set_stairstep_wall_flag(TGD,iturbflag_stairstep);
+      }else{
+      use_cutcell = true;
+      }
+    */
+
+    return;
 }
 
 
-void TURBWallBuilding::setWallsBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
-{
+void TURBWallBuilding::setWallsBC(WINDSGeneralData *WGD,TURBGeneralData *TGD){
 
-  /*
-    This function apply the loglow at the wall for building
-    Note:
-    - only stair-step is implemented
-    - need to do: cut-cell for building
-  */
+    /*
+      This function apply the loglow at the wall for building
+      Note:
+      - only stair-step is implemented
+      - need to do: cut-cell for building
+    */
 
-  if (!use_cutcell) {
+    if(!use_cutcell) {
 
-    for (size_t id = 0; id < stairstep_wall_id.size(); ++id) {
-      set_loglaw_stairstep_at_id_cc(WGD, TGD, stairstep_wall_id[id], icellflag_building, WGD->z0);
+        for (size_t id=0; id < stairstep_wall_id.size(); ++id){
+            set_loglaw_stairstep_at_id_cc(WGD,TGD,stairstep_wall_id[id],icellflag_building,WGD->z0);
+        }
+    } else {
+        //[FM] temporary fix because the cut-cell are messing with the wall
+        //at the terrain
+        for(size_t i=0; i < cutcell_wall_id.size(); i++) {
+            int id_cc=cutcell_wall_id[i];
+            TGD->S11[id_cc]=0.0;
+            TGD->S12[id_cc]=0.0;
+            TGD->S13[id_cc]=0.0;
+            TGD->S22[id_cc]=0.0;
+            TGD->S23[id_cc]=0.0;
+            TGD->S33[id_cc]=0.0;
+            TGD->Lm[id_cc]=0.0;
+        }
     }
-  } else {
-    //[FM] temporary fix because the cut-cell are messing with the wall
-    // at the terrain
-    for (size_t i = 0; i < cutcell_wall_id.size(); i++) {
-      int id_cc = cutcell_wall_id[i];
-      TGD->Sxx[id_cc] = 0.0;
-      TGD->Sxy[id_cc] = 0.0;
-      TGD->Sxz[id_cc] = 0.0;
-      TGD->Syy[id_cc] = 0.0;
-      TGD->Syz[id_cc] = 0.0;
-      TGD->Szz[id_cc] = 0.0;
-      TGD->Lm[id_cc] = 0.0;
-    }
-  }
 }
