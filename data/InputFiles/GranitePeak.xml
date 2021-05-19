@@ -1,5 +1,5 @@
 <simulationParameters>
-	<DEM>../scratch/Granite_east.tif</DEM>				<!-- Address to DEM location-->	
+	<DEM>../../scratch/Granite_east.tif</DEM>				<!-- Address to DEM location-->	
 	<!--SHP>../scratch/building.shp</SHP-->				<!-- Address to shapefile location-->
 	<!--SHPBuildingLayer>building</SHPBuildingLayer-->
 	<!--heightFactor> 1.0 </heightFactor-->				<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
@@ -34,17 +34,17 @@
 </simulationParameters>                     				<!-- End of simulation parameters -->
 <metParams>
 	<z0_domain_flag> 0 </z0_domain_flag>           			<!-- Distribution of sueface roughness for domain (0-uniform (default), 1-custom -->
-	<sensorName>../data/InputFiles/PWID79.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWID96.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWID72.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWID93.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWID75.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWID33.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWID37.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWID108.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWID01.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWID92.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWID90.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>../../data/InputFiles/PWID79.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>../../data/InputFiles/PWID96.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>../../data/InputFiles/PWID72.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>../../data/InputFiles/PWID93.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>../../data/InputFiles/PWID75.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>../../data/InputFiles/PWID33.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>../../data/InputFiles/PWID37.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>../../data/InputFiles/PWID108.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>../../data/InputFiles/PWID01.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>../../data/InputFiles/PWID92.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>../../data/InputFiles/PWID90.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
 
 </metParams>								<!-- End of meteorological parameters -->
 <localMixingParam>
