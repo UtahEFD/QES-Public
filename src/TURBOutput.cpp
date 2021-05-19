@@ -1,16 +1,47 @@
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/**
+ * @file TURBOutput.cpp
+ * @brief :document this:
+ */
+
 #include "TURBOutput.h"
 
-TURBOutput::TURBOutput(TURBGeneralData *tgd,std::string output_file)
+TURBOutput::TURBOutput(TURBGeneralData *tgd, std::string output_file)
   : QESNetCDFOutput(output_file)
 {
-  std::cout<<"[Output] \t Setting output fields for Turbulence data"<<std::endl;
+  std::cout << "[Output] \t Setting output fields for Turbulence data" << std::endl;
 
+  output_fields = { "t", "time", "x", "y", "z", "iturbflag", "Sxx", "Syy", "Szz", "Sxy", "Sxz", "Syz", "L", "txx", "txy", "txz", "tyz", "tyy", "tzz", "tke", "CoEps" };
 
-  output_fields = {"t","time","x","y","z","iturbflag",
-                   "Sxx","Syy","Szz","Sxy","Sxz","Syz","L",
-                   "txx","txy","txz","tyz","tyy","tzz","tke","CoEps"};
-
-  tgd_=tgd;
+  tgd_ = tgd;
 
   int nx = tgd_->nx;
   int ny = tgd_->ny;
@@ -18,36 +49,36 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd,std::string output_file)
 
   // unused: long numcell_cout = (nx-1)*(ny-1)*(nz-1);
 
-  timestamp.resize( dateStrLen, '0' );
+  timestamp.resize(dateStrLen, '0');
   // set time data dimensions
-  NcDim NcDim_t=addDimension("t");
-  NcDim NcDim_tstr=addDimension("dateStrLen",dateStrLen);
+  NcDim NcDim_t = addDimension("t");
+  NcDim NcDim_tstr = addDimension("dateStrLen", dateStrLen);
   // create attributes for time dimension
   std::vector<NcDim> dim_vect_t;
   dim_vect_t.push_back(NcDim_t);
-  createAttScalar("t","time","s",dim_vect_t,&time);
+  createAttScalar("t", "time", "s", dim_vect_t, &time);
   // create attributes for time dimension
   std::vector<NcDim> dim_vect_tstr;
   dim_vect_tstr.push_back(NcDim_t);
   dim_vect_tstr.push_back(NcDim_tstr);
-  createAttVector("times","date time","-",dim_vect_tstr,&timestamp);
-    
+  createAttVector("times", "date time", "-", dim_vect_tstr, &timestamp);
+
   // set cell-centered data dimensions
   // space dimensions
-  NcDim NcDim_x_cc=addDimension("x",nx-1);
-  NcDim NcDim_y_cc=addDimension("y",ny-1);
-  NcDim NcDim_z_cc=addDimension("z",nz-1);
+  NcDim NcDim_x_cc = addDimension("x", nx - 1);
+  NcDim NcDim_y_cc = addDimension("y", ny - 1);
+  NcDim NcDim_z_cc = addDimension("z", nz - 1);
 
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_x;
   dim_vect_x.push_back(NcDim_x_cc);
-  createAttVector("x","x-distance","m",dim_vect_x,&(tgd_->x_cc));
+  createAttVector("x", "x-distance", "m", dim_vect_x, &(tgd_->x_cc));
   std::vector<NcDim> dim_vect_y;
   dim_vect_y.push_back(NcDim_y_cc);
-  createAttVector("y","y-distance","m",dim_vect_y,&(tgd_->y_cc));
+  createAttVector("y", "y-distance", "m", dim_vect_y, &(tgd_->y_cc));
   std::vector<NcDim> dim_vect_z;
   dim_vect_z.push_back(NcDim_z_cc);
-  createAttVector("z","z-distance","m",dim_vect_z,&(tgd_->z_cc));
+  createAttVector("z", "z-distance", "m", dim_vect_z, &(tgd_->z_cc));
 
   // 3D vector dimension (time dep)
   std::vector<NcDim> dim_vect_cc;
@@ -56,53 +87,51 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd,std::string output_file)
   dim_vect_cc.push_back(NcDim_y_cc);
   dim_vect_cc.push_back(NcDim_x_cc);
 
-  createAttVector("iturbflag","icell turb flag","--",dim_vect_cc,&(tgd_->iturbflag));
+  createAttVector("iturbflag", "icell turb flag", "--", dim_vect_cc, &(tgd_->iturbflag));
 
   // create attributes for strain-rate stress tensor
-  createAttVector("Sxx","uu-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->Sxx));
-  createAttVector("Syy","vv-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->Syy));
-  createAttVector("Szz","ww-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->Szz));
-  createAttVector("Sxy","uv-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->Sxy));
-  createAttVector("Sxz","uw-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->Sxz));
-  createAttVector("Syz","vw-component of strain-rate tensor","s-1",dim_vect_cc,&(tgd_->Syz));
+  createAttVector("Sxx", "uu-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Sxx));
+  createAttVector("Syy", "vv-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Syy));
+  createAttVector("Szz", "ww-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Szz));
+  createAttVector("Sxy", "uv-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Sxy));
+  createAttVector("Sxz", "uw-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Sxz));
+  createAttVector("Syz", "vw-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Syz));
 
   // create attribute for mixing length
-  createAttVector("L","mixing length","m",dim_vect_cc,&(tgd_->Lm));
+  createAttVector("L", "mixing length", "m", dim_vect_cc, &(tgd_->Lm));
 
   // create derived attributes
-  createAttVector("txx","uu-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->txx));
-  createAttVector("tyy","vv-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->tyy));
-  createAttVector("tzz","ww-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->tzz));
-  createAttVector("txy","uv-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->txy));
-  createAttVector("txz","uw-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->txz));
-  createAttVector("tyz","vw-component of stress tensor","m2s-2",dim_vect_cc,&(tgd_->tyz));
-  createAttVector("tke","turbulent kinetic energy","m2s-2",dim_vect_cc,&(tgd_->tke));
-  createAttVector("CoEps","dissipation rate","m2s-3",dim_vect_cc,&(tgd_->CoEps));
+  createAttVector("txx", "uu-component of stress tensor", "m2s-2", dim_vect_cc, &(tgd_->txx));
+  createAttVector("tyy", "vv-component of stress tensor", "m2s-2", dim_vect_cc, &(tgd_->tyy));
+  createAttVector("tzz", "ww-component of stress tensor", "m2s-2", dim_vect_cc, &(tgd_->tzz));
+  createAttVector("txy", "uv-component of stress tensor", "m2s-2", dim_vect_cc, &(tgd_->txy));
+  createAttVector("txz", "uw-component of stress tensor", "m2s-2", dim_vect_cc, &(tgd_->txz));
+  createAttVector("tyz", "vw-component of stress tensor", "m2s-2", dim_vect_cc, &(tgd_->tyz));
+  createAttVector("tke", "turbulent kinetic energy", "m2s-2", dim_vect_cc, &(tgd_->tke));
+  createAttVector("CoEps", "dissipation rate", "m2s-3", dim_vect_cc, &(tgd_->CoEps));
 
   // create output fields
   addOutputFields();
-
 }
 
 // Save output at cell-centered values
 void TURBOutput::save(ptime timeOut)
 {
 
-    // set time
-    time = (double)output_counter;
-    
-    std::string s=to_iso_extended_string(timeOut);
-    std::copy(s.begin(), s.end(), timestamp.begin());
-   
-    // save fields
-    saveOutputFields();
+  // set time
+  time = (double)output_counter;
 
-    // remmove time indep from output array after first save
-    if (output_counter==0) {
-        rmTimeIndepFields();
-    }
+  std::string s = to_iso_extended_string(timeOut);
+  std::copy(s.begin(), s.end(), timestamp.begin());
 
-    // increment for next time insertion
-    output_counter +=1;
+  // save fields
+  saveOutputFields();
 
+  // remmove time indep from output array after first save
+  if (output_counter == 0) {
+    rmTimeIndepFields();
+  }
+
+  // increment for next time insertion
+  output_counter += 1;
 };

@@ -1,7 +1,7 @@
 #include "ParseInterface.h"
 
 
-//	void ParseInterface::parseTree(pt::ptree t, URBInputData*& root) 
+//	void ParseInterface::parseTree(pt::ptree t, URBInputData*& root)
 //	{
 //		root = new URBInputData();
 //		root->setTree(t);

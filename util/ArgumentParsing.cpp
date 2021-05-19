@@ -15,7 +15,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with libsivelab.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -24,15 +24,13 @@
 #include "ArgumentParsing.h"
 
 ArgumentParsing::ArgumentParsing()
-  : m_optDesc("Allowed options")
-{
-};
+  : m_optDesc("Allowed options"){};
 
 ArgumentParsing::~ArgumentParsing()
 {
 }
 
-void ArgumentParsing::reg(const std::string& argName, const std::string &description, ArgTypes t, char shortArgName)
+void ArgumentParsing::reg(const std::string &argName, const std::string &description, ArgTypes t, char shortArgName)
 {
   std::ostringstream argName_wShort;
 
@@ -40,36 +38,19 @@ void ArgumentParsing::reg(const std::string& argName, const std::string &descrip
   if (shortArgName)
     argName_wShort << "," << shortArgName;
 
-  if (t == NONE)
-    {
-      m_optDesc.add_options()
-	(argName_wShort.str().c_str(), description.c_str());
-    }
-  else if (t == INT)
-    {
-      m_optDesc.add_options()
-	(argName_wShort.str().c_str(), po::value<int>(), description.c_str());
-    }
-  else if (t == FLOAT)
-    {
-      m_optDesc.add_options()
-	(argName_wShort.str().c_str(), po::value<float>(), description.c_str());
-    }
-  else if (t == CHAR)
-    {
-      m_optDesc.add_options()
-	(argName_wShort.str().c_str(), po::value<char>(), description.c_str());
-    }
-  else if (t == STRING)
-    {
-      m_optDesc.add_options()
-	(argName_wShort.str().c_str(), po::value<std::string>(), description.c_str());
-    }
-  else 
-    {
-      m_optDesc.add_options()
-	(argName_wShort.str().c_str(), description.c_str());
-    }
+  if (t == NONE) {
+    m_optDesc.add_options()(argName_wShort.str().c_str(), description.c_str());
+  } else if (t == INT) {
+    m_optDesc.add_options()(argName_wShort.str().c_str(), po::value<int>(), description.c_str());
+  } else if (t == FLOAT) {
+    m_optDesc.add_options()(argName_wShort.str().c_str(), po::value<float>(), description.c_str());
+  } else if (t == CHAR) {
+    m_optDesc.add_options()(argName_wShort.str().c_str(), po::value<char>(), description.c_str());
+  } else if (t == STRING) {
+    m_optDesc.add_options()(argName_wShort.str().c_str(), po::value<std::string>(), description.c_str());
+  } else {
+    m_optDesc.add_options()(argName_wShort.str().c_str(), description.c_str());
+  }
 }
 
 void ArgumentParsing::printUsage() const
@@ -77,54 +58,50 @@ void ArgumentParsing::printUsage() const
   std::cout << m_optDesc << std::endl;
 }
 
-bool ArgumentParsing::isSet(const std::string& argName)
+bool ArgumentParsing::isSet(const std::string &argName)
 {
-  if (m_varMap.count(argName)) 
+  if (m_varMap.count(argName))
     return true;
   else
     return false;
 }
 
-bool ArgumentParsing::isSet(const std::string& argName, int &argValue)
+bool ArgumentParsing::isSet(const std::string &argName, int &argValue)
 {
-  if (m_varMap.count(argName)) 
-    {
-      argValue = m_varMap[argName].as<int>();
-      return true;
-    }
+  if (m_varMap.count(argName)) {
+    argValue = m_varMap[argName].as<int>();
+    return true;
+  }
 
   return false;
 }
 
-bool ArgumentParsing::isSet(const std::string& argName, float &argValue)
+bool ArgumentParsing::isSet(const std::string &argName, float &argValue)
 {
-  if (m_varMap.count(argName)) 
-    {
-      argValue = m_varMap[argName].as<float>();
-      return true;
-    }
+  if (m_varMap.count(argName)) {
+    argValue = m_varMap[argName].as<float>();
+    return true;
+  }
 
   return false;
 }
 
-bool ArgumentParsing::isSet(const std::string& argName, char &argValue)
+bool ArgumentParsing::isSet(const std::string &argName, char &argValue)
 {
-  if (m_varMap.count(argName)) 
-    {
-      argValue = m_varMap[argName].as<char>();
-      return true;
-    }
+  if (m_varMap.count(argName)) {
+    argValue = m_varMap[argName].as<char>();
+    return true;
+  }
 
   return false;
 }
 
-bool ArgumentParsing::isSet(const std::string& argName, std::string &argValue)
+bool ArgumentParsing::isSet(const std::string &argName, std::string &argValue)
 {
-  if (m_varMap.count(argName)) 
-    {
-      argValue = m_varMap[argName].as<std::string>();
-      return true;
-    }
+  if (m_varMap.count(argName)) {
+    argValue = m_varMap[argName].as<std::string>();
+    return true;
+  }
 
   return false;
 }
@@ -132,8 +109,7 @@ bool ArgumentParsing::isSet(const std::string& argName, std::string &argValue)
 int ArgumentParsing::process(int argc, char *argv[])
 {
   po::store(po::parse_command_line(argc, argv, m_optDesc), m_varMap);
-  po::notify(m_varMap);    
+  po::notify(m_varMap);
 
   return 1;
 }
-

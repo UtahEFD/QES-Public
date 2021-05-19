@@ -1,4 +1,7 @@
 <simulationParameters>
+
+  <!-- Specifies the WRF Output file that will be read in by QES-Winds -->
+  <!-- <WRF>/uufs/chpc.utah.edu/common/home/stoll-group3/willemsn/RXCwrfout_d07_2012-11-11_15-21</WRF> -->
   <WRF>/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21</WRF>		<!-- Address to WRF location-->
 
   <!-- <WRFSensorSample>12</WRFSensorSample> --> <!-- seems to not work -->
@@ -25,18 +28,16 @@ Use Case - WRF with no Fire Mesh (i.e. Korea)
 * With non-FireMesh WRF output, we really want to merge the DEM that we load with the WRF Wind Profile data.
 * Load in DEM file.
 * Walk through WRF Atmos Mesh at discretization specified by UTMX and UTMY with domain bounds
+
+Important Parameters
+UTM:  when UTM is provided we can use it as the world offset of the lower left corner of the domain.
+
+Shouldn't need when loading WRF output though.
+
   -->
   
-  <UTMx> 0 </UTMx> 						<!-- x component (m) in UTM -->
-  <UTMy> 0 </UTMy> 						<!-- y component (m) in UTM -->
-  <UTMZone> 1 </UTMZone> 					<!-- UTM zone that domain located -->
-  <UTMZoneLetter> 17 </UTMZoneLetter>
-  <readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->
-  <!--COEFF>test_windsWk.nc</COEFF-->					<!-- Address to coefficients file location --> 
-
-  <domain>384 384 100</domain>					<!-- Number of cells in x,y and z directions-->
-  <cellSize> 3.0 3.0 1.0 </cellSize> 				<!-- Mesh resolution (meters)-->
-
+  <domain>384 384 100</domain>
+  <cellSize> 3.0 3.0 1.0 </cellSize>  <!-- Meters-->
 
   <verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
@@ -51,7 +52,7 @@ Use Case - WRF with no Fire Mesh (i.e. Korea)
   <sidewallFlag> 0 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
   <maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
   <tolerance> 1e-9 </tolerance> 				<!-- Convergence criteria, error threshold (default = 1e-9) -->
-  <meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (origional QUIC) (default), 1-Cut-cell method -->
+  <meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
   <domainRotation> 0 </domainRotation>  			<!-- Rotation angle of domain relative to true north -->
 
 </simulationParameters>						<!-- End of simulation parameters -->
@@ -61,9 +62,9 @@ Use Case - WRF with no Fire Mesh (i.e. Korea)
 	<!--sensorName>../data/QU_Files/sensor.xml</sensorName-->	<!-- Name of the sensor file with information for the sensor included -->
 
 	<sensor>
-    	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
-            <site_xcoord> 1.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
-            <site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
+    	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QES (default), 2=UTM, 3=Lat/Lon) -->
+            <site_xcoord> 1.0  </site_xcoord> 				<!-- x component of site location in QES domain (m) (if site_coord_flag = 1) -->
+            <site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QES domain (m) (if site_coord_flag = 1)-->
             <site_UTM_x> 2.0 </site_UTM_x> 				<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
             <site_UTM_y> 2.0 </site_UTM_y> 				<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
             <site_UTM_zone> 0 </site_UTM_zone> 				<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->

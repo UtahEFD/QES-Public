@@ -22,7 +22,7 @@
 	<sidewallFlag> 0 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
 	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
 	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
-	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (origional QUIC) (default), 1-Cut-cell method -->
+	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
 	<UTMx> 0 </UTMx> 						<!-- x component (m) in UTM -->
 	<UTMy> 0 </UTMy> 						<!-- y component (m) in UTM -->

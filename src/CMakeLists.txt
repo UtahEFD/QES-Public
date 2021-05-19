@@ -8,6 +8,7 @@ add_subdirectory( unitTests )
 CUDA_ADD_LIBRARY( qeswindscore
   BVH.cpp
   Canopy.cpp
+  CanopyElement.cpp
   CanopyHomogeneous.cpp
   CanopyIsolatedTree.cpp
   CanopyWindbreak.cpp
@@ -43,6 +44,7 @@ CUDA_ADD_LIBRARY( qeswindscore
   WINDSGeneralData.cpp
   WINDSOutputVisualization.cpp
   WINDSOutputWorkspace.cpp
+  WINDSOutputWRF.cpp
   WRFInput.cpp WRFInput.h
   Wall.cpp Wall.h
   UpwindCavity.cpp
