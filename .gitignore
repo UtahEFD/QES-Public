@@ -1,6 +1,7 @@
 # emacs backup/tilde files
 *~
 
+build_old/
 build/
 Build/
 src/docs/*

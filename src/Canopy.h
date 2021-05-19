@@ -7,8 +7,7 @@
 
 enum CanopyType {
     Homogeneous,
-    IsolatedTree,
-    Vineyard
+    IsolatedTree
 };
 
 class Canopy : public Building

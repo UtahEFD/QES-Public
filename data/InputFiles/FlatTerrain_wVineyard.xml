@@ -36,13 +36,36 @@
 	  <reciprocal> 0 </reciprocal>
 	  <height> 10 </height>
 	  <speed> 5 </speed>
-	  <direction> 0 </direction> 
+	  <direction> 270 </direction> 
     </timeSeries>
   </sensor>
 </metParams>
 <localMixingParam>
   <method>0</method>
 </localMixingParam>
+<canopies>
+  <num_canopies>1</num_canopies>
+  <Vineyard>
+    <opticalPorosity>0.2</opticalPorosity>
+    <height>2.0</height>
+    <understoryHeight>0.5</understoryHeight>
+    <rowSpacing>2.5</rowSpacing>
+    <rowWidth>0.5</rowWidth>
+    <rowAngle>0</rowAngle>
+    <corner1x> 40 </corner1x>
+    <corner1y> 40 </corner1y>
+    <corner2x> 80 </corner2x>
+    <corner2y> 40 </corner2y>
+    <corner3x> 80 </corner3x>
+    <corner3y> 80 </corner3y>
+    <corner4x> 40 </corner4x>
+    <corner4y> 80 </corner4y>
+    <thinFence> 0 </thinFence>
+    <upstreamSigmaW> 0.6 </upstreamSigmaW>
+    <upstreamUstar> 0.5 </upstreamUstar>
+    <displacementHeight> 1.42</displacementHeight>
+  </Vineyard>
+</canopies>
 <fileOptions>
   <outputFlag>1</outputFlag>
   <outputFields>u</outputFields> 

@@ -11,6 +11,7 @@ CUDA_ADD_LIBRARY( qeswindscore
   CanopyHomogeneous.cpp
   CanopyIsolatedTree.cpp
   CanopyWindbreak.cpp
+  CanopyVineyard.cpp
   Cell.cpp
   CPUSolver.cpp
   Cut_cell.cpp
