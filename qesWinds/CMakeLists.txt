@@ -24,28 +24,27 @@ target_link_libraries(qesWinds ${NETCDF_LIBRARIES_C})
 target_link_libraries(qesWinds cudadevrt)
 target_link_libraries(qesWinds ${CUDA_LIBRARIES})
 
-add_test(NAME CPU_FlatTerrain COMMAND ./qesWinds -q
-  ../../data/InputFiles/FlatTerrain.xml)
-add_test(NAME GPU_FlatTerrain COMMAND ./qesWinds -q
-  ../../data/InputFiles/FlatTerrain.xml -s 2)
+# sanity tests
+IF (ENABLE_SANITY_TESTS OR ENABLE_ALL_TESTS)
+add_test(NAME CPU_FlatTerrain COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q
+  ${CMAKE_SOURCE_DIR}/data/InputFiles/FlatTerrain.xml)
+add_test(NAME GPU_FlatTerrain COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q
+  ${CMAKE_SOURCE_DIR}/data/InputFiles/FlatTerrain.xml -s 2)
+add_test(NAME GPU_GaussianHill COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q
+  ${CMAKE_SOURCE_DIR}/data/InputFiles/GaussianHill.xml -s 2)
 
-# add_test(NAME CPU_GaussianHill COMMAND ./qesWinds -q
-#   ../../data/InputFiles/GaussianHill.xml)
-add_test(NAME GPU_GaussianHill COMMAND ./qesWinds -q
-  ../../data/InputFiles/GaussianHill.xml -s 2)
+# longer sanity tests
+IF (ENABLE_LONG_SANITY_TESTS OR ENABLE_ALL_TESTS)
+add_test(NAME CPU_GaussianHill COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q
+  ${CMAKE_SOURCE_DIR}/data/InputFiles/GaussianHill.xml)
+add_test(NAME CPU_GranitePeak COMMAND ${CMAKE_BINARY_DIR}/qesWinds -q
+  ${CMAKE_SOURCE_DIR}/data/InputFiles/GranitePeak.xml)
+add_test(NAME GPU_GranitePeak COMMAND ${CMAKE_BINARY_DIR}/qesWinds -q
+  ${CMAKE_SOURCE_DIR}/data/InputFiles/GranitePeak.xml -s 2)
 
-# define which tests are basic checks that don't take long to run
-# use: `ctest -L "basic"`
-set_tests_properties(CPU_FlatTerrain GPU_FlatTerrain GPU_GaussianHill
-  PROPERTIES LABELS basic)
-
-# add_test(NAME CPU_GranitePeak COMMAND ./qesWinds -q
-#   ../../data/InputFiles/GranitePeak.xml)
-# add_test(NAME GPU_GranitePeak COMMAND ./qesWinds -q
-#   ../../data/InputFiles/GranitePeak.xml -s 2)
-
-# add_test(NAME CPU_OklahomaCity COMMAND ./qesWinds -q
-#   ../../data/InputFiles/Oklahoma_city.xml)
-# add_test(NAME GPU_OklahomaCity COMMAND ./qesWinds -q
-#   ../../data/InputFiles/Oklahoma_city.xml -s 2)
-
+add_test(NAME CPU_OklahomaCity COMMAND ${CMAKE_BINARY_DIR}/qesWinds -q
+  ${CMAKE_SOURCE_DIR}/data/InputFiles/Oklahoma_city.xml)
+add_test(NAME GPU_OklahomaCity COMMAND ${CMAKE_BINARY_DIR}/qesWinds -q
+  ${CMAKE_SOURCE_DIR}/data/InputFiles/Oklahoma_city.xml -s 2)
+ENDIF()
+ENDIF()
