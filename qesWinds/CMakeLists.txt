@@ -24,28 +24,33 @@ target_link_libraries(qesWinds ${NETCDF_LIBRARIES_C})
 target_link_libraries(qesWinds cudadevrt)
 target_link_libraries(qesWinds ${CUDA_LIBRARIES})
 
+# easy to use functions to add sanity tests
+## just specify the infile's name (w/o extension) as below
+function(add_sanity_test_CPU infile_prefix)
+  add_test(NAME CPU_${infile_prefix} COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${CMAKE_SOURCE_DIR}/data/InputFiles/${infile_prefix}.xml -z -o test_${infile_prefix}_CPU WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+endfunction()
+
+function(add_sanity_test_GPU infile_prefix)
+  add_test(NAME GPU_${infile_prefix} COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${CMAKE_SOURCE_DIR}/data/InputFiles/${infile_prefix}.xml -s 2 -z -o test_${infile_prefix}_GPU WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+endfunction()
+
 # sanity tests
 IF (ENABLE_SANITY_TESTS OR ENABLE_ALL_TESTS)
   IF (ENABLE_CPU_TESTS)
-    add_test(NAME CPU_FlatTerrain COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${CMAKE_SOURCE_DIR}/data/InputFiles/FlatTerrain.xml -z -o test_Flatterrain_cpu WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+    add_sanity_test_CPU(FlatTerrain)
+    IF (ENABLE_LONG_SANITY_TESTS)
+      add_sanity_test_CPU(GaussianHill)
+      add_sanity_test_CPU(GranitePeak)
+      add_sanity_test_CPU(Oklahoma_city)
+    ENDIF()
   ENDIF()
 
   IF (ENABLE_GPU_TESTS)
-    add_test(NAME GPU_FlatTerrain COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${CMAKE_SOURCE_DIR}/data/InputFiles/FlatTerrain.xml -s 2 -z -o test_Flatterrain_gpu WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-    add_test(NAME GPU_GaussianHill COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${CMAKE_SOURCE_DIR}/data/InputFiles/GaussianHill.xml -s 2 -z -o test_GaussianHill_gpu WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-  ENDIF()
-
-  # longer sanity tests
-  IF (ENABLE_LONG_SANITY_TESTS OR ENABLE_ALL_TESTS)
-    IF (ENABLE_CPU_TESTS)
-      add_test(NAME CPU_GaussianHill COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${CMAKE_SOURCE_DIR}/data/InputFiles/GaussianHill.xml -z -o test_GaussianHill_cpu WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-      add_test(NAME CPU_GranitePeak COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${CMAKE_SOURCE_DIR}/data/InputFiles/GranitePeak.xml -z -o test_GranitePeak_cpu WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-      add_test(NAME CPU_OklahomaCity COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${CMAKE_SOURCE_DIR}/data/InputFiles/Oklahoma_city.xml -z -o test_OKC_cpu WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-    ENDIF()
-
-    IF (ENABLE_GPU_TESTS)
-      add_test(NAME GPU_OklahomaCity COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${CMAKE_SOURCE_DIR}/data/InputFiles/Oklahoma_city.xml -s 2 -z -o test_OKC_gpu WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-      add_test(NAME GPU_GranitePeak COMMAND ${CMAKE_BINARY_DIR}/qesWinds/qesWinds -q ${CMAKE_SOURCE_DIR}/data/InputFiles/GranitePeak.xml -s 2 -z -o test_GranitePeak_gpu WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+    add_sanity_test_GPU(FlatTerrain)
+    add_sanity_test_GPU(GaussianHill)
+    IF (ENABLE_LONG_SANITY_TESTS)
+      add_sanity_test_GPU(GranitePeak)
+      add_sanity_test_GPU(Oklahoma_city)
     ENDIF()
   ENDIF()
 ENDIF()
