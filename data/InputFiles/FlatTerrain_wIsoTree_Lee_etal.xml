@@ -40,9 +40,9 @@
     </timeSeries>
   </sensor>
 </metParams>
-<localMixingParam>
+<turbParams>
   <method>0</method>
-</localMixingParam>
+</turbParams>
 <canopies>
   <num_canopies>1</num_canopies>
   <IsolatedTree>
@@ -50,20 +50,13 @@
     <height>20.0</height>
     <baseHeight>0.0</baseHeight>
     <zMaxLAI>0.5</zMaxLAI>
-    <xCenter>30.0</xCenter>
+    <xCenter>40.0</xCenter>
     <yCenter>80.0</yCenter>
     <width>20.0</width>
   </IsolatedTree>
 </canopies>
 <fileOptions>
   <outputFlag>1</outputFlag>
-  <outputFields>u</outputFields> 
-  <outputFields>v</outputFields> 
-  <outputFields>w</outputFields>
-  <outputFields>icell</outputFields>  
-  <outputTURBInputFile>true</outputTURBInputFile>
-  <massConservedFlag> 0 </massConservedFlag>
-  <sensorVelocityFlag> 0 </sensorVelocityFlag>
-  <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+  <outputFields>all</outputFields> 
 </fileOptions>
 
