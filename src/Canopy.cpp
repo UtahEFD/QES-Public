@@ -227,7 +227,12 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
         int icell_3d = i + j * nx_canopy + (canopy_top_index[icell_2d] - 1) * nx_canopy * ny_canopy;
 
         // Call the bisection method to find the root
-        canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d], canopy_z0[icell_2d], canopy_height[icell_2d], canopy_atten_coeff[icell_3d], WGD->vk, 0.0);
+        canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d],
+                                             canopy_z0[icell_2d],
+                                             canopy_height[icell_2d],
+                                             canopy_atten_coeff[icell_3d],
+                                             WGD->vk,
+                                             0.0);
         // std::cout << "WGD->vk:" << WGD->vk << "\n";
         // std::cout << "WGD->canopy_atten[icell_cent]:" << WGD->canopy_atten[icell_cent] << "\n";
         if (canopy_d[icell_2d] == 10000) {
