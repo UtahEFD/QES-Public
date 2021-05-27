@@ -249,7 +249,9 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
   const float tol = 0.01 * M_PI / 180.0;
   const float epsilon = 10e-10;
 
-  const int wake_stream_coef = 12;
+  const float wake_shear_coef = 7.5;
+  const float wake_recov_coef = 4;
+  const float wake_stream_coef = wake_shear_coef + wake_recov_coef;
 
   //*** spreading parameters ***!
   float udelt = (1 - a_obf);// udelt parameters
@@ -509,7 +511,8 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
 
                   // x_u,y_u,z_c
                   float aeropor = (0.5 * (1.0 - a_obf)) * tanh(1.5 * (z_c - zwmo) / d_shearzone) + 0.5 * (1.0 + a_obf);
-                  WGD->canopy->wake_u_defect[icell_face] = (1.0 - aeropor) * (0.5 - 0.5 * tanh(x_u - 9.5 * Lr));
+                  float recovery = 0.5 - 0.5 * tanh((x_u - wake_shear_coef * Lr - 0.5 * wake_recov_coef * Lr) / (0.25 * wake_recov_coef * Lr));
+                  WGD->canopy->wake_u_defect[icell_face] = (1.0 - aeropor) * recovery;
                   /*
 		    if (x_u < 7.5 * Lr) {
                     // zone2
@@ -523,7 +526,7 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
                     WGD->canopy->wake_u_defect[icell_face] = recovery_factor;
                     //WGD->canopy->wake_u_defect[icell_face] = recovery_factor * u0_wh / WGD->u0[icell_face];
                   }
-		  */
+                  */
                   ds = 0.5 * spreadclassicmix * x_u;
                   WGD->canopy->wake_u_defect[icell_face] *= (0.5 - 0.5 * tanh(1.5 * (y_u - (y2 - ds)) / ds));
                   WGD->canopy->wake_u_defect[icell_face] *= (0.5 - 0.5 * tanh(1.5 * ((y1 + ds) - y_u) / ds));
@@ -571,7 +574,8 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
 
                   // x_v,y_v,z_c
                   float aeropor = (0.5 * (1.0 - a_obf)) * tanh(1.5 / (d_shearzone) * (z_c)-1.5 / (d_shearzone)*zwmo) + 0.5 * (1.0 + a_obf);
-                  WGD->canopy->wake_v_defect[icell_face] = (1.0 - aeropor) * (0.5 - 0.5 * tanh(x_v - 9.5 * Lr));
+                  float recovery = 0.5 - 0.5 * tanh((x_v - wake_shear_coef * Lr - 0.5 * wake_recov_coef * Lr) / (0.25 * wake_recov_coef * Lr));
+                  WGD->canopy->wake_v_defect[icell_face] = (1.0 - aeropor) * recovery;
                   /*
 		    if (x_v < 8.5 * Lr) {
                     // zone2
