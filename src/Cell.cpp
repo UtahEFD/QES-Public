@@ -65,14 +65,14 @@ Cell::Cell(const int type_CT, const Vector3<float> locationN, const Vector3<floa
   dimensions = dimensionsN;
 }
 
-Cell::Cell(std::vector<Vector3<float>> &points /*,  std::vector< Edge< int > >& edges*/, int intermed[4][4][2], Vector3<float> locationN, Vector3<float> dimensionsN)
+Cell::Cell(std::vector<Vector3<float>> &points, std::vector<Edge<int>> &edges, int intermed[4][4][2], Vector3<float> locationN, Vector3<float> dimensionsN)
 {
   isTerrain = isAir = isCutCell = true;
   terrainPoints.clear();
   for (int i = 0; i < points.size(); i++)
     terrainPoints.push_back(points[i]);
-  /*for (int i = 0; i < edges.size(); i++)
-          terrainEdges.push_back(edges[i]);*/
+  for (int i = 0; i < edges.size(); i++)
+    terrainEdges.push_back(edges[i]);
   location = locationN;
   dimensions = dimensionsN;
 

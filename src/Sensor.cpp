@@ -99,9 +99,6 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
     }
   }
 
-  std::cout << "available_sensor_id:  " << available_sensor_id.size() << std::endl;
-
-
   std::vector<std::vector<float>> u_prof(num_sites, std::vector<float>(WGD->nz, 0.0));
   std::vector<std::vector<float>> v_prof(num_sites, std::vector<float>(WGD->nz, 0.0));
   int icell_face, icell_cent;

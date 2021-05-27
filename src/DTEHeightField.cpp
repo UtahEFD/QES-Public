@@ -99,7 +99,7 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
   // correct dimensions
 
   int step = 1;// step size is interpretted incorrectly here for
-               // fire meshes...
+    // fire meshes...
 
   // previously, with regular DEMs we can use the cellSize to
   // determine how we step over the terrain to create the actual
@@ -487,9 +487,9 @@ void DTEHeightField::setDomain(Vector3<int> *domain, Vector3<float> *grid)
   }
 
   auto start = std::chrono::high_resolution_clock::now();// Start
-                                                         // recording
-                                                         // execution
-                                                         // time
+    // recording
+    // execution
+    // time
 
   std::cout << "Setting Terrain Boundaries\n";
   for (int q = 0; q < 3; q++) {
@@ -775,7 +775,7 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
       cutCells.push_back(CELL(i, j, k));
 
       std::vector<Vector3<float>> pointsInCell;
-      // std::vector< Edge< int > > edgesInCell;
+      std::vector<Edge<int>> edgesInCell;
 
       // Check to see the positions of the corners, the corners are always in
       // the cell, no matter what. If they exist out of bounds of the cell in the
@@ -796,11 +796,11 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
           cornerPos[l] = 1;
           pointsInCell.push_back(Vector3<float>(corners[l][0], corners[l][1], cellTop));
         }
-      /*for (int first = 0; first < 3; first++)
-           for (int second = first + 1; second < 4; second++)
-             if ( (first != 1 || second != 3) && (first != 0 || second != 2) )
-               if (cornerPos[first] == cornerPos[second])
-                 edgesInCell.push_back(Edge<int>(first, second));*/
+      for (int first = 0; first < 3; first++)
+        for (int second = first + 1; second < 4; second++)
+          if ((first != 1 || second != 3) && (first != 0 || second != 2))
+            if (cornerPos[first] == cornerPos[second])
+              edgesInCell.push_back(Edge<int>(first, second));
 
       // check intermediates 0-1 0-2 0-3 1-2 2-3
       int intermed[4][4][2];// first two array cells are for identifying the corners, last one is top and bottom of cell
@@ -821,66 +821,65 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
               if (cornerPos[second] < 0) {
                 intermed[first][second][0] = pointsInCell.size();
                 pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellBot)));
-                // edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
-                // edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
+                edgesInCell.push_back(Edge<int>(second, pointsInCell.size() - 1));
+                edgesInCell.push_back(Edge<int>(first, pointsInCell.size() - 1));
               } else if (cornerPos[second] > 0) {
                 intermed[first][second][1] = pointsInCell.size();
                 pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellTop)));
-                // edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
-                // edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
+                edgesInCell.push_back(Edge<int>(second, pointsInCell.size() - 1));
+                edgesInCell.push_back(Edge<int>(first, pointsInCell.size() - 1));
               }
             } else if (cornerPos[first] > 0) {
 
               if (cornerPos[second] == 0) {
                 intermed[first][second][1] = pointsInCell.size();
                 pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellTop)));
-                // edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
-                // edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
+                edgesInCell.push_back(Edge<int>(first, pointsInCell.size() - 1));
+                edgesInCell.push_back(Edge<int>(second, pointsInCell.size() - 1));
               } else if (cornerPos[second] < 0) {
                 intermed[first][second][1] = pointsInCell.size();
                 intermed[first][second][0] = pointsInCell.size() + 1;
                 pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellTop)));
                 pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellBot)));
-                // edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 2));
-                // edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
+                edgesInCell.push_back(Edge<int>(first, pointsInCell.size() - 2));
+                edgesInCell.push_back(Edge<int>(second, pointsInCell.size() - 1));
               }
             } else {
               if (cornerPos[second] == 0) {
                 intermed[first][second][0] = pointsInCell.size();
                 pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellBot)));
-                // edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
-                // edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 1));
+                edgesInCell.push_back(Edge<int>(first, pointsInCell.size() - 1));
+                edgesInCell.push_back(Edge<int>(second, pointsInCell.size() - 1));
               } else if (cornerPos[second] > 0) {
                 intermed[first][second][1] = pointsInCell.size();
                 intermed[first][second][0] = pointsInCell.size() + 1;
                 pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellTop)));
                 pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellBot)));
-                // edgesInCell.push_back( Edge< int >(second, pointsInCell.size() - 2));
-                // edgesInCell.push_back( Edge< int >(first, pointsInCell.size() - 1));
+                edgesInCell.push_back(Edge<int>(second, pointsInCell.size() - 2));
+                edgesInCell.push_back(Edge<int>(first, pointsInCell.size() - 1));
               }
             }
           }
 
       // if there is a top and bottom on any intermediate set, create an edge
-      /*for (int first = 0; first < 3; first++)
+      for (int first = 0; first < 3; first++)
         for (int second = first + 1; second < 4; second++)
           if (first != 1 || second != 3)
             if (intermed[first][second][0] != -1 && intermed[first][second][1] != -1)
-              edgesInCell.push_back(Edge<int>(intermed[first][second][0], intermed[first][second][1]));*/
+              edgesInCell.push_back(Edge<int>(intermed[first][second][0], intermed[first][second][1]));
 
       // intermediates who share a corner on the same plane as them form an edge
       // unless the diagonal is also there
-      /*for (int tier = 0; tier < 2; tier ++)
-      {
-        if (cornerPos[1] == -1 + (2 * tier) && intermed[0][1][tier] != -1 && intermed[1][2][tier] != -1) //-1 for bottom, 1 for top
+      for (int tier = 0; tier < 2; tier++) {
+        if (cornerPos[1] == -1 + (2 * tier) && intermed[0][1][tier] != -1 && intermed[1][2][tier] != -1)//-1 for bottom, 1 for top
         {
           edgesInCell.push_back(Edge<int>(intermed[0][1][tier], intermed[1][2][tier]));
         }
-        if (cornerPos[3] == -1 + (2 * tier) && intermed[0][3][tier] != -1 && intermed[2][3][tier] != -1) //-1 for bottom, 1 for top
+        if (cornerPos[3] == -1 + (2 * tier) && intermed[0][3][tier] != -1 && intermed[2][3][tier] != -1)//-1 for bottom, 1 for top
         {
           edgesInCell.push_back(Edge<int>(intermed[0][3][tier], intermed[2][3][tier]));
         }
-      }*/
+      }
 
 
       // if the diagonal is completely in the cell create a mid a
@@ -888,61 +887,52 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
       if (cornerPos[0] == 0 && cornerPos[2] == 0) {
         pointsInCell.push_back(Vector3<float>((corners[0][0] + corners[2][0]) / 2.0f, (corners[0][1] + corners[2][1]) / 2.0f, (corners[0][2] + corners[2][2]) / 2.0f));
         int newP = pointsInCell.size() - 1;
-        // edgesInCell.push_back(Edge<int>(0, newP));
-        // edgesInCell.push_back(Edge<int>(2, newP));
-        /*if ( cornerPos[1] == 0)
-          edgesInCell.push_back(Edge<int>(1,newP));
+        edgesInCell.push_back(Edge<int>(0, newP));
+        edgesInCell.push_back(Edge<int>(2, newP));
+        if (cornerPos[1] == 0)
+          edgesInCell.push_back(Edge<int>(1, newP));
         else
-          for (int tier = 0; tier < 2; tier++)
-          {
+          for (int tier = 0; tier < 2; tier++) {
             if (intermed[0][1][tier] != -1)
               edgesInCell.push_back(Edge<int>(intermed[0][1][tier], newP));
             if (intermed[1][2][tier] != -1)
               edgesInCell.push_back(Edge<int>(intermed[1][2][tier], newP));
           }
-        if ( cornerPos[3] == 0)
-          edgesInCell.push_back(Edge<int>(3,newP));
+        if (cornerPos[3] == 0)
+          edgesInCell.push_back(Edge<int>(3, newP));
         else
-          for (int tier = 0; tier < 2; tier++)
-          {
+          for (int tier = 0; tier < 2; tier++) {
             if (intermed[0][3][tier] != -1)
               edgesInCell.push_back(Edge<int>(intermed[0][3][tier], newP));
             if (intermed[2][3][tier] != -1)
               edgesInCell.push_back(Edge<int>(intermed[2][3][tier], newP));
-          }*/
+          }
       }
       // if there is one diagonal intermed, run the same idea as above
       // note: code will be quite different. But this should connect
       // to all intermediates, and all corners if they are missing an
       // intermediate pair.---- != is essentially XOR
-      /*else if ( (intermed[0][2][0] != -1)  != (intermed[0][2][1] != -1) )
-      {
+      else if ((intermed[0][2][0] != -1) != (intermed[0][2][1] != -1)) {
         int midP = (intermed[0][2][0] != -1 ? intermed[0][2][0] : intermed[0][2][1]);
         //only need to check 1 and 3 corners
         //since there is only one intermediate on the diagonal, either 0 or 2 exists in the cell
         //because of this, if 1 or 3 exists in the cell the intermediate always connects to it
-        if ( (cornerPos[1] == -1 && (intermed[0][1][0] == -1 || intermed[1][2][0] == -1) ) ||
-             (cornerPos[1] == 1 && (intermed[0][1][1] == -1 || intermed[1][2][1] == -1) ) ||
-             cornerPos[1] == 0)
+        if ((cornerPos[1] == -1 && (intermed[0][1][0] == -1 || intermed[1][2][0] == -1)) || (cornerPos[1] == 1 && (intermed[0][1][1] == -1 || intermed[1][2][1] == -1)) || cornerPos[1] == 0)
           edgesInCell.push_back(Edge<int>(1, midP));
-        if ( (cornerPos[3] == -1 && (intermed[0][3][0] == -1 || intermed[2][3][0] == -1) ) ||
-             (cornerPos[3] == 1 && (intermed[0][3][1] == -1 || intermed[2][3][1] == -1) ) ||
-             cornerPos[3] == 0)
+        if ((cornerPos[3] == -1 && (intermed[0][3][0] == -1 || intermed[2][3][0] == -1)) || (cornerPos[3] == 1 && (intermed[0][3][1] == -1 || intermed[2][3][1] == -1)) || cornerPos[3] == 0)
           edgesInCell.push_back(Edge<int>(3, midP));
         for (int first = 0; first < 3; first++)
           for (int second = first + 1; second < 4; second++)
-            if ( (first != 1 || second != 3) && (first != 0 || second != 2) )
-            {
+            if ((first != 1 || second != 3) && (first != 0 || second != 2)) {
               if (intermed[first][second][0] != -1)
                 edgesInCell.push_back(Edge<int>(intermed[first][second][0], midP));
               if (intermed[first][second][1] != -1)
                 edgesInCell.push_back(Edge<int>(intermed[first][second][1], midP));
             }
-      }*/
+      }
       // if there is both diagonal intermeds, connect top with all tops,
       // bot with all bots, then top to all bot intermediates
-      /*else if (intermed[0][2][0] != -1  && intermed[0][2][1] != -1)
-      {
+      else if (intermed[0][2][0] != -1 && intermed[0][2][1] != -1) {
         int midB = intermed[0][2][0], midT = intermed[0][2][1];
         //for bot, check 0-3, 2-3, 0-1, 1-2  & Corner 1,3
         //corners
@@ -955,56 +945,51 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
         if (cornerPos[3] < 0)
           edgesInCell.push_back(Edge<int>(3, midB));
         //intermeds
-       for (int first = 0; first < 3; first++)
-        for (int second = first + 1; second < 4; second++)
-          if ( (first != 1 || second != 3) && (first != 0 || second != 2) )
-          {
-            if (intermed[first][second][0] != -1)
-            {
-              edgesInCell.push_back(Edge<int>(intermed[first][second][0], midB));
-              edgesInCell.push_back(Edge<int>(intermed[first][second][0], midT));
+        for (int first = 0; first < 3; first++)
+          for (int second = first + 1; second < 4; second++)
+            if ((first != 1 || second != 3) && (first != 0 || second != 2)) {
+              if (intermed[first][second][0] != -1) {
+                edgesInCell.push_back(Edge<int>(intermed[first][second][0], midB));
+                edgesInCell.push_back(Edge<int>(intermed[first][second][0], midT));
+              }
+              if (intermed[first][second][1] != -1)
+                edgesInCell.push_back(Edge<int>(intermed[first][second][1], midT));
             }
-            if (intermed[first][second][1] != -1)
-              edgesInCell.push_back(Edge<int>(intermed[first][second][1], midT));
-          }
       }
       //in this case 0 and 2 are either both above or below
       //this breaks down into further cases
-      else
-      {
+      else {
         //Note: there should be no case where all points are above or below
         //this algorithm should not execute under that circumstance
 
-        int topBot = (cornerPos[0] > 0 ? 1 : 0); //if the diagonal is across the top, we make a mesh across the top
+        int topBot = (cornerPos[0] > 0 ? 1 : 0);//if the diagonal is across the top, we make a mesh across the top
         //else we make a mesh across the bottom
 
-        if (cornerPos[1] != cornerPos[0] && cornerPos[3] != cornerPos[0]) //if both corners are away from the diagonal
-        { //create a mesh on the top of the cell
+        if (cornerPos[1] != cornerPos[0] && cornerPos[3] != cornerPos[0])//if both corners are away from the diagonal
+        {//create a mesh on the top of the cell
           edgesInCell.push_back(Edge<int>(intermed[0][3][topBot], intermed[0][1][topBot]));
           edgesInCell.push_back(Edge<int>(intermed[0][3][topBot], intermed[1][2][topBot]));
           edgesInCell.push_back(Edge<int>(intermed[0][3][topBot], intermed[2][3][topBot]));
           edgesInCell.push_back(Edge<int>(intermed[0][1][topBot], intermed[1][2][topBot]));
           edgesInCell.push_back(Edge<int>(intermed[2][3][topBot], intermed[1][2][topBot]));
-          if (cornerPos[1] == (topBot == 1 ? -1 : 1)) //if the diag is on the cell top, we check if the corner is out of the bottom vice versa.
-            edgesInCell.push_back(Edge<int>(intermed[0][1][1], intermed[1][2][0])); //make the intermediate face into triangles
-          if (cornerPos[3] == (topBot == 1 ? -1 : 1)) //if the diag is on the cell top, we check if the corner is out of the bottom vice versa.
-            edgesInCell.push_back(Edge<int>(intermed[0][3][1], intermed[2][3][0])); //make the intermediate face into triangles
-        }
-        else //at least one has to be
+          if (cornerPos[1] == (topBot == 1 ? -1 : 1))//if the diag is on the cell top, we check if the corner is out of the bottom vice versa.
+            edgesInCell.push_back(Edge<int>(intermed[0][1][1], intermed[1][2][0]));//make the intermediate face into triangles
+          if (cornerPos[3] == (topBot == 1 ? -1 : 1))//if the diag is on the cell top, we check if the corner is out of the bottom vice versa.
+            edgesInCell.push_back(Edge<int>(intermed[0][3][1], intermed[2][3][0]));//make the intermediate face into triangles
+        } else//at least one has to be
         {
           //triangles from up corner to opposing intermediates
-          if (cornerPos[1] == cornerPos[0]) //either c1 to c3 intermeds
+          if (cornerPos[1] == cornerPos[0])//either c1 to c3 intermeds
           {
             edgesInCell.push_back(Edge<int>(1, intermed[0][3][topBot]));
             edgesInCell.push_back(Edge<int>(1, intermed[2][3][topBot]));
-          }
-          else //or c3 to c1 intermeds
+          } else//or c3 to c1 intermeds
           {
             edgesInCell.push_back(Edge<int>(3, intermed[0][1][topBot]));
             edgesInCell.push_back(Edge<int>(3, intermed[1][2][topBot]));
           }
         }
-      }*/
+      }
 
 
       /* point index structure notes: 0 is always top left, 1 is always top right,
@@ -1020,7 +1005,7 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
        * also should not matter.
        */
 
-      cells[CELL(i, j, k)] = Cell(pointsInCell /*, edgesInCell*/, intermed, Vector3<float>(corners[0][0], corners[0][1], cellBot), Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
+      cells[CELL(i, j, k)] = Cell(pointsInCell, edgesInCell, intermed, Vector3<float>(corners[0][0], corners[0][1], cellBot), Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
     }
   }
 }

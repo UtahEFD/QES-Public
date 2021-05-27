@@ -20,7 +20,7 @@
 	<sidewallFlag> 0 </sidewallFlag> 				<!-- Convergence criteria, error threshold (default = 1e-9) -->
 	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
 	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria (default = 1e-9) -->
-	<meshTypeFlag> 1 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
+	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
 	<originFlag> 0 </originFlag>					<!-- Origin flag (0- DEM coordinates (default), 1- UTM coordinates) -->
 	<DEMDistancex> 0.0 </DEMDistancex> 				<!-- x component (m) of origin in DEM coordinates (if originFlag = 0) -->
@@ -29,13 +29,14 @@
 	<UTMy> 4438000.0 </UTMy> 					<!-- y component (m) of origin in UTM DEM coordinates (if originFlag = 1)-->
 	<UTMZone> 12 </UTMZone> 					<!-- UTM zone that domain located -->
 	<UTMZoneLetter> 1 </UTMZoneLetter>
-	<readCoefficientsFlag> 1 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->
+	<readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file) -->
 	<COEFF>Granite_cut_8_3_windsWk.nc</COEFF>					<!-- Address to coefficients file location --> 
 </simulationParameters>                     				<!-- End of simulation parameters -->
 <metParams>
 	<z0_domain_flag> 0 </z0_domain_flag>           			<!-- Distribution of sueface roughness for domain (0-uniform (default), 1-custom -->
 	<sensorName>../data/InputFiles/PWIDS/PWID79.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
 	<sensorName>../data/InputFiles/PWIDS/PWID96.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>../data/InputFiles/PWIDS/PWID78.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
 	<sensorName>../data/InputFiles/PWIDS/PWID72.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
 	<sensorName>../data/InputFiles/PWIDS/PWID93.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
 	<sensorName>../data/InputFiles/PWIDS/PWID75.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
