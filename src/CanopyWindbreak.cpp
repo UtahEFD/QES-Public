@@ -176,7 +176,7 @@ void CanopyWindbreak::canopyVegetation(WINDSGeneralData *WGD, int building_id)
     int i = icell_2d - j * (WGD->nx - 1);
     // base of the canopy
     float z_b = WGD->z[WGD->terrain_id[icell_2d]];
-    for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < WGD->canopy->canopy_top_index[icell_2d]; {
+    for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < WGD->canopy->canopy_top_index[icell_2d]) {
       int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
 
       if ((WGD->z_face[k - 1] - z_b >= understory_height) && (WGD->z_face[k - 1] - z_b <= H)) {
@@ -196,7 +196,7 @@ void CanopyWindbreak::canopyVegetation(WINDSGeneralData *WGD, int building_id)
         v0_modified[icell_face] = a_obf;
         v0_modified[icell_face + WGD->nx] = a_obf;
       }
-  }
+    }
   }
 
   // apply the parameterization (only once per cell/face!)
