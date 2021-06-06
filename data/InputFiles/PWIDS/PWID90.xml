@@ -95,7 +95,7 @@
 
 
 <timeSeries>									<!-- Start of timestep informastion for a sensor -->
-	<timeStamp>2013-05-08T21:30:00</timeStamp>
+	<timeStamp>2013-05-09T21:30:00</timeStamp>
 	<boundaryLayerFlag> 1 </boundaryLayerFlag> 	<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
 	<siteZ0> 0.01 </siteZ0> 						<!-- Site z0 -->
 	<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
