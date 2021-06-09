@@ -7,8 +7,8 @@
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 
-  	<domain> 250 200 375 </domain>					<!-- Number of cells in x,y and z directions-->
-  	<cellSize> 20.0 20.0 2.0 </cellSize> 				<!-- Mesh resolution (meters)-->
+  	<domain> 625 500 375 </domain>					<!-- Number of cells in x,y and z directions-->
+  	<cellSize> 8.0 8.0 2.0 </cellSize> 				<!-- Mesh resolution (meters)-->
 	<verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
 	<totalTimeIncrements> 67 </totalTimeIncrements> 			<!-- Number of time steps-->
