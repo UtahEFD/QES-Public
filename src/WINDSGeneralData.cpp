@@ -603,7 +603,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   if (WID->simParams->SHPData) {
     auto buildingsetup_start = std::chrono::high_resolution_clock::now();// Start recording execution time
 
-    std::vector<Building *> poly_buildings;
+    //std::vector<Building *> poly_buildings;
 
 
     float corner_height, min_height;
@@ -612,9 +612,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     WID->simParams->SHPData->getLocalDomain(shpDomainSize);
     WID->simParams->SHPData->getMinExtent(minExtent);
 
+    std::vector<std::vector<polyVert>> shpPolygons;
+    sphPolygon = WID->simParams->SHPData->m_polygon;
+
     printf("\tShapefile Origin = (%.6f,%.6f)\n",
-      minExtent[0],
-      minExtent[1]);
+           minExtent[0],
+           minExtent[1]);
     // If the shapefile is not covering the whole domain or the UTM coordinates
     // of the QES domain is different than shapefile origin
     if (WID->simParams->UTMx != 0.0 && WID->simParams->UTMy != 0.0) {
@@ -634,11 +637,11 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       }
       }
     */
-    for (auto pIdx = 0u; pIdx < WID->simParams->shpPolygons.size(); pIdx++) {
+    for (auto pIdx = 0u; pIdx < shpPolygons.size(); pIdx++) {
       // convert the global polys to local domain coordinates
-      for (auto lIdx = 0u; lIdx < WID->simParams->shpPolygons[pIdx].size(); lIdx++) {
-        WID->simParams->shpPolygons[pIdx][lIdx].x_poly -= UTMOrigin[0];
-        WID->simParams->shpPolygons[pIdx][lIdx].y_poly -= UTMOrigin[1];
+      for (auto lIdx = 0u; lIdx < shpPolygons[pIdx].size(); lIdx++) {
+        shpPolygons[pIdx][lIdx].x_poly -= UTMOrigin[0];
+        shpPolygons[pIdx][lIdx].y_poly -= UTMOrigin[1];
       }
     }
 
@@ -646,14 +649,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh) {
       for (auto pIdx = 0u; pIdx < WID->simParams->shpPolygons.size(); pIdx++) {
         // Get base height of every corner of building from terrain height
-        min_height = WID->simParams->DTE_mesh->getHeight(WID->simParams->shpPolygons[pIdx][0].x_poly,
-          WID->simParams->shpPolygons[pIdx][0].y_poly);
+        min_height = WID->simParams->DTE_mesh->getHeight(shpPolygons[pIdx][0].x_poly,
+                                                         shpPolygons[pIdx][0].y_poly);
         if (min_height < 0) {
           min_height = 0.0;
         }
-        for (auto lIdx = 1u; lIdx < WID->simParams->shpPolygons[pIdx].size(); lIdx++) {
-          corner_height = WID->simParams->DTE_mesh->getHeight(WID->simParams->shpPolygons[pIdx][lIdx].x_poly,
-            WID->simParams->shpPolygons[pIdx][lIdx].y_poly);
+        for (auto lIdx = 1u; lIdx < shpPolygons[pIdx].size(); lIdx++) {
+          corner_height = WID->simParams->DTE_mesh->getHeight(shpPolygons[pIdx][lIdx].x_poly,
+                                                              shpPolygons[pIdx][lIdx].y_poly);
 
           if (corner_height < min_height && corner_height >= 0.0) {
             min_height = corner_height;
@@ -662,22 +665,26 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         base_height.push_back(min_height);
       }
     } else {
-      for (auto pIdx = 0u; pIdx < WID->simParams->shpPolygons.size(); pIdx++) {
+      for (auto pIdx = 0u; pIdx < shpPolygons.size(); pIdx++) {
         base_height.push_back(0.0);
       }
     }
 
-    for (auto pIdx = 0u; pIdx < WID->simParams->shpPolygons.size(); pIdx++) {
-      for (auto lIdx = 0u; lIdx < WID->simParams->shpPolygons[pIdx].size(); lIdx++) {
-        WID->simParams->shpPolygons[pIdx][lIdx].x_poly += WID->simParams->halo_x;
-        WID->simParams->shpPolygons[pIdx][lIdx].y_poly += WID->simParams->halo_y;
+    for (auto pIdx = 0u; pIdx < shpPolygons.size(); pIdx++) {
+      for (auto lIdx = 0u; lIdx < shpPolygons[pIdx].size(); lIdx++) {
+        shpPolygons[pIdx][lIdx].x_poly += WID->simParams->halo_x;
+        shpPolygons[pIdx][lIdx].y_poly += WID->simParams->halo_y;
       }
     }
 
     std::cout << "Creating buildings from shapefile...\n";
     // Loop to create each of the polygon buildings read in from the shapefile
-    for (auto pIdx = 0u; pIdx < WID->simParams->shpPolygons.size(); pIdx++) {
-      allBuildingsV.push_back(new PolyBuilding(WID, this, pIdx));
+    for (auto pIdx = 0u; pIdx < shpPolygons.size(); pIdx++) {
+      //allBuildingsV.push_back(new PolyBuilding(WID, this, pIdx));
+      allBuildingsV.push_back(new PolyBuilding(WID->simParams->shpPolygons[pIdx],
+                                               WID->simParams->shpFeatures["H"][pIdx] * WID->simParams->heightFactor,
+                                               base_height[pIdx],
+                                               bId));
       building_id.push_back(allBuildingsV.size() - 1);
       allBuildingsV[pIdx]->setPolyBuilding(this);
       allBuildingsV[pIdx]->setCellFlags(WID, this, pIdx);
@@ -804,13 +811,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh) {
         // Get base height of every corner of building from terrain height
         min_height = WID->simParams->DTE_mesh->getHeight(allBuildingsV[j]->polygonVertices[0].x_poly,
-          allBuildingsV[j]->polygonVertices[0].y_poly);
+                                                         allBuildingsV[j]->polygonVertices[0].y_poly);
         if (min_height < 0) {
           min_height = 0.0;
         }
         for (size_t lIdx = 1; lIdx < allBuildingsV[j]->polygonVertices.size(); lIdx++) {
           corner_height = WID->simParams->DTE_mesh->getHeight(allBuildingsV[j]->polygonVertices[lIdx].x_poly,
-            allBuildingsV[j]->polygonVertices[lIdx].y_poly);
+                                                              allBuildingsV[j]->polygonVertices[lIdx].y_poly);
 
           if (corner_height < min_height && corner_height >= 0.0) {
             min_height = corner_height;
@@ -867,9 +874,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     NCDFInput->getDimensionSize("t", ncnt);
 
     count = { static_cast<unsigned long>(1),
-      static_cast<unsigned long>(ncnz - 1),
-      static_cast<unsigned long>(ncny - 1),
-      static_cast<unsigned long>(ncnx - 1) };
+              static_cast<unsigned long>(ncnz - 1),
+              static_cast<unsigned long>(ncny - 1),
+              static_cast<unsigned long>(ncnx - 1) };
 
 
     NCDFInput->getVariableData("icellflag", start, count, icellflag);
@@ -976,7 +983,7 @@ WINDSGeneralData ::WINDSGeneralData(const std::string inputFile)
 
   start = { 0, 0 };
   count_2d = { static_cast<unsigned long>(ny - 1),
-    static_cast<unsigned long>(nx - 1) };
+               static_cast<unsigned long>(nx - 1) };
 
   // terrain (cell-center)
   terrain.resize((ny - 1) * (nx - 1), 0.0);
@@ -1040,13 +1047,13 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
 
   start = { static_cast<unsigned long>(stepin), 0, 0, 0 };
   count_cc = { 1,
-    static_cast<unsigned long>(nz - 1),
-    static_cast<unsigned long>(ny - 1),
-    static_cast<unsigned long>(nx - 1) };
+               static_cast<unsigned long>(nz - 1),
+               static_cast<unsigned long>(ny - 1),
+               static_cast<unsigned long>(nx - 1) };
   count_fc = { 1,
-    static_cast<unsigned long>(nz),
-    static_cast<unsigned long>(ny),
-    static_cast<unsigned long>(nx) };
+               static_cast<unsigned long>(nz),
+               static_cast<unsigned long>(ny),
+               static_cast<unsigned long>(nx) };
 
   // cell-center variables
   // icellflag (see .h for velues)

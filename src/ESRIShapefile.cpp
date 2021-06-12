@@ -81,7 +81,24 @@ ESRIShapefile::ESRIShapefile(const std::string &filename,
   maxBound = { -1.0 * std::numeric_limits<float>::max(), -1.0 * std::numeric_limits<float>::max() };
 
   GDALAllRegister();
-  loadVectorData(m_polygons, m_features);
+
+  // From -- http://www.gdal.org/gdal_tutorial.html
+  m_poDS = (GDALDataset *)GDALOpenEx(m_filename.c_str(), GDAL_OF_VECTOR, NULL, NULL, NULL);
+  if (m_poDS == nullptr) {
+    std::cerr << "ESRIShapefile -- could not open data file: " << m_filename << std::endl;
+    exit(1);
+  } else {
+    std::cout << "Reading ESRIShapefile: " << m_filename << std::endl;
+    printf("SHP File Driver: %s/%s\n",
+      m_poDS->GetDriver()->GetDescription(),
+      m_poDS->GetDriver()->GetMetadataItem(GDAL_DMD_LONGNAME));
+
+    m_SpRef = (OGRSpatialReference *)m_poDS->GetSpatialRef();
+
+    m_SpRef->dumpReadable();
+
+    loadVectorData(m_polygons, m_features);
+  }
 }
 
 void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons, std::vector<float> &building_height, float heightFactor)
@@ -243,22 +260,6 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
   std::map<std::string, std::vector<float>> &features)
 {
   int polyCount = 0;
-
-  // From -- http://www.gdal.org/gdal_tutorial.html
-  m_poDS = (GDALDataset *)GDALOpenEx(m_filename.c_str(), GDAL_OF_VECTOR, NULL, NULL, NULL);
-  if (m_poDS == nullptr) {
-    std::cerr << "ESRIShapefile -- could not open data file: " << m_filename << std::endl;
-    exit(1);
-  } else {
-    std::cout << "Reading ESRIShapefile: " << m_filename << std::endl;
-  }
-
-  printf("SHP File Driver: %s/%s\n",
-    m_poDS->GetDriver()->GetDescription(),
-    m_poDS->GetDriver()->GetMetadataItem(GDAL_DMD_LONGNAME));
-
-  m_SpRef = m_poDS->GetSpatialRef();
-  m_SpRef->dumpReadable();
 
   // OGRLayer  *poLayer;
   // poLayer = poDS->GetLayerByName( "point" );

@@ -122,6 +122,18 @@ public:
    */
   PolyBuilding(const WINDSInputData *WID, WINDSGeneralData *WGD, int id);
 
+  /**
+   * Creates a polygon type building.
+   *
+   * Calculates and initializes all the features specific to this type of the building.
+   * This function reads in nodes of the polygon along with height and base height of the building.
+   *
+   * @param iSP :document this:
+   * @param iH :document this:
+   * @param iH :document this:
+   * @param iID :document this:
+   */
+  PolyBuilding(const std::vector<polyVert> &iSP, float iH, float iBH, int iID);
 
   // Need to complete!!!
   virtual void parseValues() {}
