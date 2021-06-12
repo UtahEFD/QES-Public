@@ -34,16 +34,22 @@
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 
-CanopyIsolatedTree::CanopyIsolatedTree(const WINDSInputData *WID, WINDSGeneralData *WGD, int id)
+CanopyIsolatedTree::CanopyIsolatedTree(const std::vector<polyVert> &iSP, float iH, float iW, float iBH, float iLAI, int iID)
 {
-  polygonVertices = WID->canopies->shpPolygons[id];
-  H = WID->canopies->shpTreeHeight[id];
-  base_height = 0.0;// WGD->base_height[id];
+  polygonVertices = iSP;
+  H = iH;
+  W = iW;
+  L = W;
+  base_height = iBH;
+  LAI = iLAI;
+  ID = iID;
+
+  height_eff = base_height + H;
   zMaxLAI = 0.5 * H;
 }
 
 // set et attenuation coefficient
-void CanopyIsolatedTree::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, int building_id)
+void CanopyIsolatedTree::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, int tree_id)
 {
   // When THIS canopy calls this function, we need to do the
   // following:
@@ -51,32 +57,115 @@ void CanopyIsolatedTree::setCellFlags(const WINDSInputData *WID, WINDSGeneralDat
   // canopy_atten, canopy_top);
 
   // this function need to be called to defined the boundary of the canopy and the icellflags
-  setCanopyGrid(WGD, building_id);
+  float ray_intersect;
+  unsigned int num_crossing, vert_id, start_poly;
+
+
+  // Find out which cells are going to be inside the polygone
+  // Based on Wm. Randolph Franklin, "PNPOLY - Point Inclusion in Polygon Test"
+  // Check the center of each cell, if it's inside, set that cell to building
+  for (auto j = j_start; j < j_end; j++) {
+    // Center of cell y coordinate
+    float y_cent = (j + 0.5) * WGD->dy;
+    for (auto i = i_start; i < i_end; i++) {
+      float x_cent = (i + 0.5) * WGD->dx;
+      // Node index
+      vert_id = 0;
+      start_poly = vert_id;
+      num_crossing = 0;
+      while (vert_id < polygonVertices.size() - 1) {
+        if ((polygonVertices[vert_id].y_poly <= y_cent && polygonVertices[vert_id + 1].y_poly > y_cent)
+            || (polygonVertices[vert_id].y_poly > y_cent && polygonVertices[vert_id + 1].y_poly <= y_cent)) {
+          ray_intersect = (y_cent - polygonVertices[vert_id].y_poly) / (polygonVertices[vert_id + 1].y_poly - polygonVertices[vert_id].y_poly);
+          if (x_cent < (polygonVertices[vert_id].x_poly + ray_intersect * (polygonVertices[vert_id + 1].x_poly - polygonVertices[vert_id].x_poly))) {
+            num_crossing += 1;
+          }
+        }
+        vert_id += 1;
+        if (polygonVertices[vert_id].x_poly == polygonVertices[start_poly].x_poly
+            && polygonVertices[vert_id].y_poly == polygonVertices[start_poly].y_poly) {
+          vert_id += 1;
+          start_poly = vert_id;
+        }
+      }
+
+      // if num_crossing is odd = cell is oustside of the polygon
+      // if num_crossing is even = cell is inside of the polygon
+      if ((num_crossing % 2) != 0) {
+        int icell_2d = i + j * (WGD->nx - 1);
+
+        if (WGD->icellflag_footprint[icell_2d] == 0) {
+          // a  building exist here -> skip
+        } else {
+          // Define start index of the canopy in z-direction
+          for (size_t k = 1u; k < WGD->z.size(); k++) {
+            if (WGD->terrain[icell_2d] + base_height <= WGD->z[k]) {
+              WGD->canopy->canopy_bot_index[icell_2d] = k;
+              WGD->canopy->canopy_bot[icell_2d] = WGD->terrain[icell_2d] + base_height;
+              WGD->canopy->canopy_base[icell_2d] = WGD->z_face[k - 1];
+              break;
+            }
+          }
+
+          // Define end index of the canopy in z-direction
+          for (size_t k = 0u; k < WGD->z.size(); k++) {
+            if (WGD->terrain[icell_2d] + H < WGD->z[k + 1]) {
+              WGD->canopy->canopy_top_index[icell_2d] = k + 1;
+              WGD->canopy->canopy_top[icell_2d] = WGD->terrain[icell_2d] + H;
+              break;
+            }
+          }
+
+          WGD->icellflag_footprint[icell_2d] = getCellFlagCanopy();
+
+          canopy_cell2D.push_back(icell_2d);
+          WGD->canopy->canopy_height[icell_2d] = WGD->canopy->canopy_top[icell_2d] - WGD->canopy->canopy_bot[icell_2d];
+
+          // define icellflag @ (x,y) for all z(k) in [k_start...k_end]
+          for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < WGD->canopy->canopy_top_index[icell_2d]; k++) {
+            int icell_3d = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+            if (WGD->icellflag[icell_3d] != 0 && WGD->icellflag[icell_3d] != 2) {
+              // Canopy cell
+              WGD->icellflag[icell_3d] = getCellFlagCanopy();
+              WGD->canopy->canopy_atten_coeff[icell_3d] = 0.5 * LAI;
+              WGD->canopy->icanopy_flag[icell_3d] = tree_id;
+              canopy_cell3D.push_back(icell_3d);
+            }
+          }
+        }// end define icellflag!
+      }
+    }
+  }
+
+  if (canopy_cell2D.size() == 0) {
+    k_start = 0;
+    k_end = 0;
+  } else {
+    k_start = WGD->nz - 1;
+    k_end = 0;
+    for (size_t k = 0u; k < canopy_cell2D.size(); k++) {
+      if (WGD->canopy->canopy_bot_index[canopy_cell2D[k]] < k_start)
+        k_start = WGD->canopy->canopy_bot_index[canopy_cell2D[k]];
+      if (WGD->canopy->canopy_top_index[canopy_cell2D[k]] > k_end)
+        k_end = WGD->canopy->canopy_top_index[canopy_cell2D[k]];
+    }
+  }
+
+  if (k_start > k_end) {
+    std::cerr << "ERROR in tree definition (k_start > k end)" << std::endl;
+    exit(EXIT_FAILURE);
+  }
 
   if (ceil(1.5 * k_end) > WGD->nz - 1) {
     std::cerr << "ERROR domain too short for tree method" << std::endl;
     exit(EXIT_FAILURE);
   }
 
-  // Resize the canopy-related vectors
-  canopy_atten.resize(numcell_cent_3d, 0.0);
-
-  for (auto j = 0; j < ny_canopy; j++) {
-    for (auto i = 0; i < nx_canopy; i++) {
-      int icell_2d = i + j * nx_canopy;
-      for (auto k = canopy_bot_index[icell_2d]; k < canopy_top_index[icell_2d]; k++) {
-        int icell_3d = i + j * nx_canopy + k * nx_canopy * ny_canopy;
-        // initiate all attenuation coefficients to the canopy coefficient
-        canopy_atten[icell_3d] = 2.0;// attenuationCoeff;
-      }
-    }
-  }
-
   return;
 }
 
 
-void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData *WGD, int building_id)
+void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData *WGD, int tree_id)
 {
 
   // apply canopy parameterization
@@ -84,99 +173,56 @@ void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData *WGD, int building_id
   float veg_vel_frac; /**< vegetation velocity fraction */
   int num_atten;
 
-  // Call regression to define ustar and surface roughness of the canopy
-  canopyRegression(WGD);
+  for (size_t n = 0u; n < canopy_cell2D.size(); ++n) {
+    int icell_2d = canopy_cell2D[n];
 
-  for (auto j = 0; j < ny_canopy; j++) {
-    for (auto i = 0; i < nx_canopy; i++) {
-      int icell_2d = i + j * nx_canopy;
+    if (WGD->canopy->canopy_top[icell_2d] > 0) {
+      int j = (int)((icell_2d) / (WGD->nx - 1));
+      int i = icell_2d - j * (WGD->nx - 1);
+      int icell_3d = icell_2d + (WGD->canopy->canopy_top_index[icell_2d] - 1) * (WGD->nx - 1) * (WGD->ny - 1);
 
-      if (canopy_top[icell_2d] > 0) {
-        int icell_3d = i + j * nx_canopy + (canopy_top_index[icell_2d] - 1) * nx_canopy * ny_canopy;
+      // Call the bisection method to find the root
+      WGD->canopy->canopy_d[icell_2d] = canopyBisection(WGD->canopy->canopy_ustar[icell_2d],
+                                                        WGD->canopy->canopy_z0[icell_2d],
+                                                        WGD->canopy->canopy_height[icell_2d],
+                                                        WGD->canopy->canopy_atten_coeff[icell_3d],
+                                                        WGD->vk,
+                                                        0.0);
+      // std::cout << "WGD->vk:" << WGD->vk << "\n";
+      // std::cout << "WGD->canopy_atten[icell_cent]:" << WGD->canopy_atten[icell_cent] << "\n";
+      if (WGD->canopy->canopy_d[icell_2d] == 10000) {
+        std::cout << "bisection failed to converge"
+                  << "\n";
+        std::cout << "TREE1 " << tree_id << " " << H << " " << base_height << std::endl;
 
-        // Call the bisection method to find the root
-        canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d], canopy_z0[icell_2d], canopy_height[icell_2d], canopy_atten[icell_3d], WGD->vk, 0.0);
-        // std::cout << "WGD->vk:" << WGD->vk << "\n";
-        // std::cout << "WGD->canopy_atten[icell_cent]:" << WGD->canopy_atten[icell_cent] << "\n";
-        if (canopy_d[icell_2d] == 10000) {
-          std::cout << "bisection failed to converge"
-                    << "\n";
-          std::cout << "TREE1 " << building_id << " " << H << " " << base_height << std::endl;
+        WGD->canopy->canopy_d[icell_2d] = canopySlopeMatch(WGD->canopy->canopy_z0[icell_2d],
+                                                           WGD->canopy->canopy_height[icell_2d],
+                                                           WGD->canopy->canopy_atten_coeff[icell_3d]);
+      }
 
-          canopy_d[icell_2d] = canopySlopeMatch(canopy_z0[icell_2d], canopy_height[icell_2d], canopy_atten[icell_3d]);
-        }
+      // std::cout << building_id << " "  << canopy_ustar[icell_2d] << " "  << canopy_d[icell_2d] << " "  << canopy_z0[icell_2d] << std::endl;
 
-        // std::cout << building_id << " "  << canopy_ustar[icell_2d] << " "  << canopy_d[icell_2d] << " "  << canopy_z0[icell_2d] << std::endl;
+      /**< velocity at the height of the canopy */
+      // Local variable - not being used by anything... so
+      // commented out for now.
+      //
+      // float u_H = (WGD->canopy_ustar[id]/WGD->vk)*
+      //  log((WGD->canopy_top[id]-WGD->canopy_d[id])/WGD->canopy_z0[id]);
 
-        /**< velocity at the height of the canopy */
-        // Local variable - not being used by anything... so
-        // commented out for now.
-        //
-        // float u_H = (WGD->canopy_ustar[id]/WGD->vk)*
-        //  log((WGD->canopy_top[id]-WGD->canopy_d[id])/WGD->canopy_z0[id]);
+      for (auto k = 1; k < WGD->nz - 1; k++) {
+        int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+        float z_rel = WGD->z[k] - WGD->canopy->canopy_base[icell_2d];
 
-        for (auto k = 1; k < WGD->nz - 1; k++) {
-          int icell_face = (i - 1 + i_start) + (j - 1 + j_start) * WGD->nx + k * WGD->nx * WGD->ny;
-          float z_rel = WGD->z[k] - canopy_base[icell_2d];
+        if (WGD->z[k] < WGD->canopy->canopy_base[icell_2d]) {
+          // below the terrain or building
+        } else if (WGD->z[k] < WGD->canopy->canopy_top[icell_2d]) {
+          if (WGD->canopy->canopy_atten_coeff[icell_3d] > 0) {
+            icell_3d = icell_2d + k * (WGD->nx - 1) * (WGD->ny - 1);
+            avg_atten = WGD->canopy->canopy_atten_coeff[icell_3d];
 
-          if (WGD->z[k] < canopy_base[icell_2d]) {
-            // below the terrain or building
-          } else if (WGD->z[k] < canopy_top[icell_2d]) {
-            if (canopy_atten[icell_3d] > 0) {
-              icell_3d = i + j * nx_canopy + k * nx_canopy * ny_canopy;
-              avg_atten = canopy_atten[icell_3d];
-
-              /*
-              if( canopy_atten[icell_3d+nx_canopy*ny_canopy]!=canopy_atten[icell_3d] ||
-                  canopy_atten[icell_3d-nx_canopy*ny_canopy]!=canopy_atten[icell_3d] ) {
-                  num_atten = 1;
-                  if( canopy_atten[icell_3d+nx_canopy*ny_canopy] > 0 ) {
-                      avg_atten += canopy_atten[icell_3d+nx_canopy*ny_canopy];
-                      num_atten += 1;
-                  }
-                  if( canopy_atten[icell_3d-nx_canopy*ny_canopy] > 0 ) {
-                      avg_atten += canopy_atten[icell_3d-nx_canopy*ny_canopy];
-                      num_atten += 1;
-                  }
-                  avg_atten /= num_atten;
-              }
-              */
-
-              /*
-              veg_vel_frac = log((canopy_top[icell_2d] - canopy_d[icell_2d])/
-                                 canopy_z0[icell_2d])*exp(avg_atten*((WGD->z[k]/canopy_top[icell_2d])-1))/
-                  log(WGD->z[k]/canopy_z0[icell_2d]);
-              */
-
-              // correction on the velocity within the canopy
-              veg_vel_frac = log((canopy_height[icell_2d] - canopy_d[icell_2d]) / canopy_z0[icell_2d]) * exp(avg_atten * ((z_rel / canopy_height[icell_2d]) - 1)) / log(z_rel / canopy_z0[icell_2d]);
-              // check if correction is bound and well defined
-              if (veg_vel_frac > 1 || veg_vel_frac < 0) {
-                veg_vel_frac = 1;
-              }
-
-              WGD->u0[icell_face] *= veg_vel_frac;
-              WGD->v0[icell_face] *= veg_vel_frac;
-
-              // at the edge of the canopy need to adjust velocity at the next face
-              // use canopy_top to detect the edge (worke with level changes)
-              if (j - 1 + j_start < WGD->ny - 2) {
-                if (canopy_top[icell_2d + nx_canopy] == 0.0) {
-                  WGD->v0[icell_face + WGD->nx] *= veg_vel_frac;
-                }
-              }
-              if (i - 1 + i_start < WGD->nx - 2) {
-                if (canopy_top[icell_2d + 1] == 0.0) {
-                  WGD->u0[icell_face + 1] *= veg_vel_frac;
-                }
-              }
-            }
-          } else if (WGD->z[k] < 2.0 * canopy_top[icell_2d]) {
-            // correction on the velocity above the canopy
-            float lam = pow((z_rel - canopy_height[icell_2d]) / (1.0 * canopy_height[icell_2d]), 1.0);
-            veg_vel_frac = log((z_rel - canopy_d[icell_2d]) / canopy_z0[icell_2d]) / log(z_rel / canopy_z0[icell_2d]);
-            veg_vel_frac = (1 - lam) * veg_vel_frac + lam;
-
+            // correction on the velocity within the canopy
+            veg_vel_frac = log((WGD->canopy->canopy_height[icell_2d] - WGD->canopy->canopy_d[icell_2d]) / WGD->canopy->canopy_z0[icell_2d])
+                           * exp(avg_atten * ((z_rel / WGD->canopy->canopy_height[icell_2d]) - 1)) / log(z_rel / WGD->canopy->canopy_z0[icell_2d]);
             // check if correction is bound and well defined
             if (veg_vel_frac > 1 || veg_vel_frac < 0) {
               veg_vel_frac = 1;
@@ -187,36 +233,67 @@ void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData *WGD, int building_id
 
             // at the edge of the canopy need to adjust velocity at the next face
             // use canopy_top to detect the edge (worke with level changes)
-            if (j - 1 + j_start < WGD->ny - 2) {
-              icell_3d = i + j * nx_canopy + canopy_bot_index[icell_2d] * nx_canopy * ny_canopy;
-              if (canopy_top[icell_2d + nx_canopy] == 0.0) {
+            if (j < WGD->ny - 2) {
+              if (WGD->canopy->canopy_top[icell_2d + (WGD->nx - 1)] == 0.0) {
                 WGD->v0[icell_face + WGD->nx] *= veg_vel_frac;
               }
             }
-            if (i - 1 + i_start < WGD->nx - 2) {
-              icell_3d = i + j * nx_canopy + canopy_bot_index[icell_2d] * nx_canopy * ny_canopy;
-              if (canopy_top[icell_2d + 1] == 0.0) {
+            if (i < WGD->nx - 2) {
+              if (WGD->canopy->canopy_top[icell_2d + 1] == 0.0) {
                 WGD->u0[icell_face + 1] *= veg_vel_frac;
               }
             }
-          } else {
-            // do nothing far above the tree
           }
-        }// end of for(auto k=1; k < WGD->nz-1; k++)
-      }
+        } else if (WGD->z[k] < 2.0 * WGD->canopy->canopy_top[icell_2d]) {
+          // correction on the velocity above the canopy
+          float lam = pow((z_rel - WGD->canopy->canopy_height[icell_2d]) / (1.0 * WGD->canopy->canopy_height[icell_2d]), 1.0);
+          veg_vel_frac = log((z_rel - WGD->canopy->canopy_d[icell_2d]) / WGD->canopy->canopy_z0[icell_2d])
+                         / log(z_rel / WGD->canopy->canopy_z0[icell_2d]);
+          veg_vel_frac = (1 - lam) * veg_vel_frac + lam;
+
+          // check if correction is bound and well defined
+          if (veg_vel_frac > 1 || veg_vel_frac < 0) {
+            veg_vel_frac = 1;
+          }
+
+          WGD->u0[icell_face] *= veg_vel_frac;
+          WGD->v0[icell_face] *= veg_vel_frac;
+
+          // at the edge of the canopy need to adjust velocity at the next face
+          // use canopy_top to detect the edge (worke with level changes)
+          if (j < WGD->ny - 2) {
+            icell_3d = icell_2d + WGD->canopy->canopy_bot_index[icell_2d] * (WGD->nx - 1) * (WGD->ny - 1);
+            if (WGD->canopy->canopy_top[icell_2d + (WGD->nx - 1)] == 0.0) {
+              WGD->v0[icell_face + WGD->nx] *= veg_vel_frac;
+            }
+          }
+          if (i < WGD->nx - 2) {
+            icell_3d = icell_2d + WGD->canopy->canopy_bot_index[icell_2d] * (WGD->nx - 1) * (WGD->ny - 1);
+            if (WGD->canopy->canopy_top[icell_2d + 1] == 0.0) {
+              WGD->u0[icell_face + 1] *= veg_vel_frac;
+            }
+          }
+        } else {
+          // do nothing far above the tree
+        }
+      }// end of for(auto k=1; k < WGD->nz-1; k++)
     }
   }
+
+  icell_face = i_building_cent + j_building_cent * WGD->nx + (k_end + 1) * WGD->nx * WGD->ny;
+  u0_h = WGD->u0[icell_face];// u velocity at the height of building at the centroid
+  v0_h = WGD->v0[icell_face];// v velocity at the height of building at the centroid
 
   return;
 }
 
-void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int building_id)
+void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
 {
 
   int u_vegwake_flag(0), v_vegwake_flag(0), w_vegwake_flag(0);
   const int wake_stream_coef = 11;
   const int wake_span_coef = 4;
-  const float lambda_sq = 0.08;
+  const float lambda_sq = 0.083;
   const float epsilon = 10e-10;
 
   float z0;
@@ -236,11 +313,14 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int building_id)
   float Lt = 0.5 * W;
   Lr = H;
 
-  if (k_end == 0) { return; }
+  if (k_end == 0)
+    return;
 
-  icell_face = i_building_cent + j_building_cent * WGD->nx + k_end * WGD->nx * WGD->ny;
+  /*
+  icell_face = i_building_cent + j_building_cent * WGD->nx + (k_end + 1) * WGD->nx * WGD->ny;
   u0_h = WGD->u0[icell_face];// u velocity at the height of building at the centroid
   v0_h = WGD->v0[icell_face];// v velocity at the height of building at the centroid
+  */
 
   upwind_dir = atan2(v0_h, u0_h);
   mag_us = sqrt(u0_h * u0_h + v0_h * v0_h);
@@ -265,10 +345,14 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int building_id)
 
   for (auto k = k_start; k < k_end; k++) {
     kk = k;
-    if (0.75 * H + base_height <= WGD->z[k]) {
+    if (0.75 * H + base_height <= WGD->z[k])
       break;
-    }
   }
+
+  // if the whole tree (defined as center) is in a flow reversal region -> skip the wake
+  icell_cent = i_building_cent + j_building_cent * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1);
+  if (WGD->icellflag[icell_cent] == 3 || WGD->icellflag[icell_cent] == 4 || WGD->icellflag[icell_cent] == 6)
+    return;
 
   // std::cout << "TREE " << building_id << " " << k_end << " " << k_top << " " << kk << std::endl;
 
@@ -300,7 +384,7 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int building_id)
     int k = ceil(1.5 * k_end);
 
     // linearized indexes
-    icell_2d = (i + 1 - i_start) + (j + 1 - j_start) * nx_canopy;
+    icell_2d = i + j * (WGD->nx - 1);
     icell_face = i + j * (WGD->nx) + k * (WGD->nx) * (WGD->ny);
 
     // velocity above the canopy
@@ -309,7 +393,7 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int building_id)
     mag_us = sqrt(utmp * utmp + vtmp * vtmp);
     z_c = WGD->z[k] - base_height;
 
-    ustar_us = mag_us * WGD->vk / (log((z_c + canopy_d[icell_2d]) / canopy_z0[icell_2d]));
+    ustar_us = mag_us * WGD->vk / (log((z_c + WGD->canopy->canopy_d[icell_2d]) / WGD->canopy->canopy_z0[icell_2d]));
     ustar_wake = ustar_us / mag_us;
 
     // std::cout << "TREE2 " << building_id << " " << H+base_height << " " << k_top << std::endl;
@@ -351,8 +435,11 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int building_id)
         // x-coord relative to center of tree (zMaxLAI)
         x_c = 0.5 * float(x_idx) * WGD->dxy;
 
-        int i = ((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx;
-        int j = ((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy;
+        int i = ceil(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx) - 1;
+        int j = ceil(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy) - 1;
+
+        //int i = ((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx;
+        //int j = ((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy;
         // check if in the domain
         if (i >= WGD->nx - 2 || i <= 0 || j >= WGD->ny - 2 || j <= 0)
           break;
@@ -361,23 +448,65 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int building_id)
         icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
 
         // check if not in canopy/building set start (was x_idx_min < 0) to x_idx_min > 0
-        if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && x_idx_min < 0)
+        /* old version - > canopy now
+	  if (WGD->icellflag[icell_cent] != 0
+            && WGD->icellflag[icell_cent] != 2
+            && WGD->icellflag[icell_cent] != getCellFlagCanopy()
+            && x_idx_min < 0)
           x_idx_min = x_idx;
 
-        if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 2 || WGD->icellflag[icell_cent] == getCellFlagCanopy()) {
+        if (WGD->icellflag[icell_cent] == 0
+            || WGD->icellflag[icell_cent] == 2
+            || WGD->icellflag[icell_cent] == getCellFlagCanopy()) {
           // check for canopy/building/terrain that will disrupt the wake
           if (x_idx_min >= 0) {
-            if (WGD->ibuilding_flag[icell_cent] == building_id) {
+            if (WGD->canopy->icanopy_flag[icell_cent] == tree_id) {
               x_idx_min = -1;
-            } else if (WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 0 || WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
+            } else if (WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 0
+                       || WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
               break;
-            } else if (WGD->icellflag[i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1)] == 0 || WGD->icellflag[i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
+            } else if (WGD->icellflag[icell_cent] == 0
+                       || WGD->icellflag[icell_cent] == 2
+                       || WGD->icellflag[icell_cent] == getCellFlagCanopy()) {
               break;
             }
+          } else {
+            // check the tree is right by a building/terrain -> skip downstream
+            if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 2)
+              break;
+          }
+        }
+	*/
+
+        if (WGD->icellflag[icell_cent] != 0
+            && WGD->icellflag[icell_cent] != 2
+            && x_idx_min < 0)
+          x_idx_min = x_idx;
+
+        if (WGD->icellflag[icell_cent] == 0
+            || WGD->icellflag[icell_cent] == 2
+            || WGD->icellflag[icell_cent] == getCellFlagCanopy()) {
+          // check for canopy/building/terrain that will disrupt the wake
+          if (x_idx_min >= 0) {
+            if (WGD->canopy->icanopy_flag[icell_cent] == tree_id) {
+              x_idx_min = -1;
+            } else if (WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 0
+                       || WGD->icellflag[i + j * (WGD->nx - 1) + kk * (WGD->nx - 1) * (WGD->ny - 1)] == 2) {
+              break;
+            } else if (WGD->icellflag[icell_cent] == 0
+                       || WGD->icellflag[icell_cent] == 2) {
+              break;
+            }
+          } else {
+            // check the tree is right by a building/terrain -> skip downstream
+            if (WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 2)
+              break;
           }
         }
 
+        // NOTE: wake is not applied in the canopy
         if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && WGD->icellflag[icell_cent] != getCellFlagCanopy()) {
+
           // START OF WAKE VELOCITY PARAMETRIZATION
 
           // wake u-values
@@ -429,12 +558,16 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int building_id)
                 // get velocity deficit
                 u_c = ucfunc(x_u / H, ustar_wake);
                 u_defect = u_c * (exp(-(r_center * r_center) / (lambda_sq * delta * delta)));
+
+                if (u_defect > WGD->canopy->wake_u_defect[icell_face])
+                  WGD->canopy->wake_u_defect[icell_face] = u_defect;
+
                 // std::cout << r_center << " " << delta << " " << ustar_wake << " " << u_c << std::endl;
                 //  apply parametrization
-                if (std::abs(WGD->u0[icell_face]) >= std::abs(0.2 * cos(upwind_dir) * mag_us)) {
-                  u0_mod_id.push_back(icell_face);
-                  u0_modified.push_back(WGD->u0[icell_face] * (1. - std::abs(u_defect)));
-                }
+                //if (std::abs(WGD->u0[icell_face]) >= std::abs(0.2 * cos(upwind_dir) * mag_us)) {
+                //  u0_mod_id.push_back(icell_face);
+                //  u0_modified.push_back(WGD->u0[icell_face] * (1. - std::abs(u_defect)));
+                //}
               }// if (r_center<delta/1)
             }
           }
@@ -470,7 +603,7 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int building_id)
               v_vegwake_flag = 0;
 
             // linearized indexes
-            icell_cent = i_u + j_u * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+            icell_cent = i_v + j_v * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
             icell_face = i_v + j_v * WGD->nx + k * WGD->nx * WGD->ny;
 
             if (dn_v > 0.0 && v_vegwake_flag == 1 && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
@@ -490,18 +623,21 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int building_id)
                 u_defect = u_c * (exp(-(r_center * r_center) / (lambda_sq * delta * delta)));
                 // apply parametrization
 
-                if (std::abs(WGD->v0[icell_face]) >= std::abs(0.2 * sin(upwind_dir) * mag_us)) {
-                  v0_mod_id.push_back(icell_face);
-                  v0_modified.push_back(WGD->v0[icell_face] * (1. - std::abs(u_defect)));
-                }
+                if (u_defect > WGD->canopy->wake_v_defect[icell_face])
+                  WGD->canopy->wake_v_defect[icell_face] = u_defect;
+
+                //if (std::abs(WGD->v0[icell_face]) >= std::abs(0.2 * sin(upwind_dir) * mag_us)) {
+                //  v0_mod_id.push_back(icell_face);
+                //  v0_modified.push_back(WGD->v0[icell_face] * (1. - std::abs(u_defect)));
+                //}
               }// if (r_center<delta/1)
             }
           }
 
           // wake celltype w-values
           // ij coord of cell-center
-          int i_w = ceil(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx);
-          int j_w = ceil(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy);
+          int i_w = ceil(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx) - 1;
+          int j_w = ceil(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy) - 1;
 
           if (i_w < WGD->nx - 1 && i_w > 0 && j_w < WGD->ny - 1 && j_w > 0) {
             // not rotated relative coordinate of cell-center
@@ -549,8 +685,8 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int building_id)
                 u_c = ucfunc(x_w / H, ustar_wake);
                 u_defect = u_c * (exp(-(r_center * r_center) / (lambda_sq * delta * delta)));
                 // apply parametrization
-                if (u_defect >= 0.01)
-                  WGD->icellflag[icell_cent] = getCellFlagWake();
+                //if (u_defect >= 0.01)
+                WGD->icellflag[icell_cent] = getCellFlagWake();
               }// if (r_center<delta/1)
             }
           }

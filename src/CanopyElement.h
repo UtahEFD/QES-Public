@@ -108,6 +108,7 @@ public:
   virtual int getCellFlagCanopy() = 0;
   virtual int getCellFlagWake() = 0;
 
+  std::vector<int> canopy_cell2D, canopy_cell3D; /**< map beteen WINDS grid and canopy grid */
   std::map<int, int> canopy_cellMap2D, canopy_cellMap3D; /**< map beteen WINDS grid and canopy grid */
 
   CanopyType _cType;
@@ -142,12 +143,6 @@ protected:
    * canopy parameterization and returns modified initial velocity field components.
    */
   void canopyCioncoParam(WINDSGeneralData *wgd);
-
-  /*!
-   * This function is being call from the plantInitial function and uses linear regression method to define
-   * ustar and surface roughness of the canopy.
-   */
-  void canopyRegression(WINDSGeneralData *wgd);
 
   /*!
    * This is a new function wrote by Lucas Ulmer and is being called from the plantInitial function. The purpose

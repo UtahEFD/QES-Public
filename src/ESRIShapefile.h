@@ -56,16 +56,16 @@ class ESRIShapefile
 public:
   ESRIShapefile();
   ESRIShapefile(const std::string &filename,
-    const std::string &layerName,
-    std::vector<std::vector<polyVert>> &polygons,
-    std::vector<float> &building_height,
-    float heightFactor);
+                const std::string &layerName,
+                std::vector<std::vector<polyVert>> &polygons,
+                std::vector<float> &building_height,
+                float heightFactor);
   ESRIShapefile(const std::string &filename,
-    const std::string &layerName,
-    std::vector<std::vector<polyVert>> &polygons,
-    std::map<std::string, std::vector<float>> &features);
+                const std::string &layerName,
+                std::vector<std::vector<polyVert>> &polygons,
+                std::map<std::string, std::vector<float>> &features);
   ESRIShapefile(const std::string &filename,
-    const std::string &layerName);
+                const std::string &layerName);
   ~ESRIShapefile();
 
   /**

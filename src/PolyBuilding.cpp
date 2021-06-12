@@ -186,6 +186,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
           }
           WGD->ibuilding_flag[icell_cent] = building_number;
         }
+        WGD->icellflag_footprint[i + j * (WGD->nx - 1)] = 0;
       }
     }
   }

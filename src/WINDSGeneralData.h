@@ -83,13 +83,15 @@ public:
   ~WINDSGeneralData();
 
   void mergeSort(std::vector<float> &effective_height,
-    std::vector<int> &building_id);
+                 std::vector<int> &building_id);
 
   void mergeSortTime(std::vector<time_t> &sensortime,
-    std::vector<int> &sensortime_id);
+                     std::vector<int> &sensortime_id);
 
   void applyParametrizations(const WINDSInputData *);
   // void applyParametrizations(const WINDSInputData*);
+
+  void printTimeProgress(int);
 
   void resetICellFlag();
 
@@ -172,8 +174,11 @@ public:
   std::vector<int> sensortime_id;
 
 
+  std::vector<float> UTMOrigin = { 0.0, 0.0 }; /**< :document this: */
+
   // time variables
   int nt; /**< :document this: */
+  int totalTimeIncrements; /**< :document this: */
   std::vector<float> dt_array; /**< :document this: */
   std::vector<time_t> epochtime; /**< :document this: */
   std::vector<bt::ptime> timestamp; /**< :document this: */
@@ -191,6 +196,7 @@ public:
                         8 = Terrain cut-cells, 9 = Sidewall, 10 = Rooftop,
                         11 = Canopy vegetation, 12 = Fire) */
   std::vector<int> icellflag_initial;
+  std::vector<int> icellflag_footprint;
 
   ///@{
   /** :document this: */

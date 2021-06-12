@@ -89,6 +89,7 @@ public:
   std::string shpBuildingLayerName; /**< :document this: */
   ESRIShapefile *SHPData = nullptr; /**< :document this: */
   std::vector<std::vector<polyVert>> shpPolygons; /**< :document this: */
+  std::map<std::string, std::vector<float>> shpFeatures; /**< :document this: */
   std::vector<float> shpBuildingHeight; /**< Height of buildings */
 
   // //////////////////////////////////////////
@@ -355,7 +356,6 @@ public:
     //
     SHPData = nullptr;
     if (shpFile != "") {
-
       // Read polygon node coordinates and building height from shapefile
       //SHPData = new ESRIShapefile(shpFile, shpBuildingLayerName, shpPolygons, shpBuildingHeight, heightFactor);
       SHPData = new ESRIShapefile(shpFile, shpBuildingLayerName);

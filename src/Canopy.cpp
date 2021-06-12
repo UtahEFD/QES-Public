@@ -43,6 +43,8 @@
 
 Canopy::Canopy(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
+  wakeFlag = WID->canopies->wakeFlag;
+
   nx_canopy = WGD->nx - 1;
   ny_canopy = WGD->ny - 1;
   nz_canopy = WGD->nz - 1;
@@ -57,7 +59,7 @@ Canopy::Canopy(const WINDSInputData *WID, WINDSGeneralData *WGD)
   canopy_top.resize(numcell_cent_2d, 0.0);
 
   canopy_bot_index.resize(numcell_cent_2d, 0);
-  canopy_top_index.resize(numcell_cent_2d, -1);
+  canopy_top_index.resize(numcell_cent_2d, 0);
 
   canopy_base.resize(numcell_cent_2d, 0.0);
   canopy_height.resize(numcell_cent_2d, 0.0);
@@ -66,325 +68,142 @@ Canopy::Canopy(const WINDSInputData *WID, WINDSGeneralData *WGD)
   canopy_ustar.resize(numcell_cent_2d, 0.0);
   canopy_d.resize(numcell_cent_2d, 0.0);
 
-  canopy_atten.resize(numcell_cent_3d, 0.0);
+  canopy_atten_coeff.resize(numcell_cent_3d, 0.0);
+  icanopy_flag.resize(numcell_cent_3d, 0);
 
-  /*
-  for (auto cId=0u; cId<WID->canopies->groundCovers.size(); cId++) {
-      float ray_intersect;
-      int num_crossing, vert_id, start_poly;
+  wake_u_defect.resize(WGD->numcell_face, 0.0);
+  wake_v_defect.resize(WGD->numcell_face, 0.0);
+}
 
-      std::vector <polyVert> polygonVertices = WID->canopies->groundCovers[cId]->polygonVertices;
-      float H = WID->canopies->groundCovers[cId]->H;
-      float base_height = WID->canopies->groundCovers[cId]->base_height;
-      float attenCoeff = WID->canopies->groundCovers[cId]->attenuationCoeff;
-      // Loop to calculate maximum and minimum of x and y values of the building
-      float x_min = polygonVertices[0].x_poly;
-      float x_max = polygonVertices[0].x_poly;
-      float y_min = polygonVertices[0].y_poly;
-      float y_max = polygonVertices[0].y_poly;
-      for (size_t id=1u; id<polygonVertices.size(); id++) {
-          if (polygonVertices[id].x_poly > x_max) {
-              x_max = polygonVertices[id].x_poly;
-          }
-          if (polygonVertices[id].x_poly < x_min) {
-              x_min = polygonVertices[id].x_poly;
-          }
-          if (polygonVertices[id].y_poly > y_max) {
-              y_max = polygonVertices[id].y_poly;
-          }
-          if (polygonVertices[id].y_poly < y_min) {
-              y_min = polygonVertices[id].y_poly;
-          }
-      }
+void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
+{
+  for (size_t i = 0; i < WID->canopies->canopies.size(); i++) {
+    int cId = allCanopiesV.size();
+    allCanopiesV.push_back(WID->canopies->canopies[i]);
 
-      // i_start and i_end are faces and not cells
-      int i_start = x_min/WGD->dx;       // Index of canopy start location in x-direction
-      int i_end = x_max/WGD->dx+1;       // Index of canopy end location in x-direction
-      // j_start and j_end are faces and not cells
-      int j_start = y_min/WGD->dy;       // Index of canopy end location in y-direction
-      int j_end = y_max/WGD->dy+1;       // Index of canopy start location in y-direction
+    for (auto pIdx = 0u; pIdx < allCanopiesV[cId]->polygonVertices.size(); pIdx++) {
+      allCanopiesV[cId]->polygonVertices[pIdx].x_poly += WID->simParams->halo_x;
+      allCanopiesV[cId]->polygonVertices[pIdx].y_poly += WID->simParams->halo_y;
+    }
 
-      // Find out which cells are going to be inside the polygone
-      // Based on Wm. Randolph Franklin, "PNPOLY - Point Inclusion in Polygon Test"
-      // Check the center of each cell, if it's inside, set that cell to building
-      for (auto j=j_start; j<j_end; j++) {
-          // Center of cell y coordinate
-          float y_cent = (j+0.5)*WGD->dy;
-          for (auto i=i_start; i<i_end; i++) {
-              float x_cent = (i+0.5)*WGD->dx;
-              // Node index
-              vert_id = 0;
-              start_poly = vert_id;
-              num_crossing = 0;
-              while (vert_id < polygonVertices.size()-1) {
-                  if ( (polygonVertices[vert_id].y_poly<=y_cent && polygonVertices[vert_id+1].y_poly>y_cent) ||
-                       (polygonVertices[vert_id].y_poly>y_cent && polygonVertices[vert_id+1].y_poly<=y_cent) ) {
-                      ray_intersect = (y_cent-polygonVertices[vert_id].y_poly)/
-                          (polygonVertices[vert_id+1].y_poly-polygonVertices[vert_id].y_poly);
-                      if (x_cent < (polygonVertices[vert_id].x_poly+ray_intersect*
-                                    (polygonVertices[vert_id+1].x_poly-polygonVertices[vert_id].x_poly))) {
-                          num_crossing += 1;
-                      }
-                  }
-                  vert_id += 1;
-                  if (polygonVertices[vert_id].x_poly == polygonVertices[start_poly].x_poly &&
-                      polygonVertices[vert_id].y_poly == polygonVertices[start_poly].y_poly) {
-                      vert_id += 1;
-                      start_poly = vert_id;
-                  }
-              }
-
-              // if num_crossing is odd = cell is oustside of the polygon
-              // if num_crossing is even = cell is inside of the polygon
-              if ( (num_crossing%2) != 0 ) {
-                  int icell_2d = i + j*(WGD->nx-1);
-
-                  // Define start index of the canopy in z-direction
-                  for (size_t k=1u; k<WGD->z.size(); k++) {
-                      if (WGD->terrain[icell_2d]+base_height <= WGD->z[k]) {
-                          canopy_bot_index[icell_2d] = k;
-                          canopy_bot[icell_2d] = WGD->terrain[icell_2d]+base_height;
-                          canopy_base[icell_2d] = WGD->z_face[k-1];
-                          break;
-                      }
-                  }
-
-                  // Define end index of the canopy in z-direction
-                  for (size_t k=0u; k<WGD->z.size(); k++) {
-                      if(WGD->terrain[icell_2d]+H < WGD->z[k+1]) {
-                          canopy_top_index[icell_2d] = k+1;
-                          canopy_top[icell_2d] = WGD->terrain[icell_2d]+H;
-                          break;
-                      }
-                  }
-
-                  canopy_height[icell_2d] = canopy_top[icell_2d]-canopy_bot[icell_2d];
-
-                  // define icellflag @ (x,y) for all z(k) in [k_start...k_end]
-                  for (auto k=canopy_bot_index[icell_2d]; k<canopy_top_index[icell_2d]; k++) {
-                      int icell_3d = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
-                      //if( WGD->icellflag[icell_3d] != 0 && WGD->icellflag[icell_3d] != 2) {
-                      // Canopy cell
-                      WGD->icellflag[icell_3d] = 11;
-                      canopy_atten[icell_3d] =  attenCoeff;
-                      //}
-                  }
-              } // end define icellflag!
-          }
-      }
+    canopy_id.push_back(cId);
+    allCanopiesV[cId]->setPolyBuilding(WGD);
+    allCanopiesV[cId]->setCellFlags(WID, WGD, cId);
+    effective_height.push_back(allCanopiesV[cId]->height_eff);
   }
-  */
+
+  if (WID->canopies->SHPData) {
+    auto canopysetup_start = std::chrono::high_resolution_clock::now();// Start recording execution time
+
+    std::cout << "Creating canopies from shapefile..." << std::flush;
+
+    std::vector<Building *> poly_buildings;
+    float corner_height, min_height;
+    std::vector<float> shpDomainSize(2), minExtent(2);
+    WID->canopies->SHPData->getLocalDomain(shpDomainSize);
+    WID->canopies->SHPData->getMinExtent(minExtent);
+
+    //printf("\tShapefile Origin = (%.6f,%.6f)\n", minExtent[0], minExtent[1]);
+
+    // float domainOffset[2] = { 0, 0 };
+    /*
+      for (auto pIdx = 0u; pIdx<WID->canopies->shpPolygons.size(); pIdx++) {
+      // convert the global polys to local domain coordinates
+      for (auto lIdx=0u; lIdx<WID->canopies->shpPolygons[pIdx].size(); lIdx++) {
+      WID->canopies->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
+      WID->canopies->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
+      }
+      }
+    */
+
+    for (auto pIdx = 0u; pIdx < WID->canopies->SHPData->m_polygons.size(); pIdx++) {
+
+      std::vector<polyVert> shpPolygon = WID->canopies->SHPData->m_polygons[pIdx];
+
+      // convert the global polys to local domain coordinates
+      for (auto lIdx = 0u; lIdx < shpPolygon.size(); lIdx++) {
+        shpPolygon[lIdx].x_poly -= WGD->UTMOrigin[0];
+        shpPolygon[lIdx].y_poly -= WGD->UTMOrigin[1];
+      }
+
+      // Setting base height for tree if there is a DEM file (TODO)
+      if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh) {
+        std::cerr << "Isolated tree from shapefile and DEM not implemented...\n";
+      } else {
+        //base_height.push_back(0.0);
+      }
+
+      for (auto lIdx = 0u; lIdx < shpPolygon.size(); lIdx++) {
+        shpPolygon[lIdx].x_poly += WID->simParams->halo_x;
+        shpPolygon[lIdx].y_poly += WID->simParams->halo_y;
+      }
+
+      // Loop to create each of the polygon buildings read in from the shapefile
+      int cId = allCanopiesV.size();
+      //allCanopiesV.push_back(new CanopyIsolatedTree(WID, WGD, pIdx));
+      allCanopiesV.push_back(new CanopyIsolatedTree(shpPolygon,
+                                                    WID->canopies->SHPData->m_features["H"][pIdx],
+                                                    WID->canopies->SHPData->m_features["D"][pIdx],
+                                                    0.0,
+                                                    WID->canopies->SHPData->m_features["LAI"][pIdx],
+                                                    cId));
+      canopy_id.push_back(cId);
+      allCanopiesV[cId]->setPolyBuilding(WGD);
+      allCanopiesV[cId]->setCellFlags(WID, WGD, cId);
+      effective_height.push_back(allCanopiesV[cId]->height_eff);
+    }
+    std::cout << "[done]" << std::endl;
+
+    auto canopysetup_finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+
+    std::chrono::duration<float> elapsed_cut = canopysetup_finish - canopysetup_start;
+    std::cout << "Elapsed time for canopy setup : " << elapsed_cut.count() << " s\n";
+  }
+
+  std::cout << "Sorting canopies by height..." << std::flush;
+  mergeSort(effective_height, allCanopiesV, canopy_id);
+  std::cout << "[done]" << std::endl;
 
   return;
 }
 
-void Canopy::canopyVegetation(WINDSGeneralData *WGD)
+void Canopy::applyCanopyVegetation(WINDSGeneralData *WGD)
 {
-  // Apply canopy parameterization
-  canopyCioncoParam(WGD);
+  // Call regression to define ustar and surface roughness of the canopy
+  canopyRegression(WGD);
+
+  for (size_t i = 0; i < allCanopiesV.size(); ++i) {
+    // for now this does the canopy stuff for us
+    //allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
+    allCanopiesV[canopy_id[i]]->canopyVegetation(WGD, canopy_id[i]);
+  }
 
   return;
 }
 
-
-/*
-void Canopy::setCanopyGrid(WINDSGeneralData* WGD, int building_number)
+void Canopy::applyCanopyWake(WINDSGeneralData *WGD)
 {
-    float ray_intersect;
-    unsigned int num_crossing, vert_id, start_poly;
 
-    // Loop to calculate maximum and minimum of x and y values of the building
-    x_min = x_max = polygonVertices[0].x_poly;
-    y_min = y_max = polygonVertices[0].y_poly;
-    for (size_t id=1; id<polygonVertices.size(); id++) {
-        if (polygonVertices[id].x_poly > x_max) {
-            x_max = polygonVertices[id].x_poly;
-        }
-        if (polygonVertices[id].x_poly < x_min) {
-            x_min = polygonVertices[id].x_poly;
-        }
-        if (polygonVertices[id].y_poly > y_max) {
-            y_max = polygonVertices[id].y_poly;
-        }
-        if (polygonVertices[id].y_poly < y_min) {
-            y_min = polygonVertices[id].y_poly;
-        }
+  if (wakeFlag == 1) {
+    for (size_t i = 0; i < allCanopiesV.size(); ++i) {
+      // for now this does the canopy stuff for us
+      //allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
+      allCanopiesV[canopy_id[i]]->canopyWake(WGD, canopy_id[i]);
     }
 
-    // i_start and i_end are faces and not cells
-    i_start = x_min/WGD->dx;       // Index of canopy start location in x-direction
-    i_end = x_max/WGD->dx+1;       // Index of canopy end location in x-direction
-    // j_start and j_end are faces and not cells
-    j_start = y_min/WGD->dy;       // Index of canopy end location in y-direction
-    j_end = y_max/WGD->dy+1;       // Index of canopy start location in y-direction
-
-    // size of the canopy array -> with ghost cell before and after (hence +2)
-    nx_canopy = (i_end-i_start-1)+2;
-    ny_canopy = (j_end-j_start-1)+2;
-
-    // number of cell cell-center elements (2D)
-    numcell_cent_2d = nx_canopy*ny_canopy;
-
-    // Resize the canopy-related vectors
-    canopy_bot.resize( numcell_cent_2d , 0.0 );
-    canopy_top.resize( numcell_cent_2d , 0.0 );
-
-    canopy_bot_index.resize( numcell_cent_2d , 0 );
-    canopy_top_index.resize( numcell_cent_2d , -1 );
-
-    canopy_base.resize( numcell_cent_2d , 0.0 );
-    canopy_height.resize( numcell_cent_2d , 0.0 );
-
-    canopy_z0.resize( numcell_cent_2d, 0.0 );
-    canopy_ustar.resize( numcell_cent_2d, 0.0 );
-    canopy_d.resize( numcell_cent_2d, 0.0 );
-
-    canopy_cellMap3D.clear();
-    canopy_cellMap2D.clear();
-
-    // Find out which cells are going to be inside the polygone
-    // Based on Wm. Randolph Franklin, "PNPOLY - Point Inclusion in Polygon Test"
-    // Check the center of each cell, if it's inside, set that cell to building
-    for (auto j=j_start; j<j_end; j++) {
-        // Center of cell y coordinate
-        float y_cent = (j+0.5)*WGD->dy;
-        for (auto i=i_start; i<i_end; i++) {
-            float x_cent = (i+0.5)*WGD->dx;
-            // Node index
-            vert_id = 0;
-            start_poly = vert_id;
-            num_crossing = 0;
-            while (vert_id < polygonVertices.size()-1) {
-                if ( (polygonVertices[vert_id].y_poly<=y_cent && polygonVertices[vert_id+1].y_poly>y_cent) ||
-                     (polygonVertices[vert_id].y_poly>y_cent && polygonVertices[vert_id+1].y_poly<=y_cent) ) {
-                    ray_intersect = (y_cent-polygonVertices[vert_id].y_poly)/
-                        (polygonVertices[vert_id+1].y_poly-polygonVertices[vert_id].y_poly);
-                    if (x_cent < (polygonVertices[vert_id].x_poly+ray_intersect*
-                                  (polygonVertices[vert_id+1].x_poly-polygonVertices[vert_id].x_poly))) {
-                        num_crossing += 1;
-                    }
-                }
-                vert_id += 1;
-                if (polygonVertices[vert_id].x_poly == polygonVertices[start_poly].x_poly &&
-                    polygonVertices[vert_id].y_poly == polygonVertices[start_poly].y_poly) {
-                    vert_id += 1;
-                    start_poly = vert_id;
-                }
-            }
-
-            // if num_crossing is odd = cell is oustside of the polygon
-            // if num_crossing is even = cell is inside of the polygon
-            if ( (num_crossing%2) != 0 ) {
-                int icell_cent_2d = i + j*(WGD->nx-1);
-                int icell_canopy_2d = (i+1-i_start) + (j+1-j_start)*nx_canopy;
-
-                // Define start index of the canopy in z-direction
-                for (size_t k=1; k<WGD->z.size(); k++) {
-                    if (WGD->terrain[icell_cent_2d]+base_height <= WGD->z[k]) {
-                        canopy_bot_index[icell_canopy_2d] = k;
-                        canopy_bot[icell_canopy_2d] = WGD->terrain[icell_cent_2d]+base_height;
-                        canopy_base[icell_canopy_2d] = WGD->z_face[k-1];
-                        break;
-                    }
-                }
-
-                // Define end index of the canopy in z-direction
-                for (size_t k=0; k<WGD->z.size(); k++) {
-                    if(WGD->terrain[icell_cent_2d]+H < WGD->z[k+1]) {
-                        canopy_top_index[icell_canopy_2d] = k+1;
-                        canopy_top[icell_canopy_2d] = WGD->terrain[icell_cent_2d]+H;
-                        break;
-                    }
-                }
-
-                // Define hieght of the canopy base in z-direction
-                for (size_t k=canopy_bot_index[icell_canopy_2d]; k<WGD->z.size(); k++) {
-                    int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
-                    if (WGD->icellflag[icell_cent] != 1) {
-                        canopy_bot_index[icell_canopy_2d] = 0;
-                        canopy_bot[icell_canopy_2d] = 0;
-                        canopy_base[icell_canopy_2d] = 0.0;
-                        canopy_top_index[icell_canopy_2d] = -1;
-                        canopy_top[icell_canopy_2d] = 0.0;
-                        break;
-                    }
-                }
-
-                canopy_height[icell_canopy_2d] = canopy_top[icell_canopy_2d]-canopy_bot[icell_canopy_2d];
-
-                // define icellflag @ (x,y) for all z(k) in [k_start...k_end]
-                for (auto k=canopy_bot_index[icell_canopy_2d]; k<canopy_top_index[icell_canopy_2d]; k++) {
-                    int icell_cent = i + j*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
-                    int icell_canopy_3d = i + j*nx_canopy + k*nx_canopy*ny_canopy;
-                    //if( WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
-
-                    // Canopy cell
-                    WGD->icellflag[icell_cent] = getCellFlagCanopy();
-                    WGD->ibuilding_flag[icell_cent] = building_number;
-
-                    canopy_cellMap2D[icell_cent_2d] = icell_canopy_2d;
-                    canopy_cellMap3D[icell_cent] = icell_canopy_3d;
-
-                }
-
-            } // end define icellflag!
-        }
+    for (size_t id = 0u; id < wake_u_defect.size(); ++id) {
+      WGD->u0[id] *= (1. - wake_u_defect[id]);
+      wake_u_defect[id] = 0.0;
     }
 
-    float linH_tot = 0;
-    for (auto k=0u;k<canopy_height.size();k++) {
-        linH_tot += canopy_height[k];
+    for (size_t id = 0u; id < wake_v_defect.size(); ++id) {
+      WGD->v0[id] *= (1. - wake_v_defect[id]);
+      wake_v_defect[id] = 0.0;
     }
-    if (linH_tot>0) {
-        // Define start/end index of the canopy in z-direction
-        k_start=WGD->nz;
-        k_end=0;
-        for (auto j=0; j<ny_canopy; j++) {
-            for (auto i=0; i<nx_canopy; i++) {
-                int icell_canopy_2d = i + j*nx_canopy;
-                if( canopy_bot_index[icell_canopy_2d] < k_start )
-                    k_start = canopy_bot_index[icell_canopy_2d];
-                if( canopy_top_index[icell_canopy_2d] > k_end )
-                    k_end = canopy_top_index[icell_canopy_2d];
-            }
-        }
+  }
 
-        // define base heigh and effective height
-        base_height=100000;
-        height_eff=0;
-        for (auto j=0; j<ny_canopy; j++) {
-            for (auto i=0; i<nx_canopy; i++) {
-                int icell_canopy_2d = i + j*nx_canopy;
-                if( canopy_top_index[icell_canopy_2d] >= 0 ) {
-                    if( canopy_base[icell_canopy_2d] < base_height )
-                    base_height = canopy_base[icell_canopy_2d];
-                    if( canopy_top[icell_canopy_2d] > height_eff )
-                    height_eff = canopy_top[icell_canopy_2d];
-                }
-            }
-        }
-
-        // number of point in z -> + 2 (1 ghost below, 1 ghost above)
-        // the canopy subarray start at the ground (with bottom ghost cell below the ground)
-        nz_canopy = k_end+2;
-        // k_end to match definition used by all building (top face and not top cell)
-        k_end++;
-
-    } else {
-        k_start=0;
-        k_end=0;
-        base_height=0;
-        height_eff=0;
-
-        nz_canopy=0;
-    }
-
-    // number of cell-center elements (3D)
-    numcell_cent_3d = nx_canopy*ny_canopy*nz_canopy;
-
-    return;
+  return;
 }
-*/
 
 // Function to apply the urban canopy parameterization
 // Based on the version contain Lucas Ulmer's modifications
@@ -396,7 +215,7 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
   int num_atten;
 
   // Call regression to define ustar and surface roughness of the canopy
-  canopyRegression(WGD);
+  //canopyRegression(WGD);
 
   for (auto j = 0; j < ny_canopy; j++) {
     for (auto i = 0; i < nx_canopy; i++) {
@@ -406,13 +225,18 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
         int icell_3d = i + j * nx_canopy + (canopy_top_index[icell_2d] - 1) * nx_canopy * ny_canopy;
 
         // Call the bisection method to find the root
-        canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d], canopy_z0[icell_2d], canopy_height[icell_2d], canopy_atten[icell_3d], WGD->vk, 0.0);
+        canopy_d[icell_2d] = canopyBisection(canopy_ustar[icell_2d],
+                                             canopy_z0[icell_2d],
+                                             canopy_height[icell_2d],
+                                             canopy_atten_coeff[icell_3d],
+                                             WGD->vk,
+                                             0.0);
         // std::cout << "WGD->vk:" << WGD->vk << "\n";
         // std::cout << "WGD->canopy_atten[icell_cent]:" << WGD->canopy_atten[icell_cent] << "\n";
         if (canopy_d[icell_2d] == 10000) {
           std::cout << "bisection failed to converge"
                     << "\n";
-          canopy_d[icell_2d] = canopySlopeMatch(canopy_z0[icell_2d], canopy_height[icell_2d], canopy_atten[icell_3d]);
+          canopy_d[icell_2d] = canopySlopeMatch(canopy_z0[icell_2d], canopy_height[icell_2d], canopy_atten_coeff[icell_3d]);
         }
 
         /**< velocity at the height of the canopy */
@@ -424,24 +248,25 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
 
         for (auto k = 1; k < WGD->nz - 1; k++) {
           int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-          float z_rel = WGD->z[k] - canopy_base[icell_2d];
+          float z_rel = WGD->z[k] - WGD->terrain[icell_2d];
 
           if (WGD->z[k] < canopy_base[icell_2d]) {
             // below the terrain or building
           } else if (WGD->z[k] < canopy_top[icell_2d]) {
-            if (canopy_atten[icell_3d] > 0) {
+            if (canopy_atten_coeff[icell_3d] > 0) {
               icell_3d = i + j * nx_canopy + k * nx_canopy * ny_canopy;
-              avg_atten = canopy_atten[icell_3d];
+              avg_atten = canopy_atten_coeff[icell_3d];
 
 
-              if (canopy_atten[icell_3d + nx_canopy * ny_canopy] != canopy_atten[icell_3d] || canopy_atten[icell_3d - nx_canopy * ny_canopy] != canopy_atten[icell_3d]) {
+              if (canopy_atten_coeff[icell_3d + nx_canopy * ny_canopy] != canopy_atten_coeff[icell_3d]
+                  || canopy_atten_coeff[icell_3d - nx_canopy * ny_canopy] != canopy_atten_coeff[icell_3d]) {
                 num_atten = 1;
-                if (canopy_atten[icell_3d + nx_canopy * ny_canopy] > 0) {
-                  avg_atten += canopy_atten[icell_3d + nx_canopy * ny_canopy];
+                if (canopy_atten_coeff[icell_3d + nx_canopy * ny_canopy] > 0) {
+                  avg_atten += canopy_atten_coeff[icell_3d + nx_canopy * ny_canopy];
                   num_atten += 1;
                 }
-                if (canopy_atten[icell_3d - nx_canopy * ny_canopy] > 0) {
-                  avg_atten += canopy_atten[icell_3d - nx_canopy * ny_canopy];
+                if (canopy_atten_coeff[icell_3d - nx_canopy * ny_canopy] > 0) {
+                  avg_atten += canopy_atten_coeff[icell_3d - nx_canopy * ny_canopy];
                   num_atten += 1;
                 }
                 avg_atten /= num_atten;
@@ -454,7 +279,8 @@ void Canopy::canopyCioncoParam(WINDSGeneralData *WGD)
               */
 
               // correction on the velocity within the canopy
-              veg_vel_frac = log((canopy_height[icell_2d] - canopy_d[icell_2d]) / canopy_z0[icell_2d]) * exp(avg_atten * ((z_rel / canopy_height[icell_2d]) - 1)) / log(z_rel / canopy_z0[icell_2d]);
+              veg_vel_frac = log((canopy_height[icell_2d] - canopy_d[icell_2d]) / canopy_z0[icell_2d])
+                             * exp(avg_atten * ((z_rel / canopy_height[icell_2d]) - 1)) / log(z_rel / canopy_z0[icell_2d]);
               // check if correction is bound and well defined
               if (veg_vel_frac > 1 || veg_vel_frac < 0) {
                 veg_vel_frac = 1;
@@ -523,7 +349,7 @@ void Canopy::canopyRegression(WINDSGeneralData *WGD)
       if (canopy_top_index[id] > 0) {
         for (auto k = canopy_top_index[id]; k < WGD->nz - 2; k++) {
           k_top = k;
-          if (2 * canopy_top[id] < WGD->z[k + 1])
+          if (canopy_top[id] + canopy_height[id] < WGD->z[k + 1])
             break;
         }
         if (k_top == canopy_top_index[id]) {
@@ -541,7 +367,7 @@ void Canopy::canopyRegression(WINDSGeneralData *WGD)
           counter += 1;
           int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
           local_mag = sqrt(pow(WGD->u0[icell_face], 2.0) + pow(WGD->v0[icell_face], 2.0));
-          y = log(WGD->z[k]);
+          y = log(WGD->z[k] - WGD->terrain[i + j * (WGD->nx - 1)]);
           sum_x += local_mag;
           sum_y += y;
           sum_xy += local_mag * y;
@@ -553,7 +379,7 @@ void Canopy::canopyRegression(WINDSGeneralData *WGD)
         ym = sum_y / counter;
         canopy_z0[id] = exp(ym - ((WGD->vk / canopy_ustar[id])) * xm);
 
-        // std::cout << i << " " << j << " " << sum_y << " " << sum_x_sq << " "  << canopy_ustar[id] << " "  << canopy_z0[id] << std::endl;
+        //std::cout << xm << " " << ym << " " << sum_y << " " << sum_x_sq << " " << canopy_ustar[id] << " " << canopy_z0[id] << std::endl;
 
       }// end of if (canopy_top_index[id] > 0)
     }
@@ -649,4 +475,57 @@ float Canopy::canopySlopeMatch(float z0, float canopy_top, float canopy_atten)
 
   // return displacement height
   return d;
+}
+
+void Canopy::mergeSort(std::vector<float> &effective_height, std::vector<Building *> allCanopiesV, std::vector<int> &tree_id)
+{
+  // if the size of the array is 1, it is already sorted
+  if (allCanopiesV.size() == 1) {
+    return;
+  }
+
+  if (allCanopiesV.size() > 1) {
+    // make left and right sides of the data
+    std::vector<float> effective_height_L, effective_height_R;
+    std::vector<int> tree_id_L, tree_id_R;
+    std::vector<Building *> allCanopiesV_L, allCanopiesV_R;
+    effective_height_L.resize(allCanopiesV.size() / 2);
+    effective_height_R.resize(allCanopiesV.size() - allCanopiesV.size() / 2);
+    tree_id_L.resize(allCanopiesV.size() / 2);
+    tree_id_R.resize(allCanopiesV.size() - allCanopiesV.size() / 2);
+    allCanopiesV_L.resize(allCanopiesV.size() / 2);
+    allCanopiesV_R.resize(allCanopiesV.size() - allCanopiesV.size() / 2);
+
+    // copy data from the main data set to the left and right children
+    size_t lC = 0, rC = 0;
+    for (size_t i = 0; i < allCanopiesV.size(); i++) {
+      if (i < allCanopiesV.size() / 2) {
+        effective_height_L[lC] = effective_height[i];
+        allCanopiesV_L[lC] = allCanopiesV[i];
+        tree_id_L[lC++] = tree_id[i];
+
+      } else {
+        effective_height_R[rC] = effective_height[i];
+        allCanopiesV_R[rC] = allCanopiesV[i];
+        tree_id_R[rC++] = tree_id[i];
+      }
+    }
+    // recursively sort the children
+    mergeSort(effective_height_L, allCanopiesV_L, tree_id_L);
+    mergeSort(effective_height_R, allCanopiesV_R, tree_id_R);
+
+    // compare the sorted children to place the data into the main array
+    lC = rC = 0;
+    for (size_t i = 0; i < allCanopiesV.size(); i++) {
+      if (rC == effective_height_R.size() || (lC != effective_height_L.size() && effective_height_L[lC] > effective_height_R[rC])) {
+        effective_height[i] = effective_height_L[lC];
+        tree_id[i] = tree_id_L[lC++];
+      } else {
+        effective_height[i] = effective_height_R[rC];
+        tree_id[i] = tree_id_R[rC++];
+      }
+    }
+  }
+
+  return;
 }

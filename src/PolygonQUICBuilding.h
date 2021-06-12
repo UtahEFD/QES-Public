@@ -66,17 +66,12 @@ public:
 
     int nNodes = xVertex.size();
     polygonVertices.resize(nNodes + 1);
-    for (auto k = 0u; k < nNodes; k++) {
+    for (int k = 0; k < nNodes; k++) {
       polygonVertices[k].x_poly = xVertex[k];
       polygonVertices[k].y_poly = yVertex[k];
     }
     polygonVertices[nNodes].x_poly = xVertex[0];
     polygonVertices[nNodes].y_poly = yVertex[0];
-
-    x_start = 0;
-    y_start = 0;
-    L = 0;
-    W = 0;
 
     // This will now be process for ALL buildings...
     // extract the vertices from this definition here and make the
