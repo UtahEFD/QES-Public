@@ -610,99 +610,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     UTMOrigin = { WID->simParams->UTMx, WID->simParams->UTMy };
   }
 
-  //
-  if (WID->simParams->SHPData) {
-    auto buildingsetup_start = std::chrono::high_resolution_clock::now();// Start recording execution time
-
-    std::cout << "Creating buildings from shapefile..." << std::flush;
-
-    //std::vector<Building *> poly_buildings;
-
-
-    float corner_height, min_height;
-
-    std::vector<float> shpDomainSize(2), minExtent(2);
-    WID->simParams->SHPData->getLocalDomain(shpDomainSize);
-    WID->simParams->SHPData->getMinExtent(minExtent);
-
-    //printf("\tShapefile Origin = (%.6f,%.6f)\n", minExtent[0], minExtent[1]);
-
-    // If the shapefile is not covering the whole domain or the UTM coordinates
-    // of the QES domain is different than shapefile origin
-    if (WID->simParams->UTMx != 0.0 && WID->simParams->UTMy != 0.0) {
-      minExtent[0] -= (minExtent[0] - WID->simParams->UTMx);
-      minExtent[1] -= (minExtent[1] - WID->simParams->UTMy);
-    }
-
-    // float domainOffset[2] = { 0, 0 };
-    /*
-      for (auto pIdx = 0u; pIdx<WID->simParams->shpPolygons.size(); pIdx++)
-      {
-      // convert the global polys to local domain coordinates
-      for (auto lIdx=0u; lIdx<WID->simParams->shpPolygons[pIdx].size(); lIdx++)
-      {
-      WID->simParams->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
-      WID->simParams->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
-      }
-      }
-    */
-
-    for (auto pIdx = 0u; pIdx < WID->simParams->SHPData->m_polygons.size(); pIdx++) {
-
-      std::vector<polyVert> shpPolygon = WID->simParams->SHPData->m_polygons[pIdx];
-
-      // convert the global polys to local domain coordinates
-      for (auto lIdx = 0u; lIdx < shpPolygon.size(); lIdx++) {
-        shpPolygon[lIdx].x_poly -= UTMOrigin[0];
-        shpPolygon[lIdx].y_poly -= UTMOrigin[1];
-      }
-
-      // Setting base height for buildings if there is a DEM file
-      if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh) {
-        // Get base height of every corner of building from terrain height
-        min_height = WID->simParams->DTE_mesh->getHeight(shpPolygon[0].x_poly,
-                                                         shpPolygon[0].y_poly);
-        if (min_height < 0) {
-          min_height = 0.0;
-        }
-        for (auto lIdx = 1u; lIdx < shpPolygon.size(); lIdx++) {
-          corner_height = WID->simParams->DTE_mesh->getHeight(shpPolygon[lIdx].x_poly,
-                                                              shpPolygon[lIdx].y_poly);
-
-          if (corner_height < min_height && corner_height >= 0.0) {
-            min_height = corner_height;
-          }
-        }
-        base_height.push_back(min_height);
-      } else {
-        base_height.push_back(0.0);
-      }
-
-      for (auto lIdx = 0u; lIdx < shpPolygon.size(); lIdx++) {
-        shpPolygon[lIdx].x_poly += WID->simParams->halo_x;
-        shpPolygon[lIdx].y_poly += WID->simParams->halo_y;
-      }
-
-      // Loop to create each of the polygon buildings read in from the shapefile
-      int bId = allBuildingsV.size();
-      //allBuildingsV.push_back(new PolyBuilding(WID, this, pIdx));
-      allBuildingsV.push_back(new PolyBuilding(shpPolygon,
-                                               WID->simParams->SHPData->m_features["H"][bId] * WID->simParams->heightFactor,
-                                               base_height[bId],
-                                               bId));
-      building_id.push_back(allBuildingsV.size() - 1);
-      allBuildingsV[pIdx]->setPolyBuilding(this);
-      allBuildingsV[pIdx]->setCellFlags(WID, this, bId);
-      effective_height.push_back(allBuildingsV[bId]->height_eff);
-    }
-    std::cout << "[done]" << std::endl;
-
-    auto buildingsetup_finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
-
-    std::chrono::duration<float> elapsed_cut = buildingsetup_finish - buildingsetup_start;
-    std::cout << "Elapsed time for building setup : " << elapsed_cut.count() << " s\n";
-  }
-
 
   // SHP processing is done.  Now, consolidate all "buildings" onto
   // the same list...  this includes any canopies and building types
@@ -713,6 +620,93 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // too -- could be RectBuilding, PolyBuilding, whatever is derived
   // from Building in the end...
   if (WID->buildings) {
+    auto buildingsetup_start = std::chrono::high_resolution_clock::now();// Start recording execution time
+    //
+    if (WID->buildings->SHPData) {
+      std::cout << "Creating buildings from shapefile..." << std::flush;
+
+      //std::vector<Building *> poly_buildings;
+
+
+      float corner_height, min_height;
+
+      std::vector<float> shpDomainSize(2), minExtent(2);
+      WID->buildings->SHPData->getLocalDomain(shpDomainSize);
+      WID->buildings->SHPData->getMinExtent(minExtent);
+
+      //printf("\tShapefile Origin = (%.6f,%.6f)\n", minExtent[0], minExtent[1]);
+
+      // If the shapefile is not covering the whole domain or the UTM coordinates
+      // of the QES domain is different than shapefile origin
+      if (WID->simParams->UTMx != 0.0 && WID->simParams->UTMy != 0.0) {
+        minExtent[0] -= (minExtent[0] - WID->simParams->UTMx);
+        minExtent[1] -= (minExtent[1] - WID->simParams->UTMy);
+      }
+
+      // float domainOffset[2] = { 0, 0 };
+      /*
+      for (auto pIdx = 0u; pIdx<WID->simParams->shpPolygons.size(); pIdx++)
+      {
+      // convert the global polys to local domain coordinates
+      for (auto lIdx=0u; lIdx<WID->simParams->shpPolygons[pIdx].size(); lIdx++)
+      {
+      WID->simParams->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
+      WID->simParams->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
+      }
+      }
+      */
+
+      for (auto pIdx = 0u; pIdx < WID->buildings->SHPData->m_polygons.size(); pIdx++) {
+
+        std::vector<polyVert> shpPolygon = WID->buildings->SHPData->m_polygons[pIdx];
+
+        // convert the global polys to local domain coordinates
+        for (auto lIdx = 0u; lIdx < shpPolygon.size(); lIdx++) {
+          shpPolygon[lIdx].x_poly -= UTMOrigin[0];
+          shpPolygon[lIdx].y_poly -= UTMOrigin[1];
+        }
+
+        // Setting base height for buildings if there is a DEM file
+        if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh) {
+          // Get base height of every corner of building from terrain height
+          min_height = WID->simParams->DTE_mesh->getHeight(shpPolygon[0].x_poly,
+                                                           shpPolygon[0].y_poly);
+          if (min_height < 0) {
+            min_height = 0.0;
+          }
+          for (auto lIdx = 1u; lIdx < shpPolygon.size(); lIdx++) {
+            corner_height = WID->simParams->DTE_mesh->getHeight(shpPolygon[lIdx].x_poly,
+                                                                shpPolygon[lIdx].y_poly);
+
+            if (corner_height < min_height && corner_height >= 0.0) {
+              min_height = corner_height;
+            }
+          }
+          base_height.push_back(min_height);
+        } else {
+          base_height.push_back(0.0);
+        }
+
+        for (auto lIdx = 0u; lIdx < shpPolygon.size(); lIdx++) {
+          shpPolygon[lIdx].x_poly += WID->simParams->halo_x;
+          shpPolygon[lIdx].y_poly += WID->simParams->halo_y;
+        }
+
+        // Loop to create each of the polygon buildings read in from the shapefile
+        int bId = allBuildingsV.size();
+        //allBuildingsV.push_back(new PolyBuilding(WID, this, pIdx));
+        allBuildingsV.push_back(new PolyBuilding(shpPolygon,
+                                                 WID->buildings->SHPData->m_features["H"][bId] * WID->buildings->heightFactor,
+                                                 base_height[bId],
+                                                 bId));
+        building_id.push_back(bId);
+        allBuildingsV[bId]->setPolyBuilding(this);
+        allBuildingsV[bId]->setCellFlags(WID, this, bId);
+        effective_height.push_back(allBuildingsV[bId]->height_eff);
+      }
+      std::cout << "[done]" << std::endl;
+    }
+
     std::cout << "Consolidating building data..." << std::endl;
 
     float corner_height, min_height;
@@ -751,15 +745,21 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       allBuildingsV[j]->setCellFlags(WID, this, j);
       effective_height.push_back(allBuildingsV[j]->height_eff);
     }
-  }
 
-  // We want to sort ALL buildings here...  use the allBuildingsV to
-  // do this... (remember some are canopies) so we may need a
-  // virtual function in the Building class to get the appropriate
-  // data for the sort.
-  std::cout << "Sorting buildings by height..." << std::flush;
-  mergeSort(effective_height, building_id);
-  std::cout << "[done]" << std::endl;
+
+    // We want to sort ALL buildings here...  use the allBuildingsV to
+    // do this... (remember some are canopies) so we may need a
+    // virtual function in the Building class to get the appropriate
+    // data for the sort.
+    std::cout << "Sorting buildings by height..." << std::flush;
+    mergeSort(effective_height, building_id);
+    std::cout << "[done]" << std::endl;
+
+    auto buildingsetup_finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+
+    std::chrono::duration<float> elapsed_cut = buildingsetup_finish - buildingsetup_start;
+    std::cout << "Elapsed time for building setup : " << elapsed_cut.count() << " s\n";
+  }
 
   // Add all the Canopy* to it (they are derived from Building)
   canopy = 0;
