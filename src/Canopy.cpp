@@ -105,25 +105,19 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
 
     //printf("\tShapefile Origin = (%.6f,%.6f)\n", minExtent[0], minExtent[1]);
 
-    // float domainOffset[2] = { 0, 0 };
-    /*
-      for (auto pIdx = 0u; pIdx<WID->canopies->shpPolygons.size(); pIdx++) {
-      // convert the global polys to local domain coordinates
-      for (auto lIdx=0u; lIdx<WID->canopies->shpPolygons[pIdx].size(); lIdx++) {
-      WID->canopies->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
-      WID->canopies->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
-      }
-      }
-    */
+    // If the shapefile is not covering the whole domain or the UTM coordinates
+    // of the QES domain is different than shapefile origin
+    if (WID->simParams->UTMx != 0.0 && WID->simParams->UTMy != 0.0) {
+      minExtent[0] -= (minExtent[0] - WID->simParams->UTMx);
+      minExtent[1] -= (minExtent[1] - WID->simParams->UTMy);
+    }
 
     for (auto pIdx = 0u; pIdx < WID->canopies->SHPData->m_polygons.size(); pIdx++) {
 
-      std::vector<polyVert> shpPolygon = WID->canopies->SHPData->m_polygons[pIdx];
-
       // convert the global polys to local domain coordinates
-      for (auto lIdx = 0u; lIdx < shpPolygon.size(); lIdx++) {
-        shpPolygon[lIdx].x_poly -= WGD->UTMOrigin[0];
-        shpPolygon[lIdx].y_poly -= WGD->UTMOrigin[1];
+      for (auto lIdx = 0u; lIdx < WID->canopies->SHPData->m_polygons[pIdx].size(); lIdx++) {
+        WID->canopies->SHPData->m_polygons[pIdx][lIdx].x_poly -= minExtent[0];
+        WID->canopies->SHPData->m_polygons[pIdx][lIdx].y_poly -= minExtent[1];
       }
 
       // Setting base height for tree if there is a DEM file (TODO)
@@ -133,15 +127,15 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
         //base_height.push_back(0.0);
       }
 
-      for (auto lIdx = 0u; lIdx < shpPolygon.size(); lIdx++) {
-        shpPolygon[lIdx].x_poly += WID->simParams->halo_x;
-        shpPolygon[lIdx].y_poly += WID->simParams->halo_y;
+      for (auto lIdx = 0u; lIdx < WID->canopies->SHPData->m_polygons[pIdx].size(); lIdx++) {
+        WID->canopies->SHPData->m_polygons[pIdx][lIdx].x_poly += WID->simParams->halo_x;
+        WID->canopies->SHPData->m_polygons[pIdx][lIdx].y_poly += WID->simParams->halo_y;
       }
 
       // Loop to create each of the polygon buildings read in from the shapefile
       int cId = allCanopiesV.size();
       //allCanopiesV.push_back(new CanopyIsolatedTree(WID, WGD, pIdx));
-      allCanopiesV.push_back(new CanopyIsolatedTree(shpPolygon,
+      allCanopiesV.push_back(new CanopyIsolatedTree(WID->canopies->SHPData->m_polygons[pIdx],
                                                     WID->canopies->SHPData->m_features["H"][pIdx],
                                                     WID->canopies->SHPData->m_features["D"][pIdx],
                                                     0.0,

@@ -606,10 +606,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
   // After Terrain is processed, handle remaining processing of SHP
   // file data
-  if (WID->simParams->UTMx != 0.0 && WID->simParams->UTMy != 0.0) {
-    UTMOrigin = { WID->simParams->UTMx, WID->simParams->UTMy };
-  }
-
 
   // SHP processing is done.  Now, consolidate all "buildings" onto
   // the same list...  this includes any canopies and building types
@@ -643,40 +639,25 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         minExtent[1] -= (minExtent[1] - WID->simParams->UTMy);
       }
 
-      // float domainOffset[2] = { 0, 0 };
-      /*
-      for (auto pIdx = 0u; pIdx<WID->simParams->shpPolygons.size(); pIdx++)
-      {
-      // convert the global polys to local domain coordinates
-      for (auto lIdx=0u; lIdx<WID->simParams->shpPolygons[pIdx].size(); lIdx++)
-      {
-      WID->simParams->shpPolygons[pIdx][lIdx].x_poly -= minExtent[0] ;
-      WID->simParams->shpPolygons[pIdx][lIdx].y_poly -= minExtent[1] ;
-      }
-      }
-      */
-
       for (auto pIdx = 0u; pIdx < WID->buildings->SHPData->m_polygons.size(); pIdx++) {
 
-        std::vector<polyVert> shpPolygon = WID->buildings->SHPData->m_polygons[pIdx];
-
         // convert the global polys to local domain coordinates
-        for (auto lIdx = 0u; lIdx < shpPolygon.size(); lIdx++) {
-          shpPolygon[lIdx].x_poly -= UTMOrigin[0];
-          shpPolygon[lIdx].y_poly -= UTMOrigin[1];
+        for (auto lIdx = 0u; lIdx < WID->buildings->SHPData->m_polygons[pIdx].size(); lIdx++) {
+          WID->buildings->SHPData->m_polygons[pIdx][lIdx].x_poly -= minExtent[0];
+          WID->buildings->SHPData->m_polygons[pIdx][lIdx].y_poly -= minExtent[1];
         }
 
         // Setting base height for buildings if there is a DEM file
         if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh) {
           // Get base height of every corner of building from terrain height
-          min_height = WID->simParams->DTE_mesh->getHeight(shpPolygon[0].x_poly,
-                                                           shpPolygon[0].y_poly);
+          min_height = WID->simParams->DTE_mesh->getHeight(WID->buildings->SHPData->m_polygons[pIdx][0].x_poly,
+                                                           WID->buildings->SHPData->m_polygons[pIdx][0].y_poly);
           if (min_height < 0) {
             min_height = 0.0;
           }
-          for (auto lIdx = 1u; lIdx < shpPolygon.size(); lIdx++) {
-            corner_height = WID->simParams->DTE_mesh->getHeight(shpPolygon[lIdx].x_poly,
-                                                                shpPolygon[lIdx].y_poly);
+          for (auto lIdx = 1u; lIdx < WID->buildings->SHPData->m_polygons[pIdx].size(); lIdx++) {
+            corner_height = WID->simParams->DTE_mesh->getHeight(WID->buildings->SHPData->m_polygons[pIdx][lIdx].x_poly,
+                                                                WID->buildings->SHPData->m_polygons[pIdx][lIdx].y_poly);
 
             if (corner_height < min_height && corner_height >= 0.0) {
               min_height = corner_height;
@@ -687,15 +668,15 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
           base_height.push_back(0.0);
         }
 
-        for (auto lIdx = 0u; lIdx < shpPolygon.size(); lIdx++) {
-          shpPolygon[lIdx].x_poly += WID->simParams->halo_x;
-          shpPolygon[lIdx].y_poly += WID->simParams->halo_y;
+        for (auto lIdx = 0u; lIdx < WID->buildings->SHPData->m_polygons[pIdx].size(); lIdx++) {
+          WID->buildings->SHPData->m_polygons[pIdx][lIdx].x_poly += WID->simParams->halo_x;
+          WID->buildings->SHPData->m_polygons[pIdx][lIdx].y_poly += WID->simParams->halo_y;
         }
 
         // Loop to create each of the polygon buildings read in from the shapefile
         int bId = allBuildingsV.size();
         //allBuildingsV.push_back(new PolyBuilding(WID, this, pIdx));
-        allBuildingsV.push_back(new PolyBuilding(shpPolygon,
+        allBuildingsV.push_back(new PolyBuilding(WID->buildings->SHPData->m_polygons[pIdx],
                                                  WID->buildings->SHPData->m_features["H"][bId] * WID->buildings->heightFactor,
                                                  base_height[bId],
                                                  bId));
