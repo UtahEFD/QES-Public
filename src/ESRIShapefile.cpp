@@ -92,9 +92,11 @@ ESRIShapefile::ESRIShapefile(const std::string &filename, const std::string &bld
            m_poDS->GetDriver()->GetDescription(),
            m_poDS->GetDriver()->GetMetadataItem(GDAL_DMD_LONGNAME));
 
-    //m_SpRef = (OGRSpatialReference *)m_poDS->GetSpatialRef();
+    m_SpRef = (OGRSpatialReference *)m_poDS->GetSpatialRef();
 
-    //m_SpRef->dumpReadable();
+    if (m_SpRef) {
+      m_SpRef->dumpReadable();
+    }
 
     loadVectorData(m_polygons, m_features);
   }
