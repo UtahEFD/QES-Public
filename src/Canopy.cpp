@@ -77,20 +77,8 @@ Canopy::Canopy(const WINDSInputData *WID, WINDSGeneralData *WGD)
 
 void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
-  for (size_t i = 0; i < WID->canopies->canopies.size(); i++) {
-    int cId = allCanopiesV.size();
-    allCanopiesV.push_back(WID->canopies->canopies[i]);
 
-    for (auto pIdx = 0u; pIdx < allCanopiesV[cId]->polygonVertices.size(); pIdx++) {
-      allCanopiesV[cId]->polygonVertices[pIdx].x_poly += WID->simParams->halo_x;
-      allCanopiesV[cId]->polygonVertices[pIdx].y_poly += WID->simParams->halo_y;
-    }
-
-    canopy_id.push_back(cId);
-    allCanopiesV[cId]->setPolyBuilding(WGD);
-    allCanopiesV[cId]->setCellFlags(WID, WGD, cId);
-    effective_height.push_back(allCanopiesV[cId]->height_eff);
-  }
+  auto canopysetup_start = std::chrono::high_resolution_clock::now();// Start recording execution time
 
   if (WID->canopies->SHPData) {
     auto canopysetup_start = std::chrono::high_resolution_clock::now();// Start recording execution time
@@ -147,16 +135,31 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
       effective_height.push_back(allCanopiesV[cId]->height_eff);
     }
     std::cout << "[done]" << std::endl;
+  }
 
-    auto canopysetup_finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+  for (size_t i = 0; i < WID->canopies->canopies.size(); i++) {
+    int cId = allCanopiesV.size();
+    allCanopiesV.push_back(WID->canopies->canopies[i]);
 
-    std::chrono::duration<float> elapsed_cut = canopysetup_finish - canopysetup_start;
-    std::cout << "Elapsed time for canopy setup : " << elapsed_cut.count() << " s\n";
+    for (auto pIdx = 0u; pIdx < allCanopiesV[cId]->polygonVertices.size(); pIdx++) {
+      allCanopiesV[cId]->polygonVertices[pIdx].x_poly += WID->simParams->halo_x;
+      allCanopiesV[cId]->polygonVertices[pIdx].y_poly += WID->simParams->halo_y;
+    }
+
+    canopy_id.push_back(cId);
+    allCanopiesV[cId]->setPolyBuilding(WGD);
+    allCanopiesV[cId]->setCellFlags(WID, WGD, cId);
+    effective_height.push_back(allCanopiesV[cId]->height_eff);
   }
 
   std::cout << "Sorting canopies by height..." << std::flush;
   mergeSort(effective_height, allCanopiesV, canopy_id);
   std::cout << "[done]" << std::endl;
+
+  auto canopysetup_finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+
+  std::chrono::duration<float> elapsed_cut = canopysetup_finish - canopysetup_start;
+  std::cout << "Elapsed time for canopy setup : " << elapsed_cut.count() << " s\n";
 
   return;
 }
