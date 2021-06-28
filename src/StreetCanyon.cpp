@@ -93,7 +93,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
 
   // Loop over face of current building
   for (auto id = 0; id < polygonVertices.size() - 1; id++) {
-    // Calculate upwind reletive direction for each face
+    // Calculate upwind reletive direction for each face (out-facing normal)
     upwind_rel_dir[id] = atan2(yi[id + 1] - yi[id], xi[id + 1] - xi[id]) + 0.5 * M_PI;
 
     // Force the angle to be between (-pi;pi]
@@ -108,7 +108,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
         perpendicular_flag[id] = 1;
         x_wall = xi[id];
       }
-      // Calculating perpendicula direction to each face
+      // Calculating perpendicula direction to each face (out-facing nomral)
       perpendicular_dir[id] = atan2(polygonVertices[id + 1].y_poly - polygonVertices[id].y_poly,
                                     polygonVertices[id + 1].x_poly - polygonVertices[id].x_poly)
                               + 0.5 * M_PI;
@@ -266,7 +266,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                 }
               }
 
-              // icell_cent set to cell inside the downstream building
+              // icell_cent set to cell (xc,yc,zc) (inside the downstream building if present)
               icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
               if (WGD->ibuilding_flag[icell_cent] >= 0) {
                 d_build = WGD->ibuilding_flag[icell_cent];
@@ -275,7 +275,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
 
                 // (LoopDB) Loop through each polygon node of the downstream buildings
                 for (auto j_id = 0; j_id < WGD->allBuildingsV[d_build]->polygonVertices.size() - 1; j_id++) {
-                  // normal direction (in-facing) of face of downstream building (ref as db-face for that loop)
+                  // normal direction (out-facing normal) of face of downstream building (ref as db-face for that loop)
                   cross_dir = atan2(WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].y_poly
                                       - WGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly,
                                     WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].x_poly
@@ -296,6 +296,8 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                   y_down = -((i + 0.5) * WGD->dx - x_ave) * sin(cross_dir) + ((j + 0.5) * WGD->dy - y_ave) * cos(cross_dir);
 
                   /* flow reverse means that the flow at the reference is reveresed compared to the upwind direction
+                     - reverse flow = flow go down along front face - up along back face
+                     - otherwise    = flow go up along front face - down along back face
                      this block check of flow conditions: 
                      1) check if location of current cell against bd-face
                      |  x-dir (relative to center of face): location within one cell
@@ -331,6 +333,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                         }
                       }
                       if (abs(downwind_rel_dir) < 0.5 * M_PI) {
+                        // out-facing normal and wind at reference cell 'same' direction
                         reverse_flag = 1;
                         if (downwind_rel_dir >= 0.0) {
                           along_dir = cross_dir - 0.5 * M_PI;
@@ -338,6 +341,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                           along_dir = cross_dir + 0.5 * M_PI;
                         }
                       } else {
+                        // out-facing normal and wind at reference cell 'opposite' direction
                         reverse_flag = 0;
                         if (downwind_rel_dir >= 0.0) {
                           along_dir = cross_dir + 0.5 * M_PI;
@@ -468,8 +472,10 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                       && WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] != 2) {
                     icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
                     if (reverse_flag == 0) {
+                      // flow go up along front face - down along back face
                       WGD->w0[icell_face] = -abs(0.5 * cross_vel_mag * (1 - 2 * x_pos / s)) * (1 - 2 * (s - x_pos) / s);
                     } else {
+                      // flow go down along front face - up along back face
                       WGD->w0[icell_face] = abs(0.5 * cross_vel_mag * (1 - 2 * x_pos / s)) * (1 - 2 * (s - x_pos) / s);
                     }
                   }
