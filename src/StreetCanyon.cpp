@@ -87,22 +87,21 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
   upwind_dir = atan2(v0_h, u0_h);
   // Loop through to calculate projected location for each polygon node in rotated coordinates
   for (auto id = 0; id < polygonVertices.size(); id++) {
-    xi[id] = (polygonVertices[id].x_poly - building_cent_x) * cos(upwind_dir)
-             + (polygonVertices[id].y_poly - building_cent_y) * sin(upwind_dir);
-    yi[id] = -(polygonVertices[id].x_poly - building_cent_x) * sin(upwind_dir)
-             + (polygonVertices[id].y_poly - building_cent_y) * cos(upwind_dir);
+    xi[id] = (polygonVertices[id].x_poly - building_cent_x) * cos(upwind_dir) + (polygonVertices[id].y_poly - building_cent_y) * sin(upwind_dir);
+    yi[id] = -(polygonVertices[id].x_poly - building_cent_x) * sin(upwind_dir) + (polygonVertices[id].y_poly - building_cent_y) * cos(upwind_dir);
   }
 
-
+  // Loop over face of current building
   for (auto id = 0; id < polygonVertices.size() - 1; id++) {
     // Calculate upwind reletive direction for each face
     upwind_rel_dir[id] = atan2(yi[id + 1] - yi[id], xi[id + 1] - xi[id]) + 0.5 * M_PI;
 
+    // Force the angle to be between (-pi;pi]
     if (upwind_rel_dir[id] > M_PI) {
       upwind_rel_dir[id] -= 2 * M_PI;
     }
 
-    // angle between two points should be in -180 to 0 degree
+    // valid only if relative angle between back face of building and wind angle is (-0.5*pi;0.5*pi)
     if (abs(upwind_rel_dir[id]) < 0.5 * M_PI - 0.0001) {
       // Checking to see whether the face is perpendicular to the wind direction
       if (abs(upwind_rel_dir[id]) > M_PI - tol || abs(upwind_rel_dir[id]) < tol) {
@@ -111,17 +110,23 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
       }
       // Calculating perpendicula direction to each face
       perpendicular_dir[id] = atan2(polygonVertices[id + 1].y_poly - polygonVertices[id].y_poly,
-                                polygonVertices[id + 1].x_poly - polygonVertices[id].x_poly)
+                                    polygonVertices[id + 1].x_poly - polygonVertices[id].x_poly)
                               + 0.5 * M_PI;
+
+      // Force the angle to be between (-pi;pi]
       if (perpendicular_dir[id] > M_PI) {
-        perpendicular_dir[id] -= 2 * M_PI;// Force the angle to be between -pi and pi
+        perpendicular_dir[id] -= 2 * M_PI;
       }
       // Loop through y locations along each face in rotated coordinates
       for (auto y_id = 0; y_id <= 2 * ceil(abs(yi[id] - yi[id + 1]) / WGD->dxy); y_id++) {
-        yc = MIN_S(yi[id], yi[id + 1]) + 0.5 * y_id * WGD->dxy;// y locations along each face in rotated coordinates
-        top_flag = 0;// If we are inside the canyon
+        // y locations along each face in rotated coordinates
+        yc = MIN_S(yi[id], yi[id + 1]) + 0.5 * y_id * WGD->dxy;
+        // reset flag for every y-location along the face (if inside the canyon)
+        top_flag = 0;
+
         if (perpendicular_flag[id] == 0) {
-          x_wall = ((xi[id + 1] - xi[id]) / (yi[id + 1] - yi[id])) * (yc - yi[id]) + xi[id];// x location of each yc point parallel to the face
+          // x location of each yc point parallel to the face
+          x_wall = ((xi[id + 1] - xi[id]) / (yi[id + 1] - yi[id])) * (yc - yi[id]) + xi[id];
         }
 
         for (auto k = k_end - 1; k >= k_start; k--) {
@@ -129,22 +134,17 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
           s = 0.0;
           reverse_flag = 0;
           x_id_min = -1;
-          // Loop through x locations along perpendicular direction of each face
+          // (LoopX1) Loop through x locations along perpendicular direction of each face
           for (auto x_id = 1; x_id <= 2 * ceil(Lr / WGD->dxy); x_id++) {
-            xc = 0.5 * x_id * WGD->dxy;// x locations along perpendicular direction of each face
+            // x locations along perpendicular direction of each face
+            xc = 0.5 * x_id * WGD->dxy;
             // Finding i and j indices of the cell (xc, yc) located in
-            int i = ceil(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir)
-                           + building_cent_x)
-                         / WGD->dx)
-                    - 1;
-            int j = ceil(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir)
-                           + building_cent_y)
-                         / WGD->dy)
-                    - 1;
+            int i = ceil(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / WGD->dx) - 1;
+            int j = ceil(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / WGD->dy) - 1;
             icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
             // Making sure i and j are inside the domain
             if (i >= WGD->nx - 2 && i <= 0 && j >= WGD->ny - 2 && j <= 0) {
-              break;
+              break;// exit LoopX1
             }
             icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
             // Finding id of the first cell in perpendicular direction of the face that is outside of the building
@@ -154,22 +154,22 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
             // Finding id of the last cell in perpendicular direction of the face that is outside of the building
             if ((WGD->icellflag[icell_cent] == 0 || WGD->icellflag[icell_cent] == 2) && x_id_min >= 0) {
               canyon_flag = 1;
+              // x_id_max is last x_id before hitting downstream building
               x_id_max = x_id - 1;
-              s = 0.5 * (x_id_max - x_id_min) * WGD->dxy;// Distance between two buildings
-              if (top_flag == 0)// If inside the street canyon
-              {
+              // Distance between two buildings
+              s = 0.5 * (x_id_max - x_id_min) * WGD->dxy;
+
+              // If inside the street canyon
+              if (top_flag == 0) {
+                // k_ref is one cell above top of street canyon zone
                 k_ref = k + 1;
-                int ic = ceil(((0.5 * x_id_max * WGD->dxy + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir)
-                                + building_cent_x - 0.001)
-                              / WGD->dx)
-                         - 1;
-                int jc = ceil(((0.5 * x_id_max * WGD->dxy + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir)
-                                + building_cent_y - 0.001)
-                              / WGD->dy)
-                         - 1;
+                int ic = ceil(((0.5 * x_id_max * WGD->dxy + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x - 0.001) / WGD->dx) - 1;
+                int jc = ceil(((0.5 * x_id_max * WGD->dxy + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y - 0.001) / WGD->dy) - 1;
+                // reference cell (x_id_max,y,k_ref)
                 icell_cent = ic + jc * (WGD->nx - 1) + k_ref * (WGD->nx - 1) * (WGD->ny - 1);
                 int icell_face = ic + jc * WGD->nx + k_ref * WGD->nx * WGD->ny;
                 if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
+                  // compute average velocity at reference cell.
                   number_u = 0;
                   number_v = 0;
                   u_component = 0.0;
@@ -191,6 +191,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                     v_component += WGD->v0[icell_face + WGD->nx];
                   }
 
+                  // compute average velocity at reference cell.
                   if (u_component != 0.0 && number_u > 0) {
                     u_component /= number_u;
                   } else {
@@ -202,15 +203,19 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                     v_component = 0.0;
                   }
 
+                  // compute velocity in polar coord (u_mag,u_dir)
                   if (number_u == 0 && number_v == 0) {
+                    // break (LoopX1) if no valid velocit at reference cell
                     canyon_flag = 0;
                     top_flag = 0;
                     s = 0.0;
-                    break;
+                    break;// exit LoopX1
                   } else if (number_u > 0 && number_v > 0) {
+                    // 2D velocity
                     velocity_mag = sqrt(pow(u_component, 2.0) + pow(v_component, 2.0));
                     canyon_dir = atan2(v_component, u_component);
                   } else if (number_u > 0) {
+                    // mean velocity along +/-x
                     velocity_mag = abs(u_component);
                     if (u_component > 0.0) {
                       canyon_dir = 0.0;
@@ -218,6 +223,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                       canyon_dir = M_PI;
                     }
                   } else {
+                    // mean velocity along +/- y
                     velocity_mag = abs(v_component);
                     if (v_component > 0.0) {
                       canyon_dir = 0.5 * M_PI;
@@ -226,61 +232,89 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                     }
                   }
 
+                  // flag=1 -> top of canyon set, velocity and direction set
+                  // this if-block will not be executed unless flag is reset
                   top_flag = 1;
+
+                  // icell_cent set to cell inside the downstream building
                   icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
 
                   if (abs(s) > 0.0) {
-                    if ((WGD->ibuilding_flag[icell_cent] >= 0) && (WGD->allBuildingsV[WGD->ibuilding_flag[icell_cent]]->height_eff < height_eff) && (WGD->z_face[k] / s < 0.65)) {
+                    if ((WGD->ibuilding_flag[icell_cent] >= 0)
+                        && (WGD->allBuildingsV[WGD->ibuilding_flag[icell_cent]]->height_eff < height_eff)
+                        && (WGD->z_face[k] / s < 0.65)) {
+                      // break if downstream building sorter than current building and H/S < 0.65 (WILL NOT WORK ABOVE TERRAIN)
                       canyon_flag = 0;
                       top_flag = 0;
                       s = 0.0;
-                      break;
+                      break;// exit LoopX1
                     }
                   }
                 } else {
+                  // break if reference cell is building or terrain (x_id_max==0,2)
                   canyon_flag = 0;
                   top_flag = 0;
                   s = 0.0;
-                  break;
+                  break;// exit LoopX1
                 }
                 if (velocity_mag > WGD->max_velmag) {
+                  // break if velocity above threshold
                   canyon_flag = 0;
                   top_flag = 0;
                   s = 0.0;
-                  break;
+                  break;// exit LoopX1
                 }
               }
 
+              // icell_cent set to cell inside the downstream building
               icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
               if (WGD->ibuilding_flag[icell_cent] >= 0) {
                 d_build = WGD->ibuilding_flag[icell_cent];
-                int i = ceil(((xc - 0.5 * WGD->dxy + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir)
-                               + building_cent_x - 0.001)
-                             / WGD->dx)
-                        - 1;
-                int j = ceil(((xc - 0.5 * WGD->dxy + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir)
-                               + building_cent_y - 0.001)
-                             / WGD->dy)
-                        - 1;
-                for (auto j_id = 0; j_id < WGD->allBuildingsV[d_build]->polygonVertices.size() - 1; j_id++) {
-                  cross_dir = atan2(WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].y_poly - WGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly,
-                                WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].x_poly - WGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly)
-                              + 0.5 * M_PI;
+                int i = ceil(((xc - 0.5 * WGD->dxy + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x - 0.001) / WGD->dx) - 1;
+                int j = ceil(((xc - 0.5 * WGD->dxy + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y - 0.001) / WGD->dy) - 1;
 
+                // (LoopDB) Loop through each polygon node of the downstream buildings
+                for (auto j_id = 0; j_id < WGD->allBuildingsV[d_build]->polygonVertices.size() - 1; j_id++) {
+                  // normal direction (in-facing) of face of downstream building (ref as db-face for that loop)
+                  cross_dir = atan2(WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].y_poly
+                                      - WGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly,
+                                    WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].x_poly
+                                      - WGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly)
+                              + 0.5 * M_PI;
+                  // forcing cross_dir to be in (-pi,pi]
                   if (cross_dir > M_PI + 0.001) {
                     cross_dir -= 2 * M_PI;
                   }
+                  // (x,y) mid point of db-face
                   x_ave = 0.5 * (WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].x_poly + WGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly);
                   y_ave = 0.5 * (WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].y_poly + WGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly);
-
+                  // x-/y-componants of segment between current location (NW-corner of cell) and mid-point of bd-face
+                  // -> relative to the normal of current face  (cross_dir)
                   x_down = ((i + 0.5) * WGD->dx - x_ave) * cos(cross_dir) + ((j + 0.5) * WGD->dy - y_ave) * sin(cross_dir);
                   y_down = -((i + 0.5) * WGD->dx - x_ave) * sin(cross_dir) + ((j + 0.5) * WGD->dy - y_ave) * cos(cross_dir);
 
+                  /* this loop check of valid conditions: 
+                     1) check if location of current cell against bd-face
+                     |  x-dir (relative to center of face): location within one cell
+                     |  y-dir (relative to center of face): less that 1/2 the length of the face
+                     2) check relative angle between wind and bd-face :
+                     |  if smaller that +/- 0.5pi -> flow reversal
+                     |  | -> along_dir = +/- angle of bd-face (according to (-1)*sign of relative angle) 
+                     |   else -> no flow reversal
+                     |  | -> along_dir = +/- angle of bd-face (according to sign of relative angle) 
+                     -> exit loop on db faces at first valid face (condition 1)
+                  */
                   if (abs(x_down) < 0.75 * WGD->dxy) {
-                    segment_length = sqrt(pow(WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].x_poly - WGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly, 2.0)
-                                          + pow(WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].y_poly - WGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly, 2.0));
+                    // length of current face
+                    segment_length = sqrt(pow(WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].x_poly
+                                                - WGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly,
+                                              2.0)
+                                          + pow(WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].y_poly
+                                                  - WGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly,
+                                                2.0));
                     if (abs(y_down) <= 0.5 * segment_length) {
                       downwind_rel_dir = canyon_dir - cross_dir;
+                      // forcing downwind_rel_dir to be in [-pi,pi] and check for round-off error
                       if (downwind_rel_dir > M_PI + 0.001) {
                         downwind_rel_dir -= 2 * M_PI;
                         if (abs(downwind_rel_dir) < 0.001) {
@@ -308,33 +342,38 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                           along_dir = cross_dir - 0.5 * M_PI;
                         }
                       }
+                      // forcing along_dir to be in [-pi,pi]
                       if (along_dir > M_PI + 0.001) {
                         along_dir -= 2 * M_PI;
                       }
                       if (along_dir <= -M_PI) {
                         along_dir += 2 * M_PI;
                       }
-                      break;
+                      break;// exit LoopDB
                     }
                   }
                 }
                 if (cross_dir <= -M_PI) {
                   cross_dir += 2 * M_PI;
                 }
+
+                // check angle between the face of current and downstream buildings.
                 if (reverse_flag == 1) {
+                  // angle need to be (-0.25*pi;0.25*pi)
                   if (cos(cross_dir - perpendicular_dir[id]) < -cos(angle_tol)) {
                     canyon_flag = 0;
                     s = 0;
                     top_flag = 0;
                   }
                 } else {
+                  // angle need to be (-pi;-0.75*pi) or (0.75*pi;pi)
                   if (cos(cross_dir - perpendicular_dir[id]) > cos(angle_tol)) {
                     canyon_flag = 0;
                     s = 0;
                     top_flag = 0;
                   }
                 }
-                break;
+                break;// exit LoopX1
               }
             }
           }
@@ -346,19 +385,20 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
             cross_vel_mag = abs(velocity_mag * cos(canyon_dir - cross_dir));
             for (auto x_id = x_id_min; x_id <= x_id_max; x_id++) {
               xc = 0.5 * x_id * WGD->dxy;
-              int i = ceil(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir)
-                             + building_cent_x - 0.001)
-                           / WGD->dx)
-                      - 1;
-              int j = ceil(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir)
-                             + building_cent_y - 0.001)
-                           / WGD->dy)
-                      - 1;
+
+              int i = ceil(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x - 0.001) / WGD->dx) - 1;
+              int j = ceil(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y - 0.001) / WGD->dy) - 1;
+
               icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
               if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
-                i_u = std::round(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir)
-                                   + building_cent_x)
-                                 / WGD->dx);
+
+                // u-velocity parameterization (face)
+                /*
+                  i_u x-index of u-face (j does not need correction cell)
+                  x_p,y_p non-rotated relative to building center (u-face)
+                  x_u,y_u rotated relative to building center (u-face)
+                */
+                i_u = std::round(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / WGD->dx);
 
                 x_p = i_u * WGD->dx - building_cent_x;
                 y_p = (j + 0.5) * WGD->dy - building_cent_y;
@@ -375,10 +415,15 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                   icell_face = i_u + j * WGD->nx + k * WGD->nx * WGD->ny;
                   WGD->u0[icell_face] = along_vel_mag * cos(along_dir) + cross_vel_mag * (2 * x_pos / s) * 2 * (1 - x_pos / s) * cos(cross_dir);
                 }
+                // end of u-velocity parameterization
 
-                j_v = std::round(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir)
-                                   + building_cent_y)
-                                 / WGD->dy);
+                // v-velocity parameterization (face)
+                /*
+                  j_v y-index of v-face (i does not need correction cell)
+                  x_p,y_p non-rotated relative to building center (v-face)
+                  x_u,y_u rotated relative to building center (u-face)
+                */
+                j_v = std::round(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / WGD->dy);
                 x_p = (i + 0.5) * WGD->dx - building_cent_x;
                 y_p = j_v * WGD->dy - building_cent_y;
                 x_v = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
@@ -393,7 +438,15 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                   icell_face = i + j_v * WGD->nx + k * WGD->nx * WGD->ny;
                   WGD->v0[icell_face] = along_vel_mag * sin(along_dir) + cross_vel_mag * (2 * x_pos / s) * 2 * (1 - x_pos / s) * sin(cross_dir);
                 }
+                // end of v-velocity parameterization
 
+                // w-velocity parameterization (face) and cellflag (cell)
+                // v-velocity parameterization (face)
+                /*
+                  (i,j do not need correction cell)
+                  x_p,y_p non-rotated relative to building center (w-face/cell)
+                  x_w,y_w rotated relative to building center (w-face/cell)
+                */
                 x_p = (i + 0.5) * WGD->dx - building_cent_x;
                 y_p = (j + 0.5) * WGD->dy - building_cent_y;
                 x_w = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
@@ -407,7 +460,8 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
 
                 if (x_pos <= s + 0.001 && x_pos > -0.5 * WGD->dxy) {
                   icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                  if (WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] != 0 && WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] != 2) {
+                  if (WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] != 0
+                      && WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] != 2) {
                     icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
                     if (reverse_flag == 0) {
                       WGD->w0[icell_face] = -abs(0.5 * cross_vel_mag * (1 - 2 * x_pos / s)) * (1 - 2 * (s - x_pos) / s);
@@ -419,6 +473,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                     WGD->icellflag[icell_cent] = 6;
                   }
                 }
+                // end of w-velocity parameterization
               }
             }
           }
