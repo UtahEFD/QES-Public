@@ -285,22 +285,25 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                   if (cross_dir > M_PI + 0.001) {
                     cross_dir -= 2 * M_PI;
                   }
+
                   // (x,y) mid point of db-face
                   x_ave = 0.5 * (WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].x_poly + WGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly);
                   y_ave = 0.5 * (WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].y_poly + WGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly);
+
                   // x-/y-componants of segment between current location (NW-corner of cell) and mid-point of bd-face
                   // -> relative to the normal of current face  (cross_dir)
                   x_down = ((i + 0.5) * WGD->dx - x_ave) * cos(cross_dir) + ((j + 0.5) * WGD->dy - y_ave) * sin(cross_dir);
                   y_down = -((i + 0.5) * WGD->dx - x_ave) * sin(cross_dir) + ((j + 0.5) * WGD->dy - y_ave) * cos(cross_dir);
 
-                  /* this loop check of valid conditions: 
+                  /* flow reverse means that the flow at the reference is reveresed compared to the upwind direction
+                     this block check of flow conditions: 
                      1) check if location of current cell against bd-face
                      |  x-dir (relative to center of face): location within one cell
                      |  y-dir (relative to center of face): less that 1/2 the length of the face
                      2) check relative angle between wind and bd-face :
-                     |  if smaller that +/- 0.5pi -> flow reversal
+                     |  if smaller that +/- 0.5pi -> flow reverse
                      |  | -> along_dir = +/- angle of bd-face (according to (-1)*sign of relative angle) 
-                     |   else -> no flow reversal
+                     |   else -> no flow reverse
                      |  | -> along_dir = +/- angle of bd-face (according to sign of relative angle) 
                      -> exit loop on db faces at first valid face (condition 1)
                   */
@@ -381,6 +384,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
 
           // std::cout << "along_dir:   " << along_dir << std::endl;
           if (canyon_flag == 1 && s > 0.9 * WGD->dxy) {
+            // along velocity adjusted for height (assuming log profile) (WILL NOT WORK OVER TERRAIN)
             along_vel_mag = abs(velocity_mag * cos(canyon_dir - along_dir)) * log(WGD->z[k] / WGD->z0) / log(WGD->z[k_ref] / WGD->z0);
             cross_vel_mag = abs(velocity_mag * cos(canyon_dir - cross_dir));
             for (auto x_id = x_id_min; x_id <= x_id_max; x_id++) {
