@@ -111,5 +111,5 @@ endif (DOXYGEN_FOUND)
 
 #add_subdirectory(quicutil)
 add_subdirectory(util)
-add_subdirectory(src)
+add_subdirectory(src/plume)
 add_subdirectory(qesPlume)

@@ -2,7 +2,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 # needs to be relative to the current project when we
 # hierarchically integrate projects together.
-include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/src/plume)
 
 CUDA_ADD_EXECUTABLE( qesPlume
   qesPlumeMain.cpp
