@@ -111,6 +111,7 @@ int main(int argc, char *argv[])
     }
   }
 
+  // probably will need to make 2 of these...
   // Generate the general WINDS data from all inputs
   WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
 
@@ -180,8 +181,28 @@ int main(int argc, char *argv[])
   }
 
   solver->solve(WID, WGD, !arguments.solveWind);
+  
+  // run the other...
+  // solverC->solve(WID, WGD, !arguments.solveWind);
 
   std::cout << "Solver done!\n";
+
+  // you could then compare wgd1->u with wgd2->u  -- these are linear
+  // vectors of floats representing u wind component...
+
+  // same for v, and w...
+
+  // together the u, v, and w represent a wind vector...
+
+  // you do a difference...
+  //you could compute the windVelMag at each cell
+
+  // average u difference =
+  // average v difference =
+  // average w difference =
+  // maybe the max differences...
+
+  // even better would be to compute a R^2 regression comparison...
 
   if (TGD != nullptr)
     TGD->run(WGD);
