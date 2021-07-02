@@ -16,7 +16,7 @@ foreach(basetest ${BASETESTS})
     ENDIF()
 
     target_link_libraries(${basetest} qeswindscore)
-    target_link_libraries(${basetest} qeswindsutil)
+    target_link_libraries(${basetest} qesutil)
     target_link_libraries(${basetest} ${Boost_LIBRARIES})
 
     target_link_libraries(${basetest} ${GDAL_LIBRARY})

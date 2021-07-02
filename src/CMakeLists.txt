@@ -85,7 +85,7 @@ IF (HAS_OPTIX_SUPPORT MATCHES ON)
 ENDIF()
 
 target_link_libraries(unitTest qeswindscore)
-target_link_libraries(unitTest qeswindsutil)
+target_link_libraries(unitTest qesutil)
 target_link_libraries(unitTest unitTestLib)
 target_link_libraries(unitTest ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(unitTest ${GDAL_LIBRARY})

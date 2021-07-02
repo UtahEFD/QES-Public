@@ -10,7 +10,7 @@ CUDA_ADD_EXECUTABLE( qesCanopy
 
 target_link_libraries(qesCanopy curand)
 target_link_libraries(qesCanopy qeswindscore)
-target_link_libraries(qesCanopy qeswindsutil)
+target_link_libraries(qesCanopy qesutil)
 
 IF (HAS_OPTIX_SUPPORT MATCHES ON)
   target_link_libraries(qesCanopy qesOptix)
