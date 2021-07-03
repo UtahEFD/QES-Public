@@ -1,5 +1,6 @@
 include_directories(${CMAKE_SOURCE_DIR})
-include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/src/winds)
+
 
 set(BASETESTS
   argparser
