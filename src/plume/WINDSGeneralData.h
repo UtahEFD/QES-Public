@@ -21,7 +21,7 @@ public:
   WINDSGeneralData() {}
 
   // initializer
-  WINDSGeneralData(Args *);
+  WINDSGeneralData(const std::string);
 
   // load data at given time instance
   void loadNetCDFData(int);

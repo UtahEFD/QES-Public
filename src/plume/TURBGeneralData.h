@@ -18,7 +18,7 @@ public:
   // Defoult
   TURBGeneralData()
   {}
-  TURBGeneralData(Args *arguments, WINDSGeneralData *);
+  TURBGeneralData(const std::string, WINDSGeneralData *);
 
   // load data at given time instance
   void loadNetCDFData(int);

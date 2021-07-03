@@ -12,13 +12,13 @@
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
-WINDSGeneralData ::WINDSGeneralData(Args *arguments)
+WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
 {
 
   std::cout << "[WINDS Data] \t Loading QES-winds fields " << std::endl;
 
   // fullname passed to WINDSGeneralData
-  input = new NetCDFInput(arguments->inputWINDSFile);
+  input = new NetCDFInput(inputFile);
 
   // create wall instance for BC
   wall = new Wall();

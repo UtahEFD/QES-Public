@@ -14,13 +14,13 @@ using namespace netCDF::exceptions;
 
 
 //TURBGeneralData::TURBGeneralData(Args* arguments, WINDSGeneralData* WGD){
-TURBGeneralData::TURBGeneralData(Args *arguments, WINDSGeneralData *WGD)
+TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *WGD)
 {
 
   std::cout << "[TURB Data] \t Loading QES-turb fields " << std::endl;
 
   // fullname passed to WINDSGeneralData
-  input = new NetCDFInput(arguments->inputTURBFile);
+  input = new NetCDFInput(inputFile);
 
   // nx,ny - face centered value (consistant with QES-Winds)
   input->getDimensionSize("x", nx);
