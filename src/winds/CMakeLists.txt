@@ -2,6 +2,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/unitTests)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../util)
 
 add_subdirectory( unitTests )
 
@@ -25,9 +26,6 @@ CUDA_ADD_LIBRARY( qeswindscore
   LocalMixingSerial.cpp
   LocalMixingOptix.cpp
   Mesh.cpp
-  NetCDFInput.cpp
-  NetCDFOutput.cpp
-  QESNetCDFOutput.cpp
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
   Sensor.cu

@@ -3,6 +3,7 @@ include_directories(${CMAKE_SOURCE_DIR})
 # needs to be relative to the current project when we
 # hierarchically integrate projects together.
 include_directories(${PROJECT_SOURCE_DIR}/src/winds)
+include_directories(${PROJECT_SOURCE_DIR}/util)
 
 CUDA_ADD_EXECUTABLE( qesCanopy
   qesCanopyMain.cpp

@@ -1,16 +1,16 @@
 include_directories(${CMAKE_SOURCE_DIR})
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../util)
+
 #INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/quicutil)  
 #LINK_DIRECTORIES (${CMAKE_BINARY_DIR}/quicutil/)
 
 CUDA_ADD_LIBRARY( qesplumecore
     
     Random.cpp
-    Vector3.h
-    
+        
     Args.cpp
-    Input.cpp
-    NetCDFInput.cpp
     WINDSGeneralData.cpp
     TURBGeneralData.cpp
     Wall.cpp
@@ -20,8 +20,6 @@ CUDA_ADD_LIBRARY( qesplumecore
     AdvectParticle.cpp
     WallReflection.cpp
     
-    NetCDFOutput.cpp
-    QESNetCDFOutput.cpp
     PlumeOutput.cpp
     PlumeOutputParticleData.cpp
     PlumeOutputEulerian.cpp
