@@ -41,7 +41,7 @@
 #include <limits>
 #include <netcdf>
 
-#include "NetCDFOutput.h"
+#include "util/NetCDFOutput.h"
 
 /*
   Author: Fabien Margairaz

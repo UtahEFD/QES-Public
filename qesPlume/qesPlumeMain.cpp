@@ -14,21 +14,20 @@
 #include "util/calcTime.h"
 
 
-#include "Args.hpp"
-#include "PlumeInputData.hpp"
-#include "Input.hpp"
-#include "NetCDFInput.h"
+#include "src/plume/Args.hpp"
+#include "src/plume/PlumeInputData.hpp"
+#include "util/NetCDFInput.h"
 
-#include "WINDSGeneralData.h"
-#include "TURBGeneralData.h"
+#include "src/plume/WINDSGeneralData.h"
+#include "src/plume/TURBGeneralData.h"
 
-#include "Plume.hpp"
-#include "Eulerian.h"
+#include "src/plume/Plume.hpp"
+#include "src/plume/Eulerian.h"
 
-#include "QESNetCDFOutput.h"
-#include "PlumeOutputEulerian.h"
-#include "PlumeOutput.h"
-#include "PlumeOutputParticleData.h"
+#include "util/QESNetCDFOutput.h"
+#include "src/plume/PlumeOutputEulerian.h"
+#include "src/plume/PlumeOutput.h"
+#include "src/plume/PlumeOutputParticleData.h"
 
 
 // LA do these need to be here???

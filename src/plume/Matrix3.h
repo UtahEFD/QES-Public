@@ -2,7 +2,7 @@
 
 #include <type_traits>
 #include <iostream>
-#include "Vector3.h"
+#include "util/Vector3.h"
 
 
 template<class T>

@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "Args.hpp"
-#include "NetCDFInput.h"
+#include "util/NetCDFInput.h"
 #include "WINDSGeneralData.h"
 
 /*

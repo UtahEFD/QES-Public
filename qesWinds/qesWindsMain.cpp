@@ -8,27 +8,27 @@
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
-#include "QESNetCDFOutput.h"
+#include "util/QESNetCDFOutput.h"
 
-#include "handleWINDSArgs.h"
+#include "src/winds/handleWINDSArgs.h"
 
-#include "WINDSInputData.h"
-#include "WINDSGeneralData.h"
-#include "WINDSOutputVisualization.h"
-#include "WINDSOutputWorkspace.h"
+#include "src/winds/WINDSInputData.h"
+#include "src/winds/WINDSGeneralData.h"
+#include "src/winds/WINDSOutputVisualization.h"
+#include "src/winds/WINDSOutputWorkspace.h"
 
-#include "WINDSOutputWRF.h"
+#include "src/winds/WINDSOutputWRF.h"
 
-#include "TURBGeneralData.h"
-#include "TURBOutput.h"
+#include "src/winds/TURBGeneralData.h"
+#include "src/winds/TURBOutput.h"
 
-#include "Solver.h"
-#include "CPUSolver.h"
-#include "DynamicParallelism.h"
-#include "GlobalMemory.h"
-#include "SharedMemory.h"
+#include "src/winds/Solver.h"
+#include "src/winds/CPUSolver.h"
+#include "src/winds/DynamicParallelism.h"
+#include "src/winds/GlobalMemory.h"
+#include "src/winds/SharedMemory.h"
 
-#include "Sensor.h"
+#include "src/winds/Sensor.h"
 
 namespace pt = boost::property_tree;
 

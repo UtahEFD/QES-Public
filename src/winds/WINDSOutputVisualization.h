@@ -37,7 +37,7 @@
 
 #include "WINDSGeneralData.h"
 #include "WINDSInputData.h"
-#include "QESNetCDFOutput.h"
+#include "util/QESNetCDFOutput.h"
 
 /**
  * @class WINDSOutputVisualization

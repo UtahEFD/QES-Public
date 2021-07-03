@@ -31,7 +31,7 @@
 
 #pragma once
 
-#include "Vector3.h"
+#include "util/Vector3.h"
 #include <vector>
 
 /**

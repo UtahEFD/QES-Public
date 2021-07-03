@@ -18,7 +18,7 @@
 
 #include "PlumeInputData.hpp"
 
-#include "QESNetCDFOutput.h"
+#include "util/QESNetCDFOutput.h"
 
 class Plume;
 

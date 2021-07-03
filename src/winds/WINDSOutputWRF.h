@@ -4,7 +4,7 @@
 
 #include "WINDSGeneralData.h"
 #include "WRFInput.h"
-#include "QESNetCDFOutput.h"
+#include "util/QESNetCDFOutput.h"
 
 /* Specialized output classes derived from QESNetCDFOutput for
    face center data (used for turbulence,...)

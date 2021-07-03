@@ -20,7 +20,7 @@
 #include "TURBGeneralData.h"
 #include "Eulerian.h"
 
-#include "QESNetCDFOutput.h"
+#include "util/QESNetCDFOutput.h"
 
 
 class PlumeOutputEulerian : public QESNetCDFOutput

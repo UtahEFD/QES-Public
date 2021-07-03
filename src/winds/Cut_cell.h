@@ -33,7 +33,7 @@
 
 #include <math.h>
 #include <algorithm>
-#include "Vector3.h"
+#include "util/Vector3.h"
 #include "Edge.h"
 #include "Cell.h"
 #include "DTEHeightField.h"

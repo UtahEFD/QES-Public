@@ -15,11 +15,11 @@
 #include <cstring>
 
 #include "util/calcTime.h"
-#include "Vector3.h"
+#include "util/Vector3.h"
 #include "Matrix3.h"
 #include "Random.h"
 
-#include "QESNetCDFOutput.h"
+#include "util/QESNetCDFOutput.h"
 #include "PlumeOutput.h"
 #include "PlumeOutputParticleData.h"
 

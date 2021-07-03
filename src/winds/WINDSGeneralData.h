@@ -53,7 +53,7 @@
 #include "DTEHeightField.h"
 #include "Cut_cell.h"
 #include "Wall.h"
-#include "NetCDFInput.h"
+#include "util/NetCDFInput.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 namespace bt = boost::posix_time;

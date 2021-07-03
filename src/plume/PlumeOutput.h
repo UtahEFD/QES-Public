@@ -20,7 +20,7 @@
 #include "PlumeInputData.hpp"
 #include "WINDSGeneralData.h"
 
-#include "QESNetCDFOutput.h"
+#include "util/QESNetCDFOutput.h"
 
 class Plume;
 

@@ -11,7 +11,7 @@
 
 #include "util/calcTime.h"
 #include "Random.h"
-#include "Vector3.h"
+#include "util/Vector3.h"
 
 #include "PlumeInputData.hpp"
 #include "WINDSGeneralData.h"

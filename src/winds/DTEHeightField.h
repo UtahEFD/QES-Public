@@ -34,7 +34,7 @@
 
 #include <string>
 #include "Triangle.h"
-#include "Vector3.h"
+#include "util/Vector3.h"
 
 #include "gdal_priv.h"
 #include "cpl_conv.h"// for CPLMalloc()
@@ -63,7 +63,7 @@ public:
   friend class test_DTEHeightField;
 
   DTEHeightField();// this is not likely to produce anything
-                   // useful -- Pete
+    // useful -- Pete
 
   /**
    * Constructs a GIS Digital Elevation Model for use with QES.

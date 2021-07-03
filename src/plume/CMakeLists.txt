@@ -1,7 +1,7 @@
 include_directories(${CMAKE_SOURCE_DIR})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../util)
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../util)
 
 #INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/quicutil)  
 #LINK_DIRECTORIES (${CMAKE_BINARY_DIR}/quicutil/)

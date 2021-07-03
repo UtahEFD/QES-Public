@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <netcdf>
-#include "NetCDFInput.h"
+#include "util/NetCDFInput.h"
 #include "Args.hpp"
 #include "Wall.h"
 

@@ -42,7 +42,7 @@
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 
-#include "Vector3.h"
+#include "util/Vector3.h"
 
 using namespace std;
 

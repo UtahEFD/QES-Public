@@ -34,7 +34,7 @@
 #include <cmath>
 #include <cfloat>
 #include <random>
-#include "Vec3D.h"
+#include "util/Vec3D.h"
 
 /**
  * @class SphereDirections

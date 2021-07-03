@@ -34,7 +34,7 @@
 #ifndef HR_H
 #define HR_H
 
-#include "Vector3.h"
+#include "util/Vector3.h"
 #include <limits>
 
 /**

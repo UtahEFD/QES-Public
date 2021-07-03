@@ -31,7 +31,7 @@
 
 #pragma once
 
-#include "Vec3D.h"
+#include "util/Vec3D.h"
 
 /**
  * @class Ray
