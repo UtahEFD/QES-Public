@@ -58,10 +58,15 @@ public:
   TURBGeneralData()
   {}
   TURBGeneralData(const WINDSInputData *, WINDSGeneralData *);
+  TURBGeneralData(const std::string, WINDSGeneralData *);
+
   virtual ~TURBGeneralData()
   {}
 
   virtual void run(WINDSGeneralData *);
+
+  // load data at given time instance
+  void loadNetCDFData(int);
 
   bool flagNonLocalMixing; /**< :document this: */
 
@@ -70,6 +75,11 @@ public:
   /** number of cells */
   int nx, ny, nz;
   ///@}
+
+  //nt - number of time instance in data
+  int nt;
+  // time vector
+  std::vector<float> t;
 
   ///@{
   /** grid information */
@@ -143,6 +153,9 @@ private:
   float sigUConst = sigUOrg * sigUOrg * cPope * cPope;
   float sigVConst = sigVOrg * sigVOrg * cPope * cPope;
   float sigWConst = sigWOrg * sigWOrg * cPope * cPope;
+
+  // input: store here for multiple time instance.
+  NetCDFInput *input;
 
   void getFrictionVelocity(WINDSGeneralData *);
   void getDerivatives(WINDSGeneralData *);
