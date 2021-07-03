@@ -7,20 +7,15 @@ class Wall
 {
 
 protected:
-
-
 public:
+  Wall()
+  {
+  }
+  ~Wall()
+  {
+  }
 
-    Wall()
-    {
-        
-    }
-    ~Wall()
-    {
-        
-    }
-
-    /**
+  /**
      * @brief
      *
      * This function takes in the icellflags set by setCellsFlag
@@ -30,6 +25,5 @@ public:
      * and wall in front/back
      *
      */
-    void defineWalls(WINDSGeneralData *WGD);
-
+  void defineWalls(WINDSGeneralData *WGD);
 };

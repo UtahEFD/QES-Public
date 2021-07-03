@@ -6,9 +6,9 @@
 
 #include "Plume.hpp"
 
-Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD,
-             Eulerian *eul, Args *arguments)
-    : particleList(0) {
+Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul, Args *arguments)
+  : particleList(0)
+{
 
   std::cout << "[Plume] \t Setting up simulation details " << std::endl;
 
@@ -94,8 +94,8 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD,
   }
 }
 
-void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD,
-                Eulerian *eul, std::vector<QESNetCDFOutput *> outputVec) {
+void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul, std::vector<QESNetCDFOutput *> outputVec)
+{
   // get the threshold velocity fluctuation to define rogue particles
   vel_threshold = eul->vel_threshold;
 
@@ -201,8 +201,8 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD,
         needToScrub = true;
       }
 
-    } // end of loop for (parItr == particleList.begin(); parItr !=
-      // particleList.end() ; parItr++ )
+    }// end of loop for (parItr == particleList.begin(); parItr !=
+    // particleList.end() ; parItr++ )
 
     // incrementation of time and timestep
     simTimeIdx++;
@@ -243,7 +243,7 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD,
       }
     }
 
-  } // end of time loop
+  }// end of time loop
 
   std::cout << "[Plume] \t End of particles advection at Time = " << simTime
             << " s (iteration = " << simTimeIdx << "). \n";
@@ -268,9 +268,8 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD,
   return;
 }
 
-double Plume::calcCourantTimestep(const double &u, const double &v,
-                                  const double &w,
-                                  const double &timeRemainder) {
+double Plume::calcCourantTimestep(const double &u, const double &v, const double &w, const double &timeRemainder)
+{
   // if the Courant Number is set to 0.0, we want to exit using the
   // timeRemainder (first time through that is the simTime)
   if (CourantNum == 0.0) {
@@ -305,7 +304,8 @@ double Plume::calcCourantTimestep(const double &u, const double &v,
   return dt_par;
 }
 
-void Plume::getInputSources(PlumeInputData *PID) {
+void Plume::getInputSources(PlumeInputData *PID)
+{
   int numSources_Input = PID->sources->sources.size();
 
   if (numSources_Input == 0) {
@@ -329,11 +329,10 @@ void Plume::getInputSources(PlumeInputData *PID) {
     // now do anything that is needed to the source via the pointer
     sPtr->setSourceIdx(sIdx);
     sPtr->m_rType->calcReleaseInfo(PID->simParams->timeStep,
-                                   PID->simParams->simDur);
+      PID->simParams->simDur);
     sPtr->m_rType->checkReleaseInfo(PID->simParams->timeStep,
-                                    PID->simParams->simDur);
-    sPtr->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend,
-                       domainZstart, domainZend);
+      PID->simParams->simDur);
+    sPtr->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
 
     // now determine the number of particles to release for the source and
     // update the overall count
@@ -345,8 +344,8 @@ void Plume::getInputSources(PlumeInputData *PID) {
   }
 }
 
-int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD,
-                                TURBGeneralData *TGD, Eulerian *eul) {
+int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul)
+{
 
   // Add new particles now
   // - walk over all sources and add the emitted particles from
@@ -355,21 +354,21 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD,
   int numNewParticles = 0;
   for (auto sIdx = 0u; sIdx < allSources.size(); sIdx++) {
     numNewParticles += allSources.at(sIdx)->emitParticles(
-        (float)sim_dt, currentTime, nextSetOfParticles);
+      (float)sim_dt, currentTime, nextSetOfParticles);
   }
 
   setParticleVals(WGD, TGD, eul, nextSetOfParticles);
 
   // append all the new particles on to the big particle
   // advection list
-  particleList.insert(particleList.end(), nextSetOfParticles.begin(),
-                      nextSetOfParticles.end());
+  particleList.insert(particleList.end(), nextSetOfParticles.begin(), nextSetOfParticles.end());
 
   // now calculate the number of particles to release for this timestep
   return numNewParticles;
 }
 
-void Plume::scrubParticleList() {
+void Plume::scrubParticleList()
+{
   for (auto parItr = particleList.begin(); parItr != particleList.end();) {
     if ((*parItr)->isActive == false) {
       delete *parItr;
@@ -382,8 +381,8 @@ void Plume::scrubParticleList() {
   return;
 }
 
-void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD,
-                            Eulerian *eul, std::list<Particle *> newParticles) {
+void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul, std::list<Particle *> newParticles)
+{
   // at this time, should be a list of each and every particle that exists at
   // the given time particles and sources can potentially be added to the list
   // elsewhere
@@ -393,8 +392,7 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD,
     // this replaces the old indexing trick, set the indexing variables for the
     // interp3D for each particle, then get interpolated values from the
     // Eulerian grid to the particle Lagrangian values for multiple datatypes
-    eul->setInterp3Dindex_cellVar((*parItr)->xPos_init, (*parItr)->yPos_init,
-                                  (*parItr)->zPos_init);
+    eul->setInterp3Dindex_cellVar((*parItr)->xPos_init, (*parItr)->yPos_init, (*parItr)->zPos_init);
 
     // set particle ID (use global particle counter)
     (*parItr)->particleID = nParsReleased;
@@ -419,10 +417,10 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD,
     // now set the initial velocity fluctuations for the particle
     // The  sqrt of the variance is to match Bailey's code
     double rann =
-        random::norRan(); // use different random numbers for each direction
+      random::norRan();// use different random numbers for each direction
     (*parItr)->uFluct = std::sqrt(current_sig_x) * rann;
-    rann = random::norRan(); // should be randn() matlab equivalent, which is a
-                             // normally distributed random number
+    rann = random::norRan();// should be randn() matlab equivalent, which is a
+      // normally distributed random number
     (*parItr)->vFluct = std::sqrt(current_sig_y) * rann;
     rann = random::norRan();
     (*parItr)->wFluct = std::sqrt(current_sig_z) * rann;
@@ -462,14 +460,13 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD,
     (*parItr)->isActive = true;
 
     int cellIdNew =
-        eul->getCellId((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos);
+      eul->getCellId((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos);
     if ((WGD->icellflag[cellIdNew] == 0) && (WGD->icellflag[cellIdNew] == 2)) {
       std::cerr << "WARNING invalid initial position" << std::endl;
       (*parItr)->isActive = false;
     }
 
-    double det = txx * (tyy * tzz - tyz * tyz) - txy * (txy * tzz - tyz * txz) +
-                 txz * (txy * tyz - tyy * txz);
+    double det = txx * (tyy * tzz - tyz * tyz) - txy * (txy * tzz - tyz * txz) + txz * (txy * tyz - tyy * txz);
     if (std::abs(det) < 1e-10) {
       std::cerr << "WARNING invalid position stress" << std::endl;
       (*parItr)->isActive = false;
@@ -477,22 +474,18 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD,
   }
 }
 
-void Plume::calcInvariants(const double &txx, const double &txy,
-                           const double &txz, const double &tyy,
-                           const double &tyz, const double &tzz,
-                           double &invar_xx, double &invar_yy,
-                           double &invar_zz) {
+void Plume::calcInvariants(const double &txx, const double &txy, const double &txz, const double &tyy, const double &tyz, const double &tzz, double &invar_xx, double &invar_yy, double &invar_zz)
+{
   // since the x doesn't depend on itself, can just set the output without doing
   // any temporary variables (copied from Bailey's code)
   invar_xx = txx + tyy + tzz;
   invar_yy =
-      txx * tyy + txx * tzz + tyy * tzz - txy * txy - txz * txz - tyz * tyz;
-  invar_zz = txx * (tyy * tzz - tyz * tyz) - txy * (txy * tzz - tyz * txz) +
-             txz * (txy * tyz - tyy * txz);
+    txx * tyy + txx * tzz + tyy * tzz - txy * txy - txz * txz - tyz * tyz;
+  invar_zz = txx * (tyy * tzz - tyz * tyz) - txy * (txy * tzz - tyz * txz) + txz * (txy * tyz - tyy * txz);
 }
 
-void Plume::makeRealizable(double &txx, double &txy, double &txz, double &tyy,
-                           double &tyz, double &tzz) {
+void Plume::makeRealizable(double &txx, double &txy, double &txz, double &tyy, double &tyz, double &tzz)
+{
   // first calculate the invariants and see if they are already realizable
   // the calcInvariants function modifies the values directly, so they always
   // need initialized to something before being sent into said function to be
@@ -502,23 +495,21 @@ void Plume::makeRealizable(double &txx, double &txy, double &txz, double &tyy,
   double invar_zz = 0.0;
   calcInvariants(txx, txy, txz, tyy, tyz, tzz, invar_xx, invar_yy, invar_zz);
 
-  if (invar_xx > invarianceTol && invar_yy > invarianceTol &&
-      invar_zz > invarianceTol) {
-    return; // tau is already realizable
+  if (invar_xx > invarianceTol && invar_yy > invarianceTol && invar_zz > invarianceTol) {
+    return;// tau is already realizable
   }
 
   // since tau is not already realizable, need to make it realizeable
   // start by making a guess of ks, the subfilter scale tke
   // I keep wondering if we can use the input Turb->tke for this or if we should
   // leave it as is
-  double b = 4.0 / 3.0 * (txx + tyy + tzz); // also 4.0/3.0*invar_xx
-  double c = txx * tyy + txx * tzz + tyy * tzz - txy * txy - txz * txz -
-             tyz * tyz; // also invar_yy
+  double b = 4.0 / 3.0 * (txx + tyy + tzz);// also 4.0/3.0*invar_xx
+  double c = txx * tyy + txx * tzz + tyy * tzz - txy * txy - txz * txz - tyz * tyz;// also invar_yy
   double ks = 1.01 * (-b + std::sqrt(b * b - 16.0 / 3.0 * c)) / (8.0 / 3.0);
 
   // if the initial guess is bad, use the straight up invar_xx value
   if (ks < invarianceTol || isnan(ks)) {
-    ks = 0.5 * std::abs(txx + tyy + tzz); // also 0.5*abs(invar_xx)
+    ks = 0.5 * std::abs(txx + tyy + tzz);// also 0.5*abs(invar_xx)
   }
 
   // to avoid increasing tau by more than ks increasing by 0.05%, use a separate
@@ -534,8 +525,7 @@ void Plume::makeRealizable(double &txx, double &txy, double &txz, double &tyy,
   double tyz_new = tyz;
   double tzz_new = tzz + 2.0 / 3.0 * ks;
 
-  calcInvariants(txx_new, txy_new, txz_new, tyy_new, tyz_new, tzz_new, invar_xx,
-                 invar_yy, invar_zz);
+  calcInvariants(txx_new, txy_new, txz_new, tyy_new, tyz_new, tzz_new, invar_xx, invar_yy, invar_zz);
 
   // now adjust the diagonals by 0.05% of the subfilter tke, which is ks, till
   // tau is realizable or if too many iterations go on, give a warning. I've had
@@ -543,9 +533,7 @@ void Plume::makeRealizable(double &txx, double &txy, double &txz, double &tyy,
   //  if it isn't realizable, so maybe another approach for when the iterations
   //  are reached might be smart
   int iter = 0;
-  while ((invar_xx < invarianceTol || invar_yy < invarianceTol ||
-          invar_zz < invarianceTol) &&
-         iter < 1000) {
+  while ((invar_xx < invarianceTol || invar_yy < invarianceTol || invar_zz < invarianceTol) && iter < 1000) {
     iter = iter + 1;
 
     // increase subfilter tke by 5%
@@ -557,8 +545,7 @@ void Plume::makeRealizable(double &txx, double &txy, double &txz, double &tyy,
     tyy_new = tyy + 2.0 / 3.0 * ks;
     tzz_new = tzz + 2.0 / 3.0 * ks;
 
-    calcInvariants(txx_new, txy_new, txz_new, tyy_new, tyz_new, tzz_new,
-                   invar_xx, invar_yy, invar_zz);
+    calcInvariants(txx_new, txy_new, txz_new, tyy_new, tyz_new, tzz_new, invar_xx, invar_yy, invar_zz);
   }
 
   if (iter == 999) {
@@ -576,18 +563,15 @@ void Plume::makeRealizable(double &txx, double &txy, double &txz, double &tyy,
   tzz = tzz_new;
 }
 
-bool Plume::invert3(double &A_11, double &A_12, double &A_13, double &A_21,
-                    double &A_22, double &A_23, double &A_31, double &A_32,
-                    double &A_33) {
+bool Plume::invert3(double &A_11, double &A_12, double &A_13, double &A_21, double &A_22, double &A_23, double &A_31, double &A_32, double &A_33)
+{
   // note that with Bailey's code, the input A_21, A_31, and A_32 are zeros even
   // though they are used here at least when using this on tau to calculate the
   // inverse stress tensor. This is not true when calculating the inverse A
   // matrix for the Ax=b calculation
 
   // now calculate the determinant
-  double det = A_11 * (A_22 * A_33 - A_23 * A_32) -
-               A_12 * (A_21 * A_33 - A_23 * A_31) +
-               A_13 * (A_21 * A_32 - A_22 * A_31);
+  double det = A_11 * (A_22 * A_33 - A_23 * A_32) - A_12 * (A_21 * A_33 - A_23 * A_31) + A_13 * (A_21 * A_32 - A_22 * A_31);
 
   // check for near zero value determinants
   // LA future work: I'm still debating whether this warning needs to be limited
@@ -648,11 +632,8 @@ bool Plume::invert3(double &A_11, double &A_12, double &A_13, double &A_21,
   }
 }
 
-void Plume::matmult(const double &A_11, const double &A_12, const double &A_13,
-                    const double &A_21, const double &A_22, const double &A_23,
-                    const double &A_31, const double &A_32, const double &A_33,
-                    const double &b_11, const double &b_21, const double &b_31,
-                    double &x_11, double &x_21, double &x_31) {
+void Plume::matmult(const double &A_11, const double &A_12, const double &A_13, const double &A_21, const double &A_22, const double &A_23, const double &A_31, const double &A_32, const double &A_33, const double &b_11, const double &b_21, const double &b_31, double &x_11, double &x_21, double &x_31)
+{
   // since the x doesn't depend on itself, can just set the output without doing
   // any temporary variables
 
@@ -662,8 +643,8 @@ void Plume::matmult(const double &A_11, const double &A_12, const double &A_13,
   x_31 = b_11 * A_31 + b_21 * A_32 + b_31 * A_33;
 }
 
-void Plume::setBCfunctions(std::string xBCtype, std::string yBCtype,
-                           std::string zBCtype) {
+void Plume::setBCfunctions(std::string xBCtype, std::string yBCtype, std::string zBCtype)
+{
   // the idea is to use the string input BCtype to determine which boundary
   // condition function to use later in the program, and to have a function
   // pointer point to the required function. I learned about pointer functions
@@ -738,10 +719,8 @@ void Plume::setBCfunctions(std::string xBCtype, std::string yBCtype,
   }
 }
 
-bool Plume::enforceWallBCs_exiting(double &pos, double &velFluct,
-                                   double &velFluct_old,
-                                   const double &domainStart,
-                                   const double &domainEnd) {
+bool Plume::enforceWallBCs_exiting(double &pos, double &velFluct, double &velFluct_old, const double &domainStart, const double &domainEnd)
+{
   // if it goes out of the domain, set isActive to false
   if (pos < domainStart || pos > domainEnd) {
     return false;
@@ -750,10 +729,8 @@ bool Plume::enforceWallBCs_exiting(double &pos, double &velFluct,
   }
 }
 
-bool Plume::enforceWallBCs_periodic(double &pos, double &velFluct,
-                                    double &velFluct_old,
-                                    const double &domainStart,
-                                    const double &domainEnd) {
+bool Plume::enforceWallBCs_periodic(double &pos, double &velFluct, double &velFluct_old, const double &domainStart, const double &domainEnd)
+{
 
   double domainSize = domainEnd - domainStart;
 
@@ -782,10 +759,8 @@ bool Plume::enforceWallBCs_periodic(double &pos, double &velFluct,
   return true;
 }
 
-bool Plume::enforceWallBCs_reflection(double &pos, double &velFluct,
-                                      double &velFluct_old,
-                                      const double &domainStart,
-                                      const double &domainEnd) {
+bool Plume::enforceWallBCs_reflection(double &pos, double &velFluct, double &velFluct_old, const double &domainStart, const double &domainEnd)
+{
   /*
   std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\",
   velFluct = \"" << velFluct << "\", velFluct_old = \"" << velFluct_old << "\",
@@ -806,7 +781,7 @@ bool Plume::enforceWallBCs_reflection(double &pos, double &velFluct,
       velFluct_old = -velFluct_old;
     }
     reflectCount = reflectCount + 1;
-  } // while outside of domain
+  }// while outside of domain
 
   // if the velocity is so large that the particle would reflect more than 100
   // times, the boundary condition could fail.
@@ -835,7 +810,8 @@ bool Plume::enforceWallBCs_reflection(double &pos, double &velFluct,
   return true;
 }
 
-void Plume::writeSimInfoFile(const double &current_time) {
+void Plume::writeSimInfoFile(const double &current_time)
+{
   // if this output is not desired, skip outputting these files
   if (outputSimInfoFile == false) {
     return;
@@ -844,7 +820,7 @@ void Plume::writeSimInfoFile(const double &current_time) {
   std::cout << "writing simInfoFile" << std::endl;
 
   // set some variables for use in the function
-  FILE *fzout; // changing file to which information will be written
+  FILE *fzout;// changing file to which information will be written
 
   // now write out the simulation information to the debug folder
 
@@ -857,19 +833,19 @@ void Plume::writeSimInfoFile(const double &current_time) {
 
   std::string outputFile = outputFolder + "/sim_info.txt";
   fzout = fopen(outputFile.c_str(), "w");
-  fprintf(fzout, "\n"); // a purposeful blank line
+  fprintf(fzout, "\n");// a purposeful blank line
   fprintf(fzout, "saveBasename     = %s\n", saveBasename.c_str());
-  fprintf(fzout, "\n"); // a purposeful blank line
+  fprintf(fzout, "\n");// a purposeful blank line
   fprintf(fzout, "C_0              = %lf\n", C_0);
   fprintf(fzout, "timestep         = %lf\n", sim_dt);
-  fprintf(fzout, "\n"); // a purposeful blank line
+  fprintf(fzout, "\n");// a purposeful blank line
   fprintf(fzout, "current_time     = %lf\n", current_time);
   fprintf(fzout, "rogueCount       = %i\n", isRogueCount);
   fprintf(fzout, "isNotActiveCount = %i\n", isNotActiveCount);
-  fprintf(fzout, "\n"); // a purposeful blank line
+  fprintf(fzout, "\n");// a purposeful blank line
   fprintf(fzout, "invarianceTol    = %lf\n", invarianceTol);
   fprintf(fzout, "velThreshold     = %lf\n", vel_threshold);
-  fprintf(fzout, "\n"); // a purposeful blank line
+  fprintf(fzout, "\n");// a purposeful blank line
   fclose(fzout);
 
   // now that all is finished, clean up the file pointer

@@ -1,37 +1,28 @@
 #include "Plume.hpp"
 
 // reflection -> set particle inactive when entering a wall
-bool Plume::wallReflectionSetToInactive(WINDSGeneralData* WGD, Eulerian* eul,
-                                        double& xPos, double& yPos, double& zPos, 
-                                        double& disX, double& disY, double& disZ,
-                                        double& uFluct, double& vFluct, double& wFluct)
+bool Plume::wallReflectionSetToInactive(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct)
 {
-    int cellIdx = eul->getCellId(xPos,yPos,zPos);
-    if( (WGD->icellflag.at(cellIdx) == 0) || (WGD->icellflag.at(cellIdx) == 2) ) {
-        // particle end trajectory inside solide -> set inactive  
-        return false;
-    } else {
-        // particle end trajectory outside solide -> keep active
-        return true;
-    }
-}
-
-// reflection -> this function will do nothing 
-bool Plume::wallReflectionDoNothing(WINDSGeneralData* WGD, Eulerian* eul,
-                                    double& xPos, double& yPos, double& zPos, 
-                                    double& disX, double& disY, double& disZ,
-                                    double& uFluct, double& vFluct, double& wFluct)
-{
+  int cellIdx = eul->getCellId(xPos, yPos, zPos);
+  if ((WGD->icellflag.at(cellIdx) == 0) || (WGD->icellflag.at(cellIdx) == 2)) {
+    // particle end trajectory inside solide -> set inactive
+    return false;
+  } else {
+    // particle end trajectory outside solide -> keep active
     return true;
+  }
+}
+
+// reflection -> this function will do nothing
+bool Plume::wallReflectionDoNothing(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct)
+{
+  return true;
 }
 
 
-bool Plume::wallReflectionFullStairStep(WINDSGeneralData* WGD, Eulerian* eul,
-                                        double& xPos, double& yPos, double& zPos, 
-                                        double& disX, double& disY, double& disZ,
-                                        double& uFluct, double& vFluct, double& wFluct)
+bool Plume::wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct)
 {
-    /*
+  /*
      * This function will return true if:
      * - no need for reflection (leave xPos, yPos, zPos, uFluct, vFluct, wFluct unchanged)
      * - reflection valid
@@ -45,58 +36,56 @@ bool Plume::wallReflectionFullStairStep(WINDSGeneralData* WGD, Eulerian* eul,
      * - cell ID out of bound 
      * - no valid surface for reflection 
      */
- 
-    // linearized cell ID for end of the trajectory of the particle
-    int cellIdNew = eul->getCellId(xPos,yPos,zPos);    
-    try {
-        int cellFlag=WGD->icellflag.at(cellIdNew);
-    } catch (const std::out_of_range& oor) {            
-        // cell ID out of bound
-        std::cerr << "Reflection problem: particle out of range" << std::endl;
-        return false;
-    }
-    
-    if( (WGD->icellflag[cellIdNew] != 0) && (WGD->icellflag[cellIdNew] != 2) ) {
-        // particle end trajectory outside solide -> no need for reflection
-        return true;
-    } 
-    
-    // linearized cell ID for origine of the trajectory of the particle
-    int cellIdOld = eul->getCellId(xPos-disX,yPos-disY,zPos-disZ); 
 
-    // i,j,k of cell index
-    Vector3<int> cellIdxOld=eul->getCellIndex(cellIdOld);
-    Vector3<int> cellIdxNew=eul->getCellIndex(cellIdNew);
-    int i=cellIdxOld[0], j=cellIdxOld[1], k=cellIdxOld[2];
-    
-    // check particle trajectory more than 1 cell in each direction
-    if( (abs(cellIdxOld[0]-cellIdxNew[0]) > 1) || (abs(cellIdxOld[1]-cellIdxNew[1]) > 1) ||
-        (abs(cellIdxOld[2]-cellIdxNew[2]) > 1) ) 
-    {
-        // update output variable: particle position to old position
-        xPos-=disX;
-        yPos-=disY;
-        zPos-=disZ;
-        
-        return true;
-    }
-        
-    // some constants
-    const double eps_S = 0.0001;
-    const int maxCount = 10;
-    
-    // QES-winds grid information
-    int nx = WGD->nx;
-    int ny = WGD->ny;
-    int nz = WGD->nz;
-    double dx = WGD->dx;
-    double dy = WGD->dy;
-    double dz = WGD->dz;
+  // linearized cell ID for end of the trajectory of the particle
+  int cellIdNew = eul->getCellId(xPos, yPos, zPos);
+  try {
+    int cellFlag = WGD->icellflag.at(cellIdNew);
+  } catch (const std::out_of_range &oor) {
+    // cell ID out of bound
+    std::cerr << "Reflection problem: particle out of range" << std::endl;
+    return false;
+  }
 
-    // cartesian basis vectors 
-    Vector3<double> e1={1.0,0.0,0.0},e2={0.0,1.0,0.0},e3={0.0,0.0,1.0};
-    
-    /* 
+  if ((WGD->icellflag[cellIdNew] != 0) && (WGD->icellflag[cellIdNew] != 2)) {
+    // particle end trajectory outside solide -> no need for reflection
+    return true;
+  }
+
+  // linearized cell ID for origine of the trajectory of the particle
+  int cellIdOld = eul->getCellId(xPos - disX, yPos - disY, zPos - disZ);
+
+  // i,j,k of cell index
+  Vector3<int> cellIdxOld = eul->getCellIndex(cellIdOld);
+  Vector3<int> cellIdxNew = eul->getCellIndex(cellIdNew);
+  int i = cellIdxOld[0], j = cellIdxOld[1], k = cellIdxOld[2];
+
+  // check particle trajectory more than 1 cell in each direction
+  if ((abs(cellIdxOld[0] - cellIdxNew[0]) > 1) || (abs(cellIdxOld[1] - cellIdxNew[1]) > 1) || (abs(cellIdxOld[2] - cellIdxNew[2]) > 1)) {
+    // update output variable: particle position to old position
+    xPos -= disX;
+    yPos -= disY;
+    zPos -= disZ;
+
+    return true;
+  }
+
+  // some constants
+  const double eps_S = 0.0001;
+  const int maxCount = 10;
+
+  // QES-winds grid information
+  int nx = WGD->nx;
+  int ny = WGD->ny;
+  int nz = WGD->nz;
+  double dx = WGD->dx;
+  double dy = WGD->dy;
+  double dz = WGD->dz;
+
+  // cartesian basis vectors
+  Vector3<double> e1 = { 1.0, 0.0, 0.0 }, e2 = { 0.0, 1.0, 0.0 }, e3 = { 0.0, 0.0, 1.0 };
+
+  /* 
        Vector3 variables informations:
        Xold     = origine of the trajectory of the particle  
        Xnew     = end of the trajectory of the particle 
@@ -109,24 +98,24 @@ bool Plume::wallReflectionFullStairStep(WINDSGeneralData* WGD, Eulerian* eul,
        R        = unit vector giving orentation of the reflection
        N        = unit vector noraml to the surface
     */
-    Vector3<double> Xnew,Xold;
-    Vector3<double> vecFluct;    
-    Vector3<double> P,S,U,V1,V2;
-    Vector3<double> R,N;
+  Vector3<double> Xnew, Xold;
+  Vector3<double> vecFluct;
+  Vector3<double> P, S, U, V1, V2;
+  Vector3<double> R, N;
 
-    // position of the particle start of trajectory
-    Xold={xPos-disX,yPos-disY,zPos-disZ};
+  // position of the particle start of trajectory
+  Xold = { xPos - disX, yPos - disY, zPos - disZ };
 
-    // postion of the particle end of trajectory 
-    Xnew={xPos,yPos,zPos};
-    
-    // icellFlag of the cell at the end of the trajectory of the particle 
-    int cellFlagNew=WGD->icellflag.at(cellIdNew);
+  // postion of the particle end of trajectory
+  Xnew = { xPos, yPos, zPos };
 
-    // vector of fluctuation
-    vecFluct={uFluct,vFluct,wFluct};
+  // icellFlag of the cell at the end of the trajectory of the particle
+  int cellFlagNew = WGD->icellflag.at(cellIdNew);
 
-    /* 
+  // vector of fluctuation
+  vecFluct = { uFluct, vFluct, wFluct };
+
+  /* 
        Working variables informations:
        count       - number of reflections
        f1,f2,f3    - sign of trajectory in each direction (+/-1)
@@ -137,181 +126,179 @@ bool Plume::wallReflectionFullStairStep(WINDSGeneralData* WGD, Eulerian* eul,
        s           - smallest ratio of dist. to wall over total dist. travel (once surface selected)
        d           - distance travel after reflection
     */
-    int count=0;
-    double f1,f2,f3;
-    double l1,l2,l3;
-    int validSurface;
-    double s,d;
-    
-    while( (cellFlagNew==0 || cellFlagNew==2) && (count < maxCount) ){ 
-        
-        // distance travelled by particle 
-        U=Xnew-Xold;
-        
-        //set direction 
-        f1=(e1*U);f1=f1/std::abs(f1);
-        f2=(e2*U);f2=f2/std::abs(f2);
-        f3=(e3*U);f3=f3/std::abs(f3);
-        
-        // reset smallest ratio
-        s=100.0;
-        // reset number of potential valid surface
-        validSurface=0;
-        // reset distance travel after all
-        d=0.0;
-                
-        // x-drection
-        N=-f1*e1;
-        S={WGD->x[i]+f1*0.5*dx,double(WGD->y[j]),double(WGD->z[k])};
-        l1 = - (Xold*N - S*N)/(U*N);
+  int count = 0;
+  double f1, f2, f3;
+  double l1, l2, l3;
+  int validSurface;
+  double s, d;
 
-        // y-drection
-        N=-f2*e2;
-        S={double(WGD->x[i]),WGD->y[j]+f2*0.5*dy,double(WGD->z[k])};
-        l2 = -(Xold*N - S*N)/(U*N);
-        
-        // z-drection (dz can be variable with hieght)
-        N=-f3*e3;
-        if(f3 >= 0.0) {
-            S={double(WGD->x[i]),double(WGD->y[j]),double(WGD->z_face[k])};
-        } else {
-            S={double(WGD->x[i]),double(WGD->y[j]),double(WGD->z_face[k-1])};
-        }
-        l3 = -(Xold*N - S*N)/(U*N);
-        
-        // check with surface is a potential bounce (li < 1.0)
-        if( (l1 < 1.0) && (l1 >= -eps_S) ){
-            validSurface ++;
-            s=l1;
-            N=-f1*e1;
-        }
-        if( (l2 < 1.0) && (l2 >= -eps_S) ){
-            validSurface ++;
-            s=l2;
-            N=-f2*e2;
-        }
-        if( (l3 < 1.0) && (l3 >= -eps_S) ){
-            validSurface ++;
-            s=l3;
-            N=-f3*e3;
-        }
-        
-        // check if more than one surface is valid
-        if(validSurface == 0) {
-            // if 0 valid surface  
-            //std::cout << "Reflection problem: no valid surface" << std::endl;
-            return false;
-        } else if(validSurface > 1) {
-            // Here-> Multiple options to bounce
-            // NOTE: vectors will be at min size 2!
-            
-            // list of potential surface (will be sorted from smallest to largest)
-            // - ratio of dist. to wall over dist. total
-            std::vector<double> vl;
-            // - normal vector for each surface
-            std::vector<Vector3<double>> vN;
-            // - linear index for icellflag check
-            std::vector<int> vn;
-            
-            // add potential surface to the list only if (li < 1.0)
-            if (l1 < 1.0) {
-                vl.push_back(l1);
-                vN.push_back(-f1*e1);
-                vn.push_back(f1);
-            }
-            if (l2 < 1.0) {
-                vl.push_back(l2);
-                vN.push_back(-f2*e2);
-                vn.push_back(f2*(nx-1));
-            }
-            if (l3 < 1.0) {
-                vl.push_back(l3);
-                vN.push_back(-f3*e3);
-                vn.push_back(f3*(nx-1)*(ny-1));
-            }
-            
-            // sort from smallest to largest and retain index 
-            std::vector<size_t> idx(vl.size());
-            std::iota(idx.begin(), idx.end(), 0);
-            std::sort(idx.begin(), idx.end(), [&vl](size_t i1, size_t i2) {return vl[i1] < vl[i2];});
-            
-            // check if surface is valid (ie, next cell is solid)
-            if( (WGD->icellflag.at(cellIdOld+vn[idx[0]]) == 0) || 
-                (WGD->icellflag.at(cellIdOld+vn[idx[0]]) == 2) ) {
-                s=vl[idx[0]];
-                N=vN[idx[0]];
-            } else if( (WGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]) == 0) || 
-                       (WGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]) == 2) ) {
-                s=vl[idx[1]];
-                N=vN[idx[1]];
-            } else if (idx.size() == 3) { // check if 3rd option is valid (avoid seg fault)
-                if( (WGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]+vn[idx[2]]) == 0) || 
-                    (WGD->icellflag.at(cellIdOld+vn[idx[0]]+vn[idx[1]]+vn[idx[2]]) == 2) ) {
-                    s=vl[idx[2]];
-                    N=vN[idx[2]];
-                } else {
-                    // this should happend only if particle traj. more than 1 cell in each direction,
-                    // -> should have been skipped at the beginning of the function
-                    //std::cout << "Reflection problem: no valid surface" << std::endl;
-                    return true;
-                } 
-            }
-        }
-        // no else -> only one valid surface
-        
-                
-        // vector from current postition to the wall
-        V1=s*U;
-        // postion of relfection on the wall
-        P=Xold+V1;
-        // distance traveled after the wall
-        V2=U-V1;
-        d=V2.length();
-        // reflection: normalizing V2 -> R is of norm 1
-        V2=V2/V2.length();
-        R=V2.reflect(N);
-        // update postion from surface reflection
-        Xnew=P+d*R;
-        
-        // relfection of the Fluctuation 
-        vecFluct=vecFluct.reflect(N);
-        
-        // prepare variables for next bounce: particle position
-        Xold=P;
+  while ((cellFlagNew == 0 || cellFlagNew == 2) && (count < maxCount)) {
 
-        // increment the relfection count
-        count=count+1;                
-        // update the icellflag
-        cellIdNew=eul->getCellId(Xnew);
-        
-        try {
-            cellFlagNew=WGD->icellflag.at(cellIdNew);
-        } catch (const std::out_of_range& oor) {            
-            // cell ID out of bound
-            std::cout << "Reflection problem: particle out of range" << std::endl;
-            return false;
-        }
-        
-    } // end of: while( (cellFlagNew==0 || cellFlagNew==2) && (count < maxCount) ) 
-    
+    // distance travelled by particle
+    U = Xnew - Xold;
 
-    if(count < maxCount){
-        // update output variable: particle position
-        xPos=Xnew[0];
-        yPos=Xnew[1];
-        zPos=Xnew[2];
-        // update output variable: fluctuations
-        uFluct=vecFluct[0];
-        vFluct=vecFluct[1];
-        wFluct=vecFluct[2];    
+    //set direction
+    f1 = (e1 * U);
+    f1 = f1 / std::abs(f1);
+    f2 = (e2 * U);
+    f2 = f2 / std::abs(f2);
+    f3 = (e3 * U);
+    f3 = f3 / std::abs(f3);
+
+    // reset smallest ratio
+    s = 100.0;
+    // reset number of potential valid surface
+    validSurface = 0;
+    // reset distance travel after all
+    d = 0.0;
+
+    // x-drection
+    N = -f1 * e1;
+    S = { WGD->x[i] + f1 * 0.5 * dx, double(WGD->y[j]), double(WGD->z[k]) };
+    l1 = -(Xold * N - S * N) / (U * N);
+
+    // y-drection
+    N = -f2 * e2;
+    S = { double(WGD->x[i]), WGD->y[j] + f2 * 0.5 * dy, double(WGD->z[k]) };
+    l2 = -(Xold * N - S * N) / (U * N);
+
+    // z-drection (dz can be variable with hieght)
+    N = -f3 * e3;
+    if (f3 >= 0.0) {
+      S = { double(WGD->x[i]), double(WGD->y[j]), double(WGD->z_face[k]) };
     } else {
-        // update output variable: particle position to old position
-        xPos-=disX;
-        yPos-=disY;
-        zPos-=disZ;
+      S = { double(WGD->x[i]), double(WGD->y[j]), double(WGD->z_face[k - 1]) };
+    }
+    l3 = -(Xold * N - S * N) / (U * N);
+
+    // check with surface is a potential bounce (li < 1.0)
+    if ((l1 < 1.0) && (l1 >= -eps_S)) {
+      validSurface++;
+      s = l1;
+      N = -f1 * e1;
+    }
+    if ((l2 < 1.0) && (l2 >= -eps_S)) {
+      validSurface++;
+      s = l2;
+      N = -f2 * e2;
+    }
+    if ((l3 < 1.0) && (l3 >= -eps_S)) {
+      validSurface++;
+      s = l3;
+      N = -f3 * e3;
     }
 
-    return true;
-    
-}
+    // check if more than one surface is valid
+    if (validSurface == 0) {
+      // if 0 valid surface
+      //std::cout << "Reflection problem: no valid surface" << std::endl;
+      return false;
+    } else if (validSurface > 1) {
+      // Here-> Multiple options to bounce
+      // NOTE: vectors will be at min size 2!
 
+      // list of potential surface (will be sorted from smallest to largest)
+      // - ratio of dist. to wall over dist. total
+      std::vector<double> vl;
+      // - normal vector for each surface
+      std::vector<Vector3<double>> vN;
+      // - linear index for icellflag check
+      std::vector<int> vn;
+
+      // add potential surface to the list only if (li < 1.0)
+      if (l1 < 1.0) {
+        vl.push_back(l1);
+        vN.push_back(-f1 * e1);
+        vn.push_back(f1);
+      }
+      if (l2 < 1.0) {
+        vl.push_back(l2);
+        vN.push_back(-f2 * e2);
+        vn.push_back(f2 * (nx - 1));
+      }
+      if (l3 < 1.0) {
+        vl.push_back(l3);
+        vN.push_back(-f3 * e3);
+        vn.push_back(f3 * (nx - 1) * (ny - 1));
+      }
+
+      // sort from smallest to largest and retain index
+      std::vector<size_t> idx(vl.size());
+      std::iota(idx.begin(), idx.end(), 0);
+      std::sort(idx.begin(), idx.end(), [&vl](size_t i1, size_t i2) { return vl[i1] < vl[i2]; });
+
+      // check if surface is valid (ie, next cell is solid)
+      if ((WGD->icellflag.at(cellIdOld + vn[idx[0]]) == 0) || (WGD->icellflag.at(cellIdOld + vn[idx[0]]) == 2)) {
+        s = vl[idx[0]];
+        N = vN[idx[0]];
+      } else if ((WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]]) == 0) || (WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]]) == 2)) {
+        s = vl[idx[1]];
+        N = vN[idx[1]];
+      } else if (idx.size() == 3) {// check if 3rd option is valid (avoid seg fault)
+        if ((WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]] + vn[idx[2]]) == 0) || (WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]] + vn[idx[2]]) == 2)) {
+          s = vl[idx[2]];
+          N = vN[idx[2]];
+        } else {
+          // this should happend only if particle traj. more than 1 cell in each direction,
+          // -> should have been skipped at the beginning of the function
+          //std::cout << "Reflection problem: no valid surface" << std::endl;
+          return true;
+        }
+      }
+    }
+    // no else -> only one valid surface
+
+
+    // vector from current postition to the wall
+    V1 = s * U;
+    // postion of relfection on the wall
+    P = Xold + V1;
+    // distance traveled after the wall
+    V2 = U - V1;
+    d = V2.length();
+    // reflection: normalizing V2 -> R is of norm 1
+    V2 = V2 / V2.length();
+    R = V2.reflect(N);
+    // update postion from surface reflection
+    Xnew = P + d * R;
+
+    // relfection of the Fluctuation
+    vecFluct = vecFluct.reflect(N);
+
+    // prepare variables for next bounce: particle position
+    Xold = P;
+
+    // increment the relfection count
+    count = count + 1;
+    // update the icellflag
+    cellIdNew = eul->getCellId(Xnew);
+
+    try {
+      cellFlagNew = WGD->icellflag.at(cellIdNew);
+    } catch (const std::out_of_range &oor) {
+      // cell ID out of bound
+      std::cout << "Reflection problem: particle out of range" << std::endl;
+      return false;
+    }
+
+  }// end of: while( (cellFlagNew==0 || cellFlagNew==2) && (count < maxCount) )
+
+
+  if (count < maxCount) {
+    // update output variable: particle position
+    xPos = Xnew[0];
+    yPos = Xnew[1];
+    zPos = Xnew[2];
+    // update output variable: fluctuations
+    uFluct = vecFluct[0];
+    vFluct = vecFluct[1];
+    wFluct = vecFluct[2];
+  } else {
+    // update output variable: particle position to old position
+    xPos -= disX;
+    yPos -= disY;
+    zPos -= disZ;
+  }
+
+  return true;
+}
