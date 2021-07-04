@@ -113,10 +113,10 @@ int main(int argc, char *argv[])
 
   // probably will need to make 2 of these...
   // Generate the general WINDS data from all inputs
-  WINDSGeneralData *WGD = new WINDSGeneralData(WID, CPU_TYPE);
+  WINDSGeneralData *WGD = new WINDSGeneralData(WID, CPU_Type);
   WINDSGeneralData *WGD_DYNAMIC = new WINDSGeneralData(WID, DYNAMIC_P);
-  WINDSGeneralData *WGD_GLOBAL = new WINDSGeneralData(WID, Global_M);
-  WINDSGeneralData *WGD_SHARED = new WINDSGeneralData(WID, Shared_M); 
+  //  WINDSGeneralData *WGD_GLOBAL = new WINDSGeneralData(WID, Global_M);
+  // WINDSGeneralData *WGD_SHARED = new WINDSGeneralData(WID, Shared_M); 
   
   // create WINDS output classes
   std::vector<QESNetCDFOutput *> outputVec;
@@ -157,12 +157,13 @@ int main(int argc, char *argv[])
   std::cout << "Run Serial Solver (CPU) ..." << std::endl;
   solverCPU = new CPUSolver(WID, WGD);
   std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
-  solverDynamic = new DynamicParallelism(WID, WGD);
+  solverDynamic = new DynamicParallelism(WID, WGD_DYNAMIC);
+  /*
   std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
-  solverGlobal = new GlobalMemory(WID, WGD);
+  solverGlobal = new GlobalMemory(WID, WGD_GLOBAL);
   std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
-  solverShared = new SharedMemory(WID, WGD);
-
+  solverShared = new SharedMemory(WID, WGD_SHARED);
+  */
 
   //////////
   //Comparison check not needed since comparison will always take
@@ -186,13 +187,19 @@ int main(int argc, char *argv[])
   }
   */
   
-  solver->solve(WID, WGD, !arguments.solveWind);
+  // solverCPU->solve(WID, WGD, !arguments.solveWind);
+  solverDynamic->solve(WID, WGD_DYNAMIC, !arguments.solveWind);
+  //solverGlobal->solve(WID, WGD_GLOBAL, !arguments.solveWind);
+  //solverShared->solve(WID, WGD_SHARED, !arguments.solveWind);
   
   // run the other...
   // solverC->solve(WID, WGD, !arguments.solveWind);
 
-  std::cout << "Solver done!\n";
-
+  std::cout << "Solvers done!\n";
+  std::cout << "CPU u-value: " << std::endl;
+  std::cout << "Dynamic u-value: "<< WGD_DYNAMIC->u.front() << std::endl;
+  std::cout << "Dynamic v-value: "<< WGD_DYNAMIC->v.front() << std::endl;
+  std::cout << "Dynamic w-value: "<< WGD_DYNAMIC->w.front() << std::endl;
   // you could then compare wgd1->u with wgd2->u  -- these are linear
   // vectors of floats representing u wind component...
 
@@ -210,16 +217,16 @@ int main(int argc, char *argv[])
 
   // even better would be to compute a R^2 regression comparison...
 
-  if (TGD != nullptr)
-    TGD->run(WGD);
+  //if (TGD != nullptr)
+  //  TGD->run(WGD);
 
   // /////////////////////////////
   // Output the various files requested from the simulation run
   // (netcdf wind velocity, icell values, etc...
   // /////////////////////////////
-  for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
-    outputVec.at(id_out)->save(WGD->timestamp[0]);
-  }
+  //for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
+  //  outputVec.at(id_out)->save(WGD->timestamp[0]);
+  //}
 
   /*
     for(size_t index=0; index < WGD->timestamp.size(); index++)
@@ -262,31 +269,31 @@ int main(int argc, char *argv[])
     */
 
   for (int index = 1; index < WID->simParams->totalTimeIncrements; index++) {
-    std::cout << "Running time step: " << to_iso_extended_string(WGD->timestamp[index]) << std::endl;
+    std::cout << "Running time step: " << to_iso_extended_string(WGD_DYNAMIC->timestamp[index]) << std::endl;
     // Reset icellflag values
-    WGD->resetICellFlag();
+    WGD_DYNAMIC->resetICellFlag();
 
     // Create initial velocity field from the new sensors
-    WID->metParams->sensors[0]->inputWindProfile(WID, WGD, index, arguments.solveType);
+    WID->metParams->sensors[0]->inputWindProfile(WID, WGD_DYNAMIC, index, DYNAMIC_P);
 
     // Apply parametrizations
-    WGD->applyParametrizations(WID);
+    WGD_DYNAMIC->applyParametrizations(WID);
 
     // Run WINDS simulation code
-    solver->solve(WID, WGD, !arguments.solveWind);
+    solverDynamic->solve(WID, WGD_DYNAMIC, !arguments.solveWind);
 
     std::cout << "Solver done!\n";
 
-    if (TGD != nullptr)
-      TGD->run(WGD);
+    //if (TGD != nullptr)
+    //  TGD->run(WGD);
 
     // /////////////////////////////
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
-      outputVec.at(id_out)->save(WGD->timestamp[index]);
-    }
+    //for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
+    //  outputVec.at(id_out)->save(WGD->timestamp[index]);
+    //}
   }
 
   // /////////////////////////////
