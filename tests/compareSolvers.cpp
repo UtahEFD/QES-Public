@@ -113,8 +113,11 @@ int main(int argc, char *argv[])
 
   // probably will need to make 2 of these...
   // Generate the general WINDS data from all inputs
-  WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
-
+  WINDSGeneralData *WGD = new WINDSGeneralData(WID, CPU_TYPE);
+  WINDSGeneralData *WGD_DYNAMIC = new WINDSGeneralData(WID, DYNAMIC_P);
+  WINDSGeneralData *WGD_GLOBAL = new WINDSGeneralData(WID, Global_M);
+  WINDSGeneralData *WGD_SHARED = new WINDSGeneralData(WID, Shared_M); 
+  
   // create WINDS output classes
   std::vector<QESNetCDFOutput *> outputVec;
   if (arguments.visuOutput) {
@@ -132,12 +135,15 @@ int main(int argc, char *argv[])
   // Generate the general TURB data from WINDS data
   // based on if the turbulence output file is defined
   TURBGeneralData *TGD = nullptr;
+  (void) TGD;
+  /*
   if (arguments.compTurb) {
     TGD = new TURBGeneralData(WID, WGD);
   }
   if (arguments.compTurb && arguments.turbOutput) {
     outputVec.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
   }
+  */
 
   std::cout << "Running time step: " << to_iso_extended_string(WGD->timestamp[0]) << std::endl;
 
@@ -146,24 +152,23 @@ int main(int argc, char *argv[])
   // Run the QES-Winds Solver
   //
   // //////////////////////////////////////////
-  Solver *solver, *solverC = nullptr;
-  if (arguments.solveType == CPU_Type) {
-    std::cout << "Run Serial Solver (CPU) ..." << std::endl;
-    solver = new CPUSolver(WID, WGD);
-  } else if (arguments.solveType == DYNAMIC_P) {
-    std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
-    solver = new DynamicParallelism(WID, WGD);
-  } else if (arguments.solveType == Global_M) {
-    std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
-    solver = new GlobalMemory(WID, WGD);
-  } else if (arguments.solveType == Shared_M) {
-    std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
-    solver = new SharedMemory(WID, WGD);
-  } else {
-    std::cerr << "[ERROR] invalid solve type\n";
-    exit(EXIT_FAILURE);
-  }
 
+  Solver *solverCPU, *solverDynamic, *solverGlobal, *solverShared = nullptr;
+  std::cout << "Run Serial Solver (CPU) ..." << std::endl;
+  solverCPU = new CPUSolver(WID, WGD);
+  std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
+  solverDynamic = new DynamicParallelism(WID, WGD);
+  std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
+  solverGlobal = new GlobalMemory(WID, WGD);
+  std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
+  solverShared = new SharedMemory(WID, WGD);
+
+
+  //////////
+  //Comparison check not needed since comparison will always take
+  //place as this is a test seperate from QESWindsMain.
+  //////////
+  /*
   //check for comparison
   if (arguments.compareType) {
     if (arguments.compareType == CPU_Type)
@@ -179,7 +184,8 @@ int main(int argc, char *argv[])
       exit(EXIT_FAILURE);
     }
   }
-
+  */
+  
   solver->solve(WID, WGD, !arguments.solveWind);
   
   // run the other...
