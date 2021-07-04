@@ -11,9 +11,6 @@ CUDA_ADD_LIBRARY( qesplumecore
     Random.cpp
         
     Args.cpp
-    WINDSGeneralData.cpp
-    TURBGeneralData.cpp
-    Wall.cpp
     
     Eulerian.cpp
     Plume.cpp

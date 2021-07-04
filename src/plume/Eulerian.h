@@ -14,8 +14,8 @@
 #include "util/Vector3.h"
 
 #include "PlumeInputData.hpp"
-#include "WINDSGeneralData.h"
-#include "TURBGeneralData.h"
+#include "src/winds/WINDSGeneralData.h"
+#include "src/winds/TURBGeneralData.h"
 
 
 class Eulerian

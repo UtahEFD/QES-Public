@@ -18,8 +18,8 @@
 #include "src/plume/PlumeInputData.hpp"
 #include "util/NetCDFInput.h"
 
-#include "src/plume/WINDSGeneralData.h"
-#include "src/plume/TURBGeneralData.h"
+#include "src/winds/WINDSGeneralData.h"
+#include "src/winds/TURBGeneralData.h"
 
 #include "src/plume/Plume.hpp"
 #include "src/plume/Eulerian.h"

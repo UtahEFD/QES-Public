@@ -6,14 +6,14 @@
 //  Created by Jeremy Gibbs on 03/25/19.
 //
 
-#ifndef SIMULATIONPARAMETERS_HPP
-#define SIMULATIONPARAMETERS_HPP
+#ifndef PLUMEPARAMETERS_HPP
+#define PLUMEPARAMETERS_HPP
 
 #include "util/ParseInterface.h"
 #include <string>
 #include <cmath>
 
-class SimulationParameters : public ParseInterface
+class PlumeParameters : public ParseInterface
 {
 
 private:

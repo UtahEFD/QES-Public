@@ -10,7 +10,7 @@
 #define PLUMEINPUTDATA_HPP
 
 
-#include "SimulationParameters.hpp"
+#include "PlumeParameters.hpp"
 #include "CollectionParameters.hpp"
 #include "ParticleOutputParameters.hpp"
 #include "Sources.hpp"
@@ -26,7 +26,7 @@ class PlumeInputData : public ParseInterface
 {
 
 public:
-  SimulationParameters *simParams;
+  PlumeParameters *simParams;
   CollectionParameters *colParams;
   ParticleOutputParameters *partOutParams;
   Sources *sources;
@@ -63,7 +63,7 @@ public:
 
   virtual void parseValues()
   {
-    parseElement<SimulationParameters>(true, simParams, "simulationParameters");
+    parseElement<PlumeParameters>(true, simParams, "simulationParameters");
     parseElement<CollectionParameters>(true, colParams, "collectionParameters");
     parseElement<ParticleOutputParameters>(false, partOutParams, "particleOutputParameters");
 

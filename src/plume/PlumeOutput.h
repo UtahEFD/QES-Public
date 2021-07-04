@@ -18,7 +18,7 @@
 
 
 #include "PlumeInputData.hpp"
-#include "WINDSGeneralData.h"
+#include "src/winds/WINDSGeneralData.h"
 
 #include "util/QESNetCDFOutput.h"
 

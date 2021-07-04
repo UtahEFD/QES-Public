@@ -26,8 +26,8 @@
 #include "Args.hpp"
 #include "PlumeInputData.hpp"
 
-#include "WINDSGeneralData.h"
-#include "TURBGeneralData.h"
+#include "src/winds/WINDSGeneralData.h"
+#include "src/winds/TURBGeneralData.h"
 #include "Eulerian.h"
 
 #include "Particle.hpp"
