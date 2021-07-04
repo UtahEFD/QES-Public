@@ -1,2 +1,6 @@
 Add any special unit test or test programs.
 
+compareSolvers will eventually compare the results of each solver type to determine if differences are within acceptable levels.
+
+For now, if you want to run it, run it using -q and -s arguments you would use for qesWinds.
+Specifying solver type won't do anything, but the argument is still required for the moment.
