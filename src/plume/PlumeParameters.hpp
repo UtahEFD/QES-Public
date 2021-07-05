@@ -1,13 +1,5 @@
-//
-//  SimulationParamters.hpp
-//
-//  This class rhandles xml simulation options
-//
-//  Created by Jeremy Gibbs on 03/25/19.
-//
 
-#ifndef PLUMEPARAMETERS_HPP
-#define PLUMEPARAMETERS_HPP
+#pragma once
 
 #include "util/ParseInterface.h"
 #include <string>
@@ -107,4 +99,3 @@ public:
     }
   }
 };
-#endif
