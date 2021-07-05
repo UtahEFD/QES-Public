@@ -33,7 +33,10 @@ ulimit -c unlimited -s
 module list
 echo '****** START OF JOB ******'
 
-./qesPlume/qesPlume -q ../testCases/ContRelease_PowerLawBLFlow/QES-files/ContRelease_PowerLawBLFlow.xml -u ../testCases/ContRelease_PowerLawBLFlow/QES-data/PowerLawBLFlow_windsWk.nc -t ../testCases/ContRelease_PowerLawBLFlow/QES-data/PowerLawBLFlow_turbOut.nc -o ../testCases/ContRelease_PowerLawBLFlow/QES-data/ -b ContRelease -l
+./qesPlume/qesPlume -q ../testCases/PowerLawBLFlow_ContRelease/QES-files/PowerLawBLFlow_xDir_ContRelease.xml -u ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_windsWk.nc -t ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_turbOut.nc -o ../testCases/PowerLawBLFlow_ContRelease/QES-data/ -b ContRelease_xDir -l
+
+./qesPlume/qesPlume -q ../testCases/PowerLawBLFlow_ContRelease/QES-files/PowerLawBLFlow_yDir_ContRelease.xml -u ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_windsWk.nc -t ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_turbOut.nc -o ../testCases/PowerLawBLFlow_ContRelease/QES-data/ -b ContRelease_yDir -l
+
 
 echo '****** END OF JOB ****** '
 

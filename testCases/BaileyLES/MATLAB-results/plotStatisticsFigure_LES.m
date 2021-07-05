@@ -10,8 +10,8 @@ Lz = zGridInfo.Lz;
 
 
 % now pull out the turb data
-txz = turb_data.tau13;
-tzz = turb_data.tau33;
+txz = turb_data.txz;
+tzz = turb_data.tzz;
 
 CoEps = turb_data.CoEps;
 epps = CoEps/C0;
