@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <vector>
 
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -120,8 +121,8 @@ int main(int argc, char *argv[])
   //
   WINDSGeneralData *WGD = new WINDSGeneralData(WID, CPU_Type);
   WINDSGeneralData *WGD_DYNAMIC = new WINDSGeneralData(WID, DYNAMIC_P);
-  // WINDSGeneralData *WGD_GLOBAL = new WINDSGeneralData(WID, Global_M);
-  // WINDSGeneralData *WGD_SHARED = new WINDSGeneralData(WID, Shared_M); 
+  WINDSGeneralData *WGD_GLOBAL = new WINDSGeneralData(WID, Global_M);
+  WINDSGeneralData *WGD_SHARED = new WINDSGeneralData(WID, Shared_M); 
 
   /*
   //OUTPUTS NOT NEEDED FOR THIS TEST
@@ -169,83 +170,98 @@ int main(int argc, char *argv[])
   solverCPU = new CPUSolver(WID, WGD);
   std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
   solverDynamic = new DynamicParallelism(WID, WGD_DYNAMIC);
-  //std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
-  //solverGlobal = new GlobalMemory(WID, WGD_GLOBAL);
-  //std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
-  //solverShared = new SharedMemory(WID, WGD_SHARED);
+  std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
+  solverGlobal = new GlobalMemory(WID, WGD_GLOBAL);
+  std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
+  solverShared = new SharedMemory(WID, WGD_SHARED);
 
-  
-  solverDynamic->solve(WID, WGD_DYNAMIC, !arguments.solveWind); 
-  solverCPU->solve(WID, WGD, !arguments.solveWind);
-  //solverGlobal->solve(WID, WGD_GLOBAL, !arguments.solveWind);
-  //solverShared->solve(WID, WGD_SHARED, !arguments.solveWind);
+  std::vector<WINDSGeneralData *>completedSolvers;
+  std::vector<string> solverNames;
+  std::cout << std::endl;
+  //solverCPU->solve(WID, WGD, !arguments.solveWind);
+  //std::cout << "✓ CPU solver done!\n";
+  //std::cout << std::endl;
+  solverDynamic->solve(WID, WGD_DYNAMIC, !arguments.solveWind);
+  completedSolvers.push_back(WGD_DYNAMIC);
+  solverNames.push_back("Dynamic");
+  std::cout << "✓ Dynamic solver done!\n";
+  std::cout << std::endl;
+  solverGlobal->solve(WID, WGD_GLOBAL, !arguments.solveWind);
+  completedSolvers.push_back(WGD_GLOBAL);
+  solverNames.push_back("Global");
+  std::cout << "✓ Global solver done!\n";
+  std::cout << std::endl;
+  solverShared->solve(WID, WGD_SHARED, !arguments.solveWind);
+  completedSolvers.push_back(WGD_SHARED);
+  solverNames.push_back("Shared");
+  std::cout << "✓ Shared solver done!\n";
+  std::cout << std::endl;
 
-  std::cout << "Solvers done!\n";
-  
   ////
-  //Calculating absoulte differences beetween CPU and dynamic parallel solvers.
+  //Calculating absolute differences between CPU and dynamic parallel solvers
   ////
 
-  //calculating u differences
-  float maxUDif = 0;
-  float avgUDif;
-  float totalUDif = 0;
-  float uDif = 0;
-  for(size_t uDifIndex = 0; uDifIndex < WGD->u.size(); uDifIndex++){
-    uDif = std::abs(WGD->u[uDifIndex] - WGD_DYNAMIC->u[uDifIndex]);
-    if(uDif>maxUDif) maxUDif = uDif;
-    totalUDif += std::abs((WGD->u[uDifIndex] - WGD_DYNAMIC->u[uDifIndex]));
-    //percentDif = (WGD->u[difIndex] - WGD_DYNAMIC->u[difIndex]) / WGD->u[difIndex] * 100;
-    //std::cout << "CPU u values: " << WGD->u[difIndex] << std::endl;
-    //std::cout << "GPU u values: " << WGD_DYNAMIC->u[difIndex] << std::endl;
+  std::cout << "Performing comparative analysis...\n" << std::endl;
+  for (int solversIndex=0; solversIndex < completedSolvers.size(); ++solversIndex) {
+    std::cout << "CPU vs. " + solverNames[solversIndex] + " solver\n";
+    std::cout << "-----------------------\n";
+
+    //calculating u differences
+    float maxUDif = 0;
+    float avgUDif;
+    float totalUDif = 0;
+    float uDif = 0;
+    for(size_t uDifIndex = 0; uDifIndex < WGD->u.size(); uDifIndex++){
+      uDif = std::abs(WGD->u[uDifIndex] - completedSolvers[solversIndex]->u[uDifIndex]);
+      if(uDif>maxUDif) maxUDif = uDif;
+      totalUDif += std::abs((WGD->u[uDifIndex] - completedSolvers[solversIndex]->u[uDifIndex]));
+    }
+    avgUDif = totalUDif/WGD->u.size();
+
+    //calculating v differences
+    float maxVDif = 0;
+    float avgVDif;
+    float totalVDif = 0;
+    float vDif = 0;
+    for(size_t vDifIndex = 0; vDifIndex < WGD->v.size(); vDifIndex++){
+      vDif = std::abs(WGD->v[vDifIndex] - completedSolvers[solversIndex]->v[vDifIndex]);
+      if(vDif>maxVDif) maxVDif = vDif;
+      totalVDif += std::abs((WGD->v[vDifIndex] - completedSolvers[solversIndex]->v[vDifIndex]));
+    }
+    avgVDif = totalVDif/WGD->v.size();
+
+    //calculating w differences
+    float maxWDif = 0;
+    float avgWDif;
+    float totalWDif = 0;
+    float wDif = 0;
+    for(size_t wDifIndex = 0; wDifIndex < WGD->w.size(); wDifIndex++){
+      wDif = std::abs(WGD->w[wDifIndex] - completedSolvers[solversIndex]->w[wDifIndex]);
+      if(wDif>maxWDif) maxWDif = wDif;
+      totalWDif += std::abs((WGD->w[wDifIndex] - completedSolvers[solversIndex]->w[wDifIndex]));
+    }
+    avgWDif = totalWDif/WGD->w.size();
+
+    //displaying max differences
+    std::cout << "Max u difference: " << maxUDif << std::endl;
+    std::cout << "Max v difference: " << maxVDif << std::endl;
+    std::cout << "Max w difference: " << maxWDif << std::endl;
+    //displaying average differences
+    std::cout << "Average u difference: " << avgUDif << std::endl;
+    std::cout << "Average v difference: " << avgVDif << std::endl;
+    std::cout << "Average w difference: " << avgWDif << std::endl;
+    //displaying sum of difference
+    std::cout << "Total u difference: " << totalUDif << std::endl;
+    std::cout << "Total v difference: " << totalVDif << std::endl;
+    std::cout << "Total w difference: " << totalWDif << std::endl;
+    std::cout << std::endl;
+
+    //you could compute the windVelMag at each cell
+
+    // even better would be to compute a R^2 regression comparison...
   }
-  avgUDif = totalUDif/WGD->u.size();
+  std::cout << "...comparative analysis complete.\n";
 
-  //calculating v differences
-  float maxVDif = 0;
-  float avgVDif;
-  float totalVDif = 0;
-  float vDif = 0;
-  for(size_t vDifIndex = 0; vDifIndex < WGD->v.size(); vDifIndex++){
-    vDif = std::abs(WGD->v[vDifIndex] - WGD_DYNAMIC->v[vDifIndex]);
-    if(vDif>maxVDif) maxVDif = vDif;
-    totalVDif += std::abs((WGD->v[vDifIndex] - WGD_DYNAMIC->v[vDifIndex]));
-  }
-  avgVDif = totalVDif/WGD->v.size();
-
-  //calculating w differences
-  float maxWDif = 0;
-  float avgWDif;
-  float totalWDif = 0;
-  float wDif = 0;
-  for(size_t wDifIndex = 0; wDifIndex < WGD->w.size(); wDifIndex++){
-    wDif = std::abs(WGD->w[wDifIndex] - WGD_DYNAMIC->w[wDifIndex]);
-    if(wDif>maxWDif) maxWDif = wDif;
-    totalWDif += std::abs((WGD->w[wDifIndex] - WGD_DYNAMIC->w[wDifIndex]));
-  }
-  avgWDif = totalWDif/WGD->w.size();
-
-  //displaying max differences
-  std::cout << "Max u difference: " << maxUDif << std::endl;
-  std::cout << "Max v difference: " << maxVDif << std::endl;
-  std::cout << "Max w difference: " << maxWDif << std::endl;
-  //displaying average differences
-  std::cout << "Average u difference: " << avgUDif << std::endl;
-  std::cout << "Average v difference: " << avgVDif << std::endl;
-  std::cout << "Average w difference: " << avgWDif << std::endl;
-  //displaying sum of difference
-  std::cout << "Total u difference: " << totalUDif << std::endl;
-  std::cout << "Total v difference: " << totalVDif << std::endl;
-  std::cout << "Total w difference: " << totalWDif << std::endl;
-
-  //you could compute the windVelMag at each cell
-
-  // average u difference =
-  // average v difference =
-  // average w difference =
-  // maybe the max differences...
-
-  // even better would be to compute a R^2 regression comparison...
 
   //if (TGD != nullptr)
   //  TGD->run(WGD);

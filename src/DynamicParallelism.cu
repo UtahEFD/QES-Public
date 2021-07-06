@@ -234,8 +234,8 @@ __global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int 
 
     iter += 1;
   }
-  printf("number of iteration = %d\n", iter);
-  printf("error = %2.9f\n", error);
+  printf("Error = %2.9f\n", error);
+  printf("Number of iteration = %d\n", iter);
 
   /*int i = 0;
   while (i < 300)
@@ -300,13 +300,13 @@ DynamicParallelism::DynamicParallelism(const WINDSInputData *WID, WINDSGeneralDa
     char msg[256];
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     sprintf_s(msg, sizeof(msg),
-      "  Total amount of global memory:                 %.0f MBytes "
+      "Total amount of global memory:                 %.0f MBytes "
       "(%llu bytes)\n",
       static_cast<float>(deviceProp.totalGlobalMem / 1048576.0f),
       (unsigned long long)deviceProp.totalGlobalMem);
 #else
     snprintf(msg, sizeof(msg),
-      "  Total amount of global memory:                 %.0f MBytes "
+      "Total amount of global memory:                 %.0f MBytes "
       "(%llu bytes)\n",
       static_cast<float>(deviceProp.totalGlobalMem / 1048576.0f),
       (unsigned long long)deviceProp.totalGlobalMem);
@@ -375,13 +375,13 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   char msg[256];
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
   sprintf_s(msg, sizeof(msg),
-    "  Total global memory required for running this case:                 %.0f MBytes "
+    "Total global memory required for running this case:                 %.0f MBytes "
     "(%llu bytes)\n",
     static_cast<float>(memory_req / 1048576.0f),
     (unsigned long long)memory_req);
 #else
   snprintf(msg, sizeof(msg),
-    "  Total global memory required for running this case:                 %.0f MBytes "
+    "Total global memory required for running this case:                 %.0f MBytes "
     "(%llu bytes)\n",
     static_cast<float>(memory_req / 1048576.0f),
     (unsigned long long)memory_req);
