@@ -48,6 +48,7 @@ public:
   // next copies important input time values and calculates needed time information
   // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
   Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, Eulerian *, Args *);
+  Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, Eulerian *);
 
   // this is the plume solver. It performs a time integration of the particle positions and particle velocity fluctuations
   // with calculations done on a per particle basis. During each iteration, temporary single value particle information

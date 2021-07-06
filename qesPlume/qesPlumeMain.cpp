@@ -80,7 +80,7 @@ int main(int argc, char **argv)
   eul->setData(WGD, TGD);
 
   // Create instance of Plume model class
-  Plume *plume = new Plume(PID, WGD, TGD, eul, &arguments);
+  Plume *plume = new Plume(PID, WGD, TGD, eul);
 
   // create output instance
   std::vector<QESNetCDFOutput *> outputVec;

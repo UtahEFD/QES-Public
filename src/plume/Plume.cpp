@@ -6,20 +6,21 @@
 
 #include "Plume.hpp"
 
-Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul, Args *arguments)
+//Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul, Args *arguments)
+Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul)
   : particleList(0)
 {
 
   std::cout << "[Plume] \t Setting up simulation details " << std::endl;
 
   // copy debug information
-  doParticleDataOutput = arguments->doParticleDataOutput;
-  outputSimInfoFile = arguments->doSimInfoFileOutput;
-  outputFolder = arguments->outputFolder;
-  caseBaseName = arguments->caseBaseName;
-  debug = arguments->debug;
+  doParticleDataOutput = false;//arguments->doParticleDataOutput;
+  outputSimInfoFile = false;//arguments->doSimInfoFileOutput;
+  outputFolder = "";//arguments->outputFolder;
+  caseBaseName = "";//arguments->caseBaseName;
+  debug = false;//arguments->debug;
 
-  verbose = arguments->verbose;
+  verbose = false;//arguments->verbose;
 
   // make local copies of the QES-Winds nVals for each dimension
   nx = WGD->nx;
