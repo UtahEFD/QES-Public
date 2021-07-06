@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
   //
   WINDSGeneralData *WGD = new WINDSGeneralData(WID, CPU_Type);
   WINDSGeneralData *WGD_DYNAMIC = new WINDSGeneralData(WID, DYNAMIC_P);
-  WINDSGeneralData *WGD_GLOBAL = new WINDSGeneralData(WID, Global_M);
+  // WINDSGeneralData *WGD_GLOBAL = new WINDSGeneralData(WID, Global_M);
   // WINDSGeneralData *WGD_SHARED = new WINDSGeneralData(WID, Shared_M); 
 
   /*
@@ -225,29 +225,19 @@ int main(int argc, char *argv[])
   }
   avgWDif = totalWDif/WGD->w.size();
 
+  //displaying max differences
   std::cout << "Max u difference: " << maxUDif << std::endl;
-  std::cout << "Average u difference: " << avgUDif << std::endl;
-  std::cout << "Total u difference: " << totalUDif << std::endl;
   std::cout << "Max v difference: " << maxVDif << std::endl;
-  std::cout << "Average v difference: " << avgVDif << std::endl;
-  std::cout << "Total v difference: " << totalVDif << std::endl;
   std::cout << "Max w difference: " << maxWDif << std::endl;
+  //displaying average differences
+  std::cout << "Average u difference: " << avgUDif << std::endl;
+  std::cout << "Average v difference: " << avgVDif << std::endl;
   std::cout << "Average w difference: " << avgWDif << std::endl;
+  //displaying sum of difference
+  std::cout << "Total u difference: " << totalUDif << std::endl;
+  std::cout << "Total v difference: " << totalVDif << std::endl;
   std::cout << "Total w difference: " << totalWDif << std::endl;
-  //std::cout << "u vector length:" << WGD_DYNAMIC->u.size() << std::endl;
-  //std::cout << "u vector length (CPU):" << WGD->u.size() << std::endl;
-  //std::cout << "CPU u-value: " << WGD->u.front() << std::endl;
-  //std::cout << "Dynamic u-value: "<< WGD_DYNAMIC->u0[0] << std::endl;
-  //std::cout << "Dynamic v-value: "<< WGD_DYNAMIC->v0[0] << std::endl;
-  //std::cout << "Dynamic w-value: "<< WGD_DYNAMIC->w0[0] << std::endl;
-  // you could then compare wgd1->u with wgd2->u  -- these are linear
-  // vectors of floats representing u wind component...
 
-  // same for v, and w...
-
-  // together the u, v, and w represent a wind vector...
-
-  // you do a difference...
   //you could compute the windVelMag at each cell
 
   // average u difference =
