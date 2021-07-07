@@ -55,6 +55,17 @@ PolyBuilding::PolyBuilding(const WINDSInputData *WID, WINDSGeneralData *WGD, int
   base_height = WGD->base_height[id];
 }
 
+PolyBuilding::PolyBuilding(const std::vector<polyVert> &iSP, float iH, float iBH, int iID)
+  : Building()
+{
+  polygonVertices = iSP;
+  H = iH;
+  base_height = iBH;
+  ID = iID;
+
+  height_eff = base_height + H;
+}
+
 void PolyBuilding::setPolyBuilding(WINDSGeneralData *WGD)
 {
 
@@ -175,6 +186,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
           }
           WGD->ibuilding_flag[icell_cent] = building_number;
         }
+        WGD->icellflag_footprint[i + j * (WGD->nx - 1)] = 0;
       }
     }
   }

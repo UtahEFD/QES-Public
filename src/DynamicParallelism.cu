@@ -300,16 +300,16 @@ DynamicParallelism::DynamicParallelism(const WINDSInputData *WID, WINDSGeneralDa
     char msg[256];
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     sprintf_s(msg, sizeof(msg),
-      "  Total amount of global memory:                 %.0f MBytes "
-      "(%llu bytes)\n",
-      static_cast<float>(deviceProp.totalGlobalMem / 1048576.0f),
-      (unsigned long long)deviceProp.totalGlobalMem);
+              "\t\tTotal amount of global memory: %.0f MBytes "
+              "(%llu bytes)\n",
+              static_cast<float>(deviceProp.totalGlobalMem / 1048576.0f),
+              (unsigned long long)deviceProp.totalGlobalMem);
 #else
     snprintf(msg, sizeof(msg),
-      "  Total amount of global memory:                 %.0f MBytes "
-      "(%llu bytes)\n",
-      static_cast<float>(deviceProp.totalGlobalMem / 1048576.0f),
-      (unsigned long long)deviceProp.totalGlobalMem);
+             "\t\tTotal amount of global memory: %.0f MBytes "
+             "(%llu bytes)\n",
+             static_cast<float>(deviceProp.totalGlobalMem / 1048576.0f),
+             (unsigned long long)deviceProp.totalGlobalMem);
 #endif
     std::cout << msg;
 
@@ -322,6 +322,10 @@ DynamicParallelism::DynamicParallelism(const WINDSInputData *WID, WINDSGeneralDa
     std::cout << "\t\tGPU Max Clock rate:  "
               << deviceProp.clockRate * 1e-3f << " MHz ("
               << deviceProp.clockRate * 1e-6f << " GHz)" << std::endl;
+
+    std::cout << "\t\tPCI: BusID=" << deviceProp.pciBusID << ", "
+              << "DeviceID=" << deviceProp.pciDeviceID << ", "
+              << "DomainID=" << deviceProp.pciDomainID << std::endl;
   }
   cudaSetDevice(0);
 }
@@ -402,16 +406,13 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   cudaMemcpy(d_m, WGD->m.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_n, WGD->n.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
 
-
   cudaMemcpy(d_dz_array, WGD->dz_array.data(), (WGD->nz - 1) * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_lambda, lambda.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_lambda_old, lambda_old.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
 
-
   /////////////////////////////////////////////////
   //                 SOR solver              //////
   /////////////////////////////////////////////////
-
 
   // Invoke the main (mother) kernel
   SOR_iteration<<<1, 1>>>(d_lambda, d_lambda_old, WGD->nx, WGD->ny, WGD->nz, omega, A, B, WGD->dx, WGD->dy, WGD->dz, d_dz_array, d_e, d_f, d_g, d_h, d_m, d_n, d_R, itermax, tol, d_value, d_bvalue, d_u0, d_v0, d_w0, alpha1, alpha2, d_u, d_v, d_w, d_icellflag);
@@ -423,7 +424,6 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   cudaMemcpy(WGD->w.data(), d_w, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
   // cudaMemcpy(R.data(),d_R,WGD->numcell_cent*sizeof(float),cudaMemcpyDeviceToHost);
   // cudaMemcpy(lambda_old.data(),d_lambda_old,WGD->numcell_cent*sizeof(float),cudaMemcpyDeviceToHost);
-
 
   cudaFree(d_lambda);
   cudaFree(d_lambda_old);

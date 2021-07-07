@@ -34,6 +34,10 @@
 
 #include "WINDSGeneralData.h"
 
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
+#define LIMIT 99999999.0f
+
 WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 {
   if (WID->simParams->upwindCavityFlag == 1) {
@@ -193,6 +197,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       timestamp.push_back(bt::from_time_t(sensortime[t]));
     }
 
+    if (WID->simParams->totalTimeIncrements == 0) {
+      totalTimeIncrements = timestamp.size();
+    } else {
+      totalTimeIncrements = WID->simParams->totalTimeIncrements;
+    }
+
     // Adding halo to sensor location (if in QEScoord site_coord_flag==1)
     for (size_t i = 0; i < WID->metParams->sensors.size(); i++) {
       if (WID->metParams->sensors[i]->site_coord_flag == 1) {
@@ -305,6 +315,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
   icellflag.resize(numcell_cent, 1);
   icellflag_initial.resize(numcell_cent, 1);
+  icellflag_footprint.resize(numcell_cout_2d, 1);
 
   ibuilding_flag.resize(numcell_cent, -1);
 
@@ -595,9 +606,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
   // After Terrain is processed, handle remaining processing of SHP
   // file data
-
-  std::vector<float> UTMOrigin = { WID->simParams->UTMx, WID->simParams->UTMy };
-
+  if (WID->simParams->UTMx != 0.0 && WID->simParams->UTMy != 0.0) {
+    UTMOrigin = { WID->simParams->UTMx, WID->simParams->UTMy };
+  }
 
   //
   if (WID->simParams->SHPData) {
@@ -613,8 +624,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     WID->simParams->SHPData->getMinExtent(minExtent);
 
     printf("\tShapefile Origin = (%.6f,%.6f)\n",
-      minExtent[0],
-      minExtent[1]);
+           minExtent[0],
+           minExtent[1]);
     // If the shapefile is not covering the whole domain or the UTM coordinates
     // of the QES domain is different than shapefile origin
     if (WID->simParams->UTMx != 0.0 && WID->simParams->UTMy != 0.0) {
@@ -647,13 +658,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       for (auto pIdx = 0u; pIdx < WID->simParams->shpPolygons.size(); pIdx++) {
         // Get base height of every corner of building from terrain height
         min_height = WID->simParams->DTE_mesh->getHeight(WID->simParams->shpPolygons[pIdx][0].x_poly,
-          WID->simParams->shpPolygons[pIdx][0].y_poly);
+                                                         WID->simParams->shpPolygons[pIdx][0].y_poly);
         if (min_height < 0) {
           min_height = 0.0;
         }
         for (auto lIdx = 1u; lIdx < WID->simParams->shpPolygons[pIdx].size(); lIdx++) {
           corner_height = WID->simParams->DTE_mesh->getHeight(WID->simParams->shpPolygons[pIdx][lIdx].x_poly,
-            WID->simParams->shpPolygons[pIdx][lIdx].y_poly);
+                                                              WID->simParams->shpPolygons[pIdx][lIdx].y_poly);
 
           if (corner_height < min_height && corner_height >= 0.0) {
             min_height = corner_height;
@@ -677,11 +688,16 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     std::cout << "Creating buildings from shapefile...\n";
     // Loop to create each of the polygon buildings read in from the shapefile
     for (auto pIdx = 0u; pIdx < WID->simParams->shpPolygons.size(); pIdx++) {
-      allBuildingsV.push_back(new PolyBuilding(WID, this, pIdx));
-      building_id.push_back(allBuildingsV.size() - 1);
+      int bId = allBuildingsV.size();
+      //allBuildingsV.push_back(new PolyBuilding(WID, this, pIdx));
+      allBuildingsV.push_back(new PolyBuilding(WID->simParams->shpPolygons[pIdx],
+                                               WID->simParams->shpFeatures["H"][pIdx] * WID->simParams->heightFactor,
+                                               0.0,
+                                               bId));
+      building_id.push_back(bId);
       allBuildingsV[pIdx]->setPolyBuilding(this);
-      allBuildingsV[pIdx]->setCellFlags(WID, this, pIdx);
-      effective_height.push_back(allBuildingsV[pIdx]->height_eff);
+      allBuildingsV[pIdx]->setCellFlags(WID, this, bId);
+      effective_height.push_back(allBuildingsV[bId]->height_eff);
     }
     std::cout << "\tdone.\n";
 
@@ -700,6 +716,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   canopy = 0;
   if (WID->canopies) {
     canopy = new Canopy(WID, this);
+    canopy->setCanopyElements(WID, this);
+    /*
 
     for (size_t i = 0; i < WID->canopies->canopies.size(); i++) {
       allBuildingsV.push_back(WID->canopies->canopies[i]);
@@ -736,7 +754,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
           }
       }
       */
-
+    /*
       for (auto pIdx = 0u; pIdx < WID->canopies->shpPolygons.size(); pIdx++) {
         // convert the global polys to local domain coordinates
         for (auto lIdx = 0u; lIdx < WID->canopies->shpPolygons[pIdx].size(); lIdx++) {
@@ -780,6 +798,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       std::chrono::duration<float> elapsed_cut = treesetup_finish - treesetup_start;
       std::cout << "Elapsed time for tree setup : " << elapsed_cut.count() << " s\n";
     }
+  */
   }
 
   // Add all the Building* that were read in from XML to this list
@@ -804,13 +823,13 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       if (WID->simParams->DTE_heightField && WID->simParams->DTE_mesh) {
         // Get base height of every corner of building from terrain height
         min_height = WID->simParams->DTE_mesh->getHeight(allBuildingsV[j]->polygonVertices[0].x_poly,
-          allBuildingsV[j]->polygonVertices[0].y_poly);
+                                                         allBuildingsV[j]->polygonVertices[0].y_poly);
         if (min_height < 0) {
           min_height = 0.0;
         }
         for (size_t lIdx = 1; lIdx < allBuildingsV[j]->polygonVertices.size(); lIdx++) {
           corner_height = WID->simParams->DTE_mesh->getHeight(allBuildingsV[j]->polygonVertices[lIdx].x_poly,
-            allBuildingsV[j]->polygonVertices[lIdx].y_poly);
+                                                              allBuildingsV[j]->polygonVertices[lIdx].y_poly);
 
           if (corner_height < min_height && corner_height >= 0.0) {
             min_height = corner_height;
@@ -867,9 +886,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     NCDFInput->getDimensionSize("t", ncnt);
 
     count = { static_cast<unsigned long>(1),
-      static_cast<unsigned long>(ncnz - 1),
-      static_cast<unsigned long>(ncny - 1),
-      static_cast<unsigned long>(ncnx - 1) };
+              static_cast<unsigned long>(ncnz - 1),
+              static_cast<unsigned long>(ncny - 1),
+              static_cast<unsigned long>(ncnx - 1) };
 
 
     NCDFInput->getVariableData("icellflag", start, count, icellflag);
@@ -976,7 +995,7 @@ WINDSGeneralData ::WINDSGeneralData(const std::string inputFile)
 
   start = { 0, 0 };
   count_2d = { static_cast<unsigned long>(ny - 1),
-    static_cast<unsigned long>(nx - 1) };
+               static_cast<unsigned long>(nx - 1) };
 
   // terrain (cell-center)
   terrain.resize((ny - 1) * (nx - 1), 0.0);
@@ -1040,13 +1059,13 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
 
   start = { static_cast<unsigned long>(stepin), 0, 0, 0 };
   count_cc = { 1,
-    static_cast<unsigned long>(nz - 1),
-    static_cast<unsigned long>(ny - 1),
-    static_cast<unsigned long>(nx - 1) };
+               static_cast<unsigned long>(nz - 1),
+               static_cast<unsigned long>(ny - 1),
+               static_cast<unsigned long>(nx - 1) };
   count_fc = { 1,
-    static_cast<unsigned long>(nz),
-    static_cast<unsigned long>(ny),
-    static_cast<unsigned long>(nx) };
+               static_cast<unsigned long>(nz),
+               static_cast<unsigned long>(ny),
+               static_cast<unsigned long>(nx) };
 
   // cell-center variables
   // icellflag (see .h for velues)
@@ -1089,17 +1108,16 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
 
 void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
 {
-  if (canopy) {
-    canopy->canopyVegetation(this);
-  }
+  //std::cout << "[Winds] \t applying Parameterization" << std::endl;
 
-  std::cout << "[Winds] \t applying Parameterization" << std::endl;
+  auto start_param = std::chrono::high_resolution_clock::now();// Start recording execution time
+
   // ///////////////////////////////////////
   // Generic Parameterization Related Stuff
   // ///////////////////////////////////////
-  for (size_t i = 0; i < allBuildingsV.size(); i++) {
-    // for now this does the canopy stuff for us
-    allBuildingsV[building_id[i]]->canopyVegetation(this, building_id[i]);
+  if (canopy) {
+    std::cout << "Applying vegetation parameterization...\n";
+    canopy->applyCanopyVegetation(this);
   }
 
   ///////////////////////////////////////////
@@ -1110,7 +1128,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->upwindCavity(WID, this);
     }
-    std::cout << "Upwind cavity parameterization done...\n";
+    //std::cout << "Upwind cavity parameterization done...\n";
   }
 
   //////////////////////////////////////////////////
@@ -1121,7 +1139,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->polygonWake(WID, this, building_id[i]);
     }
-    std::cout << "Wake behind building parameterization done...\n";
+    //std::cout << "Wake behind building parameterization done...\n";
   }
 
   ///////////////////////////////////////////
@@ -1132,7 +1150,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->streetCanyon(this);
     }
-    std::cout << "Street canyon parameterization done...\n";
+    //std::cout << "Street canyon parameterization done...\n";
   }
 
   ///////////////////////////////////////////
@@ -1143,7 +1161,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->sideWall(WID, this);
     }
-    std::cout << "Sidewall parameterization done...\n";
+    //std::cout << "Sidewall parameterization done...\n";
   }
 
 
@@ -1155,15 +1173,15 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->rooftop(WID, this);
     }
-    std::cout << "Rooftop parameterization done...\n";
+    //std::cout << "Rooftop parameterization done...\n";
   }
 
   // ///////////////////////////////////////
   // Generic Parameterization Related Stuff
   // ///////////////////////////////////////
-  for (size_t i = 0; i < allBuildingsV.size(); i++) {
-    // for now this does the canopy stuff for us
-    allBuildingsV[building_id[i]]->canopyWake(this, building_id[i]);
+  if (canopy) {
+    std::cout << "Applying canopy wake parameterization...\n";
+    canopy->applyCanopyWake(this);
   }
 
   ///////////////////////////////////////////
@@ -1189,6 +1207,11 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
   wall->setVelocityZero(this);
 
 
+  auto finish_param = std::chrono::high_resolution_clock::now();// Finish recording execution time
+
+  std::chrono::duration<float> elapsed_param = finish_param - start_param;
+  std::cout << "Elapsed time for parameterization: " << elapsed_param.count() << " s\n";
+
   return;
 }
 
@@ -1198,6 +1221,20 @@ void WINDSGeneralData::resetICellFlag()
     icellflag[id] = icellflag_initial[id];
   }
   return;
+}
+
+void WINDSGeneralData::printTimeProgress(int index)
+{
+  float percentage = (float)(index + 1) / (float)totalTimeIncrements;
+  int val = (int)(percentage * 100);
+  int lpad = (int)(percentage * PBWIDTH);
+  int rpad = PBWIDTH - lpad;
+  std::cout << "-------------------------------------------------------------------" << std::endl;
+  std::cout << "Running time step (" << index + 1 << "/" << totalTimeIncrements << ") at "
+            << bt::to_iso_extended_string(timestamp[index]) << std::endl;
+  printf("%3d%% [%.*s%*s]\n", val, lpad, PBSTR, rpad, "");
+  fflush(stdout);
+  std::cout << "-------------------------------------------------------------------" << std::endl;
 }
 
 

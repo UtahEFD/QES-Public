@@ -18,19 +18,23 @@ class Canopies : public ParseInterface
 {
 private:
 public:
-  int num_canopies;
-  std::vector<Building *> canopies;
+  std::vector<Building *> canopies; /**< :document this: */
+
+  int wakeFlag = 1; /**< :document this: */
+
 
   // SHP File parameters
-  std::string shpFile;// SHP file name
-  std::string shpTreeLayerName;
-  ESRIShapefile *SHPData = nullptr;
-  std::vector<std::vector<polyVert>> shpPolygons;
-  std::vector<float> shpTreeHeight;// Height of buildings
+  std::string shpFile; /**< :document this: */
+  std::string shpTreeLayerName; /**< :document this: */
+  ESRIShapefile *SHPData = nullptr; /**< :document this: */
+
+  std::vector<std::vector<polyVert>> shpPolygons; /**< :document this: */
+  std::map<std::string, std::vector<float>> shpFeatures; /**< :document this: */
 
   virtual void parseValues()
   {
-    parsePrimitive<int>(true, num_canopies, "num_canopies");
+    parsePrimitive<int>(false, wakeFlag, "wakeFlag");
+
     // read the input data for canopies
     parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyHomogeneous>("Homogeneous"));
     parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyIsolatedTree>("IsolatedTree"));
@@ -51,7 +55,7 @@ public:
     SHPData = nullptr;
     if (shpFile != "") {
       // Read polygon node coordinates and building height from shapefile
-      SHPData = new ESRIShapefile(shpFile, shpTreeLayerName, shpPolygons, shpTreeHeight, 1.0);
+      SHPData = new ESRIShapefile(shpFile, shpTreeLayerName, shpPolygons, shpFeatures);
       // std::cout << shpPolygons.size() << " " << shpTreeHeight.size() << std::endl;
     }
   }
