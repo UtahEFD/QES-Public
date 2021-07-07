@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
 
-  /*
+  
   if (arguments.terrainOut) {
     if (WID->simParams->DTE_heightField) {
       std::cout << "Creating terrain OBJ....\n";
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
     }
   
   }
-  */
+  
 
   
   //
@@ -178,8 +178,7 @@ int main(int argc, char *argv[])
   std::vector<WINDSGeneralData *>completedSolvers;
   std::vector<string> solverNames;
   // CPU Solver
-  std::cout << std::endl;
-  //solverCPU->solve(WID, WGD, !arguments.solveWind);
+  solverCPU->solve(WID, WGD, !arguments.solveWind);
   std::cout << "✓ CPU solver done!\n";
   std::cout << std::endl;
   // Dynamic Solver
@@ -244,28 +243,65 @@ int main(int argc, char *argv[])
     }
     avgWDif = totalWDif/WGD->w.size();
 
-    //calculate windVelMag (wvm) difference
+    //calculate windVelMag (wvm) difference and velocity magnitude average of each solver
     float totalWvmDif = 0;
+    float cpuWVM = 0;
+    float secondWVM = 0;
+    float cpuSum = 0;
+    float secondSum = 0;
     for(size_t i = 0; i < WGD->w.size(); ++i){
-      totalWvmDif += std::abs(sqrt(((WGD->u[i])*(WGD->u[i]))+
-       			           ((WGD->v[i])*(WGD->v[i]))+
-			           ((WGD->w[i])*(WGD->w[i])))-
-                              sqrt(((completedSolvers[solversIndex]->u[i])*(completedSolvers[solversIndex]->u[i]))+
-                                   ((completedSolvers[solversIndex]->v[i])*(completedSolvers[solversIndex]->v[i]))+
-                                   ((completedSolvers[solversIndex]->w[i])*(completedSolvers[solversIndex]->w[i]))));
+      cpuWVM = sqrt(((WGD->u[i])*(WGD->u[i]))+
+		    ((WGD->v[i])*(WGD->v[i]))+
+		    ((WGD->w[i])*(WGD->w[i])));
+      secondWVM  = sqrt(((completedSolvers[solversIndex]->u[i])*(completedSolvers[solversIndex]->u[i]))+
+			((completedSolvers[solversIndex]->v[i])*(completedSolvers[solversIndex]->v[i]))+
+                        ((completedSolvers[solversIndex]->w[i])*(completedSolvers[solversIndex]->w[i])));
+      totalWvmDif += std::abs(cpuWVM-secondWVM);
+      cpuSum += cpuWVM;
+      secondSum += secondWVM;
     }
-
-    //calculate R^2 regression
-    float rSquared = 0;
-    for(size_t i = 0; i < WGD->w.size(); ++i){
-      /*totalWvmDif += std::abs(sqrt(((WGD->u[i])*(WGD->u[i]))+
-                                   ((WGD->v[i])*(WGD->v[i]))+
-                                   ((WGD->w[i])*(WGD->w[i])))-
-                              sqrt(((completedSolvers[solversIndex]->u[i])*(completedSolvers[solversIndex]->u[i]))+
-                                   ((completedSolvers[solversIndex]->v[i])*(completedSolvers[solversIndex]->v[i]))+
-                                   ((completedSolvers[solversIndex]->w[i])*(completedSolvers[solversIndex]->w[i]))));*/
+    float cpuAverage = cpuSum/WGD->w.size();
+    float secondAverage = secondSum/completedSolvers[solversIndex]->w.size();
+    //calculate standard deviations and covariance
+    float cpuDev;
+    float secondDev;
+    float cpuDevSum = 0;
+    float secondDevSum = 0;
+    float solversCovariance;
+    float solversCovarianceSum = 0;
+    for(size_t i = 0; i < WGD->w.size(); i++){
+      cpuWVM = sqrt(((WGD->u[i])*(WGD->u[i]))+
+		    ((WGD->v[i])*(WGD->v[i]))+
+		    ((WGD->w[i])*(WGD->w[i])));
+      secondWVM  = sqrt(((completedSolvers[solversIndex]->u[i])*(completedSolvers[solversIndex]->u[i]))+
+			((completedSolvers[solversIndex]->v[i])*(completedSolvers[solversIndex]->v[i]))+
+                        ((completedSolvers[solversIndex]->w[i])*(completedSolvers[solversIndex]->w[i])));
+      
+      cpuDev = (cpuWVM-cpuAverage)*(cpuWVM-cpuAverage);
+      secondDev = (secondWVM-secondAverage)*(secondWVM-secondAverage);
+      solversCovariance = (cpuWVM-cpuAverage) * (secondWVM-secondAverage);
+      
+      cpuDevSum += cpuDev;
+      secondDevSum += secondDev;
+      solversCovarianceSum += solversCovariance;
     }
+    float cpuStDev = std::sqrt(cpuDevSum/(WGD->w.size()-1));
+    float secondStDev = std::sqrt(secondDevSum/(WGD->w.size()-1));
+    solversCovariance = solversCovarianceSum/(WGD->w.size()-1);
+    /////////////////////////////
+    //////CALCULATING R-Squared
+    /////////////////////////////
+    /*
+      R squared is calculated by first finding r (shocking), and squaring it. To find r, you find the standard deviation of the two data sets, then find the covariance between them. Divide the covariance by the product of the two standard deviations, and you'll find R.
 
+All of this is done in the 2 loops above.
+     */
+    float r = solversCovariance/(cpuStDev*secondStDev);
+    cout << "CPU STDEV: " << cpuStDev << std::endl;
+    cout << "Second STDEV: " << secondStDev << std::endl;
+    cout << "Covariance: " << cpuStDev << std::endl;
+    cout << "r:  " << r << std::endl;
+    float rSquared = r * r;
     //std::cout << "  Max u difference: " << maxUDif << std::endl;
     //std::cout << "  Max v difference: " << maxVDif << std::endl;
     //std::cout << "  Max w difference: " << maxWDif << std::endl;
