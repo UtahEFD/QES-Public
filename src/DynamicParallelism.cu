@@ -375,6 +375,23 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   cudaMalloc((void **)&d_v, WGD->numcell_face * sizeof(float));
   cudaMalloc((void **)&d_w, WGD->numcell_face * sizeof(float));
 
+  long long memory_req = (10 * WGD->numcell_cent + 6 * WGD->numcell_face + numblocks + (WGD->nz - 1)) * sizeof(float) + (WGD->numcell_cent) * sizeof(int) + 2308964352;
+  char msg[256];
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+  sprintf_s(msg, sizeof(msg),
+    "  Total global memory required for running this case:                 %.0f MBytes "
+    "(%llu bytes)\n",
+    static_cast<float>(memory_req / 1048576.0f),
+    (unsigned long long)memory_req);
+#else
+  snprintf(msg, sizeof(msg),
+    "  Total global memory required for running this case:                 %.0f MBytes "
+    "(%llu bytes)\n",
+    static_cast<float>(memory_req / 1048576.0f),
+    (unsigned long long)memory_req);
+#endif
+  std::cout << msg;
+
   cudaMemcpy(d_icellflag, WGD->icellflag.data(), WGD->numcell_cent * sizeof(int), cudaMemcpyHostToDevice);
   cudaMemcpy(d_u0, WGD->u0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_v0, WGD->v0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);

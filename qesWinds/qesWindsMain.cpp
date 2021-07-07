@@ -138,6 +138,8 @@ int main(int argc, char *argv[])
     outputVec.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
   }
 
+  std::cout << "Running time step: " << to_iso_extended_string(WGD->timestamp[0]) << std::endl;
+
   // //////////////////////////////////////////
   //
   // Run the QES-Winds Solver
@@ -175,6 +177,21 @@ int main(int argc, char *argv[])
       std::cerr << "[ERROR] invalid comparison type\n";
       exit(EXIT_FAILURE);
     }
+  }
+
+  solver->solve(WID, WGD, !arguments.solveWind);
+
+  std::cout << "Solver done!\n";
+
+  if (TGD != nullptr)
+    TGD->run(WGD);
+
+  // /////////////////////////////
+  // Output the various files requested from the simulation run
+  // (netcdf wind velocity, icell values, etc...
+  // /////////////////////////////
+  for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
+    outputVec.at(id_out)->save(WGD->timestamp[0]);
   }
 
   /*
@@ -217,7 +234,7 @@ int main(int argc, char *argv[])
     }
     */
 
-  for (int index = 0; index < WID->simParams->totalTimeIncrements; index++) {
+  for (int index = 1; index < WID->simParams->totalTimeIncrements; index++) {
     std::cout << "Running time step: " << to_iso_extended_string(WGD->timestamp[index]) << std::endl;
     // Reset icellflag values
     WGD->resetICellFlag();
