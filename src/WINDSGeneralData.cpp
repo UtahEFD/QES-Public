@@ -677,7 +677,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         int bId = allBuildingsV.size();
         //allBuildingsV.push_back(new PolyBuilding(WID, this, pIdx));
         allBuildingsV.push_back(new PolyBuilding(WID->buildings->SHPData->m_polygons[pIdx],
-                                                 WID->buildings->SHPData->m_features["H"][pIdx] * WID->buildings->heightFactor,
+                                                 WID->buildings->SHPData->m_features[WID->buildings->shpHeightField][pIdx] * WID->buildings->heightFactor,
                                                  base_height[bId],
                                                  bId));
         building_id.push_back(bId);

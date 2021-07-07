@@ -56,6 +56,7 @@ public:
   // SHP File parameters
   std::string shpFile; /**< SHP file name */
   std::string shpBuildingLayerName; /**< :document this: */
+  std::string shpHeightField;
   ESRIShapefile *SHPData = nullptr; /**< :document this: */
   float heightFactor = 1.0; /**< :document this: */
 
@@ -72,6 +73,8 @@ public:
     parsePrimitive<std::string>(false, shpFile, "SHPFile");
     shpBuildingLayerName = "buildings";// defaults
     parsePrimitive<std::string>(false, shpBuildingLayerName, "SHPBuildingLayer");
+    shpHeightField = "H";// default;
+    parsePrimitive<std::string>(false, shpHeightField, "SHPHeightField");
 
     SHPData = nullptr;
     if (shpFile != "") {
