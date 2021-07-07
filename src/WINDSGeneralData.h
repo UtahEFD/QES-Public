@@ -88,6 +88,8 @@ public:
   void mergeSortTime(std::vector<time_t> &sensortime,
                      std::vector<int> &sensortime_id);
 
+  void applyWindProfile(const WINDSInputData *, int, int);
+
   void applyParametrizations(const WINDSInputData *);
   // void applyParametrizations(const WINDSInputData*);
 

@@ -521,26 +521,27 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
   // Pete could move to input param processing...
   assert(WID->metParams->sensors.size() > 0);// extra
+  std::cout << "Sensors have been loaded (total sensors = " << WID->metParams->sensors.size() << ")." << std::endl;
   // check
   // to
   // be safe
   // Guaranteed to always have at least 1 sensor!
   // Pete thinks inputWindProfile should be a function of MetParams
   // so it would have access to all the sensors naturally.
-  // Make this change later.
+  // Make this change later. (Move to function applyWindProfile)
   //    WID->metParams->inputWindProfile(WID, this);
-  WID->metParams->sensors[0]->inputWindProfile(WID, this, 0, solverType);
+  /* FM -> Move to function applyWindProfile)
+     WID->metParams->sensors[0]->inputWindProfile(WID, this, 0, solverType);
 
-  std::cout << "Sensors have been loaded (total sensors = " << WID->metParams->sensors.size() << ")." << std::endl;
-
-  max_velmag = 0.0;
-  for (auto i = 0; i < nx; i++) {
-    for (auto j = 0; j < ny; j++) {
-      int icell_face = i + j * nx + (nz - 2) * nx * ny;
-      max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face], 2.0) + pow(v0[icell_face], 2.0)));
-    }
-  }
-  max_velmag *= 1.2;
+     max_velmag = 0.0;
+     for (auto i = 0; i < nx; i++) {
+     for (auto j = 0; j < ny; j++) {
+     int icell_face = i + j * nx + (nz - 2) * nx * ny;
+     max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face], 2.0) + pow(v0[icell_face], 2.0)));
+     }
+     }
+     max_velmag *= 1.2;
+  */
 
   ////////////////////////////////////////////////////////
   //////              Apply Terrain code             /////
@@ -997,7 +998,22 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
 
   return;
 }
+void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex, int solveType)
+{
+  std::cout << "Applying Wind Profile...\n";
+  WID->metParams->sensors[0]->inputWindProfile(WID, this, timeIndex, solveType);
 
+  max_velmag = 0.0;
+  for (auto i = 0; i < nx; i++) {
+    for (auto j = 0; j < ny; j++) {
+      int icell_face = i + j * nx + (nz - 2) * nx * ny;
+      max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face], 2.0) + pow(v0[icell_face], 2.0)));
+    }
+  }
+  max_velmag *= 1.2;
+
+  return;
+}
 
 void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
 {
