@@ -38,6 +38,7 @@
 #include "gdal_priv.h"
 #include "cpl_conv.h"// for CPLMalloc()
 #include "ogrsf_frmts.h"
+#include "ogr_spatialref.h"
 #include <limits>
 
 #include "PolygonVertex.h"
@@ -63,6 +64,8 @@ public:
                 const std::string &layerName,
                 std::vector<std::vector<polyVert>> &polygons,
                 std::map<std::string, std::vector<float>> &features);
+  ESRIShapefile(const std::string &filename,
+                const std::string &layerName);
   ~ESRIShapefile();
 
   /**
@@ -96,6 +99,9 @@ public:
     ext[1] = maxBound[1];
   }
 
+  std::vector<std::vector<polyVert>> m_polygons;
+  std::map<std::string, std::vector<float>> m_features;
+
 private:
   /**
    * :document this:
@@ -118,6 +124,8 @@ private:
   std::string m_layerName; /**< :document this */
 
   GDALDataset *m_poDS; /**< :document this */
+
+  OGRSpatialReference *m_SpRef;
 
   ///@{
   /** :document this */

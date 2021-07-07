@@ -173,9 +173,6 @@ public:
   std::vector<time_t> sensortime; /**< :document this: */
   std::vector<int> sensortime_id;
 
-
-  std::vector<float> UTMOrigin = { 0.0, 0.0 }; /**< :document this: */
-
   // time variables
   int nt; /**< :document this: */
   int totalTimeIncrements; /**< :document this: */

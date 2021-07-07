@@ -358,7 +358,7 @@ public:
     if (shpFile != "") {
       // Read polygon node coordinates and building height from shapefile
       //SHPData = new ESRIShapefile(shpFile, shpBuildingLayerName, shpPolygons, shpBuildingHeight, heightFactor);
-      SHPData = new ESRIShapefile(shpFile, shpBuildingLayerName, shpPolygons, shpFeatures);
+      SHPData = new ESRIShapefile(shpFile, shpBuildingLayerName);
     }
   }
 };
