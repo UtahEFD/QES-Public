@@ -1,0 +1,54 @@
+<simulationParameters>
+  <domain>400 340 200 </domain>
+  <cellSize> 2.0 2.0 0.6 </cellSize> <!-- Meters-->
+  <verticalStretching> 0 </verticalStretching>
+
+  <totalTimeIncrements> 0 </totalTimeIncrements>
+
+  <UTCConversion> 0 </UTCConversion>
+  <rooftopFlag> 1 </rooftopFlag>
+  <upwindCavityFlag> 3 </upwindCavityFlag>
+  <streetCanyonFlag> 1 </streetCanyonFlag>
+  <streetIntersectionFlag> 0 </streetIntersectionFlag>
+  <wakeFlag> 2 </wakeFlag>
+  <sidewallFlag> 1 </sidewallFlag>
+  <maxIterations> 500 </maxIterations>
+  <residualReduction> 3 </residualReduction>
+  <meshTypeFlag> 0 </meshTypeFlag> <!-- 0 is stair; 1 is cut-cell  -->
+  <useDiffusion> 0 </useDiffusion>
+  <domainRotation> 0 </domainRotation>
+  <originFlag> 0 </originFlag> 
+  <UTMx> 428270 </UTMx>
+  <UTMy> 4512880 </UTMy>
+  <UTMZone> 12 </UTMZone>
+  <UTMZoneLetter> T </UTMZoneLetter>
+</simulationParameters>
+<metParams>
+  <z0_domain_flag> 0 </z0_domain_flag>            <!-- Distribution of sueface roughness for domain (0-uniform, 1-custom -->
+  <sensorName>../sensor2015.xml</sensorName>
+</metParams>
+
+<canopies>
+  <wakeFlag> 1 </wakeFlag>
+  <SHPFile>../EngQuad_AlEqTreeCleaned.shp</SHPFile>   
+  <SHPTreeLayer>EngQuad_AlEqTreeCleaned</SHPTreeLayer>
+</canopies>
+<buildings>
+  <wallRoughness>0.01</wallRoughness>
+  <SHPFile>../Shapefiles/EngQuad_Building.shp</SHPFile>   
+  <SHPBuildingLayer>EngQuad_Building</SHPBuildingLayer>
+  <SHPHeightField>H</SHPHeightField> 
+  <heightFactor> 1.0 </heightFactor>  
+<buildings>
+<metParams>
+  <z0_domain_flag> 0 </z0_domain_flag>            <!-- Distribution of sueface roughness for domain (0-uniform, 1-custom -->
+  <sensorName>../sensor2017.xml</sensorName>
+</metParams>
+<localMixingParam>
+  <method>0</method>
+</localMixingParam>
+<fileOptions>
+  <outputFlag>1</outputFlag>
+  <outputFields>all</outputFields> 
+</fileOptions>
+
