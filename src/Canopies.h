@@ -55,7 +55,8 @@ public:
     SHPData = nullptr;
     if (shpFile != "") {
       // Read polygon node coordinates and building height from shapefile
-      SHPData = new ESRIShapefile(shpFile, shpTreeLayerName, shpPolygons, shpFeatures);
+      //SHPData = new ESRIShapefile(shpFile, shpTreeLayerName, shpPolygons, shpFeatures);
+      SHPData = new ESRIShapefile(shpFile, shpTreeLayerName);
       // std::cout << shpPolygons.size() << " " << shpTreeHeight.size() << std::endl;
     }
   }

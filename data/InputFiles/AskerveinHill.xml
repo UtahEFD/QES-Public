@@ -1,8 +1,5 @@
 <simulationParameters>
 	<DEM>../scratch/DEM/askervein.tif</DEM>				<!-- Address to DEM location-->	
-	<!--SHP>../scratch/building.shp</SHP-->				<!-- Address to shapefile location-->
-	<!--SHPBuildingLayer>building</SHPBuildingLayer-->
-	<!--heightFactor> 1.0 </heightFactor-->				<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
 
   	<halo_x> 50.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 50.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->

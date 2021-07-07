@@ -40,7 +40,7 @@
 
 WINDSArgs::WINDSArgs()
   : verbose(false), compTurb(false),
-    quicFile(""), netCDFFileBasename(""),
+    qesFile(""), netCDFFileBasename(""),
     visuOutput(false), wkspOutput(false), turbOutput(false), terrainOut(false),
     solveType(1), compareType(0)
 {
@@ -53,7 +53,7 @@ WINDSArgs::WINDSArgs()
 
   reg("turbcomp", "Turns on the computation of turbulent fields", ArgumentParsing::NONE, 't');
 
-  reg("quicproj", "Specifies the QUIC Proj file", ArgumentParsing::STRING, 'q');
+  reg("qesproj", "Specifies the QES Proj file", ArgumentParsing::STRING, 'q');
 
   reg("outbasename", "Specifies the basename for netcdf files", ArgumentParsing::STRING, 'o');
   reg("visuout", "Turns on the netcdf file to write visulatization results", ArgumentParsing::NONE, 'z');
@@ -104,8 +104,8 @@ void WINDSArgs::processArguments(int argc, char *argv[])
   fireMode = isSet("firemode");
   if (fireMode) std::cout << "Wind data will be written back to WRF input file." << std::endl;
 
-  isSet("quicproj", quicFile);
-  if (quicFile != "") std::cout << "quicproj set to " << quicFile << std::endl;
+  isSet("qesproj", qesFile);
+  if (qesFile != "") std::cout << "QES proj set to " << qesFile << std::endl;
 
   isSet("outbasename", netCDFFileBasename);
   if (netCDFFileBasename != "") {

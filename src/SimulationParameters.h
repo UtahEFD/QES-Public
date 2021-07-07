@@ -35,7 +35,6 @@
 #include "util/ParseInterface.h"
 #include "Vector3.h"
 #include "DTEHeightField.h"
-#include "ESRIShapefile.h"
 #include "WRFInput.h"
 #include "Mesh.h"
 
@@ -83,14 +82,6 @@ public:
   std::string demFile; /**< DEM file name */
   DTEHeightField *DTE_heightField = nullptr; /**< :document this: */
   Mesh *DTE_mesh; /**< :document this: */
-
-  // SHP File parameters
-  std::string shpFile; /**< SHP file name */
-  std::string shpBuildingLayerName; /**< :document this: */
-  ESRIShapefile *SHPData = nullptr; /**< :document this: */
-  std::vector<std::vector<polyVert>> shpPolygons; /**< :document this: */
-  std::map<std::string, std::vector<float>> shpFeatures; /**< :document this: */
-  std::vector<float> shpBuildingHeight; /**< Height of buildings */
 
   // //////////////////////////////////////////
   // WRF File Parameters
@@ -181,16 +172,10 @@ public:
     demFile = "";
     parsePrimitive<std::string>(false, demFile, "DEM");
 
-    shpFile = "";
-    parsePrimitive<std::string>(false, shpFile, "SHP");
-
     wrfFile = "";
     wrfSensorSample = 1;
     parsePrimitive<std::string>(false, wrfFile, "WRF");
     parsePrimitive<int>(false, wrfSensorSample, "WRFSensorSample");
-
-    shpBuildingLayerName = "buildings";// defaults
-    parsePrimitive<std::string>(false, shpBuildingLayerName, "SHPBuildingLayer");
 
     // Determine which use case to use for WRF/DEM combinations
     if ((demFile != "") && (wrfFile != "")) {
@@ -348,17 +333,6 @@ public:
       DTE_heightField = nullptr;
       DTE_mesh = nullptr;
       wrfInputData = nullptr;
-    }
-
-    //
-    // Process ESRIShapeFile here, but leave extraction of poly
-    // building for later in WINDSGeneralData
-    //
-    SHPData = nullptr;
-    if (shpFile != "") {
-      // Read polygon node coordinates and building height from shapefile
-      //SHPData = new ESRIShapefile(shpFile, shpBuildingLayerName, shpPolygons, shpBuildingHeight, heightFactor);
-      SHPData = new ESRIShapefile(shpFile, shpBuildingLayerName, shpPolygons, shpFeatures);
     }
   }
 };
