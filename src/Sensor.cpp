@@ -99,9 +99,6 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
     }
   }
 
-  std::cout << "available_sensor_id:  " << available_sensor_id.size() << std::endl;
-
-
   std::vector<std::vector<float>> u_prof(num_sites, std::vector<float>(WGD->nz, 0.0));
   std::vector<std::vector<float>> v_prof(num_sites, std::vector<float>(WGD->nz, 0.0));
   int icell_face, icell_cent;
@@ -524,10 +521,6 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
   rc_sum = 0.0;
   for (auto i = 0; i < num_sites; i++) {
     rc_val = 1000000.0;
-    if (available_sensor_id[i] == 6) {
-      std::cout << "WID->metParams->sensors[ii]->site_xcoord:  " << WID->metParams->sensors[available_sensor_id[i]]->site_xcoord << std::endl;
-      std::cout << "WID->metParams->sensors[ii]->site_ycoord:  " << WID->metParams->sensors[available_sensor_id[i]]->site_ycoord << std::endl;
-    }
     for (auto ii = 0; ii < num_sites; ii++) {
       xc = WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord - WID->metParams->sensors[available_sensor_id[i]]->site_xcoord;
       yc = WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord - WID->metParams->sensors[available_sensor_id[i]]->site_ycoord;

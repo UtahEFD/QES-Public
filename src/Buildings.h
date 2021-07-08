@@ -32,6 +32,7 @@
 #pragma once
 
 #include "util/ParseInterface.h"
+#include "ESRIShapefile.h"
 
 #include "Building.h"
 #include "RectangularBuilding.h"
@@ -52,12 +53,35 @@ public:
   std::vector<Building *> buildings; /**< vector containing Building objects */
   float wallRoughness; /**< wall roughness metric */
 
+  // SHP File parameters
+  std::string shpFile; /**< SHP file name */
+  std::string shpBuildingLayerName; /**< :document this: */
+  std::string shpHeightField;
+  ESRIShapefile *SHPData = nullptr; /**< :document this: */
+  float heightFactor = 1.0; /**< :document this: */
+
   virtual void parseValues()
   {
-    parsePrimitive<int>(true, numBuildings, "numBuildings");
-    parsePrimitive<int>(true, numPolygonNodes, "numPolygonNodes");
+    parsePrimitive<int>(false, numBuildings, "numBuildings");
+    parsePrimitive<int>(false, numPolygonNodes, "numPolygonNodes");
     parseMultiPolymorphs(false, buildings, Polymorph<Building, RectangularBuilding>("rectangularBuilding"));
     parseMultiPolymorphs(false, buildings, Polymorph<Building, PolygonQUICBuilding>("QUICBuilding"));
     parsePrimitive<float>(true, wallRoughness, "wallRoughness");
+    parsePrimitive<float>(false, heightFactor, "heightFactor");
+
+    shpFile = "";
+    parsePrimitive<std::string>(false, shpFile, "SHPFile");
+    shpBuildingLayerName = "buildings";// defaults
+    parsePrimitive<std::string>(false, shpBuildingLayerName, "SHPBuildingLayer");
+    shpHeightField = "H";// default;
+    parsePrimitive<std::string>(false, shpHeightField, "SHPHeightField");
+
+    SHPData = nullptr;
+    if (shpFile != "") {
+      // Read polygon node coordinates and building height from shapefile
+      //SHPData = new ESRIShapefile(shpFile, shpTreeLayerName, shpPolygons, shpFeatures);
+      SHPData = new ESRIShapefile(shpFile, shpBuildingLayerName);
+      // std::cout << shpPolygons.size() << " " << shpTreeHeight.size() << std::endl;
+    }
   }
 };
