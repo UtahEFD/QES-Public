@@ -160,9 +160,7 @@ int main(int argc, char *argv[])
   std::cout << "Running time step: " << to_iso_extended_string(WGD->timestamp[0]) << std::endl;
 
   // //////////////////////////////////////////
-  //
   // Run the QES-Winds Solver
-  //
   // //////////////////////////////////////////
 
   Solver *solverCPU, *solverDynamic, *solverGlobal, *solverShared = nullptr;
@@ -175,10 +173,11 @@ int main(int argc, char *argv[])
   std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
   solverShared = new SharedMemory(WID, WGD_SHARED);
 
+  std::cout << std::endl;
   std::vector<WINDSGeneralData *>completedSolvers;
   std::vector<string> solverNames;
   // CPU Solver
-  solverCPU->solve(WID, WGD, !arguments.solveWind);
+  //solverCPU->solve(WID, WGD, !arguments.solveWind);
   std::cout << "✓ CPU solver done!\n";
   std::cout << std::endl;
   // Dynamic Solver
@@ -200,16 +199,14 @@ int main(int argc, char *argv[])
   std::cout << "✓ Shared solver done!\n";
   std::cout << std::endl;
 
-  ////
-  //Calculating absolute differences between CPU and dynamic parallel solvers
-  ////
+  // Calculating absolute differences between CPU and parallel solvers
   std::cout << "Performing comparative analysis...\n" << std::endl;
-  for (int solversIndex=0; solversIndex < completedSolvers.size(); ++solversIndex) {
+  for (int solversIndex = 0; solversIndex < completedSolvers.size(); ++solversIndex) {
     std::cout << "CPU vs. " + solverNames[solversIndex] + " solver\n";
 
-    //calculating u differences
+    // Calculating u differences
     float maxUDif = 0;
-    float avgUDif;
+    float avgUDif = 0;
     float totalUDif = 0;
     float uDif = 0;
     for(size_t uDifIndex = 0; uDifIndex < WGD->u.size(); uDifIndex++){
@@ -219,9 +216,9 @@ int main(int argc, char *argv[])
     }
     avgUDif = totalUDif/WGD->u.size();
 
-    //calculating v differences
+    // Calculating v differences
     float maxVDif = 0;
-    float avgVDif;
+    float avgVDif = 0;
     float totalVDif = 0;
     float vDif = 0;
     for(size_t vDifIndex = 0; vDifIndex < WGD->v.size(); vDifIndex++){
@@ -231,9 +228,9 @@ int main(int argc, char *argv[])
     }
     avgVDif = totalVDif/WGD->v.size();
 
-    //calculating w differences
+    // Calculating w differences
     float maxWDif = 0;
-    float avgWDif;
+    float avgWDif = 0;
     float totalWDif = 0;
     float wDif = 0;
     for(size_t wDifIndex = 0; wDifIndex < WGD->w.size(); wDifIndex++){
@@ -243,65 +240,57 @@ int main(int argc, char *argv[])
     }
     avgWDif = totalWDif/WGD->w.size();
 
-    //calculate windVelMag (wvm) difference and velocity magnitude average of each solver
-    float totalWvmDif = 0;
+    // Wind velocity magnitude (WindVelMag) difference calculations
     float cpuWVM = 0;
-    float secondWVM = 0;
+    float gpuWVM = 0;
+    float totalWvmDif = 0;
     float cpuSum = 0;
-    float secondSum = 0;
+    float gpuSum = 0;
+    // Calculate vector magnitude, find difference and then add to sum
     for(size_t i = 0; i < WGD->w.size(); ++i){
       cpuWVM = sqrt(((WGD->u[i])*(WGD->u[i]))+
 		    ((WGD->v[i])*(WGD->v[i]))+
 		    ((WGD->w[i])*(WGD->w[i])));
-      secondWVM  = sqrt(((completedSolvers[solversIndex]->u[i])*(completedSolvers[solversIndex]->u[i]))+
+      gpuWVM  = sqrt(((completedSolvers[solversIndex]->u[i])*(completedSolvers[solversIndex]->u[i]))+
 			((completedSolvers[solversIndex]->v[i])*(completedSolvers[solversIndex]->v[i]))+
                         ((completedSolvers[solversIndex]->w[i])*(completedSolvers[solversIndex]->w[i])));
-      totalWvmDif += std::abs(cpuWVM-secondWVM);
+      totalWvmDif += std::abs(cpuWVM-gpuWVM);
+
+      // These sums required for R-squared calculations below
       cpuSum += cpuWVM;
-      secondSum += secondWVM;
+      gpuSum += gpuWVM;
     }
+
+    // /////////////////////////
+    // CALCULATING R-squared
+    // //////////////////////////
+
+    // R-squared is calculated by first finding r (shocking), and squaring it.
+    // To find r, you find the standard deviation of the two data sets,
+    // then find the covariance between them. Divide the covariance by the
+    // product of the two standard deviations, and you'll find R.
+
     float cpuAverage = cpuSum/WGD->w.size();
-    float secondAverage = secondSum/completedSolvers[solversIndex]->w.size();
-    //calculate standard deviations and covariance
-    float cpuDev;
-    float secondDev;
+    float gpuAverage = gpuSum/completedSolvers[solversIndex]->w.size();
     float cpuDevSum = 0;
-    float secondDevSum = 0;
-    float solversCovariance;
+    float gpuDevSum = 0;
+    float solversCovariance = 0;
     float solversCovarianceSum = 0;
     for(size_t i = 0; i < WGD->w.size(); i++){
-      cpuWVM = sqrt(((WGD->u[i])*(WGD->u[i]))+
-		    ((WGD->v[i])*(WGD->v[i]))+
-		    ((WGD->w[i])*(WGD->w[i])));
-      secondWVM  = sqrt(((completedSolvers[solversIndex]->u[i])*(completedSolvers[solversIndex]->u[i]))+
-			((completedSolvers[solversIndex]->v[i])*(completedSolvers[solversIndex]->v[i]))+
-                        ((completedSolvers[solversIndex]->w[i])*(completedSolvers[solversIndex]->w[i])));
-      
-      cpuDev = (cpuWVM-cpuAverage)*(cpuWVM-cpuAverage);
-      secondDev = (secondWVM-secondAverage)*(secondWVM-secondAverage);
-      solversCovariance = (cpuWVM-cpuAverage) * (secondWVM-secondAverage);
-      
-      cpuDevSum += cpuDev;
-      secondDevSum += secondDev;
-      solversCovarianceSum += solversCovariance;
+      // Calculate deviation and covariance sums
+      cpuDevSum = (cpuWVM-cpuAverage)*(cpuWVM-cpuAverage);
+      gpuDevSum = (gpuWVM-gpuAverage)*(gpuWVM-gpuAverage);
+      solversCovarianceSum = (cpuWVM-cpuAverage) * (gpuWVM-gpuAverage);
     }
+    // Calculate standard deviations and covariance
     float cpuStDev = std::sqrt(cpuDevSum/(WGD->w.size()-1));
-    float secondStDev = std::sqrt(secondDevSum/(WGD->w.size()-1));
+    float gpuStDev = std::sqrt(gpuDevSum/(WGD->w.size()-1));
     solversCovariance = solversCovarianceSum/(WGD->w.size()-1);
-    /////////////////////////////
-    //////CALCULATING R-Squared
-    /////////////////////////////
-    /*
-      R squared is calculated by first finding r (shocking), and squaring it. To find r, you find the standard deviation of the two data sets, then find the covariance between them. Divide the covariance by the product of the two standard deviations, and you'll find R.
-
-All of this is done in the 2 loops above.
-     */
-    float r = solversCovariance/(cpuStDev*secondStDev);
-    cout << "CPU STDEV: " << cpuStDev << std::endl;
-    cout << "Second STDEV: " << secondStDev << std::endl;
-    cout << "Covariance: " << cpuStDev << std::endl;
-    cout << "r:  " << r << std::endl;
+    // Calculate r and r^2
+    float r = solversCovariance/(cpuStDev*gpuStDev);
     float rSquared = r * r;
+
+    // Displaying all comparison metrics
     //std::cout << "  Max u difference: " << maxUDif << std::endl;
     //std::cout << "  Max v difference: " << maxVDif << std::endl;
     //std::cout << "  Max w difference: " << maxWDif << std::endl;
@@ -312,6 +301,10 @@ All of this is done in the 2 loops above.
     //std::cout << "  Total v difference: " << totalVDif << std::endl;
     //std::cout << "  Total w difference: " << totalWDif << std::endl;
     std::cout << "  Total WindVelMag difference: " << totalWvmDif << std::endl;
+    //std::cout << "  CPU STDEV: " << cpuStDev << std::endl;
+    //std::cout << "  GPU STDEV: " << gpuStDev << std::endl;
+    //std::cout << "  Covariance: " << solversCovariance << std::endl;
+    //std::cout << "  R value: " << r << std::endl;
     std::cout << "  R-squared value: " << rSquared << std::endl;
     std::cout << std::endl;
   }
