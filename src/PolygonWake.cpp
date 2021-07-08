@@ -83,8 +83,8 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
   float dn_u, dn_v, dn_w;// Length of cavity zone
   float farwake_vel;
   std::vector<double> u_temp, v_temp;
-  u_temp.resize(WGD->nx * WGD->ny, 0.0);
-  v_temp.resize(WGD->nx * WGD->ny, 0.0);
+  //u_temp.resize(WGD->nx * WGD->ny, 0.0);
+  //v_temp.resize(WGD->nx * WGD->ny, 0.0);
   std::vector<double> u0_modified, v0_modified;
   std::vector<int> u0_mod_id, v0_mod_id;
   float R_scale, R_cx, vd, hd, shell_height;
@@ -203,13 +203,17 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
         Lr_node[id + 1] = Lr_face[id];
       } else if (Lr_face[index_previous] < 0.0) {
         Lr_node[id] = Lr_face[id];
-        Lr_node[id + 1] = ((yi[index_next] - yi[index_next + 1]) * Lr_face[index_next] + (yi[id] - yi[index_next]) * Lr_face[id]) / (yi[id] - yi[index_next + 1]);
+        Lr_node[id + 1] = ((yi[index_next] - yi[index_next + 1]) * Lr_face[index_next] + (yi[id] - yi[index_next]) * Lr_face[id])
+                          / (yi[id] - yi[index_next + 1]);
       } else if (Lr_face[index_next] < 0.0) {
-        Lr_node[id] = ((yi[id] - yi[index_next]) * Lr_face[id] + (yi[index_previous] - yi[id]) * Lr_face[index_previous]) / (yi[index_previous] - yi[index_next]);
+        Lr_node[id] = ((yi[id] - yi[index_next]) * Lr_face[id] + (yi[index_previous] - yi[id]) * Lr_face[index_previous])
+                      / (yi[index_previous] - yi[index_next]);
         Lr_node[id + 1] = Lr_face[id];
       } else {
-        Lr_node[id] = ((yi[id] - yi[index_next]) * Lr_face[id] + (yi[index_previous] - yi[id]) * Lr_face[index_previous]) / (yi[index_previous] - yi[index_next]);
-        Lr_node[id + 1] = ((yi[index_next] - yi[index_next + 1]) * Lr_face[index_next] + (yi[id] - yi[index_next]) * Lr_face[id]) / (yi[id] - yi[index_next + 1]);
+        Lr_node[id] = ((yi[id] - yi[index_next]) * Lr_face[id] + (yi[index_previous] - yi[id]) * Lr_face[index_previous])
+                      / (yi[index_previous] - yi[index_next]);
+        Lr_node[id + 1] = ((yi[index_next] - yi[index_next + 1]) * Lr_face[index_next] + (yi[id] - yi[index_next]) * Lr_face[id])
+                          / (yi[id] - yi[index_next + 1]);
       }
       Lr_ave += Lr_face[id] * (yi[id] - yi[index_next]);
       total_seg_length += (yi[id] - yi[index_next]);
