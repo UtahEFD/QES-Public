@@ -1054,10 +1054,16 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
   ///////////////////////////////////////////
   //   Street Canyon Parameterization     ///
   ///////////////////////////////////////////
-  if (WID->simParams->streetCanyonFlag > 0) {
+  if (WID->simParams->streetCanyonFlag == 1) {
     std::cout << "Applying street canyon parameterization...\n";
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->streetCanyon(this);
+    }
+    //std::cout << "Street canyon parameterization done...\n";
+  } else if (WID->simParams->streetCanyonFlag == 2) {
+    std::cout << "Applying street canyon parameterization...\n";
+    for (size_t i = 0; i < allBuildingsV.size(); i++) {
+      allBuildingsV[building_id[i]]->streetCanyonModified(this);
     }
     //std::cout << "Street canyon parameterization done...\n";
   }

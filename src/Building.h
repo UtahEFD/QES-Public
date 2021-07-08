@@ -131,7 +131,6 @@ public:
   {
   }
 
-
   virtual void polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD, int building_id)
   {
   }
@@ -139,12 +138,16 @@ public:
   virtual void canopyVegetation(WINDSGeneralData *WGD, int building_id)
   {
   }
+
   virtual void canopyWake(WINDSGeneralData *wgd, int building_id)
   {
   }
 
-
   virtual void streetCanyon(WINDSGeneralData *WGD)
+  {
+  }
+
+  virtual void streetCanyonModified(WINDSGeneralData *WGD)
   {
   }
 

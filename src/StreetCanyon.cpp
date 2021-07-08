@@ -86,13 +86,13 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
   // Wind direction of initial velocity at the height of building at the centroid
   upwind_dir = atan2(v0_h, u0_h);
   // Loop through to calculate projected location for each polygon node in rotated coordinates
-  for (auto id = 0; id < polygonVertices.size(); id++) {
+  for (size_t id = 0; id < polygonVertices.size(); id++) {
     xi[id] = (polygonVertices[id].x_poly - building_cent_x) * cos(upwind_dir) + (polygonVertices[id].y_poly - building_cent_y) * sin(upwind_dir);
     yi[id] = -(polygonVertices[id].x_poly - building_cent_x) * sin(upwind_dir) + (polygonVertices[id].y_poly - building_cent_y) * cos(upwind_dir);
   }
 
   // Loop over face of current building
-  for (auto id = 0; id < polygonVertices.size() - 1; id++) {
+  for (size_t id = 0; id < polygonVertices.size() - 1; id++) {
     // Calculate upwind reletive direction for each face (out-facing normal)
     upwind_rel_dir[id] = atan2(yi[id + 1] - yi[id], xi[id + 1] - xi[id]) + 0.5 * M_PI;
 
@@ -274,7 +274,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                 int j = ceil(((xc - 0.5 * WGD->dxy + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y - 0.001) / WGD->dy) - 1;
 
                 // (LoopDB) Loop through each polygon node of the downstream buildings
-                for (auto j_id = 0; j_id < WGD->allBuildingsV[d_build]->polygonVertices.size() - 1; j_id++) {
+                for (size_t j_id = 0; j_id < WGD->allBuildingsV[d_build]->polygonVertices.size() - 1; j_id++) {
                   // normal direction (out-facing normal) of face of downstream building (ref as db-face for that loop)
                   cross_dir = atan2(WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].y_poly
                                       - WGD->allBuildingsV[d_build]->polygonVertices[j_id].y_poly,
