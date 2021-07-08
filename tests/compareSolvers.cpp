@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <string>
 
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -31,6 +32,8 @@
 #include "SharedMemory.h"
 
 #include "Sensor.h"
+
+#include "TextTable.h"
 
 namespace pt = boost::property_tree;
 
@@ -173,37 +176,44 @@ int main(int argc, char *argv[])
   std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
   solverShared = new SharedMemory(WID, WGD_SHARED);
 
-  std::cout << std::endl;
   std::vector<WINDSGeneralData *>completedSolvers;
   std::vector<string> solverNames;
   // CPU Solver
-  //solverCPU->solve(WID, WGD, !arguments.solveWind);
-  std::cout << "✓ CPU solver done!\n";
+  solverCPU->solve(WID, WGD, !arguments.solveWind);
+  std::cout << "✓ CPU solver done\n";
   std::cout << std::endl;
   // Dynamic Solver
   solverDynamic->solve(WID, WGD_DYNAMIC, !arguments.solveWind);
   completedSolvers.push_back(WGD_DYNAMIC);
   solverNames.push_back("Dynamic");
-  std::cout << "✓ Dynamic solver done!\n";
+  std::cout << "✓ Dynamic solver done\n";
   std::cout << std::endl;
   // Global Solver
   solverGlobal->solve(WID, WGD_GLOBAL, !arguments.solveWind);
   completedSolvers.push_back(WGD_GLOBAL);
   solverNames.push_back("Global");
-  std::cout << "✓ Global solver done!\n";
+  std::cout << "✓ Global solver done\n";
   std::cout << std::endl;
   // Shared Solver
   solverShared->solve(WID, WGD_SHARED, !arguments.solveWind);
   completedSolvers.push_back(WGD_SHARED);
   solverNames.push_back("Shared");
-  std::cout << "✓ Shared solver done!\n";
+  std::cout << "✓ Shared solver done\n";
   std::cout << std::endl;
 
-  // Calculating absolute differences between CPU and parallel solvers
-  std::cout << "Performing comparative analysis...\n" << std::endl;
+  // Table title
+  std::cout << "Performing comparative analysis against CPU serial solver...\n";
+  TextTable t( '-', '|', '+' );
+  // Specify table header row here
+  t.add( "SOLVER NAME" );
+  t.add( "AVG U DIFF" );
+  t.add( "AVG V DIFF" );
+  t.add( "AVG W DIFF" );
+  t.add( "WindVelMag DIFF" );
+  t.add( "R^2 VALUE" );
+  t.endOfRow();
+  // Loop to calculate comparison metrics between serial and parallel solvers
   for (int solversIndex = 0; solversIndex < completedSolvers.size(); ++solversIndex) {
-    std::cout << "CPU vs. " + solverNames[solversIndex] + " solver\n";
-
     // Calculating u differences
     float maxUDif = 0;
     float avgUDif = 0;
@@ -246,7 +256,7 @@ int main(int argc, char *argv[])
     float totalWvmDif = 0;
     float cpuSum = 0;
     float gpuSum = 0;
-    // Calculate vector magnitude, find difference and then add to sum
+    // Calculate vector magnitudes, find difference and then add to sum
     for(size_t i = 0; i < WGD->w.size(); ++i){
       cpuWVM = sqrt(((WGD->u[i])*(WGD->u[i]))+
 		    ((WGD->v[i])*(WGD->v[i]))+
@@ -255,7 +265,6 @@ int main(int argc, char *argv[])
 			((completedSolvers[solversIndex]->v[i])*(completedSolvers[solversIndex]->v[i]))+
                         ((completedSolvers[solversIndex]->w[i])*(completedSolvers[solversIndex]->w[i])));
       totalWvmDif += std::abs(cpuWVM-gpuWVM);
-
       // These sums required for R-squared calculations below
       cpuSum += cpuWVM;
       gpuSum += gpuWVM;
@@ -263,13 +272,12 @@ int main(int argc, char *argv[])
 
     // /////////////////////////
     // CALCULATING R-squared
-    // //////////////////////////
+    // /////////////////////////
 
     // R-squared is calculated by first finding r (shocking), and squaring it.
     // To find r, you find the standard deviation of the two data sets,
     // then find the covariance between them. Divide the covariance by the
     // product of the two standard deviations, and you'll find R.
-
     float cpuAverage = cpuSum/WGD->w.size();
     float gpuAverage = gpuSum/completedSolvers[solversIndex]->w.size();
     float cpuDevSum = 0;
@@ -277,10 +285,17 @@ int main(int argc, char *argv[])
     float solversCovariance = 0;
     float solversCovarianceSum = 0;
     for(size_t i = 0; i < WGD->w.size(); i++){
+      // Calculate vector magnitudes
+      cpuWVM = sqrt(((WGD->u[i])*(WGD->u[i]))+
+                    ((WGD->v[i])*(WGD->v[i]))+
+                    ((WGD->w[i])*(WGD->w[i])));
+      gpuWVM  = sqrt(((completedSolvers[solversIndex]->u[i])*(completedSolvers[solversIndex]->u[i]))+
+                        ((completedSolvers[solversIndex]->v[i])*(completedSolvers[solversIndex]->v[i]))+
+                        ((completedSolvers[solversIndex]->w[i])*(completedSolvers[solversIndex]->w[i])));
       // Calculate deviation and covariance sums
-      cpuDevSum = (cpuWVM-cpuAverage)*(cpuWVM-cpuAverage);
-      gpuDevSum = (gpuWVM-gpuAverage)*(gpuWVM-gpuAverage);
-      solversCovarianceSum = (cpuWVM-cpuAverage) * (gpuWVM-gpuAverage);
+      cpuDevSum += (cpuWVM-cpuAverage)*(cpuWVM-cpuAverage);
+      gpuDevSum += (gpuWVM-gpuAverage)*(gpuWVM-gpuAverage);
+      solversCovarianceSum += (cpuWVM-cpuAverage) * (gpuWVM-gpuAverage);
     }
     // Calculate standard deviations and covariance
     float cpuStDev = std::sqrt(cpuDevSum/(WGD->w.size()-1));
@@ -290,25 +305,34 @@ int main(int argc, char *argv[])
     float r = solversCovariance/(cpuStDev*gpuStDev);
     float rSquared = r * r;
 
-    // Displaying all comparison metrics
+    // Table comparison metrics row
+    t.add(solverNames[solversIndex]);
+    t.add(std::to_string(avgUDif));
+    t.add(std::to_string(avgVDif));
+    t.add(std::to_string(avgWDif));
+    t.add(std::to_string(totalWvmDif));
+    t.add(std::to_string(rSquared));
+    t.endOfRow();
+
     //std::cout << "  Max u difference: " << maxUDif << std::endl;
     //std::cout << "  Max v difference: " << maxVDif << std::endl;
     //std::cout << "  Max w difference: " << maxWDif << std::endl;
-    std::cout << "  Average u difference: " << avgUDif << std::endl;
-    std::cout << "  Average v difference: " << avgVDif << std::endl;
-    std::cout << "  Average w difference: " << avgWDif << std::endl;
+    //std::cout << "  Average u difference: " << avgUDif << std::endl;
+    //std::cout << "  Average v difference: " << avgVDif << std::endl;
+    //std::cout << "  Average w difference: " << avgWDif << std::endl;
     //std::cout << "  Total u difference: " << totalUDif << std::endl;
     //std::cout << "  Total v difference: " << totalVDif << std::endl;
     //std::cout << "  Total w difference: " << totalWDif << std::endl;
-    std::cout << "  Total WindVelMag difference: " << totalWvmDif << std::endl;
+    //std::cout << "  Total WindVelMag difference: " << totalWvmDif << std::endl;
     //std::cout << "  CPU STDEV: " << cpuStDev << std::endl;
     //std::cout << "  GPU STDEV: " << gpuStDev << std::endl;
     //std::cout << "  Covariance: " << solversCovariance << std::endl;
     //std::cout << "  R value: " << r << std::endl;
-    std::cout << "  R-squared value: " << rSquared << std::endl;
-    std::cout << std::endl;
+    //std::cout << "  R-squared value: " << rSquared << std::endl;
+    //std::cout << std::endl;
   }
-  std::cout << "...comparative analysis complete.\n";
+  std::cout << t;
+  std::cout << "✓ Comparative analysis complete\n";
 
   //if (TGD != nullptr)
   //  TGD->run(WGD);
