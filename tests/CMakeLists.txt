@@ -30,6 +30,8 @@ endfunction()
     
 IF(ENABLE_ALL_TESTS OR ENABLE_ALL_COMPARISON_TESTS)
   add_comparison_test(GaussianHill)
+  add_comparison_test(FlatTerrain)
+  add_comparison_test(AskerveinHill)
   #add_comparison_test(GranitePeak 1)
   #add_comparison_test(Oklahoma_city 1)
 ENDIF()
