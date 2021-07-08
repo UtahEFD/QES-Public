@@ -33,10 +33,12 @@
 
 #include <cassert>
 #include <vector>
+#include <map>
 // #include "gdal.h"
 #include "gdal_priv.h"
 #include "cpl_conv.h"// for CPLMalloc()
 #include "ogrsf_frmts.h"
+#include "ogr_spatialref.h"
 #include <limits>
 
 #include "PolygonVertex.h"
@@ -53,7 +55,17 @@ class ESRIShapefile
 {
 public:
   ESRIShapefile();
-  ESRIShapefile(const std::string &filename, const std::string &layerName, std::vector<std::vector<polyVert>> &polygons, std::vector<float> &building_height, float heightFactor);
+  ESRIShapefile(const std::string &filename,
+                const std::string &layerName,
+                std::vector<std::vector<polyVert>> &polygons,
+                std::vector<float> &building_height,
+                float heightFactor);
+  ESRIShapefile(const std::string &filename,
+                const std::string &layerName,
+                std::vector<std::vector<polyVert>> &polygons,
+                std::map<std::string, std::vector<float>> &features);
+  ESRIShapefile(const std::string &filename,
+                const std::string &layerName);
   ~ESRIShapefile();
 
   /**
@@ -87,6 +99,9 @@ public:
     ext[1] = maxBound[1];
   }
 
+  std::vector<std::vector<polyVert>> m_polygons;
+  std::map<std::string, std::vector<float>> m_features;
+
 private:
   /**
    * :document this:
@@ -97,10 +112,20 @@ private:
    */
   void loadVectorData(std::vector<std::vector<polyVert>> &polygons, std::vector<float> &building_height, float heightFactor);
 
+  /**
+   * :document this:
+   *
+   * @param polygons :document this:
+   * @param features :document this:
+   */
+  void loadVectorData(std::vector<std::vector<polyVert>> &polygons, std::map<std::string, std::vector<float>> &feature);
+
   std::string m_filename; /**< :document this */
   std::string m_layerName; /**< :document this */
 
   GDALDataset *m_poDS; /**< :document this */
+
+  OGRSpatialReference *m_SpRef;
 
   ///@{
   /** :document this */

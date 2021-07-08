@@ -35,37 +35,8 @@
 #include "WINDSGeneralData.h"
 
 // set et attenuation coefficient
-void CanopyWindbreak::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, int building_id)
+void CanopyWindbreak::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, int canopy_id)
 {
-  // When THIS canopy calls this function, we need to do the
-  // following:
-  // readCanopy(nx, ny, nz, landuse_flag, num_canopies, lu_canopy_flag,
-  // canopy_atten, canopy_top);
-
-  // this function need to be called to defined the boundary of the canopy and the icellflags
-  setCanopyGrid(WGD, building_id);
-
-  if (ceil(1.5 * k_end) > WGD->nz - 1) {
-    std::cerr << "ERROR domain too short for tree method" << std::endl;
-    exit(EXIT_FAILURE);
-  }
-
-  // Resize the canopy-related vectors
-  /*
-    canopy_atten.resize( numcell_cent_3d, 0.0 );
-
-  for (auto j=0; j<ny_canopy; j++) {
-      for (auto i=0; i<nx_canopy; i++) {
-          int icell_2d = i + j*nx_canopy;
-          for (auto k=canopy_bot_index[icell_2d]; k<=canopy_top_index[icell_2d]; k++) {
-              int icell_3d = i + j*nx_canopy + k*nx_canopy*ny_canopy;
-              // initiate all attenuation coefficients to the canopy coefficient
-              canopy_atten[icell_3d] = attenuationCoeff;
-          }
-      }
-  }
-  */
-
   // Aerodyamic Porosity Models
   if (wbModel == 1) {
     // Guan 2D model porosity profile
@@ -75,6 +46,115 @@ void CanopyWindbreak::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *
     a_obf = pow(beta, 0.4);
   }
 
+  // this function need to be called to defined the boundary of the canopy and the icellflags
+  float ray_intersect;
+  unsigned int num_crossing, vert_id, start_poly;
+
+  // Find out which cells are going to be inside the polygone
+  // Based on Wm. Randolph Franklin, "PNPOLY - Point Inclusion in Polygon Test"
+  // Check the center of each cell, if it's inside, set that cell to building
+  for (auto j = j_start; j < j_end; j++) {
+    // Center of cell y coordinate
+    float y_cent = (j + 0.5) * WGD->dy;
+    for (auto i = i_start; i < i_end; i++) {
+      float x_cent = (i + 0.5) * WGD->dx;
+      // Node index
+      vert_id = 0;
+      start_poly = vert_id;
+      num_crossing = 0;
+      while (vert_id < polygonVertices.size() - 1) {
+        if ((polygonVertices[vert_id].y_poly <= y_cent && polygonVertices[vert_id + 1].y_poly > y_cent)
+            || (polygonVertices[vert_id].y_poly > y_cent && polygonVertices[vert_id + 1].y_poly <= y_cent)) {
+          ray_intersect = (y_cent - polygonVertices[vert_id].y_poly) / (polygonVertices[vert_id + 1].y_poly - polygonVertices[vert_id].y_poly);
+          if (x_cent < (polygonVertices[vert_id].x_poly + ray_intersect * (polygonVertices[vert_id + 1].x_poly - polygonVertices[vert_id].x_poly))) {
+            num_crossing += 1;
+          }
+        }
+        vert_id += 1;
+        if (polygonVertices[vert_id].x_poly == polygonVertices[start_poly].x_poly
+            && polygonVertices[vert_id].y_poly == polygonVertices[start_poly].y_poly) {
+          vert_id += 1;
+          start_poly = vert_id;
+        }
+      }
+
+      // if num_crossing is odd = cell is oustside of the polygon
+      // if num_crossing is even = cell is inside of the polygon
+      if ((num_crossing % 2) != 0) {
+        int icell_2d = i + j * (WGD->nx - 1);
+
+        if (WGD->icellflag_footprint[icell_2d] == 0) {
+          // a  building exist here -> skip
+        } else {
+          // save the (x,y) location of the canopy
+          canopy_cell2D.push_back(icell_2d);
+          // set the footprint array for canopy
+          WGD->icellflag_footprint[icell_2d] = getCellFlagCanopy();
+
+          // Define start index of the canopy in z-direction
+          for (size_t k = 1u; k < WGD->z.size(); k++) {
+            if (WGD->terrain[icell_2d] + base_height <= WGD->z[k]) {
+              WGD->canopy->canopy_bot_index[icell_2d] = k;
+              WGD->canopy->canopy_bot[icell_2d] = WGD->terrain[icell_2d] + base_height;
+              WGD->canopy->canopy_base[icell_2d] = WGD->z_face[k - 1];
+              break;
+            }
+          }
+
+          // Define end index of the canopy in z-direction
+          for (size_t k = 0u; k < WGD->z.size(); k++) {
+            if (WGD->terrain[icell_2d] + H < WGD->z[k + 1]) {
+              WGD->canopy->canopy_top_index[icell_2d] = k + 1;
+              WGD->canopy->canopy_top[icell_2d] = WGD->terrain[icell_2d] + H;
+              break;
+            }
+          }
+
+          // Define the height of the canopy
+          WGD->canopy->canopy_height[icell_2d] = WGD->canopy->canopy_top[icell_2d] - WGD->canopy->canopy_bot[icell_2d];
+
+          // define icellflag @ (x,y) for all z(k) in [k_start...k_end]
+          for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < WGD->canopy->canopy_top_index[icell_2d]; k++) {
+            int icell_3d = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+            if (WGD->icellflag[icell_3d] != 0 && WGD->icellflag[icell_3d] != 2) {
+              // Canopy cell
+              WGD->icellflag[icell_3d] = getCellFlagCanopy();
+              //WGD->canopy->canopy_atten_coeff[icell_3d] = attenuationCoeff;
+              WGD->canopy->icanopy_flag[icell_3d] = canopy_id;
+              canopy_cell3D.push_back(icell_3d);
+            }
+          }
+        }// end define icellflag!
+      }
+    }
+  }
+
+  // check if the canopy is well defined
+  if (canopy_cell2D.size() == 0) {
+    k_start = 0;
+    k_end = 0;
+  } else {
+    k_start = WGD->nz - 1;
+    k_end = 0;
+    for (size_t k = 0u; k < canopy_cell2D.size(); k++) {
+      if (WGD->canopy->canopy_bot_index[canopy_cell2D[k]] < k_start)
+        k_start = WGD->canopy->canopy_bot_index[canopy_cell2D[k]];
+      if (WGD->canopy->canopy_top_index[canopy_cell2D[k]] > k_end)
+        k_end = WGD->canopy->canopy_top_index[canopy_cell2D[k]];
+    }
+  }
+
+  // check of illegal definition.
+  if (k_start > k_end) {
+    std::cerr << "ERROR in tree definition (k_start > k end)" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  if (ceil(1.5 * k_end) > WGD->nz - 1) {
+    std::cerr << "ERROR domain too short for tree method" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
   return;
 }
 
@@ -82,8 +162,7 @@ void CanopyWindbreak::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *
 void CanopyWindbreak::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 {
 
-  std::vector<float> u0_modified, v0_modified;
-  std::vector<int> u0_mod_id, v0_mod_id;
+  std::map<int, float> u0_modified, v0_modified;
 
   int icell_face = i_building_cent + j_building_cent * WGD->nx + k_end * WGD->nx * WGD->ny;
   u0_h = WGD->u0[icell_face];// u velocity at the height of building at the centroid
@@ -92,62 +171,42 @@ void CanopyWindbreak::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   upwind_dir = atan2(v0_h, u0_h);
 
   // apply canopy parameterization
-  for (auto j = 0; j < ny_canopy; j++) {
-    for (auto i = 0; i < nx_canopy; i++) {
-      int icell_2d = i + j * nx_canopy;
-      // base of the canopy
-      float z_b = canopy_base[icell_2d];
-      for (auto k = canopy_bot_index[icell_2d]; k < canopy_top_index[icell_2d]; k++) {
-        // int icell_3d = i + j*nx_canopy + k*nx_canopy*ny_canopy;
-        // int icell_cent = (i-1+i_start) + (j-1+j_start)*(WGD->nx-1) + k*(WGD->nx-1)*(WGD->ny-1);
-        int icell_face = (i - 1 + i_start) + (j - 1 + j_start) * WGD->nx + k * WGD->nx * WGD->ny;
+  for (auto icell_2d : canopy_cell2D) {
+    int j = (int)((icell_2d) / (WGD->nx - 1));
+    int i = icell_2d - j * (WGD->nx - 1);
+    // base of the canopy
+    float z_b = WGD->z[WGD->terrain_id[icell_2d]];
+    for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < WGD->canopy->canopy_top_index[icell_2d]; ++k) {
+      int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
 
-        if ((WGD->z_face[k - 1] - z_b >= understory_height) && (WGD->z_face[k - 1] - z_b <= H)) {
-          // storing unperturbed data
-          u0[icell_face] = WGD->u0[icell_face];
-          u0[icell_face + 1] = WGD->u0[icell_face + 1];
-          v0[icell_face] = WGD->v0[icell_face];
-          v0[icell_face + WGD->nx] = WGD->v0[icell_face + WGD->nx];
-
-          // get velocity mag at the center of the cell
-          float utmp = 0.5 * (WGD->u0[icell_face] + WGD->u0[icell_face + 1]);
-          float vtmp = 0.5 * (WGD->v0[icell_face] + WGD->v0[icell_face + WGD->nx]);
-          float us_mag = sqrt(utmp * utmp + vtmp * vtmp);
-          float us_dir = atan2(vtmp, utmp);
-
-          // adding modified velocity to the list of node to modifiy
-          /*
+      if ((WGD->z_face[k - 1] - z_b >= understory_height) && (WGD->z_face[k - 1] - z_b <= H)) {
+        // adding modified velocity to the list of node to modifiy
+        /*
             this method avoid double appication of the param.
             especially important when the param multiply the velocity at the
             current location!
             example: u0[]*=(1-p)
           */
-          // all face of the cell i=icell_face & i+1 = icell_face+1
-          u0_mod_id.push_back(icell_face);
-          u0_modified.push_back(a_obf * us_mag * cos(us_dir));
-          u0_mod_id.push_back(icell_face + 1);
-          u0_modified.push_back(a_obf * us_mag * cos(us_dir));
-          // all face of the cell j=icell_face & j+1 = icell_face+nx
-          v0_mod_id.push_back(icell_face);
-          v0_modified.push_back(a_obf * us_mag * sin(us_dir));
-          v0_mod_id.push_back(icell_face + WGD->nx);
-          v0_modified.push_back(a_obf * us_mag * sin(us_dir));
-        }
+        // all face of the cell i=icell_face & i+1 = icell_face+1
+        //u0_mod_id.push_back(icell_face);
+        u0_modified[icell_face] = a_obf;
+        u0_modified[icell_face + 1] = a_obf;
+
+        // all face of the cell j=icell_face & j+1 = icell_face+nx
+        v0_modified[icell_face] = a_obf;
+        v0_modified[icell_face + WGD->nx] = a_obf;
       }
     }
   }
 
   // apply the parameterization (only once per cell/face!)
-  for (auto x_id = 0u; x_id < u0_mod_id.size(); x_id++) {
-    WGD->u0[u0_mod_id[x_id]] = u0_modified[x_id];
-  }
-  for (auto y_id = 0u; y_id < v0_mod_id.size(); y_id++) {
-    WGD->v0[v0_mod_id[y_id]] = v0_modified[y_id];
-  }
+  for (auto const &m : u0_modified)
+    WGD->u0[m.first] *= m.second;
+
+  for (auto const &m : v0_modified)
+    WGD->v0[m.first] *= m.second;
 
   // clear memory
-  u0_mod_id.clear();
-  v0_mod_id.clear();
   u0_modified.clear();
   v0_modified.clear();
 
@@ -159,7 +218,9 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
   const float tol = 0.01 * M_PI / 180.0;
   const float epsilon = 10e-10;
 
-  const int wake_stream_coef = 13;
+  const float wake_shear_coef = 7.5;
+  const float wake_recov_coef = 4;
+  const float wake_stream_coef = wake_shear_coef + wake_recov_coef;
 
   //*** spreading parameters ***!
   float udelt = (1 - a_obf);// udelt parameters
@@ -167,19 +228,19 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
   float spreadclassicmix = 0.14 * udelt / uave;// classic mixing layer
   float spreadupstream = 0.0;// upstream spread rate
   float spreadrate = 0.0;// sum of two spreading models
-  /*
+
+  /* FM - OBSOLETE (using tanh to blend recovery zone)
      Perrera 1981 contains a typo "K=(2.0*k^2)/(ln(H-d)/zo)" where k is von Karman's constant.
      The correct form and the one used in this line is found in Counihan et al.
      "Wakes behind two-dimensional surface obstacles in turbulent boundary layers"
      J. Fluid Mech. (1974) vol 64, part 3, Eq. 2.19b on page 536
   */
-  const float n = 0.1429;
-  float zo = 0.1;
-  float K = (2.0 * 0.4 * 0.4) / log((H - d) / zo);
-  float xbar, eta, recovery_factor;
-  float aeropor;
+  //const float n = 0.1429;
+  //float zo = 0.1;
+  //float K = (2.0 * 0.4 * 0.4) / log((H - d) / zo);
+  //float xbar, eta, recovery_factor;
 
-  float z_b;
+  //float z_b;
   float x_c, y_c, z_c, x1(0), x2(0), y1(0), y2(0), y_norm;
   float x_p, y_p, x_u, y_u, x_v, y_v, x_w, y_w;
   float x_wall, x_wall_u, x_wall_v, x_wall_w, dn_u, dn_v, dn_w;
@@ -188,14 +249,15 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
   // velocity at top of windbreak
   float u0_wh, v0_wh, w0_wh, umag0_wh;
   // shear zone orig. and spread
-  float zwmo, d_shearzone;
+  float zwmo, d_shearzone, ds;
 
   // float u_defect,u_c,r_center,theta,delta,B_h;
   // float ustar_wake(0),ustar_us(0),mag_us(0);
 
 
-  int k_bottom(1), k_top(WGD->nz - 2);
-  int icell_cent, icell_face, icell_canopy_2d;
+  //int k_bottom(1), k_top(WGD->nz - 2);
+  int icell_cent, icell_face;
+  //int icell_canopy_2d;
 
   std::vector<float> u0_modified, v0_modified;
   std::vector<int> u0_mod_id, v0_mod_id;
@@ -246,8 +308,11 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
     if (yi[id] > y2)
       y2 = yi[id];// Maximum y
 
-    // caculate last id, ie, come back to itself
-    if ((polygonVertices[id + 1].x_poly > polygonVertices[0].x_poly - 0.1) && (polygonVertices[id + 1].x_poly < polygonVertices[0].x_poly + 0.1) && (polygonVertices[id + 1].y_poly > polygonVertices[0].y_poly - 0.1) && (polygonVertices[id + 1].y_poly < polygonVertices[0].y_poly + 0.1)) {
+    // calculate last id, ie, come back to itself
+    if ((polygonVertices[id + 1].x_poly > polygonVertices[0].x_poly - 0.1)
+        && (polygonVertices[id + 1].x_poly < polygonVertices[0].x_poly + 0.1)
+        && (polygonVertices[id + 1].y_poly > polygonVertices[0].y_poly - 0.1)
+        && (polygonVertices[id + 1].y_poly < polygonVertices[0].y_poly + 0.1)) {
       stop_id = id;
       break;
     }
@@ -278,18 +343,7 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
         if (i >= WGD->nx - 2 && i <= 0 && j >= WGD->ny - 2 && j <= 0)
           break;
 
-        // icell_canopy_2d = (i-i_start+1) + (j-j_start+1)*nx_canopy;
-        icell_canopy_2d = canopy_cellMap2D[i + j * (WGD->nx - 1)];
-
-        // base of the canopy at the current (x-wall,y) location
-        z_b = canopy_base[icell_canopy_2d];
-        k_bottom = canopy_bot_index[icell_canopy_2d];
-        // k_top = canopy_top_index[icell_canopy_2d];
-
-        // for (auto k=3*k_top; k>=k_bottom; k--) {
-        for (auto z_id = 3 * H / WGD->dz; z_id >= 0; z_id--) {
-          // z-coord relative to the base of the building.
-          // z_c = WGD->z[k] - z_b;
+        for (auto z_id = 5.0 * H / WGD->dz; z_id > 0; z_id--) {
 
           int x_id_min = -1;
           for (auto x_id = 1; x_id <= 2 * ceil(wake_stream_coef * Lr / WGD->dxy); x_id++) {
@@ -301,23 +355,20 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
             // x-coord relative to center of the windbreak (downstream)
             x_c = 0.5 * x_id * WGD->dxy;
 
-            int i = ((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx;
-            int j = ((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy;
+            int i = ceil(((x_c + x_wall) * cos(upwind_dir) - y_c * sin(upwind_dir) + building_cent_x) / WGD->dx) - 1;
+            int j = ceil(((x_c + x_wall) * sin(upwind_dir) + y_c * cos(upwind_dir) + building_cent_y) / WGD->dy) - 1;
 
-            int k = z_id + WGD->terrain_id[i + j * (WGD->nx)];
-            k_top = H / WGD->dz + WGD->terrain_id[i + j * (WGD->nx)];
-
-            // std::cout << WGD->terrain_id[i+j*(WGD->nx)] << std::endl;
+            int k = z_id + WGD->terrain_id[i + j * (WGD->nx - 1)] - 1;
+            int k_top = H / WGD->dz + WGD->terrain_id[i + j * (WGD->nx - 1)];
 
             // z-coord relative to the base of the building.
-            // z_c = WGD->z[k] - z_b;
-            z_c = WGD->z[k] - WGD->terrain[i + j * (WGD->nx - 1)];
+            z_c = WGD->z[k] - WGD->z_face[WGD->terrain_id[i + j * (WGD->nx - 1)] - 1];
 
             if (i >= WGD->nx - 2 && i <= 0 && j >= WGD->ny - 2 && j <= 0)
               break;
 
             // adjustement of center of the shear zone
-            icell_face = i + j * WGD->nx + (k_top)*WGD->nx * WGD->ny;
+            icell_face = i + j * WGD->nx + k_top * WGD->nx * WGD->ny;
 
             u0_wh = WGD->u0[icell_face];
             v0_wh = WGD->v0[icell_face];
@@ -330,13 +381,11 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
               zwmo = H;
 
             // upstream spread rate
-            spreadupstream = 2 * stdw / u0_wh;
+            spreadupstream = 2.0 * stdw / umag0_wh;
             // sum of two spreading models
             spreadrate = sqrt(spreadclassicmix * spreadclassicmix + spreadupstream * spreadupstream);
-            d_shearzone = 0.5 * (spreadrate * x_c);
-
-            // K need to be adjusted here if zo not constant
-            // K=(2.0*0.4*0.4)/log((H-d)/zo);
+            // size of the shear zone
+            d_shearzone = spreadrate * x_c;
 
             // linearized indexes
             icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
@@ -357,7 +406,8 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
               }
             }
 
-            if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2 && WGD->icellflag[icell_cent] != getCellFlagCanopy()) {
+            if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2
+                && WGD->icellflag[icell_cent] != getCellFlagCanopy()) {
               // START OF WAKE VELOCITY PARAMETRIZATION
 
               // wake u-values
@@ -400,21 +450,14 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
                 if (dn_u > 0.0 && u_wake_flag == 1 && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
 
                   // x_u,y_u,z_c
-                  if (x_u < 8.5 * Lr) {
-                    // zone2
-                    aeropor = (0.5 * (1.0 - a_obf)) * tanh(1.5 / (d_shearzone) * (z_c)-1.5 / (d_shearzone)*zwmo) + 0.5 * (1.0 + a_obf);
+                  float aeropor = (0.5 * (1.0 - a_obf)) * tanh(1.5 * (z_c - zwmo) / d_shearzone) + 0.5 * (1.0 + a_obf);
+                  float recovery = 0.5 - 0.5 * tanh((x_u - wake_shear_coef * Lr - 0.5 * wake_recov_coef * Lr) / (0.25 * wake_recov_coef * Lr));
+                  WGD->canopy->wake_u_defect[icell_face] = (1.0 - aeropor) * recovery;
 
-                    u0_mod_id.push_back(icell_face);
-                    u0_modified.push_back(aeropor * WGD->u0[icell_face]);
-                  } else {
-                    // zone 3
-                    xbar = (x_u) / (H - d);
-                    eta = (z_c) / (H - d) * pow(1.0 / (K * xbar), 1.0 / (n + 2.0));
-                    recovery_factor = 9.75 * (1.0 - beta) * eta * exp(-0.67 * pow(eta, 1.5)) / xbar;
-
-                    u0_mod_id.push_back(icell_face);
-                    u0_modified.push_back(WGD->u0[icell_face] - recovery_factor * u0_wh);
-                  }
+                  // latteral shear zone
+                  ds = 0.5 * spreadclassicmix * x_u;
+                  WGD->canopy->wake_u_defect[icell_face] *= (0.5 - 0.5 * tanh(1.5 * (y_u - (y2 - ds)) / ds));
+                  WGD->canopy->wake_u_defect[icell_face] *= (0.5 - 0.5 * tanh(1.5 * ((y1 + ds) - y_u) / ds));
                 }
               }
 
@@ -429,9 +472,6 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
                 // rotated relative coordinate of u-face
                 x_v = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
                 y_v = -x_p * sin(upwind_dir) + y_p * cos(upwind_dir);
-
-                // if(std::abs(y_v) > std::abs(y_norm))
-                //     break;
 
                 if (perpendicular_flag[id]) {
                   x_wall_v = xi[id];
@@ -457,22 +497,16 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
 
                 if (dn_v > 0.0 && v_wake_flag == 1 && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
 
-                  // x_u,y_u,z_c
-                  if (x_v < 8.5 * Lr) {
-                    // zone2
-                    aeropor = (0.5 * (1.0 - a_obf)) * tanh(1.5 / (d_shearzone) * (z_c)-1.5 / (d_shearzone)*zwmo) + 0.5 * (1.0 + a_obf);
+                  // x_v,y_v,z_c
+                  float aeropor = (0.5 * (1.0 - a_obf)) * tanh(1.5 / (d_shearzone) * (z_c)-1.5 / (d_shearzone)*zwmo) + 0.5 * (1.0 + a_obf);
+                  float recovery = 0.5 - 0.5 * tanh((x_v - wake_shear_coef * Lr - 0.5 * wake_recov_coef * Lr) / (0.25 * wake_recov_coef * Lr));
 
-                    v0_mod_id.push_back(icell_face);
-                    v0_modified.push_back(aeropor * WGD->v0[icell_face]);
-                  } else {
-                    // zone 3
-                    xbar = (x_v) / (H - d);
-                    eta = (z_c) / (H - d) * pow(1.0 / (K * xbar), 1.0 / (n + 2.0));
-                    recovery_factor = 9.75 * (1.0 - beta) * eta * exp(-0.67 * pow(eta, 1.5)) / xbar;
+                  WGD->canopy->wake_v_defect[icell_face] = (1.0 - aeropor) * recovery;
 
-                    v0_mod_id.push_back(icell_face);
-                    v0_modified.push_back(WGD->v0[icell_face] - recovery_factor * v0_wh);
-                  }
+                  // latteral shear zone
+                  ds = 0.5 * spreadclassicmix * x_v;
+                  WGD->canopy->wake_v_defect[icell_face] *= (-0.5 * tanh(1.5 * (y_u - (y2 - ds)) / ds) + 0.5);
+                  WGD->canopy->wake_v_defect[icell_face] *= (-0.5 * tanh(1.5 * ((y1 + ds) - y_u) / ds) + 0.5);
                 }
               }
 
@@ -529,19 +563,6 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
       }
     }
   }
-
-  for (auto x_id = 0u; x_id < u0_mod_id.size(); x_id++) {
-    WGD->u0[u0_mod_id[x_id]] = u0_modified[x_id];
-  }
-
-  for (auto y_id = 0u; y_id < v0_mod_id.size(); y_id++) {
-    WGD->v0[v0_mod_id[y_id]] = v0_modified[y_id];
-  }
-
-  u0_mod_id.clear();
-  v0_mod_id.clear();
-  u0_modified.clear();
-  v0_modified.clear();
 
   return;
 }

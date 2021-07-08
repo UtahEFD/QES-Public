@@ -35,7 +35,6 @@
 #include "util/ParseInterface.h"
 #include "util/Vector3.h"
 #include "DTEHeightField.h"
-#include "ESRIShapefile.h"
 #include "WRFInput.h"
 #include "Mesh.h"
 
@@ -83,13 +82,6 @@ public:
   std::string demFile; /**< DEM file name */
   DTEHeightField *DTE_heightField = nullptr; /**< :document this: */
   Mesh *DTE_mesh; /**< :document this: */
-
-  // SHP File parameters
-  std::string shpFile; /**< SHP file name */
-  std::string shpBuildingLayerName; /**< :document this: */
-  ESRIShapefile *SHPData = nullptr; /**< :document this: */
-  std::vector<std::vector<polyVert>> shpPolygons; /**< :document this: */
-  std::vector<float> shpBuildingHeight; /**< Height of buildings */
 
   // //////////////////////////////////////////
   // WRF File Parameters
@@ -180,16 +172,10 @@ public:
     demFile = "";
     parsePrimitive<std::string>(false, demFile, "DEM");
 
-    shpFile = "";
-    parsePrimitive<std::string>(false, shpFile, "SHP");
-
     wrfFile = "";
     wrfSensorSample = 1;
     parsePrimitive<std::string>(false, wrfFile, "WRF");
     parsePrimitive<int>(false, wrfSensorSample, "WRFSensorSample");
-
-    shpBuildingLayerName = "buildings";// defaults
-    parsePrimitive<std::string>(false, shpBuildingLayerName, "SHPBuildingLayer");
 
     // Determine which use case to use for WRF/DEM combinations
     if ((demFile != "") && (wrfFile != "")) {
@@ -242,10 +228,10 @@ public:
       std::cout << "Constructing the DTE from WRF input heighfield..." << std::endl;
 
       DTE_heightField = new DTEHeightField(wrfInputData->fmHeight,
-        std::tuple<int, int, int>(wrfInputData->fm_nx, wrfInputData->fm_ny, wrfInputData->fm_nz),
-        std::tuple<float, float, float>(wrfInputData->fm_dx, wrfInputData->fm_dy, wrfInputData->fm_dz),
-        halo_x,
-        halo_y);
+                                           std::tuple<int, int, int>(wrfInputData->fm_nx, wrfInputData->fm_ny, wrfInputData->fm_nz),
+                                           std::tuple<float, float, float>(wrfInputData->fm_dx, wrfInputData->fm_dy, wrfInputData->fm_dz),
+                                           halo_x,
+                                           halo_y);
 
       (*(grid))[0] = wrfInputData->fm_dx;
       (*(grid))[1] = wrfInputData->fm_dy;
@@ -282,13 +268,13 @@ public:
       std::cout << "Domain: " << (*(domain))[0] << ", " << (*(domain))[1] << ", " << (*(domain))[2] << std::endl;
       std::cout << "Grid: " << (*(grid))[0] << ", " << (*(grid))[1] << ", " << (*(grid))[2] << std::endl;
       DTE_heightField = new DTEHeightField(demFile,
-        std::tuple<int, int, int>((*(domain))[0], (*(domain))[1], (*(domain))[2]),
-        std::tuple<float, float, float>((*(grid))[0], (*(grid))[1], (*(grid))[2]),
-        UTMx,
-        UTMy,
-        originFlag,
-        DEMDistancex,
-        DEMDistancey);
+                                           std::tuple<int, int, int>((*(domain))[0], (*(domain))[1], (*(domain))[2]),
+                                           std::tuple<float, float, float>((*(grid))[0], (*(grid))[1], (*(grid))[2]),
+                                           UTMx,
+                                           UTMy,
+                                           originFlag,
+                                           DEMDistancex,
+                                           DEMDistancey);
       assert(DTE_heightField);
 
       std::cout << "Forming triangle mesh...\n";
@@ -329,13 +315,13 @@ public:
     else if (m_domIType == DEMOnly) {
       std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
       DTE_heightField = new DTEHeightField(demFile,
-        std::tuple<int, int, int>((*(domain))[0], (*(domain))[1], (*(domain))[2]),
-        std::tuple<float, float, float>((*(grid))[0], (*(grid))[1], (*(grid))[2]),
-        UTMx,
-        UTMy,
-        originFlag,
-        DEMDistancex,
-        DEMDistancey);
+                                           std::tuple<int, int, int>((*(domain))[0], (*(domain))[1], (*(domain))[2]),
+                                           std::tuple<float, float, float>((*(grid))[0], (*(grid))[1], (*(grid))[2]),
+                                           UTMx,
+                                           UTMy,
+                                           originFlag,
+                                           DEMDistancex,
+                                           DEMDistancey);
       assert(DTE_heightField);
 
       std::cout << "Forming triangle mesh...\n";
@@ -347,17 +333,6 @@ public:
       DTE_heightField = nullptr;
       DTE_mesh = nullptr;
       wrfInputData = nullptr;
-    }
-
-    //
-    // Process ESRIShapeFile here, but leave extraction of poly
-    // building for later in WINDSGeneralData
-    //
-    SHPData = nullptr;
-    if (shpFile != "") {
-
-      // Read polygon node coordinates and building height from shapefile
-      SHPData = new ESRIShapefile(shpFile, shpBuildingLayerName, shpPolygons, shpBuildingHeight, heightFactor);
     }
   }
 };

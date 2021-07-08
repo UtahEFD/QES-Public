@@ -41,7 +41,7 @@ public:
   CanopyIsolatedTree()
   {
   }
-  CanopyIsolatedTree(const WINDSInputData *WID, WINDSGeneralData *WGD, int id);
+  CanopyIsolatedTree(const std::vector<polyVert> &iSP, float iH, float iW, float iBH, float iLAI, int iID);
 
   virtual void parseValues()
   {
@@ -62,6 +62,7 @@ public:
     canopy_rotation = 0;
 
     zMaxLAI = zMaxLAI * H;
+    LAI = 2.0 * attenuationCoeff;
 
     // x_start += UID->simParams->halo_x;
     // y_start += UID->simParams->halo_y;
@@ -90,7 +91,7 @@ public:
 
 private:
   float attenuationCoeff;
-  float zMaxLAI;
+  float LAI, zMaxLAI;
   int ustar_method = 2;
 
   float Bfunc(const float &);

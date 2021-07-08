@@ -35,6 +35,9 @@
 #include <vector>
 #include <map>
 
+#include "CanopyElement.h"
+
+
 // forward declaration of WINDSInputData and WINDSGeneralData, which
 // will be used by the derived classes and thus included there in the
 // C++ files
@@ -61,6 +64,11 @@ public:
   virtual ~Canopy()
   {}
 
+  void setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD);
+
+  void applyCanopyVegetation(WINDSGeneralData *WGD);
+  void applyCanopyWake(WINDSGeneralData *WGD);
+
   /*
    * For all Canopy classes derived, this need to be defined
   virtual void parseValues()
@@ -74,24 +82,15 @@ public:
   }
   */
 
-  virtual void canopyVegetation(WINDSGeneralData *wgd);
-  virtual void canopyWake(WINDSGeneralData *wgd)
-  {
-    return;
-  }
-
   virtual int getCellFlagCanopy();
   virtual int getCellFlagWake();
 
-
-protected:
-  int nx_canopy, ny_canopy, nz_canopy;
-  int numcell_cent_2d, numcell_cent_3d;
+  int wakeFlag;
 
   /*!
    *
    */
-  std::vector<float> canopy_atten; /**< Canopy attenuation coefficient */
+  std::vector<float> canopy_atten_coeff; /**< Canopy attenuation coefficient */
 
   std::vector<float> canopy_bot; /**< Canopy bottom */
   std::vector<int> canopy_bot_index; /**< Canopy bottom index */
@@ -104,6 +103,19 @@ protected:
   std::vector<float> canopy_z0; /**< Canopy surface roughness */
   std::vector<float> canopy_ustar; /**< Velocity gradient at the top of canopy */
   std::vector<float> canopy_d; /**< Canopy displacement length */
+
+  std::vector<Building *> allCanopiesV; /**< :document this: */
+  std::vector<float> base_height; /**< Base height of trees */
+  std::vector<float> effective_height; /**< Effective height of trees */
+  std::vector<int> icanopy_flag; /**< :document this: */
+  std::vector<int> canopy_id; /**< :document this: */
+
+  std::vector<float> wake_u_defect; /**< :document this: */
+  std::vector<float> wake_v_defect; /**< :document this: */
+
+protected:
+  int nx_canopy, ny_canopy, nz_canopy;
+  int numcell_cent_2d, numcell_cent_3d;
 
   /*!
    * This function takes in icellflag defined in the defineCanopy function along with variables initialized in
@@ -139,6 +151,7 @@ protected:
   float canopyBisection(float ustar, float z0, float canopy_top, float canopy_atten, float vk, float psi_m);
 
 private:
+  void mergeSort(std::vector<float> &effective_height, std::vector<Building *> allBuildingsV, std::vector<int> &tree_id);
 };
 
 inline int Canopy::getCellFlagCanopy()
