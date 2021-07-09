@@ -52,6 +52,14 @@ using namespace boost::posix_time;
 WINDSInputData *parseXMLTree(const std::string fileName);
 Sensor *parseSensors(const std::string fileName);
 
+//These functions run the solvers and return the solved WINDSGeneralData
+WINDSGeneralData* runSerial(WINDSGeneralData* WGD, WINDSInputData* WID, Solver *solverCPU, bool solveWind);
+WINDSGeneralData* runDynamic(WINDSGeneralData* WGD_DYNAMIC, WINDSInputData* WID, Solver *solverDynamic, bool solveWind);
+WINDSGeneralData* runGlobal(WINDSGeneralData* WGD_GLOBAL, WINDSInputData* WID, Solver *solverGlobal, bool solveWind);
+WINDSGeneralData* runShared(WINDSGeneralData* WGD_SHARED, WINDSInputData* WID, Solver *solverShared, bool solveWind);
+
+
+
 int main(int argc, char *argv[])
 {
   // QES-Winds - Version output information
@@ -167,40 +175,36 @@ int main(int argc, char *argv[])
   // //////////////////////////////////////////
 
   Solver *solverCPU, *solverDynamic, *solverGlobal, *solverShared = nullptr;
-  std::cout << "Run Serial Solver (CPU) ..." << std::endl;
-  solverCPU = new CPUSolver(WID, WGD);
-  std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
-  solverDynamic = new DynamicParallelism(WID, WGD_DYNAMIC);
-  std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
-  solverGlobal = new GlobalMemory(WID, WGD_GLOBAL);
-  std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
-  solverShared = new SharedMemory(WID, WGD_SHARED);
-
-  std::vector<WINDSGeneralData *>completedSolvers;
+  std::vector<WINDSGeneralData *> completedSolvers;
   std::vector<string> solverNames;
-  // CPU Solver
-  solverCPU->solve(WID, WGD, !arguments.solveWind);
-  std::cout << "✓ CPU solver done\n";
-  std::cout << std::endl;
-  // Dynamic Solver
-  solverDynamic->solve(WID, WGD_DYNAMIC, !arguments.solveWind);
-  completedSolvers.push_back(WGD_DYNAMIC);
-  solverNames.push_back("Dynamic");
-  std::cout << "✓ Dynamic solver done\n";
-  std::cout << std::endl;
-  // Global Solver
-  solverGlobal->solve(WID, WGD_GLOBAL, !arguments.solveWind);
-  completedSolvers.push_back(WGD_GLOBAL);
-  solverNames.push_back("Global");
-  std::cout << "✓ Global solver done\n";
-  std::cout << std::endl;
-  // Shared Solver
-  solverShared->solve(WID, WGD_SHARED, !arguments.solveWind);
-  completedSolvers.push_back(WGD_SHARED);
-  solverNames.push_back("Shared");
-  std::cout << "✓ Shared solver done\n";
-  std::cout << std::endl;
 
+  switch(arguments.solveType){
+  case 1:
+    WGD = runSerial(WGD, WID, solverCPU, arguments.solveWind);
+    completedSolvers.push_back(runDynamic(WGD_DYNAMIC, WID, solverDynamic, arguments.solveWind));
+    solverNames.push_back("Dynamic");
+    completedSolvers.push_back(runGlobal(WGD_GLOBAL, WID, solverGlobal, arguments.solveWind));
+    solverNames.push_back("Global");
+    completedSolvers.push_back(runShared(WGD_SHARED, WID, solverShared, arguments.solveWind));
+    solverNames.push_back("Shared");
+    break;
+  case 2:
+    WGD = runSerial(WGD, WID, solverCPU, arguments.solveWind);
+    completedSolvers.push_back(runDynamic(WGD_DYNAMIC, WID, solverDynamic, arguments.solveWind));
+    solverNames.push_back("Dynamic");
+    break;
+  case 3:
+    WGD = runSerial(WGD, WID, solverCPU, arguments.solveWind);
+    completedSolvers.push_back(runGlobal(WGD_GLOBAL, WID, solverGlobal, arguments.solveWind));
+    solverNames.push_back("Global");
+    break;
+  case 4:
+    WGD = runSerial(WGD, WID, solverCPU, arguments.solveWind);
+    completedSolvers.push_back(runShared(WGD_SHARED, WID, solverShared, arguments.solveWind));
+    solverNames.push_back("Shared");
+    break;
+  }
+  
   // Table title
   std::cout << "Performing comparative analysis against CPU serial solver...\n";
   TextTable t( '-', '|', '+' );
@@ -417,6 +421,48 @@ int main(int argc, char *argv[])
   // /////////////////////////////
   exit(EXIT_SUCCESS);
 }
+
+
+//CPU solver
+WINDSGeneralData* runSerial(WINDSGeneralData* WGD, WINDSInputData* WID, Solver *solverCPU, bool solveWind){
+  std::cout << "Run Serial Solver (CPU) ..." << std::endl;
+  solverCPU = new CPUSolver(WID, WGD);
+  solverCPU->solve(WID, WGD, !solveWind);
+  std::cout << "✓ CPU solver done\n";
+  std::cout << std::endl;
+  return WGD;
+}
+
+//Dynamic parallel GPU solver
+WINDSGeneralData* runDynamic(WINDSGeneralData* WGD_DYNAMIC, WINDSInputData* WID, Solver *solverDynamic, bool solveWind){
+  std::cout << "Run Dynamic Parallel Solver (GPU) ..." << std::endl;
+  solverDynamic = new DynamicParallelism(WID, WGD_DYNAMIC);
+  solverDynamic->solve(WID, WGD_DYNAMIC, !solveWind);
+  std::cout << "✓ Dynamic solver done\n";
+  std::cout << std::endl;
+  return WGD_DYNAMIC;
+}
+
+//Global memory GPU solver
+WINDSGeneralData* runGlobal(WINDSGeneralData* WGD_GLOBAL, WINDSInputData* WID, Solver *solverGlobal, bool solveWind){ 
+  std::cout << "Run Global Memory Solver (GPU) ..." << std::endl;
+  solverGlobal = new GlobalMemory(WID, WGD_GLOBAL);
+  solverGlobal->solve(WID, WGD_GLOBAL, !solveWind);
+  std::cout << "✓ Global solver done\n";
+  std::cout << std::endl;
+  return WGD_GLOBAL;
+}
+
+//Shared memory GPU solver
+WINDSGeneralData* runShared(WINDSGeneralData* WGD_SHARED, WINDSInputData* WID, Solver *solverShared, bool solveWind){
+  std::cout << "Run Shared Memory Solver (GPU) ..." << std::endl;
+  solverShared = new SharedMemory(WID, WGD_SHARED);
+  solverShared->solve(WID, WGD_SHARED, !solveWind);
+  std::cout << "✓ Shared solver done\n";
+  std::cout << std::endl;
+  return WGD_SHARED;
+}
+
 
 WINDSInputData *parseXMLTree(const std::string fileName)
 {

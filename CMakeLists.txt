@@ -241,3 +241,4 @@ option(ENABLE_ALL_COMPARISON_TESTS "Enables test of comparison between serial an
 option(ENABLE_DYNAMIC_PARALLELISM_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Dynamic Parallel solvers" OFF)
 option(ENABLE_GLOBAL_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Global Memory solvers" OFF)
 option(ENABLE_SHARED_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Shared Memory solvers" OFF)
+option(ENABLE_LONG_COMPARISON_TESTS "Enables longer comparison tests on all other comparison test options (this takes upwards of 20 minutes)" OFF)
