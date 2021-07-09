@@ -1,18 +1,17 @@
 ADD FUTURE TESTS HERE
 
------------------
-COMPARING SOLVERS
------------------
+##COMPARING SOLVERS
+
 This test allows the user to analyze the correlation in results between solvers.
 
-Usage -- 
+##Usage -- 
 
 Specify the options you want using CCmake, then rebuild and use ctest --verbose. When specifying options,
 keep in mind that tests stack, so only run the tests you want to run, unless you want to wait a very long time. For
 example, choosing ENABLE_ALL_COMPARISON_TESTS would be much faster than enabling each of the other tests individually,
 since for each test it has to run the CPU solver again.
 
-Options -- 
+##Options -- 
 
 ENABLE_ALL_COMPARISON_TESTS: Runs every solver. 
 ENABLE_DYNAMIOC_PARALLELISM_COMPARISON_TESTS: Only runs the CPU and Dynamic Parallel solvers.
@@ -22,7 +21,7 @@ ENABLE_LONG_COMPARISON_TESTS: By default, only FlatTerrain is used for the test,
 this on adds GaussianHill to the test, which adds around 5 minutes.
 ENABLE_RIDICULOUSLY_LONG_COMPARISON_TESTS: Adds AskerveinHill to the test, which adds around 15 minutes.
 
-Running compareSolvers manually --
+##Running compareSolvers manually --
 
 Runs using similar arguments to qesWinds. From the build folder, run: ./tests/compareSolvers -q "..." -s "...".
 The -q command specifies which input file you want to use (example: "../data/InputFiles/FlatTerrain.xml".
