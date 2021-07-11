@@ -226,12 +226,14 @@ int main(int argc, char *argv[])
   t.add( "AVG W DIFF" );
   t.add( "WindVelMag DIFF" );
   t.add( "R^2 VALUE" );
+  t.add( "Mean WVM DIFF");
+  t.add( "Max WVM DIFF");
   t.endOfRow();
 
   // These vars for storing comparison results for later bar chart construction in loop below
   vector<double> wvmResults;
   vector<double> rSquaredResults;
-
+  vector<double> avgWVMResults;
   // Loop to calculate comparison metrics between serial and parallel solvers
   for (int solversIndex = 0; solversIndex < completedSolvers.size(); ++solversIndex) {
     // Calculating u differences
@@ -274,6 +276,8 @@ int main(int argc, char *argv[])
     float cpuWVM = 0;
     float gpuWVM = 0;
     float totalWvmDif = 0;
+    float avgWvmDif = 0;
+    float maxWvmDif = 0;
     float cpuSum = 0;
     float gpuSum = 0;
     // Calculate vector magnitudes, find difference and then add to sum
@@ -285,11 +289,12 @@ int main(int argc, char *argv[])
 			((completedSolvers[solversIndex]->v[i])*(completedSolvers[solversIndex]->v[i]))+
                         ((completedSolvers[solversIndex]->w[i])*(completedSolvers[solversIndex]->w[i])));
       totalWvmDif += std::abs(cpuWVM-gpuWVM);
+      if(std::abs(cpuWVM-gpuWVM) > maxWvmDif) maxWvmDif = std::abs(cpuWVM-gpuWVM);
       // These sums required for R-squared calculations below
       cpuSum += cpuWVM;
       gpuSum += gpuWVM;
     }
-
+    avgWvmDif = totalWvmDif/WGD->w.size();
     // /////////////////////////
     // CALCULATING R-squared
     // /////////////////////////
@@ -335,12 +340,15 @@ int main(int argc, char *argv[])
     t.add(std::to_string(avgWDif));
     t.add(std::to_string(totalWvmDif));
     t.add(std::to_string(rSquared));
+    t.add(std::to_string(avgWvmDif));
+    t.add(std::to_string(maxWvmDif));
     t.endOfRow();
 
     // Stores results for bar chart construction that happens after this loop completes
+    avgWVMResults.push_back(avgWvmDif);
     wvmResults.push_back(totalWvmDif);
     rSquaredResults.push_back(rSquared);
-
+   
     //std::cout << "  Max u difference: " << maxUDif << std::endl;
     //std::cout << "  Max v difference: " << maxVDif << std::endl;
     //std::cout << "  Max w difference: " << maxWDif << std::endl;
@@ -363,6 +371,7 @@ int main(int argc, char *argv[])
   // Print comparison bar charts if user is running all solvers
   if(arguments.solveType == 1) {
     printChart("WindVelMag DIFF", false, wvmResults);
+    printChart("Average WVM DIFF", false, avgWVMResults);
     //printChart("R^2 VALUE", true, rSquaredResults);
   }
   std::cout << "✔ Comparative analysis complete\n";
