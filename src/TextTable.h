@@ -1,3 +1,7 @@
+// Author: Yoav Kleinberger
+// Source: https://github.com/haarcuba
+// Date: 11 Jul 2021
+
 #pragma once
 
 #include <iostream>
