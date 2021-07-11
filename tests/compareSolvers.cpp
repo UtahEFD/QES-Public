@@ -1,3 +1,9 @@
+/* 
+  Bar-chart Author: Michael Thomas Greer
+  Source: http://cplusplus.com/forum/beginner/264784/
+  Date: 11 Jul 2021
+*/
+
 #include <iostream>
 #include <cmath>
 #include <vector>
