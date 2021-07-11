@@ -237,7 +237,7 @@ option(ENABLE_SANITY_TESTS "Enables tests that simply check if qesWinds runs on 
 option(ENABLE_LONG_SANITY_TESTS "Enables the longer sanity tests" OFF)
 option(ENABLE_CPU_TESTS "Enable CPU tests" OFF)
 option(ENABLE_GPU_TESTS "Enable GPU tests" OFF)
-option(ENABLE_ALL_COMPARISON_TESTS "Enables test of comparison between serial and GPU solvers" OFF)
+option(ENABLE_ALL_COMPARISON_TESTS "Enables test of comparison between serial and GPU solvers" OFF) # overrides individual comparison selections
 option(ENABLE_DYNAMIC_PARALLELISM_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Dynamic Parallel solvers" OFF)
 option(ENABLE_GLOBAL_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Global Memory solvers" OFF)
 option(ENABLE_SHARED_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Shared Memory solvers" OFF)

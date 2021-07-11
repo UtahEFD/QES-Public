@@ -9,7 +9,7 @@ This test allows the user to analyze the correlation in results between solvers.
 Specify the options you want using CCmake, then rebuild and use ctest --verbose. When specifying options,
 keep in mind that tests stack, so only run the tests you want to run, unless you want to wait a very long time. For
 example, choosing ENABLE_ALL_COMPARISON_TESTS would be much faster than enabling each of the other tests individually,
-since for each test it has to run the CPU solver again.
+since for each test it has to run the CPU solver again. ENABLE_ALL_COMPARISON_TESTS and ENABLE_ALL_TESTS will override any individually selected tests to reduce the amount of time spent.
 
 ## Options -- 
 
