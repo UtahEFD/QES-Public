@@ -6,7 +6,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 
 CUDA_ADD_EXECUTABLE(compareSolvers compareSolvers.cpp)
 
-#target_link_libraries(compareSolvers curand)
+target_link_libraries(compareSolvers curand)
 target_link_libraries(compareSolvers qeswindscore)
 target_link_libraries(compareSolvers qeswindsutil)
 
@@ -19,7 +19,7 @@ target_link_libraries(compareSolvers ${Boost_DATE_TIME_LIBRARIES})
 target_link_libraries(compareSolvers ${GDAL_LIBRARY})
 target_link_libraries(compareSolvers ${NETCDF_LIBRARIES_CXX})
 target_link_libraries(compareSolvers ${NETCDF_LIBRARIES_C})
-#target_link_libraries(compareSolvers cudadevrt)
+target_link_libraries(compareSolvers cudadevrt)
 target_link_libraries(compareSolvers ${CUDA_LIBRARIES})
 
 
