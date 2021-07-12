@@ -22,7 +22,7 @@ foreach(basetest ${BASETESTS})
     target_link_libraries(${basetest} ${GDAL_LIBRARY})
     target_link_libraries(${basetest} ${NETCDF_LIBRARIES_CXX})
     target_link_libraries(${basetest} ${NETCDF_LIBRARIES_C})
-    target_link_libraries(${basetest} cudadevrt)
+    #target_link_libraries(${basetest} cudadevrt)
     target_link_libraries(${basetest} ${CUDA_LIBRARIES})
 
 endforeach(basetest)
