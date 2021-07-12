@@ -503,6 +503,16 @@ WINDSGeneralData* runSerial(WINDSGeneralData* WGD, WINDSInputData* WID, Solver *
   std::cout << std::endl;
   std::cout << "Run Serial Solver (CPU)..." << std::endl;
   solverCPU = new CPUSolver(WID, WGD);
+
+  // Reset icellflag values
+  WGD->resetICellFlag();
+
+  // Create initial velocity field from the new sensors
+  WGD->applyWindProfile(WID, 0, CPU_Type);
+
+  // Apply parametrizations
+  WGD->applyParametrizations(WID);
+  
   solverCPU->solve(WID, WGD, !solveWind);
   std::cout << "✔ CPU solver done\n";
   std::cout << std::endl;
@@ -513,6 +523,16 @@ WINDSGeneralData* runSerial(WINDSGeneralData* WGD, WINDSInputData* WID, Solver *
 WINDSGeneralData* runDynamic(WINDSGeneralData* WGD_DYNAMIC, WINDSInputData* WID, Solver *solverDynamic, bool solveWind){
   std::cout << "Run Dynamic Parallel Solver (GPU)..." << std::endl;
   solverDynamic = new DynamicParallelism(WID, WGD_DYNAMIC);
+
+  // Reset icellflag values
+  WGD_DYNAMIC->resetICellFlag();
+
+  // Create initial velocity field from the new sensors
+  WGD_DYNAMIC->applyWindProfile(WID, 0, DYNAMIC_P);
+
+  // Apply parametrizations
+  WGD_DYNAMIC->applyParametrizations(WID);
+  
   solverDynamic->solve(WID, WGD_DYNAMIC, !solveWind);
   std::cout << "✔ Dynamic solver done\n";
   std::cout << std::endl;
@@ -523,6 +543,16 @@ WINDSGeneralData* runDynamic(WINDSGeneralData* WGD_DYNAMIC, WINDSInputData* WID,
 WINDSGeneralData* runGlobal(WINDSGeneralData* WGD_GLOBAL, WINDSInputData* WID, Solver *solverGlobal, bool solveWind){
   std::cout << "Run Global Memory Solver (GPU)..." << std::endl;
   solverGlobal = new GlobalMemory(WID, WGD_GLOBAL);
+
+  // Reset icellflag values
+  WGD_GLOBAL->resetICellFlag();
+
+  // Create initial velocity field from the new sensors
+  WGD_GLOBAL->applyWindProfile(WID, 0, Global_M);
+
+  // Apply parametrizations
+  WGD_GLOBAL->applyParametrizations(WID);
+
   solverGlobal->solve(WID, WGD_GLOBAL, !solveWind);
   std::cout << "✔ Global solver done\n";
   std::cout << std::endl;
@@ -533,6 +563,16 @@ WINDSGeneralData* runGlobal(WINDSGeneralData* WGD_GLOBAL, WINDSInputData* WID, S
 WINDSGeneralData* runShared(WINDSGeneralData* WGD_SHARED, WINDSInputData* WID, Solver *solverShared, bool solveWind){
   std::cout << "Run Shared Memory Solver (GPU)..." << std::endl;
   solverShared = new SharedMemory(WID, WGD_SHARED);
+
+  // Reset icellflag values
+  WGD_SHARED->resetICellFlag();
+
+  // Create initial velocity field from the new sensors
+  WGD_SHARED->applyWindProfile(WID, 0, Shared_M);
+
+  // Apply parametrizations
+  WGD_SHARED->applyParametrizations(WID);
+
   solverShared->solve(WID, WGD_SHARED, !solveWind);
   std::cout << "✔ Shared solver done\n";
   std::cout << std::endl;
