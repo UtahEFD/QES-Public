@@ -201,22 +201,25 @@ int main(int argc, char *argv[])
   std::cout << "Performing comparative analysis against CPU serial solver...\n" << std::endl;
   TextTable table1( '-', '|', '+' );
   TextTable table2( '-', '|', '+' );
+  TextTable table3( '-', '|', '+' );
   // Specify table 1 header row here
   table1.add( "SOLVER NAME" );
   table1.add( "MAX U DIFF" );
   table1.add( "MAX V DIFF" );
   table1.add( "MAX W DIFF" );
-  table1.add( "AVG U DIFF" );
-  table1.add( "AVG V DIFF" );
-  table1.add( "AVG W DIFF" );
   table1.endOfRow();
   // Specify table 2 header row here
   table2.add( "SOLVER NAME" );
-  table2.add( "MAX WVM DIFF" );
-  table2.add( "AVG WVM DIFF" );
-  table2.add( "SUM WVM DIFF" );
-  table2.add( "R^2 VALUE" );
+  table2.add( "AVG U DIFF" );
+  table2.add( "AVG V DIFF" );
+  table2.add( "AVG W DIFF" );
   table2.endOfRow();
+  // Specify table 3 header row here
+  table3.add( "SOLVER NAME" );
+  table3.add( "MAX WVM DIFF" );
+  table3.add( "AVG WVM DIFF" );
+  table3.add( "R^2 VALUE" );
+  table3.endOfRow();
 
   // Loop to calculate comparison metrics between serial and parallel solvers
   for (int solversIndex = 0; solversIndex < completedSolvers.size(); ++solversIndex) {
@@ -320,16 +323,17 @@ int main(int argc, char *argv[])
     table1.add(std::to_string(maxUDif));
     table1.add(std::to_string(maxVDif));
     table1.add(std::to_string(maxWDif));
-    table1.add(std::to_string(avgUDif));
-    table1.add(std::to_string(avgVDif));
-    table1.add(std::to_string(avgWDif));
     table1.endOfRow();
     table2.add(solverNames[solversIndex]);
-    table2.add(std::to_string(maxWvmDif));
-    table2.add(std::to_string(avgWvmDif));
-    table2.add(std::to_string(totalWvmDif));
-    table2.add(std::to_string(rSquared));
+    table2.add(std::to_string(avgUDif));
+    table2.add(std::to_string(avgVDif));
+    table2.add(std::to_string(avgWDif));
     table2.endOfRow();
+    table3.add(solverNames[solversIndex]);
+    table3.add(std::to_string(maxWvmDif));
+    table3.add(std::to_string(avgWvmDif));
+    table3.add(std::to_string(rSquared));
+    table3.endOfRow();
 
     //std::cout << "  Max u difference: " << maxUDif << std::endl;
     //std::cout << "  Max v difference: " << maxVDif << std::endl;
@@ -349,10 +353,12 @@ int main(int argc, char *argv[])
     //std::cout << std::endl;
   }
   // Print comparison table
-  std::cout << "Table 1 of 2\n";
+  std::cout << "Table 1 of 3\n";
   std::cout << table1 << std::endl;
-  std::cout << "Table 2 of 2\n";
+  std::cout << "Table 2 of 3\n";
   std::cout << table2 << std::endl;
+  std::cout << "Table 3 of 3\n";
+  std::cout << table3 << std::endl;
   std::cout << "Comparative analysis complete!\n";
 
   //if (TGD != nullptr)
