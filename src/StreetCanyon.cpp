@@ -309,7 +309,8 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                      |  | -> along_dir = +/- angle of bd-face (according to sign of relative angle) 
                      -> exit loop on db faces at first valid face (condition 1)
                   */
-                  if (abs(x_down) < 0.75 * WGD->dxy) {
+                  //if (abs(x_down) < 0.75 * WGD->dxy) {
+                  if (abs(x_down) < 0.9 * WGD->dxy) {
                     // length of current face
                     segment_length = sqrt(pow(WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].x_poly
                                                 - WGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly,
@@ -365,14 +366,22 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                 }
 
                 // check angle between the face of current and downstream buildings.
-                if (reverse_flag == 1) {
+                // angle need to be (-pi;-0.75*pi) or (0.75*pi;pi)
+                if (cos(cross_dir - perpendicular_dir[id]) > cos(angle_tol)) {
+                  canyon_flag = 0;
+                  s = 0;
+                  top_flag = 0;
+                }
+                /* FM old version where cross_dir depend on direction of the flow
+		  if (reverse_flag == 1) {
                   // angle need to be (-0.25*pi;0.25*pi)
-                  if (cos(cross_dir - perpendicular_dir[id]) < -cos(angle_tol)) {
+                  //if (cos(cross_dir - perpendicular_dir[id]) < -cos(angle_tol)) {
+                  if (cos(cross_dir - perpendicular_dir[id]) > cos(angle_tol)) {
                     canyon_flag = 0;
                     s = 0;
                     top_flag = 0;
                   }
-                } else {
+		  } else {
                   // angle need to be (-pi;-0.75*pi) or (0.75*pi;pi)
                   if (cos(cross_dir - perpendicular_dir[id]) > cos(angle_tol)) {
                     canyon_flag = 0;
@@ -380,6 +389,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                     top_flag = 0;
                   }
                 }
+		*/
                 break;// exit LoopX1
               }
             }
@@ -391,100 +401,103 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
             // along velocity adjusted for height (assuming log profile) (WILL NOT WORK OVER TERRAIN)
             along_vel_mag = abs(velocity_mag * cos(canyon_dir - along_dir)) * log(WGD->z[k] / WGD->z0) / log(WGD->z[k_ref] / WGD->z0);
             cross_vel_mag = abs(velocity_mag * cos(canyon_dir - cross_dir));
-            for (auto x_id = x_id_min; x_id <= x_id_max; x_id++) {
+            for (auto x_id = x_id_min; x_id <= x_id_max + 2; x_id++) {
               xc = 0.5 * x_id * WGD->dxy;
 
               int i = ceil(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x - 0.001) / WGD->dx) - 1;
               int j = ceil(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y - 0.001) / WGD->dy) - 1;
 
-              icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-              if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
+              //icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+              //if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
 
-                // u-velocity parameterization (face)
-                /*
-                  i_u x-index of u-face (j does not need correction cell)
-                  x_p,y_p non-rotated relative to building center (u-face)
-                  x_u,y_u rotated relative to building center (u-face)
-                */
-                i_u = std::round(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / WGD->dx);
+              // u-velocity parameterization (face)
+              /*
+		i_u x-index of u-face (j does not need correction cell)
+		x_p,y_p non-rotated relative to building center (u-face)
+		x_u,y_u rotated relative to building center (u-face)
+	      */
+              i_u = std::round(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x) / WGD->dx);
+              x_p = i_u * WGD->dx - building_cent_x;
+              y_p = (j + 0.5) * WGD->dy - building_cent_y;
+              x_u = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
+              y_u = -x_p * sin(upwind_dir) + y_p * cos(upwind_dir);
 
-                x_p = i_u * WGD->dx - building_cent_x;
-                y_p = (j + 0.5) * WGD->dy - building_cent_y;
-                x_u = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
-                y_u = -x_p * sin(upwind_dir) + y_p * cos(upwind_dir);
-
-                if (perpendicular_flag[id] == 0) {
-                  x_wall_u = ((xi[id + 1] - xi[id]) / (yi[id + 1] - yi[id])) * (y_u - yi[id]) + xi[id];
-                } else {
-                  x_wall_u = xi[id];
-                }
-                x_pos = x_u - x_wall_u;
-                if (x_pos <= s + 0.001 && x_pos > -0.5 * WGD->dxy) {
-                  icell_face = i_u + j * WGD->nx + k * WGD->nx * WGD->ny;
-                  WGD->u0[icell_face] = along_vel_mag * cos(along_dir) + cross_vel_mag * (2 * x_pos / s) * 2 * (1 - x_pos / s) * cos(cross_dir);
-                }
-                // end of u-velocity parameterization
-
-                // v-velocity parameterization (face)
-                /*
-                  j_v y-index of v-face (i does not need correction cell)
-                  x_p,y_p non-rotated relative to building center (v-face)
-                  x_u,y_u rotated relative to building center (u-face)
-                */
-                j_v = std::round(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / WGD->dy);
-                x_p = (i + 0.5) * WGD->dx - building_cent_x;
-                y_p = j_v * WGD->dy - building_cent_y;
-                x_v = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
-                y_v = -x_p * sin(upwind_dir) + y_p * cos(upwind_dir);
-                if (perpendicular_flag[id] == 0) {
-                  x_wall_v = ((xi[id + 1] - xi[id]) / (yi[id + 1] - yi[id])) * (y_v - yi[id]) + xi[id];
-                } else {
-                  x_wall_v = xi[id];
-                }
-                x_pos = x_v - x_wall_v;
-                if (x_pos <= s + 0.001 && x_pos > -0.5 * WGD->dxy) {
-                  icell_face = i + j_v * WGD->nx + k * WGD->nx * WGD->ny;
-                  WGD->v0[icell_face] = along_vel_mag * sin(along_dir) + cross_vel_mag * (2 * x_pos / s) * 2 * (1 - x_pos / s) * sin(cross_dir);
-                }
-                // end of v-velocity parameterization
-
-                // w-velocity parameterization (face) and cellflag (cell)
-                // v-velocity parameterization (face)
-                /*
-                  (i,j do not need correction cell)
-                  x_p,y_p non-rotated relative to building center (w-face/cell)
-                  x_w,y_w rotated relative to building center (w-face/cell)
-                */
-                x_p = (i + 0.5) * WGD->dx - building_cent_x;
-                y_p = (j + 0.5) * WGD->dy - building_cent_y;
-                x_w = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
-                y_w = -x_p * sin(upwind_dir) + y_p * cos(upwind_dir);
-                if (perpendicular_flag[id] == 0) {
-                  x_wall_w = ((xi[id + 1] - xi[id]) / (yi[id + 1] - yi[id])) * (y_w - yi[id]) + xi[id];
-                } else {
-                  x_wall_w = xi[id];
-                }
-                x_pos = x_w - x_wall_w;
-
-                if (x_pos <= s + 0.001 && x_pos > -0.5 * WGD->dxy) {
-                  icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                  if (WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] != 0
-                      && WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] != 2) {
-                    icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-                    if (reverse_flag == 0) {
-                      // flow go up along front face - down along back face
-                      WGD->w0[icell_face] = -abs(0.5 * cross_vel_mag * (1 - 2 * x_pos / s)) * (1 - 2 * (s - x_pos) / s);
-                    } else {
-                      // flow go down along front face - up along back face
-                      WGD->w0[icell_face] = abs(0.5 * cross_vel_mag * (1 - 2 * x_pos / s)) * (1 - 2 * (s - x_pos) / s);
-                    }
-                  }
-                  if ((WGD->icellflag[icell_cent] != 7) && (WGD->icellflag[icell_cent] != 8)) {
-                    WGD->icellflag[icell_cent] = 6;
-                  }
-                }
-                // end of w-velocity parameterization
+              if (perpendicular_flag[id] == 0) {
+                x_wall_u = ((xi[id + 1] - xi[id]) / (yi[id + 1] - yi[id])) * (y_u - yi[id]) + xi[id];
+              } else {
+                x_wall_u = xi[id];
               }
+              x_pos = x_u - x_wall_u;
+              //if (x_pos <= s + 0.001 && x_pos > -0.5 * WGD->dxy) {
+              if (x_pos > -0.5 * WGD->dxy && x_pos <= s + 0.5 * WGD->dxy) {
+                icell_face = i_u + j * WGD->nx + k * WGD->nx * WGD->ny;
+                WGD->u0[icell_face] = along_vel_mag * cos(along_dir) + cross_vel_mag * (2 * x_pos / s) * 2 * (1 - x_pos / s) * cos(cross_dir);
+              }
+              // end of u-velocity parameterization
+
+              // v-velocity parameterization (face)
+              /*
+		j_v y-index of v-face (i does not need correction cell)
+		x_p,y_p non-rotated relative to building center (v-face)
+		x_u,y_u rotated relative to building center (u-face)
+	      */
+              j_v = std::round(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y) / WGD->dy);
+              x_p = (i + 0.5) * WGD->dx - building_cent_x;
+              y_p = j_v * WGD->dy - building_cent_y;
+              x_v = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
+              y_v = -x_p * sin(upwind_dir) + y_p * cos(upwind_dir);
+
+              if (perpendicular_flag[id] == 0) {
+                x_wall_v = ((xi[id + 1] - xi[id]) / (yi[id + 1] - yi[id])) * (y_v - yi[id]) + xi[id];
+              } else {
+                x_wall_v = xi[id];
+              }
+              x_pos = x_v - x_wall_v;
+              //if (x_pos <= s + 0.001 && x_pos > -0.5 * WGD->dxy) {
+              if (x_pos > -0.5 * WGD->dxy && x_pos <= s + 0.5 * WGD->dxy) {
+                icell_face = i + j_v * WGD->nx + k * WGD->nx * WGD->ny;
+                WGD->v0[icell_face] = along_vel_mag * sin(along_dir) + cross_vel_mag * (2 * x_pos / s) * 2 * (1 - x_pos / s) * sin(cross_dir);
+              }
+              // end of v-velocity parameterization
+
+              // w-velocity parameterization (face) and cellflag (cell)
+              /*
+		(i,j do not need correction cell)
+		x_p,y_p non-rotated relative to building center (w-face/cell)
+		x_w,y_w rotated relative to building center (w-face/cell)
+	      */
+              x_p = (i + 0.5) * WGD->dx - building_cent_x;
+              y_p = (j + 0.5) * WGD->dy - building_cent_y;
+              x_w = x_p * cos(upwind_dir) + y_p * sin(upwind_dir);
+              y_w = -x_p * sin(upwind_dir) + y_p * cos(upwind_dir);
+
+              if (perpendicular_flag[id] == 0) {
+                x_wall_w = ((xi[id + 1] - xi[id]) / (yi[id + 1] - yi[id])) * (y_w - yi[id]) + xi[id];
+              } else {
+                x_wall_w = xi[id];
+              }
+              x_pos = x_w - x_wall_w;
+
+              //if (x_pos <= s + 0.001 && x_pos > -0.5 * WGD->dxy) {
+              if (x_pos > -0.5 * WGD->dxy && x_pos <= s + 0.5 * WGD->dxy) {
+                icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+                if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2
+                    && WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] != 0
+                    && WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] != 2) {
+                  icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+                  if (reverse_flag == 0) {
+                    // flow go up along front face - down along back face
+                    WGD->w0[icell_face] = -abs(0.5 * cross_vel_mag * (1 - 2 * x_pos / s)) * (1 - 2 * (s - x_pos) / s);
+                  } else {
+                    // flow go down along front face - up along back face
+                    WGD->w0[icell_face] = abs(0.5 * cross_vel_mag * (1 - 2 * x_pos / s)) * (1 - 2 * (s - x_pos) / s);
+                  }
+                }
+                if ((WGD->icellflag[icell_cent] != 7) && (WGD->icellflag[icell_cent] != 8)) {
+                  WGD->icellflag[icell_cent] = 6;
+                }
+              }
+              // end of w-velocity parameterization
             }
           }
         }
