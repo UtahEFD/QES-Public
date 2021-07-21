@@ -367,7 +367,7 @@ void PolyBuilding::streetCanyonModified(WINDSGeneralData *WGD)
                   */
 
                   // checking distance to face of down-wind building
-                  if (std::abs(x_down) < 0.75 * WGD->dxy) {
+                  if (std::abs(x_down) < 1.0 * WGD->dxy) {
                     // length of current face
                     segment_length = sqrt(pow(WGD->allBuildingsV[d_build]->polygonVertices[j_id + 1].x_poly
                                                 - WGD->allBuildingsV[d_build]->polygonVertices[j_id].x_poly,
