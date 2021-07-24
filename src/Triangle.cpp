@@ -133,7 +133,7 @@ bool Triangle::rayTriangleIntersect(Ray ray, HitRecord &rec, float t0, float t1)
 
 void Triangle::parseValues()
 {
-  parseElement<Vector3<float>>(true, a, "a");
-  parseElement<Vector3<float>>(true, b, "b");
-  parseElement<Vector3<float>>(true, c, "c");
+  parseElement<Vector3>(true, a, "a");
+  parseElement<Vector3>(true, b, "b");
+  parseElement<Vector3>(true, c, "c");
 }

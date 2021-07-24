@@ -63,11 +63,11 @@ private:
   bool isAir, isTerrain, isCutCell;
 
   ///@}
-  std::vector<Vector3<float>> terrainPoints; /**< List of terrain points */
+  std::vector<Vector3> terrainPoints; /**< List of terrain points */
   std::vector< Edge< int > > terrainEdges;   /**< List of edges that connect the terrain points */
-  std::vector<Vector3<float>> fluidFacePoints[6]; /**< :document this: */
-  Vector3<float> location; /**< XYZ location of the cell */
-  Vector3<float> dimensions; /**< Size of the cell in xyz directions */
+  std::vector<Vector3> fluidFacePoints[6]; /**< :document this: */
+  Vector3 location; /**< XYZ location of the cell */
+  Vector3 dimensions; /**< Size of the cell in xyz directions */
 public:
   /**
    * @return true if air exists, else false
@@ -91,7 +91,7 @@ public:
    * @return the list of terrain points
    * @brief Returns a list of coordinate points that form the terrain in the cell.
    */
-  std::vector<Vector3<float>> getTerrainPoints() { return terrainPoints; }
+  std::vector<Vector3> getTerrainPoints() { return terrainPoints; }
 
   /**
    * @return the list of edges connecting terrain points
@@ -112,7 +112,7 @@ public:
    * @param locationN the position of the corner closest to the origin
    * @param dimensionsN the size of the cell in the xyz directions
    */
-  Cell(const int type_CT, Vector3<float> locationN, Vector3<float> dimensionsN);
+  Cell(const int type_CT, Vector3 locationN, Vector3 dimensionsN);
 
   /**
    * Takes in a list of terrain points that exist in the cell separating where
@@ -124,7 +124,7 @@ public:
    * @param locationN the position of the corner closest to the origin
    * @param dimensionsN the size of the cell in the xyz directions
    */
-  Cell(std::vector<Vector3<float>> &points ,  std::vector< Edge< int > >& edges, int intermed[4][4][2], Vector3<float> locationN, Vector3<float> dimensionsN);
+  Cell(std::vector<Vector3> &points ,  std::vector< Edge< int > >& edges, int intermed[4][4][2], Vector3 locationN, Vector3 dimensionsN);
 
 
   /**
@@ -132,12 +132,12 @@ public:
    * @param index the index of the face to be returned (cellFace enum)
    * @brief  Returns a vector of points that lie on the specified face.
    */
-  std::vector<Vector3<float>> getFaceFluidPoints(const int index) { return fluidFacePoints[index % 6]; }
+  std::vector<Vector3> getFaceFluidPoints(const int index) { return fluidFacePoints[index % 6]; }
 
 
   /**
    * @return the location of the cell
    * @brief Returns the xyz location of the cell from the corner closest to the origin.
    */
-  Vector3<float> getLocationPoints() { return location; }
+  Vector3 getLocationPoints() { return location; }
 };

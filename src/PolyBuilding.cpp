@@ -1807,9 +1807,9 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 void PolyBuilding::reorderPoints(std::vector<cutVert> &face_points, int index)
 {
 
-  Vector3<float> centroid;
+  Vector3 centroid;
   std::vector<float> angle(face_points.size(), 0.0);
-  Vector3<float> sum;
+  Vector3 sum;
 
   sum[0] = 0.0;
   sum[1] = 0.0;

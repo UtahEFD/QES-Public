@@ -35,6 +35,7 @@
 #include <string>
 #include "Triangle.h"
 #include "Vector3.h"
+#include "Vector3Int.h"
 
 #include "gdal_priv.h"
 #include "cpl_conv.h"// for CPLMalloc()
@@ -119,7 +120,7 @@ public:
    * @param domain Domain that will be changed to match the dem file
    * @param grid Size of each cell in the domain space.
    */
-  void setDomain(Vector3<int> *domain, Vector3<float> *grid);
+  void setDomain(Vector3Int *domain, Vector3 *grid);
 
 
   /**
@@ -210,7 +211,7 @@ private:
    * @param corners Array containing the points that representing the DEM elevation at each of the cells corners
    * @param cutCells List of all cells which the terrain goes through
    */
-  void setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3<float> corners[], std::vector<int> &cutCells) const;
+  void setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3 corners[], std::vector<int> &cutCells) const;
 
   /**
    * :document this:
@@ -285,7 +286,7 @@ private:
    * @param height The height at which the third point will be created
    * @return An intermediate point existing on the line from a to b at z value height
    */
-  Vector3<float> getIntermediate(Vector3<float> a, Vector3<float> b, float height) const;
+  Vector3 getIntermediate(Vector3 a, Vector3 b, float height) const;
 
 
   std::string m_filename; /**< :document this: */

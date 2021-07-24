@@ -60,7 +60,7 @@ public:
 
   int mlSamplesPerAirCell;
 
-  Vector3<float> *sigConst;
+  Vector3 *sigConst;
   bool flagNonLocalMixing;
 
   float turbUpperBound;
@@ -109,7 +109,7 @@ public:
     }
 
     sigConst = nullptr;
-    parseElement<Vector3<float>>(false, sigConst, "sigmaConst");
+    parseElement<Vector3>(false, sigConst, "sigmaConst");
 
     flagNonLocalMixing = false;
     parsePrimitive<bool>(false, flagNonLocalMixing, "nonLocalMixing");
