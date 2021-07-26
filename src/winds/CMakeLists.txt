@@ -48,6 +48,7 @@ CUDA_ADD_LIBRARY( qeswindscore
   NonLocalMixing.cpp
   PolygonWake.cpp
   StreetCanyon.cpp
+  StreetCanyonModified.cpp
   Sidewall.cpp
   Rooftop.cpp
   StreetIntersection.cpp
@@ -89,7 +90,7 @@ target_link_libraries(unitTest ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(unitTest ${GDAL_LIBRARY})
 target_link_libraries(unitTest ${NETCDF_LIBRARIES_CXX})
 target_link_libraries(unitTest ${NETCDF_LIBRARIES_C})
-target_link_libraries(unitTest cudadevrt)
+#target_link_libraries(unitTest cudadevrt)
 target_link_libraries(unitTest ${CUDA_LIBRARIES})
 
 # add_test(unitTest unitTest)

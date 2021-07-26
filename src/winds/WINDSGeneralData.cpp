@@ -723,6 +723,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       } else {
         // allBuildingsV[j]->base_height = 0.0;
       }
+      allBuildingsV[j]->ID = j;
       allBuildingsV[j]->setPolyBuilding(this);
       allBuildingsV[j]->setCellFlags(WID, this, j);
       effective_height.push_back(allBuildingsV[j]->height_eff);
@@ -1054,10 +1055,16 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
   ///////////////////////////////////////////
   //   Street Canyon Parameterization     ///
   ///////////////////////////////////////////
-  if (WID->simParams->streetCanyonFlag > 0) {
+  if (WID->simParams->streetCanyonFlag == 1) {
     std::cout << "Applying street canyon parameterization...\n";
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->streetCanyon(this);
+    }
+    //std::cout << "Street canyon parameterization done...\n";
+  } else if (WID->simParams->streetCanyonFlag == 2) {
+    std::cout << "Applying street canyon parameterization...\n";
+    for (size_t i = 0; i < allBuildingsV.size(); i++) {
+      allBuildingsV[building_id[i]]->streetCanyonModified(this);
     }
     //std::cout << "Street canyon parameterization done...\n";
   }

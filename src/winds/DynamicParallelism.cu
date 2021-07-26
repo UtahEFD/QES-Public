@@ -234,8 +234,8 @@ __global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int 
 
     iter += 1;
   }
-  printf("number of iteration = %d\n", iter);
-  printf("error = %2.9f\n", error);
+  printf("Error = %2.9f\n", error);
+  printf("Number of iteration = %d\n", iter);
 
   /*int i = 0;
   while (i < 300)

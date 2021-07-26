@@ -197,6 +197,19 @@ public:
    */
   void streetCanyon(WINDSGeneralData *WGD);
 
+  /**
+   * Applies the street canyon parameterization to the qualified space between buildings defined as polygons.
+   *
+   * Reads in building features like nodes, building height and base height and uses
+   * features of the building defined in the class constructor and setCellsFlag function. It defines
+   * cells qualified in the space between buildings and applies the approperiate parameterization to them.
+   * More information: "Improvements to a fast-response WINDSan wind model, M. Nelson et al. (2008)"
+   * New model base on "Evaluation of the QUIC-URB fast response urban wind model for a cubical building 
+   * array and wide building street canyon" Singh et al. (2008) 
+   *
+   * @param WGD :document this:
+   */
+  void streetCanyonModified(WINDSGeneralData *WGD);
 
   /**
    * Applies the sidewall parameterization to the qualified space on the side of buildings defined as polygons.

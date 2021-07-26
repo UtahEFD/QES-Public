@@ -233,9 +233,16 @@ add_subdirectory(qesWinds)
 add_subdirectory(qesCanopy)
 add_subdirectory(qesPlume)
 add_subdirectory(qes)
+add_subdirectory(tests)
 
 option(ENABLE_ALL_TESTS "Enables all tests for an extensive test run" OFF) # will not override CPU/GPU selection
 option(ENABLE_SANITY_TESTS "Enables tests that simply check if qesWinds runs on input w/o runtime errors" ON)
 option(ENABLE_LONG_SANITY_TESTS "Enables the longer sanity tests" OFF)
 option(ENABLE_CPU_TESTS "Enable CPU tests" OFF)
-option(ENABLE_GPU_TESTS "Enable GPU tests" ON)
+option(ENABLE_GPU_TESTS "Enable GPU tests" OFF)
+option(ENABLE_ALL_COMPARISON_TESTS "Enables test of comparison between serial and GPU solvers" OFF) # overrides individual comparison selections
+option(ENABLE_DYNAMIC_PARALLELISM_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Dynamic Parallel solvers" OFF)
+option(ENABLE_GLOBAL_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Global Memory solvers" OFF)
+option(ENABLE_SHARED_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Shared Memory solvers" OFF)
+option(ENABLE_LONG_COMPARISON_TESTS "Enables longer comparison tests on all other comparison test options (adds around 5 minutes)" OFF)
+option(ENABLE_RIDICULOUSLY_LONG_COMPARISON_TESTS "Enables the longest comparison tests (adds around 15 minutes)." OFF)
