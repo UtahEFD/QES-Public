@@ -38,6 +38,6 @@
 <boundaryConditions>
   	<xBCtype>exiting</xBCtype>
   	<yBCtype>exiting</yBCtype>
-    <zBCtype>exiting</zBCtype>
-    <wallReflection>stairstepReflection</wallReflection>
+    <zBCtype>reflection</zBCtype>
+    <wallReflection>doNothing</wallReflection>
 </boundaryConditions>

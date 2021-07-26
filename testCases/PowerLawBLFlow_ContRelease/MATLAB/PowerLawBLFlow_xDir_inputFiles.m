@@ -38,6 +38,7 @@ p = 0.15;
 b = 0.08;
 n = 1;
 
+
 uRef = 5.90; % m/s
 hRef = 4.0; % m
 uStar = 0.20; % m/s
@@ -92,32 +93,35 @@ writeNetCDFFile_winds(filename,nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
 %dudz(1) = -dudz(2);
 
 dudz = p*a*z_cc.^(p-1);
+dudz(1) = dudz(2);
 
 ustar = 0.4*z_cc.*dudz;
+%ustar = (b*z_cc.^n)./(0.4*z_cc);
 %ustar = 0.4*p*a*z_cc.^p;
 %ustar = b/0.4*ones(size(z_cc)); 
 ustar(1) = -ustar(2);
 ustar(end) = ustar(end-1);
 
-uw = -b*z_cc.^n.*dudz;
+%uw = -b*z_cc.^n.*dudz;
+uw = -ustar.^2;
 uw(1) = -uw(2);
 uw(end) = uw(end-1);
 
 CsigU=2.5;
-CsigV=2.0;
+CsigV=2.3;
 CsigW=1.3;
-%CsigU=1.0;
-%CsigV=1.0;
-%CsigW=1.0;
+%CsigU=2.3;
+%CsigV=2.3;
+%CsigW=1.1;
 
 k = (ustar/0.55).^2;
 k(1) = -k(2);
 k(end) = k(end-1);
 
-nu = 0.4.*z_cc.*ustar;
-nu(1) = -nu(2);
+%nu = 0.4.*z_cc.*ustar;
+%nu(1) = -nu(2);
 
-%eps = 4.0*(0.55^3*k.^1.5)./(0.4*z_cc);
+%eps = 5.7*(0.55^3*k.^1.5)./(0.4*z_cc);
 eps = 5.7*(ustar.^3)./(0.4*z_cc);
 eps(1) = -eps(2);
 eps(end) = eps(end-1);

@@ -7,7 +7,7 @@
 % F. Margaiaraz
 % Univesity of Utah. 2021
 %==========================================================================
-figW=27;figH=20;fsize=14;
+figW=30;figH=20;fsize=14;
 %========================
 load('data2plot_xDir.mat')
 nProf=numel(d2plotLat.xoH);
@@ -56,13 +56,20 @@ end
 %set(haxes(nProf+2:2*nProf),'YtickLabel',[])
 axes(haxes(1+nProf));ylabel('$z/H$')
 
+max=0.5;
 for k=1:nProf
-    m1=haxes(k).YLim(2);
-    m2=haxes(k+nProf).XLim(2);
-    m3=max(m1,m2);
-    haxes(k).YLim(2)=m3;
-    haxes(k+nProf).XLim(2)=m3;
+    haxes(k).YLim(2)=max*2^(-k+1);
+    haxes(k+nProf).XLim(2)=max*2^(-k+1);
 end
+
+% for k=1:nProf
+%     m1=haxes(k).YLim(2);
+%     m2=haxes(k+nProf).XLim(2);
+%     m3=max(m1,m2);
+%     haxes(k).YLim(2)=m3;
+%     haxes(k+nProf).XLim(2)=m3;
+% end
+
 
 currentPlotName=sprintf('plotOutput/%s_%s_ModelComp',caseNameWinds,caseNamePlume);
 save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)

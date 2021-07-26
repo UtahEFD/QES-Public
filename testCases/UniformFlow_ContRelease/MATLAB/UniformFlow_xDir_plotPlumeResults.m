@@ -7,7 +7,7 @@
 % F. Margaiaraz
 % Univesity of Utah. 2021
 %==========================================================================
-figW=27;figH=20;fsize=14;
+figW=30;figH=20;fsize=14;
 %========================
 load('data2plot_xDir.mat')
 nProf=numel(d2plotLat.xoH);

@@ -92,6 +92,7 @@ writeNetCDFFile_winds(filename,nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
 %dudz(1) = -dudz(2);
 
 dudz = p*a*z_cc.^(p-1);
+dudz(1) = -dudz(2);
 
 ustar = 0.4*z_cc.*dudz;
 %ustar = 0.4*p*a*z_cc.^p;
@@ -99,12 +100,13 @@ ustar = 0.4*z_cc.*dudz;
 ustar(1) = -ustar(2);
 ustar(end) = ustar(end-1);
 
-uw = -b*z_cc.^n.*dudz;
+%uw = -b*z_cc.^n.*dudz;
+uw = -ustar.^2;
 uw(1) = -uw(2);
 uw(end) = uw(end-1);
 
 CsigU=2.5;
-CsigV=2.0;
+CsigV=2.3;
 CsigW=1.3;
 
 k = (ustar/0.55).^2;
