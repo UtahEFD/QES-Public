@@ -50,6 +50,7 @@ CUDA_ADD_LIBRARY( qeswindscore
   NonLocalMixing.cpp
   PolygonWake.cpp
   StreetCanyon.cpp
+  StreetCanyonModified.cpp
   Sidewall.cpp
   Rooftop.cpp
   StreetIntersection.cpp
