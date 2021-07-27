@@ -38,6 +38,8 @@
  */
 
 #include "DTEHeightField.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
@@ -362,7 +364,6 @@ void DTEHeightField::load()
   convertRasterToGeo(0, m_nYSize, xGeo, yGeo);
   printf("Raster Coordinate (0, %d):\t(%12.7f, %12.7f)\n", m_nYSize, xGeo, yGeo);
 
-  std::cout << "nx:  " << nx << std::endl;
   if (originFlag == 0) {
     float domain_end_x = origin_x + DEMDistancex + nx * dx;
     float domain_end_y = origin_y + DEMDistancey + ny * dy;
@@ -628,35 +629,35 @@ void DTEHeightField::printProgress(float percentage)
 #define CELL(i, j, k) ((i) + (j) * (nx - 1) + (k) * (nx - 1) * (ny - 1))
 #define CLAMP(low, high, x) ((x) < (low) ? (low) : ((x) > (high) ? (high) : (x)))
 
-std::vector<int> DTEHeightField::setCells(Cell *cells, int nx, int ny, int nz, float dx, float dy, std::vector<float> &dz_array, std::vector<float> z_face, float halo_x, float halo_y) const
+void DTEHeightField::setCells(Cell *cells, WINDSGeneralData *WGD, const WINDSInputData *WID)
 {
 
   printf("Setting Cell Data...\n");
-  auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
+  //auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
 
   std::vector<int> cutCells;
 
-  int ii = halo_x / dx;
-  int jj = halo_y / dy;
-  int i_domain_end = ii + (m_nXSize * pixelSizeX) / dx;
-  int j_domain_end = jj + (m_nYSize * pixelSizeY) / dy;
+  int ii = WID->simParams->halo_x / WGD->dx;
+  int jj = WID->simParams->halo_y / WGD->dy;
+  int i_domain_end = ii + (m_nXSize * pixelSizeX) / WGD->dx;
+  int j_domain_end = jj + (m_nYSize * pixelSizeY) / WGD->dy;
 
-  for (int i = 0; i < nx - 2; i++)
-    for (int j = 0; j < ny - 2; j++) {
+  for (int i = 0; i < WGD->nx - 2; i++)
+    for (int j = 0; j < WGD->ny - 2; j++) {
 
       // all work here is done for each column of cells in the z direction from the xy plane.
 
       Vector3 corners[4];// stored from top Left in clockwise order
       if (i >= ii && j >= jj && i <= i_domain_end && j <= j_domain_end) {
-        corners[0] = Vector3(i * dx, j * dy, CLAMP(0, max[2], queryHeight(pafScanline, ((i - ii) * dx) / pixelSizeX, ((j - jj) * dy) / pixelSizeY) - min[2]));
-        corners[1] = Vector3(i * dx, (j + 1) * dy, CLAMP(0, max[2], queryHeight(pafScanline, ((i - ii) * dx) / pixelSizeX, (((j - jj) + 1) * dy) / pixelSizeY) - min[2]));
-        corners[2] = Vector3((i + 1) * dx, (j + 1) * dy, CLAMP(0, max[2], queryHeight(pafScanline, (((i - ii) + 1) * dx) / pixelSizeX, (((j - jj) + 1) * dy) / pixelSizeY) - min[2]));
-        corners[3] = Vector3((i + 1) * dx, j * dy, CLAMP(0, max[2], queryHeight(pafScanline, (((i - ii) + 1) * dx) / pixelSizeX, ((j - jj) * dy) / pixelSizeY) - min[2]));
+        corners[0] = Vector3(i * WGD->dx, j * WGD->dy, CLAMP(0, max[2], queryHeight(pafScanline, ((i - ii) * WGD->dx) / pixelSizeX, ((j - jj) * WGD->dy) / pixelSizeY) - min[2]));
+        corners[1] = Vector3(i * WGD->dx, (j + 1) * WGD->dy, CLAMP(0, max[2], queryHeight(pafScanline, ((i - ii) * WGD->dx) / pixelSizeX, (((j - jj) + 1) * WGD->dy) / pixelSizeY) - min[2]));
+        corners[2] = Vector3((i + 1) * WGD->dx, (j + 1) * WGD->dy, CLAMP(0, max[2], queryHeight(pafScanline, (((i - ii) + 1) * WGD->dx) / pixelSizeX, (((j - jj) + 1) * WGD->dy) / pixelSizeY) - min[2]));
+        corners[3] = Vector3((i + 1) * WGD->dx, j * WGD->dy, CLAMP(0, max[2], queryHeight(pafScanline, (((i - ii) + 1) * WGD->dx) / pixelSizeX, ((j - jj) * WGD->dy) / pixelSizeY) - min[2]));
       } else {
-        corners[0] = Vector3(i * dx, j * dy, 0.0f);
-        corners[1] = Vector3(i * dx, (j + 1) * dy, 0.0f);
-        corners[2] = Vector3((i + 1) * dx, (j + 1) * dy, 0.0f);
-        corners[3] = Vector3((i + 1) * dx, j * dy, 0.0f);
+        corners[0] = Vector3(i * WGD->dx, j * WGD->dy, 0.0f);
+        corners[1] = Vector3(i * WGD->dx, (j + 1) * WGD->dy, 0.0f);
+        corners[2] = Vector3((i + 1) * WGD->dx, (j + 1) * WGD->dy, 0.0f);
+        corners[3] = Vector3((i + 1) * WGD->dx, j * WGD->dy, 0.0f);
       }
       /*else if (i < ii)
       {
@@ -739,18 +740,18 @@ std::vector<int> DTEHeightField::setCells(Cell *cells, int nx, int ny, int nz, f
         std::cout << "corners[3]:  " << corners[3][2] << std::endl;
       }*/
 
-      setCellPoints(cells, i, j, nx, ny, nz, dz_array, z_face, corners, cutCells);
+      setCellPoints(cells, i, j, WGD->nx, WGD->ny, WGD->nz, WGD->dz_array, WGD->z_face, corners, cutCells, WGD);
     }
 
 
-  auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
-  std::chrono::duration<float> elapsed = finish - start;
-  std::cout << "Elapsed time For CellSet: " << elapsed.count() << " s\n";// Print out elapsed execution time
+  //auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+  //std::chrono::duration<float> elapsed = finish - start;
+  //std::cout << "Elapsed time For CellSet: " << elapsed.count() << " s\n";// Print out elapsed execution time
 
-  return cutCells;
+  //return cutCells;
 }
 
-void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3 corners[], std::vector<int> &cutCells) const
+void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3 corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD)
 {
   float coordsMin, coordsMax;
   coordsMin = coordsMax = corners[0][2];
@@ -768,14 +769,20 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
     float cellTop = cellBot + dz_array[k];
 
     if (cellTop <= coordsMin)
-      cells[CELL(i, j, k)] = Cell(terrain_CT, Vector3(corners[0][0], corners[0][1], cellBot), Vector3(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
+      //cells[CELL(i, j, k)] = Cell(terrain_CT, Vector3(corners[0][0], corners[0][1], cellBot), Vector3(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
+      WGD->icellflag[CELL(i, j, k)] = 2;
     else if (cellBot >= coordsMax)
-      cells[CELL(i, j, k)] = Cell(air_CT, Vector3(corners[0][0], corners[0][1], cellBot), Vector3(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
+      //cells[CELL(i, j, k)] = Cell(air_CT, Vector3(corners[0][0], corners[0][1], cellBot), Vector3(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
+      WGD->icellflag[CELL(i, j, k)] = 1;
     else {
-      cutCells.push_back(CELL(i, j, k));
+      //cutCells.push_back(CELL(i, j, k));
+      WGD->icellflag[CELL(i, j, k)] = 8;
+
+      int cutcell_index = CELL(i, j, k);
 
       std::vector<Vector3> pointsInCell;
       std::vector<Edge<int>> edgesInCell;
+
 
       // Check to see the positions of the corners, the corners are always in
       // the cell, no matter what. If they exist out of bounds of the cell in the
@@ -1004,9 +1011,177 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
        * are written in should not matter, edge(0-3) is the same as edge(3-0) and the index of each edge
        * also should not matter.
        */
+      //cells[CELL(i, j, k)] = Cell(pointsInCell, edgesInCell, intermed, Vector3(corners[0][0], corners[0][1], cellBot), Vector3(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
 
-      cells[CELL(i, j, k)] = Cell(pointsInCell, edgesInCell, intermed, Vector3(corners[0][0], corners[0][1], cellBot), Vector3(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
+      terrainPoints.clear();
+      terrainEdges.clear();
+      for (int i = 0; i < pointsInCell.size(); i++)
+        terrainPoints.push_back(pointsInCell[i]);
+      for (int i = 0; i < edgesInCell.size(); i++)
+        terrainEdges.push_back(edgesInCell[i]);
+      location = Vector3(corners[0][0], corners[0][1], cellBot);
+      dimensions = Vector3(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]);
+
+      for (int i = 0; i < 6; i++) {
+        fluidFacePoints[i].clear();
+      }
+      // set fluid points for the XZ and YZ faces
+      for (int i = 0; i < 4; i++) {
+        int firstC, secondC;
+        if (i == 0) {
+          firstC = 0;
+          secondC = 3;
+        } else if (i == 1) {
+          firstC = 1;
+          secondC = 2;
+        } else if (i == 2) {
+          firstC = 2;
+          secondC = 3;
+        } else {
+          firstC = 0;
+          secondC = 1;
+        }
+
+        if (pointsInCell[firstC][2] > location[2] + dimensions[2]
+            && pointsInCell[secondC][2] > location[2] + dimensions[2]) {
+          fluidFacePoints[i].clear();
+        } else// if here, then this face is cut
+        {
+          if (pointsInCell[firstC][2] < location[2] + dimensions[2]) {
+            fluidFacePoints[i].push_back(pointsInCell[firstC]);
+            fluidFacePoints[i].push_back(Vector3(pointsInCell[firstC][0], pointsInCell[firstC][1], location[2] + dimensions[2]));
+          } else if (intermed[firstC][secondC][1] == -1)
+            fluidFacePoints[i].push_back(Vector3(pointsInCell[firstC][0], pointsInCell[firstC][1], location[2] + dimensions[2]));
+
+          if (pointsInCell[secondC][2] < location[2] + dimensions[2]) {
+            fluidFacePoints[i].push_back(pointsInCell[secondC]);
+            fluidFacePoints[i].push_back(Vector3(pointsInCell[secondC][0], pointsInCell[secondC][1], location[2] + dimensions[2]));
+          }
+
+          for (int j = 0; j < 2; j++)
+            if (intermed[firstC][secondC][j] != -1)
+              fluidFacePoints[i].push_back(pointsInCell[intermed[firstC][secondC][j]]);
+
+          if (fluidFacePoints[i].size() <= 2)
+            fluidFacePoints[i].clear();
+        }
+      }
+
+      for (int i = 4; i < 6; i++) {
+        for (int j = 0; j < 4; j++)
+          if ((i == 4) ? pointsInCell[j][2] <= location[2] :// if this is the bottom, we check if the corner is on the floor
+                pointsInCell[j][2] < location[2] + dimensions[2])// else we check if it's under the ceiling
+            fluidFacePoints[i].push_back(pointsInCell[j]);
+
+        for (int first = 0; first < 3; first++)
+          for (int second = first + 1; second < 4; second++)
+            if (first != 1 || second != 3)
+              if (intermed[first][second][i - 4] != -1)
+                fluidFacePoints[i].push_back(pointsInCell[intermed[first][second][i - 4]]);
+        if (fluidFacePoints[i].size() <= 2)
+          fluidFacePoints[i].clear();
+      }
+
+      count += 1;
+      float S_front, S_behind, S_right, S_left, S_below, S_above;
+      float S_cut;
+      float ni, nj, nk;
+      float solid_V_frac;
+      std::vector<Vector3> cut_points;// Intersection points for each face
+
+      S_front = S_behind = S_right = S_left = S_below = S_above = 0.0;
+      S_cut = 0.0;
+      ni = nj = nk = 0.0;
+      solid_V_frac = 0.0;
+      const float pi = 4.0f * atan(1.0); /**< pi constant */
+
+      for (int i = 0; i < 6; i++) {
+
+        cut_points.clear();
+        cut_points = fluidFacePoints[i];
+        // place points in local cell space
+        if (cut_points.size() > 2) {
+          for (int jj = 0; jj < cut_points.size(); jj++) {
+            for (int l = 0; l < 3; l++) {
+              cut_points[jj][l] = cut_points[jj][l] - location[l];
+            }
+          }
+
+          // for faces that exist on the side of the cell (not XY planes)
+          if (i < 4) {
+            WGD->cut_cell->reorderPoints(cut_points, i, pi);
+            if (i == 0) {
+              S_right = WGD->cut_cell->calculateArea(cut_points, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
+            }
+            if (i == 1) {
+              S_left = WGD->cut_cell->calculateArea(cut_points, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
+            }
+            if (i == 2) {
+              S_front = WGD->cut_cell->calculateArea(cut_points, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
+            }
+            if (i == 3) {
+              S_behind = WGD->cut_cell->calculateArea(cut_points, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
+            }
+          }
+        }
+        // for the top and bottom faces of the cell (XY planes)
+
+        if (i == 4) {
+          S_below = WGD->cut_cell->calculateAreaTopBot(terrainPoints, terrainEdges, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], location, WGD->n, true);
+        }
+
+        if (i == 5) {
+          S_above = WGD->cut_cell->calculateAreaTopBot(terrainPoints, terrainEdges, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], location, WGD->m, false);
+        }
+
+        S_cut = sqrt(pow(S_behind - S_front, 2.0) + pow(S_right - S_left, 2.0) + pow(S_below - S_above, 2.0));
+
+        if (S_cut != 0.0) {
+          ni = (S_behind - S_front) / S_cut;
+          nj = (S_right - S_left) / S_cut;
+          nk = (S_below - S_above) / S_cut;
+        }
+
+        if (i == 0) {
+          solid_V_frac += (0.0 * (-1) * S_right) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+        }
+
+        if (i == 1) {
+          solid_V_frac += (WGD->dy * (1) * S_left) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+        }
+
+        if (i == 2) {
+          solid_V_frac += (WGD->dx * (1) * S_front) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+        }
+
+        if (i == 3) {
+          solid_V_frac += (0.0 * (-1) * S_behind) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+        }
+
+        if (i == 4) {
+          solid_V_frac += (0.0 * (-1) * S_below) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+        }
+
+        if (i == 5) {
+          solid_V_frac += (WGD->dz_array[k] * (1) * S_above) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+        }
+      }
+
+      if (terrainPoints.size() != 0) {
+        solid_V_frac += (((terrainPoints[0][0] - location[0]) * ni * S_cut) + ((terrainPoints[0][1] - location[1]) * nj * S_cut) + ((terrainPoints[0][2] - location[2]) * nk * S_cut)) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+      }
+
+      WGD->terrain_volume_frac[cutcell_index] -= solid_V_frac;
+
+      WGD->ni[cutcell_index] = ni;
+      WGD->nj[cutcell_index] = nj;
+      WGD->nk[cutcell_index] = nk;
+
+      if (WGD->terrain_volume_frac[cutcell_index] < 0.0) {
+        WGD->terrain_volume_frac[cutcell_index] = 0.0;
+      }
     }
+    //std::cout << "count:  " << count << std::endl;
   }
 }
 

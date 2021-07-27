@@ -49,6 +49,9 @@
 #include <cmath>
 #include <chrono>
 
+class WINDSGeneralData;
+class WINDSInputData;
+
 /**
  * @class DTEHeightField
  * @brief Loads digital elevation data.
@@ -149,7 +152,7 @@ public:
    * @param halo_y :document this:
    * @return List of ID values for all cut cells.
    */
-  std::vector<int> setCells(Cell *cells, int nx, int ny, int nz, float dx, float dy, std::vector<float> &dz_array, std::vector<float> z_face, float halo_x, float halo_y) const;
+  void setCells(Cell *cells, WINDSGeneralData *WGD, const WINDSInputData *WID);
 
   /**
    * Frees the pafScanline.
@@ -195,6 +198,14 @@ public:
   double adfMinMax[2]; /**< :document this: */
 
 private:
+
+  std::vector<Vector3> terrainPoints; /**< List of terrain points */
+  std::vector< Edge< int > > terrainEdges;   /**< List of edges that connect the terrain points */
+  std::vector<Vector3> fluidFacePoints[6]; /**< :document this: */
+  Vector3 location; /**< XYZ location of the cell */
+  Vector3 dimensions; /**< Size of the cell in xyz directions */
+  int count = 0;
+
   /**
    * Given the height of the DEM file at each of it's corners and uses
    * them to calculate at what points cells are intersected by the quad the corners form.
@@ -211,7 +222,7 @@ private:
    * @param corners Array containing the points that representing the DEM elevation at each of the cells corners
    * @param cutCells List of all cells which the terrain goes through
    */
-  void setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3 corners[], std::vector<int> &cutCells) const;
+  void setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3 corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD);
 
   /**
    * :document this:

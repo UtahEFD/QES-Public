@@ -49,11 +49,11 @@ void Cut_cell::calculateCoefficient(Cell *cells, const DTEHeightField *DTEHF, co
   Vector3 location;// Coordinates of the left corner of cell face
 
 
-  cells = new Cell[(WGD->nx - 1) * (WGD->ny - 1) * (WGD->nz - 1)];
+  //cells = new Cell[(WGD->nx - 1) * (WGD->ny - 1) * (WGD->nz - 1)];
   // Get cut-cell indices from terrain function
-  cutcell_index = DTEHF->setCells(cells, WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, WGD->dz_array, WGD->z_face, WID->simParams->halo_x, WID->simParams->halo_y);
+  //cutcell_index = DTEHF->setCells(cells, WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, WGD->dz_array, WGD->z_face, WID->simParams->halo_x, WID->simParams->halo_y);
 
-  std::cout << "number of cut cells:" << cutcell_index.size() << "\n";
+  /*std::cout << "number of cut cells:" << cutcell_index.size() << "\n";
 
   // Set icellflag value for terrain cells
 #pragma acc parallel loop independent
@@ -176,7 +176,7 @@ void Cut_cell::calculateCoefficient(Cell *cells, const DTEHeightField *DTEHF, co
     if (WGD->terrain_volume_frac[cutcell_index[j]] < 0.0) {
       WGD->terrain_volume_frac[cutcell_index[j]] = 0.0;
     }
-  }
+  }*/
 }
 
 

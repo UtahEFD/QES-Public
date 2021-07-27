@@ -41,7 +41,7 @@
 
 #include "Cell.h"
 
-Cell::Cell()
+/*Cell::Cell()
 {
   isAir = isCutCell = isTerrain = false;
   terrainPoints.clear();
@@ -132,4 +132,4 @@ Cell::Cell(std::vector<Vector3> &points, std::vector<Edge<int>> &edges, int inte
     if (fluidFacePoints[i].size() <= 2)
       fluidFacePoints[i].clear();
   }
-}
+}*/

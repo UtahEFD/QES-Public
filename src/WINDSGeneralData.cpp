@@ -585,7 +585,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       auto start_cut = std::chrono::high_resolution_clock::now();
 
       // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
-      cut_cell.calculateCoefficient(cells, WID->simParams->DTE_heightField, WID, this);
+      WID->simParams->DTE_heightField->setCells(cells, this, WID);
 
       auto finish_cut = std::chrono::high_resolution_clock::now();// Finish recording execution time
 

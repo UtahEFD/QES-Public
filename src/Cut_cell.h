@@ -56,6 +56,7 @@ private:
 
 public:
   friend class test_CutCell;
+  friend class DTEHeightField;
 
   /**
    * This function calculates area fraction coefficients used in the cut-cell method.

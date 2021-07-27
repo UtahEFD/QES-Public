@@ -2,27 +2,27 @@
 
 std::string test_DTEHeightField::mainTest()
 {
-	DTEHF = DTEHeightField();
-	std::string result;
-	/**********
+  DTEHF = DTEHeightField();
+  std::string result;
+  /**********
 	 *cutCells*
 	 *********/
-	result = testCutCells();
+  result = testCutCells();
 
-	if (result != TEST_PASS)
-		return result;
+  if (result != TEST_PASS)
+    return result;
 
 
-	return TEST_PASS;
+  return TEST_PASS;
 }
 
-#define CELL(i,j,k) ((i) + (j) * (nx - 1) + (k) * (nx - 1) * (ny - 1))
+#define CELL(i, j, k) ((i) + (j) * (nx - 1) + (k) * (nx - 1) * (ny - 1))
 std::string test_DTEHeightField::testCutCells()
 {
   //cutCells(Cell* cells, int i, int j, int nx, int ny, int nz, float dz, Vector3<float> corners[])
 
-  Cell *cells;
-  cells = new Cell[24];//4 stacks of 5 cells. (+ ghost cell)
+  //Cell *cells;
+  /*cells = new Cell[24];//4 stacks of 5 cells. (+ ghost cell)
   int nx = 4 + 1, ny = 1 + 1, nz = 5 + 2;
   float dz = 1.0f;//dx and dy are also 1.0 but that doesn't entirely matter
   Vector3 corners[4];
@@ -466,5 +466,5 @@ std::string test_DTEHeightField::testCutCells()
 			return util_errorReport("cutCells", 811, messages[i]);
 	}
 
-	return TEST_PASS;
+	return TEST_PASS;*/
 }
