@@ -72,7 +72,7 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
   int index_previous, index_next;// Indices of previous and next nodes
   int stop_id = 0;
   int kk;
-  float tol;
+  const float tol = 0.01 * M_PI / 180.0;
   float farwake_exp = 1.5;
   float farwake_factor = 3;
   float epsilon = 10e-10;
@@ -128,9 +128,8 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
   polygon_area = abs(polygon_area);
   width_eff = polygon_area / (x2 - x1);// Effective width of the building
   length_eff = polygon_area / (y2 - y1);// Effective length of the building
-  float wake_height = height_eff;
+  float wake_height = height_eff;// effective top of the wake
 
-  int counter = 0;
   // Loop through points to find the height added to the effective height because of rooftop parameterization
   for (size_t id = 0; id < polygonVertices.size() - 1; id++) {
     // Calculate upwind reletive direction for each face
@@ -138,29 +137,8 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
     if (upwind_rel_dir[id] > M_PI + 0.0001) {
       upwind_rel_dir[id] -= 2 * M_PI;
     }
-    // If there is a rooftop parameterization (only first face that is eligible)
-    if (WID->simParams->rooftopFlag > 0 && counter == 0) {
-      // Rooftop applies if upcoming wind angle is in -/+30 degrees of perpendicular direction of the face
-      tol = 30 * M_PI / 180.0;
-      if (abs(upwind_rel_dir[id]) >= M_PI - tol) {
-        // Smaller of the effective height (height_eff) and the effective cross-wind width (Weff)
-        small_dimension = MIN_S(width_eff, height_eff);
-        // Larger of the effective height (height_eff) and the effective cross-wind width (Weff)
-        long_dimension = MAX_S(width_eff, height_eff);
-        R_scale = pow(small_dimension, (2.0 / 3.0)) * pow(long_dimension, (1.0 / 3.0));// Scaling length
-        R_cx = 0.9 * R_scale;// Normalized cavity length
-        vd = 0.5 * 0.22 * R_scale;// Cavity height
-        // Smaller of the effective length (length_eff) and the effective cross-wind width (Weff)
-        hd = MIN_S(width_eff, length_eff);
-        if (hd < R_cx) {
-          shell_height = vd * sqrt(1.0 - pow((0.5 * R_cx - hd) / (0.5 * R_cx), 2.0));// Additional height because of the rooftop
-          if (shell_height > 0.0) {
-            wake_height += shell_height;
-          }
-        }
-        // Addition only happens once
-        counter += 1;
-      }
+    if (abs(upwind_rel_dir[id]) < tol) {
+      perpendicular_flag[id] = 1;
     }
   }
 
@@ -178,9 +156,100 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
     W_over_H = 10.0;
   }
 
-  tol = 0.01 * M_PI / 180.0;
   // Calculating length of the downwind wake based on Fackrell (1984) formulation
   Lr = 1.8 * wake_height * W_over_H / (pow(L_over_H, 0.3) * (1 + 0.24 * W_over_H));
+
+  // if rectangular building and rooftop vortex, recalculate the top of the wake
+  if (rectangular_flag && WID->simParams->rooftopFlag == 2) {
+    int id_valid = -1;
+    int bldg_upwind = 0;
+
+    // Rooftop applies if upcoming wind angle is in -/+30 degrees of perpendicular direction of the face
+    const float tolRT = 30.0 * M_PI / 180.0;
+
+    // search for valid face (can only have one here)
+    for (size_t id = 0; id < polygonVertices.size() - 1; id++) {
+      if (abs(upwind_rel_dir[id]) >= M_PI - tolRT) {
+        id_valid = id;
+        //std::cout << "valid ID = " << id << " " << upwind_rel_dir[id] << std::endl;
+      }
+    }
+
+    // if valid face found
+    if (id_valid >= 0) {
+
+      // search for building upstream
+      for (auto y_id = 0; y_id <= 2 * ceil(abs(yi[id_valid] - yi[id_valid + 1]) / WGD->dxy); y_id++) {
+        yc = MIN_S(yi[id_valid], yi[id_valid + 1]) + 0.5 * y_id * WGD->dxy;
+
+        // Checking to see whether the face is perpendicular to the wind direction
+        if (perpendicular_flag[id_valid] == 1) {
+          x_wall = xi[id_valid];
+        } else {
+          x_wall = ((xi[id_valid + 1] - xi[id_valid]) / (yi[id_valid + 1] - yi[id_valid])) * (yc - yi[id_valid]) + xi[id_valid];
+        }
+
+        for (auto x_id = ceil(Lr / WGD->dxy) + 1; x_id >= 1; x_id--) {
+          xc = -x_id * WGD->dxy;
+          int i = ceil(((xc + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x)) / WGD->dx - 1;
+          int j = ceil(((xc + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y)) / WGD->dy - 1;
+          if (i < WGD->nx - 2 && i > 0 && j < WGD->ny - 2 && j > 0) {
+            int icell_cent = i + j * (WGD->nx - 1) + (k_end - 1) * (WGD->nx - 1) * (WGD->ny - 1);
+            if (WGD->icellflag[icell_cent] == 0) {
+              // found building
+              bldg_upwind++;
+              //std::cout << ID << " FOUND BUILDING " << WGD->ibuilding_flag[icell_cent] << std::endl;
+              break;
+            }
+          }
+        }
+      }
+
+      // set rooftop_flag based on presence of building upstream
+      if (bldg_upwind >= ceil(abs(yi[id_valid] - yi[id_valid + 1]) / WGD->dxy)) {
+        rooftop_flag = 0;
+      } else {
+        rooftop_flag = 1;
+      }
+      //std::cout << ID << " ROOFTOP = " << rooftop_flag << std::endl;
+
+      if (rooftop_flag == 1) {
+        // Smaller of the effective height (height_eff) and the effective cross-wind width (Weff)
+        small_dimension = MIN_S(width_eff, height_eff);
+        // Larger of the effective height (height_eff) and the effective cross-wind width (Weff)
+        long_dimension = MAX_S(width_eff, height_eff);
+        R_scale = pow(small_dimension, (2.0 / 3.0)) * pow(long_dimension, (1.0 / 3.0));// Scaling length
+        R_cx = 0.9 * R_scale;// Normalized cavity length
+        vd = 0.5 * 0.22 * R_scale;// Cavity height
+        // Smaller of the effective length (length_eff) and the effective cross-wind width (Weff)
+        hd = MIN_S(width_eff, length_eff);
+        if (hd < R_cx) {
+          shell_height = vd * sqrt(1.0 - pow((0.5 * R_cx - hd) / (0.5 * R_cx), 2.0));// Additional height because of the rooftop
+          if (shell_height > 0.0) {
+            wake_height += shell_height;
+          }
+        }
+
+        // recaluclate based one new height
+        L_over_H = length_eff / wake_height;// Length over height
+        W_over_H = width_eff / wake_height;// Width over height
+
+        // Checking bounds of length over height and width over height
+        if (L_over_H > 3.0) {
+          L_over_H = 3.0;
+        }
+        if (L_over_H < 0.3) {
+          L_over_H = 0.3;
+        }
+        if (W_over_H > 10.0) {
+          W_over_H = 10.0;
+        }
+
+        // Calculating length of the downwind wake based on Fackrell (1984) formulation
+        Lr = 1.8 * wake_height * W_over_H / (pow(L_over_H, 0.3) * (1 + 0.24 * W_over_H));
+      }
+    }
+  }
 
   for (size_t id = 0; id < polygonVertices.size() - 1; id++) {
     // Finding faces that are eligible for applying the far-wake parameterizations
@@ -252,8 +321,7 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
     z_build = WGD->z[k] - base_height;
     for (auto id = 0; id <= stop_id; id++) {
       if (abs(upwind_rel_dir[id]) < 0.5 * M_PI) {
-        if (abs(upwind_rel_dir[id]) < tol) {
-          perpendicular_flag[id] = 1;
+        if (perpendicular_flag[id] == 1) {
           x_wall = xi[id];
         }
         for (auto y_id = 0; y_id <= 2 * ceil(abs(yi[id] - yi[id + 1]) / WGD->dxy); y_id++) {

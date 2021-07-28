@@ -85,6 +85,40 @@ void PolyBuilding::setPolyBuilding(WINDSGeneralData *WGD)
 
   i_building_cent = std::round(building_cent_x / WGD->dx) - 1;// Index of building centroid in x-direction
   j_building_cent = std::round(building_cent_y / WGD->dy) - 1;// Index of building centroid in y-direction
+
+  // checking if polygon is rectangular
+  if (polygonVertices.size() == 5) {
+    float tol = 1.0 * M_PI / 180.0;
+    std::vector<float> normal_x;
+    std::vector<float> normal_y;
+
+    normal_x.resize(polygonVertices.size() - 1, 0.0);
+    normal_y.resize(polygonVertices.size() - 1, 0.0);
+
+    // Calculating outward normal to face
+    for (size_t id = 0; id < polygonVertices.size() - 1; id++) {
+      normal_x[id] = polygonVertices[id + 1].y_poly - polygonVertices[id].y_poly;
+      normal_y[id] = polygonVertices[id].x_poly - polygonVertices[id + 1].x_poly;
+      float norm = pow(normal_x[id] * normal_x[id] + normal_y[id] * normal_y[id], -0.5);
+      normal_x[id] *= norm;
+      normal_y[id] *= norm;
+    }
+
+    // checking internal angle
+    for (size_t id = 0; id < polygonVertices.size() - 2; id++) {
+      float scalProd = normal_x[id] * normal_x[id + 1] + normal_y[id] * normal_y[id + 1];
+      if (std::abs(scalProd) < std::abs(cos(0.5 * M_PI - tol))) {
+        rectangular_flag = true;
+      } else {
+        rectangular_flag = false;
+        break;
+      }
+    }
+  } else {
+    rectangular_flag = false;
+  }
+
+  return;
 }
 
 
@@ -166,14 +200,18 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
       start_poly = vert_id;
       num_crossing = 0;
       while (vert_id < polygonVertices.size() - 1) {
-        if ((polygonVertices[vert_id].y_poly <= y_cent && polygonVertices[vert_id + 1].y_poly > y_cent) || (polygonVertices[vert_id].y_poly > y_cent && polygonVertices[vert_id + 1].y_poly <= y_cent)) {
+        if ((polygonVertices[vert_id].y_poly <= y_cent && polygonVertices[vert_id + 1].y_poly > y_cent)
+            || (polygonVertices[vert_id].y_poly > y_cent && polygonVertices[vert_id + 1].y_poly <= y_cent)) {
+
           ray_intersect = (y_cent - polygonVertices[vert_id].y_poly) / (polygonVertices[vert_id + 1].y_poly - polygonVertices[vert_id].y_poly);
+
           if (x_cent < (polygonVertices[vert_id].x_poly + ray_intersect * (polygonVertices[vert_id + 1].x_poly - polygonVertices[vert_id].x_poly))) {
             num_crossing += 1;
           }
         }
         vert_id += 1;
-        if (polygonVertices[vert_id].x_poly == polygonVertices[start_poly].x_poly && polygonVertices[vert_id].y_poly == polygonVertices[start_poly].y_poly) {
+        if (polygonVertices[vert_id].x_poly == polygonVertices[start_poly].x_poly
+            && polygonVertices[vert_id].y_poly == polygonVertices[start_poly].y_poly) {
           vert_id += 1;
           start_poly = vert_id;
         }
