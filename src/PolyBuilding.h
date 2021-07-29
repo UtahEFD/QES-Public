@@ -75,6 +75,11 @@ protected:
   ///@}
   float polygon_area; /**< Polygon area */
 
+
+  bool rectangular_flag = false; /**< Is the building rectangular */
+
+  int rooftop_flag = 0; /**< rooftop flag */
+
   ///@{
   /** :document this */
   std::vector<float> xi, yi;

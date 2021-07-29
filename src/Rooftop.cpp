@@ -50,6 +50,9 @@ void PolyBuilding::rooftop(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
   float tol = 30 * M_PI / 180.0;// Rooftop criteria for vortex parameterization
   float wing_tol = 70 * M_PI / 180.0;// Rooftop criteria for delta wing parameterization
+
+  int rooftop_method = 0;
+
   int k_ref;
   float R_scale;
   float R_cx;
@@ -72,6 +75,23 @@ void PolyBuilding::rooftop(const WINDSInputData *WID, WINDSGeneralData *WGD)
 
   float roof_angle;
   float u0_roof, v0_roof;
+
+  // check which rooftop method to use
+  if (WID->simParams->rooftopFlag == 1) {
+    // everything uses log-law
+    rooftop_method = 1;
+  } else if (WID->simParams->rooftopFlag == 2) {
+    // rectangulare building can use rooftop vortex
+    if (rectangular_flag && rooftop_flag == 1) {
+      rooftop_method = 2;
+    } else {
+      rooftop_method = 1;
+    }
+  } else {
+    //
+    rooftop_method = 0;
+    return;
+  }
 
   upwind_rel_dir.resize(polygonVertices.size(), 0.0);// Upwind reletive direction for each face
   perpendicular_flag.resize(polygonVertices.size(), 0);
@@ -127,8 +147,9 @@ void PolyBuilding::rooftop(const WINDSInputData *WID, WINDSGeneralData *WGD)
         break;
       }
     }
+
     // Log parameterization
-    if (WID->simParams->rooftopFlag == 1) {
+    if (rooftop_method == 1) {
       for (auto j = j_start; j < j_end - 1; j++) {
         for (auto i = i_start; i < i_end - 1; i++) {
           // Defining which velocity component is applicable for the parameterization
@@ -256,7 +277,7 @@ void PolyBuilding::rooftop(const WINDSInputData *WID, WINDSGeneralData *WGD)
     }
 
     // Vortex parameterization
-    if (WID->simParams->rooftopFlag == 2) {
+    if (rooftop_method == 2) {
       for (auto id = 0; id < polygonVertices.size() - 1; id++) {
         // Calculate upwind reletive direction for each face
         upwind_rel_dir[id] = atan2(yi[id + 1] - yi[id], xi[id + 1] - xi[id]) + 0.5 * M_PI;
