@@ -165,7 +165,7 @@ __global__ void finalVelocity(float *d_u0, float *d_v0, float *d_w0, float *d_la
   int i = icell_face - k * nx * ny - j * nx;
   int icell_cent = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);/// Lineralized index for cell centered values
 
-  if ((i >= 0) && (j >= 0) && (k >= 0) && (i < nx) && (j < ny) && (k < nz - 1)) {
+  if ((i >= 0) && (j >= 0) && (k >= 0) && (i < nx) && (j < ny) && (k < nz)) {
 
     d_u[icell_face] = d_u0[icell_face];
     d_v[icell_face] = d_v0[icell_face];
