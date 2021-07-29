@@ -211,9 +211,9 @@ __global__ void finalVelocityGlobal(float *d_u0, float *d_v0, float *d_w0, float
 void GlobalMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
 {
   auto startTotal = std::chrono::high_resolution_clock::now();// Start
-                                                              // recording
-                                                              // execution
-                                                              // time
+    // recording
+    // execution
+    // time
   int numblocks = (WGD->numcell_cent / BLOCKSIZE) + 1;
   R.resize(WGD->numcell_cent, 0.0);
 
@@ -256,6 +256,9 @@ void GlobalMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
   cudaMemcpy(d_u0, WGD->u0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_v0, WGD->v0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_w0, WGD->w0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_u, WGD->u.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_v, WGD->v.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_w, WGD->w.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_R, R.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_e, WGD->e.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_f, WGD->f.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);

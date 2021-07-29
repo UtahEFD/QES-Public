@@ -379,16 +379,16 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   char msg[256];
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
   sprintf_s(msg, sizeof(msg),
-    "  Total global memory required for running this case:                 %.0f MBytes "
-    "(%llu bytes)\n",
-    static_cast<float>(memory_req / 1048576.0f),
-    (unsigned long long)memory_req);
+            "  Total global memory required for running this case:                 %.0f MBytes "
+            "(%llu bytes)\n",
+            static_cast<float>(memory_req / 1048576.0f),
+            (unsigned long long)memory_req);
 #else
   snprintf(msg, sizeof(msg),
-    "  Total global memory required for running this case:                 %.0f MBytes "
-    "(%llu bytes)\n",
-    static_cast<float>(memory_req / 1048576.0f),
-    (unsigned long long)memory_req);
+           "  Total global memory required for running this case:                 %.0f MBytes "
+           "(%llu bytes)\n",
+           static_cast<float>(memory_req / 1048576.0f),
+           (unsigned long long)memory_req);
 #endif
   std::cout << msg;
 
@@ -396,6 +396,9 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   cudaMemcpy(d_u0, WGD->u0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_v0, WGD->v0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_w0, WGD->w0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_u, WGD->u.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_v, WGD->v.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_w, WGD->w.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_R, R.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_value, value.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_bvalue, bvalue.data(), numblocks * sizeof(float), cudaMemcpyHostToDevice);
