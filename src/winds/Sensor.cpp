@@ -202,8 +202,8 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
     // Exponential velocity profile
     if (WID->metParams->sensors[i]->TS[time_id[i]]->site_blayer_flag == 2) {
       for (auto k = WGD->terrain_face_id[site_id[idx]]; k < WGD->nz; k++) {
-        u_prof[idx][k] = cos(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_z0);
-        v_prof[idx][k] = sin(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_z0);
+        u_prof[idx][k] = cos(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_p);
+        v_prof[idx][k] = sin(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_p);
       }
     }
 
@@ -314,9 +314,9 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
               log_flag = 0;
               if (ii < z_size - 2) {
                 a1 = ((WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii + 1] - WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii])
-                         * (WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[ii + 2] - WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[ii])
-                       + (WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii] - WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii + 2])
-                           * (WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[ii + 1] - WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[ii]))
+                        * (WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[ii + 2] - WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[ii])
+                      + (WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii] - WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii + 2])
+                          * (WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[ii + 1] - WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[ii]))
                      / ((WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii + 1] - WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii])
                           * (pow(WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii + 2], 2.0) - pow(WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii], 2.0))
                         + (pow(WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii + 1], 2.0) - pow(WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii], 2.0))
@@ -325,7 +325,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
                 a1 = 0.0;
               }
               a2 = ((WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[ii + 1] - WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[ii])
-                     - a1 * (pow(WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii + 1], 2.0) - pow(WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii], 2.0)))
+                    - a1 * (pow(WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii + 1], 2.0) - pow(WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii], 2.0)))
                    / (WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii + 1] - WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii]);
               a3 = WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[ii] - a1 * pow(WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii], 2.0)
                    - a2 * WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[ii];
