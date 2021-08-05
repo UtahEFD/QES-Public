@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
     eul->setData(WGD, TGD);
 
     // Run plume advection model
-    plume->run(PID->simParams->simDur, WGD, TGD, eul, outputPlume);
+    plume->run(PID->plumeParams->simDur, WGD, TGD, eul, outputPlume);
 
     std::cout << "[QES-Plume] \t Finished. \n"
               << std::endl;

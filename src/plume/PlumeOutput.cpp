@@ -58,18 +58,18 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   //Adjusted if the time averaging duration does not divide evenly by the averaging frequency
   timeAvgStart = PID->colParams->timeAvgStart;
   // time to end concentration averaging and output. Notice that this is now always the simulation end time
-  timeAvgEnd = PID->simParams->simDur;
+  timeAvgEnd = PID->plumeParams->simDur;
   // time averaging frequency and output frequency
   timeAvgFreq = PID->colParams->timeAvgFreq;
 
   // !!! Because collection parameters could not know anything about simulation duration at parse time,
   //  need to make this check now
   // Make sure the timeAvgStart is not greater than the simulation end time
-  if (timeAvgStart > PID->simParams->simDur) {
+  if (timeAvgStart > PID->plumeParams->simDur) {
     std::cerr << "[PlumeOutput] ERROR "
               << "(CollectionParameters checked during PlumeOutput) "
               << "input timeAvgStart must be smaller than or equal to the input simulation duration!" << std::endl;
-    std::cerr << " timeAvgStart = \"" << timeAvgStart << "\", simDur = \"" << PID->simParams->simDur << "\"" << std::endl;
+    std::cerr << " timeAvgStart = \"" << timeAvgStart << "\", simDur = \"" << PID->plumeParams->simDur << "\"" << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -78,11 +78,11 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   // Make sure timeAvgFreq is not bigger than the simulation duration
   // LA note: timeAvgFreq can be as big as the collection duration, or even smaller than the collection duration
   //  IF timeAvgFreq is at least the same size or smaller than the simulation duration
-  if (timeAvgFreq > PID->simParams->simDur) {
+  if (timeAvgFreq > PID->plumeParams->simDur) {
     std::cerr << "[PlumeOutput] ERROR "
               << "(CollectionParameters checked during PlumeOutput): "
               << "input timeAvgFreq must be smaller than or equal to the input simulation duration!" << std::endl;
-    std::cerr << " timeAvgFreq = \"" << timeAvgFreq << "\", simDur = \"" << PID->simParams->simDur << "\"" << std::endl;
+    std::cerr << " timeAvgFreq = \"" << timeAvgFreq << "\", simDur = \"" << PID->plumeParams->simDur << "\"" << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -148,7 +148,7 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   nz = WGD->nz;
 
   // need the simulation timeStep for use in concentration averaging
-  timeStep = PID->simParams->timeStep;
+  timeStep = PID->plumeParams->timeStep;
 
 
   // --------------------------------------------------------

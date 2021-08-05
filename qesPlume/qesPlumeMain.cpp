@@ -34,8 +34,6 @@
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
-PlumeInputData *parseXMLTree(const std::string fileName);
-
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,7 +97,7 @@ int main(int argc, char **argv)
   }
 
   // Run plume advection model
-  plume->run(PID->simParams->simDur, WGD, TGD, eul, outputVec);
+  plume->run(PID->plumeParams->simDur, WGD, TGD, eul, outputVec);
 
   // compute run time information and print the elapsed execution time
   std::cout << "[QES-Plume] \t Finished. \n"
@@ -110,20 +108,4 @@ int main(int argc, char **argv)
   std::cout << "##############################################################" << std::endl;
 
   exit(EXIT_SUCCESS);
-}
-
-PlumeInputData *parseXMLTree(const std::string fileName)
-{
-  pt::ptree tree;
-
-  try {
-    pt::read_xml(fileName, tree);
-  } catch (boost::property_tree::xml_parser::xml_parser_error &e) {
-    std::cerr << "Error reading tree in" << fileName << "\n";
-    return (PlumeInputData *)0;
-  }
-
-  PlumeInputData *xmlRoot = new PlumeInputData();
-  xmlRoot->parseTree(tree);
-  return xmlRoot;
 }

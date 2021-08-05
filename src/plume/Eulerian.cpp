@@ -81,7 +81,7 @@ Eulerian::Eulerian(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *
   }
 
   // set additional values from the input
-  C_0 = PID->simParams->C_0;
+  C_0 = PID->plumeParams->C_0;
 
   // set the tau gradient sizes
   dtxxdx.resize(WGD->numcell_face, 0.0);

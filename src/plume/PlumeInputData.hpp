@@ -26,7 +26,7 @@ class PlumeInputData : public ParseInterface
 {
 
 public:
-  PlumeParameters *simParams;
+  PlumeParameters *plumeParams;
   CollectionParameters *colParams;
   ParticleOutputParameters *partOutParams;
   Sources *sources;
@@ -35,7 +35,7 @@ public:
 
   PlumeInputData()
   {
-    simParams = 0;
+    plumeParams = 0;
     colParams = 0;
     partOutParams = 0;
     sources = 0;
@@ -43,7 +43,7 @@ public:
 
   PlumeInputData(const std::string fileName)
   {
-    simParams = 0;
+    plumeParams = 0;
     colParams = 0;
     partOutParams = 0;
     sources = 0;
@@ -63,7 +63,7 @@ public:
 
   virtual void parseValues()
   {
-    parseElement<PlumeParameters>(true, simParams, "simulationParameters");
+    parseElement<PlumeParameters>(true, plumeParams, "plumeParameters");
     parseElement<CollectionParameters>(true, colParams, "collectionParameters");
     parseElement<ParticleOutputParameters>(false, partOutParams, "particleOutputParameters");
 

@@ -97,7 +97,7 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
     outputStartTime = PID->partOutParams->outputStartTime;
   // time to end output
   if (PID->partOutParams->outputEndTime < 0)
-    outputEndTime = PID->simParams->simDur;
+    outputEndTime = PID->plumeParams->simDur;
   else
     outputEndTime = PID->partOutParams->outputEndTime;
   // output frequency

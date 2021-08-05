@@ -65,20 +65,20 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, E
   domainZend = eul->zEnd;
 
   // make copies of important dispersion time variables
-  sim_dt = PID->simParams->timeStep;
+  sim_dt = PID->plumeParams->timeStep;
 
   // time variables
   simTime = 0.0;
   simTimeIdx = 0;
 
   // other important time variables not from dispersion
-  CourantNum = PID->simParams->CourantNum;
+  CourantNum = PID->plumeParams->CourantNum;
 
   // set additional values from the input
-  invarianceTol = PID->simParams->invarianceTol;
-  C_0 = PID->simParams->C_0;
-  updateFrequency_timeLoop = PID->simParams->updateFrequency_timeLoop;
-  updateFrequency_particleLoop = PID->simParams->updateFrequency_particleLoop;
+  invarianceTol = PID->plumeParams->invarianceTol;
+  C_0 = PID->plumeParams->C_0;
+  updateFrequency_timeLoop = PID->plumeParams->updateFrequency_timeLoop;
+  updateFrequency_particleLoop = PID->plumeParams->updateFrequency_particleLoop;
 
   // set the isRogueCount and isNotActiveCount to zero
   isRogueCount = 0;
@@ -354,8 +354,8 @@ void Plume::getInputSources(PlumeInputData *PID)
 
     // now do anything that is needed to the source via the pointer
     sPtr->setSourceIdx(sIdx);
-    sPtr->m_rType->calcReleaseInfo(PID->simParams->timeStep, PID->simParams->simDur);
-    sPtr->m_rType->checkReleaseInfo(PID->simParams->timeStep, PID->simParams->simDur);
+    sPtr->m_rType->calcReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
+    sPtr->m_rType->checkReleaseInfo(PID->plumeParams->timeStep, PID->plumeParams->simDur);
     sPtr->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
 
     // now determine the number of particles to release for the source and
