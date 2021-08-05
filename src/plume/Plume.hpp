@@ -183,13 +183,13 @@ private:
 
   /* reflection functions in WallReflection.cpp */
   // main function pointer
-  bool (Plume::*wallReflection)(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct);
+  bool (Plume::*wallReflection)(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct, double &uFluct_old, double &vFluct_old, double &wFluct_old);
   // reflection on walls (stair step)
-  bool wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct);
+  bool wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct, double &uFluct_old, double &vFluct_old, double &wFluct_old);
   // reflection -> set particle inactive when entering a wall
-  bool wallReflectionSetToInactive(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct);
+  bool wallReflectionSetToInactive(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct, double &uFluct_old, double &vFluct_old, double &wFluct_old);
   // reflection -> this function will do nothing
-  bool wallReflectionDoNothing(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct);
+  bool wallReflectionDoNothing(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct, double &uFluct_old, double &vFluct_old, double &wFluct_old);
 
 
   // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,

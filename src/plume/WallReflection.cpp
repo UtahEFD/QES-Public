@@ -36,7 +36,7 @@
 #include "Plume.hpp"
 
 // reflection -> set particle inactive when entering a wall
-bool Plume::wallReflectionSetToInactive(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct)
+bool Plume::wallReflectionSetToInactive(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct, double &uFluct_old, double &vFluct_old, double &wFluct_old)
 {
   int cellIdx = eul->getCellId(xPos, yPos, zPos);
   if ((WGD->icellflag.at(cellIdx) == 0) || (WGD->icellflag.at(cellIdx) == 2)) {
@@ -49,13 +49,13 @@ bool Plume::wallReflectionSetToInactive(WINDSGeneralData *WGD, Eulerian *eul, do
 }
 
 // reflection -> this function will do nothing
-bool Plume::wallReflectionDoNothing(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct)
+bool Plume::wallReflectionDoNothing(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct, double &uFluct_old, double &vFluct_old, double &wFluct_old)
 {
   return true;
 }
 
 
-bool Plume::wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct)
+bool Plume::wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct, double &uFluct_old, double &vFluct_old, double &wFluct_old)
 {
   /*
      * This function will return true if:
@@ -134,7 +134,7 @@ bool Plume::wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, do
        N        = unit vector noraml to the surface
     */
   Vector3<double> Xnew, Xold;
-  Vector3<double> vecFluct;
+  Vector3<double> vecFluct, vecFluct_old;
   Vector3<double> P, S, U, V1, V2;
   Vector3<double> R, N;
 
@@ -149,6 +149,7 @@ bool Plume::wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, do
 
   // vector of fluctuation
   vecFluct = { uFluct, vFluct, wFluct };
+  vecFluct = { uFluct_old, vFluct_old, wFluct_old };
 
   /* 
        Working variables informations:
@@ -302,6 +303,7 @@ bool Plume::wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, do
 
     // relfection of the Fluctuation
     vecFluct = vecFluct.reflect(N);
+    vecFluct_old = vecFluct_old.reflect(N);
 
     // prepare variables for next bounce: particle position
     Xold = P;
@@ -331,6 +333,10 @@ bool Plume::wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, do
     uFluct = vecFluct[0];
     vFluct = vecFluct[1];
     wFluct = vecFluct[2];
+    // update output variable: old fluctuations
+    uFluct_old = vecFluct_old[0];
+    vFluct_old = vecFluct_old[1];
+    wFluct_old = vecFluct_old[2];
   } else {
     // update output variable: particle position to old position
     xPos -= disX;

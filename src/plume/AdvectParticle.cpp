@@ -296,7 +296,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     yPos = yPos + disY;
     zPos = zPos + disZ;
     // check and do wall (building and terrain) reflection (based in the method)
-    if (isActive == true) isActive = (this->*wallReflection)(WGD, eul, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct);
+    if (isActive == true) isActive = (this->*wallReflection)(WGD, eul, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct, uFluct_old, vFluct_old, wFluct_old);
 
 
     // now apply boundary conditions
