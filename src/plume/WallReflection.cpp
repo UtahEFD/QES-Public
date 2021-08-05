@@ -1,3 +1,38 @@
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Plume
+ *
+ * GPL-3.0 License
+ *
+ * QES-Plume is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Plume is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/** @file WallReflection.cpp 
+ * @brief These functions handle the different wall reflection options
+ *
+ * @note Part of plume class 
+ */
+
 #include "Plume.hpp"
 
 // reflection -> set particle inactive when entering a wall
@@ -228,14 +263,17 @@ bool Plume::wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, do
       std::sort(idx.begin(), idx.end(), [&vl](size_t i1, size_t i2) { return vl[i1] < vl[i2]; });
 
       // check if surface is valid (ie, next cell is solid)
-      if ((WGD->icellflag.at(cellIdOld + vn[idx[0]]) == 0) || (WGD->icellflag.at(cellIdOld + vn[idx[0]]) == 2)) {
+      if ((WGD->icellflag.at(cellIdOld + vn[idx[0]]) == 0)
+          || (WGD->icellflag.at(cellIdOld + vn[idx[0]]) == 2)) {
         s = vl[idx[0]];
         N = vN[idx[0]];
-      } else if ((WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]]) == 0) || (WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]]) == 2)) {
+      } else if ((WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]]) == 0)
+                 || (WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]]) == 2)) {
         s = vl[idx[1]];
         N = vN[idx[1]];
       } else if (idx.size() == 3) {// check if 3rd option is valid (avoid seg fault)
-        if ((WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]] + vn[idx[2]]) == 0) || (WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]] + vn[idx[2]]) == 2)) {
+        if ((WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]] + vn[idx[2]]) == 0)
+            || (WGD->icellflag.at(cellIdOld + vn[idx[0]] + vn[idx[1]] + vn[idx[2]]) == 2)) {
           s = vl[idx[2]];
           N = vN[idx[2]];
         } else {

@@ -1,8 +1,33 @@
-//  Plume.cpp
-//
-//
-//  This class handles plume model
-//
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Plume
+ *
+ * GPL-3.0 License
+ *
+ * QES-Plume is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Plume is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/** @file Plume.cpp */
 
 #include "Plume.hpp"
 
@@ -322,17 +347,15 @@ void Plume::getInputSources(PlumeInputData *PID)
 
   for (auto sIdx = 0u; sIdx < numSources_Input; sIdx++) {
     // first create the pointer to the input source
-    SourceKind *sPtr;
+    SourceType *sPtr;
 
     // now point the pointer at the source
     sPtr = PID->sources->sources.at(sIdx);
 
     // now do anything that is needed to the source via the pointer
     sPtr->setSourceIdx(sIdx);
-    sPtr->m_rType->calcReleaseInfo(PID->simParams->timeStep,
-      PID->simParams->simDur);
-    sPtr->m_rType->checkReleaseInfo(PID->simParams->timeStep,
-      PID->simParams->simDur);
+    sPtr->m_rType->calcReleaseInfo(PID->simParams->timeStep, PID->simParams->simDur);
+    sPtr->m_rType->checkReleaseInfo(PID->simParams->timeStep, PID->simParams->simDur);
     sPtr->checkPosInfo(domainXstart, domainXend, domainYstart, domainYend, domainZstart, domainZend);
 
     // now determine the number of particles to release for the source and
@@ -354,8 +377,7 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGe
   std::list<Particle *> nextSetOfParticles;
   int numNewParticles = 0;
   for (auto sIdx = 0u; sIdx < allSources.size(); sIdx++) {
-    numNewParticles += allSources.at(sIdx)->emitParticles(
-      (float)sim_dt, currentTime, nextSetOfParticles);
+    numNewParticles += allSources.at(sIdx)->emitParticles((float)sim_dt, currentTime, nextSetOfParticles);
   }
 
   setParticleVals(WGD, TGD, eul, nextSetOfParticles);
@@ -417,11 +439,10 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, Euleria
 
     // now set the initial velocity fluctuations for the particle
     // The  sqrt of the variance is to match Bailey's code
-    double rann =
-      random::norRan();// use different random numbers for each direction
+    double rann = random::norRan();// use different random numbers for each direction
     (*parItr)->uFluct = std::sqrt(current_sig_x) * rann;
     rann = random::norRan();// should be randn() matlab equivalent, which is a
-      // normally distributed random number
+    // normally distributed random number
     (*parItr)->vFluct = std::sqrt(current_sig_y) * rann;
     rann = random::norRan();
     (*parItr)->wFluct = std::sqrt(current_sig_z) * rann;
@@ -480,8 +501,7 @@ void Plume::calcInvariants(const double &txx, const double &txy, const double &t
   // since the x doesn't depend on itself, can just set the output without doing
   // any temporary variables (copied from Bailey's code)
   invar_xx = txx + tyy + tzz;
-  invar_yy =
-    txx * tyy + txx * tzz + tyy * tzz - txy * txy - txz * txz - tyz * tyz;
+  invar_yy = txx * tyy + txx * tzz + tyy * tzz - txy * txy - txz * txz - tyz * tyz;
   invar_zz = txx * (tyy * tzz - tyz * tyz) - txy * (txy * tzz - tyz * txz) + txz * (txy * tyz - tyy * txz);
 }
 

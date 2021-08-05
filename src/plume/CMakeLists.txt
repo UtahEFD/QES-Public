@@ -23,15 +23,14 @@ CUDA_ADD_LIBRARY( qesplumecore
 
     BoundaryConditions.hpp
     Particle.hpp
-
-    Sources.hpp
-    SourceKind.hpp
     
     ReleaseType.hpp
     ReleaseType_instantaneous.hpp
     ReleaseType_continuous.hpp
     ReleaseType_duration.hpp
     
+    Sources.hpp
+    SourceType.hpp
     SourcePoint.cpp SourcePoint.hpp
     SourceLine.cpp SourceLine.hpp
     SourceCircle.cpp SourceCircle.hpp
