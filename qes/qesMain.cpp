@@ -153,47 +153,55 @@ int main(int argc, char *argv[])
   // //////////////////////////////////////////
   Solver *solver = setSolver(arguments.solveType, WID, WGD);
 
-  // Run WINDS simulation code
-  solver->solve(WID, WGD, !arguments.solveWind);
+  for (int index = 0; index < WGD->totalTimeIncrements; index++) {
+    // print time progress (time stamp and percentage)
+    WGD->printTimeProgress(index);
 
-  std::cout << "Solver done!\n";
+    // Reset icellflag values
+    WGD->resetICellFlag();
 
-  // /////////////////////////////
-  //
-  // Run turbulence
-  //
-  // /////////////////////////////
-  if (TGD != nullptr) {
-    TGD->run(WGD);
+    // Create initial velocity field from the new sensors
+    WGD->applyWindProfile(WID, index, arguments.solveType);
+
+    // Apply parametrizations
+    WGD->applyParametrizations(WID);
+
+    // Run WINDS simulation code
+    solver->solve(WID, WGD, !arguments.solveWind);
+
+    std::cout << "Solver done!\n";
+
+    // Run turbulence
+    if (TGD != nullptr)
+      TGD->run(WGD);
+
+    // /////////////////////////////
+    // Output the various files requested from the simulation run
+    // (netcdf wind velocity, icell values, etc...
+    // /////////////////////////////
+    for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
+      outputVec.at(id_out)->save(WGD->timestamp[0]);// need to replace 0.0 with timestep
+    }
+
+    if (plume != nullptr) {
+
+      eul->setData(WGD, TGD);
+
+      // Run plume advection model
+      plume->run(PID->plumeParams->simDur, WGD, TGD, eul, outputPlume);
+
+      std::cout << "[QES-Plume] \t Finished. \n"
+                << std::endl;
+      std::cout << "End run particle summary \n";
+      std::cout << "----------------------------------------------------------------- \n";
+      std::cout << "Total number of particles released: " << plume->getNumReleasedParticles() << "\n";
+      std::cout << "Current number of particles in simulation: " << plume->getNumCurrentParticles() << "\n";
+      std::cout << "Number of rogue particles: " << plume->getNumRogueParticles() << "\n";
+      std::cout << "Number of deleted particles: " << plume->getNumNotActiveParticles() << "\n";
+      std::cout << "----------------------------------------------------------------- \n"
+                << std::endl;
+    }
   }
-
-  // /////////////////////////////
-  // Output the various files requested from the simulation run
-  // (netcdf wind velocity, icell values, etc...
-  // /////////////////////////////
-  for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
-    outputVec.at(id_out)->save(WGD->timestamp[0]);// need to replace 0.0 with timestep
-  }
-
-  if (plume != nullptr) {
-
-    eul->setData(WGD, TGD);
-
-    // Run plume advection model
-    plume->run(PID->plumeParams->simDur, WGD, TGD, eul, outputPlume);
-
-    std::cout << "[QES-Plume] \t Finished. \n"
-              << std::endl;
-    std::cout << "End run particle summary \n";
-    std::cout << "----------------------------------------------------------------- \n";
-    std::cout << "Total number of particles released: " << plume->getNumReleasedParticles() << "\n";
-    std::cout << "Current number of particles in simulation: " << plume->getNumCurrentParticles() << "\n";
-    std::cout << "Number of rogue particles: " << plume->getNumRogueParticles() << "\n";
-    std::cout << "Number of deleted particles: " << plume->getNumNotActiveParticles() << "\n";
-    std::cout << "----------------------------------------------------------------- \n"
-              << std::endl;
-  }
-
   exit(EXIT_SUCCESS);
 }
 
