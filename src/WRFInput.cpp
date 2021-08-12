@@ -303,6 +303,20 @@ a list of UTM zones of the world is available at www.dmap.co.uk/utmworld.htm
 
 
 
+int checksum( int currChkSum, std::vector<float> &data)
+{
+    for (auto idx=0u; idx<data.size(); idx++) {
+        float d = data[idx];
+        int *i = (int*)&d;
+        // std::cout << "float = " << d << ", int = " << *i << std::endl;
+        // currChkSum = currChkSum ^ *reinterpret_cast<int*>(&d);
+        currChkSum = currChkSum ^ *i;
+    }
+    return currChkSum;
+}
+
+
+
 
 WRFInput::WRFInput(const std::string& filename,
                    double domainUTMx, double domainUTMy, int zoneUTM, std::string &zoneLetterUTM,
@@ -728,7 +742,7 @@ WRFInput::WRFInput(const std::string& filename,
     // SUBDATASET_14_NAME=NETCDF:"/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21":T
     //
     std::vector<size_t> atmStartIdx = {0,0,0,0};
-    std::vector<size_t> atmCounts = {2,
+    std::vector<size_t> atmCounts = {1,
                                      static_cast<unsigned long>(atm_nz),
                                      static_cast<unsigned long>(atm_ny),
                                      static_cast<unsigned long>(atm_nx)};
@@ -920,7 +934,7 @@ WRFInput::WRFInput(const std::string& filename,
     // Extract time dim size
     NcDim dim = wrfInputFile.getVar("U0_FMW").getDim( 0 );
     int timeSize = dim.getSize();
-    std::cout << "timeSize:  " << timeSize << std::endl;
+    std::cout << "Number of time series:  " << timeSize << std::endl;
     
     // Extract height dim size
     dim = wrfInputFile.getVar("U0_FMW").getDim( 1 );
@@ -937,6 +951,28 @@ WRFInput::WRFInput(const std::string& filename,
 
     v0_fmw.resize( 1 * hgtSize * fm_ny * fm_nx );
     wrfInputFile.getVar("V0_FMW").getVar(interpWinds_StartIdx, interpWinds_counts, v0_fmw.data());
+
+    w0_fmw.resize( 1 * hgtSize * fm_ny * fm_nx );
+    wrfInputFile.getVar("W0_FMW").getVar(interpWinds_StartIdx, interpWinds_counts, w0_fmw.data());
+
+    //
+    // Compute the Checksum
+    //
+
+    // read the checksum
+    std::vector<size_t> chksum_StartIdx = {timeSize-1};
+    std::vector<size_t> chksum_counts = {1};
+
+    int wrfCHSUM0_FMW = 0;
+    wrfInputFile.getVar("CHSUM0_FMW").getVar(chksum_StartIdx, chksum_counts, &wrfCHSUM0_FMW);    
+    std::cout << "WRF CHSUM0_FMW = " << wrfCHSUM0_FMW << std::endl;
+    
+    int chkSum = 0;
+    chkSum = checksum( chkSum, u0_fmw );
+    chkSum = checksum( chkSum, v0_fmw );
+    chkSum = checksum( chkSum, w0_fmw );
+    std::cout << "WRF file output checksum of FMW fields: " << chkSum << std::endl;
+    exit(1);
 
     // Read the heights
     std::vector<size_t> interpWindsHT_StartIdx = {timeSize-1,0,0,0};
