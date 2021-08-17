@@ -61,7 +61,6 @@ void TURBWallTerrain::defineWalls(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 
 void TURBWallTerrain::setWallsBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
-
   /*
     This function apply the loglow at the wall for terrain
     Note:

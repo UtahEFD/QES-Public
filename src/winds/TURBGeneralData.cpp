@@ -53,9 +53,9 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
     sigVOrg = sigConst[1];
     sigWOrg = sigConst[2];
 
-    sigUConst = sigUOrg * sigUOrg * cPope * cPope;
-    sigVConst = sigVOrg * sigVOrg * cPope * cPope;
-    sigWConst = sigWOrg * sigWOrg * cPope * cPope;
+    sigUConst = 1.5 * sigUOrg * sigUOrg * cPope * cPope;
+    sigVConst = 1.5 * sigVOrg * sigVOrg * cPope * cPope;
+    sigWConst = 1.5 * sigWOrg * sigWOrg * cPope * cPope;
   }
 
   flagNonLocalMixing = WID->turbParams->flagNonLocalMixing;
@@ -360,9 +360,9 @@ void TURBGeneralData::loadNetCDFData(int stepin)
 
   start = { static_cast<unsigned long>(stepin), 0, 0, 0 };
   count_cc = { 1,
-    static_cast<unsigned long>(nz - 1),
-    static_cast<unsigned long>(ny - 1),
-    static_cast<unsigned long>(nx - 1) };
+               static_cast<unsigned long>(nz - 1),
+               static_cast<unsigned long>(ny - 1),
+               static_cast<unsigned long>(nx - 1) };
 
   // stress tensor
   input->getVariableData("txx", start, count_cc, txx);
