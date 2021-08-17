@@ -189,19 +189,15 @@ int main(int argc, char *argv[])
 
       // Run plume advection model
       plume->run(PID->plumeParams->simDur, WGD, TGD, eul, outputPlume);
-
-      std::cout << "[QES-Plume] \t Finished. \n"
-                << std::endl;
-      std::cout << "End run particle summary \n";
-      std::cout << "----------------------------------------------------------------- \n";
-      std::cout << "Total number of particles released: " << plume->getNumReleasedParticles() << "\n";
-      std::cout << "Current number of particles in simulation: " << plume->getNumCurrentParticles() << "\n";
-      std::cout << "Number of rogue particles: " << plume->getNumRogueParticles() << "\n";
-      std::cout << "Number of deleted particles: " << plume->getNumNotActiveParticles() << "\n";
-      std::cout << "----------------------------------------------------------------- \n"
-                << std::endl;
     }
   }
+
+  if (plume != nullptr) {
+    std::cout << "[QES-Plume] \t Finished. \n";
+    std::cout << "End run particle summary \n";
+    plume->showCurrentStatus();
+  }
+
   exit(EXIT_SUCCESS);
 }
 
