@@ -104,6 +104,39 @@ public:
   std::vector<double> sig_z;
 
   void setData(WINDSGeneralData *, TURBGeneralData *);
+  void interpValues(const double &xPos,
+                    const double &yPos,
+                    const double &zPos,
+                    const WINDSGeneralData *WGD,
+                    double &uMain_out,
+                    double &vMean_out,
+                    double &wMean_out,
+                    const TURBGeneralData *TGD,
+                    double &txx_out,
+                    double &txy_out,
+                    double &txz_out,
+                    double &tyy_out,
+                    double &tyz_out,
+                    double &tzz_out,
+                    double &flux_div_x_out,
+                    double &flux_div_y_out,
+                    double &flux_div_z_out,
+                    double &CoEps_out);
+
+  void interpInitialValues(const double &xPos,
+                           const double &yPos,
+                           const double &zPos,
+                           const TURBGeneralData *TGD,
+                           double &sig_x_out,
+                           double &sig_y_out,
+                           double &sig_z_out,
+                           double &txx_out,
+                           double &txy_out,
+                           double &txz_out,
+                           double &tyy_out,
+                           double &tyz_out,
+                           double &tzz_out);
+
 
   void setInterp3Dindex_uFace(const double &, const double &, const double &);
   void setInterp3Dindex_vFace(const double &, const double &, const double &);
@@ -169,7 +202,7 @@ inline int Eulerian::getCellId(const double &xPos, const double &yPos, const dou
 {
   int i = floor((xPos - 0.0 * dx) / (dx + 1e-9));
   int j = floor((yPos - 0.0 * dy) / (dy + 1e-9));
-  int k = floor((zPos + dz) / (dz + 1e-9));
+  int k = floor((zPos + 1.0 * dz) / (dz + 1e-9));
 
   return i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
 }
@@ -182,7 +215,7 @@ inline int Eulerian::getCellId(Vector3<double> &X)
 
   int i = floor((X[0] - 0.0 * dx) / (dx + 1e-9));
   int j = floor((X[1] - 0.0 * dy) / (dy + 1e-9));
-  int k = floor((X[2] + dz) / (dz + 1e-9));
+  int k = floor((X[2] + 1.0 * dz) / (dz + 1e-9));
 
   return i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
 }

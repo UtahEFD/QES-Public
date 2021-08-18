@@ -36,7 +36,20 @@
 #include "Plume.hpp"
 
 // reflection -> set particle inactive when entering a wall
-bool Plume::wallReflectionSetToInactive(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct, double &uFluct_old, double &vFluct_old, double &wFluct_old)
+bool Plume::wallReflectionSetToInactive(const WINDSGeneralData *WGD,
+                                        Eulerian *eul,
+                                        double &xPos,
+                                        double &yPos,
+                                        double &zPos,
+                                        double &disX,
+                                        double &disY,
+                                        double &disZ,
+                                        double &uFluct,
+                                        double &vFluct,
+                                        double &wFluct,
+                                        double &uFluct_old,
+                                        double &vFluct_old,
+                                        double &wFluct_old)
 {
   int cellIdx = eul->getCellId(xPos, yPos, zPos);
   if ((WGD->icellflag.at(cellIdx) == 0) || (WGD->icellflag.at(cellIdx) == 2)) {
@@ -49,13 +62,39 @@ bool Plume::wallReflectionSetToInactive(WINDSGeneralData *WGD, Eulerian *eul, do
 }
 
 // reflection -> this function will do nothing
-bool Plume::wallReflectionDoNothing(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct, double &uFluct_old, double &vFluct_old, double &wFluct_old)
+bool Plume::wallReflectionDoNothing(const WINDSGeneralData *WGD,
+                                    Eulerian *eul,
+                                    double &xPos,
+                                    double &yPos,
+                                    double &zPos,
+                                    double &disX,
+                                    double &disY,
+                                    double &disZ,
+                                    double &uFluct,
+                                    double &vFluct,
+                                    double &wFluct,
+                                    double &uFluct_old,
+                                    double &vFluct_old,
+                                    double &wFluct_old)
 {
   return true;
 }
 
 
-bool Plume::wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct, double &uFluct_old, double &vFluct_old, double &wFluct_old)
+bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
+                                        Eulerian *eul,
+                                        double &xPos,
+                                        double &yPos,
+                                        double &zPos,
+                                        double &disX,
+                                        double &disY,
+                                        double &disZ,
+                                        double &uFluct,
+                                        double &vFluct,
+                                        double &wFluct,
+                                        double &uFluct_old,
+                                        double &vFluct_old,
+                                        double &wFluct_old)
 {
   /*
      * This function will return true if:
@@ -78,7 +117,8 @@ bool Plume::wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, do
     int cellFlag = WGD->icellflag.at(cellIdNew);
   } catch (const std::out_of_range &oor) {
     // cell ID out of bound
-    std::cerr << "Reflection problem: particle out of range" << std::endl;
+    std::cerr << "Reflection problem: particle out of range before reflection" << std::endl;
+    std::cerr << xPos << "," << yPos << "," << zPos << std::endl;
     return false;
   }
 
@@ -101,7 +141,7 @@ bool Plume::wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, do
     xPos -= disX;
     yPos -= disY;
     zPos -= disZ;
-
+    std::cerr << "Reflection problem: particle moved too fast" << std::endl;
     return true;
   }
 
@@ -149,7 +189,7 @@ bool Plume::wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, do
 
   // vector of fluctuation
   vecFluct = { uFluct, vFluct, wFluct };
-  vecFluct = { uFluct_old, vFluct_old, wFluct_old };
+  vecFluct_old = { uFluct_old, vFluct_old, wFluct_old };
 
   /* 
        Working variables informations:
@@ -227,7 +267,7 @@ bool Plume::wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, do
     // check if more than one surface is valid
     if (validSurface == 0) {
       // if 0 valid surface
-      //std::cout << "Reflection problem: no valid surface" << std::endl;
+      std::cout << "Reflection problem: no valid surface" << std::endl;
       return false;
     } else if (validSurface > 1) {
       // Here-> Multiple options to bounce
@@ -317,12 +357,14 @@ bool Plume::wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, do
       cellFlagNew = WGD->icellflag.at(cellIdNew);
     } catch (const std::out_of_range &oor) {
       // cell ID out of bound
-      std::cout << "Reflection problem: particle out of range" << std::endl;
+      std::cout << "Reflection problem: particle out of range after reflection" << std::endl;
+      std::cerr << xPos << "," << yPos << "," << zPos << std::endl;
       return false;
     }
 
   }// end of: while( (cellFlagNew==0 || cellFlagNew==2) && (count < maxCount) )
 
+  //std::cout << Xold << " " << Xnew << std::endl;
 
   if (count < maxCount) {
     // update output variable: particle position

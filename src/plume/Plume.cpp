@@ -409,13 +409,7 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, Euleria
   // at this time, should be a list of each and every particle that exists at
   // the given time particles and sources can potentially be added to the list
   // elsewhere
-  for (auto parItr = newParticles.begin(); parItr != newParticles.end();
-       parItr++) {
-
-    // this replaces the old indexing trick, set the indexing variables for the
-    // interp3D for each particle, then get interpolated values from the
-    // Eulerian grid to the particle Lagrangian values for multiple datatypes
-    eul->setInterp3Dindex_cellVar((*parItr)->xPos_init, (*parItr)->yPos_init, (*parItr)->zPos_init);
+  for (auto parItr = newParticles.begin(); parItr != newParticles.end(); parItr++) {
 
     // set particle ID (use global particle counter)
     (*parItr)->particleID = nParsReleased;
@@ -427,38 +421,45 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, Euleria
     (*parItr)->zPos = (*parItr)->zPos_init;
 
     // get the sigma values from the Eulerian grid for the particle value
-    double current_sig_x = eul->interp3D_cellVar(eul->sig_x);
-    if (current_sig_x == 0.0)
-      current_sig_x = 1e-8;
-    double current_sig_y = eul->interp3D_cellVar(eul->sig_y);
-    if (current_sig_y == 0.0)
-      current_sig_y = 1e-8;
-    double current_sig_z = eul->interp3D_cellVar(eul->sig_z);
-    if (current_sig_z == 0.0)
-      current_sig_z = 1e-8;
+    double sig_x, sig_y, sig_z;
+    // get the tau values from the Eulerian grid for the particle value
+    double txx, txy, txz, tyy, tyz, tzz;
+
+    if (true) {
+      double a = 4.8;
+      double p = 0.15;
+
+      double us = 0.4 * p * a * pow((*parItr)->zPos, p);
+
+      sig_x = 2.5 * us;
+      sig_y = 2.3 * us;
+      sig_z = 1.3 * us;
+
+      txx = pow(sig_x, 2.0);
+      tyy = pow(sig_y, 2.0);
+      tzz = pow(sig_z, 2.0);
+      txy = 0.0;
+      tyz = 0.0;
+      txz = -pow(us, 2.0);
+
+    } else {
+      eul->interpInitialValues((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos, TGD, sig_x, sig_y, sig_z, txx, txy, txz, tyy, tyz, tzz);
+    }
 
     // now set the initial velocity fluctuations for the particle
     // The  sqrt of the variance is to match Bailey's code
     double rann = random::norRan();// use different random numbers for each direction
-    (*parItr)->uFluct = std::sqrt(current_sig_x) * rann;
+    (*parItr)->uFluct = sig_x * rann;
     rann = random::norRan();// should be randn() matlab equivalent, which is a
     // normally distributed random number
-    (*parItr)->vFluct = std::sqrt(current_sig_y) * rann;
+    (*parItr)->vFluct = sig_y * rann;
     rann = random::norRan();
-    (*parItr)->wFluct = std::sqrt(current_sig_z) * rann;
+    (*parItr)->wFluct = sig_z * rann;
 
     // set the initial values for the old velFluct values
     (*parItr)->uFluct_old = (*parItr)->uFluct;
     (*parItr)->vFluct_old = (*parItr)->vFluct;
     (*parItr)->wFluct_old = (*parItr)->wFluct;
-
-    // get the tau values from the Eulerian grid for the particle value
-    double txx = eul->interp3D_cellVar(TGD->txx);
-    double txy = eul->interp3D_cellVar(TGD->txy);
-    double txz = eul->interp3D_cellVar(TGD->txz);
-    double tyy = eul->interp3D_cellVar(TGD->tyy);
-    double tyz = eul->interp3D_cellVar(TGD->tyz);
-    double tzz = eul->interp3D_cellVar(TGD->tzz);
 
     // now need to call makeRealizable on tau
     makeRealizable(txx, txy, txz, tyy, tyz, tzz);
@@ -481,8 +482,7 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, Euleria
     (*parItr)->isRogue = false;
     (*parItr)->isActive = true;
 
-    int cellIdNew =
-      eul->getCellId((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos);
+    int cellIdNew = eul->getCellId((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos);
     if ((WGD->icellflag[cellIdNew] == 0) && (WGD->icellflag[cellIdNew] == 2)) {
       std::cerr << "WARNING invalid initial position" << std::endl;
       (*parItr)->isActive = false;
@@ -496,7 +496,15 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, Euleria
   }
 }
 
-void Plume::calcInvariants(const double &txx, const double &txy, const double &txz, const double &tyy, const double &tyz, const double &tzz, double &invar_xx, double &invar_yy, double &invar_zz)
+void Plume::calcInvariants(const double &txx,
+                           const double &txy,
+                           const double &txz,
+                           const double &tyy,
+                           const double &tyz,
+                           const double &tzz,
+                           double &invar_xx,
+                           double &invar_yy,
+                           double &invar_zz)
 {
   // since the x doesn't depend on itself, can just set the output without doing
   // any temporary variables (copied from Bailey's code)
@@ -505,7 +513,12 @@ void Plume::calcInvariants(const double &txx, const double &txy, const double &t
   invar_zz = txx * (tyy * tzz - tyz * tyz) - txy * (txy * tzz - tyz * txz) + txz * (txy * tyz - tyy * txz);
 }
 
-void Plume::makeRealizable(double &txx, double &txy, double &txz, double &tyy, double &tyz, double &tzz)
+void Plume::makeRealizable(double &txx,
+                           double &txy,
+                           double &txz,
+                           double &tyy,
+                           double &tyz,
+                           double &tzz)
 {
   // first calculate the invariants and see if they are already realizable
   // the calcInvariants function modifies the values directly, so they always
@@ -584,7 +597,15 @@ void Plume::makeRealizable(double &txx, double &txy, double &txz, double &tyy, d
   tzz = tzz_new;
 }
 
-bool Plume::invert3(double &A_11, double &A_12, double &A_13, double &A_21, double &A_22, double &A_23, double &A_31, double &A_32, double &A_33)
+bool Plume::invert3(double &A_11,
+                    double &A_12,
+                    double &A_13,
+                    double &A_21,
+                    double &A_22,
+                    double &A_23,
+                    double &A_31,
+                    double &A_32,
+                    double &A_33)
 {
   // note that with Bailey's code, the input A_21, A_31, and A_32 are zeros even
   // though they are used here at least when using this on tau to calculate the
@@ -653,7 +674,21 @@ bool Plume::invert3(double &A_11, double &A_12, double &A_13, double &A_21, doub
   }
 }
 
-void Plume::matmult(const double &A_11, const double &A_12, const double &A_13, const double &A_21, const double &A_22, const double &A_23, const double &A_31, const double &A_32, const double &A_33, const double &b_11, const double &b_21, const double &b_31, double &x_11, double &x_21, double &x_31)
+void Plume::matmult(const double &A_11,
+                    const double &A_12,
+                    const double &A_13,
+                    const double &A_21,
+                    const double &A_22,
+                    const double &A_23,
+                    const double &A_31,
+                    const double &A_32,
+                    const double &A_33,
+                    const double &b_11,
+                    const double &b_21,
+                    const double &b_31,
+                    double &x_11,
+                    double &x_21,
+                    double &x_31)
 {
   // since the x doesn't depend on itself, can just set the output without doing
   // any temporary variables
@@ -740,7 +775,11 @@ void Plume::setBCfunctions(std::string xBCtype, std::string yBCtype, std::string
   }
 }
 
-bool Plume::enforceWallBCs_exiting(double &pos, double &velFluct, double &velFluct_old, const double &domainStart, const double &domainEnd)
+bool Plume::enforceWallBCs_exiting(double &pos,
+                                   double &velFluct,
+                                   double &velFluct_old,
+                                   const double &domainStart,
+                                   const double &domainEnd)
 {
   // if it goes out of the domain, set isActive to false
   if (pos < domainStart || pos > domainEnd) {
@@ -750,7 +789,11 @@ bool Plume::enforceWallBCs_exiting(double &pos, double &velFluct, double &velFlu
   }
 }
 
-bool Plume::enforceWallBCs_periodic(double &pos, double &velFluct, double &velFluct_old, const double &domainStart, const double &domainEnd)
+bool Plume::enforceWallBCs_periodic(double &pos,
+                                    double &velFluct,
+                                    double &velFluct_old,
+                                    const double &domainStart,
+                                    const double &domainEnd)
 {
 
   double domainSize = domainEnd - domainStart;
@@ -780,7 +823,11 @@ bool Plume::enforceWallBCs_periodic(double &pos, double &velFluct, double &velFl
   return true;
 }
 
-bool Plume::enforceWallBCs_reflection(double &pos, double &velFluct, double &velFluct_old, const double &domainStart, const double &domainEnd)
+bool Plume::enforceWallBCs_reflection(double &pos,
+                                      double &velFluct,
+                                      double &velFluct_old,
+                                      const double &domainStart,
+                                      const double &domainEnd)
 {
   /*
   std::cout << "enforceWallBCs_reflection starting pos = \"" << pos << "\",
