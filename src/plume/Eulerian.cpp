@@ -64,7 +64,6 @@ Eulerian::Eulerian(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *
   // in x-direction (face)
   xStart = WGD->x[iStart] - 0.5 * dx;
   xEnd = WGD->x[iEnd] + 0.5 * dx;
-
   // in y-direction (face)
   yStart = WGD->y[jStart] - 0.5 * dy;
   yEnd = WGD->y[jEnd] + 0.5 * dy;

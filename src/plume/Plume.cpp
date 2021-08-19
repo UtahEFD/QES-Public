@@ -32,8 +32,8 @@
 #include "Plume.hpp"
 
 //Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul, Args *arguments)
-Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul)
-  : particleList(0)
+Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+  : particleList(0), allSources(0)
 {
 
   std::cout << "[Plume] \t Setting up simulation details " << std::endl;
@@ -54,6 +54,9 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, E
   dx = WGD->dx;
   dy = WGD->dy;
   dz = WGD->dz;
+
+  // Create instance of Eulerian class
+  eul = new Eulerian(PID, WGD, TGD, debug);
 
   // get the domain start and end values, needed for wall boundary condition
   // application
@@ -120,8 +123,10 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, E
   }
 }
 
-void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul, std::vector<QESNetCDFOutput *> outputVec)
+void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
 {
+
+  eul->setData(WGD, TGD);
   // get the threshold velocity fluctuation to define rogue particles
   vel_threshold = eul->vel_threshold;
 
@@ -164,7 +169,7 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eule
   // FMargairaz -> need clean-up
   while (simTime < endTime) {
     // need to release new particles -> add new particles to the number to move
-    int nParsToRelease = generateParticleList((float)simTime, WGD, TGD, eul);
+    int nParsToRelease = generateParticleList((float)simTime, WGD, TGD);
 
     // number of active particle at the current time step.
     // list is scrubbed at the end of each time step (if flag turned true)
@@ -216,7 +221,7 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eule
         this function does not do any manipulation on particleList
       */
 
-      advectParticle(timeRemainder, parItr, WGD, TGD, eul);
+      advectParticle(timeRemainder, parItr, WGD, TGD);
 
       // now update the isRogueCount and isNotActiveCount
       if ((*parItr)->isRogue == true) {
@@ -368,7 +373,7 @@ void Plume::getInputSources(PlumeInputData *PID)
   }
 }
 
-int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul)
+int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
 
   // Add new particles now
@@ -380,7 +385,7 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGe
     numNewParticles += allSources.at(sIdx)->emitParticles((float)sim_dt, currentTime, nextSetOfParticles);
   }
 
-  setParticleVals(WGD, TGD, eul, nextSetOfParticles);
+  setParticleVals(WGD, TGD, nextSetOfParticles);
 
   // append all the new particles on to the big particle
   // advection list
@@ -404,7 +409,7 @@ void Plume::scrubParticleList()
   return;
 }
 
-void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul, std::list<Particle *> newParticles)
+void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::list<Particle *> newParticles)
 {
   // at this time, should be a list of each and every particle that exists at
   // the given time particles and sources can potentially be added to the list

@@ -73,8 +73,8 @@ public:
   // then sets up the concentration sampling box information for output
   // next copies important input time values and calculates needed time information
   // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
-  Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, Eulerian *, Args *);
-  Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, Eulerian *);
+  //Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, Args *);
+  Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *);
 
   // this is the plume solver. It performs a time integration of the particle positions and particle velocity fluctuations
   // with calculations done on a per particle basis. During each iteration, temporary single value particle information
@@ -87,7 +87,7 @@ public:
   // LA future work: Need to add a CFL condition where the user specifies a courant number that varies from 0 to 1
   //  that is used to do an additional time remainder time integration loop for each particle, forcing particles to only
   //  move one cell at a time.
-  void run(float, WINDSGeneralData *, TURBGeneralData *, Eulerian *, std::vector<QESNetCDFOutput *>);
+  void run(float, WINDSGeneralData *, TURBGeneralData *, std::vector<QESNetCDFOutput *>);
 
   int getTotalParsToRelease() const { return totalParsToRelease; }// accessor
 
@@ -111,7 +111,6 @@ private:
   double dy;// a copy of the urb grid dy value, eventually could become an array
   double dz;// a copy of the urb grid dz value, eventually could become an array
 
-
   // these values are calculated from the urb and turb grids by dispersion
   // they are used for applying boundary conditions at the walls of the domain
   double domainXstart;// the domain starting x value, a copy of the value found by dispersion
@@ -120,6 +119,8 @@ private:
   double domainYend;// the domain ending y value, a copy of the value found by dispersion
   double domainZstart;// the domain starting z value, a copy of the value found by dispersion
   double domainZend;// the domain ending z value, a copy of the value found by dispersion
+
+  Eulerian *eul;
 
   // time variables
   double sim_dt;// the simulation timestep
@@ -161,7 +162,7 @@ private:
 
   bool verbose;
 
-  void setParticleVals(WINDSGeneralData *, TURBGeneralData *, Eulerian *, std::list<Particle *>);
+  void setParticleVals(WINDSGeneralData *, TURBGeneralData *, std::list<Particle *>);
   // this function gets sources from input data and adds them to the allSources vector
   // this function also calls the many check and calc functions for all the input sources
   // !!! note that these check and calc functions have to be called here
@@ -170,7 +171,7 @@ private:
   void getInputSources(PlumeInputData *);
 
   // this function generates the list of particle to be released at a given time
-  int generateParticleList(float, WINDSGeneralData *, TURBGeneralData *, Eulerian *);
+  int generateParticleList(float, WINDSGeneralData *, TURBGeneralData *);
 
   // this function scrubs the inactive particle for the particle list (particleList)
   void scrubParticleList();
@@ -178,12 +179,11 @@ private:
 
   // this function moves (advects) one particle
   //void advectParticle(int&, std::list<Particle*>::iterator, WINDSGeneralData*, TURBGeneralData*, Eulerian*);
-  void advectParticle(double, std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *, Eulerian *);
+  void advectParticle(double, std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *);
 
   /* reflection functions in WallReflection.cpp */
   // main function pointer
   bool (Plume::*wallReflection)(const WINDSGeneralData *WGD,
-                                Eulerian *eul,
                                 double &xPos,
                                 double &yPos,
                                 double &zPos,
@@ -198,7 +198,6 @@ private:
                                 double &wFluct_old);
   // reflection on walls (stair step)
   bool wallReflectionFullStairStep(const WINDSGeneralData *WGD,
-                                   Eulerian *eul,
                                    double &xPos,
                                    double &yPos,
                                    double &zPos,
@@ -213,7 +212,6 @@ private:
                                    double &wFluct_old);
   // reflection -> set particle inactive when entering a wall
   bool wallReflectionSetToInactive(const WINDSGeneralData *WGD,
-                                   Eulerian *eul,
                                    double &xPos,
                                    double &yPos,
                                    double &zPos,
@@ -228,7 +226,6 @@ private:
                                    double &wFluct_old);
   // reflection -> this function will do nothing
   bool wallReflectionDoNothing(const WINDSGeneralData *WGD,
-                               Eulerian *eul,
                                double &xPos,
                                double &yPos,
                                double &zPos,

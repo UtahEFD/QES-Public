@@ -32,7 +32,7 @@
 #include "Plume.hpp"
 
 //void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul)
-void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator parItr, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul)
+void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator parItr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
 
   double rhoAir = 1.225;// in kg m^-3
@@ -288,7 +288,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     zPos = zPos + disZ;
     // check and do wall (building and terrain) reflection (based in the method)
     if (isActive == true) {
-      isActive = (this->*wallReflection)(WGD, eul, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct, uFluct_old, vFluct_old, wFluct_old);
+      isActive = (this->*wallReflection)(WGD, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct, uFluct_old, vFluct_old, wFluct_old);
     }
 
     // now apply boundary conditions

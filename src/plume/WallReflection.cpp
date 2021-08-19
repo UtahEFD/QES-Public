@@ -37,7 +37,6 @@
 
 // reflection -> set particle inactive when entering a wall
 bool Plume::wallReflectionSetToInactive(const WINDSGeneralData *WGD,
-                                        Eulerian *eul,
                                         double &xPos,
                                         double &yPos,
                                         double &zPos,
@@ -63,7 +62,6 @@ bool Plume::wallReflectionSetToInactive(const WINDSGeneralData *WGD,
 
 // reflection -> this function will do nothing
 bool Plume::wallReflectionDoNothing(const WINDSGeneralData *WGD,
-                                    Eulerian *eul,
                                     double &xPos,
                                     double &yPos,
                                     double &zPos,
@@ -82,7 +80,6 @@ bool Plume::wallReflectionDoNothing(const WINDSGeneralData *WGD,
 
 
 bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
-                                        Eulerian *eul,
                                         double &xPos,
                                         double &yPos,
                                         double &zPos,
@@ -97,19 +94,19 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
                                         double &wFluct_old)
 {
   /*
-     * This function will return true if:
-     * - no need for reflection (leave xPos, yPos, zPos, uFluct, vFluct, wFluct unchanged)
-     * - reflection valid
-     * - reflection invalid
-     *   if: - count > maxCount
-     *       - particle trajectory more than 1 cell in each direction
-     *   => in this case, the particle will be place back ot the old position, new random move next step.
-     *
-     *
-     * This function will return false (leave xPos, yPos, zPos, uFluct, vFluct, wFluct unchanged) 
-     * - cell ID out of bound 
-     * - no valid surface for reflection 
-     */
+   * This function will return true if:
+   * - no need for reflection (leave xPos, yPos, zPos, uFluct, vFluct, wFluct unchanged)
+   * - reflection valid
+   * - reflection invalid
+   *   if: - count > maxCount
+   *       - particle trajectory more than 1 cell in each direction
+   *   => in this case, the particle will be place back ot the old position, new random move next step.
+   *
+   *
+   * This function will return false (leave xPos, yPos, zPos, uFluct, vFluct, wFluct unchanged) 
+   * - cell ID out of bound 
+   * - no valid surface for reflection 
+   */
 
   // linearized cell ID for end of the trajectory of the particle
   int cellIdNew = eul->getCellId(xPos, yPos, zPos);

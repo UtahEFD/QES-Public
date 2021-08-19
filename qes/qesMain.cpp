@@ -29,10 +29,7 @@
 
 //#include "Args.hpp"
 #include "src/plume/PlumeInputData.hpp"
-
 #include "src/plume/Plume.hpp"
-#include "src/plume/Eulerian.h"
-
 #include "src/plume/PlumeOutput.h"
 #include "src/plume/PlumeOutputEulerian.h"
 #include "src/plume/PlumeOutputParticleData.h"
@@ -127,17 +124,13 @@ int main(int argc, char *argv[])
     outputVec.push_back(new TURBOutput(TGD, arguments.netCDFFileTurb));
   }
 
-  Eulerian *eul = nullptr;
   Plume *plume = nullptr;
   // create output instance
   std::vector<QESNetCDFOutput *> outputPlume;
 
   if (arguments.compPlume) {
-    // Create instance of Eulerian class
-    eul = new Eulerian(PID, WGD, TGD, false);
-
     // Create instance of Plume model class
-    plume = new Plume(PID, WGD, TGD, eul);
+    plume = new Plume(PID, WGD, TGD);
 
     // always supposed to output lagrToEulOutput data
     outputPlume.push_back(new PlumeOutput(PID, WGD, plume, arguments.outputPlumeFile));
@@ -172,8 +165,9 @@ int main(int argc, char *argv[])
     std::cout << "Solver done!\n";
 
     // Run turbulence
-    if (TGD != nullptr)
+    if (TGD != nullptr) {
       TGD->run(WGD);
+    }
 
     // /////////////////////////////
     // Output the various files requested from the simulation run
@@ -183,12 +177,9 @@ int main(int argc, char *argv[])
       outputVec.at(id_out)->save(WGD->timestamp[0]);// need to replace 0.0 with timestep
     }
 
+    // Run plume advection model
     if (plume != nullptr) {
-
-      eul->setData(WGD, TGD);
-
-      // Run plume advection model
-      plume->run(PID->plumeParams->simDur, WGD, TGD, eul, outputPlume);
+      plume->run(PID->plumeParams->simDur, WGD, TGD, outputPlume);
     }
   }
 
