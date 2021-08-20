@@ -64,9 +64,9 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   //size_t cellIdx_old = eul->getCellId(xPos,yPos,zPos);
 
   // getting the initial position, for use in setting finished particles
-  double xPos_init = (*parItr)->xPos_init;
-  double yPos_init = (*parItr)->yPos_init;
-  double zPos_init = (*parItr)->zPos_init;
+  //double xPos_init = (*parItr)->xPos_init;
+  //double yPos_init = (*parItr)->yPos_init;
+  //double zPos_init = (*parItr)->zPos_init;
 
   // grab the velFluct values.
   // LA notes: hmm, Bailey's code just starts out setting these values to zero,
@@ -130,7 +130,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
       will need to use the interp3D function
     */
 
-    if (true) {
+    if (false) {
       double a = 4.8;
       double p = 0.15;
 
@@ -147,9 +147,9 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
       tzz = pow(1.3 * us, 2.0);
       txy = 0.0;
       tyz = 0.0;
-      txz = pow(us, 2.0);
+      txz = -pow(us, 2.0);
 
-      flux_div_x = 2.0 * p * pow(0.4 * p * a, 2.0) * pow(zPos, 2.0 * p - 1.0);
+      flux_div_x = -2.0 * p * pow(0.4 * p * a, 2.0) * pow(zPos, 2.0 * p - 1.0);
       flux_div_y = 0.0;
       flux_div_z = 2.0 * p * pow(1.3 * 0.4 * p * a, 2.0) * pow(zPos, 2.0 * p - 1.0);
     } else {

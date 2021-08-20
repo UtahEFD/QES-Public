@@ -78,7 +78,6 @@ bool Plume::wallReflectionDoNothing(const WINDSGeneralData *WGD,
   return true;
 }
 
-
 bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
                                         double &xPos,
                                         double &yPos,

@@ -350,7 +350,7 @@ void Plume::getInputSources(PlumeInputData *PID)
   // is found out
   totalParsToRelease = 0;
 
-  for (auto sIdx = 0u; sIdx < numSources_Input; sIdx++) {
+  for (auto sIdx = 0; sIdx < numSources_Input; sIdx++) {
     // first create the pointer to the input source
     SourceType *sPtr;
 
@@ -430,7 +430,7 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
     // get the tau values from the Eulerian grid for the particle value
     double txx, txy, txz, tyy, tyz, tzz;
 
-    if (true) {
+    if (false) {
       double a = 4.8;
       double p = 0.15;
 
