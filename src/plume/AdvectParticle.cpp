@@ -130,31 +130,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
       will need to use the interp3D function
     */
 
-    if (false) {
-      double a = 4.8;
-      double p = 0.15;
-
-      double us = 0.4 * p * a * pow(zPos, p);
-
-      uMean = a * pow(zPos, p);
-      vMean = 0.0;
-      wMean = 0.0;
-
-      CoEps = (5.7 * us * us * us) / (0.4 * zPos);
-
-      txx = pow(2.5 * us, 2.0);
-      tyy = pow(2.3 * us, 2.0);
-      tzz = pow(1.3 * us, 2.0);
-      txy = 0.0;
-      tyz = 0.0;
-      txz = -pow(us, 2.0);
-
-      flux_div_x = -2.0 * p * pow(0.4 * p * a, 2.0) * pow(zPos, 2.0 * p - 1.0);
-      flux_div_y = 0.0;
-      flux_div_z = 2.0 * p * pow(1.3 * 0.4 * p * a, 2.0) * pow(zPos, 2.0 * p - 1.0);
-    } else {
-      eul->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
-    }
+    eul->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
 
     // now need to call makeRealizable on tau
     makeRealizable(txx, txy, txz, tyy, tyz, tzz);

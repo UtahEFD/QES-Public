@@ -121,7 +121,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   std::cout << "[Eulerian] \t Correction QES-winds fields for BC" << std::endl;
 
   // verical surface (wall right => j-1)
-  for (size_t id; id < WGD->wall_right_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_right_indices.size(); ++id) {
     int idface = WGD->wall_right_indices[id];
     // u(i,j-1,k)=-u(i,j,k)
     WGD->u[idface - nx] = -WGD->u[idface];
@@ -135,7 +135,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // verical surface (wall left => j+1)
-  for (size_t id; id < WGD->wall_left_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_left_indices.size(); ++id) {
     int idface = WGD->wall_left_indices[id];
     // u(i,j+1,k)=-u(i,j,k)
     WGD->u[idface + nx] = -WGD->u[idface];
@@ -149,7 +149,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // horizontal surface (wall above => k+1)
-  for (size_t id; id < WGD->wall_above_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_above_indices.size(); ++id) {
     int idface = WGD->wall_above_indices[id];
     // u(i,j,k+1)=-u(i,j,k)
     WGD->u[idface + nx * ny] = -WGD->u[idface];
@@ -163,7 +163,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // horizontal surface (wall below => k-1)
-  for (size_t id; id < WGD->wall_below_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_below_indices.size(); ++id) {
     int idface = WGD->wall_below_indices[id];
     // u(i,j,k-1)=-u(i,j,k)
     WGD->u[idface - nx * ny] = -WGD->u[idface];
@@ -178,7 +178,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 
 
   // verical surface (wall back => i-1)
-  for (size_t id; id < WGD->wall_back_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_back_indices.size(); ++id) {
     int idface = WGD->wall_back_indices[id];
     // v(i-1,j,k)=-v(i,j,k)
     WGD->v[idface - 1] = -WGD->v[idface];
@@ -192,7 +192,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // verical surface (wall front => i+1)
-  for (size_t id; id < WGD->wall_front_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_front_indices.size(); ++id) {
     int idface = WGD->wall_front_indices[id];
     // v(i+1,j,k)=-v(i,j,k)
     WGD->v[idface + 1] = -WGD->v[idface];
@@ -208,7 +208,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   std::cout << "[Eulerian] \t Correction QES-turb fields for BC" << std::endl;
 
   // verical surface (wall right => j-1)
-  for (size_t id; id < WGD->wall_right_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_right_indices.size(); ++id) {
     int idface = WGD->wall_right_indices[id];
     // i,j,k -> inverted linearized index
     int k = (int)(idface / ((nx * nx)));
@@ -229,7 +229,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // verical surface (wall left => j+1)
-  for (size_t id; id < WGD->wall_left_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_left_indices.size(); ++id) {
     int idface = WGD->wall_left_indices[id];
     // i,j,k -> inverted linearized index
     int k = (int)(idface / ((nx * nx)));
@@ -250,7 +250,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // horizontal surface (wall above => k+1)
-  for (size_t id; id < WGD->wall_above_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_above_indices.size(); ++id) {
     int idface = WGD->wall_above_indices[id];
     // i,j,k -> inverted linearized index
     int k = (int)(idface / ((nx * nx)));
@@ -271,7 +271,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // horizontal surface (wall below => k-1)
-  for (size_t id; id < WGD->wall_below_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_below_indices.size(); ++id) {
     int idface = WGD->wall_below_indices[id];
     // i,j,k -> inverted linearized index
     int k = (int)(idface / ((nx * nx)));
@@ -314,7 +314,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // verical surface (wall front => i+1)
-  for (size_t id; id < WGD->wall_front_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_front_indices.size(); ++id) {
     int idface = WGD->wall_front_indices[id];
     // i,j,k -> inverted linearized index
     int k = (int)(idface / ((nx * nx)));
@@ -482,7 +482,9 @@ void Eulerian::setSigmas(TURBGeneralData *TGD)
   return;
 }
 
-double Eulerian::getMaxVariance(const std::vector<double> &sigma_x_vals, const std::vector<double> &sigma_y_vals, const std::vector<double> &sigma_z_vals)
+double Eulerian::getMaxVariance(const std::vector<double> &sigma_x_vals,
+                                const std::vector<double> &sigma_y_vals,
+                                const std::vector<double> &sigma_z_vals)
 {
   // set thoe initial maximum value to a very small number. The idea is to go through each value of the data,
   // setting the current value to the max value each time the current value is bigger than the old maximum value

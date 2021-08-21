@@ -56,7 +56,11 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   dz = WGD->dz;
 
   // Create instance of Eulerian class
-  eul = new Eulerian(PID, WGD, TGD, debug);
+  if (PID->plumeParams->interpMethod == "analyticalPowerLaw") {
+    eul = new EulerianPowerLaw(PID, WGD, TGD, debug);
+  } else {
+    eul = new Eulerian(PID, WGD, TGD, debug);
+  }
 
   // get the domain start and end values, needed for wall boundary condition
   // application
@@ -430,26 +434,7 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
     // get the tau values from the Eulerian grid for the particle value
     double txx, txy, txz, tyy, tyz, tzz;
 
-    if (false) {
-      double a = 4.8;
-      double p = 0.15;
-
-      double us = 0.4 * p * a * pow((*parItr)->zPos, p);
-
-      sig_x = 2.5 * us;
-      sig_y = 2.3 * us;
-      sig_z = 1.3 * us;
-
-      txx = pow(sig_x, 2.0);
-      tyy = pow(sig_y, 2.0);
-      tzz = pow(sig_z, 2.0);
-      txy = 0.0;
-      tyz = 0.0;
-      txz = -pow(us, 2.0);
-
-    } else {
-      eul->interpInitialValues((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos, TGD, sig_x, sig_y, sig_z, txx, txy, txz, tyy, tyz, tzz);
-    }
+    eul->interpInitialValues((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos, TGD, sig_x, sig_y, sig_z, txx, txy, txz, tyy, tyz, tzz);
 
     // now set the initial velocity fluctuations for the particle
     // The  sqrt of the variance is to match Bailey's code

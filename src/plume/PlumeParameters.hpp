@@ -54,6 +54,8 @@ public:
   int updateFrequency_particleLoop;// this is used to know how frequently to print out information during the particle loop of the solver. Only used during debug mode
   int updateFrequency_timeLoop;// this is used to know how frequently to print out information during the time integration loop of the solver
 
+  std::string interpMethod;
+
   virtual void parseValues()
   {
     parsePrimitive<float>(true, simDur, "simDur");
@@ -63,6 +65,9 @@ public:
     parsePrimitive<double>(true, C_0, "C_0");
     parsePrimitive<int>(true, updateFrequency_particleLoop, "updateFrequency_particleLoop");
     parsePrimitive<int>(true, updateFrequency_timeLoop, "updateFrequency_timeLoop");
+
+    interpMethod = "stdQES";
+    parsePrimitive<std::string>(false, interpMethod, "interpolation_method");
 
     // check some of the parsed values to see if they make sense
     checkParsedValues();

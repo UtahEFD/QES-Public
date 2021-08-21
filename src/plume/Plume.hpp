@@ -54,7 +54,10 @@
 
 #include "src/winds/WINDSGeneralData.h"
 #include "src/winds/TURBGeneralData.h"
+
+#include "GriddedDataType.h"
 #include "Eulerian.h"
+#include "EulerianPowerLaw.h"
 
 #include "Particle.hpp"
 
@@ -120,7 +123,7 @@ private:
   double domainZstart;// the domain starting z value, a copy of the value found by dispersion
   double domainZend;// the domain ending z value, a copy of the value found by dispersion
 
-  Eulerian *eul;
+  GriddedDataType *eul;
 
   // time variables
   double sim_dt;// the simulation timestep
