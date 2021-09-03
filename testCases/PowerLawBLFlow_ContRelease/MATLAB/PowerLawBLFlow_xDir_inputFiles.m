@@ -110,9 +110,9 @@ uw(end) = uw(end-1);
 CsigU=2.5;
 CsigV=2.3;
 CsigW=1.3;
-%CsigU=2.3;
-%CsigV=2.3;
-%CsigW=1.1;
+%CsigU=2.0;
+%CsigV=1.6;
+%CsigW=1.2;
 
 k = (ustar/0.55).^2;
 k(1) = -k(2);

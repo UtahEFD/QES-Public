@@ -22,28 +22,28 @@ nu=(1-n)/alpha;
 
 % source info
 Q=200; % #par/s (source strength)
-tRelease=2000; % total time of release
+tRelease=4000; % total time of release
 Ntot=Q*tRelease; % total number of particles
 
 % concentration info
 dt=1; % s
 %tAvg=1200; % s 
-tAvg=1800; % s 
+tAvg=3600; % s 
 
 fsize=12;
 
-xS=20;yS=50;zS=4;
+xS=20+5;yS=50;zS=4;
 
 %xProf=[6.0,10.0,18.0]; % streamwise location 
-xProf=[4.0,10.0,18.0,36.0]; % streamwise location 
-%xProf=[5.42,10.97,19.31]; % streamwise location 
+%xProf=[4.0,10.0,19.0,32.0]; % streamwise location 
+xProf=[5.42,10.97,19.31]; % streamwise location 
 
 % set the case base name for use in all the other file paths
 caseNameWinds = "PowerLawBLFlow_long";
+
 %caseNamePlume = "ContRelease_ElevatedReflect";
-%caseNamePlume = "ContRelease_ElevatedNoReflect";
-caseNamePlume = "ContRelease_NearSurfaceNoReflect";
-%caseNamePlume = "ContRelease_NearSurfaceNoReflect";
+caseNamePlume = "ContRelease_ElevatedNoReflect";
+
 %caseNamePlume = "ContRelease_xDir";
 
 data=struct();

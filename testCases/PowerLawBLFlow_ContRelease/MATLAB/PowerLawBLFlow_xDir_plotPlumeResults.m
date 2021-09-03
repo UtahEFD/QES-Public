@@ -21,7 +21,7 @@ set(hfig,'defaulttextinterpreter','latex','DefaultAxesFontSize',fsize)
 
 for k=1:nProf
     axes(haxes(k))
-    plot(d2plotLat.QPlume.yoH,d2plotLat.QPlume.cStar(:,k),'s','LineWidth',2)
+    plot(d2plotLat.QPlume.yoH,d2plotLat.QPlume.cStar(:,k),'s:','LineWidth',2)
     hold all
     plot(d2plotLat.GModel.yoH,d2plotLat.GModel.cStar(:,k),'-','LineWidth',2)
     
@@ -32,7 +32,7 @@ for k=1:nProf
     
     %tmpstr=sprintf('(%s) $x/H=$%.2f',cStr(k),d2plotLat.xoH(k));
     tmpstr=sprintf('(%s)',cStr(k));
-    htext=text(0.05,0.92,tmpstr,'Units','normalized');
+    htext=text(0.95,0.92,tmpstr,'Units','normalized','HorizontalAlignment','right');
     set(htext,'interpreter','latex','FontSize',fsize,'BackgroundColor','w');
 end
 %set(haxes(2:nProf),'YtickLabel',[])
@@ -40,7 +40,7 @@ axes(haxes(1));ylabel('$C^*$')
 
 for k=1:nProf
     axes(haxes(k+nProf))
-    plot(d2plotVert.QPlume.cStar(:,k),d2plotVert.QPlume.zoH,'s','LineWidth',2)
+    plot(d2plotVert.QPlume.cStar(:,k),d2plotVert.QPlume.zoH,'s:','LineWidth',2)
     hold all
     plot(d2plotVert.GModel.cStar(:,k),d2plotVert.GModel.zoH,'-','LineWidth',2)
    
@@ -50,25 +50,27 @@ for k=1:nProf
     xlabel('$C^*$')
 
     tmpstr=sprintf('(%s) $x/H=$%.2f',cStr(k+nProf),d2plotLat.xoH(k));
-    htext=text(0.05,0.92,tmpstr,'Units','normalized');
+    htext=text(0.95,0.92,tmpstr,'Units','normalized','HorizontalAlignment','right');
     set(htext,'interpreter','latex','FontSize',fsize,'BackgroundColor','w');
 end
 %set(haxes(nProf+2:2*nProf),'YtickLabel',[])
 axes(haxes(1+nProf));ylabel('$z/H$')
 
-max=0.5;
-for k=1:nProf
-    haxes(k).YLim(2)=max*2^(-k+1);
-    haxes(k+nProf).XLim(2)=max*2^(-k+1);
-end
-
+%maxV=0.5;
+% maxV=1.0;
 % for k=1:nProf
-%     m1=haxes(k).YLim(2);
-%     m2=haxes(k+nProf).XLim(2);
-%     m3=max(m1,m2);
-%     haxes(k).YLim(2)=m3;
-%     haxes(k+nProf).XLim(2)=m3;
+%     haxes(k).YLim(2)=maxV*2^(-k+1);
+%     haxes(k+nProf).XLim(2)=maxV*2^(-k+1);
+%     haxes(k+nProf).XTick=haxes(k).YTick;
 % end
+
+for k=1:nProf
+    m1=haxes(k).YLim(2);
+    m2=haxes(k+nProf).XLim(2);
+    m3=max(m1,m2);
+    haxes(k).YLim(2)=m3;
+    haxes(k+nProf).XLim(2)=m3;
+end
 
 
 currentPlotName=sprintf('plotOutput/%s_%s_ModelComp',caseNameWinds,caseNamePlume);
