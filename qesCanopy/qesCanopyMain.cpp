@@ -153,15 +153,19 @@ int main(int argc, char *argv[])
 
     for (int k = 0; k < 1; ++k) {
       // set u0,v0 to current solution
-      //WGD->u0 = WGD->u;
-      //WGD->v0 = WGD->v;
-      //WGD->w0 = WGD->w;
-
+      if (k>0){
+        WGD->u0 = WGD->u;
+        WGD->v0 = WGD->v;
+        WGD->w0 = WGD->w;
+      }
+      std::cout << "iteration " << k << "\n";
       // Apply parametrizations
       WGD->applyParametrizations(WID);
 
       // Run WINDS simulation code
       solver->solve(WID, WGD, !arguments.solveWind);
+      int icell_face_out = 114 + 75*WGD->nx + 102*WGD->nx*WGD->ny; 
+      std::cout << "After solving, at ref node: U = " << WGD->u[icell_face_out] << " V = " << WGD->v[icell_face_out] << "\n";
       std::cout << "Solver done!\n";
     }
 

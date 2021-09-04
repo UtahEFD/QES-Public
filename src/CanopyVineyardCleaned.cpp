@@ -136,7 +136,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData* WGD, int building_id)
     std::vector<int> u0_mod_id, v0_mod_id;
     //std::cout << "checkpoint 1 \n";
     // Which aerodynamic porosity model to use
-    if (thinFence == 1) {
+    if (thinFence = 1) {
         a_obf = beta;
     } else{
         a_obf = pow(beta,0.4);
@@ -242,33 +242,26 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData* WGD, int building_id)
     float l_e = L_c * log((M0_h/uustar)*(H/L_c));
     float N_e_float = ceil(l_e/rowSpacing);
     int N_e = (int)N_e_float;
-    //N_e = 1;
+    N_e = 4;
     
     std::cout << "l_e = " << l_e << ", N_e = " << N_e << "\n";
     // Spread rate calculations
     float udelt = (1-a_obf);
-    //float udelt = (1-pow(a_obf,N_e+1));
     float uave = (1+a_obf)/2;
-    //float uave = (1+pow(a_obf,N_e+1))/2;
 
     float spreadclassicmix = 0.14*udelt/uave;
-    
     float spreadupstream_top = 2*stdw/M0_h;
-    //float spreadupstream_top = 2*stdw/(M0_h*pow(a_obf,N_e+1));
     float spreadupstream_bot = 2*stdw/M0_uh;
-    //float spreadupstream_bot = 2*stdw/(M0_uh*pow(a_obf,N_e+1));
-   
-    std::cout << "a_obf = " << a_obf << " spreadclassicmix = " << spreadclassicmix << " spreadupstream_top = " << spreadupstream_top << " \n";
+    
     // Avoid divide-by-zero for the no-understory case (where M0_uh will be 0)
     if (abs(M0_uh) < 0.000001){
         spreadupstream_bot = spreadupstream_top;
     }
-    std::cout << " M0_h = " << M0_h << " spreadupstream_top = " << spreadupstream_top << "\n";
     std::cout << " M0_uh = " << M0_uh << " spreadupstream_bot = " << spreadupstream_bot << "\n";
     
     float spreadrate_top = sqrt(pow(spreadclassicmix,2) + pow(spreadupstream_top,2));
     float spreadrate_bot = sqrt(pow(spreadclassicmix,2) + pow(spreadupstream_bot,2));
-    std::cout << "spreadrate_top = " << spreadrate_top << "spreadrate_bot = " << spreadrate_bot << "\n";
+
     // Shear zone origin (for now, keep it at H, but later parameterize its descent)
     float szo_top = H;
     float szo_bot = understory_height;
@@ -281,7 +274,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData* WGD, int building_id)
     float x_ud; // horizontal distance in the UD zone. Measured orthogonally from the "upwindest" side of the vine
 
     // V_c parameterization parameters
-    float ustar_v_c, psi, psiH, dpsiH, ex, exH,  dexH, vH_c, a_v, vref_c, zref, exRef, dexRef, psiRef, dpsiRef;
+    float ustar_v_c, psi, psiH, dpsiH, ex, exH,  dexH, vH_c, a_v, vref_c, zref;
     int icell_face_ref, zref_k;
     
     // WGD->terrain[i+j*(WGD->nx-1)] appears to be height (in meters) of the terrain (may be cell-centered because it's always called with nx-1 rather than nx)
@@ -299,12 +292,7 @@ float szt_top, szt_bot; // shear zone thickness, used in calculating fac
 int k_mid; // mid-canopy k-node
 float a_exp; // a blending constant that smooths the transition from wake to upwind flow
 float szt_uw, szt_local; // shear zone thicknesses
-
-
-bool growth = 1;
-float a_uwv[N_e+1]; // the attenuation due to one row (to be raised to N_e, where N_e is number of rows in entry region)
-float a_uw = 1;
-
+float a_uw[N_e+1]; // the attenuation due to one row (to be raised to N_e, where N_e is number of rows in entry region)
 float a_local; // the attenuation due to the closest upwind row only 
 float u_c0, v_c0; // u0 and v0 rotated into row-aligned coordinates
 float u_c, v_c; // altered (parameterized) u and v, in row-aligned coordinates
@@ -318,7 +306,7 @@ int UD_zone_flag = 1;
         for (auto i=0; i<nx_canopy; i++) {
             icell_2d = i+j*nx_canopy;
  
-            
+
             // CALCULATE VARIOUS QUANTITIES USED IN THE PARAMETERIZATIONS
 
             // base of the canopy
@@ -329,14 +317,13 @@ int UD_zone_flag = 1;
 
             float Rx_o [2] = {polygonVertices[idS].x_poly, polygonVertices[idS].x_poly+rd[0]}; // x-components of upwind-est row vector
             float Ry_o [2] = {polygonVertices[idS].y_poly, polygonVertices[idS].y_poly+rd[1]}; // y-components "   "   " 
-           
-            // Row-orthogonal distance between current point and the upwind-est row
+            
             dv_c = abs(P2L(cxy,Rx_o,Ry_o));
 
             // calculate number of rows upwind of this point, N (not including nearest upwind row)
             N = floor(dv_c/rowSpacing);
             
-            // calculate "local row-orthogonal distance" from nearest upwind row
+            // calculate "local row-orthogonal distance" from upwind-est row
             ld = dv_c - N*rowSpacing;
 
             // calculate "local streamwise distance" from nearest row
@@ -352,10 +339,7 @@ int UD_zone_flag = 1;
                 k_mid = k;
             }
 
-            // Find shear zone origin based on Greg Torkelson's slopes from PIV (S1H_omega1, Table 2)
-            szo_top = std::max(-0.43*ld+H,0.);
-            float szo_top_uw = std::max(-0.43*(rowSpacing-rowWidth)+H,0.); // origin right before the next row, e.g. at a distance of "rowSpacing" orthogonally from nearest upwind row 
-            
+
             // Find matching factor that matches upper/lower tanh profiles at k_mid
             // (this can be moved inside the if-statement under BEGIN PARAMETERIZATIONS so it doesn't run outside of canopy i-j spots)
             float z_mid = (H - understory_height)/2 + understory_height;
@@ -387,7 +371,7 @@ int UD_zone_flag = 1;
             a_uw_top[0] = 1;
             for (int n = 1; n<N_e+1; n++){
                 szt_uw_top = spreadrate_top*(d_dw*n) + 0.00001;
-                a_uw_top[n] = (a_exp*(0.5*(1-a_obf)*tanh(1.5*(z_mid - szo_top_uw)/szt_uw_top) + 0.5*(1+a_obf)) + (1-a_exp));
+                a_uw_top[n] = (a_exp*(0.5*(1-a_obf)*tanh(1.5*(z_mid - szo_top)/szt_uw_top) + 0.5*(1+a_obf)) + (1-a_exp));
             }
             //szt_top = spreadrate_top*d_dw_local + 0.00001; // add a small number to avoid dividing by zero
             //szt_bot = spreadrate_bot*d_dw_local + 0.00001;
@@ -437,40 +421,11 @@ int UD_zone_flag = 1;
                 icell_face_ref = (i-1+i_start) + (j-1+j_start)*WGD->nx + zref_k*WGD->nx*WGD->ny;
                 //std::cout << "icell_face_ref = " << icell_face_ref << "zref_k = " << zref_k << "\n";
                 //std::cout << "z_b = " << z_b << "\n";
-               
-                // Calculate the stability correction quantities that aren't height dependent (for vo parameterization)
-                if (rL >= 0.){
-                    psiH = -5.0*(H-d_v)*rL;
-                    dpsiH = -5.0*rL;
-
-                    psiRef = -5.0*(zref - d_v)*rL;
-                    dpsiRef = -5.0*rL;
-                    
-                        
-                }
-                else{
-                    exH = pow(1.-15.*(H-d_v)*rL,.25);
-                    psiH = log((0.5*(1.+pow(exH,2)))*pow(0.5*(1.+exH),2)) - 2.*atan(exH) + M_PI*0.5;
- 
-                    dexH = -15./4.*rL*pow(1.-15.*(H-d_v)*rL,-0.75);
-                    //dpsiH = (exH*dexH*(1.+exH)*0.5 + 0.5*(1.+pow(exH,2))*dexH)/(0.25*(1.+pow(exH,2))*(1.+exH)) - (dexH/(1.+pow(exH,2))); // this is old, from the Fortran, possibly contains errors (7/15/21)
-                    dpsiH = dexH*(( (exH*(0.5*(1+exH)) + 0.5*(1+pow(exH,2)) ) / ( 0.5*(1+pow(exH,2)) * (0.5*(1+exH))   ) ) - 2./(1.+pow(exH,2.)));
-                    
-                    exRef = pow(1.-15.*(zref-d_v)*rL,.25);
-                    psiRef = log((0.5*(1.+pow(exRef,2)))*pow(0.5*(1.+exRef),2)) - 2.*atan(exRef) + M_PI*0.5;
- 
-                    dexRef = -15./4.*rL*pow(1.-15.*(zref - d_v)*rL,-0.75);
-                    dpsiRef = dexRef*(( (exRef*(0.5*(1+exRef)) + 0.5*(1+pow(exRef,2)) ) / ( 0.5*(1+pow(exRef,2)) * (0.5*(1+exRef))   ) ) - 2./(1.+pow(exRef,2.)));
-                }
-                
-                //psiH = 0; // TEMPORARILY ADDED FOR DEBUGGING
-                //dpsiH = 0;
-
                 vref_c = sinA*WGD->u0[icell_face_ref] + cosA*WGD->v0[icell_face_ref]; // The sign of vref_c (the rotated reference velocity) is preserved (rather than abs() ) so that rotation of the final parameterized v0_c is correct. It determines the sign of ustar_v_c which determines sign of vH_c which determines sign of v_c 
                 //std::cout << "C2 \n";
-                ustar_v_c = WGD->vk*vref_c/(log((zref-d_v)/z0_site) - psiRef); // d_v (displacement height from Nate's data). This is the ustar_v_c that should cause the v profile to be vref_c at zref. it's zref-d_v and not just zref like in Pardyjak 2008 because the v profile that will eventually be prescribed in the canopy is displaced.  
-                vH_c = ustar_v_c/WGD->vk*(log((H-d_v)/z0_site) - psiH);
-                a_v = (H/abs(vH_c + 0.00001))*(abs(ustar_v_c)/WGD->vk)*(1/(H-d_v) - dpsiH); // abs() here because the attenuation coefficient should be always positive. add 0.00001 to avoid divide by zero
+                ustar_v_c = WGD->vk*vref_c/log((zref - d_v)/z0_site); // d_v (displacement height from Nate's data)  
+                vH_c = ustar_v_c/WGD->vk*(log((H-d_v)/z0_site)) - psiH;
+                a_v = (H/abs(vH_c + 0.00001))*(abs(ustar_v_c)/(WGD->vk*(H-d_v)) - dpsiH); // abs() here because the attenuation coefficient should be always positive. add 0.00001 to avoid divide by zero
                 
                 if (i + i_start == i_building_cent && j + j_start == j_building_cent){
                     std::cout << "vref_c = " << vref_c << "\n";
@@ -481,7 +436,6 @@ int UD_zone_flag = 1;
                     std::cout << "rL = " << rL << "\n";
                 }
                 
-                // MAIN Z-LOOP
                 for (auto k=canopy_bot_index[icell_2d]; k<WGD->nz; k++){
                     z_rel = WGD->z_face[k-1]-z_b; 
                     int icell_face = (i-1+i_start) + (j-1+j_start)*WGD->nx + k*WGD->nx*WGD->ny;
@@ -492,8 +446,6 @@ int UD_zone_flag = 1;
                     u_c0 = cosA*WGD->u0[icell_face] - sinA*WGD->v0[icell_face];
                     v_c0 = sinA*WGD->u0[icell_face] + cosA*WGD->v0[icell_face];
 
-
-
                     // Initialize u_c and v_c so that in the understory, where no parameterization takes place, u_c and v_c have the correct (i.e. unaltered) value
                     u_c = u_c0;
                     v_c = v_c0;
@@ -503,76 +455,51 @@ int UD_zone_flag = 1;
                         //u_c0 = u_c0 + (a_obf*u_c0 - 2*u_c0)*(1-exp(br*(H_ud-z_rel)));
                     }
 
+                    if (i+i_start == 78 && j+j_start == 60 && k < 40){
+                        //std::cout << "k = " << k <<  "     u_c0 = " << u_c0 << " before params \n"; 
+                    }
 
-                    if (growth != 1){
-                    if (k <= k_mid){ // if i'm below mid-canopy, use bottom shear layer quantities
+/*                    if (k <= k_mid){ // if i'm below mid-canopy, use bottom shear layer quantities
                         szt_uw = spreadrate_bot*d_dw + 0.00001; // d_dw = streamwise downwind distance
                         szt_local = spreadrate_bot*d_dw_local + 0.00001;
-                        a_uw = 1*(a_exp*(0.5*(1-a_obf)*tanh(1.5*(szo_bot - z_rel)/szt_uw) + 0.5*(1+a_obf)) + (1-a_exp)); // should be a "fac" where the 1* is
-                        a_local = 1*(a_exp*(0.5*(1-a_obf)*tanh(1.5*(szo_bot - z_rel)/szt_local) + 0.5*(1+a_obf)) + (1-a_exp)); // should be a "fac" where the 1* is
+                        a_uw = fac*(a_exp*(0.5*(1-a_obf)*tanh(1.5*(szo_bot - z_rel)/szt_uw) + 0.5*(1+a_obf)) + (1-a_exp));
+                        a_local = fac*(a_exp*(0.5*(1-a_obf)*tanh(1.5*(szo_bot - z_rel)/szt_local) + 0.5*(1+a_obf)) + (1-a_exp));
                     }
                     else{
                         szt_uw = spreadrate_top*d_dw + 0.00001;
                         szt_local = spreadrate_top*d_dw_local + 0.00001;
-                        a_uw = (a_exp*(0.5*(1-a_obf)*tanh(1.5*(z_rel - szo_top_uw)/szt_uw) + 0.5*(1+a_obf)) + (1-a_exp));
+                        a_uw = (a_exp*(0.5*(1-a_obf)*tanh(1.5*(z_rel - szo_top)/szt_uw) + 0.5*(1+a_obf)) + (1-a_exp));
                         a_local = (a_exp*(0.5*(1-a_obf)*tanh(1.5*(z_rel - szo_top)/szt_local) + 0.5*(1+a_obf)) + (1-a_exp));
                     }
-                  /* 
-                    if (i+i_start == 114 && j+j_start == 75 && k<50){
-                        std::cout << " i,j,k = " << i << ", " << j << ", " << k << " " << "before param at query, u_c = " << u_c0 << " v_c = " << v_c0 << " a_uw = " << a_uw << " a_local = " << a_local << "\n";
-                    }
-
-                    if (i+i_start == 50 && j+j_start == 75 && k<50){
-                        std::cout << " i,j,k = " << i << ", " << j << ", " << k << " " << "before param in entry (x=10m), u_c = " << u_c0 << " v_c = " << v_c0 << " a_uw = " << a_uw << " a_local = " << a_local << "\n";
-                    }
-                  */ 
-
-                    }
-                    else{
+*/
 
                     if (k <= k_mid){ // if i'm below mid-canopy, use bottom shear layer quantities
                         if (N <= N_e){
-                            szt_local = spreadrate_bot*(d_dw*N + d_dw_local) + 0.00001; // temp comment 8.1.21
-                            //szt_local = spreadrate_bot*d_dw_local + 0.00001; // temp insert, 8.1.21 
+                            szt_local = spreadrate_bot*(d_dw*N + d_dw_local) + 0.00001;
                         }
                         else{
-                            szt_local = spreadrate_bot*(d_dw*N_e + d_dw_local) + 0.00001; // temp comment 8.1.21
-                            //szt_local = spreadrate_bot*d_dw_local + 0.00001; // temp insert, 8.1.21
+                            szt_local = spreadrate_bot*(d_dw*N_e + d_dw_local) + 0.00001;
                         }
                         a_local = 1*(a_exp*(0.5*(1-a_obf)*tanh(1.5*(szo_bot - z_rel)/szt_local) + 0.5*(1+a_obf)) + (1-a_exp)); // there should be a "fac" where the 1* is (fac isn't working right now)
-                        a_uwv[0] = 1;
+                        a_uw[0] = 1;
                         for (int n = 1; n<N_e+1; n++){
-                            szt_uw = spreadrate_bot*(d_dw*n) + 0.00001; // temp comment, 8.1.21
-                            //szt_uw = spreadrate_bot*d_dw + 0.00001; // temp insert, 8.1.21
-                            a_uwv[n] = 1*(a_exp*(0.5*(1-a_obf)*tanh(1.5*(szo_bot - z_rel)/szt_uw) + 0.5*(1+a_obf)) + (1-a_exp)); // there should be a "fac" where the 1* is (fac isn't working right now)
+                            szt_uw = spreadrate_bot*(d_dw*n) + 0.00001;
+                            a_uw[n] = 1*(a_exp*(0.5*(1-a_obf)*tanh(1.5*(szo_bot - z_rel)/szt_uw) + 0.5*(1+a_obf)) + (1-a_exp)); // there should be a "fac" where the 1* is (fac isn't working right now)
                         }
                     }
-                    else{ // if I'm above mid-canopy
+                    else{
                         if (N <= N_e){
-                            szt_local = spreadrate_top*(d_dw*N + d_dw_local) + 0.00001; // temp comment, 8.1.21
-                            //szt_local = spreadrate_top*d_dw_local + 0.00001; // temp insert, 8.1.21
+                            szt_local = spreadrate_top*(d_dw*N + d_dw_local) + 0.00001;
                         }
                         else{
-                            szt_local = spreadrate_top*(d_dw*N_e + d_dw_local) + 0.00001; // temp comment, 8.1.21
-                            //szt_local = spreadrate_top*d_dw_local + 0.00001; // temp insert, 8.1.21
+                            szt_local = spreadrate_top*(d_dw*N_e + d_dw_local) + 0.00001;
                         }
                         a_local = (a_exp*(0.5*(1-a_obf)*tanh(1.5*(z_rel - szo_top)/szt_local) + 0.5*(1+a_obf)) + (1-a_exp));
-                        a_uwv[0] = 1;
+                        a_uw[0] = 1;
                         for (int n = 1; n<N_e+1; n++){
-                            szt_uw = spreadrate_top*(d_dw*n) + 0.00001; // temp comment, 8.1.21
-                            //szt_uw = spreadrate_top*d_dw + 0.00001; // temp insert, 8.1.21 
-                            a_uwv[n] = (a_exp*(0.5*(1-a_obf)*tanh(1.5*(z_rel - szo_top_uw)/szt_uw) + 0.5*(1+a_obf)) + (1-a_exp));
+                            szt_uw = spreadrate_top*(d_dw*n) + 0.00001;
+                            a_uw[n] = (a_exp*(0.5*(1-a_obf)*tanh(1.5*(z_rel - szo_top)/szt_uw) + 0.5*(1+a_obf)) + (1-a_exp));
                         }
-                    }
-/*
-                    if (i+i_start == 114 && j+j_start == 75 && k<50){
-                        std::cout << " i,j,k = " << i << ", " << j << ", " << k << " " << "before param at query, u_c = " << u_c0 << " v_c = " << v_c0 << " a_uwv[0] = " << a_uwv[0] << " a_uwv[1] = " << a_uwv[1] << " a_uwv[2] = " << a_uwv[2] << " a_local = " << a_local << "\n";
-                    }
-
-                    if (i+i_start == 50 && j+j_start == 75 && k<50){
-                        std::cout << " i,j,k = " << i << ", " << j << ", " << k << " " << "before param in entry (x=10m), u_c = " << u_c0 << " v_c = " << v_c0 << " a_uwv[0] = " << a_uwv[0] << " a_uwv[1] = " << a_uwv[1] << " a_uwv[2] = " << a_uwv[2] << " a_local = " << a_local << "\n";
-                    }
-*/
                     }
                    
                    if (abs(u_c) > 10.){
@@ -581,37 +508,18 @@ int UD_zone_flag = 1;
                     // APPLY BLEED FLOW PARAMETERIZATION INSIDE THE ACTUAL VEGETATION
                     if (BF_flag == 1 && ld < rowWidth) { // if my x-y position indicates i'm on a vine
                         if ((z_rel >= understory_height) && (z_rel <= H)) { // if my z position indicates i'm inside the actual vegetation
-                            //int icell_3d = i + j*nx_canopy + k*nx_canopy*ny_canopy;
                        
                             
                             // Am I in entry region or /quilibrated region?
                             if (N <= N_e) { // i'm in entry region
                         
                                 WGD->icellflag[icell_cent] = 28;
-                                // Commented 7.7.21 while i try things
-                                
-                                if (growth != 1){
-                                u_c = pow(a_uw,N)*a_obf*u_c0;
-                                }
-                                else{
                                
                                 u_c = u_c0*a_obf;
                                 for (int n = 0; n<=N; n++){
-                                    u_c *= a_uwv[n];
+                                    u_c *= a_uw[n];
                                 }
-                                }
-                               // v_c = v_c0;
-                               //std::cout << "bleed flow is being applied, entry. icellflag is: " << WGD->icellflag[icell_cent] << "\n";
-                               if (abs(u_c) > 10.){
-                                   std::cout << "u_c is big (BF, entry): " << u_c << " at i= " << i+i_start << " j= " << j+j_start << " k= " << k << "\n";
-                               }
 
-                               if (isnan(u_c) || abs(u_c)>10){
-                                   std::cout << "u_c is NaN (BF, entry): " << u_c << " at i= " << i+i_start << " j= " << j+j_start << " k= " << k << "\n";
-                               }
-                               if (isnan(v_c) || abs(v_c)>10){
-                                   std::cout << "v_c is NaN (BF, entry): " << v_c << " at i= " << i+i_start << " j= " << j+j_start << " k= " << k << "\n";
-                               }
           
                            
                             }
@@ -619,27 +527,16 @@ int UD_zone_flag = 1;
                             else { // if i'm in equilibrated region
 
                                 WGD->icellflag[icell_cent] = 29;
-                               // Temporarily commented as i try things 7.7.21
-                                if (growth){
-                                u_c = pow(a_uw,N_e)*a_obf*u_c0;
-                                }
-                                else{
+                               
                                 u_c = u_c0 * a_obf;
                                 for (int n = 0; n <= N_e; n++){
-                                    u_c *= a_uwv[n];
+                                    u_c *= a_uw[n];
                                 }
-                                }
-                               if (isnan(u_c) || abs(u_c)>10){
-                                   std::cout << "u_c is NaN (BF, eq.): " << u_c << " at i= " << i+i_start << " j= " << j+j_start << " k= " << k << "\n";
-                               }
-                               if (isnan(v_c) || abs(v_c)>10){
-                                   std::cout << "v_c is NaN (BF, eq.): " << v_c << " at i= " << i+i_start << " j= " << j+j_start << " k= " << k << "\n";
-                               }
+                               
 
                             }
                         } // end bleed flow z if 
                     } // end bleed flow x-y if
-
 
                     // APPLY WAKE PARAMETERIZATION
                     //if (ld > rowWidth){ // if i'm in the wake
@@ -650,81 +547,21 @@ int UD_zone_flag = 1;
                         // Am I in entry region or equilibrated region?
                         if (N <= N_e) { // i'm in entry region
                             
-                            // Commented 7.7.21 as i try allowing the shear thickness to grow in entry region
-                            if (growth != 1){
-                            u_c = u_c0 * pow(a_uw,N)*a_local;
-                           
-                            /*
-                            if (i+i_start == 50 && j+j_start == 75 && k<50){
-                                std::cout << " i,j,k = " << i << ", " << j << ", " << k << " " << "after param in entry (x=10m), u_c = " << u_c << " v_c = " << v_c << " a_uw = " << a_uw << " a_local = " << a_local << "\n";
-                            }
-                            */
-                            if (i+i_start == 50 && j+j_start == 75 && k<50){
-                            //    std::cout << u_c << "\n";
-                            }
-                            
-                            }
-                            else{
+
                             u_c = u_c0*a_local;
                             for (int n = 0; n<=N; n++){
-                                u_c *= a_uwv[n];
+                                u_c *= a_uw[n];
                             }
                             
-                            if (i+i_start == 50 && j+j_start == 75 && k<50){
-                                std::cout << " i,j,k = " << i << ", " << j << ", " << k << " " << "after param in entry (x=10m), u_c = " << u_c << " v_c = " << v_c << " a_uwv[0] = " << a_uwv[0] << " a_uwv[1] = " << a_uwv[1] << " a_uwv[2] = " << a_uwv[2] << " a_local = " << a_local << "\n";
-                            }
-                            
-                            if (i+i_start == 50 && j+j_start == 75 && k<50){
-                            //    std::cout << u_c << "\n";
-                            }
-                            
-                            }
-                            
-                            // v_c = v_c0;
                         }
                         
                         else { // if i'm in equilibrated region
 
-                            // Commented 7.7.21 as i try allowing the shear thickness to grow in entry region
-                            if(growth != 1){
-                            u_c = u_c0 * pow(a_uw,N_e) * a_local;
-                           /* 
-                            if (i+i_start == 114 && j+j_start == 75 && k<50){
-                                std::cout << " i,j,k = " << i << ", " << j << ", " << k << " " << "after param at query, u_c = " << u_c << " v_c = " << v_c << " a_uw = " << a_uw << " a_local = " << a_local << "\n";
-                            }
-                            */
-                            if (i+i_start == 114 && j+j_start == 75 && k<50){
-                            //   std::cout << u_c << "\n";
-                            }
                             
-                            }
-                            else{
                             u_c = u_c0 * a_local;
                             for (int n = 0; n <= N_e; n++){
-                                u_c *= a_uwv[n];
+                                u_c *= a_uw[n];
                             }
-                            
-                            
-                            // print stuff
-                           /* 
-                            if (i+i_start == 114 && j+j_start == 75 && k<50){
-                                std::cout << " i,j,k = " << i << ", " << j << ", " << k << " " << "after param at query, u_c = " << u_c << " v_c = " << v_c << " a_uwv[0] = " << a_uwv[0] << " a_uwv[1] = " << a_uwv[1] << " a_uwv[2] = " << a_uwv[2] << " a_local = " << a_local << "\n";
-                            }
-                            */
-                            if (i+i_start == 114 && j+j_start == 75 && k<50){
-                            //    std::cout << u_c << "\n";
-                            }
-
-                            }
-                            
-                            
-                            // v_c = v_c0;
-                           if (isnan(v_c) || abs(v_c)>10){
-                               std::cout << "v_c is NaN (wake, eq region): " << v_c << " at i= " << i+i_start << " j= " << j+j_start << " k= " << k << "\n";
-                           }
-                           if (i+i_start == 81 && j+j_start == 23) {
-                                std::cout << " ld = " << ld << " dv_c = " << dv_c << " N = " << N << " d_dw_local = " << d_dw_local <<  "\n";
-                           }
                         }
 
                         // APPLY UD ZONE PARAMETERIZATION
@@ -733,43 +570,17 @@ int UD_zone_flag = 1;
                             WGD->icellflag[icell_cent] = 31;
 
                             if (N <= N_e){
-                                //if (i+i_start == 156 && j+j_start == 60 && k < 100){
-                                //    std::cout << "k = " << k <<  "     u_c = " << u_c << "       gz = " <<  (a_obf*pow(a_uw,N)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel))) << "     br = " << br << "     x_ud = " << x_ud << "     1st chunk = " <<  a_obf*pow(a_uw,N)*u_c0  <<  "\n";
-                                //}
                        
-                                // "Actual" parameterization (commented to try others, 7.7.21)
-                                //u_c = u_c + (a_obf*pow(a_uw,N+3)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel)));
-                                //u_c = u_c + (-2*u_c)*(1-exp(br*(z_ud-z_rel)));
-                                
                                 // Test parameterization (7.7.21)
                                 u_c = -u_c;
 
-                               if (isnan(u_c) || abs(u_c)>10){
-                                   std::cout << "u_c is NaN (UD, entry region): " << u_c << " at i= " << i+i_start << " j= " << j+j_start << " k= " << k << "\n";
-                               }
-                               if (isnan(v_c) || abs(v_c)>10){
-                                   std::cout << "v_c is NaN (UD, entry region): " << v_c << " at i= " << i+i_start << " j= " << j+j_start << " k= " << k << "\n";
-                               }
                                 
                             }
                             else{
-                                //if (i+i_start == 156 && j+j_start == 60 && k < 100){
-                                //    std::cout << "k = " << k <<  "     u_c = " << u_c << "     gz = " <<  (a_obf*pow(a_uw,N_e)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel))) << "     br = " << br << "     x_ud = " << x_ud << "     z_ud = " << z_ud << "      1st chunk = " <<  a_obf*pow(a_uw,N_e)*u_c0   << "\n";
-                                //}
-                                
-                                // "Actual" parameterization (commented to try others, 7.7.21)
-                                //u_c = u_c + (a_obf*pow(a_uw,N_e+3)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel)));
-                                //u_c = u_c + (-2*u_c)*(1-exp(br*(z_ud-z_rel)));
                                 
                                 // Test parameterization (7.7.21)
                                 u_c = -u_c;
                                
-                                if (isnan(u_c) || abs(u_c)>10){
-                                   std::cout << "u_c is NaN (UD, eq. region): " << u_c << " at i= " << i+i_start << " j= " << j+j_start << " k= " << k << "\n";
-                               }
-                               if (isnan(v_c) || abs(v_c)>10){
-                                   std::cout << "v_c is NaN (UD, eq. region): " << v_c << " at i= " << i+i_start << " j= " << j+j_start << " k= " << k << "\n";
-                               }
                             }
             
                             // v_c = v_c0;
@@ -783,25 +594,31 @@ int UD_zone_flag = 1;
                            std::cout << "v_c is NaN (3): " << v_c << " at i= " << i+i_start << " j= " << j+j_start << " k= " << k << "\n";
                        }
                         // APPLY V_C PARAMETERIZATION
+                       if (rL >= 0.){
+                           psi = -5.0*z_rel * rL; 
+                           psiH = -5.0*H*rL;
+                           dpsiH = -5.0*rL;
+                       }
+                       else{
+                           ex = pow((1.-15.*z_rel*rL),0.25);
+                           psi = log((0.5*(1.+pow(ex,2)))*pow(0.5*(1.+ex),2)) - 2.*atan(ex) + M_PI*0.5;
+                           exH = pow(1.-15.*H*rL,.25);
+                           psiH = log((0.5*(1.+pow(exH,2)))*pow(0.5*(1.+exH),2)) - 2.*atan(exH) + M_PI*0.5;
+
+                           dexH = -15./4.*rL*pow(1.-15.*H*rL,-0.75);
+                           dpsiH = (exH*dexH*(1.+exH)*0.5 + 0.5*(1.+pow(exH,2))*dexH)/(0.25*(1.+pow(exH,2))*(1.+exH)) - (dexH/(1.+pow(exH,2)));
+
+                       }
 
                        if (z_rel <= H){
                            v_c = vH_c*exp(a_v*(z_rel/H-1));
                        }
                        else{
-                           // Calculate height-dependent stability correction quantities
-                           if (rL >= 0.){
-                               psi = -5.0*(z_rel-d_v) * rL; 
-                           }
-                           else{
-                               ex = pow((1.-15.*(z_rel - d_v)*rL),0.25);
-                               psi = log((0.5*(1.+pow(ex,2)))*pow(0.5*(1.+ex),2)) - 2.*atan(ex) + M_PI*0.5;
-                           }
-                           //psi = 0; // TEMPORARILY ADDED FOR DEBUGGING
-                           v_c = ustar_v_c/WGD->vk*(log((z_rel-d_v)/z0_site) - psi);
+                           v_c = ustar_v_c/WGD->vk*(log((z_rel-d_v)/z0_site)) - psi;
                        }
 
                        if (abs(v_c) >= abs(v_c0)){ // if the parameterization gives a higher abs value for v than what's already there (v_c0)...
-                           //v_c = v_c0; // ...then just take v_c0
+                           v_c = v_c0; // ...then just take v_c0
                        }
 
                        if (isnan(v_c) || abs(v_c)>10){
@@ -830,12 +647,7 @@ int UD_zone_flag = 1;
                    if (isnan(u_c) || abs(u_c)>10){
                        std::cout << "u_c is NaN (at end): " << u_c << " at i= " << i+i_start << " j= " << j+j_start << " k= " << k << "\n";
                    }
-          
-                   if (i+i_start == 114 && j+j_start == 75 && k == 102){
-                       std::cout << "After params, U = " << cosA*u_c + sinA*v_c << " V = " << -sinA*u_c + cosA*v_c << " arctan(U/V) = " << 180./M_PI * atan( (cosA*u_c + sinA*v_c ) / (-sinA*u_c + cosA*v_c ) ) << "\n";
-                   }
-                   
-                   // Rotate back into QES-grid coordinates
+                    // Rotate back into QES-grid coordinates
                     u0_mod_id.push_back(icell_face);
                     u0_modified.push_back(cosA*u_c + sinA*v_c);
                     v0_mod_id.push_back(icell_face);

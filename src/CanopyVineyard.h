@@ -4,7 +4,7 @@
 #include "util/ParseInterface.h"
 #include "Canopy.h"
 
-class CanopyVineyard : public Canopy
+class CanopyVineyard : public CanopyElement
 {
 public:
     
