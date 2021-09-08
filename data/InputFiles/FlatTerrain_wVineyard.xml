@@ -1,6 +1,6 @@
 <simulationParameters>
-  <domain>200 200 200 </domain>
-  <cellSize> 1.0 1.0 0.25 </cellSize> <!-- Meters-->
+  <domain>400 400 200 </domain>
+  <cellSize> 0.25 0.25 0.25 </cellSize> <!-- Meters-->
   <verticalStretching> 0 </verticalStretching>
   <totalTimeIncrements> 1 </totalTimeIncrements>
   <UTCConversion> 0 </UTCConversion>
@@ -24,7 +24,7 @@
 <metParams>
   <z0_domain_flag> 0 </z0_domain_flag>            <!-- Distribution of sueface roughness for domain (0-uniform, 1-custom -->
   <sensor>
-	<site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QES, 2=UTM, 3=Lat/Lon) -->
+	<site_coord_flag> 1 </site_coord_flag> 				<!-- Sensor site coordinate system (1=QUIC, 2=UTM, 3=Lat/Lon) -->
 	<site_xcoord> 1.0</site_xcoord>
 	<site_ycoord> 1.0</site_ycoord>		
 	<site_UTM_x> 2.0 </site_UTM_x> 								<!-- x components of site coordinate in UTM -->
@@ -36,28 +36,45 @@
 	  <reciprocal> 0 </reciprocal>
 	  <height> 10 </height>
 	  <speed> 5 </speed>
-	  <direction> 225 </direction> 
+	  <direction> 270 </direction> 
     </timeSeries>
   </sensor>
 </metParams>
-<turbParams>
+<localMixingParam>
   <method>0</method>
-</turbParams>
+</localMixingParam>
 <canopies>
   <num_canopies>1</num_canopies>
-  <Windbreak>
-    <opticalPorosity>0.1</opticalPorosity>
-    <height>4.0</height>
-    <understroyHeight>0.0</understroyHeight>
-    <xStart>80.0</xStart>
-    <yStart>60.0</yStart>
-    <length>80.0</length>
-    <width>1.0</width>
-    <canopyRotation>0.0</canopyRotation>
-  </Windbreak>
+  <Vineyard>
+    <opticalPorosity>0.2</opticalPorosity>
+    <height>2.0</height>
+    <understoryHeight>0.5</understoryHeight>
+    <rowSpacing>2.5</rowSpacing>
+    <rowWidth>0.5</rowWidth>
+    <rowAngle>0</rowAngle>
+    <corner1x> 40 </corner1x>
+    <corner1y> 40 </corner1y>
+    <corner2x> 80 </corner2x>
+    <corner2y> 40 </corner2y>
+    <corner3x> 80 </corner3x>
+    <corner3y> 80 </corner3y>
+    <corner4x> 40 </corner4x>
+    <corner4y> 80 </corner4y>
+    <thinFence> 0 </thinFence>
+    <upstreamSigmaW> 0.6 </upstreamSigmaW>
+    <upstreamUstar> 0.5 </upstreamUstar>
+    <displacementHeight> 1.42</displacementHeight>
+  </Vineyard>
 </canopies>
 <fileOptions>
   <outputFlag>1</outputFlag>
-  <outputFields>all</outputFields> 
+  <outputFields>u</outputFields> 
+  <outputFields>v</outputFields> 
+  <outputFields>w</outputFields>
+  <outputFields>icell</outputFields>  
+  <outputTURBInputFile>true</outputTURBInputFile>
+  <massConservedFlag> 0 </massConservedFlag>
+  <sensorVelocityFlag> 0 </sensorVelocityFlag>
+  <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
 </fileOptions>
 
