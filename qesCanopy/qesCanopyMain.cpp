@@ -52,16 +52,16 @@ int main(int argc, char *argv[])
   // ///////////////////////////////////
 
   // Parse the base XML QUIC file -- contains simulation parameters
-  WINDSInputData *WID = new WINDSInputData(arguments.quicFile);
+  WINDSInputData *WID = new WINDSInputData(arguments.qesFile);
   if (!WID) {
-    std::cerr << "[ERROR] QUIC Input file: " << arguments.quicFile << " not able to be read successfully." << std::endl;
+    std::cerr << "[ERROR] QES Input file: " << arguments.qesFile << " not able to be read successfully." << std::endl;
     exit(EXIT_FAILURE);
   }
 
   // Checking if
   if (arguments.compTurb && !WID->turbParams) {
     std::cerr << "[ERROR] Turbulence model is turned on without LocalMixingParam in QES Intput file "
-              << arguments.quicFile << std::endl;
+              << arguments.qesFile << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
   // Run the CUDA-WINDS Solver
   //
   // //////////////////////////////////////////
-  Solver *solver, *solverC = nullptr;
+  Solver *solver = nullptr;
   if (arguments.solveType == CPU_Type) {
     std::cout << "Run Serial Solver (CPU) ..." << std::endl;
     solver = new CPUSolver(WID, WGD);
@@ -121,22 +121,6 @@ int main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
 
-  //check for comparison
-  if (arguments.compareType) {
-    if (arguments.compareType == CPU_Type)
-      solverC = new CPUSolver(WID, WGD);
-    else if (arguments.compareType == DYNAMIC_P)
-      solverC = new DynamicParallelism(WID, WGD);
-    else if (arguments.compareType == Global_M)
-      solverC = new GlobalMemory(WID, WGD);
-    else if (arguments.compareType == Shared_M)
-      solverC = new SharedMemory(WID, WGD);
-    else {
-      std::cerr << "[ERROR] invalid comparison type\n";
-      exit(EXIT_FAILURE);
-    }
-  }
-
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     // print time progress (time stamp and percentage)
     WGD->printTimeProgress(index);
@@ -145,29 +129,30 @@ int main(int argc, char *argv[])
     WGD->resetICellFlag();
 
     // Create initial velocity field from the new sensors
-    WID->metParams->sensors[0]->inputWindProfile(WID, WGD, index, arguments.solveType);
+    WGD->applyWindProfile(WID, index, arguments.solveType);
+
+    // Apply parametrizations
+    WGD->applyParametrizations(WID);
 
     // Run WINDS simulation code
-    //solver->solve(WID, WGD, !arguments.solveWind);
-    //std::cout << "Solver done!\n";
+    solver->solve(WID, WGD, !arguments.solveWind);
+    std::cout << "Solver done!\n";
 
+    /* OBSOLETE since no param need this
     for (int k = 0; k < 1; ++k) {
       // set u0,v0 to current solution
-      if (k>0){
-        WGD->u0 = WGD->u;
-        WGD->v0 = WGD->v;
-        WGD->w0 = WGD->w;
-      }
-      std::cout << "iteration " << k << "\n";
+      WGD->u0 = WGD->u;
+      WGD->v0 = WGD->v;
+      WGD->w0 = WGD->w;
+
       // Apply parametrizations
       WGD->applyParametrizations(WID);
-
+      
       // Run WINDS simulation code
       solver->solve(WID, WGD, !arguments.solveWind);
-      int icell_face_out = 114 + 75*WGD->nx + 102*WGD->nx*WGD->ny; 
-      std::cout << "After solving, at ref node: U = " << WGD->u[icell_face_out] << " V = " << WGD->v[icell_face_out] << "\n";
       std::cout << "Solver done!\n";
     }
+    */
 
     // Run turbulence
     if (TGD != nullptr) {
