@@ -36,7 +36,7 @@
 	  <reciprocal> 0 </reciprocal>
 	  <height> 10 </height>
 	  <speed> 5 </speed>
-	  <direction> 270 </direction> 
+	  <direction> 225 </direction> 
     </timeSeries>
   </sensor>
 </metParams>

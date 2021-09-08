@@ -7,7 +7,7 @@
 #include "CanopyHomogeneous.h"
 #include "CanopyIsolatedTree.h"
 #include "CanopyWindbreak.h"
-
+#include "CanopyVineyard.h"
 #include "ESRIShapefile.h"
 
 #include "WINDSInputData.h"
@@ -39,6 +39,7 @@ public:
     parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyHomogeneous>("Homogeneous"));
     parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyIsolatedTree>("IsolatedTree"));
     parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyWindbreak>("Windbreak"));
+    parseMultiPolymorphs(false, canopies, Polymorph<Building, CanopyVineyard>("Vineyard"));
 
     // add other type of canopy here
 
