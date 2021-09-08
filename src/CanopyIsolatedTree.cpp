@@ -293,7 +293,7 @@ void CanopyIsolatedTree::canopyWake(WINDSGeneralData *WGD, int tree_id)
   int u_vegwake_flag(0), v_vegwake_flag(0), w_vegwake_flag(0);
   const int wake_stream_coef = 11;
   const int wake_span_coef = 4;
-  const float lambda_sq = 0.08;
+  const float lambda_sq = 0.083;
   const float epsilon = 10e-10;
 
   float z0;

@@ -88,6 +88,8 @@ public:
   void mergeSortTime(std::vector<time_t> &sensortime,
                      std::vector<int> &sensortime_id);
 
+  void applyWindProfile(const WINDSInputData *, int, int);
+
   void applyParametrizations(const WINDSInputData *);
   // void applyParametrizations(const WINDSInputData*);
 
@@ -172,9 +174,6 @@ public:
 
   std::vector<time_t> sensortime; /**< :document this: */
   std::vector<int> sensortime_id;
-
-
-  std::vector<float> UTMOrigin = { 0.0, 0.0 }; /**< :document this: */
 
   // time variables
   int nt; /**< :document this: */

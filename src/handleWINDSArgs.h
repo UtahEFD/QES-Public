@@ -35,9 +35,9 @@
 #include "util/ArgumentParsing.h"
 
 enum solverTypes : int { CPU_Type = 1,
-  DYNAMIC_P = 2,
-  Global_M = 3,
-  Shared_M = 4 };
+                         DYNAMIC_P = 2,
+                         Global_M = 3,
+                         Shared_M = 4 };
 
 /**
  * @class WINDSArgs
@@ -67,7 +67,7 @@ public:
   bool verbose;
 
 
-  std::string quicFile = ""; /**< Input files (from cmd line) */
+  std::string qesFile = ""; /**< Input files (from cmd line) */
 
 
   std::string netCDFFileBasename = ""; /**< Base name for all NetCDF output files */

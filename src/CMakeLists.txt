@@ -95,7 +95,7 @@ target_link_libraries(unitTest ${NETCDF_LIBRARIES_C})
 target_link_libraries(unitTest cudadevrt)
 target_link_libraries(unitTest ${CUDA_LIBRARIES})
 
-add_test(unitTest unitTest)
+# add_test(unitTest unitTest)
 
 
 

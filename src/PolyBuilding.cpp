@@ -50,9 +50,11 @@
 PolyBuilding::PolyBuilding(const WINDSInputData *WID, WINDSGeneralData *WGD, int id)
   : Building()
 {
-  polygonVertices = WID->simParams->shpPolygons[id];
-  H = WID->simParams->shpBuildingHeight[id];
+  polygonVertices = WID->buildings->SHPData->m_polygons[id];
+  H = WID->buildings->SHPData->m_features[WID->buildings->shpHeightField][id] * WID->buildings->heightFactor;
   base_height = WGD->base_height[id];
+
+  ID = id;
 }
 
 PolyBuilding::PolyBuilding(const std::vector<polyVert> &iSP, float iH, float iBH, int iID)

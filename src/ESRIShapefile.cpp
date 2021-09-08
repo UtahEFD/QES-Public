@@ -73,6 +73,35 @@ ESRIShapefile::ESRIShapefile(const std::string &filename,
   loadVectorData(polygons, features);
 }
 
+ESRIShapefile::ESRIShapefile(const std::string &filename, const std::string &bldLayerName)
+  : m_filename(filename), m_layerName(bldLayerName), minBound(2), maxBound(2)
+{
+  minBound = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
+  maxBound = { -1.0 * std::numeric_limits<float>::max(), -1.0 * std::numeric_limits<float>::max() };
+
+  GDALAllRegister();
+
+  // From -- http://www.gdal.org/gdal_tutorial.html
+  m_poDS = (GDALDataset *)GDALOpenEx(m_filename.c_str(), GDAL_OF_VECTOR, NULL, NULL, NULL);
+  if (m_poDS == nullptr) {
+    std::cerr << "ESRIShapefile -- could not open data file: " << m_filename << std::endl;
+    exit(1);
+  } else {
+    std::cout << "Reading ESRIShapefile: " << m_filename << std::endl;
+    printf("\tSHP File Driver: %s/%s\n",
+           m_poDS->GetDriver()->GetDescription(),
+           m_poDS->GetDriver()->GetMetadataItem(GDAL_DMD_LONGNAME));
+
+    m_SpRef = (OGRSpatialReference *)m_poDS->GetSpatialRef();
+
+    if (m_SpRef) {
+      m_SpRef->dumpReadable();
+    }
+
+    loadVectorData(m_polygons, m_features);
+  }
+}
+
 void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons, std::vector<float> &building_height, float heightFactor)
 {
   int polyCount = 0;
@@ -233,29 +262,16 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
 {
   int polyCount = 0;
 
-  // From -- http://www.gdal.org/gdal_tutorial.html
-  m_poDS = (GDALDataset *)GDALOpenEx(m_filename.c_str(), GDAL_OF_VECTOR, NULL, NULL, NULL);
-  if (m_poDS == nullptr) {
-    std::cerr << "ESRIShapefile -- could not open data file: " << m_filename << std::endl;
-    exit(1);
-  } else {
-    std::cout << "Reading ESRIShapefile: " << m_filename << std::endl;
-  }
-
-  printf("SHP File Driver: %s/%s\n",
-         m_poDS->GetDriver()->GetDescription(),
-         m_poDS->GetDriver()->GetMetadataItem(GDAL_DMD_LONGNAME));
-
   // OGRLayer  *poLayer;
   // poLayer = poDS->GetLayerByName( "point" );
 
   int numLayers = m_poDS->GetLayerCount();
-  std::cout << "Number of Layers: " << numLayers << std::endl;
+  std::cout << "\tNumber of Layers: " << numLayers << std::endl;
 
   // Dump the layers for now
   for (auto i = 0; i < numLayers; i++) {
     OGRLayer *poLayer = m_poDS->GetLayer(i);
-    std::cout << "Layer Name: " << poLayer->GetName() << std::endl;
+    std::cout << "\tLayer Name: " << poLayer->GetName() << std::endl;
   }
 
   // just what I set my layer name too -- may need to specify this
@@ -272,7 +288,7 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
   OGRFeature *feature = nullptr;
   OGRFeatureDefn *poFDefn = buildingLayer->GetLayerDefn();
 
-  std::cout << "Number of Features: " << buildingLayer->GetFeatureCount() << std::endl;
+  std::cout << "\tNumber of Features: " << buildingLayer->GetFeatureCount() << std::endl;
   if (buildingLayer->GetFeatureCount() == 0) {
     std::cerr << "[ERROR]\t ESRIShapefile -- no feature" << std::endl;
     exit(1);
@@ -280,13 +296,13 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
 
   feature = buildingLayer->GetFeature(0);
 
-  std::cout << "Number of Fields: " << feature->GetFieldCount() << std::endl;
+  std::cout << "\tNumber of Fields: " << feature->GetFieldCount() << std::endl;
   if (feature->GetFieldCount() == 0) {
     std::cerr << "[ERROR]\t ESRIShapefile -- no field" << std::endl;
     exit(1);
   }
 
-  std::cout << "Field Names:";
+  std::cout << "\tField Names:";
   std::vector<int> validIdxField;
   for (int idxField = 0; idxField < poFDefn->GetFieldCount(); ++idxField) {
     OGRFieldDefn *oField = poFDefn->GetFieldDefn(idxField);
@@ -314,7 +330,6 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
 
 
   while ((feature = buildingLayer->GetNextFeature()) != nullptr) {
-
     // for( auto&& oField: *feature ) {
     for (auto idxField : validIdxField) {
 
@@ -391,6 +406,6 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
 
   //std::cout << "[TEST] number of polygons " << polygons.size() << std::endl;
 
-  std::cout << "Bounds of SHP: Min=(" << minBound[0] << ", " << minBound[1] << "), Max=(" << maxBound[0] << ", " << maxBound[1] << ")" << std::endl;
-  std::cout << "Domain Size: " << (int)ceil(maxBound[0] - minBound[0]) << " X " << (int)ceil(maxBound[1] - minBound[1]) << std::endl;
+  std::cout << "\tBounds of SHP: Min=(" << minBound[0] << ", " << minBound[1] << "), Max=(" << maxBound[0] << ", " << maxBound[1] << ")" << std::endl;
+  std::cout << "\tDomain Size: " << (int)ceil(maxBound[0] - minBound[0]) << " X " << (int)ceil(maxBound[1] - minBound[1]) << std::endl;
 }

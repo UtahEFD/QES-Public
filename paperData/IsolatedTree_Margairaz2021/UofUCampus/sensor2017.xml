@@ -1,0 +1,4645 @@
+<site_coord_flag> 2 </site_coord_flag>
+<site_UTM_x> 428456  </site_UTM_x>
+<site_UTM_y> 4513159 </site_UTM_y>
+<site_UTM_zone> 12 </site_UTM_zone> 
+
+<timeSeries>
+<timeEpoch> 1489183200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.0 </speed>
+<direction> 109.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489185000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 343.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489186800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.8 </speed>
+<direction> 344.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489188600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.3 </speed>
+<direction> 273.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489190400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.6 </speed>
+<direction> 107.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489192200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.6 </speed>
+<direction> 301.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489201200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.7 </speed>
+<direction> 331.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489203000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.3 </speed>
+<direction> 155.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489222800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.3 </speed>
+<direction> 170.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489224600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 178.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489226400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 223.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489228200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.0 </speed>
+<direction> 250.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489230000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.8 </speed>
+<direction> 183.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489231800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 186.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489233600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.7 </speed>
+<direction> 109.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489235400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.3 </speed>
+<direction> 257.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489237200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.3 </speed>
+<direction> 279.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489239000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 280.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489240800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.2 </speed>
+<direction> 306.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489242600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.5 </speed>
+<direction> 296.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489244400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 295.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489246200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 256.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489248000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.8 </speed>
+<direction> 257.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489249800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.9 </speed>
+<direction> 289.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489251600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.0 </speed>
+<direction> 345.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489253400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.0 </speed>
+<direction> 313.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489255200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.0 </speed>
+<direction> 279.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489257000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.6 </speed>
+<direction> 6.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489258800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 34.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489260600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.5 </speed>
+<direction> 112.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489262400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.3 </speed>
+<direction> 108.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489264200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.0 </speed>
+<direction> 76.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489266000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.7 </speed>
+<direction> 91.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489267800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.4 </speed>
+<direction> 84.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489269600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 92.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489271400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.2 </speed>
+<direction> 19.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489273200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.3 </speed>
+<direction> 47.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489275000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.3 </speed>
+<direction> 50.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489276800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.0 </speed>
+<direction> 42.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489278600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.7 </speed>
+<direction> 340.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489280400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.9 </speed>
+<direction> 322.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489282200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 297.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489287600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.6 </speed>
+<direction> 317.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489289400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 2.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489291200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.3 </speed>
+<direction> 38.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489293000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.4 </speed>
+<direction> 15.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489294800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 348.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489296600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.0 </speed>
+<direction> 317.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489298400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 305.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489300200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.6 </speed>
+<direction> 272.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489302000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.2 </speed>
+<direction> 174.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489303800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.4 </speed>
+<direction> 101.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489305600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.0 </speed>
+<direction> 43.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489307400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.4 </speed>
+<direction> 60.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489311000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 243.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489312800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.4 </speed>
+<direction> 254.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489314600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 257.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489316400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.2 </speed>
+<direction> 273.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489318200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.3 </speed>
+<direction> 273.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489320000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.5 </speed>
+<direction> 279.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489321800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.3 </speed>
+<direction> 262.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489323600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.7 </speed>
+<direction> 247.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489325400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.3 </speed>
+<direction> 303.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489327200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.2 </speed>
+<direction> 277.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489329000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.3 </speed>
+<direction> 297.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489330800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.1 </speed>
+<direction> 293.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489332600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.8 </speed>
+<direction> 279.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489334400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.8 </speed>
+<direction> 262.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489336200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.0 </speed>
+<direction> 257.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489338000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.7 </speed>
+<direction> 252.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489339800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.4 </speed>
+<direction> 251.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489341600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.2 </speed>
+<direction> 287.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489343400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 282.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489345200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.9 </speed>
+<direction> 298.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489347000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.0 </speed>
+<direction> 351.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489348800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.1 </speed>
+<direction> 36.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489350600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.1 </speed>
+<direction> 37.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489352400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.3 </speed>
+<direction> 74.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489354200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.0 </speed>
+<direction> 49.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489356000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.6 </speed>
+<direction> 53.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489357800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.7 </speed>
+<direction> 52.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489359600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.5 </speed>
+<direction> 49.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489361400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.6 </speed>
+<direction> 50.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489363200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.3 </speed>
+<direction> 51.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489365000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.2 </speed>
+<direction> 48.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489366800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.6 </speed>
+<direction> 10.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489368600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 6.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489370400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 26.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489372200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 67.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489374000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 45.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489375800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 20.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489377600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 70.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489379400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.5 </speed>
+<direction> 80.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489381200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.7 </speed>
+<direction> 60.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489383000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.1 </speed>
+<direction> 49.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489384800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.0 </speed>
+<direction> 49.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489386600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.9 </speed>
+<direction> 45.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489388400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.1 </speed>
+<direction> 47.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489390200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.2 </speed>
+<direction> 48.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489392000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 25.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489393800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.6 </speed>
+<direction> 11.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489395600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.1 </speed>
+<direction> 183.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489399200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.5 </speed>
+<direction> 241.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489401000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.4 </speed>
+<direction> 290.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489402800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.7 </speed>
+<direction> 320.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489404600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 180.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489406400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 177.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489408200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.9 </speed>
+<direction> 258.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489410000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 236.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489411800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 227.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489413600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 246.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489415400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.0 </speed>
+<direction> 223.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489417200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.2 </speed>
+<direction> 276.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489419000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.9 </speed>
+<direction> 231.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489420800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.8 </speed>
+<direction> 244.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489422600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.6 </speed>
+<direction> 249.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489424400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.7 </speed>
+<direction> 291.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489426200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 286.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489428000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 256.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489429800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.6 </speed>
+<direction> 242.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489431600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.9 </speed>
+<direction> 332.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489433400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 47.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489435200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.6 </speed>
+<direction> 56.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489437000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.9 </speed>
+<direction> 70.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489438800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.6 </speed>
+<direction> 63.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489440600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.5 </speed>
+<direction> 53.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489442400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.8 </speed>
+<direction> 53.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489444200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 351.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489446000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.3 </speed>
+<direction> 28.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489447800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.3 </speed>
+<direction> 16.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489449600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 19.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489451400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 30.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489453200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.9 </speed>
+<direction> 42.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489455000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 49.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489456800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 1.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489458600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 335.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489460400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.2 </speed>
+<direction> 349.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489462200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 18.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489464000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 9.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489465800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 32.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489467600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.0 </speed>
+<direction> 298.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489469400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.9 </speed>
+<direction> 292.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489471200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 284.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489473000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.5 </speed>
+<direction> 329.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489474800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 42.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489476600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 60.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489478400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.3 </speed>
+<direction> 51.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489480200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 48.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489482000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.8 </speed>
+<direction> 30.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489483800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.6 </speed>
+<direction> 232.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489485600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.6 </speed>
+<direction> 174.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489487400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.5 </speed>
+<direction> 239.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489489200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.0 </speed>
+<direction> 156.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489491000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.8 </speed>
+<direction> 219.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489492800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 241.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489494600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 260.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489496400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.9 </speed>
+<direction> 257.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489498200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.3 </speed>
+<direction> 279.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489500000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.2 </speed>
+<direction> 288.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489501800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.3 </speed>
+<direction> 304.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489503600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 279.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489505400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.0 </speed>
+<direction> 253.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489507200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.0 </speed>
+<direction> 264.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489509000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.0 </speed>
+<direction> 273.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489510800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 257.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489512600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.5 </speed>
+<direction> 296.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489514400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.9 </speed>
+<direction> 294.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489516200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.4 </speed>
+<direction> 328.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489518000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.0 </speed>
+<direction> 344.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489519800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.1 </speed>
+<direction> 36.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489521600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.3 </speed>
+<direction> 92.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489523400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 62.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489525200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.4 </speed>
+<direction> 46.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489527000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.4 </speed>
+<direction> 46.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489528800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.3 </speed>
+<direction> 47.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489530600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.5 </speed>
+<direction> 47.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489532400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.2 </speed>
+<direction> 46.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489534200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.9 </speed>
+<direction> 342.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489536000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.8 </speed>
+<direction> 40.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489537800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.0 </speed>
+<direction> 28.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489539600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.3 </speed>
+<direction> 50.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489541400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.6 </speed>
+<direction> 51.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489543200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.9 </speed>
+<direction> 51.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489545000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.0 </speed>
+<direction> 298.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489546800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.7 </speed>
+<direction> 16.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489548600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 36.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489550400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.4 </speed>
+<direction> 343.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489552200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 333.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489554000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 11.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489555800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.5 </speed>
+<direction> 18.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489557600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.3 </speed>
+<direction> 252.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489559400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.1 </speed>
+<direction> 240.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489561200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.9 </speed>
+<direction> 6.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489563000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.4 </speed>
+<direction> 329.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489564800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.4 </speed>
+<direction> 321.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489566600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 253.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489568400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.6 </speed>
+<direction> 240.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489570200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.5 </speed>
+<direction> 114.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489572000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.3 </speed>
+<direction> 30.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489573800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.6 </speed>
+<direction> 298.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489575600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.9 </speed>
+<direction> 298.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489577400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.0 </speed>
+<direction> 190.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489579200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.8 </speed>
+<direction> 236.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489581000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.0 </speed>
+<direction> 208.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489582800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.8 </speed>
+<direction> 200.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489584600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.3 </speed>
+<direction> 184.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489586400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.9 </speed>
+<direction> 198.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489588200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.1 </speed>
+<direction> 198.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489590000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 6.2 </speed>
+<direction> 178.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489591800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.8 </speed>
+<direction> 191.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489593600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.8 </speed>
+<direction> 182.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489595400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.7 </speed>
+<direction> 179.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489597200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.1 </speed>
+<direction> 178.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489599000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.1 </speed>
+<direction> 188.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489600800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.5 </speed>
+<direction> 195.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489602600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.2 </speed>
+<direction> 237.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489604400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.8 </speed>
+<direction> 238.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489606200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.7 </speed>
+<direction> 77.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489608000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.6 </speed>
+<direction> 93.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489609800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.5 </speed>
+<direction> 92.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489611600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.8 </speed>
+<direction> 92.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489613400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.2 </speed>
+<direction> 100.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489615200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.0 </speed>
+<direction> 111.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489617000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 149.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489618800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 149.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489620600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.6 </speed>
+<direction> 138.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489622400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.2 </speed>
+<direction> 176.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489624200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.8 </speed>
+<direction> 187.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489626000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.8 </speed>
+<direction> 189.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489627800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.6 </speed>
+<direction> 229.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489629600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 262.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489631400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 261.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489633200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.9 </speed>
+<direction> 285.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489635000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 291.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489636800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.3 </speed>
+<direction> 320.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489638600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.2 </speed>
+<direction> 53.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489640400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.0 </speed>
+<direction> 39.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489642200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.2 </speed>
+<direction> 41.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489644000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 15.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489645800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.3 </speed>
+<direction> 4.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489647600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.3 </speed>
+<direction> 347.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489649400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.3 </speed>
+<direction> 317.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489651200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.6 </speed>
+<direction> 341.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489653000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.1 </speed>
+<direction> 335.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489654800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.2 </speed>
+<direction> 318.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489656600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.8 </speed>
+<direction> 303.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489658400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.1 </speed>
+<direction> 279.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489660200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.9 </speed>
+<direction> 271.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489662000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.6 </speed>
+<direction> 287.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489663800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.4 </speed>
+<direction> 295.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489665600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.7 </speed>
+<direction> 300.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489667400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.5 </speed>
+<direction> 305.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489669200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.6 </speed>
+<direction> 295.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489671000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.4 </speed>
+<direction> 303.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489672800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.5 </speed>
+<direction> 272.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489674600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.6 </speed>
+<direction> 252.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489676400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.6 </speed>
+<direction> 300.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489678200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.2 </speed>
+<direction> 298.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489680000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.9 </speed>
+<direction> 311.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489681800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.7 </speed>
+<direction> 270.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489683600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.3 </speed>
+<direction> 310.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489685400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.4 </speed>
+<direction> 310.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489687200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.8 </speed>
+<direction> 310.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489689000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.1 </speed>
+<direction> 306.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489690800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.8 </speed>
+<direction> 322.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489692600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.4 </speed>
+<direction> 14.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489694400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.6 </speed>
+<direction> 33.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489696200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.3 </speed>
+<direction> 40.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489698000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.8 </speed>
+<direction> 41.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489699800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.0 </speed>
+<direction> 35.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489701600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.1 </speed>
+<direction> 31.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489703400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.4 </speed>
+<direction> 41.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489705200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.0 </speed>
+<direction> 169.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489707000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.7 </speed>
+<direction> 42.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489708800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 54.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489710600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.8 </speed>
+<direction> 346.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489712400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.9 </speed>
+<direction> 334.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489714200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.8 </speed>
+<direction> 105.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489716000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.4 </speed>
+<direction> 46.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489717800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 19.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489719600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.7 </speed>
+<direction> 357.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489721400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.6 </speed>
+<direction> 311.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489723200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 341.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489725000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.5 </speed>
+<direction> 330.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489726800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.6 </speed>
+<direction> 31.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489728600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.6 </speed>
+<direction> 53.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489730400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.2 </speed>
+<direction> 60.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489732200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.0 </speed>
+<direction> 54.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489734000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.5 </speed>
+<direction> 51.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489735800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.4 </speed>
+<direction> 34.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489737600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.0 </speed>
+<direction> 22.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489739400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.9 </speed>
+<direction> 350.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489741200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.4 </speed>
+<direction> 243.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489743000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.4 </speed>
+<direction> 235.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489744800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.4 </speed>
+<direction> 296.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489746600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.4 </speed>
+<direction> 272.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489748400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.8 </speed>
+<direction> 288.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489750200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.4 </speed>
+<direction> 267.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489752000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 261.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489753800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.3 </speed>
+<direction> 315.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489755600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.4 </speed>
+<direction> 248.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489757400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 302.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489759200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.6 </speed>
+<direction> 266.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489761000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.6 </speed>
+<direction> 278.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489762800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.6 </speed>
+<direction> 255.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489764600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 253.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489766400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 289.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489768200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 188.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489770000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.0 </speed>
+<direction> 153.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489771800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 196.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489773600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.6 </speed>
+<direction> 266.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489775400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.4 </speed>
+<direction> 298.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489777200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 276.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489779000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 80.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489780800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.5 </speed>
+<direction> 86.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489782600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.3 </speed>
+<direction> 76.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489784400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.6 </speed>
+<direction> 339.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489786200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.3 </speed>
+<direction> 14.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489788000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.8 </speed>
+<direction> 255.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489789800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.0 </speed>
+<direction> 10.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489791600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.9 </speed>
+<direction> 336.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489793400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.5 </speed>
+<direction> 341.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489795200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.7 </speed>
+<direction> 342.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489797000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.7 </speed>
+<direction> 262.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489798800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 334.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489800600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.7 </speed>
+<direction> 11.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489802400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 33.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489804200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 308.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489806000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 19.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489807800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 67.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489809600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.5 </speed>
+<direction> 130.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489811400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.7 </speed>
+<direction> 353.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489813200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.6 </speed>
+<direction> 81.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489815000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 166.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489816800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.5 </speed>
+<direction> 55.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489818600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 42.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489820400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.3 </speed>
+<direction> 321.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489822200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.4 </speed>
+<direction> 331.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489824000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.0 </speed>
+<direction> 347.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489825800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.7 </speed>
+<direction> 318.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489827600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 317.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489829400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 250.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489831200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 178.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489833000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.4 </speed>
+<direction> 196.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489834800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.5 </speed>
+<direction> 197.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489836600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.5 </speed>
+<direction> 190.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489838400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 6.0 </speed>
+<direction> 192.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489840200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 7.4 </speed>
+<direction> 186.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489842000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 8.2 </speed>
+<direction> 185.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489843800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 7.6 </speed>
+<direction> 183.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489845600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 6.5 </speed>
+<direction> 175.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489847400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 6.0 </speed>
+<direction> 189.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489849200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 6.5 </speed>
+<direction> 189.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489851000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 6.4 </speed>
+<direction> 193.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489852800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.8 </speed>
+<direction> 198.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489854600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 6.1 </speed>
+<direction> 202.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489856400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.1 </speed>
+<direction> 221.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489858200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.3 </speed>
+<direction> 227.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489860000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.9 </speed>
+<direction> 281.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489861800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 311.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489863600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.3 </speed>
+<direction> 14.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489865400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.7 </speed>
+<direction> 73.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489867200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.5 </speed>
+<direction> 71.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489869000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 119.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489870800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.5 </speed>
+<direction> 134.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489872600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.3 </speed>
+<direction> 160.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489874400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 6.0 </speed>
+<direction> 171.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489876200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.5 </speed>
+<direction> 175.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489878000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.6 </speed>
+<direction> 179.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489879800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 6.2 </speed>
+<direction> 176.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489881600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 6.9 </speed>
+<direction> 174.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489883400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 7.2 </speed>
+<direction> 179.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489885200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.2 </speed>
+<direction> 191.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489887000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.8 </speed>
+<direction> 198.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489888800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 6.3 </speed>
+<direction> 200.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489890600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.6 </speed>
+<direction> 291.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489892400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 6.2 </speed>
+<direction> 333.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489894200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.4 </speed>
+<direction> 235.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489896000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 206.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489897800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 255.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489899600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 180.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489901400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 133.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489903200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.7 </speed>
+<direction> 52.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489905000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.9 </speed>
+<direction> 46.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489906800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.7 </speed>
+<direction> 65.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489908600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 53.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489910400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 89.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489912200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.5 </speed>
+<direction> 29.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489914000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.4 </speed>
+<direction> 290.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489915800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.8 </speed>
+<direction> 229.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489917600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 179.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489919400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.7 </speed>
+<direction> 222.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489921200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.8 </speed>
+<direction> 243.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489923000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 219.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489924800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 180.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489926600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.4 </speed>
+<direction> 165.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489928400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.4 </speed>
+<direction> 152.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489930200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.9 </speed>
+<direction> 70.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489932000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.7 </speed>
+<direction> 172.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489933800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.2 </speed>
+<direction> 182.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489935600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.5 </speed>
+<direction> 191.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489937400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.0 </speed>
+<direction> 200.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489939200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.5 </speed>
+<direction> 207.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489941000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.2 </speed>
+<direction> 284.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489942800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.0 </speed>
+<direction> 293.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489944600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 315.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489946400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.4 </speed>
+<direction> 1.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489948200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.3 </speed>
+<direction> 135.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489950000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.6 </speed>
+<direction> 189.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489951800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 150.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489953600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.6 </speed>
+<direction> 166.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489955400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 111.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489957200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.3 </speed>
+<direction> 75.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489959000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.6 </speed>
+<direction> 94.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489960800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.5 </speed>
+<direction> 93.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489962600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.7 </speed>
+<direction> 109.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489964400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 41.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489966200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 55.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489968000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.4 </speed>
+<direction> 48.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489969800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.1 </speed>
+<direction> 53.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489971600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.6 </speed>
+<direction> 31.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489973400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.7 </speed>
+<direction> 341.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489975200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.7 </speed>
+<direction> 110.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489977000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.7 </speed>
+<direction> 52.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489978800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.4 </speed>
+<direction> 33.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489980600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.0 </speed>
+<direction> 66.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489982400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.1 </speed>
+<direction> 348.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489984200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.2 </speed>
+<direction> 273.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489986000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.5 </speed>
+<direction> 182.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489987800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.3 </speed>
+<direction> 121.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489989600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.6 </speed>
+<direction> 36.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489991400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.3 </speed>
+<direction> 359.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489993200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.4 </speed>
+<direction> 13.5 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489995000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.6 </speed>
+<direction> 22.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489996800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.9 </speed>
+<direction> 303.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1489998600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.0 </speed>
+<direction> 28.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490000400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.7 </speed>
+<direction> 177.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490002200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.5 </speed>
+<direction> 104.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490004000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.7 </speed>
+<direction> 245.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490005800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 0.4 </speed>
+<direction> 63.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490007600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 162.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490009400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.6 </speed>
+<direction> 180.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490011200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.4 </speed>
+<direction> 171.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490013000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 6.8 </speed>
+<direction> 178.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490014800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.8 </speed>
+<direction> 192.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490016600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.9 </speed>
+<direction> 191.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490018400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 6.1 </speed>
+<direction> 192.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490020200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 5.4 </speed>
+<direction> 267.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490022000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.3 </speed>
+<direction> 296.4 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490023800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.8 </speed>
+<direction> 255.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490025600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.5 </speed>
+<direction> 176.0 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490027400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 7.4 </speed>
+<direction> 170.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490029200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.1 </speed>
+<direction> 177.8 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490031000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.7 </speed>
+<direction> 178.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490032800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.5 </speed>
+<direction> 168.7 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490034600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.6 </speed>
+<direction> 172.6 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490036400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.3 </speed>
+<direction> 159.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490038200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 1.8 </speed>
+<direction> 139.9 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490040000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.6 </speed>
+<direction> 76.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490041800 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.3 </speed>
+<direction> 71.3 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490043600 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.1 </speed>
+<direction> 88.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490045400 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 4.5 </speed>
+<direction> 83.1 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490047200 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 3.7 </speed>
+<direction> 105.2 </direction>
+</timeSeries>
+
+<timeSeries>
+<timeEpoch> 1490049000 </timeEpoch>
+<boundaryLayerFlag> 1 </boundaryLayerFlag>
+<siteZ0> 0.1 </siteZ0>
+<reciprocal> 0 </reciprocal>
+<height> 42.0 </height>
+<speed> 2.6 </speed>
+<direction> 127.5 </direction>
+</timeSeries>
+

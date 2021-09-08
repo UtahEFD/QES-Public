@@ -40,13 +40,13 @@
     </timeSeries>
   </sensor>
 </metParams>
-<localMixingParam>
+<turbParams>
   <method>0</method>
-</localMixingParam>
+</turbParams>
 <canopies>
   <num_canopies>1</num_canopies>
   <Windbreak>
-    <opticalPorosity>0.01</opticalPorosity>
+    <opticalPorosity>0.1</opticalPorosity>
     <height>4.0</height>
     <understroyHeight>0.0</understroyHeight>
     <xStart>80.0</xStart>
@@ -58,13 +58,6 @@
 </canopies>
 <fileOptions>
   <outputFlag>1</outputFlag>
-  <outputFields>u</outputFields> 
-  <outputFields>v</outputFields> 
-  <outputFields>w</outputFields>
-  <outputFields>icell</outputFields>  
-  <outputTURBInputFile>true</outputTURBInputFile>
-  <massConservedFlag> 0 </massConservedFlag>
-  <sensorVelocityFlag> 0 </sensorVelocityFlag>
-  <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+  <outputFields>all</outputFields> 
 </fileOptions>
 

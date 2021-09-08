@@ -62,6 +62,7 @@ public:
     canopy_rotation = 0;
 
     zMaxLAI = zMaxLAI * H;
+    LAI = 2.0 * attenuationCoeff;
 
     // x_start += UID->simParams->halo_x;
     // y_start += UID->simParams->halo_y;
