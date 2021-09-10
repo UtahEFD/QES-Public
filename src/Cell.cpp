@@ -76,6 +76,7 @@ Cell::Cell(std::vector<Vector3<float>> &points, std::vector<Edge<int>> &edges, i
   location = locationN;
   dimensions = dimensionsN;
 
+
   // set fluid points for the XZ and YZ faces
   for (int i = 0; i < 4; i++) {
     int firstC, secondC;

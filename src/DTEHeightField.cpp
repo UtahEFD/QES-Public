@@ -50,13 +50,13 @@ DTEHeightField::DTEHeightField()
 }
 
 DTEHeightField::DTEHeightField(const std::string &filename,
-  std::tuple<int, int, int> dim,
-  std::tuple<float, float, float> cellSize,
-  float UTMx,
-  float UTMy,
-  int OriginFlag,
-  float DEMDistanceX,
-  float DEMDistanceY)
+                               std::tuple<int, int, int> dim,
+                               std::tuple<float, float, float> cellSize,
+                               float UTMx,
+                               float UTMy,
+                               int OriginFlag,
+                               float DEMDistanceX,
+                               float DEMDistanceY)
   : m_filename(filename), m_rbMin(0.0),
     m_cellSize(cellSize), m_dim(dim),
     domain_UTMx(UTMx), domain_UTMy(UTMy),
@@ -72,10 +72,10 @@ DTEHeightField::DTEHeightField(const std::string &filename,
 //
 // Inputs need to provide the nx, ny, nz
 DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
-  std::tuple<int, int, int> dim,
-  std::tuple<float, float, float> cellSize,
-  float halo_x,
-  float halo_y)
+                               std::tuple<int, int, int> dim,
+                               std::tuple<float, float, float> cellSize,
+                               float halo_x,
+                               float halo_y)
   : m_cellSize(cellSize), m_dim(dim)
 {
   Triangle *tPtr = 0;
@@ -257,13 +257,13 @@ void DTEHeightField::load()
   }
 
   printf("GDAL Driver: %s/%s\n",
-    m_poDataset->GetDriver()->GetDescription(),
-    m_poDataset->GetDriver()->GetMetadataItem(GDAL_DMD_LONGNAME));
+         m_poDataset->GetDriver()->GetDescription(),
+         m_poDataset->GetDriver()->GetMetadataItem(GDAL_DMD_LONGNAME));
 
   printf("\tRaster Size is %dx%dx%d\n",
-    m_poDataset->GetRasterXSize(),
-    m_poDataset->GetRasterYSize(),
-    m_poDataset->GetRasterCount());
+         m_poDataset->GetRasterXSize(),
+         m_poDataset->GetRasterYSize(),
+         m_poDataset->GetRasterCount());
 
   // Attempt to get the spatial reference from this dataset -
   // which will help us convert into lat/long
@@ -275,18 +275,18 @@ void DTEHeightField::load()
 
   if (m_poDataset->GetGeoTransform(m_geoTransform) == CE_None) {
     printf("\tDEM Origin = (%.6f,%.6f)\n",
-      m_geoTransform[0],
-      m_geoTransform[3]);
+           m_geoTransform[0],
+           m_geoTransform[3]);
 
     printf("\tPixel Size = (%.6f,%.6f)\n",
-      m_geoTransform[1],
-      m_geoTransform[5]);
+           m_geoTransform[1],
+           m_geoTransform[5]);
     pixelSizeX = abs(m_geoTransform[1]);
     pixelSizeY = abs(m_geoTransform[5]);
 
     printf("These should be zero for north up: (%.6f, %.6f)\n",
-      m_geoTransform[2],
-      m_geoTransform[4]);
+           m_geoTransform[2],
+           m_geoTransform[4]);
   }
 
   GDALRasterBand *poBand;
@@ -297,10 +297,10 @@ void DTEHeightField::load()
   poBand = m_poDataset->GetRasterBand(1);
   poBand->GetBlockSize(&nBlockXSize, &nBlockYSize);
   printf("\tRaster Block=%dx%d Type=%s, ColorInterp=%s\n",
-    nBlockXSize,
-    nBlockYSize,
-    GDALGetDataTypeName(poBand->GetRasterDataType()),
-    GDALGetColorInterpretationName(poBand->GetColorInterpretation()));
+         nBlockXSize,
+         nBlockYSize,
+         GDALGetDataTypeName(poBand->GetRasterDataType()),
+         GDALGetColorInterpretationName(poBand->GetColorInterpretation()));
 
   adfMinMax[0] = poBand->GetMinimum(&bGotMin);
   adfMinMax[1] = poBand->GetMaximum(&bGotMax);
@@ -314,7 +314,7 @@ void DTEHeightField::load()
 
   if (poBand->GetColorTable() != NULL)
     printf("\tBand has a color table with %d entries.\n",
-      poBand->GetColorTable()->GetColorEntryCount());
+           poBand->GetColorTable()->GetColorEntryCount());
 
   m_rbScale = poBand->GetScale();
   printf("Band has scale: %.4f\n", m_rbScale);
@@ -331,12 +331,12 @@ void DTEHeightField::load()
   origin_x = m_geoTransform[0];
   origin_y = m_geoTransform[3] - pixelSizeY * m_nYSize;
   printf("\tDomain Origin = (%.6f,%.6f)\n",
-    origin_x,
-    origin_y);
+         origin_x,
+         origin_y);
 
   printf("DEM size is %dx%dx%d\n",
-    m_nXSize,
-    m_nYSize);
+         m_nXSize,
+         m_nYSize);
 
   // UTMx will be correct, but need to subtract halo
   //      demMinX == UTMx - halo_x
@@ -1004,7 +1004,6 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
        * are written in should not matter, edge(0-3) is the same as edge(3-0) and the index of each edge
        * also should not matter.
        */
-
       cells[CELL(i, j, k)] = Cell(pointsInCell, edgesInCell, intermed, Vector3<float>(corners[0][0], corners[0][1], cellBot), Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
     }
   }
