@@ -3,11 +3,11 @@
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 
-  	<domain>100 100 100</domain>					<!-- Number of cells in x,y and z directions-->
-  	<cellSize> 2.0 2.0 2.0 </cellSize> 				<!-- Mesh resolution (meters)-->
+  	<domain>1000 580 250</domain>					<!-- Number of cells in x,y and z directions-->
+  	<cellSize> 0.2 0.35 0.4 </cellSize> 				<!-- Mesh resolution (meters)-->
 	<verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
-	<totalTimeIncrements> 5 </totalTimeIncrements> 			<!-- Number of time steps-->
+	<totalTimeIncrements> 1 </totalTimeIncrements> 			<!-- Number of time steps-->
 	<rooftopFlag> 1 </rooftopFlag> 					<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
 	<upwindCavityFlag> 2 </upwindCavityFlag> 			<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP) -->
 	<streetCanyonFlag> 1 </streetCanyonFlag> 			<!-- Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)) -->
@@ -16,7 +16,7 @@
 	<sidewallFlag> 1 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
 
 	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
-	<tolerance> 1E-09 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
+	<tolerance> 1E-9 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
 	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
 
 	<domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
@@ -31,8 +31,8 @@
 <metParams>
 	<z0_domain_flag> 0 </z0_domain_flag>           			<!-- Distribution of sueface roughness for domain (0-uniform (default), 1-custom -->
 	<sensorName>../data/InputFiles/sensor1.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/sensor2.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/sensor3.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<!--sensorName>../data/InputFiles/sensor2.xml</sensorName-->		<!-- Name of the sensor file with information for the sensor included -->
+	<!--sensorName>../data/InputFiles/sensor3.xml</sensorName-->		<!-- Name of the sensor file with information for the sensor included -->
 </metParams>
 <!--buildings>
   <wallRoughness>0.01</wallRoughness>  
@@ -88,7 +88,7 @@
 		<width> 20.0 </width>
 		<buildingRotation> 0.0 </buildingRotation>
 	</rectangularBuilding>
-	<rectangularBuilding>
+	<!--rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
 		<height> 33.0 </height>
@@ -98,6 +98,6 @@
 		<length> 28.0 </length>
 		<width> 27.0 </width>
 		<buildingRotation> 0.0 </buildingRotation>
-	</rectangularBuilding>
+	</rectangularBuilding-->
 </buildings>
 

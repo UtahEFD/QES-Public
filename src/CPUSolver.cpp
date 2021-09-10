@@ -101,7 +101,14 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
 
             icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);// Lineralized index for cell centered values
 
-            lambda[icell_cent] = (omega / (WGD->e[icell_cent] + WGD->f[icell_cent] + WGD->g[icell_cent] + WGD->h[icell_cent] + WGD->m[icell_cent] + WGD->n[icell_cent])) * (WGD->e[icell_cent] * lambda[icell_cent + 1] + WGD->f[icell_cent] * lambda[icell_cent - 1] + WGD->g[icell_cent] * lambda[icell_cent + (WGD->nx - 1)] + WGD->h[icell_cent] * lambda[icell_cent - (WGD->nx - 1)] + WGD->m[icell_cent] * lambda[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] + WGD->n[icell_cent] * lambda[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] - R[icell_cent]) + (1.0 - omega) * lambda[icell_cent];// SOR formulation
+            lambda[icell_cent] = (omega / (WGD->e[icell_cent] + WGD->f[icell_cent] + WGD->g[icell_cent] + WGD->h[icell_cent] + WGD->m[icell_cent] + WGD->n[icell_cent]))
+                                   * (WGD->e[icell_cent] * lambda[icell_cent + 1]
+                                      + WGD->f[icell_cent] * lambda[icell_cent - 1]
+                                      + WGD->g[icell_cent] * lambda[icell_cent + (WGD->nx - 1)]
+                                      + WGD->h[icell_cent] * lambda[icell_cent - (WGD->nx - 1)]
+                                      + WGD->m[icell_cent] * lambda[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)]
+                                      + WGD->n[icell_cent] * lambda[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] - R[icell_cent])
+                                 + (1.0 - omega) * lambda[icell_cent];// SOR formulation
           }
         }
       }
@@ -147,7 +154,7 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
      *** Update the velocity field using Euler-Lagrange equations **
      ***************************************************************/
 
-    for (int k = 0; k < WGD->nz - 1; k++) {
+    for (int k = 0; k < WGD->nz; k++) {
       for (int j = 0; j < WGD->ny; j++) {
         for (int i = 0; i < WGD->nx; i++) {
           int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;// Lineralized index for cell faced values
@@ -168,12 +175,18 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
           icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);// Lineralized index for cell centered values
           icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;// Lineralized index for cell faced values
 
-          WGD->u[icell_face] = WGD->u0[icell_face] + (1 / (2 * pow(alpha1, 2.0))) * WGD->f[icell_cent] * WGD->dx * (lambda[icell_cent] - lambda[icell_cent - 1]);
+          WGD->u[icell_face] = WGD->u0[icell_face]
+                               + (1 / (2 * pow(alpha1, 2.0))) * WGD->f[icell_cent] * WGD->dx
+                                   * (lambda[icell_cent] - lambda[icell_cent - 1]);
 
           // Calculate correct wind velocity
-          WGD->v[icell_face] = WGD->v0[icell_face] + (1 / (2 * pow(alpha1, 2.0))) * WGD->h[icell_cent] * WGD->dy * (lambda[icell_cent] - lambda[icell_cent - (WGD->nx - 1)]);
+          WGD->v[icell_face] = WGD->v0[icell_face]
+                               + (1 / (2 * pow(alpha1, 2.0))) * WGD->h[icell_cent] * WGD->dy
+                                   * (lambda[icell_cent] - lambda[icell_cent - (WGD->nx - 1)]);
 
-          WGD->w[icell_face] = WGD->w0[icell_face] + (1 / (2 * pow(alpha2, 2.0))) * WGD->n[icell_cent] * WGD->dz_array[k] * (lambda[icell_cent] - lambda[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)]);
+          WGD->w[icell_face] = WGD->w0[icell_face]
+                               + (1 / (2 * pow(alpha2, 2.0))) * WGD->n[icell_cent] * WGD->dz_array[k]
+                                   * (lambda[icell_cent] - lambda[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)]);
         }
       }
     }
