@@ -55,6 +55,9 @@
 class TURBWallBuilding : public TURBWall
 {
 protected:
+  void set_loglaw_stairstep(WINDSGeneralData *, TURBGeneralData *);
+  void set_finitediff_stairstep(WINDSGeneralData *, TURBGeneralData *);
+
 public:
   TURBWallBuilding()
   {}

@@ -46,28 +46,28 @@ void TURBWall::get_stairstep_wall_id(WINDSGeneralData *WGD, int cellflag)
   for (int i = 1; i < nx - 2; i++) {
     for (int j = 1; j < ny - 2; j++) {
       for (int k = 1; k < nz - 2; k++) {
-        int icell_cent = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+        int cellID = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
 
-        if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
+        if (WGD->icellflag[cellID] != 0 && WGD->icellflag[cellID] != 2) {
           /// Terrain below
-          if (WGD->icellflag[icell_cent - (nx - 1) * (ny - 1)] == cellflag) {
-            stairstep_wall_id.push_back(icell_cent);
+          if (WGD->icellflag[cellID - (nx - 1) * (ny - 1)] == cellflag) {
+            stairstep_wall_id.push_back(cellID);
           }
           /// Terrain in back
-          if (WGD->icellflag[icell_cent - 1] == cellflag) {
-            stairstep_wall_id.push_back(icell_cent);
+          if (WGD->icellflag[cellID - 1] == cellflag) {
+            stairstep_wall_id.push_back(cellID);
           }
           /// Terrain in front
-          if (WGD->icellflag[icell_cent + 1] == cellflag) {
-            stairstep_wall_id.push_back(icell_cent);
+          if (WGD->icellflag[cellID + 1] == cellflag) {
+            stairstep_wall_id.push_back(cellID);
           }
           /// Terrain on right
-          if (WGD->icellflag[icell_cent - (nx - 1)] == cellflag) {
-            stairstep_wall_id.push_back(icell_cent);
+          if (WGD->icellflag[cellID - (nx - 1)] == cellflag) {
+            stairstep_wall_id.push_back(cellID);
           }
           /// Terrain on left
-          if (WGD->icellflag[icell_cent + (nx - 1)] == cellflag) {
-            stairstep_wall_id.push_back(icell_cent);
+          if (WGD->icellflag[cellID + (nx - 1)] == cellflag) {
+            stairstep_wall_id.push_back(cellID);
           }
         }
       }
@@ -82,11 +82,82 @@ void TURBWall::get_stairstep_wall_id(WINDSGeneralData *WGD, int cellflag)
   stairstep_wall_id.assign(s.begin(), s.end());
   sort(stairstep_wall_id.begin(), stairstep_wall_id.end());
 
+  for (auto i = 1; i < nx - 1; i++) {
+    for (auto j = 1; j < ny - 1; j++) {
+      for (auto k = 1; k < nz - 2; k++) {
+        int cellID = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+        int faceID = i + j * nx + k * nx * ny;
+
+        if (WGD->icellflag[cellID] != 0 && WGD->icellflag[cellID] != 2) {
+
+          // Wall below
+          if (WGD->icellflag[cellID - (nx - 1) * (ny - 1)] == cellflag) {
+            wall_below_indices.push_back({ cellID, faceID });
+          }
+          // Wall above
+          if (WGD->icellflag[cellID + (nx - 1) * (ny - 1)] == cellflag) {
+            wall_above_indices.push_back({ cellID, faceID });
+          }
+          // Wall in back
+          if (WGD->icellflag[cellID - 1] == cellflag) {
+            wall_back_indices.push_back({ cellID, faceID });
+          }
+          // Wall in front
+          if (WGD->icellflag[cellID + 1] == cellflag) {
+            wall_front_indices.push_back({ cellID, faceID });
+          }
+          // Wall on right
+          if (WGD->icellflag[cellID - (nx - 1)] == cellflag) {
+            wall_right_indices.push_back({ cellID, faceID });
+          }
+          // Wall on left
+          if (WGD->icellflag[cellID + (nx - 1)] == cellflag) {
+            wall_left_indices.push_back({ cellID, faceID });
+          }
+        }
+      }
+    }
+  }
+
   return;
 }
 
 void TURBWall::set_stairstep_wall_flag(TURBGeneralData *TGD, int cellflag)
 {
+
+  for (std::vector<pairCellFaceID>::iterator it = wall_below_indices.begin();
+       it != wall_below_indices.end();
+       ++it) {
+    TGD->iturbflag.at(it->cellID) = cellflag;
+  }
+  for (std::vector<pairCellFaceID>::iterator it = wall_above_indices.begin();
+       it != wall_above_indices.end();
+       ++it) {
+    TGD->iturbflag.at(it->cellID) = cellflag;
+  }
+
+  for (std::vector<pairCellFaceID>::iterator it = wall_back_indices.begin();
+       it != wall_back_indices.end();
+       ++it) {
+    TGD->iturbflag.at(it->cellID) = cellflag;
+  }
+  for (std::vector<pairCellFaceID>::iterator it = wall_front_indices.begin();
+       it != wall_front_indices.end();
+       ++it) {
+    TGD->iturbflag.at(it->cellID) = cellflag;
+  }
+
+  for (std::vector<pairCellFaceID>::iterator it = wall_right_indices.begin();
+       it != wall_right_indices.end();
+       ++it) {
+    TGD->iturbflag.at(it->cellID) = cellflag;
+  }
+  for (std::vector<pairCellFaceID>::iterator it = wall_left_indices.begin();
+       it != wall_left_indices.end();
+       ++it) {
+    TGD->iturbflag.at(it->cellID) = cellflag;
+  }
+
   for (size_t id = 0; id < stairstep_wall_id.size(); ++id) {
     int idcell = stairstep_wall_id.at(id);
     TGD->iturbflag.at(idcell) = cellflag;
@@ -125,7 +196,12 @@ void TURBWall::set_cutcell_wall_flag(TURBGeneralData *TGD, int cellflag)
   return;
 }
 
-void TURBWall::set_loglaw_stairstep_at_id_cc(WINDSGeneralData *WGD, TURBGeneralData *TGD, int id_cc, int flag2check, float z0)
+
+void TURBWall::set_loglaw_stairstep_at_id_cc(WINDSGeneralData *WGD,
+                                             TURBGeneralData *TGD,
+                                             int id_cc,
+                                             int flag2check,
+                                             float z0)
 {
   int nx = TGD->nx;
   int ny = TGD->ny;
@@ -153,26 +229,34 @@ void TURBWall::set_loglaw_stairstep_at_id_cc(WINDSGeneralData *WGD, TURBGeneralD
     // dvdx=v_hat/(0.5dx*log(0.5dx/z0))
     idp = id_fc + nx;// i,j+1,k
     idm = id_fc;// i,j,k
-    vp = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp] + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm]) / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
+    vp = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp]
+          + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm])
+         / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
     dvdx = vp / ((TGD->x_cc[i] - TGD->x_fc[i]) * log((TGD->x_cc[i] - TGD->x_fc[i]) / z0));
 
     // dwdx=w_hat/(0.5dx*log(0.5dx/z0))
     idp = id_fc + nx * ny;// i,j,k+1
     idm = id_fc;// i,j,k
-    wp = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp] + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm]) / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
+    wp = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp]
+          + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm])
+         / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
     dwdx = wp / ((TGD->x_cc[i] - TGD->x_fc[i]) * log((TGD->x_cc[i] - TGD->x_fc[i]) / z0));
 
   } else if (WGD->icellflag[id_cc + 1] == flag2check) {
     // dvdx=-v_hat/(0.5dx*log(0.5dx/z0))
     idp = id_fc + nx;// i,j+1,k
     idm = id_fc;// i,j,k
-    vp = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp] + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm]) / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
+    vp = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp]
+          + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm])
+         / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
     dvdx = -vp / ((TGD->x_fc[i + 1] - TGD->x_cc[i]) * log((TGD->x_fc[i + 1] - TGD->x_cc[i]) / z0));
 
     // dwdx=-w_hat/(0.5dx*log(0.5dx/z0))
     idp = id_fc + nx * ny;// i,j,k+1
     idm = id_fc;// i,j,k
-    wp = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp] + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm]) / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
+    wp = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp]
+          + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm])
+         / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
     dwdx = -wp / ((TGD->x_fc[i + 1] - TGD->x_cc[i]) * log((TGD->x_fc[i + 1] - TGD->x_cc[i]) / z0));
 
   } else {
@@ -180,11 +264,15 @@ void TURBWall::set_loglaw_stairstep_at_id_cc(WINDSGeneralData *WGD, TURBGeneralD
     // v_hat+
     idp = id_fc + 1 + nx;// i+1,j+1,k
     idm = id_fc + 1;// i+1,j,k
-    vp = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp] + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm]) / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
+    vp = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp]
+          + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm])
+         / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
     // v_hat-
     idp = id_fc - 1 + nx;// i-1,j+1,k
     idm = id_fc - 1;// i-1,j,k
-    vm = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp] + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm]) / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
+    vm = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp]
+          + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm])
+         / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
     // ==>
     dvdx = (vp - vm) / (TGD->x_cc[i + 1] - TGD->x_cc[i - 1]);
 
@@ -192,11 +280,15 @@ void TURBWall::set_loglaw_stairstep_at_id_cc(WINDSGeneralData *WGD, TURBGeneralD
     // w_hat+
     idp = id_fc + 1 + nx * ny;// i+1,j,k+1
     idm = id_fc + 1;// i+1,j,k
-    wp = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp] + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm]) / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
+    wp = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp]
+          + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm])
+         / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
     // w_hat-
     idp = id_fc - 1 + nx * ny;// i-1,j,k+1
     idm = id_fc - 1;// i-1,j,k
-    wm = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp] + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm]) / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
+    wm = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp]
+          + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm])
+         / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
     // ==>
     dwdx = (wp - wm) / (TGD->x_cc[i + 1] - TGD->x_cc[i - 1]);
   }
@@ -214,48 +306,64 @@ void TURBWall::set_loglaw_stairstep_at_id_cc(WINDSGeneralData *WGD, TURBGeneralD
     // dudy=u_hat/(0.5dy*log(0.5dy/z0))
     idp = id_fc + 1;// i+1,j,k
     idm = id_fc;// i,j,k
-    up = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp] + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm]) / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
+    up = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp]
+          + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm])
+         / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
     dudy = up / ((TGD->y_cc[j] - TGD->y_fc[j]) * log((TGD->y_cc[j] - TGD->y_fc[j]) / z0));
 
     // dwdx=w_hat/(0.5dx*log(0.5dx/z0))
     idp = id_fc + nx * ny;// i,j,k+1
     idm = id_fc;// i,j,k
-    wp = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp] + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm]) / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
+    wp = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp]
+          + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm])
+         / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
     dwdy = wp / ((TGD->y_cc[j] - TGD->y_fc[j]) * log((TGD->y_cc[j] - TGD->y_fc[j]) / z0));
 
   } else if (WGD->icellflag[id_cc + (nx - 1)] == flag2check) {
     // dudy=-u_hat/(0.5dy*log(0.5dy/z0))
     idp = id_fc + 1;// i+1,j,k
     idm = id_fc;// i,j,k
-    up = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp] + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm]) / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
+    up = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp]
+          + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm])
+         / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
     dudy = -up / ((TGD->y_fc[j + 1] - TGD->y_cc[j]) * log((TGD->y_fc[j + 1] - TGD->y_cc[j]) / z0));
 
     // dwdy=-w_hat/(0.5dy*log(0.5dy/z0))
     idp = id_fc + nx * ny;// i,j,k+1
     idm = id_fc;// i,j,k
-    wp = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp] + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm]) / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
+    wp = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp]
+          + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm])
+         / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
     dwdy = -wp / ((TGD->y_fc[i + 1] - TGD->y_cc[i]) * log((TGD->y_fc[i + 1] - TGD->y_cc[i]) / z0));
 
   } else {
     // u_hat+
     idp = id_fc + 1 + nx;// i+1,j+1,k
     idm = id_fc + nx;// i,j+1,k
-    up = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp] + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm]) / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
+    up = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp]
+          + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm])
+         / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
     // u_hat-
     idp = id_fc + 1 - nx;// i+1,j-1,k
     idm = id_fc - nx;// i,j-1,k
-    um = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp] + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm]) / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
+    um = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp]
+          + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm])
+         / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
     // ==>
     dudy = (up - um) / (TGD->y_cc[j + 1] - TGD->y_cc[j - 1]);
 
     // w_hat+
     idp = id_fc + nx + nx * ny;// i,j+1,k+1
     idm = id_fc + nx;// i,j,+1,k
-    wp = ((TGD->z_cc[k - 1] - TGD->z_fc[k]) * WGD->w[idp] + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm]) / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
+    wp = ((TGD->z_cc[k - 1] - TGD->z_fc[k]) * WGD->w[idp]
+          + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm])
+         / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
     // w_hat-
     idp = id_fc - nx + nx * ny;// i,j-1,k+1
     idm = id_fc - nx;// i,j-1,k
-    wp = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp] + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm]) / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
+    wp = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp]
+          + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm])
+         / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
     // ==>
     dwdy = (wp - wm) / (TGD->y_cc[j + 1] - TGD->y_cc[j - 1]);
   }
@@ -273,48 +381,64 @@ void TURBWall::set_loglaw_stairstep_at_id_cc(WINDSGeneralData *WGD, TURBGeneralD
     // dudz=u_hat/(0.5dz*log(0.5dz/z0))
     idp = id_fc + 1;// i+1,j,k
     idm = id_fc;// i,j,k
-    up = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp] + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm]) / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
+    up = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp]
+          + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm])
+         / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
     dudz = up / ((TGD->z_cc[k] - TGD->z_fc[k]) * log((TGD->z_cc[k] - TGD->z_fc[k]) / z0));
 
     // dvdz=v_hat/(0.5dz*log(0.5dz/z0))
     idp = id_fc + nx;// i,j+1,k
     idm = id_fc;// i,j,k
-    vp = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp] + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm]) / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
+    vp = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp]
+          + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm])
+         / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
     dvdz = vp / ((TGD->z_cc[k] - TGD->z_fc[k]) * log((TGD->z_cc[k] - TGD->z_fc[k]) / z0));
 
   } else if (WGD->icellflag[id_cc + (nx - 1) * (ny - 1)] == flag2check) {
     // dudz=-u_hat/(0.5dz*log(0.5dz/z0))
     idp = id_fc + 1;// i+1,j,k
     idm = id_fc;// i,j,k
-    up = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp] + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm]) / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
+    up = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp]
+          + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm])
+         / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
     dudz = -up / ((TGD->z_fc[k + 1] - TGD->z_cc[k]) * log((TGD->z_fc[k + 1] - TGD->z_cc[k]) / z0));
 
     // dvdz=-v_hat/(0.5dz*log(0.5dz/z0))
     idp = id_fc + nx;// i,j+1,k
     idm = id_fc;// i,j,k
-    vp = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp] + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm]) / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
+    vp = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp]
+          + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm])
+         / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
     dvdz = -vp / ((TGD->z_fc[k + 1] - TGD->z_cc[k]) * log((TGD->z_fc[k + 1] - TGD->z_cc[k]) / z0));
 
   } else {
     // u_hat+
     idp = id_fc + 1 + nx * ny;// i+1,j,k+1
     idm = id_fc + nx * ny;// i,j,k+1
-    up = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp] + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm]) / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
+    up = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp]
+          + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm])
+         / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
     // u_hat-
     idp = id_fc + 1 - nx * ny;// i+1,j,k-1
     idm = id_fc - nx * ny;// i,j,k-1
-    um = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp] + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm]) / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
+    um = ((TGD->x_cc[i] - TGD->x_fc[i]) * WGD->u[idp]
+          + (TGD->x_fc[i + 1] - TGD->x_cc[i]) * WGD->u[idm])
+         / (TGD->x_fc[i + 1] - TGD->x_fc[i]);
     // ==>
     dudz = (up - um) / (TGD->z_cc[k + 1] - TGD->z_cc[k - 1]);
 
     // v_hat+
     idp = id_fc + nx + nx * ny;// i,j+1,k+1
     idm = id_fc + nx * ny;// i,j,k+1
-    vp = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp] + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm]) / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
+    vp = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp]
+          + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm])
+         / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
     // v_hat-
     idp = id_fc + nx - nx * ny;// i,j+1,k-1
     idm = id_fc - nx * ny;// i,j,k-1
-    vm = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp] + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm]) / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
+    vm = ((TGD->y_cc[j] - TGD->y_fc[j]) * WGD->v[idp]
+          + (TGD->y_fc[j + 1] - TGD->y_cc[j]) * WGD->v[idm])
+         / (TGD->y_fc[j + 1] - TGD->y_fc[j]);
     // ==>
     dvdz = (vp - vm) / (TGD->z_cc[k + 1] - TGD->z_cc[k - 1]);
   }
