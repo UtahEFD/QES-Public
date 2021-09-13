@@ -55,6 +55,8 @@
 class TURBWallTerrain : public TURBWall
 {
 protected:
+  void set_loglaw_stairstep(WINDSGeneralData *, TURBGeneralData *);
+
 public:
   TURBWallTerrain()
   {}

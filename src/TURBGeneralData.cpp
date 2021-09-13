@@ -291,7 +291,7 @@ void TURBGeneralData::run(WINDSGeneralData *WGD)
   getFrictionVelocity(WGD);
 
   std::cout << "\t\t Computing Derivatives (Strain Rate)..." << std::endl;
-  getDerivatives(WGD);
+  getDerivatives_v2(WGD);
   // std::cout<<"\t\t Derivatives computed."<<std::endl;
 
   std::cout << "\t\t Imposing Wall BC (log law)..." << std::endl;
@@ -301,7 +301,7 @@ void TURBGeneralData::run(WINDSGeneralData *WGD)
   // std::cout<<"\t\t Wall BC done."<<std::endl;
 
   std::cout << "\t\t Computing Stess Tensor..." << std::endl;
-  getStressTensor();
+  getStressTensor_v2();
   // std::cout<<"\t\t Stress Tensor computed."<<std::endl;
 
   if (flagNonLocalMixing) {
@@ -552,7 +552,7 @@ void TURBGeneralData::getDerivatives_v2(WINDSGeneralData *WGD)
       Gzx[cellID] = ((WGD->u[faceID + nx * ny] + WGD->u[faceID + 1 + nx * nx])
                      - (WGD->u[faceID - nx * ny] + WGD->u[faceID + 1 - nx * ny]))
                     / (4.0 * WGD->dz);
-      // Gyz = dvdy
+      // Gyz = dvdz
       Gzy[cellID] = ((WGD->v[faceID + nx * ny] + WGD->v[faceID + nx + nx * nx])
                      - (WGD->v[faceID - nx * ny] + WGD->v[faceID + nx - nx * ny]))
                     / (4.0 * WGD->dz);
@@ -567,7 +567,7 @@ void TURBGeneralData::getDerivatives_v2(WINDSGeneralData *WGD)
                          * ((WGD->u[faceID] + WGD->u[faceID + 1])
                             - (WGD->u[faceID - nx * ny] + WGD->u[faceID + 1 - nx * ny])))
                     / (WGD->z[k + 1] - WGD->z[k - 1]);
-      // Gyz = dvdy
+      // Gyz = dvdz
       Gzy[cellID] = (0.5 * (WGD->z[k] - WGD->z[k - 1]) / (WGD->z[k + 1] - WGD->z[k])
                        * ((WGD->v[faceID + nx * ny] + WGD->v[faceID + nx + nx * nx])
                           - (WGD->v[faceID] + WGD->v[faceID + nx]))
