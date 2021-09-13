@@ -173,7 +173,7 @@ __global__ void calculateErrorShared(float *d_lambda, float *d_lambda_old, int n
 
 
 // Euler Final Velocity kernel
-__global__ void finalVelocityShared(float *d_u0, float *d_v0, float *d_w0, float *d_lambda, float *d_u, float *d_v, float *d_w, int *d_icellflag, float *d_f, float *d_h, float *d_n, int alpha1, int alpha2, float dx, float dy, float dz, float *d_dz_array, int nx, int ny, int nz)
+__global__ void finalVelocityShared(float *d_lambda, float *d_u, float *d_v, float *d_w, int *d_icellflag, float *d_f, float *d_h, float *d_n, int alpha1, int alpha2, float dx, float dy, float dz, float *d_dz_array, int nx, int ny, int nz)
 {
 
   int icell_face = blockDim.x * blockIdx.x + threadIdx.x;
@@ -182,19 +182,19 @@ __global__ void finalVelocityShared(float *d_u0, float *d_v0, float *d_w0, float
   int i = icell_face - k * nx * ny - j * nx;
   int icell_cent = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);// Lineralized index for cell centered values
 
-  if ((i >= 0) && (j >= 0) && (k >= 0) && (i < nx) && (j < ny) && (k < nz)) {
+  /*if ((i >= 0) && (j >= 0) && (k >= 0) && (i < nx) && (j < ny) && (k < nz)) {
 
     d_u[icell_face] = d_u0[icell_face];
     d_v[icell_face] = d_v0[icell_face];
     d_w[icell_face] = d_w0[icell_face];
-  }
+  }*/
 
 
   if ((i > 0) && (i < nx - 1) && (j > 0) && (j < ny - 1) && (k < nz - 2) && (k > 0)) {
 
-    d_u[icell_face] = d_u0[icell_face] + (1 / (2 * pow(alpha1, 2.0))) * d_f[icell_cent] * dx * (d_lambda[icell_cent] - d_lambda[icell_cent - 1]);
-    d_v[icell_face] = d_v0[icell_face] + (1 / (2 * pow(alpha1, 2.0))) * d_h[icell_cent] * dy * (d_lambda[icell_cent] - d_lambda[icell_cent - (nx - 1)]);
-    d_w[icell_face] = d_w0[icell_face] + (1 / (2 * pow(alpha2, 2.0))) * d_n[icell_cent] * d_dz_array[k] * (d_lambda[icell_cent] - d_lambda[icell_cent - (nx - 1) * (ny - 1)]);
+    d_u[icell_face] = d_u[icell_face] + (1 / (2 * pow(alpha1, 2.0))) * d_f[icell_cent] * dx * (d_lambda[icell_cent] - d_lambda[icell_cent - 1]);
+    d_v[icell_face] = d_v[icell_face] + (1 / (2 * pow(alpha1, 2.0))) * d_h[icell_cent] * dy * (d_lambda[icell_cent] - d_lambda[icell_cent - (nx - 1)]);
+    d_w[icell_face] = d_w[icell_face] + (1 / (2 * pow(alpha2, 2.0))) * d_n[icell_cent] * d_dz_array[k] * (d_lambda[icell_cent] - d_lambda[icell_cent - (nx - 1) * (ny - 1)]);
   }
 
 
@@ -212,9 +212,9 @@ __global__ void finalVelocityShared(float *d_u0, float *d_v0, float *d_w0, float
 void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
 {
   auto startTotal = std::chrono::high_resolution_clock::now();// Start
-                                                              // recording
-                                                              // execution
-                                                              // time
+    // recording
+    // execution
+    // time
   int numblocks = (WGD->numcell_cent / BLOCKSIZE) + 1;
   R.resize(WGD->numcell_cent, 0.0);
 
@@ -224,7 +224,7 @@ void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
   std::vector<float> value(WGD->numcell_cent, 0.0);
   std::vector<float> bvalue(numblocks, 0.0);
 
-  float *d_u0, *d_v0, *d_w0;
+  //float *d_u0, *d_v0, *d_w0;
   float *d_u, *d_v, *d_w;
   float *d_value, *d_bvalue;
   int *d_icellflag;
@@ -241,9 +241,9 @@ void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
   cudaMalloc((void **)&d_n, WGD->numcell_cent * sizeof(float));
   cudaMalloc((void **)&d_lambda, WGD->numcell_cent * sizeof(float));
   cudaMalloc((void **)&d_lambda_old, WGD->numcell_cent * sizeof(float));
-  cudaMalloc((void **)&d_u0, WGD->numcell_face * sizeof(float));
+  /*cudaMalloc((void **)&d_u0, WGD->numcell_face * sizeof(float));
   cudaMalloc((void **)&d_v0, WGD->numcell_face * sizeof(float));
-  cudaMalloc((void **)&d_w0, WGD->numcell_face * sizeof(float));
+  cudaMalloc((void **)&d_w0, WGD->numcell_face * sizeof(float));*/
   cudaMalloc((void **)&d_dz_array, (WGD->nz - 1) * sizeof(float));
   cudaMalloc((void **)&d_R, WGD->numcell_cent * sizeof(float));
   cudaMalloc((void **)&d_value, WGD->numcell_cent * sizeof(float));
@@ -253,10 +253,12 @@ void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
   cudaMalloc((void **)&d_v, WGD->numcell_face * sizeof(float));
   cudaMalloc((void **)&d_w, WGD->numcell_face * sizeof(float));
 
-
-  cudaMemcpy(d_u0, WGD->u0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  /*cudaMemcpy(d_u0, WGD->u0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_v0, WGD->v0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_w0, WGD->w0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_w0, WGD->w0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);*/
+  cudaMemcpy(d_u, WGD->u0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_v, WGD->v0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_w, WGD->w0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_R, R.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_e, WGD->e.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_f, WGD->f.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
@@ -275,7 +277,7 @@ void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
   dim3 numberOfBlocks(ceil(((WGD->nx - 1) * (WGD->ny - 1) * (WGD->nz - 1)) / (float)(BLOCKSIZE)), 1, 1);
 
   // Invoke divergence kernel
-  divergenceShared<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_u0, d_v0, d_w0, d_R, d_e, d_f, d_g, d_h, d_m, d_n, alpha1, WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, d_dz_array);
+  divergenceShared<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_u, d_v, d_w, d_R, d_e, d_f, d_g, d_h, d_m, d_n, alpha1, WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, d_dz_array);
 
 
   /////////////////////////////////////////////////
@@ -357,7 +359,7 @@ void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
 
   dim3 numberOfBlocks3(ceil((WGD->nx * WGD->ny * WGD->nz) / (float)(BLOCKSIZE)), 1, 1);
   // Invoke final velocity (Euler) kernel
-  finalVelocityShared<<<numberOfBlocks3, numberOfThreadsPerBlock>>>(d_u0, d_v0, d_w0, d_lambda, d_u, d_v, d_w, d_icellflag, d_f, d_h, d_n, alpha1, alpha2, WGD->dx, WGD->dy, WGD->dz, d_dz_array, WGD->nx, WGD->ny, WGD->nz);
+  finalVelocityShared<<<numberOfBlocks3, numberOfThreadsPerBlock>>>(d_lambda, d_u, d_v, d_w, d_icellflag, d_f, d_h, d_n, alpha1, alpha2, WGD->dx, WGD->dy, WGD->dz, d_dz_array, WGD->nx, WGD->ny, WGD->nz);
   cudaCheck(cudaGetLastError());
 
   cudaMemcpy(WGD->u.data(), d_u, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
@@ -376,9 +378,9 @@ void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool 
   cudaFree(d_R);
   cudaFree(d_value);
   cudaFree(d_bvalue);
-  cudaFree(d_u0);
+  /*cudaFree(d_u0);
   cudaFree(d_v0);
-  cudaFree(d_w0);
+  cudaFree(d_w0);*/
   cudaFree(d_u);
   cudaFree(d_v);
   cudaFree(d_w);
