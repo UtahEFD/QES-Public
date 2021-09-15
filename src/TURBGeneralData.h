@@ -58,10 +58,14 @@ public:
   TURBGeneralData()
   {}
   TURBGeneralData(const WINDSInputData *, WINDSGeneralData *);
+  TURBGeneralData(WINDSGeneralData *);
+
+
   virtual ~TURBGeneralData()
   {}
 
   virtual void run(WINDSGeneralData *);
+  void getDerivatives_v2(WINDSGeneralData *);
 
   bool flagUniformZGrid = true; /**< :document this: */
   bool flagNonLocalMixing; /**< :document this: */
@@ -161,7 +165,7 @@ private:
   void getFrictionVelocity(WINDSGeneralData *);
 
   void getDerivatives(WINDSGeneralData *);
-  void getDerivatives_v2(WINDSGeneralData *);
+  //void getDerivatives_v2(WINDSGeneralData *);
 
   void getStressTensor();
   void getStressTensor_v2();

@@ -22,6 +22,23 @@ target_link_libraries(compareSolvers ${NETCDF_LIBRARIES_C})
 target_link_libraries(compareSolvers cudadevrt)
 target_link_libraries(compareSolvers ${CUDA_LIBRARIES})
 
+CUDA_ADD_EXECUTABLE(testDerivatives testDerivatives.cpp)
+
+target_link_libraries(testDerivatives curand)
+target_link_libraries(testDerivatives qeswindscore)
+target_link_libraries(testDerivatives qeswindsutil)
+
+IF (HAS_OPTIX_SUPPORT MATCHES ON)
+  target_link_libraries(testDerivatives qesOptix)
+ENDIF()
+
+target_link_libraries(testDerivatives ${Boost_PROGRAM_OPTIONS_LIBRARIES})
+target_link_libraries(testDerivatives ${Boost_DATE_TIME_LIBRARIES})
+target_link_libraries(testDerivatives ${GDAL_LIBRARY})
+target_link_libraries(testDerivatives ${NETCDF_LIBRARIES_CXX})
+target_link_libraries(testDerivatives ${NETCDF_LIBRARIES_C})
+target_link_libraries(testDerivatives cudadevrt)
+target_link_libraries(testDerivatives ${CUDA_LIBRARIES})
 
 #Comparison tests function
 function(add_comparison_test infile_prefix solver_arg solver_name)
