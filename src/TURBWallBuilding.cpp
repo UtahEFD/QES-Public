@@ -34,26 +34,35 @@
 
 #include "TURBWallBuilding.h"
 
-void TURBWallBuilding::defineWalls(WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void TURBWallBuilding::defineWalls(const WINDSInputData *WID,
+                                   WINDSGeneralData *WGD,
+                                   TURBGeneralData *TGD)
 {
-  // fill array with cellid  of cutcell cells
-  get_cutcell_wall_id(WGD, icellflag_cutcell);
-  // fill itrublfag with cutcell flag
-  set_cutcell_wall_flag(TGD, iturbflag_cutcell);
-
-  // [FM] temporary fix -> use stairstep within the cut-cell
-  get_stairstep_wall_id(WGD, icellflag_building);
-  set_stairstep_wall_flag(TGD, iturbflag_stairstep);
-
-  /*
-    [FM] temporary fix -> when cut-cell treatement is implmented
-    if(cutcell_wall_id.size()==0) {
-    get_stairstep_wall_id(WGD,icellflag_building);
-    set_stairstep_wall_flag(TGD,iturbflag_stairstep);
-    }else{
+  if (WID->simParams->meshTypeFlag == 1) {
     use_cutcell = true;
+    // fill array with cellid  of cutcell cells
+    get_cutcell_wall_id(WGD, icellflag_cutcell);
+    // fill itrublfag with cutcell flag
+    set_cutcell_wall_flag(TGD, iturbflag_cutcell);
+
+    // [FM] temporary fix -> use stairstep within the cut-cell
+    get_stairstep_wall_id(WGD, icellflag_building);
+    set_stairstep_wall_flag(TGD, iturbflag_stairstep);
+    set_wall = &TURBWallBuilding::set_finitediff_stairstep;
+
+  } else {
+    use_cutcell = false;
+    // use stairstep
+    get_stairstep_wall_id(WGD, icellflag_building);
+    set_stairstep_wall_flag(TGD, iturbflag_stairstep);
+    if (WID->turbParams->buildingWallFlag == 1) {
+      set_wall = &TURBWallBuilding::set_loglaw_stairstep;
+    } else if (WID->turbParams->buildingWallFlag == 2) {
+      set_wall = &TURBWallBuilding::set_finitediff_stairstep;
+    } else {
+      set_wall = nullptr;
     }
-  */
+  }
 
   return;
 }
@@ -61,33 +70,7 @@ void TURBWallBuilding::defineWalls(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 
 void TURBWallBuilding::setWallsBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
-
-  /*
-    This function apply the loglow at the wall for building
-    Note:
-    - only stair-step is implemented
-    - need to do: cut-cell for building
-  */
-
-  if (!use_cutcell) {
-    //set_loglaw_stairstep(WGD, TGD);
-    set_finitediff_stairstep(WGD, TGD);
-  } else {
-    //[FM] temporary fix because the cut-cell are messing with the wall
-    // at the terrain
-    /*
-      for (size_t i = 0; i < cutcell_wall_id.size(); i++) {
-      int id_cc = cutcell_wall_id[i];
-      TGD->Sxx[id_cc] = 0.0;
-      TGD->Sxy[id_cc] = 0.0;
-      TGD->Sxz[id_cc] = 0.0;
-      TGD->Syy[id_cc] = 0.0;
-      TGD->Syz[id_cc] = 0.0;
-      TGD->Szz[id_cc] = 0.0;
-      TGD->Lm[id_cc] = 0.0;
-      }
-    */
-  }
+  if (set_wall) (this->*set_wall)(WGD, TGD);
 }
 
 

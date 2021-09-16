@@ -55,6 +55,7 @@
 class TURBWallBuilding : public TURBWall
 {
 protected:
+  void (TURBWallBuilding::*set_wall)(WINDSGeneralData *, TURBGeneralData *);
   void set_loglaw_stairstep(WINDSGeneralData *, TURBGeneralData *);
   void set_finitediff_stairstep(WINDSGeneralData *, TURBGeneralData *);
 
@@ -71,7 +72,7 @@ public:
    * of the cells that have wall to right/left, wall above/bellow
    * and wall in front/back
    */
-  void defineWalls(WINDSGeneralData *, TURBGeneralData *);
+  void defineWalls(const WINDSInputData *, WINDSGeneralData *, TURBGeneralData *);
   void setWallsBC(WINDSGeneralData *, TURBGeneralData *);
 
 private:

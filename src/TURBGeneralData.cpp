@@ -147,7 +147,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   wallVec.push_back(new TURBWallTerrain());
   /// Boundary condition at wall
   for (auto i = 0u; i < wallVec.size(); i++) {
-    wallVec.at(i)->defineWalls(WGD, this);
+    wallVec.at(i)->defineWalls(WID, WGD, this);
   }
   // std::cout << "\t\t Walls Defined...\n";
 
