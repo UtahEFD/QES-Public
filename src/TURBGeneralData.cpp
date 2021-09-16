@@ -531,29 +531,29 @@ void TURBGeneralData::getDerivatives_v2(WINDSGeneralData *WGD)
                    - (WGD->v[faceID - 1] - WGD->v[faceID - 1 + nx]))
                   / (4.0 * WGD->dx);
     // Gzx = dwdx
-    Gzx[cellID] = ((WGD->w[faceID + 1] + WGD->u[faceID + 1 + nx * ny]
-                    - WGD->u[faceID - 1] + WGD->u[faceID - 1 + nx * ny]))
+    Gzx[cellID] = ((WGD->w[faceID + 1] + WGD->w[faceID + 1 + nx * ny]
+                    - WGD->w[faceID - 1] + WGD->w[faceID - 1 + nx * ny]))
                   / (4.0 * WGD->dx);
 
     // Gxy = dudy
     Gxy[cellID] = ((WGD->u[faceID + nx] + WGD->u[faceID + 1 + nx])
                    - (WGD->u[faceID - nx] + WGD->u[faceID + 1 - nx]))
-                  / (4.0 * WGD->dx);
+                  / (4.0 * WGD->dy);
     // Gyy = dvdy
     Gyy[cellID] = (WGD->v[faceID + nx] - WGD->v[faceID]) / (WGD->dy);
     // Gzy = dwdy
-    Gzy[cellID] = ((WGD->w[faceID + nx] + WGD->u[faceID + nx + nx * ny])
-                   - (WGD->u[faceID - nx] + WGD->u[faceID - nx + nx * ny]))
-                  / (4.0 * WGD->dx);
+    Gzy[cellID] = ((WGD->w[faceID + nx] + WGD->w[faceID + nx + nx * ny])
+                   - (WGD->w[faceID - nx] + WGD->w[faceID - nx + nx * ny]))
+                  / (4.0 * WGD->dy);
 
 
     if (flagUniformZGrid) {
       // Gxz = dudz
-      Gxz[cellID] = ((WGD->u[faceID + nx * ny] + WGD->u[faceID + 1 + nx * nx])
+      Gxz[cellID] = ((WGD->u[faceID + nx * ny] + WGD->u[faceID + 1 + nx * ny])
                      - (WGD->u[faceID - nx * ny] + WGD->u[faceID + 1 - nx * ny]))
                     / (4.0 * WGD->dz);
       // Gyz = dvdz
-      Gyz[cellID] = ((WGD->v[faceID + nx * ny] + WGD->v[faceID + nx + nx * nx])
+      Gyz[cellID] = ((WGD->v[faceID + nx * ny] + WGD->v[faceID + nx + nx * ny])
                      - (WGD->v[faceID - nx * ny] + WGD->v[faceID + nx - nx * ny]))
                     / (4.0 * WGD->dz);
       // Gzz = dwdz
@@ -561,7 +561,7 @@ void TURBGeneralData::getDerivatives_v2(WINDSGeneralData *WGD)
     } else {
       // Gxz = dudz
       Gxz[cellID] = (0.5 * (WGD->z[k] - WGD->z[k - 1]) / (WGD->z[k + 1] - WGD->z[k])
-                       * ((WGD->u[faceID + nx * ny] + WGD->u[faceID + 1 + nx * nx])
+                       * ((WGD->u[faceID + nx * ny] + WGD->u[faceID + 1 + nx * ny])
                           - (WGD->u[faceID] + WGD->u[faceID + 1]))
                      + 0.5 * (WGD->z[k + 1] - WGD->z[k]) / (WGD->z[k] - WGD->z[k - 1])
                          * ((WGD->u[faceID] + WGD->u[faceID + 1])
@@ -569,7 +569,7 @@ void TURBGeneralData::getDerivatives_v2(WINDSGeneralData *WGD)
                     / (WGD->z[k + 1] - WGD->z[k - 1]);
       // Gyz = dvdz
       Gyz[cellID] = (0.5 * (WGD->z[k] - WGD->z[k - 1]) / (WGD->z[k + 1] - WGD->z[k])
-                       * ((WGD->v[faceID + nx * ny] + WGD->v[faceID + nx + nx * nx])
+                       * ((WGD->v[faceID + nx * ny] + WGD->v[faceID + nx + nx * ny])
                           - (WGD->v[faceID] + WGD->v[faceID + nx]))
                      + 0.5 * (WGD->z[k + 1] - WGD->z[k]) / (WGD->z[k] - WGD->z[k - 1])
                          * ((WGD->v[faceID] + WGD->v[faceID + nx])

@@ -70,8 +70,8 @@ void TURBWallBuilding::setWallsBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   */
 
   if (!use_cutcell) {
-    set_loglaw_stairstep(WGD, TGD);
-    //set_finitediff_stairstep(WGD, TGD);
+    //set_loglaw_stairstep(WGD, TGD);
+    set_finitediff_stairstep(WGD, TGD);
   } else {
     //[FM] temporary fix because the cut-cell are messing with the wall
     // at the terrain
@@ -257,8 +257,8 @@ void TURBWallBuilding::set_finitediff_stairstep(WINDSGeneralData *WGD, TURBGener
                            / WGD->dy;
   }
   // set BC for vertical wall left of the cell
-  for (std::vector<pairCellFaceID>::iterator it = wall_below_indices.begin();
-       it != wall_below_indices.end();
+  for (std::vector<pairCellFaceID>::iterator it = wall_left_indices.begin();
+       it != wall_left_indices.end();
        ++it) {
     // Gxy = dudy
     TGD->Gxy[it->cellID] = (0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1])
