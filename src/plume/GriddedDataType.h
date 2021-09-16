@@ -42,7 +42,9 @@
 
 #include "util/calcTime.h"
 #include "Random.h"
+#include "util/Vector3Int.h"
 #include "util/Vector3.h"
+#include "util/Vector3Double.h"
 
 #include "PlumeInputData.hpp"
 #include "src/winds/WINDSGeneralData.h"
@@ -116,8 +118,8 @@ public:
                                    double &tzz_out) = 0;
 
   int getCellId(const double &, const double &, const double &);
-  int getCellId(Vector3<double> &);
-  Vector3<int> getCellIndex(const int &);
+  int getCellId(Vector3Double &);
+  Vector3Int getCellIndex(const int &);
 
 protected:
   // index of domain bounds
@@ -141,7 +143,7 @@ inline int GriddedDataType::getCellId(const double &xPos, const double &yPos, co
   return i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
 }
 
-inline int GriddedDataType::getCellId(Vector3<double> &X)
+inline int GriddedDataType::getCellId(Vector3Double &X)
 {
   //int i = floor((xPos - xStart + 0.5*dx)/(dx+1e-9));
   //int j = floor((yPos - yStart + 0.5*dy)/(dy+1e-9));
@@ -154,7 +156,7 @@ inline int GriddedDataType::getCellId(Vector3<double> &X)
   return i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
 }
 
-inline Vector3<int> GriddedDataType::getCellIndex(const int &cellId)
+inline Vector3Int GriddedDataType::getCellIndex(const int &cellId)
 {
   int k = (int)(cellId / ((nx - 1) * (ny - 1)));
   int j = (int)((cellId - k * (nx - 1) * (ny - 1)) / (nx - 1));

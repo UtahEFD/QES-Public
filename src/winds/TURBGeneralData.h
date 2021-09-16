@@ -68,6 +68,7 @@ public:
   // load data at given time instance
   void loadNetCDFData(int);
 
+  bool flagUniformZGrid = true; /**< :document this: */
   bool flagNonLocalMixing; /**< :document this: */
 
   // General QUIC Domain Data
@@ -108,6 +109,19 @@ public:
     2 - stairstep terrain-wall, 3 - cut-cell terrain
     4 - stairstep building-wall, 5 - cut-cell building
   */
+
+  ///@{
+  /** Velocity gradient tensor */
+  std::vector<float> Gxx;
+  std::vector<float> Gxy;
+  std::vector<float> Gxz;
+  std::vector<float> Gyx;
+  std::vector<float> Gyy;
+  std::vector<float> Gyz;
+  std::vector<float> Gzx;
+  std::vector<float> Gzy;
+  std::vector<float> Gzz;
+  ///@}
 
   ///@{
   /** strain rate tensor */
@@ -158,8 +172,13 @@ private:
   NetCDFInput *input;
 
   void getFrictionVelocity(WINDSGeneralData *);
+
   void getDerivatives(WINDSGeneralData *);
+  void getDerivatives_v2(WINDSGeneralData *);
+
   void getStressTensor();
+  void getStressTensor_v2();
+
 
   void boundTurbFields();
 };

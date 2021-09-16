@@ -27,41 +27,56 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file HitRecord.h */
 
 #pragma once
 
-#ifndef HR_H
-#define HR_H
+#include <iostream>
+#include "util/ParseInterface.h"
 
-#include "util/Vector3.h"
-#include <limits>
 
-/**
- * @class HitRecord
- * @brief Used to store information about intersections.
- *
- * @note Can add other information about the BVH node it hits as needed.
- *
- * @sa Vector3
- * @sa BVH
- */
-class HitRecord
+class Vector3Int : public ParseInterface
 {
+protected:
+  std::vector<int> values;
+
+
 public:
-  bool isHit; /**< :document this: */
-  void *hitNode; /**< Reference to BVH node that was hit */
-  float hitDist; /**< Distance from ray origin to hit point */
-  float t; /**< :document this: */
-  Vector3 endpt; /**< The intersection point */
+  Vector3Int()
+  {
 
-  HitRecord();
-  HitRecord(void *hitNode, bool isHit);
-  HitRecord(void *hitNode, bool isHit, float hitDist);
+    values.resize(3);
+    values[0] = values[1] = values[2] = 0;
+  }
 
-  void *getHitNode();
-  float getHitDist();
-  bool getIsHit();
+  template<typename X>
+  Vector3Int(const X a, const X b, const X c)
+  {
+    /*values.clear();
+    values.push_back(a);
+    values.push_back(b);
+    values.push_back(c);*/
+    values.resize(3);
+
+    values[0] = a;
+    values[1] = b;
+    values[2] = c;
+  }
+
+  virtual void parseValues()
+  {
+    values.clear();
+    parseTaglessValues(values);
+  }
+
+  ~Vector3Int() {}
+
+  int operator[](const int i) const
+  {
+    return values[i];
+  }
+
+  int &operator[](const int i)
+  {
+    return values[i];
+  }
 };
-
-#endif

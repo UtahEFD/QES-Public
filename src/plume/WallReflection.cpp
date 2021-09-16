@@ -127,8 +127,8 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
   int cellIdOld = eul->getCellId(xPos - disX, yPos - disY, zPos - disZ);
 
   // i,j,k of cell index
-  Vector3<int> cellIdxOld = eul->getCellIndex(cellIdOld);
-  Vector3<int> cellIdxNew = eul->getCellIndex(cellIdNew);
+  Vector3Int cellIdxOld = eul->getCellIndex(cellIdOld);
+  Vector3Int cellIdxNew = eul->getCellIndex(cellIdNew);
   int i = cellIdxOld[0], j = cellIdxOld[1], k = cellIdxOld[2];
 
   // check particle trajectory more than 1 cell in each direction
@@ -137,7 +137,10 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
     xPos -= disX;
     yPos -= disY;
     zPos -= disZ;
-    std::cerr << "Reflection problem: particle moved too fast" << std::endl;
+    std::cerr << "Reflection problem: particle moved too fast: cell traveled: "
+              << abs(cellIdxOld[0] - cellIdxNew[0]) << ","
+              << abs(cellIdxOld[1] - cellIdxNew[1]) << ","
+              << abs(cellIdxOld[2] - cellIdxNew[2]) << std::endl;
     return true;
   }
 
@@ -154,7 +157,7 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
   double dz = WGD->dz;
 
   // cartesian basis vectors
-  Vector3<double> e1 = { 1.0, 0.0, 0.0 }, e2 = { 0.0, 1.0, 0.0 }, e3 = { 0.0, 0.0, 1.0 };
+  Vector3Double e1 = { 1.0, 0.0, 0.0 }, e2 = { 0.0, 1.0, 0.0 }, e3 = { 0.0, 0.0, 1.0 };
 
   /* 
        Vector3 variables informations:
@@ -169,10 +172,10 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
        R        = unit vector giving orentation of the reflection
        N        = unit vector noraml to the surface
     */
-  Vector3<double> Xnew, Xold;
-  Vector3<double> vecFluct, vecFluct_old;
-  Vector3<double> P, S, U, V1, V2;
-  Vector3<double> R, N;
+  Vector3Double Xnew, Xold;
+  Vector3Double vecFluct, vecFluct_old;
+  Vector3Double P, S, U, V1, V2;
+  Vector3Double R, N;
 
   // position of the particle start of trajectory
   Xold = { xPos - disX, yPos - disY, zPos - disZ };
@@ -273,7 +276,7 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
       // - ratio of dist. to wall over dist. total
       std::vector<double> vl;
       // - normal vector for each surface
-      std::vector<Vector3<double>> vN;
+      std::vector<Vector3Double> vN;
       // - linear index for icellflag check
       std::vector<int> vn;
 

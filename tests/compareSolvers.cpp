@@ -1,16 +1,7 @@
-/* 
-  Bar-chart Author: Michael Thomas Greer
-  Source: http://cplusplus.com/forum/beginner/264784/
-  Date: 11 Jul 2021
-*/
-
 #include <iostream>
 #include <cmath>
 #include <vector>
 #include <string>
-#include <algorithm>
-#include <iomanip>
-#include <sstream>
 
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
@@ -44,15 +35,6 @@
 
 #include "src/winds/TextTable.h"
 
-// For printing comparison results bar chart
-// The isatty() function will tell us whether standard input is piped or not.
-#ifdef _WIN32
-#include <windows.h>
-#include <io.h>
-#define isatty _isatty
-#else
-#include <unistd.h>
-#endif
 
 namespace pt = boost::property_tree;
 
@@ -76,9 +58,6 @@ WINDSGeneralData *runSerial(WINDSGeneralData *WGD, WINDSInputData *WID, Solver *
 WINDSGeneralData *runDynamic(WINDSGeneralData *WGD_DYNAMIC, WINDSInputData *WID, Solver *solverDynamic, bool solveWind);
 WINDSGeneralData *runGlobal(WINDSGeneralData *WGD_GLOBAL, WINDSInputData *WID, Solver *solverGlobal, bool solveWind);
 WINDSGeneralData *runShared(WINDSGeneralData *WGD_SHARED, WINDSInputData *WID, Solver *solverShared, bool solveWind);
-
-// This function prints the comparison results into a bar chart
-void printChart(string title, bool isHigherBetter, vector<double> results);
 
 int main(int argc, char *argv[])
 {
@@ -220,26 +199,30 @@ int main(int argc, char *argv[])
   }
 
   // Table title
-  std::cout << "Performing comparative analysis against CPU serial solver...\n";
-  TextTable t('-', '|', '+');
-  // Specify table header row here
-  t.add("SOLVER NAME");
-  t.add("MAX U DIFF");
-  t.add("MAX V DIFF");
-  t.add("MAX W DIFF");
-  t.add("AVG U DIFF");
-  t.add("AVG V DIFF");
-  t.add("AVG W DIFF");
-  t.add("WindVelMag DIFF");
-  t.add("R^2 VALUE");
-  t.add("Mean WVM DIFF");
-  t.add("Max WVM DIFF");
-  t.endOfRow();
+  std::cout << "Performing comparative analysis against CPU serial solver...\n"
+            << std::endl;
+  TextTable table1('-', '|', '+');
+  TextTable table2('-', '|', '+');
+  TextTable table3('-', '|', '+');
+  // Specify table 1 header row here
+  table1.add("SOLVER NAME");
+  table1.add("MAX U DIFF");
+  table1.add("MAX V DIFF");
+  table1.add("MAX W DIFF");
+  table1.endOfRow();
+  // Specify table 2 header row here
+  table2.add("SOLVER NAME");
+  table2.add("AVG U DIFF");
+  table2.add("AVG V DIFF");
+  table2.add("AVG W DIFF");
+  table2.endOfRow();
+  // Specify table 3 header row here
+  table3.add("SOLVER NAME");
+  table3.add("MAX WVM DIFF");
+  table3.add("AVG WVM DIFF");
+  table3.add("R^2 VALUE");
+  table3.endOfRow();
 
-  // These vars for storing comparison results for later bar chart construction in loop below
-  vector<double> wvmResults;
-  vector<double> rSquaredResults;
-  vector<double> avgWVMResults;
   // Loop to calculate comparison metrics between serial and parallel solvers
   for (int solversIndex = 0; solversIndex < completedSolvers.size(); ++solversIndex) {
     // Calculating u differences
@@ -290,13 +273,14 @@ int main(int argc, char *argv[])
     for (size_t i = 0; i < WGD->w.size(); ++i) {
       cpuWVM = sqrt(((WGD->u[i]) * (WGD->u[i])) + ((WGD->v[i]) * (WGD->v[i])) + ((WGD->w[i]) * (WGD->w[i])));
       gpuWVM = sqrt(((completedSolvers[solversIndex]->u[i]) * (completedSolvers[solversIndex]->u[i])) + ((completedSolvers[solversIndex]->v[i]) * (completedSolvers[solversIndex]->v[i])) + ((completedSolvers[solversIndex]->w[i]) * (completedSolvers[solversIndex]->w[i])));
-      totalWvmDif += std::abs(cpuWVM - gpuWVM);
       if (std::abs(cpuWVM - gpuWVM) > maxWvmDif) maxWvmDif = std::abs(cpuWVM - gpuWVM);
+      totalWvmDif += std::abs(cpuWVM - gpuWVM);
       // These sums required for R-squared calculations below
       cpuSum += cpuWVM;
       gpuSum += gpuWVM;
     }
     avgWvmDif = totalWvmDif / WGD->w.size();
+
     // /////////////////////////
     // CALCULATING R-squared
     // /////////////////////////
@@ -329,23 +313,21 @@ int main(int argc, char *argv[])
     float rSquared = r * r;
 
     // Table comparison metrics row
-    t.add(solverNames[solversIndex]);
-    t.add(std::to_string(maxUDif));
-    t.add(std::to_string(maxVDif));
-    t.add(std::to_string(maxWDif));
-    t.add(std::to_string(avgUDif));
-    t.add(std::to_string(avgVDif));
-    t.add(std::to_string(avgWDif));
-    t.add(std::to_string(totalWvmDif));
-    t.add(std::to_string(rSquared));
-    t.add(std::to_string(avgWvmDif));
-    t.add(std::to_string(maxWvmDif));
-    t.endOfRow();
-
-    // Stores results for bar chart construction that happens after this loop completes
-    avgWVMResults.push_back(avgWvmDif);
-    wvmResults.push_back(totalWvmDif);
-    rSquaredResults.push_back(rSquared);
+    table1.add(solverNames[solversIndex]);
+    table1.add(std::to_string(maxUDif));
+    table1.add(std::to_string(maxVDif));
+    table1.add(std::to_string(maxWDif));
+    table1.endOfRow();
+    table2.add(solverNames[solversIndex]);
+    table2.add(std::to_string(avgUDif));
+    table2.add(std::to_string(avgVDif));
+    table2.add(std::to_string(avgWDif));
+    table2.endOfRow();
+    table3.add(solverNames[solversIndex]);
+    table3.add(std::to_string(maxWvmDif));
+    table3.add(std::to_string(avgWvmDif));
+    table3.add(std::to_string(rSquared));
+    table3.endOfRow();
 
     //std::cout << "  Max u difference: " << maxUDif << std::endl;
     //std::cout << "  Max v difference: " << maxVDif << std::endl;
@@ -365,14 +347,13 @@ int main(int argc, char *argv[])
     //std::cout << std::endl;
   }
   // Print comparison table
-  std::cout << t << std::endl;
-  // Print comparison bar charts if user is running all solvers
-  if (arguments.solveType == 1) {
-    printChart("WindVelMag DIFF", false, wvmResults);
-    printChart("Average WVM DIFF", false, avgWVMResults);
-    //printChart("R^2 VALUE", true, rSquaredResults);
-  }
-  std::cout << "✔ Comparative analysis complete\n";
+  std::cout << "Table 1 of 3\n";
+  std::cout << table1 << std::endl;
+  std::cout << "Table 2 of 3\n";
+  std::cout << table2 << std::endl;
+  std::cout << "Table 3 of 3\n";
+  std::cout << table3 << std::endl;
+  std::cout << "Comparative analysis complete!\n";
 
   //if (TGD != nullptr)
   //  TGD->run(WGD);
@@ -507,7 +488,7 @@ WINDSGeneralData *runSerial(WINDSGeneralData *WGD, WINDSInputData *WID, Solver *
   WGD->applyParametrizations(WID);
 
   solverCPU->solve(WID, WGD, !solveWind);
-  std::cout << "✔ CPU solver done\n";
+  std::cout << "CPU solver done!\n";
   std::cout << std::endl;
   return WGD;
 }
@@ -528,7 +509,7 @@ WINDSGeneralData *runDynamic(WINDSGeneralData *WGD_DYNAMIC, WINDSInputData *WID,
   WGD_DYNAMIC->applyParametrizations(WID);
 
   solverDynamic->solve(WID, WGD_DYNAMIC, !solveWind);
-  std::cout << "✔ Dynamic solver done\n";
+  std::cout << "Dynamic solver done!\n";
   std::cout << std::endl;
   return WGD_DYNAMIC;
 }
@@ -549,7 +530,7 @@ WINDSGeneralData *runGlobal(WINDSGeneralData *WGD_GLOBAL, WINDSInputData *WID, S
   WGD_GLOBAL->applyParametrizations(WID);
 
   solverGlobal->solve(WID, WGD_GLOBAL, !solveWind);
-  std::cout << "✔ Global solver done\n";
+  std::cout << "Global solver done!\n";
   std::cout << std::endl;
   return WGD_GLOBAL;
 }
@@ -570,88 +551,7 @@ WINDSGeneralData *runShared(WINDSGeneralData *WGD_SHARED, WINDSInputData *WID, S
   WGD_SHARED->applyParametrizations(WID);
 
   solverShared->solve(WID, WGD_SHARED, !solveWind);
-  std::cout << "✔ Shared solver done\n";
+  std::cout << "Shared solver done!\n";
   std::cout << std::endl;
   return WGD_SHARED;
-}
-
-void printChart(string title, bool isHigherBetter, vector<double> results)
-{
-// Windows needs a little help...
-#ifdef _WIN32
-  SetConsoleOutputCP(CP_UTF8);
-#endif
-
-  // Maximum screen height
-  int max_lines = 12;
-
-  // Calculate the vertical dimensions of the graph,
-  // fitting it to the available space as necessary.
-  double domain = *std::max_element(results.begin(), results.end());
-  double divisor = (domain < (max_lines - 3)) ? 1 : domain / (max_lines - 3);
-  int nlines = (domain < (max_lines - 3)) ? (int)domain : (max_lines - 3);
-
-  // Output Glyphs (this is the UTF-8 required part)
-  const char *none_bar = "────";
-  const char *half_bar = "─▄▄▄";
-  const char *full_bar = "─███";
-  const char *x_axis = "─▀▀▀";
-  const char *x_axis_0 = "────";
-  const char *x_axis_cap = "─ ";
-  const char *y_axis = "├";
-  const char *line_cap = "─ ";
-  const char *origin = "└";
-
-  // Find max number length for future vertical alignment calculations
-  int maxNum = *max_element(results.begin(), results.end());
-  int maxNumLength = std::to_string(maxNum).length();
-  int spaces = 0;
-
-  // Draw the graph
-  spaces = maxNumLength;
-  std::cout << std::string(spaces, ' ') << title << std::endl;
-  if (isHigherBetter)
-    std::cout << std::string(spaces, ' ') << "HIGHER IS BETTER";
-  else
-    std::cout << std::string(spaces, ' ') << "LOWER IS BETTER";
-
-  // Draw everything above the X-axis
-  std::cout << std::fixed << "\n";
-  for (int n = 0; n < nlines; n++) {
-    double y2 = (nlines - n) * divisor;
-    double y1 = y2 - divisor / 4;
-    // Calculate number of spaces to add before Y-axis labels
-    int y2Length = std::to_string((int)y2).length();
-    spaces = maxNumLength - y2Length;
-    std::cout << std::string(spaces, ' ') << std::setprecision(0) << y2 << y_axis;
-    for (auto x : results) {
-      if (x > y2)
-        std::cout << full_bar;
-      else if (x > y1)
-        std::cout << half_bar;
-      else
-        std::cout << none_bar;
-    }
-    std::cout << line_cap << "\n";
-  }
-
-  // Draw the X-axis
-  spaces = maxNumLength - 1;
-  std::cout << std::string(spaces, ' ') << "0" << origin;
-  for (auto x : results) {
-    if (x > divisor / 4)
-      std::cout << x_axis;
-    else
-      std::cout << x_axis_0;
-  }
-  std::cout << x_axis_cap << "\n";
-
-  // Draw labels under the X-axis
-  spaces = maxNumLength + 2;
-  std::cout << std::string(spaces, ' ');
-  std::vector<string> xAxisLabels = { "DYN", "GBL", "SHR" };
-  for (int n = 0; n < xAxisLabels.size(); ++n)
-    std::cout << std::setw(4) << xAxisLabels[n];
-  std::cout << "\n"
-            << std::endl;
 }

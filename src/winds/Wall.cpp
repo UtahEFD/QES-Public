@@ -322,7 +322,9 @@ void Wall::wallLogBC(WINDSGeneralData *WGD)
   float wind_dir;// wind direction in parallel planes to wall
 
   // Total size of wall indices
-  int wall_size = WGD->wall_right_indices.size() + WGD->wall_left_indices.size() + WGD->wall_above_indices.size() + WGD->wall_below_indices.size() + WGD->wall_front_indices.size() + WGD->wall_back_indices.size();
+  int wall_size = WGD->wall_right_indices.size() + WGD->wall_left_indices.size()
+                  + WGD->wall_above_indices.size() + WGD->wall_below_indices.size()
+                  + WGD->wall_front_indices.size() + WGD->wall_back_indices.size();
 
   std::vector<float> ustar;
   ustar.resize(wall_size, 0.0);

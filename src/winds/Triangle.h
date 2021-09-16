@@ -48,18 +48,18 @@
 class Triangle : public ParseInterface
 {
 public:
-  Vector3<float> *a, *b, *c;
+  Vector3 *a, *b, *c;
 
   Triangle()
   {
     a = b = c = 0;
   }
 
-  Triangle(Vector3<float> aN, Vector3<float> bN, Vector3<float> cN)
+  Triangle(Vector3 aN, Vector3 bN, Vector3 cN)
   {
-    a = new Vector3<float>(aN);
-    b = new Vector3<float>(bN);
-    c = new Vector3<float>(cN);
+    a = new Vector3(aN);
+    b = new Vector3(bN);
+    c = new Vector3(cN);
   }
 
   /**

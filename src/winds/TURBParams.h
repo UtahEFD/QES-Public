@@ -60,9 +60,9 @@ public:
 
   int mlSamplesPerAirCell;
 
-  Vector3<float> *sigConst;
+  Vector3 *sigConst;
   bool flagNonLocalMixing;
-
+  int buildingWallFlag, terrainWallFlag;
   float turbUpperBound;
 
   TURBParams()
@@ -91,17 +91,20 @@ public:
     parsePrimitive<int>(false, mlSamplesPerAirCell, "samples");
     if (methodLocalMixing == 3) {
 
-      std::cout << "Setting samples per air cell for ray-traced mixing length to " << mlSamplesPerAirCell << std::endl;
+      std::cout << "Setting samples per air cell for ray-traced mixing length to "
+                << mlSamplesPerAirCell << std::endl;
     }
 
 
     if (methodLocalMixing < 0 || methodLocalMixing > 4) {
-      std::cout << "[WARNING] unknown local mixing method -> set method to 0 (height above terrain)" << std::endl;
+      std::cout << "[WARNING] unknown local mixing method -> "
+                << "set method to 0 (height above terrain)" << std::endl;
       methodLocalMixing = 0;
     }
 
     if ((methodLocalMixing == 4 || save2file == true) && (filename == "")) {
-      std::cout << "[WARNING] no local mixing file provided -> set method to 0 (height above terrain)" << std::endl;
+      std::cout << "[WARNING] no local mixing file provided -> "
+                << "set method to 0 (height above terrain)" << std::endl;
       methodLocalMixing = 0;
     }
     if (methodLocalMixing == 0 || methodLocalMixing == 4) {
@@ -109,10 +112,15 @@ public:
     }
 
     sigConst = nullptr;
-    parseElement<Vector3<float>>(false, sigConst, "sigmaConst");
+    parseElement<Vector3>(false, sigConst, "sigmaConst");
 
     flagNonLocalMixing = false;
     parsePrimitive<bool>(false, flagNonLocalMixing, "nonLocalMixing");
+
+    terrainWallFlag = 2;
+    parsePrimitive<int>(false, terrainWallFlag, "terrainWallFlag");
+    buildingWallFlag = 2;
+    parsePrimitive<int>(false, buildingWallFlag, "buildingWallFlag");
 
     turbUpperBound = 100;
     parsePrimitive<float>(false, turbUpperBound, "turbUpperBound");
