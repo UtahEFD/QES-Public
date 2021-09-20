@@ -37,24 +37,24 @@
 #if 0
 SphereDirections::SphereDirections(){
    //default cardinal directions for now
-   nextList[0] = *(new Vector3<float>(1,0,0));   //front
-   nextList[1] = *(new Vector3<float>(-1,0,0));  //back
-   nextList[2] = *(new Vector3<float>(0,1,0));   //left
-   nextList[3] = *(new Vector3<float>(0,-1,0));  //right
-   nextList[4] = *(new Vector3<float>(0,0,1));   //top
-   nextList[5] = *(new Vector3<float>(0,0,-1));  //bottom
+   nextList[0] = *(new Vector3(1,0,0));   //front
+   nextList[1] = *(new Vector3(-1,0,0));  //back
+   nextList[2] = *(new Vector3(0,1,0));   //left
+   nextList[3] = *(new Vector3(0,-1,0));  //right
+   nextList[4] = *(new Vector3(0,0,1));   //top
+   nextList[5] = *(new Vector3(0,0,-1));  //bottom
    vecCount = 0;
    numDirVec = 6;
 }
 
 SphereDirections::SphereDirections(int numDirVec){
    //default cardinal directions for now
-   nextList[0] = Vector3<float>(1,0,0);   //front
-   nextList[1] = Vector3<float>(-1,0,0);  //back
-   nextList[2] = Vector3<float>(0,1,0);   //left
-   nextList[3] = Vector3<float>(0,-1,0);  //right
-   nextList[4] = Vector3<float>(0,0,1);   //top
-   nextList[5] = Vector3<float>(0,0,-1);  //bottom
+   nextList[0] = Vector3(1,0,0);   //front
+   nextList[1] = Vector3(-1,0,0);  //back
+   nextList[2] = Vector3(0,1,0);   //left
+   nextList[3] = Vector3(0,-1,0);  //right
+   nextList[4] = Vector3(0,0,1);   //top
+   nextList[5] = Vector3(0,0,-1);  //bottom
    vecCount = 0;
    this->numDirVec = numDirVec;
 }
@@ -70,12 +70,12 @@ SphereDirections::SphereDirections(int numDirVec, float lowerThetaBound, float u
    this->upperPhiBound = upperPhiBound;
 
    //just to for sure check the bottom direction
-   nextList[0] = *(new Vector3<float>(0,0,-1));
+   nextList[0] = *(new Vector3(0,0,-1));
 }
 
-Vector3<float> SphereDirections::getNextDirCardinal(){
+Vector3 SphereDirections::getNextDirCardinal(){
    //temp for 6 cardinal directions
-   Vector3<float>* next = NULL;
+   Vector3* next = NULL;
    if(vecCount < numDirVec){
       next = &nextList[vecCount];
       vecCount++;
@@ -86,8 +86,8 @@ Vector3<float> SphereDirections::getNextDirCardinal(){
 
 
 
-Vector3<float> SphereDirections::getNextDir2(){
-   Vector3<float> nextDir;
+Vector3 SphereDirections::getNextDir2(){
+   Vector3 nextDir;
 
    //testing Mitchell's Best Candidate Version
    if(vecCount < numDirVec){
@@ -101,7 +101,7 @@ Vector3<float> SphereDirections::getNextDir2(){
          nextDir = nextList[vecCount];
       }else{
          int N = 5; //number of sample points to create
-         Vector3<float> samplePtList[N];
+         Vector3 samplePtList[N];
          for(int i = 0; i < N; i++){
             samplePtList[i] = genRandSpherePt();
          }

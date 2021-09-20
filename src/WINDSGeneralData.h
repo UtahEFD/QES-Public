@@ -265,7 +265,7 @@ public:
 
   Cell *cells; /**< :document this: */
   // bool DTEHFExists = false;
-  Cut_cell cut_cell; /**< :document this: */
+  Cut_cell *cut_cell; /**< :document this: */
   Wall *wall; /**< :document this: */
 
   // NetCDFInput* NCDFInput;     /**< :document this: */

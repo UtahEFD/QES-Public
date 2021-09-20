@@ -164,7 +164,7 @@ public:
   /*
    * @return the next cardinal directional vector or NULL if the vecCount > numDirVec
    */
-  //   Vector3<float> getNextDirCardinal();
+  //   Vector3 getNextDirCardinal();
 
   /**
    * Gets a randomly generated directional vector based on theta and
@@ -172,7 +172,7 @@ public:
    *
    * @return the next randomly generated directional vector
    */
-  //   Vector3<float> getNextDir();
+  //   Vector3 getNextDir();
   Vec3D getNextDir()
   {
     Vec3D retVal = nextList[vecCount];
@@ -189,5 +189,5 @@ public:
    *Gets the next unique direction
    *@return the next non-repeated directional vector
    */
-  //   Vector3<float> getNextDir2();
+  //   Vector3 getNextDir2();
 };

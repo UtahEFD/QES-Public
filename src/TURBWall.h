@@ -71,7 +71,7 @@ public:
    * of the cells that have wall to right/left, wall above/bellow
    * and wall in front/back
    */
-  virtual void defineWalls(WINDSGeneralData *, TURBGeneralData *) = 0;
+  virtual void defineWalls(const WINDSInputData *, WINDSGeneralData *, TURBGeneralData *) = 0;
   virtual void setWallsBC(WINDSGeneralData *, TURBGeneralData *) = 0;
 
 protected:

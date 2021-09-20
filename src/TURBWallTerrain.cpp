@@ -34,26 +34,35 @@
 
 #include "TURBWallTerrain.h"
 
-void TURBWallTerrain::defineWalls(WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void TURBWallTerrain::defineWalls(const WINDSInputData *WID,
+                                  WINDSGeneralData *WGD,
+                                  TURBGeneralData *TGD)
 {
-  // fill array with cellid  of cutcell cells
-  get_cutcell_wall_id(WGD, icellflag_cutcell);
-  // fill itrublfag with cutcell flag
-  set_cutcell_wall_flag(TGD, iturbflag_cutcell);
-
-  // [FM] temporary fix -> use stairstep within the cut-cell
-  get_stairstep_wall_id(WGD, icellflag_terrain);
-  set_stairstep_wall_flag(TGD, iturbflag_stairstep);
-
-  /*
-    [FM] temporary fix -> when cut-cell treatement is implmented
-    if(cutcell_wall_id.size()==0) {
-    get_stairstep_wall_id(WGD,icellflag_terrain);
-    set_stairstep_wall_flag(TGD,iturbflag_stairstep);
-    } else {
+  if (WID->simParams->meshTypeFlag == 1) {
     use_cutcell = true;
+    // fill array with cellid  of cutcell cells
+    get_cutcell_wall_id(WGD, icellflag_cutcell);
+    // fill itrublfag with cutcell flag
+    set_cutcell_wall_flag(TGD, iturbflag_cutcell);
+
+    // [FM] temporary fix -> use stairstep within the cut-cell
+    get_stairstep_wall_id(WGD, icellflag_terrain);
+    set_stairstep_wall_flag(TGD, iturbflag_stairstep);
+    set_wall = &TURBWallTerrain::set_finitediff_stairstep;
+  } else {
+    use_cutcell = false;
+    // use stairstep
+    get_stairstep_wall_id(WGD, icellflag_terrain);
+    set_stairstep_wall_flag(TGD, iturbflag_stairstep);
+    if (WID->turbParams->terrainWallFlag == 1) {
+      set_wall = &TURBWallTerrain::set_loglaw_stairstep;
+    } else if (WID->turbParams->terrainWallFlag == 2) {
+      set_wall = &TURBWallTerrain::set_finitediff_stairstep;
+    } else {
+      set_wall = nullptr;
     }
-  */
+  }
+
 
   return;
 }
@@ -61,32 +70,7 @@ void TURBWallTerrain::defineWalls(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 
 void TURBWallTerrain::setWallsBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
-
-  /*
-    This function apply the loglow at the wall for terrain
-    Note:
-    - only stair-step is implemented
-    - need to do: cut-cell for terrain
-  */
-
-  if (!use_cutcell) {
-    set_loglaw_stairstep(WGD, TGD);
-  } else {
-    // [FM] temporary fix because the cut-cell are messing with the wall
-    // at the terrain
-    /* 
-       for (size_t i = 0; i < cutcell_wall_id.size(); i++) {
-       int id_cc = cutcell_wall_id[i];
-       TGD->Sxx[id_cc] = 0.0;
-       TGD->Sxy[id_cc] = 0.0;
-       TGD->Sxz[id_cc] = 0.0;
-       TGD->Syy[id_cc] = 0.0;
-       TGD->Syz[id_cc] = 0.0;
-       TGD->Szz[id_cc] = 0.0;
-      TGD->Lm[id_cc] = 0.0;
-      }
-    */
-  }
+  if (set_wall) (this->*set_wall)(WGD, TGD);
 }
 
 
@@ -214,6 +198,103 @@ void TURBWallTerrain::set_loglaw_stairstep(WINDSGeneralData *WGD, TURBGeneralDat
     // Gzy = dwdy
     TGD->Gzy[it->cellID] = 0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny])
                            / (0.5 * WGD->dy * log(0.5 * WGD->dy / z0));
+  }
+
+  return;
+}
+
+void TURBWallTerrain::set_finitediff_stairstep(WINDSGeneralData *WGD, TURBGeneralData *TGD)
+{
+  int nx = WGD->nx;
+  int ny = WGD->ny;
+
+  // ## HORIZONTAL WALL
+  // set BC for horizontal wall below the cell
+  for (std::vector<pairCellFaceID>::iterator it = wall_below_indices.begin();
+       it != wall_below_indices.end();
+       ++it) {
+    int k = (int)(it->cellID / ((nx - 1) * (ny - 1)));
+
+    // Gxz = dudz
+    TGD->Gxz[it->cellID] = (0.5 * (WGD->u[it->faceID + nx * ny] + WGD->u[it->faceID + 1 + nx * ny])
+                            - 0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1]))
+                           / (WGD->z[k + 1] - WGD->z[k]);
+
+    // Gyz = dvdz
+    TGD->Gyz[it->cellID] = (0.5 * (WGD->v[it->faceID + nx * ny] + WGD->v[it->faceID + nx + nx * ny])
+                            - 0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + nx]))
+                           / (WGD->z[k + 1] - WGD->z[k]);
+  }
+  // set BC for horizontal wall above the cell
+  for (std::vector<pairCellFaceID>::iterator it = wall_above_indices.begin();
+       it != wall_above_indices.end();
+       ++it) {
+    int k = (int)(it->cellID / ((nx - 1) * (ny - 1)));
+
+    // Gxz = dudz
+    TGD->Gxz[it->cellID] = (0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1])
+                            - 0.5 * (WGD->u[it->faceID - nx * ny] + WGD->u[it->faceID + 1 - nx * ny]))
+                           / (WGD->z[k] - WGD->z[k - 1]);
+    // Gyz = dvdz
+    TGD->Gyz[it->cellID] = (0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx])
+                            - 0.5 * (WGD->u[it->faceID - nx * ny] + WGD->u[it->faceID + nx - nx * ny]))
+                           / (WGD->z[k] - WGD->z[k - 1]);
+  }
+
+  // ## VERTICAL WALL ALONG X (front/back)
+  // set BC for vertical wall in back of the cell
+  for (std::vector<pairCellFaceID>::iterator it = wall_back_indices.begin();
+       it != wall_back_indices.end();
+       ++it) {
+    // Gyx = dvdx
+    TGD->Gyx[it->cellID] = (0.5 * (WGD->v[it->faceID + 1] + WGD->v[it->faceID + 1 + nx])
+                            - 0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx]))
+                           / WGD->dx;
+    // Gzx = dwdx
+    TGD->Gzx[it->cellID] = (0.5 * (WGD->w[it->faceID + 1] + WGD->w[it->faceID + 1 + nx * ny])
+                            - 0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny]))
+                           / WGD->dx;
+  }
+  // set BC for vertical wall in front of the cell
+  for (std::vector<pairCellFaceID>::iterator it = wall_front_indices.begin();
+       it != wall_front_indices.end();
+       ++it) {
+    // Gyx = dvdx
+    TGD->Gyx[it->cellID] = (0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx])
+                            - 0.5 * (WGD->v[it->faceID - 1] + WGD->v[it->faceID - 1 + nx]))
+                           / WGD->dx;
+    // Gzx = dwdx
+    TGD->Gzx[it->cellID] = (0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny])
+                            - 0.5 * (WGD->w[it->faceID - 1] + WGD->w[it->faceID - 1 + nx * ny]))
+                           / WGD->dx;
+  }
+
+  // ## VERTICAL WALL ALONG Y (right/left)
+  // set BC for vertical wall right of the cell
+  for (std::vector<pairCellFaceID>::iterator it = wall_right_indices.begin();
+       it != wall_right_indices.end();
+       ++it) {
+    // Gxy = dudy
+    TGD->Gxy[it->cellID] = (0.5 * (WGD->u[it->faceID + nx] + WGD->u[it->faceID + 1 + nx])
+                            - 0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1]))
+                           / WGD->dy;
+    // Gzy = dwdy
+    TGD->Gzy[it->cellID] = (0.5 * (WGD->w[it->faceID + nx] + WGD->w[it->faceID + nx + nx * ny])
+                            - 0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny]))
+                           / WGD->dy;
+  }
+  // set BC for vertical wall left of the cell
+  for (std::vector<pairCellFaceID>::iterator it = wall_left_indices.begin();
+       it != wall_left_indices.end();
+       ++it) {
+    // Gxy = dudy
+    TGD->Gxy[it->cellID] = (0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + 1])
+                            - 0.5 * (WGD->u[it->faceID - nx] + WGD->u[it->faceID + 1 - nx]))
+                           / WGD->dy;
+    // Gzy = dwdy
+    TGD->Gzy[it->cellID] = (0.5 * (WGD->w[it->faceID] + WGD->w[it->faceID + nx * ny])
+                            - 0.5 * (WGD->w[it->faceID - nx] + WGD->w[it->faceID - nx + nx * ny]))
+                           / WGD->dy;
   }
 
   return;

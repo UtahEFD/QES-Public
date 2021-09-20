@@ -46,7 +46,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   turbUpperBound = WID->turbParams->turbUpperBound;
 
   if (WID->turbParams->sigConst) {
-    Vector3<float> sigConst;
+    Vector3 sigConst;
     sigConst = *(WID->turbParams->sigConst);
 
     sigUOrg = sigConst[0];
@@ -147,7 +147,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   wallVec.push_back(new TURBWallTerrain());
   /// Boundary condition at wall
   for (auto i = 0u; i < wallVec.size(); i++) {
-    wallVec.at(i)->defineWalls(WGD, this);
+    wallVec.at(i)->defineWalls(WID, WGD, this);
   }
   // std::cout << "\t\t Walls Defined...\n";
 
@@ -629,20 +629,20 @@ void TURBGeneralData::getDerivatives_v2(WINDSGeneralData *WGD)
                    - (WGD->v[faceID - 1] - WGD->v[faceID - 1 + nx]))
                   / (4.0 * WGD->dx);
     // Gzx = dwdx
-    Gzx[cellID] = ((WGD->w[faceID + 1] + WGD->u[faceID + 1 + nx * ny]
-                    - WGD->u[faceID - 1] + WGD->u[faceID - 1 + nx * ny]))
+    Gzx[cellID] = ((WGD->w[faceID + 1] + WGD->w[faceID + 1 + nx * ny]
+                    - WGD->w[faceID - 1] + WGD->w[faceID - 1 + nx * ny]))
                   / (4.0 * WGD->dx);
 
     // Gxy = dudy
     Gxy[cellID] = ((WGD->u[faceID + nx] + WGD->u[faceID + 1 + nx])
                    - (WGD->u[faceID - nx] + WGD->u[faceID + 1 - nx]))
-                  / (4.0 * WGD->dx);
+                  / (4.0 * WGD->dy);
     // Gyy = dvdy
     Gyy[cellID] = (WGD->v[faceID + nx] - WGD->v[faceID]) / (WGD->dy);
     // Gzy = dwdy
-    Gzy[cellID] = ((WGD->w[faceID + nx] + WGD->u[faceID + nx + nx * ny])
-                   - (WGD->u[faceID - nx] + WGD->u[faceID - nx + nx * ny]))
-                  / (4.0 * WGD->dx);
+    Gzy[cellID] = ((WGD->w[faceID + nx] + WGD->w[faceID + nx + nx * ny])
+                   - (WGD->w[faceID - nx] + WGD->w[faceID - nx + nx * ny]))
+                  / (4.0 * WGD->dy);
 
 
     if (flagUniformZGrid) {
