@@ -61,10 +61,6 @@ public:
   {}
 
   void run(WINDSGeneralData *);
-  void getDerivatives_v2(WINDSGeneralData *);
-
-  bool flagUniformZGrid = true; /**< :document this: */
-  bool flagNonLocalMixing; /**< :document this: */
 
   // General QUIC Domain Data
   ///@{
@@ -81,15 +77,6 @@ public:
   std::vector<float> z_fc;
   std::vector<float> z_cc;
   ///@}
-
-  // Mean trubulence quantities
-  float z0d, d0d;
-  float zRef, uRef, uStar;
-  float bldgH_mean, bldgH_max;
-  float terrainH_max;
-
-  // Turbulence Fields Upper Bound (tij < turbUpperBound*uStar^2)
-  float turbUpperBound; /**< Turbulence fields upper bound */
 
   // index for fluid cell
   std::vector<int> icellfluid; /**< :document this: */
@@ -144,6 +131,15 @@ public:
   std::vector<double> mixingLengths;
 
 protected:
+  void getDerivatives(WINDSGeneralData *);
+  void getDerivatives_v2(WINDSGeneralData *);
+
+  void getStressTensor();
+  void getStressTensor_v2();
+
+  void getFrictionVelocity(WINDSGeneralData *);
+  void boundTurbFields();
+
 private:
   // cannot have an empty constructor (have to pass in a mesh to build)
   TURBGeneralData();
@@ -161,14 +157,15 @@ private:
   float sigVConst = sigVOrg * sigVOrg * cPope * cPope;
   float sigWConst = sigWOrg * sigWOrg * cPope * cPope;
 
-  void getFrictionVelocity(WINDSGeneralData *);
+  bool flagUniformZGrid = true; /**< :document this: */
+  bool flagNonLocalMixing; /**< :document this: */
 
-  void getDerivatives(WINDSGeneralData *);
-  //void getDerivatives_v2(WINDSGeneralData *);
+  // Mean trubulence quantities
+  float z0d, d0d;
+  float zRef, uRef, uStar;
+  float bldgH_mean, bldgH_max;
+  float terrainH_max;
 
-  void getStressTensor();
-  void getStressTensor_v2();
-
-
-  void boundTurbFields();
+  // Turbulence Fields Upper Bound (tij < turbUpperBound*uStar^2)
+  float turbUpperBound; /**< Turbulence fields upper bound */
 };
