@@ -34,13 +34,13 @@ CUDA_ADD_LIBRARY( qeswindscore
   Solver.cpp
   Triangle.cpp
   TURBParams.h
-  TURBGeneralData.cpp
+  TURBGeneralData.cpp TURBGeneralData.h
   TURBOutput.cpp
   TURBWall.cpp
   TURBWallBuilding.cpp
   TURBWallTerrain.cpp
   WINDSInputData.h
-  WINDSGeneralData.cpp
+  WINDSGeneralData.cpp WINDSGeneralData.h
   WINDSOutputVisualization.cpp
   WINDSOutputWorkspace.cpp
   WINDSOutputWRF.cpp
@@ -75,19 +75,20 @@ IF (HAS_OPTIX_SUPPORT MATCHES ON)
     OptixRayTrace.cpp
     )  
 ENDIF()
-  
+
 cuda_add_executable( unitTest
   unitTests/testsMain.cpp
   )
 
+target_link_libraries(unitTest curand)
+target_link_libraries(unitTest unitTestLib)
+target_link_libraries(unitTest qeswindscore)
+target_link_libraries(unitTest qeswindsutil)
 
 IF (HAS_OPTIX_SUPPORT MATCHES ON)
   target_link_libraries(unitTest qesOptix)
 ENDIF()
 
-target_link_libraries(unitTest qeswindscore)
-target_link_libraries(unitTest qeswindsutil)
-target_link_libraries(unitTest unitTestLib)
 target_link_libraries(unitTest ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(unitTest ${GDAL_LIBRARY})
 target_link_libraries(unitTest ${NETCDF_LIBRARIES_CXX})
