@@ -77,11 +77,12 @@ class WINDSInputData;
 class WINDSGeneralData
 {
 public:
-  WINDSGeneralData();
+  WINDSGeneralData()
+  {}
   WINDSGeneralData(const WINDSInputData *WID, int solverType);
   WINDSGeneralData(const std::string inputFile);
-  WINDSGeneralData(const int[3], const float[3]);
-  ~WINDSGeneralData();
+  virtual ~WINDSGeneralData()
+  {}
 
   void mergeSort(std::vector<float> &effective_height,
                  std::vector<int> &building_id);

@@ -55,16 +55,12 @@ class TURBGeneralData
 {
 
 public:
-  TURBGeneralData()
-  {}
   TURBGeneralData(const WINDSInputData *, WINDSGeneralData *);
   TURBGeneralData(WINDSGeneralData *);
-
-
   virtual ~TURBGeneralData()
   {}
 
-  virtual void run(WINDSGeneralData *);
+  void run(WINDSGeneralData *);
   void getDerivatives_v2(WINDSGeneralData *);
 
   bool flagUniformZGrid = true; /**< :document this: */
@@ -149,6 +145,9 @@ public:
 
 protected:
 private:
+  // cannot have an empty constructor (have to pass in a mesh to build)
+  TURBGeneralData();
+
   // store the wall classes
   std::vector<TURBWall *> wallVec;
 
