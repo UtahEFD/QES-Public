@@ -10,9 +10,9 @@
 class test_DTEHeightField
 {
 public:
-	std::string mainTest();
-	std::string testCutCells();
+  std::string mainTest();
+  std::string testCutCells();
 
 private:
-	DTEHeightField DTEHF;
+  DTEHeightField DTEHF;
 };
