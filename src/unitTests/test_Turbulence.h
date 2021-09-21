@@ -17,5 +17,7 @@ private:
   WINDSGeneralData *WGD;
   test_TURBGeneralData *TGD;
 
-  bool checkError1Dz(std::vector<float>, float);
+  float compError1Dx(std::vector<float> *, std::vector<float> *);
+  float compError1Dy(std::vector<float> *, std::vector<float> *);
+  float compError1Dz(std::vector<float> *, std::vector<float> *);
 };
