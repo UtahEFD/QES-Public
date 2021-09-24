@@ -46,6 +46,12 @@
 // may need to forward reference this???
 class TURBGeneralData;
 
+struct pairCellFaceID
+{
+  int cellID;
+  int faceID;
+};
+
 /**
  * @class TURBWall
  * @brief :document this:
@@ -65,7 +71,7 @@ public:
    * of the cells that have wall to right/left, wall above/bellow
    * and wall in front/back
    */
-  virtual void defineWalls(WINDSGeneralData *, TURBGeneralData *) = 0;
+  virtual void defineWalls(const WINDSInputData *, WINDSGeneralData *, TURBGeneralData *) = 0;
   virtual void setWallsBC(WINDSGeneralData *, TURBGeneralData *) = 0;
 
 protected:
@@ -76,6 +82,15 @@ protected:
   void set_cutcell_wall_flag(TURBGeneralData *, int);
 
   void set_loglaw_stairstep_at_id_cc(WINDSGeneralData *, TURBGeneralData *, int, int, float);
+  virtual void set_loglaw_stairstep(WINDSGeneralData *, TURBGeneralData *) = 0;
+
+  // cell
+  std::vector<pairCellFaceID> wall_right_indices; /**< Indices of the cells with wall to right boundary condition */
+  std::vector<pairCellFaceID> wall_left_indices; /**< Indices of the cells with wall to left boundary condition */
+  std::vector<pairCellFaceID> wall_above_indices; /**< Indices of the cells with wall above boundary condition */
+  std::vector<pairCellFaceID> wall_below_indices; /**< Indices of the cells with wall bellow boundary condition */
+  std::vector<pairCellFaceID> wall_back_indices; /**< Indices of the cells with wall in back boundary condition */
+  std::vector<pairCellFaceID> wall_front_indices; /**< Indices of the cells with wall in front boundary condition */
 
   // cells above wall (for stair-step methods for Wall BC)
   std::vector<int> stairstep_wall_id;

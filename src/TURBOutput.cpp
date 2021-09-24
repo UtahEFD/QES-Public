@@ -39,7 +39,7 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd, std::string output_file)
 {
   std::cout << "[Output] \t Setting output fields for Turbulence data" << std::endl;
 
-  output_fields = { "t", "time", "x", "y", "z", "iturbflag", "Sxx", "Syy", "Szz", "Sxy", "Sxz", "Syz", "L", "txx", "txy", "txz", "tyz", "tyy", "tzz", "tke", "CoEps" };
+  output_fields = { "t", "time", "x", "y", "z", "iturbflag", "Gxx", "Gyx", "Gzx", "Gxy", "Gyy", "Gzy", "Gxz", "Gyz", "Gzz", "L", "txx", "txy", "txz", "tyz", "tyy", "tzz", "tke", "CoEps" };
 
   tgd_ = tgd;
 
@@ -90,12 +90,25 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd, std::string output_file)
   createAttVector("iturbflag", "icell turb flag", "--", dim_vect_cc, &(tgd_->iturbflag));
 
   // create attributes for strain-rate stress tensor
-  createAttVector("Sxx", "uu-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Sxx));
-  createAttVector("Syy", "vv-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Syy));
-  createAttVector("Szz", "ww-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Szz));
-  createAttVector("Sxy", "uv-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Sxy));
-  createAttVector("Sxz", "uw-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Sxz));
-  createAttVector("Syz", "vw-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Syz));
+  /*
+    createAttVector("Sxx", "uu-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Sxx));
+    createAttVector("Syy", "vv-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Syy));
+    createAttVector("Szz", "ww-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Szz));
+    createAttVector("Sxy", "uv-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Sxy));
+    createAttVector("Sxz", "uw-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Sxz));
+    createAttVector("Syz", "vw-component of strain-rate tensor", "s-1", dim_vect_cc, &(tgd_->Syz));
+  */
+
+  // create attributes for velocity gradient tensor
+  createAttVector("Gxx", "velocity gradient tensor: Gxx = dudx", "s-1", dim_vect_cc, &(tgd_->Gxx));
+  createAttVector("Gyx", "velocity gradient tensor: Gyx = dvdx", "s-1", dim_vect_cc, &(tgd_->Gyx));
+  createAttVector("Gzx", "velocity gradient tensor: Gzx = dwdx", "s-1", dim_vect_cc, &(tgd_->Gzx));
+  createAttVector("Gxy", "velocity gradient tensor: Gxy = dudy", "s-1", dim_vect_cc, &(tgd_->Gxy));
+  createAttVector("Gyy", "velocity gradient tensor: Gyy = dvdy", "s-1", dim_vect_cc, &(tgd_->Gyy));
+  createAttVector("Gzy", "velocity gradient tensor: Gzy = dwdy", "s-1", dim_vect_cc, &(tgd_->Gzy));
+  createAttVector("Gxz", "velocity gradient tensor: Gxz = dudz", "s-1", dim_vect_cc, &(tgd_->Gxz));
+  createAttVector("Gyz", "velocity gradient tensor: Gyz = dvdz", "s-1", dim_vect_cc, &(tgd_->Gyz));
+  createAttVector("Gzz", "velocity gradient tensor: Gzz = dwdz", "s-1", dim_vect_cc, &(tgd_->Gzz));
 
   // create attribute for mixing length
   createAttVector("L", "mixing length", "m", dim_vect_cc, &(tgd_->Lm));
