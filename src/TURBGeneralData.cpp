@@ -46,7 +46,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   turbUpperBound = WID->turbParams->turbUpperBound;
 
   if (WID->turbParams->sigConst) {
-    Vector3<float> sigConst;
+    Vector3 sigConst;
     sigConst = *(WID->turbParams->sigConst);
 
     sigUOrg = sigConst[0];

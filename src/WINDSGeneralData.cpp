@@ -66,7 +66,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // main input structure.
   //
   // This is done to make reference to nx, ny and nz easier in this function
-  Vector3<int> domainInfo;
+  Vector3Int domainInfo;
   domainInfo = *(WID->simParams->domain);
   nx = domainInfo[0];
   ny = domainInfo[1];
@@ -77,7 +77,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   ny += 1;// +1 for Staggered grid
   nz += 2;// +2 for staggered grid and ghost cell
 
-  Vector3<float> gridInfo;
+  Vector3 gridInfo;
   gridInfo = *(WID->simParams->grid);
   dx = gridInfo[0];// Grid resolution in x-direction
   dy = gridInfo[1];// Grid resolution in y-direction
@@ -565,7 +565,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       auto start_cut = std::chrono::high_resolution_clock::now();
 
       // Calling calculateCoefficient function to calculate area fraction coefficients for cut-cells
-      cut_cell.calculateCoefficient(cells, WID->simParams->DTE_heightField, WID, this);
+      WID->simParams->DTE_heightField->setCells(cells, this, WID);
 
       auto finish_cut = std::chrono::high_resolution_clock::now();// Finish recording execution time
 

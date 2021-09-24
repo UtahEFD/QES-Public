@@ -38,6 +38,8 @@
  */
 
 #include "DTEHeightField.h"
+#include "WINDSInputData.h"
+#include "WINDSGeneralData.h"
 
 #define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
 #define PBWIDTH 60
@@ -82,7 +84,7 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
   m_triList.clear();
 
   // local variables to hold triangle vertices
-  // Vector3<float> tc0, tc1, tc2;
+  // Vector3 tc0, tc1, tc2;
 
   // local variables to hold common variables
   auto [nx, ny, nz] = m_dim;
@@ -129,8 +131,8 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
       float xPos = halo_x + (i * dx);
       float yPos = halo_y + (j * dy);
 
-      // Vector3<float> tv0( i, j, (float)heightField[ idx ] ); // queryHeight( pafScanline, Xpixel,  Yline));
-      Vector3<float> tv0(xPos, yPos, (float)heightField[idx]);// queryHeight( pafScanline, Xpixel,  Yline));
+      // Vector3 tv0( i, j, (float)heightField[ idx ] ); // queryHeight( pafScanline, Xpixel,  Yline));
+      Vector3 tv0(xPos, yPos, (float)heightField[idx]);// queryHeight( pafScanline, Xpixel,  Yline));
 
       idx = j * nx + (i + step);
       if (idx > heightField.size() - 1) {
@@ -138,9 +140,9 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
         idx = heightField.size() - 1;
       }
 
-      // Vector3<float> tv1( i+step, j, (float)heightField[ idx ] ); // queryHeight( pafScanline,  (int)(iXpixel + stepX ), Yline ) );
+      // Vector3 tv1( i+step, j, (float)heightField[ idx ] ); // queryHeight( pafScanline,  (int)(iXpixel + stepX ), Yline ) );
       xPos = halo_x + ((i + step) * dx);
-      Vector3<float> tv1(xPos, yPos, (float)heightField[idx]);// queryHeight( pafScanline,  (int)(iXpixel + stepX ), Yline ) );
+      Vector3 tv1(xPos, yPos, (float)heightField[idx]);// queryHeight( pafScanline,  (int)(iXpixel + stepX ), Yline ) );
 
       idx = (j + step) * nx + i;
       if (idx > heightField.size() - 1) {
@@ -148,10 +150,10 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
         idx = heightField.size() - 1;
       }
 
-      // Vector3<float> tv2( i, j+step, (float)heightField[ idx] ); // queryHeight( pafScanline, Xpixel, (int)(iYline + stepY) ));
+      // Vector3 tv2( i, j+step, (float)heightField[ idx] ); // queryHeight( pafScanline, Xpixel, (int)(iYline + stepY) ));
       xPos = halo_x + (i * dx);
       yPos = halo_y + ((j + step) * dy);
-      Vector3<float> tv2(xPos, yPos, (float)heightField[idx]);// queryHeight( pafScanline, Xpixel, (int)(iYline + stepY) ));
+      Vector3 tv2(xPos, yPos, (float)heightField[idx]);// queryHeight( pafScanline, Xpixel, (int)(iYline + stepY) ));
 
       // std::cout << "Triangle: (" << tv0[0] << ", " << tv0[1] << ", " << tv0[2] <<  "), (" << tv1[0] << ", " << tv1[1] << ", " << tv1[2] <<  "), (" << tv2[0] << ", " << tv2[1] << ", " << tv2[2] <<  ")" << std::endl;
 
@@ -161,24 +163,24 @@ DTEHeightField::DTEHeightField(const std::vector<double> &heightField,
       idx = (j + step) * nx + i;
       if (idx > heightField.size() - 1) idx = heightField.size() - 1;
 
-      // Vector3<float> tv3( i, j+step, (float)heightField[ idx ] );// queryHeight( pafScanline,  Xpixel, (int)(iYline + stepY) ) );
+      // Vector3 tv3( i, j+step, (float)heightField[ idx ] );// queryHeight( pafScanline,  Xpixel, (int)(iYline + stepY) ) );
       xPos = halo_x + (i * dx);
       yPos = halo_y + ((j + step) * dy);
-      Vector3<float> tv3(xPos, yPos, (float)heightField[idx]);// queryHeight( pafScanline,  Xpixel, (int)(iYline + stepY) ) );
+      Vector3 tv3(xPos, yPos, (float)heightField[idx]);// queryHeight( pafScanline,  Xpixel, (int)(iYline + stepY) ) );
 
       idx = j * nx + (i + step);
       if (idx > heightField.size() - 1) idx = heightField.size() - 1;
-      // Vector3<float> tv4( i+step, j, (float)heightField[ idx ] ); //  queryHeight( pafScanline,  (int)(iXpixel + stepX) , Yline ) );
+      // Vector3 tv4( i+step, j, (float)heightField[ idx ] ); //  queryHeight( pafScanline,  (int)(iXpixel + stepX) , Yline ) );
       xPos = halo_x + ((i + step) * dx);
       yPos = halo_y + (j * dy);
-      Vector3<float> tv4(xPos, yPos, (float)heightField[idx]);//  queryHeight( pafScanline,  (int)(iXpixel + stepX) , Yline ) );
+      Vector3 tv4(xPos, yPos, (float)heightField[idx]);//  queryHeight( pafScanline,  (int)(iXpixel + stepX) , Yline ) );
 
       idx = (j + step) * nx + (i + step);
       if (idx > heightField.size() - 1) idx = heightField.size() - 1;
-      // Vector3<float> tv5( i+step, j+step, (float)heightField[ idx ] ); // queryHeight( pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY) ) );
+      // Vector3 tv5( i+step, j+step, (float)heightField[ idx ] ); // queryHeight( pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY) ) );
       xPos = halo_x + ((i + step) * dx);
       yPos = halo_y + ((j + step) * dy);
-      Vector3<float> tv5(xPos, yPos, (float)heightField[idx]);// queryHeight( pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY) ) );
+      Vector3 tv5(xPos, yPos, (float)heightField[idx]);// queryHeight( pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY) ) );
 
       // std::cout << "Triangle: (" << tv3[0] << ", " << tv3[1] << ", " << tv3[2] <<  "), (" << tv4[0] << ", " << tv4[1] << ", " << tv4[2] <<  "), (" << tv5[0] << ", " << tv5[1] << ", " << tv5[2] <<  ")" << std::endl;
 
@@ -362,7 +364,6 @@ void DTEHeightField::load()
   convertRasterToGeo(0, m_nYSize, xGeo, yGeo);
   printf("Raster Coordinate (0, %d):\t(%12.7f, %12.7f)\n", m_nYSize, xGeo, yGeo);
 
-
   if (originFlag == 0) {
     float domain_end_x = origin_x + DEMDistancex + nx * dx;
     float domain_end_y = origin_y + DEMDistancey + ny * dy;
@@ -415,7 +416,7 @@ void DTEHeightField::load()
   m_triList.clear();
 
   // double xGeo, yGeo;
-  Vector3<float> tc0, tc1, tc2;
+  Vector3 tc0, tc1, tc2;
 
 
   std::cout << "DEM Loading\n";
@@ -445,21 +446,21 @@ void DTEHeightField::load()
       // height set to y coord, change to z
 
       // These "should" be real unit-based triangles.. hopefully meters..
-      Vector3<float> tv0(iXpixel * pixelSizeX, iYline * pixelSizeY, queryHeight(pafScanline, Xpixel, Yline));
-      Vector3<float> tv1((iXpixel + stepX) * pixelSizeX, iYline * pixelSizeY, queryHeight(pafScanline, (int)(iXpixel + stepX), Yline));
-      Vector3<float> tv2(iXpixel * pixelSizeX, (iYline + stepY) * pixelSizeY, queryHeight(pafScanline, Xpixel, (int)(iYline + stepY)));
+      Vector3 tv0(iXpixel * pixelSizeX, iYline * pixelSizeY, queryHeight(pafScanline, Xpixel, Yline));
+      Vector3 tv1((iXpixel + stepX) * pixelSizeX, iYline * pixelSizeY, queryHeight(pafScanline, (int)(iXpixel + stepX), Yline));
+      Vector3 tv2(iXpixel * pixelSizeX, (iYline + stepY) * pixelSizeY, queryHeight(pafScanline, Xpixel, (int)(iYline + stepY)));
 
       tPtr = new Triangle(tv0, tv1, tv2);
       m_triList.push_back(tPtr);
 
 
-      Vector3<float> tv3(iXpixel * pixelSizeX, (iYline + stepY) * pixelSizeY, queryHeight(pafScanline, Xpixel, (int)(iYline + stepY)));
+      Vector3 tv3(iXpixel * pixelSizeX, (iYline + stepY) * pixelSizeY, queryHeight(pafScanline, Xpixel, (int)(iYline + stepY)));
       // convertToTexCoord(Yline+step, Xpixel, tc0);
 
-      Vector3<float> tv4((iXpixel + stepX) * pixelSizeX, iYline * pixelSizeY, queryHeight(pafScanline, (int)(iXpixel + stepX), Yline));
+      Vector3 tv4((iXpixel + stepX) * pixelSizeX, iYline * pixelSizeY, queryHeight(pafScanline, (int)(iXpixel + stepX), Yline));
       // convertToTexCoord(Yline, Xpixel+step, tc1);
 
-      Vector3<float> tv5((iXpixel + stepX) * pixelSizeX, (iYline + stepY) * pixelSizeY, queryHeight(pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY)));
+      Vector3 tv5((iXpixel + stepX) * pixelSizeX, (iYline + stepY) * pixelSizeY, queryHeight(pafScanline, (int)(iXpixel + stepX), (int)(iYline + stepY)));
       // convertToTexCoord(Yline+step, Xpixel+step, tc2);
 
       tPtr = new Triangle(tv3, tv4, tv5);
@@ -479,7 +480,7 @@ DTEHeightField::~DTEHeightField()
     GDALClose(m_poDataset);
 }
 
-void DTEHeightField::setDomain(Vector3<int> *domain, Vector3<float> *grid)
+void DTEHeightField::setDomain(Vector3Int *domain, Vector3 *grid)
 {
   for (int i = 0; i < 3; i++) {
     min[i] = LIMIT;
@@ -565,14 +566,14 @@ void DTEHeightField::outputOBJ(std::string s)
   std::ofstream file;
   file.open(s.c_str());
 
-  std::vector<Vector3<float> *> verts;
-  std::vector<Vector3<int> *> tris;
+  std::vector<Vector3 *> verts;
+  std::vector<Vector3 *> tris;
 
   for (int i = 0; i < m_triList.size(); i++) {
 
     Triangle *t = m_triList[i];
 
-    Vector3<int> *tVs = new Vector3<int>(-1, -1, -1);
+    Vector3 *tVs = new Vector3(-1, -1, -1);
 
     for (int j = 0; j < verts.size(); j++) {
       if ((*(t->a)) == (*verts[j]))
@@ -628,59 +629,59 @@ void DTEHeightField::printProgress(float percentage)
 #define CELL(i, j, k) ((i) + (j) * (nx - 1) + (k) * (nx - 1) * (ny - 1))
 #define CLAMP(low, high, x) ((x) < (low) ? (low) : ((x) > (high) ? (high) : (x)))
 
-std::vector<int> DTEHeightField::setCells(Cell *cells, int nx, int ny, int nz, float dx, float dy, std::vector<float> &dz_array, std::vector<float> z_face, float halo_x, float halo_y) const
+void DTEHeightField::setCells(Cell *cells, WINDSGeneralData *WGD, const WINDSInputData *WID)
 {
 
   printf("Setting Cell Data...\n");
-  auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
+  //auto start = std::chrono::high_resolution_clock::now();// Start recording execution time
 
   std::vector<int> cutCells;
 
-  int ii = halo_x / dx;
-  int jj = halo_y / dy;
-  int i_domain_end = ii + (m_nXSize * pixelSizeX) / dx;
-  int j_domain_end = jj + (m_nYSize * pixelSizeY) / dy;
+  int ii = WID->simParams->halo_x / WGD->dx;
+  int jj = WID->simParams->halo_y / WGD->dy;
+  int i_domain_end = ii + (m_nXSize * pixelSizeX) / WGD->dx;
+  int j_domain_end = jj + (m_nYSize * pixelSizeY) / WGD->dy;
 
-  for (int i = 0; i < nx - 2; i++)
-    for (int j = 0; j < ny - 2; j++) {
+  for (int i = 0; i < WGD->nx - 2; i++)
+    for (int j = 0; j < WGD->ny - 2; j++) {
 
       // all work here is done for each column of cells in the z direction from the xy plane.
 
-      Vector3<float> corners[4];// stored from top Left in clockwise order
+      Vector3 corners[4];// stored from top Left in clockwise order
       if (i >= ii && j >= jj && i <= i_domain_end && j <= j_domain_end) {
-        corners[0] = Vector3<float>(i * dx, j * dy, CLAMP(0, max[2], queryHeight(pafScanline, ((i - ii) * dx) / pixelSizeX, ((j - jj) * dy) / pixelSizeY) - min[2]));
-        corners[1] = Vector3<float>(i * dx, (j + 1) * dy, CLAMP(0, max[2], queryHeight(pafScanline, ((i - ii) * dx) / pixelSizeX, (((j - jj) + 1) * dy) / pixelSizeY) - min[2]));
-        corners[2] = Vector3<float>((i + 1) * dx, (j + 1) * dy, CLAMP(0, max[2], queryHeight(pafScanline, (((i - ii) + 1) * dx) / pixelSizeX, (((j - jj) + 1) * dy) / pixelSizeY) - min[2]));
-        corners[3] = Vector3<float>((i + 1) * dx, j * dy, CLAMP(0, max[2], queryHeight(pafScanline, (((i - ii) + 1) * dx) / pixelSizeX, ((j - jj) * dy) / pixelSizeY) - min[2]));
+        corners[0] = Vector3(i * WGD->dx, j * WGD->dy, CLAMP(0, max[2], queryHeight(pafScanline, ((i - ii) * WGD->dx) / pixelSizeX, ((j - jj) * WGD->dy) / pixelSizeY) - min[2]));
+        corners[1] = Vector3(i * WGD->dx, (j + 1) * WGD->dy, CLAMP(0, max[2], queryHeight(pafScanline, ((i - ii) * WGD->dx) / pixelSizeX, (((j - jj) + 1) * WGD->dy) / pixelSizeY) - min[2]));
+        corners[2] = Vector3((i + 1) * WGD->dx, (j + 1) * WGD->dy, CLAMP(0, max[2], queryHeight(pafScanline, (((i - ii) + 1) * WGD->dx) / pixelSizeX, (((j - jj) + 1) * WGD->dy) / pixelSizeY) - min[2]));
+        corners[3] = Vector3((i + 1) * WGD->dx, j * WGD->dy, CLAMP(0, max[2], queryHeight(pafScanline, (((i - ii) + 1) * WGD->dx) / pixelSizeX, ((j - jj) * WGD->dy) / pixelSizeY) - min[2]));
       } else {
-        corners[0] = Vector3<float>(i * dx, j * dy, 0.0f);
-        corners[1] = Vector3<float>(i * dx, (j + 1) * dy, 0.0f);
-        corners[2] = Vector3<float>((i + 1) * dx, (j + 1) * dy, 0.0f);
-        corners[3] = Vector3<float>((i + 1) * dx, j * dy, 0.0f);
+        corners[0] = Vector3(i * WGD->dx, j * WGD->dy, 0.0f);
+        corners[1] = Vector3(i * WGD->dx, (j + 1) * WGD->dy, 0.0f);
+        corners[2] = Vector3((i + 1) * WGD->dx, (j + 1) * WGD->dy, 0.0f);
+        corners[3] = Vector3((i + 1) * WGD->dx, j * WGD->dy, 0.0f);
       }
       /*else if (i < ii)
       {
         if (j < jj)
         {
           //std::cout << "height:  " << queryHeight( pafScanline , ( dx) / pixelSizeX,  ( dy) / pixelSizeY) - min[2] << std::endl;
-          corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , ( dx) / pixelSizeX,  ( dy) / pixelSizeY) - min[2]);
-          corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , ( dx) / pixelSizeX,  ( dy) / pixelSizeY) - min[2]);
-          corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
-          corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+          corners[0] = Vector3( i * dx, j * dy,   queryHeight( pafScanline , ( dx) / pixelSizeX,  ( dy) / pixelSizeY) - min[2]);
+          corners[1] = Vector3( i * dx, (j + 1) * dy, queryHeight( pafScanline , ( dx) / pixelSizeX,  ( dy) / pixelSizeY) - min[2]);
+          corners[2] = Vector3( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+          corners[3] = Vector3( (i + 1) * dx, j * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
         }
         else if (j > j_domain_end)
         {
-          corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , ( dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
-          corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
-          corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
-          corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+          corners[0] = Vector3( i * dx, j * dy,   queryHeight( pafScanline , ( dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+          corners[1] = Vector3( i * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+          corners[2] = Vector3( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+          corners[3] = Vector3( (i + 1) * dx, j * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
         }
         else
         {
-          corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
-          corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
-          corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
-          corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+          corners[0] = Vector3( i * dx, j * dy,   queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+          corners[1] = Vector3( i * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+          corners[2] = Vector3( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+          corners[3] = Vector3( (i + 1) * dx, j * dy, queryHeight( pafScanline , (dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
         }
       }
 
@@ -688,17 +689,17 @@ std::vector<int> DTEHeightField::setCells(Cell *cells, int nx, int ny, int nz, f
       {
         if (i > i_domain_end)
         {
-          corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
-          corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
-          corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
-          corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+          corners[0] = Vector3( i * dx, j * dy,   queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+          corners[1] = Vector3( i * dx, (j + 1) * dy, queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+          corners[2] = Vector3( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+          corners[3] = Vector3( (i + 1) * dx, j * dy, queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
         }
         else
         {
-          corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
-          corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
-          corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
-          corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+          corners[0] = Vector3( i * dx, j * dy,   queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+          corners[1] = Vector3( i * dx, (j + 1) * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+          corners[2] = Vector3( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
+          corners[3] = Vector3( (i + 1) * dx, j * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  (dy) / pixelSizeY) - min[2]);
         }
       }
 
@@ -706,26 +707,26 @@ std::vector<int> DTEHeightField::setCells(Cell *cells, int nx, int ny, int nz, f
       {
         if (j > j_domain_end)
         {
-          corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
-          corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
-          corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , ((i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
-          corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , ((i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+          corners[0] = Vector3( i * dx, j * dy,   queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+          corners[1] = Vector3( i * dx, (j + 1) * dy, queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+          corners[2] = Vector3( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , ((i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+          corners[3] = Vector3( (i + 1) * dx, j * dy, queryHeight( pafScanline , ((i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
         }
         else
         {
-          corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , ((i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
-          corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
-          corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , ((i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
-          corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , ((i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+          corners[0] = Vector3( i * dx, j * dy,   queryHeight( pafScanline , ((i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+          corners[1] = Vector3( i * dx, (j + 1) * dy, queryHeight( pafScanline , ( (i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+          corners[2] = Vector3( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , ((i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
+          corners[3] = Vector3( (i + 1) * dx, j * dy, queryHeight( pafScanline , ((i_domain_end-ii-1) * dx) / pixelSizeX,  ( (j-jj) * dy) / pixelSizeY) - min[2]);
         }
       }
 
       else if (j > j_domain_end)
       {
-        corners[0] = Vector3<float>( i * dx, j * dy,   queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
-        corners[1] = Vector3<float>( i * dx, (j + 1) * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
-        corners[2] = Vector3<float>( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
-        corners[3] = Vector3<float>( (i + 1) * dx, j * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+        corners[0] = Vector3( i * dx, j * dy,   queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+        corners[1] = Vector3( i * dx, (j + 1) * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+        corners[2] = Vector3( (i + 1) * dx, (j + 1) * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
+        corners[3] = Vector3( (i + 1) * dx, j * dy, queryHeight( pafScanline , ((i-ii) * dx) / pixelSizeX,  ( (j_domain_end-jj-1) * dy) / pixelSizeY) - min[2]);
       }
 
       if (i==319 && j==10)
@@ -739,18 +740,18 @@ std::vector<int> DTEHeightField::setCells(Cell *cells, int nx, int ny, int nz, f
         std::cout << "corners[3]:  " << corners[3][2] << std::endl;
       }*/
 
-      setCellPoints(cells, i, j, nx, ny, nz, dz_array, z_face, corners, cutCells);
+      setCellPoints(cells, i, j, WGD->nx, WGD->ny, WGD->nz, WGD->dz_array, WGD->z_face, corners, cutCells, WGD);
     }
 
 
-  auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
-  std::chrono::duration<float> elapsed = finish - start;
-  std::cout << "Elapsed time For CellSet: " << elapsed.count() << " s\n";// Print out elapsed execution time
+  //auto finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+  //std::chrono::duration<float> elapsed = finish - start;
+  //std::cout << "Elapsed time For CellSet: " << elapsed.count() << " s\n";// Print out elapsed execution time
 
-  return cutCells;
+  //return cutCells;
 }
 
-void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3<float> corners[], std::vector<int> &cutCells) const
+void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3 corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD)
 {
   float coordsMin, coordsMax;
   coordsMin = coordsMax = corners[0][2];
@@ -768,14 +769,20 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
     float cellTop = cellBot + dz_array[k];
 
     if (cellTop <= coordsMin)
-      cells[CELL(i, j, k)] = Cell(terrain_CT, Vector3<float>(corners[0][0], corners[0][1], cellBot), Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
+      //cells[CELL(i, j, k)] = Cell(terrain_CT, Vector3(corners[0][0], corners[0][1], cellBot), Vector3(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
+      WGD->icellflag[CELL(i, j, k)] = 2;
     else if (cellBot >= coordsMax)
-      cells[CELL(i, j, k)] = Cell(air_CT, Vector3<float>(corners[0][0], corners[0][1], cellBot), Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
+      //cells[CELL(i, j, k)] = Cell(air_CT, Vector3(corners[0][0], corners[0][1], cellBot), Vector3(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
+      WGD->icellflag[CELL(i, j, k)] = 1;
     else {
-      cutCells.push_back(CELL(i, j, k));
+      //cutCells.push_back(CELL(i, j, k));
+      WGD->icellflag[CELL(i, j, k)] = 8;
 
-      std::vector<Vector3<float>> pointsInCell;
+      int cutcell_index = CELL(i, j, k);
+
+      std::vector<Vector3> pointsInCell;
       std::vector<Edge<int>> edgesInCell;
+
 
       // Check to see the positions of the corners, the corners are always in
       // the cell, no matter what. If they exist out of bounds of the cell in the
@@ -791,10 +798,10 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
           cornerPos[l] = 0;
         } else if (corners[l][2] < cellBot) {
           cornerPos[l] = -1;
-          pointsInCell.push_back(Vector3<float>(corners[l][0], corners[l][1], cellBot));
+          pointsInCell.push_back(Vector3(corners[l][0], corners[l][1], cellBot));
         } else {
           cornerPos[l] = 1;
-          pointsInCell.push_back(Vector3<float>(corners[l][0], corners[l][1], cellTop));
+          pointsInCell.push_back(Vector3(corners[l][0], corners[l][1], cellTop));
         }
       for (int first = 0; first < 3; first++)
         for (int second = first + 1; second < 4; second++)
@@ -820,12 +827,12 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
             if (cornerPos[first] == 0) {
               if (cornerPos[second] < 0) {
                 intermed[first][second][0] = pointsInCell.size();
-                pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellBot)));
+                pointsInCell.push_back(Vector3(getIntermediate(corners[first], corners[second], cellBot)));
                 edgesInCell.push_back(Edge<int>(second, pointsInCell.size() - 1));
                 edgesInCell.push_back(Edge<int>(first, pointsInCell.size() - 1));
               } else if (cornerPos[second] > 0) {
                 intermed[first][second][1] = pointsInCell.size();
-                pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellTop)));
+                pointsInCell.push_back(Vector3(getIntermediate(corners[first], corners[second], cellTop)));
                 edgesInCell.push_back(Edge<int>(second, pointsInCell.size() - 1));
                 edgesInCell.push_back(Edge<int>(first, pointsInCell.size() - 1));
               }
@@ -833,28 +840,28 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
 
               if (cornerPos[second] == 0) {
                 intermed[first][second][1] = pointsInCell.size();
-                pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellTop)));
+                pointsInCell.push_back(Vector3(getIntermediate(corners[first], corners[second], cellTop)));
                 edgesInCell.push_back(Edge<int>(first, pointsInCell.size() - 1));
                 edgesInCell.push_back(Edge<int>(second, pointsInCell.size() - 1));
               } else if (cornerPos[second] < 0) {
                 intermed[first][second][1] = pointsInCell.size();
                 intermed[first][second][0] = pointsInCell.size() + 1;
-                pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellTop)));
-                pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellBot)));
+                pointsInCell.push_back(Vector3(getIntermediate(corners[first], corners[second], cellTop)));
+                pointsInCell.push_back(Vector3(getIntermediate(corners[first], corners[second], cellBot)));
                 edgesInCell.push_back(Edge<int>(first, pointsInCell.size() - 2));
                 edgesInCell.push_back(Edge<int>(second, pointsInCell.size() - 1));
               }
             } else {
               if (cornerPos[second] == 0) {
                 intermed[first][second][0] = pointsInCell.size();
-                pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellBot)));
+                pointsInCell.push_back(Vector3(getIntermediate(corners[first], corners[second], cellBot)));
                 edgesInCell.push_back(Edge<int>(first, pointsInCell.size() - 1));
                 edgesInCell.push_back(Edge<int>(second, pointsInCell.size() - 1));
               } else if (cornerPos[second] > 0) {
                 intermed[first][second][1] = pointsInCell.size();
                 intermed[first][second][0] = pointsInCell.size() + 1;
-                pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellTop)));
-                pointsInCell.push_back(Vector3<float>(getIntermediate(corners[first], corners[second], cellBot)));
+                pointsInCell.push_back(Vector3(getIntermediate(corners[first], corners[second], cellTop)));
+                pointsInCell.push_back(Vector3(getIntermediate(corners[first], corners[second], cellBot)));
                 edgesInCell.push_back(Edge<int>(second, pointsInCell.size() - 2));
                 edgesInCell.push_back(Edge<int>(first, pointsInCell.size() - 1));
               }
@@ -885,7 +892,7 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
       // if the diagonal is completely in the cell create a mid a
       // and attatch to all intermediates or corners if the intermeds doesn't exist
       if (cornerPos[0] == 0 && cornerPos[2] == 0) {
-        pointsInCell.push_back(Vector3<float>((corners[0][0] + corners[2][0]) / 2.0f, (corners[0][1] + corners[2][1]) / 2.0f, (corners[0][2] + corners[2][2]) / 2.0f));
+        pointsInCell.push_back(Vector3((corners[0][0] + corners[2][0]) / 2.0f, (corners[0][1] + corners[2][1]) / 2.0f, (corners[0][2] + corners[2][2]) / 2.0f));
         int newP = pointsInCell.size() - 1;
         edgesInCell.push_back(Edge<int>(0, newP));
         edgesInCell.push_back(Edge<int>(2, newP));
@@ -1004,17 +1011,186 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
        * are written in should not matter, edge(0-3) is the same as edge(3-0) and the index of each edge
        * also should not matter.
        */
-      cells[CELL(i, j, k)] = Cell(pointsInCell, edgesInCell, intermed, Vector3<float>(corners[0][0], corners[0][1], cellBot), Vector3<float>(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
+      //cells[CELL(i, j, k)] = Cell(pointsInCell, edgesInCell, intermed, Vector3(corners[0][0], corners[0][1], cellBot), Vector3(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]));
+
+      terrainPoints.clear();
+      terrainEdges.clear();
+      for (int i = 0; i < pointsInCell.size(); i++)
+        terrainPoints.push_back(pointsInCell[i]);
+      for (int i = 0; i < edgesInCell.size(); i++)
+        terrainEdges.push_back(edgesInCell[i]);
+      location = Vector3(corners[0][0], corners[0][1], cellBot);
+      dimensions = Vector3(corners[1][0] - corners[0][0], corners[0][1] - corners[3][1], dz_array[k]);
+
+      for (int i = 0; i < 6; i++) {
+        fluidFacePoints[i].clear();
+      }
+      // set fluid points for the XZ and YZ faces
+      for (int i = 0; i < 4; i++) {
+        int firstC, secondC;
+        if (i == 0) {
+          firstC = 0;
+          secondC = 3;
+        } else if (i == 1) {
+          firstC = 1;
+          secondC = 2;
+        } else if (i == 2) {
+          firstC = 2;
+          secondC = 3;
+        } else {
+          firstC = 0;
+          secondC = 1;
+        }
+
+        if (pointsInCell[firstC][2] > location[2] + dimensions[2]
+            && pointsInCell[secondC][2] > location[2] + dimensions[2]) {
+          fluidFacePoints[i].clear();
+        } else// if here, then this face is cut
+        {
+          if (pointsInCell[firstC][2] < location[2] + dimensions[2]) {
+            fluidFacePoints[i].push_back(pointsInCell[firstC]);
+            fluidFacePoints[i].push_back(Vector3(pointsInCell[firstC][0], pointsInCell[firstC][1], location[2] + dimensions[2]));
+          } else if (intermed[firstC][secondC][1] == -1)
+            fluidFacePoints[i].push_back(Vector3(pointsInCell[firstC][0], pointsInCell[firstC][1], location[2] + dimensions[2]));
+
+          if (pointsInCell[secondC][2] < location[2] + dimensions[2]) {
+            fluidFacePoints[i].push_back(pointsInCell[secondC]);
+            fluidFacePoints[i].push_back(Vector3(pointsInCell[secondC][0], pointsInCell[secondC][1], location[2] + dimensions[2]));
+          }
+
+          for (int j = 0; j < 2; j++)
+            if (intermed[firstC][secondC][j] != -1)
+              fluidFacePoints[i].push_back(pointsInCell[intermed[firstC][secondC][j]]);
+
+          if (fluidFacePoints[i].size() <= 2)
+            fluidFacePoints[i].clear();
+        }
+      }
+
+      for (int i = 4; i < 6; i++) {
+        for (int j = 0; j < 4; j++)
+          if ((i == 4) ? pointsInCell[j][2] <= location[2] :// if this is the bottom, we check if the corner is on the floor
+                pointsInCell[j][2] < location[2] + dimensions[2])// else we check if it's under the ceiling
+            fluidFacePoints[i].push_back(pointsInCell[j]);
+
+        for (int first = 0; first < 3; first++)
+          for (int second = first + 1; second < 4; second++)
+            if (first != 1 || second != 3)
+              if (intermed[first][second][i - 4] != -1)
+                fluidFacePoints[i].push_back(pointsInCell[intermed[first][second][i - 4]]);
+        if (fluidFacePoints[i].size() <= 2)
+          fluidFacePoints[i].clear();
+      }
+
+      count += 1;
+      float S_front, S_behind, S_right, S_left, S_below, S_above;
+      float S_cut;
+      float ni, nj, nk;
+      float solid_V_frac;
+      std::vector<Vector3> cut_points;// Intersection points for each face
+
+      S_front = S_behind = S_right = S_left = S_below = S_above = 0.0;
+      S_cut = 0.0;
+      ni = nj = nk = 0.0;
+      solid_V_frac = 0.0;
+      const float pi = 4.0f * atan(1.0); /**< pi constant */
+
+      for (int i = 0; i < 6; i++) {
+
+        cut_points.clear();
+        cut_points = fluidFacePoints[i];
+        // place points in local cell space
+        if (cut_points.size() > 2) {
+          for (int jj = 0; jj < cut_points.size(); jj++) {
+            for (int l = 0; l < 3; l++) {
+              cut_points[jj][l] = cut_points[jj][l] - location[l];
+            }
+          }
+
+          // for faces that exist on the side of the cell (not XY planes)
+          if (i < 4) {
+            WGD->cut_cell->reorderPoints(cut_points, i, pi);
+            if (i == 0) {
+              S_right = WGD->cut_cell->calculateArea(cut_points, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
+            }
+            if (i == 1) {
+              S_left = WGD->cut_cell->calculateArea(cut_points, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
+            }
+            if (i == 2) {
+              S_front = WGD->cut_cell->calculateArea(cut_points, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
+            }
+            if (i == 3) {
+              S_behind = WGD->cut_cell->calculateArea(cut_points, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
+            }
+          }
+        }
+        // for the top and bottom faces of the cell (XY planes)
+
+        if (i == 4) {
+          S_below = WGD->cut_cell->calculateAreaTopBot(terrainPoints, terrainEdges, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], location, WGD->n, true);
+        }
+
+        if (i == 5) {
+          S_above = WGD->cut_cell->calculateAreaTopBot(terrainPoints, terrainEdges, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], location, WGD->m, false);
+        }
+
+        S_cut = sqrt(pow(S_behind - S_front, 2.0) + pow(S_right - S_left, 2.0) + pow(S_below - S_above, 2.0));
+
+        if (S_cut != 0.0) {
+          ni = (S_behind - S_front) / S_cut;
+          nj = (S_right - S_left) / S_cut;
+          nk = (S_below - S_above) / S_cut;
+        }
+
+        if (i == 0) {
+          solid_V_frac += (0.0 * (-1) * S_right) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+        }
+
+        if (i == 1) {
+          solid_V_frac += (WGD->dy * (1) * S_left) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+        }
+
+        if (i == 2) {
+          solid_V_frac += (WGD->dx * (1) * S_front) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+        }
+
+        if (i == 3) {
+          solid_V_frac += (0.0 * (-1) * S_behind) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+        }
+
+        if (i == 4) {
+          solid_V_frac += (0.0 * (-1) * S_below) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+        }
+
+        if (i == 5) {
+          solid_V_frac += (WGD->dz_array[k] * (1) * S_above) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+        }
+      }
+
+      if (terrainPoints.size() != 0) {
+        solid_V_frac += (((terrainPoints[0][0] - location[0]) * ni * S_cut) + ((terrainPoints[0][1] - location[1]) * nj * S_cut) + ((terrainPoints[0][2] - location[2]) * nk * S_cut)) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+      }
+
+      WGD->terrain_volume_frac[cutcell_index] -= solid_V_frac;
+
+      WGD->ni[cutcell_index] = ni;
+      WGD->nj[cutcell_index] = nj;
+      WGD->nk[cutcell_index] = nk;
+
+      if (WGD->terrain_volume_frac[cutcell_index] < 0.0) {
+        WGD->terrain_volume_frac[cutcell_index] = 0.0;
+      }
     }
+    //std::cout << "count:  " << count << std::endl;
   }
 }
 
-Vector3<float> DTEHeightField::getIntermediate(Vector3<float> a, Vector3<float> b, float height) const
+Vector3 DTEHeightField::getIntermediate(Vector3 a, Vector3 b, float height) const
 
 {
 
   if (a[2] == b[2])
-    return Vector3<float>((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, a[2]);
+    return Vector3((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, a[2]);
 
   float offset = a[2] - height;
   float xCoord, yCoord;
@@ -1035,7 +1211,7 @@ Vector3<float> DTEHeightField::getIntermediate(Vector3<float> a, Vector3<float> 
   } else
     yCoord = a[1];
 
-  return Vector3<float>(xCoord, yCoord, height);
+  return Vector3(xCoord, yCoord, height);
 }
 
 void DTEHeightField::closeScanner()

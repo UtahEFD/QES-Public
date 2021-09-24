@@ -43,19 +43,25 @@
  *
  * Values can be accessed as if this was an array.
  */
-template<class T>
+
 class Vector3 : public ParseInterface
 {
 protected:
-  std::vector<T> values;
+
+  std::vector<float> values;
 
 public:
+
+
   Vector3()
   {
-    values.clear();
+    /*values.clear();
     values.push_back((0));
     values.push_back((0));
-    values.push_back((0));
+    values.push_back((0));*/
+    values.resize(3);
+    values[0] = values[1] = values[2] = 0.0;
+
   }
 
   /*	template <typename X> Vector3(const Vector3<X>& newV)
@@ -68,17 +74,24 @@ public:
   template<typename X>
   Vector3(const X a, const X b, const X c)
   {
-    values.clear();
+    /*values.clear();
     values.push_back(a);
     values.push_back(b);
-    values.push_back(c);
+    values.push_back(c);*/
+
+    values.resize(3);
+    values[0] = a;
+    values[1] = b;
+    values[2] = c;
   }
 
   virtual void parseValues()
   {
     values.clear();
-    parseTaglessValues<T>(values);
+    parseTaglessValues(values);
   }
+
+  ~Vector3() {}
 
   /**
    * Accesses the value at position i.
@@ -86,9 +99,9 @@ public:
    * @param i the index of the value to return
    * @return a reference to the value stored at i
    */
-  T &operator[](const int i)
+  float &operator[](const int i)
   {
-    return values[i % 3];
+    return values[i];
   }
 
   /**
@@ -97,12 +110,12 @@ public:
    * @param v the vector3 to compare with this
    * @return if values at index 0,1,2 are all equal with their counterparts
    */
-  bool operator==(const Vector3<T> &v)
+  bool operator==(const Vector3 &v)
   {
-    if (std::is_same<T, float>::value || std::is_same<T, double>::value)
+    //if (std::is_same<T,float>::value || std::is_same<T, double>::value)
       return FLOATS_ARE_EQUAL(values[0], v.values[0]) && FLOATS_ARE_EQUAL(values[1], v.values[1]) && FLOATS_ARE_EQUAL(values[2], v.values[2]);
-    else
-      return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];
+    /*else
+      return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];*/
   }
 
   /*Vector3<T>& operator=(const Vector3<T>& v)
@@ -113,14 +126,14 @@ public:
   }*/
 
 
-  friend std::istream &operator>>(std::istream &is, Vector3<T> &v)
+  /*friend std::istream &operator>>(std::istream &is, Vector3 &v)
   {
     is >> v.values[0] >> v.values[1] >> v.values[2];
     return is;
   }
 
-  friend Vector3<T> operator-(const Vector3<T> &v1, const Vector3<T> &v2)
+  friend Vector3 operator-(const Vector3 &v1, const Vector3 &v2)
   {
-    return Vector3<T>(v1.values[0] - v2.values[0], v1.values[1] - v2.values[1], v1.values[2] - v2.values[2]);
-  }
+    return Vector3(v1.values[0] - v2.values[0], v1.values[1] - v2.values[1], v1.values[2] - v2.values[2]);
+  }*/
 };
