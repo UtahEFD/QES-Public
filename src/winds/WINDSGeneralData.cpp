@@ -522,26 +522,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // Pete could move to input param processing...
   assert(WID->metParams->sensors.size() > 0);// extra
   std::cout << "Sensors have been loaded (total sensors = " << WID->metParams->sensors.size() << ")." << std::endl;
-  // check
-  // to
-  // be safe
-  // Guaranteed to always have at least 1 sensor!
-  // Pete thinks inputWindProfile should be a function of MetParams
-  // so it would have access to all the sensors naturally.
-  // Make this change later. (Move to function applyWindProfile)
-  //    WID->metParams->inputWindProfile(WID, this);
-  /* FM -> Move to function applyWindProfile)
-     WID->metParams->sensors[0]->inputWindProfile(WID, this, 0, solverType);
-
-     max_velmag = 0.0;
-     for (auto i = 0; i < nx; i++) {
-     for (auto j = 0; j < ny; j++) {
-     int icell_face = i + j * nx + (nz - 2) * nx * ny;
-     max_velmag = MAX_S(max_velmag, sqrt(pow(u0[icell_face], 2.0) + pow(v0[icell_face], 2.0)));
-     }
-     }
-     max_velmag *= 1.2;
-  */
 
   ////////////////////////////////////////////////////////
   //////              Apply Terrain code             /////
@@ -676,6 +656,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
         // Loop to create each of the polygon buildings read in from the shapefile
         int bId = allBuildingsV.size();
+
         //allBuildingsV.push_back(new PolyBuilding(WID, this, pIdx));
         allBuildingsV.push_back(new PolyBuilding(WID->buildings->SHPData->m_polygons[pIdx],
                                                  WID->buildings->SHPData->m_features[WID->buildings->shpHeightField][pIdx] * WID->buildings->heightFactor,
@@ -688,7 +669,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       }
       std::cout << "[done]" << std::endl;
     }
-
     std::cout << "Consolidating building data..." << std::endl;
 
     float corner_height, min_height;
@@ -751,12 +731,18 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     canopy->setCanopyElements(WID, this);
   }
 
+  auto wallsetup_start = std::chrono::high_resolution_clock::now();
+
   std::cout << "Defining Solid Walls..." << std::flush;
   wall = new Wall();
   // Boundary condition for building edges
   wall->defineWalls(this);
   wall->solverCoefficients(this);
   std::cout << "[done]" << std::endl;
+
+  auto wallsetup_finish = std::chrono::high_resolution_clock::now();// Finish recording execution time
+  std::chrono::duration<float> elapsed_wall = wallsetup_finish - wallsetup_start;
+  std::cout << "Elapsed time for defining walls: " << elapsed_wall.count() << " s\n";
 
   for (auto id = 0u; id < icellflag.size(); id++) {
     icellflag_initial[id] = icellflag[id];

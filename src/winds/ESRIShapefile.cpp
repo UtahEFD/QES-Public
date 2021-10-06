@@ -328,7 +328,6 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
   }
   std::cout << std::endl;
 
-
   while ((feature = buildingLayer->GetNextFeature()) != nullptr) {
     // for( auto&& oField: *feature ) {
     for (auto idxField : validIdxField) {
@@ -352,7 +351,6 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
         exit(1);
       }
     }
-
     OGRGeometry *poGeometry;
     poGeometry = feature->GetGeometryRef();
     if (poGeometry != NULL
