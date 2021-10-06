@@ -54,6 +54,7 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   dx = WGD->dx;
   dy = WGD->dy;
   dz = WGD->dz;
+  dxy = WGD->dxy;
 
   // Create instance of Eulerian class
   if (PID->plumeParams->interpMethod == "analyticalPowerLaw") {
@@ -129,6 +130,7 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 
 void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
 {
+  auto StartTime = std::chrono::high_resolution_clock::now();
 
   eul->setData(WGD, TGD);
   // get the threshold velocity fluctuation to define rogue particles
@@ -300,10 +302,20 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
   //  loop time.
   writeSimInfoFile(simTime);
 
+  auto EndTime = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> Elapsed = EndTime - StartTime;
+
+  std::cout << "[QES-Plume]\t Advection.\n";
+  std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << endl;
+
   return;
 }
 
-double Plume::calcCourantTimestep(const double &u, const double &v, const double &w, const double &timeRemainder)
+double Plume::calcCourantTimestep(const double &d,
+                                  const double &u,
+                                  const double &v,
+                                  const double &w,
+                                  const double &timeRemainder)
 {
   // if the Courant Number is set to 0.0, we want to exit using the
   // timeRemainder (first time through that is the simTime)
@@ -311,6 +323,21 @@ double Plume::calcCourantTimestep(const double &u, const double &v, const double
     return timeRemainder;
   }
 
+  double min_ds = std::min(dxy, dz);
+  double max_u = std::max({ u, v, w });
+  double CN = 0.0;
+  if (d > 15.0 * min_ds) {
+    return timeRemainder;
+  } else if (d > 8.0 * min_ds) {
+    CN = 0.5;
+  } else if (d > 4.0 * min_ds) {
+    CN = 1.0 / 3.0;
+  } else {
+    CN = 0.2;
+  }
+
+  return std::min(timeRemainder, CN * min_ds / max_u);
+  /* original code 
   // set the output dt_par val to the timeRemainder
   // then if any of the Courant number values end up smaller, use that value
   // instead
@@ -337,6 +364,7 @@ double Plume::calcCourantTimestep(const double &u, const double &v, const double
   }
 
   return dt_par;
+  */
 }
 
 void Plume::getInputSources(PlumeInputData *PID)
@@ -772,7 +800,7 @@ bool Plume::enforceWallBCs_exiting(double &pos,
                                    const double &domainEnd)
 {
   // if it goes out of the domain, set isActive to false
-  if (pos < domainStart || pos > domainEnd) {
+  if (pos <= domainStart || pos >= domainEnd) {
     return false;
   } else {
     return true;

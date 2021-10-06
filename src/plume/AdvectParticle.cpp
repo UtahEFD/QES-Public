@@ -141,7 +141,14 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
 
     // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
     // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
-    double par_dt = calcCourantTimestep(uMean + uFluct, vMean + vFluct, wMean + wFluct, timeRemainder);
+
+    int cellId = eul->getCellId(xPos, yPos, zPos);
+    double dWall = WGD->mixingLengths[cellId];
+    double par_dt = calcCourantTimestep(dWall,
+                                        std::abs(uMean) + std::abs(uFluct),
+                                        std::abs(vMean) + std::abs(vFluct),
+                                        std::abs(wMean) + std::abs(wFluct),
+                                        timeRemainder);
 
     // update the par_time, useful for debugging
     //par_time = par_time + par_dt;
@@ -168,7 +175,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     if (isRogue == true) {
       //int cellIdNew = eul->getCellId(xPos,yPos,zPos);
       std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
-      isActive == false;
+      isActive = false;
       break;
     }
 
@@ -222,24 +229,24 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
 
     // now check to see if the value is rogue or not
     if (std::abs(uFluct) >= vel_threshold || isnan(uFluct)) {
-      //std::cout << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      //std::cout << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
+      std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
+      std::cerr << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
       uFluct = 0.0;
       isActive = false;
       isRogue = true;
       break;
     }
     if (std::abs(vFluct) >= vel_threshold || isnan(vFluct)) {
-      //std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      //std::cerr << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
+      std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
+      std::cerr << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
       vFluct = 0.0;
       isActive = false;
       isRogue = true;
       break;
     }
     if (std::abs(wFluct) >= vel_threshold || isnan(wFluct)) {
-      //std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      //std::cerr << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
+      std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
+      std::cerr << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
       wFluct = 0.0;
       isActive = false;
       isRogue = true;

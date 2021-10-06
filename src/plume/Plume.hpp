@@ -113,6 +113,7 @@ private:
   double dx;// a copy of the urb grid dx value, eventually could become an array
   double dy;// a copy of the urb grid dy value, eventually could become an array
   double dz;// a copy of the urb grid dz value, eventually could become an array
+  double dxy;//a copy of the urb grid dz value, eventually could become an array
 
   // these values are calculated from the urb and turb grids by dispersion
   // they are used for applying boundary conditions at the walls of the domain
@@ -245,9 +246,14 @@ private:
   // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,
   // and the grid size. Forces particles to always move only at one timestep at at time.
   // Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
-  double calcCourantTimestep(const double &uFluct,
-                             const double &vFluct,
-                             const double &wFluct,
+  double calcCourantTimestep(const double &u,
+                             const double &v,
+                             const double &w,
+                             const double &timeRemainder);
+  double calcCourantTimestep(const double &d,
+                             const double &u,
+                             const double &v,
+                             const double &w,
                              const double &timeRemainder);
 
   // utility functions for the plume solver
