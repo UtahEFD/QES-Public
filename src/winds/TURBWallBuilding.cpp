@@ -178,7 +178,7 @@ void TURBWallBuilding::set_finitediff_stairstep(WINDSGeneralData *WGD, TURBGener
 
     // Gyz = dvdz
     TGD->Gyz[it->cellID] = (0.5 * (WGD->v[it->faceID + nx * ny] + WGD->v[it->faceID + nx + nx * ny])
-                            - 0.5 * (WGD->u[it->faceID] + WGD->u[it->faceID + nx]))
+                            - 0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx]))
                            / (WGD->z[k + 1] - WGD->z[k]);
   }
   // set BC for horizontal wall above the cell
@@ -193,7 +193,7 @@ void TURBWallBuilding::set_finitediff_stairstep(WINDSGeneralData *WGD, TURBGener
                            / (WGD->z[k] - WGD->z[k - 1]);
     // Gyz = dvdz
     TGD->Gyz[it->cellID] = (0.5 * (WGD->v[it->faceID] + WGD->v[it->faceID + nx])
-                            - 0.5 * (WGD->u[it->faceID - nx * ny] + WGD->u[it->faceID + nx - nx * ny]))
+                            - 0.5 * (WGD->v[it->faceID - nx * ny] + WGD->v[it->faceID + nx - nx * ny]))
                            / (WGD->z[k] - WGD->z[k - 1]);
   }
 

@@ -646,8 +646,8 @@ void TURBGeneralData::getDerivatives_v2(WINDSGeneralData *WGD)
                    - (WGD->v[faceID - 1] - WGD->v[faceID - 1 + nx]))
                   / (4.0 * WGD->dx);
     // Gzx = dwdx
-    Gzx[cellID] = ((WGD->w[faceID + 1] + WGD->w[faceID + 1 + nx * ny]
-                    - WGD->w[faceID - 1] + WGD->w[faceID - 1 + nx * ny]))
+    Gzx[cellID] = ((WGD->w[faceID + 1] + WGD->w[faceID + 1 + nx * ny])
+                   - (WGD->w[faceID - 1] + WGD->w[faceID - 1 + nx * ny]))
                   / (4.0 * WGD->dx);
 
     // Gxy = dudy
@@ -699,6 +699,7 @@ void TURBGeneralData::getDerivatives_v2(WINDSGeneralData *WGD)
 
 void TURBGeneralData::getStressTensor_v2()
 {
+  float tkeBound = turbUpperBound * uStar * uStar;
 
   for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
     int cellID = *it;
@@ -719,8 +720,12 @@ void TURBGeneralData::getStressTensor_v2()
 
     NU_T = LM * LM * sqrt(2.0 * SijSij);
     TKE = pow((NU_T / (cPope * LM)), 2.0);
-    tke[cellID] = TKE;
+
+    if (TKE > tkeBound)
+      TKE = tkeBound;
+
     CoEps[cellID] = 5.7 * pow(sqrt(TKE) * cPope, 3.0) / (LM);
+    tke[cellID] = TKE;
 
     txx[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Sxx);
     tyy[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Syy);
@@ -732,6 +737,15 @@ void TURBGeneralData::getStressTensor_v2()
     txx[cellID] = fabs(sigUConst * txx[cellID]);
     tyy[cellID] = fabs(sigVConst * tyy[cellID]);
     tzz[cellID] = fabs(sigWConst * tzz[cellID]);
+
+    /*
+    txx[cellID] += 0.3;
+    tyy[cellID] += 0.3;
+    tzz[cellID] += 0.3;
+    txy[cellID] = -txy[cellID];
+    txz[cellID] = -txz[cellID];
+    tyz[cellID] = -tyz[cellID];
+    */
   }
 }
 
