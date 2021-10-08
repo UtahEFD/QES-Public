@@ -145,12 +145,8 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
 
   // definition of the solid wall for loglaw
   std::cout << "\t\t Defining Solid Walls...\n";
-  wallVec.push_back(new TURBWallBuilding());
-  wallVec.push_back(new TURBWallTerrain());
-  /// Boundary condition at wall
-  for (auto i = 0u; i < wallVec.size(); i++) {
-    wallVec.at(i)->defineWalls(WID, WGD, this);
-  }
+  wallVec.push_back(new TURBWallBuilding(WID, WGD, this));
+  wallVec.push_back(new TURBWallTerrain(WID, WGD, this));
   // std::cout << "\t\t Walls Defined...\n";
 
   // mixing length

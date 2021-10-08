@@ -64,14 +64,6 @@ public:
   ~TURBWall()
   {}
 
-  /**
-   * Takes in the icellflags set by setCellsFlag
-   * function for stair-step method and sets related coefficients to
-   * zero to define solid walls. It also creates vectors of indices
-   * of the cells that have wall to right/left, wall above/bellow
-   * and wall in front/back
-   */
-  virtual void defineWalls(const WINDSInputData *, WINDSGeneralData *, TURBGeneralData *) = 0;
   virtual void setWallsVelocityDeriv(WINDSGeneralData *, TURBGeneralData *) = 0;
   virtual void setWallsStressDeriv(WINDSGeneralData *,
                                    TURBGeneralData *,

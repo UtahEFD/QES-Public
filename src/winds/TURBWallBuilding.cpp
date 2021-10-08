@@ -34,7 +34,7 @@
 
 #include "TURBWallBuilding.h"
 
-void TURBWallBuilding::defineWalls(const WINDSInputData *WID,
+TURBWallBuilding::TURBWallBuilding(const WINDSInputData *WID,
                                    WINDSGeneralData *WGD,
                                    TURBGeneralData *TGD)
 {

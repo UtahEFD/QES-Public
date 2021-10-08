@@ -34,9 +34,9 @@
 
 #include "TURBWallTerrain.h"
 
-void TURBWallTerrain::defineWalls(const WINDSInputData *WID,
-                                  WINDSGeneralData *WGD,
-                                  TURBGeneralData *TGD)
+TURBWallTerrain::TURBWallTerrain(const WINDSInputData *WID,
+                                 WINDSGeneralData *WGD,
+                                 TURBGeneralData *TGD)
 {
   if (WID->simParams->meshTypeFlag == 1) {
     use_cutcell = true;
