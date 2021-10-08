@@ -186,15 +186,20 @@ private:
   // input: store here for multiple time instance.
   NetCDFInput *input;
 
-  void getFrictionVelocity(WINDSGeneralData *);
+  void frictionVelocity(WINDSGeneralData *);
 
   void getDerivatives(WINDSGeneralData *);
-  void getDerivatives_v2(WINDSGeneralData *);
+  void derivativeVelocity(WINDSGeneralData *);
 
   void getStressTensor();
-  void getStressTensor_v2();
+  void stressTensor();
 
-  void compDivergenceStress(WINDSGeneralData *);
+  void divergenceStress(WINDSGeneralData *);
+  void derivativeStress(WINDSGeneralData *,
+                        const std::vector<float> &,
+                        const std::vector<float> &,
+                        const std::vector<float> &,
+                        std::vector<float> &);
 
   void boundTurbFields();
 };
