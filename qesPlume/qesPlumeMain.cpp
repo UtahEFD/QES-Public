@@ -25,7 +25,6 @@
 #include "src/plume/Eulerian.h"
 
 #include "util/QESNetCDFOutput.h"
-#include "src/plume/PlumeOutputEulerian.h"
 #include "src/plume/PlumeOutput.h"
 #include "src/plume/PlumeOutputParticleData.h"
 

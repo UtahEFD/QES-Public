@@ -31,7 +31,6 @@
 #include "src/plume/PlumeInputData.hpp"
 #include "src/plume/Plume.hpp"
 #include "src/plume/PlumeOutput.h"
-#include "src/plume/PlumeOutputEulerian.h"
 #include "src/plume/PlumeOutputParticleData.h"
 
 
