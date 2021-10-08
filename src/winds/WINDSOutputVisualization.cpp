@@ -40,16 +40,18 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD, WINDSI
 {
   std::cout << "[Output] \t Getting output fields for Vizualization file" << std::endl;
 
+  setAllOutputFields();
+
   std::vector<std::string> fileOP = WID->fileOptions->outputFields;
   bool valid_output;
 
   if (fileOP.empty() || fileOP[0] == "all") {
-    output_fields = allOutputFields;
+    output_fields = all_output_fields;
     valid_output = true;
   } else {
     output_fields = { "t", "x", "y", "z" };
     output_fields.insert(output_fields.end(), fileOP.begin(), fileOP.end());
-    valid_output = validateFileOtions();
+    valid_output = validateFileOptions();
   }
 
   if (!valid_output) {
@@ -150,21 +152,23 @@ WINDSOutputVisualization::WINDSOutputVisualization(WINDSGeneralData *WGD, WINDSI
   addOutputFields();
 }
 
-bool WINDSOutputVisualization::validateFileOtions()
+void WINDSOutputVisualization::setAllOutputFields()
 {
-
-  // check if all fileOptions->outputFields are possible
-  bool doContains(true);
-  std::size_t iter = 0, maxiter = output_fields.size();
-
-  while (doContains && iter < maxiter) {
-    doContains = find(allOutputFields.begin(), allOutputFields.end(), output_fields.at(iter)) != allOutputFields.end();
-    iter++;
-  }
-
-  return doContains;
+  all_output_fields.clear();
+  // all possible output fields need to be add to this list
+  all_output_fields = { "t",
+                        "times",
+                        "x",
+                        "y",
+                        "z",
+                        "u",
+                        "v",
+                        "w",
+                        "mag",
+                        "icell",
+                        "icellInitial",
+                        "terrain" };
 }
-
 
 // Save output at cell-centered values
 void WINDSOutputVisualization::save(ptime timeOut)
@@ -189,7 +193,9 @@ void WINDSOutputVisualization::save(ptime timeOut)
         u_out[icell_cent] = 0.5 * (WGD_->u[icell_face + 1] + WGD_->u[icell_face]);
         v_out[icell_cent] = 0.5 * (WGD_->v[icell_face + nx] + WGD_->v[icell_face]);
         w_out[icell_cent] = 0.5 * (WGD_->w[icell_face + nx * ny] + WGD_->w[icell_face]);
-        mag_out[icell_cent] = sqrt(u_out[icell_cent] * u_out[icell_cent] + v_out[icell_cent] * v_out[icell_cent] + w_out[icell_cent] * w_out[icell_cent]);
+        mag_out[icell_cent] = sqrt(u_out[icell_cent] * u_out[icell_cent]
+                                   + v_out[icell_cent] * v_out[icell_cent]
+                                   + w_out[icell_cent] * w_out[icell_cent]);
 
         icellflag_out[icell_cent] = WGD_->icellflag[icell_cent + ((nx - 1) * (ny - 1))];
         icellflag2_out[icell_cent] = WGD_->icellflag_initial[icell_cent + ((nx - 1) * (ny - 1))];
