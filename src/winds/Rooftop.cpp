@@ -136,9 +136,11 @@ void PolyBuilding::rooftop(const WINDSInputData *WID, WINDSGeneralData *WGD)
     small_dimension = MIN_S(width_eff, H);
     // Larger of H and the effective cross-wind width (Weff)
     long_dimension = MAX_S(width_eff, H);
-    R_scale = pow(small_dimension, (2.0 / 3.0)) * pow(long_dimension, (1.0 / 3.0));// Scaling length
+    //R_scale = pow(small_dimension, (2.0 / 3.0)) * pow(long_dimension, (1.0 / 3.0));// Scaling length
+    R_scale = 2.0 / 3.0 * small_dimension + 1.0 / 3.0 * long_dimension;// Scaling length
     R_cx = 0.9 * R_scale;// Normalized cavity length
-    vd = 0.5 * 0.22 * R_scale;// Cavity height
+    //vd = 0.5 * 0.22 * R_scale;// Cavity height
+    vd = 0.22 * R_scale;// Cavity height
     z_ref = (vd / sqrt(0.5 * R_cx));
     // Finding index related to height of building plus rooftop height
     for (auto k = k_end; k <= k_ref; k++) {
