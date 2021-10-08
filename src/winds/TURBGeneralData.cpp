@@ -74,9 +74,9 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   ny = WGD->ny;
   nx = WGD->nx;
 
-  float dz = WGD->dz;
-  float dy = WGD->dy;
-  float dx = WGD->dx;
+  dz = WGD->dz;
+  dy = WGD->dy;
+  dx = WGD->dx;
 
   // x-grid (face-center & cell-center)
   x_fc.resize(nx, 0);
@@ -272,6 +272,18 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   CoEps.resize(np_cc, 0);
   // std::cout << "\t\t Memory allocation completed.\n";
 
+  if (flagCompDivStress) {
+    // comp of the divergence of the stress tensor
+    tmp_dtoxdx.resize(np_cc, 0);
+    tmp_dtoydy.resize(np_cc, 0);
+    tmp_dtozdz.resize(np_cc, 0);
+
+    // comp of the divergence of the stress tensor
+    div_tau_x.resize(np_cc, 0);
+    div_tau_y.resize(np_cc, 0);
+    div_tau_z.resize(np_cc, 0);
+  }
+
   auto EndTime = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> Elapsed = EndTime - StartTime;
 
@@ -409,19 +421,13 @@ void TURBGeneralData::run(WINDSGeneralData *WGD)
   getDerivatives_v2(WGD);
   // std::cout<<"\t\t Derivatives computed."<<std::endl;
 
-  std::cout << "\t\t Imposing Wall BC (log law)..." << std::endl;
-  for (auto i = 0u; i < wallVec.size(); i++) {
-    wallVec.at(i)->setWallsBC(WGD, this);
-  }
-  // std::cout<<"\t\t Wall BC done."<<std::endl;
-
   std::cout << "\t\t Computing Stess Tensor..." << std::endl;
   getStressTensor_v2();
   // std::cout<<"\t\t Stress Tensor computed."<<std::endl;
 
   if (flagNonLocalMixing) {
     std::cout << "\t\t Applying non-local mixing..." << std::endl;
-    ;
+
     for (size_t i = 0; i < WGD->allBuildingsV.size(); i++) {
       WGD->allBuildingsV[WGD->building_id[i]]->NonLocalMixing(WGD, this, WGD->building_id[i]);
     }
@@ -430,6 +436,10 @@ void TURBGeneralData::run(WINDSGeneralData *WGD)
 
   std::cout << "\t\t Checking Upper Bound of Turbulence Fields..." << std::endl;
   boundTurbFields();
+
+  if (flagCompDivStress) {
+    compDivergenceStress(WGD);
+  }
 
   auto EndTime = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> Elapsed = EndTime - StartTime;
@@ -694,6 +704,13 @@ void TURBGeneralData::getDerivatives_v2(WINDSGeneralData *WGD)
       Gzz[cellID] = (WGD->w[faceID + nx * ny] - WGD->w[faceID]) / (WGD->dz_array[k]);
     }
   }
+
+  std::cout << "\t\t Imposing Wall BC (log law)..." << std::endl;
+  for (auto i = 0u; i < wallVec.size(); i++) {
+    wallVec.at(i)->setWallsVelocityDeriv(WGD, this);
+  }
+  // std::cout<<"\t\t Wall BC done."<<std::endl;
+
   return;
 }
 
@@ -747,6 +764,110 @@ void TURBGeneralData::getStressTensor_v2()
     tyz[cellID] = -tyz[cellID];
     */
   }
+  return;
+}
+
+void TURBGeneralData::compDivergenceStress(WINDSGeneralData *WGD)
+{
+  std::cout << "\t\t Computing Divergence of Stess Tensor..." << std::endl;
+
+  // x-comp of the divergence of the stress tensor
+  // div(tau)_x = dtxxdx + dtxydy + dtxzdz
+  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
+    int cellID = *it;
+
+    // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
+    //  i,j,k -> inverted linearized index
+    int k = (int)(cellID / ((nx - 1) * (ny - 1)));
+
+    tmp_dtoxdx[cellID] = (txx[cellID + 1] - txx[cellID - 1]) / (2.0 * WGD->dx);
+    tmp_dtoydy[cellID] = (txy[cellID + (nx - 1)] - txy[cellID - (nx - 1)]) / (2.0 * WGD->dy);
+
+    if (flagUniformZGrid) {
+      tmp_dtozdz[cellID] = (txy[cellID + (nx - 1) * (ny - 1)] - txy[cellID - (nx - 1) * (ny - 1)]) / (2.0 * WGD->dz);
+    } else {
+      tmp_dtozdz[cellID] = ((WGD->z[k] - WGD->z[k - 1]) / (WGD->z[k + 1] - WGD->z[k])
+                              * (txz[cellID + (nx - 1) * (ny - 1)] - txz[cellID])
+                            + (WGD->z[k + 1] - WGD->z[k]) / (WGD->z[k] - WGD->z[k - 1])
+                                * (txz[cellID] - txz[cellID - (nx - 1) * (ny - 1)]))
+                           / (WGD->z[k + 1] - WGD->z[k - 1]);
+    }
+  }
+  // correction at the wall
+  for (auto i = 0u; i < wallVec.size(); i++) {
+    wallVec.at(i)->setWallsStressDeriv(WGD, this, txx, txy, txz);
+  }
+  // compute the the divergence
+  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
+    int cellID = *it;
+    div_tau_x[cellID] = tmp_dtoxdx[cellID] + tmp_dtoydy[cellID] + tmp_dtozdz[cellID];
+  }
+
+  // y-comp of the divergence of the stress tensor
+  // div(tau)_y = dtxzdx + dtyydy + dtyzdz
+  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
+    int cellID = *it;
+
+    // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
+    //  i,j,k -> inverted linearized index
+    int k = (int)(cellID / ((nx - 1) * (ny - 1)));
+
+    tmp_dtoxdx[cellID] = (txy[cellID + 1] - txy[cellID - 1]) / (2.0 * WGD->dx);
+    tmp_dtoydy[cellID] = (tyy[cellID + (nx - 1)] - tyy[cellID - (nx - 1)]) / (2.0 * WGD->dy);
+
+    if (flagUniformZGrid) {
+      tmp_dtozdz[cellID] = (txy[cellID + (nx - 1) * (ny - 1)] - txy[cellID - (nx - 1) * (ny - 1)]) / (2.0 * WGD->dz);
+    } else {
+      tmp_dtozdz[cellID] = ((WGD->z[k] - WGD->z[k - 1]) / (WGD->z[k + 1] - WGD->z[k])
+                              * (tyz[cellID + (nx - 1) * (ny - 1)] - tyz[cellID])
+                            + (WGD->z[k + 1] - WGD->z[k]) / (WGD->z[k] - WGD->z[k - 1])
+                                * (tyz[cellID] - tyz[cellID - (nx - 1) * (ny - 1)]))
+                           / (WGD->z[k + 1] - WGD->z[k - 1]);
+    }
+  }
+  // correction at the wall
+  for (auto i = 0u; i < wallVec.size(); i++) {
+    wallVec.at(i)->setWallsStressDeriv(WGD, this, txy, tyy, tyz);
+  }
+  // compute the the divergence
+  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
+    int cellID = *it;
+    div_tau_y[cellID] = tmp_dtoxdx[cellID] + tmp_dtoydy[cellID] + tmp_dtozdz[cellID];
+  }
+
+  // z-comp of the divergence of the stress tensor
+  // div(tau)_z = dtxzdx + dtyzdy + dtzzdz
+  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
+    int cellID = *it;
+
+    // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
+    //  i,j,k -> inverted linearized index
+    int k = (int)(cellID / ((nx - 1) * (ny - 1)));
+
+    tmp_dtoxdx[cellID] = (txz[cellID + 1] - txz[cellID - 1]) / (2.0 * WGD->dx);
+    tmp_dtoydy[cellID] = (tyz[cellID + (nx - 1)] - tyz[cellID - (nx - 1)]) / (2.0 * WGD->dy);
+
+    if (flagUniformZGrid) {
+      tmp_dtozdz[cellID] = (tzz[cellID + (nx - 1) * (ny - 1)] - tzz[cellID - (nx - 1) * (ny - 1)]) / (2.0 * WGD->dz);
+    } else {
+      tmp_dtozdz[cellID] = ((WGD->z[k] - WGD->z[k - 1]) / (WGD->z[k + 1] - WGD->z[k])
+                              * (tzz[cellID + (nx - 1) * (ny - 1)] - tzz[cellID])
+                            + (WGD->z[k + 1] - WGD->z[k]) / (WGD->z[k] - WGD->z[k - 1])
+                                * (tzz[cellID] - tzz[cellID - (nx - 1) * (ny - 1)]))
+                           / (WGD->z[k + 1] - WGD->z[k - 1]);
+    }
+  }
+  // correction at the wall
+  for (auto i = 0u; i < wallVec.size(); i++) {
+    wallVec.at(i)->setWallsStressDeriv(WGD, this, txz, tyz, tzz);
+  }
+  // compute the the divergence
+  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
+    int cellID = *it;
+    div_tau_z[cellID] = tmp_dtoxdx[cellID] + tmp_dtoydy[cellID] + tmp_dtozdz[cellID];
+  }
+
+  return;
 }
 
 void TURBGeneralData::boundTurbFields()

@@ -55,9 +55,14 @@
 class TURBWallBuilding : public TURBWall
 {
 protected:
-  void (TURBWallBuilding::*set_wall)(WINDSGeneralData *, TURBGeneralData *);
+  void (TURBWallBuilding::*comp_wall_velocity_deriv)(WINDSGeneralData *, TURBGeneralData *);
+  void (TURBWallBuilding::*comp_wall_stress_deriv)(WINDSGeneralData *,
+                                                   TURBGeneralData *,
+                                                   const std::vector<float> &,
+                                                   const std::vector<float> &,
+                                                   const std::vector<float> &);
+
   void set_loglaw_stairstep(WINDSGeneralData *, TURBGeneralData *);
-  void set_finitediff_stairstep(WINDSGeneralData *, TURBGeneralData *);
 
 public:
   TURBWallBuilding()
@@ -73,7 +78,12 @@ public:
    * and wall in front/back
    */
   void defineWalls(const WINDSInputData *, WINDSGeneralData *, TURBGeneralData *);
-  void setWallsBC(WINDSGeneralData *, TURBGeneralData *);
+  void setWallsVelocityDeriv(WINDSGeneralData *, TURBGeneralData *);
+  void setWallsStressDeriv(WINDSGeneralData *,
+                           TURBGeneralData *,
+                           const std::vector<float> &,
+                           const std::vector<float> &,
+                           const std::vector<float> &);
 
 private:
   const int icellflag_building = 0;

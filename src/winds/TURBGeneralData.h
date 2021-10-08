@@ -70,6 +70,7 @@ public:
 
   bool flagUniformZGrid = true; /**< :document this: */
   bool flagNonLocalMixing; /**< :document this: */
+  bool flagCompDivStress = true; /**< :document this: */
 
   // General QUIC Domain Data
   ///@{
@@ -145,13 +146,25 @@ public:
   std::vector<float> tzz;
   ///@}
 
-  // derived turbulence quantities
-  std::vector<float> tke;
-  std::vector<float> CoEps;
+  ///@{
+  /** derivative of the stress */
+  std::vector<float> tmp_dtoxdx;
+  std::vector<float> tmp_dtoydy;
+  std::vector<float> tmp_dtozdz;
+  ///@}
 
-  // local Mixing class and data
-  LocalMixing *localMixing;
-  std::vector<double> mixingLengths;
+  ///@{
+  /** divergence of the stress */
+  std::vector<float> div_tau_x;
+  std::vector<float> div_tau_y;
+  std::vector<float> div_tau_z;
+  ///@}
+
+  std::vector<float> tke; /**< turbulence kinetic energy */
+  std::vector<float> CoEps; /**< dissipation rate */
+
+  LocalMixing *localMixing; /**< mixing length class */
+  std::vector<double> mixingLengths; /**< distance to the wall */
 
 protected:
 private:
@@ -168,6 +181,8 @@ private:
   float sigVConst = 1.5 * sigVOrg * sigVOrg * cPope * cPope;
   float sigWConst = 1.5 * sigWOrg * sigWOrg * cPope * cPope;
 
+  float dx, dy, dz;
+
   // input: store here for multiple time instance.
   NetCDFInput *input;
 
@@ -179,6 +194,7 @@ private:
   void getStressTensor();
   void getStressTensor_v2();
 
+  void compDivergenceStress(WINDSGeneralData *);
 
   void boundTurbFields();
 };

@@ -72,7 +72,12 @@ public:
    * and wall in front/back
    */
   virtual void defineWalls(const WINDSInputData *, WINDSGeneralData *, TURBGeneralData *) = 0;
-  virtual void setWallsBC(WINDSGeneralData *, TURBGeneralData *) = 0;
+  virtual void setWallsVelocityDeriv(WINDSGeneralData *, TURBGeneralData *) = 0;
+  virtual void setWallsStressDeriv(WINDSGeneralData *,
+                                   TURBGeneralData *,
+                                   const std::vector<float> &,
+                                   const std::vector<float> &,
+                                   const std::vector<float> &) = 0;
 
 protected:
   void get_stairstep_wall_id(WINDSGeneralData *, int);
@@ -82,7 +87,14 @@ protected:
   void set_cutcell_wall_flag(TURBGeneralData *, int);
 
   void set_loglaw_stairstep_at_id_cc(WINDSGeneralData *, TURBGeneralData *, int, int, float);
+
   virtual void set_loglaw_stairstep(WINDSGeneralData *, TURBGeneralData *) = 0;
+  void comp_velocity_deriv_finitediff_stairstep(WINDSGeneralData *, TURBGeneralData *);
+  void comp_stress_deriv_finitediff_stairstep(WINDSGeneralData *,
+                                              TURBGeneralData *,
+                                              const std::vector<float> &,
+                                              const std::vector<float> &,
+                                              const std::vector<float> &);
 
   // cell
   std::vector<pairCellFaceID> wall_right_indices; /**< Indices of the cells with wall to right boundary condition */
