@@ -180,6 +180,7 @@ private:
   float sigUConst = 1.5 * sigUOrg * sigUOrg * cPope * cPope;
   float sigVConst = 1.5 * sigVOrg * sigVOrg * cPope * cPope;
   float sigWConst = 1.5 * sigWOrg * sigWOrg * cPope * cPope;
+  float backgroundMixing = 0.0;
 
   float dx, dy, dz;
 
@@ -193,6 +194,8 @@ private:
 
   void getStressTensor();
   void stressTensor();
+
+  void addBackgroundMixing();
 
   void divergenceStress(WINDSGeneralData *);
   void derivativeStress(WINDSGeneralData *,

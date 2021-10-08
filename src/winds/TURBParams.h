@@ -64,6 +64,7 @@ public:
   bool flagNonLocalMixing;
   int buildingWallFlag, terrainWallFlag;
   float turbUpperBound;
+  float backgroundMixing;
 
   TURBParams()
   {}
@@ -122,7 +123,10 @@ public:
     buildingWallFlag = 2;
     parsePrimitive<int>(false, buildingWallFlag, "buildingWallFlag");
 
-    turbUpperBound = 100;
+    turbUpperBound = 20.0;
     parsePrimitive<float>(false, turbUpperBound, "turbUpperBound");
+
+    backgroundMixing = 0.0;
+    parsePrimitive<float>(false, backgroundMixing, "backgroundMixing");
   }
 };
