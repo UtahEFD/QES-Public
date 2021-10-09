@@ -27,15 +27,15 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Eulerian.cpp */
+/** @file interpPowerLaw.cpp */
 
-#include "EulerianPowerLaw.h"
+#include "InterpPowerLaw.h"
 
 
-EulerianPowerLaw::EulerianPowerLaw(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, const bool &debug_val)
+InterpPowerLaw::InterpPowerLaw(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, const bool &debug_val)
 {
 
-  std::cout << "[EulerianPowerLaw] \t Setting Eulerian fields " << std::endl;
+  std::cout << "[InterpPowerLaw] \t Setting Interpolation method " << std::endl;
 
   // copy debug information
   bool debug = debug_val;
@@ -73,7 +73,7 @@ EulerianPowerLaw::EulerianPowerLaw(PlumeInputData *PID, WINDSGeneralData *WGD, T
 
 
   if (debug == true) {
-    std::cout << "[Eulerian] \t DEBUG - Domain boundary" << std::endl;
+    std::cout << "[InterpPowerLaw] \t DEBUG - Domain boundary" << std::endl;
     std::cout << "\t\t xStart=" << xStart << " xEnd=" << xEnd << std::endl;
     std::cout << "\t\t yStart=" << yStart << " yEnd=" << yEnd << std::endl;
     std::cout << "\t\t zStart=" << zStart << " zEnd=" << zEnd << std::endl;
@@ -83,7 +83,7 @@ EulerianPowerLaw::EulerianPowerLaw(PlumeInputData *PID, WINDSGeneralData *WGD, T
   C_0 = PID->plumeParams->C_0;
 }
 
-void EulerianPowerLaw::setData(WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void InterpPowerLaw::setData(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
   // set BC
   //setBC(WGD, TGD);
@@ -102,19 +102,19 @@ void EulerianPowerLaw::setData(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   vel_threshold = 10.0 * 2.5 * us;//std::sqrt(getMaxVariance(sig_x, sig_y, sig_z));
 }
 
-void EulerianPowerLaw::interpInitialValues(const double &xPos,
-                                           const double &yPos,
-                                           const double &zPos,
-                                           const TURBGeneralData *TGD,
-                                           double &sig_x_out,
-                                           double &sig_y_out,
-                                           double &sig_z_out,
-                                           double &txx_out,
-                                           double &txy_out,
-                                           double &txz_out,
-                                           double &tyy_out,
-                                           double &tyz_out,
-                                           double &tzz_out)
+void InterpPowerLaw::interpInitialValues(const double &xPos,
+                                         const double &yPos,
+                                         const double &zPos,
+                                         const TURBGeneralData *TGD,
+                                         double &sig_x_out,
+                                         double &sig_y_out,
+                                         double &sig_z_out,
+                                         double &txx_out,
+                                         double &txy_out,
+                                         double &txz_out,
+                                         double &tyy_out,
+                                         double &tyz_out,
+                                         double &tzz_out)
 {
   double a = 4.8;
   double p = 0.15;
@@ -135,24 +135,24 @@ void EulerianPowerLaw::interpInitialValues(const double &xPos,
   return;
 }
 
-void EulerianPowerLaw::interpValues(const double &xPos,
-                                    const double &yPos,
-                                    const double &zPos,
-                                    const WINDSGeneralData *WGD,
-                                    double &uMean_out,
-                                    double &vMean_out,
-                                    double &wMean_out,
-                                    const TURBGeneralData *TGD,
-                                    double &txx_out,
-                                    double &txy_out,
-                                    double &txz_out,
-                                    double &tyy_out,
-                                    double &tyz_out,
-                                    double &tzz_out,
-                                    double &flux_div_x_out,
-                                    double &flux_div_y_out,
-                                    double &flux_div_z_out,
-                                    double &CoEps_out)
+void InterpPowerLaw::interpValues(const double &xPos,
+                                  const double &yPos,
+                                  const double &zPos,
+                                  const WINDSGeneralData *WGD,
+                                  double &uMean_out,
+                                  double &vMean_out,
+                                  double &wMean_out,
+                                  const TURBGeneralData *TGD,
+                                  double &txx_out,
+                                  double &txy_out,
+                                  double &txz_out,
+                                  double &tyy_out,
+                                  double &tyz_out,
+                                  double &tzz_out,
+                                  double &flux_div_x_out,
+                                  double &flux_div_y_out,
+                                  double &flux_div_z_out,
+                                  double &CoEps_out)
 {
   double a = 4.8;
   double p = 0.15;

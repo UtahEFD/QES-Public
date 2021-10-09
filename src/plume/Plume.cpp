@@ -31,7 +31,6 @@
 
 #include "Plume.hpp"
 
-//Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul, Args *arguments)
 Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   : particleList(0), allSources(0)
 {
@@ -56,21 +55,21 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   dz = WGD->dz;
   dxy = WGD->dxy;
 
-  // Create instance of Eulerian class
+  // Create instance of Interpolation class
   if (PID->plumeParams->interpMethod == "analyticalPowerLaw") {
-    eul = new EulerianPowerLaw(PID, WGD, TGD, debug);
+    interp = new InterpPowerLaw(PID, WGD, TGD, debug);
   } else {
-    eul = new Eulerian(PID, WGD, TGD, debug);
+    interp = new InterpTriLinear(PID, WGD, TGD, debug);
   }
 
   // get the domain start and end values, needed for wall boundary condition
   // application
-  domainXstart = eul->xStart;
-  domainXend = eul->xEnd;
-  domainYstart = eul->yStart;
-  domainYend = eul->yEnd;
-  domainZstart = eul->zStart;
-  domainZend = eul->zEnd;
+  domainXstart = interp->xStart;
+  domainXend = interp->xEnd;
+  domainYstart = interp->yStart;
+  domainYend = interp->yEnd;
+  domainZstart = interp->zStart;
+  domainZend = interp->zEnd;
 
   // make copies of important dispersion time variables
   sim_dt = PID->plumeParams->timeStep;
@@ -132,9 +131,9 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
 {
   auto StartTime = std::chrono::high_resolution_clock::now();
 
-  eul->setData(WGD, TGD);
+  interp->setData(WGD, TGD);
   // get the threshold velocity fluctuation to define rogue particles
-  vel_threshold = eul->vel_threshold;
+  vel_threshold = interp->vel_threshold;
 
   std::cout << "[Plume] \t Advecting particles at Time = " << simTime
             << " s (iteration = " << simTimeIdx << "). \n";
@@ -457,12 +456,12 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
     (*parItr)->yPos = (*parItr)->yPos_init;
     (*parItr)->zPos = (*parItr)->zPos_init;
 
-    // get the sigma values from the Eulerian grid for the particle value
+    // get the sigma values from the QES grid for the particle value
     double sig_x, sig_y, sig_z;
-    // get the tau values from the Eulerian grid for the particle value
+    // get the tau values from the QES grid for the particle value
     double txx, txy, txz, tyy, tyz, tzz;
 
-    eul->interpInitialValues((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos, TGD, sig_x, sig_y, sig_z, txx, txy, txz, tyy, tyz, tzz);
+    interp->interpInitialValues((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos, TGD, sig_x, sig_y, sig_z, txx, txy, txz, tyy, tyz, tzz);
 
     // now set the initial velocity fluctuations for the particle
     // The  sqrt of the variance is to match Bailey's code
@@ -500,7 +499,7 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
     (*parItr)->isRogue = false;
     (*parItr)->isActive = true;
 
-    int cellIdNew = eul->getCellId((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos);
+    int cellIdNew = interp->getCellId((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos);
     if ((WGD->icellflag[cellIdNew] == 0) && (WGD->icellflag[cellIdNew] == 2)) {
       std::cerr << "WARNING invalid initial position" << std::endl;
       (*parItr)->isActive = false;

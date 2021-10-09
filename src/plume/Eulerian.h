@@ -65,30 +65,6 @@ public:
 
   //double vel_threshold;
 
-  // these are the gradients of many components of tau in many different direction. Tau is still kept inside TGD
-  // this is only the derivatives that matter for calculating the flux_div
-  // since this is just a temporary variable for calculating flux_div, it may be better to move this into the functions directly at some point
-  // units are probably m/s^2
-  // notice that tau is a symmetric tensor, so the flux div for each direction is taking a given x, y, or z face,
-  //  then calculating the derivative of each stress on that face in the given direction of that stress.
-  //  because of symmetry, the storage names don't always show this, so the symmetrical names are given in comments to make it clearer.
-  std::vector<double> dtxxdx;// dtxxdx
-  std::vector<double> dtxydy;// dtxydy
-  std::vector<double> dtxzdz;// dtxzdz
-
-  std::vector<double> dtxydx;// dtyxdx
-  std::vector<double> dtyydy;// dtyydy
-  std::vector<double> dtyzdz;// dtyzdz
-
-  std::vector<double> dtxzdx;// dtzxdx
-  std::vector<double> dtyzdy;// dtzydy
-  std::vector<double> dtzzdz;// dtzzyz
-
-  // temporary storage of sigma_x,_y,_z
-  std::vector<double> sig_x;
-  std::vector<double> sig_y;
-  std::vector<double> sig_z;
-
   void setData(WINDSGeneralData *, TURBGeneralData *);
   void interpValues(const double &xPos,
                     const double &yPos,
@@ -171,6 +147,27 @@ private:
 
   // copies of debug related information from the input arguments
   bool debug;
+
+  std::vector<double> dtxxdx;// dtxxdx
+  std::vector<double> dtxydy;// dtxydy
+  std::vector<double> dtxzdz;// dtxzdz
+
+  std::vector<double> dtxydx;// dtyxdx
+  std::vector<double> dtyydy;// dtyydy
+  std::vector<double> dtyzdz;// dtyzdz
+
+  std::vector<double> dtxzdx;// dtzxdx
+  std::vector<double> dtyzdy;// dtzydy
+  std::vector<double> dtzzdz;// dtzzyz
+
+  std::vector<double> flux_div_x;
+  std::vector<double> flux_div_y;
+  std::vector<double> flux_div_z;
+
+  // temporary storage of sigma_x,_y,_z
+  std::vector<double> sig_x;
+  std::vector<double> sig_y;
+  std::vector<double> sig_z;
 };
 
 inline void Eulerian::setDX_1D(const TURBGeneralData *TGD, const int idx)

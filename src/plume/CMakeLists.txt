@@ -12,9 +12,9 @@ CUDA_ADD_LIBRARY( qesplumecore
         
     Args.cpp
     
-    Eulerian.cpp
-    EulerianPowerLaw.cpp
-    
+    InterpPowerLaw.cpp
+    InterpTriLinear.cpp    
+
     Plume.cpp
     AdvectParticle.cpp
     WallReflection.cpp

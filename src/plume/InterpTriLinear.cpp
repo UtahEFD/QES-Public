@@ -27,15 +27,15 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Eulerian.cpp */
+/** @file InterpTriLinear.cpp */
 
-#include "Eulerian.h"
+#include "InterpTriLinear.h"
 
 
-Eulerian::Eulerian(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, const bool &debug_val)
+InterpTriLinear::InterpTriLinear(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, const bool &debug_val)
 {
 
-  std::cout << "[Eulerian] \t Setting Eulerian fields " << std::endl;
+  std::cout << "[InterpTriLinear] \t Setting InterpTriLinear fields " << std::endl;
 
   // copy debug information
   debug = debug_val;
@@ -73,7 +73,7 @@ Eulerian::Eulerian(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *
 
 
   if (debug == true) {
-    std::cout << "[Eulerian] \t DEBUG - Domain boundary" << std::endl;
+    std::cout << "[InterpTriLinear] \t DEBUG - Domain boundary" << std::endl;
     std::cout << "\t\t xStart=" << xStart << " xEnd=" << xEnd << std::endl;
     std::cout << "\t\t yStart=" << yStart << " yEnd=" << yEnd << std::endl;
     std::cout << "\t\t zStart=" << zStart << " zEnd=" << zEnd << std::endl;
@@ -101,7 +101,7 @@ Eulerian::Eulerian(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *
   sig_z.resize(WGD->numcell_cent, 0.0);
 }
 
-void Eulerian::setData(WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void InterpTriLinear::setData(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
   // set BC
   //setBC(WGD, TGD);
@@ -116,9 +116,9 @@ void Eulerian::setData(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   vel_threshold = 10.0 * std::sqrt(getMaxVariance(sig_x, sig_y, sig_z));
 }
 
-void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void InterpTriLinear::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
-  std::cout << "[Eulerian] \t Correction QES-winds fields for BC" << std::endl;
+  std::cout << "[InterpTriLinear] \t Correction QES-winds fields for BC" << std::endl;
 
   // verical surface (wall right => j-1)
   for (size_t id = 0; id < WGD->wall_right_indices.size(); ++id) {
@@ -205,7 +205,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
     WGD->w[idface + nx * ny + 1] = -WGD->w[idface + nx * ny];
   }
 
-  std::cout << "[Eulerian] \t Correction QES-turb fields for BC" << std::endl;
+  std::cout << "[InterpTriLinear] \t Correction QES-turb fields for BC" << std::endl;
 
   // verical surface (wall right => j-1)
   for (size_t id = 0; id < WGD->wall_right_indices.size(); ++id) {
@@ -337,9 +337,9 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   return;
 }
 
-void Eulerian::setStressGradient(TURBGeneralData *TGD)
+void InterpTriLinear::setStressGradient(TURBGeneralData *TGD)
 {
-  std::cout << "[Eulerian] \t Computing stress gradients on face" << std::endl;
+  std::cout << "[InterpTriLinear] \t Computing stress gradients on face" << std::endl;
 
   for (int k = kStart; k < kEnd + 1; ++k) {
     for (int j = jStart; j < jEnd + 1; ++j) {
@@ -386,93 +386,7 @@ void Eulerian::setStressGradient(TURBGeneralData *TGD)
   return;
 }
 
-void Eulerian::setStressGrads(TURBGeneralData *TGD)
-{
-  std::cout << "[Eulerian] \t Computing stress gradients " << std::endl;
-
-  // start recording execution time
-  if (debug == true) {
-    timers.startNewTimer("calcGradient");
-  }
-
-  // 2nd order Forward differencing up to 2 in from the edge in the direction of the gradient,
-  // 2nd order Backward differencing for the last two in the direction of the gradient,
-  // all this over all cells in the other two directions
-
-  // DX forward differencing
-  for (int k = kStart; k < kEnd; ++k) {
-    for (int j = jStart; j < jEnd; ++j) {
-      for (int i = iStart; i < iEnd - 2; ++i) {
-        // Provides a linear index based on the 3D (i, j, k)
-        int idx = k * (ny - 1) * (nx - 1) + j * (nx - 1) + i;
-        setDX_Forward(TGD, idx);
-      }
-    }
-  }
-
-  // DX backward differencing
-  for (int k = kStart; k < kEnd; ++k) {
-    for (int j = jStart; j < jEnd; ++j) {
-      for (int i = iEnd - 2; i < iEnd; ++i) {
-        // Provides a linear index based on the 3D (i, j, k)
-        int idx = k * (ny - 1) * (nx - 1) + j * (nx - 1) + i;
-        setDX_Backward(TGD, idx);
-      }
-    }
-  }
-
-
-  // DY forward differencing
-  for (int k = kStart; k < kEnd; ++k) {
-    for (int j = jStart; j < jEnd - 2; ++j) {
-      for (int i = iStart; i < iEnd; ++i) {
-        // Provides a linear index based on the 3D (i, j, k)
-        int idx = k * (ny - 1) * (nx - 1) + j * (nx - 1) + i;
-        setDY_Forward(TGD, idx);
-      }
-    }
-  }
-
-  // DY backward differencing
-  for (int k = kStart; k < kEnd; ++k) {
-    for (int j = jEnd - 2; j < jEnd; ++j) {
-      for (int i = iStart; i < iEnd; ++i) {
-        // Provides a linear index based on the 3D (i, j, k)
-        int idx = k * (ny - 1) * (nx - 1) + j * (nx - 1) + i;
-        setDY_Backward(TGD, idx);
-      }
-    }
-  }
-
-  // DZ forward differencing
-  for (int k = kStart; k < kEnd - 2; ++k) {
-    for (int j = jStart; j < jEnd; ++j) {
-      for (int i = iStart; i < iEnd; ++i) {
-        // Provides a linear index based on the 3D (i, j, k)
-        int idx = k * (ny - 1) * (nx - 1) + j * (nx - 1) + i;
-        setDZ_Forward(TGD, idx);
-      }
-    }
-  }
-
-  // DZ backward differencing
-  for (int k = kEnd - 2; k < kEnd; ++k) {
-    for (int j = jStart; j < jEnd; ++j) {
-      for (int i = iEnd; i < iEnd; ++i) {
-        // Provides a  linear index based on the 3D (i, j, k)
-        int idx = k * (ny - 1) * (nx - 1) + j * (nx - 1) + i;
-        setDZ_Backward(TGD, idx);
-      }
-    }
-  }
-
-  // print out elapsed execution time
-  if (debug == true) {
-    timers.printStoredTime("calcGradient");
-  }
-}
-
-void Eulerian::setSigmas(TURBGeneralData *TGD)
+void InterpTriLinear::setSigmas(TURBGeneralData *TGD)
 {
   for (int idx = 0; idx < (nx - 1) * (ny - 1) * (nz - 1); idx++) {
     sig_x.at(idx) = std::sqrt(std::abs(TGD->txx.at(idx)));
@@ -482,9 +396,9 @@ void Eulerian::setSigmas(TURBGeneralData *TGD)
   return;
 }
 
-double Eulerian::getMaxVariance(const std::vector<double> &sigma_x_vals,
-                                const std::vector<double> &sigma_y_vals,
-                                const std::vector<double> &sigma_z_vals)
+double InterpTriLinear::getMaxVariance(const std::vector<double> &sigma_x_vals,
+                                       const std::vector<double> &sigma_y_vals,
+                                       const std::vector<double> &sigma_z_vals)
 {
   // set thoe initial maximum value to a very small number. The idea is to go through each value of the data,
   // setting the current value to the max value each time the current value is bigger than the old maximum value
@@ -513,23 +427,23 @@ double Eulerian::getMaxVariance(const std::vector<double> &sigma_x_vals,
   return maximumVal;
 }
 
-void Eulerian::interpInitialValues(const double &xPos,
-                                   const double &yPos,
-                                   const double &zPos,
-                                   const TURBGeneralData *TGD,
-                                   double &sig_x_out,
-                                   double &sig_y_out,
-                                   double &sig_z_out,
-                                   double &txx_out,
-                                   double &txy_out,
-                                   double &txz_out,
-                                   double &tyy_out,
-                                   double &tyz_out,
-                                   double &tzz_out)
+void InterpTriLinear::interpInitialValues(const double &xPos,
+                                          const double &yPos,
+                                          const double &zPos,
+                                          const TURBGeneralData *TGD,
+                                          double &sig_x_out,
+                                          double &sig_y_out,
+                                          double &sig_z_out,
+                                          double &txx_out,
+                                          double &txy_out,
+                                          double &txz_out,
+                                          double &tyy_out,
+                                          double &tyz_out,
+                                          double &tzz_out)
 {
   // this replaces the old indexing trick, set the indexing variables for the
   // interp3D for each particle, then get interpolated values from the
-  // Eulerian grid to the particle Lagrangian values for multiple datatypes
+  // InterpTriLinear grid to the particle Lagrangian values for multiple datatypes
   setInterp3Dindex_cellVar(xPos, yPos, zPos);
 
   sig_x_out = interp3D_cellVar(sig_x);
@@ -542,7 +456,7 @@ void Eulerian::interpInitialValues(const double &xPos,
   if (sig_z_out == 0.0)
     sig_z_out = 1e-8;
 
-  // get the tau values from the Eulerian grid for the particle value
+  // get the tau values from the InterpTriLinear grid for the particle value
   txx_out = interp3D_cellVar(TGD->txx);
   txy_out = interp3D_cellVar(TGD->txy);
   txz_out = interp3D_cellVar(TGD->txz);
@@ -553,24 +467,24 @@ void Eulerian::interpInitialValues(const double &xPos,
   return;
 }
 
-void Eulerian::interpValues(const double &xPos,
-                            const double &yPos,
-                            const double &zPos,
-                            const WINDSGeneralData *WGD,
-                            double &uMean_out,
-                            double &vMean_out,
-                            double &wMean_out,
-                            const TURBGeneralData *TGD,
-                            double &txx_out,
-                            double &txy_out,
-                            double &txz_out,
-                            double &tyy_out,
-                            double &tyz_out,
-                            double &tzz_out,
-                            double &flux_div_x_out,
-                            double &flux_div_y_out,
-                            double &flux_div_z_out,
-                            double &CoEps_out)
+void InterpTriLinear::interpValues(const double &xPos,
+                                   const double &yPos,
+                                   const double &zPos,
+                                   const WINDSGeneralData *WGD,
+                                   double &uMean_out,
+                                   double &vMean_out,
+                                   double &wMean_out,
+                                   const TURBGeneralData *TGD,
+                                   double &txx_out,
+                                   double &txy_out,
+                                   double &txz_out,
+                                   double &tyy_out,
+                                   double &tyz_out,
+                                   double &tzz_out,
+                                   double &flux_div_x_out,
+                                   double &flux_div_y_out,
+                                   double &flux_div_z_out,
+                                   double &CoEps_out)
 {
   // set interoplation indexing variables for uFace variables
   setInterp3Dindex_uFace(xPos, yPos, zPos);
@@ -597,7 +511,7 @@ void Eulerian::interpValues(const double &xPos,
   //flux_div_z_out += interp3D_faceVar(dtzzdz);
 
   // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
-  // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
+  // then get interpolated values from the InterpTriLinear grid to the particle Lagrangian values for multiple datatypes
   setInterp3Dindex_cellVar(xPos, yPos, zPos);
 
   // this is the Co times Eps for the particle
@@ -624,7 +538,7 @@ void Eulerian::interpValues(const double &xPos,
   return;
 }
 
-void Eulerian::setInterp3Dindex_uFace(const double &par_xPos, const double &par_yPos, const double &par_zPos)
+void InterpTriLinear::setInterp3Dindex_uFace(const double &par_xPos, const double &par_yPos, const double &par_zPos)
 {
 
   // set a particle position corrected by the start of the domain in each direction
@@ -648,7 +562,7 @@ void Eulerian::setInterp3Dindex_uFace(const double &par_xPos, const double &par_
 }
 
 
-void Eulerian::setInterp3Dindex_vFace(const double &par_xPos, const double &par_yPos, const double &par_zPos)
+void InterpTriLinear::setInterp3Dindex_vFace(const double &par_xPos, const double &par_yPos, const double &par_zPos)
 {
 
   // set a particle position corrected by the start of the domain in each direction
@@ -671,7 +585,7 @@ void Eulerian::setInterp3Dindex_vFace(const double &par_xPos, const double &par_
   return;
 }
 
-void Eulerian::setInterp3Dindex_wFace(const double &par_xPos, const double &par_yPos, const double &par_zPos)
+void InterpTriLinear::setInterp3Dindex_wFace(const double &par_xPos, const double &par_yPos, const double &par_zPos)
 {
 
   // set a particle position corrected by the start of the domain in each direction
@@ -695,7 +609,7 @@ void Eulerian::setInterp3Dindex_wFace(const double &par_xPos, const double &par_
 }
 
 // always call this after setting the interpolation indices with the setInterp3Dindex_u/v/wFace() function!
-double Eulerian::interp3D_faceVar(const std::vector<float> &EulerData)
+double InterpTriLinear::interp3D_faceVar(const std::vector<float> &EulerData)
 {
 
   double cube[2][2][2] = { 0.0 };
@@ -720,7 +634,7 @@ double Eulerian::interp3D_faceVar(const std::vector<float> &EulerData)
 }
 
 // always call this after setting the interpolation indices with the setInterp3Dindex_u/v/wFace() function!
-double Eulerian::interp3D_faceVar(const std::vector<double> &EulerData)
+double InterpTriLinear::interp3D_faceVar(const std::vector<double> &EulerData)
 {
 
   double cube[2][2][2] = { 0.0 };
@@ -746,7 +660,7 @@ double Eulerian::interp3D_faceVar(const std::vector<double> &EulerData)
 
 // this gets around the problem of repeated or not repeated information, just needs called once before each interpolation,
 // then intepolation on all kinds of datatypes can be done
-void Eulerian::setInterp3Dindex_cellVar(const double &par_xPos, const double &par_yPos, const double &par_zPos)
+void InterpTriLinear::setInterp3Dindex_cellVar(const double &par_xPos, const double &par_yPos, const double &par_zPos)
 {
 
   // the next steps are to figure out the right indices to grab the values for cube from the data,
@@ -791,22 +705,22 @@ void Eulerian::setInterp3Dindex_cellVar(const double &par_xPos, const double &pa
   kw = (par_z / dz) - floor(par_z / dz);
 
   /* FM -> OBSOLETE (this is insure at the boundary condition level)
-    // now check to make sure that the indices are within the Eulerian grid domain
+    // now check to make sure that the indices are within the InterpTriLinear grid domain
     // Notice that this no longer includes throwing an error if particles touch the far walls
     // because adding a small number to dx in the index calculation forces the index to be completely left side biased
     
     if( ii < 0 || ii+ip > nx-1 ) {
-    std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle x position is out of range! x = \"" << par_xPos 
+    std::cerr << "ERROR (InterpTriLinear::setInterp3Dindexing): particle x position is out of range! x = \"" << par_xPos 
          << "\" ii+ip = \"" << ii << "\"+\"" << ip << "\",   nx-1 = \"" << nx-1 << "\"" << std::endl;
         exit(1);
     }
     if( jj < 0 || jj+jp > ny-1 ) {
-        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle y position is out of range! y = \"" << par_yPos 
+        std::cerr << "ERROR (InterpTriLinear::setInterp3Dindexing): particle y position is out of range! y = \"" << par_yPos 
             << "\" jj+jp = \"" << jj << "\"+\"" << jp << "\",   ny-1 = \"" << ny-1 << "\"" << std::endl;
         exit(1);
     }
     if( kk < 0 || kk+kp > nz-1 ) {
-        std::cerr << "ERROR (Eulerian::setInterp3Dindexing): particle z position is out of range! z = \"" << par_zPos 
+        std::cerr << "ERROR (InterpTriLinear::setInterp3Dindexing): particle z position is out of range! z = \"" << par_zPos 
             << "\" kk+kp = \"" << kk << "\"+\"" << kp << "\",   nz-1 = \"" << nz-1 << "\"" << std::endl;
         exit(1);
     }
@@ -815,7 +729,7 @@ void Eulerian::setInterp3Dindex_cellVar(const double &par_xPos, const double &pa
 
 
 // always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-double Eulerian::interp3D_cellVar(const std::vector<float> &EulerData)
+double InterpTriLinear::interp3D_cellVar(const std::vector<float> &EulerData)
 {
 
   // first set a cube of size two to zero.
@@ -847,7 +761,7 @@ double Eulerian::interp3D_cellVar(const std::vector<float> &EulerData)
 }
 
 // always call this after setting the interpolation indices with the setInterp3Dindexing() function!
-double Eulerian::interp3D_cellVar(const std::vector<double> &EulerData)
+double InterpTriLinear::interp3D_cellVar(const std::vector<double> &EulerData)
 {
 
   // first set a cube of size two to zero.

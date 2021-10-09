@@ -27,7 +27,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Eulerian.h 
+/** @file InterpPowerLaw.h 
  * @brief 
  */
 
@@ -44,20 +44,20 @@
 #include "Random.h"
 #include "util/Vector3.h"
 
-#include "GriddedDataType.h"
+#include "Interp.h"
 #include "PlumeInputData.hpp"
 
 #include "src/winds/WINDSGeneralData.h"
 #include "src/winds/TURBGeneralData.h"
 
 
-class EulerianPowerLaw : public GriddedDataType
+class InterpPowerLaw : public Interp
 {
 public:
   // constructor
-  // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the Eulerian grid values,
+  // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the QES grid values,
   // then calculates the tau gradients which are then used to calculate the flux_div grid values.
-  EulerianPowerLaw(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, const bool &);
+  InterpPowerLaw(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, const bool &);
 
   // other input variable
   //double C_0;// a copy of the TGD grid information. This is used to separate out CoEps into its separate parts when doing debug output
@@ -100,6 +100,8 @@ public:
                            double &tzz_out);
 
 protected:
+  InterpPowerLaw()
+  {}
   // timer class useful for debugging and timing different operations
   //calcTime timers;
 

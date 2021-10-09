@@ -22,7 +22,6 @@
 #include "src/winds/TURBGeneralData.h"
 
 #include "src/plume/Plume.hpp"
-#include "src/plume/Eulerian.h"
 
 #include "util/QESNetCDFOutput.h"
 #include "src/plume/PlumeOutput.h"
@@ -83,16 +82,6 @@ int main(int argc, char **argv)
   if (arguments.doParticleDataOutput == true) {
     outputVec.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
   }
-
-  // create output instance (separate for eulerian class)
-  /*
-    QESNetCDFOutput *eulOutput = nullptr;
-    if (arguments.doEulDataOutput == true) {
-    eulOutput = new PlumeOutputEulerian(PID, WGD, TGD, arguments.outputEulerianFile);
-    // output Eulerian data. Use time zero
-    eulOutput->save(0.0);
-    }
-  */
 
   // Run plume advection model
   plume->run(PID->plumeParams->simDur, WGD, TGD, outputVec);

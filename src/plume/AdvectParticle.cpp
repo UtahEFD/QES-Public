@@ -31,7 +31,6 @@
 
 #include "Plume.hpp"
 
-//void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul)
 void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator parItr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
 
@@ -61,7 +60,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   double flux_div_y = 0.0;
   double flux_div_z = 0.0;
 
-  //size_t cellIdx_old = eul->getCellId(xPos,yPos,zPos);
+  //size_t cellIdx_old = interp->getCellId(xPos,yPos,zPos);
 
   // getting the initial position, for use in setting finished particles
   //double xPos_init = (*parItr)->xPos_init;
@@ -95,7 +94,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
 
 
   // need to avoid current tau values going out of scope now that I've added the particle timestep loop
-  // so initialize their values to the tau_old values. They will be overwritten with the Eulerian grid value
+  // so initialize their values to the tau_old values. They will be overwritten with the Interperian grid value
   // at each iteration in the particle timestep loop
   double txx = txx_old;
   double txy = txy_old;
@@ -126,11 +125,11 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   while (isActive == true && timeRemainder > 0.0) {
 
     /*
-      now get the Lagrangian values for the current iteration from the Eulerian grid
+      now get the Lagrangian values for the current iteration from the Interperian grid
       will need to use the interp3D function
     */
 
-    eul->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
+    interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
 
     // now need to call makeRealizable on tau
     makeRealizable(txx, txy, txz, tyy, tyz, tzz);
@@ -142,7 +141,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
     // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
 
-    int cellId = eul->getCellId(xPos, yPos, zPos);
+    int cellId = interp->getCellId(xPos, yPos, zPos);
     double dWall = WGD->mixingLengths[cellId];
     double par_dt = calcCourantTimestep(dWall,
                                         std::abs(uMean) + std::abs(uFluct),
@@ -173,7 +172,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     double lzz = tzz;
     isRogue = !invert3(lxx, lxy, lxz, lyx, lyy, lyz, lzx, lzy, lzz);
     if (isRogue == true) {
-      //int cellIdNew = eul->getCellId(xPos,yPos,zPos);
+      //int cellIdNew = interp->getCellId(xPos,yPos,zPos);
       std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
       isActive = false;
       break;

@@ -55,9 +55,9 @@
 #include "src/winds/WINDSGeneralData.h"
 #include "src/winds/TURBGeneralData.h"
 
-#include "GriddedDataType.h"
-#include "Eulerian.h"
-#include "EulerianPowerLaw.h"
+#include "Interp.h"
+#include "InterpPowerLaw.h"
+#include "InterpTriLinear.h"
 
 #include "Particle.hpp"
 
@@ -106,7 +106,10 @@ public:
   std::list<Particle *> particleList;
 
 private:
-  // Eulerian grid information
+  Plume()
+  {}
+
+  // QES grid information
   int nx;// a copy of the urb grid nx value
   int ny;// a copy of the urb grid ny value
   int nz;// a copy of the urb grid nz value
@@ -124,7 +127,7 @@ private:
   double domainZstart;// the domain starting z value, a copy of the value found by dispersion
   double domainZend;// the domain ending z value, a copy of the value found by dispersion
 
-  GriddedDataType *eul;
+  Interp *interp;
 
   // time variables
   double sim_dt;// the simulation timestep
@@ -182,7 +185,6 @@ private:
 
 
   // this function moves (advects) one particle
-  //void advectParticle(int&, std::list<Particle*>::iterator, WINDSGeneralData*, TURBGeneralData*, Eulerian*);
   void advectParticle(double, std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *);
 
   /* reflection functions in WallReflection.cpp */
