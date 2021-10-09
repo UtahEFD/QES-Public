@@ -183,6 +183,7 @@ private:
   // this function scrubs the inactive particle for the particle list (particleList)
   void scrubParticleList();
 
+  double getMaxVariance(const TURBGeneralData *);
 
   // this function moves (advects) one particle
   void advectParticle(double, std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *);

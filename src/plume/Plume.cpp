@@ -131,14 +131,17 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
 {
   auto StartTime = std::chrono::high_resolution_clock::now();
 
-  interp->setData(WGD, TGD);
+  //interp->setData(WGD, TGD);
   // get the threshold velocity fluctuation to define rogue particles
-  vel_threshold = interp->vel_threshold;
+  vel_threshold = 10.0 * getMaxVariance(TGD);
 
   std::cout << "[Plume] \t Advecting particles at Time = " << simTime
             << " s (iteration = " << simTimeIdx << "). \n";
   std::cout << "\t\t Particles: Released = " << nParsReleased << " "
             << "Active = " << particleList.size() << "." << std::endl;
+
+  // get the threshold velocity fluctuation to define rogue particles
+  vel_threshold = 10.0 * getMaxVariance(TGD);
 
   // //////////////////////////////////////////
   // TIME Stepping Loop
@@ -511,6 +514,51 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
       (*parItr)->isActive = false;
     }
   }
+}
+
+double Plume::getMaxVariance(const TURBGeneralData *TGD)
+{
+  // set thoe initial maximum value to a very small number. The idea is to go through each value of the data,
+  // setting the current value to the max value each time the current value is bigger than the old maximum value
+  double maximumVal = -10e-10;
+
+  // go through each vector to find the maximum value
+  // each one could potentially be different sizes if the grid is not 3D
+  for (auto it = TGD->txx.begin(); it != TGD->txx.end(); ++it) {
+    if (std::sqrt(std::abs(*it)) > maximumVal) {
+      maximumVal = std::sqrt(std::abs(*it));
+    }
+  }
+  for (auto it = TGD->tyy.begin(); it != TGD->tyy.end(); ++it) {
+    if (std::sqrt(std::abs(*it)) > maximumVal) {
+      maximumVal = std::sqrt(std::abs(*it));
+    }
+  }
+  for (auto it = TGD->tzz.begin(); it != TGD->tzz.end(); ++it) {
+    if (std::sqrt(std::abs(*it)) > maximumVal) {
+      maximumVal = std::sqrt(std::abs(*it));
+    }
+  }
+  /*
+  for (size_t idx = 0; idx < sigma_x_vals.size(); idx++) {
+    if (std::sqrt(std::abs(TGD->txx[])) > maximumVal) {
+      maximumVal = sigma_x_vals.at(idx);
+    }
+  }
+	 
+  for (size_t idx = 0; idx < sigma_y_vals.size(); idx++) {
+    if (sigma_y_vals.at(idx) > maximumVal) {
+      maximumVal = sigma_y_vals.at(idx);
+    }
+  }
+
+  for (size_t idx = 0; idx < sigma_z_vals.size(); idx++) {
+    if (sigma_z_vals.at(idx) > maximumVal) {
+      maximumVal = sigma_z_vals.at(idx);
+    }
+  }
+	 */
+  return maximumVal;
 }
 
 void Plume::calcInvariants(const double &txx,
