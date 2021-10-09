@@ -65,7 +65,6 @@ public:
 
   //double vel_threshold;
 
-  void setData(WINDSGeneralData *, TURBGeneralData *);
   void interpValues(const double &xPos,
                     const double &yPos,
                     const double &zPos,
@@ -118,36 +117,9 @@ private:
   double interp3D_cellVar(const std::vector<float> &);
   double interp3D_cellVar(const std::vector<double> &);
 
-  void setStressGradient(TURBGeneralData *);
-  void setSigmas(TURBGeneralData *);
-  double getMaxVariance(const std::vector<double> &, const std::vector<double> &, const std::vector<double> &);
-
-  void setBC(WINDSGeneralData *, TURBGeneralData *);
-
   // timer class useful for debugging and timing different operations
   calcTime timers;
 
   // copies of debug related information from the input arguments
   bool debug;
-
-  std::vector<double> dtxxdx;// dtxxdx
-  std::vector<double> dtxydy;// dtxydy
-  std::vector<double> dtxzdz;// dtxzdz
-
-  std::vector<double> dtxydx;// dtyxdx
-  std::vector<double> dtyydy;// dtyydy
-  std::vector<double> dtyzdz;// dtyzdz
-
-  std::vector<double> dtxzdx;// dtzxdx
-  std::vector<double> dtyzdy;// dtzydy
-  std::vector<double> dtzzdz;// dtzzyz
-
-  std::vector<double> flux_div_x;
-  std::vector<double> flux_div_y;
-  std::vector<double> flux_div_z;
-
-  // temporary storage of sigma_x,_y,_z
-  std::vector<double> sig_x;
-  std::vector<double> sig_y;
-  std::vector<double> sig_z;
 };

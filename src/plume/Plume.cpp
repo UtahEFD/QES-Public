@@ -539,25 +539,7 @@ double Plume::getMaxVariance(const TURBGeneralData *TGD)
       maximumVal = std::sqrt(std::abs(*it));
     }
   }
-  /*
-  for (size_t idx = 0; idx < sigma_x_vals.size(); idx++) {
-    if (std::sqrt(std::abs(TGD->txx[])) > maximumVal) {
-      maximumVal = sigma_x_vals.at(idx);
-    }
-  }
-	 
-  for (size_t idx = 0; idx < sigma_y_vals.size(); idx++) {
-    if (sigma_y_vals.at(idx) > maximumVal) {
-      maximumVal = sigma_y_vals.at(idx);
-    }
-  }
 
-  for (size_t idx = 0; idx < sigma_z_vals.size(); idx++) {
-    if (sigma_z_vals.at(idx) > maximumVal) {
-      maximumVal = sigma_z_vals.at(idx);
-    }
-  }
-	 */
   return maximumVal;
 }
 

@@ -82,8 +82,6 @@ public:
 
   double vel_threshold;
 
-  virtual void setData(WINDSGeneralData *, TURBGeneralData *) = 0;
-
   virtual void interpValues(const double &xPos,
                             const double &yPos,
                             const double &zPos,

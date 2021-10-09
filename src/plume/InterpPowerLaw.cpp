@@ -78,29 +78,18 @@ InterpPowerLaw::InterpPowerLaw(PlumeInputData *PID, WINDSGeneralData *WGD, TURBG
     std::cout << "\t\t yStart=" << yStart << " yEnd=" << yEnd << std::endl;
     std::cout << "\t\t zStart=" << zStart << " zEnd=" << zEnd << std::endl;
   }
-
-  // set additional values from the input
-  C_0 = PID->plumeParams->C_0;
 }
 
-void InterpPowerLaw::setData(WINDSGeneralData *WGD, TURBGeneralData *TGD)
+double InterpPowerLaw::getMaxFluctuation()
 {
-  // set BC
-  //setBC(WGD, TGD);
-
-  // compute stress gradients
-  //setStressGradient(TGD);
-
-  // temporary copy of sigma's
-  //setSigmas(TGD);
-
   // calculate the threshold velocity
   double a = 4.8;
   double p = 0.15;
 
   double us = 0.4 * p * a * pow(zEnd, p);
-  vel_threshold = 10.0 * 2.5 * us;//std::sqrt(getMaxVariance(sig_x, sig_y, sig_z));
+  return 10.0 * 2.5 * us;
 }
+
 
 void InterpPowerLaw::interpInitialValues(const double &xPos,
                                          const double &yPos,
