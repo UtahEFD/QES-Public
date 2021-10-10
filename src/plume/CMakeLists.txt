@@ -12,6 +12,8 @@ CUDA_ADD_LIBRARY( qesplumecore
         
     Args.cpp
     
+    Interp.cpp
+    InterpNearestCell.cpp
     InterpPowerLaw.cpp
     InterpTriLinear.cpp    
 
