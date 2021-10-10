@@ -58,21 +58,11 @@ public:
   // constructor
   // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the QES grid,
   // then calculates the tau gradients which are then used to calculate the flux_div grid values.
-  Interp()
-  {}
+  Interp(WINDSGeneralData *);
   ~Interp()
   {}
 
-  // the QES data held in this class is on the turb grid, so these are copies of the turb grid values
-  int nx;// a copy of the turb grid information. This is the number of points in the x dimension
-  int ny;// a copy of the turb grid information. This is the number of points in the y dimension
-  int nz;// a copy of the turb grid information. This is the number of points in the z dimension
-
-  double dx;// a copy of the turb grid information. This is the difference between points in the x dimension, eventually could become an array
-  double dy;// a copy of the turb grid information. This is the difference between points in the y dimension, eventually could become an array
-  double dz;// a copy of the TGD grid information. This is the difference between points in the z dimension, eventually could become an array
-
-  // The QES grid information.
+  // The Plume domain bounds.
   double xStart, xEnd;
   double yStart, yEnd;
   double zStart, zEnd;
@@ -118,8 +108,19 @@ public:
   int getCellId(const double &, const double &, const double &);
   int getCellId(Vector3Double &);
   Vector3Int getCellIndex(const int &);
+  Vector3Int getCellIndex(const double &, const double &, const double &);
 
 protected:
+  // the QES data held in this class is on the WINDS grid,
+  // a copy of the WINDS grid information.
+  int nx;
+  int ny;
+  int nz;
+  // a copy of the grid resolution.
+  double dx;
+  double dy;
+  double dz;
+
   // index of domain bounds
   int iStart, iEnd;
   int jStart, jEnd;
@@ -130,6 +131,9 @@ protected:
 
   // copies of debug related information from the input arguments
   //bool debug;
+
+  Interp()
+  {}
 };
 
 inline int Interp::getCellId(const double &xPos, const double &yPos, const double &zPos)
@@ -156,6 +160,16 @@ inline int Interp::getCellId(Vector3Double &X)
 
 inline Vector3Int Interp::getCellIndex(const int &cellId)
 {
+  int k = (int)(cellId / ((nx - 1) * (ny - 1)));
+  int j = (int)((cellId - k * (nx - 1) * (ny - 1)) / (nx - 1));
+  int i = cellId - j * (nx - 1) - k * (nx - 1) * (ny - 1);
+
+  return { i, j, k };
+}
+
+inline Vector3Int Interp::getCellIndex(const double &xPos, const double &yPos, const double &zPos)
+{
+  int cellId = getCellId(xPos, yPos, zPos);
   int k = (int)(cellId / ((nx - 1) * (ny - 1)));
   int j = (int)((cellId - k * (nx - 1) * (ny - 1)) / (nx - 1));
   int i = cellId - j * (nx - 1) - k * (nx - 1) * (ny - 1);

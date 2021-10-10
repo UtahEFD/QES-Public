@@ -27,7 +27,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file InterpPowerLaw.h 
+/** @file InterpTriLinear.h 
  * @brief 
  */
 
@@ -51,13 +51,19 @@
 #include "src/winds/TURBGeneralData.h"
 
 
-class InterpPowerLaw : public Interp
+class InterpNearestCell : public Interp
 {
+
 public:
   // constructor
-  // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the QES grid values,
+  // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the InterpTriLinear grid values,
   // then calculates the tau gradients which are then used to calculate the flux_div grid values.
-  InterpPowerLaw(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, const bool &);
+  InterpNearestCell(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, const bool &);
+
+  // other input variable
+  //double C_0;// a copy of the TGD grid information. This is used to separate out CoEps into its separate parts when doing debug output
+
+  //double vel_threshold;
 
   void interpValues(const double &xPos,
                     const double &yPos,
@@ -92,15 +98,10 @@ public:
                            double &tyz_out,
                            double &tzz_out);
 
-  double getMaxFluctuation();
-
-protected:
-  InterpPowerLaw()
-  {}
+private:
   // timer class useful for debugging and timing different operations
-  //calcTime timers;
+  calcTime timers;
 
   // copies of debug related information from the input arguments
-  //bool debug;
-private:
+  bool debug;
 };

@@ -33,44 +33,12 @@
 
 
 InterpPowerLaw::InterpPowerLaw(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, const bool &debug_val)
+  : Interp(WGD)
 {
-
-  std::cout << "[InterpPowerLaw] \t Setting Interpolation method " << std::endl;
+  //std::cout << "[InterpPowerLaw] \t Setting Interpolation method " << std::endl;
 
   // copy debug information
   bool debug = debug_val;
-
-  // copy WGD grid information
-  nz = WGD->nz;
-  ny = WGD->ny;
-  nx = WGD->nx;
-
-  dz = WGD->dz;
-  dy = WGD->dy;
-  dx = WGD->dx;
-
-  // domain beginning for interpolation in each direction
-  // in x-direction (halo cell to account for TURB variables)
-  iStart = 1;
-  iEnd = nx - 3;
-  // in y-direction (halo cell to account for TURB variables)
-  jStart = 1;
-  jEnd = ny - 3;
-  // in z-direction (ghost cell at bottom and halo cell at top)
-  kStart = 1;
-  kEnd = nz - 2;
-
-  // get the TGD domain start and end values, other TGD grid information
-  // in x-direction (face)
-  xStart = WGD->x[iStart] - 0.5 * dx;
-  xEnd = WGD->x[iEnd] + 0.5 * dx;
-  // in y-direction (face)
-  yStart = WGD->y[jStart] - 0.5 * dy;
-  yEnd = WGD->y[jEnd] + 0.5 * dy;
-  // in z-direction (face)
-  zStart = WGD->z_face[kStart - 1];// z_face does not have a ghost cell under the terrain.
-  zEnd = WGD->z_face[kEnd - 1];// z_face does not have a ghost cell under the terrain.
-
 
   if (debug == true) {
     std::cout << "[InterpPowerLaw] \t DEBUG - Domain boundary" << std::endl;
