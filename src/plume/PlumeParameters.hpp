@@ -66,8 +66,8 @@ public:
     parsePrimitive<int>(true, updateFrequency_particleLoop, "updateFrequency_particleLoop");
     parsePrimitive<int>(true, updateFrequency_timeLoop, "updateFrequency_timeLoop");
 
-    interpMethod = "stdQES";
-    parsePrimitive<std::string>(false, interpMethod, "interpolation_method");
+    interpMethod = "triLinear";
+    parsePrimitive<std::string>(false, interpMethod, "interpolationMethod");
 
     // check some of the parsed values to see if they make sense
     checkParsedValues();

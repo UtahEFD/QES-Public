@@ -50,16 +50,24 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   nx = WGD->nx;
   ny = WGD->ny;
   nz = WGD->nz;
+
   dx = WGD->dx;
   dy = WGD->dy;
   dz = WGD->dz;
   dxy = WGD->dxy;
 
   // Create instance of Interpolation class
+  std::cout << "[Plume] \t Interpolation Method set to: "
+            << PID->plumeParams->interpMethod << std::endl;
   if (PID->plumeParams->interpMethod == "analyticalPowerLaw") {
     interp = new InterpPowerLaw(PID, WGD, TGD, debug);
-  } else {
+  } else if (PID->plumeParams->interpMethod == "nearestCell") {
+    interp = new InterpNearestCell(PID, WGD, TGD, debug);
+  } else if (PID->plumeParams->interpMethod == "triLinear") {
     interp = new InterpTriLinear(PID, WGD, TGD, debug);
+  } else {
+    std::cerr << "[ERROR] unknown interpolation method" << std::endl;
+    exit(EXIT_FAILURE);
   }
 
   // get the domain start and end values, needed for wall boundary condition
@@ -130,10 +138,6 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
 {
   auto StartTime = std::chrono::high_resolution_clock::now();
-
-  //interp->setData(WGD, TGD);
-  // get the threshold velocity fluctuation to define rogue particles
-  vel_threshold = 10.0 * getMaxVariance(TGD);
 
   std::cout << "[Plume] \t Advecting particles at Time = " << simTime
             << " s (iteration = " << simTimeIdx << "). \n";

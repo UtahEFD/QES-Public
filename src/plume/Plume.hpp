@@ -56,6 +56,7 @@
 #include "src/winds/TURBGeneralData.h"
 
 #include "Interp.h"
+#include "InterpNearestCell.h"
 #include "InterpPowerLaw.h"
 #include "InterpTriLinear.h"
 
