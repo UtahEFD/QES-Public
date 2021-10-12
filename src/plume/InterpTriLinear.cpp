@@ -64,7 +64,7 @@ void InterpTriLinear::interpInitialValues(const double &xPos,
 {
   // this replaces the old indexing trick, set the indexing variables for the
   // interp3D for each particle, then get interpolated values from the
-  // InterpTriLinear grid to the particle Lagrangian values for multiple datatypes
+  // InterpTriLinear grid to the particle values for multiple datatypes
   setInterp3Dindex_cellVar(xPos, yPos, zPos);
 
   // get the tau values from the InterpTriLinear grid for the particle value
@@ -107,7 +107,7 @@ void InterpTriLinear::interpValues(const double &xPos,
                                    double &flux_div_z_out,
                                    double &CoEps_out)
 {
-  // set interoplation indexing variables for uFace variables
+  // set in`teroplation indexing variables for uFace variables
   setInterp3Dindex_uFace(xPos, yPos, zPos);
   // interpolation of variables on uFace
   uMean_out = interp3D_faceVar(WGD->u);

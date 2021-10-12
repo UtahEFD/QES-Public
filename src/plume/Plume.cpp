@@ -91,7 +91,6 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 
   // set additional values from the input
   invarianceTol = PID->plumeParams->invarianceTol;
-  C_0 = PID->plumeParams->C_0;
   updateFrequency_timeLoop = PID->plumeParams->updateFrequency_timeLoop;
   updateFrequency_particleLoop = PID->plumeParams->updateFrequency_particleLoop;
 
@@ -955,7 +954,6 @@ void Plume::writeSimInfoFile(const double &current_time)
   fprintf(fzout, "\n");// a purposeful blank line
   fprintf(fzout, "saveBasename     = %s\n", saveBasename.c_str());
   fprintf(fzout, "\n");// a purposeful blank line
-  fprintf(fzout, "C_0              = %lf\n", C_0);
   fprintf(fzout, "timestep         = %lf\n", sim_dt);
   fprintf(fzout, "\n");// a purposeful blank line
   fprintf(fzout, "current_time     = %lf\n", current_time);

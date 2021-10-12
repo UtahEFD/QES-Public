@@ -69,11 +69,8 @@ void InterpNearestCell::interpInitialValues(const double &xPos,
 
   Vector3Int cellIndex = getCellIndex(xPos, yPos, zPos);
   int cellId = cellIndex[0]
-               + cellIndex[1] * (TGD->nx - 1)
-               + cellIndex[2] * (TGD->nx - 1) * (TGD->ny - 1);
-  int faceId = cellIndex[0]
-               + cellIndex[1] * TGD->nx
-               + cellIndex[2] * TGD->nx * TGD->ny;
+               + cellIndex[1] * (nx - 1)
+               + cellIndex[2] * (nx - 1) * (ny - 1);
 
   // this is the current reynolds stress tensor
   txx_out = TGD->txx[cellId];

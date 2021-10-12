@@ -152,9 +152,7 @@ private:
   // !!! this has to be calculated carefully inside the getInputSources() function
   int totalParsToRelease;
 
-
   double invarianceTol;// this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
-  double C_0;// used to separate out CoEps into its separate parts when doing debug output
   int updateFrequency_timeLoop;// used to know how frequently to print out information during the time loop of the solver
   int updateFrequency_particleLoop;// used to know how frequently to print out information during the particle loop of the solver
 

@@ -60,9 +60,6 @@ public:
   // then calculates the tau gradients which are then used to calculate the flux_div grid values.
   InterpTriLinear(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, const bool &);
 
-  // other input variable
-  //double C_0;// a copy of the TGD grid information. This is used to separate out CoEps into its separate parts when doing debug output
-
   //double vel_threshold;
 
   void interpValues(const double &xPos,

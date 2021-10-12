@@ -113,14 +113,21 @@ void InterpPowerLaw::interpValues(const double &xPos,
 {
   double a = 4.8;
   double p = 0.15;
+  double z = 1.0;
 
-  double us = 0.4 * p * a * pow(zPos, p);
+  if (zPos < 1.0) {
+    z = 1.0;
+  } else {
+    z = zPos;
+  }
 
-  uMean_out = a * pow(zPos, p);
+  double us = 0.4 * p * a * pow(z, p);
+
+  uMean_out = a * pow(z, p);
   vMean_out = 0.0;
   wMean_out = 0.0;
 
-  CoEps_out = (5.7 * us * us * us) / (0.4 * zPos);
+  CoEps_out = (5.7 * us * us * us) / (0.4 * z);
 
   txx_out = pow(2.5 * us, 2.0);
   tyy_out = pow(2.3 * us, 2.0);
@@ -129,9 +136,9 @@ void InterpPowerLaw::interpValues(const double &xPos,
   tyz_out = 0.0;
   txz_out = -pow(us, 2.0);
 
-  flux_div_x_out = -2.0 * p * pow(0.4 * p * a, 2.0) * pow(zPos, 2.0 * p - 1.0);
+  flux_div_x_out = -2.0 * p * pow(0.4 * p * a, 2.0) * pow(z, 2.0 * p - 1.0);
   flux_div_y_out = 0.0;
-  flux_div_z_out = 2.0 * p * pow(1.3 * 0.4 * p * a, 2.0) * pow(zPos, 2.0 * p - 1.0);
+  flux_div_z_out = 2.0 * p * pow(1.3 * 0.4 * p * a, 2.0) * pow(z, 2.0 * p - 1.0);
 
   return;
 }

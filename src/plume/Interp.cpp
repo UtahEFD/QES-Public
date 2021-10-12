@@ -56,7 +56,7 @@ Interp::Interp(WINDSGeneralData *WGD)
   kStart = 1;
   kEnd = nz - 2;
 
-  // get the TGD domain start and end values, other TGD grid information
+  // get the TGD domain start and end values, other WGD grid information
   // in x-direction (face)
   xStart = WGD->x[iStart] - 0.5 * dx;
   xEnd = WGD->x[iEnd] + 0.5 * dx;

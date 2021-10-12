@@ -67,9 +67,6 @@ public:
   double yStart, yEnd;
   double zStart, zEnd;
 
-  // other input variable
-  double C_0;// a copy of the TGD grid information. This is used to separate out CoEps into its separate parts when doing debug output
-
   double vel_threshold;
 
   virtual void interpValues(const double &xPos,
