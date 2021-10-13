@@ -142,7 +142,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData* WGD, int building_id)
         a_obf = pow(beta,0.4);
     }
 
-    
+    std::cout << "VINEYARD PARAMETERIZATION STARTING \n";
 
     int icell_face = i_building_cent + j_building_cent*WGD->nx + (WGD->nz-5)*WGD->nx*WGD->ny;
     float u0_uw = WGD->u0[icell_face];         // u velocity at the centroid, 5 nodes from the top of domain (avoids effect of nearby wakes)

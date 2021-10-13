@@ -59,6 +59,7 @@ int main(int argc, char *argv[])
   }
 
   // Checking if
+  std::cout << "WID->turbParams = " << WID->turbParams << "\n";
   if (arguments.compTurb && !WID->turbParams) {
     std::cerr << "[ERROR] Turbulence model is turned on without LocalMixingParam in QES Intput file "
               << arguments.qesFile << std::endl;
