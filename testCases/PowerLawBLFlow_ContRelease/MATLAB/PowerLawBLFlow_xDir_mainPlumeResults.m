@@ -120,7 +120,7 @@ for k=1:numel(xProf)
     ylabel('$C^*$')
     grid on
     
-    currentPlotName=sprintf('plotOutput/%s_%s_LatConc_%s',...
+    currentPlotName=sprintf('../plotOutput/%s_%s_LatConc_%s',...
         caseNameWinds,caseNamePlume,strrep(sprintf('x%.2f',x/H),'.','o'));
     save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
     %================================================
@@ -137,7 +137,7 @@ for k=1:numel(xProf)
     ylabel('$z/H$')
     grid on 
     
-    currentPlotName=sprintf('plotOutput/%s_%s_VertConc_%s',...
+    currentPlotName=sprintf('../plotOutput/%s_%s_VertConc_%s',...
            caseNameWinds,caseNamePlume,strrep(sprintf('x%.2f',x/H),'.','o'));
     save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
     %================================================
