@@ -34,6 +34,7 @@
 #include <string>
 #include "util/ParseInterface.h"
 #include "util/Vector3.h"
+#include "util/Vector3Int.h"
 #include "DTEHeightField.h"
 #include "WRFInput.h"
 #include "Mesh.h"
@@ -49,8 +50,8 @@ class SimulationParameters : public ParseInterface
 {
 private:
 public:
-  Vector3<int> *domain; /**< :document this: */
-  Vector3<float> *grid; /**< :document this: */
+  Vector3Int *domain; /**< :document this: */
+  Vector3 *grid; /**< :document this: */
   int verticalStretching = 0; /**< :document this: */
   std::vector<float> dz_value; /**< :document this: */
   int totalTimeIncrements; /**< :document this: */
@@ -139,8 +140,8 @@ public:
    */
   virtual void parseValues()
   {
-    parseElement<Vector3<int>>(false, domain, "domain");
-    parseElement<Vector3<float>>(false, grid, "cellSize");
+    parseElement<Vector3Int>(false, domain, "domain");
+    parseElement<Vector3>(false, grid, "cellSize");
     parsePrimitive<int>(false, verticalStretching, "verticalStretching");
     parseMultiPrimitives<float>(false, dz_value, "dz_value");
     parsePrimitive<int>(false, totalTimeIncrements, "totalTimeIncrements");
@@ -239,7 +240,7 @@ public:
       std::cout << "Dim: " << wrfInputData->fm_nx << " X " << wrfInputData->fm_ny << " X " << wrfInputData->fm_nz << std::endl;
       std::cout << "at " << (*(grid))[0] << " X " << (*(grid))[1] << " X " << (*(grid))[2] << std::endl;
 
-      domain = new Vector3<int>(wrfInputData->fm_nx, wrfInputData->fm_nx, wrfInputData->fm_nz);
+      domain = new Vector3Int(wrfInputData->fm_nx, wrfInputData->fm_nx, wrfInputData->fm_nz);
       DTE_heightField->setDomain(domain, grid);
 
       // need this to make sure domain sizes include halo

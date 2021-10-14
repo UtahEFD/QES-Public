@@ -1,11 +1,38 @@
-//
-//  SourceKind.hpp
-//
-//  This class represents a generic source
-//
-//  Created by Jeremy Gibbs on 03/28/19.
-//  Updated by Loren Atwood on 01/31/20.
-//
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Plume
+ *
+ * GPL-3.0 License
+ *
+ * QES-Plume is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Plume is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/** @file SourceType.hpp 
+ * @brief  This class represents a generic sourece type
+ *
+ * @note Pure virtual child of ParseInterface
+ * @sa ParseInterface
+ */
 
 #pragma once
 
@@ -29,7 +56,7 @@ enum SourceShape {
   fullDomain
 };
 
-class SourceKind : public ParseInterface
+class SourceType : public ParseInterface
 {
 protected:
   // this variable is a temporary variable to be used by setReleaseType() to set the publicly available variable m_rType.
@@ -66,12 +93,12 @@ public:
 
 
   // default constructor
-  SourceKind()
+  SourceType()
   {
   }
 
   // destructor
-  virtual ~SourceKind()
+  virtual ~SourceType()
   {
   }
 
@@ -91,11 +118,11 @@ public:
 
     // now if the number of release types is not 1, there was a problem, need to quit with an error
     if (rType_tmp.size() == 0) {
-      std::cerr << "ERROR (SourceKind::setReleaseType): there was no input releaseType!" << std::endl;
+      std::cerr << "ERROR (SourceType::setReleaseType): there was no input releaseType!" << std::endl;
       exit(1);
     }
     if (rType_tmp.size() > 1) {
-      std::cerr << "ERROR (SourceKind::setReleaseType): there was more than one input releaseType!" << std::endl;
+      std::cerr << "ERROR (SourceType::setReleaseType): there was more than one input releaseType!" << std::endl;
       exit(1);
     }
 

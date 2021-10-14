@@ -36,7 +36,7 @@
 
 /**
  * @class Edge
- * @brief Contains 2 Vector3<float>s and represents a connection
+ * @brief Contains 2 Vector3s and represents a connection
  * between these two points.
  */
 template<class T>

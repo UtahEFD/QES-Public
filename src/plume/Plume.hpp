@@ -1,11 +1,37 @@
-//
-//  Plume.hpp
-//
-//  This class handles plume model
-//
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Plume
+ *
+ * GPL-3.0 License
+ *
+ * QES-Plume is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Plume is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
 
-#ifndef PLUME_H
-#define PLUME_H
+/** @file Plume.hpp 
+ * @brief
+ */
+
+#pragma once
 
 #include <iostream>
 #include <fstream>
@@ -16,7 +42,7 @@
 
 #include "util/calcTime.h"
 #include "util/Vector3.h"
-#include "Matrix3.h"
+//#include "Matrix3.h"
 #include "Random.h"
 
 #include "util/QESNetCDFOutput.h"
@@ -28,7 +54,10 @@
 
 #include "src/winds/WINDSGeneralData.h"
 #include "src/winds/TURBGeneralData.h"
+
+#include "GriddedDataType.h"
 #include "Eulerian.h"
+#include "EulerianPowerLaw.h"
 
 #include "Particle.hpp"
 
@@ -47,8 +76,8 @@ public:
   // then sets up the concentration sampling box information for output
   // next copies important input time values and calculates needed time information
   // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
-  Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, Eulerian *, Args *);
-  Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, Eulerian *);
+  //Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, Args *);
+  Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *);
 
   // this is the plume solver. It performs a time integration of the particle positions and particle velocity fluctuations
   // with calculations done on a per particle basis. During each iteration, temporary single value particle information
@@ -61,7 +90,7 @@ public:
   // LA future work: Need to add a CFL condition where the user specifies a courant number that varies from 0 to 1
   //  that is used to do an additional time remainder time integration loop for each particle, forcing particles to only
   //  move one cell at a time.
-  void run(float, WINDSGeneralData *, TURBGeneralData *, Eulerian *, std::vector<QESNetCDFOutput *>);
+  void run(float, WINDSGeneralData *, TURBGeneralData *, std::vector<QESNetCDFOutput *>);
 
   int getTotalParsToRelease() const { return totalParsToRelease; }// accessor
 
@@ -84,7 +113,7 @@ private:
   double dx;// a copy of the urb grid dx value, eventually could become an array
   double dy;// a copy of the urb grid dy value, eventually could become an array
   double dz;// a copy of the urb grid dz value, eventually could become an array
-
+  double dxy;//a copy of the urb grid dz value, eventually could become an array
 
   // these values are calculated from the urb and turb grids by dispersion
   // they are used for applying boundary conditions at the walls of the domain
@@ -95,6 +124,7 @@ private:
   double domainZstart;// the domain starting z value, a copy of the value found by dispersion
   double domainZend;// the domain ending z value, a copy of the value found by dispersion
 
+  GriddedDataType *eul;
 
   // time variables
   double sim_dt;// the simulation timestep
@@ -110,7 +140,7 @@ private:
   double vel_threshold;
 
   // ALL Sources that will be used
-  std::vector<SourceKind *> allSources;
+  std::vector<SourceType *> allSources;
   // this is the global counter of particles released (used to set particleID)
   int nParsReleased;
 
@@ -136,7 +166,7 @@ private:
 
   bool verbose;
 
-  void setParticleVals(WINDSGeneralData *, TURBGeneralData *, Eulerian *, std::list<Particle *>);
+  void setParticleVals(WINDSGeneralData *, TURBGeneralData *, std::list<Particle *>);
   // this function gets sources from input data and adds them to the allSources vector
   // this function also calls the many check and calc functions for all the input sources
   // !!! note that these check and calc functions have to be called here
@@ -145,7 +175,7 @@ private:
   void getInputSources(PlumeInputData *);
 
   // this function generates the list of particle to be released at a given time
-  int generateParticleList(float, WINDSGeneralData *, TURBGeneralData *, Eulerian *);
+  int generateParticleList(float, WINDSGeneralData *, TURBGeneralData *);
 
   // this function scrubs the inactive particle for the particle list (particleList)
   void scrubParticleList();
@@ -153,47 +183,163 @@ private:
 
   // this function moves (advects) one particle
   //void advectParticle(int&, std::list<Particle*>::iterator, WINDSGeneralData*, TURBGeneralData*, Eulerian*);
-  void advectParticle(double, std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *, Eulerian *);
+  void advectParticle(double, std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *);
 
   /* reflection functions in WallReflection.cpp */
   // main function pointer
-  bool (Plume::*wallReflection)(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct);
+  bool (Plume::*wallReflection)(const WINDSGeneralData *WGD,
+                                double &xPos,
+                                double &yPos,
+                                double &zPos,
+                                double &disX,
+                                double &disY,
+                                double &disZ,
+                                double &uFluct,
+                                double &vFluct,
+                                double &wFluct,
+                                double &uFluct_old,
+                                double &vFluct_old,
+                                double &wFluct_old);
   // reflection on walls (stair step)
-  bool wallReflectionFullStairStep(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct);
+  bool wallReflectionFullStairStep(const WINDSGeneralData *WGD,
+                                   double &xPos,
+                                   double &yPos,
+                                   double &zPos,
+                                   double &disX,
+                                   double &disY,
+                                   double &disZ,
+                                   double &uFluct,
+                                   double &vFluct,
+                                   double &wFluct,
+                                   double &uFluct_old,
+                                   double &vFluct_old,
+                                   double &wFluct_old);
   // reflection -> set particle inactive when entering a wall
-  bool wallReflectionSetToInactive(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct);
+  bool wallReflectionSetToInactive(const WINDSGeneralData *WGD,
+                                   double &xPos,
+                                   double &yPos,
+                                   double &zPos,
+                                   double &disX,
+                                   double &disY,
+                                   double &disZ,
+                                   double &uFluct,
+                                   double &vFluct,
+                                   double &wFluct,
+                                   double &uFluct_old,
+                                   double &vFluct_old,
+                                   double &wFluct_old);
   // reflection -> this function will do nothing
-  bool wallReflectionDoNothing(WINDSGeneralData *WGD, Eulerian *eul, double &xPos, double &yPos, double &zPos, double &disX, double &disY, double &disZ, double &uFluct, double &vFluct, double &wFluct);
-
+  bool wallReflectionDoNothing(const WINDSGeneralData *WGD,
+                               double &xPos,
+                               double &yPos,
+                               double &zPos,
+                               double &disX,
+                               double &disY,
+                               double &disZ,
+                               double &uFluct,
+                               double &vFluct,
+                               double &wFluct,
+                               double &uFluct_old,
+                               double &vFluct_old,
+                               double &wFluct_old);
 
   // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,
   // and the grid size. Forces particles to always move only at one timestep at at time.
   // Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
-  double calcCourantTimestep(const double &uFluct, const double &vFluct, const double &wFluct, const double &timeRemainder);
-
+  double calcCourantTimestep(const double &u,
+                             const double &v,
+                             const double &w,
+                             const double &timeRemainder);
+  double calcCourantTimestep(const double &d,
+                             const double &u,
+                             const double &v,
+                             const double &w,
+                             const double &timeRemainder);
 
   // utility functions for the plume solver
-  void calcInvariants(const double &txx, const double &txy, const double &txz, const double &tyy, const double &tyz, const double &tzz, double &invar_xx, double &invar_yy, double &invar_zz);
-  void makeRealizable(double &txx, double &txy, double &txz, double &tyy, double &tyz, double &tzz);
-  bool invert3(double &A_11, double &A_12, double &A_13, double &A_21, double &A_22, double &A_23, double &A_31, double &A_32, double &A_33);
-  void matmult(const double &A_11, const double &A_12, const double &A_13, const double &A_21, const double &A_22, const double &A_23, const double &A_31, const double &A_32, const double &A_33, const double &b_11, const double &b_21, const double &b_31, double &x_11, double &x_21, double &x_31);
+  void calcInvariants(const double &txx,
+                      const double &txy,
+                      const double &txz,
+                      const double &tyy,
+                      const double &tyz,
+                      const double &tzz,
+                      double &invar_xx,
+                      double &invar_yy,
+                      double &invar_zz);
+
+  void makeRealizable(double &txx,
+                      double &txy,
+                      double &txz,
+                      double &tyy,
+                      double &tyz,
+                      double &tzz);
+
+  bool invert3(double &A_11,
+               double &A_12,
+               double &A_13,
+               double &A_21,
+               double &A_22,
+               double &A_23,
+               double &A_31,
+               double &A_32,
+               double &A_33);
+
+  void matmult(const double &A_11,
+               const double &A_12,
+               const double &A_13,
+               const double &A_21,
+               const double &A_22,
+               const double &A_23,
+               const double &A_31,
+               const double &A_32,
+               const double &A_33,
+               const double &b_11,
+               const double &b_21,
+               const double &b_31,
+               double &x_11,
+               double &x_21,
+               double &x_31);
 
   // a function used at constructor time to set the pointer function to the desired BC type
   void setBCfunctions(std::string xBCtype, std::string yBCtype, std::string zBCtype);
 
   // A pointer to the wallBC function for the x direction.
   // Which function it points at is determined by setBCfunctions and the input xBCtype
-  bool (Plume::*enforceWallBCs_x)(double &pos, double &velFluct, double &velFluct_old, const double &domainStart, const double &domainEnd);
+  bool (Plume::*enforceWallBCs_x)(double &pos,
+                                  double &velFluct,
+                                  double &velFluct_old,
+                                  const double &domainStart,
+                                  const double &domainEnd);
   // A pointer to the wallBC function for the y direction.
   // Which function it points at is determined by setBCfunctions and the input yBCtype
-  bool (Plume::*enforceWallBCs_y)(double &pos, double &velFluct, double &velFluct_old, const double &domainStart, const double &domainEnd);
+  bool (Plume::*enforceWallBCs_y)(double &pos,
+                                  double &velFluct,
+                                  double &velFluct_old,
+                                  const double &domainStart,
+                                  const double &domainEnd);
   // A pointer to the wallBC function for the z direction.
   // Which function it points at is determined by setBCfunctions and the input zBCtype
-  bool (Plume::*enforceWallBCs_z)(double &pos, double &velFluct, double &velFluct_old, const double &domainStart, const double &domainEnd);
+  bool (Plume::*enforceWallBCs_z)(double &pos,
+                                  double &velFluct,
+                                  double &velFluct_old,
+                                  const double &domainStart,
+                                  const double &domainEnd);
   // Boundary condition functions:
-  bool enforceWallBCs_exiting(double &pos, double &velFluct, double &velFluct_old, const double &domainStart, const double &domainEnd);
-  bool enforceWallBCs_periodic(double &pos, double &velFluct, double &velFluct_old, const double &domainStart, const double &domainEnd);
-  bool enforceWallBCs_reflection(double &pos, double &velFluct, double &velFluct_old, const double &domainStart, const double &domainEnd);
+  bool enforceWallBCs_exiting(double &pos,
+                              double &velFluct,
+                              double &velFluct_old,
+                              const double &domainStart,
+                              const double &domainEnd);
+  bool enforceWallBCs_periodic(double &pos,
+                               double &velFluct,
+                               double &velFluct_old,
+                               const double &domainStart,
+                               const double &domainEnd);
+  bool enforceWallBCs_reflection(double &pos,
+                                 double &velFluct,
+                                 double &velFluct_old,
+                                 const double &domainStart,
+                                 const double &domainEnd);
 
   // this is for writing an output simulation info file separate from the regular command line output
   void writeSimInfoFile(const double &current_time);
@@ -208,7 +354,5 @@ inline void Plume::showCurrentStatus()
   std::cout << "Number of rogue particles: " << isRogueCount << "\n";
   std::cout << "Number of deleted particles: " << isNotActiveCount << "\n";
   std::cout << "----------------------------------------------------------------- \n"
-            << std::endl;
+            << std::flush;
 }
-
-#endif

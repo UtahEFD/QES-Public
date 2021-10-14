@@ -69,8 +69,11 @@ void QESArgs::processArguments(int argc, char *argv[])
     std::cout << "Comparing against: GPU" << std::endl;
 
   compTurb = isSet("turbcomp");
-  isSet("plumeproj", inputPlumeFile);
 
+  isSet("plumeproj", inputPlumeFile);
+  if (inputPlumeFile == "x") {
+    inputPlumeFile = inputWINDSFile;
+  }
   if (inputPlumeFile != "") {
     compTurb = true;
     std::cout << "Turbulence model: ON" << std::endl;

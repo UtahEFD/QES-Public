@@ -1,4 +1,4 @@
-<simulationParameters>
+<plumeParameters>
 	<simDur> 12.0 </simDur>
 	<timeStep> 4.0 </timeStep>
     <CourantNumber> 0.0 </CourantNumber>
@@ -6,7 +6,7 @@
 	<C_0> 1.0 </C_0>
 	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
 	<updateFrequency_timeLoop> 1 </updateFrequency_timeLoop>
-</simulationParameters>
+</plumeParameters>
 <particleOutputParameters>
   <outputFrequency> 4.0  </outputFrequency>
   <outputFields>all</outputFields>

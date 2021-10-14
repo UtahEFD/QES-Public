@@ -1,19 +1,43 @@
-//
-//  NetCDFOutputEulerian.h
-//
-//  This class handles saving output files for input Eulerian data
-//  This is a specialized output class derived
-//   and inheriting from QESNetCDFOutput.
-//
-//  Created by Fabien Margairaz on 01/25/20
-//  Modified by Loren Atwood 02/08/20
-//
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Plume
+ *
+ * GPL-3.0 License
+ *
+ * QES-Plume is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Plume is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/** @file PlumeOutputEulerian.h
+ * @brief This class handles saving output files for Eulerian data.
+ * This is a specialized output class derived and inheriting from QESNetCDFOutput.
+ *
+ * @note child of QESNetCDFOutput
+ * @sa QESNetCDFOutput
+ */
 
 #pragma once
 
-
 #include <string>
-
 
 #include "PlumeInputData.hpp"
 #include "src/winds/WINDSGeneralData.h"
@@ -21,7 +45,6 @@
 #include "Eulerian.h"
 
 #include "util/QESNetCDFOutput.h"
-
 
 class PlumeOutputEulerian : public QESNetCDFOutput
 {

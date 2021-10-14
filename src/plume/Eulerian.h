@@ -44,12 +44,14 @@
 #include "Random.h"
 #include "util/Vector3.h"
 
+#include "GriddedDataType.h"
 #include "PlumeInputData.hpp"
+
 #include "src/winds/WINDSGeneralData.h"
 #include "src/winds/TURBGeneralData.h"
 
 
-class Eulerian
+class Eulerian : public GriddedDataType
 {
 
 public:
@@ -58,26 +60,10 @@ public:
   // then calculates the tau gradients which are then used to calculate the flux_div grid values.
   Eulerian(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, const bool &);
 
-
-  // the Eulerian data held in this class is on the turb grid, so these are copies of the turb grid values
-  int nx;// a copy of the turb grid information. This is the number of points in the x dimension
-  int ny;// a copy of the turb grid information. This is the number of points in the y dimension
-  int nz;// a copy of the turb grid information. This is the number of points in the z dimension
-  int nt;// a copy of the turb grid information. This is the number of times for which the x,y, and z values are repeated
-
-  double dx;// a copy of the turb grid information. This is the difference between points in the x dimension, eventually could become an array
-  double dy;// a copy of the turb grid information. This is the difference between points in the y dimension, eventually could become an array
-  double dz;// a copy of the TGD grid information. This is the difference between points in the z dimension, eventually could become an array
-
-  // The eulerian grid information.
-  double xStart, xEnd;
-  double yStart, yEnd;
-  double zStart, zEnd;
-
   // other input variable
-  double C_0;// a copy of the TGD grid information. This is used to separate out CoEps into its separate parts when doing debug output
+  //double C_0;// a copy of the TGD grid information. This is used to separate out CoEps into its separate parts when doing debug output
 
-  double vel_threshold;
+  //double vel_threshold;
 
   // these are the gradients of many components of tau in many different direction. Tau is still kept inside TGD
   // this is only the derivatives that matter for calculating the flux_div
@@ -104,20 +90,38 @@ public:
   std::vector<double> sig_z;
 
   void setData(WINDSGeneralData *, TURBGeneralData *);
+  void interpValues(const double &xPos,
+                    const double &yPos,
+                    const double &zPos,
+                    const WINDSGeneralData *WGD,
+                    double &uMain_out,
+                    double &vMean_out,
+                    double &wMean_out,
+                    const TURBGeneralData *TGD,
+                    double &txx_out,
+                    double &txy_out,
+                    double &txz_out,
+                    double &tyy_out,
+                    double &tyz_out,
+                    double &tzz_out,
+                    double &flux_div_x_out,
+                    double &flux_div_y_out,
+                    double &flux_div_z_out,
+                    double &CoEps_out);
 
-  void setInterp3Dindex_uFace(const double &, const double &, const double &);
-  void setInterp3Dindex_vFace(const double &, const double &, const double &);
-  void setInterp3Dindex_wFace(const double &, const double &, const double &);
-  double interp3D_faceVar(const std::vector<float> &);
-  double interp3D_faceVar(const std::vector<double> &);
-
-  void setInterp3Dindex_cellVar(const double &, const double &, const double &);
-  double interp3D_cellVar(const std::vector<float> &);
-  double interp3D_cellVar(const std::vector<double> &);
-
-  int getCellId(const double &, const double &, const double &);
-  int getCellId(Vector3<double> &);
-  Vector3<int> getCellIndex(const int &);
+  void interpInitialValues(const double &xPos,
+                           const double &yPos,
+                           const double &zPos,
+                           const TURBGeneralData *TGD,
+                           double &sig_x_out,
+                           double &sig_y_out,
+                           double &sig_z_out,
+                           double &txx_out,
+                           double &txy_out,
+                           double &txz_out,
+                           double &tyy_out,
+                           double &tyz_out,
+                           double &tzz_out);
 
 private:
   // these are the current interp3D variables, as they are used for multiple interpolations for each particle
@@ -128,10 +132,15 @@ private:
   double jw;// this is the normalized distance to the nearest cell index to the left in the y direction
   double kw;// this is the normalized distance to the nearest cell index to the left in the z direction
 
-  // index of domain bounds
-  int iStart, iEnd;
-  int jStart, jEnd;
-  int kStart, kEnd;
+  void setInterp3Dindex_uFace(const double &, const double &, const double &);
+  void setInterp3Dindex_vFace(const double &, const double &, const double &);
+  void setInterp3Dindex_wFace(const double &, const double &, const double &);
+  double interp3D_faceVar(const std::vector<float> &);
+  double interp3D_faceVar(const std::vector<double> &);
+
+  void setInterp3Dindex_cellVar(const double &, const double &, const double &);
+  double interp3D_cellVar(const std::vector<float> &);
+  double interp3D_cellVar(const std::vector<double> &);
 
   // these are for calculating the gradients more efficiently
   // LA future work: I keep wondering, since we never use the gradients again since they are just used to calculate flux_div,
@@ -163,39 +172,6 @@ private:
   // copies of debug related information from the input arguments
   bool debug;
 };
-
-
-inline int Eulerian::getCellId(const double &xPos, const double &yPos, const double &zPos)
-{
-  int i = floor((xPos - 0.0 * dx) / (dx + 1e-9));
-  int j = floor((yPos - 0.0 * dy) / (dy + 1e-9));
-  int k = floor((zPos + dz) / (dz + 1e-9));
-
-  return i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
-}
-
-inline int Eulerian::getCellId(Vector3<double> &X)
-{
-  //int i = floor((xPos - xStart + 0.5*dx)/(dx+1e-9));
-  //int j = floor((yPos - yStart + 0.5*dy)/(dy+1e-9));
-  //int k = floor((zPos - zStart + dz)/(dz+1e-9));
-
-  int i = floor((X[0] - 0.0 * dx) / (dx + 1e-9));
-  int j = floor((X[1] - 0.0 * dy) / (dy + 1e-9));
-  int k = floor((X[2] + dz) / (dz + 1e-9));
-
-  return i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
-}
-
-inline Vector3<int> Eulerian::getCellIndex(const int &cellId)
-{
-  int k = (int)(cellId / ((nx - 1) * (ny - 1)));
-  int j = (int)((cellId - k * (nx - 1) * (ny - 1)) / (nx - 1));
-  int i = cellId - j * (nx - 1) - k * (nx - 1) * (ny - 1);
-
-  return { i, j, k };
-}
-
 
 inline void Eulerian::setDX_1D(const TURBGeneralData *TGD, const int idx)
 {

@@ -45,7 +45,7 @@ __global__ void divergence(float *d_u0, float *d_v0, float *d_w0, float *d_R, fl
   if ((i < nx - 1) && (j < ny - 1) && (k < nz - 1) && (i >= 0) && (j >= 0) && (k > 0)) {
 
     // Divergence equation
-    d_R[icell_cent] = (-2 * pow(alpha1, 2.0)) * (((d_u0[icell_face + 1] - d_u0[icell_face]) / dx) + ((d_v0[icell_face + nx] - d_v0[icell_face]) / dy) + ((d_w0[icell_face + nx * ny] - d_w0[icell_face]) / d_dz_array[k]));
+    d_R[icell_cent] = (-2 * pow(alpha1, 2.0)) * (((d_e[icell_cent] * d_u0[icell_face + 1] - d_f[icell_cent] * d_u0[icell_face]) * dx) + ((d_g[icell_cent] * d_v0[icell_face + nx] - d_h[icell_cent] * d_v0[icell_face]) * dy) + (d_m[icell_cent] * d_dz_array[k] * 0.5 * (d_dz_array[k] + d_dz_array[k + 1]) * d_w0[icell_face + nx * ny] - d_n[icell_cent] * d_w0[icell_face] * d_dz_array[k] * 0.5 * (d_dz_array[k] + d_dz_array[k - 1])));
   }
 }
 
@@ -156,7 +156,7 @@ __global__ void calculateError(float *d_lambda, float *d_lambda_old, int nx, int
 }
 
 // Euler Final Velocity kernel
-__global__ void finalVelocity(float *d_lambda, float *d_u, float *d_v, float *d_w, int *d_icellflag, float *d_f, float *d_h, float *d_n, int alpha1, int alpha2, float dx, float dy, float dz, float *d_dz_array, int nx, int ny, int nz)
+__global__ void finalVelocity(float *d_u0, float *d_v0, float *d_w0, float *d_lambda, float *d_u, float *d_v, float *d_w, int *d_icellflag, float *d_f, float *d_h, float *d_n, int alpha1, int alpha2, float dx, float dy, float dz, float *d_dz_array, int nx, int ny, int nz)
 {
 
   int icell_face = blockDim.x * blockIdx.x + threadIdx.x;
@@ -165,19 +165,19 @@ __global__ void finalVelocity(float *d_lambda, float *d_u, float *d_v, float *d_
   int i = icell_face - k * nx * ny - j * nx;
   int icell_cent = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);/// Lineralized index for cell centered values
 
-  /*if ((i >= 0) && (j >= 0) && (k >= 0) && (i < nx) && (j < ny) && (k < nz)) {
+  if ((i >= 0) && (j >= 0) && (k >= 0) && (i < nx) && (j < ny) && (k < nz - 1)) {
 
     d_u[icell_face] = d_u0[icell_face];
     d_v[icell_face] = d_v0[icell_face];
     d_w[icell_face] = d_w0[icell_face];
-  }*/
+  }
 
 
   if ((i > 0) && (i < nx - 1) && (j > 0) && (j < ny - 1) && (k < nz - 2) && (k > 0)) {
 
-    d_u[icell_face] = d_u[icell_face] + (1 / (2 * pow(alpha1, 2.0))) * d_f[icell_cent] * dx * (d_lambda[icell_cent] - d_lambda[icell_cent - 1]);
-    d_v[icell_face] = d_v[icell_face] + (1 / (2 * pow(alpha1, 2.0))) * d_h[icell_cent] * dy * (d_lambda[icell_cent] - d_lambda[icell_cent - (nx - 1)]);
-    d_w[icell_face] = d_w[icell_face] + (1 / (2 * pow(alpha2, 2.0))) * d_n[icell_cent] * d_dz_array[k] * (d_lambda[icell_cent] - d_lambda[icell_cent - (nx - 1) * (ny - 1)]);
+    d_u[icell_face] = d_u0[icell_face] + (1 / (2 * pow(alpha1, 2.0))) * d_f[icell_cent] * dx * (d_lambda[icell_cent] - d_lambda[icell_cent - 1]);
+    d_v[icell_face] = d_v0[icell_face] + (1 / (2 * pow(alpha1, 2.0))) * d_h[icell_cent] * dy * (d_lambda[icell_cent] - d_lambda[icell_cent - (nx - 1)]);
+    d_w[icell_face] = d_w0[icell_face] + (1 / (2 * pow(alpha2, 2.0))) * d_n[icell_cent] * d_dz_array[k] * (d_lambda[icell_cent] - d_lambda[icell_cent - (nx - 1) * (ny - 1)]);
   }
 
 
@@ -194,7 +194,7 @@ __global__ void finalVelocity(float *d_lambda, float *d_u, float *d_v, float *d_
 
 /// SOR iteration kernel
 ///
-__global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int ny, int nz, float omega, float A, float B, float dx, float dy, float dz, float *d_dz_array, float *d_e, float *d_f, float *d_g, float *d_h, float *d_m, float *d_n, float *d_R, int itermax, float tol, float *d_value, float *d_bvalue, int alpha1, int alpha2, float *d_u, float *d_v, float *d_w, int *d_icellflag)
+__global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int ny, int nz, float omega, float A, float B, float dx, float dy, float dz, float *d_dz_array, float *d_e, float *d_f, float *d_g, float *d_h, float *d_m, float *d_n, float *d_R, int itermax, float tol, float *d_value, float *d_bvalue, float *d_u0, float *d_v0, float *d_w0, int alpha1, int alpha2, float *d_u, float *d_v, float *d_w, int *d_icellflag)
 {
   int iter = 0;
   error = 1.0;
@@ -204,7 +204,7 @@ __global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int 
   dim3 numberOfBlocks(ceil(((nx - 1) * (ny - 1) * (nz - 1)) / (float)(BLOCKSIZE)), 1, 1);
 
   // Invoke divergence kernel
-  divergence<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_u, d_v, d_w, d_R, d_e, d_f, d_g, d_h, d_m, d_n, alpha1, nx, ny, nz, dx, dy, d_dz_array);
+  divergence<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_u0, d_v0, d_w0, d_R, d_e, d_f, d_g, d_h, d_m, d_n, alpha1, nx, ny, nz, dx, dy, d_dz_array);
   // Iterate untill convergence is reached
   while ((iter < itermax) && (error > tol)) {
 
@@ -250,7 +250,7 @@ __global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int 
   }*/
   dim3 numberOfBlocks3(ceil((nx * ny * nz) / (float)(BLOCKSIZE)), 1, 1);
   // Invoke final velocity (Euler) kernel
-  finalVelocity<<<numberOfBlocks3, numberOfThreadsPerBlock>>>(d_lambda, d_u, d_v, d_w, d_icellflag, d_f, d_h, d_n, alpha1, alpha2, dx, dy, dz, d_dz_array, nx, ny, nz);
+  finalVelocity<<<numberOfBlocks3, numberOfThreadsPerBlock>>>(d_u0, d_v0, d_w0, d_lambda, d_u, d_v, d_w, d_icellflag, d_f, d_h, d_n, alpha1, alpha2, dx, dy, dz, d_dz_array, nx, ny, nz);
 }
 
 
@@ -346,7 +346,7 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
 
   std::vector<float> value(WGD->numcell_cent, 0.0);
   std::vector<float> bvalue(numblocks, 0.0);
-  //float *d_u0, *d_v0, *d_w0;
+  float *d_u0, *d_v0, *d_w0;
   float *d_value, *d_bvalue;
   // float *d_x,*d_y,*d_z;
   float *d_u, *d_v, *d_w;
@@ -365,9 +365,9 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   cudaMalloc((void **)&d_lambda, WGD->numcell_cent * sizeof(float));
   cudaMalloc((void **)&d_lambda_old, WGD->numcell_cent * sizeof(float));
   cudaMalloc((void **)&d_icellflag, WGD->numcell_cent * sizeof(int));
-  /*cudaMalloc((void **)&d_u0, WGD->numcell_face * sizeof(float));
+  cudaMalloc((void **)&d_u0, WGD->numcell_face * sizeof(float));
   cudaMalloc((void **)&d_v0, WGD->numcell_face * sizeof(float));
-  cudaMalloc((void **)&d_w0, WGD->numcell_face * sizeof(float));*/
+  cudaMalloc((void **)&d_w0, WGD->numcell_face * sizeof(float));
   cudaMalloc((void **)&d_value, WGD->numcell_cent * sizeof(float));
   cudaMalloc((void **)&d_bvalue, numblocks * sizeof(float));
   cudaMalloc((void **)&d_dz_array, (WGD->nz - 1) * sizeof(float));
@@ -375,7 +375,7 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   cudaMalloc((void **)&d_v, WGD->numcell_face * sizeof(float));
   cudaMalloc((void **)&d_w, WGD->numcell_face * sizeof(float));
 
-  long long memory_req = (10 * WGD->numcell_cent + 3 * WGD->numcell_face + numblocks + (WGD->nz - 1)) * sizeof(float) + (WGD->numcell_cent) * sizeof(int) + 2308964352;
+  long long memory_req = (10 * WGD->numcell_cent + 6 * WGD->numcell_face + numblocks + (WGD->nz - 1)) * sizeof(float) + (WGD->numcell_cent) * sizeof(int) + 2308964352;
   char msg[256];
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
   sprintf_s(msg, sizeof(msg),
@@ -393,12 +393,9 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   std::cout << msg;
 
   cudaMemcpy(d_icellflag, WGD->icellflag.data(), WGD->numcell_cent * sizeof(int), cudaMemcpyHostToDevice);
-  /*cudaMemcpy(d_u0, WGD->u0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_u0, WGD->u0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_v0, WGD->v0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_w0, WGD->w0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);*/
-  cudaMemcpy(d_u, WGD->u0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_v, WGD->v0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_w, WGD->w0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_w0, WGD->w0.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_R, R.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_value, value.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_bvalue, bvalue.data(), numblocks * sizeof(float), cudaMemcpyHostToDevice);
@@ -418,7 +415,7 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   /////////////////////////////////////////////////
 
   // Invoke the main (mother) kernel
-  SOR_iteration<<<1, 1>>>(d_lambda, d_lambda_old, WGD->nx, WGD->ny, WGD->nz, omega, A, B, WGD->dx, WGD->dy, WGD->dz, d_dz_array, d_e, d_f, d_g, d_h, d_m, d_n, d_R, itermax, tol, d_value, d_bvalue, alpha1, alpha2, d_u, d_v, d_w, d_icellflag);
+  SOR_iteration<<<1, 1>>>(d_lambda, d_lambda_old, WGD->nx, WGD->ny, WGD->nz, omega, A, B, WGD->dx, WGD->dy, WGD->dz, d_dz_array, d_e, d_f, d_g, d_h, d_m, d_n, d_R, itermax, tol, d_value, d_bvalue, d_u0, d_v0, d_w0, alpha1, alpha2, d_u, d_v, d_w, d_icellflag);
   cudaCheck(cudaGetLastError());
 
   // cudaMemcpy (lambda.data() , d_lambda , WGD->numcell_cent * sizeof(float) , cudaMemcpyDeviceToHost);
@@ -439,9 +436,9 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   cudaFree(d_R);
   cudaFree(d_value);
   cudaFree(d_bvalue);
-  /*cudaFree(d_u0);
+  cudaFree(d_u0);
   cudaFree(d_v0);
-  cudaFree(d_w0);*/
+  cudaFree(d_w0);
   cudaFree(d_u);
   cudaFree(d_v);
   cudaFree(d_w);

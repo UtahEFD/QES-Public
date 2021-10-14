@@ -1,15 +1,40 @@
-//
-//  NetCDFOutput.h
-//
-//  This class handles saving output files for Eulerian binned Lagrangian particle data,
-//   where this class handles the binning of the Lagrangian particle data
-//  This is a specialized output class derived
-//   and inheriting from QESNetCDFOutput.
-//
-//  Created by Fabien Margairaz on 01/25/20
-//  Modified by Loren Atwood 02/08/20
-//
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Plume
+ *
+ * GPL-3.0 License
+ *
+ * QES-Plume is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Plume is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
 
+/** @file PlumeOutput.cpp
+ * @brief This class handles saving output files for Eulerian binned Lagrangian particle data,
+ * where this class handles the binning of the Lagrangian particle data
+ * This is a specialized output class derived and inheriting from QESNetCDFOutput.
+ *
+ * @note child of QESNetCDFOutput
+ * @sa QESNetCDFOutput
+ */
 
 #include "PlumeOutput.h"
 #include "Plume.hpp"
@@ -33,18 +58,18 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   //Adjusted if the time averaging duration does not divide evenly by the averaging frequency
   timeAvgStart = PID->colParams->timeAvgStart;
   // time to end concentration averaging and output. Notice that this is now always the simulation end time
-  timeAvgEnd = PID->simParams->simDur;
+  timeAvgEnd = PID->plumeParams->simDur;
   // time averaging frequency and output frequency
   timeAvgFreq = PID->colParams->timeAvgFreq;
 
   // !!! Because collection parameters could not know anything about simulation duration at parse time,
   //  need to make this check now
   // Make sure the timeAvgStart is not greater than the simulation end time
-  if (timeAvgStart > PID->simParams->simDur) {
+  if (timeAvgStart > PID->plumeParams->simDur) {
     std::cerr << "[PlumeOutput] ERROR "
               << "(CollectionParameters checked during PlumeOutput) "
               << "input timeAvgStart must be smaller than or equal to the input simulation duration!" << std::endl;
-    std::cerr << " timeAvgStart = \"" << timeAvgStart << "\", simDur = \"" << PID->simParams->simDur << "\"" << std::endl;
+    std::cerr << " timeAvgStart = \"" << timeAvgStart << "\", simDur = \"" << PID->plumeParams->simDur << "\"" << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -53,11 +78,11 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   // Make sure timeAvgFreq is not bigger than the simulation duration
   // LA note: timeAvgFreq can be as big as the collection duration, or even smaller than the collection duration
   //  IF timeAvgFreq is at least the same size or smaller than the simulation duration
-  if (timeAvgFreq > PID->simParams->simDur) {
+  if (timeAvgFreq > PID->plumeParams->simDur) {
     std::cerr << "[PlumeOutput] ERROR "
               << "(CollectionParameters checked during PlumeOutput): "
               << "input timeAvgFreq must be smaller than or equal to the input simulation duration!" << std::endl;
-    std::cerr << " timeAvgFreq = \"" << timeAvgFreq << "\", simDur = \"" << PID->simParams->simDur << "\"" << std::endl;
+    std::cerr << " timeAvgFreq = \"" << timeAvgFreq << "\", simDur = \"" << PID->plumeParams->simDur << "\"" << std::endl;
     exit(EXIT_FAILURE);
   }
 
@@ -123,7 +148,7 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   nz = WGD->nz;
 
   // need the simulation timeStep for use in concentration averaging
-  timeStep = PID->simParams->timeStep;
+  timeStep = PID->plumeParams->timeStep;
 
 
   // --------------------------------------------------------

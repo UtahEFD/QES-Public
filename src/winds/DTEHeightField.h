@@ -35,6 +35,8 @@
 #include <string>
 #include "Triangle.h"
 #include "util/Vector3.h"
+#include "util/Vector3Int.h"
+
 
 #include "gdal_priv.h"
 #include "cpl_conv.h"// for CPLMalloc()
@@ -47,6 +49,9 @@
 #include <fstream>
 #include <cmath>
 #include <chrono>
+
+class WINDSGeneralData;
+class WINDSInputData;
 
 /**
  * @class DTEHeightField
@@ -81,13 +86,13 @@ public:
    * @return a string representing the results of the failed summation.
    */
   DTEHeightField(const std::string &filename,
-    std::tuple<int, int, int> dim,
-    std::tuple<float, float, float> cellSize,
-    float UTMx,
-    float UTMy,
-    int OriginFlag,
-    float DEMDistanceX,
-    float DEMDistanceY);
+                 std::tuple<int, int, int> dim,
+                 std::tuple<float, float, float> cellSize,
+                 float UTMx,
+                 float UTMy,
+                 int OriginFlag,
+                 float DEMDistanceX,
+                 float DEMDistanceY);
 
   /**
    * Loads a GIS Digital Elevation Model
@@ -100,10 +105,10 @@ public:
    * @return a string representing the results of the failed summation.
    */
   DTEHeightField(const std::vector<double> &heightField,
-    std::tuple<int, int, int> dim,
-    std::tuple<float, float, float> cellSize,
-    float halo_x,
-    float halo_y);
+                 std::tuple<int, int, int> dim,
+                 std::tuple<float, float, float> cellSize,
+                 float halo_x,
+                 float halo_y);
 
   ~DTEHeightField();
 
@@ -119,7 +124,7 @@ public:
    * @param domain Domain that will be changed to match the dem file
    * @param grid Size of each cell in the domain space.
    */
-  void setDomain(Vector3<int> *domain, Vector3<float> *grid);
+  void setDomain(Vector3Int *domain, Vector3 *grid);
 
 
   /**
@@ -148,7 +153,7 @@ public:
    * @param halo_y :document this:
    * @return List of ID values for all cut cells.
    */
-  std::vector<int> setCells(Cell *cells, int nx, int ny, int nz, float dx, float dy, std::vector<float> &dz_array, std::vector<float> z_face, float halo_x, float halo_y) const;
+  void setCells(Cell *cells, WINDSGeneralData *WGD, const WINDSInputData *WID);
 
   /**
    * Frees the pafScanline.
@@ -194,6 +199,13 @@ public:
   double adfMinMax[2]; /**< :document this: */
 
 private:
+  std::vector<Vector3> terrainPoints; /**< List of terrain points */
+  std::vector<Edge<int>> terrainEdges; /**< List of edges that connect the terrain points */
+  std::vector<Vector3> fluidFacePoints[6]; /**< :document this: */
+  Vector3 location; /**< XYZ location of the cell */
+  Vector3 dimensions; /**< Size of the cell in xyz directions */
+  int count = 0;
+
   /**
    * Given the height of the DEM file at each of it's corners and uses
    * them to calculate at what points cells are intersected by the quad the corners form.
@@ -210,7 +222,7 @@ private:
    * @param corners Array containing the points that representing the DEM elevation at each of the cells corners
    * @param cutCells List of all cells which the terrain goes through
    */
-  void setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3<float> corners[], std::vector<int> &cutCells) const;
+  void setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3 corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD);
 
   /**
    * :document this:
@@ -285,7 +297,7 @@ private:
    * @param height The height at which the third point will be created
    * @return An intermediate point existing on the line from a to b at z value height
    */
-  Vector3<float> getIntermediate(Vector3<float> a, Vector3<float> b, float height) const;
+  Vector3 getIntermediate(Vector3 a, Vector3 b, float height) const;
 
 
   std::string m_filename; /**< :document this: */

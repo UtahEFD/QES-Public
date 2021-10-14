@@ -64,7 +64,6 @@ Eulerian::Eulerian(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *
   // in x-direction (face)
   xStart = WGD->x[iStart] - 0.5 * dx;
   xEnd = WGD->x[iEnd] + 0.5 * dx;
-
   // in y-direction (face)
   yStart = WGD->y[jStart] - 0.5 * dy;
   yEnd = WGD->y[jEnd] + 0.5 * dy;
@@ -81,7 +80,7 @@ Eulerian::Eulerian(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *
   }
 
   // set additional values from the input
-  C_0 = PID->simParams->C_0;
+  C_0 = PID->plumeParams->C_0;
 
   // set the tau gradient sizes
   dtxxdx.resize(WGD->numcell_face, 0.0);
@@ -122,7 +121,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   std::cout << "[Eulerian] \t Correction QES-winds fields for BC" << std::endl;
 
   // verical surface (wall right => j-1)
-  for (size_t id; id < WGD->wall_right_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_right_indices.size(); ++id) {
     int idface = WGD->wall_right_indices[id];
     // u(i,j-1,k)=-u(i,j,k)
     WGD->u[idface - nx] = -WGD->u[idface];
@@ -136,7 +135,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // verical surface (wall left => j+1)
-  for (size_t id; id < WGD->wall_left_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_left_indices.size(); ++id) {
     int idface = WGD->wall_left_indices[id];
     // u(i,j+1,k)=-u(i,j,k)
     WGD->u[idface + nx] = -WGD->u[idface];
@@ -150,7 +149,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // horizontal surface (wall above => k+1)
-  for (size_t id; id < WGD->wall_above_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_above_indices.size(); ++id) {
     int idface = WGD->wall_above_indices[id];
     // u(i,j,k+1)=-u(i,j,k)
     WGD->u[idface + nx * ny] = -WGD->u[idface];
@@ -164,7 +163,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // horizontal surface (wall below => k-1)
-  for (size_t id; id < WGD->wall_below_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_below_indices.size(); ++id) {
     int idface = WGD->wall_below_indices[id];
     // u(i,j,k-1)=-u(i,j,k)
     WGD->u[idface - nx * ny] = -WGD->u[idface];
@@ -179,7 +178,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
 
 
   // verical surface (wall back => i-1)
-  for (size_t id; id < WGD->wall_back_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_back_indices.size(); ++id) {
     int idface = WGD->wall_back_indices[id];
     // v(i-1,j,k)=-v(i,j,k)
     WGD->v[idface - 1] = -WGD->v[idface];
@@ -193,7 +192,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // verical surface (wall front => i+1)
-  for (size_t id; id < WGD->wall_front_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_front_indices.size(); ++id) {
     int idface = WGD->wall_front_indices[id];
     // v(i+1,j,k)=-v(i,j,k)
     WGD->v[idface + 1] = -WGD->v[idface];
@@ -209,7 +208,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   std::cout << "[Eulerian] \t Correction QES-turb fields for BC" << std::endl;
 
   // verical surface (wall right => j-1)
-  for (size_t id; id < WGD->wall_right_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_right_indices.size(); ++id) {
     int idface = WGD->wall_right_indices[id];
     // i,j,k -> inverted linearized index
     int k = (int)(idface / ((nx * nx)));
@@ -230,7 +229,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // verical surface (wall left => j+1)
-  for (size_t id; id < WGD->wall_left_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_left_indices.size(); ++id) {
     int idface = WGD->wall_left_indices[id];
     // i,j,k -> inverted linearized index
     int k = (int)(idface / ((nx * nx)));
@@ -251,7 +250,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // horizontal surface (wall above => k+1)
-  for (size_t id; id < WGD->wall_above_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_above_indices.size(); ++id) {
     int idface = WGD->wall_above_indices[id];
     // i,j,k -> inverted linearized index
     int k = (int)(idface / ((nx * nx)));
@@ -272,7 +271,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // horizontal surface (wall below => k-1)
-  for (size_t id; id < WGD->wall_below_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_below_indices.size(); ++id) {
     int idface = WGD->wall_below_indices[id];
     // i,j,k -> inverted linearized index
     int k = (int)(idface / ((nx * nx)));
@@ -315,7 +314,7 @@ void Eulerian::setBC(WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 
   // verical surface (wall front => i+1)
-  for (size_t id; id < WGD->wall_front_indices.size(); ++id) {
+  for (size_t id = 0; id < WGD->wall_front_indices.size(); ++id) {
     int idface = WGD->wall_front_indices[id];
     // i,j,k -> inverted linearized index
     int k = (int)(idface / ((nx * nx)));
@@ -476,14 +475,16 @@ void Eulerian::setStressGrads(TURBGeneralData *TGD)
 void Eulerian::setSigmas(TURBGeneralData *TGD)
 {
   for (int idx = 0; idx < (nx - 1) * (ny - 1) * (nz - 1); idx++) {
-    sig_x.at(idx) = std::abs(TGD->txx.at(idx));
-    sig_y.at(idx) = std::abs(TGD->tyy.at(idx));
-    sig_z.at(idx) = std::abs(TGD->tzz.at(idx));
+    sig_x.at(idx) = std::sqrt(std::abs(TGD->txx.at(idx)));
+    sig_y.at(idx) = std::sqrt(std::abs(TGD->tyy.at(idx)));
+    sig_z.at(idx) = std::sqrt(std::abs(TGD->tzz.at(idx)));
   }
   return;
 }
 
-double Eulerian::getMaxVariance(const std::vector<double> &sigma_x_vals, const std::vector<double> &sigma_y_vals, const std::vector<double> &sigma_z_vals)
+double Eulerian::getMaxVariance(const std::vector<double> &sigma_x_vals,
+                                const std::vector<double> &sigma_y_vals,
+                                const std::vector<double> &sigma_z_vals)
 {
   // set thoe initial maximum value to a very small number. The idea is to go through each value of the data,
   // setting the current value to the max value each time the current value is bigger than the old maximum value
@@ -512,6 +513,112 @@ double Eulerian::getMaxVariance(const std::vector<double> &sigma_x_vals, const s
   return maximumVal;
 }
 
+void Eulerian::interpInitialValues(const double &xPos,
+                                   const double &yPos,
+                                   const double &zPos,
+                                   const TURBGeneralData *TGD,
+                                   double &sig_x_out,
+                                   double &sig_y_out,
+                                   double &sig_z_out,
+                                   double &txx_out,
+                                   double &txy_out,
+                                   double &txz_out,
+                                   double &tyy_out,
+                                   double &tyz_out,
+                                   double &tzz_out)
+{
+  // this replaces the old indexing trick, set the indexing variables for the
+  // interp3D for each particle, then get interpolated values from the
+  // Eulerian grid to the particle Lagrangian values for multiple datatypes
+  setInterp3Dindex_cellVar(xPos, yPos, zPos);
+
+  sig_x_out = interp3D_cellVar(sig_x);
+  if (sig_x_out == 0.0)
+    sig_x_out = 1e-8;
+  sig_y_out = interp3D_cellVar(sig_y);
+  if (sig_y_out == 0.0)
+    sig_y_out = 1e-8;
+  sig_z_out = interp3D_cellVar(sig_z);
+  if (sig_z_out == 0.0)
+    sig_z_out = 1e-8;
+
+  // get the tau values from the Eulerian grid for the particle value
+  txx_out = interp3D_cellVar(TGD->txx);
+  txy_out = interp3D_cellVar(TGD->txy);
+  txz_out = interp3D_cellVar(TGD->txz);
+  tyy_out = interp3D_cellVar(TGD->tyy);
+  tyz_out = interp3D_cellVar(TGD->tyz);
+  tzz_out = interp3D_cellVar(TGD->tzz);
+
+  return;
+}
+
+void Eulerian::interpValues(const double &xPos,
+                            const double &yPos,
+                            const double &zPos,
+                            const WINDSGeneralData *WGD,
+                            double &uMean_out,
+                            double &vMean_out,
+                            double &wMean_out,
+                            const TURBGeneralData *TGD,
+                            double &txx_out,
+                            double &txy_out,
+                            double &txz_out,
+                            double &tyy_out,
+                            double &tyz_out,
+                            double &tzz_out,
+                            double &flux_div_x_out,
+                            double &flux_div_y_out,
+                            double &flux_div_z_out,
+                            double &CoEps_out)
+{
+  // set interoplation indexing variables for uFace variables
+  setInterp3Dindex_uFace(xPos, yPos, zPos);
+  // interpolation of variables on uFace
+  uMean_out = interp3D_faceVar(WGD->u);
+  flux_div_x_out = interp3D_faceVar(dtxxdx);
+  flux_div_y_out = interp3D_faceVar(dtxydx);
+  flux_div_z_out = interp3D_faceVar(dtxzdx);
+
+  // set interpolation indexing variables for vFace variables
+  setInterp3Dindex_vFace(xPos, yPos, zPos);
+  // interpolation of variables on vFace
+  vMean_out = interp3D_faceVar(WGD->v);
+  flux_div_x_out += interp3D_faceVar(dtxydy);
+  flux_div_y_out += interp3D_faceVar(dtyydy);
+  flux_div_z_out += interp3D_faceVar(dtyzdy);
+
+  // set interpolation indexing variables for wFace variables
+  setInterp3Dindex_wFace(xPos, yPos, zPos);
+  // interpolation of variables on wFace
+  wMean_out = interp3D_faceVar(WGD->w);
+  flux_div_x_out += interp3D_faceVar(dtxzdz);
+  flux_div_y_out += interp3D_faceVar(dtyzdz);
+  flux_div_z_out += interp3D_faceVar(dtzzdz);
+
+  // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
+  // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
+  setInterp3Dindex_cellVar(xPos, yPos, zPos);
+
+  // this is the Co times Eps for the particle
+  // LA note: because Bailey's code uses Eps by itself and this does not, I wanted an option to switch between the two if necessary
+  //  it's looking more and more like we will just use CoEps.
+  CoEps_out = interp3D_cellVar(TGD->CoEps);
+  // make sure CoEps is always bigger than zero
+  if (CoEps_out <= 1e-6) {
+    CoEps_out = 1e-6;
+  }
+
+  // this is the current reynolds stress tensor
+  txx_out = interp3D_cellVar(TGD->txx);
+  txy_out = interp3D_cellVar(TGD->txy);
+  txz_out = interp3D_cellVar(TGD->txz);
+  tyy_out = interp3D_cellVar(TGD->tyy);
+  tyz_out = interp3D_cellVar(TGD->tyz);
+  tzz_out = interp3D_cellVar(TGD->tzz);
+
+  return;
+}
 
 void Eulerian::setInterp3Dindex_uFace(const double &par_xPos, const double &par_yPos, const double &par_zPos)
 {
@@ -535,6 +642,7 @@ void Eulerian::setInterp3Dindex_uFace(const double &par_xPos, const double &par_
 
   return;
 }
+
 
 void Eulerian::setInterp3Dindex_vFace(const double &par_xPos, const double &par_yPos, const double &par_zPos)
 {

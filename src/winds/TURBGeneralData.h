@@ -68,6 +68,7 @@ public:
   // load data at given time instance
   void loadNetCDFData(int);
 
+  bool flagUniformZGrid = true; /**< :document this: */
   bool flagNonLocalMixing; /**< :document this: */
 
   // General QUIC Domain Data
@@ -110,6 +111,19 @@ public:
   */
 
   ///@{
+  /** Velocity gradient tensor */
+  std::vector<float> Gxx;
+  std::vector<float> Gxy;
+  std::vector<float> Gxz;
+  std::vector<float> Gyx;
+  std::vector<float> Gyy;
+  std::vector<float> Gyz;
+  std::vector<float> Gzx;
+  std::vector<float> Gzy;
+  std::vector<float> Gzz;
+  ///@}
+
+  ///@{
   /** strain rate tensor */
   std::vector<float> Sxx;
   std::vector<float> Sxy;
@@ -145,21 +159,26 @@ private:
   std::vector<TURBWall *> wallVec;
 
   // some constants for turbulent model
-  const float vonKar = 0.41;
+  const float vonKar = 0.4;
   const float cPope = 0.55;
   float sigUOrg = 2.5;
   float sigVOrg = 2.0;
   float sigWOrg = 1.3;
-  float sigUConst = sigUOrg * sigUOrg * cPope * cPope;
-  float sigVConst = sigVOrg * sigVOrg * cPope * cPope;
-  float sigWConst = sigWOrg * sigWOrg * cPope * cPope;
+  float sigUConst = 1.5 * sigUOrg * sigUOrg * cPope * cPope;
+  float sigVConst = 1.5 * sigVOrg * sigVOrg * cPope * cPope;
+  float sigWConst = 1.5 * sigWOrg * sigWOrg * cPope * cPope;
 
   // input: store here for multiple time instance.
   NetCDFInput *input;
 
   void getFrictionVelocity(WINDSGeneralData *);
+
   void getDerivatives(WINDSGeneralData *);
+  void getDerivatives_v2(WINDSGeneralData *);
+
   void getStressTensor();
+  void getStressTensor_v2();
+
 
   void boundTurbFields();
 };

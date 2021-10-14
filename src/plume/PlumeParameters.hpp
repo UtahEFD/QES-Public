@@ -1,3 +1,39 @@
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Behnam Bozorgmehr
+ * Copyright (c) 2021 Jeremy A. Gibbs
+ * Copyright (c) 2021 Fabien Margairaz
+ * Copyright (c) 2021 Eric R. Pardyjak
+ * Copyright (c) 2021 Zachary Patterson
+ * Copyright (c) 2021 Rob Stoll
+ * Copyright (c) 2021 Pete Willemsen
+ *
+ * This file is part of QES-Plume
+ *
+ * GPL-3.0 License
+ *
+ * QES-Plume is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Plume is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
+/** @file PlumeParameters.hpp 
+ * @brief This class contains data and variables that set flags and
+ * settngs read from the xml.
+ *
+ * @note Child of ParseInterface
+ * @sa ParseInterface
+ */
 
 #pragma once
 
@@ -18,6 +54,8 @@ public:
   int updateFrequency_particleLoop;// this is used to know how frequently to print out information during the particle loop of the solver. Only used during debug mode
   int updateFrequency_timeLoop;// this is used to know how frequently to print out information during the time integration loop of the solver
 
+  std::string interpMethod;
+
   virtual void parseValues()
   {
     parsePrimitive<float>(true, simDur, "simDur");
@@ -27,6 +65,9 @@ public:
     parsePrimitive<double>(true, C_0, "C_0");
     parsePrimitive<int>(true, updateFrequency_particleLoop, "updateFrequency_particleLoop");
     parsePrimitive<int>(true, updateFrequency_timeLoop, "updateFrequency_timeLoop");
+
+    interpMethod = "stdQES";
+    parsePrimitive<std::string>(false, interpMethod, "interpolation_method");
 
     // check some of the parsed values to see if they make sense
     checkParsedValues();

@@ -34,8 +34,6 @@
 using namespace netCDF;
 using namespace netCDF::exceptions;
 
-PlumeInputData *parseXMLTree(const std::string fileName);
-
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
@@ -71,16 +69,13 @@ int main(int argc, char **argv)
   WINDSGeneralData *WGD = new WINDSGeneralData(arguments.inputWINDSFile);
   // Create instance of QES-Turb General data class
   TURBGeneralData *TGD = new TURBGeneralData(arguments.inputTURBFile, WGD);
-  // Create instance of Eulerian class
-  Eulerian *eul = new Eulerian(PID, WGD, TGD, arguments.debug);
 
   //load data at t=0;
   TGD->loadNetCDFData(0);
   WGD->loadNetCDFData(0);
-  eul->setData(WGD, TGD);
 
   // Create instance of Plume model class
-  Plume *plume = new Plume(PID, WGD, TGD, eul);
+  Plume *plume = new Plume(PID, WGD, TGD);
 
   // create output instance
   std::vector<QESNetCDFOutput *> outputVec;
@@ -91,15 +86,17 @@ int main(int argc, char **argv)
   }
 
   // create output instance (separate for eulerian class)
-  QESNetCDFOutput *eulOutput = nullptr;
-  if (arguments.doEulDataOutput == true) {
-    eulOutput = new PlumeOutputEulerian(PID, WGD, TGD, eul, arguments.outputEulerianFile);
+  /*
+    QESNetCDFOutput *eulOutput = nullptr;
+    if (arguments.doEulDataOutput == true) {
+    eulOutput = new PlumeOutputEulerian(PID, WGD, TGD, arguments.outputEulerianFile);
     // output Eulerian data. Use time zero
     eulOutput->save(0.0);
-  }
+    }
+  */
 
   // Run plume advection model
-  plume->run(PID->simParams->simDur, WGD, TGD, eul, outputVec);
+  plume->run(PID->plumeParams->simDur, WGD, TGD, outputVec);
 
   // compute run time information and print the elapsed execution time
   std::cout << "[QES-Plume] \t Finished. \n"
@@ -110,20 +107,4 @@ int main(int argc, char **argv)
   std::cout << "##############################################################" << std::endl;
 
   exit(EXIT_SUCCESS);
-}
-
-PlumeInputData *parseXMLTree(const std::string fileName)
-{
-  pt::ptree tree;
-
-  try {
-    pt::read_xml(fileName, tree);
-  } catch (boost::property_tree::xml_parser::xml_parser_error &e) {
-    std::cerr << "Error reading tree in" << fileName << "\n";
-    return (PlumeInputData *)0;
-  }
-
-  PlumeInputData *xmlRoot = new PlumeInputData();
-  xmlRoot->parseTree(tree);
-  return xmlRoot;
 }

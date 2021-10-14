@@ -1,4 +1,4 @@
-<simulationParameters>
+<plumeParameters>
 	<simDur> 1000.0 </simDur>		<!-- this is the amount of time to run the simulation, lets you have an arbitrary start time to an arbitrary end time -->
 	<timeStep> 0.1 </timeStep>		<!-- this is the overall integration timestep -->
     <CourantNumber> 1 </CourantNumber>      <!-- this is the Courant Number for the simulation, how to divide the timestep up for each particle to keep them moving one grid cell at a time -->
@@ -6,7 +6,7 @@
 	<C_0> 4.0 </C_0>				<!-- this is used to separate out CoEps into its separate parts when doing debug output -->
 	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>	 <!-- this is used to know how frequently to print out information during the particle loop of the solver. Only used during debug mode. -->
 	<updateFrequency_timeLoop> 100 </updateFrequency_timeLoop>	 <!-- this is used to know how frequently to print out information during the time integration loop of the solver -->
-</simulationParameters>
+</plumeParameters>
 <collectionParameters>			<!-- this is for collecting output from Lagrangian particle values to Eulerian values like concentration -->
 	<timeAvgStart> 0.0 </timeAvgStart>      <!-- time to start concentration averaging, not the time to start output. Adjusted if the time averaging duration does not divide evenly by the averaging frequency -->
 	<timeAvgFreq> 60.0 </timeAvgFreq>		<!-- time averaging frequency and output frequency -->

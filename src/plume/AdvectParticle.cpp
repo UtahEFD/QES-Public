@@ -32,7 +32,7 @@
 #include "Plume.hpp"
 
 //void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul)
-void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator parItr, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul)
+void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator parItr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
 
   double rhoAir = 1.225;// in kg m^-3
@@ -64,9 +64,9 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   //size_t cellIdx_old = eul->getCellId(xPos,yPos,zPos);
 
   // getting the initial position, for use in setting finished particles
-  double xPos_init = (*parItr)->xPos_init;
-  double yPos_init = (*parItr)->yPos_init;
-  double zPos_init = (*parItr)->zPos_init;
+  //double xPos_init = (*parItr)->xPos_init;
+  //double yPos_init = (*parItr)->yPos_init;
+  //double zPos_init = (*parItr)->zPos_init;
 
   // grab the velFluct values.
   // LA notes: hmm, Bailey's code just starts out setting these values to zero,
@@ -111,6 +111,8 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   double delta_vFluct = 0.0;
   double delta_wFluct = 0.0;
 
+  double CoEps = 1e-6;
+
   // time to do a particle timestep loop. start the time remainder as the simulation timestep.
   // at each particle timestep loop iteration the time remainder gets closer and closer to zero.
   // the particle timestep for a given particle timestep loop is either the time remainder or the value calculated
@@ -124,64 +126,29 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   while (isActive == true && timeRemainder > 0.0) {
 
     /*
-          now get the Lagrangian values for the current iteration from the Eulerian grid
-          will need to use the interp3D function
-        */
+      now get the Lagrangian values for the current iteration from the Eulerian grid
+      will need to use the interp3D function
+    */
 
-    // set interoplation indexing variables for uFace variables
-    eul->setInterp3Dindex_uFace(xPos, yPos, zPos);
-    // interpolation of variables on uFace
-    uMean = eul->interp3D_faceVar(WGD->u);
-    flux_div_x = eul->interp3D_faceVar(eul->dtxxdx);
-    flux_div_y = eul->interp3D_faceVar(eul->dtxydx);
-    flux_div_z = eul->interp3D_faceVar(eul->dtxzdx);
+    eul->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
 
-    // set interpolation indexing variables for vFace variables
-    eul->setInterp3Dindex_vFace(xPos, yPos, zPos);
-    // interpolation of variables on vFace
-    vMean = eul->interp3D_faceVar(WGD->v);
-    flux_div_x += eul->interp3D_faceVar(eul->dtxydy);
-    flux_div_y += eul->interp3D_faceVar(eul->dtyydy);
-    flux_div_z += eul->interp3D_faceVar(eul->dtyzdy);
-
-    // set interpolation indexing variables for wFace variables
-    eul->setInterp3Dindex_wFace(xPos, yPos, zPos);
-    // interpolation of variables on wFace
-    wMean = eul->interp3D_faceVar(WGD->w);
-    flux_div_x += eul->interp3D_faceVar(eul->dtxzdz);
-    flux_div_y += eul->interp3D_faceVar(eul->dtyzdz);
-    flux_div_z += eul->interp3D_faceVar(eul->dtzzdz);
+    // now need to call makeRealizable on tau
+    makeRealizable(txx, txy, txz, tyy, tyz, tzz);
 
     // adjusting mean vertical velocity for settling velocity
     wMean -= (*parItr)->vs;
 
-    // this replaces the old indexing trick, set the indexing variables for the interp3D for each particle,
-    // then get interpolated values from the Eulerian grid to the particle Lagrangian values for multiple datatypes
-    eul->setInterp3Dindex_cellVar(xPos, yPos, zPos);
-
-    // this is the Co times Eps for the particle
-    // LA note: because Bailey's code uses Eps by itself and this does not, I wanted an option to switch between the two if necessary
-    //  it's looking more and more like we will just use CoEps.
-    double CoEps = eul->interp3D_cellVar(TGD->CoEps);
-    // make sure CoEps is always bigger than zero
-    if (CoEps <= 1e-6) {
-      CoEps = 1e-6;
-    }
-
-    // this is the current reynolds stress tensor
-    txx = eul->interp3D_cellVar(TGD->txx);
-    txy = eul->interp3D_cellVar(TGD->txy);
-    txz = eul->interp3D_cellVar(TGD->txz);
-    tyy = eul->interp3D_cellVar(TGD->tyy);
-    tyz = eul->interp3D_cellVar(TGD->tyz);
-    tzz = eul->interp3D_cellVar(TGD->tzz);
-    // now need to call makeRealizable on tau
-    makeRealizable(txx, txy, txz, tyy, tyz, tzz);
-
 
     // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
     // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
-    double par_dt = calcCourantTimestep(uMean + uFluct, vMean + vFluct, wMean + wFluct, timeRemainder);
+
+    int cellId = eul->getCellId(xPos, yPos, zPos);
+    double dWall = WGD->mixingLengths[cellId];
+    double par_dt = calcCourantTimestep(dWall,
+                                        std::abs(uMean) + std::abs(uFluct),
+                                        std::abs(vMean) + std::abs(vFluct),
+                                        std::abs(wMean) + std::abs(wFluct),
+                                        timeRemainder);
 
     // update the par_time, useful for debugging
     //par_time = par_time + par_dt;
@@ -204,13 +171,14 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     //double lzx = 0.0;
     //double lzy = 0.0;
     double lzz = tzz;
-    isActive = invert3(lxx, lxy, lxz, lyx, lyy, lyz, lzx, lzy, lzz);
-    if (isActive == false) {
+    isRogue = !invert3(lxx, lxy, lxz, lyx, lyy, lyz, lzx, lzy, lzz);
+    if (isRogue == true) {
       //int cellIdNew = eul->getCellId(xPos,yPos,zPos);
-      //std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
-      //std::cerr << "PartID = " << (*parItr)->particleID << " in cell type: " << WGD->icellflag.at(cellIdNew) << std::endl;
+      std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
+      isActive = false;
       break;
     }
+
     // these are the random numbers for each direction
     // LA note: should be randn() matlab equivalent, which is a normally distributed random number
     // LA future work: it is possible the rogue particles are caused by the random number generator stuff.
@@ -249,9 +217,10 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     double b_31 = -wFluct_old - 0.50 * flux_div_z * par_dt - std::sqrt(CoEps * par_dt) * zRandn;
 
     // now prepare for the Ax=b calculation by calculating the inverted A matrix
-    isActive = invert3(A_11, A_12, A_13, A_21, A_22, A_23, A_31, A_32, A_33);
-    if (isActive == false) {
-      //std::cerr << "ERROR in matrix inversion in Langevin equation" << std::endl;
+    isRogue = !invert3(A_11, A_12, A_13, A_21, A_22, A_23, A_31, A_32, A_33);
+    if (isRogue == true) {
+      std::cerr << "ERROR in matrix inversion in Langevin equation" << std::endl;
+      isActive = false;
       break;
     }
     // now do the Ax=b calculation using the inverted matrix (vecFluct = A*b)
@@ -260,32 +229,37 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
 
     // now check to see if the value is rogue or not
     if (std::abs(uFluct) >= vel_threshold || isnan(uFluct)) {
-      //std::cout << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      //std::cout << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
+      std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
+      std::cerr << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
       uFluct = 0.0;
       isActive = false;
       isRogue = true;
+      break;
     }
     if (std::abs(vFluct) >= vel_threshold || isnan(vFluct)) {
-      //std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      //std::cerr << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
+      std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
+      std::cerr << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
       vFluct = 0.0;
       isActive = false;
       isRogue = true;
+      break;
     }
     if (std::abs(wFluct) >= vel_threshold || isnan(wFluct)) {
-      //std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      //std::cerr << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
+      std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
+      std::cerr << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
       wFluct = 0.0;
       isActive = false;
       isRogue = true;
+      break;
     }
 
+    if (isRogue == true) {
+      isActive = false;
+      break;
+    }
     // Pete: Do you need this???
     // ONLY if this should never happen....
     //    assert( isRogue == false );
-    // LA reply: maybe implement this after the thesis work. Currently use it to know if something is going wrong
-    //  I think we are still a long ways from being able to throw this out.
 
     // now update the particle position for this iteration
     double disX = (uMean + uFluct) * par_dt;
@@ -296,28 +270,14 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     yPos = yPos + disY;
     zPos = zPos + disZ;
     // check and do wall (building and terrain) reflection (based in the method)
-    if (isActive == true) isActive = (this->*wallReflection)(WGD, eul, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct);
-
+    if (isActive == true) {
+      isActive = (this->*wallReflection)(WGD, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct, uFluct_old, vFluct_old, wFluct_old);
+    }
 
     // now apply boundary conditions
     if (isActive == true) isActive = (this->*enforceWallBCs_x)(xPos, uFluct, uFluct_old, domainXstart, domainXend);
     if (isActive == true) isActive = (this->*enforceWallBCs_y)(yPos, vFluct, vFluct_old, domainYstart, domainYend);
     if (isActive == true) isActive = (this->*enforceWallBCs_z)(zPos, wFluct, wFluct_old, domainZstart, domainZend);
-
-
-    // now set the particle values for if they are rogue or outside the domain
-    // need to set all rogue particles to inactive
-    if (isRogue == true) {
-      isActive = false;
-    }
-    // now any inactive particles need set to the initial position
-    /* FMargairaz -> this has been deactivated
-           if( isActive == false ) {
-           xPos = xPos_init;
-           yPos = yPos_init;
-           zPos = zPos_init;
-           }
-        */
 
     // now update the old values to be ready for the next particle time iteration
     // the current values are already set for the next iteration by the above calculations
