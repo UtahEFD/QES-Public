@@ -80,7 +80,7 @@ __global__ void divergenceShared(float *d_u0, float *d_v0, float *d_w0, float *d
   if ((i < nx - 1) && (j < ny - 1) && (k < nz - 1) && (i >= 0) && (j >= 0) && (k > 0)) {
 
     // Divergence equation
-    d_R[icell_cent] = (-2 * pow(alpha1, 2.0)) * (((d_u0[icell_face + 1] - d_u0[icell_face]) / dx) + ((d_v0[icell_face + nx] - d_v0[icell_face]) / dy) + ((d_w0[icell_face + nx * ny] - d_w0[icell_face]) / d_dz_array[k]));
+    d_R[icell_cent] = (-2 * pow(alpha1, 2.0)) * (((d_e[icell_cent] * d_u0[icell_face + 1] - d_f[icell_cent] * d_u0[icell_face]) * dx) + ((d_g[icell_cent] * d_v0[icell_face + nx] - d_h[icell_cent] * d_v0[icell_face]) * dy) + (d_m[icell_cent] * d_dz_array[k] * 0.5 * (d_dz_array[k] + d_dz_array[k + 1]) * d_w0[icell_face + nx * ny] - d_n[icell_cent] * d_w0[icell_face] * d_dz_array[k] * 0.5 * (d_dz_array[k] + d_dz_array[k - 1])));
   }
 }
 

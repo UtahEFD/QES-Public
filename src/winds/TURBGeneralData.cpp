@@ -46,7 +46,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   turbUpperBound = WID->turbParams->turbUpperBound;
 
   if (WID->turbParams->sigConst) {
-    Vector3<float> sigConst;
+    Vector3 sigConst;
     sigConst = *(WID->turbParams->sigConst);
 
     sigUOrg = sigConst[0];
@@ -63,6 +63,9 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
     std::cout << "\t\t Non-Local mixing for buidlings: ON \n";
   }
 
+  if (WID->simParams->verticalStretching > 0) {
+    flagUniformZGrid = false;
+  }
 
   // make local copy of grid information
   // nx,ny,nz consitant with WINDS (face-center)
@@ -144,7 +147,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   wallVec.push_back(new TURBWallTerrain());
   /// Boundary condition at wall
   for (auto i = 0u; i < wallVec.size(); i++) {
-    wallVec.at(i)->defineWalls(WGD, this);
+    wallVec.at(i)->defineWalls(WID, WGD, this);
   }
   // std::cout << "\t\t Walls Defined...\n";
 
@@ -237,12 +240,24 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
 
   std::cout << "\t\t Allocating memory...\n";
   // comp. of the strain rate tensor
-  Sxx.resize(np_cc, 0);
-  Sxy.resize(np_cc, 0);
-  Sxz.resize(np_cc, 0);
-  Syy.resize(np_cc, 0);
-  Syz.resize(np_cc, 0);
-  Szz.resize(np_cc, 0);
+  /*
+    Sxx.resize(np_cc, 0);
+    Sxy.resize(np_cc, 0);
+    Sxz.resize(np_cc, 0);
+    Syy.resize(np_cc, 0);
+    Syz.resize(np_cc, 0);
+    Szz.resize(np_cc, 0);
+  */
+  // comp. of the velocity gradient tensor
+  Gxx.resize(np_cc, 0);
+  Gxy.resize(np_cc, 0);
+  Gxz.resize(np_cc, 0);
+  Gyx.resize(np_cc, 0);
+  Gyy.resize(np_cc, 0);
+  Gyz.resize(np_cc, 0);
+  Gzx.resize(np_cc, 0);
+  Gzy.resize(np_cc, 0);
+  Gzz.resize(np_cc, 0);
 
   // comp of the stress tensor
   txx.resize(np_cc, 0);
@@ -276,7 +291,7 @@ void TURBGeneralData::run(WINDSGeneralData *WGD)
   getFrictionVelocity(WGD);
 
   std::cout << "\t\t Computing Derivatives (Strain Rate)..." << std::endl;
-  getDerivatives(WGD);
+  getDerivatives_v2(WGD);
   // std::cout<<"\t\t Derivatives computed."<<std::endl;
 
   std::cout << "\t\t Imposing Wall BC (log law)..." << std::endl;
@@ -286,7 +301,7 @@ void TURBGeneralData::run(WINDSGeneralData *WGD)
   // std::cout<<"\t\t Wall BC done."<<std::endl;
 
   std::cout << "\t\t Computing Stess Tensor..." << std::endl;
-  getStressTensor();
+  getStressTensor_v2();
   // std::cout<<"\t\t Stress Tensor computed."<<std::endl;
 
   if (flagNonLocalMixing) {
@@ -325,10 +340,12 @@ void TURBGeneralData::getFrictionVelocity(WINDSGeneralData *WGD)
         exit(EXIT_FAILURE);
       }
 
-      int icell_cent = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
-      int icell_face = i + j * (nx) + k * (nx) * (ny);
-      if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
-        uSum += sqrt(pow(0.5 * (WGD->u[icell_face] + WGD->u[icell_face + 1]), 2) + pow(0.5 * (WGD->v[icell_face] + WGD->v[icell_face + nx]), 2) + pow(0.5 * (WGD->w[icell_face] + WGD->w[icell_face + nx * ny]), 2));
+      int cellID = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+      int faceID = i + j * (nx) + k * (nx) * (ny);
+      if (WGD->icellflag[cellID] != 0 && WGD->icellflag[cellID] != 2) {
+        uSum += sqrt(pow(0.5 * (WGD->u[faceID] + WGD->u[faceID + 1]), 2)
+                     + pow(0.5 * (WGD->v[faceID] + WGD->v[faceID + nx]), 2)
+                     + pow(0.5 * (WGD->w[faceID] + WGD->w[faceID + nx * ny]), 2));
         nVal++;
       }
     }
@@ -344,12 +361,12 @@ void TURBGeneralData::getDerivatives(WINDSGeneralData *WGD)
 {
 
   for (auto id = 0u; id < icellfluid.size(); id++) {
-    int id_cc = icellfluid[id];
-    // linearized index: id_cc = i + j*(nx-1) + k*(nx-1)*(ny-1);
+    int cellID = icellfluid[id];
+    // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
     //  i,j,k -> inverted linearized index
-    int k = (int)(id_cc / ((nx - 1) * (ny - 1)));
-    int j = (int)((id_cc - k * (nx - 1) * (ny - 1)) / (nx - 1));
-    int i = id_cc - j * (nx - 1) - k * (nx - 1) * (ny - 1);
+    int k = (int)(cellID / ((nx - 1) * (ny - 1)));
+    int j = (int)((cellID - k * (nx - 1) * (ny - 1)) / (nx - 1));
+    int i = cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1);
 
     /*
       Diagonal componants of the strain-rate tensor naturally fall at
@@ -357,17 +374,17 @@ void TURBGeneralData::getDerivatives(WINDSGeneralData *WGD)
     */
 
     // index of neighbour cells
-    int id_fc = i + j * nx + k * nx * ny;
-    int idxp = id_fc + 1;// i+1,j,k
-    int idyp = id_fc + nx;// i,j+1,k
-    int idzp = id_fc + ny * nx;// i,j,k+1
+    int faceID = i + j * nx + k * nx * ny;
+    int idxp = faceID + 1;// i+1,j,k
+    int idyp = faceID + nx;// i,j+1,k
+    int idzp = faceID + ny * nx;// i,j,k+1
 
     // Sxx = dudx
-    Sxx[id_cc] = (WGD->u[idxp] - WGD->u[id_fc]) / (x_fc[i + 1] - x_fc[i]);
+    Sxx[cellID] = (WGD->u[idxp] - WGD->u[faceID]) / (x_fc[i + 1] - x_fc[i]);
     // Syy = dvdy
-    Syy[id_cc] = (WGD->v[idyp] - WGD->v[id_fc]) / (y_fc[j + 1] - y_fc[j]);
+    Syy[cellID] = (WGD->v[idyp] - WGD->v[faceID]) / (y_fc[j + 1] - y_fc[j]);
     // Szz = dwdz
-    Szz[id_cc] = (WGD->w[idzp] - WGD->w[id_fc]) / (z_fc[k + 1] - z_fc[k]);
+    Szz[cellID] = (WGD->w[idzp] - WGD->w[faceID]) / (z_fc[k + 1] - z_fc[k]);
 
     /*
       Off-diagonal componants of the strain-rate tensor require extra interpolation
@@ -382,148 +399,261 @@ void TURBGeneralData::getDerivatives(WINDSGeneralData *WGD)
     //--------------------------------------
     // Sxy = 0.5*(dudy+dvdx) at z_cc
     // u_hat+
-    idp = id_fc + 1 + nx;// i+1,j+1
-    idm = id_fc + nx;// i,j+1
+    idp = faceID + 1 + nx;// i+1,j+1
+    idm = faceID + nx;// i,j+1
     up = ((x_cc[i] - x_fc[i]) * WGD->u[idp] + (x_fc[i + 1] - x_cc[i]) * WGD->u[idm]) / (x_fc[i + 1] - x_fc[i]);
 
     // u_hat-
-    idp = id_fc + 1 - nx;// i+1,j-1
-    idm = id_fc - nx;// i,j-1
+    idp = faceID + 1 - nx;// i+1,j-1
+    idm = faceID - nx;// i,j-1
     um = ((x_cc[i] - x_fc[i]) * WGD->u[idp] + (x_fc[i + 1] - x_cc[i]) * WGD->u[idm]) / (x_fc[i + 1] - x_fc[i]);
 
     // v_hat+
-    idp = id_fc + 1 + nx;// i+1,j+1
-    idm = id_fc + 1;// i+1,j
+    idp = faceID + 1 + nx;// i+1,j+1
+    idm = faceID + 1;// i+1,j
     vp = ((y_cc[j] - y_fc[j]) * WGD->v[idp] + (y_fc[j + 1] - y_cc[j]) * WGD->v[idm]) / (y_fc[j + 1] - y_fc[j]);
 
     // v_hat-
-    idp = id_fc - 1 + nx;// i-1,j+1
-    idm = id_fc - 1;// i-1,j
+    idp = faceID - 1 + nx;// i-1,j+1
+    idm = faceID - 1;// i-1,j
     vm = ((y_cc[j] - y_fc[j]) * WGD->v[idp] + (y_fc[j + 1] - y_cc[j]) * WGD->v[idm]) / (y_fc[j + 1] - y_fc[j]);
 
     // Sxy = 0.5*(dudy+dvdx) at z_cc
-    Sxy[id_cc] = 0.5 * ((up - um) / (y_cc[j + 1] - y_cc[j - 1]) + (vp - vm) / (x_cc[i + 1] - x_cc[i - 1]));
+    Sxy[cellID] = 0.5 * ((up - um) / (y_cc[j + 1] - y_cc[j - 1]) + (vp - vm) / (x_cc[i + 1] - x_cc[i - 1]));
 
     //--------------------------------------
     // Sxz = 0.5*(dudz+dwdx) at y_cc
     // u_hat+
-    idp = id_fc + 1 + nx * ny;// i+1,k+1
-    idm = id_fc + nx * ny;// i,k+1
+    idp = faceID + 1 + nx * ny;// i+1,k+1
+    idm = faceID + nx * ny;// i,k+1
     up = ((x_cc[i] - x_fc[i]) * WGD->u[idp] + (x_fc[i + 1] - x_cc[i]) * WGD->u[idm]) / (x_fc[i + 1] - x_fc[i]);
 
     // u_hat-
-    idp = id_fc + 1 - nx * ny;// i+1,k-1
-    idm = id_fc - nx * ny;// i,k-1
+    idp = faceID + 1 - nx * ny;// i+1,k-1
+    idm = faceID - nx * ny;// i,k-1
     um = ((x_cc[i] - x_fc[i]) * WGD->u[idp] + (x_fc[i + 1] - x_cc[i]) * WGD->u[idm]) / (x_fc[i + 1] - x_fc[i]);
 
     // w_hat+
-    idp = id_fc + 1 + nx * ny;// i+1,k+1
-    idm = id_fc + 1;// i+1,k
+    idp = faceID + 1 + nx * ny;// i+1,k+1
+    idm = faceID + 1;// i+1,k
     wp = ((z_cc[k] - z_fc[k]) * WGD->w[idp] + (z_fc[k + 1] - z_cc[k]) * WGD->w[idm]) / (z_fc[k + 1] - z_fc[k]);
 
     // w_hat-
-    idp = id_fc - 1 + nx * ny;// i-1,k+1
-    idm = id_fc - 1;// i-1,k
+    idp = faceID - 1 + nx * ny;// i-1,k+1
+    idm = faceID - 1;// i-1,k
     wm = ((z_cc[k] - z_fc[k]) * WGD->w[idp] + (z_fc[k + 1] - z_cc[k]) * WGD->w[idm]) / (z_fc[k + 1] - z_fc[k]);
 
     // Sxz = 0.5*(dudz+dwdx) at y_cc
-    Sxz[id_cc] = 0.5 * ((up - um) / (z_cc[k + 1] - z_cc[k - 1]) + (wp - wm) / (x_cc[i + 1] - x_cc[i - 1]));
+    Sxz[cellID] = 0.5 * ((up - um) / (z_cc[k + 1] - z_cc[k - 1]) + (wp - wm) / (x_cc[i + 1] - x_cc[i - 1]));
 
     //--------------------------------------
     // Syz = 0.5*(dvdz+dwdy) at x_cc
     // v_hat+
-    idp = id_fc + nx + nx * ny;// j+1,k+1
-    idm = id_fc + nx * ny;// j,k+1
+    idp = faceID + nx + nx * ny;// j+1,k+1
+    idm = faceID + nx * ny;// j,k+1
     vp = ((y_cc[j] - y_fc[j]) * WGD->v[idp] + (y_fc[j + 1] - y_cc[j]) * WGD->v[idm]) / (y_fc[j + 1] - y_fc[j]);
 
     // v_hat-
-    idp = id_fc + nx - nx * ny;// j+1,k-1
-    idm = id_fc - nx * ny;// j,k-1
+    idp = faceID + nx - nx * ny;// j+1,k-1
+    idm = faceID - nx * ny;// j,k-1
     vm = ((y_cc[j] - y_fc[j]) * WGD->v[idp] + (y_fc[j + 1] - y_cc[j]) * WGD->v[idm]) / (y_fc[j + 1] - y_fc[j]);
 
     // w_hat+
-    idp = id_fc + nx + nx * ny;// j+1,k+1
-    idm = id_fc + nx;// j+1,k
+    idp = faceID + nx + nx * ny;// j+1,k+1
+    idm = faceID + nx;// j+1,k
     wp = ((z_cc[k - 1] - z_fc[k]) * WGD->w[idp] + (z_fc[k + 1] - z_cc[k]) * WGD->w[idm]) / (z_fc[k + 1] - z_fc[k]);
 
     // w_hat-
-    idp = id_fc - nx + nx * ny;// j-1,k+1
-    idm = id_fc - nx;// j-1,k
+    idp = faceID - nx + nx * ny;// j-1,k+1
+    idm = faceID - nx;// j-1,k
     wp = ((z_cc[k] - z_fc[k]) * WGD->w[idp] + (z_fc[k + 1] - z_cc[k]) * WGD->w[idm]) / (z_fc[k + 1] - z_fc[k]);
 
     // Syz = 0.5*(dvdz+dwdy) at x_cc
-    Syz[id_cc] = 0.5 * ((vp - vm) / (z_cc[k + 1] - z_cc[k - 1]) + (wp - wm) / (y_cc[j + 1] - y_cc[j - 1]));
+    Syz[cellID] = 0.5 * ((vp - vm) / (z_cc[k + 1] - z_cc[k - 1]) + (wp - wm) / (y_cc[j + 1] - y_cc[j - 1]));
   }
 }
 
 void TURBGeneralData::getStressTensor()
 {
-  int id_cc;
+  int cellID;
   for (auto id = 0u; id < icellfluid.size(); id++) {
-    id_cc = icellfluid[id];
+    cellID = icellfluid[id];
 
     float NU_T = 0.0;
     float TKE = 0.0;
-    float LM = Lm[id_cc];
+    float LM = Lm[cellID];
 
     //
-    float SijSij = Sxx[id_cc] * Sxx[id_cc] + Syy[id_cc] * Syy[id_cc] + Szz[id_cc] * Szz[id_cc]
-                   + 2.0 * (Sxy[id_cc] * Sxy[id_cc] + Sxz[id_cc] * Sxz[id_cc] + Syz[id_cc] * Syz[id_cc]);
+    float SijSij = Sxx[cellID] * Sxx[cellID] + Syy[cellID] * Syy[cellID] + Szz[cellID] * Szz[cellID]
+                   + 2.0 * (Sxy[cellID] * Sxy[cellID] + Sxz[cellID] * Sxz[cellID] + Syz[cellID] * Syz[cellID]);
 
     NU_T = LM * LM * sqrt(2.0 * SijSij);
     TKE = pow((NU_T / (cPope * LM)), 2.0);
-    tke[id_cc] = TKE;
-    CoEps[id_cc] = 5.7 * pow(sqrt(TKE) * cPope, 3.0) / (LM);
+    tke[cellID] = TKE;
+    CoEps[cellID] = 5.7 * pow(sqrt(TKE) * cPope, 3.0) / (LM);
 
-    txx[id_cc] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Sxx[id_cc]);
-    tyy[id_cc] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Syy[id_cc]);
-    tzz[id_cc] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Szz[id_cc]);
-    txy[id_cc] = -2.0 * (NU_T * Sxy[id_cc]);
-    txz[id_cc] = -2.0 * (NU_T * Sxz[id_cc]);
-    tyz[id_cc] = -2.0 * (NU_T * Syz[id_cc]);
+    txx[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Sxx[cellID]);
+    tyy[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Syy[cellID]);
+    tzz[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Szz[cellID]);
+    txy[cellID] = -2.0 * (NU_T * Sxy[cellID]);
+    txz[cellID] = -2.0 * (NU_T * Sxz[cellID]);
+    tyz[cellID] = -2.0 * (NU_T * Syz[cellID]);
 
-    txx[id_cc] = fabs(sigUConst * txx[id_cc]);
-    tyy[id_cc] = fabs(sigVConst * tyy[id_cc]);
-    tzz[id_cc] = fabs(sigWConst * tzz[id_cc]);
+    txx[cellID] = fabs(sigUConst * txx[cellID]);
+    tyy[cellID] = fabs(sigVConst * tyy[cellID]);
+    tzz[cellID] = fabs(sigWConst * tzz[cellID]);
   }
 }
 
+void TURBGeneralData::getDerivatives_v2(WINDSGeneralData *WGD)
+{
+  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
+    int cellID = *it;
+
+    // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
+    //  i,j,k -> inverted linearized index
+    int k = (int)(cellID / ((nx - 1) * (ny - 1)));
+    int j = (int)((cellID - k * (nx - 1) * (ny - 1)) / (nx - 1));
+    int i = cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1);
+    int faceID = i + j * nx + k * nx * ny;
+
+    /*
+     - Diagonal componants of the velocity gradient tensor naturally fall at the cell-center
+     - Off-diagonal componants of the  velocity gradient tensor require extra interpolation
+       of the velocity field to get the derivative at the cell-center  
+     - Derivative with respect to z need to be adjusted for non-uniform z-grid
+    */
+
+    // Gxx = dudx
+    Gxx[cellID] = (WGD->u[faceID + 1] - WGD->u[faceID]) / (WGD->dx);
+    // Gyx = dvdx
+    Gyx[cellID] = ((WGD->v[faceID + 1] + WGD->v[faceID + 1 + nx])
+                   - (WGD->v[faceID - 1] - WGD->v[faceID - 1 + nx]))
+                  / (4.0 * WGD->dx);
+    // Gzx = dwdx
+    Gzx[cellID] = ((WGD->w[faceID + 1] + WGD->w[faceID + 1 + nx * ny]
+                    - WGD->w[faceID - 1] + WGD->w[faceID - 1 + nx * ny]))
+                  / (4.0 * WGD->dx);
+
+    // Gxy = dudy
+    Gxy[cellID] = ((WGD->u[faceID + nx] + WGD->u[faceID + 1 + nx])
+                   - (WGD->u[faceID - nx] + WGD->u[faceID + 1 - nx]))
+                  / (4.0 * WGD->dy);
+    // Gyy = dvdy
+    Gyy[cellID] = (WGD->v[faceID + nx] - WGD->v[faceID]) / (WGD->dy);
+    // Gzy = dwdy
+    Gzy[cellID] = ((WGD->w[faceID + nx] + WGD->w[faceID + nx + nx * ny])
+                   - (WGD->w[faceID - nx] + WGD->w[faceID - nx + nx * ny]))
+                  / (4.0 * WGD->dy);
+
+
+    if (flagUniformZGrid) {
+      // Gxz = dudz
+      Gxz[cellID] = ((WGD->u[faceID + nx * ny] + WGD->u[faceID + 1 + nx * ny])
+                     - (WGD->u[faceID - nx * ny] + WGD->u[faceID + 1 - nx * ny]))
+                    / (4.0 * WGD->dz);
+      // Gyz = dvdz
+      Gyz[cellID] = ((WGD->v[faceID + nx * ny] + WGD->v[faceID + nx + nx * ny])
+                     - (WGD->v[faceID - nx * ny] + WGD->v[faceID + nx - nx * ny]))
+                    / (4.0 * WGD->dz);
+      // Gzz = dwdz
+      Gzz[cellID] = (WGD->w[faceID + nx * ny] - WGD->w[faceID]) / (WGD->dz);
+    } else {
+      // Gxz = dudz
+      Gxz[cellID] = (0.5 * (WGD->z[k] - WGD->z[k - 1]) / (WGD->z[k + 1] - WGD->z[k])
+                       * ((WGD->u[faceID + nx * ny] + WGD->u[faceID + 1 + nx * ny])
+                          - (WGD->u[faceID] + WGD->u[faceID + 1]))
+                     + 0.5 * (WGD->z[k + 1] - WGD->z[k]) / (WGD->z[k] - WGD->z[k - 1])
+                         * ((WGD->u[faceID] + WGD->u[faceID + 1])
+                            - (WGD->u[faceID - nx * ny] + WGD->u[faceID + 1 - nx * ny])))
+                    / (WGD->z[k + 1] - WGD->z[k - 1]);
+      // Gyz = dvdz
+      Gyz[cellID] = (0.5 * (WGD->z[k] - WGD->z[k - 1]) / (WGD->z[k + 1] - WGD->z[k])
+                       * ((WGD->v[faceID + nx * ny] + WGD->v[faceID + nx + nx * ny])
+                          - (WGD->v[faceID] + WGD->v[faceID + nx]))
+                     + 0.5 * (WGD->z[k + 1] - WGD->z[k]) / (WGD->z[k] - WGD->z[k - 1])
+                         * ((WGD->v[faceID] + WGD->v[faceID + nx])
+                            - (WGD->v[faceID - nx * ny] + WGD->v[faceID + nx - nx * ny])))
+                    / (WGD->z[k + 1] - WGD->z[k - 1]);
+      // Gzz = dwdz
+      Gzz[cellID] = (WGD->w[faceID + nx * ny] - WGD->w[faceID]) / (WGD->dz_array[k]);
+    }
+  }
+  return;
+}
+
+void TURBGeneralData::getStressTensor_v2()
+{
+
+  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
+    int cellID = *it;
+
+    float Sxx = Gxx[cellID];
+    float Syy = Gyy[cellID];
+    float Szz = Gzz[cellID];
+    float Sxy = 0.5 * (Gxy[cellID] + Gyx[cellID]);
+    float Sxz = 0.5 * (Gxz[cellID] + Gzx[cellID]);
+    float Syz = 0.5 * (Gyz[cellID] + Gzy[cellID]);
+
+    float NU_T = 0.0;
+    float TKE = 0.0;
+    float LM = Lm[cellID];
+
+    //
+    float SijSij = Sxx * Sxx + Syy * Syy + Szz * Szz + 2.0 * (Sxy * Sxy + Sxz * Sxz + Syz * Syz);
+
+    NU_T = LM * LM * sqrt(2.0 * SijSij);
+    TKE = pow((NU_T / (cPope * LM)), 2.0);
+    tke[cellID] = TKE;
+    CoEps[cellID] = 5.7 * pow(sqrt(TKE) * cPope, 3.0) / (LM);
+
+    txx[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Sxx);
+    tyy[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Syy);
+    tzz[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Szz);
+    txy[cellID] = -2.0 * (NU_T * Sxy);
+    txz[cellID] = -2.0 * (NU_T * Sxz);
+    tyz[cellID] = -2.0 * (NU_T * Syz);
+
+    txx[cellID] = fabs(sigUConst * txx[cellID]);
+    tyy[cellID] = fabs(sigVConst * tyy[cellID]);
+    tzz[cellID] = fabs(sigWConst * tzz[cellID]);
+  }
+}
 
 void TURBGeneralData::boundTurbFields()
 {
-  int id_cc;
   float stressBound = turbUpperBound * uStar * uStar;
-  for (auto id = 0u; id < icellfluid.size(); id++) {
-    id_cc = icellfluid[id];
+  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
+    int cellID = *it;
 
-    if (txx[id_cc] < -stressBound)
-      txx[id_cc] = -stressBound;
-    if (txx[id_cc] > stressBound)
-      txx[id_cc] = stressBound;
+    if (txx[cellID] < -stressBound)
+      txx[cellID] = -stressBound;
+    if (txx[cellID] > stressBound)
+      txx[cellID] = stressBound;
 
-    if (txy[id_cc] < -stressBound)
-      txy[id_cc] = -stressBound;
-    if (txy[id_cc] > stressBound)
-      txy[id_cc] = stressBound;
+    if (txy[cellID] < -stressBound)
+      txy[cellID] = -stressBound;
+    if (txy[cellID] > stressBound)
+      txy[cellID] = stressBound;
 
-    if (txz[id_cc] < -stressBound)
-      txz[id_cc] = -stressBound;
-    if (txz[id_cc] > stressBound)
-      txz[id_cc] = stressBound;
+    if (txz[cellID] < -stressBound)
+      txz[cellID] = -stressBound;
+    if (txz[cellID] > stressBound)
+      txz[cellID] = stressBound;
 
-    if (tyy[id_cc] < -stressBound)
-      tyy[id_cc] = -stressBound;
-    if (tyy[id_cc] > stressBound)
-      tyy[id_cc] = stressBound;
+    if (tyy[cellID] < -stressBound)
+      tyy[cellID] = -stressBound;
+    if (tyy[cellID] > stressBound)
+      tyy[cellID] = stressBound;
 
-    if (tyz[id_cc] < -stressBound)
-      tyz[id_cc] = -stressBound;
-    if (tyz[id_cc] > stressBound)
-      tyz[id_cc] = stressBound;
+    if (tyz[cellID] < -stressBound)
+      tyz[cellID] = -stressBound;
+    if (tyz[cellID] > stressBound)
+      tyz[cellID] = stressBound;
 
-    if (tzz[id_cc] < -stressBound)
-      tzz[id_cc] = -stressBound;
-    if (tzz[id_cc] > stressBound)
-      tzz[id_cc] = stressBound;
+    if (tzz[cellID] < -stressBound)
+      tzz[cellID] = -stressBound;
+    if (tzz[cellID] > stressBound)
+      tzz[cellID] = stressBound;
   }
 }
