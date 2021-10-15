@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
 
     // Run turbulence
     if (TGD != nullptr) {
-      TGD->run(WGD);
+      TGD->run();
     }
 
     // /////////////////////////////

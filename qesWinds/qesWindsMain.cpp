@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
 
     // Run turbulence
     if (TGD != nullptr)
-      TGD->run(WGD);
+      TGD->run();
 
     // /////////////////////////////
     // Output the various files requested from the simulation run (netcdf wind velocity, icell values, etc...)

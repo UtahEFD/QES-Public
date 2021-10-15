@@ -63,7 +63,7 @@ public:
   virtual ~TURBGeneralData()
   {}
 
-  virtual void run(WINDSGeneralData *);
+  virtual void run();
 
   // load data at given time instance
   void loadNetCDFData(int);
@@ -167,9 +167,12 @@ public:
   std::vector<double> mixingLengths; /**< distance to the wall */
 
 protected:
+  WINDSGeneralData *m_WGD;
+
 private:
   // store the wall classes
-  std::vector<TURBWall *> wallVec;
+  std::vector<TURBWall *>
+    wallVec;
 
   // some constants for turbulent model
   const float vonKar = 0.4;
@@ -187,19 +190,18 @@ private:
   // input: store here for multiple time instance.
   NetCDFInput *input;
 
-  void frictionVelocity(WINDSGeneralData *);
+  void frictionVelocity();
 
-  void getDerivatives(WINDSGeneralData *);
-  void derivativeVelocity(WINDSGeneralData *);
+  void getDerivatives();
+  void derivativeVelocity();
 
   void getStressTensor();
   void stressTensor();
 
   void addBackgroundMixing();
 
-  void divergenceStress(WINDSGeneralData *);
-  void derivativeStress(WINDSGeneralData *,
-                        const std::vector<float> &,
+  void divergenceStress();
+  void derivativeStress(const std::vector<float> &,
                         const std::vector<float> &,
                         const std::vector<float> &,
                         std::vector<float> &);
