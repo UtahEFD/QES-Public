@@ -1,16 +1,14 @@
 <simulationParameters>
-	<DEM>../data/GISFiles/L2F_elevation_UTM.tif</DEM>			<!-- Address to DEM location-->
+	<DEM>../data/GISFiles/L2F_elevation_UTM.tif</DEM>			<!-- Address to DEM location -->
 
-  	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
-  	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
+  	<halo_x> 16.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters) -->
+  	<halo_y> 16.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters) -->
 	<!-- This is the domain sampled in large cells -->
-  	<domain> 120 120 50 </domain>					<!-- Number of cells in x,y and z directions-->
-  	<cellSize> 15.37 15.37 1.0 </cellSize> 			<!-- Mesh resolution (meters)-->
+  	<domain> 120 120 125 </domain>					<!-- Number of cells in x,y and z directions-->
+  	<cellSize> 15.5 15.5 0.5 </cellSize> 			<!-- Mesh resolution (meters)-->
 
 	<verticalStretching> 0 </verticalStretching>
-	<totalTimeIncrements> 4500 </totalTimeIncrements>
-	<!--UTCConversion> 0 </UTCConversion-->
-	<!--Epoch> 1510930800 </Epoch-->
+	<totalTimeIncrements> 11000 </totalTimeIncrements>
 	<rooftopFlag> 1 </rooftopFlag>
 	<upwindCavityFlag> 2 </upwindCavityFlag>
 	<streetCanyonFlag> 1 </streetCanyonFlag>
@@ -20,7 +18,6 @@
 	<maxIterations> 500 </maxIterations>
 	<tolerance> 1E-9 </tolerance>
 	<meshTypeFlag> 0 </meshTypeFlag>
-	<!--useDiffusion> 0 </useDiffusion-->
 	<domainRotation> 0 </domainRotation>
 	<UTMx> 0 </UTMx>
 	<UTMy> 0 </UTMy>
@@ -30,12 +27,6 @@
 </simulationParameters>
 <metParams>
 	<z0_domain_flag> 0 </z0_domain_flag>
-	<!--metInputFlag> 0 </metInputFlag-->
-	<!--num_sites> 1 </num_sites-->
-	<!--maxSizeDataPoints> 2 </maxSizeDataPoints-->
-	<!--siteName> sensor1 </siteName-->
-	<!--fileName> sensor1.inp </fileName-->
-	<!--site_coord_flag> 1</site_coord_flag-->
 	
 		<sensor>
     	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
@@ -46,31 +37,66 @@
             <site_UTM_zone> 16 </site_UTM_zone> 				<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->
 
     	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+    	      <timeStamp>2012-11-11T18:02:50</timeStamp>									<!-- Start of timestep informastion for a sensor -->
        		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
        		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
        		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
        		<height> 9.0 </height> 				<!-- Height of the sensor -->
-       		<speed> 3.6 </speed> 					<!-- Measured speed at the sensor height -->       		<direction> 130.0 </direction> 				<!-- Wind direction of sensor -->
+       		<speed> 12.6 </speed> 					<!-- Measured speed at the sensor height -->       		
+       		<direction> 130.0 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
 	</sensor>                      					<!-- End of sensor section -->
+			<sensor>
+    	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
+            <site_xcoord> 915.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+            <site_ycoord> 500.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
+            <site_UTM_x> 524994.0 </site_UTM_x> 				<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
+            <site_UTM_y> 3377070.0 </site_UTM_y> 				<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
+            <site_UTM_zone> 16 </site_UTM_zone> 				<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->
+
+    	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+    	      <timeStamp>2012-11-11T18:02:50</timeStamp>									<!-- Start of timestep informastion for a sensor -->
+       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<height> 9.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 10.6 </speed> 					<!-- Measured speed at the sensor height -->       		
+       		<direction> 130.0 </direction> 				<!-- Wind direction of sensor -->
+    	    </timeSeries>
+	</sensor>   
+			<sensor>
+    	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
+            <site_xcoord> 900.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+            <site_ycoord> 1200.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
+            <site_UTM_x> 524994.0 </site_UTM_x> 				<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
+            <site_UTM_y> 3377070.0 </site_UTM_y> 				<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
+            <site_UTM_zone> 16 </site_UTM_zone> 				<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->
+
+    	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+    	      <timeStamp>2012-11-11T18:02:50</timeStamp>									<!-- Start of timestep informastion for a sensor -->
+       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<height> 9.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 10.6 </speed> 					<!-- Measured speed at the sensor height -->       		
+       		<direction> 130.0 </direction> 				<!-- Wind direction of sensor -->
+    	    </timeSeries>
+	</sensor>      
 </metParams>
-<!--localMixingParam-->
-  <!--method>3</method--> <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
-  <!--samples>2000</samples--> <!-- Samples per air cell for ray-traced mixing length calculations -->
-  <!--save>true</save--> <!-- Save 2 to file -->    
-  <!--LMfile>Fire_mixlength.nc</LMfile--> <!-- Address to mixing lethng location--> 
-<!--/localMixingParam-->
+
 <fires>
 	<numFires> 1 </numFires>
-	<fuelType> 2 </fuelType>
-	<fmc> 0.020 </fmc>			<!-- Fuel moisture -->
+	<fuelType> 3 </fuelType>
+	<fmc> 0.14 </fmc>			<!-- Fuel moisture -->
 	<fuelMap>../data/FireFiles/L2F_fuel_UTM.tif</fuelMap>
-   <height> 0.25 </height>
-   <baseHeight> 0 </baseHeight> <!--meters-->
-   <xStart> 1530.0 </xStart> <!--meters-->
-   <yStart> 1145.0 </yStart> <!--meters-->
-   <length> 16.0 </length> <!--meters-->
-   <width>  16.0 </width> <!--meters-->
+	<ignition>
+     <height> 1.0 </height>
+     <baseHeight> 0 </baseHeight> <!--meters-->
+     <xStart> 1530.0 </xStart> <!--meters-->
+     <yStart> 1145.0 </yStart> <!--meters-->
+     <length> 16.0 </length> <!--meters-->
+     <width>  16.0 </width> <!--meters-->
+   </ignition>
    <courant> 0.2 </courant>
    <fieldFlag> 2 </fieldFlag>
 </fires>
@@ -80,7 +106,4 @@
 	<outputFields>v</outputFields> 
 	<outputFields>w</outputFields>
 	<outputFields>icell</outputFields>
-	<!--massConservedFlag> 0 </massConservedFlag-->
-	<!--sensorVelocityFlag> 0 </sensorVelocityFlag-->
-	<!--staggerdVelocityFlag> 0 </staggerdVelocityFlag-->
 </fileOptions>

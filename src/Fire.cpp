@@ -188,13 +188,13 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
 				if (fuel_type==1)  fire_cells[idx].fuel = new ShortGrass();
 				if (fuel_type==2)  fire_cells[idx].fuel = new TimberGrass();
 				if (fuel_type==3)  fire_cells[idx].fuel = new TallGrass();
-     				if (fuel_type==4)  fire_cells[idx].fuel = new Chaparral();
-     				if (fuel_type==5)  fire_cells[idx].fuel = new Brush();
-	   			if (fuel_type==6)  fire_cells[idx].fuel = new DormantBrush();
-     				if (fuel_type==7)  fire_cells[idx].fuel = new SouthernRough();
-     				if (fuel_type==8)  fire_cells[idx].fuel = new TimberClosedLitter();
-     				if (fuel_type==9)  fire_cells[idx].fuel = new HarwoodLitter();
-     				if (fuel_type==10) fire_cells[idx].fuel = new TimberLitter();
+				if (fuel_type==4)  fire_cells[idx].fuel = new Chaparral();
+				if (fuel_type==5)  fire_cells[idx].fuel = new Brush();
+				if (fuel_type==6)  fire_cells[idx].fuel = new DormantBrush();
+				if (fuel_type==7)  fire_cells[idx].fuel = new SouthernRough();
+				if (fuel_type==8)  fire_cells[idx].fuel = new TimberClosedLitter();
+				if (fuel_type==9)  fire_cells[idx].fuel = new HarwoodLitter();
+				if (fuel_type==10) fire_cells[idx].fuel = new TimberLitter();
 				if (fuel_type==11) fire_cells[idx].fuel = new LoggingSlashLight();
 				if (fuel_type==12) fire_cells[idx].fuel = new LoggingSlashMedium();
 				if (fuel_type==13) fire_cells[idx].fuel = new LoggingSlashHeavy();
@@ -202,8 +202,7 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
 				if (fuel_type==92) fire_cells[idx].fuel = new Snow();
 				if (fuel_type==93) fire_cells[idx].fuel = new Agricultural();
 				if (fuel_type==98) fire_cells[idx].fuel = new Water();
-				if (fuel_type==99) fire_cells[idx].fuel = new Bare();
-				
+				if (fuel_type==99) fire_cells[idx].fuel = new Bare();				
 			}
 		}
 	std::cout<<"fuel set constant = "<<fuel_type<<std::endl;		
@@ -326,6 +325,7 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
      * Calculate level set gradient and norm (Chapter 6, Sethian 2008)
      */
 	float dmx, dpx, dmy, dpy, n_star_x, n_star_y;
+	float sdmx, sdpx, sdmy, sdpy, sn_star_x,sn_star_y;
 	for (int j = 1; j < ny-2; j++){
   		for (int i = 1; i < nx-2; i++){
 			int idx = i + j*(nx-1);       
@@ -340,7 +340,7 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
 			n_star_x = dpx/sqrt(dpx*dpx + dpy*dpy) + dmx/sqrt(dmx*dmx + dpy*dpy) + dpx/sqrt(dpx*dpx + dmy*dmy) + dmx/sqrt(dmx*dmx + dmy*dmy);
 			n_star_y = dpy/sqrt(dpx*dpx + dpy*dpy) + dpy/sqrt(dmx*dmx + dpy*dpy) + dmy/sqrt(dpx*dpx + dmy*dmy) + dmy/sqrt(dmx*dmx + dmy*dmy);
 			xNorm[idx] = n_star_x/sqrt(n_star_x*n_star_x + n_star_y*n_star_y);
-			yNorm[idx] = n_star_y/sqrt(n_star_x*n_star_x + n_star_y*n_star_y);
+			yNorm[idx] = n_star_y/sqrt(n_star_x*n_star_x + n_star_y*n_star_y);	
 		}
 	}
 	std::cout<<"level set calculated"<<std::endl;
@@ -447,7 +447,7 @@ void Fire :: run(Solver* solver, WINDSGeneralData* WGD) {
 		// update icell value for flame
 		for (int k=TID; k<= maxkh; k++){
 			int icell_cent = ii + jj*(nx-1) + (k)*(nx-1)*(ny-1);
-			WGD->icellflag[icell_cent] = 1;
+			WGD->icellflag[icell_cent] = 12;
 		}
 	}
 	// compute time step
@@ -810,12 +810,7 @@ void Fire :: move(Solver* solver, WINDSGeneralData* WGD){
             if (fire_cells[idx].state.burn_time >= fp.tau) {
                 fire_cells[idx].state.burn_flag = 2;
 				Force[idx] = 0;
-				WGD->icellflag[i+j*(nx-1)+TID*(nx-1)*(ny-1)] = 2;
-				for (int k = TID+1; k <= maxkh; k++){
-		  			int icell_cent = i + j*(nx-1) + (k)*(nx-1)*(ny-1);
-		  			WGD->icellflag[icell_cent] = 1;
-				}
-		
+
 				// Need to fix where z0 is reset MM
 				//WGD->z0_domain[idx] = 0.01;
             }  
@@ -950,27 +945,27 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, floa
       int n_c = 0;
       int v_c = 0;
       if (abs(x_slope) < 0.001 and abs(y_slope) < 0.001){
-		s_c = 1;
+				s_c = 1;
       }
       if (abs(x_norm) < 0.001 and abs(y_norm) < 0.001){
-		n_c = 1;
+				n_c = 1;
       }
       if (abs(u_mid) < 0.001 and abs(v_mid) < 0.001){
-		v_c = 1;
+				v_c = 1;
       }
       if (s_c == 1 or n_c == 1){
-	 	phi = 0;
+			 	phi = 0;
       } else {
-		phi = acos((x_slope*x_norm + y_slope*y_norm)/(sqrt(x_slope*x_slope + y_slope*y_slope)*sqrt(x_norm*x_norm + y_norm*y_norm)));
+				phi = acos((x_slope*x_norm + y_slope*y_norm)/(sqrt(x_slope*x_slope + y_slope*y_slope)*sqrt(x_norm*x_norm + y_norm*y_norm)));
       }
       if (v_c == 1 or n_c == 1){
-		psi = 0;
+				psi = 0;
       } else {
-		psi = acos((u_mid*x_norm + v_mid*y_norm)/(sqrt(u_mid*u_mid + v_mid*v_mid)*sqrt(x_norm*x_norm + y_norm*y_norm)));
+				psi = acos((u_mid*x_norm + v_mid*y_norm)/(sqrt(u_mid*u_mid + v_mid*v_mid)*sqrt(x_norm*x_norm + y_norm*y_norm)));
       }
-      //std::cout<<"s_c = "<<s_c<<", n_c = "<<n_c<<", v_c = "<<v_c<<std::endl;
-      //std::cout<<"x slope = "<<x_slope<<", x norm = "<<x_norm<<", y slope = "<<y_slope<<", y norm = "<<y_norm<<", phi = "<<phi<<", psi = "<<psi<<std::endl;
-
+			if (phi > 0.785){
+				alpha = -alpha;
+			} 
       float KDrag = K1*betaT*fmin(fueldepthm/lv,1);  ///< Drag force coefficient [eq.7]
   
       float q = C_p*(T_i - T_a) + m*Deltah_v;        ///< Activation energy [eq.14]

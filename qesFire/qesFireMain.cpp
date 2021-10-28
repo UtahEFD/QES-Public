@@ -173,6 +173,8 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
     }
+    // Apply parametrizations
+    WGD->applyParametrizations(WID);
 
     // Run WINDS simulation code
     solver->solve(WID, WGD, !arguments.solveWind );
@@ -240,27 +242,38 @@ int main(int argc, char *argv[])
         std::cout<<"Processing time t = "<<t<<std::endl;
         // re-set initial fields after first time step
         if (t>0) {
-
+		// Reset icellflag values
+    		 WGD->resetICellFlag();
 	    
-	    WGD->u0 = u0;
-	    WGD->v0 = v0;
-	    WGD->w0 = w0;
-	    
+	     WGD->u0 = u0;
+	     WGD->v0 = v0;
+	     WGD->w0 = w0;
+		 std::cout<<"Wind field reset to initial"<<std::endl;
+	   
 	    /*
 	    WID->metParams->z0_domain_flag=1;
 	    WID->metParams->sensors[0]->inputWindProfile(WID, WGD);
             solver->solve(WID, WGD, !arguments.solveWind);
 	    */
+
+	// Generate the general WINDS data from all inputs
+    // WINDSGeneralData* WGD = new WINDSGeneralData(WID, arguments.solveType);
+	    // Apply parametrizations
+    // WGD->applyParametrizations(WID);
+
+    // Run WINDS simulation code
+    // solver->solve(WID, WGD, !arguments.solveWind );
+
+    // std::cout << "Solver done!\n";
         }
-        
+
         // loop 2 times for fire
         int loop = 0;
         while (loop<1) {
-            
             // run Balbi model to get new spread rate and fire properties
             fire->run(solver, WGD);
-            
-	    // calculate plume potential
+	    //WGD->applyParametrizations(WID);
+            // calculate plume potential
 	    auto start = std::chrono::high_resolution_clock::now(); // Start recording execution time
 	    
 	    fire->potential(WGD);
@@ -269,9 +282,17 @@ int main(int argc, char *argv[])
 	    
     	    std::chrono::duration<float> elapsed = finish - start;
     	    std::cout << "Plume solve: elapsed time: " << elapsed.count() << " s\n";   // Print out elapsed execution time
-	      
+	    /**
+            * Apply parameterizations and run wind solver 
+	    **/
+	     
+	    solver->solve(WID, WGD, !arguments.solveWind);
 	    // run wind solver
-            solver->solve(WID, WGD, !arguments.solveWind);
+            // solver->solve(WID, WGD, !arguments.solveWind);
+
+
+            
+
 	    	    
             //increment fire loop
             loop += 1;

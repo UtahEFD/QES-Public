@@ -22,7 +22,9 @@ public:
     ~FIREOutput()	       
     {}
     
-    void save(float);
+    void save(ptime)
+    {}
+    virtual void save(float);
     
 private:
 

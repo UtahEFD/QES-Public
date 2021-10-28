@@ -36,8 +36,8 @@
        		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
        		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
        		<height>10.0 </height> 				<!-- Height of the sensor -->
-       		<speed> 8.5 </speed> 					<!-- Measured speed at the sensor height -->
-       		<direction> 305.0 </direction> 				<!-- Wind direction of sensor -->
+       		<speed> 8.9 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 295.0 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
 	</sensor>                      					<!-- End of sensor section -->
 </metParams>
@@ -55,7 +55,7 @@
     <yStart> 655.0 </yStart> <!--meters-->
     <length> 5.0 </length> <!--meters-->
     <width>  5.0 </width> <!--meters-->
-    </ignition>
+   </ignition>
     <courant> 0.9 </courant>
     <fieldFlag> 1 </fieldFlag> <!-- flag for if multiple timesteps for fire -->
 </fires>
