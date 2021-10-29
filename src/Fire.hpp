@@ -12,6 +12,7 @@
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 #include "FuelProperties.hpp"
+#include "FuelProperties40.hpp"
 #include "Vector3.h"
 #include "Solver.h"
 #include "FuelRead.h"
@@ -27,6 +28,7 @@ using namespace netCDF;
 using namespace netCDF::exceptions;
 
 class FuelProperties;
+class FuelProperties40;
 
 class Fire {
     
@@ -48,6 +50,7 @@ class Fire {
         struct FireCell {
             FireProperties properties;
             FuelProperties* fuel;
+            FuelProperties40* fuel40;
             FireState state;
         };
         
@@ -126,7 +129,8 @@ class Fire {
 	int fieldFlag;
         float rothermel(FuelProperties*, float, float, float);
                      
-        FireProperties balbi(FuelProperties*, float, float, float, float, float, float, float);
+        FireProperties balbi(FuelProperties40*, float, float, float, float, float, float, float);
+
         
         FireProperties runFire(float, float, int);
 

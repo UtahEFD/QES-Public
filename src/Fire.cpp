@@ -880,7 +880,7 @@ float Fire :: rothermel(FuelProperties* fuel, float max_wind, float tanphi, floa
 }
 
 // Balbi (2019) fire propagation model
-struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, float v_mid, 
+struct Fire::FireProperties Fire :: balbi(FuelProperties40* fuel40,float u_mid, float v_mid, 
                                           float x_norm, float y_norm, float x_slope, float y_slope, float fmc_g) {
 
 
@@ -888,11 +888,31 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, floa
     struct FireProperties fp;
    
     // fuel properties
+	/*
     float fgi        = fuel->fgi;              ///< initial total mass of surface fuel [kg/m**2]
     float fueldepthm = fuel->fueldepthm;       ///< fuel depth [m]
     float savr          = fuel->savr;             ///< fuel particle surface-area-to-volume ratio, [1/ft]
     float cmbcnst       = fuel->cmbcnst;          ///< joules per kg of dry fuel [J/kg]
-    if (fgi < 0.00001){
+    */
+	// Fuel Properties
+	float oneHour = fuel40->oneHour; 		///< one hour fuel load [t/ac]
+	float tenHour = fuel40->tenHour;		///< ten hour fuel load [t/ac]
+	float hundredHour = fuel40->hundredHour	///< hundred hour fuel load [t/ac]
+	float liveHerb = fuel40->liveHerb;		///< live herb fuel load [t/ac]
+	float liveWoody = fuel40->liveWoody; 	///< live woody fuel load [t/ac]
+	float savOneHour = fuel40->savOneHour;	///< surface area to volume ratio of one hour fuels
+	float savHerb = fuel40->savHerb; 		///< surface area to volume ratio of live herbacious fuel load
+	float savWoody = fuel40->savWoody;		///< surface area to volume ratio of live woody fuel load
+	float fueldepthm = fuel40->fuelDepth*0.3048; ///< fuel bed depth [m]
+	float cmbcnst = fuel40->heatContent*2326; ///< heat content [J/kg]
+	float savTenHour = 109;					///< surface area to volume ratio of ten hour fuel load
+	float savHundredHour = 30;				///< surface area to volume ratio of hundred hour fuel load
+	float rhoFuel = fuel40->fuelDensity*16.0185; 		///< ovendry fuel particle density [kg/m^3]
+	float fgi = (oneHour+liveHerb+liveWoody)*0.2471; 	///< Initial fine fuel load [kg/m^2]
+	float savr = (savOneHour*oneHour+savTenHour*tenHour+savHundredHour*hundredhour+savHerb*liveHerb+savWood*liveWoody)/(oneHour+tenHour+hundredHour+liveHerb+liveWoody);		///< Characteristic fine fuel load surface area to volume ratio
+
+
+	if (fgi < 0.00001){
 
       // set fire properties
       fp.w    = 0;
@@ -915,14 +935,14 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, floa
       float C_p      = 2e3;                      ///< calorific capacity [J/kg] - Balbi 2009  
       float C_pa     = 1150;                     ///< specific heat of air [J/Kg/K]
       float tau_0    = 75591;                    ///< residence time coefficient - Anderson 196?
-      float tau      = 75591/(savr/0.3048);
+      float tau      = tau_0/(savr/0.3048);
 
       // fuel constants
-      float m        = fmc_g;                    ///< fuel particle moisture content [0-1]
-      float sigma    = fgi;                      ///< dead fuel load [kg/m^2]
-      float sigmaT   = sigma;                    ///< total fuel load [kg/m^2]
-      float rhoFuel  = 1500;                     ///< fuel density [kg/m^3]
-      float T_i      = 600;                      ///< ignition temp [k]
+      float m        = fmc_g;                   ///< fuel particle moisture content [0-1]
+      float sigma    = oneHour;					///< dead fine fuel load [kg/m^2]
+      float sigmaT   = fgi;                    	///< total fine fuel load [kg/m^2]
+      //float rhoFuel  = 1500;                    ///< fuel density [kg/m^3]
+      float T_i      = 600;                     ///< ignition temp [k]
     
       // model parameters
       float beta  = sigma/(fueldepthm*rhoFuel);  ///< packing ratio of dead fuel [eq.1]
@@ -973,8 +993,8 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, floa
       float A = fmin(SAV/(2*pi),beta/betaT)*Chi_0*cmbcnst/(4*q);     ///< Radiant coefficient [eq.13]
     
       // Initial guess = Rothermel ROS 
-      float R = rothermel(fuel,max(u_mid,v_mid),alpha,fmc_g);       ///< Total Rate of Spread (ROS) [m/s]
-    
+      //float R = rothermel(fuel,max(u_mid,v_mid),alpha,fmc_g);       ///< Total Rate of Spread (ROS) [m/s]
+		float R = 0.1;
       // Initial tilt angle guess = slope angle
       float gamma  = alpha;    ///< Flame tilt angle
       float maxIter = 100;
