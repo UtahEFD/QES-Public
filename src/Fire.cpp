@@ -842,20 +842,28 @@ void Fire :: move(Solver* solver, WINDSGeneralData* WGD){
 float Fire :: rothermel(FuelProperties* fuel, float max_wind, float tanphi, float fmc_g) {
     
     // fuel properties
-    int savr          = fuel->savr;
-    int fueldens      = fuel->fueldens;
-    float st         = fuel->st;
-    float se         = fuel->se;
-    float fgi        = fuel->fgi;        
-    float fuelmce    = fuel->fuelmce;
-    float fuelheat   = fuel->fuelheat;
-    float fueldepthm = fuel->fueldepthm;
+	float oneHour = fuel->oneHour; 					///< one hour fuel load [t/ac]
+	float tenHour = fuel->tenHour;					///< ten hour fuel load [t/ac]
+	float hundredHour = fuel->hundredHour;			///< hundred hour fuel load [t/ac]
+	float liveHerb = fuel->liveHerb;				///< live herb fuel load [t/ac]
+	float liveWoody = fuel->liveWoody; 				///< live woody fuel load [t/ac]
+    float savOneHour        = fuel->savOneHour;		///< surface area to volume ratio of one hour fuel load
+	float savTenHour 		= 109;					///< surface area to volume ratio of ten hour fuel load
+	float savHundredHour 	= 30;					///< surface area to volume ratio of hundred hour fuel load
+    float fueldens      	= fuel->fuelDensity;	///< ovendry fuel particle density [lb/ft^2]
+    float st         		= 0.0555;				///< Total fuel mineral content
+    float se         		= 0.0100;				///< Silica free mineral content
+    float fgi = (oneHour+liveHerb+liveWoody)*0.2471;///< Initial fine fuel load [kg/m^2]
+    float fuelmce    		= fuel->fuelmce/100;	///< fuel moisture content of extinction[%]
+    float fuelheat   		= fuel->heatContent;	///< heat content of fuel [BTU/lb]
+    float fueldepth  		= fuel->fueldepth;		///< fuel bed depth [ft]
     
+	float savr = (savOneHour*oneHour+savTenHour*tenHour+savHundredHour*hundredHour+savHerb*liveHerb+savWoody*liveWoody)
+					/(oneHour+tenHour+hundredHour+liveHerb+liveWoody);		///< Characteristic fine fuel load surface area to volume ratio
     // local fire variables
     float bmst      = fmc_g/(1+fmc_g);
     float fuelloadm = (1.-bmst)*fgi;
     float fuelload  = fuelloadm*(pow(.3048, 2.0))*2.205;               // convert fuel load to lb/ft^2
-    float fueldepth = fueldepthm/0.3048;                               // to ft
     float betafl    = fuelload/(fueldepth * fueldens);                 // packing ratio  jm: lb/ft^2/(ft * lb*ft^3) = 1
     float betaop    = 3.348 * pow(savr, -0.8189);                      // optimum packing ratio jm: units?? 
     float qig       = 250. + 1116.*fmc_g;                              // heat of preignition, btu/lb
@@ -880,7 +888,7 @@ float Fire :: rothermel(FuelProperties* fuel, float max_wind, float tanphi, floa
 }
 
 // Balbi (2019) fire propagation model
-struct Fire::FireProperties Fire :: balbi(FuelProperties40* fuel40,float u_mid, float v_mid, 
+struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, float v_mid, 
                                           float x_norm, float y_norm, float x_slope, float y_slope, float fmc_g) {
 
 
@@ -895,21 +903,22 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties40* fuel40,float u_mid, 
     float cmbcnst       = fuel->cmbcnst;          ///< joules per kg of dry fuel [J/kg]
     */
 	// Fuel Properties
-	float oneHour = fuel40->oneHour; 		///< one hour fuel load [t/ac]
-	float tenHour = fuel40->tenHour;		///< ten hour fuel load [t/ac]
-	float hundredHour = fuel40->hundredHour	///< hundred hour fuel load [t/ac]
-	float liveHerb = fuel40->liveHerb;		///< live herb fuel load [t/ac]
-	float liveWoody = fuel40->liveWoody; 	///< live woody fuel load [t/ac]
-	float savOneHour = fuel40->savOneHour;	///< surface area to volume ratio of one hour fuels
-	float savHerb = fuel40->savHerb; 		///< surface area to volume ratio of live herbacious fuel load
-	float savWoody = fuel40->savWoody;		///< surface area to volume ratio of live woody fuel load
-	float fueldepthm = fuel40->fuelDepth*0.3048; ///< fuel bed depth [m]
-	float cmbcnst = fuel40->heatContent*2326; ///< heat content [J/kg]
+	float oneHour = fuel->oneHour; 		///< one hour fuel load [t/ac]
+	float tenHour = fuel->tenHour;		///< ten hour fuel load [t/ac]
+	float hundredHour = fuel->hundredHour;	///< hundred hour fuel load [t/ac]
+	float liveHerb = fuel->liveHerb;		///< live herb fuel load [t/ac]
+	float liveWoody = fuel->liveWoody; 	///< live woody fuel load [t/ac]
+	float savOneHour = fuel->savOneHour;	///< surface area to volume ratio of one hour fuels
+	float savHerb = fuel->savHerb; 		///< surface area to volume ratio of live herbacious fuel load
+	float savWoody = fuel->savWoody;		///< surface area to volume ratio of live woody fuel load
+	float fueldepthm = fuel->fuelDepth*0.3048; ///< fuel bed depth [m]
+	float cmbcnst = fuel->heatContent*2326; ///< heat content [J/kg]
 	float savTenHour = 109;					///< surface area to volume ratio of ten hour fuel load
 	float savHundredHour = 30;				///< surface area to volume ratio of hundred hour fuel load
-	float rhoFuel = fuel40->fuelDensity*16.0185; 		///< ovendry fuel particle density [kg/m^3]
+	float rhoFuel = fuel->fuelDensity*16.0185; 		///< ovendry fuel particle density [kg/m^3]
 	float fgi = (oneHour+liveHerb+liveWoody)*0.2471; 	///< Initial fine fuel load [kg/m^2]
-	float savr = (savOneHour*oneHour+savTenHour*tenHour+savHundredHour*hundredhour+savHerb*liveHerb+savWood*liveWoody)/(oneHour+tenHour+hundredHour+liveHerb+liveWoody);		///< Characteristic fine fuel load surface area to volume ratio
+	float savr = (savOneHour*oneHour+savTenHour*tenHour+savHundredHour*hundredHour+savHerb*liveHerb+savWoody*liveWoody)
+					/(oneHour+tenHour+hundredHour+liveHerb+liveWoody);		///< Characteristic fine fuel load surface area to volume ratio
 
 
 	if (fgi < 0.00001){
@@ -959,7 +968,8 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties40* fuel40,float u_mid, 
       float T_a    = 289.15;                     ///< air Temp [K]
       float alpha  = sqrt(x_slope*x_slope + y_slope*y_slope);		               ///< slope angle [rad]
       float psi    = 0;                          ///< angle between wind and flame front [rad]
-      float phi    = 0;                          ///< angle between flame front vector and slope vector [rad]
+      float phi    = 0;                          ///< angle between flame front vec
+	  tor and slope vector [rad]
 
       int s_c = 0;
       int n_c = 0;
