@@ -1,7 +1,7 @@
 <simulationParameters>       
   	<halo_x> 2.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 2.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
-    <domain> 200 200 25 </domain> <!-- nx,ny,nz-->
+    <domain> 100 100 25 </domain> <!-- nx,ny,nz-->
 	<cellSize> 1.0 1.0 1.0 </cellSize> <!-- dx, dy,dz [Meters]-->	
 	<verticalStretching> 0 </verticalStretching>
 	<totalTimeIncrements> 1000 </totalTimeIncrements>
@@ -31,7 +31,7 @@
 </metParams>
 
 <fires>
-	<fuelType>3</fuelType>
+	<fuelType>204</fuelType>
 	<!-- fuelMap>../data/FireFiles/test.tif</fuelMap -->
 	<fmc> 0.065 </fmc>
 
@@ -43,7 +43,7 @@
     	<xStart> 40.0 </xStart> <!--meters-->
     	<yStart> 50.0 </yStart> <!--meters-->
     	<length> 1.0 </length> <!--meters-->
-    	<width>  100.0 </width> <!--meters-->
+    	<width>  10.0 </width> <!--meters-->
     </ignition>
 
 </fires>
