@@ -58,7 +58,6 @@
   <C_0> 1.0 </C_0>
   <updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
   <updateFrequency_timeLoop> 100 </updateFrequency_timeLoop>
-  <interpolationMethod>analyticalPowerLaw</interpolationMethod>
 </plumeParameters>
 <particleOutputParameters>
   <outputFrequency> 100  </outputFrequency>
@@ -92,5 +91,5 @@
   <xBCtype>exiting</xBCtype>
   <yBCtype>exiting</yBCtype>
   <zBCtype>exiting</zBCtype>
-  <!--wallReflection>stairstepReflection</wallReflection-->
+  <wallReflection>stairstepReflection</wallReflection>
 </boundaryConditions>

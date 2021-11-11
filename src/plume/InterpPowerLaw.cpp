@@ -76,7 +76,12 @@ void InterpPowerLaw::interpInitialValues(const double &xPos,
   double a = 4.8;
   double p = 0.15;
 
-  double us = 0.4 * p * a * pow(zPos, p);
+  //double b = 0.08;
+  //double n = 1.0;
+  double z = 0.1 * ceil(10.0 * zPos);
+
+  double us = 0.4 * p * a * pow(z, p);
+  //double us = sqrt(b * p * a * pow(zPos, n + p - 1));
 
   sig_x_out = 2.5 * us;
   sig_y_out = 2.3 * us;
@@ -113,15 +118,14 @@ void InterpPowerLaw::interpValues(const double &xPos,
 {
   double a = 4.8;
   double p = 0.15;
-  double z = 1.0;
 
-  if (zPos < 1.0) {
-    z = 1.0;
-  } else {
-    z = zPos;
-  }
+  //double b = 0.08;
+  //double n = 1.0;
+
+  double z = 0.1 * ceil(10.0 * zPos);
 
   double us = 0.4 * p * a * pow(z, p);
+  //double us = sqrt(b * p * a * pow(z, n + p - 1));
 
   uMean_out = a * pow(z, p);
   vMean_out = 0.0;
@@ -137,8 +141,11 @@ void InterpPowerLaw::interpValues(const double &xPos,
   txz_out = -pow(us, 2.0);
 
   flux_div_x_out = -2.0 * p * pow(0.4 * p * a, 2.0) * pow(z, 2.0 * p - 1.0);
+  //flux_div_x_out = -b * p * a * (n + p - 1) * pow(z, n + p - 2.0);
   flux_div_y_out = 0.0;
   flux_div_z_out = 2.0 * p * pow(1.3 * 0.4 * p * a, 2.0) * pow(z, 2.0 * p - 1.0);
+  //flux_div_z_out = (1.3 * 1.3) * b * p * a * (n + p - 1) * pow(z, n + p - 2.0);
+
 
   return;
 }

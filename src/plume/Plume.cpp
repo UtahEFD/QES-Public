@@ -332,7 +332,7 @@ double Plume::calcCourantTimestep(const double &d,
   double max_u = std::max({ u, v, w });
   double CN = 0.0;
   if (d > 15.0 * min_ds) {
-    return timeRemainder;
+    CN = 1.0;
   } else if (d > 8.0 * min_ds) {
     CN = 0.5;
   } else if (d > 4.0 * min_ds) {

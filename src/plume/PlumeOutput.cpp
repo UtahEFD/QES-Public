@@ -199,7 +199,12 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   // setup information:
   // --------------------------------------------------------
 
-  int nbrFace = WGD->wall_below_indices.size() + WGD->wall_above_indices.size() + WGD->wall_back_indices.size() + WGD->wall_front_indices.size() + WGD->wall_left_indices.size() + WGD->wall_right_indices.size();
+  int nbrFace = WGD->wall_below_indices.size()
+                + WGD->wall_above_indices.size()
+                + WGD->wall_back_indices.size()
+                + WGD->wall_front_indices.size()
+                + WGD->wall_left_indices.size()
+                + WGD->wall_right_indices.size();
 
 
   // --------------------------------------------------------
@@ -307,10 +312,10 @@ void PlumeOutput::save(float currentTime)
 
     // adjusting concentration for averaging time and volume of the box
     // cc = dt/Tavg * 1/vol => in /m3
-    //double cc = (timeStep)/(timeAvgFreq*volume);
+    //double cc = (timeStep) / (timeAvgFreq * volume);
 
-    //for( auto id = 0u; id <  conc.size();id++ ) {
-    //    conc[id] = conc[id]*cc;
+    //for (auto id = 0u; id < conc.size(); id++) {
+    //  conc[id] = conc[id] * cc;
     //}
 
     // set output time for correct netcdf output
