@@ -334,15 +334,11 @@ DynamicParallelism::DynamicParallelism(const WINDSInputData *WID, WINDSGeneralDa
 void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
 {
   auto startTotal = std::chrono::high_resolution_clock::now();// Start
-    // recording
-    // execution
-    // time
+  // recording
+  // execution
+  // time
+  itermax = WID->simParams->maxIterations;
   int numblocks = (WGD->numcell_cent / BLOCKSIZE) + 1;
-
-  R.resize(WGD->numcell_cent, 0.0);
-
-  lambda.resize(WGD->numcell_cent, 0.0);
-  lambda_old.resize(WGD->numcell_cent, 0.0);
 
   std::vector<float> value(WGD->numcell_cent, 0.0);
   std::vector<float> bvalue(numblocks, 0.0);
@@ -422,8 +418,9 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   cudaMemcpy(WGD->u.data(), d_u, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
   cudaMemcpy(WGD->v.data(), d_v, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
   cudaMemcpy(WGD->w.data(), d_w, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
-  // cudaMemcpy(R.data(),d_R,WGD->numcell_cent*sizeof(float),cudaMemcpyDeviceToHost);
-  // cudaMemcpy(lambda_old.data(),d_lambda_old,WGD->numcell_cent*sizeof(float),cudaMemcpyDeviceToHost);
+  cudaMemcpy(lambda.data(), d_lambda, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(lambda_old.data(), d_lambda_old, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(R.data(), d_R, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
 
   cudaFree(d_lambda);
   cudaFree(d_lambda_old);

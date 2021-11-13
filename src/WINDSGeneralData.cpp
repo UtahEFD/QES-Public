@@ -290,15 +290,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     y[j] = (j + 0.5) * dy;// Location of face centers in y-dir
   }
 
-  // Resize the canopy-related vectors
-  // canopy_atten.resize( numcell_cent, 0.0 );
-  // canopy_top.resize( (nx-1)*(ny-1), 0.0 );
-  // canopy_top_index.resize( (nx-1)*(ny-1), 0 );
-  // canopy_z0.resize( (nx-1)*(ny-1), 0.0 );
-  // canopy_ustar.resize( (nx-1)*(ny-1), 0.0 );
-  // canopy_d.resize( (nx-1)*(ny-1), 0.0 );
-
-
   // Resize the coefficients for use with the solver
   e.resize(numcell_cent, 1.0);
   f.resize(numcell_cent, 1.0);
@@ -312,6 +303,11 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   ni.resize(numcell_cent, 0.0);
   nj.resize(numcell_cent, 0.0);
   nk.resize(numcell_cent, 0.0);
+  ti.resize(numcell_cent, 0.0);
+  tj.resize(numcell_cent, 0.0);
+  tk.resize(numcell_cent, 0.0);
+  center_id.resize(numcell_cent, 1);
+  wall_distance.resize(numcell_cent, 0.0);
 
   icellflag.resize(numcell_cent, 1);
   icellflag_initial.resize(numcell_cent, 1);
@@ -376,6 +372,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         }
       }
     }
+    std::cout << "terrain_height1:   " << WID->simParams->DTE_mesh->getHeight(1624, 2656) << std::endl;
+    std::cout << "terrain_height2:   " << WID->simParams->DTE_mesh->getHeight(1624, 2664) << std::endl;
+    std::cout << "terrain_height3:   " << WID->simParams->DTE_mesh->getHeight(1632, 2664) << std::endl;
+    std::cout << "terrain_height4:   " << WID->simParams->DTE_mesh->getHeight(1632, 2656) << std::endl;
 
     for (int i = halo_index_x; i < nx - halo_index_x - 1; i++) {
       for (int j = 0; j < halo_index_y; j++) {
@@ -531,6 +531,21 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
 
   if (WID->simParams->DTE_heightField) {
+
+    for (int i = 0; i < nx - 1; i++) {
+      for (int j = 0; j < ny - 1; j++) {
+        // Gets height of the terrain for each cell
+        int idx = i + j * (nx - 1);
+        for (size_t k = 0; k < z.size() - 1; k++) {
+          if (terrain[idx] < z[k + 1]) {
+            break;
+          }
+          icell_cent = i + j * (nx - 1) + (k + 1) * (nx - 1) * (ny - 1);
+          center_id[icell_cent] = 0;// Marks the cell center as inside solid
+        }
+      }
+    }
+
     if (WID->simParams->meshTypeFlag == 0 && WID->simParams->readCoefficientsFlag == 0) {
       auto start_stair = std::chrono::high_resolution_clock::now();
       for (int i = 0; i < nx - 1; i++) {
@@ -903,6 +918,9 @@ WINDSGeneralData ::WINDSGeneralData(const std::string inputFile)
   ni.resize(numcell_cent, 0.0);
   nj.resize(numcell_cent, 0.0);
   nk.resize(numcell_cent, 0.0);
+  ti.resize(numcell_cent, 0.0);
+  tj.resize(numcell_cent, 0.0);
+  tk.resize(numcell_cent, 0.0);
 
   icellflag.resize(numcell_cent, 1);
   ibuilding_flag.resize(numcell_cent, -1);
@@ -1104,7 +1122,20 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
    * to the cells near Walls
    *
    */
-  // wall->wallLogBC (this);
+  /*int i = 337;
+  int j = 445;
+  int k = 45;
+  int icell_face = i + j * nx + k * nx * ny;
+  std::cout << "WGD->u0[icell_face]:   " << u0[icell_face] << std::endl;
+  std::cout << "WGD->v0[icell_face]:   " << v0[icell_face] << std::endl;
+  std::cout << "WGD->w0[icell_face]:   " << w0[icell_face] << std::endl;
+  std::cout << "WGD->u0[icell_face+1]:   " << u0[icell_face + 1] << std::endl;
+  std::cout << "WGD->v0[icell_face+WGD->nx]:   " << v0[icell_face + nx] << std::endl;
+  std::cout << "WGD->w0[icell_face+WGD->nx * WGD->ny]:   " << w0[icell_face + nx * ny] << std::endl;*/
+  if (WID->simParams->logLawFlag == 1) {
+    wall->wallLogBC(this);
+  }
+
 
   wall->setVelocityZero(this);
 

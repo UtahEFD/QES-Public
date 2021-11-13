@@ -43,10 +43,10 @@
 void Cut_cell::calculateCoefficient(Cell *cells, const DTEHeightField *DTEHF, const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
 
-  std::vector<int> cutcell_index;// Index of cut-cells
+  /*std::vector<int> cutcell_index;// Index of cut-cells
   std::vector<Vector3> cut_points;// Intersection points for each face
   std::vector<Edge<int>> terrainEdges;
-  Vector3 location;// Coordinates of the left corner of cell face
+  Vector3 location;// Coordinates of the left corner of cell face*/
 
 
   //cells = new Cell[(WGD->nx - 1) * (WGD->ny - 1) * (WGD->nz - 1)];
@@ -316,33 +316,36 @@ float Cut_cell::calculateArea(std::vector<Vector3> &cut_points, int cutcell_inde
 
     coeff += (0.5 * (cut_points[0][1] + cut_points[cut_points.size() - 1][1]) * (cut_points[0][2] - cut_points[cut_points.size() - 1][2])) / (dy * dz) + (0.5 * (cut_points[0][0] + cut_points[cut_points.size() - 1][0]) * (cut_points[0][2] - cut_points[cut_points.size() - 1][2])) / (dx * dz) + (0.5 * (cut_points[0][0] + cut_points[cut_points.size() - 1][0]) * (cut_points[0][1] - cut_points[cut_points.size() - 1][1])) / (dx * dy);
   }
-  if (coeff >= 0) {
-    if (index == 3) {
-      S = (1.0 - coeff) * (dy * dz);
-      f[cutcell_index] = coeff;
-    }
-    if (index == 2) {
-      S = (1.0 - coeff) * (dy * dz);
-      e[cutcell_index] = coeff;
-    }
-    if (index == 0) {
-      S = (1.0 - coeff) * (dx * dz);
-      h[cutcell_index] = coeff;
-    }
-    if (index == 1) {
-      S = (1.0 - coeff) * (dx * dz);
-      g[cutcell_index] = coeff;
-    }
-    /*if (index == 4)
-    {
-        S = (1.0 - coeff)*(dx*dy);
-        n[cutcell_index] = coeff;
-    }
-    if (index == 5)
-    {
-        S = (1.0 - coeff)*(dx*dy);
-        m[cutcell_index] = coeff;
-    }*/
+
+  if (coeff <= 0.05) {
+    coeff = 0.0;
+  } else if (coeff > 1.0) {
+    coeff = 1.0;
+  }
+
+  if (index == 3) {
+    S = (1.0 - coeff) * (dy * dz);
+    f[cutcell_index] = coeff;
+  }
+  if (index == 2) {
+    S = (1.0 - coeff) * (dy * dz);
+    e[cutcell_index] = coeff;
+  }
+  if (index == 0) {
+    S = (1.0 - coeff) * (dx * dz);
+    h[cutcell_index] = coeff;
+  }
+  if (index == 1) {
+    S = (1.0 - coeff) * (dx * dz);
+    g[cutcell_index] = coeff;
+  }
+  if (index == 4) {
+    S = coeff * (dx * dy);
+    n[cutcell_index] = 1.0 - coeff;
+  }
+  if (index == 5) {
+    S = coeff * (dx * dy);
+    m[cutcell_index] = 1.0 - coeff;
   }
   return S;
 }
@@ -364,10 +367,32 @@ float Cut_cell::calculateAreaTopBot(std::vector<Vector3> &terrainPoints,
   std::vector<Vector3> listOfTriangles;// each point is a vector3, the triangle is 3 points
   float faceHeight = location[2] + (isBot ? 0.0f : dz);// face height is 0 if we are on the bottom, otherwise add dz_array
 
+  if (cellIndex == 35509585) {
+    std::cout << "faceHeight:  " << faceHeight << std::endl;
+    for (int i = 0; i < terrainPoints.size(); i++) {
+      std::cout << "terrainPoints_x:  " << terrainPoints[i][0] << std::endl;
+      std::cout << "terrainPoints_y:  " << terrainPoints[i][1] << std::endl;
+      std::cout << "terrainPoints_z:  " << terrainPoints[i][2] << std::endl;
+    }
+  }
   // find all points in the terrain on this face
-  for (int i = 0; i < terrainPoints.size(); i++)
-    if (terrainPoints[i][2] > faceHeight - 0.00001f && terrainPoints[i][2] < faceHeight + 0.00001f)
+  for (int i = 0; i < terrainPoints.size(); i++) {
+    if (terrainPoints[i][2] >= faceHeight) {
       pointsOnFace.push_back(i);
+    }
+  }
+
+  /*if (cellIndex == 34582703) {
+    std::cout << "pointsOnFace_size:  " << pointsOnFace.size() << std::endl;
+    std::cout << "terrainEdges_size:  " << terrainEdges.size() << std::endl;
+    for (int i = 0; i < terrainEdges.size(); i++) {
+      std::cout << "terrainEdges_1:  " << terrainEdges[i].values[0] << std::endl;
+      std::cout << "terrainEdges_2:  " << terrainEdges[i].values[1] << std::endl;
+    }
+    for (int i = 0; i < pointsOnFace.size(); i++) {
+      std::cout << "pointsOnFace_point:  " << pointsOnFace[i] << std::endl;
+    }
+  }*/
 
   // find list of triangles
   if (pointsOnFace.size() > 2) {
@@ -379,6 +404,11 @@ float Cut_cell::calculateAreaTopBot(std::vector<Vector3> &terrainPoints,
           Edge<int> abEdge(pointsOnFace[a], pointsOnFace[b]), acEdge(pointsOnFace[a], pointsOnFace[c]),
             bcEdge(pointsOnFace[b], pointsOnFace[c]);
           if ((std::find(terrainEdges.begin(), terrainEdges.end(), abEdge) != terrainEdges.end()) && (std::find(terrainEdges.begin(), terrainEdges.end(), acEdge) != terrainEdges.end()) && (std::find(terrainEdges.begin(), terrainEdges.end(), bcEdge) != terrainEdges.end())) {
+            /*if (cellIndex == 34895204) {
+              std::cout << "a:  " << a << std::endl;
+              std::cout << "b:  " << b << std::endl;
+              std::cout << "c:  " << c << std::endl;
+            }*/
             listOfTriangles.push_back(Vector3(terrainPoints[pointsOnFace[a]][0],
                                               terrainPoints[pointsOnFace[a]][1],
                                               terrainPoints[pointsOnFace[a]][2]));
@@ -390,6 +420,14 @@ float Cut_cell::calculateAreaTopBot(std::vector<Vector3> &terrainPoints,
                                               terrainPoints[pointsOnFace[c]][2]));
           }
         }
+  }
+
+  if (cellIndex == 35509585) {
+    for (int i = 0; i < listOfTriangles.size(); i++) {
+      std::cout << "listOfTriangles_x:  " << listOfTriangles[i][0] << std::endl;
+      std::cout << "listOfTriangles_y:  " << listOfTriangles[i][1] << std::endl;
+      std::cout << "listOfTriangles_z:  " << listOfTriangles[i][2] << std::endl;
+    }
   }
 
   // for all triangles, add the area to the total
@@ -407,13 +445,23 @@ float Cut_cell::calculateAreaTopBot(std::vector<Vector3> &terrainPoints,
 
     float tempArea = (a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1])) / 2.0f;
     area += (tempArea < 0.0f ? tempArea * -1.0f : tempArea);
+    if (cellIndex == 35509585) {
+      std::cout << "area:  " << area << std::endl;
+    }
   }
 
-  // when on the bottom, the area of triangles is the area of the air, so subtract it from the face size
-  if (!isBot)
-    area = dx * dy - area;
+  if (cellIndex == 35509585) {
+    std::cout << "area:  " << area << std::endl;
+  }
 
-  coef[cellIndex] = area / (dx * dy);
+  area = 1.0 - (area / (dx * dy));
+
+  if (area <= 0.05) {
+    area = 0.0;
+  }
+
+  coef[cellIndex] = area;
   S = (1.0 - coef[cellIndex]) * (dx * dy);
+
   return S;
 }

@@ -135,12 +135,6 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
   float ray_intersect;
   int num_crossing, vert_id, start_poly;
 
-  // if (building_number == 3674)
-  //{
-  //   return;
-  // }
-
-
   // Loop to calculate maximum and minimum of x and y values of the building
   x_min = x_max = polygonVertices[0].x_poly;
   y_min = y_max = polygonVertices[0].y_poly;
@@ -1758,6 +1752,9 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
       }
     }
 
+    float distance_x, distance_y, distance_z;
+    float distance;// Distance of cut face from the center of the cut-cell
+
     if (cut_points.size() > 0) {
       for (auto id = 0; id < cut_points.size(); id++) {
         int k = cut_cell_id[id] / ((WGD->nx - 1) * (WGD->ny - 1));
@@ -1826,6 +1823,20 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
         }
 
         solid_V_frac += ((cut_points[id].intersect[0].x_cut * (cut_points[id].ni) * S_cut) + (cut_points[id].intersect[0].y_cut * (cut_points[id].nj) * S_cut) + (cut_points[id].intersect[0].z_cut * (cut_points[id].nk) * S_cut)) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
+
+
+        distance_x = (cut_points[id].intersect[0].x_cut - WGD->x[i]) * cut_points[id].ni;
+        distance_y = (cut_points[id].intersect[0].y_cut - WGD->y[j]) * cut_points[id].nj;
+        distance_z = (cut_points[id].intersect[0].z_cut - WGD->z[k]) * cut_points[id].nk;
+
+        distance = sqrt(pow(distance_x, 2.0) + pow(distance_y, 2.0) + pow(distance_z, 2.0));
+
+        // If the cell center is not in solid
+        if (WGD->center_id[cut_cell_id[id]] == 1) {
+          WGD->wall_distance[cut_cell_id[id]] = distance;
+        } else {// If the cell center is inside solid
+          WGD->wall_distance[cut_cell_id[id]] = -distance;
+        }
 
         WGD->building_volume_frac[cut_cell_id[id]] -= solid_V_frac;
 
@@ -1943,78 +1954,82 @@ float PolyBuilding::calculateArea(WINDSGeneralData *WGD, std::vector<cutVert> &f
 
     coeff += (0.5 * (face_points[0].y_cut + face_points[face_points.size() - 1].y_cut) * (face_points[0].z_cut - face_points[face_points.size() - 1].z_cut)) / (WGD->dy * WGD->dz_array[k]) + (0.5 * (face_points[0].x_cut + face_points[face_points.size() - 1].x_cut) * (face_points[0].z_cut - face_points[face_points.size() - 1].z_cut)) / (WGD->dx * WGD->dz_array[k]) + (0.5 * (face_points[0].x_cut + face_points[face_points.size() - 1].x_cut) * (face_points[0].y_cut - face_points[face_points.size() - 1].y_cut)) / (WGD->dx * WGD->dy);
   }
-  coeff = 1.0 - coeff;
+  coeff = 1.0 - coeff;// Calculate area fraction coefficient for fluid part
 
-  if (coeff >= 0.0) {
-    if (index == 0) {
-      S = (1.0 - coeff) * (WGD->dy * WGD->dz_array[k]);
-      if (WGD->f[cutcell_index] == 1.0) {
-        WGD->f[cutcell_index] = coeff;
-      } else {
-        WGD->f[cutcell_index] -= (1.0 - coeff);
-        if (WGD->f[cutcell_index] < 0.0) {
-          WGD->f[cutcell_index] = 0.0;
-        }
+  if (coeff <= 0.05) {
+    coeff = 0.0;
+  } else if (coeff > 1.0) {
+    coeff = 1.0;
+  }
+
+  if (index == 0) {
+    S = (1.0 - coeff) * (WGD->dy * WGD->dz_array[k]);
+    if (WGD->f[cutcell_index] == 1.0) {
+      WGD->f[cutcell_index] = coeff;
+    } else {
+      WGD->f[cutcell_index] -= (1.0 - coeff);
+      if (WGD->f[cutcell_index] < 0.0) {
+        WGD->f[cutcell_index] = 0.0;
       }
     }
+  }
 
 
-    if (index == 1) {
-      S = (1.0 - coeff) * (WGD->dy * WGD->dz_array[k]);
-      if (WGD->e[cutcell_index] == 1.0) {
-        WGD->e[cutcell_index] = coeff;
-      } else {
-        WGD->e[cutcell_index] -= (1.0 - coeff);
-        if (WGD->e[cutcell_index] < 0.0) {
-          WGD->e[cutcell_index] = 0.0;
-        }
+  if (index == 1) {
+    S = (1.0 - coeff) * (WGD->dy * WGD->dz_array[k]);
+    if (WGD->e[cutcell_index] == 1.0) {
+      WGD->e[cutcell_index] = coeff;
+    } else {
+      WGD->e[cutcell_index] -= (1.0 - coeff);
+      if (WGD->e[cutcell_index] < 0.0) {
+        WGD->e[cutcell_index] = 0.0;
       }
     }
+  }
 
 
-    if (index == 2) {
-      S = (1.0 - coeff) * (WGD->dx * WGD->dz_array[k]);
-      if (WGD->h[cutcell_index] == 1.0) {
-        WGD->h[cutcell_index] = coeff;
-      } else {
-        WGD->h[cutcell_index] -= (1.0 - coeff);
-        if (WGD->h[cutcell_index] < 0.0) {
-          WGD->h[cutcell_index] = 0.0;
-        }
+  if (index == 2) {
+    S = (1.0 - coeff) * (WGD->dx * WGD->dz_array[k]);
+    if (WGD->h[cutcell_index] == 1.0) {
+      WGD->h[cutcell_index] = coeff;
+    } else {
+      WGD->h[cutcell_index] -= (1.0 - coeff);
+      if (WGD->h[cutcell_index] < 0.0) {
+        WGD->h[cutcell_index] = 0.0;
       }
     }
-    if (index == 3) {
-      S = (1.0 - coeff) * (WGD->dx * WGD->dz_array[k]);
-      if (WGD->g[cutcell_index] == 1.0) {
-        WGD->g[cutcell_index] = coeff;
-      } else {
-        WGD->g[cutcell_index] -= (1.0 - coeff);
-        if (WGD->g[cutcell_index] < 0.0) {
+  }
+  if (index == 3) {
+    S = (1.0 - coeff) * (WGD->dx * WGD->dz_array[k]);
+    if (WGD->g[cutcell_index] == 1.0) {
+      WGD->g[cutcell_index] = coeff;
+    } else {
+      WGD->g[cutcell_index] -= (1.0 - coeff);
+      if (WGD->g[cutcell_index] < 0.0) {
 
-          WGD->g[cutcell_index] = 0.0;
-        }
+        WGD->g[cutcell_index] = 0.0;
       }
     }
-    if (index == 4) {
-      S = (1.0 - coeff) * (WGD->dx * WGD->dy);
-      if (WGD->n[cutcell_index] == 1.0) {
-        WGD->n[cutcell_index] = coeff;
-      } else {
-        WGD->n[cutcell_index] -= (1.0 - coeff);
-        if (WGD->n[cutcell_index] < 0.0) {
-          WGD->n[cutcell_index] = 0.0;
-        }
+  }
+  if (index == 4) {
+    S = (1.0 - coeff) * (WGD->dx * WGD->dy);
+    if (WGD->n[cutcell_index] == 1.0) {
+      WGD->n[cutcell_index] = coeff;
+    } else {
+      WGD->n[cutcell_index] -= (1.0 - coeff);
+      if (WGD->n[cutcell_index] < 0.0) {
+        WGD->n[cutcell_index] = 0.0;
       }
     }
-    if (index == 5) {
-      S = (1.0 - coeff) * (WGD->dx * WGD->dy);
-      if (WGD->m[cutcell_index] == 1.0) {
-        WGD->m[cutcell_index] = coeff;
-      } else {
-        WGD->m[cutcell_index] -= (1.0 - coeff);
-        if (WGD->m[cutcell_index] < 0.0) {
-          WGD->m[cutcell_index] = 0.0;
-        }
+  }
+  if (index == 5) {
+    S = (1.0 - coeff) * (WGD->dx * WGD->dy);
+    if (WGD->m[cutcell_index] == 1.0) {
+      WGD->m[cutcell_index] = coeff;
+    } else {
+      WGD->m[cutcell_index] -= (1.0 - coeff);
+      if (WGD->m[cutcell_index] < 0.0) {
+        WGD->m[cutcell_index] = 0.0;
       }
     }
   }
