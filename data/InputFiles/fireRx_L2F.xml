@@ -8,7 +8,7 @@
   	<cellSize> 15.5 15.5 0.5 </cellSize> 			<!-- Mesh resolution (meters)-->
 
 	<verticalStretching> 0 </verticalStretching>
-	<totalTimeIncrements> 3600 </totalTimeIncrements>
+	<totalTimeIncrements> 11160 </totalTimeIncrements>
 	<rooftopFlag> 1 </rooftopFlag>
 	<upwindCavityFlag> 2 </upwindCavityFlag>
 	<streetCanyonFlag> 1 </streetCanyonFlag>

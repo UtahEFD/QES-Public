@@ -1130,25 +1130,27 @@ struct Fire::FireProperties Fire :: balbi(FuelProperties* fuel,float u_mid, floa
         ROSFlame = A*R*(1+sin(gamma) - cos (gamma))/(1 + R*cos(gamma)/(SAV*r_00));
         
         // ROS from convection
-        ROSConv = b*(tan(alpha) + 2*V_mid/u0*exp(-KDrag*R));
+        ROSConv = b*(tan(alpha) + 2*V_mid/u0*exp(-KDrag*R))*cos(psi);
         
         // Total ROS 
         R    = ROSBase + ROSFlame + ROSConv;
-	if(R < 0){
-		std::cout<<"ROS Base = "<<ROSBase<<": ROS Flame = "<<ROSFlame<<": ROS Conv = "<<ROSConv<<": gamma = "<<gamma<<": psi = "<<psi<<std::endl;
-		R = 0;
+	if(R < ROSBase){
+		//std::cout<<"ROS Base = "<<ROSBase<<": ROS Flame = "<<ROSFlame<<": ROS Conv = "<<ROSConv<<": gamma = "<<gamma<<": psi = "<<psi<<std::endl;
+		R = ROSBase;
 	}
         error = std::abs(R-R_old);
         
 	iter++;
+	/*
 	if(iter == 99){
 		std::cout<<"Balbi iteration reached: R = "<<R<<": R old = "<<R_old<<": one hour =  "<<oneHour<<std::endl;
 		std::cout<<"u = "<<u_mid<<": v = "<<v_mid<<": xnorm = "<<x_norm<<": ynorm = "<<y_norm<<": xslope = "<<x_slope<<": yslope = "<<y_slope<<std::endl;
 	}
-
+	*/
 	R_old = R;
       }
         
+
       // calculate flame depth
       float L = R*tau;
       if (isnan(L)){
