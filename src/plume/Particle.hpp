@@ -116,6 +116,18 @@ public:
   double vFluct;// v component
   double wFluct;// w component
 
+  // Particle displacements for each time step
+  double disX;
+  double disY;
+  double disZ;
+
+  // Total velocities (mean plus fluct) for each time step
+  double uTot;
+  double vTot;
+  double wTot;
+
+  double CoEps;
+
   // The velocity fluctuation for a particle from the last iteration
   double uFluct_old;// u component
   double vFluct_old;// v component
@@ -141,14 +153,15 @@ public:
   double d_m;// particle diameter diameter [m]
   double m;// particle mass [g]
   double m_kg;// particle mass [kg]
-  double rho;// density of particle
+  double rho;// density of particle [kg/m^3]
 
   // deposition vatiables
   double wdepos;// (1 - fraction) particle deposited [0,1]
   double Sc;// Schmidt number
   double taud;// characteristic relaxation time [s]
   double vd;// deposition velocity [m/s]
-
+  bool depFlag; // whether a particle deposits
+  
   // settling vatiables
   double dstar;// dimensionless grain diameter
   double Cd;// drag coefficent

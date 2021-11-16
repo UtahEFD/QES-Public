@@ -27,19 +27,16 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file AdvectParticle.cpp */
+/** @file DepositParticle.cpp */
 
 #include "Plume.hpp"
 
-//void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul)
-void Plume::advectParticle(double timeRemainder, double endTime, double simTime, std::list<Particle *>::iterator parItr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void Plume::depositParticle(double timeRemainder, std::list<Particle *>::iterator parItr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
 
   double rhoAir = 1.225;// in kg m^-3
   double nuAir = 1.506E-5;// in m^2 s^-1
 
-  // set settling velocity
-  (*parItr)->setSettlingVelocity(rhoAir, nuAir);
 
   // get the current isRogue and isActive information
   bool isRogue = (*parItr)->isRogue;
@@ -53,17 +50,9 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
   double yPos = (*parItr)->yPos;
   double zPos = (*parItr)->zPos;
 
-  double disX = 0.0;
-  double disY = 0.0;
-  double disZ = 0.0;
-
   double uMean = 0.0;
   double vMean = 0.0;
   double wMean = 0.0;
-
-  double uTot = 0.0;
-  double vTot = 0.0;
-  double wTot = 0.0;
 
   double flux_div_x = 0.0;
   double flux_div_y = 0.0;
@@ -157,7 +146,7 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
                                         std::abs(vMean) + std::abs(vFluct),
                                         std::abs(wMean) + std::abs(wFluct),
                                         timeRemainder);
-    std::cout << "par_dt = " << par_dt << std::endl;
+
     // update the par_time, useful for debugging
     //par_time = par_time + par_dt;
 
@@ -194,10 +183,6 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
     double xRandn = random::norRan();
     double yRandn = random::norRan();
     double zRandn = random::norRan();
-
-//    if (endTime - simTime > 898){
-//        std::cout << "xRandn = " << xRandn << "yRandn = " << yRandn << "zRandn = " << zRandn << std::endl; 
-//    }
 
     // now calculate a bunch of values for the current particle
     // calculate the time derivative of the stress tensor: (tau_current - tau_old)/dt
@@ -274,27 +259,72 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
     //    assert( isRogue == false );
 
     // now update the particle position for this iteration
-    disX = (uMean + uFluct) * par_dt;
-    disY = (vMean + vFluct) * par_dt;
-    disZ = (wMean + wFluct) * par_dt;
+    double disX = (uMean + uFluct) * par_dt;
+    double disY = (vMean + vFluct) * par_dt;
+    double disZ = (wMean + wFluct) * par_dt;
 
     xPos = xPos + disX;
     yPos = yPos + disY;
     zPos = zPos + disZ;
-   
-    uTot = uMean + uFluct;
-    vTot = vMean + vFluct;
-    wTot = wMean + wFluct;
-
-    // Deposit mass (vegetation only right now)
-    if ((*parItr)->depFlag == true){
-      depositParticle(endTime, simTime, xPos, yPos, zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, CoEps, parItr, WGD, TGD);
-    }
-    
     // check and do wall (building and terrain) reflection (based in the method)
     if (isActive == true) {
       isActive = (this->*wallReflection)(WGD, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct, uFluct_old, vFluct_old, wFluct_old);
     }
+
+
+
+
+
+
+    // Determine if particle was in veg cell last time step
+    xPos_old = (*parItr)->xPos - (*parItr)->disX;
+    yPos_old = (*parItr)->yPos - (*parItr)->disY;
+    zPos_old = (*parItr)->zPos - (*parItr)->disZ;
+
+    int cellId_old = eul->getCellId(xPos_old, yPos_old, zPos_old);
+   
+    // If so, calculate deposition fraction
+    if (WGD->icellflag[cellId_old] == 20){
+        utot = sqrt(()->)
+        taup=((*parItr)->rho*(1e-6*(*parItr)->d_m)**2)/(18*rhoAir*nuAir)*(1e-3*elementdiameter/(utot))**(-1);
+       
+        relamda=(sqrt(5*ustarz(im,jm,km)**2)*spatial_taylor_microscale(im,jm,km))/nuair;
+        
+        dimv = (1-1/(2.049*(relamda**0.3*taup)**1.19+1));
+        
+        releaf = 1e-3*elementdiameter*utot/nuair;
+        
+        gam = -6.5e-5*releaf+0.43; // non-impaction-surface weighting factor
+        
+        LAI_eff = leafAreaDensitydep*(1+gam);
+
+        depfrac =exp(-dimv*LAI_eff*vegDistance/2); 
+
+    }
+    else{
+        return;
+    }
+
+    // Decrement particle mass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // now apply boundary conditions
     if (isActive == true) isActive = (this->*enforceWallBCs_x)(xPos, uFluct, uFluct_old, domainXstart, domainXend);
@@ -340,16 +370,6 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
   (*parItr)->xPos = xPos;
   (*parItr)->yPos = yPos;
   (*parItr)->zPos = zPos;
-
-  (*parItr)->disX = disX;
-  (*parItr)->disY = disY;
-  (*parItr)->disZ = disZ;
-
-  (*parItr)->uTot = uTot;
-  (*parItr)->vTot = vTot;
-  (*parItr)->wTot = wTot;
-
-  (*parItr)->CoEps = CoEps;
 
   (*parItr)->uMean = uMean;
   (*parItr)->vMean = vMean;

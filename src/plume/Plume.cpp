@@ -227,7 +227,14 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
         this function does not do any manipulation on particleList
       */
 
-      advectParticle(timeRemainder, parItr, WGD, TGD);
+        
+//      std::cout << "particle mass: " << (*parItr)->m  << " particle diameter: " << (*parItr)->d << " wdepos = " << (*parItr)->wdepos << "\n";
+
+      advectParticle(timeRemainder, endTime, simTime, parItr, WGD, TGD);
+     
+      //if ((*parItr)->depFlag == true){
+      //  depositParticle(endTime, simTime, parItr, WGD, TGD);
+      //}
 
       // now update the isRogueCount and isNotActiveCount
       if ((*parItr)->isRogue == true) {

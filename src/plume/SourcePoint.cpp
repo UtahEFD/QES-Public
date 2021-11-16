@@ -35,7 +35,8 @@
  */
 
 #include "SourcePoint.hpp"
-
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 void SourcePoint::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -63,12 +64,19 @@ int SourcePoint::emitParticles(const float dt, const float currTime, std::list<P
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
 
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
-
       Particle *cPar = new Particle();
       cPar->xPos_init = posX;
       cPar->yPos_init = posY;
       cPar->zPos_init = posZ;
 
+      cPar->d = pD;
+      cPar->d_m = (1.0E-6)*pD;
+      cPar->rho = pRho;
+      cPar->m = sourceStrength/m_rType->m_numPar;
+      cPar->m_kg = sourceStrength/m_rType->m_numPar * (1.0E-3); 
+      cPar->depFlag = sourceDepFlag;
+      //std::cout << "m_numPar = " << m_rType->m_numPar << " particle mass in emitParticles = " << cPar->m << "\n";
+      
       cPar->tStrt = currTime;
 
       cPar->sourceIdx = sourceIdx;
