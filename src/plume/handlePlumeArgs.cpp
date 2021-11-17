@@ -27,11 +27,11 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Args.cpp */
+/** @file handlePlumeArgs.cpp */
 
-#include "Args.hpp"
+#include "handlePlumeArgs.hpp"
 
-Args::Args() : inputWINDSFile("windsout.nc"), inputTURBFile("turbout.nc")
+PlumeArgs::PlumeArgs() : inputWINDSFile("windsout.nc"), inputTURBFile("turbout.nc")
 {
   reg("help", "help/usage information", ArgumentParsing::NONE, '?');
   reg("inputQESFile", "specifies input xml settings file", ArgumentParsing::STRING, 'q');
@@ -51,7 +51,7 @@ Args::Args() : inputWINDSFile("windsout.nc"), inputTURBFile("turbout.nc")
   reg("verbose", "should command line output include verbose info", ArgumentParsing::NONE, 'v');
 }
 
-void Args::processArguments(int argc, char *argv[])
+void PlumeArgs::processArguments(int argc, char *argv[])
 {
   processCommandLineArgs(argc, argv);
 

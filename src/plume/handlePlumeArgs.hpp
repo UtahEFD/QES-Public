@@ -27,7 +27,8 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Args.hpp 
+/** @file handlePlumeArgs.hpp 
+ * @class PlumeArgs
  * @brief This class handles different commandline options and arguments
  * and places the values into variables.
  *
@@ -42,12 +43,12 @@
 #include "util/doesFolderExist.h"
 #include "util/ArgumentParsing.h"
 
-class Args : public ArgumentParsing
+class PlumeArgs : public ArgumentParsing
 {
 public:
-  Args();
+  PlumeArgs();
 
-  ~Args()
+  ~PlumeArgs()
   {
   }
 

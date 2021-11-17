@@ -1,7 +1,5 @@
-include_directories(${CMAKE_SOURCE_DIR})
-
+include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../util)
 
 #INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/quicutil)  
 #LINK_DIRECTORIES (${CMAKE_BINARY_DIR}/quicutil/)
@@ -10,7 +8,7 @@ CUDA_ADD_LIBRARY( qesplumecore
     
     Random.cpp
         
-    Args.cpp
+    handlePlumeArgs.cpp
     
     Interp.cpp
     InterpNearestCell.cpp

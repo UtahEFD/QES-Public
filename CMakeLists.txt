@@ -223,7 +223,7 @@ endif (DOXYGEN_FOUND)
 enable_testing() # once
 include(CTest)
 
-add_subdirectory(util)
+add_subdirectory(src/util)
 add_subdirectory(src/winds)
 add_subdirectory(src/plume)
 

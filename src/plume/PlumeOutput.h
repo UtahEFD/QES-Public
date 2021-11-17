@@ -41,7 +41,7 @@
 #include <string>
 
 #include "PlumeInputData.hpp"
-#include "src/winds/WINDSGeneralData.h"
+#include "winds/WINDSGeneralData.h"
 
 #include "util/QESNetCDFOutput.h"
 

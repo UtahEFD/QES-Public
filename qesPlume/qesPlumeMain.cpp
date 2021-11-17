@@ -14,18 +14,18 @@
 #include "util/calcTime.h"
 
 
-#include "src/plume/Args.hpp"
-#include "src/plume/PlumeInputData.hpp"
+#include "plume/handlePlumeArgs.hpp"
+#include "plume/PlumeInputData.hpp"
 #include "util/NetCDFInput.h"
 
-#include "src/winds/WINDSGeneralData.h"
-#include "src/winds/TURBGeneralData.h"
+#include "winds/WINDSGeneralData.h"
+#include "winds/TURBGeneralData.h"
 
-#include "src/plume/Plume.hpp"
+#include "plume/Plume.hpp"
 
 #include "util/QESNetCDFOutput.h"
-#include "src/plume/PlumeOutput.h"
-#include "src/plume/PlumeOutputParticleData.h"
+#include "plume/PlumeOutput.h"
+#include "plume/PlumeOutputParticleData.h"
 
 
 // LA do these need to be here???
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
   std::cout << "##############################################################" << std::endl;
 
   // parse command line arguments
-  Args arguments;
+  PlumeArgs arguments;
   arguments.processArguments(argc, argv);
 
   // parse xml settings

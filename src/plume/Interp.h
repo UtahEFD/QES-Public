@@ -47,8 +47,8 @@
 #include "util/Vector3Double.h"
 
 #include "PlumeInputData.hpp"
-#include "src/winds/WINDSGeneralData.h"
-#include "src/winds/TURBGeneralData.h"
+#include "winds/WINDSGeneralData.h"
+#include "winds/TURBGeneralData.h"
 
 
 class Interp

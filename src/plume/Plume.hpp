@@ -49,11 +49,10 @@
 #include "PlumeOutput.h"
 #include "PlumeOutputParticleData.h"
 
-#include "Args.hpp"
 #include "PlumeInputData.hpp"
 
-#include "src/winds/WINDSGeneralData.h"
-#include "src/winds/TURBGeneralData.h"
+#include "winds/WINDSGeneralData.h"
+#include "winds/TURBGeneralData.h"
 
 #include "Interp.h"
 #include "InterpNearestCell.h"
@@ -77,7 +76,6 @@ public:
   // then sets up the concentration sampling box information for output
   // next copies important input time values and calculates needed time information
   // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
-  //Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, Args *);
   Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *);
 
   // this is the plume solver. It performs a time integration of the particle positions and particle velocity fluctuations

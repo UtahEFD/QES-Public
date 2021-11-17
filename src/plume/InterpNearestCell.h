@@ -47,10 +47,6 @@
 #include "Interp.h"
 #include "PlumeInputData.hpp"
 
-#include "src/winds/WINDSGeneralData.h"
-#include "src/winds/TURBGeneralData.h"
-
-
 class InterpNearestCell : public Interp
 {
 
