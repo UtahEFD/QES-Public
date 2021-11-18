@@ -5,25 +5,25 @@
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
-#include "QESNetCDFOutput.h"
+#include "util/QESNetCDFOutput.h"
 
-#include "handleWINDSArgs.h"
+#include "winds/handleWINDSArgs.h"
 
-#include "WINDSInputData.h"
-#include "WINDSGeneralData.h"
-#include "WINDSOutputVisualization.h"
-#include "WINDSOutputWorkspace.h"
+#include "winds/WINDSInputData.h"
+#include "winds/WINDSGeneralData.h"
+#include "winds/WINDSOutputVisualization.h"
+#include "winds/WINDSOutputWorkspace.h"
 
-#include "TURBGeneralData.h"
-#include "TURBOutput.h"
+#include "winds/TURBGeneralData.h"
+#include "winds/TURBOutput.h"
 
-#include "Solver.h"
-#include "CPUSolver.h"
-#include "DynamicParallelism.h"
-#include "GlobalMemory.h"
-#include "SharedMemory.h"
+#include "winds/Solver.h"
+#include "winds/CPUSolver.h"
+#include "winds/DynamicParallelism.h"
+#include "winds/GlobalMemory.h"
+#include "winds/SharedMemory.h"
 
-#include "Sensor.h"
+#include "winds/Sensor.h"
 
 namespace bt = boost::posix_time;
 
@@ -156,9 +156,8 @@ int main(int argc, char *argv[])
 
     // Run turbulence
     if (TGD != nullptr) {
-      TGD->run(WGD);
+      TGD->run();
     }
-
     // /////////////////////////////
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...

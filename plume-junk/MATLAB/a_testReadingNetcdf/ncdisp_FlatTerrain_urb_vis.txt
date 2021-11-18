@@ -1,0 +1,68 @@
+Source:
+           FlatTerrain_urb_vis.nc
+Format:
+           netcdf4
+Global Attributes:
+           _NCProperties = 'version=1|netcdflibversion=4.4.1|hdf5libversion=1.8.17'
+Dimensions:
+           t = 1     (UNLIMITED)
+           x = 200
+           y = 200
+           z = 200
+Variables:
+    t    
+           Size:       1x1
+           Dimensions: t
+           Datatype:   double
+           Attributes:
+                       units     = 's'
+                       long_name = 'time'
+    icell
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   int32
+           Attributes:
+                       units     = '--'
+                       long_name = 'icell flag value'
+    x    
+           Size:       200x1
+           Dimensions: x
+           Datatype:   single
+           Attributes:
+                       units     = 'm'
+                       long_name = 'x-distance'
+    y    
+           Size:       200x1
+           Dimensions: y
+           Datatype:   single
+           Attributes:
+                       units     = 'm'
+                       long_name = 'y-distance'
+    z    
+           Size:       200x1
+           Dimensions: z
+           Datatype:   single
+           Attributes:
+                       units     = 'm'
+                       long_name = 'z-distance'
+    u    
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-1'
+                       long_name = 'x-component velocity'
+    v    
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-1'
+                       long_name = 'y-component velocity'
+    w    
+           Size:       200x200x200x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-1'
+                       long_name = 'z-component velocity'
