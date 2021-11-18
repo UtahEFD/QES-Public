@@ -1204,7 +1204,7 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
         solid_V_frac += (((terrainPoints[0][0] - location[0]) * ni * S_cut) + ((terrainPoints[0][1] - location[1]) * nj * S_cut) + ((terrainPoints[0][2] - location[2]) * nk * S_cut)) / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
       }
 
-      if (iii == 208 && jjj == 318 && kkk == 115) {
+      /*if (iii == 208 && jjj == 318 && kkk == 115) {
         std::cout << "iii:   " << iii << std::endl;
         std::cout << "jjj:   " << jjj << std::endl;
         std::cout << "kkk:   " << kkk << std::endl;
@@ -1221,7 +1221,7 @@ void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, in
         std::cout << "S_right:  " << WGD->h[cutcell_index] << std::endl;
         std::cout << "S_below:  " << WGD->n[cutcell_index] << std::endl;
         std::cout << "S_above:  " << WGD->m[cutcell_index] << std::endl;
-      }
+      }*/
 
       distance_x = (terrainPoints[0][0] - WGD->x[iii]) * ni;
       distance_y = (terrainPoints[0][1] - WGD->y[jjj]) * nj;

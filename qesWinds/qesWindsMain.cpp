@@ -179,48 +179,64 @@ int main(int argc, char *argv[])
     // Applying the log law and solver iteratively
     if (WID->simParams->logLawFlag == 1) {
       WID->simParams->maxIterations = tempMaxIter;
-      int ii = 208;
+      /*int ii = 208;
       int j = 318;
       int k = 115;
       int icell_face = ii + j * WGD->nx + k * WGD->nx * WGD->ny;
       int icell_cent = ii + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
       std::cout << "WGD->icellflag[icell_cent]:   " << WGD->icellflag[icell_cent] << std::endl;
-      std::cout << "solver->lambda[icell_cent]:   " << solver->lambda[icell_cent] << std::endl;
-      std::cout << "solver->R[icell_cent]:   " << solver->R[icell_cent] << std::endl;
-      std::cout << "solver->lambda_old[icell_cent]:   " << solver->lambda_old[icell_cent] << std::endl;
+      std::cout << "WGD->icellflag[icell_cent-1]:   " << WGD->icellflag[icell_cent - 1] << std::endl;
+      std::cout << "WGD->icellflag[icell_cent+1]:   " << WGD->icellflag[icell_cent + 1] << std::endl;
+      std::cout << "WGD->icellflag[icell_cent-(WGD->nx - 1)]:   " << WGD->icellflag[icell_cent - (WGD->nx - 1)] << std::endl;
+      std::cout << "WGD->icellflag[icell_cent+(WGD->nx - 1)]:   " << WGD->icellflag[icell_cent + (WGD->nx - 1)] << std::endl;
+      std::cout << "WGD->icellflag[icell_cent-(WGD->nx - 1) * (WGD->ny - 1)]:   " << WGD->icellflag[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] << std::endl;
+      std::cout << "WGD->icellflag[icell_cent+(WGD->nx - 1) * (WGD->ny - 1)]:   " << WGD->icellflag[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] << std::endl;
+
       std::cout << "WGD->u0[icell_face]:   " << WGD->u0[icell_face] << std::endl;
-      std::cout << "WGD->v0[icell_face]:   " << WGD->v0[icell_face] << std::endl;
-      std::cout << "WGD->w0[icell_face]:   " << WGD->w0[icell_face] << std::endl;
       std::cout << "WGD->u0[icell_face+1]:   " << WGD->u0[icell_face + 1] << std::endl;
+      std::cout << "WGD->v0[icell_face]:   " << WGD->v0[icell_face] << std::endl;
       std::cout << "WGD->v0[icell_face+WGD->nx]:   " << WGD->v0[icell_face + WGD->nx] << std::endl;
-      std::cout << "WGD->w0[icell_face+WGD->nx * WGD->ny]:   " << WGD->w0[icell_face + WGD->nx * WGD->ny] << std::endl;
+      std::cout << "WGD->w0[icell_face]:   " << WGD->w0[icell_face] << std::endl;
+      std::cout << "WGD->w0[icell_face+WGD->nx * WGD->ny]:   " << WGD->w0[icell_face + WGD->nx * WGD->ny] << std::endl;*/
       solver->solve(WID, WGD, !arguments.solveWind);
 
-
+      solver->lambda_old = solver->lambda;
       WGD->u0 = WGD->u;
       WGD->v0 = WGD->v;
       WGD->w0 = WGD->w;
       /*std::cout << "solver->lambda[icell_cent]:   " << solver->lambda[icell_cent] << std::endl;
-      std::cout << "solver->lambda_old[icell_cent]:   " << solver->lambda_old[icell_cent] << std::endl;
+      std::cout << "solver->lambda[icell_cent-1]:   " << solver->lambda[icell_cent - 1] << std::endl;
+      std::cout << "solver->lambda[icell_cent+1]:   " << solver->lambda[icell_cent + 1] << std::endl;
+      std::cout << "solver->lambda[icell_cent-(WGD->nx - 1)]:   " << solver->lambda[icell_cent - (WGD->nx - 1)] << std::endl;
+      std::cout << "solver->lambda[icell_cent+(WGD->nx - 1)]:   " << solver->lambda[icell_cent + (WGD->nx - 1)] << std::endl;
+      std::cout << "solver->lambda[icell_cent-(WGD->nx - 1) * (WGD->ny - 1)]:   " << solver->lambda[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] << std::endl;
+      std::cout << "solver->lambda[icell_cent+(WGD->nx - 1) * (WGD->ny - 1)]:   " << solver->lambda[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] << std::endl;
+
       std::cout << "solver->R[icell_cent]:   " << solver->R[icell_cent] << std::endl;
-      std::cout << "WGD->u0[icell_face]1:   " << WGD->u0[icell_face] << std::endl;
-      std::cout << "WGD->v0[icell_face]1:   " << WGD->v0[icell_face] << std::endl;
-      std::cout << "WGD->w0[icell_face]1:   " << WGD->w0[icell_face] << std::endl;
-      std::cout << "WGD->u0[icell_face+1]1:   " << WGD->u0[icell_face + 1] << std::endl;
-      std::cout << "WGD->v0[icell_face+WGD->nx]1:   " << WGD->v0[icell_face + WGD->nx] << std::endl;
-      std::cout << "WGD->w0[icell_face+WGD->nx * WGD->ny]1:   " << WGD->w0[icell_face + WGD->nx * WGD->ny] << std::endl;*/
+      std::cout << "solver->R[icell_cent-1]:   " << solver->R[icell_cent - 1] << std::endl;
+      std::cout << "solver->R[icell_cent+1]:   " << solver->R[icell_cent + 1] << std::endl;
+      std::cout << "solver->R[icell_cent-(WGD->nx - 1)]:   " << solver->R[icell_cent - (WGD->nx - 1)] << std::endl;
+      std::cout << "solver->R[icell_cent+(WGD->nx - 1)]:   " << solver->R[icell_cent + (WGD->nx - 1)] << std::endl;
+      std::cout << "solver->R[icell_cent-(WGD->nx - 1) * (WGD->ny - 1)]:   " << solver->R[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] << std::endl;
+      std::cout << "solver->R[icell_cent+(WGD->nx - 1) * (WGD->ny - 1)]:   " << solver->R[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] << std::endl;*/
+
       WGD->wall->wallLogBC(WGD);
       for (int i = 0; i < numIterations; i++) {
         WID->simParams->maxIterations = 500;
-        std::cout << "solver->lambda[icell_cent]:   " << solver->lambda[icell_cent] << std::endl;
-        std::cout << "solver->lambda_old[icell_cent]:   " << solver->lambda_old[icell_cent] << std::endl;
-        std::cout << "solver->R[icell_cent]:   " << solver->R[icell_cent] << std::endl;
-        std::cout << "WGD->u0[icell_face]2:   " << WGD->u0[icell_face] << std::endl;
-        std::cout << "WGD->v0[icell_face]2:   " << WGD->v0[icell_face] << std::endl;
-        std::cout << "WGD->w0[icell_face]2:   " << WGD->w0[icell_face] << std::endl;
-        std::cout << "WGD->u0[icell_face+1]2:   " << WGD->u0[icell_face + 1] << std::endl;
-        std::cout << "WGD->v0[icell_face+WGD->nx]2:   " << WGD->v0[icell_face + WGD->nx] << std::endl;
-        std::cout << "WGD->w0[icell_face+WGD->nx * WGD->ny]2:   " << WGD->w0[icell_face + WGD->nx * WGD->ny] << std::endl;
+        /*std::cout << "i:   " << i << std::endl;
+        std::cout << "WGD->u0[icell_face]:   " << WGD->u0[icell_face] << std::endl;
+        std::cout << "WGD->u0[icell_face+1]:   " << WGD->u0[icell_face + 1] << std::endl;
+        std::cout << "WGD->v0[icell_face]:   " << WGD->v0[icell_face] << std::endl;
+        std::cout << "WGD->v0[icell_face+WGD->nx]:   " << WGD->v0[icell_face + WGD->nx] << std::endl;
+        std::cout << "WGD->w0[icell_face]:   " << WGD->w0[icell_face] << std::endl;
+        std::cout << "WGD->w0[icell_face+WGD->nx * WGD->ny]:   " << WGD->w0[icell_face + WGD->nx * WGD->ny] << std::endl;
+
+        std::cout << "WGD->e[icell_cent]:   " << WGD->e[icell_cent] << std::endl;
+        std::cout << "WGD->f[icell_cent]:   " << WGD->f[icell_cent] << std::endl;
+        std::cout << "WGD->g[icell_cent]:   " << WGD->g[icell_cent] << std::endl;
+        std::cout << "WGD->h[icell_cent]:   " << WGD->h[icell_cent] << std::endl;
+        std::cout << "WGD->m[icell_cent]:   " << WGD->m[icell_cent] << std::endl;
+        std::cout << "WGD->n[icell_cent]:   " << WGD->n[icell_cent] << std::endl;*/
         /*solver->lambda.clear();
         solver->lambda_old.clear();
         solver->lambda.resize(WGD->numcell_cent, 0.0);
@@ -229,46 +245,39 @@ int main(int argc, char *argv[])
         solver->R.resize(WGD->numcell_cent, 0.0);*/
         // Run WINDS simulation code
         solver->solve(WID, WGD, !arguments.solveWind);
+
+        solver->lambda_old = solver->lambda;
         WGD->u0 = WGD->u;
         WGD->v0 = WGD->v;
         WGD->w0 = WGD->w;
-        std::cout << "solver->lambda[icell_cent]:   " << solver->lambda[icell_cent] << std::endl;
-        std::cout << "solver->lambda_old[icell_cent]:   " << solver->lambda_old[icell_cent] << std::endl;
+        /*std::cout << "solver->lambda[icell_cent]:   " << solver->lambda[icell_cent] << std::endl;
+        std::cout << "solver->lambda[icell_cent-1]:   " << solver->lambda[icell_cent - 1] << std::endl;
+        std::cout << "solver->lambda[icell_cent+1]:   " << solver->lambda[icell_cent + 1] << std::endl;
+        std::cout << "solver->lambda[icell_cent-(WGD->nx - 1)]:   " << solver->lambda[icell_cent - (WGD->nx - 1)] << std::endl;
+        std::cout << "solver->lambda[icell_cent+(WGD->nx - 1)]:   " << solver->lambda[icell_cent + (WGD->nx - 1)] << std::endl;
+        std::cout << "solver->lambda[icell_cent-(WGD->nx - 1) * (WGD->ny - 1)]:   " << solver->lambda[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] << std::endl;
+        std::cout << "solver->lambda[icell_cent+(WGD->nx - 1) * (WGD->ny - 1)]:   " << solver->lambda[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] << std::endl;
+
         std::cout << "solver->R[icell_cent]:   " << solver->R[icell_cent] << std::endl;
-        std::cout << "WGD->u0[icell_face]3:   " << WGD->u0[icell_face] << std::endl;
-        std::cout << "WGD->v0[icell_face]3:   " << WGD->v0[icell_face] << std::endl;
-        std::cout << "WGD->w0[icell_face]3:   " << WGD->w0[icell_face] << std::endl;
-        std::cout << "WGD->u0[icell_face+1]3:   " << WGD->u0[icell_face + 1] << std::endl;
-        std::cout << "WGD->v0[icell_face+WGD->nx]3:   " << WGD->v0[icell_face + WGD->nx] << std::endl;
-        std::cout << "WGD->w0[icell_face+WGD->nx * WGD->ny]3:   " << WGD->w0[icell_face + WGD->nx * WGD->ny] << std::endl;
+        std::cout << "solver->R[icell_cent-1]:   " << solver->R[icell_cent - 1] << std::endl;
+        std::cout << "solver->R[icell_cent+1]:   " << solver->R[icell_cent + 1] << std::endl;
+        std::cout << "solver->R[icell_cent-(WGD->nx - 1)]:   " << solver->R[icell_cent - (WGD->nx - 1)] << std::endl;
+        std::cout << "solver->R[icell_cent+(WGD->nx - 1)]:   " << solver->R[icell_cent + (WGD->nx - 1)] << std::endl;
+        std::cout << "solver->R[icell_cent-(WGD->nx - 1) * (WGD->ny - 1)]:   " << solver->R[icell_cent - (WGD->nx - 1) * (WGD->ny - 1)] << std::endl;
+        std::cout << "solver->R[icell_cent+(WGD->nx - 1) * (WGD->ny - 1)]:   " << solver->R[icell_cent + (WGD->nx - 1) * (WGD->ny - 1)] << std::endl;*/
 
         WGD->wall->wallLogBC(WGD);
-        std::cout << "solver->lambda[icell_cent]:   " << solver->lambda[icell_cent] << std::endl;
-        std::cout << "solver->lambda_old[icell_cent]:   " << solver->lambda_old[icell_cent] << std::endl;
-        std::cout << "solver->R[icell_cent]:   " << solver->R[icell_cent] << std::endl;
-        std::cout << "WGD->u0[icell_face]4:   " << WGD->u0[icell_face] << std::endl;
-        std::cout << "WGD->v0[icell_face]4:   " << WGD->v0[icell_face] << std::endl;
-        std::cout << "WGD->w0[icell_face]4:   " << WGD->w0[icell_face] << std::endl;
-        std::cout << "WGD->u0[icell_face+1]4:   " << WGD->u0[icell_face + 1] << std::endl;
-        std::cout << "WGD->v0[icell_face+WGD->nx]4:   " << WGD->v0[icell_face + WGD->nx] << std::endl;
-        std::cout << "WGD->w0[icell_face+WGD->nx * WGD->ny]4:   " << WGD->w0[icell_face + WGD->nx * WGD->ny] << std::endl;
+        /*std::cout << "WGD->u0[icell_face]:   " << WGD->u0[icell_face] << std::endl;
+        std::cout << "WGD->u0[icell_face+1]:   " << WGD->u0[icell_face + 1] << std::endl;
+        std::cout << "WGD->v0[icell_face]:   " << WGD->v0[icell_face] << std::endl;
+        std::cout << "WGD->v0[icell_face+WGD->nx]:   " << WGD->v0[icell_face + WGD->nx] << std::endl;
+        std::cout << "WGD->w0[icell_face]:   " << WGD->w0[icell_face] << std::endl;
+        std::cout << "WGD->w0[icell_face+WGD->nx * WGD->ny]:   " << WGD->w0[icell_face + WGD->nx * WGD->ny] << std::endl;*/
       }
       WGD->u = WGD->u0;
       WGD->v = WGD->v0;
       WGD->w = WGD->w0;
-      /*std::cout << "solver->lambda[icell_cent]:   " << solver->lambda[icell_cent] << std::endl;
-      std::cout << "solver->lambda_old[icell_cent]:   " << solver->lambda_old[icell_cent] << std::endl;
-      std::cout << "solver->R[icell_cent]:   " << solver->R[icell_cent] << std::endl;
-      std::cout << "WGD->u[icell_face]:   " << WGD->u[icell_face] << std::endl;
-      std::cout << "WGD->v[icell_face]:   " << WGD->v[icell_face] << std::endl;
-      std::cout << "WGD->w[icell_face]:   " << WGD->w[icell_face] << std::endl;
-      std::cout << "WGD->u[icell_face+1]:   " << WGD->u[icell_face + 1] << std::endl;
-      std::cout << "WGD->v[icell_face+WGD->nx]:   " << WGD->v[icell_face + WGD->nx] << std::endl;
-      std::cout << "WGD->w[icell_face+WGD->nx * WGD->ny]:   " << WGD->w[icell_face + WGD->nx * WGD->ny] << std::endl;*/
     } else {
-      /*solver->lambda.resize(WGD->numcell_cent, 0.0);
-      solver->lambda_old.resize(WGD->numcell_cent, 0.0);
-      solver->R.resize(WGD->numcell_cent, 0.0);*/
       // Run WINDS simulation code
       solver->solve(WID, WGD, !arguments.solveWind);
     }

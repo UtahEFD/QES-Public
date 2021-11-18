@@ -265,45 +265,6 @@ void Cut_cell::mergeSort(std::vector<float> &angle, std::vector<Vector3> &cutPoi
   return;
 }
 
-/*
-{
-
-    std::vector<float> angle_temp (cut_points.size(), 0.0);
-    std::vector<float> angle_max (cut_points.size(), 0.0);
-    std::vector<Vector3<float>> cut_points_temp;
-    std::vector<int> imax (cut_points.size(),0);
-
-    cut_points_temp = cut_points;
-
-    for (int i=0; i<cut_points.size(); i++)
-    {
-        imax[i] = i;
-        angle_max[i] = -180;
-        angle_temp[i] = angle[i];
-    }
-
-    for (int i=0; i<cut_points.size(); i++)
-    {
-        for (int j=0; j<cut_points.size(); j++)
-        {
-            if (angle[j] > angle_max[i]){
-                angle_max[i] = angle[j];
-                imax[i] = j;
-            }
-        }
-        angle[imax[i]] = -999;
-    }
-
-    for (int i=0; i<cut_points.size(); i++)
-    {
-        cut_points[i][0] = cut_points_temp[imax[cut_points.size()-1-i]][0];
-        cut_points[i][1] = cut_points_temp[imax[cut_points.size()-1-i]][1];
-        cut_points[i][2] = cut_points_temp[imax[cut_points.size()-1-i]][2];
-        angle[i] = angle_temp[imax[cut_points.size()-1-i]];
-    }
-
-}*/
-
 float Cut_cell::calculateArea(std::vector<Vector3> &cut_points, int cutcell_index, float dx, float dy, float dz, std::vector<float> &n, std::vector<float> &m, std::vector<float> &f, std::vector<float> &e, std::vector<float> &h, std::vector<float> &g, int index)
 {
   float S = 0.0;
@@ -367,32 +328,12 @@ float Cut_cell::calculateAreaTopBot(std::vector<Vector3> &terrainPoints,
   std::vector<Vector3> listOfTriangles;// each point is a vector3, the triangle is 3 points
   float faceHeight = location[2] + (isBot ? 0.0f : dz);// face height is 0 if we are on the bottom, otherwise add dz_array
 
-  if (cellIndex == 35509585) {
-    std::cout << "faceHeight:  " << faceHeight << std::endl;
-    for (int i = 0; i < terrainPoints.size(); i++) {
-      std::cout << "terrainPoints_x:  " << terrainPoints[i][0] << std::endl;
-      std::cout << "terrainPoints_y:  " << terrainPoints[i][1] << std::endl;
-      std::cout << "terrainPoints_z:  " << terrainPoints[i][2] << std::endl;
-    }
-  }
   // find all points in the terrain on this face
   for (int i = 0; i < terrainPoints.size(); i++) {
     if (terrainPoints[i][2] >= faceHeight) {
       pointsOnFace.push_back(i);
     }
   }
-
-  /*if (cellIndex == 34582703) {
-    std::cout << "pointsOnFace_size:  " << pointsOnFace.size() << std::endl;
-    std::cout << "terrainEdges_size:  " << terrainEdges.size() << std::endl;
-    for (int i = 0; i < terrainEdges.size(); i++) {
-      std::cout << "terrainEdges_1:  " << terrainEdges[i].values[0] << std::endl;
-      std::cout << "terrainEdges_2:  " << terrainEdges[i].values[1] << std::endl;
-    }
-    for (int i = 0; i < pointsOnFace.size(); i++) {
-      std::cout << "pointsOnFace_point:  " << pointsOnFace[i] << std::endl;
-    }
-  }*/
 
   // find list of triangles
   if (pointsOnFace.size() > 2) {
@@ -404,11 +345,6 @@ float Cut_cell::calculateAreaTopBot(std::vector<Vector3> &terrainPoints,
           Edge<int> abEdge(pointsOnFace[a], pointsOnFace[b]), acEdge(pointsOnFace[a], pointsOnFace[c]),
             bcEdge(pointsOnFace[b], pointsOnFace[c]);
           if ((std::find(terrainEdges.begin(), terrainEdges.end(), abEdge) != terrainEdges.end()) && (std::find(terrainEdges.begin(), terrainEdges.end(), acEdge) != terrainEdges.end()) && (std::find(terrainEdges.begin(), terrainEdges.end(), bcEdge) != terrainEdges.end())) {
-            /*if (cellIndex == 34895204) {
-              std::cout << "a:  " << a << std::endl;
-              std::cout << "b:  " << b << std::endl;
-              std::cout << "c:  " << c << std::endl;
-            }*/
             listOfTriangles.push_back(Vector3(terrainPoints[pointsOnFace[a]][0],
                                               terrainPoints[pointsOnFace[a]][1],
                                               terrainPoints[pointsOnFace[a]][2]));
@@ -422,13 +358,13 @@ float Cut_cell::calculateAreaTopBot(std::vector<Vector3> &terrainPoints,
         }
   }
 
-  if (cellIndex == 35509585) {
+  /*if (cellIndex == 35509585) {
     for (int i = 0; i < listOfTriangles.size(); i++) {
       std::cout << "listOfTriangles_x:  " << listOfTriangles[i][0] << std::endl;
       std::cout << "listOfTriangles_y:  " << listOfTriangles[i][1] << std::endl;
       std::cout << "listOfTriangles_z:  " << listOfTriangles[i][2] << std::endl;
     }
-  }
+  }*/
 
   // for all triangles, add the area to the total
   for (int t = 0; t < listOfTriangles.size(); t = t + 3) {
@@ -445,13 +381,6 @@ float Cut_cell::calculateAreaTopBot(std::vector<Vector3> &terrainPoints,
 
     float tempArea = (a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]) + c[0] * (a[1] - b[1])) / 2.0f;
     area += (tempArea < 0.0f ? tempArea * -1.0f : tempArea);
-    if (cellIndex == 35509585) {
-      std::cout << "area:  " << area << std::endl;
-    }
-  }
-
-  if (cellIndex == 35509585) {
-    std::cout << "area:  " << area << std::endl;
   }
 
   area = 1.0 - (area / (dx * dy));

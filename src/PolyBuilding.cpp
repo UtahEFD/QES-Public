@@ -1847,6 +1847,27 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
         if (WGD->building_volume_frac[cut_cell_id[id]] < 0.0) {
           WGD->building_volume_frac[cut_cell_id[id]] = 0.0;
         }
+
+        if (WGD->building_volume_frac[cut_cell_id[id]] <= 0.1) {
+          WGD->icellflag[cut_cell_id[id]] = 0;
+          WGD->e[cut_cell_id[id]] = 1.0;
+          WGD->f[cut_cell_id[id]] = 1.0;
+          WGD->g[cut_cell_id[id]] = 1.0;
+          WGD->h[cut_cell_id[id]] = 1.0;
+          WGD->m[cut_cell_id[id]] = 1.0;
+          WGD->n[cut_cell_id[id]] = 1.0;
+        }
+
+        if (WGD->e[cut_cell_id[id]] == 0.0 && WGD->f[cut_cell_id[id]] == 0.0 && WGD->g[cut_cell_id[id]] == 0.0
+            && WGD->h[cut_cell_id[id]] == 0.0 && WGD->m[cut_cell_id[id]] == 0.0 && WGD->n[cut_cell_id[id]] == 0.0) {
+          WGD->icellflag[cut_cell_id[id]] = 0;
+          WGD->e[cut_cell_id[id]] = 1.0;
+          WGD->f[cut_cell_id[id]] = 1.0;
+          WGD->g[cut_cell_id[id]] = 1.0;
+          WGD->h[cut_cell_id[id]] = 1.0;
+          WGD->m[cut_cell_id[id]] = 1.0;
+          WGD->n[cut_cell_id[id]] = 1.0;
+        }
       }
     }
   }
