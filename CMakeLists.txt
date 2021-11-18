@@ -223,13 +223,16 @@ endif (DOXYGEN_FOUND)
 enable_testing() # once
 include(CTest)
 
-add_subdirectory(util)
-add_subdirectory(src)
+add_subdirectory(src/util)
+add_subdirectory(src/winds)
+add_subdirectory(src/plume)
 
 add_subdirectory(scratch)
 
 add_subdirectory(qesWinds)
 add_subdirectory(qesCanopy)
+add_subdirectory(qesPlume)
+add_subdirectory(qes)
 add_subdirectory(tests)
 
 option(ENABLE_ALL_TESTS "Enables all tests for an extensive test run" OFF) # will not override CPU/GPU selection

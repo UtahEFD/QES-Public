@@ -1,0 +1,40 @@
+<plumeParameters>
+	<simDur> 12.0 </simDur>
+	<timeStep> 0.1 </timeStep>
+    <CourantNumber> 0.0 </CourantNumber>
+  	<invarianceTol> 1e-10 </invarianceTol>
+	<C_0> 1.0 </C_0>
+	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
+	<updateFrequency_timeLoop> 10 </updateFrequency_timeLoop>
+</plumeParameters>
+<particleOutputParameters>
+  <outputFrequency> 4.0  </outputFrequency>
+  <outputFields>all</outputFields>
+</particleOutputParameters>
+<collectionParameters>
+	<timeAvgStart> 0.0 </timeAvgStart>
+	<timeAvgFreq> 4.0 </timeAvgFreq>
+	<boxBoundsX1> 0.0 </boxBoundsX1>
+	<boxBoundsX2> 1.0 </boxBoundsX2>
+	<boxBoundsY1> 0.0 </boxBoundsY1>
+	<boxBoundsY2> 1.0 </boxBoundsY2>
+	<boxBoundsZ1> 0.0 </boxBoundsZ1>
+	<boxBoundsZ2> 1.0 </boxBoundsZ2>
+	<nBoxesX> 5 </nBoxesX>
+	<nBoxesY> 5 </nBoxesY>
+	<nBoxesZ> 20 </nBoxesZ>
+</collectionParameters>
+<sources>
+  	<numSources> 1 </numSources>
+  	<SourceFullDomain>
+		<ReleaseType_instantaneous>
+			<numPar>100000</numPar>
+		</ReleaseType_instantaneous>
+  	</SourceFullDomain>
+</sources>
+<boundaryConditions>
+  	<xBCtype>periodic</xBCtype>
+  	<yBCtype>periodic</yBCtype>
+  	<zBCtype>periodic</zBCtype>
+    <wallReflection>doNothing</wallReflection>
+</boundaryConditions>

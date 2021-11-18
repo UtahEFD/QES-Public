@@ -11,29 +11,30 @@
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
-#include "QESNetCDFOutput.h"
+#include "util/QESNetCDFOutput.h"
 
-#include "handleWINDSArgs.h"
+#include "winds/handleWINDSArgs.h"
 
-#include "WINDSInputData.h"
-#include "WINDSGeneralData.h"
-#include "WINDSOutputVisualization.h"
-#include "WINDSOutputWorkspace.h"
+#include "winds/WINDSInputData.h"
+#include "winds/WINDSGeneralData.h"
+#include "winds/WINDSOutputVisualization.h"
+#include "winds/WINDSOutputWorkspace.h"
 
-#include "WINDSOutputWRF.h"
+#include "winds/WINDSOutputWRF.h"
 
-#include "TURBGeneralData.h"
-#include "TURBOutput.h"
+#include "winds/TURBGeneralData.h"
+#include "winds/TURBOutput.h"
 
-#include "Solver.h"
-#include "CPUSolver.h"
-#include "DynamicParallelism.h"
-#include "GlobalMemory.h"
-#include "SharedMemory.h"
+#include "winds/Solver.h"
+#include "winds/CPUSolver.h"
+#include "winds/DynamicParallelism.h"
+#include "winds/GlobalMemory.h"
+#include "winds/SharedMemory.h"
 
-#include "Sensor.h"
+#include "winds/Sensor.h"
 
-#include "TextTable.h"
+#include "winds/TextTable.h"
+
 
 namespace pt = boost::property_tree;
 
@@ -53,10 +54,10 @@ WINDSInputData *parseXMLTree(const std::string fileName);
 Sensor *parseSensors(const std::string fileName);
 
 // These functions run the solvers and return the solved WINDSGeneralData
-WINDSGeneralData* runSerial(WINDSGeneralData* WGD, WINDSInputData* WID, Solver *solverCPU, bool solveWind);
-WINDSGeneralData* runDynamic(WINDSGeneralData* WGD_DYNAMIC, WINDSInputData* WID, Solver *solverDynamic, bool solveWind);
-WINDSGeneralData* runGlobal(WINDSGeneralData* WGD_GLOBAL, WINDSInputData* WID, Solver *solverGlobal, bool solveWind);
-WINDSGeneralData* runShared(WINDSGeneralData* WGD_SHARED, WINDSInputData* WID, Solver *solverShared, bool solveWind);
+WINDSGeneralData *runSerial(WINDSGeneralData *WGD, WINDSInputData *WID, Solver *solverCPU, bool solveWind);
+WINDSGeneralData *runDynamic(WINDSGeneralData *WGD_DYNAMIC, WINDSInputData *WID, Solver *solverDynamic, bool solveWind);
+WINDSGeneralData *runGlobal(WINDSGeneralData *WGD_GLOBAL, WINDSInputData *WID, Solver *solverGlobal, bool solveWind);
+WINDSGeneralData *runShared(WINDSGeneralData *WGD_SHARED, WINDSInputData *WID, Solver *solverShared, bool solveWind);
 
 int main(int argc, char *argv[])
 {
@@ -170,7 +171,7 @@ int main(int argc, char *argv[])
   std::vector<WINDSGeneralData *> completedSolvers;
   std::vector<string> solverNames;
 
-  switch(arguments.solveType){
+  switch (arguments.solveType) {
   case 1:
     WGD = runSerial(WGD, WID, solverCPU, arguments.solveWind);
     completedSolvers.push_back(runDynamic(WGD_DYNAMIC, WID, solverDynamic, arguments.solveWind));
@@ -198,27 +199,28 @@ int main(int argc, char *argv[])
   }
 
   // Table title
-  std::cout << "Performing comparative analysis against CPU serial solver...\n" << std::endl;
-  TextTable table1( '-', '|', '+' );
-  TextTable table2( '-', '|', '+' );
-  TextTable table3( '-', '|', '+' );
+  std::cout << "Performing comparative analysis against CPU serial solver...\n"
+            << std::endl;
+  TextTable table1('-', '|', '+');
+  TextTable table2('-', '|', '+');
+  TextTable table3('-', '|', '+');
   // Specify table 1 header row here
-  table1.add( "SOLVER NAME" );
-  table1.add( "MAX U DIFF" );
-  table1.add( "MAX V DIFF" );
-  table1.add( "MAX W DIFF" );
+  table1.add("SOLVER NAME");
+  table1.add("MAX U DIFF");
+  table1.add("MAX V DIFF");
+  table1.add("MAX W DIFF");
   table1.endOfRow();
   // Specify table 2 header row here
-  table2.add( "SOLVER NAME" );
-  table2.add( "AVG U DIFF" );
-  table2.add( "AVG V DIFF" );
-  table2.add( "AVG W DIFF" );
+  table2.add("SOLVER NAME");
+  table2.add("AVG U DIFF");
+  table2.add("AVG V DIFF");
+  table2.add("AVG W DIFF");
   table2.endOfRow();
   // Specify table 3 header row here
-  table3.add( "SOLVER NAME" );
-  table3.add( "MAX WVM DIFF" );
-  table3.add( "AVG WVM DIFF" );
-  table3.add( "R^2 VALUE" );
+  table3.add("SOLVER NAME");
+  table3.add("MAX WVM DIFF");
+  table3.add("AVG WVM DIFF");
+  table3.add("R^2 VALUE");
   table3.endOfRow();
 
   // Loop to calculate comparison metrics between serial and parallel solvers
@@ -228,36 +230,36 @@ int main(int argc, char *argv[])
     float avgUDif = 0;
     float totalUDif = 0;
     float uDif = 0;
-    for(size_t uDifIndex = 0; uDifIndex < WGD->u.size(); uDifIndex++){
+    for (size_t uDifIndex = 0; uDifIndex < WGD->u.size(); uDifIndex++) {
       uDif = std::abs(WGD->u[uDifIndex] - completedSolvers[solversIndex]->u[uDifIndex]);
-      if(uDif>maxUDif) maxUDif = uDif;
+      if (uDif > maxUDif) maxUDif = uDif;
       totalUDif += uDif;
     }
-    avgUDif = totalUDif/WGD->u.size();
+    avgUDif = totalUDif / WGD->u.size();
 
     // Calculating v differences
     float maxVDif = 0;
     float avgVDif = 0;
     float totalVDif = 0;
     float vDif = 0;
-    for(size_t vDifIndex = 0; vDifIndex < WGD->v.size(); vDifIndex++){
+    for (size_t vDifIndex = 0; vDifIndex < WGD->v.size(); vDifIndex++) {
       vDif = std::abs(WGD->v[vDifIndex] - completedSolvers[solversIndex]->v[vDifIndex]);
-      if(vDif>maxVDif) maxVDif = vDif;
+      if (vDif > maxVDif) maxVDif = vDif;
       totalVDif += vDif;
     }
-    avgVDif = totalVDif/WGD->v.size();
+    avgVDif = totalVDif / WGD->v.size();
 
     // Calculating w differences
     float maxWDif = 0;
     float avgWDif = 0;
     float totalWDif = 0;
     float wDif = 0;
-    for(size_t wDifIndex = 0; wDifIndex < WGD->w.size(); wDifIndex++){
+    for (size_t wDifIndex = 0; wDifIndex < WGD->w.size(); wDifIndex++) {
       wDif = std::abs(WGD->w[wDifIndex] - completedSolvers[solversIndex]->w[wDifIndex]);
-      if(wDif>maxWDif) maxWDif = wDif;
+      if (wDif > maxWDif) maxWDif = wDif;
       totalWDif += wDif;
     }
-    avgWDif = totalWDif/WGD->w.size();
+    avgWDif = totalWDif / WGD->w.size();
 
     // Wind velocity magnitude (WindVelMag) difference calculations
     float cpuWVM = 0;
@@ -268,20 +270,16 @@ int main(int argc, char *argv[])
     float cpuSum = 0;
     float gpuSum = 0;
     // Calculate vector magnitudes, find difference and then add to sum
-    for(size_t i = 0; i < WGD->w.size(); ++i){
-      cpuWVM = sqrt(((WGD->u[i])*(WGD->u[i]))+
-		    ((WGD->v[i])*(WGD->v[i]))+
-		    ((WGD->w[i])*(WGD->w[i])));
-      gpuWVM  = sqrt(((completedSolvers[solversIndex]->u[i])*(completedSolvers[solversIndex]->u[i]))+
-			((completedSolvers[solversIndex]->v[i])*(completedSolvers[solversIndex]->v[i]))+
-                        ((completedSolvers[solversIndex]->w[i])*(completedSolvers[solversIndex]->w[i])));
-      if(std::abs(cpuWVM-gpuWVM) > maxWvmDif) maxWvmDif = std::abs(cpuWVM-gpuWVM);
-      totalWvmDif += std::abs(cpuWVM-gpuWVM);
+    for (size_t i = 0; i < WGD->w.size(); ++i) {
+      cpuWVM = sqrt(((WGD->u[i]) * (WGD->u[i])) + ((WGD->v[i]) * (WGD->v[i])) + ((WGD->w[i]) * (WGD->w[i])));
+      gpuWVM = sqrt(((completedSolvers[solversIndex]->u[i]) * (completedSolvers[solversIndex]->u[i])) + ((completedSolvers[solversIndex]->v[i]) * (completedSolvers[solversIndex]->v[i])) + ((completedSolvers[solversIndex]->w[i]) * (completedSolvers[solversIndex]->w[i])));
+      if (std::abs(cpuWVM - gpuWVM) > maxWvmDif) maxWvmDif = std::abs(cpuWVM - gpuWVM);
+      totalWvmDif += std::abs(cpuWVM - gpuWVM);
       // These sums required for R-squared calculations below
       cpuSum += cpuWVM;
       gpuSum += gpuWVM;
     }
-    avgWvmDif = totalWvmDif/WGD->w.size();
+    avgWvmDif = totalWvmDif / WGD->w.size();
 
     // /////////////////////////
     // CALCULATING R-squared
@@ -291,31 +289,27 @@ int main(int argc, char *argv[])
     // To find r, you find the standard deviation of the two data sets,
     // then find the covariance between them. Divide the covariance by the
     // product of the two standard deviations, and you'll find R.
-    float cpuAverage = cpuSum/WGD->w.size();
-    float gpuAverage = gpuSum/completedSolvers[solversIndex]->w.size();
+    float cpuAverage = cpuSum / WGD->w.size();
+    float gpuAverage = gpuSum / completedSolvers[solversIndex]->w.size();
     float cpuDevSum = 0;
     float gpuDevSum = 0;
     float solversCovariance = 0;
     float solversCovarianceSum = 0;
-    for(size_t i = 0; i < WGD->w.size(); i++){
+    for (size_t i = 0; i < WGD->w.size(); i++) {
       // Calculate vector magnitudes
-      cpuWVM = sqrt(((WGD->u[i])*(WGD->u[i]))+
-                    ((WGD->v[i])*(WGD->v[i]))+
-                    ((WGD->w[i])*(WGD->w[i])));
-      gpuWVM  = sqrt(((completedSolvers[solversIndex]->u[i])*(completedSolvers[solversIndex]->u[i]))+
-                        ((completedSolvers[solversIndex]->v[i])*(completedSolvers[solversIndex]->v[i]))+
-                        ((completedSolvers[solversIndex]->w[i])*(completedSolvers[solversIndex]->w[i])));
+      cpuWVM = sqrt(((WGD->u[i]) * (WGD->u[i])) + ((WGD->v[i]) * (WGD->v[i])) + ((WGD->w[i]) * (WGD->w[i])));
+      gpuWVM = sqrt(((completedSolvers[solversIndex]->u[i]) * (completedSolvers[solversIndex]->u[i])) + ((completedSolvers[solversIndex]->v[i]) * (completedSolvers[solversIndex]->v[i])) + ((completedSolvers[solversIndex]->w[i]) * (completedSolvers[solversIndex]->w[i])));
       // Calculate deviation and covariance sums
-      cpuDevSum += (cpuWVM-cpuAverage)*(cpuWVM-cpuAverage);
-      gpuDevSum += (gpuWVM-gpuAverage)*(gpuWVM-gpuAverage);
-      solversCovarianceSum += (cpuWVM-cpuAverage) * (gpuWVM-gpuAverage);
+      cpuDevSum += (cpuWVM - cpuAverage) * (cpuWVM - cpuAverage);
+      gpuDevSum += (gpuWVM - gpuAverage) * (gpuWVM - gpuAverage);
+      solversCovarianceSum += (cpuWVM - cpuAverage) * (gpuWVM - gpuAverage);
     }
     // Calculate standard deviations and covariance
-    float cpuStDev = std::sqrt(cpuDevSum/(WGD->w.size()-1));
-    float gpuStDev = std::sqrt(gpuDevSum/(WGD->w.size()-1));
-    solversCovariance = solversCovarianceSum/(WGD->w.size()-1);
+    float cpuStDev = std::sqrt(cpuDevSum / (WGD->w.size() - 1));
+    float gpuStDev = std::sqrt(gpuDevSum / (WGD->w.size() - 1));
+    solversCovariance = solversCovarianceSum / (WGD->w.size() - 1);
     // Calculate r and r^2
-    float r = solversCovariance/(cpuStDev*gpuStDev);
+    float r = solversCovariance / (cpuStDev * gpuStDev);
     float rSquared = r * r;
 
     // Table comparison metrics row
@@ -478,7 +472,8 @@ Sensor *parseSensors(const std::string fileName)
 }
 
 //CPU solver
-WINDSGeneralData* runSerial(WINDSGeneralData* WGD, WINDSInputData* WID, Solver *solverCPU, bool solveWind){
+WINDSGeneralData *runSerial(WINDSGeneralData *WGD, WINDSInputData *WID, Solver *solverCPU, bool solveWind)
+{
   std::cout << std::endl;
   std::cout << "Run Serial Solver (CPU)..." << std::endl;
   solverCPU = new CPUSolver(WID, WGD);
@@ -499,7 +494,8 @@ WINDSGeneralData* runSerial(WINDSGeneralData* WGD, WINDSInputData* WID, Solver *
 }
 
 //Dynamic parallel GPU solver
-WINDSGeneralData* runDynamic(WINDSGeneralData* WGD_DYNAMIC, WINDSInputData* WID, Solver *solverDynamic, bool solveWind){
+WINDSGeneralData *runDynamic(WINDSGeneralData *WGD_DYNAMIC, WINDSInputData *WID, Solver *solverDynamic, bool solveWind)
+{
   std::cout << "Run Dynamic Parallel Solver (GPU)..." << std::endl;
   solverDynamic = new DynamicParallelism(WID, WGD_DYNAMIC);
 
@@ -519,7 +515,8 @@ WINDSGeneralData* runDynamic(WINDSGeneralData* WGD_DYNAMIC, WINDSInputData* WID,
 }
 
 //Global memory GPU solver
-WINDSGeneralData* runGlobal(WINDSGeneralData* WGD_GLOBAL, WINDSInputData* WID, Solver *solverGlobal, bool solveWind){
+WINDSGeneralData *runGlobal(WINDSGeneralData *WGD_GLOBAL, WINDSInputData *WID, Solver *solverGlobal, bool solveWind)
+{
   std::cout << "Run Global Memory Solver (GPU)..." << std::endl;
   solverGlobal = new GlobalMemory(WID, WGD_GLOBAL);
 
@@ -539,7 +536,8 @@ WINDSGeneralData* runGlobal(WINDSGeneralData* WGD_GLOBAL, WINDSInputData* WID, S
 }
 
 //Shared memory GPU solver
-WINDSGeneralData* runShared(WINDSGeneralData* WGD_SHARED, WINDSInputData* WID, Solver *solverShared, bool solveWind){
+WINDSGeneralData *runShared(WINDSGeneralData *WGD_SHARED, WINDSInputData *WID, Solver *solverShared, bool solveWind)
+{
   std::cout << "Run Shared Memory Solver (GPU)..." << std::endl;
   solverShared = new SharedMemory(WID, WGD_SHARED);
 
