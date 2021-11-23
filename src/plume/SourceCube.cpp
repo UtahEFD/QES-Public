@@ -99,7 +99,7 @@ int SourceCube::emitParticles(const float dt, const float currTime, std::list<Pa
 
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-      Particle *cPar = new Particle();
+      //Particle *cPar = new Particle();
 
       // generate uniform dist in domain
       cPar->xPos_init = uniformDistr(prng) * (m_maxX - m_minX) + m_minX;

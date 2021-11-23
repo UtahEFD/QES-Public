@@ -40,6 +40,11 @@
 #include <list>
 
 #include "Particle.hpp"
+#include "ParticleTracer.hpp"
+#include "ParticleSmall.hpp"
+#include "ParticleLarge.hpp"
+#include "ParticleHeavyGas.hpp"
+
 #include "ReleaseType.hpp"
 #include "ReleaseType_instantaneous.hpp"
 #include "ReleaseType_continuous.hpp"
@@ -64,6 +69,8 @@ protected:
   //  setReleaseType uses parseMultiPolymorph() to fill this variable, then checks to make sure it is size 1 as only 1 release type is allowed,
   //  then setReleaseType() sets the variable m_rType to be the one value found in this variable.
   std::vector<ReleaseType *> rType_tmp;
+  
+  std::vector<Particle *> cPar_tmp;
 
 
 public:
@@ -82,6 +89,8 @@ public:
   // !!! this needs set by parseValues() in each source generated from input files by a call to the setReleaseType() function
   ReleaseType *m_rType;
 
+  Particle *cPar;
+  
   // LA-future work: need a class similar to ReleaseType that describes the input source mass.
   //  This could be mass, mass per time, volume with a density, and volume per time with a density.
 
@@ -130,6 +139,27 @@ public:
     m_rType = rType_tmp.at(0);
   }
 
+  void setParticleType()
+  {
+    parseMultiPolymorphs(false, cPar_tmp, Polymorph<Particle, ParticleTracer>("ParticleTracer"));
+    parseMultiPolymorphs(false, cPar_tmp, Polymorph<Particle, ParticleSmall>("ParticleSmall"));
+    parseMultiPolymorphs(false, cPar_tmp, Polymorph<Particle, ParticleLarge>("ParticleLarge"));
+    parseMultiPolymorphs(false, cPar_tmp, Polymorph<Particle, ParticleHeavyGas>("ParticleHeavyGas"));
+    
+    if (cPar_tmp.empty()) {
+      //std::cerr << "ERROR (SourceType::setParticleType): there was no input particle type!" << std::endl;
+      //exit(1);
+      cPar = new Particle();
+      return;
+    }
+    else if (cPar_tmp.size() > 1) {
+      std::cerr << "ERROR (SourceType::setParticleType): there was more than one input particle type!" << std::endl;
+      exit(1);
+    }
+
+    // the number of release types is 1, so now set the public release type to be the one that we have
+    cPar = cPar_tmp.at(0);
+  }
 
   // this function is used to parse all the variables for each source from the input .xml file
   // each source overloads this function with their own version, allowing different combinations of input variables for each source,

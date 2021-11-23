@@ -79,7 +79,7 @@ int SourceLine::emitParticles(const float dt, const float currTime, std::list<Pa
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-      Particle *cPar = new Particle();
+      //Particle *cPar = new Particle();
 
       // generate random point on line between m_pt0 and m_pt1
       double diffX = posX_1 - posX_0;
@@ -87,6 +87,9 @@ int SourceLine::emitParticles(const float dt, const float currTime, std::list<Pa
       double diffZ = posZ_1 - posZ_0;
 
       float t = drand48();
+ 
+      // Now cPar is a generic particle, only created once (in setParticleType()).
+      // If physical quantities should change per particle, the setParticleType() call should be moved here.
       cPar->xPos_init = posX_0 + t * diffX;
       cPar->yPos_init = posY_0 + t * diffY;
       cPar->zPos_init = posZ_0 + t * diffZ;

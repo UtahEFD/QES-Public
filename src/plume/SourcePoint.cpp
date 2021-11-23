@@ -57,25 +57,30 @@ void SourcePoint::checkPosInfo(const double &domainXstart, const double &domainX
   }
 }
 
-
+//template <class typeid(parType).name()>
 int SourcePoint::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles)
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
 
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
-      Particle *cPar = new Particle();
+      //parType *cPar = new parType();
+      //Particle *cPar = new Particle();
+     
+      // Now cPar is a generic particle, only created once (in setParticleType()).
+      // If physical quantities should change per particle, the setParticleType() call should be moved here.
       cPar->xPos_init = posX;
       cPar->yPos_init = posY;
       cPar->zPos_init = posZ;
 
-      cPar->d = pD;
-      cPar->d_m = (1.0E-6)*pD;
-      cPar->rho = pRho;
+      //cPar->d = pD; //LDU commented 11/16
+      //cPar->d_m = (1.0E-6)*pD; // LDU commented 11/16
+      //cPar->rho = pRho; // LDU commented 11/16
       cPar->m = sourceStrength/m_rType->m_numPar;
       cPar->m_kg = sourceStrength/m_rType->m_numPar * (1.0E-3); 
-      cPar->depFlag = sourceDepFlag;
-      //std::cout << "m_numPar = " << m_rType->m_numPar << " particle mass in emitParticles = " << cPar->m << "\n";
+      //cPar->depFlag = sourceDepFlag; // LDU commented 11/16
+      std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
+
       
       cPar->tStrt = currTime;
 

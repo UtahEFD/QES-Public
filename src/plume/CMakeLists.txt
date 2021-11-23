@@ -25,7 +25,11 @@ CUDA_ADD_LIBRARY( qesplumecore
     PlumeOutputEulerian.cpp
 
     BoundaryConditions.hpp
+
     Particle.hpp
+    ParticleSmall.hpp
+    ParticleLarge.hpp
+    ParticleHeavyGas.hpp
     
     ReleaseType.hpp
     ReleaseType_instantaneous.hpp

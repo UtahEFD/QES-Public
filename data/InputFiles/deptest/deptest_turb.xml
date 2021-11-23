@@ -28,15 +28,14 @@
   	<numSources> 1 </numSources>
     <SourcePoint>
       <ReleaseType_continuous>
-        <parPerTimestep>200</parPerTimestep>
+        <parPerTimestep>1</parPerTimestep>
       </ReleaseType_continuous>
+      <ParticleTracer>
+      </ParticleTracer>
       <posX> 10 </posX>
       <posY> 25 </posY>
       <posZ> 10 </posZ>
       <sourceStrength>0.5</sourceStrength>
-      <particleDensity>1000</particleDensity>
-      <particleDiameter>10</particleDiameter>
-      <depositionFlag>true</depositionFlag>
     </SourcePoint>
 </sources>
 <boundaryConditions>

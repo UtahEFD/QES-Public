@@ -28,67 +28,41 @@
  ****************************************************************************/
 
 /** @file Particle.hpp 
- * @brief This class represents information stored for each particle
+ * @brief 
+ *  
+ *
+ * @note Pure virtual child of ParseInterface 
+ * @sa ParseInterface
  */
 
 #pragma once
 
-#include "util/Vector3.h"
+#include <cmath>
 
-class Particle
+#include "util/ParseInterface.h"
+
+enum ParticleType {
+  tracer,
+  small,
+  large,
+  heavygas
+};
+
+
+class Particle : public ParseInterface
 {
-
+protected:
 public:
-  // initializer
-  Particle()
-  {
-    // diameter of particle (micron and m)
-    d = 0.0;
-    d_m = (1.0E-6) * d;
+  ParticleType parType;
 
-    // mass of particle (g and kg)
-    m = 0.0;
-    m_kg = (1.0E-3) * m;
+  // Physical properties
+  double d;
+  double d_m;
+  double m;
+  double m_kg;
+  double rho;
 
-    // density of particle
-    rho = 0.0;
 
-    // (1 - fraction) particle deposited
-    wdepos = 1.0;
-    // (1 - fraction) particle decay
-    wdecay = 1.0;
-  }
-
-  // initializer
-  Particle(const double &d_part, const double &m_part, const double &rho_part)
-  {
-    // diameter of particle (micron and m)
-    d = d_part;
-    d_m = (1.0E-6) * d;
-
-    // mass of particle (g and kg)
-    m = m_part;
-    m_kg = (1.0E-3) * m;
-
-    // density of particle
-    rho = rho_part;
-
-    // (1 - fraction) particle deposited
-    wdepos = 1.0;
-    // (1 - fraction) particle deposited
-    wdecay = 1.0;
-  }
-
-  // destructor
-  ~Particle()
-  {
-  }
-
-  // the point info variables
-  // LA: I'm used to making stuff like this private and creating a bunch of accessor functions
-  //  so that they all get edited together. But so long as we use them correctly, this isn't a problem
-
-  // values set by emitParticles() by each source
   // the initial position for the particle, to not be changed after the simulation starts
   double xPos_init;// the initial x component of position for the particle
   double yPos_init;// the initial y component of position for the particle
@@ -148,20 +122,13 @@ public:
   bool isRogue;// this is false until it becomes true. Should not go true. It is whether a particle has gone rogue or not
   bool isActive;// this is true until it becomes false.  If a particle leaves the domain or runs out of mass, this becomes false.
 
-  // particle physical property
-  double d;// particle diameter diameter [microns]
-  double d_m;// particle diameter diameter [m]
-  double m;// particle mass [g]
-  double m_kg;// particle mass [kg]
-  double rho;// density of particle [kg/m^3]
-
   // deposition vatiables
   double wdepos;// (1 - fraction) particle deposited [0,1]
   double Sc;// Schmidt number
   double taud;// characteristic relaxation time [s]
   double vd;// deposition velocity [m/s]
   bool depFlag; // whether a particle deposits
-  
+
   // settling vatiables
   double dstar;// dimensionless grain diameter
   double Cd;// drag coefficent
@@ -171,23 +138,20 @@ public:
   // decay varables
   double wdecay;// (1 - fraction) particle decayed [0,1]
 
-  void setSettlingVelocity(const double &, const double &);
-
-private:
-};
-
-inline void Particle::setSettlingVelocity(const double &rhoAir, const double &nuAir)
-{
-  if (d > 0) {
-    //dimensionless grain diameter
-    dstar = d_m * pow(9.81 / pow(nuAir, 2.0) * (rho / rhoAir - 1.), 1.0 / 3.0);
-    // drag coefficent
-    Cd = (432.0 / pow(dstar, 3.0)) * pow(1.0 + 0.022 * pow(dstar, 3.0), 0.54) + 0.47 * (1.0 - exp(-0.15 * pow(dstar, 0.45)));
-    // dimensionless settling velociy
-    wstar = pow((4.0 * dstar) / (3.0 * Cd), 0.5);
-    // settling velocity
-    vs = wstar * pow(9.81 * nuAir * (rho / rhoAir - 1.0), 1.0 / 3.0);
-  } else {
-    vs = 0.0;
+  // default constructor
+  Particle()
+  {
   }
-}
+
+  // destructor
+  virtual ~Particle()
+  {
+  }
+
+
+  virtual void parseValues() {};
+
+  virtual void setSettlingVelocity(const double &, const double &) {};
+
+
+};

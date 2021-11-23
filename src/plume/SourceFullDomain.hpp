@@ -74,6 +74,9 @@ public:
     m_sShape = SourceShape::fullDomain;
 
     setReleaseType();
+
+    setParticleType();
+
   }
 
 

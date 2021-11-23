@@ -41,6 +41,7 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
   // set settling velocity
   (*parItr)->setSettlingVelocity(rhoAir, nuAir);
 
+  std::cout << "in advpart, par type is: " << typeid(*parItr).name() <<  " d = " << (*parItr)->d << " m = " << (*parItr)->m << " depFlag = " << (*parItr)->depFlag << " vs = " << (*parItr)->vs << std::endl;
   // get the current isRogue and isActive information
   bool isRogue = (*parItr)->isRogue;
   bool isActive = (*parItr)->isActive;
@@ -157,7 +158,7 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
                                         std::abs(vMean) + std::abs(vFluct),
                                         std::abs(wMean) + std::abs(wFluct),
                                         timeRemainder);
-    std::cout << "par_dt = " << par_dt << std::endl;
+    //std::cout << "par_dt = " << par_dt << std::endl;
     // update the par_time, useful for debugging
     //par_time = par_time + par_dt;
 
@@ -341,6 +342,7 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
   (*parItr)->yPos = yPos;
   (*parItr)->zPos = zPos;
 
+  std::cout << " particleID = " << (*parItr)->particleID << " xPos = " << (*parItr)->xPos << " yPos = " << (*parItr)->yPos << " zPos = " << (*parItr)->zPos << std::endl;
   (*parItr)->disX = disX;
   (*parItr)->disY = disY;
   (*parItr)->disZ = disZ;

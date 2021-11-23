@@ -70,7 +70,7 @@ int SourceCircle::emitParticles(const float dt, const float currTime, std::list<
 
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-      Particle *cPar = new Particle();
+      //Particle *cPar = new Particle();
 
       cPar->xPos_init = posX;
       cPar->yPos_init = posY;

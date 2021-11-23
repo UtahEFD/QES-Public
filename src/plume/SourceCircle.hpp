@@ -70,6 +70,8 @@ public:
 
     setReleaseType();
 
+    setParticleType();
+
     parsePrimitive<double>(true, posX, "posX");
     parsePrimitive<double>(true, posY, "posY");
     parsePrimitive<double>(true, posZ, "posZ");

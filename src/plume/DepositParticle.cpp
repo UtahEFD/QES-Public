@@ -80,7 +80,7 @@ void Plume::depositParticle(double endTime, double simTime, double xPos, double 
         
         (*parItr)->wdepos *= exp(-depEff*adjLAD*vegDistance/2); // the /2 comes from Ross' G function, assuming uniform leaf orientation distribution
 
-        std::cout << "particle in homog. veg., mass: " << (*parItr)->m  << " wdepos = " << (*parItr)->wdepos << " depEff = " << depEff << " adjLAD = " << adjLAD << " vegDistance = " << vegDistance << " gam = " << gam << " ReLeaf = " << ReLeaf << " MTot = " << MTot << std::endl;
+        //std::cout << "particle in homog. veg., mass: " << (*parItr)->m  << " wdepos = " << (*parItr)->wdepos << " depEff = " << depEff << " adjLAD = " << adjLAD << " vegDistance = " << vegDistance << " gam = " << gam << " ReLeaf = " << ReLeaf << " MTot = " << MTot << std::endl;
     }
     else{
         return;
