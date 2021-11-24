@@ -97,7 +97,7 @@ class ParticleTypeFactory
   
   public:
     // Function to read in all possible particle types and create factories for them
-    void ReadParticles(std::string particleType, ParticleFactory * particleFactory)
+    void RegisterParticles(std::string particleType, ParticleFactory * particleFactory)
     {
       ParticleTypeContainer.insert(std::pair<std::string, ParticleFactory*>(particleType, particleFactory))
     }

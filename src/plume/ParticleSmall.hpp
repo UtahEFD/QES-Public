@@ -54,6 +54,8 @@ public:
     // density of particle
     rho = 0.0;
     
+    // tag
+    tag = "ParticleSmall";
 
     // (1 - fraction) particle deposited
     wdepos = 1.0;
@@ -77,6 +79,9 @@ public:
     // density of particle
     rho = rho_part;
 
+    // tag
+    tag = "ParticleSmall";
+    
     // (1 - fraction) particle deposited
     wdepos = 1.0;
     depFlag = true;
@@ -90,14 +95,14 @@ public:
   {
   }
 
-  void parseValues()
-  {
-      parType = ParticleType::small;
-      parsePrimitive<double>(false, rho, "particleDensity");
-      parsePrimitive<double>(false, d, "particleDiameter"); 
-      parsePrimitive<bool>(false, depFlag, "depositionFlag");
-      d_m = (1.0E-6) * d;
-  }
+//  void parseValues()
+//  {
+//      parType = ParticleType::small;
+//      parsePrimitive<double>(false, rho, "particleDensity");
+//      parsePrimitive<double>(false, d, "particleDiameter"); 
+//      parsePrimitive<bool>(false, depFlag, "depositionFlag");
+//      d_m = (1.0E-6) * d;
+//  }
 
 
   //void setSettlingVelocity(const double &, const double &);

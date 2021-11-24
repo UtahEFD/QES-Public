@@ -67,18 +67,18 @@ int SourcePoint::emitParticles(const float dt, const float currTime, std::list<P
       //parType *cPar = new parType();
       //Particle *cPar = new Particle();
      
-      // Now cPar is a generic particle, only created once (in setParticleType()).
-      // If physical quantities should change per particle, the setParticleType() call should be moved here.
+      auto cPar = particleTypeFactory.create(particles->protoParticle->tag);
+      
       cPar->xPos_init = posX;
       cPar->yPos_init = posY;
       cPar->zPos_init = posZ;
 
-      //cPar->d = pD; //LDU commented 11/16
-      //cPar->d_m = (1.0E-6)*pD; // LDU commented 11/16
-      //cPar->rho = pRho; // LDU commented 11/16
+      cPar->d = particles->protoParticle->d; //LDU commented 11/16
+      cPar->d_m = (1.0E-6)*particles->protoParticle->d; // LDU commented 11/16
+      cPar->rho = particles->protoParticle->rho; // LDU commented 11/16
       cPar->m = sourceStrength/m_rType->m_numPar;
       cPar->m_kg = sourceStrength/m_rType->m_numPar * (1.0E-3); 
-      //cPar->depFlag = sourceDepFlag; // LDU commented 11/16
+      cPar->depFlag = particles->protoParticle->depFlag; // LDU commented 11/16
       std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
 
       

@@ -53,7 +53,9 @@ public:
 
     // density of particle
     rho = 0.0;
-    
+   
+    // tag
+    tag = "ParticleHeavyGas";
 
     // (1 - fraction) particle deposited
     wdepos = 1.0;
@@ -77,6 +79,9 @@ public:
     // density of particle
     rho = rho_part;
 
+    // tag
+    tag = "ParticleHeavyGas";
+    
     // (1 - fraction) particle deposited
     wdepos = 1.0;
     depFlag = true;
@@ -90,14 +95,14 @@ public:
   {
   }
 
-  void parseValues()
+/*  void parseValues()
   {
       parType = ParticleType::heavygas;
       parsePrimitive<double>(false, rho, "particleDensity");
       parsePrimitive<double>(false, d, "particleDiameter"); 
       parsePrimitive<bool>(false, depFlag, "depositionFlag");
   }
-
+*/
 
 //  void setSettlingVelocity(const double &, const double &);
   void setSettlingVelocity(const double &rhoAir, const double &nuAir)

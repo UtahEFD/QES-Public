@@ -75,8 +75,19 @@ public:
 
     setReleaseType();
 
-    setParticleType();
+//    setParticleType();
+    
+    //Create particle factories  
+    registerParticles();
 
+    // Create a generic particle with attributes read from XML
+    Particles * particles;
+    particles.setParticleValues();
+
+    std::cout << " particles->protoParticle->tag = " << particles->protoParticle->tag << std::endl;
+
+    
+    parsePrimitive<double>(false, sourceStrength, "sourceStrength")
   }
 
 

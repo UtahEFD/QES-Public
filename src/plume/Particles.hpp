@@ -27,32 +27,38 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Particle.hpp 
+/** @file Particles.hpp 
  * @brief 
  *  
  *
  * @note Pure virtual child of ParseInterface 
- * @sa ParseInterface
+ * @sa 
  */
 
 #pragma once
 
 #include <cmath>
 
+#include "util/ParseInterface.h"
 
+/*
 enum ParticleType {
   tracer,
   small,
   large,
   heavygas
 };
+*/
 
-
-class Particle 
+class Particles : public ParseInterface
 {
 protected:
 public:
-  ParticleType parType;
+//  ParticleType parType;
+
+  std::vector<Particle *> protoParticle_tmp;
+  Particle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
+
 
   // Physical properties
   double d;
@@ -60,9 +66,8 @@ public:
   double m;
   double m_kg;
   double rho;
- 
-  std::string tag; // particle type tag
-
+  bool depFlag;
+/*
   // the initial position for the particle, to not be changed after the simulation starts
   double xPos_init;// the initial x component of position for the particle
   double yPos_init;// the initial y component of position for the particle
@@ -137,64 +142,43 @@ public:
 
   // decay varables
   double wdecay;// (1 - fraction) particle decayed [0,1]
+*/
 
-  // initializer
-  Particle()
-  { 
-    // diameter of particle (micron and m)
-    d = 0.0;
-    d_m = (1.0E-6) * d;
-  
-    // mass of particle (g and kg)
-    m = 0.0;
-    m_kg = (1.0E-3) * m;
-
-    // density of particle
-    rho = 0.0;
-
-    // tag 
-    tag = "ParticleTracer"; // tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer 
-
-
-    // (1 - fraction) particle deposited
-    wdepos = 1.0;
-    depFlag = false;
-
-    // (1 - fraction) particle decay
-    wdecay = 1.0;
-    }
-
-    // initializer
-  Particle(const double &d_part, const double &m_part, const double &rho_part)
+  // default constructor
+  Particles()
   {
-    // diameter of particle (micron and m)
-    d = d_part;
-    d_m = (1.0E-6) * d;
-
-    // mass of particle (g and kg)
-    m = m_part;
-    m_kg = (1.0E-3) * m;
-
-    // density of particle
-    rho = rho_part;
-
-    // tag 
-    tag = "ParticleTracer"; // tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer 
-
-    // (1 - fraction) particle deposited
-    wdepos = 1.0;
-    depFlag = false;
-
-    // (1 - fraction) particle deposited
-    wdecay = 1.0;
   }
-  
+
   // destructor
-  virtual ~Particle()
+  ~Particles()
   {
   }
 
-  virtual void setSettlingVelocity(const double &, const double &) {};
+
+  void setParticleValues() 
+  {
+    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<Particle, ParticleTracer>("ParticleTracer"));
+    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<Particle, ParticleSmall>("ParticleSmall"));
+    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<Particle, ParticleLarge>("ParticleLarge"));
+    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<Particle, ParticleHeavyGas>("ParticleHeavyGas"));
+
+    if (protoParticle_tmp.empty()) {
+      
+      // protoParticle remains a generic tracer particle (created with default constructor)
+
+      return;
+    }
+    else if (protoParticle_tmp.size() > 1) {
+      std::cerr << "ERROR (SourceType::setParticleType): there was more than one input particle type!" << std::endl;
+      exit(1);
+    }
+                        
+    // the number of release types is 1, so now set the public release type to be the one that we have
+    protoParticle = protoParticle_tmp.at(0);
+
+  };
+
+//  virtual void setSettlingVelocity(const double &, const double &) {};
 
 
 };

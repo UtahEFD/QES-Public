@@ -44,6 +44,7 @@
 #include "ParticleSmall.hpp"
 #include "ParticleLarge.hpp"
 #include "ParticleHeavyGas.hpp"
+#include "ParticleFactories.hpp"
 
 #include "ReleaseType.hpp"
 #include "ReleaseType_instantaneous.hpp"
@@ -70,7 +71,7 @@ protected:
   //  then setReleaseType() sets the variable m_rType to be the one value found in this variable.
   std::vector<ReleaseType *> rType_tmp;
   
-  std::vector<Particle *> cPar_tmp;
+  //std::vector<Particle *> cPar_tmp;
 
 
 public:
@@ -89,7 +90,7 @@ public:
   // !!! this needs set by parseValues() in each source generated from input files by a call to the setReleaseType() function
   ReleaseType *m_rType;
 
-  Particle *cPar;
+  //Particle *cPar;
   
   // LA-future work: need a class similar to ReleaseType that describes the input source mass.
   //  This could be mass, mass per time, volume with a density, and volume per time with a density.
@@ -139,6 +140,7 @@ public:
     m_rType = rType_tmp.at(0);
   }
 
+  /*
   void setParticleType()
   {
     parseMultiPolymorphs(false, cPar_tmp, Polymorph<Particle, ParticleTracer>("ParticleTracer"));
@@ -159,6 +161,27 @@ public:
 
     // the number of release types is 1, so now set the public release type to be the one that we have
     cPar = cPar_tmp.at(0);
+  }
+  */
+
+  void registerParticles()
+  {
+  
+      ParticleTypeFactory particleTypeFactory;
+      
+      ParticleTracerFactory * particleTracerFactory;
+      particleTypeFactory.RegisterParticles("ParticleTracer",particleTracerFactory);
+      
+      ParticleSmallFactory * particleSmallFactory;
+      particleTypeFactory.RegisterParticles("ParticleSmall",particleSmallFactory);
+     
+      ParticleLargeFactory * particleLargeFactory;
+      particleTypeFactory.RegisterParticles("ParticleLarge",particleLargeFactory);
+      
+      ParticleHeavyGasFactory * particleHeavyGasFactory;
+      particleTypeFactory.RegisterParticles("ParticleHeavyGas",particleHeavyGasFactory);
+
+  
   }
 
   // this function is used to parse all the variables for each source from the input .xml file

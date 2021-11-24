@@ -70,12 +70,22 @@ public:
 
     setReleaseType();
 
-    setParticleType();
+//    setParticleType();
+
+    registerParticle();
+
+    // Create a generic particle with attributes read from XML
+    Particles * particles;
+    particles.setParticleValues();
+
 
     parsePrimitive<double>(true, posX, "posX");
     parsePrimitive<double>(true, posY, "posY");
     parsePrimitive<double>(true, posZ, "posZ");
     parsePrimitive<double>(true, radius, "radius");
+
+    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
+  
   }
 
 
