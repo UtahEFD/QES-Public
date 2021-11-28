@@ -35,7 +35,7 @@
  * @sa ParseInterface
  */
 
-#pragma once
+// #pragma once
 
 #include <cmath>
 

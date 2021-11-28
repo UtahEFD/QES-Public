@@ -31,9 +31,8 @@
  * @brief 
  */
 
-#pragma once
+// #pragma once
 
-#include "util/Vector3.h"
 #include "Particle.hpp"
 
 class ParticleFactory

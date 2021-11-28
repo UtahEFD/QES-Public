@@ -35,7 +35,7 @@
  * @sa 
  */
 
-#pragma once
+// #pragma once
 
 #include <cmath>
 
