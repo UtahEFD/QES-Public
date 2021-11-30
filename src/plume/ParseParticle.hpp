@@ -27,7 +27,7 @@
  * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Particles.hpp 
+/** @file ParseParticle.hpp 
  * @brief 
  *  
  *
@@ -35,29 +35,35 @@
  * @sa 
  */
 
-// #pragma once
+#pragma once
 
 #include <cmath>
 
 #include "util/ParseInterface.h"
+//#include "Particle.hpp"
+//#include "ParticleTracer.hpp"
+//#include "ParticleSmall.hpp"
+//#include "ParticleLarge.hpp"
+//#include "ParticleHeavyGas.hpp"
 
-/*
+
+
 enum ParticleType {
   tracer,
   small,
   large,
   heavygas
 };
-*/
 
-class Particles : public ParseInterface
+
+class ParseParticle : public ParseInterface
 {
 protected:
 public:
-//  ParticleType parType;
+  ParticleType parType;
 
-  std::vector<Particle *> protoParticle_tmp;
-  Particle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
+//  std::vector<Particle *> protoParticle_tmp;
+//  Particle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
 
 
   // Physical properties
@@ -67,6 +73,7 @@ public:
   double m_kg;
   double rho;
   bool depFlag;
+  std::string tag; 
 /*
   // the initial position for the particle, to not be changed after the simulation starts
   double xPos_init;// the initial x component of position for the particle
@@ -145,40 +152,227 @@ public:
 */
 
   // default constructor
-  Particles()
+  ParseParticle()
   {
+    d = 0.0;
+    d_m = 0.0;
+    m = 0.0;
+    m_kg = 0.0;
+    rho = 0.0;
+    depFlag = false;
+    tag = "ParticleTracer";
+    d_m = d * (1.0E-6);
+    m_kg = m * (1.0E-3);
   }
 
   // destructor
-  ~Particles()
+  ~ParseParticle()
   {
   }
 
-
-  void setParticleValues() 
+  virtual void parseValues() 
   {
-    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<Particle, ParticleTracer>("ParticleTracer"));
-    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<Particle, ParticleSmall>("ParticleSmall"));
-    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<Particle, ParticleLarge>("ParticleLarge"));
-    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<Particle, ParticleHeavyGas>("ParticleHeavyGas"));
-
-    if (protoParticle_tmp.empty()) {
-      
-      // protoParticle remains a generic tracer particle (created with default constructor)
-
-      return;
-    }
-    else if (protoParticle_tmp.size() > 1) {
-      std::cerr << "ERROR (SourceType::setParticleType): there was more than one input particle type!" << std::endl;
-      exit(1);
-    }
-                        
-    // the number of release types is 1, so now set the public release type to be the one that we have
-    protoParticle = protoParticle_tmp.at(0);
-
+    parType = ParticleType::tracer;
   };
 
 //  virtual void setSettlingVelocity(const double &, const double &) {};
 
+
+};
+
+
+
+class ParseParticleTracer : public ParseParticle
+{
+protected:
+public:
+    ParticleType parType;
+
+//  std::vector<ParseParticle *> protoParticle_tmp;
+//  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
+
+/*
+  // Physical properties
+  double d;
+  double d_m;
+  double m;
+  double m_kg;
+  double rho;
+  bool depFlag;
+*/
+  // default constructor
+  ParseParticleTracer()
+  {
+    d = 0.0;
+    d_m = 0.0;
+    m = 0.0;
+    m_kg = 0.0;
+    rho = 0.0;
+    depFlag = false;
+    tag = "ParticleTracer";
+  }
+
+  // destructor
+  ~ParseParticleTracer()
+  {
+  }
+
+  virtual void parseValues()
+  {
+    parType = ParticleType::tracer;
+  }
+
+
+
+};
+
+
+
+class ParseParticleSmall : public ParseParticle
+{
+protected:
+public:
+    ParticleType parType;
+
+//  std::vector<ParseParticle *> protoParticle_tmp;
+//  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
+
+/*
+  // Physical properties
+  double d;
+  double d_m;
+  double m;
+  double m_kg;
+  double rho;
+  bool depFlag;
+*/
+  // default constructor
+  ParseParticleSmall()
+  {
+    d = 0.0;
+    d_m = 0.0;
+    m = 0.0;
+    m_kg = 0.0;
+    rho = 0.0;
+    depFlag = true;
+    tag = "ParticleSmall";
+  }
+
+  // destructor
+  ~ParseParticleSmall()
+  {
+  }
+
+  virtual void parseValues()
+  {
+    parType = ParticleType::small;
+    parsePrimitive<double>(true, rho, "particleDensity");
+    parsePrimitive<double>(true, d, "particleDiameter"); 
+    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    d_m = d * (1.0E-6);
+    m_kg = m * (1.0E-3);
+  }
+
+
+
+};
+
+
+
+class ParseParticleLarge : public ParseParticle
+{
+protected:
+public:
+    ParticleType parType;
+
+//  std::vector<ParseParticle *> protoParticle_tmp;
+//  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
+
+/*
+  // Physical properties
+  double d;
+  double d_m;
+  double m;
+  double m_kg;
+  double rho;
+  bool depFlag;
+*/
+  // default constructor
+  ParseParticleLarge()
+  {
+    d = 0.0;
+    d_m = 0.0;
+    m = 0.0;
+    m_kg = 0.0;
+    rho = 0.0;
+    depFlag = true;
+    tag = "ParticleLarge";
+  }
+
+  // destructor
+  ~ParseParticleLarge()
+  {
+  }
+
+  virtual void parseValues()
+  {
+    parType = ParticleType::large;
+    parsePrimitive<double>(true, rho, "particleDensity");
+    parsePrimitive<double>(true, d, "particleDiameter"); 
+    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    d_m = d * (1.0E-6);
+    m_kg = m * (1.0E-3);
+  }
+
+
+
+};
+
+
+
+class ParseParticleHeavyGas : public ParseParticle
+{
+protected:
+public:
+  ParticleType parType;
+
+//  std::vector<ParseParticle *> protoParticle_tmp;
+//  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
+
+/*
+  // Physical properties
+  double d;
+  double d_m;
+  double m;
+  double m_kg;
+  double rho;
+  bool depFlag;
+*/
+  // default constructor
+  ParseParticleHeavyGas()
+  {
+    d = 0.0;
+    d_m = 0.0;
+    m = 0.0;
+    m_kg = 0.0;
+    rho = 0.0;
+    depFlag = true;
+    tag = "ParticleHeavyGas";
+  }
+
+  // destructor
+  ~ParseParticleHeavyGas()
+  {
+  }
+
+  virtual void parseValues()
+  {
+    parType = ParticleType::heavygas;
+    parsePrimitive<double>(true, rho, "particleDensity");
+    parsePrimitive<double>(true, d, "particleDiameter"); 
+    parsePrimitive<bool>(true, depFlag, "depositionFlag");
+    d_m = d * (1.0E-6);
+    m_kg = m * (1.0E-3);
+  }
 
 };

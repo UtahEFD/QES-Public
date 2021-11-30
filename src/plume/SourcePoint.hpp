@@ -38,7 +38,7 @@
 
 
 #include "SourceType.hpp"
-
+//#include "Particles.hpp"
 
 class SourcePoint : public SourceType
 {
@@ -72,16 +72,17 @@ public:
 
     setReleaseType();
 
-    //setParticleType();
+    setParticleType();
 
     // Create particle factories  
     registerParticles();
 
+/* 
     // Create a generic particle with attributes read from XML
     Particles * particles;
-    particles.setParticleValues();
-
-    std::cout << " particles->protoParticle->tag = " << particles->protoParticle->tag << std::endl;
+    particles->setParticleValues();
+*/
+    std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
     parsePrimitive<double>(true, posX, "posX");
     parsePrimitive<double>(true, posY, "posY");
     parsePrimitive<double>(true, posZ, "posZ");

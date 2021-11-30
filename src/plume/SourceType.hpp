@@ -40,6 +40,7 @@
 #include <list>
 
 #include "Particle.hpp"
+#include "ParseParticle.hpp"
 #include "ParticleTracer.hpp"
 #include "ParticleSmall.hpp"
 #include "ParticleLarge.hpp"
@@ -71,7 +72,7 @@ protected:
   //  then setReleaseType() sets the variable m_rType to be the one value found in this variable.
   std::vector<ReleaseType *> rType_tmp;
   
-  //std::vector<Particle *> cPar_tmp;
+  std::vector<ParseParticle *> protoParticle_tmp;
 
 
 public:
@@ -90,8 +91,14 @@ public:
   // !!! this needs set by parseValues() in each source generated from input files by a call to the setReleaseType() function
   ReleaseType *m_rType;
 
-  //Particle *cPar;
+  ParseParticle *protoParticle;
   
+  ParticleTypeFactory particleTypeFactory;
+  ParticleTracerFactory * particleTracerFactory;
+  ParticleSmallFactory * particleSmallFactory;
+  ParticleLargeFactory * particleLargeFactory;
+  ParticleHeavyGasFactory * particleHeavyGasFactory;
+
   // LA-future work: need a class similar to ReleaseType that describes the input source mass.
   //  This could be mass, mass per time, volume with a density, and volume per time with a density.
 
@@ -140,48 +147,34 @@ public:
     m_rType = rType_tmp.at(0);
   }
 
-  /*
   void setParticleType()
   {
-    parseMultiPolymorphs(false, cPar_tmp, Polymorph<Particle, ParticleTracer>("ParticleTracer"));
-    parseMultiPolymorphs(false, cPar_tmp, Polymorph<Particle, ParticleSmall>("ParticleSmall"));
-    parseMultiPolymorphs(false, cPar_tmp, Polymorph<Particle, ParticleLarge>("ParticleLarge"));
-    parseMultiPolymorphs(false, cPar_tmp, Polymorph<Particle, ParticleHeavyGas>("ParticleHeavyGas"));
+    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleTracer>("ParticleTracer"));
+    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleSmall>("ParticleSmall"));
+    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleLarge>("ParticleLarge"));
+    parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleHeavyGas>("ParticleHeavyGas"));
     
-    if (cPar_tmp.empty()) {
+    if (protoParticle_tmp.empty()) {
       //std::cerr << "ERROR (SourceType::setParticleType): there was no input particle type!" << std::endl;
       //exit(1);
-      cPar = new Particle();
+      protoParticle = new ParseParticle();
       return;
     }
-    else if (cPar_tmp.size() > 1) {
+    else if (protoParticle_tmp.size() > 1) {
       std::cerr << "ERROR (SourceType::setParticleType): there was more than one input particle type!" << std::endl;
       exit(1);
     }
 
     // the number of release types is 1, so now set the public release type to be the one that we have
-    cPar = cPar_tmp.at(0);
+    protoParticle = protoParticle_tmp.at(0);
   }
-  */
 
   void registerParticles()
   {
-  
-      ParticleTypeFactory particleTypeFactory;
-      
-      ParticleTracerFactory * particleTracerFactory;
       particleTypeFactory.RegisterParticles("ParticleTracer",particleTracerFactory);
-      
-      ParticleSmallFactory * particleSmallFactory;
       particleTypeFactory.RegisterParticles("ParticleSmall",particleSmallFactory);
-     
-      ParticleLargeFactory * particleLargeFactory;
       particleTypeFactory.RegisterParticles("ParticleLarge",particleLargeFactory);
-      
-      ParticleHeavyGasFactory * particleHeavyGasFactory;
       particleTypeFactory.RegisterParticles("ParticleHeavyGas",particleHeavyGasFactory);
-
-  
   }
 
   // this function is used to parse all the variables for each source from the input .xml file

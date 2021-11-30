@@ -38,7 +38,7 @@
 
 
 #include "SourceType.hpp"
-
+//#include "Particles.hpp"
 
 class SourceLine : public SourceType
 {
@@ -52,7 +52,7 @@ private:
   double posX_1;
   double posY_1;
   double posZ_1;
-
+  double sourceStrength = 0.0; // total mass released (g)
 protected:
 public:
   // Default constructor
@@ -72,15 +72,15 @@ public:
 
     setReleaseType();
 
-//    setParticleType();
+    setParticleType();
 
     registerParticles();
-
+/*
     // Create a generic particle with attributes read from XML
     Particles * particles;
-    particles.setParticleValues();
-
-    std::cout << " particles->protoParticle->tag = " << particles->protoParticle->tag << std::endl;
+    particles->setParticleValues();
+*/
+    std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
 
     parsePrimitive<double>(true, posX_0, "posX_0");
     parsePrimitive<double>(true, posY_0, "posY_0");

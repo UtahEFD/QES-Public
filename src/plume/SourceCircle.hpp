@@ -38,7 +38,7 @@
 
 
 #include "SourceType.hpp"
-
+//#include "Particles.hpp"
 
 class SourceCircle : public SourceType
 {
@@ -50,7 +50,7 @@ private:
   double posY;
   double posZ;
   double radius;
-
+  double sourceStrength = 0.0; // total mass released (g)
 protected:
 public:
   // Default constructor
@@ -70,14 +70,14 @@ public:
 
     setReleaseType();
 
-//    setParticleType();
+    setParticleType();
 
-    registerParticle();
-
+    registerParticles();
+/*
     // Create a generic particle with attributes read from XML
     Particles * particles;
-    particles.setParticleValues();
-
+    particles->setParticleValues();
+*/
 
     parsePrimitive<double>(true, posX, "posX");
     parsePrimitive<double>(true, posY, "posY");

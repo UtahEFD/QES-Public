@@ -38,7 +38,7 @@
 
 
 #include "SourceType.hpp"
-
+//#include "Particles.hpp"
 
 class SourceCube : public SourceType
 {
@@ -52,7 +52,7 @@ private:
   double m_maxX;
   double m_maxY;
   double m_maxZ;
-
+  double sourceStrength = 0.0; // total mass released (g)
 protected:
 public:
   // Default constructor
@@ -72,16 +72,16 @@ public:
 
     setReleaseType();
 
-    //setParticleType();
+    setParticleType();
 
     // Create particle factories  
     registerParticles();
-
+/*
     // Create a generic particle with attributes read from XML
     Particles * particles;
-    particles.setParticleValues();
-
-    std::cout << " particles->protoParticle->tag = " << particles->protoParticle->tag << std::endl;
+    particles->setParticleValues();
+*/
+    std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
 
 
     parsePrimitive<double>(true, m_minX, "minX");

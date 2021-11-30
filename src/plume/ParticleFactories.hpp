@@ -34,6 +34,7 @@
 // #pragma once
 
 #include "Particle.hpp"
+#include <unordered_map>
 
 class ParticleFactory
 {
@@ -98,7 +99,7 @@ class ParticleTypeFactory
     // Function to read in all possible particle types and create factories for them
     void RegisterParticles(std::string particleType, ParticleFactory * particleFactory)
     {
-      ParticleTypeContainer.insert(std::pair<std::string, ParticleFactory*>(particleType, particleFactory))
+      ParticleTypeContainer.insert(std::pair<std::string, ParticleFactory*>(particleType, particleFactory));
     }
     
     // Function to return the actual particle object 

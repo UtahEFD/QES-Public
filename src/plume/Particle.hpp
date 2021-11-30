@@ -35,18 +35,18 @@
  * @sa ParseInterface
  */
 
-// #pragma once
+#pragma once
 
 #include <cmath>
-
-
+#include "ParseParticle.hpp"
+/*
 enum ParticleType {
   tracer,
   small,
   large,
   heavygas
 };
-
+*/
 
 class Particle 
 {

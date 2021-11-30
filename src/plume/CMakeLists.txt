@@ -27,7 +27,7 @@ CUDA_ADD_LIBRARY( qesplumecore
   BoundaryConditions.hpp
 
   Particle.hpp
-  Particles.hpp
+  ParseParticle.hpp
   ParticleFactories.hpp
   ParticleSmall.hpp
   ParticleLarge.hpp
