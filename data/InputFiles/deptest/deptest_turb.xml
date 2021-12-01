@@ -30,8 +30,6 @@
       <ReleaseType_continuous>
         <parPerTimestep>1</parPerTimestep>
       </ReleaseType_continuous>
-      <ParticleTracer>
-      </ParticleTracer>
       <posX> 10 </posX>
       <posY> 25 </posY>
       <posZ> 10 </posZ>

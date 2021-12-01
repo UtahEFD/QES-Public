@@ -80,7 +80,7 @@ int SourceLine::emitParticles(const float dt, const float currTime, std::list<Pa
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
       //Particle *cPar = new Particle();
-      auto cPar = particleTypeFactory.create(protoParticle->tag);
+      auto cPar = particleTypeFactory->Create(protoParticle->tag);
       
       // generate random point on line between m_pt0 and m_pt1
       double diffX = posX_1 - posX_0;

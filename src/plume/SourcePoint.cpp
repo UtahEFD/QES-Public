@@ -66,9 +66,30 @@ int SourcePoint::emitParticles(const float dt, const float currTime, std::list<P
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
       //parType *cPar = new parType();
       //Particle *cPar = new Particle();
-     
-      auto cPar = particleTypeFactory.create(protoParticle->tag);
+      /*
+      ParticleTypeFactory particleTypeFactory;
+      ParticleTracerFactory particleTracerFactory;
+      ParticleSmallFactory particleSmallFactory;
+      ParticleLargeFactory particleLargeFactory;
+      ParticleHeavyGasFactory particleHeavyGasFactory;
+      std::string tracerstr = "ParticleTracer";
+      std::string smallstr = "ParticleSmall";
+      std::string largestr = "ParticleLarge";
+      std::string heavygasstr = "ParticleHeavyGas";
+      particleTypeFactory.RegisterParticles(tracerstr,&particleTracerFactory);
+      particleTypeFactory.RegisterParticles(smallstr,&particleSmallFactory);
+      particleTypeFactory.RegisterParticles(largestr,&particleLargeFactory);
+      particleTypeFactory.RegisterParticles(heavygasstr,&particleHeavyGasFactory);
+      */
+      std::cout << "Creating cPar via factory " << std::endl;
+      Particle * cPar = particleTypeFactory->Create(protoParticle->tag);
       
+      //ParticleTracerFactory particleTracerFactoryTest;
+      //Particle * cPar = particleTracerFactoryTest.create();
+      //Particle * cPar = new ParticleSmall();
+      //std::cout << "cPar is: " << cPar << " particleTracerFactoryTest is: " << particleTracerFactoryTest << std::endl;
+      std::cout << "Done creating cPar via factory " << std::endl;
+
       cPar->xPos_init = posX;
       cPar->yPos_init = posY;
       cPar->zPos_init = posZ;

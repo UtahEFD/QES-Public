@@ -71,9 +71,7 @@ public:
     m_sShape = SourceShape::point;
 
     setReleaseType();
-
     setParticleType();
-
     // Create particle factories  
     registerParticles();
 

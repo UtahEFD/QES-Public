@@ -83,7 +83,7 @@ int SourceFullDomain::emitParticles(const float dt, const float currTime, std::l
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
       //Particle *cPar = new Particle();
-      auto cPar = particleTypeFactory.create(protoParticle->tag);
+      auto cPar = particleTypeFactory->Create(protoParticle->tag);
       
       // generate uniform dist in domain
       cPar->xPos_init = uniformDistr(prng) * (xDomainEnd - xDomainStart) + xDomainStart;

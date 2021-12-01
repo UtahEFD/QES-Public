@@ -52,7 +52,9 @@ public:
 
   virtual Particle* create()
   {
-    return new ParticleTracer();       
+    std::cout << "Creating new ParticleTracer" << std::endl;
+    return new ParticleTracer();
+    std::cout << "Done creating new ParticleTracer" << std::endl;
   }
 };
 
@@ -96,16 +98,34 @@ class ParticleTypeFactory
     std::unordered_map<std::string, ParticleFactory *> ParticleTypeContainer;
   
   public:
+    ParticleTypeFactory()
+    {
+    }
+
+    ~ParticleTypeFactory()
+    {
+    }
+    
     // Function to read in all possible particle types and create factories for them
     void RegisterParticles(std::string particleType, ParticleFactory * particleFactory)
     {
+      //std::cout << 
       ParticleTypeContainer.insert(std::pair<std::string, ParticleFactory*>(particleType, particleFactory));
+      
     }
     
     // Function to return the actual particle object 
-    Particle * create(std::string particleType)
+    Particle * Create(std::string particleType)
     {
+      std::cout << "Element of ParticleTypeContainer are: " << std::endl;
+      for (auto const &pair: ParticleTypeContainer) {
+        std::cout << "{" << pair.first << ": " << pair.second << "}\n";
+      }
+      std::cout << " ParticleTypeContainer.at(particleType) is: " << ParticleTypeContainer.at(particleType) << std::endl;
+      
+      std::cout << "Calling create() from the " << particleType << " factory" << std::endl;
       return ParticleTypeContainer.at(particleType)->create();
+      std::cout << "done calling create() from the " << particleType << " factory" << std::endl;
     }
 
 
