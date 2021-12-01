@@ -615,12 +615,12 @@ void TURBGeneralData::getDerivatives_v2(WINDSGeneralData *WGD)
     int i = cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1);
     int faceID = i + j * nx + k * nx * ny;
 
-    /*
-     - Diagonal componants of the velocity gradient tensor naturally fall at the cell-center
-     - Off-diagonal componants of the  velocity gradient tensor require extra interpolation
-       of the velocity field to get the derivative at the cell-center  
-     - Derivative with respect to z need to be adjusted for non-uniform z-grid
-    */
+    
+    // - Diagonal componants of the velocity gradient tensor naturally fall at the cell-center
+    // - Off-diagonal componants of the  velocity gradient tensor require extra interpolation
+    //   of the velocity field to get the derivative at the cell-center  
+    // - Derivative with respect to z need to be adjusted for non-uniform z-grid
+    
 
     // Gxx = dudx
     Gxx[cellID] = (WGD->u[faceID + 1] - WGD->u[faceID]) / (WGD->dx);

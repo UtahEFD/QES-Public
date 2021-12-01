@@ -131,6 +131,8 @@ public:
   std::vector<double> mixingLengths;
 
 protected:
+  void getDerivativesGPU(WINDSGeneralData *);
+  
   void getDerivatives(WINDSGeneralData *);
   void getDerivatives_v2(WINDSGeneralData *);
 
