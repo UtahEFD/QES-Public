@@ -305,12 +305,17 @@ a list of UTM zones of the world is available at www.dmap.co.uk/utmworld.htm
 
 int checksum( int currChkSum, std::vector<float> &data)
 {
+    union equivalence 
+    {
+        int i;
+        float r;
+    };
+    
+
     for (auto idx=0u; idx<data.size(); idx++) {
-        float d = data[idx];
-        int *i = (int*)&d;
-        // std::cout << "float = " << d << ", int = " << *i << std::endl;
-        // currChkSum = currChkSum ^ *reinterpret_cast<int*>(&d);
-        currChkSum = currChkSum ^ *i;
+        equivalence num;
+        num.r = data[idx];
+        currChkSum = currChkSum ^ num.i;
     }
     return currChkSum;
 }
@@ -447,8 +452,15 @@ WRFInput::WRFInput(const std::string& filename,
         float sr_x = sizeZSF_x/(sizeHGT_x+1);
         float sr_y = sizeZSF_y/(sizeHGT_y+1);
 
+
         fm_dx = atm_dx / sr_x;
-        fm_dy = atm_dy / sr_y;    
+        fm_dy = atm_dy / sr_y;
+
+        std::cout << "Full Fire Mesh Size with border: " << fm_nx << " X " << fm_ny << std::endl;
+        
+        fm_nx = fm_nx - sr_x;
+        fm_ny = fm_ny - sr_y;
+
         // Then dxf=DX/sr_x, dyf=DY/sr_y
 
         // for now, set dz = 1
@@ -970,9 +982,10 @@ WRFInput::WRFInput(const std::string& filename,
     int chkSum = 0;
     chkSum = checksum( chkSum, u0_fmw );
     chkSum = checksum( chkSum, v0_fmw );
+    std::cout << "WRF file output checksum (without W0_FMW) of FMW fields: " << chkSum << std::endl;
     chkSum = checksum( chkSum, w0_fmw );
     std::cout << "WRF file output checksum of FMW fields: " << chkSum << std::endl;
-    exit(1);
+    // exit(1);
 
     // Read the heights
     std::vector<size_t> interpWindsHT_StartIdx = {timeSize-1,0,0,0};
