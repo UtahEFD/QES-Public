@@ -1,0 +1,10 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/uufs/chpc.utah.edu/common/home/stoll-group3/lucasulmer/QES-Winds/build/ptx/cuda_compile_ptx_generated_OptixRayTrace.cu.ptx_embedded.c
+

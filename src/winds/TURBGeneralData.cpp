@@ -67,6 +67,9 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
     flagUniformZGrid = false;
   }
 
+  backgroundMixing = WID->turbParams->backgroundMixing;
+
+
   // make local copy of grid information
   // nx,ny,nz consitant with WINDS (face-center)
   // WINDS->grid correspond to face-center grid
@@ -431,6 +434,11 @@ void TURBGeneralData::run(WINDSGeneralData *WGD)
   std::cout << "\t\t Checking Upper Bound of Turbulence Fields..." << std::endl;
   boundTurbFields();
 
+  if (backgroundMixing > 0.0) {
+    addBackgroundMixing();
+  }
+
+
   auto EndTime = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> Elapsed = EndTime - StartTime;
 
@@ -747,6 +755,18 @@ void TURBGeneralData::getStressTensor_v2()
     tyz[cellID] = -tyz[cellID];
     */
   }
+}
+
+void TURBGeneralData::addBackgroundMixing()
+{
+  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
+    int cellID = *it;
+
+    txx[cellID] += backgroundMixing;
+    tyy[cellID] += backgroundMixing;
+    tzz[cellID] += backgroundMixing;
+  }
+  return;
 }
 
 void TURBGeneralData::boundTurbFields()

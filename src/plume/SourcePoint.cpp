@@ -81,14 +81,14 @@ int SourcePoint::emitParticles(const float dt, const float currTime, std::list<P
       particleTypeFactory.RegisterParticles(largestr,&particleLargeFactory);
       particleTypeFactory.RegisterParticles(heavygasstr,&particleHeavyGasFactory);
       */
-      std::cout << "Creating cPar via factory " << std::endl;
+      //std::cout << "Creating cPar via factory " << std::endl;
       Particle * cPar = particleTypeFactory->Create(protoParticle->tag);
       
       //ParticleTracerFactory particleTracerFactoryTest;
       //Particle * cPar = particleTracerFactoryTest.create();
       //Particle * cPar = new ParticleSmall();
       //std::cout << "cPar is: " << cPar << " particleTracerFactoryTest is: " << particleTracerFactoryTest << std::endl;
-      std::cout << "Done creating cPar via factory " << std::endl;
+      //std::cout << "Done creating cPar via factory " << std::endl;
 
       cPar->xPos_init = posX;
       cPar->yPos_init = posY;
@@ -102,7 +102,7 @@ int SourcePoint::emitParticles(const float dt, const float currTime, std::list<P
       cPar->m = sourceStrength/m_rType->m_numPar;
       cPar->m_kg = sourceStrength/m_rType->m_numPar * (1.0E-3); 
       
-      std::cout << " par type is: " << cPar->tag << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
+      //std::cout << " par type is: " << cPar->tag << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
 
       
       cPar->tStrt = currTime;

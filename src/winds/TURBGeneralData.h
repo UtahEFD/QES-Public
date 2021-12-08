@@ -167,6 +167,7 @@ private:
   float sigUConst = 1.5 * sigUOrg * sigUOrg * cPope * cPope;
   float sigVConst = 1.5 * sigVOrg * sigVOrg * cPope * cPope;
   float sigWConst = 1.5 * sigWOrg * sigWOrg * cPope * cPope;
+  float backgroundMixing = 0.0;
 
   // input: store here for multiple time instance.
   NetCDFInput *input;
@@ -179,6 +180,7 @@ private:
   void getStressTensor();
   void getStressTensor_v2();
 
+  void addBackgroundMixing();
 
   void boundTurbFields();
 };

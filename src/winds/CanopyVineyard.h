@@ -15,6 +15,7 @@ public:
     // LDU: this gets run first, when the XML is parsed. So polygonVertices are always the rotated ones, wherever they're used downstream. However, the wake rotation seems to be done inside the paramterization.
     virtual void parseValues()
     {
+        std::cout << "PARSING VINEYARD PARAMETERS" << std::endl;
         base_height = 0.0;
         
         parsePrimitive<float>(true, H, "height");

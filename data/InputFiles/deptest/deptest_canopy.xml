@@ -44,6 +44,7 @@
         <method>0</method>
         <samples>2000</samples>
         <save>false</save>
+        <backgroundMixing>0.0</backgroundMixing> 
     </turbParams>
     <canopies>
         <num_canopies>1</num_canopies>

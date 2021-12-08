@@ -243,20 +243,21 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData* WGD, int building_id)
     float N_e_float = ceil(l_e/rowSpacing);
     int N_e = (int)N_e_float;
     //N_e = 1;
-    
+    N_e=2;
+    std::cout << "CAN ANYBODY HEAR ME?" << std::endl;
     std::cout << "l_e = " << l_e << ", N_e = " << N_e << "\n";
     // Spread rate calculations
     float udelt = (1-a_obf);
-    //float udelt = (1-pow(a_obf,N_e+1));
+    //float udelt = (1-pow(a_obf,N_e));
     float uave = (1+a_obf)/2;
-    //float uave = (1+pow(a_obf,N_e+1))/2;
+    //float uave = (1+pow(a_obf,N_e))/2;
 
     float spreadclassicmix = 0.14*udelt/uave;
     
     float spreadupstream_top = 2*stdw/M0_h;
-    //float spreadupstream_top = 2*stdw/(M0_h*pow(a_obf,N_e+1));
+    //float spreadupstream_top = 2*stdw/(M0_h*pow(a_obf,N_e));
     float spreadupstream_bot = 2*stdw/M0_uh;
-    //float spreadupstream_bot = 2*stdw/(M0_uh*pow(a_obf,N_e+1));
+    //float spreadupstream_bot = 2*stdw/(M0_uh*pow(a_obf,N_e));
    
     std::cout << "a_obf = " << a_obf << " spreadclassicmix = " << spreadclassicmix << " spreadupstream_top = " << spreadupstream_top << " \n";
     // Avoid divide-by-zero for the no-understory case (where M0_uh will be 0)
@@ -266,8 +267,8 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData* WGD, int building_id)
     std::cout << " M0_h = " << M0_h << " spreadupstream_top = " << spreadupstream_top << "\n";
     std::cout << " M0_uh = " << M0_uh << " spreadupstream_bot = " << spreadupstream_bot << "\n";
     
-    float spreadrate_top = sqrt(pow(spreadclassicmix,2) + pow(spreadupstream_top,2));
-    float spreadrate_bot = sqrt(pow(spreadclassicmix,2) + pow(spreadupstream_bot,2));
+    float spreadrate_top = 2*sqrt(pow(spreadclassicmix,2) + pow(spreadupstream_top,2));
+    float spreadrate_bot = 2*sqrt(pow(spreadclassicmix,2) + pow(spreadupstream_bot,2));
     std::cout << "spreadrate_top = " << spreadrate_top << "spreadrate_bot = " << spreadrate_bot << "\n";
     // Shear zone origin (for now, keep it at H, but later parameterize its descent)
     float szo_top = H;
@@ -508,8 +509,8 @@ int UD_zone_flag = 1;
                     if (k <= k_mid){ // if i'm below mid-canopy, use bottom shear layer quantities
                         szt_uw = spreadrate_bot*d_dw + 0.00001; // d_dw = streamwise downwind distance
                         szt_local = spreadrate_bot*d_dw_local + 0.00001;
-                        a_uw = 1*(a_exp*(0.5*(1-a_obf)*tanh(1.5*(szo_bot - z_rel)/szt_uw) + 0.5*(1+a_obf)) + (1-a_exp)); // should be a "fac" where the 1* is
-                        a_local = 1*(a_exp*(0.5*(1-a_obf)*tanh(1.5*(szo_bot - z_rel)/szt_local) + 0.5*(1+a_obf)) + (1-a_exp)); // should be a "fac" where the 1* is
+                        a_uw = 1*(a_exp*(0.5*(1-a_obf)*tanh(1.5*(szo_bot - z_rel)/szt_uw) + 0.5*(1+a_obf)) + (1-a_exp)); // should be a "fac" where the 1* is, will fix this later
+                        a_local = 1*(a_exp*(0.5*(1-a_obf)*tanh(1.5*(szo_bot - z_rel)/szt_local) + 0.5*(1+a_obf)) + (1-a_exp)); // should be a "fac" where the 1* is, will fix this later
                     }
                     else{
                         szt_uw = spreadrate_top*d_dw + 0.00001;
@@ -723,7 +724,7 @@ int UD_zone_flag = 1;
                                std::cout << "v_c is NaN (wake, eq region): " << v_c << " at i= " << i+i_start << " j= " << j+j_start << " k= " << k << "\n";
                            }
                            if (i+i_start == 81 && j+j_start == 23) {
-                                std::cout << " ld = " << ld << " dv_c = " << dv_c << " N = " << N << " d_dw_local = " << d_dw_local <<  "\n";
+                                //std::cout << " ld = " << ld << " dv_c = " << dv_c << " N = " << N << " d_dw_local = " << d_dw_local <<  "\n";
                            }
                         }
 
@@ -738,8 +739,8 @@ int UD_zone_flag = 1;
                                 //}
                        
                                 // "Actual" parameterization (commented to try others, 7.7.21)
-                                //u_c = u_c + (a_obf*pow(a_uw,N+3)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel)));
-                                //u_c = u_c + (-2*u_c)*(1-exp(br*(z_ud-z_rel)));
+                               // u_c = u_c + (a_obf*pow(a_uw,N+3)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel)));
+                               // u_c = u_c + (-2*u_c)*(1-exp(br*(z_ud-z_rel)));
                                 
                                 // Test parameterization (7.7.21)
                                 u_c = -u_c;

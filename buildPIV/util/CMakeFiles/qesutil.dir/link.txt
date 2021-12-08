@@ -1,0 +1,2 @@
+/bin/ar qc libqesutil.a  CMakeFiles/qesutil.dir/ArgumentParsing.cpp.o CMakeFiles/qesutil.dir/ParseInterface.cpp.o CMakeFiles/qesutil.dir/calcTime.cpp.o CMakeFiles/qesutil.dir/NetCDFInput.cpp.o CMakeFiles/qesutil.dir/NetCDFOutput.cpp.o CMakeFiles/qesutil.dir/QESNetCDFOutput.cpp.o
+/bin/ranlib libqesutil.a

@@ -41,7 +41,7 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
   // set settling velocity
   (*parItr)->setSettlingVelocity(rhoAir, nuAir);
 
-  std::cout << "in advpart, par type is: " << typeid(*parItr).name() <<  " d = " << (*parItr)->d << " m = " << (*parItr)->m << " depFlag = " << (*parItr)->depFlag << " vs = " << (*parItr)->vs << std::endl;
+  //std::cout << "in advpart, par type is: " << typeid(*parItr).name() << " txx=" << (*parItr)->txx_old <<  " tyy=" << (*parItr)->tyy_old << " tzz=" << (*parItr)->tzz_old << " d = " << (*parItr)->d << " m = " << (*parItr)->m << " depFlag = " << (*parItr)->depFlag << " vs = " << (*parItr)->vs << std::endl;
   // get the current isRogue and isActive information
   bool isRogue = (*parItr)->isRogue;
   bool isActive = (*parItr)->isActive;
@@ -243,7 +243,8 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
     // now check to see if the value is rogue or not
     if (std::abs(uFluct) >= vel_threshold || isnan(uFluct)) {
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      std::cerr << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
+      std::cerr << "responsible uFluct was \"" << uFluct << "\" at xPos=" << (*parItr)->xPos << " yPos=" << (*parItr)->yPos << " zPos=" << (*parItr)->zPos << std::endl;
+      std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl; 
       uFluct = 0.0;
       isActive = false;
       isRogue = true;
@@ -251,7 +252,8 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
     }
     if (std::abs(vFluct) >= vel_threshold || isnan(vFluct)) {
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      std::cerr << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
+      std::cerr << "responsible vFluct was \"" << vFluct << "\" at xPos=" << (*parItr)->xPos << " yPos=" << (*parItr)->yPos << " zPos=" << (*parItr)->zPos << std::endl;
+      std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl; 
       vFluct = 0.0;
       isActive = false;
       isRogue = true;
@@ -259,7 +261,8 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
     }
     if (std::abs(wFluct) >= vel_threshold || isnan(wFluct)) {
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      std::cerr << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
+      std::cerr << "responsible wFluct was \"" << wFluct << "\" at xPos=" << (*parItr)->xPos << " yPos=" << (*parItr)->yPos << " zPos=" << (*parItr)->zPos << std::endl;
+      std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl; 
       wFluct = 0.0;
       isActive = false;
       isRogue = true;
@@ -342,7 +345,7 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
   (*parItr)->yPos = yPos;
   (*parItr)->zPos = zPos;
 
-  std::cout << " particleID = " << (*parItr)->particleID << " xPos = " << (*parItr)->xPos << " yPos = " << (*parItr)->yPos << " zPos = " << (*parItr)->zPos << std::endl;
+  //std::cout << " particleID = " << (*parItr)->particleID << " xPos = " << (*parItr)->xPos << " yPos = " << (*parItr)->yPos << " zPos = " << (*parItr)->zPos << std::endl;
   (*parItr)->disX = disX;
   (*parItr)->disY = disY;
   (*parItr)->disZ = disZ;

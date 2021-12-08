@@ -54,7 +54,7 @@ void Plume::depositParticle(double endTime, double simTime, double xPos, double 
     if (WGD->icellflag[cellId_old] == 20){
 
         double elementDiameter = 100e-3; // temporarily hard-coded [m]
-        double leafAreaDensitydep = 1; // LAD, temporarily hard-coded [m^-1]
+        double leafAreaDensitydep = 5.57; // LAD, temporarily hard-coded [m^-1]
         double Cc = 1; // Cunningham correction factor, temporarily hard-coded, only important for <10um particles
         
         double vegDistance = sqrt(pow(disX,2) + pow(disY,2) + pow(disZ,2)); // distance travelled through veg
@@ -72,9 +72,17 @@ void Plume::depositParticle(double endTime, double simTime, double xPos, double 
         double depEff = 1-1/(2.049*pow(pow(ReLambda,0.3)*Stk,1.19)+1); // deposition efficiency (E in Bailey 2018 Eq. 13)
         
         double ReLeaf = elementDiameter * MTot / nuAir; // leaf Reynolds number
-        
-        //double gam = -6.5e-5*ReLeaf+0.43; // non-impaction surface weighting factor
-        double gam = 0.1; // temporarily set to 1 because of problems (gam is becoming negative, but should be positive and ~0.1)
+      
+        // Temporary fix to address limitations of Price 2017 model (correlation only valid for 400 < ReLeaf < 6000)
+        if (ReLeaf > 6000.0){
+          ReLeaf = 6000.0;
+        }
+        if (ReLeaf < 400.0){
+          ReLeaf = 400.0;
+        }
+
+        double gam = -6.5e-5*ReLeaf+0.43; // non-impaction surface weighting factor
+        //double gam = 0.1; // temporarily set to 1 because of problems (gam is becoming negative, but should be positive and ~0.1)
 
         double adjLAD = leafAreaDensitydep*(1+gam); // LAD adjusted to include non-impaction surface 
         

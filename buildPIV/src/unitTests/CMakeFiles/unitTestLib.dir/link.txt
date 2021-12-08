@@ -1,0 +1,2 @@
+/usr/bin/ar qc libunitTestLib.a  CMakeFiles/unitTestLib.dir/test_DTEHeightField.cpp.o CMakeFiles/unitTestLib.dir/util.cpp.o
+/usr/bin/ranlib libunitTestLib.a

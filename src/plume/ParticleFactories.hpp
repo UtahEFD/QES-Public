@@ -52,9 +52,9 @@ public:
 
   virtual Particle* create()
   {
-    std::cout << "Creating new ParticleTracer" << std::endl;
+//    std::cout << "Creating new ParticleTracer" << std::endl;
     return new ParticleTracer();
-    std::cout << "Done creating new ParticleTracer" << std::endl;
+//    std::cout << "Done creating new ParticleTracer" << std::endl;
   }
 };
 
@@ -117,15 +117,15 @@ class ParticleTypeFactory
     // Function to return the actual particle object 
     Particle * Create(std::string particleType)
     {
-      std::cout << "Element of ParticleTypeContainer are: " << std::endl;
+ //     std::cout << "Element of ParticleTypeContainer are: " << std::endl;
       for (auto const &pair: ParticleTypeContainer) {
-        std::cout << "{" << pair.first << ": " << pair.second << "}\n";
+      //  std::cout << "{" << pair.first << ": " << pair.second << "}\n";
       }
-      std::cout << " ParticleTypeContainer.at(particleType) is: " << ParticleTypeContainer.at(particleType) << std::endl;
+//      std::cout << " ParticleTypeContainer.at(particleType) is: " << ParticleTypeContainer.at(particleType) << std::endl;
       
-      std::cout << "Calling create() from the " << particleType << " factory" << std::endl;
+//      std::cout << "Calling create() from the " << particleType << " factory" << std::endl;
       return ParticleTypeContainer.at(particleType)->create();
-      std::cout << "done calling create() from the " << particleType << " factory" << std::endl;
+//      std::cout << "done calling create() from the " << particleType << " factory" << std::endl;
     }
 
 
