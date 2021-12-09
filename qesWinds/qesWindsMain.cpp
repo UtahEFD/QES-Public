@@ -211,6 +211,11 @@ int main(int argc, char *argv[])
     {
       for (int index = 1; index < WID->simParams->totalTimeIncrements; index++)
       {
+
+	// Re-read WRF data
+	std::cout << "Running multiple time increments..." << std::endl;
+	WID->simParams->wrfInputData->updateFromWRF();
+
         // Reset icellflag values
         for (int k = 0; k < WGD->nz-2; k++)
         {
@@ -227,9 +232,11 @@ int main(int argc, char *argv[])
             }
         }
 
+	std::cout << "Re-processing inputWindProfile" << std::endl;
         // Create initial velocity field from the new sensors
         WID->metParams->sensors[0]->inputWindProfile(WID, WGD, index, arguments.solveType);
 
+	std::cout << "Re-computing parameterizations..." << std::endl;
         // ///////////////////////////////////////
         // Canopy Vegetation Parameterization
         // ///////////////////////////////////////

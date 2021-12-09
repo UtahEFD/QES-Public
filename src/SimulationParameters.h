@@ -155,6 +155,12 @@ public:
         parsePrimitive<std::string>(false, wrfFile, "WRF");
         parsePrimitive<int>(false, wrfSensorSample, "WRFSensorSample");
 
+	// 
+	// WRF coupling
+	//
+	bool wrfCoupling = false;
+        parsePrimitive<bool>(false, wrfCoupling, "WRFCoupling");
+
         shpBuildingLayerName = "buildings";  // defaults
         parsePrimitive<std::string>(false, shpBuildingLayerName, "SHPBuildingLayer");
 
@@ -194,7 +200,7 @@ public:
             // nx and ny domain cells. 
             //
             std::cout << "Processing WRF data for terrain and met param sensors from " << wrfFile << std::endl;
-            wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, 0, 0, wrfSensorSample );
+            wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, 0, 0, wrfCoupling, wrfSensorSample );
             std::cout << "WRF input data processing completed." << std::endl;
 
             // Apply halo to wind profile locations -- halo units are
@@ -291,7 +297,7 @@ public:
             float dimX = (*(domain))[0] * (*(grid))[0];
             float dimY = (*(domain))[1] * (*(grid))[1];
             std::cout << "dimX = " << dimX << ", dimY = " << dimY << std::endl;
-            wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, dimX, dimY, wrfSensorSample, onlySensorData );
+            wrfInputData = new WRFInput( wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, dimX, dimY, wrfSensorSample, wrfCoupling, onlySensorData );
             std::cout << "WRF Wind Velocity Profile Data processing completed." << std::endl;
         }
 
