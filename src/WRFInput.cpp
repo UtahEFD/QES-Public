@@ -1,3 +1,4 @@
+
 /** \file "WRFInput.cpp" input data header file.
     \author Pete Willemsen, Matthieu
 
@@ -327,16 +328,22 @@ WRFInput::WRFInput(const std::string& filename,
                    double domainUTMx, double domainUTMy, int zoneUTM, std::string &zoneLetterUTM,
                    float dimX, float dimY,
                    int sensorSample,
+		   bool performWRFCoupling,
                    bool sensorsOnly)
     : m_WRFFilename( filename ),
       m_processOnlySensorData( sensorsOnly ),
       wrfInputFile( filename, NcFile::write ),
       m_minWRFAlt( 22 ), m_maxWRFAlt( 330 ), m_maxTerrainSize( 10001 ), m_maxNbStat( 156 ),
-      m_TerrainFlag(1), m_BdFlag(0), m_VegFlag(0), m_Z0Flag(2)
+      m_TerrainFlag(1), m_BdFlag(0), m_VegFlag(0), m_Z0Flag(2),
+      m_performWRFRunCoupling( performWRFCoupling )
 {
     std::cout << "WRF Input Processor - reading data from " << filename << std::endl;
     if (sensorsOnly) {
         std::cout << "\tOnly parsing wind velocity profiles from WRF file." << std::endl;
+    }
+
+    if (m_performWRFRunCoupling) {
+      std::cout << "\n============> WRF-QES Run Coupling Enabled!\n" << std::endl;
     }
     
     // How is UTM used now?  --Pete
@@ -355,6 +362,29 @@ WRFInput::WRFInput(const std::string& filename,
     std::string subStr1 = wrfTitle.substr(vLoc+2, wrfTitle.length()-1);
     nextSpace = subStr1.find( " " );
     std::string vString = subStr1.substr(0, nextSpace);
+
+    // Wait until WRF has run and placed the correct checksum and timestamp number in the file
+    // CHSUM0_FMW
+    // FRAME0_FMW
+    // int wrfCHSUM0_FMW = 0;
+    int wrfFRAME0_FMW = -1;
+
+    NcDim fmwdim = wrfInputFile.getVar("U0_FMW").getDim( 0 );
+    int fmwTimeSize = fmwdim.getSize();
+
+    std::vector<size_t> fmw_StartIdx = {fmwTimeSize-1};
+    std::vector<size_t> fmw_counts = {1};
+    wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);        
+
+    if (m_performWRFRunCoupling) {
+      while (wrfFRAME0_FMW == -1) {
+	std::cout << "Waiting for FRAME0_FMW..." << std::endl;
+	sleep(2);
+	wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);        
+      }
+
+      std::cout << "WRF-QES Coupling: Frame = " << wrfFRAME0_FMW << std::endl;
+    }
 
     // Report the version information
     std::cout << "\tWRF Version: " << vString << std::endl;
@@ -985,7 +1015,6 @@ WRFInput::WRFInput(const std::string& filename,
     std::cout << "WRF file output checksum (without W0_FMW) of FMW fields: " << chkSum << std::endl;
     chkSum = checksum( chkSum, w0_fmw );
     std::cout << "WRF file output checksum of FMW fields: " << chkSum << std::endl;
-    // exit(1);
 
     // Read the heights
     std::vector<size_t> interpWindsHT_StartIdx = {timeSize-1,0,0,0};
@@ -2192,6 +2221,93 @@ float WRFInput::lookupLandUse(int luIdx)
 }
 
 
+void WRFInput::updateFromWRF()
+{
+  // Only perform if doing the coupling
+  if (m_performWRFRunCoupling) {
+
+    // Wait until WRF has run and placed the correct checksum and timestamp number in the file
+    // CHSUM0_FMW
+    // FRAME0_FMW
+    int wrfFRAME0_FMW = -1;
+
+    NcDim fmwdim = wrfInputFile.getVar("U0_FMW").getDim( 0 );
+    int fmwTimeSize = fmwdim.getSize();
+
+    std::vector<size_t> fmw_StartIdx = {fmwTimeSize-1};
+    std::vector<size_t> fmw_counts = {1};
+    wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);        
+    
+    while (wrfFRAME0_FMW == -1) {
+      std::cout << "Waiting for FRAME0_FMW to advance to the next frame..." << std::endl;
+      sleep(2);
+      wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);        
+    }
+
+    std::cout << "WRF-QES Coupling: Frame = " << wrfFRAME0_FMW << std::endl;
+
+    std::cout << "Reading and processing WRF Stations for input wind profiles..." << std::endl;
+
+    std::cout << "Dim Count: " << wrfInputFile.getVar("U0_FMW").getDimCount() << std::endl;
+    for (auto dIdx=0u; dIdx<wrfInputFile.getVar("U0_FMW").getDimCount(); dIdx++) {
+      NcDim dim = wrfInputFile.getVar("U0_FMW").getDim( dIdx );
+      std::cout << "Dim " << dIdx << ", Size=" << dim.getSize() << std::endl;
+    }
+    
+    // Extract time dim size
+    NcDim dim = wrfInputFile.getVar("U0_FMW").getDim( 0 );
+    int timeSize = dim.getSize();
+    std::cout << "Number of time series:  " << timeSize << std::endl;
+    
+    // Extract height dim size
+    dim = wrfInputFile.getVar("U0_FMW").getDim( 1 );
+    int hgtSize = dim.getSize();
+
+    std::vector<size_t> interpWinds_StartIdx = {timeSize-1,0,0,0};
+    std::vector<size_t> interpWinds_counts = {1,
+					      hgtSize,
+					      static_cast<unsigned long>(fm_ny),
+					      static_cast<unsigned long>(fm_nx)};
+    
+    // u0_fmw.resize( 1 * hgtSize * fm_ny * fm_nx );
+    wrfInputFile.getVar("U0_FMW").getVar(interpWinds_StartIdx, interpWinds_counts, u0_fmw.data());
+    
+    // v0_fmw.resize( 1 * hgtSize * fm_ny * fm_nx );
+    wrfInputFile.getVar("V0_FMW").getVar(interpWinds_StartIdx, interpWinds_counts, v0_fmw.data());
+    
+    // w0_fmw.resize( 1 * hgtSize * fm_ny * fm_nx );
+    wrfInputFile.getVar("W0_FMW").getVar(interpWinds_StartIdx, interpWinds_counts, w0_fmw.data());
+
+    //
+    // Compute the Checksum
+    //
+    
+    // read the checksum
+    std::vector<size_t> chksum_StartIdx = {timeSize-1};
+    std::vector<size_t> chksum_counts = {1};
+
+    int wrfCHSUM0_FMW = 0;
+    wrfInputFile.getVar("CHSUM0_FMW").getVar(chksum_StartIdx, chksum_counts, &wrfCHSUM0_FMW);    
+    std::cout << "WRF CHSUM0_FMW = " << wrfCHSUM0_FMW << std::endl;
+    
+    int chkSum = 0;
+    chkSum = checksum( chkSum, u0_fmw );
+    chkSum = checksum( chkSum, v0_fmw );
+    chkSum = checksum( chkSum, w0_fmw );
+    std::cout << "WRF file output checksum of FMW fields: " << chkSum << std::endl;
+
+    // Read the heights
+    std::vector<size_t> interpWindsHT_StartIdx = {timeSize-1,0,0,0};
+    std::vector<size_t> interpWindsHT_counts = {1,
+                                              hgtSize};
+
+    // ht_fmw.resize( 1 * hgtSize );
+    wrfInputFile.getVar("HT_FMW").getVar(interpWindsHT_StartIdx, interpWindsHT_counts, ht_fmw.data());
+  }  
+
+  std::cout << "Finalized update from WRF." << std::endl;
+}
+
 
 void WRFInput::extractWind( WINDSGeneralData *wgd )
 {
@@ -2207,12 +2323,16 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
                                   static_cast<unsigned long>(fm_ny),
                                   static_cast<unsigned long>(fm_nx)};
 
-    assert( fm_nx != (wgd->nx - 1 - 2*m_haloX_DimAddition) );
-    assert( fm_ny != (wgd->ny - 1 - 2*m_haloY_DimAddition) );    
+    std::cout << "fm_nx=" << fm_nx << ", wgd->nx=" << wgd->nx << ", haloX=" << m_haloX_DimAddition << "( " << std::endl;
+    std::cout << "fm_ny=" << fm_ny << ", wgd->ny=" << wgd->ny << ", haloY=" << m_haloY_DimAddition << std::endl;
+
+    // why?
+    // assert( fm_nx != (wgd->nx - 1 - 2*m_haloX_DimAddition) );
+    // assert( fm_ny != (wgd->ny - 1 - 2*m_haloY_DimAddition) );    
 
     // Initialize the two fields to 0.0
-    std::vector<double> ufOut( fm_nx * fm_ny, 0.0 );
-    std::vector<double> vfOut( fm_nx * fm_ny, 0.0 );
+    std::vector<float> ufOut( fm_nx * fm_ny, 0.0 );
+    std::vector<float> vfOut( fm_nx * fm_ny, 0.0 );
 
     auto FWH = 1.2;
 
@@ -2263,14 +2383,32 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
         }
     }
 
+    // Compute the CHSUM
+    int ufvf_chsum = 0;
+    ufvf_chsum = checksum( ufvf_chsum, ufOut );
+    ufvf_chsum = checksum( ufvf_chsum, vfOut );
+    std::cout << "WRF UF/VF output checksum: " << ufvf_chsum << std::endl;
+
     NcVar field_UF = wrfInputFile.getVar("UF");
     NcVar field_VF = wrfInputFile.getVar("VF");
+
+    NcVar field_CHSUM = wrfInputFile.getVar("CHSUM_FMW");
+    NcVar field_FRAME = wrfInputFile.getVar("FRAME_FMW");
 
     std::cout << "Wind field data written to WRF Output file: " << m_WRFFilename << std::endl;
 
     field_UF.putVar( startIdx, counts, ufOut.data() ); //, startIdx, counts );
     field_VF.putVar( startIdx, counts, vfOut.data() ); //, startIdx, counts );
+
+    std::vector<size_t> chksum_StartIdx = {0};
+    std::vector<size_t> chksum_counts = {1};
+    
+    field_CHSUM.putVar( chksum_StartIdx, chksum_counts, &ufvf_chsum );
+    int frame = 1;
+    field_FRAME.putVar( chksum_StartIdx, chksum_counts, &frame );
         
+    std::cout << "Checksum and frame updated!" << std::endl;
+
     wrfInputFile.sync();
 }
 

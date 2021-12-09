@@ -66,6 +66,7 @@ public:
     WRFInput(const std::string& filename, double domainUTMx, double domainUTMy,
              int zoneUTM, std::string &zoneLetterUTM, float dimX, float dimY,
              int sensorSample,
+	     bool performWRFCoupling,
              bool sensorsOnly=false);
     ~WRFInput();
 
@@ -97,6 +98,9 @@ public:
 
     int maxSensors;
 
+    // WRF-QES Run Coupling 
+    bool m_performWRFRunCoupling;
+
     // these are the interpolated wind fields from WRF
     std::vector<float> u0_fmw, v0_fmw, w0_fmw, ht_fmw;
 
@@ -108,6 +112,10 @@ public:
      */
     void dumpStationData() const;
 
+
+    /**
+     */
+    void updateFromWRF();
 
     /**
      */
