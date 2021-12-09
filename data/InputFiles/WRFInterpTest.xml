@@ -2,7 +2,9 @@
 
   <!-- Specifies the WRF Output file that will be read in by QES-Winds -->
   <!-- <WRF>/uufs/chpc.utah.edu/common/home/stoll-group3/willemsn/RXCwrfout_d07_2012-11-11_15-21</WRF> -->
-  <WRF>../scratch/wrfout_d01_0001-01-01_00:00:00</WRF>
+  <WRF>/uufs/chpc.utah.edu/common/home/u0240900/WRF-SFIRE/test/em_fire/hill/wrf.nc</WRF>
+  <!-- ../scratch/wrfout_d01_0001-01-01_00:00:00</WRF> -->
+  <WRFCoupling>true</WRFCoupling>
 
   <!-- <WRFSensorSample>12</WRFSensorSample> --> <!-- seems to not work -->
   <WRFSensorSample>1</WRFSensorSample> <!-- seems to work -->
@@ -41,7 +43,7 @@ Shouldn't need when loading WRF output though.
 
   <verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
-  <!--  <totalTimeIncrements> 1 </totalTimeIncrements> -->
+  <totalTimeIncrements> 2 </totalTimeIncrements>
   <!--  <UTCConversion> 0 </UTCConversion> -->
 
   <rooftopFlag> 0 </rooftopFlag> 				<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
