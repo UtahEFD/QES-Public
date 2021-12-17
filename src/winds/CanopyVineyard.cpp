@@ -243,14 +243,13 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData* WGD, int building_id)
     float N_e_float = ceil(l_e/rowSpacing);
     int N_e = (int)N_e_float;
     //N_e = 1;
-    N_e=2;
-    std::cout << "CAN ANYBODY HEAR ME?" << std::endl;
+    
     std::cout << "l_e = " << l_e << ", N_e = " << N_e << "\n";
     // Spread rate calculations
-    float udelt = (1-a_obf);
-    //float udelt = (1-pow(a_obf,N_e));
-    float uave = (1+a_obf)/2;
-    //float uave = (1+pow(a_obf,N_e))/2;
+    //float udelt = (1-a_obf);
+    float udelt = (1-pow(a_obf,N_e));
+    //float uave = (1+a_obf)/2;
+    float uave = (1+pow(a_obf,N_e))/2;
 
     float spreadclassicmix = 0.14*udelt/uave;
     

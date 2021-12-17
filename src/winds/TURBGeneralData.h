@@ -161,7 +161,7 @@ private:
   // some constants for turbulent model
   const float vonKar = 0.4;
   const float cPope = 0.55;
-  float sigUOrg = 2.5;
+  float sigUOrg = 2.0;
   float sigVOrg = 2.0;
   float sigWOrg = 1.3;
   float sigUConst = 1.5 * sigUOrg * sigUOrg * cPope * cPope;
