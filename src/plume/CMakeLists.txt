@@ -1,52 +1,50 @@
-include_directories(${CMAKE_SOURCE_DIR})
-
+include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../util)
 
 #INCLUDE_DIRECTORIES (${CMAKE_SOURCE_DIR}/quicutil)  
 #LINK_DIRECTORIES (${CMAKE_BINARY_DIR}/quicutil/)
 
 CUDA_ADD_LIBRARY( qesplumecore
     
-  Random.cpp
-                  
-  Args.cpp
-                          
-  Eulerian.cpp
-  EulerianPowerLaw.cpp
-                                      
-  Plume.cpp
-  AdvectParticle.cpp
-  DepositParticle.cpp
-  WallReflection.cpp
-                                                          
-  PlumeOutput.cpp
-  PlumeOutputParticleData.cpp
-  PlumeOutputEulerian.cpp
+    Random.cpp
+        
+    handlePlumeArgs.cpp
+    
+    Interp.cpp
+    InterpNearestCell.cpp
+    InterpPowerLaw.cpp
+    InterpTriLinear.cpp    
 
-  BoundaryConditions.hpp
+    Plume.cpp
+    AdvectParticle.cpp
+    DepositParticle.cpp
+    WallReflection.cpp
+    
+    PlumeOutput.cpp
+    PlumeOutputParticleData.cpp
 
-  Particle.hpp
-  ParseParticle.hpp
-  ParticleFactories.hpp
-  ParticleSmall.hpp
-  ParticleLarge.hpp
-  ParticleHeavyGas.hpp
-                                                                                              
-  ReleaseType.hpp
-  ReleaseType_instantaneous.hpp
-  ReleaseType_continuous.hpp
-  ReleaseType_duration.hpp
-                                                                                                                  
-  Sources.hpp
-  SourceType.hpp
-  SourcePoint.cpp SourcePoint.hpp
-  SourceLine.cpp SourceLine.hpp
-  SourceCircle.cpp SourceCircle.hpp
-  SourceCube.cpp SourceCube.hpp
-  SourceFullDomain.cpp SourceFullDomain.hpp
+    BoundaryConditions.hpp
+    Particle.hpp
+    ParseParticle.hpp
+    ParticleFactories.hpp
+    ParticleSmall.hpp
+    ParticleLarge.hpp
+    ParticleHeavyGas.hpp
+    
+    ReleaseType.hpp
+    ReleaseType_instantaneous.hpp
+    ReleaseType_continuous.hpp
+    ReleaseType_duration.hpp
+    
+    Sources.hpp
+    SourceType.hpp
+    SourcePoint.cpp SourcePoint.hpp
+    SourceLine.cpp SourceLine.hpp
+    SourceCircle.cpp SourceCircle.hpp
+    SourceCube.cpp SourceCube.hpp
+    SourceFullDomain.cpp SourceFullDomain.hpp
 
-  )
+)
 
 #target_link_libraries (qesplumecore quicloader) 
 #target_link_libraries (qesplumecore util)
@@ -64,4 +62,4 @@ CUDA_ADD_LIBRARY( qesplumecore
 #  target_link_libraries (qesplumecore glut)
 #  target_link_libraries (qesplumecore GLU)
 #endif (APPLE)
-#target_link_libraries (qesplumecore GLEW)
+#target_link_libraries (qesplumecore GLEW) 
