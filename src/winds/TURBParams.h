@@ -66,7 +66,6 @@ public:
   float turbUpperBound;
   float backgroundMixing;
 
-
   TURBParams()
   {}
   ~TURBParams()
@@ -129,6 +128,5 @@ public:
 
     backgroundMixing = 0.0;
     parsePrimitive<float>(false, backgroundMixing, "backgroundMixing");
-
   }
 };
