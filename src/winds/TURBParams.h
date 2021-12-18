@@ -124,7 +124,7 @@ public:
     buildingWallFlag = 2;
     parsePrimitive<int>(false, buildingWallFlag, "buildingWallFlag");
 
-    turbUpperBound = 100;
+    turbUpperBound = 20.0;
     parsePrimitive<float>(false, turbUpperBound, "turbUpperBound");
 
     backgroundMixing = 0.0;
