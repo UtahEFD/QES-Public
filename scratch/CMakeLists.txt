@@ -1,5 +1,6 @@
-include_directories(${CMAKE_SOURCE_DIR})
-include_directories(${PROJECT_SOURCE_DIR}/src)
+include_directories(${CMAKE_SOURCE_DIR}/src)
+include_directories(${PROJECT_SOURCE_DIR}/src/winds)
+
 
 set(BASETESTS
   argparser
@@ -16,7 +17,7 @@ foreach(basetest ${BASETESTS})
     ENDIF()
 
     target_link_libraries(${basetest} qeswindscore)
-    target_link_libraries(${basetest} qeswindsutil)
+    target_link_libraries(${basetest} qesutil)
     target_link_libraries(${basetest} ${Boost_LIBRARIES})
 
     target_link_libraries(${basetest} ${GDAL_LIBRARY})

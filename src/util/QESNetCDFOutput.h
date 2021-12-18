@@ -132,6 +132,7 @@ public:
    * @note Can be called outside.
    */
   virtual void save(ptime) = 0;
+  virtual void save(float) {}
 
 protected:
   // create attribute scalar based on type of data
@@ -154,10 +155,9 @@ protected:
   // save fields
   void saveOutputFields();
 
-  virtual bool validateFileOtions()
-  {
-    return true;
-  };
+  virtual void setAllOutputFields()
+  {}
+  virtual bool validateFileOptions();
 
   std::vector<char> timestamp; /**< :document this: */
   const int dateStrLen = 19; /**< :document this: */
@@ -165,6 +165,7 @@ protected:
   int output_counter = 0; /**< :document this: */
   double time = 0; /**< :document this: */
 
+  std::vector<std::string> all_output_fields;
   std::vector<std::string> output_fields;
   /**< Vector containing fields to add to the NetCDF file
        @note This vector is used ONLY for creating fields

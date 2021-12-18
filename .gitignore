@@ -39,3 +39,7 @@ docs/*
 *.exe
 *.out
 *.app
+
+# IDE related files
+*.vscode
+

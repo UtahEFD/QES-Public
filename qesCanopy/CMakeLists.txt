@@ -1,5 +1,3 @@
-include_directories(${CMAKE_SOURCE_DIR})
-
 # needs to be relative to the current project when we
 # hierarchically integrate projects together.
 include_directories(${PROJECT_SOURCE_DIR}/src)
@@ -10,7 +8,7 @@ CUDA_ADD_EXECUTABLE( qesCanopy
 
 target_link_libraries(qesCanopy curand)
 target_link_libraries(qesCanopy qeswindscore)
-target_link_libraries(qesCanopy qeswindsutil)
+target_link_libraries(qesCanopy qesutil)
 
 IF (HAS_OPTIX_SUPPORT MATCHES ON)
   target_link_libraries(qesCanopy qesOptix)
