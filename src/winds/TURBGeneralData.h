@@ -63,13 +63,14 @@ public:
   virtual ~TURBGeneralData()
   {}
 
-  virtual void run(WINDSGeneralData *);
+  virtual void run();
 
   // load data at given time instance
   void loadNetCDFData(int);
 
   bool flagUniformZGrid = true; /**< :document this: */
   bool flagNonLocalMixing; /**< :document this: */
+  bool flagCompDivStress = true; /**< :document this: */
 
   // General QUIC Domain Data
   ///@{
@@ -145,23 +146,38 @@ public:
   std::vector<float> tzz;
   ///@}
 
-  // derived turbulence quantities
-  std::vector<float> tke;
-  std::vector<float> CoEps;
+  ///@{
+  /** derivative of the stress */
+  std::vector<float> tmp_dtoxdx;
+  std::vector<float> tmp_dtoydy;
+  std::vector<float> tmp_dtozdz;
+  ///@}
 
-  // local Mixing class and data
-  LocalMixing *localMixing;
-  std::vector<double> mixingLengths;
+  ///@{
+  /** divergence of the stress */
+  std::vector<float> div_tau_x;
+  std::vector<float> div_tau_y;
+  std::vector<float> div_tau_z;
+  ///@}
+
+  std::vector<float> tke; /**< turbulence kinetic energy */
+  std::vector<float> CoEps; /**< dissipation rate */
+
+  LocalMixing *localMixing; /**< mixing length class */
+  std::vector<double> mixingLengths; /**< distance to the wall */
 
 protected:
+  WINDSGeneralData *m_WGD;
+
 private:
   // store the wall classes
-  std::vector<TURBWall *> wallVec;
+  std::vector<TURBWall *>
+    wallVec;
 
   // some constants for turbulent model
   const float vonKar = 0.4;
   const float cPope = 0.55;
-  float sigUOrg = 2.0;
+  float sigUOrg = 2.5;
   float sigVOrg = 2.0;
   float sigWOrg = 1.3;
   float sigUConst = 1.5 * sigUOrg * sigUOrg * cPope * cPope;
@@ -169,18 +185,26 @@ private:
   float sigWConst = 1.5 * sigWOrg * sigWOrg * cPope * cPope;
   float backgroundMixing = 0.0;
 
+  float dx, dy, dz;
+
   // input: store here for multiple time instance.
   NetCDFInput *input;
 
-  void getFrictionVelocity(WINDSGeneralData *);
+  void frictionVelocity();
 
-  void getDerivatives(WINDSGeneralData *);
-  void getDerivatives_v2(WINDSGeneralData *);
+  void getDerivatives();
+  void derivativeVelocity();
 
   void getStressTensor();
-  void getStressTensor_v2();
+  void stressTensor();
 
   void addBackgroundMixing();
+
+  void divergenceStress();
+  void derivativeStress(const std::vector<float> &,
+                        const std::vector<float> &,
+                        const std::vector<float> &,
+                        std::vector<float> &);
 
   void boundTurbFields();
 };
