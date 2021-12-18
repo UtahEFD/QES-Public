@@ -49,15 +49,15 @@
 #include "PlumeOutput.h"
 #include "PlumeOutputParticleData.h"
 
-#include "Args.hpp"
 #include "PlumeInputData.hpp"
 
-#include "src/winds/WINDSGeneralData.h"
-#include "src/winds/TURBGeneralData.h"
+#include "winds/WINDSGeneralData.h"
+#include "winds/TURBGeneralData.h"
 
-#include "GriddedDataType.h"
-#include "Eulerian.h"
-#include "EulerianPowerLaw.h"
+#include "Interp.h"
+#include "InterpNearestCell.h"
+#include "InterpPowerLaw.h"
+#include "InterpTriLinear.h"
 
 #include "Particle.hpp"
 
@@ -76,7 +76,6 @@ public:
   // then sets up the concentration sampling box information for output
   // next copies important input time values and calculates needed time information
   // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
-  //Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, Args *);
   Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *);
 
   // this is the plume solver. It performs a time integration of the particle positions and particle velocity fluctuations
@@ -106,7 +105,10 @@ public:
   std::list<Particle *> particleList;
 
 private:
-  // Eulerian grid information
+  Plume()
+  {}
+
+  // QES grid information
   int nx;// a copy of the urb grid nx value
   int ny;// a copy of the urb grid ny value
   int nz;// a copy of the urb grid nz value
@@ -124,7 +126,7 @@ private:
   double domainZstart;// the domain starting z value, a copy of the value found by dispersion
   double domainZend;// the domain ending z value, a copy of the value found by dispersion
 
-  GriddedDataType *eul;
+  Interp *interp;
 
   // time variables
   double sim_dt;// the simulation timestep
@@ -148,9 +150,7 @@ private:
   // !!! this has to be calculated carefully inside the getInputSources() function
   int totalParsToRelease;
 
-
   double invarianceTol;// this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
-  double C_0;// used to separate out CoEps into its separate parts when doing debug output
   int updateFrequency_timeLoop;// used to know how frequently to print out information during the time loop of the solver
   int updateFrequency_particleLoop;// used to know how frequently to print out information during the particle loop of the solver
 
@@ -180,13 +180,12 @@ private:
   // this function scrubs the inactive particle for the particle list (particleList)
   void scrubParticleList();
 
+  double getMaxVariance(const TURBGeneralData *);
 
   // this function moves (advects) one particle
-  //void advectParticle(int&, std::list<Particle*>::iterator, WINDSGeneralData*, TURBGeneralData*, Eulerian*);
-  void advectParticle(double, double, double, std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *);
+  void advectParticle(double, std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *);
 
   void depositParticle(double, double, double, double, double, double, double, double, double, double, double, double, double, double, double,  std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *);
-
   /* reflection functions in WallReflection.cpp */
   // main function pointer
   bool (Plume::*wallReflection)(const WINDSGeneralData *WGD,
