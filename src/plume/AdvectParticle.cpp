@@ -99,7 +99,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
 
 
   // need to avoid current tau values going out of scope now that I've added the particle timestep loop
-// so initialize their values to the tau_old values. They will be overwritten with the Interperian grid value
+  // so initialize their values to the tau_old values. They will be overwritten with the Interperian grid value
   // at each iteration in the particle timestep loop
   double txx = txx_old;
   double txy = txy_old;
@@ -146,7 +146,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
     // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
 
-    int cellId = interp->getCellId(xPos, yPos, zPos)
+    int cellId = interp->getCellId(xPos, yPos, zPos);
     double dWall = WGD->mixingLengths[cellId];
     double par_dt = calcCourantTimestep(dWall,
                                         std::abs(uMean) + std::abs(uFluct),
@@ -178,7 +178,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     double lzz = tzz;
     isRogue = !invert3(lxx, lxy, lxz, lyx, lyy, lyz, lzx, lzy, lzz);
     if (isRogue == true) {
-      //int cellIdNew = interp->getCellId(xPos,yPos,zPos)
+      //int cellIdNew = interp->getCellId(xPos,yPos,zPos);
       std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
       isActive = false;
       break;
@@ -235,7 +235,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     // now check to see if the value is rogue or not
     if (std::abs(uFluct) >= vel_threshold || isnan(uFluct)) {
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      std::cerr << "responsible uFluct was \"" << uFluct << "\"" << std::endl
+      std::cerr << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
       //std::cerr << "responsible uFluct was \"" << uFluct << "\" at xPos=" << (*parItr)->xPos << " yPos=" << (*parItr)->yPos << " zPos=" << (*parItr)->zPos << std::endl;
       //std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl; 
       uFluct = 0.0;
@@ -255,7 +255,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     }
     if (std::abs(wFluct) >= vel_threshold || isnan(wFluct)) {
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      std::cerr << "responsible wFluct was \"" << wFluct << "\"" << std::endl
+      std::cerr << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
       //std::cerr << "responsible wFluct was \"" << wFluct << "\" at xPos=" << (*parItr)->xPos << " yPos=" << (*parItr)->yPos << " zPos=" << (*parItr)->zPos << std::endl;
       //std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl; 
       wFluct = 0.0;
