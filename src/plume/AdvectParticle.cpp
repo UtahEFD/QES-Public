@@ -31,8 +31,7 @@
 
 #include "Plume.hpp"
 
-//void Plume::advectParticle(int& sim_tIdx, std::list<Particle*>::iterator parItr, WINDSGeneralData* WGD, TURBGeneralData* TGD, Eulerian* eul)
-void Plume::advectParticle(double timeRemainder, double endTime, double simTime, std::list<Particle *>::iterator parItr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator parItr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
 
   double rhoAir = 1.225;// in kg m^-3
@@ -54,10 +53,6 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
   double yPos = (*parItr)->yPos;
   double zPos = (*parItr)->zPos;
 
-  double disX = 0.0;
-  double disY = 0.0;
-  double disZ = 0.0;
-
   double uMean = 0.0;
   double vMean = 0.0;
   double wMean = 0.0;
@@ -70,7 +65,7 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
   double flux_div_y = 0.0;
   double flux_div_z = 0.0;
 
-  //size_t cellIdx_old = eul->getCellId(xPos,yPos,zPos);
+  //size_t cellIdx_old = interp->getCellId(xPos,yPos,zPos);
 
   // getting the initial position, for use in setting finished particles
   //double xPos_init = (*parItr)->xPos_init;
@@ -104,7 +99,7 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
 
 
   // need to avoid current tau values going out of scope now that I've added the particle timestep loop
-  // so initialize their values to the tau_old values. They will be overwritten with the Eulerian grid value
+// so initialize their values to the tau_old values. They will be overwritten with the Interperian grid value
   // at each iteration in the particle timestep loop
   double txx = txx_old;
   double txy = txy_old;
@@ -135,11 +130,11 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
   while (isActive == true && timeRemainder > 0.0) {
 
     /*
-      now get the Lagrangian values for the current iteration from the Eulerian grid
+      now get the Lagrangian values for the current iteration from the Interperian grid
       will need to use the interp3D function
     */
 
-    eul->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
+    interp->interpValues(xPos, yPos, zPos, WGD, uMean, vMean, wMean, TGD, txx, txy, txz, tyy, tyz, tzz, flux_div_x, flux_div_y, flux_div_z, CoEps);
 
     // now need to call makeRealizable on tau
     makeRealizable(txx, txy, txz, tyy, tyz, tzz);
@@ -151,13 +146,14 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
     // now calculate the particle timestep using the courant number, the velocity fluctuation from the last time,
     // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
 
-    int cellId = eul->getCellId(xPos, yPos, zPos);
+    int cellId = interp->getCellId(xPos, yPos, zPos)
     double dWall = WGD->mixingLengths[cellId];
     double par_dt = calcCourantTimestep(dWall,
                                         std::abs(uMean) + std::abs(uFluct),
                                         std::abs(vMean) + std::abs(vFluct),
                                         std::abs(wMean) + std::abs(wFluct),
                                         timeRemainder);
+
     //std::cout << "par_dt = " << par_dt << std::endl;
     // update the par_time, useful for debugging
     //par_time = par_time + par_dt;
@@ -182,7 +178,7 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
     double lzz = tzz;
     isRogue = !invert3(lxx, lxy, lxz, lyx, lyy, lyz, lzx, lzy, lzz);
     if (isRogue == true) {
-      //int cellIdNew = eul->getCellId(xPos,yPos,zPos);
+      //int cellIdNew = interp->getCellId(xPos,yPos,zPos)
       std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
       isActive = false;
       break;
@@ -195,10 +191,6 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
     double xRandn = random::norRan();
     double yRandn = random::norRan();
     double zRandn = random::norRan();
-
-//    if (endTime - simTime > 898){
-//        std::cout << "xRandn = " << xRandn << "yRandn = " << yRandn << "zRandn = " << zRandn << std::endl; 
-//    }
 
     // now calculate a bunch of values for the current particle
     // calculate the time derivative of the stress tensor: (tau_current - tau_old)/dt
@@ -243,8 +235,9 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
     // now check to see if the value is rogue or not
     if (std::abs(uFluct) >= vel_threshold || isnan(uFluct)) {
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      std::cerr << "responsible uFluct was \"" << uFluct << "\" at xPos=" << (*parItr)->xPos << " yPos=" << (*parItr)->yPos << " zPos=" << (*parItr)->zPos << std::endl;
-      std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl; 
+      std::cerr << "responsible uFluct was \"" << uFluct << "\"" << std::endl
+      //std::cerr << "responsible uFluct was \"" << uFluct << "\" at xPos=" << (*parItr)->xPos << " yPos=" << (*parItr)->yPos << " zPos=" << (*parItr)->zPos << std::endl;
+      //std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl; 
       uFluct = 0.0;
       isActive = false;
       isRogue = true;
@@ -252,8 +245,9 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
     }
     if (std::abs(vFluct) >= vel_threshold || isnan(vFluct)) {
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      std::cerr << "responsible vFluct was \"" << vFluct << "\" at xPos=" << (*parItr)->xPos << " yPos=" << (*parItr)->yPos << " zPos=" << (*parItr)->zPos << std::endl;
-      std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl; 
+      std::cerr << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
+      //std::cerr << "responsible vFluct was \"" << vFluct << "\" at xPos=" << (*parItr)->xPos << " yPos=" << (*parItr)->yPos << " zPos=" << (*parItr)->zPos << std::endl;
+      //std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl; 
       vFluct = 0.0;
       isActive = false;
       isRogue = true;
@@ -261,8 +255,9 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
     }
     if (std::abs(wFluct) >= vel_threshold || isnan(wFluct)) {
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      std::cerr << "responsible wFluct was \"" << wFluct << "\" at xPos=" << (*parItr)->xPos << " yPos=" << (*parItr)->yPos << " zPos=" << (*parItr)->zPos << std::endl;
-      std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl; 
+      std::cerr << "responsible wFluct was \"" << wFluct << "\"" << std::endl
+      //std::cerr << "responsible wFluct was \"" << wFluct << "\" at xPos=" << (*parItr)->xPos << " yPos=" << (*parItr)->yPos << " zPos=" << (*parItr)->zPos << std::endl;
+      //std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl; 
       wFluct = 0.0;
       isActive = false;
       isRogue = true;
@@ -278,9 +273,9 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
     //    assert( isRogue == false );
 
     // now update the particle position for this iteration
-    disX = (uMean + uFluct) * par_dt;
-    disY = (vMean + vFluct) * par_dt;
-    disZ = (wMean + wFluct) * par_dt;
+    double disX = (uMean + uFluct) * par_dt;
+    double disY = (vMean + vFluct) * par_dt;
+    double disZ = (wMean + wFluct) * par_dt;
 
     xPos = xPos + disX;
     yPos = yPos + disY;
@@ -345,7 +340,6 @@ void Plume::advectParticle(double timeRemainder, double endTime, double simTime,
   (*parItr)->yPos = yPos;
   (*parItr)->zPos = zPos;
 
-  //std::cout << " particleID = " << (*parItr)->particleID << " xPos = " << (*parItr)->xPos << " yPos = " << (*parItr)->yPos << " zPos = " << (*parItr)->zPos << std::endl;
   (*parItr)->disX = disX;
   (*parItr)->disY = disY;
   (*parItr)->disZ = disZ;
