@@ -71,16 +71,15 @@ public:
     m_sShape = SourceShape::line;
 
     setReleaseType();
-
     setParticleType();
-
+    // Create particle factories
     registerParticles();
 /*
     // Create a generic particle with attributes read from XML
     Particles * particles;
     particles->setParticleValues();
 */
-    std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
+    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
 
     parsePrimitive<double>(true, posX_0, "posX_0");
     parsePrimitive<double>(true, posY_0, "posY_0");

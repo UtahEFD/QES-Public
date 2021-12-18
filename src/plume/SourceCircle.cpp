@@ -72,8 +72,9 @@ int SourceCircle::emitParticles(const float dt, const float currTime, std::list<
 
       //Particle *cPar = new Particle();
       
-      auto cPar = particleTypeFactory->Create(protoParticle->tag);
-      
+     
+      Particle * cPar = particleTypeFactory->Create(protoParticle->tag);
+
       cPar->xPos_init = posX;
       cPar->yPos_init = posY;
       cPar->zPos_init = posZ;
@@ -86,7 +87,7 @@ int SourceCircle::emitParticles(const float dt, const float currTime, std::list<
       cPar->m = sourceStrength/m_rType->m_numPar;
       cPar->m_kg = sourceStrength/m_rType->m_numPar * (1.0E-3);
      
-      std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
+      //std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
 
 
       cPar->tStrt = currTime;

@@ -71,9 +71,7 @@ public:
     m_sShape = SourceShape::cube;
 
     setReleaseType();
-
     setParticleType();
-
     // Create particle factories  
     registerParticles();
 /*
@@ -81,7 +79,7 @@ public:
     Particles * particles;
     particles->setParticleValues();
 */
-    std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
+    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
 
 
     parsePrimitive<double>(true, m_minX, "minX");

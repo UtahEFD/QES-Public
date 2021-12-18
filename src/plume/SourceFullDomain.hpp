@@ -74,9 +74,7 @@ public:
     m_sShape = SourceShape::fullDomain;
 
     setReleaseType();
-
     setParticleType();
-    
     //Create particle factories  
     registerParticles();
 /*
@@ -84,7 +82,7 @@ public:
     Particles * particles;
     particles->setParticleValues();
 */
-    std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
+    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
 
     
     parsePrimitive<double>(false, sourceStrength, "sourceStrength");

@@ -69,9 +69,8 @@ public:
     m_sShape = SourceShape::circle;
 
     setReleaseType();
-
     setParticleType();
-
+    // Create particle factories
     registerParticles();
 /*
     // Create a generic particle with attributes read from XML

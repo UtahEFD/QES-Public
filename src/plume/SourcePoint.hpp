@@ -80,7 +80,7 @@ public:
     Particles * particles;
     particles->setParticleValues();
 */
-    std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
+    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
     parsePrimitive<double>(true, posX, "posX");
     parsePrimitive<double>(true, posY, "posY");
     parsePrimitive<double>(true, posZ, "posZ");

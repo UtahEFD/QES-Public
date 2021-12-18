@@ -31,8 +31,6 @@
  * @brief 
  *  
  *
- * @note Pure virtual child of ParseInterface 
- * @sa ParseInterface
  */
 
 #pragma once
