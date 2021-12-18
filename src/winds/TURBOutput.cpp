@@ -39,7 +39,10 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd, std::string output_file)
 {
   std::cout << "[Output] \t Setting output fields for Turbulence data" << std::endl;
 
-  output_fields = { "t", "time", "x", "y", "z", "iturbflag", "Gxx", "Gyx", "Gzx", "Gxy", "Gyy", "Gzy", "Gxz", "Gyz", "Gzz", "L", "txx", "txy", "txz", "tyz", "tyy", "tzz", "tke", "CoEps" };
+  setAllOutputFields();
+
+  // set list of fields to save, no option available for this file
+  output_fields = all_output_fields;
 
   tgd_ = tgd;
 
@@ -122,10 +125,47 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd, std::string output_file)
   createAttVector("tyz", "vw-component of stress tensor", "m2s-2", dim_vect_cc, &(tgd_->tyz));
   createAttVector("tke", "turbulent kinetic energy", "m2s-2", dim_vect_cc, &(tgd_->tke));
   createAttVector("CoEps", "dissipation rate", "m2s-3", dim_vect_cc, &(tgd_->CoEps));
+  createAttVector("div_tau_x", "x-component of stress-tensor divergence", "ms-2", dim_vect_cc, &(tgd_->div_tau_x));
+  createAttVector("div_tau_y", "y-component of stress-tensor divergence", "ms-2", dim_vect_cc, &(tgd_->div_tau_y));
+  createAttVector("div_tau_z", "z-component of stress-tensor divergence", "ms-2", dim_vect_cc, &(tgd_->div_tau_z));
 
   // create output fields
   addOutputFields();
 }
+
+void TURBOutput::setAllOutputFields()
+{
+  all_output_fields.clear();
+  // all possible output fields need to be add to this list
+  all_output_fields = { "t",
+                        "time",
+                        "x",
+                        "y",
+                        "z",
+                        "iturbflag",
+                        "Gxx",
+                        "Gyx",
+                        "Gzx",
+                        "Gxy",
+                        "Gyy",
+                        "Gzy",
+                        "Gxz",
+                        "Gyz",
+                        "Gzz",
+                        "L",
+                        "txx",
+                        "txy",
+                        "txz",
+                        "tyz",
+                        "tyy",
+                        "tzz",
+                        "tke",
+                        "CoEps",
+                        "div_tau_x",
+                        "div_tau_y",
+                        "div_tau_z" };
+}
+
 
 // Save output at cell-centered values
 void TURBOutput::save(ptime timeOut)

@@ -55,6 +55,12 @@ public:
   {}
   void save(ptime);
 
+protected:
+  /**
+   * :document this:
+   */
+  void setAllOutputFields();
+
 private:
   TURBGeneralData *tgd_;
 };

@@ -46,36 +46,51 @@ class PlumeParameters : public ParseInterface
 
 private:
 public:
-  float simDur;// this is the amount of time to run the simulation, lets you have an arbitrary start time to an arbitrary end time
-  float timeStep;// this is the overall integration timestep
-  float CourantNum;// this is the Courant Number for the simulation, how to divide the timestep up for each particle to keep them moving one grid cell at a time
-  double invarianceTol;// this is the tolerance used to determine whether makeRealizeable should be run on the stress tensor for a particle
-  double C_0;// this is used to separate out CoEps into its separate parts when doing debug output
-  int updateFrequency_particleLoop;// this is used to know how frequently to print out information during the particle loop of the solver. Only used during debug mode
-  int updateFrequency_timeLoop;// this is used to know how frequently to print out information during the time integration loop of the solver
+  float simDur; /**< amount of time to run the simulation */
+  float timeStep; /**< overall integration timestep */
+  float CourantNum; /**< Courant Number,
+		       how to divide the timestep up for each particle to keep them 
+		       moving one grid cell at a time */
+  double invarianceTol; /** < tolerance used to determine whether makeRealizeable should be run 
+			   on the stress tensor for a particle */
 
-  std::string interpMethod;
+  int updateFrequency_particleLoop; /**< frequency to print out information during the particle loop of the solver. 
+				      Only used during debug mode */
+  int updateFrequency_timeLoop; /**< frequency to print out information during the time integration loop of the solver. */
 
+  std::string interpMethod; /**< interpolation method:
+			       triLinear - tri linear interpolation (default)
+			       nearestCell - use value from the cell where the particle is 
+			       analyticalPowerLaw - use analytical solution from the power law
+			    */
+
+  /**
+   * Parse the input file for parameters.
+   */
   virtual void parseValues()
   {
     parsePrimitive<float>(true, simDur, "simDur");
     parsePrimitive<float>(true, timeStep, "timeStep");
+
     parsePrimitive<float>(true, CourantNum, "CourantNumber");
     parsePrimitive<double>(true, invarianceTol, "invarianceTol");
-    parsePrimitive<double>(true, C_0, "C_0");
+
     parsePrimitive<int>(true, updateFrequency_particleLoop, "updateFrequency_particleLoop");
     parsePrimitive<int>(true, updateFrequency_timeLoop, "updateFrequency_timeLoop");
 
-    interpMethod = "stdQES";
-    parsePrimitive<std::string>(false, interpMethod, "interpolation_method");
+    interpMethod = "triLinear";
+    parsePrimitive<std::string>(false, interpMethod, "interpolationMethod");
 
     // check some of the parsed values to see if they make sense
     checkParsedValues();
   }
 
+  /**
+   * Saves user-defined data to file.
+   */
   void checkParsedValues()
   {
-    // make sure simDur, timeStep, invarianceTol, and C_0 are not negative values
+    // make sure simDur, timeStep, and invarianceTol are not negative values
     if (simDur <= 0) {
       std::cerr << "(SimulationParameters::checkParsedValues): "
                 << "input simDur must be greater than zero!";
@@ -98,11 +113,6 @@ public:
       std::cerr << "(SimulationParameters::checkParsedValues): "
                 << "input invarianceTol must be greater than zero!";
       std::cerr << " invarianceTol = \"" << invarianceTol << "\"" << std::endl;
-      exit(EXIT_FAILURE);
-    }
-    if (C_0 < 0) {
-      std::cerr << "(SimulationParameters::checkParsedValues): input C_0 must be zero or greater!";
-      std::cerr << " C_0 = \"" << C_0 << "\"" << std::endl;
       exit(EXIT_FAILURE);
     }
 

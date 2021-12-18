@@ -31,7 +31,6 @@
 
 #include "Plume.hpp"
 
-//Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, Eulerian *eul, Args *arguments)
 Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   : particleList(0), allSources(0)
 {
@@ -51,26 +50,34 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   nx = WGD->nx;
   ny = WGD->ny;
   nz = WGD->nz;
+
   dx = WGD->dx;
   dy = WGD->dy;
   dz = WGD->dz;
   dxy = WGD->dxy;
 
-  // Create instance of Eulerian class
+  // Create instance of Interpolation class
+  std::cout << "[Plume] \t Interpolation Method set to: "
+            << PID->plumeParams->interpMethod << std::endl;
   if (PID->plumeParams->interpMethod == "analyticalPowerLaw") {
-    eul = new EulerianPowerLaw(PID, WGD, TGD, debug);
+    interp = new InterpPowerLaw(PID, WGD, TGD, debug);
+  } else if (PID->plumeParams->interpMethod == "nearestCell") {
+    interp = new InterpNearestCell(PID, WGD, TGD, debug);
+  } else if (PID->plumeParams->interpMethod == "triLinear") {
+    interp = new InterpTriLinear(PID, WGD, TGD, debug);
   } else {
-    eul = new Eulerian(PID, WGD, TGD, debug);
+    std::cerr << "[ERROR] unknown interpolation method" << std::endl;
+    exit(EXIT_FAILURE);
   }
 
   // get the domain start and end values, needed for wall boundary condition
   // application
-  domainXstart = eul->xStart;
-  domainXend = eul->xEnd;
-  domainYstart = eul->yStart;
-  domainYend = eul->yEnd;
-  domainZstart = eul->zStart;
-  domainZend = eul->zEnd;
+  domainXstart = interp->xStart;
+  domainXend = interp->xEnd;
+  domainYstart = interp->yStart;
+  domainYend = interp->yEnd;
+  domainZstart = interp->zStart;
+  domainZend = interp->zEnd;
 
   // make copies of important dispersion time variables
   sim_dt = PID->plumeParams->timeStep;
@@ -84,7 +91,6 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 
   // set additional values from the input
   invarianceTol = PID->plumeParams->invarianceTol;
-  C_0 = PID->plumeParams->C_0;
   updateFrequency_timeLoop = PID->plumeParams->updateFrequency_timeLoop;
   updateFrequency_particleLoop = PID->plumeParams->updateFrequency_particleLoop;
 
@@ -132,14 +138,13 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
 {
   auto StartTime = std::chrono::high_resolution_clock::now();
 
-  eul->setData(WGD, TGD);
-  // get the threshold velocity fluctuation to define rogue particles
-  vel_threshold = eul->vel_threshold;
-
   std::cout << "[Plume] \t Advecting particles at Time = " << simTime
             << " s (iteration = " << simTimeIdx << "). \n";
   std::cout << "\t\t Particles: Released = " << nParsReleased << " "
             << "Active = " << particleList.size() << "." << std::endl;
+
+  // get the threshold velocity fluctuation to define rogue particles
+  vel_threshold = 10.0 * getMaxVariance(TGD);
 
   // //////////////////////////////////////////
   // TIME Stepping Loop
@@ -334,7 +339,7 @@ double Plume::calcCourantTimestep(const double &d,
   double max_u = std::max({ u, v, w });
   double CN = 0.0;
   if (d > 15.0 * min_ds) {
-    return timeRemainder;
+    CN = 1.0;
   } else if (d > 8.0 * min_ds) {
     CN = 0.5;
   } else if (d > 4.0 * min_ds) {
@@ -464,12 +469,12 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
     (*parItr)->yPos = (*parItr)->yPos_init;
     (*parItr)->zPos = (*parItr)->zPos_init;
 
-    // get the sigma values from the Eulerian grid for the particle value
+    // get the sigma values from the QES grid for the particle value
     double sig_x, sig_y, sig_z;
-    // get the tau values from the Eulerian grid for the particle value
+    // get the tau values from the QES grid for the particle value
     double txx, txy, txz, tyy, tyz, tzz;
 
-    eul->interpInitialValues((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos, TGD, sig_x, sig_y, sig_z, txx, txy, txz, tyy, tyz, tzz);
+    interp->interpInitialValues((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos, TGD, sig_x, sig_y, sig_z, txx, txy, txz, tyy, tyz, tzz);
 
     // now set the initial velocity fluctuations for the particle
     // The  sqrt of the variance is to match Bailey's code
@@ -507,7 +512,7 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
     (*parItr)->isRogue = false;
     (*parItr)->isActive = true;
 
-    int cellIdNew = eul->getCellId((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos);
+    int cellIdNew = interp->getCellId((*parItr)->xPos, (*parItr)->yPos, (*parItr)->zPos);
     if ((WGD->icellflag[cellIdNew] == 0) && (WGD->icellflag[cellIdNew] == 2)) {
       std::cerr << "WARNING invalid initial position" << std::endl;
       (*parItr)->isActive = false;
@@ -519,6 +524,33 @@ void Plume::setParticleVals(WINDSGeneralData *WGD, TURBGeneralData *TGD, std::li
       (*parItr)->isActive = false;
     }
   }
+}
+
+double Plume::getMaxVariance(const TURBGeneralData *TGD)
+{
+  // set thoe initial maximum value to a very small number. The idea is to go through each value of the data,
+  // setting the current value to the max value each time the current value is bigger than the old maximum value
+  double maximumVal = -10e-10;
+
+  // go through each vector to find the maximum value
+  // each one could potentially be different sizes if the grid is not 3D
+  for (auto it = TGD->txx.begin(); it != TGD->txx.end(); ++it) {
+    if (std::sqrt(std::abs(*it)) > maximumVal) {
+      maximumVal = std::sqrt(std::abs(*it));
+    }
+  }
+  for (auto it = TGD->tyy.begin(); it != TGD->tyy.end(); ++it) {
+    if (std::sqrt(std::abs(*it)) > maximumVal) {
+      maximumVal = std::sqrt(std::abs(*it));
+    }
+  }
+  for (auto it = TGD->tzz.begin(); it != TGD->tzz.end(); ++it) {
+    if (std::sqrt(std::abs(*it)) > maximumVal) {
+      maximumVal = std::sqrt(std::abs(*it));
+    }
+  }
+
+  return maximumVal;
 }
 
 void Plume::calcInvariants(const double &txx,
@@ -929,7 +961,6 @@ void Plume::writeSimInfoFile(const double &current_time)
   fprintf(fzout, "\n");// a purposeful blank line
   fprintf(fzout, "saveBasename     = %s\n", saveBasename.c_str());
   fprintf(fzout, "\n");// a purposeful blank line
-  fprintf(fzout, "C_0              = %lf\n", C_0);
   fprintf(fzout, "timestep         = %lf\n", sim_dt);
   fprintf(fzout, "\n");// a purposeful blank line
   fprintf(fzout, "current_time     = %lf\n", current_time);

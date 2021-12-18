@@ -55,6 +55,12 @@ public:
   /** save function be call outside */
   void save(ptime);
 
+protected:
+  /**
+   * :document this:
+   */
+  void setAllOutputFields();
+
 private:
   std::vector<float> x_cc, y_cc, z_cc, z_face, dz_array;
 

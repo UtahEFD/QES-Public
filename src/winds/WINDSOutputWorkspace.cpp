@@ -39,9 +39,10 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
   : QESNetCDFOutput(output_file)
 {
   std::cout << "[Output] \t Setting fields of workspace file" << std::endl;
+  setAllOutputFields();
 
   // set list of fields to save, no option available for this file
-  output_fields = { "t", "times", "x_cc", "y_cc", "z_cc", "z_face", "dz_array", "u", "v", "w", "icellflag", "terrain", "z0_u", "z0_v", "e", "f", "g", "h", "m", "n", "building_volume_frac", "terrain_volume_frac", "mixlength" };
+  output_fields = all_output_fields;
 
   // copy of WGD pointer
   WGD_ = WGD;
@@ -108,20 +109,20 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
 
   // set cell-centered data dimensions
   // space dimensions
-  NcDim NcDim_x_cc = addDimension("x_cc", WGD_->nx - 1);
-  NcDim NcDim_y_cc = addDimension("y_cc", WGD_->ny - 1);
-  NcDim NcDim_z_cc = addDimension("z_cc", WGD_->nz - 1);
+  NcDim NcDim_x_cc = addDimension("x", WGD_->nx - 1);
+  NcDim NcDim_y_cc = addDimension("y", WGD_->ny - 1);
+  NcDim NcDim_z_cc = addDimension("z", WGD_->nz - 1);
 
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_x_cc;
   dim_vect_x_cc.push_back(NcDim_x_cc);
-  createAttVector("x_cc", "x-distance", "m", dim_vect_x_cc, &x_cc);
+  createAttVector("x", "x-distance", "m", dim_vect_x_cc, &x_cc);
   std::vector<NcDim> dim_vect_y_cc;
   dim_vect_y_cc.push_back(NcDim_y_cc);
-  createAttVector("y_cc", "y-distance", "m", dim_vect_y_cc, &y_cc);
+  createAttVector("y", "y-distance", "m", dim_vect_y_cc, &y_cc);
   std::vector<NcDim> dim_vect_z_cc;
   dim_vect_z_cc.push_back(NcDim_z_cc);
-  createAttVector("z_cc", "z-distance", "m", dim_vect_z_cc, &z_cc);
+  createAttVector("z", "z-distance", "m", dim_vect_z_cc, &z_cc);
   createAttVector("z_face", "z location of the faces", "m", dim_vect_z_cc, &z_face);
   createAttVector("dz_array", "dz size of the cells", "m", dim_vect_z_cc, &dz_array);
 
@@ -281,6 +282,35 @@ void WINDSOutputWorkspace::setBuildingFields(NcDim *NcDim_t, NcDim *NcDim_buildi
   output_fields.insert(output_fields.end(), tmp_fields.begin(), tmp_fields.end());
 
   return;
+}
+
+void WINDSOutputWorkspace::setAllOutputFields()
+{
+  all_output_fields.clear();
+  // all possible output fields need to be add to this list
+  all_output_fields = { "t",
+                        "times",
+                        "x",
+                        "y",
+                        "z",
+                        "z_face",
+                        "dz_array",
+                        "u",
+                        "v",
+                        "w",
+                        "icellflag",
+                        "terrain",
+                        "z0_u",
+                        "z0_v",
+                        "e",
+                        "f",
+                        "g",
+                        "h",
+                        "m",
+                        "n",
+                        "building_volume_frac",
+                        "terrain_volume_frac",
+                        "mixlength" };
 }
 
 // [FM] Feb.28.2020 OBSOLETE

@@ -55,27 +55,31 @@
 class TURBWallBuilding : public TURBWall
 {
 protected:
-  void (TURBWallBuilding::*set_wall)(WINDSGeneralData *, TURBGeneralData *);
+  void (TURBWallBuilding::*comp_wall_velocity_deriv)(WINDSGeneralData *, TURBGeneralData *);
+  void (TURBWallBuilding::*comp_wall_stress_deriv)(WINDSGeneralData *,
+                                                   TURBGeneralData *,
+                                                   const std::vector<float> &,
+                                                   const std::vector<float> &,
+                                                   const std::vector<float> &);
+
   void set_loglaw_stairstep(WINDSGeneralData *, TURBGeneralData *);
-  void set_finitediff_stairstep(WINDSGeneralData *, TURBGeneralData *);
 
 public:
-  TURBWallBuilding()
-  {}
+  TURBWallBuilding(const WINDSInputData *, WINDSGeneralData *, TURBGeneralData *);
   ~TURBWallBuilding()
   {}
 
-  /**
-   * Takes in the icellflags set by setCellsFlag
-   * function for stair-step method and sets related coefficients to
-   * zero to define solid walls. It also creates vectors of indices
-   * of the cells that have wall to right/left, wall above/bellow
-   * and wall in front/back
-   */
-  void defineWalls(const WINDSInputData *, WINDSGeneralData *, TURBGeneralData *);
-  void setWallsBC(WINDSGeneralData *, TURBGeneralData *);
+  void setWallsVelocityDeriv(WINDSGeneralData *, TURBGeneralData *);
+  void setWallsStressDeriv(WINDSGeneralData *,
+                           TURBGeneralData *,
+                           const std::vector<float> &,
+                           const std::vector<float> &,
+                           const std::vector<float> &);
 
 private:
+  TURBWallBuilding()
+  {}
+
   const int icellflag_building = 0;
   const int icellflag_cutcell = 7;
 

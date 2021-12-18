@@ -51,7 +51,7 @@ bool Plume::wallReflectionSetToInactive(const WINDSGeneralData *WGD,
                                         double &wFluct_old)
 {
   try {
-    int cellIdx = eul->getCellId(xPos, yPos, zPos);
+    int cellIdx = interp->getCellId(xPos, yPos, zPos);
     int cellFlag(0);
     cellFlag = WGD->icellflag.at(cellIdx);
 
@@ -122,7 +122,7 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
    */
 
   // linearized cell ID for end of the trajectory of the particle
-  int cellIdNew = eul->getCellId(xPos, yPos, zPos);
+  int cellIdNew = interp->getCellId(xPos, yPos, zPos);
   int cellFlag(0);
   try {
     cellFlag = WGD->icellflag.at(cellIdNew);
@@ -142,11 +142,11 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
   }
 
   // linearized cell ID for origine of the trajectory of the particle
-  int cellIdOld = eul->getCellId(xPos - disX, yPos - disY, zPos - disZ);
+  int cellIdOld = interp->getCellId(xPos - disX, yPos - disY, zPos - disZ);
 
   // i,j,k of cell index
-  Vector3Int cellIdxOld = eul->getCellIndex(cellIdOld);
-  Vector3Int cellIdxNew = eul->getCellIndex(cellIdNew);
+  Vector3Int cellIdxOld = interp->getCellIndex(cellIdOld);
+  Vector3Int cellIdxNew = interp->getCellIndex(cellIdNew);
   int i = cellIdxOld[0], j = cellIdxOld[1], k = cellIdxOld[2];
 
   // check particle trajectory more than 1 cell in each direction
@@ -415,7 +415,7 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
     // increment the relfection count
     count = count + 1;
     // update the icellflag
-    cellIdNew = eul->getCellId(Xnew);
+    cellIdNew = interp->getCellId(Xnew);
 
     try {
       cellFlagNew = WGD->icellflag.at(cellIdNew);

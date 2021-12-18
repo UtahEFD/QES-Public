@@ -63,7 +63,7 @@ protected:
   /**
    * :document this:
    */
-  bool validateFileOtions();
+  void setAllOutputFields();
 
 private:
   ///@{
@@ -82,7 +82,4 @@ private:
   ///@}
 
   WINDSGeneralData *WGD_; /**< :document this: */
-
-  // all possible output fields need to be add to this list
-  std::vector<std::string> allOutputFields = { "t", "times", "x", "y", "z", "u", "v", "w", "mag", "icell", "icellInitial", "terrain" };
 };
