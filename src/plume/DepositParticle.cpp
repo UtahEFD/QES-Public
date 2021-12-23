@@ -33,7 +33,7 @@
 #include <math.h>
 #include "Plume.hpp"
 
-void Plume::depositParticle(double endTime, double simTime, double xPos, double yPos, double zPos, double disX, double disY, double disZ, double uTot, double vTot, double wTot, double txx, double tyy, double tzz, double CoEps, std::list<Particle *>::iterator parItr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
+void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, double disY, double disZ, double uTot, double vTot, double wTot, double txx, double tyy, double tzz, double CoEps, std::list<Particle *>::iterator parItr, WINDSGeneralData *WGD, TURBGeneralData *TGD)
 {
 
   double rhoAir = 1.225;// in kg m^-3
@@ -48,7 +48,7 @@ void Plume::depositParticle(double endTime, double simTime, double xPos, double 
     double yPos_old = yPos - disY;
     double zPos_old = zPos - disZ;
 
-    int cellId_old = eul->getCellId(xPos_old, yPos_old, zPos_old);
+    int cellId_old = interp->getCellId(xPos_old, yPos_old, zPos_old);
    
     // If so, calculate deposition fraction
     if (WGD->icellflag[cellId_old] == 20){

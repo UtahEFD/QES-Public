@@ -53,6 +53,10 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   double yPos = (*parItr)->yPos;
   double zPos = (*parItr)->zPos;
 
+  double disX = 0.0;
+  double disY = 0.0;
+  double disZ = 0.0;
+
   double uMean = 0.0;
   double vMean = 0.0;
   double wMean = 0.0;
@@ -273,9 +277,9 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     //    assert( isRogue == false );
 
     // now update the particle position for this iteration
-    double disX = (uMean + uFluct) * par_dt;
-    double disY = (vMean + vFluct) * par_dt;
-    double disZ = (wMean + wFluct) * par_dt;
+    disX = (uMean + uFluct) * par_dt;
+    disY = (vMean + vFluct) * par_dt;
+    disZ = (wMean + wFluct) * par_dt;
 
     xPos = xPos + disX;
     yPos = yPos + disY;
@@ -287,7 +291,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
 
     // Deposit mass (vegetation only right now)
     if ((*parItr)->depFlag == true){
-      depositParticle(endTime, simTime, xPos, yPos, zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, CoEps, parItr, WGD, TGD);
+      depositParticle(xPos, yPos, zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, CoEps, parItr, WGD, TGD);
     }
     
     // check and do wall (building and terrain) reflection (based in the method)

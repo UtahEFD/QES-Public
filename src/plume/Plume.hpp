@@ -185,7 +185,7 @@ private:
   // this function moves (advects) one particle
   void advectParticle(double, std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *);
 
-  void depositParticle(double, double, double, double, double, double, double, double, double, double, double, double, double, double, double,  std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *);
+  void depositParticle(double, double, double, double, double, double, double, double, double, double, double, double, double,  std::list<Particle *>::iterator, WINDSGeneralData *, TURBGeneralData *);
   /* reflection functions in WallReflection.cpp */
   // main function pointer
   bool (Plume::*wallReflection)(const WINDSGeneralData *WGD,
