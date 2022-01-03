@@ -242,7 +242,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData* WGD, int building_id)
     float l_e = L_c * log((M0_h/uustar)*(H/L_c));
     float N_e_float = ceil(l_e/rowSpacing);
     int N_e = (int)N_e_float;
-    //N_e = 1;
+    N_e += 1;
     
     std::cout << "l_e = " << l_e << ", N_e = " << N_e << "\n";
     // Spread rate calculations
