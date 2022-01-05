@@ -109,20 +109,20 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
 
   // set cell-centered data dimensions
   // space dimensions
-  NcDim NcDim_x_cc = addDimension("x", WGD_->nx - 1);
-  NcDim NcDim_y_cc = addDimension("y", WGD_->ny - 1);
-  NcDim NcDim_z_cc = addDimension("z", WGD_->nz - 1);
+  NcDim NcDim_x_cc = addDimension("x_cc", WGD_->nx - 1);
+  NcDim NcDim_y_cc = addDimension("y_cc", WGD_->ny - 1);
+  NcDim NcDim_z_cc = addDimension("z_cc", WGD_->nz - 1);
 
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_x_cc;
   dim_vect_x_cc.push_back(NcDim_x_cc);
-  createAttVector("x", "x-distance", "m", dim_vect_x_cc, &x_cc);
+  createAttVector("x_cc", "x-distance", "m", dim_vect_x_cc, &x_cc);
   std::vector<NcDim> dim_vect_y_cc;
   dim_vect_y_cc.push_back(NcDim_y_cc);
-  createAttVector("y", "y-distance", "m", dim_vect_y_cc, &y_cc);
+  createAttVector("y_cc", "y-distance", "m", dim_vect_y_cc, &y_cc);
   std::vector<NcDim> dim_vect_z_cc;
   dim_vect_z_cc.push_back(NcDim_z_cc);
-  createAttVector("z", "z-distance", "m", dim_vect_z_cc, &z_cc);
+  createAttVector("z_cc", "z-distance", "m", dim_vect_z_cc, &z_cc);
   createAttVector("z_face", "z location of the faces", "m", dim_vect_z_cc, &z_face);
   createAttVector("dz_array", "dz size of the cells", "m", dim_vect_z_cc, &dz_array);
 
@@ -293,6 +293,9 @@ void WINDSOutputWorkspace::setAllOutputFields()
                         "x",
                         "y",
                         "z",
+                        "x_cc",
+                        "y_cc",
+                        "z_cc",
                         "z_face",
                         "dz_array",
                         "u",
