@@ -127,12 +127,12 @@ private:
    * @param isBot states if the area for the bottom or top of the cell should be calculated
    */
   float calculateAreaTopBot(std::vector<Vector3> &terrainPoints,
-    const std::vector<Edge<int>> &terrainEdges,
-    const int cellIndex,
-    const float dx,
-    const float dy,
-    const float dz,
-    Vector3 location,
-    std::vector<float> &coef,
-    const bool isBot);
+                            const std::vector<Edge<int>> &terrainEdges,
+                            const int cellIndex,
+                            const float dx,
+                            const float dy,
+                            const float dz,
+                            Vector3 location,
+                            std::vector<float> &coef,
+                            const bool isBot);
 };

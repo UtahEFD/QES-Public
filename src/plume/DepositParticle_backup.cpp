@@ -272,58 +272,35 @@ void Plume::depositParticle(double timeRemainder, std::list<Particle *>::iterato
     }
 
 
-
-
-
-
     // Determine if particle was in veg cell last time step
     xPos_old = (*parItr)->xPos - (*parItr)->disX;
     yPos_old = (*parItr)->yPos - (*parItr)->disY;
     zPos_old = (*parItr)->zPos - (*parItr)->disZ;
 
     int cellId_old = eul->getCellId(xPos_old, yPos_old, zPos_old);
-   
+
     // If so, calculate deposition fraction
-    if (WGD->icellflag[cellId_old] == 20){
-        utot = sqrt(()->)
-        taup=((*parItr)->rho*(1e-6*(*parItr)->d_m)**2)/(18*rhoAir*nuAir)*(1e-3*elementdiameter/(utot))**(-1);
-       
-        relamda=(sqrt(5*ustarz(im,jm,km)**2)*spatial_taylor_microscale(im,jm,km))/nuair;
-        
-        dimv = (1-1/(2.049*(relamda**0.3*taup)**1.19+1));
-        
-        releaf = 1e-3*elementdiameter*utot/nuair;
-        
-        gam = -6.5e-5*releaf+0.43; // non-impaction-surface weighting factor
-        
-        LAI_eff = leafAreaDensitydep*(1+gam);
+    if (WGD->icellflag[cellId_old] == 20) {
+      utot = sqrt(()->)
+        taup = ((*parItr)->rho * (1e-6 * (*parItr)->d_m) * *2) / (18 * rhoAir * nuAir) * (1e-3 * elementdiameter / (utot)) * *(-1);
 
-        depfrac =exp(-dimv*LAI_eff*vegDistance/2); 
+      relamda = (sqrt(5 * ustarz(im, jm, km) * *2) * spatial_taylor_microscale(im, jm, km)) / nuair;
 
-    }
-    else{
-        return;
+      dimv = (1 - 1 / (2.049 * (relamda * *0.3 * taup) * *1.19 + 1));
+
+      releaf = 1e-3 * elementdiameter * utot / nuair;
+
+      gam = -6.5e-5 * releaf + 0.43;// non-impaction-surface weighting factor
+
+      LAI_eff = leafAreaDensitydep * (1 + gam);
+
+      depfrac = exp(-dimv * LAI_eff * vegDistance / 2);
+
+    } else {
+      return;
     }
 
     // Decrement particle mass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     // now apply boundary conditions

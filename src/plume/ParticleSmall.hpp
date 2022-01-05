@@ -53,14 +53,14 @@ public:
 
     // density of particle
     rho = 0.0;
-    
+
     // tag
     tag = "ParticleSmall";
 
     // (1 - fraction) particle deposited
     wdepos = 1.0;
     depFlag = true;
-    
+
     // (1 - fraction) particle decay
     wdecay = 1.0;
   }
@@ -81,11 +81,11 @@ public:
 
     // tag
     tag = "ParticleSmall";
-    
+
     // (1 - fraction) particle deposited
     wdepos = 1.0;
     depFlag = true;
-    
+
     // (1 - fraction) particle deposited
     wdecay = 1.0;
   }
@@ -95,22 +95,22 @@ public:
   {
   }
 
-//  void parseValues()
-//  {
-//      parType = ParticleType::small;
-//      parsePrimitive<double>(false, rho, "particleDensity");
-//      parsePrimitive<double>(false, d, "particleDiameter"); 
-//      parsePrimitive<bool>(false, depFlag, "depositionFlag");
-//      d_m = (1.0E-6) * d;
-//  }
+  //  void parseValues()
+  //  {
+  //      parType = ParticleType::small;
+  //      parsePrimitive<double>(false, rho, "particleDensity");
+  //      parsePrimitive<double>(false, d, "particleDiameter");
+  //      parsePrimitive<bool>(false, depFlag, "depositionFlag");
+  //      d_m = (1.0E-6) * d;
+  //  }
 
 
   //void setSettlingVelocity(const double &, const double &);
   void setSettlingVelocity(const double &rhoAir, const double &nuAir)
   {
-      //std::cout << "setting vs for small particle, ";
+    //std::cout << "setting vs for small particle, ";
     if (d > 0) {
-        //std::cout << " d>0 in vs calc " << " d_m = " << d_m << " rho = " << rho << std::endl;
+      //std::cout << " d>0 in vs calc " << " d_m = " << d_m << " rho = " << rho << std::endl;
       // dimensionless grain diameter
       dstar = d_m * pow(9.81 / pow(nuAir, 2.0) * (rho / rhoAir - 1.), 1.0 / 3.0);
       // drag coefficent
@@ -123,9 +123,7 @@ public:
       //std::cout << " d<=0 in vs calc " << std::endl;
       vs = 0.0;
     }
-    
   }
 
 private:
 };
-

@@ -51,7 +51,7 @@
 void PolyBuilding::sideWall(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
   float tol = 10 * M_PI / 180.0;// Sidewall is applied if outward normal of the face is in +/-10 degree perpendicular
-                                // to the local wind
+    // to the local wind
   int side_wall_flag = 0;// If 1, indicates that there are faces that are nominally parallel with the wind
   std::vector<float> face_rel_dir; /**< Face relative angle to the perpendicular direction of the local wind */
   face_rel_dir.resize(polygonVertices.size(), 0.0);

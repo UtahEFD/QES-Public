@@ -241,7 +241,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
       std::cerr << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
       //std::cerr << "responsible uFluct was \"" << uFluct << "\" at xPos=" << (*parItr)->xPos << " yPos=" << (*parItr)->yPos << " zPos=" << (*parItr)->zPos << std::endl;
-      //std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl; 
+      //std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl;
       uFluct = 0.0;
       isActive = false;
       isRogue = true;
@@ -251,7 +251,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
       std::cerr << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
       //std::cerr << "responsible vFluct was \"" << vFluct << "\" at xPos=" << (*parItr)->xPos << " yPos=" << (*parItr)->yPos << " zPos=" << (*parItr)->zPos << std::endl;
-      //std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl; 
+      //std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl;
       vFluct = 0.0;
       isActive = false;
       isRogue = true;
@@ -261,7 +261,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
       std::cerr << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
       //std::cerr << "responsible wFluct was \"" << wFluct << "\" at xPos=" << (*parItr)->xPos << " yPos=" << (*parItr)->yPos << " zPos=" << (*parItr)->zPos << std::endl;
-      //std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl; 
+      //std::cout << "par_dt=" << par_dt << " dtxxdt=" << dtxxdt << " dtyydt=" << dtyydt << " dtzzdt=" << dtzzdt << " dtxydt=" << dtxydt << " dtxzdt=" << dtxzdt << " dtyzdt=" << dtyzdt << std::endl;
       wFluct = 0.0;
       isActive = false;
       isRogue = true;
@@ -284,16 +284,16 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     xPos = xPos + disX;
     yPos = yPos + disY;
     zPos = zPos + disZ;
-   
+
     uTot = uMean + uFluct;
     vTot = vMean + vFluct;
     wTot = wMean + wFluct;
 
     // Deposit mass (vegetation only right now)
-    if ((*parItr)->depFlag == true){
+    if ((*parItr)->depFlag == true) {
       depositParticle(xPos, yPos, zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, CoEps, parItr, WGD, TGD);
     }
-    
+
     // check and do wall (building and terrain) reflection (based in the method)
     if (isActive == true) {
       isActive = (this->*wallReflection)(WGD, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct, uFluct_old, vFluct_old, wFluct_old);

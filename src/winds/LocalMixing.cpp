@@ -53,8 +53,8 @@ void LocalMixing::saveMixingLength(const WINDSInputData *WID, WINDSGeneralData *
 
   vector_index = { 0, 0, 0 };
   vector_size = { static_cast<unsigned long>(WGD->nz - 1),
-    static_cast<unsigned long>(WGD->ny - 1),
-    static_cast<unsigned long>(WGD->nx - 1) };
+                  static_cast<unsigned long>(WGD->ny - 1),
+                  static_cast<unsigned long>(WGD->nx - 1) };
 
   // create NetCDF filed in file
   mixLengthOut->addField(WID->turbParams->varname, "m", "distance to nearest object", { NcDim_z, NcDim_y, NcDim_x }, ncFloat);

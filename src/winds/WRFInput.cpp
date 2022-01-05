@@ -301,14 +301,14 @@ void UTMConv(double &rlon, double &rlat, double &rx, double &ry, int &UTM_PROJEC
 
 
 WRFInput::WRFInput(const std::string &filename,
-  double domainUTMx,
-  double domainUTMy,
-  int zoneUTM,
-  std::string &zoneLetterUTM,
-  float dimX,
-  float dimY,
-  int sensorSample,
-  bool sensorsOnly)
+                   double domainUTMx,
+                   double domainUTMy,
+                   int zoneUTM,
+                   std::string &zoneLetterUTM,
+                   float dimX,
+                   float dimY,
+                   int sensorSample,
+                   bool sensorsOnly)
   : m_WRFFilename(filename),
     m_processOnlySensorData(sensorsOnly),
     wrfInputFile(filename, NcFile::write),
@@ -406,8 +406,8 @@ WRFInput::WRFInput(const std::string &filename,
 
     std::vector<size_t> startIdx = { 0, 0, 0, 0 };
     std::vector<size_t> counts = { 1,
-      static_cast<unsigned long>(fm_ny),
-      static_cast<unsigned long>(fm_nx) };
+                                   static_cast<unsigned long>(fm_ny),
+                                   static_cast<unsigned long>(fm_nx) };
 
     std::vector<double> fxlong(fm_nx * fm_ny);
     std::vector<double> fxlat(fm_nx * fm_ny);
@@ -464,7 +464,7 @@ WRFInput::WRFInput(const std::string &filename,
     // if specified, use the max height... otherwise, pick one
     // that's about twice the max height to give room for the flow
     fm_nz = (int)ceil(fm_maxWRFAlt * 2.0);// this ONLY works
-                                          // if dz=1.0
+      // if dz=1.0
 
     std::cout << "Domain nz: " << fm_nz << std::endl;
 
@@ -704,8 +704,8 @@ WRFInput::WRFInput(const std::string &filename,
 
   std::vector<size_t> atm_startIdx = { 0, 0, 0 };
   std::vector<size_t> atm_counts = { 1,
-    static_cast<unsigned long>(atm_ny),
-    static_cast<unsigned long>(atm_nx) };
+                                     static_cast<unsigned long>(atm_ny),
+                                     static_cast<unsigned long>(atm_nx) };
 
   std::vector<double> atm_xlong(atm_nx * atm_ny);
   std::vector<double> atm_xlat(atm_nx * atm_ny);
@@ -728,9 +728,9 @@ WRFInput::WRFInput(const std::string &filename,
   //
   std::vector<size_t> atmStartIdx = { 0, 0, 0, 0 };
   std::vector<size_t> atmCounts = { 2,
-    static_cast<unsigned long>(atm_nz),
-    static_cast<unsigned long>(atm_ny),
-    static_cast<unsigned long>(atm_nx) };
+                                    static_cast<unsigned long>(atm_nz),
+                                    static_cast<unsigned long>(atm_ny),
+                                    static_cast<unsigned long>(atm_nx) };
 
   std::vector<double> phbData(2 * atm_nz * atm_ny * atm_nx);
   wrfInputFile.getVar("PHB").getVar(atmStartIdx, atmCounts, phbData.data());
@@ -865,8 +865,8 @@ WRFInput::WRFInput(const std::string &filename,
 
   std::vector<size_t> atmStartIdx_2D = { 0, 0, 0 };
   std::vector<size_t> atmCounts_2D = { 1,
-    static_cast<unsigned long>(atm_ny),
-    static_cast<unsigned long>(atm_nx) };
+                                       static_cast<unsigned long>(atm_ny),
+                                       static_cast<unsigned long>(atm_nx) };
 
   std::vector<float> luData(atm_ny * atm_nx);
   wrfInputFile.getVar("LU_INDEX").getVar(atmStartIdx_2D, atmCounts_2D, luData.data());
@@ -2099,8 +2099,8 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
 
   std::vector<size_t> startIdx = { 0, 0, 0, 0 };
   std::vector<size_t> counts = { 1,
-    static_cast<unsigned long>(fm_ny),
-    static_cast<unsigned long>(fm_nx) };
+                                 static_cast<unsigned long>(fm_ny),
+                                 static_cast<unsigned long>(fm_nx) };
 
   assert(fm_nx != (wgd->nx - 1 - 2 * m_haloX_DimAddition));
   assert(fm_ny != (wgd->ny - 1 - 2 * m_haloY_DimAddition));

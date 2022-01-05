@@ -47,7 +47,6 @@
 //#include "ParticleHeavyGas.hpp"
 
 
-
 enum ParticleType {
   tracer,
   small,
@@ -62,8 +61,8 @@ protected:
 public:
   ParticleType parType;
 
-//  std::vector<Particle *> protoParticle_tmp;
-//  Particle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
+  //  std::vector<Particle *> protoParticle_tmp;
+  //  Particle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
 
 
   // Physical properties
@@ -73,8 +72,8 @@ public:
   double m_kg;
   double rho;
   bool depFlag;
-  std::string tag; 
-/*
+  std::string tag;
+  /*
   // the initial position for the particle, to not be changed after the simulation starts
   double xPos_init;// the initial x component of position for the particle
   double yPos_init;// the initial y component of position for the particle
@@ -170,28 +169,25 @@ public:
   {
   }
 
-  virtual void parseValues() 
+  virtual void parseValues()
   {
     parType = ParticleType::tracer;
   };
 
-//  virtual void setSettlingVelocity(const double &, const double &) {};
-
-
+  //  virtual void setSettlingVelocity(const double &, const double &) {};
 };
-
 
 
 class ParseParticleTracer : public ParseParticle
 {
 protected:
 public:
-    ParticleType parType;
+  ParticleType parType;
 
-//  std::vector<ParseParticle *> protoParticle_tmp;
-//  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
+  //  std::vector<ParseParticle *> protoParticle_tmp;
+  //  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
 
-/*
+  /*
   // Physical properties
   double d;
   double d_m;
@@ -221,23 +217,19 @@ public:
   {
     parType = ParticleType::tracer;
   }
-
-
-
 };
-
 
 
 class ParseParticleSmall : public ParseParticle
 {
 protected:
 public:
-    ParticleType parType;
+  ParticleType parType;
 
-//  std::vector<ParseParticle *> protoParticle_tmp;
-//  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
+  //  std::vector<ParseParticle *> protoParticle_tmp;
+  //  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
 
-/*
+  /*
   // Physical properties
   double d;
   double d_m;
@@ -267,28 +259,24 @@ public:
   {
     parType = ParticleType::small;
     parsePrimitive<double>(true, rho, "particleDensity");
-    parsePrimitive<double>(true, d, "particleDiameter"); 
+    parsePrimitive<double>(true, d, "particleDiameter");
     parsePrimitive<bool>(true, depFlag, "depositionFlag");
     d_m = d * (1.0E-6);
     m_kg = m * (1.0E-3);
   }
-
-
-
 };
-
 
 
 class ParseParticleLarge : public ParseParticle
 {
 protected:
 public:
-    ParticleType parType;
+  ParticleType parType;
 
-//  std::vector<ParseParticle *> protoParticle_tmp;
-//  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
+  //  std::vector<ParseParticle *> protoParticle_tmp;
+  //  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
 
-/*
+  /*
   // Physical properties
   double d;
   double d_m;
@@ -318,16 +306,12 @@ public:
   {
     parType = ParticleType::large;
     parsePrimitive<double>(true, rho, "particleDensity");
-    parsePrimitive<double>(true, d, "particleDiameter"); 
+    parsePrimitive<double>(true, d, "particleDiameter");
     parsePrimitive<bool>(true, depFlag, "depositionFlag");
     d_m = d * (1.0E-6);
     m_kg = m * (1.0E-3);
   }
-
-
-
 };
-
 
 
 class ParseParticleHeavyGas : public ParseParticle
@@ -336,10 +320,10 @@ protected:
 public:
   ParticleType parType;
 
-//  std::vector<ParseParticle *> protoParticle_tmp;
-//  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
+  //  std::vector<ParseParticle *> protoParticle_tmp;
+  //  ParseParticle *protoParticle; // prototype particle with values from XML, to be copied to emitted particles
 
-/*
+  /*
   // Physical properties
   double d;
   double d_m;
@@ -369,10 +353,9 @@ public:
   {
     parType = ParticleType::heavygas;
     parsePrimitive<double>(true, rho, "particleDensity");
-    parsePrimitive<double>(true, d, "particleDiameter"); 
+    parsePrimitive<double>(true, d, "particleDiameter");
     parsePrimitive<bool>(true, depFlag, "depositionFlag");
     d_m = d * (1.0E-6);
     m_kg = m * (1.0E-3);
   }
-
 };

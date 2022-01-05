@@ -80,15 +80,15 @@ int SourceLine::emitParticles(const float dt, const float currTime, std::list<Pa
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
       //Particle *cPar = new Particle();
-      Particle * cPar = particleTypeFactory->Create(protoParticle->tag); 
-      
+      Particle *cPar = particleTypeFactory->Create(protoParticle->tag);
+
       // generate random point on line between m_pt0 and m_pt1
       double diffX = posX_1 - posX_0;
       double diffY = posY_1 - posY_0;
       double diffZ = posZ_1 - posZ_0;
 
       float t = drand48();
- 
+
       // Now cPar is a generic particle, only created once (in setParticleType()).
       // If physical quantities should change per particle, the setParticleType() call should be moved here.
       cPar->xPos_init = posX_0 + t * diffX;
@@ -96,16 +96,15 @@ int SourceLine::emitParticles(const float dt, const float currTime, std::list<Pa
       cPar->zPos_init = posZ_0 + t * diffZ;
 
 
-      cPar->d = protoParticle->d; 
-      cPar->d_m = (1.0E-6)*protoParticle->d;
-      cPar->rho = protoParticle->rho; 
-      cPar->depFlag = protoParticle->depFlag; 
-      
-      cPar->m = sourceStrength/m_rType->m_numPar;
-      cPar->m_kg = sourceStrength/m_rType->m_numPar * (1.0E-3);
-     
-      //std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
+      cPar->d = protoParticle->d;
+      cPar->d_m = (1.0E-6) * protoParticle->d;
+      cPar->rho = protoParticle->rho;
+      cPar->depFlag = protoParticle->depFlag;
 
+      cPar->m = sourceStrength / m_rType->m_numPar;
+      cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);
+
+      //std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
 
 
       cPar->tStrt = currTime;

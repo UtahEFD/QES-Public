@@ -53,14 +53,14 @@ public:
 
     // density of particle
     rho = 0.0;
-   
-    // tag 
+
+    // tag
     tag = "ParticleTracer";
 
     // (1 - fraction) particle deposited
     wdepos = 1.0;
     depFlag = false;
-    
+
     // (1 - fraction) particle decay
     wdecay = 1.0;
   }
@@ -79,13 +79,13 @@ public:
     // density of particle
     rho = rho_part;
 
-    // tag 
+    // tag
     tag = "ParticleTracer";
-    
+
     // (1 - fraction) particle deposited
     wdepos = 1.0;
     depFlag = false;
-    
+
     // (1 - fraction) particle deposited
     wdecay = 1.0;
   }
@@ -95,20 +95,19 @@ public:
   {
   }
 
-/*  void parseValues()
+  /*  void parseValues()
   {
       parType = ParticleType::tracer;
       
   }
 */
 
-//  void setSettlingVelocity(const double &, const double &){
-//    vs = 0.0; 
+  //  void setSettlingVelocity(const double &, const double &){
+  //    vs = 0.0;
   void setSettlingVelocity(const double &rhoAir, const double &nuAir)
-  {     
+  {
     vs = 0.0;
   }
 
 private:
 };
-

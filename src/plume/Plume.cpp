@@ -232,11 +232,11 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
         this function does not do any manipulation on particleList
       */
 
-        
-//      std::cout << "particle mass: " << (*parItr)->m  << " particle diameter: " << (*parItr)->d << " wdepos = " << (*parItr)->wdepos << "\n";
+
+      //      std::cout << "particle mass: " << (*parItr)->m  << " particle diameter: " << (*parItr)->d << " wdepos = " << (*parItr)->wdepos << "\n";
 
       advectParticle(timeRemainder, parItr, WGD, TGD);
-     
+
       //if ((*parItr)->depFlag == true){
       //  depositParticle(endTime, simTime, parItr, WGD, TGD);
       //}

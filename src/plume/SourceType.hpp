@@ -71,7 +71,7 @@ protected:
   //  setReleaseType uses parseMultiPolymorph() to fill this variable, then checks to make sure it is size 1 as only 1 release type is allowed,
   //  then setReleaseType() sets the variable m_rType to be the one value found in this variable.
   std::vector<ReleaseType *> rType_tmp;
-  
+
   std::vector<ParseParticle *> protoParticle_tmp;
 
 
@@ -92,12 +92,12 @@ public:
   ReleaseType *m_rType;
 
   ParseParticle *protoParticle;
-  ParticleTypeFactory * particleTypeFactory = new ParticleTypeFactory();
+  ParticleTypeFactory *particleTypeFactory = new ParticleTypeFactory();
   ParticleTracerFactory particleTracerFactory;
   ParticleSmallFactory particleSmallFactory;
   ParticleLargeFactory particleLargeFactory;
   ParticleHeavyGasFactory particleHeavyGasFactory;
-  
+
   // LA-future work: need a class similar to ReleaseType that describes the input source mass.
   //  This could be mass, mass per time, volume with a density, and volume per time with a density.
 
@@ -152,14 +152,13 @@ public:
     parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleSmall>("ParticleSmall"));
     parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleLarge>("ParticleLarge"));
     parseMultiPolymorphs(false, protoParticle_tmp, Polymorph<ParseParticle, ParseParticleHeavyGas>("ParticleHeavyGas"));
-    
+
     if (protoParticle_tmp.empty()) {
       //std::cerr << "ERROR (SourceType::setParticleType): there was no input particle type!" << std::endl;
       //exit(1);
       protoParticle = new ParseParticle();
       return;
-    }
-    else if (protoParticle_tmp.size() > 1) {
+    } else if (protoParticle_tmp.size() > 1) {
       std::cerr << "ERROR (SourceType::setParticleType): there was more than one input particle type!" << std::endl;
       exit(1);
     }
@@ -170,15 +169,15 @@ public:
 
   void registerParticles()
   {
-      std::string tracerstr = "ParticleTracer";
-      std::string smallstr = "ParticleSmall";
-      std::string largestr = "ParticleLarge";
-      std::string heavygasstr = "ParticleHeavyGas";
+    std::string tracerstr = "ParticleTracer";
+    std::string smallstr = "ParticleSmall";
+    std::string largestr = "ParticleLarge";
+    std::string heavygasstr = "ParticleHeavyGas";
 
-      particleTypeFactory->RegisterParticles(tracerstr,&particleTracerFactory);
-      particleTypeFactory->RegisterParticles(smallstr,&particleSmallFactory);
-      particleTypeFactory->RegisterParticles(largestr,&particleLargeFactory);
-      particleTypeFactory->RegisterParticles(heavygasstr,&particleHeavyGasFactory);
+    particleTypeFactory->RegisterParticles(tracerstr, &particleTracerFactory);
+    particleTypeFactory->RegisterParticles(smallstr, &particleSmallFactory);
+    particleTypeFactory->RegisterParticles(largestr, &particleLargeFactory);
+    particleTypeFactory->RegisterParticles(heavygasstr, &particleHeavyGasFactory);
   }
 
   // this function is used to parse all the variables for each source from the input .xml file

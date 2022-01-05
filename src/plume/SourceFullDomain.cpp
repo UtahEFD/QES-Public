@@ -83,7 +83,7 @@ int SourceFullDomain::emitParticles(const float dt, const float currTime, std::l
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
       //Particle *cPar = new Particle();
-      Particle * cPar = particleTypeFactory->Create(protoParticle->tag);
+      Particle *cPar = particleTypeFactory->Create(protoParticle->tag);
 
       // generate uniform dist in domain
       cPar->xPos_init = uniformDistr(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
@@ -91,13 +91,13 @@ int SourceFullDomain::emitParticles(const float dt, const float currTime, std::l
       cPar->zPos_init = uniformDistr(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
 
       cPar->d = protoParticle->d;
-      cPar->d_m = (1.0E-6)*protoParticle->d;
+      cPar->d_m = (1.0E-6) * protoParticle->d;
       cPar->rho = protoParticle->rho;
       cPar->depFlag = protoParticle->depFlag;
-      
-      cPar->m = sourceStrength/m_rType->m_numPar;
-      cPar->m_kg = sourceStrength/m_rType->m_numPar * (1.0E-3);
-     
+
+      cPar->m = sourceStrength / m_rType->m_numPar;
+      cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);
+
       //std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
 
 

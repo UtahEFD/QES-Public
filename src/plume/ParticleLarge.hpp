@@ -60,7 +60,7 @@ public:
     // (1 - fraction) particle deposited
     wdepos = 1.0;
     depFlag = true;
-    
+
     // (1 - fraction) particle decay
     wdecay = 1.0;
   }
@@ -81,11 +81,11 @@ public:
 
     // tag
     tag = "ParticleLarge";
-    
+
     // (1 - fraction) particle deposited
     wdepos = 1.0;
     depFlag = true;
-    
+
     // (1 - fraction) particle deposited
     wdecay = 1.0;
   }
@@ -95,7 +95,7 @@ public:
   {
   }
 
-/*  void parseValues()
+  /*  void parseValues()
   {
       parType = ParticleType::large;
       parsePrimitive<double>(false, rho, "particleDensity");
@@ -104,7 +104,7 @@ public:
   }
 */
 
-//  void setSettlingVelocity(const double &, const double &);
+  //  void setSettlingVelocity(const double &, const double &);
   void setSettlingVelocity(const double &rhoAir, const double &nuAir)
   {
     if (d > 0) {
@@ -123,4 +123,3 @@ public:
 
 private:
 };
-

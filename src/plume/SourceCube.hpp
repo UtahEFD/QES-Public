@@ -52,7 +52,7 @@ private:
   double m_maxX;
   double m_maxY;
   double m_maxZ;
-  double sourceStrength = 0.0; // total mass released (g)
+  double sourceStrength = 0.0;// total mass released (g)
 protected:
 public:
   // Default constructor
@@ -72,9 +72,9 @@ public:
 
     setReleaseType();
     setParticleType();
-    // Create particle factories  
+    // Create particle factories
     registerParticles();
-/*
+    /*
     // Create a generic particle with attributes read from XML
     Particles * particles;
     particles->setParticleValues();
@@ -88,9 +88,8 @@ public:
     parsePrimitive<double>(true, m_maxX, "maxX");
     parsePrimitive<double>(true, m_maxY, "maxY");
     parsePrimitive<double>(true, m_maxZ, "maxZ");
-  
+
     parsePrimitive<double>(false, sourceStrength, "sourceStrength");
-  
   }
 
 

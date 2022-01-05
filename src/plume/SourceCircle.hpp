@@ -50,7 +50,7 @@ private:
   double posY;
   double posZ;
   double radius;
-  double sourceStrength = 0.0; // total mass released (g)
+  double sourceStrength = 0.0;// total mass released (g)
 protected:
 public:
   // Default constructor
@@ -72,7 +72,7 @@ public:
     setParticleType();
     // Create particle factories
     registerParticles();
-/*
+    /*
     // Create a generic particle with attributes read from XML
     Particles * particles;
     particles->setParticleValues();
@@ -84,7 +84,6 @@ public:
     parsePrimitive<double>(true, radius, "radius");
 
     parsePrimitive<double>(false, sourceStrength, "sourceStrength");
-  
   }
 
 

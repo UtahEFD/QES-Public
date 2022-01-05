@@ -41,7 +41,7 @@ void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, 
 
   if ((*parItr)->isActive == true) {
 
-//    std::cout << "Deposition code running (particle not necessarily depositing) \n";
+    //    std::cout << "Deposition code running (particle not necessarily depositing) \n";
 
     // Determine if particle was in veg cell last time step
     double xPos_old = xPos - disX;
@@ -49,57 +49,56 @@ void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, 
     double zPos_old = zPos - disZ;
 
     int cellId_old = interp->getCellId(xPos_old, yPos_old, zPos_old);
-   
+
     // If so, calculate deposition fraction
-    if (WGD->icellflag[cellId_old] == 20){
+    if (WGD->icellflag[cellId_old] == 20) {
 
-        double elementDiameter = 100e-3; // temporarily hard-coded [m]
-        double leafAreaDensitydep = 5.57; // LAD, temporarily hard-coded [m^-1]
-        double Cc = 1; // Cunningham correction factor, temporarily hard-coded, only important for <10um particles
-        
-        double vegDistance = sqrt(pow(disX,2) + pow(disY,2) + pow(disZ,2)); // distance travelled through veg
-        
-        double MTot = sqrt(pow(uTot,2) + pow(vTot,2) + pow(wTot,2)); // particle speed [m/s]
-        
-        double parRMS = 1/sqrt(3) * sqrt(txx + tyy + tzz); // RMS of velocity fluctuations the particle is experiencing [m/s]
-        
-        double taylorMicroscale = sqrt((15*nuAir*5*pow(parRMS,2))/CoEps); 
+      double elementDiameter = 100e-3;// temporarily hard-coded [m]
+      double leafAreaDensitydep = 5.57;// LAD, temporarily hard-coded [m^-1]
+      double Cc = 1;// Cunningham correction factor, temporarily hard-coded, only important for <10um particles
 
-        double Stk=((*parItr)->rho * pow((*parItr)->d_m,2) * MTot * Cc)/(18*rhoAir*nuAir*elementDiameter); // classical Stokes number
-       
-        double ReLambda = parRMS * taylorMicroscale / nuAir; // Taylor microscale Reynolds number
-        
-        double depEff = 1-1/(2.049*pow(pow(ReLambda,0.3)*Stk,1.19)+1); // deposition efficiency (E in Bailey 2018 Eq. 13)
-        
-        double ReLeaf = elementDiameter * MTot / nuAir; // leaf Reynolds number
-      
-        // Temporary fix to address limitations of Price 2017 model (correlation only valid for 400 < ReLeaf < 6000)
-        if (ReLeaf > 6000.0){
-          ReLeaf = 6000.0;
-        }
-        if (ReLeaf < 400.0){
-          ReLeaf = 400.0;
-        }
+      double vegDistance = sqrt(pow(disX, 2) + pow(disY, 2) + pow(disZ, 2));// distance travelled through veg
 
-        double gam = -6.5e-5*ReLeaf+0.43; // non-impaction surface weighting factor
-        //double gam = 0.1; // temporarily set to 1 because of problems (gam is becoming negative, but should be positive and ~0.1)
+      double MTot = sqrt(pow(uTot, 2) + pow(vTot, 2) + pow(wTot, 2));// particle speed [m/s]
 
-        double adjLAD = leafAreaDensitydep*(1+gam); // LAD adjusted to include non-impaction surface 
-        
-        (*parItr)->wdepos *= exp(-depEff*adjLAD*vegDistance/2); // the /2 comes from Ross' G function, assuming uniform leaf orientation distribution
+      double parRMS = 1 / sqrt(3) * sqrt(txx + tyy + tzz);// RMS of velocity fluctuations the particle is experiencing [m/s]
 
-        //std::cout << "particle in homog. veg., mass: " << (*parItr)->m  << " wdepos = " << (*parItr)->wdepos << " depEff = " << depEff << " adjLAD = " << adjLAD << " vegDistance = " << vegDistance << " gam = " << gam << " ReLeaf = " << ReLeaf << " MTot = " << MTot << std::endl;
-    }
-    else{
-        return;
+      double taylorMicroscale = sqrt((15 * nuAir * 5 * pow(parRMS, 2)) / CoEps);
+
+      double Stk = ((*parItr)->rho * pow((*parItr)->d_m, 2) * MTot * Cc) / (18 * rhoAir * nuAir * elementDiameter);// classical Stokes number
+
+      double ReLambda = parRMS * taylorMicroscale / nuAir;// Taylor microscale Reynolds number
+
+      double depEff = 1 - 1 / (2.049 * pow(pow(ReLambda, 0.3) * Stk, 1.19) + 1);// deposition efficiency (E in Bailey 2018 Eq. 13)
+
+      double ReLeaf = elementDiameter * MTot / nuAir;// leaf Reynolds number
+
+      // Temporary fix to address limitations of Price 2017 model (correlation only valid for 400 < ReLeaf < 6000)
+      if (ReLeaf > 6000.0) {
+        ReLeaf = 6000.0;
+      }
+      if (ReLeaf < 400.0) {
+        ReLeaf = 400.0;
+      }
+
+      double gam = -6.5e-5 * ReLeaf + 0.43;// non-impaction surface weighting factor
+      //double gam = 0.1; // temporarily set to 1 because of problems (gam is becoming negative, but should be positive and ~0.1)
+
+      double adjLAD = leafAreaDensitydep * (1 + gam);// LAD adjusted to include non-impaction surface
+
+      (*parItr)->wdepos *= exp(-depEff * adjLAD * vegDistance / 2);// the /2 comes from Ross' G function, assuming uniform leaf orientation distribution
+
+      //std::cout << "particle in homog. veg., mass: " << (*parItr)->m  << " wdepos = " << (*parItr)->wdepos << " depEff = " << depEff << " adjLAD = " << adjLAD << " vegDistance = " << vegDistance << " gam = " << gam << " ReLeaf = " << ReLeaf << " MTot = " << MTot << std::endl;
+    } else {
+      return;
     }
 
     // If particle mass drops below mass of a single particle, set it to zero and inactivate it
-    double oneParMass = (*parItr)->rho * (1/6) * M_PI * pow((*parItr)->d_m,3);
-    if ((*parItr)->wdepos * (*parItr)->m_kg < oneParMass){
-        (*parItr)->m_kg = 0.0;
-        (*parItr)->m = 0;
-        (*parItr)->isActive = false;
+    double oneParMass = (*parItr)->rho * (1 / 6) * M_PI * pow((*parItr)->d_m, 3);
+    if ((*parItr)->wdepos * (*parItr)->m_kg < oneParMass) {
+      (*parItr)->m_kg = 0.0;
+      (*parItr)->m = 0;
+      (*parItr)->isActive = false;
     }
 
   }// if ( isActive == true )

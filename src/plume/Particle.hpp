@@ -46,7 +46,7 @@ enum ParticleType {
 };
 */
 
-class Particle 
+class Particle
 {
 protected:
 public:
@@ -58,8 +58,8 @@ public:
   double m;
   double m_kg;
   double rho;
- 
-  std::string tag; // particle type tag
+
+  std::string tag;// particle type tag
 
   // the initial position for the particle, to not be changed after the simulation starts
   double xPos_init;// the initial x component of position for the particle
@@ -125,7 +125,7 @@ public:
   double Sc;// Schmidt number
   double taud;// characteristic relaxation time [s]
   double vd;// deposition velocity [m/s]
-  bool depFlag; // whether a particle deposits
+  bool depFlag;// whether a particle deposits
 
   // settling vatiables
   double dstar;// dimensionless grain diameter
@@ -138,11 +138,11 @@ public:
 
   // initializer
   Particle()
-  { 
+  {
     // diameter of particle (micron and m)
     d = 0.0;
     d_m = (1.0E-6) * d;
-  
+
     // mass of particle (g and kg)
     m = 0.0;
     m_kg = (1.0E-3) * m;
@@ -150,8 +150,8 @@ public:
     // density of particle
     rho = 0.0;
 
-    // tag 
-    tag = "ParticleTracer"; // tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer 
+    // tag
+    tag = "ParticleTracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
 
 
     // (1 - fraction) particle deposited
@@ -160,9 +160,9 @@ public:
 
     // (1 - fraction) particle decay
     wdecay = 1.0;
-    }
+  }
 
-    // initializer
+  // initializer
   Particle(const double &d_part, const double &m_part, const double &rho_part)
   {
     // diameter of particle (micron and m)
@@ -176,8 +176,8 @@ public:
     // density of particle
     rho = rho_part;
 
-    // tag 
-    tag = "ParticleTracer"; // tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer 
+    // tag
+    tag = "ParticleTracer";// tagged as "tracer" so when particle type is unspecified in XML, it defaults to tracer
 
     // (1 - fraction) particle deposited
     wdepos = 1.0;
@@ -186,13 +186,11 @@ public:
     // (1 - fraction) particle deposited
     wdecay = 1.0;
   }
-  
+
   // destructor
   virtual ~Particle()
   {
   }
 
-  virtual void setSettlingVelocity(const double &, const double &) {};
-
-
+  virtual void setSettlingVelocity(const double &, const double &){};
 };

@@ -67,8 +67,8 @@ void LocalMixingNetCDF::defineMixingLength(const WINDSInputData *WID, WINDSGener
     std::vector<size_t> count;
     start = { 0, 0, 0 };
     count = { static_cast<unsigned long>(nz_f),
-      static_cast<unsigned long>(ny_f),
-      static_cast<unsigned long>(nx_f) };
+              static_cast<unsigned long>(ny_f),
+              static_cast<unsigned long>(nx_f) };
 
     // read in mixilength
     mixLengthInput->getVariableData(WID->turbParams->varname, start, count, WGD->mixingLengths);

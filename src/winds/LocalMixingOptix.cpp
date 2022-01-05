@@ -98,25 +98,25 @@ void LocalMixingOptix::defineMixingLength(const WINDSInputData *WID, WINDSGenera
 
           // Triangle 1
           Triangle *tri1 = new Triangle(Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].x_poly,
-                                          WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
-                                          WGD->allBuildingsV[bIdx]->base_height),
-            Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[0].x_poly,
-              WGD->allBuildingsV[bIdx]->polygonVertices[0].y_poly,
-              WGD->allBuildingsV[bIdx]->base_height),
-            Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[0].x_poly,
-              WGD->allBuildingsV[bIdx]->polygonVertices[0].y_poly,
-              WGD->allBuildingsV[bIdx]->base_height + WGD->allBuildingsV[bIdx]->H));
+                                                WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
+                                                WGD->allBuildingsV[bIdx]->base_height),
+                                        Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[0].x_poly,
+                                                WGD->allBuildingsV[bIdx]->polygonVertices[0].y_poly,
+                                                WGD->allBuildingsV[bIdx]->base_height),
+                                        Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[0].x_poly,
+                                                WGD->allBuildingsV[bIdx]->polygonVertices[0].y_poly,
+                                                WGD->allBuildingsV[bIdx]->base_height + WGD->allBuildingsV[bIdx]->H));
 
           // Triangle 2
           Triangle *tri2 = new Triangle(Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].x_poly,
-                                          WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
-                                          WGD->allBuildingsV[bIdx]->base_height + WGD->allBuildingsV[bIdx]->H),
-            Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[0].x_poly,
-              WGD->allBuildingsV[bIdx]->polygonVertices[0].y_poly,
-              WGD->allBuildingsV[bIdx]->base_height + WGD->allBuildingsV[bIdx]->H),
-            Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[0].x_poly,
-              WGD->allBuildingsV[bIdx]->polygonVertices[0].y_poly,
-              WGD->allBuildingsV[bIdx]->base_height));
+                                                WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
+                                                WGD->allBuildingsV[bIdx]->base_height + WGD->allBuildingsV[bIdx]->H),
+                                        Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[0].x_poly,
+                                                WGD->allBuildingsV[bIdx]->polygonVertices[0].y_poly,
+                                                WGD->allBuildingsV[bIdx]->base_height + WGD->allBuildingsV[bIdx]->H),
+                                        Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[0].x_poly,
+                                                WGD->allBuildingsV[bIdx]->polygonVertices[0].y_poly,
+                                                WGD->allBuildingsV[bIdx]->base_height));
 
           buildingTris.push_back(tri1);
           buildingTris.push_back(tri2);
@@ -125,25 +125,25 @@ void LocalMixingOptix::defineMixingLength(const WINDSInputData *WID, WINDSGenera
 
           // Triangle 1
           Triangle *tri1 = new Triangle(Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].x_poly,
-                                          WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
-                                          WGD->allBuildingsV[bIdx]->base_height),
-            Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].x_poly,
-              WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].y_poly,
-              WGD->allBuildingsV[bIdx]->base_height),
-            Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].x_poly,
-              WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].y_poly,
-              WGD->allBuildingsV[bIdx]->base_height + WGD->allBuildingsV[bIdx]->H));
+                                                WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
+                                                WGD->allBuildingsV[bIdx]->base_height),
+                                        Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].x_poly,
+                                                WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].y_poly,
+                                                WGD->allBuildingsV[bIdx]->base_height),
+                                        Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].x_poly,
+                                                WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].y_poly,
+                                                WGD->allBuildingsV[bIdx]->base_height + WGD->allBuildingsV[bIdx]->H));
 
           // Triangle 2
           Triangle *tri2 = new Triangle(Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].x_poly,
-                                          WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
-                                          WGD->allBuildingsV[bIdx]->base_height + WGD->allBuildingsV[bIdx]->H),
-            Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].x_poly,
-              WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].y_poly,
-              WGD->allBuildingsV[bIdx]->base_height + WGD->allBuildingsV[bIdx]->H),
-            Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].x_poly,
-              WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].y_poly,
-              WGD->allBuildingsV[bIdx]->base_height));
+                                                WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
+                                                WGD->allBuildingsV[bIdx]->base_height + WGD->allBuildingsV[bIdx]->H),
+                                        Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].x_poly,
+                                                WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].y_poly,
+                                                WGD->allBuildingsV[bIdx]->base_height + WGD->allBuildingsV[bIdx]->H),
+                                        Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].x_poly,
+                                                WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].y_poly,
+                                                WGD->allBuildingsV[bIdx]->base_height));
 
           buildingTris.push_back(tri1);
           buildingTris.push_back(tri2);
@@ -159,19 +159,19 @@ void LocalMixingOptix::defineMixingLength(const WINDSInputData *WID, WINDSGenera
 
       // Base Point (take the first polyvert edge and "fan" around
       Vector3 baseRoofPt(WGD->allBuildingsV[bIdx]->polygonVertices[0].x_poly,
-        WGD->allBuildingsV[bIdx]->polygonVertices[0].y_poly,
-        WGD->allBuildingsV[bIdx]->height_eff);
+                         WGD->allBuildingsV[bIdx]->polygonVertices[0].y_poly,
+                         WGD->allBuildingsV[bIdx]->height_eff);
 
       for (auto pIdx = 1u; pIdx < WGD->allBuildingsV[bIdx]->polygonVertices.size() - 1; pIdx++) {
 
         Triangle *triRoof = new Triangle(baseRoofPt,
-          Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].x_poly,
-            WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
-            WGD->allBuildingsV[bIdx]->height_eff),
+                                         Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].x_poly,
+                                                 WGD->allBuildingsV[bIdx]->polygonVertices[pIdx].y_poly,
+                                                 WGD->allBuildingsV[bIdx]->height_eff),
 
-          Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].x_poly,
-            WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].y_poly,
-            WGD->allBuildingsV[bIdx]->height_eff));
+                                         Vector3(WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].x_poly,
+                                                 WGD->allBuildingsV[bIdx]->polygonVertices[pIdx + 1].y_poly,
+                                                 WGD->allBuildingsV[bIdx]->height_eff));
 
         buildingTris.push_back(triRoof);
 
