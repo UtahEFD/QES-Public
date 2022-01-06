@@ -800,10 +800,10 @@ WINDSGeneralData ::WINDSGeneralData(const std::string inputFile)
   wall = new Wall();
 
   // nx,ny - face centered value (consistant with QES-Winds)
-  input->getDimensionSize("x", nx);
-  input->getDimensionSize("y", ny);
+  input->getDimensionSize("x_face", nx);
+  input->getDimensionSize("y_face", ny);
   // nz - face centered value + bottom ghost (consistant with QES-Winds)
-  input->getDimensionSize("z", nz);
+  input->getDimensionSize("z_face", nz);
   // nt - number of time instance in data
   input->getDimensionSize("t", nt);
 
@@ -819,14 +819,14 @@ WINDSGeneralData ::WINDSGeneralData(const std::string inputFile)
   z_face.resize(nz - 1);
   dz_array.resize(nz - 1, 0.0);
 
-  input->getVariableData("x_cc", x);
+  input->getVariableData("x", x);
   dx = x[1] - x[0]; /**< Grid resolution in x-direction */
 
-  input->getVariableData("y_cc", y);
+  input->getVariableData("y", y);
   dy = y[1] - y[0]; /**< Grid resolution in x-direction */
   dxy = MIN_S(dx, dy);
 
-  input->getVariableData("z_cc", z);
+  input->getVariableData("z", z);
   // check if dz_array is in the NetCDF file
   NcVar NcVar_dz;
   input->getVariable("dz_array", NcVar_dz);
