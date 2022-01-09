@@ -33,16 +33,16 @@
  */
 
 #include "TURBGeneralData.h"
-__global__ void getDerivativesCUDA(int nx, int ny, int nz, float dx, float dy, float dz, float *Gxx, float *Gxy, float *Gxz, float *Gyx, float *Gyy, float *Gyz, float *Gzx, float *Gzy, float *Gzz, bool flagUniformZGrid, int icellfluidLength, float *u, float *v, float *w, float *x, float *y, float *z, float *dz_array)
+__global__ void getDerivativesCUDA(int nx, int ny, int nz, float dx, float dy, float dz, float *Gxx, float *Gxy, float *Gxz, float *Gyx, float *Gyy, float *Gyz, float *Gzx, float *Gzy, float *Gzz, bool flagUniformZGrid, int icellfluidLength, float *u, float *v, float *w, float *x, float *y, float *z, float *dz_array, int *icellfluid2)
 {
   for (int it = 0; it < icellfluidLength; ++it) {
-    int cellID = it;
+    int cellID = icellfluid2[it];
 
     // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
     //  i,j,k -> inverted linearized index
     int k = (int)(cellID / ((nx - 1) * (ny - 1)));
     int j = (int)((cellID - k * (nx - 1) * (ny - 1)) / (nx - 1));
-    int i = cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1);
+    int i = (int)(cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1));
     int faceID = i + j * nx + k * nx * ny;
 
     
@@ -69,7 +69,7 @@ __global__ void getDerivativesCUDA(int nx, int ny, int nz, float dx, float dy, f
                   / (4.0 * dy);
 
 
-    if (!flagUniformZGrid) {
+    if (flagUniformZGrid) {
       // Gxz = dudz
       Gxz[cellID] = ((u[faceID + nx * ny] + u[faceID + 1 + nx * ny])
                      - (u[faceID - nx * ny] + u[faceID + 1 - nx * ny]))
@@ -80,7 +80,9 @@ __global__ void getDerivativesCUDA(int nx, int ny, int nz, float dx, float dy, f
                     / (4.0 * dz);
       // Gzz = dwdz
       Gzz[cellID] = (w[faceID + nx * ny] - w[faceID]) / (dz);
-    } else {
+    }
+    
+    else {
       // Gxz = dudz
       Gxz[cellID] = (0.5 * (z[k] - z[k - 1]) / (z[k + 1] - z[k])
                        * ((u[faceID + nx * ny] + u[faceID + 1 + nx * ny])
@@ -101,15 +103,20 @@ __global__ void getDerivativesCUDA(int nx, int ny, int nz, float dx, float dy, f
       Gzz[cellID] = (w[faceID + nx * ny] - w[faceID]) / (dz_array[k]);
       
     }
+    
   }
   return;
 }
 
 void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD){
+     int blocks = 1;
+     int threadsPerBlock = 1;
+     
      int length = (int)icellfluid.size();
      
      //temp
      float *Gxx2, *Gxy2, *Gxz2, *Gyx2, *Gyy2, *Gyz2, *Gzx2, *Gzy2, *Gzz2, *WGDu, *WGDv, *WGDw, *WGDx, *WGDy, *WGDz, *WGDdz_array;
+     int *icellfluid2;
      
      cudaMalloc((void **)&Gxx2, WGD->numcell_cent * sizeof(float));
      cudaMalloc((void **)&Gxy2, WGD->numcell_cent * sizeof(float));
@@ -127,6 +134,7 @@ void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD){
      cudaMalloc((void **)&WGDy, WGD->ny * sizeof(float));
      cudaMalloc((void **)&WGDz, WGD->nz * sizeof(float));
      cudaMalloc((void **)&WGDdz_array, (WGD->nz-1) * sizeof(float));
+     cudaMalloc((void **)&icellfluid2, (int)icellfluid.size() * sizeof(int));
 
      cudaMemcpy(Gxx2, Gxx.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
      cudaMemcpy(Gxy2, Gxy.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
@@ -144,9 +152,10 @@ void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD){
      cudaMemcpy(WGDy, WGD->y.data(), WGD->ny * sizeof(float), cudaMemcpyHostToDevice);
      cudaMemcpy(WGDz, WGD->z.data(), WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
      cudaMemcpy(WGDdz_array, WGD->dz_array.data(), (WGD->nz-1) * sizeof(float),  cudaMemcpyHostToDevice);
+     cudaMemcpy(icellfluid2, icellfluid.data(), (int)icellfluid.size() * sizeof(int), cudaMemcpyHostToDevice);
 
 //call kernel
-     getDerivativesCUDA<<<1,1>>>(WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, WGD->dz, Gxx2, Gxy2, Gxz2, Gyx2, Gyy2, Gyz2, Gzx2, Gzy2, Gzz2, flagUniformZGrid, length, WGDu, WGDv, WGDw, WGDx, WGDy, WGDz, WGDdz_array);
+     getDerivativesCUDA<<<1,1>>>(WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, WGD->dz, Gxx2, Gxy2, Gxz2, Gyx2, Gyy2, Gyz2, Gzx2, Gzy2, Gzz2, flagUniformZGrid, length, WGDu, WGDv, WGDw, WGDx, WGDy, WGDz, WGDdz_array, icellfluid2);
 
      //cudamemcpy back to host
      cudaMemcpy(Gxx.data(), Gxx2, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
@@ -166,6 +175,7 @@ void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD){
      cudaMemcpy(WGD->z.data(), WGDz, WGD->nz * sizeof(float), cudaMemcpyDeviceToHost);
      cudaMemcpy(WGD->dz_array.data(),WGDdz_array, (WGD->nz-1) * sizeof(float), cudaMemcpyDeviceToHost);
      
+     
      //cudafree
      cudaFree(Gxx2);
      cudaFree(Gxy2);
@@ -183,5 +193,6 @@ void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD){
      cudaFree(WGDy);
      cudaFree(WGDz);
      cudaFree(WGDdz_array);
+     cudaFree(icellfluid2);
 }
 
