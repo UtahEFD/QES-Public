@@ -111,11 +111,18 @@ for (int it = index; it < icellfluidLength; it+=stride) {
 }
 
 void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD){
-     int blocks = 100;
+
+     int gpuID=0;
+     cudaError_t errorCheck = cudaGetDevice(&gpuID);
+
+     int smCount=1;
+     cudaDeviceGetAttribute(&smCount, cudaDevAttrMultiProcessorCount, gpuID);
+     
      int threadsPerBlock = 32;
      
      int length = (int)icellfluid.size();
-     
+
+     if(errorCheck==cudaSuccess){
      //temp
      float *Gxx2, *Gxy2, *Gxz2, *Gyx2, *Gyy2, *Gyz2, *Gzx2, *Gzy2, *Gzz2, *WGDu, *WGDv, *WGDw, *WGDx, *WGDy, *WGDz, *WGDdz_array;
      int *icellfluid2;
@@ -157,7 +164,9 @@ void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD){
      cudaMemcpy(icellfluid2, icellfluid.data(), (int)icellfluid.size() * sizeof(int), cudaMemcpyHostToDevice);
 
 //call kernel
-     getDerivativesCUDA<<<blocks,threadsPerBlock>>>(WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, WGD->dz, Gxx2, Gxy2, Gxz2, Gyx2, Gyy2, Gyz2, Gzx2, Gzy2, Gzz2, flagUniformZGrid, length, WGDu, WGDv, WGDw, WGDx, WGDy, WGDz, WGDdz_array, icellfluid2);
+     getDerivativesCUDA<<<smCount,threadsPerBlock>>>(WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, WGD->dz, Gxx2, Gxy2, Gxz2, Gyx2, Gyy2, Gyz2, Gzx2, Gzy2, Gzz2, flagUniformZGrid, length, WGDu, WGDv, WGDw, WGDx, WGDy, WGDz, WGDdz_array, icellfluid2);
+
+     cudaDeviceSynchronize();
 
      //cudamemcpy back to host
      cudaMemcpy(Gxx.data(), Gxx2, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
@@ -196,5 +205,9 @@ void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD){
      cudaFree(WGDz);
      cudaFree(WGDdz_array);
      cudaFree(icellfluid2);
+     }
+     else{
+	printf("CUDA ERROR!\n");
+     }
 }
 
