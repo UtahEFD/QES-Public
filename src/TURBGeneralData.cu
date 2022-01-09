@@ -35,7 +35,9 @@
 #include "TURBGeneralData.h"
 __global__ void getDerivativesCUDA(int nx, int ny, int nz, float dx, float dy, float dz, float *Gxx, float *Gxy, float *Gxz, float *Gyx, float *Gyy, float *Gyz, float *Gzx, float *Gzy, float *Gzz, bool flagUniformZGrid, int icellfluidLength, float *u, float *v, float *w, float *x, float *y, float *z, float *dz_array, int *icellfluid2)
 {
-  for (int it = 0; it < icellfluidLength; ++it) {
+int index = blockIdx.x*blockDim.x+threadIdx.x;
+int stride = blockDim.x*gridDim.x;
+for (int it = index; it < icellfluidLength; it+=stride) {
     int cellID = icellfluid2[it];
 
     // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
@@ -109,8 +111,8 @@ __global__ void getDerivativesCUDA(int nx, int ny, int nz, float dx, float dy, f
 }
 
 void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD){
-     int blocks = 1;
-     int threadsPerBlock = 1;
+     int blocks = 100;
+     int threadsPerBlock = 32;
      
      int length = (int)icellfluid.size();
      
@@ -155,7 +157,7 @@ void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD){
      cudaMemcpy(icellfluid2, icellfluid.data(), (int)icellfluid.size() * sizeof(int), cudaMemcpyHostToDevice);
 
 //call kernel
-     getDerivativesCUDA<<<1,1>>>(WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, WGD->dz, Gxx2, Gxy2, Gxz2, Gyx2, Gyy2, Gyz2, Gzx2, Gzy2, Gzz2, flagUniformZGrid, length, WGDu, WGDv, WGDw, WGDx, WGDy, WGDz, WGDdz_array, icellfluid2);
+     getDerivativesCUDA<<<blocks,threadsPerBlock>>>(WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, WGD->dz, Gxx2, Gxy2, Gxz2, Gyx2, Gyy2, Gyz2, Gzx2, Gzy2, Gzz2, flagUniformZGrid, length, WGDu, WGDv, WGDw, WGDx, WGDy, WGDz, WGDdz_array, icellfluid2);
 
      //cudamemcpy back to host
      cudaMemcpy(Gxx.data(), Gxx2, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
