@@ -115,8 +115,8 @@ void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD){
      int gpuID=0;
      cudaError_t errorCheck = cudaGetDevice(&gpuID);
 
-     int smCount=1;
-     cudaDeviceGetAttribute(&smCount, cudaDevAttrMultiProcessorCount, gpuID);
+     int blockCount=1;
+     cudaDeviceGetAttribute(&blockCount, cudaDevAttrMultiProcessorCount, gpuID);
      
      int threadsPerBlock = 32;
      
@@ -164,7 +164,7 @@ void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD){
      cudaMemcpy(icellfluid2, icellfluid.data(), (int)icellfluid.size() * sizeof(int), cudaMemcpyHostToDevice);
 
 //call kernel
-     getDerivativesCUDA<<<smCount,threadsPerBlock>>>(WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, WGD->dz, Gxx2, Gxy2, Gxz2, Gyx2, Gyy2, Gyz2, Gzx2, Gzy2, Gzz2, flagUniformZGrid, length, WGDu, WGDv, WGDw, WGDx, WGDy, WGDz, WGDdz_array, icellfluid2);
+     getDerivativesCUDA<<<blockCount,threadsPerBlock>>>(WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, WGD->dz, Gxx2, Gxy2, Gxz2, Gyx2, Gyy2, Gyz2, Gzx2, Gzy2, Gzz2, flagUniformZGrid, length, WGDu, WGDv, WGDw, WGDx, WGDy, WGDz, WGDdz_array, icellfluid2);
 
      cudaDeviceSynchronize();
 
