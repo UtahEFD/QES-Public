@@ -34,7 +34,9 @@ CUDA_ADD_LIBRARY( qeswindscore
   Solver.cpp
   Triangle.cpp
   TURBParams.h
-  TURBGeneralData.cpp TURBGeneralData.h
+  TURBGeneralData.cpp
+  TURBGeneralData.cu
+  TURBGeneralData.h
   TURBOutput.cpp
   TURBWall.cpp
   TURBWallBuilding.cpp
@@ -80,7 +82,7 @@ cuda_add_executable( unitTest
   unitTests/testsMain.cpp
   )
 
-target_link_libraries(unitTest curand)
+#target_link_libraries(unitTest curand)
 target_link_libraries(unitTest unitTestLib)
 target_link_libraries(unitTest qeswindscore)
 target_link_libraries(unitTest qeswindsutil)
@@ -96,7 +98,7 @@ target_link_libraries(unitTest ${NETCDF_LIBRARIES_C})
 #target_link_libraries(unitTest cudadevrt)
 target_link_libraries(unitTest ${CUDA_LIBRARIES})
 
-# add_test(unitTest unitTest)
+ add_test(unitTest unitTest)
 
 
 
