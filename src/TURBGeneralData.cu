@@ -139,9 +139,9 @@ void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD){
      cudaMalloc((void **)&WGDu, WGD->numcell_face * sizeof(float));
      cudaMalloc((void **)&WGDv, WGD->numcell_face * sizeof(float));
      cudaMalloc((void **)&WGDw, WGD->numcell_face * sizeof(float));
-     cudaMalloc((void **)&WGDx, WGD->nx * sizeof(float));
-     cudaMalloc((void **)&WGDy, WGD->ny * sizeof(float));
-     cudaMalloc((void **)&WGDz, WGD->nz * sizeof(float));
+     cudaMalloc((void **)&WGDx, (WGD->nx-1) * sizeof(float));
+     cudaMalloc((void **)&WGDy, (WGD->ny-1) * sizeof(float));
+     cudaMalloc((void **)&WGDz, (WGD->nz-1) * sizeof(float));
      cudaMalloc((void **)&WGDdz_array, (WGD->nz-1) * sizeof(float));
      cudaMalloc((void **)&icellfluid2, (int)icellfluid.size() * sizeof(int));
 
@@ -157,9 +157,9 @@ void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD){
      cudaMemcpy(WGDu, WGD->u.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
      cudaMemcpy(WGDv, WGD->v.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
      cudaMemcpy(WGDw, WGD->w.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-     cudaMemcpy(WGDx, WGD->x.data(), WGD->nx * sizeof(float), cudaMemcpyHostToDevice);
-     cudaMemcpy(WGDy, WGD->y.data(), WGD->ny * sizeof(float), cudaMemcpyHostToDevice);
-     cudaMemcpy(WGDz, WGD->z.data(), WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
+     cudaMemcpy(WGDx, WGD->x.data(), (WGD->nx-1) * sizeof(float), cudaMemcpyHostToDevice);
+     cudaMemcpy(WGDy, WGD->y.data(), (WGD->ny-1) * sizeof(float), cudaMemcpyHostToDevice);
+     cudaMemcpy(WGDz, WGD->z.data(), (WGD->nz-1) * sizeof(float), cudaMemcpyHostToDevice);
      cudaMemcpy(WGDdz_array, WGD->dz_array.data(), (WGD->nz-1) * sizeof(float),  cudaMemcpyHostToDevice);
      cudaMemcpy(icellfluid2, icellfluid.data(), (int)icellfluid.size() * sizeof(int), cudaMemcpyHostToDevice);
 
