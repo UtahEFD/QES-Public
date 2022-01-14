@@ -1,0 +1,7 @@
+# NetCDF files
+*.nc
+
+# Figure files
+*.pdf
+*.fig
+
