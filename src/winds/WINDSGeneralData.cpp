@@ -216,6 +216,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // Calculation of z0 domain info MAY need to move to WINDSInputData
   // or somewhere else once we know the domain size
   // /////////////////////////
+  z0 = 0.1;
   z0_domain_u.resize(nx * ny);
   z0_domain_v.resize(nx * ny);
   if (WID->metParams->z0_domain_flag == 0)// Uniform z0 for the whole domain
@@ -225,6 +226,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         id = i + j * nx;
         z0_domain_u[id] = WID->metParams->sensors[0]->TS[0]->site_z0;
         z0_domain_v[id] = WID->metParams->sensors[0]->TS[0]->site_z0;
+        z0 = WID->metParams->sensors[0]->TS[0]->site_z0;
       }
     }
   } else {
@@ -243,8 +245,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       }
     }
   }
-
-  z0 = 0.1f;
+  z0 = 0.03;
   if (WID->buildings)
     z0 = WID->buildings->wallRoughness;
 
@@ -363,6 +364,11 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         if (terrain[idx] < 0.0) {
           terrain[idx] = 0.0;
         }
+        if (ii == 110 && jj == 135) {
+          std::cout << "terrain[idx]:  " << terrain[idx] << std::endl;
+          std::cout << "x[ii]:  " << x[ii] << std::endl;
+          std::cout << "y[jj]:  " << y[jj] << std::endl;
+        }
         id = ii + jj * nx;
         for (size_t k = 0; k < z.size() - 1; k++) {
           terrain_face_id[id] = k;
@@ -372,10 +378,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         }
       }
     }
-    std::cout << "terrain_height1:   " << WID->simParams->DTE_mesh->getHeight(1624, 2656) << std::endl;
-    std::cout << "terrain_height2:   " << WID->simParams->DTE_mesh->getHeight(1624, 2664) << std::endl;
-    std::cout << "terrain_height3:   " << WID->simParams->DTE_mesh->getHeight(1632, 2664) << std::endl;
-    std::cout << "terrain_height4:   " << WID->simParams->DTE_mesh->getHeight(1632, 2656) << std::endl;
 
     for (int i = halo_index_x; i < nx - halo_index_x - 1; i++) {
       for (int j = 0; j < halo_index_y; j++) {
@@ -985,9 +987,9 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
   }
 
   // face-center variables
-  input->getVariableData("u", start, count_fc, u);
-  input->getVariableData("v", start, count_fc, v);
-  input->getVariableData("w", start, count_fc, w);
+  input->getVariableData("u", start, count_fc, u0);
+  input->getVariableData("v", start, count_fc, v0);
+  input->getVariableData("w", start, count_fc, w0);
 
   // clear wall indices container (guarantee entry vector)
   wall_right_indices.clear();
@@ -1122,19 +1124,9 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
    * to the cells near Walls
    *
    */
-  /*int i = 337;
-  int j = 445;
-  int k = 45;
-  int icell_face = i + j * nx + k * nx * ny;
-  std::cout << "WGD->u0[icell_face]:   " << u0[icell_face] << std::endl;
-  std::cout << "WGD->v0[icell_face]:   " << v0[icell_face] << std::endl;
-  std::cout << "WGD->w0[icell_face]:   " << w0[icell_face] << std::endl;
-  std::cout << "WGD->u0[icell_face+1]:   " << u0[icell_face + 1] << std::endl;
-  std::cout << "WGD->v0[icell_face+WGD->nx]:   " << v0[icell_face + nx] << std::endl;
-  std::cout << "WGD->w0[icell_face+WGD->nx * WGD->ny]:   " << w0[icell_face + nx * ny] << std::endl;*/
-  if (WID->simParams->logLawFlag == 1) {
-    wall->wallLogBC(this);
-  }
+  /*if (WID->simParams->logLawFlag == 1) {
+    wall->wallLogBC(this, true);
+  }*/
 
 
   wall->setVelocityZero(this);

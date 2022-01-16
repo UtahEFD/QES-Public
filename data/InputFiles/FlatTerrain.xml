@@ -14,7 +14,7 @@
 	<streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
 	<wakeFlag> 0 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled) -->
 	<sidewallFlag> 0 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
-	<logLawFlag> 0 </logLawFlag> 					<!-- Log Law flag to apply the log law (0-off (default), 1-on) -->
+	<logLawFlag> 1 </logLawFlag> 					<!-- Log Law flag to apply the log law (0-off (default), 1-on) -->
 	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
 	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
 	<meshTypeFlag> 1 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->
@@ -44,7 +44,7 @@
        		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
        		<height> 10.0 </height> 				<!-- Height of the sensor -->
        		<speed> 5.0 </speed> 					<!-- Measured speed at the sensor height -->
-       		<direction> 210.0 </direction> 				<!-- Wind direction of sensor -->
+       		<direction> 240.0 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
 	</sensor>                       				<!-- End of sensor section -->
 
@@ -62,7 +62,7 @@
        		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
        		<height> 10.0 </height> 				<!-- Height of the sensor -->
        		<speed> 5.0 </speed> 					<!-- Measured speed at the sensor height -->
-       		<direction> 150.0 </direction> 				<!-- Wind direction of sensor -->
+       		<direction> 300.0 </direction> 				<!-- Wind direction of sensor -->
     	    </timeSeries>
 	</sensor>                       				<!-- End of sensor section -->
 

@@ -4,8 +4,8 @@
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 
-  	<domain> 1200 1200 70 </domain>					<!-- Number of cells in x,y and z directions-->
-  	<cellSize> 5.0 5.0 3.0 </cellSize> 				<!-- Mesh resolution (meters)-->
+  	<domain> 750 750 200 </domain>					<!-- Number of cells in x,y and z directions-->
+  	<cellSize> 8.0 8.0 1.0 </cellSize> 				<!-- Mesh resolution (meters)-->
 	<verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
 	<totalTimeIncrements> 1 </totalTimeIncrements> 			<!-- Number of time steps-->
@@ -15,7 +15,7 @@
 	<streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
 	<wakeFlag> 0 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled) -->
 	<sidewallFlag> 0 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
-	<logLawFlag> 1 </logLawFlag> 					<!-- Log Law flag to apply the log law (0-off (default), 1-on) -->
+	<logLawFlag> 0 </logLawFlag> 					<!-- Log Law flag to apply the log law (0-off (default), 1-on) -->
 	<maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
 	<tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria (default = 1e-9) -->
 	<meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method -->

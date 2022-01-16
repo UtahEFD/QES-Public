@@ -270,7 +270,9 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
     i_face_second.resize(polygonVertices.size(), 1);
     j_face_second.resize(polygonVertices.size(), 1);
 
+    // Loop to find the maximum and minimum in x and y directions and calculate slope of the line between each two points of polygon
     for (auto id = 0; id < polygonVertices.size() - 1; id++) {
+      // Find the maximum and minimum in x direction of each line of the polygon
       if (polygonVertices[id].x_poly < polygonVertices[id + 1].x_poly) {
         x_min_face[id] = polygonVertices[id].x_poly;
         x_max_face[id] = polygonVertices[id + 1].x_poly;
@@ -279,9 +281,11 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
         x_max_face[id] = polygonVertices[id].x_poly;
       }
 
+      // Calculate the start and end indices for each line of polygon in x direction
       i_face_start[id] = (x_min_face[id] / WGD->dx) - 1;
       i_face_end[id] = std::floor(x_max_face[id] / WGD->dx);
 
+      // Find the maximum and minimum in y direction of each line of the polygon
       if (polygonVertices[id].y_poly < polygonVertices[id + 1].y_poly) {
         y_min_face[id] = polygonVertices[id].y_poly;
         y_max_face[id] = polygonVertices[id + 1].y_poly;
@@ -290,9 +294,11 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
         y_max_face[id] = polygonVertices[id].y_poly;
       }
 
+      // Calculate the start and end indices for each line of polygon in y direction
       j_face_start[id] = (y_min_face[id] / WGD->dy) - 1;
       j_face_end[id] = std::floor(y_max_face[id] / WGD->dy);
 
+      // Calculate the slope for each line of polygon in x direction
       if (polygonVertices[id + 1].x_poly != polygonVertices[id].x_poly) {
         slope[id] = (polygonVertices[id + 1].y_poly - polygonVertices[id].y_poly) / (polygonVertices[id + 1].x_poly - polygonVertices[id].x_poly);
       } else {
@@ -301,6 +307,8 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
     }
 
     int number = 0;
+
+    // The main loop going through all points in polygon and processing cut-cells
     for (auto id = 0; id < polygonVertices.size() - 1; id++) {
       if (skip_id.size() != 0) {
         if (id == skip_id[number]) {
@@ -311,16 +319,21 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
         }
       }
 
+      // Loops to go through all the cells that encompass the line
       for (auto i = i_face_start[id]; i <= i_face_end[id]; i++) {
         for (auto j = j_face_start[id]; j <= j_face_end[id]; j++) {
+          // x and y values of intersection points with 1 and 2 lines of the cell in x-direction
           x1i = x2i = 0.0;
           y1i = y2i = 0.0;
+          // x and y values of intersection points with 1 and 2 lines of the cell in y-direction
           x1j = x2j = 0.0;
           y1j = y2j = 0.0;
           face_intersect.clear();
           condition = 0;
+          // x values of intersection points with 1 and 2 lines of the cell in x-direction
           x1i = i * WGD->dx;
           x2i = (i + 1) * WGD->dx;
+          // y values of intersection points with 1 and 2 lines of the cell in y-direction
           y1j = j * WGD->dy;
           y2j = (j + 1) * WGD->dy;
           i_face_first[id] = polygonVertices[id].x_poly / WGD->dx;
@@ -328,86 +341,119 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
           i_face_second[id] = polygonVertices[id + 1].x_poly / WGD->dx;
           j_face_second[id] = polygonVertices[id + 1].y_poly / WGD->dy;
 
+          // If the first and second points of line are not in the same cell, ignore processing the first point cells
+          // Since it has been processed as the second point of previous line
           if ((i == i_face_first[id] && j == j_face_first[id]) && (i != i_face_second[id] || j != j_face_second[id])) {
             continue;
           }
 
-
+          // If the second point is in bounds of the current cell
           if (x2i >= polygonVertices[id + 1].x_poly && x1i <= polygonVertices[id + 1].x_poly && y2j >= polygonVertices[id + 1].y_poly && y1j <= polygonVertices[id + 1].y_poly) {
             x1i_intersect = x2i_intersect = 0.0;
             y1i_intersect = y2i_intersect = 0.0;
             x1j_intersect = x2j_intersect = 0.0;
             y1j_intersect = y2j_intersect = 0.0;
+            // Add the second point to solid points in the cell
             face_intersect.push_back(cutVert(polygonVertices[id + 1].x_poly, polygonVertices[id + 1].y_poly, 0.0));
+            // If the first line of the cell in x-direction is in range of the line
             if (x1i >= x_min_face[id] && x1i <= x_max_face[id] && x1i != polygonVertices[id + 1].x_poly && x1i != polygonVertices[id].x_poly) {
+              // Calculate intersection of two lines in y-direction
               y1i_intersect = slope[id] * (x1i - polygonVertices[id].x_poly) + polygonVertices[id].y_poly;
+              // If the intersection is outside of the cell bounds
               if (y1i_intersect > y2j || y1i_intersect < y1j) {
                 y1i_intersect = 0.0;
               }
               x1i_intersect = x1i;
             }
+            // If the second line of the cell in x-direction is in range of the line
             if (x2i >= x_min_face[id] && x2i <= x_max_face[id] && x2i != polygonVertices[id + 1].x_poly && x2i != polygonVertices[id].x_poly) {
+              // Calculate intersection of two lines in y-direction
               y1i_intersect = slope[id] * (x2i - polygonVertices[id].x_poly) + polygonVertices[id].y_poly;
+              // If the intersection is outside of the cell bounds
               if (y1i_intersect > y2j || y1i_intersect < y1j) {
                 y1i_intersect = 0.0;
               }
               x1i_intersect = x2i;
             }
-
+            // If the first line of the cell in y-direction is in range of the line
             if (y1j >= y_min_face[id] && y1j <= y_max_face[id] && y1j != polygonVertices[id + 1].y_poly && y1j != polygonVertices[id].y_poly) {
+              // Calculate intersection of two lines in x-direction
               x1j_intersect = ((y1j - polygonVertices[id].y_poly) / slope[id]) + polygonVertices[id].x_poly;
+              // If the intersection is outside of the cell bounds
               if (x1j_intersect > x2i || x1j_intersect < x1i) {
                 x1j_intersect = 0.0;
               }
               y1j_intersect = y1j;
             }
+            // If the second line of the cell in y-direction is in range of the line
             if (y2j >= y_min_face[id] && y2j <= y_max_face[id] && y2j != polygonVertices[id + 1].y_poly && y2j != polygonVertices[id].y_poly) {
+              // Calculate intersection of two lines in x-direction
               x1j_intersect = ((y2j - polygonVertices[id].y_poly) / slope[id]) + polygonVertices[id].x_poly;
+              // If the intersection is outside of the cell bounds
               if (x1j_intersect > x2i || x1j_intersect < x1i) {
                 x1j_intersect = 0.0;
               }
               y1j_intersect = y2j;
             }
 
-            index_next = (id + 1) % (polygonVertices.size() - 1);// Index of next face
+            // Index of the next line of polygon
+            index_next = (id + 1) % (polygonVertices.size() - 1);
 
+            // If the first line of the cell in x-direction is in range of the next line
             if (x1i >= x_min_face[index_next] && x1i <= x_max_face[index_next] && x1i != polygonVertices[index_next].x_poly) {
+              // Calculate intersection of two lines in y-direction
               y2i_intersect = slope[index_next] * (x1i - polygonVertices[index_next].x_poly) + polygonVertices[index_next].y_poly;
+              // If the intersection is outside of the cell bounds
               if (y2i_intersect > y2j || y2i_intersect < y1j) {
                 y2i_intersect = 0.0;
               }
               x2i_intersect = x1i;
             }
+            // If the second line of the cell in x-direction is in range of the next line
             if (x2i >= x_min_face[index_next] && x2i <= x_max_face[index_next] && x2i != polygonVertices[index_next].x_poly) {
+              // Calculate intersection of two lines in y-direction
               y2i_intersect = slope[index_next] * (x2i - polygonVertices[index_next].x_poly) + polygonVertices[index_next].y_poly;
+              // If the intersection is outside of the cell bounds
               if (y2i_intersect > y2j || y2i_intersect < y1j) {
                 y2i_intersect = 0.0;
               }
               x2i_intersect = x2i;
             }
-
+            // If the first line of the cell in y-direction is in range of the next line
             if (y1j >= y_min_face[index_next] && y1j <= y_max_face[index_next] && y1j != polygonVertices[index_next].y_poly) {
+              // Calculate intersection of two lines in x-direction
               x2j_intersect = ((y1j - polygonVertices[index_next].y_poly) / slope[index_next]) + polygonVertices[index_next].x_poly;
+              // If the intersection is outside of the cell bounds
               if (x2j_intersect > x2i || x2j_intersect < x1i) {
                 x2j_intersect = 0.0;
               }
               y2j_intersect = y1j;
             }
+            // If the second line of the cell in y-direction is in range of the next line
             if (y2j >= y_min_face[index_next] && y2j <= y_max_face[index_next] && y2j != polygonVertices[index_next].y_poly) {
+              // Calculate intersection of two lines in x-direction
               x2j_intersect = ((y2j - polygonVertices[index_next].y_poly) / slope[index_next]) + polygonVertices[index_next].x_poly;
+              // If the intersection is outside of the cell bounds
               if (x2j_intersect > x2i || x2j_intersect < x1i) {
                 x2j_intersect = 0.0;
               }
               y2j_intersect = y2j;
             }
 
-
             int count = 0;
+            // Loop to calculate all the intersection points in case the next line is in the current cell
+            // The loop is complete once the second point of a line is outside of the cell
             while (x2i >= polygonVertices[index_next + 1].x_poly && x1i <= polygonVertices[index_next + 1].x_poly && count != polygonVertices.size() - 2 && y2j >= polygonVertices[index_next + 1].y_poly && y1j <= polygonVertices[index_next + 1].y_poly && index_next != polygonVertices.size() - 1) {
+              // Add the second point to solid points in the cell
               face_intersect.push_back(cutVert(polygonVertices[index_next + 1].x_poly, polygonVertices[index_next + 1].y_poly, 0.0));
+              // Add the ID to the list to skip it in the process
               skip_id.push_back(index_next);
 
+              // Index of the next line of polygon
               index_next = (index_next + 1) % (polygonVertices.size() - 1);
+              //////////////////////////////////////////////////////////////////
+              ////////    Finding intersection points for the next line  ///////
+              //////////////////////////////////////////////////////////////////
               if (x1i >= x_min_face[index_next] && x1i <= x_max_face[index_next] && x1i != polygonVertices[index_next].x_poly) {
                 y2i_intersect = slope[index_next] * (x1i - polygonVertices[index_next].x_poly) + polygonVertices[index_next].y_poly;
                 if (y2i_intersect > y2j || y2i_intersect < y1j) {
@@ -439,12 +485,13 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
               count += 1;
             }
 
+            // If all the intersection points are outside of cell bounds, skip to the next cell
             if (x1j_intersect == 0.0 && x2j_intersect == 0.0) {
               if ((y1i_intersect > y2j && y2i_intersect > y2j) || (y1i_intersect < y1j && y2i_intersect < y1j)) {
                 continue;
               }
             }
-
+            // If all the intersection points are outside of cell bounds, skip to the next cell
             if (y1i_intersect == 0.0 && y2i_intersect == 0.0) {
               if ((x1j_intersect > x2i && x2j_intersect > x2i) || (x1j_intersect < x1i && x2j_intersect < x1i)) {
                 continue;
@@ -488,7 +535,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
                 continue;
               }
             }
-
+            // If all the intersection points are outside of cell bounds, skip to the next cell
             if (x1i_intersect == 0.0 && x2i_intersect == 0.0 && x1j_intersect == 0.0 && x2j_intersect == 0.0 && y1i_intersect == 0.0 && y2i_intersect == 0.0 && y1j_intersect == 0.0 && y2j_intersect == 0.0) {
               continue;
             }
@@ -496,15 +543,6 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 
             for (auto k = k_start; k <= k_cut_end; k++) {
               icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-              if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0) {
-                WGD->terrain_volume_frac[icell_cent] = 1.0;
-                WGD->e[icell_cent] = 1.0;
-                WGD->f[icell_cent] = 1.0;
-                WGD->g[icell_cent] = 1.0;
-                WGD->h[icell_cent] = 1.0;
-                WGD->m[icell_cent] = 1.0;
-                WGD->n[icell_cent] = 1.0;
-              }
               if (WGD->icellflag[icell_cent] != 2) {
                 if (WGD->icellflag[icell_cent] != 7) {
                   WGD->icellflag[icell_cent] = 7;
@@ -714,10 +752,13 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
               }
             }
 
-          } else {
+          }
+          // If the second point is not in bounds of the current cell
+          else {
             if ((x1i < x_min_face[id] && x2i < x_min_face[id]) || (y1j < y_min_face[id] && y2j < y_min_face[id])) {
               continue;
             }
+            // Calculate intersection of two lines in x and y directions
             if (x1i >= x_min_face[id] && x1i <= x_max_face[id]) {
               y1i = slope[id] * (x1i - polygonVertices[id].x_poly) + polygonVertices[id].y_poly;
             }
@@ -730,32 +771,41 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
             if (y2j >= y_min_face[id] && y2j <= y_max_face[id]) {
               x2j = ((y2j - polygonVertices[id].y_poly) / slope[id]) + polygonVertices[id].x_poly;
             }
+            // If intersection points are outside of cell bound, skip the cell
             if (x1j == 0.0 && x2j == 0.0 && y1i == 0.0 && y2i == 0.0) {
               continue;
             }
           }
 
-          if (y1i > j * WGD->dy && y1i < (j + 1) * WGD->dy && x1i != x2i) {
+          /////////////////////////////////////////////////////////////////////////////////////////////
+          ///////   Processing different combinations of the building cuts through cell lies     //////
+          /////////////////////////////////////////////////////////////////////////////////////////////
+
+
+          ////////////////////////////////////////////////////////////////////////////////////////////
+          //////   Case 1: intersection point at the first line of cell in x-direction is in  ////////
+          //////                          y bounds of cell.                                   ////////
+          ////////////////////////////////////////////////////////////////////////////////////////////
+
+          if (y1i > j * WGD->dy && y1i < (j + 1) * WGD->dy) {
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //////   Case 1A: intersection point at the second line of cell in x-direction      ////////
+            //////                          is in y bounds of cell.                             ////////
+            ////////////////////////////////////////////////////////////////////////////////////////////
             if (y2i >= j * WGD->dy && y2i <= (j + 1) * WGD->dy) {
               for (auto k = k_start; k <= k_cut_end; k++) {
 
                 icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0) {
-                  WGD->terrain_volume_frac[icell_cent] = 1.0;
-                  WGD->e[icell_cent] = 1.0;
-                  WGD->f[icell_cent] = 1.0;
-                  WGD->g[icell_cent] = 1.0;
-                  WGD->h[icell_cent] = 1.0;
-                  WGD->m[icell_cent] = 1.0;
-                  WGD->n[icell_cent] = 1.0;
-                }
-                if (WGD->icellflag[icell_cent] != 2) {
+                if (WGD->icellflag[icell_cent] != 2) {// If the cell is not terrain
+                  // Check to see if the cell is already a cut-cell
                   if (WGD->icellflag[icell_cent] != 7) {
                     WGD->icellflag[icell_cent] = 7;
                     cut_points.push_back(cutCell(icell_cent));
                     cut_cell_id.push_back(icell_cent);
                     counter = cut_cell_id.size() - 1;
-                  } else {
+                  }
+                  // If the cell is cut-cell, find the index
+                  else {
                     it = std::find(cut_cell_id.begin(), cut_cell_id.end(), icell_cent);
                     counter = std::distance(cut_cell_id.begin(), it);
                     if (counter == cut_cell_id.size()) {
@@ -768,15 +818,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 
                 if (WGD->icellflag[icell_cent] == 7) {
                   cut_points[counter].intersect.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
-                  /*if ( ((WGD->icellflag[icell_cent-(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)] == building_number) ||
-                     ((WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)-1] == building_number) ||
-                     ((WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)+1] == building_number))
-                  {
-                    cut_points[counter].corner_id[0] += 1;
-                    cut_points[counter].corner_id[4] = 1;
-                    cut_points[counter].corner_id[3] += 1;
-                    cut_points[counter].corner_id[7] = 1;*/
-
+                  cut_points[counter].intersect.push_back(cutVert((x2i - i * WGD->dx), (y2i - j * WGD->dy), 0.0));
                   cut_points[counter].z_solid = WGD->dz_array[k];
                   if (k == k_cut_end) {
                     if (height_eff - WGD->z_face[k_cut_end - 1] < WGD->dz_array[k]) {
@@ -795,73 +837,16 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
                   cut_points[counter].face_behind.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), cut_points[counter].z_solid));
                   cut_points[counter].face_front.push_back(cutVert((x2i - i * WGD->dx), (y2i - j * WGD->dy), 0.0));
                   cut_points[counter].face_front.push_back(cutVert((x2i - i * WGD->dx), (y2i - j * WGD->dy), cut_points[counter].z_solid));
-                  /*if ( (cut_points[counter].corner_id[0]/cut_points[counter].pass_number) == 1 )
-                  {
-                    cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
-                    cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
-                  }
-                  if ( (cut_points[counter].corner_id[3]/cut_points[counter].pass_number) == 1 )
-                  {
-                    cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
-                    cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
-                  }
-                }*/
-
-                  /*if (((WGD->icellflag[icell_cent+(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)] == building_number) ||
-                      ((WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)-1] == building_number) ||
-                      ((WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)+1] == building_number))
-                  {
-
-                    cut_points[counter].corner_id[1] += 1;
-                    cut_points[counter].corner_id[5] = 1;
-                    cut_points[counter].corner_id[2] += 1;
-                    cut_points[counter].corner_id[6] = 1;
-
-                    cut_points[counter].z_solid = WGD->dz_array[k];
-                    if ( k == k_cut_end )
-                    {
-                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
-                      {
-                        cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
-                      }
-                    }
-
-                    cut_points[counter].face_below.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
-                    if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
-                    {
-                      cut_points[counter].face_above.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
-                    }
-                    if ( (cut_points[counter].corner_id[1]/cut_points[counter].pass_number) == 1 )
-                    {
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
-
-                    }
-                    if ( (cut_points[counter].corner_id[2]/cut_points[counter].pass_number) == 1 )
-                    {
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
-                    }
-                  }*/
                 }
               }
             }
-
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //////   Case 1B: intersection point at the second line of cell in x-direction      ////////
+            //////                          is lower than cell's y bound                        ////////
+            ////////////////////////////////////////////////////////////////////////////////////////////
             else if (y2i < j * WGD->dy) {
               for (auto k = k_start; k <= k_cut_end; k++) {
                 icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0) {
-                  WGD->terrain_volume_frac[icell_cent] = 1.0;
-                  WGD->e[icell_cent] = 1.0;
-                  WGD->f[icell_cent] = 1.0;
-                  WGD->g[icell_cent] = 1.0;
-                  WGD->h[icell_cent] = 1.0;
-                  WGD->m[icell_cent] = 1.0;
-                  WGD->n[icell_cent] = 1.0;
-                }
                 if (WGD->icellflag[icell_cent] != 2) {
                   if (WGD->icellflag[icell_cent] != 7) {
                     WGD->icellflag[icell_cent] = 7;
@@ -876,29 +861,13 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
                       cut_cell_id.push_back(icell_cent);
                       counter = cut_cell_id.size() - 1;
                     }
-                    /*else
-                    {
-                      if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
-                          cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
-                      {
-                        cut_points[counter].pass_number += 1;
-                      }
-                    }*/
                   }
                 }
                 if (WGD->icellflag[icell_cent] == 7) {
 
                   cut_points[counter].intersect.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
-                  /*if (((WGD->icellflag[icell_cent-(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)] == building_number) ||
-                      ((WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 7) && WGD->ibuilding_flag[icell_cent-1] == building_number) ||
-                      ((WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)-1] == building_number))
-                  {
-
-                    cut_points[counter].corner_id[0] += 1;
-                    cut_points[counter].corner_id[4] = 1;*/
-
-
                   cut_points[counter].z_solid = WGD->dz_array[k];
+
                   if (k == k_cut_end) {
                     if (height_eff - WGD->z_face[k_cut_end - 1] < WGD->dz_array[k]) {
                       cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
@@ -916,68 +885,16 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 
                   cut_points[counter].face_behind.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
                   cut_points[counter].face_behind.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), cut_points[counter].z_solid));
-
-                  /*if ( (cut_points[counter].corner_id[0]/cut_points[counter].pass_number) == 1 )
-                  {
-                    cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
-                    cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
-                  }
-                }*/
-
-
-                  /*if (((WGD->icellflag[icell_cent+(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)] == building_number ) ||
-                      ((WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 7) && WGD->ibuilding_flag[icell_cent+1] == building_number) ||
-                      ((WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)+1] == building_number))
-                  {
-                    cut_points[counter].corner_id[1] += 1;
-                    cut_points[counter].corner_id[5] = 1;
-                    cut_points[counter].corner_id[3] += 1;
-                    cut_points[counter].corner_id[7] = 1;
-                    cut_points[counter].corner_id[2] += 1;
-                    cut_points[counter].corner_id[6] = 1;
-
-                    cut_points[counter].z_solid = WGD->dz_array[k];
-                    if ( k == k_cut_end )
-                    {
-                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
-                      {
-                        cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
-                      }
-                    }
-                    cut_points[counter].face_below.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
-                    if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
-                    {
-                      cut_points[counter].face_above.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
-                    }
-                    cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
-                    cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
-
-                    if ( (cut_points[counter].corner_id[1]/cut_points[counter].pass_number) == 1 )
-                    {
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
-                    }
-
-                  }*/
                 }
               }
             }
-
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //////   Case 1C: intersection point at the second line of cell in x-direction      ////////
+            //////                          is greater than cell's y bound                        ////////
+            ////////////////////////////////////////////////////////////////////////////////////////////
             else if (y2i > (j + 1) * WGD->dy) {
               for (auto k = k_start; k <= k_cut_end; k++) {
                 icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0) {
-                  WGD->terrain_volume_frac[icell_cent] = 1.0;
-                  WGD->e[icell_cent] = 1.0;
-                  WGD->f[icell_cent] = 1.0;
-                  WGD->g[icell_cent] = 1.0;
-                  WGD->h[icell_cent] = 1.0;
-                  WGD->m[icell_cent] = 1.0;
-                  WGD->n[icell_cent] = 1.0;
-                }
                 if (WGD->icellflag[icell_cent] != 2) {
                   if (WGD->icellflag[icell_cent] != 7) {
                     WGD->icellflag[icell_cent] = 7;
@@ -992,25 +909,11 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
                       cut_cell_id.push_back(icell_cent);
                       counter = cut_cell_id.size() - 1;
                     }
-                    /*else
-                    {
-                      if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
-                          cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
-                      {
-                        cut_points[counter].pass_number += 1;
-                      }
-                    }*/
                   }
                 }
 
                 if (WGD->icellflag[icell_cent] == 7) {
                   cut_points[counter].intersect.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
-                  /*if (((WGD->icellflag[icell_cent+(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)] == building_number)  ||
-                      ((WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 7) && WGD->ibuilding_flag[icell_cent-1] == building_number) ||
-                      ((WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)-1] == building_number))
-                  {
-                    cut_points[counter].corner_id[1] += 1;
-                    cut_points[counter].corner_id[5] = 1;*/
 
                   cut_points[counter].z_solid = WGD->dz_array[k];
                   if (k == k_cut_end) {
@@ -1030,69 +933,23 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 
                   cut_points[counter].face_behind.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
                   cut_points[counter].face_behind.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), cut_points[counter].z_solid));
-                  /*if ( (cut_points[counter].corner_id[1]/cut_points[counter].pass_number) == 1 )
-                  {
-                    cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
-                    cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
-                  }
-                }*/
-
-                  /*if (((WGD->icellflag[icell_cent-(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)] == building_number) ||
-                      ((WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 7) && WGD->ibuilding_flag[icell_cent+1] == building_number) ||
-                      ((WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)+1] == building_number))
-                  {
-                    cut_points[counter].corner_id[0] += 1;
-                    cut_points[counter].corner_id[4] = 1;
-                    cut_points[counter].corner_id[3] += 1;
-                    cut_points[counter].corner_id[7] = 1;
-                    cut_points[counter].corner_id[2] += 1;
-                    cut_points[counter].corner_id[6] = 1;
-
-                    cut_points[counter].z_solid = WGD->dz_array[k];
-                    if ( k == k_cut_end )
-                    {
-                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
-                      {
-                        cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
-                      }
-                    }
-                    cut_points[counter].face_below.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
-                    if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
-                    {
-                      cut_points[counter].face_above.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
-                    }
-                    if ( (cut_points[counter].corner_id[0]/cut_points[counter].pass_number) == 1 )
-                    {
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), 0.0));
-                      cut_points[counter].face_behind.push_back(cutVert((x1i-i*WGD->dx), (y1i-j*WGD->dy), cut_points[counter].z_solid));
-                    }
-                    if ( (cut_points[counter].corner_id[2]/cut_points[counter].pass_number) == 1)
-                    {
-                      cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
-                      cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
-                    }
-                  }*/
                 }
               }
             }
           }
 
-          if (y2i > j * WGD->dy && y2i < (j + 1) * WGD->dy && x1i != x2i) {
+          ////////////////////////////////////////////////////////////////////////////////////////////
+          //////   Case 2: intersection point at the second line of cell in x-direction is    ////////
+          //////                          in y bounds of cell.                                ////////
+          ////////////////////////////////////////////////////////////////////////////////////////////
+          if (y2i > j * WGD->dy && y2i < (j + 1) * WGD->dy) {
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //////   Case 2A: intersection point at the first line of cell in x-direction       ////////
+            //////                        is lower than cell's y bound.                         ////////
+            ////////////////////////////////////////////////////////////////////////////////////////////
             if (y1i <= j * WGD->dy) {
               for (auto k = k_start; k <= k_cut_end; k++) {
                 icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0) {
-                  WGD->terrain_volume_frac[icell_cent] = 1.0;
-                  WGD->e[icell_cent] = 1.0;
-                  WGD->f[icell_cent] = 1.0;
-                  WGD->g[icell_cent] = 1.0;
-                  WGD->h[icell_cent] = 1.0;
-                  WGD->m[icell_cent] = 1.0;
-                  WGD->n[icell_cent] = 1.0;
-                }
                 if (WGD->icellflag[icell_cent] != 2) {
                   if (WGD->icellflag[icell_cent] != 7) {
                     WGD->icellflag[icell_cent] = 7;
@@ -1107,31 +964,11 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
                       cut_cell_id.push_back(icell_cent);
                       counter = cut_cell_id.size() - 1;
                     }
-                    /*else
-                    {
-                      if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
-                          cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
-                      {
-                        cut_points[counter].pass_number += 1;
-                      }
-                    }*/
                   }
                 }
 
                 if (WGD->icellflag[icell_cent] == 7) {
                   cut_points[counter].intersect.push_back(cutVert((x2i - i * WGD->dx), (y2i - j * WGD->dy), 0.0));
-                  /*if (((WGD->icellflag[icell_cent-(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)] == building_number) ||
-                      ((WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 7) && WGD->ibuilding_flag[icell_cent+1] == building_number) ||
-                      ((WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)+1] == building_number))
-                  {
-
-                    cut_points[counter].corner_id[3] += 1;
-                    cut_points[counter].corner_id[7] = 1;
-                    if (y1i == j*WGD->dy)
-                    {
-                      cut_points[counter].corner_id[0] += 1;
-                      cut_points[counter].corner_id[4] = 1;
-                    }*/
 
                   cut_points[counter].z_solid = WGD->dz_array[k];
                   if (k == k_cut_end) {
@@ -1152,68 +989,16 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 
                   cut_points[counter].face_front.push_back(cutVert((x2i - i * WGD->dx), (y2i - j * WGD->dy), 0.0));
                   cut_points[counter].face_front.push_back(cutVert((x2i - i * WGD->dx), (y2i - j * WGD->dy), cut_points[counter].z_solid));
-                  /*if ( (cut_points[counter].corner_id[3]/cut_points[counter].pass_number) == 1 )
-                  {
-                    cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
-                    cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
-                  }
-                }*/
-
-                  /*if (((WGD->icellflag[icell_cent+(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)] == building_number) ||
-                      ((WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 7) && WGD->ibuilding_flag[icell_cent-1] == building_number) ||
-                      ((WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)-1] == building_number))
-                  {
-
-                    cut_points[counter].corner_id[1] += 1;
-                    cut_points[counter].corner_id[5] = 1;
-                    cut_points[counter].corner_id[2] += 1;
-                    cut_points[counter].corner_id[6] = 1;
-                    if (y1i == j*WGD->dy)
-                    {
-                      cut_points[counter].corner_id[0] += 1;
-                      cut_points[counter].corner_id[4] = 1;
-                    }
-
-                    cut_points[counter].z_solid = WGD->dz_array[k];
-                    if ( k == k_cut_end )
-                    {
-                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
-                      {
-                        cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
-                      }
-                    }
-                    cut_points[counter].face_below.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
-                    if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
-                    {
-                      cut_points[counter].face_above.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
-                    }
-                    cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
-                    cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
-                    if ( (cut_points[counter].corner_id[2]/cut_points[counter].pass_number) == 1 )
-                    {
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
-                    }
-                  }*/
                 }
               }
             }
-
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //////   Case 2B: intersection point at the first line of cell in x-direction       ////////
+            //////                        is greater than cell's y bound.                       ////////
+            ////////////////////////////////////////////////////////////////////////////////////////////
             if (y1i >= (j + 1) * WGD->dy) {
               for (auto k = k_start; k <= k_cut_end; k++) {
                 icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0) {
-                  WGD->terrain_volume_frac[icell_cent] = 1.0;
-                  WGD->e[icell_cent] = 1.0;
-                  WGD->f[icell_cent] = 1.0;
-                  WGD->g[icell_cent] = 1.0;
-                  WGD->h[icell_cent] = 1.0;
-                  WGD->m[icell_cent] = 1.0;
-                  WGD->n[icell_cent] = 1.0;
-                }
                 if (WGD->icellflag[icell_cent] != 2) {
                   if (WGD->icellflag[icell_cent] != 7) {
                     WGD->icellflag[icell_cent] = 7;
@@ -1228,28 +1013,11 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
                       cut_cell_id.push_back(icell_cent);
                       counter = cut_cell_id.size() - 1;
                     }
-                    /*else
-                    {
-                      if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
-                          cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
-                      {
-                        cut_points[counter].pass_number += 1;
-                      }
-                    }*/
                   }
                 }
 
                 if (WGD->icellflag[icell_cent] == 7) {
                   cut_points[counter].intersect.push_back(cutVert((x2i - i * WGD->dx), (y2i - j * WGD->dy), 0.0));
-                  /*if (((WGD->icellflag[icell_cent+(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)] == building_number) ||
-                      ((WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 7) && WGD->ibuilding_flag[icell_cent+1] == building_number) ||
-                      ((WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)+1] == building_number))
-                  {
-                    cut_points[counter].corner_id[2] = cut_points[counter].corner_id[6] = 1;
-                    if (y1i == (j+1)*WGD->dy)
-                    {
-                      cut_points[counter].corner_id[1] = cut_points[counter].corner_id[5] = 1;
-                    }*/
 
                   cut_points[counter].z_solid = WGD->dz_array[k];
                   if (k == k_cut_end) {
@@ -1269,69 +1037,20 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 
                   cut_points[counter].face_front.push_back(cutVert((x2i - i * WGD->dx), (y2i - j * WGD->dy), 0.0));
                   cut_points[counter].face_front.push_back(cutVert((x2i - i * WGD->dx), (y2i - j * WGD->dy), cut_points[counter].z_solid));
-                  /*if ( cut_points[counter].corner_id[2] == 1 )
-                  {
-                    cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
-                    cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
-                  }
-                }*/
-
-                  /*if (((WGD->icellflag[icell_cent-(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)] == building_number) ||
-                      ((WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 7) && WGD->ibuilding_flag[icell_cent-1] == building_number) ||
-                      ((WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)-1] == building_number))
-                  {
-                    if (y1i == (j+1)*WGD->dy)
-                    {
-                      cut_points[counter].corner_id[1] = cut_points[counter].corner_id[5] = 1;
-                    }
-                    cut_points[counter].corner_id[0] = cut_points[counter].corner_id[4] = 1;
-                    cut_points[counter].corner_id[3] = cut_points[counter].corner_id[7] = 1;
-
-                    cut_points[counter].z_solid = WGD->dz_array[k];
-                    if ( k == k_cut_end )
-                    {
-                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
-                      {
-                        cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
-                      }
-                    }
-                    cut_points[counter].face_below.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
-                    if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
-                    {
-                      cut_points[counter].face_above.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
-                    }
-                    if ( cut_points[counter].corner_id[1] == 1 )
-                    {
-                      cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
-                      cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
-                    }
-                    if ( cut_points[counter].corner_id[3] == 1 )
-                    {
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), 0.0));
-                      cut_points[counter].face_front.push_back(cutVert((x2i-i*WGD->dx), (y2i-j*WGD->dy), cut_points[counter].z_solid));
-                    }
-                  }*/
                 }
               }
             }
           }
 
-          if (y1i == j * WGD->dy && y2i == (j + 1) * WGD->dy && x1i != x2i) {
+          /////////////////////////////////////////////////////////////////////////////////////////////
+          //////   Case 3: intersection point at the first line of cell in x-direction is at   ////////
+          //////           lower y bound of cell and intersection point at the second line of  ////////
+          //////           cell in x-direction is at higher y bound of cell.                   ////////
+          /////////////////////////////////////////////////////////////////////////////////////////////
+          if (y1i == j * WGD->dy && y2i == (j + 1) * WGD->dy) {
             if (x1j == i * WGD->dx && x2j == (i + 1) * WGD->dx) {
               for (auto k = k_start; k <= k_cut_end; k++) {
                 icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0) {
-                  WGD->terrain_volume_frac[icell_cent] = 1.0;
-                  WGD->e[icell_cent] = 1.0;
-                  WGD->f[icell_cent] = 1.0;
-                  WGD->g[icell_cent] = 1.0;
-                  WGD->h[icell_cent] = 1.0;
-                  WGD->m[icell_cent] = 1.0;
-                  WGD->n[icell_cent] = 1.0;
-                }
                 if (WGD->icellflag[icell_cent] != 2) {
                   if (WGD->icellflag[icell_cent] != 7) {
                     WGD->icellflag[icell_cent] = 7;
@@ -1346,76 +1065,31 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
                       cut_cell_id.push_back(icell_cent);
                       counter = cut_cell_id.size() - 1;
                     }
-                    /*else
-                    {
-                      if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
-                          cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
-                      {
-                        cut_points[counter].pass_number += 1;
-                      }
-                    }*/
                   }
                 }
 
                 if (WGD->icellflag[icell_cent] == 7) {
                   cut_points[counter].intersect.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
-                  /*if (((WGD->icellflag[icell_cent-(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)] == building_number) ||
-                      ((WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 7) && WGD->ibuilding_flag[icell_cent+1] == building_number) ||
-                      ((WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)+1] == building_number))
-                  {
-                    cut_points[counter].corner_id[0] += 1;
-                    cut_points[counter].corner_id[4] = 1;
-                    cut_points[counter].corner_id[2] += 1;
-                    cut_points[counter].corner_id[6] = 1;
-                    cut_points[counter].corner_id[3] += 1;
-                    cut_points[counter].corner_id[7] = 1;
-                    cut_points[counter].z_solid = WGD->dz_array[k];*/
                   if (k == k_cut_end) {
                     if (height_eff - WGD->z_face[k_cut_end - 1] < WGD->dz_array[k]) {
                       cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
                       cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end - 1];
                     }
                   }
-                  //}
-
-                  /*if (((WGD->icellflag[icell_cent+(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)] == building_number) ||
-                      ((WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 7) && WGD->ibuilding_flag[icell_cent-1] == building_number) ||
-                      ((WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)-1] == building_number))
-                  {
-                    cut_points[counter].corner_id[0] += 1;
-                    cut_points[counter].corner_id[4] = 1;
-                    cut_points[counter].corner_id[1] += 1;
-                    cut_points[counter].corner_id[5] = 1;
-                    cut_points[counter].corner_id[2] += 1;
-                    cut_points[counter].corner_id[6] = 1;
-                    cut_points[counter].z_solid = WGD->dz_array[k];
-                    if ( k == k_cut_end )
-                    {
-                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
-                      {
-                        cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
-                      }
-                    }
-                  }*/
                 }
               }
             }
           }
 
-          if (y1i == (j + 1) * WGD->dy && y2i == j * WGD->dy && x1i != x2i) {
+          /////////////////////////////////////////////////////////////////////////////////////////////
+          //////   Case 4: intersection point at the first line of cell in x-direction is at   ////////
+          //////           higher y bound of cell and intersection point at the second line of ////////
+          //////           cell in x-direction is at lower y bound of cell.                    ////////
+          /////////////////////////////////////////////////////////////////////////////////////////////
+          if (y1i == (j + 1) * WGD->dy && y2i == j * WGD->dy) {
             if (x1j == (i + 1) * WGD->dx && x2j == i * WGD->dx) {
               for (auto k = k_start; k <= k_cut_end; k++) {
                 icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0) {
-                  WGD->terrain_volume_frac[icell_cent] = 1.0;
-                  WGD->e[icell_cent] = 1.0;
-                  WGD->f[icell_cent] = 1.0;
-                  WGD->g[icell_cent] = 1.0;
-                  WGD->h[icell_cent] = 1.0;
-                  WGD->m[icell_cent] = 1.0;
-                  WGD->n[icell_cent] = 1.0;
-                }
                 if (WGD->icellflag[icell_cent] != 2) {
                   if (WGD->icellflag[icell_cent] != 7) {
                     WGD->icellflag[icell_cent] = 7;
@@ -1430,76 +1104,30 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
                       cut_cell_id.push_back(icell_cent);
                       counter = cut_cell_id.size() - 1;
                     }
-                    /*else
-                    {
-                      if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
-                          cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
-                      {
-                        cut_points[counter].pass_number += 1;
-                      }
-                    }*/
                   }
                 }
 
                 if (WGD->icellflag[icell_cent] == 7) {
                   cut_points[counter].intersect.push_back(cutVert((x1i - i * WGD->dx), (y1i - j * WGD->dy), 0.0));
-                  /*if (((WGD->icellflag[icell_cent-(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)] == building_number) ||
-                      ((WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 7) && WGD->ibuilding_flag[icell_cent-1] == building_number) ||
-                      ((WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)-1] == building_number))
-                  {
-                    cut_points[counter].corner_id[0] += 1;
-                    cut_points[counter].corner_id[4] = 1;
-                    cut_points[counter].corner_id[1] += 1;
-                    cut_points[counter].corner_id[5] = 1;
-                    cut_points[counter].corner_id[3] += 1;
-                    cut_points[counter].corner_id[7] = 1;
-                    cut_points[counter].z_solid = WGD->dz_array[k];*/
                   if (k == k_cut_end) {
                     if (height_eff - WGD->z_face[k_cut_end - 1] < WGD->dz_array[k]) {
                       cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
                       cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end - 1];
                     }
                   }
-                  //}
-
-                  /*if (((WGD->icellflag[icell_cent+(WGD->nx-1)] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)] == building_number) ||
-                      ((WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 7) && WGD->ibuilding_flag[icell_cent+1] == building_number) ||
-                      ((WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)+1] == building_number))
-                  {
-                    cut_points[counter].corner_id[1] += 1;
-                    cut_points[counter].corner_id[5] = 1;
-                    cut_points[counter].corner_id[2] += 1;
-                    cut_points[counter].corner_id[6] = 1;
-                    cut_points[counter].corner_id[3] += 1;
-                    cut_points[counter].corner_id[7] = 1;
-                    cut_points[counter].z_solid = WGD->dz_array[k];
-                    if ( k == k_cut_end )
-                    {
-                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
-                      {
-                        cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                        cut_points[counter].z_solid = height_eff-WGD->z_face[k_cut_end-1];
-                      }
-                    }
-                  }*/
                 }
               }
             }
           }
 
+          /////////////////////////////////////////////////////////////////////////////////////////////
+          //////   Case 5: intersection points at the first and second lines of cell in        ////////
+          //////                    x-direction are out of y bounds of cell.                   ////////
+          /////////////////////////////////////////////////////////////////////////////////////////////
           if ((y1i > (j + 1) * WGD->dy || y1i < j * WGD->dy) && (y2i > (j + 1) * WGD->dy || y2i < j * WGD->dy)) {
             if (x1j > i * WGD->dx && x1j < (i + 1) * WGD->dx && x2j > i * WGD->dx && x2j < (i + 1) * WGD->dx) {
               for (auto k = k_start; k <= k_cut_end; k++) {
                 icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-                if (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 0) {
-                  WGD->terrain_volume_frac[icell_cent] = 1.0;
-                  WGD->e[icell_cent] = 1.0;
-                  WGD->f[icell_cent] = 1.0;
-                  WGD->g[icell_cent] = 1.0;
-                  WGD->h[icell_cent] = 1.0;
-                  WGD->m[icell_cent] = 1.0;
-                  WGD->n[icell_cent] = 1.0;
-                }
                 if (WGD->icellflag[icell_cent] != 2) {
                   if (WGD->icellflag[icell_cent] != 7) {
                     WGD->icellflag[icell_cent] = 7;
@@ -1514,28 +1142,11 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
                       cut_cell_id.push_back(icell_cent);
                       counter = cut_cell_id.size() - 1;
                     }
-                    /*else
-                    {
-                      if (cut_points[counter].corner_id[0] != 0 || cut_points[counter].corner_id[1] != 0 ||
-                          cut_points[counter].corner_id[2] != 0 || cut_points[counter].corner_id[3] != 0)
-                      {
-                        cut_points[counter].pass_number += 1;
-                      }
-                    }*/
                   }
                 }
 
                 if (WGD->icellflag[icell_cent] == 7) {
                   cut_points[counter].intersect.push_back(cutVert((x1j - i * WGD->dx), (y1j - j * WGD->dy), 0.0));
-                  /*if (((WGD->icellflag[icell_cent-1] == 0 || WGD->icellflag[icell_cent-1] == 7) && WGD->ibuilding_flag[icell_cent-1] == building_number) ||
-                      ((WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)-1] == building_number) ||
-                      ((WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)-1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)-1] == building_number))
-                  {
-
-                    cut_points[counter].corner_id[0] += 1;
-                    cut_points[counter].corner_id[4] = 1;
-                    cut_points[counter].corner_id[1] += 1;
-                    cut_points[counter].corner_id[5] = 1;*/
 
                   cut_points[counter].z_solid = WGD->dz_array[k];
                   if (k == k_cut_end) {
@@ -1556,57 +1167,6 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 
                   cut_points[counter].face_left.push_back(cutVert((x2j - i * WGD->dx), (y2j - j * WGD->dy), 0.0));
                   cut_points[counter].face_left.push_back(cutVert((x2j - i * WGD->dx), (y2j - j * WGD->dy), cut_points[counter].z_solid));
-                  /*
-                  if ( (cut_points[counter].corner_id[0]/cut_points[counter].pass_number) == 1 )
-                  {
-                    cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
-                    cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
-                  }
-                  if ( (cut_points[counter].corner_id[1]/cut_points[counter].pass_number) == 1 )
-                  {
-                    cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
-                    cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
-                  }
-                }*/
-
-                  /*if (((WGD->icellflag[icell_cent+1] == 0 || WGD->icellflag[icell_cent+1] == 7) && WGD->ibuilding_flag[icell_cent+1] == building_number) ||
-                      ((WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent-(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent-(WGD->nx-1)+1] == building_number) ||
-                      ((WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 0 || WGD->icellflag[icell_cent+(WGD->nx-1)+1] == 7) && WGD->ibuilding_flag[icell_cent+(WGD->nx-1)+1] == building_number))
-                  {
-
-                    cut_points[counter].corner_id[3] += 1;
-                    cut_points[counter].corner_id[7] = 1;
-                    cut_points[counter].corner_id[2] += 1;
-                    cut_points[counter].corner_id[6] = 1;
-
-                    cut_points[counter].z_solid = WGD->dz_array[k];
-                    if ( k == k_cut_end )
-                    {
-                      if ( height_eff-WGD->z_face[k_cut_end-1] < WGD->dz_array[k])
-                      {
-                        cut_points[counter].corner_id[4] = cut_points[counter].corner_id[5] = cut_points[counter].corner_id[6] = cut_points[counter].corner_id[7] = 0;
-                      }
-                    }
-                    cut_points[counter].face_below.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
-                    cut_points[counter].face_below.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
-                    if (cut_points[counter].corner_id[4] != 0 || cut_points[counter].corner_id[5] != 0 || cut_points[counter].corner_id[6] != 0 || cut_points[counter].corner_id[7] != 0 )
-                    {
-                      cut_points[counter].face_above.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
-                      cut_points[counter].face_above.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
-                    }
-                    if ( (cut_points[counter].corner_id[3]/cut_points[counter].pass_number) == 1 )
-                    {
-                      cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), 0.0));
-                      cut_points[counter].face_right.push_back(cutVert((x1j-i*WGD->dx), (y1j-j*WGD->dy), cut_points[counter].z_solid));
-                    }
-                    if ( (cut_points[counter].corner_id[2]/cut_points[counter].pass_number) == 1 )
-                    {
-                      cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), 0.0));
-                      cut_points[counter].face_left.push_back(cutVert((x2j-i*WGD->dx), (y2j-j*WGD->dy), cut_points[counter].z_solid));
-                    }
-
-
-                  }*/
                 }
               }
             }

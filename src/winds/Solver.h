@@ -70,7 +70,7 @@ protected:
   const float B; /**< :document this: */
 
   float tol; /**< Error tolerance */
-  const float omega = 1.78f; /**< Over-relaxation factor */
+  const float omega = 1.0f; /**< Over-relaxation factor */
 
   int itermax; /**< Maximum number of iterations */
 
@@ -88,7 +88,7 @@ public:
   // SOLVER-based parameters
   std::vector<float> R; /**< Divergence of initial velocity field */
   std::vector<float> lambda, lambda_old; /**< :document these as group or indiv: */
-  
+
   Solver(const WINDSInputData *WID, WINDSGeneralData *WGD);
 
   virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind) = 0;

@@ -202,8 +202,8 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
     // Exponential velocity profile
     if (WID->metParams->sensors[i]->TS[time_id[i]]->site_blayer_flag == 2) {
       for (auto k = WGD->terrain_face_id[site_id[idx]]; k < WGD->nz; k++) {
-        u_prof[idx][k] = cos(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_p);
-        v_prof[idx][k] = sin(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_p);
+        u_prof[idx][k] = cos(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_z0);
+        v_prof[idx][k] = sin(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_z0);
       }
     }
 
