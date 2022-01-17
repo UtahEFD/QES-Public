@@ -1,8 +1,5 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR}/unitTests)
-
-#add_subdirectory( unitTests )
 
 CUDA_ADD_LIBRARY( qeswindscore
   BVH.cpp
@@ -71,27 +68,7 @@ IF (HAS_OPTIX_SUPPORT MATCHES ON)
     OptixRayTrace.cpp
     )  
 ENDIF()
-  
-#cuda_add_executable( unitTest
-#  unitTests/testsMain.cpp
-#  )
 
-
-#IF (HAS_OPTIX_SUPPORT MATCHES ON)
-#  target_link_libraries(unitTest qesOptix)
-#ENDIF()
-
-#target_link_libraries(unitTest qeswindscore)
-#target_link_libraries(unitTest qesutil)
-#target_link_libraries(unitTest unitTestLib)
-#target_link_libraries(unitTest ${Boost_PROGRAM_OPTIONS_LIBRARIES})
-#target_link_libraries(unitTest ${GDAL_LIBRARY})
-#target_link_libraries(unitTest ${NETCDF_LIBRARIES_CXX})
-#target_link_libraries(unitTest ${NETCDF_LIBRARIES_C})
-#target_link_libraries(unitTest cudadevrt)
-#target_link_libraries(unitTest ${CUDA_LIBRARIES})
-
-# add_test(unitTest unitTest)
 
 
 

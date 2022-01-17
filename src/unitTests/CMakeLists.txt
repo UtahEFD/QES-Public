@@ -36,3 +36,5 @@ foreach(unittest ${UNITTESTS})
   #target_link_libraries(${unittest} cudadevrt)
   target_link_libraries(${unittest} ${CUDA_LIBRARIES})
 endforeach(unittest)
+
+# add_test(unitTest unitTest)
