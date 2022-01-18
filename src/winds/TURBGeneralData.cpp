@@ -129,9 +129,9 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
      do not include 1 cell shell around the domain
      => i=1...nx-2 j=1...ny-2
      do not include 1 cell layer at the top of the domain
-     => k=0...nz-2
+     => k=1...nz-2
   */
-  for (int k = 0; k < nz - 2; k++) {
+  for (int k = 1; k < nz - 2; k++) {
     for (int j = 1; j < ny - 2; j++) {
       for (int i = 1; i < nx - 2; i++) {
         int id = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
@@ -363,6 +363,143 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
   // unused: int np_fc = nz*ny*nx;
   int np_cc = (nz - 1) * (ny - 1) * (nx - 1);
 
+  /*
+     vector containing cell id of fluid cell
+     do not include 1 cell shell around the domain
+     => i=1...nx-2 j=1...ny-2
+     do not include 1 cell layer at the top of the domain
+     => k=1...nz-2
+  */
+  for (int k = 1; k < nz - 2; k++) {
+    for (int j = 1; j < ny - 2; j++) {
+      for (int i = 1; i < nx - 2; i++) {
+        int id = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+        if (m_WGD->icellflag[id] != 0 && m_WGD->icellflag[id] != 2) {
+          icellfluid.push_back(id);
+        }
+      }
+    }
+  }
+  // comp. of the velocity gradient tensor
+  /*
+    Gxx.resize(np_cc, 0);
+    Gxy.resize(np_cc, 0);
+    Gxz.resize(np_cc, 0);
+    Gyx.resize(np_cc, 0);
+    Gyy.resize(np_cc, 0);
+    Gyz.resize(np_cc, 0);
+    Gzx.resize(np_cc, 0);
+    Gzy.resize(np_cc, 0);
+    Gzz.resize(np_cc, 0);
+  */
+
+  // comp of the stress tensor
+  txx.resize(np_cc, 0);
+  txy.resize(np_cc, 0);
+  txz.resize(np_cc, 0);
+  tyy.resize(np_cc, 0);
+  tyz.resize(np_cc, 0);
+  tzz.resize(np_cc, 0);
+
+  // derived turbulence quantities
+  tke.resize(np_cc, 0);
+  CoEps.resize(np_cc, 0);
+
+  // comp of the divergence of the stress tensor
+  tmp_dtoxdx.resize(np_cc, 0);
+  tmp_dtoydy.resize(np_cc, 0);
+  tmp_dtozdz.resize(np_cc, 0);
+
+  // comp of the divergence of the stress tensor
+  div_tau_x.resize(np_cc, 0);
+  div_tau_y.resize(np_cc, 0);
+  div_tau_z.resize(np_cc, 0);
+}
+
+TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
+{
+  std::cout << "[QES-TURB]\t Initialization of turbulence model...\n";
+  m_WGD = WGDin;
+  // make local copy of grid information
+  // nx,ny,nz consitant with WINDS (face-center)
+  // WINDS->grid correspond to face-center grid
+  nz = m_WGD->nz;
+  ny = m_WGD->ny;
+  nx = m_WGD->nx;
+
+  float dz = m_WGD->dz;
+  float dy = m_WGD->dy;
+  float dx = m_WGD->dx;
+
+  // x-grid (face-center & cell-center)
+  x_fc.resize(nx, 0);
+  x_cc.resize(nx - 1, 0);
+
+  // y-grid (face-center & cell-center)
+  y_fc.resize(ny, 0);
+  y_cc.resize(ny - 1, 0);
+
+  // z-grid (face-center & cell-center)
+  z_fc.resize(nz, 0);
+  z_cc.resize(nz - 1, 0);
+
+  // x cell-center
+  x_cc = m_WGD->x;
+  // x face-center (this assume constant dx for the moment, same as QES-Winds)
+  for (int i = 1; i < nx - 1; i++) {
+    x_fc[i] = 0.5 * (m_WGD->x[i - 1] + m_WGD->x[i]);
+  }
+  x_fc[0] = x_fc[1] - dx;
+  x_fc[nx - 1] = x_fc[nx - 2] + dx;
+
+  // y cell-center
+  y_cc = m_WGD->y;
+  // y face-center (this assume constant dy for the moment, same as QES-winds)
+  for (int i = 1; i < ny - 1; i++) {
+    y_fc[i] = 0.5 * (m_WGD->y[i - 1] + m_WGD->y[i]);
+  }
+  y_fc[0] = y_fc[1] - dy;
+  y_fc[ny - 1] = y_fc[ny - 2] + dy;
+
+  // z cell-center
+  z_cc = m_WGD->z;
+  // z face-center (with ghost cell under the ground)
+  for (int i = 1; i < nz; i++) {
+    z_fc[i] = m_WGD->z_face[i - 1];
+  }
+  z_fc[0] = z_fc[1] - dz;
+
+  // unused: int np_fc = nz*ny*nx;
+  int np_cc = (nz - 1) * (ny - 1) * (nx - 1);
+
+  /*
+     vector containing cell id of fluid cell
+     do not include 1 cell shell around the domain
+     => i=1...nx-2 j=1...ny-2
+     do not include 1 cell layer at the top of the domain
+     => k=1...nz-2
+  */
+  for (int k = 1; k < nz - 2; k++) {
+    for (int j = 1; j < ny - 2; j++) {
+      for (int i = 1; i < nx - 2; i++) {
+        int id = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+        if (m_WGD->icellflag[id] != 0 && m_WGD->icellflag[id] != 2) {
+          icellfluid.push_back(id);
+        }
+      }
+    }
+  }
+  // comp. of the velocity gradient tensor
+  Gxx.resize(np_cc, 0);
+  Gxy.resize(np_cc, 0);
+  Gxz.resize(np_cc, 0);
+  Gyx.resize(np_cc, 0);
+  Gyy.resize(np_cc, 0);
+  Gyz.resize(np_cc, 0);
+  Gzx.resize(np_cc, 0);
+  Gzy.resize(np_cc, 0);
+  Gzz.resize(np_cc, 0);
+
   // comp of the stress tensor
   txx.resize(np_cc, 0);
   txy.resize(np_cc, 0);
@@ -417,6 +554,8 @@ void TURBGeneralData::loadNetCDFData(int stepin)
   divergenceStress();
 
   return;
+  // std::cout << "\t\t Memory allocation completed.\n";
+  std::cout << "[QES-TURB]\t Initialization of turbulence model completed.\n";
 }
 
 // compute turbulence fields
@@ -659,12 +798,12 @@ void TURBGeneralData::derivativeVelocity()
     int i = cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1);
     int faceID = i + j * nx + k * nx * ny;
 
-    /*
-     - Diagonal componants of the velocity gradient tensor naturally fall at the cell-center
-     - Off-diagonal componants of the  velocity gradient tensor require extra interpolation
-       of the velocity field to get the derivative at the cell-center  
-     - Derivative with respect to z need to be adjusted for non-uniform z-grid
-    */
+
+    // - Diagonal componants of the velocity gradient tensor naturally fall at the cell-center
+    // - Off-diagonal componants of the  velocity gradient tensor require extra interpolation
+    //   of the velocity field to get the derivative at the cell-center
+    // - Derivative with respect to z need to be adjusted for non-uniform z-grid
+
 
     // Gxx = dudx
     Gxx[cellID] = (m_WGD->u[faceID + 1] - m_WGD->u[faceID]) / (m_WGD->dx);

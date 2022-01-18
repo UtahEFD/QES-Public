@@ -10,3 +10,4 @@ std::string util_errorReport(std::string function, int lineN, char expected, cha
 std::string util_errorReport(std::string function, int lineN, bool expected, bool received);
 std::string util_errorReport(std::string function, int lineN, int expected, int received);
 std::string util_errorReport(std::string function, int lineN, std::string note);
+std::string util_errorReport(std::string function, std::string note);

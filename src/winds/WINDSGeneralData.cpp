@@ -1277,12 +1277,3 @@ float WINDSGeneralData::canopyBisection(float ustar, float z0, float canopy_top,
 
   return d;
 }
-
-
-WINDSGeneralData::WINDSGeneralData()
-{
-}
-
-WINDSGeneralData::~WINDSGeneralData()
-{
-}

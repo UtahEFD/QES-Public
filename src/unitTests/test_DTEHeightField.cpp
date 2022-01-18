@@ -5,8 +5,8 @@ std::string test_DTEHeightField::mainTest()
   DTEHF = DTEHeightField();
   std::string result;
   /**********
-	 *cutCells*
-	 *********/
+   *cutCells*
+   *********/
   result = testCutCells();
 
   if (result != TEST_PASS)
@@ -465,6 +465,6 @@ std::string test_DTEHeightField::testCutCells()
 		if (it == cellPoints.end())
 			return util_errorReport("cutCells", 811, messages[i]);
 	}
-
-	return TEST_PASS;*/
+  */
+  return TEST_PASS;
 }

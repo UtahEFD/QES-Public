@@ -20,7 +20,6 @@ target_link_libraries(compareSolvers ${NETCDF_LIBRARIES_C})
 target_link_libraries(compareSolvers cudadevrt)
 target_link_libraries(compareSolvers ${CUDA_LIBRARIES})
 
-
 #Comparison tests function
 function(add_comparison_test infile_prefix solver_arg solver_name)
   add_test(NAME ${solver_name}_COMPARISON_${infile_prefix} COMMAND ${CMAKE_BINARY_DIR}/tests/compareSolvers -q ${CMAKE_SOURCE_DIR}/data/InputFiles/${infile_prefix}.xml -s ${solver_arg} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})

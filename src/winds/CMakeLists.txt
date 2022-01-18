@@ -28,12 +28,14 @@ CUDA_ADD_LIBRARY( qeswindscore
   Triangle.cpp
   TURBParams.h
   TURBGeneralData.cpp
+  TURBGeneralData.cu
+  TURBGeneralData.h
   TURBOutput.cpp
   TURBWall.cpp
   TURBWallBuilding.cpp
   TURBWallTerrain.cpp
   WINDSInputData.h
-  WINDSGeneralData.cpp
+  WINDSGeneralData.cpp WINDSGeneralData.h
   WINDSOutputVisualization.cpp
   WINDSOutputWorkspace.cpp
   WINDSOutputWRF.cpp
@@ -68,7 +70,6 @@ IF (HAS_OPTIX_SUPPORT MATCHES ON)
     OptixRayTrace.cpp
     )  
 ENDIF()
-
 
 
 
