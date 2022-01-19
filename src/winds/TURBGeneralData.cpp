@@ -809,7 +809,7 @@ void TURBGeneralData::derivativeVelocity()
     Gxx[cellID] = (m_WGD->u[faceID + 1] - m_WGD->u[faceID]) / (m_WGD->dx);
     // Gyx = dvdx
     Gyx[cellID] = ((m_WGD->v[faceID + 1] + m_WGD->v[faceID + 1 + nx])
-                   - (m_WGD->v[faceID - 1] - m_WGD->v[faceID - 1 + nx]))
+                   - (m_WGD->v[faceID - 1] + m_WGD->v[faceID - 1 + nx]))
                   / (4.0 * m_WGD->dx);
     // Gzx = dwdx
     Gzx[cellID] = ((m_WGD->w[faceID + 1] + m_WGD->w[faceID + 1 + nx * ny])

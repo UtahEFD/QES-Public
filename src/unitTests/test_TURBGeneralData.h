@@ -18,7 +18,8 @@ public:
   virtual ~test_TURBGeneralData()
   {}
 
-  void test_compDerivatives(WINDSGeneralData *);
+  void test_compDerivatives_CPU(WINDSGeneralData *);
+  void test_compDerivatives_GPU(WINDSGeneralData *);
 
 private:
   test_TURBGeneralData();
