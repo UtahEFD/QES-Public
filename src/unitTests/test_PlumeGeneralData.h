@@ -10,6 +10,8 @@
 #include "winds/TURBGeneralData.h"
 #include "plume/Plume.hpp"
 
+#include "vectorMath.h"
+
 
 class test_PlumeGeneralData : public Plume
 {
@@ -26,6 +28,7 @@ public:
   //void test_compDerivatives_GPU(WINDSGeneralData *);
   void testGPU(int);
   void testGPU_struct(int);
+
   void testCPU(int);
 
 private:

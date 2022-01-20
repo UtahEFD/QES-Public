@@ -8,7 +8,9 @@
 #include "test_TURBGeneralData.h"
 #include "test_PlumeGeneralData.h"
 
-std::string mainTest();
+std::string testInterpolation();
+std::string testVectorMath();
+
 void setTestVelocity(WINDSGeneralData *);
 std::string check1DDerivative(std::vector<float> *,
                               std::vector<float> *,
@@ -42,14 +44,28 @@ int main()
    * TURBULENCE * 
    ******************/
   printf("======================================\n");
-  printf("starting TURBULENCE tests...\n");
-  results = mainTest();
+  printf("starting PLUME tests...\n");
+
+
+  printf("--------------------------------------\n");
+  results = testInterpolation();
+  printf("--------------------------------------\n");
   if (results == "") {
-    printf("TURBULENCE: Success!\n");
+    printf("PLUME: Success!\n");
   } else {
-    printf("TURBULENCE: Failure\n%s\n", results.c_str());
+    printf("PLUME: Failure\n%s\n", results.c_str());
     exit(EXIT_FAILURE);
   }
+  printf("======================================\n");
+  results = testVectorMath();
+  printf("--------------------------------------\n");
+  if (results == "") {
+    printf("PLUME: Success!\n");
+  } else {
+    printf("PLUME: Failure\n%s\n", results.c_str());
+    exit(EXIT_FAILURE);
+  }
+
 
   printf("======================================\n");
   printf("All tests pass!\n");
@@ -58,7 +74,7 @@ int main()
   return 0;
 }
 
-std::string mainTest()
+std::string testInterpolation()
 {
 
   std::string results = TEST_PASS;
@@ -76,9 +92,29 @@ std::string mainTest()
 
   PGD->testInterp(WGD, TGD);
 
-  //PGD->testCPU(100000);
+  return results;
+}
+
+std::string testVectorMath()
+{
+
+  std::string results = TEST_PASS;
+
+  int gridSize[3] = { 10, 10, 10 };
+  float gridRes[3] = { 0.1, 0.1, 0.1 };
+
+  WINDSGeneralData *WGD = new test_WINDSGeneralData(gridSize, gridRes);
+  TURBGeneralData *TGD = new test_TURBGeneralData(WGD);
+  test_PlumeGeneralData *PGD = new test_PlumeGeneralData(WGD, TGD);
+
+  printf("--------------------------------------\n");
+  printf("starting PLUME vector math CPU...\n");
+  PGD->testCPU(1000000);
+
+  printf("--------------------------------------\n");
+  printf("starting PLUME vector math CUDA...\n");
   //PGD->testGPU(100000);
-  PGD->testGPU_struct(100000);
+  PGD->testGPU_struct(1000000);
 
   return results;
 }

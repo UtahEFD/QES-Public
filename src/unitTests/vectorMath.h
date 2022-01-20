@@ -10,31 +10,76 @@
  * Copyright (c) 2021 Rob Stoll
  * Copyright (c) 2021 Pete Willemsen
  *
- * This file is part of QES-Winds
+ * This file is part of QES-Plume
  *
  * GPL-3.0 License
  *
- * QES-Winds is free software: you can redistribute it and/or modify
+ * QES-Plume is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3 of the License.
  *
- * QES-Winds is distributed in the hope that it will be useful,
+ * QES-Plume is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ * along with QES-Plume. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/**
- * @file vectorMath.cu
- * @brief :document this:
+/** @file vectorMath.h 
+ * @brief This class handles the random number generation
  */
 
-#include "vectorMath.h"
+#pragma once
 
-__device__ void calcInvariants(const mat3sym &tau, vec3 &invar)
+#include <iostream>
+#include <cstdlib>
+#include <math.h>
+
+typedef struct
+{
+  float _11;
+  float _12;
+  float _13;
+  float _21;
+  float _22;
+  float _23;
+  float _31;
+  float _32;
+  float _33;
+} mat3;
+typedef struct
+{
+  float _11;
+  float _12;
+  float _13;
+  float _22;
+  float _23;
+  float _33;
+} mat3sym;
+
+
+typedef struct
+{
+  float _1;
+  float _2;
+  float _3;
+} vec3;
+
+
+class vectorMath
+{
+public:
+  vectorMath()
+  {}
+  static void calcInvariants(const mat3sym &, vec3 &);
+  static void makeRealizable(const float, mat3sym &);
+  static bool invert3(mat3 &);
+  static void matmult(const mat3 &, const vec3 &, vec3 &);
+};
+
+inline void vectorMath::calcInvariants(const mat3sym &tau, vec3 &invar)
 {
   // since the x doesn't depend on itself, can just set the output without doing
   // any temporary variables (copied from Bailey's code)
@@ -46,7 +91,7 @@ __device__ void calcInvariants(const mat3sym &tau, vec3 &invar)
              + tau._13 * (tau._12 * tau._23 - tau._22 * tau._13);
 }
 
-__device__ void makeRealizable(float invarianceTol, mat3sym &tau)
+inline void vectorMath::makeRealizable(const float invarianceTol, mat3sym &tau)
 {
   // first calculate the invariants and see if they are already realizable
   vec3 invar = { 0.0, 0.0, 0.0 };
@@ -116,7 +161,7 @@ __device__ void makeRealizable(float invarianceTol, mat3sym &tau)
 }
 
 
-__device__ bool invert3(mat3 &A)
+inline bool vectorMath::invert3(mat3 &A)
 {
 
   // calculate the determinant
@@ -150,7 +195,7 @@ __device__ bool invert3(mat3 &A)
   }
 }
 
-__device__ void matmult(const mat3 &A, const vec3 &b, vec3 &x)
+inline void vectorMath::matmult(const mat3 &A, const vec3 &b, vec3 &x)
 {
   // now calculate the Ax=b x value from the input inverse A matrix and b matrix
   x._1 = b._1 * A._11 + b._2 * A._12 + b._3 * A._13;

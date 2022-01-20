@@ -81,28 +81,49 @@ void test_PlumeGeneralData::testInterp(WINDSGeneralData *WGD, TURBGeneralData *T
 
 void test_PlumeGeneralData::testCPU(int length)
 {
-  std::vector<double> A11, A12, A13, A21, A22, A23, A31, A32, A33;
-  A11.resize(length, 1.0);
-  A12.resize(length, 2.0);
-  A13.resize(length, 3.0);
-  A21.resize(length, 2.0);
-  A22.resize(length, 1.0);
-  A23.resize(length, 2.0);
-  A31.resize(length, 3.0);
-  A32.resize(length, 2.0);
-  A33.resize(length, 1.0);
+
+  mat3 tmp = { 1, 2, 3, 2, 1, 2, 3, 2, 1 };
+  std::vector<mat3> A;
+  A.resize(length, tmp);
+
+  std::vector<vec3> b;
+  b.resize(length, { 1.0, 1.0, 1.0 });
+
+  std::vector<vec3> x;
+  x.resize(length, { 0.0, 0.0, 0.0 });
+
+  std::vector<mat3sym> tau;
+  //tau.resize(length, { 1, 2, 3, 1, 2, 1 });
+  tau.resize(length, { 1, 0, 3, 0, 0, 1 });
+  std::vector<vec3> invar;
+  invar.resize(length, { 0.0, 0.0, 0.0 });
 
   auto cpuStartTime = std::chrono::high_resolution_clock::now();
   for (size_t it = 0; it < length; ++it) {
-    bool tt = invert3(A11[it], A12[it], A13[it], A21[it], A22[it], A23[it], A31[it], A32[it], A33[it]);
+    bool tt = vectorMath::invert3(A[it]);
+    vectorMath::matmult(A[it], b[it], x[it]);
   }
+
+  for (size_t it = 0; it < length; ++it) {
+    vectorMath::makeRealizable(10e-4, tau[it]);
+    vectorMath::calcInvariants(tau[it], invar[it]);
+  }
+
   auto cpuEndTime = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double> cpuElapsed = cpuEndTime - cpuStartTime;
-  std::cout << "\t\t CPU  elapsed time: " << cpuElapsed.count() << " s\n";
+  std::cout << "CPU  elapsed time: " << cpuElapsed.count() << " s\n";
 
-  std::cout << A11[0] << " " << A12[0] << " " << A13[0] << std::endl;
-  std::cout << A21[0] << " " << A22[0] << " " << A23[0] << std::endl;
-  std::cout << A31[0] << " " << A32[0] << " " << A33[0] << std::endl;
+  std::cout << A[0]._11 << " " << A[0]._12 << " " << A[0]._13 << std::endl;
+  std::cout << A[0]._21 << " " << A[0]._22 << " " << A[0]._23 << std::endl;
+  std::cout << A[0]._31 << " " << A[0]._32 << " " << A[0]._33 << std::endl;
+  std::cout << x[0]._1 << " " << x[0]._2 << " " << x[0]._3 << std::endl;
+
+  std::cout << std::endl;
+
+  std::cout << tau[0]._11 << " " << tau[0]._12 << " " << tau[0]._13 << std::endl;
+  std::cout << tau[0]._12 << " " << tau[0]._22 << " " << tau[0]._23 << std::endl;
+  std::cout << tau[0]._13 << " " << tau[0]._23 << " " << tau[0]._33 << std::endl;
+  std::cout << invar[0]._1 << " " << invar[0]._2 << " " << invar[0]._3 << std::endl;
 
   return;
 }
