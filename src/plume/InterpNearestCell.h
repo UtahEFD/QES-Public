@@ -45,7 +45,6 @@
 #include "util/Vector3.h"
 
 #include "Interp.h"
-#include "PlumeInputData.hpp"
 
 class InterpNearestCell : public Interp
 {
@@ -54,7 +53,7 @@ public:
   // constructor
   // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the InterpTriLinear grid values,
   // then calculates the tau gradients which are then used to calculate the flux_div grid values.
-  InterpNearestCell(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, const bool &);
+  InterpNearestCell(WINDSGeneralData *, TURBGeneralData *, const bool &);
 
   //double vel_threshold;
 

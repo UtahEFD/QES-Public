@@ -31,6 +31,31 @@
 
 #include "Plume.hpp"
 
+Plume::Plume(WINDSGeneralData *WGD, TURBGeneralData *TGD)
+  : particleList(0), allSources(0)
+{
+  // copy debug information
+  doParticleDataOutput = false;//arguments->doParticleDataOutput;
+  outputSimInfoFile = false;//arguments->doSimInfoFileOutput;
+  outputFolder = "";//arguments->outputFolder;
+  caseBaseName = "";//arguments->caseBaseName;
+  debug = false;//arguments->debug;
+
+  verbose = false;//arguments->verbose;
+
+  // make local copies of the QES-Winds nVals for each dimension
+  nx = WGD->nx;
+  ny = WGD->ny;
+  nz = WGD->nz;
+
+  dx = WGD->dx;
+  dy = WGD->dy;
+  dz = WGD->dz;
+  dxy = WGD->dxy;
+
+  return;
+}
+
 Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   : particleList(0), allSources(0)
 {
@@ -60,11 +85,11 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   std::cout << "[Plume] \t Interpolation Method set to: "
             << PID->plumeParams->interpMethod << std::endl;
   if (PID->plumeParams->interpMethod == "analyticalPowerLaw") {
-    interp = new InterpPowerLaw(PID, WGD, TGD, debug);
+    interp = new InterpPowerLaw(WGD, TGD, debug);
   } else if (PID->plumeParams->interpMethod == "nearestCell") {
-    interp = new InterpNearestCell(PID, WGD, TGD, debug);
+    interp = new InterpNearestCell(WGD, TGD, debug);
   } else if (PID->plumeParams->interpMethod == "triLinear") {
-    interp = new InterpTriLinear(PID, WGD, TGD, debug);
+    interp = new InterpTriLinear(WGD, TGD, debug);
   } else {
     std::cerr << "[ERROR] unknown interpolation method" << std::endl;
     exit(EXIT_FAILURE);

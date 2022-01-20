@@ -71,12 +71,16 @@ class Plume
 {
 
 public:
+  Plume(WINDSGeneralData *, TURBGeneralData *);
   // constructor
   // first makes a copy of the urb grid number of values and the domain size as determined by dispersion
   // then sets up the concentration sampling box information for output
   // next copies important input time values and calculates needed time information
   // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
   Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *);
+
+  virtual ~Plume()
+  {}
 
   // this is the plume solver. It performs a time integration of the particle positions and particle velocity fluctuations
   // with calculations done on a per particle basis. During each iteration, temporary single value particle information
@@ -104,10 +108,7 @@ public:
   // the sources can set these values, then the other values are set using urb and turb info using these values
   std::list<Particle *> particleList;
 
-private:
-  Plume()
-  {}
-
+protected:
   // QES grid information
   int nx;// a copy of the urb grid nx value
   int ny;// a copy of the urb grid ny value
@@ -340,6 +341,9 @@ private:
                                  double &velFluct_old,
                                  const double &domainStart,
                                  const double &domainEnd);
+
+private:
+  Plume();
 
   // this is for writing an output simulation info file separate from the regular command line output
   void writeSimInfoFile(const double &current_time);

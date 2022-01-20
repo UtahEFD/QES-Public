@@ -32,7 +32,7 @@
 #include "InterpTriLinear.h"
 
 
-InterpTriLinear::InterpTriLinear(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, const bool &debug_val)
+InterpTriLinear::InterpTriLinear(WINDSGeneralData *WGD, TURBGeneralData *TGD, const bool &debug_val)
   : Interp(WGD)
 {
   //std::cout << "[InterpTriLinear] \t Setting InterpTriLinear fields " << std::endl;

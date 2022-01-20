@@ -18,9 +18,16 @@ cuda_add_executable(unitTestTurbulence
   test_TURBGeneralData.h test_TURBGeneralData.cpp
   mainTurbulenceTest.cpp)
 
+cuda_add_executable(unitTestPlume
+  test_WINDSGeneralData.h test_WINDSGeneralData.cpp
+  test_TURBGeneralData.h test_TURBGeneralData.cpp	
+  test_PlumeGeneralData.h test_PlumeGeneralData.cpp
+  mainPlumeTest.cpp)
+
 set(UNITTESTS 
   unitTestWind
-  unitTestTurbulence)
+  unitTestTurbulence
+  unitTestPlume)
 
 foreach (unittest ${UNITTESTS})
   target_link_libraries(${unittest} qesplumecore)

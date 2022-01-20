@@ -61,3 +61,25 @@ std::string util_errorReport(std::string function, std::string note)
   return function
          + " NOTE:" + note;
 }
+
+bool util_checkRMSE(std::vector<float> *a, std::vector<float> *b, float tol, float &RMSE)
+{
+
+  if (a->size() != b->size()) {
+    printf("ERROR: incompatible size in:  util_checkRMSE");
+    exit(EXIT_FAILURE);
+  }
+
+  float error(0.0), numcell(0.0);
+
+  for (size_t k = 0; k < a->size(); ++k) {
+    error += pow((a->at(k) - b->at(k)), 2.0);
+    numcell++;
+  }
+  RMSE = sqrt(error / numcell);
+
+  if (RMSE < tol)
+    return true;
+  else
+    return false;
+}
