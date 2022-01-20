@@ -21,7 +21,7 @@ cuda_add_executable(unitTestTurbulence
 cuda_add_executable(unitTestPlume
   test_WINDSGeneralData.h test_WINDSGeneralData.cpp
   test_TURBGeneralData.h test_TURBGeneralData.cpp	
-  test_PlumeGeneralData.h test_PlumeGeneralData.cpp
+  test_PlumeGeneralData.h test_PlumeGeneralData.cpp vectorMath.cu
   mainPlumeTest.cpp)
 
 set(UNITTESTS 

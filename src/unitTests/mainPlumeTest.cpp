@@ -76,6 +76,10 @@ std::string mainTest()
 
   PGD->testInterp(WGD, TGD);
 
+  //PGD->testCPU(100000);
+  //PGD->testGPU(100000);
+  PGD->testGPU_struct(100000);
+
   return results;
 }
 

@@ -21,9 +21,12 @@ public:
   {}
 
   void setInterpMethod(std::string, WINDSGeneralData *, TURBGeneralData *);
-  void testInterp(WINDSGeneralData *WGD, TURBGeneralData *TGD);
+  void testInterp(WINDSGeneralData *, TURBGeneralData *);
   //void test_compDerivatives_CPU(WINDSGeneralData *);
   //void test_compDerivatives_GPU(WINDSGeneralData *);
+  void testGPU(int);
+  void testGPU_struct(int);
+  void testCPU(int);
 
 private:
   test_PlumeGeneralData();

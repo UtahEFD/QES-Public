@@ -78,3 +78,31 @@ void test_PlumeGeneralData::testInterp(WINDSGeneralData *WGD, TURBGeneralData *T
 
   return;
 }
+
+void test_PlumeGeneralData::testCPU(int length)
+{
+  std::vector<double> A11, A12, A13, A21, A22, A23, A31, A32, A33;
+  A11.resize(length, 1.0);
+  A12.resize(length, 2.0);
+  A13.resize(length, 3.0);
+  A21.resize(length, 2.0);
+  A22.resize(length, 1.0);
+  A23.resize(length, 2.0);
+  A31.resize(length, 3.0);
+  A32.resize(length, 2.0);
+  A33.resize(length, 1.0);
+
+  auto cpuStartTime = std::chrono::high_resolution_clock::now();
+  for (size_t it = 0; it < length; ++it) {
+    bool tt = invert3(A11[it], A12[it], A13[it], A21[it], A22[it], A23[it], A31[it], A32[it], A33[it]);
+  }
+  auto cpuEndTime = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> cpuElapsed = cpuEndTime - cpuStartTime;
+  std::cout << "\t\t CPU  elapsed time: " << cpuElapsed.count() << " s\n";
+
+  std::cout << A11[0] << " " << A12[0] << " " << A13[0] << std::endl;
+  std::cout << A21[0] << " " << A22[0] << " " << A23[0] << std::endl;
+  std::cout << A31[0] << " " << A32[0] << " " << A33[0] << std::endl;
+
+  return;
+}
