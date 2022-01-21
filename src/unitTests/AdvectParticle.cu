@@ -133,18 +133,18 @@ __device__ void advectParticle(float timeRemainder, vec3 &pPos)
     //  but I wonder if it messes with the invert3 stuff since those values are used even though they are empty in his code
     //  going to send in 9 terms anyways to try to follow Bailey's method for now
 
-    mat3 l;
-    l._11 = tau._11;
-    l._12 = tau._12;
-    l._13 = tau._13;
-    l._21 = tau._12;
-    l._22 = tau._22;
-    l._23 = tau._23;
-    l._31 = tau._13;
-    l._32 = tau._23;
-    l._33 = tau._33;
+    mat3 L;
+    L._11 = tau._11;
+    L._12 = tau._12;
+    L._13 = tau._13;
+    L._21 = tau._12;
+    L._22 = tau._22;
+    L._23 = tau._23;
+    L._31 = tau._13;
+    L._32 = tau._23;
+    L._33 = tau._33;
 
-    isRogue = !invert3(l);
+    isRogue = !invert3(L);
     if (isRogue == true) {
       //int cellIdNew = interp->getCellId(xPos,yPos,zPos);
       //std::cerr << "ERROR in Matrix inversion of stress tensor" << std::endl;
@@ -175,17 +175,17 @@ __device__ void advectParticle(float timeRemainder, vec3 &pPos)
     // now calculate and set the A and b matrices for an Ax = b
     // A = -I + 0.5*(-CoEps*L + dTdt*L )*par_dt;
     mat3 A;
-    A._11 = -1.0 + 0.50 * (-CoEps * l._11 + l._11 * tau_ddt._11 + l._12 * tau_ddt._12 + l._13 * tau_ddt._13) * par_dt;
-    A._12 = -0.0 + 0.50 * (-CoEps * l._12 + l._12 * tau_ddt._11 + l._22 * tau_ddt._12 + l._23 * tau_ddt._13) * par_dt;
-    A._13 = -0.0 + 0.50 * (-CoEps * l._13 + l._13 * tau_ddt._11 + l._23 * tau_ddt._12 + l._33 * tau_ddt._13) * par_dt;
+    A._11 = -1.0 + 0.50 * (-CoEps * L._11 + L._11 * tau_ddt._11 + L._12 * tau_ddt._12 + L._13 * tau_ddt._13) * par_dt;
+    A._12 = -0.0 + 0.50 * (-CoEps * L._12 + L._12 * tau_ddt._11 + L._22 * tau_ddt._12 + L._23 * tau_ddt._13) * par_dt;
+    A._13 = -0.0 + 0.50 * (-CoEps * L._13 + L._13 * tau_ddt._11 + L._23 * tau_ddt._12 + L._33 * tau_ddt._13) * par_dt;
 
-    A._21 = -0.0 + 0.50 * (-CoEps * l._12 + l._11 * tau_ddt._12 + l._12 * tau_ddt._22 + l._13 * tau_ddt._23) * par_dt;
-    A._22 = -1.0 + 0.50 * (-CoEps * l._22 + l._12 * tau_ddt._12 + l._22 * tau_ddt._22 + l._23 * tau_ddt._23) * par_dt;
-    A._23 = -0.0 + 0.50 * (-CoEps * l._23 + l._13 * tau_ddt._12 + l._23 * tau_ddt._22 + l._33 * tau_ddt._23) * par_dt;
+    A._21 = -0.0 + 0.50 * (-CoEps * L._12 + L._11 * tau_ddt._12 + L._12 * tau_ddt._22 + L._13 * tau_ddt._23) * par_dt;
+    A._22 = -1.0 + 0.50 * (-CoEps * L._22 + L._12 * tau_ddt._12 + L._22 * tau_ddt._22 + L._23 * tau_ddt._23) * par_dt;
+    A._23 = -0.0 + 0.50 * (-CoEps * L._23 + L._13 * tau_ddt._12 + L._23 * tau_ddt._22 + L._33 * tau_ddt._23) * par_dt;
 
-    A._31 = -0.0 + 0.50 * (-CoEps * l._13 + l._11 * tau_ddt._13 + l._12 * tau_ddt._23 + l._13 * tau_ddt._33) * par_dt;
-    A._32 = -0.0 + 0.50 * (-CoEps * l._23 + l._12 * tau_ddt._13 + l._22 * tau_ddt._23 + l._23 * tau_ddt._33) * par_dt;
-    A._33 = -1.0 + 0.50 * (-CoEps * l._33 + l._13 * tau_ddt._13 + l._23 * tau_ddt._23 + l._33 * tau_ddt._33) * par_dt;
+    A._31 = -0.0 + 0.50 * (-CoEps * L._13 + L._11 * tau_ddt._13 + L._12 * tau_ddt._23 + L._13 * tau_ddt._33) * par_dt;
+    A._32 = -0.0 + 0.50 * (-CoEps * L._23 + L._12 * tau_ddt._13 + L._22 * tau_ddt._23 + L._23 * tau_ddt._33) * par_dt;
+    A._33 = -1.0 + 0.50 * (-CoEps * L._33 + L._13 * tau_ddt._13 + L._23 * tau_ddt._23 + L._33 * tau_ddt._33) * par_dt;
 
 
     // b = -vectFluct - 0.5*vecFluxDiv*par_dt - sqrt(CoEps*par_dt)*vecRandn;

@@ -12,7 +12,6 @@
 
 #include "vectorMath.h"
 
-
 class test_PlumeGeneralData : public Plume
 {
 public:
