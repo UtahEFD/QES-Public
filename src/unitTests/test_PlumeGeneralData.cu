@@ -33,7 +33,7 @@
  */
 
 #include "test_PlumeGeneralData.h"
-#include "vectorMath.cu"
+#include "AdvectParticle.cu"
 
 typedef struct
 {
@@ -54,6 +54,7 @@ typedef struct
 
 } part;
 
+
 __global__ void testCUDA_matmult(int length, mat3 *d_A, vec3 *d_b, vec3 *d_x)
 {
   int index = blockIdx.x * blockDim.x + threadIdx.x;
@@ -72,6 +73,16 @@ __global__ void testCUDA_invar(int length, mat3sym *d_tau, vec3 *d_invar)
   for (int it = index; it < length; it += stride) {
     makeRealizable(10e-4, d_tau[it]);
     calcInvariants(d_tau[it], d_invar[it]);
+  }
+  return;
+}
+
+__global__ void testCUDA_advection(int length, vec3 *d_pPos)
+{
+  int index = blockIdx.x * blockDim.x + threadIdx.x;
+  int stride = blockDim.x * gridDim.x;
+  for (int it = index; it < length; it += stride) {
+    advectParticle(1.0, d_pPos[it]);
   }
   return;
 }
@@ -137,6 +148,7 @@ void test_PlumeGeneralData::testGPU_struct(int length)
     auto kernelStartTime = std::chrono::high_resolution_clock::now();
     testCUDA_matmult<<<numberOfBlocks, numberOfThreadsPerBlock>>>(length, d_A, d_b, d_x);
     testCUDA_invar<<<numberOfBlocks, numberOfThreadsPerBlock>>>(length, d_tau, d_invar);
+    //testCUDA_advection<<<numberOfBlocks, numberOfThreadsPerBlock>>>(length, d_x);
     cudaDeviceSynchronize();
     auto kernelEndTime = std::chrono::high_resolution_clock::now();
 
