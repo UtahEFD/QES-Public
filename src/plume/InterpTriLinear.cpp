@@ -170,14 +170,14 @@ void InterpTriLinear::setInterp3Dindex_uFace(const double &par_xPos, const doubl
   double par_y = par_yPos - 0.5 * dy;
   double par_z = par_zPos + 0.5 * dz;
 
-  ii = floor(par_x / (dx + 1e-9));
-  jj = floor(par_y / (dy + 1e-9));
-  kk = floor(par_z / (dz + 1e-9));
+  ii = floor(par_x / (dx + 1e-7));
+  jj = floor(par_y / (dy + 1e-7));
+  kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between nearest nodes
-  iw = (par_x / dx - floor(par_x / dx));
-  jw = (par_y / dy - floor(par_y / dy));
-  kw = (par_z / dz - floor(par_z / dz));
+  iw = (par_x / dx) - floor(par_x / (dx + 1e-7));
+  jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
+  kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
 
   return;
 }
@@ -194,14 +194,14 @@ void InterpTriLinear::setInterp3Dindex_vFace(const double &par_xPos, const doubl
   double par_y = par_yPos - 0.0 * dy;
   double par_z = par_zPos + 0.5 * dz;
 
-  ii = floor(par_x / (dx + 1e-9));
-  jj = floor(par_y / (dy + 1e-9));
-  kk = floor(par_z / (dz + 1e-9));
+  ii = floor(par_x / (dx + 1e-7));
+  jj = floor(par_y / (dy + 1e-7));
+  kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between nearest nodes
-  iw = (par_x / dx - floor(par_x / dx));
-  jw = (par_y / dy - floor(par_y / dy));
-  kw = (par_z / dz - floor(par_z / dz));
+  iw = (par_x / dx) - floor(par_x / (dx + 1e-4));
+  jw = (par_y / dy) - floor(par_y / (dy + 1e-4));
+  kw = (par_z / dz) - floor(par_z / (dz + 1e-4));
 
   return;
 }
@@ -217,14 +217,14 @@ void InterpTriLinear::setInterp3Dindex_wFace(const double &par_xPos, const doubl
   double par_y = par_yPos - 0.5 * dy;
   double par_z = par_zPos + 1.0 * dz;
 
-  ii = floor(par_x / (dx + 1e-9));
-  jj = floor(par_y / (dy + 1e-9));
-  kk = floor(par_z / (dz + 1e-9));
+  ii = floor(par_x / (dx + 1e-7));
+  jj = floor(par_y / (dy + 1e-7));
+  kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between nearest nodes
-  iw = (par_x / dx - floor(par_x / dx));
-  jw = (par_y / dy - floor(par_y / dy));
-  kw = (par_z / dz - floor(par_z / dz));
+  iw = (par_x / dx) - floor(par_x / (dx + 1e-7));
+  jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
+  kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
 
   return;
 }
@@ -316,14 +316,14 @@ void InterpTriLinear::setInterp3Dindex_cellVar(const double &par_xPos, const dou
   // basically adding a small number to dx shifts the indices so that instead of going
   // from 0 to nx - 1, they go from 0 to nx - 2. This means that ii + ip can at most be nx - 1
   // and only if a particle lands directly on the far boundary condition edge
-  ii = floor(par_x / (dx + 1e-9));
-  jj = floor(par_y / (dy + 1e-9));
-  kk = floor(par_z / (dz + 1e-9));
+  ii = floor(par_x / (dx + 1e-7));
+  jj = floor(par_y / (dy + 1e-7));
+  kk = floor(par_z / (dz + 1e-7));
 
   // fractional distance between nearest nodes
-  iw = (par_x / dx) - floor(par_x / dx);
-  jw = (par_y / dy) - floor(par_y / dy);
-  kw = (par_z / dz) - floor(par_z / dz);
+  iw = (par_x / dx) - floor(par_x / (dx + 1e-7));
+  jw = (par_y / dy) - floor(par_y / (dy + 1e-7));
+  kw = (par_z / dz) - floor(par_z / (dz + 1e-7));
 
   /* FM -> OBSOLETE (this is insure at the boundary condition level)
     // now check to make sure that the indices are within the InterpTriLinear grid domain
