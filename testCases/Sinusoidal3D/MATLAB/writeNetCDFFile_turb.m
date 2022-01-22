@@ -66,6 +66,6 @@ ncwriteatt(outputFileName,'tke','units','m2 s-2');
 ncwriteatt(outputFileName,'tke','long_name','tke');
 
 %%% now check to make sure it looks right
-ncdisp(outputFileName);
+%ncdisp(outputFileName);
 
 end

@@ -57,6 +57,6 @@ ncwriteatt(outputFileName,'icellflag','units','--');
 ncwriteatt(outputFileName,'icellflag','long_name','icell flag value');
 
 %%% now check to make sure it looks right
-ncdisp(outputFileName);
+%ncdisp(outputFileName);
 
 end

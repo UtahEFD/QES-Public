@@ -30,7 +30,11 @@ xProf=[0.393,0.464,0.964]; % streamwise location
 
 % set the case base name for use in all the other file paths
 caseNameWinds = "UniformFlow_xDir";
-caseNamePlume = "ContRelease_xDir";
+caseNamePlume = "UniformFlow_xDir_ContRelease";
+
+% set the plotOutputFolders
+plotOutputDir = "plotOutput";
+mkdir(plotOutputDir)
 
 data=struct();
 varnames=struct();
@@ -119,9 +123,9 @@ for k=1:numel(xProf)
     ylabel('$C^*$')
     grid on 
     
-    currentPlotName=sprintf('plotOutput/%s_%s_LatConc_%s',...
-        caseNameWinds,caseNamePlume,strrep(sprintf('x%.3f',x/H),'.','o'));
-    save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
+    %currentPlotName=sprintf('plotOutput/%s_LatConc_%s',...
+    %    caseNamePlume,strrep(sprintf('x%.3f',x/H),'.','o'));
+    %save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
     
     
     hfig = figure;
@@ -138,9 +142,9 @@ for k=1:numel(xProf)
     ylabel('$z/H$')
     grid on
     
-    currentPlotName=sprintf('plotOutput/%s_%s_VertConc_%s',...
-        caseNameWinds,caseNamePlume,strrep(sprintf('x%.3f',x/H),'.','o'));
-    save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
+    %currentPlotName=sprintf('plotOutput/%s_VertConc_%s',...
+    %    caseNamePlume,strrep(sprintf('x%.3f',x/H),'.','o'));
+    %save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
 end
 %==========================================================================
 
@@ -148,7 +152,7 @@ close all
 
 save('data2plot_xDir','d2plotLat','d2plotVert','caseNameWinds','caseNamePlume')
 
-%% ========================================================================
+%==========================================================================
 
 [yy,zz]=ndgrid(data.plume.y-yS,data.plume.z-zS);
 xProf2=xoH(xoH > 0.2);
@@ -199,7 +203,7 @@ end
 myColorMap=parula(numel(xProf2));
 hfig=figure();
 hfig.Position=[hfig.Position(1) hfig.Position(2) hfig.Position(3) hfig.Position(3)];
-hp=plot(cStarPlume,cStarModel,'kd');
+hp=plot(cStarModel,cStarPlume,'kd');
 for k=1:numel(xProf2)
     hp(k).Color=myColorMap(k,:);
     hp(k).MarkerFaceColor=myColorMap(k,:);
@@ -225,10 +229,10 @@ htxt=text(1,1,sprintf('R^2=%f\n',double(R)));
 htxt.Units='normalized';
 htxt.Position=[.1 .9 0];
 
-currentPlotName=sprintf('plotOutput/%s_%s_1to1',caseNameWinds,caseNamePlume);
+currentPlotName=sprintf('plotOutput/%s_1to1',caseNamePlume);
 hfig.Units='centimeters';
 save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
 
-%% ========================================================================
+%==========================================================================
 
 UniformFlow_xDir_plotPlumeResults
