@@ -3,7 +3,7 @@
   <halo_x> 0.0 </halo_x>
   <halo_y> 0.0 </halo_y>
   
-  <domain>100 110 40 </domain>
+  <domain>110 100 40 </domain>
   <cellSize> 1.0 1.0 0.5 </cellSize>
   <verticalStretching> 0 </verticalStretching> 
   
@@ -72,7 +72,7 @@
   <boxBoundsY2> 100.0 </boxBoundsY2>
   <boxBoundsZ1> 0.0 </boxBoundsZ1>
   <boxBoundsZ2> 20.0 </boxBoundsZ2>
-  <nBoxesX> 36 </nBoxesX>
+  <nBoxesX> 18 </nBoxesX>
   <nBoxesY> 51 </nBoxesY>
   <nBoxesZ> 20 </nBoxesZ>
 </collectionParameters>

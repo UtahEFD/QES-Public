@@ -22,13 +22,13 @@ alpha=2+p-n;
 nu=(1-n)/alpha;
 
 % concentration info
-dt=.05; % s
-tAvg=1200; % s 
+dt=1.0; % s
+tAvg=1800; % s 
 %tAvg=3600; % s 
 
 % source info
-Q=20/dt; % #par/s (source strength)
-tRelease=1400; % total time of release
+Q=200/dt; % #par/s (source strength)
+tRelease=2000; % total time of release
 Ntot=Q*tRelease; % total number of particles
 
 
@@ -36,17 +36,12 @@ fsize=12;
 
 xS=20.0;yS=50;zS=4;
 
-%xProf=[6.0,10.0,18.0]; % streamwise location 
-xProf=[5.0,10.0,19.0,32.0]; % streamwise location 
-%xProf=[5.42,10.97,19.31]; % streamwise location 
+xProf=[5.42,10.97,19.31]; % streamwise location 
 
 % set the case base name for use in all the other file paths
-caseNameWinds = "PowerLawBLFlow_long";
+caseNameWinds = "QES_PowerLawBLFlow_ContRelease";
+caseNamePlume = "QES_PowerLawBLFlow_ContRelease";
 
-%caseNamePlume = "ContRelease_ElevatedReflect";
-caseNamePlume = "ContRelease_ElevatedNoReflect";
-
-%caseNamePlume = "ContRelease_xDir";
 
 data=struct();
 varnames=struct();
@@ -132,9 +127,9 @@ for k=1:numel(xProf)
     ylabel('$C^*$')
     grid on
     
-    currentPlotName=sprintf('plotOutput/%s_%s_LatConc_%s',...
-        caseNameWinds,caseNamePlume,strrep(sprintf('x%.2f',x/H),'.','o'));
-    save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
+    %currentPlotName=sprintf('plotOutput/%s_LatConc_%s',...
+    %    caseNameWinds,caseNamePlume,strrep(sprintf('x%.2f',x/H),'.','o'));
+    %save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
     %================================================
     hfig = figure;
     set(hfig,'Units','centimeters')
@@ -149,9 +144,9 @@ for k=1:numel(xProf)
     ylabel('$z/H$')
     grid on 
     
-    currentPlotName=sprintf('plotOutput/%s_%s_VertConc_%s',...
-           caseNameWinds,caseNamePlume,strrep(sprintf('x%.2f',x/H),'.','o'));
-    save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
+    %currentPlotName=sprintf('plotOutput/%s_VertConc_%s',...
+    %       caseNameWinds,caseNamePlume,strrep(sprintf('x%.2f',x/H),'.','o'));
+    %save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
     %================================================
 end
 close all
@@ -211,7 +206,7 @@ htxt=text(1,1,sprintf('R^2=%f\n',double(R)));
 htxt.Units='normalized';
 htxt.Position=[.1 .9 0];
 
-currentPlotName=sprintf('plotOutput/%s_%s_1to1',caseNameWinds,caseNamePlume);
+currentPlotName=sprintf('plotOutput/%s_1to1',caseNamePlume);
 hfig.Units='centimeters';
 save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
 %% ========================================================================

@@ -50,7 +50,7 @@ int main()
   printf("--------------------------------------\n");
   results = testInterpolation();
   printf("--------------------------------------\n");
-  if (results == "") {
+  if (results == TEST_PASS) {
     printf("PLUME: Success!\n");
   } else {
     printf("PLUME: Failure\n%s\n", results.c_str());
@@ -61,7 +61,7 @@ int main()
   printf("--------------------------------------\n");
   results = testVectorMath();
   printf("--------------------------------------\n");
-  if (results == "") {
+  if (results == TEST_PASS) {
     printf("PLUME: Success!\n");
   } else {
     printf("PLUME: Failure\n%s\n", results.c_str());
@@ -90,10 +90,14 @@ std::string testInterpolation()
 
   PGD->setInterpMethod("triLinear", WGD, TGD);
 
+  printf("--------------------------------------\n");
+  printf("testing for accuracy\n");
   results = PGD->testInterp(WGD, TGD);
   if (results != TEST_PASS)
     return results;
 
+  printf("--------------------------------------\n");
+  printf("testing for time on CPU\n");
   results = PGD->timeInterpCPU(WGD, TGD);
   if (results != TEST_PASS)
     return results;
