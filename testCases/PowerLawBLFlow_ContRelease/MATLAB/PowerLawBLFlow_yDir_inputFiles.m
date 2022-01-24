@@ -47,7 +47,7 @@ C0 = 4.0;
 % QES-WINDS data:
 
 % face-center data:
-u_out = zeros(nx,ny,nz);
+v_out = zeros(nx,ny,nz);
 
 uPowBL=a*(z_cc).^p;
 % BC in the ghost cell:
@@ -55,12 +55,12 @@ uPowBL(1)=-uPowBL(2); % ghost cell
 uPowBL(end)=uPowBL(end-1); % ghost cell
 
 for kk=1:nz-1
-    u_out(:,1:ny-1,kk)=uPowBL(kk);
+    v_out(1:nx-1,:,kk)=uPowBL(kk);
 end
 
 % data for NetCDF file
 u = zeros(nx,ny,nz); 
-v = u_out;
+v = v_out;
 w = zeros(nx,ny,nz);
 
 % cell-center data:
@@ -91,22 +91,22 @@ writeNetCDFFile_winds(filename,nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
 %end
 %dudz(1) = -dudz(2);
 
-dudz = p*a*z_cc.^(p-1);
-dudz(1) = -dudz(2);
+dvdz = p*a*z_cc.^(p-1);
+dvdz(1) = dvdz(2);
 
-ustar = 0.4*z_cc.*dudz;
+ustar = 0.4*z_cc.*dvdz;
 %ustar = 0.4*p*a*z_cc.^p;
 %ustar = b/0.4*ones(size(z_cc)); 
 ustar(1) = -ustar(2);
 ustar(end) = ustar(end-1);
 
 %uw = -b*z_cc.^n.*dudz;
-uw = -ustar.^2;
-uw(1) = -uw(2);
-uw(end) = uw(end-1);
+vw = -ustar.^2;
+vw(1) = -vw(2);
+vw(end) = vw(end-1);
 
-CsigU=2.5;
-CsigV=2.3;
+CsigU=2.3;
+CsigV=2.5;
 CsigW=1.3;
 
 k = (ustar/0.55).^2;
@@ -129,8 +129,8 @@ tyz = zeros(nx-1,ny-1,nz-1);
 tzz = zeros(nx-1,ny-1,nz-1);
 
 for kk=2:nz-1
-    txx(:,:,kk) = (ustar(kk)*CsigV)^2;
-    tyy(:,:,kk) = (ustar(kk)*CsigU)^2;
+    txx(:,:,kk) = (ustar(kk)*CsigU)^2;
+    tyy(:,:,kk) = (ustar(kk)*CsigV)^2;
     tzz(:,:,kk) = (ustar(kk)*CsigW)^2;
     %txx(:,:,kk) = 2.0/3.0*k(kk) * (CsigU*0.55)^2;
     %tyy(:,:,kk) = 2.0/3.0*k(kk) * (CsigV*0.55)^2;

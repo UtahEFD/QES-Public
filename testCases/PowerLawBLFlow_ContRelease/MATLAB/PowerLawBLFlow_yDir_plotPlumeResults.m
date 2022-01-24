@@ -64,6 +64,6 @@ for k=1:nProf
     haxes(k+nProf).XLim(2)=m3;
 end
 
-currentPlotName=sprintf('plotOutput/%s_%s_ModelComp',caseNameWinds,caseNamePlume);
+currentPlotName=sprintf('plotOutput/%s_ModelComp',caseNamePlume);
 save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
 

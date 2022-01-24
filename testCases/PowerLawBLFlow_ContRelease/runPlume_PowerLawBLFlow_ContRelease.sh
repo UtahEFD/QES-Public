@@ -29,14 +29,26 @@ module load cmake/3.15.3
 module load gdal/3.0.1
 module load boost/1.69.0
 module load netcdf-cxx
+module load matlab
 ulimit -c unlimited -s
 module list
 echo '****** START OF JOB ******'
 
-./qesPlume/qesPlume -q ../testCases/PowerLawBLFlow_ContRelease/QES-files/PowerLawBLFlow_xDir_ContRelease.xml -u ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_windsWk.nc -t ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_turbOut.nc -o ../testCases/PowerLawBLFlow_ContRelease/QES-data/ -b ContRelease_xDir -l
+cd MATLAB
 
-./qesPlume/qesPlume -q ../testCases/PowerLawBLFlow_ContRelease/QES-files/PowerLawBLFlow_yDir_ContRelease.xml -u ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_windsWk.nc -t ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_turbOut.nc -o ../testCases/PowerLawBLFlow_ContRelease/QES-data/ -b ContRelease_yDir -l
+matlab -nodisplay -nosplash -nodesktop -r "run('PowerLawBLFlow_xDir_inputFiles.m'); run('PowerLawBLFlow_yDir_inputFiles.m'); exit;"
 
+cd ../../../build
+
+./qesPlume/qesPlume -q ../testCases/PowerLawBLFlow_ContRelease/QES-files/PowerLawBLFlow_xDir_ContRelease.xml -u ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_windsWk.nc -t ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_xDir_turbOut.nc -o ../testCases/PowerLawBLFlow_ContRelease/QES-data/ -b PowerLawBLFlow_xDir_ContRelease
+
+./qesPlume/qesPlume -q ../testCases/PowerLawBLFlow_ContRelease/QES-files/PowerLawBLFlow_yDir_ContRelease.xml -u ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_windsWk.nc -t ../testCases/PowerLawBLFlow_ContRelease/QES-data/PowerLawBLFlow_yDir_turbOut.nc -o ../testCases/PowerLawBLFlow_ContRelease/QES-data/ -b PowerLawBLFlow_yDir_ContRelease
+
+cd -
+
+matlab -nodisplay -nosplash -nodesktop -r "run('PowerLawBLFlow_xDir_mainPlumeResults.m'); run('PowerLawBLFlow_yDir_mainPlumeResults.m'); exit;"
+
+cd ..
 
 echo '****** END OF JOB ****** '
 

@@ -22,12 +22,12 @@ nu=(1-n)/alpha;
 
 % source info
 Q=200; % #par/s (source strength)
-tRelease=1400; % total time of release
+tRelease=2000; % total time of release
 Ntot=Q*tRelease; % total number of particles
 
 % concentration info
 dt=1; % s
-tAvg=1200; % s 
+tAvg=1800; % s 
 
 fsize=12;
 
@@ -38,7 +38,7 @@ yProf=[6.0,10.0,19.0]; % streamwise location
 
 % set the case base name for use in all the other file paths
 caseNameWinds = "PowerLawBLFlow_yDir";
-caseNamePlume = "ContRelease_yDir";
+caseNamePlume = "PowerLawBLFlow_yDir_ContRelease";
 
 data=struct();
 varnames=struct();
@@ -120,9 +120,9 @@ for k=1:numel(yProf)
     ylabel('$C^*$')
     grid on
     
-    currentPlotName=sprintf('plotOutput/%s_%s_LatConc_%s',...
-        caseNameWinds,caseNamePlume,strrep(sprintf('y%.2f',y/H),'.','o'));
-    save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
+    %currentPlotName=sprintf('plotOutput/%s_%s_LatConc_%s',...
+    %    caseNameWinds,caseNamePlume,strrep(sprintf('y%.2f',y/H),'.','o'));
+    %save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
     %================================================
     hfig = figure;
     set(hfig,'Units','centimeters')
@@ -137,14 +137,81 @@ for k=1:numel(yProf)
     ylabel('$z/H$')
     grid on 
     
-    currentPlotName=sprintf('plotOutput/%s_%s_VertConc_%s',...
-           caseNameWinds,caseNamePlume,strrep(sprintf('y%.2f',y/H),'.','o'));
-    save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
+    %currentPlotName=sprintf('plotOutput/%s_%s_VertConc_%s',...
+    %       caseNameWinds,caseNamePlume,strrep(sprintf('y%.2f',y/H),'.','o'));
+    %save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
     %================================================
 end
 close all
 
 save('data2plot_yDir','d2plotLat','d2plotVert','caseNameWinds','caseNamePlume')
+%==========================================================================
 
+[xx,zz]=ndgrid(data.plume.x-xS,data.plume.z);
+yProf2=yoH(yoH > 2);
+cStarPlume=[];
+cStarModel=[];
+
+boxNx=numel(data.plume.x);
+boxNy=numel(data.plume.y);
+boxNz=numel(data.plume.z);
+
+for k=1:numel(yProf2)
+    %================================================
+    idy1=find(round(100*yoH)>=round(100*yProf2(k)),1);
+    y=data.plume.y(idy1)-yS;
+    %================================================
+    cStarPlume=cat(2,cStarPlume,...
+        reshape(squeeze(double(data.plume.pBox(:,idy1,:))*CC*(U*H*H/Q)),[boxNx*boxNz 1]));
+    %================================================
+    % from Seinfeld and Pandis 1998
+    
+    sigX=0.32*y^0.78;
+    
+    C=Q/(sqrt(2*pi)*sigX)*exp(-0.5*xx.^2/sigX^2).*...
+        exp(-a*(zz.^alpha+H^alpha)/(b*alpha^2*y)).*(zz*H).^(0.5*(1-n))/(b*alpha*y).*...
+        besseli(-nu,(2*a*(zz*H).^(0.5*alpha))/(b*alpha^2*y));
+    
+    cStarModel=cat(2,cStarModel,...
+       reshape(C*(U*H*H/Q),[boxNx*boxNz 1]));
+    %================================================
+    
+end
+
+myColorMap=parula(numel(yProf2));
+hfig=figure();
+hfig.Position=[hfig.Position(1) hfig.Position(2) hfig.Position(3) hfig.Position(3)];
+hp=plot(cStarModel,cStarPlume,'kd');
+for k=1:numel(yProf2)
+    hp(k).Color=myColorMap(k,:);
+    hp(k).MarkerFaceColor=myColorMap(k,:);
+end
+hold all
+grid on
+plot([0 1],[0 1],'k--')
+xlim([0,.6])
+xlabel('C^* Gaussian plume model')
+ylim([0,.6])
+ylabel('C^* QES-Plume')
+
+SSres=0;
+SStot=0;
+cStarPlumeMean=mean(mean(cStarPlume));
+for k=1:numel(yProf2)
+    validInd=~isnan(cStarModel(:,k));
+    SSres=SSres+sum((cStarPlume(validInd,k)-cStarModel(validInd,k)).^2);
+    SStot=SStot+sum((cStarPlume(validInd,k)-cStarPlumeMean).^2);
+end
+R = 1-SSres/SStot;
+
+htxt=text(1,1,sprintf('R^2=%f\n',double(R)));
+htxt.Units='normalized';
+htxt.Position=[.1 .9 0];
+
+currentPlotName=sprintf('plotOutput/%s_1to1',caseNamePlume);
+hfig.Units='centimeters';
+save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)
+
+%==========================================================================
 PowerLawBLFlow_yDir_plotPlumeResults
 

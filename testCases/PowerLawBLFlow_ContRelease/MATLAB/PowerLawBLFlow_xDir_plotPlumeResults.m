@@ -21,7 +21,7 @@ set(hfig,'defaulttextinterpreter','latex','DefaultAxesFontSize',fsize)
 
 for k=1:nProf
     axes(haxes(k))
-    plot(d2plotLat.QPlume.yoH,d2plotLat.QPlume.cStar(:,k),'s:','LineWidth',2)
+    plot(d2plotLat.QPlume.yoH,d2plotLat.QPlume.cStar(:,k),'s','LineWidth',2)
     hold all
     plot(d2plotLat.GModel.yoH,d2plotLat.GModel.cStar(:,k),'-','LineWidth',2)
     
@@ -40,7 +40,7 @@ axes(haxes(1));ylabel('$C^*$')
 
 for k=1:nProf
     axes(haxes(k+nProf))
-    plot(d2plotVert.QPlume.cStar(:,k),d2plotVert.QPlume.zoH,'s:','LineWidth',2)
+    plot(d2plotVert.QPlume.cStar(:,k),d2plotVert.QPlume.zoH,'s','LineWidth',2)
     hold all
     plot(d2plotVert.GModel.cStar(:,k),d2plotVert.GModel.zoH,'-','LineWidth',2)
    
