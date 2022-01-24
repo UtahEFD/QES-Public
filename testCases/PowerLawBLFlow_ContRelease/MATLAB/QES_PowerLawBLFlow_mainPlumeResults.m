@@ -36,7 +36,7 @@ fsize=12;
 
 xS=20.0;yS=50;zS=4;
 
-xProf=[5.42,10.97,19.31]; % streamwise location 
+xProf=[6.81,10.97,19.31]; % streamwise location 
 
 % set the case base name for use in all the other file paths
 caseNameWinds = "QES_PowerLawBLFlow_ContRelease";
