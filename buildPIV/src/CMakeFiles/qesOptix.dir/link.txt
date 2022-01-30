@@ -1,2 +1,0 @@
-/usr/bin/ar qc libqesOptix.a  CMakeFiles/qesOptix.dir/__/ptx/cuda_compile_ptx_generated_OptixRayTrace.cu.ptx_embedded.c.o CMakeFiles/qesOptix.dir/OptixRayTrace.cpp.o
-/usr/bin/ranlib libqesOptix.a

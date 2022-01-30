@@ -1,2 +1,0 @@
-/usr/bin/ar qc libqeswindsutil.a  CMakeFiles/qeswindsutil.dir/ArgumentParsing.cpp.o CMakeFiles/qeswindsutil.dir/ParseInterface.cpp.o
-/usr/bin/ranlib libqeswindsutil.a

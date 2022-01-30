@@ -47,7 +47,7 @@
 <canopies>
   <num_canopies>1</num_canopies>
   <Vineyard>
-    <opticalPorosity>0.062</opticalPorosity>
+    <opticalPorosity>0.1157</opticalPorosity>
     <height>2.16</height>
     <understoryHeight>0.5</understoryHeight>
     <rowSpacing>2.5</rowSpacing>

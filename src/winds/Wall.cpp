@@ -50,7 +50,7 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
   int ny = WGD->ny;
   int nz = WGD->nz;
 
-
+  std::cout << "SETTING E F G H M N" << std::endl;
   for (auto i = 0; i < nx - 1; i++) {
     for (auto j = 0; j < ny - 1; j++) {
       for (auto k = 1; k < nz - 1; k++) {

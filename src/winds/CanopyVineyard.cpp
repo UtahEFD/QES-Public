@@ -135,12 +135,6 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   std::vector<float> u0_modified, v0_modified;
   std::vector<int> u0_mod_id, v0_mod_id;
   //std::cout << "checkpoint 1 \n";
-  // Which aerodynamic porosity model to use
-  if (thinFence == 1) {
-    a_obf = beta;
-  } else {
-    a_obf = pow(beta, 0.4);
-  }
 
   std::cout << "VINEYARD PARAMETERIZATION STARTING \n";
 
@@ -168,11 +162,13 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   float Rx[2] = { building_cent_x, building_cent_x + rd[0] };
   float Ry[2] = { building_cent_y, building_cent_y + rd[1] };
 
-  float wwdV = -1000000;// a low number
+  float uwdV = -1000000;// a low number
+  float dwdV = 1000000;// a high number
   float curr_V[2];
   float d2V;
-  float wwdV_current;
+  float wwdV_current;// windward distance to current vertex
   int idS;
+  int idE;
   for (int id = 0; id < polygonVertices.size() - 1; id++) {
     curr_V[0] = polygonVertices[id].x_poly;
     curr_V[1] = polygonVertices[id].y_poly;
@@ -185,27 +181,31 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
     // Find windward distance of current vertex
     wwdV_current = u0n_uw * orthog[0] + v0n_uw * orthog[1];
 
-    if (wwdV_current > wwdV) {
-      wwdV = wwdV_current;
-      idS = id;// index of vertex where rows "start" from
+    if (wwdV_current > uwdV) {
+      uwdV = wwdV_current;
+      idS = id;// index of vertex where rows "start" from (i.e. the most upwind vertex)
+    }
+    if (wwdV_current < dwdV) {
+      dwdV = wwdV_current;
+      idE = id;// index of vertex where rows "end" at (i.e. the most downwind vertex)
     }
   }
-  std::cout << "idS = " << idS << "\n";
-  std::cout << "x_poly = " << polygonVertices[idS].x_poly << "\n";
-  std::cout << "y_poly = " << polygonVertices[idS].y_poly << "\n";
+  std::cout << "idS = " << idS << " idE = " << idE << "\n";
+  std::cout << "x,y of upwindest vertex = " << polygonVertices[idS].x_poly << " , " << polygonVertices[idS].y_poly << "\n";
+  std::cout << "x,y of downwindest vertex = " << polygonVertices[idE].x_poly << " , " << polygonVertices[idE].y_poly << "\n";
 
   // Find streamwise distance between rows (d_sw):
   // 1. Find acute angle between wd and row vector
-  float beta = acos(rd[0] * u0n_uw + rd[1] * v0n_uw) * 180 / M_PI;// beta is in degrees
+  float betaAngle = acos(rd[0] * u0n_uw + rd[1] * v0n_uw) * 180 / M_PI;// betaAngle is in degrees
 
-  if (beta > 90) {
-    beta = 180 - beta;
+  if (betaAngle > 90) {
+    betaAngle = 180 - betaAngle;
   }
-  if (abs(beta) < 0.5) {
-    beta = 0.5;// because we have sin(beta) in a couple denominators
+  if (abs(betaAngle) < 0.5) {
+    betaAngle = 0.5;// because we have sin(betaAngle) in a couple denominators
   }
   // 2. Find d_sw (streamwise distance between end of one row and beginning of next)
-  float d_dw = (rowSpacing - rowWidth) / sin(beta * M_PI / 180);
+  float d_dw = (rowSpacing - rowWidth) / sin(betaAngle * M_PI / 180);
 
   // 3. Find shear zone width at d_dw
   //    To get spread rate:
@@ -242,29 +242,49 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   //float L_c = rowWidth*(1/(1-a_obf)); // from eq. 3.1, Belcher 2003, approximating du/dx using a finite difference about the upwind-est vine, then dividing through by u
 
   float Cd = 0.5;// Bailey 2013
-  float LAI_row = 5.57;
-  float LAI_eff = LAI_row * (rowWidth / rowSpacing);
-  float LAD_eff = LAI_eff / H;
+  float Cd_ud = 1.98;//flat plate in perpendicular flow
+  //float Cd = 2 * pow(uustar / M0_h, 2);// Heilman 1996 eq. 5
+  //float Cd = 0.2;// Chahine 2014
+  //float LAI_row = 5.57;
+  //float LAI_eff = LAI_row * (rowWidth / rowSpacing);
+  //float LAD_eff = LAI_eff / H;
+
+  float LAD_eff = 0.6667;
+  float LAD_avg = 4.3138;
+  float fenceThickness = H * (8. / 72.);
+  std::cout << "fenceThickness = " << fenceThickness << std::endl;
+  // Which aerodynamic porosity model to use
+  if (thinFence == 1) {
+    a_obf = beta;
+    float A_frontal = (1 - beta) * pow(H, 2);
+    LAD_eff = (1 - a_obf) / rowSpacing;
+    //LAI_eff = (1 - a_obf) * (H / rowSpacing);// this is true but the variable is unused now
+  } else {
+    a_obf = pow(beta, 0.4);
+  }
+
   float L_c = pow(Cd * LAD_eff, -1);
 
   float l_e = L_c * log((M0_h / uustar) * (H / L_c));
   float N_e_float = ceil(l_e / rowSpacing);
   int N_e = (int)N_e_float;
-  //N_e += 1;
+  N_e += 2;
+
+  //N_e = 5;
 
   std::cout << "l_e = " << l_e << ", N_e = " << N_e << ", L_c = " << L_c << ", M0_h = " << M0_h << ", uustar = " << uustar << "\n";
   // Spread rate calculations
   //float udelt = (1-a_obf);
-  float udelt = (1 - pow(a_obf, N_e));
+  float udelt = (1 - pow(a_obf, N_e + 1));
   //float uave = (1+a_obf)/2;
-  float uave = (1 + pow(a_obf, N_e)) / 2;
+  float uave = (1 + pow(a_obf, N_e + 1)) / 2;
 
   float spreadclassicmix = 0.14 * udelt / uave;
 
   float spreadupstream_top = 2 * stdw / M0_h;
-  //float spreadupstream_top = 2*stdw/(M0_h*pow(a_obf,N_e));
+  //float spreadupstream_top = 2 * stdw / (M0_h * pow(a_obf, N_e));
   float spreadupstream_bot = 2 * stdw / M0_uh;
-  //float spreadupstream_bot = 2*stdw/(M0_uh*pow(a_obf,N_e));
+  //float spreadupstream_bot = 2 * stdw / (M0_uh * pow(a_obf, N_e));
 
   std::cout << "a_obf = " << a_obf << " spreadclassicmix = " << spreadclassicmix << " spreadupstream_top = " << spreadupstream_top << " \n";
   // Avoid divide-by-zero for the no-understory case (where M0_uh will be 0)
@@ -274,19 +294,26 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   std::cout << " M0_h = " << M0_h << " spreadupstream_top = " << spreadupstream_top << "\n";
   std::cout << " M0_uh = " << M0_uh << " spreadupstream_bot = " << spreadupstream_bot << "\n";
 
-  float spreadrate_top = 2 * sqrt(pow(spreadclassicmix, 2) + pow(spreadupstream_top, 2));
-  float spreadrate_bot = 2 * sqrt(pow(spreadclassicmix, 2) + pow(spreadupstream_bot, 2));
+  float spreadrate_top = sqrt(pow(spreadclassicmix, 2) + pow(spreadupstream_top, 2));
+  float spreadrate_bot = sqrt(pow(spreadclassicmix, 2) + pow(spreadupstream_bot, 2));
   std::cout << "spreadrate_top = " << spreadrate_top << "spreadrate_bot = " << spreadrate_bot << "\n";
   // Shear zone origin (for now, keep it at H, but later parameterize its descent)
   float szo_top = H;
   float szo_bot = understory_height;
 
-  // Upwind displacement zone parameters
+  // Upwind displacement zone parameters (for no understory)
   float l_ud = 0.5 * H;// horizontal length of UD zone (distance from the vine that it extends to in the windward direction)
-  float z_ud;// height of UD zone at current i,j location
+  float z_ud;// upper bound of UD zone at current i,j location, if no understory
   float H_ud = 0.6 * H;// max height of UD (occurs where it attaches at the windward side of a vine)
   float br;// blend rate, used in the blending function that smoothes the UD zone into the wake
   float x_ud;// horizontal distance in the UD zone. Measured orthogonally from the "upwindest" side of the vine
+
+  // UD zone variables (if understory)
+  float z_udTOP;// upper bound of UD zone, if there's an understory
+  float z_udBOT;// lower bound of UD zone, if there's an understory
+  float brTOP;//blend rate for top half of UD zone, if there's an understory
+  float brBOT;//blend rate for bottom half of UD zone, if there's an understory
+  float a_ud;// a constant
 
   // V_c parameterization parameters
   float ustar_v_c, psi, psiH, dpsiH, ex, exH, dexH, vH_c, a_v, vref_c, zref, exRef, dexRef, psiRef, dpsiRef;
@@ -297,6 +324,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   // max_terrain_id is calculated in Sensor.cpp. Index (using nx-1) of highest terrain node
 
   float dv_c;// distance of current node to upwind-est vertex
+  float dv_c_dw;// distance of current node to downwind-est vertex
   float N;// number of rows upwind of current point
   float ld;// "local distance", the orthogonal distance from the current i,j point to the upwind edge of the closest row in the upwind direction
   float z_rel;// height off the terrain
@@ -335,11 +363,15 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
       // calculate row-orthogonal distance to upwind-est row, dv_c
       float cxy[2] = { (i - 1 + i_start) * WGD->dx, (j - 1 + j_start) * WGD->dy };// current x position
 
+      // Row-orthogonal distance between current point and the upwind-est row
       float Rx_o[2] = { polygonVertices[idS].x_poly, polygonVertices[idS].x_poly + rd[0] };// x-components of upwind-est row vector
       float Ry_o[2] = { polygonVertices[idS].y_poly, polygonVertices[idS].y_poly + rd[1] };// y-components "   "   "
-
-      // Row-orthogonal distance between current point and the upwind-est row
       dv_c = abs(P2L(cxy, Rx_o, Ry_o));
+
+      // Row-orthogonal distance between current point and the downwind-est row
+      float Rx_o_dw[2] = { polygonVertices[idE].x_poly, polygonVertices[idE].x_poly + rd[0] };// x-components of downwind-est row vector
+      float Ry_o_dw[2] = { polygonVertices[idE].y_poly, polygonVertices[idE].y_poly + rd[1] };// y-components "   "   "
+      dv_c_dw = abs(P2L(cxy, Rx_o_dw, Ry_o_dw));
 
       // calculate number of rows upwind of this point, N (not including nearest upwind row)
       N = floor(dv_c / rowSpacing);
@@ -348,7 +380,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
       ld = dv_c - N * rowSpacing;
 
       // calculate "local streamwise distance" from nearest row
-      float d_dw_local = (ld - rowWidth) / sin(beta * M_PI / 180);
+      float d_dw_local = (ld - rowWidth) / sin(betaAngle * M_PI / 180);
       // find blending factor "a_exp" at the current i,j location (a function of d_dw_local)
       a_exp = exp((log(0.01) / (7.5 * H)) * d_dw_local);
 
@@ -420,9 +452,23 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
       //std::cout << " fac = " << fac << "fac_numerator = " << fac_numerator << " fac_denominator = " << fac_denominator << " a_local_top = " << a_local_top << " a_local_bot = " << a_local_bot << " a_uw_top = " << a_uw_top << " a_uw_bot = " << a_uw_bot << "\n";
       //}
       // Calculate quantities for UD zone
+
       x_ud = rowSpacing - ld;// right now I'm using the row-orthogonal distance, not streamwise distance. Perhaps should use streamwise distance so that UD zone responds appropriately to wind angle.
-      z_ud = H_ud * sqrt(abs(1 - x_ud / l_ud));
-      br = log(1 - 0.99) / (z_ud * (1 - 0.2));// reaches 0.99 at 0.2*z_ud below z_ud
+
+      if (understory_height == 0. && x_ud <= l_ud) {
+
+        z_ud = H_ud * sqrt(abs(1 - x_ud / l_ud));
+        br = log(0.01) / (z_ud);// reaches 0.01 at ground
+
+      } else if (understory_height > 0. && x_ud <= l_ud) {
+        a_ud = -l_ud * pow(0.5 * (H - understory_height), -2);
+        z_udBOT = (a_ud * (H + understory_height) + pow(pow(a_ud, 2) * pow(H + understory_height, 2) - 4 * a_ud * (a_ud * H * understory_height - x_ud), 0.5)) / (2 * a_ud);
+        z_udTOP = (a_ud * (H + understory_height) - pow(pow(a_ud, 2) * pow(H + understory_height, 2) - 4 * a_ud * (a_ud * H * understory_height - x_ud), 0.5)) / (2 * a_ud);
+        brTOP = log(0.01) / (z_udTOP - z_mid);
+        brBOT = log(0.01) / (z_mid - z_udBOT);
+      }
+
+
       //std::cout << "starting zref_k search \n";
       // v_c parameterization variables
       zref = 10.;// arbitrarily choose 10m for reference velocity. Doesn't really matter.
@@ -532,7 +578,8 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
           } else {
 
-            if (k <= k_mid) {// if i'm below mid-canopy, use bottom shear layer quantities
+            if (understory_height > 0 && k <= k_mid) {// if i'm below mid-canopy, use bottom shear layer quantities
+              //std::cout << "WARNING: NOT DOING THE ZERO-UNDERSTORY WAKE PARAM" << std::endl;
               if (N <= N_e) {
                 szt_local = spreadrate_bot * (d_dw * N + d_dw_local) + 0.00001;// temp comment 8.1.21
                 //szt_local = spreadrate_bot*d_dw_local + 0.00001; // temp insert, 8.1.21
@@ -547,7 +594,23 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 //szt_uw = spreadrate_bot*d_dw + 0.00001; // temp insert, 8.1.21
                 a_uwv[n] = 1 * (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (szo_bot - z_rel) / szt_uw) + 0.5 * (1 + a_obf)) + (1 - a_exp));// there should be a "fac" where the 1* is (fac isn't working right now)
               }
-            } else {// if I'm above mid-canopy
+            } else if (understory_height > 0 && k > k_mid) {// if I'm above mid-canopy
+              //std::cout << "WARNING: NOT DOING THE ZERO-UNDERSTORY WAKE PARAM" << std::endl;
+              if (N <= N_e) {
+                szt_local = spreadrate_top * (d_dw * N + d_dw_local) + 0.00001;// temp comment, 8.1.21
+                //szt_local = spreadrate_top*d_dw_local + 0.00001; // temp insert, 8.1.21
+              } else {
+                szt_local = spreadrate_top * (d_dw * N_e + d_dw_local) + 0.00001;// temp comment, 8.1.21
+                //szt_local = spreadrate_top*d_dw_local + 0.00001; // temp insert, 8.1.21
+              }
+              a_local = (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (z_rel - szo_top) / szt_local) + 0.5 * (1 + a_obf)) + (1 - a_exp));
+              a_uwv[0] = 1;
+              for (int n = 1; n < N_e + 1; n++) {
+                szt_uw = spreadrate_top * (d_dw * n) + 0.00001;// temp comment, 8.1.21
+                //szt_uw = spreadrate_top*d_dw + 0.00001; // temp insert, 8.1.21
+                a_uwv[n] = (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (z_rel - szo_top_uw) / szt_uw) + 0.5 * (1 + a_obf)) + (1 - a_exp));
+              }
+            } else if (understory_height == 0) {
               if (N <= N_e) {
                 szt_local = spreadrate_top * (d_dw * N + d_dw_local) + 0.00001;// temp comment, 8.1.21
                 //szt_local = spreadrate_top*d_dw_local + 0.00001; // temp insert, 8.1.21
@@ -574,11 +637,11 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 */
           }
 
-          if (abs(u_c) > 10.) {
+          if (abs(u_c) > 15.) {
             std::cout << "u_c is big (1): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
           }
           // APPLY BLEED FLOW PARAMETERIZATION INSIDE THE ACTUAL VEGETATION
-          if (BF_flag == 1 && ld < rowWidth) {// if my x-y position indicates i'm on a vine
+          if (BF_flag == 1 && dv_c > rowSpacing && ld < rowWidth) {// if my x-y position indicates i'm on a vine
             if ((z_rel >= understory_height) && (z_rel <= H)) {// if my z position indicates i'm inside the actual vegetation
               //int icell_3d = i + j*nx_canopy + k*nx_canopy*ny_canopy;
 
@@ -600,14 +663,14 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 }
                 // v_c = v_c0;
                 //std::cout << "bleed flow is being applied, entry. icellflag is: " << WGD->icellflag[icell_cent] << "\n";
-                if (abs(u_c) > 10.) {
+                if (abs(u_c) > 15.) {
                   std::cout << "u_c is big (BF, entry): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
                 }
 
-                if (isnan(u_c) || abs(u_c) > 10) {
+                if (isnan(u_c) || abs(u_c) > 15) {
                   std::cout << "u_c is NaN (BF, entry): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
                 }
-                if (isnan(v_c) || abs(v_c) > 10) {
+                if (isnan(v_c) || abs(v_c) > 15) {
                   std::cout << "v_c is NaN (BF, entry): " << v_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
                 }
 
@@ -626,10 +689,10 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                     u_c *= a_uwv[n];
                   }
                 }
-                if (isnan(u_c) || abs(u_c) > 10) {
+                if (isnan(u_c) || abs(u_c) > 15) {
                   std::cout << "u_c is NaN (BF, eq.): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
                 }
-                if (isnan(v_c) || abs(v_c) > 10) {
+                if (isnan(v_c) || abs(v_c) > 15) {
                   std::cout << "v_c is NaN (BF, eq.): " << v_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
                 }
               }
@@ -644,7 +707,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
 
             // Am I in entry region or equilibrated region?
-            if (N <= N_e) {// i'm in entry region
+            if (N <= N_e && dv_c > rowSpacing) {// i'm in entry region
 
               // Commented 7.7.21 as i try allowing the shear thickness to grow in entry region
               if (growth != 1) {
@@ -677,7 +740,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
               // v_c = v_c0;
             }
 
-            else {// if i'm in equilibrated region
+            else if (N > N_e && dv_c > rowSpacing) {// if i'm in equilibrated region
 
               // Commented 7.7.21 as i try allowing the shear thickness to grow in entry region
               if (growth != 1) {
@@ -711,7 +774,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
 
               // v_c = v_c0;
-              if (isnan(v_c) || abs(v_c) > 10) {
+              if (isnan(v_c) || abs(v_c) > 15) {
                 std::cout << "v_c is NaN (wake, eq region): " << v_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
               }
               if (i + i_start == 81 && j + j_start == 23) {
@@ -720,57 +783,149 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
             }
 
             // APPLY UD ZONE PARAMETERIZATION
-            if (UD_zone_flag && ((rowSpacing - ld) < l_ud) && (z_rel <= z_ud)) {// if i'm ALSO in the UD zone
-              //  If the rotated u-velocity was negative in the UD zone, this reverses it and then SUBTRACTS bleed flow. If the rotated u-velocity was positive in the UD zone, this reverses it and then ADDS bleed flow
-              WGD->icellflag[icell_cent] = 31;
+            if (understory_height == 0) {
+              if (UD_zone_flag && dv_c_dw > rowSpacing && ((rowSpacing - ld) < l_ud) && (z_rel <= z_ud)) {// if i'm ALSO in the UD zone
+                //  If the rotated u-velocity was negative in the UD zone, this reverses it and then SUBTRACTS bleed flow. If the rotated u-velocity was positive in the UD zone, this reverses it and then ADDS bleed flow
+                WGD->icellflag[icell_cent] = 31;
 
-              if (N <= N_e) {
-                //if (i+i_start == 156 && j+j_start == 60 && k < 100){
-                //    std::cout << "k = " << k <<  "     u_c = " << u_c << "       gz = " <<  (a_obf*pow(a_uw,N)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel))) << "     br = " << br << "     x_ud = " << x_ud << "     1st chunk = " <<  a_obf*pow(a_uw,N)*u_c0  <<  "\n";
-                //}
+                if (N <= N_e) {
+                  //if (i+i_start == 156 && j+j_start == 60 && k < 100){
+                  //    std::cout << "k = " << k <<  "     u_c = " << u_c << "       gz = " <<  (a_obf*pow(a_uw,N)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel))) << "     br = " << br << "     x_ud = " << x_ud << "     1st chunk = " <<  a_obf*pow(a_uw,N)*u_c0  <<  "\n";
+                  //}
 
-                // "Actual" parameterization (commented to try others, 7.7.21)
-                // u_c = u_c + (a_obf*pow(a_uw,N+3)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel)));
-                // u_c = u_c + (-2*u_c)*(1-exp(br*(z_ud-z_rel)));
+                  // "Actual" parameterization (commented to try others, 7.7.21)
+                  //u_c = u_c + (a_obf * pow(a_uw, N + 1) * u_c0 - 2 * u_c) * (1 - exp(br * (z_ud - z_rel)));
+                  //u_c = u_c + (a_obf * u_c - 2 * u_c) * (1 - exp(br * (z_ud - z_rel)));
+                  u_c = u_c + (-l_ud / (2 * fenceThickness) * u_c * Cd_ud * (1 - beta)) * (1 - exp(br * (z_ud - z_rel)));
+                  //u_c = u_c + (-2 * u_c) * (1 - exp(br * (z_ud - z_rel)));
 
-                // Test parameterization (7.7.21)
-                u_c = -u_c;
+                  // Test parameterization (7.7.21)
+                  //u_c = -u_c;
 
-                if (isnan(u_c) || abs(u_c) > 10) {
-                  std::cout << "u_c is NaN (UD, entry region): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
+                  if (isnan(u_c) || abs(u_c) > 15) {
+                    std::cout << "u_c is NaN (UD, entry region): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
+                  }
+                  if (isnan(v_c) || abs(v_c) > 15) {
+                    std::cout << "v_c is NaN (UD, entry region): " << v_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
+                  }
+
+                } else {
+                  //if (i + i_start == 256 && j + j_start == 75 && k < 100) {
+                  //  std::cout << "k = " << k << " u_c = " << u_c << " u_c0 = " << u_c0 << " a_obf = " << a_obf << " a_uw = " << a_uw << " addition = " << a_obf * pow(a_uw, N_e + 1) * u_c0 << " blend = " << (1 - exp(br * (z_ud - z_rel))) << std::endl;
+                  //}
+
+                  if (i + i_start == 256 && j + j_start == 75 && k < 100) {
+                    std::cout << "k = " << k << " u_c = " << u_c << " deficit: " << -l_ud / (2 * fenceThickness) * u_c * Cd * (1 - beta) << " beta = " << beta << " fenceThickness = " << fenceThickness << " l_ud = " << l_ud << " Cd = " << Cd << std::endl;
+                  }
+
+
+                  // "Actual" parameterization (commented to try others, 7.7.21)
+                  //u_c = u_c + (a_obf * pow(a_uw, N_e + 1) * u_c0 - 2 * u_c) * (1 - exp(br * (z_ud - z_rel)));
+                  //u_c = u_c + (a_obf * u_c - 2 * u_c) * (1 - exp(br * (z_ud - z_rel)));
+                  u_c = u_c + (-l_ud / (2 * fenceThickness) * u_c * Cd_ud * (1 - beta)) * (1 - exp(br * (z_ud - z_rel)));
+                  //u_c = u_c + (-2 * u_c) * (1 - exp(br * (z_ud - z_rel)));
+
+                  // Test parameterization (7.7.21)
+                  //u_c = -u_c;
+
+                  if (isnan(u_c) || abs(u_c) > 15) {
+                    std::cout << "u_c is NaN (UD, eq. region): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
+                  }
+                  if (isnan(v_c) || abs(v_c) > 15) {
+                    std::cout << "v_c is NaN (UD, eq. region): " << v_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
+                  }
                 }
-                if (isnan(v_c) || abs(v_c) > 10) {
-                  std::cout << "v_c is NaN (UD, entry region): " << v_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
+
+                // v_c = v_c0;
+
+              }// end UD zone if, no understory
+            } else {// else if there's an understory
+
+
+              if (UD_zone_flag && dv_c_dw > rowSpacing && ((rowSpacing - ld) < l_ud) && (z_rel <= z_udTOP) && (z_rel >= z_udBOT)) {// if i'm ALSO in the UD zone
+                //  If the rotated u-velocity was negative in the UD zone, this reverses it and then SUBTRACTS bleed flow. If the rotated u-velocity was positive in the UD zone, this reverses it and then ADDS bleed flow
+                WGD->icellflag[icell_cent] = 31;
+
+                if (N <= N_e) {
+                  //if (i+i_start == 156 && j+j_start == 60 && k < 100){
+                  //    std::cout << "k = " << k <<  "     u_c = " << u_c << "       gz = " <<  (a_obf*pow(a_uw,N)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel))) << "     br = " << br << "     x_ud = " << x_ud << "     1st chunk = " <<  a_obf*pow(a_uw,N)*u_c0  <<  "\n";
+                  //}
+
+                  if (z_rel > z_mid) {// upper half of UD zone, entry region
+
+                    // "Actual" parameterization (commented to try others, 7.7.21)
+                    //u_c = u_c + (a_obf * pow(a_uw, N + 1) * u_c0 - 2 * u_c) * (1 - exp(brTOP * (z_udTOP - z_rel)));
+                    //u_c = u_c + (a_obf * u_c - 2 * u_c) * (1 - exp(brTOP * (z_udTOP - z_rel)));
+                    u_c = u_c + (-Cd * LAD_avg * a_obf * u_c * l_ud) * (1 - exp(brTOP * (z_udTOP - z_rel)));
+                    //u_c = u_c + (-2 * u_c) * (1 - exp(brTOP * (z_udTOP - z_rel)));
+
+                    // Test parameterization (7.7.21)
+                    //u_c = -u_c;
+
+                  } else {// lower half of UD zone, entry region
+
+                    // "Actual" parameterization (commented to try others, 7.7.21)
+                    //u_c = u_c + (a_obf * pow(a_uw, N + 1) * u_c0 - 2 * u_c) * (1 - exp(brBOT * (z_rel - z_udBOT)));
+                    //u_c = u_c + (a_obf * u_c - 2 * u_c) * (1 - exp(brBOT * (z_rel - z_udBOT)));
+                    u_c = u_c + (-Cd * LAD_avg * a_obf * u_c * l_ud) * (1 - exp(brBOT * (z_rel - z_udBOT)));
+                    //u_c = u_c + (-2 * u_c) * (1 - exp(brBOT * (z_rel - z_udBOT)));
+
+                    // Test parameterization (7.7.21)
+                    //u_c = -u_c;
+                  }
+                  if (isnan(u_c) || abs(u_c) > 15) {
+                    std::cout << "u_c is NaN (UD, entry region): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
+                  }
+                  if (isnan(v_c) || abs(v_c) > 15) {
+                    std::cout << "v_c is NaN (UD, entry region): " << v_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
+                  }
+
+                } else {// if i'm in the equilibrium region
+                  //if (i+i_start == 156 && j+j_start == 60 && k < 100){
+                  //    std::cout << "k = " << k <<  "     u_c = " << u_c << "     gz = " <<  (a_obf*pow(a_uw,N_e)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel))) << "     br = " << br << "     x_ud = " << x_ud << "     z_ud = " << z_ud << "      1st chunk = " <<  a_obf*pow(a_uw,N_e)*u_c0   << "\n";
+                  //}
+
+                  if (z_rel > z_mid) {// upper half of UD zone, eq. region
+
+                    // "Actual" parameterization (commented to try others, 7.7.21)
+                    //u_c = u_c + (a_obf * pow(a_uw, N_e + 1) * u_c0 - 2 * u_c) * (1 - exp(brTOP * (z_udTOP - z_rel)));
+                    //u_c = u_c + (a_obf * u_c - 2 * u_c) * (1 - exp(brTOP * (z_udTOP - z_rel)));
+                    u_c = u_c + (-Cd * LAD_avg * a_obf * u_c * l_ud) * (1 - exp(brTOP * (z_udTOP - z_rel)));
+                    //u_c = u_c + (-2 * u_c) * (1 - exp(brTOP * (z_udTOP - z_rel)));
+
+                    // Test parameterization (7.7.21)
+                    //u_c = -u_c;
+
+                  } else {// lower half of UD zone, eq. region
+
+                    // "Actual" parameterization (commented to try others, 7.7.21)
+                    //u_c = u_c + (a_obf * pow(a_uw, N_e + 1) * u_c0 - 2 * u_c) * (1 - exp(brBOT * (z_rel - z_udBOT)));
+                    //u_c = u_c + (a_obf * u_c - 2 * u_c) * (1 - exp(brBOT * (z_rel - z_udBOT)));
+                    u_c = u_c + (-Cd * LAD_avg * a_obf * u_c * l_ud) * (1 - exp(brBOT * (z_rel - z_udBOT)));
+                    //u_c = u_c + (-2 * u_c) * (1 - exp(brBOT * (z_rel - z_udBOT)));
+
+                    // Test parameterization (7.7.21)
+                    //u_c = -u_c;
+                  }
+
+
+                  if (isnan(u_c) || abs(u_c) > 15) {
+                    std::cout << "u_c is NaN (UD, eq. region): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
+                  }
+                  if (isnan(v_c) || abs(v_c) > 15) {
+                    std::cout << "v_c is NaN (UD, eq. region): " << v_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
+                  }
                 }
 
-              } else {
-                //if (i+i_start == 156 && j+j_start == 60 && k < 100){
-                //    std::cout << "k = " << k <<  "     u_c = " << u_c << "     gz = " <<  (a_obf*pow(a_uw,N_e)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel))) << "     br = " << br << "     x_ud = " << x_ud << "     z_ud = " << z_ud << "      1st chunk = " <<  a_obf*pow(a_uw,N_e)*u_c0   << "\n";
-                //}
+                // v_c = v_c0;
 
-                // "Actual" parameterization (commented to try others, 7.7.21)
-                //u_c = u_c + (a_obf*pow(a_uw,N_e+3)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel)));
-                //u_c = u_c + (-2*u_c)*(1-exp(br*(z_ud-z_rel)));
+              }// end UD zone if, understory
+            }// end understory/no understory if for UD zone
 
-                // Test parameterization (7.7.21)
-                u_c = -u_c;
-
-                if (isnan(u_c) || abs(u_c) > 10) {
-                  std::cout << "u_c is NaN (UD, eq. region): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
-                }
-                if (isnan(v_c) || abs(v_c) > 10) {
-                  std::cout << "v_c is NaN (UD, eq. region): " << v_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
-                }
-              }
-
-              // v_c = v_c0;
-
-            }// end UD zone if
-
-            if (isnan(u_c) || abs(u_c) > 10) {
+            if (isnan(u_c) || abs(u_c) > 15) {
               std::cout << "u_c is NaN (3): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
             }
-            if (isnan(v_c) || abs(v_c) > 10) {
+            if (isnan(v_c) || abs(v_c) > 15) {
               std::cout << "v_c is NaN (3): " << v_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
             }
             // APPLY V_C PARAMETERIZATION
@@ -793,11 +948,11 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
               //v_c = v_c0; // ...then just take v_c0
             }
 
-            if (isnan(v_c) || abs(v_c) > 10) {
+            if (isnan(v_c) || abs(v_c) > 15) {
               std::cout << "v_c is NaN (4): " << v_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
             }
 
-            if (isnan(u_c) || abs(u_c) > 10) {
+            if (isnan(u_c) || abs(u_c) > 15) {
               std::cout << "u_c is NaN (4): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
             }
             if (N == 3 && j + j_start == 240 && z_rel <= H) {
@@ -813,10 +968,10 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
             //std::cout << "k = " << k <<  "     u_c = " << u_c << "       gz = " <<  (a_obf*pow(a_uw,N)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel))) << "     br = " << br << "     x_ud = " << x_ud << "     1st chunk = " <<  a_obf*pow(a_uw,N)*u_c0  <<  "\n";
           }
 
-          if (isnan(v_c) || abs(v_c) > 10) {
+          if (isnan(v_c) || abs(v_c) > 15) {
             std::cout << "v_c is NaN (at end): " << v_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
           }
-          if (isnan(u_c) || abs(u_c) > 10) {
+          if (isnan(u_c) || abs(u_c) > 15) {
             std::cout << "u_c is NaN (at end): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
           }
 
