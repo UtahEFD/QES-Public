@@ -918,9 +918,9 @@ void TURBGeneralData::addBackgroundMixing()
   for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
     int cellID = *it;
 
-    txx[cellID] += backgroundMixing;
-    tyy[cellID] += backgroundMixing;
-    tzz[cellID] += backgroundMixing;
+    txx[cellID] += backgroundMixing * backgroundMixing;
+    tyy[cellID] += backgroundMixing * backgroundMixing;
+    tzz[cellID] += backgroundMixing * backgroundMixing;
   }
   return;
 }
