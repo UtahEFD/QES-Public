@@ -115,6 +115,10 @@ public:
     // WRF-QES Run Coupling 
     bool m_performWRFRunCoupling;
 
+    // Current WRF FRAME0 number last read in
+    int currWRFFRAME0Num;
+    int nextWRFFrameNum;
+    
     // these are the interpolated wind fields from WRF
     std::vector<float> u0_fmw, v0_fmw, w0_fmw, ht_fmw;
 
@@ -143,7 +147,6 @@ public:
    */
     void extractWind( WINDSGeneralData *wgd );
     
-
     /**
      * Reading WRF data - ReadDomainInfo.m
      *

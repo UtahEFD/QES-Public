@@ -374,16 +374,18 @@ WRFInput::WRFInput(const std::string& filename,
 
     std::vector<size_t> fmw_StartIdx = {fmwTimeSize-1};
     std::vector<size_t> fmw_counts = {1};
-    wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);        
+    wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);
 
     if (m_performWRFRunCoupling) {
+
       while (wrfFRAME0_FMW == -1) {
-	std::cout << "Waiting for FRAME0_FMW..." << std::endl;
-	sleep(2);
-	wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);        
+	std::cout << "Waiting for FRAME0_FMW to be initialized..." << std::endl;
+	usleep(1000000); // 1 sec
+	wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);
       }
 
       std::cout << "WRF-QES Coupling: Frame = " << wrfFRAME0_FMW << std::endl;
+      currWRFFRAME0Num = wrfFRAME0_FMW;
     }
 
     // Report the version information
@@ -1012,9 +1014,10 @@ WRFInput::WRFInput(const std::string& filename,
     int chkSum = 0;
     chkSum = checksum( chkSum, u0_fmw );
     chkSum = checksum( chkSum, v0_fmw );
-    std::cout << "WRF file output checksum (without W0_FMW) of FMW fields: " << chkSum << std::endl;
     chkSum = checksum( chkSum, w0_fmw );
-    std::cout << "WRF file output checksum of FMW fields: " << chkSum << std::endl;
+    std::cout << "QES checksum of FMW fields: " << chkSum << std::endl;
+
+    assert( wrfCHSUM0_FMW == chkSum );
 
     // Read the heights
     std::vector<size_t> interpWindsHT_StartIdx = {timeSize-1,0,0,0};
@@ -2227,24 +2230,46 @@ void WRFInput::updateFromWRF()
   if (m_performWRFRunCoupling) {
 
     // Wait until WRF has run and placed the correct checksum and timestamp number in the file
-    // CHSUM0_FMW
-    // FRAME0_FMW
-    int wrfFRAME0_FMW = -1;
+
+    //
+    // check for next frame info
+    //
+    std::cout << "Waiting for next frame: " << nextWRFFrameNum << std::endl;
 
     NcDim fmwdim = wrfInputFile.getVar("U0_FMW").getDim( 0 );
     int fmwTimeSize = fmwdim.getSize();
-
+    
     std::vector<size_t> fmw_StartIdx = {fmwTimeSize-1};
     std::vector<size_t> fmw_counts = {1};
+
+    int numWait = 0;
+    int maxWait = 20;
+
+    int wrfFRAME0_FMW = -1;
     wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);        
-    
-    while (wrfFRAME0_FMW == -1) {
-      std::cout << "Waiting for FRAME0_FMW to advance to the next frame..." << std::endl;
-      sleep(2);
+    while (wrfFRAME0_FMW != nextWRFFrameNum  && (numWait < maxWait)) {
+      std::cout << "Waiting for FRAME0_FMW to be ====> " << nextWRFFrameNum << ", received " << wrfFRAME0_FMW << std::endl;
+
+      // close file
+      wrfInputFile.close();
+
+      // wait a few seconds for now
+      usleep(6000000);
+
+      // re-open
+      wrfInputFile.open( m_WRFFilename, NcFile::write );
       wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);        
+
+      numWait++;
     }
+      
+    if ((numWait == maxWait) || (wrfFRAME0_FMW < 0))
+      exit(EXIT_FAILURE);
 
     std::cout << "WRF-QES Coupling: Frame = " << wrfFRAME0_FMW << std::endl;
+
+    // set the current WRF FRAME0 Num
+    currWRFFRAME0Num = wrfFRAME0_FMW;
 
     std::cout << "Reading and processing WRF Stations for input wind profiles..." << std::endl;
 
@@ -2395,8 +2420,6 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
     NcVar field_CHSUM = wrfInputFile.getVar("CHSUM_FMW");
     NcVar field_FRAME = wrfInputFile.getVar("FRAME_FMW");
 
-    std::cout << "Wind field data written to WRF Output file: " << m_WRFFilename << std::endl;
-
     field_UF.putVar( startIdx, counts, ufOut.data() ); //, startIdx, counts );
     field_VF.putVar( startIdx, counts, vfOut.data() ); //, startIdx, counts );
 
@@ -2404,12 +2427,18 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
     std::vector<size_t> chksum_counts = {1};
     
     field_CHSUM.putVar( chksum_StartIdx, chksum_counts, &ufvf_chsum );
-    int frame = 1;
-    field_FRAME.putVar( chksum_StartIdx, chksum_counts, &frame );
+
+    // Need to output the wrfFRAME0 back to the FRAME_FMW
+    std::cout << "Writing last read frame num back: " << currWRFFRAME0Num << std::endl;
+    field_FRAME.putVar( chksum_StartIdx, chksum_counts, &currWRFFRAME0Num );
         
     std::cout << "Checksum and frame updated!" << std::endl;
 
     wrfInputFile.sync();
+    std::cout << "Wind field data written to WRF Output file: " << m_WRFFilename << std::endl;
+
+    nextWRFFrameNum = currWRFFRAME0Num + 1;
+    std::cout << "curr frame was " << currWRFFRAME0Num << ", now waiting for " << nextWRFFrameNum << std::endl;
 }
 
 
