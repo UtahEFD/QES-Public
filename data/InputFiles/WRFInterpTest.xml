@@ -9,6 +9,8 @@
   <!-- <WRFSensorSample>12</WRFSensorSample> --> <!-- seems to not work -->
   <WRFSensorSample>1</WRFSensorSample> <!-- seems to work -->
 
+  <totalTimeIncrements> 10 </totalTimeIncrements>
+
   <halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   <halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 
@@ -43,7 +45,6 @@ Shouldn't need when loading WRF output though.
 
   <verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
-  <totalTimeIncrements> 1 </totalTimeIncrements>
   <!--  <UTCConversion> 0 </UTCConversion> -->
 
   <rooftopFlag> 0 </rooftopFlag> 				<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
