@@ -270,7 +270,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   int N_e = (int)N_e_float;
   N_e += 2;
 
-  //N_e = 5;
+  //N_e = 3;
 
   std::cout << "l_e = " << l_e << ", N_e = " << N_e << ", L_c = " << L_c << ", M0_h = " << M0_h << ", uustar = " << uustar << "\n";
   // Spread rate calculations
@@ -796,7 +796,8 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                   // "Actual" parameterization (commented to try others, 7.7.21)
                   //u_c = u_c + (a_obf * pow(a_uw, N + 1) * u_c0 - 2 * u_c) * (1 - exp(br * (z_ud - z_rel)));
                   //u_c = u_c + (a_obf * u_c - 2 * u_c) * (1 - exp(br * (z_ud - z_rel)));
-                  u_c = u_c + (-l_ud / (2 * fenceThickness) * u_c * Cd_ud * (1 - beta)) * (1 - exp(br * (z_ud - z_rel)));
+                  u_c = u_c + (-l_ud / (fenceThickness)*a_obf * u_c * Cd_ud * (1 - beta)) * (1 - exp(br * (z_ud - z_rel)));
+                  //u_c = u_c + (-l_ud / (fenceThickness)*a_obf * u_c * Cd * (1 - beta)) * (1 - exp(br * (z_ud - z_rel)));
                   //u_c = u_c + (-2 * u_c) * (1 - exp(br * (z_ud - z_rel)));
 
                   // Test parameterization (7.7.21)
@@ -815,14 +816,15 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                   //}
 
                   if (i + i_start == 256 && j + j_start == 75 && k < 100) {
-                    std::cout << "k = " << k << " u_c = " << u_c << " deficit: " << -l_ud / (2 * fenceThickness) * u_c * Cd * (1 - beta) << " beta = " << beta << " fenceThickness = " << fenceThickness << " l_ud = " << l_ud << " Cd = " << Cd << std::endl;
+                    std::cout << "k = " << k << " u_c = " << u_c << " deficit: " << -l_ud / (2 * fenceThickness) * u_c * Cd * (1 - beta) << " beta = " << beta << " a_obf = " << a_obf << " fenceThickness = " << fenceThickness << " l_ud = " << l_ud << " Cd = " << Cd << std::endl;
                   }
 
 
                   // "Actual" parameterization (commented to try others, 7.7.21)
                   //u_c = u_c + (a_obf * pow(a_uw, N_e + 1) * u_c0 - 2 * u_c) * (1 - exp(br * (z_ud - z_rel)));
                   //u_c = u_c + (a_obf * u_c - 2 * u_c) * (1 - exp(br * (z_ud - z_rel)));
-                  u_c = u_c + (-l_ud / (2 * fenceThickness) * u_c * Cd_ud * (1 - beta)) * (1 - exp(br * (z_ud - z_rel)));
+                  u_c = u_c + (-l_ud / (fenceThickness)*a_obf * u_c * Cd_ud * (1 - beta)) * (1 - exp(br * (z_ud - z_rel)));
+                  //u_c = u_c + (-l_ud / (fenceThickness)*a_obf * u_c * Cd * (1 - beta)) * (1 - exp(br * (z_ud - z_rel)));
                   //u_c = u_c + (-2 * u_c) * (1 - exp(br * (z_ud - z_rel)));
 
                   // Test parameterization (7.7.21)

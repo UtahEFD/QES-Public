@@ -34,15 +34,18 @@
                 <boundaryLayerFlag>1</boundaryLayerFlag>
                 <siteZ0>0.03</siteZ0>
                 <reciprocal>-0.19769</reciprocal>
-                <height>10</height>
-                <speed>3.5</speed>
+                <height>10.1</height>
+                <speed>1.5107</speed>
                 <direction>210</direction>
             </timeSeries>
         </sensor>
     </metParams>
-    <localMixingParam>
+    <turbParams>
         <method>0</method>
-    </localMixingParam>
+        <samples>2000</samples>
+        <save>false</save>
+        <backgroundMixing>0</backgroundMixing>
+    </turbParams>
     <canopies>
         <num_canopies>1</num_canopies>
         <Vineyard>
