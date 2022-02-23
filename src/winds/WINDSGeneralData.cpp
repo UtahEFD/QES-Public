@@ -133,11 +133,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 	//      timestamp.push_back(bt::from_time_t(sensortime[t]));
 	//   }
 
+	std::cout << "SENSORTIME_ID size = " << sensortime_id.size() << std::endl;
 
-	sensortime.push_back(0);
+	// initialize our time info...
+	sensortime.push_back(1642619569);  // that's roughly 01/19/22 at 1:00pm Central
 	sensortime_id.push_back(0);
 	timestamp.push_back(bt::from_time_t(sensortime[0]));
 
+	// #if 0
 	for (auto i = 0; i < wrf_ptr->fm_nx; i++)
           {
             for (auto j = 0; j < wrf_ptr->fm_ny; j++)
@@ -164,6 +167,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
 	      }
           }
+	// #endif
 
 	// u0 and v0 are wrf_ptr->fm_nx * wrf_ptr->fm_ny *
 	// wrf_ptr->ht_fmw.size()
@@ -250,6 +254,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     }
 
     // If there are more than one timestep
+    std::cout << "Total Incr from simparams: " << WID->simParams->totalTimeIncrements << std::endl;
     if (WID->simParams->totalTimeIncrements > 0) {
       // Loop to include all the timestep for the first sensor
       for (auto i = 0; i < WID->metParams->sensors[0]->TS.size(); i++) {
@@ -274,7 +279,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         }
       }
     }
-    }
     
     // Sort the timesteps from low to high (earliest to latest)
     mergeSortTime(sensortime, sensortime_id);
@@ -284,11 +288,14 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       timestamp.push_back(bt::from_time_t(sensortime[t]));
     }
 
+    std::cout << "time stamp size: " << timestamp.size() << std::endl;
     if (WID->simParams->totalTimeIncrements == 0) {
       totalTimeIncrements = timestamp.size();
     } else {
       totalTimeIncrements = WID->simParams->totalTimeIncrements;
     }
+
+    std::cout << "Total TI = " << totalTimeIncrements << std::endl;
 
     // Adding halo to sensor location (if in QEScoord site_coord_flag==1)
     for (size_t i = 0; i < WID->metParams->sensors.size(); i++) {
@@ -297,7 +304,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         WID->metParams->sensors[i]->site_ycoord += WID->simParams->halo_y;
       }
     }
-  }
+    }
+  }  
 
   // /////////////////////////
   // Calculation of z0 domain info MAY need to move to WINDSInputData
@@ -1076,7 +1084,48 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
 void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex, int solveType)
 {
   std::cout << "Applying Wind Profile...\n";
-  WID->metParams->sensors[0]->inputWindProfile(WID, this, timeIndex, solveType);
+
+  if (WID->simParams->wrfCoupling) {
+
+    std::cout << "Using WRF Coupling..." << std::endl;
+
+    WRFInput *wrf_ptr = WID->simParams->wrfInputData;
+
+	for (auto i = 0; i < wrf_ptr->fm_nx; i++)
+          {
+            for (auto j = 0; j < wrf_ptr->fm_ny; j++)
+	      {
+		int index = i+j*wrf_ptr->fm_nx;
+		WID->metParams->sensors[index]->site_coord_flag = 1;
+		WID->metParams->sensors[index]->site_xcoord = (i+halo_index_x+0.5)*dx;
+		WID->metParams->sensors[index]->site_ycoord = (j+halo_index_y+0.5)*dy;
+
+		WID->metParams->sensors[index]->TS[0]->site_wind_dir.resize( wrf_ptr->ht_fmw.size() );
+		WID->metParams->sensors[index]->TS[0]->site_z_ref.resize( wrf_ptr->ht_fmw.size() );
+		WID->metParams->sensors[index]->TS[0]->site_U_ref.resize( wrf_ptr->ht_fmw.size() );
+
+		WID->metParams->sensors[index]->TS[0]->site_z0 = 0.1;
+		WID->metParams->sensors[index]->TS[0]->site_one_overL = 0.0;
+
+		for (auto p = 0; p < wrf_ptr->ht_fmw.size(); p++)
+		  {
+		    int id = index + p*wrf_ptr->fm_nx*wrf_ptr->fm_ny;
+		    WID->metParams->sensors[index]->TS[0]->site_z_ref[p] = wrf_ptr->ht_fmw[p];
+		    WID->metParams->sensors[index]->TS[0]->site_U_ref[p] = sqrt (pow(wrf_ptr->u0_fmw[id],2.0) + pow(wrf_ptr->v0_fmw[id],2.0) );
+		    WID->metParams->sensors[index]->TS[0]->site_wind_dir[p] = 180 + (180/pi)*atan2(wrf_ptr->v0_fmw[id], wrf_ptr->u0_fmw[id]);
+		  }
+
+	      }
+          }
+
+	// use the time Index of 0 (forcing it) because time series are not worked out with WRF well..
+	WID->metParams->sensors[0]->inputWindProfile(WID, this, 0, solveType);
+  }
+  else {
+    WID->metParams->sensors[0]->inputWindProfile(WID, this, timeIndex, solveType);
+  }
+
+
 
   max_velmag = 0.0;
   for (auto i = 0; i < nx; i++) {
