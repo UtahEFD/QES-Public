@@ -21,37 +21,38 @@ ncwrite(outputFileName,'t',times);
 ncwriteatt(outputFileName,'t','units','s');
 ncwriteatt(outputFileName,'t','long_name','time');
 
-nccreate(outputFileName,'x','Dimensions',{'x',nx});
-nccreate(outputFileName,'y','Dimensions',{'y',ny});
-nccreate(outputFileName,'z','Dimensions',{'z',nz});
+nccreate(outputFileName,'x_face','Dimensions',{'x_face',nx});
+nccreate(outputFileName,'y_face','Dimensions',{'y_face',ny});
+nccreate(outputFileName,'z_face','Dimensions',{'z_face',nz});
 
-nccreate(outputFileName,'x_cc','Dimensions',{'x_cc',nx_cc});
-ncwrite(outputFileName,'x_cc',x_cc);
-ncwriteatt(outputFileName,'x_cc','units','m');
-ncwriteatt(outputFileName,'x_cc','long_name','x-distance');
-nccreate(outputFileName,'y_cc','Dimensions',{'y_cc',ny_cc});
-ncwrite(outputFileName,'y_cc',y_cc);
-ncwriteatt(outputFileName,'y_cc','units','m');
-ncwriteatt(outputFileName,'y_cc','long_name','y-distance');
-nccreate(outputFileName,'z_cc','Dimensions',{'z_cc',nz_cc});
-ncwrite(outputFileName,'z_cc',z_cc);
-ncwriteatt(outputFileName,'z_cc','units','m');
-ncwriteatt(outputFileName,'z_cc','long_name','z-distance');
 
-nccreate(outputFileName,'u','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
+nccreate(outputFileName,'x','Dimensions',{'x',nx_cc});
+ncwrite(outputFileName,'x',x_cc);
+ncwriteatt(outputFileName,'x','units','m');
+ncwriteatt(outputFileName,'x','long_name','x-distance');
+nccreate(outputFileName,'y','Dimensions',{'y',ny_cc});
+ncwrite(outputFileName,'y',y_cc);
+ncwriteatt(outputFileName,'y','units','m');
+ncwriteatt(outputFileName,'y','long_name','y-distance');
+nccreate(outputFileName,'z','Dimensions',{'z',nz_cc});
+ncwrite(outputFileName,'z',z_cc);
+ncwriteatt(outputFileName,'z','units','m');
+ncwriteatt(outputFileName,'z','long_name','z-distance');
+
+nccreate(outputFileName,'u','Dimensions',{'x_face',nx,'y_face',ny,'z_face',nz,'t',1});
 ncwrite(outputFileName,'u',u);
 ncwriteatt(outputFileName,'u','units','m s-1');
 ncwriteatt(outputFileName,'u','long_name','x-component velocity');
-nccreate(outputFileName,'v','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
+nccreate(outputFileName,'v','Dimensions',{'x_face',nx,'y_face',ny,'z_face',nz,'t',1});
 ncwrite(outputFileName,'v',v);
 ncwriteatt(outputFileName,'v','units','m s-1');
 ncwriteatt(outputFileName,'v','long_name','y-component velocity');
-nccreate(outputFileName,'w','Dimensions',{'x',nx,'y',ny,'z',nz,'t',1});
+nccreate(outputFileName,'w','Dimensions',{'x_face',nx,'y_face',ny,'z_face',nz,'t',1});
 ncwrite(outputFileName,'w',w);
 ncwriteatt(outputFileName,'w','units','m s-1');
 ncwriteatt(outputFileName,'w','long_name','z-component velocity');
 
-nccreate(outputFileName,'icellflag','Dimensions',{'x_cc',nx_cc,'y_cc',ny_cc,'z_cc',nz_cc,'t',1},'Datatype','int32');
+nccreate(outputFileName,'icellflag','Dimensions',{'x',nx_cc,'y',ny_cc,'z',nz_cc,'t',1},'Datatype','int32');
 ncwrite(outputFileName,'icellflag',icellflag);
 ncwriteatt(outputFileName,'icellflag','units','--');
 ncwriteatt(outputFileName,'icellflag','long_name','icell flag value');

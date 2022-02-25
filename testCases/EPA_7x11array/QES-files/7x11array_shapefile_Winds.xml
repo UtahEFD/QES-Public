@@ -18,9 +18,9 @@
   <tolerance> 1e-9 </tolerance> 					<!-- Convergence criteria, error threshold (default = 1e-9) -->
   <meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (origional QUIC) (default), 1-Cut-cell method -->
   <domainRotation> 0 </domainRotation>  				<!-- Rotation angle of domain relative to true north -->
-  <originFlag> 1 </originFlag>					<!-- Origin flag (0- DEM coordinates (default), 1- UTM coordinates) -->
+  <originFlag> 0 </originFlag>					<!-- Origin flag (0- DEM coordinates (default), 1- UTM coordinates) -->
   <UTMx> -50 </UTMx> 						<!-- x component (m) in UTM -->
-  <UTMy> -199.5 </UTMy> 						<!-- y component (m) in UTM -->
+  <UTMy> -200.5 </UTMy> 						<!-- y component (m) in UTM -->
   <UTMZone> 1 </UTMZone> 						<!-- UTM zone that domain located -->
   <UTMZoneLetter> 17 </UTMZoneLetter>
   <readCoefficientsFlag> 0 </readCoefficientsFlag> 		<!-- Reading solver coeff flag (0-calculate coeff (default), 1-read coeff from the file) -->
@@ -45,7 +45,7 @@
 </metParams>								<!-- End of meteorological parameters -->
 
 <turbParams>
-  <sigmaConst> 2.5 2.0 1.3 </sigmaConst>
+  <sigmaConst> 2.5 1.8 1.3 </sigmaConst>
   <method>1</method>                         <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <samples>5000</samples>                    <!-- Samples per air cell for ray-traced mixing length calculations -->
   <save>false</save>
@@ -53,7 +53,7 @@
   <terrainWallFlag> 2 </terrainWallFlag>     <!-- Terrain wall flag (0-none, 1-log law, 2-finite difference -->
   <buildingWallFlag> 2 </buildingWallFlag>   <!-- Building wall flag (0-none, 1-log law, 2-finite difference -->
   <backgroundMixing> 0.3 </backgroundMixing>  
-  <turbUpperBound> 3.0 </turbUpperBound>
+  <turbUpperBound> 15.0 </turbUpperBound>
 </turbParams>
 
 <buildings>
