@@ -22,11 +22,11 @@ nu=(1-n)/alpha;
 
 % source info
 Q=200; % #par/s (source strength)
-tRelease=2000; % total time of release
+tRelease=2100; % total time of release
 Ntot=Q*tRelease; % total number of particles
 
 % concentration info
-dt=1; % s
+dt=1.0; % s
 %tAvg=1200; % s 
 tAvg=1800; % s 
 
@@ -87,6 +87,7 @@ for k=1:numel(xProf)
     %================================================
     % from Seinfeld and Pandis 1998
     sigY=0.32*x^0.78;
+    %sigY=1.8*0.2*x/U;
     C=Q/(sqrt(2*pi)*sigY)*exp(-0.5*yy.^2/sigY^2).*...
         exp(-a*(zz.^alpha+H^alpha)/(b*alpha^2*x)).*(zz*H).^(0.5*(1-n))/(b*alpha*x).*...
         besseli(-nu,(2*a*(zz*H).^(0.5*alpha))/(b*alpha^2*x));
