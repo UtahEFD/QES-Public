@@ -25,7 +25,7 @@ for k=1:nProf
     hold all
     plot(d2plotLat.GModel.yoH,d2plotLat.GModel.cStar(:,k),'-','LineWidth',2)
     
-    xlim([.2 1.2])
+    xlim([-.4 .4])
     %ylim([0 65])
     grid on
     xlabel('$y/H$')
@@ -36,7 +36,7 @@ for k=1:nProf
     set(htext,'interpreter','latex','FontSize',fsize,'BackgroundColor','w');
 end
 %set(haxes(2:nProf),'YtickLabel',[])
-set(haxes(1:nProf),'Xtick',0.2:0.2:1.2)
+%set(haxes(1:nProf),'Xtick',0.2:0.2:1.2)
 axes(haxes(1));ylabel('$C^*$')
 
 for k=1:nProf
@@ -64,9 +64,9 @@ for k=1:nProf
     haxes(k).YLim(2)=m3;
     haxes(k+nProf).XLim(2)=m3;
     if I==1
-        haxes(k+nProf).XTick=haxes(k).YTick;
+       haxes(k+nProf).XTick=haxes(k).YTick;
     else
-        haxes(k).XTick=haxes(k+nProf).YTick;
+       haxes(k).XTick=haxes(k+nProf).YTick;
     end
 end
 
