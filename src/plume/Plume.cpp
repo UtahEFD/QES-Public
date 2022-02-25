@@ -95,6 +95,8 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
     exit(EXIT_FAILURE);
   }
 
+  std::srand(std::time(0));
+
   // get the domain start and end values, needed for wall boundary condition
   // application
   domainXstart = interp->xStart;
@@ -187,6 +189,8 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
     timers.startNewTimer("advection loop");
     timers.startNewTimer("particle iteration");
   }
+
+  double nextUpdate = simTime + updateFrequency_timeLoop;
 
   // LA note: that this loop goes from 0 to nTimes-2, not nTimes-1. This is
   // because
@@ -288,10 +292,9 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
     if (needToScrub) {
       scrubParticleList();
     }
-
     // output the time, isRogueCount, and isNotActiveCount information for all
     // simulations, but only when the updateFrequency allows
-    if ((simTimeIdx) % updateFrequency_timeLoop == 0 || simTime == endTime) {
+    if (std::abs(simTime - nextUpdate) < 0.0001 || (simTime == endTime)) {
       if (verbose) {
         std::cout << "Time = " << simTime << " s (iteration = " << simTimeIdx
                   << "). Finished advection iteration. "
@@ -304,6 +307,7 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
                   << "Particles: Released = " << nParsReleased << " "
                   << "Active = " << particleList.size() << "." << std::endl;
       }
+      nextUpdate += updateFrequency_timeLoop;
       // output advection loop runtime if in debug mode
       if (debug == true) {
         timers.printStoredTime("advection loop");

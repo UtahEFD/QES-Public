@@ -36,8 +36,9 @@
 random::random()
 {
   m_normal_value = false;
-  //  std::cout<<"Set  RANDOM seed "<<std::endl;
-  std::srand(1);
+  std::cout << "Set  RANDOM seed " << std::endl;
+  //std::srand(1);
+  std::srand(std::time(0));
 }
 
 double random::uniRan()
@@ -62,7 +63,6 @@ double random::norRan()
 
     return v1 * rsq;
   } else {
-    //     std::cout<<"Set  RANDOM seed "<<std::endl;
     m_normal_value = false;
     return m_remaining_value;
   }
