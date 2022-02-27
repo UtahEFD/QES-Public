@@ -33,6 +33,7 @@
 
 #include <algorithm>
 #include "util/ParseInterface.h"
+#include "util/QESFileSystemHandler.h"
 #include "TimeSeries.h"
 
 class WINDSInputData;

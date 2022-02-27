@@ -112,6 +112,10 @@ public:
       save2file = "false";
     }
 
+    if (filename != "") {
+      filename = QESfs::get_absolute_path(filename);
+    }
+
     sigConst = nullptr;
     parseElement<Vector3>(false, sigConst, "sigmaConst");
 

@@ -195,6 +195,14 @@ public:
       m_domIType = UNKNOWN;
     }
 
+    if (demFile != "")
+      demFile = QESfs::get_absolute_path(demFile);
+    if (wrfFile != "")
+      wrfFile = QESfs::get_absolute_path(wrfFile);
+    if (coeffFile != "")
+      coeffFile = QESfs::get_absolute_path(coeffFile);
+
+
     //
     // Process the data files based on the state determined above
     //

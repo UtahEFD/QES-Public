@@ -14,6 +14,7 @@ add_library (qesutil ${LIB_TYPE}
   NetCDFInput.cpp
   NetCDFOutput.cpp
   QESNetCDFOutput.cpp 
+  QESFileSystemHandler.cpp
 )
 
 FILE(GLOB files "*.h")

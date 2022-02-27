@@ -78,6 +78,7 @@ public:
 
     SHPData = nullptr;
     if (shpFile != "") {
+      shpFile = QESfs::get_absolute_path(shpFile);
       // Read polygon node coordinates and building height from shapefile
       //SHPData = new ESRIShapefile(shpFile, shpTreeLayerName, shpPolygons, shpFeatures);
       SHPData = new ESRIShapefile(shpFile, shpBuildingLayerName);

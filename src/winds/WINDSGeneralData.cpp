@@ -160,35 +160,36 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     // If the sensor file specified in the xml
     if (WID->metParams->sensorName.size() > 0) {
       for (auto i = 0; i < WID->metParams->sensorName.size(); i++) {
-        WID->metParams->sensors.push_back(new Sensor(WID->metParams->sensorName[i]));// Create new sensor object
+        // Create new sensor object
+        WID->metParams->sensors.push_back(new Sensor(WID->metParams->sensorName[i]));
       }
     }
 
     // If there are more than one timestep
-    if (WID->simParams->totalTimeIncrements > 0) {
-      // Loop to include all the timestep for the first sensor
-      for (auto i = 0; i < WID->metParams->sensors[0]->TS.size(); i++) {
-        sensortime.push_back(WID->metParams->sensors[0]->TS[i]->timeEpoch);
-        sensortime_id.push_back(i);
-      }
+    //if (WID->simParams->totalTimeIcnrements > 0) {
+    // Loop to include all the timestep for the first sensor
+    for (auto i = 0; i < WID->metParams->sensors[0]->TS.size(); i++) {
+      sensortime.push_back(WID->metParams->sensors[0]->TS[i]->timeEpoch);
+      sensortime_id.push_back(i);
+    }
 
-      // Loop to include all the unique timesteps of the rest of the sensors
-      for (auto i = 0; i < WID->metParams->sensors.size(); i++) {
-        for (auto j = 0; j < WID->metParams->sensors[i]->TS.size(); j++) {
-          int count = 0;
-          for (auto k = 0; k < sensortime.size(); k++) {
-            if (WID->metParams->sensors[i]->TS[j]->timeEpoch != sensortime[k]) {
-              count += 1;
-            }
+    // Loop to include all the unique timesteps of the rest of the sensors
+    for (auto i = 0; i < WID->metParams->sensors.size(); i++) {
+      for (auto j = 0; j < WID->metParams->sensors[i]->TS.size(); j++) {
+        int count = 0;
+        for (auto k = 0; k < sensortime.size(); k++) {
+          if (WID->metParams->sensors[i]->TS[j]->timeEpoch != sensortime[k]) {
+            count += 1;
           }
-          // If the timestep is not allready included in the list
-          if (count == sensortime.size()) {
-            sensortime.push_back(WID->metParams->sensors[i]->TS[j]->timeEpoch);
-            sensortime_id.push_back(sensortime.size() - 1);
-          }
+        }
+        // If the timestep is not allready included in the list
+        if (count == sensortime.size()) {
+          sensortime.push_back(WID->metParams->sensors[i]->TS[j]->timeEpoch);
+          sensortime_id.push_back(sensortime.size() - 1);
         }
       }
     }
+    //}
     // Sort the timesteps from low to high (earliest to latest)
     mergeSortTime(sensortime, sensortime_id);
 

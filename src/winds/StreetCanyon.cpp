@@ -283,9 +283,9 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                 int i = ceil(((xc - 0.5 * WGD->dxy + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x - 0.001) / WGD->dx) - 1;
                 int j = ceil(((xc - 0.5 * WGD->dxy + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y - 0.001) / WGD->dy) - 1;
 
-                if (WGD->ibuilding_flag[i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1)] >= 0) {
-                  std::cout << "error" << std::endl;
-                }
+                //if (WGD->ibuilding_flag[i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1)] >= 0) {
+                //  std::cout << "error" << std::endl;
+                //}
 
                 // (LoopDB) Loop through each polygon node of the downstream buildings
                 for (size_t j_id = 0; j_id < WGD->allBuildingsV[d_build]->polygonVertices.size() - 1; j_id++) {

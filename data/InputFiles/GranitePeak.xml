@@ -1,5 +1,5 @@
 <simulationParameters>
-	<DEM>../scratch/Granite_east.tif</DEM>				<!-- Address to DEM location-->	
+	<DEM>../../scratch/Granite_east.tif</DEM>				<!-- Address to DEM location-->	
 
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
@@ -31,16 +31,16 @@
 </simulationParameters>                     				<!-- End of simulation parameters -->
 <metParams>
 	<z0_domain_flag> 0 </z0_domain_flag>           			<!-- Distribution of sueface roughness for domain (0-uniform (default), 1-custom -->
-	<sensorName>../data/InputFiles/PWIDS/PWID79.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWIDS/PWID96.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWIDS/PWID78.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWIDS/PWID72.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWIDS/PWID93.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWIDS/PWID75.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWIDS/PWID33.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWIDS/PWID01.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWIDS/PWID92.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
-	<sensorName>../data/InputFiles/PWIDS/PWID90.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>PWIDS/PWID79.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>PWIDS/PWID96.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<!--sensorName>PWIDS/PWID78.xml</sensorName-->		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>PWIDS/PWID72.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>PWIDS/PWID93.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>PWIDS/PWID75.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>PWIDS/PWID33.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>PWIDS/PWID01.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>PWIDS/PWID92.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>PWIDS/PWID90.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
 
 </metParams>								<!-- End of meteorological parameters -->
 <localMixingParam>
