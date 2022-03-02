@@ -140,6 +140,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 	sensortime_id.push_back(0);
 	timestamp.push_back(bt::from_time_t(sensortime[0]));
 
+	totalTimeIncrements = WID->simParams->totalTimeIncrements;
+
 	// #if 0
 	for (auto i = 0; i < wrf_ptr->fm_nx; i++)
           {
@@ -238,7 +240,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 	  }
 	}
       }
-    } else {
+    } 
+  } else {  // no wrf data to deal with...
       /* FM NOTES:
 	 WARNING this is unfinished.
 	 + does support halo for QES coord (site coord == 1)
@@ -304,8 +307,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         WID->metParams->sensors[i]->site_ycoord += WID->simParams->halo_y;
       }
     }
-    }
-  }  
+  }
 
   // /////////////////////////
   // Calculation of z0 domain info MAY need to move to WINDSInputData
@@ -1107,6 +1109,9 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
 		WID->metParams->sensors[index]->TS[0]->site_z0 = 0.1;
 		WID->metParams->sensors[index]->TS[0]->site_one_overL = 0.0;
 
+		//hack to make time equivalencies 
+		WID->metParams->sensors[index]->TS[0]->timeEpoch = 1642619569;
+
 		for (auto p = 0; p < wrf_ptr->ht_fmw.size(); p++)
 		  {
 		    int id = index + p*wrf_ptr->fm_nx*wrf_ptr->fm_ny;
@@ -1120,6 +1125,7 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
 
 	// use the time Index of 0 (forcing it) because time series are not worked out with WRF well..
 	WID->metParams->sensors[0]->inputWindProfile(WID, this, 0, solveType);
+	std::cout << "Done with sensor." << std::endl;
   }
   else {
     WID->metParams->sensors[0]->inputWindProfile(WID, this, timeIndex, solveType);
@@ -1135,6 +1141,8 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
     }
   }
   max_velmag *= 1.2;
+
+	std::cout << "Done with awp." << std::endl;
 
   return;
 }
