@@ -2224,6 +2224,21 @@ float WRFInput::lookupLandUse(int luIdx)
 }
 
 
+void WRFInput::endWRFSession()
+{
+  int wrfEndFrameNum = -99;
+
+  // Need to output the wrfFRAME0 back to the FRAME_FMW
+  std::vector<size_t> chksum_StartIdx = {0};
+  std::vector<size_t> chksum_counts = {1};
+  
+  NcVar field_FRAME = wrfInputFile.getVar("FRAME_FMW");
+  field_FRAME.putVar( chksum_StartIdx, chksum_counts, &wrfEndFrameNum );
+
+  // close file
+  wrfInputFile.close();
+}
+
 void WRFInput::updateFromWRF()
 {
   // Only perform if doing the coupling

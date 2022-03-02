@@ -136,6 +136,8 @@ public:
     void dumpStationData() const;
 
 
+    void endWRFSession();
+
     /**
      */
     void updateFromWRF();
