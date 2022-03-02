@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
   }
 
   std::cout << "WGD->totalTimeIncr = " << WGD->totalTimeIncrements << std::endl;
-  WGD->totalTimeIncrements = 10;
+
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     // print time progress (time stamp and percentage)
     // WGD->printTimeProgress(index);
@@ -196,6 +196,8 @@ int main(int argc, char *argv[])
     }
 
   }
+
+  WID->simParams->wrfInputData->endWRFSession();
 
   // /////////////////////////////
   exit(EXIT_SUCCESS);
