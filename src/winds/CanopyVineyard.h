@@ -100,6 +100,7 @@ private:
   float rowWidth;
   float rowAngle;
   bool thinFence = 0;
+  std::vector<float> tke_v;
   //float fetch = 7;
   float corner1x, corner1y, corner2x, corner2y, corner3x, corner3y, corner4x, corner4y;
   std::map<int, float> u0, v0;

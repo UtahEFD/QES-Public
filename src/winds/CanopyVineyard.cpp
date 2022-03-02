@@ -1030,3 +1030,8 @@ void CanopyVineyard::canopyWake(WINDSGeneralData *WGD, int building_id)
 
   return;
 }
+
+void CanopyVineyard::canopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData *TGD, int tree_id)
+{
+}
+

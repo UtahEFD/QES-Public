@@ -267,7 +267,6 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   tzz.resize(np_cc, 0);
 
   // derived turbulence quantities
-  nuT.resize(np_cc, 0);
   tke.resize(np_cc, 0);
   CoEps.resize(np_cc, 0);
   // std::cout << "\t\t Memory allocation completed.\n";
@@ -434,14 +433,6 @@ void TURBGeneralData::run()
   std::cout << "\t\t Computing Derivatives (Strain Rate)..." << std::endl;
   derivativeVelocity();
   // std::cout<<"\t\t Derivatives computed."<<std::endl;
-
-  std::cout << "\t\t Computing local mixing length model..." << std::endl;
-  getTurbulentViscosity();
-
-  if (m_WGD->canopy) {
-    std::cout << "Applying canopy wake parameterization...\n";
-    m_WGD->canopy->applyCanopyTurbulenceWake(m_WGD, this);
-  }
 
   std::cout << "\t\t Computing Stess Tensor..." << std::endl;
   stressTensor();
@@ -740,7 +731,7 @@ void TURBGeneralData::derivativeVelocity()
   return;
 }
 
-void TURBGeneralData::getTurbulentViscosity()
+void TURBGeneralData::stressTensor()
 {
   float tkeBound = turbUpperBound * uStar * uStar;
 
@@ -767,33 +758,15 @@ void TURBGeneralData::getTurbulentViscosity()
     if (TKE > tkeBound)
       TKE = tkeBound;
 
-    nuT[cellID] = NU_T;
     CoEps[cellID] = 5.7 * pow(sqrt(TKE) * cPope, 3.0) / (LM);
     tke[cellID] = TKE;
-  }
-  return;
-}
 
-
-void TURBGeneralData::stressTensor()
-{
-
-  for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
-    int cellID = *it;
-
-    float Sxx = Gxx[cellID];
-    float Syy = Gyy[cellID];
-    float Szz = Gzz[cellID];
-    float Sxy = 0.5 * (Gxy[cellID] + Gyx[cellID]);
-    float Sxz = 0.5 * (Gxz[cellID] + Gzx[cellID]);
-    float Syz = 0.5 * (Gyz[cellID] + Gzy[cellID]);
-
-    txx[cellID] = (2.0 / 3.0) * tke[cellID] - 2.0 * (nuT[cellID] * Sxx);
-    tyy[cellID] = (2.0 / 3.0) * tke[cellID] - 2.0 * (nuT[cellID] * Syy);
-    tzz[cellID] = (2.0 / 3.0) * tke[cellID] - 2.0 * (nuT[cellID] * Szz);
-    txy[cellID] = -2.0 * (nuT[cellID] * Sxy);
-    txz[cellID] = -2.0 * (nuT[cellID] * Sxz);
-    tyz[cellID] = -2.0 * (nuT[cellID] * Syz);
+    txx[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Sxx);
+    tyy[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Syy);
+    tzz[cellID] = (2.0 / 3.0) * TKE - 2.0 * (NU_T * Szz);
+    txy[cellID] = -2.0 * (NU_T * Sxy);
+    txz[cellID] = -2.0 * (NU_T * Sxz);
+    tyz[cellID] = -2.0 * (NU_T * Syz);
 
     txx[cellID] = fabs(sigUConst * txx[cellID]);
     tyy[cellID] = fabs(sigVConst * tyy[cellID]);

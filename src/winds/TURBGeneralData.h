@@ -160,6 +160,7 @@ public:
   std::vector<float> div_tau_z;
   ///@}
 
+  std::vector<float> nuT; /**< turbulent viscosity */
   std::vector<float> tke; /**< turbulence kinetic energy */
   std::vector<float> CoEps; /**< dissipation rate */
 
@@ -195,6 +196,7 @@ private:
   void getDerivatives();
   void derivativeVelocity();
 
+  void getTurbulentViscosity();
   void getStressTensor();
   void stressTensor();
 

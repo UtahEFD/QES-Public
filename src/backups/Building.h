@@ -142,10 +142,6 @@ public:
   virtual void canopyWake(WINDSGeneralData *wgd, int building_id)
   {
   }
-  
-  virtual void canopyTurbulenceWake(WINDSGeneralData *wgd, TURBGeneralData *TGD, int buildind_id)
-  {
-  }
 
   virtual void streetCanyon(WINDSGeneralData *WGD)
   {
