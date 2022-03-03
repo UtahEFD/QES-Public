@@ -47,12 +47,9 @@
 class Vector3 : public ParseInterface
 {
 protected:
-
   std::vector<float> values;
 
 public:
-
-
   Vector3()
   {
     /*values.clear();
@@ -61,7 +58,6 @@ public:
     values.push_back((0));*/
     values.resize(3);
     values[0] = values[1] = values[2] = 0.0;
-
   }
 
   /*	template <typename X> Vector3(const Vector3<X>& newV)
@@ -85,6 +81,14 @@ public:
     values[2] = c;
   }
 
+  Vector3(float x, float y, float z)
+  {
+    values.resize(3);
+    values[0] = x;
+    values[1] = y;
+    values[2] = z;
+  }
+
   virtual void parseValues()
   {
     values.clear();
@@ -105,6 +109,17 @@ public:
   }
 
   /**
+   * Accesses the value at position i.
+   *
+   * @param i the index of the value to return
+   * @return a copy to the value stored at i
+   */
+  float operator[](const int i) const
+  {
+    return values[i];
+  }
+
+  /**
    * Returns if two Vector3 values of the same type are equal.
    *
    * @param v the vector3 to compare with this
@@ -113,7 +128,7 @@ public:
   bool operator==(const Vector3 &v)
   {
     //if (std::is_same<T,float>::value || std::is_same<T, double>::value)
-      return FLOATS_ARE_EQUAL(values[0], v.values[0]) && FLOATS_ARE_EQUAL(values[1], v.values[1]) && FLOATS_ARE_EQUAL(values[2], v.values[2]);
+    return FLOATS_ARE_EQUAL(values[0], v.values[0]) && FLOATS_ARE_EQUAL(values[1], v.values[1]) && FLOATS_ARE_EQUAL(values[2], v.values[2]);
     /*else
       return v.values[0] == values[0] && v.values[1] == values[1] && v.values[2] == values[2];*/
   }

@@ -203,7 +203,7 @@ bool BVH::rayBoxIntersect(const Ray &ray)
   float originY = ray.getOriginY();
   float originZ = ray.getOriginZ();
   // Vector3<float> dir = ray.getDirection();
-  Vec3D dir = ray.getDirection();
+  Vector3 dir = ray.getDirection();
 
   float tMinX, tMaxX, tMinY, tMaxY, tMinZ, tMaxZ;
 
