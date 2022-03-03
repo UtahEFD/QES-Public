@@ -37,7 +37,6 @@
 
 #include "Canopy.h"
 
-#include "PolygonVertex.h"
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 

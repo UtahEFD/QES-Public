@@ -16,7 +16,6 @@ CUDA_ADD_LIBRARY( qeswindscore
   Cut_cell.cpp
   DTEHeightField.cpp
   DynamicParallelism.cu
-  ESRIShapefile.cpp ESRIShapefile.h
   handleWINDSArgs.cpp
   LocalMixing.cpp
   LocalMixingDefault.cpp

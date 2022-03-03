@@ -32,7 +32,7 @@
 #pragma once
 
 #include "util/ParseInterface.h"
-#include "PolygonVertex.h"
+#include "util/PolygonVertex.h"
 #include "CutVertex.h"
 
 using namespace std;

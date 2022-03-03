@@ -1,14 +1,14 @@
 #pragma once
 
 #include "util/ParseInterface.h"
+#include "util/ESRIShapefile.h"
+
 #include "Building.h"
 
 #include "CanopyElement.h"
 #include "CanopyHomogeneous.h"
 #include "CanopyIsolatedTree.h"
 #include "CanopyWindbreak.h"
-
-#include "ESRIShapefile.h"
 
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
