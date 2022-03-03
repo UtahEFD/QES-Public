@@ -41,7 +41,7 @@
 
 #include "Cell.h"
 
-/*Cell::Cell()
+Cell::Cell()
 {
   isAir = isCutCell = isTerrain = false;
   terrainPoints.clear();
@@ -65,14 +65,15 @@ Cell::Cell(const int type_CT, const Vector3 locationN, const Vector3 dimensionsN
   dimensions = dimensionsN;
 }
 
-Cell::Cell(std::vector<Vector3> &points, std::vector<Edge<int>> &edges, int intermed[4][4][2], Vector3 locationN, Vector3 dimensionsN)
+//Cell::Cell(std::vector<Vector3> &points, std::vector<Edge<int>> &edges, int intermed[4][4][2], Vector3 locationN, Vector3 dimensionsN)
+Cell::Cell(std::vector<Vector3> &points, int intermed[4][4][2], Vector3 locationN, Vector3 dimensionsN)
 {
   isTerrain = isAir = isCutCell = true;
   terrainPoints.clear();
   for (int i = 0; i < points.size(); i++)
     terrainPoints.push_back(points[i]);
-  for (int i = 0; i < edges.size(); i++)
-    terrainEdges.push_back(edges[i]);
+  //for (int i = 0; i < edges.size(); i++)
+  // terrainEdges.push_back(edges[i]);
   location = locationN;
   dimensions = dimensionsN;
 
@@ -133,4 +134,4 @@ Cell::Cell(std::vector<Vector3> &points, std::vector<Edge<int>> &edges, int inte
     if (fluidFacePoints[i].size() <= 2)
       fluidFacePoints[i].clear();
   }
-}*/
+}
