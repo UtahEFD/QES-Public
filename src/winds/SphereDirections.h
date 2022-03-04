@@ -88,7 +88,9 @@ public:
    * @param upperPhi :document this:
    */
   SphereDirections(int numDV, float lowerTheta, float upperTheta, float lowerPhi, float upperPhi)
-    : vecCount(0), lowerThetaBound(lowerTheta), upperThetaBound(upperTheta), lowerPhiBound(lowerPhi), upperPhiBound(upperPhi)
+    : vecCount(0),
+      lowerThetaBound(lowerTheta), upperThetaBound(upperTheta),
+      lowerPhiBound(lowerPhi), upperPhiBound(upperPhi)
 
   {
     //        std::random_device rd;  // the rd device reads from a file,
@@ -115,11 +117,12 @@ public:
 
       float magnitude = std::sqrt(dx * dx + dy * dy + dz * dz);
 
+      /* FM CLEANUP - NOT USED
       // only send rays mostly down but a little up... can use
       // dot product between (0, 0, 1) and vector
       Vector3 dirVec(dx / magnitude, dy / magnitude, dz / magnitude);
-
       float dotProd = dirVec[0] * 0.0f + dirVec[1] * 0.0f + dirVec[2] * 1.0f;
+      */
 
       // if (dotProd < 0.20) {
       nextList[i] = Vector3(dx / magnitude, dy / magnitude, dz / magnitude);

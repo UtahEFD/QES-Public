@@ -101,7 +101,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     std::cout << "Size of WRF station/sensor profile data: " << wrf_ptr->statData.size() << std::endl;
     WID->metParams->sensors.resize(wrf_ptr->statData.size());
 
-    for (auto i = 0; i < wrf_ptr->statData.size(); i++) {
+    for (size_t i = 0; i < wrf_ptr->statData.size(); i++) {
       std::cout << "Station " << i << " ("
                 << wrf_ptr->statData[i].xCoord << ", "
                 << wrf_ptr->statData[i].yCoord << ")" << std::endl;
@@ -167,16 +167,16 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     // If there are more than one timestep
     if (WID->simParams->totalTimeIncrements > 0) {
       // Loop to include all the timestep for the first sensor
-      for (auto i = 0; i < WID->metParams->sensors[0]->TS.size(); i++) {
+      for (size_t i = 0; i < WID->metParams->sensors[0]->TS.size(); i++) {
         sensortime.push_back(WID->metParams->sensors[0]->TS[i]->timeEpoch);
         sensortime_id.push_back(i);
       }
 
       // Loop to include all the unique timesteps of the rest of the sensors
-      for (auto i = 0; i < WID->metParams->sensors.size(); i++) {
-        for (auto j = 0; j < WID->metParams->sensors[i]->TS.size(); j++) {
+      for (size_t i = 0; i < WID->metParams->sensors.size(); i++) {
+        for (size_t j = 0; j < WID->metParams->sensors[i]->TS.size(); j++) {
           int count = 0;
-          for (auto k = 0; k < sensortime.size(); k++) {
+          for (size_t k = 0; k < sensortime.size(); k++) {
             if (WID->metParams->sensors[i]->TS[j]->timeEpoch != sensortime[k]) {
               count += 1;
             }
@@ -620,7 +620,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         minExtent[1] -= (minExtent[1] - WID->simParams->UTMy);
       }
 
-      for (auto pIdx = 0u; pIdx < WID->buildings->SHPData->m_polygons.size(); pIdx++) {
+      for (size_t pIdx = 0u; pIdx < WID->buildings->SHPData->m_polygons.size(); pIdx++) {
 
         // convert the global polys to local domain coordinates
         for (auto lIdx = 0u; lIdx < WID->buildings->SHPData->m_polygons[pIdx].size(); lIdx++) {
@@ -636,7 +636,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
           if (min_height < 0) {
             min_height = 0.0;
           }
-          for (auto lIdx = 1u; lIdx < WID->buildings->SHPData->m_polygons[pIdx].size(); lIdx++) {
+          for (size_t lIdx = 1u; lIdx < WID->buildings->SHPData->m_polygons[pIdx].size(); lIdx++) {
             corner_height = WID->simParams->DTE_mesh->getHeight(WID->buildings->SHPData->m_polygons[pIdx][lIdx].x_poly,
                                                                 WID->buildings->SHPData->m_polygons[pIdx][lIdx].y_poly);
 
@@ -649,7 +649,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
           base_height.push_back(0.0);
         }
 
-        for (auto lIdx = 0u; lIdx < WID->buildings->SHPData->m_polygons[pIdx].size(); lIdx++) {
+        for (size_t lIdx = 0u; lIdx < WID->buildings->SHPData->m_polygons[pIdx].size(); lIdx++) {
           WID->buildings->SHPData->m_polygons[pIdx][lIdx].x_poly += WID->simParams->halo_x;
           WID->buildings->SHPData->m_polygons[pIdx][lIdx].y_poly += WID->simParams->halo_y;
         }
@@ -678,7 +678,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       int j = allBuildingsV.size() - 1;
       building_id.push_back(j);
 
-      for (auto pIdx = 0u; pIdx < allBuildingsV[j]->polygonVertices.size(); pIdx++) {
+      for (size_t pIdx = 0u; pIdx < allBuildingsV[j]->polygonVertices.size(); pIdx++) {
         allBuildingsV[j]->polygonVertices[pIdx].x_poly += WID->simParams->halo_x;
         allBuildingsV[j]->polygonVertices[pIdx].y_poly += WID->simParams->halo_y;
       }
@@ -1119,7 +1119,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
 
 void WINDSGeneralData::resetICellFlag()
 {
-  for (auto id = 0u; id < icellflag.size(); id++) {
+  for (size_t id = 0; id < icellflag.size(); id++) {
     icellflag[id] = icellflag_initial[id];
   }
   return;
