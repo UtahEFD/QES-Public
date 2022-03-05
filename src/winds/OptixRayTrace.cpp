@@ -318,14 +318,12 @@ void OptixRayTrace::buildAS()
 void OptixRayTrace::convertVecMeshType(std::vector<Triangle *> &tris, std::vector<Vertex> &trisArray)
 {
   int tempIdx = 0;
-  for (int i = 0; i < tris.size(); i++) {// get access to the Triangle at index
-
-
-    trisArray[tempIdx] = { (*(tris[i]->a))[0], (*(tris[i]->a))[1], (*(tris[i]->a))[2] };
+  for (size_t i = 0; i < tris.size(); i++) {// get access to the Triangle at index
+    trisArray[tempIdx] = { tris[i]->a[0], tris[i]->a[1], tris[i]->a[2] };
     tempIdx++;
-    trisArray[tempIdx] = { (*(tris[i]->b))[0], (*(tris[i]->b))[1], (*(tris[i]->b))[2] };
+    trisArray[tempIdx] = { tris[i]->b[0], tris[i]->b[1], tris[i]->b[2] };
     tempIdx++;
-    trisArray[tempIdx] = { (*(tris[i]->c))[0], (*(tris[i]->c))[1], (*(tris[i]->c))[2] };
+    trisArray[tempIdx] = { tris[i]->c[0], tris[i]->c[1], tris[i]->c[2] };
     tempIdx++;
   }
 }

@@ -124,7 +124,7 @@ public:
    * @param domain Domain that will be changed to match the dem file
    * @param grid Size of each cell in the domain space.
    */
-  void setDomain(Vector3Int *domain, Vector3 *grid);
+  void setDomain(Vector3Int &domain, Vector3 &grid);
 
 
   /**

@@ -66,22 +66,22 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // main input structure.
   //
   // This is done to make reference to nx, ny and nz easier in this function
-  Vector3Int domainInfo;
-  domainInfo = *(WID->simParams->domain);
-  nx = domainInfo[0];
-  ny = domainInfo[1];
-  nz = domainInfo[2];
+  //Vector3Int domainInfo;
+  //domainInfo = *(WID->simParams->domain);
+  nx = WID->simParams->domain[0];
+  ny = WID->simParams->domain[1];
+  nz = WID->simParams->domain[2];
 
   // Modify the domain size to fit the Staggered Grid used in the solver
   nx += 1;// +1 for Staggered grid
   ny += 1;// +1 for Staggered grid
   nz += 2;// +2 for staggered grid and ghost cell
 
-  Vector3 gridInfo;
-  gridInfo = *(WID->simParams->grid);
-  dx = gridInfo[0];// Grid resolution in x-direction
-  dy = gridInfo[1];// Grid resolution in y-direction
-  dz = gridInfo[2];// Grid resolution in z-direction
+  //Vector3 gridInfo;
+  //gridInfo = *(WID->simParams->grid);
+  dx = WID->simParams->grid[0];// Grid resolution in x-direction
+  dy = WID->simParams->grid[1];// Grid resolution in y-direction
+  dz = WID->simParams->grid[2];// Grid resolution in z-direction
   dxy = MIN_S(dx, dy);
 
   numcell_cout = (nx - 1) * (ny - 1) * (nz - 2);// Total number of cell-centered values in domain
@@ -159,7 +159,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
     // If the sensor file specified in the xml
     if (WID->metParams->sensorName.size() > 0) {
-      for (auto i = 0; i < WID->metParams->sensorName.size(); i++) {
+      for (size_t i = 0; i < WID->metParams->sensorName.size(); i++) {
         WID->metParams->sensors.push_back(new Sensor(WID->metParams->sensorName[i]));// Create new sensor object
       }
     }
@@ -175,7 +175,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       // Loop to include all the unique timesteps of the rest of the sensors
       for (size_t i = 0; i < WID->metParams->sensors.size(); i++) {
         for (size_t j = 0; j < WID->metParams->sensors[i]->TS.size(); j++) {
-          int count = 0;
+          size_t count = 0;
           for (size_t k = 0; k < sensortime.size(); k++) {
             if (WID->metParams->sensors[i]->TS[j]->timeEpoch != sensortime[k]) {
               count += 1;
@@ -863,7 +863,7 @@ WINDSGeneralData ::WINDSGeneralData(const std::string inputFile)
   if (!NcVar_times.isNull()) {
     // nothing here yet
   } else {
-    for (size_t t = 0; t < nt; t++) {
+    for (int t = 0; t < nt; t++) {
       // ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp);
       timestamp.push_back(bt::from_iso_extended_string("2020-01-01T00:00"));
     }

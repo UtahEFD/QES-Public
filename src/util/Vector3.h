@@ -44,55 +44,37 @@
  * Values can be accessed as if this was an array.
  */
 
-class Vector3 : public ParseInterface
+class Vector3
 {
 protected:
-  std::vector<float> values;
+  //std::vector<float> values;
+  float values[3];
 
 public:
   Vector3()
+    : values{ 0.0, 0.0, 0.0 }
   {
-    /*values.clear();
-    values.push_back((0));
-    values.push_back((0));
-    values.push_back((0));*/
-    values.resize(3);
-    values[0] = values[1] = values[2] = 0.0;
   }
 
-  /*	template <typename X> Vector3(const Vector3<X>& newV)
-          {
-                  for (int i = 0; i < 3; i++)
-                          values[i] = newV[i];
-          }
+  /*
+    template <typename X> 
+    Vector3(const Vector3<X>& newV)
+    {
+    values[0] = newV[0];
+    values[1] = newV[1];
+    values[2] = newV[2];
+    }
   */
-
+  /*
   template<typename X>
   Vector3(const X a, const X b, const X c)
+    : values{ a, b, c }
   {
-    /*values.clear();
-    values.push_back(a);
-    values.push_back(b);
-    values.push_back(c);*/
-
-    values.resize(3);
-    values[0] = a;
-    values[1] = b;
-    values[2] = c;
   }
-
+  */
   Vector3(float x, float y, float z)
+    : values{ x, y, z }
   {
-    values.resize(3);
-    values[0] = x;
-    values[1] = y;
-    values[2] = z;
-  }
-
-  virtual void parseValues()
-  {
-    values.clear();
-    parseTaglessValues(values);
   }
 
   ~Vector3() {}
