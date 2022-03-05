@@ -86,7 +86,7 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
   v0_h = WGD->v0[index_building_face];// v velocity at the height of building at the centroid
   // Wind direction of initial velocity at the height of building at the centroid
   upwind_dir = atan2(v0_h, u0_h);
-  for (auto id = 0; id < polygonVertices.size() - 1; id++) {
+  for (size_t id = 0; id < polygonVertices.size() - 1; id++) {
     xf1[id] = 0.5 * (polygonVertices[id].x_poly - polygonVertices[id + 1].x_poly) * cos(upwind_dir)
               + 0.5 * (polygonVertices[id].y_poly - polygonVertices[id + 1].y_poly) * sin(upwind_dir);
     yf1[id] = -0.5 * (polygonVertices[id].x_poly - polygonVertices[id + 1].x_poly) * sin(upwind_dir)
@@ -134,7 +134,7 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
       }
 
       // Defining index related to the height that upwind cavity is being applied
-      for (auto k = k_start; k < WGD->z.size(); k++) {
+      for (size_t k = k_start; k < WGD->z.size(); k++) {
         k_top = k + 1;
         if (height_factor * retarding_height + base_height <= WGD->z[k]) {
           break;

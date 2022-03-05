@@ -70,7 +70,7 @@ Cell::Cell(std::vector<Vector3> &points, int intermed[4][4][2], Vector3 location
 {
   isTerrain = isAir = isCutCell = true;
   terrainPoints.clear();
-  for (int i = 0; i < points.size(); i++)
+  for (size_t i = 0; i < points.size(); i++)
     terrainPoints.push_back(points[i]);
   //for (int i = 0; i < edges.size(); i++)
   // terrainEdges.push_back(edges[i]);

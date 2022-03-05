@@ -51,7 +51,7 @@
 void PolyBuilding::sideWall(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
   float tol = 10 * M_PI / 180.0;// Sidewall is applied if outward normal of the face is in +/-10 degree perpendicular
-                                // to the local wind
+    // to the local wind
   int side_wall_flag = 0;// If 1, indicates that there are faces that are nominally parallel with the wind
   std::vector<float> face_rel_dir; /**< Face relative angle to the perpendicular direction of the local wind */
   face_rel_dir.resize(polygonVertices.size(), 0.0);
@@ -88,12 +88,12 @@ void PolyBuilding::sideWall(const WINDSInputData *WID, WINDSGeneralData *WGD)
   yi.resize(polygonVertices.size(), 0.0);// Difference of y values of the centroid and each node
 
   // Loop to calculate x and y values of each polygon point in rotated coordinates
-  for (auto id = 0; id < polygonVertices.size(); id++) {
+  for (size_t id = 0; id < polygonVertices.size(); id++) {
     xi[id] = (polygonVertices[id].x_poly - building_cent_x) * cos(upwind_dir) + (polygonVertices[id].y_poly - building_cent_y) * sin(upwind_dir);
     yi[id] = -(polygonVertices[id].x_poly - building_cent_x) * sin(upwind_dir) + (polygonVertices[id].y_poly - building_cent_y) * cos(upwind_dir);
   }
 
-  for (auto id = 0; id < polygonVertices.size() - 1; id++) {
+  for (size_t id = 0; id < polygonVertices.size() - 1; id++) {
     // Face relative angle to the perpendicular angle to the local wind
     face_rel_dir[id] = atan2(yi[id + 1] - yi[id], xi[id + 1] - xi[id]) + 0.5 * M_PI;
     if (face_rel_dir[id] > M_PI) {
@@ -115,7 +115,7 @@ void PolyBuilding::sideWall(const WINDSInputData *WID, WINDSGeneralData *WGD)
     vd = 0.5 * 0.22 * R_scale_side;// Shell width
     y_pref = vd / sqrt(0.5 * R_cx_side);
 
-    for (auto id = 0; id < polygonVertices.size() - 1; id++) {
+    for (size_t id = 0; id < polygonVertices.size() - 1; id++) {
       // +/-10 degree perpendicular to the local wind
       if (abs(face_rel_dir[id]) >= 0.5 * M_PI - tol && abs(face_rel_dir[id]) <= 0.5 * M_PI + tol) {
         right_flag = 0;

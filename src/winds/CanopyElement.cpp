@@ -10,7 +10,7 @@ void CanopyElement::setPolyBuilding(WINDSGeneralData *WGD)
   building_cent_x = 0.0;// x-coordinate of the centroid of the building
   building_cent_y = 0.0;// y-coordinate of the centroid of the building
 
-  for (auto i = 0; i < polygonVertices.size() - 1; i++) {
+  for (size_t i = 0; i < polygonVertices.size() - 1; i++) {
     building_cent_x += polygonVertices[i].x_poly;
     building_cent_y += polygonVertices[i].y_poly;
   }
