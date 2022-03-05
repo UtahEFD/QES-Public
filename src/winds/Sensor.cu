@@ -314,7 +314,7 @@ void Sensor::BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData 
 
   std::vector<float> x, y;
   x.resize(WGD->nx);
-  for (size_t i = 0; i < WGD->nx; i++) {
+  for (int i = 0; i < WGD->nx; i++) {
     x[i] = (i - 0.5) * WGD->dx; /**< Location of face centers in x-dir */
   }
 
