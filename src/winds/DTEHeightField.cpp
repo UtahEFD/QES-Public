@@ -638,7 +638,8 @@ void DTEHeightField::printProgress(float percentage)
 #define CELL(i, j, k) ((i) + (j) * (nx - 1) + (k) * (nx - 1) * (ny - 1))
 #define CLAMP(low, high, x) ((x) < (low) ? (low) : ((x) > (high) ? (high) : (x)))
 
-void DTEHeightField::setCells(Cell *cells, WINDSGeneralData *WGD, const WINDSInputData *WID)
+//void DTEHeightField::setCells(Cell *cells, WINDSGeneralData *WGD, const WINDSInputData *WID)
+void DTEHeightField::setCells(WINDSGeneralData *WGD, const WINDSInputData *WID)
 {
 
   printf("Setting Cell Data...\n");
@@ -765,7 +766,8 @@ void DTEHeightField::setCells(Cell *cells, WINDSGeneralData *WGD, const WINDSInp
         std::cout << "corners[3]:  " << corners[3][2] << std::endl;
       }*/
 
-      setCellPoints(cells, i, j, WGD->nx, WGD->ny, WGD->nz, WGD->dz_array, WGD->z_face, corners, cutCells, WGD);
+      //setCellPoints(cells, i, j, WGD->nx, WGD->ny, WGD->nz, WGD->dz_array, WGD->z_face, corners, cutCells, WGD);
+      setCellPoints(i, j, WGD->nx, WGD->ny, WGD->nz, WGD->dz_array, WGD->z_face, corners, cutCells, WGD);
     }
 
 
@@ -776,7 +778,8 @@ void DTEHeightField::setCells(Cell *cells, WINDSGeneralData *WGD, const WINDSInp
   //return cutCells;
 }
 
-void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3 corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD)
+//void DTEHeightField::setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3 corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD)
+void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3 corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD)
 {
   float coordsMin, coordsMax;
   coordsMin = coordsMax = corners[0][2];

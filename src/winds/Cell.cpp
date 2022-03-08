@@ -41,6 +41,7 @@
 
 #include "Cell.h"
 
+/* OBSOLETE CODE
 Cell::Cell()
 {
   isAir = isCutCell = isTerrain = false;
@@ -135,3 +136,5 @@ Cell::Cell(std::vector<Vector3> &points, int intermed[4][4][2], Vector3 location
       fluidFacePoints[i].clear();
   }
 }
+
+*/
