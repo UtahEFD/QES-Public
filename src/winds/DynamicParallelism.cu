@@ -333,10 +333,8 @@ DynamicParallelism::DynamicParallelism(const WINDSInputData *WID, WINDSGeneralDa
 
 void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
 {
-  auto startTotal = std::chrono::high_resolution_clock::now();// Start
-    // recording
-    // execution
-    // time
+  //auto startTotal = std::chrono::high_resolution_clock::now();
+
   int numblocks = (WGD->numcell_cent / BLOCKSIZE) + 1;
 
   R.resize(WGD->numcell_cent, 0.0);

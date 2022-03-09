@@ -51,7 +51,7 @@ void BVH::mergeSort(std::vector<BVH *> &list, const int type)
   int midPoint = list.size() / 2;
   for (int i = 0; i < midPoint; i++)
     l.push_back(list[i]);
-  for (int i = midPoint; i < list.size(); i++)
+  for (size_t i = midPoint; i < list.size(); i++)
     r.push_back(list[i]);
 
   mergeSort(l, type);
@@ -59,7 +59,7 @@ void BVH::mergeSort(std::vector<BVH *> &list, const int type)
 
   int lSize = l.size(), rSize = r.size();
   int j = 0, k = 0;
-  for (auto i = 0u; i < list.size(); i++) {
+  for (size_t i = 0u; i < list.size(); i++) {
     if (j == lSize)
       list[i] = r[k++];
     else if (k == rSize)
@@ -150,7 +150,7 @@ BVH::BVH(std::vector<BVH *> m, int height)
   int midPoint = m.size() / 2;
   for (int i = 0; i < midPoint; i++)
     l.push_back(m[i]);
-  for (int i = midPoint; i < m.size(); i++)
+  for (size_t i = midPoint; i < m.size(); i++)
     r.push_back(m[i]);
 
   leftBox = new BVH(l, height + 1);
@@ -171,7 +171,7 @@ BVH *BVH::createBVH(const std::vector<Triangle *> &tris)
 {
   std::vector<BVH *> boxes;
 
-  for (int i = 0; i < tris.size(); i++) {
+  for (size_t i = 0; i < tris.size(); i++) {
     BVH *b = new BVH(tris[i]);
     boxes.push_back(b);
   }
@@ -203,7 +203,7 @@ bool BVH::rayBoxIntersect(const Ray &ray)
   float originY = ray.getOriginY();
   float originZ = ray.getOriginZ();
   // Vector3<float> dir = ray.getDirection();
-  Vec3D dir = ray.getDirection();
+  Vector3 dir = ray.getDirection();
 
   float tMinX, tMaxX, tMinY, tMaxY, tMinZ, tMaxZ;
 

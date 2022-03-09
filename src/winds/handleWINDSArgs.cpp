@@ -39,10 +39,11 @@
 #include "handleWINDSArgs.h"
 
 WINDSArgs::WINDSArgs()
-  : verbose(false), compTurb(false),
+  : verbose(false),
     qesFile(""), netCDFFileBasename(""),
+    compTurb(false), solveType(1), compareType(0),
     visuOutput(false), wkspOutput(false), turbOutput(false), terrainOut(false),
-    solveType(1), compareType(0)
+    fireMode(false)
 {
   reg("help", "help/usage information", ArgumentParsing::NONE, '?');
   reg("verbose", "turn on verbose output", ArgumentParsing::NONE, 'v');

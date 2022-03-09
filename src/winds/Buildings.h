@@ -32,7 +32,7 @@
 #pragma once
 
 #include "util/ParseInterface.h"
-#include "ESRIShapefile.h"
+#include "util/ESRIShapefile.h"
 
 #include "Building.h"
 #include "RectangularBuilding.h"

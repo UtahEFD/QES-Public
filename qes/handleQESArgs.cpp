@@ -1,11 +1,14 @@
 #include "handleQESArgs.h"
 
 QESArgs::QESArgs()
-  : verbose(false), compTurb(false), compPlume(false),
+  : verbose(false),
     inputWINDSFile(""), inputPlumeFile(""),
     netCDFFileBasename(""),
-    visuOutput(false), wkspOutput(false), turbOutput(false), terrainOut(false), doParticleDataOutput(false),
-    solveType(1), compareType(0)
+    solveWind(false), compTurb(false), compPlume(false),
+    solveType(1), compareType(0),
+    visuOutput(false), wkspOutput(false), terrainOut(false),
+    turbOutput(false),
+    doParticleDataOutput(false)
 {
   reg("help", "help/usage information", ArgumentParsing::NONE, '?');
   reg("verbose", "turn on verbose output", ArgumentParsing::NONE, 'v');

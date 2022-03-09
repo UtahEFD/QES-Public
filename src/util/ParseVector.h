@@ -27,49 +27,62 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file Ray.h */
+/** @file ParseVector.h */
 
 #pragma once
 
-#include "util/Vector3.h"
+#include <type_traits>
+#include <iostream>
+#include "util/ParseInterface.h"
+
+#define FLOATS_ARE_EQUAL(x, y) (((x) - (y)) < 0.000001 && ((x) - (y)) > -0.000001)
 
 /**
- * @class Ray
- * @brief Basic definition of a ray.
+ * @class ParseVector
+ * @brief Template class that holds 3 values.
+ *
+ * Values can be accessed as if this was an array.
  */
-class Ray
+template<class T>
+class ParseVector : public ParseInterface
 {
-private:
-  float origin_x, origin_y, origin_z;
-  Vector3 dirVec;
+protected:
+  std::vector<T> values;
 
 public:
-  Ray(float o_x, float o_y, float o_z, Vector3 &dVec)
-    : origin_x(o_x), origin_y(o_y), origin_z(o_z), dirVec(dVec)
+  ParseVector()
   {
+    values.clear();
   }
 
-  Ray(float o_x, float o_y, float o_z)
-    : origin_x(o_x), origin_y(o_y), origin_z(o_z)
+
+  virtual void parseValues()
   {
-    dirVec[0] = 0.0;
-    ;
-    dirVec[1] = 0.0;
-    dirVec[2] = 1.0;
+    values.clear();
+    parseTaglessValues<T>(values);
   }
 
-  ~Ray() {}
-
-  float getOriginX() const { return origin_x; }
-  float getOriginY() const { return origin_y; }
-  float getOriginZ() const { return origin_z; };
-
-  Vector3 getDirection() const { return dirVec; }
-
-  void setDir(const Vector3 &dir)
+  size_t size()
   {
-    dirVec[0] = dir[0];
-    dirVec[1] = dir[1];
-    dirVec[2] = dir[2];
+    return values.size();
+  }
+
+  /**
+   * Accesses the value at position i.
+   *
+   * @param i the index of the value to return
+   * @return a reference to the value stored at i
+   */
+  T &operator[](const int i)
+  {
+    return values[i];
+  }
+
+
+  friend std::istream &operator>>(std::istream &is, ParseVector<T> &v)
+  {
+    for (size_t i = 0; i < v.values.size(); ++i)
+      is >> v.values[i];
+    return is;
   }
 };

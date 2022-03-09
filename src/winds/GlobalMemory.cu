@@ -210,10 +210,8 @@ __global__ void finalVelocityGlobal(float *d_lambda, float *d_u, float *d_v, flo
 
 void GlobalMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
 {
-  auto startTotal = std::chrono::high_resolution_clock::now();// Start
-    // recording
-    // execution
-    // time
+  //auto startTotal = std::chrono::high_resolution_clock::now();
+
   int numblocks = (WGD->numcell_cent / BLOCKSIZE) + 1;
   R.resize(WGD->numcell_cent, 0.0);
 
