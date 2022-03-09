@@ -137,7 +137,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
       totalTimeIncrements = WID->simParams->totalTimeIncrements;
 
-      // #if 0
+      // Here to take care of the first time this is built
       for (auto i = 0; i < wrf_ptr->fm_nx; i++) {
         for (auto j = 0; j < wrf_ptr->fm_ny; j++) {
           int index = i + j * wrf_ptr->fm_nx;
@@ -149,7 +149,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
           WID->metParams->sensors[index]->TS[0]->site_z_ref.resize(wrf_ptr->ht_fmw.size());
           WID->metParams->sensors[index]->TS[0]->site_U_ref.resize(wrf_ptr->ht_fmw.size());
 
-          WID->metParams->sensors[index]->TS[0]->site_z0 = 0.1;// should get per cell from WRF data...
+          WID->metParams->sensors[index]->TS[0]->site_z0 = 0.1;// should get per cell from WRF data...  we do load per atm cell...
           WID->metParams->sensors[index]->TS[0]->site_one_overL = 0.0;
 
           for (auto p = 0; p < wrf_ptr->ht_fmw.size(); p++) {
@@ -248,7 +248,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     }
 
     // If there are more than one timestep
-    std::cout << "Total Incr from simparams: " << WID->simParams->totalTimeIncrements << std::endl;
     if (WID->simParams->totalTimeIncrements > 0) {
       // Loop to include all the timestep for the first sensor
       for (auto i = 0; i < WID->metParams->sensors[0]->TS.size(); i++) {
@@ -282,14 +281,11 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       timestamp.push_back(bt::from_time_t(sensortime[t]));
     }
 
-    std::cout << "time stamp size: " << timestamp.size() << std::endl;
     if (WID->simParams->totalTimeIncrements == 0) {
       totalTimeIncrements = timestamp.size();
     } else {
       totalTimeIncrements = WID->simParams->totalTimeIncrements;
     }
-
-    std::cout << "Total TI = " << totalTimeIncrements << std::endl;
 
     // Adding halo to sensor location (if in QEScoord site_coord_flag==1)
     for (size_t i = 0; i < WID->metParams->sensors.size(); i++) {
