@@ -177,6 +177,16 @@ int main(int argc, char *argv[])
     if (TGD != nullptr)
       TGD->run();
 
+    // /////////////////////////////
+    // Output the various files requested from the simulation run (netcdf wind velocity, icell values, etc...)
+    // /////////////////////////////
+    for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
+      outputVec.at(id_out)->save(WGD->timestamp[0]);
+    }
+    
+    // /////////////////////////////
+    // WRF Coupling
+    // /////////////////////////////
     if (WID->simParams->wrfCoupling) {
       wrfOutput->save( WGD->timestamp[0] );
 
@@ -184,13 +194,6 @@ int main(int argc, char *argv[])
       std::cout << "Attempting to re-read data from WRF." << std::endl;
       WID->simParams->wrfInputData->updateFromWRF();
     } 
-
-    // /////////////////////////////
-    // Output the various files requested from the simulation run (netcdf wind velocity, icell values, etc...)
-    // /////////////////////////////
-    for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
-      outputVec.at(id_out)->save(WGD->timestamp[0]);
-    }
 
   }
 
