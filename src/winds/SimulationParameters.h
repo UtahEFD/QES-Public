@@ -225,7 +225,8 @@ public:
       // as station coordinates.
       wrfInputData->applyHalotoStationData(halo_x, halo_y);
 
-      wrfInputData->dumpStationData();
+      // Debug to show where the stations are...
+      // wrfInputData->dumpStationData();
 
       // In the current setup, grid may NOT be set... be careful
       // may need to initialize it here if nullptr is true for grid
