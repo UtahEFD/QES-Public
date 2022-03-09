@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
   WINDSOutputWRF *wrfOutput = nullptr;
   if (arguments.fireMode) {
     wrfOutput = new WINDSOutputWRF(WGD, WID->simParams->wrfInputData);
-    // outputVec.push_back(wrfOutput);
+    outputVec.push_back(wrfOutput);
   }
 
 
@@ -155,11 +155,9 @@ int main(int argc, char *argv[])
     }
   }
 
-  std::cout << "WGD->totalTimeIncr = " << WGD->totalTimeIncrements << std::endl;
-
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     // print time progress (time stamp and percentage)
-    // WGD->printTimeProgress(index);
+    WGD->printTimeProgress(index);
     
     // Reset icellflag values
     WGD->resetICellFlag();
@@ -186,19 +184,20 @@ int main(int argc, char *argv[])
       std::cout << "Attempting to re-read data from WRF." << std::endl;
       WID->simParams->wrfInputData->updateFromWRF();
     } 
-    else {
-      // /////////////////////////////
-      // Output the various files requested from the simulation run (netcdf wind velocity, icell values, etc...)
-      // /////////////////////////////
-      for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
-	outputVec.at(id_out)->save(WGD->timestamp[index]);
-      }
+
+    // /////////////////////////////
+    // Output the various files requested from the simulation run (netcdf wind velocity, icell values, etc...)
+    // /////////////////////////////
+    for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
+      outputVec.at(id_out)->save(WGD->timestamp[0]);
     }
 
   }
 
-  WID->simParams->wrfInputData->endWRFSession();
+  if (WID->simParams->wrfCoupling) 
+    WID->simParams->wrfInputData->endWRFSession();
 
   // /////////////////////////////
+  std::cout << "QES-Winds Exiting." << std::endl;
   exit(EXIT_SUCCESS);
 }
