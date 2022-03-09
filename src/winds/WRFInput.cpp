@@ -2418,6 +2418,7 @@ void WRFInput::extractWind( WINDSGeneralData *wgd )
             auto qes3DIdx = kQES*(wgd->nx)*(wgd->ny) + jQES*(wgd->nx) + iQES;
             
             // provide cell centered data to WRF
+	    // -- Need to switch to linear interpolation within the cells...
             ufOut[ fireMeshIdx ] = 0.5 * (wgd->u[ qes3DIdx + 1 ] + wgd->u[ qes3DIdx ]);
             vfOut[ fireMeshIdx ] = 0.5 * (wgd->v[ qes3DIdx + wgd->nx ] + wgd->v[ qes3DIdx ]);
         }
