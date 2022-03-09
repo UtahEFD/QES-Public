@@ -116,11 +116,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 	      {
 		WID->metParams->sensors[i] = new Sensor();
 	      }    
+
             // create one time series for each sensor, for now
-            WID->metParams->sensors[i]->TS.resize(1);
+            WID->metParams->sensors[i]->TS.resize(1); 
             if (!WID->metParams->sensors[i]->TS[0])
 	      {
-		WID->metParams->sensors[i]->TS[0] = new TimeSeries;
+		WID->metParams->sensors[i]->TS[0] = new TimeSeries();
 	      }
 
             // WRF profile data -- sensor blayer flag is 4
@@ -156,7 +157,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 		WID->metParams->sensors[index]->TS[0]->site_z_ref.resize( wrf_ptr->ht_fmw.size() );
 		WID->metParams->sensors[index]->TS[0]->site_U_ref.resize( wrf_ptr->ht_fmw.size() );
 
-		WID->metParams->sensors[index]->TS[0]->site_z0 = 0.1;
+		WID->metParams->sensors[index]->TS[0]->site_z0 = 0.1;  // should get per cell from WRF data...
 		WID->metParams->sensors[index]->TS[0]->site_one_overL = 0.0;
 
 		for (auto p = 0; p < wrf_ptr->ht_fmw.size(); p++)
@@ -444,9 +445,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     }
   }
 
-  int halo_index_x = (WID->simParams->halo_x / dx);
+  halo_index_x = (WID->simParams->halo_x / dx);
   // WID->simParams->halo_x = halo_index_x*dx;
-  int halo_index_y = (WID->simParams->halo_y / dy);
+  halo_index_y = (WID->simParams->halo_y / dy);
   // WID->simParams->halo_y = halo_index_y*dy;
 
   int ii, jj, idx;
