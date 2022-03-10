@@ -116,6 +116,7 @@ public:
 
   // these are the interpolated wind fields from WRF
   std::vector<float> u0_fmw, v0_fmw, w0_fmw, ht_fmw;
+  std::vector<float> fwh;
 
   /**
    * :document this:

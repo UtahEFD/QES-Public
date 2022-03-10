@@ -478,7 +478,7 @@ WRFInput::WRFInput(const std::string &filename,
 
     std::cout << "\treading data for FWH, FZ0, and ZSF..." << std::endl;
 
-    std::vector<double> fwh(fm_nx * fm_ny);
+    fwh.resize(fm_nx * fm_ny);
     std::vector<double> fz0(fm_nx * fm_ny);
     wrfInputFile.getVar("FWH").getVar(startIdx, counts, fwh.data());
     wrfInputFile.getVar("FZ0").getVar(startIdx, counts, fz0.data());
@@ -2335,7 +2335,8 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
   std::vector<float> ufOut(fm_nx * fm_ny, 0.0);
   std::vector<float> vfOut(fm_nx * fm_ny, 0.0);
 
-  auto FWH = 1.2;
+  // default FWH, just in case
+  auto FWH = 6.09;
 
   if (FWH <= wgd->dz) {
     std::cout << "Warning: resolution in z-direction is not fine enough to define above ground cells for calculating wind" << std::endl;
@@ -2358,6 +2359,13 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
       auto qes2DIdx = jQES * (wgd->nx - 1) + iQES;
       auto tHeight = wgd->terrain[qes2DIdx];
 
+      // fire mesh idx
+      auto fireMeshIdx = j * fm_nx + i;
+
+      // fwh lookup
+      FWH = fwh[fireMeshIdx];
+      if (FWH < wgd->dz) FWH = wgd->dz * 1.5;
+
       // find the k index value at this height in the domain,
       // need to take into account the variable dz
       int kQES;
@@ -2368,9 +2376,6 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
         }
       }
       // auto kQES = (int)floor( ((tHeight + FWH)/float(wgd->dz) ));
-
-      // fire mesh idx
-      auto fireMeshIdx = j * fm_nx + i;
 
       // 3D QES Idx
       auto qes3DIdx = kQES * (wgd->nx) * (wgd->ny) + jQES * (wgd->nx) + iQES;
