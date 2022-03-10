@@ -195,7 +195,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         }
       }
     }
-    //}
+
     // Sort the timesteps from low to high (earliest to latest)
     mergeSortTime(sensortime, sensortime_id);
 

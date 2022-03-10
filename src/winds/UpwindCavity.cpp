@@ -54,7 +54,7 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
   float retarding_factor = 0.4;// In the outer region, velocities are reduced by 40% (Bagal et al. (2004))
   float height_factor = 0.6;// Height of both elipsoids (inner and outer) extends to 0.6H
   float length_factor = 0.4;
-  int k_top;// Index of top of the upwind area
+  int k_top(1);// Index of top of the upwind area
   float uh_rotation, vh_rotation;// Velocity components at the height of the building after rotation
   float vortex_height;// Height of the vortex
   float retarding_height;// Height of the obstacle causes retardation in flow
@@ -86,7 +86,7 @@ void PolyBuilding::upwindCavity(const WINDSInputData *WID, WINDSGeneralData *WGD
   v0_h = WGD->v0[index_building_face];// v velocity at the height of building at the centroid
   // Wind direction of initial velocity at the height of building at the centroid
   upwind_dir = atan2(v0_h, u0_h);
-  for (size_t id = 0; id < polygonVertices.size() - 1; id++) {
+  for (auto id = 0u; id < polygonVertices.size() - 1; id++) {
     xf1[id] = 0.5 * (polygonVertices[id].x_poly - polygonVertices[id + 1].x_poly) * cos(upwind_dir)
               + 0.5 * (polygonVertices[id].y_poly - polygonVertices[id + 1].y_poly) * sin(upwind_dir);
     yf1[id] = -0.5 * (polygonVertices[id].x_poly - polygonVertices[id + 1].x_poly) * sin(upwind_dir)
