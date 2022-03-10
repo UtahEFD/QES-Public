@@ -102,7 +102,8 @@ int main(int argc, char *argv[])
   WINDSOutputWRF *wrfOutput = nullptr;
   if (arguments.fireMode) {
     wrfOutput = new WINDSOutputWRF(WGD, WID->simParams->wrfInputData);
-    outputVec.push_back(wrfOutput);
+    // Eventually we can add the wrf output here...
+    // outputVec.push_back(wrfOutput);
   }
 
 
@@ -157,7 +158,7 @@ int main(int argc, char *argv[])
 
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     // print time progress (time stamp and percentage)
-    WGD->printTimeProgress(index);
+    // WGD->printTimeProgress(index);
     
     // Reset icellflag values
     WGD->resetICellFlag();
@@ -188,7 +189,10 @@ int main(int argc, char *argv[])
     // WRF Coupling
     // /////////////////////////////
     if (WID->simParams->wrfCoupling) {
-      wrfOutput->save( WGD->timestamp[0] );
+      if (wrfOutput) {
+	std::cout << "Writing data back to the WRF file." << std::endl;
+	wrfOutput->save( WGD->timestamp[0] );
+      }
 
       // Re-read WRF data
       std::cout << "Attempting to re-read data from WRF." << std::endl;
