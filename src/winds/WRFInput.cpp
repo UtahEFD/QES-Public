@@ -2377,13 +2377,22 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
       }
       // auto kQES = (int)floor( ((tHeight + FWH)/float(wgd->dz) ));
 
+      // kQES represents the first cell in which the height is above
+      // the tHeight + FWH.  Use this to linearly interpolate
+      // vertical, face centered winds in U and V.  Normalize by dz.
+      // kQES - 1 should represent the cell below.
+      float t = (wgd->z[kQES] - (tHeight + FWH)) / wgd->dz;
+
       // 3D QES Idx
       auto qes3DIdx = kQES * (wgd->nx) * (wgd->ny) + jQES * (wgd->nx) + iQES;
 
       // provide cell centered data to WRF
       // -- Need to switch to linear interpolation within the cells...
-      ufOut[fireMeshIdx] = 0.5 * (wgd->u[qes3DIdx + 1] + wgd->u[qes3DIdx]);
-      vfOut[fireMeshIdx] = 0.5 * (wgd->v[qes3DIdx + wgd->nx] + wgd->v[qes3DIdx]);
+      //      ufOut[fireMeshIdx] = 0.5 * (wgd->u[qes3DIdx + 1] + wgd->u[qes3DIdx]);
+      //      vfOut[fireMeshIdx] = 0.5 * (wgd->v[qes3DIdx + wgd->nx] + wgd->v[qes3DIdx]);
+
+      ufOut[fireMeshIdx] = t * wgd->u[qes3DIdx - 1] + (1 - t) * wgd->u[qes3DIdx];
+      vfOut[fireMeshIdx] = t * wgd->v[qes3DIdx - wgd->nx] + (1 - t) * wgd->v[qes3DIdx];
     }
   }
 
