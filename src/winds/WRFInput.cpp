@@ -436,27 +436,8 @@ WRFInput::WRFInput(const std::string &filename,
     fm_ny = wrfInputFile.getVar("FXLONG").getDim(1).getSize();
     fm_nx = wrfInputFile.getVar("FXLONG").getDim(2).getSize();
 
-    std::vector<size_t> startIdx = { 0, 0, 0, 0 };
-    std::vector<size_t> counts = { 1,
-                                   static_cast<unsigned long>(fm_ny),
-                                   static_cast<unsigned long>(fm_nx) };
-
-    std::vector<double> fxlong(fm_nx * fm_ny);
-    std::vector<double> fxlat(fm_nx * fm_ny);
-    wrfInputFile.getVar("FXLONG").getVar(startIdx, counts, fxlong.data());
-    wrfInputFile.getVar("FXLAT").getVar(startIdx, counts, fxlat.data());
-
-    std::cout << "\treading data for FWH, FZ0, and ZSF..." << std::endl;
-
-    std::vector<double> fwh(fm_nx * fm_ny);
-    std::vector<double> fz0(fm_nx * fm_ny);
-    wrfInputFile.getVar("FWH").getVar(startIdx, counts, fwh.data());
-    wrfInputFile.getVar("FZ0").getVar(startIdx, counts, fz0.data());
-
-    fmHeight.resize(fm_nx * fm_ny);
-    wrfInputFile.getVar("ZSF").getVar(startIdx, counts, fmHeight.data());
-
-    // The following is provided from Jan and students
+    // Need to subtract out borders in the WRF fire mesh, as 
+    // provided from Jan and students
     int sizeHGT_x = wrfInputFile.getVar("HGT").getDim(2).getSize();
     int sizeHGT_y = wrfInputFile.getVar("HGT").getDim(1).getSize();
     int sizeZSF_x = wrfInputFile.getVar("ZSF").getDim(2).getSize();
@@ -483,6 +464,28 @@ WRFInput::WRFInput(const std::string &filename,
     std::cout << "WRF Fire Mesh Resolution (dx, dy): (" << fm_dx << ", " << fm_dy << ")" << std::endl;
 
     std::cout << "\ttotal domain size: " << fm_nx * fm_dx << "m by " << fm_ny * fm_dy << "m" << std::endl;
+
+
+    std::vector<size_t> startIdx = { 0, 0, 0, 0 };
+    std::vector<size_t> counts = { 1,
+                                   static_cast<unsigned long>(fm_ny),
+                                   static_cast<unsigned long>(fm_nx) };
+
+    std::vector<double> fxlong(fm_nx * fm_ny);
+    std::vector<double> fxlat(fm_nx * fm_ny);
+    wrfInputFile.getVar("FXLONG").getVar(startIdx, counts, fxlong.data());
+    wrfInputFile.getVar("FXLAT").getVar(startIdx, counts, fxlat.data());
+
+    std::cout << "\treading data for FWH, FZ0, and ZSF..." << std::endl;
+
+    std::vector<double> fwh(fm_nx * fm_ny);
+    std::vector<double> fz0(fm_nx * fm_ny);
+    wrfInputFile.getVar("FWH").getVar(startIdx, counts, fwh.data());
+    wrfInputFile.getVar("FZ0").getVar(startIdx, counts, fz0.data());
+
+    fmHeight.resize(fm_nx * fm_ny);
+    wrfInputFile.getVar("ZSF").getVar(startIdx, counts, fmHeight.data());
+
 
     double fm_minWRFAlt = std::numeric_limits<double>::max(),
            fm_maxWRFAlt = std::numeric_limits<double>::min();
@@ -2231,7 +2234,7 @@ void WRFInput::updateFromWRF()
       wrfInputFile.close();
 
       // wait a few seconds for now
-      usleep(6000000);
+      usleep(1000000);
 
       // re-open
       wrfInputFile.open(m_WRFFilename, NcFile::write);
@@ -2320,11 +2323,7 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
   // wind field and at the moment, the fire mesh and the QES domain
   // should match up (as stated above).
 
-  std::vector<size_t> startIdx = { 0, 0, 0, 0 };
-  std::vector<size_t> counts = { 1,
-                                 static_cast<unsigned long>(fm_ny),
-                                 static_cast<unsigned long>(fm_nx) };
-
+  std::cout << "QES Extracting fire height wind field into WRF UF and VF" << std::endl;
   std::cout << "fm_nx=" << fm_nx << ", wgd->nx=" << wgd->nx << ", haloX=" << m_haloX_DimAddition << "( " << std::endl;
   std::cout << "fm_ny=" << fm_ny << ", wgd->ny=" << wgd->ny << ", haloY=" << m_haloY_DimAddition << std::endl;
 
@@ -2395,6 +2394,11 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
   NcVar field_CHSUM = wrfInputFile.getVar("CHSUM_FMW");
   NcVar field_FRAME = wrfInputFile.getVar("FRAME_FMW");
 
+  std::vector<size_t> startIdx = { 0, 0, 0 };
+  std::vector<size_t> counts = { 1, 
+				 static_cast<unsigned long>(fm_ny),
+				 static_cast<unsigned long>(fm_nx) };
+  
   field_UF.putVar(startIdx, counts, ufOut.data());//, startIdx, counts );
   field_VF.putVar(startIdx, counts, vfOut.data());//, startIdx, counts );
 
@@ -2404,10 +2408,9 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
   field_CHSUM.putVar(chksum_StartIdx, chksum_counts, &ufvf_chsum);
 
   // Need to output the wrfFRAME0 back to the FRAME_FMW
-  std::cout << "Writing last read frame num back: " << currWRFFRAME0Num << std::endl;
   field_FRAME.putVar(chksum_StartIdx, chksum_counts, &currWRFFRAME0Num);
 
-  std::cout << "Checksum and frame updated!" << std::endl;
+  std::cout << "\tChecksum and frame updated!" << std::endl;
 
   wrfInputFile.sync();
   std::cout << "Wind field data written to WRF Output file: " << m_WRFFilename << std::endl;
