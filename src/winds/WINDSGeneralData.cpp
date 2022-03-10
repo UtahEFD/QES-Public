@@ -152,10 +152,11 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
           WID->metParams->sensors[index]->TS[0]->site_z0 = 0.1;// should get per cell from WRF data...  we do load per atm cell...
           WID->metParams->sensors[index]->TS[0]->site_one_overL = 0.0;
 
+	  // for each height in the WRF profile
           for (auto p = 0; p < wrf_ptr->ht_fmw.size(); p++) {
             int id = index + p * wrf_ptr->fm_nx * wrf_ptr->fm_ny;
             WID->metParams->sensors[index]->TS[0]->site_z_ref[p] = wrf_ptr->ht_fmw[p];
-            WID->metParams->sensors[index]->TS[0]->site_U_ref[p] = sqrt(pow(wrf_ptr->u0_fmw[id], 2.0) + pow(wrf_ptr->v0_fmw[id], 2.0));
+            WID->metParams->sensors[index]->TS[0]->site_U_ref[p] = sqrt( (wrf_ptr->u0_fmw[id] * wrf_ptr->u0_fmw[id]) + (wrf_ptr->v0_fmw[id] * wrf_ptr->v0_fmw[id]) );
             WID->metParams->sensors[index]->TS[0]->site_wind_dir[p] = 180 + (180 / pi) * atan2(wrf_ptr->v0_fmw[id], wrf_ptr->u0_fmw[id]);
           }
         }
