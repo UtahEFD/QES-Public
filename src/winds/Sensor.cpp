@@ -401,6 +401,9 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 
 
   else if (WID->simParams->m_domIType == SimulationParameters::DomainInputType::WRFOnly) {
+
+    std::cout << "Processing WRF u0_fmw, v0_fmw and w0_fmw into initial QES wind fields." << std::endl;
+
     // Create initial wind field in the area WRF data is available
     for (auto i = WGD->halo_index_x + 1; i < WGD->wrf_nx + WGD->halo_index_x; i++) {
       for (auto j = WGD->halo_index_y + 1; j < WGD->wrf_ny + WGD->halo_index_y; j++) {
