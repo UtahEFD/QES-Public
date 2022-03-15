@@ -7,7 +7,7 @@ add_library (qesutil ${LIB_TYPE}
   ParseException.h
   
   ESRIShapefile.cpp ESRIShapefile.h
-
+  GIStool.cpp
   
   doesFolderExist.h
   calcTime.cpp calcTime.h
