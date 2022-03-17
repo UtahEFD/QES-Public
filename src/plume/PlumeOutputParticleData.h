@@ -48,11 +48,6 @@ class Plume;
 class PlumeOutputParticleData : public QESNetCDFOutput
 {
 public:
-  // default constructor
-  PlumeOutputParticleData() : QESNetCDFOutput()
-  {
-  }
-
   // specialized constructor
   PlumeOutputParticleData(PlumeInputData *PID, Plume *plume_ptr, std::string output_file);
 
@@ -71,6 +66,9 @@ protected:
   bool validateFileOtions();
 
 private:
+  // default constructor
+  PlumeOutputParticleData() {}
+
   // Output frequency control information
   float outputStartTime;// time to start output, adjusted if the output duration does not divide evenly by the output frequency
   float outputEndTime;// time to end output

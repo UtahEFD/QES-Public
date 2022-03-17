@@ -50,11 +50,6 @@ class Plume;
 class PlumeOutput : public QESNetCDFOutput
 {
 public:
-  // default constructor
-  PlumeOutput() : QESNetCDFOutput()
-  {
-  }
-
   // specialized constructor
   PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plume_ptr, std::string output_file);
 
@@ -70,6 +65,9 @@ public:
   void save(ptime) {}
 
 private:
+  // default constructor
+  PlumeOutput() {}
+
   // time averaging frequency control information
   // in this case, this is also the output control information
   float timeAvgStart;// time to start concentration averaging, not the time to start output. Adjusted if the time averaging duration does not divide evenly by the averaging frequency
