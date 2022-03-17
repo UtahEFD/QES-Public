@@ -330,17 +330,6 @@ void PlumeOutput::save(float currentTime)
       conc[id] = 0.0;
     }
 
-    // remove x, y, z
-    // from output array after first save
-    // FM: only remove time dep variables from output array after first save
-    // LA note: the output counter is an inherited variable
-    if (output_counter == 0) {
-      rmTimeIndepFields();
-    }
-
-    // increment inherited output counter for next time insertion
-    output_counter += 1;
-
     // update the next output time value
     // so averaging and output only happens at the averaging frequency
     nextOutputTime = nextOutputTime + timeAvgFreq;

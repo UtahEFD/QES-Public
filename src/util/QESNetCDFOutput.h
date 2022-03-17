@@ -120,8 +120,6 @@ struct AttVectorChar
 class QESNetCDFOutput : public NetCDFOutput
 {
 public:
-  QESNetCDFOutput()
-  {}
   QESNetCDFOutput(std::string);
   virtual ~QESNetCDFOutput()
   {}
@@ -134,6 +132,8 @@ public:
   virtual void save(ptime) = 0;
   virtual void save(float) {}
 
+  QESNetCDFOutput() {}
+
 protected:
   // create attribute scalar based on type of data
   void createAttScalar(std::string, std::string, std::string, std::vector<NcDim>, int *);
@@ -145,6 +145,9 @@ protected:
   void createAttVector(std::string, std::string, std::string, std::vector<NcDim>, std::vector<float> *);
   void createAttVector(std::string, std::string, std::string, std::vector<NcDim>, std::vector<double> *);
   void createAttVector(std::string, std::string, std::string, std::vector<NcDim>, std::vector<char> *);
+
+  NcDim NcDim_t;
+  NcDim NcDim_tstr;
 
 
   // add fields based on output_fields
@@ -159,7 +162,8 @@ protected:
   {}
   virtual bool validateFileOptions();
 
-  std::vector<char> timestamp; /**< :document this: */
+  std::string timestamp;
+  std::vector<char> timestamp_out; /**< :document this: */
   const int dateStrLen = 19; /**< :document this: */
 
   int output_counter = 0; /**< :document this: */

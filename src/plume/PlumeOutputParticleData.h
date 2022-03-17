@@ -84,8 +84,8 @@ private:
   Plume *plume;
 
   // all possible output fields need to be add to this list
-  std::vector<std::string> allOutputFields = { "t", "parID", "tStrt", "sourceIdx", "d", "m", "wdepos", "wdecay", "xPos_init", "yPos_init", "zPos_init", "xPos", "yPos", "zPos", "uMean", "vMean", "wMean", "uFluct", "vFluct", "wFluct", "delta_uFluct", "delta_vFluct", "delta_wFluct", "isRogue", "isActive" };
-  std::vector<std::string> minimalOutputFields = { "t", "parID", "tStrt", "sourceIdx", "xPos", "yPos", "zPos", "isActive" };
+  std::vector<std::string> allOutputFields = { "parID", "tStrt", "sourceIdx", "d", "m", "wdepos", "wdecay", "xPos_init", "yPos_init", "zPos_init", "xPos", "yPos", "zPos", "uMean", "vMean", "wMean", "uFluct", "vFluct", "wFluct", "delta_uFluct", "delta_vFluct", "delta_wFluct", "isRogue", "isActive" };
+  std::vector<std::string> minimalOutputFields = { "parID", "tStrt", "sourceIdx", "xPos", "yPos", "zPos", "isActive" };
 
 
   // main particle metadata, almost a copy of what is in the "particle" class

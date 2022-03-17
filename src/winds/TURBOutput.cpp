@@ -52,20 +52,6 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd, std::string output_file)
 
   // unused: long numcell_cout = (nx-1)*(ny-1)*(nz-1);
 
-  timestamp.resize(dateStrLen, '0');
-  // set time data dimensions
-  NcDim NcDim_t = addDimension("t");
-  NcDim NcDim_tstr = addDimension("dateStrLen", dateStrLen);
-  // create attributes for time dimension
-  std::vector<NcDim> dim_vect_t;
-  dim_vect_t.push_back(NcDim_t);
-  createAttScalar("t", "time", "s", dim_vect_t, &time);
-  // create attributes for time dimension
-  std::vector<NcDim> dim_vect_tstr;
-  dim_vect_tstr.push_back(NcDim_t);
-  dim_vect_tstr.push_back(NcDim_tstr);
-  createAttVector("times", "date time", "-", dim_vect_tstr, &timestamp);
-
   // set cell-centered data dimensions
   // space dimensions
   NcDim NcDim_x_cc = addDimension("x", nx - 1);
@@ -137,9 +123,7 @@ void TURBOutput::setAllOutputFields()
 {
   all_output_fields.clear();
   // all possible output fields need to be add to this list
-  all_output_fields = { "t",
-                        "time",
-                        "x",
+  all_output_fields = { "x",
                         "y",
                         "z",
                         "iturbflag",
@@ -173,18 +157,8 @@ void TURBOutput::save(ptime timeOut)
 
   // set time
   time = (double)output_counter;
-
-  std::string s = to_iso_extended_string(timeOut);
-  std::copy(s.begin(), s.end(), timestamp.begin());
+  timestamp = to_iso_extended_string(timeOut);
 
   // save fields
   saveOutputFields();
-
-  // remmove time indep from output array after first save
-  if (output_counter == 0) {
-    rmTimeIndepFields();
-  }
-
-  // increment for next time insertion
-  output_counter += 1;
 };

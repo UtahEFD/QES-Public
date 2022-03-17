@@ -72,7 +72,7 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
   } else if (fileOP[0] == "minimal") {
     output_fields = minimalOutputFields;
   } else {
-    output_fields = { "t", "parID", "tStrt", "sourceIdx", "isActive" };
+    output_fields = { "parID", "tStrt", "sourceIdx", "isActive" };
     output_fields.insert(output_fields.end(), fileOP.begin(), fileOP.end());
   }
 
@@ -208,15 +208,8 @@ PlumeOutputParticleData::PlumeOutputParticleData(PlumeInputData *PID, Plume *plu
   // --------------------------------------------------------
 
   // set data dimensions, which in this case are cell-centered dimensions
-  // time dimension
-  NcDim NcDim_t = addDimension("t");
   // particles dimensions
   NcDim NcDim_par = addDimension("parID", numPar);
-
-  // create attributes for time dimension
-  std::vector<NcDim> dim_vect_t;
-  dim_vect_t.push_back(NcDim_t);
-  createAttScalar("t", "time", "s", dim_vect_t, &time);
 
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_par;
@@ -345,16 +338,6 @@ void PlumeOutputParticleData::save(float currentTime)
 
     // save the fields to NetCDF files
     saveOutputFields();
-
-
-    // FM: only remove time dep variables from output array after first save
-    // LA note: the output counter is an inherited variable
-    if (output_counter == 0)
-      rmTimeIndepFields();
-
-    // increment inherited output counter for next time insertion
-    output_counter += 1;
-
 
     // update the next output time so output only happens at output frequency
     nextOutputTime = nextOutputTime + outputFrequency;

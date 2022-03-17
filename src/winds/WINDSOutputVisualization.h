@@ -78,7 +78,7 @@ private:
 
   ///@{
   /** :document this: */
-  std::vector<double> u_out, v_out, w_out, mag_out;
+  std::vector<float> u_out, v_out, w_out, mag_out;
   ///@}
 
   WINDSGeneralData *WGD_; /**< :document this: */

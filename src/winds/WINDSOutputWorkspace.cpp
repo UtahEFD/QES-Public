@@ -75,23 +75,6 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
     y[j] = WGD_->y[j];
   }
 
-  timestamp.resize(dateStrLen, '0');
-
-  // time dimension
-  NcDim NcDim_t = addDimension("t");
-  NcDim NcDim_tstr = addDimension("dateStrLen", dateStrLen);
-
-  // create attributes for time dimension
-  std::vector<NcDim> dim_vect_t;
-  dim_vect_t.push_back(NcDim_t);
-  createAttScalar("t", "time", "s", dim_vect_t, &time);
-
-  // create attributes for time dimension
-  std::vector<NcDim> dim_vect_tstr;
-  dim_vect_tstr.push_back(NcDim_t);
-  dim_vect_tstr.push_back(NcDim_tstr);
-  createAttVector("times", "date time", "-", dim_vect_tstr, &timestamp);
-
   // set face-centered data dimensions
   // space dimensions
   NcDim NcDim_x_fc = addDimension("x_face", WGD_->nx);
@@ -172,20 +155,13 @@ void WINDSOutputWorkspace::save(ptime timeOut)
 
   // set time
   time = (double)output_counter;
+  timestamp = to_iso_extended_string(timeOut);
 
   std::string s = to_iso_extended_string(timeOut);
   std::copy(s.begin(), s.end(), timestamp.begin());
 
   // save fields
   saveOutputFields();
-
-  // remmove time indep from output array after first save
-  if (output_counter == 0) {
-    rmTimeIndepFields();
-  }
-
-  // increment for next time insertion
-  output_counter += 1;
 };
 
 
@@ -290,9 +266,7 @@ void WINDSOutputWorkspace::setAllOutputFields()
 {
   all_output_fields.clear();
   // all possible output fields need to be add to this list
-  all_output_fields = { "t",
-                        "times",
-                        "x",
+  all_output_fields = { "x",
                         "y",
                         "z",
                         "z_face",

@@ -18,6 +18,8 @@ add_library (qesutil ${LIB_TYPE}
   NetCDFOutput.cpp
   QESNetCDFOutput.cpp 
   QESFileSystemHandler.cpp
+
+  QEStime.cpp
 )
 
 FILE(GLOB files "*.h")
