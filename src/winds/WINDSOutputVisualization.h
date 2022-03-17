@@ -46,10 +46,10 @@
  */
 class WINDSOutputVisualization : public QESNetCDFOutput
 {
+private:
+  WINDSOutputVisualization() {}
+
 public:
-  WINDSOutputVisualization()
-    : QESNetCDFOutput()
-  {}
   WINDSOutputVisualization(WINDSGeneralData *, WINDSInputData *, std::string);
   ~WINDSOutputVisualization()
   {}

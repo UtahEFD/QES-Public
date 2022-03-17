@@ -45,11 +45,10 @@
  */
 class TURBOutput : public QESNetCDFOutput
 {
-public:
-  TURBOutput()
-    : QESNetCDFOutput()
-  {}
+private:
+  TURBOutput() {}
 
+public:
   TURBOutput(TURBGeneralData *, std::string);
   ~TURBOutput()
   {}

@@ -45,14 +45,13 @@ using namespace netCDF::exceptions;
  */
 class NetCDFOutput
 {
-
 protected:
+  NetCDFOutput() {}
+
   NcFile *outfile; /**< File to write. */
   std::map<std::string, NcVar> fields; /**< :document this: */
 
 public:
-  NetCDFOutput()
-  {}
   // initializer
   NetCDFOutput(std::string);
   virtual ~NetCDFOutput()

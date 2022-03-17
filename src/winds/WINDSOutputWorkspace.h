@@ -43,11 +43,10 @@
  */
 class WINDSOutputWorkspace : public QESNetCDFOutput
 {
-public:
-  WINDSOutputWorkspace()
-    : QESNetCDFOutput()
-  {}
+private:
+  WINDSOutputWorkspace() {}
 
+public:
   WINDSOutputWorkspace(WINDSGeneralData *, std::string);
   ~WINDSOutputWorkspace()
   {}
