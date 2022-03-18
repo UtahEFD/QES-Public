@@ -373,7 +373,10 @@ void QESNetCDFOutput::saveOutputFields()
   time_index = { static_cast<unsigned long>(output_counter) };
   saveField1D("t", time_index, &time);
 
-  std::copy(timestamp.begin(), timestamp.end(), timestamp_out.begin());
+  //std::copy(timestamp.begin(), timestamp.end(), timestamp_out.begin());
+  for (int i = 0; i < dateStrLen; ++i) {
+    timestamp_out[i] = timestamp[i];
+  }
   time_index = { static_cast<unsigned long>(output_counter), 0 };
   time_size = { 1, static_cast<unsigned long>(dateStrLen) };
   saveField2D("timestamp", time_index, time_size, timestamp_out);
