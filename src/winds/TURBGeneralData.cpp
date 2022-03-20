@@ -894,8 +894,10 @@ void TURBGeneralData::stressTensor()
     NU_T = LM * LM * sqrt(2.0 * SijSij);
     TKE = pow((NU_T / (cPope * LM)), 2.0);
 
-    if (TKE > tkeBound)
+    if (TKE > tkeBound) {
       TKE = tkeBound;
+      NU_T = cPope * sqrt(TKE) * LM;
+    }
 
     CoEps[cellID] = 5.7 * pow(sqrt(TKE) * cPope, 3.0) / (LM);
     tke[cellID] = TKE;

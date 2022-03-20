@@ -158,6 +158,7 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
     yPos -= disY;
     zPos -= disZ;
 
+
     std::cerr << "Reflection problem: particle moved too fast: cell traveled: "
               << abs(cellIdxOld[0] - cellIdxNew[0]) << ","
               << abs(cellIdxOld[1] - cellIdxNew[1]) << ","

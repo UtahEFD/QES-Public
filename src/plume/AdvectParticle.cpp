@@ -229,7 +229,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     // now check to see if the value is rogue or not
     if (std::abs(uFluct) >= vel_threshold || isnan(uFluct)) {
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      std::cerr << "responsible uFluct was \"" << uFluct << "\"" << std::endl;
+      std::cerr << "uFluct = " << uFluct << ", CoEps = " << CoEps << std::endl;
       uFluct = 0.0;
       isActive = false;
       isRogue = true;
@@ -237,7 +237,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     }
     if (std::abs(vFluct) >= vel_threshold || isnan(vFluct)) {
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      std::cerr << "responsible vFluct was \"" << vFluct << "\"" << std::endl;
+      std::cerr << "vFluct = " << vFluct << ", CoEps = " << CoEps << std::endl;
       vFluct = 0.0;
       isActive = false;
       isRogue = true;
@@ -245,7 +245,7 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     }
     if (std::abs(wFluct) >= vel_threshold || isnan(wFluct)) {
       std::cerr << "Particle # " << (*parItr)->particleID << " is rogue, ";
-      std::cerr << "responsible wFluct was \"" << wFluct << "\"" << std::endl;
+      std::cerr << "wFluct = " << wFluct << ", CoEps = " << CoEps << std::endl;
       wFluct = 0.0;
       isActive = false;
       isRogue = true;

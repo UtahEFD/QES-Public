@@ -700,13 +700,10 @@ bool Plume::invert3(double &A_11,
   //  if so, how would we go about limiting that info? Would probably need to
   //  make the loop counter variables actual data members of the class
   if (std::abs(det) < 1e-10) {
-    // std::cout << "WARNING (Plume::invert3): matrix nearly singular" <<
-    // std::endl; std::cout << "abs(det) = \"" << std::abs(det) << "\",  A_11 =
-    // \"" << A_11 << "\", A_12 = \"" << A_12 << "\", A_13 = \""
-    //          << A_13 << "\", A_21 = \"" << A_21 << "\", A_22 = \"" << A_22 <<
-    //          "\", A_23 = \"" << A_23 << "\", A_31 = \""
-    //          << A_31 << "\" A_32 = \"" << A_32 << "\", A_33 = \"" << A_33 <<
-    //          "\"" << std::endl;
+    std::cerr << "WARNING (Plume::invert3): matrix nearly singular" << std::endl;
+    std::cerr << "abs(det) = \"" << std::abs(det) << "\",  A_11 =  \"" << A_11 << "\", A_12 = \"" << A_12 << "\", A_13 = \""
+              << A_13 << "\", A_21 = \"" << A_21 << "\", A_22 = \"" << A_22 << "\", A_23 = \"" << A_23 << "\", A_31 = \""
+              << A_31 << "\" A_32 = \"" << A_32 << "\", A_33 = \"" << A_33 << "\"" << std::endl;
 
     det = 10e10;
     A_11 = 0.0;
