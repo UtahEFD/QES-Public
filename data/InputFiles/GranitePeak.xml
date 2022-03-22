@@ -46,9 +46,6 @@
 </localMixingParam>
 <fileOptions>
   <outputFlag>1</outputFlag>
-  <outputFields>u</outputFields> 
-  <outputFields>v</outputFields> 
-  <outputFields>w</outputFields>
-  <outputFields>icell</outputFields> 
+  <outputFields>all</outputFields> 
 </fileOptions>
 

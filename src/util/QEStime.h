@@ -44,7 +44,6 @@ public:
   void setTime(double);
   QEStime &operator=(const double &);
 
-  void setTimestamp();
   void setTimestamp(time_t);
   void setTimestamp(std::string);
   void setTimestamp(time_t, std::string);
@@ -76,6 +75,8 @@ public:
   }
 
   void increment(float);
+  QEStime &operator+=(const float &);
+  QEStime &operator+(const float &);
 
 private:
   bool m_timestamp_mode = false;

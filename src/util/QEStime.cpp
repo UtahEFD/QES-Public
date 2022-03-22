@@ -42,12 +42,6 @@ QEStime &QEStime::operator=(const double &t)
   return *this;
 }
 
-void QEStime::setTimestamp()
-{
-  m_timestamp_mode = true;
-  std::cout << btime::to_iso_extended_string(m_ptime) << std::endl;
-}
-
 void QEStime::setTimestamp(time_t t)
 {
   m_timestamp_mode = true;
@@ -85,4 +79,24 @@ void QEStime::increment(float dt)
     btime::time_duration tt = btime::milliseconds((int)(1000.0d * (double)dt));
     m_ptime += tt;
   }
+}
+
+QEStime &QEStime::operator+=(const float &dt)
+{
+  m_time += dt;
+  if (m_timestamp_mode) {
+    btime::time_duration tt = btime::milliseconds((int)(1000.0d * (double)dt));
+    m_ptime += tt;
+  }
+  return *this;
+}
+
+QEStime &QEStime::operator+(const float &dt)
+{
+  m_time += dt;
+  if (m_timestamp_mode) {
+    btime::time_duration tt = btime::milliseconds((int)(1000.0d * (double)dt));
+    m_ptime += tt;
+  }
+  return *this;
 }

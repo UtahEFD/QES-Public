@@ -10,7 +10,7 @@ int main()
 
   time.increment(10.0 * 3600.0 + 12.5);
   time.increment(.5);
-  time.increment(.1);
+  time.increment(.01);
   time.increment(.1);
   time.increment(.1);
   time.increment(.1);
@@ -20,12 +20,26 @@ int main()
   time.increment(.1);
   time.increment(20.0 * 3600.0 + 12.5);
 
+
   std::cout << time.getTime() << std::endl;
   std::cout.precision(10);
   std::cout << time.getTime() << std::endl;
 
   std::cout << time.getEpochTime() << std::endl;
   std::cout << time.getTimestamp() << std::endl;
+
+  time += 10 * 60;
+
+  std::cout << time.getTime() << std::endl;
+  std::cout << time.getEpochTime() << std::endl;
+  std::cout << time.getTimestamp() << std::endl;
+
+  time = time + 60 * 60 * 24;
+
+  std::cout << time.getTime() << std::endl;
+  std::cout << time.getEpochTime() << std::endl;
+  std::cout << time.getTimestamp() << std::endl;
+
 
   QEStime t1;
   t1 = 10.5;
@@ -37,6 +51,7 @@ int main()
 
   t2 = time;
   std::cout << t2.getTimestamp() << std::endl;
+
 
   return 0;
 }
