@@ -361,12 +361,12 @@ WRFInput::WRFInput(const std::string &filename,
 
     // Wait for WRF to start this...
     while (wrfFRAME0_FMW != 1) {
-      std::cout << "Waiting for FRAME0_FMW to be initialized..." << std::endl;
+      std::cout << "Waiting for FRAME0_FMW to be initialized to 1 before starting the coupling with WRF..." << std::endl;
 
       // close file
       wrfInputFile.close();
 
-      usleep(1000000);// 1 sec
+      usleep(100000);// 1 sec
 
       // re-open
       wrfInputFile.open(m_WRFFilename, NcFile::write);
@@ -2242,7 +2242,7 @@ void WRFInput::updateFromWRF()
       wrfInputFile.close();
 
       // wait a few seconds for now
-      usleep(1000000);
+      usleep(100000);
 
       // re-open
       wrfInputFile.open(m_WRFFilename, NcFile::write);
