@@ -359,9 +359,17 @@ WRFInput::WRFInput(const std::string &filename,
 
   if (m_performWRFRunCoupling) {
 
-    while (wrfFRAME0_FMW == -1) {
+    // Wait for WRF to start this...
+    while (wrfFRAME0_FMW != 1) {
       std::cout << "Waiting for FRAME0_FMW to be initialized..." << std::endl;
+
+      // close file
+      wrfInputFile.close();
+
       usleep(1000000);// 1 sec
+
+      // re-open
+      wrfInputFile.open(m_WRFFilename, NcFile::write);
       wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);
     }
 
