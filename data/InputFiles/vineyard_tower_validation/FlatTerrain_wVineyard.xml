@@ -1,7 +1,7 @@
 <QESinput>
 <simulationParameters>
-  <domain> 250 150 150</domain>
-  <cellSize> 0.2 0.2 0.1 </cellSize> <!-- Meters-->
+  <domain> 167 100 150</domain>
+  <cellSize> 0.3 0.3 0.1 </cellSize> <!-- Meters-->
   <verticalStretching> 0 </verticalStretching>
   <totalTimeIncrements> 1 </totalTimeIncrements>
   <UTCConversion> 0 </UTCConversion>

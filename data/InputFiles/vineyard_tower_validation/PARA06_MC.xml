@@ -10,7 +10,7 @@
         <residualReduction>3</residualReduction>
         <maxIterations>500</maxIterations>
         <sidewallFlag>0</sidewallFlag>
-        <domain>250 150 150</domain>
+        <domain>167 100 150</domain>
         <streetIntersectionFlag>0</streetIntersectionFlag>
         <streetCanyonFlag>0</streetCanyonFlag>
         <upwindCavityFlag>0</upwindCavityFlag>
@@ -19,7 +19,7 @@
         <UTCConversion>0</UTCConversion>
         <totalTimeIncrements>1</totalTimeIncrements>
         <verticalStretching>0</verticalStretching>
-        <cellSize>0.2 0.2 0.1</cellSize>
+        <cellSize>0.3 0.3 0.1</cellSize>
     </simulationParameters>
     <metParams>
         <z0_domain_flag>0</z0_domain_flag>
@@ -35,7 +35,7 @@
                 <siteZ0>0.03</siteZ0>
                 <reciprocal>-0.040278</reciprocal>
                 <height>10.1</height>
-                <speed>3.0261</speed>
+                <speed>3.5</speed>
                 <direction>186</direction>
             </timeSeries>
         </sensor>

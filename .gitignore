@@ -7,7 +7,7 @@ build_old/
 buildPIV/
 src/docs/*
 docs/*
-data/InputFiles/vineyard_tower_validation*
+data/InputFiles/vineyard_tower_validation/*
 
 # Prerequisites
 *.d

@@ -73,7 +73,7 @@ public:
 
   void canopyVegetation(WINDSGeneralData *wgd, int building_id);
   void canopyWake(WINDSGeneralData *wgd, int building_id);
-
+  void canopyTurbulenceWake(WINDSGeneralData *, TURBGeneralData *, int);
   int getCellFlagCanopy();
   int getCellFlagWake();
 
@@ -88,6 +88,7 @@ public:
 private:
   //float attenuationCoeff=1.0;
   float understory_height;
+  std::vector<float> tkeFac;
 
   float beta;// optical porosity
   //int wbModel = 2;   // flow in windbreak 1 for wang aerodynamic profile; bean otherwise
@@ -100,7 +101,6 @@ private:
   float rowWidth;
   float rowAngle;
   bool thinFence = 0;
-  std::vector<float> tke_v;
   //float fetch = 7;
   float corner1x, corner1y, corner2x, corner2y, corner3x, corner3y, corner4x, corner4y;
   std::map<int, float> u0, v0;

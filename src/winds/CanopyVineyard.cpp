@@ -2,6 +2,7 @@
 
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
+#include "TURBGeneralData.h"
 
 float rL, z0_site;// parameters used by multiple functions in this file
 
@@ -339,16 +340,29 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
   bool growth = 1;
   float a_uwv[N_e + 1];// the attenuation due to one row (to be raised to N_e, where N_e is number of rows in entry region)
+  float tkeFac_uwv[N_e + 1];
+  int nx = WGD->nx;
+  int ny = WGD->ny;
+  int nz = WGD->nz;
+  int np_cc_v = (nz - 1) * (ny - 1) * (nx - 1);
+  //int np_cc_v = 5;
+  //std::cout << "CHECKPOINT 1" << std::endl;
+
+  tkeFac.resize(np_cc_v, 0);
+  //std::cout << "CHECKPOINT 2" << std::endl;
   float a_uw = 1;
 
   float a_local;// the attenuation due to the closest upwind row only
+  float tkeFac_local;
   float u_c0, v_c0;// u0 and v0 rotated into row-aligned coordinates
   float u_c, v_c;// altered (parameterized) u and v, in row-aligned coordinates
+  //std::cout << "CHECKPOINT 3" << std::endl;
 
   // DEBUG VARIABLES
   bool BF_flag = 1;
   int UD_zone_flag = 1;
 
+  //std::cout << "CHECKPOINT 4" << std::endl;
   // BEGIN MAIN PARAMETERIZATION LOOPS
   for (auto j = 0; j < ny_canopy; j++) {
     for (auto i = 0; i < nx_canopy; i++) {
@@ -533,11 +547,12 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
         }
 
         // MAIN Z-LOOP
-        for (auto k = canopy_bot_index[icell_2d]; k < WGD->nz; k++) {
+        for (auto k = canopy_bot_index[icell_2d]; k < (WGD->nz - 1); k++) {
           z_rel = WGD->z_face[k - 1] - z_b;
           int icell_face = (i - 1 + i_start) + (j - 1 + j_start) * WGD->nx + k * WGD->nx * WGD->ny;
           int icell_cent = (i - 1 + i_start) + (j - 1 + j_start) * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
 
+          //std::cout << "icell_cent = " << icell_cent << " np_cc_v = " << np_cc_v << " i_start j_start = " << i_start << " " << j_start << " nx_canopy ny_canopy = " << nx_canopy << " " << ny_canopy << " nx ny nz = " << WGD->nx << " " << WGD->ny << " " << WGD->nz << " i j k = " << i << " " << j << " " << k << std::endl;
 
           // Rotate u0 and v0 into row-aligned coords
           u_c0 = cosA * WGD->u0[icell_face] - sinA * WGD->v0[icell_face];
@@ -547,11 +562,6 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
           // Initialize u_c and v_c so that in the understory, where no parameterization takes place, u_c and v_c have the correct (i.e. unaltered) value
           u_c = u_c0;
           v_c = v_c0;
-
-          // Include effect of UD zone on the upwind u_c0 velocity
-          if (z_rel < H_ud) {
-            //u_c0 = u_c0 + (a_obf*u_c0 - 2*u_c0)*(1-exp(br*(H_ud-z_rel)));
-          }
 
 
           if (growth != 1) {
@@ -566,20 +576,10 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
               a_uw = (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (z_rel - szo_top_uw) / szt_uw) + 0.5 * (1 + a_obf)) + (1 - a_exp));
               a_local = (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (z_rel - szo_top) / szt_local) + 0.5 * (1 + a_obf)) + (1 - a_exp));
             }
-            /* 
-                    if (i+i_start == 114 && j+j_start == 75 && k<50){
-                        std::cout << " i,j,k = " << i << ", " << j << ", " << k << " " << "before param at query, u_c = " << u_c0 << " v_c = " << v_c0 << " a_uw = " << a_uw << " a_local = " << a_local << "\n";
-                    }
-
-                    if (i+i_start == 50 && j+j_start == 75 && k<50){
-                        std::cout << " i,j,k = " << i << ", " << j << ", " << k << " " << "before param in entry (x=10m), u_c = " << u_c0 << " v_c = " << v_c0 << " a_uw = " << a_uw << " a_local = " << a_local << "\n";
-                    }
-                  */
 
           } else {
 
             if (understory_height > 0 && k <= k_mid) {// if i'm below mid-canopy, use bottom shear layer quantities
-              //std::cout << "WARNING: NOT DOING THE ZERO-UNDERSTORY WAKE PARAM" << std::endl;
               if (N <= N_e) {
                 szt_local = spreadrate_bot * (d_dw * N + d_dw_local) + 0.00001;// temp comment 8.1.21
                 //szt_local = spreadrate_bot*d_dw_local + 0.00001; // temp insert, 8.1.21
@@ -588,11 +588,14 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 //szt_local = spreadrate_bot*d_dw_local + 0.00001; // temp insert, 8.1.21
               }
               a_local = 1 * (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (szo_bot - z_rel) / szt_local) + 0.5 * (1 + a_obf)) + (1 - a_exp));// there should be a "fac" where the 1* is (fac isn't working right now)
+              tkeFac_local = 1 * (a_exp * (0.5 * (1 - pow(a_obf, 2)) * tanh(1.5 * (szo_bot - z_rel) / szt_local) + 0.5 * (1 + pow(a_obf, 2))) + (1 - a_exp));// there should be a "fac" where the 1* is (fac isn't working right now)
               a_uwv[0] = 1;
+              tkeFac_uwv[0] = 1;
               for (int n = 1; n < N_e + 1; n++) {
                 szt_uw = spreadrate_bot * (d_dw * n) + 0.00001;// temp comment, 8.1.21
                 //szt_uw = spreadrate_bot*d_dw + 0.00001; // temp insert, 8.1.21
                 a_uwv[n] = 1 * (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (szo_bot - z_rel) / szt_uw) + 0.5 * (1 + a_obf)) + (1 - a_exp));// there should be a "fac" where the 1* is (fac isn't working right now)
+                tkeFac_uwv[n] = 1 * (a_exp * (0.5 * (1 - pow(a_obf, 2)) * tanh(1.5 * (szo_bot - z_rel) / szt_uw) + 0.5 * (1 + pow(a_obf, 2))) + (1 - a_exp));// there should be a "fac" where the 1* is (fac isn't working right now)
               }
             } else if (understory_height > 0 && k > k_mid) {// if I'm above mid-canopy
               //std::cout << "WARNING: NOT DOING THE ZERO-UNDERSTORY WAKE PARAM" << std::endl;
@@ -604,11 +607,14 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 //szt_local = spreadrate_top*d_dw_local + 0.00001; // temp insert, 8.1.21
               }
               a_local = (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (z_rel - szo_top) / szt_local) + 0.5 * (1 + a_obf)) + (1 - a_exp));
+              tkeFac_local = (a_exp * (0.5 * (1 - pow(a_obf, 2)) * tanh(1.5 * (z_rel - szo_top) / szt_local) + 0.5 * (1 + pow(a_obf, 2))) + (1 - a_exp));
               a_uwv[0] = 1;
+              tkeFac_uwv[0] = 1;
               for (int n = 1; n < N_e + 1; n++) {
                 szt_uw = spreadrate_top * (d_dw * n) + 0.00001;// temp comment, 8.1.21
                 //szt_uw = spreadrate_top*d_dw + 0.00001; // temp insert, 8.1.21
                 a_uwv[n] = (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (z_rel - szo_top_uw) / szt_uw) + 0.5 * (1 + a_obf)) + (1 - a_exp));
+                tkeFac_uwv[n] = (a_exp * (0.5 * (1 - pow(a_obf, 2)) * tanh(1.5 * (z_rel - szo_top_uw) / szt_uw) + 0.5 * (1 + pow(a_obf, 2))) + (1 - a_exp));
               }
             } else if (understory_height == 0) {
               if (N <= N_e) {
@@ -619,11 +625,14 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 //szt_local = spreadrate_top*d_dw_local + 0.00001; // temp insert, 8.1.21
               }
               a_local = (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (z_rel - szo_top) / szt_local) + 0.5 * (1 + a_obf)) + (1 - a_exp));
+              tkeFac_local = (a_exp * (0.5 * (1 - pow(a_obf, 2)) * tanh(1.5 * (z_rel - szo_top) / szt_local) + 0.5 * (1 + pow(a_obf, 2))) + (1 - a_exp));
               a_uwv[0] = 1;
+              tkeFac_uwv[0] = 1;
               for (int n = 1; n < N_e + 1; n++) {
                 szt_uw = spreadrate_top * (d_dw * n) + 0.00001;// temp comment, 8.1.21
                 //szt_uw = spreadrate_top*d_dw + 0.00001; // temp insert, 8.1.21
                 a_uwv[n] = (a_exp * (0.5 * (1 - a_obf) * tanh(1.5 * (z_rel - szo_top_uw) / szt_uw) + 0.5 * (1 + a_obf)) + (1 - a_exp));
+                tkeFac_uwv[n] = (a_exp * (0.5 * (1 - pow(a_obf, 2)) * tanh(1.5 * (z_rel - szo_top_uw) / szt_uw) + 0.5 * (1 + pow(a_obf, 2))) + (1 - a_exp));
               }
             }
             /*
@@ -655,19 +664,18 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 if (growth != 1) {
                   u_c = pow(a_uw, N) * a_obf * u_c0;
                 } else {
-
+                  //std::cout << "CHECKPOINT 5" << std::endl;
                   u_c = u_c0 * a_obf;
+                  tkeFac[icell_cent] = pow(a_obf, 2);
                   for (int n = 0; n <= N; n++) {
                     u_c *= a_uwv[n];
+                    tkeFac[icell_cent] *= tkeFac_uwv[n];
                   }
                 }
                 // v_c = v_c0;
                 //std::cout << "bleed flow is being applied, entry. icellflag is: " << WGD->icellflag[icell_cent] << "\n";
-                if (abs(u_c) > 15.) {
-                  std::cout << "u_c is big (BF, entry): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
-                }
 
-                if (isnan(u_c) || abs(u_c) > 15) {
+                if (isnan(u_c) || abs(u_c) > 15.) {
                   std::cout << "u_c is NaN (BF, entry): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
                 }
                 if (isnan(v_c) || abs(v_c) > 15) {
@@ -684,9 +692,12 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 if (growth) {
                   u_c = pow(a_uw, N_e) * a_obf * u_c0;
                 } else {
+                  //std::cout << "CHECKPOINT 5" << std::endl;
                   u_c = u_c0 * a_obf;
+                  tkeFac[icell_cent] = pow(a_obf, 2);
                   for (int n = 0; n <= N_e; n++) {
                     u_c *= a_uwv[n];
+                    tkeFac[icell_cent] *= tkeFac_uwv[n];
                   }
                 }
                 if (isnan(u_c) || abs(u_c) > 15) {
@@ -713,27 +724,14 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
               if (growth != 1) {
                 u_c = u_c0 * pow(a_uw, N) * a_local;
 
-                /*
-                            if (i+i_start == 50 && j+j_start == 75 && k<50){
-                                std::cout << " i,j,k = " << i << ", " << j << ", " << k << " " << "after param in entry (x=10m), u_c = " << u_c << " v_c = " << v_c << " a_uw = " << a_uw << " a_local = " << a_local << "\n";
-                            }
-                            */
-                if (i + i_start == 50 && j + j_start == 75 && k < 50) {
-                  //    std::cout << u_c << "\n";
-                }
 
               } else {
+                //std::cout << "CHECKPOINT 5" << std::endl;
                 u_c = u_c0 * a_local;
+                tkeFac[icell_cent] = tkeFac_local;
                 for (int n = 0; n <= N; n++) {
                   u_c *= a_uwv[n];
-                }
-
-                if (i + i_start == 50 && j + j_start == 75 && k < 50) {
-                  //std::cout << " i,j,k = " << i << ", " << j << ", " << k << " " << "after param in entry (x=10m), u_c = " << u_c << " v_c = " << v_c << " a_uwv[0] = " << a_uwv[0] << " a_uwv[1] = " << a_uwv[1] << " a_uwv[2] = " << a_uwv[2] << " a_local = " << a_local << "\n";
-                }
-
-                if (i + i_start == 50 && j + j_start == 75 && k < 50) {
-                  //    std::cout << u_c << "\n";
+                  tkeFac[icell_cent] *= tkeFac_uwv[n];
                 }
               }
 
@@ -745,30 +743,15 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
               // Commented 7.7.21 as i try allowing the shear thickness to grow in entry region
               if (growth != 1) {
                 u_c = u_c0 * pow(a_uw, N_e) * a_local;
-                /* 
-                            if (i+i_start == 114 && j+j_start == 75 && k<50){
-                                std::cout << " i,j,k = " << i << ", " << j << ", " << k << " " << "after param at query, u_c = " << u_c << " v_c = " << v_c << " a_uw = " << a_uw << " a_local = " << a_local << "\n";
-                            }
-                            */
-                if (i + i_start == 114 && j + j_start == 75 && k < 50) {
-                  //   std::cout << u_c << "\n";
-                }
+
 
               } else {
+                //std::cout << "CHECKPOINT 5" << std::endl;
                 u_c = u_c0 * a_local;
+                tkeFac[icell_cent] = tkeFac_local;
                 for (int n = 0; n <= N_e; n++) {
                   u_c *= a_uwv[n];
-                }
-
-
-                // print stuff
-                /* 
-                            if (i+i_start == 114 && j+j_start == 75 && k<50){
-                                std::cout << " i,j,k = " << i << ", " << j << ", " << k << " " << "after param at query, u_c = " << u_c << " v_c = " << v_c << " a_uwv[0] = " << a_uwv[0] << " a_uwv[1] = " << a_uwv[1] << " a_uwv[2] = " << a_uwv[2] << " a_local = " << a_local << "\n";
-                            }
-                            */
-                if (i + i_start == 114 && j + j_start == 75 && k < 50) {
-                  //    std::cout << u_c << "\n";
+                  tkeFac[icell_cent] *= tkeFac_uwv[n];
                 }
               }
 
@@ -776,9 +759,6 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
               // v_c = v_c0;
               if (isnan(v_c) || abs(v_c) > 15) {
                 std::cout << "v_c is NaN (wake, eq region): " << v_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
-              }
-              if (i + i_start == 81 && j + j_start == 23) {
-                //std::cout << " ld = " << ld << " dv_c = " << dv_c << " N = " << N << " d_dw_local = " << d_dw_local <<  "\n";
               }
             }
 
@@ -789,9 +769,6 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 WGD->icellflag[icell_cent] = 31;
 
                 if (N <= N_e) {
-                  //if (i+i_start == 156 && j+j_start == 60 && k < 100){
-                  //    std::cout << "k = " << k <<  "     u_c = " << u_c << "       gz = " <<  (a_obf*pow(a_uw,N)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel))) << "     br = " << br << "     x_ud = " << x_ud << "     1st chunk = " <<  a_obf*pow(a_uw,N)*u_c0  <<  "\n";
-                  //}
 
                   // "Actual" parameterization (commented to try others, 7.7.21)
                   //u_c = u_c + (a_obf * pow(a_uw, N + 1) * u_c0 - 2 * u_c) * (1 - exp(br * (z_ud - z_rel)));
@@ -811,9 +788,6 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                   }
 
                 } else {
-                  //if (i + i_start == 256 && j + j_start == 75 && k < 100) {
-                  //  std::cout << "k = " << k << " u_c = " << u_c << " u_c0 = " << u_c0 << " a_obf = " << a_obf << " a_uw = " << a_uw << " addition = " << a_obf * pow(a_uw, N_e + 1) * u_c0 << " blend = " << (1 - exp(br * (z_ud - z_rel))) << std::endl;
-                  //}
 
                   if (i + i_start == 256 && j + j_start == 75 && k < 100) {
                     std::cout << "k = " << k << " u_c = " << u_c << " deficit: " << -l_ud / (2 * fenceThickness) * u_c * Cd * (1 - beta) << " beta = " << beta << " a_obf = " << a_obf << " fenceThickness = " << fenceThickness << " l_ud = " << l_ud << " Cd = " << Cd << std::endl;
@@ -849,9 +823,6 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 WGD->icellflag[icell_cent] = 31;
 
                 if (N <= N_e) {
-                  //if (i+i_start == 156 && j+j_start == 60 && k < 100){
-                  //    std::cout << "k = " << k <<  "     u_c = " << u_c << "       gz = " <<  (a_obf*pow(a_uw,N)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel))) << "     br = " << br << "     x_ud = " << x_ud << "     1st chunk = " <<  a_obf*pow(a_uw,N)*u_c0  <<  "\n";
-                  //}
 
                   if (z_rel > z_mid) {// upper half of UD zone, entry region
 
@@ -883,9 +854,6 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                   }
 
                 } else {// if i'm in the equilibrium region
-                  //if (i+i_start == 156 && j+j_start == 60 && k < 100){
-                  //    std::cout << "k = " << k <<  "     u_c = " << u_c << "     gz = " <<  (a_obf*pow(a_uw,N_e)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel))) << "     br = " << br << "     x_ud = " << x_ud << "     z_ud = " << z_ud << "      1st chunk = " <<  a_obf*pow(a_uw,N_e)*u_c0   << "\n";
-                  //}
 
                   if (z_rel > z_mid) {// upper half of UD zone, eq. region
 
@@ -966,9 +934,6 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
           //     std::cout << " wasn't wake or BF: i = " << i+i_start << " j = " << j+j_start << " k = " << k << "\n";
           //}
 
-          if (i + i_start == 92 && j + j_start == 60 && k < 40 && z_rel <= z_ud) {
-            //std::cout << "k = " << k <<  "     u_c = " << u_c << "       gz = " <<  (a_obf*pow(a_uw,N)*u_c0 - 2*u_c)*(1-exp(br*(z_ud-z_rel))) << "     br = " << br << "     x_ud = " << x_ud << "     1st chunk = " <<  a_obf*pow(a_uw,N)*u_c0  <<  "\n";
-          }
 
           if (isnan(v_c) || abs(v_c) > 15) {
             std::cout << "v_c is NaN (at end): " << v_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
@@ -977,9 +942,6 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
             std::cout << "u_c is NaN (at end): " << u_c << " at i= " << i + i_start << " j= " << j + j_start << " k= " << k << "\n";
           }
 
-          if (i + i_start == 114 && j + j_start == 75 && k == 102) {
-            std::cout << "After params, U = " << cosA * u_c + sinA * v_c << " V = " << -sinA * u_c + cosA * v_c << " arctan(U/V) = " << 180. / M_PI * atan((cosA * u_c + sinA * v_c) / (-sinA * u_c + cosA * v_c)) << "\n";
-          }
 
           // Rotate back into QES-grid coordinates
           u0_mod_id.push_back(icell_face);
@@ -1031,7 +993,21 @@ void CanopyVineyard::canopyWake(WINDSGeneralData *WGD, int building_id)
   return;
 }
 
-void CanopyVineyard::canopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData *TGD, int tree_id)
+void CanopyVineyard::canopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData *TGD, int building_id)
 {
+
+  float tkeMax = 0.5;// To be modeled/assimilated from WRF later
+  for (auto i = 0; i < WGD->nx - 1; i++) {
+
+    for (auto j = 0; j < WGD->ny - 1; j++) {
+      for (auto k = 0; k < WGD->nz - 1; k++) {
+        int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+        if (fabs(tkeFac[icell_cent]) > 0.) {
+          TGD->tke[icell_cent] = tkeFac[icell_cent] * tkeMax;
+          TGD->nuT[icell_cent] = 0.55 * sqrt(TGD->tke[icell_cent]) * TGD->Lm[icell_cent];
+        }
+      }
+    }
+  }
 }
 
