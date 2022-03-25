@@ -37,6 +37,8 @@ public:
     parsePrimitive<float>(true, rowWidth, "rowWidth");
     parsePrimitive<float>(true, rowAngle, "rowAngle");
 
+    parsePrimitive<float>(false, LAD_eff, "LAD_eff");
+    parsePrimitive<float>(false, LAD_avg, "LAD_avg");
     parsePrimitive<float>(true, beta, "opticalPorosity");
     parsePrimitive<float>(false, stdw, "upstreamSigmaW");
     parsePrimitive<float>(false, uustar, "upstreamUstar");//upstream ustar
@@ -70,12 +72,13 @@ public:
   }
 
   void setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, int building_id);
-
+  void orthog_vec(float, float[2], float[2], float[2], float[2]);
   void canopyVegetation(WINDSGeneralData *wgd, int building_id);
   void canopyWake(WINDSGeneralData *wgd, int building_id);
   void canopyTurbulenceWake(WINDSGeneralData *, TURBGeneralData *, int);
   int getCellFlagCanopy();
   int getCellFlagWake();
+  float P2L(float[2], float[2], float[2]);
 
 
   /*!
@@ -101,9 +104,12 @@ private:
   float rowWidth;
   float rowAngle;
   bool thinFence = 0;
+  float LAD_eff=0.66667;//leaf area per volume of canopy, including aisles. Effective (bulk) LAD. Re-calculated by the code using beta if thinFence==1
+  float LAD_avg=4.3138;//vertically averaged LAD for just the row, used in UD zone drag calc for vegetative rows only.  
   //float fetch = 7;
   float corner1x, corner1y, corner2x, corner2y, corner3x, corner3y, corner4x, corner4y;
   std::map<int, float> u0, v0;
+  float rL, z0_site;
 };
 
 inline int CanopyVineyard::getCellFlagCanopy()
@@ -115,3 +121,10 @@ inline int CanopyVineyard::getCellFlagWake()
 {
   return 27;
 }
+
+inline float CanopyVineyard::P2L(float P[2], float Lx[2], float Ly[2])
+{
+  return abs((Lx[1] - Lx[0]) * (Ly[0] - P[1]) - (Lx[0] - P[0]) * (Ly[1] - Ly[0])) / sqrt(pow(Lx[1] - Lx[0], 2) + pow(Ly[1] - Ly[0], 2));
+
+}
+
