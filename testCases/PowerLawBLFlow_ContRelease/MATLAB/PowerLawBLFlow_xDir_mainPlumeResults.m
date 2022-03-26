@@ -86,8 +86,16 @@ for k=1:numel(xProf)
     cStarPlume=squeeze(double(data.plume.pBox(idx1,:,:))*CC*(U*H*H/Q));    
     %================================================
     % from Seinfeld and Pandis 1998
+    
+    %t=x/U;
+    %sigV=1.78*uStar;
+    %Ti=(2.5*uStar/zi)^(-1);
+    %Fy=(1+(t/Ti)^0.5)^(-1);
+    %sigY=sigV*t*Fy
+    
     sigY=0.32*x^0.78;
     %sigY=1.8*0.2*x/U;
+    
     C=Q/(sqrt(2*pi)*sigY)*exp(-0.5*yy.^2/sigY^2).*...
         exp(-a*(zz.^alpha+H^alpha)/(b*alpha^2*x)).*(zz*H).^(0.5*(1-n))/(b*alpha*x).*...
         besseli(-nu,(2*a*(zz*H).^(0.5*alpha))/(b*alpha^2*x));
@@ -174,6 +182,12 @@ for k=1:numel(xProf2)
     %================================================
     % from Seinfeld and Pandis 1998
     
+    %t=x/U;
+    %sigV=1.78*uStar;
+    %Ti=(2.5*uStar/zi)^(-1);
+    %Fy=(1+(t/Ti)^0.5)^(-1);
+    %sigY=sigV*t*Fy;
+    
     sigY=0.32*x^0.78;
     
     C=Q/(sqrt(2*pi)*sigY)*exp(-0.5*yy.^2/sigY^2).*...
@@ -204,17 +218,36 @@ ylabel('C^* QES-Plume')
 
 SSres=0;
 SStot=0;
+maxRelErr=zeros(size(xProf2));
+
 cStarPlumeMean=mean(mean(cStarPlume));
 for k=1:numel(xProf2)
     validInd=~isnan(cStarModel(:,k));
     SSres=SSres+sum((cStarPlume(validInd,k)-cStarModel(validInd,k)).^2);
     SStot=SStot+sum((cStarPlume(validInd,k)-cStarPlumeMean).^2);
+    maxRelErr(k) = max(abs(cStarPlume(validInd,k)-cStarModel(validInd,k)))/(max(cStarModel(validInd,k)));
 end
 R = 1-SSres/SStot;
 
-htxt=text(1,1,sprintf('R^2=%f\n',double(R)));
+RMSE = sqrt(SSres/(boxNy*boxNz*numel(xProf2)));
+
+htxt=text(1,1,sprintf('$r^2$=%f\n',double(R)));
 htxt.Units='normalized';
+htxt.Interpreter='latex';
+htxt.FontSize=12;
 htxt.Position=[.1 .9 0];
+
+htxt=text(1,1,sprintf('MaxRelErr=%f\n',double(max(maxRelErr))));
+htxt.Units='normalized';
+htxt.Interpreter='latex';
+htxt.FontSize=12;
+htxt.Position=[.1 .8 0];
+
+htxt=text(1,1,sprintf('RMSE=%f\n',double(RMSE)));
+htxt.Units='normalized';
+htxt.Interpreter='latex';
+htxt.FontSize=12;
+htxt.Position=[.1 .7 0];
 
 currentPlotName=sprintf('plotOutput/%s_1to1',caseNamePlume);
 hfig.Units='centimeters';

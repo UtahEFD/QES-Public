@@ -97,22 +97,22 @@ dudz(1) = dudz(2);
 ustar = 0.4*z_cc.*dudz;
 %ustar = (b*z_cc.^n)./(0.4*z_cc);
 %ustar = 0.4*p*a*z_cc.^p;
-%ustar = b/0.4*ones(size(z_cc)); 
+ustar = b/0.4*ones(size(z_cc)); 
 %ustar = sqrt(b*p*a*z_cc.^(n+p-1));
-ustar(1) = -ustar(2);
+ustar(1) = ustar(2);
 ustar(end) = ustar(end-1);
 
 %uw = -b*z_cc.^n.*dudz;
 uw = -ustar.^2;
-uw(1) = -uw(2);
+uw(1) = uw(2);
 uw(end) = uw(end-1);
 
 CsigU=2.5;
 CsigV=2.3;
-CsigW=1.3;
+CsigW=1.4;
 
 k = (ustar/0.55).^2;
-k(1) = -k(2);
+k(1) = k(2);
 k(end) = k(end-1);
 
 %nu = 0.4.*z_cc.*ustar;
@@ -120,7 +120,7 @@ k(end) = k(end-1);
 
 %eps = 5.7*(0.55^3*k.^1.5)./(0.4*z_cc);
 eps = 5.7*(ustar.^3)./(0.4*z_cc);
-eps(1) = -eps(2);
+eps(1) = eps(2);
 eps(end) = eps(end-1);
 
 % stress tensor
@@ -139,14 +139,14 @@ for kk=2:nz-1
     %tyy(:,:,kk) = 2.0/3.0*k(kk) * (CsigV*0.55)^2;
     %tzz(:,:,kk) = 2.0/3.0*k(kk) * (CsigW*0.55)^2;
 end
-txx(:,:,1) = -txx(:,:,2);
-tyy(:,:,1) = -tyy(:,:,2);
-tzz(:,:,1) = -tzz(:,:,2);
+txx(:,:,1) = txx(:,:,2);
+tyy(:,:,1) = tyy(:,:,2);
+tzz(:,:,1) = tzz(:,:,2);
 
 for kk=2:nz-1
     txz(:,:,kk) = -ustar(kk)^2;%nu(kk)*dudz(kk);
 end
-txz(:,:,1) = -txz(:,:,2);
+txz(:,:,1) = txz(:,:,2);
 
 CoEps = zeros(nx-1,ny-1,nz-1);
 tke = zeros(nx-1,ny-1,nz-1);
