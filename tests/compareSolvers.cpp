@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
   // Run the QES-Winds Solver
   // //////////////////////////////////////////
 
-  Solver *solverCPU, *solverDynamic, *solverGlobal, *solverShared = nullptr;
+  Solver *solverCPU = nullptr, *solverDynamic = nullptr, *solverGlobal = nullptr, *solverShared = nullptr;
   std::vector<WINDSGeneralData *> completedSolvers;
   std::vector<string> solverNames;
 
@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
   table3.endOfRow();
 
   // Loop to calculate comparison metrics between serial and parallel solvers
-  for (int solversIndex = 0; solversIndex < completedSolvers.size(); ++solversIndex) {
+  for (size_t solversIndex = 0; solversIndex < completedSolvers.size(); ++solversIndex) {
     // Calculating u differences
     float maxUDif = 0;
     float avgUDif = 0;

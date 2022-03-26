@@ -43,9 +43,9 @@
 void Wall::defineWalls(WINDSGeneralData *WGD)
 {
 
-  float dx = WGD->dx;
-  float dy = WGD->dy;
-  float dz = WGD->dz;
+  //float dx = WGD->dx;
+  //float dy = WGD->dy;
+  //float dz = WGD->dz;
   int nx = WGD->nx;
   int ny = WGD->ny;
   int nz = WGD->nz;
@@ -136,7 +136,7 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
     for (auto j = 0; j < ny - 1; j++) {
       for (auto k = 1; k < nz - 2; k++) {
         int icell_cent = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
-        int icell_face = i + j * nx + k * nx * ny;
+        //int icell_face = i + j * nx + k * nx * ny;
 
         if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
 
@@ -244,7 +244,8 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
       for (auto k = 1; k < nz - 1; k++) {
         int icell_cent = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
         if (WGD->e[icell_cent] == 0.0 && WGD->f[icell_cent] == 0.0 && WGD->g[icell_cent] == 0.0
-            && WGD->h[icell_cent] == 0.0 && WGD->m[icell_cent] == 0.0 && WGD->n[icell_cent] == 0.0 && (WGD->icellflag[icell_cent] == 7 || WGD->icellflag[icell_cent] == 0)) {
+            && WGD->h[icell_cent] == 0.0 && WGD->m[icell_cent] == 0.0 && WGD->n[icell_cent] == 0.0
+            && (WGD->icellflag[icell_cent] == 7 || WGD->icellflag[icell_cent] == 0)) {
           WGD->icellflag[icell_cent] = 0;
           WGD->e[icell_cent] = 1.0;
           WGD->f[icell_cent] = 1.0;
@@ -255,7 +256,8 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
         }
 
         if (WGD->e[icell_cent] == 0.0 && WGD->f[icell_cent] == 0.0 && WGD->g[icell_cent] == 0.0
-            && WGD->h[icell_cent] == 0.0 && WGD->m[icell_cent] == 0.0 && WGD->n[icell_cent] == 0.0 && (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 2)) {
+            && WGD->h[icell_cent] == 0.0 && WGD->m[icell_cent] == 0.0 && WGD->n[icell_cent] == 0.0
+            && (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 2)) {
           WGD->icellflag[icell_cent] = 2;
           WGD->e[icell_cent] = 1.0;
           WGD->f[icell_cent] = 1.0;
@@ -324,7 +326,7 @@ void Wall::wallLogBC(WINDSGeneralData *WGD)
   float dz = WGD->dz;
   int nx = WGD->nx;
   int ny = WGD->ny;
-  int nz = WGD->nz;
+  //int nz = WGD->nz;
   const float z0 = WGD->z0;
   std::vector<float> &u0 = WGD->u0;
   std::vector<float> &v0 = WGD->v0;

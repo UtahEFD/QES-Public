@@ -42,15 +42,15 @@ float Triangle::getHeightTo(float x, float y)
 {
   float t, beta, gamma, M;
   float A, B, C, D, E, F, J, K, L;
-  A = (*a)[0] - (*b)[0];
-  D = (*a)[0] - (*c)[0];
-  J = (*a)[0] - x;
-  B = (*a)[1] - (*b)[1];
-  E = (*a)[1] - (*c)[1];
-  K = (*a)[1] - y;
-  C = (*a)[2] - (*b)[2];
-  F = (*a)[2] - (*c)[2];
-  L = (*a)[2];
+  A = a[0] - b[0];
+  D = a[0] - c[0];
+  J = a[0] - x;
+  B = a[1] - b[1];
+  E = a[1] - c[1];
+  K = a[1] - y;
+  C = a[2] - b[2];
+  F = a[2] - c[2];
+  L = a[2];
 
   float EIHF = (E * I - H * F);
   float GFDI = (G * F - D * I);
@@ -75,12 +75,12 @@ float Triangle::getHeightTo(float x, float y)
 
 void Triangle::getBoundaries(float &xmin, float &xmax, float &ymin, float &ymax, float &zmin, float &zmax)
 {
-  xmin = LOWEST_OF_THREE((*a)[0], (*b)[0], (*c)[0]);
-  xmax = HIGHEST_OF_THREE((*a)[0], (*b)[0], (*c)[0]);
-  ymin = LOWEST_OF_THREE((*a)[1], (*b)[1], (*c)[1]);
-  ymax = HIGHEST_OF_THREE((*a)[1], (*b)[1], (*c)[1]);
-  zmin = LOWEST_OF_THREE((*a)[2], (*b)[2], (*c)[2]);
-  zmax = HIGHEST_OF_THREE((*a)[2], (*b)[2], (*c)[2]);
+  xmin = LOWEST_OF_THREE(a[0], b[0], c[0]);
+  xmax = HIGHEST_OF_THREE(a[0], b[0], c[0]);
+  ymin = LOWEST_OF_THREE(a[1], b[1], c[1]);
+  ymax = HIGHEST_OF_THREE(a[1], b[1], c[1]);
+  zmin = LOWEST_OF_THREE(a[2], b[2], c[2]);
+  zmax = HIGHEST_OF_THREE(a[2], b[2], c[2]);
 }
 
 bool Triangle::rayTriangleIntersect(Ray ray, HitRecord &rec, float t0, float t1)
@@ -88,19 +88,19 @@ bool Triangle::rayTriangleIntersect(Ray ray, HitRecord &rec, float t0, float t1)
   float beta, gamma, t, M;
   float A, B, C, D, E, F, G2, H2, I2, J, K, L;
   // note GHI has a 2 beside it to avoid conflicting with macro def above
-  A = (*a)[0] - (*b)[0];
-  D = (*a)[0] - (*c)[0];
+  A = a[0] - b[0];
+  D = a[0] - c[0];
   G2 = ray.getDirection()[0];
-  B = (*a)[1] - (*b)[1];
-  E = (*a)[1] - (*c)[1];
+  B = a[1] - b[1];
+  E = a[1] - c[1];
   H2 = ray.getDirection()[1];
-  C = (*a)[2] - (*b)[2];
-  F = (*a)[2] - (*c)[2];
+  C = a[2] - b[2];
+  F = a[2] - c[2];
   I2 = ray.getDirection()[2];
 
-  J = (*a)[0] - ray.getOriginX();
-  K = (*a)[1] - ray.getOriginY();
-  L = (*a)[2] - ray.getOriginZ();
+  J = a[0] - ray.getOriginX();
+  K = a[1] - ray.getOriginY();
+  L = a[2] - ray.getOriginZ();
 
   float EIHF = (E * I2) - (H2 * F);
   float GFDI = (G2 * F) - (D * I2);
@@ -130,10 +130,11 @@ bool Triangle::rayTriangleIntersect(Ray ray, HitRecord &rec, float t0, float t1)
   }
 }
 
-
+/*
 void Triangle::parseValues()
 {
   parseElement<Vector3>(true, a, "a");
   parseElement<Vector3>(true, b, "b");
   parseElement<Vector3>(true, c, "c");
 }
+*/

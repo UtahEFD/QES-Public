@@ -217,7 +217,8 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
     // POLYGON
     else if (poGeometry != NULL
              && wkbFlatten(poGeometry->getGeometryType()) == wkbPolygon) {
-      OGRPolygon *poPolygon = (OGRPolygon *)poGeometry;
+      //FM CLEANUP - NOT USED
+      //OGRPolygon *poPolygon = (OGRPolygon *)poGeometry;
 
       OGRLinearRing *pLinearRing = nullptr;
       ;
@@ -366,7 +367,8 @@ void ESRIShapefile::loadVectorData(std::vector<std::vector<polyVert>> &polygons,
     // POLYGON
     else if (poGeometry != NULL
              && wkbFlatten(poGeometry->getGeometryType()) == wkbPolygon) {
-      OGRPolygon *poPolygon = (OGRPolygon *)poGeometry;
+      //FM CLEANUP - NOT USED
+      //OGRPolygon *poPolygon = (OGRPolygon *)poGeometry;
 
       OGRLinearRing *pLinearRing = nullptr;
 

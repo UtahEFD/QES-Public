@@ -361,7 +361,7 @@ void TURBWall::set_loglaw_stairstep_at_id_cc(WINDSGeneralData *WGD,
     // w_hat-
     idp = id_fc - nx + nx * ny;// i,j-1,k+1
     idm = id_fc - nx;// i,j-1,k
-    wp = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp]
+    wm = ((TGD->z_cc[k] - TGD->z_fc[k]) * WGD->w[idp]
           + (TGD->z_fc[k + 1] - TGD->z_cc[k]) * WGD->w[idm])
          / (TGD->z_fc[k + 1] - TGD->z_fc[k]);
     // ==>

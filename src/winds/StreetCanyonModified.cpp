@@ -76,7 +76,7 @@ void PolyBuilding::streetCanyonModified(WINDSGeneralData *WGD)
   float x_ave, y_ave;
   float x_down, y_down;
   float segment_length;// Face length
-  float downwind_rel_dir, along_dir, cross_dir, facenormal_dir;
+  float downwind_rel_dir(0.0), along_dir(0.0), cross_dir(0.0), facenormal_dir(0.0);
   float cross_vel_mag, along_vel_mag;
   float fSC;
   std::vector<bool> valid_face_flag;

@@ -120,9 +120,9 @@ void OptixRayTrace::buildAS(std::vector<Triangle *> tris)
   CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&state.d_tris), tris_size));
 
   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void *>(state.d_tris),
-    trisArray.data(),
-    tris_size,
-    cudaMemcpyHostToDevice));
+                        trisArray.data(),
+                        tris_size,
+                        cudaMemcpyHostToDevice));
 
   // set OptiX AS input types
   const uint32_t triangle_input_flags[1] = { OPTIX_GEOMETRY_FLAG_NONE };
@@ -138,19 +138,19 @@ void OptixRayTrace::buildAS(std::vector<Triangle *> tris)
 
   OptixAccelBufferSizes gas_buffer_sizes;
   OPTIX_CHECK(optixAccelComputeMemoryUsage(state.context,
-    &accel_options,
-    &triangle_input,
-    1,
-    &gas_buffer_sizes));
+                                           &accel_options,
+                                           &triangle_input,
+                                           1,
+                                           &gas_buffer_sizes));
 
   CUdeviceptr d_temp_buffer_gas;
   CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&d_temp_buffer_gas),
-    gas_buffer_sizes.tempSizeInBytes));
+                        gas_buffer_sizes.tempSizeInBytes));
 
   CUdeviceptr d_buffer_temp_output_gas_and_compacted_size;
   size_t compactedSizeOffset = roundUp(gas_buffer_sizes.outputSizeInBytes, 8ull);
   CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&d_buffer_temp_output_gas_and_compacted_size),
-    compactedSizeOffset + 8));
+                        compactedSizeOffset + 8));
 
   OptixAccelEmitDesc emit_property = {};
   emit_property.type = OPTIX_PROPERTY_TYPE_COMPACTED_SIZE;
@@ -159,17 +159,17 @@ void OptixRayTrace::buildAS(std::vector<Triangle *> tris)
                   + compactedSizeOffset);
 
   OPTIX_CHECK(optixAccelBuild(state.context,
-    0,
-    &accel_options,
-    &triangle_input,
-    1,
-    d_temp_buffer_gas,
-    gas_buffer_sizes.tempSizeInBytes,
-    d_buffer_temp_output_gas_and_compacted_size,
-    gas_buffer_sizes.outputSizeInBytes,
-    &state.gas_handle,
-    &emit_property,
-    1));
+                              0,
+                              &accel_options,
+                              &triangle_input,
+                              1,
+                              d_temp_buffer_gas,
+                              gas_buffer_sizes.tempSizeInBytes,
+                              d_buffer_temp_output_gas_and_compacted_size,
+                              gas_buffer_sizes.outputSizeInBytes,
+                              &state.gas_handle,
+                              &emit_property,
+                              1));
 
   CUDA_SYNC_CHECK();
 
@@ -180,20 +180,20 @@ void OptixRayTrace::buildAS(std::vector<Triangle *> tris)
   // Compact the accelerated structure for efficiency
   size_t compacted_gas_size;
   CUDA_CHECK(cudaMemcpy(&compacted_gas_size,
-    (void *)emit_property.result,
-    sizeof(size_t),
-    cudaMemcpyDeviceToHost));
+                        (void *)emit_property.result,
+                        sizeof(size_t),
+                        cudaMemcpyDeviceToHost));
 
   if (compacted_gas_size < gas_buffer_sizes.outputSizeInBytes) {
     CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&state.d_gas_output_buffer),
-      compacted_gas_size));
+                          compacted_gas_size));
 
     OPTIX_CHECK(optixAccelCompact(state.context,
-      0,
-      state.gas_handle,
-      state.d_gas_output_buffer,
-      compacted_gas_size,
-      &state.gas_handle));
+                                  0,
+                                  state.gas_handle,
+                                  state.d_gas_output_buffer,
+                                  compacted_gas_size,
+                                  &state.gas_handle));
 
     CUDA_SYNC_CHECK();
 
@@ -229,9 +229,9 @@ void OptixRayTrace::buildAS()
   CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&state.d_tris), tris_size));
 
   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void *>(state.d_tris),
-    trisArray.data(),
-    tris_size,
-    cudaMemcpyHostToDevice));
+                        trisArray.data(),
+                        tris_size,
+                        cudaMemcpyHostToDevice));
 
 
   // intialize OptiX AS values
@@ -250,19 +250,19 @@ void OptixRayTrace::buildAS()
 
   OptixAccelBufferSizes gas_buffer_sizes;
   OPTIX_CHECK(optixAccelComputeMemoryUsage(state.context,
-    &accel_options,
-    &triangle_input,
-    1,
-    &gas_buffer_sizes));
+                                           &accel_options,
+                                           &triangle_input,
+                                           1,
+                                           &gas_buffer_sizes));
 
   CUdeviceptr d_temp_buffer_gas;
   CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&d_temp_buffer_gas),
-    gas_buffer_sizes.tempSizeInBytes));
+                        gas_buffer_sizes.tempSizeInBytes));
 
   CUdeviceptr d_buffer_temp_output_gas_and_compacted_size;
   size_t compactedSizeOffset = roundUp(gas_buffer_sizes.outputSizeInBytes, 8ull);
   CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&d_buffer_temp_output_gas_and_compacted_size),
-    compactedSizeOffset + 8));
+                        compactedSizeOffset + 8));
 
   OptixAccelEmitDesc emit_property = {};
   emit_property.type = OPTIX_PROPERTY_TYPE_COMPACTED_SIZE;
@@ -271,17 +271,17 @@ void OptixRayTrace::buildAS()
                   + compactedSizeOffset);
 
   OPTIX_CHECK(optixAccelBuild(state.context,
-    0,
-    &accel_options,
-    &triangle_input,
-    1,
-    d_temp_buffer_gas,
-    gas_buffer_sizes.tempSizeInBytes,
-    d_buffer_temp_output_gas_and_compacted_size,
-    gas_buffer_sizes.outputSizeInBytes,
-    &state.gas_handle,
-    &emit_property,
-    1));
+                              0,
+                              &accel_options,
+                              &triangle_input,
+                              1,
+                              d_temp_buffer_gas,
+                              gas_buffer_sizes.tempSizeInBytes,
+                              d_buffer_temp_output_gas_and_compacted_size,
+                              gas_buffer_sizes.outputSizeInBytes,
+                              &state.gas_handle,
+                              &emit_property,
+                              1));
 
   CUDA_SYNC_CHECK();
 
@@ -292,20 +292,20 @@ void OptixRayTrace::buildAS()
   // Compact AS for efficiency
   size_t compacted_gas_size;
   CUDA_CHECK(cudaMemcpy(&compacted_gas_size,
-    (void *)emit_property.result,
-    sizeof(size_t),
-    cudaMemcpyDeviceToHost));
+                        (void *)emit_property.result,
+                        sizeof(size_t),
+                        cudaMemcpyDeviceToHost));
 
   if (compacted_gas_size < gas_buffer_sizes.outputSizeInBytes) {
     CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&state.d_gas_output_buffer),
-      compacted_gas_size));
+                          compacted_gas_size));
 
     OPTIX_CHECK(optixAccelCompact(state.context,
-      0,
-      state.gas_handle,
-      state.d_gas_output_buffer,
-      compacted_gas_size,
-      &state.gas_handle));
+                                  0,
+                                  state.gas_handle,
+                                  state.d_gas_output_buffer,
+                                  compacted_gas_size,
+                                  &state.gas_handle));
     CUDA_SYNC_CHECK();
 
     CUDA_CHECK(cudaFree((void *)d_buffer_temp_output_gas_and_compacted_size));
@@ -318,14 +318,12 @@ void OptixRayTrace::buildAS()
 void OptixRayTrace::convertVecMeshType(std::vector<Triangle *> &tris, std::vector<Vertex> &trisArray)
 {
   int tempIdx = 0;
-  for (int i = 0; i < tris.size(); i++) {// get access to the Triangle at index
-
-
-    trisArray[tempIdx] = { (*(tris[i]->a))[0], (*(tris[i]->a))[1], (*(tris[i]->a))[2] };
+  for (size_t i = 0; i < tris.size(); i++) {// get access to the Triangle at index
+    trisArray[tempIdx] = { tris[i]->a[0], tris[i]->a[1], tris[i]->a[2] };
     tempIdx++;
-    trisArray[tempIdx] = { (*(tris[i]->b))[0], (*(tris[i]->b))[1], (*(tris[i]->b))[2] };
+    trisArray[tempIdx] = { tris[i]->b[0], tris[i]->b[1], tris[i]->b[2] };
     tempIdx++;
-    trisArray[tempIdx] = { (*(tris[i]->c))[0], (*(tris[i]->c))[1], (*(tris[i]->c))[2] };
+    trisArray[tempIdx] = { tris[i]->c[0], tris[i]->c[1], tris[i]->c[2] };
     tempIdx++;
   }
 }
@@ -374,11 +372,11 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
   // Initialize mixingLengths array with t values returned from OptiX
   std::vector<Hit> hitList(icellflag.size());
   CUDA_CHECK(cudaMemcpy(hitList.data(),
-    reinterpret_cast<void *>(state.outputBuffer),
-    sizeof(Hit) * icellflag.size(),
-    cudaMemcpyDeviceToHost));
+                        reinterpret_cast<void *>(state.outputBuffer),
+                        sizeof(Hit) * icellflag.size(),
+                        cudaMemcpyDeviceToHost));
 
-  for (int i = 0; i < icellflag.size(); i++) {
+  for (size_t i = 0; i < icellflag.size(); i++) {
     mixingLengths[i] = hitList[i].t;
   }
 
@@ -442,14 +440,14 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
 
   int *tempArray = (int *)malloc(icellflag.size() * sizeof(int));
 
-  for (int i = 0; i < icellflag.size(); i++) {
+  for (size_t i = 0; i < icellflag.size(); i++) {
     tempArray[i] = icellflag[i];
   }
 
   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void *>(state.icellflagArray_d),
-    reinterpret_cast<void *>(tempArray),
-    icellflag.size() * sizeof(int),
-    cudaMemcpyHostToDevice));
+                        reinterpret_cast<void *>(tempArray),
+                        icellflag.size() * sizeof(int),
+                        cudaMemcpyHostToDevice));
 
   state.params.icellflagArray = (int *)state.icellflagArray_d;
 
@@ -519,12 +517,12 @@ void OptixRayTrace::createProgramGroups()
   size_t sizeof_log = sizeof(log);
 
   OPTIX_CHECK(optixProgramGroupCreate(state.context,
-    &raygen_prog_group_desc,
-    1,
-    &program_group_options,
-    log,
-    &sizeof_log,
-    &state.raygen_prog_group));
+                                      &raygen_prog_group_desc,
+                                      1,
+                                      &program_group_options,
+                                      log,
+                                      &sizeof_log,
+                                      &state.raygen_prog_group));
 
   OptixProgramGroupDesc miss_prog_group_desc = {};
   miss_prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_MISS;
@@ -534,12 +532,12 @@ void OptixRayTrace::createProgramGroups()
   sizeof_log = sizeof(log);
 
   OPTIX_CHECK(optixProgramGroupCreate(state.context,
-    &miss_prog_group_desc,
-    1,
-    &program_group_options,
-    log,
-    &sizeof_log,
-    &state.miss_prog_group));
+                                      &miss_prog_group_desc,
+                                      1,
+                                      &program_group_options,
+                                      log,
+                                      &sizeof_log,
+                                      &state.miss_prog_group));
 
   OptixProgramGroupDesc hit_prog_group_desc = {};
   hit_prog_group_desc.kind = OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
@@ -549,12 +547,12 @@ void OptixRayTrace::createProgramGroups()
   sizeof_log = sizeof(log);
 
   OPTIX_CHECK(optixProgramGroupCreate(state.context,
-    &hit_prog_group_desc,
-    1,
-    &program_group_options,
-    log,
-    &sizeof_log,
-    &state.hit_prog_group));
+                                      &hit_prog_group_desc,
+                                      1,
+                                      &program_group_options,
+                                      log,
+                                      &sizeof_log,
+                                      &state.hit_prog_group));
 }
 
 
@@ -577,13 +575,13 @@ void OptixRayTrace::createPipeline()
   size_t sizeof_log = sizeof(log);
 
   OPTIX_CHECK(optixPipelineCreate(state.context,
-    &state.pipeline_compile_options,
-    &pipeline_link_options,
-    program_groups,
-    sizeof(program_groups) / sizeof(program_groups[0]),
-    log,
-    &sizeof_log,
-    &state.pipeline));
+                                  &state.pipeline_compile_options,
+                                  &pipeline_link_options,
+                                  program_groups,
+                                  sizeof(program_groups) / sizeof(program_groups[0]),
+                                  log,
+                                  &sizeof_log,
+                                  &state.pipeline));
 }
 
 
@@ -601,9 +599,9 @@ void OptixRayTrace::createSBT()
   OPTIX_CHECK(optixSbtRecordPackHeader(state.raygen_prog_group, &sbt_raygen));
 
   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void *>(d_raygen_record),
-    &sbt_raygen,
-    raygen_record_size,
-    cudaMemcpyHostToDevice));
+                        &sbt_raygen,
+                        raygen_record_size,
+                        cudaMemcpyHostToDevice));
 
 
   // miss
@@ -618,9 +616,9 @@ void OptixRayTrace::createSBT()
   CUDA_CHECK(cudaMalloc(reinterpret_cast<void **>(&d_miss_record), miss_record_size));
 
   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void *>(d_miss_record),
-    &sbt_miss,
-    miss_record_size,
-    cudaMemcpyHostToDevice));
+                        &sbt_miss,
+                        miss_record_size,
+                        cudaMemcpyHostToDevice));
 
 
   // hit
@@ -633,9 +631,9 @@ void OptixRayTrace::createSBT()
   HitGroupRecord sbt_hit;
   OPTIX_CHECK(optixSbtRecordPackHeader(state.hit_prog_group, &sbt_hit));
   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void *>(d_hit_record),
-    &sbt_hit,
-    hit_record_size,
-    cudaMemcpyHostToDevice));
+                        &sbt_hit,
+                        hit_record_size,
+                        cudaMemcpyHostToDevice));
 
 
   // update state
@@ -660,19 +658,19 @@ void OptixRayTrace::launch()
 
   // Allocate memory to pass initialized params variable to device
   CUDA_CHECK(cudaMemcpy(reinterpret_cast<void *>(state.paramsBuffer),
-    reinterpret_cast<void *>(&state.params),
-    1 * sizeof(Params),
-    cudaMemcpyHostToDevice));
+                        reinterpret_cast<void *>(&state.params),
+                        1 * sizeof(Params),
+                        cudaMemcpyHostToDevice));
 
   // launch OptiX
   OPTIX_CHECK(optixLaunch(state.pipeline,
-    state.stream,
-    state.paramsBuffer,
-    sizeof(Params),
-    &state.sbt,
-    state.nx - 1,
-    state.ny - 1,
-    state.nz - 1));
+                          state.stream,
+                          state.paramsBuffer,
+                          sizeof(Params),
+                          &state.sbt,
+                          state.nx - 1,
+                          state.ny - 1,
+                          state.nz - 1));
 
 
   CUDA_SYNC_CHECK();

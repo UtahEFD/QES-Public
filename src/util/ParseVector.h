@@ -27,56 +27,62 @@
  * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
  ****************************************************************************/
 
-/** @file MetParams.h */
+/** @file ParseVector.h */
 
 #pragma once
 
-/*
- * This class is a container relating to sensors and metric
- * information read from the xml.
- */
-#include <algorithm>
-
+#include <type_traits>
+#include <iostream>
 #include "util/ParseInterface.h"
-#include "util/ParseException.h"
-#include "Sensor.h"
-#include <boost/foreach.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <string>
 
-namespace pt = boost::property_tree;
+#define FLOATS_ARE_EQUAL(x, y) (((x) - (y)) < 0.000001 && ((x) - (y)) > -0.000001)
 
 /**
- * @class MetParams
+ * @class ParseVector
+ * @brief Template class that holds 3 values.
  *
- * Container relating to sensors and metric information
- * read from the xml.
- *
- * @sa Sensor
- * @sa ParseInterface
+ * Values can be accessed as if this was an array.
  */
-class MetParams : public ParseInterface
+template<class T>
+class ParseVector : public ParseInterface
 {
-private:
+protected:
+  std::vector<T> values;
+
 public:
-  int z0_domain_flag = 0; /**< :document this: */
-  std::vector<Sensor *> sensors; /**< :document this: */
+  ParseVector()
+  {
+    values.clear();
+  }
 
-  std::vector<std::string> sensorName; /**< :document this: */
 
-
-  /**
-   * :document this:
-   */
   virtual void parseValues()
   {
-    parsePrimitive<int>(false, z0_domain_flag, "z0_domain_flag");
-    parseMultiElements<Sensor>(false, sensors, "sensor");
+    values.clear();
+    parseTaglessValues<T>(values);
+  }
 
-    parseMultiPrimitives<std::string>(false, sensorName, "sensorName");
-    for (auto i = 0u; i < sensorName.size(); i++) {
-      sensorName[i] = QESfs::get_absolute_path(sensorName[i]);
-    }
+  size_t size()
+  {
+    return values.size();
+  }
+
+  /**
+   * Accesses the value at position i.
+   *
+   * @param i the index of the value to return
+   * @return a reference to the value stored at i
+   */
+  T &operator[](const int i)
+  {
+    return values[i];
+  }
+
+
+  friend std::istream &operator>>(std::istream &is, ParseVector<T> &v)
+  {
+    for (size_t i = 0; i < v.values.size(); ++i)
+      is >> v.values[i];
+    return is;
   }
 };

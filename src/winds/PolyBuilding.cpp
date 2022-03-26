@@ -76,7 +76,7 @@ void PolyBuilding::setPolyBuilding(WINDSGeneralData *WGD)
   height_eff = H + base_height;// Effective height of the building
 
   // Calculate the centroid coordinates of the building (average of all nodes coordinates)
-  for (auto i = 0; i < polygonVertices.size() - 1; i++) {
+  for (auto i = 0u; i < polygonVertices.size() - 1; i++) {
     building_cent_x += polygonVertices[i].x_poly;
     building_cent_y += polygonVertices[i].y_poly;
   }
@@ -133,7 +133,8 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 
   int mesh_type_flag = WID->simParams->meshTypeFlag;
   float ray_intersect;
-  int num_crossing, vert_id, start_poly;
+  int num_crossing, start_poly;
+  unsigned int vert_id;
 
   // if (building_number == 3674)
   //{
@@ -144,7 +145,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
   // Loop to calculate maximum and minimum of x and y values of the building
   x_min = x_max = polygonVertices[0].x_poly;
   y_min = y_max = polygonVertices[0].y_poly;
-  for (auto id = 1; id < polygonVertices.size(); id++) {
+  for (auto id = 1u; id < polygonVertices.size(); id++) {
     if (polygonVertices[id].x_poly > x_max) {
       x_max = polygonVertices[id].x_poly;
     }
@@ -166,7 +167,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
   j_end = (y_max / WGD->dy) + 1;// Index of building end location in y-direction
 
   // Define start index of the building in z-direction
-  for (auto k = 1; k < WGD->z.size(); k++) {
+  for (auto k = 1u; k < WGD->z.size(); k++) {
     k_start = k;
     if (base_height <= WGD->z_face[k]) {
       break;
@@ -174,7 +175,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
   }
 
   // Define end index of the building in z-direction
-  for (auto k = 0; k < WGD->z.size(); k++) {
+  for (auto k = 0u; k < WGD->z.size(); k++) {
     k_end = k + 1;
     if (height_eff < WGD->z[k + 1]) {
       break;
@@ -182,7 +183,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
   }
 
   // Define cut end index of the building in z-direction
-  for (auto k = 0; k < WGD->z.size(); k++) {
+  for (auto k = 0u; k < WGD->z.size(); k++) {
     k_cut_end = k + 1;
     if (height_eff <= WGD->z_face[k + 1]) {
       break;
@@ -245,10 +246,10 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
     std::vector<cutCell> cut_points;
     std::vector<int> cut_cell_id;
     std::vector<int>::iterator it;
-    int counter;
+    unsigned int counter;
     cut_points.clear();
     cut_cell_id.clear();
-    int index_next;
+    unsigned int index_next;
     float x1i_intersect, x2i_intersect;
     float y1i_intersect, y2i_intersect;
     float x1j_intersect, x2j_intersect;
@@ -258,7 +259,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
     int height_flag;
     float S_cut;
     float solid_V_frac;
-    std::vector<int> skip_id;
+    std::vector<unsigned int> skip_id;
     skip_id.clear();
     float y_face, x_face;
 
@@ -276,7 +277,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
     i_face_second.resize(polygonVertices.size(), 1);
     j_face_second.resize(polygonVertices.size(), 1);
 
-    for (auto id = 0; id < polygonVertices.size() - 1; id++) {
+    for (auto id = 0u; id < polygonVertices.size() - 1; id++) {
       if (polygonVertices[id].x_poly < polygonVertices[id + 1].x_poly) {
         x_min_face[id] = polygonVertices[id].x_poly;
         x_max_face[id] = polygonVertices[id + 1].x_poly;
@@ -306,8 +307,8 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
       }
     }
 
-    int number = 0;
-    for (auto id = 0; id < polygonVertices.size() - 1; id++) {
+    unsigned int number = 0;
+    for (auto id = 0u; id < polygonVertices.size() - 1; id++) {
       if (skip_id.size() != 0) {
         if (id == skip_id[number]) {
           if (number < skip_id.size()) {
@@ -408,7 +409,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
             }
 
 
-            int count = 0;
+            unsigned int count = 0;
             while (x2i >= polygonVertices[index_next + 1].x_poly && x1i <= polygonVertices[index_next + 1].x_poly && count != polygonVertices.size() - 2 && y2j >= polygonVertices[index_next + 1].y_poly && y1j <= polygonVertices[index_next + 1].y_poly && index_next != polygonVertices.size() - 1) {
               face_intersect.push_back(cutVert(polygonVertices[index_next + 1].x_poly, polygonVertices[index_next + 1].y_poly, 0.0));
               skip_id.push_back(index_next);
@@ -537,7 +538,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
                     cut_points[counter].z_solid = height_eff - WGD->z_face[k_cut_end - 1];
                   }
                 }
-                for (auto ii = 0; ii < face_intersect.size(); ii++) {
+                for (auto ii = 0u; ii < face_intersect.size(); ii++) {
                   cut_points[counter].intersect.push_back(cutVert(face_intersect[ii].x_cut - i * WGD->dx, face_intersect[ii].y_cut - j * WGD->dy, 0.0));
                   cut_points[counter].face_below.push_back(cutVert(face_intersect[ii].x_cut - i * WGD->dx, face_intersect[ii].y_cut - j * WGD->dy, 0.0));
                   if (height_flag == 1) {
@@ -1623,7 +1624,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
 
 
     if (cut_points.size() > 0) {
-      for (auto id = 0; id < cut_points.size(); id++) {
+      for (auto id = 0u; id < cut_points.size(); id++) {
         int k = cut_cell_id[id] / ((WGD->nx - 1) * (WGD->ny - 1));
         int j = (cut_cell_id[id] - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1);
         int i = cut_cell_id[id] - k * (WGD->nx - 1) * (WGD->ny - 1) - j * (WGD->nx - 1);
@@ -1759,7 +1760,7 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
     }
 
     if (cut_points.size() > 0) {
-      for (auto id = 0; id < cut_points.size(); id++) {
+      for (auto id = 0u; id < cut_points.size(); id++) {
         int k = cut_cell_id[id] / ((WGD->nx - 1) * (WGD->ny - 1));
         int j = (cut_cell_id[id] - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1);
         int i = cut_cell_id[id] - k * (WGD->nx - 1) * (WGD->ny - 1) - j * (WGD->nx - 1);
@@ -1854,7 +1855,7 @@ void PolyBuilding::reorderPoints(std::vector<cutVert> &face_points, int index)
   sum[2] = 0.0;
 
   // Calculate centroid of points
-  for (int i = 0; i < face_points.size(); i++) {
+  for (auto i = 0u; i < face_points.size(); i++) {
     sum[0] += face_points[i].x_cut;
     sum[1] += face_points[i].y_cut;
     sum[2] += face_points[i].z_cut;
@@ -1865,7 +1866,7 @@ void PolyBuilding::reorderPoints(std::vector<cutVert> &face_points, int index)
   centroid[2] = sum[2] / face_points.size();
 
   // Calculate angle between each point and centroid
-  for (int i = 0; i < face_points.size(); i++) {
+  for (auto i = 0u; i < face_points.size(); i++) {
     if (index == 0 || index == 1) {
       angle[i] = (180 / M_PI) * atan2((face_points[i].z_cut - centroid[2]), (face_points[i].y_cut - centroid[1]));
     }
@@ -1897,7 +1898,7 @@ void PolyBuilding::mergeSort(std::vector<float> &angle, std::vector<cutVert> &fa
   face_points_R.resize(face_points.size() - face_points.size() / 2);
 
   // copy data from the main data set to the left and right children
-  int lC = 0, rC = 0;
+  size_t lC = 0, rC = 0;
   for (unsigned int i = 0; i < angle.size(); i++) {
     if (i < angle.size() / 2) {
       angleL[lC] = angle[i];
@@ -1914,7 +1915,7 @@ void PolyBuilding::mergeSort(std::vector<float> &angle, std::vector<cutVert> &fa
 
   // compare the sorted children to place the data into the main array
   lC = rC = 0;
-  for (unsigned int i = 0; i < face_points.size(); i++) {
+  for (auto i = 0u; i < face_points.size(); i++) {
     if (rC == angleR.size() || (lC != angleL.size() && angleL[lC] < angleR[rC])) {
       angle[i] = angleL[lC];
       face_points[i] = face_points_L[lC++];
@@ -1931,13 +1932,13 @@ float PolyBuilding::calculateArea(WINDSGeneralData *WGD, std::vector<cutVert> &f
 {
   float S = 0.0;
   float coeff = 0.0;
-  int i, j, k;
+  int i(0), j(0), k(0);
   if (face_points.size() != 0) {
     k = cutcell_index / ((WGD->nx - 1) * (WGD->ny - 1));
     j = (cutcell_index - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1);
     i = cutcell_index - k * (WGD->nx - 1) * (WGD->ny - 1) - j * (WGD->nx - 1);
     // calculate area fraction coefficient for each face of the cut-cell
-    for (int i = 0; i < face_points.size() - 1; i++) {
+    for (auto i = 0u; i < face_points.size() - 1; i++) {
       coeff += (0.5 * (face_points[i + 1].y_cut + face_points[i].y_cut) * (face_points[i + 1].z_cut - face_points[i].z_cut)) / (WGD->dy * WGD->dz_array[k]) + (0.5 * (face_points[i + 1].x_cut + face_points[i].x_cut) * (face_points[i + 1].z_cut - face_points[i].z_cut)) / (WGD->dx * WGD->dz_array[k]) + (0.5 * (face_points[i + 1].x_cut + face_points[i].x_cut) * (face_points[i + 1].y_cut - face_points[i].y_cut)) / (WGD->dx * WGD->dy);
     }
 

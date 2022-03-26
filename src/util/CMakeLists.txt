@@ -5,7 +5,10 @@ add_library (qesutil ${LIB_TYPE}
   ArgumentParsing.cpp ArgumentParsing.h
   ParseInterface.cpp ParseInterface.h
   ParseException.h
+  
+  ESRIShapefile.cpp ESRIShapefile.h
 
+  
   doesFolderExist.h
   calcTime.cpp calcTime.h
 

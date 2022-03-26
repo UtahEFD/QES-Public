@@ -35,8 +35,9 @@
 #include <vector>
 #include <map>
 
-#include "CanopyElement.h"
+#include "util/PolygonVertex.h"
 
+#include "CanopyElement.h"
 
 // forward declaration of WINDSInputData and WINDSGeneralData, which
 // will be used by the derived classes and thus included there in the

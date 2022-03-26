@@ -31,7 +31,7 @@
 
 #pragma once
 
-#include "util/Vec3D.h"
+#include "util/Vector3.h"
 
 /**
  * @class Ray
@@ -41,10 +41,10 @@ class Ray
 {
 private:
   float origin_x, origin_y, origin_z;
-  Vec3D dirVec;
+  Vector3 dirVec;
 
 public:
-  Ray(float o_x, float o_y, float o_z, Vec3D &dVec)
+  Ray(float o_x, float o_y, float o_z, Vector3 &dVec)
     : origin_x(o_x), origin_y(o_y), origin_z(o_z), dirVec(dVec)
   {
   }
@@ -64,9 +64,9 @@ public:
   float getOriginY() const { return origin_y; }
   float getOriginZ() const { return origin_z; };
 
-  Vec3D getDirection() const { return dirVec; }
+  Vector3 getDirection() const { return dirVec; }
 
-  void setDir(const Vec3D &dir)
+  void setDir(const Vector3 &dir)
   {
     dirVec[0] = dir[0];
     dirVec[1] = dir[1];
