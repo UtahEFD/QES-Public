@@ -44,7 +44,6 @@
 Canopy::Canopy(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
   wakeFlag = WID->canopies->wakeFlag;
-
   nx_canopy = WGD->nx - 1;
   ny_canopy = WGD->ny - 1;
   nz_canopy = WGD->nz - 1;

@@ -10,7 +10,7 @@
         <residualReduction>3</residualReduction>
         <maxIterations>500</maxIterations>
         <sidewallFlag>0</sidewallFlag>
-        <domain>167 100 150</domain>
+        <domain>250 150 150</domain>
         <streetIntersectionFlag>0</streetIntersectionFlag>
         <streetCanyonFlag>0</streetCanyonFlag>
         <upwindCavityFlag>0</upwindCavityFlag>
@@ -19,7 +19,7 @@
         <UTCConversion>0</UTCConversion>
         <totalTimeIncrements>1</totalTimeIncrements>
         <verticalStretching>0</verticalStretching>
-        <cellSize>0.3 0.3 0.1</cellSize>
+        <cellSize>0.2 0.2 0.1</cellSize>
     </simulationParameters>
     <metParams>
         <z0_domain_flag>0</z0_domain_flag>
@@ -49,34 +49,28 @@
     <canopies>
         <num_canopies>1</num_canopies>
         <Vineyard>
-            <corner2y>2.5</corner2y>
-            <displacementHeight>1.42</displacementHeight>
-            <upstreamUstar>0.2891</upstreamUstar>
-            <upstreamSigmaW>0.097</upstreamSigmaW>
-            <thinFence>0</thinFence>
-            <corner4y>27.5</corner4y>
-            <corner4x>6</corner4x>
-            <corner3y>27.5</corner3y>
-            <corner3x>45</corner3x>
             <opticalPorosity>0.1157</opticalPorosity>
-            <corner2x>45</corner2x>
-            <corner1y>2.5</corner1y>
-            <corner1x>6</corner1x>
-            <rowAngle>0</rowAngle>
-            <rowWidth>0.5</rowWidth>
-            <rowSpacing>2.5</rowSpacing>
-            <understoryHeight>0.5</understoryHeight>
             <height>2.16</height>
+            <understoryHeight>0.5</understoryHeight>
+            <rowSpacing>2.5</rowSpacing>
+            <rowWidth>0.5</rowWidth>
+            <rowAngle>0</rowAngle>
+            <xVertex>6</xVertex>
+            <xVertex>45</xVertex>
+            <xVertex>45</xVertex>
+            <xVertex>6</xVertex>
+            <yVertex>2.5</yVertex>
+            <yVertex>2.5</yVertex>
+            <yVertex>27.5</yVertex>
+            <yVertex>27.5</yVertex>
+            <thinFence>0</thinFence>
+            <upstreamSigmaW>0.097</upstreamSigmaW>
+            <upstreamUstar>0.2891</upstreamUstar>
+            <tkeMax>0.12654</tkeMax>
+            <displacementHeightParallel>1.42</displacementHeightParallel>
         </Vineyard>
     </canopies>
     <fileOptions>
         <outputFlag>1</outputFlag>
-        <outputFields>u</outputFields>
-        <outputFields>v</outputFields>
-        <outputFields>w</outputFields>
-        <outputFields>icell</outputFields>
-        <outputTURBInputFile>true</outputTURBInputFile>
-        <massConservedFlag>0</massConservedFlag>
-        <sensorVelocityFlag>0</sensorVelocityFlag>
-        <staggerdVelocityFlag>0</staggerdVelocityFlag>
+        <outputFields>all</outputFields>
     </fileOptions>

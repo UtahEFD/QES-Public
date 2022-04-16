@@ -1,7 +1,7 @@
 <QESinput>
 <simulationParameters>
-  <domain> 167 100 150</domain>
-  <cellSize> 0.3 0.3 0.1 </cellSize> <!-- Meters-->
+  <domain> 250 150 150</domain>
+  <cellSize> 0.2 0.2 0.1 </cellSize> <!-- Meters-->
   <verticalStretching> 0 </verticalStretching>
   <totalTimeIncrements> 1 </totalTimeIncrements>
   <UTCConversion> 0 </UTCConversion>
@@ -56,29 +56,30 @@
     <rowSpacing>2.5</rowSpacing>
     <rowWidth>0.5</rowWidth>
     <rowAngle>0</rowAngle>
-    <corner1x> 6 </corner1x>
-    <corner1y> 2.5 </corner1y>
-    <corner2x> 45 </corner2x>
-    <corner2y> 2.5 </corner2y>
-    <corner3x> 45 </corner3x>
-    <corner3y> 27.5 </corner3y>
-    <corner4x> 6 </corner4x>
-    <corner4y> 27.5 </corner4y>
+    <xVertex> 6 </xVertex>
+    <xVertex> 45 </xVertex>
+    <xVertex> 45 </xVertex>
+    <xVertex> 6 </xVertex>
+    <yVertex> 2.5 </yVertex>
+    <yVertex> 2.5 </yVertex>
+    <yVertex> 27.5 </yVertex>
+    <yVertex> 27.5 </yVertex>
     <thinFence> 0 </thinFence>
     <upstreamSigmaW> 0.4095 </upstreamSigmaW>
     <upstreamUstar> 0.4472 </upstreamUstar>
-    <displacementHeight> 1.42</displacementHeight>
+    <tkeMax>0.5</tkeMax>
+    <displacementHeightParallel> 1.42</displacementHeightParallel>
   </Vineyard>
 </canopies>
 <fileOptions>
   <outputFlag>1</outputFlag>
-  <outputFields>u</outputFields> 
-  <outputFields>v</outputFields> 
+  <outputFields>all</outputFields> 
+  <!--<outputFields>v</outputFields> 
   <outputFields>w</outputFields>
   <outputFields>icell</outputFields>  
   <outputTURBInputFile>true</outputTURBInputFile>
   <massConservedFlag> 0 </massConservedFlag>
   <sensorVelocityFlag> 0 </sensorVelocityFlag>
-  <staggerdVelocityFlag> 0 </staggerdVelocityFlag>
+  <staggerdVelocityFlag> 0 </staggerdVelocityFlag> -->
 </fileOptions>
 </QESinput>

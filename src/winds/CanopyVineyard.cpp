@@ -60,13 +60,121 @@ void CanopyVineyard::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *W
   //canopy_atten, canopy_top);
 
   // this function need to be called to defined the boundary of the canopy and the icellflags
-  setCanopyGrid(WGD, building_id);
+  //setCanopyGrid(WGD, building_id);
+  float ray_intersect;
+  unsigned int num_crossing, vert_id, start_poly;
+  
+  // Find out which cells are going to be inside the polygone
+  // Based on Wm. Randolph Franklin, "PNPOLY - Point Inclusion in Polygon Test"
+  // Check the center of each cell, if it's inside, set that cell to building
+  for (auto j = j_start; j < j_end; j++) {
+    // Center of cell y coordinate
+    float y_cent = (j + 0.5) * WGD->dy;
+    for (auto i = i_start; i < i_end; i++) {
+      float x_cent = (i + 0.5) * WGD->dx;
+      // Node index
+      vert_id = 0;
+      start_poly = vert_id;
+      num_crossing = 0;
+      while (vert_id < polygonVertices.size() - 1) {
+        if ((polygonVertices[vert_id].y_poly <= y_cent && polygonVertices[vert_id + 1].y_poly > y_cent)
+            || (polygonVertices[vert_id].y_poly > y_cent && polygonVertices[vert_id + 1].y_poly <= y_cent)) {
+          ray_intersect = (y_cent - polygonVertices[vert_id].y_poly) / (polygonVertices[vert_id + 1].y_poly - polygonVertices[vert_id].y_poly);
+          if (x_cent < (polygonVertices[vert_id].x_poly + ray_intersect * (polygonVertices[vert_id + 1].x_poly - polygonVertices[vert_id].x_poly))) {
+            num_crossing += 1;
+          }
+        }
+        vert_id += 1;
+        if (polygonVertices[vert_id].x_poly == polygonVertices[start_poly].x_poly
+            && polygonVertices[vert_id].y_poly == polygonVertices[start_poly].y_poly) {
+          vert_id += 1;
+          start_poly = vert_id;
+        }
+      }
+
+      // if num_crossing is odd = cell is oustside of the polygon
+      // if num_crossing is even = cell is inside of the polygon
+      if ((num_crossing % 2) != 0) {
+        int icell_2d = i + j * (WGD->nx - 1);
+
+        if (WGD->icellflag_footprint[icell_2d] == 0) {
+          // a  building exist here -> skip
+        } else {
+          // save the (x,y) location of the canopy
+          canopy_cell2D.push_back(icell_2d);
+          // set the footprint array for canopy
+          //WGD->icellflag_footprint[icell_2d] = getCellFlagCanopy();
+
+          // Define start index of the canopy in z-direction
+          for (size_t k = 1u; k < WGD->z.size(); k++) {
+            if (WGD->terrain[icell_2d] + base_height <= WGD->z[k]) {
+              WGD->canopy->canopy_bot_index[icell_2d] = k;
+              WGD->canopy->canopy_bot[icell_2d] = WGD->terrain[icell_2d] + base_height;
+              WGD->canopy->canopy_base[icell_2d] = WGD->z_face[k - 1];
+              //std::cout << "canopy_bot[" << icell_2d <<"] = " << WGD->canopy->canopy_bot[icell_2d] << "canopy_bot_index[" << icell_2d <<"] = " << WGD->canopy->canopy_bot_index[icell_2d] << std::endl;
+              break;
+            }
+
+          }
+
+
+          // Define end index of the canopy in z-direction
+          for (size_t k = 0u; k < WGD->z.size(); k++) {
+            if (WGD->terrain[icell_2d] + H < WGD->z[k + 1]) {
+              WGD->canopy->canopy_top_index[icell_2d] = k + 1;
+              WGD->canopy->canopy_top[icell_2d] = WGD->terrain[icell_2d] + H;
+              break;
+            }
+          }
+
+          // Define the height of the canopy
+          WGD->canopy->canopy_height[icell_2d] = WGD->canopy->canopy_top[icell_2d] - WGD->canopy->canopy_bot[icell_2d];
+
+          // define icellflag @ (x,y) for all z(k) in [k_start...k_end]
+          for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < WGD->canopy->canopy_top_index[icell_2d]; k++) {
+            int icell_3d = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+            if (WGD->icellflag[icell_3d] != 0 && WGD->icellflag[icell_3d] != 2) {
+              // Canopy cell
+              //WGD->icellflag[icell_3d] = getCellFlagCanopy();
+              //WGD->canopy->canopy_atten_coeff[icell_3d] = attenuationCoeff;
+              WGD->canopy->icanopy_flag[icell_3d] = building_id;
+              canopy_cell3D.push_back(icell_3d);
+            }
+          }
+        }// end define icellflag!
+      }
+    }
+  }
+
+  // check if the canopy is well defined
+  if (canopy_cell2D.size() == 0) {
+    k_start = 0;
+    k_end = 0;
+  } else {
+    k_start = WGD->nz - 1;
+    k_end = 0;
+    for (size_t k = 0u; k < canopy_cell2D.size(); k++) {
+      if (WGD->canopy->canopy_bot_index[canopy_cell2D[k]] < k_start)
+        k_start = WGD->canopy->canopy_bot_index[canopy_cell2D[k]];
+      if (WGD->canopy->canopy_top_index[canopy_cell2D[k]] > k_end)
+        k_end = WGD->canopy->canopy_top_index[canopy_cell2D[k]];
+    }
+  }
+
+  // check of illegal definition.
+  if (k_start > k_end) {
+    std::cerr << "ERROR in tree definition (k_start > k end)" << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
 
   if (ceil(1.5 * k_end) > WGD->nz - 1) {
     std::cerr << "ERROR domain too short for tree method" << std::endl;
     exit(EXIT_FAILURE);
   }
 
+  nx_canopy = (i_end - i_start - 1) + 2;
+  ny_canopy = (j_end - j_start - 1) + 2;
 
   // Find nearest sensor (so we use the correct 1/L in the vo parameterization)
   float sensor_distance = 99999;
@@ -84,24 +192,9 @@ void CanopyVineyard::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *W
   rL = WID->metParams->sensors[nearest_sensor_i]->TS[0]->site_one_overL;// uses first time step value only - figure out how to get current time step inside this function
 
   z0_site = WID->metParams->sensors[nearest_sensor_i]->TS[0]->site_z0;
-  std::cout << "z0_site = " << z0_site << "\n";
-  std::cout << "rL = " << rL << "\n";
-  std::cout << "nearest_sensor_i = " << nearest_sensor_i << "\n";
-  // Resize the canopy-related vectors
-  /*
-      canopy_atten.resize( numcell_cent_3d, 0.0 );
-
-    for (auto j=0; j<ny_canopy; j++) {
-        for (auto i=0; i<nx_canopy; i++) {
-            int icell_2d = i + j*nx_canopy;
-            for (auto k=canopy_bot_index[icell_2d]; k<=canopy_top_index[icell_2d]; k++) {
-                int icell_3d = i + j*nx_canopy + k*nx_canopy*ny_canopy;
-                // initiate all attenuation coefficients to the canopy coefficient
-                canopy_atten[icell_3d] = attenuationCoeff;     
-            }
-        }
-    }
-    */
+  //std::cout << "z0_site = " << z0_site << "\n";
+  //std::cout << "rL = " << rL << "\n";
+  //std::cout << "nearest_sensor_i = " << nearest_sensor_i << "\n";
 
   a_obf = pow(beta, 0.4);
 
@@ -116,12 +209,12 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   std::vector<int> u0_mod_id, v0_mod_id;
   //std::cout << "checkpoint 1 \n";
 
-  std::cout << "VINEYARD PARAMETERIZATION STARTING \n";
+  //std::cout << "VINEYARD PARAMETERIZATION STARTING \n";
 
   int icell_face = i_building_cent + j_building_cent * WGD->nx + (WGD->nz - 5) * WGD->nx * WGD->ny;
   float u0_uw = WGD->u0[icell_face];// u velocity at the centroid, 5 nodes from the top of domain (avoids effect of nearby wakes)
   float v0_uw = WGD->v0[icell_face];// v velocity at the centroid, 5 nodes from the top of domain
-  std::cout << "is u0_uw a nan? " << isnan(u0_uw) << "  is v0_uw a nan? " << isnan(v0_uw) << "\n";
+  //std::cout << "is u0_uw a nan? " << isnan(u0_uw) << "  is v0_uw a nan? " << isnan(v0_uw) << "\n";
 
   upwind_dir = atan2(v0_uw, u0_uw);
 
@@ -293,10 +386,10 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   float ld;// "local distance", the orthogonal distance from the current i,j point to the upwind edge of the closest row in the upwind direction
   float z_rel;// height off the terrain
   float z_b;// base of the canopy
-  int icell_2d;
+  int icell_2d, icell_2d_canopy;
   int k_mid;// mid-canopy k-node
   float a_exp;// a blending constant that smooths the transition from wake to upwind flow
-  float szt_uw, szt_local;// shear zone thicknesses
+  float szt_uw, szt_local, szt_Lm;// shear zone thickness variables
 
 
   float a_uwv[N_e + 1];// the attenuation due to one row (to be raised to N_e, where N_e is number of rows in entry region)
@@ -307,6 +400,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   int np_cc_v = (nz - 1) * (ny - 1) * (nx - 1);
 
   tkeFac.resize(np_cc_v, 0);
+  vineLm.resize(np_cc_v, 0);
   float a_uw = 1;
 
   float a_local;// the attenuation due to the closest upwind row only
@@ -321,11 +415,11 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   // BEGIN MAIN PARAMETERIZATION LOOPS
   for (auto j = 0; j < ny_canopy; j++) {
     for (auto i = 0; i < nx_canopy; i++) {
-      icell_2d = i + j * nx_canopy;
-
+      //icell_2d = i + j * nx_canopy;
+      icell_2d = (i + i_start) + (j + j_start) * (WGD->nx - 1);
 
       // base of the canopy
-      z_b = canopy_base[icell_2d];
+      z_b = WGD->canopy->canopy_base[icell_2d];
 
       // calculate row-orthogonal distance to upwind-est row, dv_c
       float cxy[2] = { (i - 1 + i_start) * WGD->dx, (j - 1 + j_start) * WGD->dy };// current x position
@@ -352,7 +446,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
       a_exp = exp((log(0.01) / (7.5 * H)) * d_dw_local);
 
       // find k-node of mid-canopy at current i,j location
-      for (auto k = canopy_bot_index[icell_2d]; k < canopy_top_index[icell_2d]; k++) {
+      for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < WGD->canopy->canopy_top_index[icell_2d]; k++) {
         if (WGD->z[k] > (z_b + understory_height + (H - understory_height) / 2)) {
           break;
         }
@@ -383,7 +477,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
       // An arbitrary ref height for v_c parameterization
       zref = 10.;// arbitrarily choose 10m
       zref_k = 0;
-      for (auto k = canopy_bot_index[icell_2d]; k < WGD->nz; k++) {
+      for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < WGD->nz; k++) {
         if (WGD->z[k] > (zref + z_b)) {
           break;
         }
@@ -392,7 +486,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
       // BEGIN PARAMETERIZATIONS
 
-      if (canopy_bot_index[icell_2d] < canopy_top_index[icell_2d]) {// if i'm inside the canopy (vineyard block) polygon
+      if (WGD->canopy->canopy_bot_index[icell_2d] < WGD->canopy->canopy_top_index[icell_2d]) {// if i'm inside the canopy (vineyard block) polygon
         icell_face_ref = (i - 1 + i_start) + (j - 1 + j_start) * WGD->nx + zref_k * WGD->nx * WGD->ny;
 
         // Calculate the stability correction quantities that aren't height dependent (for vo parameterization)
@@ -427,18 +521,24 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
         /*
         if (i + i_start == i_building_cent && j + j_start == j_building_cent) {
+          
+          std::cout << "i = " << i_building_cent << "j = " << j_building_cent << "\n";
+          std::cout << "canopy_bot_index[" << icell_2d << "] = " << WGD->canopy->canopy_bot_index[icell_2d] << std::endl;
+          std::cout << "z_b = " << z_b << std::endl;
           std::cout << "vref_c = " << vref_c << "\n";
           std::cout << "ustar_v_c = " << ustar_v_c << "\n";
           std::cout << "vH_c = " << vH_c << "\n";
           std::cout << "a_v = " << a_v << "\n";
           std::cout << "z0_site = " << z0_site << "\n";
           std::cout << "rL = " << rL << "\n";
+          std::cout << "zref = " << zref << "\n";
+          std::cout << "zref_k = " << zref_k << "\n";
+          std::cout << "d_v = " << d_v << "\n";
         }
-        */
-
+*/
 
         // MAIN Z-LOOP
-        for (auto k = canopy_bot_index[icell_2d]; k < (WGD->nz - 1); k++) {
+        for (auto k = WGD->canopy->canopy_bot_index[icell_2d]; k < (WGD->nz - 1); k++) {
           z_rel = WGD->z_face[k - 1] - z_b;
           int icell_face = (i - 1 + i_start) + (j - 1 + j_start) * WGD->nx + k * WGD->nx * WGD->ny;
           int icell_cent = (i - 1 + i_start) + (j - 1 + j_start) * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
@@ -510,6 +610,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
           // APPLY BLEED FLOW PARAMETERIZATION INSIDE THE ACTUAL VEGETATION
           if (BF_flag == 1 && dv_c > rowSpacing && ld < rowWidth) {// if my x-y position indicates i'm on a vine
+            tkeFac[icell_cent] = 1;// tke is tkeMax above the fence (will be overwritten inside the fence)
             if ((z_rel >= understory_height) && (z_rel <= H)) {// if my z position indicates i'm inside the actual vegetation
 
               // Am I in entry region or /quilibrated region?
@@ -553,6 +654,12 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 u_c *= a_uwv[n];
                 tkeFac[icell_cent] *= tkeFac_uwv[n];
               }
+
+              szt_Lm = spreadrate_top * (d_dw * N + d_dw_local) + 0.00001;
+              if (z_rel > szo_top - 0.5*szt_Lm  && z_rel < szo_top + 0.5*szt_Lm) {
+                vineLm[icell_cent] = szt_Lm;
+              }
+
             }
 
             else if (N > N_e && dv_c > rowSpacing) {// if i'm in equilibrated region
@@ -563,6 +670,12 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 u_c *= a_uwv[n];
                 tkeFac[icell_cent] *= tkeFac_uwv[n];
               }
+
+              szt_Lm = spreadrate_top * (d_dw * N_e + d_dw_local) + 0.00001;
+              if (z_rel > szo_top - 0.5*szt_Lm  && z_rel < szo_top + 0.5*szt_Lm) {
+                vineLm[icell_cent] = szt_Lm;
+              }
+
             }
 
             // APPLY UD ZONE PARAMETERIZATION
@@ -656,12 +769,16 @@ void CanopyVineyard::canopyWake(WINDSGeneralData *WGD, int building_id)
 void CanopyVineyard::canopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData *TGD, int building_id)
 {
 
-  float tkeMax = 0.5;// To be modeled/assimilated from NWP output later
+  //float tkeMax = 0.5;// To be modeled/assimilated from NWP output later
+  std::cout << "tkeMax = " << tkeMax << std::endl;
   for (auto i = 0; i < WGD->nx - 1; i++) {
 
     for (auto j = 0; j < WGD->ny - 1; j++) {
       for (auto k = 0; k < WGD->nz - 1; k++) {
         int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+        if (fabs(vineLm[icell_cent]) > 0.) {
+          TGD->Lm[icell_cent] = vineLm[icell_cent];
+        }
         if (fabs(tkeFac[icell_cent]) > 0.) {
           TGD->tke[icell_cent] = tkeFac[icell_cent] * tkeMax;
           TGD->nuT[icell_cent] = 0.55 * sqrt(TGD->tke[icell_cent]) * TGD->Lm[icell_cent];
@@ -669,5 +786,7 @@ void CanopyVineyard::canopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData
       }
     }
   }
+  tkeFac.clear();
+  vineLm.clear();
 }
 
