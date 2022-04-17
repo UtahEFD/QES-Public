@@ -109,6 +109,7 @@ public:
 
 private:
   //float attenuationCoeff=1.0;
+  float upwind_dir_unit = 0.;
   float understory_height;
   std::vector<float> tkeFac;
   std::vector<float> vineLm;

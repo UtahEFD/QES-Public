@@ -50,6 +50,19 @@ void CanopyVineyard::orthog_vec(float d, float P[2], float Lx[2], float Ly[2], f
   row_ortho[0] = o_signed[0];
   row_ortho[1] = o_signed[1];
 }
+/*
+float CanopyVineyard::UV2compass(float u, float v){
+
+  if (u>0 && v>0){
+    
+  }
+
+
+  float unitDir = -(compDir- 90);
+
+  return compDir;
+}
+*/
 
 
 void CanopyVineyard::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, int building_id)
@@ -63,7 +76,7 @@ void CanopyVineyard::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *W
   //setCanopyGrid(WGD, building_id);
   float ray_intersect;
   unsigned int num_crossing, vert_id, start_poly;
-  
+
   // Find out which cells are going to be inside the polygone
   // Based on Wm. Randolph Franklin, "PNPOLY - Point Inclusion in Polygon Test"
   // Check the center of each cell, if it's inside, set that cell to building
@@ -114,7 +127,6 @@ void CanopyVineyard::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *W
               //std::cout << "canopy_bot[" << icell_2d <<"] = " << WGD->canopy->canopy_bot[icell_2d] << "canopy_bot_index[" << icell_2d <<"] = " << WGD->canopy->canopy_bot_index[icell_2d] << std::endl;
               break;
             }
-
           }
 
 
@@ -216,8 +228,9 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   float v0_uw = WGD->v0[icell_face];// v velocity at the centroid, 5 nodes from the top of domain
   //std::cout << "is u0_uw a nan? " << isnan(u0_uw) << "  is v0_uw a nan? " << isnan(v0_uw) << "\n";
 
-  upwind_dir = atan2(v0_uw, u0_uw);
+  upwind_dir_unit = atan2(v0_uw, u0_uw) * 180. / M_PI + 180.;// degrees on the unit circle
 
+  //std::cout << "v0_uw = " << v0_uw << "u0_uw = " << u0_uw << "upwind_dir_unit = " << upwind_dir_unit << std::endl;
 
   // Create unit wind vector
   float M0_uw, u0n_uw, v0n_uw;
@@ -333,7 +346,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   int N_e = (int)N_e_float;
   N_e += 2;// tuned to Torkelson PIV
 
-  //std::cout << "l_e = " << l_e << ", N_e = " << N_e << ", L_c = " << L_c << ", M0_h = " << M0_h << ", uustar = " << uustar << "\n";
+  std::cout << "l_e = " << l_e << ", N_e = " << N_e << ", L_c = " << L_c << ", M0_h = " << M0_h << ", uustar = " << uustar << "\n";
 
   // Spread rate calculations
   float udelt = (1 - pow(a_obf, N_e + 1));
@@ -355,7 +368,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
   float spreadrate_top = sqrt(pow(spreadclassicmix, 2) + pow(spreadupstream_top, 2));
   float spreadrate_bot = sqrt(pow(spreadclassicmix, 2) + pow(spreadupstream_bot, 2));
-  //std::cout << "spreadrate_top = " << spreadrate_top << "spreadrate_bot = " << spreadrate_bot << "\n";
+  std::cout << "spreadrate_top = " << spreadrate_top << "spreadrate_bot = " << spreadrate_bot << "\n";
 
   // Shear zone origin (initialized to H but parameterized later)
   float szo_top = H;
@@ -655,9 +668,10 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 tkeFac[icell_cent] *= tkeFac_uwv[n];
               }
 
-              szt_Lm = spreadrate_top * (d_dw * N + d_dw_local) + 0.00001;
-              if (z_rel > szo_top - 0.5*szt_Lm  && z_rel < szo_top + 0.5*szt_Lm) {
+              szt_Lm = spreadrate_top * (d_dw_local) + 0.00001;
+              if (z_rel > szo_top - 0.5 * szt_Lm && z_rel < szo_top + 0.5 * szt_Lm) {
                 vineLm[icell_cent] = szt_Lm;
+                //vineLm[icell_cent] = spreadrate_top * (d_dw * N + d_dw_local) + 0.00001;
               }
 
             }
@@ -671,11 +685,11 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 tkeFac[icell_cent] *= tkeFac_uwv[n];
               }
 
-              szt_Lm = spreadrate_top * (d_dw * N_e + d_dw_local) + 0.00001;
-              if (z_rel > szo_top - 0.5*szt_Lm  && z_rel < szo_top + 0.5*szt_Lm) {
+              szt_Lm = spreadrate_top * (d_dw_local) + 0.00001;
+              if (z_rel > szo_top - 0.5 * szt_Lm && z_rel < szo_top + 0.5 * szt_Lm) {
                 vineLm[icell_cent] = szt_Lm;
+                //vineLm[icell_cent] = spreadrate_top * (d_dw * N_e + d_dw_local) + 0.00001;
               }
-
             }
 
             // APPLY UD ZONE PARAMETERIZATION
@@ -776,8 +790,10 @@ void CanopyVineyard::canopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData
     for (auto j = 0; j < WGD->ny - 1; j++) {
       for (auto k = 0; k < WGD->nz - 1; k++) {
         int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+
         if (fabs(vineLm[icell_cent]) > 0.) {
-          TGD->Lm[icell_cent] = vineLm[icell_cent];
+          //TGD->Lm[icell_cent] = vineLm[icell_cent];
+          TGD->Lm[icell_cent] = vineLm[icell_cent] * fabs(cos(upwind_dir_unit * M_PI / 180.)) + TGD->Lm[icell_cent] * (1 - abs(cos(upwind_dir_unit * M_PI / 180.)));
         }
         if (fabs(tkeFac[icell_cent]) > 0.) {
           TGD->tke[icell_cent] = tkeFac[icell_cent] * tkeMax;
