@@ -62,9 +62,11 @@ protected:
   void setAllOutputFields();
 
 private:
-  std::vector<float> x, y, z, z_face, dz_array;
+  std::vector<float> m_x, m_y, m_z;
+  std::vector<float> m_x_face, m_y_face, m_z_face;
+  std::vector<float> m_dz_array;
 
-  WINDSGeneralData *WGD_;
+  WINDSGeneralData *m_WGD;
 
   ///@{
   /**
