@@ -51,7 +51,7 @@ void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, 
     int cellId_old = interp->getCellId(xPos_old, yPos_old, zPos_old);
 
     // If so, calculate deposition fraction
-    if (WGD->icellflag[cellId_old] == 20) {
+    if (WGD->icellflag[cellId_old] == 20 || WGD->icellflag[cellId_old] == 22 || WGD->icellflag[cellId_old] == 24 || WGD->icellflag[cellId_old] == 28) {
 
       double elementDiameter = 100e-3;// temporarily hard-coded [m]
       double leafAreaDensitydep = 5.57;// LAD, temporarily hard-coded [m^-1]
@@ -88,6 +88,13 @@ void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, 
 
       (*parItr)->wdepos *= exp(-depEff * adjLAD * vegDistance / 2);// the /2 comes from Ross' G function, assuming uniform leaf orientation distribution
 
+      // Take deposited mass away from particle
+      (*parItr)->m *= (*parItr)->wdepos;
+      (*parItr)->m_kg *= (*parItr)->wdepos;
+
+      // Add deposited mass to deposition bins (bins are on QES-Winds grid)
+      WGD->depcvol[cellId_old] += (1 - (*parItr)->wdepos) * (*parItr)->m;
+
       //std::cout << "particle in homog. veg., mass: " << (*parItr)->m  << " wdepos = " << (*parItr)->wdepos << " depEff = " << depEff << " adjLAD = " << adjLAD << " vegDistance = " << vegDistance << " gam = " << gam << " ReLeaf = " << ReLeaf << " MTot = " << MTot << std::endl;
     } else {
       return;
@@ -95,9 +102,9 @@ void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, 
 
     // If particle mass drops below mass of a single particle, set it to zero and inactivate it
     double oneParMass = (*parItr)->rho * (1 / 6) * M_PI * pow((*parItr)->d_m, 3);
-    if ((*parItr)->wdepos * (*parItr)->m_kg < oneParMass) {
+    if ((*parItr)->m_kg < oneParMass) {
       (*parItr)->m_kg = 0.0;
-      (*parItr)->m = 0;
+      (*parItr)->m = 0.0;
       (*parItr)->isActive = false;
     }
 

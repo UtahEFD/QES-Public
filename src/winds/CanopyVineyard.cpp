@@ -642,7 +642,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
 
               else {// if i'm in equilibrated region
 
-                WGD->icellflag[icell_cent] = 29;
+                WGD->icellflag[icell_cent] = 28;
                 u_c = u_c0 * a_obf;
                 tkeFac[icell_cent] = pow(a_obf, 2);
                 for (int n = 0; n <= N_e; n++) {

@@ -281,10 +281,16 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     disY = (vMean + vFluct) * par_dt;
     disZ = (wMean + wFluct) * par_dt;
 
-    xPos = xPos + disX;
+    // LDU 5/2/22: CHANGE THIS BACK WHEN DONE MAKING FRAME2 FIGS. FORWARD DISPERSION IS + disX etc, BACKWARD DISPERSION IS - disX etc.
+    /*
+    xPos = xPos + disX; // for forward (normal) dispersion
     yPos = yPos + disY;
     zPos = zPos + disZ;
-
+    */
+    xPos = xPos - disX; // for backward dispersion (footprint study)
+    yPos = yPos - disY;
+    zPos = zPos - disZ;
+    
     uTot = uMean + uFluct;
     vTot = vMean + vFluct;
     wTot = wMean + wFluct;

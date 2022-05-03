@@ -224,6 +224,7 @@ public:
   std::vector<float> u, v, w;
   ///@}
 
+  std::vector<float> depcvol;
   // local Mixing class and data
   LocalMixing *localMixing; /**< :document this: */
   std::vector<double> mixingLengths; /**< :document this: */
