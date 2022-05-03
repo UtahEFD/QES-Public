@@ -144,9 +144,9 @@ public:
   std::vector<float> div_tau_z;
   ///@}
 
-  std::vector<float> nuT; /**< turbulent viscosity */
   std::vector<float> tke; /**< turbulence kinetic energy */
   std::vector<float> CoEps; /**< dissipation rate */
+  std::vector<float> nuT; /**< turbulent viscosity */
 
   LocalMixing *localMixing; /**< mixing length class */
   std::vector<double> mixingLengths; /**< distance to the wall */
@@ -159,9 +159,9 @@ protected:
   void getDerivatives();
   void derivativeVelocity();
 
-  void getTurbulentViscosity();
   void getStressTensor();
   void stressTensor();
+  void getTurbulentViscosity();
 
   void divergenceStress();
   void derivativeStress(const std::vector<float> &,
