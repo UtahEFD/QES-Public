@@ -296,9 +296,11 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     wTot = wMean + wFluct;
 
     // Deposit mass (vegetation only right now)
+    //std::cout << "ADVECT CHECKPOINT 0" << std::endl; 
     if ((*parItr)->depFlag == true) {
       depositParticle(xPos, yPos, zPos, disX, disY, disZ, uTot, vTot, wTot, txx, tyy, tzz, CoEps, parItr, WGD, TGD);
     }
+    //std::cout << "ADVECT CHECKPOINT 1" << std::endl; 
 
     // check and do wall (building and terrain) reflection (based in the method)
     if (isActive == true) {

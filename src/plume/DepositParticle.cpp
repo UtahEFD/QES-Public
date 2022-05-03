@@ -92,8 +92,11 @@ void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, 
       (*parItr)->m *= (*parItr)->wdepos;
       (*parItr)->m_kg *= (*parItr)->wdepos;
 
+      //      std::cout << "DEPOSIT CHECKPOINT 0" << std::endl;
       // Add deposited mass to deposition bins (bins are on QES-Winds grid)
+      //      std::cout << "size of depcvol = " << WGD->depcvol.size() << std::endl;
       WGD->depcvol[cellId_old] += (1 - (*parItr)->wdepos) * (*parItr)->m;
+      //     std::cout << "DEPOSIT CHECKPOINT 1" << std::endl;
 
       //std::cout << "particle in homog. veg., mass: " << (*parItr)->m  << " wdepos = " << (*parItr)->wdepos << " depEff = " << depEff << " adjLAD = " << adjLAD << " vegDistance = " << vegDistance << " gam = " << gam << " ReLeaf = " << ReLeaf << " MTot = " << MTot << std::endl;
     } else {

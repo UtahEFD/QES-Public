@@ -213,9 +213,9 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
 
   // setup desired output fields string
   // LA future work: can be added in fileOptions at some point
-  std::cout << "CHECKPOINT 0" << std::endl;
+  // std::cout << "PLUMEOUTPUT CHECKPOINT 0" << std::endl;
   //output_fields = { "t", "x", "y", "z", "pBox", "conc", "depcvol" };
-  output_fields = { "t", "x", "y", "z", "pBox", "conc"};
+  output_fields = { "t", "x", "y", "z", "pBox", "conc" };
 
   // set data dimensions, which in this case are cell-centered dimensions
   // time dimension
@@ -255,8 +255,8 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   createAttVector("pBox", "number of particle per box", "#ofPar", dim_vect_3d, &pBox);
   createAttVector("conc", "concentration", "g m-3", dim_vect_3d, &conc);
 
-  std::cout << "CHECKPOINT 1" << std::endl;
-/*
+  //  std::cout << "PLUMEOUT CHECKPOINT 1" << std::endl;
+  /*
   // set cell-centered data dimensions from QES-Winds grid (for deposition)
   // space dimensions
   NcDim NcDim_x_cc = addDimension("x_cc", WGD->nx - 1);

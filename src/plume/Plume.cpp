@@ -56,6 +56,9 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   dz = WGD->dz;
   dxy = WGD->dxy;
 
+  long numcell_cent = (nx - 1) * (ny - 1) * (nz - 1);
+  WGD->depcvol.resize(numcell_cent, 0.0);
+
   // Create instance of Interpolation class
   std::cout << "[Plume] \t Interpolation Method set to: "
             << PID->plumeParams->interpMethod << std::endl;
@@ -180,7 +183,9 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
   // FMargairaz -> need clean-up
   while (simTime < endTime) {
     // need to release new particles -> add new particles to the number to move
+    //    std::cout << "PLUME CHECKPOINT 0" << std::endl;
     int nParsToRelease = generateParticleList((float)simTime, WGD, TGD);
+    //   std::cout << "PLUME CHECKPOINT 1" << std::endl;
 
     // number of active particle at the current time step.
     // list is scrubbed at the end of each time step (if flag turned true)
@@ -235,7 +240,9 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
 
       //      std::cout << "particle mass: " << (*parItr)->m  << " particle diameter: " << (*parItr)->d << " wdepos = " << (*parItr)->wdepos << "\n";
 
+      //      std::cout << "PLUME CHECKPOINT 2" << std::endl;
       advectParticle(timeRemainder, parItr, WGD, TGD);
+      //     std::cout << "PLUME CHECKPOINT 3" << std::endl;
 
       //if ((*parItr)->depFlag == true){
       //  depositParticle(endTime, simTime, parItr, WGD, TGD);

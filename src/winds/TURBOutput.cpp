@@ -68,20 +68,20 @@ TURBOutput::TURBOutput(TURBGeneralData *tgd, std::string output_file)
 
   // set cell-centered data dimensions
   // space dimensions
-  NcDim NcDim_x_cc = addDimension("x_cc", nx - 1);
-  NcDim NcDim_y_cc = addDimension("y_cc", ny - 1);
-  NcDim NcDim_z_cc = addDimension("z_cc", nz - 1);
+  NcDim NcDim_x_cc = addDimension("x", nx - 1);
+  NcDim NcDim_y_cc = addDimension("y", ny - 1);
+  NcDim NcDim_z_cc = addDimension("z", nz - 1);
 
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_x;
   dim_vect_x.push_back(NcDim_x_cc);
-  createAttVector("x_cc", "x-distance", "m", dim_vect_x, &(tgd_->x_cc));
+  createAttVector("x", "x-distance", "m", dim_vect_x, &(tgd_->x_cc));
   std::vector<NcDim> dim_vect_y;
   dim_vect_y.push_back(NcDim_y_cc);
-  createAttVector("y_cc", "y-distance", "m", dim_vect_y, &(tgd_->y_cc));
+  createAttVector("y", "y-distance", "m", dim_vect_y, &(tgd_->y_cc));
   std::vector<NcDim> dim_vect_z;
   dim_vect_z.push_back(NcDim_z_cc);
-  createAttVector("z_cc", "z-distance", "m", dim_vect_z, &(tgd_->z_cc));
+  createAttVector("z", "z-distance", "m", dim_vect_z, &(tgd_->z_cc));
 
   // 3D vector dimension (time dep)
   std::vector<NcDim> dim_vect_cc;
@@ -139,9 +139,9 @@ void TURBOutput::setAllOutputFields()
   // all possible output fields need to be add to this list
   all_output_fields = { "t",
                         "time",
-                        "x_cc",
-                        "y_cc",
-                        "z_cc",
+                        "x",
+                        "y",
+                        "z",
                         "iturbflag",
                         "Gxx",
                         "Gyx",
