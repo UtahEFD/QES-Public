@@ -35,8 +35,10 @@
  */
 
 #include "SourcePoint.hpp"
+#include "winds/WINDSGeneralData.h"
 #define _USE_MATH_DEFINES
 #include <cmath>
+//#include "Interp.h"
 
 void SourcePoint::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -58,7 +60,7 @@ void SourcePoint::checkPosInfo(const double &domainXstart, const double &domainX
 }
 
 //template <class typeid(parType).name()>
-int SourcePoint::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles)
+int SourcePoint::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles, WINDSGeneralData *WGD)
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
@@ -93,6 +95,8 @@ int SourcePoint::emitParticles(const float dt, const float currTime, std::list<P
       cPar->xPos_init = posX;
       cPar->yPos_init = posY;
       cPar->zPos_init = posZ;
+      //int cellId2d = interp->getCellId2d(posX, posY);
+      //cPar->zPos_init = posZ + WGD->terrain[cellId2d];
 
       cPar->d = protoParticle->d;
       cPar->d_m = (1.0E-6) * protoParticle->d;

@@ -151,6 +151,12 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     // and the grid sizes. Uses timeRemainder as the timestep if it is smaller than the one calculated from the Courant number
 
     int cellId = interp->getCellId(xPos, yPos, zPos);
+    int cellId2d = interp->getCellId2d(xPos, yPos);
+    // LDU: if particle drops below terrain height, remove it (kludge, fix later) (doesn't include halo)
+    if (zPos <= WGD->terrain[cellId2d]){
+      isActive = false;
+      break;
+    }
     double dWall = WGD->mixingLengths[cellId];
     double par_dt = calcCourantTimestep(dWall,
                                         std::abs(uMean) + std::abs(uFluct),

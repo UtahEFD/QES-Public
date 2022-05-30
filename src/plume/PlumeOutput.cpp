@@ -214,8 +214,8 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   // setup desired output fields string
   // LA future work: can be added in fileOptions at some point
   // std::cout << "PLUMEOUTPUT CHECKPOINT 0" << std::endl;
-  //output_fields = { "t", "x", "y", "z", "pBox", "conc", "depcvol" };
-  output_fields = { "t", "x", "y", "z", "pBox", "conc" };
+  output_fields = { "t", "x", "y", "z", "x_cc","y_cc","z_cc","pBox", "conc", "depcvol" };
+  //output_fields = { "t", "x", "y", "z", "pBox", "conc" };
 
   // set data dimensions, which in this case are cell-centered dimensions
   // time dimension
@@ -256,12 +256,12 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   createAttVector("conc", "concentration", "g m-3", dim_vect_3d, &conc);
 
   //  std::cout << "PLUMEOUT CHECKPOINT 1" << std::endl;
-  /*
+  //  /*
   // set cell-centered data dimensions from QES-Winds grid (for deposition)
   // space dimensions
-  NcDim NcDim_x_cc = addDimension("x_cc", WGD->nx - 1);
-  NcDim NcDim_y_cc = addDimension("y_cc", WGD->ny - 1);
-  NcDim NcDim_z_cc = addDimension("z_cc", WGD->nz - 1);
+  NcDim NcDim_x_cc = addDimension("x_cc", nx - 1);
+  NcDim NcDim_y_cc = addDimension("y_cc", ny - 1);
+  NcDim NcDim_z_cc = addDimension("z_cc", nz - 1);
 
   std::cout << "CHECKPOINT 2" << std::endl;
   // create attributes space dimensions
@@ -274,8 +274,8 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   std::vector<NcDim> dim_vect_z_winds;
   dim_vect_z_winds.push_back(NcDim_z_cc);
   createAttVector("z_cc", "z-distance, QES-Winds grid", "m", dim_vect_z_winds, &(WGD->z));
-  
-  std::cout << "CHECKPOINT 3" << std::endl;
+
+  //std::cout << "CHECKPOINT 3" << std::endl;
 
   // 3D vector dimension (time dep)
   std::vector<NcDim> dim_vect_cc;
@@ -284,11 +284,11 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   dim_vect_cc.push_back(NcDim_y_cc);
   dim_vect_cc.push_back(NcDim_x_cc);
 
-  std::cout << "CHECKPOINT 4" << std::endl;
-  
+  //std::cout << "CHECKPOINT 4" << std::endl;
+
   createAttVector("depcvol", "deposited mass", "g", dim_vect_cc, &(WGD->depcvol));
-  std::cout << "CHECKPOINT 5" << std::endl;
-*/
+  //std::cout << "CHECKPOINT 5" << std::endl;
+  // */
   // face dimensions
   NcDim NcDim_nFace = addDimension("nFace", nbrFace);
   //NcDim NcDim_x = addDimension("x",nBoxesX);

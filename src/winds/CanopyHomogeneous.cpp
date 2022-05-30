@@ -239,6 +239,9 @@ void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
           // check if correction is bound and well defined
           if (veg_vel_frac > 1 || veg_vel_frac < 0) {
             // check if correction is valide (0,1)
+            if (i + i_start == 114 && j + j_start == 75) {
+              //std::cout << "veg_vel_frac being corrected to 1 at k = " << k << ". It was: " << veg_vel_frac << std::endl;
+            }
             veg_vel_frac = 1;
           }
 
@@ -246,6 +249,9 @@ void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
           WGD->u0[icell_face] *= veg_vel_frac;
           WGD->v0[icell_face] *= veg_vel_frac;
 
+          if (i + i_start == 114 && j + j_start == 75) {
+            //std::cout << "HOMOG CAN AT i=114 j=75 k=" << k << ", veg_vel_frac = " << veg_vel_frac << std::endl;
+          }
           // at the edge of the canopy need to adjust velocity at the next face
           // use canopy_top to detect the edge (worke with level changes)
           if (i < WGD->nx - 2) {
@@ -265,12 +271,18 @@ void CanopyHomogeneous::canopyVegetation(WINDSGeneralData *WGD, int canopy_id)
 
           // check if correction is bound and well defined
           if (veg_vel_frac > 1 || veg_vel_frac < 0) {
+            if (i + i_start == 114 && j + j_start == 75) {
+              //std::cout << "veg_vel_frac being corrected to 1 above canopy at k =" << k << ". It was: " << veg_vel_frac << std::endl;
+            }
             veg_vel_frac = 1;
           }
 
           // apply parametrization
           WGD->u0[icell_face] *= veg_vel_frac;
           WGD->v0[icell_face] *= veg_vel_frac;
+          if (i + i_start == 114 && j + j_start == 75) {
+            //std::cout << "HOMOG ABOVE CAN AT i=114 j=75 k=" << k << " veg_vel_frac = " << veg_vel_frac << std::endl;
+          }
 
           // at the edge of the canopy need to adjust velocity at the next face
           // use canopy_top to detect the edge (worke with level changes)

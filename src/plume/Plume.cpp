@@ -433,7 +433,7 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGe
   std::list<Particle *> nextSetOfParticles;
   int numNewParticles = 0;
   for (auto sIdx = 0u; sIdx < allSources.size(); sIdx++) {
-    numNewParticles += allSources.at(sIdx)->emitParticles((float)sim_dt, currentTime, nextSetOfParticles);
+    numNewParticles += allSources.at(sIdx)->emitParticles((float)sim_dt, currentTime, nextSetOfParticles, WGD);
   }
 
   setParticleVals(WGD, TGD, nextSetOfParticles);

@@ -38,6 +38,7 @@
 
 
 #include "SourceType.hpp"
+#include "winds/WINDSGeneralData.h"
 //#include "Particles.hpp"
 
 class SourceCircle : public SourceType
@@ -90,5 +91,5 @@ public:
   void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend);
 
 
-  int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles);
+  int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles, WINDSGeneralData *WGD);
 };

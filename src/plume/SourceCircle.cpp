@@ -35,7 +35,8 @@
  */
 
 #include "SourceCircle.hpp"
-
+#include "winds/WINDSGeneralData.h"
+//#include "Interp.h"
 
 void SourceCircle::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -62,7 +63,7 @@ void SourceCircle::checkPosInfo(const double &domainXstart, const double &domain
 }
 
 
-int SourceCircle::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles)
+int SourceCircle::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles, WINDSGeneralData *WGD)
 {
   // warning!!! this is still a point source! Need to work out the geometry details still
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
@@ -78,6 +79,8 @@ int SourceCircle::emitParticles(const float dt, const float currTime, std::list<
       cPar->xPos_init = posX;
       cPar->yPos_init = posY;
       cPar->zPos_init = posZ;
+      //int cellId2d = interp->getCellId2d(posX, posY);
+      //cPar->zPos_init = posZ + WGD->terrain[cellId2d];
 
       cPar->d = protoParticle->d;
       cPar->d_m = (1.0E-6) * protoParticle->d;

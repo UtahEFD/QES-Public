@@ -35,7 +35,8 @@
  */
 
 #include "SourceLine.hpp"
-
+#include "winds/WINDSGeneralData.h"
+//#include "Interp.h"
 
 void SourceLine::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -73,7 +74,7 @@ void SourceLine::checkPosInfo(const double &domainXstart, const double &domainXe
 }
 
 
-int SourceLine::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles)
+int SourceLine::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles, WINDSGeneralData *WGD)
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
@@ -94,6 +95,8 @@ int SourceLine::emitParticles(const float dt, const float currTime, std::list<Pa
       cPar->xPos_init = posX_0 + t * diffX;
       cPar->yPos_init = posY_0 + t * diffY;
       cPar->zPos_init = posZ_0 + t * diffZ;
+      //int cellId2d = interp->getCellId2d(cPar->xPos_init, cPar->yPos_init);
+      //cPar->zPos_init = posZ_0 + t * diffZ + WGD->terrain[cellId2d];
 
 
       cPar->d = protoParticle->d;

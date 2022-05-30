@@ -303,7 +303,7 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   float u0_h = WGD->u0[icell_face];
   float v0_h = WGD->v0[icell_face];
   float rd_o[2] = { rd[1], -rd[0] };// row-orthogonal unit vector
-  float M0_h = abs(u0_h * rd_o[0] + v0_h * rd_o[1]);// the component of the wind vector in the row-orthogonal direction
+  float M0_h = abs(u0_h * rd_o[0] + v0_h * rd_o[1]);// the component of the wind vector in the row-orthogonal direction <-- should this just be total wind speed, not row-ortho speed?
 
   // Ref velocity for bottom shear zone
   int k_bot = 0;
@@ -347,6 +347,14 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
   N_e += 2;// tuned to Torkelson PIV
 
   std::cout << "l_e = " << l_e << ", N_e = " << N_e << ", L_c = " << L_c << ", M0_h = " << M0_h << ", uustar = " << uustar << "\n";
+  int terrQi = 241;
+  int terrQj = 550;
+  int icell_2d_source = (terrQi) + (terrQj) * (WGD->nx - 1);
+  std::cout << "TERRAIN HEIGHT (ROAD) AT i = " << terrQi << " j = " << terrQj << " is: " << WGD->terrain[icell_2d_source] << std::endl;
+  terrQi = 501;
+  terrQj = 550;
+  icell_2d_source = (terrQi) + (terrQj) * (WGD->nx - 1);
+  std::cout << "TERRAIN HEIGHT (VINE) AT i = " << terrQi << " j = " << terrQj << " is: " << WGD->terrain[icell_2d_source] << std::endl;
 
   // Spread rate calculations
   float udelt = (1 - pow(a_obf, N_e + 1));
@@ -434,6 +442,9 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
       // base of the canopy
       z_b = WGD->canopy->canopy_base[icell_2d];
 
+      //if (i+i_start == 434 && j+j_start == 385){
+      //  std::cout << "TERRAIN HEIGHT AT posX posY = " << WGD->terrain[icell_2d] << std::endl;
+      //}
       // calculate row-orthogonal distance to upwind-est row, dv_c
       float cxy[2] = { (i - 1 + i_start) * WGD->dx, (j - 1 + j_start) * WGD->dy };// current x position
 
@@ -466,9 +477,22 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
         k_mid = k;
       }
 
-      // Find shear zone origin based on Greg Torkelson's slopes from PIV (S1H_omega1, Table 2)
-      szo_top = std::max(-0.43 * ld + H, 0.);
-      float szo_top_uw = std::max(-0.43 * (rowSpacing - rowWidth) + H, 0.);// origin right before the next row, e.g. at a distance of "rowSpacing" orthogonally from nearest upwind row
+      // Find shear zone origin based on Greg Torkelson's slopes from PIV (S_omega1, Table 2)
+      // Data are fit to a modified Michaelis-Menten curve: fit_a*x / (fit_b * x) + fit_c, where x is rowSpacing/H
+      float fit_a, fit_b, fit_c;
+
+      //fit_a = 0.7583;//with first data point set at 1
+      //fit_b = 1.3333;
+      //fit_c = -0.7550;
+      fit_a = 1.3945;//with first data point set at 2.5/2.16=1.1574
+      fit_b = 0.4209;
+      fit_c = -1.4524;
+
+      float szo_slope = fit_a * (rowSpacing / H) / ((rowSpacing / H) + fit_b) + fit_c;
+      //float szo_slope = -0.43;
+      std::cout << "szo_slope = " << szo_slope << std::endl;
+      szo_top = std::max(szo_slope * ld + H, 0.);
+      float szo_top_uw = std::max(szo_slope * (rowSpacing - rowWidth) + H, 0.);// origin right before the next row, e.g. at a distance of "rowSpacing" orthogonally from nearest upwind row
 
       float z_mid = (H - understory_height) / 2 + understory_height;
 

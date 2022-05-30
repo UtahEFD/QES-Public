@@ -95,6 +95,8 @@ void Plume::depositParticle(double xPos, double yPos, double zPos, double disX, 
       //      std::cout << "DEPOSIT CHECKPOINT 0" << std::endl;
       // Add deposited mass to deposition bins (bins are on QES-Winds grid)
       //      std::cout << "size of depcvol = " << WGD->depcvol.size() << std::endl;
+      //std::cout << "Mass being added: " << (1 - (*parItr)->wdepos) * (*parItr)->m << std::endl;
+
       WGD->depcvol[cellId_old] += (1 - (*parItr)->wdepos) * (*parItr)->m;
       //     std::cout << "DEPOSIT CHECKPOINT 1" << std::endl;
 

@@ -35,7 +35,8 @@
  */
 
 #include "SourceCube.hpp"
-
+#include "winds/WINDSGeneralData.h"
+//#include "Interp.h"
 
 void SourceCube::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -89,7 +90,7 @@ void SourceCube::checkPosInfo(const double &domainXstart, const double &domainXe
 }
 
 
-int SourceCube::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles)
+int SourceCube::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles, WINDSGeneralData *WGD)
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {
@@ -106,6 +107,8 @@ int SourceCube::emitParticles(const float dt, const float currTime, std::list<Pa
       cPar->xPos_init = uniformDistr(prng) * (m_maxX - m_minX) + m_minX;
       cPar->yPos_init = uniformDistr(prng) * (m_maxY - m_minY) + m_minY;
       cPar->zPos_init = uniformDistr(prng) * (m_maxZ - m_minZ) + m_minZ;
+      //int cellId2d = interp->getCellId2d(cPar->xPos_init, cPar->yPos_init);
+      //cPar->zPos_init = uniformDistr(prng) * (m_maxZ - m_minZ) + m_minZ + WGD->terrain[cellId2d];
 
       cPar->d = protoParticle->d;//LDU commented 11/16
       cPar->d_m = (1.0E-6) * protoParticle->d;// LDU commented 11/16

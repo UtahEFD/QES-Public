@@ -35,7 +35,8 @@
  */
 
 #include "SourceFullDomain.hpp"
-
+#include "winds/WINDSGeneralData.h"
+//#include "Interp.h"
 
 void SourceFullDomain::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -70,7 +71,7 @@ void SourceFullDomain::checkPosInfo(const double &domainXstart, const double &do
 }
 
 
-int SourceFullDomain::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles)
+int SourceFullDomain::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles, WINDSGeneralData *WGD)
 {
   // this function WILL fail if checkPosInfo() is not called, because for once checkPosInfo() acts to set the required data for using this function
 
@@ -89,6 +90,8 @@ int SourceFullDomain::emitParticles(const float dt, const float currTime, std::l
       cPar->xPos_init = uniformDistr(prng) * (xDomainEnd - xDomainStart) + xDomainStart;
       cPar->yPos_init = uniformDistr(prng) * (yDomainEnd - yDomainStart) + yDomainStart;
       cPar->zPos_init = uniformDistr(prng) * (zDomainEnd - zDomainStart) + zDomainStart;
+      //int cellId2d = interp->getCellId2d(cPar->xPos_init, cPar->yPos_init);
+      //cPar->zPos_init = uniformDistr(prng) * (zDomainEnd - zDomainStart) + zDomainStart + WGD->terrain[cellId2d];
 
       cPar->d = protoParticle->d;
       cPar->d_m = (1.0E-6) * protoParticle->d;

@@ -52,8 +52,9 @@
 #include "ReleaseType_continuous.hpp"
 #include "ReleaseType_duration.hpp"
 
+//#include "Interp.h"
 #include "util/ParseInterface.h"
-
+#include "winds/WINDSGeneralData.h"
 
 enum SourceShape {
   point,
@@ -80,6 +81,7 @@ public:
   // this is used to set the source ID for a given particle, to know from which source each particle comes from
   // !!! this will only be set correctly if a call to setSourceIdx() is done by the class that sets up a vector of this class.
   int sourceIdx;
+  //Interp *interp;
 
   // this is a description variable for determining the source shape. May or may not be used.
   // !!! this needs set by parseValues() in each source generated from input files.
@@ -227,5 +229,5 @@ public:
   // !!! Because the input vector is never empty if there is more than one source,
   //   the size of the vector should NOT be used for output for this function!
   //  In order to make this function work correctly, the number of particles to release per timestep needs to be the output
-  virtual int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles) = 0;
+  virtual int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles, WINDSGeneralData *WGD) = 0;
 };
