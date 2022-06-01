@@ -366,7 +366,7 @@ WRFInput::WRFInput(const std::string &filename,
       // close file
       wrfInputFile.close();
 
-      usleep(100000);// 1 sec
+      usleep(1000000);// 1 sec
 
       // re-open
       wrfInputFile.open(m_WRFFilename, NcFile::write);
@@ -2242,7 +2242,7 @@ void WRFInput::updateFromWRF()
       wrfInputFile.close();
 
       // wait a few seconds for now
-      usleep(100000);
+      usleep(1000000);
 
       // re-open
       wrfInputFile.open(m_WRFFilename, NcFile::write);
