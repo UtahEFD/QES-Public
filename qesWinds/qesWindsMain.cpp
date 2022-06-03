@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
   // how to extend the arguments.
   WINDSArgs arguments;
   arguments.processArguments(argc, argv);
-
+  
   // ///////////////////////////////////
   // Read and Process any Input for the system
   // ///////////////////////////////////
@@ -99,8 +99,11 @@ int main(int argc, char *argv[])
     outputVec.push_back(new WINDSOutputWorkspace(WGD, arguments.netCDFFileWksp));
   }
 
+  WINDSOutputWRF *wrfOutput = nullptr;
   if (arguments.fireMode) {
-    outputVec.push_back(new WINDSOutputWRF(WGD, WID->simParams->wrfInputData));
+    wrfOutput = new WINDSOutputWRF(WGD, WID->simParams->wrfInputData);
+    // Eventually we can add the wrf output here...
+    // outputVec.push_back(wrfOutput);
   }
 
 
@@ -155,8 +158,8 @@ int main(int argc, char *argv[])
 
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     // print time progress (time stamp and percentage)
-    WGD->printTimeProgress(index);
-
+    // WGD->printTimeProgress(index);
+    
     // Reset icellflag values
     WGD->resetICellFlag();
 
@@ -179,10 +182,29 @@ int main(int argc, char *argv[])
     // Output the various files requested from the simulation run (netcdf wind velocity, icell values, etc...)
     // /////////////////////////////
     for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
-      outputVec.at(id_out)->save(WGD->timestamp[index]);
+      outputVec.at(id_out)->save(WGD->timestamp[0]);
     }
+    
+    // /////////////////////////////
+    // WRF Coupling
+    // /////////////////////////////
+    if (WID->simParams->wrfCoupling) {
+      if (wrfOutput) {
+	std::cout << "Writing data back to the WRF file." << std::endl;
+	wrfOutput->save( WGD->timestamp[0] );
+      }
+
+      // Re-read WRF data
+      std::cout << "Attempting to re-read data from WRF." << std::endl;
+      WID->simParams->wrfInputData->updateFromWRF();
+    } 
+
   }
 
+  if (WID->simParams->wrfCoupling) 
+    WID->simParams->wrfInputData->endWRFSession();
+
   // /////////////////////////////
+  std::cout << "QES-Winds Exiting." << std::endl;
   exit(EXIT_SUCCESS);
 }

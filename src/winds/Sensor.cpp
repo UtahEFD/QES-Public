@@ -109,8 +109,6 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
   std::vector<float> site_theta(num_sites, 0.0);
   int count = 0;
 
-  //std::cout << "index:  " << index << std::endl;
-
   // Loop through all sites and create velocity profiles (WGD->u0,WGD->v0)
   for (auto i = 0; i < WID->metParams->sensors.size(); i++) {
     // If sensor does not have the timestep information, skip it
@@ -118,7 +116,6 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
       count += 1;
       continue;
     }
-    //std::cout << "i:  " << i << std::endl;
 
     float convergence = 0.0;
 
@@ -383,7 +380,10 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
 
   // If number of sites are more than one
   // Apply 2D Barnes scheme to interpolate site velocity profiles to the whole domain
-  else {
+  //
+  // If number of sites are more than one
+  // Apply 2D Barnes scheme to interpolate site velocity profiles to the whole domain
+  else if (WID->simParams->m_domIType != SimulationParameters::DomainInputType::WRFOnly) {
     if (solverType == 1) {
       auto startBarnesCPU = std::chrono::high_resolution_clock::now();
       BarnesInterpolationCPU(WID, WGD, u_prof, v_prof, num_sites, available_sensor_id);
@@ -396,6 +396,104 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
       auto finishBarnesGPU = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> elapsedBarnesGPU = finishBarnesGPU - startBarnesGPU;
       std::cout << "Elapsed time for Barnes interpolation on GPU: " << elapsedBarnesGPU.count() << " s\n";
+    }
+  }
+
+
+  else if (WID->simParams->m_domIType == SimulationParameters::DomainInputType::WRFOnly) {
+
+    std::cout << "Processing WRF u0_fmw, v0_fmw and w0_fmw into initial QES wind fields." << std::endl;
+
+    // Create initial wind field in the area WRF data is available
+    for (auto i = WGD->halo_index_x + 1; i < WGD->wrf_nx + WGD->halo_index_x; i++) {
+      for (auto j = WGD->halo_index_y + 1; j < WGD->wrf_ny + WGD->halo_index_y; j++) {
+        id = (i - WGD->halo_index_x) + (j - WGD->halo_index_y) * (WGD->wrf_nx);
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = (u_prof[id][k] + u_prof[id - 1][k]) / 2;
+          WGD->v0[icell_face] = (v_prof[id][k] + v_prof[id - WGD->wrf_nx][k]) / 2;
+        }
+      }
+    }
+
+    for (auto i = WGD->halo_index_x + 1; i < WGD->wrf_nx + WGD->halo_index_x; i++) {
+      for (auto j = 0; j < WGD->halo_index_y + 1; j++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = i + (WGD->halo_index_y + 1) * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
+
+      for (auto j = WGD->wrf_ny + WGD->halo_index_y; j < WGD->ny; j++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = i + (WGD->wrf_ny + WGD->halo_index_y - 1) * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
+    }
+
+    for (auto j = WGD->halo_index_y + 1; j < WGD->wrf_ny + WGD->halo_index_y; j++) {
+      for (auto i = 0; i < WGD->halo_index_x + 1; i++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = WGD->halo_index_x + 1 + j * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
+
+      for (auto i = WGD->wrf_nx + WGD->halo_index_x; i < WGD->nx; i++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = (WGD->wrf_nx + WGD->halo_index_x - 1) + j * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
+    }
+
+    for (auto i = 0; i < WGD->halo_index_x + 1; i++) {
+      for (auto j = 0; j < WGD->halo_index_y + 1; j++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = WGD->halo_index_x + 1 + (WGD->halo_index_y + 1) * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
+
+      for (auto j = WGD->wrf_ny + WGD->halo_index_y; j < WGD->ny; j++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = WGD->halo_index_x + 1 + (WGD->wrf_ny + WGD->halo_index_y - 1) * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
+    }
+
+    for (auto i = WGD->wrf_nx + WGD->halo_index_x; i < WGD->halo_index_x + 1; i++) {
+      for (auto j = 0; j < WGD->halo_index_y + 1; j++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = WGD->wrf_nx + WGD->halo_index_x - 1 + (WGD->halo_index_y + 1) * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
+
+      for (auto j = WGD->wrf_ny + WGD->halo_index_y; j < WGD->ny; j++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = WGD->wrf_nx + WGD->halo_index_x - 1 + (WGD->wrf_ny + WGD->halo_index_y - 1) * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
     }
   }
 
