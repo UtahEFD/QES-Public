@@ -112,7 +112,7 @@ void PolyBuilding::rooftop(const WINDSInputData *WID, WINDSGeneralData *WGD)
   int ns_flag = 0;
 
   // Loop to calculate x and y values of each polygon point in rotated coordinates
-  for (auto id = 0; id < polygonVertices.size(); id++) {
+  for (size_t id = 0; id < polygonVertices.size(); id++) {
     xi[id] = (polygonVertices[id].x_poly - building_cent_x) * cos(upwind_dir) + (polygonVertices[id].y_poly - building_cent_y) * sin(upwind_dir);
     yi[id] = -(polygonVertices[id].x_poly - building_cent_x) * sin(upwind_dir) + (polygonVertices[id].y_poly - building_cent_y) * cos(upwind_dir);
     if (xi[id] < x_front) {
@@ -281,7 +281,7 @@ void PolyBuilding::rooftop(const WINDSInputData *WID, WINDSGeneralData *WGD)
 
     // Vortex parameterization
     if (rooftop_method == 2) {
-      for (auto id = 0; id < polygonVertices.size() - 1; id++) {
+      for (size_t id = 0; id < polygonVertices.size() - 1; id++) {
         // Calculate upwind reletive direction for each face
         upwind_rel_dir[id] = atan2(yi[id + 1] - yi[id], xi[id + 1] - xi[id]) + 0.5 * M_PI;
 

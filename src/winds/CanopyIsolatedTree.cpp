@@ -171,7 +171,7 @@ void CanopyIsolatedTree::canopyVegetation(WINDSGeneralData *WGD, int tree_id)
   // apply canopy parameterization
   float avg_atten; /**< average attenuation of the canopy */
   float veg_vel_frac; /**< vegetation velocity fraction */
-  int num_atten;
+  //int num_atten;
 
   for (size_t n = 0u; n < canopy_cell2D.size(); ++n) {
     int icell_2d = canopy_cell2D[n];

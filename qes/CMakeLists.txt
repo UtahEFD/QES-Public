@@ -17,6 +17,7 @@ ENDIF()
 
 target_link_libraries(qes ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(qes ${Boost_DATE_TIME_LIBRARIES})
+target_link_libraries(qes ${Boost_FILESYSTEM_LIBRARIES})
 target_link_libraries(qes ${GDAL_LIBRARY})
 target_link_libraries(qes ${NETCDF_LIBRARIES_CXX})
 target_link_libraries(qes ${NETCDF_LIBRARIES_C})

@@ -1,5 +1,5 @@
 <simulationParameters>
-	<DEM>../scratch/Bare_Earth/be45123a1/w001001.adf</DEM>				<!-- Address to DEM location-->	
+	<DEM>../../scratch/Bare_Earth/be45123a1/w001001.adf</DEM>				<!-- Address to DEM location-->	
 
   	<halo_x> 40.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 40.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->

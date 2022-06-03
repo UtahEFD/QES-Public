@@ -29,9 +29,16 @@ module load cmake/3.15.3
 module load gdal/3.0.1
 module load boost/1.69.0
 module load netcdf-cxx
+module load matlab
 ulimit -c unlimited -s
 module list
 echo '****** START OF JOB ******'
+
+cd MATLAB
+
+matlab -nodisplay -nosplash -nodesktop -r "run('Sinusoidal3D_testcase.m');exit;"
+
+cd ../../../build/
 
 ./qesPlume/qesPlume -q ../testCases/Sinusoidal3D/QES-files/Sinusoidal3D_4_12.xml -u ../testCases/Sinusoidal3D/QES-data/Sinusoidal3D_windsWk.nc -t ../testCases/Sinusoidal3D/QES-data/Sinusoidal3D_turbOut.nc -o ../testCases/Sinusoidal3D/QES-data/ -b Sinusoidal3D_4_12 -e -l
 
@@ -40,6 +47,12 @@ echo '****** START OF JOB ******'
 ./qesPlume/qesPlume -q ../testCases/Sinusoidal3D/QES-files/Sinusoidal3D_0.05_12.xml -u ../testCases/Sinusoidal3D/QES-data/Sinusoidal3D_windsWk.nc -t ../testCases/Sinusoidal3D/QES-data/Sinusoidal3D_turbOut.nc -o ../testCases/Sinusoidal3D/QES-data/ -b Sinusoidal3D_0.05_12 -e -l
 
 ./qesPlume/qesPlume -q ../testCases/Sinusoidal3D/QES-files/Sinusoidal3D_0.01_12.xml -u ../testCases/Sinusoidal3D/QES-data/Sinusoidal3D_windsWk.nc -t ../testCases/Sinusoidal3D/QES-data/Sinusoidal3D_turbOut.nc -o ../testCases/Sinusoidal3D/QES-data/ -b Sinusoidal3D_0.01_12 -e -l
+
+cd - 
+
+matlab -nodisplay -nosplash -nodesktop -r "run('plotPlumeResults_Sinusoidal3D.m');exit;"
+
+cd ..
 
 echo '****** END OF JOB ****** '
 

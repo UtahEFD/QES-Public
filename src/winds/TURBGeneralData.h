@@ -55,22 +55,15 @@ class TURBGeneralData
 {
 
 public:
-  TURBGeneralData()
-  {}
   TURBGeneralData(const WINDSInputData *, WINDSGeneralData *);
   TURBGeneralData(const std::string, WINDSGeneralData *);
-
+  TURBGeneralData(WINDSGeneralData *);
   virtual ~TURBGeneralData()
   {}
 
   virtual void run();
 
-  // load data at given time instance
   void loadNetCDFData(int);
-
-  bool flagUniformZGrid = true; /**< :document this: */
-  bool flagNonLocalMixing; /**< :document this: */
-  bool flagCompDivStress = true; /**< :document this: */
 
   // General QUIC Domain Data
   ///@{
@@ -92,15 +85,6 @@ public:
   std::vector<float> z_fc;
   std::vector<float> z_cc;
   ///@}
-
-  // Mean trubulence quantities
-  float z0d, d0d;
-  float zRef, uRef, uStar;
-  float bldgH_mean, bldgH_max;
-  float terrainH_max;
-
-  // Turbulence Fields Upper Bound (tij < turbUpperBound*uStar^2)
-  float turbUpperBound; /**< Turbulence fields upper bound */
 
   // index for fluid cell
   std::vector<int> icellfluid; /**< :document this: */
@@ -169,10 +153,30 @@ public:
 protected:
   WINDSGeneralData *m_WGD;
 
+  void getDerivativesGPU(WINDSGeneralData *);
+
+  void getDerivatives();
+  void derivativeVelocity();
+
+  void getStressTensor();
+  void stressTensor();
+
+  void divergenceStress();
+  void derivativeStress(const std::vector<float> &,
+                        const std::vector<float> &,
+                        const std::vector<float> &,
+                        std::vector<float> &);
+
+  void addBackgroundMixing();
+  void frictionVelocity();
+  void boundTurbFields();
+
 private:
+  // cannot have an empty constructor (have to pass in a mesh to build)
+  TURBGeneralData();
+
   // store the wall classes
-  std::vector<TURBWall *>
-    wallVec;
+  std::vector<TURBWall *> wallVec;
 
   // some constants for turbulent model
   const float vonKar = 0.4;
@@ -190,21 +194,16 @@ private:
   // input: store here for multiple time instance.
   NetCDFInput *input;
 
-  void frictionVelocity();
+  bool flagUniformZGrid = true; /**< :document this: */
+  bool flagNonLocalMixing; /**< :document this: */
+  bool flagCompDivStress = true; /**< :document this: */
 
-  void getDerivatives();
-  void derivativeVelocity();
+  // Mean trubulence quantities
+  float z0d, d0d;
+  float zRef, uRef, uStar;
+  float bldgH_mean, bldgH_max;
+  float terrainH_max;
 
-  void getStressTensor();
-  void stressTensor();
-
-  void addBackgroundMixing();
-
-  void divergenceStress();
-  void derivativeStress(const std::vector<float> &,
-                        const std::vector<float> &,
-                        const std::vector<float> &,
-                        std::vector<float> &);
-
-  void boundTurbFields();
+  // Turbulence Fields Upper Bound (tij < turbUpperBound*uStar^2)
+  float turbUpperBound; /**< Turbulence fields upper bound */
 };

@@ -51,34 +51,29 @@
  * Values can be accessed as if this was an array.
  */
 
-class Vector3Double : public ParseInterface
+class Vector3Double
 {
 
 protected:
-  std::vector<double> values;
+  double values[3];
 
 public:
   Vector3Double()
+    : values{ 0.0, 0.0, 0.0 }
   {
-    values.resize(3);
-    values[0] = values[1] = values[2] = 0.0;
   }
 
-  template<typename X>
+  /*
+    template<typename X>
   Vector3Double(const X a, const X b, const X c)
+    : values(a, b, c)
   {
-    values.resize(3);
-    values[0] = a;
-    values[1] = b;
-    values[2] = c;
   }
-
-  virtual void parseValues()
+  */
+  Vector3Double(double x, double y, double z)
+    : values{ x, y, z }
   {
-    values.clear();
-    parseTaglessValues<double>(values);
   }
-
   /*
    * accesses the value at position i
    *

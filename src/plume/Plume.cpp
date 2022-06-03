@@ -31,6 +31,31 @@
 
 #include "Plume.hpp"
 
+Plume::Plume(WINDSGeneralData *WGD, TURBGeneralData *TGD)
+  : particleList(0), allSources(0)
+{
+  // copy debug information
+  doParticleDataOutput = false;//arguments->doParticleDataOutput;
+  outputSimInfoFile = false;//arguments->doSimInfoFileOutput;
+  outputFolder = "";//arguments->outputFolder;
+  caseBaseName = "";//arguments->caseBaseName;
+  debug = false;//arguments->debug;
+
+  verbose = false;//arguments->verbose;
+
+  // make local copies of the QES-Winds nVals for each dimension
+  nx = WGD->nx;
+  ny = WGD->ny;
+  nz = WGD->nz;
+
+  dx = WGD->dx;
+  dy = WGD->dy;
+  dz = WGD->dz;
+  dxy = WGD->dxy;
+
+  return;
+}
+
 Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   : particleList(0), allSources(0)
 {
@@ -60,15 +85,17 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   std::cout << "[Plume] \t Interpolation Method set to: "
             << PID->plumeParams->interpMethod << std::endl;
   if (PID->plumeParams->interpMethod == "analyticalPowerLaw") {
-    interp = new InterpPowerLaw(PID, WGD, TGD, debug);
+    interp = new InterpPowerLaw(WGD, TGD, debug);
   } else if (PID->plumeParams->interpMethod == "nearestCell") {
-    interp = new InterpNearestCell(PID, WGD, TGD, debug);
+    interp = new InterpNearestCell(WGD, TGD, debug);
   } else if (PID->plumeParams->interpMethod == "triLinear") {
-    interp = new InterpTriLinear(PID, WGD, TGD, debug);
+    interp = new InterpTriLinear(WGD, TGD, debug);
   } else {
     std::cerr << "[ERROR] unknown interpolation method" << std::endl;
     exit(EXIT_FAILURE);
   }
+
+  std::srand(std::time(0));
 
   // get the domain start and end values, needed for wall boundary condition
   // application
@@ -162,6 +189,8 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
     timers.startNewTimer("advection loop");
     timers.startNewTimer("particle iteration");
   }
+
+  double nextUpdate = simTime + updateFrequency_timeLoop;
 
   // LA note: that this loop goes from 0 to nTimes-2, not nTimes-1. This is
   // because
@@ -263,10 +292,9 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
     if (needToScrub) {
       scrubParticleList();
     }
-
     // output the time, isRogueCount, and isNotActiveCount information for all
     // simulations, but only when the updateFrequency allows
-    if ((simTimeIdx) % updateFrequency_timeLoop == 0 || simTime == endTime) {
+    if (std::abs(simTime - nextUpdate) < 0.0001 || (simTime == endTime)) {
       if (verbose) {
         std::cout << "Time = " << simTime << " s (iteration = " << simTimeIdx
                   << "). Finished advection iteration. "
@@ -279,6 +307,7 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
                   << "Particles: Released = " << nParsReleased << " "
                   << "Active = " << particleList.size() << "." << std::endl;
       }
+      nextUpdate += updateFrequency_timeLoop;
       // output advection loop runtime if in debug mode
       if (debug == true) {
         timers.printStoredTime("advection loop");

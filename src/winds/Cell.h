@@ -63,6 +63,12 @@ private:
   bool isAir, isTerrain, isCutCell;
 
   ///@}
+
+  //std::vector<Vector3> terrainPoints; /**< List of terrain points */
+  //std::vector<Edge<int>> terrainEdges; /**< List of edges that connect the terrain points */
+  //std::vector<Vector3> fluidFacePoints[6]; /**< :document this: */
+  //Vector3 location; /**< XYZ location of the cell */
+  //Vector3 dimensions; /**< Size of the cell in xyz directions */
 public:
   /**
    * @return true if air exists, else false
@@ -93,12 +99,14 @@ public:
    * @brief Returns a list of edges that connect the terrain points in the cell.
    */
 
-  //std::vector< Edge< int > > getTerrainEdges() {return terrainEdges;}
+  //std::vector<Edge<int>> getTerrainEdges() { return terrainEdges; }
 
   /**
    * Defaults all entity existances values to false, and has no terrain points.
    */
-  Cell();
+  Cell()
+    : isAir(false), isTerrain(false), isCutCell(false)
+  {}
 
   /**
    * Takes in a specific entity that totally fills the cell, set's that value
@@ -120,7 +128,8 @@ public:
    * @param locationN the position of the corner closest to the origin
    * @param dimensionsN the size of the cell in the xyz directions
    */
-  //Cell(std::vector<Vector3> &points ,  std::vector< Edge< int > >& edges, int intermed[4][4][2], Vector3 locationN, Vector3 dimensionsN);
+  //Cell(std::vector<Vector3> &points, int intermed[4][4][2], Vector3 locationN, Vector3 dimensionsN);
+  //Cell(std::vector<Vector3> &points, std::vector<Edge<int>> &edges, int intermed[4][4][2], Vector3 locationN, Vector3 dimensionsN);
 
 
   /**

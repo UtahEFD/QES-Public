@@ -45,7 +45,6 @@
 #include "util/Vector3.h"
 
 #include "Interp.h"
-#include "PlumeInputData.hpp"
 
 class InterpTriLinear : public Interp
 {
@@ -54,7 +53,7 @@ public:
   // constructor
   // copies the turb grid values for nx, ny, nz, nt, dx, dy, and dz to the InterpTriLinear grid values,
   // then calculates the tau gradients which are then used to calculate the flux_div grid values.
-  InterpTriLinear(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *, const bool &);
+  InterpTriLinear(WINDSGeneralData *, TURBGeneralData *, const bool &);
 
   //double vel_threshold;
 

@@ -14,9 +14,10 @@ struct cutVert
 struct cutCell
 {
   cutCell(int id)
-    : cell_id(id), corner_id(8, 1), z_solid(0.0), pass_number(1),
-      ni(0.0), nj(0.0), nk(0.0), s_behind(0.0), s_front(0.0), s_right(0.0),
-      s_left(0.0), s_below(0.0), s_above(0.0) {}
+    : cell_id(id), pass_number(1), z_solid(0.0),
+      ni(0.0), nj(0.0), nk(0.0),
+      s_behind(0.0), s_front(0.0), s_right(0.0), s_left(0.0), s_above(0.0), s_below(0.0),
+      corner_id(8, 1) {}
 
   int cell_id;
   int pass_number;

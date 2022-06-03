@@ -27,6 +27,7 @@ z_cc=-0.5*dz:dz:lz+0.5*dz;
 % set Uniform Flow param:
 uMean = 2.0; % m/s
 uStar = 0.174; % m/s
+H=70; % m;
 C0 = 4.0;
 
 %% ========================================================================
@@ -66,7 +67,7 @@ icellflag_out(:,:,1) = 2; % terrain
 %icellflag_out(:,:,1) = 1; % fluid
 
 % now save the netcdf wind output
-writeNetCDFFile_winds(filename,nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
+writeNetCDFFile_winds(filename,nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag_out);
 
 
 %% ========================================================================
@@ -74,7 +75,7 @@ writeNetCDFFile_winds(filename,nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
 
 k = (uStar/0.55)^2;
 
-sigU=2.50*uStar;
+sigU=0.0;%2.50*uStar;
 sigV=1.78*uStar;
 sigW=1.27*uStar;
 
@@ -83,7 +84,7 @@ CoEps = zeros(nx-1,ny-1,nz-1);
 tke = zeros(nx-1,ny-1,nz-1);
 
 for kk=2:nz-1
-    CoEps(:,:,kk)=5.7*(sqrt(k)*0.55)^3/(0.4*z_cc(kk));
+    CoEps(:,:,kk)=5.7*(sqrt(k)*0.55)^3/(0.4*H);
     tke(:,:,kk)=k;
 end
 CoEps(:,:,1)=-CoEps(:,:,2);

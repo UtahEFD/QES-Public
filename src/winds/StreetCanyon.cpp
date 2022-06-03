@@ -68,7 +68,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
   float x_ave, y_ave;
   float x_down, y_down;
   float segment_length;// Face length
-  float downwind_rel_dir, along_dir, cross_dir, facenormal_dir;
+  float downwind_rel_dir(0.0), along_dir(0.0), cross_dir(0.0), facenormal_dir(0.0);
   float cross_vel_mag, along_vel_mag;
   std::vector<int> perpendicular_flag;
   std::vector<float> perpendicular_dir;
@@ -127,7 +127,10 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
         if (perpendicular_flag[id] == 0) {
           // x location of each yc point parallel to the face
           x_wall = ((xi[id + 1] - xi[id]) / (yi[id + 1] - yi[id])) * (yc - yi[id]) + xi[id];
+        } else {
+          x_wall = xi[id];
         }
+
 
         for (auto k = k_end - 1; k >= k_start; k--) {
 
@@ -283,9 +286,9 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                 int i = ceil(((xc - 0.5 * WGD->dxy + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x - 0.001) / WGD->dx) - 1;
                 int j = ceil(((xc - 0.5 * WGD->dxy + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y - 0.001) / WGD->dy) - 1;
 
-                if (WGD->ibuilding_flag[i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1)] >= 0) {
-                  std::cout << "error" << std::endl;
-                }
+                //if (WGD->ibuilding_flag[i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1)] >= 0) {
+                //  std::cout << "error" << std::endl;
+                //}
 
                 // (LoopDB) Loop through each polygon node of the downstream buildings
                 for (size_t j_id = 0; j_id < WGD->allBuildingsV[d_build]->polygonVertices.size() - 1; j_id++) {

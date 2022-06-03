@@ -34,7 +34,7 @@
 #include <cmath>
 #include <cfloat>
 #include <random>
-#include "util/Vec3D.h"
+#include "util/Vector3.h"
 
 /**
  * @class SphereDirections
@@ -54,9 +54,9 @@ private:
   float upperPhiBound;
   ///@}
 
-  // std::vector< Vec3D > nextList; // [6];  //holds vectors of the 6
+  // std::vector< Vector3 > nextList; // [6];  //holds vectors of the 6
 
-  Vec3D *nextList; /**< :document this: */
+  Vector3 *nextList; /**< :document this: */
 
 public:
   /**
@@ -65,15 +65,15 @@ public:
   SphereDirections()
     : vecCount(0)
   {
-    nextList = new Vec3D[6];
+    nextList = new Vector3[6];
 
     // default cardinal directions for now
-    nextList[0] = Vec3D(1, 0, 0);// front
-    nextList[1] = Vec3D(-1, 0, 0);// back
-    nextList[2] = Vec3D(0, 1, 0);// left
-    nextList[3] = Vec3D(0, -1, 0);// right
-    nextList[4] = Vec3D(0, 0, 1);// top
-    nextList[5] = Vec3D(0, 0, -1);// bottom
+    nextList[0] = Vector3(1, 0, 0);// front
+    nextList[1] = Vector3(-1, 0, 0);// back
+    nextList[2] = Vector3(0, 1, 0);// left
+    nextList[3] = Vector3(0, -1, 0);// right
+    nextList[4] = Vector3(0, 0, 1);// top
+    nextList[5] = Vector3(0, 0, -1);// bottom
 
     numDirs = 6;
   }
@@ -88,7 +88,9 @@ public:
    * @param upperPhi :document this:
    */
   SphereDirections(int numDV, float lowerTheta, float upperTheta, float lowerPhi, float upperPhi)
-    : vecCount(0), lowerThetaBound(lowerTheta), upperThetaBound(upperTheta), lowerPhiBound(lowerPhi), upperPhiBound(upperPhi)
+    : vecCount(0),
+      lowerThetaBound(lowerTheta), upperThetaBound(upperTheta),
+      lowerPhiBound(lowerPhi), upperPhiBound(upperPhi)
 
   {
     //        std::random_device rd;  // the rd device reads from a file,
@@ -101,7 +103,7 @@ public:
     std::uniform_real_distribution<float> phi(lowerPhiBound, upperPhiBound);
 
     numDirs = numDV + 5;
-    nextList = new Vec3D[numDirs];
+    nextList = new Vector3[numDirs];
 
     // for (int i=0; i<numDV; i++) {
     int i = 0;
@@ -115,25 +117,26 @@ public:
 
       float magnitude = std::sqrt(dx * dx + dy * dy + dz * dz);
 
+      /* FM CLEANUP - NOT USED
       // only send rays mostly down but a little up... can use
       // dot product between (0, 0, 1) and vector
-      Vec3D dirVec(dx / magnitude, dy / magnitude, dz / magnitude);
-
+      Vector3 dirVec(dx / magnitude, dy / magnitude, dz / magnitude);
       float dotProd = dirVec[0] * 0.0f + dirVec[1] * 0.0f + dirVec[2] * 1.0f;
+      */
 
       // if (dotProd < 0.20) {
-      nextList[i] = Vec3D(dx / magnitude, dy / magnitude, dz / magnitude);
+      nextList[i] = Vector3(dx / magnitude, dy / magnitude, dz / magnitude);
       i++;
       // }
     }
 
     // Then make sure the cardinal directions that may matter are
     // added -- up is unlikely at this point
-    nextList[numDV] = Vec3D(1, 0, 0);// front
-    nextList[numDV + 1] = Vec3D(-1, 0, 0);// back
-    nextList[numDV + 2] = Vec3D(0, 1, 0);// left
-    nextList[numDV + 3] = Vec3D(0, -1, 0);// right
-    nextList[numDV + 4] = Vec3D(0, 0, -1);// bottom
+    nextList[numDV] = Vector3(1, 0, 0);// front
+    nextList[numDV + 1] = Vector3(-1, 0, 0);// back
+    nextList[numDV + 2] = Vector3(0, 1, 0);// left
+    nextList[numDV + 3] = Vector3(0, -1, 0);// right
+    nextList[numDV + 4] = Vector3(0, 0, -1);// bottom
 
     //        std::cout << "Generated " << nextList.size() << " sphere directions." << std::endl;
     //        std::cout << "sd = [" << std::endl;
@@ -173,9 +176,9 @@ public:
    * @return the next randomly generated directional vector
    */
   //   Vector3 getNextDir();
-  Vec3D getNextDir()
+  Vector3 getNextDir()
   {
-    Vec3D retVal = nextList[vecCount];
+    Vector3 retVal = nextList[vecCount];
 
     vecCount++;
     if (vecCount > numDirs)

@@ -45,21 +45,21 @@
  * @class Triangle
  * @brief Represents a triangle made of 3 points, each with an x,y,z location.
  */
-class Triangle : public ParseInterface
+class Triangle
 {
 public:
-  Vector3 *a, *b, *c;
+  Vector3 a, b, c;
 
   Triangle()
+    : a(0.0, 0.0, 0.0),
+      b(0.0, 0.0, 0.0),
+      c(0.0, 0.0, 0.0)
   {
-    a = b = c = 0;
   }
 
   Triangle(Vector3 aN, Vector3 bN, Vector3 cN)
+    : a(aN), b(bN), c(cN)
   {
-    a = new Vector3(aN);
-    b = new Vector3(bN);
-    c = new Vector3(cN);
   }
 
   /**
@@ -93,6 +93,4 @@ public:
    * @param rec the HitRecord to be updated
    */
   bool rayTriangleIntersect(Ray ray, HitRecord &rec, float t0, float t1);
-
-  virtual void parseValues();
 };

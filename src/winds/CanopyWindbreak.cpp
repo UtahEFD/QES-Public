@@ -492,7 +492,7 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
                   v_wake_flag = 0;
 
                 // linearized indexes
-                icell_cent = i_u + j_u * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+                icell_cent = i_v + j_v * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
                 icell_face = i_v + j_v * WGD->nx + k * WGD->nx * WGD->ny;
 
                 if (dn_v > 0.0 && v_wake_flag == 1 && WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
@@ -505,8 +505,8 @@ void CanopyWindbreak::canopyWake(WINDSGeneralData *WGD, int building_id)
 
                   // latteral shear zone
                   ds = 0.5 * spreadclassicmix * x_v;
-                  WGD->canopy->wake_v_defect[icell_face] *= (-0.5 * tanh(1.5 * (y_u - (y2 - ds)) / ds) + 0.5);
-                  WGD->canopy->wake_v_defect[icell_face] *= (-0.5 * tanh(1.5 * ((y1 + ds) - y_u) / ds) + 0.5);
+                  WGD->canopy->wake_v_defect[icell_face] *= (-0.5 * tanh(1.5 * (y_v - (y2 - ds)) / ds) + 0.5);
+                  WGD->canopy->wake_v_defect[icell_face] *= (-0.5 * tanh(1.5 * ((y1 + ds) - y_v) / ds) + 0.5);
                 }
               }
 

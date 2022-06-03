@@ -51,7 +51,7 @@
 </metParams>								<!-- End of meteorological parameters -->
 <buildings>
   <wallRoughness>0.01</wallRoughness>                                   <!-- Building wall roughness-->
-  <SHPFile>../regressionTests/runTests/OklahomaCity/OKCSmallDomainJU2003.shp</SHPFile>	<!-- Address to shapefile location-->
+  <SHPFile>OklahomaCity/OKCSmallDomainJU2003.shp</SHPFile>	<!-- Address to shapefile location-->
   <SHPBuildingLayer>OKCSmallDomainJU2003</SHPBuildingLayer>             <!-- Name of building layer in shapefile-->
   <SHPHeightField>AVGHT_M</SHPHeightField>                              <!-- Name of building height field in shapefile -->
   <heightFactor> 1.0 </heightFactor>				        <!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
