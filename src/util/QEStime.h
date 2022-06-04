@@ -30,6 +30,7 @@
 /** @file QEStime.h */
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <iostream>
 
 namespace bgreg = boost::gregorian;
 namespace btime = boost::posix_time;
@@ -37,49 +38,55 @@ namespace btime = boost::posix_time;
 class QEStime
 {
 public:
-  QEStime() {}
+  QEStime()
+  {
+    btime::ptime epoch(bgreg::date(1970, 1, 1));
+    m_ptime = epoch;
+  }
+
+  QEStime(time_t t)
+  {
+    m_ptime = btime::from_time_t(t);
+  }
+  QEStime(std::string t)
+  {
+    m_ptime = btime::from_iso_extended_string(t);
+  }
+  QEStime(btime::ptime t)
+  {
+    m_ptime = t;
+  }
 
   ~QEStime() {}
 
   void setTime(double);
   QEStime &operator=(const double &);
+  QEStime &operator=(const btime::ptime &);
 
   void setTimestamp(time_t);
   void setTimestamp(std::string);
-  void setTimestamp(time_t, std::string);
   QEStime &operator=(const std::string &);
 
-  bool timestampMode()
-  {
-    return m_timestamp_mode;
-  }
-
-  std::string getTimestamp()
-  {
-    if (m_timestamp_mode)
-      return btime::to_iso_extended_string(m_ptime);
-    else
-      return "0000-00-00T00:00:00";
-  }
-
-  double getTime()
-  {
-    return m_time;
-  }
-
-  time_t getEpochTime()
-  {
-    btime::ptime epoch(bgreg::date(1970, 1, 1));
-    btime::time_duration::sec_type x = (m_ptime - epoch).total_seconds();
-    return time_t(x);
-  }
+  std::string getTimestamp();
+  double getTime();
+  time_t getEpochTime();
 
   void increment(float);
   QEStime &operator+=(const float &);
-  QEStime &operator+(const float &);
+  QEStime operator+(const float &);
+
+  double operator-(const QEStime &);
+
+  bool operator==(const std::string &);
+  bool operator==(const QEStime &);
+
+  bool operator<=(const QEStime &);
+  bool operator<(const QEStime &);
+
+  double operator%(const double &);
+
+  friend std::ostream &operator<<(std::ostream &, QEStime &);
 
 private:
-  bool m_timestamp_mode = false;
-  double m_time = 0.0;
   btime::ptime m_ptime;
 };

@@ -32,71 +32,109 @@
 #include "QEStime.h"
 
 
-void QEStime::setTime(double t)
-{
-  m_time = t;
-}
 QEStime &QEStime::operator=(const double &t)
 {
-  m_time = t;
+  //m_time = t;
   return *this;
 }
 
 void QEStime::setTimestamp(time_t t)
 {
-  m_timestamp_mode = true;
   m_ptime = btime::from_time_t(t);
 }
 
 void QEStime::setTimestamp(std::string t)
 {
-  m_timestamp_mode = true;
   m_ptime = btime::from_iso_extended_string(t);
-}
-
-void QEStime::setTimestamp(time_t t1, std::string t2)
-{
-  m_timestamp_mode = true;
-  m_ptime = btime::from_iso_extended_string(t2);
-  btime::ptime testtime = btime::from_time_t(t1);
-  if (testtime != m_ptime) {
-    std::cerr << "[ERROR] invalid timeStamp (timeEpoch != timeStamp)\n";
-    exit(EXIT_FAILURE);
-  }
 }
 
 QEStime &QEStime::operator=(const std::string &t)
 {
-  m_timestamp_mode = true;
   m_ptime = btime::from_iso_extended_string(t);
   return *this;
 }
 
+QEStime &QEStime::operator=(const btime::ptime &t)
+{
+  m_ptime = t;
+  return *this;
+}
+
+std::string QEStime::getTimestamp()
+{
+  return btime::to_iso_extended_string(m_ptime);
+}
+
+double QEStime::getTime()
+{
+  btime::ptime epoch(bgreg::date(1970, 1, 1));
+  double x = (m_ptime - epoch).total_milliseconds();
+  return double(x / 1000.0);
+}
+
+time_t QEStime::getEpochTime()
+{
+  btime::ptime epoch(bgreg::date(1970, 1, 1));
+  time_t x = (m_ptime - epoch).total_seconds();
+  return x;
+}
+
 void QEStime::increment(float dt)
 {
-  m_time += dt;
-  if (m_timestamp_mode) {
-    btime::time_duration tt = btime::milliseconds((int)(1000.0d * (double)dt));
-    m_ptime += tt;
-  }
+  btime::time_duration tt = btime::milliseconds((int)round(1000.0d * (double)dt));
+  m_ptime += tt;
 }
 
 QEStime &QEStime::operator+=(const float &dt)
 {
-  m_time += dt;
-  if (m_timestamp_mode) {
-    btime::time_duration tt = btime::milliseconds((int)(1000.0d * (double)dt));
-    m_ptime += tt;
-  }
+  btime::time_duration tt = btime::milliseconds((int)round(1000.0d * (double)dt));
+  m_ptime += tt;
   return *this;
 }
 
-QEStime &QEStime::operator+(const float &dt)
+QEStime QEStime::operator+(const float &dt)
 {
-  m_time += dt;
-  if (m_timestamp_mode) {
-    btime::time_duration tt = btime::milliseconds((int)(1000.0d * (double)dt));
-    m_ptime += tt;
-  }
-  return *this;
+  btime::time_duration tt = btime::milliseconds((int)round(1000.0d * (double)dt));
+  QEStime t = this->m_ptime + tt;
+  return t;
+}
+
+double QEStime::operator-(const QEStime &t2)
+{
+  double x = (m_ptime - t2.m_ptime).total_milliseconds() / 1000.0;
+  return x;
+}
+
+bool QEStime::operator==(const std::string &t)
+{
+  btime::ptime testtime = btime::from_iso_extended_string(t);
+  return m_ptime == testtime;
+}
+
+bool QEStime::operator==(const QEStime &t)
+{
+  return m_ptime == t.m_ptime;
+}
+
+bool QEStime::operator<=(const QEStime &t)
+{
+  return m_ptime <= t.m_ptime;
+}
+
+bool QEStime::operator<(const QEStime &t)
+{
+  return m_ptime < t.m_ptime;
+}
+
+double QEStime::operator%(const double &t)
+{
+  btime::ptime epoch(bgreg::date(1970, 1, 1));
+  return ((m_ptime - epoch).total_milliseconds() % int(t * 1000.0)) / 1000.0;
+}
+
+
+std::ostream &operator<<(std::ostream &os, QEStime &t)
+{
+  os << t.getTimestamp();
+  return os;
 }
