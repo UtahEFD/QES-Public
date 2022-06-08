@@ -89,7 +89,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   numcell_cent = (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
   numcell_face = nx * ny * nz;// Total number of face-centered values in domain
 
-
   // where should this really go?
   //
   // Need to now take all WRF station data and convert to
@@ -98,64 +97,149 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
     WRFInput *wrf_ptr = WID->simParams->wrfInputData;
 
-    std::cout << "Size of WRF station/sensor profile data: " << wrf_ptr->statData.size() << std::endl;
-    WID->metParams->sensors.resize(wrf_ptr->statData.size());
+    // Use WID->simParams->m_domIType == WRFOnly -- to indicate wrf
+    // interp data usage
+    if (WID->simParams->m_domIType == SimulationParameters::DomainInputType::WRFOnly) {
 
-    for (size_t i = 0; i < wrf_ptr->statData.size(); i++) {
-      std::cout << "Station " << i << " ("
-                << wrf_ptr->statData[i].xCoord << ", "
-                << wrf_ptr->statData[i].yCoord << ")" << std::endl;
+      // WRFOnly is the PREEVENTS Fire usage cases...
 
-      if (!WID->metParams->sensors[i])
-        WID->metParams->sensors[i] = new Sensor();
+      wrf_nx = wrf_ptr->fm_nx;
+      wrf_ny = wrf_ptr->fm_ny;
 
-      WID->metParams->sensors[i]->site_xcoord = wrf_ptr->statData[i].xCoord;
-      WID->metParams->sensors[i]->site_ycoord = wrf_ptr->statData[i].yCoord;
+      WID->metParams->sensors.resize(wrf_ptr->fm_nx * wrf_ptr->fm_ny);
 
-      // Need to allocate time series... not fully pulling all WRF
-      // time series yet... just first
-      WID->metParams->sensors[i]->TS.resize(1);
-      // Also need to allocate the space...
-      if (!WID->metParams->sensors[i]->TS[0])
-        WID->metParams->sensors[i]->TS[0] = new TimeSeries;
+      for (auto i = 0; i < wrf_ptr->fm_nx * wrf_ptr->fm_ny; i++) {
+        // create a new sensor element
+        if (!WID->metParams->sensors[i]) {
+          WID->metParams->sensors[i] = new Sensor();
+        }
 
-      // WRF profile data -- sensor blayer flag is 4
-      WID->metParams->sensors[i]->TS[0]->site_blayer_flag = 4;
+        // create one time series for each sensor, for now
+        WID->metParams->sensors[i]->TS.resize(1);
+        if (!WID->metParams->sensors[i]->TS[0]) {
+          WID->metParams->sensors[i]->TS[0] = new TimeSeries();
+        }
 
-      // Make sure to set size_z0 to be z0 from WRF cell
-      WID->metParams->sensors[i]->TS[0]->site_z0 = wrf_ptr->statData[i].z0;
+        // WRF profile data -- sensor blayer flag is 4
+        WID->metParams->sensors[i]->TS[0]->site_blayer_flag = 4;
+      }
 
+      // Also need to correctly add time stamps
+      // example from below:
+      //   for (size_t t = 0; t < sensortime_id.size(); t++) {
+      //      timestamp.push_back(bt::from_time_t(sensortime[t]));
+      //   }
+
+      // initialize our time info...
+      sensortime.push_back(1642619569);// that's roughly 01/19/22 at 1:00pm Central
+      sensortime_id.push_back(0);
+      timestamp.push_back(bt::from_time_t(sensortime[0]));
+
+      totalTimeIncrements = WID->simParams->totalTimeIncrements;
+
+      // Here to take care of the first time this is built
+      for (auto i = 0; i < wrf_ptr->fm_nx; i++) {
+        for (auto j = 0; j < wrf_ptr->fm_ny; j++) {
+          int index = i + j * wrf_ptr->fm_nx;
+          WID->metParams->sensors[index]->site_coord_flag = 1;
+          WID->metParams->sensors[index]->site_xcoord = (i + halo_index_x + 0.5) * dx;
+          WID->metParams->sensors[index]->site_ycoord = (j + halo_index_y + 0.5) * dy;
+
+          WID->metParams->sensors[index]->TS[0]->site_wind_dir.resize(wrf_ptr->ht_fmw.size());
+          WID->metParams->sensors[index]->TS[0]->site_z_ref.resize(wrf_ptr->ht_fmw.size());
+          WID->metParams->sensors[index]->TS[0]->site_U_ref.resize(wrf_ptr->ht_fmw.size());
+
+          WID->metParams->sensors[index]->TS[0]->site_z0 = 0.1;// should get per cell from WRF data...  we do load per atm cell...
+          WID->metParams->sensors[index]->TS[0]->site_one_overL = 0.0;
+
+	  // for each height in the WRF profile
+          for (auto p = 0; p < wrf_ptr->ht_fmw.size(); p++) {
+            int id = index + p * wrf_ptr->fm_nx * wrf_ptr->fm_ny;
+            WID->metParams->sensors[index]->TS[0]->site_z_ref[p] = wrf_ptr->ht_fmw[p];
+            WID->metParams->sensors[index]->TS[0]->site_U_ref[p] = sqrt( (wrf_ptr->u0_fmw[id] * wrf_ptr->u0_fmw[id]) + (wrf_ptr->v0_fmw[id] * wrf_ptr->v0_fmw[id]) );
+            WID->metParams->sensors[index]->TS[0]->site_wind_dir[p] = 180 + (180 / pi) * atan2(wrf_ptr->v0_fmw[id], wrf_ptr->u0_fmw[id]);
+          }
+        }
+      }
+      // #endif
+
+      // u0 and v0 are wrf_ptr->fm_nx * wrf_ptr->fm_ny *
+      // wrf_ptr->ht_fmw.size()
       //
-      // 1 time series for now - how do we deal with this for
-      // new time steps???  Need to figure out ASAP.
-      //
-      for (int t = 0; t < 1; t++) {
-        std::cout << "\tTime Series: " << t << std::endl;
+      // The heights themselves are in the wrf_ptr->ht_fmw array
 
-        int profDataSz = wrf_ptr->statData[i].profiles[t].size();
-        WID->metParams->sensors[i]->TS[0]->site_wind_dir.resize(profDataSz);
-        WID->metParams->sensors[i]->TS[0]->site_z_ref.resize(profDataSz);
-        WID->metParams->sensors[i]->TS[0]->site_U_ref.resize(profDataSz);
+    }
+
+    else if (wrf_ptr->statData.size() > 0) {
+      std::cout << "Size of WRF station/sensor profile data: " << wrf_ptr->statData.size() << std::endl;
+      WID->metParams->sensors.resize(wrf_ptr->statData.size());
+
+      for (auto i = 0; i < wrf_ptr->statData.size(); i++) {
+        std::cout << "Station " << i << " ("
+                  << wrf_ptr->statData[i].xCoord << ", "
+                  << wrf_ptr->statData[i].yCoord << ")" << std::endl;
+
+        if (!WID->metParams->sensors[i])
+          WID->metParams->sensors[i] = new Sensor();
+
+        WID->metParams->sensors[i]->site_xcoord = wrf_ptr->statData[i].xCoord;
+        WID->metParams->sensors[i]->site_ycoord = wrf_ptr->statData[i].yCoord;
+
+        // Need to allocate time series... not fully pulling all WRF
+        // time series yet... just first
+        WID->metParams->sensors[i]->TS.resize(1);
+        // Also need to allocate the space...
+        if (!WID->metParams->sensors[i]->TS[0])
+          WID->metParams->sensors[i]->TS[0] = new TimeSeries;
+
+        // WRF profile data -- sensor blayer flag is 4
+        WID->metParams->sensors[i]->TS[0]->site_blayer_flag = 4;
+
+        // Make sure to set size_z0 to be z0 from WRF cell
+        WID->metParams->sensors[i]->TS[0]->site_z0 = wrf_ptr->statData[i].z0;
+
+        //
+        // 1 time series for now - how do we deal with this for
+        // new time steps???  Need to figure out ASAP.
+        //
+        // Also need to correctly add time stamps
+        // example from below:
+        //   for (size_t t = 0; t < sensortime_id.size(); t++) {
+        //      timestamp.push_back(bt::from_time_t(sensortime[t]));
+        //   }
+
+        for (int t = 0; t < 1; t++) {
+          std::cout << "\tTime Series: " << t << std::endl;
+
+          sensortime.push_back(t);
+          sensortime_id.push_back(t);
+          timestamp.push_back(bt::from_time_t(sensortime[t]));
+
+          int profDataSz = wrf_ptr->statData[i].profiles[t].size();
+          WID->metParams->sensors[i]->TS[0]->site_wind_dir.resize(profDataSz);
+          WID->metParams->sensors[i]->TS[0]->site_z_ref.resize(profDataSz);
+          WID->metParams->sensors[i]->TS[0]->site_U_ref.resize(profDataSz);
 
 
-        for (size_t p = 0; p < wrf_ptr->statData[i].profiles[t].size(); p++) {
-          std::cout << "\t" << wrf_ptr->statData[i].profiles[t][p].zCoord
-                    << ", " << wrf_ptr->statData[i].profiles[t][p].ws
-                    << ", " << wrf_ptr->statData[i].profiles[t][p].wd << std::endl;
+          for (size_t p = 0; p < wrf_ptr->statData[i].profiles[t].size(); p++) {
+            std::cout << "\t" << wrf_ptr->statData[i].profiles[t][p].zCoord
+                      << ", " << wrf_ptr->statData[i].profiles[t][p].ws
+                      << ", " << wrf_ptr->statData[i].profiles[t][p].wd << std::endl;
 
-          WID->metParams->sensors[i]->TS[0]->site_z_ref[p] = wrf_ptr->statData[i].profiles[t][p].zCoord;
-          WID->metParams->sensors[i]->TS[0]->site_U_ref[p] = wrf_ptr->statData[i].profiles[t][p].ws;
-          WID->metParams->sensors[i]->TS[0]->site_wind_dir[p] = wrf_ptr->statData[i].profiles[t][p].wd;
+            WID->metParams->sensors[i]->TS[0]->site_z_ref[p] = wrf_ptr->statData[i].profiles[t][p].zCoord;
+            WID->metParams->sensors[i]->TS[0]->site_U_ref[p] = wrf_ptr->statData[i].profiles[t][p].ws;
+            WID->metParams->sensors[i]->TS[0]->site_wind_dir[p] = wrf_ptr->statData[i].profiles[t][p].wd;
+          }
         }
       }
     }
-  } else {
+  } else {// no wrf data to deal with...
     /* FM NOTES:
-     WARNING this is unfinished.
-     + does support halo for QES coord (site coord == 1)
-     - does not support halo for UTM coord (site coord == 2)
-     - does not support halo for lon/lat coord (site coord == 3)
-     */
+       WARNING this is unfinished.
+       + does support halo for QES coord (site coord == 1)
+       - does not support halo for UTM coord (site coord == 2)
+       - does not support halo for lon/lat coord (site coord == 3)
+    */
 
     // If the sensor file specified in the xml
     if (WID->metParams->sensorName.size() > 0) {
@@ -354,9 +438,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     }
   }
 
-  int halo_index_x = (WID->simParams->halo_x / dx);
+  halo_index_x = (WID->simParams->halo_x / dx);
   // WID->simParams->halo_x = halo_index_x*dx;
-  int halo_index_y = (WID->simParams->halo_y / dy);
+  halo_index_y = (WID->simParams->halo_y / dy);
   // WID->simParams->halo_y = halo_index_y*dy;
 
   int ii, jj, idx;
@@ -610,7 +694,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     if (WID->buildings->SHPData) {
       std::cout << "Creating buildings from shapefile..." << std::flush;
 
-      //std::vector<Building *> poly_buildings;
+      // std::vector<Building *> poly_buildings;
 
 
       float corner_height, min_height;
@@ -619,7 +703,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       WID->buildings->SHPData->getLocalDomain(shpDomainSize);
       WID->buildings->SHPData->getMinExtent(minExtent);
 
-      //printf("\tShapefile Origin = (%.6f,%.6f)\n", minExtent[0], minExtent[1]);
+      // printf("\tShapefile Origin = (%.6f,%.6f)\n", minExtent[0], minExtent[1]);
 
       // If the shapefile is not covering the whole domain or the UTM coordinates
       // of the QES domain is different than shapefile origin
@@ -665,7 +749,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         // Loop to create each of the polygon buildings read in from the shapefile
         int bId = allBuildingsV.size();
 
-        //allBuildingsV.push_back(new PolyBuilding(WID, this, pIdx));
+        // allBuildingsV.push_back(new PolyBuilding(WID, this, pIdx));
         allBuildingsV.push_back(new PolyBuilding(WID->buildings->SHPData->m_polygons[pIdx],
                                                  WID->buildings->SHPData->m_features[WID->buildings->shpHeightField][pIdx] * WID->buildings->heightFactor,
                                                  base_height[bId],
@@ -796,7 +880,8 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   return;
 }
 
-WINDSGeneralData ::WINDSGeneralData(const std::string inputFile)
+
+WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
 {
 
   std::cout << "[WINDS Data] \t Loading QES-winds fields " << std::endl;
@@ -996,7 +1081,45 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
 void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex, int solveType)
 {
   std::cout << "Applying Wind Profile...\n";
-  WID->metParams->sensors[0]->inputWindProfile(WID, this, timeIndex, solveType);
+
+  if (WID->simParams->wrfCoupling) {
+
+    std::cout << "Using WRF Coupling..." << std::endl;
+
+    WRFInput *wrf_ptr = WID->simParams->wrfInputData;
+
+    for (auto i = 0; i < wrf_ptr->fm_nx; i++) {
+      for (auto j = 0; j < wrf_ptr->fm_ny; j++) {
+        int index = i + j * wrf_ptr->fm_nx;
+        WID->metParams->sensors[index]->site_coord_flag = 1;
+        WID->metParams->sensors[index]->site_xcoord = (i + halo_index_x + 0.5) * dx;
+        WID->metParams->sensors[index]->site_ycoord = (j + halo_index_y + 0.5) * dy;
+
+        WID->metParams->sensors[index]->TS[0]->site_wind_dir.resize(wrf_ptr->ht_fmw.size());
+        WID->metParams->sensors[index]->TS[0]->site_z_ref.resize(wrf_ptr->ht_fmw.size());
+        WID->metParams->sensors[index]->TS[0]->site_U_ref.resize(wrf_ptr->ht_fmw.size());
+
+        WID->metParams->sensors[index]->TS[0]->site_z0 = 0.1;
+        WID->metParams->sensors[index]->TS[0]->site_one_overL = 0.0;
+
+        // hack to make time equivalencies
+        WID->metParams->sensors[index]->TS[0]->timeEpoch = 1642619569;
+
+        for (auto p = 0; p < wrf_ptr->ht_fmw.size(); p++) {
+          int id = index + p * wrf_ptr->fm_nx * wrf_ptr->fm_ny;
+          WID->metParams->sensors[index]->TS[0]->site_z_ref[p] = wrf_ptr->ht_fmw[p];
+          WID->metParams->sensors[index]->TS[0]->site_U_ref[p] = sqrt(pow(wrf_ptr->u0_fmw[id], 2.0) + pow(wrf_ptr->v0_fmw[id], 2.0));
+          WID->metParams->sensors[index]->TS[0]->site_wind_dir[p] = 180 + (180 / pi) * atan2(wrf_ptr->v0_fmw[id], wrf_ptr->u0_fmw[id]);
+        }
+      }
+    }
+
+    // use the time Index of 0 (forcing it) because time series are not worked out with WRF well..
+    WID->metParams->sensors[0]->inputWindProfile(WID, this, 0, solveType);
+  } else {
+    WID->metParams->sensors[0]->inputWindProfile(WID, this, timeIndex, solveType);
+  }
+
 
   max_velmag = 0.0;
   for (auto i = 0; i < nx; i++) {
@@ -1012,7 +1135,7 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
 
 void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
 {
-  //std::cout << "[Winds] \t applying Parameterization" << std::endl;
+  // std::cout << "[Winds] \t applying Parameterization" << std::endl;
 
   auto start_param = std::chrono::high_resolution_clock::now();// Start recording execution time
 
@@ -1032,7 +1155,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->upwindCavity(WID, this);
     }
-    //std::cout << "Upwind cavity parameterization done...\n";
+    // std::cout << "Upwind cavity parameterization done...\n";
   }
 
   //////////////////////////////////////////////////
@@ -1043,7 +1166,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->polygonWake(WID, this, building_id[i]);
     }
-    //std::cout << "Wake behind building parameterization done...\n";
+    // std::cout << "Wake behind building parameterization done...\n";
   }
 
   ///////////////////////////////////////////
@@ -1054,13 +1177,13 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->streetCanyon(this);
     }
-    //std::cout << "Street canyon parameterization done...\n";
+    // std::cout << "Street canyon parameterization done...\n";
   } else if (WID->simParams->streetCanyonFlag == 2) {
     std::cout << "Applying street canyon parameterization...\n";
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->streetCanyonModified(this);
     }
-    //std::cout << "Street canyon parameterization done...\n";
+    // std::cout << "Street canyon parameterization done...\n";
   }
 
   ///////////////////////////////////////////
@@ -1071,7 +1194,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->sideWall(WID, this);
     }
-    //std::cout << "Sidewall parameterization done...\n";
+    // std::cout << "Sidewall parameterization done...\n";
   }
 
 
@@ -1083,7 +1206,7 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
     for (size_t i = 0; i < allBuildingsV.size(); i++) {
       allBuildingsV[building_id[i]]->rooftop(WID, this);
     }
-    //std::cout << "Rooftop parameterization done...\n";
+    // std::cout << "Rooftop parameterization done...\n";
   }
 
   // ///////////////////////////////////////
@@ -1135,7 +1258,7 @@ void WINDSGeneralData::resetICellFlag()
 void WINDSGeneralData::printTimeProgress(int index)
 {
   float percentage = (float)(index + 1) / (float)totalTimeIncrements;
-  int val = (int)(percentage * 100);
+  int val = (int)floor(percentage * 100);
   int lpad = (int)(percentage * PBWIDTH);
   int rpad = PBWIDTH - lpad;
   std::cout << "-------------------------------------------------------------------" << std::endl;

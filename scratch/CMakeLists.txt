@@ -1,12 +1,13 @@
 include_directories(${CMAKE_SOURCE_DIR}/src)
 include_directories(${PROJECT_SOURCE_DIR}/src/winds)
 
+#  wrfInputTest
+#  wrf2dem
 
 set(BASETESTS
   argparser
   shpTest
-  wrfInputTest
-  wrf2dem
+  wrfCouplingTest
   )
 
 foreach(basetest ${BASETESTS})

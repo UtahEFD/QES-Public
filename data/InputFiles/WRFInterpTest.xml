@@ -1,0 +1,100 @@
+<simulationParameters>
+
+  <!-- Specifies the WRF Output file that will be read in by QES-Winds -->
+  <!-- <WRF>/uufs/chpc.utah.edu/common/home/stoll-group3/willemsn/RXCwrfout_d07_2012-11-11_15-21</WRF> -->
+  <WRF>/uufs/chpc.utah.edu/common/home/u0240900/WRF-SFIRE/test/em_fire/hill/wrf.nc</WRF>
+  <!-- ../scratch/wrfout_d01_0001-01-01_00:00:00</WRF> -->
+  <WRFCoupling>true</WRFCoupling>
+
+  <!-- <WRFSensorSample>12</WRFSensorSample> --> <!-- seems to not work -->
+  <WRFSensorSample>1</WRFSensorSample> <!-- seems to work -->
+
+  <totalTimeIncrements> 10 </totalTimeIncrements>
+
+  <halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
+  <halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
+
+
+
+  <!-- We really want to be able to specify the bounds of the WRF domain
+       we want to pull from this... using geo-referenced coordinates, like UTM
+       Example:
+       UTMX and UTMY
+       
+       Using these parameters, we can pull the fire mesh for terrain.
+
+Use Case - WRF with Fire Mesh
+* Take the fire mesh and make it the terrain.
+* Then, using the UTMX and UTMY plus domain bounds, we can then sample the WRF Station data into the wind profiles...
+* What to set the halo in this case?  Could use average heights of neighbor terrain for halo heights...
+
+Use Case - WRF with no Fire Mesh (i.e. Korea)
+* With non-FireMesh WRF output, we really want to merge the DEM that we load with the WRF Wind Profile data.
+* Load in DEM file.
+* Walk through WRF Atmos Mesh at discretization specified by UTMX and UTMY with domain bounds
+
+Important Parameters
+UTM:  when UTM is provided we can use it as the world offset of the lower left corner of the domain.
+
+Shouldn't need when loading WRF output though.
+
+  -->
+  
+  <domain>384 384 100</domain>
+  <cellSize> 3.0 3.0 1.0 </cellSize>  <!-- Meters-->
+
+  <verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
+
+  <!--  <UTCConversion> 0 </UTCConversion> -->
+
+  <rooftopFlag> 0 </rooftopFlag> 				<!-- Rooftop flag (0-none, 1-log profile (default), 2-vortex) -->
+  <upwindCavityFlag> 0 </upwindCavityFlag> 			<!-- Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP) -->
+  <streetCanyonFlag> 0 </streetCanyonFlag> 			<!-- Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)) -->
+  <streetIntersectionFlag> 0 </streetIntersectionFlag> 		<!--Street intersection flag (0-off, 1-on) -->
+  <wakeFlag> 0 </wakeFlag> 					<!-- Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled) -->
+  <sidewallFlag> 0 </sidewallFlag> 				<!-- Sidewall flag (0-off, 1-on (default)) -->
+  <maxIterations> 500 </maxIterations> 				<!-- Maximum number of iterations (default = 500) -->
+  <tolerance> 1e-9 </tolerance> 				<!-- Convergence criteria, error threshold (default = 1e-9) -->
+  <meshTypeFlag> 0 </meshTypeFlag> 				<!-- Type of meshing scheme (0-Stair step (origional QUIC) (default), 1-Cut-cell method -->
+  <domainRotation> 0 </domainRotation>  			<!-- Rotation angle of domain relative to true north -->
+
+</simulationParameters>						<!-- End of simulation parameters -->
+
+<metParams>
+	<z0_domain_flag> 0 </z0_domain_flag>           		<!-- Distribution of sueface roughness for domain (0-uniform (default), 1-custom -->
+	<!--sensorName>../data/QU_Files/sensor.xml</sensorName-->	<!-- Name of the sensor file with information for the sensor included -->
+
+	<sensor>
+    	    <site_coord_flag> 1 </site_coord_flag> 			<!-- Sensor site coordinate system (1=QUIC (default), 2=UTM, 3=Lat/Lon) -->
+            <site_xcoord> 1.0  </site_xcoord> 				<!-- x component of site location in QUIC domain (m) (if site_coord_flag = 1) -->
+            <site_ycoord> 1.0 </site_ycoord> 				<!-- y component of site location in QUIC domain (m) (if site_coord_flag = 1)-->
+
+            <site_UTM_x> 2.0 </site_UTM_x> 				<!-- x components of site coordinate in UTM (if site_coord_flag = 2) -->
+            <site_UTM_y> 2.0 </site_UTM_y> 				<!-- y components of site coordinate in UTM (if site_coord_flag = 2)-->
+
+            <site_UTM_zone> 0 </site_UTM_zone> 				<!-- UTM zone of the sensor site (if site_coord_flag = 2)-->
+
+    	    <timeSeries>						<!-- Start of timestep informastion for a sensor -->
+       		<boundaryLayerFlag> 1 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
+       		<siteZ0> 0.1 </siteZ0> 					<!-- Site z0 -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<height> 10.0 </height> 				<!-- Height of the sensor -->
+       		<speed> 5.0 </speed> 					<!-- Measured speed at the sensor height -->
+       		<direction> 270.0 </direction> 				<!-- Wind direction of sensor -->
+    	    </timeSeries>
+	</sensor>                       				<!-- End of sensor section -->
+
+</metParams>							<!-- End of meteorological parameters -->
+<turbParams>
+  <method>3</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
+  <save>true</save>     <!-- Save to file -->
+  <LMfile>../scratch/RxCADRE/RxCADRE_WRFOnly_mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
+</turbParams>
+<fileOptions>
+  <outputFlag>1</outputFlag>
+  <outputFields>all</outputFields> 
+  <outputFields>v</outputFields> 
+  <outputFields>w</outputFields>
+  <outputFields>icell</outputFields> 
+</fileOptions>
+
