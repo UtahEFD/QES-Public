@@ -103,5 +103,9 @@ int main()
   }
   std::cout << "--------------------------" << std::endl;
   std::cout << "t \t" << t << std::endl;
+  std::cout << std::endl;
+
+  QEStime test;
+  std::cout << "t-now \t" << test << std::endl;
   return 0;
 }

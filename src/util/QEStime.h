@@ -40,8 +40,10 @@ class QEStime
 public:
   QEStime()
   {
-    btime::ptime epoch(bgreg::date(1970, 1, 1));
-    m_ptime = epoch;
+    btime::ptime UTCtime = btime::second_clock::universal_time();
+    m_ptime = UTCtime;
+    //btime::ptime epoch(bgreg::date(1970, 1, 1));
+    //m_ptime = epoch;
   }
 
   QEStime(time_t t)
@@ -82,6 +84,9 @@ public:
 
   bool operator<=(const QEStime &);
   bool operator<(const QEStime &);
+
+  bool operator>=(const QEStime &);
+  bool operator>(const QEStime &);
 
   double operator%(const double &);
 

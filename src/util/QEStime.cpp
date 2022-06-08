@@ -126,12 +126,21 @@ bool QEStime::operator<(const QEStime &t)
   return m_ptime < t.m_ptime;
 }
 
+bool QEStime::operator>=(const QEStime &t)
+{
+  return m_ptime >= t.m_ptime;
+}
+
+bool QEStime::operator>(const QEStime &t)
+{
+  return m_ptime > t.m_ptime;
+}
+
 double QEStime::operator%(const double &t)
 {
   btime::ptime epoch(bgreg::date(1970, 1, 1));
   return ((m_ptime - epoch).total_milliseconds() % int(t * 1000.0)) / 1000.0;
 }
-
 
 std::ostream &operator<<(std::ostream &os, QEStime &t)
 {
