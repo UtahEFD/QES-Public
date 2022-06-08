@@ -17,8 +17,6 @@
 #include "winds/WINDSOutputVisualization.h"
 #include "winds/WINDSOutputWorkspace.h"
 
-#include "winds/WINDSOutputWRF.h"
-
 #include "winds/TURBGeneralData.h"
 #include "winds/TURBOutput.h"
 
@@ -98,14 +96,6 @@ int main(int argc, char *argv[])
   if (arguments.wkspOutput) {
     outputVec.push_back(new WINDSOutputWorkspace(WGD, arguments.netCDFFileWksp));
   }
-
-  WINDSOutputWRF *wrfOutput = nullptr;
-  if (arguments.fireMode) {
-    wrfOutput = new WINDSOutputWRF(WGD, WID->simParams->wrfInputData);
-    // Eventually we can add the wrf output here...
-    // outputVec.push_back(wrfOutput);
-  }
-
 
   // Generate the general TURB data from WINDS data
   // based on if the turbulence output file is defined
@@ -189,12 +179,11 @@ int main(int argc, char *argv[])
     // WRF Coupling
     // /////////////////////////////
     if (WID->simParams->wrfCoupling) {
-      if (wrfOutput) {
-	std::cout << "Writing data back to the WRF file." << std::endl;
-	wrfOutput->save( WGD->timestamp[0] );
-      }
-
-      // Re-read WRF data
+      // send our stuff to wrf input file
+      std::cout << "Writing data back to the WRF file." << std::endl;
+      WID->simParams->wrfInputData->extractWind(WGD);
+      
+      // Re-read WRF data -- get new stuff from wrf input file... sync...
       std::cout << "Attempting to re-read data from WRF." << std::endl;
       WID->simParams->wrfInputData->updateFromWRF();
     } 
