@@ -116,6 +116,11 @@ bool QEStime::operator==(const QEStime &t)
   return m_ptime == t.m_ptime;
 }
 
+bool QEStime::operator!=(const QEStime &t)
+{
+  return m_ptime != t.m_ptime;
+}
+
 bool QEStime::operator<=(const QEStime &t)
 {
   return m_ptime <= t.m_ptime;

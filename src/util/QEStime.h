@@ -29,6 +29,8 @@
 
 /** @file QEStime.h */
 
+#pragma once
+
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <iostream>
 
@@ -81,6 +83,7 @@ public:
 
   bool operator==(const std::string &);
   bool operator==(const QEStime &);
+  bool operator!=(const QEStime &);
 
   bool operator<=(const QEStime &);
   bool operator<(const QEStime &);
