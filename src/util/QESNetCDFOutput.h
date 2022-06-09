@@ -39,6 +39,7 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 
+#include "QEStime.h"
 #include "NetCDFOutput.h"
 
 using namespace netCDF;
@@ -129,7 +130,7 @@ public:
    *
    * @note Can be called outside.
    */
-  virtual void save(ptime) = 0;
+  virtual void save(QEStime) = 0;
   virtual void save(float) {}
 
 protected:

@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
   }
   */
 
-  std::cout << "Running time step: " << to_iso_extended_string(WGD->timestamp[0]) << std::endl;
+  std::cout << "Running time step: " << WGD->timestamp[0] << std::endl;
 
   // //////////////////////////////////////////
   // Run the QES-Winds Solver

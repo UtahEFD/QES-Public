@@ -42,6 +42,7 @@
 #include "PlumeInputData.hpp"
 
 #include "util/QESNetCDFOutput.h"
+#include "util/QEStime.h"
 
 class Plume;
 
@@ -60,7 +61,7 @@ public:
   // in this case the saved data is output averaged concentration
   // This is the one function that needs called from outside after constructor time
   void save(float);
-  void save(ptime) {}
+  void save(QEStime) {}
 
 protected:
   bool validateFileOtions();

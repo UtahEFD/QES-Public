@@ -150,15 +150,15 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
 
 
 // Save output at cell-centered values
-void WINDSOutputWorkspace::save(ptime timeOut)
+void WINDSOutputWorkspace::save(QEStime timeOut)
 {
 
   // set time
   time = (double)output_counter;
-  timestamp = to_iso_extended_string(timeOut);
+  timestamp = timeOut.getTimestamp();
 
-  std::string s = to_iso_extended_string(timeOut);
-  std::copy(s.begin(), s.end(), timestamp.begin());
+  //std::string s = timeOut.getTimestamp();
+  //std::copy(s.begin(), s.end(), timestamp.begin());
 
   // save fields
   saveOutputFields();

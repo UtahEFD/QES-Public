@@ -152,12 +152,12 @@ void TURBOutput::setAllOutputFields()
 
 
 // Save output at cell-centered values
-void TURBOutput::save(ptime timeOut)
+void TURBOutput::save(QEStime timeOut)
 {
 
   // set time
   time = (double)output_counter;
-  timestamp = to_iso_extended_string(timeOut);
+  timestamp = timeOut.getTimestamp();
 
   // save fields
   saveOutputFields();

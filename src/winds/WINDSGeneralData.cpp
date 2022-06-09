@@ -131,9 +131,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       //   }
 
       // initialize our time info...
-      sensortime.push_back(1642619569);// that's roughly 01/19/22 at 1:00pm Central
+      QEStime tmp("2022-01-01T00:00");
+      sensortime.push_back(tmp);// that's roughly 01/19/22 at 1:00pm Central
       sensortime_id.push_back(0);
-      timestamp.push_back(bt::from_time_t(sensortime[0]));
+      timestamp.push_back(sensortime[0]);
 
       totalTimeIncrements = WID->simParams->totalTimeIncrements;
 
@@ -152,11 +153,11 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
           WID->metParams->sensors[index]->TS[0]->site_z0 = 0.1;// should get per cell from WRF data...  we do load per atm cell...
           WID->metParams->sensors[index]->TS[0]->site_one_overL = 0.0;
 
-	  // for each height in the WRF profile
+          // for each height in the WRF profile
           for (auto p = 0; p < wrf_ptr->ht_fmw.size(); p++) {
             int id = index + p * wrf_ptr->fm_nx * wrf_ptr->fm_ny;
             WID->metParams->sensors[index]->TS[0]->site_z_ref[p] = wrf_ptr->ht_fmw[p];
-            WID->metParams->sensors[index]->TS[0]->site_U_ref[p] = sqrt( (wrf_ptr->u0_fmw[id] * wrf_ptr->u0_fmw[id]) + (wrf_ptr->v0_fmw[id] * wrf_ptr->v0_fmw[id]) );
+            WID->metParams->sensors[index]->TS[0]->site_U_ref[p] = sqrt((wrf_ptr->u0_fmw[id] * wrf_ptr->u0_fmw[id]) + (wrf_ptr->v0_fmw[id] * wrf_ptr->v0_fmw[id]));
             WID->metParams->sensors[index]->TS[0]->site_wind_dir[p] = 180 + (180 / pi) * atan2(wrf_ptr->v0_fmw[id], wrf_ptr->u0_fmw[id]);
           }
         }
@@ -213,7 +214,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
           sensortime.push_back(t);
           sensortime_id.push_back(t);
-          timestamp.push_back(bt::from_time_t(sensortime[t]));
+          timestamp.push_back(sensortime[t]);
 
           int profDataSz = wrf_ptr->statData[i].profiles[t].size();
           WID->metParams->sensors[i]->TS[0]->site_wind_dir.resize(profDataSz);
@@ -253,7 +254,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     //if (WID->simParams->totalTimeIncrements > 0) {
     // Loop to include all the timestep for the first sensor
     for (size_t i = 0; i < WID->metParams->sensors[0]->TS.size(); i++) {
-      sensortime.push_back(WID->metParams->sensors[0]->TS[i]->timeEpoch);
+      sensortime.push_back(WID->metParams->sensors[0]->TS[i]->time);
       sensortime_id.push_back(i);
     }
 
@@ -262,19 +263,19 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       for (size_t j = 0; j < WID->metParams->sensors[i]->TS.size(); j++) {
         size_t count = 0;
         for (size_t k = 0; k < sensortime.size(); k++) {
-          if (WID->metParams->sensors[i]->TS[j]->timeEpoch != sensortime[k]) {
+          if (WID->metParams->sensors[i]->TS[j]->time != sensortime[k]) {
             count += 1;
           }
         }
         // If the timestep is not allready included in the list
         if (count == sensortime.size()) {
-          sensortime.push_back(WID->metParams->sensors[i]->TS[j]->timeEpoch);
+          sensortime.push_back(WID->metParams->sensors[i]->TS[j]->time);
           sensortime_id.push_back(sensortime.size() - 1);
         }
 
         // If the timestep is not allready included in the list
         if (count == sensortime.size()) {
-          sensortime.push_back(WID->metParams->sensors[i]->TS[j]->timeEpoch);
+          sensortime.push_back(WID->metParams->sensors[i]->TS[j]->time);
           sensortime_id.push_back(sensortime.size() - 1);
         }
       }
@@ -285,7 +286,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
     // adding time stamps
     for (size_t t = 0; t < sensortime_id.size(); t++) {
-      timestamp.push_back(bt::from_time_t(sensortime[t]));
+      timestamp.push_back(sensortime[t]);
     }
 
     if (WID->simParams->totalTimeIncrements == 0) {
@@ -957,8 +958,9 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
     // nothing here yet
   } else {
     for (int t = 0; t < nt; t++) {
-      // ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp);
-      timestamp.push_back(bt::from_iso_extended_string("2020-01-01T00:00"));
+      // ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp)
+      QEStime tmp("2022-01-01T00:00");
+      timestamp.push_back(tmp);
     }
   }
 
@@ -1103,7 +1105,7 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
         WID->metParams->sensors[index]->TS[0]->site_one_overL = 0.0;
 
         // hack to make time equivalencies
-        WID->metParams->sensors[index]->TS[0]->timeEpoch = 1642619569;
+        WID->metParams->sensors[index]->TS[0]->time = "2022-01-01T00:00:00";
 
         for (auto p = 0; p < wrf_ptr->ht_fmw.size(); p++) {
           int id = index + p * wrf_ptr->fm_nx * wrf_ptr->fm_ny;
@@ -1263,7 +1265,7 @@ void WINDSGeneralData::printTimeProgress(int index)
   int rpad = PBWIDTH - lpad;
   std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "Running time step (" << index + 1 << "/" << totalTimeIncrements << ") at "
-            << bt::to_iso_extended_string(timestamp[index]) << std::endl;
+            << timestamp[index] << std::endl;
   printf("%3d%% [%.*s%*s]\n", val, lpad, PBSTR, rpad, "");
   fflush(stdout);
   std::cout << "-------------------------------------------------------------------" << std::endl;
@@ -1318,7 +1320,7 @@ void WINDSGeneralData::mergeSort(std::vector<float> &effective_height, std::vect
   return;
 }
 
-void WINDSGeneralData::mergeSortTime(std::vector<time_t> &sensortime, std::vector<int> &sensortime_id)
+void WINDSGeneralData::mergeSortTime(std::vector<QEStime> &sensortime, std::vector<int> &sensortime_id)
 {
   // if the size of the array is 1, it is already sorted
   if (sensortime_id.size() == 1) {
@@ -1327,7 +1329,7 @@ void WINDSGeneralData::mergeSortTime(std::vector<time_t> &sensortime, std::vecto
 
   if (sensortime_id.size() > 1) {
     // make left and right sides of the data
-    std::vector<time_t> sensortime_L, sensortime_R;
+    std::vector<QEStime> sensortime_L, sensortime_R;
     std::vector<int> sensortime_id_L, sensortime_id_R;
     sensortime_L.resize(sensortime_id.size() / 2);
     sensortime_R.resize(sensortime_id.size() - sensortime_id.size() / 2);

@@ -153,7 +153,7 @@ void WINDSOutputVisualization::setAllOutputFields()
 }
 
 // Save output at cell-centered values
-void WINDSOutputVisualization::save(ptime timeOut)
+void WINDSOutputVisualization::save(QEStime timeOut)
 {
   // get grid size (not output var size)
   int nx = WGD_->nx;
@@ -162,7 +162,7 @@ void WINDSOutputVisualization::save(ptime timeOut)
 
   // set time
   time = (double)output_counter;
-  timestamp = to_iso_extended_string(timeOut);
+  timestamp = timeOut.getTimestamp();
 
   // get cell-centered values
   for (auto k = 1; k < nz - 1; k++) {

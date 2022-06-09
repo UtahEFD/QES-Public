@@ -54,6 +54,7 @@
 #include "Cut_cell.h"
 #include "Wall.h"
 #include "util/NetCDFInput.h"
+#include "util/QEStime.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 namespace bt = boost::posix_time;
@@ -87,7 +88,7 @@ public:
   void mergeSort(std::vector<float> &effective_height,
                  std::vector<int> &building_id);
 
-  void mergeSortTime(std::vector<time_t> &sensortime,
+  void mergeSortTime(std::vector<QEStime> &sensortime,
                      std::vector<int> &sensortime_id);
 
   void applyWindProfile(const WINDSInputData *, int, int);
@@ -177,15 +178,14 @@ public:
   std::vector<float> z_face; /**< :document this: */
   // std::vector<float> x_out,y_out,z_out;
 
-  std::vector<time_t> sensortime; /**< :document this: */
+  std::vector<QEStime> sensortime; /**< :document this: */
   std::vector<int> sensortime_id;
 
   // time variables
   int nt; /**< :document this: */
   int totalTimeIncrements; /**< :document this: */
   std::vector<float> dt_array; /**< :document this: */
-  std::vector<time_t> epochtime; /**< :document this: */
-  std::vector<bt::ptime> timestamp; /**< :document this: */
+  std::vector<QEStime> timestamp; /**< :document this: */
 
 
   ///@{

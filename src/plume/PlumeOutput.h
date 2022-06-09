@@ -44,6 +44,7 @@
 #include "winds/WINDSGeneralData.h"
 
 #include "util/QESNetCDFOutput.h"
+#include "util/QEStime.h"
 
 class Plume;
 
@@ -62,7 +63,7 @@ public:
   // in this case the saved data is output averaged concentration
   // This is the one function that needs called from outside after constructor time
   void save(float currentTime);
-  void save(ptime) {}
+  void save(QEStime) {}
 
 private:
   // default constructor

@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
   // how to extend the arguments.
   WINDSArgs arguments;
   arguments.processArguments(argc, argv);
-  
+
   // ///////////////////////////////////
   // Read and Process any Input for the system
   // ///////////////////////////////////
@@ -148,8 +148,9 @@ int main(int argc, char *argv[])
 
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     // print time progress (time stamp and percentage)
-    // WGD->printTimeProgress(index);
-    
+    if (!WID->simParams->wrfCoupling) {
+      WGD->printTimeProgress(index);
+    }
     // Reset icellflag values
     WGD->resetICellFlag();
 
@@ -169,28 +170,27 @@ int main(int argc, char *argv[])
       TGD->run();
 
     // /////////////////////////////
-    // Output the various files requested from the simulation run (netcdf wind velocity, icell values, etc...)
-    // /////////////////////////////
-    for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
-      outputVec.at(id_out)->save(WGD->timestamp[0]);
-    }
-    
-    // /////////////////////////////
     // WRF Coupling
     // /////////////////////////////
     if (WID->simParams->wrfCoupling) {
       // send our stuff to wrf input file
       std::cout << "Writing data back to the WRF file." << std::endl;
       WID->simParams->wrfInputData->extractWind(WGD);
-      
+
       // Re-read WRF data -- get new stuff from wrf input file... sync...
       std::cout << "Attempting to re-read data from WRF." << std::endl;
       WID->simParams->wrfInputData->updateFromWRF();
-    } 
-
+    } else {
+      // /////////////////////////////
+      // Output the various files requested from the simulation run (netcdf wind velocity, icell values, etc...)
+      // /////////////////////////////
+      for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
+        outputVec.at(id_out)->save(WGD->timestamp[index]);
+      }
+    }
   }
 
-  if (WID->simParams->wrfCoupling) 
+  if (WID->simParams->wrfCoupling)
     WID->simParams->wrfInputData->endWRFSession();
 
   // /////////////////////////////

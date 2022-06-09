@@ -33,6 +33,7 @@
 
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "util/ParseInterface.h"
+#include "util/QEStime.h"
 
 class URBInputData;
 class URBGeneralData;
@@ -61,9 +62,7 @@ public:
   float site_one_overL; /**< :document this: */
   float site_canopy_H, site_atten_coeff; /**< :document this: */
 
-  std::string timeStamp = ""; /**< :document this: */
-  time_t timeEpoch = -1; /**< :document this: */
-  bt::ptime timePosix; /**< :document this: */
+  QEStime time; /**< :document this: */
 
 
   /**
@@ -71,6 +70,9 @@ public:
    */
   virtual void parseValues()
   {
+    std::string timeStamp = ""; /**< :document this: */
+    time_t timeEpoch = -1; /**< :document this: */
+
     parsePrimitive<std::string>(false, timeStamp, "timeStamp");
     parsePrimitive<time_t>(false, timeEpoch, "timeEpoch");
     parsePrimitive<int>(false, site_blayer_flag, "boundaryLayerFlag");
@@ -87,18 +89,15 @@ public:
     if (timeStamp == "" && timeEpoch == -1) {
       std::cout << "[WARNING] no timestamp provided" << std::endl;
       timeStamp = "2020-01-01T00:00";
-      timePosix = bt::from_iso_extended_string(timeStamp);
-      timeEpoch = bt::to_time_t(timePosix);
+      time = timeStamp;
     } else if (timeStamp != "" && timeEpoch == -1) {
-      timePosix = bt::from_iso_extended_string(timeStamp);
-      timeEpoch = bt::to_time_t(timePosix);
+      time = timeStamp;
     } else if (timeEpoch != -1 && timeStamp == "") {
-      timePosix = bt::from_time_t(timeEpoch);
-      timeStamp = bt::to_iso_extended_string(timePosix);
+      time = timeEpoch;
     } else {
-      timePosix = bt::from_iso_extended_string(timeStamp);
-      bt::ptime testtime = bt::from_time_t(timeEpoch);
-      if (testtime != timePosix) {
+      time = timeStamp;
+      QEStime testtime = timeEpoch;
+      if (testtime != time) {
         std::cerr << "[ERROR] invalid timeStamp (timeEpoch != timeStamp)\n";
         exit(EXIT_FAILURE);
       }

@@ -35,6 +35,7 @@
 
 #include "TURBGeneralData.h"
 #include "util/QESNetCDFOutput.h"
+#include "util/QEStime.h"
 
 /**
  * @class TURBOutput
@@ -52,7 +53,7 @@ public:
   TURBOutput(TURBGeneralData *, std::string);
   ~TURBOutput()
   {}
-  void save(ptime);
+  void save(QEStime);
 
 protected:
   /**

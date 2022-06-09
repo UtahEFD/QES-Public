@@ -79,7 +79,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
   // loop to find which timestep of each sensor is related to the running timestep of the code
   for (auto i = 0; i < WID->metParams->sensors.size(); i++) {
     for (auto j = 0; j < WID->metParams->sensors[i]->TS.size(); j++) {
-      if (WGD->sensortime[index] == WID->metParams->sensors[i]->TS[j]->timeEpoch) {
+      if (WGD->sensortime[index] == WID->metParams->sensors[i]->TS[j]->time) {
         time_id[i] = j;
       }
     }

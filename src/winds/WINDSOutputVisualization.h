@@ -38,6 +38,7 @@
 #include "WINDSGeneralData.h"
 #include "WINDSInputData.h"
 #include "util/QESNetCDFOutput.h"
+#include "util/QEStime.h"
 
 /**
  * @class WINDSOutputVisualization
@@ -57,7 +58,7 @@ public:
   /**
    * :document this:
    */
-  void save(ptime);
+  void save(QEStime);
 
 protected:
   /**
