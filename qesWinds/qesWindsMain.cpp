@@ -1,10 +1,5 @@
 #include <iostream>
 
-#include <boost/foreach.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
@@ -27,12 +22,6 @@
 #include "winds/SharedMemory.h"
 
 #include "winds/Sensor.h"
-
-namespace pt = boost::property_tree;
-
-using namespace boost::gregorian;
-using namespace boost::posix_time;
-
 
 int main(int argc, char *argv[])
 {

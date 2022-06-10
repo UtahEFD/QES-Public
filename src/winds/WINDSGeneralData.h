@@ -56,18 +56,12 @@
 #include "util/NetCDFInput.h"
 #include "util/QEStime.h"
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-namespace bt = boost::posix_time;
-
-
 #ifdef HAS_OPTIX
 #include "OptixRayTrace.h"
 #endif
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
-
-namespace bt = boost::posix_time;
 
 class WINDSInputData;
 

@@ -1,9 +1,5 @@
 #include <iostream>
 
-#include <boost/foreach.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
-
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
@@ -33,8 +29,6 @@
 #include "plume/PlumeOutput.h"
 #include "plume/PlumeOutputParticleData.h"
 
-
-namespace pt = boost::property_tree;
 
 Solver *setSolver(const int, WINDSInputData *, WINDSGeneralData *);
 

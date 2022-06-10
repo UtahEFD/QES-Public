@@ -31,14 +31,11 @@
 
 #pragma once
 
-#include "boost/date_time/posix_time/posix_time.hpp"
 #include "util/ParseInterface.h"
 #include "util/QEStime.h"
 
 class URBInputData;
 class URBGeneralData;
-
-namespace bt = boost::posix_time;
 
 /**
  * @class TimeSeries

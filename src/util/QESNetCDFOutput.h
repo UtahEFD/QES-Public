@@ -37,16 +37,11 @@
 #include <map>
 #include <netcdf>
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-
-#include "QEStime.h"
 #include "NetCDFOutput.h"
+#include "QEStime.h"
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
-
-using namespace boost::gregorian;
-using namespace boost::posix_time;
 
 // Attribute for scalar/vector for each type
 struct AttScalarInt
