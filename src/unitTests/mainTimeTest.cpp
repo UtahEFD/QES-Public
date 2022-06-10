@@ -83,22 +83,36 @@ int main()
     sensor_times.push(ts + k * 5 * 60);
   }
 
+  //std::cout << "total time \t" << tf - ts << std::endl;
+
+  dt = 10;
+
+  int n = 0;
   t = sensor_times.front();
-  tf = sensor_times.back() + 5 * 60;
-
-  std::cout << "total time \t" << tf - ts << std::endl;
-
   std::cout << "t \t" << t << std::endl;
   std::cout << "--------------------------" << std::endl;
-  while (t < tf) {
-    if (t == sensor_times.front()) {
-      std::cout << "t \t" << t << std::endl;
-      sensor_times.pop();
+  do {
+    QEStime timeNextWindUpdate;
+
+    sensor_times.pop();
+    if (sensor_times.empty())
+      timeNextWindUpdate = t + 5 * 60;
+    else
+      timeNextWindUpdate = sensor_times.front();
+
+    std::cout << "t \t" << t << std::endl;
+    std::cout << "tf \t" << tf << std::endl;
+
+    while (t < timeNextWindUpdate) {
+      n++;
+      t += dt;
     }
-    t += dt;
-  }
+
+    std::cout << "----" << std::endl;
+  } while (!sensor_times.empty());
   std::cout << "--------------------------" << std::endl;
   std::cout << "t \t" << t << std::endl;
+  std::cout << "n \t" << n << std::endl;
   std::cout << std::endl;
 
   QEStime test;
