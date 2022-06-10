@@ -154,8 +154,7 @@ void WINDSOutputWorkspace::save(QEStime timeOut)
 {
 
   // set time
-  time = (double)output_counter;
-  timestamp = timeOut.getTimestamp();
+  timeCurrent = timeOut;
 
   //std::string s = timeOut.getTimestamp();
   //std::copy(s.begin(), s.end(), timestamp.begin());
@@ -292,6 +291,7 @@ void WINDSOutputWorkspace::setAllOutputFields()
 // [FM] Feb.28.2020 OBSOLETE
 void WINDSOutputWorkspace::getBuildingFields()
 {
+#if 0
   int nBuildings = WGD_->allBuildingsV.size();
 
   // information only needed once (at output_counter==0)
@@ -336,6 +336,6 @@ void WINDSOutputWorkspace::getBuildingFields()
     upwind_dir[id] = WGD_->allBuildingsV[id]->upwind_dir;
     Lr[id] = WGD_->allBuildingsV[id]->Lr;
   }
-
+#endif
   return;
 }

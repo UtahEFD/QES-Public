@@ -65,11 +65,9 @@ std::string QEStime::getTimestamp()
   return btime::to_iso_extended_string(m_ptime);
 }
 
-double QEStime::getTime()
+void QEStime::getTimestamp(std::string &inout)
 {
-  btime::ptime epoch(bgreg::date(1970, 1, 1));
-  double x = (m_ptime - epoch).total_milliseconds();
-  return double(x / 1000.0);
+  inout = btime::to_iso_extended_string(m_ptime);
 }
 
 time_t QEStime::getEpochTime()

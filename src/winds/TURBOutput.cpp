@@ -156,8 +156,7 @@ void TURBOutput::save(QEStime timeOut)
 {
 
   // set time
-  time = (double)output_counter;
-  timestamp = timeOut.getTimestamp();
+  timeCurrent = timeOut;
 
   // save fields
   saveOutputFields();

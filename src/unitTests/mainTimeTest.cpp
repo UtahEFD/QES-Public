@@ -7,7 +7,6 @@ int main()
 
   std::cout.precision(15);
 
-  std::cout << "getTime() \t\t" << time.getTime() << std::endl;
   std::cout << "getEpochTime() \t" << time.getEpochTime() << std::endl;
   std::cout << "getTimestamp() \t" << time.getTimestamp() << std::endl;
 
@@ -23,19 +22,16 @@ int main()
   time.increment(.1);
   time.increment(20.0 * 3600.0 + 12.5);
 
-  std::cout << "getTime() \t\t" << time.getTime() << std::endl;
   std::cout << "getEpochTime() \t" << time.getEpochTime() << std::endl;
   std::cout << "getTimestamp() \t" << time.getTimestamp() << std::endl;
 
   time += 10 * 60;
 
-  std::cout << "getTime() \t\t" << time.getTime() << std::endl;
   std::cout << "getEpochTime() \t" << time.getEpochTime() << std::endl;
   std::cout << "getTimestamp() \t" << time.getTimestamp() << std::endl;
 
   time = time + 60 * 60 * 24;
 
-  std::cout << "getTime() \t\t" << time.getTime() << std::endl;
   std::cout << "getEpochTime() \t" << time.getEpochTime() << std::endl;
   std::cout << "getTimestamp() \t" << time.getTimestamp() << std::endl;
 

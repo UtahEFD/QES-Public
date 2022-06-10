@@ -72,8 +72,9 @@ public:
   QEStime &operator=(const std::string &);
 
   std::string getTimestamp();
-  double getTime();
+  void getTimestamp(std::string &);
   time_t getEpochTime();
+
 
   void increment(float);
   QEStime &operator+=(const float &);

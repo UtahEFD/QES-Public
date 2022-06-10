@@ -47,12 +47,12 @@ QESNetCDFOutput::QESNetCDFOutput(std::string output_file)
 
   std::vector<NcDim> dim_vect_t;
   dim_vect_t.push_back(NcDim_t);
-  addField("t", "s", "time", dim_vect_t, ncDouble);
+  addField("t", "s", "time since start of simulation", dim_vect_t, ncDouble);
 
   std::vector<NcDim> dim_vect_tstr;
   dim_vect_tstr.push_back(NcDim_t);
   dim_vect_tstr.push_back(NcDim_tstr);
-  addField("timestamp", "--", "date time", dim_vect_tstr, ncChar);
+  addField("timestamp", "--", "date time using format: YYYY-MM-DDThh:mm:ss", dim_vect_tstr, ncChar);
 
   timestamp_out.resize(dateStrLen, '0');
 };
@@ -368,11 +368,20 @@ void QESNetCDFOutput::saveOutputFields()
 
   //std::cout << fields["t"].getDim(0).getSize() << std::endl;
 
+  if (output_counter == 0) {
+    timeStart = timeCurrent;
+    addAtt("t", "simulation_start", timeStart.getTimestamp());
+    time = 0.0;
+  } else {
+    time = timeCurrent - timeStart;
+  }
+
   std::vector<size_t> time_index;
   std::vector<size_t> time_size;
   time_index = { static_cast<unsigned long>(output_counter) };
   saveField1D("t", time_index, &time);
 
+  timeCurrent.getTimestamp(timestamp);
   //std::copy(timestamp.begin(), timestamp.end(), timestamp_out.begin());
   for (int i = 0; i < dateStrLen; ++i) {
     timestamp_out[i] = timestamp[i];

@@ -161,8 +161,7 @@ void WINDSOutputVisualization::save(QEStime timeOut)
   int nz = WGD_->nz;
 
   // set time
-  time = (double)output_counter;
-  timestamp = timeOut.getTimestamp();
+  timeCurrent = timeOut;
 
   // get cell-centered values
   for (auto k = 1; k < nz - 1; k++) {
