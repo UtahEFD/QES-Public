@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
     for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
-      outputVec.at(id_out)->save(WGD->timestamp[0]);// need to replace 0.0 with timestep
+      outputVec.at(id_out)->save(WGD->timestamp[index]);// need to replace 0.0 with timestep
     }
 
     // Run plume advection model
