@@ -57,6 +57,13 @@ QESNetCDFOutput::QESNetCDFOutput(std::string output_file)
   timestamp_out.resize(dateStrLen, '0');
 };
 
+void QESNetCDFOutput::setStartTime(QEStime in)
+{
+  timeStart = in;
+  addAtt("t", "simulation_start", timeStart.getTimestamp());
+  flagStartTimeSet = true;
+}
+
 bool QESNetCDFOutput::validateFileOptions()
 {
 
@@ -368,9 +375,8 @@ void QESNetCDFOutput::saveOutputFields()
 
   //std::cout << fields["t"].getDim(0).getSize() << std::endl;
 
-  if (output_counter == 0) {
-    timeStart = timeCurrent;
-    addAtt("t", "simulation_start", timeStart.getTimestamp());
+  if (output_counter == 0 && !flagStartTimeSet) {
+    setStartTime(timeCurrent);
     time = 0.0;
   } else {
     time = timeCurrent - timeStart;

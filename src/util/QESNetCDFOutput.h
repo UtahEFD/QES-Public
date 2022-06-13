@@ -142,6 +142,8 @@ protected:
   void createAttVector(std::string, std::string, std::string, std::vector<NcDim>, std::vector<double> *);
   void createAttVector(std::string, std::string, std::string, std::vector<NcDim>, std::vector<char> *);
 
+  void setStartTime(QEStime);
+
   // add fields based on output_fields
   void addOutputFields();
   // removed field
@@ -157,7 +159,9 @@ protected:
   NcDim NcDim_t;
   NcDim NcDim_tstr;
   const int dateStrLen = 19; /**< :document this: */
+  QEStime timeStart;
   QEStime timeCurrent;
+  bool flagStartTimeSet = false;
   double time = 0; /**< :document this: */
 
   std::vector<std::string> all_output_fields;
@@ -200,6 +204,4 @@ private:
   std::string timestamp;
   std::vector<char> timestamp_out; /**< :document this: */
   int output_counter = 0; /**< :document this: */
-
-  QEStime timeStart;
 };
