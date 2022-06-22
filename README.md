@@ -264,3 +264,14 @@ We were running continuous integration on Travis-CI but this is no longer functi
 [Basic Concepts for Travis Continuous Integration](https://docs.travis-ci.com/user/for-beginners/)
 
 
+## Testing
+
+We are using ctest to conduct unit tests and sanity check on the code. Here are a few commands:
+```
+ctest			# launch all tests
+ctest --verbose		# launch all tests with verbose (see commant output)
+ctest -N		# get list of tests
+ctest -R $testname	# launch only $testname
+```
+List of tests and testing option will be added here.
+

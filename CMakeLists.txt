@@ -17,6 +17,19 @@ SET(QESWINDS_VERSION_INFO -${qesWinds_Toolkit_VERSION_MAJOR}.${MinVR_Toolkit_VER
 MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of qesWinds.")
 MESSAGE(STATUS "If you want something different, use -DCMAKE_BUILD_TYPE=Debug, Release, RelWithDebInfo, MinSizeRel.")
 
+option(ENABLE_CPPCHECK "Enable static analysis with cppcheck" OFF)
+option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
+
+if(ENABLE_CLANG_TIDY)
+  find_program(CLANGTIDY clang-tidy-13)
+  if(CLANGTIDY)
+    set(CMAKE_C_CLANG_TIDY ${CLANGTIDY})
+    set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY})
+  else()
+    message(SEND_ERROR "clang-tidy could not be located.")
+  endif()
+endif()
+
 # Force VERBOSE Output -- used in all branches except master
 # Can be commented out in master branches.
 SET(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON" FORCE)
@@ -223,11 +236,27 @@ endif (DOXYGEN_FOUND)
 enable_testing() # once
 include(CTest)
 
-add_subdirectory(util)
-add_subdirectory(src)
+add_subdirectory(src/util)
+add_subdirectory(src/winds)
+add_subdirectory(src/plume)
+add_subdirectory(src/unitTests)
+
 add_subdirectory(scratch)
 add_subdirectory(qesFire)
 add_subdirectory(qesWinds)
 add_subdirectory(qesCanopy)
+add_subdirectory(qesPlume)
+add_subdirectory(qes)
+add_subdirectory(tests)
 
-
+option(ENABLE_ALL_TESTS "Enables all tests for an extensive test run" OFF) # will not override CPU/GPU selection
+option(ENABLE_SANITY_TESTS "Enables tests that simply check if qesWinds runs on input w/o runtime errors" ON)
+option(ENABLE_LONG_SANITY_TESTS "Enables the longer sanity tests" OFF)
+option(ENABLE_CPU_TESTS "Enable CPU tests" OFF)
+option(ENABLE_GPU_TESTS "Enable GPU tests" OFF)
+option(ENABLE_ALL_COMPARISON_TESTS "Enables test of comparison between serial and GPU solvers" OFF) # overrides individual comparison selections
+option(ENABLE_DYNAMIC_PARALLELISM_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Dynamic Parallel solvers" OFF)
+option(ENABLE_GLOBAL_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Global Memory solvers" OFF)
+option(ENABLE_SHARED_COMPARISON_TESTS "(NOT FINISHED) Enables tests between CPU and Shared Memory solvers" OFF)
+option(ENABLE_LONG_COMPARISON_TESTS "Enables longer comparison tests on all other comparison test options (adds around 5 minutes)" OFF)
+option(ENABLE_RIDICULOUSLY_LONG_COMPARISON_TESTS "Enables the longest comparison tests (adds around 15 minutes)." OFF)

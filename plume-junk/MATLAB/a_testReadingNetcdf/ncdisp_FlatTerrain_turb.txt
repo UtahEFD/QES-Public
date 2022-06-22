@@ -1,0 +1,152 @@
+Source:
+           FlatTerrain_turb.nc
+Format:
+           netcdf4
+Global Attributes:
+           _NCProperties = 'version=1|netcdflibversion=4.4.1|hdf5libversion=1.8.17'
+Dimensions:
+           t = 1     (UNLIMITED)
+           x = 200
+           y = 200
+           z = 201
+Variables:
+    t        
+           Size:       1x1
+           Dimensions: t
+           Datatype:   double
+           Attributes:
+                       units     = 's'
+                       long_name = 'time'
+    iturbflag
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   int32
+           Attributes:
+                       units     = '--'
+                       long_name = 'icell turb flag'
+    x        
+           Size:       200x1
+           Dimensions: x
+           Datatype:   single
+           Attributes:
+                       units     = 'm'
+                       long_name = 'x-distance'
+    y        
+           Size:       200x1
+           Dimensions: y
+           Datatype:   single
+           Attributes:
+                       units     = 'm'
+                       long_name = 'y-distance'
+    z        
+           Size:       201x1
+           Dimensions: z
+           Datatype:   single
+           Attributes:
+                       units     = 'm'
+                       long_name = 'z-distance'
+    S11      
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 's-1'
+                       long_name = 'uu-component of strain-rate tensor'
+    S22      
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 's-1'
+                       long_name = 'vv-component of strain-rate tensor'
+    S33      
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 's-1'
+                       long_name = 'ww-component of strain-rate tensor'
+    S12      
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 's-1'
+                       long_name = 'uv-component of strain-rate tensor'
+    S13      
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 's-1'
+                       long_name = 'uw-component of strain-rate tensor'
+    S23      
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 's-1'
+                       long_name = 'vw-component of strain-rate tensor'
+    L        
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 'm'
+                       long_name = 'mixing length'
+    tau11    
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 'm2s-2'
+                       long_name = 'uu-component of stress tensor'
+    tau12    
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 'm2s-2'
+                       long_name = 'uv-component of stress tensor'
+    tau13    
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 'm2s-2'
+                       long_name = 'uw-component of stress tensor'
+    tau23    
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 'm2s-2'
+                       long_name = 'vw-component of stress tensor'
+    tau22    
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 'm2s-2'
+                       long_name = 'vv-component of stress tensor'
+    tau33    
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 'm2s-2'
+                       long_name = 'ww-component of stress tensor'
+    tke      
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 'm2s-2'
+                       long_name = 'turbulent kinetic energy'
+    CoEps    
+           Size:       200x200x201x1
+           Dimensions: x,y,z,t
+           Datatype:   single
+           Attributes:
+                       units     = 'm2s-3'
+                       long_name = 'dissipation rate'

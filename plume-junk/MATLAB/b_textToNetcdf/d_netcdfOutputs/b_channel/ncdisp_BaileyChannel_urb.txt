@@ -1,0 +1,73 @@
+Source:
+           ..\d_netcdfOutputs\b_channel\BaileyChannel_urb.nc
+Format:
+           netcdf4
+Dimensions:
+           t = 1     (UNLIMITED)
+           x = 1
+           y = 1
+           z = 50
+Variables:
+    t      
+           Size:       1x1
+           Dimensions: t
+           Datatype:   double
+           Attributes:
+                       units     = 's'
+                       long_name = 'time'
+    x      
+           Size:       1x1
+           Dimensions: x
+           Datatype:   double
+           Attributes:
+                       units     = 'm'
+                       long_name = 'x-distance'
+    y      
+           Size:       1x1
+           Dimensions: y
+           Datatype:   double
+           Attributes:
+                       units     = 'm'
+                       long_name = 'y-distance'
+    z      
+           Size:       50x1
+           Dimensions: z
+           Datatype:   double
+           Attributes:
+                       units     = 'm'
+                       long_name = 'z-distance'
+    terrain
+           Size:       1x1
+           Dimensions: x,y
+           Datatype:   double
+           Attributes:
+                       units     = 'm'
+                       long_name = 'terrain height'
+    u      
+           Size:       1x1x50x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-1'
+                       long_name = 'x-component velocity'
+    v      
+           Size:       1x1x50x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-1'
+                       long_name = 'y-component velocity'
+    w      
+           Size:       1x1x50x1
+           Dimensions: x,y,z,t
+           Datatype:   double
+           Attributes:
+                       units     = 'm s-1'
+                       long_name = 'z-component velocity'
+    icell  
+           Size:       1x1x50x1
+           Dimensions: x,y,z,t
+           Datatype:   int32
+           Attributes:
+                       units     = '--'
+                       long_name = 'icell flag value'

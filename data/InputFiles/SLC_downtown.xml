@@ -1,14 +1,11 @@
 <simulationParameters>
 
-	<DEM>../scratch/SLC/n41w112_30m/n41w112_30m.tif</DEM> 		<!-- Address to DEM location-->
- 	<SHP>../scratch/SLC/slc_cut.shp</SHP>				<!-- Address to shapefile location-->
-  	<SHPBuildingLayer>slc_cut</SHPBuildingLayer>
-  	<heightFactor> 1.0 </heightFactor>				<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
+	<!--DEM>../scratch/SLC/n41w112_30m/n41w112_30m.tif</DEM--> 		<!-- Address to DEM location-->
 
-  	<halo_x> 40.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
-  	<halo_y> 40.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
+  	<halo_x> 100.0 </halo_x>					<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
+  	<halo_y> 100.0 </halo_y>					<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 
-  	<domain>600 680 100</domain>					<!-- Number of cells in x,y and z directions-->
+  	<domain>700 700 100</domain>					<!-- Number of cells in x,y and z directions-->
   	<cellSize> 2.0 2.0 2.0 </cellSize> 				<!-- Mesh resolution (meters)-->
 	<verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
@@ -56,10 +53,17 @@
 	</sensor>                      					<!-- End of sensor section -->
 
 </metParams>       <!-- End of meteorological parameters -->
+<buildings>
+  <wallRoughness>0.01</wallRoughness>  
+  <SHPFile>../../scratch/SLC/slc_cut.shp</SHPFile>	                        <!-- Address to shapefile location-->
+  <SHPBuildingLayer>slc_cut</SHPBuildingLayer>                          <!-- Name of building layer in shapefile-->
+  <SHPHeightField>MEANHEIGHT</SHPHeightField>                           <!-- Name of building height field in shapefile -->
+  <heightFactor> 1.0 </heightFactor>				        <!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
+</buildings>
 <turbParams>
   <method>3</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <samples>5000</samples>
-  <LMfile>../scratch/SLC/slc_cut_mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
+  <!--LMfile>../scratch/SLC/slc_cut_mixlength.nc</LMfile-->  <!-- Address to mixing lethng location-->
   <nonLocalMixing>true</nonLocalMixing>
   <turbUpperBound>100.0</turbUpperBound>
 </turbParams>							

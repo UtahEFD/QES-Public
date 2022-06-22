@@ -1,8 +1,5 @@
 <simulationParameters>
   <DEM>../scratch/Gangnam/w001001.adf</DEM>				<!-- Address to DEM location-->
-  <!--SHP>../scratch/Gangnam/building.shp</SHP-->			<!-- Address to shapefile location-->
-  <!--SHPBuildingLayer>building</SHPBuildingLayer-->
-  <!--heightFactor> 3.0 </heightFactor-->				<!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
 
   <halo_x> 40.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   <halo_y> 40.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
@@ -133,6 +130,13 @@
 	</sensor>                      					<!-- End of sensor section -->
 
 </metParams>								<!-- End of meteorological parameters -->
+<!--buildings>
+  <wallRoughness>0.01</wallRoughness>  
+  <SHPFile>/scratch/Gangnam/building.shp</SHPFile>
+  <SHPBuildingLayer>building</SHPBuildingLayer>
+  <SHPHeightField>H</SHPHeightField>
+  <heightFactor> 3.0 </heightFactor>
+</buildings-->
 <turbParams>
   <method>3</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <LMfile>../scratch/Gangnam/mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
