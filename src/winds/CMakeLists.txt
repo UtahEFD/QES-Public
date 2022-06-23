@@ -58,13 +58,6 @@ CUDA_ADD_LIBRARY( qeswindscore
   TimeSeries.h
   )
 
-CUDA_ADD_LIBRARY( qesfirecore
-  Fire.cpp
-  FIREOutput.cpp
-  FuelRead.cpp
-  ignition.h
-  )
-
  
 IF (HAS_OPTIX_SUPPORT MATCHES ON)
   cuda_compile_and_embed(embedded_ptx_code OptixRayTrace.cu)
