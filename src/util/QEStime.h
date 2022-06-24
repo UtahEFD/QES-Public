@@ -63,8 +63,8 @@ public:
 
   ~QEStime() {}
 
-  void setTime(double);
-  QEStime &operator=(const double &);
+  void setTimeToNow();
+  //QEStime &operator=(const double &);
   QEStime &operator=(const btime::ptime &);
 
   void setTimestamp(time_t);

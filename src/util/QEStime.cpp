@@ -32,10 +32,10 @@
 #include "QEStime.h"
 
 
-QEStime &QEStime::operator=(const double &t)
+void QEStime::setTimeToNow()
 {
-  //m_time = t;
-  return *this;
+  btime::ptime UTCtime = btime::second_clock::universal_time();
+  m_ptime = UTCtime;
 }
 
 void QEStime::setTimestamp(time_t t)
