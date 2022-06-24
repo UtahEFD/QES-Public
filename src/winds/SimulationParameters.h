@@ -268,8 +268,10 @@ public:
                                            halo_x,
                                            halo_y);
 
+      // Make sure to pull the dx, dy and dz back from the WRF calculations
       grid[0] = wrfInputData->fm_dx;
       grid[1] = wrfInputData->fm_dy;
+      grid[2] = wrfInputData->fm_dz;
 
       std::cout << "Dim: " << wrfInputData->fm_nx << " X " << wrfInputData->fm_ny << " X " << wrfInputData->fm_nz << std::endl;
       std::cout << "at " << grid[0] << " X " << grid[1] << " X " << grid[2] << std::endl;
