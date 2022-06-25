@@ -40,6 +40,7 @@
 #include <cmath>
 #include <cstring>
 
+#include "util/QEStime.h"
 #include "util/calcTime.h"
 #include "util/Vector3.h"
 //#include "Matrix3.h"
@@ -93,7 +94,7 @@ public:
   // LA future work: Need to add a CFL condition where the user specifies a courant number that varies from 0 to 1
   //  that is used to do an additional time remainder time integration loop for each particle, forcing particles to only
   //  move one cell at a time.
-  void run(float, WINDSGeneralData *, TURBGeneralData *, std::vector<QESNetCDFOutput *>);
+  void run(QEStime, WINDSGeneralData *, TURBGeneralData *, std::vector<QESNetCDFOutput *>);
 
   int getTotalParsToRelease() const { return totalParsToRelease; }// accessor
 
@@ -101,6 +102,9 @@ public:
   int getNumRogueParticles() const { return isRogueCount; }// accessor
   int getNumNotActiveParticles() const { return isNotActiveCount; }// accessor
   int getNumCurrentParticles() const { return particleList.size(); }// accessor
+
+  QEStime getSimTimeStart() const { return simTimeStart; }
+  QEStime getSimTimeCurrent() const { return simTimeCurr; }
 
   void showCurrentStatus();
 
@@ -131,7 +135,8 @@ protected:
 
   // time variables
   double sim_dt;// the simulation timestep
-  double simTime;
+  QEStime simTimeStart;
+  QEStime simTimeCurr;
   int simTimeIdx;
 
   // some overall metadata for the set of particles
@@ -344,15 +349,13 @@ protected:
 
 private:
   Plume();
-
-  // this is for writing an output simulation info file separate from the regular command line output
-  void writeSimInfoFile(const double &current_time);
 };
 
 inline void Plume::showCurrentStatus()
 {
   std::cout << "----------------------------------------------------------------- \n";
-  std::cout << "Current simulation time: " << simTime << "\n";
+  std::cout << "Current simulation time: " << simTimeCurr << "\n";
+  std::cout << "Simulation run time: " << simTimeCurr - simTimeStart << "\n";
   std::cout << "Total number of particles released: " << nParsReleased << "\n";
   std::cout << "Current number of particles in simulation: " << particleList.size() << "\n";
   std::cout << "Number of rogue particles: " << isRogueCount << "\n";
