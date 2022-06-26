@@ -77,6 +77,8 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   ny = m_WGD->ny;
   nx = m_WGD->nx;
 
+  numcell_cent = m_WGD->numcell_cent;
+
   dz = m_WGD->dz;
   dy = m_WGD->dy;
   dx = m_WGD->dx;
@@ -119,10 +121,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   }
   z_fc[0] = z_fc[1] - dz;
 
-  // unused: int np_fc = nz*ny*nx;
-  int np_cc = (nz - 1) * (ny - 1) * (nx - 1);
-
-  iturbflag.resize(np_cc, 0);
+  iturbflag.resize(numcell_cent, 0);
 
   /*
      vector containing cell id of fluid cell
@@ -175,7 +174,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
 
   localMixing->defineMixingLength(WID, m_WGD);
 
-  Lm.resize(np_cc, 0.0);
+  Lm.resize(numcell_cent, 0.0);
   // make a copy as mixing length will be modifiy by non local
   // (need to be reset at each time instances)
   for (auto id = 0u; id < icellfluid.size(); id++) {
@@ -238,49 +237,41 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   frictionVelocity();
 
   std::cout << "\t\t Allocating memory...\n";
-  // comp. of the strain rate tensor
-  /*
-    Sxx.resize(np_cc, 0);
-    Sxy.resize(np_cc, 0);
-    Sxz.resize(np_cc, 0);
-    Syy.resize(np_cc, 0);
-    Syz.resize(np_cc, 0);
-    Szz.resize(np_cc, 0);
-  */
+
   // comp. of the velocity gradient tensor
-  Gxx.resize(np_cc, 0);
-  Gxy.resize(np_cc, 0);
-  Gxz.resize(np_cc, 0);
-  Gyx.resize(np_cc, 0);
-  Gyy.resize(np_cc, 0);
-  Gyz.resize(np_cc, 0);
-  Gzx.resize(np_cc, 0);
-  Gzy.resize(np_cc, 0);
-  Gzz.resize(np_cc, 0);
+  Gxx.resize(numcell_cent, 0);
+  Gxy.resize(numcell_cent, 0);
+  Gxz.resize(numcell_cent, 0);
+  Gyx.resize(numcell_cent, 0);
+  Gyy.resize(numcell_cent, 0);
+  Gyz.resize(numcell_cent, 0);
+  Gzx.resize(numcell_cent, 0);
+  Gzy.resize(numcell_cent, 0);
+  Gzz.resize(numcell_cent, 0);
 
   // comp of the stress tensor
-  txx.resize(np_cc, 0);
-  txy.resize(np_cc, 0);
-  txz.resize(np_cc, 0);
-  tyy.resize(np_cc, 0);
-  tyz.resize(np_cc, 0);
-  tzz.resize(np_cc, 0);
+  txx.resize(numcell_cent, 0);
+  txy.resize(numcell_cent, 0);
+  txz.resize(numcell_cent, 0);
+  tyy.resize(numcell_cent, 0);
+  tyz.resize(numcell_cent, 0);
+  tzz.resize(numcell_cent, 0);
 
   // derived turbulence quantities
-  tke.resize(np_cc, 0);
-  CoEps.resize(np_cc, 0);
+  tke.resize(numcell_cent, 0);
+  CoEps.resize(numcell_cent, 0);
   // std::cout << "\t\t Memory allocation completed.\n";
 
   if (flagCompDivStress) {
     // comp of the divergence of the stress tensor
-    tmp_dtoxdx.resize(np_cc, 0);
-    tmp_dtoydy.resize(np_cc, 0);
-    tmp_dtozdz.resize(np_cc, 0);
+    tmp_dtoxdx.resize(numcell_cent, 0);
+    tmp_dtoydy.resize(numcell_cent, 0);
+    tmp_dtozdz.resize(numcell_cent, 0);
 
     // comp of the divergence of the stress tensor
-    div_tau_x.resize(np_cc, 0);
-    div_tau_y.resize(np_cc, 0);
-    div_tau_z.resize(np_cc, 0);
+    div_tau_x.resize(numcell_cent, 0);
+    div_tau_y.resize(numcell_cent, 0);
+    div_tau_z.resize(numcell_cent, 0);
   }
 
   auto EndTime = std::chrono::high_resolution_clock::now();
@@ -328,6 +319,9 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
   ny = m_WGD->ny;
   nz = m_WGD->nz;
 
+  numcell_cent = m_WGD->numcell_cent;
+  numcell_face = m_WGD->numcell_face;
+
   float dx = m_WGD->dx;
   float dy = m_WGD->dy;
   float dz = m_WGD->dz;
@@ -370,9 +364,6 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
   }
   z_fc[0] = z_fc[1] - dz;
 
-  // unused: int np_fc = nz*ny*nx;
-  int np_cc = (nz - 1) * (ny - 1) * (nx - 1);
-
   /*
      vector containing cell id of fluid cell
      do not include 1 cell shell around the domain
@@ -391,39 +382,37 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
     }
   }
   // comp. of the velocity gradient tensor
-  /*
-    Gxx.resize(np_cc, 0);
-    Gxy.resize(np_cc, 0);
-    Gxz.resize(np_cc, 0);
-    Gyx.resize(np_cc, 0);
-    Gyy.resize(np_cc, 0);
-    Gyz.resize(np_cc, 0);
-    Gzx.resize(np_cc, 0);
-    Gzy.resize(np_cc, 0);
-    Gzz.resize(np_cc, 0);
-  */
+  Gxx.resize(numcell_cent, 0);
+  Gxy.resize(numcell_cent, 0);
+  Gxz.resize(numcell_cent, 0);
+  Gyx.resize(numcell_cent, 0);
+  Gyy.resize(numcell_cent, 0);
+  Gyz.resize(numcell_cent, 0);
+  Gzx.resize(numcell_cent, 0);
+  Gzy.resize(numcell_cent, 0);
+  Gzz.resize(numcell_cent, 0);
 
   // comp of the stress tensor
-  txx.resize(np_cc, 0);
-  txy.resize(np_cc, 0);
-  txz.resize(np_cc, 0);
-  tyy.resize(np_cc, 0);
-  tyz.resize(np_cc, 0);
-  tzz.resize(np_cc, 0);
+  txx.resize(numcell_cent, 0);
+  txy.resize(numcell_cent, 0);
+  txz.resize(numcell_cent, 0);
+  tyy.resize(numcell_cent, 0);
+  tyz.resize(numcell_cent, 0);
+  tzz.resize(numcell_cent, 0);
 
   // derived turbulence quantities
-  tke.resize(np_cc, 0);
-  CoEps.resize(np_cc, 0);
+  tke.resize(numcell_cent, 0);
+  CoEps.resize(numcell_cent, 0);
 
   // comp of the divergence of the stress tensor
-  tmp_dtoxdx.resize(np_cc, 0);
-  tmp_dtoydy.resize(np_cc, 0);
-  tmp_dtozdz.resize(np_cc, 0);
+  tmp_dtoxdx.resize(numcell_cent, 0);
+  tmp_dtoydy.resize(numcell_cent, 0);
+  tmp_dtozdz.resize(numcell_cent, 0);
 
   // comp of the divergence of the stress tensor
-  div_tau_x.resize(np_cc, 0);
-  div_tau_y.resize(np_cc, 0);
-  div_tau_z.resize(np_cc, 0);
+  div_tau_x.resize(numcell_cent, 0);
+  div_tau_y.resize(numcell_cent, 0);
+  div_tau_z.resize(numcell_cent, 0);
 }
 
 TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
@@ -437,9 +426,12 @@ TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
   ny = m_WGD->ny;
   nx = m_WGD->nx;
 
-  float dz = m_WGD->dz;
-  float dy = m_WGD->dy;
-  float dx = m_WGD->dx;
+  numcell_cent = m_WGD->numcell_cent;
+  numcell_face = m_WGD->numcell_face;
+
+  dz = m_WGD->dz;
+  dy = m_WGD->dy;
+  dx = m_WGD->dx;
 
   // x-grid (face-center & cell-center)
   x_fc.resize(nx, 0);
@@ -479,9 +471,6 @@ TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
   }
   z_fc[0] = z_fc[1] - dz;
 
-  // unused: int np_fc = nz*ny*nx;
-  int np_cc = (nz - 1) * (ny - 1) * (nx - 1);
-
   /*
      vector containing cell id of fluid cell
      do not include 1 cell shell around the domain
@@ -500,37 +489,37 @@ TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
     }
   }
   // comp. of the velocity gradient tensor
-  Gxx.resize(np_cc, 0);
-  Gxy.resize(np_cc, 0);
-  Gxz.resize(np_cc, 0);
-  Gyx.resize(np_cc, 0);
-  Gyy.resize(np_cc, 0);
-  Gyz.resize(np_cc, 0);
-  Gzx.resize(np_cc, 0);
-  Gzy.resize(np_cc, 0);
-  Gzz.resize(np_cc, 0);
+  Gxx.resize(numcell_cent, 0);
+  Gxy.resize(numcell_cent, 0);
+  Gxz.resize(numcell_cent, 0);
+  Gyx.resize(numcell_cent, 0);
+  Gyy.resize(numcell_cent, 0);
+  Gyz.resize(numcell_cent, 0);
+  Gzx.resize(numcell_cent, 0);
+  Gzy.resize(numcell_cent, 0);
+  Gzz.resize(numcell_cent, 0);
 
   // comp of the stress tensor
-  txx.resize(np_cc, 0);
-  txy.resize(np_cc, 0);
-  txz.resize(np_cc, 0);
-  tyy.resize(np_cc, 0);
-  tyz.resize(np_cc, 0);
-  tzz.resize(np_cc, 0);
+  txx.resize(numcell_cent, 0);
+  txy.resize(numcell_cent, 0);
+  txz.resize(numcell_cent, 0);
+  tyy.resize(numcell_cent, 0);
+  tyz.resize(numcell_cent, 0);
+  tzz.resize(numcell_cent, 0);
 
   // derived turbulence quantities
-  tke.resize(np_cc, 0);
-  CoEps.resize(np_cc, 0);
+  tke.resize(numcell_cent, 0);
+  CoEps.resize(numcell_cent, 0);
 
   // comp of the divergence of the stress tensor
-  tmp_dtoxdx.resize(np_cc, 0);
-  tmp_dtoydy.resize(np_cc, 0);
-  tmp_dtozdz.resize(np_cc, 0);
+  tmp_dtoxdx.resize(numcell_cent, 0);
+  tmp_dtoydy.resize(numcell_cent, 0);
+  tmp_dtozdz.resize(numcell_cent, 0);
 
   // comp of the divergence of the stress tensor
-  div_tau_x.resize(np_cc, 0);
-  div_tau_y.resize(np_cc, 0);
-  div_tau_z.resize(np_cc, 0);
+  div_tau_x.resize(numcell_cent, 0);
+  div_tau_y.resize(numcell_cent, 0);
+  div_tau_z.resize(numcell_cent, 0);
 }
 
 void TURBGeneralData::loadNetCDFData(int stepin)

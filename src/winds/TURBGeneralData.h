@@ -71,6 +71,9 @@ public:
   int nx, ny, nz;
   ///@}
 
+  long numcell_cent; /**< Total number of cell-centered values in domain */
+  long numcell_face; /**< Total number of face-centered values in domain */
+
   //nt - number of time instance in data
   int nt;
   // time vector
@@ -153,7 +156,7 @@ public:
 protected:
   WINDSGeneralData *m_WGD;
 
-  void getDerivativesGPU(WINDSGeneralData *);
+  void getDerivativesGPU();
 
   void getDerivatives();
   void derivativeVelocity();

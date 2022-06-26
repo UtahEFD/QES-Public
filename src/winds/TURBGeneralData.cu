@@ -108,7 +108,7 @@ __global__ void getDerivativesCUDA(int nx, int ny, int nz, float dx, float dy, f
   return;
 }
 
-void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD)
+void TURBGeneralData::getDerivativesGPU()
 {
 
   int gpuID = 0;
@@ -130,62 +130,52 @@ void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD)
 
   if (errorCheck == cudaSuccess) {
     //temp
-    float *Gxx2, *Gxy2, *Gxz2, *Gyx2, *Gyy2, *Gyz2, *Gzx2, *Gzy2, *Gzz2, *WGDu, *WGDv, *WGDw, *WGDx, *WGDy, *WGDz, *WGDdz_array;
-    int *icellfluid2;
+    float *d_Gxx, *d_Gxy, *d_Gxz, *d_Gyx, *d_Gyy, *d_Gyz, *d_Gzx, *d_Gzy, *d_Gzz, *d_u, *d_v, *d_w, *d_x, *d_y, *d_z, *d_dz_array;
+    int *d_icellfluid;
 
-    cudaMalloc((void **)&Gxx2, WGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **)&Gxy2, WGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **)&Gxz2, WGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **)&Gyx2, WGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **)&Gyy2, WGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **)&Gyz2, WGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **)&Gzx2, WGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **)&Gzy2, WGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **)&Gzz2, WGD->numcell_cent * sizeof(float));
-    cudaMalloc((void **)&WGDu, WGD->numcell_face * sizeof(float));
-    cudaMalloc((void **)&WGDv, WGD->numcell_face * sizeof(float));
-    cudaMalloc((void **)&WGDw, WGD->numcell_face * sizeof(float));
-    cudaMalloc((void **)&WGDx, (WGD->nx - 1) * sizeof(float));
-    cudaMalloc((void **)&WGDy, (WGD->ny - 1) * sizeof(float));
-    cudaMalloc((void **)&WGDz, (WGD->nz - 1) * sizeof(float));
-    cudaMalloc((void **)&WGDdz_array, (WGD->nz - 1) * sizeof(float));
-    cudaMalloc((void **)&icellfluid2, (int)icellfluid.size() * sizeof(int));
-    /*
-      cudaMemcpy(Gxx2, Gxx.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-      cudaMemcpy(Gxy2, Gxy.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-      cudaMemcpy(Gxz2, Gxz.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-      cudaMemcpy(Gyx2, Gyx.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-      cudaMemcpy(Gyy2, Gyy.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-      cudaMemcpy(Gyz2, Gyz.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-      cudaMemcpy(Gzx2, Gzx.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-      cudaMemcpy(Gzy2, Gzy.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-      cudaMemcpy(Gzz2, Gzz.data(), WGD->numcell_cent * sizeof(float), cudaMemcpyHostToDevice);
-    */
-    cudaMemcpy(WGDu, WGD->u.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(WGDv, WGD->v.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(WGDw, WGD->w.data(), WGD->numcell_face * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(WGDx, WGD->x.data(), (WGD->nx - 1) * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(WGDy, WGD->y.data(), (WGD->ny - 1) * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(WGDz, WGD->z.data(), (WGD->nz - 1) * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(WGDdz_array, WGD->dz_array.data(), (WGD->nz - 1) * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(icellfluid2, icellfluid.data(), (int)icellfluid.size() * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMalloc((void **)&d_Gxx, numcell_cent * sizeof(float));
+    cudaMalloc((void **)&d_Gxy, numcell_cent * sizeof(float));
+    cudaMalloc((void **)&d_Gxz, numcell_cent * sizeof(float));
+    cudaMalloc((void **)&d_Gyx, numcell_cent * sizeof(float));
+    cudaMalloc((void **)&d_Gyy, numcell_cent * sizeof(float));
+    cudaMalloc((void **)&d_Gyz, numcell_cent * sizeof(float));
+    cudaMalloc((void **)&d_Gzx, numcell_cent * sizeof(float));
+    cudaMalloc((void **)&d_Gzy, numcell_cent * sizeof(float));
+    cudaMalloc((void **)&d_Gzz, numcell_cent * sizeof(float));
+    cudaMalloc((void **)&d_u, numcell_face * sizeof(float));
+    cudaMalloc((void **)&d_v, numcell_face * sizeof(float));
+    cudaMalloc((void **)&d_w, numcell_face * sizeof(float));
+    cudaMalloc((void **)&d_x, (nx - 1) * sizeof(float));
+    cudaMalloc((void **)&d_y, (ny - 1) * sizeof(float));
+    cudaMalloc((void **)&d_z, (nz - 1) * sizeof(float));
+    cudaMalloc((void **)&d_dz_array, (nz - 1) * sizeof(float));
+    cudaMalloc((void **)&d_icellfluid, (int)icellfluid.size() * sizeof(int));
+
+    cudaMemcpy(d_u, m_WGD->u.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_v, m_WGD->v.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_w, m_WGD->w.data(), numcell_face * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_x, m_WGD->x.data(), (nx - 1) * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_y, m_WGD->y.data(), (ny - 1) * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_z, m_WGD->z.data(), (nz - 1) * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_dz_array, m_WGD->dz_array.data(), (nz - 1) * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_icellfluid, icellfluid.data(), (int)icellfluid.size() * sizeof(int), cudaMemcpyHostToDevice);
 
     //call kernel
 
     auto gpuStartTime = std::chrono::high_resolution_clock::now();
 
-    getDerivativesCUDA<<<blockCount, threadsPerBlock>>>(WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, WGD->dz, Gxx2, Gxy2, Gxz2, Gyx2, Gyy2, Gyz2, Gzx2, Gzy2, Gzz2, flagUniformZGrid, length, WGDu, WGDv, WGDw, WGDx, WGDy, WGDz, WGDdz_array, icellfluid2);
+    getDerivativesCUDA<<<blockCount, threadsPerBlock>>>(nx, ny, nz, dx, dy, dz, d_Gxx, d_Gxy, d_Gxz, d_Gyx, d_Gyy, d_Gyz, d_Gzx, d_Gzy, d_Gzz, flagUniformZGrid, length, d_u, d_v, d_w, d_x, d_y, d_z, d_dz_array, d_icellfluid);
     cudaError_t kernelError = cudaGetLastError();
-    if(kernelError != cudaSuccess) std::cout << "CUDA KERNEL ERROR: " << cudaGetErrorString(kernelError) << "\n";
+    if (kernelError != cudaSuccess) std::cout << "CUDA KERNEL ERROR: " << cudaGetErrorString(kernelError) << "\n";
     cudaDeviceSynchronize();
 
     auto gpuEndTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> gpuElapsed = gpuEndTime - gpuStartTime;
     std::cout << "\t\t GPU Derivatives: elapsed time: " << gpuElapsed.count() << " s\n";
 
-/*
+    /*
     gpuStartTime = std::chrono::high_resolution_clock::now();
-    getDerivativesCUDA<<<100, 100>>>(WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, WGD->dz, Gxx2, Gxy2, Gxz2, Gyx2, Gyy2, Gyz2, Gzx2, Gzy2, Gzz2, flagUniformZGrid, length, WGDu, WGDv, WGDw, WGDx, WGDy, WGDz, WGDdz_array, icellfluid2);
+    getDerivativesCUDA<<<100, 100>>>(WGD->nx, WGD->ny, WGD->nz, WGD->dx, WGD->dy, WGD->dz, d_Gxx, d_Gxy, d_Gxz, d_Gyx, d_Gyy, d_Gyz, d_Gzx, d_Gzy, d_Gzz, flagUniformZGrid, length, d_u, d_v, d_w, d_x, d_y, d_z, WGDdz_array, icellfluid2);
     cudaDeviceSynchronize();
 
     gpuEndTime = std::chrono::high_resolution_clock::now();
@@ -193,43 +183,34 @@ void TURBGeneralData::getDerivativesGPU(WINDSGeneralData *WGD)
     std::cout << "\t\t GPU Derivatives: elapsed time: " << gpuElapsed.count() << " s\n";
 */
     //cudamemcpy back to host
-    cudaMemcpy(Gxx.data(), Gxx2, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(Gxy.data(), Gxy2, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(Gxz.data(), Gxz2, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(Gyx.data(), Gyx2, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(Gyy.data(), Gyy2, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(Gyz.data(), Gyz2, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(Gzx.data(), Gzx2, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(Gzy.data(), Gzy2, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(Gzz.data(), Gzz2, WGD->numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
-    /*
-      cudaMemcpy(WGD->u.data(), WGDu, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
-      cudaMemcpy(WGD->v.data(), WGDv, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
-      cudaMemcpy(WGD->w.data(), WGDw, WGD->numcell_face * sizeof(float), cudaMemcpyDeviceToHost);
-      cudaMemcpy(WGD->x.data(), WGDx, (WGD->nx-1) * sizeof(float), cudaMemcpyDeviceToHost);
-      cudaMemcpy(WGD->y.data(), WGDy, (WGD->ny-1) * sizeof(float), cudaMemcpyDeviceToHost);
-      cudaMemcpy(WGD->z.data(), WGDz, (WGD->nz-1) * sizeof(float), cudaMemcpyDeviceToHost);
-      cudaMemcpy(WGD->dz_array.data(), WGDdz_array, (WGD->nz - 1) * sizeof(float), cudaMemcpyDeviceToHost);
-    */
+    cudaMemcpy(Gxx.data(), d_Gxx, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(Gxy.data(), d_Gxy, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(Gxz.data(), d_Gxz, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(Gyx.data(), d_Gyx, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(Gyy.data(), d_Gyy, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(Gyz.data(), d_Gyz, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(Gzx.data(), d_Gzx, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(Gzy.data(), d_Gzy, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(Gzz.data(), d_Gzz, numcell_cent * sizeof(float), cudaMemcpyDeviceToHost);
 
     //cudafree
-    cudaFree(Gxx2);
-    cudaFree(Gxy2);
-    cudaFree(Gxz2);
-    cudaFree(Gyx2);
-    cudaFree(Gyy2);
-    cudaFree(Gyz2);
-    cudaFree(Gzx2);
-    cudaFree(Gzy2);
-    cudaFree(Gzz2);
-    cudaFree(WGDu);
-    cudaFree(WGDv);
-    cudaFree(WGDw);
-    cudaFree(WGDx);
-    cudaFree(WGDy);
-    cudaFree(WGDz);
-    cudaFree(WGDdz_array);
-    cudaFree(icellfluid2);
+    cudaFree(d_Gxx);
+    cudaFree(d_Gxy);
+    cudaFree(d_Gxz);
+    cudaFree(d_Gyx);
+    cudaFree(d_Gyy);
+    cudaFree(d_Gyz);
+    cudaFree(d_Gzx);
+    cudaFree(d_Gzy);
+    cudaFree(d_Gzz);
+    cudaFree(d_u);
+    cudaFree(d_v);
+    cudaFree(d_w);
+    cudaFree(d_x);
+    cudaFree(d_y);
+    cudaFree(d_z);
+    cudaFree(d_dz_array);
+    cudaFree(d_icellfluid);
   } else {
     std::cout << "CUDA ERROR: " << cudaGetErrorString(cudaGetLastError()) << "\n";
   }
