@@ -312,6 +312,16 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
   t.resize(nt);
   input->getVariableData("t", t);
 
+  // check if times is in the NetCDF file
+  NcVar NcVar_timestamp;
+  input->getVariable("timestamp", NcVar_timestamp);
+
+  if (NcVar_timestamp.isNull()) {
+    std::cout << "-----------------------------------------------------------------" << std::endl;
+    std::cout << "[WARNING] No timestamp in NetCDF file" << std::endl;
+    std::cout << "-----------------------------------------------------------------" << std::endl;
+  }
+
   // make local copy of grid information
   // nx,ny,nz consitant with QES-Winds (face-center)
   nx = m_WGD->nx;

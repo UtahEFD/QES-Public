@@ -952,18 +952,38 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
   input->getVariableData("t", t);
 
   // check if times is in the NetCDF file
-  NcVar NcVar_times;
-  input->getVariable("times", NcVar_times);
-  if (!NcVar_times.isNull()) {
-    // nothing here yet
-  } else {
-    for (int t = 0; t < nt; t++) {
+  NcVar NcVar_timestamp;
+  input->getVariable("timestamp", NcVar_timestamp);
+
+  if (NcVar_timestamp.isNull()) {
+    std::cout << "-----------------------------------------------------------------" << std::endl;
+    std::cout << "[WARNING] No timestamp in NetCDF file" << std::endl;
+    std::cout << "-----------------------------------------------------------------" << std::endl;
+    QEStime tmp("2022-01-01T00:00");
+    for (int k = 0; k < nt; k++) {
       // ptime test= from_iso_extended_string(WID->metParams->sensors[i]->TS[t]->timeStamp)
-      QEStime tmp("2022-01-01T00:00");
-      timestamp.push_back(tmp);
+      timestamp.push_back(tmp + t[k]);
+    }
+  } else {
+    for (int k = 0; k < nt; k++) {
+      std::vector<size_t> start_time;
+      std::vector<size_t> count_time;
+      start_time = { static_cast<unsigned long>(k), 0 };
+      count_time = { 1, 19 };
+
+      std::vector<char> timestamp_tmp;
+      NcVar_timestamp.getVar(start_time, count_time, &timestamp_tmp[0]);
+      std::string tmp;
+      for (int i = 0; i < 19; ++i) {
+        tmp[i] = timestamp_tmp[i];
+      }
+      QEStime time(tmp);
+      std::cout << "read at time " << time << std::endl;
+
+      timestamp.push_back(time);
     }
   }
-
+  totalTimeIncrements = nt;
 
   // netCDF variables
   std::vector<size_t> start;
@@ -1027,7 +1047,26 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
 {
 
   std::cout << "[WINDS Data] \t loading data at step " << stepin << std::endl;
+#if 0
+  std::vector<size_t> start_time;
+  std::vector<size_t> count_time;
+  start_time = { static_cast<unsigned long>(stepin), 0 };
+  count_time = { 1, 19 };
 
+  NcVar NcVar_timestamp;
+  input->getVariable("timestamp", NcVar_timestamp);
+
+  std::vector<char> timestamp_tmp;
+  NcVar_timestamp.getVar(start_time, count_time, &timestamp_tmp[0]);
+  std::string tmp;
+  for (int i = 0; i < 19; ++i) {
+    tmp[i] = timestamp_tmp[i];
+  }
+  QEStime time(tmp);
+  std::cout << "read at time " << time << std::endl;
+
+  timestamp.push_back(time);
+#endif
   // netCDF variables
   std::vector<size_t> start;
   std::vector<size_t> count_cc;
