@@ -68,10 +68,6 @@ int main(int argc, char **argv)
   // Create instance of QES-Turb General data class
   TURBGeneralData *TGD = new TURBGeneralData(arguments.inputTURBFile, WGD);
 
-  //load data at t=0;
-  TGD->loadNetCDFData(0);
-  WGD->loadNetCDFData(0);
-
   // Create instance of Plume model class
   Plume *plume = new Plume(PID, WGD, TGD);
 
@@ -83,12 +79,26 @@ int main(int argc, char **argv)
     outputVec.push_back(new PlumeOutputParticleData(PID, plume, arguments.outputParticleDataFile));
   }
 
-  // Run plume advection model
-  plume->run(PID->plumeParams->simDur, WGD, TGD, outputVec);
+  for (int index = 0; index < WGD->totalTimeIncrements; index++) {
+    //load data at
+    TGD->loadNetCDFData(index);
+    WGD->loadNetCDFData(index);
 
-  // compute run time information and print the elapsed execution time
-  std::cout << "[QES-Plume] \t Finished. \n"
-            << std::endl;
+    // Run plume advection model
+    QEStime endtime;
+    if (WGD->totalTimeIncrements == 1) {
+      endtime = WGD->timestamp[index] + PID->plumeParams->simDur;
+    } else if (index == WGD->totalTimeIncrements - 1) {
+      endtime = WGD->timestamp[index] + (WGD->timestamp[index] - WGD->timestamp[index - 1]);
+    } else {
+      endtime = WGD->timestamp[index + 1];
+    }
+    plume->run(endtime, WGD, TGD, outputVec);
+
+    // compute run time information and print the elapsed execution time
+    std::cout << "[QES-Plume] \t Finished." << std::endl;
+  }
+
   std::cout << "End run particle summary \n";
   plume->showCurrentStatus();
   timers.printStoredTime("QES-Plume total runtime");

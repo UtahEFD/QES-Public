@@ -129,9 +129,6 @@ PlumeOutput::PlumeOutput(PlumeInputData *PID, WINDSGeneralData *WGD, Plume *plum
   // set the initial next output time value
   nextOutputTime = averagingStartTime + averagingPeriod;
 
-  std::cout << "time average start " << averagingStartTime << std::endl;
-  std::cout << "next output time " << nextOutputTime << std::endl;
-
   // need the simulation timeStep for use in concentration averaging
   timeStep = PID->plumeParams->timeStep;
 
