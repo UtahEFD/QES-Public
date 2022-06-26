@@ -81,12 +81,11 @@ public:
 
   ///@{
   /** grid information */
-  std::vector<float> x_fc;
+  std::vector<float> x, y, z;
+
   std::vector<float> x_cc;
-  std::vector<float> y_fc;
-  std::vector<float> y_cc;
-  std::vector<float> z_fc;
-  std::vector<float> z_cc;
+  std::vector<float> z_face;
+  std::vector<float> dz_array;
   ///@}
 
   // index for fluid cell
@@ -109,16 +108,6 @@ public:
   std::vector<float> Gzx;
   std::vector<float> Gzy;
   std::vector<float> Gzz;
-  ///@}
-
-  ///@{
-  /** strain rate tensor */
-  std::vector<float> Sxx;
-  std::vector<float> Sxy;
-  std::vector<float> Sxz;
-  std::vector<float> Syy;
-  std::vector<float> Syz;
-  std::vector<float> Szz;
   ///@}
 
   std::vector<float> Lm; /**< mixing length */
@@ -158,10 +147,8 @@ protected:
 
   void getDerivativesGPU();
 
-  void getDerivatives();
   void derivativeVelocity();
 
-  void getStressTensor();
   void stressTensor();
 
   void divergenceStress();

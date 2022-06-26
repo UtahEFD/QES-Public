@@ -62,5 +62,5 @@ protected:
   void setAllOutputFields();
 
 private:
-  TURBGeneralData *tgd_;
+  TURBGeneralData *m_TGD;
 };
