@@ -108,6 +108,126 @@ __global__ void getDerivativesCUDA(int nx, int ny, int nz, float dx, float dy, f
   return;
 }
 
+__global__ void uDerivatives(int nx, int ny, int nz, float dx, float dy, float dz, float *Gxx, float *Gxy, float *Gxz, bool flagUniformZGrid, int icellfluidLength, float *u, float *x, float *y, float *z, float *dz_array, int *icellfluid2)
+{
+  int index = blockIdx.x * blockDim.x + threadIdx.x;
+  int stride = blockDim.x * gridDim.x;
+  for (int it = index; it < icellfluidLength; it += stride) {
+    int cellID = icellfluid2[it];
+    //int cellID = it;
+    // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
+    //  i,j,k -> inverted linearized index
+    int k = (int)(cellID / ((nx - 1) * (ny - 1)));
+    int j = (int)((cellID - k * (nx - 1) * (ny - 1)) / (nx - 1));
+    int i = (int)(cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1));
+    int faceID = i + j * nx + k * nx * ny;
+
+
+    // Gxx = dudx
+    Gxx[cellID] = (u[faceID + 1] - u[faceID]) / (dx);
+
+    // Gxy = dudy
+    Gxy[cellID] = ((u[faceID + nx] + u[faceID + 1 + nx])
+                   - (u[faceID - nx] + u[faceID + 1 - nx]))
+                  / (4.0 * dy);
+
+    if (flagUniformZGrid) {
+      // Gxz = dudz
+      Gxz[cellID] = ((u[faceID + nx * ny] + u[faceID + 1 + nx * ny])
+                     - (u[faceID - nx * ny] + u[faceID + 1 - nx * ny]))
+                    / (4.0 * dz);
+    } else {
+      // Gxz = dudz
+      Gxz[cellID] = (0.5 * (z[k] - z[k - 1]) / (z[k + 1] - z[k])
+                       * ((u[faceID + nx * ny] + u[faceID + 1 + nx * ny])
+                          - (u[faceID] + u[faceID + 1]))
+                     + 0.5 * (z[k + 1] - z[k]) / (z[k] - z[k - 1])
+                         * ((u[faceID] + u[faceID + 1])
+                            - (u[faceID - nx * ny] + u[faceID + 1 - nx * ny])))
+                    / (z[k + 1] - z[k - 1]);
+    }
+  }
+  return;
+}
+
+__global__ void vDerivatives(int nx, int ny, int nz, float dx, float dy, float dz, float *Gyx, float *Gyy, float *Gyz, bool flagUniformZGrid, int icellfluidLength, float *v, float *x, float *y, float *z, float *dz_array, int *icellfluid2)
+{
+  int index = blockIdx.x * blockDim.x + threadIdx.x;
+  int stride = blockDim.x * gridDim.x;
+  for (int it = index; it < icellfluidLength; it += stride) {
+    int cellID = icellfluid2[it];
+    //int cellID = it;
+    // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
+    //  i,j,k -> inverted linearized index
+    int k = (int)(cellID / ((nx - 1) * (ny - 1)));
+    int j = (int)((cellID - k * (nx - 1) * (ny - 1)) / (nx - 1));
+    int i = (int)(cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1));
+    int faceID = i + j * nx + k * nx * ny;
+
+    // Gyx = dvdx
+    Gyx[cellID] = ((v[faceID + 1] + v[faceID + 1 + nx])
+                   - (v[faceID - 1] + v[faceID - 1 + nx]))
+                  / (4.0 * dx);
+
+    // Gyy = dvdy
+    Gyy[cellID] = (v[faceID + nx] - v[faceID]) / (dy);
+
+
+    if (flagUniformZGrid) {
+      // Gyz = dvdz
+      Gyz[cellID] = ((v[faceID + nx * ny] + v[faceID + nx + nx * ny])
+                     - (v[faceID - nx * ny] + v[faceID + nx - nx * ny]))
+                    / (4.0 * dz);
+    } else {
+      // Gyz = dvdz
+      Gyz[cellID] = (0.5 * (z[k] - z[k - 1]) / (z[k + 1] - z[k])
+                       * ((v[faceID + nx * ny] + v[faceID + nx + nx * ny])
+                          - (v[faceID] + v[faceID + nx]))
+                     + 0.5 * (z[k + 1] - z[k]) / (z[k] - z[k - 1])
+                         * ((v[faceID] + v[faceID + nx])
+                            - (v[faceID - nx * ny] + v[faceID + nx - nx * ny])))
+                    / (z[k + 1] - z[k - 1]);
+    }
+  }
+  return;
+}
+
+__global__ void wDerivatives(int nx, int ny, int nz, float dx, float dy, float dz, float *Gzx, float *Gzy, float *Gzz, bool flagUniformZGrid, int icellfluidLength, float *w, float *x, float *y, float *z, float *dz_array, int *icellfluid2)
+{
+  int index = blockIdx.x * blockDim.x + threadIdx.x;
+  int stride = blockDim.x * gridDim.x;
+  for (int it = index; it < icellfluidLength; it += stride) {
+    int cellID = icellfluid2[it];
+    //int cellID = it;
+    // linearized index: cellID = i + j*(nx-1) + k*(nx-1)*(ny-1);
+    //  i,j,k -> inverted linearized index
+    int k = (int)(cellID / ((nx - 1) * (ny - 1)));
+    int j = (int)((cellID - k * (nx - 1) * (ny - 1)) / (nx - 1));
+    int i = (int)(cellID - j * (nx - 1) - k * (nx - 1) * (ny - 1));
+    int faceID = i + j * nx + k * nx * ny;
+
+    // Gzx = dwdx
+    Gzx[cellID] = ((w[faceID + 1] + w[faceID + 1 + nx * ny])
+                   - (w[faceID - 1] + w[faceID - 1 + nx * ny]))
+                  / (4.0 * dx);
+
+    // Gzy = dwdy
+    Gzy[cellID] = ((w[faceID + nx] + w[faceID + nx + nx * ny])
+                   - (w[faceID - nx] + w[faceID - nx + nx * ny]))
+                  / (4.0 * dy);
+
+
+    if (flagUniformZGrid) {
+      // Gzz = dwdz
+      Gzz[cellID] = (w[faceID + nx * ny] - w[faceID]) / (dz);
+    } else {
+      // Gzz = dwdz
+      Gzz[cellID] = (w[faceID + nx * ny] - w[faceID]) / (dz_array[k]);
+    }
+  }
+  return;
+}
+
 void TURBGeneralData::getDerivativesGPU()
 {
 
@@ -171,6 +291,19 @@ void TURBGeneralData::getDerivativesGPU()
 
     auto gpuEndTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> gpuElapsed = gpuEndTime - gpuStartTime;
+    std::cout << "\t\t GPU Derivatives: elapsed time: " << gpuElapsed.count() << " s\n";
+
+    gpuStartTime = std::chrono::high_resolution_clock::now();
+
+    uDerivatives<<<blockCount, threadsPerBlock>>>(nx, ny, nz, dx, dy, dz, d_Gxx, d_Gxy, d_Gxz, flagUniformZGrid, length, d_u, d_x, d_y, d_z, d_dz_array, d_icellfluid);
+    vDerivatives<<<blockCount, threadsPerBlock>>>(nx, ny, nz, dx, dy, dz, d_Gyx, d_Gyy, d_Gyz, flagUniformZGrid, length, d_v, d_x, d_y, d_z, d_dz_array, d_icellfluid);
+    wDerivatives<<<blockCount, threadsPerBlock>>>(nx, ny, nz, dx, dy, dz, d_Gzx, d_Gzy, d_Gzz, flagUniformZGrid, length, d_w, d_x, d_y, d_z, d_dz_array, d_icellfluid);
+    kernelError = cudaGetLastError();
+    if (kernelError != cudaSuccess) std::cout << "CUDA KERNEL ERROR: " << cudaGetErrorString(kernelError) << "\n";
+    cudaDeviceSynchronize();
+
+    gpuEndTime = std::chrono::high_resolution_clock::now();
+    gpuElapsed = gpuEndTime - gpuStartTime;
     std::cout << "\t\t GPU Derivatives: elapsed time: " << gpuElapsed.count() << " s\n";
 
     /*
