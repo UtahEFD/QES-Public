@@ -491,8 +491,8 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
       float szo_slope = fit_a * (rowSpacing / H) / ((rowSpacing / H) + fit_b) + fit_c;
       //float szo_slope = -0.43;
       std::cout << "szo_slope = " << szo_slope << std::endl;
-      szo_top = std::max(szo_slope * ld + H, 0.);
-      float szo_top_uw = std::max(szo_slope * (rowSpacing - rowWidth) + H, 0.);// origin right before the next row, e.g. at a distance of "rowSpacing" orthogonally from nearest upwind row
+      szo_top = std::max(szo_slope * ld + H, 0.0f);
+      float szo_top_uw = std::max(szo_slope * (rowSpacing - rowWidth) + H, 0.0f);// origin right before the next row, e.g. at a distance of "rowSpacing" orthogonally from nearest upwind row
 
       float z_mid = (H - understory_height) / 2 + understory_height;
 
