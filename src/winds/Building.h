@@ -32,7 +32,7 @@
 #pragma once
 
 #include "util/ParseInterface.h"
-#include "PolygonVertex.h"
+#include "util/PolygonVertex.h"
 #include "CutVertex.h"
 
 using namespace std;
@@ -142,7 +142,7 @@ public:
   virtual void canopyWake(WINDSGeneralData *wgd, int building_id)
   {
   }
-  
+
   virtual void canopyTurbulenceWake(WINDSGeneralData *wgd, TURBGeneralData *TGD, int buildind_id)
   {
   }

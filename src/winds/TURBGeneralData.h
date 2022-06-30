@@ -78,6 +78,9 @@ public:
   int nx, ny, nz;
   ///@}
 
+  long numcell_cent; /**< Total number of cell-centered values in domain */
+  long numcell_face; /**< Total number of face-centered values in domain */
+
   //nt - number of time instance in data
   int nt;
   // time vector
@@ -170,6 +173,25 @@ public:
 protected:
   WINDSGeneralData *m_WGD;
 
+  void getDerivatives();
+  void getDerivativesGPU();
+  void derivativeVelocity();
+
+  void getTurbulentViscosity();
+  void getStressTensor();
+  void stressTensor();
+
+  void addBackgroundMixing();
+
+  void divergenceStress();
+  void derivativeStress(const std::vector<float> &,
+                        const std::vector<float> &,
+                        const std::vector<float> &,
+                        std::vector<float> &);
+
+  void frictionVelocity();
+  void boundTurbFields();
+
 private:
   // store the wall classes
   std::vector<TURBWall *>
@@ -190,23 +212,4 @@ private:
 
   // input: store here for multiple time instance.
   NetCDFInput *input;
-
-  void frictionVelocity();
-
-  void getDerivatives();
-  void derivativeVelocity();
-
-  void getTurbulentViscosity();
-  void getStressTensor();
-  void stressTensor();
-
-  void addBackgroundMixing();
-
-  void divergenceStress();
-  void derivativeStress(const std::vector<float> &,
-                        const std::vector<float> &,
-                        const std::vector<float> &,
-                        std::vector<float> &);
-
-  void boundTurbFields();
 };

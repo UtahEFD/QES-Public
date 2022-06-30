@@ -112,8 +112,20 @@ public:
       save2file = "false";
     }
 
+    if (filename != "") {
+      filename = QESfs::get_absolute_path(filename);
+    }
+
     sigConst = nullptr;
-    parseElement<Vector3>(false, sigConst, "sigmaConst");
+    ParseVector<float> *sig_in = nullptr;
+    parseElement<ParseVector<float>>(false, sig_in, "sigmaConst");
+    if (sig_in) {
+      if (sig_in->size() == 3) {
+        sigConst = new Vector3((*(sig_in))[0], (*(sig_in))[1], (*(sig_in))[2]);
+      } else {
+        exit(EXIT_FAILURE);
+      }
+    }
 
     flagNonLocalMixing = false;
     parsePrimitive<bool>(false, flagNonLocalMixing, "nonLocalMixing");

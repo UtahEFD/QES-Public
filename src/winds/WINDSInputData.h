@@ -37,6 +37,7 @@
  */
 
 #include "util/ParseInterface.h"
+#include "util/QESFileSystemHandler.h"
 
 #include "SimulationParameters.h"
 #include "FileOptions.h"
@@ -81,6 +82,7 @@ public:
     buildings = 0;
     canopies = 0;
 
+    QESfs::set_file_path(fileName);
     pt::ptree tree;
 
     try {
