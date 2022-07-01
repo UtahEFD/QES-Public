@@ -466,8 +466,8 @@ WRFInput::WRFInput(const std::string &filename,
     // Need to work towards pulling these values from the XML file to
     // allow user control of the discretization
     
-    // for now, set dz = 1
-    fm_dz = 50.0f;
+    // this parameter needs to come from xml... 
+    fm_dz = 10.0f;
 
     std::cout << "WRF Fire Mesh dimensions (nx, ny): " << fm_nx << " by " << fm_ny << std::endl;
     std::cout << "WRF Fire Mesh Resolution (dx, dy): (" << fm_dx << ", " << fm_dy << ")" << std::endl;
@@ -514,10 +514,15 @@ WRFInput::WRFInput(const std::string &filename,
     // fm_nz = (int)ceil(fm_maxWRFAlt * 2.0);// this ONLY works
                                           // if dz=1.0
 
-    int numZCells = (int)floor((fm_maxWRFAlt * 1.75)/ fm_dz) + 1;
+    // Should only need to be concerned about the difference between
+    // the max and min height here, rather than building off the max
+    // height.
+    float heightRange = fm_maxWRFAlt - fm_minWRFAlt;
+    std::cout << "Terrain height range: " << heightRange << std::endl;
+
+    // use 110% of height range for now
+    int numZCells = (int)floor((heightRange * 1.10)/ fm_dz) + 1;
     std::cout << "With dz = " << fm_dz << ", nz = " << numZCells << std::endl;
-    // fm_nz = (int)ceil(fm_maxWRFAlt * 1.75) ; // this ONLY works
-    // // if dz=1.0--> why?
     fm_nz = numZCells;
 
     std::cout << "Setting domain nz: " << fm_nz << std::endl;
