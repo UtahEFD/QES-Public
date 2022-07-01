@@ -2,7 +2,7 @@
 
   <!-- Specifies the WRF Output file that will be read in by QES-Winds -->
   <!-- <WRF>/uufs/chpc.utah.edu/common/home/stoll-group3/willemsn/RXCwrfout_d07_2012-11-11_15-21</WRF> -->
-  <WRF>/uufs/chpc.utah.edu/common/home/u0240900/WRF-SFIRE/test/em_fire/hill/wrf.nc</WRF>
+  <WRF>/scratch/general/lustre/u0240900/wrf_topo.nc</WRF>
   <!-- ../scratch/wrfout_d01_0001-01-01_00:00:00</WRF> -->
   <WRFCoupling>true</WRFCoupling>
 
@@ -87,8 +87,8 @@ Shouldn't need when loading WRF output though.
 </metParams>							<!-- End of meteorological parameters -->
 <turbParams>
   <method>3</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
-  <save>true</save>     <!-- Save to file -->
-  <LMfile>../scratch/RxCADRE/RxCADRE_WRFOnly_mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
+  <save>false</save>     <!-- Save to file -->
+  <LMfile>WRFOnly_mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
 </turbParams>
 <fileOptions>
   <outputFlag>1</outputFlag>
