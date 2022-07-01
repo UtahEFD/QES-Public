@@ -318,14 +318,12 @@ void OptixRayTrace::buildAS()
 void OptixRayTrace::convertVecMeshType(std::vector<Triangle *> &tris, std::vector<Vertex> &trisArray)
 {
   int tempIdx = 0;
-  for (int i = 0; i < tris.size(); i++) {// get access to the Triangle at index
-
-
-    trisArray[tempIdx] = { (*(tris[i]->a))[0], (*(tris[i]->a))[1], (*(tris[i]->a))[2] };
+  for (size_t i = 0; i < tris.size(); i++) {// get access to the Triangle at index
+    trisArray[tempIdx] = { tris[i]->a[0], tris[i]->a[1], tris[i]->a[2] };
     tempIdx++;
-    trisArray[tempIdx] = { (*(tris[i]->b))[0], (*(tris[i]->b))[1], (*(tris[i]->b))[2] };
+    trisArray[tempIdx] = { tris[i]->b[0], tris[i]->b[1], tris[i]->b[2] };
     tempIdx++;
-    trisArray[tempIdx] = { (*(tris[i]->c))[0], (*(tris[i]->c))[1], (*(tris[i]->c))[2] };
+    trisArray[tempIdx] = { tris[i]->c[0], tris[i]->c[1], tris[i]->c[2] };
     tempIdx++;
   }
 }
@@ -378,7 +376,7 @@ void OptixRayTrace::calculateMixingLength(int numSamples, int dimX, int dimY, in
                         sizeof(Hit) * icellflag.size(),
                         cudaMemcpyDeviceToHost));
 
-  for (int i = 0; i < icellflag.size(); i++) {
+  for (size_t i = 0; i < icellflag.size(); i++) {
     mixingLengths[i] = hitList[i].t;
   }
 
@@ -442,7 +440,7 @@ void OptixRayTrace::initParams(int dimX, int dimY, int dimZ, float dx, float dy,
 
   int *tempArray = (int *)malloc(icellflag.size() * sizeof(int));
 
-  for (int i = 0; i < icellflag.size(); i++) {
+  for (size_t i = 0; i < icellflag.size(); i++) {
     tempArray[i] = icellflag[i];
   }
 

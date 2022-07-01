@@ -75,23 +75,6 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
     y[j] = WGD_->y[j];
   }
 
-  timestamp.resize(dateStrLen, '0');
-
-  // time dimension
-  NcDim NcDim_t = addDimension("t");
-  NcDim NcDim_tstr = addDimension("dateStrLen", dateStrLen);
-
-  // create attributes for time dimension
-  std::vector<NcDim> dim_vect_t;
-  dim_vect_t.push_back(NcDim_t);
-  createAttScalar("t", "time", "s", dim_vect_t, &time);
-
-  // create attributes for time dimension
-  std::vector<NcDim> dim_vect_tstr;
-  dim_vect_tstr.push_back(NcDim_t);
-  dim_vect_tstr.push_back(NcDim_tstr);
-  createAttVector("times", "date time", "-", dim_vect_tstr, &timestamp);
-
   // set face-centered data dimensions
   // space dimensions
   NcDim NcDim_x_fc = addDimension("x_face", WGD_->nx);
@@ -111,9 +94,9 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
 
   // set cell-centered data dimensions
   // space dimensions
-  NcDim NcDim_x_cc = addDimension("x_cc", WGD_->nx - 1);
-  NcDim NcDim_y_cc = addDimension("y_cc", WGD_->ny - 1);
-  NcDim NcDim_z_cc = addDimension("z_cc", WGD_->nz - 1);
+  NcDim NcDim_x_cc = addDimension("x", WGD_->nx - 1);
+  NcDim NcDim_y_cc = addDimension("y", WGD_->ny - 1);
+  NcDim NcDim_z_cc = addDimension("z", WGD_->nz - 1);
 
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_x_cc;
@@ -167,25 +150,17 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
 
 
 // Save output at cell-centered values
-void WINDSOutputWorkspace::save(ptime timeOut)
+void WINDSOutputWorkspace::save(QEStime timeOut)
 {
 
   // set time
-  time = (double)output_counter;
+  timeCurrent = timeOut;
 
-  std::string s = to_iso_extended_string(timeOut);
-  std::copy(s.begin(), s.end(), timestamp.begin());
+  //std::string s = timeOut.getTimestamp();
+  //std::copy(s.begin(), s.end(), timestamp.begin());
 
   // save fields
   saveOutputFields();
-
-  // remmove time indep from output array after first save
-  if (output_counter == 0) {
-    rmTimeIndepFields();
-  }
-
-  // increment for next time insertion
-  output_counter += 1;
 };
 
 
@@ -290,14 +265,9 @@ void WINDSOutputWorkspace::setAllOutputFields()
 {
   all_output_fields.clear();
   // all possible output fields need to be add to this list
-  all_output_fields = { "t",
-                        "times",
-                        "x",
+  all_output_fields = { "x",
                         "y",
                         "z",
-                        "x_cc",
-                        "y_cc",
-                        "z_cc",
                         "z_face",
                         "dz_array",
                         "u",
@@ -321,6 +291,7 @@ void WINDSOutputWorkspace::setAllOutputFields()
 // [FM] Feb.28.2020 OBSOLETE
 void WINDSOutputWorkspace::getBuildingFields()
 {
+#if 0
   int nBuildings = WGD_->allBuildingsV.size();
 
   // information only needed once (at output_counter==0)
@@ -365,6 +336,6 @@ void WINDSOutputWorkspace::getBuildingFields()
     upwind_dir[id] = WGD_->allBuildingsV[id]->upwind_dir;
     Lr[id] = WGD_->allBuildingsV[id]->Lr;
   }
-
+#endif
   return;
 }

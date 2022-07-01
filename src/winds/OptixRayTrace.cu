@@ -110,18 +110,18 @@ extern "C" __global__ void __raygen__from_cell()
       }
 
       optixTrace(params.handle,
-                 origin,
-                 dir,
-                 0.0f,
-                 1e16f,
-                 0.0f,
-                 // OptixVisibilityMask(1),
-                 OptixVisibilityMask(255),
-                 OPTIX_RAY_FLAG_NONE,
-                 RAY_TYPE_RADIENCE,
-                 RAY_TYPE_COUNT,
-                 RAY_TYPE_RADIENCE,
-                 t);
+        origin,
+        dir,
+        0.0f,
+        1e16f,
+        0.0f,
+        // OptixVisibilityMask(1),
+        OptixVisibilityMask(255),
+        OPTIX_RAY_FLAG_NONE,
+        RAY_TYPE_RADIENCE,
+        RAY_TYPE_COUNT,
+        RAY_TYPE_RADIENCE,
+        t);
 
 
       if (int_as_float(t) < lowestLen) {
