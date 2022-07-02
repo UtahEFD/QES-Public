@@ -271,14 +271,21 @@ __global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, floa
 }
 
 
-void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, std::vector<int> site_id, int num_sites, std::vector<int> available_sensor_id)
+void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID,
+                                                 WINDSGeneralData *WGD,
+                                                 std::vector<std::vector<float>> u_prof,
+                                                 std::vector<std::vector<float>> v_prof,
+                                                 std::vector<int> site_id,
+                                                 std::vector<int> available_sensor_id)
 {
+  int num_sites = available_sensor_id.size();
 
   std::vector<float> u_prof_1d, v_prof_1d, wm, wms, u0_int, v0_int;
   std::vector<float> site_xcoord, site_ycoord, sum_wm, sum_wu, sum_wv;
   std::vector<float> dxx, dyy, u12, u34, v12, v34;
   std::vector<int> iwork, jwork;
   std::vector<int> k_mod;
+
   u_prof_1d.resize(num_sites * WGD->nz, 0.0);
   v_prof_1d.resize(num_sites * WGD->nz, 0.0);
   wm.resize(num_sites * WGD->nx * WGD->ny, 0.0);

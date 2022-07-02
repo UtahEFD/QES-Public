@@ -44,7 +44,6 @@ private:
                               WINDSGeneralData *WGD,
                               std::vector<std::vector<float>> u_prof,
                               std::vector<std::vector<float>> v_prof,
-                              int num_sites,
                               std::vector<int> available_sensor_id);
 
 public:

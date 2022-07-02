@@ -48,7 +48,6 @@ private:
                               std::vector<std::vector<float>> u_prof,
                               std::vector<std::vector<float>> v_prof,
                               std::vector<int> site_id,
-                              int num_sites,
                               std::vector<int> available_sensor_id);
 
 public:
