@@ -1,6 +1,6 @@
 <plumeParameters>
   <simDur> 2100.0 </simDur>
-  <timeStep> 1.0</timeStep>
+  <timeStep> 0.1 </timeStep>
   <CourantNumber> 0.0 </CourantNumber>
   <invarianceTol> 1e-10 </invarianceTol>
   <C_0> 1.0 </C_0>
@@ -15,12 +15,12 @@
   <timeAvgStart> 300.0 </timeAvgStart>
   <timeAvgFreq> 1800.0 </timeAvgFreq>
   <boxBoundsX1> 0.0 </boxBoundsX1>
-  <boxBoundsX2> 100.0 </boxBoundsX2>
+  <boxBoundsX2> 200.0 </boxBoundsX2>
   <boxBoundsY1> 0.0 </boxBoundsY1>
   <boxBoundsY2> 100.0 </boxBoundsY2>
   <boxBoundsZ1> 0.0 </boxBoundsZ1>
   <boxBoundsZ2> 20.0 </boxBoundsZ2>
-  <nBoxesX> 18 </nBoxesX>
+  <nBoxesX> 36 </nBoxesX>
   <nBoxesY> 51 </nBoxesY>
   <nBoxesZ> 20 </nBoxesZ>
 </collectionParameters>
@@ -28,7 +28,7 @@
   <numSources> 1 </numSources>
   <SourcePoint>
     <ReleaseType_continuous>
-      <parPerTimestep>200</parPerTimestep>
+      <parPerTimestep>20</parPerTimestep>
     </ReleaseType_continuous>
     <posX> 20.0 </posX>
     <posY> 50.0 </posY>
@@ -38,6 +38,8 @@
 <boundaryConditions>
   <xBCtype>exiting</xBCtype>
   <yBCtype>exiting</yBCtype>
+  <!--zBCtype>exiting</zBCtype-->
   <zBCtype>reflection</zBCtype>
+  <!--wallReflection>stairstepReflection</wallReflection-->
   <wallReflection>doNothing</wallReflection>
 </boundaryConditions>

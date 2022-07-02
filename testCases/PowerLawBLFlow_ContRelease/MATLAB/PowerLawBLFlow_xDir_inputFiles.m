@@ -14,10 +14,10 @@
 filename='../QES-data/PowerLawBLFlow_xDir';
 
 % dimensions of the 3D domain
-lx=100;ly=100;lz=20;
+lx=200;ly=100;lz=20;
 
 % grid resolution in x and y set to have 50 cells
-nx=103;ny=103;
+nx=203;ny=103;
 % grid resolution in z is set to have:
 % 141 faces in the plume domain -> 2 extra face on top (above) and bottom (below)
 % -> 140 cell within the plume domain -> 2 extra cell on top (above) and bottom (below)
@@ -97,7 +97,7 @@ dudz(1) = dudz(2);
 ustar = 0.4*z_cc.*dudz;
 %ustar = (b*z_cc.^n)./(0.4*z_cc);
 %ustar = 0.4*p*a*z_cc.^p;
-ustar = b/0.4*ones(size(z_cc)); 
+%ustar = b/0.4*ones(size(z_cc)); 
 %ustar = sqrt(b*p*a*z_cc.^(n+p-1));
 ustar(1) = ustar(2);
 ustar(end) = ustar(end-1);
@@ -109,7 +109,7 @@ uw(end) = uw(end-1);
 
 CsigU=2.5;
 CsigV=2.3;
-CsigW=1.4;
+CsigW=1.2;
 
 k = (ustar/0.55).^2;
 k(1) = k(2);
@@ -120,7 +120,7 @@ k(end) = k(end-1);
 
 %eps = 5.7*(0.55^3*k.^1.5)./(0.4*z_cc);
 eps = 5.7*(ustar.^3)./(0.4*z_cc);
-eps(1) = eps(2);
+eps(1) = -eps(2);
 eps(end) = eps(end-1);
 
 % stress tensor

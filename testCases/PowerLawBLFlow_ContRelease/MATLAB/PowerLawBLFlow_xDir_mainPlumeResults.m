@@ -26,7 +26,8 @@ tRelease=2100; % total time of release
 Ntot=Q*tRelease; % total number of particles
 
 % concentration info
-dt=1.0; % s
+%dt=1.0; % s
+dt=0.1;
 %tAvg=1200; % s 
 tAvg=1800; % s 
 
@@ -34,7 +35,7 @@ fsize=12;
 
 xS=20;yS=50;zS=4;
 
-xProf=[6.0,10.0,18.0]; % streamwise location 
+xProf=[6.0,10.0,19.0]; % streamwise location 
 %xProf=[4.0,10.0,18.0,36.0]; % streamwise location 
 %xProf=[5.42,10.97,19.31]; % streamwise location 
 
