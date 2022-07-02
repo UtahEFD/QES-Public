@@ -16,6 +16,7 @@ ENDIF()
 
 target_link_libraries(qesPlume ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(qesPlume ${Boost_DATE_TIME_LIBRARIES})
+target_link_libraries(qesPlume ${Boost_FILESYSTEM_LIBRARIES})
 target_link_libraries(qesPlume ${GDAL_LIBRARY})
 target_link_libraries(qesPlume ${NETCDF_LIBRARIES_CXX})
 target_link_libraries(qesPlume ${NETCDF_LIBRARIES_C})

@@ -1,40 +1,40 @@
 <plumeParameters>
-	<simDur> 222.0 </simDur>
-	<timeStep> 22.200000  </timeStep>
-    <CourantNumber> 0.0 </CourantNumber>
-  	<invarianceTol> 1e-10 </invarianceTol>
-	<C_0> 1.0 </C_0>
-	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
-	<updateFrequency_timeLoop> 1 </updateFrequency_timeLoop>
+  <simDur> 222.0 </simDur>
+  <timeStep> 22.200000  </timeStep>
+  <CourantNumber> 0.0 </CourantNumber>
+  <invarianceTol> 1e-10 </invarianceTol>
+  <C_0> 1.0 </C_0>
+  <updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
+  <updateFrequency_timeLoop> 22.2 </updateFrequency_timeLoop>
 </plumeParameters>
 <particleOutputParameters>
   <outputFrequency> 22.2  </outputFrequency>
   <outputFields>all</outputFields>
 </particleOutputParameters>
 <collectionParameters>
-	<timeAvgStart> 0.0 </timeAvgStart>
-	<timeAvgFreq> 22.2 </timeAvgFreq>
-	<boxBoundsX1> 0.0 </boxBoundsX1>
-	<boxBoundsX2> 6393.2 </boxBoundsX2>
-	<boxBoundsY1> 0.0 </boxBoundsY1>
-	<boxBoundsY2> 6393.2 </boxBoundsY2>
-	<boxBoundsZ1> 0.0 </boxBoundsZ1>
-	<boxBoundsZ2> 1000.0 </boxBoundsZ2>
-	<nBoxesX> 32 </nBoxesX>
-	<nBoxesY> 32 </nBoxesY>
-	<nBoxesZ> 32 </nBoxesZ>
+  <timeAvgStart> 0.0 </timeAvgStart>
+  <timeAvgFreq> 22.2 </timeAvgFreq>
+  <boxBoundsX1> 0.0 </boxBoundsX1>
+  <boxBoundsX2> 6393.2 </boxBoundsX2>
+  <boxBoundsY1> 0.0 </boxBoundsY1>
+  <boxBoundsY2> 6393.2 </boxBoundsY2>
+  <boxBoundsZ1> 0.0 </boxBoundsZ1>
+  <boxBoundsZ2> 1000.0 </boxBoundsZ2>
+  <nBoxesX> 32 </nBoxesX>
+  <nBoxesY> 32 </nBoxesY>
+  <nBoxesZ> 32 </nBoxesZ>
 </collectionParameters>
 <sources>
-  	<numSources> 1 </numSources>
-  	<SourceFullDomain>
-		<ReleaseType_instantaneous>
-			<numPar>100000</numPar>
-		</ReleaseType_instantaneous>
-  	</SourceFullDomain>
+  <numSources> 1 </numSources>
+  <SourceFullDomain>
+    <ReleaseType_instantaneous>
+      <numPar>100000</numPar>
+    </ReleaseType_instantaneous>
+  </SourceFullDomain>
 </sources>
 <boundaryConditions>
-  	<xBCtype>periodic</xBCtype>
-  	<yBCtype>periodic</yBCtype>
-  	<zBCtype>reflection</zBCtype>
-    <wallReflection>doNothing</wallReflection>
+  <xBCtype>periodic</xBCtype>
+  <yBCtype>periodic</yBCtype>
+  <zBCtype>reflection</zBCtype>
+  <wallReflection>doNothing</wallReflection>
 </boundaryConditions>

@@ -67,7 +67,6 @@ w = zeros(nx,ny,nz);
 % cell-center data:
 icellflag_out = ones(nx-1,ny-1,nz-1);
 
-icellflag = icellflag_out;
 % this can be used to check terrain reflection versus domain BC reflection:
 % - if icellflag is set to 2 (terrain) and reflection is enable 
 %   -> QES-plume will perform a trajectory reflection for each particle
@@ -80,7 +79,7 @@ icellflag_out(:,:,1) = 2; % terrain
 %icellflag_out(:,:,1) = 1; % fluid
 
 % now save the netcdf wind output
-writeNetCDFFile_winds(filename,nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag);
+writeNetCDFFile_winds(filename,nx,ny,nz,x_cc,y_cc,z_cc,u,v,w,icellflag_out);
 
 
 %% ========================================================================
@@ -99,6 +98,7 @@ ustar = 0.4*z_cc.*dudz;
 %ustar = (b*z_cc.^n)./(0.4*z_cc);
 %ustar = 0.4*p*a*z_cc.^p;
 %ustar = b/0.4*ones(size(z_cc)); 
+%ustar = sqrt(b*p*a*z_cc.^(n+p-1));
 ustar(1) = -ustar(2);
 ustar(end) = ustar(end-1);
 
@@ -110,9 +110,6 @@ uw(end) = uw(end-1);
 CsigU=2.5;
 CsigV=2.3;
 CsigW=1.3;
-%CsigU=2.0;
-%CsigV=1.6;
-%CsigW=1.2;
 
 k = (ustar/0.55).^2;
 k(1) = -k(2);

@@ -6,7 +6,6 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
@@ -19,8 +18,6 @@
 #include "winds/WINDSGeneralData.h"
 #include "winds/WINDSOutputVisualization.h"
 #include "winds/WINDSOutputWorkspace.h"
-
-#include "winds/WINDSOutputWRF.h"
 
 #include "winds/TURBGeneralData.h"
 #include "winds/TURBOutput.h"
@@ -37,9 +34,6 @@
 
 
 namespace pt = boost::property_tree;
-
-using namespace boost::gregorian;
-using namespace boost::posix_time;
 
 /**
  * This function takes in a filename and attempts to open and parse it.
@@ -161,13 +155,13 @@ int main(int argc, char *argv[])
   }
   */
 
-  std::cout << "Running time step: " << to_iso_extended_string(WGD->timestamp[0]) << std::endl;
+  std::cout << "Running time step: " << WGD->timestamp[0] << std::endl;
 
   // //////////////////////////////////////////
   // Run the QES-Winds Solver
   // //////////////////////////////////////////
 
-  Solver *solverCPU, *solverDynamic, *solverGlobal, *solverShared = nullptr;
+  Solver *solverCPU = nullptr, *solverDynamic = nullptr, *solverGlobal = nullptr, *solverShared = nullptr;
   std::vector<WINDSGeneralData *> completedSolvers;
   std::vector<string> solverNames;
 
@@ -224,7 +218,7 @@ int main(int argc, char *argv[])
   table3.endOfRow();
 
   // Loop to calculate comparison metrics between serial and parallel solvers
-  for (int solversIndex = 0; solversIndex < completedSolvers.size(); ++solversIndex) {
+  for (size_t solversIndex = 0; solversIndex < completedSolvers.size(); ++solversIndex) {
     // Calculating u differences
     float maxUDif = 0;
     float avgUDif = 0;

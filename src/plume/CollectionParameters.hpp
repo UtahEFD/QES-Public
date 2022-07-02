@@ -58,13 +58,13 @@ public:
   int nBoxesX, nBoxesY, nBoxesZ;
   float boxBoundsX1, boxBoundsY1, boxBoundsZ1;
   float boxBoundsX2, boxBoundsY2, boxBoundsZ2;
-  float timeAvgStart;// time to start concentration averaging, not the time to start output.
-  float timeAvgFreq;// time averaging frequency and output frequency
+  float averagingStartTime;// time to start concentration averaging, not the time to start output.
+  float averagingPeriod;// time averaging frequency and output frequency
 
   virtual void parseValues()
   {
-    parsePrimitive<float>(true, timeAvgStart, "timeAvgStart");
-    parsePrimitive<float>(true, timeAvgFreq, "timeAvgFreq");
+    parsePrimitive<float>(true, averagingStartTime, "timeAvgStart");
+    parsePrimitive<float>(true, averagingPeriod, "timeAvgFreq");
     parsePrimitive<float>(true, boxBoundsX1, "boxBoundsX1");
     parsePrimitive<float>(true, boxBoundsY1, "boxBoundsY1");
     parsePrimitive<float>(true, boxBoundsZ1, "boxBoundsZ1");
@@ -82,14 +82,14 @@ public:
   void checkParsedValues()
   {
     // make sure that all variables are greater than 0 except where they need to be at least 0
-    if (timeAvgStart < 0) {
-      std::cerr << "(CollectionParameters::checkParsedValues): input timeAvgStart must be greater than or equal to zero!";
-      std::cerr << " timeAvgStart = \"" << timeAvgStart << "\"" << std::endl;
+    if (averagingStartTime < 0) {
+      std::cerr << "(CollectionParameters::checkParsedValues): input averagingStartTime must be greater than or equal to zero!";
+      std::cerr << " averagingStartTime = \"" << averagingStartTime << "\"" << std::endl;
       exit(EXIT_FAILURE);
     }
-    if (timeAvgFreq <= 0) {
-      std::cerr << "(CollectionParameters::checkParsedValues): input timeAvgFreq must be greater than zero!";
-      std::cerr << " timeAvgFreq = \"" << timeAvgFreq << "\"" << std::endl;
+    if (averagingPeriod <= 0) {
+      std::cerr << "(CollectionParameters::checkParsedValues): input averagingPeriod must be greater than zero!";
+      std::cerr << " averagingPeriod = \"" << averagingPeriod << "\"" << std::endl;
       exit(EXIT_FAILURE);
     }
     if (boxBoundsX1 < 0) {
@@ -138,12 +138,6 @@ public:
       exit(EXIT_FAILURE);
     }
 
-
-    // make sure the input timeAvgStart is not greater than the timeEnd
-    // LA note: since the timeAvgEnd is not an input anymore, but is the simulation duration
-    //  (now always ending output and averaging at simulation end time), and since the simulation
-    //  duration is not known at parse time, !!! This check needs done in the time averaging output at constructor time
-
     // make sure the boxBounds1 is not greater than the boxBounds2 for each dimension
     if (boxBoundsX1 > boxBoundsX2) {
       std::cerr << "(CollectionParameters::checkParsedValues): input boxBoundsX1 must be smaller than or equal to input boxBoundsX2!";
@@ -160,12 +154,5 @@ public:
       std::cerr << " boxBoundsZ1 = \"" << boxBoundsZ1 << "\", boxBoundsZ2 = \"" << boxBoundsZ2 << "\"" << std::endl;
       exit(EXIT_FAILURE);
     }
-
-
-    // make sure timeAvgFreq is not bigger than the simulation duration
-    // LA note: timeAvgFreq can be as big as the collection duration, or even smaller than the collection duration
-    //  IF timeAvgFreq is at least the same size or smaller than the simulation duration
-    //  UNFORTUNATELY, variables related to the simulation duration are not available here.
-    //  This means this should probably be checked in the time averaging output at constructor time
   }
 };

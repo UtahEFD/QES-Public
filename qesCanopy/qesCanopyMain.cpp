@@ -1,7 +1,5 @@
 #include <iostream>
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
@@ -24,8 +22,6 @@
 #include "winds/SharedMemory.h"
 
 #include "winds/Sensor.h"
-
-namespace bt = boost::posix_time;
 
 int main(int argc, char *argv[])
 {
@@ -59,7 +55,6 @@ int main(int argc, char *argv[])
   }
 
   // Checking if
-  std::cout << "WID->turbParams = " << WID->turbParams << "\n";
   if (arguments.compTurb && !WID->turbParams) {
     std::cerr << "[ERROR] Turbulence model is turned on without LocalMixingParam in QES Intput file "
               << arguments.qesFile << std::endl;

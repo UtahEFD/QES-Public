@@ -70,5 +70,5 @@ for k=1:nProf
     end
 end
 
-currentPlotName=sprintf('plotOutput/%s_%s_ModelComp',caseNameWinds,caseNamePlume);
+currentPlotName=sprintf('plotOutput/%s_ModelComp',caseNamePlume);
 save2pdf(hfig,currentPlotName,hfig.Position(3:4),12)

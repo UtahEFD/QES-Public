@@ -1,9 +1,5 @@
 #include <iostream>
 
-#include <boost/foreach.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
-
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
@@ -33,8 +29,6 @@
 #include "plume/PlumeOutput.h"
 #include "plume/PlumeOutputParticleData.h"
 
-
-namespace pt = boost::property_tree;
 
 Solver *setSolver(const int, WINDSInputData *, WINDSGeneralData *);
 
@@ -172,13 +166,21 @@ int main(int argc, char *argv[])
     // Output the various files requested from the simulation run
     // (netcdf wind velocity, icell values, etc...
     // /////////////////////////////
-    for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
-      outputVec.at(id_out)->save(WGD->timestamp[0]);// need to replace 0.0 with timestep
+    for (auto outItr = outputVec.begin(); outItr != outputVec.end(); ++outItr) {
+      (*outItr)->save(WGD->timestamp[index]);
     }
 
     // Run plume advection model
     if (plume != nullptr) {
-      plume->run(PID->plumeParams->simDur, WGD, TGD, outputPlume);
+      QEStime endtime;
+      if (WGD->totalTimeIncrements == 1) {
+        endtime = WGD->timestamp[index] + PID->plumeParams->simDur;
+      } else if (index == WGD->totalTimeIncrements - 1) {
+        endtime = WGD->timestamp[index] + (WGD->timestamp[index] - WGD->timestamp[index - 1]);
+      } else {
+        endtime = WGD->timestamp[index + 1];
+      }
+      plume->run(endtime, WGD, TGD, outputPlume);
     }
   }
 
