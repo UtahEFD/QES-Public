@@ -1,10 +1,5 @@
 #include <iostream>
 
-#include <boost/foreach.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
@@ -17,8 +12,6 @@
 #include "winds/WINDSOutputVisualization.h"
 #include "winds/WINDSOutputWorkspace.h"
 
-#include "winds/WINDSOutputWRF.h"
-
 #include "winds/TURBGeneralData.h"
 #include "winds/TURBOutput.h"
 
@@ -29,12 +22,6 @@
 #include "winds/SharedMemory.h"
 
 #include "winds/Sensor.h"
-
-namespace pt = boost::property_tree;
-
-using namespace boost::gregorian;
-using namespace boost::posix_time;
-
 
 int main(int argc, char *argv[])
 {
@@ -99,11 +86,6 @@ int main(int argc, char *argv[])
     outputVec.push_back(new WINDSOutputWorkspace(WGD, arguments.netCDFFileWksp));
   }
 
-  if (arguments.fireMode) {
-    outputVec.push_back(new WINDSOutputWRF(WGD, WID->simParams->wrfInputData));
-  }
-
-
   // Generate the general TURB data from WINDS data
   // based on if the turbulence output file is defined
   TURBGeneralData *TGD = nullptr;
@@ -155,8 +137,9 @@ int main(int argc, char *argv[])
 
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     // print time progress (time stamp and percentage)
-    WGD->printTimeProgress(index);
-
+    if (!WID->simParams->wrfCoupling) {
+      WGD->printTimeProgress(index);
+    }
     // Reset icellflag values
     WGD->resetICellFlag();
 
@@ -176,6 +159,18 @@ int main(int argc, char *argv[])
       TGD->run();
 
     // /////////////////////////////
+    // WRF Coupling
+    // /////////////////////////////
+    if (WID->simParams->wrfCoupling) {
+      // send our stuff to wrf input file
+      std::cout << "Writing data back to the WRF file." << std::endl;
+      WID->simParams->wrfInputData->extractWind(WGD);
+
+      // Re-read WRF data -- get new stuff from wrf input file... sync...
+      std::cout << "Attempting to re-read data from WRF." << std::endl;
+      WID->simParams->wrfInputData->updateFromWRF();
+    }
+    // /////////////////////////////
     // Output the various files requested from the simulation run (netcdf wind velocity, icell values, etc...)
     // /////////////////////////////
     for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
@@ -183,6 +178,10 @@ int main(int argc, char *argv[])
     }
   }
 
+  if (WID->simParams->wrfCoupling)
+    WID->simParams->wrfInputData->endWRFSession();
+
   // /////////////////////////////
+  std::cout << "QES-Winds Exiting." << std::endl;
   exit(EXIT_SUCCESS);
 }

@@ -111,6 +111,7 @@ public:
   std::string wrfFile; /**< :document this: */
   WRFInput *wrfInputData = nullptr; /**< :document this: */
   int wrfSensorSample; /**< :document this: */
+  bool wrfCoupling = false;
 
   enum DomainInputType {
     WRFOnly,
@@ -197,6 +198,11 @@ public:
     parsePrimitive<std::string>(false, wrfFile, "WRF");
     parsePrimitive<int>(false, wrfSensorSample, "WRFSensorSample");
 
+    // 
+    // WRF coupling
+    //
+    parsePrimitive<bool>(false, wrfCoupling, "WRFCoupling");
+
     // Determine which use case to use for WRF/DEM combinations
     if ((demFile != "") && (wrfFile != "")) {
       // Both specified
@@ -238,7 +244,7 @@ public:
       // nx and ny domain cells.
       //
       std::cout << "Processing WRF data for terrain and met param sensors from " << wrfFile << std::endl;
-      wrfInputData = new WRFInput(wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, 0, 0, wrfSensorSample);
+      wrfInputData = new WRFInput(wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, 0, 0, wrfCoupling, wrfSensorSample);
       std::cout << "WRF input data processing completed." << std::endl;
 
       // Apply halo to wind profile locations -- halo units are
@@ -246,7 +252,8 @@ public:
       // as station coordinates.
       wrfInputData->applyHalotoStationData(halo_x, halo_y);
 
-      wrfInputData->dumpStationData();
+      // Debug to show where the stations are...
+      // wrfInputData->dumpStationData();
 
       // In the current setup, grid may NOT be set... be careful
       // may need to initialize it here if nullptr is true for grid
@@ -261,13 +268,15 @@ public:
                                            halo_x,
                                            halo_y);
 
+      // Make sure to pull the dx, dy and dz back from the WRF calculations
       grid[0] = wrfInputData->fm_dx;
       grid[1] = wrfInputData->fm_dy;
+      grid[2] = wrfInputData->fm_dz;
 
       std::cout << "Dim: " << wrfInputData->fm_nx << " X " << wrfInputData->fm_ny << " X " << wrfInputData->fm_nz << std::endl;
       std::cout << "at " << grid[0] << " X " << grid[1] << " X " << grid[2] << std::endl;
 
-      domain = { wrfInputData->fm_nx, wrfInputData->fm_nx, wrfInputData->fm_nz };
+      domain = { wrfInputData->fm_nx, wrfInputData->fm_ny, wrfInputData->fm_nz };
       DTE_heightField->setDomain(domain, grid);
 
       // need this to make sure domain sizes include halo
@@ -338,7 +347,7 @@ public:
       float dimX = domain[0] * grid[0];
       float dimY = domain[1] * grid[1];
       std::cout << "dimX = " << dimX << ", dimY = " << dimY << std::endl;
-      wrfInputData = new WRFInput(wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, dimX, dimY, wrfSensorSample, onlySensorData);
+      wrfInputData = new WRFInput(wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, dimX, dimY, wrfSensorSample, wrfCoupling, onlySensorData);
       std::cout << "WRF Wind Velocity Profile Data processing completed." << std::endl;
     }
 

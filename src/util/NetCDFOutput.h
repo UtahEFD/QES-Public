@@ -45,14 +45,13 @@ using namespace netCDF::exceptions;
  */
 class NetCDFOutput
 {
-
 protected:
+  NetCDFOutput() {}
+
   NcFile *outfile; /**< File to write. */
   std::map<std::string, NcVar> fields; /**< :document this: */
 
 public:
-  NetCDFOutput()
-  {}
   // initializer
   NetCDFOutput(std::string);
   virtual ~NetCDFOutput()
@@ -62,6 +61,7 @@ public:
   NcDim addDimension(std::string, int size = 0);
   NcDim getDimension(std::string);
   void addField(std::string, std::string, std::string, std::vector<NcDim>, NcType);
+  void addAtt(std::string, std::string, std::string);
 
   // save functions for 1D array (save 1D time)
   void saveField1D(std::string, const std::vector<size_t>, int *);

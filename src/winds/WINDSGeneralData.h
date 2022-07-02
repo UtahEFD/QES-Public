@@ -41,6 +41,12 @@
 #define MAX_S(x, y) ((x) > (y) ? (x) : (y))
 
 #include "WINDSInputData.h"
+
+#include "WindProfilerType.h"
+#include "WindProfilerWRF.h"
+#include "WindProfilerBarnCPU.h"
+#include "WindProfilerBarnGPU.h"
+
 #include "Building.h"
 #include "Canopy.h"
 #include "CanopyElement.h"
@@ -54,10 +60,7 @@
 #include "Cut_cell.h"
 #include "Wall.h"
 #include "util/NetCDFInput.h"
-
-#include <boost/date_time/posix_time/posix_time.hpp>
-namespace bt = boost::posix_time;
-
+#include "util/QEStime.h"
 
 #ifdef HAS_OPTIX
 #include "OptixRayTrace.h"
@@ -65,8 +68,6 @@ namespace bt = boost::posix_time;
 
 using namespace netCDF;
 using namespace netCDF::exceptions;
-
-namespace bt = boost::posix_time;
 
 class WINDSInputData;
 
@@ -87,7 +88,7 @@ public:
   void mergeSort(std::vector<float> &effective_height,
                  std::vector<int> &building_id);
 
-  void mergeSortTime(std::vector<time_t> &sensortime,
+  void mergeSortTime(std::vector<QEStime> &sensortime,
                      std::vector<int> &sensortime_id);
 
   void applyWindProfile(const WINDSInputData *, int, int);
@@ -146,6 +147,9 @@ public:
   ///@}
   float dxy; /**< Minimum value between dx and dy */
 
+  int wrf_nx, wrf_ny;
+  int halo_index_x, halo_index_y;
+
   long numcell_cout; /**< :document this: */
   long numcell_cout_2d; /**< :document this: */
   long numcell_cent; /**< Total number of cell-centered values in domain */
@@ -174,15 +178,16 @@ public:
   std::vector<float> z_face; /**< :document this: */
   // std::vector<float> x_out,y_out,z_out;
 
-  std::vector<time_t> sensortime; /**< :document this: */
+  std::vector<QEStime> sensortime; /**< :document this: */
   std::vector<int> sensortime_id;
+  // FM TEMPORARY!!!!!!!!!!!!!
+  std::vector<int> time_id;
 
   // time variables
   int nt; /**< :document this: */
   int totalTimeIncrements; /**< :document this: */
   std::vector<float> dt_array; /**< :document this: */
-  std::vector<time_t> epochtime; /**< :document this: */
-  std::vector<bt::ptime> timestamp; /**< :document this: */
+  std::vector<QEStime> timestamp; /**< :document this: */
 
 
   ///@{
@@ -232,6 +237,8 @@ public:
 
   // Sensor* sensor;      may not need this now
 
+  // wind profiler class
+  WindProfilerType *wp; /**< pointer to the wind profiler class, used to interp wind */
 
   int id; /**< :document this: */
 

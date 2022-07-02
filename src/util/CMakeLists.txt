@@ -7,7 +7,7 @@ add_library (qesutil ${LIB_TYPE}
   ParseException.h
   
   ESRIShapefile.cpp ESRIShapefile.h
-
+  GIStool.cpp
   
   doesFolderExist.h
   calcTime.cpp calcTime.h
@@ -18,6 +18,8 @@ add_library (qesutil ${LIB_TYPE}
   NetCDFOutput.cpp
   QESNetCDFOutput.cpp 
   QESFileSystemHandler.cpp
+
+  QEStime.cpp
 )
 
 FILE(GLOB files "*.h")

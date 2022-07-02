@@ -115,7 +115,7 @@ delta_wFluct_variances_Lim = [0 0.08];
 
 % use the input cell centered grid values to calculate all the grid
 % information
-[ xGridInfo, yGridInfo, zGridInfo ] = calcGridInfo( winds_data.x_cc, winds_data.y_cc, winds_data.z_cc );
+[ xGridInfo, yGridInfo, zGridInfo ] = calcGridInfo( winds_data.x, winds_data.y, winds_data.z );
 
 
 % now input the conc and particleInfo files

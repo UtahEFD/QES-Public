@@ -99,13 +99,17 @@ std::string mainTest()
 
   set1DDerivative(&dudx, &dudy, &dudz, &dvdx, &dvdy, &dvdz, &dwdx, &dwdy, &dwdz, WGD);
 
-  std::cout << "Checking derivatives CPU" << std::endl;
+  std::cout << "Calculation derivatives CPU" << std::endl;
   TGD1->test_compDerivatives_CPU(WGD);
+  std::cout << "Checking derivatives CPU" << std::endl;
   results = check1DDerivative(&dudx, &dudy, &dudz, &dvdx, &dvdy, &dvdz, &dwdx, &dwdy, &dwdz, WGD, TGD1);
+  std::cout << results << std::endl;
 
-  std::cout << "Checking derivatives GPU" << std::endl;
+  std::cout << "Calculating derivatives GPU" << std::endl;
   TGD2->test_compDerivatives_GPU(WGD);
+  std::cout << "Checking derivatives GPU" << std::endl;
   results = check1DDerivative(&dudx, &dudy, &dudz, &dvdx, &dvdy, &dvdz, &dwdx, &dwdy, &dwdz, WGD, TGD2);
+  std::cout << results << std::endl;
 
   float RMSE(0.0);
   if (!util_checkRMSE(&(TGD1->Gxz), &(TGD2->Gxz), 1.0e-6, RMSE))

@@ -74,6 +74,14 @@ void NetCDFOutput ::addField(std::string name, std::string units, std::string lo
   fields[name] = var;
 }
 
+void NetCDFOutput ::addAtt(std::string name, std::string att_name, std::string att_string)
+{
+
+  NcVar var = fields[name];
+
+  var.putAtt(att_name, att_string);
+}
+
 // 1D -> int
 void NetCDFOutput ::saveField1D(std::string name, const std::vector<size_t> index, int *data)
 {

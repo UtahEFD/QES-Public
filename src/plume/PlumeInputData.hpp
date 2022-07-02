@@ -76,10 +76,12 @@ public:
      * @param UID the object that will serve as the base level of the xml parser
      */
   void parseTree(pt::ptree t)
-  {//  URBInputData*& UID) {
-    // root = new URBInputData();
+  {
     setTree(t);
     setParents("root");
+    //auto child = t.get_child_optional("QESPlume");
+    //setTree(*child);
+    //setParents("root::QESPlume");
     parseValues();
   }
 };
