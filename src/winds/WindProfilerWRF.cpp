@@ -59,14 +59,14 @@ void WindProfilerWRF::interpolateWindProfile(const WINDSInputData *WID, WINDSGen
   WRFInput *wrf_ptr = WID->simParams->wrfInputData;
 
   // Create initial wind field in the area WRF data is available
-  for (auto i = WGD->halo_index_x + 1; i < WGD->wrf_nx + WGD->halo_index_x; i++) {
-    for (auto j = WGD->halo_index_y + 1; j < WGD->wrf_ny + WGD->halo_index_y; j++) {
+  for (auto i = WGD->halo_index_x; i < WGD->wrf_nx + WGD->halo_index_x - 1; i++) {
+    for (auto j = WGD->halo_index_y; j < WGD->wrf_ny + WGD->halo_index_y - 1; j++) {
       id = (i - WGD->halo_index_x) + (j - WGD->halo_index_y) * (WGD->wrf_nx);
       for (auto k = 1; k < WGD->nz; k++) {
         icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-        icell_face = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-        WGD->u0[icell_face] = 0.5 * (wrf_ptr->u0_fmw[icell_cent] + wrf_ptr->u0_fmw[icell_cent]);
-        WGD->v0[icell_face] = 0.5 * (wrf_ptr->v0_fmw[icell_cent] + wrf_ptr->v0_fmw[icell_cent]);
+        icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+        WGD->u0[icell_face] = 0.5 * (wrf_ptr->u0_fmw[icell_cent] + wrf_ptr->u0_fmw[icell_cent + 1]);
+        WGD->v0[icell_face] = 0.5 * (wrf_ptr->v0_fmw[icell_cent] + wrf_ptr->v0_fmw[icell_cent + (WGD->nx - 1)]);
       }
     }
   }
