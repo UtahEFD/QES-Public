@@ -41,6 +41,12 @@
 #define MAX_S(x, y) ((x) > (y) ? (x) : (y))
 
 #include "WINDSInputData.h"
+
+#include "WindProfilerType.h"
+#include "WindProfilerWRF.h"
+#include "WindProfilerBarnCPU.h"
+#include "WindProfilerBarnGPU.h"
+
 #include "Building.h"
 #include "Canopy.h"
 #include "CanopyElement.h"
@@ -174,6 +180,8 @@ public:
 
   std::vector<QEStime> sensortime; /**< :document this: */
   std::vector<int> sensortime_id;
+  // FM TEMPORARY!!!!!!!!!!!!!
+  std::vector<int> time_id;
 
   // time variables
   int nt; /**< :document this: */

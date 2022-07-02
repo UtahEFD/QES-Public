@@ -1123,12 +1123,17 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
 {
   std::cout << "Applying Wind Profile...\n";
 
+  auto start_InputWindProfile = std::chrono::high_resolution_clock::now();// Finish recording execution time
+
   if (WID->simParams->wrfCoupling) {
 
     std::cout << "Using WRF Coupling..." << std::endl;
 
     WRFInput *wrf_ptr = WID->simParams->wrfInputData;
 
+    WindProfilerType *wp = new WindProfilerWRF();
+    wp->interpolateWindProfile(WID, this);
+#if 0
     for (auto i = 0; i < wrf_ptr->fm_nx; i++) {
       for (auto j = 0; j < wrf_ptr->fm_ny; j++) {
         int index = i + j * wrf_ptr->fm_nx;
@@ -1157,8 +1162,29 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
 
     // use the time Index of 0 (forcing it) because time series are not worked out with WRF well..
     WID->metParams->sensors[0]->inputWindProfile(WID, this, 0, solveType);
+#endif
   } else {
-    WID->metParams->sensors[0]->inputWindProfile(WID, this, timeIndex, solveType);
+    //WID->metParams->sensors[0]->inputWindProfile(WID, this, timeIndex, solveType);
+
+    std::cout << "timestep of each sensor " << std::endl;
+
+    int num_sites = WID->metParams->sensors.size();
+
+    time_id.resize(num_sites, -1);
+
+    // loop to find which timestep of each sensor is related to the running timestep of the code
+    for (auto i = 0; i < WID->metParams->sensors.size(); i++) {
+      for (auto j = 0; j < WID->metParams->sensors[i]->TS.size(); j++) {
+        if (sensortime[timeIndex] == WID->metParams->sensors[i]->TS[j]->time) {
+          time_id[i] = j;
+        }
+      }
+    }
+    std::cout << "before new Wind Interp" << std::endl;
+
+    //WindProfilerType *wp = new WindProfilerBarnCPU();
+    WindProfilerType *wp = new WindProfilerBarnGPU();
+    wp->interpolateWindProfile(WID, this);
   }
 
 
@@ -1171,6 +1197,10 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
   }
   max_velmag *= 1.2;
 
+  auto end_InputWindProfile = std::chrono::high_resolution_clock::now();// Finish recording execution time
+
+  std::chrono::duration<float> elapsed_InputWindProfile = end_InputWindProfile - start_InputWindProfile;
+  std::cout << "Elapsed time for input wind profile: " << elapsed_InputWindProfile.count() << " s\n";
   return;
 }
 

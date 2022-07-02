@@ -22,7 +22,6 @@ CUDA_ADD_LIBRARY( qeswindscore
   Mesh.cpp
   PolyBuilding.cpp PolyBuilding.h
   Sensor.cpp
-  Sensor.cu
   Solver.cpp
   Triangle.cpp
   TURBParams.h
@@ -33,6 +32,10 @@ CUDA_ADD_LIBRARY( qeswindscore
   TURBWall.cpp
   TURBWallBuilding.cpp
   TURBWallTerrain.cpp
+  WindProfilerBarnCPU.cpp
+  WindProfilerBarnGPU.cpp
+  WindProfilerBarnGPU.cu
+  WindProfilerWRF.cpp
   WINDSInputData.h
   WINDSGeneralData.cpp WINDSGeneralData.h
   WINDSOutputVisualization.cpp
