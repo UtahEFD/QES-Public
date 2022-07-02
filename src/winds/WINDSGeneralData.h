@@ -237,6 +237,8 @@ public:
 
   // Sensor* sensor;      may not need this now
 
+  // wind profiler class
+  WindProfilerType *wp; /**< pointer to the wind profiler class, used to interp wind */
 
   int id; /**< :document this: */
 

@@ -106,6 +106,20 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       wrf_nx = wrf_ptr->fm_nx;
       wrf_ny = wrf_ptr->fm_ny;
 
+      wp = new WindProfilerWRF();
+
+      // FM -> this should be added on wrf-input (read time form wrf)
+      // initialize our time info...
+      QEStime tmp("2022-01-01T00:00");
+      sensortime.push_back(tmp);// that's roughly 01/19/22 at 1:00pm Central
+      sensortime_id.push_back(0);
+      timestamp.push_back(sensortime[0]);
+
+      totalTimeIncrements = WID->simParams->totalTimeIncrements;
+
+
+      // FM -> CODE REMOVED TO WITH WINDPROFILER CLASSES // TO CLEAN
+#if 0
       WID->metParams->sensors.resize(wrf_ptr->fm_nx * wrf_ptr->fm_ny);
 
       for (auto i = 0; i < wrf_ptr->fm_nx * wrf_ptr->fm_ny; i++) {
@@ -131,12 +145,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       //   }
 
       // initialize our time info...
-      QEStime tmp("2022-01-01T00:00");
-      sensortime.push_back(tmp);// that's roughly 01/19/22 at 1:00pm Central
-      sensortime_id.push_back(0);
-      timestamp.push_back(sensortime[0]);
+      //QEStime tmp("2022-01-01T00:00");
+      //sensortime.push_back(tmp);// that's roughly 01/19/22 at 1:00pm Central
+      //sensortime_id.push_back(0);
+      //timestamp.push_back(sensortime[0]);
 
-      totalTimeIncrements = WID->simParams->totalTimeIncrements;
+      //totalTimeIncrements = WID->simParams->totalTimeIncrements;
 
       // Here to take care of the first time this is built
       for (auto i = 0; i < wrf_ptr->fm_nx; i++) {
@@ -162,7 +176,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
           }
         }
       }
-      // #endif
+#endif
+      // FM -> CODE REMOVED TO WITH WINDPROFILER CLASSES // TO CLEAN
+
 
       // u0 and v0 are wrf_ptr->fm_nx * wrf_ptr->fm_ny *
       // wrf_ptr->ht_fmw.size()
@@ -241,6 +257,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
        - does not support halo for UTM coord (site coord == 2)
        - does not support halo for lon/lat coord (site coord == 3)
     */
+
+    if (solverType == 1) {
+      wp = new WindProfilerBarnCPU();
+    } else {
+      wp = new WindProfilerBarnGPU();
+    }
 
     // If the sensor file specified in the xml
     if (WID->metParams->sensorName.size() > 0) {
@@ -1125,15 +1147,27 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
 
   auto start_InputWindProfile = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
+  int num_sites = WID->metParams->sensors.size();
+  time_id.resize(num_sites, -1);
+  // loop to find which timestep of each sensor is related to the running timestep of the code
+  for (auto i = 0; i < WID->metParams->sensors.size(); i++) {
+    for (auto j = 0; j < WID->metParams->sensors[i]->TS.size(); j++) {
+      if (sensortime[timeIndex] == WID->metParams->sensors[i]->TS[j]->time) {
+        time_id[i] = j;
+      }
+    }
+  }
+
+  wp->interpolateWindProfile(WID, this);
+
+  // FM -> CODE REMOVED TO WITH WINDPROFILER CLASSES // TO CLEAN
+#if 0
   if (WID->simParams->wrfCoupling) {
 
     std::cout << "Using WRF Coupling..." << std::endl;
 
     WRFInput *wrf_ptr = WID->simParams->wrfInputData;
 
-    WindProfilerType *wp = new WindProfilerWRF();
-    wp->interpolateWindProfile(WID, this);
-#if 0
     for (auto i = 0; i < wrf_ptr->fm_nx; i++) {
       for (auto j = 0; j < wrf_ptr->fm_ny; j++) {
         int index = i + j * wrf_ptr->fm_nx;
@@ -1162,31 +1196,11 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
 
     // use the time Index of 0 (forcing it) because time series are not worked out with WRF well..
     WID->metParams->sensors[0]->inputWindProfile(WID, this, 0, solveType);
-#endif
   } else {
-    //WID->metParams->sensors[0]->inputWindProfile(WID, this, timeIndex, solveType);
-
-    std::cout << "timestep of each sensor " << std::endl;
-
-    int num_sites = WID->metParams->sensors.size();
-
-    time_id.resize(num_sites, -1);
-
-    // loop to find which timestep of each sensor is related to the running timestep of the code
-    for (auto i = 0; i < WID->metParams->sensors.size(); i++) {
-      for (auto j = 0; j < WID->metParams->sensors[i]->TS.size(); j++) {
-        if (sensortime[timeIndex] == WID->metParams->sensors[i]->TS[j]->time) {
-          time_id[i] = j;
-        }
-      }
-    }
-    std::cout << "before new Wind Interp" << std::endl;
-
-    //WindProfilerType *wp = new WindProfilerBarnCPU();
-    WindProfilerType *wp = new WindProfilerBarnGPU();
-    wp->interpolateWindProfile(WID, this);
+    WID->metParams->sensors[0]->inputWindProfile(WID, this, timeIndex, solveType);
   }
-
+#endif
+  // FM -> CODE REMOVED TO WITH WINDPROFILER CLASSES // TO CLEAN
 
   max_velmag = 0.0;
   for (auto i = 0; i < nx; i++) {
