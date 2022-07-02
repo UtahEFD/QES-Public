@@ -63,7 +63,7 @@ void SourceCircle::checkPosInfo(const double &domainXstart, const double &domain
 }
 
 
-int SourceCircle::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles, WINDSGeneralData *WGD)
+int SourceCircle::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles)
 {
   // warning!!! this is still a point source! Need to work out the geometry details still
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime

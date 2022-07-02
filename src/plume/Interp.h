@@ -104,7 +104,6 @@ public:
 
   int getCellId(const double &, const double &, const double &);
   int getCellId(Vector3Double &);
-  int getCellId2d(const double &, const double &);
   Vector3Int getCellIndex(const int &);
   Vector3Int getCellIndex(const double &, const double &, const double &);
 
@@ -141,14 +140,6 @@ inline int Interp::getCellId(const double &xPos, const double &yPos, const doubl
   int k = floor((zPos + 1.0 * dz) / (dz + 1e-9));
 
   return i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
-}
-
-inline int Interp::getCellId2d(const double &xPos, const double &yPos)
-{
-  int i = floor((xPos - 0.0 * dx) / (dx + 1e-9));
-  int j = floor((yPos - 0.0 * dy) / (dy + 1e-9));
-
-  return i + j * (nx - 1);
 }
 
 inline int Interp::getCellId(Vector3Double &X)

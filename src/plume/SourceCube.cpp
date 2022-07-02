@@ -90,7 +90,7 @@ void SourceCube::checkPosInfo(const double &domainXstart, const double &domainXe
 }
 
 
-int SourceCube::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles, WINDSGeneralData *WGD)
+int SourceCube::emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles)
 {
   // release particle per timestep only if currTime is between m_releaseStartTime and m_releaseEndTime
   if (currTime >= m_rType->m_releaseStartTime && currTime <= m_rType->m_releaseEndTime) {

@@ -32,7 +32,7 @@
 #include "InterpPowerLaw.h"
 
 
-InterpPowerLaw::InterpPowerLaw(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, const bool &debug_val)
+InterpPowerLaw::InterpPowerLaw(WINDSGeneralData *WGD, TURBGeneralData *TGD, const bool &debug_val)
   : Interp(WGD)
 {
   //std::cout << "[InterpPowerLaw] \t Setting Interpolation method " << std::endl;

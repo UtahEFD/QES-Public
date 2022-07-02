@@ -31,6 +31,31 @@
 
 #include "Plume.hpp"
 
+Plume::Plume(WINDSGeneralData *WGD, TURBGeneralData *TGD)
+  : particleList(0), allSources(0)
+{
+  // copy debug information
+  doParticleDataOutput = false;//arguments->doParticleDataOutput;
+  outputSimInfoFile = false;//arguments->doSimInfoFileOutput;
+  outputFolder = "";//arguments->outputFolder;
+  caseBaseName = "";//arguments->caseBaseName;
+  debug = false;//arguments->debug;
+
+  verbose = false;//arguments->verbose;
+
+  // make local copies of the QES-Winds nVals for each dimension
+  nx = WGD->nx;
+  ny = WGD->ny;
+  nz = WGD->nz;
+
+  dx = WGD->dx;
+  dy = WGD->dy;
+  dz = WGD->dz;
+  dxy = WGD->dxy;
+
+  return;
+}
+
 Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   : particleList(0), allSources(0)
 {
@@ -56,22 +81,21 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   dz = WGD->dz;
   dxy = WGD->dxy;
 
-  long numcell_cent = (nx - 1) * (ny - 1) * (nz - 1);
-  WGD->depcvol.resize(numcell_cent, 0.0);
-
   // Create instance of Interpolation class
   std::cout << "[Plume] \t Interpolation Method set to: "
             << PID->plumeParams->interpMethod << std::endl;
   if (PID->plumeParams->interpMethod == "analyticalPowerLaw") {
-    interp = new InterpPowerLaw(PID, WGD, TGD, debug);
+    interp = new InterpPowerLaw(WGD, TGD, debug);
   } else if (PID->plumeParams->interpMethod == "nearestCell") {
-    interp = new InterpNearestCell(PID, WGD, TGD, debug);
+    interp = new InterpNearestCell(WGD, TGD, debug);
   } else if (PID->plumeParams->interpMethod == "triLinear") {
-    interp = new InterpTriLinear(PID, WGD, TGD, debug);
+    interp = new InterpTriLinear(WGD, TGD, debug);
   } else {
     std::cerr << "[ERROR] unknown interpolation method" << std::endl;
     exit(EXIT_FAILURE);
   }
+
+  std::srand(std::time(0));
 
   // get the domain start and end values, needed for wall boundary condition
   // application
@@ -86,7 +110,8 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   sim_dt = PID->plumeParams->timeStep;
 
   // time variables
-  simTime = 0.0;
+  simTimeStart = WGD->timestamp[0];
+  simTimeCurr = simTimeStart;
   simTimeIdx = 0;
 
   // other important time variables not from dispersion
@@ -137,14 +162,9 @@ Plume::Plume(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD)
   }
 }
 
-void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
+void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD, std::vector<QESNetCDFOutput *> outputVec)
 {
-  auto StartTime = std::chrono::high_resolution_clock::now();
-
-  std::cout << "[Plume] \t Advecting particles at Time = " << simTime
-            << " s (iteration = " << simTimeIdx << "). \n";
-  std::cout << "\t\t Particles: Released = " << nParsReleased << " "
-            << "Active = " << particleList.size() << "." << std::endl;
+  auto startTimeAdvec = std::chrono::high_resolution_clock::now();
 
   // get the threshold velocity fluctuation to define rogue particles
   vel_threshold = 10.0 * getMaxVariance(TGD);
@@ -166,6 +186,15 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
     timers.startNewTimer("particle iteration");
   }
 
+  QEStime nextUpdate = simTimeCurr + updateFrequency_timeLoop;
+  float simTime = simTimeCurr - simTimeStart;
+
+  std::cout << "[Plume] \t Advecting particles from " << simTimeCurr << " to " << loopTimeEnd << "\n";
+  std::cout << "\t\t total run time = " << loopTimeEnd - simTimeCurr << " s \n";
+  std::cout << "\t\t simulation time = " << simTime << " s (iteration = " << simTimeIdx << "). \n";
+  std::cout << "\t\t Particles: Released = " << nParsReleased << " "
+            << "Active = " << particleList.size() << std::endl;
+
   // LA note: that this loop goes from 0 to nTimes-2, not nTimes-1. This is
   // because
   //  a given time iteration is calculating where particles for the current time
@@ -181,11 +210,9 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
   //  tStep. At the same time, the current time output to consol output and to
   //  function calls need to also be set to tStep+1.
   // FMargairaz -> need clean-up
-  while (simTime < endTime) {
+  while (simTimeCurr < loopTimeEnd) {
     // need to release new particles -> add new particles to the number to move
-    //    std::cout << "PLUME CHECKPOINT 0" << std::endl;
-    int nParsToRelease = generateParticleList((float)simTime, WGD, TGD);
-    //   std::cout << "PLUME CHECKPOINT 1" << std::endl;
+    int nParsToRelease = generateParticleList(simTime, WGD, TGD);
 
     // number of active particle at the current time step.
     // list is scrubbed at the end of each time step (if flag turned true)
@@ -216,7 +243,7 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
 
     // the current time, updated in this loop with each new par_dt.
     // Will end at simTimes.at(simTimeIdx+1) at the end of this particle loop
-    double timeRemainder = endTime - simTime;
+    double timeRemainder = loopTimeEnd - simTimeCurr;
     if (timeRemainder > sim_dt) {
       timeRemainder = sim_dt;
     }
@@ -237,16 +264,7 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
         this function does not do any manipulation on particleList
       */
 
-
-      //      std::cout << "particle mass: " << (*parItr)->m  << " particle diameter: " << (*parItr)->d << " wdepos = " << (*parItr)->wdepos << "\n";
-
-      //      std::cout << "PLUME CHECKPOINT 2" << std::endl;
       advectParticle(timeRemainder, parItr, WGD, TGD);
-      //     std::cout << "PLUME CHECKPOINT 3" << std::endl;
-
-      //if ((*parItr)->depFlag == true){
-      //  depositParticle(endTime, simTime, parItr, WGD, TGD);
-      //}
 
       // now update the isRogueCount and isNotActiveCount
       if ((*parItr)->isRogue == true) {
@@ -262,14 +280,15 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
 
     // incrementation of time and timestep
     simTimeIdx++;
-    simTime += timeRemainder;
+    simTimeCurr += timeRemainder;
+    simTime = simTimeCurr - simTimeStart;
 
     // netcdf output for a given simulation timestep
     // note that the first time is already output, so this is the time the loop
     // iteration
     //  is calculating, not the input time to the loop iteration
     for (size_t id_out = 0; id_out < outputVec.size(); id_out++) {
-      outputVec.at(id_out)->save(simTime);
+      outputVec.at(id_out)->save(simTimeCurr);
     }
 
     // For all particles that need to be removed from the particle
@@ -277,22 +296,20 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
     if (needToScrub) {
       scrubParticleList();
     }
-
     // output the time, isRogueCount, and isNotActiveCount information for all
     // simulations, but only when the updateFrequency allows
-    if ((simTimeIdx) % updateFrequency_timeLoop == 0 || simTime == endTime) {
+    if (simTimeCurr >= nextUpdate || (simTimeCurr == loopTimeEnd)) {
       if (verbose) {
-        std::cout << "Time = " << simTime << " s (iteration = " << simTimeIdx
-                  << "). Finished advection iteration. "
+        std::cout << "Time = " << simTimeCurr << "(sim time = " << simTime << " s, iteration = " << simTimeIdx << "). "
                   << "Particles: Released = " << nParsReleased << " "
                   << "Active = " << particleList.size() << " "
                   << "Rogue = " << isRogueCount << "." << std::endl;
       } else {
-        std::cout << "Time = " << simTime << " s (iteration = " << simTimeIdx
-                  << "). "
+        std::cout << "Time = " << simTimeCurr << "(sim time = " << simTime << " s, iteration = " << simTimeIdx << "). "
                   << "Particles: Released = " << nParsReleased << " "
                   << "Active = " << particleList.size() << "." << std::endl;
       }
+      nextUpdate += updateFrequency_timeLoop;
       // output advection loop runtime if in debug mode
       if (debug == true) {
         timers.printStoredTime("advection loop");
@@ -301,7 +318,7 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
 
   }// end of time loop
 
-  std::cout << "[Plume] \t End of particles advection at Time = " << simTime
+  std::cout << "[Plume] \t End of particles advection at Time = " << simTimeCurr
             << " s (iteration = " << simTimeIdx << "). \n";
   std::cout << "\t\t Particles: Released = " << nParsReleased << " "
             << "Active = " << particleList.size() << "." << std::endl;
@@ -314,18 +331,11 @@ void Plume::run(float endTime, WINDSGeneralData *WGD, TURBGeneralData *TGD, std:
     timers.printStoredTime("simulation time integration loop");
   }
 
-  // only outputs if the required booleans from input args are set
-  // LA note: the current time put in here is one past when the simulation time
-  // loop ends
-  //  this is because the loop always calculates info for one time ahead of the
-  //  loop time.
-  writeSimInfoFile(simTime);
-
-  auto EndTime = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<double> Elapsed = EndTime - StartTime;
+  auto endTimerAdvec = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double> Elapsed = endTimerAdvec - startTimeAdvec;
 
   std::cout << "[QES-Plume]\t Advection.\n";
-  std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << endl;
+  std::cout << "\t\t elapsed time: " << Elapsed.count() << " s" << std::endl;
 
   return;
 }
@@ -433,7 +443,7 @@ int Plume::generateParticleList(float currentTime, WINDSGeneralData *WGD, TURBGe
   std::list<Particle *> nextSetOfParticles;
   int numNewParticles = 0;
   for (auto sIdx = 0u; sIdx < allSources.size(); sIdx++) {
-    numNewParticles += allSources.at(sIdx)->emitParticles((float)sim_dt, currentTime, nextSetOfParticles, WGD);
+    numNewParticles += allSources.at(sIdx)->emitParticles((float)sim_dt, currentTime, nextSetOfParticles);
   }
 
   setParticleVals(WGD, TGD, nextSetOfParticles);
@@ -940,45 +950,4 @@ bool Plume::enforceWallBCs_reflection(double &pos,
     std::endl;
   */
   return true;
-}
-
-void Plume::writeSimInfoFile(const double &current_time)
-{
-  // if this output is not desired, skip outputting these files
-  if (outputSimInfoFile == false) {
-    return;
-  }
-
-  std::cout << "writing simInfoFile" << std::endl;
-
-  // set some variables for use in the function
-  FILE *fzout;// changing file to which information will be written
-
-  // now write out the simulation information to the debug folder
-
-  // want a temporary variable to represent the caseBaseName, cause going to add
-  // on a timestep to the name
-  std::string saveBasename = caseBaseName;
-
-  // add timestep to saveBasename variable
-  saveBasename = saveBasename + "_" + std::to_string(sim_dt);
-
-  std::string outputFile = outputFolder + "/sim_info.txt";
-  fzout = fopen(outputFile.c_str(), "w");
-  fprintf(fzout, "\n");// a purposeful blank line
-  fprintf(fzout, "saveBasename     = %s\n", saveBasename.c_str());
-  fprintf(fzout, "\n");// a purposeful blank line
-  fprintf(fzout, "timestep         = %lf\n", sim_dt);
-  fprintf(fzout, "\n");// a purposeful blank line
-  fprintf(fzout, "current_time     = %lf\n", current_time);
-  fprintf(fzout, "rogueCount       = %i\n", isRogueCount);
-  fprintf(fzout, "isNotActiveCount = %i\n", isNotActiveCount);
-  fprintf(fzout, "\n");// a purposeful blank line
-  fprintf(fzout, "invarianceTol    = %lf\n", invarianceTol);
-  fprintf(fzout, "velThreshold     = %lf\n", vel_threshold);
-  fprintf(fzout, "\n");// a purposeful blank line
-  fclose(fzout);
-
-  // now that all is finished, clean up the file pointer
-  fzout = NULL;
 }

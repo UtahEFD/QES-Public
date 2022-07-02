@@ -96,5 +96,5 @@ public:
   void checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend);
 
   //template <class parType>
-  int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles, WINDSGeneralData *WGD);
+  int emitParticles(const float dt, const float currTime, std::list<Particle *> &emittedParticles);
 };

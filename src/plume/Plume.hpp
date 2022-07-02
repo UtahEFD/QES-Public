@@ -40,6 +40,7 @@
 #include <cmath>
 #include <cstring>
 
+#include "util/QEStime.h"
 #include "util/calcTime.h"
 #include "util/Vector3.h"
 //#include "Matrix3.h"
@@ -71,12 +72,16 @@ class Plume
 {
 
 public:
+  Plume(WINDSGeneralData *, TURBGeneralData *);
   // constructor
   // first makes a copy of the urb grid number of values and the domain size as determined by dispersion
   // then sets up the concentration sampling box information for output
   // next copies important input time values and calculates needed time information
   // lastly sets up the boundary condition functions and checks to make sure input BC's are valid
   Plume(PlumeInputData *, WINDSGeneralData *, TURBGeneralData *);
+
+  virtual ~Plume()
+  {}
 
   // this is the plume solver. It performs a time integration of the particle positions and particle velocity fluctuations
   // with calculations done on a per particle basis. During each iteration, temporary single value particle information
@@ -89,7 +94,7 @@ public:
   // LA future work: Need to add a CFL condition where the user specifies a courant number that varies from 0 to 1
   //  that is used to do an additional time remainder time integration loop for each particle, forcing particles to only
   //  move one cell at a time.
-  void run(float, WINDSGeneralData *, TURBGeneralData *, std::vector<QESNetCDFOutput *>);
+  void run(QEStime, WINDSGeneralData *, TURBGeneralData *, std::vector<QESNetCDFOutput *>);
 
   int getTotalParsToRelease() const { return totalParsToRelease; }// accessor
 
@@ -98,16 +103,16 @@ public:
   int getNumNotActiveParticles() const { return isNotActiveCount; }// accessor
   int getNumCurrentParticles() const { return particleList.size(); }// accessor
 
+  QEStime getSimTimeStart() const { return simTimeStart; }
+  QEStime getSimTimeCurrent() const { return simTimeCurr; }
+
   void showCurrentStatus();
 
   // This the storage for all particles
   // the sources can set these values, then the other values are set using urb and turb info using these values
   std::list<Particle *> particleList;
 
-private:
-  Plume()
-  {}
-
+protected:
   // QES grid information
   int nx;// a copy of the urb grid nx value
   int ny;// a copy of the urb grid ny value
@@ -130,7 +135,8 @@ private:
 
   // time variables
   double sim_dt;// the simulation timestep
-  double simTime;
+  QEStime simTimeStart;
+  QEStime simTimeCurr;
   int simTimeIdx;
 
   // some overall metadata for the set of particles
@@ -342,14 +348,15 @@ private:
                                  const double &domainStart,
                                  const double &domainEnd);
 
-  // this is for writing an output simulation info file separate from the regular command line output
-  void writeSimInfoFile(const double &current_time);
+private:
+  Plume();
 };
 
 inline void Plume::showCurrentStatus()
 {
   std::cout << "----------------------------------------------------------------- \n";
-  std::cout << "Current simulation time: " << simTime << "\n";
+  std::cout << "Current simulation time: " << simTimeCurr << "\n";
+  std::cout << "Simulation run time: " << simTimeCurr - simTimeStart << "\n";
   std::cout << "Total number of particles released: " << nParsReleased << "\n";
   std::cout << "Current number of particles in simulation: " << particleList.size() << "\n";
   std::cout << "Number of rogue particles: " << isRogueCount << "\n";
