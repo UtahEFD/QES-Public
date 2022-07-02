@@ -169,13 +169,12 @@ int main(int argc, char *argv[])
       // Re-read WRF data -- get new stuff from wrf input file... sync...
       std::cout << "Attempting to re-read data from WRF." << std::endl;
       WID->simParams->wrfInputData->updateFromWRF();
-    } else {
-      // /////////////////////////////
-      // Output the various files requested from the simulation run (netcdf wind velocity, icell values, etc...)
-      // /////////////////////////////
-      for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
-        outputVec.at(id_out)->save(WGD->timestamp[index]);
-      }
+    }
+    // /////////////////////////////
+    // Output the various files requested from the simulation run (netcdf wind velocity, icell values, etc...)
+    // /////////////////////////////
+    for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
+      outputVec.at(id_out)->save(WGD->timestamp[index]);
     }
   }
 
