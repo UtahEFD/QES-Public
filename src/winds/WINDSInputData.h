@@ -45,7 +45,7 @@
 #include "Buildings.h"
 #include "Canopies.h"
 
-#include "Fires.hpp"
+#include "fire/Fires.hpp"
 
 #include "TURBParams.h"
 

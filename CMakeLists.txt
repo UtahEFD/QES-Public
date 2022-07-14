@@ -240,6 +240,7 @@ add_subdirectory(src/util)
 add_subdirectory(src/winds)
 add_subdirectory(src/plume)
 add_subdirectory(src/unitTests)
+add_subdirectory(src/fire)
 
 add_subdirectory(scratch)
 add_subdirectory(qesFire)

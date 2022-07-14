@@ -7,8 +7,8 @@
 
 #include <string>
 #include "util/ParseInterface.h"
-#include "Vector3.h"
-#include "DTEHeightField.h"
+#include "util/Vector3.h"
+#include "winds/DTEHeightField.h"
 #include "ignition.h"
 
 class Fires : public ParseInterface {

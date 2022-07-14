@@ -3,46 +3,39 @@
 #include <boost/foreach.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "util/ParseException.h"
 #include "util/ParseInterface.h"
 
-#include "QESNetCDFOutput.h"
+#include "util/QESNetCDFOutput.h"
 
-#include "handleWINDSArgs.h"
+#include "winds/handleWINDSArgs.h"
 
-#include "WINDSInputData.h"
-#include "WINDSGeneralData.h"
-#include "WINDSOutputVisualization.h"
-#include "WINDSOutputWorkspace.h"
+#include "winds/WINDSInputData.h"
+#include "winds/WINDSGeneralData.h"
+#include "winds/WINDSOutputVisualization.h"
+#include "winds/WINDSOutputWorkspace.h"
 
-#include "TURBGeneralData.h"
-#include "TURBOutput.h"
+#include "winds/TURBGeneralData.h"
+#include "winds/TURBOutput.h"
 
-#include "Solver.h"
-#include "CPUSolver.h"
-#include "DynamicParallelism.h"
-#include "GlobalMemory.h"
-#include "SharedMemory.h"
+#include "winds/Solver.h"
+#include "winds/CPUSolver.h"
+#include "winds/DynamicParallelism.h"
+#include "winds/GlobalMemory.h"
+#include "winds/SharedMemory.h"
 
-#include "Sensor.h"
+#include "winds/Sensor.h"
 
-#include "Fire.hpp"
-#include "FIREOutput.h"
+#include "fire/Fire.hpp"
+#include "fire/FIREOutput.h"
 #include <chrono>
 namespace pt = boost::property_tree;
 
-/**
- * This function takes in a filename and attempts to open and parse it.
- * If the file can't be opened or parsed properly it throws an exception,
- * if the file is missing necessary data, an error will be thrown detailing
- * what data and where in the xml the data is missing. If the tree can't be
- * parsed, the Root* value returned is 0, which will register as false if tested.
- * @param fileName the path/name of the file to be opened, must be an xml
- * @return A pointer to a root that is filled with data parsed from the tree
- */
-WINDSInputData* parseXMLTree(const std::string fileName);
-Sensor* parseSensors (const std::string fileName);
+using namespace boost::gregorian;
+using namespace boost::posix_time;
+
 
 int main(int argc, char *argv[])
 {
@@ -68,59 +61,43 @@ int main(int argc, char *argv[])
     // Read and Process any Input for the system
     // ///////////////////////////////////
 
-    // Parse the base XML QUIC file -- contains simulation parameters
-    WINDSInputData* WID = parseXMLTree(arguments.quicFile);
-    if ( !WID ) {
-        std::cerr << "[ERROR] QES Input file: " << arguments.quicFile <<
-            " not able to be read successfully." << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-
-    // If the sensor file specified in the xml
-    if (WID->metParams->sensorName.size() > 0)
-    {
-        for (auto i = 0; i < WID->metParams->sensorName.size(); i++)
-  		  {
-            WID->metParams->sensors.push_back(new Sensor());            // Create new sensor object
-            WID->metParams->sensors[i] = parseSensors(WID->metParams->sensorName[i]);       // Parse new sensor objects from xml
-        }
-    }
-
+  // Parse the base XML QUIC file -- contains simulation parameters
+  //WINDSInputData* WID = parseXMLTree(arguments.quicFile);
+  WINDSInputData *WID = new WINDSInputData(arguments.qesFile);
+  if (!WID) {
+    std::cerr << "[ERROR] QES Input file: " << arguments.qesFile << " not able to be read successfully." << std::endl;
+    exit(EXIT_FAILURE);
+  }
 
     // Checking if
-    if (arguments.compTurb && !WID->turbParams) {
-        std::cerr << "[ERROR] Turbulence model is turned on without LocalMixingParam in QES Intput file "
-                  << arguments.quicFile << std::endl;
-        exit(EXIT_FAILURE);
+  if (arguments.compTurb && !WID->turbParams) {
+    std::cerr << "[ERROR] Turbulence model is turned on without turbParams in QES Intput file "
+              << arguments.qesFile << std::endl;
+    exit(EXIT_FAILURE);
+  }
+
+  if (arguments.terrainOut) {
+    if (WID->simParams->DTE_heightField) {
+      std::cout << "Creating terrain OBJ....\n";
+      WID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
+      std::cout << "OBJ created....\n";
+    } else {
+      std::cerr << "[ERROR] No dem file specified as input\n";
+      return -1;
     }
+  }
 
+  // Generate the general WINDS data from all inputs
+  WINDSGeneralData *WGD = new WINDSGeneralData(WID, arguments.solveType);
 
-    if (arguments.terrainOut) {
-        if (WID->simParams->DTE_heightField) {
-            std::cout << "Creating terrain OBJ....\n";
-            WID->simParams->DTE_heightField->outputOBJ(arguments.filenameTerrain);
-            std::cout << "OBJ created....\n";
-        }
-        else {
-            std::cerr << "[ERROR] No dem file specified as input\n";
-            return -1;
-        }
-    }
-
-    // Generate the general WINDS data from all inputs
-    WINDSGeneralData* WGD = new WINDSGeneralData(WID, arguments.solveType);
-
-
-    // create WINDS output classes
-    std::vector<QESNetCDFOutput*> outputVec;
-    if (arguments.visuOutput) {
-        outputVec.push_back(new WINDSOutputVisualization(WGD,WID,arguments.netCDFFileVisu));
-    }
-    if (arguments.wkspOutput) {
-        outputVec.push_back(new WINDSOutputWorkspace(WGD,arguments.netCDFFileWksp));
-    }
-
+  // create WINDS output classes
+  std::vector<QESNetCDFOutput *> outputVec;
+  if (arguments.visuOutput) {
+    outputVec.push_back(new WINDSOutputVisualization(WGD, WID, arguments.netCDFFileVisu));
+  }
+  if (arguments.wkspOutput) {
+    outputVec.push_back(new WINDSOutputWorkspace(WGD, arguments.netCDFFileWksp));
+  }
 
     // Generate the general TURB data from WINDS data
     // based on if the turbulence output file is defined
@@ -131,9 +108,6 @@ int main(int argc, char *argv[])
     if (arguments.compTurb && arguments.turbOutput) {
         outputVec.push_back(new TURBOutput(TGD,arguments.netCDFFileTurb));
     }
-
-
-
 
     // //////////////////////////////////////////
     //
@@ -173,6 +147,13 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
     }
+
+    // Reset icellflag values
+    WGD->resetICellFlag();
+    int index = 0;
+    // Create initial velocity field from the new sensors
+    WGD->applyWindProfile(WID, index, arguments.solveType);
+    
     // Apply parametrizations
     WGD->applyParametrizations(WID);
 
@@ -192,7 +173,7 @@ int main(int argc, char *argv[])
     // /////////////////////////////
 
     if(TGD != nullptr) {
-        TGD->run(WGD);
+        TGD->run();
     }
 
     // /////////////////////////////
@@ -316,41 +297,5 @@ int main(int argc, char *argv[])
     exit(EXIT_SUCCESS);
 }
 
-WINDSInputData* parseXMLTree(const std::string fileName)
-{
-	pt::ptree tree;
 
-	try
-	{
-		pt::read_xml(fileName, tree);
-	}
-	catch (boost::property_tree::xml_parser::xml_parser_error& e)
-	{
-		std::cerr << "Error reading tree in" << fileName << "\n";
-		return (WINDSInputData*)0;
-	}
 
-	WINDSInputData* xmlRoot = new WINDSInputData();
-        xmlRoot->parseTree( tree );
-	return xmlRoot;
-}
-Sensor* parseSensors (const std::string fileName)
-{
-
-  pt::ptree tree1;
-
-  try
-  {
-    pt::read_xml(fileName, tree1);
-  }
-  catch (boost::property_tree::xml_parser::xml_parser_error& e)
-  {
-    std::cerr << "Error reading tree in" << fileName << "\n";
-    return (Sensor*)0;
-  }
-
-  Sensor* xmlRoot = new Sensor();
-  xmlRoot->parseTree( tree1 );
-  return xmlRoot;
-
-}

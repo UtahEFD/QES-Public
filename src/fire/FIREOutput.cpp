@@ -32,7 +32,7 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
     // set cell-centered data dimensions
     // time dimension
     NcDim NcDim_t=addDimension("t");
-  
+    NcDim NcDim_tstr = addDimension("dateStrLen", dateStrLen);
     // space dimensions
     NcDim NcDim_x=addDimension("x",wgd_->nx-1);
     NcDim NcDim_y=addDimension("y",wgd_->ny-1);
@@ -42,6 +42,12 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
     std::vector<NcDim> dim_vect_t;
     dim_vect_t.push_back(NcDim_t);
     createAttScalar("t","time","s",dim_vect_t,&time);
+    
+    // create attributes for time dimension
+    std::vector<NcDim> dim_vect_tstr;
+    dim_vect_tstr.push_back(NcDim_t);
+    dim_vect_tstr.push_back(NcDim_tstr);
+    createAttVector("times", "date time", "-", dim_vect_tstr, &timestamp);
     
     // create attributes space dimensions
     std::vector<NcDim> dim_vect_x;
@@ -54,13 +60,14 @@ FIREOutput::FIREOutput(WINDSGeneralData *wgd,Fire* fire,std::string output_file)
     dim_vect_z.push_back(NcDim_z);
     createAttVector("z","z-distance","m",dim_vect_z,&z_out);
     
-    // create 2D vector (x,y)
+    // create 2D vector (x,y- time independent)
     std::vector<NcDim> dim_vect_2d;
     dim_vect_2d.push_back(NcDim_y);
     dim_vect_2d.push_back(NcDim_x);
     // create attributes
     createAttVector("terrain","terrain height","m",dim_vect_2d,&(wgd_->terrain));
     createAttVector("fuel","fuel type","--",dim_vect_2d,&(fire_->fuel_map));
+
     // create 3D vector (x,y,t)
     std::vector<NcDim> dim_vect_3d;
     dim_vect_3d.push_back(NcDim_t);

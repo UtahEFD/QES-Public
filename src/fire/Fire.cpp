@@ -134,19 +134,26 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
     
 	// Set fuel properties for domain
 	std::string fuelFile = WID->fires->fuelFile;
-	FuelRead* fuelField = nullptr;
-	Mesh* fuelMesh;
+        //MM FuelRead* fuelField = nullptr;
+	//MM Mesh* fuelMesh;
 
-	Vector3<int>* domain;
-	Vector3<float>* grid;
+	Vector3Int domain;
+	Vector3 grid;
 	domain = WID->simParams->domain;
 	grid = WID->simParams->grid;
+	float halo_x = WID->simParams->halo_x;
+	float halo_y = WID->simParams->halo_y;
 	if (fuelFile != ""){
 		std::cout<<"Extracting fuel data from "<< fuelFile << std::endl;
-		fuelField = new FuelRead(fuelFile,(*(grid))[0],(*(grid))[1] );	
-		assert(fuelField);	
+		//fuelField = new FuelRead(fuelFile,(grid[0],grid[1] ));
+		
+		/*MM fuelField = new FuelRead(fuelFile,
+					 std::tuple<int, int>(domain[0], domain[1]), 
+					 std::tuple<float, float>(grid[0], grid[1]));
+		*/
+		//MM assert(fuelField);	
 		//fuelField->setDomain(domain, grid);
-		fuelMesh = new Mesh(fuelField->getTris());
+		/*MM fuelMesh = new Mesh(fuelField->getTris());
     
 		for (int j = 0; j < ny-1; j++){
 			for (int i = 0; i < nx-1; i++){
@@ -219,8 +226,9 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
 				
 			}
 		}
+		*/
 	std::cout<<"fuel set"<<std::endl;								
-	} else {
+	 } else {
 		for (int j = 0; j < ny-1; j++){
 			for (int i = 0; i < nx-1; i++){
 				int idx = i + j*(nx-1);

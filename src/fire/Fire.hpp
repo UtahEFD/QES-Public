@@ -9,13 +9,14 @@
 #ifndef FIRE_H
 #define FIRE_H
 
-#include "WINDSInputData.h"
-#include "WINDSGeneralData.h"
+#include "winds/WINDSInputData.h"
+#include "winds/WINDSGeneralData.h"
 #include "FuelProperties.hpp"
-#include "Vector3.h"
-#include "Solver.h"
-#include "FuelRead.h"
-#include "DTEHeightField.h"
+#include "util/Vector3.h"
+#include "util/Vector3Int.h"
+#include "winds/Solver.h"
+//#include "FuelRead.cpp"
+#include "winds/DTEHeightField.h"
 #include <fstream>
 #include <iostream>
 #include <vector>

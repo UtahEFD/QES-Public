@@ -4,9 +4,9 @@
 #include <vector>
 #include <algorithm>
 
-#include "WINDSGeneralData.h"
-#include "WINDSInputData.h"
-#include "QESNetCDFOutput.h"
+#include "winds/WINDSGeneralData.h"
+#include "winds/WINDSInputData.h"
+#include "util/QESNetCDFOutput.h"
 #include "Fire.hpp"
 
 /* Specialized output classes derived from QESNetCDFOutput for 

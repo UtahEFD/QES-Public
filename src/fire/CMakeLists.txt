@@ -5,13 +5,13 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 CUDA_ADD_LIBRARY( qesfirecore
   Fire.cpp
   FIREOutput.cpp
-  FuelRead.cpp
 
-  fire.hpp
+
+  Fire.hpp
   FIREOutput.h
   Fires.hpp
   FuelProperties.hpp
-  FuelRead.h
+
   ignition.h
   OldFuelProperties.hpp
   )

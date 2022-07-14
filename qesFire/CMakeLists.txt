@@ -8,7 +8,7 @@ CUDA_ADD_EXECUTABLE( qesFire
 target_link_libraries(qesFire curand)
 target_link_libraries(qesFire qeswindscore)
 target_link_libraries(qesFire qesfirecore)
-target_link_libraries(qesFire qeswindsutil)
+target_link_libraries(qesFire qesutil)
 
 IF (HAS_OPTIX_SUPPORT MATCHES ON)
   target_link_libraries(qesFire qesOptix)
@@ -16,6 +16,7 @@ ENDIF()
 
 target_link_libraries(qesFire ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(qesFire ${Boost_DATE_TIME_LIBRARIES})
+target_link_libraries(qesFire ${Boost_FILESYSTEM_LIBRARIES})
 target_link_libraries(qesFire ${GDAL_LIBRARY})
 target_link_libraries(qesFire ${NETCDF_LIBRARIES_CXX})
 target_link_libraries(qesFire ${NETCDF_LIBRARIES_C})
