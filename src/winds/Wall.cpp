@@ -528,7 +528,7 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
       bool condition = true;
       while (condition) {
         if (WGD->center_id[WGD->wall_indices[id]] == 1) {
-          coeff = 1.0 + count - 1.0;
+          coeff = count;
         } else {
           coeff = 1.0 + count;
         }

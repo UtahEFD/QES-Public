@@ -128,9 +128,6 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
             int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);// Lineralized index for cell centered values
             error = fabs(lambda[icell_cent] - lambda_old[icell_cent]);
             if (error > max_error) {
-              i_max = i;
-              j_max = j;
-              k_max = k;
               max_error = error;
             }
           }
@@ -138,9 +135,6 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
       }
       iter += 1;
     }
-    std::cout << "i_max:" << i_max << std::endl;
-    std::cout << "j_max:" << j_max << std::endl;
-    std::cout << "k_max:" << k_max << std::endl;
 
     std::cout << "Solved!\n";
 

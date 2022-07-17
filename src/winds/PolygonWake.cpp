@@ -274,6 +274,19 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
     }
   }
 
+  if (tall_flag == 1) {
+    // Caluculate the saddle point height and the in-canyon separation-point Location
+    z_s = (-1.47 * L_over_H - 0.69 * W_over_H + 1.25) * wake_height;
+    x_sep = 4.34 * wake_height * W_over_H / (pow(L_over_H, -0.16) * (2.99 - 0.81 * W_over_H));
+    wake_height = (1.4077 * L_over_H - 1.5705 * W_over_H + 0.9297) * wake_height;
+    for (auto k = k_start; k <= WGD->nz - 2; k++) {
+      k_s = k;
+      if (z_s <= WGD->z[k]) {
+        break;
+      }
+    }
+  }
+
   for (size_t id = 0; id < polygonVertices.size() - 1; id++) {
     // Finding faces that are eligible for applying the far-wake parameterizations
     // angle between two points should be in -180 to 0 degree
@@ -320,26 +333,6 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
 
   Lr = Lr_ave / total_seg_length;
 
-  if (tall_flag == 1) {
-    // Caluculate the saddle point height and the in-canyon separation-point Location
-    z_s = -1.47 * length_eff - 0.69 * width_eff + 1.25 * wake_height;
-    x_sep = 4.34 * wake_height * W_over_H / (pow(L_over_H, -0.16) * (2.99 - 0.81 * W_over_H));
-    for (auto k = k_start; k <= WGD->nz - 2; k++) {
-      k_s = k;
-      if (z_s <= WGD->z[k]) {
-        break;
-      }
-    }
-  }
-  std::cout << "length_eff:  " << length_eff << std::endl;
-  std::cout << "width_eff:  " << width_eff << std::endl;
-  std::cout << "wake_height:  " << wake_height << std::endl;
-  std::cout << "tall_flag:  " << tall_flag << std::endl;
-  std::cout << "z_s:  " << z_s << std::endl;
-  std::cout << "x_sep:  " << x_sep << std::endl;
-  std::cout << "Lr:  " << Lr << std::endl;
-  std::cout << "k_s:  " << k_s << std::endl;
-
   for (auto k = 1; k <= k_start; k++) {
     k_bottom = k;
     if (base_height <= WGD->z[k]) {
@@ -380,6 +373,7 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
           } else {
             y_norm = y1;
           }
+          //std::cout << "y_norm:  " << y_norm << std::endl;
           canyon_factor = 1.0;
           x_id_min = -1;
           for (auto x_id = 1; x_id <= ceil(Lr_local / WGD->dxy); x_id++) {
@@ -446,10 +440,10 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
                 if (abs(yu) < abs(y_norm) && abs(y_norm) > epsilon && z_build < wake_height && wake_height > epsilon) {
                   if (tall_flag == 0) {
                     dn_u = sqrt((1.0 - pow((yu / y_norm), 2.0)) * (1.0 - pow((z_build / wake_height), 2.0)) * pow((canyon_factor * Lr_local_u), 2.0));
-                  } else if (tall_flag == 1 && k >= k_s) {
+                  } else if (tall_flag == 1 && z_build > z_s) {
                     dn_u = sqrt((1.0 - pow((yu / y_norm), 2.0)) * (1.0 - pow(((z_build - z_s) / (wake_height - z_s)), 2.0)) * pow((canyon_factor * Lr_local_u), 2.0));
-                  } else if (tall_flag == 1 && k < k_s) {
-                    dn_u = sqrt((1.0 - pow((yu / y_norm), 2.0)) * (1.0 - pow(((z_build - z_s) / z_s), 2.0)) * pow((canyon_factor * (Lr_local_u - x_sep)), 2.0)) + x_sep;
+                  } else if (tall_flag == 1 && z_build <= z_s) {
+                    dn_u = sqrt((1.0 - pow((yu / y_norm), 2.0))) * ((sqrt(1.0 - pow(((z_build - z_s) / z_s), 2.0)) * (canyon_factor * (Lr_local_u - x_sep))) + x_sep);
                   }
                 } else {
                   dn_u = 0.0;
@@ -469,26 +463,21 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
                       // std::cout << "i_u:   " << i_u << "\t\t"<< "j_u:   " << j_u << "\t\t"<< "k:   " << k << std::endl;
                       u0_modified.push_back(farwake_vel);
                       u0_mod_id.push_back(icell_face);
-
-                      WGD->w0[i + j * WGD->nx + k * WGD->nx * WGD->ny] = 0.0;
+                      WGD->w0[icell_face] = 0.0;
                     }
                   }
                   // Cavity zone
                   else {
-                    if (tall_flag == 0) {
-                      WGD->u0[icell_face] = -u0_h * MIN_S(pow((1.0 - xu / (WGD->cavity_factor * dn_u)), 2.0), 1.0)
-                                            * MIN_S(sqrt(1.0 - abs(yu / y_norm)), 1.0);
-                    } else if (tall_flag == 1 && k >= k_s) {
-                      WGD->u0[icell_face] = -u0_h * MIN_S(pow((1.0 - xu / (WGD->cavity_factor * dn_u)), 2.0), 1.0)
-                                            * MIN_S(sqrt(1.0 - abs(yu / y_norm)), 1.0);
-                    } else if (tall_flag == 1 && k < k_s) {
-                      WGD->u0[icell_face] = -u0_h * MIN_S(pow((1.0 - xu / (WGD->cavity_factor * dn_u)), 2.0), 1.0)
-                                            * MIN_S(sqrt(1.0 - abs(yu / y_norm)), 1.0);
-                    }
-                    if (tall_flag == 0 && k >= k_s) {
-                      WGD->w0[i + j * WGD->nx + k * WGD->nx * WGD->ny] = (z_build / wake_height) * 0.1 * WGD->u0[icell_face];
+                    WGD->u0[icell_face] = -u0_h * MIN_S(pow((1.0 - xu / (WGD->cavity_factor * dn_u)), 2.0), 1.0)
+                                          * MIN_S(sqrt(1.0 - abs(yu / y_norm)), 1.0);
+                    if (tall_flag == 1 && xu <= (dn_u / 2) && z_build >= z_s) {
+                      WGD->w0[icell_face] = -1.0 * (abs(z_build - z_s) / wake_height) * WGD->u0[icell_face];
+                    } else if (tall_flag == 1 && xu > (dn_u / 2) && z_build >= z_s) {
+                      WGD->w0[icell_face] = 1.0 * (abs(z_build - z_s) / wake_height) * WGD->u0[icell_face];
+                    } else if (tall_flag == 1 && z_build < z_s) {
+                      WGD->w0[icell_face] = -2.0 * (abs(z_build - z_s) / wake_height) * WGD->u0[icell_face];
                     } else {
-                      WGD->w0[i + j * WGD->nx + k * WGD->nx * WGD->ny] = 0.0;
+                      WGD->w0[icell_face] = 0.0;
                     }
                   }
                 }
@@ -512,10 +501,10 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
                 if (abs(yv) < abs(y_norm) && abs(y_norm) > epsilon && z_build < wake_height && wake_height > epsilon) {
                   if (tall_flag == 0) {
                     dn_v = sqrt((1.0 - pow((yv / y_norm), 2.0)) * (1.0 - pow((z_build / wake_height), 2.0)) * pow((canyon_factor * Lr_local_v), 2.0));
-                  } else if (tall_flag == 1 && k >= k_s) {
+                  } else if (tall_flag == 1 && z_build >= z_s) {
                     dn_v = sqrt((1.0 - pow((yv / y_norm), 2.0)) * (1.0 - pow(((z_build - z_s) / (wake_height - z_s)), 2.0)) * pow((canyon_factor * Lr_local_v), 2.0));
-                  } else if (tall_flag == 1 && k < k_s) {
-                    dn_v = sqrt((1.0 - pow((yv / y_norm), 2.0)) * (1.0 - pow(((z_build - z_s) / z_s), 2.0)) * pow((canyon_factor * (Lr_local_v - x_sep)), 2.0)) + x_sep;
+                  } else if (tall_flag == 1 && z_build < z_s) {
+                    dn_v = sqrt((1.0 - pow((yv / y_norm), 2.0))) * ((sqrt(1.0 - pow(((z_build - z_s) / z_s), 2.0)) * (canyon_factor * (Lr_local_v - x_sep))) + x_sep);
                   }
                 } else {
                   dn_v = 0.0;
@@ -533,25 +522,22 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
                     if (canyon_factor == 1) {
                       v0_modified.push_back(farwake_vel);
                       v0_mod_id.push_back(icell_face);
-                      WGD->w0[i + j * WGD->nx + k * WGD->nx * WGD->ny] = 0.0;
+
+                      WGD->w0[icell_face] = 0.0;
                     }
                   }
                   // Cavity zone
                   else {
-                    if (tall_flag == 0) {
-                      WGD->v0[icell_face] = -v0_h * MIN_S(pow((1.0 - xv / (WGD->cavity_factor * dn_v)), 2.0), 1.0)
-                                            * MIN_S(sqrt(1.0 - abs(yv / y_norm)), 1.0);
-                    } else if (tall_flag == 1 && k >= k_s) {
-                      WGD->v0[icell_face] = -v0_h * MIN_S(pow((1.0 - xv / (WGD->cavity_factor * dn_v)), 2.0), 1.0)
-                                            * MIN_S(sqrt(1.0 - abs(yv / y_norm)), 1.0);
-                    } else if (tall_flag == 1 && k < k_s) {
-                      WGD->v0[icell_face] = -v0_h * MIN_S(pow((1.0 - xv / (WGD->cavity_factor * dn_v)), 2.0), 1.0)
-                                            * MIN_S(sqrt(1.0 - abs(yv / y_norm)), 1.0);
-                    }
-                    if (tall_flag == 0 && k >= k_s) {
-                      WGD->w0[i + j * WGD->nx + k * WGD->nx * WGD->ny] = MAX_S((z_build / wake_height) * 0.1 * WGD->v0[icell_face], WGD->w0[i + j * WGD->nx + k * WGD->nx * WGD->ny]);
+                    WGD->v0[icell_face] = -v0_h * MIN_S(pow((1.0 - xv / (WGD->cavity_factor * dn_v)), 2.0), 1.0)
+                                          * MIN_S(sqrt(1.0 - abs(yv / y_norm)), 1.0);
+                    if (tall_flag == 1 && xv <= (dn_v / 2) && z_build >= z_s) {
+                      WGD->w0[icell_face] = MAX_S(-1.0 * (abs(z_build - z_s) / wake_height) * WGD->v0[icell_face], WGD->w0[icell_face]);
+                    } else if (tall_flag == 1 && xv > (dn_v / 2) && z_build >= z_s) {
+                      WGD->w0[icell_face] = MIN_S(1.0 * (abs(z_build - z_s) / wake_height) * WGD->v0[icell_face], WGD->w0[icell_face]);
+                    } else if (tall_flag == 1 && z_build < z_s) {
+                      WGD->w0[icell_face] = MAX_S(-2.0 * (abs(z_build - z_s) / wake_height) * WGD->v0[icell_face], WGD->w0[icell_face]);
                     } else {
-                      WGD->w0[i + j * WGD->nx + k * WGD->nx * WGD->ny] = 0.0;
+                      WGD->w0[icell_face] = 0.0;
                     }
                   }
                 }

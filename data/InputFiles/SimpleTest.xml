@@ -81,7 +81,7 @@
 	<rectangularBuilding>
 		<groupID> 1 </groupID>
 		<buildingType> 1 </buildingType>
-		<height> 600.0 </height>
+		<height> 400.0 </height>
 		<baseHeight> 0 </baseHeight>
 		<xStart> 199.0 </xStart>
 		<yStart> 199.0 </yStart>

@@ -364,11 +364,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         if (terrain[idx] < 0.0) {
           terrain[idx] = 0.0;
         }
-        if (ii == 110 && jj == 135) {
-          std::cout << "terrain[idx]:  " << terrain[idx] << std::endl;
-          std::cout << "x[ii]:  " << x[ii] << std::endl;
-          std::cout << "y[jj]:  " << y[jj] << std::endl;
-        }
+
         id = ii + jj * nx;
         for (size_t k = 0; k < z.size() - 1; k++) {
           terrain_face_id[id] = k;

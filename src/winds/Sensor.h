@@ -175,7 +175,7 @@ public:
    * @param u_prof u component of the velocity profile created by the sensor information
    * @param v_prof v component of the velocity profile created by the sensor information
    */
-  void BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, int num_sites, std::vector<int> available_sensor_id);
+  void BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, int num_sites, std::vector<int> available_sensor_id, float asl_percent, float abl_height);
 
   /**
    * This function utilizes Barnes scheme to interplote velocity to generate the initial velocity field for the domain.
@@ -187,5 +187,5 @@ public:
    * @param v_prof v component of the velocity profile created by the sensor information
    * @param site_id flatten id of the sensor location in 2D domain region
    */
-  void BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, std::vector<int> site_id, int num_sites, std::vector<int> available_sensor_id);
+  void BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, std::vector<int> site_id, int num_sites, std::vector<int> available_sensor_id, float asl_percent, float abl_height);
 };

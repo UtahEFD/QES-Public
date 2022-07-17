@@ -109,7 +109,6 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
   std::vector<float> site_theta(num_sites, 0.0);
   int count = 0;
 
-  //std::cout << "index:  " << index << std::endl;
 
   // Loop through all sites and create velocity profiles (WGD->u0,WGD->v0)
   for (auto i = 0; i < WID->metParams->sensors.size(); i++) {
@@ -118,10 +117,8 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
       count += 1;
       continue;
     }
-    //std::cout << "i:  " << i << std::endl;
 
     float convergence = 0.0;
-
     average__one_overL += WID->metParams->sensors[i]->TS[time_id[i]]->site_one_overL / num_sites;
     if (WID->simParams->UTMx != 0 && WID->simParams->UTMy != 0) {
       if (WID->metParams->sensors[i]->site_coord_flag == 1) {
@@ -344,6 +341,20 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
     }
   }
 
+  float surf_layer_height;// Surface layer height of the atmospheric boundary layer
+  float abl_height;// Atmospheric boundary layer height
+  float asl_percent = 0.05;// Percentage of atmospheric surface layer
+
+  // Stable boundary layer
+  if (average__one_overL > 0.0) {
+    abl_height = 200;
+  } else if (average__one_overL < 0.0) {// Unstable boundary layer
+    abl_height = 1000;
+  } else {// Neutral boundary layer
+    abl_height = 100;
+  }
+
+
   x.resize(WGD->nx);
   for (size_t i = 0; i < WGD->nx; i++) {
     x[i] = (i - 0.5) * WGD->dx; /**< Location of face centers in x-dir */
@@ -354,9 +365,10 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
     y[j] = (j - 0.5) * WGD->dy; /**< Location of face centers in y-dir */
   }
 
+
   int k_mod;
   if (num_sites == 1) {
-    for (auto k = 0; k < WGD->nz; k++) {
+    for (auto k = 1; k < WGD->nz; k++) {
       for (auto j = 0; j < WGD->ny; j++) {
         for (auto i = 0; i < WGD->nx; i++) {
 
@@ -366,15 +378,37 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
           } else {
             continue;
           }
-          icell_face = i + j * WGD->nx + k_mod * WGD->nx * WGD->ny;/// Lineralized index for cell faced values
-          if (k + WGD->terrain_face_id[site_id[0]] - 1 > WGD->nz - 2) {
+          icell_face = i + j * WGD->nx + k_mod * WGD->nx * WGD->ny;
+          /// Lineralized index for cell faced values
+
+          /*if (k + WGD->terrain_face_id[site_id[0]] - 1 > WGD->nz - 2) {
             WGD->u0[icell_face] = u_prof[0][WGD->nz - 2];
             WGD->v0[icell_face] = v_prof[0][WGD->nz - 2];
           } else {
             WGD->u0[icell_face] = u_prof[0][k + WGD->terrain_face_id[site_id[0]] - 1];
             WGD->v0[icell_face] = v_prof[0][k + WGD->terrain_face_id[site_id[0]] - 1];
+          }*/
+          if (abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[0]]]) > abl_height) {
+            surf_layer_height = asl_percent * abl_height;
+          } else {
+            surf_layer_height = asl_percent * (2 * abl_height - (WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[0]]]));
           }
 
+          if (WGD->z[k] <= surf_layer_height) {
+            WGD->u0[icell_face] = u_prof[0][k + WGD->terrain_face_id[site_id[0]] - 1];
+            WGD->v0[icell_face] = v_prof[0][k + WGD->terrain_face_id[site_id[0]] - 1];
+          } else if (k + WGD->terrain_face_id[site_id[0]] - 1 > WGD->nz - 2) {
+            WGD->u0[icell_face] = u_prof[0][WGD->nz - 2];
+            WGD->v0[icell_face] = v_prof[0][WGD->nz - 2];
+          } else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
+            WGD->u0[icell_face] = u_prof[0][k_mod];
+            WGD->v0[icell_face] = v_prof[0][k_mod];
+          }
+
+
+          /*icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = u_prof[0][k];
+          WGD->v0[icell_face] = v_prof[0][k];*/
           // WGD->w0[icell_face] = 0.0;         /// Perpendicular wind direction
         }
       }
@@ -386,13 +420,13 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
   else {
     if (solverType == 1) {
       auto startBarnesCPU = std::chrono::high_resolution_clock::now();
-      BarnesInterpolationCPU(WID, WGD, u_prof, v_prof, num_sites, available_sensor_id);
+      BarnesInterpolationCPU(WID, WGD, u_prof, v_prof, num_sites, available_sensor_id, asl_percent, abl_height);
       auto finishBarnesCPU = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> elapsedBarnesCPU = finishBarnesCPU - startBarnesCPU;
       std::cout << "Elapsed time for Barnes interpolation on CPU: " << elapsedBarnesCPU.count() << " s\n";
     } else {
       auto startBarnesGPU = std::chrono::high_resolution_clock::now();
-      BarnesInterpolationGPU(WID, WGD, u_prof, v_prof, site_id, num_sites, available_sensor_id);
+      BarnesInterpolationGPU(WID, WGD, u_prof, v_prof, site_id, num_sites, available_sensor_id, asl_percent, abl_height);
       auto finishBarnesGPU = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> elapsedBarnesGPU = finishBarnesGPU - startBarnesGPU;
       std::cout << "Elapsed time for Barnes interpolation on GPU: " << elapsedBarnesGPU.count() << " s\n";
@@ -490,7 +524,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
   std::cout << "Elapsed time for input wind profile: " << elapsed_InputWindProfile.count() << " s\n";
 }
 
-void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, int num_sites, std::vector<int> available_sensor_id)
+void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, int num_sites, std::vector<int> available_sensor_id, float asl_percent, float abl_height)
 {
   std::vector<float> x, y;
   x.resize(WGD->nx);
@@ -508,6 +542,7 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
   float sum_wm, sum_wu, sum_wv;
   float dxx, dyy, u12, u34, v12, v34;
   int icell_face, icell_cent;
+  float surf_layer_height;// Surface layer height of the atmospheric boundary layer
 
   std::vector<float> u0_int(num_sites * WGD->nz, 0.0);
   std::vector<float> v0_int(num_sites * WGD->nz, 0.0);
@@ -570,9 +605,33 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
           site_i[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord / WGD->dx;
           site_j[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord / WGD->dy;
           site_id[ii] = site_i[ii] + site_j[ii] * WGD->nx;
+          /*if (WGD->z[k] <= ave_z0) {
+            WGD->u0[icell_face] = u_prof[0][k + WGD->terrain_face_id[site_id[0]] - 1];
+            WGD->v0[icell_face] = v_prof[0][k + WGD->terrain_face_id[site_id[0]] - 1];
+          } else if (k + WGD->terrain_face_id[site_id[0]] - 1 > WGD->nz - 2) {
+            WGD->u0[icell_face] = u_prof[0][WGD->nz - 2];
+            WGD->v0[icell_face] = v_prof[0][WGD->nz - 2];
+          } else if (WGD->z[k] > ave_z0 && k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
+            WGD->u0[icell_face] = u_prof[0][k_mod];
+            WGD->v0[icell_face] = v_prof[0][k_mod];
+          }*/
+          if (abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]) > abl_height) {
+            surf_layer_height = asl_percent * abl_height;
+          } else {
+            surf_layer_height = asl_percent * (2 * abl_height - abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]));
+          }
+
           if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
             sum_wu += wm[ii][i][j] * u_prof[ii][WGD->nz - 2];
             sum_wv += wm[ii][i][j] * v_prof[ii][WGD->nz - 2];
+            sum_wm += wm[ii][i][j];
+          } else if (WGD->z[k] <= surf_layer_height) {
+            sum_wu += wm[ii][i][j] * u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
+            sum_wv += wm[ii][i][j] * v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
+            sum_wm += wm[ii][i][j];
+          } else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[site_id[ii]] - 1 < WGD->nz && k_mod > k + WGD->terrain_face_id[site_id[ii]] - 1) {
+            sum_wu += wm[ii][i][j] * u_prof[ii][k_mod];
+            sum_wv += wm[ii][i][j] * v_prof[ii][k_mod];
             sum_wm += wm[ii][i][j];
           } else {
             sum_wu += wm[ii][i][j] * u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
@@ -580,6 +639,15 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
             sum_wm += wm[ii][i][j];
           }
         }
+        /*if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
+            sum_wu += wm[ii][i][j] * u_prof[ii][WGD->nz - 2];
+            sum_wv += wm[ii][i][j] * v_prof[ii][WGD->nz - 2];
+            sum_wm += wm[ii][i][j];
+          } else {
+            sum_wu += wm[ii][i][j] * u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
+            sum_wv += wm[ii][i][j] * v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
+            sum_wm += wm[ii][i][j];
+          }*/
         icell_face = i + j * WGD->nx + k_mod * WGD->nx * WGD->ny;
         WGD->u0[icell_face] = sum_wu / sum_wm;
         WGD->v0[icell_face] = sum_wv / sum_wm;
@@ -627,6 +695,13 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
           u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz] = u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
           v0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz] = v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
         }
+        /*if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
+          u0_int[k + ii * WGD->nz] = u_prof[ii][WGD->nz - 2];
+          v0_int[k + ii * WGD->nz] = v_prof[ii][WGD->nz - 2];
+        } else {
+          u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz] = u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
+          v0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz] = v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
+        }*/
       }
     }
   }
@@ -647,7 +722,29 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
           site_i[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord / WGD->dx;
           site_j[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord / WGD->dy;
           site_id[ii] = site_i[ii] + site_j[ii] * WGD->nx;
+          if (abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]) > abl_height) {
+            surf_layer_height = asl_percent * abl_height;
+          } else {
+            surf_layer_height = asl_percent * (2 * abl_height - abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]));
+          }
           if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
+            sum_wu += wm[ii][i][j] * (u_prof[ii][WGD->nz - 2] - u0_int[WGD->nz - 2 + ii * WGD->nz]);
+            sum_wv += wm[ii][i][j] * (v_prof[ii][WGD->nz - 2] - v0_int[WGD->nz - 2 + ii * WGD->nz]);
+            sum_wm += wm[ii][i][j];
+          } else if (WGD->z[k] <= surf_layer_height) {
+            sum_wu += wm[ii][i][j] * (u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1] - u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);
+            sum_wv += wm[ii][i][j] * (v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1] - v0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);
+            sum_wm += wm[ii][i][j];
+          } else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[site_id[ii]] - 1 < WGD->nz && k_mod > k + WGD->terrain_face_id[site_id[ii]] - 1) {
+            sum_wu += wm[ii][i][j] * (u_prof[ii][k_mod] - u0_int[k_mod + ii * WGD->nz]);
+            sum_wv += wm[ii][i][j] * (v_prof[ii][k_mod] - v0_int[k_mod + ii * WGD->nz]);
+            sum_wm += wm[ii][i][j];
+          } else {
+            sum_wu += wm[ii][i][j] * (u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1] - u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);
+            sum_wv += wm[ii][i][j] * (v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1] - v0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);
+            sum_wm += wm[ii][i][j];
+          }
+          /*if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
             sum_wu += wm[ii][i][j] * (u_prof[ii][WGD->nz - 2] - u0_int[WGD->nz - 2 + ii * WGD->nz]);
             sum_wv += wm[ii][i][j] * (v_prof[ii][WGD->nz - 2] - v0_int[WGD->nz - 2 + ii * WGD->nz]);
             sum_wm += wm[ii][i][j];
@@ -655,7 +752,7 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
             sum_wu += wm[ii][i][j] * (u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1] - u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);
             sum_wv += wm[ii][i][j] * (v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1] - v0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);
             sum_wm += wm[ii][i][j];
-          }
+          }*/
         }
 
         if (sum_wm != 0) {

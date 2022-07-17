@@ -4,8 +4,8 @@
   	<halo_x> 0.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 0.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
 
-  	<domain> 750 750 200 </domain>					<!-- Number of cells in x,y and z directions-->
-  	<cellSize> 8.0 8.0 1.0 </cellSize> 				<!-- Mesh resolution (meters)-->
+  	<domain> 257 257 300 </domain>					<!-- Number of cells in x,y and z directions-->
+  	<cellSize> 23.347963 23.347963 1.0 </cellSize> 				<!-- Mesh resolution (meters)-->
 	<verticalStretching> 0 </verticalStretching>              	<!-- vertical stretching (0-uniform grid (default), 1-costum grid)-->
 
 	<totalTimeIncrements> 1 </totalTimeIncrements> 			<!-- Number of time steps-->
@@ -46,7 +46,7 @@
               <timeStamp>2020-01-01T00:00:00</timeStamp>
        		<boundaryLayerFlag> 2 </boundaryLayerFlag> 		<!-- Site boundary layer flag (1-log (default), 2-exp, 3-urban canopy, 4-data entry) -->
        		<siteZ0> 0.2113 </siteZ0> 					<!-- Site z0 -->
-       		<reciprocal> -2500.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
+       		<reciprocal> 0.0 </reciprocal> 				<!-- Reciprocal Monin-Obukhov Length (1/m) -->
        		<height> 10.2423 </height> 				<!-- Height of the sensor -->
        		<speed> 8.7946 </speed> 					<!-- Measured speed at the sensor height -->
        		<direction> 210.0 </direction> 				<!-- Wind direction of sensor -->

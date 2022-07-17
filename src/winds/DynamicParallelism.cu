@@ -204,9 +204,12 @@ __global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int 
   dim3 numberOfBlocks(ceil(((nx - 1) * (ny - 1) * (nz - 1)) / (float)(BLOCKSIZE)), 1, 1);
 
   // Invoke divergence kernel
-  divergence<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_u, d_v, d_w, d_R, d_e, d_f, d_g, d_h, d_m, d_n, alpha1, nx, ny, nz, dx, dy, d_dz_array);
+  if (itermax > 0) {
+    divergence<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_u, d_v, d_w, d_R, d_e, d_f, d_g, d_h, d_m, d_n, alpha1, nx, ny, nz, dx, dy, d_dz_array);
+  }
+
   // Iterate untill convergence is reached
-  while ((iter < itermax) && (error > tol)) {
+  while ((iter < itermax) && (error > tol) && (itermax > 0)) {
 
     // Save previous iteration values for error calculation
     saveLambda<<<numberOfBlocks, numberOfThreadsPerBlock>>>(d_lambda, d_lambda_old, nx, ny, nz);
@@ -250,7 +253,9 @@ __global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int 
   }*/
   dim3 numberOfBlocks3(ceil((nx * ny * nz) / (float)(BLOCKSIZE)), 1, 1);
   // Invoke final velocity (Euler) kernel
-  finalVelocity<<<numberOfBlocks3, numberOfThreadsPerBlock>>>(d_lambda, d_u, d_v, d_w, d_icellflag, d_f, d_h, d_n, alpha1, alpha2, dx, dy, dz, d_dz_array, nx, ny, nz);
+  if (itermax > 0) {
+    finalVelocity<<<numberOfBlocks3, numberOfThreadsPerBlock>>>(d_lambda, d_u, d_v, d_w, d_icellflag, d_f, d_h, d_n, alpha1, alpha2, dx, dy, dz, d_dz_array, nx, ny, nz);
+  }
 }
 
 
@@ -370,6 +375,15 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   cudaMalloc((void **)&d_u, WGD->numcell_face * sizeof(float));
   cudaMalloc((void **)&d_v, WGD->numcell_face * sizeof(float));
   cudaMalloc((void **)&d_w, WGD->numcell_face * sizeof(float));
+
+  /*int i = 105;
+  int j = 131;
+  for (auto k = 1; k < WGD->nz; k++) {
+    int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+    std::cout << "k:   " << k << std::endl;
+    std::cout << "WGD->u0[icell_face]:   " << WGD->u0[icell_face] << std::endl;
+    std::cout << "WGD->v0[icell_face]:   " << WGD->v0[icell_face] << std::endl;
+  }*/
 
   long long memory_req = (10 * WGD->numcell_cent + 6 * WGD->numcell_face + numblocks + (WGD->nz - 1)) * sizeof(float) + (WGD->numcell_cent) * sizeof(int) + 2308964352;
   char msg[256];
