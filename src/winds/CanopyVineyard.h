@@ -23,7 +23,7 @@ public:
     parsePrimitive<float>(true, understory_height, "understoryHeight");
     //parsePrimitive<float>(true, x_start, "xStart");
     //parsePrimitive<float>(true, y_start, "yStart");
-   /* 
+    /* 
     parsePrimitive<float>(false, corner1x, "corner1x");
     parsePrimitive<float>(false, corner1y, "corner1y");
     parsePrimitive<float>(false, corner2x, "corner2x");
@@ -32,13 +32,13 @@ public:
     parsePrimitive<float>(false, corner3y, "corner3y");
     parsePrimitive<float>(false, corner4x, "corner4x");
     parsePrimitive<float>(false, corner4y, "corner4y");
-   */ 
-    parseMultiPrimitives<float>(false,xVertex, "xVertex");
-    parseMultiPrimitives<float>(false,yVertex, "yVertex");
+   */
+    parseMultiPrimitives<float>(false, xVertex, "xVertex");
+    parseMultiPrimitives<float>(false, yVertex, "yVertex");
 
     int nNodes = xVertex.size();
-    polygonVertices.resize(nNodes+1);
-    for (int k=0; k<nNodes; k++){
+    polygonVertices.resize(nNodes + 1);
+    for (int k = 0; k < nNodes; k++) {
       polygonVertices[k].x_poly = xVertex[k];
       polygonVertices[k].y_poly = yVertex[k];
     }
@@ -87,7 +87,7 @@ public:
     polygonVertices[2].y_poly = corner3y;
     polygonVertices[3].x_poly = corner4x;
     polygonVertices[3].y_poly = corner4y;
-*/  
+*/
   }
 
   void setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD, int building_id);
@@ -124,8 +124,8 @@ private:
   float rowWidth;
   float rowAngle;
   bool thinFence = 0;
-  float LAD_eff=0.66667;//leaf area per volume of canopy, including aisles. Effective (bulk) LAD. Re-calculated by the code using beta if thinFence==1
-  float LAD_avg=4.3138;//vertically averaged LAD for just the row, used in UD zone drag calc for vegetative rows only.  
+  float LAD_eff = 0.66667;//leaf area per volume of canopy, including aisles. Effective (bulk) LAD. Re-calculated by the code using beta if thinFence==1
+  float LAD_avg = 4.3138;//vertically averaged LAD for just the row, used in UD zone drag calc for vegetative rows only.
   //float fetch = 7;
   //float corner1x, corner1y, corner2x, corner2y, corner3x, corner3y, corner4x, corner4y;
   std::map<int, float> u0, v0;
@@ -146,6 +146,5 @@ inline int CanopyVineyard::getCellFlagWake()
 inline float CanopyVineyard::P2L(float P[2], float Lx[2], float Ly[2])
 {
   return abs((Lx[1] - Lx[0]) * (Ly[0] - P[1]) - (Lx[0] - P[0]) * (Ly[1] - Ly[0])) / sqrt(pow(Lx[1] - Lx[0], 2) + pow(Ly[1] - Ly[0], 2));
-
 }
 
