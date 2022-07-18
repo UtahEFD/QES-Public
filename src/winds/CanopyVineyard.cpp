@@ -727,6 +727,9 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
             if (understory_height == 0) {// if no understory space
               if (UD_zone_flag && dv_c_dw > rowSpacing && ((rowSpacing - ld) < l_ud) && (z_rel <= z_ud)) {// if i'm ALSO in the UD zone
                 WGD->icellflag[icell_cent] = 31;
+                if (i + i_start == 65 && j + j_start == 75 && k < 20) {
+                  std::cout << "k = " << k << " u_c = " << u_c << " u_c after = " << u_c + u_def * (1 - exp(br * (z_ud - z_rel))) << " deficit: " << u_def << " beta = " << beta << " a_obf = " << a_obf << " rowWidth = " << rowWidth << " l_ud = " << l_ud << " Cd = " << Cd << std::endl;
+                }
 
                 u_c = u_c + u_def * (1 - exp(br * (z_ud - z_rel)));
               }
@@ -736,10 +739,16 @@ void CanopyVineyard::canopyVegetation(WINDSGeneralData *WGD, int building_id)
                 WGD->icellflag[icell_cent] = 31;
 
                 if (z_rel > z_mid) {// upper half of UD zone
+                  if (i + i_start == 65 && j + j_start == 75 && k < 20) {
+                    std::cout << "k = " << k << " u_c = " << u_c << " u_c after = " << u_c + u_def * (1 - exp(brTOP * (z_udTOP - z_rel))) << " deficit: " << u_def << " beta = " << beta << " a_obf = " << a_obf << " rowWidth = " << rowWidth << " l_ud = " << l_ud << " Cd = " << Cd << std::endl;
+                  }
 
                   u_c = u_c + u_def * (1 - exp(brTOP * (z_udTOP - z_rel)));
 
                 } else {// lower half of UD zone
+                  if (i + i_start == 65 && j + j_start == 75 && k < 20) {
+                    std::cout << "k = " << k << " u_c = " << u_c << " u_c after = " << u_c + u_def * (1 - exp(brBOT * (z_rel - z_udBOT))) << " deficit: " << u_def << " beta = " << beta << " a_obf = " << a_obf << " rowWidth = " << rowWidth << " l_ud = " << l_ud << " Cd = " << Cd << std::endl;
+                  }
 
                   u_c = u_c + u_def * (1 - exp(brBOT * (z_rel - z_udBOT)));
                 }
