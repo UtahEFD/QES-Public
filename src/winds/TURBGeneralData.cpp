@@ -241,6 +241,7 @@ TURBGeneralData::TURBGeneralData(const WINDSInputData *WID, WINDSGeneralData *WG
   // derived turbulence quantities
   tke.resize(numcell_cent, 0);
   CoEps.resize(numcell_cent, 0);
+  nuT.resize(numcell_cent, 0);
   // std::cout << "\t\t Memory allocation completed.\n";
 
   if (flagCompDivStress) {
@@ -365,6 +366,7 @@ TURBGeneralData::TURBGeneralData(const std::string inputFile, WINDSGeneralData *
   // derived turbulence quantities
   tke.resize(numcell_cent, 0);
   CoEps.resize(numcell_cent, 0);
+  nuT.resize(numcell_cent, 0);
 
   // comp of the divergence of the stress tensor
   tmp_dtoxdx.resize(numcell_cent, 0);
@@ -450,6 +452,7 @@ TURBGeneralData::TURBGeneralData(WINDSGeneralData *WGDin)
   // derived turbulence quantities
   tke.resize(numcell_cent, 0);
   CoEps.resize(numcell_cent, 0);
+  nuT.resize(numcell_cent, 0);
 
   // comp of the divergence of the stress tensor
   tmp_dtoxdx.resize(numcell_cent, 0);
@@ -674,6 +677,7 @@ void TURBGeneralData::getTurbulentViscosity()
   float tkeBound = turbUpperBound * uStar * uStar;
 
   for (std::vector<int>::iterator it = icellfluid.begin(); it != icellfluid.end(); ++it) {
+
     int cellID = *it;
 
     float Sxx = Gxx[cellID];
@@ -692,13 +696,17 @@ void TURBGeneralData::getTurbulentViscosity()
 
     NU_T = LM * LM * sqrt(2.0 * SijSij);
     TKE = pow((NU_T / (cPope * LM)), 2.0);
+    //    std::cout << "gTV check7" << std::endl;
 
     if (TKE > tkeBound)
       TKE = tkeBound;
 
     nuT[cellID] = NU_T;
+    //   std::cout << "gTV check8" << std::endl;
     CoEps[cellID] = 5.7 * pow(sqrt(TKE) * cPope, 3.0) / (LM);
     tke[cellID] = TKE;
+
+    //  std::cout << "gTV check9" << std::endl;
   }
   return;
 }
