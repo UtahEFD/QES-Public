@@ -1,11 +1,34 @@
+/****************************************************************************
+ * Copyright (c) 2021 University of Utah
+ * Copyright (c) 2021 University of Minnesota Duluth
+ *
+ * Copyright (c) 2021 Matthew Moody
+ * Copyright (c) 2021 Jeremy Gibbs
+ *
+ * This file is part of QES-Winds
+ *
+ * GPL-3.0 License
+ *
+ * QES-Winds is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3 of the License.
+ *
+ * QES-Winds is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
+ ****************************************************************************/
+
 /**
 *  Fire.cpp
 *  
-*  This class models fire spread rate in QUIC using Balbi (2019), Baum & McCaffrey (1988), level set: Sethian
+*  This class models fire spread rate in QES using Balbi (2019), Baum & McCaffrey (1988), level set: Sethian
 *
-*  Created by Matthew Moody, Jeremy Gibbs on 12/27/18.
 */
-#include "Fire.hpp"
+#include "Fire.h"
 
 using namespace std;
 float PI = 3.14159265359;
@@ -134,8 +157,7 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
     
 	// Set fuel properties for domain
 	std::string fuelFile = WID->fires->fuelFile;
-        //MM FuelRead* fuelField = nullptr;
-	//MM Mesh* fuelMesh;
+        FuelRead *Fuel_read = nullptr;
 
 	Vector3Int domain;
 	Vector3 grid;
@@ -144,26 +166,25 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
 	float halo_x = WID->simParams->halo_x;
 	float halo_y = WID->simParams->halo_y;
 	if (fuelFile != ""){
-		std::cout<<"Extracting fuel data from "<< fuelFile << std::endl;
-		//fuelField = new FuelRead(fuelFile,(grid[0],grid[1] ));
+		Fuel_read = new FuelRead(fuelFile,
+					 std::tuple<int, int>(domain[0], domain[1] ), 
+					 std::tuple<float, float>(grid[0], grid[1] ));
+
 		
-		/*MM fuelField = new FuelRead(fuelFile,
-					 std::tuple<int, int>(domain[0], domain[1]), 
-					 std::tuple<float, float>(grid[0], grid[1]));
-		*/
 		//MM assert(fuelField);	
 		//fuelField->setDomain(domain, grid);
-		/*MM fuelMesh = new Mesh(fuelField->getTris());
-    
+		int fID = fuel_type;
+		int fuelID = fuel_type;
 		for (int j = 0; j < ny-1; j++){
 			for (int i = 0; i < nx-1; i++){
 				int idx = i+j*(nx-1);
-				//float fID = fuelMesh->getHeight(i*dx+dx*0.5f,j*dy+dy*0.5f);
-				float fID = fuelMesh->getHeight(i*dx,j*dy);				
-				//std::cout<<"fuelMesh ["<<i<<"]["<<j<<"] = "<<fID<<std::endl;
-				fuel_map[idx] = round(fID);
-				int fuelID = round(fID);
-					
+			        
+				fID = Fuel_read->fuelField[idx];
+				fuel_map[idx] = fID;
+				
+				fuelID = fID;
+				//std::cout<<"fuel["<<i<<"]["<<j<<"] = "<<fuelID<<std::endl;
+			       
 				if (fuelID==1)  	fire_cells[idx].fuel = new ShortGrass();
 				else if (fuelID==2)	fire_cells[idx].fuel = new TimberGrass();
 				else if (fuelID==3) fire_cells[idx].fuel = new TallGrass();
@@ -222,12 +243,11 @@ Fire :: Fire(WINDSInputData* WID, WINDSGeneralData* WGD) {
 				else if (fuelID==202) fire_cells[idx].fuel = new SB2();
 				else if (fuelID==203) fire_cells[idx].fuel = new SB3();
 				else if (fuelID==204) fire_cells[idx].fuel = new SB4();
-				else fire_cells[idx].fuel = new SH1();
+				else fire_cells[idx].fuel = new SB4();
 				
 			}
 		}
-		*/
-	std::cout<<"fuel set"<<std::endl;								
+	std::cout<<"Fuel set"<<std::endl;								
 	 } else {
 		for (int j = 0; j < ny-1; j++){
 			for (int i = 0; i < nx-1; i++){

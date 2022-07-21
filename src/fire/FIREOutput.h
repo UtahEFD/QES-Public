@@ -7,7 +7,7 @@
 #include "winds/WINDSGeneralData.h"
 #include "winds/WINDSInputData.h"
 #include "util/QESNetCDFOutput.h"
-#include "Fire.hpp"
+#include "Fire.h"
 
 /* Specialized output classes derived from QESNetCDFOutput for 
    cell center data (used primarly for vizualization)

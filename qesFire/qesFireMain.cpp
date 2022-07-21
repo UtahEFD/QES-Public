@@ -28,7 +28,7 @@
 
 #include "winds/Sensor.h"
 
-#include "fire/Fire.hpp"
+#include "fire/Fire.h"
 #include "fire/FIREOutput.h"
 #include <chrono>
 namespace pt = boost::property_tree;
