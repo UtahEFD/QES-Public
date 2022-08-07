@@ -386,19 +386,15 @@ void WindProfilerBarnCPU::interpolateWindProfile(const WINDSInputData *WID, WIND
         }
       }
     }
+  } else {
+    // If number of sites are more than one
+    // Apply 2D Barnes scheme to interpolate site velocity profiles to the whole domain
+    auto startBarnesCPU = std::chrono::high_resolution_clock::now();
+    BarnesInterpolationCPU(WID, WGD, u_prof, v_prof, available_sensor_id);
+    auto finishBarnesCPU = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> elapsedBarnesCPU = finishBarnesCPU - startBarnesCPU;
+    std::cout << "Elapsed time for Barnes interpolation on CPU: " << elapsedBarnesCPU.count() << " s\n";
   }
-
-  // If number of sites are more than one
-  // Apply 2D Barnes scheme to interpolate site velocity profiles to the whole domain
-  //
-  // If number of sites are more than one
-  // Apply 2D Barnes scheme to interpolate site velocity profiles to the whole domain
-
-  auto startBarnesCPU = std::chrono::high_resolution_clock::now();
-  BarnesInterpolationCPU(WID, WGD, u_prof, v_prof, available_sensor_id);
-  auto finishBarnesCPU = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<float> elapsedBarnesCPU = finishBarnesCPU - startBarnesCPU;
-  std::cout << "Elapsed time for Barnes interpolation on CPU: " << elapsedBarnesCPU.count() << " s\n";
 
   return;
 }
