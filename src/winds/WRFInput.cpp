@@ -467,7 +467,7 @@ WRFInput::WRFInput(const std::string &filename,
     // allow user control of the discretization
     
     // this parameter needs to come from xml... 
-    fm_dz = 10.0f;
+    fm_dz = 12.0f;
 
     std::cout << "WRF Fire Mesh dimensions (nx, ny): " << fm_nx << " by " << fm_ny << std::endl;
     std::cout << "WRF Fire Mesh Resolution (dx, dy): (" << fm_dx << ", " << fm_dy << ")" << std::endl;
