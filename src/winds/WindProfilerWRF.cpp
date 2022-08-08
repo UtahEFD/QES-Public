@@ -62,7 +62,7 @@ void WindProfilerWRF::interpolateWindProfile(const WINDSInputData *WID, WINDSGen
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  int id, icell_face, icell_cent;
+  int id, icell_face;
   float zm;
   WRFInput *wrf_ptr = WID->simParams->wrfInputData;
 

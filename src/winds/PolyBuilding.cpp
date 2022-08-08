@@ -1762,8 +1762,8 @@ void PolyBuilding::setCellFlags(const WINDSInputData *WID, WINDSGeneralData *WGD
     if (cut_points.size() > 0) {
       for (auto id = 0u; id < cut_points.size(); id++) {
         int k = cut_cell_id[id] / ((WGD->nx - 1) * (WGD->ny - 1));
-        int j = (cut_cell_id[id] - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1);
-        int i = cut_cell_id[id] - k * (WGD->nx - 1) * (WGD->ny - 1) - j * (WGD->nx - 1);
+        //unused int j = (cut_cell_id[id] - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1);
+        //unused int i = cut_cell_id[id] - k * (WGD->nx - 1) * (WGD->ny - 1) - j * (WGD->nx - 1);
 
         if (cut_points[id].face_behind.size() != 0) {
           reorderPoints(cut_points[id].face_behind, 0);
@@ -1932,11 +1932,11 @@ float PolyBuilding::calculateArea(WINDSGeneralData *WGD, std::vector<cutVert> &f
 {
   float S = 0.0;
   float coeff = 0.0;
-  int i(0), j(0), k(0);
+  int k = 0;
   if (face_points.size() != 0) {
     k = cutcell_index / ((WGD->nx - 1) * (WGD->ny - 1));
-    j = (cutcell_index - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1);
-    i = cutcell_index - k * (WGD->nx - 1) * (WGD->ny - 1) - j * (WGD->nx - 1);
+    //unused: int j = (cutcell_index - k * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1);
+    //unused: int i = cutcell_index - k * (WGD->nx - 1) * (WGD->ny - 1) - j * (WGD->nx - 1);
     // calculate area fraction coefficient for each face of the cut-cell
     for (auto i = 0u; i < face_points.size() - 1; i++) {
       coeff += (0.5 * (face_points[i + 1].y_cut + face_points[i].y_cut) * (face_points[i + 1].z_cut - face_points[i].z_cut)) / (WGD->dy * WGD->dz_array[k]) + (0.5 * (face_points[i + 1].x_cut + face_points[i].x_cut) * (face_points[i + 1].z_cut - face_points[i].z_cut)) / (WGD->dx * WGD->dz_array[k]) + (0.5 * (face_points[i + 1].x_cut + face_points[i].x_cut) * (face_points[i + 1].y_cut - face_points[i].y_cut)) / (WGD->dx * WGD->dy);

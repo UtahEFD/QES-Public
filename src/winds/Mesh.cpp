@@ -49,7 +49,7 @@ float Mesh::getHeight(float x, float y)
 void Mesh::calculateMixingLength(int dimX, int dimY, int dimZ, float dx, float dy, float dz, const std::vector<int> &icellflag, std::vector<double> &mixingLength)
 {
 
-  int cellNum = 0;
+  // unused: int cellNum = 0;
 
 #pragma acc parallel loop independent
   for (int k = 0; k < dimZ - 1; k++) {

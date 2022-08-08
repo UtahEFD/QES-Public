@@ -54,17 +54,18 @@ void WindProfilerBarnCPU::interpolateWindProfile(const WINDSInputData *WID, WIND
   std::cout << "new Wind Interp" << std::endl;
 
   const float vk = 0.4;// Von Karman's constant
-  float canopy_d, u_H;
+  float canopy_d = 0.0, u_H = 0.0;
   //float site_UTM_x, site_UTM_y;
   //float site_lon, site_lat;
-  float wind_dir, z0_new, z0_high, z0_low;
-  float psi, psi_first, x_temp, u_star;
-  float u_new, u_new_low, u_new_high;
-  int log_flag, iter;
-  float a1, a2, a3;
+  float wind_dir = 0.0, z0_new = 0.0, z0_high = 0.0, z0_low = 0.0;
+  float psi;// unused: psi_first
+  float x_temp;
+  float u_star = 0.0, u_new = 0.0, u_new_low = 0.0, u_new_high = 0.0;
+  int log_flag = 0, iter = 0;
+  float a1 = 0.0, a2 = 0.0, a3 = 0.0;
   float site_mag;
   float blending_height = 0.0, average__one_overL = 0.0;
-  int max_terrain = 1;
+  // unused: int max_terrain = 1;
   std::vector<float> x, y;
 
   int num_sites = WID->metParams->sensors.size();
@@ -91,7 +92,7 @@ void WindProfilerBarnCPU::interpolateWindProfile(const WINDSInputData *WID, WIND
 
   std::vector<std::vector<float>> u_prof(num_sites, std::vector<float>(WGD->nz, 0.0));
   std::vector<std::vector<float>> v_prof(num_sites, std::vector<float>(WGD->nz, 0.0));
-  int icell_face, icell_cent;
+  int icell_face;
 
   std::vector<int> site_i(num_sites, 0);
   std::vector<int> site_j(num_sites, 0);
@@ -173,7 +174,7 @@ void WindProfilerBarnCPU::interpolateWindProfile(const WINDSInputData *WID, WIND
 
     // If site has a uniform velocity profile
     if (ts->site_blayer_flag == 0) {
-      for (auto k = WGD->terrain_face_id[site_id[idx]]; k < WGD->nz; k++) {
+      for (auto k = WGD->terrain_face_id[site_id[idx]]; k < WGD->nz; ++k) {
         u_prof[idx][k] = cos(site_theta[idx]) * ts->site_U_ref[0];
         v_prof[idx][k] = sin(site_theta[idx]) * ts->site_U_ref[0];
       }
@@ -184,7 +185,7 @@ void WindProfilerBarnCPU::interpolateWindProfile(const WINDSInputData *WID, WIND
       // vector, and not WGD->nz since z.size can be equal to
       // WGD->nz+1 from what I can tell.  We access z[k]
       // below...
-      for (size_t k = WGD->terrain_face_id[site_id[idx]]; k < WGD->z.size(); k++) {
+      for (auto k = WGD->terrain_face_id[site_id[idx]]; k < WGD->nz - 1; ++k) {
         if (k == WGD->terrain_face_id[site_id[idx]]) {
           if (ts->site_z_ref[0] * ts->site_one_overL >= 0) {
             psi = 4.7 * ts->site_z_ref[0] * ts->site_one_overL;
@@ -420,7 +421,7 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID,
   float dn, lamda, s_gamma;
   float sum_wm, sum_wu, sum_wv;
   float dxx, dyy, u12, u34, v12, v34;
-  int icell_face, icell_cent;
+  int icell_face;
 
   int num_sites = available_sensor_id.size();
 

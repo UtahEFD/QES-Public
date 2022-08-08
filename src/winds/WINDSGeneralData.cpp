@@ -191,7 +191,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       std::cout << "Size of WRF station/sensor profile data: " << wrf_ptr->statData.size() << std::endl;
       WID->metParams->sensors.resize(wrf_ptr->statData.size());
 
-      for (auto i = 0; i < wrf_ptr->statData.size(); i++) {
+      for (auto i = 0u; i < wrf_ptr->statData.size(); i++) {
         std::cout << "Station " << i << " ("
                   << wrf_ptr->statData[i].xCoord << ", "
                   << wrf_ptr->statData[i].yCoord << ")" << std::endl;
@@ -1150,8 +1150,8 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
   int num_sites = WID->metParams->sensors.size();
   time_id.resize(num_sites, -1);
   // loop to find which timestep of each sensor is related to the running timestep of the code
-  for (auto i = 0; i < WID->metParams->sensors.size(); i++) {
-    for (auto j = 0; j < WID->metParams->sensors[i]->TS.size(); j++) {
+  for (auto i = 0u; i < WID->metParams->sensors.size(); i++) {
+    for (auto j = 0u; j < WID->metParams->sensors[i]->TS.size(); j++) {
       if (sensortime[timeIndex] == WID->metParams->sensors[i]->TS[j]->time) {
         time_id[i] = j;
       }
@@ -1185,7 +1185,7 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
         // hack to make time equivalencies
         WID->metParams->sensors[index]->TS[0]->time = "2022-01-01T00:00:00";
 
-        for (auto p = 0; p < wrf_ptr->ht_fmw.size(); p++) {
+        for (auto p = 0u; p < wrf_ptr->ht_fmw.size(); p++) {
           int id = index + p * wrf_ptr->fm_nx * wrf_ptr->fm_ny;
           WID->metParams->sensors[index]->TS[0]->site_z_ref[p] = wrf_ptr->ht_fmw[p];
           WID->metParams->sensors[index]->TS[0]->site_U_ref[p] = sqrt(pow(wrf_ptr->u0_fmw[id], 2.0) + pow(wrf_ptr->v0_fmw[id], 2.0));

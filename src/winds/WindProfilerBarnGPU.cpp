@@ -54,17 +54,18 @@ void WindProfilerBarnGPU::interpolateWindProfile(const WINDSInputData *WID, WIND
   std::cout << "new Wind Interp" << std::endl;
 
   const float vk = 0.4;// Von Karman's constant
-  float canopy_d, u_H;
+  float canopy_d = 0.0, u_H = 0.0;
   //float site_UTM_x, site_UTM_y;
   //float site_lon, site_lat;
-  float wind_dir, z0_new, z0_high, z0_low;
-  float psi, psi_first, x_temp, u_star;
-  float u_new, u_new_low, u_new_high;
-  int log_flag, iter;
-  float a1, a2, a3;
+  float wind_dir = 0.0, z0_new = 0.0, z0_high = 0.0, z0_low = 0.0;
+  float psi;// unused: psi_first
+  float x_temp;
+  float u_star = 0.0, u_new = 0.0, u_new_low = 0.0, u_new_high = 0.0;
+  int log_flag = 0, iter = 0;
+  float a1 = 0.0, a2 = 0.0, a3 = 0.0;
   float site_mag;
   float blending_height = 0.0, average__one_overL = 0.0;
-  int max_terrain = 1;
+  // unused: int max_terrain = 1;
   std::vector<float> x, y;
 
   int num_sites = WID->metParams->sensors.size();
@@ -91,7 +92,7 @@ void WindProfilerBarnGPU::interpolateWindProfile(const WINDSInputData *WID, WIND
 
   std::vector<std::vector<float>> u_prof(num_sites, std::vector<float>(WGD->nz, 0.0));
   std::vector<std::vector<float>> v_prof(num_sites, std::vector<float>(WGD->nz, 0.0));
-  int icell_face, icell_cent;
+  int icell_face;
 
   std::vector<int> site_i(num_sites, 0);
   std::vector<int> site_j(num_sites, 0);
