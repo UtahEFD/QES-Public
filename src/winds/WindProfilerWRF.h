@@ -40,6 +40,8 @@
 class WindProfilerWRF : public WindProfilerType
 {
 private:
+  void interpolate(float &, float &, int &, std::vector<float> &, std::vector<float> &, int, int);
+
 public:
   WindProfilerWRF()
   {}
