@@ -1148,10 +1148,11 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
   auto start_InputWindProfile = std::chrono::high_resolution_clock::now();// Finish recording execution time
 
   int num_sites = WID->metParams->sensors.size();
+  time_id.clear();
   time_id.resize(num_sites, -1);
   // loop to find which timestep of each sensor is related to the running timestep of the code
-  for (auto i = 0u; i < WID->metParams->sensors.size(); i++) {
-    for (auto j = 0u; j < WID->metParams->sensors[i]->TS.size(); j++) {
+  for (auto i = 0u; i < WID->metParams->sensors.size(); ++i) {
+    for (auto j = 0u; j < WID->metParams->sensors[i]->TS.size(); ++j) {
       if (sensortime[timeIndex] == WID->metParams->sensors[i]->TS[j]->time) {
         time_id[i] = j;
       }

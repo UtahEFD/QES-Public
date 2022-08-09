@@ -35,16 +35,25 @@
 #include <netcdf>
 #include <cmath>
 
-#include "WindProfilerSensorType.h"
+#include "WindProfilerType.h"
 
-class WindProfilerBarnGPU : public WindProfilerSensorType
+class WindProfilerSensorType : public WindProfilerType
 {
-private:
-  template<typename T>
-  void _cudaCheck(T e, const char *func, const char *call, const int line);
+protected:
+  std::vector<float> u_prof;
+  std::vector<float> v_prof;
+  std::vector<int> available_sensor_id;
+  std::vector<int> site_id;
 
-  void BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData *WGD);
+  void sensorsProfiles(const WINDSInputData *WID, WINDSGeneralData *WGD);
+
+  void singleSensorInterpolation(WINDSGeneralData *WGD);
 
 public:
-  void interpolateWindProfile(const WINDSInputData *, WINDSGeneralData *);
+  WindProfilerSensorType()
+  {}
+  virtual ~WindProfilerSensorType()
+  {}
+
+  virtual void interpolateWindProfile(const WINDSInputData *, WINDSGeneralData *) = 0;
 };

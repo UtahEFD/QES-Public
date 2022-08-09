@@ -32,6 +32,7 @@ CUDA_ADD_LIBRARY( qeswindscore
   TURBWall.cpp
   TURBWallBuilding.cpp
   TURBWallTerrain.cpp
+  WindProfilerSensorType.cpp
   WindProfilerBarnCPU.cpp
   WindProfilerBarnGPU.cpp
   WindProfilerBarnGPU.cu

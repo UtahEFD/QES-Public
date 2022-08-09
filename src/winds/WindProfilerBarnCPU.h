@@ -35,16 +35,12 @@
 #include <netcdf>
 #include <cmath>
 
-#include "WindProfilerType.h"
+#include "WindProfilerSensorType.h"
 
-class WindProfilerBarnCPU : public WindProfilerType
+class WindProfilerBarnCPU : public WindProfilerSensorType
 {
 private:
-  void BarnesInterpolationCPU(const WINDSInputData *WID,
-                              WINDSGeneralData *WGD,
-                              std::vector<std::vector<float>> u_prof,
-                              std::vector<std::vector<float>> v_prof,
-                              std::vector<int> available_sensor_id);
+  void BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData *WGD);
 
 public:
   void interpolateWindProfile(const WINDSInputData *, WINDSGeneralData *);

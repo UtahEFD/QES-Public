@@ -51,8 +51,23 @@
 
 void WindProfilerBarnGPU::interpolateWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
-  std::cout << "new Wind Interp" << std::endl;
 
+  sensorsProfiles(WID, WGD);
+  int num_sites = available_sensor_id.size();
+
+  if (num_sites == 1) {
+    singleSensorInterpolation(WGD);
+  } else {
+    // If number of sites are more than one
+    // Apply 2D Barnes scheme to interpolate site velocity profiles to the whole domain
+    auto startBarnesGPU = std::chrono::high_resolution_clock::now();
+    BarnesInterpolationGPU(WID, WGD);
+    auto finishBarnesGPU = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> elapsedBarnesGPU = finishBarnesGPU - startBarnesGPU;
+    std::cout << "Elapsed time for Barnes interpolation on GPU: " << elapsedBarnesGPU.count() << " s\n";
+  }
+
+#if 0
   const float vk = 0.4;// Von Karman's constant
   float canopy_d = 0.0, u_H = 0.0;
   //float site_UTM_x, site_UTM_y;
@@ -396,6 +411,6 @@ void WindProfilerBarnGPU::interpolateWindProfile(const WINDSInputData *WID, WIND
     std::chrono::duration<float> elapsedBarnesGPU = finishBarnesGPU - startBarnesGPU;
     std::cout << "Elapsed time for Barnes interpolation on GPU: " << elapsedBarnesGPU.count() << " s\n";
   }
-
+#endif
   return;
 }

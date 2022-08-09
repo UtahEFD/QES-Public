@@ -271,23 +271,19 @@ __global__ void BarnesScheme(float *d_u_prof, float *d_v_prof, float *d_wm, floa
 }
 
 
-void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID,
-                                                 WINDSGeneralData *WGD,
-                                                 std::vector<std::vector<float>> u_prof,
-                                                 std::vector<std::vector<float>> v_prof,
-                                                 std::vector<int> site_id,
-                                                 std::vector<int> available_sensor_id)
+void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData *WGD)
 {
   int num_sites = available_sensor_id.size();
 
-  std::vector<float> u_prof_1d, v_prof_1d, wm, wms, u0_int, v0_int;
+  //std::vector<float> u_prof_1d, v_prof_1d;
+  std::vector<float> wm, wms, u0_int, v0_int;
   std::vector<float> site_xcoord, site_ycoord, sum_wm, sum_wu, sum_wv;
   std::vector<float> dxx, dyy, u12, u34, v12, v34;
   std::vector<int> iwork, jwork;
   std::vector<int> k_mod;
 
-  u_prof_1d.resize(num_sites * WGD->nz, 0.0);
-  v_prof_1d.resize(num_sites * WGD->nz, 0.0);
+  //u_prof_1d.resize(num_sites * WGD->nz, 0.0);
+  //v_prof_1d.resize(num_sites * WGD->nz, 0.0);
   wm.resize(num_sites * WGD->nx * WGD->ny, 0.0);
   wms.resize(num_sites * WGD->nx * WGD->ny, 0.0);
   u0_int.resize(num_sites * WGD->nz, 0.0);
@@ -307,13 +303,15 @@ void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID,
   v34.resize(num_sites * WGD->nz, 0.0);
   k_mod.resize(WGD->nx * WGD->ny, 1);
 
-  for (auto i = 0; i < num_sites; i++) {
+  /*
+    for (auto i = 0; i < num_sites; i++) {
     for (auto k = 0; k < WGD->nz; k++) {
       int id = k + i * WGD->nz;
       u_prof_1d[id] = u_prof[i][k];
       v_prof_1d[id] = v_prof[i][k];
     }
-  }
+    }
+  */
 
   for (auto i = 0; i < num_sites; i++) {
     site_xcoord[i] = WID->metParams->sensors[available_sensor_id[i]]->site_xcoord;
@@ -367,8 +365,8 @@ void WindProfilerBarnGPU::BarnesInterpolationGPU(const WINDSInputData *WID,
   cudaMalloc((void **)&d_terrain_face_id, WGD->nx * WGD->ny * sizeof(int));
   cudaMalloc((void **)&d_k_mod, WGD->nx * WGD->ny * sizeof(int));
 
-  cudaMemcpy(d_u_prof, u_prof_1d.data(), num_sites * WGD->nz * sizeof(int), cudaMemcpyHostToDevice);
-  cudaMemcpy(d_v_prof, v_prof_1d.data(), num_sites * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_u_prof, u_prof.data(), num_sites * WGD->nz * sizeof(int), cudaMemcpyHostToDevice);
+  cudaMemcpy(d_v_prof, v_prof.data(), num_sites * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_wm, wm.data(), num_sites * WGD->nx * WGD->ny * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_wms, wms.data(), num_sites * WGD->nx * WGD->ny * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_u0_int, u0_int.data(), num_sites * WGD->nz * sizeof(float), cudaMemcpyHostToDevice);
