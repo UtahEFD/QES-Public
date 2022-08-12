@@ -67,6 +67,9 @@ public:
 private:
 };
 
+// Note -- need to make WRFInput a base class, then put the different specifics into the classes
+// Will cleanup the organization and make the code easier for others to understand.
+
 /**
  * @class WRFInput
  * @brief :document this:
@@ -76,6 +79,21 @@ class WRFInput
 public:
   const double c_PI = 3.14159265358979323846; /**< pi constant */
 
+  /**
+   * Routine that Uses bisection method to find the displacement height of the canopy.
+   *
+   * @note Constructor for pulling in WRF data
+   *
+   * @param filename :string specifying full filename path to the wrf input/output file:
+   * @param domainUTMx :this is for standard wrf... document this:
+   * @param domainUTMy :document this:
+   * @param zoneUTM :document this:
+   * @param zoneLetter :document this:
+   * @param dimX
+   * @param dimY
+   * @param vk :document this:
+   * @param psi_m :document this:
+   */  
   WRFInput(const std::string &filename, double domainUTMx, double domainUTMy, int zoneUTM, std::string &zoneLetterUTM, float dimX, float dimY, int sensorSample, bool performWRFCoupling, bool sensorsOnly = false);
   ~WRFInput();
 
@@ -117,6 +135,8 @@ public:
   // these are the interpolated wind fields from WRF
   std::vector<float> u0_fmw, v0_fmw, w0_fmw, ht_fmw;
   std::vector<float> fwh;
+
+  // store the 
 
   /**
    * :document this:
