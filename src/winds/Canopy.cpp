@@ -37,7 +37,6 @@
 
 #include "Canopy.h"
 
-#include "util/PolygonVertex.h"
 #include "WINDSInputData.h"
 #include "WINDSGeneralData.h"
 
@@ -80,12 +79,12 @@ void Canopy::setCanopyElements(const WINDSInputData *WID, WINDSGeneralData *WGD)
   auto canopysetup_start = std::chrono::high_resolution_clock::now();// Start recording execution time
 
   if (WID->canopies->SHPData) {
-    auto canopysetup_start = std::chrono::high_resolution_clock::now();// Start recording execution time
 
     std::cout << "Creating canopies from shapefile..." << std::flush;
 
     std::vector<Building *> poly_buildings;
-    float corner_height, min_height;
+    // FM CLEANUP - NOT USED
+    // float corner_height, min_height;
     std::vector<float> shpDomainSize(2), minExtent(2);
     WID->canopies->SHPData->getLocalDomain(shpDomainSize);
     WID->canopies->SHPData->getMinExtent(minExtent);

@@ -35,6 +35,8 @@
 #include <vector>
 #include <map>
 
+#include "util/PolygonVertex.h"
+
 #include "CanopyElement.h"
 
 
@@ -71,7 +73,7 @@ public:
 
   void applyCanopyTurbulenceWake(WINDSGeneralData *WGD, TURBGeneralData *);
 
-  
+
   /*
    * For all Canopy classes derived, this need to be defined
   virtual void parseValues()
