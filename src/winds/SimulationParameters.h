@@ -51,34 +51,35 @@ class SimulationParameters : public ParseInterface
 {
 private:
 public:
-  Vector3Int domain; /**< :document this: */
-  Vector3 grid; /**< :document this: */
-  int verticalStretching = 0; /**< :document this: */
-  std::vector<float> dz_value; /**< :document this: */
-  int totalTimeIncrements; /**< :document this: */
-  int rooftopFlag = 1; /**< :document this: */
-  int upwindCavityFlag = 2; /**< :document this: */
-  int streetCanyonFlag = 1; /**< :document this: */
-  int streetIntersectionFlag = 0; /**< :document this: */
-  int wakeFlag = 2; /**< :document this: */
-  int sidewallFlag = 1; /**< :document this: */
-  int maxIterations = 500; /**< :document this: */
-  double tolerance = 1e-9; /**< :document this: */
-  float domainRotation = 0; /**< :document this: */
-  int originFlag = 0; /**< :document this: */
-  float UTMx; /**< :document this: */
-  float UTMy; /**< :document this: */
-  int UTMZone; /**< :document this: */
-  std::string UTMZoneLetter; /**< :document this: */
-  float DEMDistancex = 0.0; /**< :document this: */
-  float DEMDistancey = 0.0; /**< :document this: */
-  int meshTypeFlag = 0; /**< :document this: */
-  float halo_x = 0.0; /**< :document this: */
-  float halo_y = 0.0; /**< :document this: */
-  float heightFactor = 1.0; /**< :document this: */
+  Vector3Int domain; /**< :Number of cells in each direction: */
+  Vector3 grid; /**< :Cell sizes in each direction: */
+  int verticalStretching = 0; /**< :Defines grid type in z-direction (0-unifrom (default), 1-custom): */
+  std::vector<float> dz_value; /**< :Array holding values of dz if the verticalStretching is 1: */
+  int totalTimeIncrements; /**< :Total number of time steps: */
+  int rooftopFlag = 1; /**< :Rooftop flag (0-none, 1-log profile (default), 2-vortex): */
+  int upwindCavityFlag = 2; /**< :Upwind cavity flag (0-none, 1-Rockle, 2-MVP (default), 3-HMVP): */
+  int streetCanyonFlag = 1; /**< :Street canyon flag (0-none, 1-Roeckle w/ Fackrel (default)): */
+  int streetIntersectionFlag = 0; /**< :Street intersection flag (0-off, 1-on): */
+  int wakeFlag = 2; /**< :Wake flag (0-none, 1-Rockle, 2-Modified Rockle (default), 3-Area Scaled): */
+  int sidewallFlag = 1; /**< :Sidewall flag (0-off, 1-on (default)): */
+  int logLawFlag = 0; /**< :Log Law flag to apply the log law (0-off (default), 1-on): */
+  int maxIterations = 500; /**< :Maximum number of iterations (default = 500): */
+  double tolerance = 1e-9; /**< :Convergence criteria, error threshold (default = 1e-9): */
+  int meshTypeFlag = 0; /**< :Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method: */
+  float domainRotation = 0; /**< :Rotation angle of domain relative to true north: */
+  int originFlag = 0; /**< :Origin flag (0- DEM coordinates (default), 1- UTM coordinates): */
+  float UTMx; /**< :x component (m) of origin in UTM DEM coordinates (if originFlag = 1): */
+  float UTMy; /**< :y component (m) of origin in UTM DEM coordinates (if originFlag = 1): */
+  int UTMZone; /**< :UTM zone that domain located: */
+  std::string UTMZoneLetter;
+  float DEMDistancex = 0.0; /**< :x component (m) of origin in DEM coordinates (if originFlag = 0): */
+  float DEMDistancey = 0.0; /**< :y component (m) of origin in DEM coordinates (if originFlag = 0): */
+  float halo_x = 0.0; /**< :Halo region added to x-direction of domain (at the beginning and the end of domain) (meters): */
+  float halo_y = 0.0; /**< :Halo region added to y-direction of domain (at the beginning and the end of domain) (meters): */
+  float heightFactor = 1.0; /**< :Height factor multiplied by the building height read in from the shapefile (default = 1.0): */
 
-  int readCoefficientsFlag = 0; /**< :document this: */
-  std::string coeffFile; /**< :document this: */
+  int readCoefficientsFlag = 0; /**< :Reading solver coefficients flag (0-calculate coefficients (default), 1-read coefficients from the file): */
+  std::string coeffFile; /**< :Address to coefficients file location: */
 
   // DTE - digital elevation model details
   std::string demFile; /**< DEM file name */
@@ -171,6 +172,7 @@ public:
     parsePrimitive<int>(false, streetIntersectionFlag, "streetIntersectionFlag");
     parsePrimitive<int>(false, wakeFlag, "wakeFlag");
     parsePrimitive<int>(false, sidewallFlag, "sidewallFlag");
+    parsePrimitive<int>(false, logLawFlag, "logLawFlag");
     parsePrimitive<int>(false, maxIterations, "maxIterations");
     parsePrimitive<double>(false, tolerance, "tolerance");
     parsePrimitive<int>(false, meshTypeFlag, "meshTypeFlag");
