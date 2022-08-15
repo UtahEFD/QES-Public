@@ -32,7 +32,7 @@
 #pragma once
 
 #include "util/ParseInterface.h"
-#include "ESRIShapefile.h"
+#include "util/ESRIShapefile.h"
 
 #include "Building.h"
 #include "RectangularBuilding.h"
@@ -78,6 +78,7 @@ public:
 
     SHPData = nullptr;
     if (shpFile != "") {
+      shpFile = QESfs::get_absolute_path(shpFile);
       // Read polygon node coordinates and building height from shapefile
       //SHPData = new ESRIShapefile(shpFile, shpTreeLayerName, shpPolygons, shpFeatures);
       SHPData = new ESRIShapefile(shpFile, shpBuildingLayerName);

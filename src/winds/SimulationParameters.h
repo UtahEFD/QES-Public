@@ -33,6 +33,7 @@
 
 #include <string>
 #include "util/ParseInterface.h"
+#include "util/ParseVector.h"
 #include "util/Vector3.h"
 #include "util/Vector3Int.h"
 #include "DTEHeightField.h"
@@ -50,8 +51,8 @@ class SimulationParameters : public ParseInterface
 {
 private:
 public:
-  Vector3Int *domain; /**< :Number of cells in each direction: */
-  Vector3 *grid; /**< :Cell sizes in each direction: */
+  Vector3Int domain; /**< :Number of cells in each direction: */
+  Vector3 grid; /**< :Cell sizes in each direction: */
   int verticalStretching = 0; /**< :Defines grid type in z-direction (0-unifrom (default), 1-custom): */
   std::vector<float> dz_value; /**< :Array holding values of dz if the verticalStretching is 1: */
   int totalTimeIncrements; /**< :Total number of time steps: */
@@ -65,7 +66,6 @@ public:
   int maxIterations = 500; /**< :Maximum number of iterations (default = 500): */
   double tolerance = 1e-9; /**< :Convergence criteria, error threshold (default = 1e-9): */
   int meshTypeFlag = 0; /**< :Type of meshing scheme (0-Stair step (original QES) (default), 1-Cut-cell method: */
-
   float domainRotation = 0; /**< :Rotation angle of domain relative to true north: */
   int originFlag = 0; /**< :Origin flag (0- DEM coordinates (default), 1- UTM coordinates): */
   float UTMx; /**< :x component (m) of origin in UTM DEM coordinates (if originFlag = 1): */
@@ -112,6 +112,7 @@ public:
   std::string wrfFile; /**< :document this: */
   WRFInput *wrfInputData = nullptr; /**< :document this: */
   int wrfSensorSample; /**< :document this: */
+  bool wrfCoupling = false;
 
   enum DomainInputType {
     WRFOnly,
@@ -142,8 +143,26 @@ public:
    */
   virtual void parseValues()
   {
-    parseElement<Vector3Int>(false, domain, "domain");
-    parseElement<Vector3>(false, grid, "cellSize");
+    ParseVector<int> *domain_in;
+    parseElement<ParseVector<int>>(false, domain_in, "domain");
+    if (domain_in) {
+      if (domain_in->size() == 3) {
+        domain = { (*domain_in)[0], (*domain_in)[1], (*domain_in)[2] };
+      } else {
+        std::cerr << "[ERROR] unvalid number of argument for domain parameter" << std::endl;
+        exit(EXIT_FAILURE);
+      }
+    }
+    ParseVector<float> *grid_in;
+    parseElement<ParseVector<float>>(false, grid_in, "cellSize");
+    if (grid_in) {
+      if (grid_in->size() == 3) {
+        grid = { (*grid_in)[0], (*grid_in)[1], (*grid_in)[2] };
+      } else {
+        std::cerr << "[ERROR] unvalid number of argument for cellSize parameter" << std::endl;
+        exit(EXIT_FAILURE);
+      }
+    }
     parsePrimitive<int>(false, verticalStretching, "verticalStretching");
     parseMultiPrimitives<float>(false, dz_value, "dz_value");
     parsePrimitive<int>(false, totalTimeIncrements, "totalTimeIncrements");
@@ -181,6 +200,11 @@ public:
     parsePrimitive<std::string>(false, wrfFile, "WRF");
     parsePrimitive<int>(false, wrfSensorSample, "WRFSensorSample");
 
+    //
+    // WRF coupling
+    //
+    parsePrimitive<bool>(false, wrfCoupling, "WRFCoupling");
+
     // Determine which use case to use for WRF/DEM combinations
     if ((demFile != "") && (wrfFile != "")) {
       // Both specified
@@ -198,6 +222,14 @@ public:
       m_domIType = UNKNOWN;
     }
 
+    if (demFile != "")
+      demFile = QESfs::get_absolute_path(demFile);
+    if (wrfFile != "")
+      wrfFile = QESfs::get_absolute_path(wrfFile);
+    if (coeffFile != "")
+      coeffFile = QESfs::get_absolute_path(coeffFile);
+
+
     //
     // Process the data files based on the state determined above
     //
@@ -214,7 +246,7 @@ public:
       // nx and ny domain cells.
       //
       std::cout << "Processing WRF data for terrain and met param sensors from " << wrfFile << std::endl;
-      wrfInputData = new WRFInput(wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, 0, 0, wrfSensorSample);
+      wrfInputData = new WRFInput(wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, 0, 0, wrfCoupling, wrfSensorSample);
       std::cout << "WRF input data processing completed." << std::endl;
 
       // Apply halo to wind profile locations -- halo units are
@@ -222,7 +254,8 @@ public:
       // as station coordinates.
       wrfInputData->applyHalotoStationData(halo_x, halo_y);
 
-      wrfInputData->dumpStationData();
+      // Debug to show where the stations are...
+      // wrfInputData->dumpStationData();
 
       // In the current setup, grid may NOT be set... be careful
       // may need to initialize it here if nullptr is true for grid
@@ -237,13 +270,15 @@ public:
                                            halo_x,
                                            halo_y);
 
-      (*(grid))[0] = wrfInputData->fm_dx;
-      (*(grid))[1] = wrfInputData->fm_dy;
+      // Make sure to pull the dx, dy and dz back from the WRF calculations
+      grid[0] = wrfInputData->fm_dx;
+      grid[1] = wrfInputData->fm_dy;
+      grid[2] = wrfInputData->fm_dz;
 
       std::cout << "Dim: " << wrfInputData->fm_nx << " X " << wrfInputData->fm_ny << " X " << wrfInputData->fm_nz << std::endl;
-      std::cout << "at " << (*(grid))[0] << " X " << (*(grid))[1] << " X " << (*(grid))[2] << std::endl;
+      std::cout << "at " << grid[0] << " X " << grid[1] << " X " << grid[2] << std::endl;
 
-      domain = new Vector3Int(wrfInputData->fm_nx, wrfInputData->fm_nx, wrfInputData->fm_nz);
+      domain = { wrfInputData->fm_nx, wrfInputData->fm_ny, wrfInputData->fm_nz };
       DTE_heightField->setDomain(domain, grid);
 
       // need this to make sure domain sizes include halo
@@ -252,13 +287,13 @@ public:
 
       std::cout << "Halo Addition to dimensions: " << halo_x_WRFAddition << " cells, " << halo_y_WRFAddition << " cells" << std::endl;
 
-      (*(domain))[0] += 2 * halo_x_WRFAddition;
-      (*(domain))[1] += 2 * halo_y_WRFAddition;
+      domain[0] += 2 * halo_x_WRFAddition;
+      domain[1] += 2 * halo_y_WRFAddition;
 
       // let WRF class know about the dimensions that the halo adds...
       wrfInputData->setHaloAdditions(halo_x_WRFAddition, halo_y_WRFAddition);
 
-      std::cout << "domain size with halo borders: " << (*(domain))[0] << " x " << (*(domain))[1] << std::endl;
+      std::cout << "domain size with halo borders: " << domain[0] << " x " << domain[1] << std::endl;
 
       DTE_mesh = new Mesh(DTE_heightField->getTris());
       std::cout << "Meshing of DEM complete\n";
@@ -269,11 +304,11 @@ public:
       // First read DEM as usual
       std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
 
-      std::cout << "Domain: " << (*(domain))[0] << ", " << (*(domain))[1] << ", " << (*(domain))[2] << std::endl;
-      std::cout << "Grid: " << (*(grid))[0] << ", " << (*(grid))[1] << ", " << (*(grid))[2] << std::endl;
+      std::cout << "Domain: " << domain[0] << ", " << domain[1] << ", " << domain[2] << std::endl;
+      std::cout << "Grid: " << grid[0] << ", " << grid[1] << ", " << grid[2] << std::endl;
       DTE_heightField = new DTEHeightField(demFile,
-                                           std::tuple<int, int, int>((*(domain))[0], (*(domain))[1], (*(domain))[2]),
-                                           std::tuple<float, float, float>((*(grid))[0], (*(grid))[1], (*(grid))[2]),
+                                           std::tuple<int, int, int>(domain[0], domain[1], domain[2]),
+                                           std::tuple<float, float, float>(grid[0], grid[1], grid[2]),
                                            UTMx,
                                            UTMy,
                                            originFlag,
@@ -297,6 +332,8 @@ public:
       float uEps = 0.001;
       if (((UTMx > -uEps) && (UTMx < uEps)) && ((UTMy > -uEps) && (UTMy < uEps)) && (UTMZone == 0)) {
         useUTM_for_DEMLocation = true;
+      }
+      if (useUTM_for_DEMLocation) {
         std::cout << "UTM (" << UTMx << ", " << UTMy << "), Zone: " << UTMZone << " will be used as lower-left location for DEM." << std::endl;
       }
 
@@ -309,18 +346,18 @@ public:
 
       // Then, read WRF File extracting ONLY the sensor data
       bool onlySensorData = true;
-      float dimX = (*(domain))[0] * (*(grid))[0];
-      float dimY = (*(domain))[1] * (*(grid))[1];
+      float dimX = domain[0] * grid[0];
+      float dimY = domain[1] * grid[1];
       std::cout << "dimX = " << dimX << ", dimY = " << dimY << std::endl;
-      wrfInputData = new WRFInput(wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, dimX, dimY, wrfSensorSample, onlySensorData);
+      wrfInputData = new WRFInput(wrfFile, UTMx, UTMy, UTMZone, UTMZoneLetter, dimX, dimY, wrfSensorSample, wrfCoupling, onlySensorData);
       std::cout << "WRF Wind Velocity Profile Data processing completed." << std::endl;
     }
 
     else if (m_domIType == DEMOnly) {
       std::cout << "Extracting Digital Elevation Data from " << demFile << std::endl;
       DTE_heightField = new DTEHeightField(demFile,
-                                           std::tuple<int, int, int>((*(domain))[0], (*(domain))[1], (*(domain))[2]),
-                                           std::tuple<float, float, float>((*(grid))[0], (*(grid))[1], (*(grid))[2]),
+                                           std::tuple<int, int, int>(domain[0], domain[1], domain[2]),
+                                           std::tuple<float, float, float>(grid[0], grid[1], grid[2]),
                                            UTMx,
                                            UTMy,
                                            originFlag,

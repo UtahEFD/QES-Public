@@ -29,13 +29,26 @@ module load cmake/3.15.3
 module load gdal/3.0.1
 module load boost/1.69.0
 module load netcdf-cxx
+module load matlab
 ulimit -c unlimited -s
 module list
 echo '****** START OF JOB ******'
 
-./qesPlume/qesPlume -q ../testCases/UniformFlow_ContRelease/QES-files/UniformFlow_xDir_ContRelease.xml -u ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_xDir_windsWk.nc -t ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_xDir_turbOut.nc -o ../testCases/UniformFlow_ContRelease/QES-data/ -b ContRelease_xDir
+cd MATLAB
 
-./qesPlume/qesPlume -q ../testCases/UniformFlow_ContRelease/QES-files/UniformFlow_yDir_ContRelease.xml -u ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_yDir_windsWk.nc -t ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_yDir_turbOut.nc -o ../testCases/UniformFlow_ContRelease/QES-data/ -b ContRelease_yDir
+matlab -nodisplay -nosplash -nodesktop -r "run('UniformFlow_xDir_inputFiles.m'); run('UniformFlow_yDir_inputFiles.m'); exit;"
+
+cd ../../../build
+
+./qesPlume/qesPlume -q ../testCases/UniformFlow_ContRelease/QES-files/UniformFlow_xDir_ContRelease.xml -u ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_xDir_windsWk.nc -t ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_xDir_turbOut.nc -o ../testCases/UniformFlow_ContRelease/QES-data/ -b UniformFlow_xDir_ContRelease
+
+./qesPlume/qesPlume -q ../testCases/UniformFlow_ContRelease/QES-files/UniformFlow_yDir_ContRelease.xml -u ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_yDir_windsWk.nc -t ../testCases/UniformFlow_ContRelease/QES-data/UniformFlow_yDir_turbOut.nc -o ../testCases/UniformFlow_ContRelease/QES-data/ -b UniformFlow_yDir_ContRelease
+
+cd - 
+
+matlab -nodisplay -nosplash -nodesktop -r "run('UniformFlow_xDir_mainPlumeResults.m'); run('UniformFlow_yDir_mainPlumeResults.m'); exit;"
+
+cd ..
 
 echo '****** END OF JOB ****** '
 

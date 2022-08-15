@@ -1,36 +1,19 @@
-/****************************************************************************
- * Copyright (c) 2021 University of Utah
- * Copyright (c) 2021 University of Minnesota Duluth
- *
- * Copyright (c) 2021 Behnam Bozorgmehr
- * Copyright (c) 2021 Jeremy A. Gibbs
- * Copyright (c) 2021 Fabien Margairaz
- * Copyright (c) 2021 Eric R. Pardyjak
- * Copyright (c) 2021 Zachary Patterson
- * Copyright (c) 2021 Rob Stoll
- * Copyright (c) 2021 Pete Willemsen
- *
- * This file is part of QES-Winds
- *
- * GPL-3.0 License
- *
- * QES-Winds is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, version 3 of the License.
- *
- * QES-Winds is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with QES-Winds. If not, see <https://www.gnu.org/licenses/>.
- ****************************************************************************/
 
-/**
- * @file WRFInput.cpp
- * @brief :document this:
- */
+/** \file "WRFInput.cpp" input data header file.
+    \author Pete Willemsen, Matthieu
+
+    Copyright (C) 2019 Pete Willemsen
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+*/
 
 #include <fstream>
 #include <cmath>
@@ -300,24 +283,48 @@ void UTMConv(double &rlon, double &rlat, double &rx, double &ry, int &UTM_PROJEC
 }
 
 
+int checksum(int currChkSum, std::vector<float> &data)
+{
+  union equivalence {
+    int i;
+    float r;
+  };
+
+
+  for (auto idx = 0u; idx < data.size(); idx++) {
+    equivalence num;
+    num.r = data[idx];
+    currChkSum = currChkSum ^ num.i;
+  }
+  return currChkSum;
+}
+
+
 WRFInput::WRFInput(const std::string &filename,
-  double domainUTMx,
-  double domainUTMy,
-  int zoneUTM,
-  std::string &zoneLetterUTM,
-  float dimX,
-  float dimY,
-  int sensorSample,
-  bool sensorsOnly)
+                   double domainUTMx,
+                   double domainUTMy,
+                   int zoneUTM,
+                   std::string &zoneLetterUTM,
+                   float dimX,
+                   float dimY,
+                   int sensorSample,
+                   bool performWRFCoupling,
+                   bool sensorsOnly)
   : m_WRFFilename(filename),
     m_processOnlySensorData(sensorsOnly),
     wrfInputFile(filename, NcFile::write),
     m_minWRFAlt(22), m_maxWRFAlt(330), m_maxTerrainSize(10001), m_maxNbStat(156),
-    m_TerrainFlag(1), m_BdFlag(0), m_VegFlag(0), m_Z0Flag(2)
+    m_TerrainFlag(1), m_BdFlag(0), m_VegFlag(0), m_Z0Flag(2),
+    m_performWRFRunCoupling(performWRFCoupling)
 {
   std::cout << "WRF Input Processor - reading data from " << filename << std::endl;
   if (sensorsOnly) {
     std::cout << "\tOnly parsing wind velocity profiles from WRF file." << std::endl;
+  }
+
+  if (m_performWRFRunCoupling) {
+    std::cout << "\n============> WRF-QES Run Coupling Enabled!\n"
+              << std::endl;
   }
 
   // How is UTM used now?  --Pete
@@ -336,6 +343,39 @@ WRFInput::WRFInput(const std::string &filename,
   std::string subStr1 = wrfTitle.substr(vLoc + 2, wrfTitle.length() - 1);
   nextSpace = subStr1.find(" ");
   std::string vString = subStr1.substr(0, nextSpace);
+
+  // In the WRF-QES Coupling mode, we need to wait until WRF has run
+  // and placed the correct checksum and timestamp number in the WRF
+  // file. These values are stored in the following WRF-SFIRE output
+  // variables: CHSUM0_FMW and FRAME0_FMW
+  int wrfFRAME0_FMW = -1;
+
+  NcDim fmwdim = wrfInputFile.getVar("U0_FMW").getDim(0);
+  int fmwTimeSize = fmwdim.getSize();
+
+  std::vector<size_t> fmw_StartIdx = { fmwTimeSize - 1 };
+  std::vector<size_t> fmw_counts = { 1 };
+  wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);
+
+  if (m_performWRFRunCoupling) {
+
+    // Wait for WRF to start the coupling...
+    while (wrfFRAME0_FMW != 1) {
+      std::cout << "Waiting for FRAME0_FMW to be initialized to 1 before starting the coupling with WRF..." << std::endl;
+
+      // close file
+      wrfInputFile.close();
+
+      usleep(2000000); // 2 sec
+
+      // re-open
+      wrfInputFile.open(m_WRFFilename, NcFile::write);
+      wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);
+    }
+
+    std::cout << "WRF-QES Coupling: Received starting frame count = " << wrfFRAME0_FMW << std::endl;
+    currWRFFRAME0Num = wrfFRAME0_FMW;
+  }
 
   // Report the version information
   std::cout << "\tWRF Version: " << vString << std::endl;
@@ -404,27 +444,8 @@ WRFInput::WRFInput(const std::string &filename,
     fm_ny = wrfInputFile.getVar("FXLONG").getDim(1).getSize();
     fm_nx = wrfInputFile.getVar("FXLONG").getDim(2).getSize();
 
-    std::vector<size_t> startIdx = { 0, 0, 0, 0 };
-    std::vector<size_t> counts = { 1,
-      static_cast<unsigned long>(fm_ny),
-      static_cast<unsigned long>(fm_nx) };
-
-    std::vector<double> fxlong(fm_nx * fm_ny);
-    std::vector<double> fxlat(fm_nx * fm_ny);
-    wrfInputFile.getVar("FXLONG").getVar(startIdx, counts, fxlong.data());
-    wrfInputFile.getVar("FXLAT").getVar(startIdx, counts, fxlat.data());
-
-    std::cout << "\treading data for FWH, FZ0, and ZSF..." << std::endl;
-
-    std::vector<double> fwh(fm_nx * fm_ny);
-    std::vector<double> fz0(fm_nx * fm_ny);
-    wrfInputFile.getVar("FWH").getVar(startIdx, counts, fwh.data());
-    wrfInputFile.getVar("FZ0").getVar(startIdx, counts, fz0.data());
-
-    fmHeight.resize(fm_nx * fm_ny);
-    wrfInputFile.getVar("ZSF").getVar(startIdx, counts, fmHeight.data());
-
-    // The following is provided from Jan and students
+    // Need to subtract out borders in the WRF fire mesh, as 
+    // provided from Jan and students
     int sizeHGT_x = wrfInputFile.getVar("HGT").getDim(2).getSize();
     int sizeHGT_y = wrfInputFile.getVar("HGT").getDim(1).getSize();
     int sizeZSF_x = wrfInputFile.getVar("ZSF").getDim(2).getSize();
@@ -433,17 +454,44 @@ WRFInput::WRFInput(const std::string &filename,
     float sr_x = sizeZSF_x / (sizeHGT_x + 1);
     float sr_y = sizeZSF_y / (sizeHGT_y + 1);
 
+    // This is the resolution of the fire mesh
     fm_dx = atm_dx / sr_x;
     fm_dy = atm_dy / sr_y;
-    // Then dxf=DX/sr_x, dyf=DY/sr_y
 
-    // for now, set dz = 1
-    fm_dz = 1.0f;
+    fm_nx = fm_nx - sr_x;
+    fm_ny = fm_ny - sr_y;
+
+    
+
+    // Need to work towards pulling these values from the XML file to
+    // allow user control of the discretization
+    
+    // this parameter needs to come from xml... 
+    fm_dz = 12.0f;
 
     std::cout << "WRF Fire Mesh dimensions (nx, ny): " << fm_nx << " by " << fm_ny << std::endl;
     std::cout << "WRF Fire Mesh Resolution (dx, dy): (" << fm_dx << ", " << fm_dy << ")" << std::endl;
-
     std::cout << "\ttotal domain size: " << fm_nx * fm_dx << "m by " << fm_ny * fm_dy << "m" << std::endl;
+
+    std::vector<size_t> startIdx = { 0, 0, 0, 0 };
+    std::vector<size_t> counts = { 1,
+                                   static_cast<unsigned long>(fm_ny),
+                                   static_cast<unsigned long>(fm_nx) };
+
+    std::vector<double> fxlong(fm_nx * fm_ny);
+    std::vector<double> fxlat(fm_nx * fm_ny);
+    wrfInputFile.getVar("FXLONG").getVar(startIdx, counts, fxlong.data());
+    wrfInputFile.getVar("FXLAT").getVar(startIdx, counts, fxlat.data());
+
+    std::cout << "\treading data for FWH, FZ0, and ZSF..." << std::endl;
+
+    fwh.resize(fm_nx * fm_ny);
+    std::vector<double> fz0(fm_nx * fm_ny);
+    wrfInputFile.getVar("FWH").getVar(startIdx, counts, fwh.data());
+    wrfInputFile.getVar("FZ0").getVar(startIdx, counts, fz0.data());
+
+    fmHeight.resize(fm_nx * fm_ny);
+    wrfInputFile.getVar("ZSF").getVar(startIdx, counts, fmHeight.data());
 
     double fm_minWRFAlt = std::numeric_limits<double>::max(),
            fm_maxWRFAlt = std::numeric_limits<double>::min();
@@ -458,15 +506,26 @@ WRFInput::WRFInput(const std::string &filename,
         if (fmHeight[l_idx] < fm_minWRFAlt) fm_minWRFAlt = fmHeight[l_idx];
       }
     }
-
-    std::cout << "Terrain Min Ht: " << fm_minWRFAlt << ", Max Ht: " << fm_maxWRFAlt << std::endl;
+    std::cout << "Fire Mesh Min Ht: " << fm_minWRFAlt << ", Max Ht: " << fm_maxWRFAlt << std::endl;
 
     // if specified, use the max height... otherwise, pick one
     // that's about twice the max height to give room for the flow
-    fm_nz = (int)ceil(fm_maxWRFAlt * 2.0);// this ONLY works
+    
+    // fm_nz = (int)ceil(fm_maxWRFAlt * 2.0);// this ONLY works
                                           // if dz=1.0
 
-    std::cout << "Domain nz: " << fm_nz << std::endl;
+    // Should only need to be concerned about the difference between
+    // the max and min height here, rather than building off the max
+    // height.
+    float heightRange = fm_maxWRFAlt - fm_minWRFAlt;
+    std::cout << "Terrain height range: " << heightRange << std::endl;
+
+    // use 110% of height range for now
+    int numZCells = (int)floor((heightRange * 1.10)/ fm_dz) + 1;
+    std::cout << "With dz = " << fm_dz << ", nz = " << numZCells << std::endl;
+    fm_nz = numZCells;
+
+    std::cout << "Setting domain nz: " << fm_nz << std::endl;
 
     //
     // override any zone information?  Need to fix these use cases
@@ -517,7 +576,7 @@ WRFInput::WRFInput(const std::string &filename,
     std::cout << "Done." << std::endl;
 
 #if 0
-        //
+        // 
         // Setting up WRF-based SpatialReference
         //
         //    lat1 = d.TRUELAT1
@@ -536,19 +595,19 @@ WRFInput::WRFInput(const std::string &filename,
         double lat1, lat2, lat0, lon0, clat, clon;
         gblAttIter = globalAttributes.find("TRUELAT1");
         gblAttIter->second.getValues( &lat1 );
-
+    
         gblAttIter = globalAttributes.find("TRUELAT2");
         gblAttIter->second.getValues( &lat2 );
 
         gblAttIter = globalAttributes.find("MOAD_CEN_LAT");
         gblAttIter->second.getValues( &lat0 );
-
+    
         gblAttIter = globalAttributes.find("STAND_LON");
         gblAttIter->second.getValues( &lon0 );
-
+    
         gblAttIter = globalAttributes.find("CEN_LAT");
         gblAttIter->second.getValues( &clat );
-
+    
         gblAttIter = globalAttributes.find("CEN_LON");
         gblAttIter->second.getValues( &clon );
 
@@ -581,11 +640,11 @@ WRFInput::WRFInput(const std::string &filename,
         wgs84.SetWellKnownGeogCS( "WGS84" );
         wgs84.SetUTM( UTMZone, TRUE );
         // wgs84.importFromProj4( "+proj=latlong +datum=WGS84" );
-
+     
         OGRSpatialReference latLongProj;
         std::string projString = "+proj=latlong +datum=WGS84";
         latLongProj.importFromProj4( projString.c_str() );
-
+    
         // # geotransform
         // e,n = pyproj.transform(ll_proj,wrf_proj,clon,clat)
         // dx_atm = d.DX
@@ -610,13 +669,13 @@ WRFInput::WRFInput(const std::string &filename,
 
         // oSRS.SetLCC(30.0, 34.0, 30.533249, -86.730408, 0.0, 0.0);
         // oSRS.SetWellKnownGeogCS( "WGS84" );
-
-
+    
+    
         // wgs84 coordinate system
 //    OGRSpatialReference wgs84sr;
 //    wgs84sr.SetWellKnownGeogCS( "WGS84" );
 //    wgs84sr.SetUTM( UTMZone, TRUE );
-
+    
         // set the transform wgs84_to_utm and do the transform
         //transform_WGS84_To_UTM =
         //osr.CoordinateTransformation(wgs84_cs,utm_cs)
@@ -629,7 +688,7 @@ WRFInput::WRFInput(const std::string &filename,
 
         // OGRCoordinateTransformation *ogrCoordXform4 = OGRCreateCoordinateTransformation(&latLongProj, &wrfSpatialRef);
         OGRCoordinateTransformation *ogrCoordXform4 = OGRCreateCoordinateTransformation(&wrfSpatialRef, &latLongProj);
-
+        
         // From: https://gdal.org/tutorials/osr_api_tut.html
         // Starting with GDAL 3.0, the axis order mandated by the
         // authority defining a CRS is by default honoured by the
@@ -704,8 +763,8 @@ WRFInput::WRFInput(const std::string &filename,
 
   std::vector<size_t> atm_startIdx = { 0, 0, 0 };
   std::vector<size_t> atm_counts = { 1,
-    static_cast<unsigned long>(atm_ny),
-    static_cast<unsigned long>(atm_nx) };
+                                     static_cast<unsigned long>(atm_ny),
+                                     static_cast<unsigned long>(atm_nx) };
 
   std::vector<double> atm_xlong(atm_nx * atm_ny);
   std::vector<double> atm_xlat(atm_nx * atm_ny);
@@ -727,10 +786,10 @@ WRFInput::WRFInput(const std::string &filename,
   // SUBDATASET_14_NAME=NETCDF:"/scratch/Downloads/RXCwrfout_d07_2012-11-11_15-21":T
   //
   std::vector<size_t> atmStartIdx = { 0, 0, 0, 0 };
-  std::vector<size_t> atmCounts = { 2,
-    static_cast<unsigned long>(atm_nz),
-    static_cast<unsigned long>(atm_ny),
-    static_cast<unsigned long>(atm_nx) };
+  std::vector<size_t> atmCounts = { 1,
+                                    static_cast<unsigned long>(atm_nz),
+                                    static_cast<unsigned long>(atm_ny),
+                                    static_cast<unsigned long>(atm_nx) };
 
   std::vector<double> phbData(2 * atm_nz * atm_ny * atm_nx);
   wrfInputFile.getVar("PHB").getVar(atmStartIdx, atmCounts, phbData.data());
@@ -865,8 +924,8 @@ WRFInput::WRFInput(const std::string &filename,
 
   std::vector<size_t> atmStartIdx_2D = { 0, 0, 0 };
   std::vector<size_t> atmCounts_2D = { 1,
-    static_cast<unsigned long>(atm_ny),
-    static_cast<unsigned long>(atm_nx) };
+                                       static_cast<unsigned long>(atm_ny),
+                                       static_cast<unsigned long>(atm_nx) };
 
   std::vector<float> luData(atm_ny * atm_nx);
   wrfInputFile.getVar("LU_INDEX").getVar(atmStartIdx_2D, atmCounts_2D, luData.data());
@@ -907,6 +966,65 @@ WRFInput::WRFInput(const std::string &filename,
 
   std::cout << "Reading and processing WRF Stations for input wind profiles..." << std::endl;
 
+  std::cout << "Dim Count: " << wrfInputFile.getVar("U0_FMW").getDimCount() << std::endl;
+  for (auto dIdx = 0u; dIdx < wrfInputFile.getVar("U0_FMW").getDimCount(); dIdx++) {
+    NcDim dim = wrfInputFile.getVar("U0_FMW").getDim(dIdx);
+    std::cout << "Dim " << dIdx << ", Size=" << dim.getSize() << std::endl;
+  }
+
+  // Extract time dim size
+  NcDim dim = wrfInputFile.getVar("U0_FMW").getDim(0);
+  int timeSize = dim.getSize();
+  std::cout << "Number of time series:  " << timeSize << std::endl;
+
+  // Extract height dim size
+  dim = wrfInputFile.getVar("U0_FMW").getDim(1);
+  int hgtSize = dim.getSize();
+
+  std::vector<size_t> interpWinds_StartIdx = { timeSize - 1, 0, 0, 0 };
+  std::vector<size_t> interpWinds_counts = { 1,
+                                             hgtSize,
+                                             static_cast<unsigned long>(fm_ny),
+                                             static_cast<unsigned long>(fm_nx) };
+
+  u0_fmw.resize(1 * hgtSize * fm_ny * fm_nx);
+  wrfInputFile.getVar("U0_FMW").getVar(interpWinds_StartIdx, interpWinds_counts, u0_fmw.data());
+
+  v0_fmw.resize(1 * hgtSize * fm_ny * fm_nx);
+  wrfInputFile.getVar("V0_FMW").getVar(interpWinds_StartIdx, interpWinds_counts, v0_fmw.data());
+
+  w0_fmw.resize(1 * hgtSize * fm_ny * fm_nx);
+  wrfInputFile.getVar("W0_FMW").getVar(interpWinds_StartIdx, interpWinds_counts, w0_fmw.data());
+
+  //
+  // Compute the Checksum
+  //
+
+  // read the checksum
+  std::vector<size_t> chksum_StartIdx = { timeSize - 1 };
+  std::vector<size_t> chksum_counts = { 1 };
+
+  int wrfCHSUM0_FMW = 0;
+  wrfInputFile.getVar("CHSUM0_FMW").getVar(chksum_StartIdx, chksum_counts, &wrfCHSUM0_FMW);
+  std::cout << "WRF CHSUM0_FMW = " << wrfCHSUM0_FMW << std::endl;
+
+  int chkSum = 0;
+  chkSum = checksum(chkSum, u0_fmw);
+  chkSum = checksum(chkSum, v0_fmw);
+  chkSum = checksum(chkSum, w0_fmw);
+  std::cout << "QES checksum of FMW fields: " << chkSum << std::endl;
+
+  assert(wrfCHSUM0_FMW == chkSum);
+
+  // Read the heights
+  std::vector<size_t> interpWindsHT_StartIdx = { timeSize - 1, 0, 0, 0 };
+  std::vector<size_t> interpWindsHT_counts = { 1,
+                                               hgtSize };
+
+  ht_fmw.resize(1 * hgtSize);
+  wrfInputFile.getVar("HT_FMW").getVar(interpWindsHT_StartIdx, interpWindsHT_counts, ht_fmw.data());
+
+
   // ////////////////////////
   // sampling strategy
   int stepSize = sensorSample;
@@ -928,8 +1046,10 @@ WRFInput::WRFInput(const std::string &filename,
     // Use nz * dz
     maxWRFAlt = 90 * 3.0;// again, only works with dz=1
   } else {
-    maxWRFAlt = fm_nz;// again, only works with dz=1
+    maxWRFAlt = fm_nz * fm_dz;// again, only works with dz=1
   }
+
+  std::cout << "fm_nz set to " << fm_nz << std::endl;
 
   std::vector<double> atm_hgt(atm_nx * atm_ny);
   wrfInputFile.getVar("HGT").getVar(atm_startIdx, atm_counts, atm_hgt.data());
@@ -2088,6 +2208,131 @@ float WRFInput::lookupLandUse(int luIdx)
 }
 
 
+void WRFInput::endWRFSession()
+{
+  int wrfEndFrameNum = -99;
+
+  // Need to output the wrfFRAME0 back to the FRAME_FMW
+  std::vector<size_t> chksum_StartIdx = { 0 };
+  std::vector<size_t> chksum_counts = { 1 };
+
+  NcVar field_FRAME = wrfInputFile.getVar("FRAME_FMW");
+  field_FRAME.putVar(chksum_StartIdx, chksum_counts, &wrfEndFrameNum);
+
+  // close file
+  wrfInputFile.close();
+}
+
+void WRFInput::updateFromWRF()
+{
+  // Only perform if doing the coupling
+  if (m_performWRFRunCoupling) {
+
+    // Wait until WRF has run and placed the correct checksum and timestamp number in the file
+
+    //
+    // check for next frame info
+    //
+    std::cout << "Waiting for next frame: " << nextWRFFrameNum << std::endl;
+
+    NcDim fmwdim = wrfInputFile.getVar("U0_FMW").getDim(0);
+    int fmwTimeSize = fmwdim.getSize();
+
+    std::vector<size_t> fmw_StartIdx = { fmwTimeSize - 1 };
+    std::vector<size_t> fmw_counts = { 1 };
+
+    int numWait = 0;
+    int maxWait = 20;
+
+    int wrfFRAME0_FMW = -1;
+    wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);
+    while (wrfFRAME0_FMW != nextWRFFrameNum && (numWait < maxWait)) {
+      std::cout << "Waiting for FRAME0_FMW to be ====> " << nextWRFFrameNum << ", received " << wrfFRAME0_FMW << std::endl;
+
+      // close file
+      wrfInputFile.close();
+
+      // wait a few seconds for now
+      usleep(1000000);
+
+      // re-open
+      wrfInputFile.open(m_WRFFilename, NcFile::write);
+      wrfInputFile.getVar("FRAME0_FMW").getVar(fmw_StartIdx, fmw_counts, &wrfFRAME0_FMW);
+
+      numWait++;
+    }
+
+    if ((numWait == maxWait) || (wrfFRAME0_FMW < 0))
+      exit(EXIT_FAILURE);
+
+    std::cout << "WRF-QES Coupling: Frame = " << wrfFRAME0_FMW << std::endl;
+
+    // set the current WRF FRAME0 Num
+    currWRFFRAME0Num = wrfFRAME0_FMW;
+
+    std::cout << "Reading and processing WRF Stations for input wind profiles..." << std::endl;
+
+    std::cout << "Dim Count: " << wrfInputFile.getVar("U0_FMW").getDimCount() << std::endl;
+    for (auto dIdx = 0u; dIdx < wrfInputFile.getVar("U0_FMW").getDimCount(); dIdx++) {
+      NcDim dim = wrfInputFile.getVar("U0_FMW").getDim(dIdx);
+      std::cout << "Dim " << dIdx << ", Size=" << dim.getSize() << std::endl;
+    }
+
+    // Extract time dim size
+    NcDim dim = wrfInputFile.getVar("U0_FMW").getDim(0);
+    int timeSize = dim.getSize();
+    std::cout << "Number of time series:  " << timeSize << std::endl;
+
+    // Extract height dim size
+    dim = wrfInputFile.getVar("U0_FMW").getDim(1);
+    int hgtSize = dim.getSize();
+
+    std::vector<size_t> interpWinds_StartIdx = { timeSize - 1, 0, 0, 0 };
+    std::vector<size_t> interpWinds_counts = { 1,
+                                               hgtSize,
+                                               static_cast<unsigned long>(fm_ny),
+                                               static_cast<unsigned long>(fm_nx) };
+
+    // u0_fmw.resize( 1 * hgtSize * fm_ny * fm_nx );
+    wrfInputFile.getVar("U0_FMW").getVar(interpWinds_StartIdx, interpWinds_counts, u0_fmw.data());
+
+    // v0_fmw.resize( 1 * hgtSize * fm_ny * fm_nx );
+    wrfInputFile.getVar("V0_FMW").getVar(interpWinds_StartIdx, interpWinds_counts, v0_fmw.data());
+
+    // w0_fmw.resize( 1 * hgtSize * fm_ny * fm_nx );
+    wrfInputFile.getVar("W0_FMW").getVar(interpWinds_StartIdx, interpWinds_counts, w0_fmw.data());
+
+    //
+    // Compute the Checksum
+    //
+
+    // read the checksum
+    std::vector<size_t> chksum_StartIdx = { timeSize - 1 };
+    std::vector<size_t> chksum_counts = { 1 };
+
+    int wrfCHSUM0_FMW = 0;
+    wrfInputFile.getVar("CHSUM0_FMW").getVar(chksum_StartIdx, chksum_counts, &wrfCHSUM0_FMW);
+    std::cout << "WRF CHSUM0_FMW = " << wrfCHSUM0_FMW << std::endl;
+
+    int chkSum = 0;
+    chkSum = checksum(chkSum, u0_fmw);
+    chkSum = checksum(chkSum, v0_fmw);
+    chkSum = checksum(chkSum, w0_fmw);
+    std::cout << "WRF file output checksum of FMW fields: " << chkSum << std::endl;
+
+    // Read the heights
+    std::vector<size_t> interpWindsHT_StartIdx = { timeSize - 1, 0, 0, 0 };
+    std::vector<size_t> interpWindsHT_counts = { 1,
+                                                 hgtSize };
+
+    // ht_fmw.resize( 1 * hgtSize );
+    wrfInputFile.getVar("HT_FMW").getVar(interpWindsHT_StartIdx, interpWindsHT_counts, ht_fmw.data());
+  }
+
+  std::cout << "Finalized update from WRF." << std::endl;
+}
+
+
 void WRFInput::extractWind(WINDSGeneralData *wgd)
 {
   // WRF fire mesh and wgd domain should be identical with the
@@ -2097,19 +2342,20 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
   // wind field and at the moment, the fire mesh and the QES domain
   // should match up (as stated above).
 
-  std::vector<size_t> startIdx = { 0, 0, 0, 0 };
-  std::vector<size_t> counts = { 1,
-    static_cast<unsigned long>(fm_ny),
-    static_cast<unsigned long>(fm_nx) };
+  std::cout << "QES Extracting fire height wind field into WRF UF and VF" << std::endl;
+  std::cout << "fm_nx=" << fm_nx << ", wgd->nx=" << wgd->nx << ", haloX=" << m_haloX_DimAddition << "( " << std::endl;
+  std::cout << "fm_ny=" << fm_ny << ", wgd->ny=" << wgd->ny << ", haloY=" << m_haloY_DimAddition << std::endl;
 
-  assert(fm_nx != (wgd->nx - 1 - 2 * m_haloX_DimAddition));
-  assert(fm_ny != (wgd->ny - 1 - 2 * m_haloY_DimAddition));
+  // why?
+  // assert( fm_nx != (wgd->nx - 1 - 2*m_haloX_DimAddition) );
+  // assert( fm_ny != (wgd->ny - 1 - 2*m_haloY_DimAddition) );
 
   // Initialize the two fields to 0.0
-  std::vector<double> ufOut(fm_nx * fm_ny, 0.0);
-  std::vector<double> vfOut(fm_nx * fm_ny, 0.0);
+  std::vector<float> ufOut(fm_nx * fm_ny, 0.0);
+  std::vector<float> vfOut(fm_nx * fm_ny, 0.0);
 
-  auto FWH = 1.2;
+  // default FWH, just in case
+  auto FWH = 6.09;
 
   if (FWH <= wgd->dz) {
     std::cout << "Warning: resolution in z-direction is not fine enough to define above ground cells for calculating wind" << std::endl;
@@ -2132,6 +2378,13 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
       auto qes2DIdx = jQES * (wgd->nx - 1) + iQES;
       auto tHeight = wgd->terrain[qes2DIdx];
 
+      // fire mesh idx
+      auto fireMeshIdx = j * fm_nx + i;
+
+      // fwh lookup
+      FWH = fwh[fireMeshIdx];
+      if (FWH < wgd->dz) FWH = wgd->dz * 1.5;
+
       // find the k index value at this height in the domain,
       // need to take into account the variable dz
       int kQES;
@@ -2143,27 +2396,60 @@ void WRFInput::extractWind(WINDSGeneralData *wgd)
       }
       // auto kQES = (int)floor( ((tHeight + FWH)/float(wgd->dz) ));
 
-      // fire mesh idx
-      auto fireMeshIdx = j * fm_nx + i;
+      // kQES represents the first cell in which the height is above
+      // the tHeight + FWH.  Use this to linearly interpolate
+      // vertical, face centered winds in U and V.  Normalize by dz.
+      // kQES - 1 should represent the cell below.
+      float t = (wgd->z[kQES] - (tHeight + FWH)) / wgd->dz;
 
       // 3D QES Idx
       auto qes3DIdx = kQES * (wgd->nx) * (wgd->ny) + jQES * (wgd->nx) + iQES;
 
       // provide cell centered data to WRF
-      ufOut[fireMeshIdx] = 0.5 * (wgd->u[qes3DIdx + 1] + wgd->u[qes3DIdx]);
-      vfOut[fireMeshIdx] = 0.5 * (wgd->v[qes3DIdx + wgd->nx] + wgd->v[qes3DIdx]);
+      // -- Need to switch to linear interpolation within the cells...
+      //      ufOut[fireMeshIdx] = 0.5 * (wgd->u[qes3DIdx + 1] + wgd->u[qes3DIdx]);
+      //      vfOut[fireMeshIdx] = 0.5 * (wgd->v[qes3DIdx + wgd->nx] + wgd->v[qes3DIdx]);
+
+      ufOut[fireMeshIdx] = t * wgd->u[qes3DIdx - 1] + (1 - t) * wgd->u[qes3DIdx];
+      vfOut[fireMeshIdx] = t * wgd->v[qes3DIdx - wgd->nx] + (1 - t) * wgd->v[qes3DIdx];
     }
   }
+
+  // Compute the CHSUM
+  int ufvf_chsum = 0;
+  ufvf_chsum = checksum(ufvf_chsum, ufOut);
+  ufvf_chsum = checksum(ufvf_chsum, vfOut);
+  std::cout << "WRF UF/VF output checksum: " << ufvf_chsum << std::endl;
 
   NcVar field_UF = wrfInputFile.getVar("UF");
   NcVar field_VF = wrfInputFile.getVar("VF");
 
-  std::cout << "Wind field data written to WRF Output file: " << m_WRFFilename << std::endl;
+  NcVar field_CHSUM = wrfInputFile.getVar("CHSUM_FMW");
+  NcVar field_FRAME = wrfInputFile.getVar("FRAME_FMW");
 
+  std::vector<size_t> startIdx = { 0, 0, 0 };
+  std::vector<size_t> counts = { 1, 
+				 static_cast<unsigned long>(fm_ny),
+				 static_cast<unsigned long>(fm_nx) };
+  
   field_UF.putVar(startIdx, counts, ufOut.data());//, startIdx, counts );
   field_VF.putVar(startIdx, counts, vfOut.data());//, startIdx, counts );
 
+  std::vector<size_t> chksum_StartIdx = { 0 };
+  std::vector<size_t> chksum_counts = { 1 };
+
+  field_CHSUM.putVar(chksum_StartIdx, chksum_counts, &ufvf_chsum);
+
+  // Need to output the wrfFRAME0 back to the FRAME_FMW
+  field_FRAME.putVar(chksum_StartIdx, chksum_counts, &currWRFFRAME0Num);
+
+  std::cout << "\tChecksum and frame updated!" << std::endl;
+
   wrfInputFile.sync();
+  std::cout << "Wind field data written to WRF Output file: " << m_WRFFilename << std::endl;
+
+  nextWRFFrameNum = currWRFFRAME0Num + 1;
+  std::cout << "curr frame was " << currWRFFRAME0Num << ", now waiting for " << nextWRFFrameNum << std::endl;
 }
 
 

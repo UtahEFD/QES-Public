@@ -53,48 +53,33 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
   int nz = WGD_->nz;
 
   // Location of face centers in z-dir
-  z_cc.resize(nz - 1);
+  z.resize(nz - 1);
   dz_array.resize(nz - 1, 0.0);
   z_face.resize(nz - 1);
   for (auto k = 0; k < nz - 1; k++) {
-    z_cc[k] = WGD_->z[k];
+    z[k] = WGD_->z[k];
     dz_array[k] = WGD_->dz_array[k];
     z_face[k] = WGD_->z_face[k];
   }
 
   // Location of face centers in x-dir
-  x_cc.resize(nx - 1);
+  x.resize(nx - 1);
   for (auto i = 0; i < nx - 1; i++) {
-    x_cc[i] = (i + 0.5) * WGD_->dx;
+    //x_cc[i] = (i + 0.5) * WGD_->dx;
+    x[i] = WGD_->x[i];
   }
   // Location of face centers in y-dir
-  y_cc.resize(ny - 1);
+  y.resize(ny - 1);
   for (auto j = 0; j < ny - 1; j++) {
-    y_cc[j] = (j + 0.5) * WGD_->dy;
+    //y_cc[j] = (j + 0.5) * WGD_->dy;
+    y[j] = WGD_->y[j];
   }
-
-  timestamp.resize(dateStrLen, '0');
-
-  // time dimension
-  NcDim NcDim_t = addDimension("t");
-  NcDim NcDim_tstr = addDimension("dateStrLen", dateStrLen);
-
-  // create attributes for time dimension
-  std::vector<NcDim> dim_vect_t;
-  dim_vect_t.push_back(NcDim_t);
-  createAttScalar("t", "time", "s", dim_vect_t, &time);
-
-  // create attributes for time dimension
-  std::vector<NcDim> dim_vect_tstr;
-  dim_vect_tstr.push_back(NcDim_t);
-  dim_vect_tstr.push_back(NcDim_tstr);
-  createAttVector("times", "date time", "-", dim_vect_tstr, &timestamp);
 
   // set face-centered data dimensions
   // space dimensions
-  NcDim NcDim_x_fc = addDimension("x", WGD_->nx);
-  NcDim NcDim_y_fc = addDimension("y", WGD_->ny);
-  NcDim NcDim_z_fc = addDimension("z", WGD_->nz);
+  NcDim NcDim_x_fc = addDimension("x_face", WGD_->nx);
+  NcDim NcDim_y_fc = addDimension("y_face", WGD_->ny);
+  NcDim NcDim_z_fc = addDimension("z_face", WGD_->nz);
 
   // 3D vector dimension (time dep)
   std::vector<NcDim> dim_vect_fc;
@@ -116,13 +101,13 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
   // create attributes space dimensions
   std::vector<NcDim> dim_vect_x_cc;
   dim_vect_x_cc.push_back(NcDim_x_cc);
-  createAttVector("x", "x-distance", "m", dim_vect_x_cc, &x_cc);
+  createAttVector("x", "x-distance", "m", dim_vect_x_cc, &x);
   std::vector<NcDim> dim_vect_y_cc;
   dim_vect_y_cc.push_back(NcDim_y_cc);
-  createAttVector("y", "y-distance", "m", dim_vect_y_cc, &y_cc);
+  createAttVector("y", "y-distance", "m", dim_vect_y_cc, &y);
   std::vector<NcDim> dim_vect_z_cc;
   dim_vect_z_cc.push_back(NcDim_z_cc);
-  createAttVector("z", "z-distance", "m", dim_vect_z_cc, &z_cc);
+  createAttVector("z", "z-distance", "m", dim_vect_z_cc, &z);
   createAttVector("z_face", "z location of the faces", "m", dim_vect_z_cc, &z_face);
   createAttVector("dz_array", "dz size of the cells", "m", dim_vect_z_cc, &dz_array);
 
@@ -165,25 +150,17 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
 
 
 // Save output at cell-centered values
-void WINDSOutputWorkspace::save(ptime timeOut)
+void WINDSOutputWorkspace::save(QEStime timeOut)
 {
 
   // set time
-  time = (double)output_counter;
+  timeCurrent = timeOut;
 
-  std::string s = to_iso_extended_string(timeOut);
-  std::copy(s.begin(), s.end(), timestamp.begin());
+  //std::string s = timeOut.getTimestamp();
+  //std::copy(s.begin(), s.end(), timestamp.begin());
 
   // save fields
   saveOutputFields();
-
-  // remmove time indep from output array after first save
-  if (output_counter == 0) {
-    rmTimeIndepFields();
-  }
-
-  // increment for next time insertion
-  output_counter += 1;
 };
 
 
@@ -288,9 +265,7 @@ void WINDSOutputWorkspace::setAllOutputFields()
 {
   all_output_fields.clear();
   // all possible output fields need to be add to this list
-  all_output_fields = { "t",
-                        "times",
-                        "x",
+  all_output_fields = { "x",
                         "y",
                         "z",
                         "z_face",
@@ -316,6 +291,7 @@ void WINDSOutputWorkspace::setAllOutputFields()
 // [FM] Feb.28.2020 OBSOLETE
 void WINDSOutputWorkspace::getBuildingFields()
 {
+#if 0
   int nBuildings = WGD_->allBuildingsV.size();
 
   // information only needed once (at output_counter==0)
@@ -360,6 +336,6 @@ void WINDSOutputWorkspace::getBuildingFields()
     upwind_dir[id] = WGD_->allBuildingsV[id]->upwind_dir;
     Lr[id] = WGD_->allBuildingsV[id]->Lr;
   }
-
+#endif
   return;
 }

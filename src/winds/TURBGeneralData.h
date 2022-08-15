@@ -55,28 +55,24 @@ class TURBGeneralData
 {
 
 public:
-  TURBGeneralData()
-  {}
   TURBGeneralData(const WINDSInputData *, WINDSGeneralData *);
   TURBGeneralData(const std::string, WINDSGeneralData *);
-
+  TURBGeneralData(WINDSGeneralData *);
   virtual ~TURBGeneralData()
   {}
 
   virtual void run();
 
-  // load data at given time instance
   void loadNetCDFData(int);
-
-  bool flagUniformZGrid = true; /**< :document this: */
-  bool flagNonLocalMixing; /**< :document this: */
-  bool flagCompDivStress = true; /**< :document this: */
 
   // General QUIC Domain Data
   ///@{
   /** number of cells */
   int nx, ny, nz;
   ///@}
+
+  long numcell_cent; /**< Total number of cell-centered values in domain */
+  long numcell_face; /**< Total number of face-centered values in domain */
 
   //nt - number of time instance in data
   int nt;
@@ -85,22 +81,12 @@ public:
 
   ///@{
   /** grid information */
-  std::vector<float> x_fc;
+  std::vector<float> x, y, z;
+
   std::vector<float> x_cc;
-  std::vector<float> y_fc;
-  std::vector<float> y_cc;
-  std::vector<float> z_fc;
-  std::vector<float> z_cc;
+  std::vector<float> z_face;
+  std::vector<float> dz_array;
   ///@}
-
-  // Mean trubulence quantities
-  float z0d, d0d;
-  float zRef, uRef, uStar;
-  float bldgH_mean, bldgH_max;
-  float terrainH_max;
-
-  // Turbulence Fields Upper Bound (tij < turbUpperBound*uStar^2)
-  float turbUpperBound; /**< Turbulence fields upper bound */
 
   // index for fluid cell
   std::vector<int> icellfluid; /**< :document this: */
@@ -122,16 +108,6 @@ public:
   std::vector<float> Gzx;
   std::vector<float> Gzy;
   std::vector<float> Gzz;
-  ///@}
-
-  ///@{
-  /** strain rate tensor */
-  std::vector<float> Sxx;
-  std::vector<float> Sxy;
-  std::vector<float> Sxz;
-  std::vector<float> Syy;
-  std::vector<float> Syz;
-  std::vector<float> Szz;
   ///@}
 
   std::vector<float> Lm; /**< mixing length */
@@ -169,10 +145,28 @@ public:
 protected:
   WINDSGeneralData *m_WGD;
 
+  void getDerivativesGPU();
+
+  void derivativeVelocity();
+
+  void stressTensor();
+
+  void divergenceStress();
+  void derivativeStress(const std::vector<float> &,
+                        const std::vector<float> &,
+                        const std::vector<float> &,
+                        std::vector<float> &);
+
+  void addBackgroundMixing();
+  void frictionVelocity();
+  void boundTurbFields();
+
 private:
+  // cannot have an empty constructor (have to pass in a mesh to build)
+  TURBGeneralData();
+
   // store the wall classes
-  std::vector<TURBWall *>
-    wallVec;
+  std::vector<TURBWall *> wallVec;
 
   // some constants for turbulent model
   const float vonKar = 0.4;
@@ -190,21 +184,16 @@ private:
   // input: store here for multiple time instance.
   NetCDFInput *input;
 
-  void frictionVelocity();
+  bool flagUniformZGrid = true; /**< :document this: */
+  bool flagNonLocalMixing; /**< :document this: */
+  bool flagCompDivStress = true; /**< :document this: */
 
-  void getDerivatives();
-  void derivativeVelocity();
+  // Mean trubulence quantities
+  float z0d, d0d;
+  float zRef, uRef, uStar;
+  float bldgH_mean, bldgH_max;
+  float terrainH_max;
 
-  void getStressTensor();
-  void stressTensor();
-
-  void addBackgroundMixing();
-
-  void divergenceStress();
-  void derivativeStress(const std::vector<float> &,
-                        const std::vector<float> &,
-                        const std::vector<float> &,
-                        std::vector<float> &);
-
-  void boundTurbFields();
+  // Turbulence Fields Upper Bound (tij < turbUpperBound*uStar^2)
+  float turbUpperBound; /**< Turbulence fields upper bound */
 };

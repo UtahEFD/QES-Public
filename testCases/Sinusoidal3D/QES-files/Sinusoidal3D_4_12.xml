@@ -1,11 +1,11 @@
 <plumeParameters>
-	<simDur> 12.0 </simDur>
-	<timeStep> 4.0 </timeStep>
-    <CourantNumber> 0.0 </CourantNumber>
-  	<invarianceTol> 1e-10 </invarianceTol>
-	<C_0> 1.0 </C_0>
-	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
-	<updateFrequency_timeLoop> 1 </updateFrequency_timeLoop>
+  <simDur> 12.0 </simDur>
+  <timeStep> 4.0 </timeStep>
+  <CourantNumber> 0.0 </CourantNumber>
+  <invarianceTol> 1e-10 </invarianceTol>
+  <C_0> 1.0 </C_0>
+  <updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
+  <updateFrequency_timeLoop> 4 </updateFrequency_timeLoop>
 </plumeParameters>
 <particleOutputParameters>
   <outputFrequency> 4.0  </outputFrequency>

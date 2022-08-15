@@ -32,7 +32,7 @@
 #include "InterpNearestCell.h"
 
 
-InterpNearestCell::InterpNearestCell(PlumeInputData *PID, WINDSGeneralData *WGD, TURBGeneralData *TGD, const bool &debug_val)
+InterpNearestCell::InterpNearestCell(WINDSGeneralData *WGD, TURBGeneralData *TGD, const bool &debug_val)
   : Interp(WGD)
 {
   //std::cout << "[InterpNearestCell] \t Setting InterpNearestCell fields " << std::endl;

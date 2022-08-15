@@ -262,6 +262,7 @@ __global__ void SOR_iteration(float *d_lambda, float *d_lambda_old, int nx, int 
 DynamicParallelism::DynamicParallelism(const WINDSInputData *WID, WINDSGeneralData *WGD)
   : Solver(WID, WGD)
 {
+  std::cout << "-------------------------------------------------------------------" << std::endl;
   std::cout << "DynamicParallelism Solver Initialization" << std::endl;
   int deviceCount = 0;
   cudaError_t error_id = cudaGetDeviceCount(&deviceCount);
@@ -333,6 +334,29 @@ DynamicParallelism::DynamicParallelism(const WINDSInputData *WID, WINDSGeneralDa
               << "DomainID=" << deviceProp.pciDomainID << std::endl;
   }
   cudaSetDevice(0);
+
+  char msg[256];
+  int numblocks = (WGD->numcell_cent / BLOCKSIZE) + 1;
+  long long memory_req = (10 * WGD->numcell_cent + 6 * WGD->numcell_face + numblocks + (WGD->nz - 1)) * sizeof(float)
+                         + (WGD->numcell_cent) * sizeof(int) + 2308964352;
+
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+  sprintf_s(msg, sizeof(msg),
+            "Total global memory required for running this case: %.0f MBytes "
+            "(%llu bytes)\n",
+            static_cast<float>(memory_req / 1048576.0f),
+            (unsigned long long)memory_req);
+#else
+  snprintf(msg, sizeof(msg),
+           "Total global memory required for running this case: %.0f MBytes "
+           "(%llu bytes)\n",
+           static_cast<float>(memory_req / 1048576.0f),
+           (unsigned long long)memory_req);
+#endif
+  std::cout << msg;
+
+
+  std::cout << "-------------------------------------------------------------------" << std::endl;
 }
 
 
@@ -376,14 +400,6 @@ void DynamicParallelism::solve(const WINDSInputData *WID, WINDSGeneralData *WGD,
   cudaMalloc((void **)&d_v, WGD->numcell_face * sizeof(float));
   cudaMalloc((void **)&d_w, WGD->numcell_face * sizeof(float));
 
-  /*int i = 105;
-  int j = 131;
-  for (auto k = 1; k < WGD->nz; k++) {
-    int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-    std::cout << "k:   " << k << std::endl;
-    std::cout << "WGD->u0[icell_face]:   " << WGD->u0[icell_face] << std::endl;
-    std::cout << "WGD->v0[icell_face]:   " << WGD->v0[icell_face] << std::endl;
-  }*/
 
   long long memory_req = (10 * WGD->numcell_cent + 6 * WGD->numcell_face + numblocks + (WGD->nz - 1)) * sizeof(float) + (WGD->numcell_cent) * sizeof(int) + 2308964352;
   char msg[256];

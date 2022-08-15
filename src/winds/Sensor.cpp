@@ -79,7 +79,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
   // loop to find which timestep of each sensor is related to the running timestep of the code
   for (auto i = 0; i < WID->metParams->sensors.size(); i++) {
     for (auto j = 0; j < WID->metParams->sensors[i]->TS.size(); j++) {
-      if (WGD->sensortime[index] == WID->metParams->sensors[i]->TS[j]->timeEpoch) {
+      if (WGD->sensortime[index] == WID->metParams->sensors[i]->TS[j]->time) {
         time_id[i] = j;
       }
     }
@@ -126,17 +126,16 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
         WID->metParams->sensors[i]->site_UTM_y = WID->metParams->sensors[i]->site_xcoord * asin(WGD->theta) + WID->metParams->sensors[i]->site_ycoord * acos(WGD->theta) + WID->simParams->UTMy;
         WID->metParams->sensors[i]->site_UTM_zone = WID->simParams->UTMZone;
         // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa (located in Sensor.cpp)
-        UTMConverter(WID->metParams->sensors[i]->site_lon, WID->metParams->sensors[i]->site_lat, WID->metParams->sensors[i]->site_UTM_x, WID->metParams->sensors[i]->site_UTM_y, WID->metParams->sensors[i]->site_UTM_zone, 1);
+        GIStool::UTMConverter(WID->metParams->sensors[i]->site_lon, WID->metParams->sensors[i]->site_lat, WID->metParams->sensors[i]->site_UTM_x, WID->metParams->sensors[i]->site_UTM_y, WID->metParams->sensors[i]->site_UTM_zone, 1);
       }
 
       if (WID->metParams->sensors[i]->site_coord_flag == 2) {
         // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa (located in Sensor.cpp)
-        UTMConverter(WID->metParams->sensors[i]->site_lon, WID->metParams->sensors[i]->site_lat, WID->metParams->sensors[i]->site_UTM_x, WID->metParams->sensors[i]->site_UTM_y, WID->metParams->sensors[i]->site_UTM_zone, 1);
+        GIStool::UTMConverter(WID->metParams->sensors[i]->site_lon, WID->metParams->sensors[i]->site_lat, WID->metParams->sensors[i]->site_UTM_x, WID->metParams->sensors[i]->site_UTM_y, WID->metParams->sensors[i]->site_UTM_zone, 1);
         WID->metParams->sensors[i]->site_xcoord = WID->metParams->sensors[i]->site_UTM_x - WID->simParams->UTMx;
         WID->metParams->sensors[i]->site_ycoord = WID->metParams->sensors[i]->site_UTM_y - WID->simParams->UTMy;
       }
-
-      getConvergence(WID->metParams->sensors[i]->site_lon, WID->metParams->sensors[i]->site_lat, WID->metParams->sensors[i]->site_UTM_zone, convergence);
+      GIStool::getConvergence(WID->metParams->sensors[i]->site_lon, WID->metParams->sensors[i]->site_lat, WID->metParams->sensors[i]->site_UTM_zone, convergence);
     }
 
     int idx = i - count;// id of the available sensors for the running timestep of the code
@@ -341,9 +340,9 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
     }
   }
 
-  float surf_layer_height;// Surface layer height of the atmospheric boundary layer
-  float abl_height;// Atmospheric boundary layer height
-  float asl_percent = 0.05;// Percentage of atmospheric surface layer
+  float surf_layer_height;// Surface layer height of the atmospheric boundary layer (ABL)
+  float abl_height;// Atmospheric boundary layer (ABL) height
+  float asl_percent = 0.05;// Percentage of atmospheric surface layer (ASL)
 
   // Stable boundary layer
   if (average__one_overL > 0.0) {
@@ -366,58 +365,53 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
   }
 
 
-  int k_mod;
-  if (num_sites == 1) {
+  int k_mod;//Modified index in z-direction
+  if (num_sites == 1) {//If there is only one sensor in the domain
     for (auto k = 1; k < WGD->nz; k++) {
       for (auto j = 0; j < WGD->ny; j++) {
         for (auto i = 0; i < WGD->nx; i++) {
 
-          int id = i + j * WGD->nx;
+          int id = i + j * WGD->nx;//Index in horizontal surface
+          //If height added to top of terrain is still inside QES domain
           if (k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
-            k_mod = k + WGD->terrain_face_id[id] - 1;
+            k_mod = k + WGD->terrain_face_id[id] - 1;//Set the modified index
           } else {
             continue;
           }
+          // Lineralized index for cell faced values
           icell_face = i + j * WGD->nx + k_mod * WGD->nx * WGD->ny;
-          /// Lineralized index for cell faced values
-
-          /*if (k + WGD->terrain_face_id[site_id[0]] - 1 > WGD->nz - 2) {
-            WGD->u0[icell_face] = u_prof[0][WGD->nz - 2];
-            WGD->v0[icell_face] = v_prof[0][WGD->nz - 2];
-          } else {
-            WGD->u0[icell_face] = u_prof[0][k + WGD->terrain_face_id[site_id[0]] - 1];
-            WGD->v0[icell_face] = v_prof[0][k + WGD->terrain_face_id[site_id[0]] - 1];
-          }*/
+          // If the height difference between the terrain at the curent cell and sensor location is less than ABL height
           if (abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[0]]]) > abl_height) {
             surf_layer_height = asl_percent * abl_height;
           } else {
             surf_layer_height = asl_percent * (2 * abl_height - (WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[0]]]));
           }
-
+          // If height (above ground) is less than or equal to ASL height
           if (WGD->z[k] <= surf_layer_height) {
             WGD->u0[icell_face] = u_prof[0][k + WGD->terrain_face_id[site_id[0]] - 1];
             WGD->v0[icell_face] = v_prof[0][k + WGD->terrain_face_id[site_id[0]] - 1];
-          } else if (k + WGD->terrain_face_id[site_id[0]] - 1 > WGD->nz - 2) {
+          }// If sum of z index and the terrain index at the sensor location is outside the domain
+          else if (k + WGD->terrain_face_id[site_id[0]] - 1 > WGD->nz - 2) {
             WGD->u0[icell_face] = u_prof[0][WGD->nz - 2];
             WGD->v0[icell_face] = v_prof[0][WGD->nz - 2];
-          } else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
+          }// If height (above ground) is greater than ASL height and modified index is inside the domain
+          else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
             WGD->u0[icell_face] = u_prof[0][k_mod];
             WGD->v0[icell_face] = v_prof[0][k_mod];
           }
 
-
-          /*icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
-          WGD->u0[icell_face] = u_prof[0][k];
-          WGD->v0[icell_face] = v_prof[0][k];*/
-          // WGD->w0[icell_face] = 0.0;         /// Perpendicular wind direction
+          WGD->w0[icell_face] = 0.0;// Perpendicular wind direction
         }
       }
     }
   }
 
   // If number of sites are more than one
-  // Apply 2D Barnes scheme to interpolate site velocity profiles to the whole domain
-  else {
+  // Apply modified Barnes scheme to interpolate site velocity profiles to the whole domain
+  //
+  // If number of sites are more than one
+  // Apply modified Barnes scheme to interpolate site velocity profiles to the whole domain
+  else if (WID->simParams->m_domIType != SimulationParameters::DomainInputType::WRFOnly) {
     if (solverType == 1) {
       auto startBarnesCPU = std::chrono::high_resolution_clock::now();
       BarnesInterpolationCPU(WID, WGD, u_prof, v_prof, num_sites, available_sensor_id, asl_percent, abl_height);
@@ -430,6 +424,104 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
       auto finishBarnesGPU = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> elapsedBarnesGPU = finishBarnesGPU - startBarnesGPU;
       std::cout << "Elapsed time for Barnes interpolation on GPU: " << elapsedBarnesGPU.count() << " s\n";
+    }
+  }
+
+
+  else if (WID->simParams->m_domIType == SimulationParameters::DomainInputType::WRFOnly) {
+
+    std::cout << "Processing WRF u0_fmw, v0_fmw and w0_fmw into initial QES wind fields." << std::endl;
+
+    // Create initial wind field in the area WRF data is available
+    for (auto i = WGD->halo_index_x + 1; i < WGD->wrf_nx + WGD->halo_index_x; i++) {
+      for (auto j = WGD->halo_index_y + 1; j < WGD->wrf_ny + WGD->halo_index_y; j++) {
+        id = (i - WGD->halo_index_x) + (j - WGD->halo_index_y) * (WGD->wrf_nx);
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = (u_prof[id][k] + u_prof[id - 1][k]) / 2;
+          WGD->v0[icell_face] = (v_prof[id][k] + v_prof[id - WGD->wrf_nx][k]) / 2;
+        }
+      }
+    }
+
+    for (auto i = WGD->halo_index_x + 1; i < WGD->wrf_nx + WGD->halo_index_x; i++) {
+      for (auto j = 0; j < WGD->halo_index_y + 1; j++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = i + (WGD->halo_index_y + 1) * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
+
+      for (auto j = WGD->wrf_ny + WGD->halo_index_y; j < WGD->ny; j++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = i + (WGD->wrf_ny + WGD->halo_index_y - 1) * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
+    }
+
+    for (auto j = WGD->halo_index_y + 1; j < WGD->wrf_ny + WGD->halo_index_y; j++) {
+      for (auto i = 0; i < WGD->halo_index_x + 1; i++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = WGD->halo_index_x + 1 + j * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
+
+      for (auto i = WGD->wrf_nx + WGD->halo_index_x; i < WGD->nx; i++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = (WGD->wrf_nx + WGD->halo_index_x - 1) + j * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
+    }
+
+    for (auto i = 0; i < WGD->halo_index_x + 1; i++) {
+      for (auto j = 0; j < WGD->halo_index_y + 1; j++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = WGD->halo_index_x + 1 + (WGD->halo_index_y + 1) * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
+
+      for (auto j = WGD->wrf_ny + WGD->halo_index_y; j < WGD->ny; j++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = WGD->halo_index_x + 1 + (WGD->wrf_ny + WGD->halo_index_y - 1) * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
+    }
+
+    for (auto i = WGD->wrf_nx + WGD->halo_index_x; i < WGD->halo_index_x + 1; i++) {
+      for (auto j = 0; j < WGD->halo_index_y + 1; j++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = WGD->wrf_nx + WGD->halo_index_x - 1 + (WGD->halo_index_y + 1) * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
+
+      for (auto j = WGD->wrf_ny + WGD->halo_index_y; j < WGD->ny; j++) {
+        for (auto k = 1; k < WGD->nz; k++) {
+          icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+          id = WGD->wrf_nx + WGD->halo_index_x - 1 + (WGD->wrf_ny + WGD->halo_index_y - 1) * WGD->nx + k * WGD->nx * WGD->ny;
+          WGD->u0[icell_face] = WGD->u0[id];
+          WGD->v0[icell_face] = WGD->v0[id];
+        }
+      }
     }
   }
 
@@ -586,17 +678,18 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
     }
   }
 
-  int k_mod;
+  int k_mod;//Modified index in z-direction
   for (auto k = 1; k < WGD->nz; k++) {
     for (auto j = 0; j < WGD->ny; j++) {
       for (auto i = 0; i < WGD->nx; i++) {
         sum_wu = 0.0;
         sum_wv = 0.0;
         sum_wm = 0.0;
-        int id = i + j * WGD->nx;
-        int idx = i + j * (WGD->nx - 1);
+        int id = i + j * WGD->nx;//Index in horizontal surface
+        int idx = i + j * (WGD->nx - 1);//Index in horizontal surface for cell faces
+        //If height added to top of terrain is still inside QES domain
         if (k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
-          k_mod = k + WGD->terrain_face_id[id] - 1;
+          k_mod = k + WGD->terrain_face_id[id] - 1;//Set the modified index
         } else {
           continue;
         }
@@ -605,31 +698,24 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
           site_i[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord / WGD->dx;
           site_j[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord / WGD->dy;
           site_id[ii] = site_i[ii] + site_j[ii] * WGD->nx;
-          /*if (WGD->z[k] <= ave_z0) {
-            WGD->u0[icell_face] = u_prof[0][k + WGD->terrain_face_id[site_id[0]] - 1];
-            WGD->v0[icell_face] = v_prof[0][k + WGD->terrain_face_id[site_id[0]] - 1];
-          } else if (k + WGD->terrain_face_id[site_id[0]] - 1 > WGD->nz - 2) {
-            WGD->u0[icell_face] = u_prof[0][WGD->nz - 2];
-            WGD->v0[icell_face] = v_prof[0][WGD->nz - 2];
-          } else if (WGD->z[k] > ave_z0 && k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
-            WGD->u0[icell_face] = u_prof[0][k_mod];
-            WGD->v0[icell_face] = v_prof[0][k_mod];
-          }*/
+          // If the height difference between the terrain at the curent cell and sensor location is less than ABL height
           if (abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]) > abl_height) {
             surf_layer_height = asl_percent * abl_height;
           } else {
             surf_layer_height = asl_percent * (2 * abl_height - abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]));
           }
-
+          // If sum of z index and the terrain index at the sensor location is outside the domain
           if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
             sum_wu += wm[ii][i][j] * u_prof[ii][WGD->nz - 2];
             sum_wv += wm[ii][i][j] * v_prof[ii][WGD->nz - 2];
             sum_wm += wm[ii][i][j];
-          } else if (WGD->z[k] <= surf_layer_height) {
+          }// If height (above ground) is less than or equal to ASL height
+          else if (WGD->z[k] <= surf_layer_height) {
             sum_wu += wm[ii][i][j] * u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
             sum_wv += wm[ii][i][j] * v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
             sum_wm += wm[ii][i][j];
-          } else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[site_id[ii]] - 1 < WGD->nz && k_mod > k + WGD->terrain_face_id[site_id[ii]] - 1) {
+          }// If height (above ground) is greater than ASL height and modified index is inside the domain
+          else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[site_id[ii]] - 1 < WGD->nz && k_mod > k + WGD->terrain_face_id[site_id[ii]] - 1) {
             sum_wu += wm[ii][i][j] * u_prof[ii][k_mod];
             sum_wv += wm[ii][i][j] * v_prof[ii][k_mod];
             sum_wm += wm[ii][i][j];
@@ -639,15 +725,7 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
             sum_wm += wm[ii][i][j];
           }
         }
-        /*if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
-            sum_wu += wm[ii][i][j] * u_prof[ii][WGD->nz - 2];
-            sum_wv += wm[ii][i][j] * v_prof[ii][WGD->nz - 2];
-            sum_wm += wm[ii][i][j];
-          } else {
-            sum_wu += wm[ii][i][j] * u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
-            sum_wv += wm[ii][i][j] * v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
-            sum_wm += wm[ii][i][j];
-          }*/
+
         icell_face = i + j * WGD->nx + k_mod * WGD->nx * WGD->ny;
         WGD->u0[icell_face] = sum_wu / sum_wm;
         WGD->v0[icell_face] = sum_wv / sum_wm;
@@ -695,13 +773,6 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
           u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz] = u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
           v0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz] = v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
         }
-        /*if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
-          u0_int[k + ii * WGD->nz] = u_prof[ii][WGD->nz - 2];
-          v0_int[k + ii * WGD->nz] = v_prof[ii][WGD->nz - 2];
-        } else {
-          u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz] = u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
-          v0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz] = v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
-        }*/
       }
     }
   }
@@ -712,9 +783,10 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
         sum_wu = 0.0;
         sum_wv = 0.0;
         sum_wm = 0.0;
-        int id = i + j * WGD->nx;
+        int id = i + j * WGD->nx;//Index in horizontal surface
+        //If height added to top of terrain is still inside QES domain
         if (k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
-          k_mod = k + WGD->terrain_face_id[id] - 1;
+          k_mod = k + WGD->terrain_face_id[id] - 1;//Set the modified index
         } else {
           continue;
         }
@@ -722,20 +794,24 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
           site_i[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord / WGD->dx;
           site_j[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord / WGD->dy;
           site_id[ii] = site_i[ii] + site_j[ii] * WGD->nx;
+          // If the height difference between the terrain at the curent cell and sensor location is less than ABL height
           if (abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]) > abl_height) {
             surf_layer_height = asl_percent * abl_height;
           } else {
             surf_layer_height = asl_percent * (2 * abl_height - abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]));
           }
+          // If sum of z index and the terrain index at the sensor location is outside the domain
           if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
             sum_wu += wm[ii][i][j] * (u_prof[ii][WGD->nz - 2] - u0_int[WGD->nz - 2 + ii * WGD->nz]);
             sum_wv += wm[ii][i][j] * (v_prof[ii][WGD->nz - 2] - v0_int[WGD->nz - 2 + ii * WGD->nz]);
             sum_wm += wm[ii][i][j];
-          } else if (WGD->z[k] <= surf_layer_height) {
+          }// If height (above ground) is less than or equal to ASL height
+          else if (WGD->z[k] <= surf_layer_height) {
             sum_wu += wm[ii][i][j] * (u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1] - u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);
             sum_wv += wm[ii][i][j] * (v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1] - v0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);
             sum_wm += wm[ii][i][j];
-          } else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[site_id[ii]] - 1 < WGD->nz && k_mod > k + WGD->terrain_face_id[site_id[ii]] - 1) {
+          }// If height (above ground) is greater than ASL height and modified index is inside the domain
+          else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[site_id[ii]] - 1 < WGD->nz && k_mod > k + WGD->terrain_face_id[site_id[ii]] - 1) {
             sum_wu += wm[ii][i][j] * (u_prof[ii][k_mod] - u0_int[k_mod + ii * WGD->nz]);
             sum_wv += wm[ii][i][j] * (v_prof[ii][k_mod] - v0_int[k_mod + ii * WGD->nz]);
             sum_wm += wm[ii][i][j];
@@ -744,15 +820,6 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
             sum_wv += wm[ii][i][j] * (v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1] - v0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);
             sum_wm += wm[ii][i][j];
           }
-          /*if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
-            sum_wu += wm[ii][i][j] * (u_prof[ii][WGD->nz - 2] - u0_int[WGD->nz - 2 + ii * WGD->nz]);
-            sum_wv += wm[ii][i][j] * (v_prof[ii][WGD->nz - 2] - v0_int[WGD->nz - 2 + ii * WGD->nz]);
-            sum_wm += wm[ii][i][j];
-          } else {
-            sum_wu += wm[ii][i][j] * (u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1] - u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);
-            sum_wv += wm[ii][i][j] * (v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1] - v0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);
-            sum_wm += wm[ii][i][j];
-          }*/
         }
 
         if (sum_wm != 0) {
@@ -763,270 +830,4 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
       }
     }
   }
-}
-
-
-void Sensor::UTMConverter(float rlon, float rlat, float rx, float ry, int UTM_PROJECTION_ZONE, int iway)
-{
-
-
-  /*
-
-                  S p e c f e m 3 D  V e r s i o n  2 . 1
-                  ---------------------------------------
-
-             Main authors: Dimitri Komatitsch and Jeroen Tromp
-       Princeton University, USA and CNRS / INRIA / University of Pau
-    (c) Princeton University / California Institute of Technology and CNRS / INRIA / University of Pau
-                                July 2012
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) aWGD->ny later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT AWGD->ny WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
-  */
-
-  /*
-    UTM (Universal Transverse Mercator) projection from the USGS
-  */
-
-
-  /*
-  convert geodetic longitude and latitude to UTM, and back
-  use iway = ILONGLAT2UTM for long/lat to UTM, IUTM2LONGLAT for UTM to lat/long
-  a list of UTM zones of the world is available at www.dmap.co.uk/utmworld.htm
-  */
-
-
-  /*
-        CAMx v2.03
-
-        UTM_GEO performs UTM to geodetic (long/lat) translation, and back.
-
-        This is a Fortran version of the BASIC program "Transverse Mercator
-        Conversion", Copyright 1986, Norman J. Berls (Stefan Musarra, 2/94)
-        Based on algorithm taken from "Map Projections Used by the USGS"
-        by John P. SWGD->nyder, Geological Survey Bulletin 1532, USDI.
-
-        Input/Output arguments:
-
-           rlon                  Longitude (deg, negative for West)
-           rlat                  Latitude (deg)
-           rx                    UTM easting (m)
-           ry                    UTM northing (m)
-           UTM_PROJECTION_ZONE  UTM zone
-           iway                  Conversion type
-                                 ILONGLAT2UTM = geodetic to UTM
-                                 IUTM2LONGLAT = UTM to geodetic
-  */
-
-
-  int ILONGLAT2UTM = 0, IUTM2LONGLAT = 1;
-  float PI = 3.141592653589793;
-  float degrad = PI / 180.0;
-  float raddeg = 180.0 / PI;
-  float semimaj = 6378206.40;
-  float semimin = 6356583.80;
-  float scfa = 0.99960;
-
-  /*
-    some extracts about UTM:
-
-    There are 60 longitudinal projection zones numbered 1 to 60 starting at 180Â°W.
-    Each of these zones is 6 degrees wide, apart from a few exceptions around Norway and Svalbard.
-    There are 20 latitudinal zones spanning the latitudes 80Â°S to 84Â°N and denoted
-    by the letters C to X, ommitting the letter O.
-    Each of these is 8 degrees south-north, apart from zone X which is 12 degrees south-north.
-
-    To change the UTM zone and the hemisphere in which the
-    calculations are carried out, need to change the fortran code and recompile. The UTM zone is described
-    actually by the central meridian of that zone, i.e. the longitude at the midpoint of the zone, 3 degrees
-    from either zone boundary.
-    To change hemisphere need to change the "north" variable:
-    - north=0 for northern hemisphere and
-    - north=10000000 (10000km) for southern hemisphere. values must be in metres i.e. north=10000000.
-
-    Note that the UTM grids are actually Mercators which
-    employ the standard UTM scale factor 0.9996 and set the
-    Easting Origin to 500,000;
-    the Northing origin in the southern
-    hemisphere is kept at 0 rather than set to 10,000,000
-    and this gives a uniform scale across the equator if the
-    normal convention of selecting the Base Latitude (origin)
-    at the equator (0 deg.) is followed.  Northings are
-    positive in the northern hemisphere and negative in the
-    southern hemisphere.
-    */
-
-  float north = 0.0;
-  float east = 500000.0;
-
-  float e2, e4, e6, ep2, xx, yy, dlat, dlon, zone, cm, cmr, delam;
-  float f1, f2, f3, f4, rm, rn, t, c, a, e1, u, rlat1, dlat1, c1, t1, rn1, r1, d;
-  float rx_save, ry_save, rlon_save, rlat_save;
-
-  // save original parameters
-  rlon_save = rlon;
-  rlat_save = rlat;
-  rx_save = rx;
-  ry_save = ry;
-
-  xx = 0.0;
-  yy = 0.0;
-  dlat = 0.0;
-  dlon = 0.0;
-
-  // define parameters of reference ellipsoid
-  e2 = 1.0 - pow((semimin / semimaj), 2.0);
-  e4 = pow(e2, 2.0);
-  e6 = e2 * e4;
-  ep2 = e2 / (1.0 - e2);
-
-  if (iway == IUTM2LONGLAT) {
-    xx = rx;
-    yy = ry;
-  } else {
-    dlon = rlon;
-    dlat = rlat;
-  }
-
-  // Set Zone parameters
-
-  zone = UTM_PROJECTION_ZONE;
-  // sets central meridian for this zone
-  cm = zone * 6.0 - 183.0;
-  cmr = cm * degrad;
-
-  // Lat/Lon to UTM conversion
-
-  if (iway == ILONGLAT2UTM) {
-    rlon = degrad * dlon;
-    rlat = degrad * dlat;
-
-    delam = dlon - cm;
-    if (delam < -180.0) {
-      delam = delam + 360.0;
-    }
-    if (delam > 180.0) {
-      delam = delam - 360.0;
-    }
-    delam = delam * degrad;
-
-    f1 = (1.0 - (e2 / 4.0) - 3.0 * (e4 / 64.0) - 5.0 * (e6 / 256)) * rlat;
-    f2 = 3.0 * (e2 / 8.0) + 3.0 * (e4 / 32.0) + 45.0 * (e6 / 1024.0);
-    f2 = f2 * sin(2.0 * rlat);
-    f3 = 15.0 * (e4 / 256.0) * 45.0 * (e6 / 1024.0);
-    f3 = f3 * sin(4.0 * rlat);
-    f4 = 35.0 * (e6 / 3072.0);
-    f4 = f4 * sin(6.0 * rlat);
-    rm = semimaj * (f1 - f2 + f3 - f4);
-    if (dlat == 90.0 || dlat == -90.0) {
-      xx = 0.0;
-      yy = scfa * rm;
-    } else {
-      rn = semimaj / sqrt(1.0 - e2 * pow(sin(rlat), 2.0));
-      t = pow(tan(rlat), 2.0);
-      c = ep2 * pow(cos(rlat), 2.0);
-      a = cos(rlat) * delam;
-
-      f1 = (1.0 - t + c) * pow(a, 3.0) / 6.0;
-      f2 = 5.0 - 18.0 * t + pow(t, 2.0) + 72.0 * c - 58.0 * ep2;
-      f2 = f2 * pow(a, 5.0) / 120.0;
-      xx = scfa * rn * (a + f1 + f2);
-      f1 = pow(a, 2.0) / 2.0;
-      f2 = 5.0 - t + 9.0 * c + 4.0 * pow(c, 2.0);
-      f2 = f2 * pow(a, 4.0) / 24.0;
-      f3 = 61.0 - 58.0 * t + pow(t, 2.0) + 600.0 * c - 330.0 * ep2;
-      f3 = f3 * pow(a, 6.0) / 720.0;
-      yy = scfa * (rm + rn * tan(rlat) * (f1 + f2 + f3));
-    }
-    xx = xx + east;
-    yy = yy + north;
-  }
-
-  // UTM to Lat/Lon conversion
-
-  else {
-    xx = xx - east;
-    yy = yy - north;
-    e1 = sqrt(1.0 - e2);
-    e1 = (1.0 - e1) / (1.0 + e1);
-    rm = yy / scfa;
-    u = 1.0 - (e2 / 4.0) - 3.0 * (e4 / 64.0) - 5.0 * (e6 / 256.0);
-    u = rm / (semimaj * u);
-
-    f1 = 3.0 * (e1 / 2.0) - 27.0 * pow(e1, 3.0) / 32.0;
-    f1 = f1 * sin(2.0 * u);
-    f2 = (21.0 * pow(e1, 2.0) / 16.0) - 55.0 * pow(e1, 4.0) / 32.0;
-    f2 = f2 * sin(4.0 * u);
-    f3 = 151.0 * pow(e1, 3.0) / 96.0;
-    f3 = f3 * sin(6.0 * u);
-    rlat1 = u + f1 + f2 + f3;
-    dlat1 = rlat1 * raddeg;
-    if (dlat1 >= 90.0 || dlat1 <= -90.0) {
-      dlat1 = std::min(dlat1, 90.0f);
-      dlat1 = std::max(dlat1, -90.0f);
-      dlon = cm;
-    } else {
-      c1 = ep2 * pow(cos(rlat1), 2.0);
-      t1 = pow(tan(rlat1), 2.0);
-      f1 = 1.0 - e2 * pow(sin(rlat1), 2.0);
-      rn1 = semimaj / sqrt(f1);
-      r1 = semimaj * (1.0 - e2) / sqrt(pow(f1, 3.0));
-      d = xx / (rn1 * scfa);
-
-      f1 = rn1 * tan(rlat1) / r1;
-      f2 = pow(d, 2.0) / 2.0;
-      f3 = 5.0 * 3.0 * t1 + 10.0 * c1 - 4.0 * pow(c1, 2.0) - 9.0 * ep2;
-      f3 = f3 * pow(d, 2.0) * pow(d, 2.0) / 24.0;
-      f4 = 61.0 + 90.0 * t1 + 298.0 * c1 + 45.0 * pow(t1, 2.0) - 252.0 * ep2 - 3.0 * pow(c1, 2.0);
-      f4 = f4 * pow(pow(d, 2.0), 3.0) / 720.0;
-      rlat = rlat1 - f1 * (f2 - f3 + f4);
-      dlat = rlat * raddeg;
-
-      f1 = 1.0 + 2.0 * t1 + c1;
-      f1 = f1 * pow(d, 2.0) * d / 6.0;
-      f2 = 5.0 - 2.0 * c1 + 28.0 * t1 - 3.0 * pow(c1, 2.0) + 8.0 * ep2 + 24.0 * pow(t1, 2.0);
-      f2 = f2 * pow(pow(d, 2.0), 2.0) * d / 120.0;
-      rlon = cmr + (d - f1 + f2) / cos(rlat1);
-      dlon = rlon * raddeg;
-      if (dlon < -180.0) {
-        dlon = dlon + 360.0;
-      }
-      if (dlon > 180.0) {
-        dlon = dlon - 360.0;
-      }
-    }
-  }
-
-  if (iway == IUTM2LONGLAT) {
-    rlon = dlon;
-    rlat = dlat;
-    rx = rx_save;
-    ry = ry_save;
-  } else {
-    rx = xx;
-    ry = yy;
-    rlon = rlon_save;
-    rlat = rlat_save;
-  }
-}
-
-
-void Sensor::getConvergence(float lon, float lat, int site_UTM_zone, float convergence)
-{
-
-  float temp_lon;
-  temp_lon = (6.0 * site_UTM_zone) - 183.0 - lon;
-  convergence = atan(atan(temp_lon * M_PI / 180.0) * asin(lat * M_PI / 180.0)) * (180.0 / M_PI);
 }

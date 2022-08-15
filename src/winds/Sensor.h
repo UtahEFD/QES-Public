@@ -33,6 +33,8 @@
 
 #include <algorithm>
 #include "util/ParseInterface.h"
+#include "util/QESFileSystemHandler.h"
+#include "util/GIStool.h"
 #include "TimeSeries.h"
 
 class WINDSInputData;
@@ -142,29 +144,6 @@ public:
    * @param solverType type of the solver specified by user
    */
   void inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, int index, int solverType);
-
-
-  /**
-   * Converts UTM to lat/lon and vice versa of the sensor coordiantes.
-   *
-   * @param rlon :document this:
-   * @param rlat :document this:
-   * @param rx :document this:
-   * @param ry :document this:
-   * @param UTM_PROJECTION_ZONE :document this:
-   * @param iway :document this:
-   */
-  void UTMConverter(float rlon, float rlat, float rx, float ry, int UTM_PROJECTION_ZONE, int iway);
-
-  /**
-   * Calculates the convergence value based on lat/lon input.
-   *
-   * @param lon :document this:
-   * @param lat :document this:
-   * @param site_UTM_zone :document this:
-   * @param convergense :document this:
-   */
-  void getConvergence(float lon, float lat, int site_UTM_zone, float convergence);
 
   /**
    * This function utilizes Barnes scheme to interplote velocity to generate the initial velocity field for the domain.

@@ -68,7 +68,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
   float x_ave, y_ave;
   float x_down, y_down;
   float segment_length;// Face length
-  float downwind_rel_dir, along_dir, cross_dir, facenormal_dir;
+  float downwind_rel_dir(0.0), along_dir(0.0), cross_dir(0.0), facenormal_dir(0.0);
   float cross_vel_mag, along_vel_mag;
   std::vector<int> perpendicular_flag;
   std::vector<float> perpendicular_dir;
@@ -127,7 +127,10 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
         if (perpendicular_flag[id] == 0) {
           // x location of each yc point parallel to the face
           x_wall = ((xi[id + 1] - xi[id]) / (yi[id + 1] - yi[id])) * (yc - yi[id]) + xi[id];
+        } else {
+          x_wall = xi[id];
         }
+
 
         for (auto k = k_end - 1; k >= k_start; k--) {
 

@@ -1,6 +1,6 @@
 <simulationParameters>
 
-	<DEM>../regressionTests/runTests/RxCADRE.tiff</DEM>				<!-- Address to DEM location-->
+	<DEM>RxCADRE.tiff</DEM>				<!-- Address to DEM location-->
 
   	<halo_x> 40.0 </halo_x>						<!-- Halo region added to x-direction of domain (at the beginning and the end of domain) (meters)-->
   	<halo_y> 40.0 </halo_y>						<!-- Halo region added to y-direction of domain (at the beginning and the end of domain) (meters)-->
@@ -53,7 +53,7 @@
 <turbParams>
   <method>0</method>   <!-- Mixing length method (0-height, 1-serial, 2-raytracing, 3-OptiX, 4-file) -->
   <save>false</save>     <!-- Save to file -->
-  <LMfile>../scratch/RxCADRE/RxCADRE_mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
+  <LMfile>RxCADRE_mixlength.nc</LMfile>  <!-- Address to mixing lethng location-->
 </turbParams>
 <fileOptions>
   <outputFlag>1</outputFlag>

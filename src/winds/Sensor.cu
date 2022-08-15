@@ -110,29 +110,24 @@ __global__ void CalculateInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_
       d_sum_wm[i + j * nx] = 0;
 
       for (int id = 0; id < num_sites; id++) {
-        /*if (k + d_terrain_face_id[d_site_id[id]] - 1 > nz - 2) {
-          d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_u_prof[nz - 2 + id * nz];
-          d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_v_prof[nz - 2 + id * nz];
-          d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
-        } else {
-          d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_u_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz];
-          d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_v_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz];
-          d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
-        }*/
+        // If the height difference between the terrain at the curent cell and sensor location is less than ABL height
         if (abs(d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]) > abl_height) {
           d_surf_layer_height[ii] = asl_percent * abl_height;
         } else {
           d_surf_layer_height[ii] = asl_percent * (2 * abl_height - (d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]));
         }
+        // If sum of z index and the terrain index at the sensor location is outside the domain
         if (k + d_terrain_face_id[d_site_id[id]] - 1 > nz - 2) {
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_u_prof[nz - 2 + id * nz];
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_v_prof[nz - 2 + id * nz];
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
-        } else if (d_z[k] <= d_surf_layer_height[ii]) {
+        }// If height (above ground) is less than or equal to ASL height
+        else if (d_z[k] <= d_surf_layer_height[ii]) {
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_u_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz];
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_v_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz];
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
-        } else if (d_z[k] > d_surf_layer_height[ii] && k + d_terrain_face_id[d_site_id[id]] - 1 < nz && d_k_mod[ii] > k + d_terrain_face_id[d_site_id[id]] - 1) {
+        }// If height (above ground) is greater than ASL height and modified index is inside the domain
+        else if (d_z[k] > d_surf_layer_height[ii] && k + d_terrain_face_id[d_site_id[id]] - 1 < nz && d_k_mod[ii] > k + d_terrain_face_id[d_site_id[id]] - 1) {
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_u_prof[d_k_mod[ii] + id * nz];
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * d_v_prof[d_k_mod[ii] + id * nz];
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
@@ -224,30 +219,24 @@ __global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu
       d_sum_wm[i + j * nx] = 0;
 
       for (int id = 0; id < num_sites; id++) {
-        /*if (k + d_terrain_face_id[d_site_id[id]] - 1 > nz - 2) {
-          d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[nz - 2 + id * nz] - d_u0_int[nz - 2 + id * nz]);
-          d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_v_prof[nz - 2 + id * nz] - d_v0_int[nz - 2 + id * nz]);
-          d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
-        } else {
-          d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz] - d_u0_int[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz]);
-          d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_v_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz] - d_v0_int[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz]);
-          d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
-        }*/
+        // If the height difference between the terrain at the curent cell and sensor location is less than ABL height
         if (abs(d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]) > abl_height) {
           d_surf_layer_height[ii] = asl_percent * abl_height;
         } else {
           d_surf_layer_height[ii] = asl_percent * (2 * abl_height - (d_z[d_terrain_face_id[ii]] - d_z[d_terrain_face_id[d_site_id[id]]]));
         }
-
+        // If sum of z index and the terrain index at the sensor location is outside the domain
         if (k + d_terrain_face_id[d_site_id[id]] - 1 > nz - 2) {
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[nz - 2 + id * nz] - d_u0_int[nz - 2 + id * nz]);
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_v_prof[nz - 2 + id * nz] - d_v0_int[nz - 2 + id * nz]);
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
-        } else if (d_z[k] <= d_surf_layer_height[ii]) {
+        }// If height (above ground) is less than or equal to ASL height
+        else if (d_z[k] <= d_surf_layer_height[ii]) {
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz] - d_u0_int[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz]);
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_v_prof[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz] - d_v0_int[k + d_terrain_face_id[d_site_id[id]] - 1 + id * nz]);
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
-        } else if (d_z[k] > d_surf_layer_height[ii] && k + d_terrain_face_id[d_site_id[id]] - 1 < nz && d_k_mod[ii] > k + d_terrain_face_id[d_site_id[id]] - 1) {
+        }// If height (above ground) is greater than ASL height and modified index is inside the domain
+        else if (d_z[k] > d_surf_layer_height[ii] && k + d_terrain_face_id[d_site_id[id]] - 1 < nz && d_k_mod[ii] > k + d_terrain_face_id[d_site_id[id]] - 1) {
           d_sum_wu[idx] = d_sum_wu[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_u_prof[d_k_mod[ii] + id * nz] - d_u0_int[d_k_mod[ii] + id * nz]);
           d_sum_wv[idx] = d_sum_wv[idx] + d_wm[id + i * num_sites + j * num_sites * nx] * (d_v_prof[d_k_mod[ii] + id * nz] - d_v0_int[d_k_mod[ii] + id * nz]);
           d_sum_wm[i + j * nx] = d_sum_wm[i + j * nx] + d_wm[id + i * num_sites + j * num_sites * nx];
@@ -360,7 +349,7 @@ void Sensor::BarnesInterpolationGPU(const WINDSInputData *WID, WINDSGeneralData 
 
   std::vector<float> x, y;
   x.resize(WGD->nx);
-  for (size_t i = 0; i < WGD->nx; i++) {
+  for (int i = 0; i < WGD->nx; i++) {
     x[i] = (i - 0.5) * WGD->dx; /**< Location of face centers in x-dir */
   }
 

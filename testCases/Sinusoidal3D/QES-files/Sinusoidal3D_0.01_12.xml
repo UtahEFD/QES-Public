@@ -5,7 +5,7 @@
   	<invarianceTol> 1e-10 </invarianceTol>
 	<C_0> 1.0 </C_0>
 	<updateFrequency_particleLoop> 10000 </updateFrequency_particleLoop>
-	<updateFrequency_timeLoop> 100 </updateFrequency_timeLoop>
+	<updateFrequency_timeLoop> 4 </updateFrequency_timeLoop>
 </plumeParameters>
 <particleOutputParameters>
   <outputFrequency> 4.0  </outputFrequency>

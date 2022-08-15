@@ -14,12 +14,12 @@ ENDIF()
 
 target_link_libraries(compareSolvers ${Boost_PROGRAM_OPTIONS_LIBRARIES})
 target_link_libraries(compareSolvers ${Boost_DATE_TIME_LIBRARIES})
+target_link_libraries(compareSolvers ${Boost_FILESYSTEM_LIBRARIES})
 target_link_libraries(compareSolvers ${GDAL_LIBRARY})
 target_link_libraries(compareSolvers ${NETCDF_LIBRARIES_CXX})
 target_link_libraries(compareSolvers ${NETCDF_LIBRARIES_C})
 target_link_libraries(compareSolvers cudadevrt)
 target_link_libraries(compareSolvers ${CUDA_LIBRARIES})
-
 
 #Comparison tests function
 function(add_comparison_test infile_prefix solver_arg solver_name)

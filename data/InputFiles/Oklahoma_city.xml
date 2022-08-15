@@ -29,14 +29,14 @@
 </simulationParameters>                     				<!-- End of simulation parameters -->
 <metParams>
 	<z0_domain_flag> 0 </z0_domain_flag>           			<!-- Distribution of sueface roughness for domain (0-uniform (default), 1-custom -->
-	<sensorName>../data/InputFiles/sensor.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
+	<sensorName>sensor1.xml</sensorName>		<!-- Name of the sensor file with information for the sensor included -->
 
 </metParams>								<!-- End of meteorological parameters -->
 <buildings>
   <wallRoughness>0.01</wallRoughness>                                   <!-- Building wall roughness-->
-  <SHPFile>../scratch/OKC_small/OKC_small.shp</SHPFile>	<!-- Address to shapefile location-->
-  <SHPBuildingLayer>OKC_small</SHPBuildingLayer>             <!-- Name of building layer in shapefile-->
-  <SHPHeightField>ELEVATION</SHPHeightField>                              <!-- Name of building height field in shapefile -->
+  <SHPFile>../../scratch/OKCSmallDomain/OKCSmallDomainJU2003.shp</SHPFile>      <!-- Address to shapefile location-->
+  <SHPBuildingLayer>OKCSmallDomainJU2003</SHPBuildingLayer>             <!-- Name of building layer in shapefile-->
+  <SHPHeightField>AVGHT_M</SHPHeightField>  
   <heightFactor> 1.0 </heightFactor>				        <!-- Height factor multiplied by the building height read in from the shapefile (default = 1.0)-->
 </buildings>
 <fileOptions>

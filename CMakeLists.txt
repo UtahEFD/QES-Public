@@ -17,6 +17,19 @@ SET(QESWINDS_VERSION_INFO -${qesWinds_Toolkit_VERSION_MAJOR}.${MinVR_Toolkit_VER
 MESSAGE(STATUS "Building the '" ${CMAKE_BUILD_TYPE} "' version of qesWinds.")
 MESSAGE(STATUS "If you want something different, use -DCMAKE_BUILD_TYPE=Debug, Release, RelWithDebInfo, MinSizeRel.")
 
+option(ENABLE_CPPCHECK "Enable static analysis with cppcheck" OFF)
+option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
+
+if(ENABLE_CLANG_TIDY)
+  find_program(CLANGTIDY clang-tidy-13)
+  if(CLANGTIDY)
+    set(CMAKE_C_CLANG_TIDY ${CLANGTIDY})
+    set(CMAKE_CXX_CLANG_TIDY ${CLANGTIDY})
+  else()
+    message(SEND_ERROR "clang-tidy could not be located.")
+  endif()
+endif()
+
 # Force VERBOSE Output -- used in all branches except master
 # Can be commented out in master branches.
 SET(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON" FORCE)
@@ -226,6 +239,7 @@ include(CTest)
 add_subdirectory(src/util)
 add_subdirectory(src/winds)
 add_subdirectory(src/plume)
+add_subdirectory(src/unitTests)
 
 add_subdirectory(scratch)
 

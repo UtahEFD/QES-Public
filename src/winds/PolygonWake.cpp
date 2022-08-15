@@ -71,7 +71,7 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
   float total_seg_length;// Length of each edge
   int index_previous, index_next;// Indices of previous and next nodes
   int stop_id = 0;
-  int kk;
+  int kk(1);
   const float tol = 0.01 * M_PI / 180.0;
   float farwake_exp = 1.5;
   float farwake_factor = 3.0;
@@ -367,6 +367,8 @@ void PolyBuilding::polygonWake(const WINDSInputData *WID, WINDSGeneralData *WGD,
           // Checking to see whether the face is perpendicular to the wind direction
           if (perpendicular_flag[id] == 0) {
             x_wall = ((xi[id + 1] - xi[id]) / (yi[id + 1] - yi[id])) * (yc - yi[id]) + xi[id];
+          } else {
+            x_wall = xi[id];
           }
           if (yc >= 0.0) {
             y_norm = y2;

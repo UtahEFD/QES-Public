@@ -43,21 +43,18 @@
 void Wall::defineWalls(WINDSGeneralData *WGD)
 {
 
-  /*for (auto i = 0; i < WGD->nx - 1; i++) {
-    for (auto j = 0; j < WGD->ny - 1; j++) {
-      for (auto k = 1; k < WGD->nz - 1; k++) {
-        int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-        if ((i == 210 || i == 211) && (j == 315 || j == 316) && k == 113) {
-          std::cout << "k:  " << k << std::endl;
-          std::cout << "WGD->icellflag[icell_cent]:  " << WGD->icellflag[icell_cent] << std::endl;
-          std::cout << "icell_cent:  " << icell_cent << std::endl;
-          std::cout << "WGD->f[icell_cent]:  " << WGD->f[icell_cent] << std::endl;
-          std::cout << "WGD->e[icell_cent]:  " << WGD->e[icell_cent] << std::endl;
-          std::cout << "WGD->g[icell_cent]:  " << WGD->g[icell_cent] << std::endl;
-          std::cout << "WGD->h[icell_cent]:  " << WGD->h[icell_cent] << std::endl;
-          std::cout << "WGD->n[icell_cent]:  " << WGD->n[icell_cent] << std::endl;
-          std::cout << "WGD->m[icell_cent]:  " << WGD->m[icell_cent] << std::endl;
-        }
+  //float dx = WGD->dx;
+  //float dy = WGD->dy;
+  //float dz = WGD->dz;
+  int nx = WGD->nx;
+  int ny = WGD->ny;
+  int nz = WGD->nz;
+
+
+  for (auto k = 1; k < nz - 1; k++) {
+    for (auto i = 0; i < nx - 1; i++) {
+      for (auto j = 0; j < ny - 1; j++) {
+        int icell_cent = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
         if (WGD->e[icell_cent] < 0.05) {
           WGD->e[icell_cent] = 0.0;
         }
@@ -97,12 +94,12 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
         }
       }
     }
-  }*/
+  }
 
-  /*for (auto i = 0; i < WGD->nx - 1; i++) {
-    for (auto j = 0; j < WGD->ny - 1; j++) {
-      for (auto k = 1; k < WGD->nz - 1; k++) {
-        int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+  for (auto k = 1; k < nz - 1; k++) {
+    for (auto i = 0; i < nx - 1; i++) {
+      for (auto j = 0; j < ny - 1; j++) {
+        int icell_cent = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
         if ((WGD->icellflag[icell_cent] == 7 || WGD->icellflag[icell_cent] == 0) && WGD->building_volume_frac[icell_cent] <= 0.1) {
           WGD->icellflag[icell_cent] = 0;
           WGD->e[icell_cent] = 1.0;
@@ -114,12 +111,12 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
         }
       }
     }
-  }*/
+  }
 
-  /*for (auto i = 0; i < WGD->nx - 1; i++) {
-    for (auto j = 0; j < WGD->ny - 1; j++) {
-      for (auto k = 1; k < WGD->nz - 1; k++) {
-        int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+  for (auto k = 1; k < nz - 1; k++) {
+    for (auto i = 0; i < nx - 1; i++) {
+      for (auto j = 0; j < ny - 1; j++) {
+        int icell_cent = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
         if (WGD->e[icell_cent] == 0.0 && WGD->f[icell_cent] == 0.0 && WGD->g[icell_cent] == 0.0
             && WGD->h[icell_cent] == 0.0 && WGD->m[icell_cent] == 0.0 && WGD->n[icell_cent] == 0.0 && WGD->icellflag[icell_cent] == 7) {
           WGD->icellflag[icell_cent] = 0;
@@ -132,13 +129,13 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
         }
       }
     }
-  }*/
+  }
 
-  for (auto i = 1; i < WGD->nx - 2; i++) {
-    for (auto j = 1; j < WGD->ny - 2; j++) {
-      for (auto k = 1; k < WGD->nz - 2; k++) {
-        int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-        int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+  for (auto k = 1; k < nz - 2; k++) {
+    for (auto i = 0; i < nx - 1; i++) {
+      for (auto j = 0; j < ny - 1; j++) {
+        int icell_cent = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+        //int icell_face = i + j * nx + k * nx * ny;
 
         if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
 
@@ -265,12 +262,13 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
     }
   }
 
-  for (auto i = 1; i < WGD->nx - 2; i++) {
-    for (auto j = 1; j < WGD->ny - 2; j++) {
-      for (auto k = 1; k < WGD->nz - 2; k++) {
-        int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
+  for (auto k = 1; k < nz - 1; k++) {
+    for (auto i = 0; i < nx - 1; i++) {
+      for (auto j = 0; j < ny - 1; j++) {
+        int icell_cent = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
         if (WGD->e[icell_cent] == 0.0 && WGD->f[icell_cent] == 0.0 && WGD->g[icell_cent] == 0.0
-            && WGD->h[icell_cent] == 0.0 && WGD->m[icell_cent] == 0.0 && WGD->n[icell_cent] == 0.0 && (WGD->icellflag[icell_cent] == 7 || WGD->icellflag[icell_cent] == 0)) {
+            && WGD->h[icell_cent] == 0.0 && WGD->m[icell_cent] == 0.0 && WGD->n[icell_cent] == 0.0
+            && (WGD->icellflag[icell_cent] == 7 || WGD->icellflag[icell_cent] == 0)) {
           WGD->icellflag[icell_cent] = 0;
           WGD->e[icell_cent] = 1.0;
           WGD->f[icell_cent] = 1.0;
@@ -282,7 +280,8 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
 
 
         if (WGD->e[icell_cent] == 0.0 && WGD->f[icell_cent] == 0.0 && WGD->g[icell_cent] == 0.0
-            && WGD->h[icell_cent] == 0.0 && WGD->m[icell_cent] == 0.0 && WGD->n[icell_cent] == 0.0 && (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 2)) {
+            && WGD->h[icell_cent] == 0.0 && WGD->m[icell_cent] == 0.0 && WGD->n[icell_cent] == 0.0
+            && (WGD->icellflag[icell_cent] == 8 || WGD->icellflag[icell_cent] == 2)) {
           WGD->icellflag[icell_cent] = 2;
           WGD->e[icell_cent] = 1.0;
           WGD->f[icell_cent] = 1.0;
@@ -295,11 +294,11 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
     }
   }
 
-  for (auto i = 1; i < WGD->nx - 2; i++) {
-    for (auto j = 1; j < WGD->ny - 2; j++) {
-      for (auto k = 1; k < WGD->nz - 2; k++) {
-        int icell_cent = i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1);
-        int icell_face = i + j * WGD->nx + k * WGD->nx * WGD->ny;
+  for (auto k = 1; k < nz - 2; k++) {
+    for (auto i = 0; i < nx - 1; i++) {
+      for (auto j = 0; j < ny - 1; j++) {
+        int icell_cent = i + j * (nx - 1) + k * (nx - 1) * (ny - 1);
+        int icell_face = i + j * nx + k * nx * ny;
         if (WGD->icellflag[icell_cent] != 0 && WGD->icellflag[icell_cent] != 2) {
 
           // Wall below
@@ -352,11 +351,6 @@ void Wall::defineWalls(WINDSGeneralData *WGD)
 
         if (WGD->icellflag[icell_cent] == 7 || WGD->icellflag[icell_cent] == 8) {
           WGD->wall_indices.push_back(icell_cent);
-          if (i == 168 && j == 112) {
-            std::cout << "k:  " << k << std::endl;
-            std::cout << "icell_cent:  " << icell_cent << std::endl;
-            std::cout << "WGD->wall_indices.size():  " << WGD->wall_indices.size() << std::endl;
-          }
         }
 
         /*if (WGD->icellflag[icell_cent] == 1) {
@@ -399,6 +393,17 @@ void Wall::wallLogBC(WINDSGeneralData *WGD, bool isInitial)
   auto wallLog_start = std::chrono::high_resolution_clock::now();
 
   std::cout << "Applying log law parameterization..." << std::flush;
+
+  float dx = WGD->dx;
+  float dy = WGD->dy;
+  float dz = WGD->dz;
+  int nx = WGD->nx;
+  int ny = WGD->ny;
+  //int nz = WGD->nz;
+  const float z0 = WGD->z0;
+  std::vector<float> &u0 = WGD->u0;
+  std::vector<float> &v0 = WGD->v0;
+  std::vector<float> &w0 = WGD->w0;
 
   float ustar_wall;// velocity gradient at the wall
   float new_ustar;// new ustar value calculated

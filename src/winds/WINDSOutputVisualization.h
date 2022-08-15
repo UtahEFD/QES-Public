@@ -38,6 +38,7 @@
 #include "WINDSGeneralData.h"
 #include "WINDSInputData.h"
 #include "util/QESNetCDFOutput.h"
+#include "util/QEStime.h"
 
 /**
  * @class WINDSOutputVisualization
@@ -46,10 +47,10 @@
  */
 class WINDSOutputVisualization : public QESNetCDFOutput
 {
+private:
+  WINDSOutputVisualization() {}
+
 public:
-  WINDSOutputVisualization()
-    : QESNetCDFOutput()
-  {}
   WINDSOutputVisualization(WINDSGeneralData *, WINDSInputData *, std::string);
   ~WINDSOutputVisualization()
   {}
@@ -57,7 +58,7 @@ public:
   /**
    * :document this:
    */
-  void save(ptime);
+  void save(QEStime);
 
 protected:
   /**
@@ -78,7 +79,7 @@ private:
 
   ///@{
   /** :document this: */
-  std::vector<double> u_out, v_out, w_out, mag_out;
+  std::vector<float> u_out, v_out, w_out, mag_out;
   ///@}
 
   WINDSGeneralData *WGD_; /**< :document this: */

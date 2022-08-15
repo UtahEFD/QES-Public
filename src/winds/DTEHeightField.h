@@ -124,7 +124,7 @@ public:
    * @param domain Domain that will be changed to match the dem file
    * @param grid Size of each cell in the domain space.
    */
-  void setDomain(Vector3Int *domain, Vector3 *grid);
+  void setDomain(Vector3Int &domain, Vector3 &grid);
 
 
   /**
@@ -153,7 +153,8 @@ public:
    * @param halo_y :document this:
    * @return List of ID values for all cut cells.
    */
-  void setCells(Cell *cells, WINDSGeneralData *WGD, const WINDSInputData *WID);
+  //void setCells(Cell *cells, WINDSGeneralData *WGD, const WINDSInputData *WID);
+  void setCells(WINDSGeneralData *WGD, const WINDSInputData *WID);
 
   /**
    * Frees the pafScanline.
@@ -222,7 +223,8 @@ private:
    * @param corners Array containing the points that representing the DEM elevation at each of the cells corners
    * @param cutCells List of all cells which the terrain goes through
    */
-  void setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3 corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD);
+  //void setCellPoints(Cell *cells, int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3 corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD);
+  void setCellPoints(int i, int j, int nx, int ny, int nz, std::vector<float> &dz_array, std::vector<float> z_face, Vector3 corners[], std::vector<int> &cutCells, WINDSGeneralData *WGD);
 
   /**
    * :document this:
