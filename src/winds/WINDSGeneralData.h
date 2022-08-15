@@ -148,6 +148,8 @@ public:
   float dxy; /**< Minimum value between dx and dy */
 
   int wrf_nx, wrf_ny;
+
+  float halo_x, halo_y;
   int halo_index_x, halo_index_y;
 
   long numcell_cout; /**< :document this: */
@@ -238,7 +240,7 @@ public:
   // Sensor* sensor;      may not need this now
 
   // wind profiler class
-  WindProfilerType *wp; /**< pointer to the wind profiler class, used to interp wind */
+  WindProfilerType *windProfiler; /**< pointer to the wind profiler class, used to interp wind */
 
   int id; /**< :document this: */
 

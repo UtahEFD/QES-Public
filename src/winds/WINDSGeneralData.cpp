@@ -89,6 +89,12 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   numcell_cent = (nx - 1) * (ny - 1) * (nz - 1);// Total number of cell-centered values in domain
   numcell_face = nx * ny * nz;// Total number of face-centered values in domain
 
+  //////////////////////////////////////////////////////////////////////////////////
+  /////    Create sensor velocity profiles and generate initial velocity field /////
+  //////////////////////////////////////////////////////////////////////////////////
+  // Calling inputWindProfile function to generate initial velocity
+  // field from sensors information (located in Sensor.cpp)
+
   // where should this really go?
   //
   // Need to now take all WRF station data and convert to
@@ -106,7 +112,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       wrf_nx = wrf_ptr->fm_nx;
       wrf_ny = wrf_ptr->fm_ny;
 
-      wp = new WindProfilerWRF();
+      windProfiler = new WindProfilerWRF();
 
       // FM -> this should be added on wrf-input (read time form wrf)
       // initialize our time info...
@@ -259,9 +265,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     */
 
     if (solverType == 1) {
-      wp = new WindProfilerBarnCPU();
+      windProfiler = new WindProfilerBarnCPU();
     } else {
-      wp = new WindProfilerBarnGPU();
+      windProfiler = new WindProfilerBarnGPU();
     }
 
     // If the sensor file specified in the xml
@@ -313,6 +319,9 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
     if (WID->simParams->totalTimeIncrements == 0) {
       totalTimeIncrements = timestamp.size();
+    } else if (WID->simParams->totalTimeIncrements > timestamp.size()) {
+      std::cout << "[WARNING] not enough timestamp in senors" << std::endl;
+      totalTimeIncrements = timestamp.size();
     } else {
       totalTimeIncrements = WID->simParams->totalTimeIncrements;
     }
@@ -325,6 +334,10 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       }
     }
   }
+
+  // Pete could move to input param processing...
+  assert(WID->metParams->sensors.size() > 0);// extra
+  std::cout << "Sensors have been loaded (total sensors = " << WID->metParams->sensors.size() << ")." << std::endl;
 
   // /////////////////////////
   // Calculation of z0 domain info MAY need to move to WINDSInputData
@@ -462,12 +475,19 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   }
 
   halo_index_x = (WID->simParams->halo_x / dx);
-  // WID->simParams->halo_x = halo_index_x*dx;
+  halo_x = halo_index_x * dx;
   halo_index_y = (WID->simParams->halo_y / dy);
-  // WID->simParams->halo_y = halo_index_y*dy;
+  halo_y = halo_index_y * dy;
 
-  int ii, jj, idx;
+  ////////////////////////////////////////////////////////
+  //////              Apply Terrain code             /////
+  ///////////////////////////////////////////////////////
+  // Handle remaining Terrain processing components here
+  ////////////////////////////////////////////////////////
+
+
   if (WID->simParams->DTE_heightField) {
+    int ii, jj, idx;
     // ////////////////////////////////
     // Retrieve terrain height field //
     // ////////////////////////////////
@@ -625,26 +645,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         terrain[icell_cent] = terrain[id];
       }
     }
-  }
 
-  //////////////////////////////////////////////////////////////////////////////////
-  /////    Create sensor velocity profiles and generate initial velocity field /////
-  //////////////////////////////////////////////////////////////////////////////////
-  // Calling inputWindProfile function to generate initial velocity
-  // field from sensors information (located in Sensor.cpp)
-
-  // Pete could move to input param processing...
-  assert(WID->metParams->sensors.size() > 0);// extra
-  std::cout << "Sensors have been loaded (total sensors = " << WID->metParams->sensors.size() << ")." << std::endl;
-
-  ////////////////////////////////////////////////////////
-  //////              Apply Terrain code             /////
-  ///////////////////////////////////////////////////////
-  // Handle remaining Terrain processing components here
-  ////////////////////////////////////////////////////////
-
-
-  if (WID->simParams->DTE_heightField) {
     if (WID->simParams->meshTypeFlag == 0 && WID->simParams->readCoefficientsFlag == 0) {
       auto start_stair = std::chrono::high_resolution_clock::now();
       for (int i = 0; i < nx - 1; i++) {
@@ -1159,7 +1160,7 @@ void WINDSGeneralData::applyWindProfile(const WINDSInputData *WID, int timeIndex
     }
   }
 
-  wp->interpolateWindProfile(WID, this);
+  windProfiler->interpolateWindProfile(WID, this);
 
   // FM -> CODE REMOVED TO WITH WINDPROFILER CLASSES // TO CLEAN
 #if 0

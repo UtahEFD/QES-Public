@@ -333,8 +333,10 @@ void DTEHeightField::load()
   origin_x = m_geoTransform[0];
   origin_y = m_geoTransform[3] - pixelSizeY * m_nYSize;
 
+  printf("\tDEM size: %dx%d\n", m_nXSize, m_nYSize);
+  printf("\tDEM size: %.1fx%.1f\n", m_nXSize * pixelSizeX, m_nYSize * pixelSizeY);
+
   printf("\tDomain Origin = (%.6f,%.6f)\n", origin_x, origin_y);
-  printf("DEM size is %dx%d\n", m_nXSize, m_nYSize);
 
   // UTMx will be correct, but need to subtract halo
   //      demMinX == UTMx - halo_x
