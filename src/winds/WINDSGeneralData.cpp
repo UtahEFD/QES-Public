@@ -999,20 +999,23 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
       timestamp.push_back(tmp + t[k]);
     }
   } else {
+    std::cout << "\t\t Loading " << nt << " time steps" << std::endl;
     for (int k = 0; k < nt; k++) {
       std::vector<size_t> start_time;
       std::vector<size_t> count_time;
       start_time = { static_cast<unsigned long>(k), 0 };
       count_time = { 1, 19 };
 
-      std::vector<char> timestamp_tmp;
+      char timestamp_tmp[19];
       NcVar_timestamp.getVar(start_time, count_time, &timestamp_tmp[0]);
-      std::string tmp;
+
+      std::string tmp = "";
       for (int i = 0; i < 19; ++i) {
-        tmp[i] = timestamp_tmp[i];
+        tmp += timestamp_tmp[i];
       }
+
       QEStime time(tmp);
-      std::cout << "read at time " << time << std::endl;
+      std::cout << "\t\t " << time << std::endl;
 
       timestamp.push_back(time);
     }
@@ -1083,7 +1086,8 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
 void WINDSGeneralData::loadNetCDFData(int stepin)
 {
 
-  std::cout << "[WINDS Data] \t loading data at step " << stepin << std::endl;
+  std::cout << "[WINDS Data] \t loading data at step " << stepin
+            << " (" << timestamp[stepin] << ")" << std::endl;
 #if 0
   std::vector<size_t> start_time;
   std::vector<size_t> count_time;
