@@ -956,8 +956,11 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
   // check if times is in the NetCDF file
   NcVar NcVar_timestamp;
   input->getVariable("timestamp", NcVar_timestamp);
+  std::cout << "WGD check 0" << std::endl;
+  std::cout << "isNull = " << NcVar_timestamp.isNull() << std::endl;
 
   if (NcVar_timestamp.isNull()) {
+    std::cout << "WGD check 1" << std::endl;
     std::cout << "-----------------------------------------------------------------" << std::endl;
     std::cout << "[WARNING] No timestamp in NetCDF file" << std::endl;
     std::cout << "-----------------------------------------------------------------" << std::endl;
@@ -967,24 +970,36 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
       timestamp.push_back(tmp + t[k]);
     }
   } else {
+
+    std::cout << "WGD check 2" << std::endl;
     for (int k = 0; k < nt; k++) {
+      std::cout << "WGD check 2a" << std::endl;
       std::vector<size_t> start_time;
       std::vector<size_t> count_time;
       start_time = { static_cast<unsigned long>(k), 0 };
       count_time = { 1, 19 };
 
       std::vector<char> timestamp_tmp;
+      std::cout << "WGD check 2b" << std::endl;
+      std::cout << " start_time = " << start_time.size() << std::endl;
+
       NcVar_timestamp.getVar(start_time, count_time, &timestamp_tmp[0]);
+      std::cout << "WGD check 2c" << std::endl;
       std::string tmp;
+
       for (int i = 0; i < 19; ++i) {
         tmp[i] = timestamp_tmp[i];
       }
+      std::cout << "WGD check 2d" << std::endl;
       QEStime time(tmp);
       std::cout << "read at time " << time << std::endl;
+      std::cout << "WGD check 2e" << std::endl;
 
       timestamp.push_back(time);
+      std::cout << "WGD check 2f" << std::endl;
     }
   }
+  std::cout << "WGD check 3" << std::endl;
   totalTimeIncrements = nt;
 
   // netCDF variables
