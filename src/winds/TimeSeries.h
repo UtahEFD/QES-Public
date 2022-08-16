@@ -49,7 +49,7 @@ private:
 public:
   int site_blayer_flag = 1; /**< :document this: */
   float site_z0; /**< :document this: */
-  float site_p = 0.0; /**< :document this: */
+  //float site_p = 0.0; /**< :document this: */
 
   ///@{
   /** :document this: */
@@ -74,7 +74,7 @@ public:
     parsePrimitive<time_t>(false, timeEpoch, "timeEpoch");
     parsePrimitive<int>(false, site_blayer_flag, "boundaryLayerFlag");
     parsePrimitive<float>(true, site_z0, "siteZ0");
-    parsePrimitive<float>(false, site_p, "siteP");
+    //parsePrimitive<float>(false, site_p, "siteP");
     parsePrimitive<float>(true, site_one_overL, "reciprocal");
     parseMultiPrimitives<float>(true, site_z_ref, "height");
     parseMultiPrimitives<float>(true, site_U_ref, "speed");

@@ -217,8 +217,8 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
     // Exponential velocity profile
     if (ts->site_blayer_flag == 2) {
       for (auto k = WGD->terrain_face_id[site_id[idx]]; k < WGD->nz; k++) {
-        u_prof[idx * WGD->nz + k] = cos(site_theta[idx]) * ts->site_U_ref[0] * pow(((WGD->z[k] - z_terrain) / ts->site_z_ref[0]), ts->site_p);
-        v_prof[idx * WGD->nz + k] = sin(site_theta[idx]) * ts->site_U_ref[0] * pow(((WGD->z[k] - z_terrain) / ts->site_z_ref[0]), ts->site_p);
+        u_prof[idx * WGD->nz + k] = cos(site_theta[idx]) * ts->site_U_ref[0] * pow(((WGD->z[k] - z_terrain) / ts->site_z_ref[0]), ts->site_z0);
+        v_prof[idx * WGD->nz + k] = sin(site_theta[idx]) * ts->site_U_ref[0] * pow(((WGD->z[k] - z_terrain) / ts->site_z_ref[0]), ts->site_z0);
       }
     }
 
