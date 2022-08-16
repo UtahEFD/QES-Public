@@ -45,6 +45,9 @@ protected:
   std::vector<int> available_sensor_id;
   std::vector<int> site_id;
 
+  float asl_percent = 0.05;
+  float abl_height = 200;
+
   void sensorsProfiles(const WINDSInputData *WID, WINDSGeneralData *WGD);
 
   void singleSensorInterpolation(WINDSGeneralData *WGD);

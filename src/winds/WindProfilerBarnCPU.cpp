@@ -434,6 +434,8 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
   float dxx, dyy, u12, u34, v12, v34;
   int icell_face;
 
+  float surf_layer_height;// Surface layer height of the atmospheric boundary layer
+
   int num_sites = available_sensor_id.size();
 
   std::vector<float> u0_int(num_sites * WGD->nz, 0.0);
@@ -482,17 +484,18 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
     }
   }
 
-  int k_mod;
+  int k_mod;//Modified index in z-direction
   for (auto k = 1; k < WGD->nz; k++) {
     for (auto j = 0; j < WGD->ny; j++) {
       for (auto i = 0; i < WGD->nx; i++) {
         sum_wu = 0.0;
         sum_wv = 0.0;
         sum_wm = 0.0;
-        int id = i + j * WGD->nx;
-        //int idx = i + j * (WGD->nx - 1);
+        int id = i + j * WGD->nx;//Index in horizontal surface
+        // !!unused!! int idx = i + j * (WGD->nx - 1);//Index in horizontal surface for cell faces
+        //If height added to top of terrain is still inside QES domain
         if (k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
-          k_mod = k + WGD->terrain_face_id[id] - 1;
+          k_mod = k + WGD->terrain_face_id[id] - 1;//Set the modified index
         } else {
           continue;
         }
@@ -501,9 +504,28 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
           site_i[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord / WGD->dx;
           site_j[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord / WGD->dy;
           site_id[ii] = site_i[ii] + site_j[ii] * WGD->nx;
+          // If the height difference between the terrain at the curent cell and sensor location is less than ABL height
+          if (abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]) > abl_height) {
+            surf_layer_height = asl_percent * abl_height;
+          } else {
+            surf_layer_height = asl_percent * (2 * abl_height - abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]));
+          }
+          // If sum of z index and the terrain index at the sensor location is outside the domain
           if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
             sum_wu += wm[ii][i][j] * u_prof[ii * WGD->nz + WGD->nz - 2];
             sum_wv += wm[ii][i][j] * v_prof[ii * WGD->nz + WGD->nz - 2];
+            sum_wm += wm[ii][i][j];
+          }// If height (above ground) is less than or equal to ASL height
+          else if (WGD->z[k] <= surf_layer_height) {
+            sum_wu += wm[ii][i][j] * u_prof[ii * WGD->nz + k + WGD->terrain_face_id[site_id[ii]] - 1];
+            sum_wv += wm[ii][i][j] * v_prof[ii * WGD->nz + k + WGD->terrain_face_id[site_id[ii]] - 1];
+            sum_wm += wm[ii][i][j];
+          }// If height (above ground) is greater than ASL height and modified index is inside the domain
+          else if (WGD->z[k] > surf_layer_height
+                   && k + WGD->terrain_face_id[site_id[ii]] - 1 < WGD->nz
+                   && k_mod > k + WGD->terrain_face_id[site_id[ii]] - 1) {
+            sum_wu += wm[ii][i][j] * u_prof[ii * WGD->nz + k_mod];
+            sum_wv += wm[ii][i][j] * v_prof[ii * WGD->nz + k_mod];
             sum_wm += wm[ii][i][j];
           } else {
             sum_wu += wm[ii][i][j] * u_prof[ii * WGD->nz + k + WGD->terrain_face_id[site_id[ii]] - 1];
@@ -511,6 +533,7 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
             sum_wm += wm[ii][i][j];
           }
         }
+
         icell_face = i + j * WGD->nx + k_mod * WGD->nx * WGD->ny;
         WGD->u0[icell_face] = sum_wu / sum_wm;
         WGD->v0[icell_face] = sum_wv / sum_wm;
@@ -571,9 +594,10 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
         sum_wu = 0.0;
         sum_wv = 0.0;
         sum_wm = 0.0;
-        int id = i + j * WGD->nx;
+        int id = i + j * WGD->nx;//Index in horizontal surface
+        //If height added to top of terrain is still inside QES domain
         if (k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
-          k_mod = k + WGD->terrain_face_id[id] - 1;
+          k_mod = k + WGD->terrain_face_id[id] - 1;//Set the modified index
         } else {
           continue;
         }
@@ -581,9 +605,32 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
           site_i[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord / WGD->dx;
           site_j[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord / WGD->dy;
           site_id[ii] = site_i[ii] + site_j[ii] * WGD->nx;
+          // If the height difference between the terrain at the curent cell and sensor location is less than ABL height
+          if (abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]) > abl_height) {
+            surf_layer_height = asl_percent * abl_height;
+          } else {
+            surf_layer_height = asl_percent * (2 * abl_height - abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]));
+          }
+          // If sum of z index and the terrain index at the sensor location is outside the domain
           if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
             sum_wu += wm[ii][i][j] * (u_prof[ii * WGD->nz + WGD->nz - 2] - u0_int[WGD->nz - 2 + ii * WGD->nz]);
             sum_wv += wm[ii][i][j] * (v_prof[ii * WGD->nz + WGD->nz - 2] - v0_int[WGD->nz - 2 + ii * WGD->nz]);
+            sum_wm += wm[ii][i][j];
+          }// If height (above ground) is less than or equal to ASL height
+          else if (WGD->z[k] <= surf_layer_height) {
+            sum_wu += wm[ii][i][j]
+                      * (u_prof[ii * WGD->nz + k + WGD->terrain_face_id[site_id[ii]] - 1]
+                         - u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);
+            sum_wv += wm[ii][i][j]
+                      * (v_prof[ii * WGD->nz + k + WGD->terrain_face_id[site_id[ii]] - 1]
+                         - v0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);
+            sum_wm += wm[ii][i][j];
+          }// If height (above ground) is greater than ASL height and modified index is inside the domain
+          else if (WGD->z[k] > surf_layer_height
+                   && k + WGD->terrain_face_id[site_id[ii]] - 1 < WGD->nz
+                   && k_mod > k + WGD->terrain_face_id[site_id[ii]] - 1) {
+            sum_wu += wm[ii][i][j] * (u_prof[ii * WGD->nz + k_mod] - u0_int[k_mod + ii * WGD->nz]);
+            sum_wv += wm[ii][i][j] * (v_prof[ii * WGD->nz + k_mod] - v0_int[k_mod + ii * WGD->nz]);
             sum_wm += wm[ii][i][j];
           } else {
             sum_wu += wm[ii][i][j]
