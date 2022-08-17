@@ -308,6 +308,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   // Calculation of z0 domain info MAY need to move to WINDSInputData
   // or somewhere else once we know the domain size
   // /////////////////////////
+  z0 = 0.1;
   z0_domain_u.resize(nx * ny);
   z0_domain_v.resize(nx * ny);
   if (WID->metParams->z0_domain_flag == 0)// Uniform z0 for the whole domain
@@ -317,6 +318,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
         id = i + j * nx;
         z0_domain_u[id] = WID->metParams->sensors[0]->TS[0]->site_z0;
         z0_domain_v[id] = WID->metParams->sensors[0]->TS[0]->site_z0;
+        z0 = WID->metParams->sensors[0]->TS[0]->site_z0;
       }
     }
   } else {
@@ -335,8 +337,7 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
       }
     }
   }
-
-  z0 = 0.1f;
+  z0 = 0.03;
   if (WID->buildings)
     z0 = WID->buildings->wallRoughness;
 
@@ -382,15 +383,6 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
     y[j] = (j + 0.5) * dy;// Location of face centers in y-dir
   }
 
-  // Resize the canopy-related vectors
-  // canopy_atten.resize( numcell_cent, 0.0 );
-  // canopy_top.resize( (nx-1)*(ny-1), 0.0 );
-  // canopy_top_index.resize( (nx-1)*(ny-1), 0 );
-  // canopy_z0.resize( (nx-1)*(ny-1), 0.0 );
-  // canopy_ustar.resize( (nx-1)*(ny-1), 0.0 );
-  // canopy_d.resize( (nx-1)*(ny-1), 0.0 );
-
-
   // Resize the coefficients for use with the solver
   e.resize(numcell_cent, 1.0);
   f.resize(numcell_cent, 1.0);
@@ -404,6 +396,11 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
   ni.resize(numcell_cent, 0.0);
   nj.resize(numcell_cent, 0.0);
   nk.resize(numcell_cent, 0.0);
+  ti.resize(numcell_cent, 0.0);
+  tj.resize(numcell_cent, 0.0);
+  tk.resize(numcell_cent, 0.0);
+  center_id.resize(numcell_cent, 1);
+  wall_distance.resize(numcell_cent, 0.0);
 
   icellflag.resize(numcell_cent, 1);
   icellflag_initial.resize(numcell_cent, 1);
@@ -625,6 +622,21 @@ WINDSGeneralData::WINDSGeneralData(const WINDSInputData *WID, int solverType)
 
 
   if (WID->simParams->DTE_heightField) {
+
+    for (int i = 0; i < nx - 1; i++) {
+      for (int j = 0; j < ny - 1; j++) {
+        // Gets height of the terrain for each cell
+        int idx = i + j * (nx - 1);
+        for (size_t k = 0; k < z.size() - 1; k++) {
+          if (terrain[idx] < z[k + 1]) {
+            break;
+          }
+          icell_cent = i + j * (nx - 1) + (k + 1) * (nx - 1) * (ny - 1);
+          center_id[icell_cent] = 0;// Marks the cell center as inside solid
+        }
+      }
+    }
+
     if (WID->simParams->meshTypeFlag == 0 && WID->simParams->readCoefficientsFlag == 0) {
       auto start_stair = std::chrono::high_resolution_clock::now();
       for (int i = 0; i < nx - 1; i++) {
@@ -956,11 +968,8 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
   // check if times is in the NetCDF file
   NcVar NcVar_timestamp;
   input->getVariable("timestamp", NcVar_timestamp);
-  std::cout << "WGD check 0" << std::endl;
-  std::cout << "isNull = " << NcVar_timestamp.isNull() << std::endl;
 
   if (NcVar_timestamp.isNull()) {
-    std::cout << "WGD check 1" << std::endl;
     std::cout << "-----------------------------------------------------------------" << std::endl;
     std::cout << "[WARNING] No timestamp in NetCDF file" << std::endl;
     std::cout << "-----------------------------------------------------------------" << std::endl;
@@ -970,36 +979,24 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
       timestamp.push_back(tmp + t[k]);
     }
   } else {
-
-    std::cout << "WGD check 2" << std::endl;
     for (int k = 0; k < nt; k++) {
-      std::cout << "WGD check 2a" << std::endl;
       std::vector<size_t> start_time;
       std::vector<size_t> count_time;
       start_time = { static_cast<unsigned long>(k), 0 };
       count_time = { 1, 19 };
 
       std::vector<char> timestamp_tmp;
-      std::cout << "WGD check 2b" << std::endl;
-      std::cout << " start_time = " << start_time.size() << std::endl;
-
       NcVar_timestamp.getVar(start_time, count_time, &timestamp_tmp[0]);
-      std::cout << "WGD check 2c" << std::endl;
       std::string tmp;
-
       for (int i = 0; i < 19; ++i) {
         tmp[i] = timestamp_tmp[i];
       }
-      std::cout << "WGD check 2d" << std::endl;
       QEStime time(tmp);
       std::cout << "read at time " << time << std::endl;
-      std::cout << "WGD check 2e" << std::endl;
 
       timestamp.push_back(time);
-      std::cout << "WGD check 2f" << std::endl;
     }
   }
-  std::cout << "WGD check 3" << std::endl;
   totalTimeIncrements = nt;
 
   // netCDF variables
@@ -1035,6 +1032,9 @@ WINDSGeneralData::WINDSGeneralData(const std::string inputFile)
   ni.resize(numcell_cent, 0.0);
   nj.resize(numcell_cent, 0.0);
   nk.resize(numcell_cent, 0.0);
+  ti.resize(numcell_cent, 0.0);
+  tj.resize(numcell_cent, 0.0);
+  tk.resize(numcell_cent, 0.0);
 
   icellflag.resize(numcell_cent, 1);
   ibuilding_flag.resize(numcell_cent, -1);
@@ -1118,9 +1118,9 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
   }
 
   // face-center variables
-  input->getVariableData("u", start, count_fc, u);
-  input->getVariableData("v", start, count_fc, v);
-  input->getVariableData("w", start, count_fc, w);
+  input->getVariableData("u", start, count_fc, u0);
+  input->getVariableData("v", start, count_fc, v0);
+  input->getVariableData("w", start, count_fc, w0);
 
   // clear wall indices container (guarantee entry vector)
   wall_right_indices.clear();
@@ -1293,7 +1293,10 @@ void WINDSGeneralData::applyParametrizations(const WINDSInputData *WID)
    * to the cells near Walls
    *
    */
-  // wall->wallLogBC (this);
+  /*if (WID->simParams->logLawFlag == 1) {
+    wall->wallLogBC(this, true);
+  }*/
+
 
   wall->setVelocityZero(this);
 
