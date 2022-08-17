@@ -87,4 +87,8 @@ Solver::Solver(const WINDSInputData *WID, WINDSGeneralData *WGD)
 
 {
   tol = WID->simParams->tolerance;
+
+  lambda.resize(WGD->numcell_cent, 0.0);
+  lambda_old.resize(WGD->numcell_cent, 0.0);
+  R.resize(WGD->numcell_cent, 0.0);
 }

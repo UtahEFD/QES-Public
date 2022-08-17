@@ -54,7 +54,9 @@ void CPUSolver::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool sol
   int icell_face;// cell-face index
   int icell_cent;// cell-centered index
 
-  R.resize(WGD->numcell_cent, 0.0);
+  //R.resize(WGD->numcell_cent, 0.0);
+  //lambda.resize(WGD->numcell_cent, 0.0);
+  //lambda_old.resize(WGD->numcell_cent, 0.0);
 
   for (int k = 1; k < WGD->nz - 2; k++) {
     for (int j = 0; j < WGD->ny - 1; j++) {
