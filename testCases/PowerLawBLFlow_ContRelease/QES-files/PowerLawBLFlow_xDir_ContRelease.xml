@@ -1,6 +1,6 @@
 <plumeParameters>
   <simDur> 2100.0 </simDur>
-  <timeStep> 0.1 </timeStep>
+  <timeStep> 0.2 </timeStep>
   <CourantNumber> 0.0 </CourantNumber>
   <invarianceTol> 1e-10 </invarianceTol>
   <C_0> 1.0 </C_0>
@@ -38,8 +38,8 @@
 <boundaryConditions>
   <xBCtype>exiting</xBCtype>
   <yBCtype>exiting</yBCtype>
-  <!--zBCtype>exiting</zBCtype-->
-  <zBCtype>reflection</zBCtype>
-  <!--wallReflection>stairstepReflection</wallReflection-->
-  <wallReflection>doNothing</wallReflection>
+  <zBCtype>exiting</zBCtype>
+  <!--zBCtype>reflection</zBCtype-->
+  <wallReflection>stairstepReflection</wallReflection>
+  <!--wallReflection>doNothing</wallReflection-->
 </boundaryConditions>

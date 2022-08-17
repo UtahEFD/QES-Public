@@ -25,8 +25,8 @@ fsize=12;
 xS=50;yS=200;zS=1;
 
 % set the case base name for use in all the other file paths
-caseNameWinds = "7x11array";
-caseNamePlume = "7x11array";
+caseNameWinds = "7x11array_shapefile";
+caseNamePlume = "7x11array_shapefile";
 
 % set the plotOutputFolders
 plotOutputDir = "plotOutput";

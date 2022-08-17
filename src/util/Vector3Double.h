@@ -178,7 +178,7 @@ public:
   // return the length of the vector
   double length(void) const
   {
-    return sqrt(values[0] * values[0] + values[0] * values[0] + values[0] * values[0]);
+    return sqrt(values[0] * values[0] + values[1] * values[1] + values[2] * values[2]);
   }
 
   // multiplication by scaler

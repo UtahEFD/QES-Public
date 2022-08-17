@@ -20,16 +20,18 @@ uStar=b/0.4; %m/s
 alpha=2+p-n;
 nu=(1-n)/alpha;
 
-% source info
-Q=200; % #par/s (source strength)
-tRelease=2100; % total time of release
-Ntot=Q*tRelease; % total number of particles
+
 
 % concentration info
 %dt=1.0; % s
-dt=0.1;
+dt=0.2;
 %tAvg=1200; % s 
 tAvg=1800; % s 
+
+% source info
+Q=20/dt; % #par/s (source strength)
+tRelease=2100; % total time of release
+Ntot=Q*tRelease; % total number of particles
 
 fsize=12;
 

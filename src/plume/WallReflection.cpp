@@ -165,18 +165,20 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
               << abs(cellIdxOld[2] - cellIdxNew[2]) << std::endl;
 
     // for debug
-    /*
-      Vector3Double Xnew, Xold, U;
-      // position of the particle start of trajectory
-      Xold = { xPos - disX, yPos - disY, zPos - disZ };
-      // postion of the particle end of trajectory
-      Xnew = { xPos, yPos, zPos };
-      U = Xnew - Xold;
-      
-      std::cerr << "\t" << Xnew << std::endl;
-    std::cerr << "\t" << Xold << std::endl;
-    std::cerr << "\t" << U << std::endl;
-    */
+
+    Vector3Double Xnew, Xold, U, vecFluct;
+    // position of the particle start of trajectory
+    Xold = { xPos - disX, yPos - disY, zPos - disZ };
+    // postion of the particle end of trajectory
+    Xnew = { xPos, yPos, zPos };
+    U = Xnew - Xold;
+    vecFluct = { uFluct, vFluct, wFluct };
+
+    std::cerr << "Xnew\t" << Xnew << std::endl;
+    std::cerr << "Xold\t" << Xold << std::endl;
+    std::cerr << "U\t" << U << " " << U.length() << std::endl;
+    std::cerr << "u\t" << vecFluct << " " << vecFluct.length() << std::endl;
+
     return true;
   }
 
