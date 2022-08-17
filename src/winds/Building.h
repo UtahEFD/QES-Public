@@ -99,6 +99,7 @@ public:
   float long_dimension; /**< Larger of the height (H) and the effective cross-wind width (Weff) */
 
   float L_over_H; /**< Length over height of the building */
+  float H_over_L; /**< Height over length of the building */
   float W_over_H; /**< Width over height of the building */
   float Lr; /**< Length of far wake zone */
 
