@@ -101,7 +101,7 @@ __global__ void CalculateInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_
   int i = (ii - j * nx);
 
   if ((i < nx) && (j < ny) && (i >= 0) && (j >= 0)) {
-    for (int k = 1; k < nz; k++) {
+    for (int k = 1; k < nz - 1; k++) {
       if (k + d_terrain_face_id[ii] - 1 < nz) {
         d_k_mod[ii] = k + d_terrain_face_id[ii] - 1;
       } else {
@@ -210,7 +210,7 @@ __global__ void CorrectInitialWind(float *d_wm, float *d_sum_wm, float *d_sum_wu
   int i = (ii - j * nx);
 
   if ((i < nx) && (j < ny) && (i >= 0) && (j >= 0)) {
-    for (int k = 1; k < nz; k++) {
+    for (int k = 1; k < nz - 1; k++) {
       if (k + d_terrain_face_id[ii] - 1 < nz) {
         d_k_mod[ii] = k + d_terrain_face_id[ii] - 1;
       } else {

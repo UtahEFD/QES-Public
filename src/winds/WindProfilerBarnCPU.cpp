@@ -485,7 +485,7 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
   }
 
   int k_mod;//Modified index in z-direction
-  for (auto k = 1; k < WGD->nz; k++) {
+  for (auto k = 1; k < WGD->nz - 1; k++) {
     for (auto j = 0; j < WGD->ny; j++) {
       for (auto i = 0; i < WGD->nx; i++) {
         sum_wu = 0.0;
@@ -588,7 +588,7 @@ void WindProfilerBarnCPU::BarnesInterpolationCPU(const WINDSInputData *WID, WIND
     }
   }
 
-  for (auto k = 1; k < WGD->nz; k++) {
+  for (auto k = 1; k < WGD->nz - 1; k++) {
     for (auto j = 0; j < WGD->ny; j++) {
       for (auto i = 0; i < WGD->nx; i++) {
         sum_wu = 0.0;

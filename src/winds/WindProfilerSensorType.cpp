@@ -216,7 +216,7 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
 
     // Exponential velocity profile
     if (ts->site_blayer_flag == 2) {
-      for (auto k = WGD->terrain_face_id[site_id[idx]]; k < WGD->nz; k++) {
+      for (auto k = WGD->terrain_face_id[site_id[idx]]; k < WGD->nz - 1; k++) {
         u_prof[idx * WGD->nz + k] = cos(site_theta[idx]) * ts->site_U_ref[0] * pow(((WGD->z[k] - z_terrain) / ts->site_z_ref[0]), ts->site_z0);
         v_prof[idx * WGD->nz + k] = sin(site_theta[idx]) * ts->site_U_ref[0] * pow(((WGD->z[k] - z_terrain) / ts->site_z_ref[0]), ts->site_z0);
       }
@@ -224,7 +224,7 @@ void WindProfilerSensorType::sensorsProfiles(const WINDSInputData *WID, WINDSGen
 
     // Canopy velocity profile
     if (ts->site_blayer_flag == 3) {
-      for (auto k = WGD->terrain_face_id[site_id[idx]]; k < WGD->nz; k++) {
+      for (auto k = WGD->terrain_face_id[site_id[idx]]; k < WGD->nz - 1; k++) {
         if (k == WGD->terrain_face_id[site_id[idx]]) {
           if (ts->site_z_ref[0] * ts->site_one_overL > 0) {
             psi = 4.7 * ts->site_z_ref[0] * ts->site_one_overL;
@@ -379,7 +379,7 @@ void WindProfilerSensorType::singleSensorInterpolation(WINDSGeneralData *WGD)
   float surf_layer_height;// Surface layer height of the atmospheric boundary layer (ABL)
 
   int k_mod;
-  for (auto k = 1; k < WGD->nz; ++k) {
+  for (auto k = 1; k < WGD->nz - 1; ++k) {
     for (auto j = 0; j < WGD->ny; ++j) {
       for (auto i = 0; i < WGD->nx; ++i) {
 
