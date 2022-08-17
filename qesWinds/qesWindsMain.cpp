@@ -135,6 +135,9 @@ int main(int argc, char *argv[])
     }
   }
 
+  int numIterations = 1;
+  int tempMaxIter = WID->simParams->maxIterations;
+
   for (int index = 0; index < WGD->totalTimeIncrements; index++) {
     // print time progress (time stamp and percentage)
     if (!WID->simParams->wrfCoupling) {
@@ -149,8 +152,42 @@ int main(int argc, char *argv[])
     // Apply parametrizations
     WGD->applyParametrizations(WID);
 
-    // Run WINDS simulation code
-    solver->solve(WID, WGD, !arguments.solveWind);
+    solver->resetLambda();
+    /*
+      solver->lambda.clear();
+      solver->lambda_old.clear();
+      solver->lambda.resize(WGD->numcell_cent, 0.0);
+      solver->lambda_old.resize(WGD->numcell_cent, 0.0);
+      solver->R.clear();
+      solver->R.resize(WGD->numcell_cent, 0.0);
+    */
+
+    // Applying the log law and solver iteratively
+    if (WID->simParams->logLawFlag == 1) {
+      WID->simParams->maxIterations = tempMaxIter;
+      solver->solve(WID, WGD, !arguments.solveWind);
+      //solver->lambda_old = solver->lambda;
+      solver->copyLambda();
+
+      /*for (int i = 0; i < numIterations; i++) {
+        WID->simParams->maxIterations = 500;
+        WGD->wall->wallLogBC(WGD, false);
+        // Run WINDS simulation code
+        solver->solve(WID, WGD, !arguments.solveWind);
+
+        solver->lambda_old = solver->lambda;
+      }*/
+      WGD->u0 = WGD->u;
+      WGD->v0 = WGD->v;
+      WGD->w0 = WGD->w;
+      WGD->wall->wallLogBC(WGD, true);
+      WGD->u = WGD->u0;
+      WGD->v = WGD->v0;
+      WGD->w = WGD->w0;
+    } else {
+      // Run WINDS simulation code
+      solver->solve(WID, WGD, !arguments.solveWind);
+    }
 
     std::cout << "Solver done!\n";
 
@@ -165,16 +202,19 @@ int main(int argc, char *argv[])
       // send our stuff to wrf input file
       std::cout << "Writing data back to the WRF file." << std::endl;
       WID->simParams->wrfInputData->extractWind(WGD);
-
-      // Re-read WRF data -- get new stuff from wrf input file... sync...
-      std::cout << "Attempting to re-read data from WRF." << std::endl;
-      WID->simParams->wrfInputData->updateFromWRF();
     }
+
     // /////////////////////////////
     // Output the various files requested from the simulation run (netcdf wind velocity, icell values, etc...)
     // /////////////////////////////
     for (auto id_out = 0u; id_out < outputVec.size(); id_out++) {
       outputVec.at(id_out)->save(WGD->timestamp[index]);
+    }
+
+    if (WID->simParams->wrfCoupling) {
+      // Re-read WRF data -- get new stuff from wrf input file... sync...
+      std::cout << "Attempting to re-read data from WRF." << std::endl;
+      WID->simParams->wrfInputData->updateFromWRF();
     }
   }
 

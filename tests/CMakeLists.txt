@@ -21,6 +21,29 @@ target_link_libraries(compareSolvers ${NETCDF_LIBRARIES_C})
 target_link_libraries(compareSolvers cudadevrt)
 target_link_libraries(compareSolvers ${CUDA_LIBRARIES})
 
+
+CUDA_ADD_EXECUTABLE( compareWindsResults
+                     handleCompareArgs.cpp
+                     compareWindsResults.cpp
+		     )
+
+target_link_libraries(compareWindsResults curand)
+target_link_libraries(compareWindsResults qeswindscore)
+target_link_libraries(compareWindsResults qesutil)
+
+IF (HAS_OPTIX_SUPPORT MATCHES ON)
+  target_link_libraries(compareWindsResults qesOptix)
+ENDIF()
+
+target_link_libraries(compareWindsResults ${Boost_PROGRAM_OPTIONS_LIBRARIES})
+target_link_libraries(compareWindsResults ${Boost_DATE_TIME_LIBRARIES})
+target_link_libraries(compareWindsResults ${Boost_FILESYSTEM_LIBRARIES})
+target_link_libraries(compareWindsResults ${GDAL_LIBRARY})
+target_link_libraries(compareWindsResults ${NETCDF_LIBRARIES_CXX})
+target_link_libraries(compareWindsResults ${NETCDF_LIBRARIES_C})
+target_link_libraries(compareWindsResults cudadevrt)
+target_link_libraries(compareWindsResults ${CUDA_LIBRARIES})
+
 #Comparison tests function
 function(add_comparison_test infile_prefix solver_arg solver_name)
   add_test(NAME ${solver_name}_COMPARISON_${infile_prefix} COMMAND ${CMAKE_BINARY_DIR}/tests/compareSolvers -q ${CMAKE_SOURCE_DIR}/data/InputFiles/${infile_prefix}.xml -s ${solver_arg} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})

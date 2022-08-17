@@ -109,6 +109,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
   std::vector<float> site_theta(num_sites, 0.0);
   int count = 0;
 
+
   // Loop through all sites and create velocity profiles (WGD->u0,WGD->v0)
   for (auto i = 0; i < WID->metParams->sensors.size(); i++) {
     // If sensor does not have the timestep information, skip it
@@ -118,24 +119,40 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
     }
 
     float convergence = 0.0;
-
     average__one_overL += WID->metParams->sensors[i]->TS[time_id[i]]->site_one_overL / num_sites;
     if (WID->simParams->UTMx != 0 && WID->simParams->UTMy != 0) {
       if (WID->metParams->sensors[i]->site_coord_flag == 1) {
-        WID->metParams->sensors[i]->site_UTM_x = WID->metParams->sensors[i]->site_xcoord * acos(WGD->theta) + WID->metParams->sensors[i]->site_ycoord * asin(WGD->theta) + WID->simParams->UTMx;
-        WID->metParams->sensors[i]->site_UTM_y = WID->metParams->sensors[i]->site_xcoord * asin(WGD->theta) + WID->metParams->sensors[i]->site_ycoord * acos(WGD->theta) + WID->simParams->UTMy;
+        WID->metParams->sensors[i]->site_UTM_x = WID->metParams->sensors[i]->site_xcoord * acos(WGD->theta)
+                                                 + WID->metParams->sensors[i]->site_ycoord * asin(WGD->theta)
+                                                 + WID->simParams->UTMx;
+        WID->metParams->sensors[i]->site_UTM_y = WID->metParams->sensors[i]->site_xcoord * asin(WGD->theta)
+                                                 + WID->metParams->sensors[i]->site_ycoord * acos(WGD->theta)
+                                                 + WID->simParams->UTMy;
         WID->metParams->sensors[i]->site_UTM_zone = WID->simParams->UTMZone;
         // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa (located in Sensor.cpp)
-        GIStool::UTMConverter(WID->metParams->sensors[i]->site_lon, WID->metParams->sensors[i]->site_lat, WID->metParams->sensors[i]->site_UTM_x, WID->metParams->sensors[i]->site_UTM_y, WID->metParams->sensors[i]->site_UTM_zone, 1);
+        GIStool::UTMConverter(WID->metParams->sensors[i]->site_lon,
+                              WID->metParams->sensors[i]->site_lat,
+                              WID->metParams->sensors[i]->site_UTM_x,
+                              WID->metParams->sensors[i]->site_UTM_y,
+                              WID->metParams->sensors[i]->site_UTM_zone,
+                              1);
       }
 
       if (WID->metParams->sensors[i]->site_coord_flag == 2) {
         // Calling UTMConverter function to convert UTM coordinate to lat/lon and vice versa (located in Sensor.cpp)
-        GIStool::UTMConverter(WID->metParams->sensors[i]->site_lon, WID->metParams->sensors[i]->site_lat, WID->metParams->sensors[i]->site_UTM_x, WID->metParams->sensors[i]->site_UTM_y, WID->metParams->sensors[i]->site_UTM_zone, 1);
+        GIStool::UTMConverter(WID->metParams->sensors[i]->site_lon,
+                              WID->metParams->sensors[i]->site_lat,
+                              WID->metParams->sensors[i]->site_UTM_x,
+                              WID->metParams->sensors[i]->site_UTM_y,
+                              WID->metParams->sensors[i]->site_UTM_zone,
+                              1);
         WID->metParams->sensors[i]->site_xcoord = WID->metParams->sensors[i]->site_UTM_x - WID->simParams->UTMx;
         WID->metParams->sensors[i]->site_ycoord = WID->metParams->sensors[i]->site_UTM_y - WID->simParams->UTMy;
       }
-      GIStool::getConvergence(WID->metParams->sensors[i]->site_lon, WID->metParams->sensors[i]->site_lat, WID->metParams->sensors[i]->site_UTM_zone, convergence);
+      GIStool::getConvergence(WID->metParams->sensors[i]->site_lon,
+                              WID->metParams->sensors[i]->site_lat,
+                              WID->metParams->sensors[i]->site_UTM_zone,
+                              convergence);
     }
 
     int idx = i - count;// id of the available sensors for the running timestep of the code
@@ -151,7 +168,9 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
       blending_height += WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0] / num_sites;
     } else {
       if (WID->metParams->sensors[i]->TS[time_id[i]]->site_blayer_flag == 4) {
-        while (id < WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref.size() && WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[id] > 0 && counter < 1) {
+        while (id < WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref.size()
+               && WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[id] > 0
+               && counter < 1) {
           blending_height += WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[id] / num_sites;
           counter += 1;
           id += 1;
@@ -198,8 +217,8 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
     // Exponential velocity profile
     if (WID->metParams->sensors[i]->TS[time_id[i]]->site_blayer_flag == 2) {
       for (auto k = WGD->terrain_face_id[site_id[idx]]; k < WGD->nz; k++) {
-        u_prof[idx][k] = cos(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_p);
-        v_prof[idx][k] = sin(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_p);
+        u_prof[idx][k] = cos(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_z0);
+        v_prof[idx][k] = sin(site_theta[idx]) * WID->metParams->sensors[i]->TS[time_id[i]]->site_U_ref[0] * pow(((WGD->z[k] - WGD->z_face[WGD->terrain_face_id[site_id[idx]] - 1]) / WID->metParams->sensors[i]->TS[time_id[i]]->site_z_ref[0]), WID->metParams->sensors[i]->TS[time_id[i]]->site_z0);
       }
     }
 
@@ -340,6 +359,20 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
     }
   }
 
+  float surf_layer_height;// Surface layer height of the atmospheric boundary layer (ABL)
+  float abl_height;// Atmospheric boundary layer (ABL) height
+  float asl_percent = 0.05;// Percentage of atmospheric surface layer (ASL)
+
+  // Stable boundary layer
+  if (average__one_overL > 0.0) {
+    abl_height = 200;
+  } else if (average__one_overL < 0.0) {// Unstable boundary layer
+    abl_height = 1000;
+  } else {// Neutral boundary layer
+    abl_height = 100;
+  }
+
+
   x.resize(WGD->nx);
   for (size_t i = 0; i < WGD->nx; i++) {
     x[i] = (i - 0.5) * WGD->dx; /**< Location of face centers in x-dir */
@@ -350,48 +383,63 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
     y[j] = (j - 0.5) * WGD->dy; /**< Location of face centers in y-dir */
   }
 
-  int k_mod;
-  if (num_sites == 1) {
-    for (auto k = 0; k < WGD->nz; k++) {
+
+  int k_mod;//Modified index in z-direction
+  if (num_sites == 1) {//If there is only one sensor in the domain
+    for (auto k = 1; k < WGD->nz; k++) {
       for (auto j = 0; j < WGD->ny; j++) {
         for (auto i = 0; i < WGD->nx; i++) {
 
-          int id = i + j * WGD->nx;
+          int id = i + j * WGD->nx;//Index in horizontal surface
+          //If height added to top of terrain is still inside QES domain
           if (k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
-            k_mod = k + WGD->terrain_face_id[id] - 1;
+            k_mod = k + WGD->terrain_face_id[id] - 1;//Set the modified index
           } else {
             continue;
           }
-          icell_face = i + j * WGD->nx + k_mod * WGD->nx * WGD->ny;/// Lineralized index for cell faced values
-          if (k + WGD->terrain_face_id[site_id[0]] - 1 > WGD->nz - 2) {
-            WGD->u0[icell_face] = u_prof[0][WGD->nz - 2];
-            WGD->v0[icell_face] = v_prof[0][WGD->nz - 2];
+          // Lineralized index for cell faced values
+          icell_face = i + j * WGD->nx + k_mod * WGD->nx * WGD->ny;
+          // If the height difference between the terrain at the curent cell and sensor location is less than ABL height
+          if (abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[0]]]) > abl_height) {
+            surf_layer_height = asl_percent * abl_height;
           } else {
+            surf_layer_height = asl_percent * (2 * abl_height - (WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[0]]]));
+          }
+          // If height (above ground) is less than or equal to ASL height
+          if (WGD->z[k] <= surf_layer_height) {
             WGD->u0[icell_face] = u_prof[0][k + WGD->terrain_face_id[site_id[0]] - 1];
             WGD->v0[icell_face] = v_prof[0][k + WGD->terrain_face_id[site_id[0]] - 1];
+          }// If sum of z index and the terrain index at the sensor location is outside the domain
+          else if (k + WGD->terrain_face_id[site_id[0]] - 1 > WGD->nz - 2) {
+            WGD->u0[icell_face] = u_prof[0][WGD->nz - 2];
+            WGD->v0[icell_face] = v_prof[0][WGD->nz - 2];
+          }// If height (above ground) is greater than ASL height and modified index is inside the domain
+          else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
+            WGD->u0[icell_face] = u_prof[0][k_mod];
+            WGD->v0[icell_face] = v_prof[0][k_mod];
           }
 
-          // WGD->w0[icell_face] = 0.0;         /// Perpendicular wind direction
+          WGD->w0[icell_face] = 0.0;// Perpendicular wind direction
         }
       }
     }
   }
 
   // If number of sites are more than one
-  // Apply 2D Barnes scheme to interpolate site velocity profiles to the whole domain
+  // Apply modified Barnes scheme to interpolate site velocity profiles to the whole domain
   //
   // If number of sites are more than one
-  // Apply 2D Barnes scheme to interpolate site velocity profiles to the whole domain
+  // Apply modified Barnes scheme to interpolate site velocity profiles to the whole domain
   else if (WID->simParams->m_domIType != SimulationParameters::DomainInputType::WRFOnly) {
     if (solverType == 1) {
       auto startBarnesCPU = std::chrono::high_resolution_clock::now();
-      BarnesInterpolationCPU(WID, WGD, u_prof, v_prof, num_sites, available_sensor_id);
+      BarnesInterpolationCPU(WID, WGD, u_prof, v_prof, num_sites, available_sensor_id, asl_percent, abl_height);
       auto finishBarnesCPU = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> elapsedBarnesCPU = finishBarnesCPU - startBarnesCPU;
       std::cout << "Elapsed time for Barnes interpolation on CPU: " << elapsedBarnesCPU.count() << " s\n";
     } else {
       auto startBarnesGPU = std::chrono::high_resolution_clock::now();
-      BarnesInterpolationGPU(WID, WGD, u_prof, v_prof, site_id, num_sites, available_sensor_id);
+      BarnesInterpolationGPU(WID, WGD, u_prof, v_prof, site_id, num_sites, available_sensor_id, asl_percent, abl_height);
       auto finishBarnesGPU = std::chrono::high_resolution_clock::now();
       std::chrono::duration<float> elapsedBarnesGPU = finishBarnesGPU - startBarnesGPU;
       std::cout << "Elapsed time for Barnes interpolation on GPU: " << elapsedBarnesGPU.count() << " s\n";
@@ -587,7 +635,7 @@ void Sensor::inputWindProfile(const WINDSInputData *WID, WINDSGeneralData *WGD, 
   std::cout << "Elapsed time for input wind profile: " << elapsed_InputWindProfile.count() << " s\n";
 }
 
-void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, int num_sites, std::vector<int> available_sensor_id)
+void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData *WGD, std::vector<std::vector<float>> u_prof, std::vector<std::vector<float>> v_prof, int num_sites, std::vector<int> available_sensor_id, float asl_percent, float abl_height)
 {
   std::vector<float> x, y;
   x.resize(WGD->nx);
@@ -605,6 +653,7 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
   float sum_wm, sum_wu, sum_wv;
   float dxx, dyy, u12, u34, v12, v34;
   int icell_face, icell_cent;
+  float surf_layer_height;// Surface layer height of the atmospheric boundary layer
 
   std::vector<float> u0_int(num_sites * WGD->nz, 0.0);
   std::vector<float> v0_int(num_sites * WGD->nz, 0.0);
@@ -648,17 +697,18 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
     }
   }
 
-  int k_mod;
+  int k_mod;//Modified index in z-direction
   for (auto k = 1; k < WGD->nz; k++) {
     for (auto j = 0; j < WGD->ny; j++) {
       for (auto i = 0; i < WGD->nx; i++) {
         sum_wu = 0.0;
         sum_wv = 0.0;
         sum_wm = 0.0;
-        int id = i + j * WGD->nx;
-        int idx = i + j * (WGD->nx - 1);
+        int id = i + j * WGD->nx;//Index in horizontal surface
+        int idx = i + j * (WGD->nx - 1);//Index in horizontal surface for cell faces
+        //If height added to top of terrain is still inside QES domain
         if (k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
-          k_mod = k + WGD->terrain_face_id[id] - 1;
+          k_mod = k + WGD->terrain_face_id[id] - 1;//Set the modified index
         } else {
           continue;
         }
@@ -667,9 +717,26 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
           site_i[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord / WGD->dx;
           site_j[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord / WGD->dy;
           site_id[ii] = site_i[ii] + site_j[ii] * WGD->nx;
+          // If the height difference between the terrain at the curent cell and sensor location is less than ABL height
+          if (abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]) > abl_height) {
+            surf_layer_height = asl_percent * abl_height;
+          } else {
+            surf_layer_height = asl_percent * (2 * abl_height - abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]));
+          }
+          // If sum of z index and the terrain index at the sensor location is outside the domain
           if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
             sum_wu += wm[ii][i][j] * u_prof[ii][WGD->nz - 2];
             sum_wv += wm[ii][i][j] * v_prof[ii][WGD->nz - 2];
+            sum_wm += wm[ii][i][j];
+          }// If height (above ground) is less than or equal to ASL height
+          else if (WGD->z[k] <= surf_layer_height) {
+            sum_wu += wm[ii][i][j] * u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
+            sum_wv += wm[ii][i][j] * v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
+            sum_wm += wm[ii][i][j];
+          }// If height (above ground) is greater than ASL height and modified index is inside the domain
+          else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[site_id[ii]] - 1 < WGD->nz && k_mod > k + WGD->terrain_face_id[site_id[ii]] - 1) {
+            sum_wu += wm[ii][i][j] * u_prof[ii][k_mod];
+            sum_wv += wm[ii][i][j] * v_prof[ii][k_mod];
             sum_wm += wm[ii][i][j];
           } else {
             sum_wu += wm[ii][i][j] * u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1];
@@ -677,6 +744,7 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
             sum_wm += wm[ii][i][j];
           }
         }
+
         icell_face = i + j * WGD->nx + k_mod * WGD->nx * WGD->ny;
         WGD->u0[icell_face] = sum_wu / sum_wm;
         WGD->v0[icell_face] = sum_wv / sum_wm;
@@ -734,9 +802,10 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
         sum_wu = 0.0;
         sum_wv = 0.0;
         sum_wm = 0.0;
-        int id = i + j * WGD->nx;
+        int id = i + j * WGD->nx;//Index in horizontal surface
+        //If height added to top of terrain is still inside QES domain
         if (k + WGD->terrain_face_id[id] - 1 < WGD->nz) {
-          k_mod = k + WGD->terrain_face_id[id] - 1;
+          k_mod = k + WGD->terrain_face_id[id] - 1;//Set the modified index
         } else {
           continue;
         }
@@ -744,9 +813,26 @@ void Sensor::BarnesInterpolationCPU(const WINDSInputData *WID, WINDSGeneralData 
           site_i[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_xcoord / WGD->dx;
           site_j[ii] = WID->metParams->sensors[available_sensor_id[ii]]->site_ycoord / WGD->dy;
           site_id[ii] = site_i[ii] + site_j[ii] * WGD->nx;
+          // If the height difference between the terrain at the curent cell and sensor location is less than ABL height
+          if (abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]) > abl_height) {
+            surf_layer_height = asl_percent * abl_height;
+          } else {
+            surf_layer_height = asl_percent * (2 * abl_height - abs(WGD->z[WGD->terrain_face_id[id]] - WGD->z[WGD->terrain_face_id[site_id[ii]]]));
+          }
+          // If sum of z index and the terrain index at the sensor location is outside the domain
           if (k + WGD->terrain_face_id[site_id[ii]] - 1 > WGD->nz - 2) {
             sum_wu += wm[ii][i][j] * (u_prof[ii][WGD->nz - 2] - u0_int[WGD->nz - 2 + ii * WGD->nz]);
             sum_wv += wm[ii][i][j] * (v_prof[ii][WGD->nz - 2] - v0_int[WGD->nz - 2 + ii * WGD->nz]);
+            sum_wm += wm[ii][i][j];
+          }// If height (above ground) is less than or equal to ASL height
+          else if (WGD->z[k] <= surf_layer_height) {
+            sum_wu += wm[ii][i][j] * (u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1] - u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);
+            sum_wv += wm[ii][i][j] * (v_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1] - v0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);
+            sum_wm += wm[ii][i][j];
+          }// If height (above ground) is greater than ASL height and modified index is inside the domain
+          else if (WGD->z[k] > surf_layer_height && k + WGD->terrain_face_id[site_id[ii]] - 1 < WGD->nz && k_mod > k + WGD->terrain_face_id[site_id[ii]] - 1) {
+            sum_wu += wm[ii][i][j] * (u_prof[ii][k_mod] - u0_int[k_mod + ii * WGD->nz]);
+            sum_wv += wm[ii][i][j] * (v_prof[ii][k_mod] - v0_int[k_mod + ii * WGD->nz]);
             sum_wm += wm[ii][i][j];
           } else {
             sum_wu += wm[ii][i][j] * (u_prof[ii][k + WGD->terrain_face_id[site_id[ii]] - 1] - u0_int[k + WGD->terrain_face_id[site_id[ii]] - 1 + ii * WGD->nz]);

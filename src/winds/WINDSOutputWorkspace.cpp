@@ -115,6 +115,7 @@ WINDSOutputWorkspace::WINDSOutputWorkspace(WINDSGeneralData *WGD, std::string ou
   dim_vect_fc.push_back(NcDim_y_fc);
   dim_vect_fc.push_back(NcDim_x_fc);
   // create attributes
+
   createAttVector("u", "x-component velocity", "m s-1", dim_vect_fc, &(m_WGD->u));
   createAttVector("v", "y-component velocity", "m s-1", dim_vect_fc, &(m_WGD->v));
   createAttVector("w", "z-component velocity", "m s-1", dim_vect_fc, &(m_WGD->w));

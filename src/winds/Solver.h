@@ -70,14 +70,15 @@ protected:
   const float B; /**< :document this: */
 
   float tol; /**< Error tolerance */
-  const float omega = 1.78f; /**< Over-relaxation factor */
+  const float omega = 1.0f; /**< Over-relaxation factor */
+
+  int itermax; /**< Maximum number of iterations */
 
   // SOLVER-based parameters
   std::vector<float> R; /**< Divergence of initial velocity field */
   std::vector<float> lambda, lambda_old; /**< :document these as group or indiv: */
 
-  int itermax; /**< Maximum number of iterations */
-
+  Solver(const WINDSInputData *WID, WINDSGeneralData *WGD);
   /**
    * Prints out the current amount that a process
    * has finished with a progress bar.
@@ -88,7 +89,20 @@ protected:
 
 
 public:
-  Solver(const WINDSInputData *WID, WINDSGeneralData *WGD);
+  void resetLambda();
+  void copyLambda();
 
   virtual void solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind) = 0;
 };
+
+inline void Solver::resetLambda()
+{
+  std::fill(lambda.begin(), lambda.end(), 0.0);
+  std::fill(lambda_old.begin(), lambda_old.end(), 0.0);
+  std::fill(R.begin(), R.end(), 0.0);
+}
+
+inline void Solver::copyLambda()
+{
+  lambda_old = lambda;
+}

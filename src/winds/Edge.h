@@ -43,9 +43,10 @@ template<class T>
 class Edge
 {
 private:
-  std::vector<T> values;
+
 
 public:
+  std::vector<T> values;
   /**
    * Default constructor, both items initialized as 0.
    */

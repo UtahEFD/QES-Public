@@ -286,9 +286,10 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                 int i = ceil(((xc - 0.5 * WGD->dxy + x_wall) * cos(upwind_dir) - yc * sin(upwind_dir) + building_cent_x - 0.001) / WGD->dx) - 1;
                 int j = ceil(((xc - 0.5 * WGD->dxy + x_wall) * sin(upwind_dir) + yc * cos(upwind_dir) + building_cent_y - 0.001) / WGD->dy) - 1;
 
-                //if (WGD->ibuilding_flag[i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1)] >= 0) {
-                //  std::cout << "error" << std::endl;
-                //}
+                if (WGD->ibuilding_flag[i + j * (WGD->nx - 1) + k * (WGD->nx - 1) * (WGD->ny - 1)] >= 0) {
+                  //std::cout << "error" << std::endl;
+                  continue;
+                }
 
                 // (LoopDB) Loop through each polygon node of the downstream buildings
                 for (size_t j_id = 0; j_id < WGD->allBuildingsV[d_build]->polygonVertices.size() - 1; j_id++) {
@@ -318,7 +319,7 @@ void PolyBuilding::streetCanyon(WINDSGeneralData *WGD)
                   /* flow reverse means that the flow at the reference is reveresed compared to the upwind direction
                      - reverse flow = flow go down along front face - up along back face
                      - otherwise    = flow go up along front face - down along back face
-                     this block check of flow conditions: 
+                     this block check of flow conditions:
                      1) check if location of current cell against db-face
                      |  x-dir (relative to center of face): location within one cell
                      |  y-dir (relative to center of face): less that 1/2 the length of the face

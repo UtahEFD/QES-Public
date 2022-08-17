@@ -42,8 +42,8 @@ class WINDSGeneralData;
 class WindProfilerType
 {
 private:
-  std::vector<std::vector<float>> u_prof;
-  std::vector<std::vector<float>> v_prof;
+  //std::vector<std::vector<float>> u_prof;
+  //std::vector<std::vector<float>> v_prof;
 
 public:
   //std::vector<SensorType *> sensors;

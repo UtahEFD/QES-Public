@@ -81,7 +81,7 @@ public:
    *
    * @param WGD :document this:
    */
-  void wallLogBC(WINDSGeneralData *WGD);
+  void wallLogBC(WINDSGeneralData *WGD, bool isInitial);
 
 
   /**

@@ -211,12 +211,13 @@ __global__ void finalVelocityShared(float *d_lambda, float *d_u, float *d_v, flo
 
 void SharedMemory::solve(const WINDSInputData *WID, WINDSGeneralData *WGD, bool solveWind)
 {
-  //auto startTotal = std::chrono::high_resolution_clock::now();
+  auto startTotal = std::chrono::high_resolution_clock::now();// Start
+  // recording
+  // execution
+  // time
+  itermax = WID->simParams->maxIterations;
   int numblocks = (WGD->numcell_cent / BLOCKSIZE) + 1;
   R.resize(WGD->numcell_cent, 0.0);
-
-  lambda.resize(WGD->numcell_cent, 0.0);
-  lambda_old.resize(WGD->numcell_cent, 0.0);
 
   std::vector<float> value(WGD->numcell_cent, 0.0);
   std::vector<float> bvalue(numblocks, 0.0);

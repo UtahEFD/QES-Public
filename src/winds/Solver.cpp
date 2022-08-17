@@ -83,9 +83,12 @@ Solver::Solver(const WINDSInputData *WID, WINDSGeneralData *WGD)
     alpha2(1),
     eta(pow((alpha1 / alpha2), 2.0)),
     A(pow((WGD->dx / WGD->dy), 2.0)),
-    B(eta * pow((WGD->dx / WGD->dz), 2.0)),
-    itermax(WID->simParams->maxIterations)
+    B(eta * pow((WGD->dx / WGD->dz), 2.0))
 
 {
   tol = WID->simParams->tolerance;
+
+  lambda.resize(WGD->numcell_cent, 0.0);
+  lambda_old.resize(WGD->numcell_cent, 0.0);
+  R.resize(WGD->numcell_cent, 0.0);
 }

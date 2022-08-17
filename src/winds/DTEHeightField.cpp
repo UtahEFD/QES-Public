@@ -333,8 +333,10 @@ void DTEHeightField::load()
   origin_x = m_geoTransform[0];
   origin_y = m_geoTransform[3] - pixelSizeY * m_nYSize;
 
+  printf("\tDEM size: %dx%d\n", m_nXSize, m_nYSize);
+  printf("\tDEM size: %.1fx%.1f\n", m_nXSize * pixelSizeX, m_nYSize * pixelSizeY);
+
   printf("\tDomain Origin = (%.6f,%.6f)\n", origin_x, origin_y);
-  printf("DEM size is %dx%d\n", m_nXSize, m_nYSize);
 
   // UTMx will be correct, but need to subtract halo
   //      demMinX == UTMx - halo_x
@@ -1123,16 +1125,20 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
       float S_cut;
       float ni, nj, nk;
       float solid_V_frac;
+      float distance_x, distance_y, distance_z;
+      float distance;// Distance of cut face from the center of the cut-cell
       std::vector<Vector3> cut_points;// Intersection points for each face
 
       S_front = S_behind = S_right = S_left = S_below = S_above = 0.0;
       S_cut = 0.0;
-      ni = nj = nk = 0.0;
-      solid_V_frac = 0.0;
       const float pi = 4.0f * atan(1.0); /**< pi constant */
-
+      int kkk = cutcell_index / ((WGD->nx - 1) * (WGD->ny - 1));
+      int jjj = (cutcell_index - kkk * (WGD->nx - 1) * (WGD->ny - 1)) / (WGD->nx - 1);
+      int iii = cutcell_index - kkk * (WGD->nx - 1) * (WGD->ny - 1) - jjj * (WGD->nx - 1);
       for (int i = 0; i < 6; i++) {
 
+        ni = nj = nk = 0.0;
+        solid_V_frac = 0.0;
         cut_points.clear();
         cut_points = fluidFacePoints[i];
         // place points in local cell space
@@ -1142,6 +1148,16 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
               cut_points[jj][l] = cut_points[jj][l] - location[l];
             }
           }
+
+          /*if (ii == 290 && jj == 257 && kk == 54) {
+            for (int jj = 0; jj < cut_points.size(); jj++) {
+              std::cout << "i:  " << i << std::endl;
+              std::cout << "jj:  " << jj << std::endl;
+              std::cout << "cut_points_x:  " << cut_points[jj][0] << std::endl;
+              std::cout << "cut_points_y:  " << cut_points[jj][1] << std::endl;
+              std::cout << "cut_points_z:  " << cut_points[jj][2] << std::endl;
+            }
+          }*/
 
           // for faces that exist on the side of the cell (not XY planes)
           if (i < 4) {
@@ -1157,6 +1173,25 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
             }
             if (i == 3) {
               S_behind = WGD->cut_cell->calculateArea(cut_points, cutcell_index, WGD->dx, WGD->dy, WGD->dz_array[k], WGD->n, WGD->m, WGD->f, WGD->e, WGD->h, WGD->g, i);
+            }
+          }
+        } else {
+          if (i < 4) {
+            if (i == 0) {
+              S_right = (WGD->dx * WGD->dz_array[k]);
+              WGD->h[cutcell_index] = 0.0;
+            }
+            if (i == 1) {
+              S_left = (WGD->dx * WGD->dz_array[k]);
+              WGD->g[cutcell_index] = 0.0;
+            }
+            if (i == 2) {
+              S_front = (WGD->dy * WGD->dz_array[k]);
+              WGD->e[cutcell_index] = 0.0;
+            }
+            if (i == 3) {
+              S_behind = (WGD->dy * WGD->dz_array[k]);
+              WGD->f[cutcell_index] = 0.0;
             }
           }
         }
@@ -1209,6 +1244,38 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
                         / (3 * WGD->dx * WGD->dy * WGD->dz_array[k]);
       }
 
+      /*if (iii == 208 && jjj == 318 && kkk == 115) {
+        std::cout << "iii:   " << iii << std::endl;
+        std::cout << "jjj:   " << jjj << std::endl;
+        std::cout << "kkk:   " << kkk << std::endl;
+        std::cout << "cutcell_index:  " << cutcell_index << std::endl;
+        std::cout << "WGD->x[ii]:  " << WGD->x[iii] << std::endl;
+        std::cout << "WGD->y[jj]:  " << WGD->y[jjj] << std::endl;
+        std::cout << "WGD->z[kk]:  " << WGD->z[kkk] << std::endl;
+        std::cout << "ni:  " << ni << std::endl;
+        std::cout << "nj:  " << nj << std::endl;
+        std::cout << "nk:  " << nk << std::endl;
+        std::cout << "S_behind:  " << WGD->f[cutcell_index] << std::endl;
+        std::cout << "S_front:  " << WGD->e[cutcell_index] << std::endl;
+        std::cout << "S_left:  " << WGD->g[cutcell_index] << std::endl;
+        std::cout << "S_right:  " << WGD->h[cutcell_index] << std::endl;
+        std::cout << "S_below:  " << WGD->n[cutcell_index] << std::endl;
+        std::cout << "S_above:  " << WGD->m[cutcell_index] << std::endl;
+      }*/
+
+      distance_x = (terrainPoints[0][0] - WGD->x[iii]) * ni;
+      distance_y = (terrainPoints[0][1] - WGD->y[jjj]) * nj;
+      distance_z = (terrainPoints[0][2] - WGD->z[kkk]) * nk;
+
+      distance = sqrt(pow(distance_x, 2.0) + pow(distance_y, 2.0) + pow(distance_z, 2.0));
+
+      // If the cell center is not in solid
+      if (WGD->center_id[cutcell_index] == 1) {
+        WGD->wall_distance[cutcell_index] = distance;
+      } else {// If the cell center is inside solid
+        WGD->wall_distance[cutcell_index] = -distance;
+      }
+
       WGD->terrain_volume_frac[cutcell_index] -= solid_V_frac;
 
       WGD->ni[cutcell_index] = ni;
@@ -1217,6 +1284,27 @@ void DTEHeightField::setCellPoints(int i, int j, int nx, int ny, int nz, std::ve
 
       if (WGD->terrain_volume_frac[cutcell_index] < 0.0) {
         WGD->terrain_volume_frac[cutcell_index] = 0.0;
+      }
+
+      if (WGD->terrain_volume_frac[cutcell_index] <= 0.1) {
+        WGD->icellflag[cutcell_index] = 2;
+        WGD->e[cutcell_index] = 1.0;
+        WGD->f[cutcell_index] = 1.0;
+        WGD->g[cutcell_index] = 1.0;
+        WGD->h[cutcell_index] = 1.0;
+        WGD->m[cutcell_index] = 1.0;
+        WGD->n[cutcell_index] = 1.0;
+      }
+
+      if (WGD->e[cutcell_index] == 0.0 && WGD->f[cutcell_index] == 0.0 && WGD->g[cutcell_index] == 0.0
+          && WGD->h[cutcell_index] == 0.0 && WGD->m[cutcell_index] == 0.0 && WGD->n[cutcell_index] == 0.0) {
+        WGD->icellflag[cutcell_index] = 2;
+        WGD->e[cutcell_index] = 1.0;
+        WGD->f[cutcell_index] = 1.0;
+        WGD->g[cutcell_index] = 1.0;
+        WGD->h[cutcell_index] = 1.0;
+        WGD->m[cutcell_index] = 1.0;
+        WGD->n[cutcell_index] = 1.0;
       }
     }
     //std::cout << "count:  " << count << std::endl;
