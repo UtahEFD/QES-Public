@@ -46,13 +46,13 @@ int main(int argc, char **argv)
     WGD1->loadNetCDFData(index);
     WGD2->loadNetCDFData(index);
 
-    comp = compareVar(WGD1->u0, WGD2->u0);
+    comp = compareVar(WGD1->u, WGD2->u);
     comp.getStats("u");
 
-    comp = compareVar(WGD1->v0, WGD2->v0);
+    comp = compareVar(WGD1->v, WGD2->v);
     comp.getStats("v");
 
-    comp = compareVar(WGD1->w0, WGD2->w0);
+    comp = compareVar(WGD1->w, WGD2->w);
     comp.getStats("w");
 
     comp = compareVar(WGD1->icellflag, WGD2->icellflag);

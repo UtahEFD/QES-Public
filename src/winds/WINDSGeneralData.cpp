@@ -1142,9 +1142,9 @@ void WINDSGeneralData::loadNetCDFData(int stepin)
   }
 
   // face-center variables
-  input->getVariableData("u", start, count_fc, u0);
-  input->getVariableData("v", start, count_fc, v0);
-  input->getVariableData("w", start, count_fc, w0);
+  input->getVariableData("u", start, count_fc, u);
+  input->getVariableData("v", start, count_fc, v);
+  input->getVariableData("w", start, count_fc, w);
 
   // clear wall indices container (guarantee entry vector)
   wall_right_indices.clear();

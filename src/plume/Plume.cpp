@@ -300,12 +300,12 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
     // simulations, but only when the updateFrequency allows
     if (simTimeCurr >= nextUpdate || (simTimeCurr == loopTimeEnd)) {
       if (verbose) {
-        std::cout << "Time = " << simTimeCurr << "(sim time = " << simTime << " s, iteration = " << simTimeIdx << "). "
+        std::cout << "Time = " << simTimeCurr << " (sim time = " << simTime << " s, iteration = " << simTimeIdx << "). "
                   << "Particles: Released = " << nParsReleased << " "
                   << "Active = " << particleList.size() << " "
                   << "Rogue = " << isRogueCount << "." << std::endl;
       } else {
-        std::cout << "Time = " << simTimeCurr << "(sim time = " << simTime << " s, iteration = " << simTimeIdx << "). "
+        std::cout << "Time = " << simTimeCurr << " (sim time = " << simTime << " s, iteration = " << simTimeIdx << "). "
                   << "Particles: Released = " << nParsReleased << " "
                   << "Active = " << particleList.size() << "." << std::endl;
       }
