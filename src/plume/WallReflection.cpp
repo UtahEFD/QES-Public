@@ -130,7 +130,18 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
     // cell ID out of bound (assuming particle outside of domain)
     if (zPos < domainZstart) {
       std::cerr << "Reflection problem: particle out of range before reflection" << std::endl;
-      std::cerr << xPos << "," << yPos << "," << zPos << std::endl;
+
+      Vector3Double Xnew, Xold, U, vecFluct;
+      // position of the particle start of trajectory
+      Xold = { xPos - disX, yPos - disY, zPos - disZ };
+      // postion of the particle end of trajectory
+      Xnew = { xPos, yPos, zPos };
+      U = Xnew - Xold;
+      vecFluct = { uFluct, vFluct, wFluct };
+
+      std::cerr << "Xnew\t" << Xnew << std::endl;
+      std::cerr << "Xold\t" << Xold << std::endl;
+      std::cerr << "U\t" << U << " " << U.length() << std::endl;
     }
     // -> set to false
     return false;
@@ -158,13 +169,11 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
     yPos -= disY;
     zPos -= disZ;
 
-
+    // for debug
     std::cerr << "Reflection problem: particle moved too fast: cell traveled: "
               << abs(cellIdxOld[0] - cellIdxNew[0]) << ","
               << abs(cellIdxOld[1] - cellIdxNew[1]) << ","
               << abs(cellIdxOld[2] - cellIdxNew[2]) << std::endl;
-
-    // for debug
 
     Vector3Double Xnew, Xold, U, vecFluct;
     // position of the particle start of trajectory
@@ -177,7 +186,16 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
     std::cerr << "Xnew\t" << Xnew << std::endl;
     std::cerr << "Xold\t" << Xold << std::endl;
     std::cerr << "U\t" << U << " " << U.length() << std::endl;
-    std::cerr << "u\t" << vecFluct << " " << vecFluct.length() << std::endl;
+    //std::cerr << "u\t" << vecFluct << " " << vecFluct.length() << std::endl;
+    Vector3Double X = 0.5 * U;
+    double d = X.length();
+    std::cerr << "dist\t" << d << std::endl;
+    X = Xold + X;
+    std::cerr << "X\t" << X << std::endl;
+
+    X = X + U / U.length() * d;
+
+    std::cerr << "X\t" << X << std::endl;
 
     return true;
   }
@@ -345,26 +363,26 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
 
       // list of potential surface
       // - ratio of dist. to wall over dist. total
-      std::vector<double> vl;
+      std::vector<double> vl(3, 0.0);
       // - normal vector for each surface
-      std::vector<Vector3Double> vN;
+      std::vector<Vector3Double> vN(3, { 0, 0, 0 });
       // - linear index for icellflag check
-      std::vector<int> vn;
+      std::vector<int> vn(3, 0);
 
       // add potential surface to the list (valid only if 0 <= li <= 1.0)
       // -> only executed if 2 valid surfaces exist
       // surface in the x-direction
-      vl.push_back(l1);
-      vN.push_back(-f1 * e1);
-      vn.push_back(f1);
+      vl[0] = l1;
+      vN[0] = -f1 * e1;
+      vn[0] = f1;
       // surface in the y-direction
-      vl.push_back(l2);
-      vN.push_back(-f2 * e2);
-      vn.push_back(f2 * (nx - 1));
+      vl[1] = l2;
+      vN[1] = -f2 * e2;
+      vn[1] = f2 * (nx - 1);
       // surface in the z-direction
-      vl.push_back(l3);
-      vN.push_back(-f3 * e3);
-      vn.push_back(f3 * (nx - 1) * (ny - 1));
+      vl[2] = l3;
+      vN[2] = -f3 * e3;
+      vn[2] = f3 * (nx - 1) * (ny - 1);
 
       // sort indices from smallest to largest (only indices are sorted)
       std::vector<size_t> idx(vl.size());

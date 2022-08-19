@@ -340,33 +340,11 @@ void Plume::run(QEStime loopTimeEnd, WINDSGeneralData *WGD, TURBGeneralData *TGD
   return;
 }
 
-double Plume::calcCourantTimestep(const double &d,
-                                  const double &u,
+double Plume::calcCourantTimestep(const double &u,
                                   const double &v,
                                   const double &w,
                                   const double &timeRemainder)
 {
-  // if the Courant Number is set to 0.0, we want to exit using the
-  // timeRemainder (first time through that is the simTime)
-  if (CourantNum == 0.0) {
-    return timeRemainder;
-  }
-
-  double min_ds = std::min(dxy, dz);
-  double max_u = std::max({ u, v, w });
-  double CN = 0.0;
-  if (d > 15.0 * min_ds) {
-    CN = 1.0;
-  } else if (d > 8.0 * min_ds) {
-    CN = 0.5;
-  } else if (d > 4.0 * min_ds) {
-    CN = 1.0 / 3.0;
-  } else {
-    CN = 0.2;
-  }
-
-  return std::min(timeRemainder, CN * min_ds / max_u);
-  /* original code 
   // set the output dt_par val to the timeRemainder
   // then if any of the Courant number values end up smaller, use that value
   // instead
@@ -393,7 +371,48 @@ double Plume::calcCourantTimestep(const double &d,
   }
 
   return dt_par;
+}
+
+double Plume::calcCourantTimestep(const double &d,
+                                  const double &u,
+                                  const double &v,
+                                  const double &w,
+                                  const double &timeRemainder)
+{
+  // if the Courant Number is set to 0.0, we want to exit using the
+  // timeRemainder (first time through that is the simTime)
+  if (CourantNum == 0.0) {
+    return timeRemainder;
+  }
+
+  double min_ds = std::min(dxy, dz);
+  //double max_u = std::max({ u, v, w });
+  double max_u = sqrt(u * u + v * v + w * w);
+  double CN = 0.0;
+
+  /*
+    if (d > 6.0 * min_ds) {
+    //CN = 1.0;
+    return timeRemainder;
+  } else if (d > 4.0 * min_ds) {
+    CN = 0.5;
+  } else if (d > 2.0 * min_ds) {
+    CN = 1.0 / 3.0;
+  } else {
+    CN = 0.2;
+  }
   */
+
+  if (d > 2.0 * max_u * sim_dt) {
+    //CN = 1.0;
+    return timeRemainder;
+  } else if (d > 1.0 * max_u * sim_dt) {
+    CN = 2.0 * CourantNum;
+  } else {
+    CN = CourantNum;
+  }
+
+  return std::min(timeRemainder, CN * min_ds / max_u);
 }
 
 void Plume::getInputSources(PlumeInputData *PID)

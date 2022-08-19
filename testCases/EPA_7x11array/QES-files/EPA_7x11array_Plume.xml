@@ -1,5 +1,5 @@
 <plumeParameters>
-  <CourantNumber> 0.5 </CourantNumber>
+  <CourantNumber> 0.4 </CourantNumber>
   <simDur> 3900.0 </simDur><!-- this is the amount of time to run the simulation -->
   <timeStep> 1.0 </timeStep><!-- this is the overall integration timestep -->
   <invarianceTol> 1e-5 </invarianceTol>     <!-- tolerance in makeRealizeable on the stress tensor -->
