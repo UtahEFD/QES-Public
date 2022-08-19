@@ -202,10 +202,7 @@ protected:
                                 double &disZ,
                                 double &uFluct,
                                 double &vFluct,
-                                double &wFluct,
-                                double &uFluct_old,
-                                double &vFluct_old,
-                                double &wFluct_old);
+                                double &wFluct);
   // reflection on walls (stair step)
   bool wallReflectionFullStairStep(const WINDSGeneralData *WGD,
                                    double &xPos,
@@ -216,10 +213,7 @@ protected:
                                    double &disZ,
                                    double &uFluct,
                                    double &vFluct,
-                                   double &wFluct,
-                                   double &uFluct_old,
-                                   double &vFluct_old,
-                                   double &wFluct_old);
+                                   double &wFluct);
   // reflection -> set particle inactive when entering a wall
   bool wallReflectionSetToInactive(const WINDSGeneralData *WGD,
                                    double &xPos,
@@ -230,10 +224,7 @@ protected:
                                    double &disZ,
                                    double &uFluct,
                                    double &vFluct,
-                                   double &wFluct,
-                                   double &uFluct_old,
-                                   double &vFluct_old,
-                                   double &wFluct_old);
+                                   double &wFluct);
   // reflection -> this function will do nothing
   bool wallReflectionDoNothing(const WINDSGeneralData *WGD,
                                double &xPos,
@@ -244,10 +235,7 @@ protected:
                                double &disZ,
                                double &uFluct,
                                double &vFluct,
-                               double &wFluct,
-                               double &uFluct_old,
-                               double &vFluct_old,
-                               double &wFluct_old);
+                               double &wFluct);
 
   // function for calculating the individual particle timestep from the courant number, the current velocity fluctuations,
   // and the grid size. Forces particles to always move only at one timestep at at time.
@@ -313,37 +301,31 @@ protected:
   // Which function it points at is determined by setBCfunctions and the input xBCtype
   bool (Plume::*enforceWallBCs_x)(double &pos,
                                   double &velFluct,
-                                  double &velFluct_old,
                                   const double &domainStart,
                                   const double &domainEnd);
   // A pointer to the wallBC function for the y direction.
   // Which function it points at is determined by setBCfunctions and the input yBCtype
   bool (Plume::*enforceWallBCs_y)(double &pos,
                                   double &velFluct,
-                                  double &velFluct_old,
                                   const double &domainStart,
                                   const double &domainEnd);
   // A pointer to the wallBC function for the z direction.
   // Which function it points at is determined by setBCfunctions and the input zBCtype
   bool (Plume::*enforceWallBCs_z)(double &pos,
                                   double &velFluct,
-                                  double &velFluct_old,
                                   const double &domainStart,
                                   const double &domainEnd);
   // Boundary condition functions:
   bool enforceWallBCs_exiting(double &pos,
                               double &velFluct,
-                              double &velFluct_old,
                               const double &domainStart,
                               const double &domainEnd);
   bool enforceWallBCs_periodic(double &pos,
                                double &velFluct,
-                               double &velFluct_old,
                                const double &domainStart,
                                const double &domainEnd);
   bool enforceWallBCs_reflection(double &pos,
                                  double &velFluct,
-                                 double &velFluct_old,
                                  const double &domainStart,
                                  const double &domainEnd);
 

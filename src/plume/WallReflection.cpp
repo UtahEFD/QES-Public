@@ -45,10 +45,7 @@ bool Plume::wallReflectionSetToInactive(const WINDSGeneralData *WGD,
                                         double &disZ,
                                         double &uFluct,
                                         double &vFluct,
-                                        double &wFluct,
-                                        double &uFluct_old,
-                                        double &vFluct_old,
-                                        double &wFluct_old)
+                                        double &wFluct)
 {
   try {
     int cellIdx = interp->getCellId(xPos, yPos, zPos);
@@ -84,10 +81,7 @@ bool Plume::wallReflectionDoNothing(const WINDSGeneralData *WGD,
                                     double &disZ,
                                     double &uFluct,
                                     double &vFluct,
-                                    double &wFluct,
-                                    double &uFluct_old,
-                                    double &vFluct_old,
-                                    double &wFluct_old)
+                                    double &wFluct)
 {
   return true;
 }
@@ -101,10 +95,7 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
                                         double &disZ,
                                         double &uFluct,
                                         double &vFluct,
-                                        double &wFluct,
-                                        double &uFluct_old,
-                                        double &vFluct_old,
-                                        double &wFluct_old)
+                                        double &wFluct)
 {
   /*
    * This function will return true if:
@@ -243,7 +234,7 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
 
   // vector of fluctuation
   vecFluct = { uFluct, vFluct, wFluct };
-  vecFluct_old = { uFluct_old, vFluct_old, wFluct_old };
+  //vecFluct_old = { uFluct_old, vFluct_old, wFluct_old };
 
   /* Working variables informations:
      count       - number of reflections
@@ -429,7 +420,7 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
     Xnew = P + d * R;
     // relfection of the Fluctuation
     vecFluct = vecFluct.reflect(N);
-    vecFluct_old = vecFluct_old.reflect(N);
+    //vecFluct_old = vecFluct_old.reflect(N);
     // prepare variables for next bounce: particle position
     Xold = P;
 
@@ -461,9 +452,9 @@ bool Plume::wallReflectionFullStairStep(const WINDSGeneralData *WGD,
     vFluct = vecFluct[1];
     wFluct = vecFluct[2];
     // update output variable: old fluctuations
-    uFluct_old = vecFluct_old[0];
-    vFluct_old = vecFluct_old[1];
-    wFluct_old = vecFluct_old[2];
+    //uFluct_old = vecFluct_old[0];
+    //vFluct_old = vecFluct_old[1];
+    //wFluct_old = vecFluct_old[2];
   } else {
     // update output variable: particle position to old position
     xPos -= disX;

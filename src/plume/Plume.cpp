@@ -867,7 +867,6 @@ void Plume::setBCfunctions(std::string xBCtype, std::string yBCtype, std::string
 
 bool Plume::enforceWallBCs_exiting(double &pos,
                                    double &velFluct,
-                                   double &velFluct_old,
                                    const double &domainStart,
                                    const double &domainEnd)
 {
@@ -881,7 +880,6 @@ bool Plume::enforceWallBCs_exiting(double &pos,
 
 bool Plume::enforceWallBCs_periodic(double &pos,
                                     double &velFluct,
-                                    double &velFluct_old,
                                     const double &domainStart,
                                     const double &domainEnd)
 {
@@ -915,7 +913,6 @@ bool Plume::enforceWallBCs_periodic(double &pos,
 
 bool Plume::enforceWallBCs_reflection(double &pos,
                                       double &velFluct,
-                                      double &velFluct_old,
                                       const double &domainStart,
                                       const double &domainEnd)
 {
@@ -932,11 +929,11 @@ bool Plume::enforceWallBCs_reflection(double &pos,
     if (pos > domainEnd) {
       pos = domainEnd - (pos - domainEnd);
       velFluct = -velFluct;
-      velFluct_old = -velFluct_old;
+      //velFluct_old = -velFluct_old;
     } else if (pos < domainStart) {
       pos = domainStart - (pos - domainStart);
       velFluct = -velFluct;
-      velFluct_old = -velFluct_old;
+      //velFluct_old = -velFluct_old;
     }
     reflectCount = reflectCount + 1;
   }// while outside of domain

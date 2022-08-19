@@ -106,9 +106,9 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   // need to get the delta velFluct values right by doing the calculation inside the particle loop
   // these values go out of scope unless initialized here. So initialize them to zero (velFluct - velFluct_old = 0 right now)
   // they will be overwritten with the actual values in the particle timestep loop
-  double delta_uFluct = 0.0;
-  double delta_vFluct = 0.0;
-  double delta_wFluct = 0.0;
+  //double delta_uFluct = 0.0;
+  //double delta_vFluct = 0.0;
+  //double delta_wFluct = 0.0;
 
   double CoEps = 1e-6;
 
@@ -270,13 +270,14 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     zPos = zPos + disZ;
     // check and do wall (building and terrain) reflection (based in the method)
     if (isActive == true) {
-      isActive = (this->*wallReflection)(WGD, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct, uFluct_old, vFluct_old, wFluct_old);
+      //isActive = (this->*wallReflection)(WGD, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct, uFluct_old, vFluct_old, wFluct_old);
+      isActive = (this->*wallReflection)(WGD, xPos, yPos, zPos, disX, disY, disZ, uFluct, vFluct, wFluct);
     }
 
     // now apply boundary conditions
-    if (isActive == true) isActive = (this->*enforceWallBCs_x)(xPos, uFluct, uFluct_old, domainXstart, domainXend);
-    if (isActive == true) isActive = (this->*enforceWallBCs_y)(yPos, vFluct, vFluct_old, domainYstart, domainYend);
-    if (isActive == true) isActive = (this->*enforceWallBCs_z)(zPos, wFluct, wFluct_old, domainZstart, domainZend);
+    if (isActive == true) isActive = (this->*enforceWallBCs_x)(xPos, uFluct, domainXstart, domainXend);
+    if (isActive == true) isActive = (this->*enforceWallBCs_y)(yPos, vFluct, domainYstart, domainYend);
+    if (isActive == true) isActive = (this->*enforceWallBCs_z)(zPos, wFluct, domainZstart, domainZend);
 
     // now update the old values to be ready for the next particle time iteration
     // the current values are already set for the next iteration by the above calculations
@@ -285,9 +286,9 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
     //  we are already done using the old _old values by this point and need to use the current ones
     // but we do need to set the delta velFluct values before setting the velFluct_old values to the current velFluct values
     // !!! this is extremely important for the next iteration to work accurately
-    delta_uFluct = uFluct - uFluct_old;
-    delta_vFluct = vFluct - vFluct_old;
-    delta_wFluct = wFluct - wFluct_old;
+    //delta_uFluct = uFluct - uFluct_old;
+    //delta_vFluct = vFluct - vFluct_old;
+    //delta_wFluct = wFluct - wFluct_old;
     uFluct_old = uFluct;
     vFluct_old = vFluct;
     wFluct_old = wFluct;
@@ -331,9 +332,9 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   (*parItr)->vFluct_old = vFluct_old;
   (*parItr)->wFluct_old = wFluct_old;
 
-  (*parItr)->delta_uFluct = delta_uFluct;
-  (*parItr)->delta_vFluct = delta_vFluct;
-  (*parItr)->delta_wFluct = delta_wFluct;
+  //(*parItr)->delta_uFluct = delta_uFluct;
+  //(*parItr)->delta_vFluct = delta_vFluct;
+  //(*parItr)->delta_wFluct = delta_wFluct;
 
   (*parItr)->txx_old = txx_old;
   (*parItr)->txy_old = txy_old;
