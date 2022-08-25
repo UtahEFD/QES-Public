@@ -38,7 +38,8 @@
 
 
 #include "SourceType.hpp"
-
+#include "winds/WINDSGeneralData.h"
+//#include "Particles.hpp"
 
 class SourceFullDomain : public SourceType
 {
@@ -55,7 +56,7 @@ private:
   double xDomainEnd;
   double yDomainEnd;
   double zDomainEnd;
-
+  double sourceStrength = 0.0;// total mass released (g)
 protected:
 public:
   // Default constructor
@@ -74,6 +75,18 @@ public:
     m_sShape = SourceShape::fullDomain;
 
     setReleaseType();
+    setParticleType();
+    //Create particle factories
+    registerParticles();
+    /*
+    // Create a generic particle with attributes read from XML
+    Particles * particles;
+    particles->setParticleValues();
+*/
+    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
+
+
+    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
   }
 
 

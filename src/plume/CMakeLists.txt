@@ -17,6 +17,7 @@ CUDA_ADD_LIBRARY( qesplumecore
 
     Plume.cpp
     AdvectParticle.cpp
+    DepositParticle.cpp
     WallReflection.cpp
     
     PlumeOutput.cpp
@@ -24,6 +25,11 @@ CUDA_ADD_LIBRARY( qesplumecore
 
     BoundaryConditions.hpp
     Particle.hpp
+    ParseParticle.hpp
+    ParticleFactories.hpp
+    ParticleSmall.hpp
+    ParticleLarge.hpp
+    ParticleHeavyGas.hpp
     
     ReleaseType.hpp
     ReleaseType_instantaneous.hpp

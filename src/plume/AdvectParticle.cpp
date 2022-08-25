@@ -52,9 +52,17 @@ void Plume::advectParticle(double timeRemainder, std::list<Particle *>::iterator
   double yPos = (*parItr)->yPos;
   double zPos = (*parItr)->zPos;
 
+  double disX = 0.0;
+  double disY = 0.0;
+  double disZ = 0.0;
+
   double uMean = 0.0;
   double vMean = 0.0;
   double wMean = 0.0;
+
+  double uTot = 0.0;
+  double vTot = 0.0;
+  double wTot = 0.0;
 
   double flux_div_x = 0.0;
   double flux_div_y = 0.0;

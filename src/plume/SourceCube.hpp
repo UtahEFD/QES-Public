@@ -38,7 +38,8 @@
 
 
 #include "SourceType.hpp"
-
+#include "winds/WINDSGeneralData.h"
+//#include "Particles.hpp"
 
 class SourceCube : public SourceType
 {
@@ -52,7 +53,7 @@ private:
   double m_maxX;
   double m_maxY;
   double m_maxZ;
-
+  double sourceStrength = 0.0;// total mass released (g)
 protected:
 public:
   // Default constructor
@@ -71,6 +72,16 @@ public:
     m_sShape = SourceShape::cube;
 
     setReleaseType();
+    setParticleType();
+    // Create particle factories
+    registerParticles();
+    /*
+    // Create a generic particle with attributes read from XML
+    Particles * particles;
+    particles->setParticleValues();
+*/
+    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
+
 
     parsePrimitive<double>(true, m_minX, "minX");
     parsePrimitive<double>(true, m_minY, "minY");
@@ -78,6 +89,8 @@ public:
     parsePrimitive<double>(true, m_maxX, "maxX");
     parsePrimitive<double>(true, m_maxY, "maxY");
     parsePrimitive<double>(true, m_maxZ, "maxZ");
+
+    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
   }
 
 

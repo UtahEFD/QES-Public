@@ -38,7 +38,8 @@
 
 
 #include "SourceType.hpp"
-
+#include "winds/WINDSGeneralData.h"
+//#include "Particles.hpp"
 
 class SourceLine : public SourceType
 {
@@ -52,7 +53,7 @@ private:
   double posX_1;
   double posY_1;
   double posZ_1;
-
+  double sourceStrength = 0.0;// total mass released (g)
 protected:
 public:
   // Default constructor
@@ -71,6 +72,15 @@ public:
     m_sShape = SourceShape::line;
 
     setReleaseType();
+    setParticleType();
+    // Create particle factories
+    registerParticles();
+    /*
+    // Create a generic particle with attributes read from XML
+    Particles * particles;
+    particles->setParticleValues();
+*/
+    //std::cout << " protoParticle->tag = " << protoParticle->tag << std::endl;
 
     parsePrimitive<double>(true, posX_0, "posX_0");
     parsePrimitive<double>(true, posY_0, "posY_0");
@@ -78,6 +88,8 @@ public:
     parsePrimitive<double>(true, posX_1, "posX_1");
     parsePrimitive<double>(true, posY_1, "posY_1");
     parsePrimitive<double>(true, posZ_1, "posZ_1");
+
+    parsePrimitive<double>(false, sourceStrength, "sourceStrength");
   }
 
 

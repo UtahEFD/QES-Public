@@ -35,7 +35,8 @@
  */
 
 #include "SourceCube.hpp"
-
+#include "winds/WINDSGeneralData.h"
+//#include "Interp.h"
 
 void SourceCube::checkPosInfo(const double &domainXstart, const double &domainXend, const double &domainYstart, const double &domainYend, const double &domainZstart, const double &domainZend)
 {
@@ -99,12 +100,26 @@ int SourceCube::emitParticles(const float dt, const float currTime, std::list<Pa
 
     for (int pidx = 0; pidx < m_rType->m_parPerTimestep; pidx++) {
 
-      Particle *cPar = new Particle();
+      //Particle *cPar = new Particle();
+      Particle *cPar = particleTypeFactory->Create(protoParticle->tag);
 
       // generate uniform dist in domain
       cPar->xPos_init = uniformDistr(prng) * (m_maxX - m_minX) + m_minX;
       cPar->yPos_init = uniformDistr(prng) * (m_maxY - m_minY) + m_minY;
       cPar->zPos_init = uniformDistr(prng) * (m_maxZ - m_minZ) + m_minZ;
+      //int cellId2d = interp->getCellId2d(cPar->xPos_init, cPar->yPos_init);
+      //cPar->zPos_init = uniformDistr(prng) * (m_maxZ - m_minZ) + m_minZ + WGD->terrain[cellId2d];
+
+      cPar->d = protoParticle->d;//LDU commented 11/16
+      cPar->d_m = (1.0E-6) * protoParticle->d;// LDU commented 11/16
+      cPar->rho = protoParticle->rho;// LDU commented 11/16
+      cPar->depFlag = protoParticle->depFlag;// LDU commented 11/16
+
+      cPar->m = sourceStrength / m_rType->m_numPar;
+      cPar->m_kg = sourceStrength / m_rType->m_numPar * (1.0E-3);
+
+      std::cout << " par type is: " << typeid(cPar).name() << " d = " << cPar->d << " m = " << cPar->m << " depFlag = " << cPar->depFlag << " vs = " << cPar->vs << std::endl;
+
 
       cPar->tStrt = currTime;
 
